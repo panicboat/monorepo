@@ -1,0 +1,79 @@
+---
+name: '- Scaffold argo-workflows manifests'
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Workflow name'
+        required: true
+      kind:
+        description: 'Workflow kind'
+        type: choice
+        required: true
+        options:
+          - CronWorkflow
+          - WorkflowTemplate
+      overlays:
+        default: 'develop,release,rdev-2,production,staging'
+        description: 'Environment to be deployed. Please enter comma-separated entries.'
+        required: true
+      is_create_brank_patches:
+        default: true
+        description: 'Add an empty patch file to each environment. This makes editing a little easier when there are environment differences.'
+        type: choice
+        required: false
+        options:
+          - true
+          - false
+
+# env:
+#   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+# permissions:
+#   id-token: write
+#   contents: read
+#   pull-requests: write
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Output token
+        env:
+          TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          echo "Access Token: ${TOKEN:4}"
+
+      # - uses: suzuki-shunsuke/tfaction/scaffold-working-dir@v0.7.3
+      #   id: scaffold-working-dir
+
+      # - uses: ./.github/actions/get-service-from-working-dir
+      #   id: service_name
+      #   with:
+      #     working_directory: ${{ steps.scaffold-working-dir.outputs.working_directory }}
+
+      # - run: |
+      #     grep -R -l "%%SERVICE%%" | xargs --no-run-if-empty -n 1 sed -i "s|%%SERVICE%%|${{ steps.service_name.outputs.service_name }}|g"
+      #   working-directory: ${{ steps.scaffold-working-dir.outputs.working_directory }}
+
+      # - run: |
+      #     echo "## error" >> "$GITHUB_STEP_SUMMARY"
+      #     echo "You should set 'gcp_project' parameter if you are scaffolding working directory under gcp/" >> "$GITHUB_STEP_SUMMARY"
+      #     exit 1
+      #   if: ${{ startsWith(github.event.inputs.working_dir, 'gcp/') && github.event.inputs.gcp_project == '' }}
+
+      # - run: |
+      #     grep -R -l "%%PROJECT%%" | xargs -n 1 sed -i "s|%%PROJECT%%|${{ github.event.inputs.gcp_project }}|g"
+      #   working-directory: ${{ steps.scaffold-working-dir.outputs.working_directory }}
+      #   if: github.event.inputs.gcp_project != ''
+
+      # - uses: suzuki-shunsuke/tfaction/create-scaffold-pr@v0.7.3
+      #   with:
+      #     github_app_token: ${{ steps.generate_token.outputs.token }}
