@@ -43,7 +43,13 @@ jobs:
         uses: actions/create-github-app-token@v1
         with:
           app-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Output token
+        env:
+          TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          echo "Access Token: ${TOKEN:4}"
 
       # - uses: suzuki-shunsuke/tfaction/scaffold-working-dir@v0.7.3
       #   id: scaffold-working-dir
