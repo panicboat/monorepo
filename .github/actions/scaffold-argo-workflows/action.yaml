@@ -4,7 +4,7 @@ inputs:
   service:
     description: 'Service name'
     required: true
-  NAMESPACE:
+  namespace:
     description: 'Workflow namespace'
     required: true
   kind:
