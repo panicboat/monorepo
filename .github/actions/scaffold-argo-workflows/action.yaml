@@ -4,6 +4,9 @@ inputs:
   service:
     description: 'Service name'
     required: true
+  NAMESPACE:
+    description: 'Workflow namespace'
+    required: true
   kind:
     description: 'Workflow kind'
     required: true
@@ -11,6 +14,7 @@ inputs:
     description: 'Workflow name'
     required: true
   overlays:
+    default: 'develop,production,staging'
     description: 'Environment to be deployed. Please enter comma-separated entries.'
     required: true
   is_create_brank_patches:
@@ -18,7 +22,7 @@ inputs:
     description: 'Add an empty patch file to each environment. This makes editing a little easier when there are environment differences.'
     required: false
   working_directory:
-    default: '.github/actions/scaffold-argo-workflows'
+    default: 'argo-workflows/scaffold-argo-workflows'
     description: 'The working directory for the action.'
     required: false
 runs:
@@ -29,6 +33,7 @@ runs:
       env:
         WORKSPACE: ${{ github.workspace }}
         SERVICE: ${{inputs.service}}
+        NAMESPACE: ${{inputs.namespace}}
         KIND: ${{inputs.kind}}
         NAME: ${{inputs.name}}
         OVERLAYS: ${{inputs.overlays}}
