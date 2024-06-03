@@ -24,7 +24,7 @@ on:
         description: 'Workflow name'
         required: true
       overlays:
-        default: 'develop,release,rdev-2,production,staging'
+        default: 'develop,production,staging'
         description: 'Environment to be deployed. Please enter comma-separated entries.'
         required: true
       is_create_brank_patches:
