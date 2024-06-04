@@ -28,14 +28,16 @@ class Overlay
     configmap = { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: name }, data: {} }
     YAML.dump(Hash.deep_transform_keys(configmap, &:to_s), File.open("#{workspace}/configmap/#{name}.yaml", 'w')) if is_create_blank_patches && !File.exist?("#{workspace}/configmap/#{name}.yaml")
     # Workflow
-    FileUtils.mkdir_p("#{workspace}/#{kind.downcase}")
-    case kind
-    when 'CronWorkflow'
-      workflow = CronWorkflow.new(service, owner, namespace, kind, name).create
-      YAML.dump(Hash.deep_transform_keys(workflow, &:to_s), File.open("#{workspace}/#{kind.downcase}/#{name}.yaml", 'w'))
-    when 'WorkflowTemplate'
-      workflow = WorkflowTemplate.new(service, owner, namespace, kind, name).create
-      YAML.dump(Hash.deep_transform_keys(workflow, &:to_s), File.open("#{workspace}/#{kind.downcase}/#{name}.yaml", 'w'))
+    if is_create_blank_patches
+      FileUtils.mkdir_p("#{workspace}/#{kind.downcase}")
+      case kind
+      when 'CronWorkflow'
+        workflow = CronWorkflow.new(service, owner, namespace, kind, name).create
+        YAML.dump(Hash.deep_transform_keys(workflow, &:to_s), File.open("#{workspace}/#{kind.downcase}/#{name}.yaml", 'w'))
+      when 'WorkflowTemplate'
+        workflow = WorkflowTemplate.new(service, owner, namespace, kind, name).create
+        YAML.dump(Hash.deep_transform_keys(workflow, &:to_s), File.open("#{workspace}/#{kind.downcase}/#{name}.yaml", 'w'))
+      end
     end
   end
 
@@ -57,11 +59,13 @@ class Overlay
       end
     end
     # Workflow
-    unless values.key?(:patches)
-      values[:patches] = [{ path: "#{kind.downcase}/#{name}.yaml" }]
-    else
-      unless values[:patches].any? { |resource| resource == "#{kind.downcase}/#{name}.yaml" }
-        values[:patches] << { path: "#{kind.downcase}/#{name}.yaml" }
+    if is_create_blank_patches
+      unless values.key?(:patches)
+        values[:patches] = [{ path: "#{kind.downcase}/#{name}.yaml" }]
+      else
+        unless values[:patches].any? { |resource| resource == "#{kind.downcase}/#{name}.yaml" }
+          values[:patches] << { path: "#{kind.downcase}/#{name}.yaml" }
+        end
       end
     end
     # OpenApi
