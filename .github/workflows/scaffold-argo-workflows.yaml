@@ -53,7 +53,7 @@ jobs:
           app-id: ${{ secrets.SANDBOX_APP_ID }}
           private-key: ${{ secrets.SANDBOX_PRIVATE_KEY }}
 
-      - uses: ./argo-workflows/scaffold-argo-workflows
+      - uses: ./.github/actions/scaffold-argo-workflows
         id: scaffold
         with:
           service: ${{ github.event.inputs.service }}
