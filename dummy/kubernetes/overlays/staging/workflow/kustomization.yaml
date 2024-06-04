@@ -5,6 +5,7 @@ namespace: "${NAMESPACE}-workflow"
 resources:
 - "../../base"
 patches:
+- path: cronworkflow/dummy.yaml
 - path: configmap/dummy.yaml
 - path: cronworkflow/dummy.yaml
 openapi:
