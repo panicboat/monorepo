@@ -1,10 +1,13 @@
 ---
-name: '- Scaffold argo-workflows manifests'
+name: '- Scaffold argo-workflows'
 on:
   workflow_dispatch:
     inputs:
       service:
         description: 'Service name'
+        required: true
+      owner:
+        description: 'Owner name'
         required: true
       namespace:
         description: 'Workflow namespace'
@@ -39,6 +42,7 @@ on:
 jobs:
   scaffold:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -53,6 +57,7 @@ jobs:
         id: scaffold
         with:
           service: ${{ github.event.inputs.service }}
+          owner: ${{ github.event.inputs.owner }}
           namespace: ${{ github.event.inputs.namespace }}
           kind: ${{ github.event.inputs.kind }}
           name: ${{ github.event.inputs.name }}

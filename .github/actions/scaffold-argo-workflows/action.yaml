@@ -4,6 +4,9 @@ inputs:
   service:
     description: 'Service name'
     required: true
+  owner:
+    description: 'Owner name'
+    required: true
   namespace:
     description: 'Workflow namespace'
     required: true
@@ -33,6 +36,7 @@ runs:
       env:
         WORKSPACE: ${{ github.workspace }}
         SERVICE: ${{inputs.service}}
+        OWNER: ${{inputs.owner}}
         NAMESPACE: ${{inputs.namespace}}
         KIND: ${{inputs.kind}}
         NAME: ${{inputs.name}}
