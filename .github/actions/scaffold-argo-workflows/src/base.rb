@@ -65,11 +65,13 @@ class Base
       end
     end
     # Workflow
-    unless values.key?(:resources)
-      values[:resources] = ["#{kind.downcase}/#{name}.yaml"]
-    else
-      unless values[:resources].any? { |resource| resource == "#{kind.downcase}/#{name}.yaml" }
-        values[:resources] << "#{kind.downcase}/#{name}.yaml"
+    if is_create_blank_patches
+      unless values.key?(:resources)
+        values[:resources] = ["#{kind.downcase}/#{name}.yaml"]
+      else
+        unless values[:resources].any? { |resource| resource == "#{kind.downcase}/#{name}.yaml" }
+          values[:resources] << "#{kind.downcase}/#{name}.yaml"
+        end
       end
     end
     # OpenApi
