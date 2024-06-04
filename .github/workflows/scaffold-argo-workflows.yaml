@@ -64,8 +64,6 @@ jobs:
           overlays: ${{ github.event.inputs.overlays }}
           is_create_brank_patches: ${{ github.event.inputs.is_create_brank_patches }}
 
-      # - name: Output token
-      #   env:
-      #     TOKEN: ${{ steps.token.outputs.token }}
-      #   run: |
-      #     echo "Access Token: ${TOKEN:4}"
+      - uses: int128/update-generated-files-action@v2
+        with:
+          token: ${{ steps.token.outputs.token }}
