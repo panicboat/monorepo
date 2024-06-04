@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    environment:
+      - TZ=Asia/Tokyo
+      - WORKSPACE=/app
+      - SERVICE=sandbox
+      - OWNER=panicboat
+      - NAMESPACE=workflow
+      - KIND=CronWorkflow
+      - NAME=scaffold-workflow
+      - OVERLAYS=develop,production,staging
+      - IS_CREATE_BLANK_PATCHES=true
+    volumes:
+      - ../../../:/app
+    command: ["ruby", "src/main.rb"]
+    working_dir: /app/.github/actions/scaffold-argo-workflows
