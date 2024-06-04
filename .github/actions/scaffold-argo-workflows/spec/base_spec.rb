@@ -69,5 +69,16 @@ describe 'Base' do
       expect(result[:patches]).to be_a(Array)
       expect(result[:patches]).to eq([{ path: "configmap/rspec-config.yaml" }, { path: "configmap/#{env[:name]}.yaml" }])
     end
+
+    it 'returns the correct kustomization (do not create blank patches)' do
+      result = _base.send(:_kustomization, kustomization, false)
+      expect(result).to be_a(Hash)
+      expect(result[:configMapGenerator]).to be_a(Array)
+      expect(result[:configMapGenerator]).to eq([{ name: 'rspec-config', options: { disableNameSuffixHash: true } }, {name: env[:name], options: {disableNameSuffixHash: true}}])
+      expect(result[:resources]).to be_a(Array)
+      expect(result[:resources]).to eq(["#{env[:kind]}/rspec-workflow.yaml", "#{env[:kind]}/#{env[:name]}.yaml"])
+      expect(result[:patches]).to be_a(Array)
+      expect(result[:patches]).to eq([{ path: "configmap/rspec-config.yaml" }])
+    end
   end
 end
