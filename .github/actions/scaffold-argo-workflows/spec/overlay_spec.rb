@@ -36,9 +36,9 @@ describe 'Oase' do
       result = _overlay.send(:_kustomization, kustomization, true)
       expect(result).to be_a(Hash)
       expect(result[:configMapGenerator]).to be_a(Array)
-      expect(result[:configMapGenerator]).to eq([{ name: 'rspec-config', options: { disableNameSuffixHash: true } }])
+      expect(result[:configMapGenerator]).to eq(kustomization[:configMapGenerator])
       expect(result[:resources]).to be_a(Array)
-      expect(result[:resources]).to eq(["#{env[:kind]}/rspec-workflow.yaml"])
+      expect(result[:resources]).to eq(kustomization[:resources])
       expect(result[:patches]).to be_a(Array)
       expect(result[:patches]).to eq([{ path: "configmap/rspec-config.yaml" }, { path: "configmap/#{env[:name]}.yaml" }, { path:"#{env[:kind]}/#{env[:name]}.yaml" }])
     end
@@ -61,11 +61,22 @@ describe 'Oase' do
       result = _overlay.send(:_kustomization, values, true)
       expect(result).to be_a(Hash)
       expect(result[:configMapGenerator]).to be_a(Array)
-      expect(result[:configMapGenerator]).to eq([{ name: 'rspec-config', options: { disableNameSuffixHash: true } }])
+      expect(result[:configMapGenerator]).to eq(kustomization[:configMapGenerator])
       expect(result[:resources]).to be_a(Array)
-      expect(result[:resources]).to eq(["#{env[:kind]}/rspec-workflow.yaml"])
+      expect(result[:resources]).to eq(kustomization[:resources])
       expect(result[:patches]).to be_a(Array)
       expect(result[:patches]).to eq([{ path: "configmap/rspec-config.yaml" }, { path: "configmap/#{env[:name]}.yaml" }, { path: "#{env[:kind]}/#{env[:name]}.yaml" }])
+    end
+
+    it 'returns the correct kustomization (do not create blank patches)' do
+      result = _overlay.send(:_kustomization, kustomization, true)
+      expect(result).to be_a(Hash)
+      expect(result[:configMapGenerator]).to be_a(Array)
+      expect(result[:configMapGenerator]).to eq(kustomization[:configMapGenerator])
+      expect(result[:resources]).to be_a(Array)
+      expect(result[:resources]).to eq(kustomization[:resources])
+      expect(result[:patches]).to be_a(Array)
+      expect(result[:patches]).to eq(kustomization[:patches])
     end
   end
 end
