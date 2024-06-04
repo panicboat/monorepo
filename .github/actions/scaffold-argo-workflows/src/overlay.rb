@@ -23,12 +23,12 @@ class Overlay
     yaml = Hash.deep_symbolize_keys(YAML.load_file("#{workspace}/kustomization.yaml")) if File.exist?("#{workspace}/kustomization.yaml")
     kustomization = _kustomization(yaml, is_create_blank_patches)
     YAML.dump(Hash.deep_transform_keys(kustomization, &:to_s), File.open("#{workspace}/kustomization.yaml", 'w'))
-    # ConfigMap
-    FileUtils.mkdir_p("#{workspace}/configmap")
-    configmap = { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: name }, data: {} }
-    YAML.dump(Hash.deep_transform_keys(configmap, &:to_s), File.open("#{workspace}/configmap/#{name}.yaml", 'w')) if is_create_blank_patches && !File.exist?("#{workspace}/configmap/#{name}.yaml")
-    # Workflow
     if is_create_blank_patches
+      # ConfigMap
+      FileUtils.mkdir_p("#{workspace}/configmap")
+      configmap = { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: name }, data: {} }
+      YAML.dump(Hash.deep_transform_keys(configmap, &:to_s), File.open("#{workspace}/configmap/#{name}.yaml", 'w'))
+      # Workflow
       FileUtils.mkdir_p("#{workspace}/#{kind.downcase}")
       case kind
       when 'CronWorkflow'
