@@ -1,0 +1,30 @@
+name: scaffold / argo-workflows / test
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/scaffold--argo-workflows--test.yaml
+      - .github/actions/scaffold-argo-workflows/**
+      - '!*/kubernetes/**'
+    branches:
+      - main
+  push:
+    paths:
+      - .github/workflows/scaffold--argo-workflows--test.yaml
+      - .github/actions/scaffold-argo-workflows/**
+      - '!*/kubernetes/**'
+    branches:
+      - main
+
+jobs:
+  scaffold-argo-workflows:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: argo-workflows/scaffold-argo-workflows
+      - run: bundle exec rspec
+        working-directory: argo-workflows/scaffold-argo-workflows
