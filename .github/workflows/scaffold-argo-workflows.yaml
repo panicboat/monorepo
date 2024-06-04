@@ -67,3 +67,4 @@ jobs:
       - uses: int128/update-generated-files-action@v2
         with:
           token: ${{ steps.token.outputs.token }}
+          reviewers: panicboat
