@@ -48,4 +48,4 @@ runs:
         OVERLAYS: ${{inputs.overlays}}
         IS_CREATE_SERVICE_ACCOUNT: ${{inputs.is_create_service_account}}
         IS_CREATE_BLANK_PATCHES: ${{inputs.is_create_brank_patches}}
-      working-directory: .github/actions/scaffold-argo-workflows
+      working-directory: '.github/actions/scaffold-argo-workflows'
