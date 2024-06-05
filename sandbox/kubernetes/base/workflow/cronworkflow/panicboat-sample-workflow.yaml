@@ -1,0 +1,47 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: panicboat-sample-workflow
+  labels:
+    workflows.argoproj.io/owner: panicboat
+    workflows.argoproj.io/service: sandbox
+  annotations:
+    workflows.argoproj.io/title: panicboat-sample-workflow
+    workflows.argoproj.io/description: ''
+spec:
+  suspend: true
+  schedule: "* * * * *"
+  timezone: Asia/Tokyo
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  startingDeadlineSeconds: 60
+  workflowMetadata:
+    labels:
+      workflows.argoproj.io/name: panicboat-sample-workflow
+      workflows.argoproj.io/owner: panicboat
+      workflows.argoproj.io/service: sandbox
+  workflowSpec:
+    entrypoint: main
+    activeDeadlineSeconds: 28800
+    templates:
+    - name: main
+      container:
+        name: main
+        image: "${DOCKER_IMAGE}"
+        command:
+        - echo
+        - "-c"
+        args:
+        - Hello, World!
+        resources:
+          limits:
+            memory: 32Mi
+          requests:
+            cpu: 100m
+            memory: 32Mi
+        envFrom:
+        - configMapRef:
+            name: panicboat-sample-workflow
+    serviceAccountName: panicboat-sample-workflow
