@@ -1,0 +1,15 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- name: sandbox
+  options:
+    disableNameSuffixHash: true
+patches:
+- path: configmap/sandbox.yaml
+resources:
+- serviceaccount/sandbox.yaml
+- rolebinding/sandbox.yaml
+- cronworkflow/sandbox.yaml
+openapi:
+  path: https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_all_k8s_kustomize_schema.json

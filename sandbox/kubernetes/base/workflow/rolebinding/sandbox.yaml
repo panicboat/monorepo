@@ -1,0 +1,13 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sandbox
+subjects:
+- kind: ServiceAccount
+  name: sandbox
+  namespace: "${NAMESPACE}-workflow"
+roleRef:
+  kind: Role
+  name: argo
+  apiGroup: rbac.authorization.k8s.io
