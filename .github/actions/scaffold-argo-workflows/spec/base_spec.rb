@@ -32,7 +32,7 @@ describe 'Base' do
       expect(result[:resources]).to eq(["serviceaccount/#{env[:service_account]}.yaml", "rolebinding/#{env[:name]}-#{env[:service_account]}.yaml", "#{env[:kind]}/#{env[:name]}.yaml"])
       expect(result[:patches]).to be_a(Array)
       expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}])
-    end\
+    end
 
     it 'returns the correct kustomization (add)' do
       result = _base.send(:_kustomization, kustomization, true)
