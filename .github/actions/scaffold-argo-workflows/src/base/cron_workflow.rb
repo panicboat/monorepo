@@ -34,23 +34,18 @@ class Base::CronWorkflow < Base::WorkflowBase
         workflowSpec: {
           entrypoint: 'main',
           activeDeadlineSeconds: 28800,
-          # serviceAccountName: '',
-          # securityContext: { fsGroup: 1000 }
-          # volumes: [{ name: 'dsdsocket', hostPath: { path: '/var/run/datadog/' }}],
           templates:[{
             name: 'main',
-            # retryStrategy: { limit: 10, retryPolicy: 'OnFailure', backoff: { duration: '1', factor: '2', maxDuration: '1m' } },
             container: {
               name: 'main',
-              image: '${DOCKER_IMAGE}',
-              command: ['echo', '-c'],
+              image: 'docker/whalesay',
+              command: ['cowsay'],
               args: ['Hello, World!'],
               resources: {
                 limits: { memory: '32Mi' },
                 requests: { cpu: '100m', memory: '32Mi' },
               },
               envFrom: [{ configMapRef: { name: name } }],
-              # volumeMounts: [{ name: 'dsdsocket', mountPath: '/var/run/datadog/' }],
             },
           }],
         },
