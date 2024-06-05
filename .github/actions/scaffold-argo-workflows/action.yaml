@@ -28,6 +28,10 @@ inputs:
     default: 'true'
     description: 'Add an empty patch file to each environment. This makes editing a little easier when there are environment differences.'
     required: false
+  working_directory:
+    default: '.github/actions/scaffold-argo-workflows'
+    description: 'The working directory for the action.'
+    required: false
 runs:
   using: composite
   steps:
@@ -48,4 +52,4 @@ runs:
         OVERLAYS: ${{inputs.overlays}}
         IS_CREATE_SERVICE_ACCOUNT: ${{inputs.is_create_service_account}}
         IS_CREATE_BLANK_PATCHES: ${{inputs.is_create_brank_patches}}
-      working-directory: .github/actions/scaffold-argo-workflows
+      working-directory: ${{inputs.working_directory}}
