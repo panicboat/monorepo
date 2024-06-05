@@ -120,6 +120,42 @@ describe 'Oase' do
     end
   end
 
+  describe '#_serviceAccount' do
+    it 'returns the correct ServiceAccount (create delete patch)' do
+      result = _overlay.send(:_serviceAccount, false, true)
+      expect(result).to be_a(Hash)
+      expect(result[:kind]).to eq('ServiceAccount')
+      expect(result[:'$patch']).to eq('delete')
+    end
+
+    it 'returns the correct ServiceAccount (do not create)' do
+      result = _overlay.send(:_serviceAccount, true, true)
+      expect(result).to be(nil)
+      result = _overlay.send(:_serviceAccount, true, false)
+      expect(result).to be(nil)
+      result = _overlay.send(:_serviceAccount, false, false)
+      expect(result).to be(nil)
+    end
+  end
+
+  describe '#_roleBinding' do
+    it 'returns the correct RoleBinding (create delete patch)' do
+      result = _overlay.send(:_roleBinding, false, true)
+      expect(result).to be_a(Hash)
+      expect(result[:kind]).to eq('RoleBinding')
+      expect(result[:'$patch']).to eq('delete')
+    end
+
+    it 'returns the correct RoleBinding (do not create)' do
+      result = _overlay.send(:_roleBinding, true, true)
+      expect(result).to be(nil)
+      result = _overlay.send(:_roleBinding, true, false)
+      expect(result).to be(nil)
+      result = _overlay.send(:_roleBinding, false, false)
+      expect(result).to be(nil)
+    end
+  end
+
   describe '#_workflow' do
     it 'returns the correct ConfigMap (create blank patch)' do
       overlay = OverlayManifest.new(env[:workspace], env[:service], env[:owner], env[:namespace], 'CronWorkflow', env[:name])
