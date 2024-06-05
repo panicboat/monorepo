@@ -5,7 +5,7 @@ require_relative 'overlay/cron_workflow'
 require_relative 'overlay/workflow_template'
 require_relative 'lib/hash'
 
-class Overlay
+class OverlayManifest
   private attr_reader :workspace, :service, :owner, :namespace, :kind, :name
   def initialize(workspace, service, owner, namespace, kind, name)
     @workspace = workspace
@@ -23,22 +23,14 @@ class Overlay
     yaml = Hash.deep_symbolize_keys(YAML.load_file("#{workspace}/kustomization.yaml")) if File.exist?("#{workspace}/kustomization.yaml")
     kustomization = _kustomization(yaml, is_create_blank_patches)
     YAML.dump(Hash.deep_transform_keys(kustomization, &:to_s), File.open("#{workspace}/kustomization.yaml", 'w'))
-    if is_create_blank_patches
-      # ConfigMap
-      FileUtils.mkdir_p("#{workspace}/configmap")
-      configmap = { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: name }, data: {} }
-      YAML.dump(Hash.deep_transform_keys(configmap, &:to_s), File.open("#{workspace}/configmap/#{name}.yaml", 'w'))
-      # Workflow
-      FileUtils.mkdir_p("#{workspace}/#{kind.downcase}")
-      case kind
-      when 'CronWorkflow'
-        workflow = CronWorkflow.new(service, owner, namespace, kind, name).create
-        YAML.dump(Hash.deep_transform_keys(workflow, &:to_s), File.open("#{workspace}/#{kind.downcase}/#{name}.yaml", 'w'))
-      when 'WorkflowTemplate'
-        workflow = WorkflowTemplate.new(service, owner, namespace, kind, name).create
-        YAML.dump(Hash.deep_transform_keys(workflow, &:to_s), File.open("#{workspace}/#{kind.downcase}/#{name}.yaml", 'w'))
-      end
-    end
+    # ConfigMap
+    FileUtils.mkdir_p("#{workspace}/configmap")
+    configmap = _configMap(is_overlay_target, is_create_blank_patches)
+    YAML.dump(Hash.deep_transform_keys(configmap, &:to_s), File.open("#{workspace}/configmap/#{name}.yaml", 'w')) if configmap && !configmap.empty?
+    # Workflow
+    FileUtils.mkdir_p("#{workspace}/#{kind.downcase}")
+    workflow = _workflow(is_overlay_target, is_create_blank_patches)
+    YAML.dump(Hash.deep_transform_keys(workflow, &:to_s), File.open("#{workspace}/#{kind.downcase}/#{name}.yaml", 'w')) if workflow && !workflow.empty?
   end
 
   private
@@ -73,5 +65,29 @@ class Overlay
       values[:openapi] = { path: 'https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_all_k8s_kustomize_schema.json' }
     end
     values
+  end
+
+  def _configMap(is_overlay_target, is_create_blank_patches)
+    configmap = nil
+    if is_create_blank_patches || !is_overlay_target
+      configmap = { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: name }, data: {} }
+      configmap[:'$patch'] = 'delete' if !is_overlay_target
+    end
+    configmap
+  end
+
+  def _workflow(is_overlay_target, is_create_blank_patches)
+    workflow = nil
+    if is_create_blank_patches || !is_overlay_target
+      case kind
+      when 'CronWorkflow'
+        workflow = Overlay::CronWorkflow.new(service, owner, namespace, kind, name).create
+        workflow[:'$patch'] = 'delete' if !is_overlay_target
+      when 'WorkflowTemplate'
+        workflow = Overlay::WorkflowTemplate.new(service, owner, namespace, kind, name).create
+        workflow[:'$patch'] = 'delete' if !is_overlay_target
+      end
+    end
+    workflow
   end
 end

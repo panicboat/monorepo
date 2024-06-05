@@ -10,6 +10,7 @@ services:
       - KIND=CronWorkflow
       - NAME=scaffold-workflow
       - OVERLAYS=develop,production,staging
+      - SERVICE_ACCOUNT_NAME=
       - IS_CREATE_BLANK_PATCHES=true
     volumes:
       - ../../../:/app

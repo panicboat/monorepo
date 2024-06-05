@@ -1,7 +1,7 @@
 require_relative 'workflow_base'
 
-class CronWorkflow < WorkflowBase
-  def create
+class Base::CronWorkflow < Base::WorkflowBase
+  def create(service_account)
     data = {
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'CronWorkflow',
@@ -30,12 +30,6 @@ class CronWorkflow < WorkflowBase
             'workflows.argoproj.io/owner' => owner,
             'workflows.argoproj.io/service' => service,
           },
-          annotations: {
-            'workflows.argoproj.io/slack-channel-id' => '',
-            'workflows.argoproj.io/slack-notification-on' => 'Failure or Always',
-            'workflows.argoproj.io/slack-notification-failure-message' => '',
-            'workflows.argoproj.io/snitch-token' => '',
-          },
         },
         workflowSpec: {
           entrypoint: 'main',
@@ -62,5 +56,7 @@ class CronWorkflow < WorkflowBase
         },
       },
     }
+    data[:spec][:workflowSpec][:serviceAccountName] = service_account if service_account && !service_account.empty?
+    data
   end
 end

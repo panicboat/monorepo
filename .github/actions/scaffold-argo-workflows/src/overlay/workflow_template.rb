@@ -1,6 +1,6 @@
 require_relative 'workflow_base'
 
-class WorkflowTemplate < WorkflowBase
+class Overlay::WorkflowTemplate < Overlay::WorkflowBase
   def create
     data = {
       apiVersion: 'argoproj.io/v1alpha1',
