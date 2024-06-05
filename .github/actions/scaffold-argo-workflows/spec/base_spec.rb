@@ -29,7 +29,7 @@ describe 'Base' do
       expect(result[:configMapGenerator]).to be_a(Array)
       expect(result[:configMapGenerator]).to eq([{name: env[:name], options: {disableNameSuffixHash: true}}])
       expect(result[:resources]).to be_a(Array)
-      expect(result[:resources]).to eq(["serviceaccount/#{env[:name]}.yaml", "rolebinding/#{env[:name]}.yaml", "#{env[:kind]}/#{env[:name]}.yaml"])
+      expect(result[:resources]).to eq(["serviceaccount/#{env[:service_account]}.yaml", "rolebinding/#{env[:name]}-#{env[:service_account]}.yaml", "#{env[:kind]}/#{env[:name]}.yaml"])
       expect(result[:patches]).to be_a(Array)
       expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}])
     end\
@@ -40,7 +40,7 @@ describe 'Base' do
       expect(result[:configMapGenerator]).to be_a(Array)
       expect(result[:configMapGenerator]).to eq([{ name: 'rspec-config', options: { disableNameSuffixHash: true } }, {name: env[:name], options: {disableNameSuffixHash: true}}])
       expect(result[:resources]).to be_a(Array)
-      expect(result[:resources]).to eq(["#{env[:kind]}/rspec-workflow.yaml", "serviceaccount/#{env[:name]}.yaml", "rolebinding/#{env[:name]}.yaml", "#{env[:kind]}/#{env[:name]}.yaml"])
+      expect(result[:resources]).to eq(["#{env[:kind]}/rspec-workflow.yaml", "serviceaccount/#{env[:service_account]}.yaml", "rolebinding/#{env[:name]}-#{env[:service_account]}.yaml", "#{env[:kind]}/#{env[:name]}.yaml"])
       expect(result[:patches]).to be_a(Array)
       expect(result[:patches]).to eq([{ path: "configmap/rspec-config.yaml" }, { path: "configmap/#{env[:name]}.yaml" }])
     end
@@ -67,7 +67,7 @@ describe 'Base' do
       expect(result[:configMapGenerator]).to be_a(Array)
       expect(result[:configMapGenerator]).to eq([{ name: 'rspec-config', options: { disableNameSuffixHash: true } }, {name: env[:name], options: {disableNameSuffixHash: true}}])
       expect(result[:resources]).to be_a(Array)
-      expect(result[:resources]).to eq(["#{env[:kind]}/rspec-workflow.yaml", "serviceaccount/#{env[:name]}.yaml", "rolebinding/#{env[:name]}.yaml", "#{env[:kind]}/#{env[:name]}.yaml"])
+      expect(result[:resources]).to eq(["#{env[:kind]}/rspec-workflow.yaml", "serviceaccount/#{env[:service_account]}.yaml", "rolebinding/#{env[:name]}-#{env[:service_account]}.yaml", "#{env[:kind]}/#{env[:name]}.yaml"])
       expect(result[:patches]).to be_a(Array)
       expect(result[:patches]).to eq([{ path: "configmap/rspec-config.yaml" }, { path: "configmap/#{env[:name]}.yaml" }])
     end
@@ -78,7 +78,7 @@ describe 'Base' do
       expect(result[:configMapGenerator]).to be_a(Array)
       expect(result[:configMapGenerator]).to eq([{ name: 'rspec-config', options: { disableNameSuffixHash: true } }, {name: env[:name], options: {disableNameSuffixHash: true}}])
       expect(result[:resources]).to be_a(Array)
-      expect(result[:resources]).to eq(["#{env[:kind]}/rspec-workflow.yaml", "serviceaccount/#{env[:name]}.yaml", "rolebinding/#{env[:name]}.yaml", "#{env[:kind]}/#{env[:name]}.yaml"])
+      expect(result[:resources]).to eq(["#{env[:kind]}/rspec-workflow.yaml", "serviceaccount/#{env[:service_account]}.yaml", "rolebinding/#{env[:name]}-#{env[:service_account]}.yaml", "#{env[:kind]}/#{env[:name]}.yaml"])
       expect(result[:patches]).to be_a(Array)
       expect(result[:patches]).to eq([{ path: "configmap/rspec-config.yaml" }])
     end
