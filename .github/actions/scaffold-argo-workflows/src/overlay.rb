@@ -16,10 +16,10 @@ class OverlayManifest
     @name = name
   end
 
-  def create(is_overlay_target, is_create_blank_patches)
+  def create(is_overlay_target, is_create_service_account, is_create_blank_patches)
     # Kustomization
     FileUtils.mkdir_p(workspace)
-    yaml = { apiVersion: 'kustomize.config.k8s.io/v1beta1', kind: 'Kustomization', namespace: "${NAMESPACE}-#{namespace}", resources: ['../../base'] }
+    yaml = { apiVersion: 'kustomize.config.k8s.io/v1beta1', kind: 'Kustomization', namespace: "${NAMESPACE}-#{namespace}", resources: ["../../../base/#{namespace}"] }
     yaml = Hash.deep_symbolize_keys(YAML.load_file("#{workspace}/kustomization.yaml")) if File.exist?("#{workspace}/kustomization.yaml")
     kustomization = _kustomization(yaml, is_create_blank_patches)
     YAML.dump(Hash.deep_transform_keys(kustomization, &:to_s), File.open("#{workspace}/kustomization.yaml", 'w'))
@@ -27,6 +27,14 @@ class OverlayManifest
     FileUtils.mkdir_p("#{workspace}/configmap")
     configmap = _configMap(is_overlay_target, is_create_blank_patches)
     YAML.dump(Hash.deep_transform_keys(configmap, &:to_s), File.open("#{workspace}/configmap/#{name}.yaml", 'w')) if configmap && !configmap.empty?
+    # ServiceAccount
+    FileUtils.mkdir_p("#{workspace}/serviceaccount")
+    serviceaccount = _serviceAccount(is_overlay_target, is_create_service_account)
+    YAML.dump(Hash.deep_transform_keys(serviceaccount, &:to_s), File.open("#{workspace}/serviceaccount/#{name}.yaml", 'w')) if serviceaccount && !serviceaccount.empty?
+    # RoleBinding
+    FileUtils.mkdir_p("#{workspace}/rolebinding")
+    rolebinding = _roleBinding(is_overlay_target, is_create_service_account)
+    YAML.dump(Hash.deep_transform_keys(rolebinding, &:to_s), File.open("#{workspace}/rolebinding/#{name}.yaml", 'w')) if rolebinding && !rolebinding.empty?
     # Workflow
     FileUtils.mkdir_p("#{workspace}/#{kind.downcase}")
     workflow = _workflow(is_overlay_target, is_create_blank_patches)
@@ -74,6 +82,18 @@ class OverlayManifest
       configmap[:'$patch'] = 'delete' if !is_overlay_target
     end
     configmap
+  end
+
+  def _serviceAccount(is_overlay_target, is_create_service_account)
+    serviceaccount = nil
+    serviceaccount = { kind: 'ServiceAccount', metadata: { name: name }, :'$patch' => 'delete' } if is_create_service_account && !is_overlay_target
+    serviceaccount
+  end
+
+  def _roleBinding(is_overlay_target, is_create_service_account)
+    rolebinding = nil
+    rolebinding = { apiVersion: 'rbac.authorization.k8s.io/v1', kind: 'RoleBinding', metadata: { name: "#{name}" }, :'$patch' => 'delete' } if is_create_service_account && !is_overlay_target
+    rolebinding
   end
 
   def _workflow(is_overlay_target, is_create_blank_patches)
