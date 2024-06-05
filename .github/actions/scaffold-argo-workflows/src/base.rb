@@ -8,23 +8,22 @@ require_relative 'base/workflow_template'
 require_relative 'lib/hash'
 
 class BaseManifest
-  private attr_reader :workspace, :service, :owner, :namespace, :kind, :name, :service_account
-  def initialize(workspace, service, owner, namespace, kind, name, service_account)
+  private attr_reader :workspace, :service, :owner, :namespace, :kind, :name
+  def initialize(workspace, service, owner, namespace, kind, name)
     @workspace = workspace
     @service = service
     @owner = owner
     @namespace = namespace
     @kind = kind
     @name = name
-    @service_account = service_account
   end
 
-  def create(is_create_blank_patches)
+  def create(is_create_service_account, is_create_blank_patches)
     # Kustomization
     FileUtils.mkdir_p(workspace)
     yaml = { apiVersion: 'kustomize.config.k8s.io/v1beta1', kind: 'Kustomization' }
     yaml = Hash.deep_symbolize_keys(YAML.load_file("#{workspace}/kustomization.yaml")) if File.exist?("#{workspace}/kustomization.yaml")
-    kustomization = _kustomization(yaml, is_create_blank_patches)
+    kustomization = _kustomization(yaml, is_create_service_account, is_create_blank_patches)
     YAML.dump(Hash.deep_transform_keys(kustomization, &:to_s), File.open("#{workspace}/kustomization.yaml", 'w')) if kustomization && !kustomization.empty?
     # ConfigMap
     FileUtils.mkdir_p("#{workspace}/configmap")
@@ -32,21 +31,21 @@ class BaseManifest
     YAML.dump(Hash.deep_transform_keys(configmap, &:to_s), File.open("#{workspace}/configmap/#{name}.yaml", 'w')) if configmap && !configmap.empty?
     # ServiceAccount
     FileUtils.mkdir_p("#{workspace}/serviceaccount")
-    serviceaccount = _serviceAccount
+    serviceaccount = _serviceAccount(is_create_service_account)
     YAML.dump(Hash.deep_transform_keys(serviceaccount, &:to_s), File.open("#{workspace}/serviceaccount/#{name}.yaml", 'w')) if serviceaccount && !serviceaccount.empty?
     # RoleBinding
     FileUtils.mkdir_p("#{workspace}/rolebinding")
-    rolebinding = _roleBinding
+    rolebinding = _roleBinding(is_create_service_account)
     YAML.dump(Hash.deep_transform_keys(rolebinding, &:to_s), File.open("#{workspace}/rolebinding/#{name}.yaml", 'w')) if rolebinding && !rolebinding.empty?
     # Workflow
     FileUtils.mkdir_p("#{workspace}/#{kind.downcase}")
-    workflow = _workflow
+    workflow = _workflow(is_create_service_account)
     YAML.dump(Hash.deep_transform_keys(workflow, &:to_s), File.open("#{workspace}/#{kind.downcase}/#{name}.yaml", 'w')) if workflow && !workflow.empty?
   end
 
   private
 
-  def _kustomization(values, is_create_blank_patches)
+  def _kustomization(values, is_create_service_account, is_create_blank_patches)
     values[:configMapGenerator].delete_if { |configmap| configmap[:name] == name } if values.key?(:configMapGenerator)
     values[:resources].delete_if { |configmap| configmap == "configmap/#{name}.yaml" } if values.key?(:resources)
     values[:resources].delete_if { |configmap| configmap == "serviceaccount/#{name}.yaml" } if values.key?(:resources)
@@ -71,22 +70,22 @@ class BaseManifest
         end
       end
     end
-    if service_account && !service_account.empty?
+    if is_create_service_account
       # ServiceAccount
       unless values.key?(:resources)
-        values[:resources] = ["serviceaccount/#{service_account}.yaml"]
+        values[:resources] = ["serviceaccount/#{name}.yaml"]
       else
-        unless values[:resources].any? { |resource| resource == "serviceaccount/#{service_account}.yaml" }
-          values[:resources] << "serviceaccount/#{service_account}.yaml"
+        unless values[:resources].any? { |resource| resource == "serviceaccount/#{name}.yaml" }
+          values[:resources] << "serviceaccount/#{name}.yaml"
         end
       end
       # RoleBinding
-      if service_account && !service_account.empty?
+      if is_create_service_account
         unless values.key?(:resources)
-          values[:resources] = ["rolebinding/#{name}-#{service_account}.yaml"]
+          values[:resources] = ["rolebinding/#{name}.yaml"]
         else
-          unless values[:resources].any? { |resource| resource == "rolebinding/#{name}-#{service_account}.yaml" }
-            values[:resources] << "rolebinding/#{name}-#{service_account}.yaml"
+          unless values[:resources].any? { |resource| resource == "rolebinding/#{name}.yaml" }
+            values[:resources] << "rolebinding/#{name}.yaml"
           end
         end
       end
@@ -112,25 +111,25 @@ class BaseManifest
     configmap
   end
 
-  def _serviceAccount
+  def _serviceAccount(is_create_service_account)
     serviceaccount = nil
-    serviceaccount = Base::ServiceAccount.new(service, owner, namespace, kind, name).create(service_account) if service_account && !service_account.empty?
+    serviceaccount = Base::ServiceAccount.new(service, owner, namespace, kind, name).create if is_create_service_account
     serviceaccount
   end
 
-  def _roleBinding
+  def _roleBinding(is_create_service_account)
     rolebinding = nil
-    rolebinding = Base::RoleBinding.new(service, owner, namespace, kind, name).create(service_account) if service_account && !service_account.empty?
+    rolebinding = Base::RoleBinding.new(service, owner, namespace, kind, name).create if is_create_service_account
     rolebinding
   end
 
-  def _workflow
+  def _workflow(is_create_service_account)
     workflow = nil
     case kind
     when 'CronWorkflow'
-      workflow = Base::CronWorkflow.new(service, owner, namespace, kind, name).create(service_account)
+      workflow = Base::CronWorkflow.new(service, owner, namespace, kind, name).create(is_create_service_account)
     when 'WorkflowTemplate'
-      workflow = Base::WorkflowTemplate.new(service, owner, namespace, kind, name).create(service_account)
+      workflow = Base::WorkflowTemplate.new(service, owner, namespace, kind, name).create(is_create_service_account)
     end
     workflow
   end

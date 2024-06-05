@@ -1,5 +1,5 @@
 ---
-name: 'scaffold / argo-workflows'
+name: 'argo-workflows / scaffold'
 on:
   workflow_dispatch:
     inputs:
@@ -30,9 +30,14 @@ on:
         default: 'develop,production,staging'
         description: 'Environment to be deployed. Please enter comma-separated entries.'
         required: true
-      service_account_name:
-        description: 'Service account name'
+      is_create_service_account:
+        default: 'false'
+        description: 'Create a service account for the workflow.'
         required: false
+        type: choice
+        options:
+          - 'true'
+          - 'false'
       is_create_brank_patches:
         default: 'true'
         description: 'Add an empty patch file to each environment. This makes editing a little easier when there are environment differences.'
@@ -56,7 +61,7 @@ jobs:
           app-id: ${{ secrets.SANDBOX_APP_ID }}
           private-key: ${{ secrets.SANDBOX_PRIVATE_KEY }}
 
-      - uses: ./.github/actions/scaffold-argo-workflows
+      - uses: ./argo-workflows/scaffold-argo-workflows
         id: scaffold
         with:
           service: ${{ github.event.inputs.service }}
@@ -65,7 +70,7 @@ jobs:
           kind: ${{ github.event.inputs.kind }}
           name: ${{ github.event.inputs.name }}
           overlays: ${{ github.event.inputs.overlays }}
-          service_account_name: ${{ github.event.inputs.service_account_name }}
+          is_create_service_account: ${{ github.event.inputs.is_create_service_account }}
           is_create_brank_patches: ${{ github.event.inputs.is_create_brank_patches }}
 
       - uses: int128/update-generated-files-action@v2

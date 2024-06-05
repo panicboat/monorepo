@@ -7,10 +7,10 @@ services:
       - SERVICE=sandbox
       - OWNER=panicboat
       - NAMESPACE=workflow
-      - KIND=CronWorkflow
+      - KIND=WorkflowTemplate
       - NAME=scaffold-workflow
       - OVERLAYS=develop,production,staging
-      - SERVICE_ACCOUNT_NAME=sandbox
+      - IS_CREATE_SERVICE_ACCOUNT=true
       - IS_CREATE_BLANK_PATCHES=true
     volumes:
       - ../../../:/app

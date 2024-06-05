@@ -9,13 +9,13 @@ describe 'WorkflowTemplate' do
 
   describe '#_workflow' do
     it 'returns the correct WorkflowTemplate' do
-      result = _cron_workflow.create(env[:service_account])
+      result = _cron_workflow.create(true)
       expect(result).to be_a(Hash)
-      expect(result[:spec][:serviceAccountName]).to eq(env[:service_account])
+      expect(result[:spec][:serviceAccountName]).to eq(env[:name])
     end
 
     it 'returns the correct WorkflowTemplate (disable service account)' do
-      result = _cron_workflow.create(nil)
+      result = _cron_workflow.create(false)
       expect(result).to be_a(Hash)
       expect(result[:spec][:serviceAccountName]).to eq(nil)
     end

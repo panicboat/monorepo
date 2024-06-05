@@ -1,10 +1,10 @@
 require_relative './base'
 require_relative './overlay'
 
-def main(workspace, service, owner, namespace, kind, name, overlays, service_account_name, is_create_blank_patches)
+def main(workspace, service, owner, namespace, kind, name, overlays, is_create_service_account, is_create_blank_patches)
   kubernetes_path = "#{workspace}/#{service}/kubernetes"
   # Base
-  BaseManifest.new("#{kubernetes_path}/base/#{namespace}", service, owner, namespace, kind, name, service_account_name).create(is_create_blank_patches)
+  BaseManifest.new("#{kubernetes_path}/base/#{namespace}", service, owner, namespace, kind, name).create(is_create_service_account, is_create_blank_patches)
   # Overlays
   targets = Dir.glob("#{kubernetes_path}/overlays/*").map { |overlay| File.basename(overlay) }
   targets = overlays.split(',') if targets.empty?
@@ -24,7 +24,7 @@ namespace = ENV.fetch('NAMESPACE')
 kind = ENV.fetch('KIND')
 name = ENV.fetch('NAME')
 overlays = ENV.fetch('OVERLAYS')
-service_account_name = ENV.fetch('SERVICE_ACCOUNT_NAME')
+is_create_service_account = ENV.fetch('IS_CREATE_SERVICE_ACCOUNT') == 'true'
 is_create_blank_patches = ENV.fetch('IS_CREATE_BLANK_PATCHES') == 'true'
 
-main(workspace, service, owner, namespace, kind, name, overlays, service_account_name, is_create_blank_patches)
+main(workspace, service, owner, namespace, kind, name, overlays, is_create_service_account, is_create_blank_patches)
