@@ -5,11 +5,17 @@ configMapGenerator:
 - name: panicboat-sample-workflow
   options:
     disableNameSuffixHash: true
+- name: scaffold-workflow
+  options:
+    disableNameSuffixHash: true
 patches:
 - path: configmap/panicboat-sample-workflow.yaml
 resources:
 - serviceaccount/panicboat-sample-workflow.yaml
 - rolebinding/panicboat-sample-workflow.yaml
 - cronworkflow/panicboat-sample-workflow.yaml
+- serviceaccount/scaffold-workflow.yaml
+- rolebinding/scaffold-workflow.yaml
+- cronworkflow/scaffold-workflow.yaml
 openapi:
   path: https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_all_k8s_kustomize_schema.json
