@@ -1,4 +1,4 @@
-name: scaffold / argo-workflows / test
+name: argo-workflows / scaffold / test
 
 on:
   pull_request:
