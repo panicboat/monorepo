@@ -1,6 +1,6 @@
 require_relative 'workflow_base'
 
-class CronWorkflow < WorkflowBase
+class Overlay::CronWorkflow < Overlay::WorkflowBase
   def create
     data = {
       apiVersion: 'argoproj.io/v1alpha1',

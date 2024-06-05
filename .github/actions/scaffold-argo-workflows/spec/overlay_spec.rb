@@ -5,7 +5,7 @@ describe 'Oase' do
   let(:env) do
     { workspace: '/app', service: 'service', owner: 'owner', namespace: 'namespace', kind: 'kind', name: 'name', }
   end
-  let(:_overlay) { Overlay.new(env[:workspace], env[:service], env[:owner], env[:namespace], env[:kind], env[:name]) }
+  let(:_overlay) { OverlayManifest.new(env[:workspace], env[:service], env[:owner], env[:namespace], env[:kind], env[:name]) }
   let(:kustomization) do
     {
       apiVersion: 'kustomize.config.k8s.io/v1beta1',
@@ -77,6 +77,78 @@ describe 'Oase' do
       expect(result[:resources]).to eq(kustomization[:resources])
       expect(result[:patches]).to be_a(Array)
       expect(result[:patches]).to eq(kustomization[:patches])
+    end
+  end
+
+  describe '#_configMap' do
+    it 'returns the correct ConfigMap (create blank patch)' do
+      result = _overlay.send(:_configMap, true, true)
+      expect(result).to be_a(Hash)
+      expect(result[:apiVersion]).to eq('v1')
+      expect(result[:kind]).to eq('ConfigMap')
+      expect(result[:metadata][:name]).to eq(env[:name])
+      expect(result[:data]).to be_a(Hash)
+      expect(result[:data]).to eq({})
+      expect(result[:'$patch']).to eq(nil)
+    end
+
+    it 'returns the correct ConfigMap (create delete patch)' do
+      result = _overlay.send(:_configMap, false, true)
+      expect(result).to be_a(Hash)
+      expect(result[:apiVersion]).to eq('v1')
+      expect(result[:kind]).to eq('ConfigMap')
+      expect(result[:metadata][:name]).to eq(env[:name])
+      expect(result[:data]).to be_a(Hash)
+      expect(result[:data]).to eq({})
+      expect(result[:'$patch']).to eq('delete')
+    end
+
+    it 'returns the correct ConfigMap (create delete patch)' do
+      result = _overlay.send(:_configMap, true, false)
+      expect(result).to be(nil)
+    end
+
+    it 'returns the correct ConfigMap (create delete patch)' do
+      result = _overlay.send(:_configMap, false, false)
+      expect(result).to be_a(Hash)
+      expect(result[:apiVersion]).to eq('v1')
+      expect(result[:kind]).to eq('ConfigMap')
+      expect(result[:metadata][:name]).to eq(env[:name])
+      expect(result[:data]).to be_a(Hash)
+      expect(result[:data]).to eq({})
+      expect(result[:'$patch']).to eq('delete')
+    end
+  end
+
+  describe '#_workflow' do
+    it 'returns the correct ConfigMap (create blank patch)' do
+      overlay = OverlayManifest.new(env[:workspace], env[:service], env[:owner], env[:namespace], 'CronWorkflow', env[:name])
+      result = overlay.send(:_workflow, true, true)
+      expect(result).to be_a(Hash)
+      expect(result[:kind]).to eq('CronWorkflow')
+      expect(result[:'$patch']).to eq(nil)
+    end
+
+    it 'returns the correct ConfigMap (create delete patch)' do
+      overlay = OverlayManifest.new(env[:workspace], env[:service], env[:owner], env[:namespace], 'CronWorkflow', env[:name])
+      result = overlay.send(:_workflow, false, true)
+      expect(result).to be_a(Hash)
+      expect(result[:kind]).to eq('CronWorkflow')
+      expect(result[:'$patch']).to eq('delete')
+    end
+
+    it 'returns the correct ConfigMap (create delete patch)' do
+      overlay = OverlayManifest.new(env[:workspace], env[:service], env[:owner], env[:namespace], 'CronWorkflow', env[:name])
+      result = overlay.send(:_workflow, true, false)
+      expect(result).to be(nil)
+    end
+
+    it 'returns the correct ConfigMap (create delete patch)' do
+      overlay = OverlayManifest.new(env[:workspace], env[:service], env[:owner], env[:namespace], 'WorkflowTemplate', env[:name])
+      result = overlay.send(:_workflow, false, false)
+      expect(result).to be_a(Hash)
+      expect(result[:kind]).to eq('WorkflowTemplate')
+      expect(result[:'$patch']).to eq('delete')
     end
   end
 end

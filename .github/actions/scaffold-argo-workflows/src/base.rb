@@ -5,15 +5,16 @@ require_relative 'base/cron_workflow'
 require_relative 'base/workflow_template'
 require_relative 'lib/hash'
 
-class Base
-  private attr_reader :workspace, :service, :owner, :namespace, :kind, :name
-  def initialize(workspace, service, owner, namespace, kind, name)
+class BaseManifest
+  private attr_reader :workspace, :service, :owner, :namespace, :kind, :name, :service_account
+  def initialize(workspace, service, owner, namespace, kind, name, service_account)
     @workspace = workspace
     @service = service
     @owner = owner
     @namespace = namespace
     @kind = kind
     @name = name
+    @service_account = service_account
   end
 
   def create(is_create_blank_patches)
@@ -22,23 +23,23 @@ class Base
     yaml = { apiVersion: 'kustomize.config.k8s.io/v1beta1', kind: 'Kustomization' }
     yaml = Hash.deep_symbolize_keys(YAML.load_file("#{workspace}/kustomization.yaml")) if File.exist?("#{workspace}/kustomization.yaml")
     kustomization = _kustomization(yaml, is_create_blank_patches)
-    YAML.dump(Hash.deep_transform_keys(kustomization, &:to_s), File.open("#{workspace}/kustomization.yaml", 'w'))
-    if is_create_blank_patches
-      # ConfigMap
-      FileUtils.mkdir_p("#{workspace}/configmap")
-      configmap = { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: name }, data: {} }
-      YAML.dump(Hash.deep_transform_keys(configmap, &:to_s), File.open("#{workspace}/configmap/#{name}.yaml", 'w'))
-    end
+    YAML.dump(Hash.deep_transform_keys(kustomization, &:to_s), File.open("#{workspace}/kustomization.yaml", 'w')) if kustomization && !kustomization.empty?
+    # ConfigMap
+    FileUtils.mkdir_p("#{workspace}/configmap")
+    configmap = _configMap(is_create_blank_patches)
+    YAML.dump(Hash.deep_transform_keys(configmap, &:to_s), File.open("#{workspace}/configmap/#{name}.yaml", 'w')) if configmap && !configmap.empty?
+    # ServiceAccount
+    FileUtils.mkdir_p("#{workspace}/serviceaccount")
+    serviceaccount = _serviceAccount(service_account)
+    YAML.dump(Hash.deep_transform_keys(serviceaccount, &:to_s), File.open("#{workspace}/rolebinding/#{name}.yaml", 'w')) if serviceaccount && !serviceaccount.empty?
+    # RoleBinding
+    FileUtils.mkdir_p("#{workspace}/rolebinding")
+    rolebinding = _roleBinding(service_account)
+    YAML.dump(Hash.deep_transform_keys(rolebinding, &:to_s), File.open("#{workspace}/rolebinding/#{name}.yaml", 'w')) if rolebinding && !rolebinding.empty?
     # Workflow
     FileUtils.mkdir_p("#{workspace}/#{kind.downcase}")
-    case kind
-    when 'CronWorkflow'
-      workflow = CronWorkflow.new(service, owner, namespace, kind, name).create
-      YAML.dump(Hash.deep_transform_keys(workflow, &:to_s), File.open("#{workspace}/#{kind.downcase}/#{name}.yaml", 'w'))
-    when 'WorkflowTemplate'
-      workflow = WorkflowTemplate.new(service, owner, namespace, kind, name).create
-      YAML.dump(Hash.deep_transform_keys(workflow, &:to_s), File.open("#{workspace}/#{kind.downcase}/#{name}.yaml", 'w'))
-    end
+    workflow = _workflow
+    YAML.dump(Hash.deep_transform_keys(workflow, &:to_s), File.open("#{workspace}/#{kind.downcase}/#{name}.yaml", 'w')) if workflow && !workflow.empty?
   end
 
   private
@@ -66,6 +67,26 @@ class Base
         end
       end
     end
+    if service_account && !service_account.empty?
+      # ServiceAccount
+      unless values.key?(:resources)
+        values[:resources] = ["serviceaccount/#{name}.yaml"]
+      else
+        unless values[:resources].any? { |resource| resource == "serviceaccount/#{name}.yaml" }
+          values[:resources] << "serviceaccount/#{name}.yaml"
+        end
+      end
+      # RoleBinding
+      if service_account && !service_account.empty?
+        unless values.key?(:resources)
+          values[:resources] = ["rolebinding/#{name}.yaml"]
+        else
+          unless values[:resources].any? { |resource| resource == "rolebinding/#{name}.yaml" }
+            values[:resources] << "rolebinding/#{name}.yaml"
+          end
+        end
+      end
+    end
     # Workflow
     unless values.key?(:resources)
       values[:resources] = ["#{kind.downcase}/#{name}.yaml"]
@@ -79,5 +100,34 @@ class Base
       values[:openapi] = { path: 'https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_all_k8s_kustomize_schema.json' }
     end
     values
+  end
+
+  def _configMap(is_create_blank_patches)
+    configmap = nil
+    configmap = { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: name }, data: {} } if is_create_blank_patches
+    configmap
+  end
+
+  def _serviceAccount
+    serviceaccount = nil
+    serviceaccount = Base::ServiceAccount.new(service, owner, namespace, name).create(service_account) if service_account && !service_account.empty?
+    serviceaccount
+  end
+
+  def _roleBinding
+    rolebinding = nil
+    rolebinding = Base::RoleBinding.new(service, owner, namespace, name).create(service_account) if service_account && !service_account.empty?
+    rolebinding
+  end
+
+  def _workflow
+    workflow = nil
+    case kind
+    when 'CronWorkflow'
+      workflow = Base::CronWorkflow.new(service, owner, namespace, kind, name).create(service_account)
+    when 'WorkflowTemplate'
+      workflow = Base::WorkflowTemplate.new(service, owner, namespace, kind, name).create(service_account)
+    end
+    workflow
   end
 end
