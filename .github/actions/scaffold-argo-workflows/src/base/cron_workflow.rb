@@ -1,7 +1,7 @@
 require_relative 'workflow_base'
 
 class Base::CronWorkflow < Base::WorkflowBase
-  def create(service_account)
+  def create(is_create_service_account)
     data = {
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'CronWorkflow',
@@ -56,7 +56,7 @@ class Base::CronWorkflow < Base::WorkflowBase
         },
       },
     }
-    data[:spec][:workflowSpec][:serviceAccountName] = service_account if service_account && !service_account.empty?
+    data[:spec][:workflowSpec][:serviceAccountName] = name if is_create_service_account
     data
   end
 end

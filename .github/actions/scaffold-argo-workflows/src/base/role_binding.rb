@@ -1,15 +1,15 @@
 require_relative 'workflow_base'
 
 class Base::RoleBinding < Base::WorkflowBase
-  def create(service_account)
+  def create
     data = {
       apiVersion: 'rbac.authorization.k8s.io/v1',
       kind: 'RoleBinding',
-      metadata: { name: "#{name}-#{service_account}", },
+      metadata: { name: "#{name}", },
       subjects: [
         {
           kind: 'ServiceAccount',
-          name: service_account,
+          name: name,
           namespace: "${NAMESPACE}-#{namespace}"
         }
       ],

@@ -20,16 +20,13 @@ inputs:
     default: 'develop,production,staging'
     description: 'Environment to be deployed. Please enter comma-separated entries.'
     required: true
-  service_account_name:
-    description: 'Service account name'
+  is_create_service_account:
+    default: 'false'
+    description: 'Create a service account for the workflow.'
     required: false
   is_create_brank_patches:
     default: 'true'
     description: 'Add an empty patch file to each environment. This makes editing a little easier when there are environment differences.'
-    required: false
-  working_directory:
-    default: '.github/actions/scaffold-argo-workflows'
-    description: 'The working directory for the action.'
     required: false
 runs:
   using: composite
@@ -49,6 +46,6 @@ runs:
         KIND: ${{inputs.kind}}
         NAME: ${{inputs.name}}
         OVERLAYS: ${{inputs.overlays}}
-        SERVICE_ACCOUNT_NAME: ${{inputs.service_account_name}}
+        IS_CREATE_SERVICE_ACCOUNT: ${{inputs.is_create_service_account}}
         IS_CREATE_BLANK_PATCHES: ${{inputs.is_create_brank_patches}}
-      working-directory: ${{inputs.working_directory}}
+      working-directory: .github/actions/scaffold-argo-workflows

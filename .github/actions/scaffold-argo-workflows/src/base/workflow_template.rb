@@ -1,7 +1,7 @@
 require_relative 'workflow_base'
 
 class Base::WorkflowTemplate < Base::WorkflowBase
-  def create(service_account)
+  def create(is_create_service_account)
     data = {
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'WorkflowTemplate',
@@ -52,7 +52,7 @@ class Base::WorkflowTemplate < Base::WorkflowBase
         }],
       },
     }
-    data[:spec][:serviceAccountName] = service_account if service_account && !service_account.empty?
+    data[:spec][:serviceAccountName] = name if is_create_service_account
     data
   end
 end
