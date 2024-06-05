@@ -12,7 +12,7 @@ def main(workspace, service, owner, namespace, kind, name, overlays, is_create_s
     environment = File.basename(overlay)
     unless ['prebuilt'].include?(environment)
       is_overlay_target = overlays.include?(environment)
-      OverlayManifest.new("#{kubernetes_path}/overlays/#{environment}/#{namespace}", service, owner, namespace, kind, name).create(is_overlay_target, is_create_blank_patches)
+      OverlayManifest.new("#{kubernetes_path}/overlays/#{environment}/#{namespace}", service, owner, namespace, kind, name).create(is_overlay_target, is_create_service_account, is_create_blank_patches)
     end
   end
 end
