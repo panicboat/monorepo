@@ -74,19 +74,19 @@ class BaseManifest
     if service_account && !service_account.empty?
       # ServiceAccount
       unless values.key?(:resources)
-        values[:resources] = ["serviceaccount/#{name}.yaml"]
+        values[:resources] = ["serviceaccount/#{service_account}.yaml"]
       else
-        unless values[:resources].any? { |resource| resource == "serviceaccount/#{name}.yaml" }
-          values[:resources] << "serviceaccount/#{name}.yaml"
+        unless values[:resources].any? { |resource| resource == "serviceaccount/#{service_account}.yaml" }
+          values[:resources] << "serviceaccount/#{service_account}.yaml"
         end
       end
       # RoleBinding
       if service_account && !service_account.empty?
         unless values.key?(:resources)
-          values[:resources] = ["rolebinding/#{name}.yaml"]
+          values[:resources] = ["rolebinding/#{name}-#{service_account}.yaml"]
         else
-          unless values[:resources].any? { |resource| resource == "rolebinding/#{name}.yaml" }
-            values[:resources] << "rolebinding/#{name}.yaml"
+          unless values[:resources].any? { |resource| resource == "rolebinding/#{name}-#{service_account}.yaml" }
+            values[:resources] << "rolebinding/#{name}-#{service_account}.yaml"
           end
         end
       end

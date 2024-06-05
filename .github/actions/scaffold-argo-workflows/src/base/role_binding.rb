@@ -5,7 +5,7 @@ class Base::RoleBinding < Base::WorkflowBase
     data = {
       apiVersion: 'rbac.authorization.k8s.io/v1',
       kind: 'RoleBinding',
-      metadata: { name: name, },
+      metadata: { name: "#{name}-#{service_account}", },
       subjects: [
         {
           kind: 'ServiceAccount',
