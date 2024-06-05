@@ -49,6 +49,8 @@ class BaseManifest
   def _kustomization(values, is_create_blank_patches)
     values[:configMapGenerator].delete_if { |configmap| configmap[:name] == name } if values.key?(:configMapGenerator)
     values[:resources].delete_if { |configmap| configmap == "configmap/#{name}.yaml" } if values.key?(:resources)
+    values[:resources].delete_if { |configmap| configmap == "serviceaccount/#{name}.yaml" } if values.key?(:resources)
+    values[:resources].delete_if { |configmap| configmap == "rolebinding/#{name}.yaml" } if values.key?(:resources)
     values[:resources].delete_if { |configmap| configmap == "#{kind.downcase}/#{name}.yaml" } if values.key?(:resources)
     values[:patches].delete_if { |configmap| configmap[:path] == "configmap/#{name}.yaml" } if values.key?(:patches)
     # ConfigMapGenerator
