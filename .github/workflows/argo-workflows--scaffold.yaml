@@ -1,5 +1,5 @@
 ---
-name: 'argo-workflows / scaffold'
+name: argo-workflows / scaffold
 on:
   workflow_dispatch:
     inputs:
