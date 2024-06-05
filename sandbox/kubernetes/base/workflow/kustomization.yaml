@@ -5,11 +5,18 @@ configMapGenerator:
 - name: panicboat-sample-workflow
   options:
     disableNameSuffixHash: true
+- name: patch-deleteworkflowservice-account
+  options:
+    disableNameSuffixHash: true
 patches:
 - path: configmap/panicboat-sample-workflow.yaml
+- path: configmap/patch-deleteworkflowservice-account.yaml
 resources:
 - serviceaccount/panicboat-sample-workflow.yaml
 - rolebinding/panicboat-sample-workflow.yaml
 - cronworkflow/panicboat-sample-workflow.yaml
+- serviceaccount/patch-deleteworkflowservice-account.yaml
+- rolebinding/patch-deleteworkflowservice-account.yaml
+- cronworkflow/patch-deleteworkflowservice-account.yaml
 openapi:
   path: https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_all_k8s_kustomize_schema.json
