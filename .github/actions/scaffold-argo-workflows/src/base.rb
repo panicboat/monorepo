@@ -2,6 +2,8 @@ require 'fileutils'
 require 'yaml'
 
 require_relative 'base/cron_workflow'
+require_relative 'base/role_binding'
+require_relative 'base/service_account'
 require_relative 'base/workflow_template'
 require_relative 'lib/hash'
 
@@ -31,7 +33,7 @@ class BaseManifest
     # ServiceAccount
     FileUtils.mkdir_p("#{workspace}/serviceaccount")
     serviceaccount = _serviceAccount
-    YAML.dump(Hash.deep_transform_keys(serviceaccount, &:to_s), File.open("#{workspace}/rolebinding/#{name}.yaml", 'w')) if serviceaccount && !serviceaccount.empty?
+    YAML.dump(Hash.deep_transform_keys(serviceaccount, &:to_s), File.open("#{workspace}/serviceaccount/#{name}.yaml", 'w')) if serviceaccount && !serviceaccount.empty?
     # RoleBinding
     FileUtils.mkdir_p("#{workspace}/rolebinding")
     rolebinding = _roleBinding
