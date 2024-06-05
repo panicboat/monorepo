@@ -49,7 +49,7 @@ class OverlayManifest
     values[:resources].delete_if { |configmap| configmap == "#{kind.downcase}/#{name}.yaml" } if values.key?(:resources)
     values[:patches].delete_if { |configmap| configmap[:path] == "configmap/#{name}.yaml" } if values.key?(:patches)
     # ConfigMap
-    if is_create_blank_patches
+    if is_create_blank_patches || !is_overlay_target
       unless values.key?(:patches)
         values[:patches] = [{ path: "configmap/#{name}.yaml" }]
       else
@@ -77,7 +77,7 @@ class OverlayManifest
       end
     end
     # Workflow
-    if is_create_blank_patches
+    if is_create_blank_patches || !is_overlay_target
       unless values.key?(:patches)
         values[:patches] = [{ path: "#{kind.downcase}/#{name}.yaml" }]
       else

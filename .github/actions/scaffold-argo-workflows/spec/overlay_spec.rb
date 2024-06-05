@@ -91,7 +91,7 @@ describe 'Oase' do
       expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
       # do not overlay target, do not create service account, do not create blank patches
       result = _overlay.send(:_kustomization, {}, false, false, false)
-      expect(result[:patches]).to be_nil
+      expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
       # do not overlay target, do not create service account, create blank patches
       result = _overlay.send(:_kustomization, {}, false, false, true)
       expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
