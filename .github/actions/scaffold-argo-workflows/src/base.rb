@@ -80,13 +80,11 @@ class BaseManifest
         end
       end
       # RoleBinding
-      if is_create_service_account
-        unless values.key?(:resources)
-          values[:resources] = ["rolebinding/#{name}.yaml"]
-        else
-          unless values[:resources].any? { |resource| resource == "rolebinding/#{name}.yaml" }
-            values[:resources] << "rolebinding/#{name}.yaml"
-          end
+      unless values.key?(:resources)
+        values[:resources] = ["rolebinding/#{name}.yaml"]
+      else
+        unless values[:resources].any? { |resource| resource == "rolebinding/#{name}.yaml" }
+          values[:resources] << "rolebinding/#{name}.yaml"
         end
       end
     end
