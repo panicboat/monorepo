@@ -1,0 +1,15 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- name: sample-workflow
+  options:
+    disableNameSuffixHash: true
+patches:
+- path: configmap/sample-workflow.yaml
+resources:
+- serviceaccount/sample-workflow.yaml
+- rolebinding/sample-workflow.yaml
+- cronworkflow/sample-workflow.yaml
+openapi:
+  path: https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_all_k8s_kustomize_schema.json
