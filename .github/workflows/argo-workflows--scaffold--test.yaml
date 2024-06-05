@@ -25,6 +25,6 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
-          working-directory: ./.github/actions/scaffold-argo-workflows
+          working-directory: .github/actions/scaffold-argo-workflows
       - run: bundle exec rspec
-        working-directory: ./.github/actions/scaffold-argo-workflows
+        working-directory: .github/actions/scaffold-argo-workflows
