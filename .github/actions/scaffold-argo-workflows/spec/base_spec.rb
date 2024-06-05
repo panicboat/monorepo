@@ -101,6 +101,22 @@ describe 'Base' do
     end
   end
 
+  describe '#_serviceAccount' do
+    it 'returns the correct ServiceAccount' do
+      result = _base.send(:_serviceAccount)
+      expect(result).to be_a(Hash)
+      expect(result[:kind]).to eq('ServiceAccount')
+    end
+  end
+
+  describe '#_roleBinding' do
+    it 'returns the correct RoleBinding' do
+      result = _base.send(:_roleBinding)
+      expect(result).to be_a(Hash)
+      expect(result[:kind]).to eq('RoleBinding')
+    end
+  end
+
   describe '#_workflow' do
     it 'returns the correct CronWorkflow' do
       base = BaseManifest.new(env[:workspace], env[:service], env[:owner], env[:namespace], 'CronWorkflow', env[:name], env[:service_account])

@@ -30,11 +30,11 @@ class BaseManifest
     YAML.dump(Hash.deep_transform_keys(configmap, &:to_s), File.open("#{workspace}/configmap/#{name}.yaml", 'w')) if configmap && !configmap.empty?
     # ServiceAccount
     FileUtils.mkdir_p("#{workspace}/serviceaccount")
-    serviceaccount = _serviceAccount(service_account)
+    serviceaccount = _serviceAccount
     YAML.dump(Hash.deep_transform_keys(serviceaccount, &:to_s), File.open("#{workspace}/rolebinding/#{name}.yaml", 'w')) if serviceaccount && !serviceaccount.empty?
     # RoleBinding
     FileUtils.mkdir_p("#{workspace}/rolebinding")
-    rolebinding = _roleBinding(service_account)
+    rolebinding = _roleBinding
     YAML.dump(Hash.deep_transform_keys(rolebinding, &:to_s), File.open("#{workspace}/rolebinding/#{name}.yaml", 'w')) if rolebinding && !rolebinding.empty?
     # Workflow
     FileUtils.mkdir_p("#{workspace}/#{kind.downcase}")
@@ -110,13 +110,13 @@ class BaseManifest
 
   def _serviceAccount
     serviceaccount = nil
-    serviceaccount = Base::ServiceAccount.new(service, owner, namespace, name).create(service_account) if service_account && !service_account.empty?
+    serviceaccount = Base::ServiceAccount.new(service, owner, namespace, kind, name).create(service_account) if service_account && !service_account.empty?
     serviceaccount
   end
 
   def _roleBinding
     rolebinding = nil
-    rolebinding = Base::RoleBinding.new(service, owner, namespace, name).create(service_account) if service_account && !service_account.empty?
+    rolebinding = Base::RoleBinding.new(service, owner, namespace, kind, name).create(service_account) if service_account && !service_account.empty?
     rolebinding
   end
 
