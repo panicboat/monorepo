@@ -21,8 +21,8 @@ class OverlayManifest
     FileUtils.mkdir_p(workspace)
     yaml = { apiVersion: 'kustomize.config.k8s.io/v1beta1', kind: 'Kustomization', namespace: "${NAMESPACE}-#{namespace}", resources: ["../../../base/#{namespace}"] }
     yaml = Hash.deep_symbolize_keys(YAML.load_file("#{workspace}/kustomization.yaml")) if File.exist?("#{workspace}/kustomization.yaml")
-    kustomization = _kustomization(yaml, is_create_blank_patches)
-    YAML.dump(Hash.deep_transform_keys(kustomization, &:to_s), File.open("#{workspace}/kustomization.yaml", 'w'))
+    kustomization = _kustomization(yaml, is_overlay_target, is_create_service_account, is_create_blank_patches)
+    YAML.dump(Hash.deep_transform_keys(kustomization, &:to_s), File.open("#{workspace}/kustomization.yaml", 'w')) if kustomization && !kustomization.empty?
     # ConfigMap
     FileUtils.mkdir_p("#{workspace}/configmap")
     configmap = _configMap(is_overlay_target, is_create_blank_patches)
@@ -43,7 +43,7 @@ class OverlayManifest
 
   private
 
-  def _kustomization(values, is_create_blank_patches)
+  def _kustomization(values, is_overlay_target, is_create_service_account, is_create_blank_patches)
     values[:configMapGenerator].delete_if { |configmap| configmap[:name] == name } if values.key?(:configMapGenerator)
     values[:resources].delete_if { |configmap| configmap == "configmap/#{name}.yaml" } if values.key?(:resources)
     values[:resources].delete_if { |configmap| configmap == "#{kind.downcase}/#{name}.yaml" } if values.key?(:resources)
@@ -55,6 +55,24 @@ class OverlayManifest
       else
         unless values[:patches].any? { |patch| patch[:path] == "configmap/#{name}.yaml" }
           values[:patches] << { path: "configmap/#{name}.yaml" }
+        end
+      end
+    end
+    if is_create_service_account && !is_overlay_target
+      # ServiceAccount
+      unless values.key?(:patches)
+        values[:patches] = [{ path: "serviceaccount/#{name}.yaml" }]
+      else
+        unless values[:patches].any? { |resource| resource == "serviceaccount/#{name}.yaml" }
+          values[:patches] << { path: "serviceaccount/#{name}.yaml" }
+        end
+      end
+      # RoleBinding
+      unless values.key?(:patches)
+        values[:patches] = [{ path: "rolebinding/#{name}.yaml" }]
+      else
+        unless values[:patches].any? { |resource| resource == "rolebinding/#{name}.yaml" }
+          values[:patches] << { path: "rolebinding/#{name}.yaml" }
         end
       end
     end
@@ -86,7 +104,7 @@ class OverlayManifest
 
   def _serviceAccount(is_overlay_target, is_create_service_account)
     serviceaccount = nil
-    serviceaccount = { kind: 'ServiceAccount', metadata: { name: name }, :'$patch' => 'delete' } if is_create_service_account && !is_overlay_target
+    serviceaccount = { apiVersion: 'v1', kind: 'ServiceAccount', metadata: { name: name }, :'$patch' => 'delete' } if is_create_service_account && !is_overlay_target
     serviceaccount
   end
 

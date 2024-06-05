@@ -97,7 +97,7 @@ describe 'Base' do
 
     it 'returns the correct ConfigMap (do not create)' do
       result = _base.send(:_configMap, false)
-      expect(result).to be(nil)
+      expect(result).to be_nil
     end
   end
 
@@ -110,7 +110,7 @@ describe 'Base' do
 
     it 'returns the correct ServiceAccount (do not create)' do
       result = _base.send(:_serviceAccount, false)
-      expect(result).to be(nil)
+      expect(result).to be_nil
     end
   end
 
@@ -123,7 +123,7 @@ describe 'Base' do
 
     it 'returns the correct RoleBinding (do not create)' do
       result = _base.send(:_roleBinding, false)
-      expect(result).to be(nil)
+      expect(result).to be_nil
     end
   end
 
