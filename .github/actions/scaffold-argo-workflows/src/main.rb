@@ -17,6 +17,11 @@ def main(workspace, service, owner, namespace, kind, name, overlays, is_create_s
   end
 end
 
+# ENV.each { |k,v| p "#{k}: #{v}" }
+['WORKSPACE', 'SERVICE', 'OWNER', 'NAMESPACE', 'KIND', 'NAME', 'OVERLAYS', 'IS_CREATE_SERVICE_ACCOUNT', 'IS_CREATE_BLANK_PATCHES'].each do |key|
+  p "#{key}: #{ENV[key]}"
+end
+
 workspace = ENV.fetch('WORKSPACE')
 service = ENV.fetch('SERVICE')
 owner = ENV.fetch('OWNER')
