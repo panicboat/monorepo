@@ -20,7 +20,7 @@ class Base::CronWorkflow < Base::WorkflowBase
         suspend: true,
         schedule: '* * * * *',
         timezone: 'Asia/Tokyo',
-        concurrencyPolicy: 'Forbid',
+        concurrencyPolicy: 'Allow',
         successfulJobsHistoryLimit: 1,
         failedJobsHistoryLimit: 1,
         startingDeadlineSeconds: 60,
