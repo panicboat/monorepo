@@ -32,7 +32,9 @@ on:
         required: true
       is_create_service_account:
         default: 'false'
-        description: 'Create a service account for the workflow.'
+        description: |
+          この Workflow が AWS API を利用する場合は true を選択した上で別途 Terraform で IRSA を作成し annotations に指定してください。
+          AWS API を使わない場合は false のままで OK です。
         required: false
         type: choice
         options:
@@ -40,7 +42,9 @@ on:
           - 'false'
       is_create_brank_patches:
         default: 'true'
-        description: 'Add an empty patch file to each environment. This makes editing a little easier when there are environment differences.'
+        description: |
+          作成されるファイルを最低限にしたい場合は false を選択してください。
+          空のパッチファイルを作成しても良い場合は true のままで OK です。
         required: false
         type: choice
         options:
