@@ -1,7 +1,7 @@
 require_relative 'workflow_base'
 
 class Base::WorkflowTemplate < Base::WorkflowBase
-  def create(is_create_service_account)
+  def create(is_create_config_map, is_create_service_account)
     data = {
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'WorkflowTemplate',
@@ -42,11 +42,11 @@ class Base::WorkflowTemplate < Base::WorkflowBase
               limits: { memory: '32Mi' },
               requests: { cpu: '100m', memory: '32Mi' },
             },
-            envFrom: [{ configMapRef: { name: name } }],
           },
         }],
       },
     }
+    data[:spec][:templates][0][:container][:envFrom] = [{ configMapRef: { name: name } }] if is_create_config_map
     data[:spec][:serviceAccountName] = name if is_create_service_account
     data
   end

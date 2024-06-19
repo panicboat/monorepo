@@ -16,16 +16,16 @@ class OverlayManifest
     @name = name
   end
 
-  def create(is_overlay_target, is_create_service_account, is_create_blank_patches)
+  def create(is_overlay_target, is_create_config_map, is_create_service_account, is_create_blank_patches)
     # Kustomization
     FileUtils.mkdir_p(workspace)
     yaml = { apiVersion: 'kustomize.config.k8s.io/v1beta1', kind: 'Kustomization', namespace: "${NAMESPACE}-#{namespace}", resources: ["../../../base/#{namespace}"] }
     yaml = Hash.deep_symbolize_keys(YAML.load_file("#{workspace}/kustomization.yaml")) if File.exist?("#{workspace}/kustomization.yaml")
-    kustomization = _kustomization(yaml, is_overlay_target, is_create_service_account, is_create_blank_patches)
+    kustomization = _kustomization(yaml, is_overlay_target, is_create_config_map, is_create_service_account, is_create_blank_patches)
     YAML.dump(Hash.deep_transform_keys(kustomization, &:to_s), File.open("#{workspace}/kustomization.yaml", 'w')) if kustomization && !kustomization.empty?
     # ConfigMap
     FileUtils.mkdir_p("#{workspace}/configmap")
-    configmap = _configMap(is_overlay_target, is_create_blank_patches)
+    configmap = _configMap(is_overlay_target, is_create_config_map, is_create_blank_patches)
     YAML.dump(Hash.deep_transform_keys(configmap, &:to_s), File.open("#{workspace}/configmap/#{name}.yaml", 'w')) if configmap && !configmap.empty?
     # ServiceAccount
     FileUtils.mkdir_p("#{workspace}/serviceaccount")
@@ -43,13 +43,13 @@ class OverlayManifest
 
   private
 
-  def _kustomization(values, is_overlay_target, is_create_service_account, is_create_blank_patches)
+  def _kustomization(values, is_overlay_target, is_create_config_map, is_create_service_account, is_create_blank_patches)
     values[:configMapGenerator].delete_if { |configmap| configmap[:name] == name } if values.key?(:configMapGenerator)
     values[:resources].delete_if { |configmap| configmap == "configmap/#{name}.yaml" } if values.key?(:resources)
     values[:resources].delete_if { |configmap| configmap == "#{kind.downcase}/#{name}.yaml" } if values.key?(:resources)
     values[:patches].delete_if { |configmap| configmap[:path] == "configmap/#{name}.yaml" } if values.key?(:patches)
     # ConfigMap
-    if is_create_blank_patches || !is_overlay_target
+    if is_create_config_map && (is_create_blank_patches || !is_overlay_target)
       unless values.key?(:patches)
         values[:patches] = [{ path: "configmap/#{name}.yaml" }]
       else
@@ -86,16 +86,12 @@ class OverlayManifest
         end
       end
     end
-    # OpenApi
-    unless values.key?(:openapi)
-      values[:openapi] = { path: 'https://raw.githubusercontent.com/argoproj/argo-schema-generator/main/schema/argo_all_k8s_kustomize_schema.json' }
-    end
     values
   end
 
-  def _configMap(is_overlay_target, is_create_blank_patches)
+  def _configMap(is_overlay_target, is_create_config_map, is_create_blank_patches)
     configmap = nil
-    if is_create_blank_patches || !is_overlay_target
+    if is_create_config_map && (is_create_blank_patches || !is_overlay_target)
       configmap = { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: name }, data: {} }
       configmap[:'$patch'] = 'delete' if !is_overlay_target
     end

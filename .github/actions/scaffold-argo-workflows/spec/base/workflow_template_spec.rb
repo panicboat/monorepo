@@ -9,15 +9,17 @@ describe 'WorkflowTemplate' do
 
   describe '#_workflow' do
     it 'returns the correct WorkflowTemplate' do
-      result = _cron_workflow.create(true)
+      result = _cron_workflow.create(true, true)
       expect(result).to be_a(Hash)
+      expect(result[:spec][:templates][0][:container][:envFrom]).to eq([{ configMapRef: { name: env[:name] } }])
       expect(result[:spec][:serviceAccountName]).to eq(env[:name])
     end
 
-    it 'returns the correct WorkflowTemplate (disable service account)' do
-      result = _cron_workflow.create(false)
+    it 'returns the correct WorkflowTemplate (disable config map, service account)' do
+      result = _cron_workflow.create(false, false)
       expect(result).to be_a(Hash)
-      expect(result[:spec][:serviceAccountName]).to eq(nil)
+      expect(result[:spec][:templates][0][:container][:envFrom]).to be_nil
+      expect(result[:spec][:serviceAccountName]).to be_nil
     end
   end
 end
