@@ -10,6 +10,7 @@ services:
       - KIND=WorkflowTemplate
       - NAME=scaffold-workflow
       - OVERLAYS=develop,production,staging
+      - IS_CREATE_CONFIG_MAP=true
       - IS_CREATE_SERVICE_ACCOUNT=true
       - IS_CREATE_BLANK_PATCHES=true
     volumes:

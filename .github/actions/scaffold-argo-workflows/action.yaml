@@ -20,6 +20,10 @@ inputs:
     default: 'develop,production,staging'
     description: 'Environment to be deployed. Please enter comma-separated entries.'
     required: true
+  is_create_config_map:
+    default: 'true'
+    description: 'Create a config map for the workflow.'
+    required: false
   is_create_service_account:
     default: 'false'
     description: 'Create a service account for the workflow.'
@@ -50,6 +54,7 @@ runs:
         KIND: ${{inputs.kind}}
         NAME: ${{inputs.name}}
         OVERLAYS: ${{inputs.overlays}}
+        IS_CREATE_CONFIG_MAP: ${{inputs.is_create_config_map}}
         IS_CREATE_SERVICE_ACCOUNT: ${{inputs.is_create_service_account}}
         IS_CREATE_BLANK_PATCHES: ${{inputs.is_create_brank_patches}}
       working-directory: ${{inputs.working_directory}}
