@@ -24,7 +24,7 @@ describe 'Oase' do
 
   describe '#_kustomization' do
     it 'returns the correct kustomization (create)' do
-      result = _overlay.send(:_kustomization, {}, false, true, true)
+      result = _overlay.send(:_kustomization, {}, false, true, true, true)
       expect(result).to be_a(Hash)
       expect(result[:configMapGenerator]).to be_nil
       expect(result[:resources]).to be_nil
@@ -33,7 +33,7 @@ describe 'Oase' do
     end
 
     it 'returns the correct kustomization (add)' do
-      result = _overlay.send(:_kustomization, kustomization, false, true, true)
+      result = _overlay.send(:_kustomization, kustomization, false, true, true, true)
       expect(result).to be_a(Hash)
       expect(result[:configMapGenerator]).to be_a(Array)
       expect(result[:configMapGenerator]).to eq(kustomization[:configMapGenerator])
@@ -58,7 +58,7 @@ describe 'Oase' do
           { path: "configmap/rspec-config.yaml" },
         ],
       }
-      result = _overlay.send(:_kustomization, values, false, true, true)
+      result = _overlay.send(:_kustomization, values, false, true, true, true)
       expect(result).to be_a(Hash)
       expect(result[:configMapGenerator]).to be_a(Array)
       expect(result[:configMapGenerator]).to eq(kustomization[:configMapGenerator])
@@ -69,7 +69,7 @@ describe 'Oase' do
     end
 
     it 'returns the correct kustomization (do not create blank patches)' do
-      result = _overlay.send(:_kustomization, kustomization, false, true, true)
+      result = _overlay.send(:_kustomization, kustomization, false, true, true, true)
       expect(result).to be_a(Hash)
       expect(result[:configMapGenerator]).to be_a(Array)
       expect(result[:configMapGenerator]).to eq(kustomization[:configMapGenerator])
@@ -79,45 +79,81 @@ describe 'Oase' do
       expect(result[:patches]).to eq(kustomization[:patches])
     end
 
-    it 'returns the correct kustomization (All patterns of flags)' do
-      # overlay target, do not create service account, create blank patches
-      result = _overlay.send(:_kustomization, {}, true, false, true)
+    it 'returns the correct kustomization (overlay target, create blank patches)' do
+      # create config map, create service account
+      result = _overlay.send(:_kustomization, {}, true, true, true, true)
       expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
-      # overlay target, create service account, do not create blank patches
-      result = _overlay.send(:_kustomization, {}, true, true, false)
+      # create config map, do not create service account
+      result = _overlay.send(:_kustomization, {}, true, true, false, true)
+      expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
+      # do not create config map, create service account
+      result = _overlay.send(:_kustomization, {}, true, false, true, true)
+      expect(result[:patches]).to eq([{path:"#{env[:kind]}/#{env[:name]}.yaml"}])
+      # do not create config map, do not create service account
+      result = _overlay.send(:_kustomization, {}, true, false, false, true)
+      expect(result[:patches]).to eq([{path:"#{env[:kind]}/#{env[:name]}.yaml"}])
+    end
+
+    it 'returns the correct kustomization (overlay target, do not create blank patches)' do
+      # create config map, create service account
+      result = _overlay.send(:_kustomization, {}, true, true, true, false)
       expect(result[:patches]).to be_nil
-      # overlay target, create service account, create blank patches
-      result = _overlay.send(:_kustomization, {}, true, true, true)
+      # create config map, do not create service account
+      result = _overlay.send(:_kustomization, {}, true, true, false, false)
+      expect(result[:patches]).to be_nil
+      # do not create config map, create service account
+      result = _overlay.send(:_kustomization, {}, true, false, true, false)
+      expect(result[:patches]).to be_nil
+      # do not create config map, do not create service account
+      result = _overlay.send(:_kustomization, {}, true, false, false, false)
+      expect(result[:patches]).to be_nil
+    end
+
+    it 'returns the correct kustomization (not overlay target, create blank patches)' do
+      # create config map, create service account
+      result = _overlay.send(:_kustomization, {}, false, true, true, true)
+      expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path: "serviceaccount/#{env[:name]}.yaml"}, {path: "rolebinding/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
+      # create config map, do not create service account
+      result = _overlay.send(:_kustomization, {}, false, true, false, true)
       expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
-      # do not overlay target, do not create service account, do not create blank patches
-      result = _overlay.send(:_kustomization, {}, false, false, false)
+      # do not create config map, create service account
+      result = _overlay.send(:_kustomization, {}, false, false, true, true)
+      expect(result[:patches]).to eq([{path: "serviceaccount/#{env[:name]}.yaml"}, {path: "rolebinding/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
+      # do not create config map, do not create service account
+      result = _overlay.send(:_kustomization, {}, false, false, false, true)
+      expect(result[:patches]).to eq([{path:"#{env[:kind]}/#{env[:name]}.yaml"}])
+    end
+
+    it 'returns the correct kustomization (not overlay target, do not create blank patches)' do
+      # create config map, create service account
+      result = _overlay.send(:_kustomization, {}, false, true, true, false)
+      expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path: "serviceaccount/#{env[:name]}.yaml"}, {path: "rolebinding/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
+      # create config map, do not create service account
+      result = _overlay.send(:_kustomization, {}, false, true, false, false)
       expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
-      # do not overlay target, do not create service account, create blank patches
-      result = _overlay.send(:_kustomization, {}, false, false, true)
-      expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
-      # do not overlay target, create service account, do not create blank patches
-      result = _overlay.send(:_kustomization, {}, false, true, false)
-      expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path: "serviceaccount/#{env[:name]}.yaml"}, {path:"rolebinding/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
-      # do not overlay target, create service account, create blank patches
-      result = _overlay.send(:_kustomization, {}, false, true, true)
-      expect(result[:patches]).to eq([{path: "configmap/#{env[:name]}.yaml"}, {path: "serviceaccount/#{env[:name]}.yaml"}, {path:"rolebinding/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
+      # do not create config map, create service account
+      result = _overlay.send(:_kustomization, {}, false, false, true, false)
+      expect(result[:patches]).to eq([{path: "serviceaccount/#{env[:name]}.yaml"}, {path: "rolebinding/#{env[:name]}.yaml"}, {path:"#{env[:kind]}/#{env[:name]}.yaml"}])
+      # do not create config map, do not create service account
+      result = _overlay.send(:_kustomization, {}, false, false, false, false)
+      expect(result[:patches]).to eq([{path:"#{env[:kind]}/#{env[:name]}.yaml"}])
     end
   end
 
   describe '#_configMap' do
     it 'returns the correct ConfigMap (create blank patch)' do
-      result = _overlay.send(:_configMap, true, true)
+      result = _overlay.send(:_configMap, true, true, true)
       expect(result).to be_a(Hash)
       expect(result[:apiVersion]).to eq('v1')
       expect(result[:kind]).to eq('ConfigMap')
       expect(result[:metadata][:name]).to eq(env[:name])
       expect(result[:data]).to be_a(Hash)
       expect(result[:data]).to eq({})
-      expect(result[:'$patch']).to eq(nil)
+      expect(result[:'$patch']).to be_nil
     end
 
     it 'returns the correct ConfigMap (create delete patch)' do
-      result = _overlay.send(:_configMap, false, true)
+      result = _overlay.send(:_configMap, false, true, true)
       expect(result).to be_a(Hash)
       expect(result[:apiVersion]).to eq('v1')
       expect(result[:kind]).to eq('ConfigMap')
@@ -127,13 +163,17 @@ describe 'Oase' do
       expect(result[:'$patch']).to eq('delete')
     end
 
-    it 'returns the correct ConfigMap (create delete patch)' do
-      result = _overlay.send(:_configMap, true, false)
+    it 'returns the correct ConfigMap (do not create patch)' do
+      result = _overlay.send(:_configMap, true, true, false)
+      expect(result).to be_nil
+      result = _overlay.send(:_configMap, true, false, true)
+      expect(result).to be_nil
+      result = _overlay.send(:_configMap, true, false, false)
       expect(result).to be_nil
     end
 
     it 'returns the correct ConfigMap (create delete patch)' do
-      result = _overlay.send(:_configMap, false, false)
+      result = _overlay.send(:_configMap, false, true, false)
       expect(result).to be_a(Hash)
       expect(result[:apiVersion]).to eq('v1')
       expect(result[:kind]).to eq('ConfigMap')
@@ -186,7 +226,7 @@ describe 'Oase' do
       result = overlay.send(:_workflow, true, true)
       expect(result).to be_a(Hash)
       expect(result[:kind]).to eq('CronWorkflow')
-      expect(result[:'$patch']).to eq(nil)
+      expect(result[:'$patch']).to be_nil
     end
 
     it 'returns the correct ConfigMap (create delete patch)' do
