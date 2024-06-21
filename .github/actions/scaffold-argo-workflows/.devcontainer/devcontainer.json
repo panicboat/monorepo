@@ -16,20 +16,15 @@
 
   "waitFor": "onCreateCommand",
   "updateContentCommand": "bundle install",
-	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "ruby --version",
 
 	// Configure tool-specific properties.
   "customizations": {
     "codespaces": {
-      "openFiles": [
-        // "app/views/hello/index.html.erb"
-      ]
+      "openFiles": ["README.md"]
     },
     "vscode": {
-      "extensions": [
-        "Shopify.ruby-lsp"
-      ]
+      "extensions": []
     }
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
