@@ -27,6 +27,6 @@
       "extensions": []
     }
   },
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
-  "workspaceFolder": "/workspace"
+  "workspaceMount": "source=${localWorkspaceFolder},target=/scaffold-argo-workflows,type=bind",
+  "workspaceFolder": "/scaffold-argo-workflows"
 }
