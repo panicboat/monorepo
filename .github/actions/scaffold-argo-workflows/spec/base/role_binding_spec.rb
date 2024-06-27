@@ -11,7 +11,7 @@ describe 'RoleBinding' do
     it 'returns the correct RoleBinding' do
       result = _role_binding.create
       expect(result).to be_a(Hash)
-      expect(result[:subjects][0][:namespace]).to eq("${NAMESPACE}-#{env[:namespace]}")
+      expect(result[:subjects][0][:name]).to eq(env[:name])
     end
   end
 end
