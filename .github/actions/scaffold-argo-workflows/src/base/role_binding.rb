@@ -10,13 +10,12 @@ class Base::RoleBinding < Base::WorkflowBase
         {
           kind: 'ServiceAccount',
           name: name,
-          namespace: "${NAMESPACE}-#{namespace}"
         }
       ],
       roleRef: {
         kind: 'Role',
-        name: 'argo',  # TODO: Changed after authority adjustment
-        apiGroup: 'rbac.authorization.k8s.io'
+        name: 'argo-workflows-default-executor-role',
+        apiGroup: 'rbac.authorization.k8s.io',
       }
     }
   end
