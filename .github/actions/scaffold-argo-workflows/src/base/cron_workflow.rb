@@ -36,11 +36,19 @@ class Base::CronWorkflow < Base::WorkflowBase
           activeDeadlineSeconds: 28800,
           templates:[{
             name: 'main',
+            # metadata: {
+            #   labels: {
+            #     'admission.datadoghq.com/enabled' => 'true',
+            #     'admission.datadoghq.com/config.mode' => 'socket',
+            #     'tags.datadoghq.com/service' => service,
+            #   }
+            # },
             container: {
               name: 'main',
               image: 'docker/whalesay',
               command: ['cowsay'],
               args: ['Hello, World!'],
+              # env: [{ name: 'DD_ENV', valueFrom: { fieldRef: { fieldPath: 'metadata.namespace' } } }],
               resources: {
                 limits: { memory: '32Mi' },
                 requests: { cpu: '100m', memory: '32Mi' },
