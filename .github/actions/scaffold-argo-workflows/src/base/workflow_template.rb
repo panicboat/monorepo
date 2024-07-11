@@ -38,6 +38,7 @@ class Base::WorkflowTemplate < Base::WorkflowBase
           #     'admission.datadoghq.com/enabled' => 'true',
           #     'admission.datadoghq.com/config.mode' => 'socket',
           #     'tags.datadoghq.com/service' => service,
+          #     'tags.datadoghq.com/env' => '${NAMESPACE}',
           #   }
           # },
           container: {
@@ -45,7 +46,6 @@ class Base::WorkflowTemplate < Base::WorkflowBase
             image: 'docker/whalesay',
             command: ['cowsay'],
             args: ['{{workflow.parameters.message}}'],
-            # env: [{ name: 'DD_ENV', valueFrom: { fieldRef: { fieldPath: 'metadata.namespace' } } }],
             resources: {
               limits: { memory: '32Mi' },
               requests: { cpu: '100m', memory: '32Mi' },
