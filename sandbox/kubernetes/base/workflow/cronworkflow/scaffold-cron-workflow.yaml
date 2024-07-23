@@ -1,0 +1,45 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: scaffold-cron-workflow
+  labels:
+    workflows.argoproj.io/owner: panicboat
+    workflows.argoproj.io/service: sandbox
+  annotations:
+    workflows.argoproj.io/title: scaffold-cron-workflow
+    workflows.argoproj.io/description: ''
+spec:
+  suspend: true
+  schedule: "* * * * *"
+  timezone: Asia/Tokyo
+  concurrencyPolicy: Allow
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  startingDeadlineSeconds: 60
+  workflowMetadata:
+    labels:
+      workflows.argoproj.io/name: scaffold-cron-workflow
+      workflows.argoproj.io/owner: panicboat
+      workflows.argoproj.io/service: sandbox
+  workflowSpec:
+    entrypoint: main
+    activeDeadlineSeconds: 28800
+    templates:
+    - name: main
+      container:
+        name: main
+        image: docker/whalesay
+        command:
+        - cowsay
+        args:
+        - Hello, World!
+        resources:
+          limits:
+            memory: 32Mi
+          requests:
+            cpu: 100m
+            memory: 32Mi
+        envFrom:
+        - configMapRef:
+            name: scaffold-cron-workflow
