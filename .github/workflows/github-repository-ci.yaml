@@ -1,0 +1,100 @@
+name: 'GitHub Repository Management - CI/CD'
+
+on:
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - 'github-repository/**'
+      - '.github/workflows/github-repository-*.yaml'
+      - '.github/workflows/reusable-*.yaml'
+      - '.github/scripts/load-terragrunt-config.js'
+      - 'terragrunt-action-root.yaml'
+  push:
+    branches:
+      - develop
+    paths:
+      - 'github-repository/**'
+      - '.github/workflows/github-repository-*.yaml'
+      - '.github/workflows/reusable-*.yaml'
+      - '.github/scripts/load-terragrunt-config.js'
+      - 'terragrunt-action-root.yaml'
+
+env:
+  SERVICE_NAME: github-repository
+  SERVICE_PATH: github-repository
+
+jobs:
+  # Load environments dynamically from directory structure
+  load-environments:
+    name: 'Load Environments'
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.get-envs.outputs.environments }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Get environments from directory structure
+      id: get-envs
+      run: |
+        # Get list of directories in github-repository/terragrunt/envs/
+        if [ -d "github-repository/terragrunt/envs" ]; then
+          envs=$(ls -1 github-repository/terragrunt/envs/ | jq -R -s -c 'split("\n")[:-1]')
+          echo "Found environments: $envs"
+          echo "environments=$envs" >> $GITHUB_OUTPUT
+        else
+          echo "No environments directory found"
+          echo "environments=[]" >> $GITHUB_OUTPUT
+        fi
+
+  # Plan jobs for each environment using dynamic matrix
+  plan:
+    name: 'Plan - ${{ matrix.environment }}'
+    if: github.event_name == 'pull_request'
+    needs: load-environments
+    strategy:
+      matrix:
+        environment: ${{ fromJson(needs.load-environments.outputs.environments) }}
+    uses: ./.github/workflows/reusable-terragrunt-plan.yaml
+    with:
+      project_name: github-repository
+      environment: ${{ matrix.environment }}
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+
+  # Apply jobs for each environment using dynamic matrix
+  apply:
+    name: 'Apply - ${{ matrix.environment }}'
+    if: github.event_name == 'push'
+    needs: load-environments
+    strategy:
+      matrix:
+        environment: ${{ fromJson(needs.load-environments.outputs.environments) }}
+    uses: ./.github/workflows/reusable-terragrunt-apply.yaml
+    with:
+      project_name: github-repository
+      environment: ${{ matrix.environment }}
+      auto_approve: true
+    permissions:
+      contents: read
+      id-token: write
+
+  # Deployment summary
+  deployment-summary:
+    name: 'Deployment Summary'
+    runs-on: ubuntu-latest
+    needs: [load-environments, apply]
+    if: always() && github.event_name == 'push'
+    steps:
+    - name: Create deployment summary
+      run: |
+        echo "## 🚀 GitHub Repository Management Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Service**: github-repository" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Environments**: ${{ needs.load-environments.outputs.environments }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Overall Status**: ${{ needs.apply.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Deployment Time**: $(date)" >> $GITHUB_STEP_SUMMARY
