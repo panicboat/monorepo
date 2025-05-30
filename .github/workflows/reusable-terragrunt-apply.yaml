@@ -3,11 +3,20 @@ name: 'reusable / terragrunt apply'
 on:
   workflow_call:
     inputs:
+      project_name:
+        description: 'Project name (e.g., claude-code-action)'
+        required: true
+        type: string
+      environment:
+        description: 'Environment name (optional, overrides auto-detection)'
+        required: false
+        type: string
+        default: ''
       working_directory:
         description: 'Working directory for Terragrunt'
         required: false
         type: string
-        default: './github-actions/claude-code-action/terragrunt'
+        default: ''
       tf_version:
         description: 'Terraform version'
         required: false
@@ -18,79 +27,110 @@ on:
         required: false
         type: string
         default: '0.58.0'
-      aws_region:
-        description: 'AWS region'
-        required: false
-        type: string
-        default: 'us-east-1'
       auto_approve:
         description: 'Auto approve for apply'
         required: false
         type: boolean
         default: true
-      max_parallel:
-        description: 'Maximum parallel deployments'
-        required: false
-        type: number
-        default: 1
-    secrets:
-      AWS_ROLE_TO_ASSUME:
-        required: true
 
 env:
   TF_VERSION: ${{ inputs.tf_version }}
   TERRAGRUNT_VERSION: ${{ inputs.terragrunt_version }}
-  AWS_REGION: ${{ inputs.aws_region }}
-  WORKING_DIRECTORY: ${{ inputs.working_directory }}
 
 jobs:
-  detect-changes:
-    name: 'Detect Changes'
+  load-config:
+    name: 'Load Configuration'
     runs-on: ubuntu-latest
     outputs:
-      environments: ${{ steps.changes.outputs.environments }}
+      environment: ${{ steps.set-environment.outputs.environment }}
+      aws_region: ${{ steps.config.outputs.aws_region }}
+      apply_role: ${{ steps.config.outputs.apply_role }}
+      project_path: ${{ steps.config.outputs.project_path }}
+      working_directory: ${{ steps.set-working-dir.outputs.working_directory }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: |
+        npm install js-yaml @actions/core
+
+    - name: Load Terragrunt configuration
+      id: config
+      env:
+        PROJECT_NAME: ${{ inputs.project_name }}
+      run: node .github/scripts/load-terragrunt-config.js
+
+    - name: Set environment
+      id: set-environment
+      run: |
+        if [ -n "${{ inputs.environment }}" ]; then
+          echo "environment=${{ inputs.environment }}" >> $GITHUB_OUTPUT
+        else
+          echo "environment=${{ steps.config.outputs.environment }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Set working directory
+      id: set-working-dir
+      run: |
+        if [ -n "${{ inputs.working_directory }}" ]; then
+          echo "working_directory=${{ inputs.working_directory }}" >> $GITHUB_OUTPUT
+        else
+          echo "working_directory=./${{ steps.config.outputs.project_path }}" >> $GITHUB_OUTPUT
+        fi
+
+  detect-changes:
+    name: 'Detect Changes'
+    needs: load-config
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.changes.outputs.has_changes }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: Detect changed environments
+    - name: Detect changes
       id: changes
       run: |
         # Get list of changed files
-        CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+        if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+        else
+          # First commit or force push
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git show --name-only --format= HEAD)
+        fi
 
         echo "Changed files:"
         echo "$CHANGED_FILES"
 
-        # Extract environments from changed env directories
-        ENVIRONMENTS=$(echo "$CHANGED_FILES" | grep -E '^github-actions/claude-code-action/terragrunt/envs/[^/]+/' | cut -d'/' -f5 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+        # Check if any relevant files changed
+        PROJECT_PATH="${{ needs.load-config.outputs.project_path }}"
+        WORKFLOW_PATH=".github/workflows/${{ inputs.project_name }}-terragrunt"
 
-        # If modules or root config changed, deploy all environments
-        if echo "$CHANGED_FILES" | grep -E '^github-actions/claude-code-action/terragrunt/(modules/|root\.hcl)'; then
-          ENVIRONMENTS='["development","staging","production"]'
+        if echo "$CHANGED_FILES" | grep -E "^${PROJECT_PATH}/" || echo "$CHANGED_FILES" | grep -E "^${WORKFLOW_PATH}"; then
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "Changes detected in project files"
+        else
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+          echo "No changes detected in project files"
         fi
-
-        # Default to development if no environments detected
-        if [ "$ENVIRONMENTS" = "[]" ] || [ -z "$ENVIRONMENTS" ]; then
-          ENVIRONMENTS='["development"]'
-        fi
-
-        echo "Detected environments: $ENVIRONMENTS"
-        echo "environments=$ENVIRONMENTS" >> $GITHUB_OUTPUT
 
   terragrunt-apply:
     name: 'Terragrunt Apply'
-    needs: detect-changes
+    needs: [load-config, detect-changes]
+    if: needs.detect-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
-    strategy:
-      matrix:
-        environment: ${{ fromJson(needs.detect-changes.outputs.environments) }}
-      max-parallel: ${{ inputs.max_parallel }}
+    environment: ${{ needs.load-config.outputs.environment }}
 
     steps:
     - name: Checkout
@@ -99,8 +139,8 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        aws-region: ${{ env.AWS_REGION }}
+        role-to-assume: ${{ needs.load-config.outputs.apply_role }}
+        aws-region: ${{ needs.load-config.outputs.aws_region }}
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
@@ -121,11 +161,17 @@ jobs:
         else
           terragrunt apply --terragrunt-non-interactive
         fi
-      working-directory: ${{ env.WORKING_DIRECTORY }}/envs/${{ matrix.environment }}
+      working-directory: ${{ needs.load-config.outputs.working_directory }}/envs/${{ needs.load-config.outputs.environment }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
     - name: Create deployment summary
       run: |
-        echo "## 🚀 Terragrunt Deployment Summary - ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Environment**: ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "## 🚀 Terragrunt Deployment Summary - ${{ inputs.project_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Project**: ${{ inputs.project_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Environment**: ${{ needs.load-config.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Auto Approve**: ${{ inputs.auto_approve }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Deployment Time**: $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "- **AWS Region**: ${{ needs.load-config.outputs.aws_region }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **IAM Role**: ${{ needs.load-config.outputs.apply_role }}" >> $GITHUB_STEP_SUMMARY
