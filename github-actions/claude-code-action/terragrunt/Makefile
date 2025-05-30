@@ -2,7 +2,7 @@
 .PHONY: help init plan apply destroy clean fmt validate outputs
 
 # Default environment
-ENV ?= development
+ENV ?= develop
 
 # Colors for output
 BLUE = \033[0;34m
@@ -21,10 +21,10 @@ help: ## Show available commands
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(YELLOW)%-12s$(NC) %s\n", $1, $2}' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "$(GREEN)Available environments:$(NC)"
-	@echo "  development, staging, production"
+	@echo "  develop, staging, production"
 	@echo ""
 	@echo "$(GREEN)Examples:$(NC)"
-	@echo "  make plan ENV=development"
+	@echo "  make plan ENV=develop"
 	@echo "  make apply ENV=production"
 
 init: ## Initialize Terragrunt for environment
@@ -80,16 +80,16 @@ clean: ## Clean Terragrunt cache
 	@echo "$(GREEN)Cache cleaned.$(NC)"
 
 # Environment shortcuts
-development: ## Deploy development environment
-	@echo "$(BLUE)Initializing development environment...$(NC)"
-	@cd envs/development && terragrunt init
-	@echo "$(BLUE)Planning development environment...$(NC)"
-	@cd envs/development && terragrunt plan
-	@echo "$(BLUE)Applying changes to development environment...$(NC)"
+develop: ## Deploy develop environment
+	@echo "$(BLUE)Initializing develop environment...$(NC)"
+	@cd envs/develop && terragrunt init
+	@echo "$(BLUE)Planning develop environment...$(NC)"
+	@cd envs/develop && terragrunt plan
+	@echo "$(BLUE)Applying changes to develop environment...$(NC)"
 	@printf "Are you sure? [y/N] "; \
 	read REPLY; \
 	case "$$REPLY" in \
-		y|Y|yes|YES) cd envs/development && terragrunt apply ;; \
+		y|Y|yes|YES) cd envs/develop && terragrunt apply ;; \
 		*) echo "$(YELLOW)Cancelled.$(NC)" ;; \
 	esac
 

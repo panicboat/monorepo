@@ -1,0 +1,69 @@
+name: 'Monorepo Change Detection'
+
+on:
+  workflow_call:
+    outputs:
+      changed-services:
+        description: 'JSON array of changed services'
+        value: ${{ jobs.detect-changes.outputs.changed-services }}
+      all-services:
+        description: 'JSON array of all services'
+        value: ${{ jobs.detect-changes.outputs.all-services }}
+
+jobs:
+  detect-changes:
+    name: 'Detect Changed Services'
+    runs-on: ubuntu-latest
+    outputs:
+      changed-services: ${{ steps.changes.outputs.changed-services }}
+      all-services: ${{ steps.changes.outputs.all-services }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Detect changed services
+      id: changes
+      run: |
+        # Auto-detect all services (those with terragrunt directories)
+        echo "Detecting all services with terragrunt directories..."
+        ALL_SERVICES=$(find . -name "terragrunt" -type d | sed 's|/terragrunt||' | sed 's|^\./||' | sort | jq -R -s -c 'split("\n")[:-1]')
+        echo "all-services=$ALL_SERVICES" >> $GITHUB_OUTPUT
+        echo "All services: $ALL_SERVICES"
+
+        # Get changed files
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "Detecting changes for pull request..."
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+        else
+          echo "Detecting changes for push event..."
+          if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          else
+            # First commit or force push
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git show --name-only --format= HEAD)
+          fi
+        fi
+
+        echo "Changed files:"
+        echo "$CHANGED_FILES"
+
+        # Detect changed services
+        CHANGED_SERVICES=()
+        for service in $(echo $ALL_SERVICES | jq -r '.[]'); do
+          if echo "$CHANGED_FILES" | grep -q "^$service/"; then
+            CHANGED_SERVICES+=("$service")
+            echo "Service '$service' has changes"
+          fi
+        done
+
+        # Output as JSON array
+        if [ ${#CHANGED_SERVICES[@]} -eq 0 ]; then
+          CHANGED_JSON="[]"
+        else
+          CHANGED_JSON=$(printf '%s\n' "${CHANGED_SERVICES[@]}" | jq -R -s -c 'split("\n")[:-1]')
+        fi
+
+        echo "changed-services=$CHANGED_JSON" >> $GITHUB_OUTPUT
+        echo "Changed services: $CHANGED_JSON"
