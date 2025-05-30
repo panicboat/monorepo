@@ -1,0 +1,23 @@
+name: 'claude-code-action / terragrunt plan'
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'github-actions/claude-code-action/terragrunt/modules/**'
+      - 'github-actions/claude-code-action/terragrunt/envs/**'
+      - 'github-actions/claude-code-action/terragrunt/root.hcl'
+
+jobs:
+  call-plan-workflow:
+    uses: ./.github/workflows/terragrunt-plan-reusable.yml
+    with:
+      working_directory: './github-actions/claude-code-action/terragrunt'
+      tf_version: '1.5.0'
+      terragrunt_version: '0.58.0'
+      aws_region: 'us-east-1'
+      enable_format_check: true
+      enable_validate: true
+    secrets:
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
