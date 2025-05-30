@@ -1,0 +1,205 @@
+name: 'reusable / terragrunt plan'
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        description: 'Working directory for Terragrunt'
+        required: false
+        type: string
+        default: './github-actions/claude-code-action/terragrunt'
+      tf_version:
+        description: 'Terraform version'
+        required: false
+        type: string
+        default: '1.5.0'
+      terragrunt_version:
+        description: 'Terragrunt version'
+        required: false
+        type: string
+        default: '0.58.0'
+      aws_region:
+        description: 'AWS region'
+        required: false
+        type: string
+        default: 'us-east-1'
+      enable_format_check:
+        description: 'Enable Terragrunt format check'
+        required: false
+        type: boolean
+        default: true
+      enable_validate:
+        description: 'Enable Terragrunt validate'
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      AWS_ROLE_TO_ASSUME:
+        required: true
+
+env:
+  TF_VERSION: ${{ inputs.tf_version }}
+  TERRAGRUNT_VERSION: ${{ inputs.terragrunt_version }}
+  AWS_REGION: ${{ inputs.aws_region }}
+  WORKING_DIRECTORY: ${{ inputs.working_directory }}
+
+jobs:
+  detect-changes:
+    name: 'Detect Changes'
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.changes.outputs.environments }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Detect changed environments
+      id: changes
+      run: |
+        # Get list of changed files
+        CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+
+        echo "Changed files:"
+        echo "$CHANGED_FILES"
+
+        # Extract environments from changed env directories
+        ENVIRONMENTS=$(echo "$CHANGED_FILES" | grep -E '^github-actions/claude-code-action/terragrunt/envs/[^/]+/' | cut -d'/' -f5 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+
+        # If modules or root config changed, plan all environments
+        if echo "$CHANGED_FILES" | grep -E '^github-actions/claude-code-action/terragrunt/(modules/|root\.hcl)'; then
+          ENVIRONMENTS='["development","staging","production"]'
+        fi
+
+        # Default to development if no environments detected
+        if [ "$ENVIRONMENTS" = "[]" ] || [ -z "$ENVIRONMENTS" ]; then
+          ENVIRONMENTS='["development"]'
+        fi
+
+        echo "Detected environments: $ENVIRONMENTS"
+        echo "environments=$ENVIRONMENTS" >> $GITHUB_OUTPUT
+
+  terragrunt-plan:
+    name: 'Terragrunt Plan'
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    strategy:
+      matrix:
+        environment: ${{ fromJson(needs.detect-changes.outputs.environments) }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform-version: ${{ env.TF_VERSION }}
+
+    - name: Setup Terragrunt
+      run: |
+        wget https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TERRAGRUNT_VERSION }}/terragrunt_linux_amd64
+        chmod +x terragrunt_linux_amd64
+        sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+        terragrunt --version
+
+    - name: Terragrunt Format Check
+      if: inputs.enable_format_check
+      run: terragrunt hclfmt --terragrunt-check --terragrunt-diff
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+      continue-on-error: true
+
+    - name: Terragrunt Validate
+      if: inputs.enable_validate
+      run: terragrunt validate-inputs
+      working-directory: ${{ env.WORKING_DIRECTORY }}/envs/${{ matrix.environment }}
+
+    - name: Terragrunt Plan
+      id: plan
+      run: terragrunt plan --terragrunt-non-interactive -out=tfplan
+      working-directory: ${{ env.WORKING_DIRECTORY }}/envs/${{ matrix.environment }}
+      continue-on-error: true
+
+    - name: Save Plan Output
+      if: github.event_name == 'pull_request'
+      run: |
+        terragrunt show -no-color tfplan > plan_output.txt 2>&1 || echo "Plan output not available" > plan_output.txt
+      working-directory: ${{ env.WORKING_DIRECTORY }}/envs/${{ matrix.environment }}
+
+    - name: Update Pull Request Comment
+      uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      with:
+        github-token: ${{ github.token }}
+        script: |
+          const fs = require('fs');
+          const path = '${{ env.WORKING_DIRECTORY }}/envs/${{ matrix.environment }}/plan_output.txt';
+          let planOutput = 'Plan output not available';
+
+          try {
+            if (fs.existsSync(path)) {
+              planOutput = fs.readFileSync(path, 'utf8');
+            }
+          } catch (error) {
+            console.log('Error reading plan output:', error);
+          }
+
+          const output = `## 🚀 Terragrunt Plan - ${{ matrix.environment }}
+
+          #### Environment: \`${{ matrix.environment }}\`
+          #### Terragrunt Plan: \`${{ steps.plan.outcome }}\`
+
+          <details><summary>📋 Show Plan Output</summary>
+
+          \`\`\`terraform
+          ${planOutput.slice(0, 8000)}${planOutput.length > 8000 ? '\n\n... (truncated - check logs for full output)' : ''}
+          \`\`\`
+
+          </details>
+
+          ---
+          *🤖 Automated by: \`${{ github.workflow }}\` | Environment: \`${{ matrix.environment }}\`*
+          `;
+
+          // Find existing comment for this environment
+          const comments = await github.rest.issues.listComments({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+          });
+
+          const existingComment = comments.data.find(comment =>
+            comment.body.includes(`Environment: \`${{ matrix.environment }}\``) &&
+            comment.body.includes('Terragrunt Plan')
+          );
+
+          if (existingComment) {
+            await github.rest.issues.updateComment({
+              comment_id: existingComment.id,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+          } else {
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+          }
+
+    - name: Terragrunt Plan Status
+      if: steps.plan.outcome == 'failure'
+      run: exit 1

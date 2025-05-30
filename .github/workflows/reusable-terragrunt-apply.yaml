@@ -1,0 +1,131 @@
+name: 'reusable / terragrunt apply'
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        description: 'Working directory for Terragrunt'
+        required: false
+        type: string
+        default: './github-actions/claude-code-action/terragrunt'
+      tf_version:
+        description: 'Terraform version'
+        required: false
+        type: string
+        default: '1.5.0'
+      terragrunt_version:
+        description: 'Terragrunt version'
+        required: false
+        type: string
+        default: '0.58.0'
+      aws_region:
+        description: 'AWS region'
+        required: false
+        type: string
+        default: 'us-east-1'
+      auto_approve:
+        description: 'Auto approve for apply'
+        required: false
+        type: boolean
+        default: true
+      max_parallel:
+        description: 'Maximum parallel deployments'
+        required: false
+        type: number
+        default: 1
+    secrets:
+      AWS_ROLE_TO_ASSUME:
+        required: true
+
+env:
+  TF_VERSION: ${{ inputs.tf_version }}
+  TERRAGRUNT_VERSION: ${{ inputs.terragrunt_version }}
+  AWS_REGION: ${{ inputs.aws_region }}
+  WORKING_DIRECTORY: ${{ inputs.working_directory }}
+
+jobs:
+  detect-changes:
+    name: 'Detect Changes'
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.changes.outputs.environments }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Detect changed environments
+      id: changes
+      run: |
+        # Get list of changed files
+        CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+
+        echo "Changed files:"
+        echo "$CHANGED_FILES"
+
+        # Extract environments from changed env directories
+        ENVIRONMENTS=$(echo "$CHANGED_FILES" | grep -E '^github-actions/claude-code-action/terragrunt/envs/[^/]+/' | cut -d'/' -f5 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+
+        # If modules or root config changed, deploy all environments
+        if echo "$CHANGED_FILES" | grep -E '^github-actions/claude-code-action/terragrunt/(modules/|root\.hcl)'; then
+          ENVIRONMENTS='["development","staging","production"]'
+        fi
+
+        # Default to development if no environments detected
+        if [ "$ENVIRONMENTS" = "[]" ] || [ -z "$ENVIRONMENTS" ]; then
+          ENVIRONMENTS='["development"]'
+        fi
+
+        echo "Detected environments: $ENVIRONMENTS"
+        echo "environments=$ENVIRONMENTS" >> $GITHUB_OUTPUT
+
+  terragrunt-apply:
+    name: 'Terragrunt Apply'
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      matrix:
+        environment: ${{ fromJson(needs.detect-changes.outputs.environments) }}
+      max-parallel: ${{ inputs.max_parallel }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform-version: ${{ env.TF_VERSION }}
+
+    - name: Setup Terragrunt
+      run: |
+        wget https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TERRAGRUNT_VERSION }}/terragrunt_linux_amd64
+        chmod +x terragrunt_linux_amd64
+        sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+        terragrunt --version
+
+    - name: Terragrunt Apply
+      run: |
+        if [ "${{ inputs.auto_approve }}" = "true" ]; then
+          terragrunt apply --terragrunt-non-interactive -auto-approve
+        else
+          terragrunt apply --terragrunt-non-interactive
+        fi
+      working-directory: ${{ env.WORKING_DIRECTORY }}/envs/${{ matrix.environment }}
+
+    - name: Create deployment summary
+      run: |
+        echo "## 🚀 Terragrunt Deployment Summary - ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Environment**: ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Auto Approve**: ${{ inputs.auto_approve }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Deployment Time**: $(date)" >> $GITHUB_STEP_SUMMARY
