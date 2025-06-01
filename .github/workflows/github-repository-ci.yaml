@@ -24,6 +24,10 @@ env:
   SERVICE_NAME: github-repository
   SERVICE_PATH: github-repository
 
+concurrency:
+  group: github-repository-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   # Load environments dynamically from directory structure
   load-environments:
