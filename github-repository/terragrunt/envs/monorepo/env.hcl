@@ -9,7 +9,7 @@ locals {
     # Repository features
     features = {
       issues   = true
-      wiki     = true
+      wiki     = false
       projects = true
     }
 

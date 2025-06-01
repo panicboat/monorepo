@@ -20,9 +20,9 @@ output "repository_html_url" {
   value       = github_repository.repository.html_url
 }
 
-output "repository_clone_url" {
+output "repository_http_clone_url" {
   description = "URL that can be provided to git clone to clone the repository"
-  value       = github_repository.repository.clone_url
+  value       = github_repository.repository.http_clone_url
 }
 
 output "repository_ssh_clone_url" {

@@ -6,7 +6,7 @@ locals {
 
   # Parse environment from the directory path
   # This assumes environments are in envs/<environment>/ directories
-  path_parts = split("/", path_relative_to_include())
+  path_parts  = split("/", path_relative_to_include())
   environment = element(local.path_parts, length(local.path_parts) - 1)
 
   # Common tags applied to all resources

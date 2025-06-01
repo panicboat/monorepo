@@ -1,5 +1,8 @@
 # main.tf - GitHub Repository Management
 
+# Data source to get current AWS account ID
+data "aws_caller_identity" "current" {}
+
 # Repository configuration
 resource "github_repository" "repository" {
   name        = var.repository_config.name
@@ -21,8 +24,6 @@ resource "github_repository" "repository" {
 
   # Archive settings
   archived = false
-
-  tags = var.common_tags
 }
 
 # Branch protection for develop branch
@@ -96,11 +97,11 @@ resource "github_branch_protection" "production" {
 
 # CloudWatch Log Group for GitHub Actions (optional, for audit logging)
 resource "aws_cloudwatch_log_group" "github_repository_logs" {
-  name              = "/github-repository/${var.repository_name}"
+  name              = "/github-repository/${var.repository_config.name}"
   retention_in_days = 30
 
   tags = merge(var.common_tags, {
-    LogGroup = "${var.project_name}-${var.repository_name}"
+    LogGroup = "${var.project_name}-${var.repository_config.name}"
     Purpose  = "github-repository-management"
   })
 }
