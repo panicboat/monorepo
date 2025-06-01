@@ -35,8 +35,8 @@ resource "github_branch_protection" "develop" {
 
   required_pull_request_reviews {
     required_approving_review_count = var.repository_config.branch_protection.develop.required_reviews
-    dismiss_stale_reviews          = var.repository_config.branch_protection.develop.dismiss_stale_reviews
-    require_code_owner_reviews     = var.repository_config.branch_protection.develop.require_code_owner_reviews
+    dismiss_stale_reviews           = var.repository_config.branch_protection.develop.dismiss_stale_reviews
+    require_code_owner_reviews      = var.repository_config.branch_protection.develop.require_code_owner_reviews
   }
 
   required_status_checks {
@@ -44,9 +44,12 @@ resource "github_branch_protection" "develop" {
     contexts = var.repository_config.branch_protection.develop.required_status_checks
   }
 
-  enforce_admins      = var.repository_config.branch_protection.develop.enforce_admins
-  allows_force_pushes = var.repository_config.branch_protection.develop.allow_force_pushes
-  allows_deletions    = var.repository_config.branch_protection.develop.allow_deletions
+  enforce_admins                  = var.repository_config.branch_protection.develop.enforce_admins
+  allows_force_pushes             = var.repository_config.branch_protection.develop.allow_force_pushes
+  allows_deletions                = var.repository_config.branch_protection.develop.allow_deletions
+  required_linear_history         = var.repository_config.branch_protection.develop.required_linear_history
+  require_conversation_resolution = var.repository_config.branch_protection.develop.require_conversation_resolution
+  require_signed_commits          = var.repository_config.branch_protection.develop.require_signed_commits
 }
 
 # Branch protection for staging/* branches
@@ -58,8 +61,8 @@ resource "github_branch_protection" "staging" {
 
   required_pull_request_reviews {
     required_approving_review_count = var.repository_config.branch_protection.staging_branches.required_reviews
-    dismiss_stale_reviews          = var.repository_config.branch_protection.staging_branches.dismiss_stale_reviews
-    require_code_owner_reviews     = var.repository_config.branch_protection.staging_branches.require_code_owner_reviews
+    dismiss_stale_reviews           = var.repository_config.branch_protection.staging_branches.dismiss_stale_reviews
+    require_code_owner_reviews      = var.repository_config.branch_protection.staging_branches.require_code_owner_reviews
   }
 
   required_status_checks {
@@ -67,9 +70,12 @@ resource "github_branch_protection" "staging" {
     contexts = var.repository_config.branch_protection.staging_branches.required_status_checks
   }
 
-  enforce_admins      = var.repository_config.branch_protection.staging_branches.enforce_admins
-  allows_force_pushes = var.repository_config.branch_protection.staging_branches.allow_force_pushes
-  allows_deletions    = var.repository_config.branch_protection.staging_branches.allow_deletions
+  enforce_admins                  = var.repository_config.branch_protection.staging_branches.enforce_admins
+  allows_force_pushes             = var.repository_config.branch_protection.staging_branches.allow_force_pushes
+  allows_deletions                = var.repository_config.branch_protection.staging_branches.allow_deletions
+  required_linear_history         = var.repository_config.branch_protection.staging_branches.required_linear_history
+  require_conversation_resolution = var.repository_config.branch_protection.staging_branches.require_conversation_resolution
+  require_signed_commits          = var.repository_config.branch_protection.staging_branches.require_signed_commits
 }
 
 # Branch protection for production/* branches
@@ -81,8 +87,8 @@ resource "github_branch_protection" "production" {
 
   required_pull_request_reviews {
     required_approving_review_count = var.repository_config.branch_protection.production_branches.required_reviews
-    dismiss_stale_reviews          = var.repository_config.branch_protection.production_branches.dismiss_stale_reviews
-    require_code_owner_reviews     = var.repository_config.branch_protection.production_branches.require_code_owner_reviews
+    dismiss_stale_reviews           = var.repository_config.branch_protection.production_branches.dismiss_stale_reviews
+    require_code_owner_reviews      = var.repository_config.branch_protection.production_branches.require_code_owner_reviews
   }
 
   required_status_checks {
@@ -90,9 +96,12 @@ resource "github_branch_protection" "production" {
     contexts = var.repository_config.branch_protection.production_branches.required_status_checks
   }
 
-  enforce_admins      = var.repository_config.branch_protection.production_branches.enforce_admins
-  allows_force_pushes = var.repository_config.branch_protection.production_branches.allow_force_pushes
-  allows_deletions    = var.repository_config.branch_protection.production_branches.allow_deletions
+  enforce_admins                  = var.repository_config.branch_protection.production_branches.enforce_admins
+  allows_force_pushes             = var.repository_config.branch_protection.production_branches.allow_force_pushes
+  allows_deletions                = var.repository_config.branch_protection.production_branches.allow_deletions
+  required_linear_history         = var.repository_config.branch_protection.production_branches.required_linear_history
+  require_conversation_resolution = var.repository_config.branch_protection.production_branches.require_conversation_resolution
+  require_signed_commits          = var.repository_config.branch_protection.production_branches.require_signed_commits
 }
 
 # CloudWatch Log Group for GitHub Actions (optional, for audit logging)

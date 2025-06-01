@@ -17,37 +17,46 @@ locals {
     branch_protection = {
       # Develop branch protection
       develop = {
-        required_reviews           = 1
-        dismiss_stale_reviews      = true
-        require_code_owner_reviews = false
-        required_status_checks     = ["ci"]
-        enforce_admins             = false
-        allow_force_pushes         = false
-        allow_deletions            = false
+        required_reviews                = 1
+        dismiss_stale_reviews           = true
+        require_code_owner_reviews      = false
+        required_status_checks          = ["ci"]
+        enforce_admins                  = false
+        allow_force_pushes              = false
+        allow_deletions                 = false
+        required_linear_history         = false
+        require_conversation_resolution = false
+        require_signed_commits          = false
       }
 
       # Staging branches protection (staging/*)
       staging_branches = {
-        pattern                    = "staging/*"
-        required_reviews           = 1
-        dismiss_stale_reviews      = true
-        require_code_owner_reviews = false
-        required_status_checks     = ["ci"]
-        enforce_admins             = false
-        allow_force_pushes         = false
-        allow_deletions            = false
+        pattern                         = "staging/*"
+        required_reviews                = 1
+        dismiss_stale_reviews           = true
+        require_code_owner_reviews      = false
+        required_status_checks          = ["ci"]
+        enforce_admins                  = false
+        allow_force_pushes              = false
+        allow_deletions                 = false
+        required_linear_history         = false
+        require_conversation_resolution = false
+        require_signed_commits          = false
       }
 
       # Production branches protection (production/*)
       production_branches = {
-        pattern                    = "production/*"
-        required_reviews           = 1
-        dismiss_stale_reviews      = true
-        require_code_owner_reviews = false
-        required_status_checks     = ["ci"]
-        enforce_admins             = false
-        allow_force_pushes         = false
-        allow_deletions            = false
+        pattern                         = "production/*"
+        required_reviews                = 1
+        dismiss_stale_reviews           = true
+        require_code_owner_reviews      = false
+        required_status_checks          = ["ci"]
+        enforce_admins                  = false
+        allow_force_pushes              = false
+        allow_deletions                 = false
+        required_linear_history         = false
+        require_conversation_resolution = false
+        require_signed_commits          = false
       }
     }
   }
