@@ -53,7 +53,7 @@ jobs:
         fi
 
   # Plan jobs for each environment using dynamic matrix
-  # TODO: Stop Parallel Execution
+  # TODO: Parallel execution fails due to state lock. Fix plan to not run in parallel.
   # plan:
   #   name: 'Plan - ${{ matrix.environment }}'
   #   if: github.event_name == 'pull_request'
@@ -71,7 +71,7 @@ jobs:
   #     id-token: write
 
   # Apply jobs for each environment using dynamic matrix
-  # TODO: Stop Parallel Execution
+  # TODO: Parallel execution fails due to state lock. Fix apply to not run in parallel.
   # apply:
   #   name: 'Apply - ${{ matrix.environment }}'
   #   if: github.event_name == 'push'
