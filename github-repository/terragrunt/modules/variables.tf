@@ -6,7 +6,7 @@ variable "project_name" {
 }
 
 variable "environment" {
-  description = "Repository name (e.g., monorepo, generated-manifests)"
+  description = "Environment name (monorepo, generated-manifests, kubernetes-clusters)"
   type        = string
 }
 

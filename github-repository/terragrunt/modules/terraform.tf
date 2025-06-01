@@ -13,11 +13,6 @@ terraform {
       version = "~> 5.0"
     }
   }
-
-  extra_arguments "parallelism" {
-    commands = ["plan", "apply", "destroy"]
-    arguments = ["-parallelism=1"]
-  }
 }
 
 # AWS Provider configuration
@@ -33,8 +28,4 @@ provider "aws" {
 provider "github" {
   owner = var.github_org
   token = var.github_token
-
-  request_timeout = 60
-  max_retries     = 5
-  retry_delay     = 5
 }

@@ -1,8 +1,5 @@
 # main.tf - GitHub OIDC Auth IAM Role and Provider
 
-# Get current AWS account information
-data "aws_caller_identity" "current" {}
-
 # Get GitHub's OIDC thumbprint
 data "tls_certificate" "github" {
   url = "https://token.actions.githubusercontent.com"
@@ -91,10 +88,46 @@ resource "aws_iam_role" "github_actions_role" {
   })
 }
 
-# Attach AdministratorAccess for full AWS access
-resource "aws_iam_role_policy_attachment" "administrator_access" {
+# Basic policy for GitHub Actions (CloudWatch Logs, basic AWS operations)
+resource "aws_iam_policy" "github_actions_basic_policy" {
+  name        = "${var.project_name}-${var.environment}-github-actions-basic-policy"
+  description = "Basic policy for GitHub Actions with CloudWatch Logs access"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
+        ]
+        Resource = [
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/github-actions/${var.project_name}*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/github-actions/${var.project_name}*:*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sts:GetCallerIdentity",
+          "sts:TagSession"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = var.common_tags
+}
+
+# Attach basic policy to the role
+resource "aws_iam_role_policy_attachment" "github_actions_basic_policy_attachment" {
   role       = aws_iam_role.github_actions_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+  policy_arn = aws_iam_policy.github_actions_basic_policy.arn
 }
 
 # Attach any additional policies specified
