@@ -29,6 +29,3 @@ provider "github" {
   owner = var.github_org
   token = var.github_token
 }
-
-# Data source to get current AWS account ID
-data "aws_caller_identity" "current" {}
