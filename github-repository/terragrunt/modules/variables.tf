@@ -45,14 +45,17 @@ variable "repository_config" {
       projects = bool
     })
     branch_protection = map(object({
-      pattern                    = optional(string)
-      required_reviews          = number
-      dismiss_stale_reviews     = bool
-      require_code_owner_reviews = bool
-      required_status_checks    = list(string)
-      enforce_admins            = bool
-      allow_force_pushes        = bool
-      allow_deletions           = bool
+      pattern                         = optional(string)
+      required_reviews                = number
+      dismiss_stale_reviews           = bool
+      require_code_owner_reviews      = bool
+      required_status_checks          = list(string)
+      enforce_admins                  = bool
+      allow_force_pushes              = bool
+      allow_deletions                 = bool
+      required_linear_history         = bool
+      require_conversation_resolution = bool
+      require_signed_commits          = bool
     }))
   })
 }
