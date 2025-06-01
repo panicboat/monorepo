@@ -53,38 +53,40 @@ jobs:
         fi
 
   # Plan jobs for each environment using dynamic matrix
-  plan:
-    name: 'Plan - ${{ matrix.environment }}'
-    if: github.event_name == 'pull_request'
-    needs: load-environments
-    strategy:
-      matrix:
-        environment: ${{ fromJson(needs.load-environments.outputs.environments) }}
-    uses: ./.github/workflows/reusable-terragrunt-plan.yaml
-    with:
-      project_name: github-repository
-      environment: ${{ matrix.environment }}
-    permissions:
-      contents: read
-      pull-requests: write
-      id-token: write
+  # TODO: Stop Parallel Execution
+  # plan:
+  #   name: 'Plan - ${{ matrix.environment }}'
+  #   if: github.event_name == 'pull_request'
+  #   needs: load-environments
+  #   strategy:
+  #     matrix:
+  #       environment: ${{ fromJson(needs.load-environments.outputs.environments) }}
+  #   uses: ./.github/workflows/reusable-terragrunt-plan.yaml
+  #   with:
+  #     project_name: github-repository
+  #     environment: ${{ matrix.environment }}
+  #   permissions:
+  #     contents: read
+  #     pull-requests: write
+  #     id-token: write
 
   # Apply jobs for each environment using dynamic matrix
-  apply:
-    name: 'Apply - ${{ matrix.environment }}'
-    if: github.event_name == 'push'
-    needs: load-environments
-    strategy:
-      matrix:
-        environment: ${{ fromJson(needs.load-environments.outputs.environments) }}
-    uses: ./.github/workflows/reusable-terragrunt-apply.yaml
-    with:
-      project_name: github-repository
-      environment: ${{ matrix.environment }}
-      auto_approve: true
-    permissions:
-      contents: read
-      id-token: write
+  # TODO: Stop Parallel Execution
+  # apply:
+  #   name: 'Apply - ${{ matrix.environment }}'
+  #   if: github.event_name == 'push'
+  #   needs: load-environments
+  #   strategy:
+  #     matrix:
+  #       environment: ${{ fromJson(needs.load-environments.outputs.environments) }}
+  #   uses: ./.github/workflows/reusable-terragrunt-apply.yaml
+  #   with:
+  #     project_name: github-repository
+  #     environment: ${{ matrix.environment }}
+  #     auto_approve: true
+  #   permissions:
+  #     contents: read
+  #     id-token: write
 
   # Deployment summary
   deployment-summary:

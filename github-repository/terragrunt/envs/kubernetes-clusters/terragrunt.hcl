@@ -14,11 +14,6 @@ include "env" {
 # Terraform module source
 terraform {
   source = "../../modules"
-
-  extra_arguments "parallelism" {
-    commands = ["plan", "apply", "destroy"]
-    arguments = ["-parallelism=1"]
-  }
 }
 
 # Repository-specific inputs
