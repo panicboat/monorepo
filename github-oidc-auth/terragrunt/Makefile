@@ -1,8 +1,7 @@
-# Makefile for GitHub Repository Management
+# Makefile for GitHub OIDC Auth
 
 # Default values
 ENV ?= monorepo
-REPO ?= monorepo
 
 # Colors for output
 RED := \033[0;31m
@@ -14,7 +13,7 @@ NC := \033[0m # No Color
 .PHONY: help init plan apply destroy validate fmt check clean
 
 help: ## Show this help message
-	@echo "GitHub Repository Management - Terragrunt Commands"
+	@echo "GitHub OIDC Auth - Terragrunt Commands"
 	@echo ""
 	@echo "Usage: make <target> [ENV=<repository>]"
 	@echo ""
@@ -22,13 +21,13 @@ help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(BLUE)%-15s$(NC) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "Available environments:"
-	@echo "  - monorepo"
-	@echo "  - generated-manifests"
-	@echo "  - kubernetes-clusters"
+	@echo "  - develop"
+	@echo "  - staging"
+	@echo "  - production"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make plan ENV=monorepo"
-	@echo "  make apply ENV=generated-manifests"
+	@echo "  make plan ENV=develop"
+	@echo "  make apply ENV=staging"
 
 init: ## Initialize Terragrunt
 	@echo "$(YELLOW)Initializing Terragrunt for $(ENV)...$(NC)"

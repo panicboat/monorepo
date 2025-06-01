@@ -2,7 +2,6 @@
 
 # Default values
 ENV ?= monorepo
-REPO ?= monorepo
 
 # Colors for output
 RED := \033[0;31m
