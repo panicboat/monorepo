@@ -38,7 +38,13 @@
     }
   ],
 
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 2,
-  "branchPrefix": "renovate/"
+  "prConcurrentLimit": 15,
+  "prHourlyLimit": 3,
+
+  "branchPrefix": "renovate/",
+
+  "commitMessagePrefix": "⬆️",
+  "commitMessageAction": "Update",
+  "commitMessageTopic": "{{depName}}",
+  "commitMessageExtra": "to {{newVersion}}"
 }
