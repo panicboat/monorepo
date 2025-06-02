@@ -1,0 +1,160 @@
+name: 'reusable / docker build'
+
+on:
+  workflow_call:
+    inputs:
+      service_path:
+        description: 'Path to the service directory'
+        required: true
+        type: string
+      image_name:
+        description: 'Docker image name'
+        required: true
+        type: string
+      dockerfile_path:
+        description: 'Path to Dockerfile'
+        required: false
+        type: string
+        default: 'Dockerfile'
+      build_target:
+        description: 'Docker build target'
+        required: false
+        type: string
+        default: ''
+      enable_security_scan:
+        description: 'Enable security scanning'
+        required: false
+        type: boolean
+        default: true
+      enable_image_test:
+        description: 'Enable image testing'
+        required: false
+        type: boolean
+        default: true
+      build_args:
+        description: 'Docker build arguments (JSON format)'
+        required: false
+        type: string
+        default: '{}'
+
+jobs:
+  docker-build:
+    name: 'Docker Build'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # - name: Set up Docker Buildx
+    #   uses: docker/setup-buildx-action@v3
+
+    # - name: Build Docker image
+    #   run: |
+    #     cd ${{ inputs.service_path }}
+    #     if [ -f ${{ inputs.dockerfile_path }} ]; then
+    #       echo "Building Docker image..."
+
+    #       # Prepare build command
+    #       BUILD_CMD="docker build"
+
+    #       # Add build target if specified
+    #       if [ -n "${{ inputs.build_target }}" ]; then
+    #         BUILD_CMD="$BUILD_CMD --target ${{ inputs.build_target }}"
+    #       fi
+
+    #       # Add build args if specified
+    #       BUILD_ARGS='${{ inputs.build_args }}'
+    #       if [ "$BUILD_ARGS" != "{}" ]; then
+    #         echo "Processing build arguments..."
+    #         echo "$BUILD_ARGS" | jq -r 'to_entries[] | "--build-arg \(.key)=\(.value)"' | while read -r arg; do
+    #           BUILD_CMD="$BUILD_CMD $arg"
+    #         done
+    #       fi
+
+    #       # Add tag and context
+    #       BUILD_CMD="$BUILD_CMD -t ${{ inputs.image_name }}:${{ github.sha }} ."
+
+    #       echo "Executing: $BUILD_CMD"
+    #       eval $BUILD_CMD
+
+    #       echo "Docker image built successfully"
+    #     else
+    #       echo "No Dockerfile found at ${{ inputs.dockerfile_path }}, skipping Docker build"
+    #       exit 0
+    #     fi
+
+    # - name: Test Docker image
+    #   if: inputs.enable_image_test
+    #   run: |
+    #     cd ${{ inputs.service_path }}
+    #     if [ -f ${{ inputs.dockerfile_path }} ]; then
+    #       echo "Testing Docker image..."
+
+    #       # Basic image inspection
+    #       docker inspect ${{ inputs.image_name }}:${{ github.sha }}
+
+    #       # Test if the image runs correctly
+    #       echo "Testing image startup..."
+    #       if docker run --rm ${{ inputs.image_name }}:${{ github.sha }} --version 2>/dev/null; then
+    #         echo "Version check passed"
+    #       else
+    #         echo "Version check not available or failed"
+    #       fi
+
+    #       if docker run --rm ${{ inputs.image_name }}:${{ github.sha }} --help 2>/dev/null; then
+    #         echo "Help check passed"
+    #       else
+    #         echo "Help check not available or failed"
+    #       fi
+
+    #       echo "Docker image testing completed"
+    #     fi
+
+    # - name: Run security scan
+    #   if: inputs.enable_security_scan
+    #   run: |
+    #     cd ${{ inputs.service_path }}
+    #     if [ -f ${{ inputs.dockerfile_path }} ]; then
+    #       echo "Running security scan..."
+
+    #       # Try to install and run trivy
+    #       if command -v trivy &> /dev/null; then
+    #         echo "Running trivy security scan..."
+    #         trivy image --exit-code 0 --severity HIGH,CRITICAL ${{ inputs.image_name }}:${{ github.sha }}
+    #       else
+    #         echo "Trivy not available, attempting to install..."
+    #         # Install trivy
+    #         sudo apt-get update
+    #         sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+    #         wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+    #         echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+    #         sudo apt-get update
+    #         sudo apt-get install -y trivy
+
+    #         if command -v trivy &> /dev/null; then
+    #           echo "Running trivy security scan..."
+    #           trivy image --exit-code 0 --severity HIGH,CRITICAL ${{ inputs.image_name }}:${{ github.sha }}
+    #         else
+    #           echo "Failed to install trivy, skipping security scan"
+    #         fi
+    #       fi
+
+    #       echo "Security scan completed"
+    #     fi
+
+    # - name: Save Docker image
+    #   run: |
+    #     cd ${{ inputs.service_path }}
+    #     if [ -f ${{ inputs.dockerfile_path }} ]; then
+    #       echo "Saving Docker image..."
+    #       docker save ${{ inputs.image_name }}:${{ github.sha }} | gzip > docker-image.tar.gz
+    #       echo "Docker image saved"
+    #     fi
+
+    # - name: Upload Docker image artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: docker-image-${{ inputs.image_name }}-${{ github.sha }}
+    #     path: ${{ inputs.service_path }}/docker-image.tar.gz
+    #     retention-days: 1
+    #     if-no-files-found: ignore
