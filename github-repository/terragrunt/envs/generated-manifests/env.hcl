@@ -16,49 +16,49 @@ locals {
     # Branch protection rules
     branch_protection = {
       develop = {
-        required_reviews                = 2
-        dismiss_stale_reviews           = false
-        require_code_owner_reviews      = false
-        restrict_pushes                 = false
-        require_last_push_approval      = false
-        required_status_checks          = ["ci"]
-        enforce_admins                  = false
+        required_reviews                = 1
+        dismiss_stale_reviews           = true
+        require_code_owner_reviews      = true
+        restrict_pushes                 = true
+        require_last_push_approval      = true
+        required_status_checks          = ["Wait for Workflows"]
+        enforce_admins                  = true
         allow_force_pushes              = false
         allow_deletions                 = false
-        required_linear_history         = false
-        require_conversation_resolution = false
+        required_linear_history         = true
+        require_conversation_resolution = true
         require_signed_commits          = false
       }
 
       staging_branches = {
         pattern                         = "staging/*"
         required_reviews                = 1
-        dismiss_stale_reviews           = false
-        require_code_owner_reviews      = false
-        restrict_pushes                 = false
-        require_last_push_approval      = false
-        required_status_checks          = ["ci"]
-        enforce_admins                  = false
+        dismiss_stale_reviews           = true
+        require_code_owner_reviews      = true
+        restrict_pushes                 = true
+        require_last_push_approval      = true
+        required_status_checks          = ["Wait for Workflows"]
+        enforce_admins                  = true
         allow_force_pushes              = false
         allow_deletions                 = false
-        required_linear_history         = false
-        require_conversation_resolution = false
+        required_linear_history         = true
+        require_conversation_resolution = true
         require_signed_commits          = false
       }
 
       production_branches = {
         pattern                         = "production/*"
-        required_reviews                = 3
-        dismiss_stale_reviews           = false
-        require_code_owner_reviews      = false
-        restrict_pushes                 = false
-        require_last_push_approval      = false
-        required_status_checks          = ["ci"]
-        enforce_admins                  = false
+        required_reviews                = 2
+        dismiss_stale_reviews           = true
+        require_code_owner_reviews      = true
+        restrict_pushes                 = true
+        require_last_push_approval      = true
+        required_status_checks          = ["Wait for Workflows"]
+        enforce_admins                  = true
         allow_force_pushes              = false
         allow_deletions                 = false
-        required_linear_history         = false
-        require_conversation_resolution = false
+        required_linear_history         = true
+        require_conversation_resolution = true
         require_signed_commits          = false
       }
     }
