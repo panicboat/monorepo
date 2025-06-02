@@ -4,7 +4,7 @@ locals {
   repository_config = {
     name        = "kubernetes-clusters"
     description = "Kubernetes cluster configurations"
-    visibility  = "private"
+    visibility  = "public"
 
     # Repository features
     features = {
