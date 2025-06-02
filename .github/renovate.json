@@ -16,22 +16,25 @@
 
   "packageRules": [
     {
-      "description": "Production environments - manual review only",
+      "description": "🚫 Production environments - manual review only",
       "matchPaths": ["**/production/**", "**/*production*/**"],
       "automerge": false,
-      "addLabels": ["production", "manual-review"]
+      "addLabels": ["⚠️ production", "manual-review"]
     },
+
     {
-      "description": "Major updates - manual review only",
+      "description": "🚫 Major updates - manual review only",
       "matchUpdateTypes": ["major"],
       "automerge": false,
-      "addLabels": ["major-update", "manual-review"]
+      "addLabels": ["📈 major-update", "manual-review"]
     },
+
     {
-      "description": "All other dependencies",
+      "description": "✅ Everything else - auto-merge",
       "matchPackagePatterns": ["*"],
       "automerge": true,
-      "addLabels": ["auto-merge"]
+      "addLabels": ["🤖 auto-merge"],
+      "groupName": "{{packageFileDir}} dependencies"
     }
   ],
 
