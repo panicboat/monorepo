@@ -1,0 +1,147 @@
+name: 'reusable / go ci'
+
+on:
+  workflow_call:
+    inputs:
+      service_path:
+        description: 'Path to the service directory'
+        required: true
+        type: string
+      go_version:
+        description: 'Go version'
+        required: false
+        type: string
+        default: '1.21'
+      enable_lint:
+        description: 'Enable linting'
+        required: false
+        type: boolean
+        default: true
+      enable_test:
+        description: 'Enable testing'
+        required: false
+        type: boolean
+        default: true
+      enable_benchmarks:
+        description: 'Enable benchmarks'
+        required: false
+        type: boolean
+        default: true
+      enable_build:
+        description: 'Enable building'
+        required: false
+        type: boolean
+        default: true
+      enable_coverage:
+        description: 'Enable coverage report'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  go-ci:
+    name: 'Go CI'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # - name: Setup Go
+    #   uses: actions/setup-go@v4
+    #   with:
+    #     go-version: ${{ inputs.go_version }}
+    #     cache-dependency-path: ${{ inputs.service_path }}/go.sum
+
+    # - name: Install dependencies
+    #   run: |
+    #     cd ${{ inputs.service_path }}
+    #     if [ -f go.mod ]; then
+    #       go mod download
+    #       go mod verify
+    #       echo "Go dependencies installed successfully"
+    #     else
+    #       echo "No go.mod found, skipping Go setup"
+    #       exit 0
+    #     fi
+
+    # - name: Run linting
+    #   if: inputs.enable_lint
+    #   run: |
+    #     cd ${{ inputs.service_path }}
+    #     if [ -f go.mod ]; then
+    #       # Try golangci-lint first, fallback to go vet
+    #       if command -v golangci-lint &> /dev/null; then
+    #         echo "Running golangci-lint..."
+    #         golangci-lint run
+    #       else
+    #         echo "golangci-lint not available, running go vet instead"
+    #         go vet ./...
+    #       fi
+    #       echo "Linting completed successfully"
+    #     else
+    #       echo "No Go module found, skipping linting"
+    #     fi
+
+    # - name: Run tests
+    #   if: inputs.enable_test
+    #   run: |
+    #     cd ${{ inputs.service_path }}
+    #     if [ -f go.mod ]; then
+    #       if [ "${{ inputs.enable_coverage }}" = "true" ]; then
+    #         echo "Running tests with coverage..."
+    #         go test -v -race -coverprofile=coverage.out ./...
+    #         go tool cover -html=coverage.out -o coverage.html
+    #       else
+    #         echo "Running tests without coverage..."
+    #         go test -v -race ./...
+    #       fi
+    #       echo "Tests completed successfully"
+    #     else
+    #       echo "No Go module found, skipping tests"
+    #     fi
+
+    # - name: Run benchmarks
+    #   if: inputs.enable_benchmarks
+    #   run: |
+    #     cd ${{ inputs.service_path }}
+    #     if [ -f go.mod ]; then
+    #       echo "Running benchmarks..."
+    #       go test -bench=. -benchmem ./...
+    #       echo "Benchmarks completed successfully"
+    #     else
+    #       echo "No Go module found, skipping benchmarks"
+    #     fi
+
+    # - name: Build application
+    #   if: inputs.enable_build
+    #   run: |
+    #     cd ${{ inputs.service_path }}
+    #     if [ -f go.mod ]; then
+    #       echo "Building Go application..."
+    #       go build -v ./...
+    #       echo "Build completed successfully"
+    #     else
+    #       echo "No Go module found, skipping build"
+    #     fi
+
+    # - name: Upload coverage reports
+    #   if: inputs.enable_test && inputs.enable_coverage
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: go-coverage-${{ github.sha }}
+    #     path: |
+    #       ${{ inputs.service_path }}/coverage.out
+    #       ${{ inputs.service_path }}/coverage.html
+    #     retention-days: 7
+    #     if-no-files-found: ignore
+
+    # - name: Upload build artifacts
+    #   if: inputs.enable_build
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: go-build-${{ github.sha }}
+    #     path: |
+    #       ${{ inputs.service_path }}/bin/
+    #       ${{ inputs.service_path }}/dist/
+    #     retention-days: 1
+    #     if-no-files-found: ignore
