@@ -4,7 +4,7 @@ locals {
   repository_config = {
     name        = "generated-manifests"
     description = "Generated Kubernetes manifests repository"
-    visibility  = "private"
+    visibility  = "public"
 
     # Repository features
     features = {
@@ -15,11 +15,12 @@ locals {
 
     # Branch protection rules
     branch_protection = {
-      # Develop branch protection
       develop = {
-        required_reviews                = 1
-        dismiss_stale_reviews           = true
+        required_reviews                = 2
+        dismiss_stale_reviews           = false
         require_code_owner_reviews      = false
+        restrict_pushes                 = false
+        require_last_push_approval      = false
         required_status_checks          = ["ci"]
         enforce_admins                  = false
         allow_force_pushes              = false
@@ -29,12 +30,13 @@ locals {
         require_signed_commits          = false
       }
 
-      # Staging branches protection (staging/*)
       staging_branches = {
         pattern                         = "staging/*"
         required_reviews                = 1
-        dismiss_stale_reviews           = true
+        dismiss_stale_reviews           = false
         require_code_owner_reviews      = false
+        restrict_pushes                 = false
+        require_last_push_approval      = false
         required_status_checks          = ["ci"]
         enforce_admins                  = false
         allow_force_pushes              = false
@@ -44,12 +46,13 @@ locals {
         require_signed_commits          = false
       }
 
-      # Production branches protection (production/*)
       production_branches = {
         pattern                         = "production/*"
-        required_reviews                = 1
-        dismiss_stale_reviews           = true
+        required_reviews                = 3
+        dismiss_stale_reviews           = false
         require_code_owner_reviews      = false
+        restrict_pushes                 = false
+        require_last_push_approval      = false
         required_status_checks          = ["ci"]
         enforce_admins                  = false
         allow_force_pushes              = false
