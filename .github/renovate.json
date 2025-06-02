@@ -11,7 +11,7 @@
   "automergeStrategy": "squash",
   "platformAutomerge": true,
 
-  "schedule": ["at 2am on weekday"],
+  "schedule": ["before 4am on weekday"],
   "minimumReleaseAge": "1 day",
 
   "packageRules": [
@@ -31,6 +31,7 @@
 
     {
       "description": "✅ Everything else - auto-merge",
+      "matchPackagePatterns": ["*"],
       "automerge": true,
       "addLabels": ["🤖 auto-merge"],
       "groupName": "{{packageFileDir}} dependencies"
@@ -48,7 +49,5 @@
   "commitMessageExtra": "to {{newVersion}}",
 
   "prTitle": "⬆️ {{commitMessageAction}} {{commitMessageTopic}} {{commitMessageExtra}}",
-  "prBodyTemplate": "This PR updates {{depName}} from {{currentVersion}} to {{newVersion}} in `{{packageFileDir}}`.\n\n### Auto-merge Status\n{{#if (equals automerge true)}}✅ **Auto-merge enabled** - This PR will be automatically merged when CI passes{{else}}❌ **Manual review required** - This PR requires manual approval{{/if}}\n\n### Change Type\n{{#if (equals updateType 'major')}}📈 **Major Update** - Breaking changes possible{{else if (equals updateType 'minor')}}✨ **Minor Update** - New features added{{else}}🩹 **Patch Update** - Bug fixes only{{/if}}\n\n### Service Impact\n**Affected Path**: `{{packageFileDir}}`\n**Manager**: {{manager}}\n**Update Type**: {{updateType}}\n\n### Release Notes\n{{#if hasReleaseNotes}}{{releaseNotes}}{{else}}No release notes available{{/if}}\n\n---\n*This PR was created by Renovate Bot using pattern-based auto-detection*",
-
-  "statusCheckNames": []
+  "prBodyTemplate": "This PR updates {{depName}} from {{currentVersion}} to {{newVersion}} in `{{packageFileDir}}`.\n\n### Auto-merge Status\n{{#if (equals automerge true)}}✅ **Auto-merge enabled** - This PR will be automatically merged when CI passes{{else}}❌ **Manual review required** - This PR requires manual approval{{/if}}\n\n### Change Type\n{{#if (equals updateType 'major')}}📈 **Major Update** - Breaking changes possible{{else if (equals updateType 'minor')}}✨ **Minor Update** - New features added{{else}}🩹 **Patch Update** - Bug fixes only{{/if}}\n\n### Service Impact\n**Affected Path**: `{{packageFileDir}}`\n**Manager**: {{manager}}\n**Update Type**: {{updateType}}\n\n### Release Notes\n{{#if hasReleaseNotes}}{{releaseNotes}}{{else}}No release notes available{{/if}}\n\n---\n*This PR was created by Renovate Bot using pattern-based auto-detection*"
 }
