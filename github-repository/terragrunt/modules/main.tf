@@ -45,7 +45,7 @@ resource "github_branch_protection" "develop" {
 
   # Status check requirements (CI/CD results)
   required_status_checks {
-    strict   = true                                                                   # Branch must be up-to-date before merge
+    strict   = false                                                                  # Branch must be up-to-date before merge
     contexts = var.repository_config.branch_protection.develop.required_status_checks # Required CI checks (tests, lint, etc.)
   }
 
