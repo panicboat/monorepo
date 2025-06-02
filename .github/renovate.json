@@ -11,7 +11,7 @@
   "automergeStrategy": "squash",
   "platformAutomerge": true,
 
-  "schedule": ["before 4am on weekday"],
+  "schedule": ["before 4am every weekday"],
   "minimumReleaseAge": "1 day",
 
   "packageRules": [
