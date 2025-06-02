@@ -1,58 +1,58 @@
 # TODO: Parallel execution fails due to state lock. Fix apply to not run in parallel.
 
-# name: 'GitHub Repository Management - CI/CD'
+name: 'GitHub Repository Management - CI/CD'
 
-# on:
-#   pull_request:
-#     branches:
-#       - develop
-#     paths:
-#       - 'github-repository/**'
-#       - '.github/workflows/github-repository-*.yaml'
-#       - '.github/workflows/reusable-*.yaml'
-#       - '.github/scripts/load-terragrunt-config.js'
-#       - 'terragrunt-action-root.yaml'
-#   push:
-#     branches:
-#       - develop
-#     paths:
-#       - 'github-repository/**'
-#       - '.github/workflows/github-repository-*.yaml'
-#       - '.github/workflows/reusable-*.yaml'
-#       - '.github/scripts/load-terragrunt-config.js'
-#       - 'terragrunt-action-root.yaml'
+on:
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - 'github-repository/**'
+      - '.github/workflows/github-repository-*.yaml'
+      - '.github/workflows/reusable-*.yaml'
+      - '.github/scripts/load-terragrunt-config.js'
+      - 'terragrunt-action-root.yaml'
+  push:
+    branches:
+      - develop
+    paths:
+      - 'github-repository/**'
+      - '.github/workflows/github-repository-*.yaml'
+      - '.github/workflows/reusable-*.yaml'
+      - '.github/scripts/load-terragrunt-config.js'
+      - 'terragrunt-action-root.yaml'
 
-# env:
-#   SERVICE_NAME: github-repository
-#   SERVICE_PATH: github-repository
+env:
+  SERVICE_NAME: github-repository
+  SERVICE_PATH: github-repository
 
-# concurrency:
-#   group: github-repository-${{ github.ref }}
-#   cancel-in-progress: false
+concurrency:
+  group: github-repository-${{ github.ref }}
+  cancel-in-progress: false
 
-# jobs:
-#   # Load environments dynamically from directory structure
-#   load-environments:
-#     name: 'Load Environments'
-#     runs-on: ubuntu-latest
-#     outputs:
-#       environments: ${{ steps.get-envs.outputs.environments }}
-#     steps:
-#     - name: Checkout
-#       uses: actions/checkout@v4
+jobs:
+  # Load environments dynamically from directory structure
+  load-environments:
+    name: 'Load Environments'
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.get-envs.outputs.environments }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
 
-#     - name: Get environments from directory structure
-#       id: get-envs
-#       run: |
-#         # Get list of directories in github-repository/terragrunt/envs/
-#         if [ -d "github-repository/terragrunt/envs" ]; then
-#           envs=$(ls -1 github-repository/terragrunt/envs/ | jq -R -s -c 'split("\n")[:-1]')
-#           echo "Found environments: $envs"
-#           echo "environments=$envs" >> $GITHUB_OUTPUT
-#         else
-#           echo "No environments directory found"
-#           echo "environments=[]" >> $GITHUB_OUTPUT
-#         fi
+    - name: Get environments from directory structure
+      id: get-envs
+      run: |
+        # Get list of directories in github-repository/terragrunt/envs/
+        if [ -d "github-repository/terragrunt/envs" ]; then
+          envs=$(ls -1 github-repository/terragrunt/envs/ | jq -R -s -c 'split("\n")[:-1]')
+          echo "Found environments: $envs"
+          echo "environments=$envs" >> $GITHUB_OUTPUT
+        else
+          echo "No environments directory found"
+          echo "environments=[]" >> $GITHUB_OUTPUT
+        fi
 
 #   # Plan jobs for each environment using dynamic matrix
 #   plan:
