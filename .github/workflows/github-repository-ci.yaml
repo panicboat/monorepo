@@ -1,5 +1,3 @@
-# TODO: Parallel execution fails due to state lock. Fix apply to not run in parallel.
-
 name: 'GitHub Repository Management - CI/CD'
 
 on:
@@ -53,6 +51,8 @@ jobs:
           echo "No environments directory found"
           echo "environments=[]" >> $GITHUB_OUTPUT
         fi
+
+# TODO: Parallel execution fails due to state lock. Fix apply to not run in parallel.
 
 #   # Plan jobs for each environment using dynamic matrix
 #   plan:
