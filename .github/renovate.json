@@ -16,38 +16,26 @@
 
   "packageRules": [
     {
-      "description": "🚫 Production environments - manual review only",
+      "description": "Production environments - manual review only",
       "matchPaths": ["**/production/**", "**/*production*/**"],
       "automerge": false,
-      "addLabels": ["⚠️ production", "manual-review"]
+      "addLabels": ["production", "manual-review"]
     },
-
     {
-      "description": "🚫 Major updates - manual review only",
+      "description": "Major updates - manual review only",
       "matchUpdateTypes": ["major"],
       "automerge": false,
-      "addLabels": ["📈 major-update", "manual-review"]
+      "addLabels": ["major-update", "manual-review"]
     },
-
     {
-      "description": "✅ Everything else - auto-merge",
+      "description": "All other dependencies",
       "matchPackagePatterns": ["*"],
       "automerge": true,
-      "addLabels": ["🤖 auto-merge"],
-      "groupName": "{{packageFileDir}} dependencies"
+      "addLabels": ["auto-merge"]
     }
   ],
 
-  "prConcurrentLimit": 15,
-  "prHourlyLimit": 3,
-
-  "branchPrefix": "renovate/",
-
-  "commitMessagePrefix": "⬆️",
-  "commitMessageAction": "Update",
-  "commitMessageTopic": "{{depName}}",
-  "commitMessageExtra": "to {{newVersion}}",
-
-  "prTitle": "⬆️ {{commitMessageAction}} {{commitMessageTopic}} {{commitMessageExtra}}",
-  "prBodyTemplate": "This PR updates {{depName}} from {{currentVersion}} to {{newVersion}} in `{{packageFileDir}}`.\n\n### Auto-merge Status\n{{#if (equals automerge true)}}✅ **Auto-merge enabled** - This PR will be automatically merged when CI passes{{else}}❌ **Manual review required** - This PR requires manual approval{{/if}}\n\n### Change Type\n{{#if (equals updateType 'major')}}📈 **Major Update** - Breaking changes possible{{else if (equals updateType 'minor')}}✨ **Minor Update** - New features added{{else}}🩹 **Patch Update** - Bug fixes only{{/if}}\n\n### Service Impact\n**Affected Path**: `{{packageFileDir}}`\n**Manager**: {{manager}}\n**Update Type**: {{updateType}}\n\n### Release Notes\n{{#if hasReleaseNotes}}{{releaseNotes}}{{else}}No release notes available{{/if}}\n\n---\n*This PR was created by Renovate Bot using pattern-based auto-detection*"
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "branchPrefix": "renovate/"
 }
