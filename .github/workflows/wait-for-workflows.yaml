@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  wait_for_workflows:
+  wait-for-workflows:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -18,7 +18,7 @@ jobs:
 
       - name: Wait for all CI workflows to complete
         uses: actions/github-script@v7
-        id: wait_workflows
+        id: wait-workflows
         with:
           script: |
             const maxWaitTime = 25 * 60 * 1000; // 25 minutes
@@ -140,9 +140,9 @@ jobs:
       - name: Report final status
         if: always()
         run: |
-          if [ "${{ steps.wait_workflows.outcome }}" = "success" ]; then
+          if [ "${{ steps.wait-workflows.outcome }}" = "success" ]; then
             echo "🎉 All required workflows passed!"
-            echo "Total workflows checked: ${{ fromJson(steps.wait_workflows.outputs.result).totalWorkflows }}"
+            echo "Total workflows checked: ${{ fromJson(steps.wait-workflows.outputs.result).totalWorkflows }}"
           else
             echo "❌ Integration check failed"
             exit 1
