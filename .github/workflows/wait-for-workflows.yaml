@@ -1,0 +1,149 @@
+name: Wait for Workflows
+
+on:
+  pull_request:
+    branches-ignore:
+      - main
+
+jobs:
+  wait_for_workflows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Wait for all CI workflows to complete
+        uses: actions/github-script@v7
+        id: wait_workflows
+        with:
+          script: |
+            const maxWaitTime = 25 * 60 * 1000; // 25 minutes
+            const pollInterval = 30 * 1000; // 30 second intervals
+            const startTime = Date.now();
+
+            // Exclude these workflows (this workflow itself and special ones)
+            const excludeWorkflows = [
+              'Wait for Workflows',
+            ];
+
+            // Required patterns (workflows containing these are required)
+            const requiredPatterns = [];
+
+            const sha = '${{ github.event.pull_request.head.sha }}';
+            console.log(`Checking workflows for SHA: ${sha}`);
+
+            while (Date.now() - startTime < maxWaitTime) {
+              try {
+                // Get all workflows
+                const { data: workflows } = await github.rest.actions.listRepoWorkflows({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo
+                });
+
+                // Identify required workflows
+                const requiredWorkflows = workflows.workflows
+                  .filter(w => w.state === 'active')
+                  .filter(w => !excludeWorkflows.includes(w.name))
+                  .filter(w => requiredPatterns.some(pattern =>
+                    w.name.toLowerCase().includes(pattern)
+                  ))
+                  .map(w => w.name);
+
+                console.log(`Required workflows: ${requiredWorkflows.join(', ')}`);
+
+                // Get workflow run status for this SHA
+                const { data: workflowRuns } = await github.rest.actions.listWorkflowRunsForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  head_sha: sha,
+                  per_page: 100
+                });
+
+                // Get latest run for each workflow
+                const latestRuns = {};
+                workflowRuns.workflow_runs.forEach(run => {
+                  if (requiredWorkflows.includes(run.name) &&
+                      run.head_sha === sha &&
+                      (!latestRuns[run.name] || run.id > latestRuns[run.name].id)) {
+                    latestRuns[run.name] = run;
+                  }
+                });
+
+                // Analyze status
+                const missing = requiredWorkflows.filter(name => !latestRuns[name]);
+                const pending = Object.values(latestRuns).filter(run =>
+                  run.status === 'in_progress' || run.status === 'queued'
+                );
+                const failed = Object.values(latestRuns).filter(run =>
+                  run.status === 'completed' && run.conclusion !== 'success'
+                );
+                const successful = Object.values(latestRuns).filter(run =>
+                  run.status === 'completed' && run.conclusion === 'success'
+                );
+
+                console.log(`Status - Missing: ${missing.length}, Pending: ${pending.length}, Failed: ${failed.length}, Success: ${successful.length}`);
+
+                // Show detailed results
+                if (missing.length > 0) {
+                  console.log(`❌ Missing workflows: ${missing.join(', ')}`);
+                }
+
+                if (failed.length > 0) {
+                  console.log(`❌ Failed workflows:`);
+                  failed.forEach(run => {
+                    console.log(`  - ${run.name}: ${run.conclusion} (${run.html_url})`);
+                  });
+                }
+
+                if (pending.length > 0) {
+                  console.log(`⏳ Still running:`);
+                  pending.forEach(run => {
+                    console.log(`  - ${run.name}: ${run.status}`);
+                  });
+                }
+
+                // Fail immediately if any workflow failed
+                if (failed.length > 0) {
+                  throw new Error(`${failed.length} workflow(s) failed`);
+                }
+
+                // Success if all are completed
+                if (missing.length === 0 && pending.length === 0) {
+                  console.log(`✅ All ${successful.length} workflows completed successfully!`);
+                  return {
+                    success: true,
+                    totalWorkflows: requiredWorkflows.length,
+                    completedWorkflows: successful.length
+                  };
+                }
+
+                // Wait if not all completed yet
+                console.log(`Waiting... (${Math.round((Date.now() - startTime) / 1000)}s elapsed)`);
+                await new Promise(resolve => setTimeout(resolve, pollInterval));
+
+              } catch (error) {
+                if (error.message.includes('workflow(s) failed')) {
+                  throw error; // Re-throw failures
+                }
+                console.log(`API Error (retrying): ${error.message}`);
+                await new Promise(resolve => setTimeout(resolve, pollInterval));
+              }
+            }
+
+            // Timeout
+            throw new Error(`Timeout: Some workflows did not complete within ${maxWaitTime / 60000} minutes`);
+
+      - name: Report final status
+        if: always()
+        run: |
+          if [ "${{ steps.wait_workflows.outcome }}" = "success" ]; then
+            echo "🎉 All required workflows passed!"
+            echo "Total workflows checked: ${{ fromJson(steps.wait_workflows.outputs.result).totalWorkflows }}"
+          else
+            echo "❌ Integration check failed"
+            exit 1
+          fi

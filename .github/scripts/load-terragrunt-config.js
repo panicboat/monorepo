@@ -40,9 +40,9 @@ function loadTerragruntConfig() {
     let environment = '';
     if (targetBranch === 'develop') {
       environment = 'develop';
-    } else if (targetBranch === 'staging/claude-code-action' || targetBranch === 'staging/github-oidc-auth') {
+    } else if (targetBranch.startsWith('staging/')) {
       environment = 'staging';
-    } else if (targetBranch === 'production/claude-code-action' || targetBranch === 'production/github-oidc-auth') {
+    } else if (targetBranch.startsWith('production/')) {
       environment = 'production';
     } else {
       // Default to develop for feature branches
