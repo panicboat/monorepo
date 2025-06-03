@@ -24,10 +24,9 @@ resource "github_repository" "repository" {
   delete_branch_on_merge = true
 
   # Archive settings
-  archived = false # Keep repository active (not read-only)
+  archived = false
 }
 
-# Branch protection rules using for_each
 # Dynamically creates protection rules for all configured branches
 resource "github_branch_protection" "branches" {
   for_each = var.repository_config.branch_protection
