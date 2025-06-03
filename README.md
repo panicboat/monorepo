@@ -348,7 +348,6 @@ The CI/CD system uses a **hybrid approach** combining path-based triggers with r
 ├── reusable-{language}-ci.yaml      # Language-specific CI/CD
 ├── reusable-docker-build.yaml       # Container building & scanning
 ├── reusable-terragrunt-*.yaml       # Infrastructure management
-├── monorepo-dispatcher.yaml         # Change detection (optional)
 └── {service-name}-ci.yaml           # Service integration workflows
 ```
 
