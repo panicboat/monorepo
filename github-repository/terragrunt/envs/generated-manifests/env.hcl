@@ -16,6 +16,7 @@ locals {
     # Branch protection rules
     branch_protection = {
       develop = {
+        pattern                         = null # Use key as branch name
         required_reviews                = 1
         dismiss_stale_reviews           = true
         require_code_owner_reviews      = true
@@ -30,7 +31,7 @@ locals {
         require_signed_commits          = false
       }
 
-      staging_branches = {
+      staging = {
         pattern                         = "staging/*"
         required_reviews                = 1
         dismiss_stale_reviews           = true
@@ -46,7 +47,7 @@ locals {
         require_signed_commits          = false
       }
 
-      production_branches = {
+      production = {
         pattern                         = "production/*"
         required_reviews                = 2
         dismiss_stale_reviews           = true
