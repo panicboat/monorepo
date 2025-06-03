@@ -33,18 +33,10 @@ output "repository_ssh_clone_url" {
 output "branch_protection_rules" {
   description = "Information about created branch protection rules"
   value = {
-    develop = length(github_branch_protection.develop) > 0 ? {
-      id      = github_branch_protection.develop[0].id
-      pattern = github_branch_protection.develop[0].pattern
-    } : null
-    staging = length(github_branch_protection.staging) > 0 ? {
-      id      = github_branch_protection.staging[0].id
-      pattern = github_branch_protection.staging[0].pattern
-    } : null
-    production = length(github_branch_protection.production) > 0 ? {
-      id      = github_branch_protection.production[0].id
-      pattern = github_branch_protection.production[0].pattern
-    } : null
+    for key, rule in github_branch_protection.branches : key => {
+      id      = rule.id
+      pattern = rule.pattern
+    }
   }
 }
 

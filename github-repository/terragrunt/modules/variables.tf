@@ -47,19 +47,19 @@ variable "repository_config" {
     })
 
     branch_protection = map(object({
-      pattern                         = optional(string)
-      required_reviews               = number
-      dismiss_stale_reviews          = bool
-      require_code_owner_reviews     = bool
-      restrict_pushes                = bool
-      require_last_push_approval     = bool
-      required_status_checks         = list(string)
-      enforce_admins                 = bool
-      allow_force_pushes             = bool
-      allow_deletions                = bool
-      required_linear_history        = bool
+      pattern                         = optional(string) # Pattern for branch matching (null means use key as exact branch name)
+      required_reviews                = number
+      dismiss_stale_reviews           = bool
+      require_code_owner_reviews      = bool
+      restrict_pushes                 = bool
+      require_last_push_approval      = bool
+      required_status_checks          = list(string)
+      enforce_admins                  = bool
+      allow_force_pushes              = bool
+      allow_deletions                 = bool
+      required_linear_history         = bool
       require_conversation_resolution = bool
-      require_signed_commits         = bool
+      require_signed_commits          = bool
     }))
   })
 }

@@ -16,12 +16,13 @@ locals {
     # Branch protection rules
     branch_protection = {
       develop = {
+        pattern                         = null # Use key as branch name
         required_reviews                = 1
         dismiss_stale_reviews           = true
         require_code_owner_reviews      = true
         restrict_pushes                 = true
         require_last_push_approval      = true
-        required_status_checks          = ["Wait for Workflows"]
+        required_status_checks          = ["Wait for Workflows / wait-for-workflows"]
         enforce_admins                  = false
         allow_force_pushes              = false
         allow_deletions                 = false
@@ -30,15 +31,15 @@ locals {
         require_signed_commits          = false
       }
 
-      staging_branches = {
+      staging = {
         pattern                         = "staging/*"
         required_reviews                = 1
         dismiss_stale_reviews           = true
         require_code_owner_reviews      = true
         restrict_pushes                 = true
         require_last_push_approval      = true
-        required_status_checks          = ["Wait for Workflows"]
-        enforce_admins                  = true
+        required_status_checks          = ["Wait for Workflows / wait-for-workflows"]
+        enforce_admins                  = false
         allow_force_pushes              = false
         allow_deletions                 = false
         required_linear_history         = true
@@ -46,15 +47,15 @@ locals {
         require_signed_commits          = false
       }
 
-      production_branches = {
+      production = {
         pattern                         = "production/*"
         required_reviews                = 2
         dismiss_stale_reviews           = true
         require_code_owner_reviews      = true
         restrict_pushes                 = true
         require_last_push_approval      = true
-        required_status_checks          = ["Wait for Workflows"]
-        enforce_admins                  = true
+        required_status_checks          = ["Wait for Workflows / wait-for-workflows"]
+        enforce_admins                  = false
         allow_force_pushes              = false
         allow_deletions                 = false
         required_linear_history         = true
