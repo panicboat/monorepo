@@ -27,6 +27,7 @@ resource "github_repository" "repository" {
   archived = false
 }
 
+# Branch protection rules using for_each
 # Dynamically creates protection rules for all configured branches
 resource "github_branch_protection" "branches" {
   for_each = var.repository_config.branch_protection
