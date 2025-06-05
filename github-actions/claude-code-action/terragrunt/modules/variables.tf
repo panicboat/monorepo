@@ -54,16 +54,9 @@ variable "max_session_duration" {
   }
 }
 
-variable "create_oidc_provider" {
-  description = "Whether to create the GitHub OIDC provider (set to false if it already exists)"
-  type        = bool
-  default     = true
-}
-
 variable "oidc_provider_arn" {
-  description = "ARN of existing GitHub OIDC provider (used when create_oidc_provider is false)"
+  description = "ARN of existing GitHub OIDC provider"
   type        = string
-  default     = ""
 }
 
 variable "enable_claude_code_action" {

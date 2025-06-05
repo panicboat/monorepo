@@ -1,29 +1,7 @@
 # Get current AWS account information
 data "aws_caller_identity" "current" {}
 
-# Get GitHub's OIDC thumbprint
-data "tls_certificate" "github" {
-  url = "https://token.actions.githubusercontent.com"
-}
-
-# Create GitHub OIDC Identity Provider (if requested)
-resource "aws_iam_openid_connect_provider" "github" {
-  count = var.create_oidc_provider ? 1 : 0
-
-  url = "https://token.actions.githubusercontent.com"
-
-  client_id_list = [
-    "sts.amazonaws.com"
-  ]
-
-  thumbprint_list = [
-    data.tls_certificate.github.certificates[0].sha1_fingerprint
-  ]
-
-  tags = merge(var.common_tags, {
-    Name = "github-oidc-provider"
-  })
-}
+# GitHub OIDC provider is expected to already exist in the AWS account
 
 # IAM Role for GitHub Actions OIDC
 resource "aws_iam_role" "github_actions_role" {
@@ -36,7 +14,7 @@ resource "aws_iam_role" "github_actions_role" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = var.create_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : var.oidc_provider_arn
+          Federated = var.oidc_provider_arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {

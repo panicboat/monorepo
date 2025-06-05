@@ -23,8 +23,7 @@ locals {
   ]
 
   # OIDC provider settings
-  create_oidc_provider = true
-  oidc_provider_arn    = ""
+  oidc_provider_arn = "arn:aws:iam::559744160976:oidc-provider/token.actions.githubusercontent.com"
 
   # Session duration (2 hours for monorepo)
   max_session_duration = 7200
