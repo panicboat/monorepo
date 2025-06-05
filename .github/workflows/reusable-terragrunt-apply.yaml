@@ -42,7 +42,7 @@ jobs:
     name: 'Load Configuration'
     runs-on: ubuntu-latest
     outputs:
-      environment: ${{ steps.set-environment.outputs.environment }}
+      environment: ${{ steps.config.outputs.environment }}
       aws_region: ${{ steps.config.outputs.aws_region }}
       apply_role: ${{ steps.config.outputs.apply_role }}
       project_path: ${{ steps.config.outputs.project_path }}
@@ -60,20 +60,64 @@ jobs:
       run: |
         npm install js-yaml @actions/core
 
-    - name: Load Terragrunt configuration
+    - name: Load Terragrunt configuration and determine environment
       id: config
       env:
         PROJECT_NAME: ${{ inputs.project_name }}
-      run: node .github/scripts/load-terragrunt-config.js
-
-    - name: Set environment
-      id: set-environment
+        INPUT_ENVIRONMENT: ${{ inputs.environment }}
       run: |
-        if [ -n "${{ inputs.environment }}" ]; then
-          echo "environment=${{ inputs.environment }}" >> $GITHUB_OUTPUT
+        # Determine the target environment directory
+        if [ -n "$INPUT_ENVIRONMENT" ]; then
+          TARGET_ENV_DIR="$INPUT_ENVIRONMENT"
         else
-          echo "environment=${{ steps.config.outputs.environment }}" >> $GITHUB_OUTPUT
+          # Auto-detect based on branch
+          node .github/scripts/load-terragrunt-config.js > /tmp/config_output.txt 2>&1
+          TARGET_ENV_DIR=$(grep "Determined environment:" /tmp/config_output.txt | cut -d: -f2 | xargs || echo 'develop')
         fi
+
+        echo "Target environment directory: $TARGET_ENV_DIR"
+
+        # Determine IAM role environment (develop for non-standard envs)
+        if [[ "$TARGET_ENV_DIR" == "develop" || "$TARGET_ENV_DIR" == "staging" || "$TARGET_ENV_DIR" == "production" ]]; then
+          IAM_ENV="$TARGET_ENV_DIR"
+        else
+          IAM_ENV="develop"
+          echo "Non-standard environment directory '$TARGET_ENV_DIR' detected, using 'develop' IAM roles"
+        fi
+
+        echo "IAM environment: $IAM_ENV"
+
+        # Load configuration for IAM roles
+        node -e "
+        const fs = require('fs');
+        const yaml = require('js-yaml');
+
+        const config = yaml.load(fs.readFileSync('.github/terragrunt-actions-config.yaml', 'utf8'));
+        const projectName = process.env.PROJECT_NAME;
+        const iamEnv = '$IAM_ENV';
+        const targetEnvDir = '$TARGET_ENV_DIR';
+
+        // Get project path
+        let projectPath = config.projects?.[projectName]?.path;
+        if (!projectPath) {
+          projectPath = \`\${projectName}/terragrunt\`;
+        }
+
+        // Get IAM configuration from the determined environment
+        const environmentConfig = config.environments[iamEnv];
+        if (!environmentConfig) {
+          throw new Error(\`Environment '\${iamEnv}' not found in configuration\`);
+        }
+
+        console.log('environment=' + targetEnvDir);
+        console.log('iam_environment=' + iamEnv);
+        console.log('aws_region=' + environmentConfig.aws_region);
+        console.log('plan_role=' + environmentConfig.plan.aws_assume_role_arn);
+        console.log('apply_role=' + environmentConfig.apply.aws_assume_role_arn);
+        console.log('project_path=' + projectPath);
+        " | while read line; do
+          echo "$line" >> $GITHUB_OUTPUT
+        done
 
     - name: Set working directory
       id: set-working-dir
