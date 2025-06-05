@@ -51,15 +51,9 @@ function loadTerragruntConfig() {
 
     console.log(`Determined environment: ${environment}`);
 
-    // Validate environment exists in config, fallback to develop if not found
+    // Validate environment exists in config
     if (!config.environments[environment]) {
-      console.log(`Environment '${environment}' not found in configuration, falling back to 'develop'`);
-      environment = 'develop';
-    }
-
-    // Double check that develop environment exists
-    if (!config.environments[environment]) {
-      throw new Error(`Fallback environment 'develop' not found in configuration`);
+      throw new Error(`Environment '${environment}' not found in configuration`);
     }
 
     // Get project path from configuration (with fallback to default)
@@ -72,24 +66,21 @@ function loadTerragruntConfig() {
       console.log(`Using configured path for project '${projectName}': ${projectPath}`);
     }
 
-    // Get environment configuration (should be guaranteed to exist after validation above)
-    const environmentConfig = config.environments[environment];
-
     // Output the configuration and environment
     core.setOutput('config', JSON.stringify(config));
     core.setOutput('environment', environment);
-    core.setOutput('aws_region', environmentConfig.aws_region);
-    core.setOutput('plan_role', environmentConfig.plan.aws_assume_role_arn);
-    core.setOutput('apply_role', environmentConfig.apply.aws_assume_role_arn);
+    core.setOutput('aws_region', config.environments[environment].aws_region);
+    core.setOutput('plan_role', config.environments[environment].plan.aws_assume_role_arn);
+    core.setOutput('apply_role', config.environments[environment].apply.aws_assume_role_arn);
     core.setOutput('project_path', projectPath);
 
     console.log('Configuration loaded successfully');
     console.log(`Project: ${projectName}`);
     console.log(`Project Path: ${projectPath}`);
     console.log(`Environment: ${environment}`);
-    console.log(`AWS Region: ${environmentConfig.aws_region}`);
-    console.log(`Plan Role: ${environmentConfig.plan.aws_assume_role_arn}`);
-    console.log(`Apply Role: ${environmentConfig.apply.aws_assume_role_arn}`);
+    console.log(`AWS Region: ${config.environments[environment].aws_region}`);
+    console.log(`Plan Role: ${config.environments[environment].plan.aws_assume_role_arn}`);
+    console.log(`Apply Role: ${config.environments[environment].apply.aws_assume_role_arn}`);
 
   } catch (error) {
     core.setFailed(`Failed to load configuration: ${error.message}`);

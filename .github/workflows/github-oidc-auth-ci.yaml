@@ -3,6 +3,7 @@ name: 'GitHub OIDC Auth - CI/CD'
 on:
   pull_request:
     branches:
+      - develop
       - staging/github-oidc-auth
       - production/github-oidc-auth
     paths:
@@ -13,6 +14,7 @@ on:
       - 'terragrunt-action-root.yaml'
   push:
     branches:
+      - develop
       - staging/github-oidc-auth
       - production/github-oidc-auth
     paths:
@@ -61,5 +63,7 @@ jobs:
         echo "- **Service**: github-oidc-auth" >> $GITHUB_STEP_SUMMARY
         echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Test Status**: ${{ needs.test-and-build.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Docker Build**: ${{ needs.docker-build.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Infrastructure**: ${{ needs.terragrunt-apply.result }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Deployment Time**: $(date)" >> $GITHUB_STEP_SUMMARY
