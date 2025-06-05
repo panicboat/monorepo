@@ -44,8 +44,6 @@ remote_state {
   }
 }
 
-
-
 # Common inputs passed to all Terraform modules
 inputs = {
   project_name = local.project_name
