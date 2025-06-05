@@ -58,7 +58,9 @@ jobs:
 
     - name: Install dependencies
       run: |
-        npm install js-yaml @actions/core    - name: Load Terragrunt configuration and determine environment
+        npm install js-yaml @actions/core
+
+    - name: Load Terragrunt configuration and determine environment
       id: config
       env:
         PROJECT_NAME: ${{ inputs.project_name }}
