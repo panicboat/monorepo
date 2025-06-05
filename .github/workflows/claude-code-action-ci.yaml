@@ -3,7 +3,6 @@ name: 'Claude Code Action - CI/CD'
 on:
   pull_request:
     branches:
-      - develop
       - staging/claude-code-action
       - production/claude-code-action
     paths:
@@ -14,7 +13,6 @@ on:
       - 'terragrunt-action-root.yaml'
   push:
     branches:
-      - develop
       - staging/claude-code-action
       - production/claude-code-action
     paths:
