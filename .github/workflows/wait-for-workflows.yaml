@@ -28,10 +28,10 @@ jobs:
       uses: lewagon/wait-on-check-action@v1.3.4
       with:
         ref: ${{ github.event.pull_request.head.sha }}
-        running-workflow-name: ${{ github.workflow }}
+        running-workflow-name: 'wait-for-workflows'
         repo-token: ${{ steps.app-token.outputs.token }}
         allowed-conclusions: success,failure,skipped,cancelled
-        wait-interval: 30
+        wait-interval: 10
 
     - name: Get all workflow statuses
       id: workflow-status
