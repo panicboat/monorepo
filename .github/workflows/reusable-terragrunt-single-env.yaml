@@ -96,6 +96,15 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ inputs.terraform_version }}
+          terraform_wrapper: false  # 重要: wrapperを無効にして生の出力を取得
+
+      - name: Setup Terragrunt Binary
+        run: |
+          TG_VERSION=${{ inputs.terragrunt_version }}
+          wget -O terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/
+          terragrunt --version
 
       - name: Terragrunt Plan
         if: inputs.action_type == 'plan'
@@ -107,6 +116,21 @@ jobs:
           tg_command: 'plan'
           args: '-no-color -detailed-exitcode'
           tg_dir: ${{ steps.load-config.outputs.working-directory }}
+        continue-on-error: true
+        env:
+          TF_INPUT: false
+          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
+
+      - name: Fallback Plan (if action fails)
+        if: inputs.action_type == 'plan' && steps.plan.outcome == 'failure'
+        id: plan-fallback
+        working-directory: ${{ steps.load-config.outputs.working-directory }}
+        run: |
+          echo "Running fallback terragrunt plan..."
+          terragrunt plan -no-color -detailed-exitcode > plan_output.txt 2>&1 || true
+          echo "plan-output<<EOF" >> $GITHUB_OUTPUT
+          cat plan_output.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
         continue-on-error: true
         env:
           TF_INPUT: false
@@ -163,24 +187,55 @@ jobs:
         run: |
           # Planの結果を解析
           if [ "${{ steps.plan.outcome }}" == "success" ]; then
-            PLAN_STATUS="✅ Success"
+            if [ "${{ steps.plan.outputs.tg_action_exit_code }}" == "0" ]; then
+              PLAN_STATUS="✅ No changes"
+            elif [ "${{ steps.plan.outputs.tg_action_exit_code }}" == "2" ]; then
+              PLAN_STATUS="✅ Changes detected"
+            else
+              PLAN_STATUS="✅ Success"
+            fi
           else
             PLAN_STATUS="❌ Failed"
           fi
 
-          # デフォルト値を設定
-          ADD_COUNT="0"
-          CHANGE_COUNT="0"
-          DESTROY_COUNT="0"
-          PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
+          # 出力ソースを決定（アクション出力 > フォールバック出力）
+          if [ -n "${{ steps.plan.outputs.tg_action_output }}" ]; then
+            PLAN_OUTPUT="${{ steps.plan.outputs.tg_action_output }}"
+          elif [ -n "${{ steps.plan-fallback.outputs.plan-output }}" ]; then
+            PLAN_OUTPUT="${{ steps.plan-fallback.outputs.plan-output }}"
+          else
+            PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
+          fi
 
-          # GitHubの出力に書き込み（エラー回避のため分割）
+          if [ -n "$PLAN_OUTPUT" ] && [ "$PLAN_OUTPUT" != "Plan execution completed. See workflow logs for detailed output." ]; then
+            ADD_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be created" || echo "0")
+            CHANGE_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be updated" || echo "0")
+            DESTROY_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be destroyed" || echo "0")
+
+            # Terraform標準出力の "Plan:" 行からも抽出を試みる
+            if [ "$ADD_COUNT" == "0" ] && [ "$CHANGE_COUNT" == "0" ] && [ "$DESTROY_COUNT" == "0" ]; then
+              PLAN_LINE=$(echo "$PLAN_OUTPUT" | grep "Plan:" | tail -1)
+              if [ -n "$PLAN_LINE" ]; then
+                ADD_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*Plan: \([0-9]*\) to add.*/\1/p' || echo "0")
+                CHANGE_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to change.*/\1/p' || echo "0")
+                DESTROY_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to destroy.*/\1/p' || echo "0")
+              fi
+            fi
+
+            # 出力を制限（30,000文字まで）
+            if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
+              PLAN_OUTPUT="${PLAN_OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
+            fi
+          else
+            ADD_COUNT="0"
+            CHANGE_COUNT="0"
+            DESTROY_COUNT="0"
+          fi
+
           echo "plan-status=$PLAN_STATUS" >> $GITHUB_OUTPUT
           echo "add-count=$ADD_COUNT" >> $GITHUB_OUTPUT
           echo "change-count=$CHANGE_COUNT" >> $GITHUB_OUTPUT
           echo "destroy-count=$DESTROY_COUNT" >> $GITHUB_OUTPUT
-
-          # 複数行出力の場合のみEOFを使用
           echo "plan-output<<EOF" >> $GITHUB_OUTPUT
           echo "$PLAN_OUTPUT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -196,19 +251,29 @@ jobs:
             APPLY_STATUS="❌ Failed"
           fi
 
-          # デフォルト値を設定
-          ADDED_COUNT="0"
-          CHANGED_COUNT="0"
-          DESTROYED_COUNT="0"
-          APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
+          # Terragrunt Actionの出力から変更数を抽出
+          APPLY_OUTPUT="${{ steps.apply.outputs.tg_action_output }}"
 
-          # GitHubの出力に書き込み（エラー回避のため分割）
+          if [ -n "$APPLY_OUTPUT" ]; then
+            ADDED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Creation complete" || echo "0")
+            CHANGED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Modifications complete" || echo "0")
+            DESTROYED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Destruction complete" || echo "0")
+
+            # 出力を制限（20,000文字まで）
+            if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
+              APPLY_OUTPUT="${APPLY_OUTPUT:0:20000}... (output truncated, see workflow logs for full details)"
+            fi
+          else
+            ADDED_COUNT="0"
+            CHANGED_COUNT="0"
+            DESTROYED_COUNT="0"
+            APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
+          fi
+
           echo "apply-status=$APPLY_STATUS" >> $GITHUB_OUTPUT
           echo "added-count=$ADDED_COUNT" >> $GITHUB_OUTPUT
           echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
           echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
-
-          # 複数行出力の場合のみEOFを使用
           echo "apply-output<<EOF" >> $GITHUB_OUTPUT
           echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
