@@ -19,7 +19,6 @@ jobs:
       with:
         app-id: ${{ vars.APP_ID }}
         private-key: ${{ secrets.APP_PRIVATE_KEY }}
-        repositories: ${{ github.repository }}
         permission-actions: read
         permission-checks: read
         permission-pull-requests: write
