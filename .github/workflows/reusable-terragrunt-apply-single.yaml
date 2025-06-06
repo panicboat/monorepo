@@ -102,10 +102,22 @@ jobs:
         run: |
           APPLY_OUTPUT="${{ steps.apply.outputs.stdout }}"
 
-          # Count changes
-          ADDITIONS=$(echo "$APPLY_OUTPUT" | grep -o "Apply complete! Resources: [0-9]* added" | grep -o "[0-9]*" || echo "0")
-          CHANGES=$(echo "$APPLY_OUTPUT" | grep -o "[0-9]* changed" | grep -o "[0-9]*" || echo "0")
-          DELETIONS=$(echo "$APPLY_OUTPUT" | grep -o "[0-9]* destroyed" | grep -o "[0-9]*" || echo "0")
+          # Count changes - improved regex patterns for apply
+          if echo "$APPLY_OUTPUT" | grep -q "Apply complete!"; then
+            # Extract the Apply complete line
+            APPLY_LINE=$(echo "$APPLY_OUTPUT" | grep "Apply complete!" | tail -1)
+            echo "Apply line found: $APPLY_LINE"
+
+            # Extract numbers using improved patterns
+            ADDITIONS=$(echo "$APPLY_LINE" | grep -o '[0-9]\+ added' | grep -o '[0-9]\+' || echo "0")
+            CHANGES=$(echo "$APPLY_LINE" | grep -o '[0-9]\+ changed' | grep -o '[0-9]\+' || echo "0")
+            DELETIONS=$(echo "$APPLY_LINE" | grep -o '[0-9]\+ destroyed' | grep -o '[0-9]\+' || echo "0")
+          else
+            echo "No Apply complete line found in output"
+            ADDITIONS="0"
+            CHANGES="0"
+            DELETIONS="0"
+          fi
 
           APPLY_STATUS="${{ steps.apply.outcome }}"
 
@@ -117,6 +129,8 @@ jobs:
 
           # Escape special characters for GitHub
           ESCAPED_OUTPUT=$(echo "$TRUNCATED_OUTPUT" | sed 's/`/\\`/g' | sed 's/\$/\\$/g')
+
+          echo "Extracted counts - Added: $ADDITIONS, Changed: $CHANGES, Destroyed: $DELETIONS"
 
           echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
           echo "changes=$CHANGES" >> $GITHUB_OUTPUT

@@ -100,10 +100,22 @@ jobs:
         run: |
           PLAN_OUTPUT="${{ steps.plan.outputs.stdout }}"
 
-          # Count changes
-          ADDITIONS=$(echo "$PLAN_OUTPUT" | grep -o "Plan: [0-9]* to add" | grep -o "[0-9]*" || echo "0")
-          CHANGES=$(echo "$PLAN_OUTPUT" | grep -o "[0-9]* to change" | grep -o "[0-9]*" || echo "0")
-          DELETIONS=$(echo "$PLAN_OUTPUT" | grep -o "[0-9]* to destroy" | grep -o "[0-9]*" || echo "0")
+          # Count changes - improved regex patterns
+          if echo "$PLAN_OUTPUT" | grep -q "Plan:"; then
+            # Extract the Plan line
+            PLAN_LINE=$(echo "$PLAN_OUTPUT" | grep "Plan:" | tail -1)
+            echo "Plan line found: $PLAN_LINE"
+
+            # Extract numbers using improved patterns
+            ADDITIONS=$(echo "$PLAN_LINE" | grep -o '[0-9]\+ to add' | grep -o '[0-9]\+' || echo "0")
+            CHANGES=$(echo "$PLAN_LINE" | grep -o '[0-9]\+ to change' | grep -o '[0-9]\+' || echo "0")
+            DELETIONS=$(echo "$PLAN_LINE" | grep -o '[0-9]\+ to destroy' | grep -o '[0-9]\+' || echo "0")
+          else
+            echo "No Plan line found in output"
+            ADDITIONS="0"
+            CHANGES="0"
+            DELETIONS="0"
+          fi
 
           PLAN_STATUS="${{ steps.plan.outcome }}"
 
@@ -116,6 +128,8 @@ jobs:
           # Escape special characters for GitHub
           ESCAPED_OUTPUT=$(echo "$TRUNCATED_OUTPUT" | sed 's/`/\\`/g' | sed 's/\$/\\$/g')
 
+          echo "Extracted counts - Add: $ADDITIONS, Change: $CHANGES, Destroy: $DELETIONS"
+
           echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
           echo "changes=$CHANGES" >> $GITHUB_OUTPUT
           echo "deletions=$DELETIONS" >> $GITHUB_OUTPUT
@@ -123,6 +137,13 @@ jobs:
           echo "output<<EOF" >> $GITHUB_OUTPUT
           echo "$ESCAPED_OUTPUT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Debug PR context
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "PR number: ${{ github.event.pull_request.number }}"
+          echo "Base ref: ${{ github.base_ref }}"
+          echo "Head ref: ${{ github.head_ref }}"
 
       - name: Find existing comment
         if: github.event_name == 'pull_request'
@@ -132,6 +153,12 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
           body-includes: 'terragrunt-plan-${{ inputs.env_name }}-${{ inputs.project_name }}'
+
+      - name: Debug comment search
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Comment ID found: ${{ steps.find-comment.outputs.comment-id }}"
+          echo "Comment body includes: terragrunt-plan-${{ inputs.env_name }}-${{ inputs.project_name }}"
 
       - name: Create or update plan comment
         if: github.event_name == 'pull_request'
