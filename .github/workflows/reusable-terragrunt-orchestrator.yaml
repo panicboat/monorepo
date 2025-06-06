@@ -65,8 +65,8 @@ jobs:
             fi
           done <<< "$CHANGED_FILES"
 
-          # 重複を除去してJSON配列に変換
-          UNIQUE_ENVIRONMENTS=$(printf '%s\n' "${ENVIRONMENTS[@]}" | sort -u | jq -R -s 'split("\n") | map(select(length > 0))')
+          # 重複を除去してJSON配列に変換（改行なし）
+          UNIQUE_ENVIRONMENTS=$(printf '%s\n' "${ENVIRONMENTS[@]}" | sort -u | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
           echo "Detected environments: $UNIQUE_ENVIRONMENTS"
 
