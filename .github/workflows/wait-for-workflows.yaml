@@ -32,7 +32,7 @@ jobs:
         repo-token: ${{ steps.app-token.outputs.token }}
         allowed-conclusions: success,failure,skipped,cancelled
         wait-interval: 10
-
+      continue-on-error: true
 
     - name: Get all workflow statuses
       id: workflow-status
