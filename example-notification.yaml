@@ -1,0 +1,91 @@
+name: Example Notification Usage
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issues:
+    types: [opened, reopened]
+  workflow_dispatch:
+
+jobs:
+  # サンプル: CI ジョブ
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      build_status: ${{ steps.build_result.outputs.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Simulate build process
+        id: build_result
+        run: |
+          # ここで実際のビルド処理を行う
+          echo "Building project..."
+          sleep 2
+
+          # ランダムに成功/失敗をシミュレート（実際の使用では削除）
+          if [ $((RANDOM % 2)) -eq 0 ]; then
+            echo "Build successful!"
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "Build failed!"
+            echo "status=failure" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+  # 成功時の通知
+  notify_success:
+    needs: build
+    if: success()
+    uses: ./.github/workflows/reusable-notification.yaml
+    with:
+      notification_type: "success"
+      title: "Build Successful"
+      message: |
+        🎉 ビルドが正常に完了しました！
+
+        **変更内容:**
+        - すべてのテストがパスしました
+        - コードカバレッジが維持されています
+        - ビルドアーティファクトが正常に生成されました
+      comment_id_prefix: "build-status"
+
+  # 失敗時の通知
+  notify_failure:
+    needs: build
+    if: failure()
+    uses: ./.github/workflows/reusable-notification.yaml
+    with:
+      notification_type: "failure"
+      title: "Build Failed"
+      message: |
+        💥 ビルドに失敗しました。
+
+        **考えられる原因:**
+        - コンパイルエラー
+        - テストの失敗
+        - 依存関係の問題
+
+        詳細は[ワークフロー実行ログ](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})をご確認ください。
+      comment_id_prefix: "build-status"
+
+  # 情報提供の通知例
+  notify_info:
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    uses: ./.github/workflows/reusable-notification.yaml
+    with:
+      notification_type: "info"
+      title: "Pull Request Review Guidelines"
+      message: |
+        📋 **レビューのお願い**
+
+        このPRをレビューする際は、以下の点をご確認ください：
+        - [ ] コードスタイルがプロジェクトの標準に準拠している
+        - [ ] テストが適切に追加されている
+        - [ ] ドキュメントが更新されている（必要に応じて）
+        - [ ] 破壊的変更がある場合は適切に文書化されている
+
+        ご協力をお願いいたします！ 🙏
+      comment_id_prefix: "pr-guidelines"
+      show_workflow_details: false
