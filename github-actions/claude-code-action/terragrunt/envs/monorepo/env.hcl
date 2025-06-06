@@ -29,7 +29,7 @@ locals {
   # Claude Code Action settings
   enable_claude_code_action = true
   bedrock_model_region     = "us-west-2"
-  bedrock_model_id         = "anthropic.claude-sonnet-4-20250514-v1:0"
+  bedrock_model_id         = "us.anthropic.claude-sonnet-4-20250514-v1:0"
 
   # Repository-specific resource tags
   additional_tags = {
