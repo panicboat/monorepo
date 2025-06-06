@@ -24,13 +24,63 @@ jobs:
         permission-checks: read
         permission-pull-requests: write
 
-    - name: Wait for all workflows to complete
-      uses: lewagon/wait-on-check-action@v1.3.4
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-        running-workflow-name: ${{ github.workflow }}
-        repo-token: ${{ steps.app-token.outputs.token }}
-        wait-interval: 30
+    - name: Check if other workflows exist
+      id: check-other-workflows
+      run: |
+        HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+        gh api repos/${{ github.repository }}/actions/runs \
+          --jq --arg sha "$HEAD_SHA" \
+          '.workflow_runs[] | select(.head_sha == $sha and .name != "Wait for Workflows" and (.status == "in_progress" or .status == "queued"))' \
+          > running_workflows.json
+
+        RUNNING_COUNT=$(jq -s 'length' running_workflows.json)
+        echo "Running workflows: $RUNNING_COUNT"
+
+        if [[ $RUNNING_COUNT -eq 0 ]]; then
+          echo "No other workflows running, skipping wait"
+          echo "should-wait=false" >> $GITHUB_OUTPUT
+        else
+          echo "Found running workflows, will wait"
+          jq -r '.name' running_workflows.json
+          echo "should-wait=true" >> $GITHUB_OUTPUT
+        fi
+      env:
+        GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+    - name: Wait for workflows with timeout
+      if: steps.check-other-workflows.outputs.should-wait == 'true'
+      timeout-minutes: 5
+      run: |
+        echo "Waiting for other workflows to complete..."
+        ATTEMPTS=0
+        MAX_ATTEMPTS=10
+
+        while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          gh api repos/${{ github.repository }}/actions/runs \
+            --jq --arg sha "$HEAD_SHA" \
+            '.workflow_runs[] | select(.head_sha == $sha and .name != "Wait for Workflows" and (.status == "in_progress" or .status == "queued"))' \
+            > current_running.json
+
+          RUNNING_COUNT=$(jq -s 'length' current_running.json)
+          echo "Attempt $((ATTEMPTS + 1)): $RUNNING_COUNT workflows still running"
+
+          if [[ $RUNNING_COUNT -eq 0 ]]; then
+            echo "All workflows completed!"
+            break
+          fi
+
+          sleep 30
+          ATTEMPTS=$((ATTEMPTS + 1))
+        done
+
+        if [[ $ATTEMPTS -eq $MAX_ATTEMPTS ]]; then
+          echo "Timeout reached, proceeding anyway"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
     - name: Get all workflow statuses
       id: workflow-status
