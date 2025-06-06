@@ -33,32 +33,39 @@ jobs:
         allowed-conclusions: success,failure,skipped,cancelled
         wait-interval: 10
 
+
     - name: Get all workflow statuses
       id: workflow-status
       run: |
         echo "Getting workflow status for PR #${{ github.event.pull_request.number }}"
         HEAD_SHA="${{ github.event.pull_request.head.sha }}"
 
-        gh api repos/${{ github.repository }}/actions/runs \
+        # ワークフローデータを一度だけ取得
+        WORKFLOW_DATA=$(gh api repos/${{ github.repository }}/actions/runs \
           --jq --arg sha "$HEAD_SHA" \
-          '[.workflow_runs[] | select(.head_sha == $sha and .name != "Wait for Workflows") | {name: .name, conclusion: .conclusion, status: .status, html_url: .html_url}]' \
-          > workflow_results.json
+          '.workflow_runs[] | select(.head_sha == $sha and .name != "Wait for Workflows")')
 
-        echo "Workflow results:"
-        cat workflow_results.json
+        echo "Raw workflow data:"
+        echo "$WORKFLOW_DATA"
 
-        SUCCESS_COUNT=$(jq '[.[] | select(.conclusion == "success")] | length' workflow_results.json)
-        FAILURE_COUNT=$(jq '[.[] | select(.conclusion == "failure")] | length' workflow_results.json)
-        IN_PROGRESS_COUNT=$(jq '[.[] | select(.status == "in_progress")] | length' workflow_results.json)
-        TOTAL_COUNT=$(jq 'length' workflow_results.json)
+        # 一時ファイルに保存
+        echo "$WORKFLOW_DATA" > raw_workflows.txt
+
+        # カウントを計算（grepとwcを使用）
+        SUCCESS_COUNT=$(echo "$WORKFLOW_DATA" | jq -r '.conclusion' | grep -c '^success$' || echo 0)
+        FAILURE_COUNT=$(echo "$WORKFLOW_DATA" | jq -r '.conclusion' | grep -c '^failure$' || echo 0)
+        IN_PROGRESS_COUNT=$(echo "$WORKFLOW_DATA" | jq -r '.status' | grep -c '^in_progress$' || echo 0)
+        TOTAL_COUNT=$(echo "$WORKFLOW_DATA" | jq -r '.name' | wc -l)
 
         echo "Success: $SUCCESS_COUNT, Failure: $FAILURE_COUNT, In Progress: $IN_PROGRESS_COUNT, Total: $TOTAL_COUNT"
 
+        # 出力に設定
         echo "success-count=$SUCCESS_COUNT" >> $GITHUB_OUTPUT
         echo "failure-count=$FAILURE_COUNT" >> $GITHUB_OUTPUT
         echo "in-progress-count=$IN_PROGRESS_COUNT" >> $GITHUB_OUTPUT
         echo "total-count=$TOTAL_COUNT" >> $GITHUB_OUTPUT
 
+        # 全体ステータスを判定
         if [[ $IN_PROGRESS_COUNT -gt 0 ]]; then
           echo "overall-status=in_progress" >> $GITHUB_OUTPUT
         elif [[ $FAILURE_COUNT -gt 0 ]]; then
