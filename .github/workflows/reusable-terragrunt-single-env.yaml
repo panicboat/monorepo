@@ -121,24 +121,13 @@ jobs:
           TF_INPUT: false
           AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
 
-      - name: Fallback Plan (if action fails or output empty)
+      - name: Fallback Plan (if needed)
         if: inputs.action_type == 'plan' && (steps.plan.outcome == 'failure' || steps.plan.outputs.tg_action_output == '')
         id: plan-fallback
         working-directory: ${{ steps.load-config.outputs.working-directory }}
         run: |
-          echo "Running fallback terragrunt plan..."
-
-          # まずはinitを実行
           terragrunt init -no-color
-
-          # planを実行して出力をキャプチャ
           terragrunt plan -no-color > plan_output.txt 2>&1 || true
-
-          echo "=== Fallback Plan Output ==="
-          cat plan_output.txt
-          echo "=== End Fallback Plan Output ==="
-
-          # GitHub Outputに保存
           echo "plan-output<<EOF" >> $GITHUB_OUTPUT
           cat plan_output.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -385,7 +374,7 @@ jobs:
             <details>
             <summary>📝 Plan Output</summary>
 
-            ```
+            ```hcl
             ${{ steps.parse-plan.outputs.plan-output }}
             ```
 
@@ -420,7 +409,7 @@ jobs:
             <details>
             <summary>📝 Apply Output</summary>
 
-            ```
+            ```hcl
             ${{ steps.parse-apply.outputs.apply-output }}
             ```
 
