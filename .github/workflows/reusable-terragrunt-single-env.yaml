@@ -309,79 +309,79 @@ jobs:
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
-      - name: Parse Apply Results
-        if: inputs.action_type == 'apply' && always()
-        id: parse-apply
-        run: |
-          # Applyの結果を解析
-          if [ "${{ steps.apply.outcome }}" == "success" ]; then
-            APPLY_STATUS="✅ Success"
-          else
-            APPLY_STATUS="❌ Failed"
-          fi
-
-          # GitHub Actionsの出力をURLデコード
-          cat > apply_output_encoded.txt << 'APPLY_OUTPUT_DELIMITER_END'
-          ${{ steps.apply.outputs.tg_action_output }}
-          APPLY_OUTPUT_DELIMITER_END
-
-          python3 -c "
-          import urllib.parse
-          with open('apply_output_encoded.txt', 'r') as f:
-              encoded_content = f.read().strip()
-          decoded_content = urllib.parse.unquote(encoded_content)
-          with open('apply_output_decoded.txt', 'w') as f:
-              f.write(decoded_content)
-          "
-
-          # デコードされた出力を使用
-          if [ -f "apply_output_decoded.txt" ] && [ -s "apply_output_decoded.txt" ]; then
-            APPLY_OUTPUT=$(cat apply_output_decoded.txt)
-          else
-            APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
-          fi
-
-          # 変更数を抽出
-          if [ "$APPLY_OUTPUT" != "Apply execution completed. See workflow logs for detailed output." ]; then
-            ADDED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Creation complete" 2>/dev/null || echo "0")
-            CHANGED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Modifications complete" 2>/dev/null || echo "0")
-            DESTROYED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Destruction complete" 2>/dev/null || echo "0")
-
-            # 数値のみを保証
-            ADDED_COUNT=$(echo "$ADDED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
-            CHANGED_COUNT=$(echo "$CHANGED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
-            DESTROYED_COUNT=$(echo "$DESTROYED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
-
-            ADDED_COUNT=${ADDED_COUNT:-0}
-            CHANGED_COUNT=${CHANGED_COUNT:-0}
-            DESTROYED_COUNT=${DESTROYED_COUNT:-0}
-
-            # 出力を制限（20,000文字まで）
-            if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
-              APPLY_OUTPUT="${APPLY_OUTPUT:0:20000}... (output truncated, see workflow logs for full details)"
+          - name: Parse Apply Results
+          if: inputs.action_type == 'apply' && always()
+          id: parse-apply
+          run: |
+            # Applyの結果を解析
+            if [ "${{ steps.apply.outcome }}" == "success" ]; then
+              APPLY_STATUS="✅ Success"
+            else
+              APPLY_STATUS="❌ Failed"
             fi
-          else
-            ADDED_COUNT="0"
-            CHANGED_COUNT="0"
-            DESTROYED_COUNT="0"
-          fi
 
-          echo "apply-status=$APPLY_STATUS" >> $GITHUB_OUTPUT
-          echo "added-count=$ADDED_COUNT" >> $GITHUB_OUTPUT
-          echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
-          echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
+            # GitHub Actionsの出力をURLデコード
+            cat > apply_output_encoded.txt << 'APPLY_OUTPUT_DELIMITER_END'
+            ${{ steps.apply.outputs.tg_action_output }}
+            APPLY_OUTPUT_DELIMITER_END
 
-          # 一意な区切り文字を生成
-          DELIMITER="APPLY_OUTPUT_END_$_$(date +%s%N)"
-          echo "apply-output<<$DELIMITER" >> $GITHUB_OUTPUT
-          if [ -f "apply_output_decoded.txt" ]; then
-            cat apply_output_decoded.txt >> $GITHUB_OUTPUT
-          else
-            echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
-          fi
-          echo "$DELIMITER" >> $GITHUB_OUTPUT
+            python3 -c "
+            import urllib.parse
+            with open('apply_output_encoded.txt', 'r') as f:
+                encoded_content = f.read().strip()
+            decoded_content = urllib.parse.unquote(encoded_content)
+            with open('apply_output_decoded.txt', 'w') as f:
+                f.write(decoded_content)
+            "
 
-          rm -f apply_output_encoded.txt apply_output_decoded.txt
+            # デコードされた出力を使用
+            if [ -f "apply_output_decoded.txt" ] && [ -s "apply_output_decoded.txt" ]; then
+              APPLY_OUTPUT=$(cat apply_output_decoded.txt)
+            else
+              APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
+            fi
+
+            # 変更数を抽出
+            if [ "$APPLY_OUTPUT" != "Apply execution completed. See workflow logs for detailed output." ]; then
+              ADDED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Creation complete" 2>/dev/null || echo "0")
+              CHANGED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Modifications complete" 2>/dev/null || echo "0")
+              DESTROYED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Destruction complete" 2>/dev/null || echo "0")
+
+              # 数値のみを保証
+              ADDED_COUNT=$(echo "$ADDED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+              CHANGED_COUNT=$(echo "$CHANGED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+              DESTROYED_COUNT=$(echo "$DESTROYED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+
+              ADDED_COUNT=${ADDED_COUNT:-0}
+              CHANGED_COUNT=${CHANGED_COUNT:-0}
+              DESTROYED_COUNT=${DESTROYED_COUNT:-0}
+
+              # 出力を制限（20,000文字まで）
+              if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
+                APPLY_OUTPUT="${APPLY_OUTPUT:0:20000}... (output truncated, see workflow logs for full details)"
+              fi
+            else
+              ADDED_COUNT="0"
+              CHANGED_COUNT="0"
+              DESTROYED_COUNT="0"
+            fi
+
+            echo "apply-status=$APPLY_STATUS" >> $GITHUB_OUTPUT
+            echo "added-count=$ADDED_COUNT" >> $GITHUB_OUTPUT
+            echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
+            echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
+
+            # 一意な区切り文字を生成
+            DELIMITER="APPLY_OUTPUT_END_$_$(date +%s%N)"
+            echo "apply-output<<$DELIMITER" >> $GITHUB_OUTPUT
+            if [ -f "apply_output_decoded.txt" ]; then
+              cat apply_output_decoded.txt >> $GITHUB_OUTPUT
+            else
+              echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
+            fi
+            echo "$DELIMITER" >> $GITHUB_OUTPUT
+
+            rm -f apply_output_encoded.txt apply_output_decoded.txt
 
       - name: Find existing comment
         if: github.event_name == 'pull_request'
