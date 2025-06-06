@@ -7,6 +7,7 @@ on:
 jobs:
   wait-for-workflows:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       pull-requests: write
       actions: read
@@ -30,7 +31,6 @@ jobs:
         running-workflow-name: 'Wait for Workflows'
         repo-token: ${{ steps.app-token.outputs.token }}
         wait-interval: 30
-        timeout: 1200
 
     - name: Get all workflow statuses
       id: workflow-status
