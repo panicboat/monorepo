@@ -112,6 +112,36 @@ jobs:
           TF_INPUT: false
           AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
 
+      - name: Capture Plan Output
+        if: inputs.action_type == 'plan' && always()
+        id: capture-plan
+        working-directory: ${{ steps.load-config.outputs.working-directory }}
+        run: |
+          # Plan出力を再実行してキャプチャ（出力のみを取得）
+          terragrunt plan -no-color > plan_output.txt 2>&1 || true
+
+          # ファイル内容を確認
+          echo "=== Plan Output ==="
+          cat plan_output.txt
+          echo "=== End Plan Output ==="
+
+          # Plan出力をGitHub Outputに保存
+          PLAN_OUTPUT=$(cat plan_output.txt)
+
+          # 出力を制限（30,000文字まで）
+          if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
+            PLAN_OUTPUT="${PLAN_OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
+          fi
+
+          {
+            echo "plan-output<<EOF"
+            echo "$PLAN_OUTPUT"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+        env:
+          TF_INPUT: false
+          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
+
       - name: Terragrunt Apply
         if: inputs.action_type == 'apply'
         id: apply
@@ -138,18 +168,28 @@ jobs:
             PLAN_STATUS="❌ Failed"
           fi
 
-          # Terragrunt Actionの標準出力を取得
-          # GitHub Actionsログから直接出力を取得する代替方法
-          PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
+          # キャプチャしたPlan出力から変更数を抽出
+          PLAN_OUTPUT="${{ steps.capture-plan.outputs.plan-output }}"
 
-          # デフォルト値を設定
-          ADD_COUNT="0"
-          CHANGE_COUNT="0"
-          DESTROY_COUNT="0"
+          if [ -n "$PLAN_OUTPUT" ]; then
+            ADD_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be created" || echo "0")
+            CHANGE_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be updated" || echo "0")
+            DESTROY_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be destroyed" || echo "0")
 
-          # 出力を制限（30,000文字まで）
-          if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
-            PLAN_OUTPUT="${PLAN_OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
+            # Terraform標準出力の "Plan:" 行からも抽出を試みる
+            if [ "$ADD_COUNT" == "0" ] && [ "$CHANGE_COUNT" == "0" ] && [ "$DESTROY_COUNT" == "0" ]; then
+              PLAN_LINE=$(echo "$PLAN_OUTPUT" | grep "Plan:" | tail -1)
+              if [ -n "$PLAN_LINE" ]; then
+                ADD_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*Plan: \([0-9]*\) to add.*/\1/p' || echo "0")
+                CHANGE_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to change.*/\1/p' || echo "0")
+                DESTROY_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to destroy.*/\1/p' || echo "0")
+              fi
+            fi
+          else
+            ADD_COUNT="0"
+            CHANGE_COUNT="0"
+            DESTROY_COUNT="0"
+            PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
           fi
 
           {
