@@ -196,20 +196,35 @@ jobs:
         if: inputs.action_type == 'plan' && always()
         id: parse-plan
         run: |
-          # デバッグ: 実際の出力を確認（安全な方法）
+          # デバッグ: 実際の出力を確認
           echo "=== Debug: tg_action_output ==="
           echo "Exit code: ${{ steps.plan.outputs.tg_action_exit_code }}"
           echo "Output exists: ${{ steps.plan.outputs.tg_action_output != '' }}"
 
-          # GitHub Actionsの出力を一時ファイルに保存
-          cat > plan_output_temp.txt << 'PLAN_OUTPUT_EOF'
+          # GitHub Actionsの出力を一時ファイルに保存してURLデコード
+          cat > plan_output_encoded.txt << 'PLAN_OUTPUT_EOF'
           ${{ steps.plan.outputs.tg_action_output }}
           PLAN_OUTPUT_EOF
 
-          echo "Output length: $(wc -c < plan_output_temp.txt)"
-          echo "First 200 chars:"
-          head -c 200 plan_output_temp.txt
-          echo ""
+          # URLデコード（%0A -> 改行、%20 -> スペースなど）
+          python3 -c "
+          import urllib.parse
+          import sys
+
+          with open('plan_output_encoded.txt', 'r') as f:
+              encoded_content = f.read().strip()
+
+          # URLデコード
+          decoded_content = urllib.parse.unquote(encoded_content)
+
+          with open('plan_output_decoded.txt', 'w') as f:
+              f.write(decoded_content)
+
+          print(f'Decoded length: {len(decoded_content)}')
+          print('First 300 chars:')
+          print(decoded_content[:300])
+          "
+
           echo "=== End Debug ==="
 
           # Planの結果を解析
@@ -225,22 +240,12 @@ jobs:
             PLAN_STATUS="❌ Failed"
           fi
 
-          # 出力ソースを決定
-          OUTPUT_SIZE=$(wc -c < plan_output_temp.txt)
-          FALLBACK_EXISTS="${{ steps.plan-fallback.outputs.plan-output != '' }}"
-
-          echo "TG_ACTION_OUTPUT size: $OUTPUT_SIZE bytes"
-          echo "FALLBACK_EXISTS: $FALLBACK_EXISTS"
-
-          if [ "$OUTPUT_SIZE" -gt 50 ]; then
-            PLAN_OUTPUT=$(cat plan_output_temp.txt)
-            echo "Using tg_action_output"
-          elif [ "$FALLBACK_EXISTS" == "true" ]; then
-            # フォールバック出力を使用
-            cat > fallback_output_temp.txt << 'FALLBACK_OUTPUT_EOF'
-          ${{ steps.plan-fallback.outputs.plan-output }}
-          FALLBACK_OUTPUT_EOF
-            PLAN_OUTPUT=$(cat fallback_output_temp.txt)
+          # デコードされた出力を使用
+          if [ -f "plan_output_decoded.txt" ] && [ -s "plan_output_decoded.txt" ]; then
+            PLAN_OUTPUT=$(cat plan_output_decoded.txt)
+            echo "Using decoded tg_action_output"
+          elif [ "${{ steps.plan-fallback.outputs.plan-output != '' }}" == "true" ]; then
+            PLAN_OUTPUT="${{ steps.plan-fallback.outputs.plan-output }}"
             echo "Using fallback output"
           else
             PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
@@ -276,7 +281,7 @@ jobs:
           fi
 
           # クリーンアップ
-          rm -f plan_output_temp.txt fallback_output_temp.txt
+          rm -f plan_output_encoded.txt plan_output_decoded.txt
 
           echo "plan-status=$PLAN_STATUS" >> $GITHUB_OUTPUT
           echo "add-count=$ADD_COUNT" >> $GITHUB_OUTPUT
