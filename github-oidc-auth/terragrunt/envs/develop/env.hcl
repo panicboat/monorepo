@@ -35,7 +35,7 @@ locals {
   additional_tags = {
     CostCenter   = "develop"
     Owner        = "panicboat"
-    AutoShutdown = "enabled"
     Purpose      = "github-actions-develop"
+    AutoShutdown = "enabled"
   }
 }

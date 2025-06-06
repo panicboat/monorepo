@@ -1,0 +1,270 @@
+name: Reusable Terragrunt Plan
+
+on:
+  workflow_call:
+    inputs:
+      project_name:
+        description: 'Project name for the service'
+        required: true
+        type: string
+      terraform_version:
+        description: 'Terraform version'
+        required: false
+        type: string
+        default: '1.5.7'
+      terragrunt_version:
+        description: 'Terragrunt version'
+        required: false
+        type: string
+        default: '0.53.2'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
+      has-changes: ${{ steps.generate-matrix.outputs.has-changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate matrix for changed terragrunt environments
+        id: generate-matrix
+        run: |
+          # Get changed files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+
+          # Find terragrunt environment directories that have changes
+          TERRAGRUNT_ENVS=""
+
+          # Pattern matching for different directory structures
+          for file in $CHANGED_FILES; do
+            # Check for **/service/terragrunt/envs/** pattern
+            if [[ $file =~ (.*/)?([^/]+)/terragrunt/envs/([^/]+)/.* ]]; then
+              prefix="${BASH_REMATCH[1]}"
+              service_name="${BASH_REMATCH[2]}"
+              env_name="${BASH_REMATCH[3]}"
+              terragrunt_env_dir="${prefix}${service_name}/terragrunt/envs/${env_name}"
+
+              # Check if directory actually exists
+              if [ -d "$terragrunt_env_dir" ]; then
+                if [[ ! $TERRAGRUNT_ENVS =~ $terragrunt_env_dir ]]; then
+                  TERRAGRUNT_ENVS="$TERRAGRUNT_ENVS $terragrunt_env_dir"
+                fi
+              fi
+            fi
+
+            # Check for category/service/terragrunt/envs pattern
+            if [[ $file =~ ^([^/]+)/([^/]+)/terragrunt/envs/([^/]+)/.* ]]; then
+              category="${BASH_REMATCH[1]}"
+              service_name="${BASH_REMATCH[2]}"
+              env_name="${BASH_REMATCH[3]}"
+              terragrunt_env_dir="$category/$service_name/terragrunt/envs/$env_name"
+
+              if [ -d "$terragrunt_env_dir" ]; then
+                if [[ ! $TERRAGRUNT_ENVS =~ $terragrunt_env_dir ]]; then
+                  TERRAGRUNT_ENVS="$TERRAGRUNT_ENVS $terragrunt_env_dir"
+                fi
+              fi
+            fi
+          done
+
+          # Convert to JSON array with environment information
+          MATRIX_JSON="[]"
+          if [ ! -z "$TERRAGRUNT_ENVS" ]; then
+            # Create matrix entries with both path and environment name
+            MATRIX_ENTRIES=""
+            for env_dir in $TERRAGRUNT_ENVS; do
+              if [ ! -z "$env_dir" ]; then
+                # Extract environment name from path (last directory name)
+                env_name=$(basename "$env_dir")
+                # Extract service directory (parent of terragrunt)
+                service_dir=$(dirname $(dirname "$env_dir"))
+
+                # Create JSON object for this entry
+                entry="{\"env_dir\":\"$env_dir\",\"env_name\":\"$env_name\",\"service_dir\":\"$service_dir\"}"
+                if [ -z "$MATRIX_ENTRIES" ]; then
+                  MATRIX_ENTRIES="$entry"
+                else
+                  MATRIX_ENTRIES="$MATRIX_ENTRIES,$entry"
+                fi
+              fi
+            done
+
+            if [ ! -z "$MATRIX_ENTRIES" ]; then
+              MATRIX_JSON="[$MATRIX_ENTRIES]"
+            fi
+          fi
+
+          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "has-changes=$([ "$MATRIX_JSON" != "[]" ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+
+          echo "Detected Terragrunt environment directories: $TERRAGRUNT_ENVS"
+          echo "Matrix: $MATRIX_JSON"
+
+  plan:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load IAM role configuration
+        id: load-config
+        run: |
+          # Load IAM role from config file
+          CONFIG_FILE=".github/terragrunt-actions-config.yaml"
+          ENV_NAME="${{ matrix.env_name }}"
+
+          echo "environment-name=$ENV_NAME" >> $GITHUB_OUTPUT
+
+          # Determine Plan IAM role: env.iam_role_plan → default.iam_role_plan
+          PLAN_IAM_ROLE=$(yq eval ".$ENV_NAME.iam_role_plan // .default.iam_role_plan" $CONFIG_FILE)
+          AWS_REGION=$(yq eval ".$ENV_NAME.aws_region // .default.aws_region // \"us-east-1\"" $CONFIG_FILE)
+
+          # Check for custom working directory
+          WORKING_DIR=$(yq eval ".$ENV_NAME.working_directory" $CONFIG_FILE)
+          if [ "$WORKING_DIR" != "null" ]; then
+            FINAL_WORKING_DIR="$WORKING_DIR"
+            echo "Using custom working directory from config: $WORKING_DIR"
+          else
+            FINAL_WORKING_DIR="${{ matrix.env_dir }}"
+            echo "Using detected working directory: $FINAL_WORKING_DIR"
+          fi
+
+          # Check if we're using fallback
+          SPECIFIC_PLAN_ROLE=$(yq eval ".$ENV_NAME.iam_role_plan" $CONFIG_FILE)
+          if [ "$SPECIFIC_PLAN_ROLE" = "null" ]; then
+            echo "Environment '$ENV_NAME' plan role not found, using default plan role"
+          fi
+
+          echo "plan-iam-role=$PLAN_IAM_ROLE" >> $GITHUB_OUTPUT
+          echo "aws-region=$AWS_REGION" >> $GITHUB_OUTPUT
+          echo "working-directory=$FINAL_WORKING_DIR" >> $GITHUB_OUTPUT
+          echo "Using Plan IAM role: $PLAN_IAM_ROLE for environment: $ENV_NAME"
+
+      - name: Configure AWS credentials for Plan
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.load-config.outputs.plan-iam-role }}
+          role-session-name: terragrunt-plan-${{ inputs.project_name }}-${{ matrix.env_name }}
+          aws-region: ${{ steps.load-config.outputs.aws-region }}
+
+      - name: Plan terragrunt for environment
+        id: plan
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tf_version: ${{ inputs.terraform_version }}
+          tg_version: ${{ inputs.terragrunt_version }}
+          tg_dir: ${{ steps.load-config.outputs.working-directory }}
+          tg_command: 'plan --terragrunt-non-interactive'
+        env:
+          TF_INPUT: false
+          TERRAGRUNT_IAM_ROLE: ${{ steps.load-config.outputs.plan-iam-role }}
+          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
+        continue-on-error: true
+
+      - name: Parse plan output
+        id: parse-plan
+        run: |
+          # Extract plan summary from the output
+          PLAN_OUTPUT="${{ steps.plan.outputs.stdout }}"
+
+          # Count changes
+          ADDITIONS=$(echo "$PLAN_OUTPUT" | grep -o "Plan: [0-9]* to add" | grep -o "[0-9]*" || echo "0")
+          CHANGES=$(echo "$PLAN_OUTPUT" | grep -o "[0-9]* to change" | grep -o "[0-9]*" || echo "0")
+          DELETIONS=$(echo "$PLAN_OUTPUT" | grep -o "[0-9]* to destroy" | grep -o "[0-9]*" || echo "0")
+
+          # Get plan status
+          PLAN_STATUS="${{ steps.plan.outcome }}"
+
+          # Truncate output if too long (GitHub comment limit is ~65K characters)
+          TRUNCATED_OUTPUT=$(echo "$PLAN_OUTPUT" | head -c 30000)
+          if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
+            TRUNCATED_OUTPUT="$TRUNCATED_OUTPUT\n\n... (output truncated, see workflow logs for full details)"
+          fi
+
+          # Escape special characters for GitHub
+          ESCAPED_OUTPUT=$(echo "$TRUNCATED_OUTPUT" | sed 's/`/\\`/g' | sed 's/\$/\\$/g')
+
+          echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
+          echo "changes=$CHANGES" >> $GITHUB_OUTPUT
+          echo "deletions=$DELETIONS" >> $GITHUB_OUTPUT
+          echo "status=$PLAN_STATUS" >> $GITHUB_OUTPUT
+          echo "output<<EOF" >> $GITHUB_OUTPUT
+          echo "$ESCAPED_OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Find existing comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: 'terragrunt-plan-${{ matrix.env_name }}-${{ inputs.project_name }}'
+
+      - name: Create or update plan comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            <!-- terragrunt-plan-${{ matrix.env_name }}-${{ inputs.project_name }} -->
+            ## 📋 Terragrunt Plan Results
+
+            **Project**: ${{ inputs.project_name }}
+            **Environment**: `${{ matrix.env_name }}`
+            **Directory**: `${{ steps.load-config.outputs.working-directory }}`
+            **IAM Role (Plan)**: ${{ steps.load-config.outputs.plan-iam-role }}
+            **AWS Region**: ${{ steps.load-config.outputs.aws-region }}
+            **Status**: ${{ steps.parse-plan.outputs.status == 'success' && '✅ Success' || '❌ Failed' }}
+
+            ### 📊 Plan Summary
+
+            | Action | Count |
+            |--------|-------|
+            | 🟢 Add | ${{ steps.parse-plan.outputs.additions }} |
+            | 🟡 Change | ${{ steps.parse-plan.outputs.changes }} |
+            | 🔴 Destroy | ${{ steps.parse-plan.outputs.deletions }} |
+
+            <details>
+            <summary>📝 Plan Output</summary>
+
+            ```hcl
+            ${{ steps.parse-plan.outputs.output }}
+            ```
+
+            </details>
+
+            <details>
+            <summary>📁 Environment Structure</summary>
+
+            ```
+            ${{ matrix.service_dir }}/terragrunt/
+            ├── root.hcl
+            ├── Makefile
+            ├── modules/
+            └── envs/
+                └── ${{ matrix.env_name }}/    ← This environment
+            ```
+            </details>
+
+            Please review the plan output above before merging. View full logs: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            *Last updated: ${{ steps.load-config.outputs.environment-name }} at ${{ github.event.pull_request.updated_at }}*
+          edit-mode: replace
