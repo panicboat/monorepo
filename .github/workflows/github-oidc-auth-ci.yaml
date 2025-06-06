@@ -1,4 +1,4 @@
-name: 'Example Service - CI/CD'
+name: 'GitHub OIDC Auth - CI/CD'
 
 on:
   pull_request:
@@ -9,18 +9,15 @@ on:
     paths:
       - 'github-oidc-auth/**'
 
-env:
-  SERVICE_NAME: github-oidc-auth
-
 jobs:
   terragrunt-plan:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/reusable-terragrunt-plan.yaml
     with:
-      project_name: ${{ env.SERVICE_NAME }}
+      project_name: github-oidc-auth
 
   terragrunt-apply:
     if: github.event_name == 'push'
     uses: ./.github/workflows/reusable-terragrunt-apply.yaml
     with:
-      project_name: ${{ env.SERVICE_NAME }}
+      project_name: github-oidc-auth
