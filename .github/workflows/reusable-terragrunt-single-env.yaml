@@ -98,43 +98,65 @@ jobs:
           terraform_version: ${{ inputs.terraform_version }}
 
       - name: Setup Terragrunt
-        run: |
-          wget -O terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/v${{ inputs.terragrunt_version }}/terragrunt_linux_amd64
-          chmod +x terragrunt
-          sudo mv terragrunt /usr/local/bin/
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          terragrunt_version: ${{ inputs.terragrunt_version }}
 
       - name: Terragrunt Plan
         if: inputs.action_type == 'plan'
         id: plan
-        working-directory: ${{ steps.load-config.outputs.working-directory }}
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          terragrunt_version: ${{ inputs.terragrunt_version }}
+          terragrunt_command: 'plan'
+          terragrunt_args: '-no-color -detailed-exitcode'
+          terragrunt_working_dir: ${{ steps.load-config.outputs.working-directory }}
+        continue-on-error: true
+        env:
+          TF_INPUT: false
+          TERRAGRUNT_IAM_ROLE: ${{ steps.load-config.outputs.plan-iam-role }}
+          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
+
+      - name: Terragrunt Apply
+        if: inputs.action_type == 'apply'
+        id: apply
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          terragrunt_version: ${{ inputs.terragrunt_version }}
+          terragrunt_command: 'apply'
+          terragrunt_args: '-auto-approve -no-color'
+          terragrunt_working_dir: ${{ steps.load-config.outputs.working-directory }}
+        continue-on-error: true
+        env:
+          TF_INPUT: false
+          TERRAGRUNT_IAM_ROLE: ${{ steps.load-config.outputs.apply-iam-role }}
+          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
+
+      - name: Parse Plan Results
+        if: inputs.action_type == 'plan' && always()
+        id: parse-plan
         run: |
-          echo "Running terragrunt init..."
-          terragrunt init -no-color
-
-          echo "Running terragrunt plan..."
-          terragrunt plan -no-color -detailed-exitcode > plan_output.txt 2>&1
-          PLAN_EXIT_CODE=$?
-
-          echo "Plan exit code: $PLAN_EXIT_CODE"
-          echo "Plan output:"
-          cat plan_output.txt
-
           # Planの結果を解析
-          if [ $PLAN_EXIT_CODE -eq 0 ]; then
-            PLAN_STATUS="✅ No changes"
-          elif [ $PLAN_EXIT_CODE -eq 2 ]; then
-            PLAN_STATUS="✅ Changes detected"
+          if [ "${{ steps.plan.outcome }}" == "success" ]; then
+            if [ "${{ steps.plan.outputs.exitcode }}" == "0" ]; then
+              PLAN_STATUS="✅ No changes"
+            elif [ "${{ steps.plan.outputs.exitcode }}" == "2" ]; then
+              PLAN_STATUS="✅ Changes detected"
+            else
+              PLAN_STATUS="✅ Success"
+            fi
           else
             PLAN_STATUS="❌ Failed"
           fi
 
-          # 変更数を抽出
-          ADD_COUNT=$(grep -c "will be created" plan_output.txt || echo "0")
-          CHANGE_COUNT=$(grep -c "will be updated" plan_output.txt || echo "0")
-          DESTROY_COUNT=$(grep -c "will be destroyed" plan_output.txt || echo "0")
+          # Terragrunt Actionの出力から変更数を抽出
+          PLAN_OUTPUT="${{ steps.plan.outputs.stdout }}"
+
+          ADD_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be created" || echo "0")
+          CHANGE_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be updated" || echo "0")
+          DESTROY_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be destroyed" || echo "0")
 
           # 出力を制限（30,000文字まで）
-          PLAN_OUTPUT=$(cat plan_output.txt)
           if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
             PLAN_OUTPUT="${PLAN_OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
           fi
@@ -147,43 +169,25 @@ jobs:
           echo "$PLAN_OUTPUT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-          exit $PLAN_EXIT_CODE
-        continue-on-error: true
-        env:
-          TF_INPUT: false
-          TERRAGRUNT_IAM_ROLE: ${{ steps.load-config.outputs.plan-iam-role }}
-          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
-
-      - name: Terragrunt Apply
-        if: inputs.action_type == 'apply'
-        id: apply
-        working-directory: ${{ steps.load-config.outputs.working-directory }}
+      - name: Parse Apply Results
+        if: inputs.action_type == 'apply' && always()
+        id: parse-apply
         run: |
-          echo "Running terragrunt init..."
-          terragrunt init -no-color
-
-          echo "Running terragrunt apply..."
-          terragrunt apply -auto-approve -no-color > apply_output.txt 2>&1
-          APPLY_EXIT_CODE=$?
-
-          echo "Apply exit code: $APPLY_EXIT_CODE"
-          echo "Apply output:"
-          cat apply_output.txt
-
           # Applyの結果を解析
-          if [ $APPLY_EXIT_CODE -eq 0 ]; then
+          if [ "${{ steps.apply.outcome }}" == "success" ]; then
             APPLY_STATUS="✅ Success"
           else
             APPLY_STATUS="❌ Failed"
           fi
 
-          # 変更数を抽出
-          ADDED_COUNT=$(grep -c "Creation complete" apply_output.txt || echo "0")
-          CHANGED_COUNT=$(grep -c "Modifications complete" apply_output.txt || echo "0")
-          DESTROYED_COUNT=$(grep -c "Destruction complete" apply_output.txt || echo "0")
+          # Terragrunt Actionの出力から変更数を抽出
+          APPLY_OUTPUT="${{ steps.apply.outputs.stdout }}"
+
+          ADDED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Creation complete" || echo "0")
+          CHANGED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Modifications complete" || echo "0")
+          DESTROYED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Destruction complete" || echo "0")
 
           # 出力を制限（20,000文字まで）
-          APPLY_OUTPUT=$(cat apply_output.txt)
           if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
             APPLY_OUTPUT="${APPLY_OUTPUT:0:20000}... (output truncated, see workflow logs for full details)"
           fi
@@ -195,13 +199,6 @@ jobs:
           echo "apply-output<<EOF" >> $GITHUB_OUTPUT
           echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-
-          exit $APPLY_EXIT_CODE
-        continue-on-error: true
-        env:
-          TF_INPUT: false
-          TERRAGRUNT_IAM_ROLE: ${{ steps.load-config.outputs.apply-iam-role }}
-          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
 
       - name: Find existing comment
         if: github.event_name == 'pull_request'
@@ -228,21 +225,21 @@ jobs:
             **Directory**: `${{ steps.load-config.outputs.working-directory }}`
             **IAM Role (Plan)**: ${{ steps.load-config.outputs.plan-iam-role }}
             **AWS Region**: ${{ steps.load-config.outputs.aws-region }}
-            **Status**: ${{ steps.plan.outputs.plan-status }}
+            **Status**: ${{ steps.parse-plan.outputs.plan-status }}
 
             ### 📊 Plan Summary
 
             | Action    | Count |
             | --------- | ----- |
-            | 🟢 Add     | ${{ steps.plan.outputs.add-count }}     |
-            | 🟡 Change  | ${{ steps.plan.outputs.change-count }}     |
-            | 🔴 Destroy | ${{ steps.plan.outputs.destroy-count }}     |
+            | 🟢 Add     | ${{ steps.parse-plan.outputs.add-count }}     |
+            | 🟡 Change  | ${{ steps.parse-plan.outputs.change-count }}     |
+            | 🔴 Destroy | ${{ steps.parse-plan.outputs.destroy-count }}     |
 
             <details>
             <summary>📝 Plan Output</summary>
 
             ```
-            ${{ steps.plan.outputs.plan-output }}
+            ${{ steps.parse-plan.outputs.plan-output }}
             ```
 
             </details>
@@ -263,21 +260,21 @@ jobs:
 
             **Project**: ${{ inputs.project_name }}
             **Environment**: `${{ inputs.environment }}`
-            **Status**: ${{ steps.apply.outputs.apply-status }}
+            **Status**: ${{ steps.parse-apply.outputs.apply-status }}
 
             ### 📊 Apply Summary
 
             | Action      | Count |
             | ----------- | ----- |
-            | 🟢 Added     | ${{ steps.apply.outputs.added-count }}     |
-            | 🟡 Changed   | ${{ steps.apply.outputs.changed-count }}     |
-            | 🔴 Destroyed | ${{ steps.apply.outputs.destroyed-count }}     |
+            | 🟢 Added     | ${{ steps.parse-apply.outputs.added-count }}     |
+            | 🟡 Changed   | ${{ steps.parse-apply.outputs.changed-count }}     |
+            | 🔴 Destroyed | ${{ steps.parse-apply.outputs.destroyed-count }}     |
 
             <details>
             <summary>📝 Apply Output</summary>
 
             ```
-            ${{ steps.apply.outputs.apply-output }}
+            ${{ steps.parse-apply.outputs.apply-output }}
             ```
 
             </details>
