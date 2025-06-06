@@ -30,6 +30,10 @@ jobs:
   terragrunt-execution:
     name: '${{ inputs.action_type }} - ${{ inputs.environment }}'
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # OIDC認証に必要
+      contents: read    # リポジトリのコードを読み取るために必要
+      pull-requests: write  # PRコメントの作成・更新に必要
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -90,6 +94,7 @@ jobs:
           role-to-assume: ${{ inputs.action_type == 'plan' && steps.load-config.outputs.plan-iam-role || steps.load-config.outputs.apply-iam-role }}
           aws-region: ${{ steps.load-config.outputs.aws-region }}
           role-session-name: GitHubActions-Terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}
+          audience: sts.amazonaws.com
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
