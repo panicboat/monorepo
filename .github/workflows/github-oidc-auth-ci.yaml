@@ -2,10 +2,12 @@ name: 'GitHub OIDC Auth - CI/CD'
 
 on:
   pull_request:
+    branches: [develop, staging/*, production/*]
     paths:
       - 'github-oidc-auth/**'
       - '.github/workflows/github-oidc-auth-*.yaml'
   push:
+    branches: [develop, staging/*, production/*]
     paths:
       - 'github-oidc-auth/**'
 
@@ -20,10 +22,10 @@ jobs:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/reusable-terragrunt-plan.yaml
     with:
-      project_name: github-oidc-auth
+      project_name: 'github-oidc-auth'
 
   terragrunt-apply:
     if: github.event_name == 'push'
     uses: ./.github/workflows/reusable-terragrunt-apply.yaml
     with:
-      project_name: github-oidc-auth
+      project_name: 'github-oidc-auth'
