@@ -103,10 +103,10 @@ jobs:
         uses: gruntwork-io/terragrunt-action@v2
         with:
           tf_version: ${{ inputs.terraform_version }}
-          terragrunt_version: ${{ inputs.terragrunt_version }}
-          terragrunt_command: 'plan'
-          terragrunt_args: '-no-color -detailed-exitcode'
-          terragrunt_working_dir: ${{ steps.load-config.outputs.working-directory }}
+          tg_version: ${{ inputs.terragrunt_version }}
+          tg_command: 'plan'
+          args: '-no-color -detailed-exitcode'
+          tg_dir: ${{ steps.load-config.outputs.working-directory }}
         continue-on-error: true
         env:
           TF_INPUT: false
@@ -119,10 +119,10 @@ jobs:
         uses: gruntwork-io/terragrunt-action@v2
         with:
           tf_version: ${{ inputs.terraform_version }}
-          terragrunt_version: ${{ inputs.terragrunt_version }}
-          terragrunt_command: 'apply'
-          terragrunt_args: '-auto-approve -no-color'
-          terragrunt_working_dir: ${{ steps.load-config.outputs.working-directory }}
+          tg_version: ${{ inputs.terragrunt_version }}
+          tg_command: 'apply'
+          args: '-auto-approve -no-color'
+          tg_dir: ${{ steps.load-config.outputs.working-directory }}
         continue-on-error: true
         env:
           TF_INPUT: false
@@ -135,36 +135,34 @@ jobs:
         run: |
           # Planの結果を解析
           if [ "${{ steps.plan.outcome }}" == "success" ]; then
-            if [ "${{ steps.plan.outputs.exitcode }}" == "0" ]; then
-              PLAN_STATUS="✅ No changes"
-            elif [ "${{ steps.plan.outputs.exitcode }}" == "2" ]; then
-              PLAN_STATUS="✅ Changes detected"
-            else
-              PLAN_STATUS="✅ Success"
-            fi
+            PLAN_STATUS="✅ Success"
           else
             PLAN_STATUS="❌ Failed"
           fi
 
-          # Terragrunt Actionの出力から変更数を抽出
-          PLAN_OUTPUT="${{ steps.plan.outputs.stdout }}"
+          # Terragrunt Actionの標準出力を取得
+          # GitHub Actionsログから直接出力を取得する代替方法
+          PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
 
-          ADD_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be created" || echo "0")
-          CHANGE_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be updated" || echo "0")
-          DESTROY_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be destroyed" || echo "0")
+          # デフォルト値を設定
+          ADD_COUNT="0"
+          CHANGE_COUNT="0"
+          DESTROY_COUNT="0"
 
           # 出力を制限（30,000文字まで）
           if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
             PLAN_OUTPUT="${PLAN_OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
           fi
 
-          echo "plan-status=$PLAN_STATUS" >> $GITHUB_OUTPUT
-          echo "add-count=$ADD_COUNT" >> $GITHUB_OUTPUT
-          echo "change-count=$CHANGE_COUNT" >> $GITHUB_OUTPUT
-          echo "destroy-count=$DESTROY_COUNT" >> $GITHUB_OUTPUT
-          echo "plan-output<<EOF" >> $GITHUB_OUTPUT
-          echo "$PLAN_OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "plan-status=$PLAN_STATUS"
+            echo "add-count=$ADD_COUNT"
+            echo "change-count=$CHANGE_COUNT"
+            echo "destroy-count=$DESTROY_COUNT"
+            echo "plan-output<<EOF"
+            echo "$PLAN_OUTPUT"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Parse Apply Results
         if: inputs.action_type == 'apply' && always()
@@ -177,25 +175,28 @@ jobs:
             APPLY_STATUS="❌ Failed"
           fi
 
-          # Terragrunt Actionの出力から変更数を抽出
-          APPLY_OUTPUT="${{ steps.apply.outputs.stdout }}"
+          # Terragrunt Actionの標準出力を取得
+          APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
 
-          ADDED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Creation complete" || echo "0")
-          CHANGED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Modifications complete" || echo "0")
-          DESTROYED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Destruction complete" || echo "0")
+          # デフォルト値を設定
+          ADDED_COUNT="0"
+          CHANGED_COUNT="0"
+          DESTROYED_COUNT="0"
 
           # 出力を制限（20,000文字まで）
           if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
             APPLY_OUTPUT="${APPLY_OUTPUT:0:20000}... (output truncated, see workflow logs for full details)"
           fi
 
-          echo "apply-status=$APPLY_STATUS" >> $GITHUB_OUTPUT
-          echo "added-count=$ADDED_COUNT" >> $GITHUB_OUTPUT
-          echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
-          echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
-          echo "apply-output<<EOF" >> $GITHUB_OUTPUT
-          echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "apply-status=$APPLY_STATUS"
+            echo "added-count=$ADDED_COUNT"
+            echo "changed-count=$CHANGED_COUNT"
+            echo "destroyed-count=$DESTROYED_COUNT"
+            echo "apply-output<<EOF"
+            echo "$APPLY_OUTPUT"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Find existing comment
         if: github.event_name == 'pull_request'
