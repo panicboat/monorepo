@@ -96,7 +96,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ inputs.terraform_version }}
-          terraform_wrapper: false  # 重要: wrapperを無効にして生の出力を取得
+          terraform_wrapper: false
 
       - name: Setup Terragrunt Binary
         run: |
@@ -136,35 +136,97 @@ jobs:
           TF_INPUT: false
           AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
 
-      - name: Capture Plan Output
+      - name: Parse Plan Results
         if: inputs.action_type == 'plan' && always()
-        id: capture-plan
-        working-directory: ${{ steps.load-config.outputs.working-directory }}
+        id: parse-plan
         run: |
-          # Plan出力を再実行してキャプチャ（出力のみを取得）
-          terragrunt plan -no-color > plan_output.txt 2>&1 || true
-
-          # ファイル内容を確認
-          echo "=== Plan Output ==="
-          cat plan_output.txt
-          echo "=== End Plan Output ==="
-
-          # Plan出力をGitHub Outputに保存
-          PLAN_OUTPUT=$(cat plan_output.txt)
-
-          # 出力を制限（30,000文字まで）
-          if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
-            PLAN_OUTPUT="${PLAN_OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
+          # Planの結果を解析
+          if [ "${{ steps.plan.outcome }}" == "success" ]; then
+            if [ "${{ steps.plan.outputs.tg_action_exit_code }}" == "0" ]; then
+              PLAN_STATUS="✅ No changes"
+            elif [ "${{ steps.plan.outputs.tg_action_exit_code }}" == "2" ]; then
+              PLAN_STATUS="✅ Changes detected"
+            else
+              PLAN_STATUS="✅ Success"
+            fi
+          else
+            PLAN_STATUS="❌ Failed"
           fi
+
+          # GitHub Actionsの出力をURLデコード
+          cat > plan_output_encoded.txt << 'PLAN_OUTPUT_EOF'
+          ${{ steps.plan.outputs.tg_action_output }}
+          PLAN_OUTPUT_EOF
+
+          python3 -c "
+          import urllib.parse
+          with open('plan_output_encoded.txt', 'r') as f:
+              encoded_content = f.read().strip()
+          decoded_content = urllib.parse.unquote(encoded_content)
+          with open('plan_output_decoded.txt', 'w') as f:
+              f.write(decoded_content)
+          "
+
+          # 出力ソースを決定
+          if [ -f "plan_output_decoded.txt" ] && [ -s "plan_output_decoded.txt" ]; then
+            PLAN_OUTPUT=$(cat plan_output_decoded.txt)
+          elif [ "${{ steps.plan-fallback.outputs.plan-output != '' }}" == "true" ]; then
+            PLAN_OUTPUT="${{ steps.plan-fallback.outputs.plan-output }}"
+          else
+            PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
+          fi
+
+          # 変更数を抽出
+          if [ "$PLAN_OUTPUT" != "Plan execution completed. See workflow logs for detailed output." ]; then
+            ADD_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be created" 2>/dev/null || echo "0")
+            CHANGE_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be updated" 2>/dev/null || echo "0")
+            DESTROY_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be destroyed" 2>/dev/null || echo "0")
+
+            # Terraform標準出力の "Plan:" 行からも抽出
+            if [ "$ADD_COUNT" == "0" ] && [ "$CHANGE_COUNT" == "0" ] && [ "$DESTROY_COUNT" == "0" ]; then
+              PLAN_LINE=$(echo "$PLAN_OUTPUT" | grep "Plan:" | tail -1)
+              if [ -n "$PLAN_LINE" ]; then
+                ADD_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*Plan: \([0-9]*\) to add.*/\1/p' 2>/dev/null | head -1 | tr -d '\n' || echo "0")
+                CHANGE_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to change.*/\1/p' 2>/dev/null | head -1 | tr -d '\n' || echo "0")
+                DESTROY_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to destroy.*/\1/p' 2>/dev/null | head -1 | tr -d '\n' || echo "0")
+              fi
+            fi
+
+            # 数値のみを保証
+            ADD_COUNT=$(echo "$ADD_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+            CHANGE_COUNT=$(echo "$CHANGE_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+            DESTROY_COUNT=$(echo "$DESTROY_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+
+            ADD_COUNT=${ADD_COUNT:-0}
+            CHANGE_COUNT=${CHANGE_COUNT:-0}
+            DESTROY_COUNT=${DESTROY_COUNT:-0}
+
+            # 出力を制限（30,000文字まで）
+            if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
+              PLAN_OUTPUT="${PLAN_OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
+            fi
+          else
+            ADD_COUNT="0"
+            CHANGE_COUNT="0"
+            DESTROY_COUNT="0"
+          fi
+
+          echo "plan-status=$PLAN_STATUS" >> $GITHUB_OUTPUT
+          echo "add-count=$ADD_COUNT" >> $GITHUB_OUTPUT
+          echo "change-count=$CHANGE_COUNT" >> $GITHUB_OUTPUT
+          echo "destroy-count=$DESTROY_COUNT" >> $GITHUB_OUTPUT
 
           {
             echo "plan-output<<EOF"
-            echo "$PLAN_OUTPUT"
+            if [ -f "plan_output_decoded.txt" ]; then
+              cat plan_output_decoded.txt
+            else
+              echo "$PLAN_OUTPUT"
+            fi
             echo "EOF"
           } >> $GITHUB_OUTPUT
-        env:
-          TF_INPUT: false
-          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
+
+          rm -f plan_output_encoded.txt plan_output_decoded.txt
 
       - name: Terragrunt Apply
         if: inputs.action_type == 'apply'
@@ -181,123 +243,6 @@ jobs:
           TF_INPUT: false
           AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
 
-      - name: Parse Plan Results
-        if: inputs.action_type == 'plan' && always()
-        id: parse-plan
-        run: |
-          # デバッグ: 実際の出力を確認
-          echo "=== Debug: tg_action_output ==="
-          echo "Exit code: ${{ steps.plan.outputs.tg_action_exit_code }}"
-          echo "Output exists: ${{ steps.plan.outputs.tg_action_output != '' }}"
-
-          # GitHub Actionsの出力を一時ファイルに保存してURLデコード
-          cat > plan_output_encoded.txt << 'PLAN_OUTPUT_EOF'
-          ${{ steps.plan.outputs.tg_action_output }}
-          PLAN_OUTPUT_EOF
-
-          # URLデコード（%0A -> 改行、%20 -> スペースなど）
-          python3 -c "
-          import urllib.parse
-          import sys
-
-          with open('plan_output_encoded.txt', 'r') as f:
-              encoded_content = f.read().strip()
-
-          # URLデコード
-          decoded_content = urllib.parse.unquote(encoded_content)
-
-          with open('plan_output_decoded.txt', 'w') as f:
-              f.write(decoded_content)
-
-          print(f'Decoded length: {len(decoded_content)}')
-          print('First 300 chars:')
-          print(decoded_content[:300])
-          "
-
-          echo "=== End Debug ==="
-
-          # Planの結果を解析
-          if [ "${{ steps.plan.outcome }}" == "success" ]; then
-            if [ "${{ steps.plan.outputs.tg_action_exit_code }}" == "0" ]; then
-              PLAN_STATUS="✅ No changes"
-            elif [ "${{ steps.plan.outputs.tg_action_exit_code }}" == "2" ]; then
-              PLAN_STATUS="✅ Changes detected"
-            else
-              PLAN_STATUS="✅ Success"
-            fi
-          else
-            PLAN_STATUS="❌ Failed"
-          fi
-
-          # デコードされた出力を使用
-          if [ -f "plan_output_decoded.txt" ] && [ -s "plan_output_decoded.txt" ]; then
-            PLAN_OUTPUT=$(cat plan_output_decoded.txt)
-            echo "Using decoded tg_action_output"
-          elif [ "${{ steps.plan-fallback.outputs.plan-output != '' }}" == "true" ]; then
-            PLAN_OUTPUT="${{ steps.plan-fallback.outputs.plan-output }}"
-            echo "Using fallback output"
-          else
-            PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
-            echo "Using default message"
-          fi
-
-          # 変更数を抽出
-          if [ "$PLAN_OUTPUT" != "Plan execution completed. See workflow logs for detailed output." ]; then
-            ADD_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be created" 2>/dev/null || echo "0")
-            CHANGE_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be updated" 2>/dev/null || echo "0")
-            DESTROY_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be destroyed" 2>/dev/null || echo "0")
-
-            # Terraform標準出力の "Plan:" 行からも抽出を試みる
-            if [ "$ADD_COUNT" == "0" ] && [ "$CHANGE_COUNT" == "0" ] && [ "$DESTROY_COUNT" == "0" ]; then
-              PLAN_LINE=$(echo "$PLAN_OUTPUT" | grep "Plan:" | tail -1)
-              if [ -n "$PLAN_LINE" ]; then
-                ADD_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*Plan: \([0-9]*\) to add.*/\1/p' 2>/dev/null | head -1 | tr -d '\n' || echo "0")
-                CHANGE_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to change.*/\1/p' 2>/dev/null | head -1 | tr -d '\n' || echo "0")
-                DESTROY_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to destroy.*/\1/p' 2>/dev/null | head -1 | tr -d '\n' || echo "0")
-              fi
-            fi
-
-            # 数値のみを保証
-            ADD_COUNT=$(echo "$ADD_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
-            CHANGE_COUNT=$(echo "$CHANGE_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
-            DESTROY_COUNT=$(echo "$DESTROY_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
-
-            # 空の場合は0にする
-            ADD_COUNT=${ADD_COUNT:-0}
-            CHANGE_COUNT=${CHANGE_COUNT:-0}
-            DESTROY_COUNT=${DESTROY_COUNT:-0}
-
-            echo "Extracted counts: ADD=$ADD_COUNT, CHANGE=$CHANGE_COUNT, DESTROY=$DESTROY_COUNT"
-
-            # 出力を制限（30,000文字まで）
-            if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
-              PLAN_OUTPUT="${PLAN_OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
-            fi
-          else
-            ADD_COUNT="0"
-            CHANGE_COUNT="0"
-            DESTROY_COUNT="0"
-          fi
-
-          # クリーンアップ
-          rm -f plan_output_encoded.txt plan_output_decoded.txt
-
-          echo "plan-status=$PLAN_STATUS" >> $GITHUB_OUTPUT
-          echo "add-count=$ADD_COUNT" >> $GITHUB_OUTPUT
-          echo "change-count=$CHANGE_COUNT" >> $GITHUB_OUTPUT
-          echo "destroy-count=$DESTROY_COUNT" >> $GITHUB_OUTPUT
-
-          # 複数行出力を安全に処理
-          {
-            echo "plan-output<<EOF"
-            if [ -f "plan_output_decoded.txt" ]; then
-              cat plan_output_decoded.txt
-            else
-              echo "$PLAN_OUTPUT"
-            fi
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
-
       - name: Parse Apply Results
         if: inputs.action_type == 'apply' && always()
         id: parse-apply
@@ -309,13 +254,41 @@ jobs:
             APPLY_STATUS="❌ Failed"
           fi
 
-          # Terragrunt Actionの出力から変更数を抽出
-          APPLY_OUTPUT="${{ steps.apply.outputs.tg_action_output }}"
+          # GitHub Actionsの出力をURLデコード
+          cat > apply_output_encoded.txt << 'APPLY_OUTPUT_EOF'
+          ${{ steps.apply.outputs.tg_action_output }}
+          APPLY_OUTPUT_EOF
 
-          if [ -n "$APPLY_OUTPUT" ]; then
-            ADDED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Creation complete" || echo "0")
-            CHANGED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Modifications complete" || echo "0")
-            DESTROYED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Destruction complete" || echo "0")
+          python3 -c "
+          import urllib.parse
+          with open('apply_output_encoded.txt', 'r') as f:
+              encoded_content = f.read().strip()
+          decoded_content = urllib.parse.unquote(encoded_content)
+          with open('apply_output_decoded.txt', 'w') as f:
+              f.write(decoded_content)
+          "
+
+          # 出力ソースを決定
+          if [ -f "apply_output_decoded.txt" ] && [ -s "apply_output_decoded.txt" ]; then
+            APPLY_OUTPUT=$(cat apply_output_decoded.txt)
+          else
+            APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
+          fi
+
+          # 変更数を抽出
+          if [ "$APPLY_OUTPUT" != "Apply execution completed. See workflow logs for detailed output." ]; then
+            ADDED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Creation complete" 2>/dev/null || echo "0")
+            CHANGED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Modifications complete" 2>/dev/null || echo "0")
+            DESTROYED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Destruction complete" 2>/dev/null || echo "0")
+
+            # 数値のみを保証
+            ADDED_COUNT=$(echo "$ADDED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+            CHANGED_COUNT=$(echo "$CHANGED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+            DESTROYED_COUNT=$(echo "$DESTROYED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+
+            ADDED_COUNT=${ADDED_COUNT:-0}
+            CHANGED_COUNT=${CHANGED_COUNT:-0}
+            DESTROYED_COUNT=${DESTROYED_COUNT:-0}
 
             # 出力を制限（20,000文字まで）
             if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
@@ -325,16 +298,24 @@ jobs:
             ADDED_COUNT="0"
             CHANGED_COUNT="0"
             DESTROYED_COUNT="0"
-            APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
           fi
 
           echo "apply-status=$APPLY_STATUS" >> $GITHUB_OUTPUT
           echo "added-count=$ADDED_COUNT" >> $GITHUB_OUTPUT
           echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
           echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
-          echo "apply-output<<EOF" >> $GITHUB_OUTPUT
-          echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+
+          {
+            echo "apply-output<<EOF"
+            if [ -f "apply_output_decoded.txt" ]; then
+              cat apply_output_decoded.txt
+            else
+              echo "$APPLY_OUTPUT"
+            fi
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+          rm -f apply_output_encoded.txt apply_output_decoded.txt
 
       - name: Find existing comment
         if: github.event_name == 'pull_request'
@@ -374,7 +355,7 @@ jobs:
             <details>
             <summary>📝 Plan Output</summary>
 
-            ```hcl
+            ```
             ${{ steps.parse-plan.outputs.plan-output }}
             ```
 
@@ -409,7 +390,7 @@ jobs:
             <details>
             <summary>📝 Apply Output</summary>
 
-            ```hcl
+            ```
             ${{ steps.parse-apply.outputs.apply-output }}
             ```
 

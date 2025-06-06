@@ -1,0 +1,100 @@
+name: Reusable Notification
+
+on:
+  workflow_call:
+    inputs:
+      notification_type:
+        description: 'Type of notification (success, failure, warning, info)'
+        required: true
+        type: string
+      title:
+        description: 'Title of the notification'
+        required: true
+        type: string
+      message:
+        description: 'Message content'
+        required: true
+        type: string
+      comment_id_prefix:
+        description: 'Unique prefix for comment identification'
+        required: true
+        type: string
+      show_workflow_details:
+        description: 'Show workflow run details'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set notification emoji and color
+        id: notification_style
+        run: |
+          case "${{ inputs.notification_type }}" in
+            "success")
+              echo "emoji=✅" >> $GITHUB_OUTPUT
+              echo "color=28a745" >> $GITHUB_OUTPUT
+              ;;
+            "failure")
+              echo "emoji=❌" >> $GITHUB_OUTPUT
+              echo "color=d73a49" >> $GITHUB_OUTPUT
+              ;;
+            "warning")
+              echo "emoji=⚠️" >> $GITHUB_OUTPUT
+              echo "color=ffc107" >> $GITHUB_OUTPUT
+              ;;
+            "info")
+              echo "emoji=ℹ️" >> $GITHUB_OUTPUT
+              echo "color=0366d6" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "emoji=📝" >> $GITHUB_OUTPUT
+              echo "color=6f42c1" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Generate comment body
+        id: comment_body
+        run: |
+          WORKFLOW_DETAILS=""
+          if [ "${{ inputs.show_workflow_details }}" = "true" ]; then
+            WORKFLOW_DETAILS="
+
+          **Workflow Details:**
+          - 🔗 [Workflow Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - 📋 Workflow: \`${{ github.workflow }}\`
+          - 🌿 Branch: \`${{ github.ref_name }}\`
+          - 📝 Commit: \`${{ github.sha }}\`
+          - 👤 Triggered by: @${{ github.actor }}"
+          fi
+
+          COMMENT_BODY="<!-- notification-comment-${{ inputs.comment_id_prefix }} -->
+          ## ${{ steps.notification_style.outputs.emoji }} ${{ inputs.title }}
+
+          ${{ inputs.message }}$WORKFLOW_DETAILS
+
+          ---
+          *Updated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')*"
+
+          # GitHub Actions の複数行出力を適切に処理
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMENT_BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: find_comment
+        with:
+          issue-number: ${{ github.event.pull_request.number || github.event.issue.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- notification-comment-${{ inputs.comment_id_prefix }} -->'
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number || github.event.issue.number }}
+          body: ${{ steps.comment_body.outputs.body }}
+          edit-mode: replace
