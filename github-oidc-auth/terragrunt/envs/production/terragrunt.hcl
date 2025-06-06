@@ -7,7 +7,7 @@ include "root" {
 
 # Include environment-specific configuration
 include "env" {
-  path   = find_in_parent_folders("./envs/production/env.hcl")
+  path   = "env.hcl"
   expose = true
 }
 
