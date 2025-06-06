@@ -9,6 +9,12 @@ on:
     paths:
       - 'github-oidc-auth/**'
 
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   terragrunt-plan:
     if: github.event_name == 'pull_request'
