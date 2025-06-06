@@ -89,16 +89,102 @@ jobs:
           tf_version: ${{ inputs.terraform_version }}
           tg_version: ${{ inputs.terragrunt_version }}
           tg_dir: ${{ steps.load-config.outputs.working-directory }}
-          tg_command: 'plan --terragrunt-non-interactive'
+          tg_command: 'plan --terragrunt-non-interactive --tf-forward-stdout'
         env:
           TF_INPUT: false
           AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
         continue-on-error: true
 
+      - name: Plan terragrunt for environment (Alternative)
+        id: plan-native
+        if: steps.plan.outcome != 'success'
+        run: |
+          # Install Terragrunt if action failed
+          TG_VERSION="${{ inputs.terragrunt_version }}"
+          TF_VERSION="${{ inputs.terraform_version }}"
+
+          # Install Terraform
+          wget https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
+          unzip terraform_${TF_VERSION}_linux_amd64.zip
+          sudo mv terraform /usr/local/bin/
+
+          # Install Terragrunt
+          wget https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+
+          # Run plan
+          cd ${{ steps.load-config.outputs.working-directory }}
+          terragrunt plan --terragrunt-non-interactive 2>&1 | tee plan_output.txt
+
+          # Save output for parsing
+          echo "PLAN_OUTPUT_FILE=plan_output.txt" >> $GITHUB_ENV
+        env:
+          TF_INPUT: false
+          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
+        continue-on-error: true
+
+      - name: Parse plan output (Alternative)
+        id: parse-plan-alt
+        if: steps.plan.outcome != 'success'
+        run: |
+          if [ -f "$PLAN_OUTPUT_FILE" ]; then
+            PLAN_OUTPUT=$(cat "$PLAN_OUTPUT_FILE")
+            echo "Using native command output"
+          else
+            PLAN_OUTPUT="No plan output available"
+          fi
+
+          # Rest of parsing logic same as above
+          echo "=== Plan Output Debug (Native) ==="
+          echo "Plan output length: ${#PLAN_OUTPUT}"
+          echo "First 500 chars:"
+          echo "${PLAN_OUTPUT:0:500}"
+
+          # ... (parsing logic continues)
+        run: |
+          echo "=== Debugging Plan Outputs ==="
+          echo "Plan outcome: ${{ steps.plan.outcome }}"
+          echo "Plan outputs keys:"
+          echo "${{ toJson(steps.plan.outputs) }}"
+          echo ""
+          echo "=== stdout length: ${#STDOUT} ==="
+          STDOUT="${{ steps.plan.outputs.stdout }}"
+          echo "First 1000 chars of stdout:"
+          echo "${STDOUT:0:1000}"
+          echo ""
+          echo "=== stderr length: ${#STDERR} ==="
+          STDERR="${{ steps.plan.outputs.stderr }}"
+          echo "First 1000 chars of stderr:"
+          echo "${STDERR:0:1000}"
+
       - name: Parse plan output
         id: parse-plan
         run: |
-          PLAN_OUTPUT="${{ steps.plan.outputs.stdout }}"
+          # Try multiple sources for plan output
+          PLAN_OUTPUT_STDOUT="${{ steps.plan.outputs.stdout }}"
+          PLAN_OUTPUT_STDERR="${{ steps.plan.outputs.stderr }}"
+          PLAN_OUTPUT_ACTION="${{ steps.plan.outputs.tg_action_output }}"
+
+          # Use the most appropriate output source
+          if [ ! -z "$PLAN_OUTPUT_ACTION" ]; then
+            PLAN_OUTPUT="$PLAN_OUTPUT_ACTION"
+            echo "Using tg_action_output for plan output"
+          elif [ ! -z "$PLAN_OUTPUT_STDOUT" ]; then
+            PLAN_OUTPUT="$PLAN_OUTPUT_STDOUT"
+            echo "Using stdout for plan output"
+          elif [ ! -z "$PLAN_OUTPUT_STDERR" ]; then
+            PLAN_OUTPUT="$PLAN_OUTPUT_STDERR"
+            echo "Using stderr for plan output"
+          else
+            PLAN_OUTPUT="No plan output available"
+            echo "No plan output found in any source"
+          fi
+
+          echo "=== Plan Output Debug ==="
+          echo "Plan output length: ${#PLAN_OUTPUT}"
+          echo "First 500 chars:"
+          echo "${PLAN_OUTPUT:0:500}"
 
           # Count changes - improved regex patterns
           if echo "$PLAN_OUTPUT" | grep -q "Plan:"; then
