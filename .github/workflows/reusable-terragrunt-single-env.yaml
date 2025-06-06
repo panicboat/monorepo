@@ -371,15 +371,15 @@ jobs:
           echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
           echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
 
-          {
-            echo "apply-output<<APPLY_OUTPUT_FINAL_END"
-            if [ -f "apply_output_decoded.txt" ]; then
-              cat apply_output_decoded.txt
-            else
-              echo "$APPLY_OUTPUT"
-            fi
-            echo "APPLY_OUTPUT_FINAL_END"
-          } >> $GITHUB_OUTPUT
+          # 一意な区切り文字を生成
+          DELIMITER="APPLY_OUTPUT_END_$_$(date +%s%N)"
+          echo "apply-output<<$DELIMITER" >> $GITHUB_OUTPUT
+          if [ -f "apply_output_decoded.txt" ]; then
+            cat apply_output_decoded.txt >> $GITHUB_OUTPUT
+          else
+            echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
+          fi
+          echo "$DELIMITER" >> $GITHUB_OUTPUT
 
           rm -f apply_output_encoded.txt apply_output_decoded.txt
 
