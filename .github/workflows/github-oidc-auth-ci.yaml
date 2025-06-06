@@ -2,12 +2,12 @@ name: 'Example Service - CI/CD'
 
 on:
   pull_request:
-    branches: [develop, staging/*, production/*]
+    # branches: [develop, staging/*, production/*]
     paths:
       - 'github-oidc-auth/**'
       - '.github/workflows/github-oidc-auth-*.yaml'
   push:
-    branches: [develop, staging/*, production/*]
+    # branches: [develop, staging/*, production/*]
     paths:
       - 'github-oidc-auth/**'
 
