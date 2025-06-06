@@ -198,9 +198,10 @@ jobs:
         run: |
           # デバッグ: 実際の出力を確認
           echo "=== Debug: tg_action_output ==="
-          echo "Length: ${#{{ steps.plan.outputs.tg_action_output }}}"
+          TG_ACTION_OUTPUT="${{ steps.plan.outputs.tg_action_output }}"
+          echo "Length: ${#TG_ACTION_OUTPUT}"
           echo "Content:"
-          echo "${{ steps.plan.outputs.tg_action_output }}"
+          echo "$TG_ACTION_OUTPUT"
           echo "=== End Debug ==="
 
           # Planの結果を解析
@@ -217,7 +218,6 @@ jobs:
           fi
 
           # 出力ソースを決定（アクション出力 > フォールバック出力）
-          TG_ACTION_OUTPUT="${{ steps.plan.outputs.tg_action_output }}"
           FALLBACK_OUTPUT="${{ steps.plan-fallback.outputs.plan-output }}"
 
           echo "TG_ACTION_OUTPUT length: ${#TG_ACTION_OUTPUT}"
