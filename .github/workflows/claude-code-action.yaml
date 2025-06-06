@@ -19,9 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       (contains(github.event.comment.body, '@claude') || contains(github.event.issue.body, '@claude')) &&
-      contains(fromJSON(env.ALLOWED_USERS), github.actor)
-    env:
-      ALLOWED_USERS: '["panicboat"]'
+      contains(fromJSON(vars.CLOUD_CODE_ALLOWED_USERS), github.actor)
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
