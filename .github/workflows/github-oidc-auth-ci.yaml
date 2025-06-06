@@ -19,7 +19,7 @@ jobs:
       contents: read         # リポジトリのコードを読み取るために必要
       pull-requests: write   # PRコメントの作成・更新に必要
     with:
-      project_name: ${{ env.SERVICE_NAME }}
+      project_name: github-oidc-auth
       terraform_version: '1.5.7'
       terragrunt_version: '0.53.2'
       action_type: ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
