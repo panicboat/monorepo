@@ -1,0 +1,227 @@
+name: Reusable Terragrunt Apply (Single Environment)
+
+on:
+  workflow_call:
+    inputs:
+      project_name:
+        description: 'Project name for the service'
+        required: true
+        type: string
+      env_dir:
+        description: 'Environment directory path'
+        required: true
+        type: string
+      env_name:
+        description: 'Environment name'
+        required: true
+        type: string
+      service_dir:
+        description: 'Service directory path'
+        required: true
+        type: string
+      terraform_version:
+        description: 'Terraform version'
+        required: false
+        type: string
+        default: '1.5.7'
+      terragrunt_version:
+        description: 'Terragrunt version'
+        required: false
+        type: string
+        default: '0.53.2'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  apply-single:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.env_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load IAM role configuration
+        id: load-config
+        run: |
+          CONFIG_FILE=".github/terragrunt-actions-config.yaml"
+          ENV_NAME="${{ inputs.env_name }}"
+
+          echo "environment-name=$ENV_NAME" >> $GITHUB_OUTPUT
+
+          # Determine Apply IAM role: env.iam_role_apply → default.iam_role_apply
+          APPLY_IAM_ROLE=$(yq eval ".$ENV_NAME.iam_role_apply // .default.iam_role_apply" $CONFIG_FILE)
+          AWS_REGION=$(yq eval ".$ENV_NAME.aws_region // .default.aws_region // \"us-east-1\"" $CONFIG_FILE)
+
+          # Check for custom working directory
+          WORKING_DIR=$(yq eval ".$ENV_NAME.working_directory" $CONFIG_FILE)
+          if [ "$WORKING_DIR" != "null" ]; then
+            FINAL_WORKING_DIR="$WORKING_DIR"
+            echo "Using custom working directory from config: $WORKING_DIR"
+          else
+            FINAL_WORKING_DIR="${{ inputs.env_dir }}"
+            echo "Using detected working directory: $FINAL_WORKING_DIR"
+          fi
+
+          # Check if we're using fallback
+          SPECIFIC_APPLY_ROLE=$(yq eval ".$ENV_NAME.iam_role_apply" $CONFIG_FILE)
+          if [ "$SPECIFIC_APPLY_ROLE" = "null" ]; then
+            echo "Environment '$ENV_NAME' apply role not found, using default apply role"
+          fi
+
+          echo "apply-iam-role=$APPLY_IAM_ROLE" >> $GITHUB_OUTPUT
+          echo "aws-region=$AWS_REGION" >> $GITHUB_OUTPUT
+          echo "working-directory=$FINAL_WORKING_DIR" >> $GITHUB_OUTPUT
+          echo "Using Apply IAM role: $APPLY_IAM_ROLE for environment: $ENV_NAME"
+
+      - name: Configure AWS credentials for Apply
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.load-config.outputs.apply-iam-role }}
+          role-session-name: terragrunt-apply-${{ inputs.project_name }}-${{ inputs.env_name }}
+          aws-region: ${{ steps.load-config.outputs.aws-region }}
+
+      - name: Apply terragrunt
+        id: apply
+        uses: gruntwork-io/terragrunt-action@v2
+        with:
+          tf_version: ${{ inputs.terraform_version }}
+          tg_version: ${{ inputs.terragrunt_version }}
+          tg_dir: ${{ steps.load-config.outputs.working-directory }}
+          tg_command: 'apply --terragrunt-non-interactive'
+        env:
+          TF_INPUT: false
+          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
+        continue-on-error: true
+
+      - name: Parse apply output
+        id: parse-apply
+        run: |
+          APPLY_OUTPUT="${{ steps.apply.outputs.stdout }}"
+
+          # Count changes
+          ADDITIONS=$(echo "$APPLY_OUTPUT" | grep -o "Apply complete! Resources: [0-9]* added" | grep -o "[0-9]*" || echo "0")
+          CHANGES=$(echo "$APPLY_OUTPUT" | grep -o "[0-9]* changed" | grep -o "[0-9]*" || echo "0")
+          DELETIONS=$(echo "$APPLY_OUTPUT" | grep -o "[0-9]* destroyed" | grep -o "[0-9]*" || echo "0")
+
+          APPLY_STATUS="${{ steps.apply.outcome }}"
+
+          # Truncate output if too long
+          TRUNCATED_OUTPUT=$(echo "$APPLY_OUTPUT" | head -c 20000)
+          if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
+            TRUNCATED_OUTPUT="$TRUNCATED_OUTPUT\n\n... (output truncated, see workflow logs for full details)"
+          fi
+
+          # Escape special characters for GitHub
+          ESCAPED_OUTPUT=$(echo "$TRUNCATED_OUTPUT" | sed 's/`/\\`/g' | sed 's/\$/\\$/g')
+
+          echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
+          echo "changes=$CHANGES" >> $GITHUB_OUTPUT
+          echo "deletions=$DELETIONS" >> $GITHUB_OUTPUT
+          echo "status=$APPLY_STATUS" >> $GITHUB_OUTPUT
+          echo "output<<EOF" >> $GITHUB_OUTPUT
+          echo "$ESCAPED_OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Find PR for commit
+        id: find-pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: prs } = await github.rest.repos.listPullRequests({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              sort: 'updated',
+              direction: 'desc'
+            });
+
+            const currentPr = prs.find(pr => pr.merge_commit_sha === context.sha || pr.head.sha === context.sha);
+
+            if (currentPr) {
+              console.log(`Found PR #${currentPr.number} for commit ${context.sha}`);
+              core.setOutput('pr-number', currentPr.number);
+              core.setOutput('pr-found', 'true');
+            } else {
+              console.log(`No PR found for commit ${context.sha}`);
+              core.setOutput('pr-found', 'false');
+            }
+
+      - name: Find existing apply comment
+        if: steps.find-pr.outputs.pr-found == 'true'
+        uses: peter-evans/find-comment@v3
+        id: find-apply-comment
+        with:
+          issue-number: ${{ steps.find-pr.outputs.pr-number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: 'terragrunt-apply-${{ inputs.env_name }}-${{ inputs.project_name }}'
+
+      - name: Comment apply results
+        if: steps.find-pr.outputs.pr-found == 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-apply-comment.outputs.comment-id }}
+          issue-number: ${{ steps.find-pr.outputs.pr-number }}
+          body: |
+            <!-- terragrunt-apply-${{ inputs.env_name }}-${{ inputs.project_name }} -->
+            ## 🚀 Terragrunt Apply Completed
+
+            **Project**: ${{ inputs.project_name }}
+            **Environment**: `${{ inputs.env_name }}`
+            **Directory**: `${{ steps.load-config.outputs.working-directory }}`
+            **IAM Role (Apply)**: ${{ steps.load-config.outputs.apply-iam-role }}
+            **AWS Region**: ${{ steps.load-config.outputs.aws-region }}
+            **Commit**: ${{ github.sha }}
+            **Branch**: ${{ github.ref_name }}
+            **Status**: ${{ steps.parse-apply.outputs.status == 'success' && '✅ Success' || '❌ Failed' }}
+
+            ### 📊 Apply Summary
+
+            | Action | Count |
+            |--------|-------|
+            | 🟢 Added | ${{ steps.parse-apply.outputs.additions }} |
+            | 🟡 Changed | ${{ steps.parse-apply.outputs.changes }} |
+            | 🔴 Destroyed | ${{ steps.parse-apply.outputs.deletions }} |
+
+            <details>
+            <summary>📝 Apply Output</summary>
+
+            ```hcl
+            ${{ steps.parse-apply.outputs.output }}
+            ```
+
+            </details>
+
+            <details>
+            <summary>📊 Deployment Details</summary>
+
+            - **Workflow Run**: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            - **Triggered by**: ${{ github.event_name }}
+            - **Actor**: @${{ github.actor }}
+            - **Timestamp**: ${{ steps.load-config.outputs.environment-name }} at $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+            </details>
+
+            ${{ steps.parse-apply.outputs.status == 'success' && '✅ **Infrastructure has been successfully applied!**' || '❌ **Apply failed. Please check the logs for details.**' }}
+
+            *Deployment completed at $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+          edit-mode: replace
+
+      - name: Create deployment summary
+        run: |
+          echo "## 🚀 Terragrunt Apply Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Project**: ${{ inputs.project_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: ${{ inputs.env_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Directory**: ${{ steps.load-config.outputs.working-directory }}" >> $GITHUB_STEP_SUMMARY
+          echo "**IAM Role (Apply)**: ${{ steps.load-config.outputs.apply-iam-role }}" >> $GITHUB_STEP_SUMMARY
+          echo "**AWS Region**: ${{ steps.load-config.outputs.aws-region }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.find-pr.outputs.pr-found }}" = "true" ]; then
+            echo "**PR**: [#${{ steps.find-pr.outputs.pr-number }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ steps.find-pr.outputs.pr-number }})" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Infrastructure has been successfully applied!" >> $GITHUB_STEP_SUMMARY
