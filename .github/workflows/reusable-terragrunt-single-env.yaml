@@ -320,13 +320,41 @@ jobs:
             APPLY_STATUS="❌ Failed"
           fi
 
-          # Terragrunt Actionの出力から変更数を抽出
-          APPLY_OUTPUT="${{ steps.apply.outputs.tg_action_output }}"
+          # GitHub Actionsの出力をURLデコード
+          cat > apply_output_encoded.txt << 'APPLY_OUTPUT_EOF'
+          ${{ steps.apply.outputs.tg_action_output }}
+          APPLY_OUTPUT_EOF
 
-          if [ -n "$APPLY_OUTPUT" ]; then
-            ADDED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Creation complete" || echo "0")
-            CHANGED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Modifications complete" || echo "0")
-            DESTROYED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Destruction complete" || echo "0")
+          python3 -c "
+          import urllib.parse
+          with open('apply_output_encoded.txt', 'r') as f:
+              encoded_content = f.read().strip()
+          decoded_content = urllib.parse.unquote(encoded_content)
+          with open('apply_output_decoded.txt', 'w') as f:
+              f.write(decoded_content)
+          "
+
+          # デコードされた出力を使用
+          if [ -f "apply_output_decoded.txt" ] && [ -s "apply_output_decoded.txt" ]; then
+            APPLY_OUTPUT=$(cat apply_output_decoded.txt)
+          else
+            APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
+          fi
+
+          # 変更数を抽出
+          if [ "$APPLY_OUTPUT" != "Apply execution completed. See workflow logs for detailed output." ]; then
+            ADDED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Creation complete" 2>/dev/null || echo "0")
+            CHANGED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Modifications complete" 2>/dev/null || echo "0")
+            DESTROYED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Destruction complete" 2>/dev/null || echo "0")
+
+            # 数値のみを保証
+            ADDED_COUNT=$(echo "$ADDED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+            CHANGED_COUNT=$(echo "$CHANGED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+            DESTROYED_COUNT=$(echo "$DESTROYED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+
+            ADDED_COUNT=${ADDED_COUNT:-0}
+            CHANGED_COUNT=${CHANGED_COUNT:-0}
+            DESTROYED_COUNT=${DESTROYED_COUNT:-0}
 
             # 出力を制限（20,000文字まで）
             if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
@@ -336,16 +364,24 @@ jobs:
             ADDED_COUNT="0"
             CHANGED_COUNT="0"
             DESTROYED_COUNT="0"
-            APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
           fi
 
           echo "apply-status=$APPLY_STATUS" >> $GITHUB_OUTPUT
           echo "added-count=$ADDED_COUNT" >> $GITHUB_OUTPUT
           echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
           echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
-          echo "apply-output<<EOF" >> $GITHUB_OUTPUT
-          echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+
+          {
+            echo "apply-output<<EOF"
+            if [ -f "apply_output_decoded.txt" ]; then
+              cat apply_output_decoded.txt
+            else
+              echo "$APPLY_OUTPUT"
+            fi
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+          rm -f apply_output_encoded.txt apply_output_decoded.txt
 
       - name: Find existing comment
         if: github.event_name == 'pull_request'
