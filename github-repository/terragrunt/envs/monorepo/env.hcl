@@ -22,7 +22,7 @@ locals {
         require_code_owner_reviews      = true
         restrict_pushes                 = true
         require_last_push_approval      = true
-        required_status_checks          = ["Wait for Workflows / wait-for-workflows"]
+        required_status_checks          = ["wait-for-workflows"]
         enforce_admins                  = false
         allow_force_pushes              = false
         allow_deletions                 = false
@@ -38,7 +38,7 @@ locals {
         require_code_owner_reviews      = true
         restrict_pushes                 = true
         require_last_push_approval      = true
-        required_status_checks          = ["Wait for Workflows / wait-for-workflows"]
+        required_status_checks          = ["wait-for-workflows"]
         enforce_admins                  = false
         allow_force_pushes              = false
         allow_deletions                 = false
@@ -54,7 +54,7 @@ locals {
         require_code_owner_reviews      = true
         restrict_pushes                 = true
         require_last_push_approval      = true
-        required_status_checks          = ["Wait for Workflows / wait-for-workflows"]
+        required_status_checks          = ["wait-for-workflows"]
         enforce_admins                  = false
         allow_force_pushes              = false
         allow_deletions                 = false

@@ -74,5 +74,5 @@ variable "bedrock_model_region" {
 variable "bedrock_model_id" {
   description = "Bedrock model ID for Claude"
   type        = string
-  default     = "us.anthropic.claude-sonnet-4-20250514-v1:0"
+  default     = "anthropic.claude-sonnet-4-20250514-v1:0"
 }
