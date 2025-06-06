@@ -254,19 +254,29 @@ jobs:
 
           # 変更数を抽出
           if [ "$PLAN_OUTPUT" != "Plan execution completed. See workflow logs for detailed output." ]; then
-            ADD_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be created" || echo "0")
-            CHANGE_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be updated" || echo "0")
-            DESTROY_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be destroyed" || echo "0")
+            ADD_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be created" 2>/dev/null || echo "0")
+            CHANGE_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be updated" 2>/dev/null || echo "0")
+            DESTROY_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be destroyed" 2>/dev/null || echo "0")
 
             # Terraform標準出力の "Plan:" 行からも抽出を試みる
             if [ "$ADD_COUNT" == "0" ] && [ "$CHANGE_COUNT" == "0" ] && [ "$DESTROY_COUNT" == "0" ]; then
               PLAN_LINE=$(echo "$PLAN_OUTPUT" | grep "Plan:" | tail -1)
               if [ -n "$PLAN_LINE" ]; then
-                ADD_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*Plan: \([0-9]*\) to add.*/\1/p' || echo "0")
-                CHANGE_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to change.*/\1/p' || echo "0")
-                DESTROY_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to destroy.*/\1/p' || echo "0")
+                ADD_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*Plan: \([0-9]*\) to add.*/\1/p' 2>/dev/null | head -1 | tr -d '\n' || echo "0")
+                CHANGE_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to change.*/\1/p' 2>/dev/null | head -1 | tr -d '\n' || echo "0")
+                DESTROY_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to destroy.*/\1/p' 2>/dev/null | head -1 | tr -d '\n' || echo "0")
               fi
             fi
+
+            # 数値のみを保証
+            ADD_COUNT=$(echo "$ADD_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+            CHANGE_COUNT=$(echo "$CHANGE_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+            DESTROY_COUNT=$(echo "$DESTROY_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
+
+            # 空の場合は0にする
+            ADD_COUNT=${ADD_COUNT:-0}
+            CHANGE_COUNT=${CHANGE_COUNT:-0}
+            DESTROY_COUNT=${DESTROY_COUNT:-0}
 
             echo "Extracted counts: ADD=$ADD_COUNT, CHANGE=$CHANGE_COUNT, DESTROY=$DESTROY_COUNT"
 
