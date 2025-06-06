@@ -1,0 +1,99 @@
+name: 'Reusable Terragrunt Orchestrator'
+
+on:
+  workflow_call:
+    inputs:
+      project_name:
+        required: true
+        type: string
+        description: 'Project name for terragrunt execution'
+      terraform_version:
+        required: false
+        type: string
+        default: '1.5.7'
+        description: 'Terraform version'
+      terragrunt_version:
+        required: false
+        type: string
+        default: '0.53.2'
+        description: 'Terragrunt version'
+      action_type:
+        required: true
+        type: string
+        description: 'Action type: plan or apply'
+
+jobs:
+  detect-environments:
+    name: 'Detect Changed Environments'
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.detect.outputs.environments }}
+      has_changes: ${{ steps.detect.outputs.has_changes }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed environments
+        id: detect
+        run: |
+          # 変更されたファイルを取得
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1..HEAD)
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # terragrunt環境ディレクトリの変更を検出（シンプルなアプローチ）
+          ENVIRONMENTS=()
+
+          while IFS= read -r file; do
+            # プロジェクト名を含むterragruntパスかチェック
+            if [[ "$file" == *"${{ inputs.project_name }}/terragrunt/envs/"* ]]; then
+              # envs/ の後の最初のディレクトリ名を抽出
+              env_path=$(echo "$file" | sed "s|.*${{ inputs.project_name }}/terragrunt/envs/||")
+              env_name=$(echo "$env_path" | cut -d'/' -f1)
+
+              if [[ -n "$env_name" ]]; then
+                echo "Found environment: $env_name (from file: $file)"
+                ENVIRONMENTS+=("$env_name")
+              fi
+            fi
+          done <<< "$CHANGED_FILES"
+
+          # 重複を除去してJSON配列に変換（改行なし）
+          UNIQUE_ENVIRONMENTS=$(printf '%s\n' "${ENVIRONMENTS[@]}" | sort -u | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          echo "Detected environments: $UNIQUE_ENVIRONMENTS"
+
+          HAS_CHANGES="false"
+          if [ "$UNIQUE_ENVIRONMENTS" != "[]" ] && [ "$UNIQUE_ENVIRONMENTS" != "" ]; then
+            HAS_CHANGES="true"
+          fi
+
+          echo "environments=$UNIQUE_ENVIRONMENTS" >> $GITHUB_OUTPUT
+          echo "has_changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
+
+  execute-environments:
+    name: 'Execute Terragrunt for Environments'
+    needs: detect-environments
+    if: needs.detect-environments.outputs.has_changes == 'true'
+    strategy:
+      matrix:
+        environment: ${{ fromJson(needs.detect-environments.outputs.environments) }}
+      fail-fast: false
+    uses: ./.github/workflows/reusable-terragrunt-single-env.yaml
+    permissions:
+      id-token: write        # OIDC認証に必要
+      contents: read         # リポジトリのコードを読み取るために必要
+      pull-requests: write   # PRコメントの作成・更新に必要
+    with:
+      project_name: ${{ inputs.project_name }}
+      environment: ${{ matrix.environment }}
+      terraform_version: ${{ inputs.terraform_version }}
+      terragrunt_version: ${{ inputs.terragrunt_version }}
+      action_type: ${{ inputs.action_type }}
