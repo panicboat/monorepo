@@ -34,74 +34,15 @@ jobs:
         wait-interval: 10
       continue-on-error: true
 
-    - name: Get all workflow statuses
+    - name: Get GitHub App slug
       uses: actions/github-script@v7
-      id: workflow-status
+      id: app-info
       with:
         github-token: ${{ steps.app-token.outputs.token }}
         script: |
-          const prNumber = ${{ github.event.pull_request.number }};
-          const headSha = '${{ github.event.pull_request.head.sha }}';
-
-          console.log(`Getting workflow status for PR #${prNumber}`);
-          console.log(`Head SHA: ${headSha}`);
-
-          try {
-            // ワークフロー実行一覧を取得
-            const { data } = await github.rest.actions.listWorkflowRunsForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              head_sha: headSha
-            });
-
-            console.log(`Total workflow runs found: ${data.workflow_runs.length}`);
-
-            const relevantRuns = data.workflow_runs.filter(run =>
-              run.name !== 'Wait for Workflows'
-            );
-
-            console.log(`Relevant workflow runs: ${relevantRuns.length}`);
-
-            relevantRuns.forEach(run => {
-              console.log(`- ${run.name}: status=${run.status}, conclusion=${run.conclusion}`);
-            });
-
-            const successCount = relevantRuns.filter(run => run.conclusion === 'success').length;
-            const failureCount = relevantRuns.filter(run => run.conclusion === 'failure').length;
-            const inProgressCount = relevantRuns.filter(run => run.status === 'in_progress').length;
-            const totalCount = relevantRuns.length;
-
-            console.log(`Counts - Success: ${successCount}, Failure: ${failureCount}, In Progress: ${inProgressCount}, Total: ${totalCount}`);
-
-            let overallStatus = 'unknown';
-            if (inProgressCount > 0) {
-              overallStatus = 'in_progress';
-            } else if (failureCount > 0) {
-              overallStatus = 'failure';
-            } else if (successCount === totalCount && totalCount > 0) {
-              overallStatus = 'success';
-            }
-
-            console.log(`Overall status: ${overallStatus}`);
-
-            core.setOutput('success-count', successCount);
-            core.setOutput('failure-count', failureCount);
-            core.setOutput('in-progress-count', inProgressCount);
-            core.setOutput('total-count', totalCount);
-            core.setOutput('overall-status', overallStatus);
-
-            const workflowDetails = relevantRuns.map(run => ({
-              name: run.name,
-              status: run.status,
-              conclusion: run.conclusion,
-              html_url: run.html_url
-            }));
-            core.setOutput('workflows', JSON.stringify(workflowDetails));
-
-          } catch (error) {
-            console.error('Error fetching workflow runs:', error);
-            core.setFailed(`Failed to get workflow status: ${error.message}`);
-          }
+          const { data: app } = await github.rest.apps.getAuthenticated();
+          core.setOutput('app-slug', app.slug);
+          console.log(`GitHub App slug: ${app.slug}`);
 
     - name: Generate comment content
       run: |
