@@ -1,4 +1,4 @@
-name: 'GitHub OIDC Auth - CI/CD'
+name: 'Example Service - CI/CD'
 
 on:
   pull_request:
@@ -11,21 +11,11 @@ on:
     paths:
       - 'github-oidc-auth/**'
 
-permissions:
-  id-token: write
-  contents: read
-  pull-requests: write
-  issues: write
-
 jobs:
-  terragrunt-plan:
-    if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/reusable-terragrunt-plan.yaml
+  terragrunt-orchestrator:
+    uses: ./.github/workflows/reusable-terragrunt-orchestrator.yaml
     with:
-      project_name: 'github-oidc-auth'
-
-  terragrunt-apply:
-    if: github.event_name == 'push'
-    uses: ./.github/workflows/reusable-terragrunt-apply.yaml
-    with:
-      project_name: 'github-oidc-auth'
+      project_name: github-oidc-auth
+      terraform_version: '1.5.7'
+      terragrunt_version: '0.53.2'
+      action_type: ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
