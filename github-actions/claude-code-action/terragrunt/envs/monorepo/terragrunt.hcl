@@ -29,7 +29,8 @@ inputs = {
 
   # Claude Code Action configuration
   enable_claude_code_action = include.env.locals.enable_claude_code_action
-  bedrock_model_region      = include.env.locals.bedrock_model_region
+  bedrock_model_region     = include.env.locals.bedrock_model_region
+  bedrock_model_id         = include.env.locals.bedrock_model_id
 
   # Merge repository-specific tags with common tags
   common_tags = merge(

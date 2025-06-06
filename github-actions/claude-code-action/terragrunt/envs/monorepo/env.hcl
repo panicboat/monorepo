@@ -28,13 +28,14 @@ locals {
 
   # Claude Code Action settings
   enable_claude_code_action = true
-  bedrock_model_region      = "us-east-1"
+  bedrock_model_region      = "us-*"
+  bedrock_model_id          = "*"
 
   # Repository-specific resource tags
   additional_tags = {
-    Owner       = "panicboat"
-    Purpose     = "claude-code-action-monorepo"
-    Criticality = "high"
+    Owner        = "panicboat"
+    Purpose      = "claude-code-action-monorepo"
+    Criticality  = "high"
     AutoShutdown = "disabled"
   }
 }

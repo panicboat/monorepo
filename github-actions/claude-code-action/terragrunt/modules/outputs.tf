@@ -35,6 +35,16 @@ output "claude_code_action_enabled" {
   value       = var.enable_claude_code_action
 }
 
+output "bedrock_model_arn" {
+  description = "ARN of the Bedrock model for Claude Code Action"
+  value       = var.enable_claude_code_action ? "arn:aws:bedrock:${var.bedrock_model_region}:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}" : null
+}
+
+output "bedrock_model_id" {
+  description = "Bedrock model ID for Claude Code Action"
+  value       = var.enable_claude_code_action ? var.bedrock_model_id : null
+}
+
 output "github_org" {
   description = "GitHub organization name"
   value       = var.github_org
@@ -60,6 +70,8 @@ output "github_actions_workflow_info" {
   value = var.enable_claude_code_action ? {
     aws_role_arn         = aws_iam_role.github_actions_role.arn
     aws_region           = var.bedrock_model_region
+    bedrock_model_id     = var.bedrock_model_id
+    bedrock_model_arn    = "arn:aws:bedrock:${var.bedrock_model_region}:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}"
     github_org           = var.github_org
     github_repo          = var.github_repo
     allowed_branches     = var.github_branches

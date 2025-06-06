@@ -58,8 +58,8 @@ resource "aws_iam_policy" "claude_bedrock_policy" {
           "bedrock:InvokeModelWithResponseStream"
         ]
         Resource = [
-          "arn:aws:bedrock:${var.bedrock_model_region}:${data.aws_caller_identity.current.account_id}:inference-profile/*",
-          "arn:aws:bedrock:${var.bedrock_model_region}::foundation-model/*",
+          "arn:aws:bedrock:${var.bedrock_model_region}:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}",
+          "arn:aws:bedrock:${var.bedrock_model_region}::foundation-model/${var.bedrock_model_id}",
         ]
       }
     ]
