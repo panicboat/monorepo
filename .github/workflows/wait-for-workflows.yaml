@@ -1,4 +1,4 @@
-name: Check All Workflows and Comment
+name: Wait for Workflows
 on:
   pull_request:
     branches-ignore:
