@@ -108,9 +108,16 @@ jobs:
         id: plan
         working-directory: ${{ steps.load-config.outputs.working-directory }}
         run: |
+          echo "Running terragrunt init..."
+          terragrunt init -no-color
+
           echo "Running terragrunt plan..."
           terragrunt plan -no-color -detailed-exitcode > plan_output.txt 2>&1
           PLAN_EXIT_CODE=$?
+
+          echo "Plan exit code: $PLAN_EXIT_CODE"
+          echo "Plan output:"
+          cat plan_output.txt
 
           # Planの結果を解析
           if [ $PLAN_EXIT_CODE -eq 0 ]; then
@@ -152,9 +159,16 @@ jobs:
         id: apply
         working-directory: ${{ steps.load-config.outputs.working-directory }}
         run: |
+          echo "Running terragrunt init..."
+          terragrunt init -no-color
+
           echo "Running terragrunt apply..."
           terragrunt apply -auto-approve -no-color > apply_output.txt 2>&1
           APPLY_EXIT_CODE=$?
+
+          echo "Apply exit code: $APPLY_EXIT_CODE"
+          echo "Apply output:"
+          cat apply_output.txt
 
           # Applyの結果を解析
           if [ $APPLY_EXIT_CODE -eq 0 ]; then
