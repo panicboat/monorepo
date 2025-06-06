@@ -41,16 +41,18 @@ jobs:
 
         gh api repos/${{ github.repository }}/actions/runs \
           --jq --arg sha "$HEAD_SHA" \
-          '.workflow_runs[] | select(.head_sha == $sha and .name != "Wait for Workflows") | {name: .name, conclusion: .conclusion, status: .status, html_url: .html_url}' \
+          '[.workflow_runs[] | select(.head_sha == $sha and .name != "Wait for Workflows") | {name: .name, conclusion: .conclusion, status: .status, html_url: .html_url}]' \
           > workflow_results.json
 
         echo "Workflow results:"
         cat workflow_results.json
 
-        SUCCESS_COUNT=$(jq 'select(.conclusion == "success")' workflow_results.json | jq -s 'length')
-        FAILURE_COUNT=$(jq 'select(.conclusion == "failure")' workflow_results.json | jq -s 'length')
-        IN_PROGRESS_COUNT=$(jq 'select(.status == "in_progress")' workflow_results.json | jq -s 'length')
-        TOTAL_COUNT=$(jq -s 'length' workflow_results.json)
+        SUCCESS_COUNT=$(jq '[.[] | select(.conclusion == "success")] | length' workflow_results.json)
+        FAILURE_COUNT=$(jq '[.[] | select(.conclusion == "failure")] | length' workflow_results.json)
+        IN_PROGRESS_COUNT=$(jq '[.[] | select(.status == "in_progress")] | length' workflow_results.json)
+        TOTAL_COUNT=$(jq 'length' workflow_results.json)
+
+        echo "Success: $SUCCESS_COUNT, Failure: $FAILURE_COUNT, In Progress: $IN_PROGRESS_COUNT, Total: $TOTAL_COUNT"
 
         echo "success-count=$SUCCESS_COUNT" >> $GITHUB_OUTPUT
         echo "failure-count=$FAILURE_COUNT" >> $GITHUB_OUTPUT
