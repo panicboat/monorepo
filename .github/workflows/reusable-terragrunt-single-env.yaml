@@ -213,28 +213,22 @@ jobs:
             APPLY_STATUS="❌ Failed"
           fi
 
-          # Terragrunt Actionの標準出力を取得
-          APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
-
           # デフォルト値を設定
           ADDED_COUNT="0"
           CHANGED_COUNT="0"
           DESTROYED_COUNT="0"
+          APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
 
-          # 出力を制限（20,000文字まで）
-          if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
-            APPLY_OUTPUT="${APPLY_OUTPUT:0:20000}... (output truncated, see workflow logs for full details)"
-          fi
+          # GitHubの出力に書き込み（エラー回避のため分割）
+          echo "apply-status=$APPLY_STATUS" >> $GITHUB_OUTPUT
+          echo "added-count=$ADDED_COUNT" >> $GITHUB_OUTPUT
+          echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
+          echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
 
-          {
-            echo "apply-status=$APPLY_STATUS"
-            echo "added-count=$ADDED_COUNT"
-            echo "changed-count=$CHANGED_COUNT"
-            echo "destroyed-count=$DESTROYED_COUNT"
-            echo "apply-output<<EOF"
-            echo "$APPLY_OUTPUT"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
+          # 複数行出力の場合のみEOFを使用
+          echo "apply-output<<EOF" >> $GITHUB_OUTPUT
+          echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Find existing comment
         if: github.event_name == 'pull_request'
