@@ -321,9 +321,9 @@ jobs:
           fi
 
           # GitHub Actionsの出力をURLデコード
-          cat > apply_output_encoded.txt << 'APPLY_OUTPUT_EOF'
+          cat > apply_output_encoded.txt << 'APPLY_OUTPUT_DELIMITER_END'
           ${{ steps.apply.outputs.tg_action_output }}
-          APPLY_OUTPUT_EOF
+          APPLY_OUTPUT_DELIMITER_END
 
           python3 -c "
           import urllib.parse
@@ -372,13 +372,13 @@ jobs:
           echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
 
           {
-            echo "apply-output<<EOF"
+            echo "apply-output<<APPLY_OUTPUT_FINAL_END"
             if [ -f "apply_output_decoded.txt" ]; then
               cat apply_output_decoded.txt
             else
               echo "$APPLY_OUTPUT"
             fi
-            echo "EOF"
+            echo "APPLY_OUTPUT_FINAL_END"
           } >> $GITHUB_OUTPUT
 
           rm -f apply_output_encoded.txt apply_output_decoded.txt
