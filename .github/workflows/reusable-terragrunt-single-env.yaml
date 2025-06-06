@@ -321,9 +321,9 @@ jobs:
           fi
 
           # GitHub Actionsの出力をURLデコード
-          cat > apply_output_encoded.txt << 'APPLY_OUTPUT_EOF'
+          cat > apply_output_encoded.txt << 'APPLY_OUTPUT_DELIMITER_END'
           ${{ steps.apply.outputs.tg_action_output }}
-          APPLY_OUTPUT_EOF
+          APPLY_OUTPUT_DELIMITER_END
 
           python3 -c "
           import urllib.parse
@@ -371,15 +371,15 @@ jobs:
           echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
           echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
 
-          {
-            echo "apply-output<<EOF"
-            if [ -f "apply_output_decoded.txt" ]; then
-              cat apply_output_decoded.txt
-            else
-              echo "$APPLY_OUTPUT"
-            fi
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
+          # 一意な区切り文字を生成
+          DELIMITER="APPLY_OUTPUT_END_$_$(date +%s%N)"
+          echo "apply-output<<$DELIMITER" >> $GITHUB_OUTPUT
+          if [ -f "apply_output_decoded.txt" ]; then
+            cat apply_output_decoded.txt >> $GITHUB_OUTPUT
+          else
+            echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
+          fi
+          echo "$DELIMITER" >> $GITHUB_OUTPUT
 
           rm -f apply_output_encoded.txt apply_output_decoded.txt
 
