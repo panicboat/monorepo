@@ -243,6 +243,21 @@ jobs:
           TF_INPUT: false
           AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
 
+      - name: Fallback Apply (if needed)
+        if: inputs.action_type == 'apply' && (steps.apply.outcome == 'failure' || steps.apply.outputs.tg_action_output == '')
+        id: apply-fallback
+        working-directory: ${{ steps.load-config.outputs.working-directory }}
+        run: |
+          terragrunt init -no-color
+          terragrunt apply -auto-approve -no-color > apply_output.txt 2>&1 || true
+          echo "apply-output<<EOF" >> $GITHUB_OUTPUT
+          cat apply_output.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        continue-on-error: true
+        env:
+          TF_INPUT: false
+          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
+
       - name: Parse Apply Results
         if: inputs.action_type == 'apply' && always()
         id: parse-apply
@@ -271,6 +286,8 @@ jobs:
           # 出力ソースを決定
           if [ -f "apply_output_decoded.txt" ] && [ -s "apply_output_decoded.txt" ]; then
             APPLY_OUTPUT=$(cat apply_output_decoded.txt)
+          elif [ "${{ steps.apply-fallback.outputs.apply-output != '' }}" == "true" ]; then
+            APPLY_OUTPUT="${{ steps.apply-fallback.outputs.apply-output }}"
           else
             APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
           fi
