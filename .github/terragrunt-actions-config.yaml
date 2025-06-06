@@ -21,4 +21,3 @@ environments:
 projects:
   claude-code-action:
     path: "github-actions/claude-code-action/terragrunt"
-  # github-oidc-auth uses default path: github-oidc-auth/terragrunt
