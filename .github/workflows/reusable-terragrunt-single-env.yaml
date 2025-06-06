@@ -110,7 +110,6 @@ jobs:
         continue-on-error: true
         env:
           TF_INPUT: false
-          TERRAGRUNT_IAM_ROLE: ${{ steps.load-config.outputs.plan-iam-role }}
           AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
 
       - name: Terragrunt Apply
@@ -126,7 +125,6 @@ jobs:
         continue-on-error: true
         env:
           TF_INPUT: false
-          TERRAGRUNT_IAM_ROLE: ${{ steps.load-config.outputs.apply-iam-role }}
           AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
 
       - name: Parse Plan Results
