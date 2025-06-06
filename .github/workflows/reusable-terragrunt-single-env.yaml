@@ -1,4 +1,4 @@
-name: 'Reusable Terragrunt Single Environment'
+name: 'Reusable Terragrunt Orchestrator'
 
 on:
   workflow_call:
@@ -7,10 +7,6 @@ on:
         required: true
         type: string
         description: 'Project name for terragrunt execution'
-      environment:
-        required: true
-        type: string
-        description: 'Environment name (develop, staging, production, etc.)'
       terraform_version:
         required: false
         type: string
@@ -27,376 +23,77 @@ on:
         description: 'Action type: plan or apply'
 
 jobs:
-  terragrunt-execution:
-    name: '${{ inputs.action_type }} - ${{ inputs.environment }}'
+  detect-environments:
+    name: 'Detect Changed Environments'
     runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.detect.outputs.environments }}
+      has_changes: ${{ steps.detect.outputs.has_changes }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Load Terragrunt configuration
-        id: load-config
-        run: |
-          CONFIG_FILE=".github/terragrunt-actions-config.yaml"
-
-          if [ ! -f "$CONFIG_FILE" ]; then
-            echo "Configuration file not found: $CONFIG_FILE"
-            exit 1
-          fi
-
-          # 環境固有の設定を取得、なければdefaultを使用
-          PLAN_IAM_ROLE=$(yq e ".${{ inputs.environment }}.iam_role_plan // .default.iam_role_plan" "$CONFIG_FILE")
-          APPLY_IAM_ROLE=$(yq e ".${{ inputs.environment }}.iam_role_apply // .default.iam_role_apply" "$CONFIG_FILE")
-          AWS_REGION=$(yq e ".${{ inputs.environment }}.aws_region // .default.aws_region // \"us-east-1\"" "$CONFIG_FILE")
-          WORKING_DIR=$(yq e ".${{ inputs.environment }}.working_directory // \"\"" "$CONFIG_FILE")
-
-          # working_directoryが指定されていない場合は自動検出
-          if [ -z "$WORKING_DIR" ] || [ "$WORKING_DIR" == "null" ]; then
-            # 複数パターンを検索
-            POSSIBLE_PATHS=(
-              "${{ inputs.project_name }}/terragrunt/envs/${{ inputs.environment }}"
-              "*/${{ inputs.project_name }}/terragrunt/envs/${{ inputs.environment }}"
-            )
-
-            for path_pattern in "${POSSIBLE_PATHS[@]}"; do
-              FOUND_PATH=$(find . -path "./$path_pattern" -type d | head -1)
-              if [ -n "$FOUND_PATH" ]; then
-                WORKING_DIR="$FOUND_PATH"
-                break
-              fi
-            done
-          fi
-
-          if [ -z "$WORKING_DIR" ] || [ "$WORKING_DIR" == "null" ]; then
-            echo "Working directory not found for project: ${{ inputs.project_name }}, environment: ${{ inputs.environment }}"
-            exit 1
-          fi
-
-          echo "plan-iam-role=$PLAN_IAM_ROLE" >> $GITHUB_OUTPUT
-          echo "apply-iam-role=$APPLY_IAM_ROLE" >> $GITHUB_OUTPUT
-          echo "aws-region=$AWS_REGION" >> $GITHUB_OUTPUT
-          echo "working-directory=$WORKING_DIR" >> $GITHUB_OUTPUT
-
-          echo "Configuration loaded:"
-          echo "  Environment: ${{ inputs.environment }}"
-          echo "  Plan IAM Role: $PLAN_IAM_ROLE"
-          echo "  Apply IAM Role: $APPLY_IAM_ROLE"
-          echo "  AWS Region: $AWS_REGION"
-          echo "  Working Directory: $WORKING_DIR"
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ inputs.action_type == 'plan' && steps.load-config.outputs.plan-iam-role || steps.load-config.outputs.apply-iam-role }}
-          aws-region: ${{ steps.load-config.outputs.aws-region }}
-          role-session-name: GitHubActions-Terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}
-          audience: sts.amazonaws.com
+          fetch-depth: 0
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ inputs.terraform_version }}
-          terraform_wrapper: false  # 重要: wrapperを無効にして生の出力を取得
-
-      - name: Setup Terragrunt Binary
+      - name: Detect changed environments
+        id: detect
         run: |
-          TG_VERSION=${{ inputs.terragrunt_version }}
-          wget -O terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64
-          chmod +x terragrunt
-          sudo mv terragrunt /usr/local/bin/
-          terragrunt --version
-
-      - name: Terragrunt Plan
-        if: inputs.action_type == 'plan'
-        id: plan
-        uses: gruntwork-io/terragrunt-action@v2
-        with:
-          tf_version: ${{ inputs.terraform_version }}
-          tg_version: ${{ inputs.terragrunt_version }}
-          tg_command: 'plan'
-          args: '-no-color -detailed-exitcode'
-          tg_dir: ${{ steps.load-config.outputs.working-directory }}
-        continue-on-error: true
-        env:
-          TF_INPUT: false
-          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
-
-      - name: Fallback Plan (if action fails or output empty)
-        if: inputs.action_type == 'plan' && (steps.plan.outcome == 'failure' || steps.plan.outputs.tg_action_output == '')
-        id: plan-fallback
-        working-directory: ${{ steps.load-config.outputs.working-directory }}
-        run: |
-          echo "Running fallback terragrunt plan..."
-
-          # まずはinitを実行
-          terragrunt init -no-color
-
-          # planを実行して出力をキャプチャ
-          terragrunt plan -no-color > plan_output.txt 2>&1 || true
-
-          echo "=== Fallback Plan Output ==="
-          cat plan_output.txt
-          echo "=== End Fallback Plan Output ==="
-
-          # GitHub Outputに保存
-          echo "plan-output<<EOF" >> $GITHUB_OUTPUT
-          cat plan_output.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        continue-on-error: true
-        env:
-          TF_INPUT: false
-          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
-
-      - name: Capture Plan Output
-        if: inputs.action_type == 'plan' && always()
-        id: capture-plan
-        working-directory: ${{ steps.load-config.outputs.working-directory }}
-        run: |
-          # Plan出力を再実行してキャプチャ（出力のみを取得）
-          terragrunt plan -no-color > plan_output.txt 2>&1 || true
-
-          # ファイル内容を確認
-          echo "=== Plan Output ==="
-          cat plan_output.txt
-          echo "=== End Plan Output ==="
-
-          # Plan出力をGitHub Outputに保存
-          PLAN_OUTPUT=$(cat plan_output.txt)
-
-          # 出力を制限（30,000文字まで）
-          if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
-            PLAN_OUTPUT="${PLAN_OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
-          fi
-
-          {
-            echo "plan-output<<EOF"
-            echo "$PLAN_OUTPUT"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
-        env:
-          TF_INPUT: false
-          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
-
-      - name: Terragrunt Apply
-        if: inputs.action_type == 'apply'
-        id: apply
-        uses: gruntwork-io/terragrunt-action@v2
-        with:
-          tf_version: ${{ inputs.terraform_version }}
-          tg_version: ${{ inputs.terragrunt_version }}
-          tg_command: 'apply'
-          args: '-auto-approve -no-color'
-          tg_dir: ${{ steps.load-config.outputs.working-directory }}
-        continue-on-error: true
-        env:
-          TF_INPUT: false
-          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
-
-      - name: Parse Plan Results
-        if: inputs.action_type == 'plan' && always()
-        id: parse-plan
-        run: |
-          # デバッグ: 実際の出力を確認
-          echo "=== Debug: tg_action_output ==="
-          TG_ACTION_OUTPUT="${{ steps.plan.outputs.tg_action_output }}"
-          echo "Length: ${#TG_ACTION_OUTPUT}"
-          echo "Content:"
-          echo "$TG_ACTION_OUTPUT"
-          echo "=== End Debug ==="
-
-          # Planの結果を解析
-          if [ "${{ steps.plan.outcome }}" == "success" ]; then
-            if [ "${{ steps.plan.outputs.tg_action_exit_code }}" == "0" ]; then
-              PLAN_STATUS="✅ No changes"
-            elif [ "${{ steps.plan.outputs.tg_action_exit_code }}" == "2" ]; then
-              PLAN_STATUS="✅ Changes detected"
-            else
-              PLAN_STATUS="✅ Success"
-            fi
+          # 変更されたファイルを取得
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
           else
-            PLAN_STATUS="❌ Failed"
+            CHANGED_FILES=$(git diff --name-only HEAD~1..HEAD)
           fi
 
-          # 出力ソースを決定（アクション出力 > フォールバック出力）
-          FALLBACK_OUTPUT="${{ steps.plan-fallback.outputs.plan-output }}"
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
 
-          echo "TG_ACTION_OUTPUT length: ${#TG_ACTION_OUTPUT}"
-          echo "FALLBACK_OUTPUT length: ${#FALLBACK_OUTPUT}"
+          # terragrunt環境ディレクトリの変更を検出（シンプルなアプローチ）
+          ENVIRONMENTS=()
 
-          if [ -n "$TG_ACTION_OUTPUT" ] && [ ${#TG_ACTION_OUTPUT} -gt 50 ]; then
-            PLAN_OUTPUT="$TG_ACTION_OUTPUT"
-            echo "Using tg_action_output"
-          elif [ -n "$FALLBACK_OUTPUT" ] && [ ${#FALLBACK_OUTPUT} -gt 50 ]; then
-            PLAN_OUTPUT="$FALLBACK_OUTPUT"
-            echo "Using fallback output"
-          else
-            PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
-            echo "Using default message"
-          fi
+          while IFS= read -r file; do
+            # プロジェクト名を含むterragruntパスかチェック
+            if [[ "$file" == *"${{ inputs.project_name }}/terragrunt/envs/"* ]]; then
+              # envs/ の後の最初のディレクトリ名を抽出
+              env_path=$(echo "$file" | sed "s|.*${{ inputs.project_name }}/terragrunt/envs/||")
+              env_name=$(echo "$env_path" | cut -d'/' -f1)
 
-          if [ -n "$PLAN_OUTPUT" ] && [ "$PLAN_OUTPUT" != "Plan execution completed. See workflow logs for detailed output." ]; then
-            ADD_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be created" || echo "0")
-            CHANGE_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be updated" || echo "0")
-            DESTROY_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be destroyed" || echo "0")
-
-            # Terraform標準出力の "Plan:" 行からも抽出を試みる
-            if [ "$ADD_COUNT" == "0" ] && [ "$CHANGE_COUNT" == "0" ] && [ "$DESTROY_COUNT" == "0" ]; then
-              PLAN_LINE=$(echo "$PLAN_OUTPUT" | grep "Plan:" | tail -1)
-              if [ -n "$PLAN_LINE" ]; then
-                ADD_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*Plan: \([0-9]*\) to add.*/\1/p' || echo "0")
-                CHANGE_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to change.*/\1/p' || echo "0")
-                DESTROY_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to destroy.*/\1/p' || echo "0")
+              if [[ -n "$env_name" ]]; then
+                echo "Found environment: $env_name (from file: $file)"
+                ENVIRONMENTS+=("$env_name")
               fi
             fi
+          done <<< "$CHANGED_FILES"
 
-            echo "Extracted counts: ADD=$ADD_COUNT, CHANGE=$CHANGE_COUNT, DESTROY=$DESTROY_COUNT"
+          # 重複を除去してJSON配列に変換（改行なし）
+          UNIQUE_ENVIRONMENTS=$(printf '%s\n' "${ENVIRONMENTS[@]}" | sort -u | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
-            # 出力を制限（30,000文字まで）
-            if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
-              PLAN_OUTPUT="${PLAN_OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
-            fi
-          else
-            ADD_COUNT="0"
-            CHANGE_COUNT="0"
-            DESTROY_COUNT="0"
+          echo "Detected environments: $UNIQUE_ENVIRONMENTS"
+
+          HAS_CHANGES="false"
+          if [ "$UNIQUE_ENVIRONMENTS" != "[]" ] && [ "$UNIQUE_ENVIRONMENTS" != "" ]; then
+            HAS_CHANGES="true"
           fi
 
-          echo "plan-status=$PLAN_STATUS" >> $GITHUB_OUTPUT
-          echo "add-count=$ADD_COUNT" >> $GITHUB_OUTPUT
-          echo "change-count=$CHANGE_COUNT" >> $GITHUB_OUTPUT
-          echo "destroy-count=$DESTROY_COUNT" >> $GITHUB_OUTPUT
-          echo "plan-output<<EOF" >> $GITHUB_OUTPUT
-          echo "$PLAN_OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "environments=$UNIQUE_ENVIRONMENTS" >> $GITHUB_OUTPUT
+          echo "has_changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
 
-      - name: Parse Apply Results
-        if: inputs.action_type == 'apply' && always()
-        id: parse-apply
-        run: |
-          # Applyの結果を解析
-          if [ "${{ steps.apply.outcome }}" == "success" ]; then
-            APPLY_STATUS="✅ Success"
-          else
-            APPLY_STATUS="❌ Failed"
-          fi
-
-          # Terragrunt Actionの出力から変更数を抽出
-          APPLY_OUTPUT="${{ steps.apply.outputs.tg_action_output }}"
-
-          if [ -n "$APPLY_OUTPUT" ]; then
-            ADDED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Creation complete" || echo "0")
-            CHANGED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Modifications complete" || echo "0")
-            DESTROYED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Destruction complete" || echo "0")
-
-            # 出力を制限（20,000文字まで）
-            if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
-              APPLY_OUTPUT="${APPLY_OUTPUT:0:20000}... (output truncated, see workflow logs for full details)"
-            fi
-          else
-            ADDED_COUNT="0"
-            CHANGED_COUNT="0"
-            DESTROYED_COUNT="0"
-            APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
-          fi
-
-          echo "apply-status=$APPLY_STATUS" >> $GITHUB_OUTPUT
-          echo "added-count=$ADDED_COUNT" >> $GITHUB_OUTPUT
-          echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
-          echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
-          echo "apply-output<<EOF" >> $GITHUB_OUTPUT
-          echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Find existing comment
-        if: github.event_name == 'pull_request'
-        uses: peter-evans/find-comment@v3
-        id: find-comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: 'terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}-${{ inputs.project_name }}'
-
-      - name: Create or update PR comment for Plan
-        if: github.event_name == 'pull_request' && inputs.action_type == 'plan'
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## 📋 Terragrunt Plan Results
-
-            <!-- terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}-${{ inputs.project_name }} -->
-
-            **Project**: ${{ inputs.project_name }}
-            **Environment**: `${{ inputs.environment }}`
-            **Directory**: `${{ steps.load-config.outputs.working-directory }}`
-            **IAM Role (Plan)**: ${{ steps.load-config.outputs.plan-iam-role }}
-            **AWS Region**: ${{ steps.load-config.outputs.aws-region }}
-            **Status**: ${{ steps.parse-plan.outputs.plan-status }}
-
-            ### 📊 Plan Summary
-
-            | Action    | Count |
-            | --------- | ----- |
-            | 🟢 Add     | ${{ steps.parse-plan.outputs.add-count }}     |
-            | 🟡 Change  | ${{ steps.parse-plan.outputs.change-count }}     |
-            | 🔴 Destroy | ${{ steps.parse-plan.outputs.destroy-count }}     |
-
-            <details>
-            <summary>📝 Plan Output</summary>
-
-            ```
-            ${{ steps.parse-plan.outputs.plan-output }}
-            ```
-
-            </details>
-
-            [View full workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          edit-mode: replace
-
-      - name: Create or update PR comment for Apply
-        if: github.event_name == 'pull_request' && inputs.action_type == 'apply'
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## 🚀 Terragrunt Apply Completed
-
-            <!-- terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}-${{ inputs.project_name }} -->
-
-            **Project**: ${{ inputs.project_name }}
-            **Environment**: `${{ inputs.environment }}`
-            **Status**: ${{ steps.parse-apply.outputs.apply-status }}
-
-            ### 📊 Apply Summary
-
-            | Action      | Count |
-            | ----------- | ----- |
-            | 🟢 Added     | ${{ steps.parse-apply.outputs.added-count }}     |
-            | 🟡 Changed   | ${{ steps.parse-apply.outputs.changed-count }}     |
-            | 🔴 Destroyed | ${{ steps.parse-apply.outputs.destroyed-count }}     |
-
-            <details>
-            <summary>📝 Apply Output</summary>
-
-            ```
-            ${{ steps.parse-apply.outputs.apply-output }}
-            ```
-
-            </details>
-
-            [View full workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          edit-mode: replace
-
-      - name: Exit with appropriate code
-        run: |
-          if [ "${{ inputs.action_type }}" == "plan" ]; then
-            if [ "${{ steps.plan.outcome }}" == "failure" ]; then
-              exit 1
-            fi
-          else
-            if [ "${{ steps.apply.outcome }}" == "failure" ]; then
-              exit 1
-            fi
-          fi
+  execute-environments:
+    name: 'Execute Terragrunt for Environments'
+    needs: detect-environments
+    if: needs.detect-environments.outputs.has_changes == 'true'
+    strategy:
+      matrix:
+        environment: ${{ fromJson(needs.detect-environments.outputs.environments) }}
+      fail-fast: false
+    uses: ./.github/workflows/reusable-terragrunt-single-env.yaml
+    permissions:
+      id-token: write        # OIDC認証に必要
+      contents: read         # リポジトリのコードを読み取るために必要
+      pull-requests: write   # PRコメントの作成・更新に必要
+    with:
+      project_name: ${{ inputs.project_name }}
+      environment: ${{ matrix.environment }}
+      terraform_version: ${{ inputs.terraform_version }}
+      terragrunt_version: ${{ inputs.terragrunt_version }}
+      action_type: ${{ inputs.action_type }}
