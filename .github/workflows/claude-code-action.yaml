@@ -37,7 +37,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::559744160976:role/claude-code-action-monorepo-github-actions-role
-          aws-region: us-west-1
+          aws-region: us-east-2
 
       - uses: anthropics/claude-code-action@beta
         with:
