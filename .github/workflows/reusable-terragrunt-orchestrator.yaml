@@ -87,6 +87,10 @@ jobs:
         environment: ${{ fromJson(needs.detect-environments.outputs.environments) }}
       fail-fast: false
     uses: ./.github/workflows/reusable-terragrunt-single-env.yaml
+    permissions:
+      id-token: write        # OIDC認証に必要
+      contents: read         # リポジトリのコードを読み取るために必要
+      pull-requests: write   # PRコメントの作成・更新に必要
     with:
       project_name: ${{ inputs.project_name }}
       environment: ${{ matrix.environment }}
