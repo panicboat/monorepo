@@ -48,21 +48,34 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
-          # terragrunt環境ディレクトリの変更を検出
-          ENVIRONMENTS=$(echo "$CHANGED_FILES" | \
-            grep -E "(^|.*/)${{ inputs.project_name }}/terragrunt/envs/[^/]+/" | \
-            sed -E 's|(^|.*/)${{ inputs.project_name }}/terragrunt/envs/([^/]+)/.*|\2|' | \
-            sort -u | \
-            jq -R -s 'split("\n") | map(select(length > 0))')
+          # terragrunt環境ディレクトリの変更を検出（シンプルなアプローチ）
+          ENVIRONMENTS=()
 
-          echo "Detected environments: $ENVIRONMENTS"
+          while IFS= read -r file; do
+            # プロジェクト名を含むterragruntパスかチェック
+            if [[ "$file" == *"${{ inputs.project_name }}/terragrunt/envs/"* ]]; then
+              # envs/ の後の最初のディレクトリ名を抽出
+              env_path=$(echo "$file" | sed "s|.*${{ inputs.project_name }}/terragrunt/envs/||")
+              env_name=$(echo "$env_path" | cut -d'/' -f1)
+
+              if [[ -n "$env_name" ]]; then
+                echo "Found environment: $env_name (from file: $file)"
+                ENVIRONMENTS+=("$env_name")
+              fi
+            fi
+          done <<< "$CHANGED_FILES"
+
+          # 重複を除去してJSON配列に変換
+          UNIQUE_ENVIRONMENTS=$(printf '%s\n' "${ENVIRONMENTS[@]}" | sort -u | jq -R -s 'split("\n") | map(select(length > 0))')
+
+          echo "Detected environments: $UNIQUE_ENVIRONMENTS"
 
           HAS_CHANGES="false"
-          if [ "$ENVIRONMENTS" != "[]" ] && [ "$ENVIRONMENTS" != "" ]; then
+          if [ "$UNIQUE_ENVIRONMENTS" != "[]" ] && [ "$UNIQUE_ENVIRONMENTS" != "" ]; then
             HAS_CHANGES="true"
           fi
 
-          echo "environments=$ENVIRONMENTS" >> $GITHUB_OUTPUT
+          echo "environments=$UNIQUE_ENVIRONMENTS" >> $GITHUB_OUTPUT
           echo "has_changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
 
   execute-environments:
