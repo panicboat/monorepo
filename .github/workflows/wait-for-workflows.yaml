@@ -27,7 +27,7 @@ jobs:
       uses: lewagon/wait-on-check-action@v1.3.4
       with:
         ref: ${{ github.event.pull_request.head.sha }}
-        running-workflow-name: 'Check All Workflows and Comment'
+        running-workflow-name: 'Wait for Workflows'
         repo-token: ${{ steps.app-token.outputs.token }}
         wait-interval: 30
         timeout: 1200
@@ -40,7 +40,7 @@ jobs:
 
         gh api repos/${{ github.repository }}/actions/runs \
           --jq --arg sha "$HEAD_SHA" \
-          '.workflow_runs[] | select(.head_sha == $sha and .name != "Check All Workflows and Comment") | {name: .name, conclusion: .conclusion, status: .status, html_url: .html_url}' \
+          '.workflow_runs[] | select(.head_sha == $sha and .name != "Wait for Workflows") | {name: .name, conclusion: .conclusion, status: .status, html_url: .html_url}' \
           > workflow_results.json
 
         echo "Workflow results:"
