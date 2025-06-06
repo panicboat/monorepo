@@ -20,10 +20,9 @@ jobs:
         app-id: ${{ vars.APP_ID }}
         private-key: ${{ secrets.PRIVATE_KEY }}
         repositories: ${{ github.repository }}
-        permissions: >-
-          actions:read,
-          checks:read,
-          pull-requests:write
+        permission-actions: read
+        permission-checks: read
+        permission-pull-requests: write
 
     - name: Wait for all workflows to complete
       uses: lewagon/wait-on-check-action@v1.3.4
@@ -40,17 +39,14 @@ jobs:
         echo "Getting workflow status for PR #${{ github.event.pull_request.number }}"
         HEAD_SHA="${{ github.event.pull_request.head.sha }}"
 
-        # GitHub APIでworkflow runsを取得
         gh api repos/${{ github.repository }}/actions/runs \
           --jq --arg sha "$HEAD_SHA" \
           '.workflow_runs[] | select(.head_sha == $sha and .name != "Check All Workflows and Comment") | {name: .name, conclusion: .conclusion, status: .status, html_url: .html_url}' \
           > workflow_results.json
 
-        # 結果をcatして確認
         echo "Workflow results:"
         cat workflow_results.json
 
-        # 成功/失敗/進行中のカウント
         SUCCESS_COUNT=$(jq 'select(.conclusion == "success")' workflow_results.json | jq -s 'length')
         FAILURE_COUNT=$(jq 'select(.conclusion == "failure")' workflow_results.json | jq -s 'length')
         IN_PROGRESS_COUNT=$(jq 'select(.status == "in_progress")' workflow_results.json | jq -s 'length')
@@ -61,7 +57,6 @@ jobs:
         echo "in-progress-count=$IN_PROGRESS_COUNT" >> $GITHUB_OUTPUT
         echo "total-count=$TOTAL_COUNT" >> $GITHUB_OUTPUT
 
-        # 全体の状態判定
         if [[ $IN_PROGRESS_COUNT -gt 0 ]]; then
           echo "overall-status=in_progress" >> $GITHUB_OUTPUT
         elif [[ $FAILURE_COUNT -gt 0 ]]; then
@@ -149,13 +144,22 @@ jobs:
         echo "Generated comment:"
         cat comment_body.md
 
+    - name: Get GitHub App info
+      id: app-info
+      run: |
+        APP_SLUG=$(gh api user --jq '.login')
+        echo "app-slug=$APP_SLUG" >> $GITHUB_OUTPUT
+        echo "GitHub App slug: $APP_SLUG"
+      env:
+        GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
     - name: Find existing comment
       uses: peter-evans/find-comment@v3
       id: find-comment
       with:
         token: ${{ steps.app-token.outputs.token }}
         issue-number: ${{ github.event.pull_request.number }}
-        comment-author: 'your-app-name[bot]'  # GitHub App名に変更
+        comment-author: '${{ steps.app-info.outputs.app-slug }}'
         body-includes: '<!-- WORKFLOW_STATUS_COMMENT -->'
 
     - name: Create or update comment
@@ -171,7 +175,7 @@ jobs:
       if: steps.workflow-status.outputs.overall-status == 'failure'
       uses: slackapi/slack-github-action@v1.27.0
       with:
-        channel-id: 'C1234567890' # TODO: Change to my channel ID
+        channel-id: 'C1234567890'
         slack-message: |
           🚨 Some workflows failed in PR #${{ github.event.pull_request.number }}
 
@@ -189,7 +193,7 @@ jobs:
       if: steps.workflow-status.outputs.overall-status == 'success'
       uses: slackapi/slack-github-action@v1.27.0
       with:
-        channel-id: 'C1234567890' # TODO: Change to my channel ID
+        channel-id: 'C1234567890'
         slack-message: |
           🎉 All workflows passed for PR #${{ github.event.pull_request.number }}
 
