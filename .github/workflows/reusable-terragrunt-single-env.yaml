@@ -168,39 +168,22 @@ jobs:
             PLAN_STATUS="❌ Failed"
           fi
 
-          # キャプチャしたPlan出力から変更数を抽出
-          PLAN_OUTPUT="${{ steps.capture-plan.outputs.plan-output }}"
+          # デフォルト値を設定
+          ADD_COUNT="0"
+          CHANGE_COUNT="0"
+          DESTROY_COUNT="0"
+          PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
 
-          if [ -n "$PLAN_OUTPUT" ]; then
-            ADD_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be created" || echo "0")
-            CHANGE_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be updated" || echo "0")
-            DESTROY_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be destroyed" || echo "0")
+          # GitHubの出力に書き込み（エラー回避のため分割）
+          echo "plan-status=$PLAN_STATUS" >> $GITHUB_OUTPUT
+          echo "add-count=$ADD_COUNT" >> $GITHUB_OUTPUT
+          echo "change-count=$CHANGE_COUNT" >> $GITHUB_OUTPUT
+          echo "destroy-count=$DESTROY_COUNT" >> $GITHUB_OUTPUT
 
-            # Terraform標準出力の "Plan:" 行からも抽出を試みる
-            if [ "$ADD_COUNT" == "0" ] && [ "$CHANGE_COUNT" == "0" ] && [ "$DESTROY_COUNT" == "0" ]; then
-              PLAN_LINE=$(echo "$PLAN_OUTPUT" | grep "Plan:" | tail -1)
-              if [ -n "$PLAN_LINE" ]; then
-                ADD_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*Plan: \([0-9]*\) to add.*/\1/p' || echo "0")
-                CHANGE_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to change.*/\1/p' || echo "0")
-                DESTROY_COUNT=$(echo "$PLAN_LINE" | sed -n 's/.*\([0-9]*\) to destroy.*/\1/p' || echo "0")
-              fi
-            fi
-          else
-            ADD_COUNT="0"
-            CHANGE_COUNT="0"
-            DESTROY_COUNT="0"
-            PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
-          fi
-
-          {
-            echo "plan-status=$PLAN_STATUS"
-            echo "add-count=$ADD_COUNT"
-            echo "change-count=$CHANGE_COUNT"
-            echo "destroy-count=$DESTROY_COUNT"
-            echo "plan-output<<EOF"
-            echo "$PLAN_OUTPUT"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
+          # 複数行出力の場合のみEOFを使用
+          echo "plan-output<<EOF" >> $GITHUB_OUTPUT
+          echo "$PLAN_OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Parse Apply Results
         if: inputs.action_type == 'apply' && always()
