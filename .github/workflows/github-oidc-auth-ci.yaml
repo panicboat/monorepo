@@ -1,4 +1,4 @@
-name: 'Example Service - CI/CD'
+name: 'GitHub OIDC Auth - CI/CD'
 
 on:
   pull_request:
