@@ -97,16 +97,12 @@ jobs:
         with:
           terraform_version: ${{ inputs.terraform_version }}
 
-      - name: Setup Terragrunt
-        uses: gruntwork-io/terragrunt-action@v2
-        with:
-          terragrunt_version: ${{ inputs.terragrunt_version }}
-
       - name: Terragrunt Plan
         if: inputs.action_type == 'plan'
         id: plan
         uses: gruntwork-io/terragrunt-action@v2
         with:
+          tf_version: ${{ inputs.terraform_version }}
           terragrunt_version: ${{ inputs.terragrunt_version }}
           terragrunt_command: 'plan'
           terragrunt_args: '-no-color -detailed-exitcode'
@@ -122,6 +118,7 @@ jobs:
         id: apply
         uses: gruntwork-io/terragrunt-action@v2
         with:
+          tf_version: ${{ inputs.terraform_version }}
           terragrunt_version: ${{ inputs.terragrunt_version }}
           terragrunt_command: 'apply'
           terragrunt_args: '-auto-approve -no-color'
