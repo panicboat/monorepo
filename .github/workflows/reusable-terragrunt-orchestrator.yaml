@@ -50,8 +50,8 @@ jobs:
 
           # terragrunt環境ディレクトリの変更を検出
           ENVIRONMENTS=$(echo "$CHANGED_FILES" | \
-            grep -E ".*/${{ inputs.project_name }}/terragrunt/envs/[^/]+/" | \
-            sed -E 's|.*/${{ inputs.project_name }}/terragrunt/envs/([^/]+)/.*|\1|' | \
+            grep -E "(^|.*/)${{ inputs.project_name }}/terragrunt/envs/[^/]+/" | \
+            sed -E 's|(^|.*/)${{ inputs.project_name }}/terragrunt/envs/([^/]+)/.*|\2|' | \
             sort -u | \
             jq -R -s 'split("\n") | map(select(length > 0))')
 
