@@ -37,13 +37,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::559744160976:role/claude-code-action-monorepo-github-actions-role
-          aws-region: us-west-2
+          aws-region: us-east-1
 
       - uses: anthropics/claude-code-action@beta
         with:
-          model: "arn:aws:bedrock:us-west-2:559744160976:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0"
+          model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
           github_token: ${{ steps.app-token.outputs.token }}
           trigger_phrase: "@claude"
           use_bedrock: "true"
         env:
-          ANTHROPIC_BEDROCK_BASE_URL: https://bedrock-runtime.us-west-2.amazonaws.com
+          ANTHROPIC_BEDROCK_BASE_URL: https://bedrock-runtime.us-east-1.amazonaws.com

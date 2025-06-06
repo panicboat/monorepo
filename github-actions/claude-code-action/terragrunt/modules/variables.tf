@@ -68,7 +68,7 @@ variable "enable_claude_code_action" {
 variable "bedrock_model_region" {
   description = "AWS region for Bedrock model access"
   type        = string
-  default     = "us-west-2"
+  default     = "us-east-1"
 }
 
 variable "bedrock_model_id" {
