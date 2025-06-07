@@ -7,6 +7,7 @@ on:
     paths:
       - 'github-oidc-auth/**'
       - '.github/workflows/github-oidc-auth-*.yaml'
+      - '.github/workflows/reusable-terragrunt-*.yaml'
   push:
     branches:
       - develop
