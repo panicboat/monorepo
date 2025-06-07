@@ -42,6 +42,7 @@ jobs:
         script: |
           const commit_sha = '${{ github.event.pull_request.head.sha }}';
 
+          // ワークフロー実行一覧を取得
           const { data: workflowRuns } = await github.rest.actions.listWorkflowRunsForRepo({
             owner: context.repo.owner,
             repo: context.repo.repo,
@@ -49,6 +50,7 @@ jobs:
             per_page: 100
           });
 
+          // Wait for Workflowsを除外
           const relevantRuns = workflowRuns.workflow_runs.filter(
             run => run.name !== 'Wait for Workflows'
           );
@@ -60,10 +62,12 @@ jobs:
             core.setOutput('in-progress-count', '0');
             core.setOutput('total-count', '0');
 
+            // 空のJSONファイルを作成
             require('fs').writeFileSync('workflow_results.json', '[]');
             return;
           }
 
+          // ステータスをカウント
           const successCount = relevantRuns.filter(run => run.conclusion === 'success').length;
           const failureCount = relevantRuns.filter(run => run.conclusion === 'failure').length;
           const cancelledCount = relevantRuns.filter(run => run.conclusion === 'cancelled').length;
@@ -73,6 +77,7 @@ jobs:
           ).length;
           const totalCount = relevantRuns.length;
 
+          // 全体ステータスを決定
           let overallStatus;
           if (inProgressCount > 0) {
             overallStatus = 'in_progress';
@@ -84,12 +89,14 @@ jobs:
             overallStatus = 'partial';
           }
 
+          // 結果を出力
           core.setOutput('overall-status', overallStatus);
           core.setOutput('success-count', successCount.toString());
           core.setOutput('failure-count', failureCount.toString());
           core.setOutput('in-progress-count', inProgressCount.toString());
           core.setOutput('total-count', totalCount.toString());
 
+          // ワークフロー詳細をJSONファイルに保存
           require('fs').writeFileSync('workflow_results.json', JSON.stringify(relevantRuns, null, 2));
 
           console.log('Workflow Status Summary:');
@@ -164,6 +171,7 @@ jobs:
             echo "| Workflow | Status | Result |"
             echo "|----------|---------|--------|"
 
+            # JavaScriptでワークフロー詳細テーブルを生成
             node -e "
               const workflows = JSON.parse(require('fs').readFileSync('workflow_results.json', 'utf8'));
               workflows.forEach(workflow => {
