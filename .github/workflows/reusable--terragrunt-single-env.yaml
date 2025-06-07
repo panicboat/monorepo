@@ -408,7 +408,7 @@ jobs:
           body-includes: 'terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}-${{ inputs.project_name }}'
 
       - name: Create or update PR comment for Plan
-        if: github.event_name == 'pull_request' && inputs.action_type == 'plan'
+        if: inputs.action_type == 'plan'
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
@@ -436,7 +436,7 @@ jobs:
             <details>
             <summary>📝 Plan Output</summary>
 
-            ```
+            ```hcl
             ${{ steps.parse-plan.outputs.plan-output }}
             ```
 
@@ -446,7 +446,7 @@ jobs:
           edit-mode: replace
 
       - name: Create or update PR comment for Apply
-        if: github.event_name == 'pull_request' && inputs.action_type == 'apply'
+        if: inputs.action_type == 'apply'
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
@@ -471,7 +471,7 @@ jobs:
             <details>
             <summary>📝 Apply Output</summary>
 
-            ```
+            ```hcl
             ${{ steps.parse-apply.outputs.apply-output }}
             ```
 
