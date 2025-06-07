@@ -1,0 +1,248 @@
+name: Wait for Workflows
+on:
+  pull_request:
+    branches-ignore:
+      - main
+
+jobs:
+  wait-for-workflows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pull-requests: write
+      actions: read
+      checks: read
+    steps:
+
+    - name: Get GitHub App Token
+      id: app-token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ vars.APP_ID }}
+        private-key: ${{ secrets.APP_PRIVATE_KEY }}
+        permission-actions: read
+        permission-checks: read
+        permission-pull-requests: write
+
+    - name: Wait for all workflows to complete
+      uses: lewagon/wait-on-check-action@v1.3.4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        running-workflow-name: 'wait-for-workflows'
+        repo-token: ${{ steps.app-token.outputs.token }}
+        allowed-conclusions: success,failure,skipped,cancelled
+        wait-interval: 10
+      continue-on-error: true
+
+    - name: Get workflow status
+      id: workflow-status
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ steps.app-token.outputs.token }}
+        script: |
+          const commit_sha = '${{ github.event.pull_request.head.sha }}';
+
+          const { data: workflowRuns } = await github.rest.actions.listWorkflowRunsForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            head_sha: commit_sha,
+            per_page: 100
+          });
+
+          const relevantRuns = workflowRuns.workflow_runs.filter(
+            run => run.name !== 'Wait for Workflows'
+          );
+
+          if (relevantRuns.length === 0) {
+            core.setOutput('overall-status', 'no_workflows');
+            core.setOutput('success-count', '0');
+            core.setOutput('failure-count', '0');
+            core.setOutput('in-progress-count', '0');
+            core.setOutput('total-count', '0');
+
+            require('fs').writeFileSync('workflow_results.json', '[]');
+            return;
+          }
+
+          const successCount = relevantRuns.filter(run => run.conclusion === 'success').length;
+          const failureCount = relevantRuns.filter(run => run.conclusion === 'failure').length;
+          const cancelledCount = relevantRuns.filter(run => run.conclusion === 'cancelled').length;
+          const skippedCount = relevantRuns.filter(run => run.conclusion === 'skipped').length;
+          const inProgressCount = relevantRuns.filter(run =>
+            run.status === 'in_progress' || run.status === 'queued'
+          ).length;
+          const totalCount = relevantRuns.length;
+
+          let overallStatus;
+          if (inProgressCount > 0) {
+            overallStatus = 'in_progress';
+          } else if (failureCount > 0) {
+            overallStatus = 'failure';
+          } else if (successCount === totalCount) {
+            overallStatus = 'success';
+          } else {
+            overallStatus = 'partial';
+          }
+
+          core.setOutput('overall-status', overallStatus);
+          core.setOutput('success-count', successCount.toString());
+          core.setOutput('failure-count', failureCount.toString());
+          core.setOutput('in-progress-count', inProgressCount.toString());
+          core.setOutput('total-count', totalCount.toString());
+
+          require('fs').writeFileSync('workflow_results.json', JSON.stringify(relevantRuns, null, 2));
+
+    - name: Generate comment content
+      run: |
+        TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        OVERALL_STATUS="${{ steps.workflow-status.outputs.overall-status }}"
+        SUCCESS_COUNT="${{ steps.workflow-status.outputs.success-count }}"
+        FAILURE_COUNT="${{ steps.workflow-status.outputs.failure-count }}"
+        IN_PROGRESS_COUNT="${{ steps.workflow-status.outputs.in-progress-count }}"
+        TOTAL_COUNT="${{ steps.workflow-status.outputs.total-count }}"
+
+        {
+          echo "## 🔄 Workflow Status Report"
+          echo ""
+          echo "<!-- workflow-status-comment -->"
+          echo ""
+          echo "**Last updated:** $TIMESTAMP"
+          echo "**Commit:** \`${{ github.event.pull_request.head.sha }}\`"
+          echo ""
+
+          case "$OVERALL_STATUS" in
+            "success")
+              echo "### ✅ All Workflows Passed!"
+              echo ""
+              echo "🎉 **Status:** All $TOTAL_COUNT workflows completed successfully"
+              ;;
+            "failure")
+              echo "### ❌ Some Workflows Failed"
+              echo ""
+              echo "📊 **Summary:**"
+              echo "- ✅ Success: $SUCCESS_COUNT"
+              echo "- ❌ Failed: $FAILURE_COUNT"
+              echo "- 📋 Total: $TOTAL_COUNT"
+              ;;
+            "in_progress")
+              echo "### ⏳ Workflows Still Running"
+              echo ""
+              echo "📊 **Summary:**"
+              echo "- ✅ Success: $SUCCESS_COUNT"
+              echo "- ❌ Failed: $FAILURE_COUNT"
+              echo "- ⏳ In Progress: $IN_PROGRESS_COUNT"
+              echo "- 📋 Total: $TOTAL_COUNT"
+              ;;
+            "no_workflows")
+              echo "### ❓ No Workflows Found"
+              echo ""
+              echo "No workflows found for this commit."
+              ;;
+            *)
+              echo "### ❓ Unknown Status"
+              echo ""
+              echo "📊 **Summary:**"
+              echo "- ✅ Success: $SUCCESS_COUNT"
+              echo "- ❌ Failed: $FAILURE_COUNT"
+              echo "- ⏳ In Progress: $IN_PROGRESS_COUNT"
+              echo "- 📋 Total: $TOTAL_COUNT"
+              ;;
+          esac
+
+          echo ""
+          echo "### 📋 Workflow Details"
+          echo ""
+
+          if [[ -s workflow_results.json ]]; then
+            echo "| Workflow | Status | Result |"
+            echo "|----------|---------|--------|"
+
+            node -e "
+              const workflows = JSON.parse(require('fs').readFileSync('workflow_results.json', 'utf8'));
+              workflows.forEach(workflow => {
+                const getIcon = (conclusion, status) => {
+                  if (conclusion === 'success') return '✅';
+                  if (conclusion === 'failure') return '❌';
+                  if (status === 'in_progress' || status === 'queued') return '⏳';
+                  return '⏸️';
+                };
+                const icon = getIcon(workflow.conclusion, workflow.status);
+                const result = workflow.conclusion || workflow.status;
+                console.log(\`| [\${workflow.name}](\${workflow.html_url}) | \${icon} | \${result} |\`);
+              });
+            "
+          else
+            echo "No workflow data available."
+          fi
+
+          echo ""
+          echo "---"
+          echo "*This comment is automatically updated when workflow status changes.*"
+
+        } > comment_body.md
+
+    - name: Find existing comment
+      uses: peter-evans/find-comment@v3
+      id: find-comment
+      with:
+        token: ${{ steps.app-token.outputs.token }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body-includes: 'workflow-status-comment'
+
+    - name: Create or update comment
+      uses: peter-evans/create-or-update-comment@v4
+      with:
+        token: ${{ steps.app-token.outputs.token }}
+        comment-id: ${{ steps.find-comment.outputs.comment-id }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body-path: comment_body.md
+        edit-mode: replace
+
+    - name: Notify Slack on failure
+      if: steps.workflow-status.outputs.overall-status == 'failure'
+      uses: slackapi/slack-github-action@v1.27.0
+      with:
+        channel-id: 'C0907M25935'
+        slack-message: |
+          🚨 Some workflows failed in PR #${{ github.event.pull_request.number }}
+
+          📊 Summary:
+          - ✅ *Success*: ${{ steps.workflow-status.outputs.success-count }}
+          - ❌ *Failed*: ${{ steps.workflow-status.outputs.failure-count }}
+          - 📋 *Total*: ${{ steps.workflow-status.outputs.total-count }}
+
+          👤 *Author*: ${{ github.event.pull_request.user.login }}
+          🔗 *PR*: ${{ github.event.pull_request.html_url }}
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+    - name: Notify Slack on success
+      if: steps.workflow-status.outputs.overall-status == 'success'
+      uses: slackapi/slack-github-action@v1.27.0
+      with:
+        channel-id: 'C0907M25935'
+        slack-message: |
+          🎉 All workflows passed for PR #${{ github.event.pull_request.number }}
+
+          ✅ *Status:* All ${{ steps.workflow-status.outputs.total-count }} workflows completed successfully
+
+          📝 *Title:* ${{ github.event.pull_request.title }}
+          👤 *Author:* ${{ github.event.pull_request.user.login }}
+          🏷️ *Branch:* ${{ github.event.pull_request.head.ref }}
+          🔗 *PR:* ${{ github.event.pull_request.html_url }}
+
+          Ready for review and merge! 🚀
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+    - name: Fail if workflows failed
+      if: steps.workflow-status.outputs.overall-status == 'failure'
+      run: |
+        echo "❌ Some workflows failed - failing this workflow as well"
+        exit 1
+
+    - name: Success actions
+      if: steps.workflow-status.outputs.overall-status == 'success'
+      run: |
+        echo "✅ All workflows passed successfully!"
+        echo "PR #${{ github.event.pull_request.number }} is ready for review and merge."
