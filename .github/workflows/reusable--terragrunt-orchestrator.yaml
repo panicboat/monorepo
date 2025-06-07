@@ -73,10 +73,6 @@ jobs:
       fail-fast: false
     uses: ./.github/workflows/reusable--terragrunt-single-env.yaml
     secrets: inherit
-    permissions:
-      id-token: write
-      contents: read
-      pull-requests: write
     with:
       project_name: ${{ inputs.project_name }}
       environment: ${{ matrix.environment }}

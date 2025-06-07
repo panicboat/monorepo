@@ -30,9 +30,6 @@ jobs:
   terragrunt-execution:
     name: '${{ inputs.action_type }} - ${{ inputs.environment }}'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
     steps:
       - name: Generate GitHub App token
         id: app-token
