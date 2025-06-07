@@ -7,16 +7,6 @@ on:
         required: true
         type: string
         description: 'Project name for terragrunt execution'
-      terraform_version:
-        required: false
-        type: string
-        default: '1.5.7'
-        description: 'Terraform version'
-      terragrunt_version:
-        required: false
-        type: string
-        default: '0.53.2'
-        description: 'Terragrunt version'
       action_type:
         required: true
         type: string
@@ -94,6 +84,4 @@ jobs:
     with:
       project_name: ${{ inputs.project_name }}
       environment: ${{ matrix.environment }}
-      terraform_version: ${{ inputs.terraform_version }}
-      terragrunt_version: ${{ inputs.terragrunt_version }}
       action_type: ${{ inputs.action_type }}
