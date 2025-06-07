@@ -398,24 +398,12 @@ jobs:
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
-      - name: Find existing comment
-        uses: peter-evans/find-comment@v3
-        id: find-comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: 'terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}-${{ inputs.project_name }}'
-
       - name: Create or update PR comment for Plan
         if: inputs.action_type == 'plan'
-        uses: peter-evans/create-or-update-comment@v4
+        uses: thollander/actions-comment-pull-request@v3
         with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
+          message: |
             ## 📋 Terragrunt Plan Results
-
-            <!-- terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}-${{ inputs.project_name }} -->
 
             **Project**: ${{ inputs.project_name }}
             **Environment**: `${{ inputs.environment }}`
@@ -442,18 +430,15 @@ jobs:
             </details>
 
             [View full workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          edit-mode: replace
+          comment-tag: 'terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}-${{ inputs.project_name }}'
+          mode: upsert
 
       - name: Create or update PR comment for Apply
         if: inputs.action_type == 'apply'
-        uses: peter-evans/create-or-update-comment@v4
+        uses: thollander/actions-comment-pull-request@v3
         with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
+          message: |
             ## 🚀 Terragrunt Apply Completed
-
-            <!-- terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}-${{ inputs.project_name }} -->
 
             **Project**: ${{ inputs.project_name }}
             **Environment**: `${{ inputs.environment }}`
@@ -477,7 +462,8 @@ jobs:
             </details>
 
             [View full workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          edit-mode: replace
+          comment-tag: 'terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}-${{ inputs.project_name }}'
+          mode: upsert
 
       - name: Exit with appropriate code
         run: |
