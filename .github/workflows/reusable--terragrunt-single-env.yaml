@@ -320,18 +320,28 @@ jobs:
             APPLY_STATUS="❌ Failed"
           fi
 
-          # GitHub Actionsの出力をURLデコード
-          cat > apply_output_encoded.txt << 'APPLY_OUTPUT_DELIMITER_END'
+          # GitHub Actionsの出力を一時ファイルに保存してURLデコード
+          cat > apply_output_encoded.txt << 'APPLY_OUTPUT_EOF'
           ${{ steps.apply.outputs.tg_action_output }}
-          APPLY_OUTPUT_DELIMITER_END
+          APPLY_OUTPUT_EOF
 
+          # URLデコード（%0A -> 改行、%20 -> スペースなど）
           python3 -c "
           import urllib.parse
+          import sys
+
           with open('apply_output_encoded.txt', 'r') as f:
               encoded_content = f.read().strip()
+
+          # URLデコード
           decoded_content = urllib.parse.unquote(encoded_content)
+
           with open('apply_output_decoded.txt', 'w') as f:
               f.write(decoded_content)
+
+          print(f'Decoded length: {len(decoded_content)}')
+          print('First 300 chars:')
+          print(decoded_content[:300])
           "
 
           # デコードされた出力を使用
@@ -352,9 +362,12 @@ jobs:
             CHANGED_COUNT=$(echo "$CHANGED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
             DESTROYED_COUNT=$(echo "$DESTROYED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
 
+            # 空の場合は0にする
             ADDED_COUNT=${ADDED_COUNT:-0}
             CHANGED_COUNT=${CHANGED_COUNT:-0}
             DESTROYED_COUNT=${DESTROYED_COUNT:-0}
+
+            echo "Extracted counts: ADDED=$ADDED_COUNT, CHANGED=$CHANGED_COUNT, DESTROYED=$DESTROYED_COUNT"
 
             # 出力を制限（20,000文字まで）
             if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
@@ -366,22 +379,24 @@ jobs:
             DESTROYED_COUNT="0"
           fi
 
+          # クリーンアップ
+          rm -f apply_output_encoded.txt apply_output_decoded.txt
+
           echo "apply-status=$APPLY_STATUS" >> $GITHUB_OUTPUT
           echo "added-count=$ADDED_COUNT" >> $GITHUB_OUTPUT
           echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
           echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
 
-          # 一意な区切り文字を生成
-          DELIMITER="APPLY_OUTPUT_END_$_$(date +%s%N)"
-          echo "apply-output<<$DELIMITER" >> $GITHUB_OUTPUT
-          if [ -f "apply_output_decoded.txt" ]; then
-            cat apply_output_decoded.txt >> $GITHUB_OUTPUT
-          else
-            echo "$APPLY_OUTPUT" >> $GITHUB_OUTPUT
-          fi
-          echo "$DELIMITER" >> $GITHUB_OUTPUT
-
-          rm -f apply_output_encoded.txt apply_output_decoded.txt
+          # 複数行出力を安全に処理（planと同じ方式）
+          {
+            echo "apply-output<<EOF"
+            if [ -f "apply_output_decoded.txt" ]; then
+              cat apply_output_decoded.txt
+            else
+              echo "$APPLY_OUTPUT"
+            fi
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Find existing comment
         if: github.event_name == 'pull_request'
