@@ -436,7 +436,7 @@ jobs:
             <details>
             <summary>📝 Plan Output</summary>
 
-            ```
+            ```hcl
             ${{ steps.parse-plan.outputs.plan-output }}
             ```
 
@@ -471,7 +471,7 @@ jobs:
             <details>
             <summary>📝 Apply Output</summary>
 
-            ```
+            ```hcl
             ${{ steps.parse-apply.outputs.apply-output }}
             ```
 
