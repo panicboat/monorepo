@@ -23,9 +23,9 @@ jobs:
     uses: ./.github/workflows/reusable--terragrunt-orchestrator.yaml
     secrets: inherit
     permissions:
-      id-token: write        # OIDC認証に必要
-      contents: read         # リポジトリのコードを読み取るために必要
-      pull-requests: write   # PRコメントの作成・更新に必要
+      id-token: write
+      contents: read
+      pull-requests: write
     with:
       project_name: github-oidc-auth
       action_type: 'plan'
@@ -35,9 +35,9 @@ jobs:
     uses: ./.github/workflows/reusable--terragrunt-orchestrator.yaml
     secrets: inherit
     permissions:
-      id-token: write        # OIDC認証に必要
-      contents: read         # リポジトリのコードを読み取るために必要
-      pull-requests: write   # PRコメントの作成・更新に必要
+      id-token: write
+      contents: read
+      pull-requests: write
     with:
       project_name: github-oidc-auth
       action_type: 'apply'
