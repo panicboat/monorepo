@@ -1,0 +1,41 @@
+name: 'GitHub OIDC Auth - CI/CD'
+
+on:
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - 'github-oidc-auth/**'
+      - '.github/workflows/github-oidc-auth--*.yaml'
+      - '.github/workflows/reusable--*.yaml'
+      - '.github/workflows/wait-for-workflows.yaml'
+  push:
+    branches:
+      - develop
+      - staging/github-oidc-auth
+      - production/github-oidc-auth
+    paths:
+      - 'github-oidc-auth/**'
+
+jobs:
+  terragrunt-plan:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/reusable--terragrunt-orchestrator.yaml
+    permissions:
+      id-token: write        # OIDC認証に必要
+      contents: read         # リポジトリのコードを読み取るために必要
+      pull-requests: write   # PRコメントの作成・更新に必要
+    with:
+      project_name: github-oidc-auth
+      action_type: 'plan'
+
+  terragrunt-apply:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/reusable--terragrunt-orchestrator.yaml
+    permissions:
+      id-token: write        # OIDC認証に必要
+      contents: read         # リポジトリのコードを読み取るために必要
+      pull-requests: write   # PRコメントの作成・更新に必要
+    with:
+      project_name: github-oidc-auth
+      action_type: 'apply'
