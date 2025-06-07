@@ -399,7 +399,6 @@ jobs:
           } >> $GITHUB_OUTPUT
 
       - name: Find existing comment
-        if: github.event_name == 'pull_request'
         uses: peter-evans/find-comment@v3
         id: find-comment
         with:
