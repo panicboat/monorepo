@@ -25,6 +25,22 @@ on:
         required: true
         type: string
         description: 'Action type: plan or apply'
+      plan_iam_role:
+        required: true
+        type: string
+        description: 'IAM role for plan operations'
+      apply_iam_role:
+        required: true
+        type: string
+        description: 'IAM role for apply operations'
+      aws_region:
+        required: true
+        type: string
+        description: 'AWS region'
+      working_directory:
+        required: true
+        type: string
+        description: 'Working directory for terragrunt execution'
 
 jobs:
   terragrunt-execution:
@@ -41,51 +57,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Load Terragrunt configuration
-        id: load-config
-        run: |
-          CONFIG_FILE=".github/terragrunt-actions-config.yaml"
-
-          if [ ! -f "$CONFIG_FILE" ]; then
-            echo "Configuration file not found: $CONFIG_FILE"
-            exit 1
-          fi
-
-          PLAN_IAM_ROLE=$(yq e ".${{ inputs.environment }}.iam_role_plan // .default.iam_role_plan" "$CONFIG_FILE")
-          APPLY_IAM_ROLE=$(yq e ".${{ inputs.environment }}.iam_role_apply // .default.iam_role_apply" "$CONFIG_FILE")
-          AWS_REGION=$(yq e ".${{ inputs.environment }}.aws_region // .default.aws_region // \"us-east-1\"" "$CONFIG_FILE")
-          WORKING_DIR=$(yq e ".${{ inputs.environment }}.working_directory // \"\"" "$CONFIG_FILE")
-
-          if [ -z "$WORKING_DIR" ] || [ "$WORKING_DIR" == "null" ]; then
-            POSSIBLE_PATHS=(
-              "${{ inputs.project_name }}/terragrunt/envs/${{ inputs.environment }}"
-              "*/${{ inputs.project_name }}/terragrunt/envs/${{ inputs.environment }}"
-            )
-
-            for path_pattern in "${POSSIBLE_PATHS[@]}"; do
-              FOUND_PATH=$(find . -path "./$path_pattern" -type d | head -1)
-              if [ -n "$FOUND_PATH" ]; then
-                WORKING_DIR="$FOUND_PATH"
-                break
-              fi
-            done
-          fi
-
-          if [ -z "$WORKING_DIR" ] || [ "$WORKING_DIR" == "null" ]; then
-            echo "Working directory not found for project: ${{ inputs.project_name }}, environment: ${{ inputs.environment }}"
-            exit 1
-          fi
-
-          echo "plan-iam-role=$PLAN_IAM_ROLE" >> $GITHUB_OUTPUT
-          echo "apply-iam-role=$APPLY_IAM_ROLE" >> $GITHUB_OUTPUT
-          echo "aws-region=$AWS_REGION" >> $GITHUB_OUTPUT
-          echo "working-directory=$WORKING_DIR" >> $GITHUB_OUTPUT
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ inputs.action_type == 'plan' && steps.load-config.outputs.plan-iam-role || steps.load-config.outputs.apply-iam-role }}
-          aws-region: ${{ steps.load-config.outputs.aws-region }}
+          role-to-assume: ${{ inputs.action_type == 'plan' && inputs.plan_iam_role || inputs.apply_iam_role }}
+          aws-region: ${{ inputs.aws_region }}
           role-session-name: GitHubActions-Terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}
           audience: sts.amazonaws.com
 
@@ -112,11 +88,11 @@ jobs:
           tg_version: ${{ inputs.terragrunt_version }}
           tg_command: 'plan'
           args: '-no-color -detailed-exitcode'
-          tg_dir: ${{ steps.load-config.outputs.working-directory }}
+          tg_dir: ${{ inputs.working_directory }}
         continue-on-error: true
         env:
           TF_INPUT: false
-          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
+          AWS_DEFAULT_REGION: ${{ inputs.aws_region }}
 
       - name: Terragrunt Apply
         if: inputs.action_type == 'apply'
@@ -127,11 +103,11 @@ jobs:
           tg_version: ${{ inputs.terragrunt_version }}
           tg_command: 'apply'
           args: '-auto-approve -no-color'
-          tg_dir: ${{ steps.load-config.outputs.working-directory }}
+          tg_dir: ${{ inputs.working_directory }}
         continue-on-error: true
         env:
           TF_INPUT: false
-          AWS_DEFAULT_REGION: ${{ steps.load-config.outputs.aws-region }}
+          AWS_DEFAULT_REGION: ${{ inputs.aws_region }}
 
       - name: Parse Results
         if: always()
@@ -211,9 +187,8 @@ jobs:
 
             **Project**: ${{ inputs.project_name }}
             **Environment**: `${{ inputs.environment }}`
-            **Directory**: `${{ steps.load-config.outputs.working-directory }}`
+            **Directory**: `${{ inputs.working_directory }}`
             **Status**: ${{ steps.parse-results.outputs.status }}
-            ${{ github.event_name == 'push' && format('**Merged PR**: #{0} - {1}', steps.pr-context.outputs.pr-number, steps.pr-context.outputs.pr-title) || '' }}
 
             <details>
             <summary>📝 ${{ inputs.action_type == 'plan' && 'Plan' || 'Apply' }} Output</summary>

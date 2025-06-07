@@ -63,17 +63,77 @@ jobs:
           echo "environments=$UNIQUE_ENVIRONMENTS" >> $GITHUB_OUTPUT
           echo "has_changes=$HAS_CHANGES" >> $GITHUB_OUTPUT
 
+  load-configurations:
+    name: 'Load Terragrunt Configurations'
+    needs: detect-environments
+    if: needs.detect-environments.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      config-matrix: ${{ steps.load-configs.outputs.config-matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Load configurations for all environments
+        id: load-configs
+        run: |
+          CONFIG_FILE=".github/terragrunt-actions-config.yaml"
+
+          if [ ! -f "$CONFIG_FILE" ]; then
+            echo "Configuration file not found: $CONFIG_FILE"
+            exit 1
+          fi
+
+          ENVIRONMENTS='${{ needs.detect-environments.outputs.environments }}'
+          CONFIG_MATRIX=()
+
+          for env in $(echo "$ENVIRONMENTS" | jq -r '.[]'); do
+            PLAN_IAM_ROLE=$(yq e ".$env.iam_role_plan // .default.iam_role_plan" "$CONFIG_FILE")
+            APPLY_IAM_ROLE=$(yq e ".$env.iam_role_apply // .default.iam_role_apply" "$CONFIG_FILE")
+            AWS_REGION=$(yq e ".$env.aws_region // .default.aws_region // \"us-east-1\"" "$CONFIG_FILE")
+            WORKING_DIR=$(yq e ".$env.working_directory // \"\"" "$CONFIG_FILE")
+
+            if [ -z "$WORKING_DIR" ] || [ "$WORKING_DIR" == "null" ]; then
+              POSSIBLE_PATHS=(
+                "${{ inputs.project_name }}/terragrunt/envs/$env"
+                "*/${{ inputs.project_name }}/terragrunt/envs/$env"
+              )
+
+              for path_pattern in "${POSSIBLE_PATHS[@]}"; do
+                FOUND_PATH=$(find . -path "./$path_pattern" -type d | head -1)
+                if [ -n "$FOUND_PATH" ]; then
+                  WORKING_DIR="$FOUND_PATH"
+                  break
+                fi
+              done
+            fi
+
+            if [ -z "$WORKING_DIR" ] || [ "$WORKING_DIR" == "null" ]; then
+              echo "Working directory not found for project: ${{ inputs.project_name }}, environment: $env"
+              exit 1
+            fi
+
+            CONFIG_MATRIX+=("{\"environment\":\"$env\",\"plan_iam_role\":\"$PLAN_IAM_ROLE\",\"apply_iam_role\":\"$APPLY_IAM_ROLE\",\"aws_region\":\"$AWS_REGION\",\"working_directory\":\"$WORKING_DIR\"}")
+          done
+
+          MATRIX_JSON=$(printf '%s\n' "${CONFIG_MATRIX[@]}" | jq -s .)
+          echo "config-matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+
   execute-environments:
     name: 'Execute Terragrunt for Environments'
-    needs: detect-environments
+    needs: [detect-environments, load-configurations]
     if: needs.detect-environments.outputs.has_changes == 'true'
     strategy:
       matrix:
-        environment: ${{ fromJson(needs.detect-environments.outputs.environments) }}
+        config: ${{ fromJson(needs.load-configurations.outputs.config-matrix) }}
       fail-fast: false
     uses: ./.github/workflows/reusable--terragrunt-single-env.yaml
     secrets: inherit
     with:
       project_name: ${{ inputs.project_name }}
-      environment: ${{ matrix.environment }}
+      environment: ${{ matrix.config.environment }}
       action_type: ${{ inputs.action_type }}
+      plan_iam_role: ${{ matrix.config.plan_iam_role }}
+      apply_iam_role: ${{ matrix.config.apply_iam_role }}
+      aws_region: ${{ matrix.config.aws_region }}
+      working_directory: ${{ matrix.config.working_directory }}
