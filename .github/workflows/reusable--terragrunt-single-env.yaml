@@ -203,17 +203,10 @@ jobs:
         if: inputs.action_type == 'plan' && always()
         id: parse-plan
         run: |
-          # デバッグ: 実際の出力を確認
-          echo "=== Debug: tg_action_output ==="
-          echo "Exit code: ${{ steps.plan.outputs.tg_action_exit_code }}"
-          echo "Output exists: ${{ steps.plan.outputs.tg_action_output != '' }}"
-
-          # GitHub Actionsの出力を一時ファイルに保存してURLデコード
           cat > plan_output_encoded.txt << 'PLAN_OUTPUT_EOF'
           ${{ steps.plan.outputs.tg_action_output }}
           PLAN_OUTPUT_EOF
 
-          # URLデコード（%0A -> 改行、%20 -> スペースなど）
           python3 -c "
           import urllib.parse
           import sys
@@ -221,20 +214,12 @@ jobs:
           with open('plan_output_encoded.txt', 'r') as f:
               encoded_content = f.read().strip()
 
-          # URLデコード
           decoded_content = urllib.parse.unquote(encoded_content)
 
           with open('plan_output_decoded.txt', 'w') as f:
               f.write(decoded_content)
-
-          print(f'Decoded length: {len(decoded_content)}')
-          print('First 300 chars:')
-          print(decoded_content[:300])
           "
 
-          echo "=== End Debug ==="
-
-          # Planの結果を解析
           if [ "${{ steps.plan.outcome }}" == "success" ]; then
             if [ "${{ steps.plan.outputs.tg_action_exit_code }}" == "0" ]; then
               PLAN_STATUS="✅ No changes"
@@ -247,25 +232,19 @@ jobs:
             PLAN_STATUS="❌ Failed"
           fi
 
-          # デコードされた出力を使用
           if [ -f "plan_output_decoded.txt" ] && [ -s "plan_output_decoded.txt" ]; then
             PLAN_OUTPUT=$(cat plan_output_decoded.txt)
-            echo "Using decoded tg_action_output"
           elif [ "${{ steps.plan-fallback.outputs.plan-output != '' }}" == "true" ]; then
             PLAN_OUTPUT="${{ steps.plan-fallback.outputs.plan-output }}"
-            echo "Using fallback output"
           else
             PLAN_OUTPUT="Plan execution completed. See workflow logs for detailed output."
-            echo "Using default message"
           fi
 
-          # 変更数を抽出
           if [ "$PLAN_OUTPUT" != "Plan execution completed. See workflow logs for detailed output." ]; then
             ADD_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be created" 2>/dev/null || echo "0")
             CHANGE_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be updated" 2>/dev/null || echo "0")
             DESTROY_COUNT=$(echo "$PLAN_OUTPUT" | grep -c "will be destroyed" 2>/dev/null || echo "0")
 
-            # Terraform標準出力の "Plan:" 行からも抽出を試みる
             if [ "$ADD_COUNT" == "0" ] && [ "$CHANGE_COUNT" == "0" ] && [ "$DESTROY_COUNT" == "0" ]; then
               PLAN_LINE=$(echo "$PLAN_OUTPUT" | grep "Plan:" | tail -1)
               if [ -n "$PLAN_LINE" ]; then
@@ -275,7 +254,6 @@ jobs:
               fi
             fi
 
-            # 数値のみを保証
             ADD_COUNT=$(echo "$ADD_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
             CHANGE_COUNT=$(echo "$CHANGE_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
             DESTROY_COUNT=$(echo "$DESTROY_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
@@ -285,9 +263,6 @@ jobs:
             CHANGE_COUNT=${CHANGE_COUNT:-0}
             DESTROY_COUNT=${DESTROY_COUNT:-0}
 
-            echo "Extracted counts: ADD=$ADD_COUNT, CHANGE=$CHANGE_COUNT, DESTROY=$DESTROY_COUNT"
-
-            # 出力を制限（30,000文字まで）
             if [ ${#PLAN_OUTPUT} -gt 30000 ]; then
               PLAN_OUTPUT="${PLAN_OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
             fi
@@ -297,7 +272,6 @@ jobs:
             DESTROY_COUNT="0"
           fi
 
-          # クリーンアップ
           rm -f plan_output_encoded.txt plan_output_decoded.txt
 
           echo "plan-status=$PLAN_STATUS" >> $GITHUB_OUTPUT
@@ -305,7 +279,6 @@ jobs:
           echo "change-count=$CHANGE_COUNT" >> $GITHUB_OUTPUT
           echo "destroy-count=$DESTROY_COUNT" >> $GITHUB_OUTPUT
 
-          # 複数行出力を安全に処理
           {
             echo "plan-output<<EOF"
             if [ -f "plan_output_decoded.txt" ]; then
@@ -320,19 +293,16 @@ jobs:
         if: inputs.action_type == 'apply' && always()
         id: parse-apply
         run: |
-          # Applyの結果を解析
           if [ "${{ steps.apply.outcome }}" == "success" ]; then
             APPLY_STATUS="✅ Success"
           else
             APPLY_STATUS="❌ Failed"
           fi
 
-          # GitHub Actionsの出力を一時ファイルに保存してURLデコード
           cat > apply_output_encoded.txt << 'APPLY_OUTPUT_EOF'
           ${{ steps.apply.outputs.tg_action_output }}
           APPLY_OUTPUT_EOF
 
-          # URLデコード（%0A -> 改行、%20 -> スペースなど）
           python3 -c "
           import urllib.parse
           import sys
@@ -340,43 +310,31 @@ jobs:
           with open('apply_output_encoded.txt', 'r') as f:
               encoded_content = f.read().strip()
 
-          # URLデコード
           decoded_content = urllib.parse.unquote(encoded_content)
 
           with open('apply_output_decoded.txt', 'w') as f:
               f.write(decoded_content)
-
-          print(f'Decoded length: {len(decoded_content)}')
-          print('First 300 chars:')
-          print(decoded_content[:300])
           "
 
-          # デコードされた出力を使用
           if [ -f "apply_output_decoded.txt" ] && [ -s "apply_output_decoded.txt" ]; then
             APPLY_OUTPUT=$(cat apply_output_decoded.txt)
           else
             APPLY_OUTPUT="Apply execution completed. See workflow logs for detailed output."
           fi
 
-          # 変更数を抽出
           if [ "$APPLY_OUTPUT" != "Apply execution completed. See workflow logs for detailed output." ]; then
             ADDED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Creation complete" 2>/dev/null || echo "0")
             CHANGED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Modifications complete" 2>/dev/null || echo "0")
             DESTROYED_COUNT=$(echo "$APPLY_OUTPUT" | grep -c "Destruction complete" 2>/dev/null || echo "0")
 
-            # 数値のみを保証
             ADDED_COUNT=$(echo "$ADDED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
             CHANGED_COUNT=$(echo "$CHANGED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
             DESTROYED_COUNT=$(echo "$DESTROYED_COUNT" | tr -d '\n' | grep -o '[0-9]*' | head -1)
 
-            # 空の場合は0にする
             ADDED_COUNT=${ADDED_COUNT:-0}
             CHANGED_COUNT=${CHANGED_COUNT:-0}
             DESTROYED_COUNT=${DESTROYED_COUNT:-0}
 
-            echo "Extracted counts: ADDED=$ADDED_COUNT, CHANGED=$CHANGED_COUNT, DESTROYED=$DESTROYED_COUNT"
-
-            # 出力を制限（20,000文字まで）
             if [ ${#APPLY_OUTPUT} -gt 20000 ]; then
               APPLY_OUTPUT="${APPLY_OUTPUT:0:20000}... (output truncated, see workflow logs for full details)"
             fi
@@ -386,7 +344,6 @@ jobs:
             DESTROYED_COUNT="0"
           fi
 
-          # クリーンアップ
           rm -f apply_output_encoded.txt apply_output_decoded.txt
 
           echo "apply-status=$APPLY_STATUS" >> $GITHUB_OUTPUT
@@ -394,7 +351,6 @@ jobs:
           echo "changed-count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
           echo "destroyed-count=$DESTROYED_COUNT" >> $GITHUB_OUTPUT
 
-          # 複数行出力を安全に処理（planと同じ方式）
           {
             echo "apply-output<<EOF"
             if [ -f "apply_output_decoded.txt" ]; then
@@ -405,7 +361,6 @@ jobs:
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
-      # PR番号取得の処理（マージ後でも対応）
       - name: Get merged PR information
         id: merged-pr
         if: github.event_name == 'push'
