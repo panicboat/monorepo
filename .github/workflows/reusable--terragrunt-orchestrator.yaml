@@ -28,7 +28,6 @@ jobs:
       - name: Detect changed environments
         id: detect
         run: |
-          # 変更されたファイルを取得
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
           else
@@ -38,13 +37,10 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
-          # terragrunt環境ディレクトリの変更を検出（シンプルなアプローチ）
           ENVIRONMENTS=()
 
           while IFS= read -r file; do
-            # プロジェクト名を含むterragruntパスかチェック
             if [[ "$file" == *"${{ inputs.project_name }}/terragrunt/envs/"* ]]; then
-              # envs/ の後の最初のディレクトリ名を抽出
               env_path=$(echo "$file" | sed "s|.*${{ inputs.project_name }}/terragrunt/envs/||")
               env_name=$(echo "$env_path" | cut -d'/' -f1)
 
@@ -55,7 +51,6 @@ jobs:
             fi
           done <<< "$CHANGED_FILES"
 
-          # 重複を除去してJSON配列に変換（改行なし）
           UNIQUE_ENVIRONMENTS=$(printf '%s\n' "${ENVIRONMENTS[@]}" | sort -u | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
           echo "Detected environments: $UNIQUE_ENVIRONMENTS"
@@ -78,9 +73,9 @@ jobs:
       fail-fast: false
     uses: ./.github/workflows/reusable--terragrunt-single-env.yaml
     permissions:
-      id-token: write        # OIDC認証に必要
-      contents: read         # リポジトリのコードを読み取るために必要
-      pull-requests: write   # PRコメントの作成・更新に必要
+      id-token: write
+      contents: read
+      pull-requests: write
     with:
       project_name: ${{ inputs.project_name }}
       environment: ${{ matrix.environment }}
