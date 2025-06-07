@@ -44,8 +44,9 @@ jobs:
         TOTAL_COUNT="${{ steps.workflow-status.outputs.total-count }}"
 
         {
-          echo "<!-- WORKFLOW_STATUS_COMMENT -->"
           echo "## 🔄 Workflow Status Report"
+          echo ""
+          echo "<!-- workflow-status-comment -->"
           echo ""
           echo "**Last updated:** $TIMESTAMP"
           echo "**Commit:** \`${{ github.event.pull_request.head.sha }}\`"
@@ -115,8 +116,8 @@ jobs:
       with:
         token: ${{ steps.app-token.outputs.token }}
         issue-number: ${{ github.event.pull_request.number }}
-        comment-author: '${{ steps.app-token.outputs.app-slug }}'
-        body-includes: '<!-- WORKFLOW_STATUS_COMMENT -->'
+        comment-author: 'github-actions[bot]'
+        body-includes: 'workflow-status-comment'
 
     - name: Create or update comment
       uses: peter-evans/create-or-update-comment@v4
