@@ -6,8 +6,8 @@ on:
       - '**'
     paths:
       - 'github-oidc-auth/**'
-      - '.github/workflows/github-oidc-auth-*.yaml'
-      - '.github/workflows/reusable-terragrunt-*.yaml'
+      - '.github/workflows/github-oidc-auth--*.yaml'
+      - '.github/workflows/reusable--*.yaml'
   push:
     branches:
       - develop
@@ -19,7 +19,7 @@ on:
 jobs:
   terragrunt-plan:
     if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/reusable-terragrunt-orchestrator.yaml
+    uses: ./.github/workflows/reusable--terragrunt-orchestrator.yaml
     permissions:
       id-token: write        # OIDC認証に必要
       contents: read         # リポジトリのコードを読み取るために必要
@@ -30,7 +30,7 @@ jobs:
 
   terragrunt-apply:
     if: github.event_name == 'push'
-    uses: ./.github/workflows/reusable-terragrunt-orchestrator.yaml
+    uses: ./.github/workflows/reusable--terragrunt-orchestrator.yaml
     permissions:
       id-token: write        # OIDC認証に必要
       contents: read         # リポジトリのコードを読み取るために必要

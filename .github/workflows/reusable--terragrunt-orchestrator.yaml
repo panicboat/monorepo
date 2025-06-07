@@ -76,7 +76,7 @@ jobs:
       matrix:
         environment: ${{ fromJson(needs.detect-environments.outputs.environments) }}
       fail-fast: false
-    uses: ./.github/workflows/reusable-terragrunt-single-env.yaml
+    uses: ./.github/workflows/reusable--terragrunt-single-env.yaml
     permissions:
       id-token: write        # OIDC認証に必要
       contents: read         # リポジトリのコードを読み取るために必要
