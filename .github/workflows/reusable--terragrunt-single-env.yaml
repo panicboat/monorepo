@@ -213,7 +213,6 @@ jobs:
             **Environment**: `${{ inputs.environment }}`
             **Directory**: `${{ steps.load-config.outputs.working-directory }}`
             **Status**: ${{ steps.parse-results.outputs.status }}
-            ${{ github.event_name == 'push' && format('**Merged PR**: #{0} - {1}', steps.pr-context.outputs.pr-number, steps.pr-context.outputs.pr-title) || '' }}
 
             <details>
             <summary>📝 ${{ inputs.action_type == 'plan' && 'Plan' || 'Apply' }} Output</summary>
