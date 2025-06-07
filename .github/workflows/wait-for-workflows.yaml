@@ -171,13 +171,21 @@ jobs:
             echo "| Workflow | Status | Result |"
             echo "|----------|---------|--------|"
 
-            jq -r '. as $item |
-              if .conclusion == "success" then "✅"
-              elif .conclusion == "failure" then "❌"
-              elif .status == "in_progress" then "⏳"
-              else "⏸️" end as $icon |
-              .conclusion // .status as $result |
-              "| [\(.name)](\(.html_url)) | \($icon) | \($result) |"' workflow_results.json
+            # JavaScriptでワークフロー詳細テーブルを生成
+            node -e "
+              const workflows = JSON.parse(require('fs').readFileSync('workflow_results.json', 'utf8'));
+              workflows.forEach(workflow => {
+                const getIcon = (conclusion, status) => {
+                  if (conclusion === 'success') return '✅';
+                  if (conclusion === 'failure') return '❌';
+                  if (status === 'in_progress' || status === 'queued') return '⏳';
+                  return '⏸️';
+                };
+                const icon = getIcon(workflow.conclusion, workflow.status);
+                const result = workflow.conclusion || workflow.status;
+                console.log(\`| [\${workflow.name}](\${workflow.html_url}) | \${icon} | \${result} |\`);
+              });
+            "
           else
             echo "No workflow data available."
           fi

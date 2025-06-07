@@ -8,6 +8,7 @@ on:
       - 'github-oidc-auth/**'
       - '.github/workflows/github-oidc-auth--*.yaml'
       - '.github/workflows/reusable--*.yaml'
+      - '.github/workflows/wait-for-workflows.yaml'
   push:
     branches:
       - develop
