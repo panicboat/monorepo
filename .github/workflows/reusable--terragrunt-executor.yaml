@@ -1,9 +1,9 @@
-name: 'Reusable Terragrunt Single Environment'
+name: 'Reusable - Terragrunt Executor'
 
 on:
   workflow_call:
     inputs:
-      project_name:
+      project-name:
         required: true
         type: string
         description: 'Project name for terragrunt execution'
@@ -11,40 +11,40 @@ on:
         required: true
         type: string
         description: 'Environment name (develop, staging, production, etc.)'
-      terraform_version:
+      terraform-version:
         required: false
         type: string
         default: '1.5.7'
         description: 'Terraform version'
-      terragrunt_version:
+      terragrunt-version:
         required: false
         type: string
         default: '0.53.2'
         description: 'Terragrunt version'
-      action_type:
+      action-type:
         required: true
         type: string
         description: 'Action type: plan or apply'
-      plan_iam_role:
+      plan-iam-role:
         required: true
         type: string
         description: 'IAM role for plan operations'
-      apply_iam_role:
+      apply-iam-role:
         required: true
         type: string
         description: 'IAM role for apply operations'
-      aws_region:
+      aws-region:
         required: true
         type: string
         description: 'AWS region'
-      working_directory:
+      working-directory:
         required: true
         type: string
         description: 'Working directory for terragrunt execution'
 
 jobs:
   terragrunt-execution:
-    name: '${{ inputs.action_type }} - ${{ inputs.environment }}'
+    name: '${{ inputs.action-type }} - ${{ inputs.environment }}'
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
@@ -60,60 +60,60 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ inputs.action_type == 'plan' && inputs.plan_iam_role || inputs.apply_iam_role }}
-          aws-region: ${{ inputs.aws_region }}
-          role-session-name: GitHubActions-Terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}
+          role-to-assume: ${{ inputs.action-type == 'plan' && inputs.plan-iam-role || inputs.apply-iam-role }}
+          aws-region: ${{ inputs.aws-region }}
+          role-session-name: GitHubActions-Terragrunt-${{ inputs.action-type }}-${{ inputs.environment }}
           audience: sts.amazonaws.com
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: ${{ inputs.terraform_version }}
+          terraform_version: ${{ inputs.terraform-version }}
           terraform_wrapper: false
 
       - name: Setup Terragrunt Binary
         run: |
-          TG_VERSION=${{ inputs.terragrunt_version }}
+          TG_VERSION=${{ inputs.terragrunt-version }}
           wget -O terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64
           chmod +x terragrunt
           sudo mv terragrunt /usr/local/bin/
           terragrunt --version
 
       - name: Terragrunt Plan
-        if: inputs.action_type == 'plan'
+        if: inputs.action-type == 'plan'
         id: plan
         uses: gruntwork-io/terragrunt-action@v2
         with:
-          tf_version: ${{ inputs.terraform_version }}
-          tg_version: ${{ inputs.terragrunt_version }}
+          tf_version: ${{ inputs.terraform-version }}
+          tg_version: ${{ inputs.terragrunt-version }}
           tg_command: 'plan'
           args: '-no-color -detailed-exitcode'
-          tg_dir: ${{ inputs.working_directory }}
+          tg_dir: ${{ inputs.working-directory }}
         continue-on-error: true
         env:
           TF_INPUT: false
-          AWS_DEFAULT_REGION: ${{ inputs.aws_region }}
+          AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
 
       - name: Terragrunt Apply
-        if: inputs.action_type == 'apply'
+        if: inputs.action-type == 'apply'
         id: apply
         uses: gruntwork-io/terragrunt-action@v2
         with:
-          tf_version: ${{ inputs.terraform_version }}
-          tg_version: ${{ inputs.terragrunt_version }}
+          tf_version: ${{ inputs.terraform-version }}
+          tg_version: ${{ inputs.terragrunt-version }}
           tg_command: 'apply'
           args: '-auto-approve -no-color'
-          tg_dir: ${{ inputs.working_directory }}
+          tg_dir: ${{ inputs.working-directory }}
         continue-on-error: true
         env:
           TF_INPUT: false
-          AWS_DEFAULT_REGION: ${{ inputs.aws_region }}
+          AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
 
       - name: Parse Results
         if: always()
         id: parse-results
         run: |
-          if [ "${{ inputs.action_type }}" == "plan" ]; then
+          if [ "${{ inputs.action-type }}" == "plan" ]; then
             STATUS=$([ "${{ steps.plan.outcome }}" == "success" ] && echo "✅ Success" || echo "❌ Failed")
             cat > /tmp/raw_output.txt << 'EOF'
           ${{ steps.plan.outputs.tg_action_output }}
@@ -129,7 +129,7 @@ jobs:
           import urllib.parse
           with open('/tmp/raw_output.txt', 'r') as f:
               encoded_content = f.read().strip()
-          decoded_content = urllib.parse.unquote(encoded_content) if encoded_content else '${{ inputs.action_type }} execution completed. See workflow logs for detailed output.'
+          decoded_content = urllib.parse.unquote(encoded_content) if encoded_content else '${{ inputs.action-type }} execution completed. See workflow logs for detailed output.'
           print(decoded_content)
           ")
 
@@ -152,46 +152,26 @@ jobs:
           github_token: ${{ steps.app-token.outputs.token }}
         continue-on-error: true
 
-      - name: Determine PR context
-        id: pr-context
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            PR_NUMBER="${{ github.event.pull_request.number }}"
-            PR_TITLE="${{ github.event.pull_request.title }}"
-          elif [ "${{ github.event_name }}" == "push" ] && [ "${{ steps.merged-pr.outputs.number }}" != "" ]; then
-            PR_NUMBER="${{ steps.merged-pr.outputs.number }}"
-            PR_TITLE="${{ steps.merged-pr.outputs.title }}"
-          else
-            PR_INFO=$(gh pr list --search "${{ github.sha }}" --state all --json number,title --jq '.[0]' 2>/dev/null || echo "null")
-            if [ "$PR_INFO" != "null" ] && [ -n "$PR_INFO" ]; then
-              PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number // empty')
-              PR_TITLE=$(echo "$PR_INFO" | jq -r '.title // empty')
-            else
-              PR_NUMBER=""
-              PR_TITLE=""
-            fi
-          fi
-
-          echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
-          echo "pr-title=$PR_TITLE" >> $GITHUB_OUTPUT
-          echo "has-pr=$([ -n "$PR_NUMBER" ] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+      - name: Find current PR
+        id: pr-info
+        uses: jwalton/gh-find-current-pr@v1
+        with:
+          state: all
 
       - name: Create or update PR comment
-        if: steps.pr-context.outputs.has-pr == 'true'
+        if: steps.pr-info.outputs.number
         uses: thollander/actions-comment-pull-request@v3
         with:
           message: |
-            ## ${{ inputs.action_type == 'plan' && '📋 Terragrunt Plan Results' || '🚀 Terragrunt Apply Completed' }}
+            ## ${{ inputs.action-type == 'plan' && '📋 Terragrunt Plan Results' || '🚀 Terragrunt Apply Completed' }}
 
-            **Project**: ${{ inputs.project_name }}
+            **Project**: ${{ inputs.project-name }}
             **Environment**: `${{ inputs.environment }}`
-            **Directory**: `${{ inputs.working_directory }}`
+            **Directory**: `${{ inputs.working-directory }}`
             **Status**: ${{ steps.parse-results.outputs.status }}
 
             <details>
-            <summary>📝 ${{ inputs.action_type == 'plan' && 'Plan' || 'Apply' }} Output</summary>
+            <summary>📝 ${{ inputs.action-type == 'plan' && 'Plan' || 'Apply' }} Output</summary>
 
             ```hcl
             ${{ steps.parse-results.outputs.output }}
@@ -200,14 +180,14 @@ jobs:
             </details>
 
             [View full workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          comment-tag: 'terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}-${{ inputs.project_name }}'
+          comment-tag: 'terragrunt-${{ inputs.action-type }}-${{ inputs.environment }}-${{ inputs.project-name }}'
           mode: upsert
-          pr-number: ${{ steps.pr-context.outputs.pr-number }}
+          pr-number: ${{ steps.pr-info.outputs.number }}
         continue-on-error: true
 
       - name: Exit with appropriate code
         run: |
-          if [ "${{ inputs.action_type }}" == "plan" ]; then
+          if [ "${{ inputs.action-type }}" == "plan" ]; then
             if [ "${{ steps.plan.outcome }}" == "failure" ]; then
               exit 1
             fi

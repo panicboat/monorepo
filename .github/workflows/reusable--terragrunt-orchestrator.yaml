@@ -1,13 +1,13 @@
-name: 'Reusable Terragrunt Orchestrator'
+name: 'Reusable - Terragrunt Orchestrator'
 
 on:
   workflow_call:
     inputs:
-      project_name:
+      project-name:
         required: true
         type: string
         description: 'Project name for terragrunt execution'
-      action_type:
+      action-type:
         required: true
         type: string
         description: 'Action type: plan or apply'
@@ -40,8 +40,8 @@ jobs:
           ENVIRONMENTS=()
 
           while IFS= read -r file; do
-            if [[ "$file" == *"${{ inputs.project_name }}/terragrunt/envs/"* ]]; then
-              env_path=$(echo "$file" | sed "s|.*${{ inputs.project_name }}/terragrunt/envs/||")
+            if [[ "$file" == *"${{ inputs.project-name }}/terragrunt/envs/"* ]]; then
+              env_path=$(echo "$file" | sed "s|.*${{ inputs.project-name }}/terragrunt/envs/||")
               env_name=$(echo "$env_path" | cut -d'/' -f1)
 
               if [[ -n "$env_name" ]]; then
@@ -65,7 +65,7 @@ jobs:
 
   load-configurations:
     name: 'Load Terragrunt Configurations'
-    needs: detect-environments
+    needs: [detect-environments]
     if: needs.detect-environments.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     outputs:
@@ -85,9 +85,13 @@ jobs:
           fi
 
           ENVIRONMENTS='${{ needs.detect-environments.outputs.environments }}'
-          CONFIG_MATRIX=()
+
+          # Initialize empty JSON array
+          MATRIX_JSON="[]"
 
           for env in $(echo "$ENVIRONMENTS" | jq -r '.[]'); do
+            echo "Processing environment: $env"
+
             PLAN_IAM_ROLE=$(yq e ".$env.iam_role_plan // .default.iam_role_plan" "$CONFIG_FILE")
             APPLY_IAM_ROLE=$(yq e ".$env.iam_role_apply // .default.iam_role_apply" "$CONFIG_FILE")
             AWS_REGION=$(yq e ".$env.aws_region // .default.aws_region // \"us-east-1\"" "$CONFIG_FILE")
@@ -95,8 +99,8 @@ jobs:
 
             if [ -z "$WORKING_DIR" ] || [ "$WORKING_DIR" == "null" ]; then
               POSSIBLE_PATHS=(
-                "${{ inputs.project_name }}/terragrunt/envs/$env"
-                "*/${{ inputs.project_name }}/terragrunt/envs/$env"
+                "${{ inputs.project-name }}/terragrunt/envs/$env"
+                "*/${{ inputs.project-name }}/terragrunt/envs/$env"
               )
 
               for path_pattern in "${POSSIBLE_PATHS[@]}"; do
@@ -109,15 +113,35 @@ jobs:
             fi
 
             if [ -z "$WORKING_DIR" ] || [ "$WORKING_DIR" == "null" ]; then
-              echo "Working directory not found for project: ${{ inputs.project_name }}, environment: $env"
+              echo "Working directory not found for project: ${{ inputs.project-name }}, environment: $env"
               exit 1
             fi
 
-            CONFIG_MATRIX+=("{\"environment\":\"$env\",\"plan_iam_role\":\"$PLAN_IAM_ROLE\",\"apply_iam_role\":\"$APPLY_IAM_ROLE\",\"aws_region\":\"$AWS_REGION\",\"working_directory\":\"$WORKING_DIR\"}")
+            echo "Config for $env: plan_iam_role=$PLAN_IAM_ROLE, apply_iam_role=$APPLY_IAM_ROLE, aws_region=$AWS_REGION, working_directory=$WORKING_DIR"
+
+            # Add config to JSON array using jq
+            CONFIG_ITEM=$(jq -n \
+              --arg env "$env" \
+              --arg plan_iam_role "$PLAN_IAM_ROLE" \
+              --arg apply_iam_role "$APPLY_IAM_ROLE" \
+              --arg aws_region "$AWS_REGION" \
+              --arg working_directory "$WORKING_DIR" \
+              '{
+                environment: $env,
+                plan_iam_role: $plan_iam_role,
+                apply_iam_role: $apply_iam_role,
+                aws_region: $aws_region,
+                working_directory: $working_directory
+              }')
+
+            MATRIX_JSON=$(echo "$MATRIX_JSON" | jq ". + [$CONFIG_ITEM]")
           done
 
-          MATRIX_JSON=$(printf '%s\n' "${CONFIG_MATRIX[@]}" | jq -s .)
-          echo "config-matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "Final config matrix: $MATRIX_JSON"
+
+          # Compact JSON for GitHub Actions output (remove newlines and spaces)
+          COMPACT_JSON=$(echo "$MATRIX_JSON" | jq -c .)
+          echo "config-matrix=$COMPACT_JSON" >> $GITHUB_OUTPUT
 
   execute-environments:
     name: 'Execute Terragrunt for Environments'
@@ -127,13 +151,13 @@ jobs:
       matrix:
         config: ${{ fromJson(needs.load-configurations.outputs.config-matrix) }}
       fail-fast: false
-    uses: ./.github/workflows/reusable--terragrunt-single-env.yaml
+    uses: ./.github/workflows/reusable--terragrunt-executor.yaml
     secrets: inherit
     with:
-      project_name: ${{ inputs.project_name }}
+      project-name: ${{ inputs.project-name }}
       environment: ${{ matrix.config.environment }}
-      action_type: ${{ inputs.action_type }}
-      plan_iam_role: ${{ matrix.config.plan_iam_role }}
-      apply_iam_role: ${{ matrix.config.apply_iam_role }}
-      aws_region: ${{ matrix.config.aws_region }}
-      working_directory: ${{ matrix.config.working_directory }}
+      action-type: ${{ inputs.action-type }}
+      plan-iam-role: ${{ matrix.config.plan_iam_role }}
+      apply-iam-role: ${{ matrix.config.apply_iam_role }}
+      aws-region: ${{ matrix.config.aws_region }}
+      working-directory: ${{ matrix.config.working_directory }}

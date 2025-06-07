@@ -33,8 +33,8 @@ locals {
 
   # Develop-specific resource tags
   additional_tags = {
-    CostCenter   = "develop-20250607"
-    Owner        = "panicboat-20250607"
+    CostCenter   = "develop"
+    Owner        = "panicboat"
     Purpose      = "github-actions-develop"
     AutoShutdown = "enabled"
   }
