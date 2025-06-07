@@ -234,12 +234,12 @@ jobs:
         slack-message: |
           🎉 All workflows passed for PR #${{ github.event.pull_request.number }}
 
-          ✅ **Status:** All ${{ steps.workflow-status.outputs.total-count }} workflows completed successfully
+          ✅ *Status:* All ${{ steps.workflow-status.outputs.total-count }} workflows completed successfully
 
-          📝 **Title:** ${{ github.event.pull_request.title }}
-          👤 **Author:** ${{ github.event.pull_request.user.login }}
-          🏷️ **Branch:** ${{ github.event.pull_request.head.ref }}
-          🔗 **PR:** ${{ github.event.pull_request.html_url }}
+          📝 *Title:* ${{ github.event.pull_request.title }}
+          👤 *Author:* ${{ github.event.pull_request.user.login }}
+          🏷️ *Branch:* ${{ github.event.pull_request.head.ref }}
+          🔗 *PR:* ${{ github.event.pull_request.html_url }}
 
           Ready for review and merge! 🚀
       env:
