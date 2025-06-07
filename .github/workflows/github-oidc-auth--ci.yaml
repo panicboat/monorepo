@@ -21,6 +21,7 @@ jobs:
   terragrunt-plan:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/reusable--terragrunt-orchestrator.yaml
+    secrets: inherit
     permissions:
       id-token: write        # OIDC認証に必要
       contents: read         # リポジトリのコードを読み取るために必要
@@ -32,6 +33,7 @@ jobs:
   terragrunt-apply:
     if: github.event_name == 'push'
     uses: ./.github/workflows/reusable--terragrunt-orchestrator.yaml
+    secrets: inherit
     permissions:
       id-token: write        # OIDC認証に必要
       contents: read         # リポジトリのコードを読み取るために必要

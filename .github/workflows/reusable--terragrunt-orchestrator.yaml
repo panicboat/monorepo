@@ -72,6 +72,7 @@ jobs:
         environment: ${{ fromJson(needs.detect-environments.outputs.environments) }}
       fail-fast: false
     uses: ./.github/workflows/reusable--terragrunt-single-env.yaml
+    secrets: inherit
     permissions:
       id-token: write
       contents: read
