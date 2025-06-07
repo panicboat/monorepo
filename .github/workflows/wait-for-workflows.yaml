@@ -212,7 +212,7 @@ jobs:
       if: steps.workflow-status.outputs.overall-status == 'failure'
       uses: slackapi/slack-github-action@v1.27.0
       with:
-        channel-id: 'C1234567890'
+        channel-id: 'C0907M25935'
         slack-message: |
           🚨 Some workflows failed in PR #${{ github.event.pull_request.number }}
 
@@ -230,7 +230,7 @@ jobs:
       if: steps.workflow-status.outputs.overall-status == 'success'
       uses: slackapi/slack-github-action@v1.27.0
       with:
-        channel-id: 'C1234567890'
+        channel-id: 'C0907M25935'
         slack-message: |
           🎉 All workflows passed for PR #${{ github.event.pull_request.number }}
 
