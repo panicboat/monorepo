@@ -1,0 +1,43 @@
+name: 'GitHub OIDC Auth - Optimized CI/CD'
+
+on:
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - 'github-oidc-auth/**'
+      - '.github/workflows/github-oidc-auth--*.yaml'
+      - '.github/workflows/optimized-*.yaml'
+      - '.github/workflows/simple-*.yaml'
+  push:
+    branches:
+      - develop
+      - staging/github-oidc-auth
+      - production/github-oidc-auth
+    paths:
+      - 'github-oidc-auth/**'
+
+jobs:
+  terragrunt-plan:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/optimized-terragrunt-orchestrator.yaml
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    with:
+      project_name: github-oidc-auth
+      action_type: 'plan'
+
+  terragrunt-apply:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/optimized-terragrunt-orchestrator.yaml
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    with:
+      project_name: github-oidc-auth
+      action_type: 'apply'

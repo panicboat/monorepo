@@ -1,0 +1,65 @@
+name: 'Optimized Terragrunt Workflow'
+
+on:
+  workflow_call:
+    inputs:
+      project_name:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      action_type:
+        required: true
+        type: string
+        description: 'plan or apply'
+
+jobs:
+  terragrunt:
+    name: '${{ inputs.action_type }}-${{ inputs.environment }}'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup & Configure
+        id: setup
+        run: |
+          # Load config
+          CONFIG=".github/terragrunt-actions-config.yaml"
+          ROLE=$(yq e ".${{ inputs.environment }}.iam_role_${{ inputs.action_type }} // .default.iam_role_${{ inputs.action_type }}" "$CONFIG")
+          REGION=$(yq e ".${{ inputs.environment }}.aws_region // .default.aws_region // \"us-east-1\"" "$CONFIG")
+          DIR=$(find . -path "./${{ inputs.project_name }}/terragrunt/envs/${{ inputs.environment }}" -type d)
+
+          echo "role=$ROLE" >> $GITHUB_OUTPUT
+          echo "region=$REGION" >> $GITHUB_OUTPUT
+          echo "dir=$DIR" >> $GITHUB_OUTPUT
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.setup.outputs.role }}
+          aws-region: ${{ steps.setup.outputs.region }}
+          role-session-name: terragrunt-${{ inputs.action_type }}-${{ inputs.environment }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.5.7'
+          terraform_wrapper: false
+
+      - name: Run Terragrunt
+        working-directory: ${{ steps.setup.outputs.dir }}
+        run: |
+          # Install Terragrunt
+          curl -LO "https://github.com/gruntwork-io/terragrunt/releases/download/v0.53.2/terragrunt_linux_amd64"
+          sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          sudo chmod +x /usr/local/bin/terragrunt
+
+          # Execute terragrunt
+          terragrunt init -no-color
+
+          if [ "${{ inputs.action_type }}" == "plan" ]; then
+            terragrunt plan -no-color -detailed-exitcode || [ $? -eq 2 ]
+          else
+            terragrunt apply -auto-approve -no-color
+          fi
+        env:
+          TF_INPUT: false
