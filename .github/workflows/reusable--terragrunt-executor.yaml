@@ -44,7 +44,7 @@ on:
 
 jobs:
   terragrunt-execution:
-    name: '${{ inputs.action-type }} - ${{ inputs.environment }}'
+    name: '${{ inputs.action-type }} - ${{ inputs.project-name }}:${{ inputs.environment }}'
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
