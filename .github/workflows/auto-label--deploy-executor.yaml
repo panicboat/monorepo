@@ -122,13 +122,13 @@ jobs:
 
           # Extract deployment targets
           TARGETS_JSON="[]"
-          
+
           # Get labels as array for processing
           LABELS_COUNT=$(echo "$DEPLOY_LABELS" | jq -r 'length')
-          
+
           for ((i=0; i<$LABELS_COUNT; i++)); do
             label=$(echo "$DEPLOY_LABELS" | jq -r ".[$i]")
-            
+
             if [ -z "$label" ] || [ "$label" = "null" ]; then
               continue
             fi
@@ -196,8 +196,11 @@ jobs:
             HAS_TARGETS="true"
           fi
 
-          echo "Final targets: $TARGETS_JSON"
-          echo "targets=$TARGETS_JSON" >> $GITHUB_OUTPUT
+          # Compact JSON for GitHub Actions output (remove formatting)
+          TARGETS_COMPACT=$(echo "$TARGETS_JSON" | jq -c .)
+
+          echo "Final targets: $TARGETS_COMPACT"
+          echo "targets=$TARGETS_COMPACT" >> $GITHUB_OUTPUT
           echo "has_targets=$HAS_TARGETS" >> $GITHUB_OUTPUT
 
   deploy-terragrunt:
