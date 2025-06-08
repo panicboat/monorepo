@@ -38,11 +38,54 @@ jobs:
         uses: dorny/paths-filter@v2
         with:
           token: ${{ steps.app-token.outputs.token }}
+          list-files: shell
           filters: |
             terragrunt:
-              - '**/terragrunt/**'
-            kubernetes:
-              - '**/kubernetes/**'
+              - '**/terragrunt/envs/**'
+            github-oidc-auth-develop:
+              - 'github-oidc-auth/terragrunt/envs/develop/**'
+            github-oidc-auth-production:
+              - 'github-oidc-auth/terragrunt/envs/production/**'
+            github-oidc-auth-staging:
+              - 'github-oidc-auth/terragrunt/envs/staging/**'
+            github-actions-claude-code-action-monorepo:
+              - 'github-actions/claude-code-action/terragrunt/envs/monorepo/**'
+            github-repository-generated-manifests:
+              - 'github-repository/terragrunt/envs/generated-manifests/**'
+            github-repository-kubernetes-clusters:
+              - 'github-repository/terragrunt/envs/kubernetes-clusters/**'
+            github-repository-monorepo:
+              - 'github-repository/terragrunt/envs/monorepo/**'
+
+      - name: Debug path filter results
+        run: |
+          echo "=== Path Filter Debug Information ==="
+          echo "Changed files (general filters):"
+          echo "  terragrunt: ${{ steps.changes.outputs.terragrunt }}"
+          echo ""
+          echo "Service-specific filters:"
+          echo "  github-oidc-auth-develop: ${{ steps.changes.outputs.github-oidc-auth-develop }}"
+          echo "  github-oidc-auth-production: ${{ steps.changes.outputs.github-oidc-auth-production }}"
+          echo "  github-oidc-auth-staging: ${{ steps.changes.outputs.github-oidc-auth-staging }}"
+          echo "  github-actions-claude-code-action-monorepo: ${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}"
+          echo "  github-repository-generated-manifests: ${{ steps.changes.outputs.github-repository-generated-manifests }}"
+          echo "  github-repository-kubernetes-clusters: ${{ steps.changes.outputs.github-repository-kubernetes-clusters }}"
+          echo "  github-repository-monorepo: ${{ steps.changes.outputs.github-repository-monorepo }}"
+
+          echo ""
+          echo "Files changed in this PR (terragrunt filter):"
+          if [ -n "${{ steps.changes.outputs.terragrunt_files }}" ]; then
+            echo "${{ steps.changes.outputs.terragrunt_files }}"
+          else
+            echo "No terragrunt files changed or list-files not enabled"
+          fi
+
+          echo ""
+          echo "All filter outputs available:"
+          echo "  terragrunt_files: ${{ steps.changes.outputs.terragrunt_files }}"
+          echo "  github-oidc-auth-develop_files: ${{ steps.changes.outputs.github-oidc-auth-develop_files }}"
+          echo "  github-oidc-auth-production_files: ${{ steps.changes.outputs.github-oidc-auth-production_files }}"
+          echo "  github-oidc-auth-staging_files: ${{ steps.changes.outputs.github-oidc-auth-staging_files }}"
 
       - name: Manage PR labels with GitHub Script
         id: manage-labels
@@ -101,6 +144,18 @@ jobs:
             };
 
             console.log('Change detection results:', changes);
+
+            // Debug: Show all path filter outputs
+            console.log('All path filter outputs:', {
+              terragrunt: '${{ steps.changes.outputs.terragrunt }}',
+              'github-oidc-auth-develop': '${{ steps.changes.outputs.github-oidc-auth-develop }}',
+              'github-oidc-auth-production': '${{ steps.changes.outputs.github-oidc-auth-production }}',
+              'github-oidc-auth-staging': '${{ steps.changes.outputs.github-oidc-auth-staging }}',
+              'github-actions-claude-code-action-monorepo': '${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}',
+              'github-repository-generated-manifests': '${{ steps.changes.outputs.github-repository-generated-manifests }}',
+              'github-repository-kubernetes-clusters': '${{ steps.changes.outputs.github-repository-kubernetes-clusters }}',
+              'github-repository-monorepo': '${{ steps.changes.outputs.github-repository-monorepo }}'
+            });
 
             // Generate required labels based on detected changes
             const requiredLabels = [];
@@ -201,8 +256,8 @@ jobs:
 
             return {
               requiredLabels,
-              labelsAdded,
-              labelsRemoved,
+              labelsAdded: labelsToAdd,
+              labelsRemoved: labelsToRemove,
               hasChanges: requiredLabels.length > 0
             };
 
@@ -274,6 +329,18 @@ jobs:
 
       - name: Summary
         run: |
+          echo "=== Pure GHA v4 実行結果 ==="
+          echo "Path Filter Results:"
+          echo "  terragrunt: ${{ steps.changes.outputs.terragrunt }}"
+          echo "  github-oidc-auth-develop: ${{ steps.changes.outputs.github-oidc-auth-develop }}"
+          echo "  github-oidc-auth-production: ${{ steps.changes.outputs.github-oidc-auth-production }}"
+          echo "  github-oidc-auth-staging: ${{ steps.changes.outputs.github-oidc-auth-staging }}"
+          echo "  github-actions-claude-code-action-monorepo: ${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}"
+          echo "  github-repository-generated-manifests: ${{ steps.changes.outputs.github-repository-generated-manifests }}"
+          echo "  github-repository-kubernetes-clusters: ${{ steps.changes.outputs.github-repository-kubernetes-clusters }}"
+          echo "  github-repository-monorepo: ${{ steps.changes.outputs.github-repository-monorepo }}"
+          echo ""
+
           REQUIRED_LABELS='${{ steps.manage-labels.outputs.required_labels }}'
           HAS_CHANGES='${{ steps.manage-labels.outputs.has_changes }}'
 
