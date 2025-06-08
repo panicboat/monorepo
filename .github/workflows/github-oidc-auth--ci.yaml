@@ -1,52 +1,22 @@
 name: 'GitHub OIDC Auth - CI/CD (New Architecture)'
 
-# 新しいラベルベースアーキテクチャへの移行
-# このワークフローは新しいアーキテクチャの動作確認用です
-#
-# 新しいアーキテクチャでは以下のワークフローが自動実行されます:
-# 1. detect-changes-and-label.yaml: PR作成時の差分検知とラベル付与
-# 2. deploy-based-on-labels.yaml: ラベルに基づくデプロイ実行
-
 on:
-  # 新アーキテクチャテスト用の手動トリガー
-  workflow_dispatch:
-    inputs:
-      test_scenario:
-        description: 'Test scenario for new architecture'
-        required: true
-        default: 'validate_new_architecture'
-        type: choice
-        options:
-          - 'validate_new_architecture'
-          - 'compare_with_legacy'
-          - 'emergency_deploy'
-
-      target_environment:
-        description: 'Target environment (for emergency deploy only)'
-        required: false
-        default: 'develop'
-        type: choice
-        options:
-          - 'develop'
-          - 'staging'
-          - 'production'
-
-  # 新アーキテクチャの動作確認のため、一時的に既存トリガーをコメントアウト
-  # pull_request:
-  #   branches:
-  #     - '**'
-  #   paths:
-  #     - 'github-oidc-auth/**'
-  #     - '.github/workflows/github-oidc-auth--*.yaml'
-  #     - '.github/workflows/reusable--*.yaml'
-  #     - '.github/workflows/wait-for-workflows.yaml'
-  # push:
-  #   branches:
-  #     - develop
-  #     - staging/github-oidc-auth
-  #     - production/github-oidc-auth
-  #   paths:
-  #     - 'github-oidc-auth/**'
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - '**'
+    paths:
+      - 'github-oidc-auth/**'
+      - '.github/workflows/github-oidc-auth--*.yaml'
+      - '.github/workflows/reusable--*.yaml'
+      - '.github/workflows/wait-for-workflows.yaml'
+  push:
+    branches:
+      - develop
+      - staging/github-oidc-auth
+      - production/github-oidc-auth
+    paths:
+      - 'github-oidc-auth/**'
 
 jobs:
   validate-new-architecture:
