@@ -1,5 +1,4 @@
 # terragrunt.hcl - Monorepo Terragrunt configuration
-# TEST: Auto Label Architecture testing - claude-code-action service
 
 # Include root configuration
 include "root" {
