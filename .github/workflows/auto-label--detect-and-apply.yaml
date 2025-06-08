@@ -1,7 +1,8 @@
-name: 'Auto Label - Detect Changes and Apply Labels'
+name: 'Auto Label - Detect Changes and Apply Labels (Pure GHA v4)'
 
 # PR作成・更新時に変更されたファイルを検知し、
-# マッピング定義に基づいてラベルを付与する
+# パターンマッチングに基づいてデプロイラベルを付与する
+# Pure GitHub Actions implementation (v4)
 
 on:
   pull_request:
@@ -21,7 +22,7 @@ jobs:
     steps:
       - name: Generate GitHub App token
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v1
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
@@ -32,276 +33,256 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Install yq
-        run: |
-          sudo wget -O /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-          sudo chmod +x /usr/bin/yq
+      - name: Detect file changes with path filters
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          filters: |
+            terragrunt:
+              - '**/terragrunt/**'
+            kubernetes:
+              - '**/kubernetes/**'
 
-      - name: Detect changed files
-        id: detect-changes
-        run: |
-          echo "Detecting changed files..."
-
-          # Get changed files in this PR
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
-
-          echo "Changed files:"
-          echo "$CHANGED_FILES"
-
-          # Save to file for processing
-          echo "$CHANGED_FILES" > /tmp/changed_files.txt
-
-          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Determine required labels
-        id: determine-labels
-        run: |
-          MAPPING_FILE=".github/auto-label--directory-mapping.yaml"
-
-          if [ ! -f "$MAPPING_FILE" ]; then
-            echo "Mapping file not found: $MAPPING_FILE"
-            exit 1
-          fi
-
-          # Initialize empty arrays
-          REQUIRED_LABELS=()
-          LABEL_COLORS=()
-
-          echo "Processing mapping file..."
-
-          # Read all mapping keys
-          MAPPING_KEYS=$(yq e '.mappings | keys | .[]' "$MAPPING_FILE")
-
-          while IFS= read -r file; do
-            if [ -z "$file" ]; then
-              continue
-            fi
-
-            echo "Checking file: $file"
-
-            # Check each mapping key to see if the file matches
-            while IFS= read -r mapping_key; do
-              if [ -z "$mapping_key" ]; then
-                continue
-              fi
-
-              # Check if file path starts with mapping key
-              if [[ "$file" == "$mapping_key"* ]]; then
-                echo "File $file matches mapping: $mapping_key"
-
-                # Get labels for this mapping
-                LABELS=$(yq e ".mappings[\"$mapping_key\"].labels[]" "$MAPPING_FILE")
-
-                while IFS= read -r label; do
-                  if [ -n "$label" ]; then
-                    echo "Adding label: $label"
-                    REQUIRED_LABELS+=("$label")
-
-                    # Determine label color based on environment
-                    ENV=$(echo "$label" | cut -d':' -f3)
-                    COLOR=$(yq e ".label_config.colors.$ENV // \"0052cc\"" "$MAPPING_FILE")
-                    LABEL_COLORS+=("$label:$COLOR")
-                  fi
-                done <<< "$LABELS"
-              fi
-            done <<< "$MAPPING_KEYS"
-          done < /tmp/changed_files.txt
-
-          # Remove duplicates and convert to JSON arrays
-          UNIQUE_LABELS=($(printf '%s\n' "${REQUIRED_LABELS[@]}" | sort -u))
-          UNIQUE_COLORS=($(printf '%s\n' "${LABEL_COLORS[@]}" | sort -u))
-
-          # Convert to JSON for GitHub Actions
-          LABELS_JSON=$(printf '%s\n' "${UNIQUE_LABELS[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          COLORS_JSON=$(printf '%s\n' "${UNIQUE_COLORS[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
-
-          echo "Required labels: $LABELS_JSON"
-          echo "Label colors: $COLORS_JSON"
-
-          echo "required_labels=$LABELS_JSON" >> $GITHUB_OUTPUT
-          echo "label_colors=$COLORS_JSON" >> $GITHUB_OUTPUT
-
-      - name: Get current PR labels
-        id: current-labels
-        run: |
-          # Get current labels on this PR
-          CURRENT_LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name' | grep '^deploy:' | jq -R -s -c 'split("\n") | map(select(length > 0))' || echo '[]')
-
-          echo "Current labels: $CURRENT_LABELS"
-          echo "current_labels=$CURRENT_LABELS" >> $GITHUB_OUTPUT
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-
-      - name: Create labels if they don't exist
-        if: steps.determine-labels.outputs.required_labels != '[]'
-        run: |
-          COLORS='${{ steps.determine-labels.outputs.label_colors }}'
-
-          echo "Ensuring all required labels exist with correct colors..."
-
-          # Create labels with colors if they don't exist
-          echo "$COLORS" | jq -r '.[]' | while IFS=':' read -r label color; do
-            if [ -n "$label" ] && [ -n "$color" ]; then
-              echo "Processing label: $label with color: #$color"
-
-              # Check if label exists (more robust check)
-              EXISTING_LABEL=$(gh label list --json name,color --jq --arg label "$label" '.[] | select(.name == $label)' || echo "")
-
-              if [ -z "$EXISTING_LABEL" ]; then
-                echo "Creating new label: $label with color #$color"
-                gh label create "$label" --color "$color" --description "Auto-generated deployment label" || {
-                  echo "Failed to create label with specified color, trying with default color..."
-                  gh label create "$label" --color "0052cc" --description "Auto-generated deployment label" || {
-                    echo "Warning: Failed to create label '$label'"
-                  }
-                }
-              else
-                # Get current color
-                CURRENT_COLOR=$(echo "$EXISTING_LABEL" | jq -r '.color' 2>/dev/null || echo "")
-                echo "Label '$label' exists with current color: #$CURRENT_COLOR"
-
-                if [ "$CURRENT_COLOR" != "$color" ]; then
-                  echo "Updating color from #$CURRENT_COLOR to #$color..."
-                  gh label edit "$label" --color "$color" || {
-                    echo "Warning: Failed to update color for label '$label' (権限不足の可能性)"
-                    echo "手動で色を変更してください: $label → #$color"
-                  }
-                else
-                  echo "Color already correct for label '$label'"
-                fi
-              fi
-            fi
-          done
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-
-      - name: Remove old deploy labels
-        run: |
-          CURRENT_LABELS='${{ steps.current-labels.outputs.current_labels }}'
-          REQUIRED_LABELS='${{ steps.determine-labels.outputs.required_labels }}'
-
-          echo "Current labels: $CURRENT_LABELS"
-          echo "Required labels: $REQUIRED_LABELS"
-
-          # Find labels to remove (current labels that are not required)
-          LABELS_TO_REMOVE=$(echo "$CURRENT_LABELS" | jq -r --argjson required "$REQUIRED_LABELS" '.[] | select(. as $item | $required | index($item) | not)')
-
-          if [ -n "$LABELS_TO_REMOVE" ] && [ "$LABELS_TO_REMOVE" != "" ]; then
-            echo "Removing old labels..."
-            echo "$LABELS_TO_REMOVE" | while IFS= read -r label; do
-              if [ -n "$label" ]; then
-                echo "Removing label: $label"
-                gh pr edit ${{ github.event.pull_request.number }} --remove-label "$label" || true
-              fi
-            done
-          else
-            echo "No labels to remove"
-          fi
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-
-      - name: Add new deploy labels
-        if: steps.determine-labels.outputs.required_labels != '[]'
-        run: |
-          REQUIRED_LABELS='${{ steps.determine-labels.outputs.required_labels }}'
-          COLORS='${{ steps.determine-labels.outputs.label_colors }}'
-
-          echo "Adding required labels..."
-          echo "$REQUIRED_LABELS" | jq -r '.[]' | while IFS= read -r label; do
-            if [ -n "$label" ]; then
-              echo "Processing label: $label"
-
-              # Get color for this label
-              COLOR=$(echo "$COLORS" | jq -r --arg label "$label" '.[] | select(startswith($label + ":")) | split(":")[1]' || echo "0052cc")
-
-              # Check if label exists in repository
-              if ! gh label list --search "$label" --limit 1 | grep -q "^$label"; then
-                echo "Label '$label' does not exist, creating it..."
-                gh label create "$label" --color "$COLOR" --description "Auto-generated deployment label" || {
-                  echo "Failed to create label '$label', using default color"
-                  gh label create "$label" --color "0052cc" --description "Auto-generated deployment label" || true
-                }
-              else
-                echo "Label '$label' already exists"
-              fi
-
-              # Add label to PR
-              echo "Adding label '$label' to PR..."
-              gh pr edit ${{ github.event.pull_request.number }} --add-label "$label" || {
-                echo "Failed to add label '$label' to PR, retrying..."
-                sleep 1
-                gh pr edit ${{ github.event.pull_request.number }} --add-label "$label" || true
+      - name: Manage PR labels with GitHub Script
+        id: manage-labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            // Service and environment mapping based on path filters
+            const serviceEnvironmentMap = {
+              'github-oidc-auth-develop': {
+                service: 'github-oidc-auth',
+                environment: 'develop',
+                color: '28a745'
+              },
+              'github-oidc-auth-production': {
+                service: 'github-oidc-auth',
+                environment: 'production',
+                color: 'dc3545'
+              },
+              'github-oidc-auth-staging': {
+                service: 'github-oidc-auth',
+                environment: 'staging',
+                color: 'ffc107'
+              },
+              'github-actions-claude-code-action-monorepo': {
+                service: 'github-actions-claude-code-action',
+                environment: 'monorepo',
+                color: '17a2b8'
+              },
+              'github-repository-generated-manifests': {
+                service: 'github-repository',
+                environment: 'generated-manifests',
+                color: '6f42c1'
+              },
+              'github-repository-kubernetes-clusters': {
+                service: 'github-repository',
+                environment: 'kubernetes-clusters',
+                color: '20c997'
+              },
+              'github-repository-monorepo': {
+                service: 'github-repository',
+                environment: 'monorepo',
+                color: '17a2b8'
               }
-            fi
-          done
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+            };
+
+            // Get change detection results
+            const changes = {
+              'github-oidc-auth-develop': '${{ steps.changes.outputs.github-oidc-auth-develop }}' === 'true',
+              'github-oidc-auth-production': '${{ steps.changes.outputs.github-oidc-auth-production }}' === 'true',
+              'github-oidc-auth-staging': '${{ steps.changes.outputs.github-oidc-auth-staging }}' === 'true',
+              'github-actions-claude-code-action-monorepo': '${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}' === 'true',
+              'github-repository-generated-manifests': '${{ steps.changes.outputs.github-repository-generated-manifests }}' === 'true',
+              'github-repository-kubernetes-clusters': '${{ steps.changes.outputs.github-repository-kubernetes-clusters }}' === 'true',
+              'github-repository-monorepo': '${{ steps.changes.outputs.github-repository-monorepo }}' === 'true'
+            };
+
+            console.log('Change detection results:', changes);
+
+            // Generate required labels based on detected changes
+            const requiredLabels = [];
+            for (const [key, hasChanges] of Object.entries(changes)) {
+              if (hasChanges && serviceEnvironmentMap[key]) {
+                const { service, environment } = serviceEnvironmentMap[key];
+                const label = `deploy:${service}:${environment}`;
+                requiredLabels.push(label);
+              }
+            }
+
+            console.log('Required labels:', requiredLabels);
+
+            // Get current PR labels (only deploy: labels)
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const currentDeployLabels = currentLabels
+              .map(label => label.name)
+              .filter(name => name.startsWith('deploy:'));
+
+            console.log('Current deploy labels:', currentDeployLabels);
+
+            // Create labels if they don't exist
+            for (const labelName of requiredLabels) {
+              const key = Object.keys(serviceEnvironmentMap).find(k => {
+                const { service, environment } = serviceEnvironmentMap[k];
+                return `deploy:${service}:${environment}` === labelName;
+              });
+
+              const color = key ? serviceEnvironmentMap[key].color : '0052cc';
+
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: labelName
+                });
+                console.log(`Label ${labelName} already exists`);
+              } catch (error) {
+                if (error.status === 404) {
+                  console.log(`Creating label: ${labelName} with color: #${color}`);
+                  try {
+                    await github.rest.issues.createLabel({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      name: labelName,
+                      color: color,
+                      description: 'Auto-generated deployment label'
+                    });
+                  } catch (createError) {
+                    console.error(`Failed to create label ${labelName}:`, createError.message);
+                  }
+                }
+              }
+            }
+
+            // Remove old deploy labels that are no longer needed
+            const labelsToRemove = currentDeployLabels.filter(label => !requiredLabels.includes(label));
+            for (const label of labelsToRemove) {
+              console.log(`Removing label: ${label}`);
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  name: label
+                });
+              } catch (error) {
+                console.error(`Failed to remove label ${label}:`, error.message);
+              }
+            }
+
+            // Add new required labels
+            const labelsToAdd = requiredLabels.filter(label => !currentDeployLabels.includes(label));
+            for (const label of labelsToAdd) {
+              console.log(`Adding label: ${label}`);
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  labels: [label]
+                });
+              } catch (error) {
+                console.error(`Failed to add label ${label}:`, error.message);
+              }
+            }
+
+            // Store results for comment step
+            core.setOutput('required_labels', JSON.stringify(requiredLabels));
+            core.setOutput('labels_added', JSON.stringify(labelsToAdd));
+            core.setOutput('labels_removed', JSON.stringify(labelsToRemove));
+            core.setOutput('has_changes', requiredLabels.length > 0 ? 'true' : 'false');
+
+            return {
+              requiredLabels,
+              labelsAdded,
+              labelsRemoved,
+              hasChanges: requiredLabels.length > 0
+            };
 
       - name: Comment on PR with deployment info
-        if: steps.determine-labels.outputs.required_labels != '[]'
-        run: |
-          REQUIRED_LABELS='${{ steps.determine-labels.outputs.required_labels }}'
-          CHANGED_FILES='${{ steps.detect-changes.outputs.changed_files }}'
+        if: steps.manage-labels.outputs.has_changes == 'true'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          comment_tag: auto-label-deployment-info
+          mode: upsert
+          message: |
+            ## 🚀 デプロイ対象の検知
 
-          # Create deployment info comment
-          cat > /tmp/comment.md << 'EOF'
-          ## 🚀 デプロイ対象の検知
+            このPRの変更により、以下のサービス・環境がデプロイ対象として検知されました：
 
-          このPRの変更により、以下のサービス・環境がデプロイ対象として検知されました：
+            **検知されたラベル:**
+            ${{ steps.manage-labels.outputs.required_labels != '[]' && steps.manage-labels.outputs.required_labels != '' && '以下のラベルが自動で付与されました：' || 'デプロイ対象となる変更は検知されませんでした。' }}
 
-          **検知されたラベル:**
-          EOF
+            ${{ steps.manage-labels.outputs.required_labels != '[]' && steps.manage-labels.outputs.required_labels != '' && steps.manage-labels.outputs.required_labels || '' }}
 
-          echo "$REQUIRED_LABELS" | jq -r '.[]' | while IFS= read -r label; do
-            if [ -n "$label" ]; then
-              SERVICE=$(echo "$label" | cut -d':' -f2)
-              ENVIRONMENT=$(echo "$label" | cut -d':' -f3)
-              echo "- \`$label\` → **$SERVICE** の **$ENVIRONMENT** 環境" >> /tmp/comment.md
-            fi
-          done
+            **変更検知の詳細:**
+            - 🔍 **Terragrunt 全般**: `${{ steps.changes.outputs.terragrunt }}`
+            - 🔑 **GitHub OIDC Auth (develop)**: `${{ steps.changes.outputs.github-oidc-auth-develop }}`
+            - 🔑 **GitHub OIDC Auth (production)**: `${{ steps.changes.outputs.github-oidc-auth-production }}`
+            - 🔑 **GitHub OIDC Auth (staging)**: `${{ steps.changes.outputs.github-oidc-auth-staging }}`
+            - ⚡ **Claude Code Action (monorepo)**: `${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}`
+            - 📦 **GitHub Repository (generated-manifests)**: `${{ steps.changes.outputs.github-repository-generated-manifests }}`
+            - 📦 **GitHub Repository (kubernetes-clusters)**: `${{ steps.changes.outputs.github-repository-kubernetes-clusters }}`
+            - 📦 **GitHub Repository (monorepo)**: `${{ steps.changes.outputs.github-repository-monorepo }}`
 
-          cat >> /tmp/comment.md << 'EOF'
+            ### 次のステップ
+            - PRをマージすると、対象環境へのデプロイが自動実行されます
+            - ラベルを手動で削除することで、特定の環境のデプロイをスキップできます
+            - ラベルを手動で追加することで、追加の環境をデプロイ対象に含められます
 
-          **変更されたファイル:**
-          <details>
-          <summary>変更ファイル一覧を表示</summary>
+            ### ラベル管理の変更
+            ${{ steps.manage-labels.outputs.labels_added != '[]' && steps.manage-labels.outputs.labels_added != '' && format('**追加されたラベル:** {0}', steps.manage-labels.outputs.labels_added) || '' }}
+            ${{ steps.manage-labels.outputs.labels_removed != '[]' && steps.manage-labels.outputs.labels_removed != '' && format('**削除されたラベル:** {0}', steps.manage-labels.outputs.labels_removed) || '' }}
 
-          ```
-          EOF
+            ---
+            *このコメントは Auto Label Pure GHA v4 により自動生成・更新されました*
 
-          echo "$CHANGED_FILES" >> /tmp/comment.md
+      - name: Add comment when no changes detected
+        if: steps.manage-labels.outputs.has_changes == 'false'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          comment_tag: auto-label-deployment-info
+          mode: upsert
+          message: |
+            ## ℹ️ デプロイ対象の検知結果
 
-          cat >> /tmp/comment.md << 'EOF'
-          ```
+            このPRの変更では、デプロイ対象となるファイルは検知されませんでした。
 
-          </details>
+            **変更検知の詳細:**
+            - 🔍 **Terragrunt 全般**: `${{ steps.changes.outputs.terragrunt }}`
+            - 🔑 **GitHub OIDC Auth (develop)**: `${{ steps.changes.outputs.github-oidc-auth-develop }}`
+            - 🔑 **GitHub OIDC Auth (production)**: `${{ steps.changes.outputs.github-oidc-auth-production }}`
+            - 🔑 **GitHub OIDC Auth (staging)**: `${{ steps.changes.outputs.github-oidc-auth-staging }}`
+            - ⚡ **Claude Code Action (monorepo)**: `${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}`
+            - 📦 **GitHub Repository (generated-manifests)**: `${{ steps.changes.outputs.github-repository-generated-manifests }}`
+            - 📦 **GitHub Repository (kubernetes-clusters)**: `${{ steps.changes.outputs.github-repository-kubernetes-clusters }}`
+            - 📦 **GitHub Repository (monorepo)**: `${{ steps.changes.outputs.github-repository-monorepo }}`
 
-          ### 次のステップ
-          - PRをマージすると、対象環境へのデプロイが自動実行されます
-          - ラベルを手動で削除することで、特定の環境のデプロイをスキップできます
-          - ラベルを手動で追加することで、追加の環境をデプロイ対象に含められます
+            手動でデプロイラベルを追加することで、特定の環境をデプロイ対象に含めることができます。
 
-          ---
-          *このコメントは変更検知ワークフローにより自動生成されました*
-          EOF
-
-          gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+            ---
+            *このコメントは Auto Label Pure GHA v4 により自動生成・更新されました*
 
       - name: Summary
         run: |
-          REQUIRED_LABELS='${{ steps.determine-labels.outputs.required_labels }}'
+          REQUIRED_LABELS='${{ steps.manage-labels.outputs.required_labels }}'
+          HAS_CHANGES='${{ steps.manage-labels.outputs.has_changes }}'
 
-          if [ "$REQUIRED_LABELS" = "[]" ] || [ -z "$REQUIRED_LABELS" ]; then
+          if [ "$HAS_CHANGES" = "false" ]; then
             echo "✅ 変更検知完了: デプロイ対象なし"
             echo "変更されたファイルにデプロイが必要なものは含まれていません。"
           else
             echo "✅ 変更検知完了: ラベル付与済み"
-            echo "検知されたラベル:"
-            echo "$REQUIRED_LABELS" | jq -r '.[]' | while IFS= read -r label; do
-              echo "  - $label"
-            done
+            echo "検知されたラベル: $REQUIRED_LABELS"
           fi
+
+          echo "Pure GHA v4 による自動ラベル付与が完了しました。"
