@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+
+require_relative '../config/application'
+require 'thor'
+
+class LabelDispatcherCLI < Thor
+  desc "dispatch PR_NUMBER", "Detect changed services and update PR labels"
+  option :base_ref, desc: "Base git reference for comparison"
+  option :head_ref, desc: "Head git reference for comparison"
+
+  def dispatch(pr_number = nil)
+    controller = DependencyContainer.resolve(:label_dispatcher_controller)
+
+    if ENV['GITHUB_ACTIONS'] && !pr_number
+      puts "::error::PR number is required in GitHub Actions environment"
+      exit 1
+    end
+
+    controller.dispatch_labels(
+      pr_number: pr_number&.to_i,
+      base_ref: options[:base_ref],
+      head_ref: options[:head_ref]
+    )
+  end
+
+  desc "test", "Test label detection without PR interaction"
+  option :base_ref, desc: "Base git reference for comparison"
+  option :head_ref, desc: "Head git reference for comparison"
+
+  def test
+    controller = DependencyContainer.resolve(:label_dispatcher_controller)
+    controller.test_detection(
+      base_ref: options[:base_ref],
+      head_ref: options[:head_ref]
+    )
+  end
+
+  desc "simulate PR_NUMBER", "Simulate GitHub Actions environment locally"
+  option :base_ref, desc: "Base git reference for comparison", default: 'main'
+  option :head_ref, desc: "Head git reference for comparison"
+
+  def simulate(pr_number)
+    puts "🎭 Simulating GitHub Actions environment..."
+
+    ENV['GITHUB_ACTIONS'] = 'true'
+    ENV['GITHUB_ENV'] = '/tmp/github_env'
+    File.write(ENV['GITHUB_ENV'], '')
+
+    controller = DependencyContainer.resolve(:label_dispatcher_controller)
+
+    begin
+      controller.dispatch_labels(
+        pr_number: pr_number.to_i,
+        base_ref: options[:base_ref],
+        head_ref: options[:head_ref]
+      )
+
+      if File.exist?(ENV['GITHUB_ENV'])
+        puts "\n📋 Generated Environment Variables:"
+        puts File.read(ENV['GITHUB_ENV'])
+      end
+    ensure
+      File.delete(ENV['GITHUB_ENV']) if File.exist?(ENV['GITHUB_ENV'])
+    end
+  end
+end
+
+LabelDispatcherCLI.start(ARGV)

@@ -14,12 +14,12 @@ on:
       terraform-version:
         required: false
         type: string
-        default: '1.5.7'
+        default: '1.12.1'
         description: 'Terraform version'
       terragrunt-version:
         required: false
         type: string
-        default: '0.53.2'
+        default: '0.81.0'
         description: 'Terragrunt version'
       action-type:
         required: true
