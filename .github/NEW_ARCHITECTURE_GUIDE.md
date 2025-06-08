@@ -131,7 +131,7 @@ graph TD
 # 環境ごとの共通設定
 environment_config:
   develop:
-    aws_region: "ap-northeast-1" 
+    aws_region: "ap-northeast-1"
     iam_role_plan: "arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role"
     iam_role_apply: "arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role"
   staging:
@@ -139,7 +139,7 @@ environment_config:
     iam_role_plan: "arn:aws:iam::123456789012:role/terragrunt-plan-staging-role"
     iam_role_apply: "arn:aws:iam::123456789012:role/terragrunt-apply-staging-role"
   production:
-    aws_region: "ap-northeast-1" 
+    aws_region: "ap-northeast-1"
     iam_role_plan: "arn:aws:iam::123456789012:role/terragrunt-plan-production-role"
     iam_role_apply: "arn:aws:iam::123456789012:role/terragrunt-apply-production-role"
 
