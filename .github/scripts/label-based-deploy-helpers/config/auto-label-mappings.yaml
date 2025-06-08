@@ -18,7 +18,6 @@ directory_conventions:
   terragrunt: "{service}/terragrunt/envs/{environment}"
   kubernetes: "{service}/kubernetes/overlays/{environment}"
 
-# Service-specific settings. Exception settings that do not belong to the defaults.
 services:
   - name: claude-code-action
     directory_conventions:
@@ -31,7 +30,7 @@ defaults:
   iam_role_apply: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
 
 modules:
-  terraform_version: "1.5.7"
-  terragrunt_version: "0.53.2"
+  terraform_version: "1.12.1"
+  terragrunt_version: "0.81.0"
   kubectl_version: "1.28.0"
   kustomize_version: "5.0.0"

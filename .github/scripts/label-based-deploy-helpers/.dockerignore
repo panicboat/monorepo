@@ -1,0 +1,21 @@
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# Development files
+.vscode/
+.idea/
+
+# Docker files themselves
+Dockerfile.*
+docker-compose*.yml

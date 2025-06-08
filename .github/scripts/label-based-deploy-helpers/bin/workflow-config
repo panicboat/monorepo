@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+
+require_relative '../config/application'
+require 'thor'
+require 'json'
+
+class WorkflowConfigCLI < Thor
+  desc "validate", "Validate configuration file"
+
+  def validate
+    begin
+      config_gateway = DependencyContainer.resolve(:config_gateway)
+      config = config_gateway.load_workflow_config
+
+      puts "✅ Configuration is valid".colorize(:green)
+      puts "Environments: #{config.environments.keys.join(', ')}"
+      puts "Services: #{config.services.keys.join(', ')}"
+      puts "Terraform version: #{config.terraform_version}"
+      puts "Terragrunt version: #{config.terragrunt_version}"
+    rescue => error
+      puts "❌ Configuration error: #{error.message}".colorize(:red)
+      exit 1
+    end
+  end
+
+  desc "show", "Show parsed configuration"
+
+  def show
+    config_gateway = DependencyContainer.resolve(:config_gateway)
+    config = config_gateway.load_workflow_config
+
+    puts JSON.pretty_generate({
+      environments: config.environments,
+      services: config.services.transform_values { |s| s.class.name },
+      directory_conventions: config.directory_conventions,
+      modules: config.modules
+    })
+  end
+
+  desc "test_service SERVICE_NAME ENVIRONMENT", "Test service configuration"
+
+  def test_service(service_name, environment)
+    config_gateway = DependencyContainer.resolve(:config_gateway)
+    config = config_gateway.load_workflow_config
+    file_gateway = DependencyContainer.resolve(:file_gateway)
+
+    env_config = config.environment_config(environment)
+    working_dir = config.directory_convention_for(service_name, 'terragrunt')
+      &.gsub('{service}', service_name)
+      &.gsub('{environment}', environment)
+
+    puts "🔧 Service: #{service_name}, Environment: #{environment}".colorize(:blue)
+    puts "Working Directory: #{working_dir}"
+    puts "Directory exists: #{file_gateway.directory_exists?(working_dir) ? '✅' : '❌'}"
+    puts "IAM Plan Role: #{env_config['iam_role_plan']}"
+    puts "IAM Apply Role: #{env_config['iam_role_apply']}"
+    puts "AWS Region: #{env_config['aws_region']}"
+  end
+end
+
+WorkflowConfigCLI.start(ARGV)

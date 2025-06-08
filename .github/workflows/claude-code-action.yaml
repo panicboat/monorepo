@@ -21,17 +21,17 @@ jobs:
       (contains(github.event.comment.body, '@claude') || contains(github.event.issue.body, '@claude')) &&
       contains(fromJSON(vars.CLOUD_CODE_ALLOWED_USERS), github.actor)
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
       - name: Generate GitHub App token
         id: app-token
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4

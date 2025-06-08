@@ -1,0 +1,33 @@
+source 'https://rubygems.org'
+
+# Core
+gem 'thor'
+gem 'dry-container'
+gem 'dry-auto_inject'
+
+# External APIs & Services
+gem 'octokit'
+gem 'aws-sdk-core'
+gem 'aws-sdk-sts'
+
+# Configuration & Data
+gem 'yaml'
+gem 'json'
+
+# Utilities
+gem 'colorize'
+gem 'activesupport'
+
+group :test do
+  gem 'rspec'
+  gem 'webmock'
+  gem 'vcr'
+  gem 'factory_bot'
+end
+
+group :development do
+  gem 'rubocop'
+  gem 'rubocop-rspec'
+  gem 'pry'
+  gem 'guard-rspec'
+end
