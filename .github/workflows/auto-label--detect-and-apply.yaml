@@ -1,8 +1,8 @@
-name: 'Auto Label - Detect Changes and Apply Labels (Pure GHA v4)'
+name: 'Auto Label - Detect Changes and Apply Labels (Dynamic v2)'
 
 # PR作成・更新時に変更されたファイルを検知し、
-# パターンマッチングに基づいてデプロイラベルを付与する
-# Pure GitHub Actions implementation (v4)
+# auto-label--mappings.yamlの設定に基づいてデプロイラベルを付与する
+# Dynamic configuration implementation (v2)
 
 on:
   pull_request:
@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   detect-and-label:
-    name: 'Detect changes and update PR labels'
+    name: 'Detect changes and update PR labels (Dynamic)'
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
@@ -33,164 +33,176 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Detect file changes with path filters
+      - name: Setup Python for configuration processing
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Generate dynamic path filters from mappings.yaml
+        id: generate-filters
+        run: |
+          python3 << 'EOF'
+          import yaml
+          import json
+          import os
+          import glob
+          
+          # Load configuration
+          with open('.github/auto-label--mappings.yaml', 'r') as f:
+              config = yaml.safe_load(f)
+          
+          # Discover existing services by scanning directories
+          services = []
+          for item in os.listdir('.'):
+              if os.path.isdir(item) and not item.startswith('.'):
+                  # Check if this directory contains terragrunt structure
+                  terragrunt_path = os.path.join(item, 'terragrunt', 'envs')
+                  if os.path.exists(terragrunt_path):
+                      services.append(item)
+          
+          # Add special case services defined in config
+          service_configs = {s['name']: s for s in config.get('services', [])}
+          for service_name in service_configs.keys():
+              if service_name not in services:
+                  services.append(service_name)
+          
+          print(f"Discovered services: {services}")
+          
+          # Generate path filters and matrix
+          filters = {}
+          matrix_items = []
+          
+          for service in services:
+              service_config = service_configs.get(service, {})
+              conventions = service_config.get('directory_conventions', config['directory_conventions'])
+              
+              for env in config['environments']:
+                  env_name = env['environment']
+                  
+                  for stack, pattern in conventions.items():
+                      path = pattern.format(service=service, environment=env_name)
+                      filter_key = f"{service}-{env_name}-{stack}"
+                      
+                      # Check if path actually exists
+                      if os.path.exists(path):
+                          filters[filter_key] = f"{path}/**"
+                          matrix_items.append({
+                              'service': service,
+                              'environment': env_name,
+                              'stack': stack,
+                              'path': path,
+                              'filter_key': filter_key
+                          })
+                          print(f"Added filter: {filter_key} -> {path}/**")
+                      else:
+                          print(f"Skipped non-existent path: {path}")
+          
+          # Create filters file for dorny/paths-filter
+          with open('path-filters.yml', 'w') as f:
+              if filters:
+                  yaml.dump(filters, f, default_flow_style=False)
+              else:
+                  # Create empty filter to avoid errors
+                  yaml.dump({'_dummy': ['README.md']}, f, default_flow_style=False)
+          
+          # Set outputs
+          matrix = {'include': matrix_items}
+          
+          # GitHub Actions output format
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"matrix={json.dumps(matrix)}\n")
+              f.write(f"has_filters={'true' if filters else 'false'}\n")
+          
+          print(f"Generated {len(filters)} filters for {len(matrix_items)} service/environment/stack combinations")
+          EOF
+
+      - name: Detect file changes with dynamic path filters
         id: changes
+        if: steps.generate-filters.outputs.has_filters == 'true'
         uses: dorny/paths-filter@v2
         with:
           token: ${{ steps.app-token.outputs.token }}
           list-files: shell
-          filters: |
-            terragrunt:
-              - '**/terragrunt/envs/**'
-            github-oidc-auth-develop:
-              - 'github-oidc-auth/terragrunt/envs/develop/**'
-            github-oidc-auth-production:
-              - 'github-oidc-auth/terragrunt/envs/production/**'
-            github-oidc-auth-staging:
-              - 'github-oidc-auth/terragrunt/envs/staging/**'
-            github-actions-claude-code-action-monorepo:
-              - 'github-actions/claude-code-action/terragrunt/envs/monorepo/**'
-            github-repository-generated-manifests:
-              - 'github-repository/terragrunt/envs/generated-manifests/**'
-            github-repository-kubernetes-clusters:
-              - 'github-repository/terragrunt/envs/kubernetes-clusters/**'
-            github-repository-monorepo:
-              - 'github-repository/terragrunt/envs/monorepo/**'
+          filters-path: path-filters.yml
 
       - name: Debug path filter results
+        if: steps.generate-filters.outputs.has_filters == 'true'
         run: |
-          echo "=== Path Filter Debug Information ==="
-          echo "Changed files (general filters):"
-          echo "  terragrunt: ${{ steps.changes.outputs.terragrunt }}"
+          echo "=== Dynamic Path Filter Debug Information ==="
+          echo "Generated filters:"
+          cat path-filters.yml
           echo ""
-          echo "Service-specific filters:"
-          echo "  github-oidc-auth-develop: ${{ steps.changes.outputs.github-oidc-auth-develop }}"
-          echo "  github-oidc-auth-production: ${{ steps.changes.outputs.github-oidc-auth-production }}"
-          echo "  github-oidc-auth-staging: ${{ steps.changes.outputs.github-oidc-auth-staging }}"
-          echo "  github-actions-claude-code-action-monorepo: ${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}"
-          echo "  github-repository-generated-manifests: ${{ steps.changes.outputs.github-repository-generated-manifests }}"
-          echo "  github-repository-kubernetes-clusters: ${{ steps.changes.outputs.github-repository-kubernetes-clusters }}"
-          echo "  github-repository-monorepo: ${{ steps.changes.outputs.github-repository-monorepo }}"
+          echo "Matrix generated:"
+          echo '${{ steps.generate-filters.outputs.matrix }}'
 
-          echo ""
-          echo "Files changed in this PR (terragrunt filter):"
-          if [ -n "${{ steps.changes.outputs.terragrunt_files }}" ]; then
-            echo "${{ steps.changes.outputs.terragrunt_files }}"
-          else
-            echo "No terragrunt files changed or list-files not enabled"
-          fi
-
-          echo ""
-          echo "All filter outputs available:"
-          echo "  terragrunt_files: ${{ steps.changes.outputs.terragrunt_files }}"
-          echo "  github-oidc-auth-develop_files: ${{ steps.changes.outputs.github-oidc-auth-develop_files }}"
-          echo "  github-oidc-auth-production_files: ${{ steps.changes.outputs.github-oidc-auth-production_files }}"
-          echo "  github-oidc-auth-staging_files: ${{ steps.changes.outputs.github-oidc-auth-staging_files }}"
-
-      - name: Manage PR labels with GitHub Script
+      - name: Process changes and manage labels
         id: manage-labels
         uses: actions/github-script@v7
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
-            // Service and environment mapping based on path filters
-            const serviceEnvironmentMap = {
-              'github-oidc-auth-develop': {
-                service: 'github-oidc-auth',
-                environment: 'develop',
-                color: '28a745'
-              },
-              'github-oidc-auth-production': {
-                service: 'github-oidc-auth',
-                environment: 'production',
-                color: 'dc3545'
-              },
-              'github-oidc-auth-staging': {
-                service: 'github-oidc-auth',
-                environment: 'staging',
-                color: 'ffc107'
-              },
-              'github-actions-claude-code-action-monorepo': {
-                service: 'github-actions-claude-code-action',
-                environment: 'monorepo',
-                color: '17a2b8'
-              },
-              'github-repository-generated-manifests': {
-                service: 'github-repository',
-                environment: 'generated-manifests',
-                color: '6f42c1'
-              },
-              'github-repository-kubernetes-clusters': {
-                service: 'github-repository',
-                environment: 'kubernetes-clusters',
-                color: '20c997'
-              },
-              'github-repository-monorepo': {
-                service: 'github-repository',
-                environment: 'monorepo',
-                color: '17a2b8'
-              }
-            };
-
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+            
+            // Load configuration
+            const configContent = fs.readFileSync('.github/auto-label--mappings.yaml', 'utf8');
+            const config = yaml.load(configContent);
+            
+            // Parse matrix from previous step
+            const matrix = JSON.parse('${{ steps.generate-filters.outputs.matrix }}');
+            
             // Get change detection results
-            const changes = {
-              'github-oidc-auth-develop': '${{ steps.changes.outputs.github-oidc-auth-develop }}' === 'true',
-              'github-oidc-auth-production': '${{ steps.changes.outputs.github-oidc-auth-production }}' === 'true',
-              'github-oidc-auth-staging': '${{ steps.changes.outputs.github-oidc-auth-staging }}' === 'true',
-              'github-actions-claude-code-action-monorepo': '${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}' === 'true',
-              'github-repository-generated-manifests': '${{ steps.changes.outputs.github-repository-generated-manifests }}' === 'true',
-              'github-repository-kubernetes-clusters': '${{ steps.changes.outputs.github-repository-kubernetes-clusters }}' === 'true',
-              'github-repository-monorepo': '${{ steps.changes.outputs.github-repository-monorepo }}' === 'true'
-            };
-
-            console.log('Change detection results:', changes);
-
-            // Debug: Show all path filter outputs
-            console.log('All path filter outputs:', {
-              terragrunt: '${{ steps.changes.outputs.terragrunt }}',
-              'github-oidc-auth-develop': '${{ steps.changes.outputs.github-oidc-auth-develop }}',
-              'github-oidc-auth-production': '${{ steps.changes.outputs.github-oidc-auth-production }}',
-              'github-oidc-auth-staging': '${{ steps.changes.outputs.github-oidc-auth-staging }}',
-              'github-actions-claude-code-action-monorepo': '${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}',
-              'github-repository-generated-manifests': '${{ steps.changes.outputs.github-repository-generated-manifests }}',
-              'github-repository-kubernetes-clusters': '${{ steps.changes.outputs.github-repository-kubernetes-clusters }}',
-              'github-repository-monorepo': '${{ steps.changes.outputs.github-repository-monorepo }}'
-            });
-
-            // Generate required labels based on detected changes
+            const hasFilters = '${{ steps.generate-filters.outputs.has_filters }}' === 'true';
+            
+            console.log('Matrix items:', matrix.include);
+            console.log('Has filters:', hasFilters);
+            
+            // Collect required labels based on detected changes
             const requiredLabels = [];
-            for (const [key, hasChanges] of Object.entries(changes)) {
-              if (hasChanges && serviceEnvironmentMap[key]) {
-                const { service, environment } = serviceEnvironmentMap[key];
-                const label = `deploy:${service}:${environment}`;
-                requiredLabels.push(label);
+            
+            if (hasFilters) {
+              for (const item of matrix.include) {
+                const filterKey = item.filter_key;
+                const changeOutput = `${{ steps.changes.outputs.${item.filter_key} }}`;
+                
+                console.log(`Checking filter ${filterKey}: ${changeOutput}`);
+                
+                if (changeOutput === 'true') {
+                  const label = `deploy:${item.service}:${item.environment}`;
+                  if (!requiredLabels.includes(label)) {
+                    requiredLabels.push(label);
+                  }
+                }
               }
             }
-
+            
             console.log('Required labels:', requiredLabels);
-
+            
             // Get current PR labels (only deploy: labels)
             const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number
             });
-
+            
             const currentDeployLabels = currentLabels
               .map(label => label.name)
               .filter(name => name.startsWith('deploy:'));
-
+            
             console.log('Current deploy labels:', currentDeployLabels);
-
+            
             // Create labels if they don't exist
             for (const labelName of requiredLabels) {
-              const key = Object.keys(serviceEnvironmentMap).find(k => {
-                const { service, environment } = serviceEnvironmentMap[k];
-                return `deploy:${service}:${environment}` === labelName;
-              });
-
-              const color = key ? serviceEnvironmentMap[key].color : '0052cc';
-
+              // Find color from environment config
+              const parts = labelName.split(':');
+              const environment = parts[2];
+              const color = config.label_config?.colors?.[environment] || '0052cc';
+              
               try {
                 await github.rest.issues.getLabel({
                   owner: context.repo.owner,
@@ -215,7 +227,7 @@ jobs:
                 }
               }
             }
-
+            
             // Remove old deploy labels that are no longer needed
             const labelsToRemove = currentDeployLabels.filter(label => !requiredLabels.includes(label));
             for (const label of labelsToRemove) {
@@ -231,7 +243,7 @@ jobs:
                 console.error(`Failed to remove label ${label}:`, error.message);
               }
             }
-
+            
             // Add new required labels
             const labelsToAdd = requiredLabels.filter(label => !currentDeployLabels.includes(label));
             for (const label of labelsToAdd) {
@@ -247,19 +259,18 @@ jobs:
                 console.error(`Failed to add label ${label}:`, error.message);
               }
             }
-
+            
             // Store results for comment step
             core.setOutput('required_labels', JSON.stringify(requiredLabels));
             core.setOutput('labels_added', JSON.stringify(labelsToAdd));
             core.setOutput('labels_removed', JSON.stringify(labelsToRemove));
             core.setOutput('has_changes', requiredLabels.length > 0 ? 'true' : 'false');
-
-            return {
-              requiredLabels,
-              labelsAdded: labelsToAdd,
-              labelsRemoved: labelsToRemove,
-              hasChanges: requiredLabels.length > 0
-            };
+            core.setOutput('matrix_summary', JSON.stringify(matrix.include.map(item => ({
+              service: item.service,
+              environment: item.environment,
+              stack: item.stack,
+              changed: `${{ steps.changes.outputs.${item.filter_key} }}` === 'true'
+            }))));
 
       - name: Comment on PR with deployment info
         if: steps.manage-labels.outputs.has_changes == 'true'
@@ -269,24 +280,15 @@ jobs:
           comment_tag: auto-label-deployment-info
           mode: upsert
           message: |
-            ## 🚀 デプロイ対象の検知
+            ## 🚀 デプロイ対象の検知 (Dynamic v2)
 
             このPRの変更により、以下のサービス・環境がデプロイ対象として検知されました：
 
             **検知されたラベル:**
-            ${{ steps.manage-labels.outputs.required_labels != '[]' && steps.manage-labels.outputs.required_labels != '' && '以下のラベルが自動で付与されました：' || 'デプロイ対象となる変更は検知されませんでした。' }}
-
-            ${{ steps.manage-labels.outputs.required_labels != '[]' && steps.manage-labels.outputs.required_labels != '' && steps.manage-labels.outputs.required_labels || '' }}
+            ${{ steps.manage-labels.outputs.required_labels }}
 
             **変更検知の詳細:**
-            - 🔍 **Terragrunt 全般**: `${{ steps.changes.outputs.terragrunt }}`
-            - 🔑 **GitHub OIDC Auth (develop)**: `${{ steps.changes.outputs.github-oidc-auth-develop }}`
-            - 🔑 **GitHub OIDC Auth (production)**: `${{ steps.changes.outputs.github-oidc-auth-production }}`
-            - 🔑 **GitHub OIDC Auth (staging)**: `${{ steps.changes.outputs.github-oidc-auth-staging }}`
-            - ⚡ **Claude Code Action (monorepo)**: `${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}`
-            - 📦 **GitHub Repository (generated-manifests)**: `${{ steps.changes.outputs.github-repository-generated-manifests }}`
-            - 📦 **GitHub Repository (kubernetes-clusters)**: `${{ steps.changes.outputs.github-repository-kubernetes-clusters }}`
-            - 📦 **GitHub Repository (monorepo)**: `${{ steps.changes.outputs.github-repository-monorepo }}`
+            ${{ steps.manage-labels.outputs.matrix_summary }}
 
             ### 次のステップ
             - PRをマージすると、対象環境へのデプロイが自動実行されます
@@ -298,7 +300,7 @@ jobs:
             ${{ steps.manage-labels.outputs.labels_removed != '[]' && steps.manage-labels.outputs.labels_removed != '' && format('**削除されたラベル:** {0}', steps.manage-labels.outputs.labels_removed) || '' }}
 
             ---
-            *このコメントは Auto Label Pure GHA v4 により自動生成・更新されました*
+            *このコメントは Auto Label Dynamic v2 により自動生成・更新されました*
 
       - name: Add comment when no changes detected
         if: steps.manage-labels.outputs.has_changes == 'false'
@@ -308,48 +310,36 @@ jobs:
           comment_tag: auto-label-deployment-info
           mode: upsert
           message: |
-            ## ℹ️ デプロイ対象の検知結果
+            ## ℹ️ デプロイ対象の検知結果 (Dynamic v2)
 
             このPRの変更では、デプロイ対象となるファイルは検知されませんでした。
 
-            **変更検知の詳細:**
-            - 🔍 **Terragrunt 全般**: `${{ steps.changes.outputs.terragrunt }}`
-            - 🔑 **GitHub OIDC Auth (develop)**: `${{ steps.changes.outputs.github-oidc-auth-develop }}`
-            - 🔑 **GitHub OIDC Auth (production)**: `${{ steps.changes.outputs.github-oidc-auth-production }}`
-            - 🔑 **GitHub OIDC Auth (staging)**: `${{ steps.changes.outputs.github-oidc-auth-staging }}`
-            - ⚡ **Claude Code Action (monorepo)**: `${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}`
-            - 📦 **GitHub Repository (generated-manifests)**: `${{ steps.changes.outputs.github-repository-generated-manifests }}`
-            - 📦 **GitHub Repository (kubernetes-clusters)**: `${{ steps.changes.outputs.github-repository-kubernetes-clusters }}`
-            - 📦 **GitHub Repository (monorepo)**: `${{ steps.changes.outputs.github-repository-monorepo }}`
+            **設定から生成されたフィルター:**
+            ${{ steps.generate-filters.outputs.has_filters == 'true' && '設定ファイルから動的にフィルターが生成されました' || '設定ファイルからフィルターを生成できませんでした' }}
 
             手動でデプロイラベルを追加することで、特定の環境をデプロイ対象に含めることができます。
 
             ---
-            *このコメントは Auto Label Pure GHA v4 により自動生成・更新されました*
+            *このコメントは Auto Label Dynamic v2 により自動生成・更新されました*
 
       - name: Summary
         run: |
-          echo "=== Pure GHA v4 実行結果 ==="
-          echo "Path Filter Results:"
-          echo "  terragrunt: ${{ steps.changes.outputs.terragrunt }}"
-          echo "  github-oidc-auth-develop: ${{ steps.changes.outputs.github-oidc-auth-develop }}"
-          echo "  github-oidc-auth-production: ${{ steps.changes.outputs.github-oidc-auth-production }}"
-          echo "  github-oidc-auth-staging: ${{ steps.changes.outputs.github-oidc-auth-staging }}"
-          echo "  github-actions-claude-code-action-monorepo: ${{ steps.changes.outputs.github-actions-claude-code-action-monorepo }}"
-          echo "  github-repository-generated-manifests: ${{ steps.changes.outputs.github-repository-generated-manifests }}"
-          echo "  github-repository-kubernetes-clusters: ${{ steps.changes.outputs.github-repository-kubernetes-clusters }}"
-          echo "  github-repository-monorepo: ${{ steps.changes.outputs.github-repository-monorepo }}"
+          echo "=== Dynamic v2 実行結果 ==="
+          echo "Has filters: ${{ steps.generate-filters.outputs.has_filters }}"
+          echo "Required labels: ${{ steps.manage-labels.outputs.required_labels }}"
+          echo "Labels added: ${{ steps.manage-labels.outputs.labels_added }}"
+          echo "Labels removed: ${{ steps.manage-labels.outputs.labels_removed }}"
+          echo "Has changes: ${{ steps.manage-labels.outputs.has_changes }}"
           echo ""
-
-          REQUIRED_LABELS='${{ steps.manage-labels.outputs.required_labels }}'
+          
           HAS_CHANGES='${{ steps.manage-labels.outputs.has_changes }}'
-
+          
           if [ "$HAS_CHANGES" = "false" ]; then
             echo "✅ 変更検知完了: デプロイ対象なし"
             echo "変更されたファイルにデプロイが必要なものは含まれていません。"
           else
             echo "✅ 変更検知完了: ラベル付与済み"
-            echo "検知されたラベル: $REQUIRED_LABELS"
+            echo "検知されたラベル: ${{ steps.manage-labels.outputs.required_labels }}"
           fi
 
-          echo "Pure GHA v4 による自動ラベル付与が完了しました。"
+          echo "Dynamic v2 による自動ラベル付与が完了しました。"

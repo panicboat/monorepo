@@ -1,0 +1,83 @@
+# auto-label--mappings.yaml
+# GitHub Actions ワークフロー疎結合化のための統合設定ファイル
+# 
+# このファイルは新しい設計により、設定の一元化と動的生成を実現します。
+# - 環境設定の統合
+# - ディレクトリ規約によるpath生成
+# - サービス固有設定の例外管理
+
+# 環境設定（AWS設定とIAMロール）
+environments:
+  - environment: develop
+    aws_region: ap-northeast-1
+    iam_role_plan: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+    iam_role_apply: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+
+  - environment: staging
+    aws_region: ap-northeast-1
+    iam_role_plan: arn:aws:iam::123456789012:role/terragrunt-plan-staging-role
+    iam_role_apply: arn:aws:iam::123456789012:role/terragrunt-apply-staging-role
+
+  - environment: production
+    aws_region: ap-northeast-1
+    iam_role_plan: arn:aws:iam::123456789012:role/terragrunt-plan-production-role
+    iam_role_apply: arn:aws:iam::123456789012:role/terragrunt-apply-production-role
+
+  - environment: monorepo
+    aws_region: ap-northeast-1
+    iam_role_plan: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+    iam_role_apply: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+
+  - environment: generated-manifests
+    aws_region: ap-northeast-1
+    iam_role_plan: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+    iam_role_apply: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+
+  - environment: kubernetes-clusters
+    aws_region: ap-northeast-1
+    iam_role_plan: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+    iam_role_apply: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+
+# デフォルトのディレクトリ規約
+directory_conventions:
+  terragrunt: "{service}/terragrunt/envs/{environment}"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
+
+# サービス固有の例外パターン
+services:
+  - name: claude-code-action
+    directory_conventions:
+      terragrunt: "github-actions/{service}/terragrunt/envs/{environment}"
+      kubernetes: "github-actions/{service}/kubernetes/overlays/{environment}"
+
+# デフォルト設定（環境定義にない場合のfallback）
+defaults:
+  aws_region: ap-northeast-1
+  iam_role_plan: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+  iam_role_apply: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+
+# ツールバージョン
+modules:
+  terraform_version: "1.5.7"
+  terragrunt_version: "0.53.2"
+  kubectl_version: "1.28.0"
+  kustomize_version: "5.0.0"
+
+# ラベル設定
+label_config:
+  prefix: "deploy"
+  separator: ":"
+  colors:
+    develop: "1f883d"      # green
+    staging: "fbca04"      # yellow
+    production: "d73a49"   # red
+    monorepo: "0366d6"     # blue
+    generated-manifests: "6f42c1" # purple
+    kubernetes-clusters: "e99695" # pink
+
+# メタデータ
+metadata:
+  version: "2.0"
+  created_by: "GitHub Actions疎結合化プロジェクトv2"
+  last_updated: "2025-06-08"
+  description: "monorepo用GitHub Actionsワークフロー疎結合化設定（新設計）"

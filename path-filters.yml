@@ -1,0 +1,14 @@
+github-repository-monorepo-terragrunt:
+  - "github-repository/terragrunt/envs/monorepo/**"
+github-repository-generated-manifests-terragrunt:
+  - "github-repository/terragrunt/envs/generated-manifests/**"
+github-repository-kubernetes-clusters-terragrunt:
+  - "github-repository/terragrunt/envs/kubernetes-clusters/**"
+github-oidc-auth-develop-terragrunt:
+  - "github-oidc-auth/terragrunt/envs/develop/**"
+github-oidc-auth-staging-terragrunt:
+  - "github-oidc-auth/terragrunt/envs/staging/**"
+github-oidc-auth-production-terragrunt:
+  - "github-oidc-auth/terragrunt/envs/production/**"
+claude-code-action-monorepo-terragrunt:
+  - "github-actions/claude-code-action/terragrunt/envs/monorepo/**"
