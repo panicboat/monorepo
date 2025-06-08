@@ -93,26 +93,3 @@ jobs:
       working-directory: ${{ matrix.target.working_directory }}
       terraform-version: ${{ matrix.target.terraform_version }}
       terragrunt-version: ${{ matrix.target.terragrunt_version }}
-
-  deployment-summary:
-    name: 'Deployment Summary'
-    needs: [extract-deployment-targets, deploy-terragrunt]
-    if: always() && needs.extract-deployment-targets.outputs.has_targets == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@v1  # 既存アクション維持
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      # - name: Comment on PR with deployment trigger
-      #   uses: thollander/actions-comment-pull-request@v3
-      #   with:
-      #     message: |
-      #       ## 🚀 デプロイ対象の検知
-      #     comment-tag: workflow-status
-      #     mode: upsert
-      #     pr-number: ${{ github.event.pull_request.number }}
-      #   continue-on-error: true
