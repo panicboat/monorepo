@@ -117,7 +117,7 @@ jobs:
           LABELS_JSON=$(printf '%s\n' "${UNIQUE_LABELS[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           COLORS_JSON=$(printf '%s\n' "${UNIQUE_COLORS[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
-                    echo "Required labels: $LABELS_JSON"
+          echo "Required labels: $LABELS_JSON"
           echo "Label colors: $COLORS_JSON"
 
           echo "required_labels=$LABELS_JSON" >> $GITHUB_OUTPUT
