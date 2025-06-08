@@ -122,8 +122,10 @@ jobs:
 
           # Extract deployment targets
           TARGETS=()
+          TEMP_FILE=$(mktemp)
 
-          echo "$DEPLOY_LABELS" | jq -r '.[]' | while IFS= read -r label; do
+          # Process each label (avoiding subshell issue with pipe)
+          while IFS= read -r label; do
             if [ -z "$label" ]; then
               continue
             fi
@@ -176,11 +178,17 @@ jobs:
                   terragrunt_version: $terragrunt_version
                 }')
 
-              TARGETS+=("$TARGET")
+              echo "$TARGET" >> "$TEMP_FILE"
             else
               echo "Invalid label format: $label"
             fi
-          done
+          done < <(echo "$DEPLOY_LABELS" | jq -r '.[]')
+
+          # Read targets from temp file
+          if [ -s "$TEMP_FILE" ]; then
+            readarray -t TARGETS < "$TEMP_FILE"
+          fi
+          rm -f "$TEMP_FILE"
 
           # Convert targets array to JSON
           if [ ${#TARGETS[@]} -eq 0 ]; then
