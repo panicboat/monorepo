@@ -117,13 +117,13 @@ jobs:
           LABELS_JSON=$(printf '%s\n' "${UNIQUE_LABELS[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           COLORS_JSON=$(printf '%s\n' "${UNIQUE_COLORS[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
-          echo "Required labels: $LABELS_JSON"
+                    echo "Required labels: $LABELS_JSON"
           echo "Label colors: $COLORS_JSON"
 
           echo "required_labels=$LABELS_JSON" >> $GITHUB_OUTPUT
           echo "label_colors=$COLORS_JSON" >> $GITHUB_OUTPUT
 
-            - name: Get current PR labels
+      - name: Get current PR labels
         id: current-labels
         run: |
           # Get current labels on this PR
@@ -140,7 +140,7 @@ jobs:
           COLORS='${{ steps.determine-labels.outputs.label_colors }}'
 
           echo "Ensuring all required labels exist with correct colors..."
-          
+
           # Create labels with colors if they don't exist
           echo "$COLORS" | jq -r '.[]' | while IFS=':' read -r label color; do
             if [ -n "$label" ] && [ -n "$color" ]; then
@@ -148,7 +148,7 @@ jobs:
 
               # Check if label exists (more robust check)
               EXISTING_LABEL=$(gh label list --json name,color --jq --arg label "$label" '.[] | select(.name == $label)' || echo "")
-              
+
               if [ -z "$EXISTING_LABEL" ]; then
                 echo "Creating new label: $label with color #$color"
                 gh label create "$label" --color "$color" --description "Auto-generated deployment label" || {
@@ -161,7 +161,7 @@ jobs:
                 # Get current color
                 CURRENT_COLOR=$(echo "$EXISTING_LABEL" | jq -r '.color' 2>/dev/null || echo "")
                 echo "Label '$label' exists with current color: #$CURRENT_COLOR"
-                
+
                 if [ "$CURRENT_COLOR" != "$color" ]; then
                   echo "Updating color from #$CURRENT_COLOR to #$color..."
                   gh label edit "$label" --color "$color" || {
