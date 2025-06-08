@@ -139,17 +139,30 @@ jobs:
         run: |
           COLORS='${{ steps.determine-labels.outputs.label_colors }}'
 
+          echo "Ensuring all required labels exist..."
+          
           # Create labels with colors if they don't exist
           echo "$COLORS" | jq -r '.[]' | while IFS=':' read -r label color; do
-            echo "Creating/updating label: $label with color: $color"
+            if [ -n "$label" ] && [ -n "$color" ]; then
+              echo "Checking label: $label with color: $color"
 
-            # Check if label exists
-            if gh label list --search "$label" --limit 1 | grep -q "$label"; then
-              echo "Label $label already exists, updating color..."
-              gh label edit "$label" --color "$color" || true
-            else
-              echo "Creating new label: $label"
-              gh label create "$label" --color "$color" --description "Auto-generated deployment label" || true
+              # Check if label exists (more robust check)
+              EXISTING_LABEL=$(gh label list --search "$label" --limit 1 --json name --jq '.[].name' | grep "^$label$" || echo "")
+              
+              if [ -z "$EXISTING_LABEL" ]; then
+                echo "Creating new label: $label"
+                gh label create "$label" --color "$color" --description "Auto-generated deployment label" || {
+                  echo "Failed to create label with specified color, trying with default color..."
+                  gh label create "$label" --color "0052cc" --description "Auto-generated deployment label" || {
+                    echo "Warning: Failed to create label '$label'"
+                  }
+                }
+              else
+                echo "Label '$label' already exists, updating color if needed..."
+                gh label edit "$label" --color "$color" || {
+                  echo "Warning: Failed to update color for label '$label'"
+                }
+              fi
             fi
           done
         env:
@@ -184,12 +197,34 @@ jobs:
         if: steps.determine-labels.outputs.required_labels != '[]'
         run: |
           REQUIRED_LABELS='${{ steps.determine-labels.outputs.required_labels }}'
+          COLORS='${{ steps.determine-labels.outputs.label_colors }}'
 
           echo "Adding required labels..."
           echo "$REQUIRED_LABELS" | jq -r '.[]' | while IFS= read -r label; do
             if [ -n "$label" ]; then
-              echo "Adding label: $label"
-              gh pr edit ${{ github.event.pull_request.number }} --add-label "$label" || true
+              echo "Processing label: $label"
+              
+              # Get color for this label
+              COLOR=$(echo "$COLORS" | jq -r --arg label "$label" '.[] | select(startswith($label + ":")) | split(":")[1]' || echo "0052cc")
+              
+              # Check if label exists in repository
+              if ! gh label list --search "$label" --limit 1 | grep -q "^$label"; then
+                echo "Label '$label' does not exist, creating it..."
+                gh label create "$label" --color "$COLOR" --description "Auto-generated deployment label" || {
+                  echo "Failed to create label '$label', using default color"
+                  gh label create "$label" --color "0052cc" --description "Auto-generated deployment label" || true
+                }
+              else
+                echo "Label '$label' already exists"
+              fi
+              
+              # Add label to PR
+              echo "Adding label '$label' to PR..."
+              gh pr edit ${{ github.event.pull_request.number }} --add-label "$label" || {
+                echo "Failed to add label '$label' to PR, retrying..."
+                sleep 1
+                gh pr edit ${{ github.event.pull_request.number }} --add-label "$label" || true
+              }
             fi
           done
         env:
