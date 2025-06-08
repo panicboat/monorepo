@@ -21,6 +21,11 @@ environment_config:
     iam_role_plan: "arn:aws:iam::123456789012:role/terragrunt-plan-production-role"
     iam_role_apply: "arn:aws:iam::123456789012:role/terragrunt-apply-production-role"
 
+  monorepo:
+    aws_region: "ap-northeast-1"
+    iam_role_plan: "arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role"
+    iam_role_apply: "arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role"
+
 # ディレクトリ構成規約（working_directory自動生成用）
 directory_conventions:
   terragrunt: "{service}/terragrunt/envs/{environment}"
@@ -101,8 +106,8 @@ mappings:
   # GitHub Actions - Claude Code Action
   "github-actions/claude-code-action/terragrunt/envs/monorepo":
     labels:
-      - "deploy:claude-code-action:monorepo"
-    service: "claude-code-action"
+      - "deploy:github-actions-claude-code-action:monorepo"
+    service: "github-actions-claude-code-action"
     environment: "monorepo"
     stack: "terragrunt"
     # 特殊なenvironmentでもディレクトリ構成規約を適用
