@@ -31,7 +31,7 @@ if [ -n "$GITHUB_ACTIONS" ]; then
 fi
 
 # Configuration file check
-CONFIG_FILE="config/auto-label-mappings.yaml"
+CONFIG_FILE="auto-label-mappings.yaml"
 if [ -f "$CONFIG_FILE" ]; then
     echo "✅ Configuration file found: $CONFIG_FILE"
 else

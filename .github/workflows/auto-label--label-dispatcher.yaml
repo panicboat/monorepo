@@ -38,8 +38,9 @@ jobs:
           working-directory: .github/scripts/label-based-deploy-helpers
 
       - name: Dispatch labels with label-dispatcher
+        working-directory: ${{ github.workspace }}
         run: |
-          bin/label-dispatcher dispatch ${{ github.event.pull_request.number }} --base-ref=${{ github.base_ref }} --head-ref=${{ github.head_ref }}
+          cd .github/scripts/label-based-deploy-helpers
+          bundle exec ruby bin/label-dispatcher dispatch ${{ github.event.pull_request.number }} --base-ref=${{ github.event.pull_request.base.sha }} --head-ref=${{ github.event.pull_request.head.sha }}
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-        working-directory: .github/scripts/label-based-deploy-helpers
