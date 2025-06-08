@@ -1,0 +1,400 @@
+name: 'Auto Label - Label Dispatcher'
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - '**'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  detect-and-label:
+    name: 'Detect changes and update PR labels (Dynamic)'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Setup Python for configuration processing
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Generate dynamic path filters from mappings.yaml
+        id: generate-filters
+        run: |
+          python3 << 'EOF'
+          import yaml
+          import json
+          import os
+          import glob
+
+          # Load configuration
+          with open('.github/config/auto-label--mappings.yaml', 'r') as f:
+              config = yaml.safe_load(f)
+
+          # Discover existing services by scanning directories
+          services = []
+          for item in os.listdir('.'):
+              if os.path.isdir(item) and not item.startswith('.'):
+                  # Check if this directory contains terragrunt structure
+                  terragrunt_path = os.path.join(item, 'terragrunt', 'envs')
+                  if os.path.exists(terragrunt_path):
+                      services.append(item)
+
+          # Add special case services defined in config
+          service_configs = {s['name']: s for s in config.get('services', [])}
+          for service_name in service_configs.keys():
+              if service_name not in services:
+                  services.append(service_name)
+
+          print(f"Discovered services: {services}")
+
+          # Generate path filters and matrix
+          filters = {}
+          matrix_items = []
+
+          for service in services:
+              service_config = service_configs.get(service, {})
+              conventions = service_config.get('directory_conventions', config['directory_conventions'])
+
+              for env in config['environments']:
+                  env_name = env['environment']
+
+                  for stack, pattern in conventions.items():
+                      path = pattern.format(service=service, environment=env_name)
+                      filter_key = f"{service}-{env_name}-{stack}"
+
+                      # Check if path actually exists
+                      if os.path.exists(path):
+                          filters[filter_key] = f"{path}/**"
+                          matrix_items.append({
+                              'service': service,
+                              'environment': env_name,
+                              'stack': stack,
+                              'path': path,
+                              'filter_key': filter_key
+                          })
+                          print(f"Added filter: {filter_key} -> {path}/**")
+                      else:
+                          print(f"Skipped non-existent path: {path}")
+
+          # Set outputs
+          matrix = {'include': matrix_items}
+
+          # Create filters YAML string for dorny/paths-filter
+          filters_yaml = ""
+          if filters:
+              for key, value in filters.items():
+                  filters_yaml += f"{key}:\n  - '{value}'\n"
+          else:
+              filters_yaml = "_dummy:\n  - 'README.md'"
+
+          # GitHub Actions output format
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"matrix={json.dumps(matrix)}\n")
+              f.write(f"has_filters={'true' if filters else 'false'}\n")
+              f.write(f"filters_yaml<<EOF\n{filters_yaml}\nEOF\n")
+
+          print(f"Generated {len(filters)} filters for {len(matrix_items)} service/environment/stack combinations")
+          EOF
+
+      - name: Detect file changes with dynamic path filters
+        id: changes
+        if: steps.generate-filters.outputs.has_filters == 'true'
+        uses: dorny/paths-filter@v3
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          list-files: shell
+          filters: ${{ steps.generate-filters.outputs.filters_yaml }}
+
+      - name: Debug path filter results
+        if: steps.generate-filters.outputs.has_filters == 'true'
+        run: |
+          echo "=== Dynamic Path Filter Debug Information ==="
+          echo "Generated filters YAML:"
+          echo '${{ steps.generate-filters.outputs.filters_yaml }}'
+          echo ""
+          echo "Matrix generated:"
+          echo '${{ steps.generate-filters.outputs.matrix }}'
+
+      - name: Process changes and manage labels
+        id: manage-labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+
+            // Load configuration
+            const configContent = fs.readFileSync('.github/config/auto-label--mappings.yaml', 'utf8');
+            const config = yaml.load(configContent);
+
+            // Parse matrix from previous step
+            const matrix = JSON.parse('${{ steps.generate-filters.outputs.matrix }}');
+
+            // Get change detection results
+            const hasFilters = '${{ steps.generate-filters.outputs.has_filters }}' === 'true';
+
+            console.log('Matrix items:', matrix.include);
+            console.log('Has filters:', hasFilters);
+
+            // Collect required labels based on detected changes
+            const requiredLabels = [];            if (hasFilters) {
+              // Get all outputs from the changes step
+              const changesOutputs = JSON.parse(`${{ toJson(steps.changes.outputs) }}`);
+
+              for (const item of matrix.include) {
+                const filterKey = item.filter_key;
+                const changeOutput = changesOutputs[filterKey];
+
+                console.log(`Checking filter ${filterKey}: ${changeOutput}`);
+
+                if (changeOutput === 'true') {
+                  const label = `deploy:${item.service}:${item.environment}`;
+                  if (!requiredLabels.includes(label)) {
+                    requiredLabels.push(label);
+                  }
+                }
+              }
+            }
+
+            console.log('Required labels:', requiredLabels);
+
+            // Get current PR labels (only deploy: labels)
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const currentDeployLabels = currentLabels
+              .map(label => label.name)
+              .filter(name => name.startsWith('deploy:'));
+
+            console.log('Current deploy labels:', currentDeployLabels);
+
+            // Create labels if they don't exist
+            for (const labelName of requiredLabels) {
+              // Find color from environment config
+              const parts = labelName.split(':');
+              const environment = parts[2];
+              const color = config.label_config?.colors?.[environment] || '0052cc';
+
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: labelName
+                });
+                console.log(`Label ${labelName} already exists`);
+              } catch (error) {
+                if (error.status === 404) {
+                  console.log(`Creating label: ${labelName} with color: #${color}`);
+                  try {
+                    await github.rest.issues.createLabel({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      name: labelName,
+                      color: color,
+                      description: 'Auto-generated deployment label'
+                    });
+                  } catch (createError) {
+                    console.error(`Failed to create label ${labelName}:`, createError.message);
+                  }
+                }
+              }
+            }
+
+            // Remove old deploy labels that are no longer needed
+            const labelsToRemove = currentDeployLabels.filter(label => !requiredLabels.includes(label));
+            for (const label of labelsToRemove) {
+              console.log(`Removing label: ${label}`);
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  name: label
+                });
+              } catch (error) {
+                console.error(`Failed to remove label ${label}:`, error.message);
+              }
+            }
+
+            // Add new required labels
+            const labelsToAdd = requiredLabels.filter(label => !currentDeployLabels.includes(label));
+            for (const label of labelsToAdd) {
+              console.log(`Adding label: ${label}`);
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  labels: [label]
+                });
+              } catch (error) {
+                console.error(`Failed to add label ${label}:`, error.message);
+              }
+            }
+
+            // Store results for comment step
+            core.setOutput('required_labels', JSON.stringify(requiredLabels));
+            core.setOutput('labels_added', JSON.stringify(labelsToAdd));
+            core.setOutput('labels_removed', JSON.stringify(labelsToRemove));
+            core.setOutput('has_changes', requiredLabels.length > 0 ? 'true' : 'false');
+
+            // Generate matrix summary with change information
+            const matrixSummary = matrix.include.map(item => {
+              const filterKey = item.filter_key;
+              const changeOutput = changesOutputs[filterKey];
+              return {
+                service: item.service,
+                environment: item.environment,
+                stack: item.stack,
+                changed: changeOutput === 'true'
+              };
+            });
+            core.setOutput('matrix_summary', JSON.stringify(matrixSummary));
+
+      - name: Comment on PR with deployment info
+        if: steps.manage-labels.outputs.has_changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const body = `## 🚀 デプロイ対象の検知 (Dynamic v2)
+
+            このPRの変更により、以下のサービス・環境がデプロイ対象として検知されました：
+
+            **検知されたラベル:**
+            ${{ steps.manage-labels.outputs.required_labels }}
+
+            **変更検知の詳細:**
+            ${{ steps.manage-labels.outputs.matrix_summary }}
+
+            ### 次のステップ
+            - PRをマージすると、対象環境へのデプロイが自動実行されます
+            - ラベルを手動で削除することで、特定の環境のデプロイをスキップできます
+            - ラベルを手動で追加することで、追加の環境をデプロイ対象に含められます
+
+            ### ラベル管理の変更
+            ${{ steps.manage-labels.outputs.labels_added != '[]' && steps.manage-labels.outputs.labels_added != '' && format('**追加されたラベル:** {0}', steps.manage-labels.outputs.labels_added) || '' }}
+            ${{ steps.manage-labels.outputs.labels_removed != '[]' && steps.manage-labels.outputs.labels_removed != '' && format('**削除されたラベル:** {0}', steps.manage-labels.outputs.labels_removed) || '' }}
+
+            ---
+            *このコメントは Auto Label Dynamic v2 により自動生成・更新されました*`;
+
+            // Check if comment already exists
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.data.find(comment =>
+              comment.body.includes('Auto Label Dynamic v2 により自動生成・更新されました')
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: Add comment when no changes detected
+        if: steps.manage-labels.outputs.has_changes == 'false'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const body = `## ℹ️ デプロイ対象の検知結果 (Dynamic v2)
+
+            このPRの変更では、デプロイ対象となるファイルは検知されませんでした。
+
+            **設定から生成されたフィルター:**
+            ${{ steps.generate-filters.outputs.has_filters == 'true' && '設定ファイルから動的にフィルターが生成されました' || '設定ファイルからフィルターを生成できませんでした' }}
+
+            手動でデプロイラベルを追加することで、特定の環境をデプロイ対象に含めることができます。
+
+            ---
+            *このコメントは Auto Label Dynamic v2 により自動生成・更新されました*`;
+
+            // Check if comment already exists
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.data.find(comment =>
+              comment.body.includes('Auto Label Dynamic v2 により自動生成・更新されました')
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: Summary
+        run: |
+          echo "=== Dynamic v2 実行結果 ==="
+          echo "Has filters: ${{ steps.generate-filters.outputs.has_filters }}"
+          echo "Required labels: ${{ steps.manage-labels.outputs.required_labels }}"
+          echo "Labels added: ${{ steps.manage-labels.outputs.labels_added }}"
+          echo "Labels removed: ${{ steps.manage-labels.outputs.labels_removed }}"
+          echo "Has changes: ${{ steps.manage-labels.outputs.has_changes }}"
+          echo ""
+
+          HAS_CHANGES='${{ steps.manage-labels.outputs.has_changes }}'
+
+          if [ "$HAS_CHANGES" = "false" ]; then
+            echo "✅ 変更検知完了: デプロイ対象なし"
+            echo "変更されたファイルにデプロイが必要なものは含まれていません。"
+          else
+            echo "✅ 変更検知完了: ラベル付与済み"
+            echo "検知されたラベル: ${{ steps.manage-labels.outputs.required_labels }}"
+          fi
+
+          echo "Dynamic v2 による自動ラベル付与が完了しました。"
