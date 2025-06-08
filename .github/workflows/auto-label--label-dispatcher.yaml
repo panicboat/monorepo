@@ -1,8 +1,4 @@
-name: 'Auto Label - Detect Changes and Apply Labels (Dynamic v2)'
-
-# PR作成・更新時に変更されたファイルを検知し、
-# auto-label--mappings.yamlの設定に基づいてデプロイラベルを付与する
-# Dynamic configuration implementation (v2)
+name: 'Auto Label - Label Dispatcher'
 
 on:
   pull_request:
@@ -22,7 +18,7 @@ jobs:
     steps:
       - name: Generate GitHub App token
         id: app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
@@ -34,7 +30,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup Python for configuration processing
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v2
         with:
           python-version: '3.11'
 
@@ -51,11 +47,11 @@ jobs:
           import json
           import os
           import glob
-          
+
           # Load configuration
-          with open('.github/auto-label--mappings.yaml', 'r') as f:
+          with open('.github/config/auto-label--mappings.yaml', 'r') as f:
               config = yaml.safe_load(f)
-          
+
           # Discover existing services by scanning directories
           services = []
           for item in os.listdir('.'):
@@ -64,30 +60,30 @@ jobs:
                   terragrunt_path = os.path.join(item, 'terragrunt', 'envs')
                   if os.path.exists(terragrunt_path):
                       services.append(item)
-          
+
           # Add special case services defined in config
           service_configs = {s['name']: s for s in config.get('services', [])}
           for service_name in service_configs.keys():
               if service_name not in services:
                   services.append(service_name)
-          
+
           print(f"Discovered services: {services}")
-          
+
           # Generate path filters and matrix
           filters = {}
           matrix_items = []
-          
+
           for service in services:
               service_config = service_configs.get(service, {})
               conventions = service_config.get('directory_conventions', config['directory_conventions'])
-              
+
               for env in config['environments']:
                   env_name = env['environment']
-                  
+
                   for stack, pattern in conventions.items():
                       path = pattern.format(service=service, environment=env_name)
                       filter_key = f"{service}-{env_name}-{stack}"
-                      
+
                       # Check if path actually exists
                       if os.path.exists(path):
                           filters[filter_key] = f"{path}/**"
@@ -101,41 +97,42 @@ jobs:
                           print(f"Added filter: {filter_key} -> {path}/**")
                       else:
                           print(f"Skipped non-existent path: {path}")
-          
-          # Create filters file for dorny/paths-filter
-          with open('path-filters.yml', 'w') as f:
-              if filters:
-                  yaml.dump(filters, f, default_flow_style=False)
-              else:
-                  # Create empty filter to avoid errors
-                  yaml.dump({'_dummy': ['README.md']}, f, default_flow_style=False)
-          
+
           # Set outputs
           matrix = {'include': matrix_items}
-          
+
+          # Create filters YAML string for dorny/paths-filter
+          filters_yaml = ""
+          if filters:
+              for key, value in filters.items():
+                  filters_yaml += f"{key}:\n  - '{value}'\n"
+          else:
+              filters_yaml = "_dummy:\n  - 'README.md'"
+
           # GitHub Actions output format
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"matrix={json.dumps(matrix)}\n")
               f.write(f"has_filters={'true' if filters else 'false'}\n")
-          
+              f.write(f"filters_yaml<<EOF\n{filters_yaml}\nEOF\n")
+
           print(f"Generated {len(filters)} filters for {len(matrix_items)} service/environment/stack combinations")
           EOF
 
       - name: Detect file changes with dynamic path filters
         id: changes
         if: steps.generate-filters.outputs.has_filters == 'true'
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         with:
           token: ${{ steps.app-token.outputs.token }}
           list-files: shell
-          filters-path: path-filters.yml
+          filters: ${{ steps.generate-filters.outputs.filters_yaml }}
 
       - name: Debug path filter results
         if: steps.generate-filters.outputs.has_filters == 'true'
         run: |
           echo "=== Dynamic Path Filter Debug Information ==="
-          echo "Generated filters:"
-          cat path-filters.yml
+          echo "Generated filters YAML:"
+          echo '${{ steps.generate-filters.outputs.filters_yaml }}'
           echo ""
           echo "Matrix generated:"
           echo '${{ steps.generate-filters.outputs.matrix }}'
@@ -148,30 +145,31 @@ jobs:
           script: |
             const fs = require('fs');
             const yaml = require('js-yaml');
-            
+
             // Load configuration
-            const configContent = fs.readFileSync('.github/auto-label--mappings.yaml', 'utf8');
+            const configContent = fs.readFileSync('.github/config/auto-label--mappings.yaml', 'utf8');
             const config = yaml.load(configContent);
-            
+
             // Parse matrix from previous step
             const matrix = JSON.parse('${{ steps.generate-filters.outputs.matrix }}');
-            
+
             // Get change detection results
             const hasFilters = '${{ steps.generate-filters.outputs.has_filters }}' === 'true';
-            
+
             console.log('Matrix items:', matrix.include);
             console.log('Has filters:', hasFilters);
-            
+
             // Collect required labels based on detected changes
-            const requiredLabels = [];
-            
-            if (hasFilters) {
+            const requiredLabels = [];            if (hasFilters) {
+              // Get all outputs from the changes step
+              const changesOutputs = JSON.parse(`${{ toJson(steps.changes.outputs) }}`);
+
               for (const item of matrix.include) {
                 const filterKey = item.filter_key;
-                const changeOutput = `${{ steps.changes.outputs.${item.filter_key} }}`;
-                
+                const changeOutput = changesOutputs[filterKey];
+
                 console.log(`Checking filter ${filterKey}: ${changeOutput}`);
-                
+
                 if (changeOutput === 'true') {
                   const label = `deploy:${item.service}:${item.environment}`;
                   if (!requiredLabels.includes(label)) {
@@ -180,29 +178,29 @@ jobs:
                 }
               }
             }
-            
+
             console.log('Required labels:', requiredLabels);
-            
+
             // Get current PR labels (only deploy: labels)
             const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number
             });
-            
+
             const currentDeployLabels = currentLabels
               .map(label => label.name)
               .filter(name => name.startsWith('deploy:'));
-            
+
             console.log('Current deploy labels:', currentDeployLabels);
-            
+
             // Create labels if they don't exist
             for (const labelName of requiredLabels) {
               // Find color from environment config
               const parts = labelName.split(':');
               const environment = parts[2];
               const color = config.label_config?.colors?.[environment] || '0052cc';
-              
+
               try {
                 await github.rest.issues.getLabel({
                   owner: context.repo.owner,
@@ -227,7 +225,7 @@ jobs:
                 }
               }
             }
-            
+
             // Remove old deploy labels that are no longer needed
             const labelsToRemove = currentDeployLabels.filter(label => !requiredLabels.includes(label));
             for (const label of labelsToRemove) {
@@ -243,7 +241,7 @@ jobs:
                 console.error(`Failed to remove label ${label}:`, error.message);
               }
             }
-            
+
             // Add new required labels
             const labelsToAdd = requiredLabels.filter(label => !currentDeployLabels.includes(label));
             for (const label of labelsToAdd) {
@@ -259,28 +257,33 @@ jobs:
                 console.error(`Failed to add label ${label}:`, error.message);
               }
             }
-            
+
             // Store results for comment step
             core.setOutput('required_labels', JSON.stringify(requiredLabels));
             core.setOutput('labels_added', JSON.stringify(labelsToAdd));
             core.setOutput('labels_removed', JSON.stringify(labelsToRemove));
             core.setOutput('has_changes', requiredLabels.length > 0 ? 'true' : 'false');
-            core.setOutput('matrix_summary', JSON.stringify(matrix.include.map(item => ({
-              service: item.service,
-              environment: item.environment,
-              stack: item.stack,
-              changed: `${{ steps.changes.outputs.${item.filter_key} }}` === 'true'
-            }))));
+
+            // Generate matrix summary with change information
+            const matrixSummary = matrix.include.map(item => {
+              const filterKey = item.filter_key;
+              const changeOutput = changesOutputs[filterKey];
+              return {
+                service: item.service,
+                environment: item.environment,
+                stack: item.stack,
+                changed: changeOutput === 'true'
+              };
+            });
+            core.setOutput('matrix_summary', JSON.stringify(matrixSummary));
 
       - name: Comment on PR with deployment info
         if: steps.manage-labels.outputs.has_changes == 'true'
-        uses: thollander/actions-comment-pull-request@v2
+        uses: actions/github-script@v7
         with:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          comment_tag: auto-label-deployment-info
-          mode: upsert
-          message: |
-            ## 🚀 デプロイ対象の検知 (Dynamic v2)
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const body = `## 🚀 デプロイ対象の検知 (Dynamic v2)
 
             このPRの変更により、以下のサービス・環境がデプロイ対象として検知されました：
 
@@ -300,17 +303,42 @@ jobs:
             ${{ steps.manage-labels.outputs.labels_removed != '[]' && steps.manage-labels.outputs.labels_removed != '' && format('**削除されたラベル:** {0}', steps.manage-labels.outputs.labels_removed) || '' }}
 
             ---
-            *このコメントは Auto Label Dynamic v2 により自動生成・更新されました*
+            *このコメントは Auto Label Dynamic v2 により自動生成・更新されました*`;
+
+            // Check if comment already exists
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.data.find(comment =>
+              comment.body.includes('Auto Label Dynamic v2 により自動生成・更新されました')
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
 
       - name: Add comment when no changes detected
         if: steps.manage-labels.outputs.has_changes == 'false'
-        uses: thollander/actions-comment-pull-request@v2
+        uses: actions/github-script@v7
         with:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          comment_tag: auto-label-deployment-info
-          mode: upsert
-          message: |
-            ## ℹ️ デプロイ対象の検知結果 (Dynamic v2)
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const body = `## ℹ️ デプロイ対象の検知結果 (Dynamic v2)
 
             このPRの変更では、デプロイ対象となるファイルは検知されませんでした。
 
@@ -320,7 +348,34 @@ jobs:
             手動でデプロイラベルを追加することで、特定の環境をデプロイ対象に含めることができます。
 
             ---
-            *このコメントは Auto Label Dynamic v2 により自動生成・更新されました*
+            *このコメントは Auto Label Dynamic v2 により自動生成・更新されました*`;
+
+            // Check if comment already exists
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.data.find(comment =>
+              comment.body.includes('Auto Label Dynamic v2 により自動生成・更新されました')
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
 
       - name: Summary
         run: |
@@ -331,9 +386,9 @@ jobs:
           echo "Labels removed: ${{ steps.manage-labels.outputs.labels_removed }}"
           echo "Has changes: ${{ steps.manage-labels.outputs.has_changes }}"
           echo ""
-          
+
           HAS_CHANGES='${{ steps.manage-labels.outputs.has_changes }}'
-          
+
           if [ "$HAS_CHANGES" = "false" ]; then
             echo "✅ 変更検知完了: デプロイ対象なし"
             echo "変更されたファイルにデプロイが必要なものは含まれていません。"

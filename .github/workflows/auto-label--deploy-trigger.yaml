@@ -1,8 +1,4 @@
-name: 'Auto Label - Deploy Executor (Dynamic v2)'
-
-# PRラベルの変更に基づいてデプロイを実行する
-# auto-label--mappings.yaml の設定を使用して動的に設定を取得
-# ラベル変更時（plan）とマージ時（apply）で動作を分離
+name: 'Auto Label - Deploy Trigger'
 
 on:
   pull_request:
@@ -62,7 +58,7 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
 
-      - name: Determine deployment targets from branch (for push events)  
+      - name: Determine deployment targets from branch (for push events)
         if: github.event_name == 'push'
         id: branch-targets
         run: |
@@ -73,15 +69,15 @@ jobs:
           import yaml
           import json
           import os
-          
+
           branch_name = os.environ['BRANCH_NAME']
-          
+
           # Load configuration
-          with open('.github/auto-label--mappings.yaml', 'r') as f:
+          with open('.github/config/auto-label--mappings.yaml', 'r') as f:
               config = yaml.safe_load(f)
-          
+
           deploy_labels = []
-          
+
           # Determine environment from branch name
           if branch_name == "develop":
               # For develop branch, deploy all services in develop environment
@@ -93,7 +89,7 @@ jobs:
                       terragrunt_path = os.path.join(item, 'terragrunt', 'envs', 'develop')
                       if os.path.exists(terragrunt_path):
                           services.append(item)
-              
+
               # Add service-specific paths
               service_configs = {s['name']: s for s in config.get('services', [])}
               for service_name, service_config in service_configs.items():
@@ -102,24 +98,24 @@ jobs:
                       path = conventions['terragrunt'].format(service=service_name, environment='develop')
                       if os.path.exists(path):
                           services.append(service_name)
-              
+
               for service in set(services):
                   deploy_labels.append(f"deploy:{service}:develop")
-                  
+
           elif branch_name.startswith("staging/"):
               # Extract service name from branch: staging/service-name
               service_name = branch_name.replace("staging/", "")
               deploy_labels.append(f"deploy:{service_name}:staging")
-              
+
           elif branch_name.startswith("production/"):
-              # Extract service name from branch: production/service-name  
+              # Extract service name from branch: production/service-name
               service_name = branch_name.replace("production/", "")
               deploy_labels.append(f"deploy:{service_name}:production")
-          
+
           # Output as JSON
           labels_json = json.dumps(deploy_labels)
           print(f"Deploy labels for branch {branch_name}: {labels_json}")
-          
+
           # GitHub Actions output
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"deploy_labels={labels_json}\n")
@@ -148,70 +144,70 @@ jobs:
           import yaml
           import json
           import os
-          
+
           # Load configuration
-          with open('.github/auto-label--mappings.yaml', 'r') as f:
+          with open('.github/config/auto-label--mappings.yaml', 'r') as f:
               config = yaml.safe_load(f)
-          
+
           # Get deploy labels
           deploy_labels_str = os.environ['DEPLOY_LABELS']
           deploy_labels = json.loads(deploy_labels_str)
-          
+
           targets = []
-          
+
           # Environment configurations lookup
           env_configs = {env['environment']: env for env in config['environments']}
           defaults = config.get('defaults', {})
           service_configs = {s['name']: s for s in config.get('services', [])}
-          
+
           for label in deploy_labels:
               if not label or label == "null":
                   continue
-                  
+
               print(f"Processing label: {label}")
-              
+
               # Parse label: deploy:service:environment[:stack]
               parts = label.split(':')
               if len(parts) < 3 or parts[0] != 'deploy':
                   print(f"Invalid label format: {label}")
                   continue
-                  
+
               service = parts[1]
-              environment = parts[2] 
+              environment = parts[2]
               stack = parts[3] if len(parts) > 3 else 'terragrunt'  # Default to terragrunt
-              
+
               print(f"Parsed - Service: {service}, Environment: {environment}, Stack: {stack}")
-              
+
               # Get environment configuration
               env_config = env_configs.get(environment, defaults)
-              
+
               iam_role_plan = env_config.get('iam_role_plan', defaults.get('iam_role_plan'))
               iam_role_apply = env_config.get('iam_role_apply', defaults.get('iam_role_apply'))
               aws_region = env_config.get('aws_region', defaults.get('aws_region'))
-              
+
               # Get service-specific configuration or use defaults
               service_config = service_configs.get(service, {})
               conventions = service_config.get('directory_conventions', config['directory_conventions'])
-              
+
               # Generate working directory using convention
               if stack in conventions:
                   working_dir = conventions[stack].format(service=service, environment=environment)
               else:
                   print(f"Stack {stack} not found in conventions")
                   continue
-                  
+
               # Get module versions
               modules = config.get('modules', {})
               terraform_version = modules.get('terraform_version', '1.5.7')
               terragrunt_version = modules.get('terragrunt_version', '0.53.2')
-              
+
               print(f"Configuration - IAM Plan: {iam_role_plan}, IAM Apply: {iam_role_apply}, Region: {aws_region}, Working Dir: {working_dir}")
-              
+
               # Verify working directory exists
               if not os.path.exists(working_dir):
                   print(f"Warning: Working directory does not exist: {working_dir}")
                   # Continue anyway - it might be created by the build process
-              
+
               # Create target configuration
               target = {
                   'service': service,
@@ -224,15 +220,15 @@ jobs:
                   'terraform_version': terraform_version,
                   'terragrunt_version': terragrunt_version
               }
-              
+
               targets.append(target)
-          
+
           # Set outputs
           has_targets = len(targets) > 0
           targets_json = json.dumps(targets)
-          
+
           print(f"Final targets: {targets_json}")
-          
+
           # GitHub Actions output
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"targets={targets_json}\n")
