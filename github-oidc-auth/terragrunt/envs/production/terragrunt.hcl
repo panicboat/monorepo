@@ -1,4 +1,5 @@
 # terragrunt.hcl - Production environment Terragrunt configuration
+# TEST: Auto Label Architecture testing - production environment
 
 # Include root configuration
 include "root" {

@@ -1,0 +1,159 @@
+# directory-label-mapping.yaml
+# GitHub Actions ワークフロー疎結合化のためのディレクトリ-ラベルマッピング定義
+#
+# このファイルは差分検知とデプロイ実行を分離し、PRラベルを介した
+# 疎結合な仕組みを提供します。
+
+# 環境ごとの共通設定
+environment_config:
+  develop:
+    aws_region: "ap-northeast-1"
+    iam_role_plan: "arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role"
+    iam_role_apply: "arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role"
+
+  staging:
+    aws_region: "ap-northeast-1"
+    iam_role_plan: "arn:aws:iam::123456789012:role/terragrunt-plan-staging-role"
+    iam_role_apply: "arn:aws:iam::123456789012:role/terragrunt-apply-staging-role"
+
+  production:
+    aws_region: "ap-northeast-1"
+    iam_role_plan: "arn:aws:iam::123456789012:role/terragrunt-plan-production-role"
+    iam_role_apply: "arn:aws:iam::123456789012:role/terragrunt-apply-production-role"
+
+# ディレクトリ構成規約（working_directory自動生成用）
+directory_conventions:
+  terragrunt: "{service}/terragrunt/envs/{environment}"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
+
+# 共通設定（デフォルト値）
+defaults:
+  terraform_version: "1.5.7"
+  terragrunt_version: "0.53.2"
+  kubectl_version: "1.28.0"
+  kustomize_version: "5.0.0"
+
+# ラベル設定
+label_config:
+  prefix: "deploy"
+  separator: ":"
+  colors:
+    develop: "1f883d"      # green
+    staging: "fbca04"      # yellow
+    production: "d73a49"   # red
+  cleanup:
+    # 古いラベルを自動削除する設定
+    remove_stale_labels: true
+    # ラベルの有効期限（日数）
+    max_age_days: 30
+
+# ディレクトリパス-ラベルマッピング定義
+mappings:
+  # GitHub OIDC Auth - Terragrunt
+  "github-oidc-auth/terragrunt/envs/develop":
+    labels:
+      - "deploy:github-oidc-auth:develop"
+    service: "github-oidc-auth"
+    environment: "develop"
+    stack: "terragrunt"
+    # working_directory は規約から自動生成される
+    # → github-oidc-auth/terragrunt/envs/develop
+
+  "github-oidc-auth/terragrunt/envs/staging":
+    labels:
+      - "deploy:github-oidc-auth:staging"
+    service: "github-oidc-auth"
+    environment: "staging"
+    stack: "terragrunt"
+
+  "github-oidc-auth/terragrunt/envs/production":
+    labels:
+      - "deploy:github-oidc-auth:production"
+    service: "github-oidc-auth"
+    environment: "production"
+    stack: "terragrunt"
+
+  # GitHub OIDC Auth - Kubernetes（将来対応）
+  "github-oidc-auth/kubernetes/overlays/develop":
+    labels:
+      - "deploy:github-oidc-auth:develop"
+    service: "github-oidc-auth"
+    environment: "develop"
+    stack: "kubernetes"
+    namespace: "github-oidc-auth-develop"
+
+  "github-oidc-auth/kubernetes/overlays/staging":
+    labels:
+      - "deploy:github-oidc-auth:staging"
+    service: "github-oidc-auth"
+    environment: "staging"
+    stack: "kubernetes"
+    namespace: "github-oidc-auth-staging"
+
+  "github-oidc-auth/kubernetes/overlays/production":
+    labels:
+      - "deploy:github-oidc-auth:production"
+    service: "github-oidc-auth"
+    environment: "production"
+    stack: "kubernetes"
+    namespace: "github-oidc-auth-production"
+
+  # GitHub Actions - Claude Code Action
+  "github-actions/claude-code-action/terragrunt/envs/monorepo":
+    labels:
+      - "deploy:claude-code-action:monorepo"
+    service: "claude-code-action"
+    environment: "monorepo"
+    stack: "terragrunt"
+    # 特殊なenvironmentでもディレクトリ構成規約を適用
+    # → github-actions/claude-code-action/terragrunt/envs/monorepo
+
+  # GitHub Repository Management
+  "github-repository/terragrunt/envs/monorepo":
+    labels:
+      - "deploy:github-repository:monorepo"
+    service: "github-repository"
+    environment: "monorepo"
+    stack: "terragrunt"
+
+  "github-repository/terragrunt/envs/generated-manifests":
+    labels:
+      - "deploy:github-repository:generated-manifests"
+    service: "github-repository"
+    environment: "generated-manifests"
+    stack: "terragrunt"
+
+  "github-repository/terragrunt/envs/kubernetes-clusters":
+    labels:
+      - "deploy:github-repository:kubernetes-clusters"
+    service: "github-repository"
+    environment: "kubernetes-clusters"
+    stack: "terragrunt"
+
+# 拡張設定（Phase 2以降で使用）
+advanced_config:
+  # 技術スタック別制御が必要になった場合の設定例
+  stack_specific_labels:
+    enabled: false
+    # 有効時のラベル形式: deploy:service:environment:stack
+    # 例: deploy:github-oidc-auth:develop:terragrunt
+
+  # 依存関係管理（将来の拡張）
+  dependencies:
+    enabled: false
+    # サービス間の依存関係定義
+    # 例: service-a のデプロイ後に service-b を自動デプロイ
+
+  # 並列実行制御
+  parallel_execution:
+    enabled: true
+    max_concurrent_jobs: 3
+    # 同一環境内での同時実行制限
+    same_environment_limit: 1
+
+# メタデータ
+metadata:
+  version: "1.0"
+  created_by: "GitHub Actions疎結合化プロジェクト"
+  last_updated: "2025-06-08"
+  description: "monorepo用GitHub Actionsワークフロー疎結合化設定"

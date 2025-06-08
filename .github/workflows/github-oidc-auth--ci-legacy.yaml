@@ -1,0 +1,75 @@
+name: 'GitHub OIDC Auth - CI/CD (Legacy)'
+
+# 既存のワークフロー（新アーキテクチャテスト期間中は無効化）
+# 新しいラベルベースのアーキテクチャに移行後、このファイルは削除予定
+
+on:
+  # 一時的に無効化 - 新アーキテクチャのテスト完了後に削除
+  workflow_dispatch:
+    inputs:
+      force_run:
+        description: 'Force run legacy workflow (for emergency use only)'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+  # 元のトリガー（コメントアウト）
+  # pull_request:
+  #   branches:
+  #     - '**'
+  #   paths:
+  #     - 'github-oidc-auth/**'
+  #     - '.github/workflows/github-oidc-auth--*.yaml'
+  #     - '.github/workflows/reusable--*.yaml'
+  #     - '.github/workflows/wait-for-workflows.yaml'
+  # push:
+  #   branches:
+  #     - develop
+  #     - staging/github-oidc-auth
+  #     - production/github-oidc-auth
+  #   paths:
+  #     - 'github-oidc-auth/**'
+
+jobs:
+  legacy-warning:
+    name: 'Legacy Workflow Warning'
+    runs-on: ubuntu-latest
+    if: github.event.inputs.force_run != 'true'
+    steps:
+      - name: Legacy workflow notice
+        run: |
+          echo "⚠️ このワークフローは新しいラベルベースアーキテクチャにより置き換えられました。"
+          echo ""
+          echo "新しいアーキテクチャの詳細:"
+          echo "- PR作成時: detect-changes-and-label.yaml により自動ラベル付与"
+          echo "- デプロイ実行: deploy-based-on-labels.yaml によりラベルベースデプロイ"
+          echo ""
+          echo "緊急時のみ、このワークフローを手動実行できます。"
+          exit 1
+
+  terragrunt-plan:
+    if: github.event.inputs.force_run == 'true' && github.event_name == 'pull_request'
+    uses: ./.github/workflows/reusable--terragrunt-orchestrator.yaml
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    with:
+      project-name: github-oidc-auth
+      action-type: 'plan'
+
+  terragrunt-apply:
+    if: github.event.inputs.force_run == 'true' && github.event_name == 'push'
+    uses: ./.github/workflows/reusable--terragrunt-orchestrator.yaml
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    with:
+      project-name: github-oidc-auth
+      action-type: 'apply'

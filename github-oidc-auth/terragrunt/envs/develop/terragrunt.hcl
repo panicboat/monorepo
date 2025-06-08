@@ -1,4 +1,5 @@
 # terragrunt.hcl - Development environment Terragrunt configuration
+# TEST: Auto Label Architecture testing - develop environment
 
 # Include root configuration
 include "root" {

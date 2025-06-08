@@ -1,0 +1,263 @@
+name: 'Auto Label - Detect Changes and Apply Labels'
+
+# PR作成・更新時に変更されたファイルを検知し、
+# マッピング定義に基づいてラベルを付与する
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - '**'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  detect-and-label:
+    name: 'Detect changes and update PR labels'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Install yq
+        run: |
+          sudo wget -O /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/bin/yq
+
+      - name: Detect changed files
+        id: detect-changes
+        run: |
+          echo "Detecting changed files..."
+
+          # Get changed files in this PR
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Save to file for processing
+          echo "$CHANGED_FILES" > /tmp/changed_files.txt
+
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Determine required labels
+        id: determine-labels
+        run: |
+          MAPPING_FILE=".github/auto-label--directory-mapping.yaml"
+
+          if [ ! -f "$MAPPING_FILE" ]; then
+            echo "Mapping file not found: $MAPPING_FILE"
+            exit 1
+          fi
+
+          # Initialize empty arrays
+          REQUIRED_LABELS=()
+          LABEL_COLORS=()
+
+          echo "Processing mapping file..."
+
+          # Read all mapping keys
+          MAPPING_KEYS=$(yq e '.mappings | keys | .[]' "$MAPPING_FILE")
+
+          while IFS= read -r file; do
+            if [ -z "$file" ]; then
+              continue
+            fi
+
+            echo "Checking file: $file"
+
+            # Check each mapping key to see if the file matches
+            while IFS= read -r mapping_key; do
+              if [ -z "$mapping_key" ]; then
+                continue
+              fi
+
+              # Check if file path starts with mapping key
+              if [[ "$file" == "$mapping_key"* ]]; then
+                echo "File $file matches mapping: $mapping_key"
+
+                # Get labels for this mapping
+                LABELS=$(yq e ".mappings[\"$mapping_key\"].labels[]" "$MAPPING_FILE")
+
+                while IFS= read -r label; do
+                  if [ -n "$label" ]; then
+                    echo "Adding label: $label"
+                    REQUIRED_LABELS+=("$label")
+
+                    # Determine label color based on environment
+                    ENV=$(echo "$label" | cut -d':' -f3)
+                    COLOR=$(yq e ".label_config.colors.$ENV // \"0052cc\"" "$MAPPING_FILE")
+                    LABEL_COLORS+=("$label:$COLOR")
+                  fi
+                done <<< "$LABELS"
+              fi
+            done <<< "$MAPPING_KEYS"
+          done < /tmp/changed_files.txt
+
+          # Remove duplicates and convert to JSON arrays
+          UNIQUE_LABELS=($(printf '%s\n' "${REQUIRED_LABELS[@]}" | sort -u))
+          UNIQUE_COLORS=($(printf '%s\n' "${LABEL_COLORS[@]}" | sort -u))
+
+          # Convert to JSON for GitHub Actions
+          LABELS_JSON=$(printf '%s\n' "${UNIQUE_LABELS[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          COLORS_JSON=$(printf '%s\n' "${UNIQUE_COLORS[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          echo "Required labels: $LABELS_JSON"
+          echo "Label colors: $COLORS_JSON"
+
+          echo "required_labels=$LABELS_JSON" >> $GITHUB_OUTPUT
+          echo "label_colors=$COLORS_JSON" >> $GITHUB_OUTPUT
+
+      - name: Get current PR labels
+        id: current-labels
+        run: |
+          # Get current labels on this PR
+          CURRENT_LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name' | grep '^deploy:' | jq -R -s -c 'split("\n") | map(select(length > 0))' || echo '[]')
+
+          echo "Current labels: $CURRENT_LABELS"
+          echo "current_labels=$CURRENT_LABELS" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Create labels if they don't exist
+        if: steps.determine-labels.outputs.required_labels != '[]'
+        run: |
+          COLORS='${{ steps.determine-labels.outputs.label_colors }}'
+
+          # Create labels with colors if they don't exist
+          echo "$COLORS" | jq -r '.[]' | while IFS=':' read -r label color; do
+            echo "Creating/updating label: $label with color: $color"
+
+            # Check if label exists
+            if gh label list --search "$label" --limit 1 | grep -q "$label"; then
+              echo "Label $label already exists, updating color..."
+              gh label edit "$label" --color "$color" || true
+            else
+              echo "Creating new label: $label"
+              gh label create "$label" --color "$color" --description "Auto-generated deployment label" || true
+            fi
+          done
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Remove old deploy labels
+        run: |
+          CURRENT_LABELS='${{ steps.current-labels.outputs.current_labels }}'
+          REQUIRED_LABELS='${{ steps.determine-labels.outputs.required_labels }}'
+
+          echo "Current labels: $CURRENT_LABELS"
+          echo "Required labels: $REQUIRED_LABELS"
+
+          # Find labels to remove (current labels that are not required)
+          LABELS_TO_REMOVE=$(echo "$CURRENT_LABELS" | jq -r --argjson required "$REQUIRED_LABELS" '.[] | select(. as $item | $required | index($item) | not)')
+
+          if [ -n "$LABELS_TO_REMOVE" ] && [ "$LABELS_TO_REMOVE" != "" ]; then
+            echo "Removing old labels..."
+            echo "$LABELS_TO_REMOVE" | while IFS= read -r label; do
+              if [ -n "$label" ]; then
+                echo "Removing label: $label"
+                gh pr edit ${{ github.event.pull_request.number }} --remove-label "$label" || true
+              fi
+            done
+          else
+            echo "No labels to remove"
+          fi
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Add new deploy labels
+        if: steps.determine-labels.outputs.required_labels != '[]'
+        run: |
+          REQUIRED_LABELS='${{ steps.determine-labels.outputs.required_labels }}'
+
+          echo "Adding required labels..."
+          echo "$REQUIRED_LABELS" | jq -r '.[]' | while IFS= read -r label; do
+            if [ -n "$label" ]; then
+              echo "Adding label: $label"
+              gh pr edit ${{ github.event.pull_request.number }} --add-label "$label" || true
+            fi
+          done
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Comment on PR with deployment info
+        if: steps.determine-labels.outputs.required_labels != '[]'
+        run: |
+          REQUIRED_LABELS='${{ steps.determine-labels.outputs.required_labels }}'
+          CHANGED_FILES='${{ steps.detect-changes.outputs.changed_files }}'
+
+          # Create deployment info comment
+          cat > /tmp/comment.md << 'EOF'
+          ## 🚀 デプロイ対象の検知
+
+          このPRの変更により、以下のサービス・環境がデプロイ対象として検知されました：
+
+          **検知されたラベル:**
+          EOF
+
+          echo "$REQUIRED_LABELS" | jq -r '.[]' | while IFS= read -r label; do
+            if [ -n "$label" ]; then
+              SERVICE=$(echo "$label" | cut -d':' -f2)
+              ENVIRONMENT=$(echo "$label" | cut -d':' -f3)
+              echo "- \`$label\` → **$SERVICE** の **$ENVIRONMENT** 環境" >> /tmp/comment.md
+            fi
+          done
+
+          cat >> /tmp/comment.md << 'EOF'
+
+          **変更されたファイル:**
+          <details>
+          <summary>変更ファイル一覧を表示</summary>
+
+          ```
+          EOF
+
+          echo "$CHANGED_FILES" >> /tmp/comment.md
+
+          cat >> /tmp/comment.md << 'EOF'
+          ```
+
+          </details>
+
+          ### 次のステップ
+          - PRをマージすると、対象環境へのデプロイが自動実行されます
+          - ラベルを手動で削除することで、特定の環境のデプロイをスキップできます
+          - ラベルを手動で追加することで、追加の環境をデプロイ対象に含められます
+
+          ---
+          *このコメントは変更検知ワークフローにより自動生成されました*
+          EOF
+
+          gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/comment.md
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Summary
+        run: |
+          REQUIRED_LABELS='${{ steps.determine-labels.outputs.required_labels }}'
+
+          if [ "$REQUIRED_LABELS" = "[]" ] || [ -z "$REQUIRED_LABELS" ]; then
+            echo "✅ 変更検知完了: デプロイ対象なし"
+            echo "変更されたファイルにデプロイが必要なものは含まれていません。"
+          else
+            echo "✅ 変更検知完了: ラベル付与済み"
+            echo "検知されたラベル:"
+            echo "$REQUIRED_LABELS" | jq -r '.[]' | while IFS= read -r label; do
+              echo "  - $label"
+            done
+          fi

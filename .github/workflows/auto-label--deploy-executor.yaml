@@ -1,0 +1,293 @@
+name: 'Auto Label - Deploy Executor'
+
+# PRラベルの変更に基づいてデプロイを実行する
+# ラベル変更時（plan）とマージ時（apply）で動作を分離
+
+on:
+  pull_request:
+    types: [labeled, unlabeled]
+    branches:
+      - '**'
+  push:
+    branches:
+      - develop
+      - 'staging/**'
+      - 'production/**'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  extract-deployment-targets:
+    name: 'Extract deployment targets from labels'
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.extract.outputs.targets }}
+      has_targets: ${{ steps.extract.outputs.has_targets }}
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Install yq
+        run: |
+          sudo wget -O /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/bin/yq
+
+      - name: Get PR labels (for pull_request events)
+        if: github.event_name == 'pull_request'
+        id: pr-labels
+        run: |
+          # Get deploy labels from the PR
+          DEPLOY_LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name' | grep '^deploy:' | jq -R -s -c 'split("\n") | map(select(length > 0))' || echo '[]')
+
+          echo "Deploy labels found: $DEPLOY_LABELS"
+          echo "deploy_labels=$DEPLOY_LABELS" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Determine deployment targets from branch (for push events)
+        if: github.event_name == 'push'
+        id: branch-targets
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          echo "Processing push to branch: $BRANCH_NAME"
+
+          DEPLOY_LABELS=()
+
+          # Determine environment from branch name
+          if [[ "$BRANCH_NAME" == "develop" ]]; then
+            # For develop branch, deploy all services in develop environment
+            MAPPING_FILE=".github/auto-label--directory-mapping.yaml"
+            DEVELOP_LABELS=$(yq e '.mappings[] | select(.environment == "develop") | .labels[]' "$MAPPING_FILE" | sort -u)
+
+            while IFS= read -r label; do
+              if [ -n "$label" ]; then
+                DEPLOY_LABELS+=("$label")
+              fi
+            done <<< "$DEVELOP_LABELS"
+
+          elif [[ "$BRANCH_NAME" == staging/* ]]; then
+            # Extract service name from branch: staging/service-name
+            SERVICE_NAME=$(echo "$BRANCH_NAME" | sed 's|staging/||')
+            DEPLOY_LABELS+=("deploy:$SERVICE_NAME:staging")
+
+          elif [[ "$BRANCH_NAME" == production/* ]]; then
+            # Extract service name from branch: production/service-name
+            SERVICE_NAME=$(echo "$BRANCH_NAME" | sed 's|production/||')
+            DEPLOY_LABELS+=("deploy:$SERVICE_NAME:production")
+          fi
+
+          # Convert to JSON
+          LABELS_JSON=$(printf '%s\n' "${DEPLOY_LABELS[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          echo "Deploy labels for branch $BRANCH_NAME: $LABELS_JSON"
+          echo "deploy_labels=$LABELS_JSON" >> $GITHUB_OUTPUT
+
+      - name: Extract deployment configuration
+        id: extract
+        run: |
+          MAPPING_FILE=".github/auto-label--directory-mapping.yaml"
+
+          if [ ! -f "$MAPPING_FILE" ]; then
+            echo "Mapping file not found: $MAPPING_FILE"
+            exit 1
+          fi
+
+          # Get deploy labels from previous steps
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            DEPLOY_LABELS='${{ steps.pr-labels.outputs.deploy_labels }}'
+          else
+            DEPLOY_LABELS='${{ steps.branch-targets.outputs.deploy_labels }}'
+          fi
+
+          echo "Processing deploy labels: $DEPLOY_LABELS"
+
+          if [ "$DEPLOY_LABELS" = "[]" ] || [ -z "$DEPLOY_LABELS" ]; then
+            echo "No deploy labels found"
+            echo "targets=[]" >> $GITHUB_OUTPUT
+            echo "has_targets=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Extract deployment targets
+          TARGETS=()
+
+          echo "$DEPLOY_LABELS" | jq -r '.[]' | while IFS= read -r label; do
+            if [ -z "$label" ]; then
+              continue
+            fi
+
+            echo "Processing label: $label"
+
+            # Parse label: deploy:service:environment[:stack]
+            if [[ $label =~ ^deploy:([^:]+):([^:]+)(:([^:]+))?$ ]]; then
+              SERVICE="${BASH_REMATCH[1]}"
+              ENVIRONMENT="${BASH_REMATCH[2]}"
+              STACK="${BASH_REMATCH[4]:-terragrunt}"  # Default to terragrunt if not specified
+
+              echo "Parsed - Service: $SERVICE, Environment: $ENVIRONMENT, Stack: $STACK"
+
+              # Get environment configuration
+              IAM_ROLE_PLAN=$(yq e ".environment_config.$ENVIRONMENT.iam_role_plan" "$MAPPING_FILE")
+              IAM_ROLE_APPLY=$(yq e ".environment_config.$ENVIRONMENT.iam_role_apply" "$MAPPING_FILE")
+              AWS_REGION=$(yq e ".environment_config.$ENVIRONMENT.aws_region" "$MAPPING_FILE")
+
+              # Generate working directory using convention
+              CONVENTION=$(yq e ".directory_conventions.$STACK" "$MAPPING_FILE")
+              WORKING_DIR=$(echo "$CONVENTION" | sed "s/{service}/$SERVICE/g" | sed "s/{environment}/$ENVIRONMENT/g")
+
+              # Get other configuration
+              TERRAFORM_VERSION=$(yq e ".defaults.terraform_version" "$MAPPING_FILE")
+              TERRAGRUNT_VERSION=$(yq e ".defaults.terragrunt_version" "$MAPPING_FILE")
+
+              echo "Configuration - IAM Plan: $IAM_ROLE_PLAN, IAM Apply: $IAM_ROLE_APPLY, Region: $AWS_REGION, Working Dir: $WORKING_DIR"
+
+              # Create target configuration
+              TARGET=$(jq -n \
+                --arg service "$SERVICE" \
+                --arg environment "$ENVIRONMENT" \
+                --arg stack "$STACK" \
+                --arg iam_role_plan "$IAM_ROLE_PLAN" \
+                --arg iam_role_apply "$IAM_ROLE_APPLY" \
+                --arg aws_region "$AWS_REGION" \
+                --arg working_directory "$WORKING_DIR" \
+                --arg terraform_version "$TERRAFORM_VERSION" \
+                --arg terragrunt_version "$TERRAGRUNT_VERSION" \
+                '{
+                  service: $service,
+                  environment: $environment,
+                  stack: $stack,
+                  iam_role_plan: $iam_role_plan,
+                  iam_role_apply: $iam_role_apply,
+                  aws_region: $aws_region,
+                  working_directory: $working_directory,
+                  terraform_version: $terraform_version,
+                  terragrunt_version: $terragrunt_version
+                }')
+
+              TARGETS+=("$TARGET")
+            else
+              echo "Invalid label format: $label"
+            fi
+          done
+
+          # Convert targets array to JSON
+          if [ ${#TARGETS[@]} -eq 0 ]; then
+            TARGETS_JSON="[]"
+            HAS_TARGETS="false"
+          else
+            TARGETS_JSON=$(printf '%s\n' "${TARGETS[@]}" | jq -s -c .)
+            HAS_TARGETS="true"
+          fi
+
+          echo "Final targets: $TARGETS_JSON"
+          echo "targets=$TARGETS_JSON" >> $GITHUB_OUTPUT
+          echo "has_targets=$HAS_TARGETS" >> $GITHUB_OUTPUT
+
+  deploy-terragrunt:
+    name: 'Deploy Terragrunt (${{ matrix.target.service }}:${{ matrix.target.environment }})'
+    needs: extract-deployment-targets
+    if: needs.extract-deployment-targets.outputs.has_targets == 'true'
+    strategy:
+      matrix:
+        target: ${{ fromJson(needs.extract-deployment-targets.outputs.targets) }}
+      fail-fast: false
+    uses: ./.github/workflows/reusable--terragrunt-executor.yaml
+    secrets: inherit
+    with:
+      project-name: ${{ matrix.target.service }}
+      environment: ${{ matrix.target.environment }}
+      action-type: ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
+      plan-iam-role: ${{ matrix.target.iam_role_plan }}
+      apply-iam-role: ${{ matrix.target.iam_role_apply }}
+      aws-region: ${{ matrix.target.aws_region }}
+      working-directory: ${{ matrix.target.working_directory }}
+      terraform-version: ${{ matrix.target.terraform_version }}
+      terragrunt-version: ${{ matrix.target.terragrunt_version }}
+
+  deployment-summary:
+    name: 'Deployment Summary'
+    needs: [extract-deployment-targets, deploy-terragrunt]
+    if: always() && needs.extract-deployment-targets.outputs.has_targets == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Create deployment summary
+        run: |
+          TARGETS='${{ needs.extract-deployment-targets.outputs.targets }}'
+          ACTION_TYPE="${{ github.event_name == 'pull_request' && 'Plan' || 'Apply' }}"
+
+          echo "## 🚀 デプロイ実行サマリー ($ACTION_TYPE)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**実行タイプ**: $ACTION_TYPE" >> $GITHUB_STEP_SUMMARY
+          echo "**トリガー**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 対象サービス・環境" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "$TARGETS" | jq -r '.[] | "- **\(.service)** → \(.environment) 環境 (\(.stack))"' >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "詳細な実行結果は各ジョブのログを確認してください。" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on PR (for pull_request events)
+        if: github.event_name == 'pull_request'
+        run: |
+          TARGETS='${{ needs.extract-deployment-targets.outputs.targets }}'
+          DEPLOY_RESULT="${{ needs.deploy-terragrunt.result }}"
+
+          if [ "$DEPLOY_RESULT" = "success" ]; then
+            STATUS="✅ 成功"
+            STATUS_COLOR="success"
+          elif [ "$DEPLOY_RESULT" = "failure" ]; then
+            STATUS="❌ 失敗"
+            STATUS_COLOR="failure"
+          else
+            STATUS="⚠️ 一部完了"
+            STATUS_COLOR="warning"
+          fi
+
+          cat > /tmp/summary.md << EOF
+          ## 📋 Terragrunt Plan 実行結果
+
+          **ステータス**: $STATUS
+          **実行時刻**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+          ### 対象環境
+          EOF
+
+          echo "$TARGETS" | jq -r '.[] | "- **\(.service)** → \(.environment) 環境"' >> /tmp/summary.md
+
+          cat >> /tmp/summary.md << EOF
+
+          ### 次のステップ
+          - Plan結果を確認し、問題がなければPRをマージしてください
+          - マージすると対象環境への自動デプロイが実行されます
+          - 特定の環境をデプロイ対象から除外したい場合は、該当するラベルを削除してください
+
+          [詳細なログを確認する](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          ---
+          *このコメントはラベルベースデプロイワークフローにより自動生成されました*
+          EOF
+
+          gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/summary.md
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
