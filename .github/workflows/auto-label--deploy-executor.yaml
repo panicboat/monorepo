@@ -121,12 +121,15 @@ jobs:
           fi
 
           # Extract deployment targets
-          TARGETS=()
-          TEMP_FILE=$(mktemp)
-
-          # Process each label (avoiding subshell issue with pipe)
-          while IFS= read -r label; do
-            if [ -z "$label" ]; then
+          TARGETS_JSON="[]"
+          
+          # Get labels as array for processing
+          LABELS_COUNT=$(echo "$DEPLOY_LABELS" | jq -r 'length')
+          
+          for ((i=0; i<$LABELS_COUNT; i++)); do
+            label=$(echo "$DEPLOY_LABELS" | jq -r ".[$i]")
+            
+            if [ -z "$label" ] || [ "$label" = "null" ]; then
               continue
             fi
 
@@ -155,7 +158,7 @@ jobs:
 
               echo "Configuration - IAM Plan: $IAM_ROLE_PLAN, IAM Apply: $IAM_ROLE_APPLY, Region: $AWS_REGION, Working Dir: $WORKING_DIR"
 
-              # Create target configuration
+              # Create target configuration and add to array
               TARGET=$(jq -n \
                 --arg service "$SERVICE" \
                 --arg environment "$ENVIRONMENT" \
@@ -178,24 +181,18 @@ jobs:
                   terragrunt_version: $terragrunt_version
                 }')
 
-              echo "$TARGET" >> "$TEMP_FILE"
+              # Add target to JSON array
+              TARGETS_JSON=$(echo "$TARGETS_JSON" | jq --argjson target "$TARGET" '. + [$target]')
             else
               echo "Invalid label format: $label"
             fi
-          done < <(echo "$DEPLOY_LABELS" | jq -r '.[]')
+          done
 
-          # Read targets from temp file
-          if [ -s "$TEMP_FILE" ]; then
-            readarray -t TARGETS < "$TEMP_FILE"
-          fi
-          rm -f "$TEMP_FILE"
-
-          # Convert targets array to JSON
-          if [ ${#TARGETS[@]} -eq 0 ]; then
-            TARGETS_JSON="[]"
+          # Check if we have any targets and set outputs
+          TARGETS_COUNT=$(echo "$TARGETS_JSON" | jq 'length')
+          if [ "$TARGETS_COUNT" -eq 0 ]; then
             HAS_TARGETS="false"
           else
-            TARGETS_JSON=$(printf '%s\n' "${TARGETS[@]}" | jq -s -c .)
             HAS_TARGETS="true"
           fi
 
