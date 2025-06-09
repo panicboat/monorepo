@@ -55,12 +55,26 @@ resource "aws_iam_policy" "claude_bedrock_policy" {
         Effect = "Allow"
         Action = [
           "bedrock:InvokeModel",
-          "bedrock:InvokeModelWithResponseStream"
+          "bedrock:InvokeModelWithResponseStream",
+          "bedrock:GetFoundationModel",
+          "bedrock:ListFoundationModels"
         ]
         Resource = [
-          "arn:aws:bedrock:${var.bedrock_model_region}:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}",
-          "arn:aws:bedrock:${var.bedrock_model_region}::foundation-model/${var.bedrock_model_id}",
+          # Cross-region inference profile
+          "arn:aws:bedrock:us-east-1:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}",
+          "arn:aws:bedrock:us-west-2:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}",
+          "arn:aws:bedrock:eu-west-1:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}",
+          # Foundation model
+          "arn:aws:bedrock:*::foundation-model/*",
         ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:ListInferenceProfiles",
+          "bedrock:GetInferenceProfile"
+        ]
+        Resource = "*"
       }
     ]
   })
