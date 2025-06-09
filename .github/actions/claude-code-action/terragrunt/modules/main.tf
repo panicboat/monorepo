@@ -61,9 +61,7 @@ resource "aws_iam_policy" "claude_bedrock_policy" {
         ]
         Resource = [
           # Cross-region inference profile
-          "arn:aws:bedrock:us-east-1:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}",
-          "arn:aws:bedrock:us-west-2:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}",
-          "arn:aws:bedrock:eu-west-1:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}",
+          "arn:aws:bedrock:*:${data.aws_caller_identity.current.account_id}:inference-profile/*",
           # Foundation model
           "arn:aws:bedrock:*::foundation-model/*",
         ]
