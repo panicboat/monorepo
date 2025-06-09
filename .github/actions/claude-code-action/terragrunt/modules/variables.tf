@@ -33,21 +33,21 @@ variable "github_repo" {
 }
 
 variable "github_branches" {
-  description = "List of GitHub branches that can assume the role"
+  description = "List of GitHub branches that can assume the role (Not used in relaxed mode)"
   type        = list(string)
-  default     = ["main", "master"]
+  default     = ["*"]
 }
 
 variable "github_environments" {
-  description = "List of GitHub environments that can assume the role"
+  description = "List of GitHub environments that can assume the role (Not used in relaxed mode)"
   type        = list(string)
-  default     = []
+  default     = ["*"]
 }
 
 variable "max_session_duration" {
   description = "Maximum session duration for the IAM role (in seconds)"
   type        = number
-  default     = 3600
+  default     = 14400
   validation {
     condition     = var.max_session_duration >= 900 && var.max_session_duration <= 43200
     error_message = "Max session duration must be between 900 and 43200 seconds (15 minutes to 12 hours)."
@@ -62,17 +62,17 @@ variable "oidc_provider_arn" {
 variable "enable_claude_code_action" {
   description = "Whether to enable Claude Code Action support"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "bedrock_model_region" {
-  description = "AWS region for Bedrock model access"
+  description = "AWS region for Bedrock model access (Not restricted in relaxed mode)"
   type        = string
-  default     = "us-east-1"
+  default     = "*"
 }
 
 variable "bedrock_model_id" {
-  description = "Bedrock model ID for Claude"
+  description = "Bedrock model ID for Claude (Not restricted in relaxed mode)"
   type        = string
-  default     = "us.anthropic.claude-sonnet-4-20250514-v1:0"
+  default     = "*"
 }
