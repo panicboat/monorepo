@@ -47,3 +47,6 @@ jobs:
           use_bedrock: "true"
         env:
           ANTHROPIC_BEDROCK_BASE_URL: https://bedrock-runtime.us-east-1.amazonaws.com
+          ANTHROPIC_MAX_RETRIES: "3"
+          ANTHROPIC_TIMEOUT: "120"
+          ANTHROPIC_REQUEST_DELAY: "5"
