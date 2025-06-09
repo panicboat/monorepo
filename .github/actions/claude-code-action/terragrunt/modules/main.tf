@@ -22,11 +22,7 @@ resource "aws_iam_role" "github_actions_role" {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = concat(
-              ["repo:${var.github_org}/${var.github_repo}:*"],
-              [for branch in var.github_branches : "repo:${var.github_org}/${var.github_repo}:ref:refs/heads/${branch}"],
-              [for env in var.github_environments : "repo:${var.github_org}/${var.github_repo}:environment:${env}"]
-            )
+            "token.actions.githubusercontent.com:sub" = "repo:${var.github_org}/${var.github_repo}:*"
           }
         }
       }
@@ -56,21 +52,6 @@ resource "aws_iam_policy" "claude_bedrock_policy" {
         Action = [
           "bedrock:InvokeModel",
           "bedrock:InvokeModelWithResponseStream",
-          "bedrock:GetFoundationModel",
-          "bedrock:ListFoundationModels"
-        ]
-        Resource = [
-          # Cross-region inference profile
-          "arn:aws:bedrock:*:${data.aws_caller_identity.current.account_id}:inference-profile/*",
-          # Foundation model
-          "arn:aws:bedrock:*::foundation-model/*",
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "bedrock:ListInferenceProfiles",
-          "bedrock:GetInferenceProfile"
         ]
         Resource = "*"
       }
@@ -83,7 +64,32 @@ resource "aws_iam_policy" "claude_bedrock_policy" {
   })
 }
 
-# Attach any additional policies specified
+resource "aws_iam_policy" "additional_permissions" {
+  count = var.enable_claude_code_action ? 1 : 0
+
+  name        = "${var.project_name}-${var.repository}-additional-permissions"
+  description = "Additional permissions for Claude Code Action"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sts:GetCallerIdentity"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = merge(var.common_tags, {
+    Name      = "${var.project_name}-${var.repository}-additional-permissions"
+    Component = "claude-code-action"
+  })
+}
+
+# Attach policies
 resource "aws_iam_role_policy_attachment" "claude_bedrock_policy" {
   count = var.enable_claude_code_action ? 1 : 0
 
@@ -91,10 +97,17 @@ resource "aws_iam_role_policy_attachment" "claude_bedrock_policy" {
   policy_arn = aws_iam_policy.claude_bedrock_policy[0].arn
 }
 
+resource "aws_iam_role_policy_attachment" "additional_permissions" {
+  count = var.enable_claude_code_action ? 1 : 0
+
+  role       = aws_iam_role.github_actions_role.name
+  policy_arn = aws_iam_policy.additional_permissions[0].arn
+}
+
 # CloudWatch Log Group for GitHub Actions
 resource "aws_cloudwatch_log_group" "github_actions_logs" {
   name              = "/github-actions/${var.project_name}-${var.repository}"
-  retention_in_days = 7
+  retention_in_days = 30
 
   tags = merge(var.common_tags, {
     LogGroup = "${var.project_name}-${var.repository}-github-actions"

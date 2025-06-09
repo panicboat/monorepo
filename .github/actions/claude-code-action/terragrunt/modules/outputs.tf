@@ -35,14 +35,13 @@ output "claude_code_action_enabled" {
   value       = var.enable_claude_code_action
 }
 
-output "bedrock_model_arn" {
-  description = "ARN of the Bedrock model for Claude Code Action"
-  value       = var.enable_claude_code_action ? "arn:aws:bedrock:${var.bedrock_model_region}:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}" : null
-}
-
-output "bedrock_model_id" {
-  description = "Bedrock model ID for Claude Code Action"
-  value       = var.enable_claude_code_action ? var.bedrock_model_id : null
+output "bedrock_access_info" {
+  description = "Bedrock access information (relaxed permissions)"
+  value = var.enable_claude_code_action ? {
+    regions_allowed    = "All regions (*)"
+    models_allowed     = "All models (*)"
+    permissions_level  = "Full Bedrock access"
+  } : null
 }
 
 output "github_org" {
@@ -55,26 +54,26 @@ output "github_repo" {
   value       = var.github_repo
 }
 
-output "allowed_branches" {
-  description = "List of GitHub branches that can assume the role"
-  value       = var.github_branches
-}
-
-output "allowed_environments" {
-  description = "List of GitHub environments that can assume the role"
-  value       = var.github_environments
+output "access_permissions" {
+  description = "Access permissions summary (relaxed mode)"
+  value = {
+    github_access        = "All branches and environments (*)"
+    aws_bedrock_access   = "Full Bedrock permissions (*)"
+    session_duration     = "${var.max_session_duration} seconds"
+    log_retention        = "30 days"
+    permission_level     = "RELAXED - Minimal restrictions"
+  }
 }
 
 output "github_actions_workflow_info" {
-  description = "Information needed for GitHub Actions workflow"
+  description = "Information needed for GitHub Actions workflow (relaxed)"
   value = var.enable_claude_code_action ? {
-    aws_role_arn         = aws_iam_role.github_actions_role.arn
-    aws_region           = var.bedrock_model_region
-    bedrock_model_id     = var.bedrock_model_id
-    bedrock_model_arn    = "arn:aws:bedrock:${var.bedrock_model_region}:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_model_id}"
-    github_org           = var.github_org
-    github_repo          = var.github_repo
-    allowed_branches     = var.github_branches
-    allowed_environments = var.github_environments
+    aws_role_arn           = aws_iam_role.github_actions_role.arn
+    aws_region             = "us-east-1"
+    bedrock_access         = "Full access to all Bedrock models and regions"
+    github_org             = var.github_org
+    github_repo            = var.github_repo
+    permissions_note       = "RELAXED MODE: All restrictions minimized"
+    recommended_model_id   = "us.anthropic.claude-sonnet-4-20250514-v1:0"
   } : null
 }
