@@ -3,7 +3,7 @@ require_relative '../entities/workflow_config'
 require 'yaml'
 
 class YamlConfigClient < ConfigGateway
-  def initialize(config_path: 'config/auto-label-mappings.yaml')
+  def initialize(config_path: 'auto-label-mappings.yaml')
     @config_path = config_path
   end
 
