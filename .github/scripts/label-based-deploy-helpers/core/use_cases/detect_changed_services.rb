@@ -57,11 +57,6 @@ class DetectChangedServices
       services << service_name
     end
 
-    Dir.glob('*/terragrunt/envs').each do |path|
-      service_name = path.split('/').first
-      services << service_name unless service_name.start_with?('.')
-    end
-
     changed_files = @file_gateway.get_changed_files
     default_pattern = config.directory_conventions['terragrunt']
 
