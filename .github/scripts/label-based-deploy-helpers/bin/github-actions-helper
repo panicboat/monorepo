@@ -56,7 +56,7 @@ class GitHubActionsHelperCLI < Thor
     puts "RUNNER_OS: #{ENV['RUNNER_OS']}"
     puts "PWD: #{Dir.pwd}"
 
-    config_path = 'config/auto-label-mappings.yaml'
+    config_path = 'auto-label-mappings.yaml'
     if File.exist?(config_path)
       puts "✅ Configuration file found: #{config_path}"
     else

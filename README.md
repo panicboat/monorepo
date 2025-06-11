@@ -30,6 +30,261 @@ feature/xxx → develop → staging/service-name → production/service-name
 
 ---
 
+# 🚀 Unified Deployment Strategy
+
+This section documents the comprehensive label-driven deployment strategy that enables precise, efficient, and safe infrastructure deployments across all environments.
+
+## 📖 Background and Context
+
+### Current System Architecture
+- **Monorepo**: Multiple services (claude-code-action, github-oidc-auth, etc.) managed in a single repository
+- **Infrastructure as Code**: AWS infrastructure managed with Terragrunt + Terraform
+- **CI/CD**: Automated deployment via GitHub Actions
+- **Multi-Environment**: Three environments - develop, staging, production
+
+### Challenges Solved
+1. **Inefficient Deployments**: All services were being deployed every time
+2. **Safety Concerns**: Unintended service deployments occurred
+3. **Operational Complexity**: Different deployment methods for each environment
+4. **Resource Waste**: Unnecessary Terragrunt executions increasing costs
+
+## 🎯 Deployment Strategy Overview
+
+### Core Principles
+1. **PR-Based**: All deployments go through Pull Requests
+2. **Label-Driven**: Deployment targets automatically determined from PR labels
+3. **Environment-Specific**: Each environment deploys only relevant services
+4. **Safety-First**: Deployments are halted in uncertain situations
+
+### Unified Workflow Concept
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  feature/*  │───▶│   develop   │───▶│staging/svc  │───▶│production/  │
+│   branch    │    │   branch    │    │   branch    │    │ svc branch  │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+       │                   │                   │                   │
+    PR Creation         PR Creation       PR Creation       PR Creation
+       │                   │                   │                   │
+   Auto-labeling       Auto-labeling     Auto-labeling     Auto-labeling
+       │                   │                   │                   │
+   ┌─────────┐         ┌─────────┐         ┌─────────┐         ┌─────────┐
+   │develop  │         │develop  │         │staging  │         │production│
+   │deploy   │         │deploy   │         │deploy   │         │deploy    │
+   └─────────┘         └─────────┘         └─────────┘         └─────────┘
+```
+
+## 🏗️ System Components
+
+### 1. Auto-Label Dispatcher (auto-label--label-dispatcher.yaml)
+- **Function**: Detects file changes and automatically applies **all environment** deployment labels to PRs
+- **Label Format**: `deploy:{service}:{environment}`
+- **Detection Logic**: Monitors service directory changes
+- **Coverage**: Applies develop, staging, production labels comprehensively
+
+### 2. Deploy Trigger System (auto-label--deploy-trigger.yaml)
+- **Function**: Reads **all environment labels** from merged PRs and deploys only relevant environment services
+- **Environment Filtering**: Each branch processes only appropriate environment labels
+- **Safety Guarantee**: Halts deployment if merged PR information is unavailable
+- **Processing Method**: Comprehensive label retrieval → Environment-specific filtering → Precise deployment
+
+### 3. Terragrunt Execution System (reusable--terragrunt-executor.yaml)
+- **Function**: Executes actual infrastructure changes
+- **Parallel Processing**: Supports concurrent multi-service deployments
+- **Environment-Specific Permissions**: Uses appropriate IAM Roles for each environment
+
+## 🔄 Detailed Deployment Flow
+
+### Phase 1: Development Phase
+```
+1. feature/new-auth-api branch development
+   └── Changes made in auth-service/ directory
+
+2. Create PR to develop branch
+   ├── auto-label--label-dispatcher.yaml executes
+   ├── File change detection: auth-service/
+   ├── Automatic label application (all environments):
+   │   ├── deploy:auth-service:develop
+   │   ├── deploy:auth-service:staging
+   │   └── deploy:auth-service:production
+   └── Multiple environment labels displayed on PR
+
+3. Review, approval, and merge
+   ├── PR #123 merged → develop branch
+   └── Push event triggered
+```
+
+### Phase 2: Develop Deployment Phase
+```
+4. auto-label--deploy-trigger.yaml execution
+   ├── Event detection: push to develop
+   ├── Merged PR information retrieval: PR #123
+   ├── PR label retrieval (all environments): [
+   │     "deploy:auth-service:develop",
+   │     "deploy:auth-service:staging",
+   │     "deploy:auth-service:production"
+   │   ]
+   ├── Environment filtering: develop environment only
+   │   → Extraction result: ["deploy:auth-service:develop"]
+   ├── Deployment matrix generation
+   └── Terragrunt execution: auth-service develop environment only
+```
+
+### Phase 3: Staging Deployment Phase
+```
+5. Create PR to staging/auth-service branch
+   ├── develop → staging/auth-service
+   ├── auto-label--label-dispatcher.yaml executes
+   ├── File change detection: auth-service/
+   ├── Automatic label application:
+   │   ├── deploy:auth-service:develop
+   │   ├── deploy:auth-service:staging
+   │   └── deploy:auth-service:production
+   └── Multiple environment labels displayed on PR
+
+6. Deployment on merge
+   ├── Event detection: push to staging/auth-service
+   ├── PR label retrieval (all environments): [
+   │     "deploy:auth-service:develop",
+   │     "deploy:auth-service:staging",
+   │     "deploy:auth-service:production"
+   │   ]
+   ├── Environment filtering: staging environment only
+   │   → Extraction result: ["deploy:auth-service:staging"]
+   └── Terragrunt execution: auth-service staging environment only
+```
+
+### Phase 4: Production Deployment Phase
+```
+7. Create PR to production/auth-service branch
+   ├── staging/auth-service → production/auth-service
+   ├── auto-label--label-dispatcher.yaml executes
+   ├── File change detection: auth-service/
+   ├── Automatic label application:
+   │   ├── deploy:auth-service:develop
+   │   ├── deploy:auth-service:staging
+   │   └── deploy:auth-service:production
+   ├── Strict review process
+   └── Multiple environment labels displayed on PR
+
+8. Deployment on merge
+   ├── Event detection: push to production/auth-service
+   ├── PR label retrieval (all environments): [
+   │     "deploy:auth-service:develop",
+   │     "deploy:auth-service:staging",
+   │     "deploy:auth-service:production"
+   │   ]
+   ├── Environment filtering: production environment only
+   │   → Extraction result: ["deploy:auth-service:production"]
+   └── Terragrunt execution: auth-service production environment only
+```
+
+## 🔍 Key Implementation Details
+
+### Environment-Specific Filtering Logic
+```ruby
+# Executed during each environment's deployment
+case target_environment
+when 'develop'
+  filtered_labels = all_labels.select { |label| label.include?(':develop') }
+when 'staging'
+  filtered_labels = all_labels.select { |label| label.include?(':staging') }
+when 'production'
+  filtered_labels = all_labels.select { |label| label.include?(':production') }
+end
+```
+
+### Safety Mechanisms
+```yaml
+# When merged PR information cannot be retrieved
+- name: Fail deployment - No merged PR found
+  if: |
+    github.event_name == 'push' &&
+    github.ref_name == 'develop' &&
+    !steps.merged-pr.outputs.number
+  run: |
+    echo "::error::No merged PR information found"
+    exit 1  # Definitely halt deployment
+```
+
+### Label Examples and Processing Results
+```
+All PRs receive labels (example):
+- deploy:auth-service:develop
+- deploy:auth-service:staging
+- deploy:auth-service:production
+- deploy:api-gateway:develop
+- deploy:api-gateway:staging
+- deploy:api-gateway:production
+
+develop branch processing result:
+→ deploy:auth-service:develop ✅
+→ deploy:api-gateway:develop ✅
+→ Other environments (staging/production) ❌ (ignored)
+
+staging/auth-service branch processing result:
+→ deploy:auth-service:staging ✅
+→ Other services/environments ❌ (ignored)
+
+production/auth-service branch processing result:
+→ deploy:auth-service:production ✅
+→ Other services/environments ❌ (ignored)
+```
+
+## 🎁 System Benefits
+
+### Development Efficiency
+- **Precise Deployment**: Targets only changed services
+- **Time Reduction**: Eliminates unnecessary Terragrunt executions
+- **Parallelization**: Concurrent multi-service deployment
+- **Automation**: Eliminates manual decision/execution tasks
+
+### Safety & Reliability
+- **Limited Impact Scope**: Service and environment-level isolation
+- **Predictability**: Pre-deployment target confirmation
+- **Staged Rollout**: develop → staging → production progression
+- **Reliable Halt**: Automatic cessation in uncertain situations
+
+### Operational & Maintenance
+- **Unified Process**: Same workflow across all environments
+- **Visibility**: Deployment target confirmation via GitHub UI
+- **Traceability**: Complete change history
+- **Learning Cost**: Master only one pattern
+
+## 🚨 Considerations and Constraints
+
+### Prerequisites
+- **Branch Naming Convention**: Strict adherence to `staging/{service}`, `production/{service}`
+- **PR-Based Workflow**: Direct push not anticipated
+- **Merged PR Information**: Normal retrieval required in GitHub Actions environment
+
+### Potential Risks
+- **Label Application Failure**: When auto-labeling system fails
+- **Permission Configuration**: Proper environment-specific IAM Role setup required
+- **Complexity**: Initial understanding requires some learning cost
+
+### Operational Rules
+- **Deployment Target Confirmation**: Verify labels before PR merge
+- **Emergency Procedures**: Manual deployment methods when automated system fails
+- **Monitoring**: Regular verification of deployment success/failure
+
+## 📊 Expected Impact
+
+### Quantitative Effects
+- **Deployment Time**: 70-80% reduction (estimated for 5-service environment)
+- **AWS API Calls**: 60-70% reduction
+- **CI/CD Resource Usage**: 50-60% reduction
+- **Deployment Success Rate**: Improvement (due to limited impact scope)
+
+### Qualitative Effects
+- **Developer Experience**: Improved through reduced deployment wait times
+- **System Stability**: Enhanced by eliminating unintended changes
+- **Operational Load**: Reduced through unified processes
+- **Change Management**: Improved through enhanced traceability
+
+This unified deployment strategy realizes safe and efficient infrastructure management in a monorepo environment.
+
+---
+
 # 🛠️ Development Guide
 
 This section provides comprehensive guidance for developers working with this monorepo, covering setup, workflows, and best practices.

@@ -26,7 +26,7 @@ jobs:
       - id: hash
         run: |
           set -eux
-          echo "hash=$(( GITHUB_RUN_ID % 2 ))" >> "$GITHUB_OUTPUT"
+          echo "hash=$(( GITHUB_RUN_ID % 1 ))" >> "$GITHUB_OUTPUT"
 
   claude-code-action:
     needs: throttle
@@ -51,20 +51,21 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::559744160976:role/claude-code-action-monorepo-github-actions-role
-          aws-region: us-east-1
+      # - name: Configure AWS Credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     role-to-assume: arn:aws:iam::559744160976:role/claude-code-action-monorepo-github-actions-role
+      #     aws-region: us-east-1
 
       - uses: anthropics/claude-code-action@beta
         with:
-          model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ steps.app-token.outputs.token }}
           trigger_phrase: "@claude"
-          use_bedrock: "true"
-        env:
-          ANTHROPIC_BEDROCK_BASE_URL: https://bedrock-runtime.us-east-1.amazonaws.com
-          ANTHROPIC_MAX_RETRIES: "3"
-          ANTHROPIC_TIMEOUT: "120"
-          ANTHROPIC_REQUEST_DELAY: "5"
+        #   model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+        #   use_bedrock: "true"
+        # env:
+        #   ANTHROPIC_BEDROCK_BASE_URL: https://bedrock-runtime.us-east-1.amazonaws.com
+        #   ANTHROPIC_MAX_RETRIES: "3"
+        #   ANTHROPIC_TIMEOUT: "120"
+        #   ANTHROPIC_REQUEST_DELAY: "5"
