@@ -58,8 +58,8 @@ resource "aws_iam_policy" "bedrock_claude_policy" {
         ]
         Resource = [
           "*",
-          for model in var.bedrock_models :
-          "arn:aws:bedrock:${var.claude_model_region}::foundation-model/${model}"
+          # for model in var.bedrock_models :
+          # "arn:aws:bedrock:${var.claude_model_region}::foundation-model/${model}",
         ]
       },
       {
