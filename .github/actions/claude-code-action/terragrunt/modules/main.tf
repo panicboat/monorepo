@@ -57,6 +57,7 @@ resource "aws_iam_policy" "bedrock_claude_policy" {
           "bedrock:InvokeModelWithResponseStream"
         ]
         Resource = [
+          "*",
           for model in var.bedrock_models :
           "arn:aws:bedrock:${var.claude_model_region}::foundation-model/${model}"
         ]
