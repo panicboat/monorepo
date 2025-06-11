@@ -18,9 +18,11 @@ resource "github_repository" "repository" {
   vulnerability_alerts = true
 
   # Merge method settings
-  allow_merge_commit     = true
+  allow_merge_commit     = false
   allow_squash_merge     = true
   allow_rebase_merge     = true
+  allow_update_branch    = true
+  allow_auto_merge       = true
   delete_branch_on_merge = true
 
   # Archive settings
