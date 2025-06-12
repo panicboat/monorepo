@@ -57,7 +57,7 @@ jobs:
         if: github.event_name == 'push'
         id: extract-branch
         run: |
-          bin/deploy-trigger from_branch ${{ github.ref_name }} --base-ref=${{ github.event.pull_request.base.sha }} --head-ref=${{ github.event.pull_request.head.sha }}
+          bin/deploy-trigger from_branch ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         working-directory: .github/scripts/label-based-deploy-helpers
