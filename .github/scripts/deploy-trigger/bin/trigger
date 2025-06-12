@@ -1,0 +1,103 @@
+#!/usr/bin/env ruby
+
+# CLI interface for deploy trigger functionality
+# Provides commands for triggering deployments based on Issue #107 strategy
+
+require_relative '../application'
+require 'thor'
+
+class DeployTriggerCLI < Thor
+  desc "from_branch BRANCH_NAME", "Trigger deployment from branch push"
+  option :commit_sha, desc: "Specific commit SHA (defaults to current HEAD)"
+
+  def from_branch(branch_name)
+    controller = DeployTriggerContainer.resolve(:deploy_trigger_controller)
+
+    controller.trigger_from_branch(
+      branch_name: branch_name,
+      commit_sha: options[:commit_sha]
+    )
+  end
+
+  desc "from_pr PR_NUMBER", "Trigger deployment from PR labels"
+  option :target_environment, desc: "Override target environment"
+
+  def from_pr(pr_number)
+    controller = DeployTriggerContainer.resolve(:deploy_trigger_controller)
+
+    controller.trigger_from_pr_labels(
+      pr_number: pr_number.to_i,
+      target_environment: options[:target_environment]
+    )
+  end
+
+  desc "test BRANCH_NAME", "Test deployment workflow without execution"
+  option :commit_sha, desc: "Specific commit SHA for testing"
+
+  def test(branch_name)
+    controller = DeployTriggerContainer.resolve(:deploy_trigger_controller)
+    controller.test_deployment_workflow(
+      branch_name: branch_name,
+      commit_sha: options[:commit_sha]
+    )
+  end
+
+  desc "simulate BRANCH_NAME", "Simulate GitHub Actions environment locally"
+  option :commit_sha, desc: "Specific commit SHA for simulation"
+
+  def simulate(branch_name)
+    controller = DeployTriggerContainer.resolve(:deploy_trigger_controller)
+    controller.simulate_github_actions(
+      branch_name: branch_name,
+      commit_sha: options[:commit_sha]
+    )
+  end
+
+  desc "validate_env", "Validate environment configuration for deployments"
+
+  def validate_env
+    required_vars = %w[GITHUB_TOKEN GITHUB_REPOSITORY]
+    missing_vars = required_vars.reject { |var| ENV[var] }
+
+    if missing_vars.any?
+      puts "::error::Missing required environment variables: #{missing_vars.join(', ')}"
+      exit 1
+    end
+
+    puts "✅ Environment is properly configured for deployments"
+    puts "Repository: #{ENV['GITHUB_REPOSITORY']}"
+    puts "Token present: #{ENV['GITHUB_TOKEN'] ? 'Yes' : 'No'}"
+    puts "Current branch: #{`git branch --show-current`.strip rescue 'unknown'}"
+  end
+
+  desc "debug BRANCH_NAME", "Debug deployment workflow step by step"
+  option :commit_sha, desc: "Specific commit SHA for debugging"
+
+  def debug(branch_name)
+    puts "🔍 Debug Mode: Deploy Trigger Workflow"
+    puts "Branch: #{branch_name}"
+    puts "Commit: #{options[:commit_sha] || 'current HEAD'}"
+    puts ""
+
+    controller = DeployTriggerContainer.resolve(:deploy_trigger_controller)
+
+    # Step-by-step debugging
+    puts "Step 1: Determining target environment..."
+    determine_env = DeployTriggerContainer.resolve(:determine_target_environment)
+    env_result = determine_env.execute(branch_name: branch_name)
+
+    if env_result.success?
+      puts "✅ Target environment: #{env_result.target_environment}"
+      puts "   Deployment pattern: #{env_result.deployment_pattern}"
+    else
+      puts "❌ Failed: #{env_result.error_message}"
+      return
+    end
+
+    puts "\nStep 2: Searching for merged PR..."
+    # This would continue with more detailed debugging steps
+    puts "Note: Full debugging requires GitHub API access"
+  end
+end
+
+DeployTriggerCLI.start(ARGV)
