@@ -1,0 +1,71 @@
+#!/usr/bin/env ruby
+
+# CLI interface for label dispatcher functionality
+# Provides commands for detecting and managing deployment labels
+
+require_relative '../application'
+require 'thor'
+
+class LabelDispatcherCLI < Thor
+  desc "dispatch PR_NUMBER", "Detect changed services and update PR labels"
+  option :base_ref, desc: "Base git reference for comparison"
+  option :head_ref, desc: "Head git reference for comparison"
+
+  def dispatch(pr_number = nil)
+    controller = LabelDispatcherContainer.resolve(:label_dispatcher_controller)
+
+    if ENV['GITHUB_ACTIONS'] && !pr_number
+      puts "::error::PR number is required in GitHub Actions environment"
+      exit 1
+    end
+
+    controller.dispatch_labels(
+      pr_number: pr_number&.to_i,
+      base_ref: options[:base_ref],
+      head_ref: options[:head_ref]
+    )
+  end
+
+  desc "test", "Test label detection without PR interaction"
+  option :base_ref, desc: "Base git reference for comparison"
+  option :head_ref, desc: "Head git reference for comparison"
+
+  def test
+    controller = LabelDispatcherContainer.resolve(:label_dispatcher_controller)
+    controller.test_detection(
+      base_ref: options[:base_ref],
+      head_ref: options[:head_ref]
+    )
+  end
+
+  desc "simulate PR_NUMBER", "Simulate GitHub Actions environment locally"
+  option :base_ref, desc: "Base git reference for comparison", default: 'main'
+  option :head_ref, desc: "Head git reference for comparison"
+
+  def simulate(pr_number)
+    controller = LabelDispatcherContainer.resolve(:label_dispatcher_controller)
+    controller.simulate_github_actions(
+      pr_number: pr_number.to_i,
+      base_ref: options[:base_ref],
+      head_ref: options[:head_ref]
+    )
+  end
+
+  desc "validate_env", "Validate environment configuration"
+
+  def validate_env
+    required_vars = %w[GITHUB_TOKEN GITHUB_REPOSITORY]
+    missing_vars = required_vars.reject { |var| ENV[var] }
+
+    if missing_vars.any?
+      puts "::error::Missing required environment variables: #{missing_vars.join(', ')}"
+      exit 1
+    end
+
+    puts "✅ Environment is properly configured"
+    puts "Repository: #{ENV['GITHUB_REPOSITORY']}"
+    puts "Token present: #{ENV['GITHUB_TOKEN'] ? 'Yes' : 'No'}"
+  end
+end
+
+LabelDispatcherCLI.start(ARGV)

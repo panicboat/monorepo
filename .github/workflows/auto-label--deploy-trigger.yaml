@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - develop
+      - main
       - 'staging/**'
       - 'production/**'
 
@@ -24,6 +25,8 @@ jobs:
     outputs:
       targets: ${{ steps.extract.outputs.targets }}
       has_targets: ${{ steps.extract.outputs.has_targets }}
+      target_environment: ${{ steps.extract.outputs.target_environment }}
+      safety_status: ${{ steps.extract.outputs.safety_status }}
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -42,36 +45,79 @@ jobs:
         with:
           ruby-version: '3.4'
           bundler-cache: true
-          working-directory: .github/scripts/label-based-deploy-helpers
+          working-directory: .github/scripts/shared
 
-      - name: Deploy Trigger - Extract targets
+      - name: Get merged PR information
+        if: github.event_name == 'push'
+        id: get-merged-pr
+        uses: actions-ecosystem/action-get-merged-pull-request@v1
+        with:
+          github_token: ${{ steps.app-token.outputs.token }}
+        continue-on-error: true
+
+      - name: Determine target environment
+        if: github.event_name == 'push'
+        id: determine-env
+        run: |
+          case "${{ github.ref_name }}" in
+            "develop"|"main")
+              echo "environment=develop" >> $GITHUB_OUTPUT
+              ;;
+            staging/*)
+              echo "environment=staging" >> $GITHUB_OUTPUT
+              ;;
+            production/*)
+              echo "environment=production" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "environment=unknown" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Deploy Trigger - Extract targets from PR labels
         if: github.event_name == 'pull_request'
         id: extract-labels
+        working-directory: .github/scripts/shared
         run: |
-          bin/deploy-trigger from_labels ${{ github.event.pull_request.number }} --base-ref=${{ github.event.pull_request.base.sha }} --head-ref=${{ github.event.pull_request.head.sha }}
+          bundle exec ruby ../deploy-trigger/bin/trigger from_pr ${{ github.event.pull_request.number }}
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-        working-directory: .github/scripts/label-based-deploy-helpers
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
-      - name: Deploy Trigger - Extract targets from branch
+      - name: Deploy Trigger - Extract targets from branch push
         if: github.event_name == 'push'
         id: extract-branch
+        working-directory: .github/scripts/shared
         run: |
-          bin/deploy-trigger from_branch ${{ github.ref_name }}
+          # Get merged PR information first
+          if [ -n "${{ steps.get-merged-pr.outputs.number }}" ]; then
+            echo "Found merged PR #${{ steps.get-merged-pr.outputs.number }}"
+            bundle exec ruby ../deploy-trigger/bin/trigger from_pr ${{ steps.get-merged-pr.outputs.number }} --target-environment="${TARGET_ENV}"
+          else
+            echo "::error::No merged PR found - deployment stopped"
+            exit 1
+          fi
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-        working-directory: .github/scripts/label-based-deploy-helpers
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          TARGET_ENV: ${{ steps.determine-env.outputs.environment }}
 
       - name: Set final outputs
         id: extract
         run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "targets=${{ env.DEPLOYMENT_TARGETS }}" >> $GITHUB_OUTPUT
-            echo "has_targets=${{ env.HAS_TARGETS }}" >> $GITHUB_OUTPUT
-          else
-            echo "targets=${{ env.DEPLOYMENT_TARGETS }}" >> $GITHUB_OUTPUT
-            echo "has_targets=${{ env.HAS_TARGETS }}" >> $GITHUB_OUTPUT
-          fi
+          # GitHub Actions environment variables are automatically set by our presenters
+          echo "targets=${DEPLOYMENT_TARGETS:-[]}" >> $GITHUB_OUTPUT
+          echo "has_targets=${HAS_TARGETS:-false}" >> $GITHUB_OUTPUT
+          echo "target_environment=${TARGET_ENVIRONMENT:-unknown}" >> $GITHUB_OUTPUT
+          echo "safety_status=${SAFETY_STATUS:-unknown}" >> $GITHUB_OUTPUT
+
+      - name: Safety check validation
+        if: env.ERROR_OCCURRED == 'true'
+        run: |
+          echo "::error::Deployment safety validation failed: ${ERROR_MESSAGE}"
+          echo "This prevents unauthorized or accidental deployments."
+          echo "Ensure this deployment follows the proper PR workflow as defined in Issue #107."
+          exit 1
 
   deploy-terragrunt:
     name: 'Deploy Terragrunt (${{ matrix.target.service }}:${{ matrix.target.environment }})'
@@ -81,7 +127,7 @@ jobs:
       matrix:
         target: ${{ fromJson(needs.extract-deployment-targets.outputs.targets) }}
       fail-fast: false
-    uses: ./.github/workflows/reusable--terragrunt-executor.yaml  # 既存ワークフロー維持
+    uses: ./.github/workflows/reusable--terragrunt-executor.yaml
     secrets: inherit
     with:
       project-name: ${{ matrix.target.service }}
@@ -93,3 +139,23 @@ jobs:
       working-directory: ${{ matrix.target.working_directory }}
       terraform-version: ${{ matrix.target.terraform_version }}
       terragrunt-version: ${{ matrix.target.terragrunt_version }}
+
+  deployment-summary:
+    name: 'Deployment Summary'
+    needs: [extract-deployment-targets, deploy-terragrunt]
+    if: always() && needs.extract-deployment-targets.outputs.has_targets == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate deployment summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Environment**: ${{ needs.extract-deployment-targets.outputs.target_environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Safety Status**: ${{ needs.extract-deployment-targets.outputs.safety_status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Event**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Results**: " >> $GITHUB_STEP_SUMMARY
+
+          TARGETS='${{ needs.extract-deployment-targets.outputs.targets }}'
+          echo "$TARGETS" | jq -r '.[] | "- \(.service):\(.environment) → `\(.working_directory)`"' >> $GITHUB_STEP_SUMMARY

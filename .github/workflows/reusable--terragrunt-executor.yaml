@@ -57,6 +57,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Validate working directory
+        run: |
+          if [ ! -d "${{ inputs.working-directory }}" ]; then
+            echo "::error::Working directory '${{ inputs.working-directory }}' does not exist"
+            echo "This may indicate a configuration issue or the service structure has changed."
+            exit 1
+          fi
+          echo "✅ Working directory validated: ${{ inputs.working-directory }}"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -169,6 +178,7 @@ jobs:
             **Environment**: `${{ inputs.environment }}`
             **Directory**: `${{ inputs.working-directory }}`
             **Status**: ${{ steps.parse-results.outputs.status }}
+            **Action**: ${{ inputs.action-type }}
 
             <details>
             <summary>📝 ${{ inputs.action-type == 'plan' && 'Plan' || 'Apply' }} Output</summary>
@@ -180,6 +190,9 @@ jobs:
             </details>
 
             [View full workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            ---
+            *Triggered by workflow automation system - [Issue #107 deployment strategy](https://github.com/panicboat/monorepo/issues/107)*
           comment-tag: 'terragrunt-${{ inputs.action-type }}-${{ inputs.environment }}-${{ inputs.project-name }}'
           mode: upsert
           pr-number: ${{ steps.pr-info.outputs.number }}
@@ -189,10 +202,12 @@ jobs:
         run: |
           if [ "${{ inputs.action-type }}" == "plan" ]; then
             if [ "${{ steps.plan.outcome }}" == "failure" ]; then
+              echo "::error::Terragrunt plan failed for ${{ inputs.project-name }}:${{ inputs.environment }}"
               exit 1
             fi
           else
             if [ "${{ steps.apply.outcome }}" == "failure" ]; then
+              echo "::error::Terragrunt apply failed for ${{ inputs.project-name }}:${{ inputs.environment }}"
               exit 1
             fi
           fi
