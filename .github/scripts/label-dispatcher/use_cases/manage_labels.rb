@@ -59,9 +59,9 @@ module UseCases
         content = "## 🚀 Auto-Deployment Information\n\n"
 
         if deploy_labels.any?
-          content += "### Detected Deployment Targets\n"
-          deploy_labels.group_by(&:service).each do |service, labels|
-            content += "- **#{service}**: #{labels.map { |l| "`#{l.environment}`" }.join(', ')}\n"
+          content += "### Detected Services\n"
+          deploy_labels.each do |label|
+            content += "- **#{label.service}**\n"
           end
           content += "\n"
 

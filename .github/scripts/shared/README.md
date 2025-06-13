@@ -156,10 +156,9 @@ directory_conventions:
 
 ### プレースホルダー解決
 
-| プレースホルダー | 説明       | 例                                 |
-| ---------------- | ---------- | ---------------------------------- |
-| `{service}`      | サービス名 | `auth-service`, `api-gateway`      |
-| `{environment}`  | 環境名     | `develop`, `staging`, `production` |
+| プレースホルダー | 説明       | 例                            |
+| ---------------- | ---------- | ----------------------------- |
+| `{service}`      | サービス名 | `auth-service`, `api-gateway` |
 
 ### 実際の解決例
 ```yaml
@@ -717,10 +716,10 @@ environments:
 
 directory_conventions:
   # インフラストラクチャ管理
-  terragrunt: "{service}/terragrunt/envs/{environment}"
+  terragrunt: "{service}/terragrunt"
 
   # アプリケーションデプロイメント
-  kubernetes: "{service}/kubernetes/overlays/{environment}"
+  kubernetes: "{service}/kubernetes"
 
   # 追加デプロイメント手法
   helm: "{service}/helm/charts"
@@ -731,8 +730,8 @@ services:
   # 標準マイクロサービス（フルスタック）
   - name: user-service
     directory_conventions:
-      terragrunt: "services/{service}/terragrunt/envs/{environment}"
-      kubernetes: "services/{service}/kubernetes/overlays/{environment}"
+      terragrunt: "services/{service}/terragrunt"
+      kubernetes: "services/{service}/kubernetes"
       helm: "services/{service}/helm"
     scaling:
       min_replicas: 2
@@ -741,8 +740,8 @@ services:
   # 高トラフィックサービス（最適化設定）
   - name: payment-service
     directory_conventions:
-      terragrunt: "services/{service}/terragrunt/envs/{environment}"
-      kubernetes: "services/{service}/kubernetes/overlays/{environment}"
+      terragrunt: "services/{service}/terragrunt"
+      kubernetes: "services/{service}/kubernetes"
       helm: "services/{service}/helm"
     scaling:
       min_replicas: 5
@@ -755,7 +754,7 @@ services:
   # レガシーシステム（インフラのみ）
   - name: legacy-billing
     directory_conventions:
-      terragrunt: "legacy/{service}/infrastructure/{environment}"
+      terragrunt: "legacy/{service}/infrastructure/develop"
       # Kubernetes/Helm なし
     deployment:
       strategy: "rolling"
@@ -764,8 +763,8 @@ services:
   # 内部ツール（軽量設定）
   - name: admin-dashboard
     directory_conventions:
-      terragrunt: "internal/{service}/terragrunt/{environment}"
-      kubernetes: "internal/{service}/kubernetes/{environment}"
+      terragrunt: "internal/{service}/terragrunt/develop"
+      kubernetes: "internal/{service}/kubernetes/develop"
       # Helm なし（シンプルな構成）
 
 defaults:
@@ -1095,7 +1094,6 @@ branch_patterns:
 
 #### プレースホルダーチェック
 - [ ] directory_conventions に `{service}` プレースホルダーが含まれている
-- [ ] 環境固有パスが必要な場合は `{environment}` プレースホルダーが含まれている
 - [ ] サービス固有の directory_conventions も同様のプレースホルダーを使用
 
 #### 参照整合性チェック

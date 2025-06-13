@@ -82,7 +82,7 @@ iam_role_arn: /^arn:aws:iam::/
 #### ディレクトリ規約検証
 ```yaml
 # 必須プレースホルダー
-required_placeholders: ['{service}', '{environment}']
+required_placeholders: ['{service}']
 
 # 必須スタック
 required_stacks: ['terragrunt']
@@ -368,7 +368,7 @@ Configuration Health: EXCELLENT
 
 Critical Errors:
   - Environment 'develop' missing required field: iam_role_plan
-  - Service 'auth-service' directory convention missing {environment} placeholder
+  - Service 'auth-service' directory convention missing {service} placeholder
   - Branch pattern 'staging' references unknown environment: unknown_env
 
 Warnings:

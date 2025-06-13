@@ -22,7 +22,7 @@ module Entities
 
     # Check if the deploy label is valid
     def valid?
-      !service.nil?
+      !service.nil? && service.match?(/\A[a-zA-Z0-9\-_]+\z/)
     end
 
     # Equality comparison
@@ -45,9 +45,9 @@ module Entities
     def parse_label!
       parts = @raw_label.split(':')
 
-      return unless parts.length >= 2 && parts[0] == 'deploy'
+      return unless parts.length == 2 && parts[0] == 'deploy'
 
-      @service = parts[1]
+      @service = parts[1] if parts[1].match?(/\A[a-zA-Z0-9\-_]+\z/)
     end
   end
 end

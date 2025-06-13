@@ -70,11 +70,9 @@ module Interfaces
           # Test directory conventions
           terragrunt_dir = config.directory_convention_for(service_name, 'terragrunt')
             &.gsub('{service}', service_name)
-            &.gsub('{environment}', environment)
 
           kubernetes_dir = config.directory_convention_for(service_name, 'kubernetes')
             &.gsub('{service}', service_name)
-            &.gsub('{environment}', environment)
 
           @presenter.present_service_test_result(
             service_name: service_name,
@@ -181,14 +179,14 @@ module Interfaces
               iam_role_apply: arn:aws:iam::ACCOUNT_ID:role/github-oidc-auth-production-apply-role
 
           directory_conventions:
-            terragrunt: "{service}/terragrunt/envs/{environment}"
-            kubernetes: "{service}/kubernetes/overlays/{environment}"
+            terragrunt: "{service}/terragrunt"
+            kubernetes: "{service}/kubernetes"
 
           services:
             - name: example-service
               directory_conventions:
-                terragrunt: "services/{service}/terragrunt/envs/{environment}"
-                kubernetes: "services/{service}/kubernetes/overlays/{environment}"
+                terragrunt: "services/{service}/terragrunt"
+                kubernetes: "services/{service}/kubernetes"
 
           defaults:
             aws_region: ap-northeast-1

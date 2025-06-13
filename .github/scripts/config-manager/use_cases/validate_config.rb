@@ -104,8 +104,8 @@ module UseCases
 
           if service_config['directory_conventions']
             service_config['directory_conventions'].each do |stack, pattern|
-              unless pattern.include?('{service}') && pattern.include?('{environment}')
-                errors << "Service '#{service_name}' directory convention for '#{stack}' must include {service} and {environment} placeholders"
+              unless pattern.include?('{service}')
+                errors << "Service '#{service_name}' directory convention for '#{stack}' must include {service} placeholder"
               end
             end
           end
@@ -129,8 +129,8 @@ module UseCases
         errors.concat(missing_stacks.map { |stack| "Missing directory convention for stack: #{stack}" })
 
         conventions.each do |stack, pattern|
-          unless pattern.include?('{service}') && pattern.include?('{environment}')
-            errors << "Directory convention for '#{stack}' must include {service} and {environment} placeholders"
+          unless pattern.include?('{service}')
+            errors << "Directory convention for '#{stack}' must include {service} placeholder"
           end
         end
 

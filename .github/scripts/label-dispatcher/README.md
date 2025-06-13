@@ -40,7 +40,7 @@ services:
 
 ### 2. ディレクトリパターンからの発見
 ```ruby
-# デフォルトパターン: {service}/terragrunt/envs/{environment}
+# デフォルトパターン: {service}/terragrunt
 # 変更ファイル: auth-service/src/main.rs
 # → サービス名: auth-service
 ```
@@ -261,7 +261,7 @@ def files_changed_in_service?(changed_files, service_name)
 end
 
 # 環境固有パスは使用しない（重要）
-# ❌ 間違い: "#{service_name}/terragrunt/envs/#{environment}"
+# ❌ 間違い: "#{service_name}/terragrunt"
 # ✅ 正しい: "#{service_name}/" で始まる任意のファイル
 ```
 

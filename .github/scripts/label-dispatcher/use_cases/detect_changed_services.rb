@@ -29,38 +29,19 @@ module UseCases
 
       # Detect deploy labels from changed files and configuration
       def detect_deploy_labels(changed_files, config)
-        labels = []
         discovered_services = discover_services(changed_files, config)
-
-        discovered_services.each do |service_name|
-          config.environments.each do |env_name, env_config|
-            %w[terragrunt kubernetes].each do |stack|
-              pattern = config.directory_convention_for(service_name, stack)
-              next unless pattern
-
-              path = pattern.gsub('{service}', service_name).gsub('{environment}', env_name)
-
-              if files_changed_in_path?(changed_files, path)
-                labels << Entities::DeployLabel.from_components(
-                  service: service_name,
-                  environment: env_name,
-                  stack: stack
-                )
-              end
-            end
-          end
-        end
-
-        labels.uniq
+        discovered_services.map { |service| Entities::DeployLabel.from_service(service: service) }
       end
 
       # Discover services from changed files and configuration
       def discover_services(changed_files, config)
         services = Set.new
 
-        # Add explicitly configured services
+        # Add explicitly configured services that have changed files
         config.services.each do |service_name, _|
-          services << service_name
+          if files_changed_in_service?(changed_files, service_name)
+            services << service_name
+          end
         end
 
         # Discover services from directory patterns
@@ -70,16 +51,22 @@ module UseCases
         end
 
         # Discover services from existing directory structure
-        services.merge(discover_services_from_filesystem(config))
+        if services.empty?
+          services.merge(discover_services_from_filesystem(changed_files))
+        end
 
         services.to_a.reject { |service| service.start_with?('.') }
       end
 
+      # Check if any files changed in a service directory
+      def files_changed_in_service?(changed_files, service_name)
+        changed_files.any? { |file| file.start_with?("#{service_name}/") }
+      end
+
       # Discover services by matching changed files against directory pattern
       def discover_services_from_pattern(changed_files, pattern)
-        regex_pattern = pattern
-          .gsub('{service}', '([^/]+)')
-          .gsub('{environment}', '[^/]+')
+        # Convert pattern like "{service}/terragrunt" to regex
+        regex_pattern = pattern.gsub('{service}', '([^/]+)')
 
         services = Set.new
         changed_files.each do |file|
@@ -93,42 +80,34 @@ module UseCases
       end
 
       # Discover services from existing filesystem structure
-      def discover_services_from_filesystem(config)
+      def discover_services_from_filesystem(changed_files)
         services = Set.new
 
-        # Look for standard terragrunt structure
-        terragrunt_dirs = @file_client.find_directories('*/terragrunt/envs/*')
-        terragrunt_dirs.each do |path|
-          service_name = path.split('/').first
-          services << service_name unless service_name.start_with?('.')
-        end
+        changed_files.each do |file|
+          # Extract service name from file path (first directory component)
+          path_parts = file.split('/')
+          next if path_parts.empty?
 
-        # Look for configured service structures
-        config.services.each do |service_name, service_config|
-          if service_config['directory_conventions']
-            %w[terragrunt kubernetes].each do |stack|
-              pattern = service_config['directory_conventions'][stack]
-              next unless pattern
+          potential_service = path_parts.first
+          next if potential_service.start_with?('.')
 
-              config.environments.each do |env_name, _|
-                working_dir = pattern
-                  .gsub('{service}', service_name)
-                  .gsub('{environment}', env_name)
-
-                if @file_client.directory_exists?(working_dir)
-                  services << service_name
-                end
-              end
-            end
+          # Check if this looks like a service directory
+          if looks_like_service_directory?(potential_service)
+            services << potential_service
           end
         end
 
         services
       end
 
-      # Check if any files changed in the specified path
-      def files_changed_in_path?(changed_files, path_pattern)
-        changed_files.any? { |file| file.start_with?(path_pattern) }
+      # Check if a directory name looks like a service directory
+      def looks_like_service_directory?(dir_name)
+        # Skip common non-service directories
+        excluded_dirs = %w[.github docs scripts tests spec bin lib config public assets]
+        return false if excluded_dirs.include?(dir_name)
+
+        # Must be a valid service name
+        dir_name.match?(/\A[a-zA-Z0-9\-_]+\z/)
       end
     end
   end

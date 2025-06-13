@@ -484,7 +484,6 @@ def generate_deployment_target(deploy_label, target_environment, config)
   # ディレクトリ規約の解決
   working_dir = config.directory_convention_for(service, 'terragrunt')
     .gsub('{service}', service)
-    .gsub('{environment}', target_environment)
 
   DeploymentTarget.new(
     service: service,
