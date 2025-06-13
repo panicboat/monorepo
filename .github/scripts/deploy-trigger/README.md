@@ -87,7 +87,7 @@ branch_patterns:
 
 ### 実際の動作例
 ```mermaid
-graph TD
+flowchart TD
     A[Push Event] --> B{ブランチ判定}
 
     B -->|develop/main| C[develop環境]
@@ -98,30 +98,33 @@ graph TD
     D --> F
     E --> F
 
-    F --> G[deploy:auth-service, deploy:api-gateway]
+    F --> G[deploy:auth-service<br/>deploy:api-gateway]
 
-    G --> H[auth-service → develop環境 (Terragrunt)]
-    G --> I[auth-service → develop環境 (Kubernetes)]
-    G --> J[api-gateway → develop環境 (Terragrunt)]
-    G --> K[api-gateway → develop環境 (Kubernetes)]
-    G --> L[auth-service → staging環境 (Terragrunt)]
-    G --> M[auth-service → staging環境 (Kubernetes)]
-    G --> N[api-gateway → staging環境 (Terragrunt)]
-    G --> O[api-gateway → staging環境 (Kubernetes)]
-    G --> P[auth-service → production環境 (Terragrunt)]
-    G --> Q[auth-service → production環境 (Kubernetes)]
-    G --> R[api-gateway → production環境 (Terragrunt)]
-    G --> S[api-gateway → production環境 (Kubernetes)]
+    G --> H[デプロイメント実行]
+
+    H --> I[auth-service → develop環境]
+    H --> J[api-gateway → develop環境]
+    H --> K[auth-service → staging環境]
+    H --> L[api-gateway → staging環境]
+    H --> M[auth-service → production環境]
+    H --> N[api-gateway → production環境]
+
+    I --> O[build & apply...]
+    J --> P[build & apply...]
+    K --> Q[build & apply...]
+    L --> R[build & apply...]
+    M --> S[build & apply...]
+    N --> T[build & apply...]
 
     style C fill:#e8f5e8
     style D fill:#fff3e0
     style E fill:#ffebee
-    style H fill:#e8f5e8
     style I fill:#e8f5e8
-    style J fill:#fff3e0
+    style J fill:#e8f5e8
     style K fill:#fff3e0
-    style L fill:#ffebee
+    style L fill:#fff3e0
     style M fill:#ffebee
+    style N fill:#ffebee
 ```
 
 ## 🛡️ 安全性チェック詳細
