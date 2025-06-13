@@ -1,5 +1,4 @@
 # Use case for filtering deployment labels by target environment
-# Implements the core environment matching logic from Issue #107
 
 module UseCases
   module DeployTrigger
@@ -41,7 +40,6 @@ module UseCases
 
       private
 
-      # Core environment matching logic from Issue #107 strategy
       def filter_labels_by_environment(deploy_labels, target_environment)
         case target_environment
         when 'develop'

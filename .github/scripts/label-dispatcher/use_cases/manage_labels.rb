@@ -4,6 +4,8 @@
 module UseCases
   module LabelManagement
     class ManageLabels
+      attr_reader :github_client
+
       def initialize(github_client:)
         @github_client = github_client
       end

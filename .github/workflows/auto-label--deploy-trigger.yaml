@@ -97,7 +97,6 @@ jobs:
         run: |
           echo "::error::Deployment safety validation failed: ${ERROR_MESSAGE}"
           echo "This prevents unauthorized or accidental deployments."
-          echo "Ensure this deployment follows the proper PR workflow as defined in Issue #107."
           exit 1
 
   deploy-terragrunt:
@@ -252,4 +251,4 @@ jobs:
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "📋 [View detailed logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "*Automated deployment via [Issue #107 strategy](https://github.com/panicboat/monorepo/issues/107)*" >> $GITHUB_STEP_SUMMARY
+          echo "*Automated deployment*" >> $GITHUB_STEP_SUMMARY

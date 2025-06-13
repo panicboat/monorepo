@@ -1,5 +1,4 @@
 # Use case for validating deployment safety before execution
-# Implements safety checks as defined in Issue #107 strategy
 
 module UseCases
   module DeployTrigger
@@ -160,7 +159,6 @@ module UseCases
         end
 
         message += "\nThis safety check prevents accidental or unauthorized deployments."
-        message += "\nEnsure deployment follows the proper PR workflow as defined in Issue #107."
 
         message
       end

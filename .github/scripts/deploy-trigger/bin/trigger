@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 # CLI interface for deploy trigger functionality
-# Provides commands for triggering deployments based on Issue #107 strategy
 
 require_relative '../application'
 require 'thor'
