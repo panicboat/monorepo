@@ -174,17 +174,17 @@ services:
 ### 設定検証とテスト
 ```bash
 # 開発環境セットアップ
-cd .github/scripts/shared
+cd .github/scripts
 bundle install
 
 # 設定ファイル検証
-bundle exec ruby ../config-manager/bin/config-manager validate
+bundle exec ruby config-manager/bin/config-manager validate
 
 # 特定サービステスト
-bundle exec ruby ../config-manager/bin/config-manager test auth-service develop
+bundle exec ruby config-manager/bin/config-manager test auth-service develop
 
 # 包括的診断
-bundle exec ruby ../config-manager/bin/config-manager diagnostics
+bundle exec ruby config-manager/bin/config-manager diagnostics
 ```
 
 ## 🛡️ 安全性機能
@@ -252,21 +252,21 @@ export GITHUB_TOKEN=ghp_xxxx
 export GITHUB_REPOSITORY=owner/repo
 
 # 依存関係インストール
-cd .github/scripts/shared
+cd .github/scripts
 bundle install
 ```
 
 ### ローカルでのテスト
 ```bash
 # ラベル検出テスト
-bundle exec ruby ../label-dispatcher/bin/dispatcher test \
+bundle exec ruby label-dispatcher/bin/dispatcher test \
   --base-ref=main --head-ref=feature/test
 
 # デプロイトリガーテスト
-bundle exec ruby ../deploy-trigger/bin/trigger test develop
+bundle exec ruby deploy-trigger/bin/trigger test develop
 
 # デバッグモード実行
-DEBUG=true bundle exec ruby ../deploy-trigger/bin/trigger debug staging/auth-service
+DEBUG=true bundle exec ruby deploy-trigger/bin/trigger debug staging/auth-service
 ```
 
 ### 機能別テスト
@@ -324,17 +324,17 @@ result = validator.execute
 ### デバッグ手順
 ```bash
 # ステップ1: 設定ファイル確認
-bundle exec ruby ../config-manager/bin/config-manager check_file
+bundle exec ruby config-manager/bin/config-manager check_file
 
 # ステップ2: 設定検証
-bundle exec ruby ../config-manager/bin/config-manager validate
+bundle exec ruby config-manager/bin/config-manager validate
 
 # ステップ3: 包括診断
-bundle exec ruby ../config-manager/bin/config-manager diagnostics
+bundle exec ruby config-manager/bin/config-manager diagnostics
 
 # ステップ4: 個別機能テスト
-bundle exec ruby ../label-dispatcher/bin/dispatcher validate_env
-bundle exec ruby ../deploy-trigger/bin/trigger validate_env
+bundle exec ruby label-dispatcher/bin/dispatcher validate_env
+bundle exec ruby deploy-trigger/bin/trigger validate_env
 ```
 
 ### GitHub Actions デバッグ

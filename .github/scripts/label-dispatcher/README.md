@@ -147,7 +147,7 @@ jobs:
       - name: Dispatch labels
         working-directory: .github/scripts/shared
         run: |
-          bundle exec ruby ../label-dispatcher/bin/dispatcher dispatch ${{ github.event.pull_request.number }} \
+          bundle exec ruby label-dispatcher/bin/dispatcher dispatch ${{ github.event.pull_request.number }} \
             --base-ref=${{ github.event.pull_request.base.sha }} \
             --head-ref=${{ github.event.pull_request.head.sha }}
 ```
@@ -163,24 +163,24 @@ jobs:
 ### 基本コマンド
 ```bash
 # shared ディレクトリから実行（推奨）
-cd .github/scripts/shared
+cd .github/scripts
 
 # PR番号指定でラベル付与
-bundle exec ruby ../label-dispatcher/bin/dispatcher dispatch 123
+bundle exec ruby label-dispatcher/bin/dispatcher dispatch 123
 
 # Git参照指定でラベル付与
-bundle exec ruby ../label-dispatcher/bin/dispatcher dispatch 123 \
+bundle exec ruby label-dispatcher/bin/dispatcher dispatch 123 \
   --base-ref=main --head-ref=feature/auth
 
 # テスト実行（PRへの操作なし）
-bundle exec ruby ../label-dispatcher/bin/dispatcher test \
+bundle exec ruby label-dispatcher/bin/dispatcher test \
   --base-ref=main --head-ref=feature/auth
 
 # GitHub Actions環境シミュレート
-bundle exec ruby ../label-dispatcher/bin/dispatcher simulate 123
+bundle exec ruby label-dispatcher/bin/dispatcher simulate 123
 
 # 環境変数検証
-bundle exec ruby ../label-dispatcher/bin/dispatcher validate_env
+bundle exec ruby label-dispatcher/bin/dispatcher validate_env
 ```
 
 ### label-dispatcher ディレクトリから直接実行
@@ -192,7 +192,7 @@ ruby bin/dispatcher dispatch 123
 ### 依存関係管理
 ```bash
 # 初回セットアップ
-cd .github/scripts/shared
+cd .github/scripts
 bundle install
 
 # 依存関係更新
@@ -424,17 +424,17 @@ end
 find . -name "*.tf" -path "*/terragrunt/*" | head -10
 
 # 診断: 設定ファイル確認
-bundle exec ruby ../config-manager/bin/config-manager show
+bundle exec ruby config-manager/bin/config-manager show
 
 # 診断: テスト実行
-bundle exec ruby ../label-dispatcher/bin/dispatcher test \
+bundle exec ruby label-dispatcher/bin/dispatcher test \
   --base-ref=main --head-ref=current-branch
 ```
 
 #### 2. ラベルが付与されない
 ```bash
 # 権限確認
-bundle exec ruby ../label-dispatcher/bin/dispatcher validate_env
+bundle exec ruby label-dispatcher/bin/dispatcher validate_env
 
 # GitHub API 接続テスト
 curl -H "Authorization: token $GITHUB_TOKEN" \
@@ -444,33 +444,33 @@ curl -H "Authorization: token $GITHUB_TOKEN" \
 #### 3. 間違ったラベルが付与される
 ```bash
 # 設定検証
-bundle exec ruby ../config-manager/bin/config-manager validate
+bundle exec ruby config-manager/bin/config-manager validate
 
 # サービス発見のデバッグ
-DEBUG=true bundle exec ruby ../label-dispatcher/bin/dispatcher test
+DEBUG=true bundle exec ruby label-dispatcher/bin/dispatcher test
 ```
 
 ### デバッグ手順
 ```bash
 # ステップ1: 環境確認
-bundle exec ruby ../label-dispatcher/bin/dispatcher validate_env
+bundle exec ruby label-dispatcher/bin/dispatcher validate_env
 
 # ステップ2: 設定確認
-bundle exec ruby ../config-manager/bin/config-manager diagnostics
+bundle exec ruby config-manager/bin/config-manager diagnostics
 
 # ステップ3: ローカルテスト
-bundle exec ruby ../label-dispatcher/bin/dispatcher test \
+bundle exec ruby label-dispatcher/bin/dispatcher test \
   --base-ref=main --head-ref=$(git branch --show-current)
 
 # ステップ4: GitHub Actions シミュレート
-bundle exec ruby ../label-dispatcher/bin/dispatcher simulate PR_NUMBER
+bundle exec ruby label-dispatcher/bin/dispatcher simulate PR_NUMBER
 ```
 
 ### ログ分析
 ```bash
 # 詳細ログ出力
 export DEBUG=true
-bundle exec ruby ../label-dispatcher/bin/dispatcher dispatch 123 2>&1 | tee debug.log
+bundle exec ruby label-dispatcher/bin/dispatcher dispatch 123 2>&1 | tee debug.log
 
 # ログフィルタリング
 grep "Service discovered" debug.log

@@ -868,36 +868,36 @@ safety_checks:
 ```bash
 # 設定ファイル検証
 cd .github/scripts/shared
-bundle exec ruby ../config-manager/bin/config-manager validate
+bundle exec ruby config-manager/bin/config-manager validate
 
 # 特定サービステスト
-bundle exec ruby ../config-manager/bin/config-manager test auth-service develop
+bundle exec ruby config-manager/bin/config-manager test auth-service develop
 
 # 包括診断
-bundle exec ruby ../config-manager/bin/config-manager diagnostics
+bundle exec ruby config-manager/bin/config-manager diagnostics
 
 # 設定内容表示
-bundle exec ruby ../config-manager/bin/config-manager show
+bundle exec ruby config-manager/bin/config-manager show
 ```
 
 ### 段階的検証プロセス
 ```bash
 # ステップ1: ファイル存在・構文確認
-bundle exec ruby ../config-manager/bin/config-manager check_file
+bundle exec ruby config-manager/bin/config-manager check_file
 
 # ステップ2: 基本構造検証
-bundle exec ruby ../config-manager/bin/config-manager validate
+bundle exec ruby config-manager/bin/config-manager validate
 
 # ステップ3: 環境別設定確認
-bundle exec ruby ../config-manager/bin/config-manager environments
-bundle exec ruby ../config-manager/bin/config-manager services
+bundle exec ruby config-manager/bin/config-manager environments
+bundle exec ruby config-manager/bin/config-manager services
 
 # ステップ4: 安全性設定確認
-bundle exec ruby ../config-manager/bin/config-manager safety_checks
+bundle exec ruby config-manager/bin/config-manager safety_checks
 
 # ステップ5: 実際の動作テスト
-bundle exec ruby ../label-dispatcher/bin/dispatcher test
-bundle exec ruby ../deploy-trigger/bin/trigger test develop
+bundle exec ruby label-dispatcher/bin/dispatcher test
+bundle exec ruby deploy-trigger/bin/trigger test develop
 ```
 
 ## 🔧 よくある設定パターン
@@ -1112,10 +1112,10 @@ branch_patterns:
 python3 -c "import yaml; yaml.safe_load(open('shared/workflow-config.yaml'))"
 
 # 詳細検証
-bundle exec ruby ../config-manager/bin/config-manager validate
+bundle exec ruby config-manager/bin/config-manager validate
 
 # 設定内容確認
-bundle exec ruby ../config-manager/bin/config-manager show | less
+bundle exec ruby config-manager/bin/config-manager show | less
 
 # 特定フィールドの確認
 bundle exec ruby -ryaml -e "
