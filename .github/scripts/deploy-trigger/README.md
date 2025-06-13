@@ -2,9 +2,9 @@
 
 ## 🎯 概要
 
-Deploy Trigger は、ブランチの push イベントから適切なデプロイメントを実行するシステムです。マージされた PR のラベル情報と push されたブランチから環境を判定し、安全で確実なデプロイメントを自動実行します。
+Deploy Trigger は、ブランチの push イベントから適切なデプロイメントを実行するシステムです。マージされた PR のラベル情報と現在のブランチから環境を判定し、安全で確実なデプロイメントを自動実行します。
 
-## 🔄 デプロイメント戦略の実装
+## 🔄 デプロイメント戦略
 
 ```mermaid
 graph LR
@@ -31,7 +31,7 @@ graph LR
     style G fill:#ffebee
 ```
 
-## 🚀 処理フロー詳細
+## 🚀 処理フロー
 
 ```mermaid
 sequenceDiagram
@@ -48,7 +48,7 @@ sequenceDiagram
     API-->>GHA: PR #123 情報
     GHA->>DT: trigger from_pr 123
 
-    DT->>DT: ブランチ名から環境判定
+    DT->>DT: 現在ブランチから環境判定
     DT->>API: PR #123 の deploy ラベル取得
     API-->>DT: deploy:auth-service, deploy:api-gateway
 
@@ -67,7 +67,7 @@ sequenceDiagram
     end
 ```
 
-## 🎯 核心：環境判定とマージPR連携
+## 🎯 環境判定
 
 ### ブランチ → 環境マッピング
 ```yaml
@@ -85,195 +85,28 @@ branch_patterns:
     target_environment: production
 ```
 
-### 実際の動作例
+### 動作例
 ```mermaid
 flowchart TD
-    A[Push Event] --> B{ブランチ判定}
+    A[Push Event] --> B[Deploy Trigger 実行]
+    B --> C[現在ブランチ取得]
+    C --> D{ブランチ判定}
 
-    B -->|develop/main| C[develop環境]
-    B -->|staging/*| D[staging環境]
-    B -->|production/*| E[production環境]
+    D -->|develop/main| E[develop環境]
+    D -->|staging/*| F[staging環境]
+    D -->|production/*| G[production環境]
 
-    C --> F[マージPRラベル取得]
-    D --> F
-    E --> F
+    E --> H[マージPRラベル取得]
+    F --> H
+    G --> H
 
-    F --> G[deploy:auth-service<br/>deploy:api-gateway]
+    H --> I[deploy:auth-service<br/>deploy:api-gateway]
+    I --> J[デプロイメント実行]
 
-    G --> H[デプロイメント実行]
-
-    H --> I[auth-service → develop環境]
-    H --> J[api-gateway → develop環境]
-    H --> K[auth-service → staging環境]
-    H --> L[api-gateway → staging環境]
-    H --> M[auth-service → production環境]
-    H --> N[api-gateway → production環境]
-
-    I --> O[build & apply...]
-    J --> P[build & apply...]
-    K --> Q[build & apply...]
-    L --> R[build & apply...]
-    M --> S[build & apply...]
-    N --> T[build & apply...]
-
-    style C fill:#e8f5e8
-    style D fill:#fff3e0
-    style E fill:#ffebee
-    style I fill:#e8f5e8
-    style J fill:#e8f5e8
-    style K fill:#fff3e0
-    style L fill:#fff3e0
-    style M fill:#ffebee
-    style N fill:#ffebee
+    style E fill:#e8f5e8
+    style F fill:#fff3e0
+    style G fill:#ffebee
 ```
-
-## 🛡️ 安全性チェック詳細
-
-```mermaid
-graph TD
-    A[安全性チェック開始] --> B[マージPR確認]
-    B --> C{PR情報存在?}
-
-    C -->|No| D[🚨 DEPLOYMENT STOPPED]
-    C -->|Yes| E[deploy ラベル存在確認]
-
-    E --> F{ラベル存在?}
-    F -->|No| G[🚨 NO LABELS - SKIP]
-    F -->|Yes| H[ブランチパターン確認]
-
-    H --> I{正規パターン?}
-    I -->|No| J[⚠️ WARNING]
-    I -->|Yes| K[環境一致確認]
-
-    K --> L{設定整合性?}
-    L -->|No| M[🚨 CONFIG ERROR]
-    L -->|Yes| N[✅ DEPLOYMENT ALLOWED]
-
-    style D fill:#ffebee
-    style G fill:#fff3e0
-    style J fill:#fff3e0
-    style M fill:#ffebee
-    style N fill:#e8f5e8
-```
-
-### 安全性チェック項目
-1. **マージPR必須**: 直接 push ではなく、PR 経由のマージであることを確認
-2. **ラベル存在確認**: `deploy:*` ラベルが存在することを確認
-3. **ブランチパターン**: 設定された正規のブランチパターンに合致することを確認
-4. **設定整合性**: 対象環境の設定が存在することを確認
-
-## 🏗️ アーキテクチャ
-
-### 主要ユースケース
-```ruby
-module UseCases
-  module DeployTrigger
-    class DetermineTargetEnvironment
-      # ブランチ名から対象環境を判定
-      def execute(branch_name:)
-        # ブランチパターンマッチング
-        # 設定ファイルから環境判定
-      end
-    end
-
-    class GetMergedPrLabels
-      # GitHub Actions で提供されるPR番号からラベル取得
-      def execute(pr_number:)
-        # GitHub API から deploy ラベル取得
-        # DeployLabel エンティティに変換
-      end
-    end
-
-    class ValidateDeploymentSafety
-      # 安全性要件のチェック
-      def execute(deploy_labels:, merged_pr_number:, branch_name:, commit_sha:)
-        # マージPR確認
-        # ラベル存在確認
-        # ブランチパターン確認
-      end
-    end
-
-    class GenerateMatrix
-      # デプロイメント実行マトリックス生成
-      def execute(deploy_labels:)
-        # ラベル → DeploymentTarget 変換
-        # GitHub Actions マトリックス形式で出力
-      end
-    end
-  end
-end
-```
-
-### Controllers
-```ruby
-module Interfaces
-  module Controllers
-    class DeployTriggerController
-      # デプロイメントワークフロー全体の調整
-      def trigger_from_pr_labels(pr_number:, target_environment:)
-        # 1. 環境判定
-        # 2. PR ラベル取得
-        # 3. 安全性チェック
-        # 4. マトリックス生成
-        # 5. 結果出力
-      end
-    end
-  end
-end
-```
-
-## 🎪 GitHub Actions 統合
-
-### ワークフロー設定
-```yaml
-name: 'Auto Label - Deploy Trigger'
-
-on:
-  push:
-    branches:
-      - develop
-      - main
-      - 'staging/**'
-      - 'production/**'
-
-jobs:
-  extract-deployment-targets:
-    steps:
-      - name: Get merged PR information
-        id: get-merged-pr
-        uses: actions-ecosystem/action-get-merged-pull-request@v1
-        continue-on-error: true
-
-      - name: Determine target environment
-        id: determine-env
-        run: |
-          case "${{ github.ref_name }}" in
-            "develop"|"main")
-              echo "environment=develop" >> $GITHUB_OUTPUT
-              ;;
-            staging/*)
-              echo "environment=staging" >> $GITHUB_OUTPUT
-              ;;
-            production/*)
-              echo "environment=production" >> $GITHUB_OUTPUT
-              ;;
-          esac
-
-      - name: Deploy Trigger - Extract targets
-        run: |
-          if [ -n "${{ steps.get-merged-pr.outputs.number }}" ]; then
-            bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ steps.get-merged-pr.outputs.number }} --target-environment="${TARGET_ENV}"
-          else
-            echo "::error::No merged PR found - deployment stopped"
-            exit 1
-          fi
-```
-
-### 重要な実装ポイント
-- **PR情報取得**: `actions-ecosystem/action-get-merged-pull-request` を使用
-- **環境判定**: ブランチ名から対象環境を判定
-- **安全性**: PR情報がない場合はデプロイ停止
-- **マトリックス出力**: JSON形式でデプロイメントターゲットを出力
 
 ## 🚀 CLI 使用方法
 
@@ -282,13 +115,10 @@ jobs:
 # shared ディレクトリから実行（推奨）
 cd .github/scripts
 
-# PR番号からデプロイトリガー
+# PR番号からデプロイトリガー（環境は自動判定）
 bundle exec ruby deploy-trigger/bin/trigger from_pr 123
 
-# 環境指定でデプロイトリガー
-bundle exec ruby deploy-trigger/bin/trigger from_pr 123 --target-environment=staging
-
-# ブランチ名からデプロイトリガー（テスト用）
+# ブランチ名からデプロイトリガー
 bundle exec ruby deploy-trigger/bin/trigger from_branch develop
 
 # テスト実行
@@ -301,12 +131,12 @@ bundle exec ruby deploy-trigger/bin/trigger simulate develop
 ### 高度なコマンド
 ```bash
 # デバッグモード
-bundle exec ruby deploy-trigger/bin/trigger debug staging/auth-service --commit-sha=abc123
+bundle exec ruby deploy-trigger/bin/trigger debug staging/auth-service
 
 # 環境変数検証
 bundle exec ruby deploy-trigger/bin/trigger validate_env
 
-# または deploy-trigger ディレクトリから直接実行
+# deploy-trigger ディレクトリから直接実行
 cd .github/scripts/deploy-trigger
 ruby bin/trigger from_pr 123
 ```
@@ -319,17 +149,8 @@ ruby bin/trigger from_pr 123
 ```bash
 # develop ブランチへ push
 # 最新のマージPR: #123
-# PR #123 のラベル:
-# - deploy:auth-service
-# - deploy:api-gateway
-```
-
-**処理:**
-```ruby
-# 1. 環境判定: develop
-# 2. PR情報取得: PR #123
-# 3. ラベル取得: deploy:auth-service, deploy:api-gateway
-# 4. マトリックス生成: 各サービス × develop環境
+# PR #123 のラベル: deploy:auth-service, deploy:api-gateway
+# 現在のブランチ: develop
 ```
 
 **出力:**
@@ -380,18 +201,8 @@ ruby bin/trigger from_pr 123
 ```bash
 # staging/auth-service ブランチへ push
 # 最新のマージPR: #124
-# PR #124 のラベル:
-# - deploy:auth-service
-# - deploy:api-gateway  # 他のサービスラベルも存在
-```
-
-**処理:**
-```ruby
-# 1. 環境判定: staging (ブランチパターン staging/* から)
-# 2. PR情報取得: PR #124
-# 3. ラベル取得: deploy:auth-service, deploy:api-gateway
-# 4. マトリックス生成: 全ラベル × staging環境
-# 注意: ブランチ名は staging/auth-service だが、全ラベルがデプロイ対象
+# PR #124 のラベル: deploy:auth-service, deploy:api-gateway
+# 現在のブランチ: staging/auth-service
 ```
 
 **出力:**
@@ -430,6 +241,158 @@ ruby bin/trigger from_pr 123
 }
 ```
 
+## 🛡️ 安全性チェック
+
+```mermaid
+graph TD
+    A[安全性チェック開始] --> B[マージPR確認]
+    B --> C{PR情報存在?}
+
+    C -->|No| D[🚨 DEPLOYMENT STOPPED]
+    C -->|Yes| E[deploy ラベル存在確認]
+
+    E --> F{ラベル存在?}
+    F -->|No| G[🚨 NO LABELS - SKIP]
+    F -->|Yes| H[現在ブランチから環境判定]
+
+    H --> I{環境判定成功?}
+    I -->|No| J[🚨 UNKNOWN ENVIRONMENT]
+    I -->|Yes| K[設定整合性確認]
+
+    K --> L{設定整合性?}
+    L -->|No| M[🚨 CONFIG ERROR]
+    L -->|Yes| N[✅ DEPLOYMENT ALLOWED]
+
+    style D fill:#ffebee
+    style G fill:#fff3e0
+    style J fill:#ffebee
+    style M fill:#ffebee
+    style N fill:#e8f5e8
+```
+
+### 安全性チェック項目
+1. **マージPR必須**: 直接 push ではなく、PR 経由のマージであることを確認
+2. **ラベル存在確認**: `deploy:*` ラベルが存在することを確認
+3. **ブランチパターン**: 設定された正規のブランチパターンに合致することを確認
+4. **設定整合性**: 対象環境の設定が存在することを確認
+
+## 🏗️ アーキテクチャ
+
+### 主要ユースケース
+```ruby
+module UseCases
+  module DeployTrigger
+    class DetermineTargetEnvironment
+      # 現在のブランチ名から対象環境を判定
+      def execute(branch_name:)
+        # GitHub Actions の GITHUB_REF_NAME または git コマンドから取得
+        # workflow-config.yaml の branch_patterns とマッチング
+      end
+    end
+
+    class GetMergedPrLabels
+      # PR番号からラベル取得
+      def execute(pr_number:)
+        # GitHub API から deploy ラベル取得
+      end
+    end
+
+    class ValidateDeploymentSafety
+      # 安全性要件のチェック
+      def execute(deploy_labels:, merged_pr_number:, branch_name:)
+        # マージPR確認
+        # ラベル存在確認
+        # 環境整合性確認
+      end
+    end
+
+    class GenerateMatrix
+      # デプロイメント実行マトリックス生成（マルチスタック対応）
+      def execute(deploy_labels:, target_environment:)
+        # ラベル → DeploymentTarget 変換
+        # Terragrunt と Kubernetes の両スタックを生成
+        # GitHub Actions マトリックス形式で出力
+      end
+    end
+  end
+end
+```
+
+### Controllers
+```ruby
+module Interfaces
+  module Controllers
+    class DeployTriggerController
+      # 環境判定の自動化
+      def trigger_from_pr_labels(pr_number:)
+        # 1. 現在ブランチ名を取得
+        current_branch = get_current_branch_name
+
+        # 2. ブランチ名から環境を自動判定
+        env_result = @determine_target_environment.execute(branch_name: current_branch)
+        target_environment = env_result.target_environment
+
+        # 3. 以降の処理を実行
+      end
+
+      private
+
+      # GitHub Actions 環境での現在ブランチ取得
+      def get_current_branch_name
+        ENV['GITHUB_REF_NAME'] || `git branch --show-current`.strip
+      end
+    end
+  end
+end
+```
+
+## 🎪 GitHub Actions 統合
+
+### ワークフロー設定
+```yaml
+- name: Deploy Trigger
+  run: |
+    # 環境判定はRuby側で自動実行
+    bundle exec ruby deploy-trigger/bin/trigger from_pr 123
+```
+
+### マルチスタック対応
+```yaml
+# Terragrunt スタック
+deploy-terragrunt:
+  strategy:
+    matrix:
+      target: ${{ fromJson(needs.extract-deployment-targets.outputs.targets) }}
+  steps:
+    - name: Check target stack
+      run: |
+        if [ "${{ matrix.target.stack }}" == "terragrunt" ]; then
+          echo "execute=true" >> $GITHUB_OUTPUT
+        else
+          echo "execute=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Execute Terragrunt
+      if: steps.check.outputs.execute == 'true'
+      uses: ./.github/workflows/reusable--terragrunt-executor.yaml
+
+# Kubernetes スタック
+deploy-kubernetes:
+  strategy:
+    matrix:
+      target: ${{ fromJson(needs.extract-deployment-targets.outputs.targets) }}
+  steps:
+    - name: Check target stack
+      run: |
+        if [ "${{ matrix.target.stack }}" == "kubernetes" ]; then
+          echo "execute=true" >> $GITHUB_OUTPUT
+        else
+          echo "execute=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Execute Kubernetes
+      if: steps.check.outputs.execute == 'true'
+      run: echo "Kubernetes deployment for ${{ matrix.target.service }}"
+```
+
 ## 🔧 設定ファイル連携
 
 ### ブランチパターン設定
@@ -446,9 +409,6 @@ branch_patterns:
   production:
     pattern: "production/*"
     target_environment: production
-  custom_deploy:
-    pattern: "deploy/*/*"
-    target_environment: custom  # ブランチ名から環境を抽出
 ```
 
 ### 安全性チェック設定
@@ -523,13 +483,9 @@ strategy:
 # Kubernetes の場合
 - name: Execute Kubernetes Deployment
   if: matrix.target.stack == 'kubernetes'
-  uses: ./.github/workflows/reusable--kubernetes-executor.yaml
-  with:
-    project-name: ${{ matrix.target.service }}
-    environment: ${{ matrix.target.environment }}
-    working-directory: ${{ matrix.target.working_directory }}
-    kubectl-version: ${{ matrix.target.kubectl_version }}
-    kustomize-version: ${{ matrix.target.kustomize_version }}
+  run: |
+    echo "Kubernetes deployment for ${{ matrix.target.service }}:${{ matrix.target.environment }}"
+    echo "Working directory: ${{ matrix.target.working_directory }}"
 ```
 
 ## 🐛 トラブルシューティング
@@ -539,65 +495,48 @@ strategy:
 #### 1. "No merged PR found"
 ```bash
 # 原因: 直接 push で PR 経由でない
-# 解決方法:
-# 1. PR 経由でマージする（推奨）
-# 2. 緊急時は allowed_direct_push_branches に追加
+# 解決方法: PR 経由でマージする
 ```
 
-#### 2. "No deployment labels found"
+#### 2. "No target environment determined"
+```bash
+# 原因: ブランチパターンが設定と一致しない
+# 解決方法:
+# 1. workflow-config.yaml の branch_patterns 確認
+# 2. 現在のブランチ名が正しいパターンか確認
+# 3. GitHub Actions の GITHUB_REF_NAME 環境変数確認
+```
+
+#### 3. "No deployment labels found"
 ```bash
 # 原因: PR にデプロイラベルがない
 # 解決方法:
 # 1. Label Dispatcher の動作確認
 # 2. PR にラベルを手動追加
-# 3. ファイル変更が正しく検知されているか確認
 ```
 
-#### 3. "Safety validation failed"
+#### 4. "Environment configuration not found"
 ```bash
-# 原因: 安全性チェックに引っかかった
+# 原因: 判定された環境が workflow-config.yaml に未定義
 # 解決方法:
-# 1. ブランチパターンの設定確認
-# 2. 環境設定の確認
-# 3. safety_checks 設定の見直し
-```
-
-#### 4. "Working directory does not exist"
-```bash
-# 原因: ディレクトリ規約の設定ミス
-# 解決方法:
-# 1. workflow-config.yaml の directory_conventions 確認
-# 2. サービス固有の directory_conventions 確認
-# 3. 実際のディレクトリ構造との整合性確認
+# 1. 環境設定の追加
+# 2. ブランチパターンの見直し
 ```
 
 ### デバッグ手順
 ```bash
-# ステップ1: 環境変数確認
-bundle exec ruby deploy-trigger/bin/trigger validate_env
+# ステップ1: 現在ブランチの確認
+echo $GITHUB_REF_NAME  # GitHub Actions 環境
+git branch --show-current  # ローカル環境
 
-# ステップ2: 設定ファイル確認
+# ステップ2: 環境判定のテスト
+bundle exec ruby deploy-trigger/bin/trigger debug $CURRENT_BRANCH
+
+# ステップ3: 設定ファイル確認
 bundle exec ruby config-manager/bin/config-manager validate
 
-# ステップ3: ステップバイステップデバッグ
-bundle exec ruby deploy-trigger/bin/trigger debug staging/auth-service
-
-# ステップ4: GitHub API 接続確認
-curl -H "Authorization: token $GITHUB_TOKEN" \
-  https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/123
-```
-
-### ログ分析
-```bash
-# 詳細ログ出力
-export DEBUG=true
-bundle exec ruby deploy-trigger/bin/trigger from_pr 123 2>&1 | tee debug.log
-
-# 重要なログパターン
-grep "Target environment" debug.log
-grep "Deploy labels" debug.log
-grep "Safety check" debug.log
-grep "Matrix generation" debug.log
+# ステップ4: ステップバイステップテスト
+bundle exec ruby deploy-trigger/bin/trigger test $CURRENT_BRANCH
 ```
 
 ## 🔧 カスタマイズ
@@ -617,115 +556,37 @@ branch_patterns:
     auto_cleanup: true
 ```
 
-### 独自安全性チェック追加
+### 環境判定ロジックのカスタマイズ
 ```ruby
-# ValidateDeploymentSafety を拡張
-class ValidateDeploymentSafety
+# DetermineTargetEnvironment を拡張
+class DetermineTargetEnvironment
   private
 
-  def validate_custom_requirements(deploy_labels, branch_name)
-    # 組織固有の安全性要件
-    if branch_name.include?('production') && deploy_labels.length > 3
-      return {
-        check: 'production_deploy_limit',
-        passed: false,
-        message: 'Production deploys limited to 3 services at once'
-      }
-    end
-
-    {
-      check: 'production_deploy_limit',
-      passed: true,
-      message: 'Production deploy limit check passed'
-    }
-  end
-end
-```
-
-### 環境固有のカスタマイズ
-```ruby
-# GenerateMatrix を拡張
-class GenerateMatrix
-  private
-
-  def customize_deployment_target(target, environment)
-    case environment
-    when 'production'
-      # 本番環境では追加の設定
-      target.deployment_strategy = 'blue_green'
-      target.health_check_timeout = 300
-    when 'staging'
-      # ステージング環境では軽量設定
-      target.resource_limits = { cpu: '500m', memory: '1Gi' }
-    end
-
-    target
-  end
-end
-```
-
-## 🔬 テスト
-
-### 単体テスト
-```ruby
-# RSpec による単体テスト例
-RSpec.describe UseCases::DeployTrigger::DetermineTargetEnvironment do
-  let(:config_client) { instance_double(Infrastructure::ConfigClient) }
-  let(:use_case) { described_class.new(config_client: config_client) }
-
-  describe '#execute' do
-    context 'with staging branch' do
-      let(:branch_name) { 'staging/auth-service' }
-
-      it 'determines staging environment' do
-        allow(config_client).to receive(:load_workflow_config).and_return(config)
-
-        result = use_case.execute(branch_name: branch_name)
-
-        expect(result.success?).to be true
-        expect(result.target_environment).to eq('staging')
-      end
-    end
-
-    context 'with unknown branch pattern' do
-      let(:branch_name) { 'unknown/branch' }
-
-      it 'fails with error' do
-        result = use_case.execute(branch_name: branch_name)
-
-        expect(result.failure?).to be true
-        expect(result.error_message).to include('No target environment determined')
-      end
+  def determine_environment_from_branch(branch_name, config)
+    case branch_name
+    when /^user\/([^\/]+)\/.*/
+      # ユーザー専用環境: user/alice/feature-x → alice-env
+      "user-#{$1}"
+    when /^experiment\/([^\/]+)$/
+      # 実験環境: experiment/ab-test → experiment
+      "experiment"
+    else
+      # デフォルトロジック
+      default_environment_determination(branch_name, config)
     end
   end
 end
-```
-
-### 統合テスト
-```bash
-# GitHub API モックを使用した統合テスト
-bundle exec rspec spec/integration/deploy_trigger_spec.rb
-
-# VCR を使用したAPI呼び出しテスト
-bundle exec rspec spec/integration/github_api_integration_spec.rb
-```
-
-### エンドツーエンドテスト
-```bash
-# 実際のワークフロー模擬
-bundle exec rspec spec/e2e/deployment_workflow_spec.rb
 ```
 
 ## 📈 パフォーマンス考慮事項
 
 ### API呼び出し最適化
 ```ruby
-# GitHub API の呼び出し回数削減
+# GitHub API の効率的な使用
 def get_pr_info_with_labels(pr_number)
   # 1回のAPI呼び出しで PR情報とラベルを取得
   pr_info = github_client.pull_request(repository, pr_number)
   labels = pr_info.labels.map(&:name)
-
   { pr_info: pr_info, labels: labels }
 end
 ```
@@ -747,7 +608,7 @@ strategy:
   uses: ruby/setup-ruby@v1
   with:
     bundler-cache: true
-    working-directory: .github/scripts/shared
+    working-directory: .github/scripts
 ```
 
 ## 🔄 継続的改善
@@ -757,12 +618,9 @@ strategy:
 # デプロイメント実行時間の記録
 def execute_with_metrics(deploy_labels:)
   start_time = Time.now
-
   result = execute(deploy_labels: deploy_labels)
-
   execution_time = Time.now - start_time
   record_metric('deploy_trigger_execution_time', execution_time)
-
   result
 end
 ```
@@ -818,8 +676,54 @@ def log_deployment_action(action, metadata)
 end
 ```
 
----
+## 🔬 テスト
 
-Deploy Trigger により、安全で確実なデプロイメント戦略が完全に自動化されます。マージされた PR のラベル情報を基に、適切な環境への正確なデプロイメントを実現し、人的エラーを最小限に抑えます。
+### 単体テスト
+```ruby
+# RSpec による単体テスト例
+RSpec.describe UseCases::DeployTrigger::DetermineTargetEnvironment do
+  let(:config_client) { instance_double(Infrastructure::ConfigClient) }
+  let(:use_case) { described_class.new(config_client: config_client) }
 
-問題が発生した場合は、上記のトラブルシューティング手順に従って原因を特定し、適切な解決策を実施してください。
+  describe '#execute' do
+    context 'with staging branch' do
+      let(:branch_name) { 'staging/auth-service' }
+
+      it 'determines staging environment' do
+        allow(config_client).to receive(:load_workflow_config).and_return(config)
+
+        result = use_case.execute(branch_name: branch_name)
+
+        expect(result.success?).to be true
+        expect(result.target_environment).to eq('staging')
+      end
+    end
+
+    context 'with unknown branch pattern' do
+      let(:branch_name) { 'unknown/branch' }
+
+      it 'fails with error' do
+        result = use_case.execute(branch_name: branch_name)
+
+        expect(result.failure?).to be true
+        expect(result.error_message).to include('No target environment determined')
+      end
+    end
+  end
+end
+```
+
+### 統合テスト
+```bash
+# GitHub API モックを使用した統合テスト
+bundle exec rspec spec/integration/deploy_trigger_spec.rb
+
+# VCR を使用したAPI呼び出しテスト
+bundle exec rspec spec/integration/github_api_integration_spec.rb
+```
+
+### エンドツーエンドテスト
+```bash
+# 実際のワークフロー模擬
+bundle exec rspec spec/e2e/deployment_workflow_spec.rb
+```

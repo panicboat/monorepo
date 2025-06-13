@@ -1,5 +1,5 @@
 # Use case for retrieving labels from merged PR
-# Simplified version - PR number is provided by GitHub Actions
+# Also retrieves branch information from GitHub API
 
 module UseCases
   module DeployTrigger
@@ -9,10 +9,13 @@ module UseCases
       end
 
       # Execute merged PR label retrieval with known PR number or branch search
-      def execute(pr_number: nil, branch_name: nil, commit_sha: nil)
+      def execute(pr_number: nil, branch_name: nil)
         if pr_number
-          # Direct PR number provided (from pull_request event or detected merged PR)
-          deploy_labels_strings = @github_client.get_deploy_labels(pr_number)
+          # Get PR information including branch name and labels
+          pr_info = @github_client.get_pr_info(pr_number)
+          deploy_labels_strings = pr_info[:labels]
+          source_branch = pr_info[:head_ref]
+
           deploy_labels = deploy_labels_strings.map { |label| Entities::DeployLabel.new(label) }.select(&:valid?)
 
           if deploy_labels.empty?
@@ -24,10 +27,11 @@ module UseCases
           return Entities::Result.success(
             merged_pr_number: pr_number,
             deploy_labels: deploy_labels,
-            raw_labels: deploy_labels_strings
+            raw_labels: deploy_labels_strings,
+            source_branch: source_branch
           )
         else
-          # Search for merged PR using branch and commit (existing logic)
+          # Search for merged PR using branch (existing logic)
           # TODO: Implement branch-based PR search if needed
           Entities::Result.failure(error_message: "Branch-based PR search not implemented yet")
         end
