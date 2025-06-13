@@ -45,7 +45,7 @@ jobs:
         with:
           ruby-version: '3.4'
           bundler-cache: true
-          working-directory: .github/scripts/shared
+          working-directory: .github/scripts
 
       - name: Get merged PR information
         if: github.event_name == 'push'
@@ -77,9 +77,9 @@ jobs:
       - name: Deploy Trigger - Extract targets from PR labels
         if: github.event_name == 'pull_request'
         id: extract-labels
-        working-directory: .github/scripts/shared
+        working-directory: .github/scripts
         run: |
-          bundle exec ruby ../deploy-trigger/bin/trigger from_pr ${{ github.event.pull_request.number }}
+          bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ github.event.pull_request.number }}
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -87,12 +87,12 @@ jobs:
       - name: Deploy Trigger - Extract targets from branch push
         if: github.event_name == 'push'
         id: extract-branch
-        working-directory: .github/scripts/shared
+        working-directory: .github/scripts
         run: |
           # Get merged PR information first
           if [ -n "${{ steps.get-merged-pr.outputs.number }}" ]; then
             echo "Found merged PR #${{ steps.get-merged-pr.outputs.number }}"
-            bundle exec ruby ../deploy-trigger/bin/trigger from_pr ${{ steps.get-merged-pr.outputs.number }} --target-environment="${TARGET_ENV}"
+            bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ steps.get-merged-pr.outputs.number }} --target-environment="${TARGET_ENV}"
           else
             echo "::error::No merged PR found - deployment stopped"
             exit 1

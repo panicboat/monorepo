@@ -1,1 +1,1 @@
-# GitHub OIDC Auth Terragrunt
+# GitHub OIDC Auth

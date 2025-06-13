@@ -15,7 +15,7 @@ require 'colorize' unless ENV['GITHUB_ACTIONS']
   'infrastructure/**/*.rb', # Infrastructure layer
   'interfaces/**/*.rb'     # Interface layer (outermost)
 ].each do |pattern|
-  Dir[File.expand_path("../#{pattern}", __dir__)].sort.each { |file| require file }
+  Dir[File.expand_path("#{pattern}", __dir__)].sort.each { |file| require file }
 end
 
 # Loading completion log (development only)
