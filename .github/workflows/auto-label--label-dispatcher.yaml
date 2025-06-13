@@ -35,12 +35,12 @@ jobs:
         with:
           ruby-version: '3.4'
           bundler-cache: true
-          working-directory: .github/scripts/shared
+          working-directory: .github/scripts
 
       - name: Dispatch labels with label-dispatcher
-        working-directory: .github/scripts/shared
+        working-directory: .github/scripts
         run: |
-          bundle exec ruby ../label-dispatcher/bin/dispatcher dispatch ${{ github.event.pull_request.number }} \
+          bundle exec ruby label-dispatcher/bin/dispatcher dispatch ${{ github.event.pull_request.number }} \
             --base-ref=${{ github.event.pull_request.base.sha }} \
             --head-ref=${{ github.event.pull_request.head.sha }}
         env:
