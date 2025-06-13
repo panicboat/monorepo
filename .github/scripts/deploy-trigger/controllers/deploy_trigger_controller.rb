@@ -20,7 +20,7 @@ module Interfaces
         @presenter = presenter
       end
 
-      # Trigger deployment from branch push (main workflow)
+      # Trigger deployment from branch push
       def trigger_from_branch(branch_name:, commit_sha: nil)
         commit_sha ||= get_current_commit_sha
 
@@ -76,7 +76,7 @@ module Interfaces
         )
       end
 
-      # Trigger deployment from PR labels (alternative workflow)
+      # Trigger deployment from PR labels
       def trigger_from_pr_labels(pr_number:, target_environment: nil)
         # Get labels from specific PR
         pr_result = get_pr_labels_directly(pr_number)
