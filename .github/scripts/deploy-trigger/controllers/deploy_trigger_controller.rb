@@ -1,5 +1,4 @@
 # Controller for deploy trigger functionality
-# Orchestrates the complete deployment workflow based on Issue #107 strategy
 
 module Interfaces
   module Controllers

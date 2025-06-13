@@ -27,12 +27,42 @@ module Infrastructure
         labels: deploy_labels,
         head_ref: pr.head.ref,
         base_ref: pr.base.ref,
+        head_sha: pr.head.sha,
+        base_sha: pr.base.sha,
         title: pr.title,
         state: pr.state,
-        merged: pr.merged
+        merged: pr.merged,
+        number: pr.number,
+        html_url: pr.html_url
       }
     rescue Octokit::Error => error
       raise "Failed to get PR info: #{error.message}"
+    end
+
+    # Get PR information with file changes
+    def get_pr_info_with_files(pr_number)
+      pr_info = get_pr_info(pr_number)
+
+      # Get changed files
+      files = @client.pull_request_files(@repository, pr_number)
+      changed_files = files.map(&:filename)
+
+      pr_info.merge({
+        changed_files: changed_files,
+        files_count: files.length,
+        additions: files.sum(&:additions),
+        deletions: files.sum(&:deletions)
+      })
+    rescue Octokit::Error => error
+      raise "Failed to get PR files: #{error.message}"
+    end
+
+    # Get commit SHA from reference
+    def get_commit_sha(ref)
+      reference = @client.ref(@repository, "heads/#{ref}")
+      reference.object.sha
+    rescue Octokit::Error => error
+      raise "Failed to get commit SHA for ref #{ref}: #{error.message}"
     end
 
     # Add a label to a PR

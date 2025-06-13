@@ -1,5 +1,4 @@
 # Use case for determining target environment from branch name
-# Implements branch-to-environment mapping logic from Issue #107
 
 module UseCases
   module DeployTrigger
@@ -40,7 +39,6 @@ module UseCases
 
       private
 
-      # Determine target environment from branch name using Issue #107 strategy
       def determine_environment_from_branch(branch_name, config)
         # Check configured branch patterns first
         branch_patterns = config.raw_config['branch_patterns'] || {}
@@ -56,7 +54,6 @@ module UseCases
           end
         end
 
-        # Fallback to default branch mapping from Issue #107
         case branch_name
         when /^production\/(.+)/
           'production'

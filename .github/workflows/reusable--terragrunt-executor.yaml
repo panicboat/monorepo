@@ -192,7 +192,7 @@ jobs:
             [View full workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
             ---
-            *Triggered by workflow automation system - [Issue #107 deployment strategy](https://github.com/panicboat/monorepo/issues/107)*
+            *Triggered by workflow automation system*
           comment-tag: 'terragrunt-${{ inputs.action-type }}-${{ inputs.environment }}-${{ inputs.project-name }}'
           mode: upsert
           pr-number: ${{ steps.pr-info.outputs.number }}

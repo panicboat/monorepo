@@ -40,9 +40,8 @@ jobs:
       - name: Dispatch labels with label-dispatcher
         working-directory: .github/scripts
         run: |
-          bundle exec ruby label-dispatcher/bin/dispatcher dispatch ${{ github.event.pull_request.number }} \
-            --base-ref=${{ github.event.pull_request.base.sha }} \
-            --head-ref=${{ github.event.pull_request.head.sha }}
+          # Automatically fetch base and head ref from GitHub API
+          bundle exec ruby label-dispatcher/bin/dispatcher dispatch ${{ github.event.pull_request.number }}
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
