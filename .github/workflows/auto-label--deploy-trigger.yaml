@@ -55,25 +55,6 @@ jobs:
           github_token: ${{ steps.app-token.outputs.token }}
         continue-on-error: true
 
-      - name: Determine target environment
-        if: github.event_name == 'push'
-        id: determine-env
-        run: |
-          case "${{ github.ref_name }}" in
-            "develop"|"main")
-              echo "environment=develop" >> $GITHUB_OUTPUT
-              ;;
-            staging/*)
-              echo "environment=staging" >> $GITHUB_OUTPUT
-              ;;
-            production/*)
-              echo "environment=production" >> $GITHUB_OUTPUT
-              ;;
-            *)
-              echo "environment=unknown" >> $GITHUB_OUTPUT
-              ;;
-          esac
-
       - name: Deploy Trigger - Extract targets from PR labels
         if: github.event_name == 'pull_request'
         id: extract-labels
@@ -92,7 +73,8 @@ jobs:
           # Get merged PR information first
           if [ -n "${{ steps.get-merged-pr.outputs.number }}" ]; then
             echo "Found merged PR #${{ steps.get-merged-pr.outputs.number }}"
-            bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ steps.get-merged-pr.outputs.number }} --target-environment="${TARGET_ENV}"
+            # Ruby will determine target environment from current branch
+            bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ steps.get-merged-pr.outputs.number }}
           else
             echo "::error::No merged PR found - deployment stopped"
             exit 1
@@ -100,7 +82,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          TARGET_ENV: ${{ steps.determine-env.outputs.environment }}
 
       - name: Set final outputs
         id: extract
@@ -127,22 +108,81 @@ jobs:
       matrix:
         target: ${{ fromJson(needs.extract-deployment-targets.outputs.targets) }}
       fail-fast: false
-    uses: ./.github/workflows/reusable--terragrunt-executor.yaml
-    secrets: inherit
-    with:
-      project-name: ${{ matrix.target.service }}
-      environment: ${{ matrix.target.environment }}
-      action-type: ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
-      plan-iam-role: ${{ matrix.target.iam_role_plan }}
-      apply-iam-role: ${{ matrix.target.iam_role_apply }}
-      aws-region: ${{ matrix.target.aws_region }}
-      working-directory: ${{ matrix.target.working_directory }}
-      terraform-version: ${{ matrix.target.terraform_version }}
-      terragrunt-version: ${{ matrix.target.terragrunt_version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check target stack
+        id: check
+        run: |
+          if [ "${{ matrix.target.stack }}" == "terragrunt" ]; then
+            echo "execute=true" >> $GITHUB_OUTPUT
+            echo "✅ Processing terragrunt target: ${{ matrix.target.service }}:${{ matrix.target.environment }}"
+          else
+            echo "execute=false" >> $GITHUB_OUTPUT
+            echo "⏭️ Skipping ${{ matrix.target.service }}:${{ matrix.target.environment }} (stack: ${{ matrix.target.stack }})"
+          fi
+
+      - name: Checkout code
+        if: steps.check.outputs.execute == 'true'
+        uses: actions/checkout@v4
+
+      - name: Execute Terragrunt deployment
+        if: steps.check.outputs.execute == 'true'
+        uses: ./.github/workflows/reusable--terragrunt-executor.yaml
+        with:
+          project-name: ${{ matrix.target.service }}
+          environment: ${{ matrix.target.environment }}
+          action-type: ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
+          plan-iam-role: ${{ matrix.target.iam_role_plan }}
+          apply-iam-role: ${{ matrix.target.iam_role_apply }}
+          aws-region: ${{ matrix.target.aws_region }}
+          working-directory: ${{ matrix.target.working_directory }}
+          terraform-version: ${{ matrix.target.terraform_version }}
+          terragrunt-version: ${{ matrix.target.terragrunt_version }}
+
+  deploy-kubernetes:
+    name: 'Deploy Kubernetes (${{ matrix.target.service }}:${{ matrix.target.environment }})'
+    needs: extract-deployment-targets
+    if: needs.extract-deployment-targets.outputs.has_targets == 'true'
+    strategy:
+      matrix:
+        target: ${{ fromJson(needs.extract-deployment-targets.outputs.targets) }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check target stack
+        id: check
+        run: |
+          if [ "${{ matrix.target.stack }}" == "kubernetes" ]; then
+            echo "execute=true" >> $GITHUB_OUTPUT
+            echo "✅ Processing kubernetes target: ${{ matrix.target.service }}:${{ matrix.target.environment }}"
+          else
+            echo "execute=false" >> $GITHUB_OUTPUT
+            echo "⏭️ Skipping ${{ matrix.target.service }}:${{ matrix.target.environment }} (stack: ${{ matrix.target.stack }})"
+          fi
+
+      - name: Checkout code
+        if: steps.check.outputs.execute == 'true'
+        uses: actions/checkout@v4
+
+      - name: Execute Kubernetes deployment
+        if: steps.check.outputs.execute == 'true'
+        run: |
+          echo "🚧 Kubernetes deployment for ${{ matrix.target.service }}:${{ matrix.target.environment }}"
+          echo "Working directory: ${{ matrix.target.working_directory }}"
+          echo "Stack: ${{ matrix.target.stack }}"
+          echo "kubectl version: ${{ matrix.target.kubectl_version || '1.28.0' }}"
+          echo "kustomize version: ${{ matrix.target.kustomize_version || '5.0.0' }}"
+          echo ""
+          echo "This will be implemented with kubernetes executor workflow"
+          echo "Future implementation:"
+          echo "  - Setup kubectl and kustomize"
+          echo "  - Run kustomize build"
+          echo "  - Apply manifests to cluster"
+          echo "  - Verify deployment health"
 
   deployment-summary:
     name: 'Deployment Summary'
-    needs: [extract-deployment-targets, deploy-terragrunt]
+    needs: [extract-deployment-targets, deploy-terragrunt, deploy-kubernetes]
     if: always() && needs.extract-deployment-targets.outputs.has_targets == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -152,10 +192,64 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Target Environment**: ${{ needs.extract-deployment-targets.outputs.target_environment }}" >> $GITHUB_STEP_SUMMARY
           echo "**Safety Status**: ${{ needs.extract-deployment-targets.outputs.safety_status }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Event**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Event Type**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Deployment Results**: " >> $GITHUB_STEP_SUMMARY
 
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "**Merged PR**: #${{ needs.extract-deployment-targets.outputs.merged_pr_number || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Pull Request**: #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Show all deployment targets with status
+          echo "### 📋 Deployment Targets" >> $GITHUB_STEP_SUMMARY
           TARGETS='${{ needs.extract-deployment-targets.outputs.targets }}'
-          echo "$TARGETS" | jq -r '.[] | "- \(.service):\(.environment) → `\(.working_directory)`"' >> $GITHUB_STEP_SUMMARY
+
+          # Count targets by stack
+          TERRAGRUNT_COUNT=$(echo "$TARGETS" | jq '[.[] | select(.stack == "terragrunt")] | length')
+          KUBERNETES_COUNT=$(echo "$TARGETS" | jq '[.[] | select(.stack == "kubernetes")] | length')
+          TOTAL_COUNT=$(echo "$TARGETS" | jq 'length')
+
+          echo "**Total Targets**: $TOTAL_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏗️ Terragrunt: $TERRAGRUNT_COUNT targets" >> $GITHUB_STEP_SUMMARY
+          echo "- ☸️ Kubernetes: $KUBERNETES_COUNT targets" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # List all targets
+          echo "### 📊 Target Details" >> $GITHUB_STEP_SUMMARY
+          echo "$TARGETS" | jq -r '.[] | "- **\(.service):\(.environment)** (\(.stack)) → `\(.working_directory)`"' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Show deployment results by stack
+          echo "### 📈 Deployment Results" >> $GITHUB_STEP_SUMMARY
+
+          TERRAGRUNT_RESULT="${{ needs.deploy-terragrunt.result }}"
+          KUBERNETES_RESULT="${{ needs.deploy-kubernetes.result }}"
+
+          case "$TERRAGRUNT_RESULT" in
+            "success") TERRAGRUNT_ICON="✅" ;;
+            "failure") TERRAGRUNT_ICON="❌" ;;
+            "cancelled") TERRAGRUNT_ICON="⏹️" ;;
+            "skipped") TERRAGRUNT_ICON="⏭️" ;;
+            *) TERRAGRUNT_ICON="❓" ;;
+          esac
+
+          case "$KUBERNETES_RESULT" in
+            "success") KUBERNETES_ICON="✅" ;;
+            "failure") KUBERNETES_ICON="❌" ;;
+            "cancelled") KUBERNETES_ICON="⏹️" ;;
+            "skipped") KUBERNETES_ICON="⏭️" ;;
+            *) KUBERNETES_ICON="❓" ;;
+          esac
+
+          echo "- $TERRAGRUNT_ICON **Terragrunt**: $TERRAGRUNT_RESULT" >> $GITHUB_STEP_SUMMARY
+          echo "- $KUBERNETES_ICON **Kubernetes**: $KUBERNETES_RESULT" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Add workflow link
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "📋 [View detailed logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "*Automated deployment via [Issue #107 strategy](https://github.com/panicboat/monorepo/issues/107)*" >> $GITHUB_STEP_SUMMARY

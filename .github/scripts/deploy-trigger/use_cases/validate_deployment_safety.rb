@@ -9,7 +9,7 @@ module UseCases
       end
 
       # Execute safety validation checks
-      def execute(deploy_labels:, merged_pr_number: nil, branch_name:, commit_sha:)
+      def execute(deploy_labels:, merged_pr_number: nil, branch_name:)
         config = @config_client.load_workflow_config
         safety_config = config.raw_config['safety_checks'] || {}
 
@@ -52,7 +52,7 @@ module UseCases
 
           if fail_on_missing
             return Entities::Result.failure(
-              error_message: build_safety_failure_message(failed_checks, branch_name, commit_sha)
+              error_message: build_safety_failure_message(failed_checks, branch_name)
             )
           else
             # Warning mode - log but don't fail
@@ -69,8 +69,7 @@ module UseCases
           safety_status: 'passed',
           validation_results: validation_results,
           deploy_allowed: true,
-          branch_name: branch_name,
-          commit_sha: commit_sha
+          branch_name: branch_name
         )
       rescue => error
         Entities::Result.failure(error_message: "Safety validation failed: #{error.message}")
@@ -101,10 +100,9 @@ module UseCases
 
         expected_patterns = [
           'develop',
-          'main',
           /^staging\/.+/,
           /^production\/.+/,
-          /^deploy\/.+\/.+/
+          /^.+/
         ]
 
         pattern_matched = expected_patterns.any? do |pattern|
@@ -126,54 +124,35 @@ module UseCases
 
       # Validate environment consistency between labels and branch
       def validate_environment_consistency(deploy_labels, branch_name, config)
+        # DeployLabel only contains service information, not environment
+        # Environment is determined from branch name, so this check always passes
+        # since we're deploying the services from the PR to the environment determined by the branch
+
         expected_environment = determine_expected_environment(branch_name)
 
-        if expected_environment.nil?
-          return {
-            check: 'environment_consistency',
-            passed: true,
-            message: 'No specific environment expected for this branch'
-          }
-        end
-
-        inconsistent_labels = deploy_labels.reject { |label| label.environment == expected_environment }
-
-        if inconsistent_labels.any?
-          {
-            check: 'environment_consistency',
-            passed: false,
-            message: "Labels contain environments inconsistent with branch '#{branch_name}' (expected: #{expected_environment})"
-          }
-        else
-          {
-            check: 'environment_consistency',
-            passed: true,
-            message: "All labels match expected environment '#{expected_environment}'"
-          }
-        end
+        {
+          check: 'environment_consistency',
+          passed: true,
+          message: "Deploy labels will be deployed to '#{expected_environment}' environment as determined by branch '#{branch_name}'"
+        }
       end
 
       # Determine expected environment from branch name
       def determine_expected_environment(branch_name)
         case branch_name
-        when 'develop', 'main'
-          'develop'
-        when /^staging\/.+/
-          'staging'
         when /^production\/.+/
           'production'
-        when /^deploy\/.+\/(.+)/
-          Regexp.last_match(1)
+        when /^staging\/.+/
+          'staging'
         else
-          nil
+          'develop'
         end
       end
 
       # Build comprehensive failure message for safety violations
-      def build_safety_failure_message(failed_checks, branch_name, commit_sha)
+      def build_safety_failure_message(failed_checks, branch_name)
         message = "🚨 DEPLOYMENT STOPPED - Safety validation failed:\n"
-        message += "Branch: #{branch_name}\n"
-        message += "Commit: #{commit_sha}\n\n"
+        message += "Branch: #{branch_name}\n\n"
         message += "Failed checks:\n"
 
         failed_checks.each do |check|

@@ -16,6 +16,25 @@ module Infrastructure
       raise "Failed to get PR labels: #{error.message}"
     end
 
+    # Get PR information including labels and branch name
+    def get_pr_info(pr_number)
+      pr = @client.pull_request(@repository, pr_number)
+      labels = @client.labels_for_issue(@repository, pr_number)
+
+      deploy_labels = labels.map(&:name).select { |name| name.start_with?('deploy:') }
+
+      {
+        labels: deploy_labels,
+        head_ref: pr.head.ref,
+        base_ref: pr.base.ref,
+        title: pr.title,
+        state: pr.state,
+        merged: pr.merged
+      }
+    rescue Octokit::Error => error
+      raise "Failed to get PR info: #{error.message}"
+    end
+
     # Add a label to a PR
     def add_label_to_pr(pr_number, label)
       @client.add_labels_to_an_issue(@repository, pr_number, [label])

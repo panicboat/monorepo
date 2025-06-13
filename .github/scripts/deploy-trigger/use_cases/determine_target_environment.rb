@@ -58,17 +58,12 @@ module UseCases
 
         # Fallback to default branch mapping from Issue #107
         case branch_name
-        when 'develop', 'main'
-          'develop'
-        when /^staging\/(.+)/
-          'staging'
         when /^production\/(.+)/
           'production'
-        when /^deploy\/(.+)\/(.+)/
-          # Custom deployment pattern: deploy/{service}/{environment}
-          Regexp.last_match(2)
+        when /^staging\/(.+)/
+          'staging'
         else
-          nil
+          'develop'
         end
       end
 
@@ -92,20 +87,12 @@ module UseCases
       # Determine deployment pattern type for logging/monitoring
       def determine_deployment_pattern(branch_name)
         case branch_name
-        when 'develop', 'main'
-          'all_services_develop'
-        when /^staging\/(.+)/
-          'single_service_staging'
         when /^production\/(.+)/
           'single_service_production'
-        when /^deploy\/(.+)\/(.+)/
-          'custom_service_environment'
-        when /^hotfix\/.+/
-          'hotfix_deployment'
-        when /^release\/.+/
-          'release_deployment'
+        when /^staging\/(.+)/
+          'single_service_staging'
         else
-          'unknown_pattern'
+          'all_services_develop'
         end
       end
     end
