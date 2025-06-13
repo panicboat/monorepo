@@ -22,8 +22,24 @@ module Interfaces
       end
 
       # Present deployment matrix results
-      def present_deployment_matrix(deployment_targets:, deploy_labels:)
+      def present_deployment_matrix(
+        deployment_targets:,
+        deploy_labels:,
+        branch_name: nil,
+        target_environment: nil,
+        merged_pr_number: nil,
+        pr_number: nil,
+        safety_status: nil
+      )
         puts "🚀 Deployment Matrix".colorize(:green)
+
+        # Show context information
+        puts "Target Environment: #{target_environment}" if target_environment
+        puts "Branch: #{branch_name}" if branch_name
+        puts "PR Number: ##{merged_pr_number || pr_number}" if merged_pr_number || pr_number
+        puts "Safety Status: #{safety_status}" if safety_status
+        puts ""
+
         puts "Deploy Labels: #{deploy_labels.map(&:to_s).join(', ')}"
         puts "Deployment Targets: #{deployment_targets.length}"
 
@@ -32,6 +48,7 @@ module Interfaces
           puts "    IAM Plan Role: #{target.iam_role_plan}"
           puts "    IAM Apply Role: #{target.iam_role_apply}"
           puts "    AWS Region: #{target.aws_region}"
+          puts ""
         end
       end
 

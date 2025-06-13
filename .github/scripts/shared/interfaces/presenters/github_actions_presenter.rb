@@ -27,7 +27,15 @@ module Interfaces
       end
 
       # Present deployment matrix for GitHub Actions
-      def present_deployment_matrix(deployment_targets:, deploy_labels:, branch_name: nil, target_environment: nil, merged_pr_number: nil, safety_status: nil)
+      def present_deployment_matrix(
+        deployment_targets:,
+        deploy_labels:,
+        branch_name: nil,
+        target_environment: nil,
+        merged_pr_number: nil,
+        pr_number: nil,
+        safety_status: nil
+      )
         matrix_items = deployment_targets.map(&:to_matrix_item)
 
         set_environment_variables(
@@ -36,7 +44,7 @@ module Interfaces
           'DEPLOY_LABELS' => deploy_labels.map(&:to_s).to_json,
           'TARGET_ENVIRONMENT' => target_environment,
           'BRANCH_NAME' => branch_name,
-          'MERGED_PR_NUMBER' => merged_pr_number,
+          'MERGED_PR_NUMBER' => merged_pr_number || pr_number,
           'SAFETY_STATUS' => safety_status
         )
 
@@ -50,7 +58,8 @@ module Interfaces
         puts "Targets: #{deployment_targets.length} deployment(s)"
         puts "Target Environment: #{target_environment}" if target_environment
         puts "Branch: #{branch_name}" if branch_name
-        puts "Merged PR: ##{merged_pr_number}" if merged_pr_number
+        puts "PR: ##{merged_pr_number || pr_number}" if merged_pr_number || pr_number
+
         deployment_targets.each do |target|
           puts "  #{target.service}:#{target.environment}:#{target.stack} -> #{target.working_directory}"
         end

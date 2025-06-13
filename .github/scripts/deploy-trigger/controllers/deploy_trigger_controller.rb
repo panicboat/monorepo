@@ -59,7 +59,10 @@ module Interfaces
         return @presenter.present_error(safety_result) if safety_result.failure?
 
         # Step 5: Generate deployment matrix
-        matrix_result = @generate_matrix.execute(deploy_labels: filtered_labels)
+        matrix_result = @generate_matrix.execute(
+          deploy_labels: deploy_labels,
+          target_environment: target_environment
+        )
         return @presenter.present_error(matrix_result) if matrix_result.failure?
 
         # Present results
@@ -81,33 +84,27 @@ module Interfaces
 
         deploy_labels = pr_result.deploy_labels
 
-        # If no target environment specified, try to determine from labels
+        # If no target environment specified, this is an error for this method
         if target_environment.nil?
-          target_environment = infer_environment_from_labels(deploy_labels)
-          if target_environment.nil?
-            return @presenter.present_error(
-              Entities::Result.failure(error_message: "Cannot determine target environment from PR labels")
+          return @presenter.present_error(
+            Entities::Result.failure(
+              error_message: "Target environment must be specified when using from_pr command. " \
+                            "Use --target-environment option or determine environment from branch context."
             )
-          end
+          )
         end
 
-        # Filter labels by target environment
-        filter_result = @filter_labels_by_environment.execute(
+        # Generate deployment matrix with target environment
+        matrix_result = @generate_matrix.execute(
           deploy_labels: deploy_labels,
           target_environment: target_environment
         )
-        return @presenter.present_error(filter_result) if filter_result.failure?
-
-        filtered_labels = filter_result.filtered_labels
-
-        # Generate deployment matrix
-        matrix_result = @generate_matrix.execute(deploy_labels: filtered_labels)
         return @presenter.present_error(matrix_result) if matrix_result.failure?
 
         # Present results
         @presenter.present_deployment_matrix(
           deployment_targets: matrix_result.deployment_targets,
-          deploy_labels: filtered_labels,
+          deploy_labels: deploy_labels,
           pr_number: pr_number,
           target_environment: target_environment
         )
@@ -160,22 +157,19 @@ module Interfaces
 
       # Get PR labels directly without searching
       def get_pr_labels_directly(pr_number)
-        # This would use the GitHub client directly
-        # For now, return a placeholder result
-        Entities::Result.failure(error_message: "Direct PR label retrieval not implemented yet")
+        unless @get_merged_pr_labels
+          return Entities::Result.failure(error_message: "GitHub client not available")
+        end
+
+        # Use existing use case with direct PR number
+        @get_merged_pr_labels.execute(pr_number: pr_number)
       end
 
       # Infer target environment from label patterns
       def infer_environment_from_labels(deploy_labels)
-        environments = deploy_labels.map(&:environment).uniq
-
-        # If all labels are for the same environment, use that
-        if environments.length == 1
-          environments.first
-        else
-          # Multiple environments - cannot infer
-          nil
-        end
+        # DeployLabel only contains service information, not environment
+        # Environment should be determined from branch name or explicitly provided
+        nil
       end
     end
   end
