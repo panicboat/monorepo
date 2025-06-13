@@ -292,37 +292,37 @@ end
 ### 基本コマンド
 ```bash
 # shared ディレクトリから実行（推奨）
-cd .github/scripts/shared
+ cd .github/scripts
 
 # 設定ファイル全体の検証
-bundle exec ruby ../config-manager/bin/config-manager validate
+bundle exec ruby config-manager/bin/config-manager validate
 
 # 設定内容の表示
-bundle exec ruby ../config-manager/bin/config-manager show
+bundle exec ruby config-manager/bin/config-manager show
 
 # 包括的な診断実行
-bundle exec ruby ../config-manager/bin/config-manager diagnostics
+bundle exec ruby config-manager/bin/config-manager diagnostics
 
 # 設定テンプレート生成
-bundle exec ruby ../config-manager/bin/config-manager template
+bundle exec ruby config-manager/bin/config-manager template
 ```
 
 ### 詳細コマンド
 ```bash
 # 特定サービスのテスト
-bundle exec ruby ../config-manager/bin/config-manager test auth-service develop
+bundle exec ruby config-manager/bin/config-manager test auth-service develop
 
 # 環境一覧表示
-bundle exec ruby ../config-manager/bin/config-manager environments
+bundle exec ruby config-manager/bin/config-manager environments
 
 # サービス一覧表示
-bundle exec ruby ../config-manager/bin/config-manager services
+bundle exec ruby config-manager/bin/config-manager services
 
 # 安全性設定確認
-bundle exec ruby ../config-manager/bin/config-manager safety_checks
+bundle exec ruby config-manager/bin/config-manager safety_checks
 
 # 設定ファイル存在確認
-bundle exec ruby ../config-manager/bin/config-manager check_file
+bundle exec ruby config-manager/bin/config-manager check_file
 
 # config-manager ディレクトリから直接実行
 cd .github/scripts/config-manager
@@ -332,13 +332,13 @@ ruby bin/config-manager validate
 ### 高度なコマンド
 ```bash
 # 設定の相互参照チェック
-bundle exec ruby ../config-manager/bin/config-manager cross_reference_check
+bundle exec ruby config-manager/bin/config-manager cross_reference_check
 
 # パフォーマンステスト
-bundle exec ruby ../config-manager/bin/config-manager performance_test
+bundle exec ruby config-manager/bin/config-manager performance_test
 
 # セキュリティ監査
-bundle exec ruby ../config-manager/bin/config-manager security_audit
+bundle exec ruby config-manager/bin/config-manager security_audit
 ```
 
 ## 📊 出力例

@@ -259,7 +259,7 @@ jobs:
       - name: Deploy Trigger - Extract targets
         run: |
           if [ -n "${{ steps.get-merged-pr.outputs.number }}" ]; then
-            bundle exec ruby ../deploy-trigger/bin/trigger from_pr ${{ steps.get-merged-pr.outputs.number }} --target-environment="${TARGET_ENV}"
+            bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ steps.get-merged-pr.outputs.number }} --target-environment="${TARGET_ENV}"
           else
             echo "::error::No merged PR found - deployment stopped"
             exit 1
@@ -277,31 +277,31 @@ jobs:
 ### 基本コマンド
 ```bash
 # shared ディレクトリから実行（推奨）
-cd .github/scripts/shared
+ cd .github/scripts
 
 # PR番号からデプロイトリガー
-bundle exec ruby ../deploy-trigger/bin/trigger from_pr 123
+bundle exec ruby deploy-trigger/bin/trigger from_pr 123
 
 # 環境指定でデプロイトリガー
-bundle exec ruby ../deploy-trigger/bin/trigger from_pr 123 --target-environment=staging
+bundle exec ruby deploy-trigger/bin/trigger from_pr 123 --target-environment=staging
 
 # ブランチ名からデプロイトリガー（テスト用）
-bundle exec ruby ../deploy-trigger/bin/trigger from_branch develop
+bundle exec ruby deploy-trigger/bin/trigger from_branch develop
 
 # テスト実行
-bundle exec ruby ../deploy-trigger/bin/trigger test develop
+bundle exec ruby deploy-trigger/bin/trigger test develop
 
 # GitHub Actions環境シミュレート
-bundle exec ruby ../deploy-trigger/bin/trigger simulate develop
+bundle exec ruby deploy-trigger/bin/trigger simulate develop
 ```
 
 ### 高度なコマンド
 ```bash
 # デバッグモード
-bundle exec ruby ../deploy-trigger/bin/trigger debug staging/auth-service --commit-sha=abc123
+bundle exec ruby deploy-trigger/bin/trigger debug staging/auth-service --commit-sha=abc123
 
 # 環境変数検証
-bundle exec ruby ../deploy-trigger/bin/trigger validate_env
+bundle exec ruby deploy-trigger/bin/trigger validate_env
 
 # または deploy-trigger ディレクトリから直接実行
 cd .github/scripts/deploy-trigger
@@ -571,13 +571,13 @@ strategy:
 ### デバッグ手順
 ```bash
 # ステップ1: 環境変数確認
-bundle exec ruby ../deploy-trigger/bin/trigger validate_env
+bundle exec ruby deploy-trigger/bin/trigger validate_env
 
 # ステップ2: 設定ファイル確認
-bundle exec ruby ../config-manager/bin/config-manager validate
+bundle exec ruby config-manager/bin/config-manager validate
 
 # ステップ3: ステップバイステップデバッグ
-bundle exec ruby ../deploy-trigger/bin/trigger debug staging/auth-service
+bundle exec ruby deploy-trigger/bin/trigger debug staging/auth-service
 
 # ステップ4: GitHub API 接続確認
 curl -H "Authorization: token $GITHUB_TOKEN" \
@@ -588,7 +588,7 @@ curl -H "Authorization: token $GITHUB_TOKEN" \
 ```bash
 # 詳細ログ出力
 export DEBUG=true
-bundle exec ruby ../deploy-trigger/bin/trigger from_pr 123 2>&1 | tee debug.log
+bundle exec ruby deploy-trigger/bin/trigger from_pr 123 2>&1 | tee debug.log
 
 # 重要なログパターン
 grep "Target environment" debug.log
