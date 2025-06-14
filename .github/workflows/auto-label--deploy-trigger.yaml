@@ -27,6 +27,13 @@ jobs:
       has_targets: ${{ steps.extract.outputs.has_targets }}
       target_environment: ${{ steps.extract.outputs.target_environment }}
       safety_status: ${{ steps.extract.outputs.safety_status }}
+      # Dynamic stack information
+      detected_stacks: ${{ steps.filter.outputs.detected_stacks }}
+      # Currently supported stacks
+      terragrunt_targets: ${{ steps.filter.outputs.terragrunt_targets }}
+      kubernetes_targets: ${{ steps.filter.outputs.kubernetes_targets }}
+      has_terragrunt: ${{ steps.filter.outputs.has_terragrunt }}
+      has_kubernetes: ${{ steps.filter.outputs.has_kubernetes }}
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -99,72 +106,64 @@ jobs:
           echo "This prevents unauthorized or accidental deployments."
           exit 1
 
+      - name: Filter targets by stack
+        id: filter
+        run: |
+          TARGETS="${DEPLOYMENT_TARGETS:-[]}"
+
+          # Automatically detect all existing stacks
+          STACKS=$(echo "$TARGETS" | jq -r '.[].stack' | sort -u)
+
+          # Dynamically filter targets for each stack
+          for stack in $STACKS; do
+            STACK_TARGETS=$(echo "$TARGETS" | jq -c --arg stack "$stack" '[.[] | select(.stack == $stack)]')
+            COUNT=$(echo "$STACK_TARGETS" | jq 'length')
+            HAS_TARGETS=$([ $COUNT -gt 0 ] && echo 'true' || echo 'false')
+
+            # Dynamically set outputs
+            echo "${stack}_targets=$STACK_TARGETS" >> $GITHUB_OUTPUT
+            echo "has_${stack}=$HAS_TARGETS" >> $GITHUB_OUTPUT
+          done
+
+          # Output list of all detected stacks
+          echo "detected_stacks=$(echo $STACKS | tr '\n' ',' | sed 's/,$//')" >> $GITHUB_OUTPUT
+
   deploy-terragrunt:
     name: 'Deploy Terragrunt (${{ matrix.target.service }}:${{ matrix.target.environment }})'
     needs: extract-deployment-targets
-    if: needs.extract-deployment-targets.outputs.has_targets == 'true'
+    if: needs.extract-deployment-targets.outputs.has_terragrunt == 'true'
     strategy:
       matrix:
-        target: ${{ fromJson(needs.extract-deployment-targets.outputs.targets) }}
+        target: ${{ fromJson(needs.extract-deployment-targets.outputs.terragrunt_targets) }}
       fail-fast: false
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check target stack
-        id: check
-        run: |
-          if [ "${{ matrix.target.stack }}" == "terragrunt" ]; then
-            echo "execute=true" >> $GITHUB_OUTPUT
-            echo "✅ Processing terragrunt target: ${{ matrix.target.service }}:${{ matrix.target.environment }}"
-          else
-            echo "execute=false" >> $GITHUB_OUTPUT
-            echo "⏭️ Skipping ${{ matrix.target.service }}:${{ matrix.target.environment }} (stack: ${{ matrix.target.stack }})"
-          fi
-
-      - name: Checkout code
-        if: steps.check.outputs.execute == 'true'
-        uses: actions/checkout@v4
-
-      - name: Execute Terragrunt deployment
-        if: steps.check.outputs.execute == 'true'
-        uses: ./.github/workflows/reusable--terragrunt-executor.yaml
-        with:
-          project-name: ${{ matrix.target.service }}
-          environment: ${{ matrix.target.environment }}
-          action-type: ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
-          plan-iam-role: ${{ matrix.target.iam_role_plan }}
-          apply-iam-role: ${{ matrix.target.iam_role_apply }}
-          aws-region: ${{ matrix.target.aws_region }}
-          working-directory: ${{ matrix.target.working_directory }}
-          terraform-version: ${{ matrix.target.terraform_version }}
-          terragrunt-version: ${{ matrix.target.terragrunt_version }}
+    uses: ./.github/workflows/reusable--terragrunt-executor.yaml
+    with:
+      project-name: ${{ matrix.target.service }}
+      environment: ${{ matrix.target.environment }}
+      action-type: ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
+      plan-iam-role: ${{ matrix.target.iam_role_plan }}
+      apply-iam-role: ${{ matrix.target.iam_role_apply }}
+      aws-region: ${{ matrix.target.aws_region }}
+      working-directory: ${{ matrix.target.working_directory }}
+      terraform-version: ${{ matrix.target.terraform_version }}
+      terragrunt-version: ${{ matrix.target.terragrunt_version }}
+    secrets:
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   deploy-kubernetes:
     name: 'Deploy Kubernetes (${{ matrix.target.service }}:${{ matrix.target.environment }})'
     needs: extract-deployment-targets
-    if: needs.extract-deployment-targets.outputs.has_targets == 'true'
+    if: needs.extract-deployment-targets.outputs.has_kubernetes == 'true'
     strategy:
       matrix:
-        target: ${{ fromJson(needs.extract-deployment-targets.outputs.targets) }}
+        target: ${{ fromJson(needs.extract-deployment-targets.outputs.kubernetes_targets) }}
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
-      - name: Check target stack
-        id: check
-        run: |
-          if [ "${{ matrix.target.stack }}" == "kubernetes" ]; then
-            echo "execute=true" >> $GITHUB_OUTPUT
-            echo "✅ Processing kubernetes target: ${{ matrix.target.service }}:${{ matrix.target.environment }}"
-          else
-            echo "execute=false" >> $GITHUB_OUTPUT
-            echo "⏭️ Skipping ${{ matrix.target.service }}:${{ matrix.target.environment }} (stack: ${{ matrix.target.stack }})"
-          fi
-
       - name: Checkout code
-        if: steps.check.outputs.execute == 'true'
         uses: actions/checkout@v4
 
       - name: Execute Kubernetes deployment
-        if: steps.check.outputs.execute == 'true'
         run: |
           echo "🚧 Kubernetes deployment for ${{ matrix.target.service }}:${{ matrix.target.environment }}"
           echo "Working directory: ${{ matrix.target.working_directory }}"
@@ -202,18 +201,27 @@ jobs:
 
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Show all deployment targets with status
+          # Show all deployment targets with status (Dynamic)
           echo "### 📋 Deployment Targets" >> $GITHUB_STEP_SUMMARY
           TARGETS='${{ needs.extract-deployment-targets.outputs.targets }}'
+          DETECTED_STACKS='${{ needs.extract-deployment-targets.outputs.detected_stacks }}'
 
-          # Count targets by stack
-          TERRAGRUNT_COUNT=$(echo "$TARGETS" | jq '[.[] | select(.stack == "terragrunt")] | length')
-          KUBERNETES_COUNT=$(echo "$TARGETS" | jq '[.[] | select(.stack == "kubernetes")] | length')
+          # Count targets by stack dynamically
           TOTAL_COUNT=$(echo "$TARGETS" | jq 'length')
-
           echo "**Total Targets**: $TOTAL_COUNT" >> $GITHUB_STEP_SUMMARY
-          echo "- 🏗️ Terragrunt: $TERRAGRUNT_COUNT targets" >> $GITHUB_STEP_SUMMARY
-          echo "- ☸️ Kubernetes: $KUBERNETES_COUNT targets" >> $GITHUB_STEP_SUMMARY
+
+          # Dynamic stack counting
+          IFS=',' read -ra STACK_ARRAY <<< "$DETECTED_STACKS"
+          for stack in "${STACK_ARRAY[@]}"; do
+            COUNT=$(echo "$TARGETS" | jq --arg stack "$stack" '[.[] | select(.stack == $stack)] | length')
+            # Select icon based on stack name
+            case "$stack" in
+              "terragrunt") ICON="🏗️" ;;
+              "kubernetes") ICON="☸️" ;;
+              *) ICON="📦" ;;
+            esac
+            echo "- $ICON $stack: $COUNT targets" >> $GITHUB_STEP_SUMMARY
+          done
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # List all targets
@@ -221,30 +229,43 @@ jobs:
           echo "$TARGETS" | jq -r '.[] | "- **\(.service):\(.environment)** (\(.stack)) → `\(.working_directory)`"' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Show deployment results by stack
+          # Show deployment results by stack (Dynamic)
           echo "### 📈 Deployment Results" >> $GITHUB_STEP_SUMMARY
 
           TERRAGRUNT_RESULT="${{ needs.deploy-terragrunt.result }}"
           KUBERNETES_RESULT="${{ needs.deploy-kubernetes.result }}"
 
-          case "$TERRAGRUNT_RESULT" in
-            "success") TERRAGRUNT_ICON="✅" ;;
-            "failure") TERRAGRUNT_ICON="❌" ;;
-            "cancelled") TERRAGRUNT_ICON="⏹️" ;;
-            "skipped") TERRAGRUNT_ICON="⏭️" ;;
-            *) TERRAGRUNT_ICON="❓" ;;
-          esac
+          # Helper function for result icons
+          get_result_icon() {
+            case "$1" in
+              "success") echo "✅" ;;
+              "failure") echo "❌" ;;
+              "cancelled") echo "⏹️" ;;
+              "skipped") echo "⏭️" ;;
+              *) echo "❓" ;;
+            esac
+          }
 
-          case "$KUBERNETES_RESULT" in
-            "success") KUBERNETES_ICON="✅" ;;
-            "failure") KUBERNETES_ICON="❌" ;;
-            "cancelled") KUBERNETES_ICON="⏹️" ;;
-            "skipped") KUBERNETES_ICON="⏭️" ;;
-            *) KUBERNETES_ICON="❓" ;;
-          esac
+          # Show results for detected stacks
+          DETECTED_STACKS='${{ needs.extract-deployment-targets.outputs.detected_stacks }}'
+          IFS=',' read -ra STACK_ARRAY <<< "$DETECTED_STACKS"
 
-          echo "- $TERRAGRUNT_ICON **Terragrunt**: $TERRAGRUNT_RESULT" >> $GITHUB_STEP_SUMMARY
-          echo "- $KUBERNETES_ICON **Kubernetes**: $KUBERNETES_RESULT" >> $GITHUB_STEP_SUMMARY
+          for stack in "${STACK_ARRAY[@]}"; do
+            case "$stack" in
+              "terragrunt")
+                ICON=$(get_result_icon "$TERRAGRUNT_RESULT")
+                echo "- $ICON **Terragrunt**: $TERRAGRUNT_RESULT" >> $GITHUB_STEP_SUMMARY
+                ;;
+              "kubernetes")
+                ICON=$(get_result_icon "$KUBERNETES_RESULT")
+                echo "- $ICON **Kubernetes**: $KUBERNETES_RESULT" >> $GITHUB_STEP_SUMMARY
+                ;;
+              *)
+                # Placeholder for future stacks
+                echo "- 📦 **$stack**: not implemented yet" >> $GITHUB_STEP_SUMMARY
+                ;;
+            esac
+          done
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Add workflow link
