@@ -22,7 +22,7 @@ module UseCases
           next unless deploy_label.valid?
 
           # Get available stacks by checking directory existence
-          available_stacks = detect_available_stacks(deploy_label.service, config)
+          available_stacks = detect_available_stacks(deploy_label.service, target_environment, config)
 
           # Generate targets for each available stack
           available_stacks.each do |stack|
@@ -43,7 +43,7 @@ module UseCases
       private
 
       # Detect available stacks by checking directory existence
-      def detect_available_stacks(service_name, config)
+      def detect_available_stacks(service_name, target_environment, config)
         available_stacks = []
 
         # Get repository root by finding .git directory
@@ -52,7 +52,9 @@ module UseCases
         # Check all configured directory conventions
         config.directory_conventions.each do |stack, pattern|
           # Get directory path by expanding placeholders
-          dir_path = pattern.gsub('{service}', service_name)
+          dir_path = pattern
+            .gsub('{service}', service_name)
+            .gsub('{environment}', target_environment)
           # Resolve path relative to repository root
           full_path = File.join(repo_root, dir_path)
 
@@ -67,7 +69,9 @@ module UseCases
         if service_config && service_config['directory_conventions']
           service_config['directory_conventions'].each do |stack, pattern|
             # Get directory path by expanding placeholders
-            dir_path = pattern.gsub('{service}', service_name)
+            dir_path = pattern
+              .gsub('{service}', service_name)
+              .gsub('{environment}', target_environment)
             # Resolve path relative to repository root
             full_path = File.join(repo_root, dir_path)
 
@@ -89,7 +93,10 @@ module UseCases
         dir_pattern = config.directory_convention_for(deploy_label.service, stack)
         return nil unless dir_pattern
 
-        working_dir = dir_pattern.gsub('{service}', deploy_label.service)
+        # Expand both service and environment placeholders
+        working_dir = dir_pattern
+          .gsub('{service}', deploy_label.service)
+          .gsub('{environment}', target_environment)
 
         # Get repository root path for absolute path checking
         repo_root = find_repository_root

@@ -15,8 +15,8 @@ environments:
     iam_role_apply: arn:aws:iam::123456789012:role/terragrunt-apply-production-role
 
 directory_conventions:
-  terragrunt: "{service}/terragrunt"
-  kubernetes: "{service}/kubernetes"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
 
 services:
   - name: claude-code-action
