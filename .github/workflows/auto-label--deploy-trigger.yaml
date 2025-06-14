@@ -2,7 +2,7 @@ name: 'Auto Label - Deploy Trigger'
 
 on:
   pull_request:
-    types: [labeled, unlabeled]
+    types: [labeled, unlabeled, synchronize]
     branches:
       - '**'
   push:
