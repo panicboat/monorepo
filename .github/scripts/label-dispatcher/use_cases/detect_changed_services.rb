@@ -87,8 +87,8 @@ module UseCases
         services = Set.new
 
         # Add explicitly configured services that have changed files
-        config.services.each do |service_name, _|
-          if files_changed_in_service?(changed_files, service_name)
+        config.services.each do |service_name, service_config|
+          if service_has_changed_files?(changed_files, service_name, service_config, config)
             services << service_name
           end
         end
@@ -100,14 +100,39 @@ module UseCases
         end
 
         # Discover services from existing directory structure
-        if services.empty?
-          services.merge(discover_services_from_filesystem(changed_files))
-        end
+        services.merge(discover_services_from_filesystem(changed_files))
 
         services.to_a.reject { |service| service.start_with?('.') }
       end
 
-      # Check if any files changed in a service directory
+      # Check if a service has changed files (considering service-specific directory conventions)
+      def service_has_changed_files?(changed_files, service_name, service_config, config)
+        # First check simple pattern: {service}/
+        return true if changed_files.any? { |file| file.start_with?("#{service_name}/") }
+
+        # Check service-specific directory conventions
+        if service_config['directory_conventions']
+          service_config['directory_conventions'].each do |stack, pattern|
+            # Expand pattern and check if any files match
+            expanded_pattern = pattern.gsub('{service}', service_name)
+            if changed_files.any? { |file| file.start_with?(expanded_pattern) }
+              return true
+            end
+          end
+        else
+          # Check default directory conventions
+          config.directory_conventions.each do |stack, pattern|
+            expanded_pattern = pattern.gsub('{service}', service_name)
+            if changed_files.any? { |file| file.start_with?(expanded_pattern) }
+              return true
+            end
+          end
+        end
+
+        false
+      end
+
+      # Check if any files changed in a service directory (legacy method for backward compatibility)
       def files_changed_in_service?(changed_files, service_name)
         changed_files.any? { |file| file.start_with?("#{service_name}/") }
       end
