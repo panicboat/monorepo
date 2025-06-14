@@ -5,25 +5,30 @@ module Interfaces
   module Presenters
     class GitHubActionsPresenter
       # Present label dispatch results for GitHub Actions
-      def present_label_dispatch_result(deploy_labels:, labels_added:, labels_removed:, changed_files:)
+      def present_label_dispatch_result(deploy_labels:, labels_added:, labels_removed:, changed_files:, excluded_services: [])
         set_environment_variables(
           'DEPLOY_LABELS' => deploy_labels.map(&:to_s).to_json,
           'LABELS_ADDED' => labels_added.to_json,
           'LABELS_REMOVED' => labels_removed.to_json,
           'HAS_CHANGES' => deploy_labels.any?.to_s,
           'CHANGED_FILES' => changed_files.to_json,
-          'SERVICES_DETECTED' => deploy_labels.map(&:service).uniq.to_json
+          'SERVICES_DETECTED' => deploy_labels.map(&:service).uniq.to_json,
+          'EXCLUDED_SERVICES' => excluded_services.to_json,
+          'HAS_EXCLUDED_SERVICES' => excluded_services.any?.to_s
         )
 
         set_action_outputs(
           'deploy_labels' => deploy_labels.map(&:to_s).to_json,
-          'has_changes' => deploy_labels.any?.to_s
+          'has_changes' => deploy_labels.any?.to_s,
+          'excluded_services' => excluded_services.to_json,
+          'has_excluded_services' => excluded_services.any?.to_s
         )
 
         puts "🏷️ Label Dispatch Completed"
         puts "Deploy Labels: #{deploy_labels.map(&:to_s).join(', ')}"
         puts "Labels Added: #{labels_added.join(', ')}" if labels_added.any?
         puts "Labels Removed: #{labels_removed.join(', ')}" if labels_removed.any?
+        puts "Excluded Services: #{excluded_services.join(', ')}" if excluded_services.any?
       end
 
       # Present deployment matrix for GitHub Actions
@@ -97,6 +102,52 @@ module Interfaces
         end
       end
 
+      # Present configuration details
+      def present_config_details(config:)
+        puts "📋 Workflow Configuration"
+        puts "Environments: #{config.environments.keys.join(', ')}"
+        puts "Services: #{config.services.keys.join(', ')}"
+        puts "Terraform version: #{config.terraform_version}"
+        puts "Terragrunt version: #{config.terragrunt_version}"
+
+        puts "\nDirectory Conventions:"
+        config.directory_conventions.each { |stack, pattern| puts "  #{stack}: #{pattern}" }
+      end
+
+      # Present service test results
+      def present_service_test_result(service_name:, environment:, env_config:, service_config:, terragrunt_directory:, kubernetes_directory:)
+        puts "🔧 Service Configuration Test"
+        puts "Service: #{service_name}"
+        puts "Environment: #{environment}"
+        puts "Terragrunt Directory: #{terragrunt_directory}"
+        puts "Kubernetes Directory: #{kubernetes_directory}"
+        puts "IAM Plan Role: #{env_config['iam_role_plan']}"
+        puts "IAM Apply Role: #{env_config['iam_role_apply']}"
+        puts "AWS Region: #{env_config['aws_region']}"
+      end
+
+      # Present diagnostic results
+      def present_diagnostic_results(results:)
+        puts "🏥 Diagnostic Results"
+        results.each do |result|
+          status_icon = case result[:status]
+                       when 'PASS' then '✅'
+                       when 'WARN' then '⚠️'
+                       when 'FAIL' then '❌'
+                       else '❓'
+                       end
+
+          puts "#{status_icon} #{result[:check]}: #{result[:details]}"
+        end
+      end
+
+      # Present config template
+      def present_config_template(template:)
+        puts "📋 Configuration Template"
+        puts ""
+        puts template
+      end
+
       # Present error results for GitHub Actions
       def present_error(result)
         set_environment_variables(
@@ -106,6 +157,13 @@ module Interfaces
 
         puts "::error::#{result.error_message}"
         exit 1
+      end
+
+      # Present service discovery results
+      def present_service_discovery_result(discovered_services:, method:)
+        puts "🔍 Service Discovery Results"
+        puts "Discovery Method: #{method}"
+        puts "Discovered Services: #{discovered_services.join(', ')}"
       end
 
       private

@@ -25,17 +25,23 @@ class LabelDispatcherCLI < Thor
   end
 
   desc "test", "Test label detection without PR interaction"
-  option :base_ref, desc: "Base git reference for comparison", default: 'main'
+  option :base_ref, desc: "Base git reference for comparison"
   option :head_ref, desc: "Head git reference for comparison"
 
   def test
     controller = LabelDispatcherContainer.resolve(:label_dispatcher_controller)
 
     # Set default values for testing
-    base_ref = options[:base_ref] || 'main'
-    head_ref = options[:head_ref] || `git branch --show-current`.strip
+    base_ref = options[:base_ref]
+    head_ref = options[:head_ref]
 
-    puts "🧪 Testing with base: #{base_ref}, head: #{head_ref}"
+    # If no refs provided, test with current working directory changes
+    if base_ref.nil? && head_ref.nil?
+      puts "🧪 Testing with current working directory changes"
+      puts "Tip: Use --base-ref and --head-ref to test with specific git references"
+    else
+      puts "🧪 Testing with base: #{base_ref || 'nil'}, head: #{head_ref || 'nil'}"
+    end
 
     controller.test_detection(
       base_ref: base_ref,

@@ -1,5 +1,6 @@
 # Use case for managing PR labels based on detected changes
 # Handles adding and removing deployment labels on PRs
+# Phase 1: Added support for excluded services display
 
 module UseCases
   module LabelManagement
@@ -42,9 +43,9 @@ module UseCases
         Entities::Result.failure(error_message: error.message)
       end
 
-      # Update PR comment with deployment information
-      def update_deployment_comment(pr_number:, deploy_labels:, changed_files:)
-        content = build_deployment_comment_content(deploy_labels, changed_files)
+      # Update PR comment with deployment information including excluded services
+      def update_deployment_comment(pr_number:, deploy_labels:, changed_files:, excluded_services: [], excluded_services_config: {})
+        content = build_deployment_comment_content(deploy_labels, changed_files, excluded_services, excluded_services_config)
         tag = 'auto-deployment-info'
 
         @github_client.update_pr_comment(pr_number, content, tag)
@@ -57,25 +58,53 @@ module UseCases
       private
 
       # Build the content for deployment information comment
-      def build_deployment_comment_content(deploy_labels, changed_files)
+      def build_deployment_comment_content(deploy_labels, changed_files, excluded_services = [], excluded_services_config = {})
         content = "## 🚀 Auto-Deployment Information\n\n"
 
         if deploy_labels.any?
-          content += "### Detected Services\n"
+          content += "### ✅ Automated Services (#{deploy_labels.length})\n"
           deploy_labels.each do |label|
-            content += "- **#{label.service}**\n"
+            content += "- **#{label.service}**: Infrastructure + Application deployment\n"
           end
           content += "\n"
 
-          content += "### Deployment Labels Applied\n"
+          content += "### 🏷️ Deployment Labels Applied\n"
           deploy_labels.each do |label|
             content += "- `#{label.to_s}`\n"
           end
-        else
-          content += "No deployment targets detected for this PR.\n"
+          content += "\n"
         end
 
-        content += "\n### Changed Files (#{changed_files.length})\n"
+        if excluded_services.any?
+          content += "### ⚠️ Manual Deployment Required (#{excluded_services.length})\n"
+          excluded_services.each do |service|
+            service_config = excluded_services_config[service] || {}
+            reason = service_config[:reason] || 'Manual deployment required'
+            type = service_config[:type] || 'unspecified'
+
+            type_emoji = case type
+                        when 'permanent' then '🔒'
+                        when 'temporary' then '⏱️'
+                        when 'conditional' then '🔀'
+                        else '📋'
+                        end
+
+            content += "- #{type_emoji} **#{service}** (#{type}): #{reason}\n"
+          end
+          content += "\n"
+          content += "### 📝 Manual Deployment Instructions\n"
+          content += "For excluded services, please follow manual deployment procedures:\n"
+          excluded_services.each do |service|
+            content += "- **#{service}**: Check service-specific documentation or contact service owner\n"
+          end
+          content += "\n"
+        end
+
+        if deploy_labels.empty? && excluded_services.empty?
+          content += "No deployment targets detected for this PR.\n\n"
+        end
+
+        content += "### 📋 Changed Files (#{changed_files.length})\n"
         if changed_files.length <= 20
           changed_files.each { |file| content += "- `#{file}`\n" }
         else

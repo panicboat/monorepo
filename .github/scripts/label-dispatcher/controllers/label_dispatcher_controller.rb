@@ -29,7 +29,7 @@ module Interfaces
           end
         end
 
-        # Detect changed services
+        # Detect changed services (including exclusion filtering)
         detection_result = @detect_services.execute(base_ref: base_ref, head_ref: head_ref)
         return @presenter.present_error(detection_result) if detection_result.failure?
 
@@ -39,11 +39,16 @@ module Interfaces
           manage_result = @manage_labels.execute(pr_number: pr_number, required_labels: required_labels)
           return @presenter.present_error(manage_result) if manage_result.failure?
 
-          # Update deployment comment
+          # Prepare excluded services configuration for comment
+          excluded_services_config = build_excluded_services_config(detection_result.excluded_services)
+
+          # Update deployment comment with exclusion information
           comment_result = @manage_labels.update_deployment_comment(
             pr_number: pr_number,
             deploy_labels: detection_result.deploy_labels,
-            changed_files: detection_result.changed_files
+            changed_files: detection_result.changed_files,
+            excluded_services: detection_result.excluded_services,
+            excluded_services_config: excluded_services_config
           )
           # Note: Don't fail if comment update fails, just log it
           if comment_result.failure?
@@ -61,12 +66,15 @@ module Interfaces
           deploy_labels: detection_result.deploy_labels,
           labels_added: labels_added,
           labels_removed: labels_removed,
-          changed_files: detection_result.changed_files
+          changed_files: detection_result.changed_files,
+          excluded_services: detection_result.excluded_services || []
         )
       end
 
       # Test detection without PR interaction
       def test_detection(base_ref: nil, head_ref: nil)
+        puts "🧪 Testing deployment workflow for base: #{base_ref}, head: #{head_ref}"
+
         detection_result = @detect_services.execute(base_ref: base_ref, head_ref: head_ref)
         return @presenter.present_error(detection_result) if detection_result.failure?
 
@@ -74,7 +82,8 @@ module Interfaces
           deploy_labels: detection_result.deploy_labels,
           labels_added: [],
           labels_removed: [],
-          changed_files: detection_result.changed_files
+          changed_files: detection_result.changed_files,
+          excluded_services: detection_result.excluded_services || []
         )
       end
 
@@ -145,6 +154,49 @@ module Interfaces
         else
           nil
         end
+      end
+
+      # Build excluded services configuration for comment display
+      def build_excluded_services_config(excluded_services)
+        return {} if excluded_services.nil? || excluded_services.empty?
+
+        # In a real implementation, this would get the configuration from the config client
+        # For now, we'll create a simplified version
+        config = {}
+
+        # Load configuration to get exclusion details
+        # Note: This is a simplified approach - in practice, we'd need to access
+        # the config client or pass this information from the detection result
+        begin
+          config_client = Infrastructure::ConfigClient.new
+          workflow_config = config_client.load_workflow_config
+
+          excluded_services.each do |service|
+            service_config = workflow_config.services[service]
+            if service_config && service_config['exclusion_config']
+              config[service] = {
+                reason: service_config['exclusion_config']['reason'] || 'Manual deployment required',
+                type: service_config['exclusion_config']['type'] || 'unspecified'
+              }
+            else
+              config[service] = {
+                reason: 'Manual deployment required',
+                type: 'unspecified'
+              }
+            end
+          end
+        rescue => error
+          puts "Warning: Could not load exclusion config details: #{error.message}"
+          # Fallback to default configuration
+          excluded_services.each do |service|
+            config[service] = {
+              reason: 'Manual deployment required',
+              type: 'unspecified'
+            }
+          end
+        end
+
+        config
       end
     end
   end

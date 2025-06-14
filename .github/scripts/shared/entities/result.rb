@@ -16,9 +16,9 @@ module Entities
       new(success: true, data: data)
     end
 
-    # Create a failed result with error message
-    def self.failure(error_message:)
-      new(success: false, error_message: error_message)
+    # Create a failed result with error message and optional additional data
+    def self.failure(error_message:, **additional_data)
+      new(success: false, data: additional_data, error_message: error_message)
     end
 
     # Check if operation was successful

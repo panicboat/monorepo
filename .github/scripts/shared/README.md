@@ -113,7 +113,7 @@ graph TD
     C --> F[.github/actions/* 配置]
     D --> G[独自ディレクトリ構造]
 
-    E --> H["{service}/terragrunt"]
+    E --> H["{service}/terragrunt/envs/{environment}"]
     F --> I[".github/actions/{service}/terragrunt"]
     G --> J["legacy/{service}/infrastructure"]
 
@@ -150,8 +150,8 @@ services:
 ### デフォルト規約
 ```yaml
 directory_conventions:
-  terragrunt: "{service}/terragrunt"
-  kubernetes: "{service}/kubernetes"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
 ```
 
 ### プレースホルダー解決
@@ -163,10 +163,10 @@ directory_conventions:
 ### 実際の解決例
 ```yaml
 # サービス: auth-service, 環境: develop の場合
-# 設定: terragrunt: "{service}/terragrunt"
+# 設定: terragrunt: "{service}/terragrunt/envs/{environment}"
 # 結果: "auth-service/terragrunt"
 
-# 設定: kubernetes: "{service}/kubernetes"
+# 設定: kubernetes: "{service}/kubernetes/overlays/{environment}"
 # 結果: "auth-service/kubernetes"
 
 # サービス: claude-code-action, 環境: staging の場合
@@ -187,8 +187,8 @@ directory_conventions:
 ### 高度なディレクトリパターン
 ```yaml
 directory_conventions:
-  terragrunt: "{service}/terragrunt"
-  kubernetes: "{service}/kubernetes"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
   # 追加のデプロイメントスタック
   helm: "{service}/helm/charts"
   ansible: "ansible/playbooks/{service}"
@@ -201,10 +201,10 @@ directory_conventions:
 # マルチスタック対応の設定例
 directory_conventions:
   # インフラストラクチャ管理
-  terragrunt: "{service}/terragrunt"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
 
   # アプリケーションデプロイメント
-  kubernetes: "{service}/kubernetes"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
 
   # 将来対応予定
   helm: "{service}/helm"
@@ -520,7 +520,7 @@ environments:
     iam_role_apply: arn:aws:iam::123456789012:role/github-actions-apply
 
 directory_conventions:
-  terragrunt: "{service}/terragrunt"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
 
 defaults:
   aws_region: ap-northeast-1
@@ -561,10 +561,10 @@ environments:
 
 directory_conventions:
   # インフラストラクチャ管理
-  terragrunt: "{service}/terragrunt"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
 
   # アプリケーションデプロイメント
-  kubernetes: "{service}/kubernetes"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
 
   # 追加スタック
   helm: "{service}/helm"
@@ -621,8 +621,8 @@ safety_checks:
     iam_role_apply: arn:aws:iam::333333333333:role/github-actions-apply-production
 
 directory_conventions:
-  terragrunt: "{service}/terragrunt"
-  kubernetes: "{service}/kubernetes"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
 
 services:
   - name: api-gateway
@@ -716,10 +716,10 @@ environments:
 
 directory_conventions:
   # インフラストラクチャ管理
-  terragrunt: "{service}/terragrunt"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
 
   # アプリケーションデプロイメント
-  kubernetes: "{service}/kubernetes"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
 
   # 追加デプロイメント手法
   helm: "{service}/helm/charts"
@@ -920,8 +920,8 @@ environments:
     iam_role_apply: arn:aws:iam::123:role/apply-production
 
 directory_conventions:
-  terragrunt: "{service}/terragrunt"
-  kubernetes: "{service}/kubernetes"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
 
 branch_patterns:
   develop: { target_environment: develop }
@@ -1057,7 +1057,7 @@ directory_conventions:
 
 # ✅ 正しい: 適切なプレースホルダー
 directory_conventions:
-  terragrunt: "{service}/terragrunt"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
 ```
 
 #### 4. IAM ARN 形式エラー
@@ -1171,10 +1171,10 @@ environments:
 # スケーラブルな設定パターン
 directory_conventions:
   # インフラストラクチャ
-  terragrunt: "{service}/terragrunt"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
 
   # アプリケーション（複数手法対応）
-  kubernetes: "{service}/kubernetes"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
   helm: "{service}/helm"
   argocd: "{service}/argocd"
 

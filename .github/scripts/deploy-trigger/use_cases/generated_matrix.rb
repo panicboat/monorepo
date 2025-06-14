@@ -1,5 +1,6 @@
 # Use case for generating deployment matrix from deploy labels
 # Creates deployment targets with all necessary configuration
+# Phase 1: Added service exclusion filtering
 
 module UseCases
   module DeployTrigger
@@ -12,14 +13,19 @@ module UseCases
       def execute(deploy_labels:, target_environment: nil)
         config = @config_client.load_workflow_config
 
-        # If target_environment is not provided, we need to determine it somehow
-        # For now, we'll assume it needs to be provided or we'll use 'develop' as default
+        # If target_environment is not provided, use 'develop' as default
         target_environment ||= 'develop'
 
         deployment_targets = []
 
         deploy_labels.each do |deploy_label|
           next unless deploy_label.valid?
+
+          # Check if service is excluded from automation
+          if service_excluded_from_automation?(deploy_label.service, config)
+            puts "⚠️  Skipping matrix generation for excluded service: #{deploy_label.service}"
+            next
+          end
 
           # Get available stacks by checking directory existence
           available_stacks = detect_available_stacks(deploy_label.service, target_environment, config)
@@ -42,8 +48,22 @@ module UseCases
 
       private
 
+      # Check if service is excluded from automation
+      def service_excluded_from_automation?(service_name, config)
+        service_config = config.services[service_name]
+        return false unless service_config
+
+        # Basic exclusion check: exclude_from_automation: true
+        service_config['exclude_from_automation'] == true
+      end
+
       # Detect available stacks by checking directory existence
       def detect_available_stacks(service_name, target_environment, config)
+        # Skip stack detection for excluded services
+        if service_excluded_from_automation?(service_name, config)
+          return []
+        end
+
         available_stacks = []
 
         # Get repository root by finding .git directory
@@ -52,9 +72,9 @@ module UseCases
         # Check all configured directory conventions
         config.directory_conventions.each do |stack, pattern|
           # Get directory path by expanding placeholders
-          dir_path = pattern
-            .gsub('{service}', service_name)
-            .gsub('{environment}', target_environment)
+          dir_path = expand_directory_pattern(pattern, service_name, target_environment)
+          next unless dir_path
+
           # Resolve path relative to repository root
           full_path = File.join(repo_root, dir_path)
 
@@ -69,9 +89,9 @@ module UseCases
         if service_config && service_config['directory_conventions']
           service_config['directory_conventions'].each do |stack, pattern|
             # Get directory path by expanding placeholders
-            dir_path = pattern
-              .gsub('{service}', service_name)
-              .gsub('{environment}', target_environment)
+            dir_path = expand_directory_pattern(pattern, service_name, target_environment)
+            next unless dir_path
+
             # Resolve path relative to repository root
             full_path = File.join(repo_root, dir_path)
 
@@ -93,10 +113,9 @@ module UseCases
         dir_pattern = config.directory_convention_for(deploy_label.service, stack)
         return nil unless dir_pattern
 
-        # Expand both service and environment placeholders
-        working_dir = dir_pattern
-          .gsub('{service}', deploy_label.service)
-          .gsub('{environment}', target_environment)
+        # Expand placeholders
+        working_dir = expand_directory_pattern(dir_pattern, deploy_label.service, target_environment)
+        return nil unless working_dir
 
         # Get repository root path for absolute path checking
         repo_root = find_repository_root
@@ -104,10 +123,56 @@ module UseCases
 
         # Double-check directory exists (safety check)
         unless File.directory?(full_path)
+          puts "Warning: Directory does not exist: #{full_path}"
           return nil
         end
 
-        # Create deployment target
+        # Create deployment target with appropriate configuration based on stack
+        case stack
+        when 'terragrunt'
+          create_terragrunt_target(deploy_label, target_environment, env_config, working_dir, config)
+        when 'kubernetes'
+          create_kubernetes_target(deploy_label, target_environment, env_config, working_dir, config)
+        else
+          # Generic target for future stacks
+          create_generic_target(deploy_label, target_environment, stack, env_config, working_dir, config)
+        end
+      end
+
+      # Create Terragrunt deployment target
+      def create_terragrunt_target(deploy_label, target_environment, env_config, working_dir, config)
+        Entities::DeploymentTarget.new(
+          service: deploy_label.service,
+          environment: target_environment,
+          stack: 'terragrunt',
+          iam_role_plan: env_config['iam_role_plan'],
+          iam_role_apply: env_config['iam_role_apply'],
+          aws_region: env_config['aws_region'],
+          working_directory: working_dir,
+          terraform_version: config.terraform_version,
+          terragrunt_version: config.terragrunt_version
+        )
+      end
+
+      # Create Kubernetes deployment target
+      def create_kubernetes_target(deploy_label, target_environment, env_config, working_dir, config)
+        Entities::DeploymentTarget.new(
+          service: deploy_label.service,
+          environment: target_environment,
+          stack: 'kubernetes',
+          iam_role_plan: nil,  # Kubernetes doesn't need IAM roles for plan
+          iam_role_apply: nil, # Kubernetes doesn't need IAM roles for apply
+          aws_region: env_config['aws_region'],
+          working_directory: working_dir,
+          terraform_version: nil,
+          terragrunt_version: nil,
+          kubectl_version: config.kubectl_version,
+          kustomize_version: config.kustomize_version
+        )
+      end
+
+      # Create generic deployment target for future stacks
+      def create_generic_target(deploy_label, target_environment, stack, env_config, working_dir, config)
         Entities::DeploymentTarget.new(
           service: deploy_label.service,
           environment: target_environment,
@@ -121,7 +186,23 @@ module UseCases
         )
       end
 
-      private
+      # Expand directory pattern with placeholders
+      def expand_directory_pattern(pattern, service_name, target_environment)
+        return nil unless pattern
+
+        # Expand both service and environment placeholders
+        expanded = pattern
+          .gsub('{service}', service_name)
+          .gsub('{environment}', target_environment)
+
+        # Validate that all placeholders were replaced
+        if expanded.include?('{') && expanded.include?('}')
+          puts "Warning: Unresolved placeholders in pattern: #{pattern} -> #{expanded}"
+          return nil
+        end
+
+        expanded
+      end
 
       # Find repository root by looking for .git directory
       def find_repository_root(start_path = __dir__)

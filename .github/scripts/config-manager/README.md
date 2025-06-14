@@ -173,8 +173,8 @@ environments:
     iam_role_apply: arn:aws:iam::ACCOUNT_ID:role/apply-develop
 
 directory_conventions:
-  terragrunt: "{service}/terragrunt"
-  kubernetes: "{service}/kubernetes"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
 
 defaults:
   aws_region: ap-northeast-1
@@ -214,11 +214,11 @@ environments:
 services:
   - name: auth-service
     directory_conventions:
-      terragrunt: "services/{service}/terragrunt"
+      terragrunt: "services/{service}/terragrunt/envs/{environment}"
       kubernetes: "services/{service}/kubernetes"
   - name: api-gateway
     directory_conventions:
-      terragrunt: "services/{service}/infrastructure"
+      terragrunt: "services/{service}/infrastructure/envs/{environment}"
 
 branch_patterns:
   develop:

@@ -1,5 +1,6 @@
 # Use case for detecting changed services from file modifications
 # Analyzes git diff output to determine which services need deployment
+# Phase 1: Added service exclusion filtering
 
 module UseCases
   module LabelManagement
@@ -14,12 +15,25 @@ module UseCases
         config = @config_client.load_workflow_config
         changed_files = @file_client.get_changed_files(base_ref: base_ref, head_ref: head_ref)
 
-        deploy_labels = detect_deploy_labels(changed_files, config)
+        # Discover all services from file changes
+        all_discovered_services = discover_services(changed_files, config)
+
+        # Filter out excluded services
+        filtered_services = filter_excluded_services(all_discovered_services, config, changed_files)
+        excluded_services = all_discovered_services - filtered_services
+
+        # Generate deploy labels for non-excluded services
+        deploy_labels = filtered_services.map { |service| Entities::DeployLabel.from_service(service: service) }
+
+        # Log excluded services if any
+        log_excluded_services(excluded_services, config) if excluded_services.any?
 
         Entities::Result.success(
           deploy_labels: deploy_labels,
           changed_files: changed_files,
-          services_detected: deploy_labels.map(&:service).uniq
+          services_detected: filtered_services,
+          excluded_services: excluded_services,
+          total_services_discovered: all_discovered_services.length
         )
       rescue => error
         Entities::Result.failure(error_message: error.message)
@@ -27,10 +41,45 @@ module UseCases
 
       private
 
+      # Filter out services that are excluded from automation
+      def filter_excluded_services(discovered_services, config, changed_files)
+        discovered_services.reject do |service|
+          excluded_from_automation?(service, config, changed_files)
+        end
+      end
+
+      # Check if a service is excluded from automation
+      def excluded_from_automation?(service, config, changed_files)
+        service_config = config.services[service]
+        return false unless service_config
+
+        return true if service_config['exclude_from_automation'] == true
+
+        false
+      end
+
+      # Log excluded services for visibility
+      def log_excluded_services(excluded_services, config)
+        return if excluded_services.empty?
+
+        puts "⚠️  Services excluded from automation (#{excluded_services.length}):"
+        excluded_services.each do |service|
+          service_config = config.services[service]
+          exclusion_config = service_config&.[]('exclusion_config') || {}
+          reason = exclusion_config['reason'] || 'No reason specified'
+          type = exclusion_config['type'] || 'unspecified'
+
+          puts "  - #{service} (#{type}): #{reason}"
+        end
+      end
+
       # Detect deploy labels from changed files and configuration
       def detect_deploy_labels(changed_files, config)
+        # This method is now replaced by the main execute method
+        # Keeping for backward compatibility if needed
         discovered_services = discover_services(changed_files, config)
-        discovered_services.map { |service| Entities::DeployLabel.from_service(service: service) }
+        filtered_services = filter_excluded_services(discovered_services, config, changed_files)
+        filtered_services.map { |service| Entities::DeployLabel.from_service(service: service) }
       end
 
       # Discover services from changed files and configuration
@@ -38,8 +87,8 @@ module UseCases
         services = Set.new
 
         # Add explicitly configured services that have changed files
-        config.services.each do |service_name, _|
-          if files_changed_in_service?(changed_files, service_name)
+        config.services.each do |service_name, service_config|
+          if service_has_changed_files?(changed_files, service_name, service_config, config)
             services << service_name
           end
         end
@@ -51,14 +100,39 @@ module UseCases
         end
 
         # Discover services from existing directory structure
-        if services.empty?
-          services.merge(discover_services_from_filesystem(changed_files))
-        end
+        services.merge(discover_services_from_filesystem(changed_files))
 
         services.to_a.reject { |service| service.start_with?('.') }
       end
 
-      # Check if any files changed in a service directory
+      # Check if a service has changed files (considering service-specific directory conventions)
+      def service_has_changed_files?(changed_files, service_name, service_config, config)
+        # First check simple pattern: {service}/
+        return true if changed_files.any? { |file| file.start_with?("#{service_name}/") }
+
+        # Check service-specific directory conventions
+        if service_config['directory_conventions']
+          service_config['directory_conventions'].each do |stack, pattern|
+            # Expand pattern and check if any files match
+            expanded_pattern = pattern.gsub('{service}', service_name)
+            if changed_files.any? { |file| file.start_with?(expanded_pattern) }
+              return true
+            end
+          end
+        else
+          # Check default directory conventions
+          config.directory_conventions.each do |stack, pattern|
+            expanded_pattern = pattern.gsub('{service}', service_name)
+            if changed_files.any? { |file| file.start_with?(expanded_pattern) }
+              return true
+            end
+          end
+        end
+
+        false
+      end
+
+      # Check if any files changed in a service directory (legacy method for backward compatibility)
       def files_changed_in_service?(changed_files, service_name)
         changed_files.any? { |file| file.start_with?("#{service_name}/") }
       end
