@@ -41,6 +41,10 @@ on:
         required: true
         type: string
         description: 'Working directory for terragrunt execution'
+    secrets:
+      APP_PRIVATE_KEY:
+        required: true
+        description: 'GitHub App private key for authentication'
 
 jobs:
   terragrunt-execution:

@@ -151,6 +151,8 @@ jobs:
       working-directory: ${{ matrix.target.working_directory }}
       terraform-version: ${{ matrix.target.terraform_version }}
       terragrunt-version: ${{ matrix.target.terragrunt_version }}
+    secrets:
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   deploy-kubernetes:
     name: 'Deploy Kubernetes (${{ matrix.target.service }}:${{ matrix.target.environment }})'
