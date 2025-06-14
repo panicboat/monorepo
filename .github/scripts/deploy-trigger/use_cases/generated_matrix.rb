@@ -160,12 +160,7 @@ module UseCases
           service: deploy_label.service,
           environment: target_environment,
           stack: 'kubernetes',
-          iam_role_plan: nil,  # Kubernetes doesn't need IAM roles for plan
-          iam_role_apply: nil, # Kubernetes doesn't need IAM roles for apply
-          aws_region: env_config['aws_region'],
           working_directory: working_dir,
-          terraform_version: nil,
-          terragrunt_version: nil,
           kubectl_version: config.kubectl_version,
           kustomize_version: config.kustomize_version
         )
@@ -177,12 +172,7 @@ module UseCases
           service: deploy_label.service,
           environment: target_environment,
           stack: stack,
-          iam_role_plan: env_config['iam_role_plan'],
-          iam_role_apply: env_config['iam_role_apply'],
-          aws_region: env_config['aws_region'],
           working_directory: working_dir,
-          terraform_version: config.terraform_version,
-          terragrunt_version: config.terragrunt_version
         )
       end
 

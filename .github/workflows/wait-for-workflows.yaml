@@ -140,7 +140,7 @@ jobs:
       continue-on-error: true
 
     - name: Notify Slack
-      uses: slackapi/slack-github-action@v2.1.0
+      uses: slackapi/slack-github-action@v1
       with:
         channel-id: 'C0907M25935'
         slack-message: |
