@@ -116,7 +116,7 @@ jobs:
           tg_version: ${{ inputs.terragrunt-version }}
           tg_command: 'apply'
           args: '-auto-approve -no-color'
-          tg_dir: ${{ inputs.working-directory }}/envs/${{ inputs.environment }}
+          tg_dir: ${{ inputs.working-directory }}
         continue-on-error: true
         env:
           TF_INPUT: false

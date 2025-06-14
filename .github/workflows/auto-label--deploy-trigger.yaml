@@ -106,15 +106,13 @@ jobs:
           echo "This prevents unauthorized or accidental deployments."
           exit 1
 
-      - name: Filter targets by stack (Dynamic)
+      - name: Filter targets by stack
         id: filter
         run: |
           TARGETS="${DEPLOYMENT_TARGETS:-[]}"
-          echo "All targets: $TARGETS"
 
           # Automatically detect all existing stacks
           STACKS=$(echo "$TARGETS" | jq -r '.[].stack' | sort -u)
-          echo "🔍 Detected stacks: $(echo $STACKS | tr '\n' ' ')"
 
           # Dynamically filter targets for each stack
           for stack in $STACKS; do
@@ -122,14 +120,12 @@ jobs:
             COUNT=$(echo "$STACK_TARGETS" | jq 'length')
             HAS_TARGETS=$([ $COUNT -gt 0 ] && echo 'true' || echo 'false')
 
-            # Dynamically set outputs (use -c flag for compact JSON)
+            # Dynamically set outputs
             echo "${stack}_targets=$STACK_TARGETS" >> $GITHUB_OUTPUT
             echo "has_${stack}=$HAS_TARGETS" >> $GITHUB_OUTPUT
-
-            echo "📊 $stack: $COUNT targets"
           done
 
-          # Debug: Output list of all detected stacks
+          # Output list of all detected stacks
           echo "detected_stacks=$(echo $STACKS | tr '\n' ',' | sed 's/,$//')" >> $GITHUB_OUTPUT
 
   deploy-terragrunt:

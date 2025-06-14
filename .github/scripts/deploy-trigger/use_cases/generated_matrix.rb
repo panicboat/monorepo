@@ -46,11 +46,8 @@ module UseCases
       def detect_available_stacks(service_name, config)
         available_stacks = []
 
-        puts "🔍 Detecting stacks for service: #{service_name}"
-
         # Get repository root by finding .git directory
         repo_root = find_repository_root
-        puts "📁 Repository root: #{repo_root}"
 
         # Check all configured directory conventions
         config.directory_conventions.each do |stack, pattern|
@@ -58,41 +55,29 @@ module UseCases
           dir_path = pattern.gsub('{service}', service_name)
           # Resolve path relative to repository root
           full_path = File.join(repo_root, dir_path)
-          puts "  Checking #{stack}: #{dir_path} (#{full_path})"
 
           # Check if directory exists
           if File.directory?(full_path)
             available_stacks << stack
-            puts "    ✅ Found #{stack} directory"
-          else
-            puts "    ❌ Directory not found"
           end
         end
 
         # Also check service-specific directory conventions
         service_config = config.services[service_name]
         if service_config && service_config['directory_conventions']
-          puts "  Checking service-specific conventions for #{service_name}:"
           service_config['directory_conventions'].each do |stack, pattern|
             # Get directory path by expanding placeholders
             dir_path = pattern.gsub('{service}', service_name)
             # Resolve path relative to repository root
             full_path = File.join(repo_root, dir_path)
-            puts "    Checking #{stack}: #{dir_path} (#{full_path})"
 
             # Check if directory exists and not already added
             if File.directory?(full_path) && !available_stacks.include?(stack)
               available_stacks << stack
-              puts "      ✅ Found service-specific #{stack} directory"
-            else
-              puts "      ❌ Directory not found or already added"
             end
           end
-        else
-          puts "  No service-specific conventions for #{service_name}"
         end
 
-        puts "📊 Available stacks for #{service_name}: #{available_stacks.join(', ')}"
         available_stacks
       end
 
@@ -112,11 +97,8 @@ module UseCases
 
         # Double-check directory exists (safety check)
         unless File.directory?(full_path)
-          puts "⚠️  Working directory not found: #{working_dir} (#{full_path})"
           return nil
         end
-
-        puts "✅ Creating deployment target: #{deploy_label.service}:#{target_environment}:#{stack} -> #{working_dir}"
 
         # Create deployment target
         Entities::DeploymentTarget.new(
