@@ -1,5 +1,6 @@
 # Use case for validating workflow configuration
 # Comprehensive validation of YAML configuration structure and content
+# Phase 1: Added service exclusion validation
 
 module UseCases
   module ConfigManagement
@@ -22,6 +23,7 @@ module UseCases
           validation_errors.concat(validate_modules(config))
           validation_errors.concat(validate_branch_patterns(config))
           validation_errors.concat(validate_safety_checks(config))
+          validation_errors.concat(validate_service_exclusions(config))  # Phase 1: Added exclusion validation
 
           if validation_errors.any?
             Entities::Result.failure(
@@ -226,11 +228,83 @@ module UseCases
         errors
       end
 
-      # Generate validation summary
+      # Phase 1: Validate service exclusion configuration
+      def validate_service_exclusions(config)
+        errors = []
+        services = config.services
+
+        services.each do |service_name, service_config|
+          if service_config['exclude_from_automation']
+            errors.concat(validate_service_exclusion_config(service_name, service_config))
+          end
+        end
+
+        errors
+      end
+
+      # Validate individual service exclusion configuration
+      def validate_service_exclusion_config(service_name, service_config)
+        errors = []
+
+        # Check if exclusion is boolean true or valid object
+        exclusion_setting = service_config['exclude_from_automation']
+        unless [true, false].include?(exclusion_setting)
+          errors << "Service '#{service_name}' exclude_from_automation must be boolean (true/false)"
+          return errors  # Early return if basic setting is invalid
+        end
+
+        # If excluded, validate exclusion_config
+        if exclusion_setting == true
+          exclusion_config = service_config['exclusion_config']
+
+          # exclusion_config is required when excluded
+          if exclusion_config.nil?
+            errors << "Service '#{service_name}' excluded from automation but missing exclusion_config"
+            return errors
+          end
+
+          # Validate required fields in exclusion_config
+          unless exclusion_config['reason']
+            errors << "Service '#{service_name}' exclusion_config missing required field: reason"
+          end
+
+          # Validate exclusion type if provided
+          if exclusion_config['type']
+            valid_types = %w[permanent temporary conditional]
+            unless valid_types.include?(exclusion_config['type'])
+              errors << "Service '#{service_name}' exclusion_config type must be one of: #{valid_types.join(', ')}"
+            end
+          end
+
+          # Check reason length (should be descriptive)
+          if exclusion_config['reason'] && exclusion_config['reason'].length < 10
+            errors << "Service '#{service_name}' exclusion_config reason should be more descriptive (at least 10 characters)"
+          end
+
+          # Info: directory_conventions is optional for excluded services
+          unless service_config['directory_conventions']
+            puts "INFO: Service '#{service_name}' is excluded and has no directory_conventions defined"
+          end
+        end
+
+        errors
+      end
+
+      # Generate validation summary including exclusion statistics
       def generate_validation_summary(config)
+        excluded_services = config.services.select { |_, service_config|
+          service_config['exclude_from_automation'] == true
+        }
+
+        excluded_by_type = excluded_services.group_by { |_, service_config|
+          service_config.dig('exclusion_config', 'type') || 'unspecified'
+        }
+
         {
           environments_count: config.environments.length,
           services_count: config.services.length,
+          excluded_services_count: excluded_services.length,
+          excluded_services_by_type: excluded_by_type.transform_values(&:length),
           directory_conventions_count: config.directory_conventions.length,
           terraform_version: config.terraform_version,
           terragrunt_version: config.terragrunt_version,

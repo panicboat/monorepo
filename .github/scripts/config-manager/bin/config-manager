@@ -105,20 +105,95 @@ class ConfigManagerCLI < Thor
         puts "  No services explicitly configured"
         puts "  Services will be auto-discovered from directory structure"
       else
+        automated_services = []
+        excluded_services = []
+
         config.services.each do |service_name, service_config|
-          puts "  #{service_name}:"
-          if service_config['directory_conventions']
-            service_config['directory_conventions'].each do |stack, pattern|
-              puts "    #{stack}: #{pattern}"
-            end
+          if service_config['exclude_from_automation'] == true
+            excluded_services << { name: service_name, config: service_config }
           else
-            puts "    Using default directory conventions"
+            automated_services << { name: service_name, config: service_config }
+          end
+        end
+
+        if automated_services.any?
+          puts "  ✅ Automated Services (#{automated_services.length}):"
+          automated_services.each do |service|
+            puts "    #{service[:name]}:"
+            if service[:config]['directory_conventions']
+              service[:config]['directory_conventions'].each do |stack, pattern|
+                puts "      #{stack}: #{pattern}"
+              end
+            else
+              puts "      Using default directory conventions"
+            end
           end
           puts ""
+        end
+
+        if excluded_services.any?
+          puts "  ⚠️  Excluded Services (#{excluded_services.length}):"
+          excluded_services.each do |service|
+            exclusion_config = service[:config]['exclusion_config'] || {}
+            reason = exclusion_config['reason'] || 'No reason specified'
+            type = exclusion_config['type'] || 'unspecified'
+
+            puts "    #{service[:name]} (#{type}):"
+            puts "      Reason: #{reason}"
+            if service[:config]['directory_conventions']
+              puts "      Directory conventions: configured (for future migration)"
+            else
+              puts "      Directory conventions: not configured"
+            end
+          end
         end
       end
     rescue => error
       puts "❌ Failed to load services: #{error.message}"
+      exit 1
+    end
+  end
+
+  desc "excluded_services", "List services excluded from automation"
+
+  def excluded_services
+    begin
+      config_client = ConfigManagerContainer.resolve(:config_client)
+      config = config_client.load_workflow_config
+
+      excluded_services = config.services.select { |_, service_config|
+        service_config['exclude_from_automation'] == true
+      }
+
+      if excluded_services.empty?
+        puts "✅ No services are excluded from automation"
+        return
+      end
+
+      puts "⚠️  Excluded Services (#{excluded_services.length}):"
+
+      # Group by exclusion type
+      by_type = excluded_services.group_by { |_, service_config|
+        service_config.dig('exclusion_config', 'type') || 'unspecified'
+      }
+
+      by_type.each do |type, services|
+        puts "  #{type.capitalize} (#{services.length}):"
+        services.each do |service_name, service_config|
+          exclusion_config = service_config['exclusion_config'] || {}
+          reason = exclusion_config['reason'] || 'No reason specified'
+
+          puts "    - #{service_name}: #{reason}"
+        end
+        puts ""
+      end
+
+      puts "📋 Total excluded: #{excluded_services.length} services"
+      puts "📋 Total configured: #{config.services.length} services"
+      puts "📋 Automation coverage: #{((config.services.length - excluded_services.length).to_f / config.services.length * 100).round(1)}%"
+
+    rescue => error
+      puts "❌ Failed to load excluded services: #{error.message}"
       exit 1
     end
   end

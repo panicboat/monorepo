@@ -244,12 +244,12 @@ labels = ["deploy:auth-service", "deploy:api-gateway"]
 services:
   - name: claude-code-action
     directory_conventions:
-      terragrunt: .github/actions/{service}/terragrunt
-      kubernetes: .github/actions/{service}/kubernetes
+      terragrunt: .github/actions/{service}/terragrunt/envs/{environment}
+      kubernetes: .github/actions/{service}/kubernetes/overlays/{environment}
 
   - name: legacy-service
     directory_conventions:
-      terragrunt: legacy/{service}/infra
+      terragrunt: legacy/{service}/infra/envs/{environment}
 ```
 
 ### パターンマッチングロジック

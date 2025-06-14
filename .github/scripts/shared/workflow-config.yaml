@@ -24,6 +24,12 @@ services:
       terragrunt: .github/actions/{service}/terragrunt
       kubernetes: .github/actions/{service}/kubernetes
 
+  - name: github-repository
+    exclude_from_automation: true
+    exclusion_config:
+      reason: "When deployed in parallel, GitHub's exclusion control deadlocks the state."
+      type: "permanent"
+
 defaults:
   aws_region: ap-northeast-1
   iam_role_plan: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
@@ -39,17 +45,12 @@ modules:
 branch_patterns:
   develop:
     target_environment: develop
-  main:
-    target_environment: develop
   staging:
     pattern: "staging/*"
     target_environment: staging
   production:
     pattern: "production/*"
     target_environment: production
-  custom_deploy:
-    pattern: "deploy/*/*/*"
-    target_environment: custom  # Will be extracted from branch name
 
 # Safety checks configuration
 safety_checks:

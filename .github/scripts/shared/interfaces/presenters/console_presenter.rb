@@ -5,11 +5,16 @@ module Interfaces
   module Presenters
     class ConsolePresenter
       # Present label dispatch results
-      def present_label_dispatch_result(deploy_labels:, labels_added:, labels_removed:, changed_files:)
+      def present_label_dispatch_result(deploy_labels:, labels_added:, labels_removed:, changed_files:, excluded_services: [])
         puts "🏷️  Label Dispatch Results".colorize(:blue)
         puts "Deploy Labels: #{deploy_labels.map(&:to_s).join(', ')}"
         puts "Labels Added: #{labels_added.join(', ')}" if labels_added.any?
         puts "Labels Removed: #{labels_removed.join(', ')}" if labels_removed.any?
+
+        if excluded_services.any?
+          puts "Excluded Services: #{excluded_services.join(', ')}".colorize(:yellow)
+        end
+
         puts "Changed Files: #{changed_files.length} files"
 
         if changed_files.length <= 10
@@ -45,8 +50,8 @@ module Interfaces
 
         deployment_targets.each do |target|
           puts "  #{target.service}:#{target.environment}:#{target.stack} -> #{target.working_directory}"
-          puts "    IAM Plan Role: #{target.iam_role_plan}"
-          puts "    IAM Apply Role: #{target.iam_role_apply}"
+          puts "    IAM Plan Role: #{target.iam_role_plan}" if target.iam_role_plan
+          puts "    IAM Apply Role: #{target.iam_role_apply}" if target.iam_role_apply
           puts "    AWS Region: #{target.aws_region}"
           puts ""
         end
@@ -57,16 +62,6 @@ module Interfaces
         puts "🌿 Branch Deployment Detection".colorize(:blue)
         puts "Branch: #{branch_name}"
         puts "Deploy Labels: #{deploy_labels.map(&:to_s).join(', ')}"
-      end
-
-      # Present configuration validation results
-      def present_config_validation_result(valid:, errors: [])
-        if valid
-          puts "✅ Configuration is valid".colorize(:green)
-        else
-          puts "❌ Configuration validation failed".colorize(:red)
-          errors.each { |error| puts "  - #{error}" }
-        end
       end
 
       # Present configuration validation results
@@ -120,6 +115,13 @@ module Interfaces
 
           puts "#{result[:status].ljust(4)} #{result[:check]}: #{result[:details]}".colorize(status_color)
         end
+      end
+
+      # Present config template
+      def present_config_template(template:)
+        puts "📋 Configuration Template".colorize(:blue)
+        puts ""
+        puts template
       end
 
       # Present error results

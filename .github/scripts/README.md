@@ -162,13 +162,13 @@ environments:
     iam_role_apply: arn:aws:iam::123:role/apply-develop
 
 directory_conventions:
-  terragrunt: "{service}/terragrunt"
-  kubernetes: "{service}/kubernetes"
+  terragrunt: "{service}/terragrunt/envs/{environment}"
+  kubernetes: "{service}/kubernetes/overlays/{environment}"
 
 services:
   - name: claude-code-action
     directory_conventions:
-      terragrunt: .github/actions/{service}/terragrunt
+      terragrunt: .github/actions/{service}/terragrunt/envs/{environment}
 ```
 
 ### 設定検証とテスト
