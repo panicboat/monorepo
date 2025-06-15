@@ -140,6 +140,7 @@ jobs:
           ${{ steps.apply.outputs.tg_action_output }}
           EOF
           fi
+
           OUTPUT=$(python3 -c "
           import urllib.parse
           with open('/tmp/raw_output.txt', 'r') as f:
@@ -147,6 +148,7 @@ jobs:
           decoded_content = urllib.parse.unquote(encoded_content) if encoded_content else '${{ inputs.action-type }} execution completed. See workflow logs for detailed output.'
           print(decoded_content)
           ")
+
           if [ ${#OUTPUT} -gt 30000 ]; then
             OUTPUT="${OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
           fi
@@ -177,17 +179,21 @@ jobs:
         with:
           message: |
             ## ${{ inputs.action-type == 'plan' && '📋 Terragrunt Plan Results' || '🚀 Terragrunt Apply Completed' }}
+
             **Project**: ${{ inputs.project-name }}
             **Environment**: `${{ inputs.environment }}`
             **Directory**: `${{ inputs.working-directory }}`
             **Status**: ${{ steps.parse-results.outputs.status }}
             **Action**: ${{ inputs.action-type }}
+
             <details>
             <summary>📝 ${{ inputs.action-type == 'plan' && 'Plan' || 'Apply' }} Output</summary>
+
             ```hcl
             ${{ steps.parse-results.outputs.output }}
             ```
             </details>
+
             [View full workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             ---
             *Triggered by workflow automation system*
