@@ -143,10 +143,10 @@ jobs:
       uses: slackapi/slack-github-action@v2
       with:
         method: chat.postMessage
+        token: ${{ secrets.SLACK_BOT_TOKEN }}
         payload: |
           {
             "channel": "C0907M25935",
-            "text": "Workflow completed for PR #123",
             "blocks": [
               {
                 "type": "section",
@@ -183,8 +183,6 @@ jobs:
               }
             ]
           }
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
     - name: Fail if workflows failed
       if: steps.workflow-status.outputs.overall-status == 'failure'
