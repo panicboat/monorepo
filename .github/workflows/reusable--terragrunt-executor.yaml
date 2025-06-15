@@ -72,8 +72,8 @@ jobs:
         id: terragrunt
         uses: gruntwork-io/terragrunt-action@v2
         with:
-          tf_version: '1.4.6'
-          tg_version: '0.50.8'
+          tf_version: '1.12.2'
+          tg_version: '0.81.6'
           tg_command: ${{ inputs.action-type }}
           tg_add_approve: ${{ inputs.action-type == 'apply' && '1' || '' }}
           # tg_comment: 1 # Noisy as comments are just added.
