@@ -139,9 +139,10 @@ jobs:
         pr-number: ${{ github.event.pull_request.number }}
       continue-on-error: true
 
-    - name: Notify Slack - Text + Blocks
+    - name: Notify Slack
       uses: slackapi/slack-github-action@v2
       with:
+        method: chat.postMessage
         payload: |
           {
             "channel": "C0907M25935",
