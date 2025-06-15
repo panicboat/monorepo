@@ -15,10 +15,10 @@
 
   "packageRules": [
     {
-      "description": "Base rule - parentDir and depName separation",
+      "description": "Base rule - packageFileDir and depName separation",
       "matchPaths": ["**"],
       "automerge": true,
-      "groupName": "{{parentDir}} {{depName}}"
+      "groupName": "{{packageFileDir}} {{depName}}"
     },
 
     {
@@ -43,7 +43,7 @@
   "branchPrefix": "renovate/",
 
   "commitMessagePrefix": "⬆️",
-  "commitMessageAction": "chore({{parentDir}}): update",
+  "commitMessageAction": "deps({{packageFileDir}}): update",
   "commitMessageTopic": "{{depName}}",
   "commitMessageExtra": "to {{newVersion}}"
 }
