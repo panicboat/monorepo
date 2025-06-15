@@ -139,15 +139,49 @@ jobs:
         pr-number: ${{ github.event.pull_request.number }}
       continue-on-error: true
 
-    - name: Notify Slack
-      uses: slackapi/slack-github-action@v1
+    - name: Notify Slack - Text + Blocks
+      uses: slackapi/slack-github-action@v2
       with:
-        channel-id: 'C0907M25935'
-        slack-message: |
-          ${{ steps.workflow-status.outputs.overall-status == 'success' && '🎉 All workflows passed' || '🚨 Workflows failed' }} in PR #${{ github.event.pull_request.number }}
-          👤 Author: ${{ github.event.pull_request.user.login }}
-          🔗 PR: ${{ github.event.pull_request.html_url }}
-          ${{ steps.workflow-status.outputs.overall-status == 'success' && 'Ready for review and merge! 🚀' || '' }}
+        payload: |
+          {
+            "channel": "C0907M25935",
+            "text": "Workflow completed for PR #123",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "${{ steps.workflow-status.outputs.overall-status == 'success' && '🎉 *All workflows passed*' || '🚨 *Workflows failed*' }} in PR #${{ github.event.pull_request.number }}"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Author:*\n${{ github.event.pull_request.user.login }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Status:*\n${{ steps.workflow-status.outputs.overall-status }}"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View PR"
+                    },
+                    "url": "${{ github.event.pull_request.html_url }}"
+                  }
+                ]
+              }
+            ]
+          }
       env:
         SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
