@@ -22,9 +22,10 @@ module UseCases
 
         # Check 2: Deploy labels presence
         if deploy_labels.empty?
+          # It is assumed to be normal even if the label is not found because there is a service that is not deployed.
           validation_results << {
             check: 'labels_presence',
-            passed: false,
+            passed: true,
             message: 'No deployment labels provided'
           }
         else

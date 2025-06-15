@@ -19,9 +19,10 @@ module UseCases
           deploy_labels = deploy_labels_strings.map { |label| Entities::DeployLabel.new(label) }.select(&:valid?)
 
           if deploy_labels.empty?
-            return Entities::Result.failure(
-              error_message: "No deployment labels found on PR ##{pr_number}"
-            )
+            # It is assumed to be normal even if the label is not found because there is a service that is not deployed.
+            # return Entities::Result.failure(
+            #   error_message: "No deployment labels found on PR ##{pr_number}"
+            # )
           end
 
           return Entities::Result.success(
