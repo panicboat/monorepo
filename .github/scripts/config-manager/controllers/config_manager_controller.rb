@@ -179,30 +179,22 @@ module Interfaces
               iam_role_apply: arn:aws:iam::ACCOUNT_ID:role/github-oidc-auth-production-apply-role
 
           directory_conventions:
-            terragrunt: "{service}/terragrunt"
-            kubernetes: "{service}/kubernetes"
+            terragrunt: "{service}/terragrunt/envs/{environment}"
+            kubernetes: "{service}/kubernetes/overlays/{environment}"
 
           services:
             - name: example-service
               directory_conventions:
-                terragrunt: "services/{service}/terragrunt"
-                kubernetes: "services/{service}/kubernetes"
+                terragrunt: "services/{service}/terragrunt/envs/{environment}"
+                kubernetes: "services/{service}/kubernetes/overlays/{environment}"
 
           defaults:
             aws_region: ap-northeast-1
             iam_role_plan: arn:aws:iam::ACCOUNT_ID:role/github-oidc-auth-default-plan-role
             iam_role_apply: arn:aws:iam::ACCOUNT_ID:role/github-oidc-auth-default-apply-role
 
-          modules:
-            terraform_version: "1.12.1"
-            terragrunt_version: "0.81.0"
-            kubectl_version: "1.28.0"
-            kustomize_version: "5.0.0"
-
           branch_patterns:
             develop:
-              target_environment: develop
-            main:
               target_environment: develop
             staging:
               pattern: "staging/*"

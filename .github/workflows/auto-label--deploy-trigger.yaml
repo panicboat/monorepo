@@ -146,8 +146,6 @@ jobs:
       apply-iam-role: ${{ matrix.target.iam_role_apply }}
       aws-region: ${{ matrix.target.aws_region }}
       working-directory: ${{ matrix.target.working_directory }}
-      terraform-version: ${{ matrix.target.terraform_version }}
-      terragrunt-version: ${{ matrix.target.terragrunt_version }}
     secrets:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
@@ -169,8 +167,6 @@ jobs:
           echo "🚧 Kubernetes deployment for ${{ matrix.target.service }}:${{ matrix.target.environment }}"
           echo "Working directory: ${{ matrix.target.working_directory }}"
           echo "Stack: ${{ matrix.target.stack }}"
-          echo "kubectl version: ${{ matrix.target.kubectl_version || '1.28.0' }}"
-          echo "kustomize version: ${{ matrix.target.kustomize_version || '5.0.0' }}"
           echo ""
           echo "This will be implemented with kubernetes executor workflow"
           echo "Future implementation:"

@@ -408,7 +408,7 @@ environments:
   with:
     ruby-version: '3.4'
     bundler-cache: true
-    working-directory: .github/scripts/shared
+    working-directory: .github/scripts
 ```
 
 ### 並列実行制御

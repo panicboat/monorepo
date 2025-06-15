@@ -1,6 +1,5 @@
 # Use case for validating workflow configuration
 # Comprehensive validation of YAML configuration structure and content
-# Phase 1: Added service exclusion validation
 
 module UseCases
   module ConfigManagement
@@ -20,10 +19,9 @@ module UseCases
           validation_errors.concat(validate_services(config))
           validation_errors.concat(validate_directory_conventions(config))
           validation_errors.concat(validate_defaults(config))
-          validation_errors.concat(validate_modules(config))
           validation_errors.concat(validate_branch_patterns(config))
           validation_errors.concat(validate_safety_checks(config))
-          validation_errors.concat(validate_service_exclusions(config))  # Phase 1: Added exclusion validation
+          validation_errors.concat(validate_service_exclusions(config))
 
           if validation_errors.any?
             Entities::Result.failure(
@@ -154,30 +152,6 @@ module UseCases
         errors
       end
 
-      # Validate modules configuration
-      def validate_modules(config)
-        errors = []
-        modules = config.modules
-
-        required_modules = %w[terraform_version terragrunt_version]
-        required_modules.each do |module_name|
-          unless modules[module_name]
-            errors << "Modules configuration missing: #{module_name}"
-          end
-        end
-
-        # Validate version formats
-        if modules['terraform_version'] && !modules['terraform_version'].match(/^\d+\.\d+\.\d+$/)
-          errors << "Invalid terraform_version format: #{modules['terraform_version']} (expected: x.y.z)"
-        end
-
-        if modules['terragrunt_version'] && !modules['terragrunt_version'].match(/^\d+\.\d+\.\d+$/)
-          errors << "Invalid terragrunt_version format: #{modules['terragrunt_version']} (expected: x.y.z)"
-        end
-
-        errors
-      end
-
       # Validate branch patterns configuration
       def validate_branch_patterns(config)
         errors = []
@@ -228,7 +202,7 @@ module UseCases
         errors
       end
 
-      # Phase 1: Validate service exclusion configuration
+      # Validate service exclusion configuration
       def validate_service_exclusions(config)
         errors = []
         services = config.services
@@ -250,7 +224,7 @@ module UseCases
         exclusion_setting = service_config['exclude_from_automation']
         unless [true, false].include?(exclusion_setting)
           errors << "Service '#{service_name}' exclude_from_automation must be boolean (true/false)"
-          return errors  # Early return if basic setting is invalid
+          return errors
         end
 
         # If excluded, validate exclusion_config
@@ -281,7 +255,6 @@ module UseCases
             errors << "Service '#{service_name}' exclusion_config reason should be more descriptive (at least 10 characters)"
           end
 
-          # Info: directory_conventions is optional for excluded services
           unless service_config['directory_conventions']
             puts "INFO: Service '#{service_name}' is excluded and has no directory_conventions defined"
           end
@@ -306,8 +279,6 @@ module UseCases
           excluded_services_count: excluded_services.length,
           excluded_services_by_type: excluded_by_type.transform_values(&:length),
           directory_conventions_count: config.directory_conventions.length,
-          terraform_version: config.terraform_version,
-          terragrunt_version: config.terragrunt_version,
           safety_checks_enabled: config.raw_config['safety_checks']&.[]('require_merged_pr') || false
         }
       end

@@ -1,6 +1,5 @@
 # Use case for generating deployment matrix from deploy labels
 # Creates deployment targets with all necessary configuration
-# Phase 1: Added service exclusion filtering
 
 module UseCases
   module DeployTrigger
@@ -130,17 +129,17 @@ module UseCases
         # Create deployment target with appropriate configuration based on stack
         case stack
         when 'terragrunt'
-          create_terragrunt_target(deploy_label, target_environment, env_config, working_dir, config)
+          create_terragrunt_target(deploy_label, target_environment, env_config, working_dir)
         when 'kubernetes'
-          create_kubernetes_target(deploy_label, target_environment, env_config, working_dir, config)
+          create_kubernetes_target(deploy_label, target_environment, env_config, working_dir)
         else
           # Generic target for future stacks
-          create_generic_target(deploy_label, target_environment, stack, env_config, working_dir, config)
+          create_generic_target(deploy_label, target_environment, stack, env_config, working_dir)
         end
       end
 
       # Create Terragrunt deployment target
-      def create_terragrunt_target(deploy_label, target_environment, env_config, working_dir, config)
+      def create_terragrunt_target(deploy_label, target_environment, env_config, working_dir)
         Entities::DeploymentTarget.new(
           service: deploy_label.service,
           environment: target_environment,
@@ -148,31 +147,31 @@ module UseCases
           iam_role_plan: env_config['iam_role_plan'],
           iam_role_apply: env_config['iam_role_apply'],
           aws_region: env_config['aws_region'],
-          working_directory: working_dir,
-          terraform_version: config.terraform_version,
-          terragrunt_version: config.terragrunt_version
+          working_directory: working_dir
         )
       end
 
       # Create Kubernetes deployment target
-      def create_kubernetes_target(deploy_label, target_environment, env_config, working_dir, config)
+      def create_kubernetes_target(deploy_label, target_environment, env_config, working_dir)
         Entities::DeploymentTarget.new(
           service: deploy_label.service,
           environment: target_environment,
           stack: 'kubernetes',
-          working_directory: working_dir,
-          kubectl_version: config.kubectl_version,
-          kustomize_version: config.kustomize_version
+          aws_region: env_config['aws_region'],
+          working_directory: working_dir
         )
       end
 
       # Create generic deployment target for future stacks
-      def create_generic_target(deploy_label, target_environment, stack, env_config, working_dir, config)
+      def create_generic_target(deploy_label, target_environment, stack, env_config, working_dir)
         Entities::DeploymentTarget.new(
           service: deploy_label.service,
           environment: target_environment,
           stack: stack,
-          working_directory: working_dir,
+          iam_role_plan: env_config['iam_role_plan'],
+          iam_role_apply: env_config['iam_role_apply'],
+          aws_region: env_config['aws_region'],
+          working_directory: working_dir
         )
       end
 

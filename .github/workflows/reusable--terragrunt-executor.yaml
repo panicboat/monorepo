@@ -11,16 +11,6 @@ on:
         required: true
         type: string
         description: 'Environment name (develop, staging, production, etc.)'
-      terraform-version:
-        required: false
-        type: string
-        default: '1.12.1'
-        description: 'Terraform version'
-      terragrunt-version:
-        required: false
-        type: string
-        default: '0.81.0'
-        description: 'Terragrunt version'
       action-type:
         required: true
         type: string
@@ -78,46 +68,15 @@ jobs:
           role-session-name: GitHubActions-Terragrunt-${{ inputs.action-type }}-${{ inputs.environment }}
           audience: sts.amazonaws.com
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ inputs.terraform-version }}
-          terraform_wrapper: false
-
-      - name: Setup Terragrunt Binary
-        run: |
-          TG_VERSION=${{ inputs.terragrunt-version }}
-          wget -O terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64
-          chmod +x terragrunt
-          sudo mv terragrunt /usr/local/bin/
-          terragrunt --version
-
-      - name: Terragrunt Plan
-        if: inputs.action-type == 'plan'
-        id: plan
+      - name: Terragrunt ${{ inputs.action-type }}
+        id: terragrunt
         uses: gruntwork-io/terragrunt-action@v2
         with:
-          tf_version: ${{ inputs.terraform-version }}
-          tg_version: ${{ inputs.terragrunt-version }}
-          tg_command: 'plan'
+          tf_version: '1.12.2'
+          tg_version: '0.81.6'
+          tg_command: ${{ inputs.action-type }}
+          tg_add_approve: ${{ inputs.action-type == 'apply' && '1' || '' }}
           # tg_comment: 1 # Noisy as comments are just added.
-          tg_dir: ${{ inputs.working-directory }}
-        continue-on-error: true
-        env:
-          TF_INPUT: false
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
-
-      - name: Terragrunt Apply
-        if: inputs.action-type == 'apply'
-        id: apply
-        uses: gruntwork-io/terragrunt-action@v2
-        with:
-          tf_version: ${{ inputs.terraform-version }}
-          tg_version: ${{ inputs.terragrunt-version }}
-          tg_command: 'apply'
-          # tg_comment: 1 # Noisy as comments are just added.
-          tg_add_approve: 1
           tg_dir: ${{ inputs.working-directory }}
         continue-on-error: true
         env:
@@ -129,17 +88,10 @@ jobs:
         if: always()
         id: parse-results
         run: |
-          if [ "${{ inputs.action-type }}" == "plan" ]; then
-            STATUS=$([ "${{ steps.plan.outcome }}" == "success" ] && echo "✅ Success" || echo "❌ Failed")
-            cat > /tmp/raw_output.txt << 'EOF'
-          ${{ steps.plan.outputs.tg_action_output }}
+          STATUS=$([ "${{ steps.terragrunt.outcome }}" == "success" ] && echo "✅ Success" || echo "❌ Failed")
+          cat > /tmp/raw_output.txt << 'EOF'
+          ${{ steps.terragrunt.outputs.tg_action_output }}
           EOF
-          else
-            STATUS=$([ "${{ steps.apply.outcome }}" == "success" ] && echo "✅ Success" || echo "❌ Failed")
-            cat > /tmp/raw_output.txt << 'EOF'
-          ${{ steps.apply.outputs.tg_action_output }}
-          EOF
-          fi
 
           OUTPUT=$(python3 -c "
           import urllib.parse
@@ -204,14 +156,7 @@ jobs:
 
       - name: Exit with appropriate code
         run: |
-          if [ "${{ inputs.action-type }}" == "plan" ]; then
-            if [ "${{ steps.plan.outcome }}" == "failure" ]; then
-              echo "::error::Terragrunt plan failed for ${{ inputs.project-name }}:${{ inputs.environment }}"
-              exit 1
-            fi
-          else
-            if [ "${{ steps.apply.outcome }}" == "failure" ]; then
-              echo "::error::Terragrunt apply failed for ${{ inputs.project-name }}:${{ inputs.environment }}"
-              exit 1
-            fi
+          if [ "${{ steps.terragrunt.outcome }}" == "failure" ]; then
+            echo "::error::Terragrunt ${{ inputs.action-type }} failed for ${{ inputs.project-name }}:${{ inputs.environment }}"
+            exit 1
           fi

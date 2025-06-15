@@ -83,8 +83,6 @@ module Interfaces
         puts "📋 Workflow Configuration".colorize(:blue)
         puts "Environments: #{config.environments.keys.join(', ')}"
         puts "Services: #{config.services.keys.join(', ')}"
-        puts "Terraform version: #{config.terraform_version}"
-        puts "Terragrunt version: #{config.terragrunt_version}"
 
         puts "\nDirectory Conventions:"
         config.directory_conventions.each { |stack, pattern| puts "  #{stack}: #{pattern}" }

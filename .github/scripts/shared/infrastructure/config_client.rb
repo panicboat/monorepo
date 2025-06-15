@@ -27,7 +27,7 @@ module Infrastructure
       raise "Configuration must be a Hash" unless config_data.is_a?(Hash)
 
       # Validate required sections
-      required_sections = %w[environments directory_conventions defaults modules]
+      required_sections = %w[environments directory_conventions defaults]
       missing_sections = required_sections - config_data.keys
       if missing_sections.any?
         raise "Missing required configuration sections: #{missing_sections.join(', ')}"

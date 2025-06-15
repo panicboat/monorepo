@@ -20,9 +20,13 @@ directory_conventions:
 
 services:
   - name: claude-code-action
-    directory_conventions:
-      terragrunt: .github/actions/{service}/terragrunt/envs/{environment}
-      kubernetes: .github/actions/{service}/kubernetes/overlays/{environment}
+    # directory_conventions:
+    #   terragrunt: .github/actions/{service}/terragrunt/envs/{environment}
+    #   kubernetes: .github/actions/{service}/kubernetes/overlays/{environment}
+    exclude_from_automation: true
+    exclusion_config:
+      reason: "Pending decision to go stock or use Bedrock."
+      type: "temporal"
 
   - name: github-repository
     exclude_from_automation: true
@@ -34,12 +38,6 @@ defaults:
   aws_region: ap-northeast-1
   iam_role_plan: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
   iam_role_apply: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
-
-modules:
-  terraform_version: "1.12.1"
-  terragrunt_version: "0.81.0"
-  kubectl_version: "1.28.0"
-  kustomize_version: "5.0.0"
 
 # Branch-to-environment mapping configuration
 branch_patterns:
