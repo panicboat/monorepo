@@ -2,11 +2,10 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
   "timezone": "Asia/Tokyo",
-  "labels": ["dependencies"],
-  "assigneesFromCodeOwners": true,
+  "labels": ["🤖 renovate"],
+  "assigneesFromCodeOwners": false,
   "reviewersFromCodeOwners": true,
 
-  "automerge": true,
   "automergeType": "pr",
   "automergeStrategy": "squash",
   "platformAutomerge": true,
@@ -16,25 +15,25 @@
 
   "packageRules": [
     {
-      "description": "🚫 Production environments - manual review only",
-      "matchPaths": ["**/production/**", "**/*production*/**"],
-      "automerge": false,
-      "addLabels": ["⚠️ production", "manual-review"]
+      "description": "Base rule - parentDir and depName separation",
+      "matchPaths": ["**"],
+      "automerge": true,
+      "groupName": "{{parentDir}} {{depName}}"
     },
 
     {
-      "description": "🚫 Major updates - manual review only",
+      "description": "🚫 Production environments - disable automerge",
+      "matchPaths": ["**/production/**"],
+      "automerge": false,
+      "prPriority": -1,
+      "addLabels": ["⚠️ production"]
+    },
+
+    {
+      "description": "🚫 Major updates - disable automerge",
       "matchUpdateTypes": ["major"],
       "automerge": false,
-      "addLabels": ["📈 major-update", "manual-review"]
-    },
-
-    {
-      "description": "✅ Everything else - auto-merge",
-      "matchPackagePatterns": ["*"],
-      "automerge": true,
-      "addLabels": ["🤖 auto-merge"],
-      "groupName": "{{packageFileDir}} dependencies"
+      "addLabels": ["📈 major-update"]
     }
   ],
 
@@ -44,7 +43,7 @@
   "branchPrefix": "renovate/",
 
   "commitMessagePrefix": "⬆️",
-  "commitMessageAction": "Update",
+  "commitMessageAction": "chore({{parentDir}}): update",
   "commitMessageTopic": "{{depName}}",
   "commitMessageExtra": "to {{newVersion}}"
 }
