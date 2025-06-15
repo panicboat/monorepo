@@ -101,7 +101,6 @@ jobs:
           tg_version: ${{ inputs.terragrunt-version }}
           tg_command: 'plan'
           tg_comment: 1
-          # args: '-no-color -detailed-exitcode'
           tg_dir: ${{ inputs.working-directory }}
         continue-on-error: true
         env:
@@ -117,105 +116,11 @@ jobs:
           tf_version: ${{ inputs.terraform-version }}
           tg_version: ${{ inputs.terragrunt-version }}
           tg_command: 'apply'
-          tg_comment: true
-          # args: '-auto-approve -no-color'
+          tg_comment: 1
+          tg_add_approve: 1
           tg_dir: ${{ inputs.working-directory }}
         continue-on-error: true
         env:
           TF_INPUT: false
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
-
-      # - name: Parse Results
-      #   if: always()
-      #   id: parse-results
-      #   run: |
-      #     if [ "${{ inputs.action-type }}" == "plan" ]; then
-      #       STATUS=$([ "${{ steps.plan.outcome }}" == "success" ] && echo "✅ Success" || echo "❌ Failed")
-      #       cat > /tmp/raw_output.txt << 'EOF'
-      #     ${{ steps.plan.outputs.tg_action_output }}
-      #     EOF
-      #     else
-      #       STATUS=$([ "${{ steps.apply.outcome }}" == "success" ] && echo "✅ Success" || echo "❌ Failed")
-      #       cat > /tmp/raw_output.txt << 'EOF'
-      #     ${{ steps.apply.outputs.tg_action_output }}
-      #     EOF
-      #     fi
-
-      #     OUTPUT=$(python3 -c "
-      #     import urllib.parse
-      #     with open('/tmp/raw_output.txt', 'r') as f:
-      #         encoded_content = f.read().strip()
-      #     decoded_content = urllib.parse.unquote(encoded_content) if encoded_content else '${{ inputs.action-type }} execution completed. See workflow logs for detailed output.'
-      #     print(decoded_content)
-      #     ")
-
-      #     if [ ${#OUTPUT} -gt 30000 ]; then
-      #       OUTPUT="${OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
-      #     fi
-
-      #     echo "status=$STATUS" >> $GITHUB_OUTPUT
-      #     {
-      #       echo "output<<EOF"
-      #       echo "$OUTPUT"
-      #       echo "EOF"
-      #     } >> $GITHUB_OUTPUT
-
-      # - name: Get merged PR information
-      #   id: merged-pr
-      #   if: github.event_name == 'push'
-      #   uses: actions-ecosystem/action-get-merged-pull-request@v1
-      #   with:
-      #     github_token: ${{ steps.app-token.outputs.token }}
-      #   continue-on-error: true
-
-      # - name: Find current PR
-      #   id: pr-info
-      #   uses: jwalton/gh-find-current-pr@v1
-      #   with:
-      #     state: all
-
-      # - name: Create or update PR comment
-      #   if: steps.pr-info.outputs.number
-      #   uses: thollander/actions-comment-pull-request@v3
-      #   with:
-      #     message: |
-      #       ## ${{ inputs.action-type == 'plan' && '📋 Terragrunt Plan Results' || '🚀 Terragrunt Apply Completed' }}
-
-      #       **Project**: ${{ inputs.project-name }}
-      #       **Environment**: `${{ inputs.environment }}`
-      #       **Directory**: `${{ inputs.working-directory }}`
-      #       **Status**: ${{ steps.parse-results.outputs.status }}
-      #       **Action**: ${{ inputs.action-type }}
-
-      #       <details>
-      #       <summary>📝 ${{ inputs.action-type == 'plan' && 'Plan' || 'Apply' }} Output</summary>
-
-      #       ```hcl
-      #       ${{ steps.parse-results.outputs.output }}
-      #       ```
-
-      #       </details>
-
-      #       [View full workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-      #       ---
-      #       *Triggered by workflow automation system*
-      #     comment-tag: 'terragrunt-${{ inputs.action-type }}-${{ inputs.environment }}-${{ inputs.project-name }}'
-      #     mode: upsert
-      #     pr-number: ${{ steps.pr-info.outputs.number }}
-      #   continue-on-error: true
-
-      # - name: Exit with appropriate code
-      #   run: |
-      #     if [ "${{ inputs.action-type }}" == "plan" ]; then
-      #       if [ "${{ steps.plan.outcome }}" == "failure" ]; then
-      #         echo "::error::Terragrunt plan failed for ${{ inputs.project-name }}:${{ inputs.environment }}"
-      #         exit 1
-      #       fi
-      #     else
-      #       if [ "${{ steps.apply.outcome }}" == "failure" ]; then
-      #         echo "::error::Terragrunt apply failed for ${{ inputs.project-name }}:${{ inputs.environment }}"
-      #         exit 1
-      #       fi
-      #     fi
