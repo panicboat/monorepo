@@ -122,6 +122,7 @@ jobs:
         continue-on-error: true
         env:
           TF_INPUT: false
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
 
       # - name: Parse Results

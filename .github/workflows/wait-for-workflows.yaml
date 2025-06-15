@@ -141,8 +141,6 @@ jobs:
 
     - name: Notify Slack
       uses: slackapi/slack-github-action@v2
-      env:
-        GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       with:
         method: chat.postMessage
         token: ${{ secrets.SLACK_BOT_TOKEN }}
