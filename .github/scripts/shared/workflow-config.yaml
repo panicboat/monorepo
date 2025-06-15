@@ -20,9 +20,13 @@ directory_conventions:
 
 services:
   - name: claude-code-action
-    directory_conventions:
-      terragrunt: .github/actions/{service}/terragrunt/envs/{environment}
-      kubernetes: .github/actions/{service}/kubernetes/overlays/{environment}
+    # directory_conventions:
+    #   terragrunt: .github/actions/{service}/terragrunt/envs/{environment}
+    #   kubernetes: .github/actions/{service}/kubernetes/overlays/{environment}
+    exclude_from_automation: true
+    exclusion_config:
+      reason: "Pending decision to go stock or use Bedrock."
+      type: "temporal"
 
   - name: github-repository
     exclude_from_automation: true
