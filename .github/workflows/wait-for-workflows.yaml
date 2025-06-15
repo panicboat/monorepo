@@ -140,16 +140,49 @@ jobs:
       continue-on-error: true
 
     - name: Notify Slack
-      uses: slackapi/slack-github-action@v2.1.0
+      uses: slackapi/slack-github-action@v2
       with:
-        channel-id: 'C0907M25935'
-        slack-message: |
-          ${{ steps.workflow-status.outputs.overall-status == 'success' && '🎉 All workflows passed' || '🚨 Workflows failed' }} in PR #${{ github.event.pull_request.number }}
-          👤 Author: ${{ github.event.pull_request.user.login }}
-          🔗 PR: ${{ github.event.pull_request.html_url }}
-          ${{ steps.workflow-status.outputs.overall-status == 'success' && 'Ready for review and merge! 🚀' || '' }}
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        method: chat.postMessage
+        token: ${{ secrets.SLACK_BOT_TOKEN }}
+        payload: |
+          {
+            "channel": "C0907M25935",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "${{ steps.workflow-status.outputs.overall-status == 'success' && '🎉 *All workflows passed*' || '🚨 *Workflows failed*' }} in PR #${{ github.event.pull_request.number }}"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Author:*\n${{ github.event.pull_request.user.login }}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Status:*\n${{ steps.workflow-status.outputs.overall-status }}"
+                  }
+                ]
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View PR"
+                    },
+                    "url": "${{ github.event.pull_request.html_url }}"
+                  }
+                ]
+              }
+            ]
+          }
 
     - name: Fail if workflows failed
       if: steps.workflow-status.outputs.overall-status == 'failure'

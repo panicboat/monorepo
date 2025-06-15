@@ -100,11 +100,12 @@ jobs:
           tf_version: ${{ inputs.terraform-version }}
           tg_version: ${{ inputs.terragrunt-version }}
           tg_command: 'plan'
-          args: '-no-color -detailed-exitcode'
+          # tg_comment: 1 # Noisy as comments are just added.
           tg_dir: ${{ inputs.working-directory }}
         continue-on-error: true
         env:
           TF_INPUT: false
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
 
       - name: Terragrunt Apply
@@ -115,11 +116,13 @@ jobs:
           tf_version: ${{ inputs.terraform-version }}
           tg_version: ${{ inputs.terragrunt-version }}
           tg_command: 'apply'
-          args: '-auto-approve -no-color'
+          # tg_comment: 1 # Noisy as comments are just added.
+          tg_add_approve: 1
           tg_dir: ${{ inputs.working-directory }}
         continue-on-error: true
         env:
           TF_INPUT: false
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
 
       - name: Parse Results
@@ -149,7 +152,6 @@ jobs:
           if [ ${#OUTPUT} -gt 30000 ]; then
             OUTPUT="${OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
           fi
-
           echo "status=$STATUS" >> $GITHUB_OUTPUT
           {
             echo "output<<EOF"
@@ -190,11 +192,9 @@ jobs:
             ```hcl
             ${{ steps.parse-results.outputs.output }}
             ```
-
             </details>
 
             [View full workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
             ---
             *Triggered by workflow automation system*
           comment-tag: 'terragrunt-${{ inputs.action-type }}-${{ inputs.environment }}-${{ inputs.project-name }}'
