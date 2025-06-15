@@ -100,7 +100,7 @@ jobs:
           tf_version: ${{ inputs.terraform-version }}
           tg_version: ${{ inputs.terragrunt-version }}
           tg_command: 'plan'
-          tg_comment: true
+          tg_comment: 1
           # args: '-no-color -detailed-exitcode'
           tg_dir: ${{ inputs.working-directory }}
         continue-on-error: true
