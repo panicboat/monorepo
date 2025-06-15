@@ -11,16 +11,6 @@ on:
         required: true
         type: string
         description: 'Environment name (develop, staging, production, etc.)'
-      terraform-version:
-        required: false
-        type: string
-        default: '1.12.1'
-        description: 'Terraform version'
-      terragrunt-version:
-        required: false
-        type: string
-        default: '0.81.0'
-        description: 'Terragrunt version'
       action-type:
         required: true
         type: string
@@ -78,27 +68,11 @@ jobs:
           role-session-name: GitHubActions-Terragrunt-${{ inputs.action-type }}-${{ inputs.environment }}
           audience: sts.amazonaws.com
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ inputs.terraform-version }}
-          terraform_wrapper: false
-
-      - name: Setup Terragrunt Binary
-        run: |
-          TG_VERSION=${{ inputs.terragrunt-version }}
-          wget -O terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64
-          chmod +x terragrunt
-          sudo mv terragrunt /usr/local/bin/
-          terragrunt --version
-
       - name: Terragrunt Plan
         if: inputs.action-type == 'plan'
         id: plan
         uses: gruntwork-io/terragrunt-action@v2
         with:
-          tf_version: ${{ inputs.terraform-version }}
-          tg_version: ${{ inputs.terragrunt-version }}
           tg_command: 'plan'
           # tg_comment: 1 # Noisy as comments are just added.
           tg_dir: ${{ inputs.working-directory }}
@@ -113,11 +87,9 @@ jobs:
         id: apply
         uses: gruntwork-io/terragrunt-action@v2
         with:
-          tf_version: ${{ inputs.terraform-version }}
-          tg_version: ${{ inputs.terragrunt-version }}
           tg_command: 'apply'
-          # tg_comment: 1 # Noisy as comments are just added.
           tg_add_approve: 1
+          # tg_comment: 1 # Noisy as comments are just added.
           tg_dir: ${{ inputs.working-directory }}
         continue-on-error: true
         env:

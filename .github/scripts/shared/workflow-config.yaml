@@ -39,12 +39,6 @@ defaults:
   iam_role_plan: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
   iam_role_apply: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
 
-modules:
-  terraform_version: "1.12.1"
-  terragrunt_version: "0.81.0"
-  kubectl_version: "1.28.0"
-  kustomize_version: "5.0.0"
-
 # Branch-to-environment mapping configuration
 branch_patterns:
   develop:
