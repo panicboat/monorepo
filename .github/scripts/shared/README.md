@@ -171,10 +171,10 @@ directory_conventions:
 
 # サービス: claude-code-action, 環境: staging の場合
 # 設定: terragrunt: ".github/actions/{service}/terragrunt"
-# 結果: ".github/actions/claude-code-action/terragrunt"
+# 結果: "platform/claude-code-action/terragrunt"
 
 # 設定: kubernetes: ".github/actions/{service}/kubernetes"
-# 結果: ".github/actions/claude-code-action/kubernetes"
+# 結果: "platform/claude-code-action/kubernetes"
 ```
 
 ### デプロイメントスタックの判定
