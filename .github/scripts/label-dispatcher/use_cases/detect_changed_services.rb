@@ -1,6 +1,5 @@
 # Use case for detecting changed services from file modifications
 # Analyzes git diff output to determine which services need deployment
-# Phase 1: Added service exclusion filtering
 
 module UseCases
   module LabelManagement
@@ -73,68 +72,64 @@ module UseCases
         end
       end
 
-      # Detect deploy labels from changed files and configuration
-      def detect_deploy_labels(changed_files, config)
-        # This method is now replaced by the main execute method
-        # Keeping for backward compatibility if needed
-        discovered_services = discover_services(changed_files, config)
-        filtered_services = filter_excluded_services(discovered_services, config, changed_files)
-        filtered_services.map { |service| Entities::DeployLabel.from_service(service: service) }
-      end
-
       # Discover services from changed files and configuration
       def discover_services(changed_files, config)
         services = Set.new
+        explicitly_configured_services = Set.new
 
-        # Add explicitly configured services that have changed files
+        # Check explicitly configured services first
         config.services.each do |service_name, service_config|
           if service_has_changed_files?(changed_files, service_name, service_config, config)
             services << service_name
+            explicitly_configured_services << service_name
           end
         end
 
-        # Discover services from directory patterns
+        # Discover services from directory patterns (excluding already configured ones)
         default_pattern = config.directory_conventions['terragrunt']
         if default_pattern && default_pattern.include?('{service}')
-          services.merge(discover_services_from_pattern(changed_files, default_pattern))
+          pattern_services = discover_services_from_pattern(changed_files, default_pattern)
+          pattern_services.each do |service|
+            unless explicitly_configured_services.include?(service)
+              services << service
+            end
+          end
         end
 
-        # Discover services from existing directory structure
-        services.merge(discover_services_from_filesystem(changed_files))
+        # Discover services from existing directory structure (excluding configured service files)
+        filesystem_services = discover_services_from_filesystem_filtered(changed_files, explicitly_configured_services)
+        services.merge(filesystem_services)
 
         services.to_a.reject { |service| service.start_with?('.') }
       end
 
-      # Check if a service has changed files (considering service-specific directory conventions)
+      # Check if a service has changed files
       def service_has_changed_files?(changed_files, service_name, service_config, config)
-        # First check simple pattern: {service}/
+        # Check simple pattern: {service}/
         return true if changed_files.any? { |file| file.start_with?("#{service_name}/") }
 
-        # Check service-specific directory conventions
-        if service_config['directory_conventions']
-          service_config['directory_conventions'].each do |stack, pattern|
-            # Expand pattern and check if any files match
-            expanded_pattern = pattern.gsub('{service}', service_name)
-            if changed_files.any? { |file| file.start_with?(expanded_pattern) }
-              return true
-            end
-          end
-        else
-          # Check default directory conventions
-          config.directory_conventions.each do |stack, pattern|
-            expanded_pattern = pattern.gsub('{service}', service_name)
-            if changed_files.any? { |file| file.start_with?(expanded_pattern) }
-              return true
-            end
+        # Check service-specific or default directory conventions
+        conventions = service_config&.dig('directory_conventions') || config.directory_conventions
+
+        conventions.each do |stack, pattern|
+          next unless pattern.include?('{service}')
+
+          # Expand service name
+          expanded_pattern = pattern.gsub('{service}', service_name)
+
+          if expanded_pattern.include?('{environment}')
+            # Create base path without environment
+            base_path = expanded_pattern.split('/{environment}').first
+            matching_files = changed_files.select { |file| file.start_with?(base_path) }
+            return true if matching_files.any?
+          else
+            # Direct pattern matching
+            matching_files = changed_files.select { |file| file.start_with?(expanded_pattern) }
+            return true if matching_files.any?
           end
         end
 
         false
-      end
-
-      # Check if any files changed in a service directory (legacy method for backward compatibility)
-      def files_changed_in_service?(changed_files, service_name)
-        changed_files.any? { |file| file.start_with?("#{service_name}/") }
       end
 
       # Discover services by matching changed files against directory pattern
@@ -153,11 +148,14 @@ module UseCases
         services
       end
 
-      # Discover services from existing filesystem structure
-      def discover_services_from_filesystem(changed_files)
+      # Discover services from existing filesystem structure, excluding configured service files
+      def discover_services_from_filesystem_filtered(changed_files, explicitly_configured_services)
         services = Set.new
 
-        changed_files.each do |file|
+        # Filter out files that belong to explicitly configured services
+        filtered_files = filter_out_configured_service_files(changed_files, explicitly_configured_services)
+
+        filtered_files.each do |file|
           # Extract service name from file path (first directory component)
           path_parts = file.split('/')
           next if path_parts.empty?
@@ -174,10 +172,45 @@ module UseCases
         services
       end
 
+      # Filter out files that belong to explicitly configured services
+      def filter_out_configured_service_files(changed_files, explicitly_configured_services)
+        return changed_files if explicitly_configured_services.empty?
+
+        filtered_files = []
+
+        changed_files.each do |file|
+          # Check if file belongs to any configured service
+          is_configured_service_file = explicitly_configured_services.any? do |service|
+            file_belongs_to_configured_service?(file, service)
+          end
+
+          # Keep files that don't belong to configured services
+          unless is_configured_service_file
+            filtered_files << file
+          end
+        end
+
+        filtered_files
+      end
+
+      # Check if a file belongs to a configured service
+      def file_belongs_to_configured_service?(file, service_name)
+        # Standard pattern: service_name/
+        return true if file.start_with?("#{service_name}/")
+
+        # Platform pattern: platform/service_name/
+        return true if file.include?("/#{service_name}/")
+
+        false
+      end
+
       # Check if a directory name looks like a service directory
       def looks_like_service_directory?(dir_name)
         # Skip common non-service directories
-        excluded_dirs = %w[.github docs scripts tests spec bin lib config public assets]
+        excluded_dirs = %w[
+          .github docs scripts tests spec bin lib config public assets
+          platform infrastructure shared common utils tools
+        ]
         return false if excluded_dirs.include?(dir_name)
 
         # Must be a valid service name
