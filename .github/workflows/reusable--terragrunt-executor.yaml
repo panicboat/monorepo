@@ -112,18 +112,11 @@ jobs:
           } >> $GITHUB_OUTPUT
 
       - name: Get merged PR information
-        id: merged-pr
-        if: github.event_name == 'push'
+        id: pr-info
         uses: actions-ecosystem/action-get-merged-pull-request@v1
         with:
           github_token: ${{ steps.app-token.outputs.token }}
         continue-on-error: true
-
-      - name: Find current PR
-        id: pr-info
-        uses: jwalton/gh-find-current-pr@v1
-        with:
-          state: all
 
       - name: Create or update PR comment
         if: steps.pr-info.outputs.number
