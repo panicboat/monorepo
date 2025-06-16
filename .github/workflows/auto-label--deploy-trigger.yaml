@@ -56,8 +56,7 @@ jobs:
           working-directory: .github/scripts
 
       - name: Get merged PR information
-        if: github.event_name == 'push'
-        id: get-merged-pr
+        id: pr-info
         uses: actions-ecosystem/action-get-merged-pull-request@v1
         with:
           github_token: ${{ steps.app-token.outputs.token }}
@@ -79,10 +78,10 @@ jobs:
         working-directory: .github/scripts
         run: |
           # Get merged PR information first
-          if [ -n "${{ steps.get-merged-pr.outputs.number }}" ]; then
-            echo "Found merged PR #${{ steps.get-merged-pr.outputs.number }}"
+          if [ -n "${{ steps.pr-info.outputs.number }}" ]; then
+            echo "Found merged PR #${{ steps.pr-info.outputs.number }}"
             # Ruby will determine target environment from current branch
-            bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ steps.get-merged-pr.outputs.number }}
+            bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ steps.pr-info.outputs.number }}
           else
             echo "::error::No merged PR found - deployment stopped"
             exit 1
