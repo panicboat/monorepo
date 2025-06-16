@@ -1,8 +1,8 @@
 name: Wait for Workflows
 on:
   pull_request:
-    branches-ignore:
-      - main
+    branches:
+      - '**'
 
 jobs:
   wait-for-workflows:
