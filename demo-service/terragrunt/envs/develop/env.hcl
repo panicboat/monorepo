@@ -7,7 +7,7 @@ locals {
   additional_tags = {
     CostCenter   = "develop"
     Owner        = "panicboat"
-    Purpose      = "template"
+    Purpose      = "demo-service"
     AutoShutdown = "enabled"
   }
 }
