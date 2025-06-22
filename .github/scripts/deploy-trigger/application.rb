@@ -51,10 +51,6 @@ class DeployTriggerContainer
       )
     end
 
-    container[:filter_labels_by_environment] = UseCases::DeployTrigger::FilterLabelsByEnvironment.new(
-      config_client: container[:config_client]
-    )
-
     container[:validate_deployment_safety] = UseCases::DeployTrigger::ValidateDeploymentSafety.new(
       config_client: container[:config_client]
     )
@@ -72,7 +68,6 @@ class DeployTriggerContainer
     container[:deploy_trigger_controller] = Interfaces::Controllers::DeployTriggerController.new(
       determine_target_environment_use_case: container[:determine_target_environment],
       get_merged_pr_labels_use_case: container[:get_merged_pr_labels],
-      filter_labels_by_environment_use_case: container[:filter_labels_by_environment],
       validate_deployment_safety_use_case: container[:validate_deployment_safety],
       generate_matrix_use_case: container[:generate_matrix],
       presenter: presenter
