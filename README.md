@@ -54,25 +54,25 @@ monorepo/
 This repository adopts an environment-based branch strategy:
 
 ```
-┌─────────────┐     ┌─────────────┐      ┌─────────────┐     ┌─────────────┐
-│  feature/*  │────▶│   develop   │─────▶│staging/svc  │────▶│production/  │
-│   branch    │     │   branch    │      │   branch    │     │ svc branch  │
-└─────────────┘     └─────────────┘      └─────────────┘     └─────────────┘
+┌─────────────┐     ┌─────────────┐      ┌─────────────┐     ┌──────────────┐
+│  feature/*  │────▶│   develop   │─────▶│   staging   │────▶│  production  │
+│   branch    │     │   branch    │      │   branch    │     │  branch      │
+└─────────────┘     └─────────────┘      └─────────────┘     └──────────────┘
        │                   │                   │                   │
     PR Creation         PR Creation         PR Creation         PR Creation
        │                   │                   │                   │
    Auto-labeling       Auto-labeling       Auto-labeling       Auto-labeling
        │                   │                   │                   │
-   ┌─────────┐         ┌─────────┐         ┌─────────┐         ┌──────────┐
-   │develop  │         │develop  │         │staging  │         │production│
-   │deploy   │         │deploy   │         │deploy   │         │deploy    │
-   └─────────┘         └─────────┘         └─────────┘         └──────────┘
+ ┌───────────┐      ┌───────────────┐    ┌─────────────┐    ┌────────────────┐
+ │  develop  │      │  develop/svc  │    │staging/svc  │    │production/svc  │
+ │  deploy   │      │  deploy       │    │deploy       │    │deploy          │
+ └───────────┘      └───────────────┘    └─────────────┘    └────────────────┘
 ```
 
 #### Branch Configuration
-- **`develop`**: Development integration branch - deploys all services to develop environment
-- **`staging/{service-name}`**: Service-specific staging branches
-- **`production/{service-name}`**: Service-specific production branches
+- **`develop`**: Deploy only the services that have changed.
+- **`staging`**: Deploy only the services that have changed
+- **`production`**: Deploy only the services that have changed.
 - **`feature/*`**: Feature development branches
 
 ### Pull Request Flow
@@ -87,7 +87,7 @@ This repository adopts an environment-based branch strategy:
 
 ```
 develop environment → staging environment → production environment
-    (All services)      (Service-specific)    (Service-specific)
+ (Service-specific)    (Service-specific)    (Service-specific)
 ```
 
 ### Automation System
