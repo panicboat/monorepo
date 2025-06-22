@@ -14,6 +14,7 @@ sequenceDiagram
     participant DT as Deploy Trigger
     participant TG as Terragrunt Executor
     participant K8s as Kubernetes Executor
+    participant GitOps as GitOps Repository
 
     Dev->>PR: ファイル変更 & PR作成
     PR->>LD: Label Dispatcher 実行
@@ -21,13 +22,15 @@ sequenceDiagram
 
     Dev->>PR: PR をマージ
     PR->>DT: Deploy Trigger 実行
-    DT->>DT: 環境判定 & 安全性チェック
+    DT->>DT: 環境判定 & スタック分類
 
     par 並列デプロイメント実行
         DT->>TG: Terragrunt 実行（インフラ）
-        DT->>K8s: Kubernetes 実行（アプリケーション）
+        DT->>K8s: Kubernetes 直接実行
+        K8s->>GitOps: マニフェスト生成 & Push
     end
 
+    GitOps->>K8s: ArgoCD による自動デプロイ
     TG->>PR: インフラデプロイ結果レポート
     K8s->>PR: アプリケーションデプロイ結果レポート
 ```
@@ -39,20 +42,28 @@ sequenceDiagram
 | ワークフロー             | 役割                               | トリガー                    | 実装場所                     |
 | ------------------------ | ---------------------------------- | --------------------------- | ---------------------------- |
 | **Label Dispatcher**     | ファイル変更検知 → ラベル付与      | PR作成・更新時              | `scripts/label-dispatcher/`  |
-| **Deploy Trigger**       | ラベル → デプロイ実行              | ブランチpush時              | `scripts/deploy-trigger/`    |
+| **Deploy Trigger**       | ラベル → デプロイ実行              | ブランチpush・タグ作成時    | `scripts/deploy-trigger/`    |
 | **Deployment Executors** | インフラ・アプリケーション変更適用 | Deploy Trigger から呼び出し | `workflows/reusable--*.yaml` |
 
 ### デプロイメント戦略
 
+| 環境           | Kubernetes | その他スタック | トリガー           | 目的                         |
+| -------------- | ---------- | -------------- | ------------------ | ---------------------------- |
+| **develop**    | **GitOps** | 直接デプロイ   | **ブランチマージ** | 開発効率・迅速フィードバック |
+| **staging**    | **GitOps** | 直接デプロイ   | **ブランチマージ** | **本番リハーサル**           |
+| **production** | **GitOps** | 直接デプロイ   | **タグ作成**       | 安全性・追跡可能性           |
+
 ```mermaid
 graph LR
-    A[develop/main] --> B[全サービス → develop環境]
-    C[staging/*] --> D[全サービス → staging環境]
-    E[production/*] --> F[全サービス → production環境]
+    A[マージ or タグ作成] --> B[サービス検出]
+    B --> C[並列デプロイ]
+    C --> D[Terragrunt: 直接]
+    C --> E[Kubernetes: GitOps]
+    E --> F[generated-manifests]
+    F --> G[ArgoCD]
 
-    style B fill:#e8f5e8
-    style D fill:#fff3e0
-    style F fill:#ffebee
+    style C fill:#e8f5e8
+    style E fill:#e1f5fe
 ```
 
 ## 🚀 使用方法
@@ -72,23 +83,35 @@ git push origin feature/new-feature
 # → Deploy Trigger が自動でdevelop環境にデプロイ
 ```
 
-### 2. 環境別デプロイ
+### 2. staging環境への部分デプロイ
 
 ```bash
-# staging環境への単一サービスデプロイ
-git checkout -b staging/auth-service
-git push origin staging/auth-service
+# staging環境への選択的デプロイ
+git checkout staging
+git checkout develop -- auth-service/  # 特定サービスのみマージ
+git commit -m "Deploy auth-service to staging"
+git push origin staging
 # → auth-service のみ staging環境にデプロイ
+```
 
+### 3. production環境への個別デプロイ
+
+```bash
 # production環境への単一サービスデプロイ
-git checkout -b production/auth-service
-git push origin production/auth-service
+git tag auth-service-v1.2.3
+git push origin auth-service-v1.2.3
 # → auth-service のみ production環境にデプロイ
+
+# production環境への複数サービスデプロイ
+git tag api-gateway-v1.2.3
+git tag user-service-v1.2.3
+git push origin --tags
+# → 各サービスが個別に production環境にデプロイ
 ```
 
 ## 🏗️ システムアーキテクチャ
 
-### Clean Architecture 実装
+### 実装
 
 ```mermaid
 graph TB
@@ -135,19 +158,19 @@ graph TB
 
 ```
 .github/
-├── workflows/                  # GitHub Actions ワークフロー
+├── workflows/
 │   ├── auto-label--label-dispatcher.yaml
 │   ├── auto-label--deploy-trigger.yaml
-│   └── reusable--terragrunt-executor.yaml
-└── scripts/                    # 自動化スクリプト
-    ├── shared/                 # 共通コンポーネント
-    │   ├── entities/          # ドメインエンティティ
-    │   ├── infrastructure/    # 外部システム連携
-    │   ├── interfaces/        # プレゼンター・インターフェース
+│   └── reusable--*-executor.yaml
+└── scripts/
+    ├── shared/
+    │   ├── entities/
+    │   ├── infrastructure/
+    │   ├── interfaces/
     │   └── workflow-config.yaml # 統合設定ファイル
-    ├── label-dispatcher/       # ラベル管理機能
-    ├── deploy-trigger/         # デプロイトリガー機能
-    └── config-manager/         # 設定管理機能
+    ├── label-dispatcher/
+    ├── deploy-trigger/
+    └── config-manager/
 ```
 
 ## 🔧 設定管理
@@ -168,7 +191,7 @@ directory_conventions:
 services:
   - name: claude-code-action
     directory_conventions:
-      terragrunt: .github/actions/{service}/terragrunt/envs/{environment}
+      terragrunt: infrastructures/{service}/terragrunt/envs/{environment}
 ```
 
 ### 設定検証とテスト
@@ -192,7 +215,7 @@ bundle exec ruby config-manager/bin/config-manager diagnostics
 ### 必須要件
 - **マージPR必須**: 直接pushでのデプロイを防止
 - **ラベル検証**: 適切なラベルが付与されているかチェック
-- **環境フィルタリング**: ブランチに応じた適切な環境のみデプロイ
+- **環境フィルタリング**: ブランチ・タグに応じた適切な環境のみデプロイ
 - **ディレクトリ検証**: 存在しないパスへのデプロイを防止
 
 ### 権限管理
@@ -236,12 +259,17 @@ deploy:api-gateway
 
 ### staging ブランチマージ時
 
-**ブランチ:** `staging/auth-service`
-**PR ラベル:** `deploy:auth-service`, `deploy:api-gateway`
+**変更ファイル:** `auth-service/`ディレクトリのみ選択的マージ
 
 **実行されるデプロイ:**
 - auth-service → staging環境（Terragrunt + Kubernetes）
-- api-gateway → staging環境（Terragrunt + Kubernetes）
+
+### production タグ作成時
+
+**タグ:** `v1.2.3-auth-service-production`
+
+**実行されるデプロイ:**
+- auth-service → production環境（Terragrunt + Kubernetes）
 
 ## 🧪 開発とテスト
 
@@ -262,11 +290,14 @@ bundle install
 bundle exec ruby label-dispatcher/bin/dispatcher test \
   --base-ref=main --head-ref=feature/test
 
-# デプロイトリガーテスト
+# デプロイトリガーテスト（ブランチ）
 bundle exec ruby deploy-trigger/bin/trigger test develop
 
+# デプロイトリガーテスト（タグ）
+bundle exec ruby deploy-trigger/bin/trigger test v1.2.3-auth-service-production
+
 # デバッグモード実行
-DEBUG=true bundle exec ruby deploy-trigger/bin/trigger debug staging/auth-service
+DEBUG=true bundle exec ruby deploy-trigger/bin/trigger debug staging
 ```
 
 ### 機能別テスト
@@ -287,12 +318,21 @@ result = detector.execute(
 
 #### Deploy Trigger
 ```ruby
-# 使用例
+# 使用例（ブランチベース）
 trigger = UseCases::DeployTrigger::DetermineTargetEnvironment.new(
   config_client: config_client
 )
 
-result = trigger.execute(branch_name: 'staging/auth-service')
+result = trigger.execute(
+  ref_name: 'staging',
+  event_type: 'push'
+)
+
+# 使用例（タグベース）
+result = trigger.execute(
+  ref_name: 'v1.2.3-auth-service-production',
+  event_type: 'create'
+)
 ```
 
 #### Config Manager
@@ -321,6 +361,10 @@ result = validator.execute
    - **原因**: ラベルが正しく付与されていない
    - **解決**: Label Dispatcher の実行ログ確認
 
+4. **"Invalid tag format"**
+   - **原因**: production タグの命名規則違反
+   - **解決**: `{service}-v{version}` 形式で作成
+
 ### デバッグ手順
 ```bash
 # ステップ1: 設定ファイル確認
@@ -343,8 +387,9 @@ bundle exec ruby deploy-trigger/bin/trigger validate_env
 - name: Debug environment
   run: |
     echo "Event: ${{ github.event_name }}"
-    echo "Branch: ${{ github.ref_name }}"
-    echo "PR Number: ${{ github.event.pull_request.number }}"
+    echo "Ref: ${{ github.ref }}"
+    echo "Ref Name: ${{ github.ref_name }}"
+    echo "Tag: ${{ github.ref_type == 'tag' && github.ref_name || 'N/A' }}"
     env | grep GITHUB_ | sort
 ```
 
@@ -427,8 +472,8 @@ strategy:
 
 ## 📚 詳細ドキュメント
 
-| ガイド                                                 | 内容                       | 対象読者         |
-| ------------------------------------------------------ | -------------------------- | ---------------- |
+| ガイド                                         | 内容                       | 対象読者         |
+| ---------------------------------------------- | -------------------------- | ---------------- |
 | [Label Dispatcher](label-dispatcher/README.md) | ラベル自動付与システム詳細 | 開発者・運用担当 |
 | [Deploy Trigger](deploy-trigger/README.md)     | デプロイ実行制御詳細       | 開発者・運用担当 |
 | [Config Manager](config-manager/README.md)     | 設定管理・検証詳細         | システム管理者   |
@@ -446,6 +491,10 @@ strategy:
 # 悪意のある入力への対策
 def validate_branch_name(branch_name)
   raise "Invalid branch name" unless branch_name.match?(/\A[a-zA-Z0-9\-_\/]+\z/)
+end
+
+def validate_tag_name(tag_name)
+  raise "Invalid tag name" unless tag_name.match?(/\Av\d+\.\d+\.\d+-\w+-production\z/)
 end
 ```
 
