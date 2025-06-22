@@ -33,7 +33,7 @@ remote_state {
     bucket = "terragrunt-state-${get_aws_account_id()}"
 
     # Service-specific path: claude-code-action/<environment>/terraform.tfstate
-    key    = "platform/claude-code-action/${local.environment}/terraform.tfstate"
+    key    = "infrastructures/claude-code-action/${local.environment}/terraform.tfstate"
     region = "ap-northeast-1"
 
     # Shared DynamoDB table for state locking across all services

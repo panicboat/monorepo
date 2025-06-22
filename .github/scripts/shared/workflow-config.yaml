@@ -21,8 +21,7 @@ directory_conventions:
 services:
   - name: claude-code-action
     directory_conventions:
-      terragrunt: platform/{service}/terragrunt/envs/{environment}
-      kubernetes: platform/{service}/kubernetes/overlays/{environment}
+      terragrunt: infrastructures/{service}/terragrunt/envs/{environment}
 
   - name: github-repository
     exclude_from_automation: true
