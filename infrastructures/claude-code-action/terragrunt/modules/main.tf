@@ -27,7 +27,9 @@ resource "aws_iam_role" "claude_code_action_role" {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:${var.github_org}/${var.github_repo}:*"
+            "token.actions.githubusercontent.com:sub" = [
+              for repo in var.github_repos : "repo:${var.github_org}/${repo}:*"
+            ]
           }
         }
       }
@@ -37,7 +39,7 @@ resource "aws_iam_role" "claude_code_action_role" {
   tags = merge(var.common_tags, {
     Name        = "${var.project_name}-${var.environment}-github-actions-role"
     GitHubOrg   = var.github_org
-    GitHubRepo  = var.github_repo
+    GitHubRepos = join(",", var.github_repos)
     Purpose     = "claude-code-action-bedrock"
   })
 }

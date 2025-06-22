@@ -2,10 +2,10 @@
 
 locals {
   # Environment-specific settings
-  environment = "monorepo"
+  environment = "develop"
 
   # GitHub configuration
-  github_repo = "monorepo"
+  github_repos = ["monorepo"]
 
   # AWS configuration
   aws_region = "ap-northeast-1"

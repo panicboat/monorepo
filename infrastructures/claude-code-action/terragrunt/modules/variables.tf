@@ -21,10 +21,10 @@ variable "github_org" {
   type        = string
 }
 
-variable "github_repo" {
-  description = "GitHub repository name"
-  type        = string
-  default     = "monorepo"
+variable "github_repos" {
+  description = "List of GitHub repository names"
+  type        = list(string)
+  default     = ["monorepo"]
 }
 
 variable "aws_region" {

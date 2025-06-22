@@ -23,8 +23,8 @@ inputs = {
   environment  = include.env.locals.environment
 
   # GitHub configuration
-  github_org  = "panicboat"  # Update this with your GitHub organization
-  github_repo = include.env.locals.github_repo
+  github_org   = "panicboat"  # Update this with your GitHub organization
+  github_repos = include.env.locals.github_repos
 
   # AWS configuration
   aws_region           = include.env.locals.aws_region
