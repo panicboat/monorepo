@@ -54,7 +54,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::559744160976:role/claude-code-action-monorepo-github-actions-role
+          role-to-assume: arn:aws:iam::559744160976:role/claude-code-action-develop-github-actions-role
           aws-region: us-west-2
 
       - uses: anthropics/claude-code-action@beta

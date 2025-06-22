@@ -36,14 +36,9 @@ defaults:
 
 # Branch-to-environment mapping configuration
 branch_patterns:
-  develop:
-    target_environment: develop
-  staging:
-    pattern: "staging/*"
-    target_environment: staging
-  production:
-    pattern: "production/*"
-    target_environment: production
+  develop: develop
+  staging: staging
+  production: production
 
 # Safety checks configuration
 safety_checks:

@@ -10,8 +10,8 @@ Deploy Trigger は、ブランチの push イベントから適切なデプロ�
 graph LR
     subgraph "ブランチフロー"
         A[feature/*] --> B[develop]
-        B --> C[staging/service]
-        C --> D[production/service]
+        B --> C[staging]
+        C --> D[production]
     end
 
     subgraph "環境マッピング"
@@ -73,16 +73,9 @@ sequenceDiagram
 ```yaml
 # workflow-config.yaml
 branch_patterns:
-  develop:
-    target_environment: develop
-  main:
-    target_environment: develop
-  staging:
-    pattern: "staging/*"
-    target_environment: staging
-  production:
-    pattern: "production/*"
-    target_environment: production
+  develop: develop
+  staging: staging
+  production: production
 ```
 
 ### 動作例
@@ -93,8 +86,8 @@ flowchart TD
     C --> D{ブランチ判定}
 
     D -->|develop/main| E[develop環境]
-    D -->|staging/*| F[staging環境]
-    D -->|production/*| G[production環境]
+    D -->|staging| F[staging環境]
+    D -->|production| G[production環境]
 
     E --> H[マージPRラベル取得]
     F --> H
@@ -118,9 +111,6 @@ cd .github/scripts
 # PR番号からデプロイトリガー（環境は自動判定）
 bundle exec ruby deploy-trigger/bin/trigger from_pr 123
 
-# ブランチ名からデプロイトリガー
-bundle exec ruby deploy-trigger/bin/trigger from_branch develop
-
 # テスト実行
 bundle exec ruby deploy-trigger/bin/trigger test develop
 
@@ -131,7 +121,7 @@ bundle exec ruby deploy-trigger/bin/trigger simulate develop
 ### 高度なコマンド
 ```bash
 # デバッグモード
-bundle exec ruby deploy-trigger/bin/trigger debug staging/auth-service
+bundle exec ruby deploy-trigger/bin/trigger debug staging
 
 # 環境変数検証
 bundle exec ruby deploy-trigger/bin/trigger validate_env
@@ -143,66 +133,14 @@ ruby bin/trigger from_pr 123
 
 ## 📊 実行例
 
-### develop ブランチへのマージ
+### production ブランチへのマージ
 
 **入力:**
 ```bash
-# develop ブランチへ push
-# 最新のマージPR: #123
-# PR #123 のラベル: deploy:auth-service, deploy:api-gateway
-# 現在のブランチ: develop
-```
-
-**出力:**
-```json
-{
-  "targets": [
-    {
-      "service": "auth-service",
-      "environment": "develop",
-      "stack": "terragrunt",
-      "working_directory": "auth-service/terragrunt",
-      "iam_role_plan": "arn:aws:iam::123:role/plan-develop",
-      "iam_role_apply": "arn:aws:iam::123:role/apply-develop",
-      "aws_region": "ap-northeast-1"
-    },
-    {
-      "service": "auth-service",
-      "environment": "develop",
-      "stack": "kubernetes",
-      "working_directory": "auth-service/kubernetes",
-      "kubectl_version": "1.28.0",
-      "kustomize_version": "5.0.0"
-    },
-    {
-      "service": "api-gateway",
-      "environment": "develop",
-      "stack": "terragrunt",
-      "working_directory": "api-gateway/terragrunt",
-      "iam_role_plan": "arn:aws:iam::123:role/plan-develop",
-      "iam_role_apply": "arn:aws:iam::123:role/apply-develop",
-      "aws_region": "ap-northeast-1"
-    },
-    {
-      "service": "api-gateway",
-      "environment": "develop",
-      "stack": "kubernetes",
-      "working_directory": "api-gateway/kubernetes",
-      "kubectl_version": "1.28.0",
-      "kustomize_version": "5.0.0"
-    }
-  ]
-}
-```
-
-### staging/auth-service ブランチへのマージ
-
-**入力:**
-```bash
-# staging/auth-service ブランチへ push
+# production ブランチへ push
 # 最新のマージPR: #124
 # PR #124 のラベル: deploy:auth-service, deploy:api-gateway
-# 現在のブランチ: staging/auth-service
+# 現在のブランチ: production
 ```
 
 **出力:**
@@ -211,29 +149,29 @@ ruby bin/trigger from_pr 123
   "targets": [
     {
       "service": "auth-service",
-      "environment": "staging",
+      "environment": "production",
       "stack": "terragrunt",
       "working_directory": "auth-service/terragrunt",
-      "iam_role_plan": "arn:aws:iam::123:role/plan-staging",
-      "iam_role_apply": "arn:aws:iam::123:role/apply-staging"
+      "iam_role_plan": "arn:aws:iam::123:role/plan-production",
+      "iam_role_apply": "arn:aws:iam::123:role/apply-production"
     },
     {
       "service": "auth-service",
-      "environment": "staging",
+      "environment": "production",
       "stack": "kubernetes",
       "working_directory": "auth-service/kubernetes"
     },
     {
       "service": "api-gateway",
-      "environment": "staging",
+      "environment": "production",
       "stack": "terragrunt",
       "working_directory": "api-gateway/terragrunt",
-      "iam_role_plan": "arn:aws:iam::123:role/plan-staging",
-      "iam_role_apply": "arn:aws:iam::123:role/apply-staging"
+      "iam_role_plan": "arn:aws:iam::123:role/plan-production",
+      "iam_role_apply": "arn:aws:iam::123:role/apply-production"
     },
     {
       "service": "api-gateway",
-      "environment": "staging",
+      "environment": "production",
       "stack": "kubernetes",
       "working_directory": "api-gateway/kubernetes"
     }
@@ -399,16 +337,9 @@ deploy-kubernetes:
 ```yaml
 # workflow-config.yaml
 branch_patterns:
-  develop:
-    target_environment: develop
-  main:
-    target_environment: develop
-  staging:
-    pattern: "staging/*"
-    target_environment: staging
-  production:
-    pattern: "production/*"
-    target_environment: production
+  develop: develop
+  staging: staging
+  production: production
 ```
 
 ### 安全性チェック設定
@@ -539,45 +470,6 @@ bundle exec ruby config-manager/bin/config-manager validate
 bundle exec ruby deploy-trigger/bin/trigger test $CURRENT_BRANCH
 ```
 
-## 🔧 カスタマイズ
-
-### 独自ブランチパターン追加
-```yaml
-# workflow-config.yaml
-branch_patterns:
-  hotfix:
-    pattern: "hotfix/*"
-    target_environment: production
-    bypass_pr_check: true  # 緊急時のみ
-
-  feature_env:
-    pattern: "feature-env/*"
-    target_environment: "feature"
-    auto_cleanup: true
-```
-
-### 環境判定ロジックのカスタマイズ
-```ruby
-# DetermineTargetEnvironment を拡張
-class DetermineTargetEnvironment
-  private
-
-  def determine_environment_from_branch(branch_name, config)
-    case branch_name
-    when /^user\/([^\/]+)\/.*/
-      # ユーザー専用環境: user/alice/feature-x → alice-env
-      "user-#{$1}"
-    when /^experiment\/([^\/]+)$/
-      # 実験環境: experiment/ab-test → experiment
-      "experiment"
-    else
-      # デフォルトロジック
-      default_environment_determination(branch_name, config)
-    end
-  end
-end
-```
-
 ## 📈 パフォーマンス考慮事項
 
 ### API呼び出し最適化
@@ -687,7 +579,7 @@ RSpec.describe UseCases::DeployTrigger::DetermineTargetEnvironment do
 
   describe '#execute' do
     context 'with staging branch' do
-      let(:branch_name) { 'staging/auth-service' }
+      let(:branch_name) { 'staging' }
 
       it 'determines staging environment' do
         allow(config_client).to receive(:load_workflow_config).and_return(config)

@@ -6,14 +6,6 @@ require_relative '../application'
 require 'thor'
 
 class DeployTriggerCLI < Thor
-  desc "from_branch BRANCH_NAME", "Trigger deployment from branch push"
-
-  def from_branch(branch_name)
-    controller = DeployTriggerContainer.resolve(:deploy_trigger_controller)
-
-    controller.trigger_from_branch(branch_name: branch_name)
-  end
-
   desc "from_pr PR_NUMBER", "Trigger deployment from PR labels (environment determined from current branch)"
 
   def from_pr(pr_number)
@@ -69,7 +61,6 @@ class DeployTriggerCLI < Thor
 
     if env_result.success?
       puts "✅ Target environment: #{env_result.target_environment}"
-      puts "   Deployment pattern: #{env_result.deployment_pattern}"
     else
       puts "❌ Failed: #{env_result.error_message}"
       return
