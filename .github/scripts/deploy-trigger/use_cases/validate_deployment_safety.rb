@@ -22,7 +22,6 @@ module UseCases
 
         # Check 2: Deploy labels presence
         if deploy_labels.empty?
-          # It is assumed to be normal even if the label is not found because there is a service that is not deployed.
           validation_results << {
             check: 'labels_presence',
             passed: true,
@@ -39,10 +38,6 @@ module UseCases
         # Check 3: Branch pattern validation
         branch_check = validate_branch_pattern(branch_name, config)
         validation_results << branch_check
-
-        # Check 4: Environment consistency
-        env_check = validate_environment_consistency(deploy_labels, branch_name, config)
-        validation_results << env_check
 
         # Determine overall safety status
         failed_checks = validation_results.reject { |check| check[:passed] }
@@ -98,54 +93,18 @@ module UseCases
       def validate_branch_pattern(branch_name, config)
         branch_patterns = config.raw_config['branch_patterns'] || {}
 
-        expected_patterns = [
-          'develop',
-          /^staging\/.+/,
-          /^production\/.+/,
-          /^.+/
-        ]
-
-        pattern_matched = expected_patterns.any? do |pattern|
-          if pattern.is_a?(Regexp)
-            branch_name =~ pattern
-          else
-            branch_name == pattern
-          end
-        end
-
-        {
-          check: 'branch_pattern',
-          passed: pattern_matched,
-          message: pattern_matched ?
-            "Branch '#{branch_name}' follows expected pattern" :
-            "Branch '#{branch_name}' does not follow expected deployment patterns"
-        }
-      end
-
-      # Validate environment consistency between labels and branch
-      def validate_environment_consistency(deploy_labels, branch_name, config)
-        # DeployLabel only contains service information, not environment
-        # Environment is determined from branch name, so this check always passes
-        # since we're deploying the services from the PR to the environment determined by the branch
-
-        expected_environment = determine_expected_environment(branch_name)
-
-        {
-          check: 'environment_consistency',
-          passed: true,
-          message: "Deploy labels will be deployed to '#{expected_environment}' environment as determined by branch '#{branch_name}'"
-        }
-      end
-
-      # Determine expected environment from branch name
-      def determine_expected_environment(branch_name)
-        case branch_name
-        when /^production\/.+/
-          'production'
-        when /^staging\/.+/
-          'staging'
+        if branch_patterns.key?(branch_name)
+          {
+            check: 'branch_pattern',
+            passed: true,
+            message: "Branch '#{branch_name}' is configured for deployment"
+          }
         else
-          'develop'
+          {
+            check: 'branch_pattern',
+            passed: true,
+            message: "Branch '#{branch_name}' uses default (develop) environment"
+          }
         end
       end
 

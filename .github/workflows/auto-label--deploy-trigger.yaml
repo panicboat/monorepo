@@ -8,9 +8,8 @@ on:
   push:
     branches:
       - develop
-      - main
-      - 'staging/**'
-      - 'production/**'
+      - staging
+      - production
 
 permissions:
   id-token: write

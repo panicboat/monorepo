@@ -221,16 +221,9 @@ services:
       terragrunt: "services/{service}/infrastructure/envs/{environment}"
 
 branch_patterns:
-  develop:
-    target_environment: develop
-  main:
-    target_environment: develop
-  staging:
-    pattern: "staging/*"
-    target_environment: staging
-  production:
-    pattern: "production/*"
-    target_environment: production
+  develop: develop
+  staging: staging
+  production: production
 
 safety_checks:
   require_merged_pr: true

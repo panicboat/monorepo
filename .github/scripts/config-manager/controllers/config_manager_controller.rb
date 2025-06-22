@@ -194,14 +194,9 @@ module Interfaces
             iam_role_apply: arn:aws:iam::ACCOUNT_ID:role/github-oidc-auth-default-apply-role
 
           branch_patterns:
-            develop:
-              target_environment: develop
-            staging:
-              pattern: "staging/*"
-              target_environment: staging
-            production:
-              pattern: "production/*"
-              target_environment: production
+            develop: develop
+            staging: staging
+            production: production
 
           safety_checks:
             require_merged_pr: true
