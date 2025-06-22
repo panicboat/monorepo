@@ -152,8 +152,8 @@ deploy:api-gateway
 
 # Deploy Trigger performs environment detection
 develop branch     → Deploy auth-service, api-gateway to develop environment
-staging/* branch   → Deploy auth-service, api-gateway to staging environment
-production/* branch → Deploy auth-service, api-gateway to production environment
+staging branch   → Deploy auth-service, api-gateway to staging environment
+production branch → Deploy auth-service, api-gateway to production environment
 ```
 
 #### Efficiency Improvements
