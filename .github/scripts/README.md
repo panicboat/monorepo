@@ -266,7 +266,7 @@ deploy:api-gateway
 
 ### production タグ作成時
 
-**タグ:** `v1.2.3-auth-service-production`
+**タグ:** `auth-service-v1.2.3`
 
 **実行されるデプロイ:**
 - auth-service → production環境（Terragrunt + Kubernetes）
@@ -294,7 +294,7 @@ bundle exec ruby label-dispatcher/bin/dispatcher test \
 bundle exec ruby deploy-trigger/bin/trigger test develop
 
 # デプロイトリガーテスト（タグ）
-bundle exec ruby deploy-trigger/bin/trigger test v1.2.3-auth-service-production
+bundle exec ruby deploy-trigger/bin/trigger test auth-service-v1.2.3
 
 # デバッグモード実行
 DEBUG=true bundle exec ruby deploy-trigger/bin/trigger debug staging
@@ -330,7 +330,7 @@ result = trigger.execute(
 
 # 使用例（タグベース）
 result = trigger.execute(
-  ref_name: 'v1.2.3-auth-service-production',
+  ref_name: 'auth-service-v1.2.3',
   event_type: 'create'
 )
 ```
@@ -435,7 +435,7 @@ environments:
   - environment: production
     aws_region: ap-northeast-1
     aws_account_id: "999999999999"  # 本番アカウント
-    iam_role_plan: arn:aws:iam::999999999999:role/plan-production
+    iam_role_plan: arn:aws:iam::999999999999:role/plan-v1.2.3
 
 # 地域別デプロイメント
   - environment: production-multi-region
@@ -494,7 +494,7 @@ def validate_branch_name(branch_name)
 end
 
 def validate_tag_name(tag_name)
-  raise "Invalid tag name" unless tag_name.match?(/\Av\d+\.\d+\.\d+-\w+-production\z/)
+  raise "Invalid tag name" unless tag_name.match?(/\Av\d+\.\d+\.\d+-\w+-v1.2.3\z/)
 end
 ```
 
