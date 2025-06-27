@@ -32,7 +32,7 @@ locals {
       }
 
       staging = {
-        pattern                         = "staging/*"
+        pattern                         = "staging"
         required_reviews                = 1
         dismiss_stale_reviews           = true
         require_code_owner_reviews      = true
@@ -48,7 +48,7 @@ locals {
       }
 
       production = {
-        pattern                         = "production/*"
+        pattern                         = "production"
         required_reviews                = 2
         dismiss_stale_reviews           = true
         require_code_owner_reviews      = true

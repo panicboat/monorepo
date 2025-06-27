@@ -51,9 +51,6 @@ resource "github_branch_protection" "branches" {
     contexts = each.value.required_status_checks
   }
 
-  # Push restrictions (who can push to this branch)
-  push_restrictions = each.value.restrict_pushes ? [] : null
-
   # Admin privileges and branch operation restrictions
   enforce_admins                  = each.value.enforce_admins
   allows_force_pushes             = each.value.allow_force_pushes
