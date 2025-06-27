@@ -10,7 +10,7 @@
   "automergeStrategy": "squash",
   "platformAutomerge": true,
   "prConcurrentLimit": 15,
-  "prHourlyLimit": 3,
+  "prHourlyLimit": 5,
   "branchPrefix": "renovate/",
 
   "schedule": ["before 4am every weekday"],
