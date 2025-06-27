@@ -37,7 +37,7 @@ plan: ## Plan Terragrunt changes
 
 apply: ## Apply Terragrunt changes
 	@echo "$(YELLOW)Applying Terragrunt changes for $(ENV)...$(NC)"
-	cd envs/$(ENV) && terragrunt apply
+	cd envs/$(ENV) && terragrunt apply -auto-approve
 
 destroy: ## Destroy Terragrunt resources
 	@echo "$(RED)Destroying Terragrunt resources for $(ENV)...$(NC)"
