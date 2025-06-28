@@ -18,11 +18,11 @@ module Interfaces
         service_name: nil,
         environment: nil
       )
-        if service_name && environment
-          puts "Starting manifest update from PR ##{pr_number} for #{service_name}:#{environment}"
-        else
-          puts "Starting manifest update from PR ##{pr_number}"
-        end
+        @presenter.present_manifest_update_start(
+          pr_number: pr_number,
+          service_name: service_name,
+          environment: environment
+        )
 
         # Execute manifest updates for specified service or all kubernetes targets in PR
         result = @update_manifests_from_pr_use_case.execute(
@@ -35,12 +35,12 @@ module Interfaces
         )
 
         unless result.success?
-          @presenter.present_error("Manifest update failed: #{result.error_message}")
+          @presenter.present_error(result)
           return false
         end
 
         # Present results
-        present_pr_results(result, pr_number)
+        @presenter.present_manifest_update_results(result: result, pr_number: pr_number)
         true
       end
 
@@ -53,21 +53,31 @@ module Interfaces
         service_name:,
         environment:
       )
-        puts "🧪 Validating manifest workflow for PR ##{pr_number}"
-        puts "Service: #{service_name}"
-        puts "Environment: #{environment}"
-        puts "Manifest file: #{manifest_file}"
-        puts "Target repo: #{target_repo}"
-        puts "Target branch: #{target_branch}"
+        @presenter.present_dry_run_start(
+          pr_number: pr_number,
+          service_name: service_name,
+          environment: environment,
+          manifest_file: manifest_file,
+          target_repo: target_repo,
+          target_branch: target_branch
+        )
 
         # Validate manifest file exists and is readable
         unless File.exist?(manifest_file)
-          @presenter.present_error("Manifest file not found: #{manifest_file}")
+          @presenter.present_manifest_validation_result(
+            file_path: manifest_file,
+            valid: false,
+            error_message: "Manifest file not found"
+          )
           return false
         end
 
         unless File.readable?(manifest_file)
-          @presenter.present_error("Manifest file not readable: #{manifest_file}")
+          @presenter.present_manifest_validation_result(
+            file_path: manifest_file,
+            valid: false,
+            error_message: "Manifest file not readable"
+          )
           return false
         end
 
@@ -75,48 +85,61 @@ module Interfaces
         begin
           manifest_content = File.read(manifest_file)
           if manifest_content.strip.empty?
-            @presenter.present_error("Manifest file is empty: #{manifest_file}")
+            @presenter.present_manifest_validation_result(
+              file_path: manifest_file,
+              valid: false,
+              error_message: "Manifest file is empty"
+            )
             return false
           end
-          puts "✅ Manifest file validation passed"
+          @presenter.present_manifest_validation_result(file_path: manifest_file, valid: true)
         rescue => e
-          @presenter.present_error("Failed to read manifest file: #{e.message}")
+          @presenter.present_manifest_validation_result(
+            file_path: manifest_file,
+            valid: false,
+            error_message: "Failed to read manifest file: #{e.message}"
+          )
           return false
         end
 
         # Extract deployment info for validation
         extract_use_case = @update_manifests_from_pr_use_case.instance_variable_get(:@extract_deployment_info_use_case)
-        
+
         deployment_info = extract_use_case.execute(
           pr_number: pr_number,
           target_branch: target_branch
         )
 
         unless deployment_info.success?
-          @presenter.present_error("Failed to extract PR deployment info: #{deployment_info.error_message}")
+          @presenter.present_error(deployment_info)
           return false
         end
 
-        deploy_labels = deployment_info.data[:deploy_labels].map(&:to_s)
         target_environment = deployment_info.data[:target_environment]
         kubernetes_targets = deployment_info.data[:kubernetes_targets]
+        
+        # Generate deploy labels from kubernetes targets
+        deploy_labels = kubernetes_targets.map { |target| "deploy:#{target.service}" }.uniq
 
-        puts "📋 PR deployment information:"
-        puts "- Deploy labels: #{deploy_labels.join(', ')}"
-        puts "- Target environment: #{target_environment}"
-        puts "- Kubernetes targets found: #{kubernetes_targets.length}"
+        @presenter.present_pr_deployment_info(
+          deploy_labels: deploy_labels,
+          target_environment: target_environment,
+          kubernetes_targets_count: kubernetes_targets.length
+        )
 
         # Validate service and environment match
         service_label = "deploy:#{service_name}"
-        unless deploy_labels.include?(service_label)
-          @presenter.present_error("Service label '#{service_label}' not found in PR labels: [#{deploy_labels.join(', ')}]")
-          return false
-        end
-
-        unless target_environment == environment
-          @presenter.present_error("Environment mismatch: expected '#{environment}', got '#{target_environment}'")
-          return false
-        end
+        service_valid = deploy_labels.include?(service_label) && target_environment == environment
+        
+        @presenter.present_service_validation_result(
+          service_name: service_name,
+          environment: environment,
+          deploy_labels: deploy_labels,
+          target_environment: target_environment,
+          valid: service_valid
+        )
+        
+        return false unless service_valid
 
         # Find matching kubernetes target
         matching_target = kubernetes_targets.find do |target|
@@ -124,54 +147,38 @@ module Interfaces
         end
 
         unless matching_target
-          @presenter.present_error("No kubernetes target found for #{service_name}:#{environment}")
+          @presenter.present_manifest_validation_result(
+            file_path: "#{service_name}:#{environment}",
+            valid: false,
+            error_message: "No kubernetes target found"
+          )
           return false
         end
 
-        puts "✅ Service and environment validation passed"
-        puts "🎯 Matching kubernetes target found: #{matching_target.service}:#{matching_target.environment}"
+        @presenter.present_target_match(
+          service_name: matching_target.service,
+          environment: matching_target.environment
+        )
 
         # Simulate what would happen
         feature_branch = "auto-update/#{service_name}-#{environment}-#{deployment_info.data[:source_sha] || 'unknown'}"[0..62]
         target_file = "#{environment}/#{service_name}.yaml"
 
-        puts "📋 Workflow simulation:"
-        puts "- Feature branch: #{feature_branch}"
-        puts "- Target file: #{target_file}"
-        puts "- Manifest source: #{manifest_file}"
-        puts "- Target repository: #{target_repo}"
-        puts "- Target branch: #{target_branch}"
-        puts "- Auto-merge: enabled (squash)"
+        @presenter.present_workflow_simulation(
+          feature_branch: feature_branch,
+          target_file: target_file,
+          manifest_file: manifest_file,
+          target_repo: target_repo,
+          target_branch: target_branch
+        )
 
-        puts "✅ Dry run validation completed successfully!"
-        puts "Note: All validations passed. Workflow would execute without errors."
+        @presenter.present_dry_run_completion
         true
       end
 
       private
 
 
-      # Present operation results for PR-based updates
-      def present_pr_results(result, pr_number)
-        processed_count = result.data[:processed_targets]
-        has_changes = result.data[:has_changes]
-
-        puts "Processed #{processed_count} kubernetes targets from PR ##{pr_number}"
-
-        if has_changes
-          changes_count = result.data[:results].count { |r| r[:has_changes] }
-          puts "Successfully created #{changes_count} pull requests"
-
-          # Show details for each result
-          result.data[:results].each do |target_result|
-            if target_result[:has_changes] && target_result[:pull_request_url]
-              puts "#{target_result[:service]}:#{target_result[:environment]} → #{target_result[:pull_request_url]}"
-            end
-          end
-        else
-          puts "No changes detected for any targets"
-        end
-      end
     end
   end
 end

@@ -134,6 +134,99 @@ module Interfaces
         puts "Discovery Method: #{method}"
         puts "Discovered Services: #{discovered_services.join(', ')}"
       end
+
+      # Present manifest update start message
+      def present_manifest_update_start(pr_number:, service_name: nil, environment: nil)
+        if service_name && environment
+          puts "🚀 Starting manifest update from PR ##{pr_number} for #{service_name}:#{environment}".colorize(:blue)
+        else
+          puts "🚀 Starting manifest update from PR ##{pr_number}".colorize(:blue)
+        end
+      end
+
+      # Present dry run validation start
+      def present_dry_run_start(pr_number:, service_name:, environment:, manifest_file:, target_repo:, target_branch:)
+        puts "🧪 Validating manifest workflow for PR ##{pr_number}".colorize(:yellow)
+        puts "Service: #{service_name}"
+        puts "Environment: #{environment}"
+        puts "Manifest file: #{manifest_file}"
+        puts "Target repo: #{target_repo}"
+        puts "Target branch: #{target_branch}"
+      end
+
+      # Present manifest validation results
+      def present_manifest_validation_result(file_path:, valid:, error_message: nil)
+        if valid
+          puts "✅ Manifest file validation passed".colorize(:green)
+        else
+          puts "❌ Manifest file validation failed: #{error_message}".colorize(:red)
+        end
+      end
+
+      # Present deployment information from PR
+      def present_pr_deployment_info(deploy_labels:, target_environment:, kubernetes_targets_count:)
+        puts "📋 PR deployment information:".colorize(:blue)
+        puts "- Deploy labels: #{deploy_labels.join(', ')}"
+        puts "- Target environment: #{target_environment}"
+        puts "- Kubernetes targets found: #{kubernetes_targets_count}"
+      end
+
+      # Present service validation results
+      def present_service_validation_result(service_name:, environment:, deploy_labels:, target_environment:, valid:)
+        if valid
+          puts "✅ Service and environment validation passed".colorize(:green)
+        else
+          service_label = "deploy:#{service_name}"
+          if !deploy_labels.include?(service_label)
+            puts "❌ Service label '#{service_label}' not found in PR labels: [#{deploy_labels.join(', ')}]".colorize(:red)
+          elsif target_environment != environment
+            puts "❌ Environment mismatch: expected '#{environment}', got '#{target_environment}'".colorize(:red)
+          end
+        end
+      end
+
+      # Present kubernetes target match
+      def present_target_match(service_name:, environment:)
+        puts "🎯 Matching kubernetes target found: #{service_name}:#{environment}".colorize(:green)
+      end
+
+      # Present workflow simulation
+      def present_workflow_simulation(feature_branch:, target_file:, manifest_file:, target_repo:, target_branch:)
+        puts "📋 Workflow simulation:".colorize(:blue)
+        puts "- Feature branch: #{feature_branch}"
+        puts "- Target file: #{target_file}"
+        puts "- Manifest source: #{manifest_file}"
+        puts "- Target repository: #{target_repo}"
+        puts "- Target branch: #{target_branch}"
+        puts "- Auto-merge: enabled (squash)"
+      end
+
+      # Present dry run completion
+      def present_dry_run_completion
+        puts "✅ Dry run validation completed successfully!".colorize(:green)
+        puts "Note: All validations passed. Workflow would execute without errors."
+      end
+
+      # Present manifest update results
+      def present_manifest_update_results(result:, pr_number:)
+        processed_count = result.data[:processed_targets]
+        has_changes = result.data[:has_changes]
+
+        puts "📊 Processed #{processed_count} kubernetes targets from PR ##{pr_number}".colorize(:blue)
+
+        if has_changes
+          changes_count = result.data[:results].count { |r| r[:has_changes] }
+          puts "✅ Successfully created #{changes_count} pull requests".colorize(:green)
+
+          result.data[:results].each do |target_result|
+            if target_result[:has_changes] && target_result[:pull_request_url]
+              puts "#{target_result[:service]}:#{target_result[:environment]} → #{target_result[:pull_request_url]}"
+            end
+          end
+        else
+          puts "ℹ️  No changes detected for any targets".colorize(:yellow)
+        end
+      end
     end
   end
 end

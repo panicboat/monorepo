@@ -64,7 +64,7 @@ module UseCases
         if deploy_labels.any?
           content += "### ✅ Automated Services (#{deploy_labels.length})\n"
           deploy_labels.each do |label|
-            content += "- **#{label.service}**: Infrastructure + Application deployment\n"
+            content += "- **#{label.service}**\n"
           end
           content += "\n"
 
