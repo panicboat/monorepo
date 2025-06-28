@@ -156,23 +156,15 @@ jobs:
       matrix:
         target: ${{ fromJson(needs.extract-deployment-targets.outputs.kubernetes_targets) }}
       fail-fast: false
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Execute Kubernetes deployment
-        run: |
-          echo "🚧 Kubernetes deployment for ${{ matrix.target.service }}:${{ matrix.target.environment }}"
-          echo "Working directory: ${{ matrix.target.working_directory }}"
-          echo "Stack: ${{ matrix.target.stack }}"
-          echo ""
-          echo "This will be implemented with kubernetes executor workflow"
-          echo "Future implementation:"
-          echo "  - Setup kubectl and kustomize"
-          echo "  - Run kustomize build"
-          echo "  - Apply manifests to cluster"
-          echo "  - Verify deployment health"
+    uses: ./.github/workflows/reusable--kubernetes-executor.yaml
+    with:
+      service-name: ${{ matrix.target.service }}
+      environment: ${{ matrix.target.environment }}
+      source-path: ${{ matrix.target.service }}/kubernetes/overlays/${{ matrix.target.environment }}
+      target-repository: panicboat/generated-manifests
+      target-branch: ${{ github.ref_name }}
+    secrets:
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   deployment-summary:
     name: 'Deployment Summary'
