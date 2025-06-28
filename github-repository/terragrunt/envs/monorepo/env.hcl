@@ -19,7 +19,7 @@ locals {
         pattern                         = null # Use key as branch name
         required_reviews                = 1
         dismiss_stale_reviews           = true
-        require_code_owner_reviews      = true
+        require_code_owner_reviews      = false
         restrict_pushes                 = true
         require_last_push_approval      = true
         required_status_checks          = ["wait-for-workflows"]
