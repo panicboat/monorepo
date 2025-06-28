@@ -16,12 +16,14 @@ on:
         type: string
         description: 'Source path for kustomize build (e.g., demo-service/kubernetes/overlays/develop)'
       target-repository:
-        required: true
+        required: false
         type: string
+        default: panicboat/generated-manifests
         description: 'Target repository for generated manifests (e.g., panicboat/generated-manifests)'
       target-branch:
-        required: true
+        required: false
         type: string
+        default: main
         description: 'Target branch for generated manifests'
     secrets:
       APP_PRIVATE_KEY:
