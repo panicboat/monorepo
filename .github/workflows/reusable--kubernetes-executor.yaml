@@ -125,14 +125,12 @@ jobs:
       - name: Update manifests using gotk-helper
         if: steps.parse-results.outputs.build-failed == 'false' && steps.pr-info.outputs.number
         id: gotk-update
-        working-directory: generated-manifests
+        working-directory: ${{ inputs.target-repository }}
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          # Execute gotk-helper with PR-based approach
-          cd ../.github/scripts/gotk-helper
-
-          bundle exec bin/gotk-helper update_from_pr ${{ steps.pr-info.outputs.number }} \
+          cd ../.github/scripts
+          bundle exec gotk-helper/bin/gotk-helper update_from_pr ${{ steps.pr-info.outputs.number }} \
             --manifest-file="${{ steps.kustomize-build.outputs.output-file }}" \
             --target-repo="${{ inputs.target-repository }}" \
             --target-branch="${{ inputs.target-branch }}" \
