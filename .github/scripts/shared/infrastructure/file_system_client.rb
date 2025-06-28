@@ -1,6 +1,8 @@
 # File system client for git operations and file/directory checks
 # Handles file change detection and path validation
 
+require 'fileutils'
+
 module Infrastructure
   class FileSystemClient
     # Get list of changed files using git diff
@@ -70,6 +72,35 @@ module Infrastructure
       `git status --porcelain`.strip.empty?
     rescue => error
       raise "Failed to check git status: #{error.message}"
+    end
+
+    # Read file content
+    def read_file(file_path)
+      File.read(file_path)
+    rescue => error
+      raise "Failed to read file #{file_path}: #{error.message}"
+    end
+
+    # Write content to file
+    def write_file(file_path, content)
+      File.write(file_path, content)
+    rescue => error
+      raise "Failed to write file #{file_path}: #{error.message}"
+    end
+
+    # Create directory if it doesn't exist
+    def create_directory(dir_path)
+      FileUtils.mkdir_p(dir_path)
+    rescue => error
+      raise "Failed to create directory #{dir_path}: #{error.message}"
+    end
+
+    # Execute shell command and return result
+    def execute_command(command)
+      result = system(command)
+      { success: result, output: $?.to_s }
+    rescue => error
+      raise "Failed to execute command '#{command}': #{error.message}"
     end
   end
 end

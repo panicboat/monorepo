@@ -116,6 +116,35 @@ module Infrastructure
       raise "Failed to update PR comment: #{error.message}"
     end
 
+    # Create pull request with labels
+    def create_pull_request(repository:, base:, head:, title:, body:, labels: [])
+      pr = @client.create_pull_request(repository, base, head, title, body)
+      
+      # Add labels if provided
+      unless labels.empty?
+        @client.add_labels_to_an_issue(repository, pr.number, labels)
+      end
+      
+      pr.html_url
+    rescue Octokit::Error => error
+      raise "Failed to create pull request: #{error.message}"
+    end
+
+    # Enable auto-merge for pull request
+    def enable_auto_merge(pull_request_url, merge_method: 'squash')
+      # Extract PR number from URL
+      pr_number = pull_request_url.split('/').last.to_i
+      
+      # Use GitHub CLI for auto-merge since Octokit doesn't support it directly
+      system("gh pr merge --auto --#{merge_method} #{pull_request_url}")
+      
+      unless $?.success?
+        raise "Failed to enable auto-merge for PR ##{pr_number}"
+      end
+    rescue => error
+      raise "Failed to enable auto-merge: #{error.message}"
+    end
+
     private
 
     # Determine label color based on environment

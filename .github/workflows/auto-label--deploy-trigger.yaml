@@ -160,7 +160,7 @@ jobs:
     with:
       service-name: ${{ matrix.target.service }}
       environment: ${{ matrix.target.environment }}
-      source-path: ${{ matrix.target.service }}/kubernetes/overlays/${{ matrix.target.environment }}
+      source-path: ${{ matrix.target.working_directory }}
       target-repository: panicboat/generated-manifests
       target-branch: ${{ github.ref_name }}
     secrets:
