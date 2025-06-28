@@ -57,28 +57,28 @@ jobs:
             echo "Expected kustomize directory structure with overlays for each environment"
             exit 1
           fi
-          
+
           KUSTOMIZATION_FILE="${{ inputs.source-path }}/kustomization.yaml"
           if [ ! -f "$KUSTOMIZATION_FILE" ]; then
             echo "::error::kustomization.yaml not found: $KUSTOMIZATION_FILE"
             exit 1
           fi
-          
+
           echo "✅ Kustomize structure validated for ${{ inputs.service-name }}:${{ inputs.environment }}"
 
       - name: Build Kubernetes manifests
         id: kustomize-build
         run: |
           OUTPUT_FILE="/tmp/${{ inputs.service-name }}-generated.yaml"
-          
+
           echo "Building manifests from: ${{ inputs.source-path }}"
           kustomize build "${{ inputs.source-path }}" > "$OUTPUT_FILE"
-          
+
           if [ ! -s "$OUTPUT_FILE" ]; then
             echo "::error::Generated manifest file is empty"
             exit 1
           fi
-          
+
           echo "output-file=$OUTPUT_FILE" >> $GITHUB_OUTPUT
           echo "✅ Successfully built manifests for ${{ inputs.service-name }}"
         continue-on-error: true
@@ -89,7 +89,7 @@ jobs:
         run: |
           STATUS=$([ "${{ steps.kustomize-build.outcome }}" == "success" ] && echo "✅ Success" || echo "❌ Failed")
           echo "status=$STATUS" >> $GITHUB_OUTPUT
-          
+
           if [ "${{ steps.kustomize-build.outcome }}" == "failure" ]; then
             echo "build-failed=true" >> $GITHUB_OUTPUT
           else
@@ -112,44 +112,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Update generated manifests
-        if: steps.parse-results.outputs.build-failed == 'false'
-        id: update-manifests
-        working-directory: generated-manifests
-        run: |
-          # Create service directory if not exists
-          SERVICE_DIR="${{ inputs.service-name }}"
-          mkdir -p "$SERVICE_DIR"
-          
-          # Copy generated manifest
-          cp "${{ steps.kustomize-build.outputs.output-file }}" "$SERVICE_DIR/generated.yaml"
-          
-          # Add and commit changes
-          git add "$SERVICE_DIR/generated.yaml"
-          
-          if git diff --cached --quiet; then
-            echo "No changes detected in generated manifests"
-            echo "has-changes=false" >> $GITHUB_OUTPUT
-          else
-            git commit -m "Update ${{ inputs.service-name }} manifests for ${{ inputs.environment }} environment
-
-            Generated from: ${{ github.repository }}@${{ github.sha }}
-            Service: ${{ inputs.service-name }}
-            Environment: ${{ inputs.environment }}
-            Branch: ${{ inputs.target-branch }}"
-            
-            echo "✅ Committed manifest changes for ${{ inputs.service-name }}"
-            echo "has-changes=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Push to target repository
-        if: steps.parse-results.outputs.build-failed == 'false' && steps.update-manifests.outputs.has-changes == 'true'
-        working-directory: generated-manifests
-        run: |
-          git push origin ${{ inputs.target-branch }}
-          echo "✅ Successfully pushed manifests to ${{ inputs.target-repository }}"
-
-      - name: Get current PR information
+      - name: Get source PR information
         id: pr-info
         uses: jwalton/gh-find-current-pr@v1
         with:
@@ -157,7 +120,34 @@ jobs:
           state: all
         continue-on-error: true
 
-      - name: Create or update PR comment
+      - name: Update manifests using gotk-helper
+        if: steps.parse-results.outputs.build-failed == 'false' && steps.pr-info.outputs.number
+        id: gotk-update
+        working-directory: generated-manifests
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # Execute gotk-helper with PR-based approach
+          cd ../.github/scripts/gotk-helper
+
+          bundle exec bin/gotk-helper update_from_pr ${{ steps.pr-info.outputs.number }} \
+            --manifest-file="${{ steps.kustomize-build.outputs.output-file }}" \
+            --target-repo="${{ inputs.target-repository }}" \
+            --target-branch="${{ inputs.target-branch }}" \
+            --service-name="${{ inputs.service-name }}" \
+            --environment="${{ inputs.environment }}"
+
+          # Check exit code for success/failure
+          if [ $? -eq 0 ]; then
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            echo "✅ Successfully executed gotk-helper for PR #${{ steps.pr-info.outputs.number }}"
+          else
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            echo "❌ gotk-helper execution failed for PR #${{ steps.pr-info.outputs.number }}"
+            exit 1
+          fi
+
+      - name: Update source PR with generation results
         if: steps.pr-info.outputs.number
         uses: thollander/actions-comment-pull-request@v3
         with:
@@ -167,16 +157,17 @@ jobs:
             **Service**: ${{ inputs.service-name }}
             **Environment**: `${{ inputs.environment }}`
             **Status**: ${{ steps.parse-results.outputs.status }}
-            **Target Repository**: [${{ inputs.target-repository }}](https://github.com/${{ inputs.target-repository }}/tree/${{ inputs.target-branch }})
-            **Generated File**: `${{ inputs.service-name }}/generated.yaml`
+            **Target Repository**: [${{ inputs.target-repository }}](https://github.com/${{ inputs.target-repository }})
+            **Generated File**: `${{ inputs.environment }}/${{ inputs.service-name }}.yaml`
 
             ### 📋 Generation Details
             - **Source Path**: `${{ inputs.source-path }}`
             - **Commit**: [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
-            - **Branch**: `${{ inputs.target-branch }}`
-            ${{ steps.parse-results.outputs.build-failed == 'false' && steps.update-manifests.outputs.has-changes == 'false' && '- **Changes**: No manifest changes detected' || '' }}
+            - **Target Branch**: `${{ inputs.target-branch }}`
+            ${{ steps.parse-results.outputs.build-failed == 'false' && steps.gotk-update.outputs.has-changes == 'false' && '- **Changes**: No manifest changes detected' || '' }}
+            ${{ steps.parse-results.outputs.build-failed == 'false' && steps.gotk-update.outputs.has-changes == 'true' && '- **Status**: Manifest update completed via gotk-helper' || '' }}
 
-            ${{ steps.parse-results.outputs.build-failed == 'false' && '[View generated manifests](https://github.com/${{ inputs.target-repository }}/blob/${{ inputs.target-branch }}/${{ inputs.service-name }}/generated.yaml) |' || '' }} [View workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            [View workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             ---
             *Generated by Kubernetes manifest automation*
           comment-tag: 'kubernetes-manifest-${{ inputs.environment }}-${{ inputs.service-name }}'
@@ -189,4 +180,10 @@ jobs:
           if [ "${{ steps.kustomize-build.outcome }}" == "failure" ]; then
             echo "::error::Kubernetes manifest generation failed for ${{ inputs.service-name }}:${{ inputs.environment }}"
             exit 1
+          fi
+
+          if [ "${{ steps.parse-results.outputs.build-failed }}" == "false" ] && [ "${{ steps.gotk-update.outputs.has-changes }}" == "true" ]; then
+            echo "✅ Successfully executed gotk-helper for ${{ inputs.service-name }}:${{ inputs.environment }}"
+          elif [ "${{ steps.parse-results.outputs.build-failed }}" == "false" ]; then
+            echo "ℹ️ No changes detected for ${{ inputs.service-name }}:${{ inputs.environment }}"
           fi
