@@ -125,7 +125,7 @@ jobs:
       - name: Update manifests using gotk-helper
         if: steps.parse-results.outputs.build-failed == 'false' && steps.pr-info.outputs.number
         id: gotk-update
-        working-directory: ${{ inputs.target-repository }}
+        working-directory: generated-manifests
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
