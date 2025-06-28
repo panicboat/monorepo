@@ -6,11 +6,6 @@ require 'bundler/setup'
 # Load shared components (adjust path for execution from shared directory)
 require_relative '../shared/shared_loader'
 
-# Load deploy-trigger use cases
-require_relative '../deploy-trigger/use_cases/get_merged_pr_labels'
-require_relative '../deploy-trigger/use_cases/determine_target_environment'
-require_relative '../deploy-trigger/use_cases/generated_matrix'
-
 # Load feature-specific components
 [
   'entities/**/*.rb',
@@ -46,25 +41,8 @@ class GotkHelperContainer
       )
     end
 
-    # Shared use cases from deploy-trigger
-    container[:get_pr_labels] = UseCases::DeployTrigger::GetMergedPrLabels.new(
-      github_client: container[:github_client]
-    )
-    
-    container[:determine_environment] = UseCases::DeployTrigger::DetermineTargetEnvironment.new(
-      config_client: Infrastructure::ConfigClient.new
-    )
-    
-    container[:generate_matrix] = UseCases::DeployTrigger::GenerateMatrix.new(
-      config_client: Infrastructure::ConfigClient.new
-    )
-
     # Gotk-helper specific use cases
-    container[:extract_deployment_info] = UseCases::ManifestManagement::ExtractDeploymentInfo.new(
-      get_pr_labels_use_case: container[:get_pr_labels],
-      determine_environment_use_case: container[:determine_environment],
-      generate_matrix_use_case: container[:generate_matrix]
-    )
+    container[:extract_deployment_info] = UseCases::ManifestManagement::ExtractDeploymentInfo.new
 
     container[:update_manifest] = UseCases::ManifestManagement::UpdateManifest.new(
       file_client: container[:file_client]
