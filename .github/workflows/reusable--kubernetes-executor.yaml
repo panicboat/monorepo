@@ -47,6 +47,13 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
 
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+          working-directory: .github/scripts
+
       - name: Setup Kustomize
         uses: imranismail/setup-kustomize@v2
         with:
