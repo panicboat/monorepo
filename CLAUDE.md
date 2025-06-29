@@ -2,12 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## コーディングルール
+## Coding Rules
 
-以下のルールを厳密に守ってください。
+Please strictly follow these rules:
 
-- コード内コメントは英語で記述してください。
-- チャットやドキュメントは日本語でお願いします。
-- コード内コメントやメソッド名には変更内容を記載しないでください。現状どうなってるかを理解できるようにしてください。
-- あらゆる場所に「シンプルな」や「複雑な」など比較が必要な表現は使わないでください。
-- コードの統一感は重要です。修正しようとしてる内容は既存のコードと統一感を持たせてください。
+- Write code comments in English.
+- Use Japanese for chat and documentation.
+- Do not include change descriptions in code comments or method names. Make them understandable for the current state.
+- Do not use comparative expressions like "simple" or "complex" anywhere.
+- Code consistency is important. Ensure modifications maintain consistency with existing code.
