@@ -31,7 +31,8 @@ class GotkHelperContainer
     container = {}
 
     # Infrastructure clients
-    container[:file_client] = Infrastructure::FileSystemClient.new
+    working_directory = ENV['GITHUB_WORKSPACE'] || ENV['GOTK_WORKING_DIRECTORY']
+    container[:file_client] = Infrastructure::FileSystemClient.new(working_directory: working_directory)
 
     # GitHub client (only in GitHub Actions or with credentials)
     if ENV['GITHUB_ACTIONS'] || (ENV['GITHUB_TOKEN'] && ENV['GITHUB_REPOSITORY'])
@@ -42,9 +43,7 @@ class GotkHelperContainer
     end
 
     # Gotk-helper specific use cases
-    container[:extract_deployment_info] = UseCases::ManifestManagement::ExtractDeploymentInfo.new
-
-    container[:update_manifest] = UseCases::ManifestManagement::UpdateManifest.new(
+    container[:process_gitops_request] = UseCases::GitOpsManagement::ProcessGitOpsRequest.new(
       file_client: container[:file_client]
     )
 
@@ -54,9 +53,8 @@ class GotkHelperContainer
         file_client: container[:file_client]
       )
 
-      container[:update_manifests_from_pr] = UseCases::ManifestManagement::UpdateManifestsFromPr.new(
-        extract_deployment_info_use_case: container[:extract_deployment_info],
-        update_manifest_use_case: container[:update_manifest],
+      container[:create_gitops_request] = UseCases::GitOpsManagement::CreateGitOpsRequest.new(
+        process_gitops_request_use_case: container[:process_gitops_request],
         create_pull_request_use_case: container[:create_pull_request]
       )
     end
@@ -68,7 +66,7 @@ class GotkHelperContainer
     # Controller
     presenter = ENV['GITHUB_ACTIONS'] ? container[:github_actions_presenter] : container[:console_presenter]
     container[:gotk_helper_controller] = Interfaces::Controllers::GotkHelperController.new(
-      update_manifests_from_pr_use_case: container[:update_manifests_from_pr],
+      create_gitops_request_use_case: container[:create_gitops_request],
       presenter: presenter
     )
 
