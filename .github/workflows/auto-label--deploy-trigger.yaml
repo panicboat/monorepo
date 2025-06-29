@@ -161,6 +161,7 @@ jobs:
       service-name: ${{ matrix.target.service }}
       environment: ${{ matrix.target.environment }}
       source-path: ${{ matrix.target.working_directory }}
+      action-type: ${{ github.event_name == 'pull_request' && 'diff' || 'apply' }}
     secrets:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 

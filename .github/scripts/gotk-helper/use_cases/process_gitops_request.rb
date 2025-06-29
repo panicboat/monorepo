@@ -1,18 +1,22 @@
-# Use case for updating Kubernetes manifests in GitOps repository
+# Use case for processing GitOps requests in target repository
 # Handles the core logic of creating feature branch, updating files, and committing changes
 
 module UseCases
-  module ManifestManagement
-    class UpdateManifest
+  module GitOpsManagement
+    class ProcessGitOpsRequest
       def initialize(file_client:)
         @file_client = file_client
       end
 
-      # Execute manifest update operation in target repository
+      # Execute GitOps request operation in target repository
       def execute(request)
-        return Entities::Result.failure(error_message: "Invalid manifest update request") unless request.valid?
+        return Entities::Result.failure(error_message: "Invalid GitOps request") unless request.valid?
 
         begin
+          # Configure Git user identity
+          configure_git_result = configure_git_identity
+          return configure_git_result unless configure_git_result.success?
+
           # Read manifest content from source file
           manifest_content = @file_client.read_file(request.manifest_file_path)
           return Entities::Result.failure(error_message: "Failed to read manifest file") if manifest_content.nil?
@@ -22,7 +26,7 @@ module UseCases
           return create_feature_branch_result unless create_feature_branch_result.success?
 
           # Update manifest file in target repository
-          update_file_result = update_manifest_file(request, manifest_content)
+          update_file_result = write_manifest_file(request, manifest_content)
           return update_file_result unless update_file_result.success?
 
           # Check for changes and commit if necessary
@@ -31,11 +35,22 @@ module UseCases
           
           Entities::Result.success(has_changes: commit_result.data[:has_changes])
         rescue => e
-          Entities::Result.failure(error_message: "Manifest update failed: #{e.message}")
+          Entities::Result.failure(error_message: "GitOps request processing failed: #{e.message}")
         end
       end
 
       private
+
+      # Configure Git user identity for commits
+      def configure_git_identity
+        begin
+          @file_client.execute_command("git config user.name 'panicboat'")
+          @file_client.execute_command("git config user.email 'panicboat@gmail.com'")
+          Entities::Result.success
+        rescue => e
+          Entities::Result.failure(error_message: "Failed to configure Git identity: #{e.message}")
+        end
+      end
 
       # Create and switch to feature branch
       def create_feature_branch(request)
@@ -47,8 +62,8 @@ module UseCases
         end
       end
 
-      # Update manifest file with new content
-      def update_manifest_file(request, manifest_content)
+      # Write manifest file with new content
+      def write_manifest_file(request, manifest_content)
         begin
           # Create environment directory if it doesn't exist
           env_dir = request.environment
@@ -62,7 +77,7 @@ module UseCases
           
           Entities::Result.success
         rescue => e
-          Entities::Result.failure(error_message: "Failed to update manifest file: #{e.message}")
+          Entities::Result.failure(error_message: "Failed to write manifest file: #{e.message}")
         end
       end
 

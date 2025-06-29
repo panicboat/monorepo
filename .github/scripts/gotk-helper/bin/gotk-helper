@@ -7,17 +7,17 @@ require_relative '../application'
 require 'thor'
 
 class GotkHelperCLI < Thor
-  desc "update_from_pr PR_NUMBER", "Update Kubernetes manifests from PR deployment labels"
+  desc "create_gitops_request PR_NUMBER", "Create GitOps request from PR for Kubernetes manifest deployment"
   option :manifest_file, desc: "Path to generated manifest file", required: true
   option :target_repo, desc: "Target GitOps repository (OWNER/REPO)", required: true
   option :target_branch, desc: "Target branch in GitOps repository", required: true
   option :service_name, desc: "Service name for single service processing", required: true
   option :environment, desc: "Environment name (develop, staging, production)", required: true
 
-  def update_from_pr(pr_number)
+  def create_gitops_request(pr_number)
     controller = GotkHelperContainer.resolve(:gotk_helper_controller)
 
-    success = controller.update_from_pr(
+    success = controller.create_gitops_request(
       pr_number: pr_number.to_i,
       manifest_file: options[:manifest_file],
       target_repo: options[:target_repo],
@@ -86,8 +86,8 @@ class GotkHelperCLI < Thor
       📋 GitOps Toolkit Helper Usage Examples
 
       🚀 Basic Usage:
-      # Update manifests from PR deployment labels
-      #{File.basename($0)} update_from_pr PR_NUMBER --manifest-file=PATH --target-repo=OWNER/REPO --target-branch=BRANCH
+      # Create GitOps request from PR deployment labels
+      #{File.basename($0)} create_gitops_request PR_NUMBER --manifest-file=PATH --target-repo=OWNER/REPO --target-branch=BRANCH
 
       🧪 Validation:
       # Validate specific service deployment
@@ -108,7 +108,7 @@ class GotkHelperCLI < Thor
       - Reports what would happen without making changes
 
       🔗 GitHub Actions Integration:
-      The workflow will use: #{File.basename($0)} update_from_pr ${{ steps.pr-info.outputs.number }} \\
+      The workflow will use: #{File.basename($0)} create_gitops_request ${{ steps.pr-info.outputs.number }} \\
         --manifest-file=${{ steps.build.outputs.file }} \\
         --target-repo=panicboat/generated-manifests \\
         --target-branch=${{ github.ref_name }}

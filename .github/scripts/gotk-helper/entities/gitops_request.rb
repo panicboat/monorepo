@@ -1,8 +1,8 @@
-# Manifest update request entity containing all information needed for GitOps repository updates
+# GitOps request entity containing all information needed for GitOps repository operations
 # Represents a single manifest generation and pull request creation operation
 
 module Entities
-  class ManifestUpdateRequest
+  class GitOpsRequest
     attr_reader :service, :environment, :manifest_file_path, :target_repository,
                 :target_branch, :source_sha, :source_repository, :pr_number
 
@@ -88,7 +88,7 @@ module Entities
 
     # Equality comparison
     def ==(other)
-      return false unless other.is_a?(ManifestUpdateRequest)
+      return false unless other.is_a?(GitOpsRequest)
       
       service == other.service &&
       environment == other.environment &&

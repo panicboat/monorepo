@@ -12,7 +12,7 @@ module Entities
       stack: 'terragrunt',
       iam_role_plan: nil,
       iam_role_apply: nil,
-      aws_region:,
+      aws_region: nil,
       working_directory:
     )
       @service = service
@@ -81,7 +81,6 @@ module Entities
           service: deploy_label.service,
           environment: target_environment,
           stack: stack,
-          aws_region: env_config['aws_region'],
           working_directory: working_dir
         )
       else
@@ -89,9 +88,6 @@ module Entities
           service: deploy_label.service,
           environment: target_environment,
           stack: stack,
-          iam_role_plan: env_config['iam_role_plan'],
-          iam_role_apply: env_config['iam_role_apply'],
-          aws_region: env_config['aws_region'],
           working_directory: working_dir
         )
       end

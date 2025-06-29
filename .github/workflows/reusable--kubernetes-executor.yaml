@@ -25,6 +25,11 @@ on:
         type: string
         default: main
         description: 'Target branch for generated manifests'
+      action-type:
+        required: false
+        type: string
+        default: apply
+        description: 'Action type: diff (plan/preview) or apply (execute)'
     secrets:
       APP_PRIVATE_KEY:
         required: true
@@ -41,6 +46,7 @@ jobs:
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
 
       - name: Checkout source repository
         uses: actions/checkout@v4
@@ -129,15 +135,16 @@ jobs:
           state: all
         continue-on-error: true
 
-      - name: Update manifests using gotk-helper
-        if: steps.parse-results.outputs.build-failed == 'false' && steps.pr-info.outputs.number
-        id: gotk-update
+      - name: Create GitOps requests using gotk-helper
+        if: steps.parse-results.outputs.build-failed == 'false' && steps.pr-info.outputs.number && inputs.action-type == 'apply'
+        id: gotk-request
         working-directory: generated-manifests
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
+          GENERATED_MANIFESTS_PATH="$(pwd)"
           cd ../.github/scripts
-          bundle exec gotk-helper/bin/gotk-helper update_from_pr ${{ steps.pr-info.outputs.number }} \
+          GITHUB_WORKSPACE="$GENERATED_MANIFESTS_PATH" bundle exec gotk-helper/bin/gotk-helper create_gitops_request ${{ steps.pr-info.outputs.number }} \
             --manifest-file="${{ steps.kustomize-build.outputs.output-file }}" \
             --target-repo="${{ inputs.target-repository }}" \
             --target-branch="${{ inputs.target-branch }}" \
@@ -155,7 +162,7 @@ jobs:
           fi
 
       - name: Update source PR with generation results
-        if: steps.pr-info.outputs.number
+        if: steps.pr-info.outputs.number && inputs.action-type == 'apply'
         uses: thollander/actions-comment-pull-request@v3
         with:
           message: |
@@ -171,8 +178,8 @@ jobs:
             - **Source Path**: `${{ inputs.source-path }}`
             - **Commit**: [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
             - **Target Branch**: `${{ inputs.target-branch }}`
-            ${{ steps.parse-results.outputs.build-failed == 'false' && steps.gotk-update.outputs.has-changes == 'false' && '- **Changes**: No manifest changes detected' || '' }}
-            ${{ steps.parse-results.outputs.build-failed == 'false' && steps.gotk-update.outputs.has-changes == 'true' && '- **Status**: Manifest update completed via gotk-helper' || '' }}
+            ${{ steps.parse-results.outputs.build-failed == 'false' && steps.gotk-request.outputs.has-changes == 'false' && '- **Changes**: No manifest changes detected' || '' }}
+            ${{ steps.parse-results.outputs.build-failed == 'false' && steps.gotk-request.outputs.has-changes == 'true' && '- **Status**: Manifest update completed via gotk-helper' || '' }}
 
             [View workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             ---
@@ -189,7 +196,7 @@ jobs:
             exit 1
           fi
 
-          if [ "${{ steps.parse-results.outputs.build-failed }}" == "false" ] && [ "${{ steps.gotk-update.outputs.has-changes }}" == "true" ]; then
+          if [ "${{ steps.parse-results.outputs.build-failed }}" == "false" ] && [ "${{ steps.gotk-request.outputs.has-changes }}" == "true" ]; then
             echo "✅ Successfully executed gotk-helper for ${{ inputs.service-name }}:${{ inputs.environment }}"
           elif [ "${{ steps.parse-results.outputs.build-failed }}" == "false" ]; then
             echo "ℹ️ No changes detected for ${{ inputs.service-name }}:${{ inputs.environment }}"
