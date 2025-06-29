@@ -136,7 +136,7 @@ jobs:
         continue-on-error: true
 
       - name: Prepare GitOps manifest
-        if: steps.parse-results.outputs.build-failed == 'false' && steps.pr-info.outputs.number && inputs.action-type == 'apply'
+        if: steps.parse-results.outputs.build-failed == 'false' && inputs.action-type == 'apply'
         id: prepare-manifest
         working-directory: generated-manifests
         run: |
@@ -149,7 +149,7 @@ jobs:
           echo "target-file=${{ inputs.environment }}/${{ inputs.service-name }}.yaml" >> $GITHUB_OUTPUT
 
       - name: Create GitOps Pull Request
-        # if: steps.parse-results.outputs.build-failed == 'false' && steps.pr-info.outputs.number && inputs.action-type == 'apply'
+        if: steps.parse-results.outputs.build-failed == 'false' && inputs.action-type == 'apply'
         id: gitops-request
         uses: peter-evans/create-pull-request@v6
         with:
@@ -181,7 +181,7 @@ jobs:
           delete-branch: true
 
       - name: Set GitOps request status
-        if: steps.parse-results.outputs.build-failed == 'false' && steps.pr-info.outputs.number && inputs.action-type == 'apply'
+        if: steps.parse-results.outputs.build-failed == 'false' && inputs.action-type == 'apply'
         id: gitops-status
         run: |
           if [ "${{ steps.gitops-request.outputs.pull-request-number }}" != "" ]; then
@@ -193,7 +193,7 @@ jobs:
           fi
 
       - name: Update source PR with generation results
-        if: steps.pr-info.outputs.number && inputs.action-type == 'apply'
+        if: inputs.action-type == 'apply'
         uses: thollander/actions-comment-pull-request@v3
         with:
           message: |
