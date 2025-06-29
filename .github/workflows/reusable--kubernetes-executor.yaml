@@ -28,7 +28,7 @@ on:
       action-type:
         required: false
         type: string
-        default: apply
+        default: diff
         description: 'Action type: diff (plan/preview) or apply (execute)'
     secrets:
       APP_PRIVATE_KEY:
