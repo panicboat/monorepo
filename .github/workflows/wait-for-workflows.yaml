@@ -35,7 +35,7 @@ jobs:
         permission-pull-requests: write
 
     - name: Wait for all workflows to complete
-      uses: lewagon/wait-on-check-action@v1.3.4
+      uses: lewagon/wait-on-check-action@v1.4.0
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         running-workflow-name: 'wait-for-workflows'
