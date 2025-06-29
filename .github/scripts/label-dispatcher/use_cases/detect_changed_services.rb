@@ -86,9 +86,10 @@ module UseCases
         end
 
         # Discover services from directory patterns (excluding already configured ones)
-        default_pattern = config.directory_conventions['terragrunt']
-        if default_pattern && default_pattern.include?('{service}')
-          pattern_services = discover_services_from_pattern(changed_files, default_pattern)
+        config.directory_conventions.each do |stack_type, pattern|
+          next unless pattern && pattern.include?('{service}')
+          
+          pattern_services = discover_services_from_pattern(changed_files, pattern)
           pattern_services.each do |service|
             unless explicitly_configured_services.include?(service)
               services << service
@@ -114,22 +115,36 @@ module UseCases
         conventions.each do |stack, pattern|
           next unless pattern.include?('{service}')
 
-          # Expand service name
-          expanded_pattern = pattern.gsub('{service}', service_name)
-
-          if expanded_pattern.include?('{environment}')
-            # Create base path without environment
-            base_path = expanded_pattern.split('/{environment}').first
-            matching_files = changed_files.select { |file| file.start_with?(base_path) }
-            return true if matching_files.any?
-          else
-            # Direct pattern matching
-            matching_files = changed_files.select { |file| file.start_with?(expanded_pattern) }
-            return true if matching_files.any?
-          end
+          # Extract the base path up to {service} and check if any files match that prefix
+          parts = pattern.split('{service}')
+          prefix = parts[0]  # Everything before {service}
+          suffix = parts[1]  # Everything after {service}
+          
+          # Build service-specific prefix
+          service_prefix = "#{prefix}#{service_name}"
+          
+          # Check if any changed files match this service prefix
+          return true if changed_files.any? { |file| 
+            file.start_with?(service_prefix) && 
+            (suffix.nil? || suffix.empty? || file_matches_suffix?(file, service_prefix, suffix))
+          }
         end
 
         false
+      end
+
+      private
+
+      # Check if file matches the suffix pattern (ignoring {environment} placeholders)
+      def file_matches_suffix?(file, service_prefix, suffix)
+        return true if suffix.nil? || suffix.empty?
+        
+        remaining_path = file[service_prefix.length..-1]
+        # Remove {environment} placeholders from suffix for matching
+        simplified_suffix = suffix.gsub(/\{environment\}/, '*')
+        
+        # Simple wildcard matching - if suffix contains placeholders, accept any path
+        simplified_suffix.include?('*') || remaining_path.start_with?(simplified_suffix)
       end
 
       # Discover services by matching changed files against directory pattern
