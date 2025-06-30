@@ -145,7 +145,7 @@ jobs:
       - name: Create GitOps Pull Request
         if: steps.parse-results.outputs.build-failed == 'false' && inputs.action-type == 'apply'
         id: gitops-request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ steps.app-token.outputs.token }}
           path: generated-manifests
