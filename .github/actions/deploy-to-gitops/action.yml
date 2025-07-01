@@ -1,0 +1,99 @@
+name: 'Deploy to GitOps Repository'
+description: 'Deploy generated manifests to GitOps repository'
+
+inputs:
+  manifest-file:
+    description: 'Path to generated manifest file'
+    required: true
+  target-repository:
+    description: 'Target repository for generated manifests'
+    required: true
+  target-branch:
+    description: 'Target branch for generated manifests'
+    required: true
+    default: 'main'
+  service-name:
+    description: 'Service name'
+    required: true
+  environment:
+    description: 'Environment name'
+    required: true
+  github-token:
+    description: 'GitHub token for authentication'
+    required: true
+
+outputs:
+  pr-number:
+    description: 'Created pull request number'
+    value: ${{ steps.create-pr.outputs.pull-request-number }}
+  has-changes:
+    description: 'Whether changes were detected'
+    value: ${{ steps.check-changes.outputs.has-changes }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout target repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.target-repository }}
+        token: ${{ inputs.github-token }}
+        ref: ${{ inputs.target-branch }}
+        path: generated-manifests
+
+    - name: Configure Git for target repository
+      shell: bash
+      working-directory: generated-manifests
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Get source PR information
+      id: pr-info
+      uses: jwalton/gh-find-current-pr@v1
+      with:
+        github-token: ${{ inputs.github-token }}
+        state: all
+      continue-on-error: true
+
+    - name: Prepare GitOps manifest
+      id: prepare-manifest
+      shell: bash
+      working-directory: generated-manifests
+      run: |
+        mkdir -p "${{ inputs.environment }}"
+        cp "${{ inputs.manifest-file }}" "${{ inputs.environment }}/${{ inputs.service-name }}.yaml"
+        echo "target-file=${{ inputs.environment }}/${{ inputs.service-name }}.yaml" >> $GITHUB_OUTPUT
+
+    - name: Create GitOps Pull Request
+      id: create-pr
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ inputs.github-token }}
+        path: generated-manifests
+        commit-message: |
+          auto: update ${{ inputs.service-name }} manifests for ${{ inputs.environment }}
+
+          Source PR: #${{ steps.pr-info.outputs.number }}
+          Commit: ${{ github.sha }}
+        title: "auto: update ${{ inputs.service-name }} manifests for ${{ inputs.environment }}"
+        body-path: ${{ github.action_path }}/templates/pr-body.md
+        branch: auto-update/${{ inputs.service-name }}-${{ inputs.environment }}-${{ github.sha }}
+        base: ${{ inputs.target-branch }}
+        labels: |
+          environment:${{ inputs.environment }}
+          service:${{ inputs.service-name }}
+          auto-generated
+        delete-branch: true
+
+    - name: Check changes status
+      id: check-changes
+      shell: bash
+      run: |
+        if [ "${{ steps.create-pr.outputs.pull-request-number }}" != "" ]; then
+          echo "has-changes=true" >> $GITHUB_OUTPUT
+          echo "✅ Successfully created GitOps PR #${{ steps.create-pr.outputs.pull-request-number }}"
+        else
+          echo "has-changes=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ No changes detected, no PR created"
+        fi
