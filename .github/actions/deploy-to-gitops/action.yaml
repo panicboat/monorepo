@@ -67,7 +67,7 @@ runs:
 
     - name: Create GitOps Pull Request
       id: create-pr
-      uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ inputs.github-token }}
         path: generated-manifests
