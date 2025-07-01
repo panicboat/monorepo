@@ -64,6 +64,14 @@ jobs:
           source-path: ${{ inputs.source-path }}
           service-name: ${{ inputs.service-name }}
 
+      - name: Upload generated manifest
+        if: steps.build.outputs.build-failed == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubernetes-manifest-${{ inputs.service-name }}-${{ inputs.environment }}-${{ github.run_id }}
+          path: ${{ steps.build.outputs.output-file }}
+          retention-days: 1
+
   deploy-to-gitops:
     name: 'Deploy to GitOps Repository'
     needs: build-manifests
@@ -86,11 +94,17 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
 
+      - name: Download generated manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: kubernetes-manifest-${{ inputs.service-name }}-${{ inputs.environment }}-${{ github.run_id }}
+          path: ./artifacts
+
       - name: Deploy to GitOps repository
         id: deploy
         uses: ./.github/actions/deploy-to-gitops
         with:
-          manifest-file: ${{ needs.build-manifests.outputs.output-file }}
+          manifest-file: ./artifacts/${{ inputs.service-name }}-generated.yaml
           target-repository: ${{ inputs.target-repository }}
           target-branch: ${{ inputs.target-branch }}
           service-name: ${{ inputs.service-name }}

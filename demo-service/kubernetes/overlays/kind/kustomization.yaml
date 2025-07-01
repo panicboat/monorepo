@@ -11,4 +11,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/rules/0/host
-        value: nginx.local2
+        value: nginx.local
