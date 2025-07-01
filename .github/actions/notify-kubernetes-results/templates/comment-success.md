@@ -10,7 +10,7 @@
 - **Source Path**: `{{source-path}}`
 - **Commit**: [`{{github-sha}}`]({{github-server-url}}/{{github-repository}}/commit/{{github-sha}})
 - **Target Branch**: `{{target-branch}}`
-- **Changes**: {{has-changes}} == 'false' && 'No manifest changes detected' || {{has-changes}} == 'true' && 'Manifest update completed via GitHub Actions' || 'Processing...'
+- **Changes**: {{changes-message}}
 
 [View workflow logs]({{github-server-url}}/{{github-repository}}/actions/runs/{{github-run-id}})
 ---

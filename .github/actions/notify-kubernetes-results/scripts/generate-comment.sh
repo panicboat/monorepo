@@ -6,8 +6,14 @@ set -euo pipefail
 
 if [ "$BUILD_FAILED" == "true" ]; then
   TEMPLATE_FILE="$ACTION_PATH/templates/comment-failure.md"
+  CHANGES_MESSAGE="Build failed"
 else
   TEMPLATE_FILE="$ACTION_PATH/templates/comment-success.md"
+  if [ "$HAS_CHANGES" == "true" ]; then
+    CHANGES_MESSAGE="Manifest update completed via GitHub Actions"
+  else
+    CHANGES_MESSAGE="No manifest changes detected"
+  fi
 fi
 
 # Read template and substitute variables
@@ -23,7 +29,8 @@ COMMENT_BODY=$(cat "$TEMPLATE_FILE" | \
   sed "s|{{github-sha}}|$GITHUB_SHA|g" | \
   sed "s|{{github-server-url}}|$GITHUB_SERVER_URL|g" | \
   sed "s|{{github-repository}}|$GITHUB_REPOSITORY|g" | \
-  sed "s|{{github-run-id}}|$GITHUB_RUN_ID|g")
+  sed "s|{{github-run-id}}|$GITHUB_RUN_ID|g" | \
+  sed "s|{{changes-message}}|$CHANGES_MESSAGE|g")
 
 # Save to output
 echo "comment-body<<EOF" >> $GITHUB_OUTPUT
