@@ -36,8 +36,71 @@ on:
         description: 'GitHub App private key for authentication'
 
 jobs:
-  kubernetes-execution:
-    name: 'Kubernetes Manifest Generation - ${{ inputs.service-name }}:${{ inputs.environment }}'
+  build-manifests:
+    name: 'Build Kubernetes Manifests'
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.build.outputs.status }}
+      output-file: ${{ steps.build.outputs.output-file }}
+      build-failed: ${{ steps.build.outputs.build-failed }}
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2.0.6
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Build Kubernetes manifests
+        id: build
+        uses: ./.github/actions/build-kubernetes-manifests
+        with:
+          source-path: ${{ inputs.source-path }}
+          service-name: ${{ inputs.service-name }}
+
+  deploy-to-gitops:
+    name: 'Deploy to GitOps Repository'
+    needs: build-manifests
+    if: needs.build-manifests.outputs.build-failed == 'false' && inputs.action-type == 'apply'
+    runs-on: ubuntu-latest
+    outputs:
+      pr-number: ${{ steps.deploy.outputs.pr-number }}
+      has-changes: ${{ steps.deploy.outputs.has-changes }}
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2.0.6
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Deploy to GitOps repository
+        id: deploy
+        uses: ./.github/actions/deploy-to-gitops
+        with:
+          manifest-file: ${{ needs.build-manifests.outputs.output-file }}
+          target-repository: ${{ inputs.target-repository }}
+          target-branch: ${{ inputs.target-branch }}
+          service-name: ${{ inputs.service-name }}
+          environment: ${{ inputs.environment }}
+          github-token: ${{ steps.app-token.outputs.token }}
+
+  notify-results:
+    name: 'Notify Results'
+    needs: [build-manifests, deploy-to-gitops]
+    if: always() && inputs.action-type == 'apply'
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
@@ -48,78 +111,10 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
-      - name: Checkout source repository
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           token: ${{ steps.app-token.outputs.token }}
-
-
-      - name: Setup Kustomize
-        uses: imranismail/setup-kustomize@v2
-        with:
-          kustomize-version: "5.0.0"
-
-      - name: Validate Kubernetes directory structure
-        run: |
-          if [ ! -d "${{ inputs.source-path }}" ]; then
-            echo "::error::Kustomize directory not found: ${{ inputs.source-path }}"
-            echo "Expected kustomize directory structure with overlays for each environment"
-            exit 1
-          fi
-
-          KUSTOMIZATION_FILE="${{ inputs.source-path }}/kustomization.yaml"
-          if [ ! -f "$KUSTOMIZATION_FILE" ]; then
-            echo "::error::kustomization.yaml not found: $KUSTOMIZATION_FILE"
-            exit 1
-          fi
-
-          echo "✅ Kustomize structure validated for ${{ inputs.service-name }}:${{ inputs.environment }}"
-
-      - name: Build Kubernetes manifests
-        id: kustomize-build
-        run: |
-          OUTPUT_FILE="/tmp/${{ inputs.service-name }}-generated.yaml"
-
-          echo "Building manifests from: ${{ inputs.source-path }}"
-          kustomize build "${{ inputs.source-path }}" > "$OUTPUT_FILE"
-
-          if [ ! -s "$OUTPUT_FILE" ]; then
-            echo "::error::Generated manifest file is empty"
-            exit 1
-          fi
-
-          echo "output-file=$OUTPUT_FILE" >> $GITHUB_OUTPUT
-          echo "✅ Successfully built manifests for ${{ inputs.service-name }}"
-        continue-on-error: true
-
-      - name: Parse build results
-        if: always()
-        id: parse-results
-        run: |
-          STATUS=$([ "${{ steps.kustomize-build.outcome }}" == "success" ] && echo "✅ Success" || echo "❌ Failed")
-          echo "status=$STATUS" >> $GITHUB_OUTPUT
-
-          if [ "${{ steps.kustomize-build.outcome }}" == "failure" ]; then
-            echo "build-failed=true" >> $GITHUB_OUTPUT
-          else
-            echo "build-failed=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout target repository
-        if: steps.parse-results.outputs.build-failed == 'false'
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.target-repository }}
-          token: ${{ steps.app-token.outputs.token }}
-          ref: ${{ inputs.target-branch }}
-          path: generated-manifests
-
-      - name: Configure Git for target repository
-        if: steps.parse-results.outputs.build-failed == 'false'
-        working-directory: generated-manifests
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Get source PR information
         id: pr-info
@@ -129,101 +124,37 @@ jobs:
           state: all
         continue-on-error: true
 
-      - name: Prepare GitOps manifest
-        if: steps.parse-results.outputs.build-failed == 'false' && inputs.action-type == 'apply'
-        id: prepare-manifest
-        working-directory: generated-manifests
-        run: |
-          # Create environment directory if needed
-          mkdir -p "${{ inputs.environment }}"
-
-          # Copy manifest to target location
-          cp "${{ steps.kustomize-build.outputs.output-file }}" "${{ inputs.environment }}/${{ inputs.service-name }}.yaml"
-
-          echo "target-file=${{ inputs.environment }}/${{ inputs.service-name }}.yaml" >> $GITHUB_OUTPUT
-
-      - name: Create GitOps Pull Request
-        if: steps.parse-results.outputs.build-failed == 'false' && inputs.action-type == 'apply'
-        id: gitops-request
-        uses: peter-evans/create-pull-request@v6
+      - name: Update source PR with results
+        if: steps.pr-info.outputs.number != ''
+        uses: ./.github/actions/notify-kubernetes-results
         with:
-          token: ${{ steps.app-token.outputs.token }}
-          path: generated-manifests
-          commit-message: |
-            auto: update ${{ inputs.service-name }} manifests for ${{ inputs.environment }}
+          build-status: ${{ needs.build-manifests.outputs.status }}
+          build-failed: ${{ needs.build-manifests.outputs.build-failed }}
+          pr-number: ${{ needs.deploy-to-gitops.outputs.pr-number }}
+          has-changes: ${{ needs.deploy-to-gitops.outputs.has-changes }}
+          service-name: ${{ inputs.service-name }}
+          environment: ${{ inputs.environment }}
+          target-repository: ${{ inputs.target-repository }}
+          target-branch: ${{ inputs.target-branch }}
+          source-path: ${{ inputs.source-path }}
+          source-pr-number: ${{ steps.pr-info.outputs.number }}
+          github-token: ${{ steps.app-token.outputs.token }}
 
-            Source PR: #${{ steps.pr-info.outputs.number }}
-            Commit: ${{ github.sha }}
-          title: "auto: update ${{ inputs.service-name }} manifests for ${{ inputs.environment }}"
-          body: |
-            Automated manifest update for ${{ inputs.service-name }} in ${{ inputs.environment }} environment.
-
-            **Source Information:**
-            - Repository: ${{ github.server_url }}/${{ github.repository }}
-            - PR: [#${{ steps.pr-info.outputs.number }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ steps.pr-info.outputs.number }})
-            - Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
-            - Run ID: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            - Generated by: @${{ github.actor }}
-
-            **Changes:**
-            - Updated: `${{ steps.prepare-manifest.outputs.target-file }}`
-          branch: auto-update/${{ inputs.service-name }}-${{ inputs.environment }}-${{ github.sha }}
-          base: ${{ inputs.target-branch }}
-          labels: |
-            environment:${{ inputs.environment }}
-            service:${{ inputs.service-name }}
-            auto-generated
-          delete-branch: true
-
-      - name: Set GitOps request status
-        if: steps.parse-results.outputs.build-failed == 'false' && inputs.action-type == 'apply'
-        id: gitops-status
+  exit-with-status:
+    name: 'Exit with Appropriate Status'
+    needs: [build-manifests, deploy-to-gitops]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check final status
         run: |
-          if [ "${{ steps.gitops-request.outputs.pull-request-number }}" != "" ]; then
-            echo "has-changes=true" >> $GITHUB_OUTPUT
-            echo "✅ Successfully created GitOps PR #${{ steps.gitops-request.outputs.pull-request-number }}"
-          else
-            echo "has-changes=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ No changes detected, no PR created"
-          fi
-
-      - name: Update source PR with generation results
-        if: inputs.action-type == 'apply'
-        uses: thollander/actions-comment-pull-request@v3
-        with:
-          message: |
-            ## ☸️ Kubernetes Manifest Generation Results
-
-            **Service**: ${{ inputs.service-name }}
-            **Environment**: `${{ inputs.environment }}`
-            **Status**: ${{ steps.parse-results.outputs.status }}
-            **Target Repository**: [${{ inputs.target-repository }}](https://github.com/${{ inputs.target-repository }})
-            **Generated File**: `${{ inputs.environment }}/${{ inputs.service-name }}.yaml`
-
-            ### 📋 Generation Details
-            - **Source Path**: `${{ inputs.source-path }}`
-            - **Commit**: [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
-            - **Target Branch**: `${{ inputs.target-branch }}`
-            ${{ steps.parse-results.outputs.build-failed == 'false' && steps.gitops-status.outputs.has-changes == 'false' && '- **Changes**: No manifest changes detected' || '' }}
-            ${{ steps.parse-results.outputs.build-failed == 'false' && steps.gitops-status.outputs.has-changes == 'true' && '- **Status**: Manifest update completed via GitHub Actions' || '' }}
-
-            [View workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            ---
-            *Generated by Kubernetes manifest automation*
-          comment-tag: 'kubernetes-manifest-${{ inputs.environment }}-${{ inputs.service-name }}'
-          mode: upsert
-          pr-number: ${{ steps.pr-info.outputs.number }}
-        continue-on-error: true
-
-      - name: Exit with appropriate code
-        run: |
-          if [ "${{ steps.kustomize-build.outcome }}" == "failure" ]; then
+          if [ "${{ needs.build-manifests.outputs.build-failed }}" == "true" ]; then
             echo "::error::Kubernetes manifest generation failed for ${{ inputs.service-name }}:${{ inputs.environment }}"
             exit 1
           fi
 
-          if [ "${{ steps.parse-results.outputs.build-failed }}" == "false" ] && [ "${{ steps.gitops-status.outputs.has-changes }}" == "true" ]; then
+          if [ "${{ needs.build-manifests.outputs.build-failed }}" == "false" ] && [ "${{ needs.deploy-to-gitops.outputs.has-changes }}" == "true" ]; then
             echo "✅ Successfully created GitOps PR for ${{ inputs.service-name }}:${{ inputs.environment }}"
-          elif [ "${{ steps.parse-results.outputs.build-failed }}" == "false" ]; then
+          elif [ "${{ needs.build-manifests.outputs.build-failed }}" == "false" ]; then
             echo "ℹ️ No changes detected for ${{ inputs.service-name }}:${{ inputs.environment }}"
           fi

@@ -1,0 +1,112 @@
+name: 'Extract Deployment Targets'
+description: 'Extract deployment targets from PR labels or branch push'
+
+inputs:
+  event-type:
+    description: 'GitHub event type (pull_request or push)'
+    required: true
+  pr-number:
+    description: 'Pull request number (for PR events)'
+    required: false
+  github-token:
+    description: 'GitHub token for authentication'
+    required: true
+
+outputs:
+  targets:
+    description: 'JSON array of deployment targets'
+    value: ${{ steps.extract.outputs.targets }}
+  has-targets:
+    description: 'Whether targets were found'
+    value: ${{ steps.extract.outputs.has_targets }}
+  target-environment:
+    description: 'Target environment name'
+    value: ${{ steps.extract.outputs.target_environment }}
+  safety-status:
+    description: 'Safety check status'
+    value: ${{ steps.extract.outputs.safety_status }}
+  detected-stacks:
+    description: 'Comma-separated list of detected stacks'
+    value: ${{ steps.filter.outputs.detected_stacks }}
+  terragrunt-targets:
+    description: 'JSON array of terragrunt targets'
+    value: ${{ steps.filter.outputs.terragrunt_targets }}
+  kubernetes-targets:
+    description: 'JSON array of kubernetes targets'
+    value: ${{ steps.filter.outputs.kubernetes_targets }}
+  has-terragrunt:
+    description: 'Whether terragrunt targets exist'
+    value: ${{ steps.filter.outputs.has_terragrunt }}
+  has-kubernetes:
+    description: 'Whether kubernetes targets exist'
+    value: ${{ steps.filter.outputs.has_kubernetes }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
+        bundler-cache: true
+        working-directory: .github/scripts
+
+    - name: Get current PR information
+      id: pr-info
+      uses: jwalton/gh-find-current-pr@v1
+      with:
+        github-token: ${{ inputs.github-token }}
+        state: all
+      continue-on-error: true
+
+    - name: Extract targets from PR labels
+      if: inputs.event-type == 'pull_request'
+      id: extract-labels
+      shell: bash
+      working-directory: .github/scripts
+      run: |
+        bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ inputs.pr-number }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+
+    - name: Extract targets from branch push
+      if: inputs.event-type == 'push'
+      id: extract-branch
+      shell: bash
+      working-directory: .github/scripts
+      run: |
+        if [ -n "${{ steps.pr-info.outputs.number }}" ]; then
+          echo "Found merged PR #${{ steps.pr-info.outputs.number }}"
+          bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ steps.pr-info.outputs.number }}
+        else
+          echo "::error::No merged PR found - deployment stopped"
+          exit 1
+        fi
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+
+    - name: Set extraction outputs
+      id: extract
+      shell: bash
+      run: |
+        echo "targets=${DEPLOYMENT_TARGETS:-[]}" >> $GITHUB_OUTPUT
+        echo "has_targets=${HAS_TARGETS:-false}" >> $GITHUB_OUTPUT
+        echo "target_environment=${TARGET_ENVIRONMENT:-unknown}" >> $GITHUB_OUTPUT
+        echo "safety_status=${SAFETY_STATUS:-unknown}" >> $GITHUB_OUTPUT
+
+    - name: Safety check validation
+      if: env.ERROR_OCCURRED == 'true'
+      shell: bash
+      run: |
+        echo "::error::Deployment safety validation failed: ${ERROR_MESSAGE}"
+        echo "This prevents unauthorized or accidental deployments."
+        exit 1
+
+    - name: Filter targets by stack
+      id: filter
+      shell: bash
+      run: ${{ github.action_path }}/filter-by-stack.sh
+      env:
+        DEPLOYMENT_TARGETS: ${{ steps.extract.outputs.targets }}

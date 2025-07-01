@@ -20,20 +20,18 @@ permissions:
 
 jobs:
   extract-deployment-targets:
-    name: 'Extract deployment targets'
+    name: 'Extract Deployment Targets'
     runs-on: ubuntu-latest
     outputs:
       targets: ${{ steps.extract.outputs.targets }}
-      has_targets: ${{ steps.extract.outputs.has_targets }}
-      target_environment: ${{ steps.extract.outputs.target_environment }}
-      safety_status: ${{ steps.extract.outputs.safety_status }}
-      # Dynamic stack information
-      detected_stacks: ${{ steps.filter.outputs.detected_stacks }}
-      # Currently supported stacks
-      terragrunt_targets: ${{ steps.filter.outputs.terragrunt_targets }}
-      kubernetes_targets: ${{ steps.filter.outputs.kubernetes_targets }}
-      has_terragrunt: ${{ steps.filter.outputs.has_terragrunt }}
-      has_kubernetes: ${{ steps.filter.outputs.has_kubernetes }}
+      has-targets: ${{ steps.extract.outputs.has-targets }}
+      target-environment: ${{ steps.extract.outputs.target-environment }}
+      safety-status: ${{ steps.extract.outputs.safety-status }}
+      detected-stacks: ${{ steps.extract.outputs.detected-stacks }}
+      terragrunt-targets: ${{ steps.extract.outputs.terragrunt-targets }}
+      kubernetes-targets: ${{ steps.extract.outputs.kubernetes-targets }}
+      has-terragrunt: ${{ steps.extract.outputs.has-terragrunt }}
+      has-kubernetes: ${{ steps.extract.outputs.has-kubernetes }}
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -41,100 +39,28 @@ jobs:
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
 
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.4'
-          bundler-cache: true
-          working-directory: .github/scripts
-
-      - name: Get current PR information
-        id: pr-info
-        uses: jwalton/gh-find-current-pr@v1
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          state: all
-        continue-on-error: true
-
-      - name: Deploy Trigger - Extract targets from PR labels
-        if: github.event_name == 'pull_request'
-        id: extract-labels
-        working-directory: .github/scripts
-        run: |
-          bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ github.event.pull_request.number }}
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-
-      - name: Deploy Trigger - Extract targets from branch push
-        if: github.event_name == 'push'
-        id: extract-branch
-        working-directory: .github/scripts
-        run: |
-          # Get current PR information first
-          if [ -n "${{ steps.pr-info.outputs.number }}" ]; then
-            echo "Found merged PR #${{ steps.pr-info.outputs.number }}"
-            # Ruby will determine target environment from current branch
-            bundle exec ruby deploy-trigger/bin/trigger from_pr ${{ steps.pr-info.outputs.number }}
-          else
-            echo "::error::No merged PR found - deployment stopped"
-            exit 1
-          fi
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-
-      - name: Set final outputs
+      - name: Extract deployment targets
         id: extract
-        run: |
-          # GitHub Actions environment variables are automatically set by our presenters
-          echo "targets=${DEPLOYMENT_TARGETS:-[]}" >> $GITHUB_OUTPUT
-          echo "has_targets=${HAS_TARGETS:-false}" >> $GITHUB_OUTPUT
-          echo "target_environment=${TARGET_ENVIRONMENT:-unknown}" >> $GITHUB_OUTPUT
-          echo "safety_status=${SAFETY_STATUS:-unknown}" >> $GITHUB_OUTPUT
-
-      - name: Safety check validation
-        if: env.ERROR_OCCURRED == 'true'
-        run: |
-          echo "::error::Deployment safety validation failed: ${ERROR_MESSAGE}"
-          echo "This prevents unauthorized or accidental deployments."
-          exit 1
-
-      - name: Filter targets by stack
-        id: filter
-        run: |
-          TARGETS="${DEPLOYMENT_TARGETS:-[]}"
-
-          # Automatically detect all existing stacks
-          STACKS=$(echo "$TARGETS" | jq -r '.[].stack' | sort -u)
-
-          # Dynamically filter targets for each stack
-          for stack in $STACKS; do
-            STACK_TARGETS=$(echo "$TARGETS" | jq -c --arg stack "$stack" '[.[] | select(.stack == $stack)]')
-            COUNT=$(echo "$STACK_TARGETS" | jq 'length')
-            HAS_TARGETS=$([ $COUNT -gt 0 ] && echo 'true' || echo 'false')
-
-            # Dynamically set outputs
-            echo "${stack}_targets=$STACK_TARGETS" >> $GITHUB_OUTPUT
-            echo "has_${stack}=$HAS_TARGETS" >> $GITHUB_OUTPUT
-          done
-
-          # Output list of all detected stacks
-          echo "detected_stacks=$(echo $STACKS | tr '\n' ',' | sed 's/,$//')" >> $GITHUB_OUTPUT
+        uses: ./.github/actions/extract-deployment-targets
+        with:
+          event-type: ${{ github.event_name }}
+          pr-number: ${{ github.event.pull_request.number }}
+          github-token: ${{ steps.app-token.outputs.token }}
 
   deploy-terragrunt:
     name: 'Deploy Terragrunt (${{ matrix.target.service }}:${{ matrix.target.environment }})'
     needs: extract-deployment-targets
-    if: needs.extract-deployment-targets.outputs.has_terragrunt == 'true'
+    if: needs.extract-deployment-targets.outputs.has-terragrunt == 'true'
     strategy:
       matrix:
-        target: ${{ fromJson(needs.extract-deployment-targets.outputs.terragrunt_targets) }}
+        target: ${{ fromJson(needs.extract-deployment-targets.outputs.terragrunt-targets) }}
       fail-fast: false
     uses: ./.github/workflows/reusable--terragrunt-executor.yaml
     with:
@@ -151,10 +77,10 @@ jobs:
   deploy-kubernetes:
     name: 'Deploy Kubernetes (${{ matrix.target.service }}:${{ matrix.target.environment }})'
     needs: extract-deployment-targets
-    if: needs.extract-deployment-targets.outputs.has_kubernetes == 'true'
+    if: needs.extract-deployment-targets.outputs.has-kubernetes == 'true'
     strategy:
       matrix:
-        target: ${{ fromJson(needs.extract-deployment-targets.outputs.kubernetes_targets) }}
+        target: ${{ fromJson(needs.extract-deployment-targets.outputs.kubernetes-targets) }}
       fail-fast: false
     uses: ./.github/workflows/reusable--kubernetes-executor.yaml
     with:
@@ -168,95 +94,29 @@ jobs:
   deployment-summary:
     name: 'Deployment Summary'
     needs: [extract-deployment-targets, deploy-terragrunt, deploy-kubernetes]
-    if: always() && needs.extract-deployment-targets.outputs.has_targets == 'true'
+    if: always() && needs.extract-deployment-targets.outputs.has-targets == 'true'
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2.0.6
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
       - name: Generate deployment summary
-        run: |
-          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Target Environment**: ${{ needs.extract-deployment-targets.outputs.target_environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Safety Status**: ${{ needs.extract-deployment-targets.outputs.safety_status }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Event Type**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-
-          if [ "${{ github.event_name }}" == "push" ]; then
-            echo "**Merged PR**: #${{ needs.extract-deployment-targets.outputs.merged_pr_number || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Pull Request**: #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Show all deployment targets with status (Dynamic)
-          echo "### 📋 Deployment Targets" >> $GITHUB_STEP_SUMMARY
-          TARGETS='${{ needs.extract-deployment-targets.outputs.targets }}'
-          DETECTED_STACKS='${{ needs.extract-deployment-targets.outputs.detected_stacks }}'
-
-          # Count targets by stack dynamically
-          TOTAL_COUNT=$(echo "$TARGETS" | jq 'length')
-          echo "**Total Targets**: $TOTAL_COUNT" >> $GITHUB_STEP_SUMMARY
-
-          # Dynamic stack counting
-          IFS=',' read -ra STACK_ARRAY <<< "$DETECTED_STACKS"
-          for stack in "${STACK_ARRAY[@]}"; do
-            COUNT=$(echo "$TARGETS" | jq --arg stack "$stack" '[.[] | select(.stack == $stack)] | length')
-            # Select icon based on stack name
-            case "$stack" in
-              "terragrunt") ICON="🏗️" ;;
-              "kubernetes") ICON="☸️" ;;
-              *) ICON="📦" ;;
-            esac
-            echo "- $ICON $stack: $COUNT targets" >> $GITHUB_STEP_SUMMARY
-          done
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # List all targets
-          echo "### 📊 Target Details" >> $GITHUB_STEP_SUMMARY
-          echo "$TARGETS" | jq -r '.[] | "- **\(.service):\(.environment)** (\(.stack)) → `\(.working_directory)`"' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Show deployment results by stack (Dynamic)
-          echo "### 📈 Deployment Results" >> $GITHUB_STEP_SUMMARY
-
-          TERRAGRUNT_RESULT="${{ needs.deploy-terragrunt.result }}"
-          KUBERNETES_RESULT="${{ needs.deploy-kubernetes.result }}"
-
-          # Helper function for result icons
-          get_result_icon() {
-            case "$1" in
-              "success") echo "✅" ;;
-              "failure") echo "❌" ;;
-              "cancelled") echo "⏹️" ;;
-              "skipped") echo "⏭️" ;;
-              *) echo "❓" ;;
-            esac
-          }
-
-          # Show results for detected stacks
-          DETECTED_STACKS='${{ needs.extract-deployment-targets.outputs.detected_stacks }}'
-          IFS=',' read -ra STACK_ARRAY <<< "$DETECTED_STACKS"
-
-          for stack in "${STACK_ARRAY[@]}"; do
-            case "$stack" in
-              "terragrunt")
-                ICON=$(get_result_icon "$TERRAGRUNT_RESULT")
-                echo "- $ICON **Terragrunt**: $TERRAGRUNT_RESULT" >> $GITHUB_STEP_SUMMARY
-                ;;
-              "kubernetes")
-                ICON=$(get_result_icon "$KUBERNETES_RESULT")
-                echo "- $ICON **Kubernetes**: $KUBERNETES_RESULT" >> $GITHUB_STEP_SUMMARY
-                ;;
-              *)
-                # Placeholder for future stacks
-                echo "- 📦 **$stack**: not implemented yet" >> $GITHUB_STEP_SUMMARY
-                ;;
-            esac
-          done
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Add workflow link
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "📋 [View detailed logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "*Automated deployment*" >> $GITHUB_STEP_SUMMARY
+        uses: ./.github/actions/generate-deployment-summary
+        with:
+          targets: ${{ needs.extract-deployment-targets.outputs.targets }}
+          target-environment: ${{ needs.extract-deployment-targets.outputs.target-environment }}
+          safety-status: ${{ needs.extract-deployment-targets.outputs.safety-status }}
+          event-type: ${{ github.event_name }}
+          branch-name: ${{ github.ref_name }}
+          pr-number: ${{ github.event.pull_request.number }}
+          detected-stacks: ${{ needs.extract-deployment-targets.outputs.detected-stacks }}

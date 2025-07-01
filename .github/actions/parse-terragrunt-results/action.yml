@@ -1,0 +1,50 @@
+name: 'Parse Terragrunt Results'
+description: 'Parse and format Terragrunt execution results'
+
+inputs:
+  terragrunt-outcome:
+    description: 'Terragrunt step outcome (success/failure)'
+    required: true
+  terragrunt-output:
+    description: 'Raw Terragrunt output'
+    required: true
+  action-type:
+    description: 'Action type (plan/apply)'
+    required: true
+
+outputs:
+  status:
+    description: 'Formatted status'
+    value: ${{ steps.parse.outputs.status }}
+  output:
+    description: 'Processed output'
+    value: ${{ steps.parse.outputs.output }}
+  is-failed:
+    description: 'Whether execution failed'
+    value: ${{ steps.parse.outputs.is-failed }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Parse execution results
+      id: parse
+      shell: bash
+      run: |
+        STATUS=$([ "${{ inputs.terragrunt-outcome }}" == "success" ] && echo "✅ Success" || echo "❌ Failed")
+        IS_FAILED=$([ "${{ inputs.terragrunt-outcome }}" == "failure" ] && echo "true" || echo "false")
+
+        # Write raw output to temporary file
+        cat > /tmp/raw_output.txt << 'EOF'
+        ${{ inputs.terragrunt-output }}
+        EOF
+
+        # Process output using external script
+        OUTPUT=$(${{ github.action_path }}/process-output.py "${{ inputs.action-type }}")
+
+        echo "status=$STATUS" >> $GITHUB_OUTPUT
+        echo "is-failed=$IS_FAILED" >> $GITHUB_OUTPUT
+        {
+          echo "output<<EOF"
+          echo "$OUTPUT"
+          echo "EOF"
+        } >> $GITHUB_OUTPUT

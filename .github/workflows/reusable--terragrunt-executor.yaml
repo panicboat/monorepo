@@ -37,9 +37,11 @@ on:
         description: 'GitHub App private key for authentication'
 
 jobs:
-  terragrunt-execution:
-    name: '${{ inputs.action-type }} - ${{ inputs.project-name }}:${{ inputs.environment }}'
+  validate-setup:
+    name: 'Validate Setup'
     runs-on: ubuntu-latest
+    outputs:
+      is-valid: ${{ steps.validate.outputs.is-valid }}
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -47,18 +49,47 @@ jobs:
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
 
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Validate working directory
+        id: validate
         run: |
           if [ ! -d "${{ inputs.working-directory }}" ]; then
             echo "::error::Working directory '${{ inputs.working-directory }}' does not exist"
             echo "This may indicate a configuration issue or the service structure has changed."
+            echo "is-valid=false" >> $GITHUB_OUTPUT
             exit 1
           fi
           echo "✅ Working directory validated: ${{ inputs.working-directory }}"
+          echo "is-valid=true" >> $GITHUB_OUTPUT
+
+  execute-terragrunt:
+    name: 'Execute Terragrunt'
+    needs: validate-setup
+    if: needs.validate-setup.outputs.is-valid == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      execution-status: ${{ steps.parse.outputs.status }}
+      execution-output: ${{ steps.parse.outputs.output }}
+      is-failed: ${{ steps.parse.outputs.is-failed }}
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2.0.6
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -68,7 +99,7 @@ jobs:
           role-session-name: GitHubActions-Terragrunt-${{ inputs.action-type }}-${{ inputs.environment }}
           audience: sts.amazonaws.com
 
-      - name: Terragrunt ${{ inputs.action-type }}
+      - name: Execute Terragrunt ${{ inputs.action-type }}
         id: terragrunt
         uses: gruntwork-io/terragrunt-action@v2
         with:
@@ -76,7 +107,6 @@ jobs:
           tg_version: '0.81.6'
           tg_command: ${{ inputs.action-type }}
           tg_add_approve: ${{ inputs.action-type == 'apply' && '1' || '' }}
-          # tg_comment: 1 # Noisy as comments are just added.
           tg_dir: ${{ inputs.working-directory }}
         continue-on-error: true
         env:
@@ -84,32 +114,33 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
 
-      - name: Parse Results
+      - name: Parse execution results
         if: always()
-        id: parse-results
-        run: |
-          STATUS=$([ "${{ steps.terragrunt.outcome }}" == "success" ] && echo "✅ Success" || echo "❌ Failed")
-          cat > /tmp/raw_output.txt << 'EOF'
-          ${{ steps.terragrunt.outputs.tg_action_output }}
-          EOF
+        id: parse
+        uses: ./.github/actions/parse-terragrunt-results
+        with:
+          terragrunt-outcome: ${{ steps.terragrunt.outcome }}
+          terragrunt-output: ${{ steps.terragrunt.outputs.tg_action_output }}
+          action-type: ${{ inputs.action-type }}
 
-          OUTPUT=$(python3 -c "
-          import urllib.parse
-          with open('/tmp/raw_output.txt', 'r') as f:
-              encoded_content = f.read().strip()
-          decoded_content = urllib.parse.unquote(encoded_content) if encoded_content else '${{ inputs.action-type }} execution completed. See workflow logs for detailed output.'
-          print(decoded_content)
-          ")
+  notify-results:
+    name: 'Notify Results'
+    needs: [validate-setup, execute-terragrunt]
+    if: always() && needs.validate-setup.outputs.is-valid == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2.0.6
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
 
-          if [ ${#OUTPUT} -gt 30000 ]; then
-            OUTPUT="${OUTPUT:0:30000}... (output truncated, see workflow logs for full details)"
-          fi
-          echo "status=$STATUS" >> $GITHUB_OUTPUT
-          {
-            echo "output<<EOF"
-            echo "$OUTPUT"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Get current PR information
         id: pr-info
@@ -119,38 +150,35 @@ jobs:
           state: all
         continue-on-error: true
 
-      - name: Create or update PR comment
+      - name: Update PR with execution results
         if: steps.pr-info.outputs.number
-        uses: thollander/actions-comment-pull-request@v3
+        uses: ./.github/actions/notify-terragrunt-results
         with:
-          message: |
-            ## ${{ inputs.action-type == 'plan' && '📋 Terragrunt Plan Results' || '🚀 Terragrunt Apply Completed' }}
-
-            **Project**: ${{ inputs.project-name }}
-            **Environment**: `${{ inputs.environment }}`
-            **Directory**: `${{ inputs.working-directory }}`
-            **Status**: ${{ steps.parse-results.outputs.status }}
-            **Action**: ${{ inputs.action-type }}
-
-            <details>
-            <summary>📝 ${{ inputs.action-type == 'plan' && 'Plan' || 'Apply' }} Output</summary>
-
-            ```hcl
-            ${{ steps.parse-results.outputs.output }}
-            ```
-            </details>
-
-            [View full workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            ---
-            *Triggered by workflow automation system*
-          comment-tag: 'terragrunt-${{ inputs.action-type }}-${{ inputs.environment }}-${{ inputs.project-name }}'
-          mode: upsert
+          action-type: ${{ inputs.action-type }}
+          project-name: ${{ inputs.project-name }}
+          environment: ${{ inputs.environment }}
+          working-directory: ${{ inputs.working-directory }}
+          status: ${{ needs.execute-terragrunt.outputs.execution-status }}
+          output: ${{ needs.execute-terragrunt.outputs.execution-output }}
           pr-number: ${{ steps.pr-info.outputs.number }}
-        continue-on-error: true
+          github-token: ${{ steps.app-token.outputs.token }}
 
-      - name: Exit with appropriate code
+  exit-with-status:
+    name: 'Exit with Appropriate Status'
+    needs: [validate-setup, execute-terragrunt]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check final status
         run: |
-          if [ "${{ steps.terragrunt.outcome }}" == "failure" ]; then
+          if [ "${{ needs.validate-setup.outputs.is-valid }}" != "true" ]; then
+            echo "::error::Setup validation failed for ${{ inputs.project-name }}:${{ inputs.environment }}"
+            exit 1
+          fi
+
+          if [ "${{ needs.execute-terragrunt.outputs.is-failed }}" == "true" ]; then
             echo "::error::Terragrunt ${{ inputs.action-type }} failed for ${{ inputs.project-name }}:${{ inputs.environment }}"
             exit 1
           fi
+
+          echo "✅ Terragrunt ${{ inputs.action-type }} completed successfully for ${{ inputs.project-name }}:${{ inputs.environment }}"

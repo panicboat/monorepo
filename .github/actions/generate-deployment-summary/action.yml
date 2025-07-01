@@ -1,0 +1,40 @@
+name: 'Generate Deployment Summary'
+description: 'Generate deployment summary for GitHub Actions summary'
+
+inputs:
+  targets:
+    description: 'JSON array of deployment targets'
+    required: true
+  target-environment:
+    description: 'Target environment name'
+    required: true
+  safety-status:
+    description: 'Safety check status'
+    required: true
+  event-type:
+    description: 'GitHub event type'
+    required: true
+  branch-name:
+    description: 'Current branch name'
+    required: true
+  pr-number:
+    description: 'Pull request number (if applicable)'
+    required: false
+  detected-stacks:
+    description: 'Comma-separated list of detected stacks'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Generate deployment summary
+      shell: bash
+      run: ${{ github.action_path }}/generate-summary.sh
+      env:
+        TARGETS: ${{ inputs.targets }}
+        TARGET_ENVIRONMENT: ${{ inputs.target-environment }}
+        SAFETY_STATUS: ${{ inputs.safety-status }}
+        EVENT_TYPE: ${{ inputs.event-type }}
+        BRANCH_NAME: ${{ inputs.branch-name }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        DETECTED_STACKS: ${{ inputs.detected-stacks }}
