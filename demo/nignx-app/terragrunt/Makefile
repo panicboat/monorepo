@@ -1,7 +1,7 @@
 # Makefile for GitHub OIDC Auth
 
 # Default values
-ENV ?= monorepo
+ENV ?= develop
 
 # Colors for output
 RED := \033[0;31m
