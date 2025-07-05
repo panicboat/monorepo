@@ -13,6 +13,13 @@ module UseCases
 
       # Execute label management for a PR
       def execute(pr_number:, required_labels:)
+        # Initial cleanup: Remove all existing deploy labels
+        current_deploy_labels = @github_client.get_deploy_labels(pr_number)
+        current_deploy_labels.each do |label|
+          @github_client.remove_label_from_pr(pr_number, label)
+        end
+
+        # Get updated labels (should be empty after cleanup)
         current_deploy_labels = @github_client.get_deploy_labels(pr_number)
 
         labels_to_add = required_labels - current_deploy_labels
