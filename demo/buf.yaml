@@ -1,0 +1,26 @@
+version: v2
+
+# Define modules for central proto directory
+modules:
+  - path: proto
+    name: buf.build/panicboat/monorepo-demo
+
+# Dependencies
+deps:
+  - buf.build/googleapis/googleapis
+
+# Linting configuration
+lint:
+  use:
+    - STANDARD
+  except:
+    - UNARY_RPC  # Relaxed for learning purposes
+    - COMMENT_FIELD
+    - COMMENT_MESSAGE
+    - COMMENT_SERVICE
+
+# Breaking change detection
+breaking:
+  use:
+    - FILE
+  ignore_unstable_packages: true

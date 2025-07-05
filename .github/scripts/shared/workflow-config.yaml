@@ -23,6 +23,12 @@ services:
     directory_conventions:
       terragrunt: infrastructures/{service}/terragrunt/envs/{environment}
 
+  - name: demo
+    exclude_from_automation: true
+    exclusion_config:
+      reason: "The demo service is for learning purposes, so the directory structure is completely different."
+      type: "permanent"
+
   - name: github-repository
     exclude_from_automation: true
     exclusion_config:
