@@ -2,7 +2,7 @@ module github.com/panicboat/monorepo/demo/grpc-gateway
 
 go 1.21
 
-require google.golang.org/grpc v1.58.0
+require google.golang.org/grpc v1.58.3
 
 require (
 	github.com/golang/protobuf v1.5.3 // indirect
