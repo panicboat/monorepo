@@ -61,9 +61,9 @@ runs:
       shell: bash
       working-directory: generated-manifests
       run: |
-        mkdir -p "services/${{ inputs.environment }}"
-        cp "../${{ inputs.manifest-file }}" "services/${{ inputs.environment }}/${{ inputs.service-name }}.yaml"
-        echo "target-file=services/${{ inputs.environment }}/${{ inputs.service-name }}.yaml" >> $GITHUB_OUTPUT
+        mkdir -p "${{ inputs.environment }}"
+        cp "../${{ inputs.manifest-file }}" "${{ inputs.environment }}/${{ inputs.service-name }}.yaml"
+        echo "target-file=${{ inputs.environment }}/${{ inputs.service-name }}.yaml" >> $GITHUB_OUTPUT
 
     - name: Create GitOps Pull Request
       id: create-pr
