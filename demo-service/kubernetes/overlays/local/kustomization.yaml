@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
   - ../../base
 patches:
-  - path: demo-app/deployment.yaml
+  - path: nginx-app/deployment.yaml
   - target:
       kind: Ingress
       name: nginx-app-ingress
