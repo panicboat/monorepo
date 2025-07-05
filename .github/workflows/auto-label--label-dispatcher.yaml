@@ -2,7 +2,7 @@ name: 'Auto Label - Label Dispatcher'
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
     branches:
       - '**'
 
