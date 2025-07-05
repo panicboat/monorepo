@@ -113,5 +113,4 @@ jobs:
           target-repository: panicboat/generated-manifests
           target-branch: main
           action-type: apply
-        secrets:
-          APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+        secrets: inherit
