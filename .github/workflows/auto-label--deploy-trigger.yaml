@@ -15,23 +15,14 @@ permissions:
   id-token: write
   contents: read
   pull-requests: write
-  issues: write
-  packages: read
 
 jobs:
-  extract-deployment-targets:
-    name: 'Extract Deployment Targets'
+  prepare-deployment:
+    name: 'Prepare Deployment'
     runs-on: ubuntu-latest
     outputs:
-      targets: ${{ steps.extract.outputs.targets }}
-      has-targets: ${{ steps.extract.outputs.has-targets }}
-      target-environment: ${{ steps.extract.outputs.target-environment }}
-      safety-status: ${{ steps.extract.outputs.safety-status }}
-      detected-stacks: ${{ steps.extract.outputs.detected-stacks }}
-      terragrunt-targets: ${{ steps.extract.outputs.terragrunt-targets }}
-      kubernetes-targets: ${{ steps.extract.outputs.kubernetes-targets }}
-      has-terragrunt: ${{ steps.extract.outputs.has-terragrunt }}
-      has-kubernetes: ${{ steps.extract.outputs.has-kubernetes }}
+      github-token: ${{ steps.app-token.outputs.token }}
+      pr-number: ${{ steps.pr-info.outputs.number }}
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -41,28 +32,36 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Get PR information
+        id: pr-info
+        uses: jwalton/gh-find-current-pr@v1
         with:
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Extract deployment targets
-        id: extract
-        uses: ./.github/actions/extract-deployment-targets
-        with:
-          event-type: ${{ github.event_name }}
-          pr-number: ${{ github.event.pull_request.number }}
           github-token: ${{ steps.app-token.outputs.token }}
+          state: all
+        continue-on-error: true
+
+  extract-deployment-targets:
+    name: 'Extract Deployment Targets'
+    needs: prepare-deployment
+    uses: takanokenichi/deploy-actions/.github/workflows/reusable--deploy-trigger.yaml@main
+    with:
+      event-type: ${{ github.event_name }}
+      branch-name: ${{ github.ref_name }}
+      pr-number: ${{ needs.prepare-deployment.outputs.pr-number || github.event.pull_request.number }}
+      repository: ${{ github.repository }}
+      config-path: '.github/config/workflow-config.yaml'
+    secrets:
+      github-token: ${{ needs.prepare-deployment.outputs.github-token }}
 
   deploy-terragrunt:
     name: 'Deploy Terragrunt (${{ matrix.target.service }}:${{ matrix.target.environment }})'
-    needs: extract-deployment-targets
+    needs: [prepare-deployment, extract-deployment-targets]
     if: needs.extract-deployment-targets.outputs.has-terragrunt == 'true'
     strategy:
       matrix:
         target: ${{ fromJson(needs.extract-deployment-targets.outputs.terragrunt-targets) }}
       fail-fast: false
-    uses: ./.github/workflows/reusable--terragrunt-executor.yaml
+    uses: takanokenichi/deploy-actions/.github/workflows/reusable--terragrunt-executor.yaml@main
     with:
       project-name: ${{ matrix.target.service }}
       environment: ${{ matrix.target.environment }}
@@ -71,52 +70,43 @@ jobs:
       apply-iam-role: ${{ matrix.target.iam_role_apply }}
       aws-region: ${{ matrix.target.aws_region }}
       working-directory: ${{ matrix.target.working_directory }}
+      repository: ${{ github.repository }}
     secrets:
-      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+      github-token: ${{ needs.prepare-deployment.outputs.github-token }}
 
   deploy-kubernetes:
     name: 'Deploy Kubernetes (${{ matrix.target.service }}:${{ matrix.target.environment }})'
-    needs: extract-deployment-targets
+    needs: [prepare-deployment, extract-deployment-targets]
     if: needs.extract-deployment-targets.outputs.has-kubernetes == 'true'
     strategy:
       matrix:
         target: ${{ fromJson(needs.extract-deployment-targets.outputs.kubernetes-targets) }}
       fail-fast: false
-    uses: ./.github/workflows/reusable--kubernetes-executor.yaml
+    uses: takanokenichi/deploy-actions/.github/workflows/reusable--kubernetes-executor.yaml@main
     with:
       service-name: ${{ matrix.target.service }}
       environment: ${{ matrix.target.environment }}
       source-path: ${{ matrix.target.working_directory }}
       action-type: ${{ github.event_name == 'pull_request' && 'diff' || 'apply' }}
+      repository: ${{ github.repository }}
     secrets:
-      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+      github-token: ${{ needs.prepare-deployment.outputs.github-token }}
 
   deployment-summary:
     name: 'Deployment Summary'
-    needs: [extract-deployment-targets, deploy-terragrunt, deploy-kubernetes]
+    needs: [prepare-deployment, extract-deployment-targets, deploy-terragrunt, deploy-kubernetes]
     if: always() && needs.extract-deployment-targets.outputs.has-targets == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@v2.0.6
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Generate deployment summary
-        uses: ./.github/actions/generate-deployment-summary
-        with:
-          targets: ${{ needs.extract-deployment-targets.outputs.targets }}
-          target-environment: ${{ needs.extract-deployment-targets.outputs.target-environment }}
-          safety-status: ${{ needs.extract-deployment-targets.outputs.safety-status }}
-          event-type: ${{ github.event_name }}
-          branch-name: ${{ github.ref_name }}
-          pr-number: ${{ github.event.pull_request.number }}
-          detected-stacks: ${{ needs.extract-deployment-targets.outputs.detected-stacks }}
+      - name: Summary
+        run: |
+          echo "📊 Deployment Summary"
+          echo "Event: ${{ github.event_name }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "PR: ${{ needs.prepare-deployment.outputs.pr-number }}"
+          echo "Environment: ${{ needs.extract-deployment-targets.outputs.target-environment }}"
+          echo "Safety Status: ${{ needs.extract-deployment-targets.outputs.safety-status }}"
+          echo "Has Terragrunt: ${{ needs.extract-deployment-targets.outputs.has-terragrunt }}"
+          echo "Has Kubernetes: ${{ needs.extract-deployment-targets.outputs.has-kubernetes }}"
+          echo "Terragrunt Job Status: ${{ needs.deploy-terragrunt.result }}"
+          echo "Kubernetes Job Status: ${{ needs.deploy-kubernetes.result }}"

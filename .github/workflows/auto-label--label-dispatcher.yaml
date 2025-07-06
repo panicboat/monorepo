@@ -10,12 +10,14 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
-  packages: read
 
 jobs:
-  dispatch-labels:
-    name: 'Dispatch Labels'
+  prepare-dispatch:
+    name: 'Prepare Dispatch'
     runs-on: ubuntu-latest
+    outputs:
+      github-token: ${{ steps.app-token.outputs.token }}
+      pr-number: ${{ steps.pr-info.outputs.number }}
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -25,24 +27,21 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Get PR information
+        id: pr-info
+        uses: jwalton/gh-find-current-pr@v1
         with:
-          token: ${{ steps.app-token.outputs.token }}
-          fetch-depth: 0
+          github-token: ${{ steps.app-token.outputs.token }}
+          state: all
+        continue-on-error: true
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.4'
-          bundler-cache: true
-          working-directory: .github/scripts
-
-      - name: Dispatch labels with label-dispatcher
-        working-directory: .github/scripts
-        run: |
-          # Automatically fetch base and head ref from GitHub API
-          bundle exec ruby label-dispatcher/bin/dispatcher dispatch ${{ github.event.pull_request.number }}
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
+  dispatch-labels:
+    name: 'Dispatch Labels'
+    needs: prepare-dispatch
+    uses: takanokenichi/deploy-actions/.github/workflows/reusable--label-dispatcher.yaml@main
+    with:
+      pr-number: ${{ needs.prepare-dispatch.outputs.pr-number || github.event.pull_request.number }}
+      repository: ${{ github.repository }}
+      config-path: '.github/config/workflow-config.yaml'
+    secrets:
+      github-token: ${{ needs.prepare-dispatch.outputs.github-token }}
