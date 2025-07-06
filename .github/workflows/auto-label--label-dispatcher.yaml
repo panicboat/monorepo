@@ -12,12 +12,9 @@ permissions:
   issues: write
 
 jobs:
-  prepare-dispatch:
-    name: 'Prepare Dispatch'
+  dispatch-labels:
+    name: 'Dispatch Labels'
     runs-on: ubuntu-latest
-    outputs:
-      github-token: ${{ steps.app-token.outputs.token }}
-      pr-number: ${{ steps.pr-info.outputs.number }}
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -35,13 +32,10 @@ jobs:
           state: all
         continue-on-error: true
 
-  dispatch-labels:
-    name: 'Dispatch Labels'
-    needs: prepare-dispatch
-    uses: takanokenichi/deploy-actions/.github/workflows/reusable--label-dispatcher.yaml@main
-    with:
-      pr-number: ${{ needs.prepare-dispatch.outputs.pr-number || github.event.pull_request.number }}
-      repository: ${{ github.repository }}
-      config-path: '.github/config/workflow-config.yaml'
-    secrets:
-      github-token: ${{ needs.prepare-dispatch.outputs.github-token }}
+      - name: Dispatch Labels
+        uses: panicboat/deploy-actions/label-dispatcher@main
+        with:
+          pr-number: ${{ steps.pr-info.outputs.number }}
+          repository: ${{ github.repository }}
+          github-token: ${{ steps.app-token.outputs.token }}
+          config-path: 'workflow-config.yaml'

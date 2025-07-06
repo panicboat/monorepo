@@ -4,11 +4,11 @@ kind: Kustomization
 resources:
   - ../../base
 patches:
-  - path: demo-app/deployment.yaml
+  - path: nginx-app/deployment.yaml
   - target:
       kind: Ingress
       name: nginx-app-ingress
     patch: |-
       - op: replace
         path: /spec/rules/0/host
-        value: nginx.local
+        value: nginx.local2

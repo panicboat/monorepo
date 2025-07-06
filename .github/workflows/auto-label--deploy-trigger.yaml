@@ -1,4 +1,4 @@
-name: 'Auto Label - Deploy Trigger'
+name: 'Auto Label - Deploy resolver'
 
 on:
   pull_request:
@@ -17,12 +17,13 @@ permissions:
   pull-requests: write
 
 jobs:
-  prepare-deployment:
-    name: 'Prepare Deployment'
+  deploy-resolver:
+    name: 'Deployment Resolver'
     runs-on: ubuntu-latest
     outputs:
-      github-token: ${{ steps.app-token.outputs.token }}
-      pr-number: ${{ steps.pr-info.outputs.number }}
+      targets: ${{ steps.resolver.outputs.targets }}
+      has-targets: ${{ steps.resolver.outputs.has-targets }}
+      target-environment: ${{ steps.resolver.outputs.target-environment }}
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -40,62 +41,65 @@ jobs:
           state: all
         continue-on-error: true
 
-  extract-deployment-targets:
-    name: 'Extract Deployment Targets'
-    needs: prepare-deployment
-    uses: takanokenichi/deploy-actions/.github/workflows/reusable--deploy-trigger.yaml@main
-    with:
-      event-type: ${{ github.event_name }}
-      branch-name: ${{ github.ref_name }}
-      pr-number: ${{ needs.prepare-deployment.outputs.pr-number || github.event.pull_request.number }}
-      repository: ${{ github.repository }}
-      config-path: '.github/config/workflow-config.yaml'
-    secrets:
-      github-token: ${{ needs.prepare-deployment.outputs.github-token }}
+      - name: Deployment Resolver
+        id: resolver
+        uses: panicboat/deploy-actions/deploy-resolver@main
+        with:
+          event-type: ${{ github.event_name }}
+          branch-name: ${{ github.ref_name }}
+          pr-number: ${{ steps.pr-info.outputs.number }}
+          repository: ${{ github.repository }}
+          github-token: ${{ steps.app-token.outputs.token }}
+          config-path: 'workflow-config.yaml'
 
   deploy-terragrunt:
     name: 'Deploy Terragrunt (${{ matrix.target.service }}:${{ matrix.target.environment }})'
-    needs: [prepare-deployment, extract-deployment-targets]
-    if: needs.extract-deployment-targets.outputs.has-terragrunt == 'true'
+    needs: deploy-resolver
+    if: |
+      needs.deploy-resolver.outputs.has-targets == 'true' &&
+      contains(needs.deploy-resolver.outputs.targets, '"stack":"terragrunt"')
     strategy:
       matrix:
-        target: ${{ fromJson(needs.extract-deployment-targets.outputs.terragrunt-targets) }}
+        target: ${{ fromJson(needs.deploy-resolver.outputs.targets) }}
       fail-fast: false
-    uses: takanokenichi/deploy-actions/.github/workflows/reusable--terragrunt-executor.yaml@main
-    with:
-      project-name: ${{ matrix.target.service }}
-      environment: ${{ matrix.target.environment }}
-      action-type: ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
-      plan-iam-role: ${{ matrix.target.iam_role_plan }}
-      apply-iam-role: ${{ matrix.target.iam_role_apply }}
-      aws-region: ${{ matrix.target.aws_region }}
-      working-directory: ${{ matrix.target.working_directory }}
-      repository: ${{ github.repository }}
-    secrets:
-      github-token: ${{ needs.prepare-deployment.outputs.github-token }}
-
-  deploy-kubernetes:
-    name: 'Deploy Kubernetes (${{ matrix.target.service }}:${{ matrix.target.environment }})'
-    needs: [prepare-deployment, extract-deployment-targets]
-    if: needs.extract-deployment-targets.outputs.has-kubernetes == 'true'
-    strategy:
-      matrix:
-        target: ${{ fromJson(needs.extract-deployment-targets.outputs.kubernetes-targets) }}
-      fail-fast: false
-    uses: takanokenichi/deploy-actions/.github/workflows/reusable--kubernetes-executor.yaml@main
+    uses: ./.github/workflows/reusable--terragrunt-executor.yaml
     with:
       service-name: ${{ matrix.target.service }}
       environment: ${{ matrix.target.environment }}
-      source-path: ${{ matrix.target.working_directory }}
-      action-type: ${{ github.event_name == 'pull_request' && 'diff' || 'apply' }}
-      repository: ${{ github.repository }}
+      action-type: ${{ matrix.target.stack == 'terragrunt' && (github.event_name == 'pull_request' && 'plan' || 'apply') || '' }}
+      iam-role: ${{ github.event_name == 'pull_request' && matrix.target.iam_role_plan || matrix.target.iam_role_apply }}
+      aws-region: ${{ matrix.target.aws_region }}
+      working-directory: ${{ matrix.target.working_directory }}
+      app-id: ${{ vars.APP_ID }}
     secrets:
-      github-token: ${{ needs.prepare-deployment.outputs.github-token }}
+      private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+  deploy-kubernetes:
+    name: 'Deploy Kubernetes (${{ matrix.target.service }}:${{ matrix.target.environment }})'
+    needs: deploy-resolver
+    if: |
+      needs.deploy-resolver.outputs.has-targets == 'true' &&
+      contains(needs.deploy-resolver.outputs.targets, '"stack":"kubernetes"')
+    strategy:
+      matrix:
+        target: ${{ fromJson(needs.deploy-resolver.outputs.targets) }}
+      fail-fast: false
+    uses: ./.github/workflows/reusable--kubernetes-executor.yaml
+    with:
+      service-name: ${{ matrix.target.service }}
+      environment: ${{ matrix.target.environment }}
+      action-type: ${{ matrix.target.stack == 'kubernetes' && (github.event_name == 'pull_request' && 'diff' || 'apply') || '' }}
+      working-directory: ${{ matrix.target.working_directory }}
+      target-repository: panicboat/generated-manifests
+      target-branch: main
+      app-id: ${{ vars.APP_ID }}
+    secrets:
+      private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
   deployment-summary:
     name: 'Deployment Summary'
-    needs: [prepare-deployment, extract-deployment-targets, deploy-terragrunt, deploy-kubernetes]
-    if: always() && needs.extract-deployment-targets.outputs.has-targets == 'true'
+    needs: [deploy-resolver, deploy-terragrunt]
+    if: always() && needs.deploy-resolver.outputs.has-targets == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Summary
@@ -103,10 +107,8 @@ jobs:
           echo "📊 Deployment Summary"
           echo "Event: ${{ github.event_name }}"
           echo "Branch: ${{ github.ref_name }}"
-          echo "PR: ${{ needs.prepare-deployment.outputs.pr-number }}"
-          echo "Environment: ${{ needs.extract-deployment-targets.outputs.target-environment }}"
-          echo "Safety Status: ${{ needs.extract-deployment-targets.outputs.safety-status }}"
-          echo "Has Terragrunt: ${{ needs.extract-deployment-targets.outputs.has-terragrunt }}"
-          echo "Has Kubernetes: ${{ needs.extract-deployment-targets.outputs.has-kubernetes }}"
+          echo "Environment: ${{ needs.deploy-resolver.outputs.target-environment }}"
+          echo "Safety Status: ${{ needs.deploy-resolver.outputs.safety-status }}"
+          echo "Targets: ${{ needs.deploy-resolver.outputs.targets }}"
           echo "Terragrunt Job Status: ${{ needs.deploy-terragrunt.result }}"
           echo "Kubernetes Job Status: ${{ needs.deploy-kubernetes.result }}"
