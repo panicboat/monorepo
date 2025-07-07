@@ -1,11 +1,13 @@
 module github.com/panicboat/monorepo/demo/user-service
 
-go 1.21
+go 1.22
+
+toolchain go1.24.4
 
 require (
 	github.com/lib/pq v1.10.9
 	google.golang.org/grpc v1.58.3
-	google.golang.org/protobuf v1.33.0
+	google.golang.org/protobuf v1.36.6
 )
 
 require (
