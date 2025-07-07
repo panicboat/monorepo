@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
 
   user-postgres:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     networks:
       - app-network
     environment:
@@ -65,7 +65,7 @@ services:
     restart: unless-stopped
 
   product-postgres:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     networks:
       - app-network
     environment:
@@ -107,7 +107,7 @@ services:
     restart: unless-stopped
 
   order-postgres:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     networks:
       - app-network
     environment:
