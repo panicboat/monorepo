@@ -98,7 +98,7 @@ jobs:
 
   deployment-summary:
     name: 'Deployment Summary'
-    needs: [deploy-resolver, deploy-terragrunt]
+    needs: [deploy-resolver, deploy-terragrunt, deploy-kubernetes]
     if: always() && needs.deploy-resolver.outputs.has-targets == 'true'
     runs-on: ubuntu-latest
     steps:
