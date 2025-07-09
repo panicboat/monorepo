@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - nginx-app/configmap.yaml
+  - nginx-app/deployment.yaml
+  - nginx-app/ingress.yaml
+  - nginx-app/service.yaml
+labels:
+  - pairs:
+      app: nginx-app
+images:
+  - name: nginx
+    newTag: 1.29.0-alpine

@@ -11,126 +11,47 @@ on:
         required: true
         type: string
         description: 'Environment name (develop, staging, production, etc.)'
-      source-path:
-        required: true
-        type: string
-        description: 'Source path for kustomize build (e.g., demo-service/kubernetes/overlays/develop)'
-      target-repository:
-        required: false
-        type: string
-        default: panicboat/generated-manifests
-        description: 'Target repository for generated manifests (e.g., panicboat/generated-manifests)'
-      target-branch:
-        required: false
-        type: string
-        default: main
-        description: 'Target branch for generated manifests'
       action-type:
         required: false
         type: string
         default: diff
         description: 'Action type: diff (plan/preview) or apply (execute)'
+      working-directory:
+        required: true
+        type: string
+        description: 'Working directory for kustomize execution'
+      target-repository:
+        required: true
+        type: string
+        description: 'Target repository for generated manifests'
+      target-branch:
+        required: true
+        type: string
+        description: 'Target branch for generated manifests'
+      app-id:
+        required: true
+        type: string
+        description: 'GitHub App ID for authentication'
     secrets:
-      APP_PRIVATE_KEY:
+      private-key:
         required: true
         description: 'GitHub App private key for authentication'
 
 jobs:
-  build-manifests:
-    name: 'Build Kubernetes Manifests'
-    runs-on: ubuntu-latest
-    outputs:
-      status: ${{ steps.build.outputs.status }}
-      output-file: ${{ steps.build.outputs.output-file }}
-      build-failed: ${{ steps.build.outputs.build-failed }}
-    steps:
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@v2.0.6
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Build Kubernetes manifests
-        id: build
-        uses: ./.github/actions/build-kubernetes-manifests
-        with:
-          source-path: ${{ inputs.source-path }}
-          service-name: ${{ inputs.service-name }}
-
-      - name: Upload generated manifest
-        if: steps.build.outputs.build-failed == 'false'
-        uses: actions/upload-artifact@v4
-        with:
-          name: kubernetes-manifest-${{ inputs.service-name }}-${{ inputs.environment }}-${{ github.run_id }}
-          path: ${{ steps.build.outputs.output-file }}
-          retention-days: 1
-
-  deploy-to-gitops:
-    name: 'Deploy to GitOps Repository'
-    needs: build-manifests
-    if: needs.build-manifests.outputs.build-failed == 'false' && inputs.action-type == 'apply'
-    runs-on: ubuntu-latest
-    outputs:
-      pr-number: ${{ steps.deploy.outputs.pr-number }}
-      has-changes: ${{ steps.deploy.outputs.has-changes }}
-    steps:
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@v2.0.6
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Download generated manifest
-        uses: actions/download-artifact@v4
-        with:
-          name: kubernetes-manifest-${{ inputs.service-name }}-${{ inputs.environment }}-${{ github.run_id }}
-          path: ./artifacts
-
-      - name: Deploy to GitOps repository
-        id: deploy
-        uses: ./.github/actions/deploy-to-gitops
-        with:
-          manifest-file: ./artifacts/${{ inputs.service-name }}-generated.yaml
-          target-repository: ${{ inputs.target-repository }}
-          target-branch: ${{ inputs.target-branch }}
-          service-name: ${{ inputs.service-name }}
-          environment: ${{ inputs.environment }}
-          github-token: ${{ steps.app-token.outputs.token }}
-
-  notify-results:
-    name: 'Notify Results'
-    needs: [build-manifests, deploy-to-gitops]
-    if: always() && inputs.action-type == 'apply'
+  execute-kubernetes:
+    name: 'Push Kubernetes Manifests to GitOps Repository'
+    if: inputs.action-type != ''
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
         id: app-token
         uses: actions/create-github-app-token@v2.0.6
         with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          app-id: ${{ inputs.app-id }}
+          private-key: ${{ secrets.private-key }}
           owner: ${{ github.repository_owner }}
 
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Get source PR information
+      - name: Get PR information
         id: pr-info
         uses: jwalton/gh-find-current-pr@v1
         with:
@@ -138,37 +59,25 @@ jobs:
           state: all
         continue-on-error: true
 
-      - name: Update source PR with results
-        if: steps.pr-info.outputs.number != ''
-        uses: ./.github/actions/notify-kubernetes-results
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          build-status: ${{ needs.build-manifests.outputs.status }}
-          build-failed: ${{ needs.build-manifests.outputs.build-failed }}
-          pr-number: ${{ needs.deploy-to-gitops.outputs.pr-number }}
-          has-changes: ${{ needs.deploy-to-gitops.outputs.has-changes }}
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Build Kubernetes manifests
+        id: kustomize
+        uses: int128/kustomize-action@v1
+        with:
+          kustomization: ${{ inputs.working-directory }}/kustomization.yaml
+
+      - name: Push Generated Manifests
+        id: git-push
+        uses: panicboat/deploy-actions/git-push@main
+        with:
+          source-file: ${{ steps.kustomize.outputs.directory }}/${{ inputs.working-directory }}/generated.yaml
           service-name: ${{ inputs.service-name }}
           environment: ${{ inputs.environment }}
           target-repository: ${{ inputs.target-repository }}
           target-branch: ${{ inputs.target-branch }}
-          source-path: ${{ inputs.source-path }}
-          source-pr-number: ${{ steps.pr-info.outputs.number }}
           github-token: ${{ steps.app-token.outputs.token }}
-
-  exit-with-status:
-    name: 'Exit with Appropriate Status'
-    needs: [build-manifests, deploy-to-gitops]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check final status
-        run: |
-          if [ "${{ needs.build-manifests.outputs.build-failed }}" == "true" ]; then
-            echo "::error::Kubernetes manifest generation failed for ${{ inputs.service-name }}:${{ inputs.environment }}"
-            exit 1
-          fi
-
-          if [ "${{ needs.build-manifests.outputs.build-failed }}" == "false" ] && [ "${{ needs.deploy-to-gitops.outputs.has-changes }}" == "true" ]; then
-            echo "✅ Successfully created GitOps PR for ${{ inputs.service-name }}:${{ inputs.environment }}"
-          elif [ "${{ needs.build-manifests.outputs.build-failed }}" == "false" ]; then
-            echo "ℹ️ No changes detected for ${{ inputs.service-name }}:${{ inputs.environment }}"
-          fi
+          pr-number: ${{ steps.pr-info.outputs.number }}
