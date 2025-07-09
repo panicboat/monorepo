@@ -48,10 +48,11 @@ jobs:
         with:
           github_token: ${{ steps.app-token.outputs.token }}
           trigger_phrase: "@claude"
-          model: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+          model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
           use_bedrock: "true"
         env:
           ANTHROPIC_BEDROCK_BASE_URL: https://bedrock-runtime.us-west-2.amazonaws.com
           ANTHROPIC_MAX_RETRIES: "3"
           ANTHROPIC_TIMEOUT: "120"
           ANTHROPIC_REQUEST_DELAY: "5"
+          CLAUDE_CODE_MAX_OUTPUT_TOKENS: 8192
