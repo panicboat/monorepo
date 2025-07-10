@@ -23,7 +23,6 @@ jobs:
     outputs:
       targets: ${{ steps.resolver.outputs.targets }}
       has-targets: ${{ steps.resolver.outputs.has-targets }}
-      target-environment: ${{ steps.resolver.outputs.target-environment }}
     steps:
       - name: Generate GitHub App token
         id: app-token
