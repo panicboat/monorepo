@@ -38,9 +38,66 @@ on:
         description: 'GitHub App private key for authentication'
 
 jobs:
-  execute-kubernetes:
+  diff-manifests:
+    name: 'Diff Kubernetes Manifests'
+    if: inputs.action-type == 'diff'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2.0.6
+        with:
+          app-id: ${{ inputs.app-id }}
+          private-key: ${{ secrets.private-key }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Get PR information
+        id: pr-info
+        uses: jwalton/gh-find-current-pr@v1
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          state: all
+        continue-on-error: true
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Kustomize Diff
+        id: kustomize-diff
+        uses: swade1987/github-action-kustomize-diff@v0.4.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          root_dir: ${{ inputs.working-directory }}
+
+      - name: Comment PR with Kustomize results
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: |
+            ## 🚀 Kustomize ${{ inputs.action-type }} Results
+
+            **Service**: `${{ inputs.service-name }}`
+            **Environment**: `${{ inputs.environment }}`
+
+            <details>
+            <summary>📋 Kustomize Output</summary>
+
+            ```diff
+            ${{ steps.kustomize-diff.outputs.diff }}
+            ```
+            </details>
+          comment-tag: "kustomize-${{ inputs.service-name }}-${{ inputs.environment }}"
+          mode: upsert
+          pr-number: ${{ steps.pr-info.outputs.number }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        continue-on-error: true
+
+  push-to-repo:
     name: 'Push Kubernetes Manifests to GitOps Repository'
-    if: inputs.action-type != ''
+    if: inputs.action-type == 'apply'
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token

@@ -17,8 +17,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  deploy-resolver:
-    name: 'Deployment Resolver'
+  deploy-trigger:
+    name: 'Deployment Trigger'
     runs-on: ubuntu-latest
     outputs:
       targets: ${{ steps.resolver.outputs.targets }}
@@ -53,13 +53,13 @@ jobs:
 
   deploy-terragrunt:
     name: 'Deploy Terragrunt (${{ matrix.target.service }}:${{ matrix.target.environment }})'
-    needs: deploy-resolver
+    needs: deploy-trigger
     if: |
-      needs.deploy-resolver.outputs.has-targets == 'true' &&
-      contains(needs.deploy-resolver.outputs.targets, '"stack":"terragrunt"')
+      needs.deploy-trigger.outputs.has-targets == 'true' &&
+      contains(needs.deploy-trigger.outputs.targets, '"stack":"terragrunt"')
     strategy:
       matrix:
-        target: ${{ fromJson(needs.deploy-resolver.outputs.targets) }}
+        target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
       fail-fast: false
     uses: ./.github/workflows/reusable--terragrunt-executor.yaml
     with:
@@ -75,13 +75,13 @@ jobs:
 
   deploy-kubernetes:
     name: 'Deploy Kubernetes (${{ matrix.target.service }}:${{ matrix.target.environment }})'
-    needs: deploy-resolver
+    needs: deploy-trigger
     if: |
-      needs.deploy-resolver.outputs.has-targets == 'true' &&
-      contains(needs.deploy-resolver.outputs.targets, '"stack":"kubernetes"')
+      needs.deploy-trigger.outputs.has-targets == 'true' &&
+      contains(needs.deploy-trigger.outputs.targets, '"stack":"kubernetes"')
     strategy:
       matrix:
-        target: ${{ fromJson(needs.deploy-resolver.outputs.targets) }}
+        target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
       fail-fast: false
     uses: ./.github/workflows/reusable--kubernetes-executor.yaml
     with:
@@ -97,8 +97,8 @@ jobs:
 
   deployment-summary:
     name: 'Deployment Summary'
-    needs: [deploy-resolver, deploy-terragrunt, deploy-kubernetes]
-    if: always() && needs.deploy-resolver.outputs.has-targets == 'true'
+    needs: [deploy-trigger, deploy-terragrunt, deploy-kubernetes]
+    if: always() && needs.deploy-trigger.outputs.has-targets == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Summary
@@ -106,8 +106,8 @@ jobs:
           echo "📊 Deployment Summary"
           echo "Event: ${{ github.event_name }}"
           echo "Branch: ${{ github.ref_name }}"
-          echo "Environment: ${{ needs.deploy-resolver.outputs.target-environment }}"
-          echo "Safety Status: ${{ needs.deploy-resolver.outputs.safety-status }}"
-          echo "Targets: ${{ needs.deploy-resolver.outputs.targets }}"
+          echo "Environment: ${{ needs.deploy-trigger.outputs.target-environment }}"
+          echo "Safety Status: ${{ needs.deploy-trigger.outputs.safety-status }}"
+          echo "Targets: ${{ needs.deploy-trigger.outputs.targets }}"
           echo "Terragrunt Job Status: ${{ needs.deploy-terragrunt.result }}"
           echo "Kubernetes Job Status: ${{ needs.deploy-kubernetes.result }}"
