@@ -91,6 +91,7 @@ jobs:
       working-directory: ${{ matrix.target.working_directory }}
       target-repository: panicboat/generated-manifests
       target-branch: main
+      target-directory: ${{ matrix.target.environment }}/${{ matrix.target.directory_conventions_root }}
       app-id: ${{ vars.APP_ID }}
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}

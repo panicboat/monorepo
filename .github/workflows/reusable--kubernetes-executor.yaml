@@ -28,6 +28,10 @@ on:
         required: true
         type: string
         description: 'Target branch for generated manifests'
+      target-directory:
+        required: true
+        type: string
+        description: 'Target directory within the repository for generated manifests'
       app-id:
         required: true
         type: string
@@ -131,10 +135,11 @@ jobs:
         id: git-push
         uses: panicboat/deploy-actions/git-push@main
         with:
-          source-file: ${{ steps.kustomize.outputs.directory }}/${{ inputs.working-directory }}/generated.yaml
           service-name: ${{ inputs.service-name }}
           environment: ${{ inputs.environment }}
+          pr-number: ${{ steps.pr-info.outputs.number }}
+          source-file: ${{ steps.kustomize.outputs.directory }}/${{ inputs.working-directory }}/generated.yaml
           target-repository: ${{ inputs.target-repository }}
           target-branch: ${{ inputs.target-branch }}
+          target-path: ${{ inputs.target-directory }}/${{ inputs.service-name }}.yaml
           github-token: ${{ steps.app-token.outputs.token }}
-          pr-number: ${{ steps.pr-info.outputs.number }}
