@@ -1,4 +1,4 @@
-name: 'Auto Label - Deploy resolver'
+name: 'Auto Label - Label Resolver'
 
 on:
   pull_request:
@@ -40,9 +40,9 @@ jobs:
           state: all
         continue-on-error: true
 
-      - name: Deployment Resolver
+      - name: Label Resolver
         id: resolver
-        uses: panicboat/deploy-actions/deploy-resolver@main
+        uses: panicboat/deploy-actions/label-resolver@main
         with:
           event-type: ${{ github.event_name }}
           branch-name: ${{ github.ref_name }}

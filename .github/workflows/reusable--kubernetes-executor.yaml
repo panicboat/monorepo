@@ -132,8 +132,8 @@ jobs:
           kustomization: ${{ inputs.working-directory }}/kustomization.yaml
 
       - name: Push Generated Manifests
-        id: git-push
-        uses: panicboat/deploy-actions/git-push@main
+        id: git-pr
+        uses: panicboat/deploy-actions/git-pr@main
         with:
           service-name: ${{ inputs.service-name }}
           environment: ${{ inputs.environment }}
