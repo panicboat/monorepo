@@ -15,19 +15,19 @@ environments:
     iam_role_apply: arn:aws:iam::123456789012:role/terragrunt-apply-production-role
 
 directory_conventions:
-  - root: "{service}"
+  - root: "apps/web/{service}"
     stacks:
       - name: terragrunt
         directory: "terragrunt/envs/{environment}"
       - name: kubernetes
         directory: "kubernetes/overlays/{environment}"
 
-services:
-  - name: demo
-    exclude_from_automation: true
-    exclusion_config:
-      reason: "The demo service is for learning purposes, so the directory structure is completely different."
-      type: "permanent"
+  - root: "services/{service}"
+    stacks:
+      - name: terragrunt
+        directory: "terragrunt/envs/{environment}"
+      - name: kubernetes
+        directory: "kubernetes/overlays/{environment}"
 
 # Branch-to-environment mapping configuration
 branch_patterns:
