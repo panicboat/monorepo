@@ -1,51 +1,42 @@
 # Monorepo
 
-This repository is a monorepo that provides unified management of multiple services and infrastructure configurations. It manages cloud-native applications and infrastructure on AWS using Terragrunt/Terraform, with automated CI/CD pipelines powered by GitHub Actions.
+This repository is a monorepo for managing microservices and modular frontend applications. It provides unified management of cloud-native applications with automated CI/CD pipelines powered by GitHub Actions, supporting both infrastructure (Terragrunt) and application (Kubernetes) deployments.
 
 ## Overview
 
-- **Architecture**: Microservice-oriented cloud-native application suite
+- **Architecture**: Microservices with modular frontend components
 - **Infrastructure Management**: Infrastructure as Code with Terragrunt + Terraform
-- **CI/CD**: Automated deployment pipelines with GitHub Actions
+- **CI/CD**: Automated deployment pipelines with label-driven selective deployment
 - **Environments**: 3-tier environment structure (develop / staging / production)
+- **Deployment Strategy**: Parallel execution of infrastructure and application deployments
 - **Target Users**: Developers, DevOps Engineers, System Administrators
 
 ## Key Components
 
-- **Services**: Independently deployable microservices
-- **Shared Infrastructure**: Common infrastructure like GitHub OIDC authentication and repository management
-- **Automation System**: Label-driven deployment and workflow automation
+- **Microservices**: Independently deployable backend services
+- **Modular Frontend**: Component-based frontend applications with independent deployment capabilities
+- **Automation System**: Label-driven deployment with parallel execution
 - **Configuration Management**: Unified configuration and policy management across environments
 
 This monorepo aims to support scalable and maintainable system development while facilitating collaboration between teams.
 
-## 📁 Repository Structure
+## 📁 Service Structure
+
+Each service follows a standardized directory structure supporting multiple deployment stacks:
 
 ```
-monorepo/
-├── README.md                          # This file
-├── .github/                           # GitHub configuration and workflows
-│   ├── workflows/                     # GitHub Actions workflows
-│   │   ├── auto-label--*.yaml         # Auto-labeling system
-│   │   ├── reusable--*.yaml           # Reusable workflows
-│   │   └── claude-code-action.yaml    # AI-assisted development tool
-│   ├── scripts/                       # Workflow automation scripts
-│   │   ├── shared/                    # Shared components
-│   │   ├── label-dispatcher/          # Auto label assignment system
-│   │   ├── deploy-trigger/            # Deployment execution control system
-│   │   └── config-manager/            # Configuration management & validation system
-│   └── renovate.json                  # Dependency auto-update configuration
-├── github-oidc-auth/                  # GitHub OIDC authentication infrastructure
-├── github-repository/                 # GitHub repository management
-└── {service-name}/                    # Individual service directories
-    └── (Service-specific files)
+.
+├── terragrunt/                       # Infrastructure stack
+│   └── envs/{environment}/           # Environment-specific configurations
+├── kubernetes/                       # Application stack (if needed)
+│   └── overlays/{environment}/       # Environment-specific overlays
+├── src/(Application code)            # Implementation
+└── docker                            # Dockerfile
 ```
 
-### Directory Structure Principles
-
-- **Service Separation**: Each service has its own independent directory
-- **Shared Infrastructure**: Common infrastructure like authentication and repository management in dedicated directories
-- **Automation Centralization**: Workflow automation logic centralized in `.github/scripts/`
+- **Stack-based Architecture**: Services support multiple deployment stacks (terragrunt, kubernetes, and others)
+- **Environment Isolation**: Separate configurations for each environment (develop/staging/production)
+- **Extensible Design**: Additional stacks can be easily added to any service as needed
 
 ## 🔄 Development Workflow
 
@@ -70,10 +61,9 @@ This repository adopts an environment-based branch strategy:
 ```
 
 #### Branch Configuration
-- **`develop`**: Deploy only the services that have changed.
-- **`staging`**: Deploy only the services that have changed
-- **`production`**: Deploy only the services that have changed.
-- **`feature/*`**: Feature development branches
+- **`develop`**: Deploy changed services to development environment
+- **`staging`**: Deploy changed services to staging environment
+- **`production`**: Deploy changed services to production environment
 
 ### Pull Request Flow
 
@@ -81,7 +71,7 @@ This repository adopts an environment-based branch strategy:
 2. **PR Creation**: Create PR to `develop` branch
 3. **Auto-labeling**: Changed services automatically get `deploy:{service}` labels
 4. **Review & Merge**: Code review followed by merge
-5. **Auto-deployment**: After merge, relevant services automatically deploy to develop environment
+5. **Auto-deployment**: After merge, relevant services automatically deploy to appropriate environment
 
 ### Environment Promotion
 
@@ -90,28 +80,9 @@ develop environment → staging environment → production environment
  (Service-specific)    (Service-specific)    (Service-specific)
 ```
 
-### Automation System
+## 🤖 CI/CD System
 
-- **Auto-labeling**: Detects file changes and automatically applies appropriate deployment labels
-- **Environment-specific Deployment**: Deploys only to appropriate environments based on branch
-- **Safety Checks**: Requires PR-based merges and prevents direct push deployments
-
-### Commit Message Convention
-
-```bash
-feat(service-name): Add new feature
-fix(service-name): Fix bug
-docs(service-name): Update documentation
-refactor(service-name): Refactor code
-```
-
-For detailed automation system information, refer to the documentation in the `.github/scripts/` directory.
-
-## 🤖 Automation System Overview
-
-This monorepo implements a comprehensive automation system to achieve efficient and secure deployments.
-
-### System Architecture
+### Workflow Architecture
 
 ```mermaid
 graph TD
@@ -120,133 +91,118 @@ graph TD
     C --> D[PR Merge]
     D --> E[Deploy Trigger]
     E --> F[Environment Detection & Safety Check]
-    F --> G[Deploy only targeted services]
+    F --> G[Parallel Deployment]
+    G --> H[Terragrunt Executor]
+    G --> I[Kubernetes Executor]
+    H --> J[Infrastructure Plan/Apply]
+    I --> K[Manifest Diff/Apply]
 ```
 
-### Key Components
+### Key Workflows
 
-#### 1. Label Dispatcher (Auto Label Assignment)
-- **Location**: `.github/scripts/label-dispatcher/`
+#### 1. Label Dispatcher (`auto-label--label-dispatcher.yaml`)
 - **Function**: Detects file changes and automatically assigns `deploy:{service}` labels to changed services
 - **Trigger**: PR creation/update
 - **Benefits**: Eliminates manual labeling work, clarifies deployment targets
 
-#### 2. Deploy Trigger (Deployment Execution Control)
-- **Location**: `.github/scripts/deploy-trigger/`
-- **Function**: Executes deployment only to appropriate environments based on merged PR labels and current branch
+#### 2. Deploy Trigger (`auto-label--deploy-trigger.yaml`)
+- **Function**: Executes deployment based on merged PR labels and current branch
+- **Multi-Stack Support**: Supports multiple deployment stacks (terragrunt, kubernetes, and others) in parallel
 - **Trigger**: Branch push events
-- **Safety**: Requires PR-based merges, stops deployment on direct pushes
+- **Safety**: Requires PR-based merges, prevents deployment on direct pushes
 
-#### 3. Config Manager (Configuration Management & Validation)
-- **Location**: `.github/scripts/config-manager/`
-- **Function**: Validates workflow configurations, system diagnostics, configuration template generation
-- **Usage**: System maintenance, troubleshooting
+#### 3. Terragrunt Executor (`reusable--terragrunt-executor.yaml`)
+- **Function**: Infrastructure deployment using Terragrunt + Terraform
+- **Modes**: Plan (on PR) / Apply (on merge)
+- **AWS Integration**: OIDC authentication with environment-specific IAM roles
+
+#### 4. Kubernetes Executor (`reusable--kubernetes-executor.yaml`)
+- **Function**: Application deployment using Kubernetes manifests
+- **Modes**: Diff (on PR) / Apply (on merge)
+- **GitOps**: Integrates with separate GitOps repository for manifest management
 
 ### Deployment Strategy
 
-#### Environment-specific Filtering
-```bash
-# Labels assigned by Label Dispatcher (no environment specification)
-deploy:auth-service
-deploy:api-gateway
+#### Environment-specific Configuration
+The deployment system uses `workflow-config.yaml` to define:
 
-# Deploy Trigger performs environment detection
-develop branch     → Deploy auth-service, api-gateway to develop environment
-staging branch   → Deploy auth-service, api-gateway to staging environment
-production branch → Deploy auth-service, api-gateway to production environment
+```yaml
+environments:
+  - environment: develop
+    aws_region: ap-northeast-1
+    iam_role_plan: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+    iam_role_apply: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-role
+
+directory_conventions:
+  - root: "apps/web/{service}"
+    stacks:
+      - name: terragrunt
+        directory: "terragrunt/envs/{environment}"
+      - name: kubernetes
+        directory: "kubernetes/overlays/{environment}"
+
+  - root: "services/{service}"
+    stacks:
+      - name: terragrunt
+        directory: "terragrunt/envs/{environment}"
+      - name: kubernetes
+        directory: "kubernetes/overlays/{environment}"
 ```
 
-#### Efficiency Improvements
+#### Deployment Flow
+```bash
+# Labels assigned by Label Dispatcher
+deploy:api-gateway
+deploy:order-service
+
+# Deploy Trigger performs environment detection and parallel execution
+develop branch → Deploy to develop environment
+  ├── Terragrunt: Infrastructure plan/apply
+  └── Kubernetes: Manifest diff/apply (GitOps)
+staging branch → Deploy to staging environment
+  ├── Terragrunt: Infrastructure plan/apply
+  └── Kubernetes: Manifest diff/apply (GitOps)
+production branch → Deploy to production environment
+  ├── Terragrunt: Infrastructure apply
+  └── Kubernetes: Manifest apply (GitOps)
+```
+
+### Efficiency Features
+
 - **Selective Deployment**: Execute deployment only for changed services
-- **Parallel Processing**: Concurrent deployment of multiple services
-- **Resource Optimization**: Eliminate unnecessary Terragrunt executions
+- **Parallel Processing**: Concurrent deployment of multiple services and deployment stacks
+- **Multi-Stack Support**: Flexible support for terragrunt, kubernetes, and additional deployment stacks
+- **Resource Optimization**: Eliminate unnecessary executions across all stack types
+- **GitOps Integration**: Kubernetes manifests managed via separate repository
+- **Preview Capabilities**: Infrastructure plan and manifest diff on PRs
 
 ### Safety Features
 
 - **PR Required**: Prevents deployment from direct pushes
-- **Environment Isolation**: Appropriate access control for each environment
+- **Environment Isolation**: Environment-specific IAM role access control
 - **Deployment Halt**: Automatic stop in uncertain situations
+- **OIDC Authentication**: Keyless authentication without long-term credentials
 - **Audit Logging**: Record all deployment operations
-
-### Detailed Documentation
-
-For detailed specifications, configuration methods, and troubleshooting of each system, refer to:
-
-- [Label Dispatcher Details](/.github/scripts/label-dispatcher/README.md)
-- [Deploy Trigger Details](/.github/scripts/deploy-trigger/README.md)
-- [Config Manager Details](/.github/scripts/config-manager/README.md)
-- [Integrated Configuration Guide](/.github/scripts/shared/README.md)
 
 ## 🏗️ Infrastructure Overview
 
-### Architecture
-
-This monorepo manages cloud infrastructure on AWS using Terragrunt + Terraform.
-
-#### Environment Configuration
-```
-AWS Account
-├── develop environment    - Development & Integration Testing
-├── staging environment    - Staging & Acceptance Testing
-└── production environment - Production Operations
-```
-
-#### Shared Infrastructure
-- **State Management**: State management with S3 bucket + DynamoDB
-- **Authentication Infrastructure**: Keyless authentication with GitHub OIDC
-- **Audit Logging**: Operation log recording with CloudWatch
-
 ### Technology Stack
 
-- **Terragrunt**: Unified infrastructure configuration management and DRY principle implementation
-- **Terraform**: AWS resource provisioning
+- **Terragrunt + Terraform**: Infrastructure as Code
+- **Kubernetes**: Container orchestration and application deployment
 - **AWS**: Cloud platform
 - **GitHub Actions**: CI/CD pipeline and OIDC authentication
 
-### Service Structure
+### Service Architecture
 
-Each service manages infrastructure with the following structure:
-
-```
-{service}/terragrunt/
-├── root.hcl           # Shared configuration
-├── Makefile          # Development & operations commands
-├── modules/          # Terraform modules
-└── envs/             # Environment-specific configurations
-    ├── develop/
-    ├── staging/
-    └── production/
-```
-
-### State Management
-
-```
-# Development Account
-S3: terragrunt-state-{dev-account-id}
-├── github-oidc-auth/develop/terraform.tfstate
-└── {service-name}/develop/terraform.tfstate
-
-# Staging Account
-S3: terragrunt-state-{staging-account-id}
-├── github-oidc-auth/staging/terraform.tfstate
-└── {service-name}/staging/terraform.tfstate
-
-# Production Account
-S3: terragrunt-state-{prod-account-id}
-├── github-oidc-auth/production/terraform.tfstate
-└── {service-name}/production/terraform.tfstate
-```
-
-### Security
-
-- **Account Separation**: Independent AWS accounts for each environment
-- **Principle of Least Privilege**: Environment-specific IAM role access control
-- **OIDC Authentication**: Keyless authentication without long-term credentials
-- **State Encryption**: Encrypted storage of Terraform state files
-- **Audit Trail**: Recording of all infrastructure changes
+Each service follows a consistent structure:
+- **Microservices**: Independent backend services with their own technology stack
+- **Frontend Modules**: Component-based frontend applications with independent deployment capabilities
+- **Multi-Stack Deployment**: Services can use multiple deployment stacks as needed:
+  - **Terragrunt**: Infrastructure provisioning and management
+  - **Kubernetes**: Container orchestration and application deployment
+  - **Additional Stacks**: Extensible to support other deployment methods (serverless, static sites, etc.)
 
 ---
 
-> **TODO**: Comprehensive documentation including detailed Terragrunt configuration methods, module creation guides, and troubleshooting will be prepared separately.
-
-For detailed technical specifications and best practices, refer to the documentation within each service's `terragrunt/` directory.
+> This repository provides a foundation for scalable microservice and modular frontend development with comprehensive CI/CD automation.
