@@ -3,7 +3,7 @@
 
 locals {
   # Project metadata
-  project_name = "demo-service"
+  project_name = "services"
 
   # Parse environment from the directory path
   # This assumes environments are in envs/<environment>/ directories
@@ -16,7 +16,7 @@ locals {
     Environment = local.environment
     ManagedBy   = "terragrunt"
     Repository  = "monorepo"
-    Component   = "demo-service"
+    Component   = "services"
     Team        = "panicboat"
   }
 }
@@ -32,8 +32,8 @@ remote_state {
     # Shared bucket for all monorepo services
     bucket = "terragrunt-state-${get_aws_account_id()}"
 
-    # Service-specific path: demo-service/<environment>/terraform.tfstate
-    key    = "demo-service/${local.environment}/terraform.tfstate"
+    # Service-specific path: services/nginx-app/<environment>/terraform.tfstate
+    key    = "services/nginx-app/${local.environment}/terraform.tfstate"
     region = "ap-northeast-1"
 
     # Shared DynamoDB table for state locking across all services
