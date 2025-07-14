@@ -141,5 +141,5 @@ jobs:
           source-file: ${{ steps.kustomize.outputs.directory }}/${{ inputs.working-directory }}/generated.yaml
           target-repository: ${{ inputs.target-repository }}
           target-branch: ${{ inputs.target-branch }}
-          target-path: ${{ inputs.target-directory }}/${{ inputs.service-name }}.yaml
+          target-path: ${{ inputs.target-directory }}.yaml # directory_conventions.root
           github-token: ${{ steps.app-token.outputs.token }}
