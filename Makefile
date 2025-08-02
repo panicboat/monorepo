@@ -1,4 +1,4 @@
-.PHONY: push deploy push-deploy
+.PHONY: push deploy gitea
 
 push:
 	@echo "Adding gitea remote..."
@@ -15,4 +15,4 @@ deploy:
 	@echo "Deployment completed successfully!"
 	flux get kustomizations
 
-push-deploy: push deploy
+gitea: push deploy
