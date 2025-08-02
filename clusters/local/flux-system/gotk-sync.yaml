@@ -8,8 +8,7 @@ spec:
   interval: 1m0s
   ref:
     branch: main
-  # url: http://gitea-gitea-http.gitea.svc.cluster.local:3000/giteaadmin/monorepo.git
-  url: https://github.com/panicboat/monorepo
+  url: http://gitea-gitea-http.gitea.svc.cluster.local:3000/giteaadmin/monorepo.git
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
