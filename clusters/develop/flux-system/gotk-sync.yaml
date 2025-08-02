@@ -1,0 +1,24 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: monorepo
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  url: https://github.com/panicboat/monorepo
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: monorepo
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: "./clusters/develop"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: monorepo

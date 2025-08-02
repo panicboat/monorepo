@@ -1,0 +1,25 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageUpdateAutomation
+metadata:
+  name: nginx-automation
+  namespace: flux-system
+spec:
+  interval: 30m0s
+  sourceRef:
+    kind: GitRepository
+    name: monorepo
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: flux@example.com
+        name: FluxCD
+      messageTemplate: 'feat(nginx): update image to {{range .Changed.Changes}}{{.NewValue}}{{end}}'
+    push:
+      branch: main
+  policySelector:
+    matchLabels:
+      service: nginx
