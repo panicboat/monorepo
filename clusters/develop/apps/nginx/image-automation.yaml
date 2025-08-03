@@ -23,3 +23,6 @@ spec:
   policySelector:
     matchLabels:
       service: nginx
+  update:
+    path: "./services/nginx"
+    strategy: Setters
