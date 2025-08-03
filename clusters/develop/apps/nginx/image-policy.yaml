@@ -3,7 +3,7 @@ apiVersion: image.toolkit.fluxcd.io/v1beta1
 kind: ImagePolicy
 metadata:
   name: nginx
-  namespace: default
+  namespace: flux-system
   labels:
     service: nginx
 spec:

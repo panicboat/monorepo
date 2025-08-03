@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: ghcr.io/panicboat/sandbox:v1.0.0 # {"$imagepolicy": "default:nginx"}
+        image: ghcr.io/panicboat/sandbox:v1.0.0 # {"$imagepolicy": "flux-system:nginx"}
         ports:
         - containerPort: 80
         resources:
