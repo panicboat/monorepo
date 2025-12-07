@@ -7,9 +7,7 @@ on:
       - '**'
   push:
     branches:
-      - develop
-      - staging
-      - production
+      - main
 
 permissions:
   id-token: write
