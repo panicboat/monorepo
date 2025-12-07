@@ -1,16 +1,13 @@
----
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
   name: monorepo
   namespace: flux-system
 spec:
-  interval: 1m0s
+  interval: 1m
+  url: https://github.com/panicboat/monorepo.git
   ref:
     branch: main
-  secretRef:
-    name: github-token
-  url: https://github.com/panicboat/monorepo
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -19,7 +16,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: "./clusters/develop"
+  path: ./clusters/develop
   prune: true
   sourceRef:
     kind: GitRepository
