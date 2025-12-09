@@ -7,7 +7,7 @@ spec:
   - name: cilium-gateway
     namespace: default
   hostnames:
-  - "nginx.local"
+  - nginx.local
   rules:
   - matches:
     - path:
