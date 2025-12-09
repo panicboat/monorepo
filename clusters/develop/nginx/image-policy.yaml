@@ -9,6 +9,8 @@ metadata:
 spec:
   imageRepositoryRef:
     name: nginx
+  filterTags:
+    pattern: '.*-alpine'
   policy:
     semver:
-      range: ">=1.0.0"
+      range: ">=1.25.0"

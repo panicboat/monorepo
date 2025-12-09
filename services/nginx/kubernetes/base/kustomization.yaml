@@ -14,6 +14,3 @@ configMapGenerator:
 labels:
   - pairs:
       app: nginx
-images:
-  - name: nginx
-    newTag: 1.29.3-alpine
