@@ -10,7 +10,8 @@ spec:
   imageRepositoryRef:
     name: nginx
   filterTags:
-    pattern: '.*-alpine'
+    extract: '$semver'
+    pattern: '^(?P<semver>.*)-alpine$'
   policy:
     semver:
       range: ">=1.25.0"
