@@ -17,6 +17,8 @@ environments:
 directory_conventions:
   - root: "docs/{service}"
     stacks:
+      - name: terragrunt
+        directory: "terragrunt/envs/{environment}"
       - name: kubernetes
         directory: "kubernetes/overlays/{environment}"
 
