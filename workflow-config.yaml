@@ -15,10 +15,8 @@ environments:
   #   iam_role_apply: arn:aws:iam::123456789012:role/terragrunt-apply-production-role
 
 directory_conventions:
-  - root: "apps/web/{service}"
+  - root: "docs/{service}"
     stacks:
-      - name: terragrunt
-        directory: "terragrunt/envs/{environment}"
       - name: kubernetes
         directory: "kubernetes/overlays/{environment}"
 
