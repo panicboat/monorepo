@@ -15,20 +15,33 @@ environments:
   #   iam_role_apply: arn:aws:iam::123456789012:role/terragrunt-apply-production-role
 
 directory_conventions:
-  - root: "docs"
+  - root: "{service}"
     stacks:
       - name: docker
-        directory: "src"
+        directory: src
       - name: terragrunt
-        directory: "terragrunt/envs/{environment}"
+        directory: terragrunt/envs/{environment}
       - name: kubernetes
-        directory: "kubernetes/overlays/{environment}"
+        directory: kubernetes/overlays/{environment}
 
-  - root: "services/{service}"
+  - root: services/{service}
     stacks:
       - name: docker
-        directory: "src"
+        directory: src
       - name: terragrunt
-        directory: "terragrunt/envs/{environment}"
+        directory: terragrunt/envs/{environment}
       - name: kubernetes
-        directory: "kubernetes/overlays/{environment}"
+        directory: kubernetes/overlays/{environment}
+
+services:
+  - name: clusters
+    exclude_from_automation: true
+    exclusion_config:
+      reason: "Cluster configuration directory, not a deployable service"
+      type: "permanent"
+
+  - name: services
+    exclude_from_automation: true
+    exclusion_config:
+      reason: "Parent directory for services, not a service itself"
+      type: "permanent"
