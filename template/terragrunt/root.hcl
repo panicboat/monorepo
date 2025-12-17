@@ -32,8 +32,8 @@ remote_state {
     # Shared bucket for all monorepo services
     bucket = "terragrunt-state-${get_aws_account_id()}"
 
-    # Service-specific path: services/docs/<environment>/terraform.tfstate
-    key    = "services/docs/${local.environment}/terraform.tfstate"
+    # Service-specific path: services/template/<environment>/terraform.tfstate
+    key    = "services/template/${local.environment}/terraform.tfstate"
     region = "ap-northeast-1"
 
     # Shared DynamoDB table for state locking across all services
