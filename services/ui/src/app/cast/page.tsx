@@ -222,7 +222,7 @@ export default function CastProfilePage() {
               <Heart className="w-6 h-6" />
             </button>
 
-            <button className="flex-1 bg-gradient-to-r from-yellow-700 to-yellow-600 rounded-2xl flex items-center justify-between px-6 text-white shadow-lg shadow-yellow-900/20 hover:from-yellow-600 hover:to-yellow-500 transition active:scale-95 group">
+            <Link href="/chat" className="flex-1 bg-gradient-to-r from-yellow-700 to-yellow-600 rounded-2xl flex items-center justify-between px-6 text-white shadow-lg shadow-yellow-900/20 hover:from-yellow-600 hover:to-yellow-500 transition active:scale-95 group">
               <span className="flex flex-col items-start">
                 <span className="text-xs text-yellow-200/80 font-medium">まずは相談から</span>
                 <span className="text-lg font-bold font-[family-name:var(--font-geist-mono)]">招待状をリクエスト</span>
@@ -230,7 +230,7 @@ export default function CastProfilePage() {
               <div className="bg-white/20 p-2 rounded-full group-hover:bg-white/30 transition">
                 <Send className="w-5 h-5" />
               </div>
-            </button>
+            </Link>
           </div>
         </div>
 

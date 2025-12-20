@@ -44,7 +44,7 @@ export default function ChatPage() {
       {/* Header */}
       <header className="h-14 border-b border-slate-800 bg-slate-950/80 backdrop-blur-md flex items-center px-4 justify-between z-10">
         <div className="flex items-center gap-3">
-          <Link href="/"><ChevronLeft className="text-slate-400 w-6 h-6 hover:text-white transition" /></Link>
+          <Link href="/cast"><ChevronLeft className="text-slate-400 w-6 h-6 hover:text-white transition" /></Link>
           <div className="flex flex-col">
             <span className="font-bold text-white text-sm">Takuya (User)</span>
             <span className="text-[10px] text-green-500 flex items-center gap-1">
