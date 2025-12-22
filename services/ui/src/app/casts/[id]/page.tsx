@@ -14,8 +14,10 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FollowButton } from "@/components/features/follow/FollowButton";
+import { use } from "react";
 
-export default function CastProfilePage() {
+export default function CastProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   return (
     <div className="bg-slate-950 text-slate-200 min-h-screen font-sans antialiased pb-24">
       <div className="max-w-md mx-auto relative bg-slate-950 min-h-screen shadow-2xl overflow-hidden">
@@ -38,7 +40,7 @@ export default function CastProfilePage() {
 
           {/* Header Buttons */}
           <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10">
-            <Link href="/" className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/10 text-white hover:bg-black/40 transition">
+            <Link href="/home" className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/10 text-white hover:bg-black/40 transition">
               <ChevronLeft className="w-6 h-6" />
             </Link>
             <button className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/10 text-white">
@@ -142,31 +144,31 @@ export default function CastProfilePage() {
                 <Gem className="w-4 h-4 text-yellow-500/50" />
               </div>
             </div>
+          </div>
 
-            <div className="flex-1">
-              <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-3">Verified Traits</h3>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-2 py-1 rounded-md bg-yellow-900/20 border border-yellow-800/50 text-yellow-200 text-xs font-medium">
-                  #写真より可愛い <span className="text-yellow-600 ml-0.5">12</span>
-                </span>
-                <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-700 text-slate-300 text-xs">
-                  #神対応 <span className="text-slate-500 ml-0.5">8</span>
-                </span>
-                <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-700 text-slate-300 text-xs">
-                  #Sっ気 <span className="text-slate-500 ml-0.5">5</span>
-                </span>
-                <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-700 text-slate-300 text-xs">
-                  #英語OK
-                </span>
-              </div>
+          <div className="flex-1">
+            <h3 className="text-xs text-slate-500 uppercase tracking-wider mb-3">Verified Traits</h3>
+            <div className="flex flex-wrap gap-2">
+              <span className="px-2 py-1 rounded-md bg-yellow-900/20 border border-yellow-800/50 text-yellow-200 text-xs font-medium">
+                #写真より可愛い <span className="text-yellow-600 ml-0.5">12</span>
+              </span>
+              <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-700 text-slate-300 text-xs">
+                #神対応 <span className="text-slate-500 ml-0.5">8</span>
+              </span>
+              <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-700 text-slate-300 text-xs">
+                #Sっ気 <span className="text-slate-500 ml-0.5">5</span>
+              </span>
+              <span className="px-2 py-1 rounded-md bg-slate-800 border border-slate-700 text-slate-300 text-xs">
+                #英語OK
+              </span>
             </div>
           </div>
+        </div>
 
-          <div className="flex justify-between text-[10px] text-slate-500 mt-2 px-2">
-            <span>Look</span>
-            <span>Promise</span>
-            <span>Tech</span>
-          </div>
+        <div className="flex justify-between text-[10px] text-slate-500 mt-2 px-2">
+          <span>Look</span>
+          <span>Promise</span>
+          <span>Tech</span>
         </div>
 
         {/* Portfolio Section */}
@@ -221,7 +223,7 @@ export default function CastProfilePage() {
           <div className="flex gap-3 h-14">
             <FollowButton />
 
-            <Link href="/chat" className="flex-1 bg-gradient-to-r from-yellow-700 to-yellow-600 rounded-2xl flex items-center justify-between px-6 text-white shadow-lg shadow-yellow-900/20 hover:from-yellow-600 hover:to-yellow-500 transition active:scale-95 group">
+            <Link href="/chats/mirei" className="flex-1 bg-gradient-to-r from-yellow-700 to-yellow-600 rounded-2xl flex items-center justify-between px-6 text-white shadow-lg shadow-yellow-900/20 hover:from-yellow-600 hover:to-yellow-500 transition active:scale-95 group">
               <span className="flex flex-col items-start">
                 <span className="text-xs text-yellow-200/80 font-medium">まずは相談から</span>
                 <span className="text-lg font-bold font-[family-name:var(--font-geist-mono)]">招待状をリクエスト</span>
