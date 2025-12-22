@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>No Show Report - PrivateHeaven</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .font-serif-jp {
+      font-family: "Yu Mincho", serif;
+    }
+
+    /* 危険な鼓動アニメーション */
+    @keyframes pulse-red {
+      0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+      }
+    }
+
+    .animate-pulse-red {
+      animation: pulse-red 2s infinite;
+    }
+  </style>
+</head>
+
+<body
+  class="bg-slate-950 text-slate-200 min-h-screen flex flex-col items-center justify-center p-4 font-sans select-none">
+
+  <div class="w-full max-w-md space-y-6">
+
+    <div class="space-y-4">
+      <div class="relative bg-slate-900 border border-yellow-800/30 rounded-xl p-5 opacity-50 grayscale">
+        <div class="flex justify-between items-start mb-2">
+          <p class="text-xs text-slate-500 uppercase tracking-widest">Confirmed Ticket</p>
+          <span class="bg-slate-800 text-slate-400 text-[10px] px-2 py-1 rounded">19:00 START</span>
+        </div>
+        <h3 class="text-slate-300 font-serif-jp">12月20日 (土) 90min</h3>
+        <p class="text-xs text-slate-500 mt-1">Club VENUS (歌舞伎町)</p>
+      </div>
+
+      <div class="bg-slate-900 border-t-4 border-yellow-600 rounded-xl p-6 shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 bg-yellow-600 text-black text-[10px] font-bold px-2 py-0.5 rounded-bl">ACTION
+          REQUIRED</div>
+
+        <h3 class="text-white font-bold mb-1">来店確認</h3>
+        <p class="text-xs text-slate-400 mb-6">予約時間を30分経過しました。ステータスを更新してください。</p>
+
+        <div class="space-y-3">
+          <button
+            class="w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-green-500 text-white font-bold py-3 rounded-lg shadow-lg flex items-center justify-center gap-2 transition active:scale-95">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+            <span>無事に来店しました</span>
+          </button>
+
+          <button onclick="openDangerModal()"
+            class="w-full bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-400 hover:text-red-400 text-sm py-3 rounded-lg flex items-center justify-center gap-2 transition">
+            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            <span>まだ来ていません (トラブル報告)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="danger-modal"
+    class="fixed inset-0 bg-red-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+    <div
+      class="bg-slate-900 border border-red-900 w-full max-w-sm rounded-2xl p-6 relative shadow-2xl shadow-red-900/20 transform scale-95 transition-transform duration-300"
+      id="modal-content">
+
+      <button onclick="closeDangerModal()" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i
+          data-lucide="x"></i></button>
+
+      <div class="text-center mb-6">
+        <div
+          class="w-16 h-16 bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-red border border-red-800">
+          <i data-lucide="siren" class="w-8 h-8 text-red-500"></i>
+        </div>
+        <h2 class="text-xl text-white font-bold mb-2">No Show 報告</h2>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          ユーザー <span class="text-white font-bold">Takuya</span> を<br>
+          <span class="text-red-400 font-bold">「無断キャンセル」</span>として処理しますか？
+        </p>
+      </div>
+
+      <div class="bg-red-950/50 border border-red-900/50 rounded-lg p-3 mb-6">
+        <ul class="text-[11px] text-red-200 space-y-1 list-disc list-inside opacity-80">
+          <li>この操作は取り消せません</li>
+          <li>相手のアカウントに違反履歴が残ります</li>
+          <li>悪質な場合、アカウント停止処分となります</li>
+        </ul>
+      </div>
+
+      <button onclick="executePunishment()"
+        class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-red-900/50 flex items-center justify-center gap-2 transition active:scale-95">
+        <i data-lucide="gavel" class="w-4 h-4"></i>
+        <span>制裁を執行する</span>
+      </button>
+
+      <button onclick="closeDangerModal()" class="w-full mt-3 text-slate-500 text-xs hover:text-white transition">
+        キャンセルして戻る
+      </button>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    const modal = document.getElementById('danger-modal');
+    const content = document.getElementById('modal-content');
+
+    function openDangerModal() {
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeDangerModal() {
+      modal.classList.add('opacity-0');
+      content.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    function executePunishment() {
+      // ここでAPIを叩く
+      const btn = document.querySelector('#danger-modal button');
+      btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> 処理中...';
+      lucide.createIcons();
+
+      setTimeout(() => {
+        closeDangerModal();
+        alert('報告が完了しました。ユーザーにペナルティが付与されました。');
+        // 画面リロードなどの処理
+      }, 1000);
+    }
+  </script>
+</body>
+
+</html>

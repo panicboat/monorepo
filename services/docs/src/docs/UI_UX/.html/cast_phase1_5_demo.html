@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cast Onboarding & CRM - PrivateHeaven</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .font-serif-jp {
+      font-family: "Yu Mincho", serif;
+    }
+
+    .step-enter {
+      animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .step-exit {
+      animation: slideOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      to {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+    }
+
+    /* Drawer animation tailored for max-w-md context */
+    .drawer-enter {
+      transform: translateX(100%);
+    }
+
+    .drawer-enter-active {
+      transform: translateX(0);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 text-slate-200 h-screen font-sans flex justify-center">
+
+  <div class="w-full max-w-md bg-slate-950 h-full relative shadow-2xl overflow-hidden">
+
+    <div id="main-app" class="h-full flex flex-col transition-opacity duration-500 opacity-0 filter blur-sm">
+      <header class="h-16 border-b border-slate-800 bg-slate-900/80 flex items-center px-4 justify-between z-10">
+        <button><i data-lucide="chevron-left" class="text-slate-400"></i></button>
+
+        <button onclick="toggleCRM()" class="flex flex-col items-center group active:scale-95 transition">
+          <span class="font-bold text-white text-sm flex items-center gap-1">
+            Takuya
+            <i data-lucide="chevron-down" class="w-3 h-3 text-slate-500 group-hover:text-yellow-500 transition"></i>
+          </span>
+          <span class="text-[10px] text-yellow-500 flex items-center gap-1">
+            <i data-lucide="sticky-note" class="w-3 h-3"></i>
+            赤ワイン好き...
+          </span>
+        </button>
+
+        <button><i data-lucide="more-vertical" class="text-slate-400"></i></button>
+      </header>
+
+      <main class="flex-1 p-4 bg-slate-900/50">
+        <div class="flex gap-3 mb-4">
+          <div class="w-8 h-8 rounded-full bg-blue-900 flex items-center justify-center text-xs">T</div>
+          <div class="bg-slate-800 p-3 rounded-r-2xl rounded-bl-2xl text-sm max-w-[80%]">
+            今日なんだけど、いつものコースで空いてる？
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div id="crm-backdrop" onclick="toggleCRM()"
+      class="absolute inset-0 bg-black/50 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity"></div>
+    <div id="crm-drawer"
+      class="absolute top-0 right-0 h-full w-[85%] bg-slate-900 border-l border-slate-700 z-50 shadow-2xl drawer-enter flex flex-col">
+      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+        <h3 class="text-sm font-bold text-yellow-500 flex items-center gap-2">
+          <i data-lucide="user-cog" class="w-4 h-4"></i> 顧客カルテ
+        </h3>
+        <button onclick="toggleCRM()"><i data-lucide="x" class="text-slate-500"></i></button>
+      </div>
+
+      <div class="p-4 flex-1 overflow-y-auto space-y-6">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-blue-900 flex items-center justify-center text-lg font-bold">T</div>
+          <div>
+            <div class="text-white font-bold">Takuya</div>
+            <div class="text-xs text-slate-400">来店回数: 3回</div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-xs text-slate-500 uppercase tracking-wider flex items-center gap-1">
+            <i data-lucide="lock" class="w-3 h-3"></i> Private Memo
+          </label>
+          <textarea
+            class="w-full h-40 bg-yellow-900/10 border border-yellow-800/30 rounded-lg p-3 text-sm text-yellow-100 focus:outline-none focus:border-yellow-600 transition resize-none placeholder-yellow-900/50"
+            placeholder="メモ...">赤ワインが好き（フルボディ）。
+仕事はIT系。
+タバコは吸わない。
+前回は90分コースで延長あり。</textarea>
+          <p class="text-[10px] text-slate-500 text-right">自動保存されました</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="wizard-overlay" class="absolute inset-0 bg-slate-950 z-[100] flex flex-col">
+      <div class="h-16 px-6 flex items-center justify-between border-b border-slate-800">
+        <div class="flex gap-1">
+          <div id="dot-1" class="w-2 h-2 rounded-full bg-yellow-500 transition-all duration-300"></div>
+          <div id="dot-2" class="w-2 h-2 rounded-full bg-slate-700 transition-all duration-300"></div>
+          <div id="dot-3" class="w-2 h-2 rounded-full bg-slate-700 transition-all duration-300"></div>
+        </div>
+        <span class="text-xs text-slate-500 font-mono">SETUP 1/3</span>
+      </div>
+
+      <div class="flex-1 relative overflow-hidden p-6 flex flex-col items-center justify-center w-full">
+
+        <div id="step-1" class="w-full absolute inset-x-0 px-6 top-1/2 -translate-y-1/2 transition-all duration-500">
+          <div class="text-center mb-8">
+            <div
+              class="w-20 h-20 bg-slate-800 rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-dashed border-slate-600">
+              <i data-lucide="camera" class="w-8 h-8 text-slate-500"></i>
+            </div>
+            <h2 class="text-2xl text-white font-serif-jp mb-2">あなたについて</h2>
+            <p class="text-slate-400 text-sm">まずは源氏名とアイコンを設定しましょう。</p>
+          </div>
+          <input type="text" value="美玲"
+            class="w-full bg-slate-900 border-b border-slate-700 p-3 text-center text-xl text-white focus:outline-none focus:border-yellow-500 transition mb-8"
+            placeholder="源氏名">
+          <button onclick="nextStep(2)"
+            class="w-full bg-yellow-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-yellow-900/20 hover:bg-yellow-500 transition">次へ</button>
+        </div>
+
+        <div id="step-2"
+          class="w-full absolute inset-x-0 px-6 top-1/2 -translate-y-1/2 transition-all duration-500 translate-x-full opacity-0 pointer-events-none">
+          <div class="text-center mb-6">
+            <h2 class="text-xl text-white font-serif-jp mb-2">アピールポイント</h2>
+            <p class="text-slate-400 text-sm">タグを選んで、あなたの魅力を伝えましょう。</p>
+          </div>
+          <div class="flex flex-wrap justify-center gap-2 mb-8">
+            <button
+              class="px-3 py-2 rounded-full bg-yellow-900/30 border border-yellow-600 text-yellow-400 text-xs">#お酒飲める</button>
+            <button
+              class="px-3 py-2 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-xs">#タバコ吸わない</button>
+            <button
+              class="px-3 py-2 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-xs">#マッサージ得意</button>
+          </div>
+          <button onclick="nextStep(3)"
+            class="w-full bg-slate-800 text-white font-bold py-4 rounded-xl border border-slate-700 hover:bg-slate-700 transition">次へ</button>
+        </div>
+
+        <div id="step-3"
+          class="w-full absolute inset-x-0 px-6 top-1/2 -translate-y-1/2 transition-all duration-500 translate-x-full opacity-0 pointer-events-none">
+          <div class="text-center mb-6">
+            <h2 class="text-xl text-white font-serif-jp mb-2">プラン作成</h2>
+            <p class="text-slate-400 text-sm">招待状で使う基本コースを登録します。</p>
+          </div>
+
+          <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 mb-6">
+            <div class="mb-3">
+              <label class="text-[10px] text-slate-500 uppercase">プラン名</label>
+              <input type="text" value="90分コース"
+                class="w-full bg-transparent border-b border-slate-700 py-1 text-white text-sm focus:outline-none focus:border-yellow-500">
+            </div>
+            <div class="flex gap-4">
+              <div class="flex-1">
+                <label class="text-[10px] text-slate-500 uppercase">時間 (分)</label>
+                <input type="number" value="90"
+                  class="w-full bg-transparent border-b border-slate-700 py-1 text-white text-sm focus:outline-none focus:border-yellow-500">
+              </div>
+              <div class="flex-1">
+                <label class="text-[10px] text-slate-500 uppercase">金額目安</label>
+                <input type="number" value="30000"
+                  class="w-full bg-transparent border-b border-slate-700 py-1 text-white text-sm focus:outline-none focus:border-yellow-500">
+              </div>
+            </div>
+          </div>
+
+          <button onclick="finishWizard()"
+            class="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 text-black font-bold py-4 rounded-xl shadow-lg shadow-yellow-500/20 hover:scale-[1.02] transition">
+            設定を完了して始める
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  <script>
+    lucide.createIcons();
+    let currentStep = 1;
+    function nextStep(step) {
+      document.getElementById(`step-${currentStep}`).classList.add('translate-x-[-100%]', 'opacity-0', 'pointer-events-none');
+      document.getElementById(`step-${step}`).classList.remove('translate-x-full', 'opacity-0', 'pointer-events-none');
+      document.getElementById(`dot-${step}`).classList.remove('bg-slate-700');
+      document.getElementById(`dot-${step}`).classList.add('bg-yellow-500');
+      currentStep = step;
+    }
+    function finishWizard() {
+      const overlay = document.getElementById('wizard-overlay');
+      const app = document.getElementById('main-app');
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+      overlay.style.transition = 'opacity 0.8s ease';
+      app.classList.remove('opacity-0', 'blur-sm');
+      setTimeout(() => { overlay.remove(); }, 800);
+    }
+    const drawer = document.getElementById('crm-drawer');
+    const backdrop = document.getElementById('crm-backdrop');
+    let isCRMOpen = false;
+    function toggleCRM() {
+      isCRMOpen = !isCRMOpen;
+      if (isCRMOpen) {
+        backdrop.classList.remove('hidden');
+        setTimeout(() => backdrop.classList.remove('opacity-0'), 10);
+        drawer.classList.remove('drawer-enter');
+        drawer.classList.add('drawer-enter-active');
+      } else {
+        backdrop.classList.add('opacity-0');
+        drawer.classList.remove('drawer-enter-active');
+        drawer.classList.add('drawer-enter');
+        setTimeout(() => backdrop.classList.add('hidden'), 300);
+      }
+    }
+  </script>
+</body>
+
+</html>

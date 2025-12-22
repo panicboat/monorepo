@@ -1,4 +1,8 @@
-# 画面構成
+---
+sidebar_position: 10
+---
+
+# Screen Layout
 
 大きく **A. 共通**, **B. Cast App**, **C. User App** の3つに分けて整理します。
 
