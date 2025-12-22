@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { FollowButton } from "@/components/features/follow/FollowButton";
 
 export default function CastProfilePage() {
   return (
@@ -218,9 +219,7 @@ export default function CastProfilePage() {
           </div>
 
           <div className="flex gap-3 h-14">
-            <button className="w-14 h-full bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-900 transition">
-              <Heart className="w-6 h-6" />
-            </button>
+            <FollowButton />
 
             <Link href="/chat" className="flex-1 bg-gradient-to-r from-yellow-700 to-yellow-600 rounded-2xl flex items-center justify-between px-6 text-white shadow-lg shadow-yellow-900/20 hover:from-yellow-600 hover:to-yellow-500 transition active:scale-95 group">
               <span className="flex flex-col items-start">
