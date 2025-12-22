@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Bell, Search, MessageSquare } from "lucide-react";
+import { Bell, Search, MessageSquare, Home, History } from "lucide-react";
 import { FollowingList } from "@/components/features/home/FollowingList";
 
 type Tab = "discover" | "following";
@@ -11,8 +11,8 @@ export default function UserHomePage() {
   const [activeTab, setActiveTab] = useState<Tab>("following"); // Default to 'following' per instructions to focus on it
 
   return (
-    <div className="bg-slate-950 text-slate-200 min-h-screen font-sans flex justify-center">
-      <div className="w-full max-w-md bg-slate-950 min-h-screen relative shadow-2xl overflow-y-auto">
+    <div className="bg-slate-950 text-slate-200 h-screen font-sans flex justify-center">
+      <div className="w-full max-w-md bg-slate-950 h-full relative shadow-2xl flex flex-col">
 
         {/* Header */}
         <header className="sticky top-0 bg-slate-950/90 backdrop-blur z-20 border-b border-slate-800">
@@ -56,7 +56,7 @@ export default function UserHomePage() {
         </header>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-4">
           {activeTab === "following" ? (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
               <FollowingList />
@@ -70,6 +70,25 @@ export default function UserHomePage() {
             </div>
           )}
         </div>
+
+        {/* Navigation */}
+        <nav className="bg-slate-950 border-t border-slate-800 h-16 flex items-center justify-around z-20">
+          <button className="flex flex-col items-center gap-1 w-16 text-yellow-500">
+            <Home className="w-6 h-6" />
+            <span className="text-[9px] font-bold">Home</span>
+          </button>
+          <Link href="/chats" className="flex flex-col items-center gap-1 w-16 text-slate-500 hover:text-white transition">
+            <div className="relative">
+              <MessageSquare className="w-6 h-6" />
+              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-950"></div>
+            </div>
+            <span className="text-[9px]">Talk</span>
+          </Link>
+          <Link href="/history" className="flex flex-col items-center gap-1 w-16 text-slate-500 hover:text-white transition">
+            <History className="w-6 h-6" />
+            <span className="text-[9px]">History</span>
+          </Link>
+        </nav>
       </div>
     </div>
   );
