@@ -23,7 +23,7 @@ export default function CastOnboardingPage() {
         >
           {/* Header */}
           <header className="h-16 border-b border-slate-800 bg-slate-900/80 flex items-center px-4 justify-between z-10 shrink-0">
-            <Link href="/cast">
+            <Link href="/cast/home">
               <ChevronLeft className="text-slate-400 w-6 h-6" />
             </Link>
 

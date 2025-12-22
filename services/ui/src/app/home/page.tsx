@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Bell, Search } from "lucide-react";
+import Link from "next/link";
+import { Bell, Search, MessageSquare } from "lucide-react";
 import { FollowingList } from "@/components/features/home/FollowingList";
 
 type Tab = "discover" | "following";
@@ -22,7 +23,12 @@ export default function UserHomePage() {
             >
               PrivateHeaven
             </span>
-            <Bell className="text-slate-400 w-5 h-5 cursor-pointer hover:text-white transition" />
+            <div className="flex items-center gap-4">
+              <Link href="/chats">
+                <MessageSquare className="text-slate-400 w-5 h-5 cursor-pointer hover:text-white transition" />
+              </Link>
+              <Bell className="text-slate-400 w-5 h-5 cursor-pointer hover:text-white transition" />
+            </div>
           </div>
 
           {/* Tabs */}
@@ -30,8 +36,8 @@ export default function UserHomePage() {
             <button
               onClick={() => setActiveTab("discover")}
               className={`flex-1 py-3 text-sm border-b-2 relative transition ${activeTab === "discover"
-                  ? "text-white font-bold border-yellow-500"
-                  : "text-slate-500 border-transparent hover:text-slate-300"
+                ? "text-white font-bold border-yellow-500"
+                : "text-slate-500 border-transparent hover:text-slate-300"
                 }`}
             >
               Discover
@@ -39,8 +45,8 @@ export default function UserHomePage() {
             <button
               onClick={() => setActiveTab("following")}
               className={`flex-1 py-3 text-sm border-b-2 relative transition ${activeTab === "following"
-                  ? "text-white font-bold border-yellow-500"
-                  : "text-slate-500 border-transparent hover:text-slate-300"
+                ? "text-white font-bold border-yellow-500"
+                : "text-slate-500 border-transparent hover:text-slate-300"
                 }`}
             >
               Following

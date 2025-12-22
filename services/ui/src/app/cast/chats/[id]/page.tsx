@@ -9,8 +9,10 @@ import { InvitationCard } from "@/components/features/invitation/InvitationCard"
 import { RitualModal } from "@/components/features/invitation/RitualModal";
 import { SealedBadge } from "@/components/features/invitation/SealedBadge";
 import { motion, AnimatePresence } from "framer-motion";
+import { use } from "react";
 
-export default function ChatPage() {
+export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [mode, setMode] = useState<'chat' | 'builder' | 'invitation' | 'report'>('chat');
   const [messages, setMessages] = useState<Array<{ type: 'text' | 'invitation', text?: string, sender: 'user' | 'cast' }>>([
     { type: 'text', sender: 'user', text: "久しぶり！今日の21時くらいって空いてるかな？\n90分コースでお願いしたい！" },
@@ -47,7 +49,7 @@ export default function ChatPage() {
       {/* Header */}
       <header className="h-14 border-b border-slate-800 bg-slate-950/80 backdrop-blur-md flex items-center px-4 justify-between z-10">
         <div className="flex items-center gap-3">
-          <Link href="/cast"><ChevronLeft className="text-slate-400 w-6 h-6 hover:text-white transition" /></Link>
+          <Link href="/cast/home"><ChevronLeft className="text-slate-400 w-6 h-6 hover:text-white transition" /></Link>
           <button
             onClick={() => setIsCRMOpen(true)}
             className="flex flex-col items-start hover:bg-slate-800/50 px-2 py-1 rounded transition"
@@ -74,7 +76,7 @@ export default function ChatPage() {
             {msg.sender === 'user' ? (
               <div className="w-8 h-8 rounded-full bg-blue-900 flex items-center justify-center text-xs text-white">T</div>
             ) : (
-              <Link href="/cast">
+              <Link href="/casts/mirei">
                 <div
                   className="w-8 h-8 rounded-full bg-slate-700 bg-cover cursor-pointer hover:opacity-80 transition"
                   style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop')" }}

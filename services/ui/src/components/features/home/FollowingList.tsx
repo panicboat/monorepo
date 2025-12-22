@@ -16,7 +16,7 @@ export function FollowingList() {
       </div>
 
       {/* Cast 1: Active (Using Link to /cast for demo) */}
-      <Link href="/cast" className="block">
+      <Link href="/casts/mirei" className="block">
         <div className="bg-slate-900 border border-yellow-900/30 rounded-xl p-3 flex items-center gap-4 cursor-pointer hover:bg-slate-800 transition relative overflow-hidden group">
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)] group-hover:shadow-[0_0_20px_rgba(34,197,94,0.8)] transition"></div>
 
