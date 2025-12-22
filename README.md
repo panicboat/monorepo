@@ -25,6 +25,20 @@
 
 ## 🚀 Getting Started
 
+Add the following to `/etc/hosts`.
+
+```bash
+127.0.0.1 nginx.local
+```
+
 ## 🏗 Architecture
+
+```mermaid
+graph LR
+    User[User] -- "1. External IP<br>LoadBalancer" --> NginxLB[Cloud LB]
+    NginxLB -- "2. Port 80" --> NginxPod[Nginx Pod<br>Reverse Proxy]
+    NginxPod -- "3. http://cilium-gateway<br>Internal" --> CiliumGw[Cilium Gateway]
+    CiliumGw -- "4. HTTPRoute<br>Host: nginx.local" --> AppPod[App Pod<br>services/nginx]
+```
 
 ## 📝 Contribution Guide
