@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - docs
   - nginx
+  - reverse-proxy
