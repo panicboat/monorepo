@@ -10,6 +10,8 @@
 .
 ├── .github/            # GitHub Actions Workflows
 ├── clusters/           # Flux CD Cluster definitions
+├── demo/               # Demo application
+├── openspec/           # OpenAPI specifications
 ├── services/           # Microservices source code & manifests
 │   ├── {service}/      # Service Name
 │   │   ├── src/        # Application Source Code
