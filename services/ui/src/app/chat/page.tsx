@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, MoreVertical, Ticket, Send, CheckCircle } from "lucide-react";
+import { ChevronLeft, MoreVertical, Ticket, Send, CheckCircle, ChevronDown, StickyNote } from "lucide-react";
 import { InvitationDrawer } from "@/components/chat/InvitationDrawer";
+import CRMDrawer from "@/components/features/crm/CRMDrawer";
 import { InvitationCard } from "@/components/features/invitation/InvitationCard";
 import { RitualModal } from "@/components/features/invitation/RitualModal";
 import { SealedBadge } from "@/components/features/invitation/SealedBadge";
@@ -16,7 +17,9 @@ export default function ChatPage() {
     { type: 'text', sender: 'cast', text: "Takuyaさんお久しぶりです！💕\n21時大丈夫ですよ✨ 招待状送りますね！" }
   ]);
   const [showToast, setShowToast] = useState(false);
+
   const [isRitualSealed, setIsRitualSealed] = useState(false);
+  const [isCRMOpen, setIsCRMOpen] = useState(false);
 
   // Function to add invitation message
   const handleSendInvitation = () => {
@@ -45,12 +48,19 @@ export default function ChatPage() {
       <header className="h-14 border-b border-slate-800 bg-slate-950/80 backdrop-blur-md flex items-center px-4 justify-between z-10">
         <div className="flex items-center gap-3">
           <Link href="/cast"><ChevronLeft className="text-slate-400 w-6 h-6 hover:text-white transition" /></Link>
-          <div className="flex flex-col">
-            <span className="font-bold text-white text-sm">Takuya (User)</span>
-            <span className="text-[10px] text-green-500 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Online
+          <button
+            onClick={() => setIsCRMOpen(true)}
+            className="flex flex-col items-start hover:bg-slate-800/50 px-2 py-1 rounded transition"
+          >
+            <span className="font-bold text-white text-sm flex items-center gap-1">
+              Takuya (User)
+              <ChevronDown className="w-3 h-3 text-slate-500" />
             </span>
-          </div>
+            <span className="text-[10px] text-yellow-500 flex items-center gap-1">
+              <StickyNote className="w-3 h-3" />
+              メモあり...
+            </span>
+          </button>
         </div>
         <button><MoreVertical className="text-slate-400 w-5 h-5" /></button>
       </header>
@@ -141,6 +151,9 @@ export default function ChatPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* CRM Drawer */}
+      <CRMDrawer isOpen={isCRMOpen} onClose={() => setIsCRMOpen(false)} />
     </div>
   );
 }

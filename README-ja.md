@@ -3,7 +3,6 @@
 [🇺🇸 English](README.md) | **日本語**
 
 ## 📖 Overview
-このリポジトリは [プロダクト名] のすべてのマイクロサービスと共有ライブラリを管理する Monorepo です。
 
 ## 📂 Structure
 
