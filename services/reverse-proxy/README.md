@@ -1,6 +1,6 @@
-# Template
+# Reverse Proxy
 
-[🇺🇸 English](README.md) | **日本語**
+**English** | [🇯🇵 日本語](README-ja.md)
 
 ## 💡 Role
 

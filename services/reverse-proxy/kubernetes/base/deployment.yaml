@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-reverse-proxy
+  labels:
+    app: reverse-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reverse-proxy
+  template:
+    metadata:
+      labels:
+        app: reverse-proxy
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/upstream.conf
+          subPath: upstream.conf
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/server.conf
+          subPath: server.conf
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
