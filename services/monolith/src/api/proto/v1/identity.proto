@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package api.proto.v1;
+
+option go_package = "github.com/panicboat/monorepo/services/monolith/src/api/proto/v1;v1";
+
+service IdentityService {
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
+  rpc SignIn(SignInRequest) returns (SignInResponse);
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+}
+
+message SignUpRequest {
+  string phone_number = 1;
+  string role = 2; // "cast" or "guest"
+}
+
+message SignUpResponse {
+  string user_id = 1;
+}
+
+message SignInRequest {
+  string phone_number = 1;
+  string verification_code = 2;
+}
+
+message SignInResponse {
+  string token = 1;
+}
+
+message GetProfileRequest {
+  string user_id = 1;
+}
+
+message GetProfileResponse {
+  string user_id = 1;
+  string role = 2;
+  string phone_number = 3;
+}
