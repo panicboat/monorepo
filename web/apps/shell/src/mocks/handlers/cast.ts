@@ -1,0 +1,39 @@
+import { http, HttpResponse } from 'msw'
+
+const castData = {
+  id: 'mirei',
+  name: '美玲',
+  age: 24,
+  height: 162,
+  shop: 'Club VENUS (歌舞伎町)',
+  status: 'On Air (返信早め)',
+  message: '本日は20時から空きあります✨ 久しぶりの出勤なのでお話したいです！',
+  promiseRate: 100,
+  images: {
+    hero: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=988&auto=format&fit=crop',
+    portfolio: [
+      'https://images.unsplash.com/photo-1616091093747-47804425986c?q=80&w=600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=600&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&auto=format&fit=crop'
+    ]
+  },
+  tags: [
+    { label: '#写真より可愛い', count: 12 },
+    { label: '#神対応', count: 8 },
+    { label: '#Sっ気', count: 5 },
+    { label: '#英語OK', count: 0 }
+  ],
+  review: {
+    rating: 5,
+    date: '2日前',
+    comment: '写真通りの美女でした。何より、待ち合わせ場所に5分前に来てくれていて、予約のやり取りも丁寧で安心できました。リピート確定です。'
+  }
+}
+
+export const handlers = [
+  http.get('/api/casts/:id', ({ params }) => {
+    // In a real app, verify params.id. For demo, return the same mock.
+    return HttpResponse.json(castData)
+  }),
+]
