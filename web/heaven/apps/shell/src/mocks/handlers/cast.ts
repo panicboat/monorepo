@@ -36,4 +36,21 @@ export const handlers = [
     // In a real app, verify params.id. For demo, return the same mock.
     return HttpResponse.json(castData)
   }),
+
+  http.get('/api/cast/dashboard', () => {
+    return HttpResponse.json({
+      status: 'offline',
+      promiseRate: 100,
+      followers: 24,
+      unread: 3
+    })
+  }),
+
+  http.get('/api/cast/mypage', () => {
+    return HttpResponse.json({
+      sales: 420000,
+      followers: 24,
+      promiseRate: 100
+    })
+  }),
 ]
