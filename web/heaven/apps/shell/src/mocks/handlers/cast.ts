@@ -53,4 +53,26 @@ export const handlers = [
       promiseRate: 100
     })
   }),
+
+  http.put('/api/cast/profile', () => {
+    return HttpResponse.json({ success: true })
+  }),
+
+  http.get('/api/cast/schedule', () => {
+    return HttpResponse.json({
+      // Mock schedule data (simplified)
+      // 20, 21 are available. 22 is booked.
+      availability: [
+        { date: 20, status: 'available' },
+        { date: 21, status: 'available' },
+        { date: 22, status: 'booked' },
+      ]
+    })
+  }),
+
+  http.post('/api/chats/:id/invitations', async ({ request }) => {
+    const data = await request.json()
+    console.log('Sent invitation:', data)
+    return HttpResponse.json({ success: true })
+  }),
 ]

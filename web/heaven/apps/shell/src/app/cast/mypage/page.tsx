@@ -16,6 +16,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { CastBottomNav } from "@/components/navigation/CastBottomNav";
 
 export default function CastMyPage() {
   const router = useRouter();
@@ -132,7 +133,7 @@ export default function CastMyPage() {
           </p>
 
           <button
-            onClick={() => handlePlaceholderClick("Profile Edit")}
+            onClick={() => router.push("/cast/profile/edit")}
             className="w-full bg-slate-900/50 hover:bg-slate-800 border border-slate-800/50 rounded-xl p-4 flex items-center justify-between group transition"
           >
             <div className="flex items-center gap-3">
@@ -215,33 +216,7 @@ export default function CastMyPage() {
           </button>
         </main>
 
-        {/* Navigation */}
-        <nav className="bg-slate-950 border-t border-slate-800 h-16 flex items-center justify-around z-20 absolute bottom-0 w-full pb-safe">
-          <Link
-            href="/cast/dashboard"
-            className="flex flex-col items-center gap-1 w-16 text-slate-500 hover:text-white transition"
-          >
-            <MessageCircle className="w-6 h-6" />
-            <span className="text-[9px]">Chats</span>
-          </Link>
-          <button className="flex flex-col items-center gap-1 w-16 text-slate-500 hover:text-white transition">
-            <Users className="w-6 h-6" />
-            <span className="text-[9px]">Followers</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 w-16 text-yellow-500">
-            <div className="w-6 h-6 rounded-full bg-slate-700 overflow-hidden border border-yellow-500">
-              <div
-                className="w-full h-full bg-cover"
-                style={{
-                  backgroundImage:
-                    "url('https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100')",
-                }}
-              ></div>
-            </div>
-            <span className="text-[9px] font-bold">My Page</span>
-          </button>
-        </nav>
+        <CastBottomNav />
       </div>
-    </div>
-  );
+      );
 }

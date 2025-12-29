@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { MoreHorizontal, Clock, Ticket, MessageCircle, Users } from "lucide-react";
+import { CastBottomNav } from "@/components/navigation/CastBottomNav";
 
 type Status = "offline" | "asking" | "online" | "tonight";
 
@@ -146,30 +147,32 @@ export default function CastDashboardPage() {
 
           <div className="space-y-2">
             {/* Kenji - Unread */}
-            <div className="bg-slate-900/80 hover:bg-slate-800 border border-slate-800/50 p-3 rounded-xl flex gap-3 cursor-pointer transition relative">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full bg-indigo-900 flex items-center justify-center text-sm font-bold text-indigo-100">
-                  K
+            <Link href="/cast/chats/kenji">
+              <div className="bg-slate-900/80 hover:bg-slate-800 border border-slate-800/50 p-3 rounded-xl flex gap-3 cursor-pointer transition relative">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-indigo-900 flex items-center justify-center text-sm font-bold text-indigo-100">
+                    K
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></div>
                 </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center mb-0.5">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-white truncate">Kenji</h3>
-                    <span className="text-[10px] text-yellow-500 bg-yellow-900/20 px-1.5 rounded border border-yellow-800/30 truncate max-w-[80px]">
-                      ワイン好き
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-center mb-0.5">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-white truncate">Kenji</h3>
+                      <span className="text-[10px] text-yellow-500 bg-yellow-900/20 px-1.5 rounded border border-yellow-800/30 truncate max-w-[80px]">
+                        ワイン好き
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-green-400 font-bold">
+                      2m ago
                     </span>
                   </div>
-                  <span className="text-[10px] text-green-400 font-bold">
-                    2m ago
-                  </span>
+                  <p className="text-xs text-slate-200 font-bold truncate">
+                    今夜空いてたりする？久々に...
+                  </p>
                 </div>
-                <p className="text-xs text-slate-200 font-bold truncate">
-                  今夜空いてたりする？久々に...
-                </p>
               </div>
-            </div>
+            </Link>
 
             {/* Masato - Invitation Sent */}
             <div className="bg-slate-900/40 hover:bg-slate-800 border border-slate-800/50 p-3 rounded-xl flex gap-3 cursor-pointer transition">
@@ -196,31 +199,7 @@ export default function CastDashboardPage() {
         </div>
       </main>
 
-      {/* Navigation - could be a separate component but keeping inline for now as per demo */}
-      <nav className="bg-slate-950 border-t border-slate-800 h-16 flex items-center justify-around z-20 pb-safe">
-        <button className="flex flex-col items-center gap-1 w-16 text-yellow-500">
-          <div className="relative">
-            <MessageCircle className="w-6 h-6 fill-yellow-500/20" />
-            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-950"></div>
-          </div>
-          <span className="text-[9px] font-bold">Chats</span>
-        </button>
-
-        <button className="flex flex-col items-center gap-1 w-16 text-slate-500 hover:text-slate-300 transition">
-          <Users className="w-6 h-6" />
-          <span className="text-[9px]">Followers</span>
-        </button>
-
-        <Link href="/cast/mypage" className="flex flex-col items-center gap-1 w-16 text-slate-500 hover:text-slate-300 transition">
-          <div className="w-6 h-6 rounded-full bg-slate-700 overflow-hidden border border-slate-600">
-            {/* Placeholder avatar */}
-            <div className="w-full h-full bg-amber-700/50 flex items-center justify-center text-[10px] font-bold">
-              Me
-            </div>
-          </div>
-          <span className="text-[9px]">My Page</span>
-        </Link>
-      </nav>
+      <CastBottomNav />
     </div>
   );
 }
