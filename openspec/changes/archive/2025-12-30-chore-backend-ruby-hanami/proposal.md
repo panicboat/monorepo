@@ -38,11 +38,14 @@ Hanami はデフォルトで `ROM.rb` (Ruby Object Mapper) を採用しており
 - **推奨:** Hanami のアーキテクチャ上の利点と厳密な境界を維持するため、**ROM.rb** の使用を推奨します。
 
 ### 3. API プロトコル & フロントエンド統合
-当初 Go バックエンドでは gRPC が計画されていました。Ruby への移行に伴い、"Web App" の性質により適した選択肢を検討できます。
-- **案 A: GraphQL (`graphql-ruby`)** - 複雑な UI (ダッシュボード, チャット) に対する柔軟なデータ取得が可能。
-- **案 B: REST (JSON API)** - シンプルで標準的な Hanami Actions を利用。
-- **案 C: gRPC (`gruf`)** - 厳密なスキーマ定義と高パフォーマンス。将来的なマイクロサービス分割に有利。
-- **推奨:** スマートドロワーやスケジュールグリッドのような複雑でインタラクティブな UI を構築するため、**GraphQL** を強く推奨します。
+**技術的挑戦として gRPC を採用します。**
+- **理由:**
+    - **Schema First:** Protocol Buffers による厳密なスキーマ定義は、チーム間の契約（Contract）として機能し、独立性を保つのに役立ちます。
+    - **Performance:** JSON よりも効率的なバイナリ通信。
+    - **Language Agnostic:** 将来的に一部のマイクロサービスを Go や Rust に置き換える際も、インターフェースを維持しやすい。
+- **実装戦略:**
+    - Ruby サーバーには **`gruf`** (gRPC Ruby Framework) を使用。
+    - **BFF層の導入:** フロントエンドとの通信には BFF (Backend For Frontend) 層を介在させ、**Connect** を利用して型安全な通信を行います。BFF の詳細は別途 OpenSpec (`feat-arch-bff`) にて定義します。
 
 ### 4. リアルタイム基盤 (チャット)
 チャット機能（スマート招待状、DM）には WebSocket サポートが不可欠です。

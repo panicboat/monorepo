@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package identity.v1;
+
+service IdentityService {
+  rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  string status = 1;
+}

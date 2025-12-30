@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@connectrpc/connect": "^2.1.1",
+    "@connectrpc/connect-node": "^2.1.1",
+    "@heaven/rpc": "workspace:*",
     "@web/ui": "workspace:*",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.26",
