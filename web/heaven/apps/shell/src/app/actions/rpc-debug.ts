@@ -7,8 +7,9 @@ export async function checkBackendHealth() {
     const res = await identityClient.healthCheck({});
     console.log("HealthCheck Response:", res);
     return { status: res.status };
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("HealthCheck Error:", e);
-    return { error: e.message || "Unknown error" };
+    const message = e instanceof Error ? e.message : String(e);
+    return { error: message };
   }
 }

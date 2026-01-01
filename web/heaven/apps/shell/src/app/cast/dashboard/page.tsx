@@ -90,7 +90,7 @@ export default function CastDashboardPage() {
         {/* Today's Promise */}
         <div className="mb-6">
           <p className="text-xs text-slate-500 font-bold mb-3 flex items-center gap-2">
-            TODAY'S PROMISE
+            TODAY&apos;S PROMISE
             <span className="w-full h-px bg-slate-800"></span>
           </p>
 

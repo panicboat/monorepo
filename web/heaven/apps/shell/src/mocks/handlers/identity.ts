@@ -1,8 +1,13 @@
 import { http, HttpResponse } from 'msw'
 
+interface SignInRequest {
+  phoneNumber: string;
+  verificationCode: string;
+}
+
 export const handlers = [
   http.post('/api/identity/sign-in', async ({ request }) => {
-    const { phoneNumber, verificationCode } = (await request.json()) as any;
+    const { verificationCode } = (await request.json()) as SignInRequest;
 
     if (verificationCode === '0000') {
       return HttpResponse.json({

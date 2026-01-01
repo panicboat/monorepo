@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S.E.E.S. Access Terminal</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap');
+
+    :root {
+      --p3-dark-blue: #050a1e;
+      --p3-mid-blue: #153e90;
+      --p3-light-blue: #54c3f0;
+      --p3-cyan: #a7e4ff;
+      --p3-white: #ffffff;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, var(--p3-dark-blue) 0%, #0a1535 50%, #000 100%);
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--p3-white);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 背景の巨大な満月 */
+    .moon-bg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70vh;
+      height: 70vh;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #f0f0f0, #ccc);
+      box-shadow:
+        0 0 60px var(--p3-light-blue),
+        inset -50px -50px 100px rgba(0, 0, 0, 0.5);
+      opacity: 0.8;
+      z-index: 0;
+      /* 月の満ち欠けのようなアニメーション（影の移動） */
+      animation: moonPhase 20s infinite alternate ease-in-out;
+    }
+
+    /* 背景の時計の針装飾 */
+    .clock-hand {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      transform-origin: bottom center;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .hour-hand {
+      width: 4px;
+      height: 25vh;
+      margin-left: -2px;
+      top: 25%;
+      animation: clockTick 60s linear infinite;
+    }
+
+    .minute-hand {
+      width: 2px;
+      height: 35vh;
+      margin-left: -1px;
+      top: 15%;
+      animation: clockTick 10s linear infinite;
+    }
+
+    /* 浮遊する泡（水中の演出） */
+    .bubble {
+      position: absolute;
+      bottom: -50px;
+      background: rgba(84, 195, 240, 0.3);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: rise 10s infinite ease-in;
+      z-index: 2;
+    }
+
+    .b1 {
+      width: 20px;
+      height: 20px;
+      left: 20%;
+      animation-duration: 7s;
+    }
+
+    .b2 {
+      width: 40px;
+      height: 40px;
+      left: 80%;
+      animation-duration: 12s;
+      animation-delay: 2s;
+    }
+
+    .b3 {
+      width: 10px;
+      height: 10px;
+      left: 50%;
+      animation-duration: 15s;
+      animation-delay: 5s;
+    }
+
+    /* メインのログインカード */
+    .login-card {
+      position: relative;
+      z-index: 10;
+      width: 350px;
+      padding: 40px;
+      /* グラスモーフィズム（すりガラス） */
+      background: rgba(10, 20, 50, 0.7);
+      border: 1px solid rgba(84, 195, 240, 0.5);
+      backdrop-filter: blur(10px);
+      border-radius: 4px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+      text-align: center;
+    }
+
+    /* 装飾的な青いライン */
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--p3-light-blue);
+      box-shadow: 0 0 10px var(--p3-light-blue);
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 2.5rem;
+      margin-bottom: 5px;
+      text-shadow: 0 0 10px var(--p3-light-blue);
+      letter-spacing: 2px;
+    }
+
+    p.subtitle {
+      font-size: 0.9rem;
+      letter-spacing: 4px;
+      color: var(--p3-cyan);
+      margin-top: 0;
+      margin-bottom: 40px;
+      opacity: 0.8;
+      text-transform: uppercase;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 30px;
+      text-align: left;
+    }
+
+    input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      color: var(--p3-white);
+      font-size: 1.2rem;
+      font-family: 'Rajdhani', sans-serif;
+      padding: 10px 0;
+      outline: none;
+      transition: all 0.4s ease;
+    }
+
+    input:focus {
+      border-bottom: 1px solid var(--p3-light-blue);
+      box-shadow: 0 10px 20px -10px rgba(84, 195, 240, 0.3);
+    }
+
+    label {
+      position: absolute;
+      top: 10px;
+      left: 0;
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.5);
+      pointer-events: none;
+      transition: 0.4s ease;
+    }
+
+    /* 入力時にラベルを移動 */
+    input:focus~label,
+    input:not(:placeholder-shown)~label {
+      top: -20px;
+      font-size: 0.8rem;
+      color: var(--p3-light-blue);
+      text-shadow: 0 0 5px var(--p3-light-blue);
+    }
+
+    button {
+      background: transparent;
+      color: var(--p3-white);
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      padding: 15px 40px;
+      border: 1px solid var(--p3-white);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+      margin-top: 20px;
+      letter-spacing: 2px;
+    }
+
+    /* ボタンのホバーエフェクト（召喚器の引き金のような鋭さ） */
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--p3-mid-blue);
+      transition: left 0.4s ease;
+      z-index: -1;
+    }
+
+    button:hover {
+      border-color: var(--p3-light-blue);
+      text-shadow: 0 0 8px var(--p3-white);
+      box-shadow: 0 0 20px var(--p3-mid-blue);
+    }
+
+    button:hover::before {
+      left: 0;
+    }
+
+    /* リロード風の回転する円形メニュー装飾 */
+    .circle-deco {
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 80px;
+      height: 80px;
+      border: 1px solid rgba(84, 195, 240, 0.3);
+      border-radius: 50%;
+      border-top: 2px solid var(--p3-light-blue);
+      animation: spin 4s linear infinite;
+    }
+
+    @keyframes clockTick {
+      from {
+        transform: translateX(-50%) rotate(0deg);
+      }
+
+      to {
+        transform: translateX(-50%) rotate(360deg);
+      }
+    }
+
+    @keyframes rise {
+      0% {
+        bottom: -50px;
+        opacity: 0;
+        transform: scale(0.5);
+      }
+
+      50% {
+        opacity: 0.6;
+      }
+
+      100% {
+        bottom: 100vh;
+        opacity: 0;
+        transform: scale(1.2);
+      }
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes moonPhase {
+      0% {
+        box-shadow: 0 0 60px var(--p3-light-blue), inset -20px -20px 50px rgba(0, 0, 0, 0.5);
+      }
+
+      100% {
+        box-shadow: 0 0 80px var(--p3-cyan), inset 20px 20px 50px rgba(0, 0, 0, 0.3);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="moon-bg"></div>
+  <div class="clock-hand hour-hand"></div>
+  <div class="clock-hand minute-hand"></div>
+
+  <div class="bubble b1"></div>
+  <div class="bubble b2"></div>
+  <div class="bubble b3"></div>
+
+  <div class="login-card">
+    <div class="circle-deco"></div>
+    <h1>S.E.E.S.</h1>
+    <p class="subtitle">Specialized Extracurricular Execution Squad</p>
+
+    <form>
+      <div class="input-group">
+        <input type="text" id="username" placeholder=" " required>
+        <label for="username">NAME</label>
+      </div>
+
+      <div class="input-group">
+        <input type="password" id="password" placeholder=" " required>
+        <label for="password">PASSWORD</label>
+      </div>
+
+      <button type="submit">ACCEPT</button>
+    </form>
+  </div>
+
+</body>
+
+</html>

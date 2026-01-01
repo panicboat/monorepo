@@ -64,7 +64,13 @@ export default function CastChatPage({ params }: { params: Promise<{ id: string 
     }
   };
 
-  const handleSendInvitation = async (data: any) => {
+  interface InvitationData {
+    plan: string;
+    slot: string;
+    message: string;
+  }
+
+  const handleSendInvitation = async (data: InvitationData) => {
     // Optimistic update for invitation
     // In reality, we might render a special Invitation Bubble
     const tempId = Math.random().toString();

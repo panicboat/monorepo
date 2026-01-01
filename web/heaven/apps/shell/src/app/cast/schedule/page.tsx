@@ -35,7 +35,7 @@ export default function CastSchedulePage() {
               Schedule
             </h1>
             <p className="text-xs text-slate-500">
-              Manage your "Princess Time"
+              Manage your &quot;Princess Time&quot;
             </p>
           </div>
           <button className="bg-slate-800 p-2 rounded-full text-slate-400 hover:text-white transition">

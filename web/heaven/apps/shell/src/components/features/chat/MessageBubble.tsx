@@ -20,7 +20,7 @@ interface Message {
 interface MessageBubbleProps {
   message: Message;
   isMe: boolean;
-  onInteract?: (type: string, payload?: any) => void;
+  onInteract?: (type: string, payload?: unknown) => void;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMe, onInteract }) => {

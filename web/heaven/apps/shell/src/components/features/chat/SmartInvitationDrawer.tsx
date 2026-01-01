@@ -11,10 +11,16 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface InvitationData {
+  plan: string;
+  slot: string;
+  message: string;
+}
+
 interface SmartInvitationDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  onSend: (data: any) => void;
+  onSend: (data: InvitationData) => void;
 }
 
 export default function SmartInvitationDrawer({

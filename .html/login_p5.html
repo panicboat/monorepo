@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phantom Thieves Login</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+JP:wght@900&display=swap');
+
+    :root {
+      --p5-red: #d31515;
+      --p5-black: #000000;
+      --p5-white: #ffffff;
+      --p5-grey: #333333;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--p5-grey);
+      /* ハーフトーンのような背景パターン */
+      background-image:
+        radial-gradient(var(--p5-black) 15%, transparent 16%),
+        radial-gradient(var(--p5-black) 15%, transparent 16%);
+      background-size: 20px 20px;
+      background-position: 0 0, 10px 10px;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Anton', 'Noto Sans JP', sans-serif;
+      overflow: hidden;
+    }
+
+    /* 背景の装飾（放射状の線） */
+    .bg-rays {
+      position: absolute;
+      width: 150vw;
+      height: 150vh;
+      background: repeating-conic-gradient(from 0deg,
+          var(--p5-grey) 0deg 10deg,
+          #222 10deg 20deg);
+      animation: rotateBg 20s linear infinite;
+      z-index: -1;
+      opacity: 0.5;
+    }
+
+    .login-container {
+      position: relative;
+      width: 350px;
+      /* 全体を少し傾ける */
+      transform: rotate(-3deg);
+    }
+
+    /* ギザギザの赤い背景カード */
+    .card-bg {
+      background-color: var(--p5-red);
+      padding: 40px 30px;
+      position: relative;
+      /* P5特有の不規則な多角形 */
+      clip-path: polygon(2% 0%, 98% 2%, 100% 95%, 95% 100%,
+          5% 98%, 0% 5%);
+      box-shadow: 10px 10px 0px var(--p5-black);
+      transition: transform 0.2s ease;
+    }
+
+    .login-container:hover .card-bg {
+      transform: scale(1.02) rotate(1deg);
+    }
+
+    h1 {
+      margin: 0 0 30px 0;
+      color: var(--p5-white);
+      font-size: 3rem;
+      text-transform: uppercase;
+      text-align: center;
+      text-shadow: 4px 4px 0px var(--p5-black);
+      transform: skewX(-10deg);
+      letter-spacing: 2px;
+      line-height: 1;
+    }
+
+    h1 span {
+      display: inline-block;
+      background: var(--p5-black);
+      padding: 5px 10px;
+      /* 文字ごとのランダムな傾き演出 */
+      transform: rotate(-2deg);
+    }
+
+    .input-group {
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    .input-group label {
+      display: block;
+      color: var(--p5-black);
+      font-weight: 900;
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+      background: var(--p5-white);
+      width: fit-content;
+      padding: 2px 8px;
+      transform: skewX(-10deg) translateX(-10px);
+      border: 2px solid var(--p5-black);
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      background: var(--p5-black);
+      color: var(--p5-white);
+      font-family: 'Anton', sans-serif;
+      font-size: 1.2rem;
+      outline: none;
+      /* 入力欄を不規則な形に */
+      clip-path: polygon(0 0, 100% 2%, 98% 100%, 2% 95%);
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus {
+      background: var(--p5-white);
+      color: var(--p5-black);
+      clip-path: polygon(2% 0, 98% 0, 100% 100%, 0% 100%);
+      transform: scale(1.05);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--p5-black);
+      color: var(--p5-white);
+      font-family: 'Anton', sans-serif;
+      font-size: 1.5rem;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 10px;
+      /* ボタンの形状 */
+      clip-path: polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%);
+      transition: all 0.2s;
+    }
+
+    .submit-btn:hover {
+      background: var(--p5-white);
+      color: var(--p5-red);
+      font-weight: 900;
+      transform: translate(-5px, -5px);
+      box-shadow: 5px 5px 0 var(--p5-black);
+    }
+
+    /* 装飾用の星 */
+    .star {
+      position: absolute;
+      background: var(--p5-white);
+      width: 20px;
+      height: 20px;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      z-index: 10;
+    }
+
+    .s1 {
+      top: -20px;
+      left: -20px;
+      transform: rotate(-15deg);
+    }
+
+    .s2 {
+      bottom: -15px;
+      right: -10px;
+      transform: rotate(15deg) scale(1.5);
+    }
+
+    @keyframes rotateBg {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* 画面全体のゆらぎアニメーション（さらに雰囲気を出したい場合） */
+    .card-bg {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-5px) rotate(0.5deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="bg-rays"></div>
+
+  <div class="login-container">
+    <div class="star s1"></div>
+    <div class="star s2"></div>
+
+    <div class="card-bg">
+      <h1><span>LOGIN</span></h1>
+
+      <form action="#">
+        <div class="input-group">
+          <label for="username">CODENAME</label>
+          <input type="text" id="username" placeholder="JOKER">
+        </div>
+
+        <div class="input-group">
+          <label for="password">PASSWORD</label>
+          <input type="password" id="password" placeholder="******">
+        </div>
+
+        <button type="submit" class="submit-btn">TAKE YOUR HEART</button>
+      </form>
+    </div>
+  </div>
+
+</body>
+
+</html>
