@@ -12,12 +12,18 @@
 ├── clusters/           # Flux CD Cluster definitions
 ├── demo/               # Demo application
 ├── openspec/           # OpenAPI specifications
+|   proto/              # Protocol Buffers definitions
 ├── services/           # Microservices source code & manifests
-│   ├── {service}/      # Service Name
-│   │   ├── src/        # Application Source Code
-│   │   ├── kubernetes/ # Kubernetes Manifests (Base/Overlays)
-│   │   └── terragrunt/ # Terraform & Terragrunt configurations
-└── templates/          # Kubernetes templates
+│   └── {service}/      # Service Name
+│       ├── src/        # Application Source Code
+│       ├── kubernetes/ # Kubernetes Manifests (Base/Overlays)
+│       └── terragrunt/ # Terraform & Terragrunt configurations
+├── templates/          # Kubernetes templates
+└── web/                # Frontend source code & manifests
+    └── {service}/      # Service Name
+        ├── src/        # Application Source Code
+        ├── kubernetes/ # Kubernetes Manifests (Base/Overlays)
+        └── terragrunt/ # Terraform & Terragrunt configurations
 ```
 ## 🛠 Prerequisites
 
@@ -35,10 +41,13 @@
 
 ```mermaid
 graph LR
-    User[User] -- "1. External IP<br>LoadBalancer" --> NginxLB[Cloud LB]
-    NginxLB -- "2. Port 80" --> NginxPod[Nginx Pod<br>Reverse Proxy]
+  User[User - Browser] -- "1. External IP<br>LoadBalancer" --> NginxLB[Cloud Load Balancer]
+  NginxLB -- "2. Port 80<br>TargetGroupBinding" --> NginxPod[Nginx Pod<br>Reverse Proxy]
+
+  subgraph "Kubernetes Cluster"
     NginxPod -- "3. http://cilium-gateway<br>Internal" --> CiliumGw[Cilium Gateway]
     CiliumGw -- "4. HTTPRoute<br>Host: nginx.local" --> AppPod[App Pod<br>services/nginx]
+  end
 ```
 
 ## 📝 Contribution Guide
