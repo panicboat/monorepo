@@ -3,8 +3,8 @@
 Please strictly follow these rules:
 
 - Write code comments in English.
-- Use Japanese for chat and documentation.
-- Use Japanese for implementation plan and walkthrough.
+- Please use Japanese for all output except code whenever possible.
+  - This includes plans and walkthroughs as well.
 - Do not include change descriptions in code comments or method names. Make them understandable for the current state.
 - Do not use comparative expressions like "simple" or "complex" anywhere.
 - Code consistency is important. Ensure modifications maintain consistency with existing code.

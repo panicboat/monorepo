@@ -2,7 +2,7 @@ version: v1
 plugins:
   - plugin: es
     out: ../web/heaven/packages/rpc/src
-    opt: target=ts
+    opt: target=ts,import_extension=none
   - plugin: connect-es
     out: ../web/heaven/packages/rpc/src
-    opt: target=ts
+    opt: target=ts,import_extension=none

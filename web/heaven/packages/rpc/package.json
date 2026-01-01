@@ -6,10 +6,17 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./identity/v1/service_pb": "./src/identity/v1/service_pb.ts",
+    "./identity/v1/service_connect": "./src/identity/v1/service_connect.ts",
     "./*": "./src/*"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "^2.0.0",
-    "@connectrpc/connect": "^2.0.0"
+    "@bufbuild/protobuf": "^1.10.0",
+    "@connectrpc/connect": "^1.4.0"
+  },
+  "devDependencies": {
+    "@bufbuild/buf": "^1.62.1",
+    "@bufbuild/protoc-gen-es": "^1.10.0",
+    "@connectrpc/protoc-gen-connect-es": "^1.4.0"
   }
 }

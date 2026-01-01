@@ -38,4 +38,6 @@ pids
 
 # Temporary files
 *.tmp
-*.temp
+
+# Turbo
+.turbo

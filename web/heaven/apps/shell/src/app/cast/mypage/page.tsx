@@ -218,5 +218,6 @@ export default function CastMyPage() {
 
         <CastBottomNav />
       </div>
-      );
+    </div>
+  );
 }

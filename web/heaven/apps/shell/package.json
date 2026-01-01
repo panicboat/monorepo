@@ -9,8 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@connectrpc/connect": "^2.1.1",
-    "@connectrpc/connect-node": "^2.1.1",
+    "@bufbuild/protobuf": "^1.10.0",
+    "@connectrpc/connect": "^1.4.0",
+    "@connectrpc/connect-node": "^1.4.0",
     "@heaven/rpc": "workspace:*",
     "@web/ui": "workspace:*",
     "clsx": "^2.1.1",
