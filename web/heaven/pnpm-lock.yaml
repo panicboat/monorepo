@@ -101,11 +101,11 @@ importers:
         specifier: ^1.62.1
         version: 1.62.1
       '@bufbuild/protoc-gen-es':
-        specifier: ^1.10.0
-        version: 1.10.1(@bufbuild/protobuf@1.10.1)
+        specifier: ^2.0.0
+        version: 2.10.2(@bufbuild/protobuf@1.10.1)
       '@connectrpc/protoc-gen-connect-es':
         specifier: ^1.4.0
-        version: 1.7.0(@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@1.10.1))(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))
+        version: 1.7.0(@bufbuild/protoc-gen-es@2.10.2(@bufbuild/protobuf@1.10.1))(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))
 
   packages/ui:
     dependencies:
@@ -260,16 +260,6 @@ packages:
 
   '@bufbuild/protobuf@2.10.2':
     resolution: {integrity: sha512-uFsRXwIGyu+r6AMdz+XijIIZJYpoWeYzILt5yZ2d3mCjQrWUTVpVD9WL/jZAbvp+Ed04rOhrsk7FiTcEDseB5A==}
-
-  '@bufbuild/protoc-gen-es@1.10.1':
-    resolution: {integrity: sha512-YADugbvibIdZSb0NGf5OF87IyKTuMvMFZ7vMHgm6pL1SCfDwJ/ZRianTdrPG9hq/gOipK+NwHmXBViyS3J7nxA==}
-    engines: {node: '>=14'}
-    hasBin: true
-    peerDependencies:
-      '@bufbuild/protobuf': 1.10.1
-    peerDependenciesMeta:
-      '@bufbuild/protobuf':
-        optional: true
 
   '@bufbuild/protoc-gen-es@2.10.2':
     resolution: {integrity: sha512-vbjPsuofbtZwZXuOP7Y16CQsxrwCjuRONffmJSBEhoC7PQu/Cabp0+Fu/poLPm9CNM0tDCQA0xvgobgudaEYxQ==}
@@ -2526,9 +2516,9 @@ snapshots:
 
   '@bufbuild/protobuf@2.10.2': {}
 
-  '@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@1.10.1)':
+  '@bufbuild/protoc-gen-es@2.10.2(@bufbuild/protobuf@1.10.1)':
     dependencies:
-      '@bufbuild/protoplugin': 1.10.1
+      '@bufbuild/protoplugin': 2.10.2
     optionalDependencies:
       '@bufbuild/protobuf': 1.10.1
     transitivePeerDependencies:
@@ -2573,12 +2563,12 @@ snapshots:
       '@bufbuild/protobuf': 2.10.2
     optional: true
 
-  '@connectrpc/protoc-gen-connect-es@1.7.0(@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@1.10.1))(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))':
+  '@connectrpc/protoc-gen-connect-es@1.7.0(@bufbuild/protoc-gen-es@2.10.2(@bufbuild/protobuf@1.10.1))(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
       '@bufbuild/protoplugin': 1.10.1
     optionalDependencies:
-      '@bufbuild/protoc-gen-es': 1.10.1(@bufbuild/protobuf@1.10.1)
+      '@bufbuild/protoc-gen-es': 2.10.2(@bufbuild/protobuf@1.10.1)
       '@connectrpc/connect': 1.7.0(@bufbuild/protobuf@1.10.1)
     transitivePeerDependencies:
       - supports-color
