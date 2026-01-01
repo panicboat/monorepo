@@ -1,13 +1,62 @@
-# Monolith
+# Monolith (🌸Hanami + gRPC)
 
-🌸 Welcome to your Hanami app!
+Modules:
+- **Identity Slice**: Authentication (Register, Login) via gRPC.
 
-## Getting started
+## Requirements
+- Ruby 3.4+
+- PostgreSQL
+- Buf (for proto generation)
 
-- Set up the project with `bin/setup`
-- Run the server with `bin/dev`
-- View the app at [http://localhost:2300](http://localhost:2300)
-- Run the tests with `bundle exec rake`
+## Setup
+
+### 1. Install Dependencies
+```bash
+bundle install
+```
+
+### 2. Database Setup
+```bash
+# Update config/app.rb or .env to point to your Postgres
+# Default: sqlite (development) / postgres (production/docker)
+
+bundle exec hanami db migrate
+```
+
+## Running Locally
+
+### Option A: Local Ruby
+```bash
+./bin/grpc
+# Server listening on 0.0.0.0:9001
+```
+
+### Option B: Docker Compose
+```bash
+docker-compose up --build
+```
+
+## Proto Generation
+If you modify `proto/identity/v1/service.proto` from the root:
+```bash
+# From services/monolith directory
+bundle exec grpc_tools_ruby_protoc -I ../../proto --ruby_out=lib --grpc_out=lib ../../proto/identity/v1/service.proto
+```
+
+## Testing
+
+### Automated Specs
+```bash
+# From services/monolith directory
+bundle exec rspec
+```
+
+### Manual Verification
+Use the provided test script:
+```bash
+# From repo root
+ruby tmp/test_client.rb
+```
 
 ## Useful links
 

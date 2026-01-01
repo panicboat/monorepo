@@ -2,15 +2,15 @@
 // @generated from file identity/v1/service.proto (package identity.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file identity/v1/service.proto.
  */
 export const file_identity_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("ChlpZGVudGl0eS92MS9zZXJ2aWNlLnByb3RvEgtpZGVudGl0eS52MSIUChJIZWFsdGhDaGVja1JlcXVlc3QiJQoTSGVhbHRoQ2hlY2tSZXNwb25zZRIOCgZzdGF0dXMYASABKAkyYwoPSWRlbnRpdHlTZXJ2aWNlElAKC0hlYWx0aENoZWNrEh8uaWRlbnRpdHkudjEuSGVhbHRoQ2hlY2tSZXF1ZXN0GiAuaWRlbnRpdHkudjEuSGVhbHRoQ2hlY2tSZXNwb25zZWIGcHJvdG8z");
+  fileDesc("ChlpZGVudGl0eS92MS9zZXJ2aWNlLnByb3RvEgtpZGVudGl0eS52MSIUChJIZWFsdGhDaGVja1JlcXVlc3QiJQoTSGVhbHRoQ2hlY2tSZXNwb25zZRIOCgZzdGF0dXMYASABKAkiUwoPUmVnaXN0ZXJSZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEh8KBHJvbGUYAyABKA4yES5pZGVudGl0eS52MS5Sb2xlIlgKEFJlZ2lzdGVyUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEi4KDHVzZXJfcHJvZmlsZRgCIAEoCzIYLmlkZW50aXR5LnYxLlVzZXJQcm9maWxlIi8KDExvZ2luUmVxdWVzdBINCgVlbWFpbBgBIAEoCRIQCghwYXNzd29yZBgCIAEoCSJVCg1Mb2dpblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIuCgx1c2VyX3Byb2ZpbGUYAiABKAsyGC5pZGVudGl0eS52MS5Vc2VyUHJvZmlsZSJJCgtVc2VyUHJvZmlsZRIKCgJpZBgBIAEoCRINCgVlbWFpbBgCIAEoCRIfCgRyb2xlGAMgASgOMhEuaWRlbnRpdHkudjEuUm9sZSo7CgRSb2xlEhQKEFJPTEVfVU5TUEVDSUZJRUQQABIOCgpST0xFX0dVRVNUEAESDQoJUk9MRV9DQVNUEAIy7AEKD0lkZW50aXR5U2VydmljZRJQCgtIZWFsdGhDaGVjaxIfLmlkZW50aXR5LnYxLkhlYWx0aENoZWNrUmVxdWVzdBogLmlkZW50aXR5LnYxLkhlYWx0aENoZWNrUmVzcG9uc2USRwoIUmVnaXN0ZXISHC5pZGVudGl0eS52MS5SZWdpc3RlclJlcXVlc3QaHS5pZGVudGl0eS52MS5SZWdpc3RlclJlc3BvbnNlEj4KBUxvZ2luEhkuaWRlbnRpdHkudjEuTG9naW5SZXF1ZXN0GhouaWRlbnRpdHkudjEuTG9naW5SZXNwb25zZWIGcHJvdG8z");
 
 /**
  * @generated from message identity.v1.HealthCheckRequest
@@ -43,6 +43,152 @@ export const HealthCheckResponseSchema: GenMessage<HealthCheckResponse> = /*@__P
   messageDesc(file_identity_v1_service, 1);
 
 /**
+ * @generated from message identity.v1.RegisterRequest
+ */
+export type RegisterRequest = Message<"identity.v1.RegisterRequest"> & {
+  /**
+   * @generated from field: string email = 1;
+   */
+  email: string;
+
+  /**
+   * @generated from field: string password = 2;
+   */
+  password: string;
+
+  /**
+   * @generated from field: identity.v1.Role role = 3;
+   */
+  role: Role;
+};
+
+/**
+ * Describes the message identity.v1.RegisterRequest.
+ * Use `create(RegisterRequestSchema)` to create a new message.
+ */
+export const RegisterRequestSchema: GenMessage<RegisterRequest> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 2);
+
+/**
+ * @generated from message identity.v1.RegisterResponse
+ */
+export type RegisterResponse = Message<"identity.v1.RegisterResponse"> & {
+  /**
+   * @generated from field: string access_token = 1;
+   */
+  accessToken: string;
+
+  /**
+   * @generated from field: identity.v1.UserProfile user_profile = 2;
+   */
+  userProfile?: UserProfile;
+};
+
+/**
+ * Describes the message identity.v1.RegisterResponse.
+ * Use `create(RegisterResponseSchema)` to create a new message.
+ */
+export const RegisterResponseSchema: GenMessage<RegisterResponse> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 3);
+
+/**
+ * @generated from message identity.v1.LoginRequest
+ */
+export type LoginRequest = Message<"identity.v1.LoginRequest"> & {
+  /**
+   * @generated from field: string email = 1;
+   */
+  email: string;
+
+  /**
+   * @generated from field: string password = 2;
+   */
+  password: string;
+};
+
+/**
+ * Describes the message identity.v1.LoginRequest.
+ * Use `create(LoginRequestSchema)` to create a new message.
+ */
+export const LoginRequestSchema: GenMessage<LoginRequest> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 4);
+
+/**
+ * @generated from message identity.v1.LoginResponse
+ */
+export type LoginResponse = Message<"identity.v1.LoginResponse"> & {
+  /**
+   * @generated from field: string access_token = 1;
+   */
+  accessToken: string;
+
+  /**
+   * @generated from field: identity.v1.UserProfile user_profile = 2;
+   */
+  userProfile?: UserProfile;
+};
+
+/**
+ * Describes the message identity.v1.LoginResponse.
+ * Use `create(LoginResponseSchema)` to create a new message.
+ */
+export const LoginResponseSchema: GenMessage<LoginResponse> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 5);
+
+/**
+ * @generated from message identity.v1.UserProfile
+ */
+export type UserProfile = Message<"identity.v1.UserProfile"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string email = 2;
+   */
+  email: string;
+
+  /**
+   * @generated from field: identity.v1.Role role = 3;
+   */
+  role: Role;
+};
+
+/**
+ * Describes the message identity.v1.UserProfile.
+ * Use `create(UserProfileSchema)` to create a new message.
+ */
+export const UserProfileSchema: GenMessage<UserProfile> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 6);
+
+/**
+ * @generated from enum identity.v1.Role
+ */
+export enum Role {
+  /**
+   * @generated from enum value: ROLE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: ROLE_GUEST = 1;
+   */
+  GUEST = 1,
+
+  /**
+   * @generated from enum value: ROLE_CAST = 2;
+   */
+  CAST = 2,
+}
+
+/**
+ * Describes the enum identity.v1.Role.
+ */
+export const RoleSchema: GenEnum<Role> = /*@__PURE__*/
+  enumDesc(file_identity_v1_service, 0);
+
+/**
  * @generated from service identity.v1.IdentityService
  */
 export const IdentityService: GenService<{
@@ -53,6 +199,22 @@ export const IdentityService: GenService<{
     methodKind: "unary";
     input: typeof HealthCheckRequestSchema;
     output: typeof HealthCheckResponseSchema;
+  },
+  /**
+   * @generated from rpc identity.v1.IdentityService.Register
+   */
+  register: {
+    methodKind: "unary";
+    input: typeof RegisterRequestSchema;
+    output: typeof RegisterResponseSchema;
+  },
+  /**
+   * @generated from rpc identity.v1.IdentityService.Login
+   */
+  login: {
+    methodKind: "unary";
+    input: typeof LoginRequestSchema;
+    output: typeof LoginResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_identity_v1_service, 0);

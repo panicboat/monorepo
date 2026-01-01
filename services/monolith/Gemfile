@@ -13,6 +13,10 @@ gem "hanami-view", "~> 2.3.0"
 gem "grpc"
 gem "gruf"
 
+gem "jwt"
+gem "bcrypt"
+gem "pg"
+
 gem "dry-types", "~> 1.7"
 gem "dry-operation", ">= 1.0.1"
 gem "puma"

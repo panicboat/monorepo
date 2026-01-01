@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  app:
+    build: .
+    command: ./bin/grpc
+    volumes:
+      - .:/app
+    ports:
+      - "9001:9001"
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/monolith
+      - GRPC_BIND_ADDRESS=0.0.0.0:9001
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=monolith
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

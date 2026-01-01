@@ -4,10 +4,45 @@ package identity.v1;
 
 service IdentityService {
   rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse);
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  rpc Login (LoginRequest) returns (LoginResponse);
 }
 
 message HealthCheckRequest {}
 
 message HealthCheckResponse {
   string status = 1;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  Role role = 3;
+}
+
+message RegisterResponse {
+  string access_token = 1;
+  UserProfile user_profile = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  UserProfile user_profile = 2;
+}
+
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_GUEST = 1;
+  ROLE_CAST = 2;
+}
+
+message UserProfile {
+  string id = 1;
+  string email = 2;
+  Role role = 3;
 }

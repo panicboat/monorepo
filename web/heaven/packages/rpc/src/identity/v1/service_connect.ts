@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { HealthCheckRequest, HealthCheckResponse } from "./service_pb.js";
+import { HealthCheckRequest, HealthCheckResponse, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from "./service_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -19,6 +19,24 @@ export const IdentityService = {
       name: "HealthCheck",
       I: HealthCheckRequest,
       O: HealthCheckResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc identity.v1.IdentityService.Register
+     */
+    register: {
+      name: "Register",
+      I: RegisterRequest,
+      O: RegisterResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc identity.v1.IdentityService.Login
+     */
+    login: {
+      name: "Login",
+      I: LoginRequest,
+      O: LoginResponse,
       kind: MethodKind.Unary,
     },
   }

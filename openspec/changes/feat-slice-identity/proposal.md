@@ -78,6 +78,23 @@ Custom (DB) から Cognito へ移行する場合の最大の壁は **「パス�
     - 他の Slice（Portfolio等）での認証チェックには、Identity Slice が提供する共通の **Interceptor (Middleware)** を使用します。
     - 将来 Cognito に移行する際は、この Interceptor の中身（署名検証ロジック）を「Cognito 公開鍵を使う版」に差し替えるだけで、各 Slice のビジネスロジックには一切影響を与えません。
 
+### 6. User Registration Flow (登録フロー詳細)
+これまでの不明瞭な点を明確化します。
+
+1.  **Unified Registration (単一の登録口):**
+    - Guest も Cast も同じ `Register` RPC を使用します。
+    - Request: `email`, `password`, `role` (`GUEST` or `CAST`)
+    - Response: `access_token` (Auto-login), `user_profile`
+
+2.  **Role Handling (MVP Strategy):**
+    - **Guest:** 誰でも登録可能。
+    - **Cast:**
+        - 本番想定: 管理画面からの招待 or 審査制。
+        - **MVP (今回):** 開発効率優先で、登録時に `role: CAST` を指定すれば即座にキャストとして登録可能とします（BFF側で出し分ける想定）。
+
+3.  **Onboarding:**
+    - 登録直後（Auto-login後）、`role` に応じてフロントエンドが適切なオンボーディング画面（Guest Home vs Cast Dashboard）へ誘導します。
+
 ## What Changes (何を変更するのか)
 
 #### A. Global Pattern (`app/grpc/handlers/identity_handler.rb`)
