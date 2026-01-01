@@ -35,10 +35,13 @@ Add the following to `/etc/hosts`.
 
 ```mermaid
 graph LR
-    User[User] -- "1. External IP<br>LoadBalancer" --> NginxLB[Cloud LB]
-    NginxLB -- "2. Port 80" --> NginxPod[Nginx Pod<br>Reverse Proxy]
+  User[User - Browser] -- "1. External IP<br>LoadBalancer" --> NginxLB[Cloud Load Balancer]
+  NginxLB -- "2. Port 80<br>TargetGroupBinding" --> NginxPod[Nginx Pod<br>Reverse Proxy]
+
+  subgraph "Kubernetes Cluster"
     NginxPod -- "3. http://cilium-gateway<br>Internal" --> CiliumGw[Cilium Gateway]
     CiliumGw -- "4. HTTPRoute<br>Host: nginx.local" --> AppPod[App Pod<br>services/nginx]
+  end
 ```
 
 ## 📝 Contribution Guide
