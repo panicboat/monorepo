@@ -14,8 +14,14 @@ import { motion } from "framer-motion";
 import { RadarChart } from "@/components/features/portfolio/RadarChart";
 import { FloatingFooter } from "@/components/features/portfolio/FloatingFooter";
 
-export default function CastProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+import { getCastProfile } from "@/app/actions/cast";
+import { CastStatus } from "@heaven/rpc/cast/v1/service_pb";
+
+export default async function CastProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const data = await getCastProfile(id);
+  const profile = data?.profile;
+  const plans = data?.plans || [];
 
   return (
     <div className="bg-slate-950 text-slate-200 min-h-screen font-sans antialiased pb-24">
@@ -89,7 +95,7 @@ export default function CastProfilePage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 <h1 className="text-4xl font-bold text-white tracking-wide flex items-center gap-2 font-serif-jp">
-                  美玲
+                  {profile?.name || "Unknown"}
                   <BadgeCheck className="w-6 h-6 text-yellow-500 fill-yellow-500/20" />
                 </h1>
               </div>
@@ -112,11 +118,11 @@ export default function CastProfilePage({ params }: { params: Promise<{ id: stri
 
             <div className="bg-gradient-to-r from-green-900/40 to-slate-900/40 border border-green-800/30 rounded-lg p-3 backdrop-blur-sm">
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                <span className="text-xs font-bold text-green-400">On Air (返信早め)</span>
+                <div className={`w-2 h-2 rounded-full ${profile?.status === CastStatus.ONLINE ? 'bg-green-500' : 'bg-slate-500'}`}></div>
+                <span className="text-xs font-bold text-green-400">{profile?.status === CastStatus.ONLINE ? 'On Air' : 'Offline'}</span>
               </div>
               <p className="text-xs text-slate-200">
-                本日は20時から空きあります✨ 久しぶりの出勤なのでお話したいです！
+                {profile?.bio || "No bio available."}
               </p>
             </div>
           </div>

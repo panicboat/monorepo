@@ -12,11 +12,13 @@ require "gruf"
 # Ensure Proto files are loaded (they are in lib/)
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 require "identity/v1/service_services_pb"
+require "cast/v1/service_services_pb"
 
 # Configure Gruf
 Gruf.configure do |c|
   c.server_binding_url = ENV.fetch("GRPC_BIND_ADDRESS", "0.0.0.0:9001")
   c.services << Identity::Grpc::Handler
+  c.services << Cast::Grpc::Handler
 end
 
 # Start Server

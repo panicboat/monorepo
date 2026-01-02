@@ -8,11 +8,10 @@ ROM::SQL.migration do
     # Only create schema on Postgres (supporting databases that have schema concept)
     is_postgres = adapter_scheme == :postgres
 
+    # Create schema if needed
     run 'CREATE SCHEMA IF NOT EXISTS identity' if is_postgres
 
-    table_name = is_postgres ? Sequel[:identity][:users] : :identity__users
-
-    create_table table_name do
+    create_table(Sequel.qualify(:identity, :users)) do
       primary_key :id
       column :email, String, null: false, unique: true
       column :password_hash, String, null: false
@@ -24,8 +23,7 @@ ROM::SQL.migration do
 
   down do
     is_postgres = adapter_scheme == :postgres
-    table_name = is_postgres ? Sequel[:identity][:users] : :identity__users
-    drop_table table_name
+    drop_table(Sequel.qualify(:identity, :users))
     run 'DROP SCHEMA IF EXISTS identity' if is_postgres
   end
 end

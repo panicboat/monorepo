@@ -4,14 +4,55 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { MoreHorizontal, Clock, Ticket, MessageCircle, Users } from "lucide-react";
 import { CastBottomNav } from "@/components/navigation/CastBottomNav";
+import { useRouter } from "next/navigation";
+import { getCastProfile, updateCastStatus } from "@/app/actions/cast";
+import { CastStatus } from "@heaven/rpc/cast/v1/service_pb";
 
 type Status = "offline" | "asking" | "online" | "tonight";
 
 export default function CastDashboardPage() {
   const [status, setStatus] = useState<Status>("offline");
+  const router = useRouter();
 
-  // In a real app, we would fetch status from API.
-  // For now we keep local state as per demo.
+  // Initial Fetch & Redirect
+  useEffect(() => {
+    const init = async () => {
+      const data = await getCastProfile("1");
+      if (!data || !data.profile) {
+        // Profile not found, redirect to onboarding
+        router.push("/cast/onboarding");
+        return;
+      }
+      // Initial status sync
+      if (data.profile.status) {
+        // Map RPC status to UI status
+        const rpcStatus = data.profile.status;
+        let uiStatus: Status = "offline";
+        if (rpcStatus === CastStatus.ONLINE) uiStatus = "online";
+        else if (rpcStatus === CastStatus.TONIGHT) uiStatus = "tonight";
+        else if (rpcStatus === CastStatus.ASKING) uiStatus = "asking";
+
+        setStatus(uiStatus);
+      }
+    };
+    init();
+  }, [router]);
+
+  // Map UI status to RPC status (Best effort for demo)
+  const mapStatusToRpc = (s: Status): CastStatus => {
+    switch (s) {
+      case "online": return CastStatus.ONLINE;
+      case "offline": return CastStatus.OFFLINE;
+      case "tonight": return CastStatus.TONIGHT;
+      case "asking": return CastStatus.ASKING;
+      default: return CastStatus.UNSPECIFIED;
+    }
+  }
+
+  const handleStatusChange = async (newStatus: Status) => {
+    setStatus(newStatus);
+    await updateCastStatus(mapStatusToRpc(newStatus));
+  };
 
   const getStatusColor = (s: Status) => {
     switch (s) {
@@ -54,7 +95,7 @@ export default function CastDashboardPage() {
             ></div>
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value as Status)}
+              onChange={(e) => handleStatusChange(e.target.value as Status)}
               className={`bg-transparent text-xs font-bold focus:outline-none appearance-none cursor-pointer ${getStatusTextColor(status)}`}
             >
               <option value="offline">⚪ Offline</option>

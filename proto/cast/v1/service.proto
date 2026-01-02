@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package cast.v1;
+
+// import "buf/validate/validate.proto";
+
+service CastService {
+  rpc CreateProfile(CreateProfileRequest) returns (CastProfile);
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+  rpc ListCasts(ListCastsRequest) returns (ListCastsResponse);
+  rpc UpdateStatus(UpdateStatusRequest) returns (UpdateStatusResponse);
+}
+
+enum CastStatus {
+  CAST_STATUS_UNSPECIFIED = 0;
+  CAST_STATUS_OFFLINE = 1;
+  CAST_STATUS_ASKING = 2; // "Asking" or "Break"
+  CAST_STATUS_ONLINE = 3;
+  CAST_STATUS_TONIGHT = 4;
+}
+
+message CreateProfileRequest {
+  string name = 1;
+  string bio = 2;
+  string image_url = 3;
+  repeated CastPlan plans = 4;
+  string user_id = 5;
+}
+
+message CastProfile {
+  string user_id = 1;
+  string name = 2;
+  string bio = 3;
+  string image_url = 4;
+  CastStatus status = 5;
+  // promise_rate should be calculated, maybe not stored here directly or read-only
+  double promise_rate = 6;
+}
+
+message CastPlan {
+  string id = 1;
+  string name = 2;
+  int32 price = 3; // JPY
+  int32 duration_minutes = 4;
+}
+
+message GetProfileRequest {
+  string user_id = 1; // [(buf.validate.field).string.uuid = true];
+}
+
+message GetProfileResponse {
+  CastProfile profile = 1;
+  repeated CastPlan plans = 2;
+}
+
+message UpdateProfileRequest {
+  string name = 1;
+  string bio = 2;
+  string image_url = 3;
+  repeated CastPlan plans = 4; // Full replacement of plans for simplicity
+}
+
+message UpdateProfileResponse {
+  CastProfile profile = 1;
+  repeated CastPlan plans = 2;
+}
+
+message ListCastsRequest {
+  // Add filters if needed, e.g. status
+  CastStatus status_filter = 1;
+}
+
+message ListCastsResponse {
+  message CastItem {
+    CastProfile profile = 1;
+    repeated CastPlan plans = 2;
+  }
+  repeated CastItem items = 1;
+}
+
+message UpdateStatusRequest {
+  CastStatus status = 1;
+}
+
+message UpdateStatusResponse {
+  CastStatus status = 1;
+}

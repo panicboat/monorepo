@@ -2,12 +2,21 @@
 
 Please strictly follow these rules:
 
-- Write code comments in English.
-- Please use Japanese for all output except code whenever possible.
-  - This includes plans and walkthroughs as well.
 - Do not include change descriptions in code comments or method names. Make them understandable for the current state.
 - Do not use comparative expressions like "simple" or "complex" anywhere.
 - Code consistency is important. Ensure modifications maintain consistency with existing code.
+
+# Language Rules
+
+- **OUTPUT MUST BE IN JAPANESE.**
+- **Documents (Proposals, Plans, etc.)**:
+  - **Headers**: MUST be in **English**.
+  - **Content**: MUST be in **Japanese**.
+- Only code (variable names, comments usually) should be English.
+
+# Workflow Rules
+
+- **Architectural Changes**: Any changes that affect the system architecture, including database schema strategies, library replacements, or major pattern changes, MUST be explicitly approved by the user before implementation. Propose these changes in an implementation plan or OpenSpec proposal first.
 
 <!-- OPENSPEC:START -->
 # OpenSpec Instructions
