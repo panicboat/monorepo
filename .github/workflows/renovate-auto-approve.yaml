@@ -22,7 +22,7 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # It doesn't make sense for me to become a reviewer myself.
-      # - name: Auto-approve Renovate PRs
-      #   uses: hmarr/auto-approve-action@v4
-      #   with:
-      #     github-token: ${{ steps.app-token.outputs.token }}
+      - name: Auto-approve Renovate PRs
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}

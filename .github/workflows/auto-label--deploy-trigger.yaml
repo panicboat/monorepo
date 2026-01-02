@@ -1,4 +1,4 @@
-name: 'Auto Label - Label Resolver'
+name: 'Auto Label - Deploy Trigger'
 
 on:
   pull_request:
@@ -69,9 +69,29 @@ jobs:
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
+  deploy-container:
+    name: 'Deploy Container (${{ matrix.target.service }})'
+    needs: deploy-trigger
+    if: |
+      needs.deploy-trigger.outputs.has-targets == 'true' &&
+      contains(needs.deploy-trigger.outputs.targets, '"stack":"docker"') &&
+      matrix.target.stack == 'docker'
+    strategy:
+      matrix:
+        target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
+      fail-fast: false
+    uses: ./.github/workflows/reusable--container-builder.yaml
+    with:
+      image-name: ${{ matrix.target.service }}
+      working-directory: ${{ matrix.target.working_directory }}
+      app-id: ${{ vars.APP_ID }}
+    secrets:
+      private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+
   deployment-summary:
     name: 'Deployment Summary'
-    needs: [deploy-trigger, deploy-terragrunt]
+    needs: [deploy-trigger, deploy-terragrunt, deploy-container]
     if: always() && needs.deploy-trigger.outputs.has-targets == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -84,3 +104,4 @@ jobs:
           echo "Safety Status: ${{ needs.deploy-trigger.outputs.safety-status }}"
           echo "Targets: ${{ needs.deploy-trigger.outputs.targets }}"
           echo "Terragrunt Job Status: ${{ needs.deploy-terragrunt.result }}"
+          echo "Container Job Status: ${{ needs.deploy-container.result }}"

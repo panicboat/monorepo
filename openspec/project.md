@@ -28,3 +28,22 @@
   - 招待状開封 -> Full Screen Overlay
   - 設定/詳細 -> Modal / Slide-in
 - ユーザーの「文脈」と「没入感」を途切れさせない。
+
+## Technical Architecture & Principles
+### 1. Infrastructure as Code & GitOps
+- すべてのインフラ構成とデプロイメントパイプラインはコードで定義され、 Git で管理される。
+- **Scope:** Kubernetes マニフェスト, Terraform, GitHub Actions ワークフローを含む。これらへの変更は「新しい Capability の導入（Add/Modify Requirements）」として扱う。
+
+### 2. Verified Automation
+- 手動操作を排除し、自動化されたワークフロー（Actions）を通じて検証・デプロイを行う。
+- 新しい自動化の導入は、新しい「機能（Capability）」と同義とみなす。
+
+### 3. Monorepo Structure
+- `services/*`, `web/*`, `platform/*` の各領域における変更は、それぞれの領域の契約（Spec）に従う。
+
+## Workflow Guidelines
+### OpenSpec Lifecycle
+- **Trigger:** 新しい機能、インフラ、ワークフローの追加時には必ず OpenSpec プロセス（Proposal -> Specs）を経由すること。
+- **Review:** 実装完了後、必ずユーザーによるレビューと承認を受けること。
+- **Archive:** 承認・デプロイ（マージ）完了後、**必ず** `openspec archive <change-id>` を実行し、変更提案を「仕様（Specs）」として確定させること。
+    - **Note:** アーカイブを忘れると仕様と実装が乖離するため、これは完了条件の必須項目である。
