@@ -49,7 +49,7 @@ export async function registerAction(prevState: unknown, formData: FormData) {
     return { error: 'Failed to register' };
   }
 
-  redirect('/home');
+  redirect('/guest/home');
 }
 
 export async function loginAction(prevState: unknown, formData: FormData) {
@@ -88,5 +88,5 @@ export async function loginAction(prevState: unknown, formData: FormData) {
     return { error: 'Failed to login' };
   }
 
-  redirect('/home');
+  redirect('/guest/home');
 }
