@@ -65,5 +65,46 @@ Gateway でのオフロードが整うまでの間、または Gateway を通過
 - **Shared Kernel の真の価値**: コードそのものではなく、**「認証仕様（トークン形式、署名鍵の配布方法、検証ルール）」の標準化**にあります。
 - 現在の Ruby 実装はこの「標準仕様」の最初のリファレンス実装（Reference Implementation）と位置付けます。将来 Go/Rust 等でサービスを書く際は、この共通仕様に従って各言語の薄い Middleware を実装します。
 
-**結論**:
-当面は Ruby モノリスであるため、Shared Lib (Middleware) パターンを採用します。これは将来的に **Cilium Gateway によるオフロード** へ移行する際も、アプリ側は「ヘッダー/コンテキストから ID を取る」というインターフェースを変えることなく、インフラ側の設定変更のみで移行可能です。
+### 6. Implementation Detail: Hybrid Interceptor
+Cilium Gateway 導入前後でコード変更を不要にするため、バックエンドの Interceptor は「Header 優先、JWT fallback」のハイブリッド構成で実装します。
+gRPC の `metadata` は HTTP/2 ヘッダーにマッピングされるため、Cilium (Envoy) が付与した `x-user-id` ヘッダーは、そのまま `request.metadata['x-user-id']` として取得可能です。
+
+```ruby
+class AuthenticationInterceptor < Gruf::Interceptors::ServerInterceptor
+  def call
+    user_id = extract_user_id
+    # 認証必須かどうかはRPCごとに制御、あるいはここではコンテキストセットのみ
+    if user_id
+       request.context[:current_user_id] = user_id
+       Monolith::Current.user_id = user_id # Helper for easy access
+    end
+
+    yield
+  end
+
+  private
+
+  def extract_user_id
+    # Case 1: Gateway Offloading (Future / Cilium)
+    # GatewayがJWTを検証し、信頼できるヘッダーとして付与した場合
+    # 注意: このヘッダーは外部からの偽装を防ぐため、Gatewayでのみ付与されるようNetworkPolicy等で保護が必要
+    if (uid = request.metadata['x-user-id'])
+      return uid
+    end
+
+    # Case 2: Direct JWT (Current / App Middleware)
+    # アプリ側でJWTを検証する場合
+    if (token = request.metadata['authorization']&.sub('Bearer ', ''))
+      # TODO: Validate JWT signature
+      payload = JWT.decode(token, ENV['JWT_PUBLIC_KEY'], true, algorithm: 'RS256').first
+      return payload['sub']
+    rescue JWT::DecodeError
+      nil
+    end
+
+    nil
+  end
+end
+```
+
+これにより、インフラ側で認証オフロードが有効になった瞬間から、バックエンドは自動的に Case 1 のパスを利用し始めます。アプリケーションロジックへの影響は一切ありません。
