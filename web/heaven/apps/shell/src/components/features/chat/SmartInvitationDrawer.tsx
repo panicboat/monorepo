@@ -4,14 +4,18 @@ import React, { useState } from "react";
 import {
   Sparkles,
   Calendar,
-  Ticket,
   Send,
-  MoreVertical,
   ChevronLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface InvitationData {
+export interface Plan {
+  id: string;
+  name: string;
+  price: number;
+}
+
+export interface InvitationData {
   plan: string;
   slot: string;
   message: string;
@@ -21,14 +25,16 @@ interface SmartInvitationDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onSend: (data: InvitationData) => void;
+  plans: Plan[];
 }
 
 export default function SmartInvitationDrawer({
   isOpen,
   onClose,
   onSend,
+  plans,
 }: SmartInvitationDrawerProps) {
-  const [selectedPlan, setSelectedPlan] = useState<string>("vip");
+  const [selectedPlanId, setSelectedPlanId] = useState<string>(plans[0]?.id || "");
   const [selectedSlot, setSelectedSlot] = useState<string>("today");
   const [view, setView] = useState<"main" | "picker">("main");
 
@@ -37,8 +43,9 @@ export default function SmartInvitationDrawer({
   const [customTime, setCustomTime] = useState<string | null>(null);
 
   const handleSend = () => {
+    const plan = plans.find(p => p.id === selectedPlanId);
     onSend({
-      plan: selectedPlan,
+      plan: plan?.name || "Unknown Plan",
       slot: selectedSlot === "custom" ? `Dec ${customDate} ${customTime}` : selectedSlot,
       message: "楽しみにしてます✨",
     });
@@ -184,71 +191,45 @@ export default function SmartInvitationDrawer({
                   </label>
 
                   <div className="space-y-2">
-                    <div
-                      onClick={() => setSelectedPlan("vip")}
-                      className={`border rounded-xl p-3 flex justify-between items-center cursor-pointer transition
-                        ${selectedPlan === "vip"
-                          ? "bg-yellow-900/10 border-yellow-600"
-                          : "bg-slate-800/50 border-slate-800"
-                        }
-                      `}
-                    >
-                      <div>
-                        <p
-                          className={`text-sm font-bold ${selectedPlan === "vip" ? "text-white" : "text-slate-300"
-                            }`}
-                        >
-                          90分 VIPコース
-                        </p>
-                        <p className="text-xs text-yellow-600">¥35,000</p>
-                      </div>
+                    {plans.map((plan) => (
                       <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
-                          ${selectedPlan === "vip"
-                            ? "border-yellow-500"
-                            : "border-slate-600"
+                        key={plan.id}
+                        onClick={() => setSelectedPlanId(plan.id)}
+                        className={`border rounded-xl p-3 flex justify-between items-center cursor-pointer transition
+                          ${selectedPlanId === plan.id
+                            ? "bg-yellow-900/10 border-yellow-600"
+                            : "bg-slate-800/50 border-slate-800 opacity-70"
                           }
                         `}
                       >
-                        {selectedPlan === "vip" && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div
-                      onClick={() => setSelectedPlan("short")}
-                      className={`border rounded-xl p-3 flex justify-between items-center cursor-pointer transition
-                        ${selectedPlan === "short"
-                          ? "bg-yellow-900/10 border-yellow-600"
-                          : "bg-slate-800/50 border-slate-800 opacity-70"
-                        }
-                      `}
-                    >
-                      <div>
-                        <p
-                          className={`text-sm font-bold ${selectedPlan === "short"
-                            ? "text-white"
-                            : "text-slate-300"
-                            }`}
+                        <div>
+                          <p
+                            className={`text-sm font-bold ${selectedPlanId === plan.id
+                              ? "text-white"
+                              : "text-slate-300"
+                              }`}
+                          >
+                            {plan.name}
+                          </p>
+                          <p className="text-xs text-slate-500">¥{plan.price.toLocaleString()}</p>
+                        </div>
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
+                            ${selectedPlanId === plan.id
+                              ? "border-yellow-500"
+                              : "border-slate-600"
+                            }
+                          `}
                         >
-                          60分 ショート
-                        </p>
-                        <p className="text-xs text-slate-500">¥20,000</p>
+                          {selectedPlanId === plan.id && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
+                          )}
+                        </div>
                       </div>
-                      <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center
-                          ${selectedPlan === "short"
-                            ? "border-yellow-500"
-                            : "border-slate-600"
-                          }
-                        `}
-                      >
-                        {selectedPlan === "short" && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
-                        )}
-                      </div>
-                    </div>
+                    ))}
+                    {plans.length === 0 && (
+                      <p className="text-xs text-slate-500">利用可能なプランがありません</p>
+                    )}
                   </div>
                 </div>
 

@@ -8,6 +8,8 @@
     ".": "./src/index.ts",
     "./identity/v1/service_pb": "./src/identity/v1/service_pb.ts",
     "./identity/v1/service_connect": "./src/identity/v1/service_connect.ts",
+    "./cast/v1/service_pb": "./src/cast/v1/service_pb.ts",
+    "./cast/v1/service_connect": "./src/cast/v1/service_connect.ts",
     "./*": "./src/*"
   },
   "dependencies": {

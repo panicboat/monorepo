@@ -2,10 +2,13 @@ syntax = "proto3";
 
 package identity.v1;
 
+import "google/protobuf/empty.proto";
+
 service IdentityService {
   rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse);
   rpc Register (RegisterRequest) returns (RegisterResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
+  rpc GetCurrentUser (google.protobuf.Empty) returns (UserProfile);
 }
 
 message HealthCheckRequest {}

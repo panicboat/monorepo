@@ -9,7 +9,8 @@ import { redirect } from 'next/navigation';
 export async function registerAction(prevState: unknown, formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
-  // Defaulting to Role.GUEST equivalent (1) if not verified.
+  // Defaulting to Role.CAST for development focus as requested.
+  // TODO: Implement Role selection in UI for production.
 
   if (!email || !password) {
     return { error: 'Email and password are required' };
@@ -18,7 +19,7 @@ export async function registerAction(prevState: unknown, formData: FormData) {
   const req = new RegisterRequest({
     email,
     password,
-    role: Role.GUEST,
+    role: Role.CAST,
   });
 
   let redirectPath = '/guest/home';

@@ -1,13 +1,16 @@
 module Identity
   module Relations
     class Users < Identity::DB::Relation
-      TABLE_NAME = if ENV['DATABASE_URL']&.start_with?('postgres')
-                     Sequel[:identity][:users]
-                   else
-                     :identity__users
-                   end
+      schema(:"identity__users", as: :users, infer: false) do
+        attribute :id, Types::Integer
+        attribute :email, Types::String
+        attribute :password_hash, Types::String
+        attribute :role, Types::String
+        attribute :created_at, Types::Time
+        attribute :updated_at, Types::Time
 
-      schema(TABLE_NAME, as: :users, infer: true)
+        primary_key :id
+      end
     end
   end
 end

@@ -3,16 +3,23 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera } from "lucide-react";
+import { createProfileAction } from "@/app/actions/cast";
 
 interface OnboardingWizardProps {
-  onFinish: () => void;
+  onFinish?: () => void;
 }
 
 export default function OnboardingWizard({ onFinish }: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isVisible, setIsVisible] = useState(true);
 
-  // Animation variants for steps
+  // Form State
+  const [name, setName] = useState("美玲");
+  const [planName, setPlanName] = useState("90分コース");
+  const [planDuration, setPlanDuration] = useState(90);
+  const [planPrice, setPlanPrice] = useState(30000);
+
+  // Animation variants
   const variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? "100%" : "-100%",
@@ -29,19 +36,23 @@ export default function OnboardingWizard({ onFinish }: OnboardingWizardProps) {
     }),
   };
 
+  const handleSubmit = async () => {
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("planName", planName);
+    formData.append("planDuration", planDuration.toString());
+    formData.append("planPrice", planPrice.toString());
+
+    await createProfileAction(formData);
+  };
+
   const handleNext = () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
-      handleFinish();
+      // Final Step
+      handleSubmit();
     }
-  };
-
-  const handleFinish = () => {
-    setIsVisible(false);
-    setTimeout(() => {
-      onFinish();
-    }, 800);
   };
 
   return (
@@ -97,7 +108,8 @@ export default function OnboardingWizard({ onFinish }: OnboardingWizardProps) {
                   </div>
                   <input
                     type="text"
-                    defaultValue="美玲"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="w-full bg-slate-900 border-b border-slate-700 p-3 text-center text-xl text-white focus:outline-none focus:border-yellow-500 transition mb-8"
                     placeholder="源氏名"
                   />
@@ -114,7 +126,7 @@ export default function OnboardingWizard({ onFinish }: OnboardingWizardProps) {
               {currentStep === 2 && (
                 <motion.div
                   key="step2"
-                  custom={1} // direction always forward for this demo
+                  custom={1}
                   variants={variants}
                   initial="enter"
                   animate="center"
@@ -178,7 +190,8 @@ export default function OnboardingWizard({ onFinish }: OnboardingWizardProps) {
                       </label>
                       <input
                         type="text"
-                        defaultValue="90分コース"
+                        value={planName}
+                        onChange={(e) => setPlanName(e.target.value)}
                         className="w-full bg-transparent border-b border-slate-700 py-1 text-white text-sm focus:outline-none focus:border-yellow-500"
                       />
                     </div>
@@ -189,7 +202,8 @@ export default function OnboardingWizard({ onFinish }: OnboardingWizardProps) {
                         </label>
                         <input
                           type="number"
-                          defaultValue="90"
+                          value={planDuration}
+                          onChange={(e) => setPlanDuration(parseInt(e.target.value))}
                           className="w-full bg-transparent border-b border-slate-700 py-1 text-white text-sm focus:outline-none focus:border-yellow-500"
                         />
                       </div>
@@ -199,7 +213,8 @@ export default function OnboardingWizard({ onFinish }: OnboardingWizardProps) {
                         </label>
                         <input
                           type="number"
-                          defaultValue="30000"
+                          value={planPrice}
+                          onChange={(e) => setPlanPrice(parseInt(e.target.value))}
                           className="w-full bg-transparent border-b border-slate-700 py-1 text-white text-sm focus:outline-none focus:border-yellow-500"
                         />
                       </div>

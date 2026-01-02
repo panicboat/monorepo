@@ -16,6 +16,9 @@ interface Message {
 
 import { RitualModal } from "@/components/features/invitation/RitualModal";
 import { SealedBadge } from "@/components/features/invitation/SealedBadge";
+import SmartInvitationDrawer, { InvitationData, Plan } from "@/components/features/chat/SmartInvitationDrawer";
+import { getCastProfile } from "@/app/actions/cast";
+import { Ticket } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ChatRoomPage({ params }: { params: Promise<{ id: string }> }) {
@@ -27,7 +30,20 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
   const [isRitualOpen, setIsRitualOpen] = useState(false);
   const [isRitualSealed, setIsRitualSealed] = useState(false);
 
+  // Invitation State
+  const [isInvitationDrawerOpen, setIsInvitationDrawerOpen] = useState(false);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [castName, setCastName] = useState("美玲"); // Default or from fetch
+
   useEffect(() => {
+    // Fetch Cast Profile & Plans
+    getCastProfile(id).then(data => {
+      if (data) {
+        setPlans(data.plans);
+        if (data.profile.name) setCastName(data.profile.name);
+      }
+    });
+
     fetch(`/api/chats/${id}/messages`)
       .then(res => res.json())
       .then(data => {
@@ -86,9 +102,14 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
       <header className="h-14 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md flex items-center px-4 justify-between z-10">
         <Link href="/guest/chats"><ChevronLeft className="text-slate-400 w-6 h-6 hover:text-white transition" /></Link>
         <div className="flex flex-col items-center">
-          <span className="font-bold text-white text-sm">美玲</span>
+          <span className="font-bold text-white text-sm">{castName}</span>
         </div>
-        <button><MoreVertical className="text-slate-400 w-5 h-5" /></button>
+        <div className="flex gap-2">
+          <button onClick={() => setIsInvitationDrawerOpen(true)} className="text-yellow-500 hover:text-yellow-400 transition">
+            <Ticket className="w-5 h-5" />
+          </button>
+          <button><MoreVertical className="text-slate-400 w-5 h-5" /></button>
+        </div>
       </header>
 
       {/* Messages */}
@@ -117,6 +138,17 @@ export default function ChatRoomPage({ params }: { params: Promise<{ id: string 
       </main>
 
       <ChatInput onSend={handleSend} />
+
+      <SmartInvitationDrawer
+        isOpen={isInvitationDrawerOpen}
+        onClose={() => setIsInvitationDrawerOpen(false)}
+        onSend={(data) => {
+          // Send logic
+          handleSend(`Invitation: ${data.plan} at ${data.slot}`);
+          // Also trigger internal message type if needed, but for now simple text representation
+        }}
+        plans={plans}
+      />
 
       <RitualModal
         isOpen={isRitualOpen}
