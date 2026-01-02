@@ -21,6 +21,8 @@ export async function registerAction(prevState: unknown, formData: FormData) {
     role: Role.GUEST,
   });
 
+  let redirectPath = '/guest/home';
+
   try {
     const res = await identityClient.register(req);
     // res.accessToken contains the JWT (if any)
@@ -36,7 +38,9 @@ export async function registerAction(prevState: unknown, formData: FormData) {
       });
     }
 
-    // Redirect to home or onboarding
+    if (res.userProfile?.role === Role.CAST) {
+      redirectPath = '/cast/dashboard';
+    }
   } catch (err: unknown) {
     if (err instanceof ConnectError) {
       return { error: err.message };
@@ -49,7 +53,7 @@ export async function registerAction(prevState: unknown, formData: FormData) {
     return { error: 'Failed to register' };
   }
 
-  redirect('/guest/home');
+  redirect(redirectPath);
 }
 
 export async function loginAction(prevState: unknown, formData: FormData) {
@@ -65,6 +69,8 @@ export async function loginAction(prevState: unknown, formData: FormData) {
     password,
   });
 
+  let redirectPath = '/guest/home';
+
   try {
     const res = await identityClient.login(req);
 
@@ -75,6 +81,10 @@ export async function loginAction(prevState: unknown, formData: FormData) {
         secure: process.env.NODE_ENV === 'production',
         maxAge: 60 * 60 * 24 * 7
       });
+    }
+
+    if (res.userProfile?.role === Role.CAST) {
+      redirectPath = '/cast/dashboard';
     }
   } catch (err: unknown) {
     if (err instanceof ConnectError) {
@@ -88,5 +98,5 @@ export async function loginAction(prevState: unknown, formData: FormData) {
     return { error: 'Failed to login' };
   }
 
-  redirect('/guest/home');
+  redirect(redirectPath);
 }
