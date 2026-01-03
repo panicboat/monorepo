@@ -12,6 +12,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  packages: write
   pull-requests: write
 
 jobs:
@@ -74,15 +75,14 @@ jobs:
     needs: deploy-trigger
     if: |
       needs.deploy-trigger.outputs.has-targets == 'true' &&
-      contains(needs.deploy-trigger.outputs.targets, '"stack":"docker"') &&
-      matrix.target.stack == 'docker'
+      contains(needs.deploy-trigger.outputs.targets, '"stack":"docker"')
     strategy:
       matrix:
         target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
       fail-fast: false
     uses: ./.github/workflows/reusable--container-builder.yaml
     with:
-      image-name: ${{ matrix.target.service }}
+      image-name: ${{ matrix.target.stack == 'docker' && matrix.target.service || '' }}
       working-directory: ${{ matrix.target.working_directory }}
       app-id: ${{ vars.APP_ID }}
     secrets:

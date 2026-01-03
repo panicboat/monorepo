@@ -1,7 +1,7 @@
 # Project Definition
 
 ## Project Overview
-- **Name:** PrivateHeaven(仮)
+- **Name:** Nyx
 - **Vision:** "店舗"から"個"へ。流動する資産を、確固たる価値へ。
 - **Mission:** キャスト個人の「信用」と「魅力」を資産化し、予約プロセスを「情緒的な儀式」へ昇華させる。
 

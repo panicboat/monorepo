@@ -2,7 +2,7 @@
 
 ## Purpose
 ゲストユーザー向けのメインインターフェース仕様。
-「Private Heaven」の世界観を維持しつつ、Next.js App Router 上で実装する。
+「Nyx」の世界観を維持しつつ、Next.js App Router 上で実装する。
 
 ## Requirements
 ### Requirement: Global Navigation
@@ -17,7 +17,7 @@
 アプリケーションは `/home` に発見機能を持つホーム画面を表示しなければならない (MUST)。
 
 #### Scenario: Home Layout
-- **Header**: "PrivateHeaven" ロゴを表示しなければならない (MUST)。
+- **Header**: "Nyx" ロゴを表示しなければならない (MUST)。
 - **Tabs**: `Discover` と `Following` の切り替えができなければならない (MUST)。
 - **List**: キャストのアップデートフィード（モックデータ）を表示しなければならない (MUST)。
 
