@@ -82,7 +82,7 @@ jobs:
       fail-fast: false
     uses: ./.github/workflows/reusable--container-builder.yaml
     with:
-      image-name: ${{ matrix.target.service }}
+      image-name: ${{ matrix.target.stack == 'docker' && matrix.target.service || '' }}
       working-directory: ${{ matrix.target.working_directory }}
       app-id: ${{ vars.APP_ID }}
     secrets:
