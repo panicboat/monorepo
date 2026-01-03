@@ -12,7 +12,7 @@
     "@bufbuild/protobuf": "^1.10.0",
     "@connectrpc/connect": "^1.6.0",
     "@connectrpc/connect-node": "^1.6.0",
-    "@heaven/rpc": "workspace:*",
+    "@nyx/rpc": "workspace:*",
     "@web/ui": "workspace:*",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.26",

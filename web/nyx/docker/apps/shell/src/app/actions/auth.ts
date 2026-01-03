@@ -1,7 +1,7 @@
 'use server';
 
 import { identityClient } from '@/lib/rpc';
-import { RegisterRequest, LoginRequest, Role } from '@heaven/rpc/identity/v1/service_pb';
+import { RegisterRequest, LoginRequest, Role } from '@nyx/rpc/identity/v1/service_pb';
 import { ConnectError } from '@connectrpc/connect';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';

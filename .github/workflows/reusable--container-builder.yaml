@@ -8,15 +8,9 @@ on:
         type: string
         description: 'Name of the image (e.g. service-name)'
       working-directory:
-        required: false
+        required: true
         type: string
-        default: '.'
         description: 'Directory containing the Dockerfile'
-      dockerfile-path:
-        required: false
-        type: string
-        default: 'Dockerfile'
-        description: 'Path to Dockerfile relative to working-directory'
       app-id:
         required: true
         type: string
@@ -42,38 +36,9 @@ jobs:
           private-key: ${{ secrets.private-key }}
           owner: ${{ github.repository_owner }}
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Build and push container with custom tags
+        uses: panicboat/deploy-actions/container-builder@main
         with:
           token: ${{ steps.app-token.outputs.token }}
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ steps.app-token.outputs.token }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}/${{ inputs.image-name }}
-          tags: |
-            type=sha
-            type=ref,event=pr
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ inputs.working-directory }}
-          file: ${{ inputs.working-directory }}/${{ inputs.dockerfile-path }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          image-name: ${{ inputs.image-name }}
+          working-directory: ${{ inputs.working-directory }}

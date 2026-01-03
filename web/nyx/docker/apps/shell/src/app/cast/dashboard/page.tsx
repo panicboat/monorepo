@@ -6,7 +6,7 @@ import { MoreHorizontal, Clock, Ticket, MessageCircle, Users } from "lucide-reac
 import { CastBottomNav } from "@/components/navigation/CastBottomNav";
 import { useRouter } from "next/navigation";
 import { getCastProfile, updateCastStatus } from "@/app/actions/cast";
-import { CastStatus } from "@heaven/rpc/cast/v1/service_pb";
+import { CastStatus } from "@nyx/rpc/cast/v1/service_pb";
 
 type Status = "offline" | "asking" | "online" | "tonight";
 

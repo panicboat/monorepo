@@ -42,9 +42,7 @@ export default function LoginGatePage() {
                 className="text-3xl font-bold text-white tracking-widest"
                 style={{ fontFamily: '"Yu Mincho", "Hiragino Mincho ProN", serif' }}
               >
-                PRIVATE
-                <br />
-                HEAVEN
+                NYX
               </h1>
               <p className="text-[10px] text-yellow-600/70 mt-3 tracking-[0.3em] uppercase">
                 Invitation Only

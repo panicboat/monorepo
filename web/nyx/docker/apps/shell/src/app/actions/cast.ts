@@ -1,7 +1,7 @@
 "use server";
 
 import { castClient } from "@/lib/rpc";
-import { GetProfileRequest, ListCastsRequest, CastStatus, UpdateStatusRequest, CreateProfileRequest, GetProfileResponse, ListCastsResponse, UpdateStatusResponse } from "@heaven/rpc/cast/v1/service_pb";
+import { GetProfileRequest, ListCastsRequest, CastStatus, UpdateStatusRequest, CreateProfileRequest, GetProfileResponse, ListCastsResponse, UpdateStatusResponse } from "@nyx/rpc/cast/v1/service_pb";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";

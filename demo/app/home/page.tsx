@@ -21,7 +21,7 @@ export default function UserHomePage() {
               className="font-bold text-lg text-yellow-500 font-serif"
               style={{ fontFamily: '"Yu Mincho", serif' }}
             >
-              PrivateHeaven
+              Nyx
             </span>
             <div className="flex items-center gap-4">
               <Link href="/chats">

@@ -15,9 +15,7 @@ export default function UserHomePage() {
       {/* Header */}
       <header className="sticky top-0 bg-slate-950/90 backdrop-blur z-20 border-b border-slate-800">
         <div className="flex items-center justify-between px-4 h-14">
-          <span className="font-bold text-lg text-yellow-500 font-serif-jp">
-            PrivateHeaven
-          </span>
+          Nyx
           <div className="flex items-center gap-4">
             <Link href="/guest/chats">
               <MessageSquare className="text-slate-400 w-5 h-5 cursor-pointer hover:text-white transition" />

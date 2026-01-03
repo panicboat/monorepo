@@ -1,0 +1,50 @@
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="iosBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e1b4b;stop-opacity:1" /> <stop offset="100%" style="stop-color:#312e81;stop-opacity:1" /> </linearGradient>
+
+    <linearGradient id="liquidRich" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:0.9" />
+    </linearGradient>
+
+    <radialGradient id="pinSphere" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#ff6b81;stop-opacity:1" /> <stop offset="50%" style="stop-color:#e11d48;stop-opacity:1" /> <stop offset="100%" style="stop-color:#881337;stop-opacity:1" /> </radialGradient>
+
+    <linearGradient id="glassReflection" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.1" />
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.1" />
+    </linearGradient>
+
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+      <feBlend in="SourceGraphic" in2="goo" />
+    </filter>
+  </defs>
+
+  <rect x="10" y="10" width="280" height="280" rx="60" ry="60" fill="url(#iosBg)" />
+
+  <g transform="translate(20, 20) scale(0.85)">
+    <path d="M50 60 L150 210 L250 60" stroke="#4f46e5" stroke-width="8" fill="none" opacity="0.3" filter="url(#softGlow)"/>
+
+    <path d="M75 90 L150 200 L225 90 Z" fill="url(#liquidRich)" opacity="0.9" />
+    <ellipse cx="150" cy="90" rx="75" ry="5" fill="#ffffff" opacity="0.2" />
+
+    <g stroke="url(#glassReflection)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M50 60 L150 210 L250 60" />
+      <line x1="150" y1="210" x2="150" y2="270" />
+      <line x1="110" y1="270" x2="190" y2="270" />
+    </g>
+    <path d="M55 65 L150 205" stroke="#ffffff" stroke-width="1" opacity="0.6" fill="none" />
+
+    <g transform="translate(160, 40) rotate(15)" filter="url(#softGlow)">
+      <path d="M0 28 L0 55" stroke="#e11d48" stroke-width="3" stroke-linecap="round"/>
+
+      <path d="M0 0 C -18 0, -28 12, -28 28 C -28 45, 0 70, 0 70 C 0 70, 28 45, 28 28 C 28 12, 18 0, 0 0 Z" fill="url(#pinSphere)"/>
+
+      <ellipse cx="-8" cy="15" rx="8" ry="12" fill="#ffffff" opacity="0.5" transform="rotate(-20)" />
+    </g>
+  </g>
+</svg>

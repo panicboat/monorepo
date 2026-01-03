@@ -32,7 +32,7 @@ importers:
       '@connectrpc/connect-node':
         specifier: ^1.6.0
         version: 1.7.0(@bufbuild/protobuf@1.10.1)(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))
-      '@heaven/rpc':
+      '@nyx/rpc':
         specifier: workspace:*
         version: link:../../packages/rpc
       '@web/ui':

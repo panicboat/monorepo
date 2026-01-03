@@ -55,9 +55,7 @@ export default function LoginGatePage() {
                   className="text-3xl font-bold text-white tracking-widest"
                   style={{ fontFamily: '"Yu Mincho", "Hiragino Mincho ProN", serif' }}
                 >
-                  PRIVATE
-                  <br />
-                  HEAVEN
+                  NYX
                 </h1>
                 <p className="text-[10px] text-yellow-600/70 mt-3 tracking-[0.3em] uppercase">
                   Invitation Only
@@ -69,8 +67,8 @@ export default function LoginGatePage() {
                 <button
                   onClick={() => setRole("guest")}
                   className={`flex-1 py-3 rounded-lg text-xs font-bold transition-all duration-300 ${role === "guest"
-                      ? "text-black bg-white shadow"
-                      : "text-slate-500 hover:text-white"
+                    ? "text-black bg-white shadow"
+                    : "text-slate-500 hover:text-white"
                     }`}
                 >
                   Guest
@@ -78,8 +76,8 @@ export default function LoginGatePage() {
                 <button
                   onClick={() => setRole("cast")}
                   className={`flex-1 py-3 rounded-lg text-xs font-bold transition-all duration-300 ${role === "cast"
-                      ? "text-black bg-yellow-500 shadow"
-                      : "text-slate-500 hover:text-white"
+                    ? "text-black bg-yellow-500 shadow"
+                    : "text-slate-500 hover:text-white"
                     }`}
                 >
                   Cast

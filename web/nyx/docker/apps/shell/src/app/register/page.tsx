@@ -18,9 +18,7 @@ export default function RegisterPage() {
             <h1 className="text-2xl font-bold text-white tracking-widest">
               REGISTER
             </h1>
-            <p className="text-[10px] text-yellow-600/70 mt-2 tracking-[0.3em] uppercase">
-              Join Private Heaven
-            </p>
+            Join Nyx
           </div>
 
           <form action={formAction} className="w-full space-y-4">

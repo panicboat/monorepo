@@ -5,7 +5,7 @@ export default function IndexPage() {
     <div className="bg-slate-950 text-slate-200 min-h-screen flex flex-col items-center justify-center p-6 font-sans">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-white tracking-wider font-serif">PrivateHeaven <span className="text-yellow-500">Dev</span></h1>
+          <h1 className="text-3xl font-bold text-white tracking-wider font-serif">Nyx <span className="text-yellow-500">Dev</span></h1>
           <p className="text-slate-400 text-sm">Design System & Route Index</p>
         </div>
 
