@@ -18,23 +18,16 @@ directory_conventions:
   - root: services/{service}
     stacks:
       - name: docker
-        directory: src
+        directory: docker
       - name: terragrunt
         directory: terragrunt/envs/{environment}
       - name: kubernetes
         directory: kubernetes/overlays/{environment}
 
-      - name: docker
-        directory: apps/shell/src # Or just apps/shell if Dockerfile is there, but User said 'src' in previous edit. Assuming apps/shell is the context.
-        # Actually user said "Currently src, but I want better name".
-        # Let's set it to apps/shell/src relative to web/frontend matches web/{service}
-        # {service} = frontend.
-        # root = web/frontend
-
   - root: web/{service}
     stacks:
       - name: docker
-        directory: apps/shell
+        directory: docker
       - name: terragrunt
         directory: terragrunt/envs/{environment}
       - name: kubernetes

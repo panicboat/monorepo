@@ -1,17 +1,6 @@
-# ci-cd Specification
+# CI/CD Specs
 
-## Purpose
-TBD - created by archiving change add-container-builder-workflow. Update Purpose after archive.
-## Requirements
-### Requirement: Container Image Build and Push
-The system SHALL automatically build and push container images to GitHub Container Registry (GHCR) when triggered by a deployment event for a service with the `docker` stack.
-
-#### Scenario: Successful build and push
-- **WHEN** a deployment is triggered for a service with `stack: docker`
-- **THEN** authentication with GHCR is performed
-- **THEN** the Docker image is built using the service's context
-- **THEN** the image is pushed to `ghcr.io/{repository}/{image-name}`
-- **THEN** the image is tagged with `sha-{commit}` and `latest` (for main branch)
+## ADDED Requirements
 
 ### Requirement: Directory Structure Separation
 Application source code MUST be isolated in a `docker` directory to separate it from infrastructure configurations (kubernetes, terragrunt).
@@ -35,4 +24,3 @@ Each service's Docker build configuration MUST point to the `docker` directory a
 - When the CI pipeline triggers a build
 - Then it MUST use the workspace root (`web/heaven`) as the build context to allow Turborepo to prune/build workspace dependencies correctly.
 - And it MUST expect a `Dockerfile` at the workspace root.
-

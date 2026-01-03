@@ -149,6 +149,7 @@ export default function CastChatPage({ params }: { params: Promise<{ id: string 
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         onSend={handleSendInvitation}
+        plans={[]}
       />
     </div>
   );
