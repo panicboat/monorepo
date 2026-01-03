@@ -27,11 +27,11 @@ importers:
         specifier: ^1.10.0
         version: 1.10.1
       '@connectrpc/connect':
-        specifier: ^1.6.0
-        version: 1.7.0(@bufbuild/protobuf@1.10.1)
+        specifier: ^2.0.0
+        version: 2.1.1(@bufbuild/protobuf@1.10.1)
       '@connectrpc/connect-node':
         specifier: ^1.6.0
-        version: 1.7.0(@bufbuild/protobuf@1.10.1)(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))
+        version: 1.7.0(@bufbuild/protobuf@1.10.1)(@connectrpc/connect@2.1.1(@bufbuild/protobuf@1.10.1))
       '@heaven/rpc':
         specifier: workspace:*
         version: link:../../packages/rpc
@@ -282,6 +282,11 @@ packages:
     resolution: {integrity: sha512-iNKdJRi69YP3mq6AePRT8F/HrxWCewrhxnLMNm0vpqXAR8biwzRtO6Hjx80C6UvtKJ5sFmffQT7I4Baecz389w==}
     peerDependencies:
       '@bufbuild/protobuf': ^1.10.0
+
+  '@connectrpc/connect@2.1.1':
+    resolution: {integrity: sha512-JzhkaTvM73m2K1URT6tv53k2RwngSmCXLZJgK580qNQOXRzZRR/BCMfZw3h+90JpnG6XksP5bYT+cz0rpUzUWQ==}
+    peerDependencies:
+      '@bufbuild/protobuf': ^2.7.0
 
   '@connectrpc/protoc-gen-connect-es@1.7.0':
     resolution: {integrity: sha512-g2rE799dxGgXtwSTBOJoSlzCy3HN0IX/Es8uKsCgXRmco8o277/bb5nz1X8TmvBooCBGNdtEdUDG50olcvS9jQ==}
@@ -2519,13 +2524,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@connectrpc/connect-node@1.7.0(@bufbuild/protobuf@1.10.1)(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))':
+  '@connectrpc/connect-node@1.7.0(@bufbuild/protobuf@1.10.1)(@connectrpc/connect@2.1.1(@bufbuild/protobuf@1.10.1))':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
-      '@connectrpc/connect': 1.7.0(@bufbuild/protobuf@1.10.1)
+      '@connectrpc/connect': 2.1.1(@bufbuild/protobuf@1.10.1)
       undici: 5.29.0
 
   '@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1)':
+    dependencies:
+      '@bufbuild/protobuf': 1.10.1
+
+  '@connectrpc/connect@2.1.1(@bufbuild/protobuf@1.10.1)':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
 
