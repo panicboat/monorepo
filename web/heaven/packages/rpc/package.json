@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@bufbuild/protobuf": "^1.10.0",
-    "@connectrpc/connect": "^1.6.0"
+    "@connectrpc/connect": "^2.0.0"
   },
   "devDependencies": {
     "@bufbuild/buf": "^1.62.1",
