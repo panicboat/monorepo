@@ -1,18 +1,21 @@
 "use server";
 
 import { castClient } from "@/lib/rpc";
-import { GetProfileRequest, ListCastsRequest, CastStatus, UpdateStatusRequest, CreateProfileRequest } from "@heaven/rpc/cast/v1/service_pb";
+import { GetProfileRequest, ListCastsRequest, CastStatus, UpdateStatusRequest, CreateProfileRequest, GetProfileResponse, ListCastsResponse, UpdateStatusResponse } from "@heaven/rpc/cast/v1/service_pb";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 async function getAuthHeaders() {
   const cookieStore = await cookies();
-  return {
-    headers: {
-      Cookie: cookieStore.toString()
-    }
-  };
+  const token = cookieStore.get('token')?.value;
+  const headers: Record<string, string> = {};
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return { headers };
 }
 
 // Fetch Cast Profile with Plans
@@ -21,7 +24,7 @@ export async function getCastProfile(userId: string) {
   try {
     const request = new GetProfileRequest({ userId });
     // Public endpoint? Maybe doesn't need auth, but safer to pass if available.
-    const response = await castClient.getProfile(request, await getAuthHeaders());
+    const response = await castClient.getProfile(request, await getAuthHeaders()) as GetProfileResponse;
 
     return {
       profile: {
@@ -52,7 +55,7 @@ export async function listCasts(statusFilter?: CastStatus) {
       statusFilter: statusFilter || CastStatus.UNSPECIFIED
     });
     // Public endpoint
-    const response = await castClient.listCasts(request, await getAuthHeaders());
+    const response = await castClient.listCasts(request, await getAuthHeaders()) as ListCastsResponse;
 
     return response.items.map(item => ({
       profile: {
@@ -74,7 +77,7 @@ export async function listCasts(statusFilter?: CastStatus) {
 export async function updateCastStatus(status: CastStatus) {
   try {
     const request = new UpdateStatusRequest({ status });
-    const response = await castClient.updateStatus(request, await getAuthHeaders());
+    const response = await castClient.updateStatus(request, await getAuthHeaders()) as UpdateStatusResponse;
     revalidatePath("/cast/dashboard");
     revalidatePath("/casts/[id]");
     return response.status;

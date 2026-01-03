@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+# Wait for DB? (Docker depends_on handles it mostly, but pg_isready is better)
+# But let's keep it simple as per original command.
+
+export PGPASSWORD=password
+
+echo "Creating database if not exists..."
+createdb -h db -U postgres monolith_test || true
+
+echo "Running migrations..."
+bundle exec hanami db migrate
+
+echo "Starting gRPC server..."
+exec ./bin/grpc

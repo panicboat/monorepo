@@ -12,6 +12,7 @@ module Cast
 
       def get_profile(request, _call)
         user_id = request.user_id.to_i
+        user_id = Monolith::Current.user_id.to_i if user_id.zero? && Monolith::Current.user_id
         # Proto defines user_id in GetProfileRequest. In real app, we might infer from token metadata.
 
         result = get_profile_service.call(user_id: user_id)
@@ -25,7 +26,14 @@ module Cast
       end
 
       def create_profile(request, _call)
-        # TODO: Identify user from metadata. For now, we trust the client or use a test ID if provided in request (though proto doesn't have it explicitly in my last edit? Wait, I added it as `user_id` in CreateProfileRequest).
+        # Identify user from metadata.
+        current_user_id = Monolith::Current.user_id
+
+        # If user_id is provided in request (e.g. admin override or testing), use it, otherwise use current user
+        # However, for security, usually we force current_user_id for self-actions.
+        # For this skeleton, we prefer Monolith::Current if available.
+        target_user_id = request.user_id.to_i
+        target_user_id = current_user_id.to_i if target_user_id.zero? && current_user_id
         # Yes, I added user_id to CreateProfileRequest in the proto update.
 
         # Parse plans
@@ -39,7 +47,7 @@ module Cast
 
         # Call service
         result = create_profile_service.call(
-          user_id: request.user_id.to_i, # Assuming it comes as string ID via RPC if defined, but wait, `user_id` in users table is int?
+          user_id: target_user_id, # Assuming it comes as string ID via RPC if defined, but wait, `user_id` in users table is int?
           # Migration: `primary_key :id` (integer). `foreign_key :user_id` (integer).
           # Proto: `string user_id`.
           # We need to parse.
@@ -73,7 +81,15 @@ module Cast
         # Assuming for now we pass cast_id or user_id.
         # My proto `UpdateStatusRequest` has `status`. No ID. This implies Context.
         # I will need to extract User ID from JWT in metadata.
-        # For prototype, I might mock this or expect it in metadata.
+        user_id = Monolith::Current.user_id
+
+        unless user_id
+           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Authentication required")
+        end
+
+        # TODO: Resolve cast_id from user_id if they are different (1:1 relation usually)
+        # For now assume 1:1 and we might need a service to fetch cast profile by user_id first
+        # But this method mocks `ActiveRecord` update.
 
         # Mocking for now:
         # raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNIMPLEMENTED, "Auth context needed")

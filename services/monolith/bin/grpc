@@ -17,6 +17,7 @@ require "cast/v1/service_services_pb"
 # Configure Gruf
 Gruf.configure do |c|
   c.server_binding_url = ENV.fetch("GRPC_BIND_ADDRESS", "0.0.0.0:9001")
+  c.interceptors.use(Monolith::Interceptors::AuthenticationInterceptor)
   c.services << Identity::Grpc::Handler
   c.services << Cast::Grpc::Handler
 end

@@ -2,7 +2,7 @@ version: "3.9"
 services:
   app:
     build: .
-    command: /bin/sh -c "export PGPASSWORD=password; createdb -h db -U postgres monolith_test || true; bundle exec hanami db migrate && ./bin/grpc"
+    command: ./bin/start
     volumes:
       - .:/app
     ports:
