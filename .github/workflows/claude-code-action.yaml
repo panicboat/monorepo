@@ -32,27 +32,11 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Run Claude Code
+        uses: panicboat/deploy-actions/claude-code-action@main
         with:
           token: ${{ steps.app-token.outputs.token }}
-          fetch-depth: 1
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
-        with:
-          role-to-assume: arn:aws:iam::559744160976:role/claude-code-action-develop-github-actions-role
-          aws-region: us-west-2
-
-      - uses: anthropics/claude-code-action@beta
-        with:
-          github_token: ${{ steps.app-token.outputs.token }}
-          trigger_phrase: "@claude"
+          aws-role-arn: arn:aws:iam::559744160976:role/claude-code-action-develop-github-actions-role
+          aws-region: us-east-1
+          trigger-phrase: "@claude"
           model: "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
-          use_bedrock: "true"
-        env:
-          ANTHROPIC_BEDROCK_BASE_URL: https://bedrock-runtime.us-west-2.amazonaws.com
-          ANTHROPIC_MAX_RETRIES: "3"
-          ANTHROPIC_TIMEOUT: "120"
-          ANTHROPIC_REQUEST_DELAY: "5"
-          CLAUDE_CODE_MAX_OUTPUT_TOKENS: 8192
