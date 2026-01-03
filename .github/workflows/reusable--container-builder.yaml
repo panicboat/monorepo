@@ -39,6 +39,7 @@ jobs:
       - name: Build and push container with custom tags
         uses: panicboat/deploy-actions/container-builder@main
         with:
-          token: ${{ steps.app-token.outputs.token }}
+          # Use GITHUB_TOKEN to ensure permission to create new packages
+          token: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ inputs.image-name }}
           working-directory: ${{ inputs.working-directory }}
