@@ -18,7 +18,7 @@ directory_conventions:
   - root: services/{service}
     stacks:
       - name: docker
-        directory: docker
+        directory: workspace
       - name: terragrunt
         directory: terragrunt/envs/{environment}
       - name: kubernetes
@@ -27,7 +27,7 @@ directory_conventions:
   - root: web/{service}
     stacks:
       - name: docker
-        directory: docker
+        directory: workspace
       - name: terragrunt
         directory: terragrunt/envs/{environment}
       - name: kubernetes

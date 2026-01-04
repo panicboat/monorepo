@@ -14,13 +14,12 @@ The system SHALL automatically build and push container images to GitHub Contain
 - **THEN** the image is tagged with `sha-{commit}` and `latest` (for main branch)
 
 ### Requirement: Directory Structure Separation
-Application source code MUST be isolated in a `docker` directory to separate it from infrastructure configurations (kubernetes, terragrunt).
+Application source code MUST be isolated in a `workspace` directory to separate it from infrastructure configurations (kubernetes, terragrunt).
 
-#### Scenario: Isolating Code
-- Given a service directory (e.g., `services/monolith`)
-- When listing the contents
-- Then it MUST contain a `docker` directory containing the application code and Dockerfile
-- And it MUST separate `kubernetes` and `terragrunt` directories from the application logic.
+#### Scenario: Renaming for Clarity
+- Given a service directory
+- When structure is inspected
+- Then application code MUST be in `workspace` directory (formerly `docker`)
 
 ### Requirement: CI Builder Configuration
 Each service's Docker build configuration MUST point to the `docker` directory as the build context root.
