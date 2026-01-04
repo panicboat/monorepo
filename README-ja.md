@@ -15,13 +15,13 @@
 |   proto/              # Protocol Buffers definitions
 ├── services/           # Microservices source code & manifests
 │   └── {service}/      # Service Name
-│       ├── src/        # Application Source Code
+│       ├── workspace/  # Application Source Code
 │       ├── kubernetes/ # Kubernetes Manifests (Base/Overlays)
 │       └── terragrunt/ # Terraform & Terragrunt configurations
 ├── templates/          # Kubernetes templates
 └── web/                # Frontend source code & manifests
     └── {service}/      # Service Name
-        ├── src/        # Application Source Code
+        ├── workspace/  # Application Source Code
         ├── kubernetes/ # Kubernetes Manifests (Base/Overlays)
         └── terragrunt/ # Terraform & Terragrunt configurations
 ```
