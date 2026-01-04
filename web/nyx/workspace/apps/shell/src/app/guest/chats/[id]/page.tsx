@@ -3,8 +3,8 @@
 import React, { useState, useEffect, use, useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, MoreVertical } from "lucide-react";
-import { MessageBubble } from "@/components/features/chat/MessageBubble";
-import { ChatInput } from "@/components/features/chat/ChatInput";
+import { MessageBubble } from "@feature/chat";
+import { ChatInput } from "@feature/chat";
 
 interface Message {
   id: string;
@@ -14,8 +14,7 @@ interface Message {
   timestamp: string;
 }
 
-import { RitualModal } from "@/components/features/invitation/RitualModal";
-import { SealedBadge } from "@/components/features/invitation/SealedBadge";
+import { RitualModal, SealedBadge } from "@feature/invitation";
 import SmartInvitationDrawer, { InvitationData, Plan } from "@/components/features/chat/SmartInvitationDrawer";
 import { getCastProfile } from "@/app/actions/cast";
 import { Ticket } from "lucide-react";

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, Camera, Loader2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
-import PhotoUploader from "@/components/features/cast/PhotoUploader";
+import { PhotoUploader } from "@feature/cast";
 
 export default function ProfileEditPage() {
   const router = useRouter();
@@ -164,8 +164,8 @@ export default function ProfileEditPage() {
                     key={tag}
                     onClick={() => toggleTag(tag)}
                     className={`px-3 py-1.5 rounded-full text-xs transition border ${formData.tags.includes(tag)
-                        ? "bg-yellow-900/30 border-yellow-600 text-yellow-400"
-                        : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600"
+                      ? "bg-yellow-900/30 border-yellow-600 text-yellow-400"
+                      : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600"
                       }`}
                   >
                     {tag}

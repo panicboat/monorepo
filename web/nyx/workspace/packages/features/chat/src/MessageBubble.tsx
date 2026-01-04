@@ -3,7 +3,7 @@
 import React from "react";
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { InvitationCard } from "@/components/features/invitation/InvitationCard";
+import { InvitationCard } from "@feature/invitation";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

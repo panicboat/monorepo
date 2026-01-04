@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use, useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, MoreVertical, Ticket, Send } from "lucide-react";
-import { MessageBubble } from "@/components/features/chat/MessageBubble";
+import { MessageBubble } from "@feature/chat";
 import SmartInvitationDrawer from "@/components/features/chat/SmartInvitationDrawer";
 
 interface Message {

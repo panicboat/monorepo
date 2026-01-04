@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, MoreVertical } from "lucide-react";
-import OnboardingWizard from "@/components/features/cast/OnboardingWizard";
+import { OnboardingWizard } from "@feature/cast";
+import { createProfileAction } from "@/app/actions/cast";
 import { useRouter } from "next/navigation";
 
 export default function CastOnboardingPage() {
@@ -63,7 +64,10 @@ export default function CastOnboardingPage() {
 
         {/* Onboarding Wizard */}
         {isWizardOpen && (
-          <OnboardingWizard onFinish={handleFinish} />
+          <OnboardingWizard
+            onFinish={handleFinish}
+            submitAction={createProfileAction}
+          />
         )}
       </div>
     </div>

@@ -3,13 +3,12 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera } from "lucide-react";
-import { createProfileAction } from "@/app/actions/cast";
-
 interface OnboardingWizardProps {
   onFinish?: () => void;
+  submitAction: (formData: FormData) => Promise<void>;
 }
 
-export default function OnboardingWizard({ onFinish }: OnboardingWizardProps) {
+export default function OnboardingWizard({ onFinish, submitAction }: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isVisible, setIsVisible] = useState(true);
 
@@ -43,7 +42,7 @@ export default function OnboardingWizard({ onFinish }: OnboardingWizardProps) {
     formData.append("planDuration", planDuration.toString());
     formData.append("planPrice", planPrice.toString());
 
-    await createProfileAction(formData);
+    await submitAction(formData);
   };
 
   const handleNext = () => {
