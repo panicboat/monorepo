@@ -35,3 +35,11 @@ Each service's Docker build configuration MUST point to the `docker` directory a
 - Then it MUST use the workspace root (`web/heaven`) as the build context to allow Turborepo to prune/build workspace dependencies correctly.
 - And it MUST expect a `Dockerfile` at the workspace root.
 
+### Requirement: Documentation Local Development
+The `services/docs/workspace` directory MUST contain a `docker-compose.yaml` file to facilitate local development and verification of the documentation site.
+
+#### Scenario: Running Docs Locally
+- Given the `services/docs/workspace` directory
+- When `docker-compose up` is executed
+- Then the documentation site MUST be accessible (e.g., via localhost).
+
