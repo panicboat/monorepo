@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: docs
-          image: ghcr.io/panicboat/monoerepo/docs:latest
+          image: ghcr.io/panicboat/monorepo/docs:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
