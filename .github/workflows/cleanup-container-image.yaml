@@ -26,8 +26,8 @@ jobs:
           # Get all container packages for the user/organization
           repo_name="${{ github.event.repository.name }}"
 
-          # Fetch packages and filter by repository name prefix (with pagination)
-          services=$(gh api --paginate \
+          # Fetch packages and filter by repository name prefix (up to 100 packages)
+          services=$(gh api \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "/users/${{ github.repository_owner }}/packages?package_type=container&per_page=100" | \
