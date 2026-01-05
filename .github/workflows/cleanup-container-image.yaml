@@ -25,7 +25,7 @@ jobs:
           # GitHub Container Registry requires PERSONAL_ACCESS_TOKEN, not Fine-grained personal access tokens
           token: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ matrix.service }}
-          pr-retention-days: 14
+          pr-retention-days: 1
 
   summary:
     name: 'Cleanup Summary'
