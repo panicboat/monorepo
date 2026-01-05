@@ -24,7 +24,7 @@ jobs:
         with:
           # GitHub Container Registry requires PERSONAL_ACCESS_TOKEN, not Fine-grained personal access tokens
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-name: monorepo/${{ matrix.service }}
+          image-name: ${{ matrix.service }}
           pr-retention-days: 14
 
   summary:
