@@ -88,10 +88,37 @@ jobs:
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
+  # TODO: Migration to scheduled workflow
+  cleanup-container:
+    name: 'Cleanup Container'
+    needs: deploy-trigger
+    runs-on: ubuntu-latest
+    if: |
+      needs.deploy-trigger.outputs.has-targets == 'true' &&
+      contains(needs.deploy-trigger.outputs.targets, '"stack":"docker"')
+    strategy:
+      matrix:
+        target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
+      fail-fast: false
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2.2.1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - uses: panicboat/deploy-actions/container-cleaner@main
+        if: matrix.target.stack == 'docker'
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          image-name: ${{ matrix.target.service }}
+
 
   deployment-summary:
     name: 'Deployment Summary'
-    needs: [deploy-trigger, deploy-terragrunt, deploy-container]
+    needs: [deploy-trigger, deploy-terragrunt, deploy-container, cleanup-container]
     if: always() && needs.deploy-trigger.outputs.has-targets == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -105,3 +132,4 @@ jobs:
           echo "Targets: ${{ needs.deploy-trigger.outputs.targets }}"
           echo "Terragrunt Job Status: ${{ needs.deploy-terragrunt.result }}"
           echo "Container Job Status: ${{ needs.deploy-container.result }}"
+          echo "Cleanup Job Status: ${{ needs.cleanup-container.result }}"
