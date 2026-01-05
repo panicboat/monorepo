@@ -11,39 +11,12 @@ permissions:
   packages: write
 
 jobs:
-  discover-packages:
-    name: 'Discover Container Packages'
-    runs-on: ubuntu-latest
-    outputs:
-      services: ${{ steps.get-packages.outputs.services }}
-    steps:
-      - name: Get packages from GitHub Container Registry
-        id: get-packages
-        env:
-          # GitHub Container Registry requires PERSONAL_ACCESS_TOKEN, not Fine-grained personal access tokens
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Get all container packages for the user/organization
-          repo_name="${{ github.event.repository.name }}"
-
-          # Fetch packages and filter by repository name prefix (up to 100 packages)
-          services=$(gh api \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "/users/${{ github.repository_owner }}/packages?package_type=container&per_page=100" | \
-            jq -c "[.[] | select(.name | startswith(\"$repo_name/\")) | .name | sub(\"$repo_name/\"; \"\")] | unique")
-
-          echo "services=$services" >> $GITHUB_OUTPUT
-          echo "Found packages: $services"
-
   cleanup-container:
     name: 'Cleanup ${{ matrix.service }}'
-    needs: discover-packages
-    if: needs.discover-packages.outputs.services != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ${{ fromJson(needs.discover-packages.outputs.services) }}
+        service: ["docs", "monolith", "nyx"]
       fail-fast: false
     steps:
       - name: Cleanup container images
@@ -51,17 +24,17 @@ jobs:
         with:
           # GitHub Container Registry requires PERSONAL_ACCESS_TOKEN, not Fine-grained personal access tokens
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-name: ${{ matrix.service }}
+          image-name: monorepo/${{ matrix.service }}
           pr-retention-days: 14
 
   summary:
     name: 'Cleanup Summary'
-    needs: [discover-packages, cleanup-container]
+    needs: cleanup-container
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Summary
         run: |
           echo "📊 Cleanup Summary"
-          echo "Packages found: ${{ needs.discover-packages.outputs.services }}"
+          echo "Services: monorepo/docs, monorepo/monolith, monorepo/nyx"
           echo "Cleanup job status: ${{ needs.cleanup-container.result }}"
