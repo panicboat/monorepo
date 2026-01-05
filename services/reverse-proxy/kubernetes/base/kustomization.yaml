@@ -1,15 +1,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: reverse-proxy
 resources:
   - deployment.yaml
   - service.yaml
 
 configMapGenerator:
-- name: nginx-config
+- name: nginx-main-config
   files:
   - nginx.conf=config/nginx.conf
-  - upstream.conf=config/conf.d/upstream.conf
-  - server.conf=config/conf.d/server.conf
-  - docs.conf=config/conf.d/docs.conf
-  - nyx.conf=config/conf.d/nyx.conf
+- name: nginx-conf-d
+  files:
+  - config/conf.d/cilium-gateway.conf
+  - config/conf.d/docs.conf
+  # - config/conf.d/nyx.conf
