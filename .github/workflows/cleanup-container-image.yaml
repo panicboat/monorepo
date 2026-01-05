@@ -30,8 +30,8 @@ jobs:
           services=$(gh api --paginate \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            "/users/${{ github.repository_owner }}/packages?package_type=container&per_page=100" \
-            --jq "[.[] | select(.name | startswith(\"${repo_name}/\")) | .name | sub(\"${repo_name}/\"; \"\")] | unique")
+            "/users/${{ github.repository_owner }}/packages?package_type=container&per_page=100" | \
+            jq -c "[.[] | select(.name | startswith(\"$repo_name/\")) | .name | sub(\"$repo_name/\"; \"\")] | unique")
 
           echo "services=$services" >> $GITHUB_OUTPUT
           echo "Found packages: $services"
