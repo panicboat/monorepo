@@ -88,30 +88,9 @@ jobs:
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-  # TODO: Migration to scheduled workflow
-  cleanup-container:
-    name: 'Cleanup Container'
-    needs: deploy-trigger
-    runs-on: ubuntu-latest
-    if: |
-      needs.deploy-trigger.outputs.has-targets == 'true' &&
-      contains(needs.deploy-trigger.outputs.targets, '"stack":"docker"')
-    strategy:
-      matrix:
-        target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
-      fail-fast: false
-    steps:
-      - uses: panicboat/deploy-actions/container-cleaner@main
-        if: matrix.target.stack == 'docker'
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          image-name: monorepo/${{ matrix.target.service }}
-    continue-on-error: true
-
-
   deployment-summary:
     name: 'Deployment Summary'
-    needs: [deploy-trigger, deploy-terragrunt, deploy-container, cleanup-container]
+    needs: [deploy-trigger, deploy-terragrunt, deploy-container]
     if: always() && needs.deploy-trigger.outputs.has-targets == 'true'
     runs-on: ubuntu-latest
     steps:
