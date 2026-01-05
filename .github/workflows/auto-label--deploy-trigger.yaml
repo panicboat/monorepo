@@ -106,6 +106,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           image-name: monorepo/${{ matrix.target.service }}
+    continue-on-error: true
 
 
   deployment-summary:
