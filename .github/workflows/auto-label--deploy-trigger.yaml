@@ -101,19 +101,11 @@ jobs:
         target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
       fail-fast: false
     steps:
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@v2.2.1
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-
       - uses: panicboat/deploy-actions/container-cleaner@main
         if: matrix.target.stack == 'docker'
         with:
-          token: ${{ steps.app-token.outputs.token }}
-          image-name: ${{ matrix.target.service }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          image-name: monorepo/${{ matrix.target.service }}
 
 
   deployment-summary:
