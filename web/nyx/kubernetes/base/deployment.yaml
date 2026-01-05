@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nyx
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: nyx
+  template:
+    metadata:
+      labels:
+        app: nyx
+    spec:
+      containers:
+        - name: nyx
+          image: ghcr.io/panicboat/monoerepo/nyx:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80

@@ -11,3 +11,5 @@ configMapGenerator:
   - nginx.conf=config/nginx.conf
   - upstream.conf=config/conf.d/upstream.conf
   - server.conf=config/conf.d/server.conf
+  - docs.conf=config/conf.d/docs.conf
+  - nyx.conf=config/conf.d/nyx.conf
