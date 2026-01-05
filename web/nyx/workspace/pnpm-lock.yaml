@@ -132,13 +132,13 @@ importers:
         version: 2.1.1
       framer-motion:
         specifier: ^12.0.0
-        version: 12.23.26(react-dom@19.2.3(react@19.0.0))(react@19.0.0)
+        version: 12.23.26(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       lucide-react:
         specifier: ^0.469.0
-        version: 0.469.0(react@19.0.0)
+        version: 0.469.0(react@19.2.3)
       react:
-        specifier: 19.0.0
-        version: 19.0.0
+        specifier: 19.2.3
+        version: 19.2.3
       tailwind-merge:
         specifier: ^2.6.0
         version: 2.6.0
@@ -4172,6 +4172,10 @@ snapshots:
   lucide-react@0.469.0(react@19.0.0):
     dependencies:
       react: 19.0.0
+
+  lucide-react@0.469.0(react@19.2.3):
+    dependencies:
+      react: 19.2.3
 
   lucide-react@0.562.0(react@19.2.3):
     dependencies:
