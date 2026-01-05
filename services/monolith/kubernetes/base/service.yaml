@@ -6,6 +6,7 @@ spec:
   selector:
     app: monolith
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
+    - name: http
+      protocol: TCP
+      port: 9001
+      targetPort: 9001

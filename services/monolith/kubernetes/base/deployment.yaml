@@ -17,5 +17,9 @@ spec:
         - name: monolith
           image: ghcr.io/panicboat/monorepo/monolith:latest
           imagePullPolicy: IfNotPresent
+          command: ["./bin/start"]
           ports:
-            - containerPort: 80
+            - containerPort: 9001
+          envFrom:
+            - configMapRef:
+                name: monolith

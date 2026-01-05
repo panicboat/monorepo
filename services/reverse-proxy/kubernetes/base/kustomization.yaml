@@ -13,4 +13,4 @@ configMapGenerator:
   files:
   - config/conf.d/cilium-gateway.conf
   - config/conf.d/docs.conf
-  # - config/conf.d/nyx.conf
+  - config/conf.d/nyx.conf

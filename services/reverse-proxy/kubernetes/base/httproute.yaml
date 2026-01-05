@@ -6,9 +6,7 @@ spec:
   parentRefs:
   - name: cilium-gateway
     namespace: default
-  hostnames:
-  - docs.local
-  - nyx.local
+  hostnames: []
   rules:
   - matches:
     - path:

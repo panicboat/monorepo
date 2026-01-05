@@ -43,4 +43,5 @@ jobs:
           # Use GITHUB_TOKEN to ensure permission to create new packages
           token: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ inputs.image-name }}
+          platforms: linux/arm64
           working-directory: ${{ inputs.working-directory }}

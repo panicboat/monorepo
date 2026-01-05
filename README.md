@@ -35,6 +35,35 @@ Add the following to `/etc/hosts`.
 
 ```bash
 127.0.0.1 nginx.local
+127.0.0.1 nyx.local
+127.0.0.1 docs.local
+```
+
+### 🔧 Local Development
+
+To edit manifests locally without Flux overwriting changes, suspend the Kustomizations:
+
+```bash
+flux suspend kustomization monolith reverse-proxy nyx -n flux-system
+```
+
+Then apply your local changes:
+
+```bash
+# Monolith
+kubectl apply -k services/monolith/kubernetes/overlays/develop
+
+# Reverse Proxy
+kubectl apply -k services/reverse-proxy/kubernetes/overlays/develop
+
+# Nyx
+kubectl apply -k web/nyx/kubernetes/overlays/develop
+```
+
+To resume Flux synchronization (discarding local changes):
+
+```bash
+flux resume kustomization monolith reverse-proxy nyx -n flux-system
 ```
 
 ## 🏗 Architecture
@@ -47,6 +76,8 @@ graph LR
   subgraph "Kubernetes Cluster"
     NginxPod -- "3. http://cilium-gateway<br>Internal" --> CiliumGw[Cilium Gateway]
     CiliumGw -- "4. HTTPRoute<br>Host: nginx.local" --> AppPod[App Pod<br>services/nginx]
+    CiliumGw -- "4. HTTPRoute<br>Host: nyx.local" --> NyxPod[Nyx Pod<br>web/nyx]
+    NyxPod -- "5. gRPC<br>Host: monolith.local" --> MonolithPod[Monolith Pod<br>services/monolith]
   end
 ```
 
