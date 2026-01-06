@@ -17,7 +17,6 @@ spec:
         - name: nyx
           image: ghcr.io/panicboat/monorepo/nyx:latest
           imagePullPolicy: IfNotPresent
-          command: ["./bin/start"]
           ports:
             - containerPort: 3000
           envFrom:

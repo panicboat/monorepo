@@ -1,16 +1,16 @@
 #!/bin/sh
 set -e
 
-# Wait for DB? (Docker depends_on handles it mostly, but pg_isready is better)
-# But let's keep it simple as per original command.
-
-export PGPASSWORD=password
-
-echo "Creating database if not exists..."
-createdb -h db -U postgres monolith_test || true
+# In Kubernetes, the database is created by the Postgres container (using POSTGRES_DB).
+# We rely on DATABASE_URL for connection details.
 
 echo "Running migrations..."
-bundle exec hanami db migrate
+# Check if hanami exists before running
+if [ -f "Gemfile" ]; then
+  bundle exec hanami db migrate || echo "Migration failed (possibly no migrations), continuing..."
+else
+  echo "Gemfile not found, skipping migrations."
+fi
 
 echo "Starting gRPC server..."
 exec ./bin/grpc

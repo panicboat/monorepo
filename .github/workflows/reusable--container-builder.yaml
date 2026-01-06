@@ -45,3 +45,5 @@ jobs:
           image-name: ${{ inputs.image-name }}
           platforms: linux/arm64
           working-directory: ${{ inputs.working-directory }}
+          tags-template: |
+            type=raw,value=${{ github.actor}}

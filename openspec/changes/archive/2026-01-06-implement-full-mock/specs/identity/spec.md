@@ -1,8 +1,5 @@
-# identity Specification
+## ADDED Requirements
 
-## Purpose
-TBD - created by archiving change implement-full-mock. Update Purpose after archive.
-## Requirements
 ### Requirement: Robust User Authentication (MUST)
 システムは、OIDCプロバイダ（特にGoogle）およびSMS認証を利用した堅牢な認証フローを提供しなければならない。
 
@@ -20,4 +17,3 @@ TBD - created by archiving change implement-full-mock. Update Purpose after arch
 #### Scenario: View Dashboard
 - **WHEN** ログイン済みユーザーがマイページにアクセスしたとき
 - **THEN** 「お気に入りキャスト」「過去の予約履歴」が表示されるエリアを提供する。
-

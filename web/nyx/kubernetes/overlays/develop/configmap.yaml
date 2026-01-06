@@ -4,3 +4,4 @@ metadata:
   name: nyx
 data:
   NODE_ENV: development
+  GRPC_BACKEND_URL: http://monolith:9001
