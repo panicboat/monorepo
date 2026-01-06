@@ -30,37 +30,23 @@ export const PhotoGallery = ({ castId }: { castId: string }) => {
   const images = MOCK_GALLERIES[castId] || MOCK_GALLERIES["default"];
   const [current, setCurrent] = useState(0);
 
+  // Swipe Logic
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
+  };
+
+  const paginate = (newDirection: number) => {
+    let nextIndex = current + newDirection;
+    if (nextIndex < 0) nextIndex = 0;
+    if (nextIndex >= images.length) nextIndex = images.length - 1;
+    setCurrent(nextIndex);
+  };
+
   return (
-    <div className="relative h-[65vh] w-full bg-slate-200">
-      {/* Main Image Slider */}
-      <div className="h-full w-full overflow-hidden">
-        <motion.img
-          key={current}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          src={images[current]}
-          className="h-full w-full object-cover"
-          alt="Cast Portrait"
-        />
-      </div>
-
-      {/* Gradient Overlay for Text Visibility */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent pointer-events-none"></div>
-
-      {/* Thumbnails / Indicators */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-        {images.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrent(idx)}
-            className={`h-2 rounded-full transition-all ${idx === current ? "w-6 bg-white" : "w-2 bg-white/50"}`}
-          />
-        ))}
-      </div>
-
-      {/* Status Badge */}
-      <div className="absolute top-4 left-4 flex gap-2">
+    <div className="relative h-[65vh] w-full bg-slate-900 overflow-hidden">
+      {/* Disclaimer / Status Badge */}
+      <div className="absolute top-4 left-4 z-20 flex gap-2">
         <span className="flex items-center gap-1 rounded-full bg-green-500/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-md shadow-sm border border-green-400/50">
           <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-white"></span>
           Online
@@ -69,6 +55,54 @@ export const PhotoGallery = ({ castId }: { castId: string }) => {
           Tonight OK
         </span>
       </div>
+
+      {/* Main Image Slider */}
+      <motion.div
+        className="flex h-full w-full"
+        animate={{ x: `-${current * 100}%` }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragEnd={(e, { offset, velocity }) => {
+          const swipe = swipePower(offset.x, velocity.x);
+
+          if (swipe < -swipeConfidenceThreshold) {
+            paginate(1);
+          } else if (swipe > swipeConfidenceThreshold) {
+            paginate(-1);
+          }
+        }}
+      >
+        {images.map((src, index) => (
+          <div key={index} className="h-full w-full flex-shrink-0 relative">
+            <img
+              src={src}
+              className="h-full w-full object-cover"
+              alt={`Cast Portrait ${index + 1}`}
+              draggable="false"
+            />
+            {/* Gradient Overlay for Text Visibility (Per Image) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none"></div>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Top Indicators (Story style - Static) */}
+      <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2">
+        {images.map((_, idx) => (
+          <div key={idx} className="h-1 flex-1 rounded-full bg-white/20 overflow-hidden backdrop-blur-sm">
+            <div
+              className={`h-full bg-white transition-opacity duration-300 ${idx === current ? "opacity-100" : "opacity-30"
+                }`}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Left/Right Tap Areas (Invisible) */}
+      <div className="absolute inset-y-0 left-0 w-1/4 z-10" onClick={() => paginate(-1)} />
+      <div className="absolute inset-y-0 right-0 w-1/4 z-10" onClick={() => paginate(1)} />
     </div>
   );
 };

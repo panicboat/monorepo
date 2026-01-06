@@ -1,14 +1,14 @@
 ## ADDED Requirements
 
 ### Requirement: Guest Reliability Visualization (MUST)
-ユーザー（ゲスト）は、自身の信頼度スコア（キャストからの評価状況）を確認できなければならない。これにより、良質なふるまいを促進する。
+ユーザー（ゲスト）は、自身の信頼度スコア（キャストからの評価状況）を確認できなければならない (MUST)。これにより、良質なふるまいを促進する。
 
 #### Scenario: View Reliability
 - **WHEN** ユーザーがマイページを開いたとき
 - **THEN** 自身の信頼度（Reliability Score / Trust Rank）が可視化されている。
 
 ### Requirement: User Relationships (MUST)
-ユーザーは、キャストに対して好意的（Favorite/Follow）または否定的（Block）な関係性を明示的に管理できなければならない。
+ユーザーは、キャストに対して好意的（Favorite/Follow）または否定的（Block）な関係性を明示的に管理できなければならない (MUST)。
 
 #### Scenario: View Favorites
 - **WHEN** ユーザーがお気に入りリストを開いたとき
