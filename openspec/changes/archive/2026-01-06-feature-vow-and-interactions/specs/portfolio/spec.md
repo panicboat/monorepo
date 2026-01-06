@@ -1,30 +1,6 @@
-# Portfolio Spec
+# Portfolio Interaction Specs
 
-## Purpose
-Define the portfolio, timeline, and media interaction features for casts.
-## Requirements
-### Requirement: Rich Timeline Data Models
-The system MUST support extended data models for media posts.
-
-#### Scenario: PostItem Structure
-- **Data Models**:
-  - `PostItem` includes `media` array with `type` ('image' | 'video' | 'gif').
-  - `PostMedia` includes `url`, `thumbnail`, `aspectRatio`.
-
-### Requirement: Rich Timeline UI/UX
-The system MUST provide a rich media timeline with list and grid views.
-
-#### Scenario: Timeline View
-- **List View**: Displays full media cards.
-- **Grid View**: Displays 3-column mosaic grid.
-- **Media Modal**: Tap to view full screen video/image.
-
-### Requirement: Timeline Page Structure
-The system MUST provide a dedicated timeline page with filters.
-
-#### Scenario: Page Layout
-- **Header**: Back button, Cast Name, Layout Toggle.
-- **Filters**: All, Photos, Videos tabs.
+## ADDED Requirements
 
 ### Requirement: Vow Completion Flow
 The system MUST support the vow completion workflow where guests report completion and casts approve it.
@@ -55,4 +31,3 @@ Given タイムラインの投稿がある状態で
 When ユーザーがコメント欄にテキストを入力し
 And 「送信」をタップした時
 Then コメントが投稿のコメントリストに追加されるべきである
-

@@ -1,58 +1,36 @@
-# Nyx Workspace (`web/nyx/workspace`)
-
-This is the monorepo workspace for the Nyx frontend application, built with [Next.js](https://nextjs.org/) and [Turborepo](https://turbo.build/).
-
-## Architecture
-
-The project follows a modular architecture using internal packages to separate features and UI components from the main application shell.
-
-### Directory Structure
-
-```
-web/nyx/workspace/
-├── apps/
-│   └── shell/              # Main Next.js application (Routes, Pages, Layouts)
-└── packages/
-    ├── features/           # Feature-specific logic and components
-    │   ├── cast/           # Cast onboarding, profile management
-    │   ├── chat/           # Chat interface, messaging logic
-    │   └── invitation/     # Invitation system, ritual modals
-    └── ui/                 # Shared UI components (Design System)
-```
-
-### Key Concepts
-
-- **Apps (`apps/shell`)**: The "container" for the application. It handles routing (`app/`), global layouts, and integrates features. usage of `packages/*` is highly encouraged to keep the shell thin.
-- **Feature Packages (`packages/features/*`)**: Independent modules containing the business logic and UI for specific domains.
-- **UI Package (`packages/ui`)**: Low-level, reusable UI components (Buttons, Inputs, etc.) that define the design system.
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js (via `.nodenv`)
-- pnpm
-
-### Installation
+First, run the development server:
 
 ```bash
-pnpm install
-```
-
-### Development
-
-Start the development server for the shell:
-
-```bash
+npm run dev
+# or
+yarn dev
+# or
 pnpm dev
 # or
-pnpm dev --filter shell...
+bun dev
 ```
 
-The application will be available at `http://localhost:3000`.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Commands
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-- `pnpm build`: Build all apps and packages.
-- `pnpm lint`: Lint all code.
-- `pnpm format`: Format code with Prettier.
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
