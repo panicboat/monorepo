@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monolith
+data:
+  HANAMI_ENV: development
+  DATABASE_URL: postgres://postgres:password@postgresql:5432/monolith

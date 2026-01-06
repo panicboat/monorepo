@@ -18,4 +18,7 @@ spec:
           image: ghcr.io/panicboat/monorepo/nyx:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 80
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: nyx

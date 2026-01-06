@@ -1,0 +1,6 @@
+- [ ] Update `GuestDashboard.tsx`
+    - [ ] Add "Trust Level" or "Completion Rate" section.
+    - [ ] Display percentage and count (e.g., 98% - 50/51).
+- [ ] Update `ProfileSpecs.tsx`
+    - [ ] Add "Completion" metric to the social counts row.
+    - [ ] Ensure layout handles 4 items gracefully.

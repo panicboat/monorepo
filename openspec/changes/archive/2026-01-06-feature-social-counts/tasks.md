@@ -1,0 +1,5 @@
+- [ ] Update Mock Data
+    - [ ] Add `socialCounts` (followers, favorites, likes) to Mock DB or generate random numbers in component.
+- [ ] Implement Social Counts UI
+    - [ ] Add a "Stats Row" in `ProfileSpecs.tsx` (below name/title, above specs).
+    - [ ] Style with icons and numbers (e.g. Heart 1.2k, User 500).
