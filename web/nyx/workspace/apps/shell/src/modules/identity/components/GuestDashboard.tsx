@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "../hooks/useAuth";
+import { GuestRadar } from "./GuestRadar";
 
 export const GuestDashboard = () => {
   const { user, logout } = useAuth();
@@ -61,23 +62,39 @@ export const GuestDashboard = () => {
         </div>
 
         {/* Reliability Score Widget */}
-        <div className="rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 p-5 text-white shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
+        {/* Reliability Score Widget */}
+        <div className="rounded-2xl bg-gradient-to-br from-amber-50/80 via-white to-white p-5 shadow-sm border border-slate-100 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none grayscale">
             <span className="text-6xl">🛡️</span>
           </div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Guest Reliability</h3>
-          <div className="flex items-end gap-3">
-            <span className="text-3xl font-bold font-mono text-yellow-500">A+</span>
-            <span className="text-sm font-medium mb-1">Excellent</span>
+
+          <div className="flex items-center justify-between">
+            {/* Left: Rank Badge */}
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Guest Reliability</h3>
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold font-mono text-amber-500">A+</span>
+                  <span className="text-sm font-medium text-slate-400">Excellent</span>
+                </div>
+                <div className="mt-1 text-[10px] text-slate-400 font-mono">
+                  Score: 850 / 999
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Radar Chart */}
+            <div className="relative z-10">
+              <GuestRadar scores={[90, 85, 95, 80, 100]} />
+            </div>
           </div>
-          <div className="mt-4 pb-1">
-            <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-              <span>Score</span>
-              <span>850 / 999</span>
-            </div>
-            <div className="h-1.5 w-full bg-slate-700 rounded-full overflow-hidden">
-              <div className="h-full w-[85%] bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full"></div>
-            </div>
+
+          {/* Bottom: Cast-facing Hint */}
+          <div className="mt-2 pt-3 border-t border-slate-100">
+            <p className="text-xs text-slate-500 italic flex items-center gap-2">
+              <span className="text-amber-500">💡</span>
+              "Very polite, punctual, and generous."
+            </p>
           </div>
         </div>
 
