@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, MouseEvent, ReactNode } from "react";
+import { useRef, useState, useEffect, ReactNode } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface HorizontalScrollProps {
   children: ReactNode;
@@ -10,52 +11,80 @@ interface HorizontalScrollProps {
 
 export const HorizontalScroll = ({ children, className = "", contentClassName = "" }: HorizontalScrollProps) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
+  const [showArrows, setShowArrows] = useState(false);
 
-  const onMouseDown = (e: MouseEvent) => {
+  const checkScroll = () => {
     if (!ref.current) return;
-    setIsDragging(true);
-    setStartX(e.pageX - ref.current.offsetLeft);
-    setScrollLeft(ref.current.scrollLeft);
+    const { scrollWidth, clientWidth } = ref.current;
+    // Show arrows if there is scrollable content
+    setShowArrows(scrollWidth > clientWidth);
   };
 
-  const onMouseLeave = () => {
-    setIsDragging(false);
-  };
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener("resize", checkScroll);
+    return () => window.removeEventListener("resize", checkScroll);
+  }, []);
 
-  const onMouseUp = () => {
-    setIsDragging(false);
-  };
+  const scroll = (direction: "left" | "right") => {
+    if (!ref.current) return;
+    const container = ref.current;
+    const scrollAmount = container.clientWidth / 2;
+    const maxScroll = container.scrollWidth - container.clientWidth;
 
-  const onMouseMove = (e: MouseEvent) => {
-    if (!isDragging || !ref.current) return;
-    e.preventDefault();
-    const x = e.pageX - ref.current.offsetLeft;
-    const walk = (x - startX) * 2; // Scroll-fast factor
-    ref.current.scrollLeft = scrollLeft - walk;
-  };
+    let targetScroll;
 
-  // Prevent click events during drag (cleanup)
-  const onCaptureClick = (e: MouseEvent) => {
-    if (isDragging) {
-      e.preventDefault();
-      e.stopPropagation();
+    if (direction === "left") {
+      // Loop to end if at start (with small buffer)
+      if (container.scrollLeft <= 5) { // 5px buffer
+        targetScroll = maxScroll;
+      } else {
+        targetScroll = container.scrollLeft - scrollAmount;
+      }
+    } else {
+      // Loop to start if at end (with small buffer)
+      if (container.scrollLeft >= maxScroll - 5) {
+        targetScroll = 0;
+      } else {
+        targetScroll = container.scrollLeft + scrollAmount;
+      }
     }
+
+    container.scrollTo({
+      left: targetScroll,
+      behavior: "smooth"
+    });
   };
 
   return (
-    <div
-      ref={ref}
-      onMouseDown={onMouseDown}
-      onMouseLeave={onMouseLeave}
-      onMouseUp={onMouseUp}
-      onMouseMove={onMouseMove}
-      onClickCapture={onCaptureClick} // Try to prevent click if dragged? (Tricky with native click vs drag)
-      className={`overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing flex ${className} ${contentClassName}`}
-    >
-      {children}
+    <div className="relative group">
+      {/* Left Arrow */}
+      {showArrows && (
+        <button
+          onClick={() => scroll("left")}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-opacity hidden sm:flex"
+        >
+          <ChevronLeft size={20} className="text-slate-700" />
+        </button>
+      )}
+
+      <div
+        ref={ref}
+        onScroll={checkScroll}
+        className={`overflow-x-auto no-scrollbar flex ${className} ${contentClassName}`}
+      >
+        {children}
+      </div>
+
+      {/* Right Arrow */}
+      {showArrows && (
+        <button
+          onClick={() => scroll("right")}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-opacity hidden sm:flex"
+        >
+          <ChevronRight size={20} className="text-slate-700" />
+        </button>
+      )}
     </div>
   );
 };

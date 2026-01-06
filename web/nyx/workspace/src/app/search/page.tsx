@@ -51,6 +51,43 @@ const SEARCH_RESULTS: CastData[] = [
     status: "online",
     oneLiner: "Looking for interesting conversation. ☕"
   },
+  // Additional Mock Data for Scrolling Test
+  {
+    id: "6", name: "Kaito", age: 21, location: "Akihabara", tags: ["Gamer"],
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kaito",
+    status: "tonight",
+    oneLiner: "Ranked match anyone? 🎮"
+  },
+  {
+    id: "7", name: "Aoi", age: 23, location: "Shibuya", tags: ["Fashion"],
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aoi",
+    status: "online",
+    oneLiner: "Check out my new outfit! 👗"
+  },
+  {
+    id: "8", name: "Ren", age: 26, location: "Shinjuku", tags: ["Singer"],
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ren",
+    status: "offline",
+    oneLiner: "Practicing a new song..."
+  },
+  {
+    id: "9", name: "Hina", age: 20, location: "Harajuku", tags: ["Student"],
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Hina",
+    status: "online",
+    oneLiner: "Study break! Let's chat. 📚"
+  },
+  {
+    id: "10", name: "Takumi", age: 24, location: "Roppongi", tags: ["DJ"],
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Takumi",
+    status: "tonight",
+    oneLiner: "Spinning tracks all night! 🎧"
+  },
+  {
+    id: "11", name: "Emi", age: 22, location: "Ginza", tags: ["Foodie"],
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emi",
+    status: "online",
+    oneLiner: "Craving sushi right now. 🍣"
+  },
 ];
 
 export default function SearchPage() {
@@ -81,7 +118,7 @@ export default function SearchPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab.toLowerCase())}
-            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors shadow-sm
+            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0 transition-colors shadow-sm
                         ${activeTab === tab.toLowerCase()
                 ? "bg-slate-900 text-white"
                 : "bg-white text-slate-500 border border-slate-100"
