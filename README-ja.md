@@ -10,7 +10,6 @@
 .
 ├── .github/            # GitHub Actions Workflows
 ├── clusters/           # Flux CD Cluster definitions
-├── demo/               # Demo application
 ├── openspec/           # OpenAPI specifications
 ├── proto/              # Protocol Buffers definitions
 ├── services/           # Microservices source code & manifests

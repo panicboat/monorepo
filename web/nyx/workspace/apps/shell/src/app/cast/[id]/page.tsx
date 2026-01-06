@@ -63,9 +63,9 @@ export default function CastDetailPage({ params }: { params: Promise<{ id: strin
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white shadow-xl shadow-slate-300 transition-colors hover:bg-slate-800"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-pink-500 text-white shadow-xl shadow-pink-200 transition-colors hover:bg-pink-600"
             >
-              <MessageCircle size={24} className="text-pink-400" />
+              <MessageCircle size={24} color="white" />
             </motion.button>
           </Link>
         </div>

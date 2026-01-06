@@ -17,7 +17,6 @@ export const TopNavBar = () => {
   let title = "Nyx.";
   let showBack = false;
 
-  // Route Logic (Same as before)
   if (pathname === "/") {
     title = "Nyx.";
     showBack = false;
@@ -47,6 +46,9 @@ export const TopNavBar = () => {
     showBack = true;
   } else if (pathname.startsWith("/concierge/")) {
     title = "Chat Room";
+    showBack = true;
+  } else if (pathname.startsWith("/timeline/")) {
+    title = "Timeline";
     showBack = true;
   }
 

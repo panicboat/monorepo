@@ -100,7 +100,7 @@ export const ReviewList = () => {
         <div className="mt-4 px-4">
           <button
             onClick={() => setIsExpanded(true)}
-            className="w-full rounded-xl border border-slate-200 bg-white py-3 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50"
+            className="w-full rounded-xl bg-slate-900 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800"
           >
             Read All Reviews
           </button>

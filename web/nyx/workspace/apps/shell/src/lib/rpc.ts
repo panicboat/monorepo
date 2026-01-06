@@ -1,7 +1,7 @@
 import { createClient } from "@connectrpc/connect";
 import { createGrpcTransport } from "@connectrpc/connect-node";
-import { CastService } from "@nyx/rpc/cast/v1/service_connect";
-import { IdentityService } from "@nyx/rpc/identity/v1/service_connect";
+import { CastService } from "./rpc/cast/v1/service_connect";
+import { IdentityService } from "./rpc/identity/v1/service_connect";
 
 // Backend URL environment variable (default for docker)
 const baseUrl = process.env.GRPC_BACKEND_URL || "http://localhost:9001";

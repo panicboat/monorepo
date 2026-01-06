@@ -1,21 +1,43 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "../hooks/useAuth";
 import { GuestRadar } from "./GuestRadar";
+import { ReviewForm } from "@/modules/trust/components/ReviewForm";
 
 export const GuestDashboard = () => {
   const { user, logout } = useAuth();
 
+  // Review Modal State
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedReviewTarget, setSelectedReviewTarget] = useState<{ id: number; cast: string } | null>(null);
+
   // Mock Data
+  const [pendingReviews, setPendingReviews] = useState([
+    { id: 101, cast: "Yuna", date: "Today 21:00", type: "Standard 60min", isPastDue: true }
+  ]);
+
   const history = [
     { id: 1, cast: "Yuna", date: "2024-01-20 21:00", type: "Standard 60min", status: "sealed" },
     { id: 2, cast: "Mio", date: "2024-01-15 19:30", type: "Option: Cosplay", status: "completed" },
   ];
 
+  const openReviewModal = (item: { id: number; cast: string }) => {
+    setSelectedReviewTarget(item);
+    setReviewModalOpen(true);
+  };
+
+  const handleReviewSubmit = (data: any) => {
+    console.log("Review Submitted", data);
+    // Remove from pending locally
+    setPendingReviews(prev => prev.filter(p => p.id !== selectedReviewTarget?.id));
+    setReviewModalOpen(false);
+  };
+
   return (
-    <div className="bg-slate-50 pb-safe">
+    <div className="bg-slate-50 pb-24 md:pb-safe min-h-screen">
       <main className="p-6 space-y-8 pt-4">
         {/* Profile Header */}
         <div className="flex items-center gap-4">
@@ -105,6 +127,46 @@ export const GuestDashboard = () => {
           </div>
         </div>
 
+        {/* Pending Reviews (Active Rituals / Past Due) */}
+        <AnimatePresence>
+          {pendingReviews.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3 px-1">
+                <span className="flex h-2 w-2 rounded-full bg-pink-500 animate-pulse"></span>
+                <h3 className="font-bold text-sm text-slate-800">Pending Reviews</h3>
+              </div>
+              <div className="space-y-3">
+                {pendingReviews.map((item) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex items-center justify-between rounded-xl bg-white p-4 shadow-md border border-pink-100 ring-1 ring-pink-50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-10 w-10 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-xs overflow-hidden">
+                        {/* Mock Avatar */}
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" alt="avatar" className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-800 text-sm">{item.cast}</div>
+                        <div className="text-[10px] text-slate-500 font-bold">{item.type}</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => openReviewModal(item)}
+                      className="px-4 py-2 rounded-full bg-pink-500 text-white text-xs font-bold shadow-md hover:bg-pink-600 transition-transform active:scale-95"
+                    >
+                      Write Review
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+            </section>
+          )}
+        </AnimatePresence>
+
         {/* Recent History Preview */}
         <section>
           <div className="flex items-center justify-between mb-3 px-1">
@@ -162,6 +224,12 @@ export const GuestDashboard = () => {
           Sign Out
         </button>
       </main>
+      <ReviewForm
+        isOpen={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        onSubmit={handleReviewSubmit}
+        castName={selectedReviewTarget?.cast || "Cast"}
+      />
     </div>
   );
 };

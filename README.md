@@ -10,7 +10,6 @@
 .
 ├── .github/            # GitHub Actions Workflows
 ├── clusters/           # Flux CD Cluster definitions
-├── demo/               # Demo application
 ├── openspec/           # OpenAPI specifications
 ├── proto/              # Protocol Buffers definitions
 ├── services/           # Microservices source code & manifests
@@ -39,7 +38,7 @@ Add the following to `/etc/hosts`.
 127.0.0.1 docs.local
 ```
 
-### 🔧 Local Development
+### 🚀 Running Locally
 
 To edit manifests locally without Flux overwriting changes, suspend the Kustomizations:
 
