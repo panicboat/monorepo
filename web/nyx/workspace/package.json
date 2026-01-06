@@ -23,7 +23,7 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
-    "@bufbuild/protoc-gen-es": "^1.10.0",
+    "@bufbuild/protoc-gen-es": "^2.0.0",
     "@connectrpc/protoc-gen-connect-es": "^1.6.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.0.0",
