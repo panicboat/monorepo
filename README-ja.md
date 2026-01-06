@@ -84,4 +84,5 @@ graph LR
 
 ## 📝 Contribution Guide
 
-- [docusaurus](services/docs/workspace/docs/README.md)
+- [handbook](services/docs/workspace/docs)
+- [blog](services/docs/workspace/blog)
