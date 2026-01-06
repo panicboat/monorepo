@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { useAuth } from "../hooks/useAuth";
 
 export const GuestDashboard = () => {
@@ -45,18 +46,39 @@ export const GuestDashboard = () => {
         {/* Quick Actions */}
         <div className="grid grid-cols-4 gap-3">
           {[
-            { label: "Favorites", icon: "❤️", color: "bg-pink-50 text-pink-600" },
-            { label: "Following", icon: "👥", color: "bg-blue-50 text-blue-600" },
-            { label: "Footprints", icon: "🐾", color: "bg-orange-50 text-orange-600" },
-            { label: "Blocking", icon: "⛔", color: "bg-slate-50 text-slate-600" },
+            { label: "Favorites", icon: "❤️", color: "bg-pink-50 text-pink-600", href: "/favorites" },
+            { label: "Following", icon: "👥", color: "bg-blue-50 text-blue-600", href: "/following" },
+            { label: "Footprints", icon: "🐾", color: "bg-orange-50 text-orange-600", href: "/footprints" },
+            { label: "Blocking", icon: "⛔", color: "bg-slate-50 text-slate-600", href: "/blocking" },
           ].map(action => (
-            <button key={action.label} className="flex flex-col items-center gap-2 rounded-xl bg-white p-3 shadow-sm border border-slate-100 transition-transform active:scale-95">
+            <Link href={action.href} key={action.label} className="flex flex-col items-center gap-2 rounded-xl bg-white p-3 shadow-sm border border-slate-100 transition-transform active:scale-95">
               <div className={`h-10 w-10 flex items-center justify-center rounded-full text-lg ${action.color}`}>
                 {action.icon}
               </div>
               <span className="text-[10px] font-bold text-slate-600">{action.label}</span>
-            </button>
+            </Link>
           ))}
+        </div>
+
+        {/* Reliability Score Widget */}
+        <div className="rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 p-5 text-white shadow-lg relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <span className="text-6xl">🛡️</span>
+          </div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Guest Reliability</h3>
+          <div className="flex items-end gap-3">
+            <span className="text-3xl font-bold font-mono text-yellow-500">A+</span>
+            <span className="text-sm font-medium mb-1">Excellent</span>
+          </div>
+          <div className="mt-4 pb-1">
+            <div className="flex justify-between text-[10px] text-slate-400 mb-1">
+              <span>Score</span>
+              <span>850 / 999</span>
+            </div>
+            <div className="h-1.5 w-full bg-slate-700 rounded-full overflow-hidden">
+              <div className="h-full w-[85%] bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full"></div>
+            </div>
+          </div>
         </div>
 
         {/* Recent History Preview */}

@@ -35,7 +35,7 @@ export default function Home() {
             </section>
 
             {/* Tab Navigation */}
-            <div className="sticky top-14 z-20 flex border-b border-slate-200 bg-white shadow-sm">
+            <div className="sticky top-14 md:top-16 z-20 flex border-b border-slate-200 bg-white shadow-sm">
               <button
                 onClick={() => setTab("timeline")}
                 className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === "timeline" ? "border-b-2 border-pink-500 text-pink-500" : "text-slate-400"}`}

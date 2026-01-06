@@ -29,8 +29,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Simulate session check on mount
     const timer = setTimeout(() => {
-      // For development convenience, we can uncomment this to auto-login
-      // setUser({ id: "guest-1", name: "Guest User", isGuest: true });
+      const stored = localStorage.getItem("nyx_mock_user");
+      if (stored) {
+        setUser(JSON.parse(stored));
+      }
       setIsLoading(false);
     }, 500);
     return () => clearTimeout(timer);
@@ -40,12 +42,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     // Mock OIDC delay
     await new Promise((resolve) => setTimeout(resolve, 1500));
-    setUser({
+    const mockUser: User = {
       id: "google-user-1",
       name: "Taro Yamada",
       avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Taro",
       isGuest: true,
-    });
+    };
+    setUser(mockUser);
+    localStorage.setItem("nyx_mock_user", JSON.stringify(mockUser));
     setIsLoading(false);
     router.push("/"); // Redirect to root (Home)
   };
@@ -61,11 +65,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (code === "1234") { // Hardcoded mock code
       setIsLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setUser({
+      const mockUser: User = {
         id: "sms-user-1",
         name: "090-XXXX-XXXX",
         isGuest: true,
-      });
+      };
+      setUser(mockUser);
+      localStorage.setItem("nyx_mock_user", JSON.stringify(mockUser));
       setIsLoading(false);
       router.push("/");
     } else {
@@ -77,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 500));
     setUser(null);
+    localStorage.removeItem("nyx_mock_user");
     setIsLoading(false);
     router.push("/");
   };
