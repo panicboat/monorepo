@@ -9,14 +9,14 @@ importers:
   .:
     dependencies:
       '@bufbuild/protobuf':
-        specifier: ^1.10.0
-        version: 1.10.1
+        specifier: ^2.0.0
+        version: 2.10.2
       '@connectrpc/connect':
         specifier: ^1.6.0
-        version: 1.7.0(@bufbuild/protobuf@1.10.1)
+        version: 1.7.0(@bufbuild/protobuf@2.10.2)
       '@connectrpc/connect-node':
         specifier: ^1.6.0
-        version: 1.7.0(@bufbuild/protobuf@1.10.1)(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))
+        version: 1.7.0(@bufbuild/protobuf@2.10.2)(@connectrpc/connect@1.7.0(@bufbuild/protobuf@2.10.2))
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -41,10 +41,10 @@ importers:
     devDependencies:
       '@bufbuild/protoc-gen-es':
         specifier: ^1.10.0
-        version: 1.10.1(@bufbuild/protobuf@1.10.1)
+        version: 1.10.1(@bufbuild/protobuf@2.10.2)
       '@connectrpc/protoc-gen-connect-es':
         specifier: ^1.6.0
-        version: 1.7.0(@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@1.10.1))(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))
+        version: 1.7.0(@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@2.10.2))(@connectrpc/connect@1.7.0(@bufbuild/protobuf@2.10.2))
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.18
@@ -262,6 +262,9 @@ packages:
 
   '@bufbuild/protobuf@1.10.1':
     resolution: {integrity: sha512-wJ8ReQbHxsAfXhrf9ixl0aYbZorRuOWpBNzm8pL8ftmSxQx/wnJD5Eg861NwJU/czy2VXFIebCeZnZrI9rktIQ==}
+
+  '@bufbuild/protobuf@2.10.2':
+    resolution: {integrity: sha512-uFsRXwIGyu+r6AMdz+XijIIZJYpoWeYzILt5yZ2d3mCjQrWUTVpVD9WL/jZAbvp+Ed04rOhrsk7FiTcEDseB5A==}
 
   '@bufbuild/protoc-gen-es@1.10.1':
     resolution: {integrity: sha512-YADugbvibIdZSb0NGf5OF87IyKTuMvMFZ7vMHgm6pL1SCfDwJ/ZRianTdrPG9hq/gOipK+NwHmXBViyS3J7nxA==}
@@ -2430,11 +2433,21 @@ snapshots:
 
   '@bufbuild/protobuf@1.10.1': {}
 
+  '@bufbuild/protobuf@2.10.2': {}
+
   '@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@1.10.1)':
     dependencies:
       '@bufbuild/protoplugin': 1.10.1
     optionalDependencies:
       '@bufbuild/protobuf': 1.10.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@2.10.2)':
+    dependencies:
+      '@bufbuild/protoplugin': 1.10.1
+    optionalDependencies:
+      '@bufbuild/protobuf': 2.10.2
     transitivePeerDependencies:
       - supports-color
 
@@ -2452,9 +2465,19 @@ snapshots:
       '@connectrpc/connect': 1.7.0(@bufbuild/protobuf@1.10.1)
       undici: 5.29.0
 
+  '@connectrpc/connect-node@1.7.0(@bufbuild/protobuf@2.10.2)(@connectrpc/connect@1.7.0(@bufbuild/protobuf@2.10.2))':
+    dependencies:
+      '@bufbuild/protobuf': 2.10.2
+      '@connectrpc/connect': 1.7.0(@bufbuild/protobuf@2.10.2)
+      undici: 5.29.0
+
   '@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1)':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
+
+  '@connectrpc/connect@1.7.0(@bufbuild/protobuf@2.10.2)':
+    dependencies:
+      '@bufbuild/protobuf': 2.10.2
 
   '@connectrpc/protoc-gen-connect-es@1.7.0(@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@1.10.1))(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))':
     dependencies:
@@ -2463,6 +2486,16 @@ snapshots:
     optionalDependencies:
       '@bufbuild/protoc-gen-es': 1.10.1(@bufbuild/protobuf@1.10.1)
       '@connectrpc/connect': 1.7.0(@bufbuild/protobuf@1.10.1)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@connectrpc/protoc-gen-connect-es@1.7.0(@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@2.10.2))(@connectrpc/connect@1.7.0(@bufbuild/protobuf@2.10.2))':
+    dependencies:
+      '@bufbuild/protobuf': 1.10.1
+      '@bufbuild/protoplugin': 1.10.1
+    optionalDependencies:
+      '@bufbuild/protoc-gen-es': 1.10.1(@bufbuild/protobuf@2.10.2)
+      '@connectrpc/connect': 1.7.0(@bufbuild/protobuf@2.10.2)
     transitivePeerDependencies:
       - supports-color
 
