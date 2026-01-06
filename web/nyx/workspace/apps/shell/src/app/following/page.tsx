@@ -4,19 +4,25 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-const FOLLOWING = [
-  { id: 2, name: "Maria", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria", area: "Roppongi" },
-  { id: 3, name: "Sarah", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah", area: "Shibuya" },
-  { id: 5, name: "Rin", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rin", area: "Ginza" },
-  { id: 6, name: "Kila", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kila", area: "Ebisu" },
+import { useSocial } from "../../modules/social/hooks/useSocial";
+
+const MOCK_DB = [
+  { id: "1", name: "Yuna", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna", area: "Roppongi" }, // Added Yuna
+  { id: "2", name: "Maria", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria", area: "Roppongi" },
+  { id: "3", name: "Sarah", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah", area: "Shibuya" },
+  { id: "5", name: "Rin", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rin", area: "Ginza" },
+  { id: "6", name: "Kila", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kila", area: "Ebisu" },
 ];
 
 export default function FollowingPage() {
+  const { following } = useSocial();
+  const list = MOCK_DB.filter(cast => following.includes(cast.id));
+
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
       <main className="px-4 pt-4">
         <div className="space-y-3">
-          {FOLLOWING.map((cast, i) => (
+          {list.length > 0 ? list.map((cast, i) => (
             <Link href={`/cast/${cast.id}`} key={cast.id}>
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
@@ -36,7 +42,11 @@ export default function FollowingPage() {
                 </button>
               </motion.div>
             </Link>
-          ))}
+          )) : (
+            <div className="py-20 text-center text-slate-400">
+              <p>Not following anyone yet.</p>
+            </div>
+          )}
         </div>
       </main>
     </div>

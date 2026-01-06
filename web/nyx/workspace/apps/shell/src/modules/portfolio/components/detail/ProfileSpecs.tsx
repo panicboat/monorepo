@@ -1,11 +1,29 @@
 "use client";
 
-export const ProfileSpecs = () => {
+import { useSocial } from "@/modules/social/hooks/useSocial";
+import { motion } from "framer-motion";
+
+export const ProfileSpecs = ({ castId }: { castId: string }) => {
+  const { isFollowing, toggleFollow } = useSocial();
+  const following = isFollowing(castId);
+
   return (
     <div className="space-y-6 px-6 py-8 bg-white rounded-t-3xl -mt-6 relative z-10">
       {/* Header Identity */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold font-serif text-slate-900 mb-1">Yuna</h1>
+        <h1 className="text-3xl font-bold font-serif text-slate-900 mb-1 flex items-center justify-center gap-3">
+          Yuna
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => toggleFollow(castId)}
+            className={`px-3 py-1 text-xs font-bold rounded-full border transition-colors ${following
+              ? "bg-slate-100 text-slate-500 border-slate-200"
+              : "bg-white text-pink-500 border-pink-500 hover:bg-pink-50"
+              }`}
+          >
+            {following ? "Following" : "Follow"}
+          </motion.button>
+        </h1>
         <p className="text-pink-500 text-sm font-bold tracking-widest uppercase">Platinum Cast</p>
       </div>
 

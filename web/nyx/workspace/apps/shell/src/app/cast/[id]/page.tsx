@@ -9,7 +9,27 @@ import { ReviewList } from "@/modules/trust/components/ReviewList";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { use, useState } from "react";
-import { ChevronLeft, MessageCircle, Heart } from "lucide-react";
+import { ChevronLeft, MessageCircle, Heart, AlertTriangle } from "lucide-react";
+import { useSocial } from "@/modules/social/hooks/useSocial";
+
+function BlockSection({ castId }: { castId: string }) {
+  const { isBlocking, toggleBlock } = useSocial();
+  const blocked = isBlocking(castId);
+
+  return (
+    <div className="flex flex-col items-center gap-2 border-t border-slate-100 pt-8">
+      <button
+        onClick={() => toggleBlock(castId)}
+        className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-colors ${blocked ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+          }`}
+      >
+        <AlertTriangle size={14} />
+        {blocked ? "Unblock Cast" : "Block / Report"}
+      </button>
+      {blocked && <p className="text-[10px] text-red-500 font-medium">You have blocked this user.</p>}
+    </div>
+  );
+}
 
 export default function CastDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -22,13 +42,17 @@ export default function CastDetailPage({ params }: { params: Promise<{ id: strin
       {/* Back Button handled by Global MobileHeader */}
 
       <PhotoGallery castId={id} />
-      <ProfileSpecs />
+      <ProfileSpecs castId={id} />
       <ScheduleCalendar />
       <TrustRadar scores={[90, 85, 70, 95, 80]} />
       <PriceSystem />
       <CastPosts />
 
       <ReviewList />
+
+      <div className="mt-8 mb-8 px-6">
+        <BlockSection castId={id} />
+      </div>
 
       {/* Floating Action Buttons */}
       <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex w-full max-w-md justify-end px-4 pb-24 pointer-events-none">
