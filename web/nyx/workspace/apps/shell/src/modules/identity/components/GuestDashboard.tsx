@@ -15,49 +15,76 @@ export const GuestDashboard = () => {
   return (
     <div className="bg-slate-50 pb-safe">
       <main className="p-6 space-y-8 pt-4">
-        {/* Profile Card */}
-        <div className="flex items-center gap-4 rounded-2xl bg-white p-6 shadow-sm">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-2xl">
-            {user?.avatarUrl ? <img src={user.avatarUrl} alt="avatar" className="h-full w-full rounded-full" /> : "👤"}
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-slate-900">{user?.name}</h2>
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
-              <span>Guest Member</span>
+        {/* Profile Header */}
+        <div className="flex items-center gap-4">
+          <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 p-0.5 shadow-lg">
+            <div className="h-full w-full rounded-full bg-white p-0.5">
+              {user?.avatarUrl ? <img src={user.avatarUrl} alt="avatar" className="h-full w-full rounded-full object-cover" /> : <div className="h-full w-full rounded-full bg-slate-100 flex items-center justify-center text-2xl">👤</div>}
+            </div>
+            <div className="absolute bottom-0 right-0 rounded-full bg-slate-900 border-2 border-white px-2 py-0.5 text-[10px] font-bold text-white">
+              Silver
             </div>
           </div>
+          <div>
+            <h2 className="text-xl font-bold font-serif text-slate-900">{user?.name}</h2>
+            <p className="text-xs text-slate-500 font-mono">ID: 99482103</p>
+            {/* <div className="mt-2 flex items-center gap-4">
+               <div>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Points</span>
+                  <span className="text-lg font-bold text-pink-500 font-mono">1,405 <span className="text-xs">pt</span></span>
+               </div>
+               <div className="h-6 w-px bg-slate-200"></div>
+               <div>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Tickets</span>
+                  <span className="text-lg font-bold text-slate-700 font-mono">2</span>
+               </div>
+            </div> */}
+          </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl bg-white p-4 shadow-sm text-center">
-            <div className="text-2xl font-bold text-slate-900">12</div>
-            <div className="text-xs text-slate-400">Pledges</div>
-          </div>
-          <div className="rounded-2xl bg-white p-4 shadow-sm text-center">
-            <div className="text-2xl font-bold text-pink-500">98%</div>
-            <div className="text-xs text-slate-400">Trust Score</div>
-          </div>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-4 gap-3">
+          {[
+            { label: "Favorites", icon: "❤️", color: "bg-pink-50 text-pink-600" },
+            { label: "Following", icon: "👥", color: "bg-blue-50 text-blue-600" },
+            { label: "Footprints", icon: "🐾", color: "bg-orange-50 text-orange-600" },
+            { label: "Blocking", icon: "⛔", color: "bg-slate-50 text-slate-600" },
+          ].map(action => (
+            <button key={action.label} className="flex flex-col items-center gap-2 rounded-xl bg-white p-3 shadow-sm border border-slate-100 transition-transform active:scale-95">
+              <div className={`h-10 w-10 flex items-center justify-center rounded-full text-lg ${action.color}`}>
+                {action.icon}
+              </div>
+              <span className="text-[10px] font-bold text-slate-600">{action.label}</span>
+            </button>
+          ))}
         </div>
 
-        {/* History */}
+        {/* Recent History Preview */}
         <section>
-          <h3 className="mb-4 text-sm font-bold text-slate-400 uppercase tracking-wider">Recent Pledges</h3>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h3 className="font-bold text-sm text-slate-800">Recent Pledges</h3>
+            <button className="text-xs font-bold text-pink-500">View All</button>
+          </div>
           <div className="space-y-3">
             {history.map((item) => (
               <motion.div
                 key={item.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 className="flex items-center justify-between rounded-xl bg-white p-4 shadow-sm border border-slate-100"
               >
-                <div>
-                  <div className="font-bold text-slate-800">{item.cast}</div>
-                  <div className="text-xs text-slate-500">{item.date}</div>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-xs">
+                    {/* Placeholder Avatar */}
+                    👩
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-800 text-sm">{item.cast}</div>
+                    <div className="text-[10px] text-slate-400">{item.date} • {item.type}</div>
+                  </div>
                 </div>
-                <div className={`px-2 py-1 rounded text-xs font-bold uppercase
-                            ${item.status === "sealed" ? "bg-red-100 text-red-800" : "bg-slate-100 text-slate-800"}
+                <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase
+                            ${item.status === "sealed" ? "bg-red-100 text-red-600 border border-red-200" : "bg-slate-100 text-slate-500 border border-slate-200"}
                         `}>
                   {item.status}
                 </div>
@@ -66,9 +93,25 @@ export const GuestDashboard = () => {
           </div>
         </section>
 
+        {/* Menu List */}
+        <div className="rounded-2xl bg-white shadow-sm border border-slate-100 overflow-hidden">
+          {[
+            "Account Settings",
+            "Notification Settings",
+            "Payment Methods",
+            "Help & Support",
+            "Terms of Service"
+          ].map((item, i) => (
+            <button key={item} className={`w-full flex items-center justify-between px-5 py-4 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors ${i !== 4 ? 'border-b border-slate-50' : ''}`}>
+              <span>{item}</span>
+              <span className="text-slate-300">›</span>
+            </button>
+          ))}
+        </div>
+
         <button
           onClick={logout}
-          className="w-full rounded-xl border border-red-100 bg-red-50 py-3 text-sm font-bold text-red-500 hover:bg-red-100 transition-colors"
+          className="w-full rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors"
         >
           Sign Out
         </button>

@@ -32,13 +32,13 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50 md:pt-16`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50`}
       >
         <AuthProvider>
           <DesktopNav />
           <div className="relative flex justify-center">
             {/* Main Mobile App Container */}
-            <div className="mx-auto min-h-screen w-full max-w-md bg-white relative">
+            <div className="mx-auto min-h-screen w-full max-w-md bg-white relative md:pt-16">
               <MobileHeader />
               {children}
               <BottomNavBar />
