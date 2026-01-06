@@ -15,7 +15,6 @@ ENV CI=true
 RUN pnpm install --frozen-lockfile
 
 # Build the project
-# This assumes 'build' script in root package.json runs 'turbo run build'
 RUN pnpm build
 
 FROM base AS runner
@@ -35,9 +34,9 @@ RUN adduser --system --uid 1001 nextjs
 # But first, we need to know where the output is.
 # Assuming 'apps/shell' is the target.
 
-COPY --from=builder --chown=nextjs:nodejs /app/apps/shell/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/shell/.next/static ./apps/shell/.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/apps/shell/public ./apps/shell/public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
 
@@ -47,4 +46,4 @@ ENV PORT=3000
 # set hostname to localhost
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "apps/shell/server.js"]
+CMD ["node", "server.js"]

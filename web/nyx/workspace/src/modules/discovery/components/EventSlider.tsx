@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
 
 type EventItem = {
   id: string;
@@ -18,12 +18,9 @@ const events: EventItem[] = [
   { id: "5", title: "Cosplay Week", subtitle: "Uniforms & Maid", bg: "bg-gradient-to-r from-green-400 to-emerald-600" },
 ];
 
-// Utility to hide scrollbar
-const noScrollbar = "scrollbar-none"; // Assuming Tailwind plugin or custom CSS exists, or use inline style
-
 export const EventSlider = () => {
   return (
-    <div className="w-full py-6 pl-4 overflow-x-auto snap-x snap-mandatory flex gap-4 pr-10 no-scrollbar">
+    <HorizontalScroll className="w-full snap-x snap-mandatory" contentClassName="gap-4 pl-4 pr-10 py-6">
       {events.map((evt) => (
         <motion.div
           key={evt.id}
@@ -43,6 +40,6 @@ export const EventSlider = () => {
           <div className="absolute -bottom-8 -right-8 h-40 w-40 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
         </motion.div>
       ))}
-    </div>
+    </HorizontalScroll>
   );
 };

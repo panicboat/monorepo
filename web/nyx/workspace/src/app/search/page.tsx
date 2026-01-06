@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Search, SlidersHorizontal, MapPin, Sparkles, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
 
 const POPULAR_TAGS = ["#Newcomer", "#Model", "#Healer", "#English", "#Cosplay", "#Student"];
 
@@ -75,24 +76,22 @@ export default function SearchPage() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="px-4 mb-6 overflow-x-auto no-scrollbar">
-        <div className="flex gap-2">
-          {["All", "Online", "New", "Ranking"].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab.toLowerCase())}
-              className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors shadow-sm
+      <HorizontalScroll className="mb-6" contentClassName="px-4 gap-2">
+        {["All", "Online", "New", "Ranking"].map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab.toLowerCase())}
+            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors shadow-sm
                         ${activeTab === tab.toLowerCase()
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-500 border border-slate-100"
-                }
+                ? "bg-slate-900 text-white"
+                : "bg-white text-slate-500 border border-slate-100"
+              }
                     `}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </div>
+          >
+            {tab}
+          </button>
+        ))}
+      </HorizontalScroll>
 
       {/* Highlights (Horizontal Scroll) */}
       <div className="mb-8 relative">
@@ -102,11 +101,11 @@ export default function SearchPage() {
         </div>
 
         {/* Scroll Container with Snap */}
-        <div className="flex overflow-x-auto gap-3 px-4 pb-4 snap-x snap-mandatory no-scrollbar pr-6">
+        <HorizontalScroll className="snap-x snap-mandatory" contentClassName="gap-3 px-4 pb-4 pr-6">
           {highlightCasts.map(cast => (
             <Link href={`/cast/${cast.id}`} key={cast.id} className="flex-shrink-0 w-28 snap-center">
               <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md">
-                <img src={cast.image} alt={cast.name} className="h-full w-full object-cover" />
+                <img src={cast.image} alt={cast.name} className="h-full w-full object-cover pointer-events-none" />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2">
                   <div className="text-white text-xs font-bold truncate">{cast.name}</div>
                   <div className={`text-[10px] font-bold ${cast.status === 'online' ? 'text-green-400' : 'text-pink-400'}`}>
@@ -116,9 +115,8 @@ export default function SearchPage() {
               </div>
             </Link>
           ))}
-          {/* Spacer for last item to snap correctly */}
-          <div className="w-2 flex-shrink-0" />
-        </div>
+          {/* Spacer for last item to snap correctly - Not needed with HorizontalScroll PR padding, but nice for visual balance if desired */}
+        </HorizontalScroll>
 
         {/* Strong Fade Mask on Right */}
         <div className="absolute right-0 top-8 bottom-4 w-12 bg-gradient-to-l from-slate-50 via-slate-50/80 to-transparent pointer-events-none" />

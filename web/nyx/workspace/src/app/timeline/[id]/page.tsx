@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+
 import { ChevronLeft, Grid, List as ListIcon, Play } from "lucide-react";
 import { MOCK_POSTS, EXTRA_POSTS, PostCard, PostItem } from "@/modules/portfolio/components/detail/CastPosts";
 import { MediaModal, MediaItem } from "@/modules/common/components/MediaModal";
+import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
 
 // Combine available mocks
 const ALL_POSTS = [...MOCK_POSTS, ...EXTRA_POSTS];
@@ -40,7 +42,7 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-slate-50 pb-safe">
       {/* Filter Tabs & Layout Toggle */}
       <div className="sticky top-14 z-20 bg-slate-50 pt-4 pb-4 px-4 flex items-center justify-between border-b border-slate-100/50 backdrop-blur-sm bg-slate-50/95">
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+        <HorizontalScroll className="flex-1 min-w-0 mr-2" contentClassName="gap-2 cursor-grab active:cursor-grabbing">
           {(["all", "image", "video"] as const).map(f => (
             <button
               key={f}
@@ -55,7 +57,7 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
               {f === "image" ? "Photos" : f === "video" ? "Videos" : "All"}
             </button>
           ))}
-        </div>
+        </HorizontalScroll>
 
         {/* Layout Toggle */}
         <div className="flex bg-white rounded-lg p-0.5 border border-slate-200 shadow-sm ml-2 flex-shrink-0">
@@ -141,6 +143,6 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
         onClose={() => setModalOpen(false)}
         media={selectedMedia}
       />
-    </div>
+    </div >
   );
 }

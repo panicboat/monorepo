@@ -18,6 +18,8 @@ const ranks: RankItem[] = [
   { id: "5", name: "Kila", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kila", score: "95.0%", change: "same" },
 ];
 
+import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
+
 export const RankingWidget = () => {
   return (
     <div className="py-2">
@@ -26,7 +28,7 @@ export const RankingWidget = () => {
         <span className="text-xs font-bold text-pink-500">Weekly</span>
       </div>
 
-      <div className="no-scrollbar flex gap-4 overflow-x-auto px-4 pb-4">
+      <HorizontalScroll contentClassName="gap-4 px-4 pb-4 cursor-grab active:cursor-grabbing">
         {ranks.map((cast, index) => (
           <div key={cast.id} className="relative flex-shrink-0">
             {/* Crown for Top 3 */}
@@ -43,7 +45,11 @@ export const RankingWidget = () => {
               <div className={`relative h-16 w-16 overflow-hidden rounded-full border-2
                     ${index === 0 ? "border-yellow-400 p-0.5" : "border-slate-100"}
                 `}>
-                <img src={cast.image} alt={cast.name} className="h-full w-full rounded-full object-cover" />
+                <img
+                  src={cast.image}
+                  alt={cast.name}
+                  className="h-full w-full rounded-full object-cover pointer-events-none" // prevent img drag interfering
+                />
                 <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-[10px] text-center text-white font-bold backdrop-blur-[1px]">
                   {index + 1}
                 </div>
@@ -53,7 +59,7 @@ export const RankingWidget = () => {
             </motion.div>
           </div>
         ))}
-      </div>
+      </HorizontalScroll>
     </div>
   );
 };
