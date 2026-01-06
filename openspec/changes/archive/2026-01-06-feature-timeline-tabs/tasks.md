@@ -1,0 +1,6 @@
+- [ ] Implement Tab UI
+    - [ ] Create a segmented control or tab bar in `Timeline.tsx`.
+    - [ ] Add state for `activeTab` ('all', 'following', 'favorites').
+- [ ] Implement Filtering Logic
+    - [ ] Filter `MOCK_POSTS` based on `useSocial` hook state (`following`, `favorites`).
+    - [ ] Handle empty states for each tab (e.g. "No following posts yet").

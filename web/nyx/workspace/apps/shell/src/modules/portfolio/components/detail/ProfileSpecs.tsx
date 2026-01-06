@@ -24,7 +24,25 @@ export const ProfileSpecs = ({ castId }: { castId: string }) => {
             {following ? "Following" : "Follow"}
           </motion.button>
         </h1>
-        <p className="text-pink-500 text-sm font-bold tracking-widest uppercase">Platinum Cast</p>
+        <p className="text-pink-500 text-sm font-bold tracking-widest uppercase mb-6">Platinum Cast</p>
+
+        {/* Social Counts */}
+        <div className="flex justify-center items-center gap-6 mb-6">
+          <div className="flex flex-col items-center">
+            <span className="font-serif font-bold text-slate-800 text-xl">1.2k</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Followers</span>
+          </div>
+          <div className="w-px h-8 bg-slate-100" />
+          <div className="flex flex-col items-center">
+            <span className="font-serif font-bold text-slate-800 text-xl">890</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Favorites</span>
+          </div>
+          <div className="w-px h-8 bg-slate-100" />
+          <div className="flex flex-col items-center">
+            <span className="font-serif font-bold text-slate-800 text-xl">15k</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Likes</span>
+          </div>
+        </div>
       </div>
 
       {/* Introductory Text */}

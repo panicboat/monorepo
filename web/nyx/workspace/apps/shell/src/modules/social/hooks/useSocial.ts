@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 type SocialState = {
   following: string[]; // List of Cast IDs
   blocking: string[]; // List of User IDs (or Cast IDs)
+  favorites: string[]; // List of Cast IDs
 };
 
 const STORAGE_KEY = "nyx_social_state";
@@ -13,6 +14,7 @@ export const useSocial = () => {
   const [state, setState] = useState<SocialState>({
     following: [],
     blocking: [],
+    favorites: [],
   });
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -21,7 +23,12 @@ export const useSocial = () => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        setState(JSON.parse(stored));
+        setState({
+          following: [],
+          blocking: [],
+          favorites: [],
+          ...JSON.parse(stored)
+        });
       } catch (e) {
         console.error("Failed to parse social state", e);
       }
@@ -60,16 +67,34 @@ export const useSocial = () => {
     });
   };
 
+  const toggleFavorite = (castId: string) => {
+    setState((prev) => {
+      const isFavorite = prev.favorites?.includes(castId) ?? false;
+      const currentFavorites = prev.favorites ?? [];
+
+      return {
+        ...prev,
+        favorites: isFavorite
+          ? currentFavorites.filter((id) => id !== castId)
+          : [...currentFavorites, castId],
+      };
+    });
+  };
+
   const isFollowing = (castId: string) => state.following.includes(castId);
   const isBlocking = (targetId: string) => state.blocking.includes(targetId);
+  const isFavorite = (castId: string) => state.favorites?.includes(castId) ?? false;
 
   return {
     following: state.following,
     blocking: state.blocking,
+    favorites: state.favorites,
     toggleFollow,
     toggleBlock,
+    toggleFavorite,
     isFollowing,
     isBlocking,
+    isFavorite,
     isLoaded,
   };
 };
