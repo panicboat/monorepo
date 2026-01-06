@@ -11,10 +11,10 @@ const valueToPoint = (value: number, index: number, total: number, radius: numbe
   return `${x},${y}`;
 };
 
-export const GuestRadar = ({ scores = [80, 80, 80, 80, 80] }: { scores?: number[] }) => {
-  const size = 120; // Smaller size for the widget
+export const GuestRadar = ({ scores = [80, 80, 80, 80, 80], className = "" }: { scores?: number[], className?: string }) => {
+  const size = 120; // Internal coordinate system size
   const center = size / 2;
-  const radius = 35; // Adjusted radius to fit labels
+  const radius = 35; // Internal radius
 
   // Data Shape
   const polyPoints = scores.map((val, i) => valueToPoint(val, i, 5, radius, center)).join(" ");
@@ -24,10 +24,10 @@ export const GuestRadar = ({ scores = [80, 80, 80, 80, 80] }: { scores?: number[
   const midPoints = [50, 50, 50, 50, 50].map((val, i) => valueToPoint(val, i, 5, radius, center)).join(" ");
 
   return (
-    <div className="relative h-[120px] w-[120px] flex-shrink-0 -my-4">
-      <svg width={size} height={size} className="overflow-visible">
+    <div className={`relative flex-shrink-0 ${className}`}>
+      <svg viewBox={`0 0 ${size} ${size}`} className="overflow-visible w-full h-full">
         {/* Background Grids */}
-        <polygon points={bgPoints} fill="rgba(0, 0, 0, 0.02)" stroke="rgba(203, 213, 225, 0.5)" strokeWidth="0.5" />
+        <polygon points={bgPoints} fill="rgba(60, 60, 60, 0.02)" stroke="rgba(203, 213, 225, 0.5)" strokeWidth="0.5" />
         <polygon points={midPoints} fill="none" stroke="rgba(203, 213, 225, 0.5)" strokeWidth="0.5" />
 
         {/* Axis Lines */}
@@ -59,7 +59,7 @@ export const GuestRadar = ({ scores = [80, 80, 80, 80, 80] }: { scores?: number[
               x={x}
               y={y + 3}
               textAnchor="middle"
-              className="text-[8px] font-bold fill-slate-400 uppercase tracking-wider"
+              className="text-[6px] font-bold fill-slate-400 uppercase tracking-wider"
             >
               {label}
             </text>

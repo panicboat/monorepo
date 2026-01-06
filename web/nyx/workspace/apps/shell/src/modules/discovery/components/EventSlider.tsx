@@ -18,52 +18,19 @@ const events: EventItem[] = [
   { id: "5", title: "Cosplay Week", subtitle: "Uniforms & Maid", bg: "bg-gradient-to-r from-green-400 to-emerald-600" },
 ];
 
+// Utility to hide scrollbar
+const noScrollbar = "scrollbar-none"; // Assuming Tailwind plugin or custom CSS exists, or use inline style
+
 export const EventSlider = () => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
-
-  useEffect(() => {
-    if (isPaused) return;
-
-    const scrollContainer = scrollRef.current;
-    if (!scrollContainer) return;
-
-    const interval = setInterval(() => {
-      // Calculate dynamic scroll amount based on first child width + gap
-      const firstCard = scrollContainer.children[0] as HTMLElement;
-      if (!firstCard) return;
-
-      const cardWidth = firstCard.offsetWidth;
-      const gap = 16; // gap-4
-      const scrollAmount = cardWidth + gap;
-
-      if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 10) {
-        scrollContainer.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        scrollContainer.scrollBy({ left: scrollAmount, behavior: "smooth" });
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isPaused]);
-
   return (
-    <div
-      ref={scrollRef}
-      className="no-scrollbar flex gap-4 overflow-x-auto px-8 py-6 w-full snap-x snap-mandatory focus:outline-none focus:ring-2 focus:ring-pink-500/20 rounded-xl"
-      tabIndex={0}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setIsPaused(false)}
-    >
+    <div className="w-full py-6 pl-4 overflow-x-auto snap-x snap-mandatory flex gap-4 pr-10 no-scrollbar">
       {events.map((evt) => (
         <motion.div
           key={evt.id}
           whileTap={{ scale: 0.97 }}
-          className={`relative h-40 w-[85%] flex-shrink-0 snap-center overflow-hidden rounded-3xl p-6 text-white shadow-lg ${evt.bg}`}
+          className={`relative h-40 w-[85%] sm:w-[320px] flex-shrink-0 snap-center overflow-hidden rounded-3xl p-6 text-white shadow-lg ${evt.bg}`}
         >
-          <div className="relative z-10 flex h-full flex-col justify-between">
+          <div className="relative z-10 flex h-full flex-col justify-between pointer-events-none select-none">
             <div>
               <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-bold backdrop-blur-sm tracking-wide">EVENT</span>
             </div>
@@ -73,7 +40,7 @@ export const EventSlider = () => {
             </div>
           </div>
           {/* Decorative Circle */}
-          <div className="absolute -bottom-8 -right-8 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
+          <div className="absolute -bottom-8 -right-8 h-40 w-40 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
         </motion.div>
       ))}
     </div>

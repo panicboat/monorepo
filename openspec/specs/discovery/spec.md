@@ -47,3 +47,28 @@ TBD - created by archiving change implement-full-mock. Update Purpose after arch
 - **WHEN** トップページを開いたとき
 - **THEN** デフォルトでは「All（すべて/おすすめ）」が表示される。
 
+### Requirement: Rich Search Visualization (MUST)
+検索結果画面は、単なるリストではなく、キャストの魅力や状態（One-Liner等）が直感的に伝わるビジュアル重視のレイアウトでなければならない (MUST)。
+
+#### Scenario: View Search Grid
+- **WHEN** ユーザーが検索画面を表示したとき
+- **THEN** キャストが大きな写真付きのカード（グリッド形式）で表示され、ひとことコメント等が確認できる。
+
+#### Scenario: View Highlights
+- **WHEN** 検索画面を表示したとき
+- **THEN** リストの上部または途中に、特定のステータス（Tonight OKや新人など）のキャストが特集された横スクロールエリアが表示される。
+
+### Requirement: Draggable Horizontal Scroll (MUST)
+横スクロール可能なセクションは、マウスドラッグ（PC）およびタッチ（SP）の両方で直感的にスクロールできなければならない (MUST)。
+
+#### Scenario: Drag on PC
+- **WHEN** PCブラウザで横スクロール領域をマウスでドラッグしたとき
+- **THEN** スムーズにスクロールし、慣性スクロールが効くこと。
+
+### Requirement: Scroll Affordance (MUST)
+横スクロール可能なセクションは、次項目の存在を視覚的に示唆（チラ見せ）しなければならない (MUST)。
+
+#### Scenario: View Carousel
+- **WHEN** カルーセルが表示されたとき
+- **THEN** 右端のアイテムが完全には表示されず、一部が見切れている状態で表示され、続きがあることがわかる。
+

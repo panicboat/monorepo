@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Social Proof Visualization (MUST)
 キャストの人気度を示す指標（フォロワー数、お気に入り数など）をプロフィール上で確認できなければならない (MUST)。

@@ -62,35 +62,42 @@ export const GuestDashboard = () => {
         </div>
 
         {/* Reliability Score Widget */}
-        {/* Reliability Score Widget */}
-        <div className="rounded-2xl bg-gradient-to-br from-amber-50/80 via-white to-white p-5 shadow-sm border border-slate-100 relative overflow-hidden">
+        <div className="rounded-2xl bg-gradient-to-br from-amber-50/80 via-white to-white p-6 shadow-sm border border-slate-100 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none grayscale">
             <span className="text-6xl">🛡️</span>
           </div>
 
-          <div className="flex items-center justify-between">
-            {/* Left: Rank Badge */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Guest Reliability</h3>
-              <div>
+          <div className="relative z-10">
+            {/* Top Row: Metrics Centered in Halves */}
+            <div className="grid grid-cols-2 gap-4 pb-4 mb-4 border-b border-slate-100">
+              {/* Left: Guest Reliability */}
+              <div className="flex flex-col items-center text-center border-r border-slate-100/50">
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Guest Reliability</h3>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold font-mono text-amber-500">A+</span>
-                  <span className="text-sm font-medium text-slate-400">Excellent</span>
+                  <span className="text-5xl font-bold font-mono text-amber-500 leading-none">A+</span>
+                  <span className="text-base font-medium text-slate-500">Excellent</span>
                 </div>
-                <div className="mt-1 text-[10px] text-slate-400 font-mono">
-                  Score: 850 / 999
+                <div className="text-[10px] text-slate-400 font-mono mt-1">Score: 850 / 999</div>
+              </div>
+
+              {/* Right: Vow Completion */}
+              <div className="flex flex-col items-center text-center">
+                <div className="text-[9px] uppercase font-bold text-slate-400 mb-0.5">Vow Completion</div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-5xl font-bold font-mono text-slate-800">98<span className="text-lg">%</span></span>
                 </div>
+                <span className="text-xs text-slate-400 font-mono block mt-1">(49/50)</span>
               </div>
             </div>
 
-            {/* Right: Radar Chart */}
-            <div className="relative z-10">
-              <GuestRadar scores={[90, 85, 95, 80, 100]} />
+            {/* Middle: Radar Chart (Centered & Large) */}
+            <div className="flex justify-center -mb-8">
+              <GuestRadar scores={[90, 85, 95, 80, 100]} className="w-[200px] h-[200px]" />
             </div>
           </div>
 
           {/* Bottom: Cast-facing Hint */}
-          <div className="mt-2 pt-3 border-t border-slate-100">
+          <div className="mt-4 pt-3 border-t border-slate-100">
             <p className="text-xs text-slate-500 italic flex items-center gap-2">
               <span className="text-amber-500">💡</span>
               "Very polite, punctual, and generous."

@@ -41,3 +41,10 @@ TBD - created by archiving change implement-full-mock. Update Purpose after arch
 - **WHEN** ギャラリーを表示したとき
 - **THEN** 現在表示中の画像が全体の何枚目かを示すインジケーター（ドットまたはバー）が表示される。
 
+### Requirement: Social Proof Visualization (MUST)
+キャストの人気度を示す指標（フォロワー数、お気に入り数など）をプロフィール上で確認できなければならない (MUST)。
+
+#### Scenario: View Social Counts
+- **WHEN** ユーザーがキャスト詳細画面を開いたとき
+- **THEN** フォロワー数、お気に入り数、いいね数がわかりやすく表示されている。
+

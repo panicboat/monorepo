@@ -1,0 +1,9 @@
+- [ ] Update Mock Data
+    - [ ] Add `statusMessage` (One-liner) to `SEARCH_RESULTS` in `app/search/page.tsx` (or move to a shared mock).
+- [ ] Implement Search UI Components
+    - [ ] Create `SearchCastCard` (or update `CastCard`) to support One-Liner display.
+    - [ ] Implement `HighlightSection` (Horizontal scroll for "Tonight" casts).
+- [ ] Refactor Search Page
+    - [ ] Change layout from vertical list to 2-column grid.
+    - [ ] Integrate `HighlightSection` above the grid.
+    - [ ] Update visual styling for "Popular Tags".

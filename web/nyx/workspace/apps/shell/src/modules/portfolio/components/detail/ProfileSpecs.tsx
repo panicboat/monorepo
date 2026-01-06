@@ -24,23 +24,35 @@ export const ProfileSpecs = ({ castId }: { castId: string }) => {
             {following ? "Following" : "Follow"}
           </motion.button>
         </h1>
-        <p className="text-pink-500 text-sm font-bold tracking-widest uppercase mb-6">Platinum Cast</p>
+        <p className="text-pink-500 text-sm font-bold tracking-widest uppercase mb-4">Platinum Cast</p>
+
+        {/* One Liner Bubble */}
+        <div className="relative inline-block bg-slate-50 border border-slate-100 rounded-2xl px-4 py-2 mb-6 mx-auto">
+          <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-50 border-t border-l border-slate-100 transform rotate-45" />
+          <p className="text-sm italic text-slate-700">"Just finished a ritual! 🕯️ Available for a chat."</p>
+        </div>
 
         {/* Social Counts */}
-        <div className="flex justify-center items-center gap-6 mb-6">
-          <div className="flex flex-col items-center">
+        <div className="flex justify-center items-center gap-4 mb-8">
+          <div className="flex flex-col items-center min-w-[60px]">
             <span className="font-serif font-bold text-slate-800 text-xl">1.2k</span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Followers</span>
+            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Followers</span>
           </div>
           <div className="w-px h-8 bg-slate-100" />
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center min-w-[60px]">
             <span className="font-serif font-bold text-slate-800 text-xl">890</span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Favorites</span>
+            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Favorites</span>
           </div>
           <div className="w-px h-8 bg-slate-100" />
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center min-w-[60px]">
             <span className="font-serif font-bold text-slate-800 text-xl">15k</span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Likes</span>
+            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Likes</span>
+          </div>
+          <div className="w-px h-8 bg-slate-100" />
+          <div className="flex flex-col items-center min-w-[60px]">
+            <span className="font-serif font-bold text-slate-800 text-xl">100<span className="text-xs">%</span></span>
+            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Etiquette</span>
+            <span className="text-[9px] text-slate-300 font-mono">(120/120)</span>
           </div>
         </div>
       </div>
@@ -97,6 +109,6 @@ export const ProfileSpecs = ({ castId }: { castId: string }) => {
           </span>
         ))}
       </div>
-    </div>
+    </div >
   );
 };
