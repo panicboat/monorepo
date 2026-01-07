@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-import { useSocial } from "../../modules/social/hooks/useSocial";
+import { useSocial } from "@/modules/social/hooks/useSocial";
 
 const MOCK_DB = [
   { id: "1", name: "Yuna", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna", area: "Roppongi" }, // Added Yuna
