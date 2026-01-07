@@ -16,7 +16,7 @@ export const DesktopRightSidebar = () => {
   if (isLoading || !user) return null;
 
   return (
-    <aside className="hidden w-80 flex-col gap-6 pt-24 lg:flex fixed left-[calc(50%+15rem)] top-0 bottom-0 overflow-y-auto no-scrollbar pr-4">
+    <aside className="hidden w-80 flex-col gap-6 pt-24 lg:flex sticky top-0 h-screen overflow-y-auto no-scrollbar">
       {/* Recommends Widget */}
       <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
         <h3 className="mb-4 font-bold text-slate-800">Tonight's Picks</h3>

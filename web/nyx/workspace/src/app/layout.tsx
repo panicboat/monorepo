@@ -17,11 +17,7 @@ export const metadata: Metadata = {
   description: "The Ritual of Sovereign Love",
 };
 
-import { AuthProvider } from "../modules/identity/hooks/useAuth";
-
-import { BottomNavBar } from "../modules/shell/components/BottomNavBar";
-import { DesktopRightSidebar } from "../modules/shell/components/DesktopSidebars";
-import { TopNavBar } from "../modules/shell/components/TopNavBar";
+import { AuthProvider } from "@/modules/identity/hooks/useAuth";
 
 export default function RootLayout({
   children,
@@ -34,17 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50`}
       >
         <AuthProvider>
-          <TopNavBar />
-          <div className="relative flex justify-center">
-            {/* Main Mobile App Container */}
-            <div className="mx-auto min-h-screen w-full max-w-md bg-white relative pt-14 md:pt-16">
-              {children}
-              <BottomNavBar />
-            </div>
-
-            {/* Desktop Sidebars (Positioned relative to center) */}
-            <DesktopRightSidebar />
-          </div>
+          {children}
         </AuthProvider>
       </body>
     </html>

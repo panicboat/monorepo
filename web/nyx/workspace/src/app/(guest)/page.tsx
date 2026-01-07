@@ -1,12 +1,12 @@
 "use client";
 
-import { CastList } from "../modules/portfolio/components/CastList";
-import { LoginGate } from "../modules/identity/components/LoginGate";
-import { useAuth } from "../modules/identity/hooks/useAuth";
-import { GuestDashboard } from "../modules/identity/components/GuestDashboard";
-import { RankingWidget } from "../modules/discovery/components/RankingWidget";
-import { EventSlider } from "../modules/discovery/components/EventSlider";
-import { TimelineFeed } from "../modules/discovery/components/TimelineFeed";
+import { CastList } from "@/modules/portfolio/components/CastList";
+import { LoginGate } from "@/modules/identity/components/LoginGate";
+import { useAuth } from "@/modules/identity/hooks/useAuth";
+import { GuestDashboard } from "@/modules/identity/components/GuestDashboard";
+import { RankingWidget } from "@/modules/discovery/components/RankingWidget";
+import { EventSlider } from "@/modules/discovery/components/EventSlider";
+import { TimelineFeed } from "@/modules/discovery/components/TimelineFeed";
 import { useState } from "react";
 
 export default function Home() {
