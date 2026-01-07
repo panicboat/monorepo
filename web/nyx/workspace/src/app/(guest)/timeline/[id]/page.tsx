@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { ChevronLeft, Grid, List as ListIcon, Play } from "lucide-react";
-import { MOCK_POSTS, EXTRA_POSTS, PostCard, PostItem } from "@/modules/portfolio/components/detail/CastPosts";
-import { MediaModal, MediaItem } from "@/modules/common/components/MediaModal";
+import { MOCK_POSTS, EXTRA_POSTS, PostCard, PostItem } from "@/modules/portfolio/components/guest/detail/CastPosts";
+import { MediaModal, MediaItem } from "@/modules/common/components/guest/MediaModal";
 import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
 
 // Combine available mocks

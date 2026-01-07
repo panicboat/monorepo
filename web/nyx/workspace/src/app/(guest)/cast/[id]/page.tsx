@@ -1,11 +1,11 @@
 "use client";
 
-import { PhotoGallery } from "@/modules/portfolio/components/detail/PhotoGallery";
-import { ProfileSpecs } from "@/modules/portfolio/components/detail/ProfileSpecs";
-import { PriceSystem, ScheduleCalendar } from "@/modules/portfolio/components/detail/CostAndSchedule";
-import { CastPosts } from "@/modules/portfolio/components/detail/CastPosts";
-import { TrustRadar } from "@/modules/trust/components/TrustRadar";
-import { ReviewList } from "@/modules/trust/components/ReviewList";
+import { PhotoGallery } from "@/modules/portfolio/components/guest/detail/PhotoGallery";
+import { ProfileSpecs } from "@/modules/portfolio/components/guest/detail/ProfileSpecs";
+import { PriceSystem, ScheduleCalendar } from "@/modules/portfolio/components/guest/detail/CostAndSchedule";
+import { CastPosts } from "@/modules/portfolio/components/guest/detail/CastPosts";
+import { TrustRadar } from "@/modules/trust/components/guest/TrustRadar";
+import { ReviewList } from "@/modules/trust/components/guest/ReviewList";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { use, useState } from "react";

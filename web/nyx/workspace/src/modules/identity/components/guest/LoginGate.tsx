@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@/modules/identity/hooks/useAuth";
 // Note: We'll assume lucide-react is available, or use text if not.
 import { Smartphone, Mail } from "lucide-react";
 

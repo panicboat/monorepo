@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { useWindowSize } from "../../../hooks/useWindowSize";
+import { useWindowSize } from "@/hooks/useWindowSize";
 
 interface ResponsiveMainContainerProps {
   children: ReactNode;

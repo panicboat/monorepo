@@ -1,4 +1,4 @@
-import { ChatList } from "@/modules/concierge/components/ChatList";
+import { ChatList } from "@/modules/concierge/components/guest/ChatList";
 
 // Ensure this page is only accessible when logged in (LoginGate handles it at root layout/page level effectively,
 // but for separate routes we might need a protect layout or HOC.

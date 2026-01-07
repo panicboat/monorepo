@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Home, Search, MessageCircle, User, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
-import { useAuth } from "../../identity/hooks/useAuth";
+import { useAuth } from "@/modules/identity/hooks/useAuth";
 
 export const BottomNavBar = () => {
   const { user, isLoading } = useAuth();

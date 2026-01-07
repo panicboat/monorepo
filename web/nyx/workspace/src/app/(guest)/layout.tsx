@@ -1,7 +1,7 @@
-import { BottomNavBar } from "@/modules/shell/components/BottomNavBar";
-import { DesktopRightSidebar } from "@/modules/shell/components/DesktopSidebars";
-import { TopNavBar } from "@/modules/shell/components/TopNavBar";
-import { ResponsiveMainContainer } from "@/modules/shell/components/ResponsiveMainContainer";
+import { BottomNavBar } from "@/modules/shell/components/guest/BottomNavBar";
+import { DesktopRightSidebar } from "@/modules/shell/components/guest/DesktopSidebars";
+import { TopNavBar } from "@/modules/shell/components/guest/TopNavBar";
+import { ResponsiveMainContainer } from "@/modules/shell/components/guest/ResponsiveMainContainer";
 
 export default function GuestLayout({
   children,

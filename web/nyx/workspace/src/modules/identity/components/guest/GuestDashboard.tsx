@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { GuestRadar } from "./GuestRadar";
-import { ReviewForm } from "@/modules/trust/components/ReviewForm";
+import { ReviewForm } from "@/modules/trust/components/guest/ReviewForm";
 
 export const GuestDashboard = () => {
   const { user, logout } = useAuth();

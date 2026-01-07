@@ -1,5 +1,8 @@
 # Project Definition
 
+> [!IMPORTANT]
+> **For AI Agents:** Before proceeding, you MUST read `AGENTS.md` in the repository root for critical Coding, Language, and Workflow rules.
+
 ## 1. Project Overview
 - **Name:** Nyx.PLACE
 - **Concept:** "Sovereignty of the Goddess" (女神の主権)

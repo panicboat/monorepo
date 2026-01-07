@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { useAuth } from "../../identity/hooks/useAuth";
+import { useAuth } from "@/modules/identity/hooks/useAuth";
 
 export const TopNavBar = () => {
   const { user, isLoading } = useAuth();

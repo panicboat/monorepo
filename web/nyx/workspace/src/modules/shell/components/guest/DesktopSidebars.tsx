@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useAuth } from "../../identity/hooks/useAuth";
+import { useAuth } from "@/modules/identity/hooks/useAuth";
 
 const RECOMMENDED_CASTS = [
   { id: 101, name: "Mio", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mio", tag: "New" },
