@@ -71,7 +71,7 @@ export const ChatRoom = ({ castId }: { castId: string }) => {
   return (
     <div className="flex flex-col min-h-[calc(100vh-8rem)]">
       {/* Messages Area */}
-      <div className="flex-1 space-y-4 p-4 pb-32">
+      <div className="flex-1 space-y-4 p-4 pb-48">
         {messages.map((msg) => (
           <motion.div
             key={msg.id}
@@ -97,7 +97,7 @@ export const ChatRoom = ({ castId }: { castId: string }) => {
       </div>
 
       {/* Input Area */}
-      <div className="fixed bottom-20 left-0 right-0 z-40 mx-auto max-w-md bg-white p-4 border-t border-slate-100">
+      <div className="sticky bottom-20 md:bottom-0 z-40 bg-white p-4 border-t border-slate-100">
         <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
           <input
             type="text"

@@ -51,7 +51,7 @@ export const TrustRadar = ({ scores }: { scores: number[] }) => {
           {/* Data Shape */}
           <motion.polygon
             initial={{ opacity: 0, scale: 0 }}
-            whileInView={{ opacity: 0.6, scale: 1 }}
+            animate={{ opacity: 0.6, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             points={polyPoints}
             fill="#ec4899"

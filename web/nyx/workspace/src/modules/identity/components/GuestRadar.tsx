@@ -39,7 +39,7 @@ export const GuestRadar = ({ scores = [80, 80, 80, 80, 80], className = "" }: { 
         {/* Data Shape */}
         <motion.polygon
           initial={{ opacity: 0, scale: 0 }}
-          whileInView={{ opacity: 0.8, scale: 1 }}
+          animate={{ opacity: 0.6, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           points={polyPoints}
           fill="rgba(245, 158, 11, 0.2)" // Amber-500 with lower opacity
