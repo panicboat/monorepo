@@ -37,3 +37,14 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@media screen and (max-width: 899px) {
+
+  /* Prevent iOS zoom on focus by enforcing 16px font size */
+  /* 'input' covers all types (text, password, date, etc.) so no need to add new types manually */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

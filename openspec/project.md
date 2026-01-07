@@ -19,14 +19,18 @@
 - **Living Portfolio:** 静的なプロフィールではなく、「今夜空いているか(Tonight)」「即レス可能か(Online)」というリアルタイムな生命感を重視する。
 - **Sanctuary (秩序):** 無断キャンセル(No Show)はシステムレベルで厳罰化し、キャストの時間を守る。
 
-## 4. Monetization Strategy (SaaS for Casts)
-「中抜き」ではなく「ツール利用料」で収益化する。
-- **Cast Subscription (Business Tools):**
-  - **Free:** 基本的なプロフィール公開、チャット、手動予約管理。
-  - **Pro (Monthly Fee):**
-    - **Google Calendar Sync:** プライベートの予定と連動した自動空き枠管理。
-    - **Deep CRM:** 過去の全顧客メモの閲覧・検索。
-    - **Priority Push:** "Tonight" ステータス変更時のフォロワーへのプッシュ通知。
+## 4. Monetization Strategy
+機能開放による Monthly Subscription で収益化する。
+
+### For Casts
+
+現在検討中です。
+
+- **Deep CRM:** 過去の全顧客メモの閲覧・検索。
+
+### For Guests
+
+現在検討中です。
 
 ## 5. Domain Architecture
 本プロジェクトは **Modular Monolith** として構築されていますが、将来的な分割を見据えて以下の5つのドメインに明確に分離して実装します。
