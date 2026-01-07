@@ -18,8 +18,9 @@ bundle install
 ### 2. Database Setup
 ```bash
 # Update config/app.rb or .env to point to your Postgres
-# Default: sqlite (development) / postgres (production/docker)
+# Default: postgres
 
+bundle exec hanami db create
 bundle exec hanami db migrate
 ```
 
@@ -27,8 +28,10 @@ bundle exec hanami db migrate
 
 ### Option A: Local Ruby
 ```bash
+# Database listening on 0.0.0.0:5432
+docker-compose up -d db
+# gRPC server listening on 0.0.0.0:9001
 ./bin/grpc
-# Server listening on 0.0.0.0:9001
 ```
 
 ### Option B: Docker Compose
@@ -49,13 +52,6 @@ bundle exec grpc_tools_ruby_protoc -I ../../proto --ruby_out=lib --grpc_out=lib 
 ```bash
 # From services/monolith directory
 bundle exec rspec
-```
-
-### Manual Verification
-Use the provided test script:
-```bash
-# From repo root
-ruby tmp/test_client.rb
 ```
 
 ## Useful links
