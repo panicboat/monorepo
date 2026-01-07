@@ -1,0 +1,58 @@
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <linearGradient id="nightBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e1b4b;stop-opacity:1" />
+    </linearGradient>
+
+    <linearGradient id="liquidNeon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.7" />
+      <stop offset="100%" style="stop-color:#9333ea;stop-opacity:0.9" />
+    </linearGradient>
+
+    <linearGradient id="pinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f43f5e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#be123c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="300" height="300" fill="url(#nightBg)" />
+
+  <g>
+
+    <path d="M75 90 L150 200 L225 90 Z" fill="url(#liquidNeon)" />
+
+    <g stroke="#22d3ee" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#neonGlow)">
+      <path d="M50 60 L150 210 L250 60" />
+      <line x1="150" y1="210" x2="150" y2="270" />
+      <line x1="110" y1="270" x2="190" y2="270" />
+      <line x1="75" y1="90" x2="225" y2="90" stroke-opacity="0.5" stroke-width="1"/>
+    </g>
+
+    <g transform="translate(160, 50) rotate(15)">
+      <path d="M0 25 L0 55" stroke="#f43f5e" stroke-width="2.5" />
+
+      <path d="M0 0 C -15 0, -25 10, -25 25 C -25 40, 0 65, 0 65 C 0 65, 25 40, 25 25 C 25 10, 15 0, 0 0 Z" fill="url(#pinGrad)" filter="url(#neonGlow)"/>
+
+      <circle cx="0" cy="22" r="7" fill="#0f172a" opacity="0.8"/>
+    </g>
+
+    <circle cx="100" cy="100" r="2.5" fill="#ffffff" opacity="0.8" filter="url(#neonGlow)"/>
+    <circle cx="120" cy="130" r="1.5" fill="#ffffff" opacity="0.6" />
+    <circle cx="180" cy="110" r="1.5" fill="#ffffff" opacity="0.6" />
+
+    <path d="M220 50 L225 58 L220 66 L215 58 Z" fill="#fbbf24" filter="url(#neonGlow)" opacity="0.9" />
+  </g>
+
+  <text x="150" y="285" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-weight="400" font-size="20" fill="#94a3b8" letter-spacing="3">
+    NYX
+  </text>
+</svg>
