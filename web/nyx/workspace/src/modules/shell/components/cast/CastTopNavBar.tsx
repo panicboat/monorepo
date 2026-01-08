@@ -10,7 +10,7 @@ export const CastTopNavBar = () => {
 
   const getTitle = () => {
     if (pathname.includes("/manage/onboarding")) return "Cast Onboarding";
-    if (pathname.includes("/manage")) return "Dashboard";
+    if (pathname.includes("/manage/dashboard")) return "Dashboard";
     return "Cast Manage";
   };
 
@@ -22,7 +22,7 @@ export const CastTopNavBar = () => {
   const title = getTitle();
 
   const LeftSlot = (
-    <Link href="/manage" className="hidden md:block font-serif text-xl font-bold tracking-tight text-slate-900 mr-4">
+    <Link href="/manage/dashboard" className="hidden md:block font-serif text-xl font-bold tracking-tight text-slate-900 mr-4">
       Nyx. Cast
     </Link>
   );
