@@ -39,7 +39,10 @@ const INITIAL_DATA: OnboardingData = {
     profile: null,
     gallery: [],
   },
-  plans: [],
+  plans: [
+    { id: "p1", name: "Standard 60min", duration: 60, price: 10000 },
+    { id: "p2", name: "VIP 90min", duration: 90, price: 25000 },
+  ],
   shifts: [],
 };
 

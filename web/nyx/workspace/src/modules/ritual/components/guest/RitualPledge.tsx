@@ -2,7 +2,7 @@
 
 import { motion, useAnimation } from "framer-motion";
 import { useRef } from "react";
-import { useRitual } from "../hooks/useRitual";
+import { useRitual } from "../../hooks/useRitual";
 
 export const RitualPledge = ({ ritualId = "mock-ritual-1" }: { ritualId?: string }) => {
   const { status, setStatus, seal } = useRitual(ritualId);

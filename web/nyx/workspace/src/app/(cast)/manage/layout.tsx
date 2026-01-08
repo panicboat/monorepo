@@ -1,4 +1,6 @@
-import { CastHeader } from "@/modules/shell/components/cast/CastHeader";
+import { CastTopNavBar } from "@/modules/shell/components/cast/CastTopNavBar";
+import { CastBottomNavBar } from "@/modules/shell/components/cast/CastBottomNavBar";
+import { ResponsiveMainContainer } from "@/modules/shell/components/ResponsiveMainContainer";
 
 export default function CastLayout({
   children,
@@ -6,11 +8,18 @@ export default function CastLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <CastHeader />
-      <main>
-        {children}
-      </main>
-    </div>
+    <>
+      <CastTopNavBar />
+      <div className="flex justify-center items-start min-h-screen gap-4 bg-slate-50">
+        <ResponsiveMainContainer className="bg-slate-50">
+          {children}
+        </ResponsiveMainContainer>
+
+        <CastBottomNavBar />
+
+        {/* Desktop Sidebar (Placeholder for Cast Side) */}
+        {/* <CastRightSidebar /> */}
+      </div>
+    </>
   );
 }

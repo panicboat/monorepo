@@ -25,7 +25,7 @@ export default function OnboardingStep3() {
   const isNextEnabled = plans.every(p => p.name.trim() !== "" && p.price > 0 && p.duration > 0);
 
   return (
-    <div className="space-y-6 animate-in slide-in-from-right-8 fade-in duration-500">
+    <div className="px-4 py-6 space-y-6 animate-in slide-in-from-right-8 fade-in duration-500">
       <div className="space-y-2">
         <h2 className="text-xl font-serif font-bold text-slate-900 flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm text-white">

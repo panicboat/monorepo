@@ -15,7 +15,7 @@ export default function OnboardingStep1Page() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="px-4 py-6 space-y-6">
       <div>
         <h1 className="text-xl font-bold text-slate-900">Basic Identity</h1>
         <p className="text-sm text-slate-500">
