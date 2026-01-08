@@ -1,7 +1,7 @@
-import { BottomNavBar } from "@/modules/shell/components/guest/BottomNavBar";
-import { DesktopRightSidebar } from "@/modules/shell/components/guest/DesktopSidebars";
-import { TopNavBar } from "@/modules/shell/components/guest/TopNavBar";
-import { ResponsiveMainContainer } from "@/modules/shell/components/guest/ResponsiveMainContainer";
+import { GuestBottomNavBar } from "@/modules/shell/components/guest/GuestBottomNavBar";
+import { GuestDesktopSidebars } from "@/modules/shell/components/guest/GuestDesktopSidebars";
+import { GuestTopNavBar } from "@/modules/shell/components/guest/GuestTopNavBar";
+import { ResponsiveMainContainer } from "@/modules/shell/components/ResponsiveMainContainer";
 
 export default function GuestLayout({
   children,
@@ -10,18 +10,18 @@ export default function GuestLayout({
 }>) {
   return (
     <>
-      <TopNavBar />
+      <GuestTopNavBar />
       <div className="flex justify-center items-start min-h-screen gap-4">
         {/* Main Mobile App Container */}
-        <ResponsiveMainContainer>
+        <ResponsiveMainContainer className="bg-white">
           {children}
         </ResponsiveMainContainer>
 
         {/* Mobile Bottom Nav is fixed, but we keep it here logically or outside */}
-        <BottomNavBar />
+        <GuestBottomNavBar />
 
         {/* Desktop Sidebars (Positioned relative to center) */}
-        <DesktopRightSidebar />
+        <GuestDesktopSidebars />
       </div>
     </>
   );

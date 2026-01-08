@@ -10,7 +10,7 @@ const RECOMMENDED_CASTS = [
   { id: 103, name: "Kila", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kila", tag: "Online" },
 ];
 
-export const DesktopRightSidebar = () => {
+export const GuestDesktopSidebars = () => {
   const { user, isLoading } = useAuth();
 
   if (isLoading || !user) return null;
