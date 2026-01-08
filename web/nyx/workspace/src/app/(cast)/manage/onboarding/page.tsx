@@ -3,7 +3,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function OnboardingWelcomePage() {
   return (
-    <div className="flex flex-col gap-6 py-4">
+    <div className="flex flex-col gap-6 py-4 px-4">
       <div className="text-center">
         <h1 className="text-2xl font-serif font-bold text-slate-900 mb-2">
           Welcome to Nyx

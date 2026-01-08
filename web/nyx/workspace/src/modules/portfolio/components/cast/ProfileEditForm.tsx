@@ -163,9 +163,9 @@ export const ProfileEditForm = ({
           value={formData.serviceCategory}
           onChange={(val) => handleChange("serviceCategory", val)}
           options={[
-            { label: "Advanced", value: "advanced", desc: "本番・濃厚接触" },
-            { label: "Standard", value: "standard", desc: "擬似・ソフト" },
-            { label: "Social", value: "social", desc: "接触なし・会話" },
+            { label: "Advanced", value: "advanced", desc: "濃厚接触" },
+            { label: "Standard", value: "standard", desc: "ソフト" },
+            { label: "Social", value: "social", desc: "飲食" },
           ]}
         />
 
@@ -176,8 +176,8 @@ export const ProfileEditForm = ({
           onChange={(val) => handleChange("locationType", val)}
           options={[
             { label: "Store", value: "store", desc: "店舗型" },
-            { label: "Dispatch", value: "dispatch", desc: "派遣（デリバリー）" },
-            { label: "Hotel", value: "hotel", desc: "ホテル待機" },
+            { label: "Dispatch", value: "dispatch", desc: "派遣" },
+            { label: "Hotel", value: "hotel", desc: "ホテル" },
           ]}
         />
 
