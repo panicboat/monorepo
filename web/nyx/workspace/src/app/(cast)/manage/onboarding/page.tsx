@@ -1,0 +1,73 @@
+import Link from "next/link";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
+
+export default function OnboardingWelcomePage() {
+  return (
+    <div className="flex flex-col gap-6 py-4">
+      <div className="text-center">
+        <h1 className="text-2xl font-serif font-bold text-slate-900 mb-2">
+          Welcome to Nyx
+        </h1>
+        <p className="text-slate-500 leading-relaxed">
+          あなただけのファンを見つけ、<br />
+          自由なスタイルで活動しましょう。
+        </p>
+      </div>
+
+      {/* Benefits / Features */}
+      <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-pink-100 text-pink-500">
+            <CheckCircle2 size={16} />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-800">No Shop, Just You</h3>
+            <p className="text-xs text-slate-500 mt-1 leading-normal">
+              店舗に所属する必要はありません。あなたのブランドを確立し、直接ゲストとつながることができます。
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-500">
+            <CheckCircle2 size={16} />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-800">Smart Scheduling</h3>
+            <p className="text-xs text-slate-500 mt-1 leading-normal">
+              働きたい時間だけシフトを公開。無理な出勤強要は一切ありません。
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-500">
+            <CheckCircle2 size={16} />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-800">Safe & Trust</h3>
+            <p className="text-xs text-slate-500 mt-1 leading-normal">
+              ゲストはSMS認証済み。評価システムにより、安心できるユーザーとのみマッチングします。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Guidelines Accordion or Link could go here */}
+
+      {/* CTA */}
+      <div className="mt-4">
+        <Link
+          href="/manage/onboarding/step-1"
+          className="flex items-center justify-center gap-2 w-full rounded-xl bg-slate-900 py-4 font-bold text-white shadow-lg shadow-slate-200 transition-transform active:scale-95"
+        >
+          <span>プロフィールを作成する</span>
+          <ArrowRight size={18} />
+        </Link>
+        <p className="text-center text-[10px] text-slate-400 mt-4">
+          登録することで、利用規約およびプライバシーポリシーに同意したものとみなされます。
+        </p>
+      </div>
+    </div>
+  );
+}

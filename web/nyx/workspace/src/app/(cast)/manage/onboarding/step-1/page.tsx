@@ -1,0 +1,27 @@
+"use client";
+
+import { ProfileEditForm, ProfileFormData } from "@/modules/portfolio/components/cast/ProfileEditForm";
+import { useRouter } from "next/navigation";
+
+export default function OnboardingStep1Page() {
+  const router = useRouter();
+
+  const handleNext = (data: ProfileFormData) => {
+    console.log("Step 1 Data:", data);
+    // TODO: Persist data to context or backend
+    router.push("/manage/onboarding/step-2");
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl font-bold text-slate-900">Basic Identity</h1>
+        <p className="text-sm text-slate-500">
+          まずはあなたの基本的なプロフィールと、活動スタイルを教えてください。
+        </p>
+      </div>
+
+      <ProfileEditForm onSubmit={handleNext} />
+    </div>
+  );
+}
