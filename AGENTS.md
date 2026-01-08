@@ -19,6 +19,10 @@ Please strictly follow these rules:
 
 - **Architectural Changes**: Any changes that affect the system architecture, including database schema strategies, library replacements, or major pattern changes, MUST be explicitly approved by the user before implementation. Propose these changes in an implementation plan or OpenSpec proposal first.
 
+# UI/UX Rules
+
+- **Navigation Consistency**: Cast management UI (Sub-pages, Wizards) MUST follow the Guest UI navigation patterns (e.g., using `router.back()` for back buttons instead of hard links) to ensure a consistent native-app-like feel.
+
 <!-- OPENSPEC:START -->
 # OpenSpec Instructions
 
