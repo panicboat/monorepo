@@ -37,13 +37,52 @@ export const handlers = [
     return HttpResponse.json(castData)
   }),
 
-  http.get('/api/cast/dashboard', () => {
+  // Dashboard Stats
+  http.get('/api/cast/stats', () => {
     return HttpResponse.json({
-      status: 'offline',
+      earningsToday: 45000,
+      earningsTodayChange: 15,
+      earningsThisWeek: 180000,
+      earningsThisMonth: 720000,
+      reservationsThisMonth: 12,
       promiseRate: 100,
-      followers: 24,
-      unread: 3
+      followers: 24
     })
+  }),
+
+  // Upcoming Reservations
+  http.get('/api/cast/upcoming-reservations', () => {
+    return HttpResponse.json({
+      reservations: [
+        {
+          id: "r1",
+          guestName: "panicboat",
+          date: "2026-01-10",
+          startTime: "19:00",
+          planName: "Standard Plan",
+          status: "confirmed",
+          duration: 60,
+          guestIcon: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop"
+        },
+        {
+          id: "r2",
+          guestName: "panicb0at",
+          date: "2026-01-10",
+          startTime: "21:00",
+          planName: "Standard Plan",
+          status: "confirmed",
+          duration: 60,
+          guestIcon: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=100&auto=format&fit=crop"
+        }
+      ]
+    })
+  }),
+
+  // Status Update
+  http.put('/api/cast/status', async ({ request }) => {
+    const body = await request.json() as { status: string };
+    console.log('Updated status to:', body.status);
+    return HttpResponse.json({ success: true, status: body.status })
   }),
 
   http.get('/api/cast/mypage', () => {
@@ -52,10 +91,6 @@ export const handlers = [
       followers: 24,
       promiseRate: 100
     })
-  }),
-
-  http.put('/api/cast/profile', () => {
-    return HttpResponse.json({ success: true })
   }),
 
   http.get('/api/cast/schedule', () => {

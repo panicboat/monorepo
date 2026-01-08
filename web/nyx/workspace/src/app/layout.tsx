@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthProvider } from "@/modules/identity/hooks/useAuth";
+import { MSWProvider } from "@/mocks/MSWProvider";
 
 export default function RootLayout({
   children,
@@ -30,7 +31,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50`}
       >
         <AuthProvider>
-          {children}
+          <MSWProvider>
+            {children}
+          </MSWProvider>
         </AuthProvider>
       </body>
     </html>

@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { TopNavBar } from "../TopNavBar";
 
+
 export const CastTopNavBar = () => {
   const router = useRouter();
   const pathname = usePathname();
 
   const getTitle = () => {
     if (pathname.includes("/manage/onboarding")) return "Cast Onboarding";
-    if (pathname.includes("/manage/dashboard")) return "Dashboard";
+    if (pathname.includes("/manage/dashboard")) return "Nyx. Cast";
     return "Cast Manage";
   };
 
@@ -28,8 +29,11 @@ export const CastTopNavBar = () => {
   );
 
   const RightSlot = (
-    <div className="h-8 w-8 rounded-full bg-slate-100 overflow-hidden border border-slate-200 block">
-      <span className="flex h-full w-full items-center justify-center text-xs text-slate-500 font-bold">Cast</span>
+    <div className="flex items-center gap-2">
+      <div className="h-8 w-8 rounded-full bg-slate-100 overflow-hidden border border-slate-200 block">
+        {/* Placeholder for Profile Icon */}
+        <span className="flex h-full w-full items-center justify-center text-xs text-slate-500 font-bold">Cast</span>
+      </div>
     </div>
   );
 
