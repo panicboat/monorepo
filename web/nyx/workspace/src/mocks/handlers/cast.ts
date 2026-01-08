@@ -75,4 +75,12 @@ export const handlers = [
     console.log('Sent invitation:', data)
     return HttpResponse.json({ success: true })
   }),
+
+  // Mock Master Data for Onboarding
+  http.get('/api/cast/onboarding/master-plans', () => {
+    return HttpResponse.json([
+      { id: "p1", name: "Standard 60min", duration: 60, price: 10000 },
+      { id: "p2", name: "VIP 90min", duration: 90, price: 25000 },
+    ])
+  }),
 ]

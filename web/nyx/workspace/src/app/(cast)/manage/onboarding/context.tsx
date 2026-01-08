@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ProfileFormData } from "@/modules/portfolio/components/cast/ProfileEditForm";
 import { SimplePlan } from "@/modules/ritual/components/cast/WeeklyShiftInput";
 import { Shift } from "@/modules/ritual/components/cast/WeeklyShiftInput";
@@ -39,10 +39,7 @@ const INITIAL_DATA: OnboardingData = {
     profile: null,
     gallery: [],
   },
-  plans: [
-    { id: "p1", name: "Standard 60min", duration: 60, price: 10000 },
-    { id: "p2", name: "VIP 90min", duration: 90, price: 25000 },
-  ],
+  plans: [], // Will be fetched
   shifts: [],
 };
 
@@ -58,6 +55,22 @@ const OnboardingContext = createContext<OnboardingContextType | undefined>(undef
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   const [data, setData] = useState<OnboardingData>(INITIAL_DATA);
+
+  // Fetch Master Data
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch("/api/cast/onboarding/master-plans");
+        if (res.ok) {
+          const plans = await res.json();
+          setData((prev) => ({ ...prev, plans }));
+        }
+      } catch (e) {
+        console.error("Failed to fetch plans", e);
+      }
+    };
+    fetchPlans();
+  }, []);
 
   const updateProfile = (profileData: Partial<ProfileFormData>) => {
     setData((prev) => ({
