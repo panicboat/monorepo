@@ -151,8 +151,9 @@ export default function ProfileEditPage() {
 
       if (!res.ok) throw new Error("Failed to save");
 
-      toast({ title: "Success", description: "Profile updated successfully!" });
-      router.refresh(); // logical refresh
+      // Success
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      router.refresh();
     } catch (e) {
       console.error(e);
       toast({ title: "Error", description: "Failed to save profile", variant: "destructive" });
@@ -218,10 +219,11 @@ export default function ProfileEditPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-pink-500 py-4 font-bold text-white shadow-lg shadow-pink-200 transition-all hover:bg-pink-600 hover:shadow-pink-300 active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
+            className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 font-bold text-white shadow-lg transition-all active:scale-95 disabled:opacity-50 ${saving ? "bg-pink-400 cursor-not-allowed" : "bg-pink-500 hover:bg-pink-600 shadow-pink-200 hover:shadow-pink-300"
+              }`}
           >
             {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-            <span>Save Profile</span>
+            <span>{saving ? "Saving..." : "Save Profile"}</span>
           </button>
         </div>
 
