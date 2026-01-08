@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Image as ImageIcon } from "lucide-react";
 import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader";
 
-import { useOnboarding } from "../onboarding-context";
+import { useOnboarding } from "../context";
 
 export default function OnboardingStep2() {
   const router = useRouter();

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, List } from "lucide-react";
 import { PlanEditor, ServicePlan } from "@/modules/portfolio/components/cast/PlanEditor";
 
-import { useOnboarding } from "../onboarding-context";
+import { useOnboarding } from "../context";
 
 export default function OnboardingStep3() {
   const router = useRouter();

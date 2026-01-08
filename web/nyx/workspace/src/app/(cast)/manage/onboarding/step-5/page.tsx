@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Check, Star } from "lucide-react";
 
-import { useOnboarding } from "../onboarding-context";
+import { useOnboarding } from "../context";
 
 export default function OnboardingStep5() {
   const router = useRouter();

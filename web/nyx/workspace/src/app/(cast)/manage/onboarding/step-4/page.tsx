@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { WeeklyShiftInput, Shift } from "@/modules/ritual/components/cast/WeeklyShiftInput";
 
-import { useOnboarding } from "../onboarding-context";
+import { useOnboarding } from "../context";
 
 export default function OnboardingStep4() {
   const router = useRouter();

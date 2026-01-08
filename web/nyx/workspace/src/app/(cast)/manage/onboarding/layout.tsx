@@ -1,6 +1,6 @@
 "use client";
 
-import { OnboardingProvider } from "./onboarding-context";
+import { OnboardingProvider } from "./context";
 
 export default function OnboardingTemplate({
   children,

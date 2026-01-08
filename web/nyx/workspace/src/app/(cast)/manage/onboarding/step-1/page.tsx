@@ -3,7 +3,7 @@
 import { ProfileEditForm, ProfileFormData } from "@/modules/portfolio/components/cast/ProfileEditForm";
 import { useRouter } from "next/navigation";
 
-import { useOnboarding } from "../onboarding-context";
+import { useOnboarding } from "../context";
 
 export default function OnboardingStep1Page() {
   const router = useRouter();
