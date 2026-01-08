@@ -1,4 +1,3 @@
-import { OnboardingHeader } from "./onboarding-header";
 import { OnboardingProvider } from "./onboarding-context";
 
 export default function OnboardingLayout({
@@ -8,13 +7,11 @@ export default function OnboardingLayout({
 }) {
   return (
     <OnboardingProvider>
-      <div className="min-h-screen bg-slate-50 text-slate-900">
-        <OnboardingHeader />
-
+      <div className="bg-slate-50 text-slate-900 pb-20">
         {/* Main Content Area */}
-        <main className="mx-auto max-w-md px-4 py-6">
+        <div className="mx-auto max-w-md px-4 py-6">
           {children}
-        </main>
+        </div>
       </div>
     </OnboardingProvider>
   );
