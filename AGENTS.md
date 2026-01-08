@@ -5,6 +5,7 @@ Please strictly follow these rules:
 - Do not include change descriptions in code comments or method names. Make them understandable for the current state.
 - Do not use comparative expressions like "simple" or "complex" anywhere.
 - Code consistency is important. Ensure modifications maintain consistency with existing code.
+- Always verify that `replace_file_content` or code modification tools succeeded. If a tool reports "target content not found", you must re-read the file and apply the fix again.
 
 # Language Rules
 

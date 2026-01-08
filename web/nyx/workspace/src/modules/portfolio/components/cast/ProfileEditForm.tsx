@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Info } from "lucide-react";
+import { ArrowRight, Info, Clock } from "lucide-react";
+
+const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  const m = i % 2 === 0 ? "00" : "30";
+  return `${h.toString().padStart(2, "0")}:${m}`;
+});
 
 export type ProfileFormData = {
   nickname: string;
@@ -10,6 +16,8 @@ export type ProfileFormData = {
   serviceCategory: "advanced" | "standard" | "social";
   locationType: "store" | "dispatch" | "hotel";
   area: string;
+  defaultShiftStart: string; // HH:mm
+  defaultShiftEnd: string; // HH:mm
   socialLinks: {
     x?: string;
     instagram?: string;
@@ -74,6 +82,8 @@ export const ProfileEditForm = ({
     serviceCategory: initialData?.serviceCategory || "standard",
     locationType: initialData?.locationType || "dispatch",
     area: initialData?.area || "",
+    defaultShiftStart: initialData?.defaultShiftStart || "18:00",
+    defaultShiftEnd: initialData?.defaultShiftEnd || "23:00",
     socialLinks: {
       others: [],
       ...initialData?.socialLinks,
@@ -170,6 +180,41 @@ export const ProfileEditForm = ({
             { label: "Hotel", value: "hotel", desc: "ホテル待機" },
           ]}
         />
+
+        {/* Default Schedule */}
+        <div>
+          <label className="block text-sm font-bold text-slate-700 mb-1">
+            3. Standard Shift Time
+            <span className="ml-2 text-xs font-normal text-slate-400">基本の活動時間設定（デフォルト値になります）</span>
+          </label>
+          <div className="flex items-center gap-2 max-w-sm">
+            <div className="relative flex-1">
+              <select
+                value={formData.defaultShiftStart}
+                onChange={(e) => handleChange("defaultShiftStart", e.target.value)}
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-pink-500 focus:outline-none"
+              >
+                {TIME_OPTIONS.map((t) => (
+                  <option key={`start-${t}`} value={t}>{t}</option>
+                ))}
+              </select>
+              <Clock className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" size={16} />
+            </div>
+            <span className="text-slate-400 font-bold">~</span>
+            <div className="relative flex-1">
+              <select
+                value={formData.defaultShiftEnd}
+                onChange={(e) => handleChange("defaultShiftEnd", e.target.value)}
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-pink-500 focus:outline-none"
+              >
+                {TIME_OPTIONS.map((t) => (
+                  <option key={`end-${t}`} value={t}>{t}</option>
+                ))}
+              </select>
+              <Clock className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" size={16} />
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Basic Info */}

@@ -9,10 +9,18 @@ export type Shift = {
   date: string; // YYYY-MM-DD
   start: string; // HH:mm
   end: string; // HH:mm
+  planId?: string; // Optional link to a specific plan
+};
+
+export type SimplePlan = {
+  id: string;
+  name: string;
+  duration: number; // minutes
 };
 
 interface WeeklyShiftInputProps {
   shifts: Shift[];
+  plans?: SimplePlan[]; // Available plans to link
   onChange: (shifts: Shift[]) => void;
 }
 
@@ -22,7 +30,15 @@ const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
   return `${h.toString().padStart(2, "0")}:${m}`;
 });
 
-export const WeeklyShiftInput = ({ shifts, onChange }: WeeklyShiftInputProps) => {
+const getDuration = (start: string, end: string) => {
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  const startMins = sh * 60 + sm;
+  const endMins = eh * 60 + em;
+  return endMins - startMins;
+};
+
+export const WeeklyShiftInput = ({ shifts, plans = [], onChange }: WeeklyShiftInputProps) => {
   const [viewStartDate, setViewStartDate] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const today = startOfDay(new Date());
 
@@ -39,11 +55,11 @@ export const WeeklyShiftInput = ({ shifts, onChange }: WeeklyShiftInputProps) =>
 
   const addShift = (dateStr: string) => {
     // Default shift: 18:00 - 23:00
-    const newShift: Shift = { date: dateStr, start: "18:00", end: "23:00" };
+    const newShift: Shift = { date: dateStr, start: "18:00", end: "23:00", planId: "" };
     onChange([...shifts, newShift]);
   };
 
-  const updateShift = (index: number, field: "start" | "end", value: string) => {
+  const updateShift = (index: number, field: keyof Shift, value: string) => {
     const newShifts = [...shifts];
     newShifts[index] = { ...newShifts[index], [field]: value };
     onChange(newShifts);
@@ -89,10 +105,10 @@ export const WeeklyShiftInput = ({ shifts, onChange }: WeeklyShiftInputProps) =>
           <div
             key={dateStr}
             className={`rounded-xl border p-4 transition-all ${isPast
-                ? "border-slate-100 bg-slate-50 opacity-60"
-                : dayShifts.length > 0
-                  ? "border-pink-200 bg-pink-50/30"
-                  : "border-slate-100 bg-white"
+              ? "border-slate-100 bg-slate-50 opacity-60"
+              : dayShifts.length > 0
+                ? "border-pink-200 bg-pink-50/30"
+                : "border-slate-100 bg-white"
               }`}
           >
             <div className="flex items-center justify-between mb-3">
@@ -121,47 +137,81 @@ export const WeeklyShiftInput = ({ shifts, onChange }: WeeklyShiftInputProps) =>
             ) : (
               <div className="space-y-2">
                 {dayShifts.map((shift, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <div className="flex flex-1 items-center gap-2 rounded-lg bg-white border border-slate-200 px-3 py-2 text-sm shadow-sm">
-                      <Clock size={14} className="text-slate-400" />
-                      <select
-                        value={shift.start}
-                        disabled={isPast}
-                        onChange={(e) =>
-                          updateShift(shift.originalIndex, "start", e.target.value)
-                        }
-                        className="bg-transparent font-bold text-slate-700 focus:outline-none disabled:text-slate-400"
-                      >
-                        {TIME_OPTIONS.map((t) => (
-                          <option key={`start-${t}`} value={t}>
-                            {t}
-                          </option>
-                        ))}
-                      </select>
-                      <span className="text-slate-400">-</span>
-                      <select
-                        value={shift.end}
-                        disabled={isPast}
-                        onChange={(e) =>
-                          updateShift(shift.originalIndex, "end", e.target.value)
-                        }
-                        className="bg-transparent font-bold text-slate-700 focus:outline-none disabled:text-slate-400"
-                      >
-                        {TIME_OPTIONS.map((t) => (
-                          <option key={`end-${t}`} value={t}>
-                            {t}
-                          </option>
-                        ))}
-                      </select>
+                  <div key={idx} className="flex flex-col gap-2 rounded-lg bg-white border border-slate-200 p-2 shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="flex flex-1 items-center gap-2">
+                        <Clock size={14} className="text-slate-400" />
+                        <select
+                          value={shift.start}
+                          disabled={isPast}
+                          onChange={(e) =>
+                            updateShift(shift.originalIndex, "start", e.target.value)
+                          }
+                          className="bg-transparent font-bold text-slate-700 focus:outline-none disabled:text-slate-400 text-sm"
+                        >
+                          {TIME_OPTIONS.map((t) => (
+                            <option key={`start-${t}`} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="text-slate-400">-</span>
+                        <select
+                          value={shift.end}
+                          disabled={isPast}
+                          onChange={(e) =>
+                            updateShift(shift.originalIndex, "end", e.target.value)
+                          }
+                          className="bg-transparent font-bold text-slate-700 focus:outline-none disabled:text-slate-400 text-sm"
+                        >
+                          {TIME_OPTIONS.map((t) => (
+                            <option key={`end-${t}`} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {!isPast && (
+                        <button
+                          type="button"
+                          onClick={() => removeShift(shift.originalIndex)}
+                          className="p-1 text-slate-400 hover:text-red-500"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </div>
-                    {!isPast && (
-                      <button
-                        type="button"
-                        onClick={() => removeShift(shift.originalIndex)}
-                        className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+
+                    {/* Plan Selector (Optional) */}
+                    {plans.length > 0 && !isPast && (
+                      <div className="flex flex-col gap-1 border-t border-slate-100 pt-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase">Plan</span>
+                          <select
+                            value={shift.planId || ""}
+                            onChange={(e) => updateShift(shift.originalIndex, "planId", e.target.value)}
+                            className="flex-1 text-xs bg-slate-50 border border-slate-200 rounded px-2 py-1 text-slate-700 focus:border-pink-300 focus:outline-none"
+                          >
+                            <option value="">All Plans (Default)</option>
+                            {plans.map((p) => (
+                              <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        {(() => {
+                          const selectedPlan = plans.find(p => p.id === shift.planId);
+                          if (!selectedPlan) return null;
+                          const shiftMins = getDuration(shift.start, shift.end);
+                          if (shiftMins <= 0) return null;
+                          const maxCount = Math.floor(shiftMins / selectedPlan.duration);
+
+                          return (
+                            <div className="text-[10px] text-right text-slate-400">
+                              このプランなら最大 <span className="font-bold text-pink-500">{Math.max(0, maxCount)}</span> 本
+                            </div>
+                          );
+                        })()}
+                      </div>
                     )}
                   </div>
                 ))}

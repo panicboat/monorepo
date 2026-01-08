@@ -3,12 +3,14 @@
 import { ProfileEditForm, ProfileFormData } from "@/modules/portfolio/components/cast/ProfileEditForm";
 import { useRouter } from "next/navigation";
 
+import { useOnboarding } from "../onboarding-context";
+
 export default function OnboardingStep1Page() {
   const router = useRouter();
+  const { data, updateProfile } = useOnboarding();
 
-  const handleNext = (data: ProfileFormData) => {
-    console.log("Step 1 Data:", data);
-    // TODO: Persist data to context or backend
+  const handleNext = (formData: ProfileFormData) => {
+    updateProfile(formData);
     router.push("/manage/onboarding/step-2");
   };
 
@@ -21,7 +23,7 @@ export default function OnboardingStep1Page() {
         </p>
       </div>
 
-      <ProfileEditForm onSubmit={handleNext} />
+      <ProfileEditForm initialData={data.profile} onSubmit={handleNext} />
     </div>
   );
 }
