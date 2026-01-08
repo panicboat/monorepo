@@ -1,14 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base",
-    ":semanticCommits"
-  ],
+  "extends": ["config:base", ":semanticCommits"],
   "semanticCommitScope": "{{packageFileDir}}",
   "timezone": "Asia/Tokyo",
-  "labels": [
-    "🤖 renovate"
-  ],
+  "labels": ["🤖 renovate"],
   "assigneesFromCodeOwners": false,
   "reviewersFromCodeOwners": true,
   "automergeType": "pr",
@@ -17,55 +12,42 @@
   "prConcurrentLimit": 15,
   "prHourlyLimit": 5,
   "branchPrefix": "renovate/",
-  "schedule": [
-    "before 4am every weekday"
-  ],
+
+  "schedule": ["before 4am every weekday"],
   "minimumReleaseAge": "1 day",
+
   "packageRules": [
     {
       "description": "Base rule - packageFileDir and depName separation",
-      "matchPaths": [
-        "**"
-      ],
+      "matchPaths": ["**"],
       "automerge": true,
       "groupName": "{{packageFileDir}} {{depName}}",
-      "addLabels": [
-        "automerge"
-      ]
+      "addLabels": ["automerge"]
     },
+
     {
       "description": "Group Buf and ConnectRPC dependencies",
+      "groupName": "Buf and ConnectRPC",
       "matchPackagePatterns": [
         "^@bufbuild/",
         "^@connectrpc/",
         "^buf"
-      ],
-      "groupName": "Buf and ConnectRPC",
-      "automerge": true,
-      "addLabels": [
-        "automerge"
       ]
     },
+    
     {
       "description": "🚫 Production environments - disable automerge",
-      "matchPaths": [
-        "**/production/**"
-      ],
+      "matchPaths": ["**/production/**"],
       "automerge": false,
       "prPriority": -1,
-      "addLabels": [
-        "⚠️ production"
-      ]
+      "addLabels": ["⚠️ production"]
     },
+
     {
       "description": "🚫 Major updates - disable automerge",
-      "matchUpdateTypes": [
-        "major"
-      ],
+      "matchUpdateTypes": ["major"],
       "automerge": false,
-      "addLabels": [
-        "📈 major-update"
-      ]
+      "addLabels": ["📈 major-update"]
     }
   ]
 }
