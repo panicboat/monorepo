@@ -11,6 +11,7 @@ export const CastTopNavBar = () => {
 
   const getTitle = () => {
     if (pathname.includes("/manage/onboarding")) return "Cast Onboarding";
+    if (pathname.includes("/manage/profile")) return "Edit Profile";
     if (pathname.includes("/manage/dashboard")) return "Nyx. Cast";
     return "Cast Manage";
   };
@@ -19,22 +20,31 @@ export const CastTopNavBar = () => {
     router.back();
   };
 
-  const showBack = pathname.includes("/onboarding");
+  const showBack = pathname.includes("/onboarding") || pathname.includes("/manage/profile");
   const title = getTitle();
 
   const LeftSlot = (
-    <Link href="/manage/dashboard" className="hidden md:block font-serif text-xl font-bold tracking-tight text-slate-900 mr-4">
-      Nyx. Cast
-    </Link>
+    <>
+      <Link href="/manage/dashboard" className="hidden md:block font-serif text-xl font-bold tracking-tight text-slate-900 mr-8">
+        Nyx. Cast
+      </Link>
+      <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-500">
+        <Link href="/manage/dashboard" className="hover:text-pink-500 transition-colors">Home</Link>
+        <Link href="/manage/schedule" className="hover:text-pink-500 transition-colors">Shift</Link>
+        <Link href="/manage/inbox" className="hover:text-pink-500 transition-colors">Inbox</Link>
+        <Link href="/manage/menu" className="hover:text-pink-500 transition-colors">Menu</Link>
+      </div>
+    </>
   );
 
   const RightSlot = (
-    <div className="flex items-center gap-2">
-      <div className="h-8 w-8 rounded-full bg-slate-100 overflow-hidden border border-slate-200 block">
-        {/* Placeholder for Profile Icon */}
-        <span className="flex h-full w-full items-center justify-center text-xs text-slate-500 font-bold">Cast</span>
-      </div>
-    </div>
+    <Link href="/manage/profile" className="block h-8 w-8 rounded-full bg-slate-100 overflow-hidden border border-slate-200 transition-transform hover:scale-105 active:scale-95">
+      <img
+        src="https://placehold.co/100x100/pink/white?text=Cast"
+        alt="Profile"
+        className="h-full w-full object-cover"
+      />
+    </Link>
   );
 
   return (
@@ -44,7 +54,7 @@ export const CastTopNavBar = () => {
       onBack={handleBack}
       leftSlot={LeftSlot}
       rightSlot={RightSlot}
-      backIconStyle="arrow"
+      backIconStyle="chevron"
     />
   );
 };

@@ -1,13 +1,19 @@
 import { http, HttpResponse } from 'msw'
+import { CastProfile } from '@/modules/portfolio/types';
 
-const castData = {
+// Initial Mock Data
+let castProfile: CastProfile = {
   id: 'mirei',
   name: '美玲',
   age: 24,
   height: 162,
-  shop: 'Club VENUS (歌舞伎町)',
   status: 'On Air (返信早め)',
   message: '本日は20時から空きあります✨ 久しぶりの出勤なのでお話したいです！',
+  tagline: '癒やしの時間をお届けします✨',
+  bio: 'はじめまして、美玲です。普段は都内でOLをしています。映画とカフェ巡りが大好きです。',
+  area: '六本木, 西麻布',
+  serviceCategory: 'standard',
+  locationType: 'dispatch',
   promiseRate: 100,
   images: {
     hero: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=988&auto=format&fit=crop',
@@ -24,17 +30,42 @@ const castData = {
     { label: '#Sっ気', count: 5 },
     { label: '#英語OK', count: 0 }
   ],
-  review: {
-    rating: 5,
-    date: '2日前',
-    comment: '写真通りの美女でした。何より、待ち合わせ場所に5分前に来てくれていて、予約のやり取りも丁寧で安心できました。リピート確定です。'
-  }
-}
+  socialLinks: {
+    others: []
+  },
+  plans: [
+    { id: "p1", name: "Standard 60min", duration: 60, price: 15000 },
+    { id: "p2", name: "Long 90min", duration: 90, price: 22000 },
+  ],
+  weeklyShifts: []
+};
 
 export const handlers = [
   http.get('/api/casts/:id', ({ params }) => {
     // In a real app, verify params.id. For demo, return the same mock.
-    return HttpResponse.json(castData)
+    return HttpResponse.json(castProfile)
+  }),
+
+  // Profile Management (Phase 2)
+  http.get('/api/cast/profile', () => {
+    return HttpResponse.json(castProfile)
+  }),
+
+  http.put('/api/cast/profile', async ({ request }) => {
+    const body = await request.json() as Partial<CastProfile>;
+
+    // Deep merge or specific field updates
+    // For simplicity, just merging top-level and specific deep fields if needed
+    castProfile = {
+      ...castProfile,
+      ...body,
+      // Handle nested merges specifically if needed, e.g. for images or tags if they are sent partially
+      // But typically PUT sends the whole resource or we handle PATCH.
+      // Assuming PUT sends complete sections or we just spread it for this mock.
+    };
+
+    console.log('[Mock] Updated profile:', castProfile);
+    return HttpResponse.json(castProfile);
   }),
 
   // Dashboard Stats

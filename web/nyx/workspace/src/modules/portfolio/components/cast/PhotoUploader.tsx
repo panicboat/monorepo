@@ -100,14 +100,32 @@ export const PhotoUploader = ({
           {images.map((src, index) => (
             <div
               key={index}
-              className={`group relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-100 ${index === 0 ? "ring-2 ring-pink-500 ring-offset-2" : ""
+              onClick={() => {
+                if (index === 0) return;
+                const newImages = [...images];
+                const [movedImage] = newImages.splice(index, 1);
+                newImages.unshift(movedImage);
+                onChange(newImages);
+              }}
+              className={`group relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-100 transition-all ${index === 0
+                  ? "ring-2 ring-pink-500 ring-offset-2"
+                  : "cursor-pointer hover:ring-2 hover:ring-pink-300 hover:ring-offset-1"
                 }`}
             >
               {/* Cover Badge for First Item */}
               {index === 0 && (
-                <div className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full bg-pink-500 px-2 py-1 text-[10px] font-bold text-white shadow-md">
+                <div className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full bg-pink-500 px-3 py-1 text-[10px] font-bold text-white shadow-md">
                   <Star size={10} fill="currentColor" />
                   <span>COVER</span>
+                </div>
+              )}
+
+              {/* Set Cover Overlay Hint */}
+              {index !== 0 && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+                  <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-slate-700 shadow-sm">
+                    Set as Cover
+                  </span>
                 </div>
               )}
 
@@ -129,7 +147,7 @@ export const PhotoUploader = ({
                   e.stopPropagation();
                   removeImage(index);
                 }}
-                className="absolute right-2 bottom-2 rounded-full bg-white p-2 text-slate-900 shadow-md transition-transform hover:scale-110 hover:bg-red-50 hover:text-red-500 active:scale-95"
+                className="absolute right-2 bottom-2 z-30 rounded-full bg-white p-2 text-slate-900 shadow-md transition-transform hover:scale-110 hover:bg-red-50 hover:text-red-500 active:scale-95"
               >
                 <X size={16} />
               </button>

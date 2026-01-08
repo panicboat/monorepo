@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { ProfileFormData } from "@/modules/portfolio/components/cast/ProfileEditForm";
+import { ProfileFormData } from "@/modules/portfolio/types";
 import { SimplePlan } from "@/modules/ritual/components/cast/WeeklyShiftInput";
 import { Shift } from "@/modules/ritual/components/cast/WeeklyShiftInput";
 
