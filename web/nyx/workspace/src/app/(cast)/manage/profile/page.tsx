@@ -9,6 +9,8 @@ import { CastProfile, ProfileFormData } from "@/modules/portfolio/types";
 import { ProfileInputs } from "@/modules/portfolio/components/cast/ProfileInputs";
 import { StyleInputs } from "@/modules/portfolio/components/cast/StyleInputs";
 import { SocialInputs } from "@/modules/portfolio/components/cast/SocialInputs";
+import { PhysicalInputs } from "@/modules/portfolio/components/cast/PhysicalInputs";
+import { TagSelector } from "@/modules/portfolio/components/cast/TagSelector";
 import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader";
 
 
@@ -38,9 +40,19 @@ export default function ProfileEditPage() {
     defaultShiftStart: "18:00",
     defaultShiftEnd: "23:00",
     socialLinks: { others: [] },
+    tags: [],
+    age: undefined,
+    height: undefined,
+    bloodType: undefined,
+    threeSizes: { b: 0, w: 0, h: 0, cup: "" },
   });
 
   const [images, setImages] = useState<string[]>([]);
+
+  // Handlers
+  const handleTagsChange = (newTags: string[]) => {
+    setProfileForm(prev => ({ ...prev, tags: newTags }));
+  };
 
   // Fetch Data
   useEffect(() => {
@@ -64,6 +76,12 @@ export default function ProfileEditPage() {
             ...data.socialLinks,
             others: data.socialLinks?.others || [],
           },
+          // New Fields
+          tags: data.tags?.map(t => t.label) || [], // CastTag[] -> string[]
+          age: data.age,
+          height: data.height,
+          bloodType: data.bloodType,
+          threeSizes: data.threeSizes || { b: 0, w: 0, h: 0, cup: "" },
         });
 
         // Images
@@ -141,6 +159,12 @@ export default function ProfileEditPage() {
           hero: images[0] || "",
           portfolio: images.slice(1),
         },
+        // New Fields
+        tags: profileForm.tags.map(t => ({ label: t, count: 1 })), // string[] -> CastTag[]
+        age: profileForm.age,
+        height: profileForm.height,
+        bloodType: profileForm.bloodType,
+        threeSizes: profileForm.threeSizes,
       };
 
       const res = await fetch("/api/cast/profile", {
@@ -186,7 +210,7 @@ export default function ProfileEditPage() {
       <div className="px-4 py-6 space-y-8">
         {/* Sections */}
 
-        {/* Photos */}
+        {/* Photos (Order 1) */}
         <section className="space-y-4">
           <h2 className="flex items-center gap-2 text-lg font-bold text-slate-800">
             <ImageIcon size={20} className="text-pink-500" />
@@ -195,7 +219,7 @@ export default function ProfileEditPage() {
           <PhotoUploader images={images} onChange={setImages} />
         </section>
 
-        {/* Basic Info */}
+        {/* Basic Info (Order 2) */}
         <section className="space-y-4">
           <h2 className="flex items-center gap-2 text-lg font-bold text-slate-800">
             <Tag size={20} className="text-pink-500" />
@@ -212,6 +236,24 @@ export default function ProfileEditPage() {
               onRemoveOther={handleRemoveOther}
             />
           </div>
+        </section>
+
+        {/* Physical Info (Order 3 - New) */}
+        <section className="space-y-4 border-t border-slate-100 pt-8">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-slate-800">
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-pink-100 text-pink-500 text-xs shadow-sm">P</span>
+            Physical Info
+          </h2>
+          <PhysicalInputs data={profileForm} onChange={handleProfileChange} />
+        </section>
+
+        {/* Appeal / Tags (Order 4 - New) */}
+        <section className="space-y-4 border-t border-slate-100 pt-8">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-slate-800">
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-pink-100 text-pink-500 text-xs shadow-sm">#</span>
+            Tags
+          </h2>
+          <TagSelector tags={profileForm.tags} onChange={handleTagsChange} />
         </section>
 
         {/* Save Button */}

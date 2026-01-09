@@ -27,6 +27,7 @@ export default function OnboardingStep1Page() {
       ...data.profile?.socialLinks,
       others: data.profile?.socialLinks?.others || [],
     },
+    tags: [],
   });
 
   // Handlers (Moved from OnboardingForm)

@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw'
 import { CastProfile } from '@/modules/portfolio/types';
 
 // Initial Mock Data
-let castProfile: CastProfile = {
+const MOCK_PROFILE: CastProfile = {
   id: 'mirei',
   name: '美玲',
   age: 24,
@@ -21,21 +21,22 @@ let castProfile: CastProfile = {
       'https://images.unsplash.com/photo-1616091093747-47804425986c?q=80&w=600&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=600&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&auto=format&fit=crop'
-    ]
+      'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&auto=format&fit=crop',
+      "https://placehold.co/600x800/orange/white?text=Casual",
+      "https://placehold.co/600x800/blue/white?text=Dress",
+    ],
   },
   tags: [
-    { label: '#写真より可愛い', count: 12 },
-    { label: '#神対応', count: 8 },
-    { label: '#Sっ気', count: 5 },
-    { label: '#英語OK', count: 0 }
+    { label: "癒し系", count: 10 },
+    { label: "聞き上手", count: 5 },
   ],
   socialLinks: {
-    others: []
+    x: "mirei_nyx",
+    others: [],
   },
   plans: [
-    { id: "p1", name: "Standard 60min", duration: 60, price: 15000 },
-    { id: "p2", name: "Long 90min", duration: 90, price: 22000 },
+    { id: "p1", name: "Standard 60", duration: 60, price: 15000 },
+    { id: "p2", name: "Standard 90", duration: 90, price: 22000 },
   ],
   weeklyShifts: []
 };
@@ -43,29 +44,36 @@ let castProfile: CastProfile = {
 export const handlers = [
   http.get('/api/casts/:id', ({ params }) => {
     // In a real app, verify params.id. For demo, return the same mock.
-    return HttpResponse.json(castProfile)
+    return HttpResponse.json(MOCK_PROFILE)
   }),
 
   // Profile Management (Phase 2)
-  http.get('/api/cast/profile', () => {
-    return HttpResponse.json(castProfile)
+  http.get("/api/cast/profile", () => {
+    return HttpResponse.json(MOCK_PROFILE);
   }),
 
-  http.put('/api/cast/profile', async ({ request }) => {
-    const body = await request.json() as Partial<CastProfile>;
+  http.put("/api/cast/profile", async ({ request }) => {
+    const body = (await request.json()) as Partial<CastProfile>;
 
-    // Deep merge or specific field updates
-    // For simplicity, just merging top-level and specific deep fields if needed
-    castProfile = {
-      ...castProfile,
-      ...body,
-      // Handle nested merges specifically if needed, e.g. for images or tags if they are sent partially
-      // But typically PUT sends the whole resource or we handle PATCH.
-      // Assuming PUT sends complete sections or we just spread it for this mock.
-    };
+    // Simulate DB Update
+    if (body.name) MOCK_PROFILE.name = body.name;
+    if (body.tagline) MOCK_PROFILE.tagline = body.tagline;
+    if (body.bio) MOCK_PROFILE.bio = body.bio;
+    if (body.message) MOCK_PROFILE.message = body.message;
+    if (body.area) MOCK_PROFILE.area = body.area;
+    if (body.serviceCategory) MOCK_PROFILE.serviceCategory = body.serviceCategory;
+    if (body.locationType) MOCK_PROFILE.locationType = body.locationType;
+    if (body.images) MOCK_PROFILE.images = body.images;
+    if (body.socialLinks) MOCK_PROFILE.socialLinks = body.socialLinks;
 
-    console.log('[Mock] Updated profile:', castProfile);
-    return HttpResponse.json(castProfile);
+    // New Fields
+    if (body.tags) MOCK_PROFILE.tags = body.tags;
+    if (body.age) MOCK_PROFILE.age = body.age;
+    if (body.height) MOCK_PROFILE.height = body.height;
+    if (body.bloodType) MOCK_PROFILE.bloodType = body.bloodType;
+    if (body.threeSizes) MOCK_PROFILE.threeSizes = body.threeSizes;
+
+    return HttpResponse.json(MOCK_PROFILE);
   }),
 
   // Dashboard Stats

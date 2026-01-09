@@ -25,8 +25,6 @@ export interface CastTag {
 export interface CastProfile {
   id: string;
   name: string;
-  age?: number;
-  height?: number;
   status: string; // CastStatus string for flexibility or strictly CastStatus
   message: string;
   tagline?: string; // Short catchphrase
@@ -42,7 +40,7 @@ export interface CastProfile {
   images: CastImages;
 
   // Metadata
-  tags: CastTag[];
+  tags: CastTag[]; // Keep as CastTag[] for Profile, but FormData uses string[]
   socialLinks?: {
     x?: string;
     instagram?: string;
@@ -50,6 +48,17 @@ export interface CastProfile {
     cityheaven?: string;
     litlink?: string;
     others?: string[];
+  };
+
+  // Detailed Info
+  age?: number;
+  height?: number;
+  bloodType?: "A" | "B" | "O" | "AB" | "Unknown";
+  threeSizes?: {
+    b: number;
+    w: number;
+    h: number;
+    cup: string;
   };
 
   // Relations
@@ -86,4 +95,16 @@ export interface ProfileFormData {
     litlink?: string;
     others: string[];
   };
+
+  // Detailed Info
+  age?: number;
+  height?: number;
+  bloodType?: "A" | "B" | "O" | "AB" | "Unknown";
+  threeSizes?: {
+    b: number;
+    w: number;
+    h: number;
+    cup: string;
+  };
+  tags: string[];
 }
