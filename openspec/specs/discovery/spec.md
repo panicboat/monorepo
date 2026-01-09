@@ -4,7 +4,7 @@
 TBD - created by archiving change implement-full-mock. Update Purpose after archive.
 ## Requirements
 ### Requirement: Cast Discovery (MUST)
-ユーザーは、様々な切り口（ランキング、タイムライン、イベント）でキャストを発見できなければならない。
+ユーザーは、様々な切り口（ランキング、タイムライン、イベント）でキャストを発見できなければならない (MUST)。
 
 #### Scenario: View Ranking
 - **WHEN** ユーザーがトップページにアクセスしたとき
@@ -71,4 +71,3 @@ TBD - created by archiving change implement-full-mock. Update Purpose after arch
 #### Scenario: View Carousel
 - **WHEN** カルーセルが表示されたとき
 - **THEN** 右端のアイテムが完全には表示されず、一部が見切れている状態で表示され、続きがあることがわかる。
-
