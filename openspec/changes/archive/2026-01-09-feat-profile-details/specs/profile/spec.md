@@ -3,7 +3,7 @@
 ## ADDED Requirements
 
 ### Requirement: Physical Information Input
-システムは、キャストがゲストに詳細情報を提供するために、自身の身体的特徴を入力・保存できるようにしなければならない。
+システムは、キャストがゲストに詳細情報を提供するために、自身の身体的特徴を入力・保存できるようにしなければならない (MUST)。
 
 #### Scenario: Entering physical stats
 Given プロフィール編集ページにいる
@@ -18,7 +18,7 @@ And プロフィールを保存すると
 Then これらの値が永続化されること
 
 ### Requirement: Tag Management
-システムは、キャストが自身の特徴を表すタグを管理できるようにしなければならない。
+システムは、キャストが自身の特徴を表すタグを管理できるようにしなければならない (MUST)。
 
 #### Scenario: Adding a tag
 Given プロフィール編集ページにいる
