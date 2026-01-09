@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { ProfileFormData } from "@/modules/portfolio/types";
 import { SimplePlan } from "@/modules/ritual/components/cast/WeeklyShiftInput";
 import { Shift } from "@/modules/ritual/components/cast/WeeklyShiftInput";
@@ -51,7 +57,9 @@ type OnboardingContextType = {
   setShifts: (shifts: Shift[]) => void;
 };
 
-const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
+const OnboardingContext = createContext<OnboardingContextType | undefined>(
+  undefined,
+);
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   const [data, setData] = useState<OnboardingData>(INITIAL_DATA);

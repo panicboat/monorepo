@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { WeeklyShiftInput, Shift } from "@/modules/ritual/components/cast/WeeklyShiftInput";
+import {
+  WeeklyShiftInput,
+  Shift,
+} from "@/modules/ritual/components/cast/WeeklyShiftInput";
 
 import { useOnboarding } from "../context";
 
@@ -35,13 +38,18 @@ export default function OnboardingStep4() {
           Initial Schedule
         </h2>
         <p className="text-sm text-slate-500">
-          まずは直近の出勤可能日を登録しましょう。<br />
+          まずは直近の出勤可能日を登録しましょう。
+          <br />
           あとからカレンダーで自由に調整できます。
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <WeeklyShiftInput shifts={shifts} plans={availablePlans} onChange={setShifts} />
+        <WeeklyShiftInput
+          shifts={shifts}
+          plans={availablePlans}
+          onChange={setShifts}
+        />
 
         <button
           type="submit"

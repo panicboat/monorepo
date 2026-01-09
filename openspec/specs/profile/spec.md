@@ -69,3 +69,36 @@ Given 既存のタグがある
 When タグチップの削除ボタン (x) をクリックすると
 Then そのタグがリストから削除されること
 
+### Requirement: Profile Preview Capability
+システムは、キャストがデータをバックエンドに保存する前に、変更内容をシミュレートされたゲストビューでプレビューできるようにしなければならない (MUST)。
+
+#### Scenario: Previewing unsaved changes
+Given プロフィール編集ページにいる
+And ニックネームを "New Name" に変更し
+And 変更をまだ保存していない
+When "プレビュー" ボタンをクリックすると
+Then ゲスト詳細ビューを表示するモーダルが開くこと
+And 表示されるニックネームが "New Name" であること
+
+#### Scenario: Previewing without changes
+Given プロフィール編集ページにいる
+And 変更を行っていない
+When "プレビュー" ボタンをクリックすると
+Then 現在のプロフィールデータを表示するモーダルが開くこと
+
+#### Scenario: Closing preview
+Given プレビューモーダルが開いている
+When 閉じるボタンまたはモーダル外をクリックすると
+Then モーダルが閉じること
+And 未保存の変更内容がそのままでプロフィール編集ページに戻ること
+
+### Requirement: Section Collapsing
+ユーザーは、編集頻度の低いセクションを折りたたんで、画面の表示領域を節約できるべきである (MUST)。
+デフォルトでは、全ての主要セクションは折りたたまれているべきである。
+
+#### Scenario: Expanding a section
+Given プロフィール編集ページにいる
+And 全てのセクションが折りたたまれている
+When 「Basic Info」セクションのヘッダーをクリックすると
+Then そのセクションが展開され、詳細な入力項目が表示されること
+

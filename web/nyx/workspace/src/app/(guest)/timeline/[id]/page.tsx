@@ -6,8 +6,16 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { ChevronLeft, Grid, List as ListIcon, Play } from "lucide-react";
-import { MOCK_POSTS, EXTRA_POSTS, PostCard, PostItem } from "@/modules/portfolio/components/guest/detail/CastPosts";
-import { MediaModal, MediaItem } from "@/modules/common/components/guest/MediaModal";
+import {
+  MOCK_POSTS,
+  EXTRA_POSTS,
+  PostCard,
+  PostItem,
+} from "@/modules/portfolio/components/guest/detail/CastPosts";
+import {
+  MediaModal,
+  MediaItem,
+} from "@/modules/common/components/guest/MediaModal";
 import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
 
 // Combine available mocks
@@ -26,10 +34,11 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
 
   // Filter Logic
-  const filteredPosts = ALL_POSTS.filter(post => {
+  const filteredPosts = ALL_POSTS.filter((post) => {
     if (filter === "all") return true;
-    if (filter === "image") return post.media?.some(m => m.type === "image" || m.type === "gif");
-    if (filter === "video") return post.media?.some(m => m.type === "video");
+    if (filter === "image")
+      return post.media?.some((m) => m.type === "image" || m.type === "gif");
+    if (filter === "video") return post.media?.some((m) => m.type === "video");
     return true;
   });
 
@@ -42,15 +51,19 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-slate-50 pb-safe">
       {/* Filter Tabs & Layout Toggle */}
       <div className="sticky top-14 z-20 bg-slate-50 pt-4 pb-4 px-4 flex items-center justify-between border-b border-slate-100/50 backdrop-blur-sm bg-slate-50/95">
-        <HorizontalScroll className="flex-1 min-w-0 mr-2" contentClassName="gap-2 cursor-grab active:cursor-grabbing">
-          {(["all", "image", "video"] as const).map(f => (
+        <HorizontalScroll
+          className="flex-1 min-w-0 mr-2"
+          contentClassName="gap-2 cursor-grab active:cursor-grabbing"
+        >
+          {(["all", "image", "video"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-full text-xs font-bold capitalize transition-colors whitespace-nowrap
-                ${filter === f
-                  ? "bg-slate-900 text-white shadow-md"
-                  : "bg-white text-slate-500 border border-slate-200"
+                ${
+                  filter === f
+                    ? "bg-slate-900 text-white shadow-md"
+                    : "bg-white text-slate-500 border border-slate-200"
                 }
               `}
             >
@@ -81,14 +94,17 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
         {layout === "list" ? (
           // List View
           <div className="space-y-4">
-            {filteredPosts.map(post => (
-              <div key={post.id} onClick={() => {
-                // Creating simple click handler for demo - real impl might need more granular click tracking within PostCard
-                // For now, PostCard handles rendering. We might need to pass an onMediaClick prop to PostCard if we want to open modal from there.
-                // Actually, let's wrap PostCard or modify it.
-                // For now, let's assume PostCard is self-contained for list view or we just view it.
-                // To support modal opening, need to patch PostCard.
-              }}>
+            {filteredPosts.map((post) => (
+              <div
+                key={post.id}
+                onClick={() => {
+                  // Creating simple click handler for demo - real impl might need more granular click tracking within PostCard
+                  // For now, PostCard handles rendering. We might need to pass an onMediaClick prop to PostCard if we want to open modal from there.
+                  // Actually, let's wrap PostCard or modify it.
+                  // For now, let's assume PostCard is self-contained for list view or we just view it.
+                  // To support modal opening, need to patch PostCard.
+                }}
+              >
                 <PostCard post={post} />
               </div>
             ))}
@@ -96,43 +112,51 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
         ) : (
           // Grid View
           <div className="grid grid-cols-3 gap-1 auto-flow-dense pb-20 px-1">
-            {filteredPosts.flatMap(post => post.media || []).map((media, idx) => {
-              // Complex Mosaic Pattern (12-item cycle)
-              // 0: Large (Left)
-              // 7: Large (Right)
-              const isLarge = idx % 12 === 0 || idx % 12 === 7;
+            {filteredPosts
+              .flatMap((post) => post.media || [])
+              .map((media, idx) => {
+                // Complex Mosaic Pattern (12-item cycle)
+                // 0: Large (Left)
+                // 7: Large (Right)
+                const isLarge = idx % 12 === 0 || idx % 12 === 7;
 
-              return (
-                <div
-                  key={idx}
-                  onClick={() => handleMediaClick(media)}
-                  className={`relative cursor-pointer bg-slate-100 block w-full rounded-xl overflow-hidden
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => handleMediaClick(media)}
+                    className={`relative cursor-pointer bg-slate-100 block w-full rounded-xl overflow-hidden
                      ${isLarge ? "col-span-2 row-span-2" : "col-span-1 row-span-1"}
                    `}
-                  style={{
-                    paddingBottom: '100%'
-                  }}
-                >
-                  <div className="absolute inset-0">
-                    <img
-                      src={media.type === 'video' ? (media.thumbnail || media.url) : media.url}
-                      alt="media"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {media.type === 'video' && (
-                    <div className="absolute top-2 right-2">
-                      <div className="bg-black/50 text-white rounded-full p-1.5 backdrop-blur-sm">
-                        <Play size={12} fill="currentColor" />
-                      </div>
+                    style={{
+                      paddingBottom: "100%",
+                    }}
+                  >
+                    <div className="absolute inset-0">
+                      <img
+                        src={
+                          media.type === "video"
+                            ? media.thumbnail || media.url
+                            : media.url
+                        }
+                        alt="media"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                  )}
-                  {media.type === 'gif' && (
-                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded backdrop-blur-sm">GIF</div>
-                  )}
-                </div>
-              );
-            })}
+                    {media.type === "video" && (
+                      <div className="absolute top-2 right-2">
+                        <div className="bg-black/50 text-white rounded-full p-1.5 backdrop-blur-sm">
+                          <Play size={12} fill="currentColor" />
+                        </div>
+                      </div>
+                    )}
+                    {media.type === "gif" && (
+                      <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded backdrop-blur-sm">
+                        GIF
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>
@@ -143,6 +167,6 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
         onClose={() => setModalOpen(false)}
         media={selectedMedia}
       />
-    </div >
+    </div>
   );
 }

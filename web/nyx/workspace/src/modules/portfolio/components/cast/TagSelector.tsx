@@ -30,13 +30,23 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
     onChange(tags.filter((t) => t !== tagToRemove));
   };
 
-  const suggestedTags = ["EnglishOK", "Singer", "AnimeLover", "Cosplay", "Student", "Model", "Golfer"];
+  const suggestedTags = [
+    "EnglishOK",
+    "Singer",
+    "AnimeLover",
+    "Cosplay",
+    "Student",
+    "Model",
+    "Golfer",
+  ];
 
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">#</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+            #
+          </span>
           <input
             type="text"
             value={input}
@@ -64,7 +74,10 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
             className="flex items-center gap-1 rounded-full bg-pink-100 px-3 py-1.5 text-xs font-bold text-pink-600"
           >
             #{tag}
-            <button onClick={() => handleRemove(tag)} className="ml-1 rounded-full bg-white/50 p-0.5 hover:bg-white text-pink-500">
+            <button
+              onClick={() => handleRemove(tag)}
+              className="ml-1 rounded-full bg-white/50 p-0.5 hover:bg-white text-pink-500"
+            >
               <X size={12} />
             </button>
           </span>
@@ -73,18 +86,22 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
 
       {/* Suggested */}
       <div className="pt-2">
-        <p className="text-xs font-bold text-slate-400 mb-2 uppercase">Suggestions</p>
+        <p className="text-xs font-bold text-slate-400 mb-2 uppercase">
+          Suggestions
+        </p>
         <div className="flex flex-wrap gap-2">
-          {suggestedTags.filter(t => !tags.includes(t)).map(tag => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => onChange([...tags, tag])}
-              className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:border-pink-300 hover:text-pink-500 hover:bg-pink-50 transition-colors"
-            >
-              #{tag}
-            </button>
-          ))}
+          {suggestedTags
+            .filter((t) => !tags.includes(t))
+            .map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => onChange([...tags, tag])}
+                className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:border-pink-300 hover:text-pink-500 hover:bg-pink-50 transition-colors"
+              >
+                #{tag}
+              </button>
+            ))}
         </div>
       </div>
     </div>

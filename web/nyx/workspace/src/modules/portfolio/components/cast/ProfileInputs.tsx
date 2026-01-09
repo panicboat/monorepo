@@ -17,7 +17,9 @@ export const ProfileInputs = ({ data, onChange }: ProfileInputsProps) => {
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-1">Nickname (源氏名)</label>
+          <label className="block text-sm font-bold text-slate-700 mb-1">
+            Nickname (源氏名)
+          </label>
           <input
             type="text"
             value={data.nickname}
@@ -28,7 +30,9 @@ export const ProfileInputs = ({ data, onChange }: ProfileInputsProps) => {
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-1">Area (活動エリア)</label>
+          <label className="block text-sm font-bold text-slate-700 mb-1">
+            Area (活動エリア)
+          </label>
           <input
             type="text"
             value={data.area}
@@ -39,7 +43,9 @@ export const ProfileInputs = ({ data, onChange }: ProfileInputsProps) => {
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-1">Tagline (キャッチコピー)</label>
+          <label className="block text-sm font-bold text-slate-700 mb-1">
+            Tagline (キャッチコピー)
+          </label>
           <input
             type="text"
             value={data.tagline}
@@ -47,11 +53,15 @@ export const ProfileInputs = ({ data, onChange }: ProfileInputsProps) => {
             placeholder="例: 癒やしの時間をお届けします✨"
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
           />
-          <p className="mt-1 text-right text-[10px] text-slate-400">{data.tagline.length}/30</p>
+          <p className="mt-1 text-right text-[10px] text-slate-400">
+            {data.tagline.length}/30
+          </p>
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-1">Bio (自己紹介)</label>
+          <label className="block text-sm font-bold text-slate-700 mb-1">
+            Bio (自己紹介)
+          </label>
           <textarea
             value={data.bio}
             onChange={(e) => onChange("bio", e.target.value)}

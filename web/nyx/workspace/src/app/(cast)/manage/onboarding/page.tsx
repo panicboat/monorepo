@@ -9,7 +9,8 @@ export default function OnboardingWelcomePage() {
           Welcome to Nyx
         </h1>
         <p className="text-slate-500 leading-relaxed">
-          あなただけのファンを見つけ、<br />
+          あなただけのファンを見つけ、
+          <br />
           自由なスタイルで活動しましょう。
         </p>
       </div>

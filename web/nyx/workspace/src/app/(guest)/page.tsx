@@ -14,7 +14,12 @@ export default function Home() {
   const [view, setView] = useState<"home" | "mypage">("home");
   const [tab, setTab] = useState<"cast" | "timeline">("timeline");
 
-  if (isLoading) return <div className="flex h-screen items-center justify-center bg-white"><div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-pink-500"></div></div>;
+  if (isLoading)
+    return (
+      <div className="flex h-screen items-center justify-center bg-white">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-pink-500"></div>
+      </div>
+    );
 
   if (!user) {
     return <LoginGate />;
@@ -64,8 +69,20 @@ export default function Home() {
         </>
       ) : (
         <div>
-          <button onClick={() => setView("home")} className="fixed top-4 left-4 z-50 rounded-full bg-black/50 p-2 text-white backdrop-blur-md">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <button
+            onClick={() => setView("home")}
+            className="fixed top-4 left-4 z-50 rounded-full bg-black/50 p-2 text-white backdrop-blur-md"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>

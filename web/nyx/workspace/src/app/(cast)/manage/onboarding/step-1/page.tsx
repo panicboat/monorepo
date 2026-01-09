@@ -35,7 +35,10 @@ export default function OnboardingStep1Page() {
     setFormData((prev) => ({ ...prev, [key]: val }));
   };
 
-  const handleSocialChange = (key: keyof ProfileFormData["socialLinks"], val: string) => {
+  const handleSocialChange = (
+    key: keyof ProfileFormData["socialLinks"],
+    val: string,
+  ) => {
     setFormData((prev) => ({
       ...prev,
       socialLinks: {
@@ -115,10 +118,7 @@ export default function OnboardingStep1Page() {
         />
 
         {/* Basic Info */}
-        <ProfileInputs
-          data={formData}
-          onChange={handleChange}
-        />
+        <ProfileInputs data={formData} onChange={handleChange} />
 
         {/* External Links Section */}
         <SocialInputs

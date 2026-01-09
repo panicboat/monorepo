@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, List } from "lucide-react";
-import { PlanEditor, ServicePlan } from "@/modules/portfolio/components/cast/PlanEditor";
+import {
+  PlanEditor,
+  ServicePlan,
+} from "@/modules/portfolio/components/cast/PlanEditor";
 
 import { useOnboarding } from "../context";
 
@@ -11,7 +14,9 @@ export default function OnboardingStep3() {
   const router = useRouter();
   const { data, setPlans: savePlans } = useOnboarding();
   const [plans, setPlans] = useState<ServicePlan[]>(
-    data.plans.length > 0 ? data.plans : [{ id: "default-1", name: "Standard 60", duration: 60, price: 15000 }]
+    data.plans.length > 0
+      ? data.plans
+      : [{ id: "default-1", name: "Standard 60", duration: 60, price: 15000 }],
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,7 +27,9 @@ export default function OnboardingStep3() {
     router.push("/manage/onboarding/step-4");
   };
 
-  const isNextEnabled = plans.every(p => p.name.trim() !== "" && p.price > 0 && p.duration > 0);
+  const isNextEnabled = plans.every(
+    (p) => p.name.trim() !== "" && p.price > 0 && p.duration > 0,
+  );
 
   return (
     <div className="px-4 py-6 space-y-6 animate-in slide-in-from-right-8 fade-in duration-500">
@@ -34,7 +41,8 @@ export default function OnboardingStep3() {
           Service Plans (Optional)
         </h2>
         <p className="text-sm text-slate-500">
-          提供するサービスプランを設定しましょう。<br />
+          提供するサービスプランを設定しましょう。
+          <br />
           設定しない場合はスキップできます。
         </p>
       </div>

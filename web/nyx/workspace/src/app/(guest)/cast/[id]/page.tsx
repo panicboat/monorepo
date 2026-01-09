@@ -2,7 +2,10 @@
 
 import { PhotoGallery } from "@/modules/portfolio/components/guest/detail/PhotoGallery";
 import { ProfileSpecs } from "@/modules/portfolio/components/guest/detail/ProfileSpecs";
-import { PriceSystem, ScheduleCalendar } from "@/modules/portfolio/components/guest/detail/CostAndSchedule";
+import {
+  PriceSystem,
+  ScheduleCalendar,
+} from "@/modules/portfolio/components/guest/detail/CostAndSchedule";
 import { CastPosts } from "@/modules/portfolio/components/guest/detail/CastPosts";
 import { TrustRadar } from "@/modules/trust/components/guest/TrustRadar";
 import { ReviewList } from "@/modules/trust/components/guest/ReviewList";
@@ -20,18 +23,29 @@ function BlockSection({ castId }: { castId: string }) {
     <div className="flex flex-col items-center gap-2 border-t border-slate-100 pt-8">
       <button
         onClick={() => toggleBlock(castId)}
-        className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-colors ${blocked ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
-          }`}
+        className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-colors ${
+          blocked
+            ? "bg-slate-900 text-white"
+            : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+        }`}
       >
         <AlertTriangle size={14} />
         {blocked ? "Unblock Cast" : "Block / Report"}
       </button>
-      {blocked && <p className="text-[10px] text-red-500 font-medium">You have blocked this user.</p>}
+      {blocked && (
+        <p className="text-[10px] text-red-500 font-medium">
+          You have blocked this user.
+        </p>
+      )}
     </div>
   );
 }
 
-export default function CastDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function CastDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const { scrollY } = useScroll();
   const headerOpacity = useTransform(scrollY, [0, 200], [0, 1]);
@@ -81,8 +95,11 @@ function FavoriteButton() {
     <motion.button
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      className={`flex h-12 w-12 items-center justify-center rounded-full shadow-xl shadow-slate-300 transition-colors border ${isFavorite ? "bg-pink-500 border-pink-500 text-white" : "bg-white border-pink-100 text-pink-500 hover:bg-pink-50"
-        }`}
+      className={`flex h-12 w-12 items-center justify-center rounded-full shadow-xl shadow-slate-300 transition-colors border ${
+        isFavorite
+          ? "bg-pink-500 border-pink-500 text-white"
+          : "bg-white border-pink-100 text-pink-500 hover:bg-pink-50"
+      }`}
       onClick={() => setIsFavorite(!isFavorite)}
     >
       <motion.div

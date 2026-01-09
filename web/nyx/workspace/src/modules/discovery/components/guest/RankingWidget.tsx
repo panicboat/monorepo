@@ -11,11 +11,41 @@ type RankItem = {
 };
 
 const ranks: RankItem[] = [
-  { id: "1", name: "Yuna", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna", score: "99.8%", change: "up" },
-  { id: "2", name: "Mio", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mio", score: "98.5%", change: "same" },
-  { id: "3", name: "Rin", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rin", score: "97.2%", change: "down" },
-  { id: "4", name: "Sara", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sara", score: "96.5%", change: "up" },
-  { id: "5", name: "Kila", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kila", score: "95.0%", change: "same" },
+  {
+    id: "1",
+    name: "Yuna",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna",
+    score: "99.8%",
+    change: "up",
+  },
+  {
+    id: "2",
+    name: "Mio",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mio",
+    score: "98.5%",
+    change: "same",
+  },
+  {
+    id: "3",
+    name: "Rin",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rin",
+    score: "97.2%",
+    change: "down",
+  },
+  {
+    id: "4",
+    name: "Sara",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sara",
+    score: "96.5%",
+    change: "up",
+  },
+  {
+    id: "5",
+    name: "Kila",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kila",
+    score: "95.0%",
+    change: "same",
+  },
 ];
 
 import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
@@ -24,7 +54,9 @@ export const RankingWidget = () => {
   return (
     <div className="py-2">
       <div className="mb-3 flex items-center justify-between px-4">
-        <h2 className="text-lg font-bold font-serif text-slate-800">Trust Ranking</h2>
+        <h2 className="text-lg font-bold font-serif text-slate-800">
+          Trust Ranking
+        </h2>
         <span className="text-xs font-bold text-pink-500">Weekly</span>
       </div>
 
@@ -42,9 +74,11 @@ export const RankingWidget = () => {
               whileTap={{ scale: 0.95 }}
               className="flex flex-col items-center gap-1"
             >
-              <div className={`relative h-16 w-16 overflow-hidden rounded-full border-2
+              <div
+                className={`relative h-16 w-16 overflow-hidden rounded-full border-2
                     ${index === 0 ? "border-yellow-400 p-0.5" : "border-slate-100"}
-                `}>
+                `}
+              >
                 <img
                   src={cast.image}
                   alt={cast.name}
@@ -54,8 +88,12 @@ export const RankingWidget = () => {
                   {index + 1}
                 </div>
               </div>
-              <div className="text-xs font-medium text-slate-700">{cast.name}</div>
-              <div className="text-[10px] font-bold text-slate-400">{cast.score}</div>
+              <div className="text-xs font-medium text-slate-700">
+                {cast.name}
+              </div>
+              <div className="text-[10px] font-bold text-slate-400">
+                {cast.score}
+              </div>
             </motion.div>
           </div>
         ))}

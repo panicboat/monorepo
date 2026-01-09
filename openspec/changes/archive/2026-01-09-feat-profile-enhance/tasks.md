@@ -1,0 +1,8 @@
+- [x] Create `SectionCard` component <!-- id: 0 -->
+    - [x] Implement collapsible logic using `details` or state
+- [x] Create `SectionNav` component <!-- id: 1 -->
+    - [x] Implement smooth scroll to section IDs
+- [x] Refactor `ProfileEditPage` layout <!-- id: 2 -->
+    - [x] Wrap existing sections with `SectionCard`
+    - [x] Implement new grouping logic defined in Design
+- [x] Verify Mobile/Desktop responsiveness <!-- id: 3 -->

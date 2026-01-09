@@ -23,7 +23,8 @@ export default function OnboardingStep5() {
   if (!data) return null;
 
   const { profile, photos, plans, shifts } = data;
-  const coverPhoto = photos.cover || "https://placehold.co/400x600/pink/white?text=No+Image";
+  const coverPhoto =
+    photos.cover || "https://placehold.co/400x600/pink/white?text=No+Image";
 
   return (
     <div className="px-4 py-6 space-y-6 animate-in slide-in-from-right-8 fade-in duration-500">
@@ -35,7 +36,8 @@ export default function OnboardingStep5() {
           Review & Publish
         </h2>
         <p className="text-sm text-slate-500">
-          入力内容を確認して、<br />
+          入力内容を確認して、
+          <br />
           プロフィールを公開しましょう。
         </p>
       </div>
@@ -55,11 +57,17 @@ export default function OnboardingStep5() {
           <div className="rounded-xl bg-white p-4 shadow-sm border border-slate-100 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Nickname</label>
-                <p className="font-bold text-slate-700">{profile.nickname || "-"}</p>
+                <label className="text-[10px] font-bold text-slate-400 uppercase">
+                  Nickname
+                </label>
+                <p className="font-bold text-slate-700">
+                  {profile.nickname || "-"}
+                </p>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Category</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase">
+                  Category
+                </label>
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-600 uppercase">
                     {profile.serviceCategory}
@@ -67,21 +75,33 @@ export default function OnboardingStep5() {
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Location Type</label>
-                <p className="capitalize text-slate-700">{profile.locationType}</p>
+                <label className="text-[10px] font-bold text-slate-400 uppercase">
+                  Location Type
+                </label>
+                <p className="capitalize text-slate-700">
+                  {profile.locationType}
+                </p>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Area</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase">
+                  Area
+                </label>
                 <p className="text-slate-700">{profile.area || "-"}</p>
               </div>
             </div>
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase">Tagline</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase">
+                Tagline
+              </label>
               <p className="text-sm text-slate-600">{profile.tagline || "-"}</p>
             </div>
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase">Bio</label>
-              <p className="text-sm text-slate-600 whitespace-pre-wrap">{profile.bio || "-"}</p>
+              <label className="text-[10px] font-bold text-slate-400 uppercase">
+                Bio
+              </label>
+              <p className="text-sm text-slate-600 whitespace-pre-wrap">
+                {profile.bio || "-"}
+              </p>
             </div>
           </div>
         </section>
@@ -100,8 +120,15 @@ export default function OnboardingStep5() {
           <div className="rounded-xl bg-white p-4 shadow-sm border border-slate-100">
             <div className="grid grid-cols-3 gap-2">
               {photos.gallery.map((src, i) => (
-                <div key={i} className="aspect-[3/4] rounded-lg bg-slate-100 overflow-hidden relative">
-                  <img src={src} alt={`Gallery ${i}`} className="h-full w-full object-cover" />
+                <div
+                  key={i}
+                  className="aspect-[3/4] rounded-lg bg-slate-100 overflow-hidden relative"
+                >
+                  <img
+                    src={src}
+                    alt={`Gallery ${i}`}
+                    className="h-full w-full object-cover"
+                  />
                   {i === 0 && (
                     <div className="absolute top-1 left-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
                       Cover
@@ -133,10 +160,17 @@ export default function OnboardingStep5() {
             {plans.length > 0 ? (
               <div className="divide-y divide-slate-50">
                 {plans.map((plan) => (
-                  <div key={plan.id} className="flex items-center justify-between p-3">
+                  <div
+                    key={plan.id}
+                    className="flex items-center justify-between p-3"
+                  >
                     <div>
-                      <div className="font-bold text-slate-700">{plan.name}</div>
-                      <div className="text-xs text-slate-400">{plan.duration} mins</div>
+                      <div className="font-bold text-slate-700">
+                        {plan.name}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        {plan.duration} mins
+                      </div>
                     </div>
                     <div className="font-mono font-bold text-slate-900">
                       ¥{plan.price.toLocaleString()}
@@ -167,12 +201,14 @@ export default function OnboardingStep5() {
             {shifts.length > 0 ? (
               <div className="divide-y divide-slate-50">
                 {shifts.map((shift, i) => {
-                  const plan = plans.find(p => p.id === shift.planId);
+                  const plan = plans.find((p) => p.id === shift.planId);
                   return (
                     <div key={i} className="flex items-center gap-3 p-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-700">{shift.date}</span>
+                          <span className="font-bold text-slate-700">
+                            {shift.date}
+                          </span>
                           <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">
                             {shift.start} - {shift.end}
                           </span>

@@ -27,7 +27,9 @@ const SelectGroup = ({
     <label className="block text-sm font-bold text-slate-700">
       {label}
       {description && (
-        <span className="ml-2 text-xs font-normal text-slate-400">{description}</span>
+        <span className="ml-2 text-xs font-normal text-slate-400">
+          {description}
+        </span>
       )}
     </label>
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -36,20 +38,27 @@ const SelectGroup = ({
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value)}
-          className={`flex flex-col items-center justify-center gap-1 rounded-xl border p-3 text-center transition-all ${value === opt.value
-            ? "border-pink-500 bg-pink-50 text-pink-600 ring-1 ring-pink-500"
-            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-            }`}
+          className={`flex flex-col items-center justify-center gap-1 rounded-xl border p-3 text-center transition-all ${
+            value === opt.value
+              ? "border-pink-500 bg-pink-50 text-pink-600 ring-1 ring-pink-500"
+              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+          }`}
         >
           <span className="text-sm font-bold">{opt.label}</span>
-          {opt.desc && <span className="text-[10px] opacity-70">{opt.desc}</span>}
+          {opt.desc && (
+            <span className="text-[10px] opacity-70">{opt.desc}</span>
+          )}
         </button>
       ))}
     </div>
   </div>
 );
 
-export const StyleInputs = ({ data, onChange, timeOptions }: StyleInputsProps) => {
+export const StyleInputs = ({
+  data,
+  onChange,
+  timeOptions,
+}: StyleInputsProps) => {
   return (
     <section className="space-y-6 rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
       <h3 className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-50 pb-2">
@@ -84,7 +93,9 @@ export const StyleInputs = ({ data, onChange, timeOptions }: StyleInputsProps) =
       <div>
         <label className="block text-sm font-bold text-slate-700 mb-1">
           3. Standard Shift Time
-          <span className="ml-2 text-xs font-normal text-slate-400">基本の活動時間設定</span>
+          <span className="ml-2 text-xs font-normal text-slate-400">
+            基本の活動時間設定
+          </span>
         </label>
         <div className="flex items-center gap-2 max-w-sm">
           <div className="relative flex-1">
@@ -94,10 +105,15 @@ export const StyleInputs = ({ data, onChange, timeOptions }: StyleInputsProps) =
               className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-pink-500 focus:outline-none"
             >
               {timeOptions.map((t) => (
-                <option key={`start-${t}`} value={t}>{t}</option>
+                <option key={`start-${t}`} value={t}>
+                  {t}
+                </option>
               ))}
             </select>
-            <Clock className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" size={16} />
+            <Clock
+              className="absolute right-3 top-3.5 text-slate-400 pointer-events-none"
+              size={16}
+            />
           </div>
           <span className="text-slate-400 font-bold">~</span>
           <div className="relative flex-1">
@@ -107,10 +123,15 @@ export const StyleInputs = ({ data, onChange, timeOptions }: StyleInputsProps) =
               className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-pink-500 focus:outline-none"
             >
               {timeOptions.map((t) => (
-                <option key={`end-${t}`} value={t}>{t}</option>
+                <option key={`end-${t}`} value={t}>
+                  {t}
+                </option>
               ))}
             </select>
-            <Clock className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" size={16} />
+            <Clock
+              className="absolute right-3 top-3.5 text-slate-400 pointer-events-none"
+              size={16}
+            />
           </div>
         </div>
       </div>

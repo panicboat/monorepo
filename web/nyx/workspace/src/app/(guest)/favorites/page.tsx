@@ -5,9 +5,27 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 const FAVORITES = [
-  { id: 1, name: "Yuna", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna", area: "Shinjuku", tags: ["Model"] },
-  { id: 4, name: "Mio", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mio", area: "Shinjuku", tags: ["Rookie"] },
-  { id: 7, name: "Elena", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena", area: "Roppongi", tags: ["VIP"] },
+  {
+    id: 1,
+    name: "Yuna",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna",
+    area: "Shinjuku",
+    tags: ["Model"],
+  },
+  {
+    id: 4,
+    name: "Mio",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mio",
+    area: "Shinjuku",
+    tags: ["Rookie"],
+  },
+  {
+    id: 7,
+    name: "Elena",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena",
+    area: "Roppongi",
+    tags: ["VIP"],
+  },
 ];
 
 export default function FavoritesPage() {
@@ -24,7 +42,11 @@ export default function FavoritesPage() {
                 className="relative overflow-hidden rounded-xl bg-white shadow-sm"
               >
                 <div className="aspect-[3/4] w-full bg-slate-200">
-                  <img src={cast.image} alt={cast.name} className="h-full w-full object-cover" />
+                  <img
+                    src={cast.image}
+                    alt={cast.name}
+                    className="h-full w-full object-cover"
+                  />
                   <div className="absolute top-2 right-2 rounded-full bg-white/20 p-1.5 backdrop-blur-sm">
                     <span className="text-xs">❤️</span>
                   </div>

@@ -30,6 +30,6 @@ export const useRitual = (ritualId: string) => {
     status,
     setStatus, // Exporting setter for UI "pressing" state management if needed locally
     seal,
-    reset
+    reset,
   };
 };

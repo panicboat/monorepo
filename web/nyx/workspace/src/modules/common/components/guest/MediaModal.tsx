@@ -11,7 +11,7 @@ export type MediaItem = {
 export const MediaModal = ({
   isOpen,
   onClose,
-  media
+  media,
 }: {
   isOpen: boolean;
   onClose: () => void;

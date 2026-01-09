@@ -24,10 +24,16 @@ const THEME = {
   },
 };
 
-const valueToPoint = (value: number, index: number, total: number, radius: number, center: number) => {
+const valueToPoint = (
+  value: number,
+  index: number,
+  total: number,
+  radius: number,
+  center: number,
+) => {
   const angle = (Math.PI * 2 * index) / total - Math.PI / 2;
-  const x = center + (radius * (value / 100)) * Math.cos(angle);
-  const y = center + (radius * (value / 100)) * Math.sin(angle);
+  const x = center + radius * (value / 100) * Math.cos(angle);
+  const y = center + radius * (value / 100) * Math.sin(angle);
   return `${x},${y}`;
 };
 
@@ -45,12 +51,20 @@ export const PolygonRadarGraph = ({
 
   const totalPoints = axes.length;
 
-  const polyPoints = scores.map((val, i) => valueToPoint(val, i, totalPoints, radius, center)).join(" ");
-  const bgPoints = Array(totalPoints).fill(100).map((val, i) => valueToPoint(val, i, totalPoints, radius, center)).join(" ");
+  const polyPoints = scores
+    .map((val, i) => valueToPoint(val, i, totalPoints, radius, center))
+    .join(" ");
+  const bgPoints = Array(totalPoints)
+    .fill(100)
+    .map((val, i) => valueToPoint(val, i, totalPoints, radius, center))
+    .join(" ");
 
   // Background levels (20%, 40%, 60%, 80%)
-  const levels = [20, 40, 60, 80].map(level => {
-    return Array(totalPoints).fill(level).map((_, i) => valueToPoint(level, i, totalPoints, radius, center)).join(" ");
+  const levels = [20, 40, 60, 80].map((level) => {
+    return Array(totalPoints)
+      .fill(level)
+      .map((_, i) => valueToPoint(level, i, totalPoints, radius, center))
+      .join(" ");
   });
 
   // Calculate mid-points (50%) for grid if needed, but using levels approach from TrustRadar is cleaner.
@@ -58,21 +72,50 @@ export const PolygonRadarGraph = ({
   // Let's standardize on the more detailed TrustRadar style (20/40/60/80/100) as it looks better.
 
   return (
-    <div className={clsx("relative flex items-center justify-center", className)} style={{ width: size, height: size }}>
-      <svg viewBox={`0 0 ${size} ${size}`} className="overflow-visible w-full h-full">
+    <div
+      className={clsx("relative flex items-center justify-center", className)}
+      style={{ width: size, height: size }}
+    >
+      <svg
+        viewBox={`0 0 ${size} ${size}`}
+        className="overflow-visible w-full h-full"
+      >
         {/* Background Web */}
         {levels.map((points, i) => (
-          <polygon key={i} points={points} fill="none" stroke="rgba(203, 213, 225, 0.5)" strokeWidth="1" />
+          <polygon
+            key={i}
+            points={points}
+            fill="none"
+            stroke="rgba(203, 213, 225, 0.5)"
+            strokeWidth="1"
+          />
         ))}
         {/* Outer Boundary */}
-        <polygon points={bgPoints} fill="rgba(60, 60, 60, 0.02)" stroke="rgba(203, 213, 225, 0.5)" strokeWidth="1" />
+        <polygon
+          points={bgPoints}
+          fill="rgba(60, 60, 60, 0.02)"
+          stroke="rgba(203, 213, 225, 0.5)"
+          strokeWidth="1"
+        />
 
         {/* Axis Lines */}
-        {Array(totalPoints).fill(0).map((_, i) => {
-          const p = valueToPoint(100, i, totalPoints, radius, center);
-          const [x2, y2] = p.split(',');
-          return <line key={i} x1={center} y1={center} x2={x2} y2={y2} stroke="rgba(203, 213, 225, 0.5)" strokeWidth="1" />;
-        })}
+        {Array(totalPoints)
+          .fill(0)
+          .map((_, i) => {
+            const p = valueToPoint(100, i, totalPoints, radius, center);
+            const [x2, y2] = p.split(",");
+            return (
+              <line
+                key={i}
+                x1={center}
+                y1={center}
+                x2={x2}
+                y2={y2}
+                stroke="rgba(203, 213, 225, 0.5)"
+                strokeWidth="1"
+              />
+            );
+          })}
 
         {/* Data Shape */}
         <motion.polygon
@@ -89,7 +132,7 @@ export const PolygonRadarGraph = ({
         {axes.map((label, i) => {
           const angle = (Math.PI * 2 * i) / totalPoints - Math.PI / 2;
           // Push labels out dynamically based on size
-          const labelR = radius + (size * 0.1);
+          const labelR = radius + size * 0.1;
           const x = center + labelR * Math.cos(angle);
           const y = center + labelR * Math.sin(angle);
 
@@ -97,9 +140,12 @@ export const PolygonRadarGraph = ({
             <text
               key={label}
               x={x}
-              y={y + (size * 0.02)} // slight vertical adjustment
+              y={y + size * 0.02} // slight vertical adjustment
               textAnchor="middle"
-              className={clsx("font-bold uppercase tracking-wider", theme.labelFill)}
+              className={clsx(
+                "font-bold uppercase tracking-wider",
+                theme.labelFill,
+              )}
               style={{ fontSize: Math.max(10, size * 0.05) + "px" }} // Responsive font size
             >
               {label}

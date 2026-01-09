@@ -9,7 +9,11 @@ interface ResponsiveMainContainerProps {
   style?: CSSProperties;
 }
 
-export const ResponsiveMainContainer = ({ children, className = "", style = {} }: ResponsiveMainContainerProps) => {
+export const ResponsiveMainContainer = ({
+  children,
+  className = "",
+  style = {},
+}: ResponsiveMainContainerProps) => {
   const { width } = useWindowSize();
 
   // Default max-width (fallback / server-side)

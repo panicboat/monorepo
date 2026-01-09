@@ -33,18 +33,15 @@ export default function OnboardingStep2() {
           Photos
         </h2>
         <p className="text-sm text-slate-500">
-          魅力的な写真をアップロードして、<br />
+          魅力的な写真をアップロードして、
+          <br />
           ゲストにアピールしましょう。
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
-          <PhotoUploader
-            images={images}
-            onChange={setImages}
-            minImages={3}
-          />
+          <PhotoUploader images={images} onChange={setImages} minImages={3} />
         </div>
 
         <button

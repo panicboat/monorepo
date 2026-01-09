@@ -13,10 +13,20 @@ export const CastBottomNavBar = () => {
   if (pathname.includes("/manage/onboarding")) return null;
 
   const tabs: BottomNavTab[] = [
-    { id: "dashboard", label: "Home", icon: LayoutDashboard, href: "/manage/dashboard" },
-    { id: "schedule", label: "Shift", icon: Calendar, href: "/manage/schedule" }, // Placeholder route
-    { id: "inbox", label: "Inbox", icon: MessageSquare, href: "/manage/inbox" },   // Placeholder route
-    { id: "menu", label: "Menu", icon: Menu, href: "/manage/menu" },             // Placeholder route
+    {
+      id: "dashboard",
+      label: "Home",
+      icon: LayoutDashboard,
+      href: "/manage/dashboard",
+    },
+    {
+      id: "schedule",
+      label: "Shift",
+      icon: Calendar,
+      href: "/manage/schedule",
+    }, // Placeholder route
+    { id: "inbox", label: "Inbox", icon: MessageSquare, href: "/manage/inbox" }, // Placeholder route
+    { id: "menu", label: "Menu", icon: Menu, href: "/manage/menu" }, // Placeholder route
   ];
 
   return (

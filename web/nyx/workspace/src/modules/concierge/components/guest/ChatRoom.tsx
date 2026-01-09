@@ -14,17 +14,53 @@ type Message = {
 
 const MOCK_MESSAGES: Record<string, Message[]> = {
   "1": [
-    { id: "1", sender: "user", text: "Thank you for the performance today!", time: "21:00", read: true },
-    { id: "2", sender: "cast", text: "Thank you too! 💖 I was so happy you came.", time: "21:05", read: true },
-    { id: "3", sender: "user", text: "I'll pledge again next week.", time: "21:10", read: true },
-    { id: "4", sender: "cast", text: "Really? I'm waiting for you! 😘", time: "21:12", read: true },
+    {
+      id: "1",
+      sender: "user",
+      text: "Thank you for the performance today!",
+      time: "21:00",
+      read: true,
+    },
+    {
+      id: "2",
+      sender: "cast",
+      text: "Thank you too! 💖 I was so happy you came.",
+      time: "21:05",
+      read: true,
+    },
+    {
+      id: "3",
+      sender: "user",
+      text: "I'll pledge again next week.",
+      time: "21:10",
+      read: true,
+    },
+    {
+      id: "4",
+      sender: "cast",
+      text: "Really? I'm waiting for you! 😘",
+      time: "21:12",
+      read: true,
+    },
   ],
   "2": [
-    { id: "1", sender: "cast", text: "Are you free tonight?", time: "18:00", read: true },
+    {
+      id: "1",
+      sender: "cast",
+      text: "Are you free tonight?",
+      time: "18:00",
+      read: true,
+    },
   ],
-  "default": [
-    { id: "1", sender: "cast", text: "Hello! Nice to meet you.", time: "12:00", read: true },
-  ]
+  default: [
+    {
+      id: "1",
+      sender: "cast",
+      text: "Hello! Nice to meet you.",
+      time: "12:00",
+      read: true,
+    },
+  ],
 };
 
 export const ChatRoom = ({ castId }: { castId: string }) => {
@@ -48,7 +84,10 @@ export const ChatRoom = ({ castId }: { castId: string }) => {
       id: Date.now().toString(),
       sender: "user",
       text: inputText,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       read: false,
     };
 
@@ -61,10 +100,13 @@ export const ChatRoom = ({ castId }: { castId: string }) => {
         id: (Date.now() + 1).toString(),
         sender: "cast",
         text: "Thank you for your message! 💌 (Auto Reply)",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        read: true
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        read: true,
       };
-      setMessages(prev => [...prev, reply]);
+      setMessages((prev) => [...prev, reply]);
     }, 1500);
   };
 
@@ -80,13 +122,16 @@ export const ChatRoom = ({ castId }: { castId: string }) => {
             className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm font-medium ${msg.sender === "user"
-                ? "bg-slate-900 text-white rounded-br-none"
-                : "bg-slate-100 text-slate-800 rounded-bl-none"
-                }`}
+              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm font-medium ${
+                msg.sender === "user"
+                  ? "bg-slate-900 text-white rounded-br-none"
+                  : "bg-slate-100 text-slate-800 rounded-bl-none"
+              }`}
             >
               <p>{msg.text}</p>
-              <div className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${msg.sender === "user" ? "text-slate-400" : "text-slate-400"}`}>
+              <div
+                className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${msg.sender === "user" ? "text-slate-400" : "text-slate-400"}`}
+              >
                 <span>{msg.time}</span>
                 {msg.sender === "user" && msg.read && <span>Read</span>}
               </div>

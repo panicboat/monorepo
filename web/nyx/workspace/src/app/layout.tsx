@@ -31,9 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50`}
       >
         <AuthProvider>
-          <MSWProvider>
-            {children}
-          </MSWProvider>
+          <MSWProvider>{children}</MSWProvider>
         </AuthProvider>
       </body>
     </html>

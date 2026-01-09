@@ -8,7 +8,9 @@ import { Smartphone, Mail } from "lucide-react";
 
 export const LoginGate = () => {
   const { loginWithGoogle, requestSMS, verifySMS, isLoading } = useAuth();
-  const [mode, setMode] = useState<"select" | "sms_input" | "sms_verify">("select");
+  const [mode, setMode] = useState<"select" | "sms_input" | "sms_verify">(
+    "select",
+  );
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -43,8 +45,12 @@ export const LoginGate = () => {
         className="w-full max-w-sm space-y-8"
       >
         <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 font-serif">Nyx</h1>
-          <p className="mt-2 text-sm text-slate-600">The Ritual of Connection</p>
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 font-serif">
+            Nyx
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            The Ritual of Connection
+          </p>
         </div>
 
         {mode === "select" && (
@@ -88,7 +94,9 @@ export const LoginGate = () => {
         {mode === "sms_input" && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Phone Number</label>
+              <label className="text-sm font-medium text-slate-700">
+                Phone Number
+              </label>
               <input
                 type="tel"
                 value={phone}
@@ -106,14 +114,21 @@ export const LoginGate = () => {
             >
               {isLoading ? "Sending..." : "Send Code"}
             </button>
-            <button onClick={() => setMode("select")} className="w-full text-sm text-slate-400 hover:text-slate-600">Back</button>
+            <button
+              onClick={() => setMode("select")}
+              className="w-full text-sm text-slate-400 hover:text-slate-600"
+            >
+              Back
+            </button>
           </div>
         )}
 
         {mode === "sms_verify" && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Verification Code</label>
+              <label className="text-sm font-medium text-slate-700">
+                Verification Code
+              </label>
               <div className="text-xs text-slate-400">Mock code: 1234</div>
               <input
                 type="text"
@@ -132,7 +147,12 @@ export const LoginGate = () => {
             >
               {isLoading ? "Verifying..." : "Verify"}
             </button>
-            <button onClick={() => setMode("sms_input")} className="w-full text-sm text-slate-400 hover:text-slate-600">Back</button>
+            <button
+              onClick={() => setMode("sms_input")}
+              className="w-full text-sm text-slate-400 hover:text-slate-600"
+            >
+              Back
+            </button>
           </div>
         )}
       </motion.div>

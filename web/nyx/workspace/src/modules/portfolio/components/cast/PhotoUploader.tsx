@@ -20,7 +20,7 @@ export const PhotoUploader = ({
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newImages = Array.from(e.target.files).map((file) =>
-        URL.createObjectURL(file)
+        URL.createObjectURL(file),
       );
       onChange([...images, ...newImages]);
     }
@@ -57,10 +57,11 @@ export const PhotoUploader = ({
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         onClick={triggerFileInput}
-        className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition-all cursor-pointer ${isDragging
-          ? "border-pink-500 bg-pink-50 scale-[1.02]"
-          : "border-slate-200 bg-slate-50 hover:border-pink-300 hover:bg-pink-50/30"
-          }`}
+        className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition-all cursor-pointer ${
+          isDragging
+            ? "border-pink-500 bg-pink-50 scale-[1.02]"
+            : "border-slate-200 bg-slate-50 hover:border-pink-300 hover:bg-pink-50/30"
+        }`}
       >
         <input
           type="file"
@@ -71,14 +72,14 @@ export const PhotoUploader = ({
           onChange={handleFileSelect}
         />
         <div className="mb-4 rounded-full bg-white p-4 shadow-sm">
-          <Upload className={`h-8 w-8 ${isDragging ? "text-pink-500" : "text-slate-400"}`} />
+          <Upload
+            className={`h-8 w-8 ${isDragging ? "text-pink-500" : "text-slate-400"}`}
+          />
         </div>
         <p className="text-sm font-bold text-slate-700">
           Click or Drop Photos Here
         </p>
-        <p className="mt-1 text-xs text-slate-400">
-          JPG, PNG, WebP supported
-        </p>
+        <p className="mt-1 text-xs text-slate-400">JPG, PNG, WebP supported</p>
       </div>
 
       {/* Helper Text */}
@@ -87,8 +88,14 @@ export const PhotoUploader = ({
         <div className="text-xs leading-relaxed">
           <p className="font-bold mb-1">Upload Recommendation</p>
           <ul className="list-disc pl-4 space-y-1 opacity-80">
-            <li>At least <strong>1</strong> photo is required ({minImages}+ recommended).</li>
-            <li>The <strong>first photo</strong> will effectively be your <strong>Cover Image</strong>.</li>
+            <li>
+              At least <strong>1</strong> photo is required ({minImages}+
+              recommended).
+            </li>
+            <li>
+              The <strong>first photo</strong> will effectively be your{" "}
+              <strong>Cover Image</strong>.
+            </li>
             <li>Use high-quality photos to attract more guests.</li>
           </ul>
         </div>
@@ -107,10 +114,11 @@ export const PhotoUploader = ({
                 newImages.unshift(movedImage);
                 onChange(newImages);
               }}
-              className={`group relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-100 transition-all ${index === 0
+              className={`group relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-100 transition-all ${
+                index === 0
                   ? "ring-2 ring-pink-500 ring-offset-2"
                   : "cursor-pointer hover:ring-2 hover:ring-pink-300 hover:ring-offset-1"
-                }`}
+              }`}
             >
               {/* Cover Badge for First Item */}
               {index === 0 && (

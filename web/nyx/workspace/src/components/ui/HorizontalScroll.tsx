@@ -9,7 +9,11 @@ interface HorizontalScrollProps {
   contentClassName?: string; // Inner flex class
 }
 
-export const HorizontalScroll = ({ children, className = "", contentClassName = "" }: HorizontalScrollProps) => {
+export const HorizontalScroll = ({
+  children,
+  className = "",
+  contentClassName = "",
+}: HorizontalScrollProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [showArrows, setShowArrows] = useState(false);
 
@@ -36,7 +40,8 @@ export const HorizontalScroll = ({ children, className = "", contentClassName = 
 
     if (direction === "left") {
       // Loop to end if at start (with small buffer)
-      if (container.scrollLeft <= 5) { // 5px buffer
+      if (container.scrollLeft <= 5) {
+        // 5px buffer
         targetScroll = maxScroll;
       } else {
         targetScroll = container.scrollLeft - scrollAmount;
@@ -52,7 +57,7 @@ export const HorizontalScroll = ({ children, className = "", contentClassName = 
 
     container.scrollTo({
       left: targetScroll,
-      behavior: "smooth"
+      behavior: "smooth",
     });
   };
 

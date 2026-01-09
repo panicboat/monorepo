@@ -69,11 +69,17 @@ export const ChatList = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="font-bold text-slate-900 truncate">{chat.castName}</h3>
-                  <span className="text-xs text-slate-400 flex-shrink-0">{chat.time}</span>
+                  <h3 className="font-bold text-slate-900 truncate">
+                    {chat.castName}
+                  </h3>
+                  <span className="text-xs text-slate-400 flex-shrink-0">
+                    {chat.time}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className={`text-sm truncate ${chat.unreadCount > 0 ? "text-slate-900 font-medium" : "text-slate-500"}`}>
+                  <p
+                    className={`text-sm truncate ${chat.unreadCount > 0 ? "text-slate-900 font-medium" : "text-slate-500"}`}
+                  >
                     {chat.lastMessage}
                   </p>
                   {chat.unreadCount > 0 && (

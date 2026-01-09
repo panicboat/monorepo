@@ -10,9 +10,21 @@ type ReviewFormProps = {
   castName: string;
 };
 
-const TAG_OPTIONS = ["Cute", "Talkative", "Punctual", "Stylish", "Good Listener", "Energetic"];
+const TAG_OPTIONS = [
+  "Cute",
+  "Talkative",
+  "Punctual",
+  "Stylish",
+  "Good Listener",
+  "Energetic",
+];
 
-export const ReviewForm = ({ isOpen, onClose, onSubmit, castName }: ReviewFormProps) => {
+export const ReviewForm = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  castName,
+}: ReviewFormProps) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -26,7 +38,7 @@ export const ReviewForm = ({ isOpen, onClose, onSubmit, castName }: ReviewFormPr
 
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter(t => t !== tag));
+      setSelectedTags(selectedTags.filter((t) => t !== tag));
     } else {
       setSelectedTags([...selectedTags, tag]);
     }
@@ -38,7 +50,10 @@ export const ReviewForm = ({ isOpen, onClose, onSubmit, castName }: ReviewFormPr
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50">
           <h3 className="font-bold text-slate-800">Review for {castName}</h3>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-slate-100 transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-slate-100 transition-colors"
+          >
             <X size={20} className="text-slate-500" />
           </button>
         </div>
@@ -47,7 +62,9 @@ export const ReviewForm = ({ isOpen, onClose, onSubmit, castName }: ReviewFormPr
         <div className="p-6 space-y-6">
           {/* Rating */}
           <div className="flex flex-col items-center gap-2">
-            <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">Rating</label>
+            <label className="text-sm font-bold text-slate-500 uppercase tracking-wider">
+              Rating
+            </label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -63,16 +80,19 @@ export const ReviewForm = ({ isOpen, onClose, onSubmit, castName }: ReviewFormPr
 
           {/* Tags */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase">What was good?</label>
+            <label className="text-xs font-bold text-slate-500 uppercase">
+              What was good?
+            </label>
             <div className="flex flex-wrap gap-2">
-              {TAG_OPTIONS.map(tag => (
+              {TAG_OPTIONS.map((tag) => (
                 <button
                   key={tag}
                   onClick={() => toggleTag(tag)}
                   className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors
-                    ${selectedTags.includes(tag)
-                      ? "bg-pink-50 border-pink-200 text-pink-600"
-                      : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
+                    ${
+                      selectedTags.includes(tag)
+                        ? "bg-pink-50 border-pink-200 text-pink-600"
+                        : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
                     }
                   `}
                 >
@@ -84,7 +104,9 @@ export const ReviewForm = ({ isOpen, onClose, onSubmit, castName }: ReviewFormPr
 
           {/* Comment */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-500 uppercase">Comment</label>
+            <label className="text-xs font-bold text-slate-500 uppercase">
+              Comment
+            </label>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}

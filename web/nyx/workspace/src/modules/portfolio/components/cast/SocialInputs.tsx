@@ -5,7 +5,10 @@ import { ProfileFormData } from "@/modules/portfolio/types";
 
 interface SocialInputsProps {
   data: ProfileFormData;
-  onSocialChange: (key: keyof ProfileFormData["socialLinks"], value: string) => void;
+  onSocialChange: (
+    key: keyof ProfileFormData["socialLinks"],
+    value: string,
+  ) => void;
   onOtherChange: (index: number, value: string) => void;
   onAddOther: () => void;
   onRemoveOther: (index: number) => void;
@@ -28,7 +31,9 @@ export const SocialInputs = ({
         {/* Main Socials */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">X (Twitter)</label>
+            <label className="block text-xs font-bold text-slate-500 mb-1">
+              X (Twitter)
+            </label>
             <input
               type="text"
               value={data.socialLinks?.x || ""}
@@ -38,7 +43,9 @@ export const SocialInputs = ({
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">Instagram</label>
+            <label className="block text-xs font-bold text-slate-500 mb-1">
+              Instagram
+            </label>
             <input
               type="text"
               value={data.socialLinks?.instagram || ""}
@@ -51,7 +58,9 @@ export const SocialInputs = ({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">TikTok</label>
+            <label className="block text-xs font-bold text-slate-500 mb-1">
+              TikTok
+            </label>
             <input
               type="text"
               value={data.socialLinks?.tiktok || ""}
@@ -61,7 +70,9 @@ export const SocialInputs = ({
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">CityHeaven URL</label>
+            <label className="block text-xs font-bold text-slate-500 mb-1">
+              CityHeaven URL
+            </label>
             <input
               type="text"
               value={data.socialLinks?.cityheaven || ""}
@@ -74,7 +85,9 @@ export const SocialInputs = ({
 
         {/* LitLink & Dynamic Others */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 mb-1">lit.link / Other Bio</label>
+          <label className="block text-xs font-bold text-slate-500 mb-1">
+            lit.link / Other Bio
+          </label>
           <input
             type="text"
             value={data.socialLinks?.litlink || ""}
@@ -86,7 +99,10 @@ export const SocialInputs = ({
 
         <div className="space-y-3 pt-2">
           {data.socialLinks.others?.map((url, idx) => (
-            <div key={idx} className="flex gap-2 items-center animate-in fade-in slide-in-from-top-2 duration-300">
+            <div
+              key={idx}
+              className="flex gap-2 items-center animate-in fade-in slide-in-from-top-2 duration-300"
+            >
               <div className="flex-1">
                 <input
                   type="text"

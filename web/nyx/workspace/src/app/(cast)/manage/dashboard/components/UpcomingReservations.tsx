@@ -15,7 +15,9 @@ interface UpcomingReservationsProps {
   reservations: Reservation[];
 }
 
-export const UpcomingReservations = ({ reservations }: UpcomingReservationsProps) => {
+export const UpcomingReservations = ({
+  reservations,
+}: UpcomingReservationsProps) => {
   if (reservations.length === 0) {
     return (
       <div className="text-center py-8 text-slate-400 bg-white rounded-xl shadow-sm border border-slate-100">

@@ -4,7 +4,13 @@ import { PolygonRadarGraph } from "@/components/ui/PolygonRadarGraph";
 
 const AXES = ["Promise", "Manners", "Response", "Generosity", "History"];
 
-export const GuestRadar = ({ scores = [80, 80, 80, 80, 80], className = "" }: { scores?: number[], className?: string }) => {
+export const GuestRadar = ({
+  scores = [80, 80, 80, 80, 80],
+  className = "",
+}: {
+  scores?: number[];
+  className?: string;
+}) => {
   return (
     <PolygonRadarGraph
       axes={AXES}

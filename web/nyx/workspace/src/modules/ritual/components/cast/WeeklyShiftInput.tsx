@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Clock, Plus, Trash2 } from "lucide-react";
-import { format, addDays, startOfWeek, endOfWeek, startOfDay, isBefore } from "date-fns";
+import {
+  format,
+  addDays,
+  startOfWeek,
+  endOfWeek,
+  startOfDay,
+  isBefore,
+} from "date-fns";
 import { ja } from "date-fns/locale";
 
 export type Shift = {
@@ -38,8 +45,14 @@ const getDuration = (start: string, end: string) => {
   return endMins - startMins;
 };
 
-export const WeeklyShiftInput = ({ shifts, plans = [], onChange }: WeeklyShiftInputProps) => {
-  const [viewStartDate, setViewStartDate] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+export const WeeklyShiftInput = ({
+  shifts,
+  plans = [],
+  onChange,
+}: WeeklyShiftInputProps) => {
+  const [viewStartDate, setViewStartDate] = useState(() =>
+    startOfWeek(new Date(), { weekStartsOn: 1 }),
+  );
   const today = startOfDay(new Date());
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(viewStartDate, i));
@@ -55,7 +68,12 @@ export const WeeklyShiftInput = ({ shifts, plans = [], onChange }: WeeklyShiftIn
 
   const addShift = (dateStr: string) => {
     // Default shift: 18:00 - 23:00
-    const newShift: Shift = { date: dateStr, start: "18:00", end: "23:00", planId: "" };
+    const newShift: Shift = {
+      date: dateStr,
+      start: "18:00",
+      end: "23:00",
+      planId: "",
+    };
     onChange([...shifts, newShift]);
   };
 
@@ -77,7 +95,9 @@ export const WeeklyShiftInput = ({ shifts, plans = [], onChange }: WeeklyShiftIn
         <button
           type="button"
           onClick={goToPrevWeek}
-          disabled={viewStartDate <= startOfWeek(new Date(), { weekStartsOn: 1 })}
+          disabled={
+            viewStartDate <= startOfWeek(new Date(), { weekStartsOn: 1 })
+          }
           className="rounded-lg p-2 text-slate-500 hover:bg-white hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-transparent"
         >
           <ChevronLeft size={20} />
@@ -104,19 +124,28 @@ export const WeeklyShiftInput = ({ shifts, plans = [], onChange }: WeeklyShiftIn
         return (
           <div
             key={dateStr}
-            className={`rounded-xl border p-4 transition-all ${isPast
-              ? "border-slate-100 bg-slate-50 opacity-60"
-              : dayShifts.length > 0
-                ? "border-pink-200 bg-pink-50/30"
-                : "border-slate-100 bg-white"
-              }`}
+            className={`rounded-xl border p-4 transition-all ${
+              isPast
+                ? "border-slate-100 bg-slate-50 opacity-60"
+                : dayShifts.length > 0
+                  ? "border-pink-200 bg-pink-50/30"
+                  : "border-slate-100 bg-white"
+            }`}
           >
             <div className="flex items-center justify-between mb-3">
               <span
-                className={`text-sm font-bold ${isPast ? "text-slate-400" : isWeekend ? "text-pink-600" : "text-slate-700"
-                  }`}
+                className={`text-sm font-bold ${
+                  isPast
+                    ? "text-slate-400"
+                    : isWeekend
+                      ? "text-pink-600"
+                      : "text-slate-700"
+                }`}
               >
-                {dayLabel} {isPast && <span className="text-[10px] font-normal">(終了)</span>}
+                {dayLabel}{" "}
+                {isPast && (
+                  <span className="text-[10px] font-normal">(終了)</span>
+                )}
               </span>
               {!isPast && (
                 <button
@@ -137,7 +166,10 @@ export const WeeklyShiftInput = ({ shifts, plans = [], onChange }: WeeklyShiftIn
             ) : (
               <div className="space-y-2">
                 {dayShifts.map((shift, idx) => (
-                  <div key={idx} className="flex flex-col gap-2 rounded-lg bg-white border border-slate-200 p-2 shadow-sm">
+                  <div
+                    key={idx}
+                    className="flex flex-col gap-2 rounded-lg bg-white border border-slate-200 p-2 shadow-sm"
+                  >
                     <div className="flex items-center gap-2">
                       <div className="flex flex-1 items-center gap-2">
                         <Clock size={14} className="text-slate-400" />
@@ -145,7 +177,11 @@ export const WeeklyShiftInput = ({ shifts, plans = [], onChange }: WeeklyShiftIn
                           value={shift.start}
                           disabled={isPast}
                           onChange={(e) =>
-                            updateShift(shift.originalIndex, "start", e.target.value)
+                            updateShift(
+                              shift.originalIndex,
+                              "start",
+                              e.target.value,
+                            )
                           }
                           className="bg-transparent font-bold text-slate-700 focus:outline-none disabled:text-slate-400 text-sm"
                         >
@@ -160,7 +196,11 @@ export const WeeklyShiftInput = ({ shifts, plans = [], onChange }: WeeklyShiftIn
                           value={shift.end}
                           disabled={isPast}
                           onChange={(e) =>
-                            updateShift(shift.originalIndex, "end", e.target.value)
+                            updateShift(
+                              shift.originalIndex,
+                              "end",
+                              e.target.value,
+                            )
                           }
                           className="bg-transparent font-bold text-slate-700 focus:outline-none disabled:text-slate-400 text-sm"
                         >
@@ -186,28 +226,46 @@ export const WeeklyShiftInput = ({ shifts, plans = [], onChange }: WeeklyShiftIn
                     {plans.length > 0 && !isPast && (
                       <div className="flex flex-col gap-1 border-t border-slate-100 pt-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase">Plan</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase">
+                            Plan
+                          </span>
                           <select
                             value={shift.planId || ""}
-                            onChange={(e) => updateShift(shift.originalIndex, "planId", e.target.value)}
+                            onChange={(e) =>
+                              updateShift(
+                                shift.originalIndex,
+                                "planId",
+                                e.target.value,
+                              )
+                            }
                             className="flex-1 text-xs bg-slate-50 border border-slate-200 rounded px-2 py-1 text-slate-700 focus:border-pink-300 focus:outline-none"
                           >
                             <option value="">All Plans (Default)</option>
                             {plans.map((p) => (
-                              <option key={p.id} value={p.id}>{p.name}</option>
+                              <option key={p.id} value={p.id}>
+                                {p.name}
+                              </option>
                             ))}
                           </select>
                         </div>
                         {(() => {
-                          const selectedPlan = plans.find(p => p.id === shift.planId);
+                          const selectedPlan = plans.find(
+                            (p) => p.id === shift.planId,
+                          );
                           if (!selectedPlan) return null;
                           const shiftMins = getDuration(shift.start, shift.end);
                           if (shiftMins <= 0) return null;
-                          const maxCount = Math.floor(shiftMins / selectedPlan.duration);
+                          const maxCount = Math.floor(
+                            shiftMins / selectedPlan.duration,
+                          );
 
                           return (
                             <div className="text-[10px] text-right text-slate-400">
-                              このプランなら最大 <span className="font-bold text-pink-500">{Math.max(0, maxCount)}</span> 本
+                              このプランなら最大{" "}
+                              <span className="font-bold text-pink-500">
+                                {Math.max(0, maxCount)}
+                              </span>{" "}
+                              本
                             </div>
                           );
                         })()}

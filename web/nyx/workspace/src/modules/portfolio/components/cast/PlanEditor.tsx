@@ -31,9 +31,7 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
   };
 
   const updatePlan = (id: string, field: keyof ServicePlan, value: any) => {
-    onChange(
-      plans.map((p) => (p.id === id ? { ...p, [field]: value } : p))
-    );
+    onChange(plans.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
   };
 
   return (
@@ -80,12 +78,16 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
                 <input
                   type="number"
                   value={plan.duration || ""}
-                  onChange={(e) => updatePlan(plan.id, "duration", Number(e.target.value))}
+                  onChange={(e) =>
+                    updatePlan(plan.id, "duration", Number(e.target.value))
+                  }
                   min={10}
                   step={10}
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none"
                 />
-                <span className="absolute right-3 top-2 text-xs text-slate-400 font-bold">min</span>
+                <span className="absolute right-3 top-2 text-xs text-slate-400 font-bold">
+                  min
+                </span>
               </div>
             </div>
 
@@ -98,12 +100,16 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
                 <input
                   type="number"
                   value={plan.price || ""}
-                  onChange={(e) => updatePlan(plan.id, "price", Number(e.target.value))}
+                  onChange={(e) =>
+                    updatePlan(plan.id, "price", Number(e.target.value))
+                  }
                   min={1000}
                   step={1000}
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none"
                 />
-                <span className="absolute right-3 top-2 text-xs text-slate-400 font-bold">¥</span>
+                <span className="absolute right-3 top-2 text-xs text-slate-400 font-bold">
+                  ¥
+                </span>
               </div>
             </div>
           </div>

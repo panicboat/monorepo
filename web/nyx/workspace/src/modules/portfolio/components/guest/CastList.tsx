@@ -5,16 +5,86 @@ import Link from "next/link";
 
 // Mock Data representing "Living Portfolio" (Realtime status)
 const MOCK_CASTS = [
-  { id: 1, name: "Yuna", tags: ["New", "Model"], status: "online", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna", area: "Shinjuku" },
-  { id: 2, name: "Maria", tags: [], status: "tonight", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria", area: "Roppongi" },
-  { id: 3, name: "Sarah", tags: ["Legend"], status: "offline", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah", area: "Shibuya" },
-  { id: 4, name: "Mio", tags: ["Rookie"], status: "tonight", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mio", area: "Shinjuku" },
-  { id: 5, name: "Rin", tags: [], status: "online", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rin", area: "Ginza" },
-  { id: 6, name: "Kila", tags: [], status: "offline", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kila", area: "Ebisu" },
-  { id: 7, name: "Elena", tags: ["VIP"], status: "tonight", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena", area: "Roppongi" },
-  { id: 8, name: "Aoi", tags: [], status: "online", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aoi", area: "Akies" },
-  { id: 9, name: "Nana", tags: [], status: "offline", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nana", area: "Shinjuku" },
-  { id: 10, name: "Luna", tags: ["New"], status: "online", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Luna", area: "Shibuya" },
+  {
+    id: 1,
+    name: "Yuna",
+    tags: ["New", "Model"],
+    status: "online",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna",
+    area: "Shinjuku",
+  },
+  {
+    id: 2,
+    name: "Maria",
+    tags: [],
+    status: "tonight",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
+    area: "Roppongi",
+  },
+  {
+    id: 3,
+    name: "Sarah",
+    tags: ["Legend"],
+    status: "offline",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
+    area: "Shibuya",
+  },
+  {
+    id: 4,
+    name: "Mio",
+    tags: ["Rookie"],
+    status: "tonight",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mio",
+    area: "Shinjuku",
+  },
+  {
+    id: 5,
+    name: "Rin",
+    tags: [],
+    status: "online",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rin",
+    area: "Ginza",
+  },
+  {
+    id: 6,
+    name: "Kila",
+    tags: [],
+    status: "offline",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kila",
+    area: "Ebisu",
+  },
+  {
+    id: 7,
+    name: "Elena",
+    tags: ["VIP"],
+    status: "tonight",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena",
+    area: "Roppongi",
+  },
+  {
+    id: 8,
+    name: "Aoi",
+    tags: [],
+    status: "online",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aoi",
+    area: "Akies",
+  },
+  {
+    id: 9,
+    name: "Nana",
+    tags: [],
+    status: "offline",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nana",
+    area: "Shinjuku",
+  },
+  {
+    id: 10,
+    name: "Luna",
+    tags: ["New"],
+    status: "online",
+    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Luna",
+    area: "Shibuya",
+  },
 ];
 
 export const CastList = () => {
@@ -29,7 +99,7 @@ export const CastList = () => {
   );
 };
 
-const CastCard = ({ cast }: { cast: typeof MOCK_CASTS[0] }) => {
+const CastCard = ({ cast }: { cast: (typeof MOCK_CASTS)[0] }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -38,7 +108,11 @@ const CastCard = ({ cast }: { cast: typeof MOCK_CASTS[0] }) => {
     >
       {/* Image specific ratio - Hime-channel style is often vertical implementation 3:4 */}
       <div className="relative aspect-[3/4] w-full bg-slate-100">
-        <img src={cast.image} alt={cast.name} className="h-full w-full object-cover" />
+        <img
+          src={cast.image}
+          alt={cast.name}
+          className="h-full w-full object-cover"
+        />
 
         {/* Status Badge (Living Portfolio) */}
         {cast.status === "online" && (
@@ -62,11 +136,13 @@ const CastCard = ({ cast }: { cast: typeof MOCK_CASTS[0] }) => {
             {/* Pledge Rate (Trust) */}
             <div className="text-right">
               <span className="block text-[9px] opacity-75">Trust</span>
-              <span className="font-mono text-xs font-bold text-yellow-400">98%</span>
+              <span className="font-mono text-xs font-bold text-yellow-400">
+                98%
+              </span>
             </div>
           </div>
         </div>
       </div>
     </motion.div>
-  )
-}
+  );
+};

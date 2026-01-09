@@ -11,7 +11,13 @@ const MOCK_SLOTS = [
   { id: 4, time: "22:30", smart: false, label: "" },
 ];
 
-export const SmartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+export const SmartDrawer = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -36,20 +42,26 @@ export const SmartDrawer = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
           >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="font-bold text-slate-800">Suggest Date</h3>
-              <button onClick={onClose} className="text-sm text-slate-400">Close</button>
+              <button onClick={onClose} className="text-sm text-slate-400">
+                Close
+              </button>
             </div>
 
             <div className="space-y-3">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Tonight's Smart Picks</p>
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                Tonight's Smart Picks
+              </p>
               <div className="grid grid-cols-2 gap-3">
-                {MOCK_SLOTS.map(slot => (
+                {MOCK_SLOTS.map((slot) => (
                   <button
                     key={slot.id}
                     className={`relative flex flex-col items-center justify-center rounded-xl border p-4 transition-colors
                                             ${slot.smart ? "border-pink-200 bg-pink-50" : "border-slate-100 bg-white"}
                                         `}
                   >
-                    <span className="text-lg font-bold text-slate-800">{slot.time}</span>
+                    <span className="text-lg font-bold text-slate-800">
+                      {slot.time}
+                    </span>
                     {slot.smart && (
                       <span className="absolute -top-2 rounded-full bg-pink-500 px-2 py-0.5 text-[10px] text-white shadow-sm">
                         {slot.label}

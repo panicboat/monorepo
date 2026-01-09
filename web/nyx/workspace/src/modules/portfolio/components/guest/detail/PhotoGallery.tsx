@@ -6,28 +6,36 @@ import { useState } from "react";
 // Mock Images
 // Mock Images Map
 const MOCK_GALLERIES: Record<string, string[]> = {
-  "1": [ // Yuna
+  "1": [
+    // Yuna
     "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna",
     "https://placehold.co/600x800/pink/white?text=Yuna+Selfie",
     "https://placehold.co/600x800/orange/white?text=Yuna+OOTD",
   ],
-  "2": [ // Maria
+  "2": [
+    // Maria
     "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
     "https://placehold.co/600x800/blue/white?text=Maria+Date",
     "https://placehold.co/600x800/cyan/white?text=Maria+Cosplay",
   ],
-  "3": [ // Sarah
+  "3": [
+    // Sarah
     "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
     "https://placehold.co/600x800/green/white?text=Sarah+Nature",
   ],
   // Fallback
-  "default": [
-    "https://placehold.co/600x800/gray/white?text=No+Image",
-  ]
+  default: ["https://placehold.co/600x800/gray/white?text=No+Image"],
 };
 
-export const PhotoGallery = ({ castId, images: propImages }: { castId: string; images?: string[] }) => {
-  const images = propImages || MOCK_GALLERIES[castId] || MOCK_GALLERIES["default"];
+export const PhotoGallery = ({
+  castId,
+  images: propImages,
+}: {
+  castId: string;
+  images?: string[];
+}) => {
+  const images =
+    propImages || MOCK_GALLERIES[castId] || MOCK_GALLERIES["default"];
   const [current, setCurrent] = useState(0);
 
   // Swipe Logic
@@ -91,18 +99,28 @@ export const PhotoGallery = ({ castId, images: propImages }: { castId: string; i
       {/* Top Indicators (Story style - Static) */}
       <div className="absolute top-0 left-0 right-0 z-20 flex gap-1 p-2">
         {images.map((_, idx) => (
-          <div key={idx} className="h-1 flex-1 rounded-full bg-white/20 overflow-hidden backdrop-blur-sm">
+          <div
+            key={idx}
+            className="h-1 flex-1 rounded-full bg-white/20 overflow-hidden backdrop-blur-sm"
+          >
             <div
-              className={`h-full bg-white transition-opacity duration-300 ${idx === current ? "opacity-100" : "opacity-30"
-                }`}
+              className={`h-full bg-white transition-opacity duration-300 ${
+                idx === current ? "opacity-100" : "opacity-30"
+              }`}
             />
           </div>
         ))}
       </div>
 
       {/* Left/Right Tap Areas (Invisible) */}
-      <div className="absolute inset-y-0 left-0 w-1/4 z-10" onClick={() => paginate(-1)} />
-      <div className="absolute inset-y-0 right-0 w-1/4 z-10" onClick={() => paginate(1)} />
+      <div
+        className="absolute inset-y-0 left-0 w-1/4 z-10"
+        onClick={() => paginate(-1)}
+      />
+      <div
+        className="absolute inset-y-0 right-0 w-1/4 z-10"
+        onClick={() => paginate(1)}
+      />
     </div>
   );
 };

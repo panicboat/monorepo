@@ -27,7 +27,7 @@ export const useSocial = () => {
           following: [],
           blocking: [],
           favorites: [],
-          ...JSON.parse(stored)
+          ...JSON.parse(stored),
         });
       } catch (e) {
         console.error("Failed to parse social state", e);
@@ -83,7 +83,8 @@ export const useSocial = () => {
 
   const isFollowing = (castId: string) => state.following.includes(castId);
   const isBlocking = (targetId: string) => state.blocking.includes(targetId);
-  const isFavorite = (castId: string) => state.favorites?.includes(castId) ?? false;
+  const isFavorite = (castId: string) =>
+    state.favorites?.includes(castId) ?? false;
 
   return {
     following: state.following,

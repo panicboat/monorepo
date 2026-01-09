@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import { useRouter } from "next/navigation";
 
 export type User = {
@@ -62,7 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const verifySMS = async (code: string) => {
     // Mock Verification
-    if (code === "1234") { // Hardcoded mock code
+    if (code === "1234") {
+      // Hardcoded mock code
       setIsLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const mockUser: User = {
@@ -89,7 +96,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, loginWithGoogle, requestSMS, verifySMS, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        loginWithGoogle,
+        requestSMS,
+        verifySMS,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -6,7 +6,9 @@ interface PhysicalInputsProps {
 }
 
 export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     // Handle nested threeSizes or root level fields
     if (name === "age" || name === "height") {
@@ -30,14 +32,30 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
     });
   };
 
-  const cups = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
+  const cups = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+  ];
   const bloodTypes = ["A", "B", "O", "AB", "Unknown"];
 
   return (
     <div className="grid grid-cols-2 gap-4">
       {/* Age */}
       <div className="space-y-1">
-        <label className="text-xs font-bold text-slate-500 uppercase">Age</label>
+        <label className="text-xs font-bold text-slate-500 uppercase">
+          Age
+        </label>
         <div className="relative">
           <input
             type="number"
@@ -55,7 +73,9 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
 
       {/* Height */}
       <div className="space-y-1">
-        <label className="text-xs font-bold text-slate-500 uppercase">Height</label>
+        <label className="text-xs font-bold text-slate-500 uppercase">
+          Height
+        </label>
         <div className="relative">
           <input
             type="number"
@@ -73,17 +93,20 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
 
       {/* Blood Type */}
       <div className="col-span-2 space-y-1">
-        <label className="text-xs font-bold text-slate-500 uppercase">Blood Type</label>
+        <label className="text-xs font-bold text-slate-500 uppercase">
+          Blood Type
+        </label>
         <div className="flex gap-2">
           {bloodTypes.map((type) => (
             <button
               key={type}
               type="button"
               onClick={() => onChange("bloodType", type)}
-              className={`flex-1 rounded-lg py-2 text-sm font-bold border transition-colors ${data.bloodType === type
+              className={`flex-1 rounded-lg py-2 text-sm font-bold border transition-colors ${
+                data.bloodType === type
                   ? "bg-pink-500 text-white border-pink-500"
                   : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                }`}
+              }`}
             >
               {type}
             </button>
@@ -94,12 +117,16 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
       <div className="col-span-2 border-t border-slate-100 my-2" />
 
       {/* Measurements Header */}
-      <div className="col-span-2 text-sm font-bold text-slate-800">Measurements</div>
+      <div className="col-span-2 text-sm font-bold text-slate-800">
+        Measurements
+      </div>
 
       {/* Bust & Cup */}
       <div className="col-span-2 grid grid-cols-3 gap-3">
         <div className="col-span-2 space-y-1">
-          <label className="text-xs font-bold text-slate-500 uppercase">Bust</label>
+          <label className="text-xs font-bold text-slate-500 uppercase">
+            Bust
+          </label>
           <div className="relative">
             <input
               type="number"
@@ -118,7 +145,11 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
                 className="h-8 rounded bg-white text-xs font-bold text-slate-600 border border-slate-200 focus:outline-none"
               >
                 <option value="">-</option>
-                {cups.map(c => <option key={c} value={c}>{c}</option>)}
+                {cups.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -127,7 +158,9 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
 
       {/* Waist */}
       <div className="space-y-1">
-        <label className="text-xs font-bold text-slate-500 uppercase">Waist</label>
+        <label className="text-xs font-bold text-slate-500 uppercase">
+          Waist
+        </label>
         <div className="relative">
           <input
             type="number"
@@ -141,7 +174,9 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
 
       {/* Hip */}
       <div className="space-y-1">
-        <label className="text-xs font-bold text-slate-500 uppercase">Hip</label>
+        <label className="text-xs font-bold text-slate-500 uppercase">
+          Hip
+        </label>
         <div className="relative">
           <input
             type="number"
@@ -152,7 +187,6 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
           />
         </div>
       </div>
-
     </div>
   );
 };

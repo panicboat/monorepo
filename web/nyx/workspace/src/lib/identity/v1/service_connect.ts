@@ -3,7 +3,14 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { HealthCheckRequest, HealthCheckResponse, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from "./service_pb";
+import {
+  HealthCheckRequest,
+  HealthCheckResponse,
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+} from "./service_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -39,6 +46,5 @@ export const IdentityService = {
       O: LoginResponse,
       kind: MethodKind.Unary,
     },
-  }
+  },
 } as const;
-

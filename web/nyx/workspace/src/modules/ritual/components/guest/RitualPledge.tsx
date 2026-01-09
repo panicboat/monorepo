@@ -4,7 +4,11 @@ import { motion, useAnimation } from "framer-motion";
 import { useRef } from "react";
 import { useRitual } from "../../hooks/useRitual";
 
-export const RitualPledge = ({ ritualId = "mock-ritual-1" }: { ritualId?: string }) => {
+export const RitualPledge = ({
+  ritualId = "mock-ritual-1",
+}: {
+  ritualId?: string;
+}) => {
   const { status, setStatus, seal } = useRitual(ritualId);
   const controls = useAnimation();
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
@@ -29,14 +33,21 @@ export const RitualPledge = ({ ritualId = "mock-ritual-1" }: { ritualId?: string
 
   const completeSeal = async () => {
     await seal();
-    controls.start({ scale: 1.1, textShadow: "0px 0px 20px rgba(255,215,0,0.8)" });
+    controls.start({
+      scale: 1.1,
+      textShadow: "0px 0px 20px rgba(255,215,0,0.8)",
+    });
   };
 
   return (
     <div className="flex flex-col items-center gap-6 p-8">
       <div className="text-center">
-        <h2 className="text-2xl font-serif font-bold text-slate-800">The Pledge</h2>
-        <p className="text-sm text-slate-500">Long press to seal your promise.</p>
+        <h2 className="text-2xl font-serif font-bold text-slate-800">
+          The Pledge
+        </h2>
+        <p className="text-sm text-slate-500">
+          Long press to seal your promise.
+        </p>
       </div>
 
       <motion.button
@@ -52,7 +63,9 @@ export const RitualPledge = ({ ritualId = "mock-ritual-1" }: { ritualId?: string
           ${status === "sealed" ? "border-red-800 bg-red-900" : ""}
         `}
       >
-        {status === "idle" && <span className="font-serif text-slate-400">PLEDGE</span>}
+        {status === "idle" && (
+          <span className="font-serif text-slate-400">PLEDGE</span>
+        )}
         {status === "pledging" && (
           <motion.div
             initial={{ opacity: 0 }}

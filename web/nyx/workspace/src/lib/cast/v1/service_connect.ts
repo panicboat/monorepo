@@ -3,7 +3,18 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CastProfile, CreateProfileRequest, GetProfileRequest, GetProfileResponse, ListCastsRequest, ListCastsResponse, UpdateProfileRequest, UpdateProfileResponse, UpdateStatusRequest, UpdateStatusResponse } from "./service_pb";
+import {
+  CastProfile,
+  CreateProfileRequest,
+  GetProfileRequest,
+  GetProfileResponse,
+  ListCastsRequest,
+  ListCastsResponse,
+  UpdateProfileRequest,
+  UpdateProfileResponse,
+  UpdateStatusRequest,
+  UpdateStatusResponse,
+} from "./service_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -57,6 +68,5 @@ export const CastService = {
       O: UpdateStatusResponse,
       kind: MethodKind.Unary,
     },
-  }
+  },
 } as const;
-
