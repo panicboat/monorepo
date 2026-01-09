@@ -26,8 +26,8 @@ const MOCK_GALLERIES: Record<string, string[]> = {
   ]
 };
 
-export const PhotoGallery = ({ castId }: { castId: string }) => {
-  const images = MOCK_GALLERIES[castId] || MOCK_GALLERIES["default"];
+export const PhotoGallery = ({ castId, images: propImages }: { castId: string; images?: string[] }) => {
+  const images = propImages || MOCK_GALLERIES[castId] || MOCK_GALLERIES["default"];
   const [current, setCurrent] = useState(0);
 
   // Swipe Logic

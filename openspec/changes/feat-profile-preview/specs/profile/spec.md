@@ -3,24 +3,24 @@
 ## ADDED Requirements
 
 ### Requirement: Profile Preview Capability
-The system MUST allow casts to preview their profile changes in a simulated guest view without saving data to the backend.
+システムは、キャストがデータをバックエンドに保存する前に、変更内容をシミュレートされたゲストビューでプレビューできるようにしなければならない (MUST)。
 
 #### Scenario: Previewing unsaved changes
-Given I am on the Profile Edit page
-And I have modified my nickname to "New Name"
-And I have not saved the changes yet
-When I click the "Preview" button
-Then a modal should appear displaying the Guest Detail view
-And the displayed nickname should be "New Name"
+Given プロフィール編集ページにいる
+And ニックネームを "New Name" に変更し
+And 変更をまだ保存していない
+When "プレビュー" ボタンをクリックすると
+Then ゲスト詳細ビューを表示するモーダルが開くこと
+And 表示されるニックネームが "New Name" であること
 
 #### Scenario: Previewing without changes
-Given I am on the Profile Edit page
-And I have not made any changes
-When I click the "Preview" button
-Then a modal should appear displaying the current profile data
+Given プロフィール編集ページにいる
+And 変更を行っていない
+When "プレビュー" ボタンをクリックすると
+Then 現在のプロフィールデータを表示するモーダルが開くこと
 
 #### Scenario: Closing preview
-Given the Preview Modal is open
-When I click the close button or outside the modal
-Then the modal should close
-And I should return to the Profile Edit page with my unsaved changes intact
+Given プレビューモーダルが開いている
+When 閉じるボタンまたはモーダル外をクリックすると
+Then モーダルが閉じること
+And 未保存の変更内容がそのままでプロフィール編集ページに戻ること

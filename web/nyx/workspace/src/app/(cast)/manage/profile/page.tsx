@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, Loader2, Image as ImageIcon, Tag } from "lucide-react";
-import Link from "next/link";
+import { Save, Loader2, Image as ImageIcon, Tag, Eye } from "lucide-react";
 
 import { CastProfile, ProfileFormData } from "@/modules/portfolio/types";
 import { ProfileInputs } from "@/modules/portfolio/components/cast/ProfileInputs";
@@ -12,9 +11,7 @@ import { SocialInputs } from "@/modules/portfolio/components/cast/SocialInputs";
 import { PhysicalInputs } from "@/modules/portfolio/components/cast/PhysicalInputs";
 import { TagSelector } from "@/modules/portfolio/components/cast/TagSelector";
 import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader";
-
-
-
+import { ProfilePreviewModal } from "./components/ProfilePreviewModal";
 
 // Mock Toast for now if UI component missing
 const useToast = () => ({
@@ -28,6 +25,7 @@ export default function ProfileEditPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   // State
   const [profileForm, setProfileForm] = useState<ProfileFormData>({
@@ -50,8 +48,44 @@ export default function ProfileEditPage() {
   const [images, setImages] = useState<string[]>([]);
 
   // Handlers
+  const handleProfileChange = (key: keyof ProfileFormData, val: any) => {
+    setProfileForm(prev => ({ ...prev, [key]: val }));
+  };
+
   const handleTagsChange = (newTags: string[]) => {
     setProfileForm(prev => ({ ...prev, tags: newTags }));
+  };
+
+  const handleSocialChange = (key: keyof ProfileFormData["socialLinks"], val: string) => {
+    setProfileForm(prev => ({
+      ...prev,
+      socialLinks: { ...prev.socialLinks, [key]: val }
+    }));
+  };
+
+  const handleOtherChange = (index: number, val: string) => {
+    setProfileForm(prev => {
+      const newOthers = [...(prev.socialLinks.others || [])];
+      newOthers[index] = val;
+      return { ...prev, socialLinks: { ...prev.socialLinks, others: newOthers } };
+    });
+  };
+
+  const handleAddOther = () => {
+    setProfileForm(prev => ({
+      ...prev,
+      socialLinks: { ...prev.socialLinks, others: [...(prev.socialLinks.others || []), ""] }
+    }));
+  };
+
+  const handleRemoveOther = (index: number) => {
+    setProfileForm(prev => ({
+      ...prev,
+      socialLinks: {
+        ...prev.socialLinks,
+        others: (prev.socialLinks.others || []).filter((_, i) => i !== index)
+      }
+    }));
   };
 
   // Fetch Data
@@ -90,10 +124,6 @@ export default function ProfileEditPage() {
         if (data.images.portfolio) imgList.push(...data.images.portfolio);
         setImages(imgList);
 
-
-
-
-
       } catch (e) {
         console.error(e);
         toast({ title: "Error", description: "Failed to load profile data", variant: "destructive" });
@@ -104,43 +134,6 @@ export default function ProfileEditPage() {
 
     fetchData();
   }, []);
-
-  // Handlers
-  const handleProfileChange = (key: keyof ProfileFormData, val: any) => {
-    setProfileForm(prev => ({ ...prev, [key]: val }));
-  };
-
-  const handleSocialChange = (key: keyof ProfileFormData["socialLinks"], val: string) => {
-    setProfileForm(prev => ({
-      ...prev,
-      socialLinks: { ...prev.socialLinks, [key]: val }
-    }));
-  };
-
-  const handleOtherChange = (index: number, val: string) => {
-    setProfileForm(prev => {
-      const newOthers = [...(prev.socialLinks.others || [])];
-      newOthers[index] = val;
-      return { ...prev, socialLinks: { ...prev.socialLinks, others: newOthers } };
-    });
-  };
-
-  const handleAddOther = () => {
-    setProfileForm(prev => ({
-      ...prev,
-      socialLinks: { ...prev.socialLinks, others: [...(prev.socialLinks.others || []), ""] }
-    }));
-  };
-
-  const handleRemoveOther = (index: number) => {
-    setProfileForm(prev => ({
-      ...prev,
-      socialLinks: {
-        ...prev.socialLinks,
-        others: (prev.socialLinks.others || []).filter((_, i) => i !== index)
-      }
-    }));
-  };
 
   // Save
   const handleSave = async () => {
@@ -203,12 +196,18 @@ export default function ProfileEditPage() {
 
   return (
     <div className="pb-12">
-      {/* Header handled by CastTopNavBar */}
-
-
-
       <div className="px-4 py-6 space-y-8">
-        {/* Sections */}
+
+        {/* Helper Action: Preview Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => setShowPreview(true)}
+            className="flex items-center gap-2 text-pink-500 font-bold bg-pink-50 px-4 py-2 rounded-full hover:bg-pink-100 transition-colors"
+          >
+            <Eye size={18} />
+            <span>Guest Preview</span>
+          </button>
+        </div>
 
         {/* Photos (Order 1) */}
         <section className="space-y-4">
@@ -269,10 +268,14 @@ export default function ProfileEditPage() {
           </button>
         </div>
 
-
-
-
       </div>
+
+      <ProfilePreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        formData={profileForm}
+        images={images}
+      />
     </div>
   );
 }

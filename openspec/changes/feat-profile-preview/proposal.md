@@ -1,18 +1,18 @@
 # Profile Preview Feature
 
 ## Background
-Currently, casts can edit their profile in the `/manage/profile` page, but they cannot see how it will look to guests before saving.
-We want to allow casts to preview their profile changes in a "Guest View" modal using their local unsaved data.
+現在、キャストは `/manage/profile` ページでプロフィールを編集できますが、保存するまでゲストにどのように表示されるかを確認できません。
+キャストが未保存のローカルデータを使用して、自身のプロフィールの変更を「ゲスト表示」モーダルでプレビューできるようにしたいと考えています。
 
 ## Goal
-- Allow Casts to preview their profile edits in a Guest-like UI without saving.
-- Reuse existing Guest components (`ProfileSpecs`, `PhotoGallery`) but adapt them to accept local data.
+- キャストが保存せずに、編集内容をゲスト向けUIでプレビューできるようにする。
+- 既存のゲストコンポーネント（`ProfileSpecs`, `PhotoGallery`）を再利用し、ローカルデータを受け取れるように改修する。
 
 ## Changes
 ### UI
-- Add a "Preview" (Eye Icon) button to the Profile Edit page header or near the Save button.
-- Create a `ProfilePreviewModal` that renders the Guest Detail view using form data.
+- プロフィール編集ページのヘッダーまたは保存ボタン付近に「プレビュー（目のアイコン）」ボタンを追加する。
+- フォームデータを使用してゲスト詳細ビューをレンダリングする `ProfilePreviewModal` を作成する。
 
 ### Components
-- Refactor `PhotoGallery` to accept `images` prop (override ID-based fetch).
-- Refactor `ProfileSpecs` to accept `profile` prop (override ID-based fetch).
+- `PhotoGallery`: `images` プロパティを受け取れるようにリファクタリングする（IDベースの取得を上書き可能に）。
+- `ProfileSpecs`: `profile` プロパティを受け取れるようにリファクタリングする（IDベースの取得を上書き可能に）。

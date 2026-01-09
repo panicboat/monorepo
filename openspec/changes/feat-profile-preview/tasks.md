@@ -1,7 +1,7 @@
-- [ ] Refactor `PhotoGallery` to accept optional `images` prop <!-- id: 0 -->
-- [ ] Refactor `ProfileSpecs` to accept optional `profileData` prop <!-- id: 1 -->
-- [ ] Create `ProfilePreviewModal` component <!-- id: 2 -->
-    - [ ] Implement data mapping from `ProfileFormData` to Component Props
-- [ ] Add "Preview" button to `ProfileEditPage` <!-- id: 3 -->
-- [ ] Integrate Modal into `ProfileEditPage` <!-- id: 4 -->
-- [ ] Verify Preview works with unsaved changes <!-- id: 5 -->
+- [ ] `PhotoGallery` をオプションの `images` プロパティを受け取るようにリファクタリングする <!-- id: 0 -->
+- [ ] `ProfileSpecs` をオプションの `profileData` プロパティを受け取るようにリファクタリングする <!-- id: 1 -->
+- [ ] `ProfilePreviewModal` コンポーネントを作成する <!-- id: 2 -->
+    - [ ] `ProfileFormData` からコンポーネントプロパティへのデータマッピングを実装する
+- [ ] `ProfileEditPage` に "プレビュー" ボタンを追加する <!-- id: 3 -->
+- [ ] `ProfileEditPage` にモーダルを統合する <!-- id: 4 -->
+- [ ] 未保存の変更でプレビューが機能することを検証する <!-- id: 5 -->
