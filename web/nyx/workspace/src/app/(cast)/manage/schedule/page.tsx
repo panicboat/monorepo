@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { WeeklyShiftInput, ScheduleItem } from "@/modules/ritual/components/cast/WeeklyShiftInput";
 import { Loader2, Save } from "lucide-react";
-import { useToast } from "@/modules/shell/components/ui/use-toast";
+import { Button } from "@/components/ui/Button";
+import { useToast } from "@/components/ui/useToast";
 
 export default function SchedulePage() {
   // Mock initial data
@@ -35,10 +36,10 @@ export default function SchedulePage() {
       </div>
 
       <div className="flex flex-col gap-4 px-4 pb-12 items-center">
-        <button
+        <Button
           onClick={handleSave}
           disabled={saving}
-          className={`flex w-full max-w-md items-center justify-center gap-2 rounded-xl py-3 font-bold text-white shadow-md transition-all active:scale-95 disabled:opacity-50 ${saving
+          className={`w-full max-w-md gap-2 h-auto py-3 text-base font-bold shadow-md transition-all active:scale-95 ${saving
             ? "bg-pink-400 cursor-not-allowed"
             : "bg-pink-500 hover:bg-pink-600 shadow-pink-200 hover:shadow-pink-300"
             }`}
@@ -49,7 +50,7 @@ export default function SchedulePage() {
             <Save size={18} />
           )}
           <span>{saving ? "Saving..." : "Save Schedule"}</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

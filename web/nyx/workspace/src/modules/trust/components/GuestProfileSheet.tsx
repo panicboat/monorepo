@@ -3,11 +3,11 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@/modules/shell/components/ui/Sheet";
-import { Badge } from "@/modules/shell/components/ui/Badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/modules/shell/components/ui/Avatar";
-import { ScrollArea } from "@/modules/shell/components/ui/ScrollArea";
-import { Separator } from "@/modules/shell/components/ui/Separator";
+} from "@/components/ui/Sheet";
+import { Badge } from "@/components/ui/Badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
+import { ScrollArea } from "@/components/ui/ScrollArea";
+import { Separator } from "@/components/ui/Separator";
 
 interface GuestProfileSheetProps {
   open: boolean;

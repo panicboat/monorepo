@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/modules/shell/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import React from "react";
 import { ReservationInfoCard } from "../ReservationInfoCard";
 

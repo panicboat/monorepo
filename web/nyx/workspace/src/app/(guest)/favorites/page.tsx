@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 
 const FAVORITES = [
   {
@@ -41,12 +42,11 @@ export default function FavoritesPage() {
                 transition={{ delay: i * 0.1 }}
                 className="relative overflow-hidden rounded-xl bg-white shadow-sm"
               >
-                <div className="aspect-[3/4] w-full bg-slate-200">
-                  <img
-                    src={cast.image}
-                    alt={cast.name}
-                    className="h-full w-full object-cover"
-                  />
+                <div className="aspect-[3/4] w-full bg-slate-200 relative">
+                  <Avatar className="h-full w-full rounded-none">
+                    <AvatarImage src={cast.image} alt={cast.name} className="object-cover" />
+                    <AvatarFallback className="rounded-none">C</AvatarFallback>
+                  </Avatar>
                   <div className="absolute top-2 right-2 rounded-full bg-white/20 p-1.5 backdrop-blur-sm">
                     <span className="text-xs">❤️</span>
                   </div>

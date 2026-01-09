@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@/modules/shell/components/ui/Badge";
-import { Button } from "@/modules/shell/components/ui/Button";
-import { Card, CardContent } from "@/modules/shell/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
 import { ChevronRight } from "lucide-react";
 import React from "react";
 import { GuestProfileSheet } from "@/modules/trust/components/GuestProfileSheet";

@@ -1,6 +1,6 @@
-import { Badge } from "@/modules/shell/components/ui/Badge";
-import { Button } from "@/modules/shell/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/modules/shell/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { MapPin, Clock, CreditCard } from "lucide-react";
 import React from "react";
 

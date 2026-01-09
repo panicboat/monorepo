@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { ProfileFormData } from "@/modules/portfolio/types";
 import { PhotoGallery } from "@/modules/portfolio/components/guest/detail/PhotoGallery";
 import { ProfileSpecs } from "@/modules/portfolio/components/guest/detail/ProfileSpecs";
@@ -24,12 +25,14 @@ export const ProfilePreviewModal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="relative w-full max-w-md h-[90vh] bg-slate-50 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
         {/* Close Button Overlay */}
-        <button
+        <Button
           onClick={onClose}
-          className="absolute top-4 right-4 z-50 bg-black/50 text-white p-2 rounded-full backdrop-blur-md hover:bg-black/70 transition-colors"
+          size="icon"
+          variant="ghost"
+          className="absolute top-4 right-4 z-50 bg-black/50 text-white rounded-full backdrop-blur-md hover:bg-black/70 hover:text-white transition-colors"
         >
           <X size={20} />
-        </button>
+        </Button>
 
         <div className="flex-1 w-full overflow-y-auto">
           {/*

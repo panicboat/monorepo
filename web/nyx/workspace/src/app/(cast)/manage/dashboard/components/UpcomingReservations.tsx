@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 import { Clock } from "lucide-react";
 import Link from "next/link";
 
@@ -48,11 +49,10 @@ export const UpcomingReservations = ({
                 {index === 0 && (
                   <div className="absolute -inset-1 rounded-full border-2 border-pink-500 animate-pulse" />
                 )}
-                <img
-                  src={reservation.guestIcon}
-                  alt={reservation.guestName}
-                  className="relative w-12 h-12 rounded-full object-cover bg-slate-200 border border-slate-100"
-                />
+                <Avatar className="relative w-12 h-12 border border-slate-100">
+                  <AvatarImage src={reservation.guestIcon} alt={reservation.guestName} className="object-cover" />
+                  <AvatarFallback className="bg-slate-200">G</AvatarFallback>
+                </Avatar>
               </div>
 
               <div className="flex-1 flex justify-between items-start">

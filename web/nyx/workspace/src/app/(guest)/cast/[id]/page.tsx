@@ -14,6 +14,7 @@ import Link from "next/link";
 import { use, useState } from "react";
 import { ChevronLeft, MessageCircle, Heart, AlertTriangle } from "lucide-react";
 import { useSocial } from "@/modules/social/hooks/useSocial";
+import { Button } from "@/components/ui/Button";
 
 function BlockSection({ castId }: { castId: string }) {
   const { isBlocking, toggleBlock } = useSocial();
@@ -21,17 +22,18 @@ function BlockSection({ castId }: { castId: string }) {
 
   return (
     <div className="flex flex-col items-center gap-2 border-t border-slate-100 pt-8">
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() => toggleBlock(castId)}
-        className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-colors ${
-          blocked
-            ? "bg-slate-900 text-white"
-            : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
-        }`}
+        className={`flex items-center gap-2 text-xs font-bold rounded-full transition-colors ${blocked
+          ? "bg-slate-900 text-white hover:bg-slate-800 hover:text-white"
+          : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+          }`}
       >
         <AlertTriangle size={14} />
         {blocked ? "Unblock Cast" : "Block / Report"}
-      </button>
+      </Button>
       {blocked && (
         <p className="text-[10px] text-red-500 font-medium">
           You have blocked this user.
@@ -74,13 +76,14 @@ export default function CastDetailPage({
           <FavoriteButton />
 
           <Link href={`/concierge/${id}`}>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-pink-500 text-white shadow-xl shadow-pink-200 transition-colors hover:bg-pink-600"
-            >
-              <MessageCircle size={24} color="white" />
-            </motion.button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="icon"
+                className="h-14 w-14 rounded-full bg-pink-500 text-white shadow-xl shadow-pink-200 transition-colors hover:bg-pink-600"
+              >
+                <MessageCircle size={24} color="white" />
+              </Button>
+            </motion.div>
           </Link>
         </div>
       </div>
@@ -92,24 +95,24 @@ function FavoriteButton() {
   const [isFavorite, setIsFavorite] = useState(false);
 
   return (
-    <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className={`flex h-12 w-12 items-center justify-center rounded-full shadow-xl shadow-slate-300 transition-colors border ${
-        isFavorite
-          ? "bg-pink-500 border-pink-500 text-white"
+    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+      <Button
+        size="icon"
+        className={`h-12 w-12 rounded-full shadow-xl shadow-slate-300 transition-colors border ${isFavorite
+          ? "bg-pink-500 border-pink-500 text-white hover:bg-pink-600 hover:text-white"
           : "bg-white border-pink-100 text-pink-500 hover:bg-pink-50"
-      }`}
-      onClick={() => setIsFavorite(!isFavorite)}
-    >
-      <motion.div
-        key={isFavorite ? "fav" : "not-fav"}
-        initial={{ scale: 0.6, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          }`}
+        onClick={() => setIsFavorite(!isFavorite)}
       >
-        <Heart size={24} className={isFavorite ? "fill-current" : ""} />
-      </motion.div>
-    </motion.button>
+        <motion.div
+          key={isFavorite ? "fav" : "not-fav"}
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        >
+          <Heart size={24} className={isFavorite ? "fill-current" : ""} />
+        </motion.div>
+      </Button>
+    </motion.div>
   );
 }

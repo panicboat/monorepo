@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Circle } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
+import { Badge } from "@/components/ui/Badge";
 
 type ChatPreview = {
   id: string; // Cast ID for routing
@@ -58,11 +60,10 @@ export const ChatList = () => {
               className="flex items-center gap-4 bg-white px-4 py-4 transition-colors hover:bg-slate-50"
             >
               <div className="relative">
-                <img
-                  src={chat.castImage}
-                  alt={chat.castName}
-                  className="h-14 w-14 rounded-full border border-slate-100 object-cover"
-                />
+                <Avatar className="h-14 w-14 border border-slate-100">
+                  <AvatarImage src={chat.castImage} alt={chat.castName} className="object-cover" />
+                  <AvatarFallback>C</AvatarFallback>
+                </Avatar>
                 {chat.isOnline && (
                   <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500"></span>
                 )}
@@ -83,9 +84,9 @@ export const ChatList = () => {
                     {chat.lastMessage}
                   </p>
                   {chat.unreadCount > 0 && (
-                    <span className="ml-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-pink-500 px-1 text-[10px] font-bold text-white">
+                    <Badge className="ml-2 h-5 min-w-[1.25rem] flex items-center justify-center rounded-full bg-pink-500 px-1 text-[10px] font-bold text-white border-none">
                       {chat.unreadCount}
-                    </span>
+                    </Badge>
                   )}
                 </div>
               </div>

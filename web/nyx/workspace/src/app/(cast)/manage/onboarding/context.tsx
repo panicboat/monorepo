@@ -8,11 +8,11 @@ import {
   ReactNode,
 } from "react";
 import { ProfileFormData } from "@/modules/portfolio/types";
-import { SimplePlan } from "@/modules/ritual/components/cast/WeeklyShiftInput";
-import { Shift } from "@/modules/ritual/components/cast/WeeklyShiftInput";
+import { SchedulePlan } from "@/modules/ritual/components/cast/WeeklyShiftInput";
+import { ScheduleItem } from "@/modules/ritual/components/cast/WeeklyShiftInput";
 
 // Extend with mock ID for Plans
-export interface PlanData extends SimplePlan {
+export interface PlanData extends SchedulePlan {
   price: number;
   duration: number; // minutes
 }
@@ -25,7 +25,7 @@ export type OnboardingData = {
     gallery: string[];
   };
   plans: PlanData[];
-  shifts: Shift[];
+  shifts: ScheduleItem[];
 };
 
 const INITIAL_DATA: OnboardingData = {
@@ -39,6 +39,7 @@ const INITIAL_DATA: OnboardingData = {
     defaultShiftStart: "18:00",
     defaultShiftEnd: "23:00",
     socialLinks: { others: [] },
+    tags: [],
   },
   photos: {
     cover: null,
@@ -54,7 +55,7 @@ type OnboardingContextType = {
   updateProfile: (data: Partial<ProfileFormData>) => void;
   updatePhotos: (data: Partial<OnboardingData["photos"]>) => void;
   setPlans: (plans: PlanData[]) => void;
-  setShifts: (shifts: Shift[]) => void;
+  setShifts: (shifts: ScheduleItem[]) => void;
 };
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(
@@ -98,7 +99,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     setData((prev) => ({ ...prev, plans }));
   };
 
-  const setShifts = (shifts: Shift[]) => {
+  const setShifts = (shifts: ScheduleItem[]) => {
     setData((prev) => ({ ...prev, shifts }));
   };
 

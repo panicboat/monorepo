@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import {
   WeeklyShiftInput,
-  Shift,
+  ScheduleItem,
 } from "@/modules/ritual/components/cast/WeeklyShiftInput";
 
 import { useOnboarding } from "../context";
@@ -13,20 +13,19 @@ import { useOnboarding } from "../context";
 export default function OnboardingStep4() {
   const router = useRouter();
   const { data, setShifts: saveShifts } = useOnboarding();
-  const [shifts, setShifts] = useState<Shift[]>(data.shifts || []);
+  const [schedules, setSchedules] = useState<ScheduleItem[]>(data.shifts || []);
 
   // Use real plans from context
   const availablePlans = data.plans;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (shifts.length < 1) return;
-    if (shifts.length < 1) return;
-    saveShifts(shifts);
+    if (schedules.length < 1) return;
+    saveShifts(schedules);
     router.push("/manage/onboarding/step-5");
   };
 
-  const isNextEnabled = shifts.length >= 1;
+  const isNextEnabled = schedules.length >= 1;
 
   return (
     <div className="px-4 py-6 space-y-6 animate-in slide-in-from-right-8 fade-in duration-500">
@@ -46,9 +45,9 @@ export default function OnboardingStep4() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <WeeklyShiftInput
-          shifts={shifts}
+          schedules={schedules}
           plans={availablePlans}
-          onChange={setShifts}
+          onChange={setSchedules}
         />
 
         <button

@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
+import { Badge } from "@/components/ui/Badge";
 
 // Mock Data representing "Living Portfolio" (Realtime status)
 const MOCK_CASTS = [
@@ -108,22 +110,21 @@ const CastCard = ({ cast }: { cast: (typeof MOCK_CASTS)[0] }) => {
     >
       {/* Image specific ratio - Hime-channel style is often vertical implementation 3:4 */}
       <div className="relative aspect-[3/4] w-full bg-slate-100">
-        <img
-          src={cast.image}
-          alt={cast.name}
-          className="h-full w-full object-cover"
-        />
+        <Avatar className="h-full w-full rounded-none">
+          <AvatarImage src={cast.image} alt={cast.name} className="object-cover" />
+          <AvatarFallback className="rounded-none">C</AvatarFallback>
+        </Avatar>
 
         {/* Status Badge (Living Portfolio) */}
         {cast.status === "online" && (
-          <div className="absolute right-2 top-2 rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
+          <Badge className="absolute right-2 top-2 bg-green-500 border-white hover:bg-green-600 text-[10px] px-2 py-0.5 shadow-sm">
             ONLINE
-          </div>
+          </Badge>
         )}
         {cast.status === "tonight" && (
-          <div className="absolute right-2 top-2 rounded-full bg-pink-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
+          <Badge className="absolute right-2 top-2 bg-pink-500 border-white hover:bg-pink-600 text-[10px] px-2 py-0.5 shadow-sm">
             TONIGHT
-          </div>
+          </Badge>
         )}
 
         {/* Labels/Tags Overlay Bottom */}
