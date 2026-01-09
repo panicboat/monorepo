@@ -1,4 +1,5 @@
 import { Clock } from "lucide-react";
+import Link from "next/link";
 
 interface Reservation {
   id: string;
@@ -37,42 +38,45 @@ export const UpcomingReservations = ({
 
       <div className="divide-y divide-slate-100">
         {reservations.map((reservation, index) => (
-          <div
+          <Link
             key={reservation.id}
-            className="p-4 flex items-center gap-4 hover:bg-slate-50 transition-colors"
+            href={`/manage/reservations/${reservation.id}`}
+            className="block hover:bg-slate-50 transition-colors"
           >
-            <div className="relative">
-              {index === 0 && (
-                <div className="absolute -inset-1 rounded-full border-2 border-pink-500 animate-pulse" />
-              )}
-              <img
-                src={reservation.guestIcon}
-                alt={reservation.guestName}
-                className="relative w-12 h-12 rounded-full object-cover bg-slate-200 border border-slate-100"
-              />
-            </div>
-
-            <div className="flex-1 flex justify-between items-start">
-              <div className="flex flex-col">
-                <div className="flex items-baseline gap-3 mb-1">
-                  <span className="text-xl font-bold font-serif text-slate-900 tracking-tight">
-                    {reservation.startTime}
-                  </span>
-                  <span className="text-sm font-bold text-slate-700">
-                    {reservation.guestName}
-                  </span>
-                </div>
-
-                <div className="text-xs text-slate-500 font-medium">
-                  {reservation.planName}
-                </div>
+            <div className="p-4 flex items-center gap-4">
+              <div className="relative">
+                {index === 0 && (
+                  <div className="absolute -inset-1 rounded-full border-2 border-pink-500 animate-pulse" />
+                )}
+                <img
+                  src={reservation.guestIcon}
+                  alt={reservation.guestName}
+                  className="relative w-12 h-12 rounded-full object-cover bg-slate-200 border border-slate-100"
+                />
               </div>
 
-              <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                {reservation.duration}min
-              </span>
+              <div className="flex-1 flex justify-between items-start">
+                <div className="flex flex-col">
+                  <div className="flex items-baseline gap-3 mb-1">
+                    <span className="text-xl font-bold font-serif text-slate-900 tracking-tight">
+                      {reservation.startTime}
+                    </span>
+                    <span className="text-sm font-bold text-slate-700">
+                      {reservation.guestName}
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-slate-500 font-medium">
+                    {reservation.planName}
+                  </div>
+                </div>
+
+                <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                  {reservation.duration}min
+                </span>
+              </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

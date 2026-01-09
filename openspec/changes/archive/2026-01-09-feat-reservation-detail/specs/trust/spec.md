@@ -1,15 +1,4 @@
-# trust Specification
-
-## Purpose
-TBD - created by archiving change implement-full-mock. Update Purpose after archive.
-## Requirements
-### Requirement: Trust Visualization (MUST)
-ユーザーは、キャストの信頼性とサービス品質を直感的に理解できなければならない (MUST be able to visually understand)。
-
-#### Scenario: View Radar Chart
-- **WHEN** キャストのレビューセクションを参照したとき
-- **THEN** 5角形（Looks, Charm, Tech, Service, Love）のレーダーチャートが表示される。
-
+## ADDED Requirements
 ### Requirement: Guest Profile View (CRM)
 キャストは、接客（サービス）の準備のために、ゲストのプロフィールと履歴を閲覧できなければならない (MUST be able to view)。
 
@@ -21,4 +10,3 @@ TBD - created by archiving change implement-full-mock. Update Purpose after arch
   - Trustスコア / レーティング（該当する場合）
   - 来店履歴（過去の日付、指名したキャスト）
   - キャストによるこのゲストへのプライベートメモ (CRM)
-

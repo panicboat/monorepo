@@ -160,4 +160,42 @@ export const handlers = [
       { id: "p2", name: "VIP 90min", duration: 90, price: 25000 },
     ]);
   }),
+
+  // Reservation Detail
+  http.get("/api/cast/reservations/:id", ({ params }) => {
+    const { id } = params;
+    return HttpResponse.json({
+      id,
+      guestName: "panicboat",
+      guestId: "g1",
+      status: "confirmed",
+      plan: "Standard 60min",
+      startAt: "2026-01-10 19:00",
+      endAt: "2026-01-10 20:00",
+      location: "Hotel Mets Shibuya",
+      address: "3-chōme-29-17 Shibuya, Tokyo",
+      amount: "¥15,000",
+      paymentStatus: "Authorized",
+    });
+  }),
+
+  // Guest Profile
+  http.get("/api/cast/guests/:id", ({ params }) => {
+    return HttpResponse.json({
+      id: params.id,
+      name: "panicboat",
+      age: "30s",
+      job: "IT Executive",
+      visits: 12,
+      lastVisit: "2025-12-20",
+      trustScore: "A",
+      tags: ["Gentleman", "Rich", "Wine Lover"],
+      memo: "Always brings expensive wine. Prefers quiet conversation.",
+      history: [
+        { date: "2025-12-20", cast: "Airi", plan: "Dinner 120min" },
+        { date: "2025-11-15", cast: "Yuna", plan: "Standard 60min" },
+        { date: "2025-10-01", cast: "Airi", plan: "Standard 90min" },
+      ],
+    });
+  }),
 ];

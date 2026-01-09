@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, MessageSquare, Menu } from "lucide-react";
+import { LayoutDashboard, Calendar, MessageSquare, List } from "lucide-react";
 import { BottomNavBar, BottomNavTab } from "../BottomNavBar";
 
 export const CastBottomNavBar = () => {
@@ -21,12 +21,12 @@ export const CastBottomNavBar = () => {
     },
     {
       id: "schedule",
-      label: "Shift",
+      label: "Schedule",
       icon: Calendar,
       href: "/manage/schedule",
-    }, // Placeholder route
-    { id: "inbox", label: "Inbox", icon: MessageSquare, href: "/manage/inbox" }, // Placeholder route
-    { id: "menu", label: "Menu", icon: Menu, href: "/manage/menu" }, // Placeholder route
+    },
+    { id: "plans", label: "Plan", icon: List, href: "/manage/plans" },
+    { id: "inbox", label: "Inbox", icon: MessageSquare, href: "/manage/inbox" },
   ];
 
   return (

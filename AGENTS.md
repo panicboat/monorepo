@@ -5,7 +5,8 @@ Please strictly follow these rules:
 - Do not include change descriptions in code comments or method names. Make them understandable for the current state.
 - Do not use comparative expressions like "simple" or "complex" anywhere.
 - Code consistency is important. Ensure modifications maintain consistency with existing code.
-- Always verify that `replace_file_content` or code modification tools succeeded. If a tool reports "target content not found", you must re-read the file and apply the fix again.
+- **Tool Verification**: You MUST check the `Output` of every code modification tool immediately. If `replace_file_content` fails (e.g., "target content not found"), DO NOT proceed. You MUST re-read the file (`view_file`) and retry the edit.
+- **Visual Verification**: After significant UI changes (layout, position, color), you MUST re-read the full file content to ensure the changes were applied correctly as intended.
 
 # Language Rules
 
@@ -14,6 +15,10 @@ Please strictly follow these rules:
   - **Headers**: MUST be in **English**.
   - **Content**: MUST be in **Japanese**.
 - Only code (variable names, comments usually) should be English.
+- **OpenSpec Requirements**:
+  - `openspec validate` requires English keywords (`MUST`, `SHALL`, `SHOULD`, `MAY`).
+  - **Rule**: Write the requirement in Japanese, then append the English keyword phrase in parentheses.
+  - **Example**: `ユーザーは...できなければならない (MUST be able to...)`
 
 # Workflow Rules
 

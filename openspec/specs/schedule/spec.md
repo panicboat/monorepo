@@ -12,3 +12,12 @@ The system SHALL support the storage of cast availability (shifts).
 
 # Schedule Specification
 
+### Requirement: Schedule Management View
+キャストは、自身のスケジュール（シフト）をカレンダー形式で確認・編集できなければならない (MUST be able to view and edit)。
+
+#### Scenario: Viewing schedule editor
+- **WHEN** キャストがナビゲーションメニューの「Schedule」をクリックしたとき
+- **THEN** スケジュール編集ページが表示される
+- **AND** 現在設定されているシフト（Weekly Plan）が表示される
+- **AND** オンボーディングと同様のUI (`WeeklyShiftInput`) で編集が可能である
+

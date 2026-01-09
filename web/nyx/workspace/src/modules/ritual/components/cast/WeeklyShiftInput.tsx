@@ -12,23 +12,23 @@ import {
 } from "date-fns";
 import { ja } from "date-fns/locale";
 
-export type Shift = {
+export type ScheduleItem = {
   date: string; // YYYY-MM-DD
   start: string; // HH:mm
   end: string; // HH:mm
   planId?: string; // Optional link to a specific plan
 };
 
-export type SimplePlan = {
+export type SchedulePlan = {
   id: string;
   name: string;
   duration: number; // minutes
 };
 
-interface WeeklyShiftInputProps {
-  shifts: Shift[];
-  plans?: SimplePlan[]; // Available plans to link
-  onChange: (shifts: Shift[]) => void;
+interface WeeklyScheduleInputProps {
+  schedules: ScheduleItem[];
+  plans?: SchedulePlan[]; // Available plans to link
+  onChange: (schedules: ScheduleItem[]) => void;
 }
 
 const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
@@ -46,10 +46,10 @@ const getDuration = (start: string, end: string) => {
 };
 
 export const WeeklyShiftInput = ({
-  shifts,
+  schedules,
   plans = [],
   onChange,
-}: WeeklyShiftInputProps) => {
+}: WeeklyScheduleInputProps) => {
   const [viewStartDate, setViewStartDate] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
@@ -66,26 +66,26 @@ export const WeeklyShiftInput = ({
 
   const goToNextWeek = () => setViewStartDate(addDays(viewStartDate, 7));
 
-  const addShift = (dateStr: string) => {
-    // Default shift: 18:00 - 23:00
-    const newShift: Shift = {
+  const addSchedule = (dateStr: string) => {
+    // Default schedule: 18:00 - 23:00
+    const newSchedule: ScheduleItem = {
       date: dateStr,
       start: "18:00",
       end: "23:00",
       planId: "",
     };
-    onChange([...shifts, newShift]);
+    onChange([...schedules, newSchedule]);
   };
 
-  const updateShift = (index: number, field: keyof Shift, value: string) => {
-    const newShifts = [...shifts];
-    newShifts[index] = { ...newShifts[index], [field]: value };
-    onChange(newShifts);
+  const updateSchedule = (index: number, field: keyof ScheduleItem, value: string) => {
+    const newSchedules = [...schedules];
+    newSchedules[index] = { ...newSchedules[index], [field]: value };
+    onChange(newSchedules);
   };
 
-  const removeShift = (index: number) => {
-    const newShifts = shifts.filter((_, i) => i !== index);
-    onChange(newShifts);
+  const removeSchedule = (index: number) => {
+    const newSchedules = schedules.filter((_, i) => i !== index);
+    onChange(newSchedules);
   };
 
   return (
@@ -98,7 +98,7 @@ export const WeeklyShiftInput = ({
           disabled={
             viewStartDate <= startOfWeek(new Date(), { weekStartsOn: 1 })
           }
-          className="rounded-lg p-2 text-slate-500 hover:bg-white hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-transparent"
+          className="rounded-lg p-2 text-slate-500 hover:bg-white hover:text-pink-600 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
         >
           <ChevronLeft size={20} />
         </button>
@@ -106,7 +106,7 @@ export const WeeklyShiftInput = ({
         <button
           type="button"
           onClick={goToNextWeek}
-          className="rounded-lg p-2 text-slate-500 hover:bg-white hover:text-slate-900"
+          className="rounded-lg p-2 text-slate-500 hover:bg-white hover:text-pink-600 transition-colors"
         >
           <ChevronRight size={20} />
         </button>
@@ -115,7 +115,7 @@ export const WeeklyShiftInput = ({
       {days.map((date) => {
         const dateStr = format(date, "yyyy-MM-dd");
         const isPast = isBefore(date, today);
-        const dayShifts = shifts
+        const daySchedules = schedules
           .map((s, i) => ({ ...s, originalIndex: i }))
           .filter((s) => s.date === dateStr);
         const dayLabel = format(date, "M/d (E)", { locale: ja });
@@ -124,23 +124,21 @@ export const WeeklyShiftInput = ({
         return (
           <div
             key={dateStr}
-            className={`rounded-xl border p-4 transition-all ${
-              isPast
-                ? "border-slate-100 bg-slate-50 opacity-60"
-                : dayShifts.length > 0
-                  ? "border-pink-200 bg-pink-50/30"
-                  : "border-slate-100 bg-white"
-            }`}
+            className={`rounded-xl border p-4 transition-all ${isPast
+              ? "border-slate-100 bg-slate-50 opacity-60"
+              : daySchedules.length > 0
+                ? "border-pink-200 bg-pink-50/30"
+                : "border-slate-100 bg-white"
+              }`}
           >
             <div className="flex items-center justify-between mb-3">
               <span
-                className={`text-sm font-bold ${
-                  isPast
-                    ? "text-slate-400"
-                    : isWeekend
-                      ? "text-pink-600"
-                      : "text-slate-700"
-                }`}
+                className={`text-sm font-bold ${isPast
+                  ? "text-slate-400"
+                  : isWeekend
+                    ? "text-pink-600"
+                    : "text-slate-700"
+                  }`}
               >
                 {dayLabel}{" "}
                 {isPast && (
@@ -150,22 +148,22 @@ export const WeeklyShiftInput = ({
               {!isPast && (
                 <button
                   type="button"
-                  onClick={() => addShift(dateStr)}
-                  className="flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 transition-colors hover:bg-pink-100 hover:text-pink-600"
+                  onClick={() => addSchedule(dateStr)}
+                  className="flex items-center gap-1 rounded-lg bg-pink-50 px-3 py-1.5 text-xs font-bold text-pink-600 transition-colors hover:bg-pink-100 hover:text-pink-700 border border-pink-100"
                 >
                   <Plus size={14} />
-                  <span>Add Shift</span>
+                  <span>Add Schedule</span>
                 </button>
               )}
             </div>
 
-            {dayShifts.length === 0 ? (
+            {daySchedules.length === 0 ? (
               <div className="text-xs text-slate-400 text-center py-2">
-                {isPast ? "受付終了" : "No shift (お休み)"}
+                {isPast ? "受付終了" : "No schedule (お休み)"}
               </div>
             ) : (
               <div className="space-y-2">
-                {dayShifts.map((shift, idx) => (
+                {daySchedules.map((schedule, idx) => (
                   <div
                     key={idx}
                     className="flex flex-col gap-2 rounded-lg bg-white border border-slate-200 p-2 shadow-sm"
@@ -174,11 +172,11 @@ export const WeeklyShiftInput = ({
                       <div className="flex flex-1 items-center gap-2">
                         <Clock size={14} className="text-slate-400" />
                         <select
-                          value={shift.start}
+                          value={schedule.start}
                           disabled={isPast}
                           onChange={(e) =>
-                            updateShift(
-                              shift.originalIndex,
+                            updateSchedule(
+                              schedule.originalIndex,
                               "start",
                               e.target.value,
                             )
@@ -193,11 +191,11 @@ export const WeeklyShiftInput = ({
                         </select>
                         <span className="text-slate-400">-</span>
                         <select
-                          value={shift.end}
+                          value={schedule.end}
                           disabled={isPast}
                           onChange={(e) =>
-                            updateShift(
-                              shift.originalIndex,
+                            updateSchedule(
+                              schedule.originalIndex,
                               "end",
                               e.target.value,
                             )
@@ -214,7 +212,7 @@ export const WeeklyShiftInput = ({
                       {!isPast && (
                         <button
                           type="button"
-                          onClick={() => removeShift(shift.originalIndex)}
+                          onClick={() => removeSchedule(schedule.originalIndex)}
                           className="p-1 text-slate-400 hover:text-red-500"
                         >
                           <Trash2 size={16} />
@@ -230,10 +228,10 @@ export const WeeklyShiftInput = ({
                             Plan
                           </span>
                           <select
-                            value={shift.planId || ""}
+                            value={schedule.planId || ""}
                             onChange={(e) =>
-                              updateShift(
-                                shift.originalIndex,
+                              updateSchedule(
+                                schedule.originalIndex,
                                 "planId",
                                 e.target.value,
                               )
@@ -250,10 +248,10 @@ export const WeeklyShiftInput = ({
                         </div>
                         {(() => {
                           const selectedPlan = plans.find(
-                            (p) => p.id === shift.planId,
+                            (p) => p.id === schedule.planId,
                           );
                           if (!selectedPlan) return null;
-                          const shiftMins = getDuration(shift.start, shift.end);
+                          const shiftMins = getDuration(schedule.start, schedule.end);
                           if (shiftMins <= 0) return null;
                           const maxCount = Math.floor(
                             shiftMins / selectedPlan.duration,

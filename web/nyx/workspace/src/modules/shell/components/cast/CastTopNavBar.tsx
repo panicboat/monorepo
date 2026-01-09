@@ -11,6 +11,8 @@ export const CastTopNavBar = () => {
   const getTitle = () => {
     if (pathname.includes("/manage/onboarding")) return "Cast Onboarding";
     if (pathname.includes("/manage/profile")) return "Edit Profile";
+    if (pathname.includes("/manage/schedule")) return "Schedule";
+    if (pathname.includes("/manage/reservations")) return "Reservation Detail";
     if (pathname.includes("/manage/dashboard")) return "Nyx. Cast";
     return "Cast Manage";
   };
@@ -20,7 +22,9 @@ export const CastTopNavBar = () => {
   };
 
   const showBack =
-    pathname.includes("/onboarding") || pathname.includes("/manage/profile");
+    pathname.includes("/onboarding") ||
+    pathname.includes("/manage/profile") ||
+    pathname.includes("/manage/reservations");
   const title = getTitle();
 
   const LeftSlot = (
@@ -42,7 +46,7 @@ export const CastTopNavBar = () => {
           href="/manage/schedule"
           className="hover:text-pink-500 transition-colors"
         >
-          Shift
+          Schedule
         </Link>
         <Link
           href="/manage/inbox"
@@ -51,10 +55,10 @@ export const CastTopNavBar = () => {
           Inbox
         </Link>
         <Link
-          href="/manage/menu"
+          href="/manage/plans"
           className="hover:text-pink-500 transition-colors"
         >
-          Menu
+          Plan
         </Link>
       </div>
     </>
