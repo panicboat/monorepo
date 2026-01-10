@@ -7,6 +7,7 @@ description: Scaffold a new OpenSpec change and validate strictly.
 - Keep changes tightly scoped to the requested outcome.
 - Refer to `openspec/AGENTS.md` (located inside the `openspec/` directory—run `ls openspec` or `openspec update` if you don't see it) if you need additional OpenSpec conventions or clarifications.
 - Identify any vague or ambiguous details and ask the necessary follow-up questions before editing files.
+- **Language Rule**: Headers MUST be in English. Content MUST be in Japanese (as per `AGENTS.md`).
 - Do not write any code during the proposal stage. Only create design documents (proposal.md, tasks.md, design.md, and spec deltas). Implementation happens in the apply stage after approval.
 
 **Steps**

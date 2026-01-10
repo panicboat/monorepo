@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Gate - PrivateHeaven</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .font-serif-jp {
+      font-family: "Yu Mincho", "Hiragino Mincho ProN", serif;
+    }
+
+    /* 背景の粒子アニメーション */
+    .particle {
+      position: absolute;
+      background: rgba(234, 179, 8, 0.3);
+      /* Yellow-500 */
+      border-radius: 50%;
+      animation: float-up linear infinite;
+    }
+
+    @keyframes float-up {
+      0% {
+        transform: translateY(100vh) scale(0);
+        opacity: 0;
+      }
+
+      20% {
+        opacity: 0.5;
+      }
+
+      80% {
+        opacity: 0.5;
+      }
+
+      100% {
+        transform: translateY(-20vh) scale(1.5);
+        opacity: 0;
+      }
+    }
+
+    /* ログイン成功時の演出 */
+    .entrance-anim {
+      animation: enter-world 1.5s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+    }
+
+    @keyframes enter-world {
+      0% {
+        transform: scale(1);
+        filter: blur(0);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.1);
+        filter: blur(4px);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1.2);
+        filter: blur(10px);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-black text-slate-200 h-screen font-sans flex justify-center overflow-hidden">
+
+  <div id="app-container"
+    class="w-full max-w-md bg-slate-950 h-full relative shadow-2xl overflow-hidden flex flex-col items-center justify-center">
+
+    <div id="particles" class="absolute inset-0 z-0 pointer-events-none">
+    </div>
+
+    <div class="relative z-10 w-full px-8 flex flex-col items-center">
+
+      <div class="mb-12 text-center">
+        <div
+          class="w-16 h-16 border border-yellow-600/30 rounded-full flex items-center justify-center mx-auto mb-4 bg-yellow-900/10 rotate-45">
+          <div class="w-12 h-12 border border-yellow-500/50 rounded-full flex items-center justify-center -rotate-45">
+            <i data-lucide="crown" class="w-6 h-6 text-yellow-500"></i>
+          </div>
+        </div>
+        <h1 class="text-3xl font-serif-jp text-white font-bold tracking-widest">PRIVATE<br>HEAVEN</h1>
+        <p class="text-[10px] text-yellow-600/70 mt-3 tracking-[0.3em] uppercase">Invitation Only</p>
+      </div>
+
+      <div class="bg-slate-900/80 p-1 rounded-xl flex w-full mb-8 border border-slate-800 backdrop-blur-sm">
+        <button onclick="switchRole('guest')" id="btn-guest"
+          class="flex-1 py-3 rounded-lg text-xs font-bold text-black bg-white shadow transition-all duration-300">
+          Guest
+        </button>
+        <button onclick="switchRole('cast')" id="btn-cast"
+          class="flex-1 py-3 rounded-lg text-xs font-bold text-slate-500 hover:text-white transition-all duration-300">
+          Cast
+        </button>
+      </div>
+
+      <div class="w-full space-y-4">
+        <div class="relative group">
+          <i data-lucide="phone"
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-yellow-500 transition"></i>
+          <input type="tel" placeholder="Phone Number"
+            class="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-4 pl-12 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-yellow-600/50 focus:bg-slate-900 transition text-sm font-mono">
+        </div>
+
+        <div class="relative group">
+          <i data-lucide="key-round"
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-yellow-500 transition"></i>
+          <input type="password" placeholder="SMS Code"
+            class="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-4 pl-12 pr-4 text-white placeholder-slate-600 focus:outline-none focus:border-yellow-600/50 focus:bg-slate-900 transition text-sm font-mono tracking-widest">
+        </div>
+
+        <button onclick="login()"
+          class="w-full bg-gradient-to-r from-yellow-700 to-yellow-600 hover:from-yellow-600 hover:to-yellow-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-yellow-900/20 mt-4 transition active:scale-[0.98] flex items-center justify-center gap-2">
+          <span id="login-text">Enter the Gate</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <p class="mt-8 text-[10px] text-slate-600 text-center leading-relaxed">
+        By entering, you agree to our<br>
+        <a href="#" class="text-slate-500 underline">Terms of Service</a> & <a href="#"
+          class="text-slate-500 underline">Privacy Policy</a>.
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // --- Particle Generation ---
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement('div');
+      p.classList.add('particle');
+      const size = Math.random() * 4 + 1;
+      p.style.width = `${size}px`;
+      p.style.height = `${size}px`;
+      p.style.left = `${Math.random() * 100}%`;
+      p.style.animationDuration = `${Math.random() * 10 + 5}s`;
+      p.style.animationDelay = `${Math.random() * 5}s`;
+      container.appendChild(p);
+    }
+
+    // --- Role Switcher ---
+    function switchRole(role) {
+      const btnGuest = document.getElementById('btn-guest');
+      const btnCast = document.getElementById('btn-cast');
+      const loginText = document.getElementById('login-text');
+
+      if (role === 'guest') {
+        btnGuest.className = "flex-1 py-3 rounded-lg text-xs font-bold text-black bg-white shadow transition-all duration-300";
+        btnCast.className = "flex-1 py-3 rounded-lg text-xs font-bold text-slate-500 hover:text-white transition-all duration-300";
+        loginText.innerText = "Enter as Guest";
+      } else {
+        btnCast.className = "flex-1 py-3 rounded-lg text-xs font-bold text-black bg-yellow-500 shadow transition-all duration-300";
+        btnGuest.className = "flex-1 py-3 rounded-lg text-xs font-bold text-slate-500 hover:text-white transition-all duration-300";
+        loginText.innerText = "Login to Dashboard";
+      }
+    }
+
+    // --- Login Animation ---
+    function login() {
+      const app = document.getElementById('app-container');
+      const btn = document.querySelector('button[onclick="login()"]');
+
+      // Loading state
+      btn.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i>';
+      lucide.createIcons();
+
+      setTimeout(() => {
+        // Success animation
+        app.classList.add('entrance-anim');
+
+        // Simulate redirect
+        setTimeout(() => {
+          alert("Welcome to PrivateHeaven. Redirecting...");
+          // window.location.href = '/home';
+          app.classList.remove('entrance-anim'); // Reset for demo
+          btn.innerHTML = '<span id="login-text">Enter the Gate</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
+          lucide.createIcons();
+        }, 1500);
+      }, 800);
+    }
+  </script>
+</body>
+
+</html>
