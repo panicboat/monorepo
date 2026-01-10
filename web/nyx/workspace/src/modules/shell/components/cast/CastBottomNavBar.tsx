@@ -1,7 +1,8 @@
 "use client";
 
+import { MessageCircle, Ticket } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, MessageSquare, List } from "lucide-react";
+import { LayoutDashboard, Calendar } from "lucide-react";
 import { BottomNavBar, BottomNavTab } from "../BottomNavBar";
 
 export const CastBottomNavBar = () => {
@@ -25,15 +26,21 @@ export const CastBottomNavBar = () => {
       icon: Calendar,
       href: "/manage/schedule",
     },
-    { id: "plans", label: "Plan", icon: List, href: "/manage/plans" },
-    { id: "inbox", label: "Inbox", icon: MessageSquare, href: "/manage/inbox" },
+    { id: "plans", label: "Plan", icon: Ticket, href: "/manage/plans" },
+    {
+      id: "concierge",
+      label: "Concierge",
+      icon: MessageCircle,
+      href: "/manage/concierge",
+      badge: 2,
+    }, // keeping badge logic static as prior code, or dynamic from state if available
   ];
 
   return (
     <BottomNavBar
       tabs={tabs}
       layoutId="cast-nav-indicator"
-      activeColorClass="text-slate-900"
+      activeColorClass="text-pink-500"
     />
   );
 };

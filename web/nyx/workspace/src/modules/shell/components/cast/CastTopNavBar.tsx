@@ -49,16 +49,16 @@ export const CastTopNavBar = () => {
           Schedule
         </Link>
         <Link
-          href="/manage/inbox"
-          className="hover:text-pink-500 transition-colors"
-        >
-          Inbox
-        </Link>
-        <Link
           href="/manage/plans"
           className="hover:text-pink-500 transition-colors"
         >
           Plan
+        </Link>
+        <Link
+          href="/manage/concierge"
+          className="hover:text-pink-500 transition-colors"
+        >
+          Concierge
         </Link>
       </div>
     </>
