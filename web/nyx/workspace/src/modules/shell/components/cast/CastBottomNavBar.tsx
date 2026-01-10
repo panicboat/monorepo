@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Ticket } from "lucide-react";
+import { MessageCircle, Ticket, User } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Calendar } from "lucide-react";
 import { BottomNavBar, BottomNavTab } from "../BottomNavBar";
@@ -15,10 +15,10 @@ export const CastBottomNavBar = () => {
 
   const tabs: BottomNavTab[] = [
     {
-      id: "dashboard",
+      id: "home",
       label: "Home",
       icon: LayoutDashboard,
-      href: "/manage/dashboard",
+      href: "/manage/home",
     },
     {
       id: "schedule",
@@ -26,14 +26,19 @@ export const CastBottomNavBar = () => {
       icon: Calendar,
       href: "/manage/schedule",
     },
-    { id: "plans", label: "Plan", icon: Ticket, href: "/manage/plans" },
     {
       id: "concierge",
       label: "Concierge",
       icon: MessageCircle,
       href: "/manage/concierge",
       badge: 2,
-    }, // keeping badge logic static as prior code, or dynamic from state if available
+    },
+    {
+      id: "mypage",
+      label: "MyPage",
+      icon: User,
+      href: "/manage/mypage",
+    },
   ];
 
   return (

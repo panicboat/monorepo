@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, CSSProperties } from "react";
+import { cn } from "@/lib/utils";
 import { useWindowSize } from "@/hooks/useWindowSize";
 
 interface ResponsiveMainContainerProps {
@@ -37,7 +38,10 @@ export const ResponsiveMainContainer = ({
 
   return (
     <div
-      className={`bg-white min-h-screen pt-14 md:pt-16 shadow-sm ring-1 ring-slate-900/5 pb-20 md:pb-0 transition-[width] duration-300 ease-in-out ${className}`}
+      className={cn(
+        "bg-white min-h-screen pt-14 md:pt-16 shadow-sm ring-1 ring-slate-900/5 pb-20 md:pb-0 transition-[width] duration-300 ease-in-out",
+        className,
+      )}
       style={containerStyle}
     >
       {children}

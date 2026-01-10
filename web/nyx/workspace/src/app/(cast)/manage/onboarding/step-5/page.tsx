@@ -18,7 +18,7 @@ export default function OnboardingStep5() {
     console.log("FINAL SUBMISSION:", data);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     console.log("Published!");
-    router.push("/manage/dashboard");
+    router.push("/manage/home");
   };
 
   if (!data) return null;
