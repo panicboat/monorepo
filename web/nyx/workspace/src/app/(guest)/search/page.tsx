@@ -11,6 +11,8 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 const POPULAR_TAGS = [
   "#Newcomer",
@@ -158,35 +160,39 @@ export default function SearchPage() {
     <div className="bg-slate-50 pb-24 pt-4 min-h-screen">
       {/* Search Input */}
       <div className="px-4 mb-4">
-        <div className="flex items-center gap-2 rounded-full bg-white p-3 shadow-sm border border-slate-100">
-          <Search className="text-slate-400 ml-1" size={20} />
-          <input
+        <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm border border-slate-100">
+          <Search className="text-slate-400 ml-1 shrink-0" size={20} />
+          <Input
             type="text"
             placeholder="Search cast, tag, location..."
-            className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-slate-400"
+            className="flex-1 bg-transparent border-none shadow-none focus-visible:ring-0 px-2"
           />
-          <button className="text-slate-400 hover:text-slate-600 mr-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-slate-400 hover:text-slate-600 mr-1 hover:bg-transparent"
+          >
             <SlidersHorizontal size={20} />
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Filter Tabs */}
       <HorizontalScroll className="mb-6" contentClassName="px-4 gap-2">
         {["All", "Online", "New", "Ranking"].map((tab) => (
-          <button
+          <Button
             key={tab}
             onClick={() => setActiveTab(tab.toLowerCase())}
-            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0 transition-colors shadow-sm
-                        ${
-                          activeTab === tab.toLowerCase()
-                            ? "bg-slate-900 text-white"
-                            : "bg-white text-slate-500 border border-slate-100"
-                        }
+            variant={activeTab === tab.toLowerCase() ? "default" : "outline"}
+            className={`rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0 transition-colors shadow-sm h-8
+                        ${activeTab === tab.toLowerCase()
+                ? "bg-slate-900 text-white hover:bg-slate-800"
+                : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
+              }
                     `}
           >
             {tab}
-          </button>
+          </Button>
         ))}
       </HorizontalScroll>
 

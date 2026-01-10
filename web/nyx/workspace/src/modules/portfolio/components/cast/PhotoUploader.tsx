@@ -2,6 +2,7 @@
 
 import { useState, useRef, ChangeEvent } from "react";
 import { Upload, X, Image as ImageIcon, Star } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface PhotoUploaderProps {
   images: string[];
@@ -57,11 +58,10 @@ export const PhotoUploader = ({
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         onClick={triggerFileInput}
-        className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition-all cursor-pointer ${
-          isDragging
-            ? "border-pink-500 bg-pink-50 scale-[1.02]"
-            : "border-slate-200 bg-slate-50 hover:border-pink-300 hover:bg-pink-50/30"
-        }`}
+        className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition-all cursor-pointer ${isDragging
+          ? "border-pink-500 bg-pink-50 scale-[1.02]"
+          : "border-slate-200 bg-slate-50 hover:border-pink-300 hover:bg-pink-50/30"
+          }`}
       >
         <input
           type="file"
@@ -114,11 +114,10 @@ export const PhotoUploader = ({
                 newImages.unshift(movedImage);
                 onChange(newImages);
               }}
-              className={`group relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-100 transition-all ${
-                index === 0
-                  ? "ring-2 ring-pink-500 ring-offset-2"
-                  : "cursor-pointer hover:ring-2 hover:ring-pink-300 hover:ring-offset-1"
-              }`}
+              className={`group relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-100 transition-all ${index === 0
+                ? "ring-2 ring-pink-500 ring-offset-2"
+                : "cursor-pointer hover:ring-2 hover:ring-pink-300 hover:ring-offset-1"
+                }`}
             >
               {/* Cover Badge for First Item */}
               {index === 0 && (
@@ -149,16 +148,18 @@ export const PhotoUploader = ({
               />
 
               {/* Remove Button */}
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="icon"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeImage(index);
                 }}
-                className="absolute right-2 bottom-2 z-30 rounded-full bg-white p-2 text-slate-900 shadow-md transition-transform hover:scale-110 hover:bg-red-50 hover:text-red-500 active:scale-95"
+                className="absolute right-2 bottom-2 z-30 h-8 w-8 rounded-full bg-white text-slate-900 shadow-md transition-transform hover:scale-110 hover:bg-red-50 hover:text-red-500 active:scale-95"
               >
                 <X size={16} />
-              </button>
+              </Button>
             </div>
           ))}
         </div>

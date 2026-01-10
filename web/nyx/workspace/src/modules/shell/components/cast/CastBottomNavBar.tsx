@@ -25,7 +25,7 @@ export const CastBottomNavBar = () => {
       icon: Calendar,
       href: "/manage/schedule",
     },
-    { id: "plans", label: "Plan", icon: List, href: "/manage/plans" },
+    { id: "plans", label: "Plan", icon: List, href: "/manage/plan" },
     { id: "inbox", label: "Inbox", icon: MessageSquare, href: "/manage/inbox" },
   ];
 

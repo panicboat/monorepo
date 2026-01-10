@@ -55,7 +55,7 @@ export const CastTopNavBar = () => {
           Inbox
         </Link>
         <Link
-          href="/manage/plans"
+          href="/manage/plan"
           className="hover:text-pink-500 transition-colors"
         >
           Plan

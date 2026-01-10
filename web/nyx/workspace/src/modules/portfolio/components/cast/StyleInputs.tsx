@@ -2,6 +2,15 @@
 
 import { Info, Clock } from "lucide-react";
 import { ProfileFormData } from "@/modules/portfolio/types";
+import { Label } from "@/components/ui/Label";
+import { Button } from "@/components/ui/Button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/Select";
 
 interface StyleInputsProps {
   data: ProfileFormData;
@@ -9,7 +18,7 @@ interface StyleInputsProps {
   timeOptions: string[];
 }
 
-// Simplified Select Component
+// Simplified Select Component (Radio-like Button Group)
 const SelectGroup = ({
   label,
   options,
@@ -24,31 +33,31 @@ const SelectGroup = ({
   description?: string;
 }) => (
   <div className="space-y-2">
-    <label className="block text-sm font-bold text-slate-700">
+    <Label className="block text-sm font-bold text-slate-700">
       {label}
       {description && (
         <span className="ml-2 text-xs font-normal text-slate-400">
           {description}
         </span>
       )}
-    </label>
+    </Label>
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
       {options.map((opt) => (
-        <button
+        <Button
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value)}
-          className={`flex flex-col items-center justify-center gap-1 rounded-xl border p-3 text-center transition-all ${
-            value === opt.value
-              ? "border-pink-500 bg-pink-50 text-pink-600 ring-1 ring-pink-500"
+          variant={value === opt.value ? "default" : "outline"}
+          className={`flex h-auto flex-col items-center justify-center gap-1 rounded-xl p-3 text-center transition-all ${value === opt.value
+              ? "bg-pink-50 text-pink-600 border-pink-500 ring-1 ring-pink-500 hover:bg-pink-100 hover:text-pink-700"
               : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-          }`}
+            }`}
         >
           <span className="text-sm font-bold">{opt.label}</span>
           {opt.desc && (
             <span className="text-[10px] opacity-70">{opt.desc}</span>
           )}
-        </button>
+        </Button>
       ))}
     </div>
   </div>
@@ -91,47 +100,47 @@ export const StyleInputs = ({
 
       {/* Default Schedule */}
       <div>
-        <label className="block text-sm font-bold text-slate-700 mb-1">
+        <Label className="block text-sm font-bold text-slate-700 mb-1">
           3. Standard Shift Time
           <span className="ml-2 text-xs font-normal text-slate-400">
             基本の活動時間設定
           </span>
-        </label>
+        </Label>
         <div className="flex items-center gap-2 max-w-sm">
           <div className="relative flex-1">
-            <select
+            <Select
               value={data.defaultShiftStart}
-              onChange={(e) => onChange("defaultShiftStart", e.target.value)}
-              className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-pink-500 focus:outline-none"
+              onValueChange={(val) => onChange("defaultShiftStart", val)}
             >
-              {timeOptions.map((t) => (
-                <option key={`start-${t}`} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-            <Clock
-              className="absolute right-3 top-3.5 text-slate-400 pointer-events-none"
-              size={16}
-            />
+              <SelectTrigger>
+                <SelectValue placeholder="Start Time" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {timeOptions.map((t) => (
+                  <SelectItem key={`start-${t}`} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <span className="text-slate-400 font-bold">~</span>
           <div className="relative flex-1">
-            <select
+            <Select
               value={data.defaultShiftEnd}
-              onChange={(e) => onChange("defaultShiftEnd", e.target.value)}
-              className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-pink-500 focus:outline-none"
+              onValueChange={(val) => onChange("defaultShiftEnd", val)}
             >
-              {timeOptions.map((t) => (
-                <option key={`end-${t}`} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-            <Clock
-              className="absolute right-3 top-3.5 text-slate-400 pointer-events-none"
-              size={16}
-            />
+              <SelectTrigger>
+                <SelectValue placeholder="End Time" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {timeOptions.map((t) => (
+                  <SelectItem key={`end-${t}`} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>

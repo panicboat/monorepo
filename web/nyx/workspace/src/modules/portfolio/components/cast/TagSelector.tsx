@@ -1,5 +1,7 @@
 import { X, Plus } from "lucide-react";
 import { useState } from "react";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 interface TagSelectorProps {
   tags: string[];
@@ -44,26 +46,27 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
     <div className="space-y-3">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold pointer-events-none">
             #
           </span>
-          <input
+          <Input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Add a tag..."
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-7 pr-4 py-3 font-bold text-slate-900 focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
+            className="pl-7 pr-4 font-bold focus-visible:ring-pink-500"
           />
         </div>
-        <button
+        <Button
           type="button"
           onClick={handleAdd}
           disabled={!input.trim()}
-          className="flex items-center justify-center w-12 rounded-xl bg-slate-900 text-white disabled:bg-slate-200 disabled:text-slate-400"
+          size="icon"
+          className="w-12 h-10 rounded-xl bg-slate-900 text-white disabled:bg-slate-200 disabled:text-slate-400"
         >
           <Plus size={20} />
-        </button>
+        </Button>
       </div>
 
       {/* Selected Tags */}
@@ -75,8 +78,9 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
           >
             #{tag}
             <button
+              type="button"
               onClick={() => handleRemove(tag)}
-              className="ml-1 rounded-full bg-white/50 p-0.5 hover:bg-white text-pink-500"
+              className="ml-1 rounded-full bg-white/50 p-0.5 hover:bg-white text-pink-500 transition-colors"
             >
               <X size={12} />
             </button>
@@ -93,14 +97,16 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
           {suggestedTags
             .filter((t) => !tags.includes(t))
             .map((tag) => (
-              <button
+              <Button
                 key={tag}
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => onChange([...tags, tag])}
-                className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:border-pink-300 hover:text-pink-500 hover:bg-pink-50 transition-colors"
+                className="h-7 rounded-full border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 hover:border-pink-300 hover:text-pink-500 hover:bg-pink-50 transition-colors"
               >
                 #{tag}
-              </button>
+              </Button>
             ))}
         </div>
       </div>

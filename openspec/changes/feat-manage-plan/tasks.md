@@ -1,0 +1,3 @@
+- [ ] Refactor `PlanEditor` to use shared UI components
+- [ ] Implement `/manage/plan/page.tsx`
+- [ ] Verify functionality

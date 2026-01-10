@@ -2,6 +2,9 @@
 
 import { Info } from "lucide-react";
 import { ProfileFormData } from "@/modules/portfolio/types";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import { Button } from "@/components/ui/Button";
 
 interface SocialInputsProps {
   data: ProfileFormData;
@@ -31,69 +34,69 @@ export const SocialInputs = ({
         {/* Main Socials */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">
+            <Label className="block text-xs font-bold text-slate-500 mb-1">
               X (Twitter)
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               value={data.socialLinks?.x || ""}
               onChange={(e) => onSocialChange("x", e.target.value)}
               placeholder="@username"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-pink-500 focus:outline-none"
+              className="focus-visible:ring-pink-500"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">
+            <Label className="block text-xs font-bold text-slate-500 mb-1">
               Instagram
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               value={data.socialLinks?.instagram || ""}
               onChange={(e) => onSocialChange("instagram", e.target.value)}
               placeholder="@username"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-pink-500 focus:outline-none"
+              className="focus-visible:ring-pink-500"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">
+            <Label className="block text-xs font-bold text-slate-500 mb-1">
               TikTok
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               value={data.socialLinks?.tiktok || ""}
               onChange={(e) => onSocialChange("tiktok", e.target.value)}
               placeholder="@username"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-pink-500 focus:outline-none"
+              className="focus-visible:ring-pink-500"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">
+            <Label className="block text-xs font-bold text-slate-500 mb-1">
               CityHeaven URL
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               value={data.socialLinks?.cityheaven || ""}
               onChange={(e) => onSocialChange("cityheaven", e.target.value)}
               placeholder="https://..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-pink-500 focus:outline-none"
+              className="focus-visible:ring-pink-500"
             />
           </div>
         </div>
 
         {/* LitLink & Dynamic Others */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 mb-1">
+          <Label className="block text-xs font-bold text-slate-500 mb-1">
             lit.link / Other Bio
-          </label>
-          <input
+          </Label>
+          <Input
             type="text"
             value={data.socialLinks?.litlink || ""}
             onChange={(e) => onSocialChange("litlink", e.target.value)}
             placeholder="https://lit.link/..."
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-pink-500 focus:outline-none"
+            className="focus-visible:ring-pink-500"
           />
         </div>
 
@@ -104,31 +107,33 @@ export const SocialInputs = ({
               className="flex gap-2 items-center animate-in fade-in slide-in-from-top-2 duration-300"
             >
               <div className="flex-1">
-                <input
+                <Input
                   type="text"
                   value={url}
                   onChange={(e) => onOtherChange(idx, e.target.value)}
                   placeholder="https://... (Other Account)"
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none"
+                  className="focus-visible:ring-pink-500"
                 />
               </div>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => onRemoveOther(idx)}
-                className="p-2 text-slate-400 hover:text-red-500"
               >
                 ✕
-              </button>
+              </Button>
             </div>
           ))}
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={onAddOther}
-            className="text-xs font-bold text-pink-500 hover:text-pink-600 flex items-center gap-1"
+            className="text-xs font-bold text-pink-500 hover:text-pink-600 flex items-center gap-1 hover:bg-pink-50"
           >
             + Add another account
-          </button>
+          </Button>
         </div>
       </div>
     </section>
