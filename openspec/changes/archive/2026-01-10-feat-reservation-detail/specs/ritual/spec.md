@@ -1,8 +1,7 @@
-# ritual Specification
+# Capability: Ritual
 
-## Purpose
-TBD - created by archiving change feat-reservation-detail. Update Purpose after archive.
-## Requirements
+## MODIFIED Requirements
+
 ### Requirement: Reservation Detail View
 システムは、予約および招待の詳細情報（日時、料金、ステータス）を表示しなければならない (SHALL display reservation details)。
 
@@ -12,6 +11,8 @@ TBD - created by archiving change feat-reservation-detail. Update Purpose after 
 - **THEN** ゲストの名前とアイコンが表示される
 - **AND** 予約ステータス（招待中、誓約済み、等）が表示される
 - **AND** 日時と料金明細が表示される
+
+## ADDED Requirements
 
 ### Requirement: Reject/Cancel Action
 システムは、予約（招待）を取り消しまたはキャンセルする機能を提供しなければならない (SHALL provide cancel action)。
@@ -25,4 +26,3 @@ TBD - created by archiving change feat-reservation-detail. Update Purpose after 
 - **GIVEN** キャストが「誓約済み（Sealed）」の予約を表示しているとき
 - **WHEN** 「キャンセル」ボタンをクリックしたとき
 - **THEN** 予約がキャンセルされる（ペナルティ確認が表示される）
-

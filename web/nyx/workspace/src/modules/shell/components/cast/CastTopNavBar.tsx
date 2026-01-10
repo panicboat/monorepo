@@ -15,7 +15,7 @@ export const CastTopNavBar = () => {
     if (pathname.includes("/manage/profile")) return "Edit Profile";
     if (pathname.includes("/manage/plans")) return "Plan Settings";
     if (pathname.includes("/manage/schedule")) return "Schedule";
-    if (pathname.includes("/manage/reservations")) return "Reservation Detail";
+    if (pathname.includes("/manage/pledges")) return "Pledge Detail";
     if (pathname.includes("/manage/concierge")) return "Concierge";
     if (pathname.includes("/manage/mypage")) return "Backstage";
     if (pathname.includes("/manage/home")) return "Nyx. Cast";
@@ -30,7 +30,7 @@ export const CastTopNavBar = () => {
     pathname.includes("/manage/onboarding") ||
     pathname.includes("/manage/profile") ||
     pathname.includes("/manage/plans") ||
-    pathname.includes("/manage/reservations");
+    pathname.includes("/manage/pledges");
   const title = getTitle();
 
   const LeftSlot = (

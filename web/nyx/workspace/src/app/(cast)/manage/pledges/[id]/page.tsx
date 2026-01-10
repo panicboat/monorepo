@@ -1,5 +1,5 @@
 import { ResponsiveMainContainer } from "@/modules/shell/components/ResponsiveMainContainer";
-import { CastReservationDetail } from "@/modules/ritual/components/cast/CastReservationDetail";
+import { CastReservationDetail } from "./components/CastReservationDetail";
 
 export default async function ReservationDetailPage({
   params,

@@ -39,25 +39,6 @@ export const ReservationInfoCard = ({ info }: ReservationInfoCardProps) => {
         </CardContent>
       </Card>
 
-      {/* Location */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-slate-500 font-medium">LOCATION</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-start gap-3">
-            <MapPin className="w-5 h-5 text-rose-500 mt-0.5" />
-            <div>
-              <p className="font-bold text-slate-900">{info.location}</p>
-              <p className="text-sm text-slate-600">{info.address}</p>
-              <Button variant="link" className="px-0 h-auto text-sky-500 text-sm mt-1">
-                Open in Maps
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Payment */}
       <Card>
         <CardHeader className="pb-2">
@@ -76,6 +57,25 @@ export const ReservationInfoCard = ({ info }: ReservationInfoCardProps) => {
               <p className="text-xs text-slate-500 mt-1">
                 * Estimated amount including options
               </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Location */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm text-slate-500 font-medium">LOCATION</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-start gap-3">
+            <MapPin className="w-5 h-5 text-rose-500 mt-0.5" />
+            <div>
+              <p className="font-bold text-slate-900">{info.location}</p>
+              <p className="text-sm text-slate-600">{info.address}</p>
+              <Button variant="link" className="px-0 h-auto text-sky-500 text-sm mt-1">
+                Open in Maps
+              </Button>
             </div>
           </div>
         </CardContent>

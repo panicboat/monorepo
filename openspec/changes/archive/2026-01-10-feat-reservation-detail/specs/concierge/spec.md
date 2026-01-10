@@ -1,14 +1,6 @@
-# concierge Specification
+# Capability: Concierge
 
-## Purpose
-TBD - created by archiving change implement-full-mock. Update Purpose after archive.
-## Requirements
-### Requirement: Smart Concierge (MUST)
-システムは、チャットを通じて予約日程の調整を支援しなければならない (MUST)。
-
-#### Scenario: Send Invitation
-- **WHEN** キャスト（モック）が招待状送信アクションを行ったとき
-- **THEN** スマートドロワーが開き、空き枠（Availability）に基づいた推奨日時が表示される。
+## ADDED Requirements
 
 ### Requirement: Smart Invitation
 システムは、キャストがゲストに対して条件を指定した招待状を作成・送信する機能を提供しなければならない (SHALL provide smart invitation)。
@@ -35,4 +27,3 @@ TBD - created by archiving change implement-full-mock. Update Purpose after arch
 - **GIVEN** キャストがゲストについて詳しく知りたいとき
 - **WHEN** メモセクションまでスクロールしたとき
 - **THEN** 過去のメモ一覧（日付、内容）が表示される
-
