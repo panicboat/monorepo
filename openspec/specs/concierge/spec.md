@@ -36,3 +36,21 @@ TBD - created by archiving change implement-full-mock. Update Purpose after arch
 - **WHEN** メモセクションまでスクロールしたとき
 - **THEN** 過去のメモ一覧（日付、内容）が表示される
 
+### Requirement: Concierge Chat Interface
+システムは、キャストがゲストとリアルタイムでメッセージをやり取りできるチャットインターフェースを提供しなければならない (SHALL provide chat interface)。
+
+#### Scenario: View Message History
+- **WHEN** キャストがコンシェルジュページを開いたとき
+- **THEN** ゲストとの過去のメッセージ履歴が表示される
+
+#### Scenario: Send Message
+- **WHEN** キャストがメッセージを入力し送信ボタンを押したとき
+- **THEN** メッセージが送信され、履歴に追加される
+
+### Requirement: Smart Suggestions
+システムは、キャストの空き状況に基づいて、招待状の日時を自動的に提案しなければならない (SHALL suggest available times)。
+
+#### Scenario: Suggest Times
+- **WHEN** 招待状作成画面を開いたとき
+- **THEN** 「今日」「明日」などの近い日程の空き枠が優先的に表示される
+
