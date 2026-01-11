@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { ChevronRight, Clock, MapPin, Ticket } from "lucide-react";
 import React from "react";
-import { GuestInfoSheet } from "@/app/(cast)/manage/concierge/components/GuestInfoSheet";
+import { GuestInfoSheet } from "@/modules/trust/components/cast/GuestInfoSheet";
 import { ReservationInfoCard } from "@/modules/ritual/components/ReservationInfoCard";
 
-interface CastReservationDetailProps {
+interface ReservationDetailProps {
   reservationId: string;
 }
 
-export const CastReservationDetail = ({ reservationId }: CastReservationDetailProps) => {
+export const ReservationDetail = ({ reservationId }: ReservationDetailProps) => {
   const [showGuestSheet, setShowGuestSheet] = React.useState(false);
 
   // TODO: Fetch real data using reservationId

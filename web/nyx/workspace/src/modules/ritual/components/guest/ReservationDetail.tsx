@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/Button";
 import React from "react";
 import { ReservationInfoCard } from "../ReservationInfoCard";
 
-interface GuestReservationDetailProps {
+interface ReservationDetailProps {
   reservationId: string;
 }
 
-export const GuestReservationDetail = ({ reservationId }: GuestReservationDetailProps) => {
+export const ReservationDetail = ({ reservationId }: ReservationDetailProps) => {
   // TODO: Fetch real data using reservationId
   const reservation = {
     plan: "Standard 60min",
