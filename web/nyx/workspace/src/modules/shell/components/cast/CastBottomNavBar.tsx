@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Ticket, User } from "lucide-react";
+import { MessageCircle, Ticket, User, LayoutList } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Calendar } from "lucide-react";
 import { BottomNavBar, BottomNavTab } from "../BottomNavBar";
@@ -25,6 +25,12 @@ export const CastBottomNavBar = () => {
       label: "Schedule",
       icon: Calendar,
       href: "/manage/schedule",
+    },
+    {
+      id: "timeline",
+      label: "Timeline",
+      icon: LayoutList,
+      href: "/manage/timeline",
     },
     {
       id: "concierge",

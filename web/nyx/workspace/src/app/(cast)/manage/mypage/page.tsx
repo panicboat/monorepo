@@ -12,6 +12,9 @@ import {
   Ticket,
   ShieldAlert,
   LogOut,
+  LayoutList,
+  Star,
+  History as HistoryIcon,
   ChevronRight,
 } from "lucide-react";
 import { CastProfile } from "@/modules/portfolio/types";
@@ -198,6 +201,61 @@ export default function CastMyPage() {
                 招待状プラン設定
               </p>
               <p className="text-xs text-slate-500">コース内容・料金の編集</p>
+            </div>
+          </div>
+          <ChevronRight className="text-slate-400 group-hover:text-slate-600 transition" />
+        </Link>
+
+        {/* Engagement Features */}
+        <Link
+          href="/manage/timeline"
+          className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-sky-50 flex items-center justify-center text-sky-500">
+              <LayoutList className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-slate-900">
+                タイムライン投稿
+              </p>
+              <p className="text-xs text-slate-500">日々の投稿管理</p>
+            </div>
+          </div>
+          <ChevronRight className="text-slate-400 group-hover:text-slate-600 transition" />
+        </Link>
+
+        <Link
+          href="/manage/reviews"
+          className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+              <Star className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-slate-900">
+                レビュー管理
+              </p>
+              <p className="text-xs text-slate-500">ゲストからの評価・承認</p>
+            </div>
+          </div>
+          <ChevronRight className="text-slate-400 group-hover:text-slate-600 transition" />
+        </Link>
+
+        <Link
+          href="/manage/history"
+          className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500">
+              <HistoryIcon className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-slate-900">
+                履歴・売上
+              </p>
+              <p className="text-xs text-slate-500">過去の予約履歴</p>
             </div>
           </div>
           <ChevronRight className="text-slate-400 group-hover:text-slate-600 transition" />
