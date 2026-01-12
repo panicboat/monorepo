@@ -117,7 +117,6 @@ export default function ConciergePage() {
           <MoreVertical className="w-5 h-5" />
         </Button>
       </div>
-
       {/* Message List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
         {messages.map((msg) => (
@@ -142,7 +141,7 @@ export default function ConciergePage() {
               </div>
             ) : (
               /* Invitation Card */
-              <div className="max-w-[85%] bg-white rounded-2xl rounded-br-none p-0 overflow-hidden shadow-md border border-pink-100">
+              (<div className="max-w-[85%] bg-white rounded-2xl rounded-br-none p-0 overflow-hidden shadow-md border border-pink-100">
                 <div className="bg-gradient-to-r from-pink-500 to-rose-500 p-3 flex items-center justify-between text-white">
                   <div className="flex items-center gap-2">
                     <Ticket className="w-4 h-4" />
@@ -177,7 +176,7 @@ export default function ConciergePage() {
                     詳細を確認
                   </Button>
                 </div>
-              </div>
+              </div>)
             )}
           </div>
         ))}
@@ -191,7 +190,6 @@ export default function ConciergePage() {
         </div>
         <div ref={messagesEndRef} />
       </div>
-
       {/* Input Area */}
       <div className="p-3 bg-white border-t border-slate-100 z-50">
         <div className="flex items-end gap-2">

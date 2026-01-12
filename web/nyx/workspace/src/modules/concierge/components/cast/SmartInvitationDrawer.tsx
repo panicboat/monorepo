@@ -52,7 +52,6 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
           </Button>
         )}
       </SheetTrigger>
-
       <SheetContent side="bottom" className="rounded-t-3xl border-t border-slate-200 bg-white text-slate-800 p-0 max-h-[90vh] flex flex-col gap-0 border-x-0 sm:max-w-[450px] sm:mx-auto">
         <div className="w-full flex justify-center pt-3 pb-1">
           <div className="w-12 h-1.5 bg-slate-200 rounded-full"></div>
@@ -221,7 +220,7 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
             </div>
           ) : (
             /* Time Picker View */
-            <div className="h-full flex flex-col">
+            (<div className="h-full flex flex-col">
               {/* Selected Plan Context */}
               <div className="mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
                 <div>
@@ -234,7 +233,6 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
                   ¥{plans.find(p => p.id === selectedPlanId)?.price.toLocaleString()}
                 </div>
               </div>
-
               <div className="flex gap-3 overflow-x-auto no-scrollbar mb-6 pb-2 min-h-[5rem]">
                 {[...Array(5)].map((_, i) => (
                   <button
@@ -255,7 +253,6 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
                   </button>
                 ))}
               </div>
-
               <div className="flex-1 overflow-y-auto">
                 <label className="text-xs text-slate-400 font-bold uppercase mb-3 block">
                   開始時間を選択
@@ -284,7 +281,7 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
                   ))}
                 </div>
               </div>
-            </div>
+            </div>)
           )}
         </div>
 

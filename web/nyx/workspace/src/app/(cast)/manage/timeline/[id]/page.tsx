@@ -28,8 +28,6 @@ export default function PostDetailPage({
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
-
-
       {/* Post Content */}
       <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
         <div className="p-4 flex items-center justify-between border-b border-slate-50">
@@ -78,13 +76,13 @@ export default function PostDetailPage({
           )}
 
           {!post.mediaUrl && post.image && ( // Fallback
-            <div className="rounded-xl overflow-hidden">
+            (<div className="rounded-xl overflow-hidden">
               <img
                 src={post.image}
                 alt="Post media"
                 className="w-full h-auto"
               />
-            </div>
+            </div>)
           )}
         </div>
 
@@ -101,7 +99,6 @@ export default function PostDetailPage({
           </div>
         </div>
       </div>
-
       {/* Mock Comments Section */}
       <div className="space-y-4">
         <h3 className="font-serif font-bold text-slate-800">Comments</h3>

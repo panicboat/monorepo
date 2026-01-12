@@ -3,6 +3,3 @@ plugins:
   - plugin: es
     out: ../web/nyx/workspace/src/lib
     opt: target=ts,import_extension=none
-  - plugin: connect-es
-    out: ../web/nyx/workspace/src/lib
-    opt: target=ts,import_extension=none

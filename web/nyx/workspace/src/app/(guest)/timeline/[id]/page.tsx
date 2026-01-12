@@ -88,12 +88,11 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
           </button>
         </div>
       </div>
-
       {/* Content */}
       <div className="px-4 pb-24">
         {layout === "list" ? (
           // List View
-          <div className="space-y-4">
+          (<div className="space-y-4">
             {filteredPosts.map((post) => (
               <div
                 key={post.id}
@@ -108,10 +107,10 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
                 <PostCard post={post} />
               </div>
             ))}
-          </div>
+          </div>)
         ) : (
           // Grid View
-          <div className="grid grid-cols-3 gap-1 auto-flow-dense pb-20 px-1">
+          (<div className="grid grid-cols-3 gap-1 auto-flow-dense pb-20 px-1">
             {filteredPosts
               .flatMap((post) => post.media || [])
               .map((media, idx) => {
@@ -157,10 +156,9 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
                   </div>
                 );
               })}
-          </div>
+          </div>)
         )}
       </div>
-
       {/* Modal */}
       <MediaModal
         isOpen={modalOpen}

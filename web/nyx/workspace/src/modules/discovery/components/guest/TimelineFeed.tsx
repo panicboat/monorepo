@@ -220,11 +220,9 @@ export const TimelineItem = ({
           </Button>
         )}
       </div>
-
       <p className="mb-3 text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">
         {item.content}
       </p>
-
       {item.mediaUrl && (
         <div className="mb-3 overflow-hidden rounded-xl bg-black/5 relative">
           {item.mediaType === 'video' ? (
@@ -250,18 +248,16 @@ export const TimelineItem = ({
           )}
         </div>
       )}
-
       {!item.mediaUrl && item.image && (
         // Fallback for legacy data if any
-        <div className="mb-3 overflow-hidden rounded-xl">
+        (<div className="mb-3 overflow-hidden rounded-xl">
           <img
             src={item.image}
             alt="Post"
             className="h-full w-full object-cover"
           />
-        </div>
+        </div>)
       )}
-
       <div className="flex items-center gap-6 border-t border-slate-50 pt-3 text-slate-400">
         <button
           onClick={handleLike}
