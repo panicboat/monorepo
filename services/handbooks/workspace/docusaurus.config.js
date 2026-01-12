@@ -51,7 +51,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/panicboat/monorepo/tree/main/services/docs/src',
+            'https://github.com/panicboat/monorepo/tree/main/services/handbooks/src',
         },
         blog: false,
         // blog: {

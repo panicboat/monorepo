@@ -37,7 +37,7 @@
 
 ## 5. Domain Architecture
 本プロジェクトは **Modular Monolith** として構築されていますが、将来的な分割を見据えて以下の5つのドメインに明確に分離して実装します。
-詳細な定義は `services/docs/workspace/docs/分散システム設計/MICROSERVICE.md` を参照してください。
+詳細な定義は `services/handbooks/workspace/handbooks/分散システム設計/MICROSERVICE.md` を参照してください。
 
 ### A. Identity Domain
 - **Role:** 認証・認可 (Cast/Guest分岐)。

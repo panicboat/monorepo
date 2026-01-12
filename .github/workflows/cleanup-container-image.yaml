@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ["docs", "monolith", "nyx"]
+        service: ["handbooks", "monolith", "nyx"]
       fail-fast: false
     steps:
       - name: Cleanup container images
@@ -36,5 +36,5 @@ jobs:
       - name: Summary
         run: |
           echo "📊 Cleanup Summary"
-          echo "Services: monorepo/docs, monorepo/monolith, monorepo/nyx"
+          echo "Services: monorepo/handbooks, monorepo/monolith, monorepo/nyx"
           echo "Cleanup job status: ${{ needs.cleanup-container.result }}"
