@@ -12,5 +12,5 @@ configMapGenerator:
 - name: nginx-conf-d
   files:
   - config/conf.d/cilium-gateway.conf
-  - config/conf.d/docs.conf
+  - config/conf.d/handbooks.conf
   - config/conf.d/nyx.conf
