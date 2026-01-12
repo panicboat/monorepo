@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base", ":semanticCommits"],
+  "extends": ["config:base",":semanticCommits"],
   "semanticCommitScope": "{{packageFileDir}}",
   "timezone": "Asia/Tokyo",
   "labels": ["🤖 renovate"],
@@ -21,8 +21,7 @@
       "description": "Base rule - packageFileDir and depName separation",
       "matchPaths": ["**"],
       "automerge": true,
-      "groupName": "{{packageFileDir}} {{depName}}",
-      "addLabels": ["automerge"]
+      "groupName": "{{packageFileDir}} {{depName}}"
     },
 
     {
@@ -34,7 +33,7 @@
         "^buf"
       ]
     },
-    
+
     {
       "description": "🚫 Production environments - disable automerge",
       "matchPaths": ["**/production/**"],
@@ -48,6 +47,11 @@
       "matchUpdateTypes": ["major"],
       "automerge": false,
       "addLabels": ["📈 major-update"]
+    },
+    {
+      "description": "✅ Non major updates - apply automerge label",
+      "matchUpdateTypes": ["minor","patch","pin","digest"],
+      "addLabels": ["automerge"]
     }
   ]
 }
