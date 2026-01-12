@@ -35,7 +35,7 @@ Add the following to `/etc/hosts`.
 ```bash
 127.0.0.1 nginx.local
 127.0.0.1 nyx.local
-127.0.0.1 docs.local
+127.0.0.1 handbooks.local
 ```
 
 ### 🚀 Running Locally
@@ -82,5 +82,5 @@ graph LR
 
 ## 📝 Contribution Guide
 
-- [handbook](services/docs/workspace/docs)
-- [blog](services/docs/workspace/blog)
+- [handbook](services/handbooks/workspace/docs)
+- [blog](services/handbooks/workspace/blog)

@@ -1,4 +1,4 @@
-# Docs
+# Handbooks
 
 [🇺🇸 English](README.md) | **日本語**
 
