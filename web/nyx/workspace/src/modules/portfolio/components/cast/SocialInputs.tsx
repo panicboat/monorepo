@@ -74,7 +74,7 @@ export const SocialInputs = ({
           </div>
           <div>
             <Label className="block text-xs font-bold text-slate-500 mb-1">
-              CityHeaven URL
+              CityHeaven
             </Label>
             <Input
               type="text"
@@ -86,10 +86,10 @@ export const SocialInputs = ({
           </div>
         </div>
 
-        {/* LitLink & Dynamic Others */}
+        {/* LitLink */}
         <div>
           <Label className="block text-xs font-bold text-slate-500 mb-1">
-            lit.link / Other Bio
+            lit.link
           </Label>
           <Input
             type="text"

@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: docs
+  name: handbooks
 spec:
   replicas: 1
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: docs
+      app: handbooks
   template:
     metadata:
       labels:
-        app: docs
+        app: handbooks
     spec:
       containers:
-        - name: docs
-          image: ghcr.io/panicboat/monorepo/docs:latest
+        - name: handbooks
+          image: ghcr.io/panicboat/monorepo/handbooks:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80

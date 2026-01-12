@@ -5,4 +5,4 @@ resources:
   - app/service.yaml
 labels:
   - pairs:
-      app: docs
+      app: handbooks

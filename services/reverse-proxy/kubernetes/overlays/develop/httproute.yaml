@@ -4,5 +4,5 @@ metadata:
   name: reverse-proxy
 spec:
   hostnames:
-  - docs.local
+  - handbooks.local
   - nyx.local
