@@ -4,8 +4,10 @@
 
 require 'google/protobuf'
 
+require 'google/protobuf/empty_pb'
 
-descriptor_data = "\n\x19identity/v1/service.proto\x12\x0bidentity.v1\"\x14\n\x12HealthCheckRequest\"%\n\x13HealthCheckResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\"S\n\x0fRegisterRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x1f\n\x04role\x18\x03 \x01(\x0e\x32\x11.identity.v1.Role\"X\n\x10RegisterResponse\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\t\x12.\n\x0cuser_profile\x18\x02 \x01(\x0b\x32\x18.identity.v1.UserProfile\"/\n\x0cLoginRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"U\n\rLoginResponse\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\t\x12.\n\x0cuser_profile\x18\x02 \x01(\x0b\x32\x18.identity.v1.UserProfile\"I\n\x0bUserProfile\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x1f\n\x04role\x18\x03 \x01(\x0e\x32\x11.identity.v1.Role*;\n\x04Role\x12\x14\n\x10ROLE_UNSPECIFIED\x10\x00\x12\x0e\n\nROLE_GUEST\x10\x01\x12\r\n\tROLE_CAST\x10\x02\x32\xec\x01\n\x0fIdentityService\x12P\n\x0bHealthCheck\x12\x1f.identity.v1.HealthCheckRequest\x1a .identity.v1.HealthCheckResponse\x12G\n\x08Register\x12\x1c.identity.v1.RegisterRequest\x1a\x1d.identity.v1.RegisterResponse\x12>\n\x05Login\x12\x19.identity.v1.LoginRequest\x1a\x1a.identity.v1.LoginResponseb\x06proto3"
+
+descriptor_data = "\n\x19identity/v1/service.proto\x12\x0bidentity.v1\x1a\x1bgoogle/protobuf/empty.proto\"\x14\n\x12HealthCheckRequest\"%\n\x13HealthCheckResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\"&\n\x0eSendSmsRequest\x12\x14\n\x0cphone_number\x18\x01 \x01(\t\"\"\n\x0fSendSmsResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"6\n\x10VerifySmsRequest\x12\x14\n\x0cphone_number\x18\x01 \x01(\t\x12\x0c\n\x04\x63ode\x18\x02 \x01(\t\"/\n\x11VerifySmsResponse\x12\x1a\n\x12verification_token\x18\x01 \x01(\t\"U\n\x0fRegisterRequest\x12\x14\n\x0cphone_number\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x1a\n\x12verification_token\x18\x03 \x01(\t\"X\n\x10RegisterResponse\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\t\x12.\n\x0cuser_profile\x18\x02 \x01(\x0b\x32\x18.identity.v1.UserProfile\"6\n\x0cLoginRequest\x12\x14\n\x0cphone_number\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"U\n\rLoginResponse\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\t\x12.\n\x0cuser_profile\x18\x02 \x01(\x0b\x32\x18.identity.v1.UserProfile\"P\n\x0bUserProfile\x12\n\n\x02id\x18\x01 \x01(\t\x12\x14\n\x0cphone_number\x18\x02 \x01(\t\x12\x1f\n\x04role\x18\x03 \x01(\x0e\x32\x11.identity.v1.Role*;\n\x04Role\x12\x14\n\x10ROLE_UNSPECIFIED\x10\x00\x12\x0e\n\nROLE_GUEST\x10\x01\x12\r\n\tROLE_CAST\x10\x02\x32\xc2\x03\n\x0fIdentityService\x12P\n\x0bHealthCheck\x12\x1f.identity.v1.HealthCheckRequest\x1a .identity.v1.HealthCheckResponse\x12\x44\n\x07SendSms\x12\x1b.identity.v1.SendSmsRequest\x1a\x1c.identity.v1.SendSmsResponse\x12J\n\tVerifySms\x12\x1d.identity.v1.VerifySmsRequest\x1a\x1e.identity.v1.VerifySmsResponse\x12G\n\x08Register\x12\x1c.identity.v1.RegisterRequest\x1a\x1d.identity.v1.RegisterResponse\x12>\n\x05Login\x12\x19.identity.v1.LoginRequest\x1a\x1a.identity.v1.LoginResponse\x12\x42\n\x0eGetCurrentUser\x12\x16.google.protobuf.Empty\x1a\x18.identity.v1.UserProfileb\x06proto3"
 
 pool = ::Google::Protobuf::DescriptorPool.generated_pool
 pool.add_serialized_file(descriptor_data)
@@ -14,6 +16,10 @@ module Identity
   module V1
     HealthCheckRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("identity.v1.HealthCheckRequest").msgclass
     HealthCheckResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("identity.v1.HealthCheckResponse").msgclass
+    SendSmsRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("identity.v1.SendSmsRequest").msgclass
+    SendSmsResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("identity.v1.SendSmsResponse").msgclass
+    VerifySmsRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("identity.v1.VerifySmsRequest").msgclass
+    VerifySmsResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("identity.v1.VerifySmsResponse").msgclass
     RegisterRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("identity.v1.RegisterRequest").msgclass
     RegisterResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("identity.v1.RegisterResponse").msgclass
     LoginRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("identity.v1.LoginRequest").msgclass

@@ -4,15 +4,19 @@
 TBD - created by archiving change implement-full-mock. Update Purpose after archive.
 ## Requirements
 ### Requirement: Robust User Authentication (MUST)
-システムは、OIDCプロバイダ（特にGoogle）およびSMS認証を利用した堅牢な認証フローを提供しなければならない (MUST)。
+システムは、電話番号とパスワードを利用した堅牢な認証フローを提供しなければならない (MUST)。Google OIDCのサポートは将来の検討事項とする。
 
-#### Scenario: Google OIDC Login
-- **WHEN** ユーザーが「Googleでログイン」を選択したとき
-- **THEN** ユーザーはプロバイダにリダイレクトされ、認証され、有効なセッションと共に戻ってくる。
+#### Scenario: Phone & Password Registration
+- **WHEN** ユーザーが電話番号を入力し、SMS認証を完了した後、パワードを設定したとき
+- **THEN** 新しいユーザーアカウントが作成され、ログイン状態となる。
 
-#### Scenario: SMS Verification
-- **WHEN** ユーザーが電話番号を提供したとき
-- **THEN** SMS経由でOTPが送信され、ユーザーは認証のためにそれを入力しなければならない。
+#### Scenario: Phone & Password Login
+- **WHEN** ユーザーが登録済みの電話番号とパスワードを入力したとき
+- **THEN** ユーザーは認証され、有効なセッション（トークン）を取得してログインできる。
+
+#### Scenario: SMS Verification Code
+- **WHEN** ユーザーが登録またはパスワードリセットのために電話番号を入力したとき
+- **THEN** システムはSMSで検証コード（OTP）を送信し、ユーザーがそれを入力することで所有確認を行う。
 
 ### Requirement: Guest Dashboard (MUST)
 ゲストユーザーは、自身の活動履歴やお気に入りキャストを確認できなければならない (MUST)。
@@ -68,3 +72,4 @@ TBD - created by archiving change implement-full-mock. Update Purpose after arch
 #### Scenario: View Cast Profile
 - **WHEN** キャスト詳細画面を表示したとき
 - **THEN** ソーシャルカウントの並びなどの適切な場所に、誓約履行率が表示される。
+

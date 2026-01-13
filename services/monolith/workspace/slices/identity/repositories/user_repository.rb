@@ -1,14 +1,14 @@
 module Identity
   module Repositories
     class UserRepository < Identity::DB::Repo
-      def find_by_email(email)
-        users.where(email: email).one
+      def find_by_phone_number(phone_number)
+        users.where(phone_number: phone_number).one
       end
 
-      def create(email:, password_hash:, role:)
+      def create(phone_number:, password_digest:, role: 1)
         users.command(:create).call(
-          email: email,
-          password_hash: password_hash,
+          phone_number: phone_number,
+          password_digest: password_digest,
           role: role
         )
       end

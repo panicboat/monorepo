@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file identity/v1/service.proto.
  */
 export const file_identity_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("ChlpZGVudGl0eS92MS9zZXJ2aWNlLnByb3RvEgtpZGVudGl0eS52MSIUChJIZWFsdGhDaGVja1JlcXVlc3QiJQoTSGVhbHRoQ2hlY2tSZXNwb25zZRIOCgZzdGF0dXMYASABKAkiUwoPUmVnaXN0ZXJSZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEh8KBHJvbGUYAyABKA4yES5pZGVudGl0eS52MS5Sb2xlIlgKEFJlZ2lzdGVyUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEi4KDHVzZXJfcHJvZmlsZRgCIAEoCzIYLmlkZW50aXR5LnYxLlVzZXJQcm9maWxlIi8KDExvZ2luUmVxdWVzdBINCgVlbWFpbBgBIAEoCRIQCghwYXNzd29yZBgCIAEoCSJVCg1Mb2dpblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIuCgx1c2VyX3Byb2ZpbGUYAiABKAsyGC5pZGVudGl0eS52MS5Vc2VyUHJvZmlsZSJJCgtVc2VyUHJvZmlsZRIKCgJpZBgBIAEoCRINCgVlbWFpbBgCIAEoCRIfCgRyb2xlGAMgASgOMhEuaWRlbnRpdHkudjEuUm9sZSo7CgRSb2xlEhQKEFJPTEVfVU5TUEVDSUZJRUQQABIOCgpST0xFX0dVRVNUEAESDQoJUk9MRV9DQVNUEAIysAIKD0lkZW50aXR5U2VydmljZRJQCgtIZWFsdGhDaGVjaxIfLmlkZW50aXR5LnYxLkhlYWx0aENoZWNrUmVxdWVzdBogLmlkZW50aXR5LnYxLkhlYWx0aENoZWNrUmVzcG9uc2USRwoIUmVnaXN0ZXISHC5pZGVudGl0eS52MS5SZWdpc3RlclJlcXVlc3QaHS5pZGVudGl0eS52MS5SZWdpc3RlclJlc3BvbnNlEj4KBUxvZ2luEhkuaWRlbnRpdHkudjEuTG9naW5SZXF1ZXN0GhouaWRlbnRpdHkudjEuTG9naW5SZXNwb25zZRJCCg5HZXRDdXJyZW50VXNlchIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoYLmlkZW50aXR5LnYxLlVzZXJQcm9maWxlYgZwcm90bzM", [file_google_protobuf_empty]);
+  fileDesc("ChlpZGVudGl0eS92MS9zZXJ2aWNlLnByb3RvEgtpZGVudGl0eS52MSIUChJIZWFsdGhDaGVja1JlcXVlc3QiJQoTSGVhbHRoQ2hlY2tSZXNwb25zZRIOCgZzdGF0dXMYASABKAkiJgoOU2VuZFNtc1JlcXVlc3QSFAoMcGhvbmVfbnVtYmVyGAEgASgJIiIKD1NlbmRTbXNSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjYKEFZlcmlmeVNtc1JlcXVlc3QSFAoMcGhvbmVfbnVtYmVyGAEgASgJEgwKBGNvZGUYAiABKAkiLwoRVmVyaWZ5U21zUmVzcG9uc2USGgoSdmVyaWZpY2F0aW9uX3Rva2VuGAEgASgJIlUKD1JlZ2lzdGVyUmVxdWVzdBIUCgxwaG9uZV9udW1iZXIYASABKAkSEAoIcGFzc3dvcmQYAiABKAkSGgoSdmVyaWZpY2F0aW9uX3Rva2VuGAMgASgJIlgKEFJlZ2lzdGVyUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEi4KDHVzZXJfcHJvZmlsZRgCIAEoCzIYLmlkZW50aXR5LnYxLlVzZXJQcm9maWxlIjYKDExvZ2luUmVxdWVzdBIUCgxwaG9uZV9udW1iZXIYASABKAkSEAoIcGFzc3dvcmQYAiABKAkiVQoNTG9naW5SZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSLgoMdXNlcl9wcm9maWxlGAIgASgLMhguaWRlbnRpdHkudjEuVXNlclByb2ZpbGUiUAoLVXNlclByb2ZpbGUSCgoCaWQYASABKAkSFAoMcGhvbmVfbnVtYmVyGAIgASgJEh8KBHJvbGUYAyABKA4yES5pZGVudGl0eS52MS5Sb2xlKjsKBFJvbGUSFAoQUk9MRV9VTlNQRUNJRklFRBAAEg4KClJPTEVfR1VFU1QQARINCglST0xFX0NBU1QQAjLCAwoPSWRlbnRpdHlTZXJ2aWNlElAKC0hlYWx0aENoZWNrEh8uaWRlbnRpdHkudjEuSGVhbHRoQ2hlY2tSZXF1ZXN0GiAuaWRlbnRpdHkudjEuSGVhbHRoQ2hlY2tSZXNwb25zZRJECgdTZW5kU21zEhsuaWRlbnRpdHkudjEuU2VuZFNtc1JlcXVlc3QaHC5pZGVudGl0eS52MS5TZW5kU21zUmVzcG9uc2USSgoJVmVyaWZ5U21zEh0uaWRlbnRpdHkudjEuVmVyaWZ5U21zUmVxdWVzdBoeLmlkZW50aXR5LnYxLlZlcmlmeVNtc1Jlc3BvbnNlEkcKCFJlZ2lzdGVyEhwuaWRlbnRpdHkudjEuUmVnaXN0ZXJSZXF1ZXN0Gh0uaWRlbnRpdHkudjEuUmVnaXN0ZXJSZXNwb25zZRI+CgVMb2dpbhIZLmlkZW50aXR5LnYxLkxvZ2luUmVxdWVzdBoaLmlkZW50aXR5LnYxLkxvZ2luUmVzcG9uc2USQgoOR2V0Q3VycmVudFVzZXISFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGC5pZGVudGl0eS52MS5Vc2VyUHJvZmlsZWIGcHJvdG8z", [file_google_protobuf_empty]);
 
 /**
  * @generated from message identity.v1.HealthCheckRequest
@@ -45,13 +45,90 @@ export const HealthCheckResponseSchema: GenMessage<HealthCheckResponse> = /*@__P
   messageDesc(file_identity_v1_service, 1);
 
 /**
+ * @generated from message identity.v1.SendSmsRequest
+ */
+export type SendSmsRequest = Message<"identity.v1.SendSmsRequest"> & {
+  /**
+   * @generated from field: string phone_number = 1;
+   */
+  phoneNumber: string;
+};
+
+/**
+ * Describes the message identity.v1.SendSmsRequest.
+ * Use `create(SendSmsRequestSchema)` to create a new message.
+ */
+export const SendSmsRequestSchema: GenMessage<SendSmsRequest> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 2);
+
+/**
+ * @generated from message identity.v1.SendSmsResponse
+ */
+export type SendSmsResponse = Message<"identity.v1.SendSmsResponse"> & {
+  /**
+   * In dev/test, we might return the code here for convenience, but skipping for now.
+   *
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message identity.v1.SendSmsResponse.
+ * Use `create(SendSmsResponseSchema)` to create a new message.
+ */
+export const SendSmsResponseSchema: GenMessage<SendSmsResponse> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 3);
+
+/**
+ * @generated from message identity.v1.VerifySmsRequest
+ */
+export type VerifySmsRequest = Message<"identity.v1.VerifySmsRequest"> & {
+  /**
+   * @generated from field: string phone_number = 1;
+   */
+  phoneNumber: string;
+
+  /**
+   * @generated from field: string code = 2;
+   */
+  code: string;
+};
+
+/**
+ * Describes the message identity.v1.VerifySmsRequest.
+ * Use `create(VerifySmsRequestSchema)` to create a new message.
+ */
+export const VerifySmsRequestSchema: GenMessage<VerifySmsRequest> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 4);
+
+/**
+ * @generated from message identity.v1.VerifySmsResponse
+ */
+export type VerifySmsResponse = Message<"identity.v1.VerifySmsResponse"> & {
+  /**
+   * Token proving phone ownership
+   *
+   * @generated from field: string verification_token = 1;
+   */
+  verificationToken: string;
+};
+
+/**
+ * Describes the message identity.v1.VerifySmsResponse.
+ * Use `create(VerifySmsResponseSchema)` to create a new message.
+ */
+export const VerifySmsResponseSchema: GenMessage<VerifySmsResponse> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 5);
+
+/**
  * @generated from message identity.v1.RegisterRequest
  */
 export type RegisterRequest = Message<"identity.v1.RegisterRequest"> & {
   /**
-   * @generated from field: string email = 1;
+   * @generated from field: string phone_number = 1;
    */
-  email: string;
+  phoneNumber: string;
 
   /**
    * @generated from field: string password = 2;
@@ -59,9 +136,11 @@ export type RegisterRequest = Message<"identity.v1.RegisterRequest"> & {
   password: string;
 
   /**
-   * @generated from field: identity.v1.Role role = 3;
+   * Must match the one from VerifySms
+   *
+   * @generated from field: string verification_token = 3;
    */
-  role: Role;
+  verificationToken: string;
 };
 
 /**
@@ -69,7 +148,7 @@ export type RegisterRequest = Message<"identity.v1.RegisterRequest"> & {
  * Use `create(RegisterRequestSchema)` to create a new message.
  */
 export const RegisterRequestSchema: GenMessage<RegisterRequest> = /*@__PURE__*/
-  messageDesc(file_identity_v1_service, 2);
+  messageDesc(file_identity_v1_service, 6);
 
 /**
  * @generated from message identity.v1.RegisterResponse
@@ -91,16 +170,16 @@ export type RegisterResponse = Message<"identity.v1.RegisterResponse"> & {
  * Use `create(RegisterResponseSchema)` to create a new message.
  */
 export const RegisterResponseSchema: GenMessage<RegisterResponse> = /*@__PURE__*/
-  messageDesc(file_identity_v1_service, 3);
+  messageDesc(file_identity_v1_service, 7);
 
 /**
  * @generated from message identity.v1.LoginRequest
  */
 export type LoginRequest = Message<"identity.v1.LoginRequest"> & {
   /**
-   * @generated from field: string email = 1;
+   * @generated from field: string phone_number = 1;
    */
-  email: string;
+  phoneNumber: string;
 
   /**
    * @generated from field: string password = 2;
@@ -113,7 +192,7 @@ export type LoginRequest = Message<"identity.v1.LoginRequest"> & {
  * Use `create(LoginRequestSchema)` to create a new message.
  */
 export const LoginRequestSchema: GenMessage<LoginRequest> = /*@__PURE__*/
-  messageDesc(file_identity_v1_service, 4);
+  messageDesc(file_identity_v1_service, 8);
 
 /**
  * @generated from message identity.v1.LoginResponse
@@ -135,7 +214,7 @@ export type LoginResponse = Message<"identity.v1.LoginResponse"> & {
  * Use `create(LoginResponseSchema)` to create a new message.
  */
 export const LoginResponseSchema: GenMessage<LoginResponse> = /*@__PURE__*/
-  messageDesc(file_identity_v1_service, 5);
+  messageDesc(file_identity_v1_service, 9);
 
 /**
  * @generated from message identity.v1.UserProfile
@@ -147,9 +226,9 @@ export type UserProfile = Message<"identity.v1.UserProfile"> & {
   id: string;
 
   /**
-   * @generated from field: string email = 2;
+   * @generated from field: string phone_number = 2;
    */
-  email: string;
+  phoneNumber: string;
 
   /**
    * @generated from field: identity.v1.Role role = 3;
@@ -162,7 +241,7 @@ export type UserProfile = Message<"identity.v1.UserProfile"> & {
  * Use `create(UserProfileSchema)` to create a new message.
  */
 export const UserProfileSchema: GenMessage<UserProfile> = /*@__PURE__*/
-  messageDesc(file_identity_v1_service, 6);
+  messageDesc(file_identity_v1_service, 10);
 
 /**
  * @generated from enum identity.v1.Role
@@ -203,6 +282,28 @@ export const IdentityService: GenService<{
     output: typeof HealthCheckResponseSchema;
   },
   /**
+   * Use Phone Number to send SMS verification code
+   *
+   * @generated from rpc identity.v1.IdentityService.SendSms
+   */
+  sendSms: {
+    methodKind: "unary";
+    input: typeof SendSmsRequestSchema;
+    output: typeof SendSmsResponseSchema;
+  },
+  /**
+   * Verify SMS code to get a verification token
+   *
+   * @generated from rpc identity.v1.IdentityService.VerifySms
+   */
+  verifySms: {
+    methodKind: "unary";
+    input: typeof VerifySmsRequestSchema;
+    output: typeof VerifySmsResponseSchema;
+  },
+  /**
+   * Register with Phone (verified) and Password
+   *
    * @generated from rpc identity.v1.IdentityService.Register
    */
   register: {
@@ -211,6 +312,8 @@ export const IdentityService: GenService<{
     output: typeof RegisterResponseSchema;
   },
   /**
+   * Login with Phone and Password
+   *
    * @generated from rpc identity.v1.IdentityService.Login
    */
   login: {
@@ -219,6 +322,8 @@ export const IdentityService: GenService<{
     output: typeof LoginResponseSchema;
   },
   /**
+   * Get current user session
+   *
    * @generated from rpc identity.v1.IdentityService.GetCurrentUser
    */
   getCurrentUser: {

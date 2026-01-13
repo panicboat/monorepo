@@ -40,10 +40,11 @@ docker-compose up --build
 ```
 
 ## Proto Generation
-If you modify `proto/identity/v1/service.proto` from the root:
+To update Ruby code from Proto definitions (`proto/**/*.proto`):
+
 ```bash
-# From services/monolith directory
-bundle exec grpc_tools_ruby_protoc -I ../../proto --ruby_out=lib --grpc_out=lib ../../proto/identity/v1/service.proto
+bin/codegen
+# Note: Automatically scans all .proto files in root 'proto' dir
 ```
 
 ## Testing

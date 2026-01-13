@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+
+# Determine paths
+ROOT_DIR = File.expand_path("..", __dir__)
+PROTO_DIR = File.expand_path("../../../../proto", __dir__)
+OUT_DIR = File.join(ROOT_DIR, "lib")
+
+puts "🤖 Generating Ruby code from Protos..."
+puts "   Proto Dir: #{PROTO_DIR}"
+puts "   Out Dir:   #{OUT_DIR}"
+
+# Find all proto files (e.g. identity/v1/service.proto)
+pattern = File.join(PROTO_DIR, "**", "*.proto")
+proto_files = Dir.glob(pattern)
+
+if proto_files.empty?
+  puts "❌ No proto files found!"
+  exit 1
+end
+
+# Build command
+# grpc_tools_ruby_protoc -I ../../../proto --ruby_out=lib --grpc_out=lib [FILES]
+files_arg = proto_files.join(" ")
+command = "bundle exec grpc_tools_ruby_protoc -I #{PROTO_DIR} --ruby_out=#{OUT_DIR} --grpc_out=#{OUT_DIR} #{files_arg}"
+
+puts "   Command: #{command}"
+system(command)
+
+if $?.success?
+  puts "✅ Done!"
+else
+  puts "❌ Failed to generate code."
+  exit 1
+end

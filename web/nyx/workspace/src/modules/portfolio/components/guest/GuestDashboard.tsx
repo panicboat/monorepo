@@ -18,6 +18,7 @@ export const GuestDashboard = () => {
   } | null>(null);
 
   // Mock Data
+  // TODO: Fetch pending reviews from Trust Service (or Portfolio)
   const [pendingReviews, setPendingReviews] = useState([
     {
       id: 101,
@@ -28,6 +29,7 @@ export const GuestDashboard = () => {
     },
   ]);
 
+  // TODO: Fetch history from Ritual Service
   const history = [
     {
       id: 1,
@@ -86,6 +88,7 @@ export const GuestDashboard = () => {
             <h2 className="text-xl font-bold font-serif text-slate-900">
               {user?.name}
             </h2>
+            {/* TODO: Fetch real User ID and Rank from Trust/Identity Service */}
             <p className="text-xs text-slate-500 font-mono">ID: 99482103</p>
             {/* <div className="mt-2 flex items-center gap-4">
                <div>
@@ -169,6 +172,7 @@ export const GuestDashboard = () => {
                   </span>
                 </div>
                 <div className="text-[10px] text-slate-400 font-mono mt-1">
+                  {/* TODO: Fetch real Reliability Score from Trust Service */}
                   Score: 850 / 999
                 </div>
               </div>
