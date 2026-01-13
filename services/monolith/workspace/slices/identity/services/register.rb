@@ -4,6 +4,8 @@ require 'jwt'
 module Identity
   module Services
     class Register
+      class RegistrationError < StandardError; end
+
       include Identity::Deps[
         repo: "repositories.user_repository",
         verification_repo: "repositories.sms_verification_repository"
@@ -15,13 +17,13 @@ module Identity
 
         # Security checks
         unless verification
-          raise StandardError, "Invalid verification token"
+          raise RegistrationError, "Invalid verification token"
         end
         if verification.phone_number != phone_number
-          raise StandardError, "Phone number mismatch"
+          raise RegistrationError, "Phone number mismatch"
         end
         unless verification.verified_at
-          raise StandardError, "Phone number not verified"
+          raise RegistrationError, "Phone number not verified"
         end
 
         # 2. Hash Password
