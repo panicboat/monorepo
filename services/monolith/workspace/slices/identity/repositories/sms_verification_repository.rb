@@ -9,7 +9,7 @@ module Identity
         )
       end
 
-      def find_latest_by_phone(phone_number)
+      def find_latest_by_phone_number(phone_number)
         sms_verifications
           .where(phone_number: phone_number)
           .order { created_at.desc }

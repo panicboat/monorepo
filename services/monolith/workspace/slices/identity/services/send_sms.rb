@@ -18,7 +18,7 @@ module Identity
         # In a real app, call Twilio/SNS here.
         puts "[SMS MOCK] Sending code #{code} to #{phone_number}"
 
-        true
+        verification
       end
     end
   end

@@ -3,12 +3,14 @@ module Identity
     class VerifySms
       include Identity::Deps[repo: "repositories.sms_verification_repository"]
 
-      def call(phone_number:, code:)
-        verification = repo.find_latest_by_phone(phone_number)
+      class VerificationError < StandardError; end
 
-        return { success: false } unless verification
-        return { success: false } if verification.expires_at < Time.now
-        return { success: false } if verification.code != code
+      def call(phone_number:, code:)
+        verification = repo.find_latest_by_phone_number(phone_number)
+
+        raise VerificationError, "Verification not found" unless verification
+        raise VerificationError, "Code expired" if verification.expires_at < Time.now
+        raise VerificationError, "Invalid code" if verification.code != code
 
         # Mark as verified
         repo.mark_as_verified(verification.id)
