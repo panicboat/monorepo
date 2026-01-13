@@ -16,8 +16,16 @@ module Identity
         self.service_name = 'identity.v1.IdentityService'
 
         rpc :HealthCheck, ::Identity::V1::HealthCheckRequest, ::Identity::V1::HealthCheckResponse
+        # Use Phone Number to send SMS verification code
+        rpc :SendSms, ::Identity::V1::SendSmsRequest, ::Identity::V1::SendSmsResponse
+        # Verify SMS code to get a verification token
+        rpc :VerifySms, ::Identity::V1::VerifySmsRequest, ::Identity::V1::VerifySmsResponse
+        # Register with Phone (verified) and Password
         rpc :Register, ::Identity::V1::RegisterRequest, ::Identity::V1::RegisterResponse
+        # Login with Phone and Password
         rpc :Login, ::Identity::V1::LoginRequest, ::Identity::V1::LoginResponse
+        # Get current user session
+        rpc :GetCurrentUser, ::Google::Protobuf::Empty, ::Identity::V1::UserProfile
       end
 
       Stub = Service.rpc_stub_class

@@ -1,9 +1,9 @@
 "use client";
 
 import { CastList } from "@/modules/portfolio/components/guest/CastList";
-import { LoginGate } from "@/modules/identity/components/guest/LoginGate";
+import { LoginGate } from "@/modules/identity/components/LoginGate";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
-import { GuestDashboard } from "@/modules/identity/components/guest/GuestDashboard";
+import { GuestDashboard } from "@/modules/portfolio/components/guest/GuestDashboard";
 import { RankingWidget } from "@/modules/discovery/components/guest/RankingWidget";
 import { EventSlider } from "@/modules/discovery/components/guest/EventSlider";
 import { TimelineFeed } from "@/modules/discovery/components/guest/TimelineFeed";
