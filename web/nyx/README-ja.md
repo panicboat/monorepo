@@ -4,7 +4,7 @@
 
 ## 💡 Role
 
-## 🔗 アーキテクチャ
+## 🔗 Architecture / Dependencies
 
 **Frontend (Next.js) → BFF (Next.js API) → Backend (gRPC)**
 

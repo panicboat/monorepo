@@ -8,7 +8,7 @@ Modules:
 - PostgreSQL
 - Buf (for proto generation)
 
-## Setup
+## Getting Started
 
 ### 1. Install Dependencies
 ```bash
@@ -17,26 +17,18 @@ bundle install
 
 ### 2. Database Setup
 ```bash
+# Database listening on 0.0.0.0:5432
+docker-compose up -d db
 # Update config/app.rb or .env to point to your Postgres
 # Default: postgres
-
 bundle exec hanami db create
 bundle exec hanami db migrate
 ```
+### 3. Run the gRPC server
 
-## Running Locally
-
-### Option A: Local Ruby
 ```bash
-# Database listening on 0.0.0.0:5432
-docker-compose up -d db
 # gRPC server listening on 0.0.0.0:9001
 ./bin/grpc
-```
-
-### Option B: Docker Compose
-```bash
-docker-compose up --build
 ```
 
 ## Proto Generation
