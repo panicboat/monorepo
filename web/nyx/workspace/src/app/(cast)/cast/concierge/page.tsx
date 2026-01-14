@@ -41,7 +41,7 @@ export default function ConciergeListPage() {
     <div className="bg-slate-50 min-h-screen pb-20">
       <div className="space-y-px bg-slate-200 border-t border-slate-200">
         {MOCK_GUEST_CHATS.map((chat) => (
-          <Link href={`/manage/concierge/${chat.id}`} key={chat.id}>
+          <Link href={`/cast/concierge/${chat.id}`} key={chat.id}>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

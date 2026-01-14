@@ -85,7 +85,7 @@ export default function OnboardingStep1Page() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateProfile(formData);
-    router.push("/manage/onboarding/step-2");
+    router.push("/cast/onboarding/step-2");
   };
 
   const isFormValid =

@@ -155,7 +155,7 @@ export default function CastMyPage() {
         </p>
 
         <Link
-          href="/manage/profile"
+          href="/cast/profile"
           className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
         >
           <div className="flex items-center gap-3">
@@ -189,7 +189,7 @@ export default function CastMyPage() {
         </button>
 
         <Link
-          href="/manage/plans"
+          href="/cast/plans"
           className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
         >
           <div className="flex items-center gap-3">
@@ -208,7 +208,7 @@ export default function CastMyPage() {
 
         {/* Engagement Features */}
         <Link
-          href="/manage/timeline"
+          href="/cast/timeline"
           className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
         >
           <div className="flex items-center gap-3">
@@ -226,7 +226,7 @@ export default function CastMyPage() {
         </Link>
 
         <Link
-          href="/manage/reviews"
+          href="/cast/reviews"
           className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
         >
           <div className="flex items-center gap-3">
@@ -244,7 +244,7 @@ export default function CastMyPage() {
         </Link>
 
         <Link
-          href="/manage/history"
+          href="/cast/history"
           className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
         >
           <div className="flex items-center gap-3">

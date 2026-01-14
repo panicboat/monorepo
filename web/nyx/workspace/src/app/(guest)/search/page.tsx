@@ -212,7 +212,7 @@ export default function SearchPage() {
         >
           {highlightCasts.map((cast) => (
             <Link
-              href={`/cast/${cast.id}`}
+              href={`/casts/${cast.id}`}
               key={cast.id}
               className="flex-shrink-0 w-28 snap-center"
             >
@@ -276,7 +276,7 @@ export default function SearchPage() {
 
 const SearchCastCard = ({ cast }: { cast: CastData }) => {
   return (
-    <Link href={`/cast/${cast.id}`}>
+    <Link href={`/casts/${cast.id}`}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         whileInView={{ opacity: 1, scale: 1 }}

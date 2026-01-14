@@ -34,7 +34,7 @@ export const BottomNavBar = ({
           const isActive =
             pathname === tab.href ||
             (tab.href !== "/" &&
-              tab.href !== "/manage" &&
+              tab.href !== "/cast" &&
               pathname.startsWith(tab.href));
 
           return (

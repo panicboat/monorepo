@@ -49,7 +49,7 @@ export default function FollowingPage() {
         <div className="space-y-3">
           {list.length > 0 ? (
             list.map((cast, i) => (
-              <Link href={`/cast/${cast.id}`} key={cast.id}>
+              <Link href={`/casts/${cast.id}`} key={cast.id}>
                 <motion.div
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}

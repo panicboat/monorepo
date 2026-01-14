@@ -59,7 +59,7 @@ export default function OnboardingWelcomePage() {
       {/* CTA */}
       <div className="mt-4">
         <Link
-          href="/manage/onboarding/step-1"
+          href="/cast/onboarding/step-1"
           className="flex items-center justify-center gap-2 w-full rounded-xl bg-slate-900 py-4 font-bold text-white shadow-lg shadow-slate-200 transition-transform active:scale-95"
         >
           <span>プロフィールを作成する</span>

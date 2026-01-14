@@ -41,7 +41,7 @@ export const UpcomingReservations = ({
         {reservations.map((reservation, index) => (
           <Link
             key={reservation.id}
-            href={`/manage/pledges/${reservation.id}`}
+            href={`/cast/pledges/${reservation.id}`}
             className="block hover:bg-slate-50 transition-colors"
           >
             <div className="p-4 flex items-center gap-4">

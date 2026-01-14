@@ -35,7 +35,7 @@ export default function FavoritesPage() {
       <main className="px-4 pt-4">
         <div className="grid grid-cols-2 gap-3">
           {FAVORITES.map((cast, i) => (
-            <Link href={`/cast/${cast.id}`} key={cast.id}>
+            <Link href={`/casts/${cast.id}`} key={cast.id}>
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}

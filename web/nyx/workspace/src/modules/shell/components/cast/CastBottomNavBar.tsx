@@ -11,39 +11,39 @@ export const CastBottomNavBar = () => {
   // Hide on onboarding wizard to prevent distraction?
   // For now, let's keep it consistent or hide it if strictly wizard.
   // Actually, usually onboarding hides nav.
-  if (pathname.includes("/manage/onboarding")) return null;
+  if (pathname.includes("/cast/onboarding")) return null;
 
   const tabs: BottomNavTab[] = [
     {
       id: "home",
       label: "Home",
       icon: LayoutDashboard,
-      href: "/manage/home",
+      href: "/cast/home",
     },
     {
       id: "schedule",
       label: "Schedule",
       icon: Calendar,
-      href: "/manage/schedule",
+      href: "/cast/schedule",
     },
     {
       id: "timeline",
       label: "Timeline",
       icon: LayoutList,
-      href: "/manage/timeline",
+      href: "/cast/timeline",
     },
     {
       id: "concierge",
       label: "Concierge",
       icon: MessageCircle,
-      href: "/manage/concierge",
+      href: "/cast/concierge",
       badge: 2,
     },
     {
       id: "mypage",
       label: "MyPage",
       icon: User,
-      href: "/manage/mypage",
+      href: "/cast/mypage",
     },
   ];
 

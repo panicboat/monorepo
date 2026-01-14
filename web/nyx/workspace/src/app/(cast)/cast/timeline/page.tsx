@@ -176,7 +176,7 @@ export default function CastTimelinePage() {
           items={posts}
           mode="cast"
           onDelete={handleDelete}
-          onItemClick={(id) => router.push(`/manage/timeline/${id}`)}
+          onItemClick={(id) => router.push(`/cast/timeline/${id}`)}
         />
       </div>
     </div>

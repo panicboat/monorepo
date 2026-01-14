@@ -93,7 +93,7 @@ export const CastList = () => {
   return (
     <div className="grid grid-cols-2 gap-1 pb-20">
       {MOCK_CASTS.map((cast) => (
-        <Link href={`/cast/${cast.id}`} key={cast.id}>
+        <Link href={`/casts/${cast.id}`} key={cast.id}>
           <CastCard cast={cast} />
         </Link>
       ))}

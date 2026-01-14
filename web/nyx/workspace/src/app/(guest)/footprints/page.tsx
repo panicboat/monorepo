@@ -45,7 +45,7 @@ export default function FootprintsPage() {
               className="flex items-center gap-4 border-b border-slate-50 last:border-0 p-4 hover:bg-slate-50"
             >
               <Link
-                href={`/cast/${cast.id}`}
+                href={`/casts/${cast.id}`}
                 className="block h-10 w-10 flex-shrink-0 rounded-full bg-slate-100 overflow-hidden"
               >
                 <img

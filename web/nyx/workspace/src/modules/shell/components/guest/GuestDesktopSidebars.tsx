@@ -38,7 +38,7 @@ export const GuestDesktopSidebars = () => {
         <div className="space-y-4">
           {RECOMMENDED_CASTS.map((cast) => (
             <Link
-              href={`/cast/${cast.id}`}
+              href={`/casts/${cast.id}`}
               key={cast.id}
               className="flex items-center gap-4 group"
             >

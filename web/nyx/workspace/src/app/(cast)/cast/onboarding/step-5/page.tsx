@@ -18,7 +18,7 @@ export default function OnboardingStep5() {
     console.log("FINAL SUBMISSION:", data);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     console.log("Published!");
-    router.push("/manage/home");
+    router.push("/cast/home");
   };
 
   if (!data) return null;
@@ -51,7 +51,7 @@ export default function OnboardingStep5() {
             <Button
               variant="link"
               size="sm"
-              onClick={() => router.push("/manage/onboarding/step-1")}
+              onClick={() => router.push("/cast/onboarding/step-1")}
               className="text-xs font-bold text-pink-500 hover:text-pink-600 hover:no-underline"
             >
               Edit
@@ -116,7 +116,7 @@ export default function OnboardingStep5() {
             <Button
               variant="link"
               size="sm"
-              onClick={() => router.push("/manage/onboarding/step-2")}
+              onClick={() => router.push("/cast/onboarding/step-2")}
               className="text-xs font-bold text-pink-500 hover:text-pink-600 hover:no-underline"
             >
               Edit
@@ -157,7 +157,7 @@ export default function OnboardingStep5() {
             <Button
               variant="link"
               size="sm"
-              onClick={() => router.push("/manage/onboarding/step-3")}
+              onClick={() => router.push("/cast/onboarding/step-3")}
               className="text-xs font-bold text-pink-500 hover:text-pink-600 hover:no-underline"
             >
               Edit
@@ -200,7 +200,7 @@ export default function OnboardingStep5() {
             <Button
               variant="link"
               size="sm"
-              onClick={() => router.push("/manage/onboarding/step-4")}
+              onClick={() => router.push("/cast/onboarding/step-4")}
               className="text-xs font-bold text-pink-500 hover:text-pink-600 hover:no-underline"
             >
               Edit
