@@ -56,3 +56,16 @@ When ユーザーがコメント欄にテキストを入力し
 And 「送信」をタップした時
 Then コメントが投稿のコメントリストに追加されるべきである
 
+### Requirement: Cast URL Structure (MUST)
+キャスト向け機能の URL は、一貫して `/cast` をプレフィックスとしなければならない (MUST)。
+
+#### Scenario: Access Dashboard
+- **Given** ログイン済みのキャストユーザーであるとき
+- **When** URL `/cast/home` にアクセスすると
+- **Then** キャスト用ダッシュボードが表示される。
+
+#### Scenario: Access Onboarding
+- **Given** 未完了のキャストユーザーであるとき
+- **When** URL `/cast/onboarding` にアクセスすると
+- **Then** オンボーディング画面が表示される。
+

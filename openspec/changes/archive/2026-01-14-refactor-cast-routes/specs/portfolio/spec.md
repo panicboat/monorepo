@@ -1,6 +1,6 @@
 # Portfolio Spec Delta
 
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Cast URL Structure (MUST)
 キャスト向け機能の URL は、一貫して `/cast` をプレフィックスとしなければならない (MUST)。
