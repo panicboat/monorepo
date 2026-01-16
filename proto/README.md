@@ -11,9 +11,12 @@ This directory contains the shared Protocol Buffers (`.proto`) definitions for t
 1.  **Edit**: Modify or add `.proto` files in this directory.
 2.  **Lint**: Ensure your definitions follow the rules.
     ```bash
-    buf lint
     ```
-3.  **Generate**: Run the generation command for the specific service you are working on.
+3.  **Breaking Check**: Verify backward compatibility against the main branch.
+    ```bash
+    buf breaking --against "../.git#branch=main,subdir=proto"
+    ```
+4.  **Generate**: Run the generation command for the specific service you are working on.
 
 ## Code Generation
 
