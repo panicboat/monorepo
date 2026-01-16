@@ -2,7 +2,23 @@ require 'cast/v1/service_services_pb'
 
 module Cast
   module Grpc
-    class Handler < ::Cast::V1::CastService::Service
+    class Handler < Gruf::Controllers::Base
+      include GRPC::GenericService
+      self.marshal_class_method = :encode
+      self.unmarshal_class_method = :decode
+      self.service_name = 'cast.v1.CastService'
+
+      bind ::Cast::V1::CastService::Service
+
+      # Clear legacy/bind-generated descriptors to avoid duplication
+      self.rpc_descs.clear
+
+      rpc :CreateProfile, ::Cast::V1::CreateProfileRequest, ::Cast::V1::CastProfile
+      rpc :GetProfile, ::Cast::V1::GetProfileRequest, ::Cast::V1::GetProfileResponse
+      rpc :UpdateProfile, ::Cast::V1::UpdateProfileRequest, ::Cast::V1::UpdateProfileResponse
+      rpc :ListCasts, ::Cast::V1::ListCastsRequest, ::Cast::V1::ListCastsResponse
+      rpc :UpdateStatus, ::Cast::V1::UpdateStatusRequest, ::Cast::V1::UpdateStatusResponse
+
       include Cast::Deps[
         create_profile_service: "services.create_profile",
         get_profile_service: "services.get_profile",
@@ -10,9 +26,9 @@ module Cast
         list_casts_service: "services.list_casts"
       ]
 
-      def get_profile(request, _call)
-        user_id = request.user_id.to_i
-        user_id = Monolith::Current.user_id.to_i if user_id.zero? && Monolith::Current.user_id
+      def get_profile
+        user_id = request.message.user_id.to_i
+        user_id = ::Current.user_id.to_i if user_id.zero? && ::Current.user_id
         # Proto defines user_id in GetProfileRequest. In real app, we might infer from token metadata.
 
         result = get_profile_service.call(user_id: user_id)
@@ -25,19 +41,19 @@ module Cast
         to_proto(result)
       end
 
-      def create_profile(request, _call)
+      def create_profile
         # Identify user from metadata.
-        current_user_id = Monolith::Current.user_id
+        current_user_id = ::Current.user_id
 
         # If user_id is provided in request (e.g. admin override or testing), use it, otherwise use current user
         # However, for security, usually we force current_user_id for self-actions.
-        # For this skeleton, we prefer Monolith::Current if available.
-        target_user_id = request.user_id.to_i
+        # For this skeleton, we prefer ::Current if available.
+        target_user_id = request.message.user_id.to_i
         target_user_id = current_user_id.to_i if target_user_id.zero? && current_user_id
         # Yes, I added user_id to CreateProfileRequest in the proto update.
 
         # Parse plans
-        plans_data = request.plans.map do |p|
+        plans_data = request.message.plans.map do |p|
           {
             name: p.name,
             price: p.price,
@@ -52,17 +68,17 @@ module Cast
           # Proto: `string user_id`.
           # We need to parse.
 
-          name: request.name,
-          bio: request.bio,
-          image_url: request.image_url,
+          name: request.message.name,
+          bio: request.message.bio,
+          image_url: request.message.image_url,
           plans: plans_data
         )
 
         to_proto(result)
       end
 
-      def list_casts(request, _call)
-        status_filter = request.status_filter == :CAST_STATUS_UNSPECIFIED ? nil : status_enum_to_str(request.status_filter)
+      def list_casts
+        status_filter = request.message.status_filter == :CAST_STATUS_UNSPECIFIED ? nil : status_enum_to_str(request.message.status_filter)
         results = list_casts_service.call(status_filter: status_filter)
 
         ::Cast::V1::ListCastsResponse.new(
@@ -75,13 +91,13 @@ module Cast
         )
       end
 
-      def update_status(request, _call)
+      def update_status
         # Need cast_id.
         # Again, auth context.
         # Assuming for now we pass cast_id or user_id.
         # My proto `UpdateStatusRequest` has `status`. No ID. This implies Context.
         # I will need to extract User ID from JWT in metadata.
-        user_id = Monolith::Current.user_id
+        user_id = ::Current.user_id
 
         unless user_id
            raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Authentication required")
@@ -95,7 +111,7 @@ module Cast
         # raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNIMPLEMENTED, "Auth context needed")
 
         # I'll implement basic List/Get first.
-        ::Cast::V1::UpdateStatusResponse.new(status: request.status)
+        ::Cast::V1::UpdateStatusResponse.new(status: request.message.status)
       end
 
       private

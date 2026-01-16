@@ -22,13 +22,14 @@ gem "dry-operation", ">= 1.0.1"
 gem "puma"
 gem "rake"
 gem "sqlite3"
+gem "dotenv"
 
 group :development do
   gem "hanami-webconsole", "~> 2.3.0"
+  gem "grpc-tools"
 end
 
 group :development, :test do
-  gem "dotenv"
 end
 
 group :cli, :development do

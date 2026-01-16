@@ -1,5 +1,5 @@
 version: v1
 plugins:
   - plugin: es
-    out: ../web/nyx/workspace/src/lib
+    out: src/lib
     opt: target=ts,import_extension=none

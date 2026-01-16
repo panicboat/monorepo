@@ -1,36 +1,40 @@
 #!/usr/bin/env ruby
+require 'bundler/setup'
 
-require 'fileutils'
+puts "🚀 Running buf generate..."
 
-# Determine paths
-ROOT_DIR = File.expand_path("..", __dir__)
-PROTO_DIR = File.expand_path("../../../../proto", __dir__)
-OUT_DIR = File.join(ROOT_DIR, "lib")
+# Find grpc_ruby_plugin using Bundler
+begin
+  # We need the actual binary for 'buf'.
+  # Heuristic: Check if there's a binary in the same gem structure.
 
-puts "🤖 Generating Ruby code from Protos..."
-puts "   Proto Dir: #{PROTO_DIR}"
-puts "   Out Dir:   #{OUT_DIR}"
+  gem_root = Gem::Specification.find_by_name("grpc-tools").gem_dir
+  os_name = `uname -s`.strip
+  filter = os_name == "Darwin" ? "macos" : "linux"
 
-# Find all proto files (e.g. identity/v1/service.proto)
-pattern = File.join(PROTO_DIR, "**", "*.proto")
-proto_files = Dir.glob(pattern)
+  binary_dir = Dir[File.join(gem_root, "bin", "*")].find do |d|
+    File.directory?(d) && d.include?(filter)
+  end
 
-if proto_files.empty?
-  puts "❌ No proto files found!"
-  exit 1
+  if binary_dir
+    puts "🔍 Found grpc plugin in: #{binary_dir}"
+    ENV['PATH'] = "#{binary_dir}:#{ENV['PATH']}"
+  else
+    puts "⚠️  Could not find native binary for grpc_ruby_plugin. Falling back to default PATH."
+  end
+
+rescue Gem::GemNotFoundException
+  puts "⚠️  grpc-tools gem not found. Ensure bundle install is run."
 end
 
-# Build command
-# grpc_tools_ruby_protoc -I ../../../proto --ruby_out=lib --grpc_out=lib [FILES]
-files_arg = proto_files.join(" ")
-command = "bundle exec grpc_tools_ruby_protoc -I #{PROTO_DIR} --ruby_out=#{OUT_DIR} --grpc_out=#{OUT_DIR} #{files_arg}"
-
-puts "   Command: #{command}"
-system(command)
+# Run buf generate, pointing to the proto definitions at root
+# Command runs from current dir (workspace), using local buf.gen.yaml
+# Input: ../../../proto (relative to workspace)
+system("buf generate ../../../proto")
 
 if $?.success?
-  puts "✅ Done!"
+  puts "✅ Done."
 else
-  puts "❌ Failed to generate code."
+  puts "❌ Failed."
   exit 1
 end

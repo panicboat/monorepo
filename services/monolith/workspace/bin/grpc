@@ -1,27 +1,59 @@
 #!/usr/bin/env ruby
 
+# Crucial Fix: Exclude development gems (like hanami-reloader) from loading.
+# This prevents the Reloader middleware from being added, fixing Zeitwerk errors.
+ENV["BUNDLE_WITHOUT"] = "development:cli:test"
+ENV["HANAMI_ENV"] = "production"
+ENV["SECRET_KEY_BASE"] ||= "development_secret_key_base_for_local_production_mode"
+
+# Sync output for Docker/Process logging
+STDOUT.sync = true
+STDERR.sync = true
+
 require "bundler/setup"
 require "hanami/setup"
 
 # Boot the app
-require_relative "../config/app"
 Hanami.app.prepare
 
+# SLEDGEHAMMER FIX: Monkey-patch Zeitwerk::Loader to ignore reload calls
+require "zeitwerk"
+class Zeitwerk::Loader
+  def reload
+    puts "DEBUG: Zeitwerk::Loader#reload called (suppressed for gRPC)"
+    true
+  end
+end
+
 require "gruf"
+require_relative "../lib/current"
+require_relative "../lib/types"
+require_relative "../lib/interceptors/access_log_interceptor"
+require_relative "../lib/interceptors/authentication_interceptor"
 
 # Ensure Proto files are loaded (they are in lib/)
+$LOAD_PATH.unshift(File.expand_path("../stubs", __dir__))
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 require "identity/v1/service_services_pb"
 require "cast/v1/service_services_pb"
 
 # Configure Gruf
 Gruf.configure do |c|
+  # Use Hanami logger
+  c.logger = Hanami.logger
+
+  # Bind to 0.0.0.0 to ensure Docker/External access if needed, but client tests via localhost
   c.server_binding_url = ENV.fetch("GRPC_BIND_ADDRESS", "0.0.0.0:9001")
-  c.interceptors.use(Monolith::Interceptors::AuthenticationInterceptor)
-  c.services << Identity::Grpc::Handler
-  c.services << Cast::Grpc::Handler
+  c.interceptors.use(Interceptors::AccessLogInterceptor)
+  c.interceptors.use(Interceptors::AuthenticationInterceptor)
+  c.services.clear
 end
 
-# Start Server
-puts "Starting gRPC Stub Server on #{Gruf.server_binding_url}"
+# Ensure Handlers are loaded so `bind` logic executes!
+require_relative "../slices/identity/grpc/handler"
+require_relative "../slices/cast/grpc/handler"
+
+Hanami.logger.info("Starting gRPC Stub Server on #{Gruf.server_binding_url}")
+Hanami.logger.info("Services: #{Gruf.services}")
+
 Gruf::Cli::Executor.new.run
