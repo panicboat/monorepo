@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "slices/identity/services/send_sms"
+require "slices/identity/operations/send_sms"
 
-RSpec.describe Identity::Services::SendSms do
+RSpec.describe Identity::Operations::SendSms do
   let(:service) { described_class.new(repo: repo) }
 
   # TODO: Review mock behavior for sms verification repository

@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "slices/identity/services/get_current_user"
+require "slices/identity/operations/get_current_user"
 
-RSpec.describe Identity::Services::GetCurrentUser do
+RSpec.describe Identity::Operations::GetCurrentUser do
   let(:service) { described_class.new(repo: repo) }
 
   # TODO: Review mock behavior for user repository and rom relation chain

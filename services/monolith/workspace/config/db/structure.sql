@@ -35,6 +35,19 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: refresh_tokens; Type: TABLE; Schema: identity; Owner: -
+--
+
+CREATE TABLE identity.refresh_tokens (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    token text NOT NULL,
+    expires_at timestamp without time zone NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
 -- Name: sms_verifications; Type: TABLE; Schema: identity; Owner: -
 --
 
@@ -107,6 +120,14 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: identity; Owner: -
+--
+
+ALTER TABLE ONLY identity.refresh_tokens
+    ADD CONSTRAINT refresh_tokens_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: sms_verifications sms_verifications_pkey; Type: CONSTRAINT; Schema: identity; Owner: -
 --
 
@@ -139,6 +160,20 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: identity_refresh_tokens_token_index; Type: INDEX; Schema: identity; Owner: -
+--
+
+CREATE UNIQUE INDEX identity_refresh_tokens_token_index ON identity.refresh_tokens USING btree (token);
+
+
+--
+-- Name: identity_refresh_tokens_user_id_index; Type: INDEX; Schema: identity; Owner: -
+--
+
+CREATE INDEX identity_refresh_tokens_user_id_index ON identity.refresh_tokens USING btree (user_id);
+
+
+--
 -- Name: identity_sms_verifications_code_index; Type: INDEX; Schema: identity; Owner: -
 --
 
@@ -167,6 +202,14 @@ CREATE UNIQUE INDEX portfolio_casts_user_id_index ON portfolio.casts USING btree
 
 
 --
+-- Name: refresh_tokens refresh_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: identity; Owner: -
+--
+
+ALTER TABLE ONLY identity.refresh_tokens
+    ADD CONSTRAINT refresh_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES identity.users(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -176,4 +219,5 @@ SET search_path TO "$user", public;
 INSERT INTO schema_migrations (filename) VALUES
 ('20260114002209_create_users.rb'),
 ('20260114003157_create_sms_verifications.rb'),
-('20260117030200_create_casts_table.rb');
+('20260117030200_create_casts_table.rb'),
+('20260118000000_create_refresh_tokens.rb');

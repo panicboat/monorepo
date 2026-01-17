@@ -1,5 +1,5 @@
 module Identity
-  module Services
+  module Operations
     class VerifySms
       include Identity::Deps[repo: "repositories.sms_verification_repository"]
 

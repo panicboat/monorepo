@@ -19,6 +19,12 @@ service IdentityService {
   // Login with Phone and Password
   rpc Login (LoginRequest) returns (LoginResponse);
 
+  // Refresh access token using refresh token
+  rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
+
+  // Logout by revoking refresh token
+  rpc Logout (LogoutRequest) returns (LogoutResponse);
+
   // Get current user session
   rpc GetCurrentUser (google.protobuf.Empty) returns (UserProfile);
 }
@@ -57,6 +63,7 @@ message RegisterRequest {
 message RegisterResponse {
   string access_token = 1;
   UserProfile user_profile = 2;
+  string refresh_token = 3;
 }
 
 message LoginRequest {
@@ -68,6 +75,24 @@ message LoginRequest {
 message LoginResponse {
   string access_token = 1;
   UserProfile user_profile = 2;
+  string refresh_token = 3;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
 }
 
 enum Role {

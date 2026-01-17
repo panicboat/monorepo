@@ -1,5 +1,5 @@
 module Cast
-  module Services
+  module Operations
     class ListCasts
       include Cast::Deps[repo: "repositories.cast_repo"]
 

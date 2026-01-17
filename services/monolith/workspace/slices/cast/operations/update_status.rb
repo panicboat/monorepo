@@ -1,5 +1,5 @@
 module Cast
-  module Services
+  module Operations
     class UpdateStatus
       include Cast::Deps[repo: "repositories.cast_repo"]
 

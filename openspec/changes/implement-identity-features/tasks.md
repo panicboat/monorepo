@@ -1,0 +1,21 @@
+# Tasks
+
+- [ ] OpenSpec Proposal
+    - [x] Scaffold Proposal (implement-identity-features)
+    - [x] Draft Spec Deltas
+    - [x] Validate Proposal
+- [ ] Implement Refresh Token Schema & Repository
+    - [x] `refresh_tokens` テーブルのマイグレーション作成
+    - [x] `RefreshToken` リポジトリの実装 (Create, Find, Revoke)
+- [ ] Implement Refresh Token Logic
+    - [x] Login/Register 時にリフレッシュトークンを発行するように変更
+    - [x] `RefreshToken` サービス/RPC の実装
+- [ ] Implement Logout Logic
+    - [x] `Logout` サービス/RPC の実装 (リフレッシュトークンのRevoke)
+- [ ] Update Frontend Auth
+    - [x] `useAuth` フックの更新 (リフレッシュトークン保存、ログアウト処理)
+    - [x] ゲストログイン画面を `/login` へ移動
+    - [x] `/` へのアクセスを制御 (非認証時は `/login` へリダイレクト)
+- [ ] Verify Implementation
+    - [/] RSpec テストの追加と実行
+    - [ ] フロントエンドの手動動作確認

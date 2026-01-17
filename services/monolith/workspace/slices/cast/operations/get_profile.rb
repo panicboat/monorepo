@@ -1,5 +1,5 @@
 module Cast
-  module Services
+  module Operations
     class GetProfile
       include Cast::Deps[repo: "repositories.cast_repo"]
 

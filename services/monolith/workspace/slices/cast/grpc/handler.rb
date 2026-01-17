@@ -20,10 +20,10 @@ module Cast
       rpc :UpdateStatus, ::Cast::V1::UpdateStatusRequest, ::Cast::V1::UpdateStatusResponse
 
       include Cast::Deps[
-        create_profile_service: "services.create_profile",
-        get_profile_service: "services.get_profile",
-        update_status_service: "services.update_status",
-        list_casts_service: "services.list_casts"
+        create_profile_service: "operations.create_profile",
+        get_profile_service: "operations.get_profile",
+        update_status_service: "operations.update_status",
+        list_casts_service: "operations.list_casts"
       ]
 
       def get_profile

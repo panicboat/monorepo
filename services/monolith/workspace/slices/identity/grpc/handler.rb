@@ -22,11 +22,13 @@ module Identity
       rpc :GetCurrentUser, ::Google::Protobuf::Empty, ::Identity::V1::UserProfile
 
       include Identity::Deps[
-        register_service: "services.register",
-        login_service: "services.login",
-        send_sms_service: "services.send_sms",
-        verify_sms_service: "services.verify_sms",
-        get_current_user_service: "services.get_current_user"
+        register_service: "operations.register",
+        login_service: "operations.login",
+        send_sms_service: "operations.send_sms",
+        verify_sms_service: "operations.verify_sms",
+        get_current_user_service: "operations.get_current_user",
+        refresh_token_service: "operations.refresh_token",
+        logout_service: "operations.logout"
       ]
 
       def health_check
@@ -88,6 +90,24 @@ module Identity
         end
       end
 
+      def refresh_token
+        result = refresh_token_service.call(refresh_token: request.message.refresh_token)
+
+        unless result
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Invalid or expired refresh token")
+        end
+
+        ::Identity::V1::RefreshTokenResponse.new(
+          access_token: result[:access_token],
+          refresh_token: result[:refresh_token]
+        )
+      end
+
+      def logout
+        logout_service.call(refresh_token: request.message.refresh_token)
+        ::Identity::V1::LogoutResponse.new(success: true)
+      end
+
       def get_current_user
         # Extract user_id from metadata (handled by interceptor potentially)
         # OR decode JWT here if no interceptor.
@@ -116,6 +136,7 @@ module Identity
       def to_register_response(result)
         ::Identity::V1::RegisterResponse.new(
           access_token: result[:access_token],
+          refresh_token: result[:refresh_token],
           user_profile: to_user_profile_proto(result[:user_profile])
         )
       end
@@ -123,6 +144,7 @@ module Identity
       def to_login_response(result)
         ::Identity::V1::LoginResponse.new(
           access_token: result[:access_token],
+          refresh_token: result[:refresh_token],
           user_profile: to_user_profile_proto(result[:user_profile])
         )
       end

@@ -1,13 +1,16 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "slices/identity/services/login"
+require "slices/identity/operations/login"
 
-RSpec.describe Identity::Services::Login do
-  let(:service) { described_class.new(repo: repo) }
-
-  # TODO: Review mock behavior for user repository
+RSpec.describe Identity::Operations::Login do
+  let(:service) { described_class.new(repo: repo, refresh_repo: refresh_repo) }
   let(:repo) { double(:user_repository) }
+  let(:refresh_repo) { double(:refresh_token_repository) }
+
+  before do
+    allow(refresh_repo).to receive(:create)
+  end
 
   describe "#call" do
     let(:phone_number) { "+1234567890" }

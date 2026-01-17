@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file identity/v1/service.proto.
  */
 export const file_identity_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("ChlpZGVudGl0eS92MS9zZXJ2aWNlLnByb3RvEgtpZGVudGl0eS52MSIUChJIZWFsdGhDaGVja1JlcXVlc3QiJQoTSGVhbHRoQ2hlY2tSZXNwb25zZRIOCgZzdGF0dXMYASABKAkiJgoOU2VuZFNtc1JlcXVlc3QSFAoMcGhvbmVfbnVtYmVyGAEgASgJIiIKD1NlbmRTbXNSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjYKEFZlcmlmeVNtc1JlcXVlc3QSFAoMcGhvbmVfbnVtYmVyGAEgASgJEgwKBGNvZGUYAiABKAkiLwoRVmVyaWZ5U21zUmVzcG9uc2USGgoSdmVyaWZpY2F0aW9uX3Rva2VuGAEgASgJInYKD1JlZ2lzdGVyUmVxdWVzdBIUCgxwaG9uZV9udW1iZXIYASABKAkSEAoIcGFzc3dvcmQYAiABKAkSGgoSdmVyaWZpY2F0aW9uX3Rva2VuGAMgASgJEh8KBHJvbGUYBCABKA4yES5pZGVudGl0eS52MS5Sb2xlIlgKEFJlZ2lzdGVyUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEi4KDHVzZXJfcHJvZmlsZRgCIAEoCzIYLmlkZW50aXR5LnYxLlVzZXJQcm9maWxlIlcKDExvZ2luUmVxdWVzdBIUCgxwaG9uZV9udW1iZXIYASABKAkSEAoIcGFzc3dvcmQYAiABKAkSHwoEcm9sZRgDIAEoDjIRLmlkZW50aXR5LnYxLlJvbGUiVQoNTG9naW5SZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSLgoMdXNlcl9wcm9maWxlGAIgASgLMhguaWRlbnRpdHkudjEuVXNlclByb2ZpbGUiUAoLVXNlclByb2ZpbGUSCgoCaWQYASABKAkSFAoMcGhvbmVfbnVtYmVyGAIgASgJEh8KBHJvbGUYAyABKA4yES5pZGVudGl0eS52MS5Sb2xlKjsKBFJvbGUSFAoQUk9MRV9VTlNQRUNJRklFRBAAEg4KClJPTEVfR1VFU1QQARINCglST0xFX0NBU1QQAjLCAwoPSWRlbnRpdHlTZXJ2aWNlElAKC0hlYWx0aENoZWNrEh8uaWRlbnRpdHkudjEuSGVhbHRoQ2hlY2tSZXF1ZXN0GiAuaWRlbnRpdHkudjEuSGVhbHRoQ2hlY2tSZXNwb25zZRJECgdTZW5kU21zEhsuaWRlbnRpdHkudjEuU2VuZFNtc1JlcXVlc3QaHC5pZGVudGl0eS52MS5TZW5kU21zUmVzcG9uc2USSgoJVmVyaWZ5U21zEh0uaWRlbnRpdHkudjEuVmVyaWZ5U21zUmVxdWVzdBoeLmlkZW50aXR5LnYxLlZlcmlmeVNtc1Jlc3BvbnNlEkcKCFJlZ2lzdGVyEhwuaWRlbnRpdHkudjEuUmVnaXN0ZXJSZXF1ZXN0Gh0uaWRlbnRpdHkudjEuUmVnaXN0ZXJSZXNwb25zZRI+CgVMb2dpbhIZLmlkZW50aXR5LnYxLkxvZ2luUmVxdWVzdBoaLmlkZW50aXR5LnYxLkxvZ2luUmVzcG9uc2USQgoOR2V0Q3VycmVudFVzZXISFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGC5pZGVudGl0eS52MS5Vc2VyUHJvZmlsZWIGcHJvdG8z", [file_google_protobuf_empty]);
+  fileDesc("ChlpZGVudGl0eS92MS9zZXJ2aWNlLnByb3RvEgtpZGVudGl0eS52MSIUChJIZWFsdGhDaGVja1JlcXVlc3QiJQoTSGVhbHRoQ2hlY2tSZXNwb25zZRIOCgZzdGF0dXMYASABKAkiJgoOU2VuZFNtc1JlcXVlc3QSFAoMcGhvbmVfbnVtYmVyGAEgASgJIiIKD1NlbmRTbXNSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjYKEFZlcmlmeVNtc1JlcXVlc3QSFAoMcGhvbmVfbnVtYmVyGAEgASgJEgwKBGNvZGUYAiABKAkiLwoRVmVyaWZ5U21zUmVzcG9uc2USGgoSdmVyaWZpY2F0aW9uX3Rva2VuGAEgASgJInYKD1JlZ2lzdGVyUmVxdWVzdBIUCgxwaG9uZV9udW1iZXIYASABKAkSEAoIcGFzc3dvcmQYAiABKAkSGgoSdmVyaWZpY2F0aW9uX3Rva2VuGAMgASgJEh8KBHJvbGUYBCABKA4yES5pZGVudGl0eS52MS5Sb2xlIm8KEFJlZ2lzdGVyUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEi4KDHVzZXJfcHJvZmlsZRgCIAEoCzIYLmlkZW50aXR5LnYxLlVzZXJQcm9maWxlEhUKDXJlZnJlc2hfdG9rZW4YAyABKAkiVwoMTG9naW5SZXF1ZXN0EhQKDHBob25lX251bWJlchgBIAEoCRIQCghwYXNzd29yZBgCIAEoCRIfCgRyb2xlGAMgASgOMhEuaWRlbnRpdHkudjEuUm9sZSJsCg1Mb2dpblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIuCgx1c2VyX3Byb2ZpbGUYAiABKAsyGC5pZGVudGl0eS52MS5Vc2VyUHJvZmlsZRIVCg1yZWZyZXNoX3Rva2VuGAMgASgJIiwKE1JlZnJlc2hUb2tlblJlcXVlc3QSFQoNcmVmcmVzaF90b2tlbhgBIAEoCSJDChRSZWZyZXNoVG9rZW5SZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSFQoNcmVmcmVzaF90b2tlbhgCIAEoCSImCg1Mb2dvdXRSZXF1ZXN0EhUKDXJlZnJlc2hfdG9rZW4YASABKAkiIQoOTG9nb3V0UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCJQCgtVc2VyUHJvZmlsZRIKCgJpZBgBIAEoCRIUCgxwaG9uZV9udW1iZXIYAiABKAkSHwoEcm9sZRgDIAEoDjIRLmlkZW50aXR5LnYxLlJvbGUqOwoEUm9sZRIUChBST0xFX1VOU1BFQ0lGSUVEEAASDgoKUk9MRV9HVUVTVBABEg0KCVJPTEVfQ0FTVBACMtoECg9JZGVudGl0eVNlcnZpY2USUAoLSGVhbHRoQ2hlY2sSHy5pZGVudGl0eS52MS5IZWFsdGhDaGVja1JlcXVlc3QaIC5pZGVudGl0eS52MS5IZWFsdGhDaGVja1Jlc3BvbnNlEkQKB1NlbmRTbXMSGy5pZGVudGl0eS52MS5TZW5kU21zUmVxdWVzdBocLmlkZW50aXR5LnYxLlNlbmRTbXNSZXNwb25zZRJKCglWZXJpZnlTbXMSHS5pZGVudGl0eS52MS5WZXJpZnlTbXNSZXF1ZXN0Gh4uaWRlbnRpdHkudjEuVmVyaWZ5U21zUmVzcG9uc2USRwoIUmVnaXN0ZXISHC5pZGVudGl0eS52MS5SZWdpc3RlclJlcXVlc3QaHS5pZGVudGl0eS52MS5SZWdpc3RlclJlc3BvbnNlEj4KBUxvZ2luEhkuaWRlbnRpdHkudjEuTG9naW5SZXF1ZXN0GhouaWRlbnRpdHkudjEuTG9naW5SZXNwb25zZRJTCgxSZWZyZXNoVG9rZW4SIC5pZGVudGl0eS52MS5SZWZyZXNoVG9rZW5SZXF1ZXN0GiEuaWRlbnRpdHkudjEuUmVmcmVzaFRva2VuUmVzcG9uc2USQQoGTG9nb3V0EhouaWRlbnRpdHkudjEuTG9nb3V0UmVxdWVzdBobLmlkZW50aXR5LnYxLkxvZ291dFJlc3BvbnNlEkIKDkdldEN1cnJlbnRVc2VyEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhguaWRlbnRpdHkudjEuVXNlclByb2ZpbGViBnByb3RvMw", [file_google_protobuf_empty]);
 
 /**
  * @generated from message identity.v1.HealthCheckRequest
@@ -168,6 +168,11 @@ export type RegisterResponse = Message<"identity.v1.RegisterResponse"> & {
    * @generated from field: identity.v1.UserProfile user_profile = 2;
    */
   userProfile?: UserProfile;
+
+  /**
+   * @generated from field: string refresh_token = 3;
+   */
+  refreshToken: string;
 };
 
 /**
@@ -217,6 +222,11 @@ export type LoginResponse = Message<"identity.v1.LoginResponse"> & {
    * @generated from field: identity.v1.UserProfile user_profile = 2;
    */
   userProfile?: UserProfile;
+
+  /**
+   * @generated from field: string refresh_token = 3;
+   */
+  refreshToken: string;
 };
 
 /**
@@ -225,6 +235,79 @@ export type LoginResponse = Message<"identity.v1.LoginResponse"> & {
  */
 export const LoginResponseSchema: GenMessage<LoginResponse> = /*@__PURE__*/
   messageDesc(file_identity_v1_service, 9);
+
+/**
+ * @generated from message identity.v1.RefreshTokenRequest
+ */
+export type RefreshTokenRequest = Message<"identity.v1.RefreshTokenRequest"> & {
+  /**
+   * @generated from field: string refresh_token = 1;
+   */
+  refreshToken: string;
+};
+
+/**
+ * Describes the message identity.v1.RefreshTokenRequest.
+ * Use `create(RefreshTokenRequestSchema)` to create a new message.
+ */
+export const RefreshTokenRequestSchema: GenMessage<RefreshTokenRequest> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 10);
+
+/**
+ * @generated from message identity.v1.RefreshTokenResponse
+ */
+export type RefreshTokenResponse = Message<"identity.v1.RefreshTokenResponse"> & {
+  /**
+   * @generated from field: string access_token = 1;
+   */
+  accessToken: string;
+
+  /**
+   * @generated from field: string refresh_token = 2;
+   */
+  refreshToken: string;
+};
+
+/**
+ * Describes the message identity.v1.RefreshTokenResponse.
+ * Use `create(RefreshTokenResponseSchema)` to create a new message.
+ */
+export const RefreshTokenResponseSchema: GenMessage<RefreshTokenResponse> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 11);
+
+/**
+ * @generated from message identity.v1.LogoutRequest
+ */
+export type LogoutRequest = Message<"identity.v1.LogoutRequest"> & {
+  /**
+   * @generated from field: string refresh_token = 1;
+   */
+  refreshToken: string;
+};
+
+/**
+ * Describes the message identity.v1.LogoutRequest.
+ * Use `create(LogoutRequestSchema)` to create a new message.
+ */
+export const LogoutRequestSchema: GenMessage<LogoutRequest> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 12);
+
+/**
+ * @generated from message identity.v1.LogoutResponse
+ */
+export type LogoutResponse = Message<"identity.v1.LogoutResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message identity.v1.LogoutResponse.
+ * Use `create(LogoutResponseSchema)` to create a new message.
+ */
+export const LogoutResponseSchema: GenMessage<LogoutResponse> = /*@__PURE__*/
+  messageDesc(file_identity_v1_service, 13);
 
 /**
  * @generated from message identity.v1.UserProfile
@@ -251,7 +334,7 @@ export type UserProfile = Message<"identity.v1.UserProfile"> & {
  * Use `create(UserProfileSchema)` to create a new message.
  */
 export const UserProfileSchema: GenMessage<UserProfile> = /*@__PURE__*/
-  messageDesc(file_identity_v1_service, 10);
+  messageDesc(file_identity_v1_service, 14);
 
 /**
  * @generated from enum identity.v1.Role
@@ -330,6 +413,26 @@ export const IdentityService: GenService<{
     methodKind: "unary";
     input: typeof LoginRequestSchema;
     output: typeof LoginResponseSchema;
+  },
+  /**
+   * Refresh access token using refresh token
+   *
+   * @generated from rpc identity.v1.IdentityService.RefreshToken
+   */
+  refreshToken: {
+    methodKind: "unary";
+    input: typeof RefreshTokenRequestSchema;
+    output: typeof RefreshTokenResponseSchema;
+  },
+  /**
+   * Logout by revoking refresh token
+   *
+   * @generated from rpc identity.v1.IdentityService.Logout
+   */
+  logout: {
+    methodKind: "unary";
+    input: typeof LogoutRequestSchema;
+    output: typeof LogoutResponseSchema;
   },
   /**
    * Get current user session

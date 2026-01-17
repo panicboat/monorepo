@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "slices/identity/services/verify_sms"
+require "slices/identity/operations/verify_sms"
 
-RSpec.describe Identity::Services::VerifySms do
+RSpec.describe Identity::Operations::VerifySms do
   let(:service) { described_class.new(repo: repo) }
 
   # TODO: Review mock behavior for sms verification repository
@@ -53,7 +53,7 @@ RSpec.describe Identity::Services::VerifySms do
       it "raises VerificationError" do
         expect {
           service.call(phone_number: phone_number, code: code)
-        }.to raise_error(Identity::Services::VerifySms::VerificationError, "Code expired")
+        }.to raise_error(Identity::Operations::VerifySms::VerificationError, "Code expired")
       end
     end
   end

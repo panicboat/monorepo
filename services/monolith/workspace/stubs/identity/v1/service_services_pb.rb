@@ -24,6 +24,10 @@ module Identity
         rpc :Register, ::Identity::V1::RegisterRequest, ::Identity::V1::RegisterResponse
         # Login with Phone and Password
         rpc :Login, ::Identity::V1::LoginRequest, ::Identity::V1::LoginResponse
+        # Refresh access token using refresh token
+        rpc :RefreshToken, ::Identity::V1::RefreshTokenRequest, ::Identity::V1::RefreshTokenResponse
+        # Logout by revoking refresh token
+        rpc :Logout, ::Identity::V1::LogoutRequest, ::Identity::V1::LogoutResponse
         # Get current user session
         rpc :GetCurrentUser, ::Google::Protobuf::Empty, ::Identity::V1::UserProfile
       end

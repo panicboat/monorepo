@@ -1,29 +1,35 @@
 "use client";
 
 import { CastList } from "@/modules/portfolio/components/guest/CastList";
-import { LoginGate } from "@/modules/identity/components/LoginGate";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { GuestDashboard } from "@/modules/portfolio/components/guest/GuestDashboard";
 import { RankingWidget } from "@/modules/discovery/components/guest/RankingWidget";
 import { EventSlider } from "@/modules/discovery/components/guest/EventSlider";
 import { TimelineFeed } from "@/modules/discovery/components/guest/TimelineFeed";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
+  const router = useRouter();
   const [view, setView] = useState<"home" | "mypage">("home");
   const [tab, setTab] = useState<"cast" | "timeline">("timeline");
 
-  if (isLoading)
+  useEffect(() => {
+    if (!isLoading && !user) {
+      console.log("GuestPage Redirecting: isLoading=", isLoading, "user=", user);
+      router.push("/login");
+    } else {
+      console.log("GuestPage Stay: isLoading=", isLoading, "user=", user);
+    }
+  }, [isLoading, user, router]);
+
+  if (isLoading || !user)
     return (
       <div className="flex h-screen items-center justify-center bg-white">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-pink-500"></div>
       </div>
     );
-
-  if (!user) {
-    return <LoginGate />;
-  }
 
   return (
     <main className="pb-20">

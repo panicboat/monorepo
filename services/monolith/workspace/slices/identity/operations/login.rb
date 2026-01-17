@@ -2,9 +2,12 @@ require 'bcrypt'
 require 'jwt'
 
 module Identity
-  module Services
+  module Operations
     class Login
-      include Identity::Deps[repo: "repositories.user_repository"]
+      include Identity::Deps[
+        repo: "repositories.user_repository",
+        refresh_repo: "repositories.refresh_token_repository"
+      ]
 
       def call(phone_number:, password:, role: nil)
         user = repo.find_by_phone_number(phone_number)
@@ -21,7 +24,10 @@ module Identity
         payload = { sub: user.id, role: user.role, exp: Time.now.to_i + 3600 * 24 * 30 }
         token = JWT.encode(payload, ENV.fetch("JWT_SECRET", "pan1cb0at"), 'HS256')
 
-        { access_token: token, user_profile: { id: user.id, phone_number: user.phone_number, role: user.role } }
+        refresh_token = SecureRandom.hex(32)
+        refresh_repo.create(token: refresh_token, user_id: user.id, expires_at: Time.now + 3600 * 24 * 30)
+
+        { access_token: token, refresh_token: refresh_token, user_profile: { id: user.id, phone_number: user.phone_number, role: user.role } }
       end
     end
   end

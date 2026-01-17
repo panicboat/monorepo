@@ -1,5 +1,5 @@
 module Identity
-  module Services
+  module Operations
     class GetCurrentUser
       include Identity::Deps[repo: "repositories.user_repository"]
 
