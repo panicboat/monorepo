@@ -18,12 +18,30 @@ const MOCK_PROFILE: CastProfile = {
   images: {
     hero: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=988&auto=format&fit=crop",
     portfolio: [
-      "https://images.unsplash.com/photo-1616091093747-47804425986c?q=80&w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=600&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&auto=format&fit=crop",
-      "https://placehold.co/600x800/orange/white?text=Casual",
-      "https://placehold.co/600x800/blue/white?text=Dress",
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1616091093747-47804425986c?q=80&w=600&auto=format&fit=crop",
+      },
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop",
+      },
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=600&auto=format&fit=crop",
+      },
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&auto=format&fit=crop",
+      },
+      {
+        type: "image",
+        url: "https://placehold.co/600x800/orange/white?text=Casual",
+      },
+      {
+        type: "image",
+        url: "https://placehold.co/600x800/blue/white?text=Dress",
+      },
     ],
   },
   tags: [

@@ -1,0 +1,169 @@
+
+Randomized with seed 29661
+...*FFFF[SMS MOCK] Sending code 0000 to 09012345678
+............FFF
+
+Pending: (Failures listed here are expected and do not affect your suite's status)
+
+  1) Identity::Action works
+     # Temporarily skipped with xit
+     # ./spec/slices/identity/action_spec.rb:4
+
+Failures:
+
+  1) Identity::Grpc::Handler#login raises Unauthenticated on failure
+     Failure/Error:
+       expect {
+         handler.login(request, nil)
+       }.to raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(GRPC::Core::StatusCodes::UNAUTHENTICATED) }
+
+       expected GRPC::BadStatus, got #<ArgumentError: missing keywords: :method_key, :service, :rpc_desc, :active_call, :message> with backtrace:
+         # ./spec/slices/identity/grpc/handler_spec.rb:8:in 'block (2 levels) in <top (required)>'
+         # ./spec/slices/identity/grpc/handler_spec.rb:61:in 'block (4 levels) in <top (required)>'
+         # ./spec/slices/identity/grpc/handler_spec.rb:62:in 'block (3 levels) in <top (required)>'
+     # ./spec/slices/identity/grpc/handler_spec.rb:62:in 'block (3 levels) in <top (required)>'
+
+  2) Identity::Grpc::Handler#login calls Login service and returns response
+     Failure/Error:
+       described_class.new(
+         register_service: register_service,
+         login_service: login_service
+       )
+
+     ArgumentError:
+       missing keywords: :method_key, :service, :rpc_desc, :active_call, :message
+     # ./spec/slices/identity/grpc/handler_spec.rb:8:in 'block (2 levels) in <top (required)>'
+     # ./spec/slices/identity/grpc/handler_spec.rb:52:in 'block (3 levels) in <top (required)>'
+
+  3) Identity::Grpc::Handler#register raises gRPC error on failure
+     Failure/Error:
+       expect {
+         handler.register(request, nil)
+       }.to raise_error(GRPC::BadStatus)
+
+       expected GRPC::BadStatus, got #<ArgumentError: missing keywords: :method_key, :service, :rpc_desc, :active_call, :message> with backtrace:
+         # ./spec/slices/identity/grpc/handler_spec.rb:8:in 'block (2 levels) in <top (required)>'
+         # ./spec/slices/identity/grpc/handler_spec.rb:36:in 'block (4 levels) in <top (required)>'
+         # ./spec/slices/identity/grpc/handler_spec.rb:37:in 'block (3 levels) in <top (required)>'
+     # ./spec/slices/identity/grpc/handler_spec.rb:37:in 'block (3 levels) in <top (required)>'
+
+  4) Identity::Grpc::Handler#register calls Register service and returns response
+     Failure/Error:
+       described_class.new(
+         register_service: register_service,
+         login_service: login_service
+       )
+
+     ArgumentError:
+       missing keywords: :method_key, :service, :rpc_desc, :active_call, :message
+     # ./spec/slices/identity/grpc/handler_spec.rb:8:in 'block (2 levels) in <top (required)>'
+     # ./spec/slices/identity/grpc/handler_spec.rb:25:in 'block (3 levels) in <top (required)>'
+
+  5) Identity::Repositories::UserRepository#create creates a user with hashed password
+     Failure/Error: user = repo.create(phone_number: "09012345678", password_digest: "hashed_secret", role: :ROLE_GUEST)
+
+     ROM::SQL::DatabaseError:
+       PG::UndefinedColumn: ERROR:  column "ROLE_GUEST" does not exist
+       LINE 1: ..., "role") VALUES ('09012345678', 'hashed_secret', "ROLE_GUES...
+                                                                    ^
+     # ./slices/identity/repositories/user_repository.rb:9:in 'Identity::Repositories::UserRepository#create'
+     # ./spec/slices/identity/repositories/user_repository_spec.rb:6:in 'block (3 levels) in <top (required)>'
+     # ------------------
+     # --- Caused by: ---
+     # PG::UndefinedColumn:
+     #   ERROR:  column "ROLE_GUEST" does not exist
+     #   LINE 1: ..., "role") VALUES ('09012345678', 'hashed_secret', "ROLE_GUES...
+     #                                                                ^
+     #   ./slices/identity/repositories/user_repository.rb:9:in 'Identity::Repositories::UserRepository#create'
+
+  6) Identity::Repositories::UserRepository#find_by_phone_number returns the user if found
+     Failure/Error: repo.create(phone_number: "09012345678", password_digest: "123", role: :ROLE_CAST)
+
+     ROM::SQL::DatabaseError:
+       PG::UndefinedColumn: ERROR:  column "ROLE_CAST" does not exist
+       LINE 1: ...rd_digest", "role") VALUES ('09012345678', '123', "ROLE_CAST...
+                                                                    ^
+     # ./slices/identity/repositories/user_repository.rb:9:in 'Identity::Repositories::UserRepository#create'
+     # ./spec/slices/identity/repositories/user_repository_spec.rb:16:in 'block (3 levels) in <top (required)>'
+     # ------------------
+     # --- Caused by: ---
+     # PG::UndefinedColumn:
+     #   ERROR:  column "ROLE_CAST" does not exist
+     #   LINE 1: ...rd_digest", "role") VALUES ('09012345678', '123', "ROLE_CAST...
+     #                                                                ^
+     #   ./slices/identity/repositories/user_repository.rb:9:in 'Identity::Repositories::UserRepository#create'
+
+  7) Identity::Repositories::UserRepository#find_by_phone_number returns nil if not found
+     Failure/Error: repo.create(phone_number: "09012345678", password_digest: "123", role: :ROLE_CAST)
+
+     ROM::SQL::DatabaseError:
+       PG::UndefinedColumn: ERROR:  column "ROLE_CAST" does not exist
+       LINE 1: ...rd_digest", "role") VALUES ('09012345678', '123', "ROLE_CAST...
+                                                                    ^
+     # ./slices/identity/repositories/user_repository.rb:9:in 'Identity::Repositories::UserRepository#create'
+     # ./spec/slices/identity/repositories/user_repository_spec.rb:16:in 'block (3 levels) in <top (required)>'
+     # ------------------
+     # --- Caused by: ---
+     # PG::UndefinedColumn:
+     #   ERROR:  column "ROLE_CAST" does not exist
+     #   LINE 1: ...rd_digest", "role") VALUES ('09012345678', '123', "ROLE_CAST...
+     #                                                                ^
+     #   ./slices/identity/repositories/user_repository.rb:9:in 'Identity::Repositories::UserRepository#create'
+
+Top 10 slowest examples (1.84 seconds, 90.0% of total time):
+  Identity::Services::Register creates a user and returns result with token
+    0.50783 seconds ./spec/slices/identity/services/register_spec.rb:15
+  Identity::Services::Login returns nil on invalid password
+    0.49333 seconds ./spec/slices/identity/services/login_spec.rb:20
+  Identity::Services::Login returns token on successful login
+    0.49234 seconds ./spec/slices/identity/services/login_spec.rb:11
+  Identity::Services::Login returns nil on unknown user
+    0.26448 seconds ./spec/slices/identity/services/login_spec.rb:25
+  Identity::Services::Register fails if verification token is invalid
+    0.03102 seconds ./spec/slices/identity/services/register_spec.rb:32
+  Identity::Services::VerifySms verifies valid code and returns token
+    0.01409 seconds ./spec/slices/identity/services/verify_sms_spec.rb:9
+  Root is not found
+    0.01228 seconds ./spec/requests/root_spec.rb:4
+  Identity::Grpc::Handler#login raises Unauthenticated on failure
+    0.00999 seconds ./spec/slices/identity/grpc/handler_spec.rb:57
+  Identity::Services::SendSms creates an sms verification record
+    0.00808 seconds ./spec/slices/identity/services/send_sms_spec.rb:5
+  Identity::Services::VerifySms fails on non-existent phone number
+    0.00703 seconds ./spec/slices/identity/services/verify_sms_spec.rb:28
+
+Top 9 slowest example groups:
+  Identity::Services::Login
+    0.41682 seconds average (1.25 seconds / 3 examples) ./spec/slices/identity/services/login_spec.rb:1
+  Identity::Services::Register
+    0.26952 seconds average (0.53904 seconds / 2 examples) ./spec/slices/identity/services/register_spec.rb:1
+  Root
+    0.0125 seconds average (0.0125 seconds / 1 example) ./spec/requests/root_spec.rb:3
+  Identity::Services::VerifySms
+    0.00933 seconds average (0.02798 seconds / 3 examples) ./spec/slices/identity/services/verify_sms_spec.rb:1
+  Identity::Services::SendSms
+    0.00815 seconds average (0.00815 seconds / 1 example) ./spec/slices/identity/services/send_sms_spec.rb:1
+  Identity::Grpc::Handler
+    0.003 seconds average (0.01201 seconds / 4 examples) ./spec/slices/identity/grpc/handler_spec.rb:3
+  Identity::Repositories::UserRepository
+    0.00239 seconds average (0.00718 seconds / 3 examples) ./spec/slices/identity/repositories/user_repository_spec.rb:1
+  Interceptors::AuthenticationInterceptor
+    0.0006 seconds average (0.00299 seconds / 5 examples) ./spec/lib/interceptors/authentication_interceptor_spec.rb:9
+  Identity::Action
+    0.0001 seconds average (0.0001 seconds / 1 example) ./spec/slices/identity/action_spec.rb:3
+
+Finished in 2.04 seconds (files took 1.06 seconds to load)
+23 examples, 7 failures, 1 pending
+
+Failed examples:
+
+rspec ./spec/slices/identity/grpc/handler_spec.rb:57 # Identity::Grpc::Handler#login raises Unauthenticated on failure
+rspec ./spec/slices/identity/grpc/handler_spec.rb:46 # Identity::Grpc::Handler#login calls Login service and returns response
+rspec ./spec/slices/identity/grpc/handler_spec.rb:32 # Identity::Grpc::Handler#register raises gRPC error on failure
+rspec ./spec/slices/identity/grpc/handler_spec.rb:19 # Identity::Grpc::Handler#register calls Register service and returns response
+rspec ./spec/slices/identity/repositories/user_repository_spec.rb:5 # Identity::Repositories::UserRepository#create creates a user with hashed password
+rspec ./spec/slices/identity/repositories/user_repository_spec.rb:19 # Identity::Repositories::UserRepository#find_by_phone_number returns the user if found
+rspec ./spec/slices/identity/repositories/user_repository_spec.rb:25 # Identity::Repositories::UserRepository#find_by_phone_number returns nil if not found
+
+Randomized with seed 29661
+

@@ -12,9 +12,16 @@ export interface CastImage {
   url: string;
 }
 
+export interface MediaItem {
+  id?: string;
+  url: string;
+  type: "image" | "video";
+  thumbnail?: string;
+}
+
 export interface CastImages {
   hero: string;
-  portfolio: string[];
+  portfolio: MediaItem[];
 }
 
 export interface CastTag {

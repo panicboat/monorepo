@@ -4,12 +4,13 @@ import { identityClient } from "@/lib/grpc";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { phoneNumber, password, verificationToken } = body;
+    const { phoneNumber, password, verificationToken, role } = body;
 
     const response = await identityClient.register({
       phoneNumber,
       password,
       verificationToken,
+      role,
     });
 
     return NextResponse.json(response);

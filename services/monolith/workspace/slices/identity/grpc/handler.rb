@@ -1,4 +1,5 @@
 require 'identity/v1/service_services_pb'
+require 'gruf'
 
 module Identity
   module Grpc
@@ -48,9 +49,11 @@ module Identity
       end
 
       def register
-        # TODO: Support Cast registration flow and role assignment.
-        # Currently defaulting to Guest (1) for all self-registrations via this endpoint.
-        role_int = 1 # Guest
+        # Map Proto Enum to Integer (or pass directly if matches)
+        # Proto: ROLE_GUEST=1, ROLE_CAST=2 -> DB: 1, 2
+        # Default to Guest if unspecified (0)
+        input_role = request.message.role
+        role_int = input_role == :ROLE_CAST || input_role == 2 ? 2 : 1
 
         result = register_service.call(
           phone_number: request.message.phone_number,
@@ -65,12 +68,23 @@ module Identity
       end
 
       def login
-        result = login_service.call(phone_number: request.message.phone_number, password: request.message.password)
+        input_role = request.message.role
+        role_int = case input_role
+                   when :ROLE_CAST, 2 then 2
+                   when :ROLE_GUEST, 1 then 1
+                   else nil
+                   end
+
+        result = login_service.call(
+          phone_number: request.message.phone_number,
+          password: request.message.password,
+          role: role_int
+        )
 
         if result
           to_login_response(result)
         else
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Invalid credentials")
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Invalid credentials or role mismatch")
         end
       end
 

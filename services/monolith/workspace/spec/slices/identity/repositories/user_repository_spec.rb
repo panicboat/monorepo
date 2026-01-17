@@ -1,31 +1,29 @@
-RSpec.describe Identity::Repositories::UserRepository, :db do
-  subject(:repo) { described_class.new }
+RSpec.describe Identity::Repositories::UserRepository do
+  let(:repo) { described_class.new }
 
   describe "#create" do
     it "creates a user with hashed password" do
-      user = repo.create(email: "spec@example.com", password_hash: "hashed_secret", role: "guest")
+      user = repo.create(phone_number: "09012345678", password_digest: "hashed_secret", role: :ROLE_GUEST)
 
       expect(user.id).not_to be_nil
-      expect(user.email).to eq("spec@example.com")
-      expect(user.role).to eq("guest")
-      expect(user.password_hash).to eq("hashed_secret")
+      expect(user.phone_number).to eq("09012345678")
+      expect(user.password_digest).to eq("hashed_secret")
     end
   end
 
-  describe "#find_by_email" do
+  describe "#find_by_phone_number" do
     before do
-      repo.create(email: "found@example.com", password_hash: "123", role: "cast")
+      repo.create(phone_number: "09012345678", password_digest: "123", role: :ROLE_CAST)
     end
 
     it "returns the user if found" do
-      user = repo.find_by_email("found@example.com")
+      user = repo.find_by_phone_number("09012345678")
       expect(user).not_to be_nil
-      expect(user.email).to eq("found@example.com")
-      expect(user.role).to eq("cast")
+      expect(user.phone_number).to eq("09012345678")
     end
 
     it "returns nil if not found" do
-      user = repo.find_by_email("missing@example.com")
+      user = repo.find_by_phone_number("09099999999")
       expect(user).to be_nil
     end
   end

@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { ProfileFormData } from "@/modules/portfolio/types";
+import { ProfileFormData, MediaItem } from "@/modules/portfolio/types";
 import { PhotoGallery } from "@/modules/portfolio/components/guest/detail/PhotoGallery";
 import { ProfileSpecs } from "@/modules/portfolio/components/guest/detail/ProfileSpecs";
 
@@ -10,7 +10,7 @@ interface ProfilePreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   formData: ProfileFormData;
-  images: string[];
+  images: MediaItem[];
 }
 
 export const ProfilePreviewModal = ({

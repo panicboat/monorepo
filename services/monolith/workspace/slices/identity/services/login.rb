@@ -6,10 +6,15 @@ module Identity
     class Login
       include Identity::Deps[repo: "repositories.user_repository"]
 
-      def call(phone_number:, password:)
+      def call(phone_number:, password:, role: nil)
         user = repo.find_by_phone_number(phone_number)
 
         unless user && BCrypt::Password.new(user.password_digest) == password
+          return nil
+        end
+
+        # Strict Role Enforcement
+        if role && user.role != role
           return nil
         end
 

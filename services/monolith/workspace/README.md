@@ -23,10 +23,15 @@ docker-compose up -d db
 # Default: postgres
 bundle exec hanami db create
 bundle exec hanami db migrate
+
+# example query
+docker-compose exec db psql -U postgres -d monolith -P pager=off -c "set search_path = 'identity'; select * from users";
 ```
 ### 3. Run the gRPC server
 
 ```bash
+# Stop the gRPC server
+pkill -f gruf
 # gRPC server listening on 0.0.0.0:9001
 ./bin/grpc
 ```
@@ -35,7 +40,7 @@ bundle exec hanami db migrate
 To update Ruby code from Proto definitions (`proto/**/*.proto`):
 
 ```bash
-bin/codegen
+./bin/codegen
 # Note: Automatically scans all .proto files in root 'proto' dir
 ```
 

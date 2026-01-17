@@ -4,20 +4,21 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Image as ImageIcon } from "lucide-react";
 import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader";
+import { MediaItem } from "@/modules/portfolio/types";
 
 import { useOnboarding } from "../context";
 
 export default function OnboardingStep2() {
   const router = useRouter();
   const { data, updatePhotos } = useOnboarding();
-  const [images, setImages] = useState<string[]>(data.photos.gallery || []);
+  const [images, setImages] = useState<MediaItem[]>(data.photos.gallery || []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (images.length < 1) return;
 
     // Save to context
-    updatePhotos({ gallery: images, cover: images[0] });
+    updatePhotos({ gallery: images, cover: images[0]?.url || null });
     router.push("/cast/onboarding/step-3");
   };
 

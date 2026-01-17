@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useRef, ChangeEvent } from "react";
-import { Upload, X, Image as ImageIcon, Star } from "lucide-react";
+import { Upload, X, Star, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { MediaItem } from "@/modules/portfolio/types";
 
 interface PhotoUploaderProps {
-  images: string[];
-  onChange: (images: string[]) => void;
+  images: MediaItem[];
+  onChange: (images: MediaItem[]) => void;
   minImages?: number;
 }
 
@@ -20,10 +21,11 @@ export const PhotoUploader = ({
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newImages = Array.from(e.target.files).map((file) =>
-        URL.createObjectURL(file),
-      );
-      onChange([...images, ...newImages]);
+      const newItems: MediaItem[] = Array.from(e.target.files).map((file) => ({
+        url: URL.createObjectURL(file),
+        type: file.type.startsWith("video") ? "video" : "image",
+      }));
+      onChange([...images, ...newItems]);
     }
   };
 
@@ -31,10 +33,16 @@ export const PhotoUploader = ({
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const newImages = Array.from(e.dataTransfer.files)
-        .filter((file) => file.type.startsWith("image/"))
-        .map((file) => URL.createObjectURL(file));
-      onChange([...images, ...newImages]);
+      const newItems: MediaItem[] = Array.from(e.dataTransfer.files)
+        .filter(
+          (file) =>
+            file.type.startsWith("image/") || file.type.startsWith("video/"),
+        )
+        .map((file) => ({
+          url: URL.createObjectURL(file),
+          type: file.type.startsWith("video/") ? "video" : "image",
+        }));
+      onChange([...images, ...newItems]);
     }
   };
 
@@ -58,28 +66,33 @@ export const PhotoUploader = ({
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         onClick={triggerFileInput}
-        className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition-all cursor-pointer ${isDragging
-          ? "border-pink-500 bg-pink-50 scale-[1.02]"
-          : "border-slate-200 bg-slate-50 hover:border-pink-300 hover:bg-pink-50/30"
-          }`}
+        className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition-all cursor-pointer ${
+          isDragging
+            ? "border-pink-500 bg-pink-50 scale-[1.02]"
+            : "border-slate-200 bg-slate-50 hover:border-pink-300 hover:bg-pink-50/30"
+        }`}
       >
         <input
           type="file"
           ref={fileInputRef}
           className="hidden"
           multiple
-          accept="image/*"
+          accept="image/*,video/*"
           onChange={handleFileSelect}
         />
         <div className="mb-4 rounded-full bg-white p-4 shadow-sm">
           <Upload
-            className={`h-8 w-8 ${isDragging ? "text-pink-500" : "text-slate-400"}`}
+            className={`h-8 w-8 ${
+              isDragging ? "text-pink-500" : "text-slate-400"
+            }`}
           />
         </div>
         <p className="text-sm font-bold text-slate-700">
-          Click or Drop Photos Here
+          Click or Drop Media Here
         </p>
-        <p className="mt-1 text-xs text-slate-400">JPG, PNG, WebP supported</p>
+        <p className="mt-1 text-xs text-slate-400">
+          JPG, PNG, WebP, MP4 supported
+        </p>
       </div>
 
       {/* Helper Text */}
@@ -89,22 +102,22 @@ export const PhotoUploader = ({
           <p className="font-bold mb-1">Upload Recommendation</p>
           <ul className="list-disc pl-4 space-y-1 opacity-80">
             <li>
-              At least <strong>1</strong> photo is required ({minImages}+
+              At least <strong>1</strong> media item is required ({minImages}+
               recommended).
             </li>
             <li>
-              The <strong>first photo</strong> will effectively be your{" "}
-              <strong>Cover Image</strong>.
+              The <strong>first item</strong> will effectively be your{" "}
+              <strong>Cover Media</strong>.
             </li>
-            <li>Use high-quality photos to attract more guests.</li>
+            <li>Use high-quality photos/videos to attract more guests.</li>
           </ul>
         </div>
       </div>
 
-      {/* Image Grid */}
+      {/* Grid */}
       {images.length > 0 && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {images.map((src, index) => (
+          {images.map((item, index) => (
             <div
               key={index}
               onClick={() => {
@@ -114,10 +127,11 @@ export const PhotoUploader = ({
                 newImages.unshift(movedImage);
                 onChange(newImages);
               }}
-              className={`group relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-100 transition-all ${index === 0
-                ? "ring-2 ring-pink-500 ring-offset-2"
-                : "cursor-pointer hover:ring-2 hover:ring-pink-300 hover:ring-offset-1"
-                }`}
+              className={`group relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-100 transition-all ${
+                index === 0
+                  ? "ring-2 ring-pink-500 ring-offset-2"
+                  : "cursor-pointer hover:ring-2 hover:ring-pink-300 hover:ring-offset-1"
+              }`}
             >
               {/* Cover Badge for First Item */}
               {index === 0 && (
@@ -141,11 +155,28 @@ export const PhotoUploader = ({
                 #{index + 1}
               </div>
 
-              <img
-                src={src}
-                alt={`Uploaded ${index + 1}`}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
+              {/* Media Content */}
+              {item.type === "video" ? (
+                <>
+                  <video
+                    src={item.url}
+                    className="h-full w-full object-cover"
+                    muted
+                    autoPlay
+                    loop
+                    playsInline
+                  />
+                  <div className="absolute bottom-2 right-2 z-10 text-white/80">
+                    <PlayCircle size={20} fill="rgba(0,0,0,0.5)" />
+                  </div>
+                </>
+              ) : (
+                <img
+                  src={item.url}
+                  alt={`Uploaded ${index + 1}`}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+              )}
 
               {/* Remove Button */}
               <Button
@@ -167,6 +198,7 @@ export const PhotoUploader = ({
     </div>
   );
 };
+
 
 const InfoIcon = ({ className }: { className?: string }) => (
   <svg

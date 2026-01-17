@@ -7,7 +7,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { ProfileFormData } from "@/modules/portfolio/types";
+import { ProfileFormData, MediaItem } from "@/modules/portfolio/types";
 import { SchedulePlan } from "@/modules/ritual/components/cast/WeeklyShiftInput";
 import { ScheduleItem } from "@/modules/ritual/components/cast/WeeklyShiftInput";
 
@@ -22,7 +22,7 @@ export type OnboardingData = {
   photos: {
     cover: string | null;
     profile: string | null;
-    gallery: string[];
+    gallery: MediaItem[];
   };
   plans: PlanData[];
   shifts: ScheduleItem[];
@@ -64,6 +64,26 @@ const OnboardingContext = createContext<OnboardingContextType | undefined>(
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   const [data, setData] = useState<OnboardingData>(INITIAL_DATA);
+
+  // Load from LocalStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("cast_onboarding_data");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setData((prev) => ({ ...prev, ...parsed }));
+      } catch (e) {
+        console.error("Failed to parse onboarding data", e);
+      }
+    }
+  }, []);
+
+  // Save to LocalStorage
+  useEffect(() => {
+    if (data !== INITIAL_DATA) {
+        localStorage.setItem("cast_onboarding_data", JSON.stringify(data));
+    }
+  }, [data]);
 
   // Fetch Master Data
   useEffect(() => {

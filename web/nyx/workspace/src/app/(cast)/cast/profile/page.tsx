@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Save, Loader2, Image as ImageIcon, Tag, Eye } from "lucide-react";
 
-import { CastProfile, ProfileFormData } from "@/modules/portfolio/types";
+import { CastProfile, ProfileFormData, MediaItem } from "@/modules/portfolio/types";
 import { ProfileInputs } from "@/modules/portfolio/components/cast/ProfileInputs";
 import { StyleInputs } from "@/modules/portfolio/components/cast/StyleInputs";
 import { SocialInputs } from "@/modules/portfolio/components/cast/SocialInputs";
@@ -47,7 +47,7 @@ export default function ProfileEditPage() {
     threeSizes: { b: 0, w: 0, h: 0, cup: "" },
   });
 
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<MediaItem[]>([]);
 
   // Handlers
   const handleProfileChange = (key: keyof ProfileFormData, val: any) => {
@@ -130,8 +130,10 @@ export default function ProfileEditPage() {
         });
 
         // Images
-        const imgList = [];
-        if (data.images.hero) imgList.push(data.images.hero);
+        const imgList: MediaItem[] = [];
+        if (data.images.hero) {
+             imgList.push({ type: "image", url: data.images.hero });
+        }
         if (data.images.portfolio) imgList.push(...data.images.portfolio);
         setImages(imgList);
       } catch (e) {
@@ -163,7 +165,7 @@ export default function ProfileEditPage() {
         locationType: profileForm.locationType,
         socialLinks: profileForm.socialLinks,
         images: {
-          hero: images[0] || "",
+          hero: images[0]?.url || "",
           portfolio: images.slice(1),
         },
         // New Fields

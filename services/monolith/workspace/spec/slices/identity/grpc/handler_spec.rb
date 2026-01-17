@@ -12,14 +12,14 @@ RSpec.describe Identity::Grpc::Handler do
   }
 
   describe "#register" do
-    let(:email) { "grpc@example.com" }
+    let(:phone_number) { "09012345678" }
     let(:password) { "pass" }
-    let(:request) { Identity::V1::RegisterRequest.new(email: email, password: password, role: :ROLE_GUEST) }
+    let(:request) { Identity::V1::RegisterRequest.new(phone_number: phone_number, password: password, role: :ROLE_GUEST) }
 
     it "calls Register service and returns response" do
       allow(register_service).to receive(:call).and_return(
         access_token: "mock_token",
-        user_profile: { id: "1", email: email, role: "guest" }
+        user_profile: { id: "1", phone_number: phone_number, role: "guest" }
       )
 
       resp = handler.register(request, nil)
@@ -39,14 +39,14 @@ RSpec.describe Identity::Grpc::Handler do
   end
 
   describe "#login" do
-    let(:email) { "grpc@example.com" }
+    let(:phone_number) { "09012345678" }
     let(:password) { "pass" }
-    let(:request) { Identity::V1::LoginRequest.new(email: email, password: password) }
+    let(:request) { Identity::V1::LoginRequest.new(phone_number: phone_number, password: password) }
 
     it "calls Login service and returns response" do
       allow(login_service).to receive(:call).and_return(
         access_token: "mock_token",
-        user_profile: { id: "1", email: email, role: "guest" }
+        user_profile: { id: "1", phone_number: phone_number, role: "guest" }
       )
 
       resp = handler.login(request, nil)

@@ -18,19 +18,34 @@
 
 ## Data Model
 
-### `casts` table
+### `casts` table (Schema: `portfolio`)
 | Column | Type | Notes |
 | :--- | :--- | :--- |
 | `id` | UUID | PK |
 | `user_id` | UUID | Logical Link to `users.id` (No FK Constraint, Unique Index) |
 | `name` | String | 表示名 (Nickname) |
-| `tagline` | String | キャッチコピー |
+| `tagline` | String | キャッチコピー (One liner) |
 | `bio` | Text | 自己紹介 |
 | `service_category` | String | `standard`, `vip` etc. |
 | `location_type` | String | `dispatch` (出張), `room` (ルーム) |
 | `area` | String | 活動エリア |
 | `status` | String | 'online', 'offline', 'unavailable' |
 | `promise_rate` | Float | 0.0 - 1.0 (信頼度スコア) |
+| `age` | Integer | 年齢 |
+| `height` | Integer | 身長 (cm) |
+| `blood_type` | String | 血液型 |
+| `occupation` | String | 職業 |
+| `charm_point` | String | チャームポイント |
+| `personality` | String | 性格 |
+| `bust` | Integer | バスト (cm) |
+| `waist` | Integer | ウエスト (cm) |
+| `hip` | Integer | ヒップ (cm) |
+| `cup_size` | String | カップ数 |
+| `images` | JSONB | 画像/動画リスト `[{ url, type: 'image'\|'video', thumbnail? }]` |
+| `tags` | JSONB | 特徴タグのリスト (String[]) |
+| `social_links` | JSONB | SNSリンク集 |
+| `default_shift_start` | String | デフォルトシフト開始時間 (HH:MM) |
+| `default_shift_end` | String | デフォルトシフト終了時間 (HH:MM) |
 
 ### URL / Routing Design
 - **Root / Portal**: `/cast`
@@ -39,8 +54,26 @@
     - 認証済みなら `/cast/onboarding` (未完了) または `/cast/home` (完了) へリダイレクトする。
     - **UI**: 登録とログインをシームレスに切り替える（GuestのTopなどと同様の体験）。
 - **Onboarding**: `/cast/onboarding`
-    - **Step-by-Step Persistence**: 各ステップ完了時（「次へ」押下時）にデータを保存する。途中で離脱しても再開可能にする。
+    - **Step-by-Step Persistence**: ユーザーが入力を進めるごとに（Stepごとに）状態を保存する。これにより離脱後の再開を容易にする。
 - **Dashboard**: `/cast/home` (Moved from `/manage`)
+
+### 4. Authentication & Onboarding Flow (Detailed)
+- **Shared Login Component**:
+    - ゲスト用の `LoginGate` コンポーネントを改修し、キャスト認証フローでも利用可能にする（共通化）。
+    - **UI Colors**: キャスト用は**ピンク**系、ゲスト用は**黒**系（既存踏襲）を使用する。
+- **Token Management**:
+    - 登録・ログイン成功時に発行されるアクセストークンは、クライアントの `localStorage` に保存する（キー: `access_token`）。
+    - アプリ起動時（または `/cast` アクセス時）、`localStorage` に有効なトークンが存在すれば、自動的にログイン後の画面へ遷移する。
+- **Redirection Logic**:
+    - ログイン済み（トークン有効）の場合の遷移先：
+        - **Onboarding未完了**: `/cast/onboarding` へ強制リダイレクト。
+        - **Onboarding完了済**: `/cast/home`（ダッシュボード）へ遷移。
+    - キャスト登録完了直後は `/cast/onboarding` へ遷移する。
+
+### 5. Frontend UI/UX
+- **Video Playback**:
+    - `images` に動画が含まれる場合、一覧では GIF (または自動再生ミュート動画) として表示する。
+    - タップ/クリック時に動画プレイヤーを起動し、音声付きで再生可能にする。
 
 ### Domain Mapping
 - **Cast Service** is part of **Portfolio Domain**.

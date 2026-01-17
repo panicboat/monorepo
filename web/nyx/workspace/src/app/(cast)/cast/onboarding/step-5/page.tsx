@@ -124,16 +124,27 @@ export default function OnboardingStep5() {
           </div>
           <div className="rounded-xl bg-white p-4 shadow-sm border border-slate-100">
             <div className="grid grid-cols-3 gap-2">
-              {photos.gallery.map((src, i) => (
+              {photos.gallery.map((item, i) => (
                 <div
                   key={i}
                   className="aspect-[3/4] rounded-lg bg-slate-100 overflow-hidden relative"
                 >
-                  <img
-                    src={src}
-                    alt={`Gallery ${i}`}
-                    className="h-full w-full object-cover"
-                  />
+                  {item.type === "video" ? (
+                    <video
+                      src={item.url}
+                      className="h-full w-full object-cover"
+                      muted
+                      autoPlay
+                      loop
+                      playsInline
+                    />
+                  ) : (
+                    <img
+                      src={item.url}
+                      alt={`Gallery ${i}`}
+                      className="h-full w-full object-cover"
+                    />
+                  )}
                   {i === 0 && (
                     <div className="absolute top-1 left-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
                       Cover
