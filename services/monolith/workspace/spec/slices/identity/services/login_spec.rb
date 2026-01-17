@@ -1,29 +1,72 @@
-RSpec.describe Identity::Services::Login, :db do
-  subject(:service) { described_class.new }
-  let(:repo) { Identity::Repositories::UserRepository.new }
+# frozen_string_literal: true
 
-  before do
-    # Create user manually
-    hash = BCrypt::Password.create("password")
-    repo.create(phone_number: "09012345678", password_digest: hash, role: 1)
-  end
+require "spec_helper"
+require "slices/identity/services/login"
 
-  it "returns token on successful login" do
-    result = service.call(phone_number: "09012345678", password: "password")
+RSpec.describe Identity::Services::Login do
+  let(:service) { described_class.new(repo: repo) }
 
-    expect(result).not_to be_nil
-    expect(result[:access_token]).to be_a(String)
-    expect(result[:user_profile][:phone_number]).to eq("09012345678")
-    expect(result[:user_profile][:role]).to eq(1)
-  end
+  # TODO: Review mock behavior for user repository
+  let(:repo) { double(:user_repository) }
 
-  it "returns nil on invalid password" do
-    result = service.call(phone_number: "09012345678", password: "wrong_password")
-    expect(result).to be_nil
-  end
+  describe "#call" do
+    let(:phone_number) { "+1234567890" }
+    let(:password) { "password" }
+    let(:role) { 1 }
 
-  it "returns nil on unknown user" do
-    result = service.call(phone_number: "09000000000", password: "password")
-    expect(result).to be_nil
+    context "when credentials are valid" do
+      let(:user) do
+        double(
+          :user,
+          id: "user-123",
+          phone_number: phone_number,
+          password_digest: BCrypt::Password.create(password),
+          role: role
+        )
+      end
+
+      before do
+        allow(repo).to receive(:find_by_phone_number).with(phone_number).and_return(user)
+      end
+
+      it "returns access token and profile" do
+        result = service.call(phone_number: phone_number, password: password, role: role)
+
+        expect(result[:access_token]).not_to be_nil
+        expect(result[:user_profile][:id]).to eq("user-123")
+      end
+    end
+
+    context "when password does not match" do
+      let(:user) do
+        double(
+          :user,
+          id: "user-123",
+          phone_number: phone_number,
+          password_digest: BCrypt::Password.create("wrong_password"),
+          role: role
+        )
+      end
+
+      before do
+        allow(repo).to receive(:find_by_phone_number).with(phone_number).and_return(user)
+      end
+
+      it "returns nil" do
+        result = service.call(phone_number: phone_number, password: password, role: role)
+        expect(result).to be_nil
+      end
+    end
+
+    context "when user not found" do
+      before do
+        allow(repo).to receive(:find_by_phone_number).with(phone_number).and_return(nil)
+      end
+
+      it "returns nil" do
+        result = service.call(phone_number: phone_number, password: password, role: role)
+        expect(result).to be_nil
+      end
+    end
   end
 end

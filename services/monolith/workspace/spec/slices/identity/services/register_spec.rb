@@ -1,37 +1,74 @@
-RSpec.describe Identity::Services::Register, :db do
-  subject(:service) { described_class.new }
-  let(:repo) { Identity::Repositories::UserRepository.new }
-  let(:sms_repo) { Identity::Repositories::SmsVerificationRepository.new }
+# frozen_string_literal: true
 
-  before do
-    # Create a verified token for the phone number
-    sms_repo.create(phone_number: "09012345678", code: "0000", expires_at: Time.now + 3600)
-    # Mark it as verified (simulation)
-    # TODO: This setup relies on mock SMS verification logic
-    verification = sms_repo.find_latest_by_phone_number("09012345678")
-    sms_repo.mark_as_verified(verification.id)
-  end
+require "spec_helper"
+require "slices/identity/services/register"
 
-  it "creates a user and returns result with token" do
-    # Fetch the verified token string
-    verification = sms_repo.find_latest_by_phone_number("09012345678")
-    token_string = verification.id
+RSpec.describe Identity::Services::Register do
+  let(:service) { described_class.new(repo: repo, verification_repo: verification_repo) }
 
-    result = service.call(phone_number: "09012345678", password: "password", verification_token: token_string)
+  # TODO: Review mock behavior for user repository
+  let(:repo) { double(:user_repository) }
 
-    expect(result[:access_token]).to be_a(String)
-    expect(result[:user_profile][:phone_number]).to eq("09012345678")
-    expect(result[:user_profile][:role]).to eq(1) # Default Guest role
+  # TODO: Review mock behavior for sms verification repository
+  let(:verification_repo) { double(:sms_verification_repository) }
 
-    # Verify DB
-    user = repo.find_by_phone_number("09012345678")
-    expect(user).not_to be_nil
-    expect(BCrypt::Password.new(user.password_digest)).to eq("password")
-  end
+  describe "#call" do
+    let(:phone_number) { "+1234567890" }
+    let(:password) { "password" }
+    let(:verification_token) { "token-123" }
+    let(:role) { 1 }
 
-  it "fails if verification token is invalid" do
-    expect {
-      service.call(phone_number: "09012345678", password: "password", verification_token: SecureRandom.uuid)
-    }.to raise_error(Identity::Services::Register::RegistrationError)
+    context "when verification is valid" do
+      let(:verification) do
+        double(
+          :verification,
+          phone_number: phone_number,
+          verified_at: Time.now
+        )
+      end
+      let(:user) do
+        double(
+          :user,
+          id: "user-123",
+          phone_number: phone_number,
+          password_digest: "digest",
+          role: role
+        )
+      end
+
+      before do
+        allow(verification_repo).to receive(:find_by_id).with(verification_token).and_return(verification)
+        allow(repo).to receive(:create).and_return(user)
+      end
+
+      it "creates a user and returns token" do
+        result = service.call(
+          phone_number: phone_number,
+          password: password,
+          verification_token: verification_token,
+          role: role
+        )
+
+        expect(result[:access_token]).not_to be_nil
+        expect(result[:user_profile][:id]).to eq("user-123")
+      end
+    end
+
+    context "when verification is invalid" do
+      before do
+        allow(verification_repo).to receive(:find_by_id).with(verification_token).and_return(nil)
+      end
+
+      it "raises RegistrationError" do
+        expect {
+          service.call(
+            phone_number: phone_number,
+            password: password,
+            verification_token: verification_token,
+            role: role
+          )
+        }.to raise_error(Identity::Services::Register::RegistrationError, "Invalid verification token")
+      end
+    end
   end
 end

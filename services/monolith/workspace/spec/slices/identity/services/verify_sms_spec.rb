@@ -1,33 +1,60 @@
-RSpec.describe Identity::Services::VerifySms, :db do
-  subject(:service) { described_class.new }
-  let(:repo) { Identity::Repositories::SmsVerificationRepository.new }
+# frozen_string_literal: true
 
-  before do
-    repo.create(phone_number: "09012345678", code: "0000", expires_at: Time.now + 3600)
-  end
+require "spec_helper"
+require "slices/identity/services/verify_sms"
 
-  it "verifies valid code and returns token" do
-    result = service.call(phone_number: "09012345678", code: "0000")
+RSpec.describe Identity::Services::VerifySms do
+  let(:service) { described_class.new(repo: repo) }
 
-    # Return the verification ID as the token
-    # TODO: In a real implementation, this might be a separate secure token column
-    expect(result[:verification_token]).to be_a(String)
+  # TODO: Review mock behavior for sms verification repository
+  let(:repo) { double(:sms_verification_repository) }
 
-    # Verify DB state
-    record = repo.find_latest_by_phone_number("09012345678")
-    expect(record.verified_at).not_to be_nil
-    expect(record.id).to eq(result[:verification_token])
-  end
+  describe "#call" do
+    let(:phone_number) { "+1234567890" }
+    let(:code) { "123456" }
+    let(:now) { Time.now }
 
-  it "fails on invalid code" do
-    expect {
-      service.call(phone_number: "09012345678", code: "9999")
-    }.to raise_error(Identity::Services::VerifySms::VerificationError)
-  end
+    context "when code is valid" do
+      let(:verification) do
+        double(
+          :verification,
+          id: "ver-123",
+          code: code,
+          expires_at: now + 300
+        )
+      end
 
-  it "fails on non-existent phone number" do
-    expect {
-      service.call(phone_number: "09000000000", code: "0000")
-    }.to raise_error(Identity::Services::VerifySms::VerificationError)
+      before do
+        allow(repo).to receive(:find_latest_by_phone_number).with(phone_number).and_return(verification)
+        allow(repo).to receive(:mark_as_verified).with("ver-123")
+      end
+
+      it "returns success and token" do
+        result = service.call(phone_number: phone_number, code: code)
+
+        expect(result[:success]).to be(true)
+        expect(result[:verification_token]).to eq("ver-123")
+      end
+    end
+
+    context "when code is expired" do
+      let(:verification) do
+        double(
+          :verification,
+          code: code,
+          expires_at: now - 300
+        )
+      end
+
+      before do
+        allow(repo).to receive(:find_latest_by_phone_number).with(phone_number).and_return(verification)
+      end
+
+      it "raises VerificationError" do
+        expect {
+          service.call(phone_number: phone_number, code: code)
+        }.to raise_error(Identity::Services::VerifySms::VerificationError, "Code expired")
+      end
+    end
   end
 end

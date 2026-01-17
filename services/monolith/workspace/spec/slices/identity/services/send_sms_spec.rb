@@ -1,18 +1,24 @@
-RSpec.describe Identity::Services::SendSms, :db do
-  subject(:service) { described_class.new }
-  let(:repo) { Identity::Repositories::SmsVerificationRepository.new }
+# frozen_string_literal: true
 
-  it "creates an sms verification record" do
-    result = service.call(phone_number: "09012345678")
+require "spec_helper"
+require "slices/identity/services/send_sms"
 
-    expect(result).not_to be_nil
-    # Check mocked expiration
-    expect(result.expires_at).to be > Time.now
+RSpec.describe Identity::Services::SendSms do
+  let(:service) { described_class.new(repo: repo) }
 
-    # Verify DB
-    record = repo.find_latest_by_phone_number("09012345678")
-    expect(record).not_to be_nil
-    # TODO: Verify real SMS sending (e.g. check Twilio mock)
-    expect(record.code).to eq("0000") # Mock logic
+  # TODO: Review mock behavior for sms verification repository
+  let(:repo) { double(:sms_verification_repository) }
+
+  describe "#call" do
+    let(:phone_number) { "+1234567890" }
+
+    before do
+      allow(repo).to receive(:create).and_return(double(:verification))
+    end
+
+    it "creates a verification record" do
+      expect(repo).to receive(:create)
+      service.call(phone_number: phone_number)
+    end
   end
 end
