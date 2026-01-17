@@ -18,6 +18,8 @@
 │       ├── kubernetes/ # Kubernetes Manifests (Base/Overlays)
 │       └── terragrunt/ # Terraform & Terragrunt configurations
 ├── templates/          # Kubernetes templates
+├── tests/              # Tests
+│   └── e2e/            # End-to-End tests
 └── web/                # Frontend source code & manifests
     └── {service}/      # Service Name
         ├── workspace/  # Application Source Code

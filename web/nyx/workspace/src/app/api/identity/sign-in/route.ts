@@ -2,18 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { identityClient } from "@/lib/grpc";
 
 export async function POST(req: NextRequest) {
+  let body: any = {};
   try {
-    const body = await req.json();
-    const { phoneNumber, password } = body;
+    body = await req.json();
+    const { phoneNumber, password, role } = body;
 
     const response = await identityClient.login({
       phoneNumber,
       password,
+      role,
     });
 
     return NextResponse.json(response);
   } catch (error: any) {
+    // Code 16 is Unauthenticated (ConnectRPC/gRPC)
+    if (error.code === 16) {
+      // Clean log for expected failures
+      console.warn(`Login failed for ${body?.phoneNumber || 'unknown'}: ${error.rawMessage || error.message}`);
+      return NextResponse.json({ error: error.rawMessage || error.message }, { status: 401 });
+    }
+
     console.error("Login Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.rawMessage || error.message }, { status: 500 });
   }
 }

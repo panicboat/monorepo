@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { CastProfile } from "@/modules/portfolio/types";
+import { useAuth } from "@/modules/identity/hooks/useAuth";
 
 interface MyPageStats {
   sales: number;
@@ -29,6 +30,7 @@ export default function CastMyPage() {
   const [profile, setProfile] = useState<CastProfile | null>(null);
   const [stats, setStats] = useState<MyPageStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const { logout } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -279,7 +281,10 @@ export default function CastMyPage() {
           <ChevronRight className="text-slate-400 group-hover:text-slate-600 transition" />
         </button>
 
-        <button className="w-full p-4 flex items-center gap-3 text-red-500 hover:text-red-600 transition justify-center mt-4">
+        <button
+          onClick={logout}
+          className="w-full p-4 flex items-center gap-3 text-red-500 hover:text-red-600 transition justify-center mt-4"
+        >
           <LogOut className="w-4 h-4" />
           <span className="text-xs font-bold">ログアウト</span>
         </button>

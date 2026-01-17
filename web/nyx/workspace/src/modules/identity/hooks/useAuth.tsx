@@ -14,6 +14,8 @@ export type User = {
   name: string; // Phone Number for now
   avatarUrl?: string;
   isGuest: boolean;
+  role: number | string;
+  isNew?: boolean;
 };
 
 type AuthContextType = {
@@ -21,8 +23,13 @@ type AuthContextType = {
   isLoading: boolean;
   requestSMS: (phoneNumber: string) => Promise<boolean>;
   verifySMS: (phoneNumber: string, code: string) => Promise<string>;
-  register: (phoneNumber: string, password: string, verificationToken: string) => Promise<void>;
-  login: (phoneNumber: string, password: string) => Promise<void>;
+  register: (
+    phoneNumber: string,
+    password: string,
+    verificationToken: string,
+    role?: number,
+  ) => Promise<void>;
+  login: (phoneNumber: string, password: string, role?: number) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -46,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: data.id,
           name: data.phoneNumber,
           isGuest: role === 1 || role === "ROLE_GUEST",
+          role: role,
         });
       } else {
          // Token invalid
@@ -90,42 +98,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.verificationToken;
   };
 
-  const register = async (phoneNumber: string, password: string, verificationToken: string) => {
+  const register = async (
+    phoneNumber: string,
+    password: string,
+    verificationToken: string,
+    role: number = 1,
+  ) => {
     const res = await fetch("/api/identity/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, password, verificationToken }),
+      body: JSON.stringify({ phoneNumber, password, verificationToken, role }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Registration failed");
 
     localStorage.setItem("access_token", data.accessToken);
-    const role = data.userProfile.role;
+    const userRole = data.userProfile.role;
+    const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
+
     setUser({
       id: data.userProfile.id,
       name: data.userProfile.phoneNumber,
-      isGuest: role === 1 || role === "ROLE_GUEST",
+      isGuest,
+      role: userRole,
+      isNew: true, // Mark as newly registered
     });
-    router.push("/");
+
+    if (isGuest) {
+      router.push("/");
+    } else {
+      router.push("/cast/onboarding");
+    }
   };
 
-  const login = async (phoneNumber: string, password: string) => {
-    const res = await fetch("/api/identity/sign-in", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Login failed");
+  const login = async (phoneNumber: string, password: string, role?: number) => {
+    try {
+      const res = await fetch("/api/identity/sign-in", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber, password, role }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Login failed");
 
-    localStorage.setItem("access_token", data.accessToken);
-    const role = data.userProfile.role;
-    setUser({
-      id: data.userProfile.id,
-      name: data.userProfile.phoneNumber,
-      isGuest: role === 1 || role === "ROLE_GUEST",
-    });
-    router.push("/");
+      localStorage.setItem("access_token", data.accessToken);
+      const userRole = data.userProfile.role;
+      const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
+      setUser({
+        id: data.userProfile.id,
+        name: data.userProfile.phoneNumber,
+        isGuest,
+        role: userRole,
+      });
+
+      if (isGuest) {
+        router.push("/");
+      } else {
+        router.push("/cast/home");
+      }
+    } catch (e) {
+      throw e;
+    }
   };
 
   const logout = async () => {
