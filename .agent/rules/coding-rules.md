@@ -1,13 +1,17 @@
 ---
+trigger: always_on
 description: Enforce restricted coding rules.
 ---
 
 # Coding Rules
 
-Please strictly follow these rules:
+以下のルールを厳守してください：
 
-- Do not include change descriptions in code comments or method names. Make them understandable for the current state.
-- Do not use comparative expressions like "simple" or "complex" anywhere.
-- Code consistency is important. Ensure modifications maintain consistency with existing code.
-- **Tool Verification**: You MUST check the `Output` of every code modification tool immediately. If `replace_file_content` fails (e.g., "target content not found"), DO NOT proceed. You MUST re-read the file (`view_file`) and retry the edit.
-- **Visual Verification**: After significant UI changes (layout, position, color), you MUST re-read the full file content to ensure the changes were applied correctly as intended.
+- コードの変更内容をコメントやメソッド名に含めないでください。現在の状態が理解できるように命名してください。
+- "simple" や "complex" といった比較表現はいかなる場所でも使用しないでください。
+- **TODOコメントの追加**: いかなるコードでも一時的な実装をする場合は TODO コメントを必ず追加してください。
+- コードの一貫性は重要です。変更を行う際は、既存のコードとの一貫性を保つようにしてください。
+- **ツールの検証**: コード修正ツールの `Output` を即座に確認しなければなりません (MUST)。もし `replace_file_content` が失敗した場合（例: "target content not found"）、処理を続行してはいけません (DO NOT)。必ずファイルを再読み込み (`view_file`) し、編集を再試行してください。
+- **視覚的な検証**: UIに重要な変更（レイアウト、配置、色など）を加えた後は、意図通りに変更が適用されたことを確認するために、ファイル全体を再読み込みしなければなりません (MUST)。
+- **テストの共創**: プロダクションコードとテストコードはセットで作成しなければなりません (MUST)。
+- **テストカバレッジ**: テストカバレッジは現実的に可能な限り高く保つべきです (SHOULD)（100%は必須ではありませんが、現実的な範囲で最高値を目指してください）。

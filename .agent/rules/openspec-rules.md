@@ -5,8 +5,8 @@ description: when working on the openspec.
 
 # OpenSpec Rules
 
-- **OpenSpec Requirements**:
-  - `openspec validate` requires English keywords (`MUST`, `SHALL`, `SHOULD`, `MAY`).
-  - **Rule**: Write the requirement in Japanese, then append the English keyword phrase in parentheses.
-  - **Example**: `ユーザーは...できなければならない (MUST be able to...)`
-- **OpenSpec Archival**: Upon confirming with the user that a task is complete, you MUST archive the corresponding OpenSpec change using `openspec archive` to finalize the workflow.
+- **OpenSpec 要件**:
+  - `openspec validate` は英語のキーワード (`MUST`, `SHALL`, `SHOULD`, `MAY`) を必要とします。
+  - **ルール**: 要件は日本語で記述し、その後に英語のキーワードフレーズを括弧書きで追加してください。
+  - **例**: `ユーザーは...できなければならない (MUST be able to...)`
+- **OpenSpec アーカイブ**: ユーザーとタスクの完了を確認したら、ワークフローを完了させるために `openspec archive` を使用して対応する OpenSpec の変更をアーカイブしなければなりません (MUST)。

@@ -1,15 +1,19 @@
 ---
+trigger: always_on
 description: Enforce restricted language rules.
 ---
 
 # Language Rules
 
-- **OUTPUT MUST BE IN JAPANESE.**
-- **Documents (Proposals, Plans, etc.)**:
-  - **Headers**: MUST be in **English**.
-  - **Content**: MUST be in **Japanese**.
-- Only code (variable names, comments usually) should be English.
-- **OpenSpec Requirements**:
-  - `openspec validate` requires English keywords (`MUST`, `SHALL`, `SHOULD`, `MAY`).
-  - **Rule**: Write the requirement in Japanese, then append the English keyword phrase in parentheses.
-  - **Example**: `ユーザーは...できなければならない (MUST be able to...)`
+- **出力は日本語でなければなりません (MUST BE IN JAPANESE)。**
+- **ドキュメント (提案書、計画書など)**:
+  - **見出し**: 英語でなければなりません (MUST be in **English**)。
+  - **本文**: 日本語でなければなりません (MUST be in **Japanese**)。
+- コード（変数名、コメントなど）のみ英語にすべきです。
+
+# Action Protocol
+
+Markdownファイルを作成・編集する際は、ツール実行前の `<thought>` ブロック内で必ず以下のチェックを行わなければならない：
+1. **Target Check**: これはドキュメントやアーティファクトか？ (YES/NO)
+2. **Header Check**: 見出しは英語か？ (YES/NO)
+3. **Content Check**: 本文は日本語か？ (YES/NO)
