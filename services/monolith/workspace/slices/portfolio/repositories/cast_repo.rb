@@ -1,6 +1,6 @@
-module Cast
+module Portfolio
   module Repositories
-    class CastRepo < Cast::DB::Repo
+    class CastRepo < Portfolio::DB::Repo
       commands :create, update: :by_pk, delete: :by_pk
 
       def find_by_user_id(user_id)

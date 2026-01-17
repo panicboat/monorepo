@@ -45,7 +45,7 @@
 
 ### B. Portfolio Domain
 - **Role:** カタログ、検索、プロフィール管理。
-- **Implementation:** `services/monolith/slices/cast` (一部), `web/nyx/src/modules/portfolio`
+- **Implementation:** `web/nyx/src/modules/portfolio`
 
 ### C. Concierge Domain
 - **Role:** チャット、リアルタイム通信、スマート招待状。
@@ -53,7 +53,7 @@
 
 ### D. Ritual Domain
 - **Role:** スケジュール、予約トランザクション、誓約（Pledge）。
-- **Implementation:** `services/monolith/slices/cast` (予約ロジック), `web/nyx/src/modules/ritual`
+- **Implementation:** `web/nyx/src/modules/ritual` (予約ロジック)
 
 ### E. Trust Domain
 - **Role:** 評価、CRM、分析。

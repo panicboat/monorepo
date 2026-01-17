@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package cast.v1;
+package portfolio.v1;
 
 // import "buf/validate/validate.proto";
 

@@ -35,7 +35,7 @@ require_relative "../lib/interceptors/authentication_interceptor"
 $LOAD_PATH.unshift(File.expand_path("../stubs", __dir__))
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 require "identity/v1/service_services_pb"
-require "cast/v1/service_services_pb"
+require "portfolio/v1/service_services_pb"
 
 # Configure Gruf
 Gruf.configure do |c|
@@ -51,7 +51,7 @@ end
 
 # Ensure Handlers are loaded so `bind` logic executes!
 require_relative "../slices/identity/grpc/handler"
-require_relative "../slices/cast/grpc/handler"
+require_relative "../slices/portfolio/grpc/handler"
 
 Hanami.logger.info("Starting gRPC Stub Server on #{Gruf.server_binding_url}")
 Hanami.logger.info("Services: #{Gruf.services}")

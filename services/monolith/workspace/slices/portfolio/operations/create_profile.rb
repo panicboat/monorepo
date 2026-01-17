@@ -1,7 +1,7 @@
-module Cast
+module Portfolio
   module Operations
     class CreateProfile
-      include Cast::Deps[repo: "repositories.cast_repo"]
+      include Portfolio::Deps[repo: "repositories.cast_repo"]
 
       def call(user_id:, name:, bio:, image_url:, plans: [])
         # TODO: Validation

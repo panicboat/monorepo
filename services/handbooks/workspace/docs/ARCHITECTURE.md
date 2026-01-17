@@ -33,15 +33,16 @@
 > **Note:** ドメイン定義の詳細は [分散システム設計/MICROSERVICE.md](分散システム設計/MICROSERVICE.md) を参照してください。
 
 ### Backend Structure: `services/monolith`
-Hanamiの **Slices** 機能を使用し、ドメインごとにディレクトリを分割しています。
+Hanamiの **Slices** 機能を使用し、ドメインごとにディレクトリを分割します。
 
 - `slices/identity/` -> **Identity Service** (Auth, Roles)
-- `slices/cast/` -> **Portfolio Service** (Profile, Search) & **Ritual Service** (Reservation Logic)
-- `slices/concierge/` -> **Concierge Service** (Chat Logic - Future)
+- `slices/portfolio/` -> **Portfolio Service** (Profile, Search)
+- `slices/ritual/` -> **Ritual Service** (Reservation Logic)
+- `slices/trust/` -> **Trust Service** (Review, Radar Chart)
 - `lib/` -> Shared Kernel (Common Entities)
 
 ### Frontend Structure: `web/nyx`
-Next.jsのディレクトリ構造内で、機能単位のモジュール分割を行っています。
+Next.jsのディレクトリ構造内で、ドメインごとにディレクトリを分割します。
 
 - `src/modules/concierge/` -> **Concierge Domain** (Chat UI, Room List)
 - `src/modules/portfolio/` -> **Portfolio Domain** (Cast List, Profile Page)
