@@ -1,25 +1,25 @@
-require 'cast/v1/service_services_pb'
+require 'portfolio/v1/service_services_pb'
 
-module Cast
+module Portfolio
   module Grpc
     class Handler < Gruf::Controllers::Base
       include GRPC::GenericService
       self.marshal_class_method = :encode
       self.unmarshal_class_method = :decode
-      self.service_name = 'cast.v1.CastService'
+      self.service_name = 'portfolio.v1.CastService'
 
-      bind ::Cast::V1::CastService::Service
+      bind ::Portfolio::V1::CastService::Service
 
       # Clear legacy/bind-generated descriptors to avoid duplication
       self.rpc_descs.clear
 
-      rpc :CreateProfile, ::Cast::V1::CreateProfileRequest, ::Cast::V1::CastProfile
-      rpc :GetProfile, ::Cast::V1::GetProfileRequest, ::Cast::V1::GetProfileResponse
-      rpc :UpdateProfile, ::Cast::V1::UpdateProfileRequest, ::Cast::V1::UpdateProfileResponse
-      rpc :ListCasts, ::Cast::V1::ListCastsRequest, ::Cast::V1::ListCastsResponse
-      rpc :UpdateStatus, ::Cast::V1::UpdateStatusRequest, ::Cast::V1::UpdateStatusResponse
+      rpc :CreateProfile, ::Portfolio::V1::CreateProfileRequest, ::Portfolio::V1::CastProfile
+      rpc :GetProfile, ::Portfolio::V1::GetProfileRequest, ::Portfolio::V1::GetProfileResponse
+      rpc :UpdateProfile, ::Portfolio::V1::UpdateProfileRequest, ::Portfolio::V1::UpdateProfileResponse
+      rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
+      rpc :UpdateStatus, ::Portfolio::V1::UpdateStatusRequest, ::Portfolio::V1::UpdateStatusResponse
 
-      include Cast::Deps[
+      include Portfolio::Deps[
         create_profile_service: "operations.create_profile",
         get_profile_service: "operations.get_profile",
         update_status_service: "operations.update_status",
@@ -81,9 +81,9 @@ module Cast
         status_filter = request.message.status_filter == :CAST_STATUS_UNSPECIFIED ? nil : status_enum_to_str(request.message.status_filter)
         results = list_casts_service.call(status_filter: status_filter)
 
-        ::Cast::V1::ListCastsResponse.new(
+        ::Portfolio::V1::ListCastsResponse.new(
           items: results.map do |cast|
-            ::Cast::V1::ListCastsResponse::CastItem.new(
+            ::Portfolio::V1::ListCastsResponse::CastItem.new(
               profile: to_profile_proto(cast),
               plans: cast.cast_plans.map { |p| to_plan_proto(p) }
             )
@@ -111,20 +111,20 @@ module Cast
         # raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNIMPLEMENTED, "Auth context needed")
 
         # I'll implement basic List/Get first.
-        ::Cast::V1::UpdateStatusResponse.new(status: request.message.status)
+        ::Portfolio::V1::UpdateStatusResponse.new(status: request.message.status)
       end
 
       private
 
       def to_proto(cast)
-        ::Cast::V1::GetProfileResponse.new(
+        ::Portfolio::V1::GetProfileResponse.new(
           profile: to_profile_proto(cast),
           plans: cast.cast_plans.map { |p| to_plan_proto(p) }
         )
       end
 
       def to_profile_proto(cast)
-        ::Cast::V1::CastProfile.new(
+        ::Portfolio::V1::CastProfile.new(
           user_id: cast.user_id.to_s,
           name: cast.name,
           bio: cast.bio,
@@ -135,7 +135,7 @@ module Cast
       end
 
       def to_plan_proto(plan)
-        ::Cast::V1::CastPlan.new(
+        ::Portfolio::V1::CastPlan.new(
           id: plan.id.to_s,
           name: plan.name,
           price: plan.price,

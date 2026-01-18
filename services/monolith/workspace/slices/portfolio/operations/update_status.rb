@@ -1,7 +1,7 @@
-module Cast
+module Portfolio
   module Operations
     class UpdateStatus
-      include Cast::Deps[repo: "repositories.cast_repo"]
+      include Portfolio::Deps[repo: "repositories.cast_repo"]
 
       def call(cast_id:, status:)
         # status is string enum

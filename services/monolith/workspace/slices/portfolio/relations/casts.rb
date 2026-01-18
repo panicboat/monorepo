@@ -1,6 +1,6 @@
-module Cast
+module Portfolio
   module Relations
-    class Casts < Cast::DB::Relation
+    class Casts < Portfolio::DB::Relation
       schema(:"cast__casts", as: :casts, infer: false) do
         attribute :id, Types::Integer
         attribute :user_id, Types::Integer

@@ -1,6 +1,6 @@
 import { createClient } from "@connectrpc/connect";
 import { createGrpcTransport } from "@connectrpc/connect-node";
-import { file_cast_v1_service } from "./cast/v1/service_pb";
+import { file_portfolio_v1_service } from "./portfolio/v1/service_pb";
 import { file_identity_v1_service } from "./identity/v1/service_pb";
 
 // Backend URL environment variable (default for docker)
@@ -13,4 +13,4 @@ const transport = createGrpcTransport({
 
 // Create client for IdentityService
 export const identityClient = createClient(file_identity_v1_service.services[0], transport);
-export const castClient = createClient(file_cast_v1_service.services[0], transport);
+export const portfolioClient = createClient(file_portfolio_v1_service.services[0], transport);
