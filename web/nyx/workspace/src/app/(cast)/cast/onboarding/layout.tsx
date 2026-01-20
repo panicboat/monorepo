@@ -1,20 +1,9 @@
-"use client";
-
-import { OnboardingProvider } from "./context";
-
 export default function OnboardingTemplate({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <OnboardingProvider>
-      {/*
-        No layout logic here.
-        Visual structure is handled by the parent (manage/layout.tsx)
-        and the pages themselves (which use max-w-md).
-      */}
-      {children}
-    </OnboardingProvider>
-  );
+  // State management is now handled by Zustand store (useOnboardingStore)
+  // No provider wrapper needed - Zustand uses a global store pattern
+  return <>{children}</>;
 }

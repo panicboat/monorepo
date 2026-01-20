@@ -1,119 +1,96 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Info } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { ProfileFormData } from "@/modules/portfolio/types";
 import { StyleInputs } from "@/modules/portfolio/components/cast/StyleInputs";
 import { ProfileInputs } from "@/modules/portfolio/components/cast/ProfileInputs";
 import { SocialInputs } from "@/modules/portfolio/components/cast/SocialInputs";
-import { useOnboarding } from "../context";
+import { useOnboardingStore } from "@/stores/onboarding";
 
 export default function OnboardingStep1Page() {
   const router = useRouter();
-  const { data, updateProfile, saveProfile, loading } = useOnboarding();
 
-  // Initialize Form State from Context
-  const [formData, setFormData] = useState<ProfileFormData>({
-    nickname: data.profile?.nickname || "",
-    tagline: data.profile?.tagline || "",
-    bio: data.profile?.bio || "",
-    serviceCategory: data.profile?.serviceCategory || "standard",
-    locationType: data.profile?.locationType || "dispatch",
-    area: data.profile?.area || "",
-    defaultShiftStart: data.profile?.defaultShiftStart || "18:00",
-    defaultShiftEnd: data.profile?.defaultShiftEnd || "23:00",
-    socialLinks: {
-      ...data.profile?.socialLinks,
-      others: data.profile?.socialLinks?.others || [],
-    },
-    tags: [],
-  });
+  // Zustand store
+  const profile = useOnboardingStore((s) => s.profile);
+  const setProfile = useOnboardingStore((s) => s.setProfile);
+  const saveProfile = useOnboardingStore((s) => s.saveProfile);
+  const loading = useOnboardingStore((s) => s.loading);
+  const initialized = useOnboardingStore((s) => s.initialized);
+  const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
 
-  // Sync form data when context data is loaded from API
+  // Initialize data on mount
   useEffect(() => {
-    if (!loading && data.profile) {
-      setFormData({
-        nickname: data.profile.nickname || "",
-        tagline: data.profile.tagline || "",
-        bio: data.profile.bio || "",
-        serviceCategory: data.profile.serviceCategory || "standard",
-        locationType: data.profile.locationType || "dispatch",
-        area: data.profile.area || "",
-        defaultShiftStart: data.profile.defaultShiftStart || "18:00",
-        defaultShiftEnd: data.profile.defaultShiftEnd || "23:00",
-        socialLinks: {
-          ...data.profile.socialLinks,
-          others: data.profile.socialLinks?.others || [],
-        },
-        tags: data.profile.tags || [],
-      });
+    if (!initialized) {
+      fetchProfile();
     }
-  }, [loading, data.profile]);
+  }, [initialized, fetchProfile]);
 
-  // Handlers (Moved from OnboardingForm)
+  // Handlers
   const handleChange = (key: keyof ProfileFormData, val: any) => {
-    setFormData((prev) => ({ ...prev, [key]: val }));
+    setProfile({ [key]: val });
   };
 
   const handleSocialChange = (
     key: keyof ProfileFormData["socialLinks"],
-    val: string,
+    val: string
   ) => {
-    setFormData((prev) => ({
-      ...prev,
+    setProfile({
       socialLinks: {
-        ...prev.socialLinks,
+        ...profile.socialLinks,
         [key]: val,
       },
-    }));
+    });
   };
 
   const handleAddOther = () => {
-    setFormData((prev) => ({
-      ...prev,
+    setProfile({
       socialLinks: {
-        ...prev.socialLinks,
-        others: [...(prev.socialLinks.others || []), ""],
+        ...profile.socialLinks,
+        others: [...(profile.socialLinks.others || []), ""],
       },
-    }));
+    });
   };
 
   const handleRemoveOther = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
+    setProfile({
       socialLinks: {
-        ...prev.socialLinks,
-        others: (prev.socialLinks.others || []).filter((_, i) => i !== index),
+        ...profile.socialLinks,
+        others: (profile.socialLinks.others || []).filter((_, i) => i !== index),
       },
-    }));
+    });
   };
 
   const handleOtherChange = (index: number, val: string) => {
-    setFormData((prev) => {
-      const newOthers = [...(prev.socialLinks.others || [])];
-      newOthers[index] = val;
-      return {
-        ...prev,
-        socialLinks: {
-          ...prev.socialLinks,
-          others: newOthers,
-        },
-      };
+    const newOthers = [...(profile.socialLinks.others || [])];
+    newOthers[index] = val;
+    setProfile({
+      socialLinks: {
+        ...profile.socialLinks,
+        others: newOthers,
+      },
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfile(formData);
-    await saveProfile(formData);
+    await saveProfile(profile);
     router.push("/cast/onboarding/step-2");
   };
 
   const isFormValid =
-    formData.nickname.trim().length > 0 &&
-    formData.area.trim().length > 0 &&
-    formData.tagline.trim().length > 0;
+    profile.nickname.trim().length > 0 &&
+    profile.area.trim().length > 0 &&
+    profile.tagline.trim().length > 0;
+
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-6 space-y-6">
@@ -126,17 +103,14 @@ export default function OnboardingStep1Page() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* 2-Axis Business Type */}
-        <StyleInputs
-          data={formData}
-          onChange={handleChange}
-        />
+        <StyleInputs data={profile} onChange={handleChange} />
 
         {/* Basic Info */}
-        <ProfileInputs data={formData} onChange={handleChange} />
+        <ProfileInputs data={profile} onChange={handleChange} />
 
         {/* External Links Section */}
         <SocialInputs
-          data={formData}
+          data={profile}
           onSocialChange={handleSocialChange}
           onOtherChange={handleOtherChange}
           onAddOther={handleAddOther}

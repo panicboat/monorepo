@@ -1,42 +1,61 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import {
   WeeklyShiftInput,
   ScheduleItem,
 } from "@/modules/ritual/components/cast/WeeklyShiftInput";
-
-import { useOnboarding } from "../context";
+import { useOnboardingStore } from "@/stores/onboarding";
 
 export default function OnboardingStep4() {
   const router = useRouter();
-  const { data, setShifts, saveSchedules, loading } = useOnboarding();
-  const [schedules, setSchedulesState] = useState<ScheduleItem[]>(data.shifts || []);
 
-  // Sync schedules from context when data is loaded
+  // Zustand store
+  const profile = useOnboardingStore((s) => s.profile);
+  const plans = useOnboardingStore((s) => s.plans);
+  const shifts = useOnboardingStore((s) => s.shifts);
+  const setShifts = useOnboardingStore((s) => s.setShifts);
+  const saveSchedules = useOnboardingStore((s) => s.saveSchedules);
+  const loading = useOnboardingStore((s) => s.loading);
+  const initialized = useOnboardingStore((s) => s.initialized);
+  const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
+
+  // Initialize data on mount
   useEffect(() => {
-    if (!loading && data.shifts.length > 0) {
-      setSchedulesState(data.shifts);
+    if (!initialized) {
+      fetchProfile();
     }
-  }, [loading, data.shifts]);
+  }, [initialized, fetchProfile]);
 
-  // Use real plans and default times from context
-  const availablePlans = data.plans;
-  const defaultShiftStart = data.profile.defaultShiftStart || "18:00";
-  const defaultShiftEnd = data.profile.defaultShiftEnd || "23:00";
+  // Convert plans to SchedulePlan format
+  const availablePlans = plans.map((p) => ({
+    id: p.id,
+    name: p.name,
+    duration: p.duration,
+    price: p.price,
+  }));
+
+  const defaultShiftStart = profile.defaultShiftStart || "18:00";
+  const defaultShiftEnd = profile.defaultShiftEnd || "23:00";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (schedules.length < 1) return;
-    // Save to context and backend
-    setShifts(schedules);
-    await saveSchedules(schedules);
+    if (shifts.length < 1) return;
+    await saveSchedules(shifts);
     router.push("/cast/onboarding/step-5");
   };
 
-  const isNextEnabled = schedules.length >= 1;
+  const isNextEnabled = shifts.length >= 1;
+
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-6 space-y-6 animate-in slide-in-from-right-8 fade-in duration-500">
@@ -56,9 +75,9 @@ export default function OnboardingStep4() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <WeeklyShiftInput
-          schedules={schedules}
+          schedules={shifts}
           plans={availablePlans}
-          onChange={setSchedulesState}
+          onChange={setShifts}
           defaultStart={defaultShiftStart}
           defaultEnd={defaultShiftEnd}
         />

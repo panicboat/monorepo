@@ -1,38 +1,67 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, List } from "lucide-react";
 import {
   PlanEditor,
   ServicePlan,
 } from "@/modules/portfolio/components/cast/PlanEditor";
-
-import { useOnboarding } from "../context";
+import { useOnboardingStore, PlanData } from "@/stores/onboarding";
 
 export default function OnboardingStep3() {
   const router = useRouter();
-  const { data, setPlans, savePlans, loading } = useOnboarding();
-  const [plans, setPlansState] = useState<ServicePlan[]>(data.plans);
 
-  // Sync plans from context when data is loaded
+  // Zustand store
+  const plans = useOnboardingStore((s) => s.plans);
+  const setPlans = useOnboardingStore((s) => s.setPlans);
+  const savePlans = useOnboardingStore((s) => s.savePlans);
+  const loading = useOnboardingStore((s) => s.loading);
+  const initialized = useOnboardingStore((s) => s.initialized);
+  const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
+
+  // Initialize data on mount
   useEffect(() => {
-    if (!loading && data.plans.length > 0) {
-      setPlansState(data.plans);
+    if (!initialized) {
+      fetchProfile();
     }
-  }, [loading, data.plans]);
+  }, [initialized, fetchProfile]);
+
+  // Convert PlanData[] to ServicePlan[]
+  const plansAsServicePlans: ServicePlan[] = plans.map((p) => ({
+    id: p.id,
+    name: p.name,
+    duration: p.duration,
+    price: p.price,
+  }));
+
+  const handlePlansChange = (servicePlans: ServicePlan[]) => {
+    const planData: PlanData[] = servicePlans.map((p) => ({
+      id: p.id,
+      name: p.name,
+      duration: p.duration,
+      price: p.price,
+    }));
+    setPlans(planData);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Save to context and backend
-    setPlans(plans);
     await savePlans(plans);
     router.push("/cast/onboarding/step-4");
   };
 
   const isNextEnabled = plans.every(
-    (p) => p.name.trim() !== "" && p.price > 0 && p.duration > 0,
+    (p) => p.name.trim() !== "" && p.price > 0 && p.duration > 0
   );
+
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-6 space-y-6 animate-in slide-in-from-right-8 fade-in duration-500">
@@ -57,7 +86,7 @@ export default function OnboardingStep3() {
             <span>プランの登録は任意です</span>
           </div>
 
-          <PlanEditor plans={plans} onChange={setPlansState} />
+          <PlanEditor plans={plansAsServicePlans} onChange={handlePlansChange} />
         </div>
 
         <button

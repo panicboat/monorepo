@@ -1,24 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader";
 import { MediaItem } from "@/modules/portfolio/types";
-
-import { useOnboarding } from "../context";
+import { useOnboardingStore, PhotoItem } from "@/stores/onboarding";
 
 export default function OnboardingStep2() {
   const router = useRouter();
-  const { data, updatePhotos, saveImages, uploadImage, loading } = useOnboarding();
-  const [images, setImages] = useState<MediaItem[]>([]);
 
-  // Sync images from context when data is loaded
+  // Zustand store
+  const photos = useOnboardingStore((s) => s.photos);
+  const setPhotos = useOnboardingStore((s) => s.setPhotos);
+  const uploadImage = useOnboardingStore((s) => s.uploadImage);
+  const saveImages = useOnboardingStore((s) => s.saveImages);
+  const loading = useOnboardingStore((s) => s.loading);
+  const initialized = useOnboardingStore((s) => s.initialized);
+  const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
+
+  // Initialize data on mount
   useEffect(() => {
-    if (!loading && data.photos.gallery.length > 0) {
-      setImages(data.photos.gallery);
+    if (!initialized) {
+      fetchProfile();
     }
-  }, [loading, data.photos.gallery]);
+  }, [initialized, fetchProfile]);
 
   const handleUpload = async (file: File): Promise<MediaItem | null> => {
     try {
@@ -35,17 +41,42 @@ export default function OnboardingStep2() {
     }
   };
 
+  const handleImagesChange = (images: MediaItem[]) => {
+    // Convert MediaItem[] to PhotoItem[]
+    const photoItems: PhotoItem[] = images.map((img) => ({
+      id: img.id,
+      url: img.url,
+      key: img.key,
+      type: img.type as "image" | "video",
+    }));
+    setPhotos({ gallery: photoItems });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (images.length < 1) return;
+    if (photos.gallery.length < 1) return;
 
-    // Save to context and backend
-    updatePhotos({ gallery: images });
-    await saveImages(images);
+    await saveImages(photos.gallery);
     router.push("/cast/onboarding/step-3");
   };
 
-  const isNextEnabled = images.length >= 1;
+  const isNextEnabled = photos.gallery.length >= 1;
+
+  // Convert PhotoItem[] to MediaItem[] for PhotoUploader
+  const galleryAsMediaItems: MediaItem[] = photos.gallery.map((p) => ({
+    id: p.id,
+    url: p.url,
+    key: p.key,
+    type: p.type,
+  }));
+
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-6 space-y-6 animate-in slide-in-from-right-8 fade-in duration-500">
@@ -66,10 +97,10 @@ export default function OnboardingStep2() {
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
           <PhotoUploader
-             images={images}
-             onChange={setImages}
-             onUpload={handleUpload}
-             minImages={3}
+            images={galleryAsMediaItems}
+            onChange={handleImagesChange}
+            onUpload={handleUpload}
+            minImages={3}
           />
         </div>
 

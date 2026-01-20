@@ -1,18 +1,33 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
-import { useOnboarding } from "./context";
+import { useOnboardingStore } from "@/stores/onboarding";
 
 export default function OnboardingWelcomePage() {
-  const { data, loading } = useOnboarding();
+  // Zustand store
+  const profile = useOnboardingStore((s) => s.profile);
+  const photos = useOnboardingStore((s) => s.photos);
+  const plans = useOnboardingStore((s) => s.plans);
+  const shifts = useOnboardingStore((s) => s.shifts);
+  const loading = useOnboardingStore((s) => s.loading);
+  const initialized = useOnboardingStore((s) => s.initialized);
+  const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
+
+  // Initialize data on mount
+  useEffect(() => {
+    if (!initialized) {
+      fetchProfile();
+    }
+  }, [initialized, fetchProfile]);
 
   const getNextStep = () => {
-      if (!data.profile.nickname) return "/cast/onboarding/step-1";
-      if (!data.photos.profile) return "/cast/onboarding/step-2";
-      if (data.plans.length === 0) return "/cast/onboarding/step-3";
-      if (data.shifts.length === 0) return "/cast/onboarding/step-4";
-      return "/cast/onboarding/step-5";
+    if (!profile.nickname) return "/cast/onboarding/step-1";
+    if (!photos.profile && photos.gallery.length === 0) return "/cast/onboarding/step-2";
+    if (plans.length === 0) return "/cast/onboarding/step-3";
+    if (shifts.length === 0) return "/cast/onboarding/step-4";
+    return "/cast/onboarding/step-5";
   };
 
   const nextStep = getNextStep();
@@ -20,9 +35,9 @@ export default function OnboardingWelcomePage() {
 
   if (loading) {
     return (
-        <div className="flex h-[50vh] items-center justify-center">
-            <Loader2 className="animate-spin text-pink-500" size={32} />
-        </div>
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="animate-spin text-pink-500" size={32} />
+      </div>
     );
   }
 

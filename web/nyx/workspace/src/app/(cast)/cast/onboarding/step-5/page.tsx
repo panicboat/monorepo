@@ -1,16 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, Star } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-
-import { useOnboarding } from "../context";
+import { useOnboardingStore } from "@/stores/onboarding";
 
 export default function OnboardingStep5() {
   const router = useRouter();
-  const { data, publishProfile } = useOnboarding();
   const [isPublishing, setIsPublishing] = useState(false);
+
+  // Zustand store
+  const profile = useOnboardingStore((s) => s.profile);
+  const photos = useOnboardingStore((s) => s.photos);
+  const plans = useOnboardingStore((s) => s.plans);
+  const shifts = useOnboardingStore((s) => s.shifts);
+  const publishProfile = useOnboardingStore((s) => s.publishProfile);
+  const loading = useOnboardingStore((s) => s.loading);
+  const initialized = useOnboardingStore((s) => s.initialized);
+  const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
+
+  // Initialize data on mount
+  useEffect(() => {
+    if (!initialized) {
+      fetchProfile();
+    }
+  }, [initialized, fetchProfile]);
 
   const handlePublish = async () => {
     setIsPublishing(true);
@@ -24,11 +39,13 @@ export default function OnboardingStep5() {
     }
   };
 
-  if (!data) return null;
-
-  const { profile, photos, plans, shifts } = data;
-  const coverPhoto =
-    photos.cover || "https://placehold.co/400x600/pink/white?text=No+Image";
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-6 space-y-6 animate-in slide-in-from-right-8 fade-in duration-500">
