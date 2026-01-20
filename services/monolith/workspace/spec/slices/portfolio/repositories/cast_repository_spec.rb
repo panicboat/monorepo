@@ -28,28 +28,28 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
     end
   end
 
-  describe "#update_plans" do
+  describe "#save_plans" do
     let!(:existing_cast) do
       repo.create(user_id: SecureRandom.uuid, name: "Plan Test", image_path: "p", status: "online")
     end
 
     it "replaces plans" do
       plans_data = [{ name: "New Plan", price: 2000, duration_minutes: 90 }]
-      updated = repo.update_plans(existing_cast.id, plans_data)
+      updated = repo.save_plans(id: existing_cast.id, plans_data: plans_data)
 
       expect(updated.cast_plans.size).to eq(1)
       expect(updated.cast_plans.first.name).to eq("New Plan")
     end
   end
 
-  describe "#update_schedules" do
+  describe "#save_schedules" do
     let!(:existing_cast) do
       repo.create(user_id: SecureRandom.uuid, name: "Schedule Test", image_path: "s", status: "online")
     end
 
     it "replaces schedules" do
       schedules_data = [{ date: Date.today, start_time: "10:00", end_time: "11:00", plan_id: nil }]
-      updated = repo.update_schedules(existing_cast.id, schedules_data)
+      updated = repo.save_schedules(id: existing_cast.id, schedules: schedules_data)
 
       expect(updated.cast_schedules.size).to eq(1)
       expect(updated.cast_schedules.first.date).to eq(Date.today)

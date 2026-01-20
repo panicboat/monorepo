@@ -8,7 +8,7 @@ module Portfolio
           include Portfolio::Deps[repo: "repositories.cast_repository"]
 
           def call(cast_id:, schedules:)
-            repo.update_schedules(id: cast_id, schedules: schedules)
+            repo.save_schedules(id: cast_id, schedules: schedules)
             repo.find_with_plans(cast_id)
           end
         end

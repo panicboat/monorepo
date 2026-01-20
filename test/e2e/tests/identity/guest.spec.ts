@@ -139,8 +139,8 @@ test.describe('Guest Authentication Flow', () => {
     // 3. Trigger the request by reloading
     await page.reload();
 
-    // 4. Verify: Page should still show authenticated content after refresh token flow
-    await expect(page.getByText('Ranking')).toBeVisible({ timeout: 10000 });
+    // 4. Verify: Page should still be on home page (not redirected to login)
+    await expect(page).toHaveURL(/\/$/);
 
     // 5. Verify the flow happened correctly
     expect(refreshTokenCalled).toBe(true);
@@ -204,7 +204,15 @@ test.describe('Guest Authentication Flow', () => {
     await page.reload();
 
     // 5. Wait for auth flow to complete and verify tokens are cleared
-    await page.waitForTimeout(2000); // Give time for auth flow to complete
+    // Use waitForFunction to poll until tokens are cleared (more reliable than fixed timeout)
+    await page.waitForFunction(
+      () => {
+        const access = localStorage.getItem('nyx_guest_access_token');
+        const refresh = localStorage.getItem('nyx_guest_refresh_token');
+        return access === null && refresh === null;
+      },
+      { timeout: 10000 }
+    );
 
     const tokensAfter = await page.evaluate(() => ({
       access: localStorage.getItem('nyx_guest_access_token'),

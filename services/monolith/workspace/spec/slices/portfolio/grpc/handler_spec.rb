@@ -55,7 +55,7 @@ RSpec.describe Portfolio::Grpc::Handler do
       default_shift_start: "10:00",
       default_shift_end: "20:00",
       image_path: "path/img.jpg",
-      status: 'online',
+      visibility: 'published',
       promise_rate: 1.0,
       cast_plans: [],
       cast_schedules: [],
@@ -92,9 +92,9 @@ RSpec.describe Portfolio::Grpc::Handler do
     end
   end
 
-  describe "#update_cast_profile" do
+  describe "#save_cast_profile" do
     let(:message) do
-      ::Portfolio::V1::UpdateCastProfileRequest.new(name: "Updated Name", bio: "Updated Bio")
+      ::Portfolio::V1::SaveCastProfileRequest.new(name: "Updated Name", bio: "Updated Bio")
     end
 
     it "calls operation and returns valid proto" do
@@ -104,14 +104,14 @@ RSpec.describe Portfolio::Grpc::Handler do
         bio: "Updated Bio"
       )).and_return(mock_cast_entity)
 
-      response = handler.update_cast_profile
-      expect(response).to be_a(::Portfolio::V1::UpdateCastProfileResponse)
+      response = handler.save_cast_profile
+      expect(response).to be_a(::Portfolio::V1::SaveCastProfileResponse)
     end
   end
 
-  describe "#update_cast_plans" do
+  describe "#save_cast_plans" do
     let(:message) do
-      ::Portfolio::V1::UpdateCastPlansRequest.new(
+      ::Portfolio::V1::SaveCastPlansRequest.new(
         plans: [::Portfolio::V1::CastPlan.new(name: "P1", price: 1000, duration_minutes: 60)]
       )
     end
@@ -123,14 +123,14 @@ RSpec.describe Portfolio::Grpc::Handler do
         plans: [{ name: "P1", price: 1000, duration_minutes: 60 }]
       ).and_return(mock_cast_entity)
 
-      response = handler.update_cast_plans
-      expect(response).to be_a(::Portfolio::V1::UpdateCastPlansResponse)
+      response = handler.save_cast_plans
+      expect(response).to be_a(::Portfolio::V1::SaveCastPlansResponse)
     end
   end
 
-  describe "#update_cast_schedules" do
+  describe "#save_cast_schedules" do
     let(:message) do
-      ::Portfolio::V1::UpdateCastSchedulesRequest.new(
+      ::Portfolio::V1::SaveCastSchedulesRequest.new(
         schedules: [::Portfolio::V1::CastSchedule.new(date: "2023-01-01", start_time: "10:00", end_time: "12:00", plan_id: "p1")]
       )
     end
@@ -142,14 +142,14 @@ RSpec.describe Portfolio::Grpc::Handler do
         schedules: [{ date: "2023-01-01", start_time: "10:00", end_time: "12:00", plan_id: "p1" }]
       ).and_return(mock_cast_entity)
 
-      response = handler.update_cast_schedules
-      expect(response).to be_a(::Portfolio::V1::UpdateCastSchedulesResponse)
+      response = handler.save_cast_schedules
+      expect(response).to be_a(::Portfolio::V1::SaveCastSchedulesResponse)
     end
   end
 
-  describe "#update_cast_images" do
+  describe "#save_cast_images" do
     let(:message) do
-      ::Portfolio::V1::UpdateCastImagesRequest.new(
+      ::Portfolio::V1::SaveCastImagesRequest.new(
         profile_image_path: "new/path.jpg",
         gallery_images: ["img1.jpg", "img2.jpg"]
       )
@@ -163,8 +163,8 @@ RSpec.describe Portfolio::Grpc::Handler do
         images: ["img1.jpg", "img2.jpg"]
       ).and_return(mock_cast_entity)
 
-      response = handler.update_cast_images
-      expect(response).to be_a(::Portfolio::V1::UpdateCastImagesResponse)
+      response = handler.save_cast_images
+      expect(response).to be_a(::Portfolio::V1::SaveCastImagesResponse)
     end
   end
 
@@ -186,27 +186,15 @@ RSpec.describe Portfolio::Grpc::Handler do
   end
 
   describe "#list_casts" do
-    let(:message) { ::Portfolio::V1::ListCastsRequest.new(status_filter: :CAST_STATUS_ONLINE) }
+    let(:message) { ::Portfolio::V1::ListCastsRequest.new(visibility_filter: :CAST_VISIBILITY_PUBLISHED) }
 
     it "delegates to operation and returns list" do
-      expect(list_casts_uc).to receive(:call).with(status_filter: "online").and_return([mock_cast_entity])
+      expect(list_casts_uc).to receive(:call).with(visibility_filter: "published").and_return([mock_cast_entity])
 
       response = handler.list_casts
       expect(response).to be_a(::Portfolio::V1::ListCastsResponse)
       expect(response.items.size).to eq(1)
       expect(response.items.first.profile.name).to eq("Cast Name")
-    end
-  end
-
-  describe "#update_cast_status" do
-    let(:message) { ::Portfolio::V1::UpdateCastStatusRequest.new(status: :CAST_STATUS_OFFLINE) }
-
-    it "delegates to operation after finding cast" do
-      expect(get_profile_uc).to receive(:call).with(user_id: 1).and_return(mock_cast_entity)
-      expect(publish_uc).to receive(:call).with(cast_id: 123, status: "offline")
-
-      response = handler.update_cast_status
-      expect(response).to be_a(::Portfolio::V1::UpdateCastStatusResponse)
     end
   end
 

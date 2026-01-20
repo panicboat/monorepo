@@ -9,7 +9,7 @@ module Portfolio
 
           def call(cast_id:, plans:)
             # plans is an array of hashes: [{name:, price:, duration_minutes:}]
-            repo.update_plans(id: cast_id, plans_data: plans)
+            repo.save_plans(id: cast_id, plans_data: plans)
           end
         end
       end

@@ -305,7 +305,6 @@ export default function ProfileEditPage() {
           <StyleInputs
             data={profileForm}
             onChange={handleProfileChange}
-            timeOptions={timeOptions}
           />
         </SectionCard>
 

@@ -10,7 +10,7 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
 
-    const response = await castClient.updateCastPlans(
+    const response = await castClient.saveCastPlans(
       {
         plans: body.plans,
       },
@@ -23,7 +23,7 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error: any) {
-    console.error("UpdateCastPlans Error:", error);
+    console.error("SaveCastPlans Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

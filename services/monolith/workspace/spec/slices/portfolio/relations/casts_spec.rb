@@ -12,7 +12,7 @@ RSpec.describe "Portfolio::Relations::Casts", type: :database do
     expect(attribute_names).to include(:name)
     expect(attribute_names).to include(:bio)
     expect(attribute_names).to include(:image_path)
-    expect(attribute_names).to include(:status)
+    expect(attribute_names).to include(:visibility)
     expect(attribute_names).to include(:promise_rate)
   end
 

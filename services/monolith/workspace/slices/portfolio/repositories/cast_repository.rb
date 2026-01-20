@@ -19,7 +19,7 @@ module Portfolio
         casts.combine(:cast_plans, :cast_schedules).where(user_id: user_id).one
       end
 
-      def update_plans(id:, plans_data:)
+      def save_plans(id:, plans_data:)
         transaction do
           cast_plans.where(cast_id: id).delete
           plans_data.each do |plan|
@@ -29,7 +29,7 @@ module Portfolio
         end
       end
 
-      def update_schedules(id:, schedules:)
+      def save_schedules(id:, schedules:)
         transaction do
           cast_schedules.where(cast_id: id).delete
           schedules.each do |schedule|
@@ -39,14 +39,14 @@ module Portfolio
         end
       end
 
-      def update_images(id:, image_path:, images:)
+      def save_images(id:, image_path:, images:)
         casts.dataset.where(id: id).update(
           image_path: image_path,
           images: Sequel.pg_jsonb(images || [])
         )
       end
 
-      def update_visibility(id, visibility)
+      def save_visibility(id, visibility)
         update(id, visibility: visibility)
       end
 

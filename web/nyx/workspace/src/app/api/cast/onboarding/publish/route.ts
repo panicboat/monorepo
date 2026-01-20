@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Publish sets visibility to PUBLISHED
-    const response = await castClient.updateCastProfile(
+    const response = await castClient.saveCastProfile(
       {
         visibility: CastVisibility.PUBLISHED,
       },
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error: any) {
-    console.error("UpdateCastProfile (publish) Error:", error);
+    console.error("SaveCastProfile (publish) Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

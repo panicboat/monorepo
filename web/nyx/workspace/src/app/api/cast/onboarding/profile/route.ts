@@ -88,7 +88,7 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     console.log("API Route /api/cast/onboarding/profile [PUT] Received Body:", body);
 
-    const response = await castClient.updateCastProfile(
+    const response = await castClient.saveCastProfile(
       {
         name: body.name,
         bio: body.bio,
@@ -117,7 +117,7 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error: any) {
-    console.error("UpdateCastProfile Error:", error);
+    console.error("SaveCastProfile Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

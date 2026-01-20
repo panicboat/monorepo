@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     // Mapping
     const mapped = {
         name: p.name,
-        tagline: p.bio, // Mapping Bio -> Tagline?
+        tagline: p.tagline,
         bio: p.bio,
         area: "", // Proto field missing
         // Wait, Proto CastProfile defined: user_id, name, bio, image_url, status, promise_rate, images, image_path.
@@ -73,18 +73,18 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
 
-    // Mapping Body to UpsertCastProfileRequest
-    // Proto: name, bio, image_url, plans, schedules, images, image_path
-    // Note: Proto is missing area, etc too! UpsertCastProfile request needs update.
-
-    const response = await castClient.upsertCastProfile({
+    // Mapping Body to SaveCastProfileRequest
+    const response = await castClient.saveCastProfile({
         name: body.name,
-        bio: body.bio || body.tagline, // Mapping
-        imageUrl: body.images?.hero, // Legacy URL support?
-        imagePath: body.imagePath, // Key
-        images: body.images, // Portfolio URLs (string[])
-        plans: body.plans || [],
-        schedules: body.schedules || []
+        bio: body.bio,
+        imagePath: body.imagePath,
+        tagline: body.tagline,
+        serviceCategory: body.serviceCategory,
+        locationType: body.locationType,
+        area: body.area,
+        defaultShiftStart: body.defaultShiftStart,
+        defaultShiftEnd: body.defaultShiftEnd,
+        socialLinks: body.socialLinks,
     }, { headers: { Authorization: authHeader } });
 
     return NextResponse.json(response);

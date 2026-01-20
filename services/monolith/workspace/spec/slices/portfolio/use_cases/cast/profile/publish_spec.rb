@@ -8,12 +8,12 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::Publish do
 
   describe "#call" do
     let(:cast_id) { 1 }
-    let(:status) { "online" }
+    let(:visibility) { "published" }
 
-    it "updates the cast status" do
-      expect(repo).to receive(:update_status).with(cast_id, status)
+    it "saves the cast visibility" do
+      expect(repo).to receive(:save_visibility).with(cast_id, visibility)
 
-      use_case.call(cast_id: cast_id, status: status)
+      use_case.call(cast_id: cast_id, visibility: visibility)
     end
   end
 end

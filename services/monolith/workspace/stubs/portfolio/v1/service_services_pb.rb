@@ -19,10 +19,10 @@ module Portfolio
 
         rpc :GetCastProfile, ::Portfolio::V1::GetCastProfileRequest, ::Portfolio::V1::GetCastProfileResponse
         rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
-        rpc :UpdateCastProfile, ::Portfolio::V1::UpdateCastProfileRequest, ::Portfolio::V1::UpdateCastProfileResponse
-        rpc :UpdateCastImages, ::Portfolio::V1::UpdateCastImagesRequest, ::Portfolio::V1::UpdateCastImagesResponse
-        rpc :UpdateCastPlans, ::Portfolio::V1::UpdateCastPlansRequest, ::Portfolio::V1::UpdateCastPlansResponse
-        rpc :UpdateCastSchedules, ::Portfolio::V1::UpdateCastSchedulesRequest, ::Portfolio::V1::UpdateCastSchedulesResponse
+        rpc :SaveCastProfile, ::Portfolio::V1::SaveCastProfileRequest, ::Portfolio::V1::SaveCastProfileResponse
+        rpc :SaveCastImages, ::Portfolio::V1::SaveCastImagesRequest, ::Portfolio::V1::SaveCastImagesResponse
+        rpc :SaveCastPlans, ::Portfolio::V1::SaveCastPlansRequest, ::Portfolio::V1::SaveCastPlansResponse
+        rpc :SaveCastSchedules, ::Portfolio::V1::SaveCastSchedulesRequest, ::Portfolio::V1::SaveCastSchedulesResponse
         rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
         rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
       end

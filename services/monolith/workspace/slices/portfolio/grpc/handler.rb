@@ -15,10 +15,10 @@ module Portfolio
 
       rpc :GetCastProfile, ::Portfolio::V1::GetCastProfileRequest, ::Portfolio::V1::GetCastProfileResponse
       rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
-      rpc :UpdateCastProfile, ::Portfolio::V1::UpdateCastProfileRequest, ::Portfolio::V1::UpdateCastProfileResponse
-      rpc :UpdateCastPlans, ::Portfolio::V1::UpdateCastPlansRequest, ::Portfolio::V1::UpdateCastPlansResponse
-      rpc :UpdateCastSchedules, ::Portfolio::V1::UpdateCastSchedulesRequest, ::Portfolio::V1::UpdateCastSchedulesResponse
-      rpc :UpdateCastImages, ::Portfolio::V1::UpdateCastImagesRequest, ::Portfolio::V1::UpdateCastImagesResponse
+      rpc :SaveCastProfile, ::Portfolio::V1::SaveCastProfileRequest, ::Portfolio::V1::SaveCastProfileResponse
+      rpc :SaveCastPlans, ::Portfolio::V1::SaveCastPlansRequest, ::Portfolio::V1::SaveCastPlansResponse
+      rpc :SaveCastSchedules, ::Portfolio::V1::SaveCastSchedulesRequest, ::Portfolio::V1::SaveCastSchedulesResponse
+      rpc :SaveCastImages, ::Portfolio::V1::SaveCastImagesRequest, ::Portfolio::V1::SaveCastImagesResponse
       rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
       rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
 
@@ -72,7 +72,7 @@ module Portfolio
         ::Portfolio::V1::CreateCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))
       end
 
-      def update_cast_profile
+      def save_cast_profile
         authenticate_user!
 
         result = save_profile_uc.call(
@@ -96,12 +96,12 @@ module Portfolio
           result = get_profile_uc.call(user_id: ::Current.user_id)
         end
 
-        ::Portfolio::V1::UpdateCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))
+        ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))
       end
 
       # === Cast Plans ===
 
-      def update_cast_plans
+      def save_cast_plans
         authenticate_user!
         cast = find_my_cast!
 
@@ -111,14 +111,14 @@ module Portfolio
 
         result = save_plans_uc.call(cast_id: cast.id, plans: plans_data)
 
-        ::Portfolio::V1::UpdateCastPlansResponse.new(
+        ::Portfolio::V1::SaveCastPlansResponse.new(
           plans: PlanPresenter.many_to_proto(result.cast_plans)
         )
       end
 
       # === Cast Schedules ===
 
-      def update_cast_schedules
+      def save_cast_schedules
         authenticate_user!
         cast = find_my_cast!
 
@@ -129,14 +129,14 @@ module Portfolio
 
         result = save_schedules_uc.call(cast_id: cast.id, schedules: schedules_data)
 
-        ::Portfolio::V1::UpdateCastSchedulesResponse.new(
+        ::Portfolio::V1::SaveCastSchedulesResponse.new(
           schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
         )
       end
 
       # === Cast Images ===
 
-      def update_cast_images
+      def save_cast_images
         authenticate_user!
         cast = find_my_cast!
 
@@ -147,7 +147,7 @@ module Portfolio
           images: images
         )
 
-        ::Portfolio::V1::UpdateCastImagesResponse.new(profile: ProfilePresenter.to_proto(result))
+        ::Portfolio::V1::SaveCastImagesResponse.new(profile: ProfilePresenter.to_proto(result))
       end
 
       def get_upload_url

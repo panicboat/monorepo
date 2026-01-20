@@ -26,7 +26,7 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::SaveProfile do
           user_id: user_id,
           name: "New",
           bio: "New Bio",
-          status: "offline"
+          visibility: "unregistered"
         ))
 
         use_case.call(user_id: user_id, name: "New", bio: "New Bio")

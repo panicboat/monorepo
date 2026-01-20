@@ -10,7 +10,7 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
 
-    const response = await castClient.updateCastImages(
+    const response = await castClient.saveCastImages(
       {
         profileImagePath: body.profileImagePath,
         galleryImages: body.galleryImages,
@@ -24,7 +24,7 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error: any) {
-    console.error("UpdateCastImages Error:", error);
+    console.error("SaveCastImages Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

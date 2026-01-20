@@ -7,10 +7,10 @@ package portfolio.v1;
 service CastService {
   rpc GetCastProfile(GetCastProfileRequest) returns (GetCastProfileResponse);
   rpc CreateCastProfile(CreateCastProfileRequest) returns (CreateCastProfileResponse);
-  rpc UpdateCastProfile(UpdateCastProfileRequest) returns (UpdateCastProfileResponse);
-  rpc UpdateCastImages(UpdateCastImagesRequest) returns (UpdateCastImagesResponse);
-  rpc UpdateCastPlans(UpdateCastPlansRequest) returns (UpdateCastPlansResponse);
-  rpc UpdateCastSchedules(UpdateCastSchedulesRequest) returns (UpdateCastSchedulesResponse);
+  rpc SaveCastProfile(SaveCastProfileRequest) returns (SaveCastProfileResponse);
+  rpc SaveCastImages(SaveCastImagesRequest) returns (SaveCastImagesResponse);
+  rpc SaveCastPlans(SaveCastPlansRequest) returns (SaveCastPlansResponse);
+  rpc SaveCastSchedules(SaveCastSchedulesRequest) returns (SaveCastSchedulesResponse);
   rpc ListCasts(ListCastsRequest) returns (ListCastsResponse);
   rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
 }
@@ -84,7 +84,7 @@ message CreateCastProfileResponse {
   CastProfile profile = 1;
 }
 
-message UpdateCastProfileRequest {
+message SaveCastProfileRequest {
   string name = 1;
   string bio = 2;
   string image_path = 3;
@@ -98,32 +98,32 @@ message UpdateCastProfileRequest {
   CastVisibility visibility = 11;
 }
 
-message UpdateCastProfileResponse {
+message SaveCastProfileResponse {
   CastProfile profile = 1;
 }
 
-message UpdateCastImagesRequest {
+message SaveCastImagesRequest {
   string profile_image_path = 1; // Cover/Profile image
   repeated string gallery_images = 2; // List of image URLs or Paths
 }
 
-message UpdateCastImagesResponse {
+message SaveCastImagesResponse {
   CastProfile profile = 1;
 }
 
-message UpdateCastPlansRequest {
+message SaveCastPlansRequest {
   repeated CastPlan plans = 1;
 }
 
-message UpdateCastPlansResponse {
+message SaveCastPlansResponse {
   repeated CastPlan plans = 1;
 }
 
-message UpdateCastSchedulesRequest {
+message SaveCastSchedulesRequest {
   repeated CastSchedule schedules = 1;
 }
 
-message UpdateCastSchedulesResponse {
+message SaveCastSchedulesResponse {
   repeated CastSchedule schedules = 1;
 }
 
