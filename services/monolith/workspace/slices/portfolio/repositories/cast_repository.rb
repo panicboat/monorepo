@@ -19,7 +19,7 @@ module Portfolio
         casts.combine(:cast_plans, :cast_schedules).where(user_id: user_id).one
       end
 
-      def update_plans(id, plans_data)
+      def update_plans(id:, plans_data:)
         transaction do
           cast_plans.where(cast_id: id).delete
           plans_data.each do |plan|
@@ -29,23 +29,30 @@ module Portfolio
         end
       end
 
-      def update_schedules(id, schedules_data)
+      def update_schedules(id:, schedules:)
         transaction do
           cast_schedules.where(cast_id: id).delete
-          schedules_data.each do |schedule|
+          schedules.each do |schedule|
             cast_schedules.changeset(:create, schedule.merge(cast_id: id)).commit
           end
           find_with_plans(id)
         end
       end
 
-      def update_status(id, status)
-        update(id, status: status)
+      def update_images(id:, image_path:, images:)
+        casts.dataset.where(id: id).update(
+          image_path: image_path,
+          images: Sequel.pg_jsonb(images || [])
+        )
       end
 
-      def list_online(status_filter = nil)
+      def update_visibility(id, visibility)
+        update(id, visibility: visibility)
+      end
+
+      def list_by_visibility(visibility_filter = nil)
         scope = casts.combine(:cast_plans, :cast_schedules)
-        scope = scope.where(status: status_filter) if status_filter
+        scope = scope.where(visibility: visibility_filter) if visibility_filter
         scope.to_a
       end
     end

@@ -119,7 +119,7 @@ CREATE TABLE portfolio.casts (
     service_category text,
     location_type text,
     area text,
-    status text DEFAULT 'offline'::text,
+    visibility text DEFAULT 'offline'::text,
     promise_rate double precision,
     age integer,
     height integer,
@@ -308,4 +308,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260117030200_create_casts_table.rb'),
 ('20260118000000_create_refresh_tokens.rb'),
 ('20260118120000_create_cast_plans_and_schedules.rb'),
-('20260118130000_add_image_path_to_casts.rb');
+('20260118130000_add_image_path_to_casts.rb'),
+('20260120100000_rename_status_to_visibility.rb');

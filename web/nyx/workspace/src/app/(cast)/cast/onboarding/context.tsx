@@ -68,9 +68,9 @@ type OnboardingContextType = {
   loading: boolean;
   isNewProfile: boolean;
   saveProfile: (data?: ProfileFormData) => Promise<void>;
-  saveImages: () => Promise<void>;
-  savePlans: () => Promise<void>;
-  saveSchedules: () => Promise<void>;
+  saveImages: (gallery?: PhotoItem[]) => Promise<void>;
+  savePlans: (plans?: PlanData[]) => Promise<void>;
+  saveSchedules: (schedules?: ScheduleItem[]) => Promise<void>;
   publishProfile: () => Promise<void>;
 };
 
@@ -127,11 +127,17 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
              const plans = apiData.plans || [];
              const schedules = apiData.schedules || [];
 
-             const profileImage: PhotoItem | null = p.imagePath ? { url: p.imageUrl || "", key: p.imagePath, type: "image" } : null;
-             const galleryImages: PhotoItem[] = (p.images || []).map((url: string, index: number) => ({
+             const getMediaType = (key: string): "image" | "video" => {
+               const ext = key.split('.').pop()?.toLowerCase() || '';
+               return ['mp4', 'webm', 'mov', 'avi'].includes(ext) ? 'video' : 'image';
+             };
+
+             const profileImage: PhotoItem | null = p.imagePath ? { url: `/uploads/${p.imagePath}`, key: p.imagePath, type: "image" } : null;
+             const galleryImages: PhotoItem[] = (p.images || []).map((key: string, index: number) => ({
                  id: `existing-${index}`,
-                 url,
-                 type: "image"
+                 url: `/uploads/${key}`,
+                 key: key,
+                 type: getMediaType(key)
              }));
 
              const socialLinks = p.socialLinks || {};
@@ -275,13 +281,13 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     if (isNewProfile) setIsNewProfile(false);
   };
 
-  const saveImages = async () => {
+  const saveImages = async (overrideGallery?: PhotoItem[]) => {
     const token = localStorage.getItem("nyx_cast_access_token");
     if (!token) return;
 
-    // Use keys if available, fallback to URLs if needed (but backend expects what? paths/keys)
-    // gallery: PhotoItem[]
-    const gallery = data.photos.gallery.map(img => img.key || img.url).filter(Boolean);
+    // Use override data if provided, otherwise fallback to current state
+    const galleryToSave = overrideGallery || data.photos.gallery;
+    const galleryKeys = galleryToSave.map(img => img.key || img.url).filter(Boolean);
 
     const res = await fetch("/api/cast/onboarding/images", {
       method: "PUT",
@@ -291,15 +297,18 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
       },
       body: JSON.stringify({
         profileImagePath: data.photos.profile?.key,
-        galleryImages: gallery,
+        galleryImages: galleryKeys,
       }),
     });
     if (!res.ok) throw new Error("Failed to save images");
   };
 
-  const savePlans = async () => {
+  const savePlans = async (overridePlans?: PlanData[]) => {
     const token = localStorage.getItem("nyx_cast_access_token");
     if (!token) return;
+
+    // Use override data if provided, otherwise fallback to current state
+    const plansToSave = overridePlans || data.plans;
 
     const res = await fetch("/api/cast/onboarding/plans", {
       method: "PUT",
@@ -308,7 +317,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
           "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-          plans: data.plans.map(p => ({
+          plans: plansToSave.map(p => ({
             name: p.name,
             price: p.price,
             durationMinutes: p.duration
@@ -316,11 +325,29 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
       }),
     });
     if (!res.ok) throw new Error("Failed to save plans");
+
+    // Update context with real IDs from backend
+    const responseData = await res.json();
+    if (responseData.plans) {
+      const updatedPlans: PlanData[] = responseData.plans.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        duration: p.durationMinutes
+      }));
+      setData(prev => ({ ...prev, plans: updatedPlans }));
+    }
   };
 
-  const saveSchedules = async () => {
+  const saveSchedules = async (overrideSchedules?: ScheduleItem[]) => {
     const token = localStorage.getItem("nyx_cast_access_token");
     if (!token) return;
+
+    // Use override data if provided, otherwise fallback to current state
+    const schedulesToSave = overrideSchedules || data.shifts;
+
+    // Get valid plan IDs from context
+    const validPlanIds = new Set(data.plans.map(p => p.id));
 
     const res = await fetch("/api/cast/onboarding/schedules", {
       method: "PUT",
@@ -329,12 +356,16 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
           "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-          schedules: data.shifts.map(s => ({
-            date: s.date,
-            startTime: s.start,
-            endTime: s.end,
-            planId: s.planId
-          }))
+          schedules: schedulesToSave.map(s => {
+            // Only include planId if it exists in current plans
+            const planId = s.planId && validPlanIds.has(s.planId) ? s.planId : undefined;
+            return {
+              date: s.date,
+              startTime: s.start,
+              endTime: s.end,
+              planId
+            };
+          })
       }),
     });
     if (!res.ok) throw new Error("Failed to save schedules");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import {
@@ -12,17 +12,27 @@ import { useOnboarding } from "../context";
 
 export default function OnboardingStep4() {
   const router = useRouter();
-  const { data, setShifts, saveSchedules } = useOnboarding();
+  const { data, setShifts, saveSchedules, loading } = useOnboarding();
   const [schedules, setSchedulesState] = useState<ScheduleItem[]>(data.shifts || []);
 
-  // Use real plans from context
+  // Sync schedules from context when data is loaded
+  useEffect(() => {
+    if (!loading && data.shifts.length > 0) {
+      setSchedulesState(data.shifts);
+    }
+  }, [loading, data.shifts]);
+
+  // Use real plans and default times from context
   const availablePlans = data.plans;
+  const defaultShiftStart = data.profile.defaultShiftStart || "18:00";
+  const defaultShiftEnd = data.profile.defaultShiftEnd || "23:00";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (schedules.length < 1) return;
+    // Save to context and backend
     setShifts(schedules);
-    await saveSchedules();
+    await saveSchedules(schedules);
     router.push("/cast/onboarding/step-5");
   };
 
@@ -49,6 +59,8 @@ export default function OnboardingStep4() {
           schedules={schedules}
           plans={availablePlans}
           onChange={setSchedulesState}
+          defaultStart={defaultShiftStart}
+          defaultEnd={defaultShiftEnd}
         />
 
         <button

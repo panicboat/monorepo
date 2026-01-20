@@ -21,30 +21,28 @@ module Portfolio
             default_shift_end: cast.default_shift_end,
             image_url: Storage.download_url(key: cast.image_path),
             image_path: cast.image_path,
-            status: status_to_enum(cast.status),
+            visibility: visibility_to_enum(cast.visibility),
             promise_rate: cast.promise_rate,
             images: (cast.images || []).to_a,
             social_links: social_links_to_proto(cast.social_links)
           )
         end
 
-        def self.status_to_enum(str)
+        def self.visibility_to_enum(str)
           case str
-          when "offline" then :CAST_STATUS_OFFLINE
-          when "asking" then :CAST_STATUS_ASKING
-          when "online" then :CAST_STATUS_ONLINE
-          when "tonight" then :CAST_STATUS_TONIGHT
-          else :CAST_STATUS_UNSPECIFIED
+          when "unregistered" then :CAST_VISIBILITY_UNREGISTERED
+          when "unpublished" then :CAST_VISIBILITY_UNPUBLISHED
+          when "published" then :CAST_VISIBILITY_PUBLISHED
+          else :CAST_VISIBILITY_UNSPECIFIED
           end
         end
 
-        def self.status_from_enum(enum_val)
+        def self.visibility_from_enum(enum_val)
           case enum_val
-          when :CAST_STATUS_OFFLINE then "offline"
-          when :CAST_STATUS_ASKING then "asking"
-          when :CAST_STATUS_ONLINE then "online"
-          when :CAST_STATUS_TONIGHT then "tonight"
-          else "offline"
+          when :CAST_VISIBILITY_UNREGISTERED then "unregistered"
+          when :CAST_VISIBILITY_UNPUBLISHED then "unpublished"
+          when :CAST_VISIBILITY_PUBLISHED then "published"
+          else "unregistered"
           end
         end
 

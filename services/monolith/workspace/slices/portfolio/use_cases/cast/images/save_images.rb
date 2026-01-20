@@ -8,7 +8,7 @@ module Portfolio
           include Portfolio::Deps[repo: "repositories.cast_repository"]
 
           def call(cast_id:, image_path:, images:)
-            repo.update(cast_id, image_path: image_path, images: images)
+            repo.update_images(id: cast_id, image_path: image_path, images: images)
             repo.find_with_plans(cast_id)
           end
         end

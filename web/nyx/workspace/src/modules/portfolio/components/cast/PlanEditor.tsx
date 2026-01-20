@@ -22,9 +22,9 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
   const addPlan = () => {
     const newPlan: ServicePlan = {
       id: crypto.randomUUID(),
-      name: "Standard Course",
-      duration: 60,
-      price: 15000,
+      name: "",
+      duration: 0,
+      price: 0,
     };
     onChange([...plans, newPlan]);
   };

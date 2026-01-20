@@ -25,7 +25,6 @@ module Portfolio
         rpc :UpdateCastSchedules, ::Portfolio::V1::UpdateCastSchedulesRequest, ::Portfolio::V1::UpdateCastSchedulesResponse
         rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
         rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
-        rpc :UpdateCastStatus, ::Portfolio::V1::UpdateCastStatusRequest, ::Portfolio::V1::UpdateCastStatusResponse
       end
 
       Stub = Service.rpc_stub_class

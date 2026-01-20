@@ -13,7 +13,7 @@ module Portfolio
         attribute :area, Types::String
         attribute :default_shift_start, Types::String
         attribute :default_shift_end, Types::String
-        attribute :status, Types::String
+        attribute :visibility, Types::String
         attribute :promise_rate, Types::Float
         attribute :images, Types::Array(Types::String)
         attribute :social_links, Types::Hash

@@ -11,6 +11,12 @@ import {
   isBefore,
 } from "date-fns";
 import { ja } from "date-fns/locale";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/Select";
 
 export type ScheduleItem = {
   date: string; // YYYY-MM-DD
@@ -23,19 +29,16 @@ export type SchedulePlan = {
   id: string;
   name: string;
   duration: number; // minutes
+  price?: number; // yen
 };
 
 interface WeeklyScheduleInputProps {
   schedules: ScheduleItem[];
   plans?: SchedulePlan[]; // Available plans to link
   onChange: (schedules: ScheduleItem[]) => void;
+  defaultStart?: string; // Default start time from profile
+  defaultEnd?: string; // Default end time from profile
 }
-
-const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
-  const h = Math.floor(i / 2);
-  const m = i % 2 === 0 ? "00" : "30";
-  return `${h.toString().padStart(2, "0")}:${m}`;
-});
 
 const getDuration = (start: string, end: string) => {
   const [sh, sm] = start.split(":").map(Number);
@@ -49,6 +52,8 @@ export const WeeklyShiftInput = ({
   schedules,
   plans = [],
   onChange,
+  defaultStart = "18:00",
+  defaultEnd = "23:00",
 }: WeeklyScheduleInputProps) => {
   const [viewStartDate, setViewStartDate] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
@@ -67,11 +72,10 @@ export const WeeklyShiftInput = ({
   const goToNextWeek = () => setViewStartDate(addDays(viewStartDate, 7));
 
   const addSchedule = (dateStr: string) => {
-    // Default schedule: 18:00 - 23:00
     const newSchedule: ScheduleItem = {
       date: dateStr,
-      start: "18:00",
-      end: "23:00",
+      start: defaultStart,
+      end: defaultEnd,
       planId: "",
     };
     onChange([...schedules, newSchedule]);
@@ -171,7 +175,8 @@ export const WeeklyShiftInput = ({
                     <div className="flex items-center gap-2">
                       <div className="flex flex-1 items-center gap-2">
                         <Clock size={14} className="text-slate-400" />
-                        <select
+                        <input
+                          type="time"
                           value={schedule.start}
                           disabled={isPast}
                           onChange={(e) =>
@@ -181,16 +186,11 @@ export const WeeklyShiftInput = ({
                               e.target.value,
                             )
                           }
-                          className="bg-transparent font-bold text-slate-700 focus:outline-none disabled:text-slate-400 text-sm"
-                        >
-                          {TIME_OPTIONS.map((t) => (
-                            <option key={`start-${t}`} value={t}>
-                              {t}
-                            </option>
-                          ))}
-                        </select>
+                          className="bg-transparent font-bold text-slate-700 focus:outline-none disabled:text-slate-400 text-sm border border-slate-200 rounded px-2 py-1"
+                        />
                         <span className="text-slate-400">-</span>
-                        <select
+                        <input
+                          type="time"
                           value={schedule.end}
                           disabled={isPast}
                           onChange={(e) =>
@@ -200,14 +200,8 @@ export const WeeklyShiftInput = ({
                               e.target.value,
                             )
                           }
-                          className="bg-transparent font-bold text-slate-700 focus:outline-none disabled:text-slate-400 text-sm"
-                        >
-                          {TIME_OPTIONS.map((t) => (
-                            <option key={`end-${t}`} value={t}>
-                              {t}
-                            </option>
-                          ))}
-                        </select>
+                          className="bg-transparent font-bold text-slate-700 focus:outline-none disabled:text-slate-400 text-sm border border-slate-200 rounded px-2 py-1"
+                        />
                       </div>
                       {!isPast && (
                         <button
@@ -224,27 +218,45 @@ export const WeeklyShiftInput = ({
                     {plans.length > 0 && !isPast && (
                       <div className="flex flex-col gap-1 border-t border-slate-100 pt-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          <span className="text-xs font-bold text-slate-400 uppercase shrink-0">
                             Plan
                           </span>
-                          <select
+                          <Select
                             value={schedule.planId || ""}
-                            onChange={(e) =>
+                            onValueChange={(val) =>
                               updateSchedule(
                                 schedule.originalIndex,
                                 "planId",
-                                e.target.value,
+                                val,
                               )
                             }
-                            className="flex-1 text-xs bg-slate-50 border border-slate-200 rounded px-2 py-1 text-slate-700 focus:border-pink-300 focus:outline-none"
                           >
-                            <option value="">All Plans (Default)</option>
-                            {plans.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name}
-                              </option>
-                            ))}
-                          </select>
+                            <SelectTrigger className="flex-1 h-9 text-sm">
+                              <span className="truncate">
+                                {schedule.planId
+                                  ? (() => {
+                                      const p = plans.find(pl => pl.id === schedule.planId);
+                                      return p ? `${p.name} (${p.duration}分)` : "プランを選択";
+                                    })()
+                                  : "All Plans (Default)"}
+                              </span>
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60">
+                              <SelectItem value="" className="py-2">
+                                <span className="font-medium">All Plans (Default)</span>
+                              </SelectItem>
+                              {plans.map((p) => (
+                                <SelectItem key={p.id} value={p.id} className="py-2">
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{p.name}</span>
+                                    <span className="text-xs text-slate-500">
+                                      {p.duration}分 / ¥{p.price?.toLocaleString()}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         {(() => {
                           const selectedPlan = plans.find(
@@ -258,7 +270,7 @@ export const WeeklyShiftInput = ({
                           );
 
                           return (
-                            <div className="text-[10px] text-right text-slate-400">
+                            <div className="text-xs text-right text-slate-400">
                               このプランなら最大{" "}
                               <span className="font-bold text-pink-500">
                                 {Math.max(0, maxCount)}

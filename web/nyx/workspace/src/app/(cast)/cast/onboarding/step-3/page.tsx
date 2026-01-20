@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, List } from "lucide-react";
 import {
@@ -12,18 +12,21 @@ import { useOnboarding } from "../context";
 
 export default function OnboardingStep3() {
   const router = useRouter();
-  const { data, setPlans, savePlans } = useOnboarding();
-  const [plans, setPlansState] = useState<ServicePlan[]>(
-    data.plans.length > 0
-      ? data.plans
-      : [{ id: "default-1", name: "Standard 60", duration: 60, price: 15000 }],
-  );
+  const { data, setPlans, savePlans, loading } = useOnboarding();
+  const [plans, setPlansState] = useState<ServicePlan[]>(data.plans);
+
+  // Sync plans from context when data is loaded
+  useEffect(() => {
+    if (!loading && data.plans.length > 0) {
+      setPlansState(data.plans);
+    }
+  }, [loading, data.plans]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Plans are optional now
+    // Save to context and backend
     setPlans(plans);
-    await savePlans();
+    await savePlans(plans);
     router.push("/cast/onboarding/step-4");
   };
 

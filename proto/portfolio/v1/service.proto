@@ -13,15 +13,13 @@ service CastService {
   rpc UpdateCastSchedules(UpdateCastSchedulesRequest) returns (UpdateCastSchedulesResponse);
   rpc ListCasts(ListCastsRequest) returns (ListCastsResponse);
   rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
-  rpc UpdateCastStatus(UpdateCastStatusRequest) returns (UpdateCastStatusResponse);
 }
 
-enum CastStatus {
-  CAST_STATUS_UNSPECIFIED = 0;
-  CAST_STATUS_OFFLINE = 1;
-  CAST_STATUS_ASKING = 2; // "Asking" or "Break"
-  CAST_STATUS_ONLINE = 3;
-  CAST_STATUS_TONIGHT = 4;
+enum CastVisibility {
+  CAST_VISIBILITY_UNSPECIFIED = 0;
+  CAST_VISIBILITY_UNREGISTERED = 1; // Onboarding not complete
+  CAST_VISIBILITY_UNPUBLISHED = 2;  // Onboarding complete, not visible
+  CAST_VISIBILITY_PUBLISHED = 3;    // Visible to guests
 }
 
 message SocialLinks {
@@ -38,7 +36,7 @@ message CastProfile {
   string name = 2;
   string bio = 3;
   string image_url = 4;
-  CastStatus status = 5;
+  CastVisibility visibility = 5;
   // promise_rate should be calculated, maybe not stored here directly or read-only
   double promise_rate = 6;
   repeated string images = 7;
@@ -97,6 +95,7 @@ message UpdateCastProfileRequest {
   string default_shift_start = 8;
   string default_shift_end = 9;
   SocialLinks social_links = 10;
+  CastVisibility visibility = 11;
 }
 
 message UpdateCastProfileResponse {
@@ -146,8 +145,8 @@ message CastSchedule {
 }
 
 message ListCastsRequest {
-  // Add filters if needed, e.g. status
-  CastStatus status_filter = 1;
+  // Add filters if needed, e.g. visibility
+  CastVisibility visibility_filter = 1;
 }
 
 message ListCastsResponse {
@@ -158,10 +157,3 @@ message ListCastsResponse {
   repeated CastItem items = 1;
 }
 
-message UpdateCastStatusRequest {
-  CastStatus status = 1;
-}
-
-message UpdateCastStatusResponse {
-  CastStatus status = 1;
-}

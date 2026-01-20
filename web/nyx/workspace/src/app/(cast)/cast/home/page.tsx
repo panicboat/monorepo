@@ -33,12 +33,24 @@ export default function CastDashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      const token = localStorage.getItem("nyx_cast_access_token");
+      if (!token) {
+        window.location.href = "/cast/login";
+        return;
+      }
+
+      const authHeaders = {
+        "Authorization": `Bearer ${token}`,
+      };
+
       try {
-        // 1. Check Onboarding Status
-        const profileRes = await fetch("/api/cast/onboarding/profile", { cache: "no-store" });
+        // 1. Check Onboarding Status via visibility
+        const profileRes = await fetch("/api/cast/onboarding/profile", {
+          cache: "no-store",
+          headers: authHeaders,
+        });
         if (!profileRes.ok) {
            if (profileRes.status === 404) {
-             console.log("Profile not found, redirecting to onboarding...");
              // No profile -> Step 1
              window.location.href = "/cast/onboarding/step-1";
              return;
@@ -46,38 +58,25 @@ export default function CastDashboardPage() {
         }
 
         const profileData = await profileRes.json();
-        const { profile, plans, schedules } = profileData;
+        const { profile } = profileData;
 
         if (!profile) {
              window.location.href = "/cast/onboarding/step-1";
              return;
         }
 
-        // Check completeness
-        // Step 2: Photos (Check profile image or gallery)
-        if (!profile.imagePath && (!profile.images || profile.images.length === 0)) {
-            console.log("No images, redirecting to step 2...");
-            window.location.href = "/cast/onboarding/step-2";
+        // Check visibility: UNREGISTERED means onboarding not complete
+        // visibility values: "unregistered", "unpublished", "published"
+        if (!profile.visibility || profile.visibility === "CAST_VISIBILITY_UNREGISTERED") {
+            window.location.href = "/cast/onboarding/step-1";
             return;
         }
 
-        // Step 3: Plans (Optional, so skip check? Or check if previously visited? Hard to know without flag)
-        // Let's assume Step 3 is optional as per UI text "Optional".
-
-        // Step 4: Schedules (Initial Schedule)
-        // If no schedules, redirect? Or optional too?
-        // "Initial Schedule" "Update later" implies it might be needed.
-        // Let's enforce it if empty.
-        if (!schedules || schedules.length === 0) {
-             console.log("No schedules, redirecting to step 4...");
-             window.location.href = "/cast/onboarding/step-4";
-             return;
-        }
-
-        // If all good, fetch dashboard data
+        // If visibility is UNPUBLISHED or PUBLISHED, user can access home
+        // Fetch dashboard data
         const [statsRes, reservationsRes] = await Promise.all([
-          fetch("/api/cast/stats"),
-          fetch("/api/cast/upcoming-reservations"),
+          fetch("/api/cast/stats", { headers: authHeaders }),
+          fetch("/api/cast/upcoming-reservations", { headers: authHeaders }),
         ]);
 
         if (statsRes.ok && reservationsRes.ok) {

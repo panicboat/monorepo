@@ -19,7 +19,14 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    return NextResponse.json(response);
+    // Rewrite URL to point to nyx's /storage/upload endpoint (BFF pattern)
+    const key = response.key;
+    const nyxUploadUrl = `/storage/upload?key=${encodeURIComponent(key)}&content_type=${encodeURIComponent(contentType)}`;
+
+    return NextResponse.json({
+      url: nyxUploadUrl,
+      key: response.key,
+    });
   } catch (error: any) {
     console.error("GetUploadUrl Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

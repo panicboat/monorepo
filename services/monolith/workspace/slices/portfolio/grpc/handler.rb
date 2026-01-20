@@ -20,7 +20,6 @@ module Portfolio
       rpc :UpdateCastSchedules, ::Portfolio::V1::UpdateCastSchedulesRequest, ::Portfolio::V1::UpdateCastSchedulesResponse
       rpc :UpdateCastImages, ::Portfolio::V1::UpdateCastImagesRequest, ::Portfolio::V1::UpdateCastImagesResponse
       rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
-      rpc :UpdateCastStatus, ::Portfolio::V1::UpdateCastStatusRequest, ::Portfolio::V1::UpdateCastStatusResponse
       rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
 
       include Portfolio::Deps[
@@ -90,17 +89,14 @@ module Portfolio
           social_links: ProfilePresenter.social_links_from_proto(request.message.social_links)
         )
 
+        # Handle visibility if provided
+        if request.message.visibility && request.message.visibility != :CAST_VISIBILITY_UNSPECIFIED
+          visibility_str = ProfilePresenter.visibility_from_enum(request.message.visibility)
+          publish_uc.call(cast_id: result.id, visibility: visibility_str)
+          result = get_profile_uc.call(user_id: ::Current.user_id)
+        end
+
         ::Portfolio::V1::UpdateCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))
-      end
-
-      def update_cast_status
-        authenticate_user!
-        cast = find_my_cast!
-
-        status_str = ProfilePresenter.status_from_enum(request.message.status)
-        publish_uc.call(cast_id: cast.id, status: status_str)
-
-        ::Portfolio::V1::UpdateCastStatusResponse.new(status: request.message.status)
       end
 
       # === Cast Plans ===
@@ -127,7 +123,8 @@ module Portfolio
         cast = find_my_cast!
 
         schedules_data = request.message.schedules.map do |s|
-          { date: s.date, start_time: s.start_time, end_time: s.end_time, plan_id: s.plan_id }
+          plan_id = s.plan_id.to_s.empty? ? nil : s.plan_id
+          { date: s.date, start_time: s.start_time, end_time: s.end_time, plan_id: plan_id }
         end
 
         result = save_schedules_uc.call(cast_id: cast.id, schedules: schedules_data)
@@ -173,8 +170,8 @@ module Portfolio
       # === Listing ===
 
       def list_casts
-        status_filter = request.message.status_filter == :CAST_STATUS_UNSPECIFIED ? nil : ProfilePresenter.status_from_enum(request.message.status_filter)
-        casts = list_casts_uc.call(status_filter: status_filter)
+        visibility_filter = request.message.visibility_filter == :CAST_VISIBILITY_UNSPECIFIED ? nil : ProfilePresenter.visibility_from_enum(request.message.visibility_filter)
+        casts = list_casts_uc.call(visibility_filter: visibility_filter)
 
         ::Portfolio::V1::ListCastsResponse.new(
           items: casts.map { |c|

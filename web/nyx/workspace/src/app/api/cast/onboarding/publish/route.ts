@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
-import { CastStatus } from "@/lib/portfolio/v1/service_pb";
+import { CastVisibility } from "@/lib/portfolio/v1/service_pb";
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,13 +9,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const status = body.status === "online" ? CastStatus.ONLINE : CastStatus.OFFLINE;
-    // Or assume "publish" means ONLINE.
-
-    const response = await castClient.updateCastStatus(
+    // Publish sets visibility to PUBLISHED
+    const response = await castClient.updateCastProfile(
       {
-        status: status,
+        visibility: CastVisibility.PUBLISHED,
       },
       {
         headers: {
@@ -26,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error: any) {
-    console.error("UpdateCastStatus Error:", error);
+    console.error("UpdateCastProfile (publish) Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -1,21 +1,13 @@
 "use client";
 
-import { Info, Clock } from "lucide-react";
+import { Info } from "lucide-react";
 import { ProfileFormData } from "@/modules/portfolio/types";
 import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/Select";
 
 interface StyleInputsProps {
   data: ProfileFormData;
   onChange: (key: keyof ProfileFormData, value: any) => void;
-  timeOptions: string[];
 }
 
 // Simplified Select Component (Radio-like Button Group)
@@ -66,7 +58,6 @@ const SelectGroup = ({
 export const StyleInputs = ({
   data,
   onChange,
-  timeOptions,
 }: StyleInputsProps) => {
   return (
     <section className="space-y-6 rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
@@ -107,41 +98,19 @@ export const StyleInputs = ({
           </span>
         </Label>
         <div className="flex items-center gap-2 max-w-sm">
-          <div className="relative flex-1">
-            <Select
-              value={data.defaultShiftStart}
-              onValueChange={(val) => onChange("defaultShiftStart", val)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Start Time" />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {timeOptions.map((t) => (
-                  <SelectItem key={`start-${t}`} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <input
+            type="time"
+            value={data.defaultShiftStart}
+            onChange={(e) => onChange("defaultShiftStart", e.target.value)}
+            className="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+          />
           <span className="text-slate-400 font-bold">~</span>
-          <div className="relative flex-1">
-            <Select
-              value={data.defaultShiftEnd}
-              onValueChange={(val) => onChange("defaultShiftEnd", val)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="End Time" />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {timeOptions.map((t) => (
-                  <SelectItem key={`end-${t}`} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <input
+            type="time"
+            value={data.defaultShiftEnd}
+            onChange={(e) => onChange("defaultShiftEnd", e.target.value)}
+            className="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+          />
         </div>
       </div>
     </section>

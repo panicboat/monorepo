@@ -7,8 +7,8 @@ module Portfolio
         class Publish
           include Portfolio::Deps[repo: "repositories.cast_repository"]
 
-          def call(cast_id:, status:)
-            repo.update_status(cast_id, status)
+          def call(cast_id:, visibility:)
+            repo.update_visibility(cast_id, visibility)
           end
         end
       end

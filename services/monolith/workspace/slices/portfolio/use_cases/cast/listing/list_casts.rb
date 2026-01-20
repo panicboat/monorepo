@@ -7,8 +7,8 @@ module Portfolio
         class ListCasts
           include Portfolio::Deps[repo: "repositories.cast_repository"]
 
-          def call(status_filter: nil)
-            repo.list_online(status_filter)
+          def call(visibility_filter: nil)
+            repo.list_by_visibility(visibility_filter)
           end
         end
       end

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Image as ImageIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader";
 import { MediaItem } from "@/modules/portfolio/types";
 
@@ -10,8 +10,15 @@ import { useOnboarding } from "../context";
 
 export default function OnboardingStep2() {
   const router = useRouter();
-  const { data, updatePhotos, saveImages, uploadImage } = useOnboarding();
-  const [images, setImages] = useState<MediaItem[]>(data.photos.gallery || []);
+  const { data, updatePhotos, saveImages, uploadImage, loading } = useOnboarding();
+  const [images, setImages] = useState<MediaItem[]>([]);
+
+  // Sync images from context when data is loaded
+  useEffect(() => {
+    if (!loading && data.photos.gallery.length > 0) {
+      setImages(data.photos.gallery);
+    }
+  }, [loading, data.photos.gallery]);
 
   const handleUpload = async (file: File): Promise<MediaItem | null> => {
     try {
@@ -32,9 +39,9 @@ export default function OnboardingStep2() {
     e.preventDefault();
     if (images.length < 1) return;
 
-    // Save to context
-    updatePhotos(images);
-    await saveImages();
+    // Save to context and backend
+    updatePhotos({ gallery: images });
+    await saveImages(images);
     router.push("/cast/onboarding/step-3");
   };
 

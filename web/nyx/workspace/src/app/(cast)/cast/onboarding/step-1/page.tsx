@@ -115,13 +115,6 @@ export default function OnboardingStep1Page() {
     formData.area.trim().length > 0 &&
     formData.tagline.trim().length > 0;
 
-  // Time Options
-  const timeOptions = Array.from({ length: 48 }, (_, i) => {
-    const h = Math.floor(i / 2);
-    const m = i % 2 === 0 ? "00" : "30";
-    return `${h.toString().padStart(2, "0")}:${m}`;
-  });
-
   return (
     <div className="px-4 py-6 space-y-6">
       <div>
@@ -136,7 +129,6 @@ export default function OnboardingStep1Page() {
         <StyleInputs
           data={formData}
           onChange={handleChange}
-          timeOptions={timeOptions}
         />
 
         {/* Basic Info */}

@@ -258,7 +258,7 @@ export default function OnboardingStep5() {
         <Button
           onClick={handlePublish}
           disabled={isPublishing}
-          className="relative w-full overflow-hidden rounded-xl bg-slate-900 py-6 h-auto font-bold text-white shadow-xl shadow-slate-200 transition-all hover:bg-slate-800 hover:shadow-2xl disabled:bg-slate-400"
+          className="relative w-full overflow-hidden rounded-xl bg-pink-500 py-6 h-auto font-bold text-white shadow-xl shadow-pink-200 transition-all hover:bg-pink-600 hover:shadow-2xl disabled:bg-slate-400"
         >
           {isPublishing ? (
             <span className="flex items-center justify-center gap-2">

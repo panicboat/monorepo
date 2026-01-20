@@ -30,7 +30,7 @@ module Portfolio
               repo.create(
                 attrs.merge(
                   user_id: user_id,
-                  status: "offline"
+                  visibility: "unregistered"
                 )
               )
             end
