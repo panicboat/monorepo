@@ -10,15 +10,31 @@ import { useOnboarding } from "../context";
 
 export default function OnboardingStep2() {
   const router = useRouter();
-  const { data, updatePhotos } = useOnboarding();
+  const { data, updatePhotos, saveImages, uploadImage } = useOnboarding();
   const [images, setImages] = useState<MediaItem[]>(data.photos.gallery || []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleUpload = async (file: File): Promise<MediaItem | null> => {
+    try {
+      const { key } = await uploadImage(file);
+      const url = URL.createObjectURL(file);
+      return {
+        url,
+        key,
+        type: file.type.startsWith("video") ? "video" : "image",
+      };
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (images.length < 1) return;
 
     // Save to context
-    updatePhotos({ gallery: images, cover: images[0]?.url || null });
+    updatePhotos(images);
+    await saveImages();
     router.push("/cast/onboarding/step-3");
   };
 
@@ -42,7 +58,12 @@ export default function OnboardingStep2() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
-          <PhotoUploader images={images} onChange={setImages} minImages={3} />
+          <PhotoUploader
+             images={images}
+             onChange={setImages}
+             onUpload={handleUpload}
+             minImages={3}
+          />
         </div>
 
         <button

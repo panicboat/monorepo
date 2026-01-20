@@ -17,11 +17,15 @@ module Portfolio
         self.unmarshal_class_method = :decode
         self.service_name = 'portfolio.v1.CastService'
 
-        rpc :CreateProfile, ::Portfolio::V1::CreateProfileRequest, ::Portfolio::V1::CastProfile
-        rpc :GetProfile, ::Portfolio::V1::GetProfileRequest, ::Portfolio::V1::GetProfileResponse
-        rpc :UpdateProfile, ::Portfolio::V1::UpdateProfileRequest, ::Portfolio::V1::UpdateProfileResponse
+        rpc :GetCastProfile, ::Portfolio::V1::GetCastProfileRequest, ::Portfolio::V1::GetCastProfileResponse
+        rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
+        rpc :UpdateCastProfile, ::Portfolio::V1::UpdateCastProfileRequest, ::Portfolio::V1::UpdateCastProfileResponse
+        rpc :UpdateCastImages, ::Portfolio::V1::UpdateCastImagesRequest, ::Portfolio::V1::UpdateCastImagesResponse
+        rpc :UpdateCastPlans, ::Portfolio::V1::UpdateCastPlansRequest, ::Portfolio::V1::UpdateCastPlansResponse
+        rpc :UpdateCastSchedules, ::Portfolio::V1::UpdateCastSchedulesRequest, ::Portfolio::V1::UpdateCastSchedulesResponse
         rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
-        rpc :UpdateStatus, ::Portfolio::V1::UpdateStatusRequest, ::Portfolio::V1::UpdateStatusResponse
+        rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
+        rpc :UpdateCastStatus, ::Portfolio::V1::UpdateCastStatusRequest, ::Portfolio::V1::UpdateCastStatusResponse
       end
 
       Stub = Service.rpc_stub_class

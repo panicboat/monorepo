@@ -12,18 +12,18 @@ import { useOnboarding } from "../context";
 
 export default function OnboardingStep3() {
   const router = useRouter();
-  const { data, setPlans: savePlans } = useOnboarding();
-  const [plans, setPlans] = useState<ServicePlan[]>(
+  const { data, setPlans, savePlans } = useOnboarding();
+  const [plans, setPlansState] = useState<ServicePlan[]>(
     data.plans.length > 0
       ? data.plans
       : [{ id: "default-1", name: "Standard 60", duration: 60, price: 15000 }],
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Plans are optional now
-    // Plans are optional now
-    savePlans(plans);
+    setPlans(plans);
+    await savePlans();
     router.push("/cast/onboarding/step-4");
   };
 
@@ -54,7 +54,7 @@ export default function OnboardingStep3() {
             <span>プランの登録は任意です</span>
           </div>
 
-          <PlanEditor plans={plans} onChange={setPlans} />
+          <PlanEditor plans={plans} onChange={setPlansState} />
         </div>
 
         <button

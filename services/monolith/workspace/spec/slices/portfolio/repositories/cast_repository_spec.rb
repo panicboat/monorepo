@@ -1,0 +1,58 @@
+# frozen_string_literal: true
+
+require "spec_helper"
+
+RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
+  let(:repo) { Hanami.app.slices[:portfolio]["repositories.cast_repository"] }
+  let(:user_id) { SecureRandom.uuid }
+  let(:cast) { repo.find_by_user_id(user_id) }
+
+  before do
+    # Cleanup before each test if needed
+  end
+
+  describe "#find_by_user_id_with_plans" do
+    it "returns nil when cast does not exist" do
+      expect(repo.find_by_user_id_with_plans(SecureRandom.uuid)).to be_nil
+    end
+
+    it "returns cast with plans when exists" do
+      # Setup data
+      uid = SecureRandom.uuid
+      cast_data = { user_id: uid, name: "Found", image_path: "test", status: "offline" }
+      repo.create(cast_data)
+
+      result = repo.find_by_user_id_with_plans(uid)
+      expect(result).not_to be_nil
+      expect(result.name).to eq("Found")
+    end
+  end
+
+  describe "#update_plans" do
+    let!(:existing_cast) do
+      repo.create(user_id: SecureRandom.uuid, name: "Plan Test", image_path: "p", status: "online")
+    end
+
+    it "replaces plans" do
+      plans_data = [{ name: "New Plan", price: 2000, duration_minutes: 90 }]
+      updated = repo.update_plans(existing_cast.id, plans_data)
+
+      expect(updated.cast_plans.size).to eq(1)
+      expect(updated.cast_plans.first.name).to eq("New Plan")
+    end
+  end
+
+  describe "#update_schedules" do
+    let!(:existing_cast) do
+      repo.create(user_id: SecureRandom.uuid, name: "Schedule Test", image_path: "s", status: "online")
+    end
+
+    it "replaces schedules" do
+      schedules_data = [{ date: Date.today, start_time: "10:00", end_time: "11:00", plan_id: nil }]
+      updated = repo.update_schedules(existing_cast.id, schedules_data)
+
+      expect(updated.cast_schedules.size).to eq(1)
+      expect(updated.cast_schedules.first.date).to eq(Date.today)
+    end
+  end
+end

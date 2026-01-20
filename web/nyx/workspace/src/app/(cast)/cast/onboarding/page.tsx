@@ -1,7 +1,31 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { useOnboarding } from "./context";
 
 export default function OnboardingWelcomePage() {
+  const { data, loading } = useOnboarding();
+
+  const getNextStep = () => {
+      if (!data.profile.nickname) return "/cast/onboarding/step-1";
+      if (!data.photos.profile) return "/cast/onboarding/step-2";
+      if (data.plans.length === 0) return "/cast/onboarding/step-3";
+      if (data.shifts.length === 0) return "/cast/onboarding/step-4";
+      return "/cast/onboarding/step-5";
+  };
+
+  const nextStep = getNextStep();
+  const isResuming = nextStep !== "/cast/onboarding/step-1";
+
+  if (loading) {
+    return (
+        <div className="flex h-[50vh] items-center justify-center">
+            <Loader2 className="animate-spin text-pink-500" size={32} />
+        </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 py-4 px-4">
       <div className="text-center">
@@ -54,15 +78,13 @@ export default function OnboardingWelcomePage() {
         </div>
       </section>
 
-      {/* Guidelines Accordion or Link could go here */}
-
       {/* CTA */}
       <div className="mt-4">
         <Link
-          href="/cast/onboarding/step-1"
+          href={nextStep}
           className="flex items-center justify-center gap-2 w-full rounded-xl bg-slate-900 py-4 font-bold text-white shadow-lg shadow-slate-200 transition-transform active:scale-95"
         >
-          <span>プロフィールを作成する</span>
+          <span>{isResuming ? "続きから再開する" : "プロフィールを作成する"}</span>
           <ArrowRight size={18} />
         </Link>
         <p className="text-center text-[10px] text-slate-400 mt-4">

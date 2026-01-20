@@ -12,6 +12,7 @@ gem "hanami-view", "~> 2.3.0"
 
 gem "grpc"
 gem "gruf"
+gem "aws-sdk-s3", "~> 1.143"
 
 gem "jwt"
 gem "bcrypt"

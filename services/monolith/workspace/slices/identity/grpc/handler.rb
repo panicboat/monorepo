@@ -22,13 +22,13 @@ module Identity
       rpc :GetCurrentUser, ::Google::Protobuf::Empty, ::Identity::V1::UserProfile
 
       include Identity::Deps[
-        register_service: "operations.register",
-        login_service: "operations.login",
-        send_sms_service: "operations.send_sms",
-        verify_sms_service: "operations.verify_sms",
-        get_current_user_service: "operations.get_current_user",
-        refresh_token_service: "operations.refresh_token",
-        logout_service: "operations.logout"
+        login_uc: "use_cases.auth.login",
+        logout_uc: "use_cases.auth.logout",
+        register_uc: "use_cases.auth.register",
+        refresh_token_uc: "use_cases.token.refresh",
+        send_code_uc: "use_cases.verification.send_code",
+        verify_code_uc: "use_cases.verification.verify_code",
+        get_profile_uc: "use_cases.user.get_profile"
       ]
 
       def health_check
@@ -36,12 +36,12 @@ module Identity
       end
 
       def send_sms
-        send_sms_service.call(phone_number: request.message.phone_number)
+        send_code_uc.call(phone_number: request.message.phone_number)
         ::Identity::V1::SendSmsResponse.new(success: true)
       end
 
       def verify_sms
-        result = verify_sms_service.call(phone_number: request.message.phone_number, code: request.message.code)
+        result = verify_code_uc.call(phone_number: request.message.phone_number, code: request.message.code)
 
         unless result[:success]
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Invalid code or expired")
@@ -51,118 +51,71 @@ module Identity
       end
 
       def register
-        # Map Proto Enum to Integer (or pass directly if matches)
-        # Proto: ROLE_GUEST=1, ROLE_CAST=2 -> DB: 1, 2
-        # Default to Guest if unspecified (0)
-        input_role = request.message.role
-        role_int = input_role == :ROLE_CAST || input_role == 2 ? 2 : 1
+        role_int = UserPresenter.role_enum_to_int(request.message.role) || 1
 
-        result = register_service.call(
+        result = register_uc.call(
           phone_number: request.message.phone_number,
           password: request.message.password,
           verification_token: request.message.verification_token,
           role: role_int
         )
 
-        to_register_response(result)
+        AuthPresenter.to_register_response(result)
       rescue => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INTERNAL, e.message)
       end
 
       def login
-        input_role = request.message.role
-        role_int = case input_role
-                   when :ROLE_CAST, 2 then 2
-                   when :ROLE_GUEST, 1 then 1
-                   else nil
-                   end
+        role_int = UserPresenter.role_enum_to_int(request.message.role)
 
-        result = login_service.call(
+        result = login_uc.call(
           phone_number: request.message.phone_number,
           password: request.message.password,
           role: role_int
         )
 
         if result
-          to_login_response(result)
+          AuthPresenter.to_login_response(result)
         else
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Invalid credentials or role mismatch")
         end
       end
 
       def refresh_token
-        result = refresh_token_service.call(refresh_token: request.message.refresh_token)
+        result = refresh_token_uc.call(refresh_token: request.message.refresh_token)
 
         unless result
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Invalid or expired refresh token")
         end
 
-        ::Identity::V1::RefreshTokenResponse.new(
-          access_token: result[:access_token],
-          refresh_token: result[:refresh_token]
-        )
+        AuthPresenter.to_refresh_response(result)
       end
 
       def logout
-        logout_service.call(refresh_token: request.message.refresh_token)
+        logout_uc.call(refresh_token: request.message.refresh_token)
         ::Identity::V1::LogoutResponse.new(success: true)
       end
 
       def get_current_user
-        # Extract user_id from metadata (handled by interceptor potentially)
-        # OR decode JWT here if no interceptor.
-        # Assumption: ::Current.user_id is set.
         user_id = ::Current.user_id
 
         unless user_id
            raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Unauthenticated")
         end
 
-        result = get_current_user_service.call(user_id: user_id)
+        result = get_profile_uc.call(user_id: user_id)
 
         unless result
            raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "User not found")
         end
 
-        ::Identity::V1::UserProfile.new(
-          id: result[:id],
-          phone_number: result[:phone_number],
-          role: role_int_to_enum(result[:role])
-        )
+        UserPresenter.to_proto(result)
       end
 
       private
 
-      def to_register_response(result)
-        ::Identity::V1::RegisterResponse.new(
-          access_token: result[:access_token],
-          refresh_token: result[:refresh_token],
-          user_profile: to_user_profile_proto(result[:user_profile])
-        )
-      end
-
-      def to_login_response(result)
-        ::Identity::V1::LoginResponse.new(
-          access_token: result[:access_token],
-          refresh_token: result[:refresh_token],
-          user_profile: to_user_profile_proto(result[:user_profile])
-        )
-      end
-
-      def to_user_profile_proto(profile)
-        ::Identity::V1::UserProfile.new(
-          id: profile[:id],
-          phone_number: profile[:phone_number],
-          role: role_int_to_enum(profile[:role])
-        )
-      end
-
-      def role_int_to_enum(role_int)
-        case role_int
-        when 2 then :ROLE_CAST
-        else :ROLE_GUEST
-        end
-      end
+      UserPresenter = Identity::Presenters::UserPresenter
+      AuthPresenter = Identity::Presenters::AuthPresenter
     end
   end
 end

@@ -12,16 +12,17 @@ import { useOnboarding } from "../context";
 
 export default function OnboardingStep4() {
   const router = useRouter();
-  const { data, setShifts: saveShifts } = useOnboarding();
-  const [schedules, setSchedules] = useState<ScheduleItem[]>(data.shifts || []);
+  const { data, setShifts, saveSchedules } = useOnboarding();
+  const [schedules, setSchedulesState] = useState<ScheduleItem[]>(data.shifts || []);
 
   // Use real plans from context
   const availablePlans = data.plans;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (schedules.length < 1) return;
-    saveShifts(schedules);
+    setShifts(schedules);
+    await saveSchedules();
     router.push("/cast/onboarding/step-5");
   };
 
@@ -47,7 +48,7 @@ export default function OnboardingStep4() {
         <WeeklyShiftInput
           schedules={schedules}
           plans={availablePlans}
-          onChange={setSchedules}
+          onChange={setSchedulesState}
         />
 
         <button

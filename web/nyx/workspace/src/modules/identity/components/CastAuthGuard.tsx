@@ -4,8 +4,8 @@ import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, ReactNode } from "react";
 
-const PUBLIC_PATHS = ["/cast/login"];
-const PUBLIC_PATH_PREFIXES = ["/cast/onboarding"];
+const PUBLIC_PATHS = ["/cast/login", "/cast/onboarding"]; // onboarding root is public (Welcome page)
+const PUBLIC_PATH_PREFIXES: string[] = []; // onboarding steps are protected (not in public list)
 
 export const CastAuthGuard = ({ children }: { children: ReactNode }) => {
   const { user, isLoading } = useAuth();

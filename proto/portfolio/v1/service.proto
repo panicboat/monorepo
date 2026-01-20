@@ -5,11 +5,15 @@ package portfolio.v1;
 // import "buf/validate/validate.proto";
 
 service CastService {
-  rpc CreateProfile(CreateProfileRequest) returns (CastProfile);
-  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
-  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+  rpc GetCastProfile(GetCastProfileRequest) returns (GetCastProfileResponse);
+  rpc CreateCastProfile(CreateCastProfileRequest) returns (CreateCastProfileResponse);
+  rpc UpdateCastProfile(UpdateCastProfileRequest) returns (UpdateCastProfileResponse);
+  rpc UpdateCastImages(UpdateCastImagesRequest) returns (UpdateCastImagesResponse);
+  rpc UpdateCastPlans(UpdateCastPlansRequest) returns (UpdateCastPlansResponse);
+  rpc UpdateCastSchedules(UpdateCastSchedulesRequest) returns (UpdateCastSchedulesResponse);
   rpc ListCasts(ListCastsRequest) returns (ListCastsResponse);
-  rpc UpdateStatus(UpdateStatusRequest) returns (UpdateStatusResponse);
+  rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
+  rpc UpdateCastStatus(UpdateCastStatusRequest) returns (UpdateCastStatusResponse);
 }
 
 enum CastStatus {
@@ -20,12 +24,13 @@ enum CastStatus {
   CAST_STATUS_TONIGHT = 4;
 }
 
-message CreateProfileRequest {
-  string name = 1;
-  string bio = 2;
-  string image_url = 3;
-  repeated CastPlan plans = 4;
-  string user_id = 5;
+message SocialLinks {
+  string x = 1;
+  string instagram = 2;
+  string tiktok = 3;
+  string cityheaven = 4;
+  string litlink = 5;
+  repeated string others = 6;
 }
 
 message CastProfile {
@@ -36,6 +41,15 @@ message CastProfile {
   CastStatus status = 5;
   // promise_rate should be calculated, maybe not stored here directly or read-only
   double promise_rate = 6;
+  repeated string images = 7;
+  string image_path = 8;
+  string tagline = 9;
+  string service_category = 10;
+  string location_type = 11;
+  string area = 12;
+  string default_shift_start = 13;
+  string default_shift_end = 14;
+  SocialLinks social_links = 15;
 }
 
 message CastPlan {
@@ -45,25 +59,90 @@ message CastPlan {
   int32 duration_minutes = 4;
 }
 
-message GetProfileRequest {
+message GetCastProfileRequest {
   string user_id = 1; // [(buf.validate.field).string.uuid = true];
 }
 
-message GetProfileResponse {
+message GetCastProfileResponse {
   CastProfile profile = 1;
   repeated CastPlan plans = 2;
+  repeated CastSchedule schedules = 3;
 }
 
-message UpdateProfileRequest {
+message CreateCastProfileRequest {
   string name = 1;
   string bio = 2;
-  string image_url = 3;
-  repeated CastPlan plans = 4; // Full replacement of plans for simplicity
+  string image_path = 3;
+  string tagline = 4;
+  string service_category = 5;
+  string location_type = 6;
+  string area = 7;
+  string default_shift_start = 8;
+  string default_shift_end = 9;
+  SocialLinks social_links = 10;
 }
 
-message UpdateProfileResponse {
+message CreateCastProfileResponse {
   CastProfile profile = 1;
-  repeated CastPlan plans = 2;
+}
+
+message UpdateCastProfileRequest {
+  string name = 1;
+  string bio = 2;
+  string image_path = 3;
+  string tagline = 4;
+  string service_category = 5;
+  string location_type = 6;
+  string area = 7;
+  string default_shift_start = 8;
+  string default_shift_end = 9;
+  SocialLinks social_links = 10;
+}
+
+message UpdateCastProfileResponse {
+  CastProfile profile = 1;
+}
+
+message UpdateCastImagesRequest {
+  string profile_image_path = 1; // Cover/Profile image
+  repeated string gallery_images = 2; // List of image URLs or Paths
+}
+
+message UpdateCastImagesResponse {
+  CastProfile profile = 1;
+}
+
+message UpdateCastPlansRequest {
+  repeated CastPlan plans = 1;
+}
+
+message UpdateCastPlansResponse {
+  repeated CastPlan plans = 1;
+}
+
+message UpdateCastSchedulesRequest {
+  repeated CastSchedule schedules = 1;
+}
+
+message UpdateCastSchedulesResponse {
+  repeated CastSchedule schedules = 1;
+}
+
+message GetUploadUrlRequest {
+  string filename = 1;
+  string content_type = 2;
+}
+
+message GetUploadUrlResponse {
+  string url = 1;
+  string key = 2;
+}
+
+message CastSchedule {
+  string date = 1; // YYYY-MM-DD
+  string start_time = 2; // HH:mm
+  string end_time = 3; // HH:mm
+  string plan_id = 4; // Optional
 }
 
 message ListCastsRequest {
@@ -79,10 +158,10 @@ message ListCastsResponse {
   repeated CastItem items = 1;
 }
 
-message UpdateStatusRequest {
+message UpdateCastStatusRequest {
   CastStatus status = 1;
 }
 
-message UpdateStatusResponse {
+message UpdateCastStatusResponse {
   CastStatus status = 1;
 }

@@ -76,6 +76,37 @@ CREATE TABLE identity.users (
 
 
 --
+-- Name: cast_plans; Type: TABLE; Schema: portfolio; Owner: -
+--
+
+CREATE TABLE portfolio.cast_plans (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    cast_id uuid NOT NULL,
+    name text NOT NULL,
+    price integer NOT NULL,
+    duration_minutes integer NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: cast_schedules; Type: TABLE; Schema: portfolio; Owner: -
+--
+
+CREATE TABLE portfolio.cast_schedules (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    cast_id uuid NOT NULL,
+    date date NOT NULL,
+    start_time text NOT NULL,
+    end_time text NOT NULL,
+    plan_id uuid,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
 -- Name: casts; Type: TABLE; Schema: portfolio; Owner: -
 --
 
@@ -106,7 +137,8 @@ CREATE TABLE portfolio.casts (
     default_shift_start text,
     default_shift_end text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    image_path text
 );
 
 
@@ -141,6 +173,22 @@ ALTER TABLE ONLY identity.sms_verifications
 
 ALTER TABLE ONLY identity.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cast_plans cast_plans_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_plans
+    ADD CONSTRAINT cast_plans_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cast_schedules cast_schedules_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_schedules
+    ADD CONSTRAINT cast_schedules_pkey PRIMARY KEY (id);
 
 
 --
@@ -195,6 +243,20 @@ CREATE UNIQUE INDEX identity_users_phone_number_index ON identity.users USING bt
 
 
 --
+-- Name: portfolio_cast_plans_cast_id_index; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX portfolio_cast_plans_cast_id_index ON portfolio.cast_plans USING btree (cast_id);
+
+
+--
+-- Name: portfolio_cast_schedules_cast_id_index; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX portfolio_cast_schedules_cast_id_index ON portfolio.cast_schedules USING btree (cast_id);
+
+
+--
 -- Name: portfolio_casts_user_id_index; Type: INDEX; Schema: portfolio; Owner: -
 --
 
@@ -210,6 +272,30 @@ ALTER TABLE ONLY identity.refresh_tokens
 
 
 --
+-- Name: cast_plans cast_plans_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_plans
+    ADD CONSTRAINT cast_plans_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: cast_schedules cast_schedules_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_schedules
+    ADD CONSTRAINT cast_schedules_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: cast_schedules cast_schedules_plan_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_schedules
+    ADD CONSTRAINT cast_schedules_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES portfolio.cast_plans(id) ON DELETE SET NULL;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -220,4 +306,6 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260114002209_create_users.rb'),
 ('20260114003157_create_sms_verifications.rb'),
 ('20260117030200_create_casts_table.rb'),
-('20260118000000_create_refresh_tokens.rb');
+('20260118000000_create_refresh_tokens.rb'),
+('20260118120000_create_cast_plans_and_schedules.rb'),
+('20260118130000_add_image_path_to_casts.rb');

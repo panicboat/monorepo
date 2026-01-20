@@ -151,12 +151,49 @@ export default function ProfileEditPage() {
     fetchData();
   }, []);
 
+  // Image Upload Handler
+  const handleUpload = async (file: File): Promise<MediaItem | null> => {
+    try {
+        const token = localStorage.getItem("nyx_cast_access_token");
+        if (!token) throw new Error("No token");
+
+        const res = await fetch("/api/cast/onboarding/upload-url", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ filename: file.name, contentType: file.type })
+        });
+
+        if (!res.ok) throw new Error("Failed to get URL");
+        const { url, key } = await res.json();
+
+        const uploadRes = await fetch(url, {
+            method: "PUT",
+            headers: { "Content-Type": file.type },
+            body: file
+        });
+        if (!uploadRes.ok) throw new Error("Upload failed");
+
+        return {
+            url: URL.createObjectURL(file),
+            key: key,
+            type: file.type.startsWith("video") ? "video" : "image"
+        };
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
+  };
+
   // Save
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Map Form State back to API Payload
-      const payload: Partial<CastProfile> = {
+      const token = localStorage.getItem("nyx_cast_access_token");
+      // Payload mappings
+      const payload = {
         name: profileForm.nickname,
         tagline: profileForm.tagline,
         bio: profileForm.bio,
@@ -164,12 +201,11 @@ export default function ProfileEditPage() {
         serviceCategory: profileForm.serviceCategory,
         locationType: profileForm.locationType,
         socialLinks: profileForm.socialLinks,
-        images: {
-          hero: images[0]?.url || "",
-          portfolio: images.slice(1),
-        },
-        // New Fields
-        tags: profileForm.tags.map((t) => ({ label: t, count: 1 })), // string[] -> CastTag[]
+        imagePath: images[0]?.key, // Send Key for Hero
+        images: images.slice(1).map(i => i.url), // Send URLs for Portfolio (Legacy/Simple)
+
+        // Metadata
+        tags: profileForm.tags.map((t) => ({ label: t, count: 1 })),
         age: profileForm.age,
         height: profileForm.height,
         bloodType: profileForm.bloodType,
@@ -178,13 +214,15 @@ export default function ProfileEditPage() {
 
       const res = await fetch("/api/cast/profile", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token || ""}`
+        },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error("Failed to save");
 
-      // Success
       window.scrollTo({ top: 0, behavior: "smooth" });
       router.refresh();
     } catch (e) {
@@ -238,7 +276,7 @@ export default function ProfileEditPage() {
           collapsible
           defaultOpen={false}
         >
-          <PhotoUploader images={images} onChange={setImages} />
+          <PhotoUploader images={images} onChange={setImages} onUpload={handleUpload} />
         </SectionCard>
 
         {/* Identity (Order 2) */}

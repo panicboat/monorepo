@@ -9,16 +9,19 @@ import { useOnboarding } from "../context";
 
 export default function OnboardingStep5() {
   const router = useRouter();
-  const { data } = useOnboarding();
+  const { data, publishProfile } = useOnboarding();
   const [isPublishing, setIsPublishing] = useState(false);
 
   const handlePublish = async () => {
     setIsPublishing(true);
-    // Simulate API call with real data
-    console.log("FINAL SUBMISSION:", data);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Published!");
-    router.push("/cast/home");
+    try {
+      await publishProfile();
+      console.log("Published!");
+      router.push("/cast/home");
+    } catch (e) {
+      console.error(e);
+      setIsPublishing(false);
+    }
   };
 
   if (!data) return null;

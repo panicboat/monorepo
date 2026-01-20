@@ -8,42 +8,54 @@ import { MediaItem } from "@/modules/portfolio/types";
 interface PhotoUploaderProps {
   images: MediaItem[];
   onChange: (images: MediaItem[]) => void;
+  onUpload: (file: File) => Promise<MediaItem | null>;
   minImages?: number;
 }
 
 export const PhotoUploader = ({
   images,
   onChange,
+  onUpload,
   minImages = 3,
 }: PhotoUploaderProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (file: File): Promise<MediaItem | null> => {
+    return onUpload(file);
+  };
+
+  const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newItems: MediaItem[] = Array.from(e.target.files).map((file) => ({
-        url: URL.createObjectURL(file),
-        type: file.type.startsWith("video") ? "video" : "image",
-      }));
-      onChange([...images, ...newItems]);
+      const files = Array.from(e.target.files);
+      const results = await Promise.all(files.map(uploadFileWithRetry));
+      const validResults = results.filter((r): r is MediaItem => r !== null);
+      if (validResults.length > 0) {
+        onChange([...images, ...validResults]);
+      }
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const newItems: MediaItem[] = Array.from(e.dataTransfer.files)
-        .filter(
-          (file) =>
-            file.type.startsWith("image/") || file.type.startsWith("video/"),
-        )
-        .map((file) => ({
-          url: URL.createObjectURL(file),
-          type: file.type.startsWith("video/") ? "video" : "image",
-        }));
-      onChange([...images, ...newItems]);
+      const files = Array.from(e.dataTransfer.files).filter(
+        (file) =>
+            file.type.startsWith("image/") || file.type.startsWith("video/")
+      );
+      const results = await Promise.all(files.map(uploadFileWithRetry));
+      const validResults = results.filter((r): r is MediaItem => r !== null);
+      if (validResults.length > 0) {
+        onChange([...images, ...validResults]);
+      }
     }
+  };
+
+  const uploadFileWithRetry = async (file: File) => {
+      // Wrapper to show loading state if we want?
+      // For now just call handleUpload
+      return handleUpload(file);
   };
 
   const removeImage = (index: number) => {

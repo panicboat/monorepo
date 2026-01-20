@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Info } from "lucide-react";
 import { ProfileFormData } from "@/modules/portfolio/types";
@@ -11,7 +11,7 @@ import { useOnboarding } from "../context";
 
 export default function OnboardingStep1Page() {
   const router = useRouter();
-  const { data, updateProfile } = useOnboarding();
+  const { data, updateProfile, saveProfile, loading } = useOnboarding();
 
   // Initialize Form State from Context
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -29,6 +29,27 @@ export default function OnboardingStep1Page() {
     },
     tags: [],
   });
+
+  // Sync form data when context data is loaded from API
+  useEffect(() => {
+    if (!loading && data.profile) {
+      setFormData({
+        nickname: data.profile.nickname || "",
+        tagline: data.profile.tagline || "",
+        bio: data.profile.bio || "",
+        serviceCategory: data.profile.serviceCategory || "standard",
+        locationType: data.profile.locationType || "dispatch",
+        area: data.profile.area || "",
+        defaultShiftStart: data.profile.defaultShiftStart || "18:00",
+        defaultShiftEnd: data.profile.defaultShiftEnd || "23:00",
+        socialLinks: {
+          ...data.profile.socialLinks,
+          others: data.profile.socialLinks?.others || [],
+        },
+        tags: data.profile.tags || [],
+      });
+    }
+  }, [loading, data.profile]);
 
   // Handlers (Moved from OnboardingForm)
   const handleChange = (key: keyof ProfileFormData, val: any) => {
@@ -82,9 +103,10 @@ export default function OnboardingStep1Page() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     updateProfile(formData);
+    await saveProfile(formData);
     router.push("/cast/onboarding/step-2");
   };
 

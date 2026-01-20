@@ -15,6 +15,7 @@ export interface CastImage {
 export interface MediaItem {
   id?: string;
   url: string;
+  key?: string;
   type: "image" | "video";
   thumbnail?: string;
 }

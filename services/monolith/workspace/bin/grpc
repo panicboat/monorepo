@@ -14,7 +14,7 @@ require "bundler/setup"
 require "hanami/setup"
 
 # Boot the app
-Hanami.app.prepare
+Hanami.app.boot
 
 # SLEDGEHAMMER FIX: Monkey-patch Zeitwerk::Loader to ignore reload calls
 require "zeitwerk"
@@ -46,7 +46,7 @@ Gruf.configure do |c|
   c.server_binding_url = ENV.fetch("GRPC_BIND_ADDRESS", "0.0.0.0:9001")
   c.interceptors.use(Interceptors::AccessLogInterceptor)
   c.interceptors.use(Interceptors::AuthenticationInterceptor)
-  c.services.clear
+  # c.services.clear
 end
 
 # Ensure Handlers are loaded so `bind` logic executes!

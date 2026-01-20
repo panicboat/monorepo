@@ -1,0 +1,21 @@
+# Tasks: Fix Onboarding Persistence
+
+- [x] Update Portfolio Spec <!-- id: 1 -->
+    - [x] `specs/portfolio/spec.md` に増分的な永続化・プラン管理・再開・**認証要件**を定義する <!-- id: 1-1 -->
+- [x] Backend Implementation <!-- id: 2 -->
+    - [x] `proto/portfolio/v1/service.proto` の `UpdateProfile` を `UpdateCastProfile` にリネームし、`buf generate` を実行 <!-- id: 2-1 -->
+    - [x] `Portfolio::Grpc::Handler#update_cast_profile` を実装する（基本情報） <!-- id: 2-2 -->
+    - [x] プラン情報の永続化ロジックを実装する <!-- id: 2-3 -->
+    - [x] `get_profile` でプランやシフト情報も返却されることを確認・修正する <!-- id: 2-4 -->
+    - [x] `UpdateCastProfile` のテストを追加する (Shifts/Images verified) <!-- id: 2-5 -->
+- [x] Frontend Implementation <!-- id: 3 -->
+    - [x] **`CastAuthGuard.tsx` を修正し、`step-*` へのアクセスに認証を強制する** <!-- id: 3-0 -->
+    - [x] `OnboardingContext` でロード時にプロフィール・プラン・シフトを取得し、進捗状態（Next Step）を判定するロジックを追加 <!-- id: 3-1 -->
+    - [x] `src/lib/grpc.ts` に `castClient` を追加する <!-- id: 3-1-1 -->
+    - [x] `src/app/api/cast/onboarding/profile/route.ts` を作成する <!-- id: 3-1-2 -->
+    - [x] `step-1` (Basic Identity) で保存処理 (`updateCastProfile`) を呼び出す <!-- id: 3-2 -->
+    - [x] `step-2` (Photos) で保存処理 (`updateCastProfile`) を呼び出す <!-- id: 3-3 -->
+    - [x] `step-3` (Plans) でプラン保存処理 (`updateCastProfile` または適切に実装) を呼び出す <!-- id: 3-4 -->
+    - [x] `step-4` (Schedule) でシフト保存処理 (`updateCastProfile` または適切に実装) を呼び出す <!-- id: 3-5 -->
+    - [x] `step-5` (Confirmation) で最終確認と完了処理を実装する <!-- id: 3-6 -->
+    - [x] `Welcome` ページ (`/cast/onboarding/page.tsx`) に再開ボタン ("Resume Setup") を追加する <!-- id: 3-7 -->

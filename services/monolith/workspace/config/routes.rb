@@ -5,6 +5,7 @@ module Monolith
     # Add your routes here. See https://guides.hanamirb.org/routing/overview/ for details.
 
     slice :identity, at: "/identity" do
+      # TODO: Implement OAuth callback endpoint (HTTP)
     end
   end
 end

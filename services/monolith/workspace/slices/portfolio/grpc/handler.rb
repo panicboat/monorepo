@@ -1,8 +1,9 @@
 require 'portfolio/v1/service_services_pb'
+require "gruf"
 
 module Portfolio
   module Grpc
-    class Handler < Gruf::Controllers::Base
+    class Handler < ::Gruf::Controllers::Base
       include GRPC::GenericService
       self.marshal_class_method = :encode
       self.unmarshal_class_method = :decode
@@ -10,155 +11,199 @@ module Portfolio
 
       bind ::Portfolio::V1::CastService::Service
 
-      # Clear legacy/bind-generated descriptors to avoid duplication
       self.rpc_descs.clear
 
-      rpc :CreateProfile, ::Portfolio::V1::CreateProfileRequest, ::Portfolio::V1::CastProfile
-      rpc :GetProfile, ::Portfolio::V1::GetProfileRequest, ::Portfolio::V1::GetProfileResponse
-      rpc :UpdateProfile, ::Portfolio::V1::UpdateProfileRequest, ::Portfolio::V1::UpdateProfileResponse
+      rpc :GetCastProfile, ::Portfolio::V1::GetCastProfileRequest, ::Portfolio::V1::GetCastProfileResponse
+      rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
+      rpc :UpdateCastProfile, ::Portfolio::V1::UpdateCastProfileRequest, ::Portfolio::V1::UpdateCastProfileResponse
+      rpc :UpdateCastPlans, ::Portfolio::V1::UpdateCastPlansRequest, ::Portfolio::V1::UpdateCastPlansResponse
+      rpc :UpdateCastSchedules, ::Portfolio::V1::UpdateCastSchedulesRequest, ::Portfolio::V1::UpdateCastSchedulesResponse
+      rpc :UpdateCastImages, ::Portfolio::V1::UpdateCastImagesRequest, ::Portfolio::V1::UpdateCastImagesResponse
       rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
-      rpc :UpdateStatus, ::Portfolio::V1::UpdateStatusRequest, ::Portfolio::V1::UpdateStatusResponse
+      rpc :UpdateCastStatus, ::Portfolio::V1::UpdateCastStatusRequest, ::Portfolio::V1::UpdateCastStatusResponse
+      rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
 
       include Portfolio::Deps[
-        create_profile_service: "operations.create_profile",
-        get_profile_service: "operations.get_profile",
-        update_status_service: "operations.update_status",
-        list_casts_service: "operations.list_casts"
+        get_profile_uc: "use_cases.cast.profile.get_profile",
+        save_profile_uc: "use_cases.cast.profile.save_profile",
+        publish_uc: "use_cases.cast.profile.publish",
+        save_plans_uc: "use_cases.cast.plans.save_plans",
+        save_schedules_uc: "use_cases.cast.schedules.save_schedules",
+        save_images_uc: "use_cases.cast.images.save_images",
+        get_upload_url_uc: "use_cases.cast.images.get_upload_url",
+        list_casts_uc: "use_cases.cast.listing.list_casts",
+        repo: "repositories.cast_repository"
       ]
 
-      def get_profile
-        user_id = request.message.user_id.to_i
-        user_id = ::Current.user_id.to_i if user_id.zero? && ::Current.user_id
-        # Proto defines user_id in GetProfileRequest. In real app, we might infer from token metadata.
+      # === Cast Profile ===
 
-        result = get_profile_service.call(user_id: user_id)
+      def get_cast_profile
+        user_id = request.message.user_id
+        user_id = ::Current.user_id if (user_id.nil? || user_id.empty?) && ::Current.user_id
 
+        result = get_profile_uc.call(user_id: user_id)
         unless result
-          # Lazy creation or return Not Found
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
         end
 
-        to_proto(result)
+        ::Portfolio::V1::GetCastProfileResponse.new(
+          profile: ProfilePresenter.to_proto(result),
+          plans: PlanPresenter.many_to_proto(result.cast_plans),
+          schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
+        )
       end
 
-      def create_profile
-        # Identify user from metadata.
-        current_user_id = ::Current.user_id
+      def create_cast_profile
+        authenticate_user!
 
-        # If user_id is provided in request (e.g. admin override or testing), use it, otherwise use current user
-        # However, for security, usually we force current_user_id for self-actions.
-        # For this skeleton, we prefer ::Current if available.
-        target_user_id = request.message.user_id.to_i
-        target_user_id = current_user_id.to_i if target_user_id.zero? && current_user_id
-        # Yes, I added user_id to CreateProfileRequest in the proto update.
-
-        # Parse plans
-        plans_data = request.message.plans.map do |p|
-          {
-            name: p.name,
-            price: p.price,
-            duration_minutes: p.duration_minutes
-          }
-        end
-
-        # Call service
-        result = create_profile_service.call(
-          user_id: target_user_id, # Assuming it comes as string ID via RPC if defined, but wait, `user_id` in users table is int?
-          # Migration: `primary_key :id` (integer). `foreign_key :user_id` (integer).
-          # Proto: `string user_id`.
-          # We need to parse.
-
+        result = save_profile_uc.call(
+          user_id: ::Current.user_id,
           name: request.message.name,
           bio: request.message.bio,
-          image_url: request.message.image_url,
-          plans: plans_data
+          tagline: request.message.tagline,
+          service_category: request.message.service_category,
+          location_type: request.message.location_type,
+          area: request.message.area,
+          default_shift_start: request.message.default_shift_start,
+          default_shift_end: request.message.default_shift_end,
+          image_path: request.message.image_path,
+          social_links: ProfilePresenter.social_links_from_proto(request.message.social_links)
         )
 
-        to_proto(result)
+        ::Portfolio::V1::CreateCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))
       end
 
-      def list_casts
-        status_filter = request.message.status_filter == :CAST_STATUS_UNSPECIFIED ? nil : status_enum_to_str(request.message.status_filter)
-        results = list_casts_service.call(status_filter: status_filter)
+      def update_cast_profile
+        authenticate_user!
 
-        ::Portfolio::V1::ListCastsResponse.new(
-          items: results.map do |cast|
-            ::Portfolio::V1::ListCastsResponse::CastItem.new(
-              profile: to_profile_proto(cast),
-              plans: cast.cast_plans.map { |p| to_plan_proto(p) }
-            )
-          end
+        result = save_profile_uc.call(
+          user_id: ::Current.user_id,
+          name: request.message.name,
+          bio: request.message.bio,
+          tagline: request.message.tagline,
+          service_category: request.message.service_category,
+          location_type: request.message.location_type,
+          area: request.message.area,
+          default_shift_start: request.message.default_shift_start,
+          default_shift_end: request.message.default_shift_end,
+          image_path: request.message.image_path,
+          social_links: ProfilePresenter.social_links_from_proto(request.message.social_links)
         )
+
+        ::Portfolio::V1::UpdateCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))
       end
 
-      def update_status
-        # Need cast_id.
-        # Again, auth context.
-        # Assuming for now we pass cast_id or user_id.
-        # My proto `UpdateStatusRequest` has `status`. No ID. This implies Context.
-        # I will need to extract User ID from JWT in metadata.
-        user_id = ::Current.user_id
+      def update_cast_status
+        authenticate_user!
+        cast = find_my_cast!
 
-        unless user_id
-           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Authentication required")
+        status_str = ProfilePresenter.status_from_enum(request.message.status)
+        publish_uc.call(cast_id: cast.id, status: status_str)
+
+        ::Portfolio::V1::UpdateCastStatusResponse.new(status: request.message.status)
+      end
+
+      # === Cast Plans ===
+
+      def update_cast_plans
+        authenticate_user!
+        cast = find_my_cast!
+
+        plans_data = request.message.plans.map do |p|
+          { name: p.name, price: p.price, duration_minutes: p.duration_minutes }
         end
 
-        # TODO: Resolve cast_id from user_id if they are different (1:1 relation usually)
-        # For now assume 1:1 and we might need a service to fetch cast profile by user_id first
-        # But this method mocks `ActiveRecord` update.
+        result = save_plans_uc.call(cast_id: cast.id, plans: plans_data)
 
-        # Mocking for now:
-        # raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNIMPLEMENTED, "Auth context needed")
+        ::Portfolio::V1::UpdateCastPlansResponse.new(
+          plans: PlanPresenter.many_to_proto(result.cast_plans)
+        )
+      end
 
-        # I'll implement basic List/Get first.
-        ::Portfolio::V1::UpdateStatusResponse.new(status: request.message.status)
+      # === Cast Schedules ===
+
+      def update_cast_schedules
+        authenticate_user!
+        cast = find_my_cast!
+
+        schedules_data = request.message.schedules.map do |s|
+          { date: s.date, start_time: s.start_time, end_time: s.end_time, plan_id: s.plan_id }
+        end
+
+        result = save_schedules_uc.call(cast_id: cast.id, schedules: schedules_data)
+
+        ::Portfolio::V1::UpdateCastSchedulesResponse.new(
+          schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
+        )
+      end
+
+      # === Cast Images ===
+
+      def update_cast_images
+        authenticate_user!
+        cast = find_my_cast!
+
+        images = request.message.gallery_images ? request.message.gallery_images.to_a : []
+        result = save_images_uc.call(
+          cast_id: cast.id,
+          image_path: request.message.profile_image_path,
+          images: images
+        )
+
+        ::Portfolio::V1::UpdateCastImagesResponse.new(profile: ProfilePresenter.to_proto(result))
+      end
+
+      def get_upload_url
+        authenticate_user!
+
+        result = get_upload_url_uc.call(
+          user_id: ::Current.user_id,
+          filename: request.message.filename,
+          content_type: request.message.content_type
+        )
+
+        if result.success?
+          data = result.value!
+          ::Portfolio::V1::GetUploadUrlResponse.new(url: data[:url], key: data[:key])
+        else
+          fail!(:invalid_argument, "Invalid input")
+        end
+      end
+
+      # === Listing ===
+
+      def list_casts
+        status_filter = request.message.status_filter == :CAST_STATUS_UNSPECIFIED ? nil : ProfilePresenter.status_from_enum(request.message.status_filter)
+        casts = list_casts_uc.call(status_filter: status_filter)
+
+        ::Portfolio::V1::ListCastsResponse.new(
+          items: casts.map { |c|
+            ::Portfolio::V1::ListCastsResponse::CastItem.new(
+              profile: ProfilePresenter.to_proto(c),
+              plans: PlanPresenter.many_to_proto(c.cast_plans)
+            )
+          }
+        )
       end
 
       private
 
-      def to_proto(cast)
-        ::Portfolio::V1::GetProfileResponse.new(
-          profile: to_profile_proto(cast),
-          plans: cast.cast_plans.map { |p| to_plan_proto(p) }
-        )
-      end
+      ProfilePresenter = Portfolio::Presenters::Cast::ProfilePresenter
+      PlanPresenter = Portfolio::Presenters::Cast::PlanPresenter
+      SchedulePresenter = Portfolio::Presenters::Cast::SchedulePresenter
 
-      def to_profile_proto(cast)
-        ::Portfolio::V1::CastProfile.new(
-          user_id: cast.user_id.to_s,
-          name: cast.name,
-          bio: cast.bio,
-          image_url: cast.image_url,
-          status: status_str_to_enum(cast.status),
-          promise_rate: cast.promise_rate
-        )
-      end
-
-      def to_plan_proto(plan)
-        ::Portfolio::V1::CastPlan.new(
-          id: plan.id.to_s,
-          name: plan.name,
-          price: plan.price,
-          duration_minutes: plan.duration_minutes
-        )
-      end
-
-      def status_str_to_enum(str)
-        case str
-        when 'online' then :CAST_STATUS_ONLINE
-        when 'tonight' then :CAST_STATUS_TONIGHT
-        when 'asking' then :CAST_STATUS_ASKING
-        else :CAST_STATUS_OFFLINE
+      def authenticate_user!
+        unless ::Current.user_id
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Authentication required")
         end
       end
 
-      def status_enum_to_str(enum)
-        case enum
-        when :CAST_STATUS_ONLINE then 'online'
-        when :CAST_STATUS_TONIGHT then 'tonight'
-        when :CAST_STATUS_ASKING then 'asking'
-        else 'offline'
+      def find_my_cast!
+        cast = get_profile_uc.call(user_id: ::Current.user_id)
+        unless cast
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Cast profile not found")
         end
+        cast
       end
     end
   end
