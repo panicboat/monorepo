@@ -30,8 +30,8 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
     : "bg-slate-900 text-white shadow-slate-200 hover:bg-slate-800 hover:shadow-slate-300";
 
   const secondaryTextClass = isCast
-    ? "text-slate-500 hover:text-slate-700"
-    : "text-pink-500 hover:text-pink-600";
+    ? "text-pink-500 hover:text-pink-600"
+    : "text-slate-500 hover:text-slate-700";
 
   const focusRingClass = isCast ? "focus:ring-pink-500" : "focus:ring-slate-900";
 

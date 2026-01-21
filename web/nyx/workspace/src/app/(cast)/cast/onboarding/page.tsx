@@ -97,7 +97,7 @@ export default function OnboardingWelcomePage() {
       <div className="mt-4">
         <Link
           href={nextStep}
-          className="flex items-center justify-center gap-2 w-full rounded-xl bg-slate-900 py-4 font-bold text-white shadow-lg shadow-slate-200 transition-transform active:scale-95"
+          className="flex items-center justify-center gap-2 w-full rounded-xl bg-pink-500 py-4 font-bold text-white shadow-lg shadow-pink-300 transition-transform active:scale-95"
         >
           <span>{isResuming ? "続きから再開する" : "プロフィールを作成する"}</span>
           <ArrowRight size={18} />
