@@ -8,14 +8,32 @@ module Identity
     module Auth
       class Register
         class RegistrationError < StandardError; end
+        class ValidationError < StandardError
+          attr_reader :errors
+
+          def initialize(errors)
+            @errors = errors
+            super(errors.to_h.to_s)
+          end
+        end
 
         include Identity::Deps[
           repo: "repositories.user_repository",
           verification_repo: "repositories.sms_verification_repository",
-          refresh_repo: "repositories.refresh_token_repository"
+          refresh_repo: "repositories.refresh_token_repository",
+          contract: "contracts.auth.register_contract"
         ]
 
         def call(phone_number:, password:, verification_token:, role: 1)
+          # 0. Input Validation
+          validation = contract.call(
+            phone_number: phone_number,
+            password: password,
+            verification_token: verification_token,
+            role: role
+          )
+          raise ValidationError, validation.errors unless validation.success?
+
           # 1. Verify Token
           verification = verification_repo.find_by_id(verification_token)
 

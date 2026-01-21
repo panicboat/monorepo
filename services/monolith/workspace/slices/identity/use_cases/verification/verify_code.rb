@@ -4,11 +4,26 @@ module Identity
   module UseCases
     module Verification
       class VerifyCode
-        include Identity::Deps[repo: "repositories.sms_verification_repository"]
-
         class VerificationError < StandardError; end
+        class ValidationError < StandardError
+          attr_reader :errors
+
+          def initialize(errors)
+            @errors = errors
+            super(errors.to_h.to_s)
+          end
+        end
+
+        include Identity::Deps[
+          repo: "repositories.sms_verification_repository",
+          contract: "contracts.verification.verify_code_contract"
+        ]
 
         def call(phone_number:, code:)
+          # 0. Input Validation
+          validation = contract.call(phone_number: phone_number, code: code)
+          raise ValidationError, validation.errors unless validation.success?
+
           verification = repo.find_latest_by_phone_number(phone_number)
 
           raise VerificationError, "Verification not found" unless verification

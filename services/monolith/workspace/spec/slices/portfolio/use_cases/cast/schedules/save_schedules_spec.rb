@@ -7,8 +7,8 @@ RSpec.describe Portfolio::UseCases::Cast::Schedules::SaveSchedules do
   let(:repo) { double(:repo) }
 
   describe "#call" do
-    let(:cast_id) { 1 }
-    let(:schedules) { [{ date: "2026-01-20", start_time: "10:00", end_time: "18:00", plan_id: "1" }] }
+    let(:cast_id) { "550e8400-e29b-41d4-a716-446655440000" }
+    let(:schedules) { [{ date: Date.parse("2026-01-22"), start_time: "10:00", end_time: "18:00", plan_id: "550e8400-e29b-41d4-a716-446655440001" }] }
     let(:cast_with_schedules) { double(:cast) }
 
     it "saves schedules and returns cast with schedules" do

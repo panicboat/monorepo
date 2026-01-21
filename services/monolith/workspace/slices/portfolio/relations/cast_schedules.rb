@@ -2,9 +2,9 @@ module Portfolio
   module Relations
     class CastSchedules < Portfolio::DB::Relation
       schema(:"portfolio__cast_schedules", as: :cast_schedules, infer: false) do
-        attribute :id, Types::Integer
-        attribute :cast_id, Types::Integer
-        attribute :plan_id, Types::Integer
+        attribute :id, Types::String      # UUID
+        attribute :cast_id, Types::String  # UUID
+        attribute :plan_id, Types::String  # UUID (nullable)
         attribute :date, Types::Date
         attribute :start_time, Types::String
         attribute :end_time, Types::String

@@ -8,6 +8,7 @@ service CastService {
   rpc GetCastProfile(GetCastProfileRequest) returns (GetCastProfileResponse);
   rpc CreateCastProfile(CreateCastProfileRequest) returns (CreateCastProfileResponse);
   rpc SaveCastProfile(SaveCastProfileRequest) returns (SaveCastProfileResponse);
+  rpc SaveCastVisibility(SaveCastVisibilityRequest) returns (SaveCastVisibilityResponse);
   rpc SaveCastImages(SaveCastImagesRequest) returns (SaveCastImagesResponse);
   rpc SaveCastPlans(SaveCastPlansRequest) returns (SaveCastPlansResponse);
   rpc SaveCastSchedules(SaveCastSchedulesRequest) returns (SaveCastSchedulesResponse);
@@ -99,6 +100,14 @@ message SaveCastProfileRequest {
 }
 
 message SaveCastProfileResponse {
+  CastProfile profile = 1;
+}
+
+message SaveCastVisibilityRequest {
+  CastVisibility visibility = 1;
+}
+
+message SaveCastVisibilityResponse {
   CastProfile profile = 1;
 }
 

@@ -16,6 +16,7 @@ module Portfolio
       rpc :GetCastProfile, ::Portfolio::V1::GetCastProfileRequest, ::Portfolio::V1::GetCastProfileResponse
       rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
       rpc :SaveCastProfile, ::Portfolio::V1::SaveCastProfileRequest, ::Portfolio::V1::SaveCastProfileResponse
+      rpc :SaveCastVisibility, ::Portfolio::V1::SaveCastVisibilityRequest, ::Portfolio::V1::SaveCastVisibilityResponse
       rpc :SaveCastPlans, ::Portfolio::V1::SaveCastPlansRequest, ::Portfolio::V1::SaveCastPlansResponse
       rpc :SaveCastSchedules, ::Portfolio::V1::SaveCastSchedulesRequest, ::Portfolio::V1::SaveCastSchedulesResponse
       rpc :SaveCastImages, ::Portfolio::V1::SaveCastImagesRequest, ::Portfolio::V1::SaveCastImagesResponse
@@ -89,14 +90,18 @@ module Portfolio
           social_links: ProfilePresenter.social_links_from_proto(request.message.social_links)
         )
 
-        # Handle visibility if provided
-        if request.message.visibility && request.message.visibility != :CAST_VISIBILITY_UNSPECIFIED
-          visibility_str = ProfilePresenter.visibility_from_enum(request.message.visibility)
-          publish_uc.call(cast_id: result.id, visibility: visibility_str)
-          result = get_profile_uc.call(user_id: ::Current.user_id)
-        end
-
         ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))
+      end
+
+      def save_cast_visibility
+        authenticate_user!
+        cast = find_my_cast!
+
+        visibility_str = ProfilePresenter.visibility_from_enum(request.message.visibility)
+        publish_uc.call(cast_id: cast.id, visibility: visibility_str)
+
+        result = get_profile_uc.call(user_id: ::Current.user_id)
+        ::Portfolio::V1::SaveCastVisibilityResponse.new(profile: ProfilePresenter.to_proto(result))
       end
 
       # === Cast Plans ===
