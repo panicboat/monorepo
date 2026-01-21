@@ -20,6 +20,7 @@ module Portfolio
         rpc :GetCastProfile, ::Portfolio::V1::GetCastProfileRequest, ::Portfolio::V1::GetCastProfileResponse
         rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
         rpc :SaveCastProfile, ::Portfolio::V1::SaveCastProfileRequest, ::Portfolio::V1::SaveCastProfileResponse
+        rpc :SaveCastVisibility, ::Portfolio::V1::SaveCastVisibilityRequest, ::Portfolio::V1::SaveCastVisibilityResponse
         rpc :SaveCastImages, ::Portfolio::V1::SaveCastImagesRequest, ::Portfolio::V1::SaveCastImagesResponse
         rpc :SaveCastPlans, ::Portfolio::V1::SaveCastPlansRequest, ::Portfolio::V1::SaveCastPlansResponse
         rpc :SaveCastSchedules, ::Portfolio::V1::SaveCastSchedulesRequest, ::Portfolio::V1::SaveCastSchedulesResponse

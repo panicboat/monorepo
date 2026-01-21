@@ -2,7 +2,7 @@ module Identity
   module Relations
     class SmsVerifications < Identity::DB::Relation
       schema(:"identity__sms_verifications", as: :sms_verifications, infer: false) do
-        attribute :id, Types::String
+        attribute :id, Types::String  # UUID
         attribute :phone_number, Types::String
         attribute :code, Types::String
         attribute :expires_at, Types::Time

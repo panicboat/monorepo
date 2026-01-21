@@ -1,0 +1,60 @@
+# frozen_string_literal: true
+
+require "dry/validation"
+
+module Portfolio
+  module Contracts
+    module Cast
+      class SaveProfileContract < Dry::Validation::Contract
+        MAX_NAME_LENGTH = 100
+        MAX_BIO_LENGTH = 1000
+        MAX_TAGLINE_LENGTH = 200
+        VALID_SERVICE_CATEGORIES = %w[companion escort guide].freeze
+        VALID_LOCATION_TYPES = %w[incall outcall both].freeze
+
+        params do
+          required(:user_id).filled(:string)
+          required(:name).filled(:string)
+          required(:bio).filled(:string)
+          optional(:tagline).maybe(:string)
+          optional(:service_category).maybe(:string)
+          optional(:location_type).maybe(:string)
+          optional(:area).maybe(:string)
+          optional(:default_shift_start).maybe(:string)
+          optional(:default_shift_end).maybe(:string)
+          optional(:image_path).maybe(:string)
+          optional(:social_links).maybe(:hash)
+        end
+
+        rule(:name) do
+          key.failure("は空白のみでは登録できません") if value.strip.empty?
+          key.failure("は#{MAX_NAME_LENGTH}文字以内で入力してください") if value.length > MAX_NAME_LENGTH
+        end
+
+        rule(:bio) do
+          key.failure("は#{MAX_BIO_LENGTH}文字以内で入力してください") if value.length > MAX_BIO_LENGTH
+        end
+
+        rule(:tagline) do
+          if key? && value && value.length > MAX_TAGLINE_LENGTH
+            key.failure("は#{MAX_TAGLINE_LENGTH}文字以内で入力してください")
+          end
+        end
+
+        rule(:default_shift_start, :default_shift_end) do
+          if values[:default_shift_start] && values[:default_shift_end]
+            start_time = values[:default_shift_start]
+            end_time = values[:default_shift_end]
+
+            unless start_time.match?(/\A([01]?[0-9]|2[0-3]):[0-5][0-9]\z/)
+              key(:default_shift_start).failure("は有効な時刻形式（HH:MM）で入力してください")
+            end
+            unless end_time.match?(/\A([01]?[0-9]|2[0-3]):[0-5][0-9]\z/)
+              key(:default_shift_end).failure("は有効な時刻形式（HH:MM）で入力してください")
+            end
+          end
+        end
+      end
+    end
+  end
+end

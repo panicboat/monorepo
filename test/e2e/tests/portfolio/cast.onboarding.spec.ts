@@ -128,13 +128,17 @@ test.describe('Cast Onboarding Flow', () => {
     await registerNewCastAndStartOnboarding(page);
 
     // ========== STEP 1 ==========
+    await page.getByRole('button', { name: /Standard/i }).first().click();
+    await page.getByRole('button', { name: /Dispatch/i }).first().click();
     await page.getByPlaceholder('例: ユナ').fill('ナビテスト');
     await page.getByPlaceholder('例: 六本木, 西麻布').fill('新宿');
     await page.getByPlaceholder('例: 癒やしの時間をお届けします✨').fill('ナビテスト用');
+    await page.getByPlaceholder('得意なこと、性格、趣味などを詳しく書いてみましょう...').fill('ナビテスト用自己紹介');
     await page.getByRole('button', { name: 'Next Step: Photos' }).click();
 
     // ========== STEP 2 ==========
     await expect(page).toHaveURL(/\/cast\/onboarding\/step-2/);
+    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
 
     const fixturesPath = path.join(__dirname, '../../fixtures');
     const fileInput = page.locator('input[type="file"]');
@@ -198,6 +202,7 @@ test.describe('Cast Onboarding Flow', () => {
 
     // ========== STEP 2 ==========
     await expect(page).toHaveURL(/\/cast\/onboarding\/step-2/);
+    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
 
     const fixturesPath = path.join(__dirname, '../../fixtures');
     const fileInput = page.locator('input[type="file"]');
@@ -232,12 +237,16 @@ test.describe('Cast Onboarding Flow', () => {
 
     // Quick path through all steps
     // Step 1
+    await page.getByRole('button', { name: /Standard/i }).first().click();
+    await page.getByRole('button', { name: /Dispatch/i }).first().click();
     await page.getByPlaceholder('例: ユナ').fill('編集テスト');
     await page.getByPlaceholder('例: 六本木, 西麻布').fill('原宿');
     await page.getByPlaceholder('例: 癒やしの時間をお届けします✨').fill('編集テスト用');
+    await page.getByPlaceholder('得意なこと、性格、趣味などを詳しく書いてみましょう...').fill('編集テスト用自己紹介');
     await page.getByRole('button', { name: 'Next Step: Photos' }).click();
 
     // Step 2
+    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
     const fixturesPath = path.join(__dirname, '../../fixtures');
     await page.locator('input[type="file"]').setInputFiles([
       path.join(fixturesPath, 'test-image-1.png'),
@@ -287,12 +296,16 @@ test.describe('Cast Onboarding Flow', () => {
     await registerNewCastAndStartOnboarding(page);
 
     // Step 1
+    await page.getByRole('button', { name: /Standard/i }).first().click();
+    await page.getByRole('button', { name: /Dispatch/i }).first().click();
     await page.getByPlaceholder('例: ユナ').fill('複数プランテスト');
     await page.getByPlaceholder('例: 六本木, 西麻布').fill('銀座');
     await page.getByPlaceholder('例: 癒やしの時間をお届けします✨').fill('複数プラン対応');
+    await page.getByPlaceholder('得意なこと、性格、趣味などを詳しく書いてみましょう...').fill('複数プラン対応自己紹介');
     await page.getByRole('button', { name: 'Next Step: Photos' }).click();
 
     // Step 2
+    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
     const fixturesPath = path.join(__dirname, '../../fixtures');
     await page.locator('input[type="file"]').setInputFiles([
       path.join(fixturesPath, 'test-image-1.png'),
@@ -351,13 +364,17 @@ test.describe('Cast Onboarding Flow', () => {
     await registerNewCastAndStartOnboarding(page);
 
     // ========== STEP 1 ==========
+    await page.getByRole('button', { name: /Standard/i }).first().click();
+    await page.getByRole('button', { name: /Dispatch/i }).first().click();
     await page.getByPlaceholder('例: ユナ').fill('画像保持テスト');
     await page.getByPlaceholder('例: 六本木, 西麻布').fill('恵比寿');
     await page.getByPlaceholder('例: 癒やしの時間をお届けします✨').fill('画像保持テスト用');
+    await page.getByPlaceholder('得意なこと、性格、趣味などを詳しく書いてみましょう...').fill('画像保持テスト用自己紹介');
     await page.getByRole('button', { name: 'Next Step: Photos' }).click();
 
     // ========== STEP 2 ==========
     await expect(page).toHaveURL(/\/cast\/onboarding\/step-2/);
+    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
 
     const fixturesPath = path.join(__dirname, '../../fixtures');
     await page.locator('input[type="file"]').setInputFiles([
@@ -393,11 +410,15 @@ test.describe('Cast Onboarding Flow', () => {
     await registerNewCastAndStartOnboarding(page);
 
     // Quick path through steps 1-3
+    await page.getByRole('button', { name: /Standard/i }).first().click();
+    await page.getByRole('button', { name: /Dispatch/i }).first().click();
     await page.getByPlaceholder('例: ユナ').fill('スケジュール保持テスト');
     await page.getByPlaceholder('例: 六本木, 西麻布').fill('品川');
     await page.getByPlaceholder('例: 癒やしの時間をお届けします✨').fill('スケジュールテスト用');
+    await page.getByPlaceholder('得意なこと、性格、趣味などを詳しく書いてみましょう...').fill('スケジュールテスト用自己紹介');
     await page.getByRole('button', { name: 'Next Step: Photos' }).click();
 
+    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
     const fixturesPath = path.join(__dirname, '../../fixtures');
     await page.locator('input[type="file"]').setInputFiles([
       path.join(fixturesPath, 'test-image-1.png'),
@@ -444,11 +465,15 @@ test.describe('Cast Onboarding Flow', () => {
     await registerNewCastAndStartOnboarding(page);
 
     // Complete all steps
+    await page.getByRole('button', { name: /Standard/i }).first().click();
+    await page.getByRole('button', { name: /Dispatch/i }).first().click();
     await page.getByPlaceholder('例: ユナ').fill('写真編集テスト');
     await page.getByPlaceholder('例: 六本木, 西麻布').fill('目黒');
     await page.getByPlaceholder('例: 癒やしの時間をお届けします✨').fill('写真編集テスト用');
+    await page.getByPlaceholder('得意なこと、性格、趣味などを詳しく書いてみましょう...').fill('写真編集テスト用自己紹介');
     await page.getByRole('button', { name: 'Next Step: Photos' }).click();
 
+    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
     const fixturesPath = path.join(__dirname, '../../fixtures');
     await page.locator('input[type="file"]').setInputFiles([
       path.join(fixturesPath, 'test-image-1.png'),
@@ -490,11 +515,15 @@ test.describe('Cast Onboarding Flow', () => {
     await registerNewCastAndStartOnboarding(page);
 
     // Complete all steps with a plan
+    await page.getByRole('button', { name: /Standard/i }).first().click();
+    await page.getByRole('button', { name: /Dispatch/i }).first().click();
     await page.getByPlaceholder('例: ユナ').fill('プラン編集テスト');
     await page.getByPlaceholder('例: 六本木, 西麻布').fill('五反田');
     await page.getByPlaceholder('例: 癒やしの時間をお届けします✨').fill('プラン編集テスト用');
+    await page.getByPlaceholder('得意なこと、性格、趣味などを詳しく書いてみましょう...').fill('プラン編集テスト用自己紹介');
     await page.getByRole('button', { name: 'Next Step: Photos' }).click();
 
+    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
     const fixturesPath = path.join(__dirname, '../../fixtures');
     await page.locator('input[type="file"]').setInputFiles([
       path.join(fixturesPath, 'test-image-1.png'),
@@ -544,11 +573,15 @@ test.describe('Cast Onboarding Flow', () => {
     await registerNewCastAndStartOnboarding(page);
 
     // Complete all steps
+    await page.getByRole('button', { name: /Standard/i }).first().click();
+    await page.getByRole('button', { name: /Dispatch/i }).first().click();
     await page.getByPlaceholder('例: ユナ').fill('スケジュール編集テスト');
     await page.getByPlaceholder('例: 六本木, 西麻布').fill('大崎');
     await page.getByPlaceholder('例: 癒やしの時間をお届けします✨').fill('スケジュール編集テスト用');
+    await page.getByPlaceholder('得意なこと、性格、趣味などを詳しく書いてみましょう...').fill('スケジュール編集テスト用自己紹介');
     await page.getByRole('button', { name: 'Next Step: Photos' }).click();
 
+    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
     const fixturesPath = path.join(__dirname, '../../fixtures');
     await page.locator('input[type="file"]').setInputFiles([
       path.join(fixturesPath, 'test-image-1.png'),
@@ -591,12 +624,16 @@ test.describe('Cast Onboarding Flow', () => {
     await registerNewCastAndStartOnboarding(page);
 
     // Step 1
+    await page.getByRole('button', { name: /Standard/i }).first().click();
+    await page.getByRole('button', { name: /Dispatch/i }).first().click();
     await page.getByPlaceholder('例: ユナ').fill('プランスキップテスト');
     await page.getByPlaceholder('例: 六本木, 西麻布').fill('表参道');
     await page.getByPlaceholder('例: 癒やしの時間をお届けします✨').fill('プランなし');
+    await page.getByPlaceholder('得意なこと、性格、趣味などを詳しく書いてみましょう...').fill('プランなし自己紹介');
     await page.getByRole('button', { name: 'Next Step: Photos' }).click();
 
     // Step 2
+    await expect(page.getByRole('heading', { name: 'Photos' })).toBeVisible();
     const fixturesPath = path.join(__dirname, '../../fixtures');
     await page.locator('input[type="file"]').setInputFiles([
       path.join(fixturesPath, 'test-image-1.png'),

@@ -2,6 +2,77 @@
 
 Modules:
 - **Identity Slice**: Authentication (Register, Login) via gRPC.
+- **Portfolio Slice**: Cast profile, plans, schedules management.
+
+## Architecture
+
+### Design Philosophy
+
+本プロジェクトは **Modular Monolith** を採用し、Clean Architecture の思想を部分的に取り入れています。
+
+#### 信念（厳格に守る原則）
+
+| 原則 | 実現方法 |
+|------|----------|
+| **Slice 間の境界分離** | Identity, Portfolio, Ritual, Trust を独立した Slice として分離 |
+| **単一責務 (SRP)** | Use Case ごとにファイル分離（Register, Login, SaveProfile など） |
+| **依存性注入 (DI)** | `Deps[]` による Repository・Contract の注入 |
+| **型安全性** | gRPC/ConnectRPC + Proto による API 型定義 |
+| **将来のマイクロサービス化** | Slice 単位での切り出しを想定した設計 |
+
+#### 妥協（実用性のために緩めている原則）
+
+| Clean Architecture の原則 | 現状 | 理由 |
+|---------------------------|------|------|
+| Entity 層の独立 | ROM Struct を直接使用 | Hanami/ROM エコシステムとの統合を優先 |
+| Repository Interface | Interface 定義なし | Ruby の Duck Typing に依存し、ボイラープレートを削減 |
+| 依存性逆転 (DIP) | Use Case が ROM Struct に直接依存 | 変換層のオーバーヘッドを回避 |
+
+#### 設計方針
+
+```
+┌─────────────────┐    ┌─────────────────┐
+│    Identity     │    │    Portfolio    │
+│  ┌───────────┐  │    │  ┌───────────┐  │
+│  │ Contracts │  │    │  │ Contracts │  │  ← Application Layer (Input)
+│  │ Use Cases │  │    │  │ Use Cases │  │  ← Application Layer
+│  │ Repos     │  │ ✗  │  │ Repos     │  │  ← Interface Adapters
+│  │ Relations │  │────│  │ Relations │  │  ← Infrastructure
+│  └───────────┘  │    │  └───────────┘  │
+└─────────────────┘    └─────────────────┘
+        ↑                       ↑
+        └───────────────────────┘
+         Slice 間は疎結合を厳守
+         Slice 内は緊密結合を許容
+```
+
+- **Vertical Slice Architecture**: 機能（ドメイン）ごとの垂直分割を重視
+- **Hanami Way**: 純粋な Clean Architecture より Hanami のエコシステムに従う
+- **YAGNI**: 必要になるまで過度な抽象化を避ける
+
+### Directory Structure
+
+```
+slices/{slice_name}/
+├── contracts/       # Application Layer - Input Validation (dry-validation)
+│   └── {domain}/
+│       └── {action}_contract.rb
+├── use_cases/       # Application Layer - Business Logic
+│   └── {domain}/
+│       └── {action}.rb
+├── repositories/    # Interface Adapters - Data Access
+│   └── {entity}_repository.rb
+├── presenters/      # Interface Adapters - Response Formatting
+│   └── {entity}_presenter.rb
+├── grpc/            # Interface Adapters - Controllers
+│   └── handler.rb
+├── relations/       # Infrastructure - ORM (ROM)
+│   └── {table}.rb
+└── db/              # Infrastructure - Database
+    ├── struct.rb
+    ├── relation.rb
+    └── repo.rb
+```
 
 ## Requirements
 - Ruby 3.4+

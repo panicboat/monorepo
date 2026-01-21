@@ -7,7 +7,7 @@ RSpec.describe Portfolio::UseCases::Cast::Plans::SavePlans do
   let(:repo) { double(:repo) }
 
   describe "#call" do
-    let(:cast_id) { 1 }
+    let(:cast_id) { "550e8400-e29b-41d4-a716-446655440000" }
     let(:plans) { [{ name: "Plan A", price: 1000, duration_minutes: 60 }] }
     let(:cast_with_plans) { double(:cast) }
 
