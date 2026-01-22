@@ -5,15 +5,7 @@ import { buildGrpcHeaders } from "@/lib/request";
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    // If no header, maybe try cookie? BUT for now assume header from client logic or fail.
-    // profile/page.tsx needs to send header. I updated handleSave to send it.
-    // But Initial Load needs it too. profile/page.tsx initial load (fetchData) does NOT send header currently.
-    // I should fix profile/page.tsx initial load too.
-
-    // For now, if no header, assume unauthorized
-    if (!authHeader) {
-        // Return 401
+    if (!req.headers.get("authorization")) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -72,8 +64,9 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!req.headers.get("authorization")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const body = await req.json();
 

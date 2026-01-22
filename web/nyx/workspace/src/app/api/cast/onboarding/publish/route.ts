@@ -5,8 +5,7 @@ import { buildGrpcHeaders } from "@/lib/request";
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
+    if (!req.headers.get("authorization")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
