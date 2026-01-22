@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { WeeklyShiftInput, ScheduleItem } from "@/modules/ritual/components/cast/WeeklyShiftInput";
+import { WeeklyScheduleInput, ScheduleItem } from "@/modules/ritual/components/cast/WeeklyScheduleInput";
 import { Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/useToast";
@@ -32,7 +32,7 @@ export default function SchedulePage() {
           設定したスケジュールは「即レス（Online）」または「要相談（Asking）」の目安としてゲストに表示されます。
         </p>
 
-        <WeeklyShiftInput schedules={schedules} onChange={setSchedules} />
+        <WeeklyScheduleInput schedules={schedules} onChange={setSchedules} />
       </div>
 
       <div className="flex flex-col gap-4 px-4 pb-12 items-center">

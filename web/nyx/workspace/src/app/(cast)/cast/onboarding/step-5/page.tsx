@@ -14,7 +14,7 @@ export default function OnboardingStep5() {
   const profile = useOnboardingStore((s) => s.profile);
   const photos = useOnboardingStore((s) => s.photos);
   const plans = useOnboardingStore((s) => s.plans);
-  const shifts = useOnboardingStore((s) => s.shifts);
+  const schedules = useOnboardingStore((s) => s.schedules);
   const publishProfile = useOnboardingStore((s) => s.publishProfile);
   const loading = useOnboardingStore((s) => s.loading);
   const initialized = useOnboardingStore((s) => s.initialized);
@@ -238,19 +238,19 @@ export default function OnboardingStep5() {
             </Button>
           </div>
           <div className="rounded-xl bg-white shadow-sm border border-slate-100 overflow-hidden">
-            {shifts.length > 0 ? (
+            {schedules.length > 0 ? (
               <div className="divide-y divide-slate-50">
-                {shifts.map((shift, i) => {
-                  const plan = plans.find((p) => p.id === shift.planId);
+                {schedules.map((schedule, i) => {
+                  const plan = plans.find((p) => p.id === schedule.planId);
                   return (
                     <div key={i} className="flex items-center gap-3 p-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-slate-700">
-                            {shift.date}
+                            {schedule.date}
                           </span>
                           <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">
-                            {shift.start} - {shift.end}
+                            {schedule.start} - {schedule.end}
                           </span>
                         </div>
                       </div>
@@ -265,7 +265,7 @@ export default function OnboardingStep5() {
               </div>
             ) : (
               <div className="p-4 text-center text-sm text-slate-400">
-                No shifts added
+                No schedules added
               </div>
             )}
           </div>

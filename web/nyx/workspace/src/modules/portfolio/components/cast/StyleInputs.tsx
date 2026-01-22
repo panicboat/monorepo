@@ -92,7 +92,7 @@ export const StyleInputs = ({
       {/* Default Schedule */}
       <div>
         <Label className="block text-sm font-bold text-slate-700 mb-1">
-          3. Standard Shift Time
+          3. Standard Schedule Time
           <span className="ml-2 text-xs font-normal text-slate-400">
             基本の活動時間設定
           </span>
@@ -100,15 +100,15 @@ export const StyleInputs = ({
         <div className="flex items-center gap-2 max-w-sm">
           <input
             type="time"
-            value={data.defaultShiftStart}
-            onChange={(e) => onChange("defaultShiftStart", e.target.value)}
+            value={data.defaultScheduleStart}
+            onChange={(e) => onChange("defaultScheduleStart", e.target.value)}
             className="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
           />
           <span className="text-slate-400 font-bold">~</span>
           <input
             type="time"
-            value={data.defaultShiftEnd}
-            onChange={(e) => onChange("defaultShiftEnd", e.target.value)}
+            value={data.defaultScheduleEnd}
+            onChange={(e) => onChange("defaultScheduleEnd", e.target.value)}
             className="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
           />
         </div>

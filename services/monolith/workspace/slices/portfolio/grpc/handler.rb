@@ -64,8 +64,8 @@ module Portfolio
           service_category: request.message.service_category,
           location_type: request.message.location_type,
           area: request.message.area,
-          default_shift_start: request.message.default_shift_start,
-          default_shift_end: request.message.default_shift_end,
+          default_schedule_start: request.message.default_schedule_start,
+          default_schedule_end: request.message.default_schedule_end,
           image_path: request.message.image_path,
           social_links: ProfilePresenter.social_links_from_proto(request.message.social_links)
         )
@@ -84,8 +84,8 @@ module Portfolio
           service_category: request.message.service_category,
           location_type: request.message.location_type,
           area: request.message.area,
-          default_shift_start: request.message.default_shift_start,
-          default_shift_end: request.message.default_shift_end,
+          default_schedule_start: request.message.default_schedule_start,
+          default_schedule_end: request.message.default_schedule_end,
           image_path: request.message.image_path,
           social_links: ProfilePresenter.social_links_from_proto(request.message.social_links)
         )

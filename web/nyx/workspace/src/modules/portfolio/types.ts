@@ -73,14 +73,11 @@ export interface CastProfile {
   plans: ServicePlan[];
 
   // Schedule Template (Internal)
-  weeklyShifts?: WeeklyShift[];
+  weeklySchedules?: WeeklySchedule[];
 }
 
-export interface WeeklyShift {
-  date: string; // "YYYY-MM-DD" or "Monday" etc? The component uses "YYYY-MM-DD" but for template it should be Day of Week.
-  // However, the component supports specific dates.
-  // The proposal says "Weekly Default".
-  // Let's stick to what WeeklyShiftInput uses: Shift[]
+export interface WeeklySchedule {
+  date: string; // "YYYY-MM-DD"
   start: string;
   end: string;
   planId?: string;
@@ -93,8 +90,8 @@ export interface ProfileFormData {
   serviceCategory: "advanced" | "standard" | "social";
   locationType: "store" | "dispatch" | "hotel";
   area: string;
-  defaultShiftStart: string; // HH:mm
-  defaultShiftEnd: string; // HH:mm
+  defaultScheduleStart: string; // HH:mm
+  defaultScheduleEnd: string; // HH:mm
   socialLinks: {
     x?: string;
     instagram?: string;

@@ -37,8 +37,8 @@ export default function ProfileEditPage() {
     serviceCategory: "standard",
     locationType: "dispatch",
     area: "",
-    defaultShiftStart: "18:00",
-    defaultShiftEnd: "23:00",
+    defaultScheduleStart: "18:00",
+    defaultScheduleEnd: "23:00",
     socialLinks: { others: [] },
     tags: [],
     age: undefined,
@@ -115,8 +115,8 @@ export default function ProfileEditPage() {
           serviceCategory: data.serviceCategory || "standard",
           locationType: data.locationType || "dispatch",
           area: data.area || "",
-          defaultShiftStart: "18:00", // Default if missing
-          defaultShiftEnd: "23:00",
+          defaultScheduleStart: "18:00", // Default if missing
+          defaultScheduleEnd: "23:00",
           socialLinks: {
             ...data.socialLinks,
             others: data.socialLinks?.others || [],

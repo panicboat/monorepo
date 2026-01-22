@@ -56,7 +56,7 @@ const MOCK_PROFILE: CastProfile = {
     { id: "p1", name: "Standard 60", duration: 60, price: 15000 },
     { id: "p2", name: "Standard 90", duration: 90, price: 22000 },
   ],
-  weeklyShifts: [],
+  weeklySchedules: [],
 };
 
 export const handlers = [

@@ -10,7 +10,7 @@ export default function OnboardingWelcomePage() {
   const profile = useOnboardingStore((s) => s.profile);
   const photos = useOnboardingStore((s) => s.photos);
   const plans = useOnboardingStore((s) => s.plans);
-  const shifts = useOnboardingStore((s) => s.shifts);
+  const schedules = useOnboardingStore((s) => s.schedules);
   const loading = useOnboardingStore((s) => s.loading);
   const initialized = useOnboardingStore((s) => s.initialized);
   const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
@@ -26,7 +26,7 @@ export default function OnboardingWelcomePage() {
     if (!profile.nickname) return "/cast/onboarding/step-1";
     if (!photos.profile && photos.gallery.length === 0) return "/cast/onboarding/step-2";
     if (plans.length === 0) return "/cast/onboarding/step-3";
-    if (shifts.length === 0) return "/cast/onboarding/step-4";
+    if (schedules.length === 0) return "/cast/onboarding/step-4";
     return "/cast/onboarding/step-5";
   };
 

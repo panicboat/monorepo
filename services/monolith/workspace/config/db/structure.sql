@@ -134,8 +134,8 @@ CREATE TABLE portfolio.casts (
     images jsonb DEFAULT '[]'::jsonb,
     tags jsonb DEFAULT '[]'::jsonb,
     social_links jsonb DEFAULT '{}'::jsonb,
-    default_shift_start text,
-    default_shift_end text,
+    default_schedule_start text,
+    default_schedule_end text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     image_path text
@@ -309,4 +309,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260118000000_create_refresh_tokens.rb'),
 ('20260118120000_create_cast_plans_and_schedules.rb'),
 ('20260118130000_add_image_path_to_casts.rb'),
-('20260120100000_rename_status_to_visibility.rb');
+('20260120100000_rename_status_to_visibility.rb'),
+('20260122000000_rename_shift_to_schedule.rb');

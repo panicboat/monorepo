@@ -48,7 +48,7 @@ const getDuration = (start: string, end: string) => {
   return endMins - startMins;
 };
 
-export const WeeklyShiftInput = ({
+export const WeeklyScheduleInput = ({
   schedules,
   plans = [],
   onChange,
@@ -263,10 +263,10 @@ export const WeeklyShiftInput = ({
                             (p) => p.id === schedule.planId,
                           );
                           if (!selectedPlan) return null;
-                          const shiftMins = getDuration(schedule.start, schedule.end);
-                          if (shiftMins <= 0) return null;
+                          const scheduleMins = getDuration(schedule.start, schedule.end);
+                          if (scheduleMins <= 0) return null;
                           const maxCount = Math.floor(
-                            shiftMins / selectedPlan.duration,
+                            scheduleMins / selectedPlan.duration,
                           );
 
                           return (

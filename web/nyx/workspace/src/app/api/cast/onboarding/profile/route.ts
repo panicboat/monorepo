@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
         serviceCategory: body.serviceCategory,
         locationType: body.locationType,
         area: body.area,
-        defaultShiftStart: body.defaultShiftStart,
-        defaultShiftEnd: body.defaultShiftEnd,
+        defaultScheduleStart: body.defaultScheduleStart,
+        defaultScheduleEnd: body.defaultScheduleEnd,
         imagePath: body.imagePath,
         socialLinks: body.socialLinks ? {
           x: body.socialLinks.x || "",
@@ -96,8 +96,8 @@ export async function PUT(req: NextRequest) {
         serviceCategory: body.serviceCategory,
         locationType: body.locationType,
         area: body.area,
-        defaultShiftStart: body.defaultShiftStart,
-        defaultShiftEnd: body.defaultShiftEnd,
+        defaultScheduleStart: body.defaultScheduleStart,
+        defaultScheduleEnd: body.defaultScheduleEnd,
         imagePath: body.imagePath,
         socialLinks: body.socialLinks ? {
           x: body.socialLinks.x || "",

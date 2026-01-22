@@ -46,8 +46,8 @@ message CastProfile {
   string service_category = 10;
   string location_type = 11;
   string area = 12;
-  string default_shift_start = 13;
-  string default_shift_end = 14;
+  string default_schedule_start = 13;
+  string default_schedule_end = 14;
   SocialLinks social_links = 15;
 }
 
@@ -76,8 +76,8 @@ message CreateCastProfileRequest {
   string service_category = 5;
   string location_type = 6;
   string area = 7;
-  string default_shift_start = 8;
-  string default_shift_end = 9;
+  string default_schedule_start = 8;
+  string default_schedule_end = 9;
   SocialLinks social_links = 10;
 }
 
@@ -93,8 +93,8 @@ message SaveCastProfileRequest {
   string service_category = 5;
   string location_type = 6;
   string area = 7;
-  string default_shift_start = 8;
-  string default_shift_end = 9;
+  string default_schedule_start = 8;
+  string default_schedule_end = 9;
   SocialLinks social_links = 10;
   CastVisibility visibility = 11;
 }

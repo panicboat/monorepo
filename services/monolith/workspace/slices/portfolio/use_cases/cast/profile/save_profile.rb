@@ -19,7 +19,7 @@ module Portfolio
             contract: "contracts.cast.save_profile_contract"
           ]
 
-          def call(user_id:, name:, bio:, tagline: nil, service_category: nil, location_type: nil, area: nil, default_shift_start: nil, default_shift_end: nil, image_path: nil, social_links: nil)
+          def call(user_id:, name:, bio:, tagline: nil, service_category: nil, location_type: nil, area: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil)
             # 0. Input Validation
             params = {
               user_id: user_id,
@@ -29,8 +29,8 @@ module Portfolio
               service_category: service_category,
               location_type: location_type,
               area: area,
-              default_shift_start: default_shift_start,
-              default_shift_end: default_shift_end,
+              default_schedule_start: default_schedule_start,
+              default_schedule_end: default_schedule_end,
               image_path: image_path,
               social_links: social_links
             }.compact
@@ -48,8 +48,8 @@ module Portfolio
               service_category: service_category,
               location_type: location_type,
               area: area,
-              default_shift_start: default_shift_start,
-              default_shift_end: default_shift_end,
+              default_schedule_start: default_schedule_start,
+              default_schedule_end: default_schedule_end,
               image_path: image_path,
               social_links: social_links ? Sequel.pg_jsonb(social_links) : nil
             }.compact

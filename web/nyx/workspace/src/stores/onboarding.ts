@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { ProfileFormData, MediaItem } from "@/modules/portfolio/types";
-import { ScheduleItem } from "@/modules/ritual/components/cast/WeeklyShiftInput";
+import { ScheduleItem } from "@/modules/ritual/components/cast/WeeklyScheduleInput";
 
 // Types
 export interface PlanData {
@@ -29,7 +29,7 @@ export interface OnboardingState {
     gallery: PhotoItem[];
   };
   plans: PlanData[];
-  shifts: ScheduleItem[];
+  schedules: ScheduleItem[];
 
   // Meta
   loading: boolean;
@@ -42,7 +42,7 @@ interface OnboardingActions {
   setProfile: (profile: Partial<ProfileFormData>) => void;
   setPhotos: (photos: Partial<OnboardingState["photos"]>) => void;
   setPlans: (plans: PlanData[]) => void;
-  setShifts: (shifts: ScheduleItem[]) => void;
+  setSchedules: (schedules: ScheduleItem[]) => void;
   setLoading: (loading: boolean) => void;
   setIsNewProfile: (isNew: boolean) => void;
   setInitialized: (initialized: boolean) => void;
@@ -67,8 +67,8 @@ const INITIAL_PROFILE: ProfileFormData = {
   serviceCategory: "standard",
   locationType: "dispatch",
   area: "",
-  defaultShiftStart: "18:00",
-  defaultShiftEnd: "23:00",
+  defaultScheduleStart: "18:00",
+  defaultScheduleEnd: "23:00",
   socialLinks: { others: [] },
   tags: [],
 };
@@ -81,7 +81,7 @@ const INITIAL_STATE: OnboardingState = {
     gallery: [],
   },
   plans: [],
-  shifts: [],
+  schedules: [],
   loading: true,
   isNewProfile: false,
   initialized: false,
@@ -117,7 +117,7 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
 
       setPlans: (plans) => set({ plans }),
 
-      setShifts: (shifts) => set({ shifts }),
+      setSchedules: (schedules) => set({ schedules }),
 
       setLoading: (loading) => set({ loading }),
 
@@ -187,8 +187,8 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
                 serviceCategory: p.serviceCategory || "standard",
                 locationType: p.locationType || "dispatch",
                 area: p.area || "",
-                defaultShiftStart: p.defaultShiftStart || "18:00",
-                defaultShiftEnd: p.defaultShiftEnd || "23:00",
+                defaultScheduleStart: p.defaultScheduleStart || "18:00",
+                defaultScheduleEnd: p.defaultScheduleEnd || "23:00",
                 socialLinks: {
                   x: socialLinks.x || "",
                   instagram: socialLinks.instagram || "",
@@ -210,7 +210,7 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
                 price: pl.price,
                 duration: pl.durationMinutes,
               })),
-              shifts: schedules.map((s: any) => ({
+              schedules: schedules.map((s: any) => ({
                 date: s.date,
                 start: s.startTime,
                 end: s.endTime,
@@ -282,8 +282,8 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
             serviceCategory: profileToSave.serviceCategory,
             locationType: profileToSave.locationType,
             area: profileToSave.area,
-            defaultShiftStart: profileToSave.defaultShiftStart,
-            defaultShiftEnd: profileToSave.defaultShiftEnd,
+            defaultScheduleStart: profileToSave.defaultScheduleStart,
+            defaultScheduleEnd: profileToSave.defaultScheduleEnd,
             imagePath: state.photos.profile?.key,
             socialLinks: profileToSave.socialLinks,
           }),
@@ -362,7 +362,7 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
         if (!token) return;
 
         const state = get();
-        const schedulesToSave = overrideSchedules || state.shifts;
+        const schedulesToSave = overrideSchedules || state.schedules;
         const validPlanIds = new Set(state.plans.map((p) => p.id));
 
         const res = await fetch("/api/cast/onboarding/schedules", {
@@ -414,7 +414,7 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
         profile: state.profile,
         photos: state.photos,
         plans: state.plans,
-        shifts: state.shifts,
+        schedules: state.schedules,
       }),
     }
   )
@@ -427,7 +427,7 @@ export const useOnboardingPhotos = () =>
   useOnboardingStore((state) => state.photos);
 export const useOnboardingPlans = () =>
   useOnboardingStore((state) => state.plans);
-export const useOnboardingShifts = () =>
-  useOnboardingStore((state) => state.shifts);
+export const useOnboardingSchedules = () =>
+  useOnboardingStore((state) => state.schedules);
 export const useOnboardingLoading = () =>
   useOnboardingStore((state) => state.loading);

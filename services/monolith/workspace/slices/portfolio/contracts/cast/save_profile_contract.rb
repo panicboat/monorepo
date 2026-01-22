@@ -20,8 +20,8 @@ module Portfolio
           optional(:service_category).maybe(:string)
           optional(:location_type).maybe(:string)
           optional(:area).maybe(:string)
-          optional(:default_shift_start).maybe(:string)
-          optional(:default_shift_end).maybe(:string)
+          optional(:default_schedule_start).maybe(:string)
+          optional(:default_schedule_end).maybe(:string)
           optional(:image_path).maybe(:string)
           optional(:social_links).maybe(:hash)
         end
@@ -41,16 +41,16 @@ module Portfolio
           end
         end
 
-        rule(:default_shift_start, :default_shift_end) do
-          if values[:default_shift_start] && values[:default_shift_end]
-            start_time = values[:default_shift_start]
-            end_time = values[:default_shift_end]
+        rule(:default_schedule_start, :default_schedule_end) do
+          if values[:default_schedule_start] && values[:default_schedule_end]
+            start_time = values[:default_schedule_start]
+            end_time = values[:default_schedule_end]
 
             unless start_time.match?(/\A([01]?[0-9]|2[0-3]):[0-5][0-9]\z/)
-              key(:default_shift_start).failure("は有効な時刻形式（HH:MM）で入力してください")
+              key(:default_schedule_start).failure("は有効な時刻形式（HH:MM）で入力してください")
             end
             unless end_time.match?(/\A([01]?[0-9]|2[0-3]):[0-5][0-9]\z/)
-              key(:default_shift_end).failure("は有効な時刻形式（HH:MM）で入力してください")
+              key(:default_schedule_end).failure("は有効な時刻形式（HH:MM）で入力してください")
             end
           end
         end

@@ -4,9 +4,9 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import {
-  WeeklyShiftInput,
+  WeeklyScheduleInput,
   ScheduleItem,
-} from "@/modules/ritual/components/cast/WeeklyShiftInput";
+} from "@/modules/ritual/components/cast/WeeklyScheduleInput";
 import { useOnboardingStore } from "@/stores/onboarding";
 
 export default function OnboardingStep4() {
@@ -15,8 +15,8 @@ export default function OnboardingStep4() {
   // Zustand store
   const profile = useOnboardingStore((s) => s.profile);
   const plans = useOnboardingStore((s) => s.plans);
-  const shifts = useOnboardingStore((s) => s.shifts);
-  const setShifts = useOnboardingStore((s) => s.setShifts);
+  const schedules = useOnboardingStore((s) => s.schedules);
+  const setSchedules = useOnboardingStore((s) => s.setSchedules);
   const saveSchedules = useOnboardingStore((s) => s.saveSchedules);
   const loading = useOnboardingStore((s) => s.loading);
   const initialized = useOnboardingStore((s) => s.initialized);
@@ -37,17 +37,17 @@ export default function OnboardingStep4() {
     price: p.price,
   }));
 
-  const defaultShiftStart = profile.defaultShiftStart || "18:00";
-  const defaultShiftEnd = profile.defaultShiftEnd || "23:00";
+  const defaultScheduleStart = profile.defaultScheduleStart || "18:00";
+  const defaultScheduleEnd = profile.defaultScheduleEnd || "23:00";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (shifts.length < 1) return;
-    await saveSchedules(shifts);
+    if (schedules.length < 1) return;
+    await saveSchedules(schedules);
     router.push("/cast/onboarding/step-5");
   };
 
-  const isNextEnabled = shifts.length >= 1;
+  const isNextEnabled = schedules.length >= 1;
 
   if (loading) {
     return (
@@ -74,12 +74,12 @@ export default function OnboardingStep4() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <WeeklyShiftInput
-          schedules={shifts}
+        <WeeklyScheduleInput
+          schedules={schedules}
           plans={availablePlans}
-          onChange={setShifts}
-          defaultStart={defaultShiftStart}
-          defaultEnd={defaultShiftEnd}
+          onChange={setSchedules}
+          defaultStart={defaultScheduleStart}
+          defaultEnd={defaultScheduleEnd}
         />
 
         <button

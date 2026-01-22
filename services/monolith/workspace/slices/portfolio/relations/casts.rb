@@ -11,8 +11,8 @@ module Portfolio
         attribute :service_category, Types::String
         attribute :location_type, Types::String
         attribute :area, Types::String
-        attribute :default_shift_start, Types::String
-        attribute :default_shift_end, Types::String
+        attribute :default_schedule_start, Types::String
+        attribute :default_schedule_end, Types::String
         attribute :visibility, Types::String
         attribute :promise_rate, Types::Float
         attribute :images, Types::Array(Types::String)
