@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
 import { CastVisibility } from "@/lib/portfolio/v1/service_pb";
+import { buildGrpcHeaders } from "@/lib/request";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,14 +12,8 @@ export async function POST(req: NextRequest) {
 
     // Publish sets visibility to PUBLISHED
     const response = await castClient.saveCastVisibility(
-      {
-        visibility: CastVisibility.PUBLISHED,
-      },
-      {
-        headers: {
-          Authorization: authHeader,
-        },
-      }
+      { visibility: CastVisibility.PUBLISHED },
+      { headers: buildGrpcHeaders(req.headers) }
     );
 
     return NextResponse.json(response);

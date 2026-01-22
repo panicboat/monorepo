@@ -35,9 +35,14 @@ export default function CastMyPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem("nyx_cast_access_token");
+        const headers: HeadersInit = token
+          ? { Authorization: `Bearer ${token}` }
+          : {};
+
         const [profileRes, statsRes] = await Promise.all([
-          fetch("/api/cast/profile"),
-          fetch("/api/cast/mypage"),
+          fetch("/api/cast/profile", { headers }),
+          fetch("/api/cast/mypage", { headers }),
         ]);
 
         if (profileRes.ok && statsRes.ok) {

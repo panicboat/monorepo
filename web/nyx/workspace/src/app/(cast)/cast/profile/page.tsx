@@ -103,7 +103,10 @@ export default function ProfileEditPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/cast/profile");
+        const token = localStorage.getItem("nyx_cast_access_token");
+        const res = await fetch("/api/cast/profile", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         if (!res.ok) throw new Error("Failed to fetch profile");
         const data: CastProfile = await res.json();
 

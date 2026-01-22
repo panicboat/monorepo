@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { identityClient } from "@/lib/grpc";
+import { buildGrpcHeaders } from "@/lib/request";
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,17 +11,12 @@ export async function GET(req: NextRequest) {
 
     const response = await identityClient.getCurrentUser(
       {},
-      {
-        headers: {
-          Authorization: authHeader,
-        },
-      }
+      { headers: buildGrpcHeaders(req.headers) }
     );
 
     return NextResponse.json(response);
   } catch (error: any) {
     console.error("GetCurrentUser Error:", error);
-    // Map gRPC errors to HTTP status if possible, or just 500/401
     return NextResponse.json({ error: error.message }, { status: 401 });
   }
 }

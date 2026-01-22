@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
+import { buildGrpcHeaders } from "@/lib/request";
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,7 +17,10 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const response = await castClient.getCastProfile({ userId: "" }, { headers: { Authorization: authHeader } });
+    const response = await castClient.getCastProfile(
+      { userId: "" },
+      { headers: buildGrpcHeaders(req.headers) }
+    );
 
     // Map response to CastProfile Frontend type
     const p = response.profile!;
@@ -85,7 +89,7 @@ export async function PUT(req: NextRequest) {
         defaultScheduleStart: body.defaultScheduleStart,
         defaultScheduleEnd: body.defaultScheduleEnd,
         socialLinks: body.socialLinks,
-    }, { headers: { Authorization: authHeader } });
+    }, { headers: buildGrpcHeaders(req.headers) });
 
     return NextResponse.json(response);
   } catch (error: any) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
+import { buildGrpcHeaders } from "@/lib/request";
 
 export async function PUT(req: NextRequest) {
   try {
@@ -15,11 +16,7 @@ export async function PUT(req: NextRequest) {
         profileImagePath: body.profileImagePath,
         galleryImages: body.galleryImages,
       },
-      {
-        headers: {
-          Authorization: authHeader,
-        },
-      }
+      { headers: buildGrpcHeaders(req.headers) }
     );
 
     return NextResponse.json(response);

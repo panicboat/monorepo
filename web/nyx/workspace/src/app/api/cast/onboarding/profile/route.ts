@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
+import { buildGrpcHeaders } from "@/lib/request";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,11 +12,7 @@ export async function GET(req: NextRequest) {
 
     const response = await castClient.getCastProfile(
       { userId: "" }, // Server infers from token if empty
-      {
-        headers: {
-          Authorization: authHeader,
-        },
-      }
+      { headers: buildGrpcHeaders(req.headers) }
     );
 
     // Convert to JSON-friendly format if needed, but response is usually plain object in Connect-Web?
@@ -64,11 +61,7 @@ export async function POST(req: NextRequest) {
           others: body.socialLinks.others || [],
         } : undefined,
       },
-      {
-        headers: {
-          Authorization: authHeader,
-        },
-      }
+      { headers: buildGrpcHeaders(req.headers) }
     );
 
     return NextResponse.json(response);
@@ -108,11 +101,7 @@ export async function PUT(req: NextRequest) {
           others: body.socialLinks.others || [],
         } : undefined,
       },
-      {
-        headers: {
-          Authorization: authHeader,
-        },
-      }
+      { headers: buildGrpcHeaders(req.headers) }
     );
 
     return NextResponse.json(response);

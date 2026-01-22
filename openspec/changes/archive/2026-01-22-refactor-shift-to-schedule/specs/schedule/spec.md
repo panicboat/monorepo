@@ -2,7 +2,7 @@
 
 ## MODIFIED Requirements
 
-### Requirement: Schedule Management
+### Requirement: Schedule Management View
 
 システムは、キャストがデフォルトのスケジュール時間を設定できなければならない (MUST)。
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
+import { buildGrpcHeaders } from "@/lib/request";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,11 +13,7 @@ export async function POST(req: NextRequest) {
 
     const response = await castClient.getUploadUrl(
       { filename, contentType },
-      {
-        headers: {
-          Authorization: authHeader,
-        },
-      }
+      { headers: buildGrpcHeaders(req.headers) }
     );
 
     // Rewrite URL to point to nyx's /storage/upload endpoint (BFF pattern)

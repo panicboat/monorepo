@@ -10,13 +10,13 @@ module Interceptors
       result = yield
 
       duration = (Time.now - start_time) * 1000 # ms
-      user_id = ::Current.user_id
 
       log_entry = {
         time: start_time.iso8601,
+        request_id: ::Current.request_id,
         method: request.method_key,
         service: request.service_key,
-        user_id: user_id,
+        user_id: ::Current.user_id,
         duration_ms: duration.round(2),
         status: 'OK',
       }
@@ -26,13 +26,13 @@ module Interceptors
       result
     rescue => e
       duration = (Time.now - start_time) * 1000 # ms
-      user_id = ::Current.user_id
 
       log_entry = {
         time: start_time.iso8601,
+        request_id: ::Current.request_id,
         method: request.method_key,
         service: request.service_key,
-        user_id: user_id,
+        user_id: ::Current.user_id,
         duration_ms: duration.round(2),
         status: 'ERROR',
         error: e.message,
