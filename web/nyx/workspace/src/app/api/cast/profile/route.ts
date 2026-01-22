@@ -1,22 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
+import { buildGrpcHeaders } from "@/lib/request";
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    // If no header, maybe try cookie? BUT for now assume header from client logic or fail.
-    // profile/page.tsx needs to send header. I updated handleSave to send it.
-    // But Initial Load needs it too. profile/page.tsx initial load (fetchData) does NOT send header currently.
-    // I should fix profile/page.tsx initial load too.
-
-    // For now, if no header, assume unauthorized
-    if (!authHeader) {
-        // Return 401
+    if (!req.headers.get("authorization")) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const response = await castClient.getCastProfile({ userId: "" }, { headers: { Authorization: authHeader } });
+    const response = await castClient.getCastProfile(
+      { userId: "" },
+      { headers: buildGrpcHeaders(req.headers) }
+    );
 
     // Map response to CastProfile Frontend type
     const p = response.profile!;
@@ -68,8 +64,9 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!req.headers.get("authorization")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const body = await req.json();
 
@@ -85,7 +82,7 @@ export async function PUT(req: NextRequest) {
         defaultScheduleStart: body.defaultScheduleStart,
         defaultScheduleEnd: body.defaultScheduleEnd,
         socialLinks: body.socialLinks,
-    }, { headers: { Authorization: authHeader } });
+    }, { headers: buildGrpcHeaders(req.headers) });
 
     return NextResponse.json(response);
   } catch (error: any) {

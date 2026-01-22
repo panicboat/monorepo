@@ -1,21 +1,23 @@
 require 'gruf'
 require 'jwt'
+require 'securerandom'
 
 module Interceptors
   class AuthenticationInterceptor < Gruf::Interceptors::ServerInterceptor
     def call
-      user_id = extract_user_id
-
       # Always clear context before setting to avoid pollution between requests if thread is reused
-      # (Though Gruf usually handles threading, it's safer)
       ::Current.clear
 
+      # Extract or generate X-Request-ID for tracing
+      request_id = extract_request_id
+      ::Current.request_id = request_id
+      request.context[:request_id] = request_id
+
+      # Extract user_id from JWT
+      user_id = extract_user_id
       if user_id
         request.context[:current_user_id] = user_id
         ::Current.user_id = user_id
-        # Hanami.logger.debug("AuthenticationInterceptor: Authenticated user #{user_id}") if defined?(Hanami.logger)
-      else
-        # Hanami.logger.debug("AuthenticationInterceptor: No user authenticated") if defined?(Hanami.logger)
       end
 
       yield
@@ -24,6 +26,11 @@ module Interceptors
     end
 
     private
+
+    def extract_request_id
+      # Get from metadata or generate a new one
+      request.metadata['x-request-id'] || SecureRandom.uuid
+    end
 
     def extract_user_id
       # Case 1: Gateway Offloading (Future / Cilium)

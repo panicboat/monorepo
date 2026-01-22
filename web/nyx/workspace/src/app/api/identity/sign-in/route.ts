@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { identityClient } from "@/lib/grpc";
+import { buildGrpcHeaders } from "@/lib/request";
 
 export async function POST(req: NextRequest) {
   let body: any = {};
@@ -7,11 +8,14 @@ export async function POST(req: NextRequest) {
     body = await req.json();
     const { phoneNumber, password, role } = body;
 
-    const response = await identityClient.login({
-      phoneNumber,
-      password,
-      role,
-    });
+    const response = await identityClient.login(
+      {
+        phoneNumber,
+        password,
+        role,
+      },
+      { headers: buildGrpcHeaders(req.headers) }
+    );
 
     return NextResponse.json(response);
   } catch (error: any) {

@@ -1,24 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
+import { buildGrpcHeaders } from "@/lib/request";
 
 export async function PUT(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
+    if (!req.headers.get("authorization")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
 
     const response = await castClient.saveCastPlans(
-      {
-        plans: body.plans,
-      },
-      {
-        headers: {
-          Authorization: authHeader,
-        },
-      }
+      { plans: body.plans },
+      { headers: buildGrpcHeaders(req.headers) }
     );
 
     return NextResponse.json(response);
