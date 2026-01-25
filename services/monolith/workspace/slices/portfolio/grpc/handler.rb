@@ -67,7 +67,12 @@ module Portfolio
           default_schedule_start: request.message.default_schedule_start,
           default_schedule_end: request.message.default_schedule_end,
           image_path: request.message.image_path,
-          social_links: ProfilePresenter.social_links_from_proto(request.message.social_links)
+          social_links: ProfilePresenter.social_links_from_proto(request.message.social_links),
+          age: request.message.age.zero? ? nil : request.message.age,
+          height: request.message.height.zero? ? nil : request.message.height,
+          blood_type: request.message.blood_type.to_s.empty? ? nil : request.message.blood_type,
+          three_sizes: ProfilePresenter.three_sizes_from_proto(request.message.three_sizes),
+          tags: request.message.tags.to_a.empty? ? nil : request.message.tags.to_a
         )
 
         ::Portfolio::V1::CreateCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))
@@ -87,7 +92,12 @@ module Portfolio
           default_schedule_start: request.message.default_schedule_start,
           default_schedule_end: request.message.default_schedule_end,
           image_path: request.message.image_path,
-          social_links: ProfilePresenter.social_links_from_proto(request.message.social_links)
+          social_links: ProfilePresenter.social_links_from_proto(request.message.social_links),
+          age: request.message.age.zero? ? nil : request.message.age,
+          height: request.message.height.zero? ? nil : request.message.height,
+          blood_type: request.message.blood_type.to_s.empty? ? nil : request.message.blood_type,
+          three_sizes: ProfilePresenter.three_sizes_from_proto(request.message.three_sizes),
+          tags: request.message.tags.to_a.empty? ? nil : request.message.tags.to_a
         )
 
         ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))

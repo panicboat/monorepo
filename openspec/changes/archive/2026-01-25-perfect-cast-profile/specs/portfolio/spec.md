@@ -1,6 +1,6 @@
 # Portfolio Spec Delta
 
-## CHANGED Requirements
+## MODIFIED
 
 ### Requirement: Enhanced Cast Profile Data
 

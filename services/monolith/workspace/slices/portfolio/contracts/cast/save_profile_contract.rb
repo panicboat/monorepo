@@ -24,6 +24,11 @@ module Portfolio
           optional(:default_schedule_end).maybe(:string)
           optional(:image_path).maybe(:string)
           optional(:social_links).maybe(:hash)
+          optional(:age).maybe(:integer)
+          optional(:height).maybe(:integer)
+          optional(:blood_type).maybe(:string)
+          optional(:three_sizes).maybe(:hash)
+          optional(:tags).maybe(:array)
         end
 
         rule(:name) do

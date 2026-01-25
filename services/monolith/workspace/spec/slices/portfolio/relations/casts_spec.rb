@@ -16,6 +16,15 @@ RSpec.describe "Portfolio::Relations::Casts", type: :database do
     expect(attribute_names).to include(:promise_rate)
   end
 
+  it "defines physical attribute fields" do
+    attribute_names = relation.schema.attributes.map(&:name)
+    expect(attribute_names).to include(:age)
+    expect(attribute_names).to include(:height)
+    expect(attribute_names).to include(:blood_type)
+    expect(attribute_names).to include(:three_sizes)
+    expect(attribute_names).to include(:tags)
+  end
+
   it "maps to the correct table" do
     expect(relation.name.dataset).to eq(:"portfolio__casts")
   end

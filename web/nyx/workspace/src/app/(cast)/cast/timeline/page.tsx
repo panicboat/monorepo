@@ -5,7 +5,7 @@ import { TimelineFeed, FeedItem, feed } from "@/modules/discovery/components/gue
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { Send, Image as ImageIcon, Video, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 
 export default function CastTimelinePage() {
@@ -75,7 +75,7 @@ export default function CastTimelinePage() {
           />
           <div className="flex-1 space-y-3">
             <textarea
-              className="w-full bg-slate-50 border-0 rounded-xl p-3 text-sm focus:ring-2 focus:ring-pink-100 focus:bg-white transition-all resize-none placeholder:text-slate-400"
+              className="w-full bg-slate-50 border-0 rounded-xl p-3 text-sm focus:ring-2 focus:ring-pink-100 focus:bg-white transition-all resize-none placeholder:text-slate-300"
               rows={3}
               placeholder="What's happening? (e.g., Schedule update, Daily life...)"
               value={content}

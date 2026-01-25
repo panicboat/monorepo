@@ -65,36 +65,6 @@ export const handlers = [
     return HttpResponse.json(MOCK_PROFILE);
   }),
 
-  // Profile Management (Phase 2)
-  http.get("/api/cast/profile", () => {
-    return HttpResponse.json(MOCK_PROFILE);
-  }),
-
-  http.put("/api/cast/profile", async ({ request }) => {
-    const body = (await request.json()) as Partial<CastProfile>;
-
-    // Simulate DB Update
-    if (body.name) MOCK_PROFILE.name = body.name;
-    if (body.tagline) MOCK_PROFILE.tagline = body.tagline;
-    if (body.bio) MOCK_PROFILE.bio = body.bio;
-    if (body.message) MOCK_PROFILE.message = body.message;
-    if (body.area) MOCK_PROFILE.area = body.area;
-    if (body.serviceCategory)
-      MOCK_PROFILE.serviceCategory = body.serviceCategory;
-    if (body.locationType) MOCK_PROFILE.locationType = body.locationType;
-    if (body.images) MOCK_PROFILE.images = body.images;
-    if (body.socialLinks) MOCK_PROFILE.socialLinks = body.socialLinks;
-
-    // New Fields
-    if (body.tags) MOCK_PROFILE.tags = body.tags;
-    if (body.age) MOCK_PROFILE.age = body.age;
-    if (body.height) MOCK_PROFILE.height = body.height;
-    if (body.bloodType) MOCK_PROFILE.bloodType = body.bloodType;
-    if (body.threeSizes) MOCK_PROFILE.threeSizes = body.threeSizes;
-
-    return HttpResponse.json(MOCK_PROFILE);
-  }),
-
   // Dashboard Stats
   http.get("/api/cast/stats", () => {
     return HttpResponse.json({

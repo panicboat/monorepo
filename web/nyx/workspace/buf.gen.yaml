@@ -1,5 +1,5 @@
 version: v1
 plugins:
   - plugin: es
-    out: src/lib
+    out: src/stub
     opt: target=ts,import_extension=none

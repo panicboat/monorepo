@@ -1,7 +1,7 @@
 "use client";
 
 import { useSocial } from "@/modules/social/hooks/useSocial";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 import { CastProfile, ProfileFormData } from "@/modules/portfolio/types";
 

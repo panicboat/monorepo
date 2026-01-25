@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Heart, MessageCircle, Trash2 } from "lucide-react";
 import { useSocial } from "@/modules/social/hooks/useSocial";
 import { useState } from "react";

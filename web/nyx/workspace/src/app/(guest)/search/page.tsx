@@ -9,7 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";

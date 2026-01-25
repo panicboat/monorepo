@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { ProfileFormData, MediaItem } from "@/modules/portfolio/types";
 import { ScheduleItem } from "@/modules/ritual/components/cast/WeeklyScheduleInput";
+import { getMediaType } from "@/lib/media";
 
 // Types
 export interface PlanData {
@@ -33,7 +34,6 @@ export interface OnboardingState {
 
   // Meta
   loading: boolean;
-  isNewProfile: boolean;
   initialized: boolean;
 }
 
@@ -44,7 +44,6 @@ interface OnboardingActions {
   setPlans: (plans: PlanData[]) => void;
   setSchedules: (schedules: ScheduleItem[]) => void;
   setLoading: (loading: boolean) => void;
-  setIsNewProfile: (isNew: boolean) => void;
   setInitialized: (initialized: boolean) => void;
 
   // API Actions
@@ -83,7 +82,6 @@ const INITIAL_STATE: OnboardingState = {
   plans: [],
   schedules: [],
   loading: true,
-  isNewProfile: false,
   initialized: false,
 };
 
@@ -91,12 +89,6 @@ const INITIAL_STATE: OnboardingState = {
 const getToken = () => {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("nyx_cast_access_token");
-};
-
-// Helper to determine media type from key
-const getMediaType = (key: string): "image" | "video" => {
-  const ext = key.split(".").pop()?.toLowerCase() || "";
-  return ["mp4", "webm", "mov", "avi"].includes(ext) ? "video" : "image";
 };
 
 export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
@@ -121,8 +113,6 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
 
       setLoading: (loading) => set({ loading }),
 
-      setIsNewProfile: (isNewProfile) => set({ isNewProfile }),
-
       setInitialized: (initialized) => set({ initialized }),
 
       // API Actions
@@ -146,7 +136,6 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
               // New user - reset all data to initial state
               set({
                 ...INITIAL_STATE,
-                isNewProfile: true,
                 loading: false,
                 initialized: true,
               });
@@ -179,7 +168,6 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
             const socialLinks = p.socialLinks || {};
 
             set({
-              isNewProfile: false,
               profile: {
                 nickname: p.name || "",
                 tagline: p.tagline || "",
@@ -197,7 +185,18 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
                   litlink: socialLinks.litlink || "",
                   others: socialLinks.others || [],
                 },
-                tags: [],
+                age: p.age || undefined,
+                height: p.height || undefined,
+                bloodType: p.bloodType || undefined,
+                threeSizes: p.threeSizes
+                  ? {
+                      b: p.threeSizes.bust || 0,
+                      w: p.threeSizes.waist || 0,
+                      h: p.threeSizes.hip || 0,
+                      cup: p.threeSizes.cup || "",
+                    }
+                  : undefined,
+                tags: p.tags || [],
               },
               photos: {
                 cover: null,
@@ -267,10 +266,9 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
 
         const state = get();
         const profileToSave = overrideData || state.profile;
-        const method = state.isNewProfile ? "POST" : "PUT";
 
         const res = await fetch("/api/cast/onboarding/profile", {
-          method,
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -286,14 +284,22 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
             defaultScheduleEnd: profileToSave.defaultScheduleEnd,
             imagePath: state.photos.profile?.key,
             socialLinks: profileToSave.socialLinks,
+            age: profileToSave.age || undefined,
+            height: profileToSave.height || undefined,
+            bloodType: profileToSave.bloodType || undefined,
+            threeSizes: profileToSave.threeSizes
+              ? {
+                  bust: profileToSave.threeSizes.b,
+                  waist: profileToSave.threeSizes.w,
+                  hip: profileToSave.threeSizes.h,
+                  cup: profileToSave.threeSizes.cup,
+                }
+              : undefined,
+            tags: profileToSave.tags,
           }),
         });
 
         if (!res.ok) throw new Error("Failed to save profile");
-
-        if (state.isNewProfile) {
-          set({ isNewProfile: false });
-        }
       },
 
       saveImages: async (overrideGallery?: PhotoItem[]) => {

@@ -9,7 +9,7 @@ import {
 import { CastPosts } from "@/modules/portfolio/components/guest/detail/CastPosts";
 import { TrustRadar } from "@/modules/trust/components/guest/TrustRadar";
 import { ReviewList } from "@/modules/trust/components/guest/ReviewList";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "motion/react";
 import Link from "next/link";
 import { use, useState } from "react";
 import { ChevronLeft, MessageCircle, Heart, AlertTriangle } from "lucide-react";

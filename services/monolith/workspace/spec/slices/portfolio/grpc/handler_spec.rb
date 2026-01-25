@@ -60,7 +60,12 @@ RSpec.describe Portfolio::Grpc::Handler do
       cast_plans: [],
       cast_schedules: [],
       images: [],
-      social_links: nil
+      social_links: nil,
+      age: 25,
+      height: 165,
+      blood_type: "A",
+      three_sizes: { "bust" => 88, "waist" => 60, "hip" => 90, "cup" => "D" },
+      tags: %w[model bilingual]
     )
   end
 
@@ -106,6 +111,38 @@ RSpec.describe Portfolio::Grpc::Handler do
 
       response = handler.save_cast_profile
       expect(response).to be_a(::Portfolio::V1::SaveCastProfileResponse)
+    end
+
+    context "with physical attributes" do
+      let(:message) do
+        ::Portfolio::V1::SaveCastProfileRequest.new(
+          name: "Updated Name",
+          age: 25,
+          height: 165,
+          blood_type: "A",
+          three_sizes: ::Portfolio::V1::ThreeSizes.new(bust: 88, waist: 60, hip: 90, cup: "D"),
+          tags: %w[model bilingual]
+        )
+      end
+
+      it "passes physical attributes to use case" do
+        expect(save_profile_uc).to receive(:call).with(hash_including(
+          user_id: 1,
+          name: "Updated Name",
+          age: 25,
+          height: 165,
+          blood_type: "A",
+          tags: %w[model bilingual]
+        )).and_return(mock_cast_entity)
+
+        response = handler.save_cast_profile
+        expect(response).to be_a(::Portfolio::V1::SaveCastProfileResponse)
+        expect(response.profile.age).to eq(25)
+        expect(response.profile.height).to eq(165)
+        expect(response.profile.blood_type).to eq("A")
+        expect(response.profile.three_sizes.bust).to eq(88)
+        expect(response.profile.tags).to eq(%w[model bilingual])
+      end
     end
   end
 

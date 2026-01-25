@@ -138,7 +138,8 @@ CREATE TABLE portfolio.casts (
     default_schedule_end text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    image_path text
+    image_path text,
+    three_sizes jsonb DEFAULT '{}'::jsonb
 );
 
 
@@ -310,4 +311,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260118120000_create_cast_plans_and_schedules.rb'),
 ('20260118130000_add_image_path_to_casts.rb'),
 ('20260120100000_rename_status_to_visibility.rb'),
-('20260122000000_rename_shift_to_schedule.rb');
+('20260122000000_rename_shift_to_schedule.rb'),
+('20260125000000_add_three_sizes_to_casts.rb');
