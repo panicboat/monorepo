@@ -6,9 +6,6 @@ import {
   PriceSystem,
   ScheduleCalendar,
 } from "@/modules/portfolio/components/guest/detail/CostAndSchedule";
-import { CastPosts } from "@/modules/portfolio/components/guest/detail/CastPosts";
-import { TrustRadar } from "@/modules/trust/components/guest/TrustRadar";
-import { ReviewList } from "@/modules/trust/components/guest/ReviewList";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { use, useState, useEffect } from "react";
@@ -119,11 +116,10 @@ export default function CastDetailPage({
       <PhotoGallery castId={id} images={images} />
       <ProfileSpecs castId={id} profileData={data.profile} />
       <ScheduleCalendar schedules={data.schedules} />
-      <TrustRadar scores={[90, 85, 70, 95, 80]} />
+      {/* TODO: TrustRadar - implement backend data source */}
       <PriceSystem plans={data.plans} />
-      <CastPosts />
-
-      <ReviewList />
+      {/* TODO: CastPosts - implement timeline/posts backend */}
+      {/* TODO: ReviewList - implement reviews backend */}
 
       <div className="mt-8 mb-8 px-6">
         <BlockSection castId={id} />

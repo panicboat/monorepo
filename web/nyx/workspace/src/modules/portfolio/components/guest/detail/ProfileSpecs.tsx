@@ -156,6 +156,8 @@ export const ProfileSpecs = ({
             )}
           </div>
         )}
+
+        {/* TODO: Social Counts - implement backend data source */}
       </div>
 
       {/* Introductory Text */}

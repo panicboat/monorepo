@@ -1,78 +1,31 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { MediaItem } from "@/modules/portfolio/types";
-import { Play, X, Volume2 } from "lucide-react";
-
-// Mock Images Map
-const MOCK_GALLERIES: Record<string, MediaItem[]> = {
-  "1": [
-    // Yuna
-    {
-      type: "image",
-      url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna",
-    },
-    {
-      type: "video",
-      url: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4",
-      thumbnail: "https://placehold.co/600x800/pink/white?text=Yuna+Video",
-    },
-    {
-      type: "image",
-      url: "https://placehold.co/600x800/pink/white?text=Yuna+Selfie",
-    },
-    {
-      type: "image",
-      url: "https://placehold.co/600x800/orange/white?text=Yuna+OOTD",
-    },
-  ],
-  "2": [
-    // Maria
-    {
-      type: "image",
-      url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
-    },
-    {
-      type: "image",
-      url: "https://placehold.co/600x800/blue/white?text=Maria+Date",
-    },
-    {
-      type: "image",
-      url: "https://placehold.co/600x800/cyan/white?text=Maria+Cosplay",
-    },
-  ],
-  "3": [
-    // Sarah
-    {
-      type: "image",
-      url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-    },
-    {
-      type: "image",
-      url: "https://placehold.co/600x800/green/white?text=Sarah+Nature",
-    },
-  ],
-  // Fallback
-  default: [
-    { type: "image", url: "https://placehold.co/600x800/gray/white?text=No+Image" },
-  ],
-};
+import { Play, X, ImageOff } from "lucide-react";
 
 export const PhotoGallery = ({
   castId,
-  images: propImages,
+  images,
 }: {
   castId: string;
   images?: MediaItem[];
 }) => {
-  // If propImages is string[] (legacy/failed migration), map to MediaItem
-  // But we enforce MediaItem[] now.
-  const images =
-    propImages || MOCK_GALLERIES[castId] || MOCK_GALLERIES["default"];
-
   const [current, setCurrent] = useState(0);
   const [isPlaying, setIsPlaying] = useState<MediaItem | null>(null);
+
+  // If no images, show placeholder
+  if (!images || images.length === 0) {
+    return (
+      <div className="relative h-[65vh] w-full bg-slate-200 overflow-hidden flex items-center justify-center">
+        <div className="text-center text-slate-400">
+          <ImageOff className="w-16 h-16 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">No photos available</p>
+        </div>
+      </div>
+    );
+  }
 
   // Swipe Logic
   const swipeConfidenceThreshold = 10000;
@@ -97,17 +50,6 @@ export const PhotoGallery = ({
 
   return (
     <div className="relative h-[65vh] w-full bg-slate-900 overflow-hidden group">
-      {/* Disclaimer / Status Badge */}
-      <div className="absolute top-4 left-4 z-20 flex gap-2">
-        <span className="flex items-center gap-1 rounded-full bg-green-500/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-md shadow-sm border border-green-400/50">
-          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-white"></span>
-          Online
-        </span>
-        <span className="rounded-full bg-black/50 px-3 py-1 text-xs font-bold text-white backdrop-blur-md border border-white/20">
-          Tonight OK
-        </span>
-      </div>
-
       {/* Main Image Slider */}
       <motion.div
         className="flex h-full w-full"
@@ -190,7 +132,7 @@ export const PhotoGallery = ({
       {/* Full Screen Video Overlay */}
       {isPlaying && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black animate-in fade-in duration-300">
-           <button
+          <button
             onClick={closeVideo}
             className="absolute top-4 right-4 z-50 rounded-full bg-white/20 p-2 text-white hover:bg-white/40"
           >
