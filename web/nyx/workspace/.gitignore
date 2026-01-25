@@ -3,6 +3,7 @@ node_modules
 .pnp
 .pnp.js
 public/uploads/*
+package-lock.json
 
 # testing
 coverage
