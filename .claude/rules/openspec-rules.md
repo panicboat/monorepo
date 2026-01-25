@@ -26,6 +26,4 @@
 
 ## Lifecycle
 
-1. **Proposal** - 提案作成 → ユーザー承認
-2. **Apply** - 実装
-3. **Archive** - 完了後にアーカイブ（ユーザー確認後）
+詳細は `workflow-rules.md` の **OpenSpec Process** を参照。
