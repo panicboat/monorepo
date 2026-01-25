@@ -1,0 +1,23 @@
+# Tasks: Perfect Cast Profile
+
+- [x] Protobuf 定義の更新 <!-- id: 0 -->
+  - [x] `ThreeSizes` メッセージを新規定義 (bust, waist, hip, cup) <!-- id: 1 -->
+  - [x] `CastProfile` に `tags` (repeated string) を追加 <!-- id: 2 -->
+  - [x] `CastProfile` に `age` (int32) を追加 <!-- id: 3 -->
+  - [x] `CastProfile` に `height` (int32) を追加 <!-- id: 4 -->
+  - [x] `CastProfile` に `blood_type` (string) を追加 <!-- id: 5 -->
+  - [x] `CastProfile` に `three_sizes` (ThreeSizes) を追加 <!-- id: 6 -->
+  - [x] `CreateCastProfileRequest` に新フィールドを追加 <!-- id: 7 -->
+  - [x] `SaveCastProfileRequest` に新フィールドを追加 <!-- id: 8 -->
+  - [x] `buf generate` を実行 <!-- id: 9 -->
+- [x] Monolith バックエンドの更新 <!-- id: 10 -->
+  - [x] `CastEntity` に新カラムを追加 <!-- id: 11 -->
+  - [x] リポジトリを更新して新フィールドを保存 <!-- id: 12 -->
+  - [x] `CastService` の Create/Save で新フィールドを処理 <!-- id: 13 -->
+  - [ ] RSpec で永続化を検証 <!-- id: 14 -->
+- [x] Nyx フロントエンドの更新 <!-- id: 15 -->
+  - [x] Proto 型の再生成 (`buf generate`) <!-- id: 16 -->
+  - [x] `onboarding.ts` の `saveProfile` で新フィールドを送信 <!-- id: 17 -->
+  - [x] `onboarding.ts` の `fetchProfile` で新フィールドを受信 <!-- id: 18 -->
+  - [x] MSW の該当ハンドラーを削除 (`/api/cast/profile` 関連) <!-- id: 19 -->
+  - [ ] 実際のバックエンドで UI が動作することを検証 <!-- id: 20 -->

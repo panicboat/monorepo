@@ -154,7 +154,7 @@ export const ChatRoom = ({ castId }: { castId: string }) => {
               }
             }}
             placeholder="Send a message..."
-            className="flex-1 bg-transparent text-sm placeholder:text-slate-400 focus:outline-none"
+            className="flex-1 bg-transparent text-sm placeholder:text-slate-300 focus:outline-none"
           />
           <button
             onClick={handleSend}

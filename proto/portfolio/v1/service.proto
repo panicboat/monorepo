@@ -32,6 +32,13 @@ message SocialLinks {
   repeated string others = 6;
 }
 
+message ThreeSizes {
+  int32 bust = 1;
+  int32 waist = 2;
+  int32 hip = 3;
+  string cup = 4;
+}
+
 message CastProfile {
   string user_id = 1;
   string name = 2;
@@ -49,6 +56,11 @@ message CastProfile {
   string default_schedule_start = 13;
   string default_schedule_end = 14;
   SocialLinks social_links = 15;
+  int32 age = 16;
+  int32 height = 17;
+  string blood_type = 18;
+  ThreeSizes three_sizes = 19;
+  repeated string tags = 20;
 }
 
 message CastPlan {
@@ -79,6 +91,11 @@ message CreateCastProfileRequest {
   string default_schedule_start = 8;
   string default_schedule_end = 9;
   SocialLinks social_links = 10;
+  int32 age = 11;
+  int32 height = 12;
+  string blood_type = 13;
+  ThreeSizes three_sizes = 14;
+  repeated string tags = 15;
 }
 
 message CreateCastProfileResponse {
@@ -97,6 +114,11 @@ message SaveCastProfileRequest {
   string default_schedule_end = 9;
   SocialLinks social_links = 10;
   CastVisibility visibility = 11;
+  int32 age = 12;
+  int32 height = 13;
+  string blood_type = 14;
+  ThreeSizes three_sizes = 15;
+  repeated string tags = 16;
 }
 
 message SaveCastProfileResponse {

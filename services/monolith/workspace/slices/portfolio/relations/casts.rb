@@ -17,6 +17,11 @@ module Portfolio
         attribute :promise_rate, Types::Float
         attribute :images, Types::Array(Types::String)
         attribute :social_links, Types::Hash
+        attribute :age, Types::Integer
+        attribute :height, Types::Integer
+        attribute :blood_type, Types::String
+        attribute :three_sizes, Types::Hash
+        attribute :tags, Types::Any
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 

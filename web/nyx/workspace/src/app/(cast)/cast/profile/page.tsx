@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, Loader2, Image as ImageIcon, Tag, Eye } from "lucide-react";
+import { Loader2, Image as ImageIcon, Tag, Eye } from "lucide-react";
 
 import { CastProfile, ProfileFormData, MediaItem } from "@/modules/portfolio/types";
+import { ActionButton } from "@/components/ui/ActionButton";
 import { ProfileInputs } from "@/modules/portfolio/components/cast/ProfileInputs";
 import { StyleInputs } from "@/modules/portfolio/components/cast/StyleInputs";
 import { SocialInputs } from "@/modules/portfolio/components/cast/SocialInputs";
@@ -14,19 +15,12 @@ import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader
 import { ProfilePreviewModal } from "./components/ProfilePreviewModal";
 import { SectionCard } from "./components/SectionCard";
 import { SectionNav } from "./components/SectionNav";
-
-// Mock Toast for now if UI component missing
-const useToast = () => ({
-  toast: ({ title, description, variant }: any) => {
-    alert(`${title}\n${description}`);
-  },
-});
+import { useToast } from "@/components/ui/Toast";
 
 export default function ProfileEditPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
   // State
@@ -134,8 +128,8 @@ export default function ProfileEditPage() {
 
         // Images
         const imgList: MediaItem[] = [];
-        if (data.images.hero) {
-             imgList.push({ type: "image", url: data.images.hero });
+        if (data.images.hero && typeof data.images.hero === "object") {
+             imgList.push(data.images.hero as MediaItem);
         }
         if (data.images.portfolio) imgList.push(...data.images.portfolio);
         setImages(imgList);
@@ -192,52 +186,50 @@ export default function ProfileEditPage() {
 
   // Save
   const handleSave = async () => {
-    setSaving(true);
-    try {
-      const token = localStorage.getItem("nyx_cast_access_token");
-      // Payload mappings
-      const payload = {
-        name: profileForm.nickname,
-        tagline: profileForm.tagline,
-        bio: profileForm.bio,
-        area: profileForm.area,
-        serviceCategory: profileForm.serviceCategory,
-        locationType: profileForm.locationType,
-        socialLinks: profileForm.socialLinks,
-        imagePath: images[0]?.key, // Send Key for Hero
-        images: images.slice(1).map(i => i.url), // Send URLs for Portfolio (Legacy/Simple)
+    const token = localStorage.getItem("nyx_cast_access_token");
+    // Payload mappings
+    const payload = {
+      name: profileForm.nickname,
+      tagline: profileForm.tagline,
+      bio: profileForm.bio,
+      area: profileForm.area,
+      serviceCategory: profileForm.serviceCategory,
+      locationType: profileForm.locationType,
+      socialLinks: profileForm.socialLinks,
+      imagePath: images[0]?.key, // Send Key for Hero
+      images: images.slice(1).map(i => i.key || i.url), // Send Keys for Portfolio
 
-        // Metadata
-        tags: profileForm.tags.map((t) => ({ label: t, count: 1 })),
-        age: profileForm.age,
-        height: profileForm.height,
-        bloodType: profileForm.bloodType,
-        threeSizes: profileForm.threeSizes,
-      };
+      // Metadata
+      tags: profileForm.tags.map((t) => ({ label: t, count: 1 })),
+      age: profileForm.age,
+      height: profileForm.height,
+      bloodType: profileForm.bloodType,
+      threeSizes: profileForm.threeSizes,
+    };
 
-      const res = await fetch("/api/cast/profile", {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token || ""}`
-        },
-        body: JSON.stringify(payload),
-      });
+    const res = await fetch("/api/cast/profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token || ""}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
-      if (!res.ok) throw new Error("Failed to save");
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      router.refresh();
-    } catch (e) {
-      console.error(e);
+    if (!res.ok) {
       toast({
         title: "Error",
         description: "Failed to save profile",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
+      throw new Error("Failed to save");
     }
+
+    toast({
+      title: "Saved",
+      description: "Profile updated successfully",
+      variant: "success",
+    });
   };
 
   if (loading) {
@@ -365,22 +357,12 @@ export default function ProfileEditPage() {
 
       {/* Save Actions */}
       <div className="flex flex-col gap-4 px-4 pb-12 items-center">
-        <button
+        <ActionButton
+          mode="save"
+          label="Save Profile"
           onClick={handleSave}
-          disabled={saving}
-          className={`flex w-full max-w-md items-center justify-center gap-2 rounded-xl py-3 font-bold text-white shadow-md transition-all active:scale-95 disabled:opacity-50 ${
-            saving
-              ? "bg-pink-400 cursor-not-allowed"
-              : "bg-pink-500 hover:bg-pink-600 shadow-pink-200 hover:shadow-pink-300"
-          }`}
-        >
-          {saving ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : (
-            <Save size={18} />
-          )}
-          <span>{saving ? "Saving..." : "Save Profile"}</span>
-        </button>
+          className="max-w-md"
+        />
       </div>
 
       <ProfilePreviewModal

@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { WeeklyScheduleInput, ScheduleItem } from "@/modules/ritual/components/cast/WeeklyScheduleInput";
-import { Loader2, Save } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { useToast } from "@/components/ui/useToast";
+import { ActionButton } from "@/components/ui/ActionButton";
+import { useToast } from "@/components/ui/Toast";
 
 export default function SchedulePage() {
   // Mock initial data
@@ -12,16 +11,13 @@ export default function SchedulePage() {
     { date: "2026-01-20", start: "19:00", end: "23:00" },
     { date: "2026-01-22", start: "20:00", end: "24:00" },
   ]);
-  const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
   const handleSave = async () => {
-    setSaving(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.log("Saving schedules:", schedules);
-    toast({ title: "Success", description: "スケジュールを保存しました" });
-    setSaving(false);
+    toast({ title: "Success", description: "スケジュールを保存しました", variant: "success" });
   };
 
   return (
@@ -36,21 +32,12 @@ export default function SchedulePage() {
       </div>
 
       <div className="flex flex-col gap-4 px-4 pb-12 items-center">
-        <Button
+        <ActionButton
+          mode="save"
+          label="Save Schedule"
           onClick={handleSave}
-          disabled={saving}
-          className={`w-full max-w-md gap-2 h-auto py-3 text-base font-bold shadow-md transition-all active:scale-95 ${saving
-            ? "bg-pink-400 cursor-not-allowed"
-            : "bg-pink-500 hover:bg-pink-600 shadow-pink-200 hover:shadow-pink-300"
-            }`}
-        >
-          {saving ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : (
-            <Save size={18} />
-          )}
-          <span>{saving ? "Saving..." : "Save Schedule"}</span>
-        </Button>
+          className="max-w-md"
+        />
       </div>
     </div>
   );

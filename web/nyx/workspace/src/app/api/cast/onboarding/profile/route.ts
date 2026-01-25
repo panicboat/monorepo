@@ -58,6 +58,16 @@ export async function POST(req: NextRequest) {
           litlink: body.socialLinks.litlink || "",
           others: body.socialLinks.others || [],
         } : undefined,
+        age: body.age || 0,
+        height: body.height || 0,
+        bloodType: body.bloodType || "",
+        threeSizes: body.threeSizes ? {
+          bust: body.threeSizes.bust || 0,
+          waist: body.threeSizes.waist || 0,
+          hip: body.threeSizes.hip || 0,
+          cup: body.threeSizes.cup || "",
+        } : undefined,
+        tags: body.tags || [],
       },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -97,6 +107,16 @@ export async function PUT(req: NextRequest) {
           litlink: body.socialLinks.litlink || "",
           others: body.socialLinks.others || [],
         } : undefined,
+        age: body.age || 0,
+        height: body.height || 0,
+        bloodType: body.bloodType || "",
+        threeSizes: body.threeSizes ? {
+          bust: body.threeSizes.bust || 0,
+          waist: body.threeSizes.waist || 0,
+          hip: body.threeSizes.hip || 0,
+          cup: body.threeSizes.cup || "",
+        } : undefined,
+        tags: body.tags || [],
       },
       { headers: buildGrpcHeaders(req.headers) }
     );

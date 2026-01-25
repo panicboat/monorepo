@@ -19,7 +19,7 @@ module Portfolio
             contract: "contracts.cast.save_profile_contract"
           ]
 
-          def call(user_id:, name:, bio:, tagline: nil, service_category: nil, location_type: nil, area: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil)
+          def call(user_id:, name:, bio:, tagline: nil, service_category: nil, location_type: nil, area: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil, age: nil, height: nil, blood_type: nil, three_sizes: nil, tags: nil)
             # 0. Input Validation
             params = {
               user_id: user_id,
@@ -32,7 +32,12 @@ module Portfolio
               default_schedule_start: default_schedule_start,
               default_schedule_end: default_schedule_end,
               image_path: image_path,
-              social_links: social_links
+              social_links: social_links,
+              age: age,
+              height: height,
+              blood_type: blood_type,
+              three_sizes: three_sizes,
+              tags: tags
             }.compact
 
             validation = contract.call(params)
@@ -51,7 +56,12 @@ module Portfolio
               default_schedule_start: default_schedule_start,
               default_schedule_end: default_schedule_end,
               image_path: image_path,
-              social_links: social_links ? Sequel.pg_jsonb(social_links) : nil
+              social_links: social_links ? Sequel.pg_jsonb(social_links) : nil,
+              age: age,
+              height: height,
+              blood_type: blood_type,
+              three_sizes: three_sizes ? Sequel.pg_jsonb(three_sizes) : nil,
+              tags: tags ? Sequel.pg_jsonb(tags) : nil
             }.compact
 
             if cast

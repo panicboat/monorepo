@@ -24,7 +24,12 @@ module Portfolio
             visibility: visibility_to_enum(cast.visibility),
             promise_rate: cast.promise_rate,
             images: (cast.images || []).to_a,
-            social_links: social_links_to_proto(cast.social_links)
+            social_links: social_links_to_proto(cast.social_links),
+            age: cast.age || 0,
+            height: cast.height || 0,
+            blood_type: cast.blood_type || "",
+            three_sizes: three_sizes_to_proto(cast.three_sizes),
+            tags: (cast.tags || []).to_a
           )
         end
 
@@ -70,6 +75,29 @@ module Portfolio
             "litlink" => proto.litlink.to_s,
             "others" => proto.others.to_a
           }.compact
+        end
+
+        def self.three_sizes_to_proto(hash)
+          return nil unless hash
+
+          ::Portfolio::V1::ThreeSizes.new(
+            bust: hash["bust"] || 0,
+            waist: hash["waist"] || 0,
+            hip: hash["hip"] || 0,
+            cup: hash["cup"] || ""
+          )
+        end
+
+        def self.three_sizes_from_proto(proto)
+          return nil unless proto
+          return nil if proto.bust.zero? && proto.waist.zero? && proto.hip.zero? && proto.cup.to_s.empty?
+
+          {
+            "bust" => proto.bust,
+            "waist" => proto.waist,
+            "hip" => proto.hip,
+            "cup" => proto.cup.to_s
+          }
         end
       end
     end
