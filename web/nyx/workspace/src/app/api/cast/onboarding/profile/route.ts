@@ -18,7 +18,21 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    return NextResponse.json({ profile: mapCastProfileToFrontend(response.profile!) });
+    const profile = mapCastProfileToFrontend(response.profile!);
+    const plans = (response.plans || []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      duration: p.durationMinutes,
+    }));
+    const schedules = (response.schedules || []).map((s) => ({
+      date: s.date,
+      start: s.startTime,
+      end: s.endTime,
+      planId: s.planId,
+    }));
+
+    return NextResponse.json({ profile, plans, schedules });
   } catch (error: any) {
     if (error instanceof ConnectError && error.code === 5) {
       // NotFound is expected during onboarding

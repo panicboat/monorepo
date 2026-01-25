@@ -213,12 +213,12 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
                 id: pl.id,
                 name: pl.name,
                 price: pl.price,
-                duration: pl.durationMinutes,
+                duration: pl.duration || pl.durationMinutes,
               })),
               schedules: schedules.map((s: any) => ({
                 date: s.date,
-                start: s.startTime,
-                end: s.endTime,
+                start: s.start || s.startTime,
+                end: s.end || s.endTime,
                 planId: s.planId,
               })),
             });
