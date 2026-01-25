@@ -27,17 +27,18 @@
 
 ### Domain Architecture
 
-本プロジェクトは **Modular Monolith** として構築されていますが、将来的な分割を見据えて以下の5つのドメインに明確に分離して実装します。
+本プロジェクトは **Modular Monolith** として構築されていますが、将来的な分割を見据えてドメインに明確に分離して実装します。
 
-詳細な定義は `services/handbooks/workspace/docs/分散システム設計/MICROSERVICE.md` を参照してください。
+**詳細なドメイン定義は [`services/handbooks/workspace/docs/domains/`](../services/handbooks/workspace/docs/domains/README.md) を参照してください。**
 
-| Domain | Role | Implementation |
-|--------|------|----------------|
-| **Identity** | 認証・認可 (Cast/Guest分岐) | `services/monolith/slices/identity` |
-| **Portfolio** | カタログ、検索、プロフィール管理 | `web/nyx/src/modules/portfolio` |
-| **Concierge** | チャット、リアルタイム通信、スマート招待状 | `web/nyx/src/modules/concierge` |
-| **Ritual** | スケジュール、予約トランザクション、誓約（Pledge） | `web/nyx/src/modules/ritual` |
-| **Trust** | 評価、CRM、分析 | `web/nyx/src/modules/trust` |
+| Domain | Role |
+|--------|------|
+| [Identity](../services/handbooks/workspace/docs/domains/identity.md) | 認証・認可 (Cast/Guest分岐) |
+| [Portfolio](../services/handbooks/workspace/docs/domains/portfolio.md) | カタログ、検索、プロフィール管理 |
+| [Concierge](../services/handbooks/workspace/docs/domains/concierge.md) | チャット、リアルタイム通信 |
+| [Ritual](../services/handbooks/workspace/docs/domains/ritual.md) | スケジュール、予約トランザクション |
+| [Trust](../services/handbooks/workspace/docs/domains/trust.md) | 評価、CRM、分析 |
+| [Social](../services/handbooks/workspace/docs/domains/social.md) | タイムライン、いいね、コメント |
 
 ## Important Constraints
 

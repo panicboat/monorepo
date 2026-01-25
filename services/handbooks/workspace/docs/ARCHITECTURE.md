@@ -26,26 +26,43 @@
 
 ---
 
-## Code Mapping (Implementation Map)
+## Domain Architecture
 
-デザインドキュメントで定義された概念（Concept）が、実際のコードベース（Implementation）のどこに存在するかを示します。
+各ドメインの責務、データベーステーブル、実装パスの詳細は **[domains/](./domains/README.md)** を参照してください。
 
-> **Note:** ドメイン定義の詳細は [分散システム設計/MICROSERVICE.md](分散システム設計/MICROSERVICE.md) を参照してください。
+| Domain | Backend | Frontend |
+|--------|---------|----------|
+| Identity | `slices/identity/` | `modules/identity/` |
+| Portfolio | `slices/portfolio/` | `modules/portfolio/` |
+| Concierge | `slices/concierge/` | `modules/concierge/` |
+| Ritual | `slices/ritual/` | `modules/ritual/` |
+| Trust | `slices/trust/` | `modules/trust/` |
+| Social | `slices/social/` | `modules/social/` |
 
-### Backend Structure: `services/monolith`
-Hanamiの **Slices** 機能を使用し、ドメインごとにディレクトリを分割します。
+## Code Mapping
 
-- `slices/identity/` -> **Identity Service** (Auth, Roles)
-- `slices/portfolio/` -> **Portfolio Service** (Profile, Search)
-- `slices/ritual/` -> **Ritual Service** (Reservation Logic)
-- `slices/trust/` -> **Trust Service** (Review, Radar Chart)
-- `lib/` -> Shared Kernel (Common Entities)
+### Backend: `services/monolith/workspace/`
 
-### Frontend Structure: `web/nyx`
-Next.jsのディレクトリ構造内で、ドメインごとにディレクトリを分割します。
+Hanami の **Slices** 機能を使用し、ドメインごとにディレクトリを分割します。
 
-- `src/modules/concierge/` -> **Concierge Domain** (Chat UI, Room List)
-- `src/modules/portfolio/` -> **Portfolio Domain** (Cast List, Profile Page)
-- `src/modules/ritual/` -> **Ritual Domain** (Reservation Modal, Pledge Action)
-- `src/modules/trust/` -> **Trust Domain** (Radar Chart, Reviews)
-- `src/app/` -> Routing & Pages (Modulesを組み合わせてページを構成)
+```
+slices/
+├── identity/     # 認証・認可
+├── portfolio/    # プロフィール管理
+├── social/       # タイムライン（予定）
+└── ...
+lib/              # Shared Kernel
+```
+
+### Frontend: `web/nyx/workspace/src/`
+
+Next.js のディレクトリ構造内で、ドメインごとに modules を分割します。
+
+```
+modules/
+├── identity/     # 認証 UI
+├── portfolio/    # プロフィール UI
+├── social/       # タイムライン UI
+└── ...
+app/              # Routing & Pages
+```

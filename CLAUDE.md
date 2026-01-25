@@ -29,10 +29,19 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 | Document | Purpose |
 |----------|---------|
-| `openspec/project.md` | プロジェクト定義、ビジョン、ドメインコンテキスト |
+| `openspec/project.md` | プロジェクト定義、ビジョン（What） |
+| `openspec/specs/` | 機能仕様（Requirements） |
 | `openspec/AGENTS.md` | OpenSpec ワークフロー |
+| `services/handbooks/workspace/docs/domains/` | **ドメイン定義（How）** |
+| `services/handbooks/workspace/docs/ARCHITECTURE.md` | 技術スタック、全体構成 |
 | `.claude/rules/*.md` | ルール（自動読み込み） |
-| `services/handbooks/workspace/docs/**/*.md` | アーキテクチャ設計書 |
+
+### Document Roles
+
+| 場所 | 役割 | 内容 |
+|------|------|------|
+| `openspec/` | 仕様（What） | ビジョン、機能要件、シナリオ |
+| `handbooks/docs/` | 設計（How） | ドメイン定義、アーキテクチャ、実装ガイド |
 
 ## Quick Reference
 
@@ -58,13 +67,16 @@ monorepo/
 
 ### Domain Architecture
 
-5つのドメインに分離（現在 Identity と Portfolio が実装済み）:
+6つのドメインに分離。詳細は `handbooks/docs/domains/` を参照。
 
-1. **Identity** - 認証・認可（Cast/Guest分岐）
-2. **Portfolio** - カタログ、検索、プロフィール管理
-3. **Concierge** - チャット、リアルタイム通信（未実装）
-4. **Ritual** - スケジュール、予約トランザクション（未実装）
-5. **Trust** - 評価、CRM、分析（未実装）
+| Domain | Role | Status |
+|--------|------|--------|
+| Identity | 認証・認可 | ✓ 実装済み |
+| Portfolio | プロフィール管理 | ✓ 実装済み |
+| Social | タイムライン | 実装中 |
+| Concierge | チャット | 未実装 |
+| Ritual | 予約 | 未実装 |
+| Trust | 評価・CRM | 未実装 |
 
 ### Frontend-Backend Communication
 
