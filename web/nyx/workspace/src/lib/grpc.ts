@@ -1,7 +1,7 @@
 import { createClient } from "@connectrpc/connect";
 import { createGrpcTransport } from "@connectrpc/connect-node";
-import { IdentityService } from "@/lib/identity/v1/service_pb";
-import { CastService } from "@/lib/portfolio/v1/service_pb";
+import { IdentityService } from "@/stub/identity/v1/service_pb";
+import { CastService } from "@/stub/portfolio/v1/service_pb";
 
 // In server environment (Next.js API Routes), we connect to Monolith directly.
 

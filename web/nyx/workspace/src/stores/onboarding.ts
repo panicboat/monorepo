@@ -34,7 +34,6 @@ export interface OnboardingState {
 
   // Meta
   loading: boolean;
-  isNewProfile: boolean;
   initialized: boolean;
 }
 
@@ -45,7 +44,6 @@ interface OnboardingActions {
   setPlans: (plans: PlanData[]) => void;
   setSchedules: (schedules: ScheduleItem[]) => void;
   setLoading: (loading: boolean) => void;
-  setIsNewProfile: (isNew: boolean) => void;
   setInitialized: (initialized: boolean) => void;
 
   // API Actions
@@ -84,7 +82,6 @@ const INITIAL_STATE: OnboardingState = {
   plans: [],
   schedules: [],
   loading: true,
-  isNewProfile: false,
   initialized: false,
 };
 
@@ -116,8 +113,6 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
 
       setLoading: (loading) => set({ loading }),
 
-      setIsNewProfile: (isNewProfile) => set({ isNewProfile }),
-
       setInitialized: (initialized) => set({ initialized }),
 
       // API Actions
@@ -141,7 +136,6 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
               // New user - reset all data to initial state
               set({
                 ...INITIAL_STATE,
-                isNewProfile: true,
                 loading: false,
                 initialized: true,
               });
@@ -174,7 +168,6 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
             const socialLinks = p.socialLinks || {};
 
             set({
-              isNewProfile: false,
               profile: {
                 nickname: p.name || "",
                 tagline: p.tagline || "",
@@ -273,10 +266,9 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
 
         const state = get();
         const profileToSave = overrideData || state.profile;
-        const method = state.isNewProfile ? "POST" : "PUT";
 
         const res = await fetch("/api/cast/onboarding/profile", {
-          method,
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -308,10 +300,6 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
         });
 
         if (!res.ok) throw new Error("Failed to save profile");
-
-        if (state.isNewProfile) {
-          set({ isNewProfile: false });
-        }
       },
 
       saveImages: async (overrideGallery?: PhotoItem[]) => {
