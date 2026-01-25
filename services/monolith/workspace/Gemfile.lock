@@ -488,7 +488,7 @@ DEPENDENCIES
   hanami-controller (~> 2.3.0)
   hanami-db (~> 2.3.0)
   hanami-reloader (~> 2.3.0)
-  hanami-router (~> 2.3.0)
+  hanami-router (~> 2.3.1)
   hanami-rspec (~> 2.3.0)
   hanami-validations (~> 2.3.0)
   hanami-view (~> 2.3.0)
