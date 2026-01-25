@@ -7,36 +7,37 @@ import { ProfileFormData } from "@/modules/portfolio/types";
 import { StyleInputs } from "@/modules/portfolio/components/cast/StyleInputs";
 import { ProfileInputs } from "@/modules/portfolio/components/cast/ProfileInputs";
 import { SocialInputs } from "@/modules/portfolio/components/cast/SocialInputs";
-import { useOnboardingStore } from "@/stores/onboarding";
+import { useCastData } from "@/modules/portfolio/hooks";
 
 export default function OnboardingStep1Page() {
   const router = useRouter();
 
-  // Zustand store
-  const profile = useOnboardingStore((s) => s.profile);
-  const setProfile = useOnboardingStore((s) => s.setProfile);
-  const saveProfile = useOnboardingStore((s) => s.saveProfile);
-  const loading = useOnboardingStore((s) => s.loading);
-  const initialized = useOnboardingStore((s) => s.initialized);
-  const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
+  const {
+    profile,
+    loading,
+    initialized,
+    fetchData,
+    updateProfile,
+    saveProfile,
+  } = useCastData();
 
   // Initialize data on mount
   useEffect(() => {
     if (!initialized) {
-      fetchProfile();
+      fetchData();
     }
-  }, [initialized, fetchProfile]);
+  }, [initialized, fetchData]);
 
   // Handlers
   const handleChange = (key: keyof ProfileFormData, val: any) => {
-    setProfile({ [key]: val });
+    updateProfile({ [key]: val });
   };
 
   const handleSocialChange = (
     key: keyof ProfileFormData["socialLinks"],
     val: string
   ) => {
-    setProfile({
+    updateProfile({
       socialLinks: {
         ...profile.socialLinks,
         [key]: val,
@@ -45,7 +46,7 @@ export default function OnboardingStep1Page() {
   };
 
   const handleAddOther = () => {
-    setProfile({
+    updateProfile({
       socialLinks: {
         ...profile.socialLinks,
         others: [...(profile.socialLinks.others || []), ""],
@@ -54,7 +55,7 @@ export default function OnboardingStep1Page() {
   };
 
   const handleRemoveOther = (index: number) => {
-    setProfile({
+    updateProfile({
       socialLinks: {
         ...profile.socialLinks,
         others: (profile.socialLinks.others || []).filter((_, i) => i !== index),
@@ -65,7 +66,7 @@ export default function OnboardingStep1Page() {
   const handleOtherChange = (index: number, val: string) => {
     const newOthers = [...(profile.socialLinks.others || [])];
     newOthers[index] = val;
-    setProfile({
+    updateProfile({
       socialLinks: {
         ...profile.socialLinks,
         others: newOthers,

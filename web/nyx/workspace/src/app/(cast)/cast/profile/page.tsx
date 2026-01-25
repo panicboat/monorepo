@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Loader2, Image as ImageIcon, Tag, Eye } from "lucide-react";
 
-import { CastProfile, ProfileFormData, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
+import { ProfileFormData, MediaItem } from "@/modules/portfolio/types";
 import { ActionButton } from "@/components/ui/ActionButton";
 import { ProfileInputs } from "@/modules/portfolio/components/cast/ProfileInputs";
 import { StyleInputs } from "@/modules/portfolio/components/cast/StyleInputs";
@@ -14,244 +13,138 @@ import { TagSelector } from "@/modules/portfolio/components/cast/TagSelector";
 import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader";
 import { ProfilePreviewModal } from "./components/ProfilePreviewModal";
 import { SectionCard } from "./components/SectionCard";
-import { SectionNav } from "./components/SectionNav";
 import { useToast } from "@/components/ui/Toast";
+import { useCastProfile, useCastImages, useCastPlans, useCastSchedules } from "@/modules/portfolio/hooks";
+import { useState } from "react";
 
 export default function ProfileEditPage() {
-  const router = useRouter();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
 
-  // State
-  const [profileForm, setProfileForm] = useState<ProfileFormData>({
-    nickname: "",
-    tagline: "",
-    bio: "",
-    serviceCategory: "standard",
-    locationType: "dispatch",
-    area: "",
-    defaultScheduleStart: "18:00",
-    defaultScheduleEnd: "23:00",
-    socialLinks: { others: [] },
-    tags: [],
-    age: undefined,
-    height: undefined,
-    bloodType: undefined,
-    threeSizes: { b: 0, w: 0, h: 0, cup: "" },
-  });
+  // Use unified hooks
+  const {
+    profile: profileForm,
+    loading: profileLoading,
+    initialized,
+    fetchProfile,
+    updateProfile,
+    saveProfile,
+  } = useCastProfile({ apiPath: "/api/cast/profile" });
 
-  const [images, setImages] = useState<MediaItem[]>([]);
-  const [plans, setPlans] = useState<ServicePlan[]>([]);
-  const [schedules, setSchedules] = useState<WeeklySchedule[]>([]);
+  const {
+    images,
+    uploadImage,
+    updateImages,
+  } = useCastImages();
+
+  const { plans, initializeFromApi: initializePlans } = useCastPlans();
+  const { schedules, initializeFromApi: initializeSchedules } = useCastSchedules();
+
+  // Fetch data on mount
+  useEffect(() => {
+    const loadData = async () => {
+      if (!initialized) {
+        const result = await fetchProfile();
+        if (result) {
+          // Initialize images from profile
+          if (result.profile?.images) {
+            const imgList: MediaItem[] = [];
+            if (result.profile.images.hero && typeof result.profile.images.hero === "object") {
+              imgList.push(result.profile.images.hero as MediaItem);
+            }
+            if (result.profile.images.portfolio) {
+              imgList.push(...result.profile.images.portfolio);
+            }
+            updateImages(imgList);
+          }
+          // Initialize plans and schedules
+          if (result.plans) initializePlans(result.plans);
+          if (result.schedules) initializeSchedules(result.schedules);
+        }
+      }
+    };
+    loadData();
+  }, [initialized, fetchProfile, updateImages, initializePlans, initializeSchedules]);
 
   // Handlers
   const handleProfileChange = (key: keyof ProfileFormData, val: any) => {
-    setProfileForm((prev) => ({ ...prev, [key]: val }));
+    updateProfile({ [key]: val });
   };
 
   const handleTagsChange = (newTags: string[]) => {
-    setProfileForm((prev) => ({ ...prev, tags: newTags }));
+    updateProfile({ tags: newTags });
   };
 
   const handleSocialChange = (
     key: keyof ProfileFormData["socialLinks"],
     val: string,
   ) => {
-    setProfileForm((prev) => ({
-      ...prev,
-      socialLinks: { ...prev.socialLinks, [key]: val },
-    }));
+    updateProfile({
+      socialLinks: { ...profileForm.socialLinks, [key]: val },
+    });
   };
 
   const handleOtherChange = (index: number, val: string) => {
-    setProfileForm((prev) => {
-      const newOthers = [...(prev.socialLinks.others || [])];
-      newOthers[index] = val;
-      return {
-        ...prev,
-        socialLinks: { ...prev.socialLinks, others: newOthers },
-      };
+    const newOthers = [...(profileForm.socialLinks.others || [])];
+    newOthers[index] = val;
+    updateProfile({
+      socialLinks: { ...profileForm.socialLinks, others: newOthers },
     });
   };
 
   const handleAddOther = () => {
-    setProfileForm((prev) => ({
-      ...prev,
+    updateProfile({
       socialLinks: {
-        ...prev.socialLinks,
-        others: [...(prev.socialLinks.others || []), ""],
+        ...profileForm.socialLinks,
+        others: [...(profileForm.socialLinks.others || []), ""],
       },
-    }));
+    });
   };
 
   const handleRemoveOther = (index: number) => {
-    setProfileForm((prev) => ({
-      ...prev,
+    updateProfile({
       socialLinks: {
-        ...prev.socialLinks,
-        others: (prev.socialLinks.others || []).filter((_, i) => i !== index),
+        ...profileForm.socialLinks,
+        others: (profileForm.socialLinks.others || []).filter((_, i) => i !== index),
       },
-    }));
+    });
   };
-
-  // Fetch Data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("nyx_cast_access_token");
-        const res = await fetch("/api/cast/profile", {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (!res.ok) throw new Error("Failed to fetch profile");
-        const { profile: data, plans: plansData, schedules: schedulesData } = await res.json();
-
-        // Map API data to Form State
-        setProfileForm({
-          nickname: data.name,
-          tagline: data.tagline || "",
-          bio: data.bio || "",
-          serviceCategory: data.serviceCategory || "standard",
-          locationType: data.locationType || "dispatch",
-          area: data.area || "",
-          defaultScheduleStart: "18:00", // Default if missing
-          defaultScheduleEnd: "23:00",
-          socialLinks: {
-            ...data.socialLinks,
-            others: data.socialLinks?.others || [],
-          },
-          // New Fields
-          tags: data.tags?.map((t: { label: string }) => t.label) || [], // CastTag[] -> string[]
-          age: data.age,
-          height: data.height,
-          bloodType: data.bloodType,
-          threeSizes: data.threeSizes || { b: 0, w: 0, h: 0, cup: "" },
-        });
-
-        // Images
-        const imgList: MediaItem[] = [];
-        if (data.images?.hero && typeof data.images.hero === "object") {
-             imgList.push(data.images.hero as MediaItem);
-        }
-        if (data.images?.portfolio) imgList.push(...data.images.portfolio);
-        setImages(imgList);
-
-        // Plans and Schedules
-        setPlans(plansData || []);
-        setSchedules(schedulesData || []);
-      } catch (e) {
-        console.error(e);
-        toast({
-          title: "Error",
-          description: "Failed to load profile data",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   // Image Upload Handler
   const handleUpload = async (file: File): Promise<MediaItem | null> => {
-    try {
-        const token = localStorage.getItem("nyx_cast_access_token");
-        if (!token) throw new Error("No token");
-
-        const res = await fetch("/api/cast/onboarding/upload-url", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({ filename: file.name, contentType: file.type })
-        });
-
-        if (!res.ok) throw new Error("Failed to get URL");
-        const { url, key } = await res.json();
-
-        const uploadRes = await fetch(url, {
-            method: "PUT",
-            headers: { "Content-Type": file.type },
-            body: file
-        });
-        if (!uploadRes.ok) throw new Error("Upload failed");
-
-        return {
-            url: URL.createObjectURL(file),
-            key: key,
-            type: file.type.startsWith("video") ? "video" : "image"
-        };
-    } catch (e) {
-        console.error(e);
-        return null;
-    }
+    const result = await uploadImage(file);
+    return result;
   };
 
   // Save
   const handleSave = async () => {
-    const token = localStorage.getItem("nyx_cast_access_token");
-    // Payload mappings
-    const payload = {
-      name: profileForm.nickname,
-      tagline: profileForm.tagline,
-      bio: profileForm.bio,
-      area: profileForm.area,
-      serviceCategory: profileForm.serviceCategory,
-      locationType: profileForm.locationType,
-      socialLinks: profileForm.socialLinks,
-      imagePath: images[0]?.key, // Send Key for Hero
-      images: images.slice(1).map(i => i.key || i.url), // Send Keys for Portfolio
+    try {
+      const heroKey = images[0]?.key;
+      const galleryKeys = images.slice(1).map(i => i.key || i.url).filter(Boolean);
+      await saveProfile(profileForm, heroKey, galleryKeys);
 
-      // Metadata
-      tags: profileForm.tags.map((t) => ({ label: t, count: 1 })),
-      age: profileForm.age,
-      height: profileForm.height,
-      bloodType: profileForm.bloodType,
-      threeSizes: profileForm.threeSizes,
-    };
-
-    const res = await fetch("/api/cast/profile", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token || ""}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
+      toast({
+        title: "Saved",
+        description: "Profile updated successfully",
+        variant: "success",
+      });
+    } catch (e) {
+      console.error(e);
       toast({
         title: "Error",
         description: "Failed to save profile",
         variant: "destructive",
       });
-      throw new Error("Failed to save");
     }
-
-    toast({
-      title: "Saved",
-      description: "Profile updated successfully",
-      variant: "success",
-    });
   };
 
-  if (loading) {
+  if (profileLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="animate-spin text-pink-500" />
       </div>
     );
   }
-
-  // Time options for StyleInputs
-  const timeOptions = Array.from({ length: 48 }, (_, i) => {
-    const h = Math.floor(i / 2);
-    const m = i % 2 === 0 ? "00" : "30";
-    return `${h.toString().padStart(2, "0")}:${m}`;
-  });
 
   return (
     <div className="pb-24 bg-slate-50 min-h-screen">
@@ -277,7 +170,7 @@ export default function ProfileEditPage() {
           collapsible
           defaultOpen={false}
         >
-          <PhotoUploader images={images} onChange={setImages} onUpload={handleUpload} />
+          <PhotoUploader images={images} onChange={updateImages} onUpload={handleUpload} />
         </SectionCard>
 
         {/* Identity (Order 2) */}

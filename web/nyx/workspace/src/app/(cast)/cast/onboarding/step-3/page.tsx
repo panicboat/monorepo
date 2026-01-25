@@ -7,42 +7,29 @@ import {
   PlanEditor,
   ServicePlan,
 } from "@/modules/portfolio/components/cast/PlanEditor";
-import { useOnboardingStore, PlanData } from "@/stores/onboarding";
+import { useCastData } from "@/modules/portfolio/hooks";
 
 export default function OnboardingStep3() {
   const router = useRouter();
 
-  // Zustand store
-  const plans = useOnboardingStore((s) => s.plans);
-  const setPlans = useOnboardingStore((s) => s.setPlans);
-  const savePlans = useOnboardingStore((s) => s.savePlans);
-  const loading = useOnboardingStore((s) => s.loading);
-  const initialized = useOnboardingStore((s) => s.initialized);
-  const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
+  const {
+    plans,
+    loading,
+    initialized,
+    fetchData,
+    updatePlans,
+    savePlans,
+  } = useCastData();
 
   // Initialize data on mount
   useEffect(() => {
     if (!initialized) {
-      fetchProfile();
+      fetchData();
     }
-  }, [initialized, fetchProfile]);
-
-  // Convert PlanData[] to ServicePlan[]
-  const plansAsServicePlans: ServicePlan[] = plans.map((p) => ({
-    id: p.id,
-    name: p.name,
-    duration: p.duration,
-    price: p.price,
-  }));
+  }, [initialized, fetchData]);
 
   const handlePlansChange = (servicePlans: ServicePlan[]) => {
-    const planData: PlanData[] = servicePlans.map((p) => ({
-      id: p.id,
-      name: p.name,
-      duration: p.duration,
-      price: p.price,
-    }));
-    setPlans(planData);
+    updatePlans(servicePlans);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,7 +73,7 @@ export default function OnboardingStep3() {
             <span>プランの登録は任意です</span>
           </div>
 
-          <PlanEditor plans={plansAsServicePlans} onChange={handlePlansChange} />
+          <PlanEditor plans={plans} onChange={handlePlansChange} />
         </div>
 
         <button

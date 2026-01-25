@@ -3,7 +3,6 @@ export default function OnboardingTemplate({
 }: {
   children: React.ReactNode;
 }) {
-  // State management is now handled by Zustand store (useOnboardingStore)
-  // No provider wrapper needed - Zustand uses a global store pattern
+  // State management handled by useCastData hook (modules/portfolio/hooks)
   return <>{children}</>;
 }

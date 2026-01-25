@@ -3,31 +3,30 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import {
-  WeeklyScheduleInput,
-  ScheduleItem,
-} from "@/modules/ritual/components/cast/WeeklyScheduleInput";
-import { useOnboardingStore } from "@/stores/onboarding";
+import { WeeklyScheduleInput } from "@/modules/ritual/components/cast/WeeklyScheduleInput";
+import { useCastData } from "@/modules/portfolio/hooks";
+import { WeeklySchedule } from "@/modules/portfolio/types";
 
 export default function OnboardingStep4() {
   const router = useRouter();
 
-  // Zustand store
-  const profile = useOnboardingStore((s) => s.profile);
-  const plans = useOnboardingStore((s) => s.plans);
-  const schedules = useOnboardingStore((s) => s.schedules);
-  const setSchedules = useOnboardingStore((s) => s.setSchedules);
-  const saveSchedules = useOnboardingStore((s) => s.saveSchedules);
-  const loading = useOnboardingStore((s) => s.loading);
-  const initialized = useOnboardingStore((s) => s.initialized);
-  const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
+  const {
+    profile,
+    plans,
+    schedules,
+    loading,
+    initialized,
+    fetchData,
+    updateSchedules,
+    saveSchedules,
+  } = useCastData();
 
   // Initialize data on mount
   useEffect(() => {
     if (!initialized) {
-      fetchProfile();
+      fetchData();
     }
-  }, [initialized, fetchProfile]);
+  }, [initialized, fetchData]);
 
   // Convert plans to SchedulePlan format
   const availablePlans = plans.map((p) => ({
@@ -39,6 +38,10 @@ export default function OnboardingStep4() {
 
   const defaultScheduleStart = profile.defaultScheduleStart || "18:00";
   const defaultScheduleEnd = profile.defaultScheduleEnd || "23:00";
+
+  const handleSchedulesChange = (newSchedules: WeeklySchedule[]) => {
+    updateSchedules(newSchedules);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +80,7 @@ export default function OnboardingStep4() {
         <WeeklyScheduleInput
           schedules={schedules}
           plans={availablePlans}
-          onChange={setSchedules}
+          onChange={handleSchedulesChange}
           defaultStart={defaultScheduleStart}
           defaultEnd={defaultScheduleEnd}
         />

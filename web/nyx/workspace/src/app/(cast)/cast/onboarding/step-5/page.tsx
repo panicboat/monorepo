@@ -4,28 +4,29 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { useOnboardingStore } from "@/stores/onboarding";
+import { useCastData } from "@/modules/portfolio/hooks";
 
 export default function OnboardingStep5() {
   const router = useRouter();
   const [isPublishing, setIsPublishing] = useState(false);
 
-  // Zustand store
-  const profile = useOnboardingStore((s) => s.profile);
-  const photos = useOnboardingStore((s) => s.photos);
-  const plans = useOnboardingStore((s) => s.plans);
-  const schedules = useOnboardingStore((s) => s.schedules);
-  const publishProfile = useOnboardingStore((s) => s.publishProfile);
-  const loading = useOnboardingStore((s) => s.loading);
-  const initialized = useOnboardingStore((s) => s.initialized);
-  const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
+  const {
+    profile,
+    images,
+    plans,
+    schedules,
+    loading,
+    initialized,
+    fetchData,
+    publishProfile,
+  } = useCastData();
 
   // Initialize data on mount
   useEffect(() => {
     if (!initialized) {
-      fetchProfile();
+      fetchData();
     }
-  }, [initialized, fetchProfile]);
+  }, [initialized, fetchData]);
 
   const handlePublish = async () => {
     setIsPublishing(true);
@@ -144,7 +145,7 @@ export default function OnboardingStep5() {
           </div>
           <div className="rounded-xl bg-white p-4 shadow-sm border border-slate-100">
             <div className="grid grid-cols-3 gap-2">
-              {photos.gallery.map((item, i) => (
+              {images.map((item, i) => (
                 <div
                   key={i}
                   className="aspect-[3/4] rounded-lg bg-slate-100 overflow-hidden relative"
@@ -172,7 +173,7 @@ export default function OnboardingStep5() {
                   )}
                 </div>
               ))}
-              {photos.gallery.length === 0 && (
+              {images.length === 0 && (
                 <div className="col-span-3 py-4 text-center text-sm text-slate-400">
                   No photos uploaded
                 </div>

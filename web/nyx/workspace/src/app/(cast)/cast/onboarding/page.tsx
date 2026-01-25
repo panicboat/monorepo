@@ -3,28 +3,29 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
-import { useOnboardingStore } from "@/stores/onboarding";
+import { useCastData } from "@/modules/portfolio/hooks";
 
 export default function OnboardingWelcomePage() {
-  // Zustand store
-  const profile = useOnboardingStore((s) => s.profile);
-  const photos = useOnboardingStore((s) => s.photos);
-  const plans = useOnboardingStore((s) => s.plans);
-  const schedules = useOnboardingStore((s) => s.schedules);
-  const loading = useOnboardingStore((s) => s.loading);
-  const initialized = useOnboardingStore((s) => s.initialized);
-  const fetchProfile = useOnboardingStore((s) => s.fetchProfile);
+  const {
+    profile,
+    images,
+    plans,
+    schedules,
+    loading,
+    initialized,
+    fetchData,
+  } = useCastData();
 
   // Initialize data on mount
   useEffect(() => {
     if (!initialized) {
-      fetchProfile();
+      fetchData();
     }
-  }, [initialized, fetchProfile]);
+  }, [initialized, fetchData]);
 
   const getNextStep = () => {
     if (!profile.nickname) return "/cast/onboarding/step-1";
-    if (!photos.profile && photos.gallery.length === 0) return "/cast/onboarding/step-2";
+    if (images.length === 0) return "/cast/onboarding/step-2";
     if (plans.length === 0) return "/cast/onboarding/step-3";
     if (schedules.length === 0) return "/cast/onboarding/step-4";
     return "/cast/onboarding/step-5";
