@@ -21,10 +21,10 @@ export const CastBottomNavBar = () => {
       href: "/cast/home",
     },
     {
-      id: "schedule",
+      id: "schedules",
       label: "Schedule",
       icon: Calendar,
-      href: "/cast/schedule",
+      href: "/cast/schedules",
     },
     {
       id: "timeline",

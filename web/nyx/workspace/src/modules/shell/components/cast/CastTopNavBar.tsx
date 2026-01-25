@@ -14,7 +14,7 @@ export const CastTopNavBar = () => {
     if (pathname.includes("/cast/onboarding")) return "Cast Onboarding";
     if (pathname.includes("/cast/profile")) return "Edit Profile";
     if (pathname.includes("/cast/plans")) return "Plan Settings";
-    if (pathname.includes("/cast/schedule")) return "Schedule";
+    if (pathname.includes("/cast/schedules")) return "Schedule";
     if (pathname.includes("/cast/pledges")) return "Pledge Detail";
     if (pathname.includes("/cast/concierge")) return "Concierge";
     if (pathname.includes("/cast/timeline")) return "Timeline";
@@ -55,7 +55,7 @@ export const CastTopNavBar = () => {
           Home
         </Link>
         <Link
-          href="/cast/schedule"
+          href="/cast/schedules"
           className="hover:text-pink-500 transition-colors"
         >
           Schedule
