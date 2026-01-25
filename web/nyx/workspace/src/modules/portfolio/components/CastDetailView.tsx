@@ -24,7 +24,7 @@ export const CastDetailView = ({
     <div className="bg-white">
       <PhotoGallery castId={castId} images={images} />
       <ProfileSpecs castId={castId} profileData={profileData} />
-      <ScheduleCalendar schedules={schedules} />
+      <ScheduleCalendar schedules={schedules} plans={plans} />
       <PriceSystem plans={plans} />
     </div>
   );
