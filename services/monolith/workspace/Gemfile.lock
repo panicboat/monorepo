@@ -81,7 +81,7 @@ GEM
       concurrent-ruby (~> 1.0)
       dry-core (~> 1.1)
     dry-files (1.1.0)
-    dry-inflector (1.3.0)
+    dry-inflector (1.3.1)
     dry-initializer (3.2.0)
     dry-logger (1.2.1)
       logger
@@ -479,7 +479,7 @@ DEPENDENCIES
   database_cleaner-sequel
   dotenv
   dry-operation (>= 1.0.1)
-  dry-types (~> 1.7)
+  dry-types (~> 1.9)
   grpc
   grpc-tools
   gruf
