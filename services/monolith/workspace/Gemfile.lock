@@ -479,7 +479,7 @@ DEPENDENCIES
   database_cleaner-sequel
   dotenv
   dry-operation (>= 1.0.1)
-  dry-types (~> 1.7)
+  dry-types (~> 1.9)
   grpc
   grpc-tools
   gruf
