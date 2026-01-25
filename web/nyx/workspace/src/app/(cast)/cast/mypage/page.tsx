@@ -91,7 +91,9 @@ export default function CastMyPage() {
             <div className="w-20 h-20 rounded-full bg-slate-100 border-2 border-white shadow-sm overflow-hidden">
               <img
                 src={
-                  profile.images?.hero ||
+                  (typeof profile.images?.hero === "string"
+                    ? profile.images.hero
+                    : profile.images?.hero?.url) ||
                   "https://placehold.co/200x200/e2e8f0/64748b?text=User"
                 }
                 alt="Profile"

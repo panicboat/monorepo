@@ -9,12 +9,19 @@ import {
 import { CastPosts } from "@/modules/portfolio/components/guest/detail/CastPosts";
 import { TrustRadar } from "@/modules/trust/components/guest/TrustRadar";
 import { ReviewList } from "@/modules/trust/components/guest/ReviewList";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion } from "motion/react";
 import Link from "next/link";
-import { use, useState } from "react";
-import { ChevronLeft, MessageCircle, Heart, AlertTriangle } from "lucide-react";
+import { use, useState, useEffect } from "react";
+import { MessageCircle, Heart, AlertTriangle, Loader2 } from "lucide-react";
 import { useSocial } from "@/modules/social/hooks/useSocial";
 import { Button } from "@/components/ui/Button";
+import { CastProfile, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
+
+interface CastData {
+  profile: CastProfile;
+  plans: ServicePlan[];
+  schedules: WeeklySchedule[];
+}
 
 function BlockSection({ castId }: { castId: string }) {
   const { isBlocking, toggleBlock } = useSocial();
@@ -49,19 +56,71 @@ export default function CastDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { scrollY } = useScroll();
-  const headerOpacity = useTransform(scrollY, [0, 200], [0, 1]);
+  const [data, setData] = useState<CastData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchCast() {
+      try {
+        const res = await fetch(`/api/guest/casts/${id}`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            setError("Cast not found");
+          } else {
+            setError("Failed to load cast");
+          }
+          return;
+        }
+        const json = await res.json();
+        setData(json);
+      } catch (e) {
+        setError("Failed to load cast");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCast();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <Loader2 className="w-8 h-8 animate-spin text-pink-500" />
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white gap-4">
+        <p className="text-slate-500">{error || "Cast not found"}</p>
+        <Link href="/">
+          <Button variant="outline">Back to Home</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  // Build images array for PhotoGallery
+  const images: MediaItem[] = [];
+  if (data.profile.images?.hero) {
+    const hero = data.profile.images.hero;
+    if (typeof hero === "object") {
+      images.push(hero as MediaItem);
+    }
+  }
+  if (data.profile.images?.portfolio) {
+    images.push(...data.profile.images.portfolio);
+  }
 
   return (
     <div className="bg-white pb-24">
-      {/* Floating Header handled by Global MobileHeader */}
-      {/* Back Button handled by Global MobileHeader */}
-
-      <PhotoGallery castId={id} />
-      <ProfileSpecs castId={id} />
-      <ScheduleCalendar />
+      <PhotoGallery castId={id} images={images} />
+      <ProfileSpecs castId={id} profileData={data.profile} />
+      <ScheduleCalendar schedules={data.schedules} />
       <TrustRadar scores={[90, 85, 70, 95, 80]} />
-      <PriceSystem />
+      <PriceSystem plans={data.plans} />
       <CastPosts />
 
       <ReviewList />

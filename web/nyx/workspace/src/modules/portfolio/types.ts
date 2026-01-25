@@ -21,7 +21,7 @@ export interface MediaItem {
 }
 
 export interface CastImages {
-  hero: string;
+  hero: string | MediaItem | null;
   portfolio: MediaItem[];
 }
 
