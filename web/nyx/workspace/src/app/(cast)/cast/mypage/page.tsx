@@ -181,22 +181,6 @@ export default function CastMyPage() {
           <ChevronRight className="text-slate-400 group-hover:text-slate-600 transition" />
         </Link>
 
-        {/* Followers List */}
-        <button className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-500">
-              <Users className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-bold text-slate-900">
-                フォロワーリスト
-              </p>
-              <p className="text-xs text-slate-500">顧客メモの管理・営業</p>
-            </div>
-          </div>
-          <ChevronRight className="text-slate-400 group-hover:text-slate-600 transition" />
-        </button>
-
         <Link
           href="/cast/plans"
           className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
@@ -215,24 +199,21 @@ export default function CastMyPage() {
           <ChevronRight className="text-slate-400 group-hover:text-slate-600 transition" />
         </Link>
 
-        {/* Engagement Features */}
-        <Link
-          href="/cast/timeline"
-          className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
-        >
+        {/* Followers List */}
+        <button className="w-full bg-white hover:bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between group transition shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-sky-50 flex items-center justify-center text-sky-500">
-              <LayoutList className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-500">
+              <Users className="w-5 h-5" />
             </div>
             <div className="text-left">
               <p className="text-sm font-bold text-slate-900">
-                タイムライン投稿
+                フォロワーリスト
               </p>
-              <p className="text-xs text-slate-500">日々の投稿管理</p>
+              <p className="text-xs text-slate-500">顧客メモの管理・営業</p>
             </div>
           </div>
           <ChevronRight className="text-slate-400 group-hover:text-slate-600 transition" />
-        </Link>
+        </button>
 
         <Link
           href="/cast/reviews"
