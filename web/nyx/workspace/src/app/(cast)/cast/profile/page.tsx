@@ -11,8 +11,8 @@ import { SocialInputs } from "@/modules/portfolio/components/cast/SocialInputs";
 import { PhysicalInputs } from "@/modules/portfolio/components/cast/PhysicalInputs";
 import { TagSelector } from "@/modules/portfolio/components/cast/TagSelector";
 import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader";
-import { ProfilePreviewModal } from "./components/ProfilePreviewModal";
-import { SectionCard } from "./components/SectionCard";
+import { ProfilePreviewModal } from "@/modules/portfolio/components/cast/ProfilePreviewModal";
+import { SectionCard } from "@/components/ui/SectionCard";
 import { useToast } from "@/components/ui/Toast";
 import { useCastData } from "@/modules/portfolio/hooks";
 
