@@ -24,28 +24,33 @@
 | `/openspec:apply` | 承認済み提案の実装 |
 | `/openspec:archive` | 完了した提案のアーカイブ |
 
-## Git Workflow
+## User Approval
 
-### Proposal 作成時
+### Pre-Implementation (実装前)
 
-`/openspec:proposal` 実行時は以下の手順を**自動実行**:
+以下の変更は**実装前にユーザー承認が必要**:
 
-1. `main` ブランチに切り替え (`git checkout main`)
-2. 最新を取得 (`git pull origin main`)
-3. 派生ブランチを作成 (`git checkout -b <change-id>`)
-4. proposal ファイルを作成
-5. コミット・プッシュはユーザー承認後
+- データベーススキーマの変更
+- ライブラリ・フレームワークの追加・置き換え
+- 主要なデザインパターンの変更
+- API の破壊的変更
 
-### Archive 時
+### Post-Implementation (実装後)
 
-`/openspec:archive` 実行時は以下の手順を**自動実行**:
+以下のアクションは**実行前にユーザー承認が必要**:
 
-1. 変更をコミット (未コミットがあれば)
-2. リモートにプッシュ
-3. `openspec archive <change-id> --yes` を実行
-4. `main` ブランチに切り替え (`git checkout main`)
-5. 最新を取得 (`git pull origin main`)
+- Git commit / push
+- OpenSpec のアーカイブ
+- ブランチの作成・削除・マージ
+
+実装完了時は変更内容のサマリーを提示し、ユーザーの明示的な承認を待つこと。
 
 ## Lifecycle
+
+```
+1. /openspec:proposal → [ユーザー承認]
+2. /openspec:apply    → [ユーザー承認]
+3. /openspec:archive
+```
 
 詳細は `openspec/AGENTS.md` を参照。

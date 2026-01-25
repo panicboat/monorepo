@@ -1,6 +1,6 @@
 ---
-name: OpenSpec: Archive
-description: Archive a deployed OpenSpec change and update specs.
+name: "OpenSpec: Archive"
+description: "Archive a deployed OpenSpec change and update specs."
 category: OpenSpec
 tags: [openspec, archive]
 ---
@@ -10,6 +10,9 @@ tags: [openspec, archive]
 - Keep changes tightly scoped to the requested outcome.
 - Refer to `openspec/AGENTS.md` (located inside the `openspec/` directory—run `ls openspec` or `openspec update` if you don't see it) if you need additional OpenSpec conventions or clarifications.
 
+**Prerequisite**
+This command should only be run after `/openspec:apply` is complete and user has approved the implementation.
+
 **Steps**
 1. Determine the change ID to archive:
    - If this prompt already includes a specific change ID (for example inside a `<ChangeId>` block populated by slash-command arguments), use that value after trimming whitespace.
@@ -17,14 +20,15 @@ tags: [openspec, archive]
    - Otherwise, review the conversation, run `openspec list`, and ask the user which change to archive; wait for a confirmed change ID before proceeding.
    - If you still cannot identify a single change ID, stop and tell the user you cannot archive anything yet.
 2. Validate the change ID by running `openspec list` (or `openspec show <id>`) and stop if the change is missing, already archived, or otherwise not ready to archive.
-3. **Git Commit & Push**: Before archiving, ensure all changes are committed and pushed:
+3. **Git Commit & Push**: Ensure all changes are committed and pushed:
    - Check for uncommitted changes with `git status`.
    - If there are uncommitted changes, stage and commit them with an appropriate message.
    - Push to the remote branch: `git push origin <current-branch>`.
 4. Run `openspec archive <id> --yes` so the CLI moves the change and applies spec updates without prompts (use `--skip-specs` only for tooling-only work).
 5. Review the command output to confirm the target specs were updated and the change landed in `changes/archive/`.
-6. Validate with `openspec validate --strict` and inspect with `openspec show <id>` if anything looks off.
-7. **Git Switch to Main**: After successful archive, switch back to main:
+6. Validate with `openspec validate --specs` and inspect with `openspec show <id>` if anything looks off.
+7. Commit and push the archive changes.
+8. **Git Switch to Main**: After successful archive, switch back to main:
    - Run `git checkout main && git pull origin main` to return to the latest main branch.
 
 **Reference**
