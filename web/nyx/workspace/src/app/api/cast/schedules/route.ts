@@ -40,7 +40,15 @@ export async function PUT(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    return NextResponse.json(response);
+    // Map to same format as GET
+    const schedules = (response.schedules || []).map((s) => ({
+      date: s.date,
+      start: s.startTime,
+      end: s.endTime,
+      planId: s.planId,
+    }));
+
+    return NextResponse.json({ schedules });
   } catch (error: any) {
     console.error("SaveCastSchedules Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

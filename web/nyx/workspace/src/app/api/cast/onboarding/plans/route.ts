@@ -15,7 +15,15 @@ export async function PUT(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    return NextResponse.json(response);
+    // Map to same format as GET /api/cast/onboarding/profile
+    const plans = (response.plans || []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      duration: p.durationMinutes,
+    }));
+
+    return NextResponse.json({ plans });
   } catch (error: any) {
     console.error("SaveCastPlans Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
