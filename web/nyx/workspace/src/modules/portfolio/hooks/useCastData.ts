@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import useSWR from "swr";
+import { useCallback, useMemo } from "react";
 import { ProfileFormData, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
 import {
   mapApiToProfileForm,
@@ -11,6 +12,7 @@ import {
   mapApiToSchedules,
   mapSchedulesToApi,
 } from "@/modules/portfolio/lib/cast/mappers";
+import { fetcher } from "@/lib/swr";
 
 const INITIAL_PROFILE: ProfileFormData = {
   nickname: "",
@@ -32,103 +34,146 @@ const getToken = () => {
 
 interface UseCastDataOptions {
   apiPath?: string;
-  autoFetch?: boolean;
+}
+
+interface CastDataApiResponse {
+  profile?: any;
+  plans?: any[];
+  schedules?: any[];
 }
 
 /**
  * Combined hook for managing all cast data (profile, images, plans, schedules).
+ * Uses SWR for data fetching and caching.
  * Useful for onboarding flow where all data is fetched/saved together.
  */
 export function useCastData(options: UseCastDataOptions = {}) {
-  const { apiPath = "/api/cast/onboarding/profile", autoFetch = true } = options;
+  const { apiPath = "/api/cast/onboarding/profile" } = options;
 
-  // State
-  const [profile, setProfile] = useState<ProfileFormData>(INITIAL_PROFILE);
-  const [images, setImages] = useState<MediaItem[]>([]);
-  const [plans, setPlans] = useState<ServicePlan[]>([]);
-  const [schedules, setSchedules] = useState<WeeklySchedule[]>([]);
+  const token = getToken();
 
-  // Meta
-  const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  // Fetch all data
-  const fetchData = useCallback(async () => {
-    const token = getToken();
-    if (!token) {
-      setProfile(INITIAL_PROFILE);
-      setImages([]);
-      setPlans([]);
-      setSchedules([]);
-      setLoading(false);
-      setInitialized(true);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(apiPath, {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
-
-      if (!res.ok) {
-        if (res.status === 404) {
-          setProfile(INITIAL_PROFILE);
-          setImages([]);
-          setPlans([]);
-          setSchedules([]);
-          setLoading(false);
-          setInitialized(true);
+  // Use SWR for data fetching
+  const { data, error, isLoading, mutate } = useSWR<CastDataApiResponse>(
+    token ? apiPath : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 5000,
+      onError: (err) => {
+        // Handle 404 as expected state for new users
+        if ((err as any).status === 404) {
           return;
         }
-        throw new Error("Failed to fetch data");
-      }
-
-      const apiData = await res.json();
-
-      if (apiData.profile) {
-        setProfile(mapApiToProfileForm(apiData.profile));
-        setImages(mapApiToImages(apiData.profile));
-      }
-
-      setPlans(mapApiToPlans(apiData.plans || []));
-      setSchedules(mapApiToSchedules(apiData.schedules || []));
-    } catch (e) {
-      const err = e instanceof Error ? e : new Error("Unknown error");
-      setError(err);
-      console.error("Failed to load cast data", e);
-    } finally {
-      setLoading(false);
-      setInitialized(true);
+        console.error("Failed to load cast data", err);
+      },
     }
-  }, [apiPath]);
+  );
 
-  // Update functions
-  const updateProfile = useCallback((updates: Partial<ProfileFormData>) => {
-    setProfile((prev) => ({ ...prev, ...updates }));
-  }, []);
+  // Derive state from API response
+  const profile = useMemo(() =>
+    data?.profile ? mapApiToProfileForm(data.profile) : INITIAL_PROFILE,
+    [data?.profile]
+  );
 
-  const updateImages = useCallback((newImages: MediaItem[]) => {
-    setImages(newImages);
-  }, []);
+  const images = useMemo(() =>
+    data?.profile ? mapApiToImages(data.profile) : [],
+    [data?.profile]
+  );
 
-  const updatePlans = useCallback((newPlans: ServicePlan[]) => {
-    setPlans(newPlans);
-  }, []);
+  const plans = useMemo(() =>
+    mapApiToPlans(data?.plans || []),
+    [data?.plans]
+  );
 
-  const updateSchedules = useCallback((newSchedules: WeeklySchedule[]) => {
-    setSchedules(newSchedules);
-  }, []);
+  const schedules = useMemo(() =>
+    mapApiToSchedules(data?.schedules || []),
+    [data?.schedules]
+  );
+
+  // Update functions that modify local cache
+  const updateProfile = useCallback(
+    (updates: Partial<ProfileFormData>) => {
+      mutate(
+        (currentData) => {
+          if (!currentData) return currentData;
+          return {
+            ...currentData,
+            profile: {
+              ...currentData.profile,
+              name: updates.nickname ?? currentData.profile?.name,
+              tagline: updates.tagline ?? currentData.profile?.tagline,
+              bio: updates.bio ?? currentData.profile?.bio,
+              area: updates.area ?? currentData.profile?.area,
+              serviceCategory: updates.serviceCategory ?? currentData.profile?.serviceCategory,
+              locationType: updates.locationType ?? currentData.profile?.locationType,
+              socialLinks: updates.socialLinks ?? currentData.profile?.socialLinks,
+              age: updates.age ?? currentData.profile?.age,
+              height: updates.height ?? currentData.profile?.height,
+              bloodType: updates.bloodType ?? currentData.profile?.bloodType,
+              threeSizes: updates.threeSizes ?? currentData.profile?.threeSizes,
+              tags: updates.tags ?? currentData.profile?.tags,
+            },
+          };
+        },
+        { revalidate: false }
+      );
+    },
+    [mutate]
+  );
+
+  const updateImages = useCallback(
+    (newImages: MediaItem[]) => {
+      mutate(
+        (currentData) => {
+          if (!currentData) return { profile: { images: { hero: newImages[0], portfolio: newImages.slice(1) } } };
+          return {
+            ...currentData,
+            profile: {
+              ...currentData.profile,
+              images: {
+                hero: newImages[0] || null,
+                portfolio: newImages.slice(1),
+              },
+            },
+          };
+        },
+        { revalidate: false }
+      );
+    },
+    [mutate]
+  );
+
+  const updatePlans = useCallback(
+    (newPlans: ServicePlan[]) => {
+      mutate(
+        (currentData) => ({
+          ...currentData,
+          plans: mapPlansToApi(newPlans),
+        }),
+        { revalidate: false }
+      );
+    },
+    [mutate]
+  );
+
+  const updateSchedules = useCallback(
+    (newSchedules: WeeklySchedule[]) => {
+      mutate(
+        (currentData) => ({
+          ...currentData,
+          schedules: mapSchedulesToApi(newSchedules),
+        }),
+        { revalidate: false }
+      );
+    },
+    [mutate]
+  );
 
   // Save functions
   const saveProfile = useCallback(
     async (overrideProfile?: ProfileFormData) => {
-      const token = getToken();
-      if (!token) throw new Error("No token");
+      const currentToken = getToken();
+      if (!currentToken) throw new Error("No token");
 
       const profileToSave = overrideProfile || profile;
       const heroKey = images[0]?.key;
@@ -138,21 +183,22 @@ export function useCastData(options: UseCastDataOptions = {}) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${currentToken}`,
         },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error("Failed to save profile");
+      mutate();
       return res.json();
     },
-    [apiPath, profile, images]
+    [apiPath, profile, images, mutate]
   );
 
   const saveImages = useCallback(
     async (overrideImages?: MediaItem[]) => {
-      const token = getToken();
-      if (!token) throw new Error("No token");
+      const currentToken = getToken();
+      if (!currentToken) throw new Error("No token");
 
       const imagesToSave = overrideImages || images;
       const heroImage = imagesToSave[0];
@@ -163,7 +209,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${currentToken}`,
         },
         body: JSON.stringify({
           profileImagePath: heroImage?.key,
@@ -172,15 +218,16 @@ export function useCastData(options: UseCastDataOptions = {}) {
       });
 
       if (!res.ok) throw new Error("Failed to save images");
+      mutate();
       return res.json();
     },
-    [images]
+    [images, mutate]
   );
 
   const savePlans = useCallback(
     async (overridePlans?: ServicePlan[]) => {
-      const token = getToken();
-      if (!token) throw new Error("No token");
+      const currentToken = getToken();
+      if (!currentToken) throw new Error("No token");
 
       const plansToSave = overridePlans || plans;
       const payload = { plans: mapPlansToApi(plansToSave) };
@@ -189,7 +236,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${currentToken}`,
         },
         body: JSON.stringify(payload),
       });
@@ -198,19 +245,23 @@ export function useCastData(options: UseCastDataOptions = {}) {
 
       const responseData = await res.json();
       if (responseData.plans) {
-        const updatedPlans = mapApiToPlans(responseData.plans);
-        setPlans(updatedPlans);
-        return updatedPlans;
+        mutate(
+          (currentData) => ({
+            ...currentData,
+            plans: responseData.plans,
+          }),
+          { revalidate: false }
+        );
       }
-      return plansToSave;
+      return responseData;
     },
-    [plans]
+    [plans, mutate]
   );
 
   const saveSchedules = useCallback(
     async (overrideSchedules?: WeeklySchedule[]) => {
-      const token = getToken();
-      if (!token) throw new Error("No token");
+      const currentToken = getToken();
+      if (!currentToken) throw new Error("No token");
 
       const schedulesToSave = overrideSchedules || schedules;
       const validPlanIds = new Set(plans.map((p) => p.id).filter(Boolean));
@@ -220,27 +271,28 @@ export function useCastData(options: UseCastDataOptions = {}) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${currentToken}`,
         },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error("Failed to save schedules");
+      mutate();
       return res.json();
     },
-    [schedules, plans]
+    [schedules, plans, mutate]
   );
 
   // Image upload
   const uploadImage = useCallback(async (file: File): Promise<{ key: string; url: string }> => {
-    const token = getToken();
-    if (!token) throw new Error("No token");
+    const currentToken = getToken();
+    if (!currentToken) throw new Error("No token");
 
     const res = await fetch("/api/cast/onboarding/upload-url", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${currentToken}`,
       },
       body: JSON.stringify({ filename: file.name, contentType: file.type }),
     });
@@ -265,37 +317,27 @@ export function useCastData(options: UseCastDataOptions = {}) {
 
   // Publish
   const publishProfile = useCallback(async () => {
-    const token = getToken();
-    if (!token) throw new Error("No token");
+    const currentToken = getToken();
+    if (!currentToken) throw new Error("No token");
 
     const res = await fetch("/api/cast/onboarding/publish", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${currentToken}`,
       },
       body: JSON.stringify({ status: "online" }),
     });
 
     if (!res.ok) throw new Error("Failed to publish profile");
+    mutate();
     return res.json();
-  }, []);
+  }, [mutate]);
 
-  // Reset
-  const reset = useCallback(() => {
-    setProfile(INITIAL_PROFILE);
-    setImages([]);
-    setPlans([]);
-    setSchedules([]);
-    setInitialized(false);
-  }, []);
-
-  // Auto fetch on mount
-  useEffect(() => {
-    if (autoFetch && !initialized) {
-      fetchData();
-    }
-  }, [autoFetch, initialized, fetchData]);
+  // Refetch
+  const fetchData = useCallback(() => {
+    mutate();
+  }, [mutate]);
 
   return {
     // Data
@@ -305,24 +347,20 @@ export function useCastData(options: UseCastDataOptions = {}) {
     schedules,
 
     // Meta
-    loading,
-    initialized,
+    loading: isLoading,
+    initialized: !isLoading,
     error,
 
     // Fetch
     fetchData,
 
-    // Update
+    // Update (local cache)
     updateProfile,
     updateImages,
     updatePlans,
     updateSchedules,
-    setProfile,
-    setImages,
-    setPlans,
-    setSchedules,
 
-    // Save
+    // Save (to server)
     saveProfile,
     saveImages,
     savePlans,
@@ -330,7 +368,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
     uploadImage,
     publishProfile,
 
-    // Reset
-    reset,
+    // SWR mutate
+    mutate,
   };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
 import { Loader2, Image as ImageIcon, Tag, Eye } from "lucide-react";
 
 import { ProfileFormData, MediaItem } from "@/modules/portfolio/types";
@@ -14,57 +14,25 @@ import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader
 import { ProfilePreviewModal } from "./components/ProfilePreviewModal";
 import { SectionCard } from "./components/SectionCard";
 import { useToast } from "@/components/ui/Toast";
-import { useCastProfile, useCastImages, useCastPlans, useCastSchedules } from "@/modules/portfolio/hooks";
-import { useState } from "react";
+import { useCastData } from "@/modules/portfolio/hooks";
 
 export default function ProfileEditPage() {
   const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
 
-  // Use unified hooks
+  // Use combined hook with profile API path
   const {
     profile: profileForm,
-    loading: profileLoading,
-    initialized,
-    fetchProfile,
-    updateProfile,
-    saveProfile,
-  } = useCastProfile({ apiPath: "/api/cast/profile" });
-
-  const {
     images,
-    uploadImage,
+    plans,
+    schedules,
+    loading,
+    updateProfile,
     updateImages,
-  } = useCastImages();
-
-  const { plans, initializeFromApi: initializePlans } = useCastPlans();
-  const { schedules, initializeFromApi: initializeSchedules } = useCastSchedules();
-
-  // Fetch data on mount
-  useEffect(() => {
-    const loadData = async () => {
-      if (!initialized) {
-        const result = await fetchProfile();
-        if (result) {
-          // Initialize images from profile
-          if (result.profile?.images) {
-            const imgList: MediaItem[] = [];
-            if (result.profile.images.hero && typeof result.profile.images.hero === "object") {
-              imgList.push(result.profile.images.hero as MediaItem);
-            }
-            if (result.profile.images.portfolio) {
-              imgList.push(...result.profile.images.portfolio);
-            }
-            updateImages(imgList);
-          }
-          // Initialize plans and schedules
-          if (result.plans) initializePlans(result.plans);
-          if (result.schedules) initializeSchedules(result.schedules);
-        }
-      }
-    };
-    loadData();
-  }, [initialized, fetchProfile, updateImages, initializePlans, initializeSchedules]);
+    saveProfile,
+    saveImages,
+    uploadImage,
+  } = useCastData({ apiPath: "/api/cast/profile" });
 
   // Handlers
   const handleProfileChange = (key: keyof ProfileFormData, val: any) => {
@@ -112,16 +80,25 @@ export default function ProfileEditPage() {
 
   // Image Upload Handler
   const handleUpload = async (file: File): Promise<MediaItem | null> => {
-    const result = await uploadImage(file);
-    return result;
+    try {
+      const { key } = await uploadImage(file);
+      const url = URL.createObjectURL(file);
+      return {
+        url,
+        key,
+        type: file.type.startsWith("video") ? "video" : "image",
+      };
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
   };
 
   // Save
   const handleSave = async () => {
     try {
-      const heroKey = images[0]?.key;
-      const galleryKeys = images.slice(1).map(i => i.key || i.url).filter(Boolean);
-      await saveProfile(profileForm, heroKey, galleryKeys);
+      await saveProfile(profileForm);
+      await saveImages(images);
 
       toast({
         title: "Saved",
@@ -138,7 +115,7 @@ export default function ProfileEditPage() {
     }
   };
 
-  if (profileLoading) {
+  if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="animate-spin text-pink-500" />

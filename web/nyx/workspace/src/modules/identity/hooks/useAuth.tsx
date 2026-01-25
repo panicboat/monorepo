@@ -5,9 +5,10 @@ import {
   useContext,
   useState,
   ReactNode,
-  useEffect,
+  useCallback,
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import useSWR from "swr";
 
 export type User = {
   id: string;
@@ -36,8 +37,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [newUserFlag, setNewUserFlag] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { access: "nyx_guest_access_token", refresh: "nyx_guest_refresh_token" };
   };
 
-  const refreshToken = async (contextKeys?: { access: string; refresh: string }): Promise<boolean> => {
+  const refreshToken = useCallback(async (contextKeys?: { access: string; refresh: string }): Promise<boolean> => {
     const keys = contextKeys || getKeys();
     const rToken = localStorage.getItem(keys.refresh);
     if (!rToken) return false;
@@ -75,64 +75,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await res.json();
         // Handle snake_case vs camelCase mismatch
         const accessToken = data.accessToken || data.access_token;
-        const refreshToken = data.refreshToken || data.refresh_token;
+        const newRefreshToken = data.refreshToken || data.refresh_token;
 
         if (accessToken) localStorage.setItem(keys.access, accessToken);
-        if (refreshToken) localStorage.setItem(keys.refresh, refreshToken);
+        if (newRefreshToken) localStorage.setItem(keys.refresh, newRefreshToken);
         return true;
       }
     } catch (e) {
       console.error("Refresh failed", e);
     }
     return false;
-  };
+  }, [pathname]);
 
-  const fetchUser = async (token: string, keys: { access: string; refresh: string }, retry = true) => {
-    try {
-      const res = await fetch("/api/identity/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const role = data.role;
-        setUser({
-          id: data.id,
-          name: data.phoneNumber,
-          isGuest: role === 1 || role === "ROLE_GUEST",
-          role: role,
-        });
-      } else {
-        if (res.status === 401 && retry) {
-          const refreshed = await refreshToken(keys);
-          if (refreshed) {
-             const newToken = localStorage.getItem(keys.access);
-             if (newToken) {
-               return fetchUser(newToken, keys, false);
-             }
-          }
-        }
-        // Token invalid
-        localStorage.removeItem(keys.access);
-        localStorage.removeItem(keys.refresh);
-        setUser(null);
-      }
-    } catch (e) {
-      console.error(e);
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
+  // SWR fetcher for /api/identity/me with token refresh support
+  const authFetcher = useCallback(async (url: string) => {
     const keys = getKeys();
     const token = localStorage.getItem(keys.access);
-    if (token) {
-      fetchUser(token, keys);
-    } else {
-      setIsLoading(false);
+    if (!token) return null;
+
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (res.ok) {
+      return res.json();
     }
-  }, [pathname]); // Re-run when switching contexts
+
+    // Handle 401 with token refresh
+    if (res.status === 401) {
+      const refreshed = await refreshToken(keys);
+      if (refreshed) {
+        const newToken = localStorage.getItem(keys.access);
+        if (newToken) {
+          const retryRes = await fetch(url, {
+            headers: { Authorization: `Bearer ${newToken}` },
+          });
+          if (retryRes.ok) {
+            return retryRes.json();
+          }
+        }
+      }
+      // Token refresh failed - clear tokens
+      localStorage.removeItem(keys.access);
+      localStorage.removeItem(keys.refresh);
+    }
+
+    return null;
+  }, [pathname, refreshToken]);
+
+  // Check if we have a token for conditional fetching
+  const keys = getKeys();
+  const hasToken = typeof window !== "undefined" && localStorage.getItem(keys.access);
+
+  // Use SWR for user data fetching
+  const { data: userData, isLoading, mutate } = useSWR(
+    hasToken ? "/api/identity/me" : null,
+    authFetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 5000,
+    }
+  );
+
+  // Derive user from SWR data
+  const user: User | null = userData ? {
+    id: userData.id,
+    name: userData.phoneNumber,
+    isGuest: userData.role === 1 || userData.role === "ROLE_GUEST",
+    role: userData.role,
+    isNew: newUserFlag,
+  } : null;
 
   const requestSMS = async (phoneNumber: string) => {
     const res = await fetch("/api/identity/send-sms", {
@@ -169,30 +181,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Registration failed");
 
-    const keys = getKeys(data.userProfile.role);
+    const registerKeys = getKeys(data.userProfile.role);
     // Handle snake_case vs camelCase mismatch
     const accessToken = data.accessToken || data.access_token;
-    const refreshToken = data.refreshToken || data.refresh_token;
+    const newRefreshToken = data.refreshToken || data.refresh_token;
 
     if (accessToken) {
-        localStorage.setItem(keys.access, accessToken);
+        localStorage.setItem(registerKeys.access, accessToken);
     } else {
         console.error("Register Error: No access token found in response", data);
     }
 
-    if (refreshToken) {
-      localStorage.setItem(keys.refresh, refreshToken);
+    if (newRefreshToken) {
+      localStorage.setItem(registerKeys.refresh, newRefreshToken);
     }
     const userRole = data.userProfile.role;
     const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
 
-    setUser({
+    // Set new user flag and update SWR cache
+    setNewUserFlag(true);
+    mutate({
       id: data.userProfile.id,
-      name: data.userProfile.phoneNumber,
-      isGuest,
+      phoneNumber: data.userProfile.phoneNumber,
       role: userRole,
-      isNew: true,
-    });
+    }, { revalidate: false });
 
     if (isGuest) {
       router.push("/");
@@ -202,51 +214,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (phoneNumber: string, password: string, role?: number) => {
-    try {
-      const res = await fetch("/api/identity/sign-in", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber, password, role }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed");
+    const res = await fetch("/api/identity/sign-in", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber, password, role }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Login failed");
 
-      const keys = getKeys(data.userProfile.role);
-      // Handle snake_case vs camelCase mismatch
-      const accessToken = data.accessToken || data.access_token;
-      const refreshToken = data.refreshToken || data.refresh_token;
+    const loginKeys = getKeys(data.userProfile.role);
+    // Handle snake_case vs camelCase mismatch
+    const accessToken = data.accessToken || data.access_token;
+    const newRefreshToken = data.refreshToken || data.refresh_token;
 
-      if (accessToken) {
-        localStorage.setItem(keys.access, accessToken);
-      } else {
-        console.error("Login Error: No access token found in response", data);
-      }
+    if (accessToken) {
+      localStorage.setItem(loginKeys.access, accessToken);
+    } else {
+      console.error("Login Error: No access token found in response", data);
+    }
 
-      if (refreshToken) {
-        localStorage.setItem(keys.refresh, refreshToken);
-      }
-      const userRole = data.userProfile.role;
-      const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
-      setUser({
-        id: data.userProfile.id,
-        name: data.userProfile.phoneNumber,
-        isGuest,
-        role: userRole,
-      });
+    if (newRefreshToken) {
+      localStorage.setItem(loginKeys.refresh, newRefreshToken);
+    }
+    const userRole = data.userProfile.role;
+    const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
 
-      if (isGuest) {
-        router.push("/");
-      } else {
-        router.push("/cast/home");
-      }
-    } catch (e) {
-      throw e;
+    // Update SWR cache with user data
+    setNewUserFlag(false);
+    mutate({
+      id: data.userProfile.id,
+      phoneNumber: data.userProfile.phoneNumber,
+      role: userRole,
+    }, { revalidate: false });
+
+    if (isGuest) {
+      router.push("/");
+    } else {
+      router.push("/cast/home");
     }
   };
 
   const logout = async () => {
-    const keys = getKeys(); // Use current context keys for logout
-    const rToken = localStorage.getItem(keys.refresh);
+    const logoutKeys = getKeys(); // Use current context keys for logout
+    const rToken = localStorage.getItem(logoutKeys.refresh);
     if (rToken) {
       try {
         await fetch("/api/identity/logout", {
@@ -258,9 +268,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Ignore logout errors
       }
     }
-    localStorage.removeItem(keys.access);
-    localStorage.removeItem(keys.refresh);
-    setUser(null);
+    localStorage.removeItem(logoutKeys.access);
+    localStorage.removeItem(logoutKeys.refresh);
+
+    // Clear SWR cache
+    setNewUserFlag(false);
+    mutate(null, { revalidate: false });
 
     if (pathname?.startsWith("/cast")) {
         router.push("/cast/login");

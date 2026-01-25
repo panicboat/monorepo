@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import useSWR from "swr";
+import { useCallback } from "react";
 import { ProfileFormData } from "@/modules/portfolio/types";
 import { mapApiToProfileForm, mapProfileFormToApi } from "@/modules/portfolio/lib/cast/mappers";
+import { fetcher } from "@/lib/swr";
 
 const INITIAL_PROFILE: ProfileFormData = {
   nickname: "",
@@ -24,72 +26,67 @@ const getToken = () => {
 
 interface UseCastProfileOptions {
   apiPath?: string;
-  autoFetch?: boolean;
+}
+
+interface ProfileApiResponse {
+  profile: any;
+  plans?: any[];
+  schedules?: any[];
 }
 
 export function useCastProfile(options: UseCastProfileOptions = {}) {
-  const { apiPath = "/api/cast/profile", autoFetch = true } = options;
+  const { apiPath = "/api/cast/profile" } = options;
 
-  const [profile, setProfile] = useState<ProfileFormData>(INITIAL_PROFILE);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [initialized, setInitialized] = useState(false);
+  const token = getToken();
 
-  const fetchProfile = useCallback(async () => {
-    const token = getToken();
-    if (!token) {
-      setProfile(INITIAL_PROFILE);
-      setLoading(false);
-      setInitialized(true);
-      return { profile: null, plans: [], schedules: [] };
+  // Use SWR for data fetching with conditional fetching (only if token exists)
+  const { data, error, isLoading, isValidating, mutate } = useSWR<ProfileApiResponse>(
+    token ? apiPath : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 5000,
     }
+  );
 
-    setLoading(true);
-    setError(null);
+  // Derive profile from API response
+  const profile = data?.profile ? mapApiToProfileForm(data.profile) : INITIAL_PROFILE;
 
-    try {
-      const res = await fetch(apiPath, {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
+  const updateProfile = useCallback(
+    (updates: Partial<ProfileFormData>) => {
+      if (!data) return;
 
-      if (!res.ok) {
-        if (res.status === 404) {
-          setProfile(INITIAL_PROFILE);
-          setLoading(false);
-          setInitialized(true);
-          return { profile: null, plans: [], schedules: [] };
-        }
-        throw new Error("Failed to fetch profile");
-      }
-
-      const data = await res.json();
-      const mappedProfile = mapApiToProfileForm(data.profile);
-      setProfile(mappedProfile);
-      setInitialized(true);
-
-      return {
-        profile: data.profile,
-        plans: data.plans || [],
-        schedules: data.schedules || [],
-      };
-    } catch (e) {
-      const err = e instanceof Error ? e : new Error("Unknown error");
-      setError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [apiPath]);
-
-  const updateProfile = useCallback((updates: Partial<ProfileFormData>) => {
-    setProfile((prev) => ({ ...prev, ...updates }));
-  }, []);
+      // Optimistically update the local cache
+      mutate(
+        {
+          ...data,
+          profile: {
+            ...data.profile,
+            // Map updates back to API format for cache consistency
+            name: updates.nickname ?? data.profile.name,
+            tagline: updates.tagline ?? data.profile.tagline,
+            bio: updates.bio ?? data.profile.bio,
+            area: updates.area ?? data.profile.area,
+            serviceCategory: updates.serviceCategory ?? data.profile.serviceCategory,
+            locationType: updates.locationType ?? data.profile.locationType,
+            socialLinks: updates.socialLinks ?? data.profile.socialLinks,
+            age: updates.age ?? data.profile.age,
+            height: updates.height ?? data.profile.height,
+            bloodType: updates.bloodType ?? data.profile.bloodType,
+            threeSizes: updates.threeSizes ?? data.profile.threeSizes,
+            tags: updates.tags ?? data.profile.tags,
+          },
+        },
+        { revalidate: false }
+      );
+    },
+    [data, mutate]
+  );
 
   const saveProfile = useCallback(
     async (overrideProfile?: ProfileFormData, heroKey?: string, galleryKeys?: string[]) => {
-      const token = getToken();
-      if (!token) throw new Error("No token");
+      const currentToken = getToken();
+      if (!currentToken) throw new Error("No token");
 
       const profileToSave = overrideProfile || profile;
       const payload = mapProfileFormToApi(profileToSave, heroKey, galleryKeys);
@@ -98,7 +95,7 @@ export function useCastProfile(options: UseCastProfileOptions = {}) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${currentToken}`,
         },
         body: JSON.stringify(payload),
       });
@@ -107,25 +104,28 @@ export function useCastProfile(options: UseCastProfileOptions = {}) {
         throw new Error("Failed to save profile");
       }
 
+      // Revalidate after save
+      mutate();
+
       return res.json();
     },
-    [apiPath, profile]
+    [apiPath, profile, mutate]
   );
 
-  useEffect(() => {
-    if (autoFetch && !initialized) {
-      fetchProfile().catch(console.error);
-    }
-  }, [autoFetch, initialized, fetchProfile]);
+  const refetch = useCallback(() => {
+    mutate();
+  }, [mutate]);
 
   return {
     profile,
-    loading,
+    rawData: data,
+    loading: isLoading,
+    validating: isValidating,
     error,
-    initialized,
-    fetchProfile,
+    initialized: !isLoading && !error,
+    fetchProfile: refetch,
     updateProfile,
     saveProfile,
-    setProfile,
+    mutate,
   };
 }
