@@ -264,12 +264,12 @@ export const ProfileSpecs = ({
               )}
               {socialLinks.litlink && (
                 <a
-                  href={socialLinks.litlink}
+                  href={`https://lit.link/${socialLinks.litlink}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1 rounded-full bg-blue-500 text-white text-xs font-medium hover:bg-blue-600 transition"
                 >
-                  Litlink
+                  lit.link
                 </a>
               )}
             </div>

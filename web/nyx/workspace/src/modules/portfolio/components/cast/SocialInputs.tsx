@@ -95,7 +95,7 @@ export const SocialInputs = ({
             type="text"
             value={data.socialLinks?.litlink || ""}
             onChange={(e) => onSocialChange("litlink", e.target.value)}
-            placeholder="https://lit.link/..."
+            placeholder="username"
             className="focus-visible:ring-pink-500"
           />
         </div>
