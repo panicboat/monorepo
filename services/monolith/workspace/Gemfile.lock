@@ -473,7 +473,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  aws-sdk-s3 (~> 1.143)
+  aws-sdk-s3 (~> 1.212)
   bcrypt
   capybara
   database_cleaner-sequel
