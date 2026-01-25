@@ -1,7 +1,6 @@
 "use client";
 
 import { X } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 import { ProfileFormData, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
 import { CastDetailView } from "@/modules/portfolio/components/CastDetailView";
 
@@ -26,18 +25,20 @@ export const ProfilePreviewModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-md h-[90vh] bg-slate-50 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
-        {/* Close Button Overlay */}
-        <Button
-          onClick={onClose}
-          size="icon"
-          variant="ghost"
-          className="absolute top-4 right-4 z-50 bg-black/50 text-white rounded-full backdrop-blur-md hover:bg-black/70 hover:text-white transition-colors"
-        >
-          <X size={20} />
-        </Button>
+      {/* transform creates new containing block to constrain inner fixed modals */}
+      <div className="relative w-full max-w-md h-[90vh] bg-slate-50 rounded-2xl overflow-hidden shadow-2xl flex flex-col transform-gpu">
+        {/* Fixed Header Bar */}
+        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/60 via-black/30 to-transparent">
+          <span className="text-white/80 text-sm font-medium">Preview</span>
+          <button
+            onClick={onClose}
+            className="p-2 bg-black/50 text-white rounded-full backdrop-blur-md hover:bg-black/70 transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-        <div className="flex-1 w-full overflow-y-auto">
+        <div className="flex-1 w-full overflow-y-auto -mt-14">
           <div className="pb-20 bg-slate-50 min-h-full">
             <CastDetailView
               castId="preview"

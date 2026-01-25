@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
 
 interface PriceSystemProps {
@@ -172,68 +173,90 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
       </p>
 
       {/* Schedule Detail Modal */}
-      {selectedDay && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
-          onClick={() => setSelectedDay(null)}
-        >
-          <div
-            className="w-full max-w-md bg-white rounded-t-2xl p-6 animate-in slide-in-from-bottom duration-300"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {selectedDay && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedDay(null)}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-bold text-slate-800">
-                {selectedDay.month}/{selectedDay.date} ({selectedDay.day})
-              </h4>
-              <button
-                onClick={() => setSelectedDay(null)}
-                className="p-2 rounded-full hover:bg-slate-100 transition-colors"
-              >
-                <X size={20} className="text-slate-400" />
-              </button>
-            </div>
+            <motion.div
+              className="w-full max-w-md bg-white rounded-t-2xl pt-3 pb-6 px-6"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.5 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 100 || info.velocity.y > 500) {
+                  setSelectedDay(null);
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Drag Handle */}
+              <div className="flex justify-center mb-4 cursor-grab active:cursor-grabbing">
+                <div className="w-10 h-1 bg-slate-300 rounded-full" />
+              </div>
 
-            <div className="space-y-3">
-              {selectedDay.schedules.map((schedule, idx) => {
-                const plan = getPlanById(schedule.planId);
-                return (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-4 bg-slate-50 rounded-xl"
-                  >
-                    <div>
-                      <div className="text-lg font-bold text-slate-800">
-                        {schedule.start} - {schedule.end}
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-bold text-slate-800">
+                  {selectedDay.month}/{selectedDay.date} ({selectedDay.day})
+                </h4>
+                <button
+                  onClick={() => setSelectedDay(null)}
+                  className="p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+                >
+                  <X size={18} className="text-slate-400" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {selectedDay.schedules.map((schedule, idx) => {
+                  const plan = getPlanById(schedule.planId);
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-4 bg-slate-50 rounded-xl"
+                    >
+                      <div>
+                        <div className="text-lg font-bold text-slate-800">
+                          {schedule.start} - {schedule.end}
+                        </div>
+                        {plan && (
+                          <div className="text-sm text-slate-500 mt-1">
+                            {plan.name}
+                          </div>
+                        )}
                       </div>
                       {plan && (
-                        <div className="text-sm text-slate-500 mt-1">
-                          {plan.name}
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-pink-500">
+                            ¥{plan.price.toLocaleString()}
+                          </div>
+                          <div className="text-xs text-slate-400">
+                            {plan.duration}min
+                          </div>
                         </div>
                       )}
                     </div>
-                    {plan && (
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-pink-500">
-                          ¥{plan.price.toLocaleString()}
-                        </div>
-                        <div className="text-xs text-slate-400">
-                          {plan.duration}min
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
 
-            {selectedDay.schedules.length > 1 && (
-              <p className="text-xs text-slate-400 text-center mt-4">
-                {selectedDay.schedules.length}件の予約枠
-              </p>
-            )}
-          </div>
-        </div>
-      )}
+              {selectedDay.schedules.length > 1 && (
+                <p className="text-xs text-slate-400 text-center mt-4">
+                  {selectedDay.schedules.length}件の予約枠
+                </p>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
