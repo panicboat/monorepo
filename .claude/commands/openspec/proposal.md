@@ -1,6 +1,6 @@
 ---
-name: "OpenSpec: Proposal"
-description: "Scaffold a new OpenSpec change and validate strictly."
+name: OpenSpec: Proposal
+description: Scaffold a new OpenSpec change and validate strictly.
 category: OpenSpec
 tags: [openspec, change]
 ---
@@ -20,11 +20,6 @@ tags: [openspec, change]
 5. Draft spec deltas in `changes/<id>/specs/<capability>/spec.md` (one folder per capability) using `## ADDED|MODIFIED|REMOVED Requirements` with at least one `#### Scenario:` per requirement and cross-reference related capabilities when relevant.
 6. Draft `tasks.md` as an ordered list of small, verifiable work items that deliver user-visible progress, include validation (tests, tooling), and highlight dependencies or parallelizable work.
 7. Validate with `openspec validate <id> --strict` and resolve every issue before sharing the proposal.
-8. **User Approval**: Present the proposal summary to the user and wait for explicit approval before proceeding.
-9. **Git Setup** (after approval): Create a feature branch:
-   - Run `git checkout main && git pull origin main` to ensure you're on the latest main.
-   - Create a feature branch: `git checkout -b <change-id>`.
-   - Commit the proposal files and push: `git push -u origin <change-id>`.
 
 **Reference**
 - Use `openspec show <id> --json --deltas-only` or `openspec show <spec> --type spec` to inspect details when validation fails.
