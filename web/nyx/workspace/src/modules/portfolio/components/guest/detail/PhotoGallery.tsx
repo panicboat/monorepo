@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useState, useRef } from "react";
 import { MediaItem } from "@/modules/portfolio/types";
 import { Play, X, Volume2 } from "lucide-react";

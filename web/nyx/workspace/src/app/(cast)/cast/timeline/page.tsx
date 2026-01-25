@@ -5,7 +5,7 @@ import { TimelineFeed, FeedItem, feed } from "@/modules/discovery/components/gue
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { Send, Image as ImageIcon, Video, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 
 export default function CastTimelinePage() {
