@@ -1,3 +1,7 @@
+## 0. Backend Fix
+- [x] 0.1 Modify `save_schedules` to preserve past schedules (only delete/replace today and future)
+- [x] 0.2 Add test to verify past schedules are preserved
+
 ## 1. URL Rename
 - [ ] 1.1 Rename `/cast/schedule/` directory to `/cast/schedules/`
 - [ ] 1.2 Update navigation links if any reference the old URL

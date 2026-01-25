@@ -47,12 +47,35 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       repo.create(user_id: SecureRandom.uuid, name: "Schedule Test", image_path: "s", status: "online")
     end
 
-    it "replaces schedules" do
+    it "replaces future schedules" do
       schedules_data = [{ date: Date.today, start_time: "10:00", end_time: "11:00", plan_id: nil }]
       updated = repo.save_schedules(id: existing_cast.id, schedules: schedules_data)
 
       expect(updated.cast_schedules.size).to eq(1)
       expect(updated.cast_schedules.first.date).to eq(Date.today)
+    end
+
+    it "preserves past schedules when saving new ones" do
+      # Create a past schedule directly in the database
+      past_date = Date.today - 7
+      schedule_repo = Hanami.app.slices[:portfolio]["relations.cast_schedules"]
+      schedule_repo.changeset(:create, {
+        cast_id: existing_cast.id,
+        date: past_date,
+        start_time: "09:00",
+        end_time: "10:00",
+        plan_id: nil
+      }).commit
+
+      # Save new future schedules
+      future_schedules = [{ date: Date.today + 1, start_time: "14:00", end_time: "15:00", plan_id: nil }]
+      updated = repo.save_schedules(id: existing_cast.id, schedules: future_schedules)
+
+      # Should have both past and future schedules
+      expect(updated.cast_schedules.size).to eq(2)
+      dates = updated.cast_schedules.map(&:date)
+      expect(dates).to include(past_date)
+      expect(dates).to include(Date.today + 1)
     end
   end
 end

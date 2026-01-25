@@ -31,7 +31,9 @@ module Portfolio
 
       def save_schedules(id:, schedules:)
         transaction do
-          cast_schedules.where(cast_id: id).delete
+          # Only delete schedules for today and future dates (preserve past schedules)
+          today = Date.today.to_s
+          cast_schedules.dataset.where(cast_id: id).where { date >= today }.delete
           schedules.each do |schedule|
             cast_schedules.changeset(:create, schedule.merge(cast_id: id)).commit
           end
