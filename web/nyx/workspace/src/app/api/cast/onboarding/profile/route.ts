@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    return NextResponse.json(mapCastProfileToFrontend(response.profile!));
+    return NextResponse.json({ profile: mapCastProfileToFrontend(response.profile!) });
   } catch (error: any) {
     if (error instanceof ConnectError && error.code === 5) {
       // NotFound is expected during onboarding

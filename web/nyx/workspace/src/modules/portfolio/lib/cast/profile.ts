@@ -1,11 +1,28 @@
 import { getMediaType } from "@/lib/media";
-import { CastProfile } from "@/stub/portfolio/v1/service_pb";
+import { CastProfile, CastVisibility } from "@/stub/portfolio/v1/service_pb";
+
+/**
+ * Convert CastVisibility enum to string representation
+ */
+function visibilityToString(v: CastVisibility): string {
+  switch (v) {
+    case CastVisibility.UNREGISTERED:
+      return "CAST_VISIBILITY_UNREGISTERED";
+    case CastVisibility.UNPUBLISHED:
+      return "CAST_VISIBILITY_UNPUBLISHED";
+    case CastVisibility.PUBLISHED:
+      return "CAST_VISIBILITY_PUBLISHED";
+    default:
+      return "CAST_VISIBILITY_UNSPECIFIED";
+  }
+}
 
 /**
  * Map gRPC CastProfile to frontend-friendly format
  */
 export function mapCastProfileToFrontend(p: CastProfile) {
   return {
+    visibility: visibilityToString(p.visibility),
     name: p.name,
     tagline: p.tagline,
     bio: p.bio,
