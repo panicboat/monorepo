@@ -485,7 +485,7 @@ DEPENDENCIES
   gruf
   hanami (~> 2.3.2)
   hanami-assets (~> 2.3.0)
-  hanami-controller (~> 2.3.0)
+  hanami-controller (~> 2.3.1)
   hanami-db (~> 2.3.0)
   hanami-reloader (~> 2.3.0)
   hanami-router (~> 2.3.1)
