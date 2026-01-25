@@ -74,28 +74,28 @@ export const SocialInputs = ({
           </div>
           <div>
             <Label className="block text-xs font-bold text-slate-500 mb-1">
-              CityHeaven
+              lit.link
             </Label>
             <Input
               type="text"
-              value={data.socialLinks?.cityheaven || ""}
-              onChange={(e) => onSocialChange("cityheaven", e.target.value)}
-              placeholder="https://..."
+              value={data.socialLinks?.litlink || ""}
+              onChange={(e) => onSocialChange("litlink", e.target.value)}
+              placeholder="username"
               className="focus-visible:ring-pink-500"
             />
           </div>
         </div>
 
-        {/* LitLink */}
+        {/* CityHeaven */}
         <div>
           <Label className="block text-xs font-bold text-slate-500 mb-1">
-            lit.link
+            CityHeaven
           </Label>
           <Input
             type="text"
-            value={data.socialLinks?.litlink || ""}
-            onChange={(e) => onSocialChange("litlink", e.target.value)}
-            placeholder="username"
+            value={data.socialLinks?.cityheaven || ""}
+            onChange={(e) => onSocialChange("cityheaven", e.target.value)}
+            placeholder="https://..."
             className="focus-visible:ring-pink-500"
           />
         </div>

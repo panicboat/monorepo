@@ -252,16 +252,6 @@ export const ProfileSpecs = ({
                   TikTok
                 </a>
               )}
-              {socialLinks.cityheaven && (
-                <a
-                  href={socialLinks.cityheaven}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1 rounded-full bg-pink-500 text-white text-xs font-medium hover:bg-pink-600 transition"
-                >
-                  CityHeaven
-                </a>
-              )}
               {socialLinks.litlink && (
                 <a
                   href={`https://lit.link/${socialLinks.litlink}`}
@@ -270,6 +260,16 @@ export const ProfileSpecs = ({
                   className="px-3 py-1 rounded-full bg-blue-500 text-white text-xs font-medium hover:bg-blue-600 transition"
                 >
                   lit.link
+                </a>
+              )}
+              {socialLinks.cityheaven && (
+                <a
+                  href={socialLinks.cityheaven}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1 rounded-full bg-pink-500 text-white text-xs font-medium hover:bg-pink-600 transition"
+                >
+                  CityHeaven
                 </a>
               )}
             </div>
