@@ -1,11 +1,6 @@
 "use client";
 
-import { PhotoGallery } from "@/modules/portfolio/components/guest/detail/PhotoGallery";
-import { ProfileSpecs } from "@/modules/portfolio/components/guest/detail/ProfileSpecs";
-import {
-  PriceSystem,
-  ScheduleCalendar,
-} from "@/modules/portfolio/components/guest/detail/CostAndSchedule";
+import { CastDetailView } from "@/modules/portfolio/components/CastDetailView";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { use, useState, useEffect } from "react";
@@ -113,11 +108,14 @@ export default function CastDetailPage({
 
   return (
     <div className="bg-white pb-24">
-      <PhotoGallery castId={id} images={images} />
-      <ProfileSpecs castId={id} profileData={data.profile} />
-      <ScheduleCalendar schedules={data.schedules} />
+      <CastDetailView
+        castId={id}
+        profileData={data.profile}
+        images={images}
+        plans={data.plans}
+        schedules={data.schedules}
+      />
       {/* TODO: TrustRadar - implement backend data source */}
-      <PriceSystem plans={data.plans} />
       {/* TODO: CastPosts - implement timeline/posts backend */}
       {/* TODO: ReviewList - implement reviews backend */}
 

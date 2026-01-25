@@ -2,15 +2,16 @@
 
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { ProfileFormData, MediaItem } from "@/modules/portfolio/types";
-import { PhotoGallery } from "@/modules/portfolio/components/guest/detail/PhotoGallery";
-import { ProfileSpecs } from "@/modules/portfolio/components/guest/detail/ProfileSpecs";
+import { ProfileFormData, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
+import { CastDetailView } from "@/modules/portfolio/components/CastDetailView";
 
 interface ProfilePreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   formData: ProfileFormData;
   images: MediaItem[];
+  plans?: ServicePlan[];
+  schedules?: WeeklySchedule[];
 }
 
 export const ProfilePreviewModal = ({
@@ -18,6 +19,8 @@ export const ProfilePreviewModal = ({
   onClose,
   formData,
   images,
+  plans = [],
+  schedules = [],
 }: ProfilePreviewModalProps) => {
   if (!isOpen) return null;
 
@@ -35,16 +38,14 @@ export const ProfilePreviewModal = ({
         </Button>
 
         <div className="flex-1 w-full overflow-y-auto">
-          {/*
-              Reusing Guest Detail Components.
-              We pass the form data and images directly.
-            */}
           <div className="pb-20 bg-slate-50 min-h-full">
-            <PhotoGallery
+            <CastDetailView
               castId="preview"
+              profileData={formData}
               images={images.length > 0 ? images : undefined}
+              plans={plans}
+              schedules={schedules}
             />
-            <ProfileSpecs castId="preview" profileData={formData} />
           </div>
         </div>
       </div>

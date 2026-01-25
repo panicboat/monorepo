@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Image as ImageIcon, Tag, Eye } from "lucide-react";
 
-import { CastProfile, ProfileFormData, MediaItem } from "@/modules/portfolio/types";
+import { CastProfile, ProfileFormData, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
 import { ActionButton } from "@/components/ui/ActionButton";
 import { ProfileInputs } from "@/modules/portfolio/components/cast/ProfileInputs";
 import { StyleInputs } from "@/modules/portfolio/components/cast/StyleInputs";
@@ -42,6 +42,8 @@ export default function ProfileEditPage() {
   });
 
   const [images, setImages] = useState<MediaItem[]>([]);
+  const [plans, setPlans] = useState<ServicePlan[]>([]);
+  const [schedules, setSchedules] = useState<WeeklySchedule[]>([]);
 
   // Handlers
   const handleProfileChange = (key: keyof ProfileFormData, val: any) => {
@@ -102,7 +104,7 @@ export default function ProfileEditPage() {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (!res.ok) throw new Error("Failed to fetch profile");
-        const data: CastProfile = await res.json();
+        const { profile: data, plans: plansData, schedules: schedulesData } = await res.json();
 
         // Map API data to Form State
         setProfileForm({
@@ -119,7 +121,7 @@ export default function ProfileEditPage() {
             others: data.socialLinks?.others || [],
           },
           // New Fields
-          tags: data.tags?.map((t) => t.label) || [], // CastTag[] -> string[]
+          tags: data.tags?.map((t: { label: string }) => t.label) || [], // CastTag[] -> string[]
           age: data.age,
           height: data.height,
           bloodType: data.bloodType,
@@ -128,11 +130,15 @@ export default function ProfileEditPage() {
 
         // Images
         const imgList: MediaItem[] = [];
-        if (data.images.hero && typeof data.images.hero === "object") {
+        if (data.images?.hero && typeof data.images.hero === "object") {
              imgList.push(data.images.hero as MediaItem);
         }
-        if (data.images.portfolio) imgList.push(...data.images.portfolio);
+        if (data.images?.portfolio) imgList.push(...data.images.portfolio);
         setImages(imgList);
+
+        // Plans and Schedules
+        setPlans(plansData || []);
+        setSchedules(schedulesData || []);
       } catch (e) {
         console.error(e);
         toast({
@@ -370,6 +376,8 @@ export default function ProfileEditPage() {
         onClose={() => setShowPreview(false)}
         formData={profileForm}
         images={images}
+        plans={plans}
+        schedules={schedules}
       />
     </div>
   );

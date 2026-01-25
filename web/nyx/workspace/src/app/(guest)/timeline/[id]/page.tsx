@@ -11,7 +11,7 @@ import {
   EXTRA_POSTS,
   PostCard,
   PostItem,
-} from "@/modules/portfolio/components/guest/detail/CastPosts";
+} from "@/modules/portfolio/components/cast/detail/CastPosts";
 import {
   MediaModal,
   MediaItem,

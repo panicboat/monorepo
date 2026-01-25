@@ -152,16 +152,22 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
             const plans = apiData.plans || [];
             const schedules = apiData.schedules || [];
 
-            const profileImage: PhotoItem | null = p.imagePath
-              ? { url: `/uploads/${p.imagePath}`, key: p.imagePath, type: "image" }
-              : null;
+            // Handle profile image from hero or imagePath
+            const heroImage = p.images?.hero;
+            const profileImage: PhotoItem | null = heroImage
+              ? { id: heroImage.id, url: heroImage.url, key: heroImage.key, type: heroImage.type || "image" }
+              : p.imagePath
+                ? { url: `/uploads/${p.imagePath}`, key: p.imagePath, type: "image" }
+                : null;
 
-            const galleryImages: PhotoItem[] = (p.images || []).map(
-              (key: string, index: number) => ({
-                id: `existing-${index}`,
-                url: `/uploads/${key}`,
-                key: key,
-                type: getMediaType(key),
+            // Handle gallery images from portfolio array
+            const portfolioImages = p.images?.portfolio || [];
+            const galleryImages: PhotoItem[] = portfolioImages.map(
+              (item: { id?: string; url: string; key?: string; type?: string }, index: number) => ({
+                id: item.id || `existing-${index}`,
+                url: item.url,
+                key: item.key || "",
+                type: item.type || "image",
               })
             );
 
@@ -190,9 +196,9 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
                 bloodType: p.bloodType || undefined,
                 threeSizes: p.threeSizes
                   ? {
-                      b: p.threeSizes.bust || 0,
-                      w: p.threeSizes.waist || 0,
-                      h: p.threeSizes.hip || 0,
+                      b: p.threeSizes.b || p.threeSizes.bust || 0,
+                      w: p.threeSizes.w || p.threeSizes.waist || 0,
+                      h: p.threeSizes.h || p.threeSizes.hip || 0,
                       cup: p.threeSizes.cup || "",
                     }
                   : undefined,
