@@ -492,7 +492,7 @@ DEPENDENCIES
   hanami-rspec (~> 2.3.0)
   hanami-validations (~> 2.3.0)
   hanami-view (~> 2.3.0)
-  hanami-webconsole (~> 2.3.0)
+  hanami-webconsole (~> 2.3.1)
   jwt
   pg
   puma
