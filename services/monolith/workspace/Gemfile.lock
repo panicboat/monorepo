@@ -491,7 +491,7 @@ DEPENDENCIES
   hanami-router (~> 2.3.1)
   hanami-rspec (~> 2.3.1)
   hanami-validations (~> 2.3.0)
-  hanami-view (~> 2.3.0)
+  hanami-view (~> 2.3.1)
   hanami-webconsole (~> 2.3.1)
   jwt
   pg
