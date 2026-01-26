@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@bufbuild/protoc-gen-es": "^2.11.0",
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^24.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
