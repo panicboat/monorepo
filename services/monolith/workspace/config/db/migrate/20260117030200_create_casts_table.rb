@@ -2,7 +2,7 @@
 
 ROM::SQL.migration do
   up do
-    run 'CREATE SCHEMA IF NOT EXISTS portfolio'
+    create_schema :portfolio
 
     create_table :portfolio__casts do
       column :id, :uuid, default: Sequel.function(:gen_random_uuid), primary_key: true
