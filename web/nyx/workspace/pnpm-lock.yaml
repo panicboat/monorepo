@@ -94,7 +94,7 @@ importers:
         specifier: 16.1.4
         version: 16.1.4(@typescript-eslint/parser@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       msw:
-        specifier: ^2.12.4
+        specifier: ^2.12.7
         version: 2.12.7(@types/node@24.10.7)(typescript@5.9.3)
       prettier:
         specifier: ^3.0.0
