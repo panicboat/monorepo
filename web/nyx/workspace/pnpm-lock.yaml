@@ -100,7 +100,7 @@ importers:
         specifier: ^3.0.0
         version: 3.7.4
       tailwindcss:
-        specifier: ^4
+        specifier: ^4.1.18
         version: 4.1.18
       typescript:
         specifier: ^5
