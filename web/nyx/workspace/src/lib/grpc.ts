@@ -2,6 +2,7 @@ import { createClient } from "@connectrpc/connect";
 import { createGrpcTransport } from "@connectrpc/connect-node";
 import { IdentityService } from "@/stub/identity/v1/service_pb";
 import { CastService } from "@/stub/portfolio/v1/service_pb";
+import { TimelineService } from "@/stub/social/v1/service_pb";
 
 // In server environment (Next.js API Routes), we connect to Monolith directly.
 
@@ -15,3 +16,4 @@ const transport = createGrpcTransport({
 
 export const identityClient = createClient(IdentityService, transport);
 export const castClient = createClient(CastService, transport);
+export const socialClient = createClient(TimelineService, transport);

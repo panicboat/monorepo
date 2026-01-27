@@ -1,10 +1,22 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { feed, FeedItem } from "@/modules/discovery/components/guest/TimelineFeed";
 import { Button } from "@/components/ui/Button";
 import { ChevronLeft, Heart, MessageCircle, Trash2, Calendar } from "lucide-react";
+import { useCastPosts } from "@/modules/social/hooks/useCastPosts";
+import { CastPost } from "@/modules/social/types";
+
+function formatTimeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
 
 export default function PostDetailPage({
   params,
@@ -13,9 +25,37 @@ export default function PostDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { posts, loading, fetchPosts, deletePost } = useCastPosts();
+  const [post, setPost] = useState<CastPost | null>(null);
 
-  // Mock fetch logic
-  const post = feed.find((p) => p.id === id);
+  useEffect(() => {
+    fetchPosts().catch(() => {});
+  }, [fetchPosts]);
+
+  useEffect(() => {
+    const found = posts.find((p) => p.id === id);
+    if (found) setPost(found);
+  }, [posts, id]);
+
+  const handleDelete = async () => {
+    if (!post) return;
+    if (confirm("Are you sure you want to delete this post?")) {
+      try {
+        await deletePost(post.id);
+        router.back();
+      } catch (e) {
+        console.error("Failed to delete post:", e);
+      }
+    }
+  };
+
+  if (loading && !post) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+        <p className="text-slate-400 text-sm">Loading...</p>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -26,26 +66,37 @@ export default function PostDetailPage({
     );
   }
 
+  const firstMedia = post.media[0];
+
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
       {/* Post Content */}
       <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
         <div className="p-4 flex items-center justify-between border-b border-slate-50">
           <div className="flex items-center gap-3">
-            <img
-              src={post.castImage}
-              alt={post.castName}
-              className="h-10 w-10 rounded-full border border-slate-100"
-            />
+            {post.author?.imageUrl ? (
+              <img
+                src={post.author.imageUrl}
+                alt={post.author.name}
+                className="h-10 w-10 rounded-full border border-slate-100"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-full border border-slate-100 bg-slate-200" />
+            )}
             <div>
-              <div className="font-bold text-slate-800">{post.castName}</div>
+              <div className="font-bold text-slate-800">{post.author?.name || ""}</div>
               <div className="flex items-center gap-1 text-xs text-slate-400">
                 <Calendar size={12} />
-                {post.time}
+                {formatTimeAgo(post.createdAt)}
               </div>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="text-slate-300 hover:text-red-500">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-slate-300 hover:text-red-500"
+            onClick={handleDelete}
+          >
             <Trash2 size={18} />
           </Button>
         </div>
@@ -55,11 +106,11 @@ export default function PostDetailPage({
             {post.content}
           </p>
 
-          {post.mediaUrl && (
+          {firstMedia && (
             <div className="rounded-xl overflow-hidden bg-black/5">
-              {post.mediaType === 'video' ? (
+              {firstMedia.mediaType === "video" ? (
                 <video
-                  src={post.mediaUrl}
+                  src={firstMedia.url}
                   className="w-full h-auto max-h-[600px]"
                   controls
                   playsInline
@@ -67,56 +118,33 @@ export default function PostDetailPage({
                 />
               ) : (
                 <img
-                  src={post.mediaUrl}
+                  src={firstMedia.url}
                   alt="Post media"
                   className="w-full h-auto"
                 />
               )}
             </div>
           )}
-
-          {!post.mediaUrl && post.image && ( // Fallback
-            (<div className="rounded-xl overflow-hidden">
-              <img
-                src={post.image}
-                alt="Post media"
-                className="w-full h-auto"
-              />
-            </div>)
-          )}
         </div>
 
         <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-6">
           <div className="flex items-center gap-2 text-slate-500">
             <Heart size={20} />
-            <span className="font-bold">{post.likes}</span>
+            <span className="font-bold">{post.likesCount}</span>
             <span className="text-xs font-normal">Likes</span>
           </div>
           <div className="flex items-center gap-2 text-slate-500">
             <MessageCircle size={20} />
-            <span className="font-bold">{post.comments}</span>
+            <span className="font-bold">{post.commentsCount}</span>
             <span className="text-xs font-normal">Comments</span>
           </div>
         </div>
       </div>
-      {/* Mock Comments Section */}
+
+      {/* Comments Section */}
       <div className="space-y-4">
         <h3 className="font-serif font-bold text-slate-800">Comments</h3>
-        {post.comments === 0 ? (
-          <p className="text-slate-400 text-sm">No comments yet.</p>
-        ) : (
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex gap-3 p-3 bg-white rounded-xl border border-slate-100">
-                <div className="w-8 h-8 rounded-full bg-slate-200" />
-                <div>
-                  <p className="text-xs font-bold text-slate-600">Guest User {i + 1}</p>
-                  <p className="text-sm text-slate-700">This is a mock comment for demonstration.</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <p className="text-slate-400 text-sm">No comments yet.</p>
       </div>
     </div>
   );

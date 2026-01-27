@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Heart, MessageCircle, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Trash2, Eye, EyeOff } from "lucide-react";
 import { useSocial } from "@/modules/social/hooks/useSocial";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
@@ -18,6 +18,7 @@ export type FeedItem = {
   image?: string; // Legacy support
   likes: number;
   comments: number;
+  visible?: boolean;
 };
 
 // Mock "Tweet-like" activities
@@ -84,6 +85,7 @@ type TimelineFeedProps = {
   items?: FeedItem[];
   mode?: "guest" | "cast";
   onDelete?: (id: string) => void;
+  onToggleVisibility?: (id: string, visible: boolean) => void;
   onItemClick?: (id: string) => void;
 };
 
@@ -91,6 +93,7 @@ export const TimelineFeed = ({
   items,
   mode = "guest",
   onDelete,
+  onToggleVisibility,
   onItemClick,
 }: TimelineFeedProps) => {
   const [filter, setFilter] = useState<"all" | "following" | "favorites">(
@@ -145,6 +148,7 @@ export const TimelineFeed = ({
               item={item}
               mode={mode}
               onDelete={onDelete}
+              onToggleVisibility={onToggleVisibility}
               onClick={() => onItemClick?.(item.id)}
             />
           ))
@@ -168,11 +172,13 @@ export const TimelineItem = ({
   item,
   mode = "guest",
   onDelete,
+  onToggleVisibility,
   onClick,
 }: {
   item: FeedItem;
   mode?: "guest" | "cast";
   onDelete?: (id: string) => void;
+  onToggleVisibility?: (id: string, visible: boolean) => void;
   onClick?: () => void;
 }) => {
   const [liked, setLiked] = useState(false);
@@ -194,7 +200,7 @@ export const TimelineItem = ({
       animate={{ opacity: 1, y: 0 }}
       layout
       onClick={onClick}
-      className={`rounded-2xl border border-slate-100 bg-white p-4 shadow-sm relative group ${onClick ? "cursor-pointer hover:border-pink-200 transition-colors" : ""}`}
+      className={`rounded-2xl border border-slate-100 bg-white p-4 shadow-sm relative group ${onClick ? "cursor-pointer hover:border-pink-200 transition-colors" : ""} ${item.visible === false ? "opacity-40" : ""}`}
     >
       <div className="mb-3 flex items-center gap-3">
         <img
@@ -206,18 +212,35 @@ export const TimelineItem = ({
           <div className="font-bold text-slate-800">{item.castName}</div>
           <div className="text-xs text-slate-400">{item.time}</div>
         </div>
-        {mode === "cast" && onDelete && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(item.id);
-            }}
-            className="absolute top-2 right-2 text-slate-300 hover:text-red-500 hover:bg-red-50"
-          >
-            <Trash2 size={16} />
-          </Button>
+        {mode === "cast" && (
+          <div className="absolute top-2 right-2 flex gap-1">
+            {onToggleVisibility && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleVisibility(item.id, item.visible === false);
+                }}
+                className={`text-slate-300 ${item.visible === false ? "hover:text-emerald-500 hover:bg-emerald-50" : "hover:text-slate-500 hover:bg-slate-50"}`}
+              >
+                {item.visible === false ? <EyeOff size={16} /> : <Eye size={16} />}
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(item.id);
+                }}
+                className="text-slate-300 hover:text-red-500 hover:bg-red-50"
+              >
+                <Trash2 size={16} />
+              </Button>
+            )}
+          </div>
         )}
       </div>
       <p className="mb-3 text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">

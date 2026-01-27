@@ -30,6 +30,13 @@ CREATE SCHEMA identity;
 CREATE SCHEMA portfolio;
 
 
+--
+-- Name: social; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA social;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -153,6 +160,35 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: cast_post_media; Type: TABLE; Schema: social; Owner: -
+--
+
+CREATE TABLE social.cast_post_media (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    post_id uuid NOT NULL,
+    media_type character varying(10) NOT NULL,
+    url text NOT NULL,
+    thumbnail_url text,
+    "position" integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: cast_posts; Type: TABLE; Schema: social; Owner: -
+--
+
+CREATE TABLE social.cast_posts (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    cast_id uuid NOT NULL,
+    content text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    visible boolean DEFAULT true NOT NULL
+);
+
+
+--
 -- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: identity; Owner: -
 --
 
@@ -206,6 +242,22 @@ ALTER TABLE ONLY portfolio.casts
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (filename);
+
+
+--
+-- Name: cast_post_media cast_post_media_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.cast_post_media
+    ADD CONSTRAINT cast_post_media_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cast_posts cast_posts_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.cast_posts
+    ADD CONSTRAINT cast_posts_pkey PRIMARY KEY (id);
 
 
 --
@@ -265,6 +317,27 @@ CREATE UNIQUE INDEX portfolio_casts_user_id_index ON portfolio.casts USING btree
 
 
 --
+-- Name: idx_cast_posts_created_at_desc; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX idx_cast_posts_created_at_desc ON social.cast_posts USING btree (created_at DESC);
+
+
+--
+-- Name: social_cast_post_media_post_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_cast_post_media_post_id_index ON social.cast_post_media USING btree (post_id);
+
+
+--
+-- Name: social_cast_posts_cast_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_cast_posts_cast_id_index ON social.cast_posts USING btree (cast_id);
+
+
+--
 -- Name: refresh_tokens refresh_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: identity; Owner: -
 --
 
@@ -297,6 +370,14 @@ ALTER TABLE ONLY portfolio.cast_schedules
 
 
 --
+-- Name: cast_post_media cast_post_media_post_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.cast_post_media
+    ADD CONSTRAINT cast_post_media_post_id_fkey FOREIGN KEY (post_id) REFERENCES social.cast_posts(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -312,4 +393,6 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260118130000_add_image_path_to_casts.rb'),
 ('20260120100000_rename_status_to_visibility.rb'),
 ('20260122000000_rename_shift_to_schedule.rb'),
-('20260125000000_add_three_sizes_to_casts.rb');
+('20260125000000_add_three_sizes_to_casts.rb'),
+('20260126000000_create_cast_posts.rb'),
+('20260127000000_add_visible_to_cast_posts.rb');

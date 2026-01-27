@@ -1,8 +1,7 @@
-# timeline Specification
+<!-- Domain: Social -->
+<!-- Backend: slices/social, Frontend: modules/social, Proto: social/v1 -->
 
-## Purpose
-TBD - created by archiving change feat-add-engagement. Update Purpose after archive.
-## Requirements
+## MODIFIED Requirements
 ### Requirement: Cast Timeline Management
 キャストは自身のタイムライン投稿を管理できなければならない (MUST be able to manage their timeline posts)。データはバックエンドに永続化される。この機能は **Social ドメイン** に属する。
 
@@ -36,15 +35,7 @@ TBD - created by archiving change feat-add-engagement. Update Purpose after arch
 - **THEN** その投稿がバックエンドから削除される
 - **AND** 投稿一覧から消える
 
-### Requirement: Video Post Support
-キャストは動画を投稿できなければならない (MUST be able to post videos).
-#### Scenario: 動画を投稿する
-- **Given** 私はタイムライン管理画面にいる
-- **When** 動画ファイルを選択して投稿する
-- **Then** タイムライン一覧ではGIFまたは自動再生（ミュート）でプレビュー表示される
-- **When** その投稿の詳細ページ（個別ページ）に遷移する
-- **Then** 動画プレイヤーが表示され、再生コントロールが使用できる
-
+## ADDED Requirements
 ### Requirement: Timeline Post Data Model
 タイムライン投稿は以下のデータを持たなければならない (MUST have the following data)。
 
@@ -101,4 +92,3 @@ TBD - created by archiving change feat-add-engagement. Update Purpose after arch
 - **AND** 自分が作成した投稿がある
 - **WHEN** DELETE `/api/cast/timeline?id={postId}` を呼び出す
 - **THEN** 投稿が削除される
-
