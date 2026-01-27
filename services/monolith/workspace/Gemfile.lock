@@ -81,7 +81,7 @@ GEM
       concurrent-ruby (~> 1.0)
       dry-core (~> 1.1)
     dry-files (1.1.0)
-    dry-inflector (1.3.0)
+    dry-inflector (1.3.1)
     dry-initializer (3.2.0)
     dry-logger (1.2.1)
       logger
@@ -245,11 +245,11 @@ GEM
       zeitwerk (~> 2.6)
     hanami-assets (2.3.0)
       zeitwerk (~> 2.6)
-    hanami-cli (2.3.3)
+    hanami-cli (2.3.4)
       bundler (>= 2.1)
       dry-cli (~> 1.0, >= 1.1.0)
-      dry-files (~> 1.0, >= 1.0.2, < 2)
-      dry-inflector (~> 1.0, < 2)
+      dry-files (~> 1.0, >= 1.0.2)
+      dry-inflector (~> 1.0)
       irb
       rackup
       rake (~> 13.0)
@@ -274,7 +274,7 @@ GEM
       mustermann (~> 3.0)
       mustermann-contrib (~> 3.0)
       rack (>= 2.2.16)
-    hanami-rspec (2.3.0)
+    hanami-rspec (2.3.1)
       hanami-cli (~> 2.3.0)
       rake (~> 13.0)
       rspec (~> 3.12)
@@ -473,26 +473,26 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  aws-sdk-s3 (~> 1.143)
+  aws-sdk-s3 (~> 1.212)
   bcrypt
   capybara
   database_cleaner-sequel
   dotenv
   dry-operation (>= 1.0.1)
-  dry-types (~> 1.7)
+  dry-types (~> 1.9)
   grpc
   grpc-tools
   gruf
-  hanami (~> 2.3.0)
+  hanami (~> 2.3.2)
   hanami-assets (~> 2.3.0)
-  hanami-controller (~> 2.3.0)
+  hanami-controller (~> 2.3.1)
   hanami-db (~> 2.3.0)
   hanami-reloader (~> 2.3.0)
-  hanami-router (~> 2.3.0)
-  hanami-rspec (~> 2.3.0)
+  hanami-router (~> 2.3.1)
+  hanami-rspec (~> 2.3.1)
   hanami-validations (~> 2.3.0)
-  hanami-view (~> 2.3.0)
-  hanami-webconsole (~> 2.3.0)
+  hanami-view (~> 2.3.1)
+  hanami-webconsole (~> 2.3.1)
   jwt
   pg
   puma

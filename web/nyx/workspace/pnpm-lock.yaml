@@ -76,13 +76,13 @@ importers:
         specifier: ^2.11.0
         version: 2.11.0(@bufbuild/protobuf@2.11.0)
       '@tailwindcss/postcss':
-        specifier: ^4
+        specifier: ^4.1.18
         version: 4.1.18
       '@types/node':
         specifier: ^24.0.0
         version: 24.10.7
       '@types/react':
-        specifier: ^19
+        specifier: ^19.2.9
         version: 19.2.9
       '@types/react-dom':
         specifier: ^19

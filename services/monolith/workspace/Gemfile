@@ -2,23 +2,23 @@
 
 source "https://rubygems.org"
 
-gem "hanami", "~> 2.3.0"
+gem "hanami", "~> 2.3.2"
 gem "hanami-assets", "~> 2.3.0"
-gem "hanami-controller", "~> 2.3.0"
+gem "hanami-controller", "~> 2.3.1"
 gem "hanami-db", "~> 2.3.0"
-gem "hanami-router", "~> 2.3.0"
+gem "hanami-router", "~> 2.3.1"
 gem "hanami-validations", "~> 2.3.0"
-gem "hanami-view", "~> 2.3.0"
+gem "hanami-view", "~> 2.3.1"
 
 gem "grpc"
 gem "gruf"
-gem "aws-sdk-s3", "~> 1.143"
+gem "aws-sdk-s3", "~> 1.212"
 
 gem "jwt"
 gem "bcrypt"
 gem "pg"
 
-gem "dry-types", "~> 1.7"
+gem "dry-types", "~> 1.9"
 gem "dry-operation", ">= 1.0.1"
 gem "puma"
 gem "rake"
@@ -26,7 +26,7 @@ gem "sqlite3"
 gem "dotenv"
 
 group :development do
-  gem "hanami-webconsole", "~> 2.3.0"
+  gem "hanami-webconsole", "~> 2.3.1"
   gem "grpc-tools"
 end
 
@@ -38,7 +38,7 @@ group :cli, :development do
 end
 
 group :cli, :development, :test do
-  gem "hanami-rspec", "~> 2.3.0"
+  gem "hanami-rspec", "~> 2.3.1"
 end
 
 group :test do
