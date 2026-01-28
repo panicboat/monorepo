@@ -1,6 +1,5 @@
-"use client";
+import { redirect } from "next/navigation";
 
-// Blank page as requested
 export default function CastRootPage() {
-  return <div className="min-h-screen bg-white" />;
+  redirect("/cast/home");
 }
