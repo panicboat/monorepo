@@ -9,6 +9,9 @@ module Portfolio
         def self.to_proto(cast)
           return nil unless cast
 
+          avatar_key = cast.respond_to?(:avatar_path) ? cast.avatar_path : nil
+          avatar_key = nil if avatar_key.to_s.empty?
+
           ::Portfolio::V1::CastProfile.new(
             user_id: cast.user_id.to_s,
             name: cast.name,
@@ -21,6 +24,8 @@ module Portfolio
             default_schedule_end: cast.default_schedule_end,
             image_url: Storage.download_url(key: cast.image_path),
             image_path: cast.image_path,
+            avatar_path: avatar_key || "",
+            avatar_url: Storage.download_url(key: avatar_key || cast.image_path),
             visibility: visibility_to_enum(cast.visibility),
             promise_rate: cast.promise_rate,
             images: (cast.images || []).to_a,

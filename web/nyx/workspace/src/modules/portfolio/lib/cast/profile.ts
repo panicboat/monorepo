@@ -33,6 +33,8 @@ export function mapCastProfileToFrontend(p: CastProfile) {
     defaultScheduleEnd: p.defaultScheduleEnd || "23:00",
     imageUrl: p.imageUrl,
     imagePath: p.imagePath,
+    avatarPath: p.avatarPath || "",
+    avatarUrl: p.avatarUrl || p.imageUrl,
     images: {
       hero: p.imagePath
         ? {

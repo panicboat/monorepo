@@ -10,11 +10,16 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
 
+    const request: Record<string, any> = {
+      profileImagePath: body.profileImagePath,
+      galleryImages: body.galleryImages,
+    };
+    if (body.avatarPath !== undefined) {
+      request.avatarPath = body.avatarPath;
+    }
+
     const response = await castClient.saveCastImages(
-      {
-        profileImagePath: body.profileImagePath,
-        galleryImages: body.galleryImages,
-      },
+      request,
       { headers: buildGrpcHeaders(req.headers) }
     );
 

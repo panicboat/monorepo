@@ -61,7 +61,7 @@ const getLocationTypeLabel = (type?: string) => {
     case "dispatch":
       return "派遣";
     case "hotel":
-      return "ホテル";
+      return "Ask";
     default:
       return null;
   }
@@ -71,9 +71,9 @@ const getLocationTypeLabel = (type?: string) => {
 const getServiceCategoryLabel = (category?: string) => {
   switch (category) {
     case "advanced":
-      return "Advanced";
+      return "Store";
     case "standard":
-      return "Standard";
+      return "Ask";
     case "social":
       return "Social";
     default:

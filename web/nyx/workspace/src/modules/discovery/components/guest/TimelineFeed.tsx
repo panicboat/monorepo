@@ -1,10 +1,16 @@
 "use client";
 
-import { motion } from "motion/react";
-import { Heart, MessageCircle, Trash2, Eye, EyeOff } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { Heart, MessageCircle, Trash2, Lock, LockOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSocial } from "@/modules/social/hooks/useSocial";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+
+export type FeedMediaItem = {
+  mediaType: "image" | "video";
+  url: string;
+};
 
 export type FeedItem = {
   id: string;
@@ -13,6 +19,7 @@ export type FeedItem = {
   castImage: string;
   content: string;
   time: string;
+  media?: FeedMediaItem[];
   mediaUrl?: string;
   mediaType?: "image" | "video";
   image?: string; // Legacy support
@@ -168,6 +175,91 @@ export const TimelineFeed = ({
   );
 };
 
+function MediaCarousel({ media, onClick }: { media: FeedMediaItem[]; onClick?: (e: React.MouseEvent) => void }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const goTo = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    setCurrentIndex(index);
+  };
+
+  const goPrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((i) => (i > 0 ? i - 1 : media.length - 1));
+  };
+
+  const goNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((i) => (i < media.length - 1 ? i + 1 : 0));
+  };
+
+  const current = media[currentIndex];
+
+  return (
+    <div className="mb-3 overflow-hidden rounded-xl bg-black/5 relative" onClick={onClick}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentIndex}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {current.mediaType === "video" ? (
+            <>
+              <video
+                src={current.url}
+                className="h-full w-full object-cover max-h-[400px]"
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
+              <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm">
+                GIF Preview
+              </div>
+            </>
+          ) : (
+            <img
+              src={current.url}
+              alt="Post"
+              className="h-full w-full object-cover max-h-[400px]"
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      {media.length > 1 && (
+        <>
+          <button
+            onClick={goPrev}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm transition-colors"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            onClick={goNext}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm transition-colors"
+          >
+            <ChevronRight size={16} />
+          </button>
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {media.map((_, i) => (
+              <button
+                key={i}
+                onClick={(e) => goTo(e, i)}
+                className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                  i === currentIndex ? "bg-white" : "bg-white/50"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export const TimelineItem = ({
   item,
   mode = "guest",
@@ -194,37 +286,58 @@ export const TimelineItem = ({
     setLiked(!liked);
   };
 
+  const isHidden = item.visible === false;
+
+  // Resolve media: prefer new `media` array, fall back to legacy single fields
+  const resolvedMedia: FeedMediaItem[] = item.media && item.media.length > 0
+    ? item.media
+    : item.mediaUrl
+      ? [{ mediaType: item.mediaType || "image", url: item.mediaUrl }]
+      : [];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       layout
       onClick={onClick}
-      className={`rounded-2xl border border-slate-100 bg-white p-4 shadow-sm relative group ${onClick ? "cursor-pointer hover:border-pink-200 transition-colors" : ""} ${item.visible === false ? "opacity-40" : ""}`}
+      className={`rounded-2xl border p-4 shadow-sm relative group ${
+        isHidden
+          ? "border-dashed border-slate-300 bg-slate-50/80 opacity-60"
+          : "border-slate-100 bg-white"
+      } ${onClick ? "cursor-pointer hover:border-pink-200 transition-colors" : ""}`}
     >
       <div className="mb-3 flex items-center gap-3">
-        <img
-          src={item.castImage}
-          alt={item.castName}
-          className="h-10 w-10 rounded-full border border-slate-100"
-        />
-        <div>
-          <div className="font-bold text-slate-800">{item.castName}</div>
-          <div className="text-xs text-slate-400">{item.time}</div>
+        {item.castImage ? (
+          <img
+            src={item.castImage}
+            alt={item.castName}
+            className="h-10 w-10 rounded-full border border-slate-100 object-cover"
+          />
+        ) : (
+          <div className="h-10 w-10 rounded-full border border-slate-100 bg-slate-200 shrink-0" />
+        )}
+        <div className="flex items-center gap-2">
+          <div>
+            <div className="font-bold text-slate-800">{item.castName}</div>
+            <div className="text-xs text-slate-400">{item.time}</div>
+          </div>
         </div>
         {mode === "cast" && (
           <div className="absolute top-2 right-2 flex gap-1">
             {onToggleVisibility && (
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onToggleVisibility(item.id, item.visible === false);
+                  onToggleVisibility(item.id, isHidden);
                 }}
-                className={`text-slate-300 ${item.visible === false ? "hover:text-emerald-500 hover:bg-emerald-50" : "hover:text-slate-500 hover:bg-slate-50"}`}
+                title={isHidden ? "Make this post public" : "Hide this post from guests"}
+                className={`gap-1 text-xs ${isHidden ? "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50" : "text-slate-300 hover:text-slate-500 hover:bg-slate-50"}`}
               >
-                {item.visible === false ? <EyeOff size={16} /> : <Eye size={16} />}
+                {isHidden ? <Lock size={14} /> : <LockOpen size={14} />}
+                <span>{isHidden ? "Private" : "Public"}</span>
               </Button>
             )}
             {onDelete && (
@@ -235,6 +348,7 @@ export const TimelineItem = ({
                   e.stopPropagation();
                   onDelete(item.id);
                 }}
+                title="Delete this post"
                 className="text-slate-300 hover:text-red-500 hover:bg-red-50"
               >
                 <Trash2 size={16} />
@@ -246,40 +360,17 @@ export const TimelineItem = ({
       <p className="mb-3 text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">
         {item.content}
       </p>
-      {item.mediaUrl && (
-        <div className="mb-3 overflow-hidden rounded-xl bg-black/5 relative">
-          {item.mediaType === 'video' ? (
-            <>
-              <video
-                src={item.mediaUrl}
-                className="h-full w-full object-cover max-h-[400px]"
-                autoPlay
-                muted
-                loop
-                playsInline
-              />
-              <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm">
-                GIF Preview
-              </div>
-            </>
-          ) : (
-            <img
-              src={item.mediaUrl}
-              alt="Post"
-              className="h-full w-full object-cover"
-            />
-          )}
-        </div>
+      {resolvedMedia.length > 0 && (
+        <MediaCarousel media={resolvedMedia} />
       )}
-      {!item.mediaUrl && item.image && (
-        // Fallback for legacy data if any
-        (<div className="mb-3 overflow-hidden rounded-xl">
+      {resolvedMedia.length === 0 && item.image && (
+        <div className="mb-3 overflow-hidden rounded-xl">
           <img
             src={item.image}
             alt="Post"
             className="h-full w-full object-cover"
           />
-        </div>)
+        </div>
       )}
       <div className="flex items-center gap-6 border-t border-slate-50 pt-3 text-slate-400">
         <button

@@ -172,6 +172,20 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
     [apiPath]
   );
 
+  const removePostLocally = useCallback((postId: string) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  }, []);
+
+  const restorePostLocally = useCallback((post: CastPost) => {
+    setPosts((prev) => {
+      if (prev.some((p) => p.id === post.id)) return prev;
+      const restored = [...prev, post].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      return restored;
+    });
+  }, []);
+
   return {
     posts,
     loading,
@@ -182,5 +196,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
     savePost,
     toggleVisibility,
     deletePost,
+    removePostLocally,
+    restorePostLocally,
   };
 }

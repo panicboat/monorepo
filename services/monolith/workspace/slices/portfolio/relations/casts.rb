@@ -22,6 +22,7 @@ module Portfolio
         attribute :blood_type, Types::String
         attribute :three_sizes, Types::Hash
         attribute :tags, Types::Any
+        attribute :avatar_path, Types::String
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 

@@ -1,11 +1,12 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ChevronLeft, Heart, MessageCircle, Trash2, Calendar } from "lucide-react";
 import { useCastPosts } from "@/modules/social/hooks/useCastPosts";
 import { CastPost } from "@/modules/social/types";
+import { useToast } from "@/components/ui/Toast";
 
 function formatTimeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -25,8 +26,10 @@ export default function PostDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { posts, loading, fetchPosts, deletePost } = useCastPosts();
+  const { toast } = useToast();
+  const { posts, loading, fetchPosts, deletePost, removePostLocally, restorePostLocally } = useCastPosts();
   const [post, setPost] = useState<CastPost | null>(null);
+  const pendingDelete = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetchPosts().catch(() => {});
@@ -37,16 +40,43 @@ export default function PostDetailPage({
     if (found) setPost(found);
   }, [posts, id]);
 
-  const handleDelete = async () => {
+  useEffect(() => {
+    return () => {
+      if (pendingDelete.current) clearTimeout(pendingDelete.current);
+    };
+  }, []);
+
+  const handleDelete = () => {
     if (!post) return;
-    if (confirm("Are you sure you want to delete this post?")) {
+    const postToDelete = { ...post };
+
+    removePostLocally(post.id);
+    router.back();
+
+    const timer = setTimeout(async () => {
+      pendingDelete.current = null;
       try {
-        await deletePost(post.id);
-        router.back();
+        await deletePost(postToDelete.id);
       } catch (e) {
         console.error("Failed to delete post:", e);
+        restorePostLocally(postToDelete);
       }
-    }
+    }, 5000);
+
+    pendingDelete.current = timer;
+
+    toast({
+      title: "Post deleted",
+      duration: 5000,
+      action: {
+        label: "Undo",
+        onClick: () => {
+          clearTimeout(timer);
+          pendingDelete.current = null;
+          restorePostLocally(postToDelete);
+        },
+      },
+    });
   };
 
   if (loading && !post) {
@@ -65,8 +95,6 @@ export default function PostDetailPage({
       </div>
     );
   }
-
-  const firstMedia = post.media[0];
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
@@ -106,23 +134,27 @@ export default function PostDetailPage({
             {post.content}
           </p>
 
-          {firstMedia && (
-            <div className="rounded-xl overflow-hidden bg-black/5">
-              {firstMedia.mediaType === "video" ? (
-                <video
-                  src={firstMedia.url}
-                  className="w-full h-auto max-h-[600px]"
-                  controls
-                  playsInline
-                  autoPlay
-                />
-              ) : (
-                <img
-                  src={firstMedia.url}
-                  alt="Post media"
-                  className="w-full h-auto"
-                />
-              )}
+          {post.media.length > 0 && (
+            <div className="space-y-3">
+              {post.media.map((m, i) => (
+                <div key={i} className="rounded-xl overflow-hidden bg-black/5">
+                  {m.mediaType === "video" ? (
+                    <video
+                      src={m.url}
+                      className="w-full h-auto max-h-[600px]"
+                      controls
+                      playsInline
+                      autoPlay={i === 0}
+                    />
+                  ) : (
+                    <img
+                      src={m.url}
+                      alt={`Post media ${i + 1}`}
+                      className="w-full h-auto"
+                    />
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>

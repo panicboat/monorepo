@@ -35,17 +35,20 @@ module Portfolio
           today = Date.today.to_s
           cast_schedules.dataset.where(cast_id: id).where { date >= today }.delete
           schedules.each do |schedule|
+            next if schedule[:date].to_s < today
             cast_schedules.changeset(:create, schedule.merge(cast_id: id)).commit
           end
           find_with_plans(id)
         end
       end
 
-      def save_images(id:, image_path:, images:)
-        casts.dataset.where(id: id).update(
+      def save_images(id:, image_path:, images:, avatar_path: nil)
+        updates = {
           image_path: image_path,
           images: Sequel.pg_jsonb(images || [])
-        )
+        }
+        updates[:avatar_path] = avatar_path unless avatar_path.nil?
+        casts.dataset.where(id: id).update(updates)
       end
 
       def save_visibility(id, visibility)

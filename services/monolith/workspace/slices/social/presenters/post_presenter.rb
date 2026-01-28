@@ -37,10 +37,14 @@ module Social
       def self.author_to_proto(cast)
         return nil unless cast
 
+        avatar_key = cast.respond_to?(:avatar_path) ? cast.avatar_path : nil
+        avatar_key = nil if avatar_key.to_s.empty?
+        image_key = avatar_key || cast.image_path
+
         ::Social::V1::CastPostAuthor.new(
           id: cast.user_id.to_s,
           name: cast.name || "",
-          image_url: cast.image_path ? Storage.download_url(key: cast.image_path) : ""
+          image_url: image_key ? Storage.download_url(key: image_key) : ""
         )
       end
     end

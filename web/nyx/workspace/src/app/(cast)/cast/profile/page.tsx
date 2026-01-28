@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Loader2, Image as ImageIcon, Tag, Eye } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Loader2, Image as ImageIcon, Tag, Eye, Camera } from "lucide-react";
 
 import { ProfileFormData, MediaItem } from "@/modules/portfolio/types";
 import { ActionButton } from "@/components/ui/ActionButton";
@@ -19,11 +19,16 @@ import { useCastData } from "@/modules/portfolio/hooks";
 export default function ProfileEditPage() {
   const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const [avatarKey, setAvatarKey] = useState<string>("");
 
   // Use combined hook with profile API path
   const {
     profile: profileForm,
     images,
+    avatarUrl,
+    avatarPath,
     plans,
     schedules,
     loading,
@@ -33,6 +38,16 @@ export default function ProfileEditPage() {
     saveImages,
     uploadImage,
   } = useCastData({ apiPath: "/api/cast/profile" });
+
+  // Initialize avatar from existing data
+  useEffect(() => {
+    if (avatarUrl && !avatarPreview) {
+      setAvatarPreview(avatarUrl);
+    }
+    if (avatarPath && !avatarKey) {
+      setAvatarKey(avatarPath);
+    }
+  }, [avatarUrl, avatarPath, avatarPreview, avatarKey]);
 
   // Handlers
   const handleProfileChange = (key: keyof ProfileFormData, val: any) => {
@@ -78,6 +93,20 @@ export default function ProfileEditPage() {
     });
   };
 
+  // Avatar Upload Handler
+  const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const { key } = await uploadImage(file);
+      setAvatarKey(key);
+      setAvatarPreview(URL.createObjectURL(file));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Image Upload Handler
   const handleUpload = async (file: File): Promise<MediaItem | null> => {
     try {
@@ -98,7 +127,7 @@ export default function ProfileEditPage() {
   const handleSave = async () => {
     try {
       await saveProfile(profileForm);
-      await saveImages(images);
+      await saveImages(images, avatarKey || undefined);
 
       toast({
         title: "Saved",
@@ -138,6 +167,50 @@ export default function ProfileEditPage() {
         </div>
 
         {/* Sections */}
+
+        {/* Avatar */}
+        <SectionCard
+          id="avatar"
+          title="Avatar"
+          icon={<Camera size={20} />}
+          collapsible
+          defaultOpen={false}
+        >
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-pink-300 hover:bg-pink-50/30"
+            >
+              {avatarPreview ? (
+                <img
+                  src={avatarPreview}
+                  alt="Avatar"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <Camera className="h-6 w-6 text-slate-400 group-hover:text-pink-500 transition-colors" />
+                </div>
+              )}
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100 rounded-full">
+                <Camera className="h-5 w-5 text-white" />
+              </div>
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              className="hidden"
+              accept="image/*"
+              onChange={handleAvatarSelect}
+            />
+            <div className="text-xs text-slate-500 leading-relaxed">
+              <p className="font-medium text-slate-700">Profile Avatar</p>
+              <p>タイムラインやチャットで表示される正方形のアイコンです。</p>
+              <p>未設定の場合はカバー写真が使用されます。</p>
+            </div>
+          </div>
+        </SectionCard>
 
         {/* Photos (Order 1) */}
         <SectionCard

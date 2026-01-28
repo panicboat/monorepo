@@ -71,9 +71,9 @@ export const StyleInputs = ({
         value={data.serviceCategory}
         onChange={(val) => onChange("serviceCategory", val)}
         options={[
-          { label: "Advanced", value: "advanced", desc: "濃厚接触" },
-          { label: "Standard", value: "standard", desc: "ソフト" },
-          { label: "Social", value: "social", desc: "飲食" },
+          { label: "Store", value: "advanced", desc: "風俗店" },
+          { label: "Social", value: "social", desc: "健全" },
+          { label: "Ask", value: "standard", desc: "問い合わせ" },
         ]}
       />
 
@@ -83,9 +83,9 @@ export const StyleInputs = ({
         value={data.locationType}
         onChange={(val) => onChange("locationType", val)}
         options={[
-          { label: "Store", value: "store", desc: "店舗型" },
+          { label: "Store", value: "store", desc: "店舗" },
           { label: "Dispatch", value: "dispatch", desc: "派遣" },
-          { label: "Hotel", value: "hotel", desc: "ホテル" },
+          { label: "Ask", value: "hotel", desc: "相談" },
         ]}
       />
 

@@ -156,10 +156,12 @@ module Portfolio
         cast = find_my_cast!
 
         images = request.message.gallery_images ? request.message.gallery_images.to_a : []
+        avatar = request.message.avatar_path.to_s.empty? ? nil : request.message.avatar_path
         result = save_images_uc.call(
           cast_id: cast.id,
           image_path: request.message.profile_image_path,
-          images: images
+          images: images,
+          avatar_path: avatar
         )
 
         ::Portfolio::V1::SaveCastImagesResponse.new(profile: ProfilePresenter.to_proto(result))

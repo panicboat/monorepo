@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 import { AuthProvider } from "@/modules/identity/hooks/useAuth";
 import { MSWProvider } from "@/mocks/MSWProvider";
 import { SWRProvider } from "@/components/providers/SWRProvider";
+import { ToastProvider } from "@/components/ui/Toast";
 
 export default function RootLayout({
   children,
@@ -33,7 +34,9 @@ export default function RootLayout({
       >
         <AuthProvider>
           <SWRProvider>
-            <MSWProvider>{children}</MSWProvider>
+            <MSWProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </MSWProvider>
           </SWRProvider>
         </AuthProvider>
       </body>

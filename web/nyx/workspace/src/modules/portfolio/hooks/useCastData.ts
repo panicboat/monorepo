@@ -80,6 +80,16 @@ export function useCastData(options: UseCastDataOptions = {}) {
     [data?.profile]
   );
 
+  const avatarUrl = useMemo(() =>
+    data?.profile?.avatarUrl || data?.profile?.imageUrl || "",
+    [data?.profile]
+  );
+
+  const avatarPath = useMemo(() =>
+    data?.profile?.avatarPath || "",
+    [data?.profile]
+  );
+
   const plans = useMemo(() =>
     mapApiToPlans(data?.plans || []),
     [data?.plans]
@@ -196,7 +206,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
   );
 
   const saveImages = useCallback(
-    async (overrideImages?: MediaItem[]) => {
+    async (overrideImages?: MediaItem[], overrideAvatarPath?: string) => {
       const currentToken = getToken();
       if (!currentToken) throw new Error("No token");
 
@@ -205,16 +215,21 @@ export function useCastData(options: UseCastDataOptions = {}) {
       const galleryImages = imagesToSave.slice(1);
       const galleryKeys = galleryImages.map((img) => img.key || img.url).filter(Boolean);
 
+      const payload: Record<string, any> = {
+        profileImagePath: heroImage?.key,
+        galleryImages: galleryKeys,
+      };
+      if (overrideAvatarPath !== undefined) {
+        payload.avatarPath = overrideAvatarPath;
+      }
+
       const res = await fetch("/api/cast/onboarding/images", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${currentToken}`,
         },
-        body: JSON.stringify({
-          profileImagePath: heroImage?.key,
-          galleryImages: galleryKeys,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error("Failed to save images");
@@ -343,6 +358,8 @@ export function useCastData(options: UseCastDataOptions = {}) {
     // Data
     profile,
     images,
+    avatarUrl,
+    avatarPath,
     plans,
     schedules,
 

@@ -1,20 +1,28 @@
 "use client";
 
-import { useEffect, useState, createContext, useContext, useCallback } from "react";
+import { useEffect, useState, useRef, createContext, useContext, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, CheckCircle, AlertCircle } from "lucide-react";
 
 type ToastVariant = "default" | "success" | "destructive";
+
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
 
 interface ToastMessage {
   id: string;
   title: string;
   description?: string;
   variant?: ToastVariant;
+  action?: ToastAction;
+  duration?: number;
 }
 
 interface ToastContextValue {
   toast: (props: Omit<ToastMessage, "id">) => void;
+  dismiss: (id: string) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -40,7 +48,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <ToastContext.Provider value={{ toast }}>
+    <ToastContext.Provider value={{ toast, dismiss: removeToast }}>
       {children}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
     </ToastContext.Provider>
@@ -72,16 +80,25 @@ function ToastItem({
   toast: ToastMessage;
   onRemove: (id: string) => void;
 }) {
+  const actionCalled = useRef(false);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       onRemove(toast.id);
-    }, 3000);
+    }, toast.duration ?? 3000);
     return () => clearTimeout(timer);
-  }, [toast.id, onRemove]);
+  }, [toast.id, toast.duration, onRemove]);
 
   const Icon = toast.variant === "destructive" ? AlertCircle : CheckCircle;
   const iconColor =
     toast.variant === "destructive" ? "text-red-500" : "text-green-500";
+
+  const handleAction = () => {
+    if (actionCalled.current || !toast.action) return;
+    actionCalled.current = true;
+    toast.action.onClick();
+    onRemove(toast.id);
+  };
 
   return (
     <motion.div
@@ -97,6 +114,14 @@ function ToastItem({
           <p className="text-sm text-slate-500 mt-0.5">{toast.description}</p>
         )}
       </div>
+      {toast.action && (
+        <button
+          onClick={handleAction}
+          className="flex-shrink-0 text-sm font-bold text-pink-600 hover:text-pink-700 transition-colors"
+        >
+          {toast.action.label}
+        </button>
+      )}
       <button
         onClick={() => onRemove(toast.id)}
         className="flex-shrink-0 text-slate-400 hover:text-slate-600 transition-colors"

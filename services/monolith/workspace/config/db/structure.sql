@@ -146,7 +146,8 @@ CREATE TABLE portfolio.casts (
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     image_path text,
-    three_sizes jsonb DEFAULT '{}'::jsonb
+    three_sizes jsonb DEFAULT '{}'::jsonb,
+    avatar_path text
 );
 
 
@@ -395,4 +396,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260122000000_rename_shift_to_schedule.rb'),
 ('20260125000000_add_three_sizes_to_casts.rb'),
 ('20260126000000_create_cast_posts.rb'),
-('20260127000000_add_visible_to_cast_posts.rb');
+('20260127000000_add_visible_to_cast_posts.rb'),
+('20260128000000_add_avatar_path_to_casts.rb');

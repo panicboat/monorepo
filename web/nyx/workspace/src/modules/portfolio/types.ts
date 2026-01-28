@@ -23,6 +23,8 @@ export interface MediaItem {
 export interface CastImages {
   hero: string | MediaItem | null;
   portfolio: MediaItem[];
+  avatarUrl?: string;
+  avatarPath?: string;
 }
 
 export interface CastTag {

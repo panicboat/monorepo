@@ -61,6 +61,8 @@ message CastProfile {
   string blood_type = 18;
   ThreeSizes three_sizes = 19;
   repeated string tags = 20;
+  string avatar_path = 21;       // Square avatar image (S3 key)
+  string avatar_url = 22;        // Signed download URL for avatar
 }
 
 message CastPlan {
@@ -136,6 +138,7 @@ message SaveCastVisibilityResponse {
 message SaveCastImagesRequest {
   string profile_image_path = 1; // Cover/Profile image
   repeated string gallery_images = 2; // List of image URLs or Paths
+  string avatar_path = 3;             // Square avatar image (S3 key)
 }
 
 message SaveCastImagesResponse {

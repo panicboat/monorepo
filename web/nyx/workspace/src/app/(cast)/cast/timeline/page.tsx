@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { TimelineFeed, FeedItem } from "@/modules/discovery/components/guest/TimelineFeed";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useCastPosts } from "@/modules/social/hooks/useCastPosts";
 import { CastPost } from "@/modules/social/types";
+import { useToast } from "@/components/ui/Toast";
+import { useCastData } from "@/modules/portfolio/hooks";
 
 function formatTimeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -22,7 +24,6 @@ function formatTimeAgo(iso: string): string {
 }
 
 function castPostToFeedItem(post: CastPost): FeedItem {
-  const firstMedia = post.media[0];
   return {
     id: post.id,
     castId: post.castId,
@@ -30,8 +31,10 @@ function castPostToFeedItem(post: CastPost): FeedItem {
     castImage: post.author?.imageUrl || "",
     content: post.content,
     time: formatTimeAgo(post.createdAt),
-    mediaUrl: firstMedia?.url,
-    mediaType: firstMedia?.mediaType as "image" | "video" | undefined,
+    media: post.media.map((m) => ({
+      mediaType: m.mediaType as "image" | "video",
+      url: m.url,
+    })),
     likes: post.likesCount,
     comments: post.commentsCount,
     visible: post.visible,
@@ -40,19 +43,30 @@ function castPostToFeedItem(post: CastPost): FeedItem {
 
 export default function CastTimelinePage() {
   const router = useRouter();
-  const { posts, loading, fetchPosts, savePost, toggleVisibility, deletePost } = useCastPosts();
+  const { toast } = useToast();
+  const { posts, loading, fetchPosts, savePost, toggleVisibility, deletePost, removePostLocally, restorePostLocally } = useCastPosts();
+  const { avatarUrl } = useCastData({ apiPath: "/api/cast/profile" });
+  const pendingDeletes = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  const MAX_MEDIA = 10;
 
   const [content, setContent] = useState("");
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [mediaType, setMediaType] = useState<"image" | "video">("image");
+  const [mediaFiles, setMediaFiles] = useState<{ file: File; previewUrl: string; type: "image" | "video" }[]>([]);
   const [posting, setPosting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchPosts().catch(() => {});
   }, [fetchPosts]);
+
+  useEffect(() => {
+    const timers = pendingDeletes.current;
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+    };
+  }, []);
 
   const uploadFile = async (file: File): Promise<string | null> => {
     const token = localStorage.getItem("nyx_cast_access_token");
@@ -81,55 +95,112 @@ export default function CastTimelinePage() {
   };
 
   const handlePost = async () => {
-    if (!content.trim() && !mediaFile) return;
+    if (!content.trim() && mediaFiles.length === 0) return;
 
     setPosting(true);
     try {
       const media: { mediaType: "image" | "video"; url: string; thumbnailUrl?: string }[] = [];
 
-      if (mediaFile) {
-        const key = await uploadFile(mediaFile);
-        if (key) {
-          media.push({ mediaType, url: key });
+      if (mediaFiles.length > 0) {
+        setUploadProgress({ current: 0, total: mediaFiles.length });
+        for (let i = 0; i < mediaFiles.length; i++) {
+          const mf = mediaFiles[i];
+          setUploadProgress({ current: i + 1, total: mediaFiles.length });
+          const key = await uploadFile(mf.file);
+          if (key) {
+            media.push({ mediaType: mf.type, url: key });
+          }
         }
       }
 
       await savePost({ content: content.trim(), media });
       setContent("");
-      setMediaPreview(null);
-      setMediaFile(null);
+      mediaFiles.forEach((mf) => URL.revokeObjectURL(mf.previewUrl));
+      setMediaFiles([]);
     } catch (e) {
       console.error("Failed to save post:", e);
     } finally {
       setPosting(false);
+      setUploadProgress(null);
     }
   };
 
   const handleToggleVisibility = async (id: string, visible: boolean) => {
     try {
       await toggleVisibility(id, visible);
+      toast({
+        title: visible ? "Post is now public" : "Post is now hidden",
+        variant: "success",
+      });
     } catch (e) {
       console.error("Failed to toggle visibility:", e);
+      toast({ title: "Failed to update visibility", variant: "destructive" });
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this post?")) {
+  const handleDelete = useCallback((id: string) => {
+    const postToDelete = posts.find((p) => p.id === id);
+    if (!postToDelete) return;
+
+    removePostLocally(id);
+
+    const existing = pendingDeletes.current.get(id);
+    if (existing) clearTimeout(existing);
+
+    const timer = setTimeout(async () => {
+      pendingDeletes.current.delete(id);
       try {
         await deletePost(id);
       } catch (e) {
         console.error("Failed to delete post:", e);
+        restorePostLocally(postToDelete);
+        toast({ title: "Failed to delete post", variant: "destructive" });
       }
-    }
-  };
+    }, 5000);
+
+    pendingDeletes.current.set(id, timer);
+
+    toast({
+      title: "Post deleted",
+      duration: 5000,
+      action: {
+        label: "Undo",
+        onClick: () => {
+          clearTimeout(timer);
+          pendingDeletes.current.delete(id);
+          restorePostLocally(postToDelete);
+        },
+      },
+    });
+  }, [posts, removePostLocally, restorePostLocally, deletePost, toast]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setMediaPreview(URL.createObjectURL(file));
-      setMediaFile(file);
-      setMediaType(type);
+    if (!e.target.files || e.target.files.length === 0) return;
+    const selected = Array.from(e.target.files);
+    const remaining = MAX_MEDIA - mediaFiles.length;
+
+    if (selected.length > remaining) {
+      toast({
+        title: `Maximum ${MAX_MEDIA} files allowed`,
+        description: remaining > 0 ? `You can add ${remaining} more file(s).` : "Remove some files first.",
+        variant: "destructive",
+      });
     }
+
+    const toAdd = selected.slice(0, remaining).map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+      type,
+    }));
+    setMediaFiles((prev) => [...prev, ...toAdd]);
+    e.target.value = "";
+  };
+
+  const removeMediaFile = (index: number) => {
+    setMediaFiles((prev) => {
+      URL.revokeObjectURL(prev[index].previewUrl);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const feedItems = posts.map(castPostToFeedItem);
@@ -146,7 +217,11 @@ export default function CastTimelinePage() {
           New Post
         </Label>
         <div className="flex gap-4">
-          <div className="w-10 h-10 rounded-full border border-slate-100 bg-slate-200 shrink-0" />
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="My avatar" className="w-10 h-10 rounded-full border border-slate-100 object-cover shrink-0" />
+          ) : (
+            <div className="w-10 h-10 rounded-full border border-slate-100 bg-slate-200 shrink-0" />
+          )}
           <div className="flex-1 space-y-3">
             <textarea
               className="w-full bg-slate-50 border-0 rounded-xl p-3 text-sm focus:ring-2 focus:ring-pink-100 focus:bg-white transition-all resize-none placeholder:text-slate-300"
@@ -157,38 +232,66 @@ export default function CastTimelinePage() {
             />
 
             <AnimatePresence>
-              {mediaPreview && (
+              {mediaFiles.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="relative rounded-xl overflow-hidden group bg-black/5"
                 >
-                  {mediaType === 'video' ? (
-                    <video
-                      src={mediaPreview}
-                      className="max-h-64 rounded-xl object-cover w-full"
-                      controls
-                    />
-                  ) : (
-                    <img
-                      src={mediaPreview}
-                      alt="Upload Preview"
-                      className="max-h-64 rounded-xl object-cover w-full"
-                    />
-                  )}
-
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="absolute top-2 right-2 bg-white/80 hover:bg-white text-slate-700"
-                    onClick={() => { setMediaPreview(null); setMediaFile(null); }}
-                  >
-                    <X size={16} />
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    {mediaFiles.map((mf, i) => (
+                      <div key={i} className="relative rounded-xl overflow-hidden bg-black/5 aspect-square">
+                        {mf.type === 'video' ? (
+                          <video
+                            src={mf.previewUrl}
+                            className="h-full w-full object-cover"
+                            muted
+                          />
+                        ) : (
+                          <img
+                            src={mf.previewUrl}
+                            alt={`Preview ${i + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                        )}
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="absolute top-1 right-1 h-6 w-6 bg-white/80 hover:bg-white text-slate-700"
+                          onClick={() => removeMediaFile(i)}
+                        >
+                          <X size={12} />
+                        </Button>
+                        {mf.type === 'video' && (
+                          <div className="absolute bottom-1 left-1 bg-black/50 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                            VIDEO
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {mediaFiles.length}/{MAX_MEDIA} files
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {uploadProgress && (
+              <div className="space-y-1">
+                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-pink-500 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Uploading {uploadProgress.current}/{uploadProgress.total}...
+                </p>
+              </div>
+            )}
 
             <div className="flex items-center justify-between pt-2">
               <div className="flex gap-2">
@@ -197,6 +300,7 @@ export default function CastTimelinePage() {
                   ref={fileInputRef}
                   className="hidden"
                   accept="image/*"
+                  multiple
                   onChange={(e) => handleFileSelect(e, 'image')}
                 />
                 <input
@@ -204,6 +308,7 @@ export default function CastTimelinePage() {
                   ref={videoInputRef}
                   className="hidden"
                   accept="video/*"
+                  multiple
                   onChange={(e) => handleFileSelect(e, 'video')}
                 />
                 <Button
@@ -211,6 +316,7 @@ export default function CastTimelinePage() {
                   size="sm"
                   className="text-slate-500 hover:text-pink-500 hover:bg-pink-50 gap-2"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={mediaFiles.length >= MAX_MEDIA}
                 >
                   <ImageIcon size={18} />
                   <span className="text-xs font-bold">Photo</span>
@@ -220,6 +326,7 @@ export default function CastTimelinePage() {
                   size="sm"
                   className="text-slate-500 hover:text-pink-500 hover:bg-pink-50 gap-2"
                   onClick={() => videoInputRef.current?.click()}
+                  disabled={mediaFiles.length >= MAX_MEDIA}
                 >
                   <Video size={18} />
                   <span className="text-xs font-bold">Video</span>
@@ -231,10 +338,10 @@ export default function CastTimelinePage() {
                 size="sm"
                 className="px-6 rounded-full"
                 onClick={handlePost}
-                disabled={(!content.trim() && !mediaFile) || posting}
+                disabled={(!content.trim() && mediaFiles.length === 0) || posting}
               >
                 <Send size={16} className="mr-2" />
-                {posting ? "Posting..." : "Post"}
+                {posting ? (uploadProgress ? `Uploading...` : "Posting...") : "Post"}
               </Button>
             </div>
           </div>
