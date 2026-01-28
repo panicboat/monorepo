@@ -41,7 +41,7 @@
     "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.2",
-    "eslint-config-next": "16.1.4",
+    "eslint-config-next": "16.1.5",
     "msw": "^2.12.7",
     "prettier": "^3.0.0",
     "tailwindcss": "^4.1.18",
