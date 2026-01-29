@@ -9,13 +9,17 @@ module Portfolio
         MAX_NAME_LENGTH = 100
         MAX_BIO_LENGTH = 1000
         MAX_TAGLINE_LENGTH = 200
+        MIN_HANDLE_LENGTH = 3
+        MAX_HANDLE_LENGTH = 30
         VALID_SERVICE_CATEGORIES = %w[companion escort guide].freeze
         VALID_LOCATION_TYPES = %w[incall outcall both].freeze
+        HANDLE_FORMAT = /\A[a-zA-Z][a-zA-Z0-9]*\z/
 
         params do
           required(:user_id).filled(:string)
           required(:name).filled(:string)
           required(:bio).filled(:string)
+          optional(:handle).maybe(:string)
           optional(:tagline).maybe(:string)
           optional(:service_category).maybe(:string)
           optional(:location_type).maybe(:string)
@@ -43,6 +47,22 @@ module Portfolio
         rule(:tagline) do
           if key? && value && value.length > MAX_TAGLINE_LENGTH
             key.failure("は#{MAX_TAGLINE_LENGTH}文字以内で入力してください")
+          end
+        end
+
+        rule(:handle) do
+          next unless key? && value
+
+          if value.length < MIN_HANDLE_LENGTH
+            key.failure("は#{MIN_HANDLE_LENGTH}文字以上で入力してください")
+          elsif value.length > MAX_HANDLE_LENGTH
+            key.failure("は#{MAX_HANDLE_LENGTH}文字以内で入力してください")
+          elsif !value.match?(HANDLE_FORMAT)
+            if value.match?(/\A[0-9]/)
+              key.failure("は先頭に数字を使用できません")
+            else
+              key.failure("は英数字のみ使用できます")
+            end
           end
         end
 

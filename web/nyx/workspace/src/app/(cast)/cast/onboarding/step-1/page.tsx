@@ -82,6 +82,7 @@ export default function OnboardingStep1Page() {
 
   const isFormValid =
     profile.nickname.trim().length > 0 &&
+    profile.handle.trim().length >= 3 &&
     profile.area.trim().length > 0 &&
     profile.tagline.trim().length > 0;
 

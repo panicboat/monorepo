@@ -4,6 +4,9 @@ import { ConnectError } from "@connectrpc/connect";
 import { mapCastProfileToFrontend } from "@/modules/portfolio/lib/cast/profile";
 import { CastVisibility } from "@/stub/portfolio/v1/service_pb";
 
+// UUID v4 format check
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -11,7 +14,11 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const response = await castClient.getCastProfile({ userId: id });
+    // If id matches UUID format, lookup by userId; otherwise lookup by handle
+    const isUuid = UUID_REGEX.test(id);
+    const response = isUuid
+      ? await castClient.getCastProfile({ userId: id })
+      : await castClient.getCastProfileByHandle({ handle: id });
 
     if (!response.profile) {
       return NextResponse.json({ error: "Not Found" }, { status: 404 });

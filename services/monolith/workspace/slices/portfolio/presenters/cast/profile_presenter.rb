@@ -14,6 +14,7 @@ module Portfolio
 
           ::Portfolio::V1::CastProfile.new(
             user_id: cast.user_id.to_s,
+            handle: cast.respond_to?(:handle) ? (cast.handle || "") : "",
             name: cast.name,
             bio: cast.bio,
             tagline: cast.tagline,

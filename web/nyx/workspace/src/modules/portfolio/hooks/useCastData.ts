@@ -16,6 +16,7 @@ import { fetcher } from "@/lib/swr";
 
 const INITIAL_PROFILE: ProfileFormData = {
   nickname: "",
+  handle: "",
   tagline: "",
   bio: "",
   serviceCategory: "standard",

@@ -14,6 +14,7 @@ module Portfolio
       self.rpc_descs.clear
 
       rpc :GetCastProfile, ::Portfolio::V1::GetCastProfileRequest, ::Portfolio::V1::GetCastProfileResponse
+      rpc :GetCastProfileByHandle, ::Portfolio::V1::GetCastProfileByHandleRequest, ::Portfolio::V1::GetCastProfileResponse
       rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
       rpc :SaveCastProfile, ::Portfolio::V1::SaveCastProfileRequest, ::Portfolio::V1::SaveCastProfileResponse
       rpc :SaveCastVisibility, ::Portfolio::V1::SaveCastVisibilityRequest, ::Portfolio::V1::SaveCastVisibilityResponse
@@ -22,6 +23,7 @@ module Portfolio
       rpc :SaveCastImages, ::Portfolio::V1::SaveCastImagesRequest, ::Portfolio::V1::SaveCastImagesResponse
       rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
       rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
+      rpc :CheckHandleAvailability, ::Portfolio::V1::CheckHandleAvailabilityRequest, ::Portfolio::V1::CheckHandleAvailabilityResponse
 
       include Portfolio::Deps[
         get_profile_uc: "use_cases.cast.profile.get_profile",
@@ -50,6 +52,70 @@ module Portfolio
           profile: ProfilePresenter.to_proto(result),
           plans: PlanPresenter.many_to_proto(result.cast_plans),
           schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
+        )
+      end
+
+      def get_cast_profile_by_handle
+        handle = request.message.handle
+        if handle.nil? || handle.empty?
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Handle is required")
+        end
+
+        result = repo.find_by_handle(handle)
+        unless result
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
+        end
+
+        # Only return published profiles for public access
+        if result.visibility != "published"
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
+        end
+
+        ::Portfolio::V1::GetCastProfileResponse.new(
+          profile: ProfilePresenter.to_proto(result),
+          plans: PlanPresenter.many_to_proto(result.cast_plans),
+          schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
+        )
+      end
+
+      def check_handle_availability
+        handle = request.message.handle
+        if handle.nil? || handle.empty?
+          return ::Portfolio::V1::CheckHandleAvailabilityResponse.new(
+            available: false,
+            message: "ID は必須です"
+          )
+        end
+
+        # Format validation
+        unless handle.match?(/\A[a-zA-Z][a-zA-Z0-9]*\z/)
+          msg = handle.match?(/\A[0-9]/) ? "先頭に数字は使用できません" : "英数字のみ使用できます"
+          return ::Portfolio::V1::CheckHandleAvailabilityResponse.new(
+            available: false,
+            message: msg
+          )
+        end
+
+        if handle.length < 3
+          return ::Portfolio::V1::CheckHandleAvailabilityResponse.new(
+            available: false,
+            message: "3文字以上で入力してください"
+          )
+        end
+
+        if handle.length > 30
+          return ::Portfolio::V1::CheckHandleAvailabilityResponse.new(
+            available: false,
+            message: "30文字以内で入力してください"
+          )
+        end
+
+        exclude_user_id = ::Current.user_id
+        available = repo.handle_available?(handle, exclude_user_id: exclude_user_id)
+
+        ::Portfolio::V1::CheckHandleAvailabilityResponse.new(
+          available: available,
+          message: available ? "" : "この ID は既に使用されています"
         )
       end
 
@@ -85,6 +151,7 @@ module Portfolio
           user_id: ::Current.user_id,
           name: request.message.name,
           bio: request.message.bio,
+          handle: request.message.handle.to_s.empty? ? nil : request.message.handle,
           tagline: request.message.tagline,
           service_category: request.message.service_category,
           location_type: request.message.location_type,
@@ -101,6 +168,10 @@ module Portfolio
         )
 
         ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))
+      rescue SaveProfile::HandleNotAvailableError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::ALREADY_EXISTS, e.message)
+      rescue SaveProfile::ValidationError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
 
       def save_cast_visibility
@@ -205,6 +276,7 @@ module Portfolio
       ProfilePresenter = Portfolio::Presenters::Cast::ProfilePresenter
       PlanPresenter = Portfolio::Presenters::Cast::PlanPresenter
       SchedulePresenter = Portfolio::Presenters::Cast::SchedulePresenter
+      SaveProfile = Portfolio::UseCases::Cast::Profile::SaveProfile
 
       def authenticate_user!
         unless ::Current.user_id

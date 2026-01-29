@@ -9,6 +9,7 @@ export function mapApiToProfileForm(apiProfile: any): ProfileFormData {
 
   return {
     nickname: apiProfile.name || "",
+    handle: apiProfile.handle || "",
     tagline: apiProfile.tagline || "",
     bio: apiProfile.bio || "",
     serviceCategory: apiProfile.serviceCategory || "standard",
@@ -45,6 +46,7 @@ export function mapApiToProfileForm(apiProfile: any): ProfileFormData {
 export function mapProfileFormToApi(form: ProfileFormData, heroKey?: string, galleryKeys?: string[]) {
   return {
     name: form.nickname,
+    handle: form.handle || undefined,
     tagline: form.tagline,
     bio: form.bio,
     area: form.area,

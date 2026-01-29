@@ -18,6 +18,7 @@ module Portfolio
         self.service_name = 'portfolio.v1.CastService'
 
         rpc :GetCastProfile, ::Portfolio::V1::GetCastProfileRequest, ::Portfolio::V1::GetCastProfileResponse
+        rpc :GetCastProfileByHandle, ::Portfolio::V1::GetCastProfileByHandleRequest, ::Portfolio::V1::GetCastProfileResponse
         rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
         rpc :SaveCastProfile, ::Portfolio::V1::SaveCastProfileRequest, ::Portfolio::V1::SaveCastProfileResponse
         rpc :SaveCastVisibility, ::Portfolio::V1::SaveCastVisibilityRequest, ::Portfolio::V1::SaveCastVisibilityResponse
@@ -26,6 +27,7 @@ module Portfolio
         rpc :SaveCastSchedules, ::Portfolio::V1::SaveCastSchedulesRequest, ::Portfolio::V1::SaveCastSchedulesResponse
         rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
         rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
+        rpc :CheckHandleAvailability, ::Portfolio::V1::CheckHandleAvailabilityRequest, ::Portfolio::V1::CheckHandleAvailabilityResponse
       end
 
       Stub = Service.rpc_stub_class

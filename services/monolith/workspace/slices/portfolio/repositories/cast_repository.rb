@@ -7,6 +7,18 @@ module Portfolio
         casts.where(user_id: user_id).one
       end
 
+      def find_by_handle(handle)
+        casts.combine(:cast_plans, :cast_schedules)
+          .where { Sequel.function(:lower, :handle) =~ handle.downcase }
+          .one
+      end
+
+      def handle_available?(handle, exclude_user_id: nil)
+        scope = casts.where { Sequel.function(:lower, :handle) =~ handle.downcase }
+        scope = scope.exclude(user_id: exclude_user_id) if exclude_user_id
+        !scope.exist?
+      end
+
       def create_plan(data)
         cast_plans.command(:create).call(data)
       end

@@ -19,12 +19,15 @@ module Portfolio
             contract: "contracts.cast.save_profile_contract"
           ]
 
-          def call(user_id:, name:, bio:, tagline: nil, service_category: nil, location_type: nil, area: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil, age: nil, height: nil, blood_type: nil, three_sizes: nil, tags: nil)
+          class HandleNotAvailableError < StandardError; end
+
+          def call(user_id:, name:, bio:, handle: nil, tagline: nil, service_category: nil, location_type: nil, area: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil, age: nil, height: nil, blood_type: nil, three_sizes: nil, tags: nil)
             # 0. Input Validation
             params = {
               user_id: user_id,
               name: name,
               bio: bio,
+              handle: handle,
               tagline: tagline,
               service_category: service_category,
               location_type: location_type,
@@ -43,12 +46,18 @@ module Portfolio
             validation = contract.call(params)
             raise ValidationError, validation.errors unless validation.success?
 
+            # Check handle uniqueness
+            if handle && !handle.empty? && !repo.handle_available?(handle, exclude_user_id: user_id)
+              raise HandleNotAvailableError, "この ID は既に使用されています"
+            end
+
             Hanami.logger.info("SaveProfile Args: tagline=#{tagline}, area=#{area}, service=#{service_category}, social_links=#{social_links}")
             cast = repo.find_by_user_id(user_id)
 
             attrs = {
               name: name,
               bio: bio,
+              handle: handle&.downcase,
               tagline: tagline,
               service_category: service_category,
               location_type: location_type,

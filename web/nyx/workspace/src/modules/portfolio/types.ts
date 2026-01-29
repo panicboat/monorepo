@@ -35,6 +35,7 @@ export interface CastTag {
 export interface CastProfile {
   id: string;
   name: string;
+  handle?: string; // Unique user-defined ID (URL key)
   status: string; // CastStatus string for flexibility or strictly CastStatus
   message: string;
   tagline?: string; // Short catchphrase
@@ -87,6 +88,7 @@ export interface WeeklySchedule {
 
 export interface ProfileFormData {
   nickname: string;
+  handle: string;
   tagline: string;
   bio: string;
   serviceCategory: "advanced" | "standard" | "social";

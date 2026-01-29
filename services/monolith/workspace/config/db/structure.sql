@@ -147,7 +147,8 @@ CREATE TABLE portfolio.casts (
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     image_path text,
     three_sizes jsonb DEFAULT '{}'::jsonb,
-    avatar_path text
+    avatar_path text,
+    handle character varying(30)
 );
 
 
@@ -318,6 +319,13 @@ CREATE UNIQUE INDEX identity_users_phone_number_index ON identity.users USING bt
 
 
 --
+-- Name: idx_casts_handle_lower; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_casts_handle_lower ON portfolio.casts USING btree (lower((handle)::text)) WHERE (handle IS NOT NULL);
+
+
+--
 -- Name: portfolio_cast_plans_cast_id_index; Type: INDEX; Schema: portfolio; Owner: -
 --
 
@@ -441,4 +449,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260126000000_create_cast_posts.rb'),
 ('20260127000000_add_visible_to_cast_posts.rb'),
 ('20260128000000_add_avatar_path_to_casts.rb'),
-('20260129000000_create_cast_post_hashtags.rb');
+('20260129000000_create_cast_post_hashtags.rb'),
+('20260129000001_add_handle_to_casts.rb');

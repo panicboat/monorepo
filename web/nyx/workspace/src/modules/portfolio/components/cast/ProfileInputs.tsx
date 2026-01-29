@@ -34,6 +34,28 @@ export const ProfileInputs = ({ data, onChange }: ProfileInputsProps) => {
 
         <div>
           <Label className="block text-sm font-bold text-slate-700 mb-1">
+            Handle (ID)
+          </Label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">@</span>
+            <Input
+              type="text"
+              value={data.handle}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^a-zA-Z0-9]/g, "");
+                onChange("handle", val);
+              }}
+              placeholder="例: yuna123"
+              className="pl-8 focus-visible:ring-pink-500"
+            />
+          </div>
+          <p className="mt-1 text-[10px] text-slate-400">
+            英数字のみ、3〜30文字。プロフィールURLに使用されます。
+          </p>
+        </div>
+
+        <div>
+          <Label className="block text-sm font-bold text-slate-700 mb-1">
             Area (活動エリア)
           </Label>
           <Input
