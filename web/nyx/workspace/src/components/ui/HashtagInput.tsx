@@ -35,6 +35,9 @@ export function HashtagInput({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // Skip during IME composition (Japanese/Chinese input)
+    if (e.nativeEvent.isComposing) return;
+
     if (e.key === "Enter" || e.key === "," || e.key === " ") {
       e.preventDefault();
       addTag(inputValue);
