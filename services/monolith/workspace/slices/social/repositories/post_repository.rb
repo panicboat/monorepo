@@ -6,7 +6,7 @@ module Social
       commands :create, update: :by_pk, delete: :by_pk
 
       def list_by_cast_id(cast_id:, limit: 20, cursor: nil)
-        scope = cast_posts.combine(:cast_post_media).where(cast_id: cast_id)
+        scope = cast_posts.combine(:cast_post_media, :cast_post_hashtags).where(cast_id: cast_id)
 
         if cursor
           scope = scope.where { created_at < cursor[:created_at] }
@@ -17,11 +17,11 @@ module Social
       end
 
       def find_by_id(id)
-        cast_posts.combine(:cast_post_media).by_pk(id).one
+        cast_posts.combine(:cast_post_media, :cast_post_hashtags).by_pk(id).one
       end
 
       def find_by_id_and_cast(id:, cast_id:)
-        cast_posts.combine(:cast_post_media).where(id: id, cast_id: cast_id).one
+        cast_posts.combine(:cast_post_media, :cast_post_hashtags).where(id: id, cast_id: cast_id).one
       end
 
       def create_post(data)
@@ -41,6 +41,15 @@ module Social
         cast_post_media.dataset.where(post_id: post_id).delete
         media_data.each_with_index do |media, index|
           cast_post_media.changeset(:create, media.merge(post_id: post_id, position: index)).commit
+        end
+      end
+
+      def save_hashtags(post_id:, hashtags:)
+        cast_post_hashtags.dataset.where(post_id: post_id).delete
+        hashtags.each_with_index do |tag, index|
+          next if tag.nil? || tag.strip.empty?
+
+          cast_post_hashtags.changeset(:create, post_id: post_id, tag: tag.strip, position: index).commit
         end
       end
     end

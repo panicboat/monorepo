@@ -18,31 +18,33 @@ module Social
           contract: "contracts.save_post_contract"
         ]
 
-        def call(cast_id:, id: nil, content: "", media: [], visible: true)
-          validation = contract.call(cast_id: cast_id, id: id, content: content, media: media, visible: visible)
+        def call(cast_id:, id: nil, content: "", media: [], visible: true, hashtags: [])
+          validation = contract.call(cast_id: cast_id, id: id, content: content, media: media, visible: visible, hashtags: hashtags)
           raise ValidationError, validation.errors unless validation.success?
 
           if id && !id.empty?
-            update_post(cast_id: cast_id, id: id, content: content, media: media, visible: visible)
+            update_post(cast_id: cast_id, id: id, content: content, media: media, visible: visible, hashtags: hashtags)
           else
-            create_post(cast_id: cast_id, content: content, media: media, visible: visible)
+            create_post(cast_id: cast_id, content: content, media: media, visible: visible, hashtags: hashtags)
           end
         end
 
         private
 
-        def create_post(cast_id:, content:, media:, visible:)
+        def create_post(cast_id:, content:, media:, visible:, hashtags:)
           post = repo.create_post(cast_id: cast_id, content: content, visible: visible)
           repo.save_media(post_id: post.id, media_data: media) if media.any?
+          repo.save_hashtags(post_id: post.id, hashtags: hashtags) if hashtags.any?
           repo.find_by_id(post.id)
         end
 
-        def update_post(cast_id:, id:, content:, media:, visible:)
+        def update_post(cast_id:, id:, content:, media:, visible:, hashtags:)
           existing = repo.find_by_id_and_cast(id: id, cast_id: cast_id)
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless existing
 
           repo.update_post(id, content: content, visible: visible)
           repo.save_media(post_id: id, media_data: media) if media.any?
+          repo.save_hashtags(post_id: id, hashtags: hashtags)
           repo.find_by_id(id)
         end
       end

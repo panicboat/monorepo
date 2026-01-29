@@ -7,6 +7,7 @@ module Social
         return nil unless post
 
         media = (post.respond_to?(:cast_post_media) ? post.cast_post_media : []) || []
+        hashtags = (post.respond_to?(:cast_post_hashtags) ? post.cast_post_hashtags : []) || []
 
         ::Social::V1::CastPost.new(
           id: post.id.to_s,
@@ -17,7 +18,8 @@ module Social
           author: author_to_proto(author),
           likes_count: 0,
           comments_count: 0,
-          visible: post.respond_to?(:visible) ? post.visible : true
+          visible: post.respond_to?(:visible) ? post.visible : true,
+          hashtags: hashtags.sort_by(&:position).map(&:tag)
         )
       end
 

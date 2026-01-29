@@ -61,12 +61,15 @@ module Social
           { media_type: m.media_type, url: m.url, thumbnail_url: m.thumbnail_url }
         end
 
+        hashtags = request.message.hashtags.to_a
+
         post = save_post_uc.call(
           cast_id: cast.id,
           id: request.message.id.empty? ? nil : request.message.id,
           content: request.message.content,
           media: media_data,
-          visible: request.message.visible
+          visible: request.message.visible,
+          hashtags: hashtags
         )
 
         ::Social::V1::SaveCastPostResponse.new(

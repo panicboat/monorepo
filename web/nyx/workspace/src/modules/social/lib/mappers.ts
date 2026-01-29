@@ -11,6 +11,7 @@ export function mapApiToPost(apiPost: any): CastPost {
     likesCount: apiPost.likesCount || 0,
     commentsCount: apiPost.commentsCount || 0,
     visible: apiPost.visible !== false,
+    hashtags: apiPost.hashtags || [],
   };
 }
 
@@ -47,11 +48,12 @@ export function mapMediaToApi(media: PostMedia[]) {
   }));
 }
 
-export function mapPostToSavePayload(post: { id?: string; content: string; media: PostMedia[]; visible?: boolean }) {
+export function mapPostToSavePayload(post: { id?: string; content: string; media: PostMedia[]; visible?: boolean; hashtags?: string[] }) {
   return {
     id: post.id || "",
     content: post.content,
     media: mapMediaToApi(post.media),
     visible: post.visible !== false,
+    hashtags: post.hashtags || [],
   };
 }

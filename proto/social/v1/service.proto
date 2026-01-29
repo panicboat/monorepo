@@ -31,6 +31,7 @@ message CastPost {
   int32 likes_count = 7;
   int32 comments_count = 8;
   bool visible = 9;
+  repeated string hashtags = 10;
 }
 
 message ListCastPostsRequest {
@@ -50,6 +51,7 @@ message SaveCastPostRequest {
   string content = 2;
   repeated CastPostMedia media = 3;
   bool visible = 4;
+  repeated string hashtags = 5;
 }
 
 message SaveCastPostResponse {

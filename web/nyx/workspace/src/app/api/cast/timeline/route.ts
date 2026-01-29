@@ -41,6 +41,7 @@ export async function PUT(req: NextRequest) {
         content: body.content,
         media: body.media || [],
         visible: body.visible !== false,
+        hashtags: body.hashtags || [],
       },
       { headers: buildGrpcHeaders(req.headers) }
     );

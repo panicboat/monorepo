@@ -77,7 +77,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
   }, [fetchPosts, nextCursor, hasMore]);
 
   const savePost = useCallback(
-    async (post: { id?: string; content: string; media: PostMedia[]; visible?: boolean }) => {
+    async (post: { id?: string; content: string; media: PostMedia[]; visible?: boolean; hashtags?: string[] }) => {
       const token = getToken();
       if (!token) throw new Error("No token");
 

@@ -161,6 +161,19 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: cast_post_hashtags; Type: TABLE; Schema: social; Owner: -
+--
+
+CREATE TABLE social.cast_post_hashtags (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    post_id uuid NOT NULL,
+    tag character varying(100) NOT NULL,
+    "position" integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: cast_post_media; Type: TABLE; Schema: social; Owner: -
 --
 
@@ -246,6 +259,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: cast_post_hashtags cast_post_hashtags_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.cast_post_hashtags
+    ADD CONSTRAINT cast_post_hashtags_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: cast_post_media cast_post_media_pkey; Type: CONSTRAINT; Schema: social; Owner: -
 --
 
@@ -325,6 +346,20 @@ CREATE INDEX idx_cast_posts_created_at_desc ON social.cast_posts USING btree (cr
 
 
 --
+-- Name: social_cast_post_hashtags_post_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_cast_post_hashtags_post_id_index ON social.cast_post_hashtags USING btree (post_id);
+
+
+--
+-- Name: social_cast_post_hashtags_tag_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_cast_post_hashtags_tag_index ON social.cast_post_hashtags USING btree (tag);
+
+
+--
 -- Name: social_cast_post_media_post_id_index; Type: INDEX; Schema: social; Owner: -
 --
 
@@ -371,6 +406,14 @@ ALTER TABLE ONLY portfolio.cast_schedules
 
 
 --
+-- Name: cast_post_hashtags cast_post_hashtags_post_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.cast_post_hashtags
+    ADD CONSTRAINT cast_post_hashtags_post_id_fkey FOREIGN KEY (post_id) REFERENCES social.cast_posts(id) ON DELETE CASCADE;
+
+
+--
 -- Name: cast_post_media cast_post_media_post_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
 --
 
@@ -397,4 +440,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260125000000_add_three_sizes_to_casts.rb'),
 ('20260126000000_create_cast_posts.rb'),
 ('20260127000000_add_visible_to_cast_posts.rb'),
-('20260128000000_add_avatar_path_to_casts.rb');
+('20260128000000_add_avatar_path_to_casts.rb'),
+('20260129000000_create_cast_post_hashtags.rb');

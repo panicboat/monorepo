@@ -26,6 +26,7 @@ export type FeedItem = {
   likes: number;
   comments: number;
   visible?: boolean;
+  hashtags?: string[];
 };
 
 // Mock "Tweet-like" activities
@@ -360,6 +361,15 @@ export const TimelineItem = ({
       <p className="mb-3 text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">
         {item.content}
       </p>
+      {item.hashtags && item.hashtags.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          {item.hashtags.map((tag, i) => (
+            <Badge key={i} variant="secondary" className="text-xs bg-pink-50 text-pink-600 hover:bg-pink-100">
+              #{tag}
+            </Badge>
+          ))}
+        </div>
+      )}
       {resolvedMedia.length > 0 && (
         <MediaCarousel media={resolvedMedia} />
       )}

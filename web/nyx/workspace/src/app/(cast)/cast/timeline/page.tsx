@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { TimelineFeed, FeedItem } from "@/modules/discovery/components/guest/TimelineFeed";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
+import { HashtagInput } from "@/components/ui/HashtagInput";
 import { Send, Image as ImageIcon, Video, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
@@ -38,6 +39,7 @@ function castPostToFeedItem(post: CastPost): FeedItem {
     likes: post.likesCount,
     comments: post.commentsCount,
     visible: post.visible,
+    hashtags: post.hashtags,
   };
 }
 
@@ -51,6 +53,7 @@ export default function CastTimelinePage() {
   const MAX_MEDIA = 10;
 
   const [content, setContent] = useState("");
+  const [hashtags, setHashtags] = useState<string[]>([]);
   const [mediaFiles, setMediaFiles] = useState<{ file: File; previewUrl: string; type: "image" | "video" }[]>([]);
   const [posting, setPosting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
@@ -113,8 +116,9 @@ export default function CastTimelinePage() {
         }
       }
 
-      await savePost({ content: content.trim(), media });
+      await savePost({ content: content.trim(), media, hashtags });
       setContent("");
+      setHashtags([]);
       mediaFiles.forEach((mf) => URL.revokeObjectURL(mf.previewUrl));
       setMediaFiles([]);
     } catch (e) {
@@ -229,6 +233,13 @@ export default function CastTimelinePage() {
               placeholder="What's happening? (e.g., Schedule update, Daily life...)"
               value={content}
               onChange={(e) => setContent(e.target.value)}
+            />
+
+            <HashtagInput
+              value={hashtags}
+              onChange={setHashtags}
+              placeholder="Add hashtag... (Enter/Space to add)"
+              maxTags={10}
             />
 
             <AnimatePresence>

@@ -15,6 +15,7 @@ module Social
 
         associations do
           has_many :cast_post_media, foreign_key: :post_id
+          has_many :cast_post_hashtags, foreign_key: :post_id
         end
       end
     end
