@@ -5,6 +5,7 @@ import { ProfileFormData } from "@/modules/portfolio/types";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
+import { AreaSelector } from "./AreaSelector";
 
 interface ProfileInputsProps {
   data: ProfileFormData;
@@ -58,12 +59,10 @@ export const ProfileInputs = ({ data, onChange }: ProfileInputsProps) => {
           <Label className="block text-sm font-bold text-slate-700 mb-1">
             Area (活動エリア)
           </Label>
-          <Input
-            type="text"
-            value={data.area}
-            onChange={(e) => onChange("area", e.target.value)}
-            placeholder="例: 六本木, 西麻布"
-            className="focus-visible:ring-pink-500"
+          <AreaSelector
+            selectedIds={data.areaIds || []}
+            onChange={(ids) => onChange("areaIds", ids)}
+            maxSelections={3}
           />
         </div>
 

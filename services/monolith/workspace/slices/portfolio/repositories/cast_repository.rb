@@ -72,6 +72,19 @@ module Portfolio
         scope = scope.where(visibility: visibility_filter) if visibility_filter
         scope.to_a
       end
+
+      def save_areas(cast_id:, area_ids:)
+        transaction do
+          cast_areas.where(cast_id: cast_id).delete
+          area_ids.each do |area_id|
+            cast_areas.changeset(:create, cast_id: cast_id, area_id: area_id).commit
+          end
+        end
+      end
+
+      def find_area_ids(cast_id)
+        cast_areas.where(cast_id: cast_id).pluck(:area_id)
+      end
     end
   end
 end

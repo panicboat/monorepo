@@ -28,6 +28,12 @@ export function mapCastProfileToFrontend(p: CastProfile) {
     tagline: p.tagline,
     bio: p.bio,
     area: p.area || "",
+    areas: (p.areas || []).map((a) => ({
+      id: a.id,
+      prefecture: a.prefecture,
+      name: a.name,
+      code: a.code,
+    })),
     serviceCategory: p.serviceCategory || "standard",
     locationType: p.locationType || "dispatch",
     defaultScheduleStart: p.defaultScheduleStart || "18:00",
@@ -97,6 +103,7 @@ export function buildSaveProfileRequest(body: any) {
     serviceCategory: body.serviceCategory,
     locationType: body.locationType,
     area: body.area,
+    areaIds: body.areaIds || [],
     defaultScheduleStart: body.defaultScheduleStart,
     defaultScheduleEnd: body.defaultScheduleEnd,
     socialLinks: body.socialLinks

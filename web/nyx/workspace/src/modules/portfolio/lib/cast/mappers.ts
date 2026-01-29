@@ -15,6 +15,7 @@ export function mapApiToProfileForm(apiProfile: any): ProfileFormData {
     serviceCategory: apiProfile.serviceCategory || "standard",
     locationType: apiProfile.locationType || "dispatch",
     area: apiProfile.area || "",
+    areaIds: (apiProfile.areas || []).map((a: any) => a.id),
     defaultScheduleStart: apiProfile.defaultScheduleStart || "18:00",
     defaultScheduleEnd: apiProfile.defaultScheduleEnd || "23:00",
     socialLinks: {
@@ -50,6 +51,7 @@ export function mapProfileFormToApi(form: ProfileFormData, heroKey?: string, gal
     tagline: form.tagline,
     bio: form.bio,
     area: form.area,
+    areaIds: form.areaIds || [],
     serviceCategory: form.serviceCategory,
     locationType: form.locationType,
     defaultScheduleStart: form.defaultScheduleStart,

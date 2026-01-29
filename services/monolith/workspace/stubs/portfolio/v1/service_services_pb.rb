@@ -28,6 +28,7 @@ module Portfolio
         rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
         rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
         rpc :CheckHandleAvailability, ::Portfolio::V1::CheckHandleAvailabilityRequest, ::Portfolio::V1::CheckHandleAvailabilityResponse
+        rpc :ListAreas, ::Portfolio::V1::ListAreasRequest, ::Portfolio::V1::ListAreasResponse
       end
 
       Stub = Service.rpc_stub_class

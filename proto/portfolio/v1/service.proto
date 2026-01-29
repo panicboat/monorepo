@@ -16,6 +16,7 @@ service CastService {
   rpc ListCasts(ListCastsRequest) returns (ListCastsResponse);
   rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
   rpc CheckHandleAvailability(CheckHandleAvailabilityRequest) returns (CheckHandleAvailabilityResponse);
+  rpc ListAreas(ListAreasRequest) returns (ListAreasResponse);
 }
 
 enum CastVisibility {
@@ -39,6 +40,13 @@ message ThreeSizes {
   int32 waist = 2;
   int32 hip = 3;
   string cup = 4;
+}
+
+message Area {
+  string id = 1;
+  string prefecture = 2;
+  string name = 3;
+  string code = 4;
 }
 
 message CastProfile {
@@ -66,6 +74,7 @@ message CastProfile {
   string avatar_path = 21;       // Square avatar image (S3 key)
   string avatar_url = 22;        // Signed download URL for avatar
   string handle = 23;            // Unique user-defined ID (URL key)
+  repeated Area areas = 24;      // Selected areas (from area master)
 }
 
 message CastPlan {
@@ -125,6 +134,7 @@ message SaveCastProfileRequest {
   ThreeSizes three_sizes = 15;
   repeated string tags = 16;
   string handle = 17;
+  repeated string area_ids = 18;  // Selected area IDs
 }
 
 message SaveCastProfileResponse {
@@ -208,3 +218,11 @@ message CheckHandleAvailabilityResponse {
   string message = 2;
 }
 
+message ListAreasRequest {
+  // Optional: filter by prefecture
+  string prefecture = 1;
+}
+
+message ListAreasResponse {
+  repeated Area areas = 1;
+}

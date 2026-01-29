@@ -6,7 +6,7 @@ module Portfolio
   module Presenters
     module Cast
       class ProfilePresenter
-        def self.to_proto(cast)
+        def self.to_proto(cast, areas: [])
           return nil unless cast
 
           avatar_key = cast.respond_to?(:avatar_path) ? cast.avatar_path : nil
@@ -35,7 +35,19 @@ module Portfolio
             height: cast.height || 0,
             blood_type: cast.blood_type || "",
             three_sizes: three_sizes_to_proto(cast.three_sizes),
-            tags: (cast.tags || []).to_a
+            tags: (cast.tags || []).to_a,
+            areas: areas.map { |a| area_to_proto(a) }
+          )
+        end
+
+        def self.area_to_proto(area)
+          return nil unless area
+
+          ::Portfolio::V1::Area.new(
+            id: area.id.to_s,
+            prefecture: area.prefecture || "",
+            name: area.name || "",
+            code: area.code || ""
           )
         end
 

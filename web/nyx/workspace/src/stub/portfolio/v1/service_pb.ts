@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file portfolio/v1/service.proto.
  */
 export const file_portfolio_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpwb3J0Zm9saW8vdjEvc2VydmljZS5wcm90bxIMcG9ydGZvbGlvLnYxInAKC1NvY2lhbExpbmtzEgkKAXgYASABKAkSEQoJaW5zdGFncmFtGAIgASgJEg4KBnRpa3RvaxgDIAEoCRISCgpjaXR5aGVhdmVuGAQgASgJEg8KB2xpdGxpbmsYBSABKAkSDgoGb3RoZXJzGAYgAygJIkMKClRocmVlU2l6ZXMSDAoEYnVzdBgBIAEoBRINCgV3YWlzdBgCIAEoBRILCgNoaXAYAyABKAUSCwoDY3VwGAQgASgJIp4ECgtDYXN0UHJvZmlsZRIPCgd1c2VyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSCwoDYmlvGAMgASgJEhEKCWltYWdlX3VybBgEIAEoCRIwCgp2aXNpYmlsaXR5GAUgASgOMhwucG9ydGZvbGlvLnYxLkNhc3RWaXNpYmlsaXR5EhQKDHByb21pc2VfcmF0ZRgGIAEoARIOCgZpbWFnZXMYByADKAkSEgoKaW1hZ2VfcGF0aBgIIAEoCRIPCgd0YWdsaW5lGAkgASgJEhgKEHNlcnZpY2VfY2F0ZWdvcnkYCiABKAkSFQoNbG9jYXRpb25fdHlwZRgLIAEoCRIMCgRhcmVhGAwgASgJEh4KFmRlZmF1bHRfc2NoZWR1bGVfc3RhcnQYDSABKAkSHAoUZGVmYXVsdF9zY2hlZHVsZV9lbmQYDiABKAkSLwoMc29jaWFsX2xpbmtzGA8gASgLMhkucG9ydGZvbGlvLnYxLlNvY2lhbExpbmtzEgsKA2FnZRgQIAEoBRIOCgZoZWlnaHQYESABKAUSEgoKYmxvb2RfdHlwZRgSIAEoCRItCgt0aHJlZV9zaXplcxgTIAEoCzIYLnBvcnRmb2xpby52MS5UaHJlZVNpemVzEgwKBHRhZ3MYFCADKAkSEwoLYXZhdGFyX3BhdGgYFSABKAkSEgoKYXZhdGFyX3VybBgWIAEoCRIOCgZoYW5kbGUYFyABKAkiTQoIQ2FzdFBsYW4SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRINCgVwcmljZRgDIAEoBRIYChBkdXJhdGlvbl9taW51dGVzGAQgASgFIigKFUdldENhc3RQcm9maWxlUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJIpoBChZHZXRDYXN0UHJvZmlsZVJlc3BvbnNlEioKB3Byb2ZpbGUYASABKAsyGS5wb3J0Zm9saW8udjEuQ2FzdFByb2ZpbGUSJQoFcGxhbnMYAiADKAsyFi5wb3J0Zm9saW8udjEuQ2FzdFBsYW4SLQoJc2NoZWR1bGVzGAMgAygLMhoucG9ydGZvbGlvLnYxLkNhc3RTY2hlZHVsZSL2AgoYQ3JlYXRlQ2FzdFByb2ZpbGVSZXF1ZXN0EgwKBG5hbWUYASABKAkSCwoDYmlvGAIgASgJEhIKCmltYWdlX3BhdGgYAyABKAkSDwoHdGFnbGluZRgEIAEoCRIYChBzZXJ2aWNlX2NhdGVnb3J5GAUgASgJEhUKDWxvY2F0aW9uX3R5cGUYBiABKAkSDAoEYXJlYRgHIAEoCRIeChZkZWZhdWx0X3NjaGVkdWxlX3N0YXJ0GAggASgJEhwKFGRlZmF1bHRfc2NoZWR1bGVfZW5kGAkgASgJEi8KDHNvY2lhbF9saW5rcxgKIAEoCzIZLnBvcnRmb2xpby52MS5Tb2NpYWxMaW5rcxILCgNhZ2UYCyABKAUSDgoGaGVpZ2h0GAwgASgFEhIKCmJsb29kX3R5cGUYDSABKAkSLQoLdGhyZWVfc2l6ZXMYDiABKAsyGC5wb3J0Zm9saW8udjEuVGhyZWVTaXplcxIMCgR0YWdzGA8gAygJIkcKGUNyZWF0ZUNhc3RQcm9maWxlUmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSK2AwoWU2F2ZUNhc3RQcm9maWxlUmVxdWVzdBIMCgRuYW1lGAEgASgJEgsKA2JpbxgCIAEoCRISCgppbWFnZV9wYXRoGAMgASgJEg8KB3RhZ2xpbmUYBCABKAkSGAoQc2VydmljZV9jYXRlZ29yeRgFIAEoCRIVCg1sb2NhdGlvbl90eXBlGAYgASgJEgwKBGFyZWEYByABKAkSHgoWZGVmYXVsdF9zY2hlZHVsZV9zdGFydBgIIAEoCRIcChRkZWZhdWx0X3NjaGVkdWxlX2VuZBgJIAEoCRIvCgxzb2NpYWxfbGlua3MYCiABKAsyGS5wb3J0Zm9saW8udjEuU29jaWFsTGlua3MSMAoKdmlzaWJpbGl0eRgLIAEoDjIcLnBvcnRmb2xpby52MS5DYXN0VmlzaWJpbGl0eRILCgNhZ2UYDCABKAUSDgoGaGVpZ2h0GA0gASgFEhIKCmJsb29kX3R5cGUYDiABKAkSLQoLdGhyZWVfc2l6ZXMYDyABKAsyGC5wb3J0Zm9saW8udjEuVGhyZWVTaXplcxIMCgR0YWdzGBAgAygJEg4KBmhhbmRsZRgRIAEoCSJFChdTYXZlQ2FzdFByb2ZpbGVSZXNwb25zZRIqCgdwcm9maWxlGAEgASgLMhkucG9ydGZvbGlvLnYxLkNhc3RQcm9maWxlIk0KGVNhdmVDYXN0VmlzaWJpbGl0eVJlcXVlc3QSMAoKdmlzaWJpbGl0eRgBIAEoDjIcLnBvcnRmb2xpby52MS5DYXN0VmlzaWJpbGl0eSJIChpTYXZlQ2FzdFZpc2liaWxpdHlSZXNwb25zZRIqCgdwcm9maWxlGAEgASgLMhkucG9ydGZvbGlvLnYxLkNhc3RQcm9maWxlImAKFVNhdmVDYXN0SW1hZ2VzUmVxdWVzdBIaChJwcm9maWxlX2ltYWdlX3BhdGgYASABKAkSFgoOZ2FsbGVyeV9pbWFnZXMYAiADKAkSEwoLYXZhdGFyX3BhdGgYAyABKAkiRAoWU2F2ZUNhc3RJbWFnZXNSZXNwb25zZRIqCgdwcm9maWxlGAEgASgLMhkucG9ydGZvbGlvLnYxLkNhc3RQcm9maWxlIj0KFFNhdmVDYXN0UGxhbnNSZXF1ZXN0EiUKBXBsYW5zGAEgAygLMhYucG9ydGZvbGlvLnYxLkNhc3RQbGFuIj4KFVNhdmVDYXN0UGxhbnNSZXNwb25zZRIlCgVwbGFucxgBIAMoCzIWLnBvcnRmb2xpby52MS5DYXN0UGxhbiJJChhTYXZlQ2FzdFNjaGVkdWxlc1JlcXVlc3QSLQoJc2NoZWR1bGVzGAEgAygLMhoucG9ydGZvbGlvLnYxLkNhc3RTY2hlZHVsZSJKChlTYXZlQ2FzdFNjaGVkdWxlc1Jlc3BvbnNlEi0KCXNjaGVkdWxlcxgBIAMoCzIaLnBvcnRmb2xpby52MS5DYXN0U2NoZWR1bGUiPQoTR2V0VXBsb2FkVXJsUmVxdWVzdBIQCghmaWxlbmFtZRgBIAEoCRIUCgxjb250ZW50X3R5cGUYAiABKAkiMAoUR2V0VXBsb2FkVXJsUmVzcG9uc2USCwoDdXJsGAEgASgJEgsKA2tleRgCIAEoCSJTCgxDYXN0U2NoZWR1bGUSDAoEZGF0ZRgBIAEoCRISCgpzdGFydF90aW1lGAIgASgJEhAKCGVuZF90aW1lGAMgASgJEg8KB3BsYW5faWQYBCABKAkiSwoQTGlzdENhc3RzUmVxdWVzdBI3ChF2aXNpYmlsaXR5X2ZpbHRlchgBIAEoDjIcLnBvcnRmb2xpby52MS5DYXN0VmlzaWJpbGl0eSKrAQoRTGlzdENhc3RzUmVzcG9uc2USNwoFaXRlbXMYASADKAsyKC5wb3J0Zm9saW8udjEuTGlzdENhc3RzUmVzcG9uc2UuQ2FzdEl0ZW0aXQoIQ2FzdEl0ZW0SKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZRIlCgVwbGFucxgCIAMoCzIWLnBvcnRmb2xpby52MS5DYXN0UGxhbiIvCh1HZXRDYXN0UHJvZmlsZUJ5SGFuZGxlUmVxdWVzdBIOCgZoYW5kbGUYASABKAkiMAoeQ2hlY2tIYW5kbGVBdmFpbGFiaWxpdHlSZXF1ZXN0Eg4KBmhhbmRsZRgBIAEoCSJFCh9DaGVja0hhbmRsZUF2YWlsYWJpbGl0eVJlc3BvbnNlEhEKCWF2YWlsYWJsZRgBIAEoCBIPCgdtZXNzYWdlGAIgASgJKpMBCg5DYXN0VmlzaWJpbGl0eRIfChtDQVNUX1ZJU0lCSUxJVFlfVU5TUEVDSUZJRUQQABIgChxDQVNUX1ZJU0lCSUxJVFlfVU5SRUdJU1RFUkVEEAESHwobQ0FTVF9WSVNJQklMSVRZX1VOUFVCTElTSEVEEAISHQoZQ0FTVF9WSVNJQklMSVRZX1BVQkxJU0hFRBADMsAICgtDYXN0U2VydmljZRJbCg5HZXRDYXN0UHJvZmlsZRIjLnBvcnRmb2xpby52MS5HZXRDYXN0UHJvZmlsZVJlcXVlc3QaJC5wb3J0Zm9saW8udjEuR2V0Q2FzdFByb2ZpbGVSZXNwb25zZRJrChZHZXRDYXN0UHJvZmlsZUJ5SGFuZGxlEisucG9ydGZvbGlvLnYxLkdldENhc3RQcm9maWxlQnlIYW5kbGVSZXF1ZXN0GiQucG9ydGZvbGlvLnYxLkdldENhc3RQcm9maWxlUmVzcG9uc2USZAoRQ3JlYXRlQ2FzdFByb2ZpbGUSJi5wb3J0Zm9saW8udjEuQ3JlYXRlQ2FzdFByb2ZpbGVSZXF1ZXN0GicucG9ydGZvbGlvLnYxLkNyZWF0ZUNhc3RQcm9maWxlUmVzcG9uc2USXgoPU2F2ZUNhc3RQcm9maWxlEiQucG9ydGZvbGlvLnYxLlNhdmVDYXN0UHJvZmlsZVJlcXVlc3QaJS5wb3J0Zm9saW8udjEuU2F2ZUNhc3RQcm9maWxlUmVzcG9uc2USZwoSU2F2ZUNhc3RWaXNpYmlsaXR5EicucG9ydGZvbGlvLnYxLlNhdmVDYXN0VmlzaWJpbGl0eVJlcXVlc3QaKC5wb3J0Zm9saW8udjEuU2F2ZUNhc3RWaXNpYmlsaXR5UmVzcG9uc2USWwoOU2F2ZUNhc3RJbWFnZXMSIy5wb3J0Zm9saW8udjEuU2F2ZUNhc3RJbWFnZXNSZXF1ZXN0GiQucG9ydGZvbGlvLnYxLlNhdmVDYXN0SW1hZ2VzUmVzcG9uc2USWAoNU2F2ZUNhc3RQbGFucxIiLnBvcnRmb2xpby52MS5TYXZlQ2FzdFBsYW5zUmVxdWVzdBojLnBvcnRmb2xpby52MS5TYXZlQ2FzdFBsYW5zUmVzcG9uc2USZAoRU2F2ZUNhc3RTY2hlZHVsZXMSJi5wb3J0Zm9saW8udjEuU2F2ZUNhc3RTY2hlZHVsZXNSZXF1ZXN0GicucG9ydGZvbGlvLnYxLlNhdmVDYXN0U2NoZWR1bGVzUmVzcG9uc2USTAoJTGlzdENhc3RzEh4ucG9ydGZvbGlvLnYxLkxpc3RDYXN0c1JlcXVlc3QaHy5wb3J0Zm9saW8udjEuTGlzdENhc3RzUmVzcG9uc2USVQoMR2V0VXBsb2FkVXJsEiEucG9ydGZvbGlvLnYxLkdldFVwbG9hZFVybFJlcXVlc3QaIi5wb3J0Zm9saW8udjEuR2V0VXBsb2FkVXJsUmVzcG9uc2USdgoXQ2hlY2tIYW5kbGVBdmFpbGFiaWxpdHkSLC5wb3J0Zm9saW8udjEuQ2hlY2tIYW5kbGVBdmFpbGFiaWxpdHlSZXF1ZXN0Gi0ucG9ydGZvbGlvLnYxLkNoZWNrSGFuZGxlQXZhaWxhYmlsaXR5UmVzcG9uc2ViBnByb3RvMw");
+  fileDesc("Chpwb3J0Zm9saW8vdjEvc2VydmljZS5wcm90bxIMcG9ydGZvbGlvLnYxInAKC1NvY2lhbExpbmtzEgkKAXgYASABKAkSEQoJaW5zdGFncmFtGAIgASgJEg4KBnRpa3RvaxgDIAEoCRISCgpjaXR5aGVhdmVuGAQgASgJEg8KB2xpdGxpbmsYBSABKAkSDgoGb3RoZXJzGAYgAygJIkMKClRocmVlU2l6ZXMSDAoEYnVzdBgBIAEoBRINCgV3YWlzdBgCIAEoBRILCgNoaXAYAyABKAUSCwoDY3VwGAQgASgJIkIKBEFyZWESCgoCaWQYASABKAkSEgoKcHJlZmVjdHVyZRgCIAEoCRIMCgRuYW1lGAMgASgJEgwKBGNvZGUYBCABKAkiwQQKC0Nhc3RQcm9maWxlEg8KB3VzZXJfaWQYASABKAkSDAoEbmFtZRgCIAEoCRILCgNiaW8YAyABKAkSEQoJaW1hZ2VfdXJsGAQgASgJEjAKCnZpc2liaWxpdHkYBSABKA4yHC5wb3J0Zm9saW8udjEuQ2FzdFZpc2liaWxpdHkSFAoMcHJvbWlzZV9yYXRlGAYgASgBEg4KBmltYWdlcxgHIAMoCRISCgppbWFnZV9wYXRoGAggASgJEg8KB3RhZ2xpbmUYCSABKAkSGAoQc2VydmljZV9jYXRlZ29yeRgKIAEoCRIVCg1sb2NhdGlvbl90eXBlGAsgASgJEgwKBGFyZWEYDCABKAkSHgoWZGVmYXVsdF9zY2hlZHVsZV9zdGFydBgNIAEoCRIcChRkZWZhdWx0X3NjaGVkdWxlX2VuZBgOIAEoCRIvCgxzb2NpYWxfbGlua3MYDyABKAsyGS5wb3J0Zm9saW8udjEuU29jaWFsTGlua3MSCwoDYWdlGBAgASgFEg4KBmhlaWdodBgRIAEoBRISCgpibG9vZF90eXBlGBIgASgJEi0KC3RocmVlX3NpemVzGBMgASgLMhgucG9ydGZvbGlvLnYxLlRocmVlU2l6ZXMSDAoEdGFncxgUIAMoCRITCgthdmF0YXJfcGF0aBgVIAEoCRISCgphdmF0YXJfdXJsGBYgASgJEg4KBmhhbmRsZRgXIAEoCRIhCgVhcmVhcxgYIAMoCzISLnBvcnRmb2xpby52MS5BcmVhIk0KCENhc3RQbGFuEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDQoFcHJpY2UYAyABKAUSGAoQZHVyYXRpb25fbWludXRlcxgEIAEoBSIoChVHZXRDYXN0UHJvZmlsZVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCSKaAQoWR2V0Q2FzdFByb2ZpbGVSZXNwb25zZRIqCgdwcm9maWxlGAEgASgLMhkucG9ydGZvbGlvLnYxLkNhc3RQcm9maWxlEiUKBXBsYW5zGAIgAygLMhYucG9ydGZvbGlvLnYxLkNhc3RQbGFuEi0KCXNjaGVkdWxlcxgDIAMoCzIaLnBvcnRmb2xpby52MS5DYXN0U2NoZWR1bGUi9gIKGENyZWF0ZUNhc3RQcm9maWxlUmVxdWVzdBIMCgRuYW1lGAEgASgJEgsKA2JpbxgCIAEoCRISCgppbWFnZV9wYXRoGAMgASgJEg8KB3RhZ2xpbmUYBCABKAkSGAoQc2VydmljZV9jYXRlZ29yeRgFIAEoCRIVCg1sb2NhdGlvbl90eXBlGAYgASgJEgwKBGFyZWEYByABKAkSHgoWZGVmYXVsdF9zY2hlZHVsZV9zdGFydBgIIAEoCRIcChRkZWZhdWx0X3NjaGVkdWxlX2VuZBgJIAEoCRIvCgxzb2NpYWxfbGlua3MYCiABKAsyGS5wb3J0Zm9saW8udjEuU29jaWFsTGlua3MSCwoDYWdlGAsgASgFEg4KBmhlaWdodBgMIAEoBRISCgpibG9vZF90eXBlGA0gASgJEi0KC3RocmVlX3NpemVzGA4gASgLMhgucG9ydGZvbGlvLnYxLlRocmVlU2l6ZXMSDAoEdGFncxgPIAMoCSJHChlDcmVhdGVDYXN0UHJvZmlsZVJlc3BvbnNlEioKB3Byb2ZpbGUYASABKAsyGS5wb3J0Zm9saW8udjEuQ2FzdFByb2ZpbGUiyAMKFlNhdmVDYXN0UHJvZmlsZVJlcXVlc3QSDAoEbmFtZRgBIAEoCRILCgNiaW8YAiABKAkSEgoKaW1hZ2VfcGF0aBgDIAEoCRIPCgd0YWdsaW5lGAQgASgJEhgKEHNlcnZpY2VfY2F0ZWdvcnkYBSABKAkSFQoNbG9jYXRpb25fdHlwZRgGIAEoCRIMCgRhcmVhGAcgASgJEh4KFmRlZmF1bHRfc2NoZWR1bGVfc3RhcnQYCCABKAkSHAoUZGVmYXVsdF9zY2hlZHVsZV9lbmQYCSABKAkSLwoMc29jaWFsX2xpbmtzGAogASgLMhkucG9ydGZvbGlvLnYxLlNvY2lhbExpbmtzEjAKCnZpc2liaWxpdHkYCyABKA4yHC5wb3J0Zm9saW8udjEuQ2FzdFZpc2liaWxpdHkSCwoDYWdlGAwgASgFEg4KBmhlaWdodBgNIAEoBRISCgpibG9vZF90eXBlGA4gASgJEi0KC3RocmVlX3NpemVzGA8gASgLMhgucG9ydGZvbGlvLnYxLlRocmVlU2l6ZXMSDAoEdGFncxgQIAMoCRIOCgZoYW5kbGUYESABKAkSEAoIYXJlYV9pZHMYEiADKAkiRQoXU2F2ZUNhc3RQcm9maWxlUmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSJNChlTYXZlQ2FzdFZpc2liaWxpdHlSZXF1ZXN0EjAKCnZpc2liaWxpdHkYASABKA4yHC5wb3J0Zm9saW8udjEuQ2FzdFZpc2liaWxpdHkiSAoaU2F2ZUNhc3RWaXNpYmlsaXR5UmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSJgChVTYXZlQ2FzdEltYWdlc1JlcXVlc3QSGgoScHJvZmlsZV9pbWFnZV9wYXRoGAEgASgJEhYKDmdhbGxlcnlfaW1hZ2VzGAIgAygJEhMKC2F2YXRhcl9wYXRoGAMgASgJIkQKFlNhdmVDYXN0SW1hZ2VzUmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSI9ChRTYXZlQ2FzdFBsYW5zUmVxdWVzdBIlCgVwbGFucxgBIAMoCzIWLnBvcnRmb2xpby52MS5DYXN0UGxhbiI+ChVTYXZlQ2FzdFBsYW5zUmVzcG9uc2USJQoFcGxhbnMYASADKAsyFi5wb3J0Zm9saW8udjEuQ2FzdFBsYW4iSQoYU2F2ZUNhc3RTY2hlZHVsZXNSZXF1ZXN0Ei0KCXNjaGVkdWxlcxgBIAMoCzIaLnBvcnRmb2xpby52MS5DYXN0U2NoZWR1bGUiSgoZU2F2ZUNhc3RTY2hlZHVsZXNSZXNwb25zZRItCglzY2hlZHVsZXMYASADKAsyGi5wb3J0Zm9saW8udjEuQ2FzdFNjaGVkdWxlIj0KE0dldFVwbG9hZFVybFJlcXVlc3QSEAoIZmlsZW5hbWUYASABKAkSFAoMY29udGVudF90eXBlGAIgASgJIjAKFEdldFVwbG9hZFVybFJlc3BvbnNlEgsKA3VybBgBIAEoCRILCgNrZXkYAiABKAkiUwoMQ2FzdFNjaGVkdWxlEgwKBGRhdGUYASABKAkSEgoKc3RhcnRfdGltZRgCIAEoCRIQCghlbmRfdGltZRgDIAEoCRIPCgdwbGFuX2lkGAQgASgJIksKEExpc3RDYXN0c1JlcXVlc3QSNwoRdmlzaWJpbGl0eV9maWx0ZXIYASABKA4yHC5wb3J0Zm9saW8udjEuQ2FzdFZpc2liaWxpdHkiqwEKEUxpc3RDYXN0c1Jlc3BvbnNlEjcKBWl0ZW1zGAEgAygLMigucG9ydGZvbGlvLnYxLkxpc3RDYXN0c1Jlc3BvbnNlLkNhc3RJdGVtGl0KCENhc3RJdGVtEioKB3Byb2ZpbGUYASABKAsyGS5wb3J0Zm9saW8udjEuQ2FzdFByb2ZpbGUSJQoFcGxhbnMYAiADKAsyFi5wb3J0Zm9saW8udjEuQ2FzdFBsYW4iLwodR2V0Q2FzdFByb2ZpbGVCeUhhbmRsZVJlcXVlc3QSDgoGaGFuZGxlGAEgASgJIjAKHkNoZWNrSGFuZGxlQXZhaWxhYmlsaXR5UmVxdWVzdBIOCgZoYW5kbGUYASABKAkiRQofQ2hlY2tIYW5kbGVBdmFpbGFiaWxpdHlSZXNwb25zZRIRCglhdmFpbGFibGUYASABKAgSDwoHbWVzc2FnZRgCIAEoCSImChBMaXN0QXJlYXNSZXF1ZXN0EhIKCnByZWZlY3R1cmUYASABKAkiNgoRTGlzdEFyZWFzUmVzcG9uc2USIQoFYXJlYXMYASADKAsyEi5wb3J0Zm9saW8udjEuQXJlYSqTAQoOQ2FzdFZpc2liaWxpdHkSHwobQ0FTVF9WSVNJQklMSVRZX1VOU1BFQ0lGSUVEEAASIAocQ0FTVF9WSVNJQklMSVRZX1VOUkVHSVNURVJFRBABEh8KG0NBU1RfVklTSUJJTElUWV9VTlBVQkxJU0hFRBACEh0KGUNBU1RfVklTSUJJTElUWV9QVUJMSVNIRUQQAzKOCQoLQ2FzdFNlcnZpY2USWwoOR2V0Q2FzdFByb2ZpbGUSIy5wb3J0Zm9saW8udjEuR2V0Q2FzdFByb2ZpbGVSZXF1ZXN0GiQucG9ydGZvbGlvLnYxLkdldENhc3RQcm9maWxlUmVzcG9uc2USawoWR2V0Q2FzdFByb2ZpbGVCeUhhbmRsZRIrLnBvcnRmb2xpby52MS5HZXRDYXN0UHJvZmlsZUJ5SGFuZGxlUmVxdWVzdBokLnBvcnRmb2xpby52MS5HZXRDYXN0UHJvZmlsZVJlc3BvbnNlEmQKEUNyZWF0ZUNhc3RQcm9maWxlEiYucG9ydGZvbGlvLnYxLkNyZWF0ZUNhc3RQcm9maWxlUmVxdWVzdBonLnBvcnRmb2xpby52MS5DcmVhdGVDYXN0UHJvZmlsZVJlc3BvbnNlEl4KD1NhdmVDYXN0UHJvZmlsZRIkLnBvcnRmb2xpby52MS5TYXZlQ2FzdFByb2ZpbGVSZXF1ZXN0GiUucG9ydGZvbGlvLnYxLlNhdmVDYXN0UHJvZmlsZVJlc3BvbnNlEmcKElNhdmVDYXN0VmlzaWJpbGl0eRInLnBvcnRmb2xpby52MS5TYXZlQ2FzdFZpc2liaWxpdHlSZXF1ZXN0GigucG9ydGZvbGlvLnYxLlNhdmVDYXN0VmlzaWJpbGl0eVJlc3BvbnNlElsKDlNhdmVDYXN0SW1hZ2VzEiMucG9ydGZvbGlvLnYxLlNhdmVDYXN0SW1hZ2VzUmVxdWVzdBokLnBvcnRmb2xpby52MS5TYXZlQ2FzdEltYWdlc1Jlc3BvbnNlElgKDVNhdmVDYXN0UGxhbnMSIi5wb3J0Zm9saW8udjEuU2F2ZUNhc3RQbGFuc1JlcXVlc3QaIy5wb3J0Zm9saW8udjEuU2F2ZUNhc3RQbGFuc1Jlc3BvbnNlEmQKEVNhdmVDYXN0U2NoZWR1bGVzEiYucG9ydGZvbGlvLnYxLlNhdmVDYXN0U2NoZWR1bGVzUmVxdWVzdBonLnBvcnRmb2xpby52MS5TYXZlQ2FzdFNjaGVkdWxlc1Jlc3BvbnNlEkwKCUxpc3RDYXN0cxIeLnBvcnRmb2xpby52MS5MaXN0Q2FzdHNSZXF1ZXN0Gh8ucG9ydGZvbGlvLnYxLkxpc3RDYXN0c1Jlc3BvbnNlElUKDEdldFVwbG9hZFVybBIhLnBvcnRmb2xpby52MS5HZXRVcGxvYWRVcmxSZXF1ZXN0GiIucG9ydGZvbGlvLnYxLkdldFVwbG9hZFVybFJlc3BvbnNlEnYKF0NoZWNrSGFuZGxlQXZhaWxhYmlsaXR5EiwucG9ydGZvbGlvLnYxLkNoZWNrSGFuZGxlQXZhaWxhYmlsaXR5UmVxdWVzdBotLnBvcnRmb2xpby52MS5DaGVja0hhbmRsZUF2YWlsYWJpbGl0eVJlc3BvbnNlEkwKCUxpc3RBcmVhcxIeLnBvcnRmb2xpby52MS5MaXN0QXJlYXNSZXF1ZXN0Gh8ucG9ydGZvbGlvLnYxLkxpc3RBcmVhc1Jlc3BvbnNlYgZwcm90bzM");
 
 /**
  * @generated from message portfolio.v1.SocialLinks
@@ -85,6 +85,38 @@ export type ThreeSizes = Message<"portfolio.v1.ThreeSizes"> & {
  */
 export const ThreeSizesSchema: GenMessage<ThreeSizes> = /*@__PURE__*/
   messageDesc(file_portfolio_v1_service, 1);
+
+/**
+ * @generated from message portfolio.v1.Area
+ */
+export type Area = Message<"portfolio.v1.Area"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string prefecture = 2;
+   */
+  prefecture: string;
+
+  /**
+   * @generated from field: string name = 3;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string code = 4;
+   */
+  code: string;
+};
+
+/**
+ * Describes the message portfolio.v1.Area.
+ * Use `create(AreaSchema)` to create a new message.
+ */
+export const AreaSchema: GenMessage<Area> = /*@__PURE__*/
+  messageDesc(file_portfolio_v1_service, 2);
 
 /**
  * @generated from message portfolio.v1.CastProfile
@@ -212,6 +244,13 @@ export type CastProfile = Message<"portfolio.v1.CastProfile"> & {
    * @generated from field: string handle = 23;
    */
   handle: string;
+
+  /**
+   * Selected areas (from area master)
+   *
+   * @generated from field: repeated portfolio.v1.Area areas = 24;
+   */
+  areas: Area[];
 };
 
 /**
@@ -219,7 +258,7 @@ export type CastProfile = Message<"portfolio.v1.CastProfile"> & {
  * Use `create(CastProfileSchema)` to create a new message.
  */
 export const CastProfileSchema: GenMessage<CastProfile> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 2);
+  messageDesc(file_portfolio_v1_service, 3);
 
 /**
  * @generated from message portfolio.v1.CastPlan
@@ -253,7 +292,7 @@ export type CastPlan = Message<"portfolio.v1.CastPlan"> & {
  * Use `create(CastPlanSchema)` to create a new message.
  */
 export const CastPlanSchema: GenMessage<CastPlan> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 3);
+  messageDesc(file_portfolio_v1_service, 4);
 
 /**
  * @generated from message portfolio.v1.GetCastProfileRequest
@@ -272,7 +311,7 @@ export type GetCastProfileRequest = Message<"portfolio.v1.GetCastProfileRequest"
  * Use `create(GetCastProfileRequestSchema)` to create a new message.
  */
 export const GetCastProfileRequestSchema: GenMessage<GetCastProfileRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 4);
+  messageDesc(file_portfolio_v1_service, 5);
 
 /**
  * @generated from message portfolio.v1.GetCastProfileResponse
@@ -299,7 +338,7 @@ export type GetCastProfileResponse = Message<"portfolio.v1.GetCastProfileRespons
  * Use `create(GetCastProfileResponseSchema)` to create a new message.
  */
 export const GetCastProfileResponseSchema: GenMessage<GetCastProfileResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 5);
+  messageDesc(file_portfolio_v1_service, 6);
 
 /**
  * @generated from message portfolio.v1.CreateCastProfileRequest
@@ -386,7 +425,7 @@ export type CreateCastProfileRequest = Message<"portfolio.v1.CreateCastProfileRe
  * Use `create(CreateCastProfileRequestSchema)` to create a new message.
  */
 export const CreateCastProfileRequestSchema: GenMessage<CreateCastProfileRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 6);
+  messageDesc(file_portfolio_v1_service, 7);
 
 /**
  * @generated from message portfolio.v1.CreateCastProfileResponse
@@ -403,7 +442,7 @@ export type CreateCastProfileResponse = Message<"portfolio.v1.CreateCastProfileR
  * Use `create(CreateCastProfileResponseSchema)` to create a new message.
  */
 export const CreateCastProfileResponseSchema: GenMessage<CreateCastProfileResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 7);
+  messageDesc(file_portfolio_v1_service, 8);
 
 /**
  * @generated from message portfolio.v1.SaveCastProfileRequest
@@ -493,6 +532,13 @@ export type SaveCastProfileRequest = Message<"portfolio.v1.SaveCastProfileReques
    * @generated from field: string handle = 17;
    */
   handle: string;
+
+  /**
+   * Selected area IDs
+   *
+   * @generated from field: repeated string area_ids = 18;
+   */
+  areaIds: string[];
 };
 
 /**
@@ -500,7 +546,7 @@ export type SaveCastProfileRequest = Message<"portfolio.v1.SaveCastProfileReques
  * Use `create(SaveCastProfileRequestSchema)` to create a new message.
  */
 export const SaveCastProfileRequestSchema: GenMessage<SaveCastProfileRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 8);
+  messageDesc(file_portfolio_v1_service, 9);
 
 /**
  * @generated from message portfolio.v1.SaveCastProfileResponse
@@ -517,7 +563,7 @@ export type SaveCastProfileResponse = Message<"portfolio.v1.SaveCastProfileRespo
  * Use `create(SaveCastProfileResponseSchema)` to create a new message.
  */
 export const SaveCastProfileResponseSchema: GenMessage<SaveCastProfileResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 9);
+  messageDesc(file_portfolio_v1_service, 10);
 
 /**
  * @generated from message portfolio.v1.SaveCastVisibilityRequest
@@ -534,7 +580,7 @@ export type SaveCastVisibilityRequest = Message<"portfolio.v1.SaveCastVisibility
  * Use `create(SaveCastVisibilityRequestSchema)` to create a new message.
  */
 export const SaveCastVisibilityRequestSchema: GenMessage<SaveCastVisibilityRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 10);
+  messageDesc(file_portfolio_v1_service, 11);
 
 /**
  * @generated from message portfolio.v1.SaveCastVisibilityResponse
@@ -551,7 +597,7 @@ export type SaveCastVisibilityResponse = Message<"portfolio.v1.SaveCastVisibilit
  * Use `create(SaveCastVisibilityResponseSchema)` to create a new message.
  */
 export const SaveCastVisibilityResponseSchema: GenMessage<SaveCastVisibilityResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 11);
+  messageDesc(file_portfolio_v1_service, 12);
 
 /**
  * @generated from message portfolio.v1.SaveCastImagesRequest
@@ -584,7 +630,7 @@ export type SaveCastImagesRequest = Message<"portfolio.v1.SaveCastImagesRequest"
  * Use `create(SaveCastImagesRequestSchema)` to create a new message.
  */
 export const SaveCastImagesRequestSchema: GenMessage<SaveCastImagesRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 12);
+  messageDesc(file_portfolio_v1_service, 13);
 
 /**
  * @generated from message portfolio.v1.SaveCastImagesResponse
@@ -601,7 +647,7 @@ export type SaveCastImagesResponse = Message<"portfolio.v1.SaveCastImagesRespons
  * Use `create(SaveCastImagesResponseSchema)` to create a new message.
  */
 export const SaveCastImagesResponseSchema: GenMessage<SaveCastImagesResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 13);
+  messageDesc(file_portfolio_v1_service, 14);
 
 /**
  * @generated from message portfolio.v1.SaveCastPlansRequest
@@ -618,7 +664,7 @@ export type SaveCastPlansRequest = Message<"portfolio.v1.SaveCastPlansRequest"> 
  * Use `create(SaveCastPlansRequestSchema)` to create a new message.
  */
 export const SaveCastPlansRequestSchema: GenMessage<SaveCastPlansRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 14);
+  messageDesc(file_portfolio_v1_service, 15);
 
 /**
  * @generated from message portfolio.v1.SaveCastPlansResponse
@@ -635,7 +681,7 @@ export type SaveCastPlansResponse = Message<"portfolio.v1.SaveCastPlansResponse"
  * Use `create(SaveCastPlansResponseSchema)` to create a new message.
  */
 export const SaveCastPlansResponseSchema: GenMessage<SaveCastPlansResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 15);
+  messageDesc(file_portfolio_v1_service, 16);
 
 /**
  * @generated from message portfolio.v1.SaveCastSchedulesRequest
@@ -652,7 +698,7 @@ export type SaveCastSchedulesRequest = Message<"portfolio.v1.SaveCastSchedulesRe
  * Use `create(SaveCastSchedulesRequestSchema)` to create a new message.
  */
 export const SaveCastSchedulesRequestSchema: GenMessage<SaveCastSchedulesRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 16);
+  messageDesc(file_portfolio_v1_service, 17);
 
 /**
  * @generated from message portfolio.v1.SaveCastSchedulesResponse
@@ -669,7 +715,7 @@ export type SaveCastSchedulesResponse = Message<"portfolio.v1.SaveCastSchedulesR
  * Use `create(SaveCastSchedulesResponseSchema)` to create a new message.
  */
 export const SaveCastSchedulesResponseSchema: GenMessage<SaveCastSchedulesResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 17);
+  messageDesc(file_portfolio_v1_service, 18);
 
 /**
  * @generated from message portfolio.v1.GetUploadUrlRequest
@@ -691,7 +737,7 @@ export type GetUploadUrlRequest = Message<"portfolio.v1.GetUploadUrlRequest"> & 
  * Use `create(GetUploadUrlRequestSchema)` to create a new message.
  */
 export const GetUploadUrlRequestSchema: GenMessage<GetUploadUrlRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 18);
+  messageDesc(file_portfolio_v1_service, 19);
 
 /**
  * @generated from message portfolio.v1.GetUploadUrlResponse
@@ -713,7 +759,7 @@ export type GetUploadUrlResponse = Message<"portfolio.v1.GetUploadUrlResponse"> 
  * Use `create(GetUploadUrlResponseSchema)` to create a new message.
  */
 export const GetUploadUrlResponseSchema: GenMessage<GetUploadUrlResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 19);
+  messageDesc(file_portfolio_v1_service, 20);
 
 /**
  * @generated from message portfolio.v1.CastSchedule
@@ -753,7 +799,7 @@ export type CastSchedule = Message<"portfolio.v1.CastSchedule"> & {
  * Use `create(CastScheduleSchema)` to create a new message.
  */
 export const CastScheduleSchema: GenMessage<CastSchedule> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 20);
+  messageDesc(file_portfolio_v1_service, 21);
 
 /**
  * @generated from message portfolio.v1.ListCastsRequest
@@ -772,7 +818,7 @@ export type ListCastsRequest = Message<"portfolio.v1.ListCastsRequest"> & {
  * Use `create(ListCastsRequestSchema)` to create a new message.
  */
 export const ListCastsRequestSchema: GenMessage<ListCastsRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 21);
+  messageDesc(file_portfolio_v1_service, 22);
 
 /**
  * @generated from message portfolio.v1.ListCastsResponse
@@ -789,7 +835,7 @@ export type ListCastsResponse = Message<"portfolio.v1.ListCastsResponse"> & {
  * Use `create(ListCastsResponseSchema)` to create a new message.
  */
 export const ListCastsResponseSchema: GenMessage<ListCastsResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 22);
+  messageDesc(file_portfolio_v1_service, 23);
 
 /**
  * @generated from message portfolio.v1.ListCastsResponse.CastItem
@@ -811,7 +857,7 @@ export type ListCastsResponse_CastItem = Message<"portfolio.v1.ListCastsResponse
  * Use `create(ListCastsResponse_CastItemSchema)` to create a new message.
  */
 export const ListCastsResponse_CastItemSchema: GenMessage<ListCastsResponse_CastItem> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 22, 0);
+  messageDesc(file_portfolio_v1_service, 23, 0);
 
 /**
  * @generated from message portfolio.v1.GetCastProfileByHandleRequest
@@ -828,7 +874,7 @@ export type GetCastProfileByHandleRequest = Message<"portfolio.v1.GetCastProfile
  * Use `create(GetCastProfileByHandleRequestSchema)` to create a new message.
  */
 export const GetCastProfileByHandleRequestSchema: GenMessage<GetCastProfileByHandleRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 23);
+  messageDesc(file_portfolio_v1_service, 24);
 
 /**
  * @generated from message portfolio.v1.CheckHandleAvailabilityRequest
@@ -845,7 +891,7 @@ export type CheckHandleAvailabilityRequest = Message<"portfolio.v1.CheckHandleAv
  * Use `create(CheckHandleAvailabilityRequestSchema)` to create a new message.
  */
 export const CheckHandleAvailabilityRequestSchema: GenMessage<CheckHandleAvailabilityRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 24);
+  messageDesc(file_portfolio_v1_service, 25);
 
 /**
  * @generated from message portfolio.v1.CheckHandleAvailabilityResponse
@@ -867,7 +913,43 @@ export type CheckHandleAvailabilityResponse = Message<"portfolio.v1.CheckHandleA
  * Use `create(CheckHandleAvailabilityResponseSchema)` to create a new message.
  */
 export const CheckHandleAvailabilityResponseSchema: GenMessage<CheckHandleAvailabilityResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_service, 25);
+  messageDesc(file_portfolio_v1_service, 26);
+
+/**
+ * @generated from message portfolio.v1.ListAreasRequest
+ */
+export type ListAreasRequest = Message<"portfolio.v1.ListAreasRequest"> & {
+  /**
+   * Optional: filter by prefecture
+   *
+   * @generated from field: string prefecture = 1;
+   */
+  prefecture: string;
+};
+
+/**
+ * Describes the message portfolio.v1.ListAreasRequest.
+ * Use `create(ListAreasRequestSchema)` to create a new message.
+ */
+export const ListAreasRequestSchema: GenMessage<ListAreasRequest> = /*@__PURE__*/
+  messageDesc(file_portfolio_v1_service, 27);
+
+/**
+ * @generated from message portfolio.v1.ListAreasResponse
+ */
+export type ListAreasResponse = Message<"portfolio.v1.ListAreasResponse"> & {
+  /**
+   * @generated from field: repeated portfolio.v1.Area areas = 1;
+   */
+  areas: Area[];
+};
+
+/**
+ * Describes the message portfolio.v1.ListAreasResponse.
+ * Use `create(ListAreasResponseSchema)` to create a new message.
+ */
+export const ListAreasResponseSchema: GenMessage<ListAreasResponse> = /*@__PURE__*/
+  messageDesc(file_portfolio_v1_service, 28);
 
 /**
  * @generated from enum portfolio.v1.CastVisibility
@@ -997,6 +1079,14 @@ export const CastService: GenService<{
     methodKind: "unary";
     input: typeof CheckHandleAvailabilityRequestSchema;
     output: typeof CheckHandleAvailabilityResponseSchema;
+  },
+  /**
+   * @generated from rpc portfolio.v1.CastService.ListAreas
+   */
+  listAreas: {
+    methodKind: "unary";
+    input: typeof ListAreasRequestSchema;
+    output: typeof ListAreasResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_portfolio_v1_service, 0);

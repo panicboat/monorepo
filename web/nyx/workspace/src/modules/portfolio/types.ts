@@ -32,6 +32,13 @@ export interface CastTag {
   count: number;
 }
 
+export interface Area {
+  id: string;
+  prefecture: string;
+  name: string;
+  code: string;
+}
+
 export interface CastProfile {
   id: string;
   name: string;
@@ -75,6 +82,9 @@ export interface CastProfile {
   // Relations
   plans: ServicePlan[];
 
+  // Areas (selected from master)
+  areas?: Area[];
+
   // Schedule Template (Internal)
   weeklySchedules?: WeeklySchedule[];
 }
@@ -94,6 +104,7 @@ export interface ProfileFormData {
   serviceCategory: "advanced" | "standard" | "social";
   locationType: "store" | "dispatch" | "hotel";
   area: string;
+  areaIds: string[];
   defaultScheduleStart: string; // HH:mm
   defaultScheduleEnd: string; // HH:mm
   socialLinks: {

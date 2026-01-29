@@ -14,6 +14,7 @@ const INITIAL_PROFILE: ProfileFormData = {
   serviceCategory: "standard",
   locationType: "dispatch",
   area: "",
+  areaIds: [],
   defaultScheduleStart: "18:00",
   defaultScheduleEnd: "23:00",
   socialLinks: { others: [] },

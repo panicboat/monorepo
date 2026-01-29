@@ -24,6 +24,7 @@ module Portfolio
       rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
       rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
       rpc :CheckHandleAvailability, ::Portfolio::V1::CheckHandleAvailabilityRequest, ::Portfolio::V1::CheckHandleAvailabilityResponse
+      rpc :ListAreas, ::Portfolio::V1::ListAreasRequest, ::Portfolio::V1::ListAreasResponse
 
       include Portfolio::Deps[
         get_profile_uc: "use_cases.cast.profile.get_profile",
@@ -34,7 +35,8 @@ module Portfolio
         save_images_uc: "use_cases.cast.images.save_images",
         get_upload_url_uc: "use_cases.cast.images.get_upload_url",
         list_casts_uc: "use_cases.cast.listing.list_casts",
-        repo: "repositories.cast_repository"
+        repo: "repositories.cast_repository",
+        area_repo: "repositories.area_repository"
       ]
 
       # === Cast Profile ===
@@ -48,8 +50,11 @@ module Portfolio
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
         end
 
+        area_ids = repo.find_area_ids(result.id)
+        areas = area_repo.find_by_ids(area_ids)
+
         ::Portfolio::V1::GetCastProfileResponse.new(
-          profile: ProfilePresenter.to_proto(result),
+          profile: ProfilePresenter.to_proto(result, areas: areas),
           plans: PlanPresenter.many_to_proto(result.cast_plans),
           schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
         )
@@ -71,8 +76,11 @@ module Portfolio
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
         end
 
+        area_ids = repo.find_area_ids(result.id)
+        areas = area_repo.find_by_ids(area_ids)
+
         ::Portfolio::V1::GetCastProfileResponse.new(
-          profile: ProfilePresenter.to_proto(result),
+          profile: ProfilePresenter.to_proto(result, areas: areas),
           plans: PlanPresenter.many_to_proto(result.cast_plans),
           schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
         )
@@ -147,6 +155,8 @@ module Portfolio
       def save_cast_profile
         authenticate_user!
 
+        area_ids = request.message.area_ids.to_a
+
         result = save_profile_uc.call(
           user_id: ::Current.user_id,
           name: request.message.name,
@@ -164,10 +174,14 @@ module Portfolio
           height: request.message.height.zero? ? nil : request.message.height,
           blood_type: request.message.blood_type.to_s.empty? ? nil : request.message.blood_type,
           three_sizes: ProfilePresenter.three_sizes_from_proto(request.message.three_sizes),
-          tags: request.message.tags.to_a.empty? ? nil : request.message.tags.to_a
+          tags: request.message.tags.to_a.empty? ? nil : request.message.tags.to_a,
+          area_ids: area_ids.empty? ? nil : area_ids
         )
 
-        ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))
+        saved_area_ids = repo.find_area_ids(result.id)
+        areas = area_repo.find_by_ids(saved_area_ids)
+
+        ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, areas: areas))
       rescue SaveProfile::HandleNotAvailableError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::ALREADY_EXISTS, e.message)
       rescue SaveProfile::ValidationError => e
@@ -268,6 +282,21 @@ module Portfolio
               plans: PlanPresenter.many_to_proto(c.cast_plans)
             )
           }
+        )
+      end
+
+      # === Areas ===
+
+      def list_areas
+        prefecture = request.message.prefecture
+        areas = if prefecture.to_s.empty?
+          area_repo.list_all
+        else
+          area_repo.list_by_prefecture(prefecture)
+        end
+
+        ::Portfolio::V1::ListAreasResponse.new(
+          areas: areas.map { |a| ProfilePresenter.area_to_proto(a) }
         )
       end
 

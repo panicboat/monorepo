@@ -83,6 +83,33 @@ CREATE TABLE identity.users (
 
 
 --
+-- Name: areas; Type: TABLE; Schema: portfolio; Owner: -
+--
+
+CREATE TABLE portfolio.areas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    prefecture character varying(50) NOT NULL,
+    name character varying(100) NOT NULL,
+    code character varying(50) NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: cast_areas; Type: TABLE; Schema: portfolio; Owner: -
+--
+
+CREATE TABLE portfolio.cast_areas (
+    cast_id uuid NOT NULL,
+    area_id uuid NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
 -- Name: cast_plans; Type: TABLE; Schema: portfolio; Owner: -
 --
 
@@ -228,6 +255,30 @@ ALTER TABLE ONLY identity.users
 
 
 --
+-- Name: areas areas_code_key; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.areas
+    ADD CONSTRAINT areas_code_key UNIQUE (code);
+
+
+--
+-- Name: areas areas_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.areas
+    ADD CONSTRAINT areas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cast_areas cast_areas_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_areas
+    ADD CONSTRAINT cast_areas_pkey PRIMARY KEY (cast_id, area_id);
+
+
+--
 -- Name: cast_plans cast_plans_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
 --
 
@@ -319,6 +370,13 @@ CREATE UNIQUE INDEX identity_users_phone_number_index ON identity.users USING bt
 
 
 --
+-- Name: idx_cast_areas_area_id; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX idx_cast_areas_area_id ON portfolio.cast_areas USING btree (area_id);
+
+
+--
 -- Name: idx_casts_handle_lower; Type: INDEX; Schema: portfolio; Owner: -
 --
 
@@ -390,6 +448,22 @@ ALTER TABLE ONLY identity.refresh_tokens
 
 
 --
+-- Name: cast_areas cast_areas_area_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_areas
+    ADD CONSTRAINT cast_areas_area_id_fkey FOREIGN KEY (area_id) REFERENCES portfolio.areas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: cast_areas cast_areas_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_areas
+    ADD CONSTRAINT cast_areas_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
+
+
+--
 -- Name: cast_plans cast_plans_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
 --
 
@@ -450,4 +524,6 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260127000000_add_visible_to_cast_posts.rb'),
 ('20260128000000_add_avatar_path_to_casts.rb'),
 ('20260129000000_create_cast_post_hashtags.rb'),
-('20260129000001_add_handle_to_casts.rb');
+('20260129000001_add_handle_to_casts.rb'),
+('20260129000002_create_areas.rb'),
+('20260129000003_create_cast_areas.rb');
