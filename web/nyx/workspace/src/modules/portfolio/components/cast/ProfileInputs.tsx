@@ -41,7 +41,7 @@ export const ProfileInputs = ({ data, onChange }: ProfileInputsProps) => {
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">@</span>
             <Input
               type="text"
-              value={data.handle}
+              value={data.handle || ""}
               onChange={(e) => {
                 const val = e.target.value.replace(/[^a-zA-Z0-9]/g, "");
                 onChange("handle", val);

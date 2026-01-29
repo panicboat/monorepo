@@ -107,23 +107,27 @@ export function useCastData(options: UseCastDataOptions = {}) {
     (updates: Partial<ProfileFormData>) => {
       mutate(
         (currentData) => {
-          if (!currentData) return currentData;
+          const existingProfile = currentData?.profile || {};
           return {
             ...currentData,
             profile: {
-              ...currentData.profile,
-              name: updates.nickname ?? currentData.profile?.name,
-              tagline: updates.tagline ?? currentData.profile?.tagline,
-              bio: updates.bio ?? currentData.profile?.bio,
-              area: updates.area ?? currentData.profile?.area,
-              serviceCategory: updates.serviceCategory ?? currentData.profile?.serviceCategory,
-              locationType: updates.locationType ?? currentData.profile?.locationType,
-              socialLinks: updates.socialLinks ?? currentData.profile?.socialLinks,
-              age: updates.age ?? currentData.profile?.age,
-              height: updates.height ?? currentData.profile?.height,
-              bloodType: updates.bloodType ?? currentData.profile?.bloodType,
-              threeSizes: updates.threeSizes ?? currentData.profile?.threeSizes,
-              tags: updates.tags ?? currentData.profile?.tags,
+              ...existingProfile,
+              name: updates.nickname ?? existingProfile.name,
+              handle: updates.handle ?? existingProfile.handle,
+              tagline: updates.tagline ?? existingProfile.tagline,
+              bio: updates.bio ?? existingProfile.bio,
+              area: updates.area ?? existingProfile.area,
+              areas: updates.areaIds
+                ? updates.areaIds.map((id: string) => ({ id }))
+                : existingProfile.areas,
+              serviceCategory: updates.serviceCategory ?? existingProfile.serviceCategory,
+              locationType: updates.locationType ?? existingProfile.locationType,
+              socialLinks: updates.socialLinks ?? existingProfile.socialLinks,
+              age: updates.age ?? existingProfile.age,
+              height: updates.height ?? existingProfile.height,
+              bloodType: updates.bloodType ?? existingProfile.bloodType,
+              threeSizes: updates.threeSizes ?? existingProfile.threeSizes,
+              tags: updates.tags ?? existingProfile.tags,
             },
           };
         },
