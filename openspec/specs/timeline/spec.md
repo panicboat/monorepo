@@ -39,6 +39,32 @@ TBD - created by archiving change feat-add-engagement. Update Purpose after arch
 - **When** その投稿の詳細ページ（個別ページ）に遷移する
 - **Then** 動画プレイヤーが表示され、再生コントロールが使用できる
 
+### Requirement: Post Hashtags (MUST)
+タイムライン投稿にはハッシュタグを付与できなければならない (MUST)。ハッシュタグは投稿テキストとは別の入力欄で管理される。
+
+#### Scenario: Add hashtags to new post
+- **GIVEN** キャストがタイムライン投稿フォームを開いている
+- **WHEN** テキストを入力し、ハッシュタグ入力欄に「今日の出勤」「渋谷」と入力して投稿する
+- **THEN** 投稿がハッシュタグとともに保存される
+- **AND** 投稿表示時にハッシュタグが表示される
+
+#### Scenario: Display hashtags on post
+- **GIVEN** ハッシュタグ付きの投稿がある
+- **WHEN** タイムラインでその投稿を表示する
+- **THEN** 投稿コンテンツの下にハッシュタグがタグ形式で表示される
+
+#### Scenario: Edit hashtags
+- **GIVEN** 既存のハッシュタグ付き投稿がある
+- **WHEN** キャストがその投稿を編集する
+- **THEN** 既存のハッシュタグが入力欄に表示される
+- **AND** ハッシュタグを追加・削除して保存できる
+
+#### Scenario: Post without hashtags
+- **GIVEN** キャストがタイムライン投稿フォームを開いている
+- **WHEN** ハッシュタグを入力せずに投稿する
+- **THEN** ハッシュタグなしで投稿が保存される
+- **AND** 投稿表示時にハッシュタグ欄は表示されない
+
 ### Requirement: Timeline Post Data Model
 タイムライン投稿は以下のデータを持たなければならない (MUST have the following data)。
 
@@ -49,6 +75,7 @@ TBD - created by archiving change feat-add-engagement. Update Purpose after arch
   - id: 一意の識別子
   - cast_id: 投稿者のキャストID
   - content: テキスト内容
+  - hashtags: ハッシュタグの配列
   - created_at: 作成日時
   - updated_at: 更新日時
 - **AND** 投稿にはオプションでメディア（画像/動画）を添付できる
@@ -57,6 +84,7 @@ TBD - created by archiving change feat-add-engagement. Update Purpose after arch
 - **GIVEN** 投稿一覧を取得する
 - **WHEN** 投稿データがレスポンスされる
 - **THEN** 各投稿にキャストの author 情報（id, name, image_url）が含まれる
+- **AND** 各投稿にハッシュタグの配列が含まれる
 - **AND** author 情報は casts テーブルから JOIN して取得される
 
 #### Scenario: いいね・コメント機能はスコープ外
