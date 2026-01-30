@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { EarningsSummary } from "./components/EarningsSummary";
 import { UpcomingReservations } from "./components/UpcomingReservations";
-import { StatusToggle } from "@/modules/shell/components/cast/StatusToggle";
 
 interface DashboardStats {
   earningsToday: number;
@@ -108,13 +107,6 @@ export default function CastDashboardPage() {
 
   return (
     <div className="p-4 space-y-6 pb-24">
-      <div className="flex items-center justify-between">
-        <StatusToggle />
-        <span className="text-xs text-slate-400 font-medium">
-          Updated just now
-        </span>
-      </div>
-
       {stats && <EarningsSummary stats={stats} />}
 
       <UpcomingReservations reservations={reservations} />
