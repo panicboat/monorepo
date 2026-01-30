@@ -79,39 +79,13 @@ export default function OnboardingStep5() {
             </Button>
           </div>
           <div className="rounded-xl bg-white p-4 shadow-sm border border-slate-100 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase">
-                  Nickname
-                </p>
-                <p className="font-bold text-slate-700">
-                  {profile.nickname || "-"}
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase">
-                  Category
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-600 uppercase">
-                    {profile.serviceCategory}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase">
-                  Location Type
-                </p>
-                <p className="capitalize text-slate-700">
-                  {profile.locationType}
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase">
-                  Area
-                </p>
-                <p className="text-slate-700">{profile.area || "-"}</p>
-              </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase">
+                Nickname
+              </p>
+              <p className="font-bold text-slate-700">
+                {profile.nickname || "-"}
+              </p>
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase">

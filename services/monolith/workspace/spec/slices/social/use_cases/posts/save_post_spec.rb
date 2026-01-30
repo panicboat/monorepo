@@ -66,6 +66,7 @@ RSpec.describe Social::UseCases::Posts::SavePost do
       expect(repo).to receive(:update_post)
         .with("post-1", content: "Updated content", visible: true)
       expect(repo).not_to receive(:save_media)
+      expect(repo).to receive(:save_hashtags).with(post_id: "post-1", hashtags: [])
       expect(repo).to receive(:find_by_id).with("post-1").and_return(post)
 
       result = use_case.call(cast_id: cast_id, id: "post-1", content: "Updated content")
@@ -82,6 +83,7 @@ RSpec.describe Social::UseCases::Posts::SavePost do
         .with("post-1", content: "Updated", visible: true)
       expect(repo).to receive(:save_media)
         .with(post_id: "post-1", media_data: media_data)
+      expect(repo).to receive(:save_hashtags).with(post_id: "post-1", hashtags: [])
       expect(repo).to receive(:find_by_id).with("post-1").and_return(post)
 
       use_case.call(cast_id: cast_id, id: "post-1", content: "Updated", media: media_data)
@@ -94,6 +96,7 @@ RSpec.describe Social::UseCases::Posts::SavePost do
       expect(repo).to receive(:update_post)
         .with("post-1", content: "Updated content", visible: false)
       expect(repo).not_to receive(:save_media)
+      expect(repo).to receive(:save_hashtags).with(post_id: "post-1", hashtags: [])
       expect(repo).to receive(:find_by_id).with("post-1").and_return(post)
 
       result = use_case.call(cast_id: cast_id, id: "post-1", content: "Updated content", visible: false)

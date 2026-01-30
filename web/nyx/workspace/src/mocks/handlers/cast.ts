@@ -11,10 +11,6 @@ const MOCK_PROFILE: CastProfile = {
   message: "本日は20時から空きあります✨ 久しぶりの出勤なのでお話したいです！",
   tagline: "癒やしの時間をお届けします✨",
   bio: "はじめまして、美玲です。普段は都内でOLをしています。映画とカフェ巡りが大好きです。",
-  area: "六本木, 西麻布",
-  serviceCategory: "standard",
-  locationType: "dispatch",
-  promiseRate: 100,
   images: {
     hero: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=988&auto=format&fit=crop",
     portfolio: [

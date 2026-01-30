@@ -104,11 +104,11 @@ export default function OnboardingStep1Page() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* 2-Axis Business Type */}
-        <StyleInputs data={profile} onChange={handleChange} />
-
         {/* Basic Info */}
         <ProfileInputs data={profile} onChange={handleChange} />
+
+        {/* 2-Axis Business Type */}
+        <StyleInputs data={profile} onChange={handleChange} />
 
         {/* External Links Section */}
         <SocialInputs

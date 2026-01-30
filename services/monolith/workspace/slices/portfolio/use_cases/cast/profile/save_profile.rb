@@ -21,7 +21,7 @@ module Portfolio
 
           class HandleNotAvailableError < StandardError; end
 
-          def call(user_id:, name:, bio:, handle: nil, tagline: nil, service_category: nil, location_type: nil, area: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil, age: nil, height: nil, blood_type: nil, three_sizes: nil, tags: nil, area_ids: nil)
+          def call(user_id:, name:, bio:, handle: nil, tagline: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil, age: nil, height: nil, blood_type: nil, three_sizes: nil, tags: nil, area_ids: nil)
             # 0. Input Validation
             params = {
               user_id: user_id,
@@ -29,9 +29,6 @@ module Portfolio
               bio: bio,
               handle: handle,
               tagline: tagline,
-              service_category: service_category,
-              location_type: location_type,
-              area: area,
               default_schedule_start: default_schedule_start,
               default_schedule_end: default_schedule_end,
               image_path: image_path,
@@ -51,7 +48,7 @@ module Portfolio
               raise HandleNotAvailableError, "この ID は既に使用されています"
             end
 
-            Hanami.logger.info("SaveProfile Args: tagline=#{tagline}, area=#{area}, service=#{service_category}, social_links=#{social_links}")
+            Hanami.logger.info("SaveProfile Args: tagline=#{tagline}, social_links=#{social_links}")
             cast = repo.find_by_user_id(user_id)
 
             attrs = {
@@ -59,9 +56,6 @@ module Portfolio
               bio: bio,
               handle: handle&.downcase,
               tagline: tagline,
-              service_category: service_category,
-              location_type: location_type,
-              area: area,
               default_schedule_start: default_schedule_start,
               default_schedule_end: default_schedule_end,
               image_path: image_path,

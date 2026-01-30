@@ -125,7 +125,7 @@ RSpec.describe Social::Grpc::Handler do
 
       it "calls save use case and returns response" do
         expect(save_post_uc).to receive(:call)
-          .with(cast_id: "cast-123", id: nil, content: "Hello world", media: [], visible: true)
+          .with(cast_id: "cast-123", id: nil, content: "Hello world", hashtags: [], media: [], visible: true)
           .and_return(mock_post)
 
         response = handler.save_cast_post
@@ -150,7 +150,7 @@ RSpec.describe Social::Grpc::Handler do
 
       it "passes visible false to use case" do
         expect(save_post_uc).to receive(:call)
-          .with(cast_id: "cast-123", id: nil, content: "Hidden post", media: [], visible: false)
+          .with(cast_id: "cast-123", id: nil, content: "Hidden post", hashtags: [], media: [], visible: false)
           .and_return(mock_post)
 
         handler.save_cast_post
@@ -169,7 +169,7 @@ RSpec.describe Social::Grpc::Handler do
 
       it "calls save use case with id" do
         expect(save_post_uc).to receive(:call)
-          .with(cast_id: "cast-123", id: "post-1", content: "Updated content", media: [], visible: true)
+          .with(cast_id: "cast-123", id: "post-1", content: "Updated content", hashtags: [], media: [], visible: true)
           .and_return(mock_post)
 
         response = handler.save_cast_post
@@ -193,6 +193,7 @@ RSpec.describe Social::Grpc::Handler do
             cast_id: "cast-123",
             id: nil,
             content: "With media",
+            hashtags: [],
             media: [{ media_type: "image", url: "http://img.jpg", thumbnail_url: "" }],
             visible: true
           )

@@ -34,8 +34,8 @@ export default function SchedulePage() {
     price: p.price,
   }));
 
-  const defaultScheduleStart = profile.defaultScheduleStart || "18:00";
-  const defaultScheduleEnd = profile.defaultScheduleEnd || "23:00";
+  const defaultScheduleStart = profile.defaultScheduleStart || "10:00";
+  const defaultScheduleEnd = profile.defaultScheduleEnd || "22:00";
 
   const handleSchedulesChange = (newSchedules: WeeklySchedule[]) => {
     updateSchedules(newSchedules);

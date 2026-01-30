@@ -13,7 +13,7 @@ RSpec.describe Portfolio::UseCases::Cast::Images::SaveImages do
     let(:cast) { double(:cast) }
 
     it "saves images and returns cast" do
-      expect(repo).to receive(:save_images).with(id: cast_id, image_path: image_path, images: images)
+      expect(repo).to receive(:save_images).with(id: cast_id, image_path: image_path, images: images, avatar_path: nil)
       expect(repo).to receive(:find_with_plans).with(cast_id).and_return(cast)
 
       result = use_case.call(cast_id: cast_id, image_path: image_path, images: images)

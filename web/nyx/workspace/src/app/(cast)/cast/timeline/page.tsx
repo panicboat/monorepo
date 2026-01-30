@@ -5,7 +5,7 @@ import { TimelineFeed, FeedItem } from "@/modules/discovery/components/guest/Tim
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { HashtagInput } from "@/components/ui/HashtagInput";
-import { Send, Image as ImageIcon, Video, X } from "lucide-react";
+import { Send, Image as ImageIcon, Video, X, Lock, LockOpen } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useCastPosts } from "@/modules/social/hooks/useCastPosts";
@@ -55,6 +55,7 @@ export default function CastTimelinePage() {
   const [content, setContent] = useState("");
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [mediaFiles, setMediaFiles] = useState<{ file: File; previewUrl: string; type: "image" | "video" }[]>([]);
+  const [visible, setVisible] = useState(true);
   const [posting, setPosting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -116,9 +117,10 @@ export default function CastTimelinePage() {
         }
       }
 
-      await savePost({ content: content.trim(), media, hashtags });
+      await savePost({ content: content.trim(), media, hashtags, visible });
       setContent("");
       setHashtags([]);
+      setVisible(true);
       mediaFiles.forEach((mf) => URL.revokeObjectURL(mf.previewUrl));
       setMediaFiles([]);
     } catch (e) {
@@ -344,16 +346,28 @@ export default function CastTimelinePage() {
                 </Button>
               </div>
 
-              <Button
-                variant="brand"
-                size="sm"
-                className="px-6 rounded-full"
-                onClick={handlePost}
-                disabled={(!content.trim() && mediaFiles.length === 0) || posting}
-              >
-                <Send size={16} className="mr-2" />
-                {posting ? (uploadProgress ? `Uploading...` : "Posting...") : "Post"}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className={`gap-1 text-xs ${visible ? "text-slate-300 hover:text-slate-500 hover:bg-slate-50" : "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"}`}
+                  onClick={() => setVisible(!visible)}
+                >
+                  {visible ? <LockOpen size={14} /> : <Lock size={14} />}
+                  <span>{visible ? "Public" : "Private"}</span>
+                </Button>
+                <Button
+                  variant="brand"
+                  size="sm"
+                  className="px-6 rounded-full"
+                  onClick={handlePost}
+                  disabled={(!content.trim() && mediaFiles.length === 0) || posting}
+                >
+                  <Send size={16} className="mr-2" />
+                  {posting ? (uploadProgress ? `Uploading...` : "Posting...") : "Post"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

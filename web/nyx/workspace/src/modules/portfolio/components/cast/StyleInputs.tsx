@@ -4,6 +4,7 @@ import { Info } from "lucide-react";
 import { ProfileFormData } from "@/modules/portfolio/types";
 import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
+import { AreaSelector } from "./AreaSelector";
 
 interface StyleInputsProps {
   data: ProfileFormData;
@@ -65,34 +66,10 @@ export const StyleInputs = ({
         <Info size={14} /> Style Definition
       </h3>
 
-      <SelectGroup
-        label="1. Service Category"
-        description="提供するサービスの内容"
-        value={data.serviceCategory}
-        onChange={(val) => onChange("serviceCategory", val)}
-        options={[
-          { label: "Store", value: "advanced", desc: "風俗店" },
-          { label: "Social", value: "social", desc: "健全" },
-          { label: "Ask", value: "standard", desc: "問い合わせ" },
-        ]}
-      />
-
-      <SelectGroup
-        label="2. Location Type"
-        description="主な活動場所"
-        value={data.locationType}
-        onChange={(val) => onChange("locationType", val)}
-        options={[
-          { label: "Store", value: "store", desc: "店舗" },
-          { label: "Dispatch", value: "dispatch", desc: "派遣" },
-          { label: "Ask", value: "hotel", desc: "相談" },
-        ]}
-      />
-
       {/* Default Schedule */}
       <div>
         <Label className="block text-sm font-bold text-slate-700 mb-1">
-          3. Standard Schedule Time
+          Standard Schedule Time
           <span className="ml-2 text-xs font-normal text-slate-400">
             基本の活動時間設定
           </span>
@@ -112,6 +89,21 @@ export const StyleInputs = ({
             className="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
           />
         </div>
+      </div>
+
+      {/* Area */}
+      <div>
+        <Label className="block text-sm font-bold text-slate-700 mb-1">
+          Area
+          <span className="ml-2 text-xs font-normal text-slate-400">
+            活動エリア（最大3つ）
+          </span>
+        </Label>
+        <AreaSelector
+          selectedIds={data.areaIds || []}
+          onChange={(ids) => onChange("areaIds", ids)}
+          maxSelections={3}
+        />
       </div>
     </section>
   );

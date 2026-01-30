@@ -20,7 +20,8 @@ RSpec.describe Portfolio::Grpc::Handler do
       save_images_uc: save_images_uc,
       get_upload_url_uc: get_upload_url_uc,
       list_casts_uc: list_casts_uc,
-      repo: repo
+      repo: repo,
+      area_repo: area_repo
     )
   }
   let(:message) { double(:message) }
@@ -35,7 +36,8 @@ RSpec.describe Portfolio::Grpc::Handler do
   let(:save_images_uc) { double(:save_images_uc) }
   let(:get_upload_url_uc) { double(:get_upload_url_uc) }
   let(:list_casts_uc) { double(:list_casts_uc) }
-  let(:repo) { double(:repo) }
+  let(:repo) { double(:repo, find_area_ids: []) }
+  let(:area_repo) { double(:area_repo, find_by_ids: []) }
 
   before do
     allow(Current).to receive(:user_id).and_return(current_user_id)
@@ -49,14 +51,10 @@ RSpec.describe Portfolio::Grpc::Handler do
       name: "Cast Name",
       bio: "Bio",
       tagline: "Tagline",
-      service_category: "category",
-      location_type: "type",
-      area: "area",
       default_schedule_start: "10:00",
       default_schedule_end: "20:00",
       image_path: "path/img.jpg",
       visibility: 'published',
-      promise_rate: 1.0,
       cast_plans: [],
       cast_schedules: [],
       images: [],
@@ -197,7 +195,8 @@ RSpec.describe Portfolio::Grpc::Handler do
       expect(save_images_uc).to receive(:call).with(
         cast_id: 123,
         image_path: "new/path.jpg",
-        images: ["img1.jpg", "img2.jpg"]
+        images: ["img1.jpg", "img2.jpg"],
+        avatar_path: nil
       ).and_return(mock_cast_entity)
 
       response = handler.save_cast_images

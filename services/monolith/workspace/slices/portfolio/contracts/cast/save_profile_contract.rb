@@ -11,8 +11,6 @@ module Portfolio
         MAX_TAGLINE_LENGTH = 200
         MIN_HANDLE_LENGTH = 3
         MAX_HANDLE_LENGTH = 30
-        VALID_SERVICE_CATEGORIES = %w[companion escort guide].freeze
-        VALID_LOCATION_TYPES = %w[incall outcall both].freeze
         HANDLE_FORMAT = /\A[a-zA-Z][a-zA-Z0-9]*\z/
 
         params do
@@ -21,9 +19,6 @@ module Portfolio
           required(:bio).filled(:string)
           optional(:handle).maybe(:string)
           optional(:tagline).maybe(:string)
-          optional(:service_category).maybe(:string)
-          optional(:location_type).maybe(:string)
-          optional(:area).maybe(:string)
           optional(:default_schedule_start).maybe(:string)
           optional(:default_schedule_end).maybe(:string)
           optional(:image_path).maybe(:string)

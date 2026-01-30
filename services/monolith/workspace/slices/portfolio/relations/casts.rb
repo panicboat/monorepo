@@ -8,13 +8,9 @@ module Portfolio
         attribute :bio, Types::String
         attribute :image_path, Types::String
         attribute :tagline, Types::String
-        attribute :service_category, Types::String
-        attribute :location_type, Types::String
-        attribute :area, Types::String
         attribute :default_schedule_start, Types::String
         attribute :default_schedule_end, Types::String
         attribute :visibility, Types::String
-        attribute :promise_rate, Types::Float
         attribute :images, Types::Array(Types::String)
         attribute :social_links, Types::Hash
         attribute :age, Types::Integer

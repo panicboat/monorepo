@@ -52,8 +52,8 @@ export const WeeklyScheduleInput = ({
   schedules,
   plans = [],
   onChange,
-  defaultStart = "18:00",
-  defaultEnd = "23:00",
+  defaultStart = "09:00",
+  defaultEnd = "21:00",
 }: WeeklyScheduleInputProps) => {
   const [viewStartDate, setViewStartDate] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),

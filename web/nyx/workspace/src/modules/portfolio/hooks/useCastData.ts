@@ -19,12 +19,9 @@ const INITIAL_PROFILE: ProfileFormData = {
   handle: "",
   tagline: "",
   bio: "",
-  serviceCategory: "standard",
-  locationType: "dispatch",
-  area: "",
   areaIds: [],
-  defaultScheduleStart: "18:00",
-  defaultScheduleEnd: "23:00",
+  defaultScheduleStart: "10:00",
+  defaultScheduleEnd: "22:00",
   socialLinks: { others: [] },
   tags: [],
 };
@@ -61,6 +58,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
     {
       revalidateOnFocus: false,
       dedupingInterval: 5000,
+      // Disable retry for 404 (expected for new users)
+      shouldRetryOnError: (err) => {
+        if ((err as any).status === 404) return false;
+        return true;
+      },
       onError: (err) => {
         // Handle 404 as expected state for new users
         if ((err as any).status === 404) {
@@ -116,12 +118,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
               handle: updates.handle ?? existingProfile.handle,
               tagline: updates.tagline ?? existingProfile.tagline,
               bio: updates.bio ?? existingProfile.bio,
-              area: updates.area ?? existingProfile.area,
               areas: updates.areaIds
                 ? updates.areaIds.map((id: string) => ({ id }))
                 : existingProfile.areas,
-              serviceCategory: updates.serviceCategory ?? existingProfile.serviceCategory,
-              locationType: updates.locationType ?? existingProfile.locationType,
+              defaultScheduleStart: updates.defaultScheduleStart ?? existingProfile.defaultScheduleStart,
+              defaultScheduleEnd: updates.defaultScheduleEnd ?? existingProfile.defaultScheduleEnd,
               socialLinks: updates.socialLinks ?? existingProfile.socialLinks,
               age: updates.age ?? existingProfile.age,
               height: updates.height ?? existingProfile.height,

@@ -63,12 +63,15 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
               <Label className="mb-1 flex items-center gap-1 text-xs font-bold text-slate-500">
                 <Tag size={12} />
                 Plan Name
+                <span className="ml-2 text-xs font-normal text-slate-400">
+                  コース名
+                </span>
               </Label>
               <Input
                 type="text"
                 value={plan.name}
                 onChange={(e) => updatePlan(plan.id, "name", e.target.value)}
-                placeholder="e.g. Standard Course"
+                placeholder=""
                 className="focus-visible:ring-pink-500"
               />
             </div>
@@ -77,6 +80,9 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
               <Label className="mb-1 flex items-center gap-1 text-xs font-bold text-slate-500">
                 <Clock size={12} />
                 Duration (min)
+                <span className="ml-2 text-xs font-normal text-slate-400">
+                  所要時間
+                </span>
               </Label>
               <div className="relative">
                 <Input
@@ -99,6 +105,9 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
               <Label className="mb-1 flex items-center gap-1 text-xs font-bold text-slate-500">
                 <Banknote size={12} />
                 Price (JPY)
+                <span className="ml-2 text-xs font-normal text-slate-400">
+                  基本料金
+                </span>
               </Label>
               <div className="relative">
                 <Input

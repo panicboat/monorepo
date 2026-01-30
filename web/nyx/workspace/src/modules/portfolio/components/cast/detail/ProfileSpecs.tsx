@@ -2,7 +2,6 @@
 
 import { useSocial } from "@/modules/social/hooks/useSocial";
 import { motion } from "motion/react";
-import { MapPin, Clock, Briefcase } from "lucide-react";
 
 import { CastProfile, ProfileFormData } from "@/modules/portfolio/types";
 
@@ -26,9 +25,6 @@ const getDisplayData = (data?: CastProfile | ProfileFormData) => {
           ? `B${data.threeSizes.b || "?"} (${data.threeSizes.cup || "?"}) / W${data.threeSizes.w || "?"} / H${data.threeSizes.h || "?"}`
           : null,
       tags: data.tags,
-      area: data.area,
-      locationType: data.locationType,
-      serviceCategory: data.serviceCategory,
       socialLinks: data.socialLinks,
     };
   } else {
@@ -45,39 +41,8 @@ const getDisplayData = (data?: CastProfile | ProfileFormData) => {
           ? `B${data.threeSizes.b || "?"} (${data.threeSizes.cup || "?"}) / W${data.threeSizes.w || "?"} / H${data.threeSizes.h || "?"}`
           : null,
       tags: data.tags?.map((t) => t.label) || [],
-      area: data.area,
-      locationType: data.locationType,
-      serviceCategory: data.serviceCategory,
       socialLinks: data.socialLinks,
     };
-  }
-};
-
-// Helper for locationType display
-const getLocationTypeLabel = (type?: string) => {
-  switch (type) {
-    case "store":
-      return "店舗";
-    case "dispatch":
-      return "派遣";
-    case "hotel":
-      return "Ask";
-    default:
-      return null;
-  }
-};
-
-// Helper for serviceCategory display
-const getServiceCategoryLabel = (category?: string) => {
-  switch (category) {
-    case "advanced":
-      return "Store";
-    case "standard":
-      return "Ask";
-    case "social":
-      return "Social";
-    default:
-      return null;
   }
 };
 
@@ -101,9 +66,6 @@ export const ProfileSpecs = ({
   const bloodType = display?.bloodType;
   const bwh = display?.bwh;
   const tags = display?.tags || [];
-  const area = display?.area;
-  const locationType = getLocationTypeLabel(display?.locationType);
-  const serviceCategory = getServiceCategoryLabel(display?.serviceCategory);
   const socialLinks = display?.socialLinks;
 
   return (
@@ -125,35 +87,11 @@ export const ProfileSpecs = ({
           </motion.button>
         </h1>
 
-        {serviceCategory && (
-          <p className="text-pink-500 text-sm font-bold tracking-widest uppercase mb-4">
-            {serviceCategory} Cast
-          </p>
-        )}
-
         {/* One Liner Bubble */}
         {tagline && (
           <div className="relative inline-block bg-slate-50 border border-slate-100 rounded-2xl px-4 py-2 mb-6 mx-auto">
             <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-50 border-t border-l border-slate-100 transform rotate-45" />
             <p className="text-sm italic text-slate-700">{tagline}</p>
-          </div>
-        )}
-
-        {/* Location & Service Info */}
-        {(area || locationType) && (
-          <div className="flex justify-center items-center gap-4 mb-6 text-sm text-slate-500">
-            {area && (
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
-                <span>{area}</span>
-              </div>
-            )}
-            {locationType && (
-              <div className="flex items-center gap-1">
-                <Briefcase className="w-4 h-4" />
-                <span>{locationType}</span>
-              </div>
-            )}
           </div>
         )}
 

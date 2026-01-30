@@ -37,25 +37,31 @@ export const SocialInputs = ({
             <Label className="block text-xs font-bold text-slate-500 mb-1">
               X (Twitter)
             </Label>
-            <Input
-              type="text"
-              value={data.socialLinks?.x || ""}
-              onChange={(e) => onSocialChange("x", e.target.value)}
-              placeholder="@username"
-              className="focus-visible:ring-pink-500"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">@</span>
+              <Input
+                type="text"
+                value={data.socialLinks?.x || ""}
+                onChange={(e) => onSocialChange("x", e.target.value)}
+                placeholder="username"
+                className="pl-8 focus-visible:ring-pink-500"
+              />
+            </div>
           </div>
           <div>
             <Label className="block text-xs font-bold text-slate-500 mb-1">
               Instagram
             </Label>
-            <Input
-              type="text"
-              value={data.socialLinks?.instagram || ""}
-              onChange={(e) => onSocialChange("instagram", e.target.value)}
-              placeholder="@username"
-              className="focus-visible:ring-pink-500"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">@</span>
+              <Input
+                type="text"
+                value={data.socialLinks?.instagram || ""}
+                onChange={(e) => onSocialChange("instagram", e.target.value)}
+                placeholder="username"
+                className="pl-8 focus-visible:ring-pink-500"
+              />
+            </div>
           </div>
         </div>
 
@@ -64,13 +70,16 @@ export const SocialInputs = ({
             <Label className="block text-xs font-bold text-slate-500 mb-1">
               TikTok
             </Label>
-            <Input
-              type="text"
-              value={data.socialLinks?.tiktok || ""}
-              onChange={(e) => onSocialChange("tiktok", e.target.value)}
-              placeholder="@username"
-              className="focus-visible:ring-pink-500"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">@</span>
+              <Input
+                type="text"
+                value={data.socialLinks?.tiktok || ""}
+                onChange={(e) => onSocialChange("tiktok", e.target.value)}
+                placeholder="username"
+                className="pl-8 focus-visible:ring-pink-500"
+              />
+            </div>
           </div>
           <div>
             <Label className="block text-xs font-bold text-slate-500 mb-1">

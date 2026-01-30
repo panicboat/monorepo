@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file portfolio/v1/service.proto.
  */
 export const file_portfolio_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpwb3J0Zm9saW8vdjEvc2VydmljZS5wcm90bxIMcG9ydGZvbGlvLnYxInAKC1NvY2lhbExpbmtzEgkKAXgYASABKAkSEQoJaW5zdGFncmFtGAIgASgJEg4KBnRpa3RvaxgDIAEoCRISCgpjaXR5aGVhdmVuGAQgASgJEg8KB2xpdGxpbmsYBSABKAkSDgoGb3RoZXJzGAYgAygJIkMKClRocmVlU2l6ZXMSDAoEYnVzdBgBIAEoBRINCgV3YWlzdBgCIAEoBRILCgNoaXAYAyABKAUSCwoDY3VwGAQgASgJIkIKBEFyZWESCgoCaWQYASABKAkSEgoKcHJlZmVjdHVyZRgCIAEoCRIMCgRuYW1lGAMgASgJEgwKBGNvZGUYBCABKAkiwQQKC0Nhc3RQcm9maWxlEg8KB3VzZXJfaWQYASABKAkSDAoEbmFtZRgCIAEoCRILCgNiaW8YAyABKAkSEQoJaW1hZ2VfdXJsGAQgASgJEjAKCnZpc2liaWxpdHkYBSABKA4yHC5wb3J0Zm9saW8udjEuQ2FzdFZpc2liaWxpdHkSFAoMcHJvbWlzZV9yYXRlGAYgASgBEg4KBmltYWdlcxgHIAMoCRISCgppbWFnZV9wYXRoGAggASgJEg8KB3RhZ2xpbmUYCSABKAkSGAoQc2VydmljZV9jYXRlZ29yeRgKIAEoCRIVCg1sb2NhdGlvbl90eXBlGAsgASgJEgwKBGFyZWEYDCABKAkSHgoWZGVmYXVsdF9zY2hlZHVsZV9zdGFydBgNIAEoCRIcChRkZWZhdWx0X3NjaGVkdWxlX2VuZBgOIAEoCRIvCgxzb2NpYWxfbGlua3MYDyABKAsyGS5wb3J0Zm9saW8udjEuU29jaWFsTGlua3MSCwoDYWdlGBAgASgFEg4KBmhlaWdodBgRIAEoBRISCgpibG9vZF90eXBlGBIgASgJEi0KC3RocmVlX3NpemVzGBMgASgLMhgucG9ydGZvbGlvLnYxLlRocmVlU2l6ZXMSDAoEdGFncxgUIAMoCRITCgthdmF0YXJfcGF0aBgVIAEoCRISCgphdmF0YXJfdXJsGBYgASgJEg4KBmhhbmRsZRgXIAEoCRIhCgVhcmVhcxgYIAMoCzISLnBvcnRmb2xpby52MS5BcmVhIk0KCENhc3RQbGFuEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDQoFcHJpY2UYAyABKAUSGAoQZHVyYXRpb25fbWludXRlcxgEIAEoBSIoChVHZXRDYXN0UHJvZmlsZVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCSKaAQoWR2V0Q2FzdFByb2ZpbGVSZXNwb25zZRIqCgdwcm9maWxlGAEgASgLMhkucG9ydGZvbGlvLnYxLkNhc3RQcm9maWxlEiUKBXBsYW5zGAIgAygLMhYucG9ydGZvbGlvLnYxLkNhc3RQbGFuEi0KCXNjaGVkdWxlcxgDIAMoCzIaLnBvcnRmb2xpby52MS5DYXN0U2NoZWR1bGUi9gIKGENyZWF0ZUNhc3RQcm9maWxlUmVxdWVzdBIMCgRuYW1lGAEgASgJEgsKA2JpbxgCIAEoCRISCgppbWFnZV9wYXRoGAMgASgJEg8KB3RhZ2xpbmUYBCABKAkSGAoQc2VydmljZV9jYXRlZ29yeRgFIAEoCRIVCg1sb2NhdGlvbl90eXBlGAYgASgJEgwKBGFyZWEYByABKAkSHgoWZGVmYXVsdF9zY2hlZHVsZV9zdGFydBgIIAEoCRIcChRkZWZhdWx0X3NjaGVkdWxlX2VuZBgJIAEoCRIvCgxzb2NpYWxfbGlua3MYCiABKAsyGS5wb3J0Zm9saW8udjEuU29jaWFsTGlua3MSCwoDYWdlGAsgASgFEg4KBmhlaWdodBgMIAEoBRISCgpibG9vZF90eXBlGA0gASgJEi0KC3RocmVlX3NpemVzGA4gASgLMhgucG9ydGZvbGlvLnYxLlRocmVlU2l6ZXMSDAoEdGFncxgPIAMoCSJHChlDcmVhdGVDYXN0UHJvZmlsZVJlc3BvbnNlEioKB3Byb2ZpbGUYASABKAsyGS5wb3J0Zm9saW8udjEuQ2FzdFByb2ZpbGUiyAMKFlNhdmVDYXN0UHJvZmlsZVJlcXVlc3QSDAoEbmFtZRgBIAEoCRILCgNiaW8YAiABKAkSEgoKaW1hZ2VfcGF0aBgDIAEoCRIPCgd0YWdsaW5lGAQgASgJEhgKEHNlcnZpY2VfY2F0ZWdvcnkYBSABKAkSFQoNbG9jYXRpb25fdHlwZRgGIAEoCRIMCgRhcmVhGAcgASgJEh4KFmRlZmF1bHRfc2NoZWR1bGVfc3RhcnQYCCABKAkSHAoUZGVmYXVsdF9zY2hlZHVsZV9lbmQYCSABKAkSLwoMc29jaWFsX2xpbmtzGAogASgLMhkucG9ydGZvbGlvLnYxLlNvY2lhbExpbmtzEjAKCnZpc2liaWxpdHkYCyABKA4yHC5wb3J0Zm9saW8udjEuQ2FzdFZpc2liaWxpdHkSCwoDYWdlGAwgASgFEg4KBmhlaWdodBgNIAEoBRISCgpibG9vZF90eXBlGA4gASgJEi0KC3RocmVlX3NpemVzGA8gASgLMhgucG9ydGZvbGlvLnYxLlRocmVlU2l6ZXMSDAoEdGFncxgQIAMoCRIOCgZoYW5kbGUYESABKAkSEAoIYXJlYV9pZHMYEiADKAkiRQoXU2F2ZUNhc3RQcm9maWxlUmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSJNChlTYXZlQ2FzdFZpc2liaWxpdHlSZXF1ZXN0EjAKCnZpc2liaWxpdHkYASABKA4yHC5wb3J0Zm9saW8udjEuQ2FzdFZpc2liaWxpdHkiSAoaU2F2ZUNhc3RWaXNpYmlsaXR5UmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSJgChVTYXZlQ2FzdEltYWdlc1JlcXVlc3QSGgoScHJvZmlsZV9pbWFnZV9wYXRoGAEgASgJEhYKDmdhbGxlcnlfaW1hZ2VzGAIgAygJEhMKC2F2YXRhcl9wYXRoGAMgASgJIkQKFlNhdmVDYXN0SW1hZ2VzUmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSI9ChRTYXZlQ2FzdFBsYW5zUmVxdWVzdBIlCgVwbGFucxgBIAMoCzIWLnBvcnRmb2xpby52MS5DYXN0UGxhbiI+ChVTYXZlQ2FzdFBsYW5zUmVzcG9uc2USJQoFcGxhbnMYASADKAsyFi5wb3J0Zm9saW8udjEuQ2FzdFBsYW4iSQoYU2F2ZUNhc3RTY2hlZHVsZXNSZXF1ZXN0Ei0KCXNjaGVkdWxlcxgBIAMoCzIaLnBvcnRmb2xpby52MS5DYXN0U2NoZWR1bGUiSgoZU2F2ZUNhc3RTY2hlZHVsZXNSZXNwb25zZRItCglzY2hlZHVsZXMYASADKAsyGi5wb3J0Zm9saW8udjEuQ2FzdFNjaGVkdWxlIj0KE0dldFVwbG9hZFVybFJlcXVlc3QSEAoIZmlsZW5hbWUYASABKAkSFAoMY29udGVudF90eXBlGAIgASgJIjAKFEdldFVwbG9hZFVybFJlc3BvbnNlEgsKA3VybBgBIAEoCRILCgNrZXkYAiABKAkiUwoMQ2FzdFNjaGVkdWxlEgwKBGRhdGUYASABKAkSEgoKc3RhcnRfdGltZRgCIAEoCRIQCghlbmRfdGltZRgDIAEoCRIPCgdwbGFuX2lkGAQgASgJIksKEExpc3RDYXN0c1JlcXVlc3QSNwoRdmlzaWJpbGl0eV9maWx0ZXIYASABKA4yHC5wb3J0Zm9saW8udjEuQ2FzdFZpc2liaWxpdHkiqwEKEUxpc3RDYXN0c1Jlc3BvbnNlEjcKBWl0ZW1zGAEgAygLMigucG9ydGZvbGlvLnYxLkxpc3RDYXN0c1Jlc3BvbnNlLkNhc3RJdGVtGl0KCENhc3RJdGVtEioKB3Byb2ZpbGUYASABKAsyGS5wb3J0Zm9saW8udjEuQ2FzdFByb2ZpbGUSJQoFcGxhbnMYAiADKAsyFi5wb3J0Zm9saW8udjEuQ2FzdFBsYW4iLwodR2V0Q2FzdFByb2ZpbGVCeUhhbmRsZVJlcXVlc3QSDgoGaGFuZGxlGAEgASgJIjAKHkNoZWNrSGFuZGxlQXZhaWxhYmlsaXR5UmVxdWVzdBIOCgZoYW5kbGUYASABKAkiRQofQ2hlY2tIYW5kbGVBdmFpbGFiaWxpdHlSZXNwb25zZRIRCglhdmFpbGFibGUYASABKAgSDwoHbWVzc2FnZRgCIAEoCSImChBMaXN0QXJlYXNSZXF1ZXN0EhIKCnByZWZlY3R1cmUYASABKAkiNgoRTGlzdEFyZWFzUmVzcG9uc2USIQoFYXJlYXMYASADKAsyEi5wb3J0Zm9saW8udjEuQXJlYSqTAQoOQ2FzdFZpc2liaWxpdHkSHwobQ0FTVF9WSVNJQklMSVRZX1VOU1BFQ0lGSUVEEAASIAocQ0FTVF9WSVNJQklMSVRZX1VOUkVHSVNURVJFRBABEh8KG0NBU1RfVklTSUJJTElUWV9VTlBVQkxJU0hFRBACEh0KGUNBU1RfVklTSUJJTElUWV9QVUJMSVNIRUQQAzKOCQoLQ2FzdFNlcnZpY2USWwoOR2V0Q2FzdFByb2ZpbGUSIy5wb3J0Zm9saW8udjEuR2V0Q2FzdFByb2ZpbGVSZXF1ZXN0GiQucG9ydGZvbGlvLnYxLkdldENhc3RQcm9maWxlUmVzcG9uc2USawoWR2V0Q2FzdFByb2ZpbGVCeUhhbmRsZRIrLnBvcnRmb2xpby52MS5HZXRDYXN0UHJvZmlsZUJ5SGFuZGxlUmVxdWVzdBokLnBvcnRmb2xpby52MS5HZXRDYXN0UHJvZmlsZVJlc3BvbnNlEmQKEUNyZWF0ZUNhc3RQcm9maWxlEiYucG9ydGZvbGlvLnYxLkNyZWF0ZUNhc3RQcm9maWxlUmVxdWVzdBonLnBvcnRmb2xpby52MS5DcmVhdGVDYXN0UHJvZmlsZVJlc3BvbnNlEl4KD1NhdmVDYXN0UHJvZmlsZRIkLnBvcnRmb2xpby52MS5TYXZlQ2FzdFByb2ZpbGVSZXF1ZXN0GiUucG9ydGZvbGlvLnYxLlNhdmVDYXN0UHJvZmlsZVJlc3BvbnNlEmcKElNhdmVDYXN0VmlzaWJpbGl0eRInLnBvcnRmb2xpby52MS5TYXZlQ2FzdFZpc2liaWxpdHlSZXF1ZXN0GigucG9ydGZvbGlvLnYxLlNhdmVDYXN0VmlzaWJpbGl0eVJlc3BvbnNlElsKDlNhdmVDYXN0SW1hZ2VzEiMucG9ydGZvbGlvLnYxLlNhdmVDYXN0SW1hZ2VzUmVxdWVzdBokLnBvcnRmb2xpby52MS5TYXZlQ2FzdEltYWdlc1Jlc3BvbnNlElgKDVNhdmVDYXN0UGxhbnMSIi5wb3J0Zm9saW8udjEuU2F2ZUNhc3RQbGFuc1JlcXVlc3QaIy5wb3J0Zm9saW8udjEuU2F2ZUNhc3RQbGFuc1Jlc3BvbnNlEmQKEVNhdmVDYXN0U2NoZWR1bGVzEiYucG9ydGZvbGlvLnYxLlNhdmVDYXN0U2NoZWR1bGVzUmVxdWVzdBonLnBvcnRmb2xpby52MS5TYXZlQ2FzdFNjaGVkdWxlc1Jlc3BvbnNlEkwKCUxpc3RDYXN0cxIeLnBvcnRmb2xpby52MS5MaXN0Q2FzdHNSZXF1ZXN0Gh8ucG9ydGZvbGlvLnYxLkxpc3RDYXN0c1Jlc3BvbnNlElUKDEdldFVwbG9hZFVybBIhLnBvcnRmb2xpby52MS5HZXRVcGxvYWRVcmxSZXF1ZXN0GiIucG9ydGZvbGlvLnYxLkdldFVwbG9hZFVybFJlc3BvbnNlEnYKF0NoZWNrSGFuZGxlQXZhaWxhYmlsaXR5EiwucG9ydGZvbGlvLnYxLkNoZWNrSGFuZGxlQXZhaWxhYmlsaXR5UmVxdWVzdBotLnBvcnRmb2xpby52MS5DaGVja0hhbmRsZUF2YWlsYWJpbGl0eVJlc3BvbnNlEkwKCUxpc3RBcmVhcxIeLnBvcnRmb2xpby52MS5MaXN0QXJlYXNSZXF1ZXN0Gh8ucG9ydGZvbGlvLnYxLkxpc3RBcmVhc1Jlc3BvbnNlYgZwcm90bzM");
+  fileDesc("Chpwb3J0Zm9saW8vdjEvc2VydmljZS5wcm90bxIMcG9ydGZvbGlvLnYxInAKC1NvY2lhbExpbmtzEgkKAXgYASABKAkSEQoJaW5zdGFncmFtGAIgASgJEg4KBnRpa3RvaxgDIAEoCRISCgpjaXR5aGVhdmVuGAQgASgJEg8KB2xpdGxpbmsYBSABKAkSDgoGb3RoZXJzGAYgAygJIkMKClRocmVlU2l6ZXMSDAoEYnVzdBgBIAEoBRINCgV3YWlzdBgCIAEoBRILCgNoaXAYAyABKAUSCwoDY3VwGAQgASgJIkIKBEFyZWESCgoCaWQYASABKAkSEgoKcHJlZmVjdHVyZRgCIAEoCRIMCgRuYW1lGAMgASgJEgwKBGNvZGUYBCABKAki7AMKC0Nhc3RQcm9maWxlEg8KB3VzZXJfaWQYASABKAkSDAoEbmFtZRgCIAEoCRILCgNiaW8YAyABKAkSEQoJaW1hZ2VfdXJsGAQgASgJEjAKCnZpc2liaWxpdHkYBSABKA4yHC5wb3J0Zm9saW8udjEuQ2FzdFZpc2liaWxpdHkSDgoGaW1hZ2VzGAYgAygJEhIKCmltYWdlX3BhdGgYByABKAkSDwoHdGFnbGluZRgIIAEoCRIeChZkZWZhdWx0X3NjaGVkdWxlX3N0YXJ0GAkgASgJEhwKFGRlZmF1bHRfc2NoZWR1bGVfZW5kGAogASgJEi8KDHNvY2lhbF9saW5rcxgLIAEoCzIZLnBvcnRmb2xpby52MS5Tb2NpYWxMaW5rcxILCgNhZ2UYDCABKAUSDgoGaGVpZ2h0GA0gASgFEhIKCmJsb29kX3R5cGUYDiABKAkSLQoLdGhyZWVfc2l6ZXMYDyABKAsyGC5wb3J0Zm9saW8udjEuVGhyZWVTaXplcxIMCgR0YWdzGBAgAygJEhMKC2F2YXRhcl9wYXRoGBEgASgJEhIKCmF2YXRhcl91cmwYEiABKAkSDgoGaGFuZGxlGBMgASgJEiEKBWFyZWFzGBQgAygLMhIucG9ydGZvbGlvLnYxLkFyZWEiTQoIQ2FzdFBsYW4SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRINCgVwcmljZRgDIAEoBRIYChBkdXJhdGlvbl9taW51dGVzGAQgASgFIigKFUdldENhc3RQcm9maWxlUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJIpoBChZHZXRDYXN0UHJvZmlsZVJlc3BvbnNlEioKB3Byb2ZpbGUYASABKAsyGS5wb3J0Zm9saW8udjEuQ2FzdFByb2ZpbGUSJQoFcGxhbnMYAiADKAsyFi5wb3J0Zm9saW8udjEuQ2FzdFBsYW4SLQoJc2NoZWR1bGVzGAMgAygLMhoucG9ydGZvbGlvLnYxLkNhc3RTY2hlZHVsZSK3AgoYQ3JlYXRlQ2FzdFByb2ZpbGVSZXF1ZXN0EgwKBG5hbWUYASABKAkSCwoDYmlvGAIgASgJEhIKCmltYWdlX3BhdGgYAyABKAkSDwoHdGFnbGluZRgEIAEoCRIeChZkZWZhdWx0X3NjaGVkdWxlX3N0YXJ0GAUgASgJEhwKFGRlZmF1bHRfc2NoZWR1bGVfZW5kGAYgASgJEi8KDHNvY2lhbF9saW5rcxgHIAEoCzIZLnBvcnRmb2xpby52MS5Tb2NpYWxMaW5rcxILCgNhZ2UYCCABKAUSDgoGaGVpZ2h0GAkgASgFEhIKCmJsb29kX3R5cGUYCiABKAkSLQoLdGhyZWVfc2l6ZXMYCyABKAsyGC5wb3J0Zm9saW8udjEuVGhyZWVTaXplcxIMCgR0YWdzGAwgAygJIkcKGUNyZWF0ZUNhc3RQcm9maWxlUmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSKJAwoWU2F2ZUNhc3RQcm9maWxlUmVxdWVzdBIMCgRuYW1lGAEgASgJEgsKA2JpbxgCIAEoCRISCgppbWFnZV9wYXRoGAMgASgJEg8KB3RhZ2xpbmUYBCABKAkSHgoWZGVmYXVsdF9zY2hlZHVsZV9zdGFydBgFIAEoCRIcChRkZWZhdWx0X3NjaGVkdWxlX2VuZBgGIAEoCRIvCgxzb2NpYWxfbGlua3MYByABKAsyGS5wb3J0Zm9saW8udjEuU29jaWFsTGlua3MSMAoKdmlzaWJpbGl0eRgIIAEoDjIcLnBvcnRmb2xpby52MS5DYXN0VmlzaWJpbGl0eRILCgNhZ2UYCSABKAUSDgoGaGVpZ2h0GAogASgFEhIKCmJsb29kX3R5cGUYCyABKAkSLQoLdGhyZWVfc2l6ZXMYDCABKAsyGC5wb3J0Zm9saW8udjEuVGhyZWVTaXplcxIMCgR0YWdzGA0gAygJEg4KBmhhbmRsZRgOIAEoCRIQCghhcmVhX2lkcxgPIAMoCSJFChdTYXZlQ2FzdFByb2ZpbGVSZXNwb25zZRIqCgdwcm9maWxlGAEgASgLMhkucG9ydGZvbGlvLnYxLkNhc3RQcm9maWxlIk0KGVNhdmVDYXN0VmlzaWJpbGl0eVJlcXVlc3QSMAoKdmlzaWJpbGl0eRgBIAEoDjIcLnBvcnRmb2xpby52MS5DYXN0VmlzaWJpbGl0eSJIChpTYXZlQ2FzdFZpc2liaWxpdHlSZXNwb25zZRIqCgdwcm9maWxlGAEgASgLMhkucG9ydGZvbGlvLnYxLkNhc3RQcm9maWxlImAKFVNhdmVDYXN0SW1hZ2VzUmVxdWVzdBIaChJwcm9maWxlX2ltYWdlX3BhdGgYASABKAkSFgoOZ2FsbGVyeV9pbWFnZXMYAiADKAkSEwoLYXZhdGFyX3BhdGgYAyABKAkiRAoWU2F2ZUNhc3RJbWFnZXNSZXNwb25zZRIqCgdwcm9maWxlGAEgASgLMhkucG9ydGZvbGlvLnYxLkNhc3RQcm9maWxlIj0KFFNhdmVDYXN0UGxhbnNSZXF1ZXN0EiUKBXBsYW5zGAEgAygLMhYucG9ydGZvbGlvLnYxLkNhc3RQbGFuIj4KFVNhdmVDYXN0UGxhbnNSZXNwb25zZRIlCgVwbGFucxgBIAMoCzIWLnBvcnRmb2xpby52MS5DYXN0UGxhbiJJChhTYXZlQ2FzdFNjaGVkdWxlc1JlcXVlc3QSLQoJc2NoZWR1bGVzGAEgAygLMhoucG9ydGZvbGlvLnYxLkNhc3RTY2hlZHVsZSJKChlTYXZlQ2FzdFNjaGVkdWxlc1Jlc3BvbnNlEi0KCXNjaGVkdWxlcxgBIAMoCzIaLnBvcnRmb2xpby52MS5DYXN0U2NoZWR1bGUiPQoTR2V0VXBsb2FkVXJsUmVxdWVzdBIQCghmaWxlbmFtZRgBIAEoCRIUCgxjb250ZW50X3R5cGUYAiABKAkiMAoUR2V0VXBsb2FkVXJsUmVzcG9uc2USCwoDdXJsGAEgASgJEgsKA2tleRgCIAEoCSJTCgxDYXN0U2NoZWR1bGUSDAoEZGF0ZRgBIAEoCRISCgpzdGFydF90aW1lGAIgASgJEhAKCGVuZF90aW1lGAMgASgJEg8KB3BsYW5faWQYBCABKAkiSwoQTGlzdENhc3RzUmVxdWVzdBI3ChF2aXNpYmlsaXR5X2ZpbHRlchgBIAEoDjIcLnBvcnRmb2xpby52MS5DYXN0VmlzaWJpbGl0eSKrAQoRTGlzdENhc3RzUmVzcG9uc2USNwoFaXRlbXMYASADKAsyKC5wb3J0Zm9saW8udjEuTGlzdENhc3RzUmVzcG9uc2UuQ2FzdEl0ZW0aXQoIQ2FzdEl0ZW0SKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZRIlCgVwbGFucxgCIAMoCzIWLnBvcnRmb2xpby52MS5DYXN0UGxhbiIvCh1HZXRDYXN0UHJvZmlsZUJ5SGFuZGxlUmVxdWVzdBIOCgZoYW5kbGUYASABKAkiMAoeQ2hlY2tIYW5kbGVBdmFpbGFiaWxpdHlSZXF1ZXN0Eg4KBmhhbmRsZRgBIAEoCSJFCh9DaGVja0hhbmRsZUF2YWlsYWJpbGl0eVJlc3BvbnNlEhEKCWF2YWlsYWJsZRgBIAEoCBIPCgdtZXNzYWdlGAIgASgJIiYKEExpc3RBcmVhc1JlcXVlc3QSEgoKcHJlZmVjdHVyZRgBIAEoCSI2ChFMaXN0QXJlYXNSZXNwb25zZRIhCgVhcmVhcxgBIAMoCzISLnBvcnRmb2xpby52MS5BcmVhKpMBCg5DYXN0VmlzaWJpbGl0eRIfChtDQVNUX1ZJU0lCSUxJVFlfVU5TUEVDSUZJRUQQABIgChxDQVNUX1ZJU0lCSUxJVFlfVU5SRUdJU1RFUkVEEAESHwobQ0FTVF9WSVNJQklMSVRZX1VOUFVCTElTSEVEEAISHQoZQ0FTVF9WSVNJQklMSVRZX1BVQkxJU0hFRBADMo4JCgtDYXN0U2VydmljZRJbCg5HZXRDYXN0UHJvZmlsZRIjLnBvcnRmb2xpby52MS5HZXRDYXN0UHJvZmlsZVJlcXVlc3QaJC5wb3J0Zm9saW8udjEuR2V0Q2FzdFByb2ZpbGVSZXNwb25zZRJrChZHZXRDYXN0UHJvZmlsZUJ5SGFuZGxlEisucG9ydGZvbGlvLnYxLkdldENhc3RQcm9maWxlQnlIYW5kbGVSZXF1ZXN0GiQucG9ydGZvbGlvLnYxLkdldENhc3RQcm9maWxlUmVzcG9uc2USZAoRQ3JlYXRlQ2FzdFByb2ZpbGUSJi5wb3J0Zm9saW8udjEuQ3JlYXRlQ2FzdFByb2ZpbGVSZXF1ZXN0GicucG9ydGZvbGlvLnYxLkNyZWF0ZUNhc3RQcm9maWxlUmVzcG9uc2USXgoPU2F2ZUNhc3RQcm9maWxlEiQucG9ydGZvbGlvLnYxLlNhdmVDYXN0UHJvZmlsZVJlcXVlc3QaJS5wb3J0Zm9saW8udjEuU2F2ZUNhc3RQcm9maWxlUmVzcG9uc2USZwoSU2F2ZUNhc3RWaXNpYmlsaXR5EicucG9ydGZvbGlvLnYxLlNhdmVDYXN0VmlzaWJpbGl0eVJlcXVlc3QaKC5wb3J0Zm9saW8udjEuU2F2ZUNhc3RWaXNpYmlsaXR5UmVzcG9uc2USWwoOU2F2ZUNhc3RJbWFnZXMSIy5wb3J0Zm9saW8udjEuU2F2ZUNhc3RJbWFnZXNSZXF1ZXN0GiQucG9ydGZvbGlvLnYxLlNhdmVDYXN0SW1hZ2VzUmVzcG9uc2USWAoNU2F2ZUNhc3RQbGFucxIiLnBvcnRmb2xpby52MS5TYXZlQ2FzdFBsYW5zUmVxdWVzdBojLnBvcnRmb2xpby52MS5TYXZlQ2FzdFBsYW5zUmVzcG9uc2USZAoRU2F2ZUNhc3RTY2hlZHVsZXMSJi5wb3J0Zm9saW8udjEuU2F2ZUNhc3RTY2hlZHVsZXNSZXF1ZXN0GicucG9ydGZvbGlvLnYxLlNhdmVDYXN0U2NoZWR1bGVzUmVzcG9uc2USTAoJTGlzdENhc3RzEh4ucG9ydGZvbGlvLnYxLkxpc3RDYXN0c1JlcXVlc3QaHy5wb3J0Zm9saW8udjEuTGlzdENhc3RzUmVzcG9uc2USVQoMR2V0VXBsb2FkVXJsEiEucG9ydGZvbGlvLnYxLkdldFVwbG9hZFVybFJlcXVlc3QaIi5wb3J0Zm9saW8udjEuR2V0VXBsb2FkVXJsUmVzcG9uc2USdgoXQ2hlY2tIYW5kbGVBdmFpbGFiaWxpdHkSLC5wb3J0Zm9saW8udjEuQ2hlY2tIYW5kbGVBdmFpbGFiaWxpdHlSZXF1ZXN0Gi0ucG9ydGZvbGlvLnYxLkNoZWNrSGFuZGxlQXZhaWxhYmlsaXR5UmVzcG9uc2USTAoJTGlzdEFyZWFzEh4ucG9ydGZvbGlvLnYxLkxpc3RBcmVhc1JlcXVlc3QaHy5wb3J0Zm9saW8udjEuTGlzdEFyZWFzUmVzcG9uc2ViBnByb3RvMw");
 
 /**
  * @generated from message portfolio.v1.SocialLinks
@@ -148,107 +148,77 @@ export type CastProfile = Message<"portfolio.v1.CastProfile"> & {
   visibility: CastVisibility;
 
   /**
-   * promise_rate should be calculated, maybe not stored here directly or read-only
-   *
-   * @generated from field: double promise_rate = 6;
-   */
-  promiseRate: number;
-
-  /**
-   * @generated from field: repeated string images = 7;
+   * @generated from field: repeated string images = 6;
    */
   images: string[];
 
   /**
-   * @generated from field: string image_path = 8;
+   * @generated from field: string image_path = 7;
    */
   imagePath: string;
 
   /**
-   * @generated from field: string tagline = 9;
+   * @generated from field: string tagline = 8;
    */
   tagline: string;
 
   /**
-   * @generated from field: string service_category = 10;
-   */
-  serviceCategory: string;
-
-  /**
-   * @generated from field: string location_type = 11;
-   */
-  locationType: string;
-
-  /**
-   * @generated from field: string area = 12;
-   */
-  area: string;
-
-  /**
-   * @generated from field: string default_schedule_start = 13;
+   * @generated from field: string default_schedule_start = 9;
    */
   defaultScheduleStart: string;
 
   /**
-   * @generated from field: string default_schedule_end = 14;
+   * @generated from field: string default_schedule_end = 10;
    */
   defaultScheduleEnd: string;
 
   /**
-   * @generated from field: portfolio.v1.SocialLinks social_links = 15;
+   * @generated from field: portfolio.v1.SocialLinks social_links = 11;
    */
   socialLinks?: SocialLinks;
 
   /**
-   * @generated from field: int32 age = 16;
+   * @generated from field: int32 age = 12;
    */
   age: number;
 
   /**
-   * @generated from field: int32 height = 17;
+   * @generated from field: int32 height = 13;
    */
   height: number;
 
   /**
-   * @generated from field: string blood_type = 18;
+   * @generated from field: string blood_type = 14;
    */
   bloodType: string;
 
   /**
-   * @generated from field: portfolio.v1.ThreeSizes three_sizes = 19;
+   * @generated from field: portfolio.v1.ThreeSizes three_sizes = 15;
    */
   threeSizes?: ThreeSizes;
 
   /**
-   * @generated from field: repeated string tags = 20;
+   * @generated from field: repeated string tags = 16;
    */
   tags: string[];
 
   /**
-   * Square avatar image (S3 key)
-   *
-   * @generated from field: string avatar_path = 21;
+   * @generated from field: string avatar_path = 17;
    */
   avatarPath: string;
 
   /**
-   * Signed download URL for avatar
-   *
-   * @generated from field: string avatar_url = 22;
+   * @generated from field: string avatar_url = 18;
    */
   avatarUrl: string;
 
   /**
-   * Unique user-defined ID (URL key)
-   *
-   * @generated from field: string handle = 23;
+   * @generated from field: string handle = 19;
    */
   handle: string;
 
   /**
-   * Selected areas (from area master)
-   *
-   * @generated from field: repeated portfolio.v1.Area areas = 24;
+   * @generated from field: repeated portfolio.v1.Area areas = 20;
    */
   areas: Area[];
 };
@@ -365,57 +335,42 @@ export type CreateCastProfileRequest = Message<"portfolio.v1.CreateCastProfileRe
   tagline: string;
 
   /**
-   * @generated from field: string service_category = 5;
-   */
-  serviceCategory: string;
-
-  /**
-   * @generated from field: string location_type = 6;
-   */
-  locationType: string;
-
-  /**
-   * @generated from field: string area = 7;
-   */
-  area: string;
-
-  /**
-   * @generated from field: string default_schedule_start = 8;
+   * @generated from field: string default_schedule_start = 5;
    */
   defaultScheduleStart: string;
 
   /**
-   * @generated from field: string default_schedule_end = 9;
+   * @generated from field: string default_schedule_end = 6;
    */
   defaultScheduleEnd: string;
 
   /**
-   * @generated from field: portfolio.v1.SocialLinks social_links = 10;
+   * @generated from field: portfolio.v1.SocialLinks social_links = 7;
    */
   socialLinks?: SocialLinks;
 
   /**
-   * @generated from field: int32 age = 11;
+   * @generated from field: int32 age = 8;
    */
   age: number;
 
   /**
-   * @generated from field: int32 height = 12;
+   * @generated from field: int32 height = 9;
    */
   height: number;
 
   /**
-   * @generated from field: string blood_type = 13;
+   * @generated from field: string blood_type = 10;
    */
   bloodType: string;
 
   /**
-   * @generated from field: portfolio.v1.ThreeSizes three_sizes = 14;
+   * @generated from field: portfolio.v1.ThreeSizes three_sizes = 11;
    */
   threeSizes?: ThreeSizes;
 
   /**
-   * @generated from field: repeated string tags = 15;
+   * @generated from field: repeated string tags = 12;
    */
   tags: string[];
 };
@@ -469,74 +424,57 @@ export type SaveCastProfileRequest = Message<"portfolio.v1.SaveCastProfileReques
   tagline: string;
 
   /**
-   * @generated from field: string service_category = 5;
-   */
-  serviceCategory: string;
-
-  /**
-   * @generated from field: string location_type = 6;
-   */
-  locationType: string;
-
-  /**
-   * @generated from field: string area = 7;
-   */
-  area: string;
-
-  /**
-   * @generated from field: string default_schedule_start = 8;
+   * @generated from field: string default_schedule_start = 5;
    */
   defaultScheduleStart: string;
 
   /**
-   * @generated from field: string default_schedule_end = 9;
+   * @generated from field: string default_schedule_end = 6;
    */
   defaultScheduleEnd: string;
 
   /**
-   * @generated from field: portfolio.v1.SocialLinks social_links = 10;
+   * @generated from field: portfolio.v1.SocialLinks social_links = 7;
    */
   socialLinks?: SocialLinks;
 
   /**
-   * @generated from field: portfolio.v1.CastVisibility visibility = 11;
+   * @generated from field: portfolio.v1.CastVisibility visibility = 8;
    */
   visibility: CastVisibility;
 
   /**
-   * @generated from field: int32 age = 12;
+   * @generated from field: int32 age = 9;
    */
   age: number;
 
   /**
-   * @generated from field: int32 height = 13;
+   * @generated from field: int32 height = 10;
    */
   height: number;
 
   /**
-   * @generated from field: string blood_type = 14;
+   * @generated from field: string blood_type = 11;
    */
   bloodType: string;
 
   /**
-   * @generated from field: portfolio.v1.ThreeSizes three_sizes = 15;
+   * @generated from field: portfolio.v1.ThreeSizes three_sizes = 12;
    */
   threeSizes?: ThreeSizes;
 
   /**
-   * @generated from field: repeated string tags = 16;
+   * @generated from field: repeated string tags = 13;
    */
   tags: string[];
 
   /**
-   * @generated from field: string handle = 17;
+   * @generated from field: string handle = 14;
    */
   handle: string;
 
   /**
-   * Selected area IDs
-   *
-   * @generated from field: repeated string area_ids = 18;
+   * @generated from field: repeated string area_ids = 15;
    */
   areaIds: string[];
 };

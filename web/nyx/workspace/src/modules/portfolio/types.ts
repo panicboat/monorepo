@@ -47,12 +47,6 @@ export interface CastProfile {
   message: string;
   tagline?: string; // Short catchphrase
   bio?: string; // Detailed self-intro
-  locationType?: "store" | "dispatch" | "hotel";
-  area?: string;
-  serviceCategory?: "advanced" | "standard" | "social";
-
-  // Stats
-  promiseRate?: number;
 
   // Media
   images: CastImages;
@@ -101,9 +95,6 @@ export interface ProfileFormData {
   handle: string;
   tagline: string;
   bio: string;
-  serviceCategory: "advanced" | "standard" | "social";
-  locationType: "store" | "dispatch" | "hotel";
-  area: string;
   areaIds: string[];
   defaultScheduleStart: string; // HH:mm
   defaultScheduleEnd: string; // HH:mm
