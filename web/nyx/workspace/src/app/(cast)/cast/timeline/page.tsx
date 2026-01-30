@@ -219,16 +219,28 @@ export default function CastTimelinePage() {
 
       {/* New Post Form */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-        <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">
-          New Post
-        </Label>
+        <div className="flex items-center justify-between mb-2">
+          <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            New Post
+          </Label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={`gap-1 text-xs ${visible ? "text-slate-300 hover:text-slate-500 hover:bg-slate-50" : "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"}`}
+            onClick={() => setVisible(!visible)}
+          >
+            {visible ? <LockOpen size={14} /> : <Lock size={14} />}
+            <span>{visible ? "Public" : "Private"}</span>
+          </Button>
+        </div>
         <div className="flex gap-4">
           {avatarUrl ? (
             <img src={avatarUrl} alt="My avatar" className="w-10 h-10 rounded-full border border-slate-100 object-cover shrink-0" />
           ) : (
             <div className="w-10 h-10 rounded-full border border-slate-100 bg-slate-200 shrink-0" />
           )}
-          <div className="flex-1 space-y-3">
+          <div className="flex-1 min-w-0 space-y-3">
             <textarea
               className="w-full bg-slate-50 border-0 rounded-xl p-3 text-sm focus:ring-2 focus:ring-pink-100 focus:bg-white transition-all resize-none placeholder:text-slate-300"
               rows={3}
@@ -346,28 +358,16 @@ export default function CastTimelinePage() {
                 </Button>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className={`gap-1 text-xs ${visible ? "text-slate-300 hover:text-slate-500 hover:bg-slate-50" : "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"}`}
-                  onClick={() => setVisible(!visible)}
-                >
-                  {visible ? <LockOpen size={14} /> : <Lock size={14} />}
-                  <span>{visible ? "Public" : "Private"}</span>
-                </Button>
-                <Button
-                  variant="brand"
-                  size="sm"
-                  className="px-6 rounded-full"
-                  onClick={handlePost}
-                  disabled={(!content.trim() && mediaFiles.length === 0) || posting}
-                >
-                  <Send size={16} className="mr-2" />
-                  {posting ? (uploadProgress ? `Uploading...` : "Posting...") : "Post"}
-                </Button>
-              </div>
+              <Button
+                variant="brand"
+                size="sm"
+                className="px-6 rounded-full"
+                onClick={handlePost}
+                disabled={(!content.trim() && mediaFiles.length === 0) || posting}
+              >
+                <Send size={16} className="mr-2" />
+                {posting ? (uploadProgress ? `Uploading...` : "Posting...") : "Post"}
+              </Button>
             </div>
           </div>
         </div>
