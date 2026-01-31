@@ -1,11 +1,13 @@
 import { SWRConfiguration } from "swr";
 
+import { useAuthStore } from "@/stores/authStore";
+
 /**
- * Get auth token from localStorage
+ * Get auth token from authStore
  */
 const getToken = () => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("nyx_cast_access_token");
+  return useAuthStore.getState().accessToken;
 };
 
 /**
@@ -27,8 +29,10 @@ export const fetcher = async <T>(url: string): Promise<T> => {
 
   if (!res.ok) {
     const error = new Error("An error occurred while fetching the data.");
-    (error as any).status = res.status;
-    (error as any).info = await res.json().catch(() => ({}));
+    (error as unknown as { status: number }).status = res.status;
+    (error as unknown as { info: unknown }).info = await res
+      .json()
+      .catch(() => ({}));
     throw error;
   }
 
@@ -40,8 +44,8 @@ export const fetcher = async <T>(url: string): Promise<T> => {
  */
 export const swrConfig: SWRConfiguration = {
   fetcher,
-  revalidateOnFocus: false,  // Disable auto-revalidation on window focus
+  revalidateOnFocus: false, // Disable auto-revalidation on window focus
   revalidateOnReconnect: true,
-  dedupingInterval: 2000,    // Dedupe requests within 2 seconds
+  dedupingInterval: 2000, // Dedupe requests within 2 seconds
   errorRetryCount: 3,
 };

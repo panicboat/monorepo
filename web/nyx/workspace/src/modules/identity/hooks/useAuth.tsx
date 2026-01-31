@@ -6,9 +6,19 @@ import {
   useState,
   ReactNode,
   useCallback,
+  useEffect,
 } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
+
+import {
+  useAuthStore,
+  initializeAuthStore,
+  selectAccessToken,
+  selectRole,
+  selectIsHydrated,
+} from "@/stores/authStore";
+import type { Role, TokenData } from "@/lib/auth";
 
 export type User = {
   id: string;
@@ -28,43 +38,50 @@ type AuthContextType = {
     phoneNumber: string,
     password: string,
     verificationToken: string,
-    role?: number,
+    role?: number
   ) => Promise<void>;
-  login: (phoneNumber: string, password: string, role?: number) => Promise<void>;
+  login: (
+    phoneNumber: string,
+    password: string,
+    role?: number
+  ) => Promise<void>;
   logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Convert API role to store role
+ */
+function toStoreRole(apiRole: number | string): Role {
+  if (apiRole === 2 || apiRole === "ROLE_CAST") {
+    return "cast";
+  }
+  return "guest";
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [newUserFlag, setNewUserFlag] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
 
+  // Zustand store
+  const accessToken = useAuthStore(selectAccessToken);
+  const role = useAuthStore(selectRole);
+  const isHydrated = useAuthStore(selectIsHydrated);
+  const setTokens = useAuthStore((state) => state.setTokens);
+  const clearTokens = useAuthStore((state) => state.clearTokens);
+  const refreshTokenFromStore = useAuthStore((state) => state.refreshToken);
 
+  // Initialize auth store (migrate legacy tokens)
+  useEffect(() => {
+    initializeAuthStore();
+  }, []);
 
-  // Helper to determine keys based on context or role
-  const getKeys = (role?: number | string) => {
-    // If role is explicitly provided, use it
-    if (role === 2 || role === "ROLE_CAST") {
-      return { access: "nyx_cast_access_token", refresh: "nyx_cast_refresh_token" };
-    }
-    if (role === 1 || role === "ROLE_GUEST") {
-      return { access: "nyx_guest_access_token", refresh: "nyx_guest_refresh_token" };
-    }
-
-    // Otherwise, infer from URL context
-    if (pathname?.startsWith("/cast")) {
-      return { access: "nyx_cast_access_token", refresh: "nyx_cast_refresh_token" };
-    }
-    // Default to Guest
-    return { access: "nyx_guest_access_token", refresh: "nyx_guest_refresh_token" };
-  };
-
-  const refreshToken = useCallback(async (contextKeys?: { access: string; refresh: string }): Promise<boolean> => {
-    const keys = contextKeys || getKeys();
-    const rToken = localStorage.getItem(keys.refresh);
+  // Token refresh function
+  const refreshToken = useCallback(async (): Promise<boolean> => {
+    const rToken = refreshTokenFromStore;
     if (!rToken) return false;
+
     try {
       const res = await fetch("/api/identity/refresh-token", {
         method: "POST",
@@ -73,78 +90,85 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (res.ok) {
         const data = await res.json();
-        // Handle snake_case vs camelCase mismatch
-        const accessToken = data.accessToken || data.access_token;
+        const newAccessToken = data.accessToken || data.access_token;
         const newRefreshToken = data.refreshToken || data.refresh_token;
 
-        if (accessToken) localStorage.setItem(keys.access, accessToken);
-        if (newRefreshToken) localStorage.setItem(keys.refresh, newRefreshToken);
-        return true;
+        if (newAccessToken && newRefreshToken && role) {
+          setTokens({
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+            role,
+            userId: useAuthStore.getState().userId || "",
+          });
+          return true;
+        }
       }
     } catch (e) {
       console.error("Refresh failed", e);
     }
     return false;
-  }, [pathname]);
+  }, [refreshTokenFromStore, role, setTokens]);
 
   // SWR fetcher for /api/identity/me with token refresh support
-  const authFetcher = useCallback(async (url: string) => {
-    const keys = getKeys();
-    const token = localStorage.getItem(keys.access);
-    if (!token) return null;
+  const authFetcher = useCallback(
+    async (url: string) => {
+      const token = useAuthStore.getState().accessToken;
+      if (!token) return null;
 
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (res.ok) {
-      return res.json();
-    }
+      if (res.ok) {
+        return res.json();
+      }
 
-    // Handle 401 with token refresh
-    if (res.status === 401) {
-      const refreshed = await refreshToken(keys);
-      if (refreshed) {
-        const newToken = localStorage.getItem(keys.access);
-        if (newToken) {
-          const retryRes = await fetch(url, {
-            headers: { Authorization: `Bearer ${newToken}` },
-          });
-          if (retryRes.ok) {
-            return retryRes.json();
+      // Handle 401 with token refresh
+      if (res.status === 401) {
+        const refreshed = await refreshToken();
+        if (refreshed) {
+          const newToken = useAuthStore.getState().accessToken;
+          if (newToken) {
+            const retryRes = await fetch(url, {
+              headers: { Authorization: `Bearer ${newToken}` },
+            });
+            if (retryRes.ok) {
+              return retryRes.json();
+            }
           }
         }
+        // Token refresh failed - clear tokens
+        clearTokens();
       }
-      // Token refresh failed - clear tokens
-      localStorage.removeItem(keys.access);
-      localStorage.removeItem(keys.refresh);
-    }
 
-    return null;
-  }, [pathname, refreshToken]);
-
-  // Check if we have a token for conditional fetching
-  const keys = getKeys();
-  const hasToken = typeof window !== "undefined" && localStorage.getItem(keys.access);
-
-  // Use SWR for user data fetching
-  const { data: userData, isLoading, mutate } = useSWR(
-    hasToken ? "/api/identity/me" : null,
-    authFetcher,
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 5000,
-    }
+      return null;
+    },
+    [refreshToken, clearTokens]
   );
 
+  // Use SWR for user data fetching (only when hydrated and has token)
+  const {
+    data: userData,
+    isLoading: swrLoading,
+    mutate,
+  } = useSWR(isHydrated && accessToken ? "/api/identity/me" : null, authFetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 5000,
+  });
+
+  // Loading state includes hydration
+  const isLoading = !isHydrated || swrLoading;
+
   // Derive user from SWR data
-  const user: User | null = userData ? {
-    id: userData.id,
-    name: userData.phoneNumber,
-    isGuest: userData.role === 1 || userData.role === "ROLE_GUEST",
-    role: userData.role,
-    isNew: newUserFlag,
-  } : null;
+  const user: User | null = userData
+    ? {
+        id: userData.id,
+        name: userData.phoneNumber,
+        isGuest: userData.role === 1 || userData.role === "ROLE_GUEST",
+        role: userData.role,
+        isNew: newUserFlag,
+      }
+    : null;
 
   const requestSMS = async (phoneNumber: string) => {
     const res = await fetch("/api/identity/send-sms", {
@@ -171,40 +195,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     phoneNumber: string,
     password: string,
     verificationToken: string,
-    role: number = 1,
+    registerRole: number = 1
   ) => {
     const res = await fetch("/api/identity/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, password, verificationToken, role }),
+      body: JSON.stringify({
+        phoneNumber,
+        password,
+        verificationToken,
+        role: registerRole,
+      }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Registration failed");
 
-    const registerKeys = getKeys(data.userProfile.role);
-    // Handle snake_case vs camelCase mismatch
-    const accessToken = data.accessToken || data.access_token;
+    const newAccessToken = data.accessToken || data.access_token;
     const newRefreshToken = data.refreshToken || data.refresh_token;
-
-    if (accessToken) {
-        localStorage.setItem(registerKeys.access, accessToken);
-    } else {
-        console.error("Register Error: No access token found in response", data);
-    }
-
-    if (newRefreshToken) {
-      localStorage.setItem(registerKeys.refresh, newRefreshToken);
-    }
     const userRole = data.userProfile.role;
     const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
 
+    if (!newAccessToken) {
+      console.error("Register Error: No access token found in response", data);
+      throw new Error("Registration failed: No access token");
+    }
+
+    // Save tokens to authStore
+    const tokenData: TokenData = {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken || "",
+      role: toStoreRole(userRole),
+      userId: data.userProfile.id,
+    };
+    setTokens(tokenData);
+
     // Set new user flag and update SWR cache
     setNewUserFlag(true);
-    mutate({
-      id: data.userProfile.id,
-      phoneNumber: data.userProfile.phoneNumber,
-      role: userRole,
-    }, { revalidate: false });
+    mutate(
+      {
+        id: data.userProfile.id,
+        phoneNumber: data.userProfile.phoneNumber,
+        role: userRole,
+      },
+      { revalidate: false }
+    );
 
     if (isGuest) {
       router.push("/");
@@ -213,39 +247,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (phoneNumber: string, password: string, role?: number) => {
+  const login = async (
+    phoneNumber: string,
+    password: string,
+    loginRole?: number
+  ) => {
     const res = await fetch("/api/identity/sign-in", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, password, role }),
+      body: JSON.stringify({ phoneNumber, password, role: loginRole }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Login failed");
 
-    const loginKeys = getKeys(data.userProfile.role);
-    // Handle snake_case vs camelCase mismatch
-    const accessToken = data.accessToken || data.access_token;
+    const newAccessToken = data.accessToken || data.access_token;
     const newRefreshToken = data.refreshToken || data.refresh_token;
-
-    if (accessToken) {
-      localStorage.setItem(loginKeys.access, accessToken);
-    } else {
-      console.error("Login Error: No access token found in response", data);
-    }
-
-    if (newRefreshToken) {
-      localStorage.setItem(loginKeys.refresh, newRefreshToken);
-    }
     const userRole = data.userProfile.role;
     const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
 
+    if (!newAccessToken) {
+      console.error("Login Error: No access token found in response", data);
+      throw new Error("Login failed: No access token");
+    }
+
+    // Save tokens to authStore
+    const tokenData: TokenData = {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken || "",
+      role: toStoreRole(userRole),
+      userId: data.userProfile.id,
+    };
+    setTokens(tokenData);
+
     // Update SWR cache with user data
     setNewUserFlag(false);
-    mutate({
-      id: data.userProfile.id,
-      phoneNumber: data.userProfile.phoneNumber,
-      role: userRole,
-    }, { revalidate: false });
+    mutate(
+      {
+        id: data.userProfile.id,
+        phoneNumber: data.userProfile.phoneNumber,
+        role: userRole,
+      },
+      { revalidate: false }
+    );
 
     if (isGuest) {
       router.push("/");
@@ -255,8 +298,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    const logoutKeys = getKeys(); // Use current context keys for logout
-    const rToken = localStorage.getItem(logoutKeys.refresh);
+    const rToken = refreshTokenFromStore;
     if (rToken) {
       try {
         await fetch("/api/identity/logout", {
@@ -264,21 +306,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken: rToken }),
         });
-      } catch (e) {
+      } catch {
         // Ignore logout errors
       }
     }
-    localStorage.removeItem(logoutKeys.access);
-    localStorage.removeItem(logoutKeys.refresh);
+
+    // Clear tokens from authStore
+    clearTokens();
 
     // Clear SWR cache
     setNewUserFlag(false);
     mutate(null, { revalidate: false });
 
-    if (pathname?.startsWith("/cast")) {
-        router.push("/cast/login");
+    // Navigate based on current role (from store, not pathname)
+    if (role === "cast") {
+      router.push("/cast/login");
     } else {
-        router.push("/login");
+      router.push("/login");
     }
   };
 
