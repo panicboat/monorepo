@@ -4,6 +4,41 @@
   --background: #ffffff;
   --foreground: #020617;
   /* slate-950 */
+
+  /* Brand Colors */
+  --color-brand-primary: #ec4899; /* pink-500 */
+  --color-brand-primary-hover: #db2777; /* pink-600 */
+
+  /* Cast Theme */
+  --color-cast-accent: #ec4899; /* pink-500 */
+  --color-cast-accent-hover: #db2777; /* pink-600 */
+
+  /* Guest Theme */
+  --color-guest-accent: #a855f7; /* purple-500 */
+  --color-guest-accent-hover: #9333ea; /* purple-600 */
+
+  /* Text Colors */
+  --color-text-primary: #0f172a; /* slate-900 */
+  --color-text-secondary: #64748b; /* slate-500 */
+  --color-text-tertiary: #94a3b8; /* slate-400 */
+
+  /* Background Colors */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8fafc; /* slate-50 */
+  --color-bg-tertiary: #f1f5f9; /* slate-100 */
+
+  /* Border Colors */
+  --color-border-light: #f1f5f9; /* slate-100 */
+  --color-border-medium: #e2e8f0; /* slate-200 */
+
+  /* Shadows */
+  --shadow-brand: 0 4px 6px -1px rgba(236, 72, 153, 0.2);
+  --shadow-brand-hover: 0 10px 15px -3px rgba(236, 72, 153, 0.3);
+
+  /* Border Radius */
+  --radius-button: 0.75rem; /* 12px */
+  --radius-card: 1rem; /* 16px */
+  --radius-input: 0.5rem; /* 8px */
 }
 
 @theme inline {
@@ -12,6 +47,14 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-serif-jp: "Yu Mincho", "Hiragino Mincho ProN", serif;
+
+  /* Typography - Small sizes */
+  --font-size-3xs: 0.5rem;    /* 8px */
+  --font-size-2xs: 0.625rem;  /* 10px */
+
+  /* Brand colors as Tailwind colors */
+  --color-brand: var(--color-brand-primary);
+  --color-brand-hover: var(--color-brand-primary-hover);
 }
 
 body {
@@ -21,6 +64,7 @@ body {
   /* App-like feel handled by layout constraint */
 }
 
+/* Custom utility classes */
 @utility pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -36,6 +80,35 @@ body {
 
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Text size utilities for design tokens */
+@utility text-3xs {
+  font-size: 0.5rem;
+  line-height: 0.75rem;
+}
+
+@utility text-2xs {
+  font-size: 0.625rem;
+  line-height: 0.875rem;
+}
+
+/* Brand shadow utilities */
+@utility shadow-brand {
+  box-shadow: var(--shadow-brand);
+}
+
+@utility shadow-brand-hover {
+  box-shadow: var(--shadow-brand-hover);
+}
+
+/* Gradient utilities */
+@utility bg-gradient-cast {
+  background: linear-gradient(to right, #ec4899, #f43f5e);
+}
+
+@utility bg-gradient-guest {
+  background: linear-gradient(to bottom right, #f472b6, #a855f7);
 }
 
 @media screen and (max-width: 899px) {

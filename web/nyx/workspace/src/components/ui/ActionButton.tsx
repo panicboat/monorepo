@@ -82,7 +82,7 @@ export function ActionButton({
           ? "bg-green-500"
           : status === "loading"
             ? "bg-pink-400 cursor-not-allowed"
-            : "bg-pink-500 hover:bg-pink-600 shadow-pink-200 hover:shadow-pink-300",
+            : "bg-pink-500 hover:bg-pink-600 shadow-brand hover:shadow-brand-hover",
         className
       )}
     >
