@@ -51,7 +51,7 @@ export const CastBottomNavBar = () => {
     <BottomNavBar
       tabs={tabs}
       layoutId="cast-nav-indicator"
-      activeColorClass="text-pink-500"
+      activeColorClass="text-role-cast"
     />
   );
 };

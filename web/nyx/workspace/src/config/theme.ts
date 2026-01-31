@@ -6,7 +6,7 @@
  *
  * Usage:
  *   import { colors } from '@/config/theme';
- *   style={{ color: colors.brand.primary }}
+ *   style={{ color: colors.role.cast.default }}
  */
 
 /**
@@ -14,12 +14,27 @@
  * These provide type-safe access to design tokens.
  */
 export const colors = {
-  // Brand
-  brand: {
-    primary: "var(--color-brand-primary)",
-    primaryHover: "var(--color-brand-primary-hover)",
-    secondary: "var(--color-brand-secondary)",
-    secondaryHover: "var(--color-brand-secondary-hover)",
+  // Role - Cast (pink)
+  role: {
+    cast: {
+      default: "var(--color-role-cast)",
+      hover: "var(--color-role-cast-hover)",
+      light: "var(--color-role-cast-light)",
+      shadow: "var(--color-role-cast-shadow)",
+    },
+    guest: {
+      default: "var(--color-role-guest)",
+      hover: "var(--color-role-guest-hover)",
+      light: "var(--color-role-guest-light)",
+      shadow: "var(--color-role-guest-shadow)",
+    },
+  },
+
+  // Accent (neutral emphasis)
+  accent: {
+    default: "var(--color-accent)",
+    hover: "var(--color-accent-hover)",
+    light: "var(--color-accent-light)",
   },
 
   // Semantic
@@ -54,12 +69,6 @@ export const colors = {
     default: "var(--color-info)",
     hover: "var(--color-info-hover)",
   },
-
-  // Role
-  role: {
-    guest: "var(--color-role-guest)",
-    cast: "var(--color-role-cast)",
-  },
 } as const;
 
 /**
@@ -67,13 +76,25 @@ export const colors = {
  * Use these when you need Tailwind classes instead of inline styles.
  */
 export const tailwindColors = {
-  // Brand
-  brand: "bg-brand",
-  brandHover: "hover:bg-brand-hover",
-  brandText: "text-brand",
-  brandCast: "bg-brand-cast",
-  brandCastHover: "hover:bg-brand-cast-hover",
-  brandCastText: "text-brand-cast",
+  // Role - Cast
+  roleCast: "bg-role-cast",
+  roleCastHover: "hover:bg-role-cast-hover",
+  roleCastText: "text-role-cast",
+  roleCastLight: "bg-role-cast-light",
+  roleCastShadow: "shadow-role-cast-shadow",
+
+  // Role - Guest
+  roleGuest: "bg-role-guest",
+  roleGuestHover: "hover:bg-role-guest-hover",
+  roleGuestText: "text-role-guest",
+  roleGuestLight: "bg-role-guest-light",
+  roleGuestShadow: "shadow-role-guest-shadow",
+
+  // Accent
+  accent: "bg-accent",
+  accentHover: "hover:bg-accent-hover",
+  accentText: "text-accent",
+  accentLight: "bg-accent-light",
 
   // Surface
   surface: "bg-surface",
@@ -97,12 +118,6 @@ export const tailwindColors = {
   errorBg: "bg-error",
   info: "text-info",
   infoBg: "bg-info",
-
-  // Role
-  roleGuest: "text-role-guest",
-  roleGuestBg: "bg-role-guest",
-  roleCast: "text-role-cast",
-  roleCastBg: "bg-role-cast",
 } as const;
 
 export type Colors = typeof colors;

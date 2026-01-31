@@ -40,8 +40,8 @@ export const CastTopNavBar = () => {
 
   const linkClass = (path: string) =>
     isActive(path)
-      ? "text-pink-500 font-bold"
-      : "text-slate-500 hover:text-pink-500 transition-colors";
+      ? "text-role-cast font-bold"
+      : "text-slate-500 hover:text-role-cast transition-colors";
 
   const RightSlot = (
     <>

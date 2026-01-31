@@ -87,7 +87,7 @@ export default function SchedulePage() {
           label="Save Schedule"
           onClick={handleSave}
           className="max-w-md"
-          colorScheme="pink"
+          role="cast"
         />
       </div>
     </div>

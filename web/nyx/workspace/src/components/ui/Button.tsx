@@ -18,10 +18,10 @@ const buttonVariants = cva(
           "bg-slate-100 text-slate-900 hover:bg-slate-100/80",
         ghost: "hover:bg-slate-100 hover:text-slate-900",
         link: "text-slate-900 underline-offset-4 hover:underline",
-        brand:
-          "bg-brand text-white hover:bg-brand-hover shadow-md shadow-pink-200 hover:shadow-pink-300",
-        brandBlue:
-          "bg-brand-cast text-white hover:bg-brand-cast-hover shadow-md shadow-blue-200 hover:shadow-blue-300",
+        cast:
+          "bg-role-cast text-white hover:bg-role-cast-hover shadow-md shadow-role-cast-shadow",
+        guest:
+          "bg-role-guest text-white hover:bg-role-guest-hover shadow-md shadow-role-guest-shadow",
       },
       size: {
         default: "h-10 px-4 py-2",

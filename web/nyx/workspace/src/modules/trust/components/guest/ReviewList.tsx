@@ -167,7 +167,7 @@ const ReviewItem = ({
           {review.status === "pending" && (
             <Button
               size="sm"
-              variant="brandBlue"
+              variant="guest"
               onClick={() => onStatusChange?.(review.id, "public")}
               className="h-8 px-4 gap-1.5 shadow-sm"
             >

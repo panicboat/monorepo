@@ -5,7 +5,7 @@ import { Loader2, Save, Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ActionButtonMode = "save" | "submit";
-type ColorScheme = "blue" | "pink";
+type Role = "cast" | "guest";
 
 interface ActionButtonProps {
   mode?: ActionButtonMode;
@@ -16,7 +16,7 @@ interface ActionButtonProps {
   disabled?: boolean;
   className?: string;
   successDuration?: number;
-  colorScheme?: ColorScheme;
+  role?: Role;
 }
 
 export function ActionButton({
@@ -28,7 +28,7 @@ export function ActionButton({
   disabled = false,
   className,
   successDuration = 2000,
-  colorScheme = "blue",
+  role = "guest",
 }: ActionButtonProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
 
@@ -84,12 +84,12 @@ export function ActionButton({
         status === "success"
           ? "bg-success"
           : status === "loading"
-            ? colorScheme === "pink"
-              ? "bg-pink-300 cursor-not-allowed"
-              : "bg-blue-300 cursor-not-allowed"
-            : colorScheme === "pink"
-              ? "bg-brand hover:bg-brand-hover shadow-pink-200 hover:shadow-pink-300"
-              : "bg-brand-cast hover:bg-brand-cast-hover shadow-blue-200 hover:shadow-blue-300",
+            ? role === "cast"
+              ? "bg-role-cast-light cursor-not-allowed"
+              : "bg-role-guest-light cursor-not-allowed"
+            : role === "cast"
+              ? "bg-role-cast hover:bg-role-cast-hover shadow-role-cast-shadow"
+              : "bg-role-guest hover:bg-role-guest-hover shadow-role-guest-shadow",
         className
       )}
     >

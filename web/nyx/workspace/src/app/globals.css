@@ -7,11 +7,22 @@
 
   /* ===== Design Tokens ===== */
 
-  /* Brand Colors */
-  --color-brand-primary: #ec4899; /* pink-500 */
-  --color-brand-primary-hover: #db2777; /* pink-600 */
-  --color-brand-secondary: #60a5fa; /* blue-400 */
-  --color-brand-secondary-hover: #3b82f6; /* blue-500 */
+  /* Role Colors - Cast (pink) */
+  --color-role-cast: #f472b6; /* pink-400 */
+  --color-role-cast-hover: #ec4899; /* pink-500 */
+  --color-role-cast-light: #f9a8d4; /* pink-300 - for loading states */
+  --color-role-cast-shadow: #fbcfe8; /* pink-200 - for shadows */
+
+  /* Role Colors - Guest (blue) */
+  --color-role-guest: #60a5fa; /* blue-400 */
+  --color-role-guest-hover: #3b82f6; /* blue-500 */
+  --color-role-guest-light: #93c5fd; /* blue-300 - for loading states */
+  --color-role-guest-shadow: #bfdbfe; /* blue-200 - for shadows */
+
+  /* Accent Color - neutral emphasis */
+  --color-accent: #60a5fa; /* blue-400 */
+  --color-accent-hover: #3b82f6; /* blue-500 */
+  --color-accent-light: #dbeafe; /* blue-100 - for backgrounds */
 
   /* Semantic Colors */
   --color-surface: #ffffff;
@@ -31,10 +42,6 @@
   --color-error-hover: #dc2626; /* red-600 */
   --color-info: #3b82f6; /* blue-500 */
   --color-info-hover: #2563eb; /* blue-600 */
-
-  /* Role Colors */
-  --color-role-guest: var(--color-brand-primary);
-  --color-role-cast: var(--color-brand-secondary);
 }
 
 @theme inline {
@@ -44,11 +51,22 @@
   --font-mono: var(--font-geist-mono);
   --font-serif-jp: "Yu Mincho", "Hiragino Mincho ProN", serif;
 
-  /* Brand */
-  --color-brand: var(--color-brand-primary);
-  --color-brand-hover: var(--color-brand-primary-hover);
-  --color-brand-cast: var(--color-brand-secondary);
-  --color-brand-cast-hover: var(--color-brand-secondary-hover);
+  /* Role - Cast (pink) */
+  --color-role-cast: var(--color-role-cast);
+  --color-role-cast-hover: var(--color-role-cast-hover);
+  --color-role-cast-light: var(--color-role-cast-light);
+  --color-role-cast-shadow: var(--color-role-cast-shadow);
+
+  /* Role - Guest (blue) */
+  --color-role-guest: var(--color-role-guest);
+  --color-role-guest-hover: var(--color-role-guest-hover);
+  --color-role-guest-light: var(--color-role-guest-light);
+  --color-role-guest-shadow: var(--color-role-guest-shadow);
+
+  /* Accent */
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-light: var(--color-accent-light);
 
   /* Semantic */
   --color-surface: var(--color-surface);
@@ -68,10 +86,6 @@
   --color-error-hover: var(--color-error-hover);
   --color-info: var(--color-info);
   --color-info-hover: var(--color-info-hover);
-
-  /* Role */
-  --color-role-guest: var(--color-role-guest);
-  --color-role-cast: var(--color-role-cast);
 }
 
 body {

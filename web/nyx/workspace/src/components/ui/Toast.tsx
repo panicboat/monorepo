@@ -117,7 +117,7 @@ function ToastItem({
       {toast.action && (
         <button
           onClick={handleAction}
-          className="flex-shrink-0 text-sm font-bold text-blue-500 hover:text-blue-600 transition-colors"
+          className="flex-shrink-0 text-sm font-bold text-accent hover:text-accent-hover transition-colors"
         >
           {toast.action.label}
         </button>

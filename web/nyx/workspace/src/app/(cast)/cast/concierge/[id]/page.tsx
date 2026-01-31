@@ -197,7 +197,7 @@ export default function ConciergePage() {
           <SmartInvitationDrawer onSend={handleSendInvitation}>
             <Button
               size="icon"
-              variant="brand"
+              variant="cast"
               className="rounded-full flex-shrink-0 bg-gradient-to-r from-pink-500 to-rose-500"
             >
               <Sparkles className="w-5 h-5" />

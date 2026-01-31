@@ -13,8 +13,8 @@ type PolygonRadarGraphProps = {
 
 const THEME = {
   pink: {
-    fill: "rgba(236, 72, 153, 0.2)", // pink-500 optimized opacity
-    stroke: "#db2777", // pink-600
+    fill: "rgba(244, 114, 182, 0.2)", // pink-400 optimized opacity
+    stroke: "#ec4899", // pink-500
     labelFill: "fill-slate-500",
   },
   amber: {

@@ -41,8 +41,8 @@ export const GuestTopNavBar = () => {
 
   const linkClass = (path: string) =>
     isActive(path)
-      ? "text-blue-400 font-bold"
-      : "text-slate-500 hover:text-blue-400 transition-colors";
+      ? "text-role-guest font-bold"
+      : "text-slate-500 hover:text-role-guest transition-colors";
 
   const LeftSlot = (
     <Link

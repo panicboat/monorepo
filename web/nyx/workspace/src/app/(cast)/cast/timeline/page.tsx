@@ -367,7 +367,7 @@ export default function CastTimelinePage() {
               </div>
 
               <Button
-                variant="brand"
+                variant="cast"
                 size="sm"
                 className="px-6 rounded-full"
                 onClick={handlePost}

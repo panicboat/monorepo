@@ -22,7 +22,7 @@ interface BottomNavBarProps {
 export const BottomNavBar = ({
   tabs,
   layoutId = "nav-indicator",
-  activeColorClass = "text-pink-500",
+  activeColorClass = "text-role-cast",
 }: BottomNavBarProps) => {
   const pathname = usePathname();
 

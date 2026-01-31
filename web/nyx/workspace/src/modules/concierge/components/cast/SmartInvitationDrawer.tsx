@@ -44,7 +44,7 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
       <SheetTrigger asChild>
         {children || (
           <Button
-            variant="brand"
+            variant="cast"
             className="w-full shadow-md shadow-pink-500/20 bg-gradient-to-r from-pink-500 to-rose-500 text-white border-0"
           >
             <Sparkles className="w-4 h-4 mr-2" />
@@ -289,7 +289,7 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
           <div className="p-4 border-t border-slate-100 bg-white">
             <Button
               onClick={handleSend}
-              variant="brand"
+              variant="cast"
               className="w-full bg-gradient-to-r from-pink-500 to-rose-500 border-none shadow-lg shadow-pink-200 hover:shadow-pink-300 transition-all active:scale-[0.98]"
             >
               <Send className="w-4 h-4 mr-2" />
