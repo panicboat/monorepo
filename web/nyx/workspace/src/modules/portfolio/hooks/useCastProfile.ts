@@ -3,8 +3,12 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { ProfileFormData } from "@/modules/portfolio/types";
-import { mapApiToProfileForm, mapProfileFormToApi } from "@/modules/portfolio/lib/cast/mappers";
+import {
+  mapApiToProfileForm,
+  mapProfileFormToApi,
+} from "@/modules/portfolio/lib/cast/mappers";
 import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 
 const INITIAL_PROFILE: ProfileFormData = {
   nickname: "",
@@ -12,6 +16,7 @@ const INITIAL_PROFILE: ProfileFormData = {
   tagline: "",
   bio: "",
   areaIds: [],
+  genreIds: [],
   defaultScheduleStart: "10:00",
   defaultScheduleEnd: "22:00",
   socialLinks: { others: [] },
@@ -20,7 +25,7 @@ const INITIAL_PROFILE: ProfileFormData = {
 
 const getToken = () => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("nyx_cast_access_token");
+  return useAuthStore.getState().accessToken;
 };
 
 interface UseCastProfileOptions {
