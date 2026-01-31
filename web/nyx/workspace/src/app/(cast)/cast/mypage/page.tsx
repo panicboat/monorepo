@@ -51,7 +51,7 @@ export default function CastMyPage() {
             </div>
             <div className="text-left">
               <p className="text-sm font-bold text-slate-900">
-                招待状プラン設定
+                プラン設定
               </p>
               <p className="text-xs text-slate-500">コース内容・料金の編集</p>
             </div>
