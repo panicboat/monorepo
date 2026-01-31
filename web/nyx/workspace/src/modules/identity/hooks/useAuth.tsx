@@ -3,24 +3,26 @@
 import {
   createContext,
   useContext,
-  useState,
   ReactNode,
   useCallback,
+  useEffect,
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import useSWR from "swr";
 import {
-  getTokenKeys,
   inferRoleFromPath,
   inferRoleFromApiRole,
   getAccessToken,
-  getRefreshToken,
-  setTokens,
   clearTokens,
-  normalizeTokenResponse,
   hasTokens,
   type UserRole,
 } from "@/lib/auth";
+import {
+  useAuthStore,
+  authApi,
+  isGuestRole,
+  getAuthRedirectPath,
+} from "@/stores";
 
 export type User = {
   id: string;
@@ -49,38 +51,30 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [newUserFlag, setNewUserFlag] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
+  // Zustand store
+  const {
+    user: storeUser,
+    setUser,
+    setLoading,
+    setCurrentRole,
+    clearAuth,
+  } = useAuthStore();
+
   // Helper to determine role based on context or API role
-  const getCurrentRole = (apiRole?: number | string): UserRole => {
+  const getCurrentRole = useCallback((apiRole?: number | string): UserRole => {
     if (apiRole !== undefined) {
       return inferRoleFromApiRole(apiRole);
     }
     return inferRoleFromPath(pathname);
-  };
+  }, [pathname]);
 
-  const refreshTokenFn = useCallback(async (role: UserRole): Promise<boolean> => {
-    const rToken = getRefreshToken(role);
-    if (!rToken) return false;
-    try {
-      const res = await fetch("/api/identity/refresh-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: rToken }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const tokens = normalizeTokenResponse(data);
-        setTokens(role, tokens);
-        return true;
-      }
-    } catch (e) {
-      console.error("Refresh failed", e);
-    }
-    return false;
-  }, []);
+  // Update current role when pathname changes
+  useEffect(() => {
+    setCurrentRole(inferRoleFromPath(pathname));
+  }, [pathname, setCurrentRole]);
 
   // SWR fetcher for /api/identity/me with token refresh support
   const authFetcher = useCallback(async (url: string) => {
@@ -98,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Handle 401 with token refresh
     if (res.status === 401) {
-      const refreshed = await refreshTokenFn(role);
+      const refreshed = await authApi.refreshToken(role);
       if (refreshed) {
         const newToken = getAccessToken(role);
         if (newToken) {
@@ -115,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return null;
-  }, [pathname, refreshTokenFn]);
+  }, [getCurrentRole]);
 
   // Check if we have a token for conditional fetching
   const currentRole = getCurrentRole();
@@ -131,137 +125,111 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   );
 
-  // Derive user from SWR data
+  // Sync SWR data with Zustand store
+  useEffect(() => {
+    if (userData) {
+      setUser({
+        id: userData.id,
+        phoneNumber: userData.phoneNumber,
+        role: userData.role,
+        isNew: storeUser?.isNew,
+      });
+    } else if (!isLoading && !userData) {
+      setLoading(false);
+    }
+  }, [userData, isLoading, setUser, setLoading, storeUser?.isNew]);
+
+  // Derive user from SWR data (for backward compatibility)
   const user: User | null = userData ? {
     id: userData.id,
     name: userData.phoneNumber,
-    isGuest: userData.role === 1 || userData.role === "ROLE_GUEST",
+    isGuest: isGuestRole(userData.role),
     role: userData.role,
-    isNew: newUserFlag,
+    isNew: storeUser?.isNew,
   } : null;
 
-  const requestSMS = async (phoneNumber: string) => {
-    const res = await fetch("/api/identity/send-sms", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber }),
-    });
-    if (!res.ok) throw new Error("Failed to send SMS");
-    return true;
-  };
+  const requestSMS = useCallback(async (phoneNumber: string) => {
+    return authApi.requestSMS(phoneNumber);
+  }, []);
 
-  const verifySMS = async (phoneNumber: string, code: string) => {
-    const res = await fetch("/api/identity/verify-sms", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, code }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Verification failed");
-    return data.verificationToken;
-  };
+  const verifySMS = useCallback(async (phoneNumber: string, code: string) => {
+    return authApi.verifySMS(phoneNumber, code);
+  }, []);
 
-  const register = async (
+  const register = useCallback(async (
     phoneNumber: string,
     password: string,
     verificationToken: string,
     role: number = 1,
   ) => {
-    const res = await fetch("/api/identity/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, password, verificationToken, role }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Registration failed");
+    const result = await authApi.register(phoneNumber, password, verificationToken, role);
 
-    const userRole = getCurrentRole(data.userProfile.role);
-    const tokens = normalizeTokenResponse(data);
-
-    if (tokens.accessToken) {
-      setTokens(userRole, tokens);
-    } else {
-      console.error("Register Error: No access token found in response", data);
+    if (!result.tokens.accessToken) {
+      console.error("Register Error: No access token found in response");
     }
 
-    const isGuest = userRole === "guest";
+    const userRole = inferRoleFromApiRole(result.user.role);
 
-    // Set new user flag and update SWR cache
-    setNewUserFlag(true);
+    // Update Zustand store
+    setUser({
+      ...result.user,
+      isNew: true,
+    });
+
+    // Update SWR cache
     mutate({
-      id: data.userProfile.id,
-      phoneNumber: data.userProfile.phoneNumber,
-      role: data.userProfile.role,
+      id: result.user.id,
+      phoneNumber: result.user.phoneNumber,
+      role: result.user.role,
     }, { revalidate: false });
 
-    if (isGuest) {
-      router.push("/");
-    } else {
-      router.push("/cast/onboarding");
-    }
-  };
+    // Navigate
+    router.push(getAuthRedirectPath(userRole, true));
+  }, [router, mutate, setUser]);
 
-  const login = async (phoneNumber: string, password: string, role?: number) => {
-    const res = await fetch("/api/identity/sign-in", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, password, role }),
+  const login = useCallback(async (phoneNumber: string, password: string, role?: number) => {
+    const result = await authApi.login(phoneNumber, password, role);
+
+    if (!result.tokens.accessToken) {
+      console.error("Login Error: No access token found in response");
+    }
+
+    const userRole = inferRoleFromApiRole(result.user.role);
+
+    // Update Zustand store
+    setUser({
+      ...result.user,
+      isNew: false,
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Login failed");
 
-    const userRole = getCurrentRole(data.userProfile.role);
-    const tokens = normalizeTokenResponse(data);
-
-    if (tokens.accessToken) {
-      setTokens(userRole, tokens);
-    } else {
-      console.error("Login Error: No access token found in response", data);
-    }
-
-    const isGuest = userRole === "guest";
-
-    // Update SWR cache with user data
-    setNewUserFlag(false);
+    // Update SWR cache
     mutate({
-      id: data.userProfile.id,
-      phoneNumber: data.userProfile.phoneNumber,
-      role: data.userProfile.role,
+      id: result.user.id,
+      phoneNumber: result.user.phoneNumber,
+      role: result.user.role,
     }, { revalidate: false });
 
-    if (isGuest) {
-      router.push("/");
-    } else {
-      router.push("/cast/home");
-    }
-  };
+    // Navigate
+    router.push(getAuthRedirectPath(userRole, false));
+  }, [router, mutate, setUser]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     const role = getCurrentRole();
-    const rToken = getRefreshToken(role);
-    if (rToken) {
-      try {
-        await fetch("/api/identity/logout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken: rToken }),
-        });
-      } catch (e) {
-        // Ignore logout errors
-      }
-    }
-    clearTokens(role);
+    await authApi.logout(role);
+
+    // Clear Zustand store
+    clearAuth();
 
     // Clear SWR cache
-    setNewUserFlag(false);
     mutate(null, { revalidate: false });
 
+    // Navigate
     if (pathname?.startsWith("/cast")) {
       router.push("/cast/login");
     } else {
       router.push("/login");
     }
-  };
+  }, [getCurrentRole, pathname, router, mutate, clearAuth]);
 
   return (
     <AuthContext.Provider
