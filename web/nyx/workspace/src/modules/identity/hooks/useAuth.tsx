@@ -6,14 +6,12 @@ import {
   useState,
   ReactNode,
   useCallback,
-  useEffect,
 } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 
 import {
   useAuthStore,
-  initializeAuthStore,
   selectAccessToken,
   selectRole,
   selectIsHydrated,
@@ -71,11 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setTokens = useAuthStore((state) => state.setTokens);
   const clearTokens = useAuthStore((state) => state.clearTokens);
   const refreshTokenFromStore = useAuthStore((state) => state.refreshToken);
-
-  // Initialize auth store (migrate legacy tokens)
-  useEffect(() => {
-    initializeAuthStore();
-  }, []);
 
   // Token refresh function
   const refreshToken = useCallback(async (): Promise<boolean> => {

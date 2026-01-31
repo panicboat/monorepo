@@ -18,6 +18,3 @@ export {
   type Role,
   type TokenData,
 } from "./tokens";
-
-// Migration utilities
-export { migrateTokens, hasLegacyTokens } from "./migration";

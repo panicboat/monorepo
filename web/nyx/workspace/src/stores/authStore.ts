@@ -6,14 +6,12 @@
  *
  * Usage:
  *   const { accessToken, role, setTokens, clearTokens } = useAuthStore();
- *
- * Note: For migration from legacy tokens, call migrateTokens() on app initialization.
  */
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { type Role, type TokenData, migrateTokens } from "@/lib/auth";
+import { type Role, type TokenData } from "@/lib/auth";
 
 interface AuthState {
   // State
@@ -79,17 +77,6 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
-
-/**
- * Initialize auth store with migration from legacy tokens
- * Call this once on app initialization
- */
-export function initializeAuthStore(): void {
-  const migratedData = migrateTokens();
-  if (migratedData) {
-    useAuthStore.getState().setTokens(migratedData);
-  }
-}
 
 /**
  * Selectors for common use cases
