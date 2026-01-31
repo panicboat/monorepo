@@ -20,6 +20,7 @@ const INITIAL_PROFILE: ProfileFormData = {
   tagline: "",
   bio: "",
   areaIds: [],
+  genreIds: [],
   defaultScheduleStart: "10:00",
   defaultScheduleEnd: "22:00",
   socialLinks: { others: [] },
@@ -121,6 +122,9 @@ export function useCastData(options: UseCastDataOptions = {}) {
               areas: updates.areaIds
                 ? updates.areaIds.map((id: string) => ({ id }))
                 : existingProfile.areas,
+              genres: updates.genreIds
+                ? updates.genreIds.map((id: string) => ({ id }))
+                : existingProfile.genres,
               defaultScheduleStart: updates.defaultScheduleStart ?? existingProfile.defaultScheduleStart,
               defaultScheduleEnd: updates.defaultScheduleEnd ?? existingProfile.defaultScheduleEnd,
               socialLinks: updates.socialLinks ?? existingProfile.socialLinks,

@@ -21,7 +21,7 @@ module Portfolio
 
           class HandleNotAvailableError < StandardError; end
 
-          def call(user_id:, name:, bio:, handle: nil, tagline: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil, age: nil, height: nil, blood_type: nil, three_sizes: nil, tags: nil, area_ids: nil)
+          def call(user_id:, name:, bio:, handle: nil, tagline: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil, age: nil, height: nil, blood_type: nil, three_sizes: nil, tags: nil, area_ids: nil, genre_ids: nil)
             # 0. Input Validation
             params = {
               user_id: user_id,
@@ -78,10 +78,16 @@ module Portfolio
               )
             end
 
+            cast_id = result.respond_to?(:id) ? result.id : (cast&.id || repo.find_by_user_id(user_id)&.id)
+
             # Save area associations if provided
-            if area_ids
-              cast_id = result.respond_to?(:id) ? result.id : (cast&.id || repo.find_by_user_id(user_id)&.id)
-              repo.save_areas(cast_id: cast_id, area_ids: area_ids) if cast_id
+            if area_ids && cast_id
+              repo.save_areas(cast_id: cast_id, area_ids: area_ids)
+            end
+
+            # Save genre associations if provided
+            if genre_ids && cast_id
+              repo.save_genres(cast_id: cast_id, genre_ids: genre_ids)
             end
 
             result

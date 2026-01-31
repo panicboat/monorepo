@@ -17,6 +17,8 @@ service CastService {
   rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
   rpc CheckHandleAvailability(CheckHandleAvailabilityRequest) returns (CheckHandleAvailabilityResponse);
   rpc ListAreas(ListAreasRequest) returns (ListAreasResponse);
+  rpc ListGenres(ListGenresRequest) returns (ListGenresResponse);
+  rpc ListPopularTags(ListPopularTagsRequest) returns (ListPopularTagsResponse);
 }
 
 enum CastVisibility {
@@ -70,6 +72,8 @@ message CastProfile {
   string avatar_url = 18;
   string handle = 19;
   repeated Area areas = 20;
+  repeated Genre genres = 21;
+  bool is_online = 22; // Currently within scheduled availability
 }
 
 message CastPlan {
@@ -102,6 +106,7 @@ message CreateCastProfileRequest {
   string blood_type = 10;
   ThreeSizes three_sizes = 11;
   repeated string tags = 12;
+  repeated string genre_ids = 13;
 }
 
 message CreateCastProfileResponse {
@@ -124,6 +129,7 @@ message SaveCastProfileRequest {
   repeated string tags = 13;
   string handle = 14;
   repeated string area_ids = 15;
+  repeated string genre_ids = 16;
 }
 
 message SaveCastProfileResponse {
@@ -181,9 +187,27 @@ message CastSchedule {
   string plan_id = 4; // Optional
 }
 
+enum CastStatusFilter {
+  CAST_STATUS_FILTER_UNSPECIFIED = 0;
+  CAST_STATUS_FILTER_ONLINE = 1;      // Has active schedule today
+  CAST_STATUS_FILTER_NEW = 2;         // Created within 7 days
+  CAST_STATUS_FILTER_RANKING = 3;     // By popularity (future)
+}
+
 message ListCastsRequest {
-  // Add filters if needed, e.g. visibility
+  // Visibility filter (default: published only)
   CastVisibility visibility_filter = 1;
+  // Filter by genre ID
+  string genre_id = 2;
+  // Filter by tag name
+  string tag = 3;
+  // Filter by status (online, new, ranking)
+  CastStatusFilter status_filter = 4;
+  // Filter by area ID
+  string area_id = 5;
+  // Pagination
+  int32 limit = 6;
+  int32 offset = 7;
 }
 
 message ListCastsResponse {
@@ -214,4 +238,36 @@ message ListAreasRequest {
 
 message ListAreasResponse {
   repeated Area areas = 1;
+}
+
+// === Genre ===
+
+message Genre {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+  int32 display_order = 4;
+}
+
+message ListGenresRequest {
+  // Empty for now, returns all active genres
+}
+
+message ListGenresResponse {
+  repeated Genre genres = 1;
+}
+
+// === Popular Tags ===
+
+message PopularTag {
+  string name = 1;
+  int32 usage_count = 2;
+}
+
+message ListPopularTagsRequest {
+  int32 limit = 1; // Default: 20
+}
+
+message ListPopularTagsResponse {
+  repeated PopularTag tags = 1;
 }

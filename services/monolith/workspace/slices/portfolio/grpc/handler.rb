@@ -25,6 +25,8 @@ module Portfolio
       rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
       rpc :CheckHandleAvailability, ::Portfolio::V1::CheckHandleAvailabilityRequest, ::Portfolio::V1::CheckHandleAvailabilityResponse
       rpc :ListAreas, ::Portfolio::V1::ListAreasRequest, ::Portfolio::V1::ListAreasResponse
+      rpc :ListGenres, ::Portfolio::V1::ListGenresRequest, ::Portfolio::V1::ListGenresResponse
+      rpc :ListPopularTags, ::Portfolio::V1::ListPopularTagsRequest, ::Portfolio::V1::ListPopularTagsResponse
 
       include Portfolio::Deps[
         get_profile_uc: "use_cases.cast.profile.get_profile",
@@ -36,7 +38,8 @@ module Portfolio
         get_upload_url_uc: "use_cases.cast.images.get_upload_url",
         list_casts_uc: "use_cases.cast.listing.list_casts",
         repo: "repositories.cast_repository",
-        area_repo: "repositories.area_repository"
+        area_repo: "repositories.area_repository",
+        genre_repo: "repositories.genre_repository"
       ]
 
       # === Cast Profile ===
@@ -52,9 +55,11 @@ module Portfolio
 
         area_ids = repo.find_area_ids(result.id)
         areas = area_repo.find_by_ids(area_ids)
+        genre_ids = repo.find_genre_ids(result.id)
+        genres = genre_repo.find_by_ids(genre_ids)
 
         ::Portfolio::V1::GetCastProfileResponse.new(
-          profile: ProfilePresenter.to_proto(result, areas: areas),
+          profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres),
           plans: PlanPresenter.many_to_proto(result.cast_plans),
           schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
         )
@@ -78,9 +83,11 @@ module Portfolio
 
         area_ids = repo.find_area_ids(result.id)
         areas = area_repo.find_by_ids(area_ids)
+        genre_ids = repo.find_genre_ids(result.id)
+        genres = genre_repo.find_by_ids(genre_ids)
 
         ::Portfolio::V1::GetCastProfileResponse.new(
-          profile: ProfilePresenter.to_proto(result, areas: areas),
+          profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres),
           plans: PlanPresenter.many_to_proto(result.cast_plans),
           schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
         )
@@ -130,6 +137,8 @@ module Portfolio
       def create_cast_profile
         authenticate_user!
 
+        genre_ids = request.message.genre_ids.to_a
+
         result = save_profile_uc.call(
           user_id: ::Current.user_id,
           name: request.message.name,
@@ -143,16 +152,21 @@ module Portfolio
           height: request.message.height.zero? ? nil : request.message.height,
           blood_type: request.message.blood_type.to_s.empty? ? nil : request.message.blood_type,
           three_sizes: ProfilePresenter.three_sizes_from_proto(request.message.three_sizes),
-          tags: request.message.tags.to_a.empty? ? nil : request.message.tags.to_a
+          tags: request.message.tags.to_a.empty? ? nil : request.message.tags.to_a,
+          genre_ids: genre_ids.empty? ? nil : genre_ids
         )
 
-        ::Portfolio::V1::CreateCastProfileResponse.new(profile: ProfilePresenter.to_proto(result))
+        saved_genre_ids = repo.find_genre_ids(result.id)
+        genres = genre_repo.find_by_ids(saved_genre_ids)
+
+        ::Portfolio::V1::CreateCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, genres: genres))
       end
 
       def save_cast_profile
         authenticate_user!
 
         area_ids = request.message.area_ids.to_a
+        genre_ids = request.message.genre_ids.to_a
 
         result = save_profile_uc.call(
           user_id: ::Current.user_id,
@@ -169,13 +183,16 @@ module Portfolio
           blood_type: request.message.blood_type.to_s.empty? ? nil : request.message.blood_type,
           three_sizes: ProfilePresenter.three_sizes_from_proto(request.message.three_sizes),
           tags: request.message.tags.to_a.empty? ? nil : request.message.tags.to_a,
-          area_ids: area_ids.empty? ? nil : area_ids
+          area_ids: area_ids.empty? ? nil : area_ids,
+          genre_ids: genre_ids.empty? ? nil : genre_ids
         )
 
         saved_area_ids = repo.find_area_ids(result.id)
         areas = area_repo.find_by_ids(saved_area_ids)
+        saved_genre_ids = repo.find_genre_ids(result.id)
+        genres = genre_repo.find_by_ids(saved_genre_ids)
 
-        ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, areas: areas))
+        ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres))
       rescue SaveProfile::HandleNotAvailableError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::ALREADY_EXISTS, e.message)
       rescue SaveProfile::ValidationError => e
@@ -267,12 +284,38 @@ module Portfolio
 
       def list_casts
         visibility_filter = request.message.visibility_filter == :CAST_VISIBILITY_UNSPECIFIED ? nil : ProfilePresenter.visibility_from_enum(request.message.visibility_filter)
-        casts = list_casts_uc.call(visibility_filter: visibility_filter)
+        genre_id = request.message.genre_id.to_s.empty? ? nil : request.message.genre_id
+        tag = request.message.tag.to_s.empty? ? nil : request.message.tag
+        area_id = request.message.area_id.to_s.empty? ? nil : request.message.area_id
+        limit = request.message.limit.zero? ? nil : request.message.limit
+        offset = request.message.offset.zero? ? nil : request.message.offset
+
+        status_filter = case request.message.status_filter
+        when :CAST_STATUS_FILTER_ONLINE then :online
+        when :CAST_STATUS_FILTER_NEW then :new
+        when :CAST_STATUS_FILTER_RANKING then :ranking
+        else nil
+        end
+
+        casts = list_casts_uc.call(
+          visibility_filter: visibility_filter,
+          genre_id: genre_id,
+          tag: tag,
+          status_filter: status_filter,
+          area_id: area_id,
+          limit: limit,
+          offset: offset
+        )
+
+        # Batch fetch online cast IDs for efficiency
+        online_ids = repo.online_cast_ids.to_set
 
         ::Portfolio::V1::ListCastsResponse.new(
           items: casts.map { |c|
+            genre_ids = repo.find_genre_ids(c.id)
+            genres = genre_repo.find_by_ids(genre_ids)
             ::Portfolio::V1::ListCastsResponse::CastItem.new(
-              profile: ProfilePresenter.to_proto(c),
+              profile: ProfilePresenter.to_proto(c, genres: genres, is_online: online_ids.include?(c.id)),
               plans: PlanPresenter.many_to_proto(c.cast_plans)
             )
           }
@@ -291,6 +334,32 @@ module Portfolio
 
         ::Portfolio::V1::ListAreasResponse.new(
           areas: areas.map { |a| ProfilePresenter.area_to_proto(a) }
+        )
+      end
+
+      # === Genres ===
+
+      def list_genres
+        genres = genre_repo.list_all
+
+        ::Portfolio::V1::ListGenresResponse.new(
+          genres: genres.map { |g| ProfilePresenter.genre_to_proto(g) }
+        )
+      end
+
+      # === Popular Tags ===
+
+      def list_popular_tags
+        limit = request.message.limit.zero? ? 20 : request.message.limit
+        tags = repo.get_popular_tags(limit: limit)
+
+        ::Portfolio::V1::ListPopularTagsResponse.new(
+          tags: tags.map { |t|
+            ::Portfolio::V1::PopularTag.new(
+              name: t[:name],
+              usage_count: t[:usage_count]
+            )
+          }
         )
       end
 

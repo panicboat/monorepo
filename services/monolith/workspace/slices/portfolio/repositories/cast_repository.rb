@@ -85,6 +85,110 @@ module Portfolio
       def find_area_ids(cast_id)
         cast_areas.where(cast_id: cast_id).pluck(:area_id)
       end
+
+      def save_genres(cast_id:, genre_ids:)
+        transaction do
+          cast_genres.where(cast_id: cast_id).delete
+          genre_ids.each do |genre_id|
+            cast_genres.changeset(:create, cast_id: cast_id, genre_id: genre_id).commit
+          end
+        end
+      end
+
+      def find_genre_ids(cast_id)
+        cast_genres.where(cast_id: cast_id).pluck(:genre_id)
+      end
+
+      def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, limit: nil, offset: nil)
+        scope = casts.combine(:cast_plans, :cast_schedules)
+
+        # Visibility filter (default: published only for guest access)
+        scope = scope.where(visibility: visibility_filter) if visibility_filter
+
+        # Genre filter
+        if genre_id && !genre_id.empty?
+          cast_ids_with_genre = cast_genres.where(genre_id: genre_id).pluck(:cast_id)
+          scope = scope.where(id: cast_ids_with_genre)
+        end
+
+        # Tag filter
+        if tag && !tag.empty?
+          # Search in JSONB tags array
+          scope = scope.where { Sequel.pg_jsonb(:tags).contains(Sequel.pg_jsonb([tag])) }
+        end
+
+        # Area filter
+        if area_id && !area_id.empty?
+          cast_ids_with_area = cast_areas.where(area_id: area_id).pluck(:cast_id)
+          scope = scope.where(id: cast_ids_with_area)
+        end
+
+        # Status filter
+        case status_filter
+        when :online
+          # Has schedule today and current time is within the schedule time range
+          today = Date.today.to_s
+          now = Time.now.strftime("%H:%M")
+          cast_ids_online = cast_schedules
+            .where(date: today)
+            .where { start_time <= now }
+            .where { end_time >= now }
+            .pluck(:cast_id)
+            .uniq
+          scope = scope.where(id: cast_ids_online)
+        when :new
+          # Created within 7 days
+          seven_days_ago = (Date.today - 7).to_datetime
+          scope = scope.where { created_at >= seven_days_ago }
+        when :ranking
+          # Future: by popularity (for now, just return all)
+        end
+
+        # Pagination
+        scope = scope.limit(limit) if limit && limit > 0
+        scope = scope.offset(offset) if offset && offset > 0
+
+        scope.to_a
+      end
+
+      def is_online?(cast_id)
+        today = Date.today.to_s
+        now = Time.now.strftime("%H:%M")
+        cast_schedules
+          .where(cast_id: cast_id, date: today)
+          .where { start_time <= now }
+          .where { end_time >= now }
+          .exist?
+      end
+
+      def online_cast_ids
+        today = Date.today.to_s
+        now = Time.now.strftime("%H:%M")
+        cast_schedules
+          .where(date: today)
+          .where { start_time <= now }
+          .where { end_time >= now }
+          .pluck(:cast_id)
+          .uniq
+      end
+
+      def get_popular_tags(limit: 20)
+        # Aggregate tags from all published casts
+        result = casts.where(visibility: "published")
+          .exclude(tags: nil)
+          .select(:tags)
+          .to_a
+
+        tag_counts = Hash.new(0)
+        result.each do |cast|
+          tags_array = cast.tags.to_a rescue []
+          tags_array.each { |t| tag_counts[t] += 1 }
+        end
+
+        tag_counts.sort_by { |_, count| -count }
+          .take(limit)
+          .map { |name, count| { name: name, usage_count: count } }
+      end
     end
   end
 end

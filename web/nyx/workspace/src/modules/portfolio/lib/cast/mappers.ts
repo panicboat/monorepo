@@ -13,6 +13,7 @@ export function mapApiToProfileForm(apiProfile: any): ProfileFormData {
     tagline: apiProfile.tagline || "",
     bio: apiProfile.bio || "",
     areaIds: (apiProfile.areas || []).map((a: any) => a.id),
+    genreIds: (apiProfile.genres || []).map((g: any) => g.id),
     defaultScheduleStart: apiProfile.defaultScheduleStart || "10:00",
     defaultScheduleEnd: apiProfile.defaultScheduleEnd || "22:00",
     socialLinks: {
@@ -48,6 +49,7 @@ export function mapProfileFormToApi(form: ProfileFormData, heroKey?: string, gal
     tagline: form.tagline,
     bio: form.bio,
     areaIds: form.areaIds || [],
+    genreIds: form.genreIds || [],
     defaultScheduleStart: form.defaultScheduleStart,
     defaultScheduleEnd: form.defaultScheduleEnd,
     socialLinks: form.socialLinks

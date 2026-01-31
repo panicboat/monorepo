@@ -5,6 +5,7 @@ import { ProfileFormData } from "@/modules/portfolio/types";
 import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
 import { AreaSelector } from "./AreaSelector";
+import { GenreSelector } from "./GenreSelector";
 
 interface StyleInputsProps {
   data: ProfileFormData;
@@ -89,6 +90,21 @@ export const StyleInputs = ({
             className="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
           />
         </div>
+      </div>
+
+      {/* Genre */}
+      <div>
+        <Label className="block text-sm font-bold text-slate-700 mb-1">
+          Genre
+          <span className="ml-2 text-xs font-normal text-slate-400">
+            活動ジャンル（最低1つ、最大3つ）
+          </span>
+        </Label>
+        <GenreSelector
+          selectedIds={data.genreIds || []}
+          onChange={(ids) => onChange("genreIds", ids)}
+          maxSelections={3}
+        />
       </div>
 
       {/* Area */}

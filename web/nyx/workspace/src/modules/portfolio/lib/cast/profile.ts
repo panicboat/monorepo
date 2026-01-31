@@ -33,6 +33,12 @@ export function mapCastProfileToFrontend(p: CastProfile) {
       name: a.name,
       code: a.code,
     })),
+    genres: (p.genres || []).map((g) => ({
+      id: g.id,
+      name: g.name,
+      slug: g.slug,
+      displayOrder: g.displayOrder,
+    })),
     defaultScheduleStart: p.defaultScheduleStart || "10:00",
     defaultScheduleEnd: p.defaultScheduleEnd || "22:00",
     imageUrl: p.imageUrl,
@@ -79,6 +85,7 @@ export function mapCastProfileToFrontend(p: CastProfile) {
           cup: p.threeSizes.cup || "",
         }
       : undefined,
+    isOnline: p.isOnline || false,
   };
 }
 
@@ -98,6 +105,7 @@ export function buildSaveProfileRequest(body: any) {
     imagePath: body.imagePath,
     tagline: body.tagline,
     areaIds: body.areaIds || [],
+    genreIds: body.genreIds || [],
     defaultScheduleStart: body.defaultScheduleStart,
     defaultScheduleEnd: body.defaultScheduleEnd,
     socialLinks: body.socialLinks

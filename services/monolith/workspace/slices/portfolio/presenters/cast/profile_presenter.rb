@@ -6,7 +6,7 @@ module Portfolio
   module Presenters
     module Cast
       class ProfilePresenter
-        def self.to_proto(cast, areas: [])
+        def self.to_proto(cast, areas: [], genres: [], is_online: false)
           return nil unless cast
 
           avatar_key = cast.respond_to?(:avatar_path) ? cast.avatar_path : nil
@@ -32,7 +32,9 @@ module Portfolio
             blood_type: cast.blood_type || "",
             three_sizes: three_sizes_to_proto(cast.three_sizes),
             tags: (cast.tags || []).to_a,
-            areas: areas.map { |a| area_to_proto(a) }
+            areas: areas.map { |a| area_to_proto(a) },
+            genres: genres.map { |g| genre_to_proto(g) },
+            is_online: is_online
           )
         end
 
@@ -44,6 +46,17 @@ module Portfolio
             prefecture: area.prefecture || "",
             name: area.name || "",
             code: area.code || ""
+          )
+        end
+
+        def self.genre_to_proto(genre)
+          return nil unless genre
+
+          ::Portfolio::V1::Genre.new(
+            id: genre.id.to_s,
+            name: genre.name || "",
+            slug: genre.slug || "",
+            display_order: genre.display_order || 0
           )
         end
 

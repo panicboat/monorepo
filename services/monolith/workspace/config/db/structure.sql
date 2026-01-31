@@ -110,6 +110,18 @@ CREATE TABLE portfolio.cast_areas (
 
 
 --
+-- Name: cast_genres; Type: TABLE; Schema: portfolio; Owner: -
+--
+
+CREATE TABLE portfolio.cast_genres (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    cast_id uuid NOT NULL,
+    genre_id uuid NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
 -- Name: cast_plans; Type: TABLE; Schema: portfolio; Owner: -
 --
 
@@ -165,6 +177,21 @@ CREATE TABLE portfolio.casts (
     three_sizes jsonb DEFAULT '{}'::jsonb,
     avatar_path text,
     handle character varying(30)
+);
+
+
+--
+-- Name: genres; Type: TABLE; Schema: portfolio; Owner: -
+--
+
+CREATE TABLE portfolio.genres (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    name character varying(100) NOT NULL,
+    slug character varying(100) NOT NULL,
+    display_order integer DEFAULT 0 NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -268,6 +295,22 @@ ALTER TABLE ONLY portfolio.cast_areas
 
 
 --
+-- Name: cast_genres cast_genres_cast_id_genre_id_key; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_genres
+    ADD CONSTRAINT cast_genres_cast_id_genre_id_key UNIQUE (cast_id, genre_id);
+
+
+--
+-- Name: cast_genres cast_genres_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_genres
+    ADD CONSTRAINT cast_genres_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: cast_plans cast_plans_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
 --
 
@@ -289,6 +332,22 @@ ALTER TABLE ONLY portfolio.cast_schedules
 
 ALTER TABLE ONLY portfolio.casts
     ADD CONSTRAINT casts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: genres genres_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.genres
+    ADD CONSTRAINT genres_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: genres genres_slug_key; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.genres
+    ADD CONSTRAINT genres_slug_key UNIQUE (slug);
 
 
 --
@@ -373,6 +432,20 @@ CREATE UNIQUE INDEX idx_casts_handle_lower ON portfolio.casts USING btree (lower
 
 
 --
+-- Name: portfolio_cast_genres_cast_id_index; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX portfolio_cast_genres_cast_id_index ON portfolio.cast_genres USING btree (cast_id);
+
+
+--
+-- Name: portfolio_cast_genres_genre_id_index; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX portfolio_cast_genres_genre_id_index ON portfolio.cast_genres USING btree (genre_id);
+
+
+--
 -- Name: portfolio_cast_plans_cast_id_index; Type: INDEX; Schema: portfolio; Owner: -
 --
 
@@ -453,6 +526,22 @@ ALTER TABLE ONLY portfolio.cast_areas
 
 
 --
+-- Name: cast_genres cast_genres_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_genres
+    ADD CONSTRAINT cast_genres_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: cast_genres cast_genres_genre_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_genres
+    ADD CONSTRAINT cast_genres_genre_id_fkey FOREIGN KEY (genre_id) REFERENCES portfolio.genres(id) ON DELETE CASCADE;
+
+
+--
 -- Name: cast_plans cast_plans_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
 --
 
@@ -516,4 +605,6 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260129000001_add_handle_to_casts.rb'),
 ('20260129000002_create_areas.rb'),
 ('20260129000003_create_cast_areas.rb'),
-('20260131000000_remove_deprecated_columns_from_casts.rb');
+('20260131000000_remove_deprecated_columns_from_casts.rb'),
+('20260131001000_create_genres.rb'),
+('20260131002000_create_cast_genres.rb');

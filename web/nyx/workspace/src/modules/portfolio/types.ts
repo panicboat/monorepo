@@ -90,12 +90,20 @@ export interface WeeklySchedule {
   planId?: string;
 }
 
+export interface Genre {
+  id: string;
+  name: string;
+  slug: string;
+  displayOrder: number;
+}
+
 export interface ProfileFormData {
   nickname: string;
   handle: string;
   tagline: string;
   bio: string;
   areaIds: string[];
+  genreIds: string[];
   defaultScheduleStart: string; // HH:mm
   defaultScheduleEnd: string; // HH:mm
   socialLinks: {
