@@ -2,11 +2,15 @@
 
 require "social/v1/service_services_pb"
 require "gruf"
+require_relative "../../../lib/grpc/authenticatable"
+require_relative "../adapters/cast_adapter"
 
 module Social
   module Grpc
     class Handler < ::Gruf::Controllers::Base
       include ::GRPC::GenericService
+      include ::Grpc::Authenticatable
+
       self.marshal_class_method = :encode
       self.unmarshal_class_method = :decode
       self.service_name = "social.v1.TimelineService"
@@ -34,7 +38,7 @@ module Social
         cast = if cast_id.nil? || cast_id.empty?
           find_my_cast!
         else
-          cast_repo.find_by_user_id(cast_id) || find_my_cast!
+          cast_adapter.find_by_user_id(cast_id) || find_my_cast!
         end
 
         limit = request.message.limit.zero? ? 20 : request.message.limit
@@ -93,18 +97,12 @@ module Social
       PostPresenter = Social::Presenters::PostPresenter
       SavePost = Social::UseCases::Posts::SavePost
 
-      def authenticate_user!
-        unless ::Current.user_id
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Authentication required")
-        end
-      end
-
-      def cast_repo
-        @cast_repo ||= Portfolio::Slice["repositories.cast_repository"]
+      def cast_adapter
+        @cast_adapter ||= Social::Adapters::CastAdapter.new
       end
 
       def find_my_cast!
-        cast = cast_repo.find_by_user_id(::Current.user_id)
+        cast = cast_adapter.find_by_user_id(current_user_id)
         unless cast
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Cast profile not found")
         end
