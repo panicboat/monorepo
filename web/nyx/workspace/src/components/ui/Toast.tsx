@@ -91,7 +91,7 @@ function ToastItem({
 
   const Icon = toast.variant === "destructive" ? AlertCircle : CheckCircle;
   const iconColor =
-    toast.variant === "destructive" ? "text-red-500" : "text-green-500";
+    toast.variant === "destructive" ? "text-error" : "text-success";
 
   const handleAction = () => {
     if (actionCalled.current || !toast.action) return;

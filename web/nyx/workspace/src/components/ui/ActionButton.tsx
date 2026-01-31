@@ -82,14 +82,14 @@ export function ActionButton({
       className={cn(
         "flex w-full items-center justify-center gap-2 rounded-xl py-3 font-bold text-white shadow-md transition-all active:scale-95 disabled:opacity-50",
         status === "success"
-          ? "bg-green-500"
+          ? "bg-success"
           : status === "loading"
             ? colorScheme === "pink"
               ? "bg-pink-300 cursor-not-allowed"
               : "bg-blue-300 cursor-not-allowed"
             : colorScheme === "pink"
-              ? "bg-pink-500 hover:bg-pink-600 shadow-pink-200 hover:shadow-pink-300"
-              : "bg-blue-400 hover:bg-blue-500 shadow-blue-200 hover:shadow-blue-300",
+              ? "bg-brand hover:bg-brand-hover shadow-pink-200 hover:shadow-pink-300"
+              : "bg-brand-cast hover:bg-brand-cast-hover shadow-blue-200 hover:shadow-blue-300",
         className
       )}
     >
