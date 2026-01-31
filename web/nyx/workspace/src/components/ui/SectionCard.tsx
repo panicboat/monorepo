@@ -45,7 +45,7 @@ export const SectionCard = ({
         onClick={toggleOpen}
       >
         <h2 className="flex items-center gap-3 text-lg font-bold text-slate-800">
-          {icon && <span className="text-pink-500">{icon}</span>}
+          {icon && <span className="text-blue-400">{icon}</span>}
           {title}
         </h2>
         {collapsible && (

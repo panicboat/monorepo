@@ -27,13 +27,13 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
   // Dynamic Styles
   const primaryBtnClass = isCast
     ? "bg-pink-500 text-white shadow-pink-200 hover:bg-pink-600 hover:shadow-pink-300"
-    : "bg-slate-900 text-white shadow-slate-200 hover:bg-slate-800 hover:shadow-slate-300";
+    : "bg-blue-400 text-white shadow-blue-200 hover:bg-blue-500 hover:shadow-blue-300";
 
   const secondaryTextClass = isCast
     ? "text-pink-500 hover:text-pink-600"
     : "text-slate-500 hover:text-slate-700";
 
-  const focusRingClass = isCast ? "focus:ring-pink-500" : "focus:ring-slate-900";
+  const focusRingClass = isCast ? "focus:ring-pink-500" : "focus:ring-blue-400";
 
   const handleSMSRequest = async () => {
     if (phone.length < 10) {

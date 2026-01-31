@@ -122,7 +122,7 @@ const CastCard = ({ cast }: { cast: (typeof MOCK_CASTS)[0] }) => {
           </Badge>
         )}
         {cast.status === "tonight" && (
-          <Badge className="absolute right-2 top-2 bg-pink-500 border-white hover:bg-pink-600 text-[10px] px-2 py-0.5 shadow-sm">
+          <Badge className="absolute right-2 top-2 bg-blue-400 border-white hover:bg-blue-500 text-[10px] px-2 py-0.5 shadow-sm">
             TONIGHT
           </Badge>
         )}

@@ -116,8 +116,8 @@ export const ReviewList = ({
         <h3 className="font-serif text-lg font-bold text-slate-800">
           {mode === "cast" ? "All Reviews" : "Recent Reviews"}
         </h3>
-        <span className="text-sm text-pink-500 font-bold">
-          4.8 <Star size={12} className="inline fill-pink-500" /> ({displayedReviews.length})
+        <span className="text-sm text-blue-400 font-bold">
+          4.8 <Star size={12} className="inline fill-blue-400" /> ({displayedReviews.length})
         </span>
       </div>
 
@@ -136,7 +136,7 @@ export const ReviewList = ({
         <div className="mt-4 px-4">
           <button
             onClick={() => setIsExpanded(true)}
-            className="w-full rounded-xl bg-slate-900 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-slate-800"
+            className="w-full rounded-xl bg-blue-400 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-blue-500"
           >
             Read All Reviews
           </button>
@@ -167,7 +167,7 @@ const ReviewItem = ({
           {review.status === "pending" && (
             <Button
               size="sm"
-              variant="brand"
+              variant="brandBlue"
               onClick={() => onStatusChange?.(review.id, "public")}
               className="h-8 px-4 gap-1.5 shadow-sm"
             >
@@ -202,7 +202,7 @@ const ReviewItem = ({
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 px-3 text-slate-400 hover:text-pink-500 hover:bg-pink-50 gap-1"
+                className="h-8 px-3 text-slate-400 hover:text-blue-400 hover:bg-blue-50 gap-1"
                 onClick={() => onStatusChange?.(review.id, "public")}
                 title="Show on profile"
               >

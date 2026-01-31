@@ -59,7 +59,7 @@ export const RitualPledge = ({
         animate={controls}
         className={`relative flex h-32 w-32 items-center justify-center rounded-full border-4 transition-colors duration-500
           ${status === "idle" ? "border-slate-200 bg-white" : ""}
-          ${status === "pledging" ? "border-pink-300 bg-pink-50" : ""}
+          ${status === "pledging" ? "border-blue-300 bg-blue-50" : ""}
           ${status === "sealed" ? "border-red-800 bg-red-900" : ""}
         `}
       >
@@ -70,7 +70,7 @@ export const RitualPledge = ({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="absolute inset-0 rounded-full border-4 border-pink-500"
+            className="absolute inset-0 rounded-full border-4 border-blue-400"
             style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0% 100%)" }}
             transition={{ duration: 0.2 }}
           />

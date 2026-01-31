@@ -84,7 +84,7 @@ export const ChatList = () => {
                     {chat.lastMessage}
                   </p>
                   {chat.unreadCount > 0 && (
-                    <Badge className="ml-2 h-5 min-w-[1.25rem] flex items-center justify-center rounded-full bg-pink-500 px-1 text-[10px] font-bold text-white border-none">
+                    <Badge className="ml-2 h-5 min-w-[1.25rem] flex items-center justify-center rounded-full bg-blue-400 px-1 text-[10px] font-bold text-white border-none">
                       {chat.unreadCount}
                     </Badge>
                   )}

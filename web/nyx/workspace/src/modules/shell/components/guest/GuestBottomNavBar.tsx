@@ -27,7 +27,7 @@ export const GuestBottomNavBar = () => {
     <BottomNavBar
       tabs={tabs}
       layoutId="guest-nav-indicator"
-      activeColorClass="text-pink-500"
+      activeColorClass="text-blue-400"
     />
   );
 };

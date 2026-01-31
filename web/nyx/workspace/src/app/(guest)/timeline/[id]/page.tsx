@@ -62,7 +62,7 @@ export default function TimelinePage({ params }: { params: { id: string } }) {
               className={`px-4 py-2 rounded-full text-xs font-bold capitalize transition-colors whitespace-nowrap
                 ${
                   filter === f
-                    ? "bg-slate-900 text-white shadow-md"
+                    ? "bg-blue-400 text-white shadow-md"
                     : "bg-white text-slate-500 border border-slate-200"
                 }
               `}

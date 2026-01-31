@@ -306,7 +306,7 @@ export const TimelineItem = ({
         isHidden
           ? "border-dashed border-slate-300 bg-slate-50/80 opacity-60"
           : "border-slate-100 bg-white"
-      } ${onClick ? "cursor-pointer hover:border-pink-200 transition-colors" : ""}`}
+      } ${onClick ? "cursor-pointer hover:border-blue-200 transition-colors" : ""}`}
     >
       <div className="mb-3 flex items-center gap-3">
         {item.castImage ? (
@@ -364,7 +364,7 @@ export const TimelineItem = ({
       {item.hashtags && item.hashtags.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-1.5">
           {item.hashtags.map((tag, i) => (
-            <Badge key={i} variant="secondary" className="text-xs bg-pink-50 text-pink-600 hover:bg-pink-100">
+            <Badge key={i} variant="secondary" className="text-xs bg-blue-50 text-blue-500 hover:bg-blue-100">
               #{tag}
             </Badge>
           ))}
@@ -385,7 +385,7 @@ export const TimelineItem = ({
       <div className="flex items-center gap-6 border-t border-slate-50 pt-3 text-slate-400">
         <button
           onClick={handleLike}
-          className={`flex items-center gap-1.5 text-xs transition-colors ${liked ? "text-pink-500" : "text-slate-400 hover:text-pink-400"}`}
+          className={`flex items-center gap-1.5 text-xs transition-colors ${liked ? "text-blue-400" : "text-slate-400 hover:text-blue-300"}`}
         >
           <motion.div
             key={liked ? "liked" : "unliked"}

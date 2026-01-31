@@ -311,6 +311,7 @@ export default function ProfileEditPage() {
           label="Save Profile"
           onClick={handleSave}
           className="max-w-md"
+          colorScheme="pink"
         />
       </div>
 

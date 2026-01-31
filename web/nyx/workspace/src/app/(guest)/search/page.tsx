@@ -194,7 +194,7 @@ export default function SearchPage() {
           >
             <SlidersHorizontal size={20} />
             {activeFilterCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-pink-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-400 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
@@ -212,12 +212,12 @@ export default function SearchPage() {
               </span>
             )}
             {filters.genreId && (
-              <span className="px-3 py-1 bg-slate-900 text-white rounded-full text-xs font-medium">
+              <span className="px-3 py-1 bg-blue-400 text-white rounded-full text-xs font-medium">
                 {genres.find((g) => g.id === filters.genreId)?.name}
               </span>
             )}
             {filters.status !== "all" && (
-              <span className="px-3 py-1 bg-pink-500 text-white rounded-full text-xs font-medium">
+              <span className="px-3 py-1 bg-blue-400 text-white rounded-full text-xs font-medium">
                 {filters.status === "online"
                   ? "オンライン"
                   : filters.status === "new"
@@ -332,7 +332,7 @@ export default function SearchPage() {
                 onClick={() => handleTagClick(tag.name)}
                 className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-colors
                   ${activeTag === tag.name
-                    ? "bg-slate-900 text-white border-slate-900"
+                    ? "bg-blue-400 text-white border-blue-400"
                     : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
                   }`}
               >

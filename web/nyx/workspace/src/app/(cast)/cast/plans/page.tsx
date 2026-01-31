@@ -66,6 +66,7 @@ export default function ManagePlanPage() {
           label="Save Changes"
           onClick={handleSave}
           className="max-w-md"
+          colorScheme="pink"
         />
       </div>
     </div>

@@ -51,10 +51,10 @@ export const GuestDesktopSidebars = () => {
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-slate-800 group-hover:text-pink-500 transition-colors">
+                  <h4 className="font-bold text-slate-800 group-hover:text-blue-400 transition-colors">
                     {cast.name}
                   </h4>
-                  <span className="text-[10px] bg-pink-50 text-pink-600 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full font-bold">
                     {cast.tag}
                   </span>
                 </div>

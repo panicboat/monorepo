@@ -66,7 +66,7 @@ export function HashtagInput({
         {value.map((tag, index) => (
           <span
             key={index}
-            className="inline-flex items-center gap-1 px-2 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-full"
+            className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-600 text-xs font-medium rounded-full"
           >
             #{tag}
             <button
@@ -75,7 +75,7 @@ export function HashtagInput({
                 e.stopPropagation();
                 removeTag(index);
               }}
-              className="hover:bg-pink-200 rounded-full p-0.5 transition-colors"
+              className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
             >
               <X size={12} />
             </button>

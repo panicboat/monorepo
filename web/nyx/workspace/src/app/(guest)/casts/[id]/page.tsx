@@ -26,7 +26,7 @@ function BlockSection({ castId }: { castId: string }) {
         size="sm"
         onClick={() => toggleBlock(castId)}
         className={`flex items-center gap-2 text-xs font-bold rounded-full transition-colors ${blocked
-          ? "bg-slate-900 text-white hover:bg-slate-800 hover:text-white"
+          ? "bg-blue-400 text-white hover:bg-blue-500 hover:text-white"
           : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
           }`}
       >
@@ -78,7 +78,7 @@ export default function CastDetailPage({
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
-        <Loader2 className="w-8 h-8 animate-spin text-pink-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
       </div>
     );
   }
@@ -132,7 +132,7 @@ export default function CastDetailPage({
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 size="icon"
-                className="h-14 w-14 rounded-full bg-pink-500 text-white shadow-xl shadow-pink-200 transition-colors hover:bg-pink-600"
+                className="h-14 w-14 rounded-full bg-blue-400 text-white shadow-xl shadow-blue-200 transition-colors hover:bg-blue-500"
               >
                 <MessageCircle size={24} color="white" />
               </Button>
@@ -152,8 +152,8 @@ function FavoriteButton() {
       <Button
         size="icon"
         className={`h-12 w-12 rounded-full shadow-xl shadow-slate-300 transition-colors border ${isFavorite
-          ? "bg-pink-500 border-pink-500 text-white hover:bg-pink-600 hover:text-white"
-          : "bg-white border-pink-100 text-pink-500 hover:bg-pink-50"
+          ? "bg-blue-400 border-blue-400 text-white hover:bg-blue-500 hover:text-white"
+          : "bg-white border-blue-100 text-blue-400 hover:bg-blue-50"
           }`}
         onClick={() => setIsFavorite(!isFavorite)}
       >

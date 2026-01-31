@@ -91,7 +91,7 @@ export const ReviewForm = ({
                   className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors
                     ${
                       selectedTags.includes(tag)
-                        ? "bg-pink-50 border-pink-200 text-pink-600"
+                        ? "bg-blue-50 border-blue-200 text-blue-500"
                         : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
                     }
                   `}
@@ -111,7 +111,7 @@ export const ReviewForm = ({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder={`Write a review for ${castName}...`}
-              className="w-full h-32 p-3 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-100 transition-all resize-none"
+              className="w-full h-32 p-3 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all resize-none"
             />
           </div>
         </div>
@@ -121,7 +121,7 @@ export const ReviewForm = ({
           <button
             onClick={handleSubmit}
             disabled={rating === 0}
-            className="w-full py-3 rounded-xl bg-pink-500 text-white font-bold shadow-md hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+            className="w-full py-3 rounded-xl bg-blue-400 text-white font-bold shadow-md hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
           >
             Submit Review
           </button>

@@ -66,7 +66,7 @@ export const GuestDashboard = () => {
       <main className="p-6 space-y-8 pt-4">
         {/* Profile Header */}
         <div className="flex items-center gap-4">
-          <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 p-0.5 shadow-lg">
+          <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-blue-300 to-blue-500 p-0.5 shadow-lg">
             <div className="h-full w-full rounded-full bg-white p-0.5">
               {user?.avatarUrl ? (
                 <img
@@ -110,7 +110,7 @@ export const GuestDashboard = () => {
             {
               label: "Favorites",
               icon: "❤️",
-              color: "bg-pink-50 text-pink-600",
+              color: "bg-blue-50 text-blue-500",
               href: "/favorites",
             },
             {
@@ -216,7 +216,7 @@ export const GuestDashboard = () => {
           {pendingReviews.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-3 px-1">
-                <span className="flex h-2 w-2 rounded-full bg-pink-500 animate-pulse"></span>
+                <span className="flex h-2 w-2 rounded-full bg-blue-400 animate-pulse"></span>
                 <h3 className="font-bold text-sm text-slate-800">
                   Pending Reviews
                 </h3>
@@ -228,7 +228,7 @@ export const GuestDashboard = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="flex items-center justify-between rounded-xl bg-white p-4 shadow-md border border-pink-100 ring-1 ring-pink-50"
+                    className="flex items-center justify-between rounded-xl bg-white p-4 shadow-md border border-blue-100 ring-1 ring-blue-50"
                   >
                     <div className="flex items-center gap-3">
                       <div className="relative h-10 w-10 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-xs overflow-hidden">
@@ -250,7 +250,7 @@ export const GuestDashboard = () => {
                     </div>
                     <button
                       onClick={() => openReviewModal(item)}
-                      className="px-4 py-2 rounded-full bg-pink-500 text-white text-xs font-bold shadow-md hover:bg-pink-600 transition-transform active:scale-95"
+                      className="px-4 py-2 rounded-full bg-blue-400 text-white text-xs font-bold shadow-md hover:bg-blue-500 transition-transform active:scale-95"
                     >
                       Write Review
                     </button>
@@ -265,7 +265,7 @@ export const GuestDashboard = () => {
         <section>
           <div className="flex items-center justify-between mb-3 px-1">
             <h3 className="font-bold text-sm text-slate-800">Recent Pledges</h3>
-            <button className="text-xs font-bold text-pink-500">
+            <button className="text-xs font-bold text-blue-400">
               View All
             </button>
           </div>

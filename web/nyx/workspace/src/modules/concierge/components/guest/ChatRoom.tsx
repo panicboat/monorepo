@@ -159,7 +159,7 @@ export const ChatRoom = ({ castId }: { castId: string }) => {
           <button
             onClick={handleSend}
             disabled={!inputText.trim()}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-500 text-white transition-all disabled:opacity-50 disabled:bg-slate-300"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-400 text-white transition-all disabled:opacity-50 disabled:bg-slate-300"
           >
             <Send size={16} />
           </button>

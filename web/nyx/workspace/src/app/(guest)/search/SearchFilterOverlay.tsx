@@ -163,7 +163,7 @@ export function SearchFilterOverlay({
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border
                       ${
                         genreId === ""
-                          ? "bg-slate-900 text-white border-slate-900"
+                          ? "bg-blue-400 text-white border-blue-400"
                           : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                       }`}
                   >
@@ -176,7 +176,7 @@ export function SearchFilterOverlay({
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border
                         ${
                           genreId === genre.id
-                            ? "bg-slate-900 text-white border-slate-900"
+                            ? "bg-blue-400 text-white border-blue-400"
                             : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                         }`}
                     >
@@ -206,7 +206,7 @@ export function SearchFilterOverlay({
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border
                         ${
                           status === item.key
-                            ? "bg-pink-500 text-white border-pink-500"
+                            ? "bg-blue-400 text-white border-blue-400"
                             : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                         }`}
                     >
@@ -231,7 +231,7 @@ export function SearchFilterOverlay({
                 </Button>
                 <Button
                   onClick={handleApply}
-                  className="flex-1 bg-slate-900 text-white hover:bg-slate-800"
+                  className="flex-1 bg-blue-400 text-white hover:bg-blue-500"
                 >
                   {loadingCount
                     ? "読み込み中..."

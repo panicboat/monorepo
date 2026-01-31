@@ -56,14 +56,14 @@ export const SmartDrawer = ({
                   <button
                     key={slot.id}
                     className={`relative flex flex-col items-center justify-center rounded-xl border p-4 transition-colors
-                                            ${slot.smart ? "border-pink-200 bg-pink-50" : "border-slate-100 bg-white"}
+                                            ${slot.smart ? "border-blue-200 bg-blue-50" : "border-slate-100 bg-white"}
                                         `}
                   >
                     <span className="text-lg font-bold text-slate-800">
                       {slot.time}
                     </span>
                     {slot.smart && (
-                      <span className="absolute -top-2 rounded-full bg-pink-500 px-2 py-0.5 text-[10px] text-white shadow-sm">
+                      <span className="absolute -top-2 rounded-full bg-blue-400 px-2 py-0.5 text-[10px] text-white shadow-sm">
                         {slot.label}
                       </span>
                     )}
@@ -73,7 +73,7 @@ export const SmartDrawer = ({
             </div>
 
             <div className="mt-6">
-              <button className="w-full rounded-full bg-slate-900 py-3 font-bold text-white shadow-lg">
+              <button className="w-full rounded-full bg-blue-400 py-3 font-bold text-white shadow-lg">
                 Send Invitation
               </button>
             </div>

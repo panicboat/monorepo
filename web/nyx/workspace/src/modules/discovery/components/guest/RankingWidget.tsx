@@ -57,7 +57,7 @@ export const RankingWidget = () => {
         <h2 className="text-lg font-bold font-serif text-slate-800">
           Trust Ranking
         </h2>
-        <span className="text-xs font-bold text-pink-500">Weekly</span>
+        <span className="text-xs font-bold text-blue-400">Weekly</span>
       </div>
 
       <HorizontalScroll contentClassName="gap-4 px-4 pb-4 cursor-grab active:cursor-grabbing">

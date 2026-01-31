@@ -5,6 +5,7 @@ import { Loader2, Save, Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ActionButtonMode = "save" | "submit";
+type ColorScheme = "blue" | "pink";
 
 interface ActionButtonProps {
   mode?: ActionButtonMode;
@@ -15,6 +16,7 @@ interface ActionButtonProps {
   disabled?: boolean;
   className?: string;
   successDuration?: number;
+  colorScheme?: ColorScheme;
 }
 
 export function ActionButton({
@@ -26,6 +28,7 @@ export function ActionButton({
   disabled = false,
   className,
   successDuration = 2000,
+  colorScheme = "blue",
 }: ActionButtonProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
 
@@ -81,8 +84,12 @@ export function ActionButton({
         status === "success"
           ? "bg-green-500"
           : status === "loading"
-            ? "bg-pink-400 cursor-not-allowed"
-            : "bg-pink-500 hover:bg-pink-600 shadow-pink-200 hover:shadow-pink-300",
+            ? colorScheme === "pink"
+              ? "bg-pink-300 cursor-not-allowed"
+              : "bg-blue-300 cursor-not-allowed"
+            : colorScheme === "pink"
+              ? "bg-pink-500 hover:bg-pink-600 shadow-pink-200 hover:shadow-pink-300"
+              : "bg-blue-400 hover:bg-blue-500 shadow-blue-200 hover:shadow-blue-300",
         className
       )}
     >

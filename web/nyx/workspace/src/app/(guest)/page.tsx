@@ -27,7 +27,7 @@ export default function Home() {
   if (isLoading || !user)
     return (
       <div className="flex h-screen items-center justify-center bg-white">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-pink-500"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-400"></div>
       </div>
     );
 
@@ -49,13 +49,13 @@ export default function Home() {
             <div className="sticky top-14 md:top-16 z-20 flex border-b border-slate-200 bg-white shadow-sm">
               <button
                 onClick={() => setTab("timeline")}
-                className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === "timeline" ? "border-b-2 border-pink-500 text-pink-500" : "text-slate-400"}`}
+                className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === "timeline" ? "border-b-2 border-blue-400 text-blue-400" : "text-slate-400"}`}
               >
                 Timeline
               </button>
               <button
                 onClick={() => setTab("cast")}
-                className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === "cast" ? "border-b-2 border-pink-500 text-pink-500" : "text-slate-400"}`}
+                className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === "cast" ? "border-b-2 border-blue-400 text-blue-400" : "text-slate-400"}`}
               >
                 Cast List
               </button>

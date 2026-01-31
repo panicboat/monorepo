@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useCastProfile } from "@/modules/portfolio/hooks/useCastProfile";
 import { TopNavBar } from "../TopNavBar";
 
 export const CastTopNavBar = () => {
-  const router = useRouter();
+  const { rawData } = useCastProfile();
   const pathname = usePathname();
+  const avatarUrl = rawData?.profile?.avatarUrl || rawData?.profile?.imageUrl;
 
   const getTitle = () => {
     if (pathname.includes("/cast/onboarding")) return "Cast Onboarding";
@@ -23,17 +25,6 @@ export const CastTopNavBar = () => {
     return "Cast Manage";
   };
 
-  const handleBack = () => {
-    router.back();
-  };
-
-  const showBack =
-    pathname.includes("/cast/onboarding") ||
-    pathname.includes("/cast/profile") ||
-    pathname.includes("/cast/plans") ||
-    pathname.includes("/cast/pledges") ||
-    pathname.includes("/cast/reviews") ||
-    pathname.includes("/cast/history");
   const title = getTitle();
 
   const LeftSlot = (
@@ -53,33 +44,42 @@ export const CastTopNavBar = () => {
       : "text-slate-500 hover:text-pink-500 transition-colors";
 
   const RightSlot = (
-    <div className="hidden md:flex items-center gap-6 text-sm font-medium">
-      <Link href="/cast/home" className={linkClass("/cast/home")}>
-        Home
+    <>
+      {/* Desktop Nav Links */}
+      <div className="hidden md:flex items-center gap-6 text-sm font-medium mr-4">
+        <Link href="/cast/home" className={linkClass("/cast/home")}>
+          Home
+        </Link>
+        <Link href="/cast/schedules" className={linkClass("/cast/schedules")}>
+          Schedule
+        </Link>
+        <Link href="/cast/timeline" className={linkClass("/cast/timeline")}>
+          Timeline
+        </Link>
+        <Link href="/cast/concierge" className={linkClass("/cast/concierge")}>
+          Concierge
+        </Link>
+      </div>
+
+      {/* Cast Avatar */}
+      <Link
+        href="/cast/mypage"
+        className="h-8 w-8 rounded-full bg-slate-100 overflow-hidden border border-slate-200 block transition-transform hover:scale-105 active:scale-95"
+      >
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="Cast" className="h-full w-full object-cover" />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center text-sm">👤</span>
+        )}
       </Link>
-      <Link href="/cast/schedules" className={linkClass("/cast/schedules")}>
-        Schedule
-      </Link>
-      <Link href="/cast/timeline" className={linkClass("/cast/timeline")}>
-        Timeline
-      </Link>
-      <Link href="/cast/concierge" className={linkClass("/cast/concierge")}>
-        Concierge
-      </Link>
-      <Link href="/cast/mypage" className={linkClass("/cast/mypage")}>
-        MyPage
-      </Link>
-    </div>
+    </>
   );
 
   return (
     <TopNavBar
       title={title}
-      showBack={showBack}
-      onBack={handleBack}
       leftSlot={LeftSlot}
       rightSlot={RightSlot}
-      backIconStyle="chevron"
     />
   );
 };
