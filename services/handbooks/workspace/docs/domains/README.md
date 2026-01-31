@@ -35,3 +35,45 @@
 3. Backend: `services/monolith/workspace/slices/{domain}/` を作成
 4. Frontend: `web/nyx/workspace/src/modules/{domain}/` を作成
 5. Proto: `proto/{domain}/v1/service.proto` を作成
+
+## Frontend Module Structure
+
+全 Frontend モジュールは以下の構造に従う:
+
+```
+modules/{domain}/
+├── components/           # UI コンポーネント
+│   ├── cast/            # Cast 向けコンポーネント
+│   └── guest/           # Guest 向けコンポーネント
+├── hooks/               # データフェッチ、状態管理
+├── lib/                 # マッパー、ユーティリティ
+└── types.ts             # ドメイン型定義
+```
+
+### Guidelines
+
+| ファイル | 役割 | 例 |
+|----------|------|-----|
+| `types.ts` | ドメイン固有の型定義 | `CastProfile`, `Reservation` |
+| `hooks/*.ts` | SWR/Zustand フック | `useProfile`, `usePosts` |
+| `lib/*.ts` | データ変換、ユーティリティ | `mapProfileResponse` |
+| `components/cast/` | Cast ダッシュボード向け | `ProfileEditor.tsx` |
+| `components/guest/` | Guest 向け | `CastCard.tsx` |
+
+### Example: Creating a New Module
+
+```bash
+# 1. Create directory structure
+mkdir -p src/modules/newdomain/{components/{cast,guest},hooks,lib}
+
+# 2. Create types.ts
+touch src/modules/newdomain/types.ts
+```
+
+```typescript
+// types.ts
+export interface NewDomainEntity {
+  id: string;
+  // ...
+}
+```
