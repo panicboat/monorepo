@@ -19,14 +19,24 @@
 |--------|:-------:|:--------:|:-----:|
 | Identity | ✓ | ✓ | ✓ |
 | Portfolio | ✓ | ✓ | ✓ |
+| Social | ✓ | ✓ | ✓ |
 | Concierge | - | △ | - |
 | Ritual | - | △ | - |
 | Trust | - | △ | - |
-| Social | - | △ | - |
 
 - ✓: 実装済み
 - △: UI のみ（モックデータ）
 - -: 未実装
+
+## Cross-Slice Dependencies
+
+スライス間の直接依存は禁止されています。共有サービスを使用してください。
+
+```
+Social → SharedServices::CastLookupService → Portfolio
+```
+
+詳細は `ARCHITECTURE.md` を参照してください。
 
 ## Adding a New Domain
 

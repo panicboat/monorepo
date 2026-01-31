@@ -22,7 +22,8 @@ module Social
       include Social::Deps[
         list_posts_uc: "use_cases.posts.list_posts",
         save_post_uc: "use_cases.posts.save_post",
-        delete_post_uc: "use_cases.posts.delete_post"
+        delete_post_uc: "use_cases.posts.delete_post",
+        cast_lookup: "shared_services.cast_lookup"
       ]
 
       # === Timeline ===
@@ -34,7 +35,7 @@ module Social
         cast = if cast_id.nil? || cast_id.empty?
           find_my_cast!
         else
-          cast_repo.find_by_user_id(cast_id) || find_my_cast!
+          cast_lookup.find_by_user_id(cast_id) || find_my_cast!
         end
 
         limit = request.message.limit.zero? ? 20 : request.message.limit
@@ -99,12 +100,8 @@ module Social
         end
       end
 
-      def cast_repo
-        @cast_repo ||= Portfolio::Slice["repositories.cast_repository"]
-      end
-
       def find_my_cast!
-        cast = cast_repo.find_by_user_id(::Current.user_id)
+        cast = cast_lookup.find_by_user_id(::Current.user_id)
         unless cast
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Cast profile not found")
         end

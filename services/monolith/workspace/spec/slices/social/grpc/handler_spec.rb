@@ -14,7 +14,8 @@ RSpec.describe Social::Grpc::Handler do
       message: message,
       list_posts_uc: list_posts_uc,
       save_post_uc: save_post_uc,
-      delete_post_uc: delete_post_uc
+      delete_post_uc: delete_post_uc,
+      cast_lookup: cast_lookup
     )
   }
   let(:message) { double(:message) }
@@ -23,6 +24,7 @@ RSpec.describe Social::Grpc::Handler do
   let(:list_posts_uc) { double(:list_posts_uc) }
   let(:save_post_uc) { double(:save_post_uc) }
   let(:delete_post_uc) { double(:delete_post_uc) }
+  let(:cast_lookup) { double(:cast_lookup) }
 
   let(:mock_cast) do
     double(
@@ -48,10 +50,7 @@ RSpec.describe Social::Grpc::Handler do
 
   before do
     allow(Current).to receive(:user_id).and_return(current_user_id)
-    # Mock cross-slice access to Portfolio
-    cast_repo = double(:cast_repo)
-    allow(cast_repo).to receive(:find_by_user_id).with("user-123").and_return(mock_cast)
-    allow(Portfolio::Slice).to receive(:[]).with("repositories.cast_repository").and_return(cast_repo)
+    allow(cast_lookup).to receive(:find_by_user_id).with("user-123").and_return(mock_cast)
   end
 
   describe "#list_cast_posts" do
@@ -78,7 +77,8 @@ RSpec.describe Social::Grpc::Handler do
       handler_with_cursor = described_class.new(
         method_key: :test, service: double, rpc_desc: double, active_call: double,
         message: let_message,
-        list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc
+        list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc,
+        cast_lookup: cast_lookup
       )
 
       expect(list_posts_uc).to receive(:call)
@@ -94,7 +94,8 @@ RSpec.describe Social::Grpc::Handler do
       handler_zero = described_class.new(
         method_key: :test, service: double, rpc_desc: double, active_call: double,
         message: message_zero,
-        list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc
+        list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc,
+        cast_lookup: cast_lookup
       )
 
       expect(list_posts_uc).to receive(:call)
@@ -220,7 +221,8 @@ RSpec.describe Social::Grpc::Handler do
       handler_val = described_class.new(
         method_key: :test, service: double, rpc_desc: double, active_call: double,
         message: let_message,
-        list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc
+        list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc,
+        cast_lookup: cast_lookup
       )
 
       validation_error = Social::UseCases::Posts::SavePost::ValidationError.new(double(to_h: { content: ["error"] }))
@@ -252,9 +254,7 @@ RSpec.describe Social::Grpc::Handler do
     end
 
     it "raises NOT_FOUND when cast not found" do
-      cast_repo = double(:cast_repo)
-      allow(cast_repo).to receive(:find_by_user_id).with("user-123").and_return(nil)
-      allow(Portfolio::Slice).to receive(:[]).with("repositories.cast_repository").and_return(cast_repo)
+      allow(cast_lookup).to receive(:find_by_user_id).with("user-123").and_return(nil)
 
       expect { handler.delete_cast_post }.to raise_error(GRPC::BadStatus) { |e|
         expect(e.code).to eq(GRPC::Core::StatusCodes::NOT_FOUND)
