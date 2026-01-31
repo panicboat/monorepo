@@ -1,4 +1,4 @@
-import { ResponsiveMainContainer } from "@/modules/shell/components/ResponsiveMainContainer";
+import { ResponsiveMainContainer } from "@/components/layout/ResponsiveMainContainer";
 import { ReservationDetail } from "@/modules/ritual/components/cast/ReservationDetail";
 
 export default async function ReservationDetailPage({

@@ -1,17 +1,28 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { TimelineFeed, FeedItem } from "@/modules/discovery/components/guest/TimelineFeed";
+import {
+  TimelineFeed,
+  FeedItem,
+} from "@/modules/social/components/guest/TimelineFeed";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { HashtagInput } from "@/components/ui/HashtagInput";
-import { Send, Image as ImageIcon, Video, X, Lock, LockOpen } from "lucide-react";
+import {
+  Send,
+  Image as ImageIcon,
+  Video,
+  X,
+  Lock,
+  LockOpen,
+} from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useCastPosts } from "@/modules/social/hooks/useCastPosts";
 import { CastPost } from "@/modules/social/types";
 import { useToast } from "@/components/ui/Toast";
 import { useCastData } from "@/modules/portfolio/hooks";
+import { useAuthStore } from "@/stores/authStore";
 
 function formatTimeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -73,7 +84,7 @@ export default function CastTimelinePage() {
   }, []);
 
   const uploadFile = async (file: File): Promise<string | null> => {
-    const token = localStorage.getItem("nyx_cast_access_token");
+    const token = useAuthStore.getState().accessToken;
     if (!token) return null;
 
     const res = await fetch("/api/cast/onboarding/upload-url", {

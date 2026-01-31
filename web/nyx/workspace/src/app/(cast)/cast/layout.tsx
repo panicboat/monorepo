@@ -1,6 +1,6 @@
-import { CastTopNavBar } from "@/modules/shell/components/cast/CastTopNavBar";
-import { CastBottomNavBar } from "@/modules/shell/components/cast/CastBottomNavBar";
-import { ResponsiveMainContainer } from "@/modules/shell/components/ResponsiveMainContainer";
+import { CastTopNavBar } from "@/components/layout/cast/CastTopNavBar";
+import { CastBottomNavBar } from "@/components/layout/cast/CastBottomNavBar";
+import { ResponsiveMainContainer } from "@/components/layout/ResponsiveMainContainer";
 import { CastAuthGuard } from "@/modules/identity/components/CastAuthGuard";
 import { ToastProvider } from "@/components/ui/Toast";
 

@@ -12,10 +12,7 @@ import {
   PostCard,
   PostItem,
 } from "@/modules/portfolio/components/cast/detail/CastPosts";
-import {
-  MediaModal,
-  MediaItem,
-} from "@/modules/common/components/guest/MediaModal";
+import { MediaModal, MediaItem } from "@/components/shared/MediaModal";
 import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
 
 // Combine available mocks
