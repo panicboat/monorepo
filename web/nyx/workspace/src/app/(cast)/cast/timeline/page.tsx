@@ -12,6 +12,7 @@ import { useCastPosts } from "@/modules/social/hooks/useCastPosts";
 import { CastPost } from "@/modules/social/types";
 import { useToast } from "@/components/ui/Toast";
 import { useCastData } from "@/modules/portfolio/hooks";
+import { getAccessToken } from "@/lib/auth";
 
 function formatTimeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -73,7 +74,7 @@ export default function CastTimelinePage() {
   }, []);
 
   const uploadFile = async (file: File): Promise<string | null> => {
-    const token = localStorage.getItem("nyx_cast_access_token");
+    const token = getAccessToken("cast");
     if (!token) return null;
 
     const res = await fetch("/api/cast/onboarding/upload-url", {

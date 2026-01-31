@@ -13,6 +13,7 @@ import {
   mapSchedulesToApi,
 } from "@/modules/portfolio/lib/cast/mappers";
 import { fetcher } from "@/lib/swr";
+import { getAccessToken } from "@/lib/auth";
 
 const INITIAL_PROFILE: ProfileFormData = {
   nickname: "",
@@ -25,11 +26,6 @@ const INITIAL_PROFILE: ProfileFormData = {
   defaultScheduleEnd: "22:00",
   socialLinks: { others: [] },
   tags: [],
-};
-
-const getToken = () => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("nyx_cast_access_token");
 };
 
 interface UseCastDataOptions {
@@ -50,7 +46,7 @@ interface CastDataApiResponse {
 export function useCastData(options: UseCastDataOptions = {}) {
   const { apiPath = "/api/cast/onboarding/profile" } = options;
 
-  const token = getToken();
+  const token = getAccessToken("cast");
 
   // Use SWR for data fetching
   const { data, error, isLoading, mutate } = useSWR<CastDataApiResponse>(
@@ -193,7 +189,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
   // Save functions
   const saveProfile = useCallback(
     async (overrideProfile?: ProfileFormData) => {
-      const currentToken = getToken();
+      const currentToken = getAccessToken("cast");
       if (!currentToken) throw new Error("No token");
 
       const profileToSave = overrideProfile || profile;
@@ -218,7 +214,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
 
   const saveImages = useCallback(
     async (overrideImages?: MediaItem[], overrideAvatarPath?: string) => {
-      const currentToken = getToken();
+      const currentToken = getAccessToken("cast");
       if (!currentToken) throw new Error("No token");
 
       const imagesToSave = overrideImages || images;
@@ -252,7 +248,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
 
   const savePlans = useCallback(
     async (overridePlans?: ServicePlan[]) => {
-      const currentToken = getToken();
+      const currentToken = getAccessToken("cast");
       if (!currentToken) throw new Error("No token");
 
       const plansToSave = overridePlans || plans;
@@ -286,7 +282,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
 
   const saveSchedules = useCallback(
     async (overrideSchedules?: WeeklySchedule[]) => {
-      const currentToken = getToken();
+      const currentToken = getAccessToken("cast");
       if (!currentToken) throw new Error("No token");
 
       const schedulesToSave = overrideSchedules || schedules;
@@ -311,7 +307,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
 
   // Image upload
   const uploadImage = useCallback(async (file: File): Promise<{ key: string; url: string }> => {
-    const currentToken = getToken();
+    const currentToken = getAccessToken("cast");
     if (!currentToken) throw new Error("No token");
 
     const res = await fetch("/api/cast/onboarding/upload-url", {
@@ -343,7 +339,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
 
   // Publish
   const publishProfile = useCallback(async () => {
-    const currentToken = getToken();
+    const currentToken = getAccessToken("cast");
     if (!currentToken) throw new Error("No token");
 
     const res = await fetch("/api/cast/onboarding/publish", {

@@ -3,11 +3,7 @@
 import { useState, useCallback } from "react";
 import { ServicePlan } from "@/modules/portfolio/types";
 import { mapApiToPlans, mapPlansToApi } from "@/modules/portfolio/lib/cast/mappers";
-
-const getToken = () => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("nyx_cast_access_token");
-};
+import { getAccessToken } from "@/lib/auth";
 
 interface UseCastPlansOptions {
   apiPath?: string;
@@ -22,7 +18,7 @@ export function useCastPlans(options: UseCastPlansOptions = {}) {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchPlans = useCallback(async () => {
-    const token = getToken();
+    const token = getAccessToken("cast");
     if (!token) {
       setPlans([]);
       return [];
@@ -64,7 +60,7 @@ export function useCastPlans(options: UseCastPlansOptions = {}) {
 
   const savePlans = useCallback(
     async (overridePlans?: ServicePlan[]) => {
-      const token = getToken();
+      const token = getAccessToken("cast");
       if (!token) throw new Error("No token");
 
       const plansToSave = overridePlans || plans;

@@ -9,6 +9,18 @@ import {
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import useSWR from "swr";
+import {
+  getTokenKeys,
+  inferRoleFromPath,
+  inferRoleFromApiRole,
+  getAccessToken,
+  getRefreshToken,
+  setTokens,
+  clearTokens,
+  normalizeTokenResponse,
+  hasTokens,
+  type UserRole,
+} from "@/lib/auth";
 
 export type User = {
   id: string;
@@ -41,29 +53,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-
-
-  // Helper to determine keys based on context or role
-  const getKeys = (role?: number | string) => {
-    // If role is explicitly provided, use it
-    if (role === 2 || role === "ROLE_CAST") {
-      return { access: "nyx_cast_access_token", refresh: "nyx_cast_refresh_token" };
+  // Helper to determine role based on context or API role
+  const getCurrentRole = (apiRole?: number | string): UserRole => {
+    if (apiRole !== undefined) {
+      return inferRoleFromApiRole(apiRole);
     }
-    if (role === 1 || role === "ROLE_GUEST") {
-      return { access: "nyx_guest_access_token", refresh: "nyx_guest_refresh_token" };
-    }
-
-    // Otherwise, infer from URL context
-    if (pathname?.startsWith("/cast")) {
-      return { access: "nyx_cast_access_token", refresh: "nyx_cast_refresh_token" };
-    }
-    // Default to Guest
-    return { access: "nyx_guest_access_token", refresh: "nyx_guest_refresh_token" };
+    return inferRoleFromPath(pathname);
   };
 
-  const refreshToken = useCallback(async (contextKeys?: { access: string; refresh: string }): Promise<boolean> => {
-    const keys = contextKeys || getKeys();
-    const rToken = localStorage.getItem(keys.refresh);
+  const refreshTokenFn = useCallback(async (role: UserRole): Promise<boolean> => {
+    const rToken = getRefreshToken(role);
     if (!rToken) return false;
     try {
       const res = await fetch("/api/identity/refresh-token", {
@@ -73,24 +72,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (res.ok) {
         const data = await res.json();
-        // Handle snake_case vs camelCase mismatch
-        const accessToken = data.accessToken || data.access_token;
-        const newRefreshToken = data.refreshToken || data.refresh_token;
-
-        if (accessToken) localStorage.setItem(keys.access, accessToken);
-        if (newRefreshToken) localStorage.setItem(keys.refresh, newRefreshToken);
+        const tokens = normalizeTokenResponse(data);
+        setTokens(role, tokens);
         return true;
       }
     } catch (e) {
       console.error("Refresh failed", e);
     }
     return false;
-  }, [pathname]);
+  }, []);
 
   // SWR fetcher for /api/identity/me with token refresh support
   const authFetcher = useCallback(async (url: string) => {
-    const keys = getKeys();
-    const token = localStorage.getItem(keys.access);
+    const role = getCurrentRole();
+    const token = getAccessToken(role);
     if (!token) return null;
 
     const res = await fetch(url, {
@@ -103,9 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Handle 401 with token refresh
     if (res.status === 401) {
-      const refreshed = await refreshToken(keys);
+      const refreshed = await refreshTokenFn(role);
       if (refreshed) {
-        const newToken = localStorage.getItem(keys.access);
+        const newToken = getAccessToken(role);
         if (newToken) {
           const retryRes = await fetch(url, {
             headers: { Authorization: `Bearer ${newToken}` },
@@ -116,20 +111,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       // Token refresh failed - clear tokens
-      localStorage.removeItem(keys.access);
-      localStorage.removeItem(keys.refresh);
+      clearTokens(role);
     }
 
     return null;
-  }, [pathname, refreshToken]);
+  }, [pathname, refreshTokenFn]);
 
   // Check if we have a token for conditional fetching
-  const keys = getKeys();
-  const hasToken = typeof window !== "undefined" && localStorage.getItem(keys.access);
+  const currentRole = getCurrentRole();
+  const hasValidToken = typeof window !== "undefined" && hasTokens(currentRole);
 
   // Use SWR for user data fetching
   const { data: userData, isLoading, mutate } = useSWR(
-    hasToken ? "/api/identity/me" : null,
+    hasValidToken ? "/api/identity/me" : null,
     authFetcher,
     {
       revalidateOnFocus: false,
@@ -181,29 +175,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Registration failed");
 
-    const registerKeys = getKeys(data.userProfile.role);
-    // Handle snake_case vs camelCase mismatch
-    const accessToken = data.accessToken || data.access_token;
-    const newRefreshToken = data.refreshToken || data.refresh_token;
+    const userRole = getCurrentRole(data.userProfile.role);
+    const tokens = normalizeTokenResponse(data);
 
-    if (accessToken) {
-        localStorage.setItem(registerKeys.access, accessToken);
+    if (tokens.accessToken) {
+      setTokens(userRole, tokens);
     } else {
-        console.error("Register Error: No access token found in response", data);
+      console.error("Register Error: No access token found in response", data);
     }
 
-    if (newRefreshToken) {
-      localStorage.setItem(registerKeys.refresh, newRefreshToken);
-    }
-    const userRole = data.userProfile.role;
-    const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
+    const isGuest = userRole === "guest";
 
     // Set new user flag and update SWR cache
     setNewUserFlag(true);
     mutate({
       id: data.userProfile.id,
       phoneNumber: data.userProfile.phoneNumber,
-      role: userRole,
+      role: data.userProfile.role,
     }, { revalidate: false });
 
     if (isGuest) {
@@ -222,29 +210,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Login failed");
 
-    const loginKeys = getKeys(data.userProfile.role);
-    // Handle snake_case vs camelCase mismatch
-    const accessToken = data.accessToken || data.access_token;
-    const newRefreshToken = data.refreshToken || data.refresh_token;
+    const userRole = getCurrentRole(data.userProfile.role);
+    const tokens = normalizeTokenResponse(data);
 
-    if (accessToken) {
-      localStorage.setItem(loginKeys.access, accessToken);
+    if (tokens.accessToken) {
+      setTokens(userRole, tokens);
     } else {
       console.error("Login Error: No access token found in response", data);
     }
 
-    if (newRefreshToken) {
-      localStorage.setItem(loginKeys.refresh, newRefreshToken);
-    }
-    const userRole = data.userProfile.role;
-    const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
+    const isGuest = userRole === "guest";
 
     // Update SWR cache with user data
     setNewUserFlag(false);
     mutate({
       id: data.userProfile.id,
       phoneNumber: data.userProfile.phoneNumber,
-      role: userRole,
+      role: data.userProfile.role,
     }, { revalidate: false });
 
     if (isGuest) {
@@ -255,8 +237,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    const logoutKeys = getKeys(); // Use current context keys for logout
-    const rToken = localStorage.getItem(logoutKeys.refresh);
+    const role = getCurrentRole();
+    const rToken = getRefreshToken(role);
     if (rToken) {
       try {
         await fetch("/api/identity/logout", {
@@ -268,17 +250,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Ignore logout errors
       }
     }
-    localStorage.removeItem(logoutKeys.access);
-    localStorage.removeItem(logoutKeys.refresh);
+    clearTokens(role);
 
     // Clear SWR cache
     setNewUserFlag(false);
     mutate(null, { revalidate: false });
 
     if (pathname?.startsWith("/cast")) {
-        router.push("/cast/login");
+      router.push("/cast/login");
     } else {
-        router.push("/login");
+      router.push("/login");
     }
   };
 

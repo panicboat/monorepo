@@ -3,11 +3,7 @@
 import { useState, useCallback } from "react";
 import { MediaItem } from "@/modules/portfolio/types";
 import { mapApiToImages } from "@/modules/portfolio/lib/cast/mappers";
-
-const getToken = () => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("nyx_cast_access_token");
-};
+import { getAccessToken } from "@/lib/auth";
 
 interface UseCastImagesOptions {
   uploadUrlPath?: string;
@@ -28,7 +24,7 @@ export function useCastImages(options: UseCastImagesOptions = {}) {
 
   const uploadImage = useCallback(
     async (file: File): Promise<MediaItem | null> => {
-      const token = getToken();
+      const token = getAccessToken("cast");
       if (!token) throw new Error("No token");
 
       setUploading(true);
@@ -77,7 +73,7 @@ export function useCastImages(options: UseCastImagesOptions = {}) {
 
   const saveImages = useCallback(
     async (overrideImages?: MediaItem[]) => {
-      const token = getToken();
+      const token = getAccessToken("cast");
       if (!token) throw new Error("No token");
 
       const imagesToSave = overrideImages || images;

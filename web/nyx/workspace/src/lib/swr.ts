@@ -1,19 +1,13 @@
 import { SWRConfiguration } from "swr";
-
-/**
- * Get auth token from localStorage
- */
-const getToken = () => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("nyx_cast_access_token");
-};
+import { getAccessToken } from "@/lib/auth";
 
 /**
  * Default fetcher for SWR
  * Automatically includes authorization header if token exists
  */
 export const fetcher = async <T>(url: string): Promise<T> => {
-  const token = getToken();
+  // Default to cast token for backward compatibility
+  const token = getAccessToken("cast");
   const headers: HeadersInit = {};
 
   if (token) {
