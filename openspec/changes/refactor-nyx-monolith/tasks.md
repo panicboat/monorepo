@@ -34,34 +34,43 @@
 - [ ] 5.3 gRPC エラーコードのマッピングを作成
 - [ ] 5.4 ユーザーフレンドリーなエラーメッセージを実装
 
-## Phase 6: Backend Slice Decoupling
+## Phase 6: Frontend Design Tokens & Styling
 
-- [ ] 6.1 `lib/shared_services/cast_lookup_service.rb` を作成
-- [ ] 6.2 Social handler から Portfolio 直接参照を削除
-- [ ] 6.3 共有サービス経由のアクセスに変更
-- [ ] 6.4 スライス境界テストを追加
+- [ ] 6.1 `config/theme.ts` を作成（カラー、スペーシング、タイポグラフィ）
+- [ ] 6.2 Tailwind v4 の `@theme` に design tokens を定義
+- [ ] 6.3 ハードコードされたテキストサイズ（text-[8px], text-[9px], text-[10px]）を統一
+- [ ] 6.4 ハードコードされたシャドウ（shadow-pink-200 等）を token 化
+- [ ] 6.5 Button コンポーネントを統一（ActionButton を Button に統合）
+- [ ] 6.6 カード・バッジのスタイルを統一（border-radius, padding）
+- [ ] 6.7 スペーシングスケールを定義・適用
 
-## Phase 7: Backend Directory Standardization
+## Phase 7: Backend Slice Decoupling
 
-- [ ] 7.1 Portfolio に `db/struct.rb` を追加
-- [ ] 7.2 Social に `db/struct.rb` を追加
-- [ ] 7.3 Portfolio のコントラクトを `contracts/` 直下に移動
-- [ ] 7.4 ディレクトリ構造ガイドラインを文書化
+- [ ] 7.1 `lib/shared_services/cast_lookup_service.rb` を作成（DI コンテナ使用）
+- [ ] 7.2 Social handler から Portfolio 直接参照を削除
+- [ ] 7.3 共有サービス経由のアクセスに変更
+- [ ] 7.4 スライス境界テストを追加
 
-## Phase 8: Backend Presenter Refactoring
+## Phase 8: Backend Directory Standardization
 
-- [ ] 8.1 `profile_presenter.rb` を機能別に分割
-- [ ] 8.2 共通プレゼンターユーティリティを `lib/presenters/` に抽出
-- [ ] 8.3 プレゼンターのテストを追加
+- [ ] 8.1 Portfolio に `db/struct.rb` を追加
+- [ ] 8.2 Social に `db/struct.rb` を追加
+- [ ] 8.3 Portfolio のコントラクトを `contracts/` 直下に移動
+- [ ] 8.4 ディレクトリ構造ガイドラインを文書化
 
-## Phase 9: Backend TODO Resolution
+## Phase 9: Backend Presenter Refactoring
 
-- [ ] 9.1 OAuth コールバックエンドポイントの実装
-- [ ] 9.2 SMS サービスインターフェースの抽象化
-- [ ] 9.3 Twilio/SNS アダプターのスタブ実装
+- [ ] 9.1 `profile_presenter.rb` を機能別に分割
+- [ ] 9.2 共通プレゼンターユーティリティを `lib/presenters/` に抽出
+- [ ] 9.3 プレゼンターのテストを追加
 
-## Phase 10: Validation & Documentation
+## Phase 10: Backend TODO Resolution
 
-- [ ] 10.1 全テストが通ることを確認
-- [ ] 10.2 リファクタリングガイドラインを文書化
-- [ ] 10.3 domains/README.md の実装状況を更新
+- [ ] 10.1 SMS サービスインターフェースの抽象化
+- [ ] 10.2 Twilio/SNS アダプターのスタブ実装
+
+## Phase 11: Validation & Documentation
+
+- [ ] 11.1 全テストが通ることを確認
+- [ ] 11.2 リファクタリングガイドラインを文書化
+- [ ] 11.3 domains/README.md の実装状況を更新
