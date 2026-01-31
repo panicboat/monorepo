@@ -4,6 +4,12 @@
  * Migrates tokens from legacy localStorage keys to the new unified format.
  * Legacy keys: nyx_{role}_access_token, nyx_{role}_refresh_token, nyx_{role}_user_id
  * New key: nyx-auth (Zustand persist format)
+ *
+ * TODO: Remove this migration file once all users have migrated to the new token format.
+ *       This can be safely removed after a reasonable migration period (e.g., 3-6 months after release).
+ *       When removing, also delete:
+ *       - initializeAuthStore() in authStore.ts
+ *       - migrateTokens export from lib/auth/index.ts
  */
 
 import { type Role, type TokenData, setTokens } from "./tokens";

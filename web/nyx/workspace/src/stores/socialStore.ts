@@ -4,6 +4,12 @@
  * Zustand store for social state management.
  * Handles following, blocking, and favorites with localStorage persistence.
  *
+ * TODO: Currently stores social data in localStorage (client-only).
+ *       Should be synced with the server via Social gRPC service when implemented.
+ *       - toggleFollow should call Social::FollowService
+ *       - toggleBlock should call Social::BlockService
+ *       - Initial state should be fetched from server on hydration
+ *
  * Usage:
  *   const { following, toggleFollow, isFollowing } = useSocialStore();
  */

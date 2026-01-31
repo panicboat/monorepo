@@ -18,7 +18,9 @@ module Social
         def image_url
           return nil if image_path.nil? || image_path.empty?
 
-          # Assuming CDN URL pattern - adjust as needed
+          # TODO: Replace hardcoded CDN URL with configuration from environment or settings.
+          #       Current implementation assumes a fixed CDN pattern.
+          #       Should use ENV['CDN_BASE_URL'] or similar configuration.
           "https://cdn.nyx.place/#{image_path}"
         end
       end
