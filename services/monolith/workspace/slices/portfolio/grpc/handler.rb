@@ -287,6 +287,7 @@ module Portfolio
         genre_id = request.message.genre_id.to_s.empty? ? nil : request.message.genre_id
         tag = request.message.tag.to_s.empty? ? nil : request.message.tag
         area_id = request.message.area_id.to_s.empty? ? nil : request.message.area_id
+        query = request.message.query.to_s.empty? ? nil : request.message.query
         limit = request.message.limit.zero? ? nil : request.message.limit
         offset = request.message.offset.zero? ? nil : request.message.offset
 
@@ -303,6 +304,7 @@ module Portfolio
           tag: tag,
           status_filter: status_filter,
           area_id: area_id,
+          query: query,
           limit: limit,
           offset: offset
         )

@@ -54,7 +54,18 @@
 - [x] 9.1 Backend: Filter combinations test (list_casts_spec.rb)
 - [x] 9.2 Backend: is_online? and online_cast_ids tests (cast_repository_spec.rb)
 - [x] 9.3 Backend: get_popular_tags tests (cast_repository_spec.rb)
-- [ ] 9.4 Frontend: Component tests (test infrastructure not set up)
+- [x] 9.4 Backend: Text search query tests (cast_repository_spec.rb)
+- [ ] 9.5 Frontend: Component tests (test infrastructure not set up)
+
+## 10. Full-Screen Filter Page (UX改善)
+- [x] 10.1 Add `query` field to ListCastsRequest proto
+- [x] 10.2 Implement text search logic in cast_repository (ILIKE for name, tagline)
+- [x] 10.3 Update use case and handler for query parameter
+- [x] 10.4 Create SearchFilterOverlay component with motion animations
+- [x] 10.5 Integrate overlay into search page (filter icon opens overlay)
+- [x] 10.6 Connect text search to API
+- [x] 10.7 Display active filter badges on search bar
+- [x] 10.8 Add filter count badge to filter icon
 
 ---
 
@@ -67,11 +78,12 @@
 ### Proto Changes
 - Added `Genre` message
 - Added `CastStatusFilter` enum
-- Extended `ListCastsRequest` with filters (genre_id, tag, status_filter, area_id, limit, offset)
+- Extended `ListCastsRequest` with filters (genre_id, tag, status_filter, area_id, limit, offset, query)
 - Added `ListGenresRequest/Response`
 - Added `ListPopularTagsRequest/Response` with `PopularTag` message
 - Extended `CastProfile` with `genres` field
 - Added `is_online` field to `CastProfile` (動的計算)
+- Added `query` field to `ListCastsRequest` for text search
 
 ### Backend Files Modified/Created
 - `slices/portfolio/relations/genres.rb`
@@ -85,9 +97,10 @@
 
 ### Frontend Files Modified/Created
 - `src/app/api/guest/genres/route.ts`
-- `src/app/api/guest/search/route.ts`
+- `src/app/api/guest/search/route.ts` (query parameter added)
 - `src/app/api/guest/tags/popular/route.ts`
-- `src/app/(guest)/search/page.tsx` (complete rewrite)
+- `src/app/(guest)/search/page.tsx` (full-screen filter integration)
+- `src/app/(guest)/search/SearchFilterOverlay.tsx` (new component)
 - `src/modules/portfolio/types.ts` (Genre type, genreIds in ProfileFormData)
 - `src/modules/portfolio/hooks/useGenres.ts`
 - `src/modules/portfolio/components/cast/GenreSelector.tsx`

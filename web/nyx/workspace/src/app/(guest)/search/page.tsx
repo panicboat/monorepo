@@ -13,6 +13,7 @@ import { motion } from "motion/react";
 import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { SearchFilterOverlay } from "./SearchFilterOverlay";
 
 type Genre = {
   id: string;
@@ -47,11 +48,21 @@ type CastItem = {
 
 type StatusFilter = "all" | "online" | "new" | "ranking";
 
+type FilterState = {
+  query: string;
+  genreId: string;
+  status: StatusFilter;
+};
+
 export default function SearchPage() {
-  const [activeStatus, setActiveStatus] = useState<StatusFilter>("all");
-  const [activeGenre, setActiveGenre] = useState<string>("");
+  const [filters, setFilters] = useState<FilterState>({
+    query: "",
+    genreId: "",
+    status: "all",
+  });
   const [activeTag, setActiveTag] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [filterOverlayOpen, setFilterOverlayOpen] = useState(false);
 
   const [genres, setGenres] = useState<Genre[]>([]);
   const [popularTags, setPopularTags] = useState<PopularTag[]>([]);
@@ -100,11 +111,14 @@ export default function SearchPage() {
     setLoadingCasts(true);
     try {
       const params = new URLSearchParams();
-      if (activeStatus !== "all") {
-        params.set("status", activeStatus);
+      if (filters.status !== "all") {
+        params.set("status", filters.status);
       }
-      if (activeGenre) {
-        params.set("genreId", activeGenre);
+      if (filters.genreId) {
+        params.set("genreId", filters.genreId);
+      }
+      if (filters.query.trim()) {
+        params.set("query", filters.query.trim());
       }
       if (activeTag) {
         params.set("tag", activeTag);
@@ -120,7 +134,7 @@ export default function SearchPage() {
     } finally {
       setLoadingCasts(false);
     }
-  }, [activeStatus, activeGenre, activeTag]);
+  }, [filters, activeTag]);
 
   useEffect(() => {
     fetchCasts();
@@ -134,13 +148,21 @@ export default function SearchPage() {
     }
   };
 
-  const handleGenreClick = (genreId: string) => {
-    if (activeGenre === genreId) {
-      setActiveGenre("");
-    } else {
-      setActiveGenre(genreId);
-    }
+  const handleFilterApply = (newFilters: FilterState) => {
+    setFilters(newFilters);
+    setSearchInput(newFilters.query);
   };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFilters((prev) => ({ ...prev, query: searchInput }));
+  };
+
+  // Count active filters for badge
+  const activeFilterCount =
+    (filters.query.trim() ? 1 : 0) +
+    (filters.genreId ? 1 : 0) +
+    (filters.status !== "all" ? 1 : 0);
 
   if (loading) {
     return (
@@ -153,81 +175,68 @@ export default function SearchPage() {
   return (
     <div className="bg-slate-50 pb-24 pt-4 min-h-screen">
       {/* Search Input */}
-      <div className="px-4 mb-4">
+      <form onSubmit={handleSearchSubmit} className="px-4 mb-4">
         <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm border border-slate-100">
           <Search className="text-slate-400 ml-1 shrink-0" size={20} />
           <Input
             type="text"
-            placeholder="キャスト、タグ、エリアを検索..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="キャスト、タグを検索..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="flex-1 bg-transparent border-none shadow-none focus-visible:ring-0 px-2"
           />
           <Button
+            type="button"
             variant="ghost"
             size="icon"
-            className="text-slate-400 hover:text-slate-600 mr-1 hover:bg-transparent"
+            onClick={() => setFilterOverlayOpen(true)}
+            className="relative text-slate-400 hover:text-slate-600 mr-1 hover:bg-transparent"
           >
             <SlidersHorizontal size={20} />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-pink-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
           </Button>
         </div>
-      </div>
+      </form>
 
-      {/* Genre Filter Pills */}
-      {genres.length > 0 && (
-        <HorizontalScroll className="mb-4" contentClassName="px-4 gap-2">
-          <Button
-            onClick={() => setActiveGenre("")}
-            variant={activeGenre === "" ? "default" : "outline"}
-            className={`rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0 transition-colors shadow-sm h-8
-              ${activeGenre === ""
-                ? "bg-slate-900 text-white hover:bg-slate-800"
-                : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
-              }`}
-          >
-            すべて
-          </Button>
-          {genres.map((genre) => (
-            <Button
-              key={genre.id}
-              onClick={() => handleGenreClick(genre.id)}
-              variant={activeGenre === genre.id ? "default" : "outline"}
-              className={`rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0 transition-colors shadow-sm h-8
-                ${activeGenre === genre.id
-                  ? "bg-slate-900 text-white hover:bg-slate-800"
-                  : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
-                }`}
+      {/* Active Filters Display */}
+      {(filters.genreId || filters.status !== "all" || filters.query) && (
+        <div className="px-4 mb-4">
+          <div className="flex flex-wrap gap-2">
+            {filters.query && (
+              <span className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-xs font-medium">
+                &quot;{filters.query}&quot;
+              </span>
+            )}
+            {filters.genreId && (
+              <span className="px-3 py-1 bg-slate-900 text-white rounded-full text-xs font-medium">
+                {genres.find((g) => g.id === filters.genreId)?.name}
+              </span>
+            )}
+            {filters.status !== "all" && (
+              <span className="px-3 py-1 bg-pink-500 text-white rounded-full text-xs font-medium">
+                {filters.status === "online"
+                  ? "オンライン"
+                  : filters.status === "new"
+                    ? "新着"
+                    : "ランキング"}
+              </span>
+            )}
+            <button
+              onClick={() => {
+                setFilters({ query: "", genreId: "", status: "all" });
+                setSearchInput("");
+              }}
+              className="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium hover:bg-slate-200"
             >
-              {genre.name}
-            </Button>
-          ))}
-        </HorizontalScroll>
+              クリア
+            </button>
+          </div>
+        </div>
       )}
-
-      {/* Status Filter Tabs */}
-      <HorizontalScroll className="mb-6" contentClassName="px-4 gap-2">
-        {(
-          [
-            { key: "all", label: "All" },
-            { key: "online", label: "Online" },
-            { key: "new", label: "New" },
-            { key: "ranking", label: "Ranking" },
-          ] as const
-        ).map((tab) => (
-          <Button
-            key={tab.key}
-            onClick={() => setActiveStatus(tab.key)}
-            variant={activeStatus === tab.key ? "default" : "outline"}
-            className={`rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0 transition-colors shadow-sm h-8
-              ${activeStatus === tab.key
-                ? "bg-pink-500 text-white hover:bg-pink-600"
-                : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
-              }`}
-          >
-            {tab.label}
-          </Button>
-        ))}
-      </HorizontalScroll>
 
       {/* Highlights (Horizontal Scroll) */}
       {highlightCasts.length > 0 && (
@@ -281,8 +290,8 @@ export default function SearchPage() {
       {/* Main Grid Results */}
       <div className="px-4">
         <h3 className="mb-3 font-bold text-sm text-slate-500 uppercase tracking-wider">
-          {activeGenre
-            ? genres.find((g) => g.id === activeGenre)?.name || "Casts"
+          {filters.genreId
+            ? genres.find((g) => g.id === filters.genreId)?.name || "Casts"
             : "All Casts"}
           {activeTag && ` - #${activeTag}`}
         </h3>
@@ -333,6 +342,15 @@ export default function SearchPage() {
           </div>
         </div>
       )}
+
+      {/* Filter Overlay */}
+      <SearchFilterOverlay
+        isOpen={filterOverlayOpen}
+        onClose={() => setFilterOverlayOpen(false)}
+        onApply={handleFilterApply}
+        genres={genres}
+        initialFilters={filters}
+      />
     </div>
   );
 }
@@ -393,7 +411,7 @@ const SearchCastCard = ({ cast }: { cast: CastProfile }) => {
           {cast.tagline && (
             <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded-lg italic leading-tight relative">
               <div className="absolute -top-1 left-3 w-2 h-2 bg-slate-50 transform rotate-45" />
-              "{cast.tagline}"
+              &quot;{cast.tagline}&quot;
             </div>
           )}
 

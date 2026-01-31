@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
     const tag = searchParams.get("tag") || "";
     const status = searchParams.get("status");
     const areaId = searchParams.get("areaId") || "";
+    const query = searchParams.get("query") || "";
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
@@ -35,6 +36,7 @@ export async function GET(req: NextRequest) {
       tag,
       statusFilter: parseStatusFilter(status),
       areaId,
+      query,
       limit,
       offset,
     });

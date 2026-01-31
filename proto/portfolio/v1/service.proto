@@ -208,6 +208,8 @@ message ListCastsRequest {
   // Pagination
   int32 limit = 6;
   int32 offset = 7;
+  // Text search query (searches name, tagline, tags)
+  string query = 8;
 }
 
 message ListCastsResponse {

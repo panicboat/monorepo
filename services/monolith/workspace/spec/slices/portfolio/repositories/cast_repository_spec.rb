@@ -209,6 +209,59 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
         expect(names).to include("NewCast")
       end
     end
+
+    context "with text search query" do
+      let!(:cast_with_name) do
+        repo.create(user_id: SecureRandom.uuid, name: "かわいいキャスト", image_path: "c1", visibility: "published", tagline: "test")
+      end
+
+      let!(:cast_with_tagline) do
+        repo.create(user_id: SecureRandom.uuid, name: "Normal", image_path: "c2", visibility: "published", tagline: "清楚系美少女")
+      end
+
+      let!(:cast_with_tag) do
+        repo.create(
+          user_id: SecureRandom.uuid,
+          name: "Another",
+          image_path: "c3",
+          visibility: "published",
+          tags: Sequel.pg_jsonb(["元アイドル", "美人"])
+        )
+      end
+
+      let!(:unmatched_cast) do
+        repo.create(user_id: SecureRandom.uuid, name: "Unmatched", image_path: "c4", visibility: "published", tagline: "other")
+      end
+
+      it "finds casts by name (case insensitive)" do
+        result = repo.list_casts_with_filters(query: "かわいい")
+        names = result.map(&:name)
+        expect(names).to include("かわいいキャスト")
+        expect(names).not_to include("Normal")
+      end
+
+      it "finds casts by tagline" do
+        result = repo.list_casts_with_filters(query: "清楚系")
+        names = result.map(&:name)
+        expect(names).to include("Normal")
+      end
+
+      it "finds casts by tag" do
+        result = repo.list_casts_with_filters(query: "元アイドル")
+        names = result.map(&:name)
+        expect(names).to include("Another")
+      end
+
+      it "returns empty when no matches" do
+        result = repo.list_casts_with_filters(query: "存在しない検索語")
+        expect(result).to be_empty
+      end
+
+      it "ignores empty or whitespace query" do
+        result = repo.list_casts_with_filters(query: "   ")
+        expect(result.size).to be >= 4
+      end
+    end
   end
 
   describe "#get_popular_tags" do

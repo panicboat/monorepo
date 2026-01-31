@@ -15,6 +15,7 @@ RSpec.describe Portfolio::UseCases::Cast::Listing::ListCasts do
         tag: "清楚系",
         status_filter: :online,
         area_id: "area-1",
+        query: "かわいい",
         limit: 10,
         offset: 0
       ).and_return(casts)
@@ -25,6 +26,7 @@ RSpec.describe Portfolio::UseCases::Cast::Listing::ListCasts do
         tag: "清楚系",
         status_filter: :online,
         area_id: "area-1",
+        query: "かわいい",
         limit: 10,
         offset: 0
       )
@@ -38,6 +40,7 @@ RSpec.describe Portfolio::UseCases::Cast::Listing::ListCasts do
         tag: nil,
         status_filter: nil,
         area_id: nil,
+        query: nil,
         limit: nil,
         offset: nil
       ).and_return(casts)
@@ -53,6 +56,7 @@ RSpec.describe Portfolio::UseCases::Cast::Listing::ListCasts do
         tag: nil,
         status_filter: nil,
         area_id: nil,
+        query: nil,
         limit: nil,
         offset: nil
       ).and_return(casts)
@@ -68,6 +72,7 @@ RSpec.describe Portfolio::UseCases::Cast::Listing::ListCasts do
         tag: nil,
         status_filter: :new,
         area_id: nil,
+        query: nil,
         limit: nil,
         offset: nil
       ).and_return(casts)
@@ -83,6 +88,7 @@ RSpec.describe Portfolio::UseCases::Cast::Listing::ListCasts do
         tag: "かわいい",
         status_filter: nil,
         area_id: nil,
+        query: nil,
         limit: nil,
         offset: nil
       ).and_return(casts)
@@ -98,6 +104,7 @@ RSpec.describe Portfolio::UseCases::Cast::Listing::ListCasts do
         tag: "清楚系",
         status_filter: :online,
         area_id: nil,
+        query: nil,
         limit: nil,
         offset: nil
       ).and_return(casts)
@@ -108,6 +115,22 @@ RSpec.describe Portfolio::UseCases::Cast::Listing::ListCasts do
         tag: "清楚系",
         status_filter: :online
       )
+      expect(result).to eq(casts)
+    end
+
+    it "supports text search query" do
+      allow(repo).to receive(:list_casts_with_filters).with(
+        visibility_filter: nil,
+        genre_id: nil,
+        tag: nil,
+        status_filter: nil,
+        area_id: nil,
+        query: "かわいい",
+        limit: nil,
+        offset: nil
+      ).and_return(casts)
+
+      result = use_case.call(query: "かわいい")
       expect(result).to eq(casts)
     end
   end

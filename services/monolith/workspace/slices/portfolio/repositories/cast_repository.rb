@@ -99,11 +99,21 @@ module Portfolio
         cast_genres.where(cast_id: cast_id).pluck(:genre_id)
       end
 
-      def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, limit: nil, offset: nil)
+      def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, query: nil, limit: nil, offset: nil)
         scope = casts.combine(:cast_plans, :cast_schedules)
 
         # Visibility filter (default: published only for guest access)
         scope = scope.where(visibility: visibility_filter) if visibility_filter
+
+        # Text search filter (name, tagline, or tags)
+        if query && !query.strip.empty?
+          q = "%#{query.strip}%"
+          scope = scope.where {
+            (Sequel.ilike(:name, q)) |
+            (Sequel.ilike(:tagline, q)) |
+            Sequel.pg_jsonb(:tags).contains(Sequel.pg_jsonb([query.strip]))
+          }
+        end
 
         # Genre filter
         if genre_id && !genre_id.empty?
