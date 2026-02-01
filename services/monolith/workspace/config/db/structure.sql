@@ -196,6 +196,20 @@ CREATE TABLE portfolio.genres (
 
 
 --
+-- Name: guests; Type: TABLE; Schema: portfolio; Owner: -
+--
+
+CREATE TABLE portfolio.guests (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    name text NOT NULL,
+    avatar_path text,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -351,6 +365,14 @@ ALTER TABLE ONLY portfolio.genres
 
 
 --
+-- Name: guests guests_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.guests
+    ADD CONSTRAINT guests_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -464,6 +486,13 @@ CREATE INDEX portfolio_cast_schedules_cast_id_index ON portfolio.cast_schedules 
 --
 
 CREATE UNIQUE INDEX portfolio_casts_user_id_index ON portfolio.casts USING btree (user_id);
+
+
+--
+-- Name: portfolio_guests_user_id_index; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE UNIQUE INDEX portfolio_guests_user_id_index ON portfolio.guests USING btree (user_id);
 
 
 --
@@ -607,4 +636,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260129000003_create_cast_areas.rb'),
 ('20260131000000_remove_deprecated_columns_from_casts.rb'),
 ('20260131001000_create_genres.rb'),
-('20260131002000_create_cast_genres.rb');
+('20260131002000_create_cast_genres.rb'),
+('20260201000000_create_guests.rb');

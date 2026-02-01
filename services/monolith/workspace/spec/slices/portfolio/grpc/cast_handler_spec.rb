@@ -2,9 +2,9 @@
 
 require "spec_helper"
 require "lib/current"
-require "slices/portfolio/grpc/handler"
+require "slices/portfolio/grpc/cast_handler"
 
-RSpec.describe Portfolio::Grpc::Handler do
+RSpec.describe Portfolio::Grpc::CastHandler do
   let(:handler) {
     described_class.new(
       method_key: :test,
@@ -21,7 +21,8 @@ RSpec.describe Portfolio::Grpc::Handler do
       get_upload_url_uc: get_upload_url_uc,
       list_casts_uc: list_casts_uc,
       repo: repo,
-      area_repo: area_repo
+      area_repo: area_repo,
+      genre_repo: genre_repo
     )
   }
   let(:message) { double(:message) }
@@ -36,8 +37,9 @@ RSpec.describe Portfolio::Grpc::Handler do
   let(:save_images_uc) { double(:save_images_uc) }
   let(:get_upload_url_uc) { double(:get_upload_url_uc) }
   let(:list_casts_uc) { double(:list_casts_uc) }
-  let(:repo) { double(:repo, find_area_ids: []) }
+  let(:repo) { double(:repo, find_area_ids: [], find_genre_ids: [], online_cast_ids: []) }
   let(:area_repo) { double(:area_repo, find_by_ids: []) }
+  let(:genre_repo) { double(:genre_repo, find_by_ids: []) }
 
   before do
     allow(Current).to receive(:user_id).and_return(current_user_id)
@@ -225,7 +227,7 @@ RSpec.describe Portfolio::Grpc::Handler do
     let(:message) { ::Portfolio::V1::ListCastsRequest.new(visibility_filter: :CAST_VISIBILITY_PUBLISHED) }
 
     it "delegates to operation and returns list" do
-      expect(list_casts_uc).to receive(:call).with(visibility_filter: "published").and_return([mock_cast_entity])
+      expect(list_casts_uc).to receive(:call).with(hash_including(visibility_filter: "published")).and_return([mock_cast_entity])
 
       response = handler.list_casts
       expect(response).to be_a(::Portfolio::V1::ListCastsResponse)
@@ -239,7 +241,7 @@ RSpec.describe Portfolio::Grpc::Handler do
 
     it "delegates to operation and returns url" do
       success_result = Dry::Monads::Result::Success.call(url: "http://url", key: "key")
-      expect(get_upload_url_uc).to receive(:call).with(user_id: 1, filename: "test.jpg", content_type: "image/jpeg").and_return(success_result)
+      expect(get_upload_url_uc).to receive(:call).with(user_id: 1, filename: "test.jpg", content_type: "image/jpeg", prefix: "casts").and_return(success_result)
 
       response = handler.get_upload_url
       expect(response).to be_a(::Portfolio::V1::GetUploadUrlResponse)

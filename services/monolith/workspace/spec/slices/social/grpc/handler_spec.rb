@@ -2,6 +2,7 @@
 
 require "spec_helper"
 require "lib/current"
+require "lib/storage"
 require "slices/social/grpc/handler"
 
 RSpec.describe Social::Grpc::Handler do
@@ -30,7 +31,8 @@ RSpec.describe Social::Grpc::Handler do
       id: "cast-123",
       user_id: "user-123",
       name: "Yuna",
-      image_path: "http://img.jpg"
+      image_path: "http://img.jpg",
+      handle: "yuna"
     )
   end
 
@@ -42,6 +44,7 @@ RSpec.describe Social::Grpc::Handler do
       content: "Hello world",
       visible: true,
       cast_post_media: [],
+      cast_post_hashtags: [],
       created_at: Time.parse("2026-01-01T10:00:00Z")
     )
   end
@@ -52,6 +55,8 @@ RSpec.describe Social::Grpc::Handler do
     cast_repo = double(:cast_repo)
     allow(cast_repo).to receive(:find_by_user_id).with("user-123").and_return(mock_cast)
     allow(Portfolio::Slice).to receive(:[]).with("repositories.cast_repository").and_return(cast_repo)
+    # Mock Storage
+    allow(Storage).to receive(:download_url) { |key:| "/uploads/#{key}" }
   end
 
   describe "#list_cast_posts" do

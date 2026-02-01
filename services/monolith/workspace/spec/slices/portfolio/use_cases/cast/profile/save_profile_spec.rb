@@ -63,6 +63,8 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::SaveProfile do
     end
 
     context "when cast does not exist" do
+      let(:new_cast) { double(id: 2, name: "New", bio: "New Bio") }
+
       it "creates the cast" do
         expect(repo).to receive(:find_by_user_id).with(user_id).and_return(nil)
         expect(repo).to receive(:create).with(hash_including(
@@ -70,7 +72,7 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::SaveProfile do
           name: "New",
           bio: "New Bio",
           visibility: "unregistered"
-        ))
+        )).and_return(new_cast)
 
         use_case.call(user_id: user_id, name: "New", bio: "New Bio")
       end
@@ -84,7 +86,7 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::SaveProfile do
           age: 22,
           height: 170,
           blood_type: "O"
-        ))
+        )).and_return(new_cast)
 
         use_case.call(
           user_id: user_id,

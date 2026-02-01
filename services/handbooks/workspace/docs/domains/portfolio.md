@@ -9,6 +9,7 @@ sidebar_position: 20
 ## Responsibilities
 
 - キャストのプロフィール情報（写真、タグ）の管理
+- ゲストのプロフィール情報（名前、アバター）の管理
 - リアルタイムステータス（Online/Tonight）の保持
 - 検索・フィルタリング
 - 料金プラン管理
@@ -20,6 +21,7 @@ sidebar_position: 20
 - `casts` - キャストプロフィール
 - `cast_plans` - 料金プラン
 - `cast_schedules` - スケジュール
+- `guests` - ゲストプロフィール
 - `tags` - タグマスタ
 
 ## Why Separate?
@@ -32,9 +34,12 @@ sidebar_position: 20
 |-------|------|
 | Backend | `services/monolith/workspace/slices/portfolio/` |
 | Frontend | `web/nyx/workspace/src/modules/portfolio/` |
-| Proto | `proto/portfolio/v1/service.proto` |
+| Proto (Cast) | `proto/portfolio/v1/service.proto` |
+| Proto (Guest) | `proto/portfolio/v1/guest.proto` |
 
 ## Key APIs
+
+### CastService
 
 - `GetCastProfile` - キャストプロフィール取得
 - `SaveCastProfile` - キャストプロフィール保存
@@ -43,6 +48,34 @@ sidebar_position: 20
 - `SaveCastSchedules` - スケジュール保存
 - `ListCasts` - キャスト一覧取得
 - `GetUploadUrl` - 画像アップロード URL 取得
+
+### GuestService
+
+- `GetGuestProfile` - ゲストプロフィール取得
+- `SaveGuestProfile` - ゲストプロフィール保存（upsert）
+- `GetUploadUrl` - 画像アップロード URL 取得
+
+## Guest Profile
+
+ゲスト（一般ユーザー）のプロフィール管理機能。
+
+### Data Model
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | UUID | Primary key |
+| `user_id` | UUID | Identity Service の User ID（ユニーク） |
+| `name` | String | ニックネーム（1-20文字） |
+| `avatar_path` | String | アバター画像のパス（オプション） |
+
+### Frontend Integration
+
+- `/onboarding` - 新規ゲストのプロフィール設定
+- `/mypage/profile` - プロフィール編集
+
+### Hooks
+
+- `useGuestData` - ゲストデータの取得・更新・保存
 
 ## Related Specs
 

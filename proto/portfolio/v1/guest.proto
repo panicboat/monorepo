@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package portfolio.v1;
+
+import "portfolio/v1/service.proto";
+
+service GuestService {
+  rpc GetGuestProfile(GetGuestProfileRequest) returns (GetGuestProfileResponse);
+  rpc SaveGuestProfile(SaveGuestProfileRequest) returns (SaveGuestProfileResponse);
+  rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
+}
+
+message GuestProfile {
+  string user_id = 1;
+  string name = 2;
+  string avatar_path = 3;
+  string avatar_url = 4;  // Read-only, download URL
+}
+
+message GetGuestProfileRequest {}  // user_id is obtained from authentication
+
+message GetGuestProfileResponse {
+  GuestProfile profile = 1;
+}
+
+message SaveGuestProfileRequest {
+  string name = 1;
+  string avatar_path = 2;
+}
+
+message SaveGuestProfileResponse {
+  GuestProfile profile = 1;
+}

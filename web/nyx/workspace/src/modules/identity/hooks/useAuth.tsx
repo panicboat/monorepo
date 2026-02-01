@@ -234,7 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     if (isGuest) {
-      router.push("/");
+      router.push("/onboarding");
     } else {
       router.push("/cast/onboarding");
     }

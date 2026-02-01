@@ -4,11 +4,13 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
+import { useGuestData } from "@/modules/portfolio/hooks/useGuestData";
 import { GuestRadar } from "./GuestRadar";
 import { ReviewForm } from "@/modules/trust/components/guest/ReviewForm";
 
 export const GuestDashboard = () => {
   const { user, logout } = useAuth();
+  const { profile, avatarUrl, hasProfile } = useGuestData();
 
   // Review Modal State
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
@@ -65,12 +67,12 @@ export const GuestDashboard = () => {
     <div className="bg-slate-50 pb-24 md:pb-safe min-h-screen">
       <main className="p-6 space-y-8 pt-4">
         {/* Profile Header */}
-        <div className="flex items-center gap-4">
-          <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-blue-300 to-blue-500 p-0.5 shadow-lg">
+        <Link href="/mypage/profile" className="flex items-center gap-4 group">
+          <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-blue-300 to-blue-500 p-0.5 shadow-lg group-hover:shadow-xl transition-shadow">
             <div className="h-full w-full rounded-full bg-white p-0.5">
-              {user?.avatarUrl ? (
+              {avatarUrl ? (
                 <img
-                  src={user.avatarUrl}
+                  src={avatarUrl}
                   alt="avatar"
                   className="h-full w-full rounded-full object-cover"
                 />
@@ -84,25 +86,20 @@ export const GuestDashboard = () => {
               Silver
             </div>
           </div>
-          <div>
-            <h2 className="text-xl font-bold font-serif text-slate-900">
-              {user?.name}
-            </h2>
-            {/* TODO: Fetch real User ID and Rank from Trust/Identity Service */}
-            <p className="text-xs text-slate-500 font-mono">ID: 99482103</p>
-            {/* <div className="mt-2 flex items-center gap-4">
-               <div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Points</span>
-                  <span className="text-lg font-bold text-pink-500 font-mono">1,405 <span className="text-xs">pt</span></span>
-               </div>
-               <div className="h-6 w-px bg-slate-200"></div>
-               <div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Tickets</span>
-                  <span className="text-lg font-bold text-slate-700 font-mono">2</span>
-               </div>
-            </div> */}
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold font-serif text-slate-900">
+                {hasProfile ? profile.name : user?.name || "ゲスト"}
+              </h2>
+              <span className="text-slate-400 group-hover:text-blue-500 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 font-mono">ID: {user?.id?.slice(0, 8) || "--------"}</p>
           </div>
-        </div>
+        </Link>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-4 gap-3">
@@ -306,19 +303,21 @@ export const GuestDashboard = () => {
         {/* Menu List */}
         <div className="rounded-2xl bg-white shadow-sm border border-slate-100 overflow-hidden">
           {[
-            "Account Settings",
-            "Notification Settings",
-            "Payment Methods",
-            "Help & Support",
-            "Terms of Service",
-          ].map((item, i) => (
-            <button
-              key={item}
-              className={`w-full flex items-center justify-between px-5 py-4 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors ${i !== 4 ? "border-b border-slate-50" : ""}`}
+            { label: "Profile Settings", href: "/mypage/profile" },
+            { label: "Account Settings", href: "#" },
+            { label: "Notification Settings", href: "#" },
+            { label: "Payment Methods", href: "#" },
+            { label: "Help & Support", href: "#" },
+            { label: "Terms of Service", href: "#" },
+          ].map((item, i, arr) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`w-full flex items-center justify-between px-5 py-4 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors ${i !== arr.length - 1 ? "border-b border-slate-50" : ""}`}
             >
-              <span>{item}</span>
+              <span>{item.label}</span>
               <span className="text-slate-300">›</span>
-            </button>
+            </Link>
           ))}
         </div>
 
