@@ -8,7 +8,7 @@ import { useGuestData, GuestProfileFormData } from "@/modules/portfolio/hooks/us
 
 export const GuestOnboarding = () => {
   const router = useRouter();
-  const { saveProfile, uploadAvatar, loading: dataLoading } = useGuestData();
+  const { profile, avatarUrl, saveProfile, uploadAvatar, loading: dataLoading } = useGuestData();
 
   const handleSubmit = useCallback(
     async (data: GuestProfileFormData) => {
@@ -37,6 +37,8 @@ export const GuestOnboarding = () => {
           </div>
 
           <GuestProfileForm
+            initialData={profile}
+            initialAvatarUrl={avatarUrl}
             onSubmit={handleSubmit}
             onUploadAvatar={uploadAvatar}
             submitLabel="はじめる"
