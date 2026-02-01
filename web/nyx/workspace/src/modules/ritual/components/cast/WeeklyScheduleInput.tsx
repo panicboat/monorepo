@@ -238,12 +238,12 @@ export const WeeklyScheduleInput = ({
                                       const p = plans.find(pl => pl.id === schedule.planId);
                                       return p ? `${p.name} (${p.duration}分)` : "プランを選択";
                                     })()
-                                  : "All Plans (Default)"}
+                                  : "All Plans"}
                               </span>
                             </SelectTrigger>
                             <SelectContent className="max-h-60">
                               <SelectItem value="" className="py-2">
-                                <span className="font-medium">All Plans (Default)</span>
+                                <span className="font-medium">All Plans</span>
                               </SelectItem>
                               {plans.map((p) => (
                                 <SelectItem key={p.id} value={p.id} className="py-2">

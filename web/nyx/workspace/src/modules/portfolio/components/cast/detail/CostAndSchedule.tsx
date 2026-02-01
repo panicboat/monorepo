@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
 
@@ -81,7 +81,8 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
   const days: DayData[] = Array.from({ length: 28 }, (_, i) => {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
-    const dateStr = date.toISOString().split("T")[0]; // YYYY-MM-DD
+    // Use local timezone instead of UTC to match backend date format
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
     // Find all schedules for this date
     const daySchedules = schedules?.filter((s) => s.date === dateStr) || [];
@@ -128,11 +129,16 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
             return (
               <button
                 key={idx}
-                onClick={() => hasSchedule && setSelectedDay(item)}
+                onClick={() => {
+                  if (!hasSchedule) return;
+                  // Toggle: close if same day selected, otherwise open new day
+                  setSelectedDay(selectedDay?.fullDate === item.fullDate ? null : item);
+                }}
                 disabled={!hasSchedule}
                 className={`
                   flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-colors
                   ${item.isToday ? "bg-pink-50 border border-pink-200" : ""}
+                  ${selectedDay?.fullDate === item.fullDate ? "bg-green-50 border border-green-200" : ""}
                   ${hasSchedule ? "hover:bg-slate-50 cursor-pointer" : "opacity-50 cursor-default"}
                 `}
               >
@@ -172,73 +178,51 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
         タップで詳細を表示 / スクロールで4週間分
       </p>
 
-      {/* Schedule Detail Modal */}
+      {/* Inline Schedule Detail */}
       <AnimatePresence>
         {selectedDay && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedDay(null)}
+            className="mx-6 mt-4 overflow-hidden"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
           >
-            <motion.div
-              className="w-full max-w-md bg-white rounded-t-2xl pt-3 pb-6 px-6"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              drag="y"
-              dragConstraints={{ top: 0, bottom: 0 }}
-              dragElastic={{ top: 0, bottom: 0.5 }}
-              onDragEnd={(_, info) => {
-                if (info.offset.y > 100 || info.velocity.y > 500) {
-                  setSelectedDay(null);
-                }
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Drag Handle */}
-              <div className="flex justify-center mb-4 cursor-grab active:cursor-grabbing">
-                <div className="w-10 h-1 bg-slate-300 rounded-full" />
-              </div>
-
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-bold text-slate-800">
+            <div className="bg-slate-50 rounded-xl p-4">
+              <button
+                onClick={() => setSelectedDay(null)}
+                className="flex items-center justify-between w-full mb-3"
+              >
+                <h4 className="text-base font-bold text-slate-800">
                   {selectedDay.month}/{selectedDay.date} ({selectedDay.day})
                 </h4>
-                <button
-                  onClick={() => setSelectedDay(null)}
-                  className="p-1.5 rounded-full hover:bg-slate-100 transition-colors"
-                >
-                  <X size={18} className="text-slate-400" />
-                </button>
-              </div>
+                <ChevronDown size={18} className="text-slate-400" />
+              </button>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {selectedDay.schedules.map((schedule, idx) => {
                   const plan = getPlanById(schedule.planId);
                   return (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-4 bg-slate-50 rounded-xl"
+                      className="flex items-center justify-between p-3 bg-white rounded-lg"
                     >
                       <div>
-                        <div className="text-lg font-bold text-slate-800">
+                        <div className="text-sm font-bold text-slate-800">
                           {schedule.start} - {schedule.end}
                         </div>
                         {plan && (
-                          <div className="text-sm text-slate-500 mt-1">
+                          <div className="text-xs text-slate-500 mt-0.5">
                             {plan.name}
                           </div>
                         )}
                       </div>
                       {plan && (
                         <div className="text-right">
-                          <div className="text-lg font-bold text-pink-500">
+                          <div className="text-sm font-bold text-pink-500">
                             ¥{plan.price.toLocaleString()}
                           </div>
-                          <div className="text-xs text-slate-400">
+                          <div className="text-[10px] text-slate-400">
                             {plan.duration}min
                           </div>
                         </div>
@@ -249,11 +233,11 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
               </div>
 
               {selectedDay.schedules.length > 1 && (
-                <p className="text-xs text-slate-400 text-center mt-4">
+                <p className="text-[10px] text-slate-400 text-center mt-3">
                   {selectedDay.schedules.length}件の予約枠
                 </p>
               )}
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
