@@ -8,6 +8,8 @@ import { useGuestData } from "@/modules/portfolio/hooks/useGuestData";
 
 const NAME_MIN_LENGTH = 1;
 const NAME_MAX_LENGTH = 20;
+const TAGLINE_MAX_LENGTH = 100;
+const BIO_MAX_LENGTH = 1000;
 
 export const GuestProfileEdit = () => {
   const router = useRouter();
@@ -20,6 +22,8 @@ export const GuestProfileEdit = () => {
   } = useGuestData();
 
   const [name, setName] = useState("");
+  const [tagline, setTagline] = useState("");
+  const [bio, setBio] = useState("");
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | null>(null);
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -30,6 +34,8 @@ export const GuestProfileEdit = () => {
   useEffect(() => {
     if (profile) {
       setName(profile.name || "");
+      setTagline(profile.tagline || "");
+      setBio(profile.bio || "");
       setAvatarPath(profile.avatarPath || null);
     }
   }, [profile]);
@@ -45,8 +51,21 @@ export const GuestProfileEdit = () => {
       ? `${NAME_MAX_LENGTH}文字以内で入力してください`
       : null;
 
+  const taglineError =
+    tagline.length > TAGLINE_MAX_LENGTH
+      ? `${TAGLINE_MAX_LENGTH}文字以内で入力してください`
+      : null;
+
+  const bioError =
+    bio.length > BIO_MAX_LENGTH
+      ? `${BIO_MAX_LENGTH}文字以内で入力してください`
+      : null;
+
   const isValid =
-    name.trim().length >= NAME_MIN_LENGTH && name.length <= NAME_MAX_LENGTH;
+    name.trim().length >= NAME_MIN_LENGTH &&
+    name.length <= NAME_MAX_LENGTH &&
+    tagline.length <= TAGLINE_MAX_LENGTH &&
+    bio.length <= BIO_MAX_LENGTH;
 
   const handleAvatarUpload = useCallback(
     async (file: File) => {
@@ -83,6 +102,8 @@ export const GuestProfileEdit = () => {
       await saveProfile({
         name: name.trim(),
         avatarPath: avatarPath || "",
+        tagline: tagline.trim(),
+        bio: bio.trim(),
       });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
@@ -166,6 +187,70 @@ export const GuestProfileEdit = () => {
               className={`text-xs ${name.length > NAME_MAX_LENGTH ? "text-red-500" : "text-slate-400"}`}
             >
               {name.length}/{NAME_MAX_LENGTH}
+            </p>
+          </div>
+        </div>
+
+        {/* Tagline Input */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-700">
+            一言紹介
+          </label>
+          <input
+            type="text"
+            value={tagline}
+            onChange={(e) => setTagline(e.target.value)}
+            placeholder="例: 映画と猫が好きです"
+            maxLength={TAGLINE_MAX_LENGTH + 10}
+            className={`w-full px-4 py-3 rounded-xl border ${
+              taglineError
+                ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                : "border-slate-200 focus:ring-blue-500 focus:border-blue-500"
+            } focus:outline-none focus:ring-2 transition-colors bg-white`}
+            disabled={isLoading}
+          />
+          <div className="flex justify-between items-center">
+            {taglineError ? (
+              <p className="text-xs text-red-500">{taglineError}</p>
+            ) : (
+              <p className="text-xs text-slate-400">任意</p>
+            )}
+            <p
+              className={`text-xs ${tagline.length > TAGLINE_MAX_LENGTH ? "text-red-500" : "text-slate-400"}`}
+            >
+              {tagline.length}/{TAGLINE_MAX_LENGTH}
+            </p>
+          </div>
+        </div>
+
+        {/* Bio Input */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-700">
+            自己紹介
+          </label>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="自己紹介を入力してください"
+            maxLength={BIO_MAX_LENGTH + 50}
+            rows={5}
+            className={`w-full px-4 py-3 rounded-xl border ${
+              bioError
+                ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                : "border-slate-200 focus:ring-blue-500 focus:border-blue-500"
+            } focus:outline-none focus:ring-2 transition-colors bg-white resize-none`}
+            disabled={isLoading}
+          />
+          <div className="flex justify-between items-center">
+            {bioError ? (
+              <p className="text-xs text-red-500">{bioError}</p>
+            ) : (
+              <p className="text-xs text-slate-400">任意</p>
+            )}
+            <p
+              className={`text-xs ${bio.length > BIO_MAX_LENGTH ? "text-red-500" : "text-slate-400"}`}
+            >
+              {bio.length}/{BIO_MAX_LENGTH}
             </p>
           </div>
         </div>

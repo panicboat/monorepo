@@ -20,6 +20,8 @@ export async function GET(req: NextRequest) {
           name: response.profile.name,
           avatarPath: response.profile.avatarPath,
           avatarUrl: response.profile.avatarUrl,
+          tagline: response.profile.tagline,
+          bio: response.profile.bio,
         }
       : null;
 
@@ -45,6 +47,8 @@ export async function PUT(req: NextRequest) {
       {
         name: body.name,
         avatarPath: body.avatarPath || "",
+        tagline: body.tagline || "",
+        bio: body.bio || "",
       },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -55,6 +59,8 @@ export async function PUT(req: NextRequest) {
           name: response.profile.name,
           avatarPath: response.profile.avatarPath,
           avatarUrl: response.profile.avatarUrl,
+          tagline: response.profile.tagline,
+          bio: response.profile.bio,
         }
       : null;
 

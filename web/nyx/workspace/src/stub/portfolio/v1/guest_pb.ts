@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file portfolio/v1/guest.proto.
  */
 export const file_portfolio_v1_guest: GenFile = /*@__PURE__*/
-  fileDesc("Chhwb3J0Zm9saW8vdjEvZ3Vlc3QucHJvdG8SDHBvcnRmb2xpby52MSJWCgxHdWVzdFByb2ZpbGUSDwoHdXNlcl9pZBgBIAEoCRIMCgRuYW1lGAIgASgJEhMKC2F2YXRhcl9wYXRoGAMgASgJEhIKCmF2YXRhcl91cmwYBCABKAkiGAoWR2V0R3Vlc3RQcm9maWxlUmVxdWVzdCJGChdHZXRHdWVzdFByb2ZpbGVSZXNwb25zZRIrCgdwcm9maWxlGAEgASgLMhoucG9ydGZvbGlvLnYxLkd1ZXN0UHJvZmlsZSI8ChdTYXZlR3Vlc3RQcm9maWxlUmVxdWVzdBIMCgRuYW1lGAEgASgJEhMKC2F2YXRhcl9wYXRoGAIgASgJIkcKGFNhdmVHdWVzdFByb2ZpbGVSZXNwb25zZRIrCgdwcm9maWxlGAEgASgLMhoucG9ydGZvbGlvLnYxLkd1ZXN0UHJvZmlsZTKoAgoMR3Vlc3RTZXJ2aWNlEl4KD0dldEd1ZXN0UHJvZmlsZRIkLnBvcnRmb2xpby52MS5HZXRHdWVzdFByb2ZpbGVSZXF1ZXN0GiUucG9ydGZvbGlvLnYxLkdldEd1ZXN0UHJvZmlsZVJlc3BvbnNlEmEKEFNhdmVHdWVzdFByb2ZpbGUSJS5wb3J0Zm9saW8udjEuU2F2ZUd1ZXN0UHJvZmlsZVJlcXVlc3QaJi5wb3J0Zm9saW8udjEuU2F2ZUd1ZXN0UHJvZmlsZVJlc3BvbnNlElUKDEdldFVwbG9hZFVybBIhLnBvcnRmb2xpby52MS5HZXRVcGxvYWRVcmxSZXF1ZXN0GiIucG9ydGZvbGlvLnYxLkdldFVwbG9hZFVybFJlc3BvbnNlYgZwcm90bzM", [file_portfolio_v1_service]);
+  fileDesc("Chhwb3J0Zm9saW8vdjEvZ3Vlc3QucHJvdG8SDHBvcnRmb2xpby52MSJ0CgxHdWVzdFByb2ZpbGUSDwoHdXNlcl9pZBgBIAEoCRIMCgRuYW1lGAIgASgJEhMKC2F2YXRhcl9wYXRoGAMgASgJEhIKCmF2YXRhcl91cmwYBCABKAkSDwoHdGFnbGluZRgFIAEoCRILCgNiaW8YBiABKAkiGAoWR2V0R3Vlc3RQcm9maWxlUmVxdWVzdCJGChdHZXRHdWVzdFByb2ZpbGVSZXNwb25zZRIrCgdwcm9maWxlGAEgASgLMhoucG9ydGZvbGlvLnYxLkd1ZXN0UHJvZmlsZSJaChdTYXZlR3Vlc3RQcm9maWxlUmVxdWVzdBIMCgRuYW1lGAEgASgJEhMKC2F2YXRhcl9wYXRoGAIgASgJEg8KB3RhZ2xpbmUYAyABKAkSCwoDYmlvGAQgASgJIkcKGFNhdmVHdWVzdFByb2ZpbGVSZXNwb25zZRIrCgdwcm9maWxlGAEgASgLMhoucG9ydGZvbGlvLnYxLkd1ZXN0UHJvZmlsZTKoAgoMR3Vlc3RTZXJ2aWNlEl4KD0dldEd1ZXN0UHJvZmlsZRIkLnBvcnRmb2xpby52MS5HZXRHdWVzdFByb2ZpbGVSZXF1ZXN0GiUucG9ydGZvbGlvLnYxLkdldEd1ZXN0UHJvZmlsZVJlc3BvbnNlEmEKEFNhdmVHdWVzdFByb2ZpbGUSJS5wb3J0Zm9saW8udjEuU2F2ZUd1ZXN0UHJvZmlsZVJlcXVlc3QaJi5wb3J0Zm9saW8udjEuU2F2ZUd1ZXN0UHJvZmlsZVJlc3BvbnNlElUKDEdldFVwbG9hZFVybBIhLnBvcnRmb2xpby52MS5HZXRVcGxvYWRVcmxSZXF1ZXN0GiIucG9ydGZvbGlvLnYxLkdldFVwbG9hZFVybFJlc3BvbnNlYgZwcm90bzM", [file_portfolio_v1_service]);
 
 /**
  * @generated from message portfolio.v1.GuestProfile
@@ -39,6 +39,20 @@ export type GuestProfile = Message<"portfolio.v1.GuestProfile"> & {
    * @generated from field: string avatar_url = 4;
    */
   avatarUrl: string;
+
+  /**
+   * Short introduction (max 100 chars)
+   *
+   * @generated from field: string tagline = 5;
+   */
+  tagline: string;
+
+  /**
+   * Self introduction (max 1000 chars)
+   *
+   * @generated from field: string bio = 6;
+   */
+  bio: string;
 };
 
 /**
@@ -91,6 +105,20 @@ export type SaveGuestProfileRequest = Message<"portfolio.v1.SaveGuestProfileRequ
    * @generated from field: string avatar_path = 2;
    */
   avatarPath: string;
+
+  /**
+   * Short introduction (max 100 chars)
+   *
+   * @generated from field: string tagline = 3;
+   */
+  tagline: string;
+
+  /**
+   * Self introduction (max 1000 chars)
+   *
+   * @generated from field: string bio = 4;
+   */
+  bio: string;
 };
 
 /**

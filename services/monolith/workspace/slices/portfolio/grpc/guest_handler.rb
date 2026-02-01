@@ -38,7 +38,9 @@ module Portfolio
         result = save_profile_uc.call(
           user_id: current_user_id,
           name: request.message.name,
-          avatar_path: request.message.avatar_path.to_s.empty? ? nil : request.message.avatar_path
+          avatar_path: request.message.avatar_path.to_s.empty? ? nil : request.message.avatar_path,
+          tagline: request.message.tagline.to_s.empty? ? nil : request.message.tagline,
+          bio: request.message.bio.to_s.empty? ? nil : request.message.bio
         )
         ::Portfolio::V1::SaveGuestProfileResponse.new(
           profile: GuestPresenter.to_proto(result)

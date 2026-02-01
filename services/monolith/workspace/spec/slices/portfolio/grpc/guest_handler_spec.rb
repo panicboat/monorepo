@@ -35,6 +35,8 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
       user_id: "user-123",
       name: "Test Guest",
       avatar_path: "guests/user-123/avatar.jpg",
+      tagline: "Hello!",
+      bio: "I am a test guest.",
       created_at: Time.now,
       updated_at: Time.now
     )
@@ -72,7 +74,9 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
     let(:message) do
       ::Portfolio::V1::SaveGuestProfileRequest.new(
         name: "New Name",
-        avatar_path: "guests/user-123/new-avatar.jpg"
+        avatar_path: "guests/user-123/new-avatar.jpg",
+        tagline: "Hello!",
+        bio: "My bio"
       )
     end
 
@@ -80,7 +84,9 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
       expect(save_profile_uc).to receive(:call).with(
         user_id: "user-123",
         name: "New Name",
-        avatar_path: "guests/user-123/new-avatar.jpg"
+        avatar_path: "guests/user-123/new-avatar.jpg",
+        tagline: "Hello!",
+        bio: "My bio"
       ).and_return(mock_guest_entity)
 
       response = handler.save_guest_profile
@@ -98,7 +104,9 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
     it "handles empty avatar_path" do
       message = ::Portfolio::V1::SaveGuestProfileRequest.new(
         name: "New Name",
-        avatar_path: ""
+        avatar_path: "",
+        tagline: "",
+        bio: ""
       )
 
       handler_with_empty_avatar = described_class.new(
@@ -115,7 +123,9 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
       expect(save_profile_uc).to receive(:call).with(
         user_id: "user-123",
         name: "New Name",
-        avatar_path: nil
+        avatar_path: nil,
+        tagline: nil,
+        bio: nil
       ).and_return(mock_guest_entity)
 
       response = handler_with_empty_avatar.save_guest_profile

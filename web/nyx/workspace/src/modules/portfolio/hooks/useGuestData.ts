@@ -14,16 +14,22 @@ export interface GuestProfile {
   name: string;
   avatarPath: string;
   avatarUrl: string;
+  tagline: string;
+  bio: string;
 }
 
 export interface GuestProfileFormData {
   name: string;
   avatarPath: string;
+  tagline: string;
+  bio: string;
 }
 
 const INITIAL_PROFILE: GuestProfileFormData = {
   name: "",
   avatarPath: "",
+  tagline: "",
+  bio: "",
 };
 
 const getToken = () => {
@@ -41,6 +47,8 @@ interface GuestDataApiResponse {
     name: string;
     avatarPath: string;
     avatarUrl: string;
+    tagline: string;
+    bio: string;
   };
 }
 
@@ -76,7 +84,12 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
   const profile = useMemo(
     (): GuestProfileFormData =>
       data?.profile
-        ? { name: data.profile.name, avatarPath: data.profile.avatarPath }
+        ? {
+            name: data.profile.name,
+            avatarPath: data.profile.avatarPath,
+            tagline: data.profile.tagline,
+            bio: data.profile.bio,
+          }
         : INITIAL_PROFILE,
     [data?.profile]
   );
@@ -95,6 +108,8 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
             name: "",
             avatarPath: "",
             avatarUrl: "",
+            tagline: "",
+            bio: "",
           };
           return {
             ...currentData,
@@ -102,6 +117,8 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
               ...existingProfile,
               name: updates.name ?? existingProfile.name,
               avatarPath: updates.avatarPath ?? existingProfile.avatarPath,
+              tagline: updates.tagline ?? existingProfile.tagline,
+              bio: updates.bio ?? existingProfile.bio,
             },
           };
         },
@@ -127,6 +144,8 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
         body: JSON.stringify({
           name: profileToSave.name,
           avatarPath: profileToSave.avatarPath || null,
+          tagline: profileToSave.tagline || null,
+          bio: profileToSave.bio || null,
         }),
       });
 

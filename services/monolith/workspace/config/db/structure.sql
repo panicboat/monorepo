@@ -205,7 +205,9 @@ CREATE TABLE portfolio.guests (
     name text NOT NULL,
     avatar_path text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    tagline character varying(100),
+    bio text
 );
 
 
@@ -637,4 +639,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260131000000_remove_deprecated_columns_from_casts.rb'),
 ('20260131001000_create_genres.rb'),
 ('20260131002000_create_cast_genres.rb'),
-('20260201000000_create_guests.rb');
+('20260201000000_create_guests.rb'),
+('20260201000001_add_tagline_bio_to_guests.rb');

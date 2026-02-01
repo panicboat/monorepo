@@ -15,6 +15,8 @@ message GuestProfile {
   string name = 2;
   string avatar_path = 3;
   string avatar_url = 4;  // Read-only, download URL
+  string tagline = 5;     // Short introduction (max 100 chars)
+  string bio = 6;         // Self introduction (max 1000 chars)
 }
 
 message GetGuestProfileRequest {}  // user_id is obtained from authentication
@@ -26,6 +28,8 @@ message GetGuestProfileResponse {
 message SaveGuestProfileRequest {
   string name = 1;
   string avatar_path = 2;
+  string tagline = 3;     // Short introduction (max 100 chars)
+  string bio = 4;         // Self introduction (max 1000 chars)
 }
 
 message SaveGuestProfileResponse {

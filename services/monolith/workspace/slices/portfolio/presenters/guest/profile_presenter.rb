@@ -17,7 +17,9 @@ module Portfolio
               user_id: guest.user_id.to_s,
               name: guest.name || "",
               avatar_path: avatar_key || "",
-              avatar_url: avatar_key ? Storage.download_url(key: avatar_key) : ""
+              avatar_url: avatar_key ? Storage.download_url(key: avatar_key) : "",
+              tagline: guest.respond_to?(:tagline) ? (guest.tagline || "") : "",
+              bio: guest.respond_to?(:bio) ? (guest.bio || "") : ""
             )
           end
 
@@ -28,7 +30,9 @@ module Portfolio
               user_id: "",
               name: "",
               avatar_path: "",
-              avatar_url: ""
+              avatar_url: "",
+              tagline: "",
+              bio: ""
             )
           end
         end

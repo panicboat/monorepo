@@ -57,6 +57,8 @@ export const GuestOnboarding = () => {
       await saveProfile({
         name: name.trim(),
         avatarPath: avatarPath || "",
+        tagline: "",
+        bio: "",
       });
       router.push("/");
     } catch (e) {
