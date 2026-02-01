@@ -13,6 +13,7 @@ import {
   mapSchedulesToApi,
 } from "@/modules/portfolio/lib/cast/mappers";
 import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 
 const INITIAL_PROFILE: ProfileFormData = {
   nickname: "",
@@ -29,7 +30,7 @@ const INITIAL_PROFILE: ProfileFormData = {
 
 const getToken = () => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("nyx_cast_access_token");
+  return useAuthStore.getState().accessToken;
 };
 
 interface UseCastDataOptions {

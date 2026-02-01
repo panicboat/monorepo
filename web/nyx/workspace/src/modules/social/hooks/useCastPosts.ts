@@ -3,10 +3,11 @@
 import { useState, useCallback } from "react";
 import { CastPost, PostMedia } from "@/modules/social/types";
 import { mapApiToPost, mapApiToPostsList, mapPostToSavePayload } from "@/modules/social/lib/mappers";
+import { useAuthStore } from "@/stores/authStore";
 
 const getToken = () => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("nyx_cast_access_token");
+  return useAuthStore.getState().accessToken;
 };
 
 interface UseCastPostsOptions {

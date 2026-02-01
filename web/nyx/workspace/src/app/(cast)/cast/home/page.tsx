@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { EarningsSummary } from "./components/EarningsSummary";
 import { UpcomingReservations } from "./components/UpcomingReservations";
+import { useAuthStore } from "@/stores/authStore";
 
 interface DashboardStats {
   earningsToday: number;
@@ -32,7 +33,7 @@ export default function CastDashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = localStorage.getItem("nyx_cast_access_token");
+      const token = useAuthStore.getState().accessToken;
       if (!token) {
         window.location.href = "/cast/login";
         return;
