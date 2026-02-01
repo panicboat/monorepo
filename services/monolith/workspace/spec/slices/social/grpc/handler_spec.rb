@@ -32,6 +32,7 @@ RSpec.describe Social::Grpc::Handler do
       user_id: "user-123",
       name: "Yuna",
       image_path: "http://img.jpg",
+      avatar_path: nil,
       handle: "yuna"
     )
   end

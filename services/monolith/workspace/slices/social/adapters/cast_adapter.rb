@@ -13,7 +13,7 @@ module Social
     #
     class CastAdapter
       # Immutable value object representing cast information needed by Social slice.
-      CastInfo = Data.define(:id, :user_id, :name, :image_path, :handle) do
+      CastInfo = Data.define(:id, :user_id, :name, :image_path, :avatar_path, :handle) do
         # @return [String, nil] full URL to the cast's image
         def image_url
           return nil if image_path.nil? || image_path.empty?
@@ -38,6 +38,7 @@ module Social
           user_id: cast.user_id,
           name: cast.name,
           image_path: cast.image_path,
+          avatar_path: cast.avatar_path,
           handle: cast.handle
         )
       end
