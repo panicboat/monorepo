@@ -90,15 +90,12 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     before do
       schedule_repo = Hanami.app.slices[:portfolio]["relations.cast_schedules"]
-      # Create schedule for today within current time
-      now = Time.now
-      start_time = (now - 3600).strftime("%H:%M") # 1 hour ago
-      end_time = (now + 3600).strftime("%H:%M")   # 1 hour from now
+      # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
         cast_id: cast_with_schedule.id,
         date: Date.today,
-        start_time: start_time,
-        end_time: end_time,
+        start_time: "00:00",
+        end_time: "23:59",
         plan_id: nil
       }).commit
     end
@@ -123,14 +120,12 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     before do
       schedule_repo = Hanami.app.slices[:portfolio]["relations.cast_schedules"]
-      now = Time.now
-      start_time = (now - 3600).strftime("%H:%M")
-      end_time = (now + 3600).strftime("%H:%M")
+      # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
         cast_id: online_cast.id,
         date: Date.today,
-        start_time: start_time,
-        end_time: end_time,
+        start_time: "00:00",
+        end_time: "23:59",
         plan_id: nil
       }).commit
     end
@@ -179,14 +174,12 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
       before do
         schedule_repo = Hanami.app.slices[:portfolio]["relations.cast_schedules"]
-        now = Time.now
-        start_time = (now - 3600).strftime("%H:%M")
-        end_time = (now + 3600).strftime("%H:%M")
+        # Use fixed time range that works regardless of current time (00:00 - 23:59)
         schedule_repo.changeset(:create, {
           cast_id: online_cast.id,
           date: Date.today,
-          start_time: start_time,
-          end_time: end_time,
+          start_time: "00:00",
+          end_time: "23:59",
           plan_id: nil
         }).commit
       end
