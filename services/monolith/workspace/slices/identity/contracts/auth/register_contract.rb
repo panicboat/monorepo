@@ -7,7 +7,7 @@ module Identity
     module Auth
       class RegisterContract < Dry::Validation::Contract
         PHONE_NUMBER_REGEX = /\A\+?[0-9]{10,15}\z/
-        MIN_PASSWORD_LENGTH = 8
+        MIN_PASSWORD_LENGTH = 4
         VALID_ROLES = [1, 2].freeze # 1: GUEST, 2: CAST
 
         params do

@@ -385,7 +385,7 @@ export const TimelineItem = ({
       <div className="flex items-center gap-6 border-t border-slate-50 pt-3 text-slate-400">
         <button
           onClick={handleLike}
-          className={`flex items-center gap-1.5 text-xs transition-colors ${liked ? "text-blue-400" : "text-slate-400 hover:text-blue-300"}`}
+          className={`flex items-center gap-1.5 text-xs transition-colors ${liked ? "text-pink-500" : "text-slate-400 hover:text-pink-300"}`}
         >
           <motion.div
             key={liked ? "liked" : "unliked"}

@@ -152,8 +152,8 @@ function FavoriteButton() {
       <Button
         size="icon"
         className={`h-12 w-12 rounded-full shadow-xl shadow-slate-300 transition-colors border ${isFavorite
-          ? "bg-blue-400 border-blue-400 text-white hover:bg-blue-500 hover:text-white"
-          : "bg-white border-blue-100 text-blue-400 hover:bg-blue-50"
+          ? "bg-pink-500 border-pink-500 text-white hover:bg-pink-600 hover:text-white"
+          : "bg-white border-pink-200 text-pink-500 hover:bg-pink-50"
           }`}
         onClick={() => setIsFavorite(!isFavorite)}
       >

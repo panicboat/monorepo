@@ -94,6 +94,7 @@ docker-compose up -d db
 # Default: postgres
 bundle exec hanami db create
 bundle exec hanami db migrate
+bundle exec hanami db seed
 
 # example query
 docker-compose exec db psql -U postgres -d monolith -P pager=off -c "set search_path = 'identity'; select * from users";
