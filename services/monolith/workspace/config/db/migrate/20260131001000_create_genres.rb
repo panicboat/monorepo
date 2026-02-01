@@ -17,17 +17,7 @@ ROM::SQL.migration do
       unique [:slug]
     end
 
-    # Seed initial genres
-    run <<~SQL
-      INSERT INTO portfolio.genres (name, slug, display_order) VALUES
-      ('風俗', 'fuzoku', 1),
-      ('P活', 'papakatsu', 2),
-      ('レンタル彼女', 'rentalkanojo', 3),
-      ('ギャラ飲み', 'gyaranomi', 4),
-      ('パーティ', 'party', 5),
-      ('イベコン', 'eventcompanion', 6),
-      ('チャットレディ', 'chatlady', 7)
-    SQL
+    # Seed data is managed in config/db/seeds.rb
   end
 
   down do

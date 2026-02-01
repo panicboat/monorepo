@@ -17,6 +17,19 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 <!-- OPENSPEC:END -->
 
+# Coding Rules
+
+## Code Quality
+
+- **一貫性を保つ** - 既存コードのスタイル・パターンに従う
+- **TODO コメント** - 一時的な実装には必ず `// TODO:` を追加
+
+## Development (Seed Data)
+
+- **シードデータ必須** - 新しいテーブルを作成する際は、必ずシードデータも作成する
+- **テストパスワード** - 開発環境の Identity パスワードは `0000` で統一する
+- シードファイルは `services/monolith/workspace/config/db/seeds/` に配置
+
 # Project Context for Claude
 
 ## Overview
