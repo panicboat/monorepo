@@ -12,7 +12,7 @@ Nyx.PLACE をプロダクションレディにするための実装計画。
 |--------|:-------:|:--------:|:-----:|:--------:|-------|
 | Identity | ✓ | ✓ | ✓ | ✓ | SMS 認証は未対応 |
 | Portfolio | ✓ | ✓ | ✓ | ✓ | オンボーディング、プロフィール、検索 |
-| Social | ✓ | △ | ✓ | △ | キャスト投稿は完了、ゲスト側はモック |
+| Social | ✓ | △ | ✓ | △ | キャスト投稿・ゲストタイムライン完了、いいね/フォロー未実装 |
 | Concierge | - | △ | - | - | UI のみモック |
 | Ritual | - | △ | - | - | UI のみモック |
 | Trust | - | △ | - | - | UI のみモック |
@@ -37,6 +37,8 @@ Nyx.PLACE をプロダクションレディにするための実装計画。
 - 複数メディア対応（画像/動画、最大10枚）
 - ハッシュタグ
 - 投稿の公開/非公開切り替え
+- ゲスト用タイムライン表示（API 接続完了）
+- 無限スクロール対応
 
 ---
 
@@ -94,6 +96,61 @@ Nyx.PLACE をプロダクションレディにするための実装計画。
 - [ ] Frontend API Route 作成
 - [ ] `useSocial` hook を API 対応に拡張
 - [ ] Following タブのフィルタリングを API 連携
+
+### 1.4 Comment Feature
+
+**Priority: MEDIUM**
+
+投稿へのコメント機能を実装する。
+
+**Tasks:**
+- [ ] `comments` テーブル作成（migration）
+- [ ] Proto 定義追加（`AddComment`, `DeleteComment`, `ListComments`）
+- [ ] Backend UseCase 実装
+- [ ] Frontend API Route 作成
+- [ ] コメント一覧・投稿 UI 実装
+- [ ] 投稿詳細ページにコメントセクション追加
+
+**Backend:**
+- `slices/social/repositories/comment_repository.rb` (new)
+- `slices/social/use_cases/comments/` (new)
+- `proto/social/v1/service.proto` (update)
+
+### 1.5 Favorites Feature
+
+**Priority: LOW**
+
+キャストのお気に入り機能を実装する。フォローとは別概念で、より強い関心を示す。
+
+**Difference from Follow:**
+- Follow: キャストの投稿をタイムラインで追う
+- Favorites: 特に気に入ったキャストを一覧で管理（検索しやすくする）
+
+**Tasks:**
+- [ ] `favorites` テーブル作成（migration）
+- [ ] Proto 定義追加（`AddFavorite`, `RemoveFavorite`, `ListFavorites`）
+- [ ] Backend UseCase 実装
+- [ ] Frontend API Route 作成
+- [ ] `useSocial` hook を API 対応に拡張
+- [ ] Favorites タブの実装
+
+### 1.6 Block Feature
+
+**Priority: LOW**
+
+ユーザーのブロック機能を実装する。
+
+**Tasks:**
+- [ ] `blocks` テーブル作成（migration）
+- [ ] Proto 定義追加（`BlockUser`, `UnblockUser`, `ListBlocked`）
+- [ ] Backend UseCase 実装
+- [ ] Frontend API Route 作成
+- [ ] ブロックしたユーザーの投稿を非表示にする
+- [ ] ブロック管理画面の実装
+
+**Backend:**
+- `slices/social/repositories/block_repository.rb` (new)
+- `slices/social/use_cases/blocks/` (new)
 
 ---
 
@@ -234,6 +291,33 @@ Nyx.PLACE をプロダクションレディにするための実装計画。
 - [ ] CloudWatch によるログ・監視の設定
 - [ ] ALB Ingress Controller 設定
 
+### 6.4 Notification System
+
+**Priority: MEDIUM**
+
+プッシュ通知・アプリ内通知システムを実装する。
+
+**Notification Types:**
+- いいね通知（投稿にいいねされた）
+- コメント通知（投稿にコメントされた）
+- フォロー通知（フォローされた）
+- メッセージ通知（新しいメッセージ）
+- 予約通知（予約リクエスト・確定・キャンセル）
+
+**Tasks:**
+- [ ] `notifications` テーブル作成
+- [ ] Proto 定義作成 (`proto/notification/v1/service.proto`)
+- [ ] Backend slice 作成 (`slices/notification/`)
+- [ ] 通知生成ロジック（各ドメインからのイベント連携）
+- [ ] Frontend 通知一覧 UI
+- [ ] 未読バッジ表示
+- [ ] プッシュ通知（PWA / FCM）
+
+**Technical Decisions:**
+- 通知生成: イベント駆動（各ドメインから通知サービスを呼び出し）
+- プッシュ通知: Firebase Cloud Messaging（将来的に）
+- 既読管理: 一括既読と個別既読の両方をサポート
+
 ---
 
 ## Implementation Patterns
@@ -296,15 +380,18 @@ export async function GET(request: Request) {
 
 ## Next Steps
 
-1. **Phase 1.1** から着手 - ゲスト側タイムラインの API 接続
-2. 各フェーズの開始前に `/openspec:proposal` で提案を作成
-3. 提案承認後に実装開始
+1. ~~**Phase 1.1** から着手 - ゲスト側タイムラインの API 接続~~ ✅ 完了
+2. **Phase 1.2 & 1.3** - いいね・フォロー機能（OpenSpec 提案作成済み: `add-like-follow-features`）
+3. 各フェーズの開始前に `/openspec:proposal` で提案を作成
+4. 提案承認後に実装開始
 
 ---
 
 ## Notes
 
 - 各フェーズは並行して進められる部分もあるが、依存関係に注意
+- Phase 1 の Social 機能（1.2〜1.6）は独立して実装可能
 - Phase 3（Concierge）は Phase 4（Ritual）の前提となる
-- インフラ整備（Phase 6）は他のフェーズと並行して進めることを推奨
+- Phase 6.4（Notification）は Phase 1 完了後に着手推奨（いいね・コメント・フォロー通知のため）
+- インフラ整備（Phase 6.1〜6.3）は他のフェーズと並行して進めることを推奨
 - SMS 認証は本番リリース前に必須
