@@ -64,7 +64,7 @@ export default function Home() {
             {/* Content Area */}
             <div className="bg-slate-50">
               {tab === "timeline" ? (
-                <TimelineFeed />
+                <TimelineFeed onItemClick={(id) => router.push(`/timeline/${id}`)} />
               ) : (
                 <div className="px-1 py-2">
                   <CastList />
