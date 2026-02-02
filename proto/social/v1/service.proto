@@ -4,6 +4,7 @@ package social.v1;
 
 service TimelineService {
   rpc ListCastPosts(ListCastPostsRequest) returns (ListCastPostsResponse);
+  rpc GetCastPost(GetCastPostRequest) returns (GetCastPostResponse);
   rpc SaveCastPost(SaveCastPostRequest) returns (SaveCastPostResponse);
   rpc DeleteCastPost(DeleteCastPostRequest) returns (DeleteCastPostResponse);
 }
@@ -55,6 +56,14 @@ message SaveCastPostRequest {
 }
 
 message SaveCastPostResponse {
+  CastPost post = 1;
+}
+
+message GetCastPostRequest {
+  string id = 1;
+}
+
+message GetCastPostResponse {
   CastPost post = 1;
 }
 

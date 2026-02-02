@@ -9,8 +9,24 @@ module Social
         scope = cast_posts.combine(:cast_post_media, :cast_post_hashtags).where(cast_id: cast_id)
 
         if cursor
-          scope = scope.where { created_at < cursor[:created_at] }
-            .or { (created_at =~ cursor[:created_at]) & (id < cursor[:id]) }
+          scope = scope.where {
+            (created_at < cursor[:created_at]) |
+              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+          }
+        end
+
+        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
+
+      def list_all_visible(limit: 20, cursor: nil, cast_id: nil)
+        scope = cast_posts.combine(:cast_post_media, :cast_post_hashtags).where(visible: true)
+        scope = scope.where(cast_id: cast_id) if cast_id
+
+        if cursor
+          scope = scope.where {
+            (created_at < cursor[:created_at]) |
+              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+          }
         end
 
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a

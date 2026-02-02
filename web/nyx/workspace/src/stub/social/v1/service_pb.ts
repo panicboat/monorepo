@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file social/v1/service.proto.
  */
 export const file_social_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("Chdzb2NpYWwvdjEvc2VydmljZS5wcm90bxIJc29jaWFsLnYxIj0KDkNhc3RQb3N0QXV0aG9yEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJIlMKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCSLwAQoIQ2FzdFBvc3QSCgoCaWQYASABKAkSDwoHY2FzdF9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEicKBW1lZGlhGAQgAygLMhguc29jaWFsLnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIpCgZhdXRob3IYBiABKAsyGS5zb2NpYWwudjEuQ2FzdFBvc3RBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSDwoHdmlzaWJsZRgJIAEoCBIQCghoYXNodGFncxgKIAMoCSJGChRMaXN0Q2FzdFBvc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkSDwoHY2FzdF9pZBgDIAEoCSJiChVMaXN0Q2FzdFBvc3RzUmVzcG9uc2USIgoFcG9zdHMYASADKAsyEy5zb2NpYWwudjEuQ2FzdFBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgifgoTU2F2ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEicKBW1lZGlhGAMgAygLMhguc29jaWFsLnYxLkNhc3RQb3N0TWVkaWESDwoHdmlzaWJsZRgEIAEoCBIQCghoYXNodGFncxgFIAMoCSI5ChRTYXZlQ2FzdFBvc3RSZXNwb25zZRIhCgRwb3N0GAEgASgLMhMuc29jaWFsLnYxLkNhc3RQb3N0IiMKFURlbGV0ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSIYChZEZWxldGVDYXN0UG9zdFJlc3BvbnNlMo0CCg9UaW1lbGluZVNlcnZpY2USUgoNTGlzdENhc3RQb3N0cxIfLnNvY2lhbC52MS5MaXN0Q2FzdFBvc3RzUmVxdWVzdBogLnNvY2lhbC52MS5MaXN0Q2FzdFBvc3RzUmVzcG9uc2USTwoMU2F2ZUNhc3RQb3N0Eh4uc29jaWFsLnYxLlNhdmVDYXN0UG9zdFJlcXVlc3QaHy5zb2NpYWwudjEuU2F2ZUNhc3RQb3N0UmVzcG9uc2USVQoORGVsZXRlQ2FzdFBvc3QSIC5zb2NpYWwudjEuRGVsZXRlQ2FzdFBvc3RSZXF1ZXN0GiEuc29jaWFsLnYxLkRlbGV0ZUNhc3RQb3N0UmVzcG9uc2ViBnByb3RvMw");
+  fileDesc("Chdzb2NpYWwvdjEvc2VydmljZS5wcm90bxIJc29jaWFsLnYxIj0KDkNhc3RQb3N0QXV0aG9yEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJIlMKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCSLwAQoIQ2FzdFBvc3QSCgoCaWQYASABKAkSDwoHY2FzdF9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEicKBW1lZGlhGAQgAygLMhguc29jaWFsLnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIpCgZhdXRob3IYBiABKAsyGS5zb2NpYWwudjEuQ2FzdFBvc3RBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSDwoHdmlzaWJsZRgJIAEoCBIQCghoYXNodGFncxgKIAMoCSJGChRMaXN0Q2FzdFBvc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkSDwoHY2FzdF9pZBgDIAEoCSJiChVMaXN0Q2FzdFBvc3RzUmVzcG9uc2USIgoFcG9zdHMYASADKAsyEy5zb2NpYWwudjEuQ2FzdFBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgifgoTU2F2ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEicKBW1lZGlhGAMgAygLMhguc29jaWFsLnYxLkNhc3RQb3N0TWVkaWESDwoHdmlzaWJsZRgEIAEoCBIQCghoYXNodGFncxgFIAMoCSI5ChRTYXZlQ2FzdFBvc3RSZXNwb25zZRIhCgRwb3N0GAEgASgLMhMuc29jaWFsLnYxLkNhc3RQb3N0IiAKEkdldENhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSI4ChNHZXRDYXN0UG9zdFJlc3BvbnNlEiEKBHBvc3QYASABKAsyEy5zb2NpYWwudjEuQ2FzdFBvc3QiIwoVRGVsZXRlQ2FzdFBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIhgKFkRlbGV0ZUNhc3RQb3N0UmVzcG9uc2Uy2wIKD1RpbWVsaW5lU2VydmljZRJSCg1MaXN0Q2FzdFBvc3RzEh8uc29jaWFsLnYxLkxpc3RDYXN0UG9zdHNSZXF1ZXN0GiAuc29jaWFsLnYxLkxpc3RDYXN0UG9zdHNSZXNwb25zZRJMCgtHZXRDYXN0UG9zdBIdLnNvY2lhbC52MS5HZXRDYXN0UG9zdFJlcXVlc3QaHi5zb2NpYWwudjEuR2V0Q2FzdFBvc3RSZXNwb25zZRJPCgxTYXZlQ2FzdFBvc3QSHi5zb2NpYWwudjEuU2F2ZUNhc3RQb3N0UmVxdWVzdBofLnNvY2lhbC52MS5TYXZlQ2FzdFBvc3RSZXNwb25zZRJVCg5EZWxldGVDYXN0UG9zdBIgLnNvY2lhbC52MS5EZWxldGVDYXN0UG9zdFJlcXVlc3QaIS5zb2NpYWwudjEuRGVsZXRlQ2FzdFBvc3RSZXNwb25zZWIGcHJvdG8z");
 
 /**
  * @generated from message social.v1.CastPostAuthor
@@ -254,6 +254,40 @@ export const SaveCastPostResponseSchema: GenMessage<SaveCastPostResponse> = /*@_
   messageDesc(file_social_v1_service, 6);
 
 /**
+ * @generated from message social.v1.GetCastPostRequest
+ */
+export type GetCastPostRequest = Message<"social.v1.GetCastPostRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message social.v1.GetCastPostRequest.
+ * Use `create(GetCastPostRequestSchema)` to create a new message.
+ */
+export const GetCastPostRequestSchema: GenMessage<GetCastPostRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 7);
+
+/**
+ * @generated from message social.v1.GetCastPostResponse
+ */
+export type GetCastPostResponse = Message<"social.v1.GetCastPostResponse"> & {
+  /**
+   * @generated from field: social.v1.CastPost post = 1;
+   */
+  post?: CastPost;
+};
+
+/**
+ * Describes the message social.v1.GetCastPostResponse.
+ * Use `create(GetCastPostResponseSchema)` to create a new message.
+ */
+export const GetCastPostResponseSchema: GenMessage<GetCastPostResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 8);
+
+/**
  * @generated from message social.v1.DeleteCastPostRequest
  */
 export type DeleteCastPostRequest = Message<"social.v1.DeleteCastPostRequest"> & {
@@ -268,7 +302,7 @@ export type DeleteCastPostRequest = Message<"social.v1.DeleteCastPostRequest"> &
  * Use `create(DeleteCastPostRequestSchema)` to create a new message.
  */
 export const DeleteCastPostRequestSchema: GenMessage<DeleteCastPostRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 7);
+  messageDesc(file_social_v1_service, 9);
 
 /**
  * @generated from message social.v1.DeleteCastPostResponse
@@ -281,7 +315,7 @@ export type DeleteCastPostResponse = Message<"social.v1.DeleteCastPostResponse">
  * Use `create(DeleteCastPostResponseSchema)` to create a new message.
  */
 export const DeleteCastPostResponseSchema: GenMessage<DeleteCastPostResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 8);
+  messageDesc(file_social_v1_service, 10);
 
 /**
  * @generated from service social.v1.TimelineService
@@ -294,6 +328,14 @@ export const TimelineService: GenService<{
     methodKind: "unary";
     input: typeof ListCastPostsRequestSchema;
     output: typeof ListCastPostsResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.GetCastPost
+   */
+  getCastPost: {
+    methodKind: "unary";
+    input: typeof GetCastPostRequestSchema;
+    output: typeof GetCastPostResponseSchema;
   },
   /**
    * @generated from rpc social.v1.TimelineService.SaveCastPost

@@ -1,11 +1,13 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, MessageCircle, Trash2, Lock, LockOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, MessageCircle, Trash2, Lock, LockOpen, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useSocial } from "@/modules/social/hooks/useSocial";
-import { useState } from "react";
+import { useGuestTimeline } from "@/modules/social/hooks/useGuestTimeline";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { CastPost } from "@/modules/social/types";
 
 export type FeedMediaItem = {
   mediaType: "image" | "video";
@@ -29,65 +31,36 @@ export type FeedItem = {
   hashtags?: string[];
 };
 
-// Mock "Tweet-like" activities
-export const feed: FeedItem[] = [
-  {
-    id: "1",
-    castId: "1",
-    castName: "Yuna",
-    castImage: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna",
-    content:
-      "Just finished a wonderful ritual! 🕯️ Thank you for the pledge. Tonight I still have 1 slot open at 23:00.",
-    time: "10m ago",
-    likes: 24,
-    comments: 2,
-  },
-  {
-    id: "2",
-    castId: "4",
-    castName: "Mio",
-    castImage: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mio",
-    content: "New cosplay arrived! 👗 Can't wait to show you all.",
-    time: "30m ago",
-    mediaUrl: "https://placehold.co/600x400/rose/white?text=Cosplay+Teaser",
-    mediaType: "image",
-    likes: 156,
-    comments: 12,
-  },
-  {
-    id: "3",
-    castId: "5",
-    castName: "Rin",
-    castImage: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rin",
-    content:
-      "Rainy days are for deep conversations... ☔ Anyone up for a chat?",
-    time: "1h ago",
-    likes: 42,
-    comments: 5,
-  },
-  {
-    id: "4",
-    castId: "3",
-    castName: "Sarah",
-    castImage: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-    content: "Check out this view from my morning walk! 🌸",
-    time: "4h ago",
-    mediaUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-    mediaType: "video",
-    likes: 89,
-    comments: 8,
-  },
-  {
-    id: "5",
-    castId: "6",
-    castName: "Kila",
-    castImage: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kila",
-    content: "Listening to jazz and drinking coffee. Recommendations? ☕",
-    time: "5h ago",
-    likes: 33,
-    comments: 14,
-  },
-];
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (seconds < 60) return "now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+  return date.toLocaleDateString();
+}
+
+function mapPostToFeedItem(post: CastPost): FeedItem {
+  return {
+    id: post.id,
+    castId: post.castId,
+    castName: post.author?.name || "Unknown",
+    castImage: post.author?.imageUrl || "",
+    content: post.content,
+    time: formatTimeAgo(post.createdAt),
+    media: post.media.map((m) => ({
+      mediaType: m.mediaType,
+      url: m.url,
+    })),
+    likes: post.likesCount,
+    comments: post.commentsCount,
+    visible: post.visible,
+    hashtags: post.hashtags,
+  };
+}
 
 type TimelineFeedProps = {
   items?: FeedItem[];
@@ -108,17 +81,45 @@ export const TimelineFeed = ({
     "all",
   );
   const { following, favorites, isLoaded } = useSocial();
+  const { posts, loading, error, hasMore, fetchPosts, loadMore } = useGuestTimeline();
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Use provided items or default mock feed
-  const sourceFeed = items || feed;
+  // Fetch posts on mount (only in guest mode without items prop)
+  useEffect(() => {
+    if (mode === "guest" && !items) {
+      fetchPosts();
+    }
+  }, [mode, items, fetchPosts]);
 
-  const filteredFeed = sourceFeed.filter((item) => {
+  // Infinite scroll
+  useEffect(() => {
+    if (mode !== "guest" || items || !loadMoreRef.current || !hasMore || loading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [mode, items, hasMore, loading, loadMore]);
+
+  // Convert API posts to FeedItem format, or use provided items
+  const sourceFeed: FeedItem[] = items || posts.map(mapPostToFeedItem);
+
+  const filteredFeed = sourceFeed.filter((item: FeedItem) => {
     if (mode === "cast") return true; // Show all (own) posts in cast mode
     if (filter === "all") return true;
     if (filter === "following") return following.includes(item.castId);
     if (filter === "favorites") return favorites.includes(item.castId);
     return true;
   });
+
+  const isInitialLoading = loading && posts.length === 0;
 
   return (
     <div className="space-y-4 py-4 min-h-screen">
@@ -147,19 +148,38 @@ export const TimelineFeed = ({
       )}
 
       <div className="space-y-4 px-4 pb-20">
-        {(!items && !isLoaded) ? (
-          <div className="py-10 text-center text-slate-400 text-sm">Loading...</div>
+        {isInitialLoading || (!items && !isLoaded) ? (
+          <div className="py-10 text-center text-slate-400 text-sm">
+            <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+            Loading...
+          </div>
+        ) : error ? (
+          <div className="py-10 text-center text-red-400 text-sm">
+            Failed to load posts. Please try again.
+          </div>
         ) : filteredFeed.length > 0 ? (
-          filteredFeed.map((item) => (
-            <TimelineItem
-              key={item.id}
-              item={item}
-              mode={mode}
-              onDelete={onDelete}
-              onToggleVisibility={onToggleVisibility}
-              onClick={() => onItemClick?.(item.id)}
-            />
-          ))
+          <>
+            {filteredFeed.map((item: FeedItem) => (
+              <TimelineItem
+                key={item.id}
+                item={item}
+                mode={mode}
+                onDelete={onDelete}
+                onToggleVisibility={onToggleVisibility}
+                onClick={() => onItemClick?.(item.id)}
+              />
+            ))}
+            {mode === "guest" && !items && hasMore && (
+              <div ref={loadMoreRef} className="pt-4 text-center">
+                {loading && (
+                  <div className="flex items-center justify-center gap-2 text-slate-400">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">Loading...</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         ) : (
           <div className="py-10 text-center text-slate-400 text-sm">
             {mode === "cast"

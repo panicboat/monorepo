@@ -7,6 +7,10 @@ module Portfolio
         casts.where(user_id: user_id).one
       end
 
+      def find_by_id(id)
+        casts.by_pk(id).one
+      end
+
       def find_by_handle(handle)
         casts.combine(:cast_plans, :cast_schedules)
           .where { Sequel.function(:lower, :handle) =~ handle.downcase }

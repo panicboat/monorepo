@@ -1,6 +1,7 @@
 "use client";
 
 import { CastDetailView } from "@/modules/portfolio/components/CastDetailView";
+import { CastTimeline } from "@/modules/social/components/guest/CastTimeline";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { use, useState, useEffect } from "react";
@@ -115,8 +116,11 @@ export default function CastDetailPage({
         plans={data.plans}
         schedules={data.schedules}
       />
+
+      {/* Cast Timeline */}
+      <CastTimeline castId={data.profile.id} />
+
       {/* TODO: TrustRadar - implement backend data source */}
-      {/* TODO: CastPosts - implement timeline/posts backend */}
       {/* TODO: ReviewList - implement reviews backend */}
 
       <div className="mt-8 mb-8 px-6">

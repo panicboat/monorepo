@@ -43,6 +43,24 @@ module Social
         )
       end
 
+      # Find cast by cast ID (primary key).
+      #
+      # @param cast_id [String] the cast ID to look up
+      # @return [CastInfo, nil] cast information or nil if not found
+      def find_by_cast_id(cast_id)
+        cast = portfolio_cast_repository.find_by_id(cast_id)
+        return nil unless cast
+
+        CastInfo.new(
+          id: cast.id,
+          user_id: cast.user_id,
+          name: cast.name,
+          image_path: cast.image_path,
+          avatar_path: cast.avatar_path,
+          handle: cast.handle
+        )
+      end
+
       private
 
       def portfolio_cast_repository

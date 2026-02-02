@@ -20,11 +20,14 @@ module Social
       self.rpc_descs.clear
 
       rpc :ListCastPosts, ::Social::V1::ListCastPostsRequest, ::Social::V1::ListCastPostsResponse
+      rpc :GetCastPost, ::Social::V1::GetCastPostRequest, ::Social::V1::GetCastPostResponse
       rpc :SaveCastPost, ::Social::V1::SaveCastPostRequest, ::Social::V1::SaveCastPostResponse
       rpc :DeleteCastPost, ::Social::V1::DeleteCastPostRequest, ::Social::V1::DeleteCastPostResponse
 
       include Social::Deps[
         list_posts_uc: "use_cases.posts.list_posts",
+        list_public_posts_uc: "use_cases.posts.list_public_posts",
+        get_post_uc: "use_cases.posts.get_post",
         save_post_uc: "use_cases.posts.save_post",
         delete_post_uc: "use_cases.posts.delete_post"
       ]
@@ -32,28 +35,53 @@ module Social
       # === Timeline ===
 
       def list_cast_posts
-        authenticate_user!
-
         cast_id = request.message.cast_id
-        cast = if cast_id.nil? || cast_id.empty?
-          find_my_cast!
-        else
-          cast_adapter.find_by_user_id(cast_id) || find_my_cast!
+        limit = request.message.limit.zero? ? 20 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        # If authenticated and no cast_id specified, return current user's posts (including hidden)
+        if current_user_id && cast_id.empty?
+          cast = find_my_cast!
+          result = list_posts_uc.call(
+            cast_id: cast.id,
+            limit: limit,
+            cursor: cursor
+          )
+          return ::Social::V1::ListCastPostsResponse.new(
+            posts: PostPresenter.many_to_proto(result[:posts], author: cast),
+            next_cursor: result[:next_cursor] || "",
+            has_more: result[:has_more]
+          )
         end
 
-        limit = request.message.limit.zero? ? 20 : request.message.limit
-        cursor = request.message.cursor
-
-        result = list_posts_uc.call(
-          cast_id: cast.id,
+        # Public timeline: list all visible posts (with optional cast_id filter)
+        result = list_public_posts_uc.call(
           limit: limit,
-          cursor: cursor.empty? ? nil : cursor
+          cursor: cursor,
+          cast_id: cast_id.empty? ? nil : cast_id
         )
 
+        posts_with_authors = result[:posts].map do |post|
+          author = result[:authors][post.cast_id]
+          PostPresenter.to_proto(post, author: author)
+        end
+
         ::Social::V1::ListCastPostsResponse.new(
-          posts: PostPresenter.many_to_proto(result[:posts], author: cast),
+          posts: posts_with_authors,
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
+        )
+      end
+
+      def get_cast_post
+        result = get_post_uc.call(id: request.message.id)
+
+        unless result
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
+        end
+
+        ::Social::V1::GetCastPostResponse.new(
+          post: PostPresenter.to_proto(result[:post], author: result[:author])
         )
       end
 

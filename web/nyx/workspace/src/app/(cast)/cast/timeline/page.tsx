@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
   TimelineFeed,
   FeedItem,
@@ -15,6 +15,7 @@ import {
   X,
   Lock,
   LockOpen,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
@@ -57,7 +58,7 @@ function castPostToFeedItem(post: CastPost): FeedItem {
 export default function CastTimelinePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { posts, loading, fetchPosts, savePost, toggleVisibility, deletePost, removePostLocally, restorePostLocally } = useCastPosts();
+  const { posts, loading, hasMore, fetchPosts, loadMore, savePost, toggleVisibility, deletePost, removePostLocally, restorePostLocally } = useCastPosts();
   const { avatarUrl } = useCastData({ apiPath: "/api/cast/profile" });
   const pendingDeletes = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
@@ -71,6 +72,7 @@ export default function CastTimelinePage() {
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchPosts().catch(() => {});
@@ -82,6 +84,23 @@ export default function CastTimelinePage() {
       timers.forEach((timer) => clearTimeout(timer));
     };
   }, []);
+
+  // Infinite scroll
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore || loading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadMore]);
 
   const uploadFile = async (file: File): Promise<string | null> => {
     const token = useAuthStore.getState().accessToken;
@@ -389,13 +408,25 @@ export default function CastTimelinePage() {
         {loading && posts.length === 0 ? (
           <div className="py-10 text-center text-slate-400 text-sm">Loading...</div>
         ) : (
-          <TimelineFeed
-            items={feedItems}
-            mode="cast"
-            onDelete={handleDelete}
-            onToggleVisibility={handleToggleVisibility}
-            onItemClick={(id) => router.push(`/cast/timeline/${id}`)}
-          />
+          <>
+            <TimelineFeed
+              items={feedItems}
+              mode="cast"
+              onDelete={handleDelete}
+              onToggleVisibility={handleToggleVisibility}
+              onItemClick={(id) => router.push(`/cast/timeline/${id}`)}
+            />
+            {hasMore && (
+              <div ref={loadMoreRef} className="pt-4 pb-8 text-center">
+                {loading && (
+                  <div className="flex items-center justify-center gap-2 text-slate-400">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">Loading...</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
