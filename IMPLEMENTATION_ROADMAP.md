@@ -51,12 +51,12 @@ Nyx.PLACE をプロダクションレディにするための実装計画。
 ゲスト側のタイムライン表示をモックデータから API 接続に移行する。
 
 **Tasks:**
-- [ ] `GET /api/guest/timeline` API Route 作成
+- [x] `GET /api/guest/timeline` API Route 作成
   - 全キャストの公開投稿を取得
   - Cursor-based pagination 対応
-- [ ] `TimelineFeed.tsx` を API 接続に更新
-- [ ] `useSocial` hook を API 対応に拡張
-- [ ] 投稿詳細ページ（`/timeline/[id]`）の API 接続
+- [x] `TimelineFeed.tsx` を API 接続に更新
+- [x] `useSocial` hook を API 対応に拡張
+- [x] 投稿詳細ページ（`/timeline/[id]`）の API 接続
 
 **Files:**
 - `web/nyx/workspace/src/app/api/guest/timeline/route.ts` (new)
