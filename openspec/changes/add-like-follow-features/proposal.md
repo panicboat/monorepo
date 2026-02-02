@@ -39,7 +39,6 @@
 
 ## Risks
 
-- **データ移行**: 既存の localStorage データをサーバーに移行する仕組みが必要
 - **重複処理**: 同一ユーザーによる重複いいね/フォローを防ぐ必要がある
 
 ## Decision
@@ -48,4 +47,4 @@
 
 1. Like は guest_id と post_id のユニーク制約で重複を防ぐ
 2. Follow は guest_id と cast_id のユニーク制約で重複を防ぐ
-3. localStorage からの移行は初回 API 呼び出し時にクライアント側でマージする
+3. API を唯一の正とし、localStorage は使用しない

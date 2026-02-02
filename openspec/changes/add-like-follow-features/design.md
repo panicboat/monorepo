@@ -174,7 +174,7 @@ app/api/guest/
 3. gRPC `FollowCast` を実行
 4. `social__cast_follows` にレコード挿入（重複時は無視）
 5. 成功フラグを返却
-6. Zustand store と localStorage を更新（オフライン対応）
+6. フロントエンドの状態を更新
 
 ### Following Filter Flow
 
@@ -182,31 +182,6 @@ app/api/guest/
 2. `GET /api/guest/timeline?filter=following` を呼び出し
 3. gRPC でフォロー中の cast_id リストを取得
 4. cast_id でフィルタリングした投稿を返却
-
-## Migration Strategy
-
-### localStorage からの移行
-
-1. アプリ起動時に localStorage の following リストを読み込み
-2. サーバーから現在の following リストを取得
-3. localStorage にあってサーバーにないものを一括フォロー
-4. 完了後、localStorage をサーバーと同期した状態に更新
-
-```typescript
-// 移行処理の概要
-async function migrateFollowing() {
-  const local = getLocalFollowing();
-  const server = await fetchServerFollowing();
-
-  const toAdd = local.filter(id => !server.includes(id));
-  if (toAdd.length > 0) {
-    await batchFollow(toAdd);
-  }
-
-  // サーバーの状態を正として更新
-  setLocalFollowing(server.concat(toAdd));
-}
-```
 
 ## Performance Considerations
 

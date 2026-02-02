@@ -48,12 +48,10 @@
 - [ ] 5.4 `GET /api/guest/following/status` API Route 作成
 - [ ] 5.5 `useFollow` hook 作成
 - [ ] 5.6 `socialStore` を API 連携に更新
-- [ ] 5.7 localStorage からの移行処理実装
-- [ ] 5.8 キャスト詳細ページのフォローボタンを API 連携に更新
-- [ ] 5.9 Following タブのフィルタリングをサーバーサイドに移行
+- [ ] 5.7 キャスト詳細ページのフォローボタンを API 連携に更新
+- [ ] 5.8 Following タブのフィルタリングをサーバーサイドに移行
 
 ## 6. Integration Testing
 
 - [ ] 6.1 Like 機能の E2E 動作確認
 - [ ] 6.2 Follow 機能の E2E 動作確認
-- [ ] 6.3 localStorage 移行の動作確認

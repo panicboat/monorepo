@@ -107,23 +107,6 @@
 - **WHEN** GET `/api/guest/following/status?cast_ids={id1,id2,...}` を呼び出す
 - **THEN** 各キャストのフォロー状態がマップ形式で返される
 
-### Requirement: Follow Data Migration
-既存の localStorage フォローデータはサーバーに移行されなければならない (MUST)。
-
-#### Scenario: 初回アクセス時の移行
-- **GIVEN** 私は localStorage にフォローデータを持っている
-- **AND** サーバーにはまだフォローデータがない
-- **WHEN** 私がアプリにアクセスする
-- **THEN** localStorage のフォローデータがサーバーに同期される
-- **AND** 同期完了後は localStorage とサーバーの両方に同じデータが存在する
-
-#### Scenario: データ競合の解決
-- **GIVEN** 私は localStorage にフォローデータを持っている
-- **AND** サーバーにも異なるフォローデータがある
-- **WHEN** 私がアプリにアクセスする
-- **THEN** 両方のデータがマージされる（和集合）
-- **AND** マージ結果がサーバーに保存される
-
 ## MODIFIED Requirements
 
 ### Requirement: Timeline Post Data Model (MODIFIED)
