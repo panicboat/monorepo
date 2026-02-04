@@ -5,8 +5,10 @@ import { CastTimeline } from "@/modules/social/components/guest/CastTimeline";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { use, useState, useEffect } from "react";
-import { MessageCircle, Heart, AlertTriangle, Loader2 } from "lucide-react";
+import { MessageCircle, Heart, AlertTriangle, Loader2, UserPlus, UserCheck } from "lucide-react";
 import { useSocial } from "@/modules/social/hooks/useSocial";
+import { useFollow } from "@/modules/social/hooks/useFollow";
+import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
 import { CastProfile, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
 
@@ -130,6 +132,8 @@ export default function CastDetailPage({
       {/* Floating Action Buttons */}
       <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex w-full max-w-md justify-end px-4 pb-24 pointer-events-none">
         <div className="flex flex-col gap-3 pointer-events-auto">
+          <FollowButton castId={data.profile.id} />
+
           <FavoriteButton />
 
           <Link href={`/concierge/${id}`}>
@@ -145,6 +149,61 @@ export default function CastDetailPage({
         </div>
       </div>
     </div>
+  );
+}
+
+function FollowButton({ castId }: { castId: string }) {
+  const { toggleFollow, fetchFollowStatus, isFollowing, loading } = useFollow();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Fetch follow status on mount
+  useEffect(() => {
+    if (isHydrated && isAuthenticated() && castId) {
+      fetchFollowStatus([castId]);
+    }
+  }, [isHydrated, isAuthenticated, castId, fetchFollowStatus]);
+
+  const following = isFollowing(castId);
+
+  const handleClick = async () => {
+    if (!isAuthenticated()) {
+      // TODO: Show login prompt
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      await toggleFollow(castId);
+    } catch (e) {
+      console.error("Failed to toggle follow:", e);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+      <Button
+        size="icon"
+        disabled={isProcessing || loading}
+        className={`h-12 w-12 rounded-full shadow-xl shadow-slate-300 transition-colors border ${following
+          ? "bg-blue-500 border-blue-500 text-white hover:bg-blue-600 hover:text-white"
+          : "bg-white border-blue-200 text-blue-500 hover:bg-blue-50"
+          } ${isProcessing || loading ? "opacity-50" : ""}`}
+        onClick={handleClick}
+      >
+        <motion.div
+          key={following ? "following" : "not-following"}
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        >
+          {following ? <UserCheck size={24} /> : <UserPlus size={24} />}
+        </motion.div>
+      </Button>
+    </motion.div>
   );
 }
 

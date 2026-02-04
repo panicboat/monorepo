@@ -19,6 +19,15 @@ module Social
         rpc :GetCastPost, ::Social::V1::GetCastPostRequest, ::Social::V1::GetCastPostResponse
         rpc :SaveCastPost, ::Social::V1::SaveCastPostRequest, ::Social::V1::SaveCastPostResponse
         rpc :DeleteCastPost, ::Social::V1::DeleteCastPostRequest, ::Social::V1::DeleteCastPostResponse
+        # Like RPCs
+        rpc :LikeCastPost, ::Social::V1::LikeCastPostRequest, ::Social::V1::LikeCastPostResponse
+        rpc :UnlikeCastPost, ::Social::V1::UnlikeCastPostRequest, ::Social::V1::UnlikeCastPostResponse
+        rpc :GetPostLikeStatus, ::Social::V1::GetPostLikeStatusRequest, ::Social::V1::GetPostLikeStatusResponse
+        # Follow RPCs
+        rpc :FollowCast, ::Social::V1::FollowCastRequest, ::Social::V1::FollowCastResponse
+        rpc :UnfollowCast, ::Social::V1::UnfollowCastRequest, ::Social::V1::UnfollowCastResponse
+        rpc :ListFollowing, ::Social::V1::ListFollowingRequest, ::Social::V1::ListFollowingResponse
+        rpc :GetFollowStatus, ::Social::V1::GetFollowStatusRequest, ::Social::V1::GetFollowStatusResponse
       end
 
       Stub = Service.rpc_stub_class

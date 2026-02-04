@@ -12,14 +12,15 @@ module Social
         DEFAULT_LIMIT = 20
         MAX_LIMIT = 50
 
-        def call(limit: DEFAULT_LIMIT, cursor: nil, cast_id: nil)
+        def call(limit: DEFAULT_LIMIT, cursor: nil, cast_id: nil, cast_ids: nil)
           limit = [[limit, 1].max, MAX_LIMIT].min
           decoded_cursor = decode_cursor(cursor)
 
           posts = repo.list_all_visible(
             limit: limit,
             cursor: decoded_cursor,
-            cast_id: cast_id
+            cast_id: cast_id,
+            cast_ids: cast_ids
           )
           has_more = posts.length > limit
           posts = posts.first(limit) if has_more

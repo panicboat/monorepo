@@ -1,9 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
+import { buildGrpcHeaders } from "@/lib/request";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const response = await castClient.listAreas({});
+    const response = await castClient.listAreas(
+      {},
+      { headers: buildGrpcHeaders(req.headers) }
+    );
 
     const areas = (response.areas || []).map((a) => ({
       id: a.id,

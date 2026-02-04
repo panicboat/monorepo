@@ -7,8 +7,15 @@ module Portfolio
         class GetProfile
           include Portfolio::Deps[repo: "repositories.cast_repository"]
 
-          def call(user_id:)
-            repo.find_by_user_id_with_plans(user_id)
+          # Find cast profile by user_id or cast id
+          # @param user_id [String, nil] User ID to search by
+          # @param id [String, nil] Cast ID to search by (takes precedence if both provided)
+          def call(user_id: nil, id: nil)
+            if id && !id.empty?
+              repo.find_with_plans(id)
+            elsif user_id && !user_id.empty?
+              repo.find_by_user_id_with_plans(user_id)
+            end
           end
         end
       end

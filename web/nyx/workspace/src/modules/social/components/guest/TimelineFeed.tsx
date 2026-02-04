@@ -4,10 +4,12 @@ import { motion, AnimatePresence } from "motion/react";
 import { Heart, MessageCircle, Trash2, Lock, LockOpen, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useSocial } from "@/modules/social/hooks/useSocial";
 import { useGuestTimeline } from "@/modules/social/hooks/useGuestTimeline";
-import { useState, useEffect, useRef } from "react";
+import { useLike } from "@/modules/social/hooks/useLike";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { CastPost } from "@/modules/social/types";
+import { useAuthStore } from "@/stores/authStore";
 
 export type FeedMediaItem = {
   mediaType: "image" | "video";
@@ -29,6 +31,7 @@ export type FeedItem = {
   comments: number;
   visible?: boolean;
   hashtags?: string[];
+  liked?: boolean;
 };
 
 function formatTimeAgo(dateString: string): string {
@@ -59,6 +62,7 @@ function mapPostToFeedItem(post: CastPost): FeedItem {
     comments: post.commentsCount,
     visible: post.visible,
     hashtags: post.hashtags,
+    liked: post.liked,
   };
 }
 
@@ -80,16 +84,36 @@ export const TimelineFeed = ({
   const [filter, setFilter] = useState<"all" | "following" | "favorites">(
     "all",
   );
-  const { following, favorites, isLoaded } = useSocial();
-  const { posts, loading, error, hasMore, fetchPosts, loadMore } = useGuestTimeline();
+  const { favorites, isLoaded } = useSocial();
+  const { posts, loading, error, hasMore, fetchPosts, loadMore, setPosts } = useGuestTimeline();
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
 
   // Fetch posts on mount (only in guest mode without items prop)
+  // Wait for hydration to complete so auth token is available
   useEffect(() => {
-    if (mode === "guest" && !items) {
+    if (mode === "guest" && !items && isHydrated) {
       fetchPosts();
     }
-  }, [mode, items, fetchPosts]);
+  }, [mode, items, fetchPosts, isHydrated]);
+
+  // Handle filter change - refetch with server-side filtering for "following"
+  const handleFilterChange = useCallback(async (newFilter: "all" | "following" | "favorites") => {
+    setFilter(newFilter);
+
+    // For "following" filter, we need to refetch from server with filter param
+    if (mode === "guest" && !items && newFilter === "following" && isAuthenticated()) {
+      // Clear current posts and fetch filtered
+      setPosts([]);
+      await fetchPosts(undefined, "following");
+    } else if (mode === "guest" && !items && newFilter === "all") {
+      // Refetch all posts
+      setPosts([]);
+      await fetchPosts();
+    }
+    // "favorites" filter is handled client-side
+  }, [mode, items, isAuthenticated, fetchPosts, setPosts]);
 
   // Infinite scroll
   useEffect(() => {
@@ -98,7 +122,7 @@ export const TimelineFeed = ({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore();
+          loadMore(filter === "following" ? "following" : undefined);
         }
       },
       { threshold: 0.1 }
@@ -106,15 +130,15 @@ export const TimelineFeed = ({
 
     observer.observe(loadMoreRef.current);
     return () => observer.disconnect();
-  }, [mode, items, hasMore, loading, loadMore]);
+  }, [mode, items, hasMore, loading, loadMore, filter]);
 
   // Convert API posts to FeedItem format, or use provided items
   const sourceFeed: FeedItem[] = items || posts.map(mapPostToFeedItem);
 
+  // Client-side filtering for favorites (server handles following)
   const filteredFeed = sourceFeed.filter((item: FeedItem) => {
     if (mode === "cast") return true; // Show all (own) posts in cast mode
-    if (filter === "all") return true;
-    if (filter === "following") return following.includes(item.castId);
+    if (filter === "all" || filter === "following") return true; // Server handles following filter
     if (filter === "favorites") return favorites.includes(item.castId);
     return true;
   });
@@ -134,7 +158,7 @@ export const TimelineFeed = ({
             {(["all", "following", "favorites"] as const).map((tab) => (
               <button
                 key={tab}
-                onClick={() => setFilter(tab)}
+                onClick={() => handleFilterChange(tab)}
                 className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${filter === tab
                   ? "bg-white text-slate-800 shadow-sm"
                   : "text-slate-400 hover:text-slate-600"
@@ -147,7 +171,7 @@ export const TimelineFeed = ({
         </div>
       )}
 
-      <div className="space-y-4 px-4 pb-20">
+      <div className="space-y-6 px-4 pb-20">
         {isInitialLoading || (!items && !isLoaded) ? (
           <div className="py-10 text-center text-slate-400 text-sm">
             <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
@@ -294,17 +318,51 @@ export const TimelineItem = ({
   onToggleVisibility?: (id: string, visible: boolean) => void;
   onClick?: () => void;
 }) => {
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(item.liked ?? false);
   const [likesCount, setLikesCount] = useState(item.likes);
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const { toggleLike } = useLike();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  const handleLike = (e: React.MouseEvent) => {
+  // Sync with item prop changes
+  useEffect(() => {
+    setLiked(item.liked ?? false);
+    setLikesCount(item.likes);
+  }, [item.liked, item.likes]);
+
+  const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (liked) {
-      setLikesCount((p) => p - 1);
-    } else {
-      setLikesCount((p) => p + 1);
+
+    // If not authenticated, just do optimistic update (will be lost on refresh)
+    if (!isAuthenticated()) {
+      if (liked) {
+        setLikesCount((p) => p - 1);
+      } else {
+        setLikesCount((p) => p + 1);
+      }
+      setLiked(!liked);
+      return;
     }
-    setLiked(!liked);
+
+    // Optimistic update
+    const wasLiked = liked;
+    const prevCount = likesCount;
+    setLiked(!wasLiked);
+    setLikesCount(wasLiked ? prevCount - 1 : prevCount + 1);
+
+    setIsLikeLoading(true);
+    try {
+      const newCount = await toggleLike(item.id, wasLiked);
+      if (newCount !== null) {
+        setLikesCount(newCount);
+      }
+    } catch {
+      // Revert on error
+      setLiked(wasLiked);
+      setLikesCount(prevCount);
+    } finally {
+      setIsLikeLoading(false);
+    }
   };
 
   const isHidden = item.visible === false;
@@ -405,7 +463,8 @@ export const TimelineItem = ({
       <div className="flex items-center gap-6 border-t border-slate-50 pt-3 text-slate-400">
         <button
           onClick={handleLike}
-          className={`flex items-center gap-1.5 text-xs transition-colors ${liked ? "text-pink-500" : "text-slate-400 hover:text-pink-300"}`}
+          disabled={isLikeLoading || mode === "cast"}
+          className={`flex items-center gap-1.5 text-xs transition-colors ${liked ? "text-pink-500" : "text-slate-400 hover:text-pink-300"} ${isLikeLoading || mode === "cast" ? "opacity-50 cursor-default hover:text-slate-400" : ""}`}
         >
           <motion.div
             key={liked ? "liked" : "unliked"}

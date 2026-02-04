@@ -22,6 +22,7 @@ export type CastPost = {
   commentsCount: number;
   visible: boolean;
   hashtags: string[];
+  liked: boolean;
 };
 
 export type PostsListResult = {

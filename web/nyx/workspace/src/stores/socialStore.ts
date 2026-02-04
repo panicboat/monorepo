@@ -2,16 +2,13 @@
  * Social Store
  *
  * Zustand store for social state management.
- * Handles following, blocking, and favorites with localStorage persistence.
+ * Handles following, blocking, and favorites.
  *
- * TODO: Currently stores social data in localStorage (client-only).
- *       Should be synced with the server via Social gRPC service when implemented.
- *       - toggleFollow should call Social::FollowService
- *       - toggleBlock should call Social::BlockService
- *       - Initial state should be fetched from server on hydration
+ * Following is now synced with the backend API.
+ * Blocking and favorites remain in localStorage for now.
  *
  * Usage:
- *   const { following, toggleFollow, isFollowing } = useSocialStore();
+ *   const { following, toggleFollow, isFollowing, syncFollowing } = useSocialStore();
  */
 
 import { create } from "zustand";
@@ -23,12 +20,17 @@ interface SocialState {
   blocking: string[];
   favorites: string[];
   isHydrated: boolean;
+  isSynced: boolean;
 
   // Actions
   toggleFollow: (castId: string) => void;
   toggleBlock: (targetId: string) => void;
   toggleFavorite: (castId: string) => void;
   setHydrated: () => void;
+  setFollowing: (castIds: string[]) => void;
+  addFollowing: (castId: string) => void;
+  removeFollowing: (castId: string) => void;
+  setSynced: (synced: boolean) => void;
 
   // Computed
   isFollowing: (castId: string) => boolean;
@@ -44,6 +46,7 @@ export const useSocialStore = create<SocialState>()(
       blocking: [],
       favorites: [],
       isHydrated: false,
+      isSynced: false,
 
       // Actions
       toggleFollow: (castId: string) => {
@@ -78,6 +81,22 @@ export const useSocialStore = create<SocialState>()(
 
       setHydrated: () => set({ isHydrated: true }),
 
+      setFollowing: (castIds: string[]) => set({ following: castIds, isSynced: true }),
+
+      addFollowing: (castId: string) => {
+        const { following } = get();
+        if (!following.includes(castId)) {
+          set({ following: [...following, castId] });
+        }
+      },
+
+      removeFollowing: (castId: string) => {
+        const { following } = get();
+        set({ following: following.filter((id) => id !== castId) });
+      },
+
+      setSynced: (synced: boolean) => set({ isSynced: synced }),
+
       // Computed
       isFollowing: (castId: string) => get().following.includes(castId),
       isBlocking: (targetId: string) => get().blocking.includes(targetId),
@@ -87,7 +106,8 @@ export const useSocialStore = create<SocialState>()(
       name: "nyx-social",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        following: state.following,
+        // Only persist blocking and favorites locally
+        // Following is synced with server
         blocking: state.blocking,
         favorites: state.favorites,
       }),
@@ -105,3 +125,4 @@ export const selectFollowing = (state: SocialState) => state.following;
 export const selectBlocking = (state: SocialState) => state.blocking;
 export const selectFavorites = (state: SocialState) => state.favorites;
 export const selectIsHydrated = (state: SocialState) => state.isHydrated;
+export const selectIsSynced = (state: SocialState) => state.isSynced;

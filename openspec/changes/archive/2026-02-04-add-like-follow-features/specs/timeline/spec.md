@@ -109,7 +109,7 @@
 
 ## MODIFIED Requirements
 
-### Requirement: Timeline Post Data Model (MODIFIED)
+### Requirement: Timeline Post Data Model
 タイムライン投稿データに `liked` フラグを追加しなければならない (MUST)。
 
 #### Scenario: 投稿表示時にいいね状態を含める

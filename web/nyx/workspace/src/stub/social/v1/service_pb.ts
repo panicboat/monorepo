@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file social/v1/service.proto.
  */
 export const file_social_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("Chdzb2NpYWwvdjEvc2VydmljZS5wcm90bxIJc29jaWFsLnYxIj0KDkNhc3RQb3N0QXV0aG9yEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJIlMKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCSLwAQoIQ2FzdFBvc3QSCgoCaWQYASABKAkSDwoHY2FzdF9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEicKBW1lZGlhGAQgAygLMhguc29jaWFsLnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIpCgZhdXRob3IYBiABKAsyGS5zb2NpYWwudjEuQ2FzdFBvc3RBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSDwoHdmlzaWJsZRgJIAEoCBIQCghoYXNodGFncxgKIAMoCSJGChRMaXN0Q2FzdFBvc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkSDwoHY2FzdF9pZBgDIAEoCSJiChVMaXN0Q2FzdFBvc3RzUmVzcG9uc2USIgoFcG9zdHMYASADKAsyEy5zb2NpYWwudjEuQ2FzdFBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgifgoTU2F2ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEicKBW1lZGlhGAMgAygLMhguc29jaWFsLnYxLkNhc3RQb3N0TWVkaWESDwoHdmlzaWJsZRgEIAEoCBIQCghoYXNodGFncxgFIAMoCSI5ChRTYXZlQ2FzdFBvc3RSZXNwb25zZRIhCgRwb3N0GAEgASgLMhMuc29jaWFsLnYxLkNhc3RQb3N0IiAKEkdldENhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSI4ChNHZXRDYXN0UG9zdFJlc3BvbnNlEiEKBHBvc3QYASABKAsyEy5zb2NpYWwudjEuQ2FzdFBvc3QiIwoVRGVsZXRlQ2FzdFBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIhgKFkRlbGV0ZUNhc3RQb3N0UmVzcG9uc2Uy2wIKD1RpbWVsaW5lU2VydmljZRJSCg1MaXN0Q2FzdFBvc3RzEh8uc29jaWFsLnYxLkxpc3RDYXN0UG9zdHNSZXF1ZXN0GiAuc29jaWFsLnYxLkxpc3RDYXN0UG9zdHNSZXNwb25zZRJMCgtHZXRDYXN0UG9zdBIdLnNvY2lhbC52MS5HZXRDYXN0UG9zdFJlcXVlc3QaHi5zb2NpYWwudjEuR2V0Q2FzdFBvc3RSZXNwb25zZRJPCgxTYXZlQ2FzdFBvc3QSHi5zb2NpYWwudjEuU2F2ZUNhc3RQb3N0UmVxdWVzdBofLnNvY2lhbC52MS5TYXZlQ2FzdFBvc3RSZXNwb25zZRJVCg5EZWxldGVDYXN0UG9zdBIgLnNvY2lhbC52MS5EZWxldGVDYXN0UG9zdFJlcXVlc3QaIS5zb2NpYWwudjEuRGVsZXRlQ2FzdFBvc3RSZXNwb25zZWIGcHJvdG8z");
+  fileDesc("Chdzb2NpYWwvdjEvc2VydmljZS5wcm90bxIJc29jaWFsLnYxIj0KDkNhc3RQb3N0QXV0aG9yEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJIlMKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCSL/AQoIQ2FzdFBvc3QSCgoCaWQYASABKAkSDwoHY2FzdF9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEicKBW1lZGlhGAQgAygLMhguc29jaWFsLnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIpCgZhdXRob3IYBiABKAsyGS5zb2NpYWwudjEuQ2FzdFBvc3RBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSDwoHdmlzaWJsZRgJIAEoCBIQCghoYXNodGFncxgKIAMoCRINCgVsaWtlZBgLIAEoCCJWChRMaXN0Q2FzdFBvc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkSDwoHY2FzdF9pZBgDIAEoCRIOCgZmaWx0ZXIYBCABKAkiYgoVTGlzdENhc3RQb3N0c1Jlc3BvbnNlEiIKBXBvc3RzGAEgAygLMhMuc29jaWFsLnYxLkNhc3RQb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIn4KE1NhdmVDYXN0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkSDwoHY29udGVudBgCIAEoCRInCgVtZWRpYRgDIAMoCzIYLnNvY2lhbC52MS5DYXN0UG9zdE1lZGlhEg8KB3Zpc2libGUYBCABKAgSEAoIaGFzaHRhZ3MYBSADKAkiOQoUU2F2ZUNhc3RQb3N0UmVzcG9uc2USIQoEcG9zdBgBIAEoCzITLnNvY2lhbC52MS5DYXN0UG9zdCIgChJHZXRDYXN0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkiOAoTR2V0Q2FzdFBvc3RSZXNwb25zZRIhCgRwb3N0GAEgASgLMhMuc29jaWFsLnYxLkNhc3RQb3N0IiMKFURlbGV0ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSIYChZEZWxldGVDYXN0UG9zdFJlc3BvbnNlIiYKE0xpa2VDYXN0UG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSIrChRMaWtlQ2FzdFBvc3RSZXNwb25zZRITCgtsaWtlc19jb3VudBgBIAEoBSIoChVVbmxpa2VDYXN0UG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSItChZVbmxpa2VDYXN0UG9zdFJlc3BvbnNlEhMKC2xpa2VzX2NvdW50GAEgASgFIiwKGEdldFBvc3RMaWtlU3RhdHVzUmVxdWVzdBIQCghwb3N0X2lkcxgBIAMoCSKJAQoZR2V0UG9zdExpa2VTdGF0dXNSZXNwb25zZRI+CgVsaWtlZBgBIAMoCzIvLnNvY2lhbC52MS5HZXRQb3N0TGlrZVN0YXR1c1Jlc3BvbnNlLkxpa2VkRW50cnkaLAoKTGlrZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBIiQKEUZvbGxvd0Nhc3RSZXF1ZXN0Eg8KB2Nhc3RfaWQYASABKAkiJQoSRm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiJgoTVW5mb2xsb3dDYXN0UmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIicKFFVuZm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiNQoUTGlzdEZvbGxvd2luZ1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJIlAKFUxpc3RGb2xsb3dpbmdSZXNwb25zZRIQCghjYXN0X2lkcxgBIAMoCRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIqChZHZXRGb2xsb3dTdGF0dXNSZXF1ZXN0EhAKCGNhc3RfaWRzGAEgAygJIpEBChdHZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJECglmb2xsb3dpbmcYASADKAsyMS5zb2NpYWwudjEuR2V0Rm9sbG93U3RhdHVzUmVzcG9uc2UuRm9sbG93aW5nRW50cnkaMAoORm9sbG93aW5nRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgIOgI4ATKtBwoPVGltZWxpbmVTZXJ2aWNlElIKDUxpc3RDYXN0UG9zdHMSHy5zb2NpYWwudjEuTGlzdENhc3RQb3N0c1JlcXVlc3QaIC5zb2NpYWwudjEuTGlzdENhc3RQb3N0c1Jlc3BvbnNlEkwKC0dldENhc3RQb3N0Eh0uc29jaWFsLnYxLkdldENhc3RQb3N0UmVxdWVzdBoeLnNvY2lhbC52MS5HZXRDYXN0UG9zdFJlc3BvbnNlEk8KDFNhdmVDYXN0UG9zdBIeLnNvY2lhbC52MS5TYXZlQ2FzdFBvc3RSZXF1ZXN0Gh8uc29jaWFsLnYxLlNhdmVDYXN0UG9zdFJlc3BvbnNlElUKDkRlbGV0ZUNhc3RQb3N0EiAuc29jaWFsLnYxLkRlbGV0ZUNhc3RQb3N0UmVxdWVzdBohLnNvY2lhbC52MS5EZWxldGVDYXN0UG9zdFJlc3BvbnNlEk8KDExpa2VDYXN0UG9zdBIeLnNvY2lhbC52MS5MaWtlQ2FzdFBvc3RSZXF1ZXN0Gh8uc29jaWFsLnYxLkxpa2VDYXN0UG9zdFJlc3BvbnNlElUKDlVubGlrZUNhc3RQb3N0EiAuc29jaWFsLnYxLlVubGlrZUNhc3RQb3N0UmVxdWVzdBohLnNvY2lhbC52MS5Vbmxpa2VDYXN0UG9zdFJlc3BvbnNlEl4KEUdldFBvc3RMaWtlU3RhdHVzEiMuc29jaWFsLnYxLkdldFBvc3RMaWtlU3RhdHVzUmVxdWVzdBokLnNvY2lhbC52MS5HZXRQb3N0TGlrZVN0YXR1c1Jlc3BvbnNlEkkKCkZvbGxvd0Nhc3QSHC5zb2NpYWwudjEuRm9sbG93Q2FzdFJlcXVlc3QaHS5zb2NpYWwudjEuRm9sbG93Q2FzdFJlc3BvbnNlEk8KDFVuZm9sbG93Q2FzdBIeLnNvY2lhbC52MS5VbmZvbGxvd0Nhc3RSZXF1ZXN0Gh8uc29jaWFsLnYxLlVuZm9sbG93Q2FzdFJlc3BvbnNlElIKDUxpc3RGb2xsb3dpbmcSHy5zb2NpYWwudjEuTGlzdEZvbGxvd2luZ1JlcXVlc3QaIC5zb2NpYWwudjEuTGlzdEZvbGxvd2luZ1Jlc3BvbnNlElgKD0dldEZvbGxvd1N0YXR1cxIhLnNvY2lhbC52MS5HZXRGb2xsb3dTdGF0dXNSZXF1ZXN0GiIuc29jaWFsLnYxLkdldEZvbGxvd1N0YXR1c1Jlc3BvbnNlYgZwcm90bzM");
 
 /**
  * @generated from message social.v1.CastPostAuthor
@@ -128,6 +128,13 @@ export type CastPost = Message<"social.v1.CastPost"> & {
    * @generated from field: repeated string hashtags = 10;
    */
   hashtags: string[];
+
+  /**
+   * whether current user liked this post
+   *
+   * @generated from field: bool liked = 11;
+   */
+  liked: boolean;
 };
 
 /**
@@ -161,6 +168,13 @@ export type ListCastPostsRequest = Message<"social.v1.ListCastPostsRequest"> & {
    * @generated from field: string cast_id = 3;
    */
   castId: string;
+
+  /**
+   * optional, "following" to filter by followed casts
+   *
+   * @generated from field: string filter = 4;
+   */
+  filter: string;
 };
 
 /**
@@ -318,6 +332,267 @@ export const DeleteCastPostResponseSchema: GenMessage<DeleteCastPostResponse> = 
   messageDesc(file_social_v1_service, 10);
 
 /**
+ * Like Messages
+ *
+ * @generated from message social.v1.LikeCastPostRequest
+ */
+export type LikeCastPostRequest = Message<"social.v1.LikeCastPostRequest"> & {
+  /**
+   * @generated from field: string post_id = 1;
+   */
+  postId: string;
+};
+
+/**
+ * Describes the message social.v1.LikeCastPostRequest.
+ * Use `create(LikeCastPostRequestSchema)` to create a new message.
+ */
+export const LikeCastPostRequestSchema: GenMessage<LikeCastPostRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 11);
+
+/**
+ * @generated from message social.v1.LikeCastPostResponse
+ */
+export type LikeCastPostResponse = Message<"social.v1.LikeCastPostResponse"> & {
+  /**
+   * @generated from field: int32 likes_count = 1;
+   */
+  likesCount: number;
+};
+
+/**
+ * Describes the message social.v1.LikeCastPostResponse.
+ * Use `create(LikeCastPostResponseSchema)` to create a new message.
+ */
+export const LikeCastPostResponseSchema: GenMessage<LikeCastPostResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 12);
+
+/**
+ * @generated from message social.v1.UnlikeCastPostRequest
+ */
+export type UnlikeCastPostRequest = Message<"social.v1.UnlikeCastPostRequest"> & {
+  /**
+   * @generated from field: string post_id = 1;
+   */
+  postId: string;
+};
+
+/**
+ * Describes the message social.v1.UnlikeCastPostRequest.
+ * Use `create(UnlikeCastPostRequestSchema)` to create a new message.
+ */
+export const UnlikeCastPostRequestSchema: GenMessage<UnlikeCastPostRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 13);
+
+/**
+ * @generated from message social.v1.UnlikeCastPostResponse
+ */
+export type UnlikeCastPostResponse = Message<"social.v1.UnlikeCastPostResponse"> & {
+  /**
+   * @generated from field: int32 likes_count = 1;
+   */
+  likesCount: number;
+};
+
+/**
+ * Describes the message social.v1.UnlikeCastPostResponse.
+ * Use `create(UnlikeCastPostResponseSchema)` to create a new message.
+ */
+export const UnlikeCastPostResponseSchema: GenMessage<UnlikeCastPostResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 14);
+
+/**
+ * @generated from message social.v1.GetPostLikeStatusRequest
+ */
+export type GetPostLikeStatusRequest = Message<"social.v1.GetPostLikeStatusRequest"> & {
+  /**
+   * @generated from field: repeated string post_ids = 1;
+   */
+  postIds: string[];
+};
+
+/**
+ * Describes the message social.v1.GetPostLikeStatusRequest.
+ * Use `create(GetPostLikeStatusRequestSchema)` to create a new message.
+ */
+export const GetPostLikeStatusRequestSchema: GenMessage<GetPostLikeStatusRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 15);
+
+/**
+ * @generated from message social.v1.GetPostLikeStatusResponse
+ */
+export type GetPostLikeStatusResponse = Message<"social.v1.GetPostLikeStatusResponse"> & {
+  /**
+   * post_id -> is_liked
+   *
+   * @generated from field: map<string, bool> liked = 1;
+   */
+  liked: { [key: string]: boolean };
+};
+
+/**
+ * Describes the message social.v1.GetPostLikeStatusResponse.
+ * Use `create(GetPostLikeStatusResponseSchema)` to create a new message.
+ */
+export const GetPostLikeStatusResponseSchema: GenMessage<GetPostLikeStatusResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 16);
+
+/**
+ * Follow Messages
+ *
+ * @generated from message social.v1.FollowCastRequest
+ */
+export type FollowCastRequest = Message<"social.v1.FollowCastRequest"> & {
+  /**
+   * @generated from field: string cast_id = 1;
+   */
+  castId: string;
+};
+
+/**
+ * Describes the message social.v1.FollowCastRequest.
+ * Use `create(FollowCastRequestSchema)` to create a new message.
+ */
+export const FollowCastRequestSchema: GenMessage<FollowCastRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 17);
+
+/**
+ * @generated from message social.v1.FollowCastResponse
+ */
+export type FollowCastResponse = Message<"social.v1.FollowCastResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message social.v1.FollowCastResponse.
+ * Use `create(FollowCastResponseSchema)` to create a new message.
+ */
+export const FollowCastResponseSchema: GenMessage<FollowCastResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 18);
+
+/**
+ * @generated from message social.v1.UnfollowCastRequest
+ */
+export type UnfollowCastRequest = Message<"social.v1.UnfollowCastRequest"> & {
+  /**
+   * @generated from field: string cast_id = 1;
+   */
+  castId: string;
+};
+
+/**
+ * Describes the message social.v1.UnfollowCastRequest.
+ * Use `create(UnfollowCastRequestSchema)` to create a new message.
+ */
+export const UnfollowCastRequestSchema: GenMessage<UnfollowCastRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 19);
+
+/**
+ * @generated from message social.v1.UnfollowCastResponse
+ */
+export type UnfollowCastResponse = Message<"social.v1.UnfollowCastResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message social.v1.UnfollowCastResponse.
+ * Use `create(UnfollowCastResponseSchema)` to create a new message.
+ */
+export const UnfollowCastResponseSchema: GenMessage<UnfollowCastResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 20);
+
+/**
+ * @generated from message social.v1.ListFollowingRequest
+ */
+export type ListFollowingRequest = Message<"social.v1.ListFollowingRequest"> & {
+  /**
+   * @generated from field: int32 limit = 1;
+   */
+  limit: number;
+
+  /**
+   * @generated from field: string cursor = 2;
+   */
+  cursor: string;
+};
+
+/**
+ * Describes the message social.v1.ListFollowingRequest.
+ * Use `create(ListFollowingRequestSchema)` to create a new message.
+ */
+export const ListFollowingRequestSchema: GenMessage<ListFollowingRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 21);
+
+/**
+ * @generated from message social.v1.ListFollowingResponse
+ */
+export type ListFollowingResponse = Message<"social.v1.ListFollowingResponse"> & {
+  /**
+   * @generated from field: repeated string cast_ids = 1;
+   */
+  castIds: string[];
+
+  /**
+   * @generated from field: string next_cursor = 2;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 3;
+   */
+  hasMore: boolean;
+};
+
+/**
+ * Describes the message social.v1.ListFollowingResponse.
+ * Use `create(ListFollowingResponseSchema)` to create a new message.
+ */
+export const ListFollowingResponseSchema: GenMessage<ListFollowingResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 22);
+
+/**
+ * @generated from message social.v1.GetFollowStatusRequest
+ */
+export type GetFollowStatusRequest = Message<"social.v1.GetFollowStatusRequest"> & {
+  /**
+   * @generated from field: repeated string cast_ids = 1;
+   */
+  castIds: string[];
+};
+
+/**
+ * Describes the message social.v1.GetFollowStatusRequest.
+ * Use `create(GetFollowStatusRequestSchema)` to create a new message.
+ */
+export const GetFollowStatusRequestSchema: GenMessage<GetFollowStatusRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 23);
+
+/**
+ * @generated from message social.v1.GetFollowStatusResponse
+ */
+export type GetFollowStatusResponse = Message<"social.v1.GetFollowStatusResponse"> & {
+  /**
+   * cast_id -> is_following
+   *
+   * @generated from field: map<string, bool> following = 1;
+   */
+  following: { [key: string]: boolean };
+};
+
+/**
+ * Describes the message social.v1.GetFollowStatusResponse.
+ * Use `create(GetFollowStatusResponseSchema)` to create a new message.
+ */
+export const GetFollowStatusResponseSchema: GenMessage<GetFollowStatusResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 24);
+
+/**
  * @generated from service social.v1.TimelineService
  */
 export const TimelineService: GenService<{
@@ -352,6 +627,66 @@ export const TimelineService: GenService<{
     methodKind: "unary";
     input: typeof DeleteCastPostRequestSchema;
     output: typeof DeleteCastPostResponseSchema;
+  },
+  /**
+   * Like RPCs
+   *
+   * @generated from rpc social.v1.TimelineService.LikeCastPost
+   */
+  likeCastPost: {
+    methodKind: "unary";
+    input: typeof LikeCastPostRequestSchema;
+    output: typeof LikeCastPostResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.UnlikeCastPost
+   */
+  unlikeCastPost: {
+    methodKind: "unary";
+    input: typeof UnlikeCastPostRequestSchema;
+    output: typeof UnlikeCastPostResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.GetPostLikeStatus
+   */
+  getPostLikeStatus: {
+    methodKind: "unary";
+    input: typeof GetPostLikeStatusRequestSchema;
+    output: typeof GetPostLikeStatusResponseSchema;
+  },
+  /**
+   * Follow RPCs
+   *
+   * @generated from rpc social.v1.TimelineService.FollowCast
+   */
+  followCast: {
+    methodKind: "unary";
+    input: typeof FollowCastRequestSchema;
+    output: typeof FollowCastResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.UnfollowCast
+   */
+  unfollowCast: {
+    methodKind: "unary";
+    input: typeof UnfollowCastRequestSchema;
+    output: typeof UnfollowCastResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.ListFollowing
+   */
+  listFollowing: {
+    methodKind: "unary";
+    input: typeof ListFollowingRequestSchema;
+    output: typeof ListFollowingResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.GetFollowStatus
+   */
+  getFollowStatus: {
+    methodKind: "unary";
+    input: typeof GetFollowStatusRequestSchema;
+    output: typeof GetFollowStatusResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_social_v1_service, 0);

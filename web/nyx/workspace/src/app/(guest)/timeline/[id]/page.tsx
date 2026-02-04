@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, Heart, MessageCircle, Share2, Loader2, ChevronRight } from "lucide-react";
 import { useGuestPost } from "@/modules/social/hooks/useGuestTimeline";
+import { useLike } from "@/modules/social/hooks/useLike";
+import { useAuthStore } from "@/stores/authStore";
 import { Badge } from "@/components/ui/Badge";
 
 type MediaItem = {
@@ -104,8 +106,11 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params);
   const router = useRouter();
   const { post, loading, error, fetchPost } = useGuestPost(id);
+  const { toggleLike } = useLike();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
 
   useEffect(() => {
     fetchPost();
@@ -114,16 +119,41 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     if (post) {
       setLikesCount(post.likesCount);
+      setLiked(post.liked);
     }
   }, [post]);
 
-  const handleLike = () => {
-    if (liked) {
-      setLikesCount((p) => p - 1);
-    } else {
-      setLikesCount((p) => p + 1);
+  const handleLike = async () => {
+    // If not authenticated, just do optimistic update (will be lost on refresh)
+    if (!isAuthenticated()) {
+      if (liked) {
+        setLikesCount((p) => p - 1);
+      } else {
+        setLikesCount((p) => p + 1);
+      }
+      setLiked(!liked);
+      return;
     }
-    setLiked(!liked);
+
+    // Optimistic update
+    const wasLiked = liked;
+    const prevCount = likesCount;
+    setLiked(!wasLiked);
+    setLikesCount(wasLiked ? prevCount - 1 : prevCount + 1);
+
+    setIsLikeLoading(true);
+    try {
+      const newCount = await toggleLike(id, wasLiked);
+      if (newCount !== null) {
+        setLikesCount(newCount);
+      }
+    } catch {
+      // Revert on error
+      setLiked(wasLiked);
+      setLikesCount(prevCount);
+    } finally {
+      setIsLikeLoading(false);
+    }
   };
 
   if (loading) {
@@ -224,9 +254,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         <div className="flex items-center gap-6 pt-4 border-t border-slate-100">
           <button
             onClick={handleLike}
+            disabled={isLikeLoading}
             className={`flex items-center gap-2 transition-colors ${
               liked ? "text-pink-500" : "text-slate-400 hover:text-pink-300"
-            }`}
+            } ${isLikeLoading ? "opacity-50" : ""}`}
           >
             <motion.div
               key={liked ? "liked" : "unliked"}

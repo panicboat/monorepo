@@ -178,7 +178,7 @@ cast_data = [
     handle: "yuna",
     tagline: "癒しの時間をお届けします 💕",
     bio: "はじめまして、Yunaです。一緒に楽しい時間を過ごしましょう。趣味は映画鑑賞とカフェ巡り。お話しするのが大好きです！",
-    visibility: "registered",
+    visibility: "published",
     age: 24,
     height: 158,
     three_sizes: { bust: 86, waist: 58, hip: 85, cup: "E" }.to_json,
@@ -191,7 +191,7 @@ cast_data = [
     handle: "mio",
     tagline: "今夜、特別な時間を ✨",
     bio: "Mioです。大人の会話を楽しみたい方、ぜひお待ちしています。ワインと音楽が好きです。",
-    visibility: "registered",
+    visibility: "published",
     age: 27,
     height: 165,
     three_sizes: { bust: 88, waist: 59, hip: 87, cup: "F" }.to_json,
@@ -204,7 +204,7 @@ cast_data = [
     handle: "rin",
     tagline: "あなたの心に寄り添います 🌸",
     bio: "Rinと申します。読書とお散歩が趣味の、のんびりした性格です。ゆっくりお話ししましょう。",
-    visibility: "registered",
+    visibility: "published",
     age: 22,
     height: 155,
     three_sizes: { bust: 82, waist: 56, hip: 83, cup: "C" }.to_json,
@@ -437,6 +437,63 @@ guest_user_ids.each_with_index do |user_id, idx|
 end
 
 puts "  Created #{guest_count} guests"
+
+# =============================================================================
+# Social: Post Likes
+# =============================================================================
+
+puts "Seeding Social: Post Likes..."
+
+# Get all guests and posts
+guests = db[:portfolio__guests].all.to_a
+posts = db[:"social__cast_posts"].all.to_a
+
+like_count = 0
+guests.each do |guest|
+  # Each guest likes some random posts
+  posts_to_like = posts.sample(rand(2..4))
+  posts_to_like.each do |post|
+    existing = db[:"social__post_likes"].where(guest_id: guest[:id], post_id: post[:id]).first
+    next if existing
+
+    db[:"social__post_likes"].insert(
+      guest_id: guest[:id],
+      post_id: post[:id],
+      created_at: Time.now,
+    )
+    like_count += 1
+  end
+end
+
+puts "  Created #{like_count} post likes"
+
+# =============================================================================
+# Social: Cast Follows
+# =============================================================================
+
+puts "Seeding Social: Cast Follows..."
+
+# Get all casts
+casts = db[:portfolio__casts].all.to_a
+
+follow_count = 0
+guests.each do |guest|
+  # Each guest follows some random casts
+  casts_to_follow = casts.sample(rand(1..2))
+  casts_to_follow.each do |cast|
+    existing = db[:"social__cast_follows"].where(guest_id: guest[:id], cast_id: cast[:id]).first
+    next if existing
+
+    db[:"social__cast_follows"].insert(
+      guest_id: guest[:id],
+      cast_id: cast[:id],
+      created_at: Time.now,
+    )
+    follow_count += 1
+  end
+end
+
+puts "  Created #{follow_count} cast follows"
 
 # =============================================================================
 # Summary

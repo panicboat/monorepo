@@ -160,7 +160,7 @@ export default function PostDetailPage({
         </div>
 
         <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-6">
-          <div className="flex items-center gap-2 text-slate-500">
+          <div className="flex items-center gap-2 text-slate-400 opacity-50">
             <Heart size={20} />
             <span className="font-bold">{post.likesCount}</span>
             <span className="text-xs font-normal">Likes</span>

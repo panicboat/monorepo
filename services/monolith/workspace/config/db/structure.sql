@@ -221,6 +221,18 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: cast_follows; Type: TABLE; Schema: social; Owner: -
+--
+
+CREATE TABLE social.cast_follows (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    cast_id uuid NOT NULL,
+    guest_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: cast_post_hashtags; Type: TABLE; Schema: social; Owner: -
 --
 
@@ -259,6 +271,18 @@ CREATE TABLE social.cast_posts (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     visible boolean DEFAULT true NOT NULL
+);
+
+
+--
+-- Name: post_likes; Type: TABLE; Schema: social; Owner: -
+--
+
+CREATE TABLE social.post_likes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    post_id uuid NOT NULL,
+    guest_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -383,6 +407,22 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: cast_follows cast_follows_cast_id_guest_id_key; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.cast_follows
+    ADD CONSTRAINT cast_follows_cast_id_guest_id_key UNIQUE (cast_id, guest_id);
+
+
+--
+-- Name: cast_follows cast_follows_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.cast_follows
+    ADD CONSTRAINT cast_follows_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: cast_post_hashtags cast_post_hashtags_pkey; Type: CONSTRAINT; Schema: social; Owner: -
 --
 
@@ -404,6 +444,22 @@ ALTER TABLE ONLY social.cast_post_media
 
 ALTER TABLE ONLY social.cast_posts
     ADD CONSTRAINT cast_posts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: post_likes post_likes_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.post_likes
+    ADD CONSTRAINT post_likes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: post_likes post_likes_post_id_guest_id_key; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.post_likes
+    ADD CONSTRAINT post_likes_post_id_guest_id_key UNIQUE (post_id, guest_id);
 
 
 --
@@ -505,6 +561,20 @@ CREATE INDEX idx_cast_posts_created_at_desc ON social.cast_posts USING btree (cr
 
 
 --
+-- Name: social_cast_follows_cast_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_cast_follows_cast_id_index ON social.cast_follows USING btree (cast_id);
+
+
+--
+-- Name: social_cast_follows_guest_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_cast_follows_guest_id_index ON social.cast_follows USING btree (guest_id);
+
+
+--
 -- Name: social_cast_post_hashtags_post_id_index; Type: INDEX; Schema: social; Owner: -
 --
 
@@ -530,6 +600,20 @@ CREATE INDEX social_cast_post_media_post_id_index ON social.cast_post_media USIN
 --
 
 CREATE INDEX social_cast_posts_cast_id_index ON social.cast_posts USING btree (cast_id);
+
+
+--
+-- Name: social_post_likes_guest_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_post_likes_guest_id_index ON social.post_likes USING btree (guest_id);
+
+
+--
+-- Name: social_post_likes_post_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_post_likes_post_id_index ON social.post_likes USING btree (post_id);
 
 
 --
@@ -613,6 +697,14 @@ ALTER TABLE ONLY social.cast_post_media
 
 
 --
+-- Name: post_likes post_likes_post_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.post_likes
+    ADD CONSTRAINT post_likes_post_id_fkey FOREIGN KEY (post_id) REFERENCES social.cast_posts(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -640,4 +732,6 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260131001000_create_genres.rb'),
 ('20260131002000_create_cast_genres.rb'),
 ('20260201000000_create_guests.rb'),
-('20260201000001_add_tagline_bio_to_guests.rb');
+('20260201000001_add_tagline_bio_to_guests.rb'),
+('20260203000000_create_post_likes.rb'),
+('20260203000001_create_cast_follows.rb');

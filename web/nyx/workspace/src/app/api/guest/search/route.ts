@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
+import { buildGrpcHeaders } from "@/lib/request";
 import { mapCastProfileToFrontend } from "@/modules/portfolio/lib/cast/profile";
 import {
   CastVisibility,
@@ -30,16 +31,19 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    const response = await castClient.listCasts({
-      visibilityFilter: CastVisibility.PUBLISHED,
-      genreId,
-      tag,
-      statusFilter: parseStatusFilter(status),
-      areaId,
-      query,
-      limit,
-      offset,
-    });
+    const response = await castClient.listCasts(
+      {
+        visibilityFilter: CastVisibility.PUBLISHED,
+        genreId,
+        tag,
+        statusFilter: parseStatusFilter(status),
+        areaId,
+        query,
+        limit,
+        offset,
+      },
+      { headers: buildGrpcHeaders(req.headers) }
+    );
 
     const items = (response.items || []).map((item) => {
       const profile = item.profile

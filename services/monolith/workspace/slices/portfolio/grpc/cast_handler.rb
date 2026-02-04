@@ -45,10 +45,12 @@ module Portfolio
       # === Cast Profile ===
 
       def get_cast_profile
-        user_id = request.message.user_id
-        user_id = current_user_id if (user_id.nil? || user_id.empty?) && current_user_id
+        lookup_id = request.message.user_id
+        lookup_id = current_user_id if (lookup_id.nil? || lookup_id.empty?) && current_user_id
 
-        result = get_profile_uc.call(user_id: user_id)
+        # Try by user_id first, then by cast id
+        result = get_profile_uc.call(user_id: lookup_id)
+        result ||= get_profile_uc.call(id: lookup_id)
         unless result
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
         end

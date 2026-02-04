@@ -16,8 +16,34 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
+    // Explicitly map to ensure all fields are serialized
+    const posts = response.posts.map((post) => ({
+      id: post.id,
+      castId: post.castId,
+      content: post.content,
+      media: post.media.map((m) => ({
+        id: m.id,
+        mediaType: m.mediaType,
+        url: m.url,
+        thumbnailUrl: m.thumbnailUrl,
+      })),
+      createdAt: post.createdAt,
+      author: post.author
+        ? {
+            id: post.author.id,
+            name: post.author.name,
+            imageUrl: post.author.imageUrl,
+          }
+        : null,
+      likesCount: post.likesCount,
+      commentsCount: post.commentsCount,
+      visible: post.visible,
+      hashtags: post.hashtags,
+      liked: post.liked,
+    }));
+
     return NextResponse.json({
-      posts: response.posts,
+      posts,
       nextCursor: response.nextCursor,
       hasMore: response.hasMore,
     });

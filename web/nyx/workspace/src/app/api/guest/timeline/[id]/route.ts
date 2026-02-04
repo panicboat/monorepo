@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { socialClient } from "@/lib/grpc";
-import { generateRequestId, HEADER_NAMES } from "@/lib/request";
+import { buildGrpcHeaders } from "@/lib/request";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -10,18 +10,43 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    const requestId = req.headers.get(HEADER_NAMES.REQUEST_ID) || generateRequestId();
-    const headers: Record<string, string> = {
-      [HEADER_NAMES.REQUEST_ID]: requestId,
-    };
-
-    const response = await socialClient.getCastPost({ id }, { headers });
+    const response = await socialClient.getCastPost(
+      { id },
+      { headers: buildGrpcHeaders(req.headers) }
+    );
 
     if (!response.post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ post: response.post });
+    const post = response.post;
+    // Explicitly map to ensure all fields are serialized
+    const mappedPost = {
+      id: post.id,
+      castId: post.castId,
+      content: post.content,
+      media: post.media.map((m) => ({
+        id: m.id,
+        mediaType: m.mediaType,
+        url: m.url,
+        thumbnailUrl: m.thumbnailUrl,
+      })),
+      createdAt: post.createdAt,
+      author: post.author
+        ? {
+            id: post.author.id,
+            name: post.author.name,
+            imageUrl: post.author.imageUrl,
+          }
+        : null,
+      likesCount: post.likesCount,
+      commentsCount: post.commentsCount,
+      visible: post.visible,
+      hashtags: post.hashtags,
+      liked: post.liked,
+    };
+
+    return NextResponse.json({ post: mappedPost });
   } catch (error: unknown) {
     console.error("GetCastPost Error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";

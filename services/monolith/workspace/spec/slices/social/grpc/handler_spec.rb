@@ -15,7 +15,8 @@ RSpec.describe Social::Grpc::Handler do
       message: message,
       list_posts_uc: list_posts_uc,
       save_post_uc: save_post_uc,
-      delete_post_uc: delete_post_uc
+      delete_post_uc: delete_post_uc,
+      like_repo: like_repo
     )
   }
   let(:message) { double(:message) }
@@ -24,6 +25,7 @@ RSpec.describe Social::Grpc::Handler do
   let(:list_posts_uc) { double(:list_posts_uc) }
   let(:save_post_uc) { double(:save_post_uc) }
   let(:delete_post_uc) { double(:delete_post_uc) }
+  let(:like_repo) { double(:like_repo) }
 
   let(:mock_cast) do
     double(
@@ -67,6 +69,7 @@ RSpec.describe Social::Grpc::Handler do
       expect(list_posts_uc).to receive(:call)
         .with(cast_id: "cast-123", limit: 20, cursor: nil)
         .and_return({ posts: [mock_post], next_cursor: nil, has_more: false })
+      allow(like_repo).to receive(:likes_count_batch).and_return({})
 
       response = handler.list_cast_posts
 
@@ -84,12 +87,14 @@ RSpec.describe Social::Grpc::Handler do
       handler_with_cursor = described_class.new(
         method_key: :test, service: double, rpc_desc: double, active_call: double,
         message: let_message,
-        list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc
+        list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc,
+        like_repo: like_repo
       )
 
       expect(list_posts_uc).to receive(:call)
         .with(cast_id: "cast-123", limit: 10, cursor: cursor)
         .and_return({ posts: [], next_cursor: nil, has_more: false })
+      allow(like_repo).to receive(:likes_count_batch).and_return({})
 
       handler_with_cursor.list_cast_posts
     end
@@ -100,21 +105,41 @@ RSpec.describe Social::Grpc::Handler do
       handler_zero = described_class.new(
         method_key: :test, service: double, rpc_desc: double, active_call: double,
         message: message_zero,
-        list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc
+        list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc,
+        like_repo: like_repo
       )
 
       expect(list_posts_uc).to receive(:call)
         .with(cast_id: "cast-123", limit: 20, cursor: nil)
         .and_return({ posts: [], next_cursor: nil, has_more: false })
+      allow(like_repo).to receive(:likes_count_batch).and_return({})
 
       handler_zero.list_cast_posts
     end
 
-    it "raises unauthenticated when no user" do
+    it "returns public timeline when no user (unauthenticated)" do
       allow(Current).to receive(:user_id).and_return(nil)
-      expect { handler.list_cast_posts }.to raise_error(GRPC::BadStatus) { |e|
-        expect(e.code).to eq(GRPC::Core::StatusCodes::UNAUTHENTICATED)
-      }
+
+      list_public_posts_uc = double(:list_public_posts_uc)
+      like_repo = double(:like_repo)
+
+      handler_unauth = described_class.new(
+        method_key: :test, service: double, rpc_desc: double, active_call: double,
+        message: message,
+        list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc,
+        list_public_posts_uc: list_public_posts_uc, like_repo: like_repo
+      )
+
+      allow(list_public_posts_uc).to receive(:call)
+        .with(limit: 20, cursor: nil, cast_id: nil)
+        .and_return({ posts: [mock_post], next_cursor: nil, has_more: false, authors: { "cast-123" => mock_cast } })
+      allow(like_repo).to receive(:likes_count_batch).and_return({})
+      allow(like_repo).to receive(:liked_status_batch).and_return({})
+
+      response = handler_unauth.list_cast_posts
+
+      expect(response).to be_a(::Social::V1::ListCastPostsResponse)
+      expect(response.posts.size).to eq(1)
     end
   end
 

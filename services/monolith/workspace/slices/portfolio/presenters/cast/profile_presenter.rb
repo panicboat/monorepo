@@ -13,6 +13,7 @@ module Portfolio
           avatar_key = nil if avatar_key.to_s.empty?
 
           ::Portfolio::V1::CastProfile.new(
+            id: cast.id.to_s,
             user_id: cast.user_id.to_s,
             handle: cast.respond_to?(:handle) ? (cast.handle || "") : "",
             name: cast.name,

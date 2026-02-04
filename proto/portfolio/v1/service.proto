@@ -74,6 +74,7 @@ message CastProfile {
   repeated Area areas = 20;
   repeated Genre genres = 21;
   bool is_online = 22; // Currently within scheduled availability
+  string id = 23; // Cast profile ID
 }
 
 message CastPlan {

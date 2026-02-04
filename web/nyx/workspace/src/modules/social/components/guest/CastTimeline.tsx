@@ -137,7 +137,7 @@ function PostCard({ post }: { post: CastPost }) {
   }));
 
   return (
-    <Link href={`/timeline/${post.id}`}>
+    <Link href={`/timeline/${post.id}`} className="block">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -305,7 +305,7 @@ export function CastTimeline({ castId }: CastTimelineProps) {
           No posts yet
         </div>
       ) : layout === "list" ? (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {posts.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}

@@ -22,6 +22,7 @@ function visibilityToString(v: CastVisibility): string {
  */
 export function mapCastProfileToFrontend(p: CastProfile) {
   return {
+    id: p.id,
     visibility: visibilityToString(p.visibility),
     name: p.name,
     handle: p.handle || "",

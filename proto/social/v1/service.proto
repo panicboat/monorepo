@@ -7,6 +7,17 @@ service TimelineService {
   rpc GetCastPost(GetCastPostRequest) returns (GetCastPostResponse);
   rpc SaveCastPost(SaveCastPostRequest) returns (SaveCastPostResponse);
   rpc DeleteCastPost(DeleteCastPostRequest) returns (DeleteCastPostResponse);
+
+  // Like RPCs
+  rpc LikeCastPost(LikeCastPostRequest) returns (LikeCastPostResponse);
+  rpc UnlikeCastPost(UnlikeCastPostRequest) returns (UnlikeCastPostResponse);
+  rpc GetPostLikeStatus(GetPostLikeStatusRequest) returns (GetPostLikeStatusResponse);
+
+  // Follow RPCs
+  rpc FollowCast(FollowCastRequest) returns (FollowCastResponse);
+  rpc UnfollowCast(UnfollowCastRequest) returns (UnfollowCastResponse);
+  rpc ListFollowing(ListFollowingRequest) returns (ListFollowingResponse);
+  rpc GetFollowStatus(GetFollowStatusRequest) returns (GetFollowStatusResponse);
 }
 
 message CastPostAuthor {
@@ -33,12 +44,14 @@ message CastPost {
   int32 comments_count = 8;
   bool visible = 9;
   repeated string hashtags = 10;
+  bool liked = 11; // whether current user liked this post
 }
 
 message ListCastPostsRequest {
   int32 limit = 1;   // default: 20, max: 50
   string cursor = 2; // optional, base64 encoded
   string cast_id = 3; // optional, filter by cast
+  string filter = 4; // optional, "following" to filter by followed casts
 }
 
 message ListCastPostsResponse {
@@ -72,3 +85,64 @@ message DeleteCastPostRequest {
 }
 
 message DeleteCastPostResponse {}
+
+// Like Messages
+message LikeCastPostRequest {
+  string post_id = 1;
+}
+
+message LikeCastPostResponse {
+  int32 likes_count = 1;
+}
+
+message UnlikeCastPostRequest {
+  string post_id = 1;
+}
+
+message UnlikeCastPostResponse {
+  int32 likes_count = 1;
+}
+
+message GetPostLikeStatusRequest {
+  repeated string post_ids = 1;
+}
+
+message GetPostLikeStatusResponse {
+  map<string, bool> liked = 1; // post_id -> is_liked
+}
+
+// Follow Messages
+message FollowCastRequest {
+  string cast_id = 1;
+}
+
+message FollowCastResponse {
+  bool success = 1;
+}
+
+message UnfollowCastRequest {
+  string cast_id = 1;
+}
+
+message UnfollowCastResponse {
+  bool success = 1;
+}
+
+message ListFollowingRequest {
+  int32 limit = 1;
+  string cursor = 2;
+}
+
+message ListFollowingResponse {
+  repeated string cast_ids = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message GetFollowStatusRequest {
+  repeated string cast_ids = 1;
+}
+
+message GetFollowStatusResponse {
+  map<string, bool> following = 1; // cast_id -> is_following
+}

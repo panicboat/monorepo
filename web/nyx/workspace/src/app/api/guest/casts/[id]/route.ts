@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
+import { buildGrpcHeaders } from "@/lib/request";
 import { ConnectError } from "@connectrpc/connect";
 import { mapCastProfileToFrontend } from "@/modules/portfolio/lib/cast/profile";
 import { CastVisibility } from "@/stub/portfolio/v1/service_pb";
@@ -14,11 +15,13 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // If id matches UUID format, lookup by userId; otherwise lookup by handle
+    // If id matches UUID format, lookup by userId/castId; otherwise lookup by handle
+    // The backend will try user_id first, then cast_id
     const isUuid = UUID_REGEX.test(id);
+    const headers = { headers: buildGrpcHeaders(req.headers) };
     const response = isUuid
-      ? await castClient.getCastProfile({ userId: id })
-      : await castClient.getCastProfileByHandle({ handle: id });
+      ? await castClient.getCastProfile({ userId: id }, headers)
+      : await castClient.getCastProfileByHandle({ handle: id }, headers);
 
     if (!response.profile) {
       return NextResponse.json({ error: "Not Found" }, { status: 404 });

@@ -52,6 +52,7 @@ function castPostToFeedItem(post: CastPost): FeedItem {
     comments: post.commentsCount,
     visible: post.visible,
     hashtags: post.hashtags,
+    liked: post.liked,
   };
 }
 
@@ -61,6 +62,7 @@ export default function CastTimelinePage() {
   const { posts, loading, hasMore, fetchPosts, loadMore, savePost, toggleVisibility, deletePost, removePostLocally, restorePostLocally } = useCastPosts();
   const { avatarUrl } = useCastData({ apiPath: "/api/cast/profile" });
   const pendingDeletes = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const isHydrated = useAuthStore((state) => state.isHydrated);
 
   const MAX_MEDIA = 10;
 
@@ -74,9 +76,12 @@ export default function CastTimelinePage() {
   const videoInputRef = useRef<HTMLInputElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
+  // Wait for hydration to ensure auth token is available
   useEffect(() => {
-    fetchPosts().catch(() => {});
-  }, [fetchPosts]);
+    if (isHydrated) {
+      fetchPosts().catch(() => {});
+    }
+  }, [fetchPosts, isHydrated]);
 
   useEffect(() => {
     const timers = pendingDeletes.current;

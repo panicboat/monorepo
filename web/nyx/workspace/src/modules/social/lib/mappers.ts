@@ -12,6 +12,7 @@ export function mapApiToPost(apiPost: any): CastPost {
     commentsCount: apiPost.commentsCount || 0,
     visible: apiPost.visible !== false,
     hashtags: apiPost.hashtags || [],
+    liked: apiPost.liked || false,
   };
 }
 
