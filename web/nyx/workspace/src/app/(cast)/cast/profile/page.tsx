@@ -147,19 +147,19 @@ export default function ProfileEditPage() {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Loader2 className="animate-spin text-pink-500" />
+        <Loader2 className="animate-spin text-role-cast" />
       </div>
     );
   }
 
   return (
-    <div className="pb-24 bg-slate-50 min-h-screen">
+    <div className="pb-24 bg-surface-secondary min-h-screen">
       <div className="px-4 py-6 space-y-6">
         {/* Top Preview Button */}
         <div className="flex justify-center">
           <button
             onClick={() => setShowPreview(true)}
-            className="flex items-center gap-2 text-pink-500 font-bold bg-white border border-pink-100 px-6 py-2 rounded-full hover:bg-pink-50 transition-colors shadow-sm"
+            className="flex items-center gap-2 text-role-cast font-bold bg-surface border border-role-cast-light px-6 py-2 rounded-full hover:bg-role-cast-lighter transition-colors shadow-sm"
           >
             <Eye size={18} />
             <span>Preview Profile</span>
@@ -180,7 +180,7 @@ export default function ProfileEditPage() {
             <button
               type="button"
               onClick={() => avatarInputRef.current?.click()}
-              className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-pink-300 hover:bg-pink-50/30"
+              className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-dashed border-border bg-surface-secondary transition-all hover:border-role-cast-light hover:bg-role-cast-lighter/30"
             >
               {avatarPreview ? (
                 <img
@@ -190,7 +190,7 @@ export default function ProfileEditPage() {
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
-                  <Camera className="h-6 w-6 text-slate-400 group-hover:text-pink-500 transition-colors" />
+                  <Camera className="h-6 w-6 text-text-muted group-hover:text-role-cast transition-colors" />
                 </div>
               )}
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100 rounded-full">
@@ -204,8 +204,8 @@ export default function ProfileEditPage() {
               accept="image/*"
               onChange={handleAvatarSelect}
             />
-            <div className="text-xs text-slate-500 leading-relaxed">
-              <p className="font-medium text-slate-700">Profile Avatar</p>
+            <div className="text-xs text-text-secondary leading-relaxed">
+              <p className="font-medium text-text-secondary">Profile Avatar</p>
               <p>タイムラインやチャットで表示される正方形のアイコンです。</p>
               <p>未設定の場合はカバー写真が使用されます。</p>
             </div>
@@ -239,7 +239,7 @@ export default function ProfileEditPage() {
           id="workstyle"
           title="Work Style"
           icon={
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-500 text-xs shadow-sm font-bold">
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-surface-secondary text-text-secondary text-xs shadow-sm font-bold">
               W
             </span>
           }
@@ -257,7 +257,7 @@ export default function ProfileEditPage() {
           id="physical"
           title="Physical Info"
           icon={
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-pink-100 text-pink-500 text-xs shadow-sm font-bold">
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-role-cast-light text-role-cast text-xs shadow-sm font-bold">
               P
             </span>
           }
@@ -272,7 +272,7 @@ export default function ProfileEditPage() {
           id="tags"
           title="Tags"
           icon={
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-pink-100 text-pink-500 text-xs shadow-sm font-bold">
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-role-cast-light text-role-cast text-xs shadow-sm font-bold">
               #
             </span>
           }
@@ -287,7 +287,7 @@ export default function ProfileEditPage() {
           id="social"
           title="Social Links"
           icon={
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-500 text-xs shadow-sm font-bold">
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-info-lighter text-info text-xs shadow-sm font-bold">
               @
             </span>
           }

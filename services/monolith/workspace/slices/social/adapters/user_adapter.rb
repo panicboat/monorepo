@@ -27,6 +27,19 @@ module Social
         user.role == ROLE_CAST ? "cast" : "guest"
       end
 
+      # Batch get user types by user IDs.
+      #
+      # @param user_ids [Array<String>] the user IDs to look up
+      # @return [Hash<String, String>] hash of user_id => "guest" or "cast"
+      def get_user_types_batch(user_ids)
+        return {} if user_ids.nil? || user_ids.empty?
+
+        users = identity_user_repository.find_by_ids(user_ids)
+        users.each_with_object({}) do |user, hash|
+          hash[user.id] = user.role == ROLE_CAST ? "cast" : "guest"
+        end
+      end
+
       private
 
       def identity_user_repository

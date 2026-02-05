@@ -50,7 +50,7 @@ export function CommentItem({
   const isCast = comment.author?.userType === "cast";
 
   return (
-    <div className={`${isReply ? "ml-8 border-l-2 border-slate-100 pl-4" : ""}`}>
+    <div className={`${isReply ? "ml-8 border-l-2 border-border pl-4" : ""}`}>
       <div className="py-3">
         {/* Author Info */}
         <div className="flex items-start gap-3">
@@ -58,32 +58,32 @@ export function CommentItem({
             <img
               src={comment.author.imageUrl}
               alt={comment.author.name || ""}
-              className="h-8 w-8 rounded-full border border-slate-100 object-cover flex-shrink-0"
+              className="h-8 w-8 rounded-full border border-border object-cover flex-shrink-0"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
                 e.currentTarget.nextElementSibling?.classList.remove("hidden");
               }}
             />
           ) : null}
-          <div className={`h-8 w-8 rounded-full bg-slate-200 border border-slate-100 flex-shrink-0 ${comment.author?.imageUrl && comment.author.imageUrl.trim() !== "" ? "hidden" : ""}`} />
+          <div className={`h-8 w-8 rounded-full bg-border border border-border flex-shrink-0 ${comment.author?.imageUrl && comment.author.imageUrl.trim() !== "" ? "hidden" : ""}`} />
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-medium text-sm text-slate-800">
+              <span className="font-medium text-sm text-text-primary">
                 {comment.author?.name || "Unknown"}
               </span>
               {isCast && (
-                <Badge variant="secondary" className="text-xs bg-slate-800 text-white">
+                <Badge variant="secondary" className="text-xs bg-neutral-800 text-white">
                   Cast
                 </Badge>
               )}
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-text-muted">
                 {formatTimeAgo(comment.createdAt)}
               </span>
             </div>
 
             {/* Content */}
-            <p className="text-sm text-slate-700 mt-1 whitespace-pre-wrap break-words">
+            <p className="text-sm text-text-secondary mt-1 whitespace-pre-wrap break-words">
               {comment.content}
             </p>
 
@@ -116,9 +116,10 @@ export function CommentItem({
               {!isReply && (
                 <button
                   onClick={() => onReply(comment.id)}
-                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label="Reply to this comment"
+                  className="flex items-center gap-1 text-xs text-text-muted hover:text-text-secondary transition-colors"
                 >
-                  <MessageCircle size={14} />
+                  <MessageCircle aria-hidden="true" size={14} />
                   <span>Reply</span>
                 </button>
               )}
@@ -127,12 +128,13 @@ export function CommentItem({
                 <button
                   onClick={() => onDelete(comment.id, isReply ? comment.parentId : undefined)}
                   disabled={isDeleting}
-                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                  aria-label="Delete this comment"
+                  className="flex items-center gap-1 text-xs text-text-muted hover:text-error transition-colors disabled:opacity-50"
                 >
                   {isDeleting ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <Loader2 aria-hidden="true" size={14} className="animate-spin" />
                   ) : (
-                    <Trash2 size={14} />
+                    <Trash2 aria-hidden="true" size={14} />
                   )}
                   <span>Delete</span>
                 </button>
@@ -143,16 +145,18 @@ export function CommentItem({
             {!isReply && comment.repliesCount > 0 && (
               <button
                 onClick={onToggleReplies}
-                className="flex items-center gap-1 mt-2 text-xs text-slate-500 hover:text-slate-700 transition-colors"
+                aria-expanded={repliesExpanded}
+                aria-label={repliesExpanded ? "Hide replies" : `View ${comment.repliesCount} replies`}
+                className="flex items-center gap-1 mt-2 text-xs text-text-secondary hover:text-text-secondary transition-colors"
               >
                 {repliesExpanded ? (
                   <>
-                    <ChevronUp size={14} />
+                    <ChevronUp aria-hidden="true" size={14} />
                     <span>Hide replies</span>
                   </>
                 ) : (
                   <>
-                    <ChevronDown size={14} />
+                    <ChevronDown aria-hidden="true" size={14} />
                     <span>View replies ({comment.repliesCount})</span>
                   </>
                 )}
@@ -174,7 +178,7 @@ export function CommentItem({
             >
               {repliesLoading && replies.length === 0 ? (
                 <div className="ml-8 py-4 flex justify-center">
-                  <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                  <Loader2 className="h-5 w-5 animate-spin text-text-muted" />
                 </div>
               ) : (
                 <>
@@ -193,10 +197,11 @@ export function CommentItem({
                     <button
                       onClick={onLoadMoreReplies}
                       disabled={repliesLoading}
-                      className="ml-8 py-2 text-xs text-slate-500 hover:text-slate-700 disabled:opacity-50"
+                      aria-label="Load more replies"
+                      className="ml-8 py-2 text-xs text-text-secondary hover:text-text-secondary disabled:opacity-50"
                     >
                       {repliesLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin inline mr-1" />
+                        <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin inline mr-1" />
                       ) : null}
                       Load more replies
                     </button>

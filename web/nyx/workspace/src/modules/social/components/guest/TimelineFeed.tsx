@@ -149,19 +149,21 @@ export const TimelineFeed = ({
     <div className="space-y-4 py-4 min-h-screen">
       {mode === "guest" && (
         <div className="px-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold font-serif text-slate-800">
+          <h2 className="text-lg font-bold font-serif text-text-primary">
             Timeline
           </h2>
 
           {/* Filter Tabs */}
-          <div className="flex bg-slate-100 p-1 rounded-lg">
+          <div className="flex bg-surface-secondary p-1 rounded-lg" role="tablist" aria-label="Timeline filters">
             {(["all", "following", "favorites"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => handleFilterChange(tab)}
+                role="tab"
+                aria-selected={filter === tab}
                 className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${filter === tab
-                  ? "bg-white text-slate-800 shadow-sm"
-                  : "text-slate-400 hover:text-slate-600"
+                  ? "bg-surface text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-secondary"
                   }`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -173,12 +175,12 @@ export const TimelineFeed = ({
 
       <div className="space-y-6 px-4 pb-20">
         {isInitialLoading || (!items && !isLoaded) ? (
-          <div className="py-10 text-center text-slate-400 text-sm">
+          <div className="py-10 text-center text-text-muted text-sm">
             <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
             Loading...
           </div>
         ) : error ? (
-          <div className="py-10 text-center text-red-400 text-sm">
+          <div className="py-10 text-center text-error text-sm">
             Failed to load posts. Please try again.
           </div>
         ) : filteredFeed.length > 0 ? (
@@ -196,7 +198,7 @@ export const TimelineFeed = ({
             {mode === "guest" && !items && hasMore && (
               <div ref={loadMoreRef} className="pt-4 text-center">
                 {loading && (
-                  <div className="flex items-center justify-center gap-2 text-slate-400">
+                  <div className="flex items-center justify-center gap-2 text-text-muted">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span className="text-sm">Loading...</span>
                   </div>
@@ -205,7 +207,7 @@ export const TimelineFeed = ({
             )}
           </>
         ) : (
-          <div className="py-10 text-center text-slate-400 text-sm">
+          <div className="py-10 text-center text-text-muted text-sm">
             {mode === "cast"
               ? "No posts yet. Share something!"
               : filter === "all"
@@ -278,23 +280,28 @@ function MediaCarousel({ media, onClick }: { media: FeedMediaItem[]; onClick?: (
         <>
           <button
             onClick={goPrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm transition-colors"
+            aria-label="Previous image"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-surface/80 hover:bg-surface rounded-full p-1 shadow-sm transition-colors"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft aria-hidden="true" size={16} />
           </button>
           <button
             onClick={goNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm transition-colors"
+            aria-label="Next image"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-surface/80 hover:bg-surface rounded-full p-1 shadow-sm transition-colors"
           >
-            <ChevronRight size={16} />
+            <ChevronRight aria-hidden="true" size={16} />
           </button>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1" role="tablist" aria-label="Image navigation">
             {media.map((_, i) => (
               <button
                 key={i}
                 onClick={(e) => goTo(e, i)}
+                role="tab"
+                aria-selected={i === currentIndex}
+                aria-label={`Go to image ${i + 1}`}
                 className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                  i === currentIndex ? "bg-white" : "bg-white/50"
+                  i === currentIndex ? "bg-surface" : "bg-surface/50"
                 }`}
               />
             ))}
@@ -382,24 +389,24 @@ export const TimelineItem = ({
       onClick={onClick}
       className={`rounded-2xl border p-4 shadow-sm relative group ${
         isHidden
-          ? "border-dashed border-slate-300 bg-slate-50/80 opacity-60"
-          : "border-slate-100 bg-white"
-      } ${onClick ? "cursor-pointer hover:border-blue-200 transition-colors" : ""}`}
+          ? "border-dashed border-border-secondary bg-surface-secondary/80 opacity-60"
+          : "border-border bg-surface"
+      } ${onClick ? "cursor-pointer hover:border-info-light transition-colors" : ""}`}
     >
       <div className="mb-3 flex items-center gap-3">
         {item.castImage ? (
           <img
             src={item.castImage}
             alt={item.castName}
-            className="h-10 w-10 rounded-full border border-slate-100 object-cover"
+            className="h-10 w-10 rounded-full border border-border object-cover"
           />
         ) : (
-          <div className="h-10 w-10 rounded-full border border-slate-100 bg-slate-200 shrink-0" />
+          <div className="h-10 w-10 rounded-full border border-border bg-border shrink-0" />
         )}
         <div className="flex items-center gap-2">
           <div>
-            <div className="font-bold text-slate-800">{item.castName}</div>
-            <div className="text-xs text-slate-400">{item.time}</div>
+            <div className="font-bold text-text-primary">{item.castName}</div>
+            <div className="text-xs text-text-muted">{item.time}</div>
           </div>
         </div>
         {mode === "cast" && (
@@ -413,7 +420,7 @@ export const TimelineItem = ({
                   onToggleVisibility(item.id, isHidden);
                 }}
                 title={isHidden ? "Make this post public" : "Hide this post from guests"}
-                className={`gap-1 text-xs ${isHidden ? "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50" : "text-slate-300 hover:text-slate-500 hover:bg-slate-50"}`}
+                className={`gap-1 text-xs ${isHidden ? "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50" : "text-text-muted hover:text-text-secondary hover:bg-surface-secondary"}`}
               >
                 {isHidden ? <Lock size={14} /> : <LockOpen size={14} />}
                 <span>{isHidden ? "Private" : "Public"}</span>
@@ -428,7 +435,7 @@ export const TimelineItem = ({
                   onDelete(item.id);
                 }}
                 title="Delete this post"
-                className="text-slate-300 hover:text-red-500 hover:bg-red-50"
+                className="text-text-muted hover:text-error hover:bg-error-lighter"
               >
                 <Trash2 size={16} />
               </Button>
@@ -436,13 +443,13 @@ export const TimelineItem = ({
           </div>
         )}
       </div>
-      <p className="mb-3 text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">
+      <p className="mb-3 text-sm leading-relaxed text-text-secondary whitespace-pre-wrap">
         {item.content}
       </p>
       {item.hashtags && item.hashtags.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-1.5">
           {item.hashtags.map((tag, i) => (
-            <Badge key={i} variant="secondary" className="text-xs bg-blue-50 text-blue-500 hover:bg-blue-100">
+            <Badge key={i} variant="secondary" className="text-xs bg-info-lighter text-info hover:bg-info-light">
               #{tag}
             </Badge>
           ))}
@@ -460,11 +467,13 @@ export const TimelineItem = ({
           />
         </div>
       )}
-      <div className="flex items-center gap-6 border-t border-slate-50 pt-3 text-slate-400">
+      <div className="flex items-center gap-6 border-t border-border pt-3 text-text-muted">
         <button
           onClick={handleLike}
           disabled={isLikeLoading || mode === "cast"}
-          className={`flex items-center gap-1.5 text-xs transition-colors ${liked ? "text-pink-500" : "text-slate-400 hover:text-pink-300"} ${isLikeLoading || mode === "cast" ? "opacity-50 cursor-default hover:text-slate-400" : ""}`}
+          aria-label={liked ? "Unlike this post" : "Like this post"}
+          aria-pressed={liked}
+          className={`flex items-center gap-1.5 text-xs transition-colors ${liked ? "text-role-cast" : "text-text-muted hover:text-role-cast-light"} ${isLikeLoading || mode === "cast" ? "opacity-50 cursor-default hover:text-text-muted" : ""}`}
         >
           <motion.div
             key={liked ? "liked" : "unliked"}
@@ -472,12 +481,12 @@ export const TimelineItem = ({
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
+            <Heart aria-hidden="true" className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
           </motion.div>
           <span>{likesCount}</span>
         </button>
-        <button className="flex items-center gap-1.5 text-xs hover:text-indigo-500 transition-colors">
-          <MessageCircle className="h-4 w-4" />
+        <button aria-label={`View ${item.comments} comments`} className="flex items-center gap-1.5 text-xs hover:text-special transition-colors">
+          <MessageCircle aria-hidden="true" className="h-4 w-4" />
           <span>{item.comments}</span>
         </button>
       </div>

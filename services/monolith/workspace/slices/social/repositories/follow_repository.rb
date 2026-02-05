@@ -27,7 +27,14 @@ module Social
           scope = scope.where { created_at < cursor[:created_at] }
         end
 
-        scope.order { created_at.desc }.limit(limit + 1).to_a
+        records = scope.order { created_at.desc }.limit(limit + 1).to_a
+        has_more = records.size > limit
+        records = records.first(limit) if has_more
+
+        {
+          cast_ids: records.map(&:cast_id),
+          has_more: has_more
+        }
       end
 
       def following_cast_ids(guest_id:)

@@ -18,8 +18,8 @@ export const PhotoGallery = ({
   // If no images, show placeholder
   if (!images || images.length === 0) {
     return (
-      <div className="relative h-[65vh] w-full bg-slate-200 overflow-hidden flex items-center justify-center">
-        <div className="text-center text-slate-400">
+      <div className="relative h-[65vh] w-full bg-border overflow-hidden flex items-center justify-center">
+        <div className="text-center text-text-muted">
           <ImageOff className="w-16 h-16 mx-auto mb-2 opacity-50" />
           <p className="text-sm">No photos available</p>
         </div>
@@ -49,7 +49,7 @@ export const PhotoGallery = ({
   };
 
   return (
-    <div className="relative h-[65vh] w-full bg-slate-900 overflow-hidden group">
+    <div className="relative h-[65vh] w-full bg-neutral-900 overflow-hidden group">
       {/* Main Image Slider */}
       <motion.div
         className="flex h-full w-full"

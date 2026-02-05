@@ -94,9 +94,9 @@ export default function ConciergePage() {
   return (
     <div className="flex flex-col h-[calc(100vh-7rem)]">
       {/* Header - Custom for Chat View */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-100 sticky top-0 z-10">
+      <div className="flex items-center justify-between px-4 py-3 bg-surface border-b border-border sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <Link href="/cast/concierge" className="text-slate-400 hover:text-slate-600">
+          <Link href="/cast/concierge" className="text-text-muted hover:text-text-secondary">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-2">
@@ -105,20 +105,20 @@ export default function ConciergePage() {
               <AvatarFallback>T</AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-bold text-slate-800">Takuya</p>
-              <p className="text-[10px] text-green-500 font-bold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+              <p className="text-sm font-bold text-text-primary">Takuya</p>
+              <p className="text-[10px] text-success font-bold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
                 Online
               </p>
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="text-slate-400">
+        <Button variant="ghost" size="icon" className="text-text-muted">
           <MoreVertical className="w-5 h-5" />
         </Button>
       </div>
       {/* Message List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-surface-secondary">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -127,13 +127,13 @@ export default function ConciergePage() {
             {msg.type === "text" ? (
               <div
                 className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow-sm ${msg.sender === "me"
-                  ? "bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-br-none"
-                  : "bg-white text-slate-700 rounded-bl-none border border-slate-100"
+                  ? "bg-gradient-to-br from-role-cast to-role-cast-hover text-white rounded-br-none"
+                  : "bg-surface text-text-secondary rounded-bl-none border border-border"
                   }`}
               >
                 <p>{msg.content}</p>
                 <p
-                  className={`text-[10px] mt-1 text-right ${msg.sender === "me" ? "text-pink-100" : "text-slate-400"
+                  className={`text-[10px] mt-1 text-right ${msg.sender === "me" ? "text-role-cast-light" : "text-text-muted"
                     }`}
                 >
                   {msg.time} {msg.status === "read" && "Read"}
@@ -141,35 +141,35 @@ export default function ConciergePage() {
               </div>
             ) : (
               /* Invitation Card */
-              (<div className="max-w-[85%] bg-white rounded-2xl rounded-br-none p-0 overflow-hidden shadow-md border border-pink-100">
-                <div className="bg-gradient-to-r from-pink-500 to-rose-500 p-3 flex items-center justify-between text-white">
+              (<div className="max-w-[85%] bg-surface rounded-2xl rounded-br-none p-0 overflow-hidden shadow-md border border-role-cast-light">
+                <div className="bg-gradient-to-r from-role-cast to-role-cast-hover p-3 flex items-center justify-between text-white">
                   <div className="flex items-center gap-2">
                     <Ticket className="w-4 h-4" />
                     <span className="font-bold text-sm">Review Invitation</span>
                   </div>
-                  <span className="bg-white/20 text-[10px] px-2 py-0.5 rounded-full backdrop-blur-sm">
+                  <span className="bg-surface/20 text-[10px] px-2 py-0.5 rounded-full backdrop-blur-sm">
                     Pending
                   </span>
                 </div>
                 <div className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center flex-shrink-0">
-                      <Calendar className="w-5 h-5 text-pink-500" />
+                    <div className="w-10 h-10 rounded-full bg-role-cast-lighter flex items-center justify-center flex-shrink-0">
+                      <Calendar className="w-5 h-5 text-role-cast" />
                     </div>
                     <div>
-                      <p className="text-xs text-slate-400 font-bold uppercase">Time</p>
-                      <p className="font-bold text-slate-800">{msg.invitation?.time}</p>
-                      <p className="text-xs text-slate-500">本日 (Today)</p>
+                      <p className="text-xs text-text-muted font-bold uppercase">Time</p>
+                      <p className="font-bold text-text-primary">{msg.invitation?.time}</p>
+                      <p className="text-xs text-text-secondary">本日 (Today)</p>
                     </div>
                   </div>
-                  <div className="border-t border-slate-100 my-2"></div>
+                  <div className="border-t border-border my-2"></div>
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-xs text-slate-400 font-bold uppercase">Plan</p>
-                      <p className="font-bold text-slate-800 text-sm">{msg.invitation?.planName}</p>
+                      <p className="text-xs text-text-muted font-bold uppercase">Plan</p>
+                      <p className="font-bold text-text-primary text-sm">{msg.invitation?.planName}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-pink-600 font-bold">¥{msg.invitation?.price.toLocaleString()}</p>
+                      <p className="text-role-cast font-bold">¥{msg.invitation?.price.toLocaleString()}</p>
                     </div>
                   </div>
                   <Button size="sm" variant="outline" className="w-full text-xs h-8">
@@ -183,7 +183,7 @@ export default function ConciergePage() {
 
         {/* Smart Suggestion Hint */}
         <div className="flex justify-end">
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-l-2xl rounded-tr-2xl text-xs max-w-[80%] shadow-sm">
+          <div className="bg-warning-lighter border border-warning-light text-warning-hover p-3 rounded-l-2xl rounded-tr-2xl text-xs max-w-[80%] shadow-sm">
             Takuyaさんが空き状況を聞いています。<br />
             <strong>スマート招待状</strong>を送ってスムーズに日程調整しましょう！
           </div>
@@ -191,14 +191,14 @@ export default function ConciergePage() {
         <div ref={messagesEndRef} />
       </div>
       {/* Input Area */}
-      <div className="p-3 bg-white border-t border-slate-100 z-50">
+      <div className="p-3 bg-surface border-t border-border z-50">
         <div className="flex items-end gap-2">
           {/* Smart Invitation Trigger - Small Icon Button */}
           <SmartInvitationDrawer onSend={handleSendInvitation}>
             <Button
               size="icon"
               variant="cast"
-              className="rounded-full flex-shrink-0 bg-gradient-to-r from-pink-500 to-rose-500"
+              className="rounded-full flex-shrink-0 bg-gradient-to-r from-role-cast to-role-cast-hover"
             >
               <Sparkles className="w-5 h-5" />
             </Button>
@@ -208,14 +208,14 @@ export default function ConciergePage() {
             placeholder="メッセージを入力..."
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            className="flex-1 bg-slate-50 border-slate-200 rounded-3xl min-h-[2.5rem]"
+            className="flex-1 bg-surface-secondary border-border rounded-3xl min-h-[2.5rem]"
             onKeyDown={(e) => e.key === "Enter" && handleSendText()}
           />
           <Button
             size="icon"
             onClick={handleSendText}
             variant="ghost"
-            className="rounded-full text-pink-500 hover:bg-pink-50 shrink-0"
+            className="rounded-full text-role-cast hover:bg-role-cast-lighter shrink-0"
             disabled={!inputText.trim()}
           >
             <Send className="w-5 h-5" />

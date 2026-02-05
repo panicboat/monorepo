@@ -60,7 +60,7 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
     <div className="grid grid-cols-2 gap-4">
       {/* Age */}
       <div className="space-y-1">
-        <Label className="text-xs font-bold text-slate-500 uppercase">
+        <Label className="text-xs font-bold text-text-secondary uppercase">
           Age
         </Label>
         <div className="relative">
@@ -70,9 +70,9 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
             value={data.age || ""}
             onChange={handleChange}
             placeholder="20"
-            className="w-full font-bold focus-visible:ring-pink-500"
+            className="w-full font-bold focus-visible:ring-role-cast"
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-text-muted pointer-events-none">
             歳
           </span>
         </div>
@@ -80,7 +80,7 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
 
       {/* Height */}
       <div className="space-y-1">
-        <Label className="text-xs font-bold text-slate-500 uppercase">
+        <Label className="text-xs font-bold text-text-secondary uppercase">
           Height
         </Label>
         <div className="relative">
@@ -90,9 +90,9 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
             value={data.height || ""}
             onChange={handleChange}
             placeholder="160"
-            className="w-full font-bold focus-visible:ring-pink-500"
+            className="w-full font-bold focus-visible:ring-role-cast"
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-text-muted pointer-events-none">
             cm
           </span>
         </div>
@@ -100,7 +100,7 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
 
       {/* Blood Type */}
       <div className="col-span-2 space-y-1">
-        <Label className="text-xs font-bold text-slate-500 uppercase">
+        <Label className="text-xs font-bold text-text-secondary uppercase">
           Blood Type
         </Label>
         <div className="flex gap-2">
@@ -111,8 +111,8 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
               variant={data.bloodType === type ? "default" : "outline"}
               onClick={() => onChange("bloodType", type)}
               className={`flex-1 ${data.bloodType === type
-                  ? "bg-pink-500 hover:bg-pink-600 text-white border-pink-500"
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                  ? "bg-role-cast hover:bg-role-cast-hover text-white border-role-cast"
+                  : "bg-surface text-text-secondary border-border hover:bg-surface-secondary"
                 }`}
             >
               {type}
@@ -121,17 +121,17 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
         </div>
       </div>
 
-      <div className="col-span-2 border-t border-slate-100 my-2" />
+      <div className="col-span-2 border-t border-border my-2" />
 
       {/* Measurements Header */}
-      <div className="col-span-2 text-sm font-bold text-slate-800">
+      <div className="col-span-2 text-sm font-bold text-text-primary">
         Measurements
       </div>
 
       {/* Bust & Cup */}
       <div className="col-span-2 grid grid-cols-3 gap-3">
         <div className="col-span-2 space-y-1">
-          <Label className="text-xs font-bold text-slate-500 uppercase">
+          <Label className="text-xs font-bold text-text-secondary uppercase">
             Bust
           </Label>
           <div className="relative">
@@ -140,9 +140,9 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
               value={data.threeSizes?.b || ""}
               onChange={(e) => handleSizeChange("b", e.target.value)}
               placeholder="85"
-              className="w-full font-bold focus-visible:ring-pink-500"
+              className="w-full font-bold focus-visible:ring-role-cast"
             />
-            <span className="absolute right-14 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">
+            <span className="absolute right-14 top-1/2 -translate-y-1/2 text-sm font-bold text-text-muted pointer-events-none">
               cm
             </span>
             <div className="absolute right-1 top-1/2 -translate-y-1/2 ">
@@ -167,7 +167,7 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
 
       {/* Waist */}
       <div className="space-y-1">
-        <Label className="text-xs font-bold text-slate-500 uppercase">
+        <Label className="text-xs font-bold text-text-secondary uppercase">
           Waist
         </Label>
         <div className="relative">
@@ -176,9 +176,9 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
             value={data.threeSizes?.w || ""}
             onChange={(e) => handleSizeChange("w", e.target.value)}
             placeholder="58"
-            className="w-full font-bold focus-visible:ring-pink-500"
+            className="w-full font-bold focus-visible:ring-role-cast"
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-text-muted pointer-events-none">
             cm
           </span>
         </div>
@@ -186,7 +186,7 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
 
       {/* Hip */}
       <div className="space-y-1">
-        <Label className="text-xs font-bold text-slate-500 uppercase">
+        <Label className="text-xs font-bold text-text-secondary uppercase">
           Hip
         </Label>
         <div className="relative">
@@ -195,9 +195,9 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
             value={data.threeSizes?.h || ""}
             onChange={(e) => handleSizeChange("h", e.target.value)}
             placeholder="88"
-            className="w-full font-bold focus-visible:ring-pink-500"
+            className="w-full font-bold focus-visible:ring-role-cast"
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-text-muted pointer-events-none">
             cm
           </span>
         </div>

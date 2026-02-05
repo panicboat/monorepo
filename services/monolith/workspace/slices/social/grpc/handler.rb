@@ -59,6 +59,7 @@ module Social
         get_follow_status_uc: "use_cases.follows.get_follow_status",
         like_repo: "repositories.like_repository",
         follow_repo: "repositories.follow_repository",
+        comment_repo: "repositories.comment_repository",
         add_comment_uc: "use_cases.comments.add_comment",
         delete_comment_uc: "use_cases.comments.delete_comment",
         list_comments_uc: "use_cases.comments.list_comments",
@@ -474,8 +475,9 @@ module Social
         guest = find_my_guest
         post_ids = result[:posts].map(&:id)
 
-        # Get likes count and status in batch
+        # Get likes count, comments count, and liked status in batch
         likes_counts = like_repo.likes_count_batch(post_ids: post_ids)
+        comments_counts = comment_repo.comments_count_batch(post_ids: post_ids)
         liked_status = guest ? like_repo.liked_status_batch(post_ids: post_ids, guest_id: guest.id) : {}
 
         posts_with_authors = result[:posts].map do |post|
@@ -484,6 +486,7 @@ module Social
             post,
             author: author,
             likes_count: likes_counts[post.id] || 0,
+            comments_count: comments_counts[post.id] || 0,
             liked: liked_status[post.id] || false
           )
         end

@@ -101,7 +101,7 @@ export function SearchFilterOverlay({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-white"
+          className="fixed inset-0 z-50 bg-surface"
         >
           {/* Content container with slide animation */}
           <motion.div
@@ -112,14 +112,14 @@ export function SearchFilterOverlay({
             className="h-full flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <button
                 onClick={onClose}
-                className="p-2 -ml-2 text-slate-500 hover:text-slate-700"
+                className="p-2 -ml-2 text-text-secondary hover:text-text-secondary"
               >
                 <X size={24} />
               </button>
-              <h2 className="font-bold text-lg text-slate-800">
+              <h2 className="font-bold text-lg text-text-primary">
                 フィルター
               </h2>
               <div className="w-10" />
@@ -129,11 +129,11 @@ export function SearchFilterOverlay({
             <div className="flex-1 overflow-y-auto px-4 py-4 pb-32 space-y-6">
               {/* Text Search */}
               <div>
-                <label className="block text-sm font-bold text-slate-600 mb-2">
+                <label className="block text-sm font-bold text-text-secondary mb-2">
                   キーワード検索
                 </label>
-                <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 border border-slate-200">
-                  <Search className="text-slate-400 shrink-0" size={18} />
+                <div className="flex items-center gap-2 rounded-lg bg-surface-secondary px-3 py-2 border border-border">
+                  <Search className="text-text-muted shrink-0" size={18} />
                   <Input
                     type="text"
                     placeholder="名前、タグ、キャッチコピーで検索..."
@@ -144,7 +144,7 @@ export function SearchFilterOverlay({
                   {query && (
                     <button
                       onClick={() => setQuery("")}
-                      className="text-slate-400 hover:text-slate-600"
+                      className="text-text-muted hover:text-text-secondary"
                     >
                       <X size={16} />
                     </button>
@@ -154,7 +154,7 @@ export function SearchFilterOverlay({
 
               {/* Genre Selection */}
               <div>
-                <label className="block text-sm font-bold text-slate-600 mb-3">
+                <label className="block text-sm font-bold text-text-secondary mb-3">
                   ジャンル
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -163,8 +163,8 @@ export function SearchFilterOverlay({
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border
                       ${
                         genreId === ""
-                          ? "bg-blue-400 text-white border-blue-400"
-                          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                          ? "bg-info text-white border-info"
+                          : "bg-surface text-text-secondary border-border hover:bg-surface-secondary"
                       }`}
                   >
                     すべて
@@ -176,8 +176,8 @@ export function SearchFilterOverlay({
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border
                         ${
                           genreId === genre.id
-                            ? "bg-blue-400 text-white border-blue-400"
-                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                            ? "bg-info text-white border-info"
+                            : "bg-surface text-text-secondary border-border hover:bg-surface-secondary"
                         }`}
                     >
                       {genre.name}
@@ -188,7 +188,7 @@ export function SearchFilterOverlay({
 
               {/* Status Selection */}
               <div>
-                <label className="block text-sm font-bold text-slate-600 mb-3">
+                <label className="block text-sm font-bold text-text-secondary mb-3">
                   ステータス
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -206,8 +206,8 @@ export function SearchFilterOverlay({
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border
                         ${
                           status === item.key
-                            ? "bg-blue-400 text-white border-blue-400"
-                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                            ? "bg-info text-white border-info"
+                            : "bg-surface text-text-secondary border-border hover:bg-surface-secondary"
                         }`}
                     >
                       {item.label}
@@ -218,12 +218,12 @@ export function SearchFilterOverlay({
             </div>
 
             {/* Footer - Fixed at bottom */}
-            <div className="sticky bottom-0 px-4 py-4 pb-24 border-t border-slate-100 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <div className="sticky bottom-0 px-4 py-4 pb-24 border-t border-border bg-surface shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
               <div className="flex gap-3">
                 <Button
                   variant="outline"
                   onClick={handleReset}
-                  className="flex items-center gap-2 text-slate-600"
+                  className="flex items-center gap-2 text-text-secondary"
                   disabled={activeFilterCount === 0}
                 >
                   <RotateCcw size={16} />
@@ -231,7 +231,7 @@ export function SearchFilterOverlay({
                 </Button>
                 <Button
                   onClick={handleApply}
-                  className="flex-1 bg-blue-400 text-white hover:bg-blue-500"
+                  className="flex-1 bg-info text-white hover:bg-info-hover"
                 >
                   {loadingCount
                     ? "読み込み中..."

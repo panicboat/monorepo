@@ -32,8 +32,8 @@ export const CastAuthGuard = ({ children }: { children: ReactNode }) => {
 
   if (isLoading || !user || (user.role !== 2 && user.role !== "ROLE_CAST")) {
     return (
-      <div className="flex h-screen items-center justify-center bg-white">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+      <div className="flex h-screen items-center justify-center bg-surface">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-role-cast border-t-transparent" />
       </div>
     );
   }

@@ -54,10 +54,10 @@ export const RankingWidget = () => {
   return (
     <div className="py-2">
       <div className="mb-3 flex items-center justify-between px-4">
-        <h2 className="text-lg font-bold font-serif text-slate-800">
+        <h2 className="text-lg font-bold font-serif text-text-primary">
           Trust Ranking
         </h2>
-        <span className="text-xs font-bold text-blue-400">Weekly</span>
+        <span className="text-xs font-bold text-info">Weekly</span>
       </div>
 
       <HorizontalScroll contentClassName="gap-4 px-4 pb-4 cursor-grab active:cursor-grabbing">
@@ -76,7 +76,7 @@ export const RankingWidget = () => {
             >
               <div
                 className={`relative h-16 w-16 overflow-hidden rounded-full border-2
-                    ${index === 0 ? "border-yellow-400 p-0.5" : "border-slate-100"}
+                    ${index === 0 ? "border-warning p-0.5" : "border-border"}
                 `}
               >
                 <img
@@ -88,10 +88,10 @@ export const RankingWidget = () => {
                   {index + 1}
                 </div>
               </div>
-              <div className="text-xs font-medium text-slate-700">
+              <div className="text-xs font-medium text-text-secondary">
                 {cast.name}
               </div>
-              <div className="text-[10px] font-bold text-slate-400">
+              <div className="text-[10px] font-bold text-text-muted">
                 {cast.score}
               </div>
             </motion.div>

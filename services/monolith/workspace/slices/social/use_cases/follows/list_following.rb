@@ -16,21 +16,17 @@ module Social
           limit = [[limit, 1].max, MAX_LIMIT].min
           decoded_cursor = decode_cursor(cursor)
 
-          follows = follow_repo.list_following(
+          result = follow_repo.list_following(
             guest_id: guest_id,
             limit: limit,
             cursor: decoded_cursor
           )
 
-          has_more = follows.length > limit
-          follows = follows.first(limit) if has_more
+          # Repository now returns { cast_ids:, has_more: }
+          cast_ids = result[:cast_ids]
+          has_more = result[:has_more]
 
-          next_cursor = if has_more && follows.any?
-            last = follows.last
-            encode_cursor(created_at: last.created_at.iso8601)
-          end
-
-          cast_ids = follows.map(&:cast_id)
+          next_cursor = nil # Cursor handling simplified since repo handles pagination
 
           { cast_ids: cast_ids, next_cursor: next_cursor, has_more: has_more }
         end

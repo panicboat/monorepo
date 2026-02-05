@@ -83,8 +83,8 @@ export const GalleryUploader = ({
         onClick={triggerFileInput}
         className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition-all cursor-pointer ${
           isDragging
-            ? "border-pink-500 bg-pink-50 scale-[1.02]"
-            : "border-slate-200 bg-slate-50 hover:border-pink-300 hover:bg-pink-50/30"
+            ? "border-role-cast bg-role-cast-lighter scale-[1.02]"
+            : "border-border bg-surface-secondary hover:border-role-cast-light hover:bg-role-cast-lighter/30"
         }`}
       >
         <input
@@ -95,23 +95,23 @@ export const GalleryUploader = ({
           accept="image/*,video/*"
           onChange={handleFileSelect}
         />
-        <div className="mb-4 rounded-full bg-white p-4 shadow-sm">
+        <div className="mb-4 rounded-full bg-surface p-4 shadow-sm">
           <Upload
             className={`h-8 w-8 ${
-              isDragging ? "text-pink-500" : "text-slate-400"
+              isDragging ? "text-role-cast" : "text-text-muted"
             }`}
           />
         </div>
-        <p className="text-sm font-bold text-slate-700">
+        <p className="text-sm font-bold text-text-primary">
           Click or Drop Media Here
         </p>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-text-muted">
           JPG, PNG, WebP, MP4 supported
         </p>
       </div>
 
       {/* Helper Text */}
-      <div className="flex items-start gap-2 rounded-xl bg-blue-50 p-4 text-blue-700">
+      <div className="flex items-start gap-2 rounded-xl bg-info-lighter p-4 text-info">
         <Info className="h-5 w-5 shrink-0" />
         <div className="text-xs leading-relaxed">
           <p className="font-bold mb-1">Upload Recommendation</p>
@@ -142,15 +142,15 @@ export const GalleryUploader = ({
                 newImages.unshift(movedImage);
                 onChange(newImages);
               }}
-              className={`group relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-100 transition-all ${
+              className={`group relative aspect-[3/4] overflow-hidden rounded-xl bg-surface-secondary transition-all ${
                 index === 0
-                  ? "ring-2 ring-pink-500 ring-offset-2"
-                  : "cursor-pointer hover:ring-2 hover:ring-pink-300 hover:ring-offset-1"
+                  ? "ring-2 ring-role-cast ring-offset-2"
+                  : "cursor-pointer hover:ring-2 hover:ring-role-cast-light hover:ring-offset-1"
               }`}
             >
               {/* Cover Badge for First Item */}
               {index === 0 && (
-                <div className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full bg-pink-500 px-3 py-1 text-[10px] font-bold text-white shadow-md">
+                <div className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full bg-role-cast px-3 py-1 text-[10px] font-bold text-white shadow-md">
                   <Star size={10} fill="currentColor" />
                   <span>COVER</span>
                 </div>
@@ -159,7 +159,7 @@ export const GalleryUploader = ({
               {/* Set Cover Overlay Hint */}
               {index !== 0 && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
-                  <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-slate-700 shadow-sm">
+                  <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-text-primary shadow-sm">
                     Set as Cover
                   </span>
                 </div>
@@ -202,7 +202,7 @@ export const GalleryUploader = ({
                   e.stopPropagation();
                   removeImage(index);
                 }}
-                className="absolute right-2 bottom-2 z-30 h-8 w-8 rounded-full bg-white text-slate-900 shadow-md transition-transform hover:scale-110 hover:bg-red-50 hover:text-red-500 active:scale-95"
+                className="absolute right-2 bottom-2 z-30 h-8 w-8 rounded-full bg-surface text-text-primary shadow-md transition-transform hover:scale-110 hover:bg-error-lighter hover:text-error active:scale-95"
               >
                 <X size={16} />
               </Button>

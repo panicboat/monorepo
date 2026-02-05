@@ -25,8 +25,8 @@ export const SocialInputs = ({
   onRemoveOther,
 }: SocialInputsProps) => {
   return (
-    <section className="space-y-6 rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
-      <h3 className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-50 pb-2">
+    <section className="space-y-6 rounded-2xl bg-surface p-5 shadow-sm border border-border">
+      <h3 className="flex items-center gap-2 text-sm font-bold text-text-muted uppercase tracking-wider border-b border-border pb-2">
         <Info size={14} /> Social & Links
       </h3>
 
@@ -34,32 +34,32 @@ export const SocialInputs = ({
         {/* Main Socials */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <Label className="block text-xs font-bold text-slate-500 mb-1">
+            <Label className="block text-xs font-bold text-text-secondary mb-1">
               X (Twitter)
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">@</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">@</span>
               <Input
                 type="text"
                 value={data.socialLinks?.x || ""}
                 onChange={(e) => onSocialChange("x", e.target.value)}
                 placeholder="username"
-                className="pl-8 focus-visible:ring-pink-500"
+                className="pl-8 focus-visible:ring-role-cast"
               />
             </div>
           </div>
           <div>
-            <Label className="block text-xs font-bold text-slate-500 mb-1">
+            <Label className="block text-xs font-bold text-text-secondary mb-1">
               Instagram
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">@</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">@</span>
               <Input
                 type="text"
                 value={data.socialLinks?.instagram || ""}
                 onChange={(e) => onSocialChange("instagram", e.target.value)}
                 placeholder="username"
-                className="pl-8 focus-visible:ring-pink-500"
+                className="pl-8 focus-visible:ring-role-cast"
               />
             </div>
           </div>
@@ -67,22 +67,22 @@ export const SocialInputs = ({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <Label className="block text-xs font-bold text-slate-500 mb-1">
+            <Label className="block text-xs font-bold text-text-secondary mb-1">
               TikTok
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">@</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">@</span>
               <Input
                 type="text"
                 value={data.socialLinks?.tiktok || ""}
                 onChange={(e) => onSocialChange("tiktok", e.target.value)}
                 placeholder="username"
-                className="pl-8 focus-visible:ring-pink-500"
+                className="pl-8 focus-visible:ring-role-cast"
               />
             </div>
           </div>
           <div>
-            <Label className="block text-xs font-bold text-slate-500 mb-1">
+            <Label className="block text-xs font-bold text-text-secondary mb-1">
               lit.link
             </Label>
             <Input
@@ -90,14 +90,14 @@ export const SocialInputs = ({
               value={data.socialLinks?.litlink || ""}
               onChange={(e) => onSocialChange("litlink", e.target.value)}
               placeholder="username"
-              className="focus-visible:ring-pink-500"
+              className="focus-visible:ring-role-cast"
             />
           </div>
         </div>
 
         {/* CityHeaven */}
         <div>
-          <Label className="block text-xs font-bold text-slate-500 mb-1">
+          <Label className="block text-xs font-bold text-text-secondary mb-1">
             CityHeaven
           </Label>
           <Input
@@ -105,7 +105,7 @@ export const SocialInputs = ({
             value={data.socialLinks?.cityheaven || ""}
             onChange={(e) => onSocialChange("cityheaven", e.target.value)}
             placeholder="https://..."
-            className="focus-visible:ring-pink-500"
+            className="focus-visible:ring-role-cast"
           />
         </div>
 
@@ -121,7 +121,7 @@ export const SocialInputs = ({
                   value={url}
                   onChange={(e) => onOtherChange(idx, e.target.value)}
                   placeholder="https://... (Other Account)"
-                  className="focus-visible:ring-pink-500"
+                  className="focus-visible:ring-role-cast"
                 />
               </div>
               <Button
@@ -139,7 +139,7 @@ export const SocialInputs = ({
             type="button"
             variant="ghost"
             onClick={onAddOther}
-            className="text-xs font-bold text-pink-500 hover:text-pink-600 flex items-center gap-1 hover:bg-pink-50"
+            className="text-xs font-bold text-role-cast hover:text-role-cast-hover flex items-center gap-1 hover:bg-role-cast-lighter"
           >
             + Add another account
           </Button>

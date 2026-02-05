@@ -99,8 +99,8 @@ export default function CastDashboardPage() {
     return (
       <div className="p-4 flex items-center justify-center min-h-[50vh]">
         <div className="animate-pulse flex flex-col items-center gap-4 w-full max-w-sm">
-          <div className="h-32 w-full bg-slate-200 rounded-xl"></div>
-          <div className="h-48 w-full bg-slate-200 rounded-xl"></div>
+          <div className="h-32 w-full bg-border rounded-xl"></div>
+          <div className="h-48 w-full bg-border rounded-xl"></div>
         </div>
       </div>
     );

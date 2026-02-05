@@ -9,6 +9,12 @@ module Portfolio
         guests.where(user_id: user_id).one
       end
 
+      def find_by_user_ids(user_ids)
+        return [] if user_ids.nil? || user_ids.empty?
+
+        guests.where(user_id: user_ids).to_a
+      end
+
       def create(attrs)
         guests.changeset(:create, attrs).commit
       end

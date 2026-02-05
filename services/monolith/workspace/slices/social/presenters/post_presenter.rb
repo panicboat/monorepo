@@ -3,7 +3,7 @@
 module Social
   module Presenters
     class PostPresenter
-      def self.to_proto(post, author: nil, likes_count: 0, liked: false)
+      def self.to_proto(post, author: nil, likes_count: 0, comments_count: 0, liked: false)
         return nil unless post
 
         media = (post.respond_to?(:cast_post_media) ? post.cast_post_media : []) || []
@@ -17,7 +17,7 @@ module Social
           created_at: post.created_at.iso8601,
           author: author_to_proto(author),
           likes_count: likes_count,
-          comments_count: 0,
+          comments_count: comments_count,
           visible: post.respond_to?(:visible) ? post.visible : true,
           hashtags: hashtags.sort_by(&:position).map(&:tag),
           liked: liked

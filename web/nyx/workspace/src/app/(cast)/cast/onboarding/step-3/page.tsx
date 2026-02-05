@@ -45,7 +45,7 @@ export default function OnboardingStep3() {
   if (loading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-role-cast border-t-transparent" />
       </div>
     );
   }
@@ -53,13 +53,13 @@ export default function OnboardingStep3() {
   return (
     <div className="px-4 py-6 space-y-6 animate-in slide-in-from-right-8 fade-in duration-500">
       <div className="space-y-2">
-        <h2 className="text-xl font-serif font-bold text-slate-900 flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm text-white">
+        <h2 className="text-xl font-serif font-bold text-text-primary flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 text-sm text-white">
             3
           </span>
           Service Plans (Optional)
         </h2>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-text-secondary">
           提供するサービスプランを設定しましょう。
           <br />
           設定しない場合はスキップできます。
@@ -68,7 +68,7 @@ export default function OnboardingStep3() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="space-y-4">
-          <div className="flex items-center gap-2 rounded-xl bg-blue-50 p-4 text-xs font-bold text-blue-700">
+          <div className="flex items-center gap-2 rounded-xl bg-info-lighter p-4 text-xs font-bold text-info">
             <List size={16} />
             <span>プランの登録は任意です</span>
           </div>
@@ -79,7 +79,7 @@ export default function OnboardingStep3() {
         <button
           type="submit"
           disabled={!isNextEnabled}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-pink-500 py-4 font-bold text-white shadow-lg shadow-pink-200 transition-all hover:bg-pink-600 hover:shadow-pink-300 disabled:bg-slate-300 disabled:shadow-none"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-role-cast py-4 font-bold text-white shadow-lg shadow-role-cast-shadow transition-all hover:bg-role-cast-hover hover:shadow-role-cast-shadow disabled:bg-neutral-300 disabled:shadow-none"
         >
           <span>Next Step: Initial Schedule</span>
           <ArrowRight size={18} />

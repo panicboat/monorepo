@@ -13,12 +13,12 @@ export const PriceSystem = ({ plans }: PriceSystemProps) => {
   // If no plans provided, show placeholder
   if (!plans || plans.length === 0) {
     return (
-      <div className="bg-slate-50 px-6 py-8 space-y-6">
-        <h3 className="font-serif font-bold text-lg text-slate-800">
+      <div className="bg-surface-secondary px-6 py-8 space-y-6">
+        <h3 className="font-serif font-bold text-lg text-text-primary">
           System & Plan
         </h3>
-        <div className="rounded-xl bg-white p-5 border border-slate-200 shadow-sm">
-          <p className="text-sm text-slate-400 text-center">
+        <div className="rounded-xl bg-surface p-5 border border-border shadow-sm">
+          <p className="text-sm text-text-muted text-center">
             No plans available
           </p>
         </div>
@@ -27,29 +27,29 @@ export const PriceSystem = ({ plans }: PriceSystemProps) => {
   }
 
   return (
-    <div className="bg-slate-50 px-6 py-8 space-y-6">
-      <h3 className="font-serif font-bold text-lg text-slate-800">
+    <div className="bg-surface-secondary px-6 py-8 space-y-6">
+      <h3 className="font-serif font-bold text-lg text-text-primary">
         System & Plan
       </h3>
 
       {plans.map((plan, idx) => (
         <div
           key={plan.id || idx}
-          className="rounded-xl bg-white p-5 border border-slate-200 shadow-sm relative overflow-hidden"
+          className="rounded-xl bg-surface p-5 border border-border shadow-sm relative overflow-hidden"
         >
           {idx === 0 && (
-            <div className="absolute top-0 right-0 bg-pink-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
+            <div className="absolute top-0 right-0 bg-role-cast text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
               POPULAR
             </div>
           )}
-          <div className="text-sm font-bold text-slate-500 uppercase mb-2">
+          <div className="text-sm font-bold text-text-secondary uppercase mb-2">
             {plan.name}
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold text-slate-900">
+            <span className="text-2xl font-bold text-text-primary">
               ¥{plan.price.toLocaleString()}
             </span>
-            <span className="text-sm text-slate-400">/ {plan.duration}min</span>
+            <span className="text-sm text-text-muted">/ {plan.duration}min</span>
           </div>
         </div>
       ))}
@@ -118,8 +118,8 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
   };
 
   return (
-    <div className="py-8 bg-white">
-      <h3 className="font-serif font-bold text-lg text-slate-800 mb-4 px-6">
+    <div className="py-8 bg-surface">
+      <h3 className="font-serif font-bold text-lg text-text-primary mb-4 px-6">
         Availability
       </h3>
       <div className="overflow-x-auto pb-2">
@@ -137,14 +137,14 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
                 disabled={!hasSchedule}
                 className={`
                   flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-colors
-                  ${item.isToday ? "bg-pink-50 border border-pink-200" : ""}
-                  ${selectedDay?.fullDate === item.fullDate ? "bg-green-50 border border-green-200" : ""}
-                  ${hasSchedule ? "hover:bg-slate-50 cursor-pointer" : "opacity-50 cursor-default"}
+                  ${item.isToday ? "bg-role-cast-light/30 border border-role-cast-light" : ""}
+                  ${selectedDay?.fullDate === item.fullDate ? "bg-success-light/30 border border-success" : ""}
+                  ${hasSchedule ? "hover:bg-surface-secondary cursor-pointer" : "opacity-50 cursor-default"}
                 `}
               >
                 <div
                   className={`text-[10px] font-bold ${
-                    item.isWeekend ? "text-pink-400" : "text-slate-400"
+                    item.isWeekend ? "text-role-cast" : "text-text-muted"
                   }`}
                 >
                   {item.day}
@@ -153,19 +153,19 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
                   className={`
                     flex items-center justify-center h-9 w-9 rounded-full text-sm font-bold
                     ${hasSchedule
-                      ? "bg-green-100 text-green-700"
-                      : "bg-slate-100 text-slate-300"
+                      ? "bg-success-light text-success"
+                      : "bg-surface-secondary text-text-muted"
                     }
                   `}
                 >
                   {item.date}
                 </div>
                 {item.timeRange ? (
-                  <div className="text-[10px] font-medium text-slate-600 whitespace-nowrap">
+                  <div className="text-[10px] font-medium text-text-secondary whitespace-nowrap">
                     {item.timeRange}
                   </div>
                 ) : (
-                  <div className="text-[10px] font-medium text-slate-300">
+                  <div className="text-[10px] font-medium text-text-muted">
                     -
                   </div>
                 )}
@@ -174,7 +174,7 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
           })}
         </div>
       </div>
-      <p className="text-center text-xs text-slate-400 mt-3 px-6">
+      <p className="text-center text-xs text-text-muted mt-3 px-6">
         タップで詳細を表示 / スクロールで4週間分
       </p>
 
@@ -188,15 +188,15 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
           >
-            <div className="bg-slate-50 rounded-xl p-4">
+            <div className="bg-surface-secondary rounded-xl p-4">
               <button
                 onClick={() => setSelectedDay(null)}
                 className="flex items-center justify-between w-full mb-3"
               >
-                <h4 className="text-base font-bold text-slate-800">
+                <h4 className="text-base font-bold text-text-primary">
                   {selectedDay.month}/{selectedDay.date} ({selectedDay.day})
                 </h4>
-                <ChevronDown size={18} className="text-slate-400" />
+                <ChevronDown size={18} className="text-text-muted" />
               </button>
 
               <div className="space-y-2">
@@ -205,24 +205,24 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
                   return (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-3 bg-white rounded-lg"
+                      className="flex items-center justify-between p-3 bg-surface rounded-lg"
                     >
                       <div>
-                        <div className="text-sm font-bold text-slate-800">
+                        <div className="text-sm font-bold text-text-primary">
                           {schedule.start} - {schedule.end}
                         </div>
                         {plan && (
-                          <div className="text-xs text-slate-500 mt-0.5">
+                          <div className="text-xs text-text-secondary mt-0.5">
                             {plan.name}
                           </div>
                         )}
                       </div>
                       {plan && (
                         <div className="text-right">
-                          <div className="text-sm font-bold text-pink-500">
+                          <div className="text-sm font-bold text-role-cast">
                             ¥{plan.price.toLocaleString()}
                           </div>
-                          <div className="text-[10px] text-slate-400">
+                          <div className="text-[10px] text-text-muted">
                             {plan.duration}min
                           </div>
                         </div>
@@ -233,7 +233,7 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
               </div>
 
               {selectedDay.schedules.length > 1 && (
-                <p className="text-[10px] text-slate-400 text-center mt-3">
+                <p className="text-[10px] text-text-muted text-center mt-3">
                   {selectedDay.schedules.length}件の予約枠
                 </p>
               )}

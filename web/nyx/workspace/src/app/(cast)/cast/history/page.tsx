@@ -71,12 +71,12 @@ export default function CastHistoryPage() {
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-serif font-bold text-slate-800">Ritual History</h1>
+        <h1 className="text-2xl font-serif font-bold text-text-primary">Ritual History</h1>
       </div>
 
       {/* Search/Filter */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted h-4 w-4" />
         <Input
           placeholder="Search by guest or plan..."
           className="pl-9"
@@ -90,22 +90,22 @@ export default function CastHistoryPage() {
           filteredHistory.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm flex items-center justify-between group hover:border-pink-200 transition-colors cursor-pointer"
+              className="bg-surface rounded-xl border border-border p-4 shadow-sm flex items-center justify-between group hover:border-role-cast-light transition-colors cursor-pointer"
             >
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <Badge
                     variant={item.status === "completed" ? "default" : "secondary"}
-                    className={item.status === "cancelled" ? "bg-slate-100 text-slate-500" : "bg-green-100 text-green-700 hover:bg-green-200"}
+                    className={item.status === "cancelled" ? "bg-surface-secondary text-text-secondary" : "bg-success-lighter text-success-hover hover:bg-success-light"}
                   >
                     {item.status.toUpperCase()}
                   </Badge>
-                  <span className="font-bold text-slate-900">{item.guestName}</span>
+                  <span className="font-bold text-text-primary">{item.guestName}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <p className="font-bold text-sm text-slate-700">{item.plan}</p>
-                  <div className="flex items-center gap-4 text-xs text-slate-500">
+                  <p className="font-bold text-sm text-text-secondary">{item.plan}</p>
+                  <div className="flex items-center gap-4 text-xs text-text-secondary">
                     <div className="flex items-center gap-1">
                       <Calendar size={12} />
                       {item.date}
@@ -117,20 +117,20 @@ export default function CastHistoryPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 text-xs text-slate-400">
+                <div className="flex items-center gap-1 text-xs text-text-muted">
                   <MapPin size={12} />
                   {item.location}
                 </div>
               </div>
 
               <div className="text-right">
-                <p className="font-bold text-slate-900">{item.amount}</p>
-                <ChevronRight className="ml-auto mt-2 text-slate-300 group-hover:text-pink-400 transition-colors" />
+                <p className="font-bold text-text-primary">{item.amount}</p>
+                <ChevronRight className="ml-auto mt-2 text-text-muted group-hover:text-role-cast transition-colors" />
               </div>
             </div>
           ))
         ) : (
-          <div className="text-center py-10 text-slate-400">
+          <div className="text-center py-10 text-text-muted">
             No history found.
           </div>
         )}

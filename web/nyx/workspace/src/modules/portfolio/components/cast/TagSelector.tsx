@@ -46,7 +46,7 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
     <div className="space-y-3">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold pointer-events-none">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted font-bold pointer-events-none">
             #
           </span>
           <Input
@@ -55,7 +55,7 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Add a tag..."
-            className="pl-7 pr-4 font-bold focus-visible:ring-pink-500"
+            className="pl-7 pr-4 font-bold focus-visible:ring-role-cast"
           />
         </div>
         <Button
@@ -63,7 +63,7 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
           onClick={handleAdd}
           disabled={!input.trim()}
           size="icon"
-          className="w-12 h-10 rounded-xl bg-slate-900 text-white disabled:bg-slate-200 disabled:text-slate-400"
+          className="w-12 h-10 rounded-xl bg-neutral-900 text-white disabled:bg-surface-secondary disabled:text-text-muted"
         >
           <Plus size={20} />
         </Button>
@@ -74,13 +74,13 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
         {tags.map((tag) => (
           <span
             key={tag}
-            className="flex items-center gap-1 rounded-full bg-pink-100 px-3 py-1.5 text-xs font-bold text-pink-600"
+            className="flex items-center gap-1 rounded-full bg-role-cast-light px-3 py-1.5 text-xs font-bold text-role-cast"
           >
             #{tag}
             <button
               type="button"
               onClick={() => handleRemove(tag)}
-              className="ml-1 rounded-full bg-white/50 p-0.5 hover:bg-white text-pink-500 transition-colors"
+              className="ml-1 rounded-full bg-surface/50 p-0.5 hover:bg-surface text-role-cast transition-colors"
             >
               <X size={12} />
             </button>
@@ -90,7 +90,7 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
 
       {/* Suggested */}
       <div className="pt-2">
-        <p className="text-xs font-bold text-slate-400 mb-2 uppercase">
+        <p className="text-xs font-bold text-text-muted mb-2 uppercase">
           Suggestions
         </p>
         <div className="flex flex-wrap gap-2">
@@ -103,7 +103,7 @@ export const TagSelector = ({ tags, onChange }: TagSelectorProps) => {
                 variant="outline"
                 size="sm"
                 onClick={() => onChange([...tags, tag])}
-                className="h-7 rounded-full border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 hover:border-pink-300 hover:text-pink-500 hover:bg-pink-50 transition-colors"
+                className="h-7 rounded-full border-border bg-surface px-3 text-xs font-medium text-text-secondary hover:border-role-cast-light hover:text-role-cast hover:bg-role-cast-lighter transition-colors"
               >
                 #{tag}
               </Button>

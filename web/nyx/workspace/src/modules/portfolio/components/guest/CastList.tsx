@@ -106,10 +106,10 @@ const CastCard = ({ cast }: { cast: (typeof MOCK_CASTS)[0] }) => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-md bg-white shadow-sm"
+      className="relative overflow-hidden rounded-md bg-surface shadow-sm"
     >
       {/* Image specific ratio - Hime-channel style is often vertical implementation 3:4 */}
-      <div className="relative aspect-[3/4] w-full bg-slate-100">
+      <div className="relative aspect-[3/4] w-full bg-surface-secondary">
         <Avatar className="h-full w-full rounded-none">
           <AvatarImage src={cast.image} alt={cast.name} className="object-cover" />
           <AvatarFallback className="rounded-none">C</AvatarFallback>
@@ -117,12 +117,12 @@ const CastCard = ({ cast }: { cast: (typeof MOCK_CASTS)[0] }) => {
 
         {/* Status Badge (Living Portfolio) */}
         {cast.status === "online" && (
-          <Badge className="absolute right-2 top-2 bg-green-500 border-white hover:bg-green-600 text-[10px] px-2 py-0.5 shadow-sm">
+          <Badge className="absolute right-2 top-2 bg-success border-white hover:bg-success-hover text-[10px] px-2 py-0.5 shadow-sm">
             ONLINE
           </Badge>
         )}
         {cast.status === "tonight" && (
-          <Badge className="absolute right-2 top-2 bg-blue-400 border-white hover:bg-blue-500 text-[10px] px-2 py-0.5 shadow-sm">
+          <Badge className="absolute right-2 top-2 bg-info border-white hover:bg-info-hover text-[10px] px-2 py-0.5 shadow-sm">
             TONIGHT
           </Badge>
         )}
@@ -137,7 +137,7 @@ const CastCard = ({ cast }: { cast: (typeof MOCK_CASTS)[0] }) => {
             {/* Pledge Rate (Trust) */}
             <div className="text-right">
               <span className="block text-[9px] opacity-75">Trust</span>
-              <span className="font-mono text-xs font-bold text-yellow-400">
+              <span className="font-mono text-xs font-bold text-warning">
                 98%
               </span>
             </div>

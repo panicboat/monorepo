@@ -46,17 +46,17 @@ export default function BlockingPage() {
   const list = MOCK_DB.filter((cast) => blocking.includes(cast.id));
 
   return (
-    <div className="bg-slate-50 min-h-screen pb-20">
+    <div className="bg-surface-secondary min-h-screen pb-20">
       <main className="px-4 pt-4">
         {list.length > 0 ? (
           <div className="space-y-3">
             {list.map((user) => (
               <div
                 key={user.id}
-                className="flex items-center justify-between rounded-xl bg-white p-4 shadow-sm border border-slate-100 opacity-75"
+                className="flex items-center justify-between rounded-xl bg-surface p-4 shadow-sm border border-border opacity-75"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-slate-200 flex-shrink-0 overflow-hidden">
+                  <div className="h-10 w-10 rounded-full bg-border flex-shrink-0 overflow-hidden">
                     <img
                       src={user.image}
                       alt={user.name}
@@ -64,13 +64,13 @@ export default function BlockingPage() {
                     />
                   </div>
                   <div>
-                    <div className="font-bold text-slate-600">{user.name}</div>
-                    <div className="text-[10px] text-slate-400">Blocked</div>
+                    <div className="font-bold text-text-secondary">{user.name}</div>
+                    <div className="text-[10px] text-text-muted">Blocked</div>
                   </div>
                 </div>
                 <button
                   onClick={() => toggleBlock(user.id)}
-                  className="text-xs font-bold text-slate-500 border border-slate-200 px-3 py-1.5 rounded-full hover:bg-slate-100 active:scale-95 transition-all"
+                  className="text-xs font-bold text-text-secondary border border-border px-3 py-1.5 rounded-full hover:bg-surface-secondary active:scale-95 transition-all"
                 >
                   Unblock
                 </button>
@@ -78,7 +78,7 @@ export default function BlockingPage() {
             ))}
           </div>
         ) : (
-          <div className="py-20 text-center text-slate-400">
+          <div className="py-20 text-center text-text-muted">
             <p>No blocked users.</p>
           </div>
         )}

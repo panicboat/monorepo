@@ -72,17 +72,18 @@ export function CommentForm({
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
+          aria-label={placeholder}
           autoFocus={autoFocus}
           disabled={isSubmitting}
           rows={isReply ? 2 : 3}
-          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-slate-300 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-400"
+          className="w-full px-3 py-2 text-sm border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent disabled:bg-surface-secondary disabled:text-text-muted"
         />
 
         {/* Character count */}
         {content.length > MAX_CONTENT_LENGTH * 0.8 && (
           <span
             className={`absolute bottom-2 right-2 text-xs ${
-              isOverLimit ? "text-red-500" : "text-slate-400"
+              isOverLimit ? "text-error" : "text-text-muted"
             }`}
           >
             {remainingChars}
@@ -91,7 +92,7 @@ export function CommentForm({
       </div>
 
       {/* Error message */}
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-xs text-error">{error}</p>}
 
       {/* Actions */}
       <div className="flex items-center justify-end mt-2 gap-2">
@@ -110,12 +111,13 @@ export function CommentForm({
           type="submit"
           size="sm"
           disabled={isSubmitting || !content.trim() || isOverLimit}
+          aria-label={isReply ? "Submit reply" : "Submit comment"}
           className="flex items-center gap-1"
         >
           {isSubmitting ? (
-            <Loader2 size={14} className="animate-spin" />
+            <Loader2 aria-hidden="true" size={14} className="animate-spin" />
           ) : (
-            <Send size={14} />
+            <Send aria-hidden="true" size={14} />
           )}
           <span>{isReply ? "Reply" : "Post"}</span>
         </Button>

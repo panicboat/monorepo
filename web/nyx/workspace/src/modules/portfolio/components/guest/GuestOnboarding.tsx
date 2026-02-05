@@ -19,7 +19,7 @@ export const GuestOnboarding = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-surface-secondary to-white flex flex-col">
       <main className="flex-1 px-6 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -28,10 +28,10 @@ export const GuestOnboarding = () => {
         >
           {/* Header */}
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-text-primary">
               プロフィール設定
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-text-secondary">
               あなたのプロフィールを設定してください
             </p>
           </div>
@@ -46,7 +46,7 @@ export const GuestOnboarding = () => {
           />
 
           {/* Skip Option */}
-          <p className="text-center text-xs text-slate-400">
+          <p className="text-center text-xs text-text-muted">
             後からマイページでいつでも変更できます
           </p>
         </motion.div>

@@ -37,7 +37,7 @@ export const TopNavBar = ({
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 flex h-14 md:h-16 w-full items-center justify-center bg-white/80 backdrop-blur-md shadow-sm border-b border-slate-100 ${className}`}
+      className={`fixed top-0 left-0 right-0 z-50 flex h-14 md:h-16 w-full items-center justify-center bg-surface/80 backdrop-blur-md shadow-sm border-b border-border ${className}`}
     >
       <div className="w-full max-w-md md:max-w-7xl px-4 flex items-center justify-between">
         {/* LEFT COMPONENT */}
@@ -49,14 +49,15 @@ export const TopNavBar = ({
             {showBack ? (
               <button
                 onClick={onBack}
-                className={`flex items-center justify-center rounded-full bg-slate-100 text-slate-600 transition-colors hover:bg-slate-200 ${
+                aria-label="Go back"
+                className={`flex items-center justify-center rounded-full bg-surface-secondary text-text-secondary transition-colors hover:bg-neutral-200 ${
                   backIconStyle === "arrow" ? "-ml-1 p-1" : "h-8 w-8"
                 }`}
               >
                 <BackIcon
+                  aria-hidden="true"
                   size={backIconStyle === "arrow" ? 20 : 20}
-                  className={backIconStyle === "arrow" ? "h-5 w-5" : ""}
-                />
+                  className={backIconStyle === "arrow" ? "h-5 w-5" : ""}/>
               </button>
             ) : // Spacer if no back button and no left slot visible on mobile (logic depends on usage)
             // If leftSlot handles its own visibility, we might just need a spacer if nothing occupies this area.
@@ -71,18 +72,19 @@ export const TopNavBar = ({
             <div className="hidden md:flex items-center gap-2">
               <button
                 onClick={onBack}
-                className="p-1 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-900 transition-colors"
+                aria-label="Go back"
+                className="p-1 hover:bg-surface-secondary rounded-full text-text-secondary hover:text-text-primary transition-colors"
               >
-                <BackIcon size={18} />
+                <BackIcon aria-hidden="true" size={18} />
               </button>
-              <span className="font-bold text-slate-900">{title}</span>
+              <span className="font-bold text-text-primary">{title}</span>
             </div>
           )}
         </div>
 
         {/* CENTER COMPONENT (Mobile Title) */}
         {!title ? null : (
-          <span className="md:hidden font-serif text-lg font-bold tracking-tight text-slate-900 absolute left-1/2 -translate-x-1/2">
+          <span className="md:hidden font-serif text-lg font-bold tracking-tight text-text-primary absolute left-1/2 -translate-x-1/2">
             {title}
           </span>
         )}

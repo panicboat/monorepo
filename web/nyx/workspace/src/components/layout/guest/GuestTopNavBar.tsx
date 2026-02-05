@@ -42,12 +42,12 @@ export const GuestTopNavBar = () => {
   const linkClass = (path: string) =>
     isActive(path)
       ? "text-role-guest font-bold"
-      : "text-slate-500 hover:text-role-guest transition-colors";
+      : "text-text-secondary hover:text-role-guest transition-colors";
 
   const LeftSlot = (
     <Link
       href="/"
-      className="hidden md:block font-serif text-2xl font-bold tracking-tight text-slate-900"
+      className="hidden md:block font-serif text-2xl font-bold tracking-tight text-text-primary"
     >
       Nyx.Place
     </Link>
@@ -56,26 +56,28 @@ export const GuestTopNavBar = () => {
   const RightSlot = (
     <>
       {/* Desktop Nav Links */}
-      <div className="hidden md:flex items-center gap-6 text-sm font-medium mr-4">
-        <Link href="/" className={linkClass("/")}>
+      <nav className="hidden md:flex items-center gap-6 text-sm font-medium mr-4" aria-label="Main navigation">
+        <Link href="/" aria-current={isActive("/") ? "page" : undefined} className={linkClass("/")}>
           Home
         </Link>
-        <Link href="/search" className={linkClass("/search")}>
+        <Link href="/search" aria-current={isActive("/search") ? "page" : undefined} className={linkClass("/search")}>
           Search
         </Link>
-        <Link href="/concierge" className={linkClass("/concierge")}>
+        <Link href="/concierge" aria-current={isActive("/concierge") ? "page" : undefined} className={linkClass("/concierge")}>
           Concierge
         </Link>
-      </div>
+      </nav>
 
       {/* Guest Specific: Mobile Home Search Icon */}
       {pathname === "/" && (
         <div className="md:hidden mr-2">
           <Link
             href="/search"
-            className="rounded-full bg-slate-100 p-2 text-slate-600 block"
+            aria-label="Search"
+            className="rounded-full bg-surface-secondary p-2 text-text-secondary block"
           >
             <svg
+              aria-hidden="true"
               width="20"
               height="20"
               viewBox="0 0 24 24"
@@ -95,9 +97,10 @@ export const GuestTopNavBar = () => {
       {/* User Avatar */}
       <Link
         href="/mypage"
-        className="h-8 w-8 rounded-full bg-slate-100 overflow-hidden border border-slate-200 block transition-transform hover:scale-105 active:scale-95"
+        aria-label="My page"
+        className="h-8 w-8 rounded-full bg-surface-secondary overflow-hidden border border-border block transition-transform hover:scale-105 active:scale-95"
       >
-        {user?.avatarUrl ? <img src={user.avatarUrl} alt="User" /> : "👤"}
+        {user?.avatarUrl ? <img src={user.avatarUrl} alt="User avatar" /> : "👤"}
       </Link>
     </>
   );

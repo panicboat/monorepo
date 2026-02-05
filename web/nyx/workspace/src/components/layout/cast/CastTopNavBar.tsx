@@ -30,7 +30,7 @@ export const CastTopNavBar = () => {
   const LeftSlot = (
     <Link
       href="/cast/home"
-      className="hidden md:block font-serif text-xl font-bold tracking-tight text-slate-900"
+      className="hidden md:block font-serif text-xl font-bold tracking-tight text-text-primary"
     >
       Nyx. Cast
     </Link>
@@ -41,35 +41,36 @@ export const CastTopNavBar = () => {
   const linkClass = (path: string) =>
     isActive(path)
       ? "text-role-cast font-bold"
-      : "text-slate-500 hover:text-role-cast transition-colors";
+      : "text-text-secondary hover:text-role-cast transition-colors";
 
   const RightSlot = (
     <>
       {/* Desktop Nav Links */}
-      <div className="hidden md:flex items-center gap-6 text-sm font-medium mr-4">
-        <Link href="/cast/home" className={linkClass("/cast/home")}>
+      <nav className="hidden md:flex items-center gap-6 text-sm font-medium mr-4" aria-label="Cast navigation">
+        <Link href="/cast/home" aria-current={isActive("/cast/home") ? "page" : undefined} className={linkClass("/cast/home")}>
           Home
         </Link>
-        <Link href="/cast/schedules" className={linkClass("/cast/schedules")}>
+        <Link href="/cast/schedules" aria-current={isActive("/cast/schedules") ? "page" : undefined} className={linkClass("/cast/schedules")}>
           Schedule
         </Link>
-        <Link href="/cast/timeline" className={linkClass("/cast/timeline")}>
+        <Link href="/cast/timeline" aria-current={isActive("/cast/timeline") ? "page" : undefined} className={linkClass("/cast/timeline")}>
           Timeline
         </Link>
-        <Link href="/cast/concierge" className={linkClass("/cast/concierge")}>
+        <Link href="/cast/concierge" aria-current={isActive("/cast/concierge") ? "page" : undefined} className={linkClass("/cast/concierge")}>
           Concierge
         </Link>
-      </div>
+      </nav>
 
       {/* Cast Avatar */}
       <Link
         href="/cast/mypage"
-        className="h-8 w-8 rounded-full bg-slate-100 overflow-hidden border border-slate-200 block transition-transform hover:scale-105 active:scale-95"
+        aria-label="Backstage"
+        className="h-8 w-8 rounded-full bg-surface-secondary overflow-hidden border border-border block transition-transform hover:scale-105 active:scale-95"
       >
         {avatarUrl ? (
-          <img src={avatarUrl} alt="Cast" className="h-full w-full object-cover" />
+          <img src={avatarUrl} alt="Cast avatar" className="h-full w-full object-cover" />
         ) : (
-          <span className="flex h-full w-full items-center justify-center text-sm">👤</span>
+          <span aria-hidden="true" className="flex h-full w-full items-center justify-center text-sm">👤</span>
         )}
       </Link>
     </>

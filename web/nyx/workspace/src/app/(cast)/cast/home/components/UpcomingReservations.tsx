@@ -22,56 +22,56 @@ export const UpcomingReservations = ({
 }: UpcomingReservationsProps) => {
   if (reservations.length === 0) {
     return (
-      <div className="text-center py-8 text-slate-400 bg-white rounded-xl shadow-sm border border-slate-100">
+      <div className="text-center py-8 text-text-muted bg-surface rounded-xl shadow-sm border border-border">
         <p className="text-sm">これからの予定はありません</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-      <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-        <h2 className="font-semibold text-slate-900 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-slate-500" />
+    <div className="bg-surface rounded-xl shadow-sm border border-border overflow-hidden">
+      <div className="p-4 border-b border-border bg-surface-secondary/50">
+        <h2 className="font-semibold text-text-primary flex items-center gap-2">
+          <Clock className="w-4 h-4 text-text-secondary" />
           直近の予定
         </h2>
       </div>
 
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-border">
         {reservations.map((reservation, index) => (
           <Link
             key={reservation.id}
             href={`/cast/pledges/${reservation.id}`}
-            className="block hover:bg-slate-50 transition-colors"
+            className="block hover:bg-surface-secondary transition-colors"
           >
             <div className="p-4 flex items-center gap-4">
               <div className="relative">
                 {index === 0 && (
-                  <div className="absolute -inset-1 rounded-full border-2 border-pink-500 animate-pulse" />
+                  <div className="absolute -inset-1 rounded-full border-2 border-role-cast animate-pulse" />
                 )}
-                <Avatar className="relative w-12 h-12 border border-slate-100">
+                <Avatar className="relative w-12 h-12 border border-border">
                   <AvatarImage src={reservation.guestIcon} alt={reservation.guestName} className="object-cover" />
-                  <AvatarFallback className="bg-slate-200">G</AvatarFallback>
+                  <AvatarFallback className="bg-border">G</AvatarFallback>
                 </Avatar>
               </div>
 
               <div className="flex-1 flex justify-between items-start">
                 <div className="flex flex-col">
                   <div className="flex items-baseline gap-3 mb-1">
-                    <span className="text-xl font-bold font-serif text-slate-900 tracking-tight">
+                    <span className="text-xl font-bold font-serif text-text-primary tracking-tight">
                       {reservation.startTime}
                     </span>
-                    <span className="text-sm font-bold text-slate-700">
+                    <span className="text-sm font-bold text-text-secondary">
                       {reservation.guestName}
                     </span>
                   </div>
 
-                  <div className="text-xs text-slate-500 font-medium">
+                  <div className="text-xs text-text-secondary font-medium">
                     {reservation.planName}
                   </div>
                 </div>
 
-                <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                <span className="text-[10px] font-bold text-text-secondary bg-surface-secondary px-1.5 py-0.5 rounded border border-border">
                   {reservation.duration}min
                 </span>
               </div>

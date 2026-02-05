@@ -11,9 +11,9 @@ export default function GuestLayout({
   return (
     <>
       <GuestTopNavBar />
-      <div className="flex justify-center items-start min-h-screen gap-4">
+      <div className="flex justify-center items-start min-h-screen gap-4 bg-background">
         {/* Main Mobile App Container */}
-        <ResponsiveMainContainer className="bg-white">
+        <ResponsiveMainContainer className="bg-surface">
           {children}
         </ResponsiveMainContainer>
 

@@ -37,7 +37,7 @@ export default function OnboardingWelcomePage() {
   if (loading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
-        <Loader2 className="animate-spin text-pink-500" size={32} />
+        <Loader2 className="animate-spin text-role-cast" size={32} />
       </div>
     );
   }
@@ -45,10 +45,10 @@ export default function OnboardingWelcomePage() {
   return (
     <div className="flex flex-col gap-6 py-4 px-4">
       <div className="text-center">
-        <h1 className="text-2xl font-serif font-bold text-slate-900 mb-2">
+        <h1 className="text-2xl font-serif font-bold text-text-primary mb-2">
           Welcome to Nyx
         </h1>
-        <p className="text-slate-500 leading-relaxed">
+        <p className="text-text-secondary leading-relaxed">
           あなただけのファンを見つけ、
           <br />
           自由なスタイルで活動しましょう。
@@ -56,38 +56,38 @@ export default function OnboardingWelcomePage() {
       </div>
 
       {/* Benefits / Features */}
-      <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-4">
+      <section className="bg-surface rounded-2xl p-6 shadow-sm border border-border space-y-4">
         <div className="flex items-start gap-3">
-          <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-pink-100 text-pink-500">
+          <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-role-cast-light text-role-cast">
             <CheckCircle2 size={16} />
           </div>
           <div>
-            <h3 className="font-bold text-slate-800">No Shop, Just You</h3>
-            <p className="text-xs text-slate-500 mt-1 leading-normal">
+            <h3 className="font-bold text-text-primary">No Shop, Just You</h3>
+            <p className="text-xs text-text-secondary mt-1 leading-normal">
               店舗に所属する必要はありません。あなたのブランドを確立し、直接ゲストとつながることができます。
             </p>
           </div>
         </div>
 
         <div className="flex items-start gap-3">
-          <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-500">
+          <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-special-lighter text-special">
             <CheckCircle2 size={16} />
           </div>
           <div>
-            <h3 className="font-bold text-slate-800">Smart Scheduling</h3>
-            <p className="text-xs text-slate-500 mt-1 leading-normal">
+            <h3 className="font-bold text-text-primary">Smart Scheduling</h3>
+            <p className="text-xs text-text-secondary mt-1 leading-normal">
               働きたい時間だけシフトを公開。無理な出勤強要は一切ありません。
             </p>
           </div>
         </div>
 
         <div className="flex items-start gap-3">
-          <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-500">
+          <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-info-lighter text-info">
             <CheckCircle2 size={16} />
           </div>
           <div>
-            <h3 className="font-bold text-slate-800">Safe & Trust</h3>
-            <p className="text-xs text-slate-500 mt-1 leading-normal">
+            <h3 className="font-bold text-text-primary">Safe & Trust</h3>
+            <p className="text-xs text-text-secondary mt-1 leading-normal">
               ゲストはSMS認証済み。評価システムにより、安心できるユーザーとのみマッチングします。
             </p>
           </div>
@@ -98,12 +98,12 @@ export default function OnboardingWelcomePage() {
       <div className="mt-4">
         <Link
           href={nextStep}
-          className="flex items-center justify-center gap-2 w-full rounded-xl bg-pink-500 py-4 font-bold text-white shadow-lg shadow-pink-300 transition-transform active:scale-95"
+          className="flex items-center justify-center gap-2 w-full rounded-xl bg-role-cast py-4 font-bold text-white shadow-lg shadow-role-cast-shadow transition-transform active:scale-95"
         >
           <span>{isResuming ? "続きから再開する" : "プロフィールを作成する"}</span>
           <ArrowRight size={18} />
         </Link>
-        <p className="text-center text-[10px] text-slate-400 mt-4">
+        <p className="text-center text-[10px] text-text-muted mt-4">
           登録することで、利用規約およびプライバシーポリシーに同意したものとみなされます。
         </p>
       </div>

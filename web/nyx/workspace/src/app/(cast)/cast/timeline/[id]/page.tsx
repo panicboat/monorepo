@@ -83,7 +83,7 @@ export default function PostDetailPage({
   if (loading && !post) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-        <p className="text-slate-400 text-sm">Loading...</p>
+        <p className="text-text-muted text-sm">Loading...</p>
       </div>
     );
   }
@@ -91,7 +91,7 @@ export default function PostDetailPage({
   if (!post) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-        <p className="text-slate-500">Post not found.</p>
+        <p className="text-text-secondary">Post not found.</p>
         <Button onClick={() => router.back()}>Go Back</Button>
       </div>
     );
@@ -100,21 +100,21 @@ export default function PostDetailPage({
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
       {/* Post Content */}
-      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
-        <div className="p-4 flex items-center justify-between border-b border-slate-50">
+      <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-sm">
+        <div className="p-4 flex items-center justify-between border-b border-border">
           <div className="flex items-center gap-3">
             {post.author?.imageUrl && post.author.imageUrl.trim() !== "" ? (
               <img
                 src={post.author.imageUrl}
                 alt={post.author.name || ""}
-                className="h-10 w-10 rounded-full border border-slate-100 object-cover"
+                className="h-10 w-10 rounded-full border border-border object-cover"
               />
             ) : (
-              <div className="h-10 w-10 rounded-full border border-slate-100 bg-slate-200" />
+              <div className="h-10 w-10 rounded-full border border-border bg-border" />
             )}
             <div>
-              <div className="font-bold text-slate-800">{post.author?.name || ""}</div>
-              <div className="flex items-center gap-1 text-xs text-slate-400">
+              <div className="font-bold text-text-primary">{post.author?.name || ""}</div>
+              <div className="flex items-center gap-1 text-xs text-text-muted">
                 <Calendar size={12} />
                 {formatTimeAgo(post.createdAt)}
               </div>
@@ -123,7 +123,7 @@ export default function PostDetailPage({
           <Button
             variant="ghost"
             size="icon"
-            className="text-slate-300 hover:text-red-500"
+            className="text-text-muted hover:text-error"
             onClick={handleDelete}
           >
             <Trash2 size={18} />
@@ -131,7 +131,7 @@ export default function PostDetailPage({
         </div>
 
         <div className="p-4">
-          <p className="text-base leading-relaxed text-slate-700 whitespace-pre-wrap mb-4">
+          <p className="text-base leading-relaxed text-text-secondary whitespace-pre-wrap mb-4">
             {post.content}
           </p>
 
@@ -160,13 +160,13 @@ export default function PostDetailPage({
           )}
         </div>
 
-        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-6">
-          <div className="flex items-center gap-2 text-slate-400 opacity-50">
+        <div className="p-4 bg-surface-secondary border-t border-border flex items-center gap-6">
+          <div className="flex items-center gap-2 text-text-muted opacity-50">
             <Heart size={20} />
             <span className="font-bold">{post.likesCount}</span>
             <span className="text-xs font-normal">Likes</span>
           </div>
-          <div className="flex items-center gap-2 text-slate-500">
+          <div className="flex items-center gap-2 text-text-secondary">
             <MessageCircle size={20} />
             <span className="font-bold">{post.commentsCount}</span>
             <span className="text-xs font-normal">Comments</span>
@@ -175,7 +175,7 @@ export default function PostDetailPage({
       </div>
 
       {/* Comments Section */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+      <div className="bg-surface rounded-2xl border border-border p-4 shadow-sm">
         <CommentSection postId={id} commentsCount={post.commentsCount} />
       </div>
     </div>

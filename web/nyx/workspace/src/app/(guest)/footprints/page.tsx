@@ -33,20 +33,20 @@ const FOOTPRINTS = [
 
 export default function FootprintsPage() {
   return (
-    <div className="bg-slate-50 min-h-screen pb-20">
+    <div className="bg-surface-secondary min-h-screen pb-20">
       <main className="px-4 pt-4">
-        <div className="rounded-2xl bg-white shadow-sm border border-slate-100 overflow-hidden">
+        <div className="rounded-2xl bg-surface shadow-sm border border-border overflow-hidden">
           {FOOTPRINTS.map((cast, i) => (
             <motion.div
               key={cast.id}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: i * 0.1 }}
-              className="flex items-center gap-4 border-b border-slate-50 last:border-0 p-4 hover:bg-slate-50"
+              className="flex items-center gap-4 border-b border-border last:border-0 p-4 hover:bg-surface-secondary"
             >
               <Link
                 href={`/casts/${cast.id}`}
-                className="block h-10 w-10 flex-shrink-0 rounded-full bg-slate-100 overflow-hidden"
+                className="block h-10 w-10 flex-shrink-0 rounded-full bg-surface-secondary overflow-hidden"
               >
                 <img
                   src={cast.image}
@@ -56,10 +56,10 @@ export default function FootprintsPage() {
               </Link>
               <div className="flex-1">
                 <p className="text-sm">
-                  <span className="font-bold text-slate-800">{cast.name}</span>
-                  <span className="text-slate-500"> visited your profile.</span>
+                  <span className="font-bold text-text-primary">{cast.name}</span>
+                  <span className="text-text-secondary"> visited your profile.</span>
                 </p>
-                <p className="text-[10px] text-slate-400">{cast.time}</p>
+                <p className="text-[10px] text-text-muted">{cast.time}</p>
               </div>
             </motion.div>
           ))}

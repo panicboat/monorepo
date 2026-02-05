@@ -111,13 +111,13 @@ export const ReviewList = ({
   const visibleReviews = isExpanded ? displayedReviews : displayedReviews.slice(0, 3);
 
   return (
-    <div className="bg-slate-50 py-6">
+    <div className="bg-surface-secondary py-6">
       <div className="px-4 mb-4 flex items-center justify-between">
-        <h3 className="font-serif text-lg font-bold text-slate-800">
+        <h3 className="font-serif text-lg font-bold text-text-primary">
           {mode === "cast" ? "All Reviews" : "Recent Reviews"}
         </h3>
-        <span className="text-sm text-blue-400 font-bold">
-          4.8 <Star size={12} className="inline fill-blue-400" /> ({displayedReviews.length})
+        <span className="text-sm text-info font-bold">
+          4.8 <Star size={12} className="inline fill-info" /> ({displayedReviews.length})
         </span>
       </div>
 
@@ -136,7 +136,7 @@ export const ReviewList = ({
         <div className="mt-4 px-4">
           <button
             onClick={() => setIsExpanded(true)}
-            className="w-full rounded-xl bg-blue-400 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-blue-500"
+            className="w-full rounded-xl bg-info py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-info-hover"
           >
             Read All Reviews
           </button>
@@ -156,9 +156,9 @@ const ReviewItem = ({
   onStatusChange?: (id: string, status: Review["status"]) => void;
 }) => {
   return (
-    <div className={`rounded-xl border bg-white p-4 shadow-sm relative transition-all ${review.status === "pending" ? "border-amber-200 bg-amber-50/50" :
-        review.status === "hidden" ? "border-slate-100 opacity-60 bg-slate-50" :
-          "border-green-100 bg-white ring-1 ring-green-50"
+    <div className={`rounded-xl border bg-surface p-4 shadow-sm relative transition-all ${review.status === "pending" ? "border-amber-200 bg-amber-50/50" :
+        review.status === "hidden" ? "border-border opacity-60 bg-surface-secondary" :
+          "border-success-light bg-surface ring-1 ring-success-lighter"
       }`}>
       {/* Status Badge for Cast */}
       {mode === "cast" && (
@@ -178,13 +178,13 @@ const ReviewItem = ({
 
           {review.status === "public" && (
             <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full uppercase tracking-wider">
+              <span className="flex items-center gap-1 text-[10px] font-bold text-success-hover bg-success-lighter px-2 py-1 rounded-full uppercase tracking-wider">
                 <Eye size={10} /> Published
               </span>
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 px-3 text-slate-400 hover:text-slate-600 hover:bg-slate-100 gap-1"
+                className="h-8 px-3 text-text-muted hover:text-text-secondary hover:bg-surface-secondary gap-1"
                 onClick={() => onStatusChange?.(review.id, "hidden")}
                 title="Hide from profile"
               >
@@ -196,13 +196,13 @@ const ReviewItem = ({
 
           {review.status === "hidden" && (
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-slate-500 bg-slate-200 px-2 py-1 rounded-full uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-text-secondary bg-border px-2 py-1 rounded-full uppercase tracking-wider">
                 Hidden
               </span>
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 px-3 text-slate-400 hover:text-blue-400 hover:bg-blue-50 gap-1"
+                className="h-8 px-3 text-text-muted hover:text-info hover:bg-info-lighter gap-1"
                 onClick={() => onStatusChange?.(review.id, "public")}
                 title="Show on profile"
               >
@@ -224,27 +224,27 @@ const ReviewItem = ({
       )}
 
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-bold text-slate-500">
+        <span className="text-xs font-bold text-text-secondary">
           {review.userName}
         </span>
-        <span className="text-xs text-slate-400">{review.date}</span>
+        <span className="text-xs text-text-muted">{review.date}</span>
       </div>
 
-      <div className="mb-2 flex text-yellow-400">
+      <div className="mb-2 flex text-warning">
         {[...Array(5)].map((_, i) => (
           <Star
             key={i}
             size={14}
             className={
               i < review.rating
-                ? "fill-yellow-400"
-                : "fill-slate-200 text-slate-200"
+                ? "fill-warning"
+                : "fill-border text-border"
             }
           />
         ))}
       </div>
 
-      <p className="mb-3 text-sm leading-relaxed text-slate-700">
+      <p className="mb-3 text-sm leading-relaxed text-text-secondary">
         {review.comment}
       </p>
 
@@ -252,7 +252,7 @@ const ReviewItem = ({
         {review.tags.map((tag) => (
           <span
             key={tag}
-            className="rounded-md bg-slate-100 px-2 py-1 text-[10px] text-slate-500"
+            className="rounded-md bg-surface-secondary px-2 py-1 text-[10px] text-text-secondary"
           >
             #{tag}
           </span>

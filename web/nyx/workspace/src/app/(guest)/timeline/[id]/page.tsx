@@ -76,13 +76,13 @@ function MediaCarousel({ media }: { media: MediaItem[] }) {
         <>
           <button
             onClick={goPrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-sm transition-colors"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-surface/80 hover:bg-surface rounded-full p-2 shadow-sm transition-colors"
           >
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={goNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-sm transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-surface/80 hover:bg-surface rounded-full p-2 shadow-sm transition-colors"
           >
             <ChevronRight size={20} />
           </button>
@@ -92,7 +92,7 @@ function MediaCarousel({ media }: { media: MediaItem[] }) {
                 key={i}
                 onClick={() => setCurrentIndex(i)}
                 className={`w-2 h-2 rounded-full transition-colors ${
-                  i === currentIndex ? "bg-white" : "bg-white/50"
+                  i === currentIndex ? "bg-surface" : "bg-surface/50"
                 }`}
               />
             ))}
@@ -159,29 +159,29 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-info" />
       </div>
     );
   }
 
   if (error || !post) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="sticky top-0 z-10 bg-white border-b border-slate-100 px-4 py-3 flex items-center gap-3">
+      <div className="min-h-screen bg-surface">
+        <div className="sticky top-0 z-10 bg-surface border-b border-border px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="p-1 rounded-full hover:bg-slate-100 transition-colors"
+            className="p-1 rounded-full hover:bg-surface-secondary transition-colors"
           >
             <ChevronLeft size={24} />
           </button>
           <h1 className="font-bold text-lg">Post</h1>
         </div>
-        <div className="p-8 text-center text-slate-400">
+        <div className="p-8 text-center text-text-muted">
           <p className="mb-4">Post not found</p>
           <button
             onClick={() => router.back()}
-            className="text-blue-400 hover:text-blue-500 font-medium"
+            className="text-info hover:text-info font-medium"
           >
             Go back
           </button>
@@ -196,12 +196,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   }));
 
   return (
-    <div className="min-h-screen bg-white pb-safe">
+    <div className="min-h-screen bg-surface pb-safe">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-slate-100 px-4 py-3 flex items-center gap-3">
+      <div className="sticky top-0 z-10 bg-surface/95 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => router.back()}
-          className="p-1 rounded-full hover:bg-slate-100 transition-colors"
+          className="p-1 rounded-full hover:bg-surface-secondary transition-colors"
         >
           <ChevronLeft size={24} />
         </button>
@@ -219,19 +219,19 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             <img
               src={post.author.imageUrl}
               alt={post.author.name || ""}
-              className="h-12 w-12 rounded-full border border-slate-100 object-cover"
+              className="h-12 w-12 rounded-full border border-border object-cover"
             />
           ) : (
-            <div className="h-12 w-12 rounded-full bg-slate-200 border border-slate-100" />
+            <div className="h-12 w-12 rounded-full bg-border border border-border" />
           )}
           <div>
-            <div className="font-bold text-slate-800">{post.author?.name || "Unknown"}</div>
-            <div className="text-sm text-slate-400">{formatTimeAgo(post.createdAt)}</div>
+            <div className="font-bold text-text-primary">{post.author?.name || "Unknown"}</div>
+            <div className="text-sm text-text-muted">{formatTimeAgo(post.createdAt)}</div>
           </div>
         </Link>
 
         {/* Content */}
-        <p className="text-base leading-relaxed text-slate-700 whitespace-pre-wrap">
+        <p className="text-base leading-relaxed text-text-secondary whitespace-pre-wrap">
           {post.content}
         </p>
 
@@ -239,7 +239,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         {post.hashtags && post.hashtags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {post.hashtags.map((tag, i) => (
-              <Badge key={i} variant="secondary" className="text-sm bg-blue-50 text-blue-500 hover:bg-blue-100">
+              <Badge key={i} variant="secondary" className="text-sm bg-info-lighter text-info hover:bg-info-light">
                 #{tag}
               </Badge>
             ))}
@@ -252,12 +252,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-6 pt-4 border-t border-slate-100">
+        <div className="flex items-center gap-6 pt-4 border-t border-border">
           <button
             onClick={handleLike}
             disabled={isLikeLoading}
             className={`flex items-center gap-2 transition-colors ${
-              liked ? "text-pink-500" : "text-slate-400 hover:text-pink-300"
+              liked ? "text-role-cast" : "text-text-muted hover:text-role-cast-light"
             } ${isLikeLoading ? "opacity-50" : ""}`}
           >
             <motion.div
@@ -270,11 +270,11 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             </motion.div>
             <span className="font-medium">{likesCount}</span>
           </button>
-          <button className="flex items-center gap-2 text-slate-400 hover:text-indigo-500 transition-colors">
+          <button className="flex items-center gap-2 text-text-muted hover:text-special transition-colors">
             <MessageCircle className="h-6 w-6" />
             <span className="font-medium">{post.commentsCount}</span>
           </button>
-          <button className="flex items-center gap-2 text-slate-400 hover:text-blue-500 transition-colors ml-auto">
+          <button className="flex items-center gap-2 text-text-muted hover:text-info transition-colors ml-auto">
             <Share2 className="h-5 w-5" />
           </button>
         </div>

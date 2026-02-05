@@ -43,7 +43,7 @@ export default function OnboardingStep5() {
   if (loading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-role-cast border-t-transparent" />
       </div>
     );
   }
@@ -51,13 +51,13 @@ export default function OnboardingStep5() {
   return (
     <div className="px-4 py-6 space-y-6 animate-in slide-in-from-right-8 fade-in duration-500">
       <div className="space-y-2">
-        <h2 className="text-xl font-serif font-bold text-slate-900 flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm text-white">
+        <h2 className="text-xl font-serif font-bold text-text-primary flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 text-sm text-white">
             5
           </span>
           Review & Publish
         </h2>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-text-secondary">
           入力内容を確認して、
           <br />
           プロフィールを公開しましょう。
@@ -67,37 +67,37 @@ export default function OnboardingStep5() {
       <div className="space-y-8">
         {/* 1. Basic Identity */}
         <section className="space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h3 className="font-bold text-slate-900">1. Basic Identity</h3>
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <h3 className="font-bold text-text-primary">1. Basic Identity</h3>
             <Button
               variant="link"
               size="sm"
               onClick={() => router.push("/cast/onboarding/step-1")}
-              className="text-xs font-bold text-pink-500 hover:text-pink-600 hover:no-underline"
+              className="text-xs font-bold text-role-cast hover:text-role-cast-hover hover:no-underline"
             >
               Edit
             </Button>
           </div>
-          <div className="rounded-xl bg-white p-4 shadow-sm border border-slate-100 space-y-4">
+          <div className="rounded-xl bg-surface p-4 shadow-sm border border-border space-y-4">
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase">
+              <p className="text-[10px] font-bold text-text-muted uppercase">
                 Nickname
               </p>
-              <p className="font-bold text-slate-700">
+              <p className="font-bold text-text-secondary">
                 {profile.nickname || "-"}
               </p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase">
+              <p className="text-[10px] font-bold text-text-muted uppercase">
                 Tagline
               </p>
-              <p className="text-sm text-slate-600">{profile.tagline || "-"}</p>
+              <p className="text-sm text-text-secondary">{profile.tagline || "-"}</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase">
+              <p className="text-[10px] font-bold text-text-muted uppercase">
                 Bio
               </p>
-              <p className="text-sm text-slate-600 whitespace-pre-wrap">
+              <p className="text-sm text-text-secondary whitespace-pre-wrap">
                 {profile.bio || "-"}
               </p>
             </div>
@@ -106,23 +106,23 @@ export default function OnboardingStep5() {
 
         {/* 2. Photos */}
         <section className="space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h3 className="font-bold text-slate-900">2. Photos</h3>
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <h3 className="font-bold text-text-primary">2. Photos</h3>
             <Button
               variant="link"
               size="sm"
               onClick={() => router.push("/cast/onboarding/step-2")}
-              className="text-xs font-bold text-pink-500 hover:text-pink-600 hover:no-underline"
+              className="text-xs font-bold text-role-cast hover:text-role-cast-hover hover:no-underline"
             >
               Edit
             </Button>
           </div>
-          <div className="rounded-xl bg-white p-4 shadow-sm border border-slate-100">
+          <div className="rounded-xl bg-surface p-4 shadow-sm border border-border">
             <div className="grid grid-cols-3 gap-2">
               {images.map((item, i) => (
                 <div
                   key={i}
-                  className="aspect-[3/4] rounded-lg bg-slate-100 overflow-hidden relative"
+                  className="aspect-[3/4] rounded-lg bg-surface-secondary overflow-hidden relative"
                 >
                   {item.type === "video" ? (
                     <video
@@ -148,7 +148,7 @@ export default function OnboardingStep5() {
                 </div>
               ))}
               {images.length === 0 && (
-                <div className="col-span-3 py-4 text-center text-sm text-slate-400">
+                <div className="col-span-3 py-4 text-center text-sm text-text-muted">
                   No photos uploaded
                 </div>
               )}
@@ -158,41 +158,41 @@ export default function OnboardingStep5() {
 
         {/* 3. Service Plans */}
         <section className="space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h3 className="font-bold text-slate-900">3. Service Plans</h3>
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <h3 className="font-bold text-text-primary">3. Service Plans</h3>
             <Button
               variant="link"
               size="sm"
               onClick={() => router.push("/cast/onboarding/step-3")}
-              className="text-xs font-bold text-pink-500 hover:text-pink-600 hover:no-underline"
+              className="text-xs font-bold text-role-cast hover:text-role-cast-hover hover:no-underline"
             >
               Edit
             </Button>
           </div>
-          <div className="rounded-xl bg-white shadow-sm border border-slate-100 overflow-hidden">
+          <div className="rounded-xl bg-surface shadow-sm border border-border overflow-hidden">
             {plans.length > 0 ? (
-              <div className="divide-y divide-slate-50">
+              <div className="divide-y divide-border">
                 {plans.map((plan) => (
                   <div
                     key={plan.id}
                     className="flex items-center justify-between p-3"
                   >
                     <div>
-                      <div className="font-bold text-slate-700">
+                      <div className="font-bold text-text-secondary">
                         {plan.name}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-text-muted">
                         {plan.duration} mins
                       </div>
                     </div>
-                    <div className="font-mono font-bold text-slate-900">
+                    <div className="font-mono font-bold text-text-primary">
                       ¥{plan.price.toLocaleString()}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-4 text-center text-sm text-slate-400">
+              <div className="p-4 text-center text-sm text-text-muted">
                 No plans configured (Optional)
               </div>
             )}
@@ -201,36 +201,36 @@ export default function OnboardingStep5() {
 
         {/* 4. Schedule */}
         <section className="space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h3 className="font-bold text-slate-900">4. Initial Schedule</h3>
+          <div className="flex items-center justify-between border-b border-border pb-2">
+            <h3 className="font-bold text-text-primary">4. Initial Schedule</h3>
             <Button
               variant="link"
               size="sm"
               onClick={() => router.push("/cast/onboarding/step-4")}
-              className="text-xs font-bold text-pink-500 hover:text-pink-600 hover:no-underline"
+              className="text-xs font-bold text-role-cast hover:text-role-cast-hover hover:no-underline"
             >
               Edit
             </Button>
           </div>
-          <div className="rounded-xl bg-white shadow-sm border border-slate-100 overflow-hidden">
+          <div className="rounded-xl bg-surface shadow-sm border border-border overflow-hidden">
             {schedules.length > 0 ? (
-              <div className="divide-y divide-slate-50">
+              <div className="divide-y divide-border">
                 {schedules.map((schedule, i) => {
                   const plan = plans.find((p) => p.id === schedule.planId);
                   return (
                     <div key={i} className="flex items-center gap-3 p-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-700">
+                          <span className="font-bold text-text-secondary">
                             {schedule.date}
                           </span>
-                          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">
+                          <span className="rounded bg-surface-secondary px-1.5 py-0.5 text-[10px] font-bold text-text-secondary">
                             {schedule.start} - {schedule.end}
                           </span>
                         </div>
                       </div>
                       {plan && (
-                        <div className="text-xs font-bold text-pink-500 bg-pink-50 px-2 py-1 rounded">
+                        <div className="text-xs font-bold text-role-cast bg-role-cast-lighter px-2 py-1 rounded">
                           {plan.name}
                         </div>
                       )}
@@ -239,7 +239,7 @@ export default function OnboardingStep5() {
                 })}
               </div>
             ) : (
-              <div className="p-4 text-center text-sm text-slate-400">
+              <div className="p-4 text-center text-sm text-text-muted">
                 No schedules added
               </div>
             )}
@@ -250,7 +250,7 @@ export default function OnboardingStep5() {
         <Button
           onClick={handlePublish}
           disabled={isPublishing}
-          className="relative w-full overflow-hidden rounded-xl bg-pink-500 py-6 h-auto font-bold text-white shadow-xl shadow-pink-200 transition-all hover:bg-pink-600 hover:shadow-2xl disabled:bg-slate-400"
+          className="relative w-full overflow-hidden rounded-xl bg-role-cast py-6 h-auto font-bold text-white shadow-xl shadow-role-cast-shadow transition-all hover:bg-role-cast-hover hover:shadow-2xl disabled:bg-neutral-400"
         >
           {isPublishing ? (
             <span className="flex items-center justify-center gap-2">

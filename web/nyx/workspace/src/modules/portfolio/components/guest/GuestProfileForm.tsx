@@ -133,13 +133,13 @@ export const GuestProfileForm = ({
           onClear={handleAvatarClear}
           size="lg"
         />
-        <p className="text-xs text-slate-400">タップして変更</p>
+        <p className="text-xs text-text-muted">タップして変更</p>
       </div>
 
       {/* Name Input */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-slate-700">
-          ニックネーム <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium text-text-secondary">
+          ニックネーム <span className="text-error">*</span>
         </label>
         <input
           type="text"
@@ -149,21 +149,21 @@ export const GuestProfileForm = ({
           maxLength={NAME_MAX_LENGTH + 5}
           className={`w-full px-4 py-3 rounded-xl border ${
             nameError
-              ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-              : "border-slate-200 focus:ring-blue-500 focus:border-blue-500"
-          } focus:outline-none focus:ring-2 transition-colors bg-white`}
+              ? "border-error-light focus:ring-error focus:border-error"
+              : "border-border focus:ring-info focus:border-info"
+          } focus:outline-none focus:ring-2 transition-colors bg-surface`}
           disabled={isLoading}
         />
         <div className="flex justify-between items-center">
           {nameError ? (
-            <p className="text-xs text-red-500">{nameError}</p>
+            <p className="text-xs text-error">{nameError}</p>
           ) : (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-text-muted">
               {NAME_MIN_LENGTH}〜{NAME_MAX_LENGTH}文字
             </p>
           )}
           <p
-            className={`text-xs ${name.length > NAME_MAX_LENGTH ? "text-red-500" : "text-slate-400"}`}
+            className={`text-xs ${name.length > NAME_MAX_LENGTH ? "text-error" : "text-text-muted"}`}
           >
             {name.length}/{NAME_MAX_LENGTH}
           </p>
@@ -172,7 +172,7 @@ export const GuestProfileForm = ({
 
       {/* Tagline Input */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-text-secondary">
           一言紹介
         </label>
         <input
@@ -183,19 +183,19 @@ export const GuestProfileForm = ({
           maxLength={TAGLINE_MAX_LENGTH + 10}
           className={`w-full px-4 py-3 rounded-xl border ${
             taglineError
-              ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-              : "border-slate-200 focus:ring-blue-500 focus:border-blue-500"
-          } focus:outline-none focus:ring-2 transition-colors bg-white`}
+              ? "border-error-light focus:ring-error focus:border-error"
+              : "border-border focus:ring-info focus:border-info"
+          } focus:outline-none focus:ring-2 transition-colors bg-surface`}
           disabled={isLoading}
         />
         <div className="flex justify-between items-center">
           {taglineError ? (
-            <p className="text-xs text-red-500">{taglineError}</p>
+            <p className="text-xs text-error">{taglineError}</p>
           ) : (
-            <p className="text-xs text-slate-400">任意</p>
+            <p className="text-xs text-text-muted">任意</p>
           )}
           <p
-            className={`text-xs ${tagline.length > TAGLINE_MAX_LENGTH ? "text-red-500" : "text-slate-400"}`}
+            className={`text-xs ${tagline.length > TAGLINE_MAX_LENGTH ? "text-error" : "text-text-muted"}`}
           >
             {tagline.length}/{TAGLINE_MAX_LENGTH}
           </p>
@@ -204,7 +204,7 @@ export const GuestProfileForm = ({
 
       {/* Bio Input */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-text-secondary">
           自己紹介
         </label>
         <textarea
@@ -215,19 +215,19 @@ export const GuestProfileForm = ({
           rows={5}
           className={`w-full px-4 py-3 rounded-xl border ${
             bioError
-              ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-              : "border-slate-200 focus:ring-blue-500 focus:border-blue-500"
-          } focus:outline-none focus:ring-2 transition-colors bg-white resize-none`}
+              ? "border-error-light focus:ring-error focus:border-error"
+              : "border-border focus:ring-info focus:border-info"
+          } focus:outline-none focus:ring-2 transition-colors bg-surface resize-none`}
           disabled={isLoading}
         />
         <div className="flex justify-between items-center">
           {bioError ? (
-            <p className="text-xs text-red-500">{bioError}</p>
+            <p className="text-xs text-error">{bioError}</p>
           ) : (
-            <p className="text-xs text-slate-400">任意</p>
+            <p className="text-xs text-text-muted">任意</p>
           )}
           <p
-            className={`text-xs ${bio.length > BIO_MAX_LENGTH ? "text-red-500" : "text-slate-400"}`}
+            className={`text-xs ${bio.length > BIO_MAX_LENGTH ? "text-error" : "text-text-muted"}`}
           >
             {bio.length}/{BIO_MAX_LENGTH}
           </p>
@@ -239,9 +239,9 @@ export const GuestProfileForm = ({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-red-50 border border-red-100"
+          className="p-4 rounded-xl bg-error-lighter border border-error-light"
         >
-          <p className="text-sm text-red-600">{error}</p>
+          <p className="text-sm text-error">{error}</p>
         </motion.div>
       )}
 
@@ -250,9 +250,9 @@ export const GuestProfileForm = ({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-green-50 border border-green-100"
+          className="p-4 rounded-xl bg-success-lighter border border-success-light"
         >
-          <p className="text-sm text-green-600">プロフィールを保存しました</p>
+          <p className="text-sm text-success">プロフィールを保存しました</p>
         </motion.div>
       )}
 
@@ -263,8 +263,8 @@ export const GuestProfileForm = ({
         whileTap={isValid && !isLoading ? { scale: 0.98 } : {}}
         className={`w-full py-4 rounded-xl font-bold text-white transition-all ${
           isValid && !isLoading
-            ? "bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/30"
-            : "bg-slate-300 cursor-not-allowed"
+            ? "bg-info hover:bg-info-hover shadow-lg shadow-info/30"
+            : "bg-border-secondary cursor-not-allowed"
         }`}
       >
         {saving ? (

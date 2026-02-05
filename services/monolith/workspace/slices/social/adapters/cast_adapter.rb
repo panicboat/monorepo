@@ -61,6 +61,46 @@ module Social
         )
       end
 
+      # Batch find casts by cast IDs.
+      #
+      # @param cast_ids [Array<String>] the cast IDs to look up
+      # @return [Hash<String, CastInfo>] hash of cast_id => CastInfo
+      def find_by_cast_ids(cast_ids)
+        return {} if cast_ids.nil? || cast_ids.empty?
+
+        casts = portfolio_cast_repository.find_by_ids(cast_ids)
+        casts.each_with_object({}) do |cast, hash|
+          hash[cast.id] = CastInfo.new(
+            id: cast.id,
+            user_id: cast.user_id,
+            name: cast.name,
+            image_path: cast.image_path,
+            avatar_path: cast.avatar_path,
+            handle: cast.handle
+          )
+        end
+      end
+
+      # Batch find casts by user IDs.
+      #
+      # @param user_ids [Array<String>] the user IDs to look up
+      # @return [Hash<String, CastInfo>] hash of user_id => CastInfo
+      def find_by_user_ids(user_ids)
+        return {} if user_ids.nil? || user_ids.empty?
+
+        casts = portfolio_cast_repository.find_by_user_ids(user_ids)
+        casts.each_with_object({}) do |cast, hash|
+          hash[cast.user_id] = CastInfo.new(
+            id: cast.id,
+            user_id: cast.user_id,
+            name: cast.name,
+            image_path: cast.image_path,
+            avatar_path: cast.avatar_path,
+            handle: cast.handle
+          )
+        end
+      end
+
       private
 
       def portfolio_cast_repository

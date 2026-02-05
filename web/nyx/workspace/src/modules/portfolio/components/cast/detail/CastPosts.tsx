@@ -275,28 +275,28 @@ export const PostCard = ({
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
+      className="rounded-2xl border border-border bg-surface p-4 shadow-sm"
     >
-      <div className="mb-2 flex items-center justify-between text-xs text-slate-400">
+      <div className="mb-2 flex items-center justify-between text-xs text-text-muted">
         <div className="flex items-center gap-2">
           {/* Avatar for context in timeline if needed, currently just time */}
-          <div className="h-6 w-6 rounded-full bg-slate-100 overflow-hidden">
+          <div className="h-6 w-6 rounded-full bg-surface-secondary overflow-hidden">
             <img
               src={post.castAvatar}
               alt={post.castName}
               className="h-full w-full object-cover"
             />
           </div>
-          <span className="font-bold text-slate-600">{post.castName}</span>
-          <span className="text-slate-300">•</span>
+          <span className="font-bold text-text-secondary">{post.castName}</span>
+          <span className="text-text-muted">•</span>
           <span>{post.time}</span>
         </div>
-        <button className="text-slate-300">
+        <button className="text-text-muted">
           <MoreHorizontal size={14} />
         </button>
       </div>
 
-      <p className="mb-3 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap pl-8">
+      <p className="mb-3 text-sm leading-relaxed text-text-secondary whitespace-pre-wrap pl-8">
         {post.content}
       </p>
 
@@ -308,7 +308,7 @@ export const PostCard = ({
             {post.media.map((item, idx) => (
               <div
                 key={idx}
-                className="aspect-[4/3] bg-slate-100 relative group overflow-hidden cursor-pointer"
+                className="aspect-[4/3] bg-surface-secondary relative group overflow-hidden cursor-pointer"
                 onClick={() => onMediaClick && onMediaClick(item)}
               >
                 {item.type === "image" && (
@@ -352,10 +352,10 @@ export const PostCard = ({
           </div>
         )}
 
-        <div className="flex items-center gap-6 border-t border-slate-50 pt-3 text-slate-400">
+        <div className="flex items-center gap-6 border-t border-border pt-3 text-text-muted">
           <button
             onClick={handleLike}
-            className={`flex items-center gap-1.5 text-xs transition-colors hover:text-pink-500 ${liked ? "text-pink-500" : ""}`}
+            className={`flex items-center gap-1.5 text-xs transition-colors hover:text-role-cast ${liked ? "text-role-cast" : ""}`}
           >
             <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
             <span>{likeCount}</span>
@@ -363,7 +363,7 @@ export const PostCard = ({
 
           <button
             onClick={() => setShowComments(!showComments)}
-            className={`flex items-center gap-1.5 text-xs transition-colors hover:text-blue-500 ${showComments ? "text-blue-500" : ""}`}
+            className={`flex items-center gap-1.5 text-xs transition-colors hover:text-info ${showComments ? "text-info" : ""}`}
           >
             <MessageCircle className="h-4 w-4" />
             <span>{commentCount}</span>
@@ -385,14 +385,14 @@ export const PostCard = ({
                   {comments.length > 0 ? (
                     comments.map((c, i) => (
                       <div key={i} className="flex gap-2 text-xs">
-                        <span className="font-bold text-slate-700">
+                        <span className="font-bold text-text-secondary">
                           {c.user}
                         </span>
-                        <span className="text-slate-600">{c.text}</span>
+                        <span className="text-text-secondary">{c.text}</span>
                       </div>
                     ))
                   ) : (
-                    <div className="text-xs text-slate-400 italic">
+                    <div className="text-xs text-text-muted italic">
                       No comments yet. Be the first!
                     </div>
                   )}
@@ -405,7 +405,7 @@ export const PostCard = ({
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                     placeholder="Add a comment..."
-                    className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-3 py-1.5 text-xs focus:outline-none focus:border-pink-300 transition-colors"
+                    className="flex-1 bg-surface-secondary border border-border rounded-full px-3 py-1.5 text-xs focus:outline-none focus:border-role-cast-light transition-colors"
                     onKeyDown={(e) =>
                       e.key === "Enter" && handleCommentSubmit()
                     }
@@ -413,7 +413,7 @@ export const PostCard = ({
                   <button
                     disabled={!commentText.trim()}
                     onClick={handleCommentSubmit}
-                    className="p-1.5 rounded-full bg-pink-50 text-pink-500 disabled:opacity-50 disabled:bg-slate-50 disabled:text-slate-300"
+                    className="p-1.5 rounded-full bg-role-cast-lighter text-role-cast disabled:opacity-50 disabled:bg-surface-secondary disabled:text-text-muted"
                   >
                     <Send size={12} />
                   </button>
@@ -435,12 +435,12 @@ export const CastPosts = () => {
     : MOCK_POSTS;
 
   return (
-    <section className="bg-slate-50 py-6">
+    <section className="bg-surface-secondary py-6">
       <div className="flex items-center justify-between px-4 mb-4">
-        <h3 className="font-serif text-lg font-bold text-slate-800">
+        <h3 className="font-serif text-lg font-bold text-text-primary">
           Media & Posts
         </h3>
-        <span className="text-xs font-bold text-slate-400">
+        <span className="text-xs font-bold text-text-muted">
           {MOCK_POSTS.length + EXTRA_POSTS.length} posts
         </span>
       </div>
@@ -455,7 +455,7 @@ export const CastPosts = () => {
         <a // Changed to a simple link that effectively goes to the page, but in React we assume client transition
           // However, if we want to replace the button behavior:
           href={`/timeline/1`} // Mock ID for now
-          className="block w-full text-center rounded-xl bg-pink-500 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-pink-600"
+          className="block w-full text-center rounded-xl bg-role-cast py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-role-cast-hover"
         >
           View All Posts
         </a>

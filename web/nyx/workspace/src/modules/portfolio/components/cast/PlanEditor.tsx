@@ -42,17 +42,17 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
       {plans.map((plan, index) => (
         <div
           key={plan.id}
-          className="relative flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm animate-in fade-in slide-in-from-top-2"
+          className="relative flex flex-col gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm animate-in fade-in slide-in-from-top-2"
         >
           <div className="flex items-start justify-between">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider">
               Plan #{index + 1}
             </h4>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => removePlan(plan.id)}
-              className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50"
+              className="h-8 w-8 text-text-muted hover:text-error hover:bg-error-lighter"
             >
               <Trash2 size={16} />
             </Button>
@@ -60,10 +60,10 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="col-span-1 sm:col-span-2">
-              <Label className="mb-1 flex items-center gap-1 text-xs font-bold text-slate-500">
+              <Label className="mb-1 flex items-center gap-1 text-xs font-bold text-text-secondary">
                 <Tag size={12} />
                 Plan Name
-                <span className="ml-2 text-xs font-normal text-slate-400">
+                <span className="ml-2 text-xs font-normal text-text-muted">
                   コース名
                 </span>
               </Label>
@@ -72,15 +72,15 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
                 value={plan.name}
                 onChange={(e) => updatePlan(plan.id, "name", e.target.value)}
                 placeholder=""
-                className="focus-visible:ring-pink-500"
+                className="focus-visible:ring-role-cast"
               />
             </div>
 
             <div>
-              <Label className="mb-1 flex items-center gap-1 text-xs font-bold text-slate-500">
+              <Label className="mb-1 flex items-center gap-1 text-xs font-bold text-text-secondary">
                 <Clock size={12} />
                 Duration (min)
-                <span className="ml-2 text-xs font-normal text-slate-400">
+                <span className="ml-2 text-xs font-normal text-text-muted">
                   所要時間
                 </span>
               </Label>
@@ -93,19 +93,19 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
                   }
                   min={10}
                   step={10}
-                  className="focus-visible:ring-pink-500"
+                  className="focus-visible:ring-role-cast"
                 />
-                <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-bold pointer-events-none">
+                <span className="absolute right-3 top-2.5 text-xs text-text-muted font-bold pointer-events-none">
                   min
                 </span>
               </div>
             </div>
 
             <div>
-              <Label className="mb-1 flex items-center gap-1 text-xs font-bold text-slate-500">
+              <Label className="mb-1 flex items-center gap-1 text-xs font-bold text-text-secondary">
                 <Banknote size={12} />
                 Price (JPY)
-                <span className="ml-2 text-xs font-normal text-slate-400">
+                <span className="ml-2 text-xs font-normal text-text-muted">
                   基本料金
                 </span>
               </Label>
@@ -118,9 +118,9 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
                   }
                   min={1000}
                   step={1000}
-                  className="focus-visible:ring-pink-500"
+                  className="focus-visible:ring-role-cast"
                 />
-                <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-bold pointer-events-none">
+                <span className="absolute right-3 top-2.5 text-xs text-text-muted font-bold pointer-events-none">
                   ¥
                 </span>
               </div>
@@ -133,7 +133,7 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
         type="button"
         variant="outline"
         onClick={addPlan}
-        className="w-full h-12 border-2 border-dashed border-slate-200 bg-slate-50 text-slate-500 hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600 font-bold"
+        className="w-full h-12 border-2 border-dashed border-border bg-surface-secondary text-text-secondary hover:border-role-cast-light hover:bg-role-cast-lighter hover:text-role-cast font-bold"
       >
         <Plus size={16} className="mr-2" />
         Add New Plan

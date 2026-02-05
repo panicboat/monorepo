@@ -37,13 +37,13 @@ export default function ManagePlanPage() {
       <div className="container max-w-lg mx-auto pb-24 px-4 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-2">Manage Plans</h1>
-          <p className="text-slate-500 text-sm">
+          <p className="text-text-secondary text-sm">
             Set up your service plans. These will be displayed on your profile for guests to book.
           </p>
         </div>
         <div className="animate-pulse space-y-4">
-          <div className="h-24 bg-slate-200 rounded"></div>
-          <div className="h-24 bg-slate-200 rounded"></div>
+          <div className="h-24 bg-border rounded"></div>
+          <div className="h-24 bg-border rounded"></div>
         </div>
       </div>
     );
@@ -53,7 +53,7 @@ export default function ManagePlanPage() {
     <div className="container max-w-lg mx-auto pb-24 px-4 py-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-2">Manage Plans</h1>
-        <p className="text-slate-500 text-sm">
+        <p className="text-text-secondary text-sm">
           Set up your service plans. These will be displayed on your profile for guests to book.
         </p>
       </div>

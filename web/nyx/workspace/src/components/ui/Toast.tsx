@@ -105,13 +105,13 @@ function ToastItem({
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -10, scale: 0.95 }}
-      className="pointer-events-auto bg-white rounded-lg shadow-lg border border-slate-200 p-4 min-w-[280px] max-w-sm flex items-start gap-3"
+      className="pointer-events-auto bg-surface rounded-lg shadow-lg border border-border p-4 min-w-[280px] max-w-sm flex items-start gap-3"
     >
       <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${iconColor}`} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-slate-900">{toast.title}</p>
+        <p className="text-sm font-medium text-text-primary">{toast.title}</p>
         {toast.description && (
-          <p className="text-sm text-slate-500 mt-0.5">{toast.description}</p>
+          <p className="text-sm text-text-secondary mt-0.5">{toast.description}</p>
         )}
       </div>
       {toast.action && (
@@ -124,7 +124,7 @@ function ToastItem({
       )}
       <button
         onClick={() => onRemove(toast.id)}
-        className="flex-shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
+        className="flex-shrink-0 text-text-muted hover:text-text-secondary transition-colors"
       >
         <X className="w-4 h-4" />
       </button>

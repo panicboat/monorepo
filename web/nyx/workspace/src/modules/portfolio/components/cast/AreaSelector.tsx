@@ -36,7 +36,7 @@ export const AreaSelector = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-4">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-role-cast border-t-transparent" />
       </div>
     );
   }
@@ -49,14 +49,14 @@ export const AreaSelector = ({
           {selectedAreas.map((area) => (
             <span
               key={area.id}
-              className="inline-flex items-center gap-1 rounded-full bg-pink-100 px-3 py-1 text-sm text-pink-700"
+              className="inline-flex items-center gap-1 rounded-full bg-role-cast-light px-3 py-1 text-sm text-role-cast-hover"
             >
               <MapPin size={12} />
               {area.name}
               <button
                 type="button"
                 onClick={() => handleRemove(area.id)}
-                className="ml-1 rounded-full p-0.5 hover:bg-pink-200"
+                className="ml-1 rounded-full p-0.5 hover:bg-role-cast-light"
               >
                 <X size={12} />
               </button>
@@ -66,7 +66,7 @@ export const AreaSelector = ({
       )}
 
       {/* Prefecture accordion */}
-      <div className="space-y-1 rounded-lg border border-slate-200 bg-white">
+      <div className="space-y-1 rounded-lg border border-border bg-surface">
         {prefectures.map((prefecture) => {
           const prefectureAreas = areasByPrefecture.get(prefecture) || [];
           const isExpanded = expandedPrefecture === prefecture;
@@ -81,12 +81,12 @@ export const AreaSelector = ({
                 onClick={() =>
                   setExpandedPrefecture(isExpanded ? null : prefecture)
                 }
-                className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium text-text-secondary hover:bg-surface-secondary"
               >
                 <span className="flex items-center gap-2">
                   {prefecture}
                   {selectedInPrefecture > 0 && (
-                    <span className="rounded-full bg-pink-500 px-2 py-0.5 text-xs text-white">
+                    <span className="rounded-full bg-role-cast px-2 py-0.5 text-xs text-white">
                       {selectedInPrefecture}
                     </span>
                   )}
@@ -111,10 +111,10 @@ export const AreaSelector = ({
                         disabled={isDisabled}
                         className={`rounded-full px-3 py-1 text-sm transition-colors ${
                           isSelected
-                            ? "bg-pink-500 text-white"
+                            ? "bg-role-cast text-white"
                             : isDisabled
-                            ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            ? "bg-surface-secondary text-text-muted cursor-not-allowed"
+                            : "bg-surface-secondary text-text-secondary hover:bg-neutral-200"
                         }`}
                       >
                         {area.name}
@@ -128,7 +128,7 @@ export const AreaSelector = ({
         })}
       </div>
 
-      <p className="text-[10px] text-slate-400">
+      <p className="text-[10px] text-text-muted">
         最大{maxSelections}エリアまで選択できます（{selectedIds.length}/{maxSelections}）
       </p>
     </div>

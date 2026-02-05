@@ -67,9 +67,9 @@ export const HorizontalScroll = ({
       {showArrows && (
         <button
           onClick={() => scroll("left")}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-opacity hidden sm:flex"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-surface/80 backdrop-blur-sm rounded-full shadow-md hover:bg-surface transition-opacity hidden sm:flex"
         >
-          <ChevronLeft size={20} className="text-slate-700" />
+          <ChevronLeft size={20} className="text-text-secondary" />
         </button>
       )}
 
@@ -85,9 +85,9 @@ export const HorizontalScroll = ({
       {showArrows && (
         <button
           onClick={() => scroll("right")}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-opacity hidden sm:flex"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-surface/80 backdrop-blur-sm rounded-full shadow-md hover:bg-surface transition-opacity hidden sm:flex"
         >
-          <ChevronRight size={20} className="text-slate-700" />
+          <ChevronRight size={20} className="text-text-secondary" />
         </button>
       )}
     </div>

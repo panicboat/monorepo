@@ -23,21 +23,21 @@ function BlockSection({ castId }: { castId: string }) {
   const blocked = isBlocking(castId);
 
   return (
-    <div className="flex flex-col items-center gap-2 border-t border-slate-100 pt-8">
+    <div className="flex flex-col items-center gap-2 border-t border-border pt-8">
       <Button
         variant="ghost"
         size="sm"
         onClick={() => toggleBlock(castId)}
         className={`flex items-center gap-2 text-xs font-bold rounded-full transition-colors ${blocked
-          ? "bg-blue-400 text-white hover:bg-blue-500 hover:text-white"
-          : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+          ? "bg-info text-white hover:bg-info-hover hover:text-white"
+          : "text-text-muted hover:text-text-secondary hover:bg-surface-secondary"
           }`}
       >
         <AlertTriangle size={14} />
         {blocked ? "Unblock Cast" : "Block / Report"}
       </Button>
       {blocked && (
-        <p className="text-[10px] text-red-500 font-medium">
+        <p className="text-[10px] text-error font-medium">
           You have blocked this user.
         </p>
       )}
@@ -80,16 +80,16 @@ export default function CastDetailPage({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+      <div className="flex items-center justify-center min-h-screen bg-surface">
+        <Loader2 className="w-8 h-8 animate-spin text-info" />
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white gap-4">
-        <p className="text-slate-500">{error || "Cast not found"}</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-surface gap-4">
+        <p className="text-text-secondary">{error || "Cast not found"}</p>
         <Link href="/">
           <Button variant="outline">Back to Home</Button>
         </Link>
@@ -110,7 +110,7 @@ export default function CastDetailPage({
   }
 
   return (
-    <div className="bg-white pb-24">
+    <div className="bg-surface pb-24">
       <CastDetailView
         castId={id}
         profileData={data.profile}
@@ -140,7 +140,7 @@ export default function CastDetailPage({
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 size="icon"
-                className="h-14 w-14 rounded-full bg-blue-400 text-white shadow-xl shadow-blue-200 transition-colors hover:bg-blue-500"
+                className="h-14 w-14 rounded-full bg-info text-white shadow-xl shadow-info/30 transition-colors hover:bg-info-hover"
               >
                 <MessageCircle size={24} color="white" />
               </Button>
@@ -188,9 +188,9 @@ function FollowButton({ castId }: { castId: string }) {
       <Button
         size="icon"
         disabled={isProcessing || loading}
-        className={`h-12 w-12 rounded-full shadow-xl shadow-slate-300 transition-colors border ${following
-          ? "bg-blue-500 border-blue-500 text-white hover:bg-blue-600 hover:text-white"
-          : "bg-white border-blue-200 text-blue-500 hover:bg-blue-50"
+        className={`h-12 w-12 rounded-full shadow-xl shadow-border transition-colors border ${following
+          ? "bg-info border-info text-white hover:bg-info-hover hover:text-white"
+          : "bg-surface border-info-light text-info hover:bg-info-lighter"
           } ${isProcessing || loading ? "opacity-50" : ""}`}
         onClick={handleClick}
       >
@@ -214,9 +214,9 @@ function FavoriteButton() {
     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
       <Button
         size="icon"
-        className={`h-12 w-12 rounded-full shadow-xl shadow-slate-300 transition-colors border ${isFavorite
-          ? "bg-pink-500 border-pink-500 text-white hover:bg-pink-600 hover:text-white"
-          : "bg-white border-pink-200 text-pink-500 hover:bg-pink-50"
+        className={`h-12 w-12 rounded-full shadow-xl shadow-border transition-colors border ${isFavorite
+          ? "bg-role-cast border-role-cast text-white hover:bg-role-cast-hover hover:text-white"
+          : "bg-surface border-role-cast-light text-role-cast hover:bg-role-cast-lighter"
           }`}
         onClick={() => setIsFavorite(!isFavorite)}
       >

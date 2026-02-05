@@ -55,12 +55,12 @@ export function HashtagInput({
   return (
     <div className={`space-y-2 ${className}`}>
       <div className="flex items-center gap-2">
-        <Hash size={14} className="text-slate-400" />
-        <span className="text-xs font-medium text-slate-500">Hashtags</span>
-        <span className="text-[10px] text-slate-400">({value.length}/{maxTags})</span>
+        <Hash size={14} className="text-text-muted" />
+        <span className="text-xs font-medium text-text-secondary">Hashtags</span>
+        <span className="text-[10px] text-text-muted">({value.length}/{maxTags})</span>
       </div>
       <div
-        className="flex flex-wrap gap-2 p-2 bg-slate-50 rounded-xl min-h-[40px] cursor-text"
+        className="flex flex-wrap gap-2 p-2 bg-surface-secondary rounded-xl min-h-[40px] cursor-text"
         onClick={() => inputRef.current?.focus()}
       >
         {value.map((tag, index) => (
@@ -90,7 +90,7 @@ export function HashtagInput({
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
             placeholder={value.length === 0 ? placeholder : ""}
-            className="flex-1 min-w-[100px] bg-transparent border-0 outline-none text-sm placeholder:text-slate-300"
+            className="flex-1 min-w-[100px] bg-transparent border-0 outline-none text-sm placeholder:text-text-muted"
           />
         )}
       </div>

@@ -27,7 +27,7 @@ export const ReservationDetail = ({ reservationId }: ReservationDetailProps) => 
 
       {/* Actions */}
       <div className="flex flex-col gap-3 mt-6 pb-8 items-center">
-        <Button variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50 h-auto py-2">
+        <Button variant="ghost" className="text-error hover:text-error-hover hover:bg-error-lighter h-auto py-2">
           Cancel Reservation
         </Button>
       </div>

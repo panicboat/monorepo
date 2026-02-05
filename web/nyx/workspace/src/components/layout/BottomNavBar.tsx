@@ -27,8 +27,11 @@ export const BottomNavBar = ({
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-md border-t border-slate-100 bg-white/90 px-6 pb-safe pt-2 backdrop-blur-lg md:hidden">
-      <div className="flex items-center justify-between">
+    <nav
+      aria-label="Main navigation"
+      className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-md border-t border-border bg-surface/90 px-6 pb-safe pt-2 backdrop-blur-lg md:hidden"
+    >
+      <div className="flex items-center justify-between" role="menubar">
         {tabs.map((tab) => {
           // Active if exact match or starts with (except root)
           const isActive =
@@ -41,18 +44,24 @@ export const BottomNavBar = ({
             <Link
               key={tab.id}
               href={tab.href}
+              aria-current={isActive ? "page" : undefined}
+              role="menuitem"
               className={`flex flex-col items-center gap-1 p-2 transition-colors ${
                 isActive
                   ? activeColorClass
-                  : "text-slate-400 hover:text-slate-600"
+                  : "text-text-muted hover:text-text-secondary"
               }`}
             >
               <div className="relative">
                 <tab.icon
+                  aria-hidden="true"
                   className={`h-6 w-6 ${isActive ? "fill-current" : ""}`}
                 />
                 {tab.badge && (
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+                  <span
+                    aria-label={`${tab.badge} notifications`}
+                    className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-error text-[10px] font-bold text-text-inverted ring-2 ring-surface"
+                  >
                     {tab.badge}
                   </span>
                 )}
@@ -68,6 +77,6 @@ export const BottomNavBar = ({
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };

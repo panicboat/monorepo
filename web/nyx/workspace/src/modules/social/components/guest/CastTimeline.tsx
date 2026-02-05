@@ -86,17 +86,19 @@ function MediaCarousel({ media }: { media: MediaItem[] }) {
         <>
           <button
             onClick={goPrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm transition-colors"
+            aria-label="Previous image"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-surface/80 hover:bg-surface rounded-full p-1 shadow-sm transition-colors"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft aria-hidden="true" size={16} />
           </button>
           <button
             onClick={goNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow-sm transition-colors"
+            aria-label="Next image"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-surface/80 hover:bg-surface rounded-full p-1 shadow-sm transition-colors"
           >
-            <ChevronRight size={16} />
+            <ChevronRight aria-hidden="true" size={16} />
           </button>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1" role="tablist" aria-label="Image navigation">
             {media.map((_, i) => (
               <button
                 key={i}
@@ -104,8 +106,11 @@ function MediaCarousel({ media }: { media: MediaItem[] }) {
                   e.stopPropagation();
                   setCurrentIndex(i);
                 }}
+                role="tab"
+                aria-selected={i === currentIndex}
+                aria-label={`Go to image ${i + 1}`}
                 className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                  i === currentIndex ? "bg-white" : "bg-white/50"
+                  i === currentIndex ? "bg-surface" : "bg-surface/50"
                 }`}
               />
             ))}
@@ -141,9 +146,9 @@ function PostCard({ post }: { post: CastPost }) {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm hover:border-blue-200 transition-colors cursor-pointer"
+        className="rounded-2xl border border-border bg-surface p-4 shadow-sm hover:border-info-light transition-colors cursor-pointer"
       >
-        <p className="mb-3 text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">
+        <p className="mb-3 text-sm leading-relaxed text-text-secondary whitespace-pre-wrap">
           {post.content}
         </p>
 
@@ -153,7 +158,7 @@ function PostCard({ post }: { post: CastPost }) {
               <Badge
                 key={i}
                 variant="secondary"
-                className="text-xs bg-blue-50 text-blue-500 hover:bg-blue-100"
+                className="text-xs bg-info-lighter text-info hover:bg-info-light"
               >
                 #{tag}
               </Badge>
@@ -167,23 +172,25 @@ function PostCard({ post }: { post: CastPost }) {
           </div>
         )}
 
-        <div className="flex items-center justify-between text-slate-400">
+        <div className="flex items-center justify-between text-text-muted">
           <div className="flex items-center gap-4">
             <button
               onClick={handleLike}
+              aria-label={liked ? "Unlike this post" : "Like this post"}
+              aria-pressed={liked}
               className={`flex items-center gap-1.5 text-xs transition-colors ${
-                liked ? "text-pink-500" : "text-slate-400 hover:text-pink-300"
+                liked ? "text-role-cast" : "text-text-muted hover:text-role-cast-light"
               }`}
             >
-              <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
+              <Heart aria-hidden="true" className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
               <span>{likesCount}</span>
             </button>
-            <span className="flex items-center gap-1.5 text-xs">
-              <MessageCircle className="h-4 w-4" />
+            <span className="flex items-center gap-1.5 text-xs" aria-label={`${post.commentsCount} comments`}>
+              <MessageCircle aria-hidden="true" className="h-4 w-4" />
               <span>{post.commentsCount}</span>
             </span>
           </div>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-text-muted">
             {formatTimeAgo(post.createdAt)}
           </span>
         </div>
@@ -204,7 +211,7 @@ function GridView({ posts }: { posts: CastPost[] }) {
 
   if (allMedia.length === 0) {
     return (
-      <div className="py-8 text-center text-slate-400 text-sm">
+      <div className="py-8 text-center text-text-muted text-sm">
         No media posts yet
       </div>
     );
@@ -215,7 +222,7 @@ function GridView({ posts }: { posts: CastPost[] }) {
       {allMedia.map((media, idx) => (
         <Link key={idx} href={`/timeline/${media.postId}`}>
           <div
-            className="relative aspect-square bg-slate-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+            className="relative aspect-square bg-surface-secondary rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
           >
             <img
               src={media.mediaType === "video" ? media.thumbnailUrl || media.url : media.url}
@@ -269,23 +276,29 @@ export function CastTimeline({ castId }: CastTimelineProps) {
     <div className="px-4 py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-slate-800">Posts</h3>
-        <div className="flex bg-slate-100 rounded-lg p-0.5">
+        <h3 className="text-lg font-bold text-text-primary">Posts</h3>
+        <div className="flex bg-surface-secondary rounded-lg p-0.5" role="tablist" aria-label="Layout options">
           <button
             onClick={() => setLayout("list")}
+            role="tab"
+            aria-selected={layout === "list"}
+            aria-label="List view"
             className={`p-1.5 rounded-md transition-all ${
-              layout === "list" ? "bg-white text-slate-900 shadow-sm" : "text-slate-400"
+              layout === "list" ? "bg-surface text-text-primary shadow-sm" : "text-text-muted"
             }`}
           >
-            <ListIcon size={16} />
+            <ListIcon aria-hidden="true" size={16} />
           </button>
           <button
             onClick={() => setLayout("grid")}
+            role="tab"
+            aria-selected={layout === "grid"}
+            aria-label="Grid view"
             className={`p-1.5 rounded-md transition-all ${
-              layout === "grid" ? "bg-white text-slate-900 shadow-sm" : "text-slate-400"
+              layout === "grid" ? "bg-surface text-text-primary shadow-sm" : "text-text-muted"
             }`}
           >
-            <Grid size={16} />
+            <Grid aria-hidden="true" size={16} />
           </button>
         </div>
       </div>
@@ -293,15 +306,15 @@ export function CastTimeline({ castId }: CastTimelineProps) {
       {/* Content */}
       {isInitialLoading ? (
         <div className="py-10 text-center">
-          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-slate-400" />
-          <span className="text-sm text-slate-400">Loading posts...</span>
+          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-text-muted" />
+          <span className="text-sm text-text-muted">Loading posts...</span>
         </div>
       ) : error ? (
-        <div className="py-10 text-center text-red-400 text-sm">
+        <div className="py-10 text-center text-error text-sm">
           Failed to load posts. Please try again.
         </div>
       ) : posts.length === 0 ? (
-        <div className="py-10 text-center text-slate-400 text-sm">
+        <div className="py-10 text-center text-text-muted text-sm">
           No posts yet
         </div>
       ) : layout === "list" ? (
@@ -312,7 +325,7 @@ export function CastTimeline({ castId }: CastTimelineProps) {
           {hasMore && (
             <div ref={loadMoreRef} className="pt-4 text-center">
               {loading && (
-                <div className="flex items-center justify-center gap-2 text-slate-400">
+                <div className="flex items-center justify-center gap-2 text-text-muted">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm">Loading...</span>
                 </div>
@@ -326,7 +339,7 @@ export function CastTimeline({ castId }: CastTimelineProps) {
           {hasMore && (
             <div ref={loadMoreRef} className="pt-4 text-center">
               {loading && (
-                <div className="flex items-center justify-center gap-2 text-slate-400">
+                <div className="flex items-center justify-center gap-2 text-text-muted">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm">Loading...</span>
                 </div>
