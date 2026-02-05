@@ -72,11 +72,11 @@ Nyx.PLACE をプロダクションレディにするための実装計画。
 投稿へのいいね機能を実装する。
 
 **Tasks:**
-- [ ] `likes` テーブル作成（migration）
-- [ ] Proto 定義追加（`LikeCastPost`, `UnlikeCastPost`）
-- [ ] Backend UseCase 実装
-- [ ] Frontend API Route 作成
-- [ ] `TimelineFeed` にいいね機能統合
+- [x] `likes` テーブル作成（migration）
+- [x] Proto 定義追加（`LikeCastPost`, `UnlikeCastPost`）
+- [x] Backend UseCase 実装
+- [x] Frontend API Route 作成
+- [x] `TimelineFeed` にいいね機能統合
 
 **Backend:**
 - `slices/social/repositories/like_repository.rb` (new)
@@ -90,12 +90,12 @@ Nyx.PLACE をプロダクションレディにするための実装計画。
 キャストのフォロー機能を実装する（現在は localStorage のみ）。
 
 **Tasks:**
-- [ ] `follows` テーブル作成（migration）
-- [ ] Proto 定義追加（`FollowCast`, `UnfollowCast`, `ListFollowing`）
-- [ ] Backend UseCase 実装
-- [ ] Frontend API Route 作成
-- [ ] `useSocial` hook を API 対応に拡張
-- [ ] Following タブのフィルタリングを API 連携
+- [x] `follows` テーブル作成（migration）
+- [x] Proto 定義追加（`FollowCast`, `UnfollowCast`, `ListFollowing`）
+- [x] Backend UseCase 実装
+- [x] Frontend API Route 作成
+- [x] `useSocial` hook を API 対応に拡張
+- [x] Following タブのフィルタリングを API 連携
 
 ### 1.4 Comment Feature
 
