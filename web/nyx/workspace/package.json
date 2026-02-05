@@ -37,13 +37,13 @@
   "devDependencies": {
     "@bufbuild/protoc-gen-es": "^2.11.0",
     "@tailwindcss/postcss": "^4.1.18",
-    "@types/node": "^24.0.0",
+    "@types/node": "^24.10.10",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.2",
     "eslint-config-next": "16.1.6",
     "msw": "^2.12.7",
-    "prettier": "^3.0.0",
+    "prettier": "^3.8.1",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"
   }

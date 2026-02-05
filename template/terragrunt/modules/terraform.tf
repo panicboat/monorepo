@@ -1,7 +1,7 @@
 # terraform.tf - Terraform configuration for GitHub OIDC Auth
 
 terraform {
-  required_version = ">= 1.0"
+  required_version = ">= 1.14.4"
 
   required_providers {
     aws = {
@@ -10,7 +10,7 @@ terraform {
     }
     tls = {
       source  = "hashicorp/tls"
-      version = "~> 4.0"
+      version = "~> 4.2"
     }
   }
 }
