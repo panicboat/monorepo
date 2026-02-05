@@ -9,6 +9,7 @@ import { useGuestPost } from "@/modules/social/hooks/useGuestTimeline";
 import { useLike } from "@/modules/social/hooks/useLike";
 import { useAuthStore } from "@/stores/authStore";
 import { Badge } from "@/components/ui/Badge";
+import { CommentSection } from "@/modules/social/components/comments";
 
 type MediaItem = {
   mediaType: "image" | "video";
@@ -214,10 +215,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           href={`/casts/${post.castId}`}
           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         >
-          {post.author?.imageUrl ? (
+          {post.author?.imageUrl && post.author.imageUrl.trim() !== "" ? (
             <img
               src={post.author.imageUrl}
-              alt={post.author.name}
+              alt={post.author.name || ""}
               className="h-12 w-12 rounded-full border border-slate-100 object-cover"
             />
           ) : (
@@ -277,6 +278,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             <Share2 className="h-5 w-5" />
           </button>
         </div>
+
+        {/* Comments Section */}
+        <CommentSection postId={id} commentsCount={post.commentsCount} />
       </div>
     </div>
   );

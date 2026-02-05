@@ -468,6 +468,84 @@ end
 puts "  Created #{like_count} post likes"
 
 # =============================================================================
+# Social: Post Comments
+# =============================================================================
+
+puts "Seeding Social: Post Comments..."
+
+comment_data = [
+  { content: "素敵な投稿ですね！✨" },
+  { content: "いつも応援しています！" },
+  { content: "今度会いに行きます！" },
+  { content: "このドレス本当に似合ってますね💕" },
+  { content: "また遊びに行きたいな〜" },
+  { content: "カフェの情報ありがとうございます！" },
+]
+
+reply_data = [
+  { content: "ありがとうございます！嬉しいです😊" },
+  { content: "ぜひお待ちしています！" },
+  { content: "嬉しいコメントありがとう💕" },
+]
+
+comment_count = 0
+reply_count = 0
+
+# Get all users (both guests and casts)
+all_user_ids = guest_user_ids + cast_user_ids
+
+posts.each do |post|
+  existing = db[:"social__post_comments"].where(post_id: post[:id]).count
+  next if existing > 0
+
+  # Add 2-4 comments per post
+  comments_to_add = rand(2..4)
+  comment_ids = []
+
+  comments_to_add.times do |idx|
+    user_id = all_user_ids.sample
+    data = comment_data.sample
+
+    comment_id = db[:"social__post_comments"].insert(
+      post_id: post[:id],
+      user_id: user_id,
+      content: data[:content],
+      parent_id: nil,
+      replies_count: 0,
+      created_at: Time.now - (idx * 1800), # Stagger by 30 minutes
+    )
+    comment_ids << comment_id
+    comment_count += 1
+  end
+
+  # Add 1-2 replies to some comments (from cast)
+  comment_ids.sample(rand(1..2)).each do |comment_id|
+    # Get the cast who owns this post
+    cast_user_id = cast_user_ids.find do |uid|
+      cast = db[:portfolio__casts].where(user_id: uid).first
+      cast && cast[:id] == post[:cast_id]
+    end
+    next unless cast_user_id
+
+    reply = reply_data.sample
+    db[:"social__post_comments"].insert(
+      post_id: post[:id],
+      user_id: cast_user_id,
+      content: reply[:content],
+      parent_id: comment_id,
+      replies_count: 0,
+      created_at: Time.now - 600, # 10 minutes ago
+    )
+
+    # Update parent's replies_count
+    db[:"social__post_comments"].where(id: comment_id).update(replies_count: 1)
+    reply_count += 1
+  end
+end
+
+puts "  Created #{comment_count} comments and #{reply_count} replies"
+
+# =============================================================================
 # Social: Cast Follows
 # =============================================================================
 

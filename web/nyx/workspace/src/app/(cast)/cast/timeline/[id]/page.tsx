@@ -7,6 +7,7 @@ import { ChevronLeft, Heart, MessageCircle, Trash2, Calendar } from "lucide-reac
 import { useCastPosts } from "@/modules/social/hooks/useCastPosts";
 import { CastPost } from "@/modules/social/types";
 import { useToast } from "@/components/ui/Toast";
+import { CommentSection } from "@/modules/social/components/comments";
 
 function formatTimeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -102,11 +103,11 @@ export default function PostDetailPage({
       <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
         <div className="p-4 flex items-center justify-between border-b border-slate-50">
           <div className="flex items-center gap-3">
-            {post.author?.imageUrl ? (
+            {post.author?.imageUrl && post.author.imageUrl.trim() !== "" ? (
               <img
                 src={post.author.imageUrl}
-                alt={post.author.name}
-                className="h-10 w-10 rounded-full border border-slate-100"
+                alt={post.author.name || ""}
+                className="h-10 w-10 rounded-full border border-slate-100 object-cover"
               />
             ) : (
               <div className="h-10 w-10 rounded-full border border-slate-100 bg-slate-200" />
@@ -174,9 +175,8 @@ export default function PostDetailPage({
       </div>
 
       {/* Comments Section */}
-      <div className="space-y-4">
-        <h3 className="font-serif font-bold text-slate-800">Comments</h3>
-        <p className="text-slate-400 text-sm">No comments yet.</p>
+      <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+        <CommentSection postId={id} commentsCount={post.commentsCount} />
       </div>
     </div>
   );

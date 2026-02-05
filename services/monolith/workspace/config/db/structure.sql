@@ -275,6 +275,36 @@ CREATE TABLE social.cast_posts (
 
 
 --
+-- Name: comment_media; Type: TABLE; Schema: social; Owner: -
+--
+
+CREATE TABLE social.comment_media (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    comment_id uuid NOT NULL,
+    media_type character varying(10) NOT NULL,
+    url text NOT NULL,
+    thumbnail_url text,
+    "position" integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: post_comments; Type: TABLE; Schema: social; Owner: -
+--
+
+CREATE TABLE social.post_comments (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    post_id uuid NOT NULL,
+    parent_id uuid,
+    user_id uuid NOT NULL,
+    content text NOT NULL,
+    replies_count integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: post_likes; Type: TABLE; Schema: social; Owner: -
 --
 
@@ -447,6 +477,22 @@ ALTER TABLE ONLY social.cast_posts
 
 
 --
+-- Name: comment_media comment_media_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.comment_media
+    ADD CONSTRAINT comment_media_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: post_comments post_comments_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.post_comments
+    ADD CONSTRAINT post_comments_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: post_likes post_likes_pkey; Type: CONSTRAINT; Schema: social; Owner: -
 --
 
@@ -561,6 +607,13 @@ CREATE INDEX idx_cast_posts_created_at_desc ON social.cast_posts USING btree (cr
 
 
 --
+-- Name: idx_post_comments_created_at_desc; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX idx_post_comments_created_at_desc ON social.post_comments USING btree (created_at DESC);
+
+
+--
 -- Name: social_cast_follows_cast_id_index; Type: INDEX; Schema: social; Owner: -
 --
 
@@ -600,6 +653,34 @@ CREATE INDEX social_cast_post_media_post_id_index ON social.cast_post_media USIN
 --
 
 CREATE INDEX social_cast_posts_cast_id_index ON social.cast_posts USING btree (cast_id);
+
+
+--
+-- Name: social_comment_media_comment_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_comment_media_comment_id_index ON social.comment_media USING btree (comment_id);
+
+
+--
+-- Name: social_post_comments_parent_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_post_comments_parent_id_index ON social.post_comments USING btree (parent_id);
+
+
+--
+-- Name: social_post_comments_post_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_post_comments_post_id_index ON social.post_comments USING btree (post_id);
+
+
+--
+-- Name: social_post_comments_user_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_post_comments_user_id_index ON social.post_comments USING btree (user_id);
 
 
 --
@@ -697,6 +778,38 @@ ALTER TABLE ONLY social.cast_post_media
 
 
 --
+-- Name: comment_media comment_media_comment_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.comment_media
+    ADD CONSTRAINT comment_media_comment_id_fkey FOREIGN KEY (comment_id) REFERENCES social.post_comments(id) ON DELETE CASCADE;
+
+
+--
+-- Name: post_comments post_comments_parent_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.post_comments
+    ADD CONSTRAINT post_comments_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES social.post_comments(id) ON DELETE CASCADE;
+
+
+--
+-- Name: post_comments post_comments_post_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.post_comments
+    ADD CONSTRAINT post_comments_post_id_fkey FOREIGN KEY (post_id) REFERENCES social.cast_posts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: post_comments post_comments_user_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.post_comments
+    ADD CONSTRAINT post_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES identity.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: post_likes post_likes_post_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
 --
 
@@ -734,4 +847,6 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260201000000_create_guests.rb'),
 ('20260201000001_add_tagline_bio_to_guests.rb'),
 ('20260203000000_create_post_likes.rb'),
-('20260203000001_create_cast_follows.rb');
+('20260203000001_create_cast_follows.rb'),
+('20260205000000_create_post_comments.rb'),
+('20260205000001_create_comment_media.rb');

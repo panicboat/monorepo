@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file social/v1/service.proto.
  */
 export const file_social_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("Chdzb2NpYWwvdjEvc2VydmljZS5wcm90bxIJc29jaWFsLnYxIj0KDkNhc3RQb3N0QXV0aG9yEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJIlMKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCSL/AQoIQ2FzdFBvc3QSCgoCaWQYASABKAkSDwoHY2FzdF9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEicKBW1lZGlhGAQgAygLMhguc29jaWFsLnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIpCgZhdXRob3IYBiABKAsyGS5zb2NpYWwudjEuQ2FzdFBvc3RBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSDwoHdmlzaWJsZRgJIAEoCBIQCghoYXNodGFncxgKIAMoCRINCgVsaWtlZBgLIAEoCCJWChRMaXN0Q2FzdFBvc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkSDwoHY2FzdF9pZBgDIAEoCRIOCgZmaWx0ZXIYBCABKAkiYgoVTGlzdENhc3RQb3N0c1Jlc3BvbnNlEiIKBXBvc3RzGAEgAygLMhMuc29jaWFsLnYxLkNhc3RQb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIn4KE1NhdmVDYXN0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkSDwoHY29udGVudBgCIAEoCRInCgVtZWRpYRgDIAMoCzIYLnNvY2lhbC52MS5DYXN0UG9zdE1lZGlhEg8KB3Zpc2libGUYBCABKAgSEAoIaGFzaHRhZ3MYBSADKAkiOQoUU2F2ZUNhc3RQb3N0UmVzcG9uc2USIQoEcG9zdBgBIAEoCzITLnNvY2lhbC52MS5DYXN0UG9zdCIgChJHZXRDYXN0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkiOAoTR2V0Q2FzdFBvc3RSZXNwb25zZRIhCgRwb3N0GAEgASgLMhMuc29jaWFsLnYxLkNhc3RQb3N0IiMKFURlbGV0ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSIYChZEZWxldGVDYXN0UG9zdFJlc3BvbnNlIiYKE0xpa2VDYXN0UG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSIrChRMaWtlQ2FzdFBvc3RSZXNwb25zZRITCgtsaWtlc19jb3VudBgBIAEoBSIoChVVbmxpa2VDYXN0UG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSItChZVbmxpa2VDYXN0UG9zdFJlc3BvbnNlEhMKC2xpa2VzX2NvdW50GAEgASgFIiwKGEdldFBvc3RMaWtlU3RhdHVzUmVxdWVzdBIQCghwb3N0X2lkcxgBIAMoCSKJAQoZR2V0UG9zdExpa2VTdGF0dXNSZXNwb25zZRI+CgVsaWtlZBgBIAMoCzIvLnNvY2lhbC52MS5HZXRQb3N0TGlrZVN0YXR1c1Jlc3BvbnNlLkxpa2VkRW50cnkaLAoKTGlrZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBIiQKEUZvbGxvd0Nhc3RSZXF1ZXN0Eg8KB2Nhc3RfaWQYASABKAkiJQoSRm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiJgoTVW5mb2xsb3dDYXN0UmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIicKFFVuZm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiNQoUTGlzdEZvbGxvd2luZ1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJIlAKFUxpc3RGb2xsb3dpbmdSZXNwb25zZRIQCghjYXN0X2lkcxgBIAMoCRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIqChZHZXRGb2xsb3dTdGF0dXNSZXF1ZXN0EhAKCGNhc3RfaWRzGAEgAygJIpEBChdHZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJECglmb2xsb3dpbmcYASADKAsyMS5zb2NpYWwudjEuR2V0Rm9sbG93U3RhdHVzUmVzcG9uc2UuRm9sbG93aW5nRW50cnkaMAoORm9sbG93aW5nRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgIOgI4ATKtBwoPVGltZWxpbmVTZXJ2aWNlElIKDUxpc3RDYXN0UG9zdHMSHy5zb2NpYWwudjEuTGlzdENhc3RQb3N0c1JlcXVlc3QaIC5zb2NpYWwudjEuTGlzdENhc3RQb3N0c1Jlc3BvbnNlEkwKC0dldENhc3RQb3N0Eh0uc29jaWFsLnYxLkdldENhc3RQb3N0UmVxdWVzdBoeLnNvY2lhbC52MS5HZXRDYXN0UG9zdFJlc3BvbnNlEk8KDFNhdmVDYXN0UG9zdBIeLnNvY2lhbC52MS5TYXZlQ2FzdFBvc3RSZXF1ZXN0Gh8uc29jaWFsLnYxLlNhdmVDYXN0UG9zdFJlc3BvbnNlElUKDkRlbGV0ZUNhc3RQb3N0EiAuc29jaWFsLnYxLkRlbGV0ZUNhc3RQb3N0UmVxdWVzdBohLnNvY2lhbC52MS5EZWxldGVDYXN0UG9zdFJlc3BvbnNlEk8KDExpa2VDYXN0UG9zdBIeLnNvY2lhbC52MS5MaWtlQ2FzdFBvc3RSZXF1ZXN0Gh8uc29jaWFsLnYxLkxpa2VDYXN0UG9zdFJlc3BvbnNlElUKDlVubGlrZUNhc3RQb3N0EiAuc29jaWFsLnYxLlVubGlrZUNhc3RQb3N0UmVxdWVzdBohLnNvY2lhbC52MS5Vbmxpa2VDYXN0UG9zdFJlc3BvbnNlEl4KEUdldFBvc3RMaWtlU3RhdHVzEiMuc29jaWFsLnYxLkdldFBvc3RMaWtlU3RhdHVzUmVxdWVzdBokLnNvY2lhbC52MS5HZXRQb3N0TGlrZVN0YXR1c1Jlc3BvbnNlEkkKCkZvbGxvd0Nhc3QSHC5zb2NpYWwudjEuRm9sbG93Q2FzdFJlcXVlc3QaHS5zb2NpYWwudjEuRm9sbG93Q2FzdFJlc3BvbnNlEk8KDFVuZm9sbG93Q2FzdBIeLnNvY2lhbC52MS5VbmZvbGxvd0Nhc3RSZXF1ZXN0Gh8uc29jaWFsLnYxLlVuZm9sbG93Q2FzdFJlc3BvbnNlElIKDUxpc3RGb2xsb3dpbmcSHy5zb2NpYWwudjEuTGlzdEZvbGxvd2luZ1JlcXVlc3QaIC5zb2NpYWwudjEuTGlzdEZvbGxvd2luZ1Jlc3BvbnNlElgKD0dldEZvbGxvd1N0YXR1cxIhLnNvY2lhbC52MS5HZXRGb2xsb3dTdGF0dXNSZXF1ZXN0GiIuc29jaWFsLnYxLkdldEZvbGxvd1N0YXR1c1Jlc3BvbnNlYgZwcm90bzM");
+  fileDesc("Chdzb2NpYWwvdjEvc2VydmljZS5wcm90bxIJc29jaWFsLnYxIj0KDkNhc3RQb3N0QXV0aG9yEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJIlMKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCSL/AQoIQ2FzdFBvc3QSCgoCaWQYASABKAkSDwoHY2FzdF9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEicKBW1lZGlhGAQgAygLMhguc29jaWFsLnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIpCgZhdXRob3IYBiABKAsyGS5zb2NpYWwudjEuQ2FzdFBvc3RBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSDwoHdmlzaWJsZRgJIAEoCBIQCghoYXNodGFncxgKIAMoCRINCgVsaWtlZBgLIAEoCCJWChRMaXN0Q2FzdFBvc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkSDwoHY2FzdF9pZBgDIAEoCRIOCgZmaWx0ZXIYBCABKAkiYgoVTGlzdENhc3RQb3N0c1Jlc3BvbnNlEiIKBXBvc3RzGAEgAygLMhMuc29jaWFsLnYxLkNhc3RQb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIn4KE1NhdmVDYXN0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkSDwoHY29udGVudBgCIAEoCRInCgVtZWRpYRgDIAMoCzIYLnNvY2lhbC52MS5DYXN0UG9zdE1lZGlhEg8KB3Zpc2libGUYBCABKAgSEAoIaGFzaHRhZ3MYBSADKAkiOQoUU2F2ZUNhc3RQb3N0UmVzcG9uc2USIQoEcG9zdBgBIAEoCzITLnNvY2lhbC52MS5DYXN0UG9zdCIgChJHZXRDYXN0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkiOAoTR2V0Q2FzdFBvc3RSZXNwb25zZRIhCgRwb3N0GAEgASgLMhMuc29jaWFsLnYxLkNhc3RQb3N0IiMKFURlbGV0ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSIYChZEZWxldGVDYXN0UG9zdFJlc3BvbnNlIiYKE0xpa2VDYXN0UG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSIrChRMaWtlQ2FzdFBvc3RSZXNwb25zZRITCgtsaWtlc19jb3VudBgBIAEoBSIoChVVbmxpa2VDYXN0UG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSItChZVbmxpa2VDYXN0UG9zdFJlc3BvbnNlEhMKC2xpa2VzX2NvdW50GAEgASgFIiwKGEdldFBvc3RMaWtlU3RhdHVzUmVxdWVzdBIQCghwb3N0X2lkcxgBIAMoCSKJAQoZR2V0UG9zdExpa2VTdGF0dXNSZXNwb25zZRI+CgVsaWtlZBgBIAMoCzIvLnNvY2lhbC52MS5HZXRQb3N0TGlrZVN0YXR1c1Jlc3BvbnNlLkxpa2VkRW50cnkaLAoKTGlrZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBIiQKEUZvbGxvd0Nhc3RSZXF1ZXN0Eg8KB2Nhc3RfaWQYASABKAkiJQoSRm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiJgoTVW5mb2xsb3dDYXN0UmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIicKFFVuZm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiNQoUTGlzdEZvbGxvd2luZ1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJIlAKFUxpc3RGb2xsb3dpbmdSZXNwb25zZRIQCghjYXN0X2lkcxgBIAMoCRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIqChZHZXRGb2xsb3dTdGF0dXNSZXF1ZXN0EhAKCGNhc3RfaWRzGAEgAygJIpEBChdHZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJECglmb2xsb3dpbmcYASADKAsyMS5zb2NpYWwudjEuR2V0Rm9sbG93U3RhdHVzUmVzcG9uc2UuRm9sbG93aW5nRW50cnkaMAoORm9sbG93aW5nRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgIOgI4ASJSCgxDb21tZW50TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCSJPCg1Db21tZW50QXV0aG9yEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJEhEKCXVzZXJfdHlwZRgEIAEoCSLYAQoHQ29tbWVudBIKCgJpZBgBIAEoCRIPCgdwb3N0X2lkGAIgASgJEhEKCXBhcmVudF9pZBgDIAEoCRIPCgd1c2VyX2lkGAQgASgJEg8KB2NvbnRlbnQYBSABKAkSEgoKY3JlYXRlZF9hdBgGIAEoCRIoCgZhdXRob3IYByABKAsyGC5zb2NpYWwudjEuQ29tbWVudEF1dGhvchImCgVtZWRpYRgIIAMoCzIXLnNvY2lhbC52MS5Db21tZW50TWVkaWESFQoNcmVwbGllc19jb3VudBgJIAEoBSJwChFBZGRDb21tZW50UmVxdWVzdBIPCgdwb3N0X2lkGAEgASgJEg8KB2NvbnRlbnQYAiABKAkSEQoJcGFyZW50X2lkGAMgASgJEiYKBW1lZGlhGAQgAygLMhcuc29jaWFsLnYxLkNvbW1lbnRNZWRpYSJRChJBZGRDb21tZW50UmVzcG9uc2USIwoHY29tbWVudBgBIAEoCzISLnNvY2lhbC52MS5Db21tZW50EhYKDmNvbW1lbnRzX2NvdW50GAIgASgFIioKFERlbGV0ZUNvbW1lbnRSZXF1ZXN0EhIKCmNvbW1lbnRfaWQYASABKAkiLwoVRGVsZXRlQ29tbWVudFJlc3BvbnNlEhYKDmNvbW1lbnRzX2NvdW50GAEgASgFIkUKE0xpc3RDb21tZW50c1JlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkiYwoUTGlzdENvbW1lbnRzUmVzcG9uc2USJAoIY29tbWVudHMYASADKAsyEi5zb2NpYWwudjEuQ29tbWVudBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCJHChJMaXN0UmVwbGllc1JlcXVlc3QSEgoKY29tbWVudF9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkiYQoTTGlzdFJlcGxpZXNSZXNwb25zZRIjCgdyZXBsaWVzGAEgAygLMhIuc29jaWFsLnYxLkNvbW1lbnQSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgy6wkKD1RpbWVsaW5lU2VydmljZRJSCg1MaXN0Q2FzdFBvc3RzEh8uc29jaWFsLnYxLkxpc3RDYXN0UG9zdHNSZXF1ZXN0GiAuc29jaWFsLnYxLkxpc3RDYXN0UG9zdHNSZXNwb25zZRJMCgtHZXRDYXN0UG9zdBIdLnNvY2lhbC52MS5HZXRDYXN0UG9zdFJlcXVlc3QaHi5zb2NpYWwudjEuR2V0Q2FzdFBvc3RSZXNwb25zZRJPCgxTYXZlQ2FzdFBvc3QSHi5zb2NpYWwudjEuU2F2ZUNhc3RQb3N0UmVxdWVzdBofLnNvY2lhbC52MS5TYXZlQ2FzdFBvc3RSZXNwb25zZRJVCg5EZWxldGVDYXN0UG9zdBIgLnNvY2lhbC52MS5EZWxldGVDYXN0UG9zdFJlcXVlc3QaIS5zb2NpYWwudjEuRGVsZXRlQ2FzdFBvc3RSZXNwb25zZRJPCgxMaWtlQ2FzdFBvc3QSHi5zb2NpYWwudjEuTGlrZUNhc3RQb3N0UmVxdWVzdBofLnNvY2lhbC52MS5MaWtlQ2FzdFBvc3RSZXNwb25zZRJVCg5Vbmxpa2VDYXN0UG9zdBIgLnNvY2lhbC52MS5Vbmxpa2VDYXN0UG9zdFJlcXVlc3QaIS5zb2NpYWwudjEuVW5saWtlQ2FzdFBvc3RSZXNwb25zZRJeChFHZXRQb3N0TGlrZVN0YXR1cxIjLnNvY2lhbC52MS5HZXRQb3N0TGlrZVN0YXR1c1JlcXVlc3QaJC5zb2NpYWwudjEuR2V0UG9zdExpa2VTdGF0dXNSZXNwb25zZRJJCgpGb2xsb3dDYXN0Ehwuc29jaWFsLnYxLkZvbGxvd0Nhc3RSZXF1ZXN0Gh0uc29jaWFsLnYxLkZvbGxvd0Nhc3RSZXNwb25zZRJPCgxVbmZvbGxvd0Nhc3QSHi5zb2NpYWwudjEuVW5mb2xsb3dDYXN0UmVxdWVzdBofLnNvY2lhbC52MS5VbmZvbGxvd0Nhc3RSZXNwb25zZRJSCg1MaXN0Rm9sbG93aW5nEh8uc29jaWFsLnYxLkxpc3RGb2xsb3dpbmdSZXF1ZXN0GiAuc29jaWFsLnYxLkxpc3RGb2xsb3dpbmdSZXNwb25zZRJYCg9HZXRGb2xsb3dTdGF0dXMSIS5zb2NpYWwudjEuR2V0Rm9sbG93U3RhdHVzUmVxdWVzdBoiLnNvY2lhbC52MS5HZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJJCgpBZGRDb21tZW50Ehwuc29jaWFsLnYxLkFkZENvbW1lbnRSZXF1ZXN0Gh0uc29jaWFsLnYxLkFkZENvbW1lbnRSZXNwb25zZRJSCg1EZWxldGVDb21tZW50Eh8uc29jaWFsLnYxLkRlbGV0ZUNvbW1lbnRSZXF1ZXN0GiAuc29jaWFsLnYxLkRlbGV0ZUNvbW1lbnRSZXNwb25zZRJPCgxMaXN0Q29tbWVudHMSHi5zb2NpYWwudjEuTGlzdENvbW1lbnRzUmVxdWVzdBofLnNvY2lhbC52MS5MaXN0Q29tbWVudHNSZXNwb25zZRJMCgtMaXN0UmVwbGllcxIdLnNvY2lhbC52MS5MaXN0UmVwbGllc1JlcXVlc3QaHi5zb2NpYWwudjEuTGlzdFJlcGxpZXNSZXNwb25zZWIGcHJvdG8z");
 
 /**
  * @generated from message social.v1.CastPostAuthor
@@ -593,6 +593,353 @@ export const GetFollowStatusResponseSchema: GenMessage<GetFollowStatusResponse> 
   messageDesc(file_social_v1_service, 24);
 
 /**
+ * Comment Messages
+ *
+ * @generated from message social.v1.CommentMedia
+ */
+export type CommentMedia = Message<"social.v1.CommentMedia"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * "image" or "video"
+   *
+   * @generated from field: string media_type = 2;
+   */
+  mediaType: string;
+
+  /**
+   * @generated from field: string url = 3;
+   */
+  url: string;
+
+  /**
+   * @generated from field: string thumbnail_url = 4;
+   */
+  thumbnailUrl: string;
+};
+
+/**
+ * Describes the message social.v1.CommentMedia.
+ * Use `create(CommentMediaSchema)` to create a new message.
+ */
+export const CommentMediaSchema: GenMessage<CommentMedia> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 25);
+
+/**
+ * @generated from message social.v1.CommentAuthor
+ */
+export type CommentAuthor = Message<"social.v1.CommentAuthor"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string image_url = 3;
+   */
+  imageUrl: string;
+
+  /**
+   * "guest" or "cast"
+   *
+   * @generated from field: string user_type = 4;
+   */
+  userType: string;
+};
+
+/**
+ * Describes the message social.v1.CommentAuthor.
+ * Use `create(CommentAuthorSchema)` to create a new message.
+ */
+export const CommentAuthorSchema: GenMessage<CommentAuthor> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 26);
+
+/**
+ * @generated from message social.v1.Comment
+ */
+export type Comment = Message<"social.v1.Comment"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string post_id = 2;
+   */
+  postId: string;
+
+  /**
+   * empty if top-level comment
+   *
+   * @generated from field: string parent_id = 3;
+   */
+  parentId: string;
+
+  /**
+   * Guest or Cast user ID
+   *
+   * @generated from field: string user_id = 4;
+   */
+  userId: string;
+
+  /**
+   * @generated from field: string content = 5;
+   */
+  content: string;
+
+  /**
+   * ISO8601
+   *
+   * @generated from field: string created_at = 6;
+   */
+  createdAt: string;
+
+  /**
+   * @generated from field: social.v1.CommentAuthor author = 7;
+   */
+  author?: CommentAuthor;
+
+  /**
+   * @generated from field: repeated social.v1.CommentMedia media = 8;
+   */
+  media: CommentMedia[];
+
+  /**
+   * @generated from field: int32 replies_count = 9;
+   */
+  repliesCount: number;
+};
+
+/**
+ * Describes the message social.v1.Comment.
+ * Use `create(CommentSchema)` to create a new message.
+ */
+export const CommentSchema: GenMessage<Comment> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 27);
+
+/**
+ * @generated from message social.v1.AddCommentRequest
+ */
+export type AddCommentRequest = Message<"social.v1.AddCommentRequest"> & {
+  /**
+   * @generated from field: string post_id = 1;
+   */
+  postId: string;
+
+  /**
+   * @generated from field: string content = 2;
+   */
+  content: string;
+
+  /**
+   * optional, for replies
+   *
+   * @generated from field: string parent_id = 3;
+   */
+  parentId: string;
+
+  /**
+   * max 3
+   *
+   * @generated from field: repeated social.v1.CommentMedia media = 4;
+   */
+  media: CommentMedia[];
+};
+
+/**
+ * Describes the message social.v1.AddCommentRequest.
+ * Use `create(AddCommentRequestSchema)` to create a new message.
+ */
+export const AddCommentRequestSchema: GenMessage<AddCommentRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 28);
+
+/**
+ * @generated from message social.v1.AddCommentResponse
+ */
+export type AddCommentResponse = Message<"social.v1.AddCommentResponse"> & {
+  /**
+   * @generated from field: social.v1.Comment comment = 1;
+   */
+  comment?: Comment;
+
+  /**
+   * updated post comments count
+   *
+   * @generated from field: int32 comments_count = 2;
+   */
+  commentsCount: number;
+};
+
+/**
+ * Describes the message social.v1.AddCommentResponse.
+ * Use `create(AddCommentResponseSchema)` to create a new message.
+ */
+export const AddCommentResponseSchema: GenMessage<AddCommentResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 29);
+
+/**
+ * @generated from message social.v1.DeleteCommentRequest
+ */
+export type DeleteCommentRequest = Message<"social.v1.DeleteCommentRequest"> & {
+  /**
+   * @generated from field: string comment_id = 1;
+   */
+  commentId: string;
+};
+
+/**
+ * Describes the message social.v1.DeleteCommentRequest.
+ * Use `create(DeleteCommentRequestSchema)` to create a new message.
+ */
+export const DeleteCommentRequestSchema: GenMessage<DeleteCommentRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 30);
+
+/**
+ * @generated from message social.v1.DeleteCommentResponse
+ */
+export type DeleteCommentResponse = Message<"social.v1.DeleteCommentResponse"> & {
+  /**
+   * @generated from field: int32 comments_count = 1;
+   */
+  commentsCount: number;
+};
+
+/**
+ * Describes the message social.v1.DeleteCommentResponse.
+ * Use `create(DeleteCommentResponseSchema)` to create a new message.
+ */
+export const DeleteCommentResponseSchema: GenMessage<DeleteCommentResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 31);
+
+/**
+ * @generated from message social.v1.ListCommentsRequest
+ */
+export type ListCommentsRequest = Message<"social.v1.ListCommentsRequest"> & {
+  /**
+   * @generated from field: string post_id = 1;
+   */
+  postId: string;
+
+  /**
+   * default: 20, max: 50
+   *
+   * @generated from field: int32 limit = 2;
+   */
+  limit: number;
+
+  /**
+   * optional, for pagination
+   *
+   * @generated from field: string cursor = 3;
+   */
+  cursor: string;
+};
+
+/**
+ * Describes the message social.v1.ListCommentsRequest.
+ * Use `create(ListCommentsRequestSchema)` to create a new message.
+ */
+export const ListCommentsRequestSchema: GenMessage<ListCommentsRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 32);
+
+/**
+ * @generated from message social.v1.ListCommentsResponse
+ */
+export type ListCommentsResponse = Message<"social.v1.ListCommentsResponse"> & {
+  /**
+   * top-level comments only
+   *
+   * @generated from field: repeated social.v1.Comment comments = 1;
+   */
+  comments: Comment[];
+
+  /**
+   * @generated from field: string next_cursor = 2;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 3;
+   */
+  hasMore: boolean;
+};
+
+/**
+ * Describes the message social.v1.ListCommentsResponse.
+ * Use `create(ListCommentsResponseSchema)` to create a new message.
+ */
+export const ListCommentsResponseSchema: GenMessage<ListCommentsResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 33);
+
+/**
+ * @generated from message social.v1.ListRepliesRequest
+ */
+export type ListRepliesRequest = Message<"social.v1.ListRepliesRequest"> & {
+  /**
+   * parent comment id
+   *
+   * @generated from field: string comment_id = 1;
+   */
+  commentId: string;
+
+  /**
+   * default: 20, max: 50
+   *
+   * @generated from field: int32 limit = 2;
+   */
+  limit: number;
+
+  /**
+   * optional, for pagination
+   *
+   * @generated from field: string cursor = 3;
+   */
+  cursor: string;
+};
+
+/**
+ * Describes the message social.v1.ListRepliesRequest.
+ * Use `create(ListRepliesRequestSchema)` to create a new message.
+ */
+export const ListRepliesRequestSchema: GenMessage<ListRepliesRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 34);
+
+/**
+ * @generated from message social.v1.ListRepliesResponse
+ */
+export type ListRepliesResponse = Message<"social.v1.ListRepliesResponse"> & {
+  /**
+   * @generated from field: repeated social.v1.Comment replies = 1;
+   */
+  replies: Comment[];
+
+  /**
+   * @generated from field: string next_cursor = 2;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 3;
+   */
+  hasMore: boolean;
+};
+
+/**
+ * Describes the message social.v1.ListRepliesResponse.
+ * Use `create(ListRepliesResponseSchema)` to create a new message.
+ */
+export const ListRepliesResponseSchema: GenMessage<ListRepliesResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 35);
+
+/**
  * @generated from service social.v1.TimelineService
  */
 export const TimelineService: GenService<{
@@ -687,6 +1034,40 @@ export const TimelineService: GenService<{
     methodKind: "unary";
     input: typeof GetFollowStatusRequestSchema;
     output: typeof GetFollowStatusResponseSchema;
+  },
+  /**
+   * Comment RPCs
+   *
+   * @generated from rpc social.v1.TimelineService.AddComment
+   */
+  addComment: {
+    methodKind: "unary";
+    input: typeof AddCommentRequestSchema;
+    output: typeof AddCommentResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.DeleteComment
+   */
+  deleteComment: {
+    methodKind: "unary";
+    input: typeof DeleteCommentRequestSchema;
+    output: typeof DeleteCommentResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.ListComments
+   */
+  listComments: {
+    methodKind: "unary";
+    input: typeof ListCommentsRequestSchema;
+    output: typeof ListCommentsResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.ListReplies
+   */
+  listReplies: {
+    methodKind: "unary";
+    input: typeof ListRepliesRequestSchema;
+    output: typeof ListRepliesResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_social_v1_service, 0);

@@ -28,6 +28,11 @@ module Social
         rpc :UnfollowCast, ::Social::V1::UnfollowCastRequest, ::Social::V1::UnfollowCastResponse
         rpc :ListFollowing, ::Social::V1::ListFollowingRequest, ::Social::V1::ListFollowingResponse
         rpc :GetFollowStatus, ::Social::V1::GetFollowStatusRequest, ::Social::V1::GetFollowStatusResponse
+        # Comment RPCs
+        rpc :AddComment, ::Social::V1::AddCommentRequest, ::Social::V1::AddCommentResponse
+        rpc :DeleteComment, ::Social::V1::DeleteCommentRequest, ::Social::V1::DeleteCommentResponse
+        rpc :ListComments, ::Social::V1::ListCommentsRequest, ::Social::V1::ListCommentsResponse
+        rpc :ListReplies, ::Social::V1::ListRepliesRequest, ::Social::V1::ListRepliesResponse
       end
 
       Stub = Service.rpc_stub_class

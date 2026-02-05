@@ -5,6 +5,7 @@ require "gruf"
 require_relative "../../../lib/grpc/authenticatable"
 require_relative "../adapters/cast_adapter"
 require_relative "../adapters/guest_adapter"
+require_relative "../adapters/user_adapter"
 
 module Social
   module Grpc
@@ -37,6 +38,12 @@ module Social
       rpc :ListFollowing, ::Social::V1::ListFollowingRequest, ::Social::V1::ListFollowingResponse
       rpc :GetFollowStatus, ::Social::V1::GetFollowStatusRequest, ::Social::V1::GetFollowStatusResponse
 
+      # Comment RPCs
+      rpc :AddComment, ::Social::V1::AddCommentRequest, ::Social::V1::AddCommentResponse
+      rpc :DeleteComment, ::Social::V1::DeleteCommentRequest, ::Social::V1::DeleteCommentResponse
+      rpc :ListComments, ::Social::V1::ListCommentsRequest, ::Social::V1::ListCommentsResponse
+      rpc :ListReplies, ::Social::V1::ListRepliesRequest, ::Social::V1::ListRepliesResponse
+
       include Social::Deps[
         list_posts_uc: "use_cases.posts.list_posts",
         list_public_posts_uc: "use_cases.posts.list_public_posts",
@@ -51,7 +58,11 @@ module Social
         list_following_uc: "use_cases.follows.list_following",
         get_follow_status_uc: "use_cases.follows.get_follow_status",
         like_repo: "repositories.like_repository",
-        follow_repo: "repositories.follow_repository"
+        follow_repo: "repositories.follow_repository",
+        add_comment_uc: "use_cases.comments.add_comment",
+        delete_comment_uc: "use_cases.comments.delete_comment",
+        list_comments_uc: "use_cases.comments.list_comments",
+        list_replies_uc: "use_cases.comments.list_replies"
       ]
 
       # === Timeline ===
@@ -277,12 +288,102 @@ module Social
         ::Social::V1::GetFollowStatusResponse.new(following: following)
       end
 
+      # === Comment ===
+
+      def add_comment
+        authenticate_user!
+
+        media_data = request.message.media.map do |m|
+          { media_type: m.media_type, url: m.url, thumbnail_url: m.thumbnail_url }
+        end
+
+        result = add_comment_uc.call(
+          post_id: request.message.post_id,
+          user_id: current_user_id,
+          content: request.message.content,
+          parent_id: request.message.parent_id.empty? ? nil : request.message.parent_id,
+          media: media_data
+        )
+
+        # Get author info
+        author = get_comment_author(current_user_id)
+
+        ::Social::V1::AddCommentResponse.new(
+          comment: CommentPresenter.to_proto(result[:comment], author: author),
+          comments_count: result[:comments_count]
+        )
+      rescue AddComment::PostNotFoundError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
+      rescue AddComment::EmptyContentError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Content cannot be empty")
+      rescue AddComment::ContentTooLongError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Content exceeds 1000 characters")
+      rescue AddComment::TooManyMediaError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Maximum 3 media attachments allowed")
+      rescue AddComment::ParentNotFoundError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Parent comment not found")
+      rescue AddComment::CannotReplyToReplyError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Cannot reply to a reply")
+      rescue AddComment::CreateFailedError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INTERNAL, "Failed to create comment")
+      end
+
+      def delete_comment
+        authenticate_user!
+
+        result = delete_comment_uc.call(
+          comment_id: request.message.comment_id,
+          user_id: current_user_id
+        )
+
+        ::Social::V1::DeleteCommentResponse.new(comments_count: result[:comments_count])
+      rescue DeleteComment::CommentNotFoundOrUnauthorizedError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Comment not found or unauthorized")
+      end
+
+      def list_comments
+        limit = request.message.limit.zero? ? 20 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        result = list_comments_uc.call(
+          post_id: request.message.post_id,
+          limit: limit,
+          cursor: cursor
+        )
+
+        ::Social::V1::ListCommentsResponse.new(
+          comments: CommentPresenter.many_to_proto(result[:comments], authors: result[:authors]),
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
+      end
+
+      def list_replies
+        limit = request.message.limit.zero? ? 20 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        result = list_replies_uc.call(
+          comment_id: request.message.comment_id,
+          limit: limit,
+          cursor: cursor
+        )
+
+        ::Social::V1::ListRepliesResponse.new(
+          replies: CommentPresenter.many_to_proto(result[:replies], authors: result[:authors]),
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
+      end
+
       private
 
       PostPresenter = Social::Presenters::PostPresenter
+      CommentPresenter = Social::Presenters::CommentPresenter
       SavePost = Social::UseCases::Posts::SavePost
       LikePost = Social::UseCases::Likes::LikePost
       UnlikePost = Social::UseCases::Likes::UnlikePost
+      AddComment = Social::UseCases::Comments::AddComment
+      DeleteComment = Social::UseCases::Comments::DeleteComment
 
       def cast_adapter
         @cast_adapter ||= Social::Adapters::CastAdapter.new
@@ -290,6 +391,43 @@ module Social
 
       def guest_adapter
         @guest_adapter ||= Social::Adapters::GuestAdapter.new
+      end
+
+      def user_adapter
+        @user_adapter ||= Social::Adapters::UserAdapter.new
+      end
+
+      def get_comment_author(user_id)
+        user_type = user_adapter.get_user_type(user_id)
+        return nil unless user_type
+
+        if user_type == "cast"
+          cast = cast_adapter.find_by_user_id(user_id)
+          if cast
+            {
+              id: cast.id,
+              name: cast.name,
+              image_url: cast.image_url,
+              user_type: "cast"
+            }
+          else
+            # Cast profile not found, return minimal info
+            { id: user_id, name: "Anonymous Cast", image_url: nil, user_type: "cast" }
+          end
+        else
+          guest = guest_adapter.find_by_user_id(user_id)
+          if guest
+            {
+              id: guest.id,
+              name: guest.name,
+              image_url: guest.avatar_path ? "https://cdn.nyx.place/#{guest.avatar_path}" : nil,
+              user_type: "guest"
+            }
+          else
+            # Guest profile not found, return minimal info
+            { id: user_id, name: "Guest", image_url: nil, user_type: "guest" }
+          end
+        end
       end
 
       def find_my_cast
