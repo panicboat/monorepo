@@ -3,12 +3,7 @@
 import { useState, useCallback } from "react";
 import { CastPost, PostMedia } from "@/modules/social/types";
 import { mapApiToPost, mapApiToPostsList, mapPostToSavePayload } from "@/modules/social/lib/mappers";
-import { useAuthStore } from "@/stores/authStore";
-
-const getToken = () => {
-  if (typeof window === "undefined") return null;
-  return useAuthStore.getState().accessToken;
-};
+import { getAuthToken } from "@/lib/swr";
 
 interface UseCastPostsOptions {
   apiPath?: string;
@@ -24,7 +19,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
   const [hasMore, setHasMore] = useState(false);
 
   const fetchPosts = useCallback(async (cursor?: string) => {
-    const token = getToken();
+    const token = getAuthToken();
     if (!token) {
       setPosts([]);
       return [];
@@ -79,7 +74,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
 
   const savePost = useCallback(
     async (post: { id?: string; content: string; media: PostMedia[]; visible?: boolean; hashtags?: string[] }) => {
-      const token = getToken();
+      const token = getAuthToken();
       if (!token) throw new Error("No token");
 
       const payload = mapPostToSavePayload(post);
@@ -114,7 +109,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
 
   const toggleVisibility = useCallback(
     async (postId: string, visible: boolean) => {
-      const token = getToken();
+      const token = getAuthToken();
       if (!token) throw new Error("No token");
 
       const post = posts.find((p) => p.id === postId);
@@ -151,7 +146,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
 
   const deletePost = useCallback(
     async (postId: string) => {
-      const token = getToken();
+      const token = getAuthToken();
       if (!token) throw new Error("No token");
 
       const res = await fetch(apiPath, {

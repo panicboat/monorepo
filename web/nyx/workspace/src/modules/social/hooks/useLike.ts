@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useAuthStore } from "@/stores/authStore";
+import { authFetch, getAuthToken } from "@/lib/auth";
 
 interface LikeState {
   [postId: string]: {
@@ -10,133 +10,91 @@ interface LikeState {
   };
 }
 
+interface LikeResponse {
+  likesCount: number;
+}
+
+interface LikeStatusResponse {
+  liked: Record<string, boolean>;
+}
+
 export function useLike() {
   const [likeState, setLikeState] = useState<LikeState>({});
   const [loading, setLoading] = useState(false);
-  const accessToken = useAuthStore((state) => state.accessToken);
 
-  const like = useCallback(
-    async (postId: string) => {
-      const token = accessToken;
-      if (!token) {
-        console.warn("Cannot like: not authenticated");
-        return null;
-      }
+  const like = useCallback(async (postId: string) => {
+    if (!getAuthToken()) {
+      console.warn("Cannot like: not authenticated");
+      return null;
+    }
 
-      setLoading(true);
-      try {
-        const res = await fetch("/api/guest/likes", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ postId }),
-        });
+    setLoading(true);
+    try {
+      const data = await authFetch<LikeResponse>("/api/guest/likes", {
+        method: "POST",
+        body: { postId },
+      });
 
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody.error || "Failed to like post");
-        }
+      setLikeState((prev) => ({
+        ...prev,
+        [postId]: { liked: true, likesCount: data.likesCount },
+      }));
+      return data.likesCount;
+    } catch (e) {
+      console.error("Like error:", e);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-        const data = await res.json();
-        setLikeState((prev) => ({
-          ...prev,
-          [postId]: {
-            liked: true,
-            likesCount: data.likesCount,
-          },
-        }));
-        return data.likesCount;
-      } catch (e) {
-        console.error("Like error:", e);
-        throw e;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [accessToken]
-  );
+  const unlike = useCallback(async (postId: string) => {
+    if (!getAuthToken()) {
+      console.warn("Cannot unlike: not authenticated");
+      return null;
+    }
 
-  const unlike = useCallback(
-    async (postId: string) => {
-      const token = accessToken;
-      if (!token) {
-        console.warn("Cannot unlike: not authenticated");
-        return null;
-      }
+    setLoading(true);
+    try {
+      const data = await authFetch<LikeResponse>(
+        `/api/guest/likes?post_id=${postId}`,
+        { method: "DELETE" }
+      );
 
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/guest/likes?post_id=${postId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody.error || "Failed to unlike post");
-        }
-
-        const data = await res.json();
-        setLikeState((prev) => ({
-          ...prev,
-          [postId]: {
-            liked: false,
-            likesCount: data.likesCount,
-          },
-        }));
-        return data.likesCount;
-      } catch (e) {
-        console.error("Unlike error:", e);
-        throw e;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [accessToken]
-  );
+      setLikeState((prev) => ({
+        ...prev,
+        [postId]: { liked: false, likesCount: data.likesCount },
+      }));
+      return data.likesCount;
+    } catch (e) {
+      console.error("Unlike error:", e);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const toggleLike = useCallback(
     async (postId: string, currentlyLiked: boolean) => {
-      if (currentlyLiked) {
-        return unlike(postId);
-      }
-      return like(postId);
+      return currentlyLiked ? unlike(postId) : like(postId);
     },
     [like, unlike]
   );
 
-  const fetchLikeStatus = useCallback(
-    async (postIds: string[]) => {
-      if (postIds.length === 0) return {};
+  const fetchLikeStatus = useCallback(async (postIds: string[]) => {
+    if (postIds.length === 0) return {};
 
-      const headers: Record<string, string> = {};
-      if (accessToken) {
-        headers.Authorization = `Bearer ${accessToken}`;
-      }
-
-      try {
-        const res = await fetch(
-          `/api/guest/likes/status?post_ids=${postIds.join(",")}`,
-          { headers }
-        );
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch like status");
-        }
-
-        const data = await res.json();
-        return data.liked as Record<string, boolean>;
-      } catch (e) {
-        console.error("Fetch like status error:", e);
-        return {};
-      }
-    },
-    [accessToken]
-  );
+    try {
+      const data = await authFetch<LikeStatusResponse>(
+        `/api/guest/likes/status?post_ids=${postIds.join(",")}`,
+        { requireAuth: false }
+      );
+      return data.liked;
+    } catch (e) {
+      console.error("Fetch like status error:", e);
+      return {};
+    }
+  }, []);
 
   const isLiked = useCallback(
     (postId: string) => likeState[postId]?.liked ?? false,

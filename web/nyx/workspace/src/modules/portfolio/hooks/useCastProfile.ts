@@ -7,8 +7,7 @@ import {
   mapApiToProfileForm,
   mapProfileFormToApi,
 } from "@/modules/portfolio/lib/cast/mappers";
-import { fetcher } from "@/lib/swr";
-import { useAuthStore } from "@/stores/authStore";
+import { fetcher, getAuthToken } from "@/lib/swr";
 
 const INITIAL_PROFILE: ProfileFormData = {
   nickname: "",
@@ -21,11 +20,6 @@ const INITIAL_PROFILE: ProfileFormData = {
   defaultScheduleEnd: "22:00",
   socialLinks: { others: [] },
   tags: [],
-};
-
-const getToken = () => {
-  if (typeof window === "undefined") return null;
-  return useAuthStore.getState().accessToken;
 };
 
 interface UseCastProfileOptions {
@@ -41,7 +35,7 @@ interface ProfileApiResponse {
 export function useCastProfile(options: UseCastProfileOptions = {}) {
   const { apiPath = "/api/cast/profile" } = options;
 
-  const token = getToken();
+  const token = getAuthToken();
 
   // Use SWR for data fetching with conditional fetching (only if token exists)
   const { data, error, isLoading, isValidating, mutate } = useSWR<ProfileApiResponse>(
@@ -86,7 +80,7 @@ export function useCastProfile(options: UseCastProfileOptions = {}) {
 
   const saveProfile = useCallback(
     async (overrideProfile?: ProfileFormData, heroKey?: string, galleryKeys?: string[]) => {
-      const currentToken = getToken();
+      const currentToken = getAuthToken();
       if (!currentToken) throw new Error("No token");
 
       const profileToSave = overrideProfile || profile;

@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import { useCallback, useMemo } from "react";
-import { fetcher } from "@/lib/swr";
+import { fetcher, getAuthToken } from "@/lib/swr";
 import {
   useAuthStore,
   selectAccessToken,
@@ -30,11 +30,6 @@ const INITIAL_PROFILE: GuestProfileFormData = {
   avatarPath: "",
   tagline: "",
   bio: "",
-};
-
-const getToken = () => {
-  if (typeof window === "undefined") return null;
-  return useAuthStore.getState().accessToken;
 };
 
 interface UseGuestDataOptions {
@@ -130,7 +125,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
 
   const saveProfile = useCallback(
     async (overrideProfile?: GuestProfileFormData) => {
-      const currentToken = getToken();
+      const currentToken = getAuthToken();
       if (!currentToken) throw new Error("ログインが必要です");
 
       const profileToSave = overrideProfile || profile;
@@ -162,7 +157,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
 
   const uploadAvatar = useCallback(
     async (file: File): Promise<{ key: string; url: string }> => {
-      const currentToken = getToken();
+      const currentToken = getAuthToken();
       if (!currentToken) throw new Error("ログインが必要です");
 
       const res = await fetch("/api/guest/upload-url", {

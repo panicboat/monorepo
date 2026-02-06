@@ -1,23 +1,27 @@
-export type PostMedia = {
-  id?: string;
-  mediaType: "image" | "video";
-  url: string;
-  thumbnailUrl?: string;
-};
+/**
+ * Social Module Types
+ *
+ * Types for posts, comments, and social interactions.
+ */
 
-export type PostAuthor = {
-  id: string;
-  name: string;
-  imageUrl: string;
-};
+import type { Media, Author, AuthorWithType, PaginatedResponse } from "@/lib/types";
+
+// Re-export base types for convenience
+export type { Media as PostMedia, Media as CommentMedia };
+export type { Author as PostAuthor };
+export type { AuthorWithType as CommentAuthor };
+
+// =============================================================================
+// Post Types
+// =============================================================================
 
 export type CastPost = {
   id: string;
   castId: string;
   content: string;
-  media: PostMedia[];
+  media: Media[];
   createdAt: string;
-  author?: PostAuthor;
+  author?: Author;
   likesCount: number;
   commentsCount: number;
   visible: boolean;
@@ -25,25 +29,13 @@ export type CastPost = {
   liked: boolean;
 };
 
-export type PostsListResult = {
-  posts: CastPost[];
-  nextCursor: string;
-  hasMore: boolean;
+export type PostsListResult = PaginatedResponse<CastPost> & {
+  posts: CastPost[]; // Alias for backwards compatibility
 };
 
-export type CommentMedia = {
-  id?: string;
-  mediaType: "image" | "video";
-  url: string;
-  thumbnailUrl?: string;
-};
-
-export type CommentAuthor = {
-  id: string;
-  name: string;
-  imageUrl: string;
-  userType: "guest" | "cast";
-};
+// =============================================================================
+// Comment Types
+// =============================================================================
 
 export type Comment = {
   id: string;
@@ -52,21 +44,17 @@ export type Comment = {
   userId: string;
   content: string;
   createdAt: string;
-  author?: CommentAuthor;
-  media: CommentMedia[];
+  author?: AuthorWithType;
+  media: Media[];
   repliesCount: number;
 };
 
-export type CommentsListResult = {
-  comments: Comment[];
-  nextCursor: string;
-  hasMore: boolean;
+export type CommentsListResult = PaginatedResponse<Comment> & {
+  comments: Comment[]; // Alias for backwards compatibility
 };
 
-export type RepliesListResult = {
-  replies: Comment[];
-  nextCursor: string;
-  hasMore: boolean;
+export type RepliesListResult = PaginatedResponse<Comment> & {
+  replies: Comment[]; // Alias for backwards compatibility
 };
 
 export type AddCommentResult = {
@@ -76,4 +64,29 @@ export type AddCommentResult = {
 
 export type DeleteCommentResult = {
   commentsCount: number;
+};
+
+// =============================================================================
+// Like Types
+// =============================================================================
+
+export type LikeState = {
+  liked: boolean;
+  likesCount: number;
+};
+
+export type LikeResult = {
+  success: boolean;
+  likesCount: number;
+};
+
+// =============================================================================
+// Follow Types
+// =============================================================================
+
+export type FollowState = Record<string, boolean>;
+
+export type FollowResult = {
+  success: boolean;
+  isFollowing: boolean;
 };

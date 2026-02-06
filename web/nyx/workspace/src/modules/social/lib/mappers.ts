@@ -1,6 +1,41 @@
 import { CastPost, PostMedia, PostAuthor, PostsListResult } from "@/modules/social/types";
+import type { MediaType } from "@/lib/types";
 
-export function mapApiToPost(apiPost: any): CastPost {
+// API Response Types
+interface ApiMedia {
+  id?: string;
+  mediaType?: string;
+  url?: string;
+  thumbnailUrl?: string;
+}
+
+interface ApiAuthor {
+  id?: string;
+  name?: string;
+  imageUrl?: string;
+}
+
+interface ApiPost {
+  id?: string;
+  castId?: string;
+  content?: string;
+  media?: ApiMedia[];
+  createdAt?: string;
+  author?: ApiAuthor;
+  likesCount?: number;
+  commentsCount?: number;
+  visible?: boolean;
+  hashtags?: string[];
+  liked?: boolean;
+}
+
+interface ApiPostsListResponse {
+  posts?: ApiPost[];
+  nextCursor?: string;
+  hasMore?: boolean;
+}
+
+export function mapApiToPost(apiPost: ApiPost): CastPost {
   return {
     id: apiPost.id || "",
     castId: apiPost.castId || "",
@@ -16,16 +51,16 @@ export function mapApiToPost(apiPost: any): CastPost {
   };
 }
 
-export function mapApiToMedia(apiMedia: any): PostMedia {
+export function mapApiToMedia(apiMedia: ApiMedia): PostMedia {
   return {
     id: apiMedia.id,
-    mediaType: apiMedia.mediaType || "image",
+    mediaType: (apiMedia.mediaType || "image") as MediaType,
     url: apiMedia.url || "",
     thumbnailUrl: apiMedia.thumbnailUrl,
   };
 }
 
-export function mapApiToAuthor(apiAuthor: any): PostAuthor {
+export function mapApiToAuthor(apiAuthor: ApiAuthor): PostAuthor {
   return {
     id: apiAuthor.id || "",
     name: apiAuthor.name || "",
@@ -33,9 +68,11 @@ export function mapApiToAuthor(apiAuthor: any): PostAuthor {
   };
 }
 
-export function mapApiToPostsList(apiResponse: any): PostsListResult {
+export function mapApiToPostsList(apiResponse: ApiPostsListResponse): PostsListResult {
+  const posts = (apiResponse.posts || []).map(mapApiToPost);
   return {
-    posts: (apiResponse.posts || []).map(mapApiToPost),
+    items: posts,
+    posts,
     nextCursor: apiResponse.nextCursor || "",
     hasMore: apiResponse.hasMore || false,
   };

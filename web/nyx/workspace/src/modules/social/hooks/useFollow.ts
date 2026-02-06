@@ -1,184 +1,140 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useAuthStore } from "@/stores/authStore";
+import { authFetch, getAuthToken } from "@/lib/auth";
 
 interface FollowState {
   [castId: string]: boolean;
+}
+
+interface FollowResponse {
+  success: boolean;
+}
+
+interface FollowListResponse {
+  castIds: string[];
+}
+
+interface FollowStatusResponse {
+  following: Record<string, boolean>;
 }
 
 export function useFollow() {
   const [followState, setFollowState] = useState<FollowState>({});
   const [followingList, setFollowingList] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const accessToken = useAuthStore((state) => state.accessToken);
 
-  const follow = useCallback(
-    async (castId: string) => {
-      const token = accessToken;
-      if (!token) {
-        console.warn("Cannot follow: not authenticated");
-        return false;
+  const follow = useCallback(async (castId: string) => {
+    if (!getAuthToken()) {
+      console.warn("Cannot follow: not authenticated");
+      return false;
+    }
+
+    setLoading(true);
+    try {
+      const data = await authFetch<FollowResponse>("/api/guest/following", {
+        method: "POST",
+        body: { castId },
+      });
+
+      if (data.success) {
+        setFollowState((prev) => ({ ...prev, [castId]: true }));
+        setFollowingList((prev) =>
+          prev.includes(castId) ? prev : [...prev, castId]
+        );
       }
+      return data.success;
+    } catch (e) {
+      console.error("Follow error:", e);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-      setLoading(true);
-      try {
-        const res = await fetch("/api/guest/following", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ castId }),
-        });
+  const unfollow = useCallback(async (castId: string) => {
+    if (!getAuthToken()) {
+      console.warn("Cannot unfollow: not authenticated");
+      return false;
+    }
 
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody.error || "Failed to follow");
-        }
+    setLoading(true);
+    try {
+      const data = await authFetch<FollowResponse>(
+        `/api/guest/following?cast_id=${castId}`,
+        { method: "DELETE" }
+      );
 
-        const data = await res.json();
-        if (data.success) {
-          setFollowState((prev) => ({ ...prev, [castId]: true }));
-          setFollowingList((prev) =>
-            prev.includes(castId) ? prev : [...prev, castId]
-          );
-        }
-        return data.success;
-      } catch (e) {
-        console.error("Follow error:", e);
-        throw e;
-      } finally {
-        setLoading(false);
+      if (data.success) {
+        setFollowState((prev) => ({ ...prev, [castId]: false }));
+        setFollowingList((prev) => prev.filter((id) => id !== castId));
       }
-    },
-    [accessToken]
-  );
-
-  const unfollow = useCallback(
-    async (castId: string) => {
-      const token = accessToken;
-      if (!token) {
-        console.warn("Cannot unfollow: not authenticated");
-        return false;
-      }
-
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/guest/following?cast_id=${castId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody.error || "Failed to unfollow");
-        }
-
-        const data = await res.json();
-        if (data.success) {
-          setFollowState((prev) => ({ ...prev, [castId]: false }));
-          setFollowingList((prev) => prev.filter((id) => id !== castId));
-        }
-        return data.success;
-      } catch (e) {
-        console.error("Unfollow error:", e);
-        throw e;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [accessToken]
-  );
+      return data.success;
+    } catch (e) {
+      console.error("Unfollow error:", e);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const toggleFollow = useCallback(
     async (castId: string) => {
-      const isCurrentlyFollowing = followState[castId];
-      if (isCurrentlyFollowing) {
-        return unfollow(castId);
-      }
-      return follow(castId);
+      return followState[castId] ? unfollow(castId) : follow(castId);
     },
     [follow, unfollow, followState]
   );
 
-  const fetchFollowingList = useCallback(
-    async (limit: number = 100) => {
-      if (!accessToken) {
-        console.warn("Cannot fetch following: not authenticated");
-        return [];
-      }
+  const fetchFollowingList = useCallback(async (limit: number = 100) => {
+    if (!getAuthToken()) {
+      console.warn("Cannot fetch following: not authenticated");
+      return [];
+    }
 
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/guest/following?limit=${limit}`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+    setLoading(true);
+    try {
+      const data = await authFetch<FollowListResponse>(
+        `/api/guest/following?limit=${limit}`
+      );
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch following list");
-        }
+      const castIds = data.castIds || [];
+      setFollowingList(castIds);
 
-        const data = await res.json();
-        setFollowingList(data.castIds || []);
+      const newState: FollowState = {};
+      castIds.forEach((id) => {
+        newState[id] = true;
+      });
+      setFollowState(newState);
 
-        // Update follow state
-        const newState: FollowState = {};
-        (data.castIds || []).forEach((id: string) => {
-          newState[id] = true;
-        });
-        setFollowState(newState);
+      return castIds;
+    } catch (e) {
+      console.error("Fetch following list error:", e);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-        return data.castIds as string[];
-      } catch (e) {
-        console.error("Fetch following list error:", e);
-        return [];
-      } finally {
-        setLoading(false);
-      }
-    },
-    [accessToken]
-  );
+  const fetchFollowStatus = useCallback(async (castIds: string[]) => {
+    if (castIds.length === 0) return {};
 
-  const fetchFollowStatus = useCallback(
-    async (castIds: string[]) => {
-      if (castIds.length === 0) return {};
+    try {
+      const data = await authFetch<FollowStatusResponse>(
+        `/api/guest/following/status?cast_ids=${castIds.join(",")}`,
+        { requireAuth: false }
+      );
 
-      const headers: Record<string, string> = {};
-      if (accessToken) {
-        headers.Authorization = `Bearer ${accessToken}`;
-      }
+      setFollowState((prev) => ({
+        ...prev,
+        ...data.following,
+      }));
 
-      try {
-        const res = await fetch(
-          `/api/guest/following/status?cast_ids=${castIds.join(",")}`,
-          { headers }
-        );
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch follow status");
-        }
-
-        const data = await res.json();
-
-        // Update local state
-        setFollowState((prev) => ({
-          ...prev,
-          ...data.following,
-        }));
-
-        return data.following as Record<string, boolean>;
-      } catch (e) {
-        console.error("Fetch follow status error:", e);
-        return {};
-      }
-    },
-    [accessToken]
-  );
+      return data.following;
+    } catch (e) {
+      console.error("Fetch follow status error:", e);
+      return {};
+    }
+  }, []);
 
   const isFollowing = useCallback(
     (castId: string) => followState[castId] ?? false,

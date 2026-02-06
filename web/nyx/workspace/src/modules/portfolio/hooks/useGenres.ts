@@ -2,13 +2,12 @@
 
 import useSWR from "swr";
 import { Genre } from "@/modules/portfolio/types";
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import { fetcher } from "@/lib/swr";
 
 interface UseGenresResult {
   genres: Genre[];
   loading: boolean;
-  error: any;
+  error: Error | undefined;
 }
 
 export function useGenres(): UseGenresResult {
