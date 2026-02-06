@@ -90,7 +90,7 @@ export default function OnboardingStep1Page() {
   if (loading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-role-cast border-t-transparent" />
       </div>
     );
   }
@@ -98,8 +98,8 @@ export default function OnboardingStep1Page() {
   return (
     <div className="px-4 py-6 space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-slate-900">Basic Identity</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-bold text-text-primary">Basic Identity</h1>
+        <p className="text-sm text-text-secondary">
           まずはあなたの基本的なプロフィールと、活動スタイルを教えてください。
         </p>
       </div>
@@ -124,7 +124,7 @@ export default function OnboardingStep1Page() {
         <button
           type="submit"
           disabled={!isFormValid}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-pink-500 py-4 font-bold text-white shadow-lg shadow-pink-200 transition-all hover:bg-pink-600 hover:shadow-pink-300 disabled:bg-slate-300 disabled:shadow-none"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-role-cast py-4 font-bold text-white shadow-lg shadow-role-cast-shadow transition-all hover:bg-role-cast-hover hover:shadow-role-cast-shadow disabled:bg-neutral-300 disabled:shadow-none"
         >
           <span>Next Step: Photos</span>
           <ArrowRight size={18} />

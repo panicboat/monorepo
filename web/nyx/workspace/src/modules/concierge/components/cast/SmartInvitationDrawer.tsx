@@ -45,28 +45,28 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
         {children || (
           <Button
             variant="cast"
-            className="w-full shadow-md shadow-pink-500/20 bg-gradient-to-r from-pink-500 to-rose-500 text-white border-0"
+            className="w-full shadow-md shadow-role-cast-shadow bg-gradient-to-r from-role-cast to-role-cast-hover text-white border-0"
           >
             <Sparkles className="w-4 h-4 mr-2" />
             招待状を作成
           </Button>
         )}
       </SheetTrigger>
-      <SheetContent side="bottom" className="rounded-t-3xl border-t border-slate-200 bg-white text-slate-800 p-0 max-h-[90vh] flex flex-col gap-0 border-x-0 sm:max-w-[450px] sm:mx-auto">
+      <SheetContent side="bottom" className="rounded-t-3xl border-t border-border bg-surface text-text-primary p-0 max-h-[90vh] flex flex-col gap-0 border-x-0 sm:max-w-[450px] sm:mx-auto">
         <div className="w-full flex justify-center pt-3 pb-1">
-          <div className="w-12 h-1.5 bg-slate-200 rounded-full"></div>
+          <div className="w-12 h-1.5 bg-border rounded-full"></div>
         </div>
 
-        <SheetHeader className="px-6 py-2 border-b border-slate-100 h-14 flex flex-row items-center justify-between space-y-0">
-          <SheetTitle className="text-slate-800 flex items-center gap-2 font-serif text-lg">
+        <SheetHeader className="px-6 py-2 border-b border-border h-14 flex flex-row items-center justify-between space-y-0">
+          <SheetTitle className="text-text-primary flex items-center gap-2 font-serif text-lg">
             {step === "main" ? (
               <>
-                <Sparkles className="w-4 h-4 text-pink-500" />
+                <Sparkles className="w-4 h-4 text-role-cast" />
                 招待状を作成
               </>
             ) : (
               <>
-                <Calendar className="w-4 h-4 text-pink-500" />
+                <Calendar className="w-4 h-4 text-role-cast" />
                 日時を指定
               </>
             )}
@@ -74,7 +74,7 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
           {step === "picker" && (
             <button
               onClick={() => setStep("main")}
-              className="text-xs text-slate-400 font-bold hover:text-slate-600 flex items-center gap-1"
+              className="text-xs text-text-muted font-bold hover:text-text-secondary flex items-center gap-1"
             >
               Back
             </button>
@@ -86,49 +86,49 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
             <div className="space-y-6">
               {/* Date Selection */}
               <div>
-                <label className="text-xs text-slate-400 font-bold uppercase mb-3 block">
+                <label className="text-xs text-text-muted font-bold uppercase mb-3 block">
                   日時を選択
                 </label>
                 <div className="flex flex-col gap-3 mb-3">
                   <button
                     onClick={() => setSelectedTime("21:00 - 22:30")}
-                    className={`w-full bg-gradient-to-r from-green-50 to-white border text-left p-4 rounded-2xl relative overflow-hidden group hover:scale-[0.98] transition shadow-sm flex items-center justify-between ${selectedTime === "21:00 - 22:30" ? "border-green-500 ring-1 ring-green-500" : "border-green-200"}`}
+                    className={`w-full bg-gradient-to-r from-success-lighter to-white border text-left p-4 rounded-2xl relative overflow-hidden group hover:scale-[0.98] transition shadow-sm flex items-center justify-between ${selectedTime === "21:00 - 22:30" ? "border-success ring-1 ring-success" : "border-success-light"}`}
                   >
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                        <span className="bg-success text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
                           Today
                         </span>
-                        <span className="text-green-600 font-bold text-sm">
+                        <span className="text-success-hover font-bold text-sm">
                           21:00 - 22:30
                         </span>
                       </div>
-                      <p className="text-[10px] text-green-600/70 font-medium pl-1">
+                      <p className="text-[10px] text-success/70 font-medium pl-1">
                         空き枠から自動提案
                       </p>
                     </div>
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedTime === "21:00 - 22:30" ? "border-green-500" : "border-gray-200"}`}>
-                      {selectedTime === "21:00 - 22:30" && <div className="w-2.5 h-2.5 bg-green-500 rounded-full" />}
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedTime === "21:00 - 22:30" ? "border-success" : "border-border"}`}>
+                      {selectedTime === "21:00 - 22:30" && <div className="w-2.5 h-2.5 bg-success rounded-full" />}
                     </div>
                   </button>
 
                   <button
                     onClick={() => setSelectedTime("19:00 - 20:30")}
-                    className={`w-full bg-white border text-left p-4 rounded-2xl group hover:bg-slate-50 transition shadow-sm flex items-center justify-between ${selectedTime === "19:00 - 20:30" ? "border-blue-500 ring-1 ring-blue-500 bg-blue-50" : "border-slate-200"}`}
+                    className={`w-full bg-surface border text-left p-4 rounded-2xl group hover:bg-surface-secondary transition shadow-sm flex items-center justify-between ${selectedTime === "19:00 - 20:30" ? "border-info ring-1 ring-info bg-info-lighter" : "border-border"}`}
                   >
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        <span className="bg-surface-secondary text-text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full">
                           Tomorrow
                         </span>
-                        <p className="text-slate-700 font-bold text-sm">19:00 - 20:30</p>
+                        <p className="text-text-secondary font-bold text-sm">19:00 - 20:30</p>
                       </div>
-                      <p className="text-[10px] text-slate-400 pl-1">
+                      <p className="text-[10px] text-text-muted pl-1">
                         空き枠あり
                       </p>
                     </div>
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedTime === "19:00 - 20:30" ? "border-blue-500" : "border-gray-200"}`}>
-                      {selectedTime === "19:00 - 20:30" && <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" />}
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedTime === "19:00 - 20:30" ? "border-info" : "border-border"}`}>
+                      {selectedTime === "19:00 - 20:30" && <div className="w-2.5 h-2.5 bg-info rounded-full" />}
                     </div>
                   </button>
 
@@ -136,43 +136,43 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
                   {selectedTime && selectedTime !== "21:00 - 22:30" && selectedTime !== "19:00 - 20:30" && (
                     <button
                       onClick={() => setStep("picker")}
-                      className={`w-full bg-white border text-left p-4 rounded-2xl group hover:bg-slate-50 transition shadow-sm flex items-center justify-between border-pink-500 ring-1 ring-pink-500 bg-pink-50`}
+                      className={`w-full bg-surface border text-left p-4 rounded-2xl group hover:bg-surface-secondary transition shadow-sm flex items-center justify-between border-role-cast ring-1 ring-role-cast bg-role-cast-lighter`}
                     >
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="bg-pink-100 text-pink-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          <span className="bg-role-cast-lighter text-role-cast text-[10px] font-bold px-2 py-0.5 rounded-full">
                             {["Today", "Wed", "Thu", "Fri", "Sat"][selectedDateIndex]}
                           </span>
-                          <p className="text-pink-700 font-bold text-sm">{selectedTime}</p>
+                          <p className="text-role-cast-hover font-bold text-sm">{selectedTime}</p>
                         </div>
-                        <p className="text-[10px] text-pink-600/70 pl-1 font-medium">
+                        <p className="text-[10px] text-role-cast/70 pl-1 font-medium">
                           指定日時
                         </p>
                       </div>
-                      <div className="w-5 h-5 rounded-full border-2 border-pink-500 flex items-center justify-center">
-                        <div className="w-2.5 h-2.5 bg-pink-500 rounded-full" />
+                      <div className="w-5 h-5 rounded-full border-2 border-role-cast flex items-center justify-center">
+                        <div className="w-2.5 h-2.5 bg-role-cast rounded-full" />
                       </div>
                     </button>
                   )}
 
                   <div
                     onClick={() => setStep("picker")}
-                    className="w-full p-4 bg-white border border-dashed border-slate-300 rounded-2xl text-slate-500 text-xs flex items-center justify-between hover:bg-slate-50 cursor-pointer hover:border-slate-400 transition group"
+                    className="w-full p-4 bg-surface border border-dashed border-border-secondary rounded-2xl text-text-secondary text-xs flex items-center justify-between hover:bg-surface-secondary cursor-pointer hover:border-border-secondary transition group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-slate-200 transition">
-                        <Calendar className="w-4 h-4 text-slate-500" />
+                      <div className="w-8 h-8 rounded-full bg-surface-secondary flex items-center justify-center group-hover:bg-surface-tertiary transition">
+                        <Calendar className="w-4 h-4 text-text-secondary" />
                       </div>
-                      <span className="font-bold text-slate-600">その他の日時を指定</span>
+                      <span className="font-bold text-text-secondary">その他の日時を指定</span>
                     </div>
-                    <span className="text-slate-400 text-lg">›</span>
+                    <span className="text-text-muted text-lg">›</span>
                   </div>
                 </div>
               </div>
 
               {/* Plan Selection */}
               <div>
-                <label className="text-xs text-slate-400 font-bold uppercase mb-3 block">
+                <label className="text-xs text-text-muted font-bold uppercase mb-3 block">
                   プランを選択
                 </label>
                 <div className="space-y-2">
@@ -181,23 +181,23 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
                       key={plan.id}
                       onClick={() => setSelectedPlanId(plan.id)}
                       className={`border rounded-xl p-3 flex justify-between items-center cursor-pointer transition shadow-sm ${selectedPlanId === plan.id
-                        ? "bg-pink-50 border-pink-500 ring-1 ring-pink-500"
-                        : "bg-white border-slate-200 hover:border-pink-200"
+                        ? "bg-role-cast-lighter border-role-cast ring-1 ring-role-cast"
+                        : "bg-surface border-border hover:border-role-cast-light"
                         }`}
                     >
                       <div>
                         <p
                           className={`text-sm font-bold ${selectedPlanId === plan.id
-                            ? "text-pink-700"
-                            : "text-slate-700"
+                            ? "text-role-cast-hover"
+                            : "text-text-secondary"
                             }`}
                         >
                           {plan.name}
                         </p>
                         <p
                           className={`text-xs ${selectedPlanId === plan.id
-                            ? "text-pink-600"
-                            : "text-slate-500"
+                            ? "text-role-cast"
+                            : "text-text-secondary"
                             }`}
                         >
                           ¥{plan.price.toLocaleString()}
@@ -205,12 +205,12 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
                       </div>
                       <div
                         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPlanId === plan.id
-                          ? "border-pink-500"
-                          : "border-slate-300"
+                          ? "border-role-cast"
+                          : "border-border-secondary"
                           }`}
                       >
                         {selectedPlanId === plan.id && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-pink-500"></div>
+                          <div className="w-2.5 h-2.5 rounded-full bg-role-cast"></div>
                         )}
                       </div>
                     </div>
@@ -222,14 +222,14 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
             /* Time Picker View */
             (<div className="h-full flex flex-col">
               {/* Selected Plan Context */}
-              <div className="mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+              <div className="mb-4 bg-surface-secondary p-3 rounded-xl border border-border flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">選択中のプラン</p>
-                  <p className="font-bold text-slate-800 text-sm">
+                  <p className="text-[10px] text-text-muted font-bold uppercase">選択中のプラン</p>
+                  <p className="font-bold text-text-primary text-sm">
                     {plans.find(p => p.id === selectedPlanId)?.name}
                   </p>
                 </div>
-                <div className="font-bold text-slate-600 text-sm">
+                <div className="font-bold text-text-secondary text-sm">
                   ¥{plans.find(p => p.id === selectedPlanId)?.price.toLocaleString()}
                 </div>
               </div>
@@ -239,22 +239,22 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
                     key={i}
                     onClick={() => setSelectedDateIndex(i)}
                     className={`flex-shrink-0 w-14 h-16 rounded-xl flex flex-col items-center justify-center border shadow-sm transition ${i === selectedDateIndex
-                      ? "bg-pink-500 border-pink-600 shadow-md shadow-pink-200 text-white"
-                      : "bg-white border-slate-200 text-slate-400 hover:border-pink-200"
+                      ? "bg-role-cast border-role-cast shadow-md shadow-role-cast-shadow text-white"
+                      : "bg-surface border-border text-text-muted hover:border-role-cast-light"
                       }`}
                   >
                     <span
-                      className={`text-[10px] font-bold ${i === selectedDateIndex ? "text-pink-100" : ""
+                      className={`text-[10px] font-bold ${i === selectedDateIndex ? "text-white/70" : ""
                         }`}
                     >
                       {["Today", "Wed", "Thu", "Fri", "Sat"][i]}
                     </span>
-                    <span className={`text-lg font-bold ${i === selectedDateIndex ? "text-white" : "text-slate-700"}`}>{23 + i}</span>
+                    <span className={`text-lg font-bold ${i === selectedDateIndex ? "text-white" : "text-text-secondary"}`}>{23 + i}</span>
                   </button>
                 ))}
               </div>
               <div className="flex-1 overflow-y-auto">
-                <label className="text-xs text-slate-400 font-bold uppercase mb-3 block">
+                <label className="text-xs text-text-muted font-bold uppercase mb-3 block">
                   開始時間を選択
                 </label>
                 <div className="grid grid-cols-4 gap-3">
@@ -262,7 +262,7 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
                     <button
                       key={time}
                       disabled
-                      className="py-2 rounded-lg bg-slate-50 text-slate-400 text-xs border border-slate-100 line-through cursor-not-allowed"
+                      className="py-2 rounded-lg bg-surface-secondary text-text-muted text-xs border border-border line-through cursor-not-allowed"
                     >
                       {time}
                     </button>
@@ -274,7 +274,7 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
                         setSelectedTime(time);
                         setStep("main");
                       }}
-                      className={`py-2 rounded-lg text-xs border transition font-bold bg-white text-slate-700 border-slate-200 hover:bg-pink-50 hover:border-pink-300 hover:text-pink-600 active:scale-95`}
+                      className={`py-2 rounded-lg text-xs border transition font-bold bg-surface text-text-secondary border-border hover:bg-role-cast-lighter hover:border-role-cast-light hover:text-role-cast active:scale-95`}
                     >
                       {time}
                     </button>
@@ -286,11 +286,11 @@ export function SmartInvitationDrawer({ onSend, children }: SmartInvitationDrawe
         </div>
 
         {step === "main" && (
-          <div className="p-4 border-t border-slate-100 bg-white">
+          <div className="p-4 border-t border-border bg-surface">
             <Button
               onClick={handleSend}
               variant="cast"
-              className="w-full bg-gradient-to-r from-pink-500 to-rose-500 border-none shadow-lg shadow-pink-200 hover:shadow-pink-300 transition-all active:scale-[0.98]"
+              className="w-full bg-gradient-to-r from-role-cast to-role-cast-hover border-none shadow-lg shadow-role-cast-shadow hover:shadow-role-cast-light transition-all active:scale-[0.98]"
             >
               <Send className="w-4 h-4 mr-2" />
               招待状を送る

@@ -4,18 +4,19 @@ import { useAuthStore } from "@/stores/authStore";
 
 /**
  * Get auth token from authStore
+ * Use this for all authenticated API calls in hooks.
  */
-const getToken = () => {
+export function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
   return useAuthStore.getState().accessToken;
-};
+}
 
 /**
  * Default fetcher for SWR
  * Automatically includes authorization header if token exists
  */
 export const fetcher = async <T>(url: string): Promise<T> => {
-  const token = getToken();
+  const token = getAuthToken();
   const headers: HeadersInit = {};
 
   if (token) {

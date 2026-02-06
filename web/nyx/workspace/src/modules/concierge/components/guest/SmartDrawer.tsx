@@ -37,18 +37,18 @@ export const SmartDrawer = ({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-white p-6 shadow-xl"
+            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-surface p-6 shadow-xl"
             style={{ maxHeight: "80vh" }}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800">Suggest Date</h3>
-              <button onClick={onClose} className="text-sm text-slate-400">
+              <h3 className="font-bold text-text-primary">Suggest Date</h3>
+              <button onClick={onClose} className="text-sm text-text-muted">
                 Close
               </button>
             </div>
 
             <div className="space-y-3">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider">
                 Tonight's Smart Picks
               </p>
               <div className="grid grid-cols-2 gap-3">
@@ -56,14 +56,14 @@ export const SmartDrawer = ({
                   <button
                     key={slot.id}
                     className={`relative flex flex-col items-center justify-center rounded-xl border p-4 transition-colors
-                                            ${slot.smart ? "border-blue-200 bg-blue-50" : "border-slate-100 bg-white"}
+                                            ${slot.smart ? "border-info-light bg-info-lighter" : "border-border bg-surface"}
                                         `}
                   >
-                    <span className="text-lg font-bold text-slate-800">
+                    <span className="text-lg font-bold text-text-primary">
                       {slot.time}
                     </span>
                     {slot.smart && (
-                      <span className="absolute -top-2 rounded-full bg-blue-400 px-2 py-0.5 text-[10px] text-white shadow-sm">
+                      <span className="absolute -top-2 rounded-full bg-role-guest px-2 py-0.5 text-[10px] text-white shadow-sm">
                         {slot.label}
                       </span>
                     )}
@@ -73,7 +73,7 @@ export const SmartDrawer = ({
             </div>
 
             <div className="mt-6">
-              <button className="w-full rounded-full bg-blue-400 py-3 font-bold text-white shadow-lg">
+              <button className="w-full rounded-full bg-role-guest py-3 font-bold text-white shadow-lg">
                 Send Invitation
               </button>
             </div>

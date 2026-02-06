@@ -26,8 +26,8 @@ export default function Home() {
 
   if (isLoading || !user)
     return (
-      <div className="flex h-screen items-center justify-center bg-white">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-400"></div>
+      <div className="flex h-screen items-center justify-center bg-surface">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-role-guest"></div>
       </div>
     );
 
@@ -41,28 +41,28 @@ export default function Home() {
             {/* Discovery Widgets */}
             <EventSlider />
 
-            <section className="bg-white py-2 shadow-sm">
+            <section className="bg-surface py-2 shadow-sm">
               <RankingWidget />
             </section>
 
             {/* Tab Navigation */}
-            <div className="sticky top-14 md:top-16 z-20 flex border-b border-slate-200 bg-white shadow-sm">
+            <div className="sticky top-14 md:top-16 z-20 flex border-b border-border bg-surface shadow-sm">
               <button
                 onClick={() => setTab("timeline")}
-                className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === "timeline" ? "border-b-2 border-blue-400 text-blue-400" : "text-slate-400"}`}
+                className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === "timeline" ? "border-b-2 border-role-guest text-role-guest" : "text-text-muted"}`}
               >
                 Timeline
               </button>
               <button
                 onClick={() => setTab("cast")}
-                className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === "cast" ? "border-b-2 border-blue-400 text-blue-400" : "text-slate-400"}`}
+                className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === "cast" ? "border-b-2 border-role-guest text-role-guest" : "text-text-muted"}`}
               >
                 Cast List
               </button>
             </div>
 
             {/* Content Area */}
-            <div className="bg-slate-50">
+            <div className="bg-surface-secondary">
               {tab === "timeline" ? (
                 <TimelineFeed onItemClick={(id) => router.push(`/timeline/${id}`)} />
               ) : (

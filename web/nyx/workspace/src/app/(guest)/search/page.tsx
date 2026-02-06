@@ -166,18 +166,18 @@ export default function SearchPage() {
 
   if (loading) {
     return (
-      <div className="bg-slate-50 min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+      <div className="bg-surface-secondary min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-text-muted" />
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-50 pb-24 pt-4 min-h-screen">
+    <div className="bg-surface-secondary pb-24 pt-4 min-h-screen">
       {/* Search Input */}
       <form onSubmit={handleSearchSubmit} className="px-4 mb-4">
-        <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm border border-slate-100">
-          <Search className="text-slate-400 ml-1 shrink-0" size={20} />
+        <div className="flex items-center gap-2 rounded-full bg-surface px-3 py-1 shadow-sm border border-border">
+          <Search className="text-text-muted ml-1 shrink-0" size={20} />
           <Input
             type="text"
             placeholder="キャスト、タグを検索..."
@@ -190,11 +190,11 @@ export default function SearchPage() {
             variant="ghost"
             size="icon"
             onClick={() => setFilterOverlayOpen(true)}
-            className="relative text-slate-400 hover:text-slate-600 mr-1 hover:bg-transparent"
+            className="relative text-text-muted hover:text-text-secondary mr-1 hover:bg-transparent"
           >
             <SlidersHorizontal size={20} />
             {activeFilterCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-400 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-info text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
@@ -207,17 +207,17 @@ export default function SearchPage() {
         <div className="px-4 mb-4">
           <div className="flex flex-wrap gap-2">
             {filters.query && (
-              <span className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-xs font-medium">
+              <span className="px-3 py-1 bg-border text-text-secondary rounded-full text-xs font-medium">
                 &quot;{filters.query}&quot;
               </span>
             )}
             {filters.genreId && (
-              <span className="px-3 py-1 bg-blue-400 text-white rounded-full text-xs font-medium">
+              <span className="px-3 py-1 bg-info text-white rounded-full text-xs font-medium">
                 {genres.find((g) => g.id === filters.genreId)?.name}
               </span>
             )}
             {filters.status !== "all" && (
-              <span className="px-3 py-1 bg-blue-400 text-white rounded-full text-xs font-medium">
+              <span className="px-3 py-1 bg-info text-white rounded-full text-xs font-medium">
                 {filters.status === "online"
                   ? "オンライン"
                   : filters.status === "new"
@@ -230,7 +230,7 @@ export default function SearchPage() {
                 setFilters({ query: "", genreId: "", status: "all" });
                 setSearchInput("");
               }}
-              className="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium hover:bg-slate-200"
+              className="px-3 py-1 bg-surface-secondary text-text-secondary rounded-full text-xs font-medium hover:bg-border"
             >
               クリア
             </button>
@@ -242,8 +242,8 @@ export default function SearchPage() {
       {highlightCasts.length > 0 && (
         <div className="mb-8 relative">
           <div className="px-4 mb-3 flex items-center gap-2">
-            <Sparkles className="text-yellow-500 w-4 h-4 fill-current" />
-            <h3 className="font-bold text-sm text-slate-800 tracking-wider">
+            <Sparkles className="text-warning w-4 h-4 fill-current" />
+            <h3 className="font-bold text-sm text-text-primary tracking-wider">
               今スグ遊べる
             </h3>
           </div>
@@ -268,7 +268,7 @@ export default function SearchPage() {
                       className="h-full w-full object-cover pointer-events-none"
                     />
                     {cast.isOnline && (
-                      <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white bg-green-500 shadow-sm">
+                      <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white bg-success shadow-sm">
                         ● ONLINE
                       </div>
                     )}
@@ -283,13 +283,13 @@ export default function SearchPage() {
             })}
           </HorizontalScroll>
 
-          <div className="absolute right-0 top-8 bottom-4 w-12 bg-gradient-to-l from-slate-50 via-slate-50/80 to-transparent pointer-events-none" />
+          <div className="absolute right-0 top-8 bottom-4 w-12 bg-gradient-to-l from-surface-secondary via-surface-secondary/80 to-transparent pointer-events-none" />
         </div>
       )}
 
       {/* Main Grid Results */}
       <div className="px-4">
-        <h3 className="mb-3 font-bold text-sm text-slate-500 uppercase tracking-wider">
+        <h3 className="mb-3 font-bold text-sm text-text-secondary uppercase tracking-wider">
           {filters.genreId
             ? genres.find((g) => g.id === filters.genreId)?.name || "Casts"
             : "All Casts"}
@@ -298,10 +298,10 @@ export default function SearchPage() {
 
         {loadingCasts ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-text-muted" />
           </div>
         ) : casts.length === 0 ? (
-          <div className="text-center py-12 text-slate-400">
+          <div className="text-center py-12 text-text-muted">
             キャストが見つかりませんでした
           </div>
         ) : (
@@ -322,7 +322,7 @@ export default function SearchPage() {
       {/* Popular Tags (Bottom) */}
       {popularTags.length > 0 && (
         <div className="px-4 mt-8">
-          <h3 className="mb-3 font-bold text-xs text-slate-400 uppercase tracking-wider">
+          <h3 className="mb-3 font-bold text-xs text-text-muted uppercase tracking-wider">
             Trending Tags
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -332,8 +332,8 @@ export default function SearchPage() {
                 onClick={() => handleTagClick(tag.name)}
                 className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-colors
                   ${activeTag === tag.name
-                    ? "bg-blue-400 text-white border-blue-400"
-                    : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
+                    ? "bg-info text-white border-info"
+                    : "bg-surface text-text-secondary border-border hover:bg-surface-secondary"
                   }`}
               >
                 #{tag.name}
@@ -365,7 +365,7 @@ const SearchCastCard = ({ cast }: { cast: CastProfile }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
-        className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 h-full flex flex-col"
+        className="bg-surface rounded-xl overflow-hidden shadow-sm border border-border h-full flex flex-col"
       >
         {/* Large Image Area */}
         <div className="relative aspect-square">
@@ -376,12 +376,12 @@ const SearchCastCard = ({ cast }: { cast: CastProfile }) => {
           />
           <div className="absolute top-2 left-2 flex gap-1">
             {cast.isOnline && (
-              <div className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-green-500 shadow-sm">
+              <div className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-success shadow-sm">
                 ● ONLINE
               </div>
             )}
             {genreName && (
-              <div className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-slate-800/80 shadow-sm">
+              <div className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-neutral-800/80 shadow-sm">
                 {genreName}
               </div>
             )}
@@ -391,16 +391,16 @@ const SearchCastCard = ({ cast }: { cast: CastProfile }) => {
         {/* Content */}
         <div className="p-3 flex-1 flex flex-col">
           <div className="flex justify-between items-end mb-1">
-            <h4 className="font-bold text-slate-800 text-base">
+            <h4 className="font-bold text-text-primary text-base">
               {cast.name}
               {cast.age && (
-                <span className="text-xs font-normal text-slate-400 ml-1">
+                <span className="text-xs font-normal text-text-muted ml-1">
                   ({cast.age})
                 </span>
               )}
             </h4>
             {areaName && (
-              <div className="flex items-center text-[10px] text-slate-400">
+              <div className="flex items-center text-[10px] text-text-muted">
                 <MapPin size={10} className="mr-0.5" />
                 {areaName}
               </div>
@@ -409,8 +409,8 @@ const SearchCastCard = ({ cast }: { cast: CastProfile }) => {
 
           {/* Tagline Bubble */}
           {cast.tagline && (
-            <div className="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded-lg italic leading-tight relative">
-              <div className="absolute -top-1 left-3 w-2 h-2 bg-slate-50 transform rotate-45" />
+            <div className="mt-2 text-xs text-text-secondary bg-surface-secondary p-2 rounded-lg italic leading-tight relative">
+              <div className="absolute -top-1 left-3 w-2 h-2 bg-surface-secondary transform rotate-45" />
               &quot;{cast.tagline}&quot;
             </div>
           )}
@@ -420,7 +420,7 @@ const SearchCastCard = ({ cast }: { cast: CastProfile }) => {
               {cast.tags.slice(0, 2).map((tag) => (
                 <span
                   key={tag.label}
-                  className="text-[9px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded"
+                  className="text-[9px] text-text-muted bg-surface-secondary px-1.5 py-0.5 rounded"
                 >
                   #{tag.label}
                 </span>

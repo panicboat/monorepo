@@ -86,7 +86,7 @@ export const AvatarUploader = ({
           type="button"
           onClick={triggerFileInput}
           disabled={isUploading}
-          className={`group relative ${sizeClasses[size]} shrink-0 overflow-hidden rounded-full border-2 border-dashed border-slate-200 bg-slate-50 transition-all hover:border-pink-300 hover:bg-pink-50/30 disabled:opacity-50`}
+          className={`group relative ${sizeClasses[size]} shrink-0 overflow-hidden rounded-full border-2 border-dashed border-border bg-surface-secondary transition-all hover:border-role-cast-light hover:bg-role-cast-lighter/30 disabled:opacity-50`}
         >
           {displayUrl ? (
             <img
@@ -98,7 +98,7 @@ export const AvatarUploader = ({
             <div className="flex h-full w-full items-center justify-center">
               <Camera
                 size={iconSizes[size]}
-                className="text-slate-400 group-hover:text-pink-500 transition-colors"
+                className="text-text-muted group-hover:text-role-cast transition-colors"
               />
             </div>
           )}
@@ -114,7 +114,7 @@ export const AvatarUploader = ({
           <button
             type="button"
             onClick={handleClear}
-            className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md hover:bg-red-50 hover:text-red-500 transition-colors"
+            className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-surface shadow-md hover:bg-error-lighter hover:text-error transition-colors"
           >
             <X size={14} />
           </button>
@@ -128,8 +128,8 @@ export const AvatarUploader = ({
         onChange={handleFileSelect}
       />
       {(label || description) && (
-        <div className="text-xs text-slate-500 leading-relaxed">
-          {label && <p className="font-medium text-slate-700">{label}</p>}
+        <div className="text-xs text-text-muted leading-relaxed">
+          {label && <p className="font-medium text-text-primary">{label}</p>}
           {description && <p>{description}</p>}
         </div>
       )}

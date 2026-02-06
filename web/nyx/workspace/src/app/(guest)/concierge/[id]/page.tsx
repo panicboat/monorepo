@@ -9,7 +9,7 @@ export default function ChatRoomPage({
   const { id } = use(params);
 
   return (
-    <div className="bg-white">
+    <div className="bg-surface">
       <ChatRoom castId={id} />
     </div>
   );

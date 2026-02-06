@@ -64,12 +64,12 @@ export const GuestDashboard = () => {
   };
 
   return (
-    <div className="bg-slate-50 pb-24 md:pb-safe min-h-screen">
+    <div className="bg-surface-secondary pb-24 md:pb-safe min-h-screen">
       <main className="p-6 space-y-8 pt-4">
         {/* Profile Header */}
         <Link href="/mypage/profile" className="flex items-center gap-4 group">
-          <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-blue-300 to-blue-500 p-0.5 shadow-lg group-hover:shadow-xl transition-shadow">
-            <div className="h-full w-full rounded-full bg-white p-0.5">
+          <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-role-guest-light to-role-guest p-0.5 shadow-lg group-hover:shadow-xl transition-shadow">
+            <div className="h-full w-full rounded-full bg-surface p-0.5">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -77,27 +77,27 @@ export const GuestDashboard = () => {
                   className="h-full w-full rounded-full object-cover"
                 />
               ) : (
-                <div className="h-full w-full rounded-full bg-slate-100 flex items-center justify-center text-2xl">
+                <div className="h-full w-full rounded-full bg-surface-secondary flex items-center justify-center text-2xl">
                   👤
                 </div>
               )}
             </div>
-            <div className="absolute bottom-0 right-0 rounded-full bg-slate-900 border-2 border-white px-2 py-0.5 text-[10px] font-bold text-white">
+            <div className="absolute bottom-0 right-0 rounded-full bg-neutral-900 border-2 border-white px-2 py-0.5 text-[10px] font-bold text-white">
               Silver
             </div>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold font-serif text-slate-900">
+              <h2 className="text-xl font-bold font-serif text-text-primary">
                 {hasProfile ? profile.name : user?.name || "ゲスト"}
               </h2>
-              <span className="text-slate-400 group-hover:text-blue-500 transition-colors">
+              <span className="text-text-muted group-hover:text-info transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-mono">ID: {user?.id?.slice(0, 8) || "--------"}</p>
+            <p className="text-xs text-text-secondary font-mono">ID: {user?.id?.slice(0, 8) || "--------"}</p>
           </div>
         </Link>
 
@@ -107,39 +107,39 @@ export const GuestDashboard = () => {
             {
               label: "Favorites",
               icon: "❤️",
-              color: "bg-blue-50 text-blue-500",
+              color: "bg-info-lighter text-info",
               href: "/favorites",
             },
             {
               label: "Following",
               icon: "👥",
-              color: "bg-blue-50 text-blue-600",
+              color: "bg-info-lighter text-info",
               href: "/following",
             },
             {
               label: "Footprints",
               icon: "🐾",
-              color: "bg-orange-50 text-orange-600",
+              color: "bg-warning-lighter text-warning",
               href: "/footprints",
             },
             {
               label: "Blocking",
               icon: "⛔",
-              color: "bg-slate-50 text-slate-600",
+              color: "bg-surface-secondary text-text-secondary",
               href: "/blocking",
             },
           ].map((action) => (
             <Link
               href={action.href}
               key={action.label}
-              className="flex flex-col items-center gap-2 rounded-xl bg-white p-3 shadow-sm border border-slate-100 transition-transform active:scale-95"
+              className="flex flex-col items-center gap-2 rounded-xl bg-surface p-3 shadow-sm border border-border transition-transform active:scale-95"
             >
               <div
                 className={`h-10 w-10 flex items-center justify-center rounded-full text-lg ${action.color}`}
               >
                 {action.icon}
               </div>
-              <span className="text-[10px] font-bold text-slate-600">
+              <span className="text-[10px] font-bold text-text-secondary">
                 {action.label}
               </span>
             </Link>
@@ -147,28 +147,28 @@ export const GuestDashboard = () => {
         </div>
 
         {/* Reliability Score Widget */}
-        <div className="rounded-2xl bg-gradient-to-br from-amber-50/80 via-white to-white p-6 shadow-sm border border-slate-100 relative overflow-hidden">
+        <div className="rounded-2xl bg-gradient-to-br from-amber-50/80 via-white to-white p-6 shadow-sm border border-border relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none grayscale">
             <span className="text-6xl">🛡️</span>
           </div>
 
           <div className="relative z-10">
             {/* Top Row: Metrics Centered in Halves */}
-            <div className="grid grid-cols-2 gap-4 pb-4 mb-4 border-b border-slate-100">
+            <div className="grid grid-cols-2 gap-4 pb-4 mb-4 border-b border-border">
               {/* Left: Guest Reliability */}
-              <div className="flex flex-col items-center text-center border-r border-slate-100/50">
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+              <div className="flex flex-col items-center text-center border-r border-border/50">
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-1">
                   Guest Reliability
                 </h3>
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-bold font-mono text-amber-500 leading-none">
                     A+
                   </span>
-                  <span className="text-base font-medium text-slate-500">
+                  <span className="text-base font-medium text-text-secondary">
                     Excellent
                   </span>
                 </div>
-                <div className="text-[10px] text-slate-400 font-mono mt-1">
+                <div className="text-[10px] text-text-muted font-mono mt-1">
                   {/* TODO: Fetch real Reliability Score from Trust Service */}
                   Score: 850 / 999
                 </div>
@@ -176,15 +176,15 @@ export const GuestDashboard = () => {
 
               {/* Right: Vow Completion */}
               <div className="flex flex-col items-center text-center">
-                <div className="text-[9px] uppercase font-bold text-slate-400 mb-0.5">
+                <div className="text-[9px] uppercase font-bold text-text-muted mb-0.5">
                   Vow Completion
                 </div>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-5xl font-bold font-mono text-slate-800">
+                  <span className="text-5xl font-bold font-mono text-text-primary">
                     98<span className="text-lg">%</span>
                   </span>
                 </div>
-                <span className="text-xs text-slate-400 font-mono block mt-1">
+                <span className="text-xs text-text-muted font-mono block mt-1">
                   (49/50)
                 </span>
               </div>
@@ -200,8 +200,8 @@ export const GuestDashboard = () => {
           </div>
 
           {/* Bottom: Cast-facing Hint */}
-          <div className="mt-4 pt-3 border-t border-slate-100">
-            <p className="text-xs text-slate-500 italic flex items-center gap-2">
+          <div className="mt-4 pt-3 border-t border-border">
+            <p className="text-xs text-text-secondary italic flex items-center gap-2">
               <span className="text-amber-500">💡</span>
               "Very polite, punctual, and generous."
             </p>
@@ -213,8 +213,8 @@ export const GuestDashboard = () => {
           {pendingReviews.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-3 px-1">
-                <span className="flex h-2 w-2 rounded-full bg-blue-400 animate-pulse"></span>
-                <h3 className="font-bold text-sm text-slate-800">
+                <span className="flex h-2 w-2 rounded-full bg-info animate-pulse"></span>
+                <h3 className="font-bold text-sm text-text-primary">
                   Pending Reviews
                 </h3>
               </div>
@@ -225,10 +225,10 @@ export const GuestDashboard = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="flex items-center justify-between rounded-xl bg-white p-4 shadow-md border border-blue-100 ring-1 ring-blue-50"
+                    className="flex items-center justify-between rounded-xl bg-surface p-4 shadow-md border border-info-light ring-1 ring-info-lighter"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="relative h-10 w-10 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-xs overflow-hidden">
+                      <div className="relative h-10 w-10 rounded-full bg-surface-secondary flex-shrink-0 flex items-center justify-center text-xs overflow-hidden">
                         {/* Mock Avatar */}
                         <img
                           src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
@@ -237,17 +237,17 @@ export const GuestDashboard = () => {
                         />
                       </div>
                       <div>
-                        <div className="font-bold text-slate-800 text-sm">
+                        <div className="font-bold text-text-primary text-sm">
                           {item.cast}
                         </div>
-                        <div className="text-[10px] text-slate-500 font-bold">
+                        <div className="text-[10px] text-text-secondary font-bold">
                           {item.type}
                         </div>
                       </div>
                     </div>
                     <button
                       onClick={() => openReviewModal(item)}
-                      className="px-4 py-2 rounded-full bg-blue-400 text-white text-xs font-bold shadow-md hover:bg-blue-500 transition-transform active:scale-95"
+                      className="px-4 py-2 rounded-full bg-info text-white text-xs font-bold shadow-md hover:bg-info-hover transition-transform active:scale-95"
                     >
                       Write Review
                     </button>
@@ -261,8 +261,8 @@ export const GuestDashboard = () => {
         {/* Recent History Preview */}
         <section>
           <div className="flex items-center justify-between mb-3 px-1">
-            <h3 className="font-bold text-sm text-slate-800">Recent Pledges</h3>
-            <button className="text-xs font-bold text-blue-400">
+            <h3 className="font-bold text-sm text-text-primary">Recent Pledges</h3>
+            <button className="text-xs font-bold text-info">
               View All
             </button>
           </div>
@@ -272,25 +272,25 @@ export const GuestDashboard = () => {
                 key={item.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-between rounded-xl bg-white p-4 shadow-sm border border-slate-100"
+                className="flex items-center justify-between rounded-xl bg-surface p-4 shadow-sm border border-border"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-xs">
+                  <div className="h-10 w-10 rounded-full bg-surface-secondary flex-shrink-0 flex items-center justify-center text-xs">
                     {/* Placeholder Avatar */}
                     👩
                   </div>
                   <div>
-                    <div className="font-bold text-slate-800 text-sm">
+                    <div className="font-bold text-text-primary text-sm">
                       {item.cast}
                     </div>
-                    <div className="text-[10px] text-slate-400">
+                    <div className="text-[10px] text-text-muted">
                       {item.date} • {item.type}
                     </div>
                   </div>
                 </div>
                 <div
                   className={`px-2 py-1 rounded text-[10px] font-bold uppercase
-                            ${item.status === "sealed" ? "bg-red-100 text-red-600 border border-red-200" : "bg-slate-100 text-slate-500 border border-slate-200"}
+                            ${item.status === "sealed" ? "bg-error-light text-error border border-error-light" : "bg-surface-secondary text-text-secondary border border-border"}
                         `}
                 >
                   {item.status}
@@ -301,7 +301,7 @@ export const GuestDashboard = () => {
         </section>
 
         {/* Menu List */}
-        <div className="rounded-2xl bg-white shadow-sm border border-slate-100 overflow-hidden">
+        <div className="rounded-2xl bg-surface shadow-sm border border-border overflow-hidden">
           {[
             { label: "Profile Settings", href: "/mypage/profile" },
             { label: "Account Settings", href: "#" },
@@ -313,17 +313,17 @@ export const GuestDashboard = () => {
             <Link
               key={item.label}
               href={item.href}
-              className={`w-full flex items-center justify-between px-5 py-4 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors ${i !== arr.length - 1 ? "border-b border-slate-50" : ""}`}
+              className={`w-full flex items-center justify-between px-5 py-4 text-sm font-medium text-text-secondary hover:bg-surface-secondary transition-colors ${i !== arr.length - 1 ? "border-b border-border" : ""}`}
             >
               <span>{item.label}</span>
-              <span className="text-slate-300">›</span>
+              <span className="text-text-muted">›</span>
             </Link>
           ))}
         </div>
 
         <button
           onClick={logout}
-          className="w-full rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors"
+          className="w-full rounded-xl bg-surface-secondary py-3 text-sm font-bold text-text-secondary hover:bg-neutral-200 hover:text-text-secondary transition-colors"
         >
           Sign Out
         </button>

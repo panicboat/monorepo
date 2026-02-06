@@ -6,8 +6,8 @@ export default function OnboardingLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex justify-center items-start min-h-screen">
-      <ResponsiveMainContainer className="bg-white">
+    <div className="flex justify-center items-start min-h-screen bg-background">
+      <ResponsiveMainContainer className="bg-surface">
         {children}
       </ResponsiveMainContainer>
     </div>

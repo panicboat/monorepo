@@ -124,13 +124,13 @@ export const ChatRoom = ({ castId }: { castId: string }) => {
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm font-medium ${
                 msg.sender === "user"
-                  ? "bg-slate-900 text-white rounded-br-none"
-                  : "bg-slate-100 text-slate-800 rounded-bl-none"
+                  ? "bg-neutral-900 text-white rounded-br-none"
+                  : "bg-surface-secondary text-text-primary rounded-bl-none"
               }`}
             >
               <p>{msg.text}</p>
               <div
-                className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${msg.sender === "user" ? "text-slate-400" : "text-slate-400"}`}
+                className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${msg.sender === "user" ? "text-text-muted" : "text-text-muted"}`}
               >
                 <span>{msg.time}</span>
                 {msg.sender === "user" && msg.read && <span>Read</span>}
@@ -142,8 +142,8 @@ export const ChatRoom = ({ castId }: { castId: string }) => {
       </div>
 
       {/* Input Area */}
-      <div className="sticky bottom-20 md:bottom-0 z-40 bg-white p-4 border-t border-slate-100">
-        <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
+      <div className="sticky bottom-20 md:bottom-0 z-40 bg-surface p-4 border-t border-border">
+        <div className="flex items-center gap-2 rounded-full border border-border bg-surface-secondary px-4 py-2">
           <input
             type="text"
             value={inputText}
@@ -154,12 +154,12 @@ export const ChatRoom = ({ castId }: { castId: string }) => {
               }
             }}
             placeholder="Send a message..."
-            className="flex-1 bg-transparent text-sm placeholder:text-slate-300 focus:outline-none"
+            className="flex-1 bg-transparent text-sm placeholder:text-text-muted focus:outline-none"
           />
           <button
             onClick={handleSend}
             disabled={!inputText.trim()}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-400 text-white transition-all disabled:opacity-50 disabled:bg-slate-300"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-role-guest text-white transition-all disabled:opacity-50 disabled:bg-border-secondary"
           >
             <Send size={16} />
           </button>

@@ -26,14 +26,14 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
 
   // Dynamic Styles
   const primaryBtnClass = isCast
-    ? "bg-pink-500 text-white shadow-pink-200 hover:bg-pink-600 hover:shadow-pink-300"
-    : "bg-blue-400 text-white shadow-blue-200 hover:bg-blue-500 hover:shadow-blue-300";
+    ? "bg-role-cast text-white shadow-role-cast-shadow hover:bg-role-cast-hover hover:shadow-role-cast-shadow"
+    : "bg-role-guest text-white shadow-role-guest-shadow hover:bg-role-guest-hover hover:shadow-role-guest-shadow";
 
   const secondaryTextClass = isCast
-    ? "text-pink-500 hover:text-pink-600"
-    : "text-slate-500 hover:text-slate-700";
+    ? "text-role-cast hover:text-role-cast-hover"
+    : "text-text-secondary hover:text-text-secondary";
 
-  const focusRingClass = isCast ? "focus:ring-pink-500" : "focus:ring-blue-400";
+  const focusRingClass = isCast ? "focus:ring-role-cast" : "focus:ring-role-guest";
 
   const handleSMSRequest = async () => {
     if (phone.length < 10) {
@@ -90,17 +90,17 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white p-6">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-surface p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-sm space-y-8"
       >
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 font-serif">
+          <h1 className="text-4xl font-bold tracking-tight text-text-primary font-serif">
             {isCast ? "Cast Portal" : "Nyx"}
           </h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-text-secondary">
             {isCast
               ? "Manage your schedule and connect with guests."
               : "The Ritual of Connection"}
@@ -137,7 +137,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Phone Number"
               className={cn(
-                "w-full rounded-lg border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:ring-2 transition-all",
+                "w-full rounded-lg border-border bg-surface-secondary px-4 py-3 outline-none focus:ring-2 transition-all",
                 focusRingClass,
               )}
             />
@@ -147,11 +147,11 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className={cn(
-                "w-full rounded-lg border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:ring-2 transition-all",
+                "w-full rounded-lg border-border bg-surface-secondary px-4 py-3 outline-none focus:ring-2 transition-all",
                 focusRingClass,
               )}
             />
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && <p className="text-sm text-error">{error}</p>}
             <button
               onClick={handleLogin}
               disabled={isSubmitting}
@@ -164,7 +164,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
             </button>
             <button
               onClick={() => setMode("select")}
-              className="w-full text-sm text-slate-400 hover:text-slate-600"
+              className="w-full text-sm text-text-muted hover:text-text-secondary"
             >
               Back
             </button>
@@ -176,7 +176,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
             <h2 className="text-xl font-bold text-center">Create Account</h2>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-text-secondary">
                 Phone Number
               </label>
               <input
@@ -185,12 +185,12 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="09012345678"
                 className={cn(
-                  "w-full rounded-lg border-slate-200 bg-slate-50 px-4 py-3 text-lg outline-none ring-2 ring-transparent transition-all",
+                  "w-full rounded-lg border-border bg-surface-secondary px-4 py-3 text-lg outline-none ring-2 ring-transparent transition-all",
                   focusRingClass,
                 )}
               />
             </div>
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && <p className="text-sm text-error">{error}</p>}
 
             <button
               onClick={handleSMSRequest}
@@ -204,7 +204,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
             </button>
             <button
               onClick={() => setMode("select")}
-              className="w-full text-sm text-slate-400 hover:text-slate-600"
+              className="w-full text-sm text-text-muted hover:text-text-secondary"
             >
               Back
             </button>
@@ -215,22 +215,22 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
             <h2 className="text-xl font-bold text-center">Verify Phone</h2>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-text-secondary">
                 Verification Code
               </label>
-              <div className="text-xs text-slate-400">Sent to {phone}</div>
+              <div className="text-xs text-text-muted">Sent to {phone}</div>
               <input
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="0000"
                 className={cn(
-                  "w-full rounded-lg border-slate-200 bg-slate-50 px-4 py-3 text-lg text-center tracking-widest outline-none ring-2 ring-transparent transition-all",
+                  "w-full rounded-lg border-border bg-surface-secondary px-4 py-3 text-lg text-center tracking-widest outline-none ring-2 ring-transparent transition-all",
                   focusRingClass,
                 )}
               />
             </div>
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && <p className="text-sm text-error">{error}</p>}
 
             <button
               onClick={handleSMSVerify}
@@ -244,7 +244,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
             </button>
             <button
               onClick={() => setMode("signup_phone")}
-              className="w-full text-sm text-slate-400 hover:text-slate-600"
+              className="w-full text-sm text-text-muted hover:text-text-secondary"
             >
               Back
             </button>
@@ -255,7 +255,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
             <h2 className="text-xl font-bold text-center">Set Password</h2>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-sm font-medium text-text-secondary">
                 Password
               </label>
               <input
@@ -264,12 +264,12 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Min 8 characters"
                 className={cn(
-                  "w-full rounded-lg border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:ring-2 transition-all",
+                  "w-full rounded-lg border-border bg-surface-secondary px-4 py-3 outline-none focus:ring-2 transition-all",
                   focusRingClass,
                 )}
               />
             </div>
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && <p className="text-sm text-error">{error}</p>}
             <button
               onClick={handleRegister}
               disabled={isSubmitting}

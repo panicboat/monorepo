@@ -33,23 +33,23 @@ export const SectionCard = ({
     <div
       id={id}
       className={cn(
-        "bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-300",
+        "bg-surface rounded-2xl shadow-sm border border-border overflow-hidden transition-all duration-300",
         className,
       )}
     >
       <div
         className={cn(
           "px-6 py-4 flex items-center justify-between",
-          collapsible ? "cursor-pointer hover:bg-slate-50/50" : "",
+          collapsible ? "cursor-pointer hover:bg-surface-secondary/50" : "",
         )}
         onClick={toggleOpen}
       >
-        <h2 className="flex items-center gap-3 text-lg font-bold text-slate-800">
+        <h2 className="flex items-center gap-3 text-lg font-bold text-text-primary">
           {icon && <span className="text-accent">{icon}</span>}
           {title}
         </h2>
         {collapsible && (
-          <button className="text-slate-400 hover:text-slate-600 transition-colors">
+          <button className="text-text-muted hover:text-text-secondary transition-colors">
             {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </button>
         )}

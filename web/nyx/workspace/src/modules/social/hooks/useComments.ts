@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useAuthStore } from "@/stores/authStore";
+import { authFetch, getAuthToken } from "@/lib/auth";
 import type { Comment, CommentMedia, CommentsListResult, RepliesListResult } from "../types";
 
 interface CommentsState {
@@ -22,6 +22,10 @@ interface RepliesState {
   };
 }
 
+interface AddCommentResponse {
+  comment: Comment;
+}
+
 export function useComments(postId: string) {
   const [state, setState] = useState<CommentsState>({
     comments: [],
@@ -35,8 +39,6 @@ export function useComments(postId: string) {
   const [addingComment, setAddingComment] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
 
-  const accessToken = useAuthStore((state) => state.accessToken);
-
   const fetchComments = useCallback(
     async (cursor?: string) => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
@@ -45,19 +47,10 @@ export function useComments(postId: string) {
         const params = new URLSearchParams({ post_id: postId });
         if (cursor) params.set("cursor", cursor);
 
-        const headers: Record<string, string> = {};
-        if (accessToken) {
-          headers.Authorization = `Bearer ${accessToken}`;
-        }
-
-        const res = await fetch(`/api/guest/comments?${params}`, { headers });
-
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody.error || "Failed to fetch comments");
-        }
-
-        const data: CommentsListResult = await res.json();
+        const data = await authFetch<CommentsListResult>(
+          `/api/guest/comments?${params}`,
+          { requireAuth: false }
+        );
 
         setState((prev) => ({
           ...prev,
@@ -71,7 +64,7 @@ export function useComments(postId: string) {
         setState((prev) => ({ ...prev, loading: false, error: message }));
       }
     },
-    [postId, accessToken]
+    [postId]
   );
 
   const fetchMoreComments = useCallback(async () => {
@@ -81,38 +74,25 @@ export function useComments(postId: string) {
 
   const addComment = useCallback(
     async (content: string, parentId?: string, media?: CommentMedia[]) => {
-      const token = accessToken;
-      if (!token) {
+      if (!getAuthToken()) {
         throw new Error("Unauthorized");
       }
 
       setAddingComment(true);
 
       try {
-        const res = await fetch("/api/guest/comments", {
+        const data = await authFetch<AddCommentResponse>("/api/guest/comments", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
+          body: {
             postId,
             content,
             parentId: parentId || undefined,
             media: media || [],
-          }),
+          },
         });
-
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody.error || "Failed to add comment");
-        }
-
-        const data = await res.json();
 
         if (data.comment) {
           if (parentId) {
-            // It's a reply - add to replies state
             setRepliesState((prev) => ({
               ...prev,
               [parentId]: {
@@ -120,7 +100,6 @@ export function useComments(postId: string) {
                 replies: [data.comment, ...(prev[parentId]?.replies || [])],
               },
             }));
-            // Update parent's replies_count
             setState((prev) => ({
               ...prev,
               comments: prev.comments.map((c) =>
@@ -128,7 +107,6 @@ export function useComments(postId: string) {
               ),
             }));
           } else {
-            // It's a top-level comment - add to comments state
             setState((prev) => ({
               ...prev,
               comments: [data.comment, ...prev.comments],
@@ -141,35 +119,24 @@ export function useComments(postId: string) {
         setAddingComment(false);
       }
     },
-    [postId, accessToken]
+    [postId]
   );
 
   const deleteComment = useCallback(
     async (commentId: string, parentId?: string) => {
-      const token = accessToken;
-      if (!token) {
+      if (!getAuthToken()) {
         throw new Error("Unauthorized");
       }
 
       setDeletingCommentId(commentId);
 
       try {
-        const res = await fetch(`/api/guest/comments/${commentId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody.error || "Failed to delete comment");
-        }
-
-        const data = await res.json();
+        const data = await authFetch<{ success: boolean }>(
+          `/api/guest/comments/${commentId}`,
+          { method: "DELETE" }
+        );
 
         if (parentId) {
-          // It's a reply - remove from replies state
           setRepliesState((prev) => ({
             ...prev,
             [parentId]: {
@@ -177,7 +144,6 @@ export function useComments(postId: string) {
               replies: (prev[parentId]?.replies || []).filter((r) => r.id !== commentId),
             },
           }));
-          // Update parent's replies_count
           setState((prev) => ({
             ...prev,
             comments: prev.comments.map((c) =>
@@ -185,12 +151,10 @@ export function useComments(postId: string) {
             ),
           }));
         } else {
-          // It's a top-level comment - remove from comments state
           setState((prev) => ({
             ...prev,
             comments: prev.comments.filter((c) => c.id !== commentId),
           }));
-          // Also clear any replies state for this comment
           setRepliesState((prev) => {
             const newState = { ...prev };
             delete newState[commentId];
@@ -203,72 +167,59 @@ export function useComments(postId: string) {
         setDeletingCommentId(null);
       }
     },
-    [accessToken]
+    []
   );
 
-  const fetchReplies = useCallback(
-    async (commentId: string, cursor?: string) => {
+  const fetchReplies = useCallback(async (commentId: string, cursor?: string) => {
+    setRepliesState((prev) => ({
+      ...prev,
+      [commentId]: {
+        ...prev[commentId],
+        replies: prev[commentId]?.replies || [],
+        nextCursor: prev[commentId]?.nextCursor || "",
+        hasMore: prev[commentId]?.hasMore || false,
+        loading: true,
+        expanded: true,
+      },
+    }));
+
+    try {
+      const params = new URLSearchParams();
+      if (cursor) params.set("cursor", cursor);
+
+      const data = await authFetch<RepliesListResult>(
+        `/api/guest/comments/${commentId}/replies?${params}`,
+        { requireAuth: false }
+      );
+
+      setRepliesState((prev) => ({
+        ...prev,
+        [commentId]: {
+          replies: cursor
+            ? [...(prev[commentId]?.replies || []), ...data.replies]
+            : data.replies,
+          nextCursor: data.nextCursor,
+          hasMore: data.hasMore,
+          loading: false,
+          expanded: true,
+        },
+      }));
+    } catch (e) {
+      console.error("Fetch replies error:", e);
       setRepliesState((prev) => ({
         ...prev,
         [commentId]: {
           ...prev[commentId],
-          replies: prev[commentId]?.replies || [],
-          nextCursor: prev[commentId]?.nextCursor || "",
-          hasMore: prev[commentId]?.hasMore || false,
-          loading: true,
-          expanded: true,
+          loading: false,
         },
       }));
-
-      try {
-        const params = new URLSearchParams();
-        if (cursor) params.set("cursor", cursor);
-
-        const headers: Record<string, string> = {};
-        if (accessToken) {
-          headers.Authorization = `Bearer ${accessToken}`;
-        }
-
-        const res = await fetch(`/api/guest/comments/${commentId}/replies?${params}`, { headers });
-
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody.error || "Failed to fetch replies");
-        }
-
-        const data: RepliesListResult = await res.json();
-
-        setRepliesState((prev) => ({
-          ...prev,
-          [commentId]: {
-            replies: cursor
-              ? [...(prev[commentId]?.replies || []), ...data.replies]
-              : data.replies,
-            nextCursor: data.nextCursor,
-            hasMore: data.hasMore,
-            loading: false,
-            expanded: true,
-          },
-        }));
-      } catch (e) {
-        console.error("Fetch replies error:", e);
-        setRepliesState((prev) => ({
-          ...prev,
-          [commentId]: {
-            ...prev[commentId],
-            loading: false,
-          },
-        }));
-      }
-    },
-    [accessToken]
-  );
+    }
+  }, []);
 
   const toggleReplies = useCallback(
     (commentId: string) => {
       const current = repliesState[commentId];
       if (current?.expanded) {
-        // Collapse
         setRepliesState((prev) => ({
           ...prev,
           [commentId]: {
@@ -277,7 +228,6 @@ export function useComments(postId: string) {
           },
         }));
       } else {
-        // Expand and fetch if needed
         if (!current?.replies?.length) {
           fetchReplies(commentId);
         } else {

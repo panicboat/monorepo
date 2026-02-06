@@ -33,8 +33,8 @@ export const GuestDesktopSidebars = () => {
   return (
     <aside className="hidden w-80 flex-col gap-6 pt-24 lg:flex sticky top-0 h-screen overflow-y-auto no-scrollbar">
       {/* Recommends Widget */}
-      <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-        <h3 className="mb-4 font-bold text-slate-800">Tonight's Picks</h3>
+      <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <h3 className="mb-4 font-bold text-text-primary">Tonight's Picks</h3>
         <div className="space-y-4">
           {RECOMMENDED_CASTS.map((cast) => (
             <Link
@@ -42,7 +42,7 @@ export const GuestDesktopSidebars = () => {
               key={cast.id}
               className="flex items-center gap-4 group"
             >
-              <div className="relative h-12 w-12 overflow-hidden rounded-full border border-slate-100 transition-transform group-hover:scale-105">
+              <div className="relative h-12 w-12 overflow-hidden rounded-full border border-border transition-transform group-hover:scale-105">
                 <img
                   src={cast.image}
                   alt={cast.name}
@@ -51,14 +51,14 @@ export const GuestDesktopSidebars = () => {
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-slate-800 group-hover:text-role-guest transition-colors">
+                  <h4 className="font-bold text-text-primary group-hover:text-role-guest transition-colors">
                     {cast.name}
                   </h4>
                   <span className="text-[10px] bg-accent-light text-accent px-2 py-0.5 rounded-full font-bold">
                     {cast.tag}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">Available from 20:00</p>
+                <p className="text-xs text-text-muted">Available from 20:00</p>
               </div>
             </Link>
           ))}
@@ -66,7 +66,7 @@ export const GuestDesktopSidebars = () => {
       </div>
 
       {/* Banner / Ad Area */}
-      <div className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-md">
+      <div className="rounded-2xl bg-gradient-to-br from-special to-special-hover p-6 text-white shadow-md">
         <h3 className="mb-2 font-bold text-lg">First Time?</h3>
         <p className="text-sm opacity-90 mb-4">
           Check our beginner's guide to the Ritual.

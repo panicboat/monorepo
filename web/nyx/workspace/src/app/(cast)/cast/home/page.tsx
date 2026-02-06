@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { EarningsSummary } from "./components/EarningsSummary";
 import { UpcomingReservations } from "./components/UpcomingReservations";
-import { useAuthStore } from "@/stores/authStore";
+import { getAuthToken } from "@/lib/swr";
 
 interface DashboardStats {
   earningsToday: number;
@@ -33,7 +33,7 @@ export default function CastDashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = useAuthStore.getState().accessToken;
+      const token = getAuthToken();
       if (!token) {
         window.location.href = "/cast/login";
         return;
@@ -99,8 +99,8 @@ export default function CastDashboardPage() {
     return (
       <div className="p-4 flex items-center justify-center min-h-[50vh]">
         <div className="animate-pulse flex flex-col items-center gap-4 w-full max-w-sm">
-          <div className="h-32 w-full bg-slate-200 rounded-xl"></div>
-          <div className="h-48 w-full bg-slate-200 rounded-xl"></div>
+          <div className="h-32 w-full bg-border rounded-xl"></div>
+          <div className="h-48 w-full bg-border rounded-xl"></div>
         </div>
       </div>
     );

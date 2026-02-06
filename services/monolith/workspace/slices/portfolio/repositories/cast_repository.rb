@@ -11,6 +11,18 @@ module Portfolio
         casts.by_pk(id).one
       end
 
+      def find_by_ids(ids)
+        return [] if ids.nil? || ids.empty?
+
+        casts.where(id: ids).to_a
+      end
+
+      def find_by_user_ids(user_ids)
+        return [] if user_ids.nil? || user_ids.empty?
+
+        casts.where(user_id: user_ids).to_a
+      end
+
       def find_by_handle(handle)
         casts.combine(:cast_plans, :cast_schedules)
           .where { Sequel.function(:lower, :handle) =~ handle.downcase }
@@ -101,6 +113,17 @@ module Portfolio
 
       def find_genre_ids(cast_id)
         cast_genres.where(cast_id: cast_id).pluck(:genre_id)
+      end
+
+      # Load areas and genres together in minimal queries.
+      #
+      # @param cast_id [String] the cast ID
+      # @return [Hash] { area_ids: [...], genre_ids: [...] }
+      def find_area_and_genre_ids(cast_id)
+        {
+          area_ids: cast_areas.where(cast_id: cast_id).pluck(:area_id),
+          genre_ids: cast_genres.where(cast_id: cast_id).pluck(:genre_id)
+        }
       end
 
       def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, query: nil, limit: nil, offset: nil)

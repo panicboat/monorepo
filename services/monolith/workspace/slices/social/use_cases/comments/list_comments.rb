@@ -39,16 +39,29 @@ module Social
         private
 
         def load_authors(user_ids)
+          return {} if user_ids.empty?
+
           user_adapter = Social::Adapters::UserAdapter.new
           cast_adapter = Social::Adapters::CastAdapter.new
           guest_adapter = Social::Adapters::GuestAdapter.new
 
+          # Batch load user types (1 query)
+          user_types = user_adapter.get_user_types_batch(user_ids)
+
+          cast_user_ids = user_types.select { |_, t| t == "cast" }.keys
+          guest_user_ids = user_types.select { |_, t| t == "guest" }.keys
+
+          # Batch load casts and guests (2 queries)
+          casts = cast_adapter.find_by_user_ids(cast_user_ids)
+          guests = guest_adapter.find_by_user_ids(guest_user_ids)
+
+          # Build result in memory
           user_ids.each_with_object({}) do |user_id, hash|
-            user_type = user_adapter.get_user_type(user_id)
+            user_type = user_types[user_id]
             next unless user_type
 
             if user_type == "cast"
-              cast = cast_adapter.find_by_user_id(user_id)
+              cast = casts[user_id]
               if cast
                 hash[user_id] = {
                   id: cast.id,
@@ -57,7 +70,6 @@ module Social
                   user_type: "cast"
                 }
               else
-                # Cast profile not found, return minimal info
                 hash[user_id] = {
                   id: user_id,
                   name: "Anonymous Cast",
@@ -66,7 +78,7 @@ module Social
                 }
               end
             else
-              guest = guest_adapter.find_by_user_id(user_id)
+              guest = guests[user_id]
               if guest
                 hash[user_id] = {
                   id: guest.id,
@@ -75,7 +87,6 @@ module Social
                   user_type: "guest"
                 }
               else
-                # Guest profile not found, return minimal info
                 hash[user_id] = {
                   id: user_id,
                   name: "Guest",

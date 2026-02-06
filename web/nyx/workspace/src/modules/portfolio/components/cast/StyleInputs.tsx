@@ -27,10 +27,10 @@ const SelectGroup = ({
   description?: string;
 }) => (
   <div className="space-y-2">
-    <Label className="block text-sm font-bold text-slate-700">
+    <Label className="block text-sm font-bold text-text-secondary">
       {label}
       {description && (
-        <span className="ml-2 text-xs font-normal text-slate-400">
+        <span className="ml-2 text-xs font-normal text-text-muted">
           {description}
         </span>
       )}
@@ -43,8 +43,8 @@ const SelectGroup = ({
           onClick={() => onChange(opt.value)}
           variant={value === opt.value ? "default" : "outline"}
           className={`flex h-auto flex-col items-center justify-center gap-1 rounded-xl p-3 text-center transition-all ${value === opt.value
-              ? "bg-pink-50 text-pink-600 border-pink-500 ring-1 ring-pink-500 hover:bg-pink-100 hover:text-pink-700"
-              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+              ? "bg-role-cast-lighter text-role-cast border-role-cast ring-1 ring-role-cast hover:bg-role-cast-light hover:text-role-cast-hover"
+              : "border-border bg-surface text-text-secondary hover:border-border-secondary hover:bg-surface-secondary"
             }`}
         >
           <span className="text-sm font-bold">{opt.label}</span>
@@ -62,16 +62,16 @@ export const StyleInputs = ({
   onChange,
 }: StyleInputsProps) => {
   return (
-    <section className="space-y-6 rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
-      <h3 className="flex items-center gap-2 text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-50 pb-2">
+    <section className="space-y-6 rounded-2xl bg-surface p-5 shadow-sm border border-border">
+      <h3 className="flex items-center gap-2 text-sm font-bold text-text-muted uppercase tracking-wider border-b border-border pb-2">
         <Info size={14} /> Style Definition
       </h3>
 
       {/* Default Schedule */}
       <div>
-        <Label className="block text-sm font-bold text-slate-700 mb-1">
+        <Label className="block text-sm font-bold text-text-secondary mb-1">
           Standard Schedule Time
-          <span className="ml-2 text-xs font-normal text-slate-400">
+          <span className="ml-2 text-xs font-normal text-text-muted">
             基本の活動時間設定
           </span>
         </Label>
@@ -80,23 +80,23 @@ export const StyleInputs = ({
             type="time"
             value={data.defaultScheduleStart}
             onChange={(e) => onChange("defaultScheduleStart", e.target.value)}
-            className="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            className="flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-role-cast focus:border-transparent"
           />
-          <span className="text-slate-400 font-bold">~</span>
+          <span className="text-text-muted font-bold">~</span>
           <input
             type="time"
             value={data.defaultScheduleEnd}
             onChange={(e) => onChange("defaultScheduleEnd", e.target.value)}
-            className="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            className="flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-role-cast focus:border-transparent"
           />
         </div>
       </div>
 
       {/* Genre */}
       <div>
-        <Label className="block text-sm font-bold text-slate-700 mb-1">
+        <Label className="block text-sm font-bold text-text-secondary mb-1">
           Genre
-          <span className="ml-2 text-xs font-normal text-slate-400">
+          <span className="ml-2 text-xs font-normal text-text-muted">
             活動ジャンル（最低1つ、最大3つ）
           </span>
         </Label>
@@ -109,9 +109,9 @@ export const StyleInputs = ({
 
       {/* Area */}
       <div>
-        <Label className="block text-sm font-bold text-slate-700 mb-1">
+        <Label className="block text-sm font-bold text-text-secondary mb-1">
           Area
-          <span className="ml-2 text-xs font-normal text-slate-400">
+          <span className="ml-2 text-xs font-normal text-text-muted">
             活動エリア（最大3つ）
           </span>
         </Label>

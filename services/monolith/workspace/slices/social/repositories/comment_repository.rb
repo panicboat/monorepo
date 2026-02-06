@@ -98,7 +98,23 @@ module Social
       end
 
       def comments_count(post_id:)
-        post_comments.where(post_id: post_id).count
+        post_comments.where(post_id: post_id, parent_id: nil).count
+      end
+
+      # Batch get comments count for multiple posts.
+      # Only counts top-level comments (parent_id is null).
+      #
+      # @param post_ids [Array<String>] the post IDs to count comments for
+      # @return [Hash<String, Integer>] hash of post_id => count
+      def comments_count_batch(post_ids:)
+        return {} if post_ids.nil? || post_ids.empty?
+
+        post_comments.dataset
+          .unordered
+          .select(:post_id)
+          .where(post_id: post_ids, parent_id: nil)
+          .group_and_count(:post_id)
+          .to_hash(:post_id, :count)
       end
 
       private

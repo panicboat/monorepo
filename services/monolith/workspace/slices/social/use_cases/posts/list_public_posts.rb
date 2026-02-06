@@ -40,11 +40,11 @@ module Social
         private
 
         def load_authors(cast_ids)
+          return {} if cast_ids.empty?
+
+          # Batch load all casts in a single query
           adapter = Social::Adapters::CastAdapter.new
-          cast_ids.each_with_object({}) do |cast_id, hash|
-            cast = adapter.find_by_cast_id(cast_id)
-            hash[cast_id] = cast if cast
-          end
+          adapter.find_by_cast_ids(cast_ids)
         end
 
         def decode_cursor(cursor)

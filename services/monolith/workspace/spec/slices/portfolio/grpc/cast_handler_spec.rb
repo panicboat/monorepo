@@ -37,7 +37,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
   let(:save_images_uc) { double(:save_images_uc) }
   let(:get_upload_url_uc) { double(:get_upload_url_uc) }
   let(:list_casts_uc) { double(:list_casts_uc) }
-  let(:repo) { double(:repo, find_area_ids: [], find_genre_ids: [], online_cast_ids: []) }
+  let(:repo) { double(:repo, find_area_ids: [], find_genre_ids: [], online_cast_ids: [], find_area_and_genre_ids: { area_ids: [], genre_ids: [] }) }
   let(:area_repo) { double(:area_repo, find_by_ids: []) }
   let(:genre_repo) { double(:genre_repo, find_by_ids: []) }
 
@@ -219,6 +219,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
 
     it "raises Not Found when operation returns nil" do
       expect(get_profile_uc).to receive(:call).with(user_id: "1").and_return(nil)
+      expect(get_profile_uc).to receive(:call).with(id: "1").and_return(nil)
       expect { handler.get_cast_profile }.to raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(GRPC::Core::StatusCodes::NOT_FOUND) }
     end
   end

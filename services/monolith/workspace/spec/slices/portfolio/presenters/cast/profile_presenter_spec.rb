@@ -57,7 +57,9 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
     let(:cast) do
       double(
         :cast,
+        id: 1,
         user_id: 123,
+        handle: "test_cast",
         name: "Test Cast",
         bio: "Test Bio",
         tagline: "Test Tagline",
@@ -107,7 +109,9 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
       let(:cast_with_nils) do
         double(
           :cast,
+          id: 2,
           user_id: 123,
+          handle: nil,
           name: "Test Cast",
           bio: nil,
           tagline: nil,

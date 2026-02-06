@@ -13,8 +13,8 @@ export default function CastLayout({
     <ToastProvider>
       <CastAuthGuard>
         <CastTopNavBar />
-        <div className="flex justify-center items-start min-h-screen gap-4 bg-slate-50">
-          <ResponsiveMainContainer className="bg-slate-50">
+        <div className="flex justify-center items-start min-h-screen gap-4 bg-surface-secondary">
+          <ResponsiveMainContainer className="bg-surface-secondary">
             {children}
           </ResponsiveMainContainer>
 

@@ -35,22 +35,22 @@ export const ReservationDetail = ({ reservationId }: ReservationDetailProps) => 
     <div className="flex flex-col gap-6 font-sans">
       {/* Guest Info (Concierge Link) */}
       <div onClick={() => setShowGuestSheet(true)} className="cursor-pointer">
-        <Card className="active:bg-slate-50 transition-colors border-pink-100 shadow-sm">
+        <Card className="active:bg-surface-secondary transition-colors border-role-cast-lighter shadow-sm">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden border border-white shadow-sm">
+              <div className="w-12 h-12 rounded-full bg-border overflow-hidden border border-white shadow-sm">
                 <img src={`https://ui-avatars.com/api/?name=${reservation.guestName}&background=random`} alt={reservation.guestName} className="w-full h-full object-cover" />
               </div>
               <div>
-                <p className="font-bold text-slate-900 flex items-center gap-2">
+                <p className="font-bold text-text-primary flex items-center gap-2">
                   {reservation.guestName}
                 </p>
                 <div className="flex gap-2 mt-0.5">
-                  <p className="text-xs text-slate-400">First Visit</p>
+                  <p className="text-xs text-text-muted">First Visit</p>
                 </div>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-slate-300" />
+            <ChevronRight className="w-5 h-5 text-text-muted" />
           </CardContent>
         </Card>
       </div>
@@ -67,11 +67,11 @@ export const ReservationDetail = ({ reservationId }: ReservationDetailProps) => 
       {/* Actions */}
       <div className="flex flex-col gap-3 mt-4 pb-8 items-center">
         {reservation.status === 'inviting' ? (
-          <Button variant="ghost" className="w-full text-slate-500 hover:bg-transparent hover:text-slate-500 active:bg-slate-100 transition-colors">
+          <Button variant="ghost" className="w-full text-text-secondary hover:bg-transparent hover:text-text-secondary active:bg-surface-secondary transition-colors">
             招待を取り消す (Cancel)
           </Button>
         ) : (
-          <Button variant="ghost" className="w-full text-red-500 hover:bg-transparent hover:text-red-500 active:bg-red-50 transition-colors">
+          <Button variant="ghost" className="w-full text-error hover:bg-transparent hover:text-error active:bg-error-lighter transition-colors">
             予約をキャンセル (Cancel)
           </Button>
         )}

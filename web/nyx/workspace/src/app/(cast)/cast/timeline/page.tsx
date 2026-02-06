@@ -24,17 +24,8 @@ import { CastPost } from "@/modules/social/types";
 import { useToast } from "@/components/ui/Toast";
 import { useCastData } from "@/modules/portfolio/hooks";
 import { useAuthStore } from "@/stores/authStore";
-
-function formatTimeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
+import { formatTimeAgo } from "@/lib/utils/date";
+import { getAuthToken } from "@/lib/swr";
 
 function castPostToFeedItem(post: CastPost): FeedItem {
   return {
@@ -108,7 +99,7 @@ export default function CastTimelinePage() {
   }, [hasMore, loading, loadMore]);
 
   const uploadFile = async (file: File): Promise<string | null> => {
-    const token = useAuthStore.getState().accessToken;
+    const token = getAuthToken();
     if (!token) return null;
 
     const res = await fetch("/api/cast/onboarding/upload-url", {
@@ -250,16 +241,16 @@ export default function CastTimelinePage() {
     <div className="max-w-2xl mx-auto p-4 space-y-6">
 
       {/* New Post Form */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+      <div className="bg-surface rounded-2xl p-4 shadow-sm border border-border">
         <div className="flex items-center justify-between mb-2">
-          <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <Label className="text-xs font-bold text-text-muted uppercase tracking-wider">
             New Post
           </Label>
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className={`gap-1 text-xs ${visible ? "text-slate-300 hover:text-slate-500 hover:bg-slate-50" : "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"}`}
+            className={`gap-1 text-xs ${visible ? "text-text-muted hover:text-text-secondary hover:bg-surface-secondary" : "text-success hover:text-success-hover hover:bg-success-lighter"}`}
             onClick={() => setVisible(!visible)}
           >
             {visible ? <LockOpen size={14} /> : <Lock size={14} />}
@@ -268,13 +259,13 @@ export default function CastTimelinePage() {
         </div>
         <div className="flex gap-4">
           {avatarUrl ? (
-            <img src={avatarUrl} alt="My avatar" className="w-10 h-10 rounded-full border border-slate-100 object-cover shrink-0" />
+            <img src={avatarUrl} alt="My avatar" className="w-10 h-10 rounded-full border border-border object-cover shrink-0" />
           ) : (
-            <div className="w-10 h-10 rounded-full border border-slate-100 bg-slate-200 shrink-0" />
+            <div className="w-10 h-10 rounded-full border border-border bg-border shrink-0" />
           )}
           <div className="flex-1 min-w-0 space-y-3">
             <textarea
-              className="w-full bg-slate-50 border-0 rounded-xl p-3 text-sm focus:ring-2 focus:ring-pink-100 focus:bg-white transition-all resize-none placeholder:text-slate-300"
+              className="w-full bg-surface-secondary border-0 rounded-xl p-3 text-sm focus:ring-2 focus:ring-role-cast-light focus:bg-surface transition-all resize-none placeholder:text-text-muted"
               rows={3}
               placeholder="What's happening? (e.g., Schedule update, Daily life...)"
               value={content}
@@ -314,7 +305,7 @@ export default function CastTimelinePage() {
                         <Button
                           size="icon"
                           variant="secondary"
-                          className="absolute top-1 right-1 h-6 w-6 bg-white/80 hover:bg-white text-slate-700"
+                          className="absolute top-1 right-1 h-6 w-6 bg-surface/80 hover:bg-surface text-text-secondary"
                           onClick={() => removeMediaFile(i)}
                         >
                           <X size={12} />
@@ -327,7 +318,7 @@ export default function CastTimelinePage() {
                       </div>
                     ))}
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1">
+                  <p className="text-[10px] text-text-muted mt-1">
                     {mediaFiles.length}/{MAX_MEDIA} files
                   </p>
                 </motion.div>
@@ -336,15 +327,15 @@ export default function CastTimelinePage() {
 
             {uploadProgress && (
               <div className="space-y-1">
-                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-surface-secondary rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-pink-500 rounded-full"
+                    className="h-full bg-role-cast rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
                     transition={{ duration: 0.3 }}
                   />
                 </div>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-text-muted">
                   Uploading {uploadProgress.current}/{uploadProgress.total}...
                 </p>
               </div>
@@ -371,7 +362,7 @@ export default function CastTimelinePage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-slate-500 hover:text-pink-500 hover:bg-pink-50 gap-2"
+                  className="text-text-secondary hover:text-role-cast hover:bg-role-cast-lighter gap-2"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={mediaFiles.length >= MAX_MEDIA}
                 >
@@ -381,7 +372,7 @@ export default function CastTimelinePage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-slate-500 hover:text-pink-500 hover:bg-pink-50 gap-2"
+                  className="text-text-secondary hover:text-role-cast hover:bg-role-cast-lighter gap-2"
                   onClick={() => videoInputRef.current?.click()}
                   disabled={mediaFiles.length >= MAX_MEDIA}
                 >
@@ -407,11 +398,11 @@ export default function CastTimelinePage() {
 
       {/* Timeline Feed */}
       <div>
-        <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block px-1">
+        <Label className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2 block px-1">
           Recent Posts
         </Label>
         {loading && posts.length === 0 ? (
-          <div className="py-10 text-center text-slate-400 text-sm">Loading...</div>
+          <div className="py-10 text-center text-text-muted text-sm">Loading...</div>
         ) : (
           <>
             <TimelineFeed
@@ -424,7 +415,7 @@ export default function CastTimelinePage() {
             {hasMore && (
               <div ref={loadMoreRef} className="pt-4 pb-8 text-center">
                 {loading && (
-                  <div className="flex items-center justify-center gap-2 text-slate-400">
+                  <div className="flex items-center justify-center gap-2 text-text-muted">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span className="text-sm">Loading...</span>
                   </div>

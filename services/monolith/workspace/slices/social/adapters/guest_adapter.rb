@@ -31,6 +31,24 @@ module Social
         )
       end
 
+      # Batch find guests by user IDs.
+      #
+      # @param user_ids [Array<String>] the user IDs to look up
+      # @return [Hash<String, GuestInfo>] hash of user_id => GuestInfo
+      def find_by_user_ids(user_ids)
+        return {} if user_ids.nil? || user_ids.empty?
+
+        guests = portfolio_guest_repository.find_by_user_ids(user_ids)
+        guests.each_with_object({}) do |guest, hash|
+          hash[guest.user_id] = GuestInfo.new(
+            id: guest.id,
+            user_id: guest.user_id,
+            name: guest.name,
+            avatar_path: guest.avatar_path
+          )
+        end
+      end
+
       private
 
       def portfolio_guest_repository

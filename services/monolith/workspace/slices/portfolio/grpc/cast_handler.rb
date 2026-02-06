@@ -55,10 +55,10 @@ module Portfolio
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
         end
 
-        area_ids = repo.find_area_ids(result.id)
-        areas = area_repo.find_by_ids(area_ids)
-        genre_ids = repo.find_genre_ids(result.id)
-        genres = genre_repo.find_by_ids(genre_ids)
+        # Load areas and genres in combined call
+        ids = repo.find_area_and_genre_ids(result.id)
+        areas = area_repo.find_by_ids(ids[:area_ids])
+        genres = genre_repo.find_by_ids(ids[:genre_ids])
 
         ::Portfolio::V1::GetCastProfileResponse.new(
           profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres),
@@ -83,10 +83,10 @@ module Portfolio
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
         end
 
-        area_ids = repo.find_area_ids(result.id)
-        areas = area_repo.find_by_ids(area_ids)
-        genre_ids = repo.find_genre_ids(result.id)
-        genres = genre_repo.find_by_ids(genre_ids)
+        # Load areas and genres in combined call
+        ids = repo.find_area_and_genre_ids(result.id)
+        areas = area_repo.find_by_ids(ids[:area_ids])
+        genres = genre_repo.find_by_ids(ids[:genre_ids])
 
         ::Portfolio::V1::GetCastProfileResponse.new(
           profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres),
@@ -158,8 +158,9 @@ module Portfolio
           genre_ids: genre_ids.empty? ? nil : genre_ids
         )
 
-        saved_genre_ids = repo.find_genre_ids(result.id)
-        genres = genre_repo.find_by_ids(saved_genre_ids)
+        # Load genres for response
+        ids = repo.find_area_and_genre_ids(result.id)
+        genres = genre_repo.find_by_ids(ids[:genre_ids])
 
         ::Portfolio::V1::CreateCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, genres: genres))
       end
@@ -189,10 +190,10 @@ module Portfolio
           genre_ids: genre_ids.empty? ? nil : genre_ids
         )
 
-        saved_area_ids = repo.find_area_ids(result.id)
-        areas = area_repo.find_by_ids(saved_area_ids)
-        saved_genre_ids = repo.find_genre_ids(result.id)
-        genres = genre_repo.find_by_ids(saved_genre_ids)
+        # Load areas and genres in combined call
+        ids = repo.find_area_and_genre_ids(result.id)
+        areas = area_repo.find_by_ids(ids[:area_ids])
+        genres = genre_repo.find_by_ids(ids[:genre_ids])
 
         ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres))
       rescue SaveProfile::HandleNotAvailableError => e

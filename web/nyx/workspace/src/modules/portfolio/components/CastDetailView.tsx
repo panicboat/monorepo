@@ -21,7 +21,7 @@ export const CastDetailView = ({
   schedules = [],
 }: CastDetailViewProps) => {
   return (
-    <div className="bg-white">
+    <div className="bg-surface">
       <PhotoGallery castId={castId} images={images} />
       <ProfileSpecs castId={castId} profileData={profileData} />
       <ScheduleCalendar schedules={schedules} plans={plans} />

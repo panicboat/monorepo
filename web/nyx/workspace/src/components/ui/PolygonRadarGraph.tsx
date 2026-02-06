@@ -13,14 +13,14 @@ type PolygonRadarGraphProps = {
 
 const THEME = {
   pink: {
-    fill: "rgba(244, 114, 182, 0.2)", // pink-400 optimized opacity
-    stroke: "#ec4899", // pink-500
-    labelFill: "fill-slate-500",
+    fill: "rgba(244, 114, 182, 0.2)",
+    stroke: "var(--color-role-cast-hover)",
+    labelFill: "fill-text-secondary",
   },
   amber: {
-    fill: "rgba(245, 158, 11, 0.2)", // amber-500 optimized opacity
-    stroke: "#d97706", // amber-600
-    labelFill: "fill-slate-400",
+    fill: "rgba(245, 158, 11, 0.2)",
+    stroke: "var(--color-warning-hover)",
+    labelFill: "fill-text-muted",
   },
 };
 

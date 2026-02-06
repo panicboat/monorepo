@@ -1,8 +1,7 @@
 "use client";
 
-import { X } from "lucide-react";
+import { MultiSelect } from "@/components/ui/MultiSelect";
 import { useGenres } from "@/modules/portfolio/hooks/useGenres";
-import { Genre } from "@/modules/portfolio/types";
 
 interface GenreSelectorProps {
   selectedIds: string[];
@@ -17,80 +16,15 @@ export const GenreSelector = ({
 }: GenreSelectorProps) => {
   const { genres, loading } = useGenres();
 
-  const selectedGenres = genres.filter((g) => selectedIds.includes(g.id));
-
-  const handleToggleGenre = (genre: Genre) => {
-    if (selectedIds.includes(genre.id)) {
-      onChange(selectedIds.filter((id) => id !== genre.id));
-    } else if (selectedIds.length < maxSelections) {
-      onChange([...selectedIds, genre.id]);
-    }
-  };
-
-  const handleRemove = (id: string) => {
-    onChange(selectedIds.filter((i) => i !== id));
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-4">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-3">
-      {/* Selected genres */}
-      {selectedGenres.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {selectedGenres.map((genre) => (
-            <span
-              key={genre.id}
-              className="inline-flex items-center gap-1 rounded-full bg-pink-100 px-3 py-1 text-sm text-pink-700"
-            >
-              {genre.name}
-              <button
-                type="button"
-                onClick={() => handleRemove(genre.id)}
-                className="ml-1 rounded-full p-0.5 hover:bg-pink-200"
-              >
-                <X size={12} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Genre buttons */}
-      <div className="flex flex-wrap gap-2">
-        {genres.map((genre) => {
-          const isSelected = selectedIds.includes(genre.id);
-          const isDisabled = !isSelected && selectedIds.length >= maxSelections;
-
-          return (
-            <button
-              key={genre.id}
-              type="button"
-              onClick={() => handleToggleGenre(genre)}
-              disabled={isDisabled}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                isSelected
-                  ? "bg-pink-500 text-white shadow-sm"
-                  : isDisabled
-                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              {genre.name}
-            </button>
-          );
-        })}
-      </div>
-
-      <p className="text-[10px] text-slate-400">
-        最低1つ、最大{maxSelections}ジャンルまで選択できます（{selectedIds.length}/{maxSelections}）
-      </p>
-    </div>
+    <MultiSelect
+      items={genres}
+      selectedIds={selectedIds}
+      onChange={onChange}
+      maxSelections={maxSelections}
+      loading={loading}
+      helpText="最低1つ、最大{max}ジャンルまで選択できます（{count}/{max}）"
+      variant="cast"
+    />
   );
 };

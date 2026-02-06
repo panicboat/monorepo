@@ -3,12 +3,7 @@
 import { useState, useCallback } from "react";
 import { WeeklySchedule } from "@/modules/portfolio/types";
 import { mapApiToSchedules, mapSchedulesToApi } from "@/modules/portfolio/lib/cast/mappers";
-import { useAuthStore } from "@/stores/authStore";
-
-const getToken = () => {
-  if (typeof window === "undefined") return null;
-  return useAuthStore.getState().accessToken;
-};
+import { getAuthToken } from "@/lib/swr";
 
 interface UseCastSchedulesOptions {
   apiPath?: string;
@@ -23,7 +18,7 @@ export function useCastSchedules(options: UseCastSchedulesOptions = {}) {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchSchedules = useCallback(async () => {
-    const token = getToken();
+    const token = getAuthToken();
     if (!token) {
       setSchedules([]);
       return [];
@@ -65,7 +60,7 @@ export function useCastSchedules(options: UseCastSchedulesOptions = {}) {
 
   const saveSchedules = useCallback(
     async (overrideSchedules?: WeeklySchedule[], validPlanIds?: Set<string>) => {
-      const token = getToken();
+      const token = getAuthToken();
       if (!token) throw new Error("No token");
 
       const schedulesToSave = overrideSchedules || schedules;

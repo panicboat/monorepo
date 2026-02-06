@@ -7,7 +7,7 @@ import { ChatList } from "@/modules/concierge/components/guest/ChatList";
 
 export default function ConciergePage() {
   return (
-    <div className="bg-white">
+    <div className="bg-surface">
       <ChatList />
     </div>
   );

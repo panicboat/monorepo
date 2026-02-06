@@ -69,18 +69,18 @@ export const ProfileSpecs = ({
   const socialLinks = display?.socialLinks;
 
   return (
-    <div className="space-y-6 px-6 py-8 bg-white rounded-t-3xl -mt-6 relative z-10">
+    <div className="space-y-6 px-6 py-8 bg-surface rounded-t-3xl -mt-6 relative z-10">
       {/* Header Identity */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold font-serif text-slate-900 mb-1 flex items-center justify-center gap-3">
+        <h1 className="text-3xl font-bold font-serif text-text-primary mb-1 flex items-center justify-center gap-3">
           {name}
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => toggleFollow(castId)}
             className={`px-3 py-1 text-xs font-bold rounded-full border transition-colors ${
               following
-                ? "bg-slate-100 text-slate-500 border-slate-200"
-                : "bg-white text-pink-500 border-pink-500 hover:bg-pink-50"
+                ? "bg-surface-secondary text-text-secondary border-border"
+                : "bg-surface text-role-cast border-role-cast hover:bg-role-cast-lighter"
             }`}
           >
             {following ? "Following" : "Follow"}
@@ -89,9 +89,9 @@ export const ProfileSpecs = ({
 
         {/* One Liner Bubble */}
         {tagline && (
-          <div className="relative inline-block bg-slate-50 border border-slate-100 rounded-2xl px-4 py-2 mb-6 mx-auto">
-            <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-50 border-t border-l border-slate-100 transform rotate-45" />
-            <p className="text-sm italic text-slate-700">{tagline}</p>
+          <div className="relative inline-block bg-surface-secondary border border-border rounded-2xl px-4 py-2 mb-6 mx-auto">
+            <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-surface-secondary border-t border-l border-border transform rotate-45" />
+            <p className="text-sm italic text-text-secondary">{tagline}</p>
           </div>
         )}
 
@@ -100,7 +100,7 @@ export const ProfileSpecs = ({
 
       {/* Introductory Text */}
       {bio && (
-        <p className="text-sm leading-relaxed text-slate-600 text-center whitespace-pre-wrap">
+        <p className="text-sm leading-relaxed text-text-secondary text-center whitespace-pre-wrap">
           {bio}
         </p>
       )}
@@ -111,30 +111,30 @@ export const ProfileSpecs = ({
           <div className="grid grid-cols-3 gap-4 text-sm text-center">
             {age && (
               <div className="space-y-1">
-                <div className="text-xs font-bold text-slate-400 uppercase">
+                <div className="text-xs font-bold text-text-muted uppercase">
                   Age
                 </div>
-                <div className="font-medium text-slate-800">{age}</div>
+                <div className="font-medium text-text-primary">{age}</div>
               </div>
             )}
             {height && (
               <div className="space-y-1">
-                <div className="text-xs font-bold text-slate-400 uppercase">
+                <div className="text-xs font-bold text-text-muted uppercase">
                   Height
                 </div>
-                <div className="font-medium text-slate-800">{height} cm</div>
+                <div className="font-medium text-text-primary">{height} cm</div>
               </div>
             )}
             {bloodType && (
               <div className="space-y-1">
-                <div className="text-xs font-bold text-slate-400 uppercase">
+                <div className="text-xs font-bold text-text-muted uppercase">
                   Blood Type
                 </div>
-                <div className="font-medium text-slate-800">{bloodType}</div>
+                <div className="font-medium text-text-primary">{bloodType}</div>
               </div>
             )}
           </div>
-          <div className="h-px bg-slate-100 my-4" />
+          <div className="h-px bg-surface-secondary my-4" />
         </>
       )}
 
@@ -142,8 +142,8 @@ export const ProfileSpecs = ({
       {bwh && (
         <div className="space-y-3">
           <div className="flex justify-between items-center text-sm">
-            <span className="text-slate-500 font-medium">B / W / H</span>
-            <span className="font-bold text-slate-800">{bwh}</span>
+            <span className="text-text-secondary font-medium">B / W / H</span>
+            <span className="font-bold text-text-primary">{bwh}</span>
           </div>
         </div>
       )}
@@ -156,7 +156,7 @@ export const ProfileSpecs = ({
           socialLinks.cityheaven ||
           socialLinks.litlink) && (
           <div className="pt-4">
-            <div className="text-xs font-bold text-slate-400 uppercase mb-3">
+            <div className="text-xs font-bold text-text-muted uppercase mb-3">
               Social
             </div>
             <div className="flex flex-wrap gap-2">
@@ -165,7 +165,7 @@ export const ProfileSpecs = ({
                   href={`https://x.com/${socialLinks.x}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-medium hover:bg-slate-800 transition"
+                  className="px-3 py-1 rounded-full bg-neutral-900 text-white text-xs font-medium hover:bg-neutral-800 transition"
                 >
                   X
                 </a>
@@ -185,7 +185,7 @@ export const ProfileSpecs = ({
                   href={`https://tiktok.com/@${socialLinks.tiktok}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-medium hover:bg-slate-800 transition"
+                  className="px-3 py-1 rounded-full bg-neutral-900 text-white text-xs font-medium hover:bg-neutral-800 transition"
                 >
                   TikTok
                 </a>
@@ -195,7 +195,7 @@ export const ProfileSpecs = ({
                   href={`https://lit.link/${socialLinks.litlink}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1 rounded-full bg-blue-500 text-white text-xs font-medium hover:bg-blue-600 transition"
+                  className="px-3 py-1 rounded-full bg-info text-white text-xs font-medium hover:bg-info-hover transition"
                 >
                   lit.link
                 </a>
@@ -205,7 +205,7 @@ export const ProfileSpecs = ({
                   href={socialLinks.cityheaven}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1 rounded-full bg-pink-500 text-white text-xs font-medium hover:bg-pink-600 transition"
+                  className="px-3 py-1 rounded-full bg-role-cast text-white text-xs font-medium hover:bg-role-cast-hover transition"
                 >
                   CityHeaven
                 </a>
@@ -220,7 +220,7 @@ export const ProfileSpecs = ({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="px-3 py-1 rounded-full bg-slate-100 text-xs text-slate-600 font-medium"
+              className="px-3 py-1 rounded-full bg-surface-secondary text-xs text-text-secondary font-medium"
             >
               {tag.startsWith("#") ? tag : `#${tag}`}
             </span>

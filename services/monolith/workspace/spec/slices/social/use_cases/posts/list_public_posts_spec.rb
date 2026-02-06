@@ -16,14 +16,18 @@ RSpec.describe Social::UseCases::Posts::ListPublicPosts do
   before do
     adapter = instance_double(Social::Adapters::CastAdapter)
     allow(Social::Adapters::CastAdapter).to receive(:new).and_return(adapter)
-    allow(adapter).to receive(:find_by_cast_id).with("cast-1").and_return(author1)
-    allow(adapter).to receive(:find_by_cast_id).with("cast-2").and_return(author2)
+    allow(adapter).to receive(:find_by_cast_ids) do |ids|
+      result = {}
+      result["cast-1"] = author1 if ids.include?("cast-1")
+      result["cast-2"] = author2 if ids.include?("cast-2")
+      result
+    end
   end
 
   describe "#call" do
     it "returns visible posts with pagination info and authors" do
       allow(repo).to receive(:list_all_visible)
-        .with(limit: 20, cursor: nil, cast_id: nil)
+        .with(limit: 20, cursor: nil, cast_id: nil, cast_ids: nil)
         .and_return([post1, post2])
 
       result = use_case.call
@@ -37,7 +41,7 @@ RSpec.describe Social::UseCases::Posts::ListPublicPosts do
 
     it "respects custom limit" do
       allow(repo).to receive(:list_all_visible)
-        .with(limit: 2, cursor: nil, cast_id: nil)
+        .with(limit: 2, cursor: nil, cast_id: nil, cast_ids: nil)
         .and_return([post1, post2, post3])
 
       result = use_case.call(limit: 2)
@@ -49,7 +53,7 @@ RSpec.describe Social::UseCases::Posts::ListPublicPosts do
 
     it "filters by cast_id when provided" do
       expect(repo).to receive(:list_all_visible)
-        .with(limit: 20, cursor: nil, cast_id: "cast-1")
+        .with(limit: 20, cursor: nil, cast_id: "cast-1", cast_ids: nil)
         .and_return([post1, post3])
 
       result = use_case.call(cast_id: "cast-1")
@@ -59,7 +63,7 @@ RSpec.describe Social::UseCases::Posts::ListPublicPosts do
 
     it "clamps limit to minimum of 1" do
       expect(repo).to receive(:list_all_visible)
-        .with(limit: 1, cursor: nil, cast_id: nil)
+        .with(limit: 1, cursor: nil, cast_id: nil, cast_ids: nil)
         .and_return([])
 
       use_case.call(limit: 0)
@@ -67,7 +71,7 @@ RSpec.describe Social::UseCases::Posts::ListPublicPosts do
 
     it "clamps limit to maximum of 50" do
       expect(repo).to receive(:list_all_visible)
-        .with(limit: 50, cursor: nil, cast_id: nil)
+        .with(limit: 50, cursor: nil, cast_id: nil, cast_ids: nil)
         .and_return([])
 
       use_case.call(limit: 100)
@@ -88,7 +92,7 @@ RSpec.describe Social::UseCases::Posts::ListPublicPosts do
 
     it "handles invalid cursor gracefully" do
       expect(repo).to receive(:list_all_visible)
-        .with(limit: 20, cursor: nil, cast_id: nil)
+        .with(limit: 20, cursor: nil, cast_id: nil, cast_ids: nil)
         .and_return([])
 
       result = use_case.call(cursor: "invalid-cursor")
@@ -97,7 +101,7 @@ RSpec.describe Social::UseCases::Posts::ListPublicPosts do
 
     it "handles empty cursor string" do
       expect(repo).to receive(:list_all_visible)
-        .with(limit: 20, cursor: nil, cast_id: nil)
+        .with(limit: 20, cursor: nil, cast_id: nil, cast_ids: nil)
         .and_return([])
 
       use_case.call(cursor: "")

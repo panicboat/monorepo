@@ -9,6 +9,12 @@ module Identity
         users.by_pk(id).one
       end
 
+      def find_by_ids(ids)
+        return [] if ids.nil? || ids.empty?
+
+        users.where(id: ids).to_a
+      end
+
       def create(phone_number:, password_digest:, role: 1)
         users.command(:create).call(
           phone_number: phone_number,

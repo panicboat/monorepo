@@ -44,7 +44,7 @@ export default function FollowingPage() {
   const list = MOCK_DB.filter((cast) => following.includes(cast.id));
 
   return (
-    <div className="bg-slate-50 min-h-screen pb-20">
+    <div className="bg-surface-secondary min-h-screen pb-20">
       <main className="px-4 pt-4">
         <div className="space-y-3">
           {list.length > 0 ? (
@@ -54,9 +54,9 @@ export default function FollowingPage() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="flex items-center gap-4 rounded-xl bg-white p-3 shadow-sm border border-slate-100"
+                  className="flex items-center gap-4 rounded-xl bg-surface p-3 shadow-sm border border-border"
                 >
-                  <div className="h-14 w-14 rounded-full bg-slate-100 overflow-hidden border border-slate-100">
+                  <div className="h-14 w-14 rounded-full bg-surface-secondary overflow-hidden border border-border">
                     <img
                       src={cast.image}
                       alt={cast.name}
@@ -64,17 +64,17 @@ export default function FollowingPage() {
                     />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-slate-800">{cast.name}</h3>
-                    <p className="text-xs text-slate-500">{cast.area}</p>
+                    <h3 className="font-bold text-text-primary">{cast.name}</h3>
+                    <p className="text-xs text-text-secondary">{cast.area}</p>
                   </div>
-                  <button className="rounded-full bg-slate-100 px-4 py-1.5 text-xs font-bold text-slate-600">
+                  <button className="rounded-full bg-surface-secondary px-4 py-1.5 text-xs font-bold text-text-secondary">
                     Following
                   </button>
                 </motion.div>
               </Link>
             ))
           ) : (
-            <div className="py-20 text-center text-slate-400">
+            <div className="py-20 text-center text-text-muted">
               <p>Not following anyone yet.</p>
             </div>
           )}

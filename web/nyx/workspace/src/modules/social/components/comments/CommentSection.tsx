@@ -92,11 +92,11 @@ export function CommentSection({ postId, commentsCount: initialCount }: CommentS
   const actualCount = initialCount || comments.length;
 
   return (
-    <div className="border-t border-slate-100 pt-4">
+    <section className="border-t border-border pt-4" aria-labelledby="comments-heading">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <MessageCircle className="h-5 w-5 text-slate-600" />
-        <h3 className="font-semibold text-slate-800">
+        <MessageCircle aria-hidden="true" className="h-5 w-5 text-text-secondary" />
+        <h3 className="font-semibold text-text-primary" id="comments-heading">
           Comments {actualCount > 0 && `(${actualCount})`}
         </h3>
       </div>
@@ -111,8 +111,8 @@ export function CommentSection({ postId, commentsCount: initialCount }: CommentS
           />
         </div>
       ) : (
-        <div className="mb-4 p-3 bg-slate-50 rounded-lg text-center">
-          <p className="text-sm text-slate-500">
+        <div className="mb-4 p-3 bg-surface-secondary rounded-lg text-center">
+          <p className="text-sm text-text-secondary">
             Please log in to comment
           </p>
         </div>
@@ -120,17 +120,17 @@ export function CommentSection({ postId, commentsCount: initialCount }: CommentS
 
       {/* Comments List */}
       {error && (
-        <div className="p-3 bg-red-50 rounded-lg text-center mb-4">
-          <p className="text-sm text-red-500">{error}</p>
+        <div className="p-3 bg-error-lighter rounded-lg text-center mb-4">
+          <p className="text-sm text-error">{error}</p>
         </div>
       )}
 
       {comments.length === 0 && !loading ? (
         <div className="py-8 text-center">
-          <p className="text-sm text-slate-400">No comments yet</p>
+          <p className="text-sm text-text-muted">No comments yet</p>
         </div>
       ) : (
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-border">
           {comments.map((comment) => (
             <div key={comment.id}>
               <CommentItem
@@ -149,7 +149,7 @@ export function CommentSection({ postId, commentsCount: initialCount }: CommentS
 
               {/* Reply Form */}
               {replyingTo === comment.id && isAuthenticated() && (
-                <div className="ml-8 pl-4 pb-3 border-l-2 border-slate-100">
+                <div className="ml-8 pl-4 pb-3 border-l-2 border-border">
                   <CommentForm
                     onSubmit={(content, media) => handleAddReply(comment.id, content, media)}
                     isSubmitting={addingComment}
@@ -168,9 +168,9 @@ export function CommentSection({ postId, commentsCount: initialCount }: CommentS
       {/* Load More */}
       <div ref={loadMoreRef} className="py-4 flex justify-center">
         {loading && (
-          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+          <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-text-muted" />
         )}
       </div>
-    </div>
+    </section>
   );
 }

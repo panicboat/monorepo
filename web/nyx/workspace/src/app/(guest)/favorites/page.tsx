@@ -31,7 +31,7 @@ const FAVORITES = [
 
 export default function FavoritesPage() {
   return (
-    <div className="bg-slate-50 min-h-screen pb-20">
+    <div className="bg-surface-secondary min-h-screen pb-20">
       <main className="px-4 pt-4">
         <div className="grid grid-cols-2 gap-3">
           {FAVORITES.map((cast, i) => (
@@ -40,14 +40,14 @@ export default function FavoritesPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.1 }}
-                className="relative overflow-hidden rounded-xl bg-white shadow-sm"
+                className="relative overflow-hidden rounded-xl bg-surface shadow-sm"
               >
-                <div className="aspect-[3/4] w-full bg-slate-200 relative">
+                <div className="aspect-[3/4] w-full bg-border relative">
                   <Avatar className="h-full w-full rounded-none">
                     <AvatarImage src={cast.image} alt={cast.name} className="object-cover" />
                     <AvatarFallback className="rounded-none">C</AvatarFallback>
                   </Avatar>
-                  <div className="absolute top-2 right-2 rounded-full bg-white/20 p-1.5 backdrop-blur-sm">
+                  <div className="absolute top-2 right-2 rounded-full bg-surface/20 p-1.5 backdrop-blur-sm">
                     <span className="text-xs">❤️</span>
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 p-3 pt-8 text-white">

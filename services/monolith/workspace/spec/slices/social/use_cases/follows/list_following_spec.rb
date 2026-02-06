@@ -8,15 +8,11 @@ RSpec.describe Social::UseCases::Follows::ListFollowing do
 
   let(:guest_id) { "guest-1" }
 
-  let(:follow1) { double(:follow, cast_id: "cast-1", created_at: Time.parse("2026-01-01T10:00:00Z")) }
-  let(:follow2) { double(:follow, cast_id: "cast-2", created_at: Time.parse("2026-01-01T09:00:00Z")) }
-  let(:follow3) { double(:follow, cast_id: "cast-3", created_at: Time.parse("2026-01-01T08:00:00Z")) }
-
   describe "#call" do
     it "returns followed casts with pagination" do
       allow(follow_repo).to receive(:list_following)
         .with(guest_id: guest_id, limit: 100, cursor: nil)
-        .and_return([follow1, follow2, follow3])
+        .and_return({ cast_ids: %w[cast-1 cast-2 cast-3], has_more: false })
 
       result = use_case.call(guest_id: guest_id)
 
@@ -27,19 +23,18 @@ RSpec.describe Social::UseCases::Follows::ListFollowing do
     it "sets has_more when results exceed limit" do
       allow(follow_repo).to receive(:list_following)
         .with(guest_id: guest_id, limit: 2, cursor: nil)
-        .and_return([follow1, follow2, follow3])
+        .and_return({ cast_ids: %w[cast-1 cast-2], has_more: true })
 
       result = use_case.call(guest_id: guest_id, limit: 2)
 
       expect(result[:cast_ids].size).to eq(2)
       expect(result[:has_more]).to be true
-      expect(result[:next_cursor]).not_to be_nil
     end
 
     it "returns empty list when not following anyone" do
       allow(follow_repo).to receive(:list_following)
         .with(guest_id: guest_id, limit: 100, cursor: nil)
-        .and_return([])
+        .and_return({ cast_ids: [], has_more: false })
 
       result = use_case.call(guest_id: guest_id)
 

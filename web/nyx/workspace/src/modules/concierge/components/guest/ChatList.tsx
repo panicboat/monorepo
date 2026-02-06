@@ -57,34 +57,34 @@ export const ChatList = () => {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               whileTap={{ backgroundColor: "rgba(0,0,0,0.02)" }}
-              className="flex items-center gap-4 bg-white px-4 py-4 transition-colors hover:bg-slate-50"
+              className="flex items-center gap-4 bg-surface px-4 py-4 transition-colors hover:bg-surface-secondary"
             >
               <div className="relative">
-                <Avatar className="h-14 w-14 border border-slate-100">
+                <Avatar className="h-14 w-14 border border-border">
                   <AvatarImage src={chat.castImage} alt={chat.castName} className="object-cover" />
                   <AvatarFallback>C</AvatarFallback>
                 </Avatar>
                 {chat.isOnline && (
-                  <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500"></span>
+                  <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-surface bg-success"></span>
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="font-bold text-slate-900 truncate">
+                  <h3 className="font-bold text-text-primary truncate">
                     {chat.castName}
                   </h3>
-                  <span className="text-xs text-slate-400 flex-shrink-0">
+                  <span className="text-xs text-text-muted flex-shrink-0">
                     {chat.time}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <p
-                    className={`text-sm truncate ${chat.unreadCount > 0 ? "text-slate-900 font-medium" : "text-slate-500"}`}
+                    className={`text-sm truncate ${chat.unreadCount > 0 ? "text-text-primary font-medium" : "text-text-secondary"}`}
                   >
                     {chat.lastMessage}
                   </p>
                   {chat.unreadCount > 0 && (
-                    <Badge className="ml-2 h-5 min-w-[1.25rem] flex items-center justify-center rounded-full bg-blue-400 px-1 text-[10px] font-bold text-white border-none">
+                    <Badge className="ml-2 h-5 min-w-[1.25rem] flex items-center justify-center rounded-full bg-role-guest px-1 text-[10px] font-bold text-white border-none">
                       {chat.unreadCount}
                     </Badge>
                   )}

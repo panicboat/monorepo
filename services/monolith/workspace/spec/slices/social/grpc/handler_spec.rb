@@ -26,6 +26,7 @@ RSpec.describe Social::Grpc::Handler do
   let(:save_post_uc) { double(:save_post_uc) }
   let(:delete_post_uc) { double(:delete_post_uc) }
   let(:like_repo) { double(:like_repo) }
+  let(:comment_repo) { double(:comment_repo, comments_count_batch: {}) }
 
   let(:mock_cast) do
     double(
@@ -122,12 +123,13 @@ RSpec.describe Social::Grpc::Handler do
 
       list_public_posts_uc = double(:list_public_posts_uc)
       like_repo = double(:like_repo)
+      comment_repo = double(:comment_repo)
 
       handler_unauth = described_class.new(
         method_key: :test, service: double, rpc_desc: double, active_call: double,
         message: message,
         list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc,
-        list_public_posts_uc: list_public_posts_uc, like_repo: like_repo
+        list_public_posts_uc: list_public_posts_uc, like_repo: like_repo, comment_repo: comment_repo
       )
 
       allow(list_public_posts_uc).to receive(:call)
@@ -135,6 +137,7 @@ RSpec.describe Social::Grpc::Handler do
         .and_return({ posts: [mock_post], next_cursor: nil, has_more: false, authors: { "cast-123" => mock_cast } })
       allow(like_repo).to receive(:likes_count_batch).and_return({})
       allow(like_repo).to receive(:liked_status_batch).and_return({})
+      allow(comment_repo).to receive(:comments_count_batch).and_return({})
 
       response = handler_unauth.list_cast_posts
 

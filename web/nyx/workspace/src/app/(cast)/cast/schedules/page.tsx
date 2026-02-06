@@ -54,10 +54,10 @@ export default function SchedulePage() {
   if (loading) {
     return (
       <div className="flex flex-col p-4 lg:p-6 pb-24 max-w-lg mx-auto w-full min-h-screen">
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
+        <div className="bg-surface rounded-xl border border-border shadow-sm p-4 mb-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-            <div className="h-32 bg-slate-200 rounded"></div>
+            <div className="h-4 bg-border rounded w-3/4"></div>
+            <div className="h-32 bg-border rounded"></div>
           </div>
         </div>
       </div>
@@ -67,8 +67,8 @@ export default function SchedulePage() {
   return (
     <div className="flex flex-col p-4 lg:p-6 pb-24 max-w-lg mx-auto w-full min-h-screen">
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
-        <p className="text-sm text-slate-500 mb-4">
+      <div className="bg-surface rounded-xl border border-border shadow-sm p-4 mb-6">
+        <p className="text-sm text-text-secondary mb-4">
           設定したスケジュールは「即レス（Online）」または「要相談（Asking）」の目安としてゲストに表示されます。
         </p>
 

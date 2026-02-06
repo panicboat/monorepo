@@ -2,15 +2,14 @@
 
 import useSWR from "swr";
 import { Area } from "@/modules/portfolio/types";
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import { fetcher } from "@/lib/swr";
 
 interface UseAreasResult {
   areas: Area[];
   areasByPrefecture: Map<string, Area[]>;
   prefectures: string[];
   loading: boolean;
-  error: any;
+  error: Error | undefined;
 }
 
 export function useAreas(): UseAreasResult {

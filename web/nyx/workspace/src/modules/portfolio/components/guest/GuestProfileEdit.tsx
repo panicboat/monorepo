@@ -23,13 +23,13 @@ export const GuestProfileEdit = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-surface-secondary pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-slate-100 px-4 py-3">
+      <div className="sticky top-0 z-10 bg-surface border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="text-slate-600 hover:text-slate-900 transition-colors"
+            className="text-text-secondary hover:text-text-primary transition-colors"
           >
             <svg
               className="w-6 h-6"
@@ -45,7 +45,7 @@ export const GuestProfileEdit = () => {
               />
             </svg>
           </button>
-          <h1 className="text-lg font-bold text-slate-900">プロフィール編集</h1>
+          <h1 className="text-lg font-bold text-text-primary">プロフィール編集</h1>
           <div className="w-6" />
         </div>
       </div>
