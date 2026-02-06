@@ -104,12 +104,12 @@ Nyx.PLACE をプロダクションレディにするための実装計画。
 投稿へのコメント機能を実装する。
 
 **Tasks:**
-- [ ] `comments` テーブル作成（migration）
-- [ ] Proto 定義追加（`AddComment`, `DeleteComment`, `ListComments`）
-- [ ] Backend UseCase 実装
-- [ ] Frontend API Route 作成
-- [ ] コメント一覧・投稿 UI 実装
-- [ ] 投稿詳細ページにコメントセクション追加
+- [x] `comments` テーブル作成（migration）
+- [x] Proto 定義追加（`AddComment`, `DeleteComment`, `ListComments`）
+- [x] Backend UseCase 実装
+- [x] Frontend API Route 作成
+- [x] コメント一覧・投稿 UI 実装
+- [x] 投稿詳細ページにコメントセクション追加
 
 **Backend:**
 - `slices/social/repositories/comment_repository.rb` (new)
