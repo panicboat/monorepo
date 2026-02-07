@@ -7,6 +7,7 @@ import Link from "next/link";
 import { use, useState, useEffect } from "react";
 import { MessageCircle, Heart, AlertTriangle, Loader2, UserPlus, UserCheck } from "lucide-react";
 import { useFollow } from "@/modules/social/hooks/useFollow";
+import { useFavorite } from "@/modules/social/hooks/useFavorite";
 import { useBlock } from "@/modules/social/hooks/useBlock";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
@@ -160,7 +161,7 @@ export default function CastDetailPage({
         <div className="flex flex-col gap-3 pointer-events-auto">
           <FollowButton castId={data.profile.id} />
 
-          <FavoriteButton />
+          <FavoriteButton castId={data.profile.id} />
 
           <Link href={`/concierge/${id}`}>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -233,26 +234,54 @@ function FollowButton({ castId }: { castId: string }) {
   );
 }
 
-function FavoriteButton() {
-  const [isFavorite, setIsFavorite] = useState(false);
+function FavoriteButton({ castId }: { castId: string }) {
+  const { toggleFavorite, fetchFavoriteStatus, isFavorite, loading } = useFavorite();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Fetch favorite status on mount
+  useEffect(() => {
+    if (isHydrated && isAuthenticated() && castId) {
+      fetchFavoriteStatus([castId]);
+    }
+  }, [isHydrated, isAuthenticated, castId, fetchFavoriteStatus]);
+
+  const favorited = isFavorite(castId);
+
+  const handleClick = async () => {
+    if (!isAuthenticated()) {
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      await toggleFavorite(castId);
+    } catch (e) {
+      console.error("Failed to toggle favorite:", e);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
       <Button
         size="icon"
-        className={`h-12 w-12 rounded-full shadow-xl shadow-border transition-colors border ${isFavorite
+        disabled={isProcessing || loading}
+        className={`h-12 w-12 rounded-full shadow-xl shadow-border transition-colors border ${favorited
           ? "bg-role-cast border-role-cast text-white hover:bg-role-cast-hover hover:text-white"
           : "bg-surface border-role-cast-light text-role-cast hover:bg-role-cast-lighter"
-          }`}
-        onClick={() => setIsFavorite(!isFavorite)}
+          } ${isProcessing || loading ? "opacity-50" : ""}`}
+        onClick={handleClick}
       >
         <motion.div
-          key={isFavorite ? "fav" : "not-fav"}
+          key={favorited ? "fav" : "not-fav"}
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
-          <Heart size={24} className={isFavorite ? "fill-current" : ""} />
+          <Heart size={24} className={favorited ? "fill-current" : ""} />
         </motion.div>
       </Button>
     </motion.div>

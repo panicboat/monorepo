@@ -38,6 +38,11 @@ module Social
         rpc :UnblockUser, ::Social::V1::UnblockUserRequest, ::Social::V1::UnblockUserResponse
         rpc :ListBlocked, ::Social::V1::ListBlockedRequest, ::Social::V1::ListBlockedResponse
         rpc :GetBlockStatus, ::Social::V1::GetBlockStatusRequest, ::Social::V1::GetBlockStatusResponse
+        # Favorite RPCs
+        rpc :AddFavorite, ::Social::V1::AddFavoriteRequest, ::Social::V1::AddFavoriteResponse
+        rpc :RemoveFavorite, ::Social::V1::RemoveFavoriteRequest, ::Social::V1::RemoveFavoriteResponse
+        rpc :ListFavorites, ::Social::V1::ListFavoritesRequest, ::Social::V1::ListFavoritesResponse
+        rpc :GetFavoriteStatus, ::Social::V1::GetFavoriteStatusRequest, ::Social::V1::GetFavoriteStatusResponse
       end
 
       Stub = Service.rpc_stub_class

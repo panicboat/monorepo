@@ -2,6 +2,7 @@
 
 require "social/v1/service_services_pb"
 require "gruf"
+require "storage"
 require_relative "../../../lib/grpc/authenticatable"
 require_relative "../adapters/cast_adapter"
 require_relative "../adapters/guest_adapter"
@@ -50,6 +51,12 @@ module Social
       rpc :ListBlocked, ::Social::V1::ListBlockedRequest, ::Social::V1::ListBlockedResponse
       rpc :GetBlockStatus, ::Social::V1::GetBlockStatusRequest, ::Social::V1::GetBlockStatusResponse
 
+      # Favorite RPCs
+      rpc :AddFavorite, ::Social::V1::AddFavoriteRequest, ::Social::V1::AddFavoriteResponse
+      rpc :RemoveFavorite, ::Social::V1::RemoveFavoriteRequest, ::Social::V1::RemoveFavoriteResponse
+      rpc :ListFavorites, ::Social::V1::ListFavoritesRequest, ::Social::V1::ListFavoritesResponse
+      rpc :GetFavoriteStatus, ::Social::V1::GetFavoriteStatusRequest, ::Social::V1::GetFavoriteStatusResponse
+
       include Social::Deps[
         list_posts_uc: "use_cases.posts.list_posts",
         list_public_posts_uc: "use_cases.posts.list_public_posts",
@@ -74,7 +81,12 @@ module Social
         unblock_user_uc: "use_cases.blocks.unblock_user",
         list_blocked_uc: "use_cases.blocks.list_blocked",
         get_block_status_uc: "use_cases.blocks.get_block_status",
-        block_repo: "repositories.block_repository"
+        block_repo: "repositories.block_repository",
+        add_favorite_uc: "use_cases.favorites.add_favorite",
+        remove_favorite_uc: "use_cases.favorites.remove_favorite",
+        list_favorites_uc: "use_cases.favorites.list_favorites",
+        get_favorite_status_uc: "use_cases.favorites.get_favorite_status",
+        favorite_repo: "repositories.favorite_repository"
       ]
 
       # === Timeline ===
@@ -126,10 +138,25 @@ module Social
           guest = find_my_guest
           if guest
             following_cast_ids = follow_repo.following_cast_ids(guest_id: guest.id)
-            result = list_public_posts_with_following_filter(
+            result = list_public_posts_with_cast_ids_filter(
               limit: limit,
               cursor: cursor,
               cast_ids: following_cast_ids,
+              exclude_cast_ids: blocked_cast_ids
+            )
+            return build_list_response(result)
+          end
+        end
+
+        # Favorites filter: get posts from favorited casts
+        if filter == "favorites" && current_user_id
+          guest = find_my_guest
+          if guest
+            favorite_cast_ids = favorite_repo.favorite_cast_ids(guest_id: guest.id)
+            result = list_public_posts_with_cast_ids_filter(
+              limit: limit,
+              cursor: cursor,
+              cast_ids: favorite_cast_ids,
               exclude_cast_ids: blocked_cast_ids
             )
             return build_list_response(result)
@@ -471,6 +498,65 @@ module Social
         ::Social::V1::GetBlockStatusResponse.new(blocked: blocked)
       end
 
+      # === Favorite ===
+
+      def add_favorite
+        authenticate_user!
+        guest = find_my_guest!
+
+        result = add_favorite_uc.call(
+          cast_id: request.message.cast_id,
+          guest_id: guest.id
+        )
+
+        ::Social::V1::AddFavoriteResponse.new(success: result[:success])
+      end
+
+      def remove_favorite
+        authenticate_user!
+        guest = find_my_guest!
+
+        result = remove_favorite_uc.call(
+          cast_id: request.message.cast_id,
+          guest_id: guest.id
+        )
+
+        ::Social::V1::RemoveFavoriteResponse.new(success: result[:success])
+      end
+
+      def list_favorites
+        authenticate_user!
+        guest = find_my_guest!
+
+        limit = request.message.limit.zero? ? 100 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        result = list_favorites_uc.call(
+          guest_id: guest.id,
+          limit: limit,
+          cursor: cursor
+        )
+
+        ::Social::V1::ListFavoritesResponse.new(
+          cast_ids: result[:cast_ids],
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
+      end
+
+      def get_favorite_status
+        guest = find_my_guest
+        cast_ids = request.message.cast_ids.to_a
+
+        favorited = if guest
+          get_favorite_status_uc.call(cast_ids: cast_ids, guest_id: guest.id)
+        else
+          cast_ids.each_with_object({}) { |id, h| h[id] = false }
+        end
+
+        ::Social::V1::GetFavoriteStatusResponse.new(favorited: favorited)
+      end
+
       private
 
       PostPresenter = Social::Presenters::PostPresenter
@@ -500,10 +586,12 @@ module Social
         if user_type == "cast"
           cast = cast_adapter.find_by_user_id(user_id)
           if cast
+            # Use avatar_path if available, otherwise fall back to image_path
+            image_key = cast.avatar_path.to_s.empty? ? cast.image_path : cast.avatar_path
             {
               id: cast.id,
               name: cast.name,
-              image_url: cast.image_url,
+              image_url: Storage.download_url(key: image_key),
               user_type: "cast"
             }
           else
@@ -516,7 +604,7 @@ module Social
             {
               id: guest.id,
               name: guest.name,
-              image_url: guest.avatar_path ? "https://cdn.nyx.place/#{guest.avatar_path}" : nil,
+              image_url: Storage.download_url(key: guest.avatar_path),
               user_type: "guest"
             }
           else
@@ -596,7 +684,7 @@ module Social
         user_ids
       end
 
-      def list_public_posts_with_following_filter(limit:, cursor:, cast_ids:, exclude_cast_ids: nil)
+      def list_public_posts_with_cast_ids_filter(limit:, cursor:, cast_ids:, exclude_cast_ids: nil)
         return { posts: [], next_cursor: nil, has_more: false, authors: {} } if cast_ids.empty?
 
         # Use existing use case with filtering

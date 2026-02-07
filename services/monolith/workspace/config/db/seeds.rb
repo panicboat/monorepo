@@ -602,6 +602,31 @@ end
 puts "  Created #{block_count} blocks"
 
 # =============================================================================
+# Social: Cast Favorites
+# =============================================================================
+
+puts "Seeding Social: Cast Favorites..."
+
+favorite_count = 0
+guests.each do |guest|
+  # Each guest favorites some random casts
+  casts_to_favorite = casts.sample(rand(1..2))
+  casts_to_favorite.each do |cast|
+    existing = db[:"social__cast_favorites"].where(guest_id: guest[:id], cast_id: cast[:id]).first
+    next if existing
+
+    db[:"social__cast_favorites"].insert(
+      guest_id: guest[:id],
+      cast_id: cast[:id],
+      created_at: Time.now,
+    )
+    favorite_count += 1
+  end
+end
+
+puts "  Created #{favorite_count} cast favorites"
+
+# =============================================================================
 # Summary
 # =============================================================================
 

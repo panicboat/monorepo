@@ -4,8 +4,8 @@
  * Zustand store for social state management.
  * Handles following, blocking, and favorites.
  *
- * Following is now synced with the backend API.
- * Blocking and favorites remain in localStorage for now.
+ * Following and favorites are synced with the backend API.
+ * Blocking remains in localStorage for now.
  *
  * Usage:
  *   const { following, toggleFollow, isFollowing, syncFollowing } = useSocialStore();
@@ -21,6 +21,7 @@ interface SocialState {
   favorites: string[];
   isHydrated: boolean;
   isSynced: boolean;
+  isFavoritesSynced: boolean;
 
   // Actions
   toggleFollow: (castId: string) => void;
@@ -31,6 +32,10 @@ interface SocialState {
   addFollowing: (castId: string) => void;
   removeFollowing: (castId: string) => void;
   setSynced: (synced: boolean) => void;
+  setFavorites: (castIds: string[]) => void;
+  addFavorite: (castId: string) => void;
+  removeFavorite: (castId: string) => void;
+  setFavoritesSynced: (synced: boolean) => void;
 
   // Computed
   isFollowing: (castId: string) => boolean;
@@ -47,6 +52,7 @@ export const useSocialStore = create<SocialState>()(
       favorites: [],
       isHydrated: false,
       isSynced: false,
+      isFavoritesSynced: false,
 
       // Actions
       toggleFollow: (castId: string) => {
@@ -97,6 +103,22 @@ export const useSocialStore = create<SocialState>()(
 
       setSynced: (synced: boolean) => set({ isSynced: synced }),
 
+      setFavorites: (castIds: string[]) => set({ favorites: castIds, isFavoritesSynced: true }),
+
+      addFavorite: (castId: string) => {
+        const { favorites } = get();
+        if (!favorites.includes(castId)) {
+          set({ favorites: [...favorites, castId] });
+        }
+      },
+
+      removeFavorite: (castId: string) => {
+        const { favorites } = get();
+        set({ favorites: favorites.filter((id) => id !== castId) });
+      },
+
+      setFavoritesSynced: (synced: boolean) => set({ isFavoritesSynced: synced }),
+
       // Computed
       isFollowing: (castId: string) => get().following.includes(castId),
       isBlocking: (targetId: string) => get().blocking.includes(targetId),
@@ -106,10 +128,9 @@ export const useSocialStore = create<SocialState>()(
       name: "nyx-social",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        // Only persist blocking and favorites locally
-        // Following is synced with server
+        // Only persist blocking locally
+        // Following and favorites are synced with server
         blocking: state.blocking,
-        favorites: state.favorites,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated();
@@ -126,3 +147,4 @@ export const selectBlocking = (state: SocialState) => state.blocking;
 export const selectFavorites = (state: SocialState) => state.favorites;
 export const selectIsHydrated = (state: SocialState) => state.isHydrated;
 export const selectIsSynced = (state: SocialState) => state.isSynced;
+export const selectIsFavoritesSynced = (state: SocialState) => state.isFavoritesSynced;

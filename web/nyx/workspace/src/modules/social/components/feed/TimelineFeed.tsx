@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Loader2 } from "lucide-react";
-import { useSocial } from "@/modules/social/hooks/useSocial";
+import { useSocialStore, selectIsHydrated } from "@/stores/socialStore";
 import { useGuestTimeline } from "@/modules/social/hooks/useGuestTimeline";
 import { useAuthStore } from "@/stores/authStore";
 import { FeedItem, mapPostToFeedItem } from "./types";
@@ -25,7 +25,7 @@ export function TimelineFeed({
   onItemClick,
 }: TimelineFeedProps) {
   const [filter, setFilter] = useState<FilterType>("all");
-  const { favorites, isLoaded } = useSocial();
+  const isLoaded = useSocialStore(selectIsHydrated);
   const { posts, loading, error, hasMore, fetchPosts, loadMore, setPosts } = useGuestTimeline();
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -42,12 +42,17 @@ export function TimelineFeed({
   const handleFilterChange = useCallback(async (newFilter: FilterType) => {
     setFilter(newFilter);
 
-    if (mode === "guest" && !items && newFilter === "following" && isAuthenticated()) {
-      setPosts([]);
-      await fetchPosts(undefined, "following");
-    } else if (mode === "guest" && !items && newFilter === "all") {
-      setPosts([]);
-      await fetchPosts();
+    if (mode === "guest" && !items) {
+      if (newFilter === "following" && isAuthenticated()) {
+        setPosts([]);
+        await fetchPosts(undefined, "following");
+      } else if (newFilter === "favorites" && isAuthenticated()) {
+        setPosts([]);
+        await fetchPosts(undefined, "favorites");
+      } else if (newFilter === "all") {
+        setPosts([]);
+        await fetchPosts();
+      }
     }
   }, [mode, items, isAuthenticated, fetchPosts, setPosts]);
 
@@ -58,7 +63,8 @@ export function TimelineFeed({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore(filter === "following" ? "following" : undefined);
+          const filterParam = filter === "following" || filter === "favorites" ? filter : undefined;
+          loadMore(filterParam);
         }
       },
       { threshold: 0.1 }
@@ -71,13 +77,8 @@ export function TimelineFeed({
   // Convert API posts to FeedItem format
   const sourceFeed: FeedItem[] = items || posts.map(mapPostToFeedItem);
 
-  // Client-side filtering for favorites
-  const filteredFeed = sourceFeed.filter((item: FeedItem) => {
-    if (mode === "cast") return true;
-    if (filter === "all" || filter === "following") return true;
-    if (filter === "favorites") return favorites.includes(item.castId);
-    return true;
-  });
+  // No client-side filtering needed - server handles following/favorites filtering
+  const filteredFeed = sourceFeed;
 
   const isInitialLoading = loading && posts.length === 0;
 
