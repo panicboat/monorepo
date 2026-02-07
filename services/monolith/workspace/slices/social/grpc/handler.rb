@@ -44,6 +44,12 @@ module Social
       rpc :ListComments, ::Social::V1::ListCommentsRequest, ::Social::V1::ListCommentsResponse
       rpc :ListReplies, ::Social::V1::ListRepliesRequest, ::Social::V1::ListRepliesResponse
 
+      # Block RPCs
+      rpc :BlockUser, ::Social::V1::BlockUserRequest, ::Social::V1::BlockUserResponse
+      rpc :UnblockUser, ::Social::V1::UnblockUserRequest, ::Social::V1::UnblockUserResponse
+      rpc :ListBlocked, ::Social::V1::ListBlockedRequest, ::Social::V1::ListBlockedResponse
+      rpc :GetBlockStatus, ::Social::V1::GetBlockStatusRequest, ::Social::V1::GetBlockStatusResponse
+
       include Social::Deps[
         list_posts_uc: "use_cases.posts.list_posts",
         list_public_posts_uc: "use_cases.posts.list_public_posts",
@@ -63,7 +69,12 @@ module Social
         add_comment_uc: "use_cases.comments.add_comment",
         delete_comment_uc: "use_cases.comments.delete_comment",
         list_comments_uc: "use_cases.comments.list_comments",
-        list_replies_uc: "use_cases.comments.list_replies"
+        list_replies_uc: "use_cases.comments.list_replies",
+        block_user_uc: "use_cases.blocks.block_user",
+        unblock_user_uc: "use_cases.blocks.unblock_user",
+        list_blocked_uc: "use_cases.blocks.list_blocked",
+        get_block_status_uc: "use_cases.blocks.get_block_status",
+        block_repo: "repositories.block_repository"
       ]
 
       # === Timeline ===
@@ -107,6 +118,9 @@ module Social
           # If user is not a Cast (e.g., Guest), fall through to public timeline
         end
 
+        # Get blocked cast IDs for filtering
+        blocked_cast_ids = get_blocked_cast_ids
+
         # Following filter: get posts from followed casts
         if filter == "following" && current_user_id
           guest = find_my_guest
@@ -115,7 +129,8 @@ module Social
             result = list_public_posts_with_following_filter(
               limit: limit,
               cursor: cursor,
-              cast_ids: following_cast_ids
+              cast_ids: following_cast_ids,
+              exclude_cast_ids: blocked_cast_ids
             )
             return build_list_response(result)
           end
@@ -125,7 +140,8 @@ module Social
         result = list_public_posts_uc.call(
           limit: limit,
           cursor: cursor,
-          cast_id: cast_id.empty? ? nil : cast_id
+          cast_id: cast_id.empty? ? nil : cast_id,
+          exclude_cast_ids: blocked_cast_ids
         )
 
         build_list_response(result)
@@ -346,10 +362,14 @@ module Social
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
+        # Get blocked user IDs for filtering comments
+        blocked_user_ids = get_blocked_user_ids
+
         result = list_comments_uc.call(
           post_id: request.message.post_id,
           limit: limit,
-          cursor: cursor
+          cursor: cursor,
+          exclude_user_ids: blocked_user_ids
         )
 
         ::Social::V1::ListCommentsResponse.new(
@@ -363,10 +383,14 @@ module Social
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
+        # Get blocked user IDs for filtering replies
+        blocked_user_ids = get_blocked_user_ids
+
         result = list_replies_uc.call(
           comment_id: request.message.comment_id,
           limit: limit,
-          cursor: cursor
+          cursor: cursor,
+          exclude_user_ids: blocked_user_ids
         )
 
         ::Social::V1::ListRepliesResponse.new(
@@ -374,6 +398,77 @@ module Social
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
+      end
+
+      # === Block ===
+
+      def block_user
+        authenticate_user!
+        blocker = find_blocker!
+
+        result = block_user_uc.call(
+          blocker_id: blocker[:id],
+          blocker_type: blocker[:type],
+          blocked_id: request.message.blocked_id,
+          blocked_type: request.message.blocked_type
+        )
+
+        ::Social::V1::BlockUserResponse.new(success: result[:success])
+      end
+
+      def unblock_user
+        authenticate_user!
+        blocker = find_blocker!
+
+        result = unblock_user_uc.call(
+          blocker_id: blocker[:id],
+          blocked_id: request.message.blocked_id
+        )
+
+        ::Social::V1::UnblockUserResponse.new(success: result[:success])
+      end
+
+      def list_blocked
+        authenticate_user!
+        blocker = find_blocker!
+
+        limit = request.message.limit.zero? ? 50 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        result = list_blocked_uc.call(
+          blocker_id: blocker[:id],
+          limit: limit,
+          cursor: cursor
+        )
+
+        users = result[:users].map do |user|
+          ::Social::V1::BlockedUser.new(
+            id: user[:id],
+            user_type: user[:user_type],
+            name: user[:name],
+            image_url: user[:image_url] || "",
+            blocked_at: user[:blocked_at]
+          )
+        end
+
+        ::Social::V1::ListBlockedResponse.new(
+          users: users,
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
+      end
+
+      def get_block_status
+        blocker = find_blocker
+        user_ids = request.message.user_ids.to_a
+
+        blocked = if blocker
+          get_block_status_uc.call(user_ids: user_ids, blocker_id: blocker[:id])
+        else
+          user_ids.each_with_object({}) { |id, h| h[id] = false }
+        end
+
+        ::Social::V1::GetBlockStatusResponse.new(blocked: blocked)
       end
 
       private
@@ -459,7 +554,49 @@ module Social
         guest
       end
 
-      def list_public_posts_with_following_filter(limit:, cursor:, cast_ids:)
+      def find_blocker
+        return nil unless current_user_id
+
+        guest = find_my_guest
+        return { id: guest.id, type: "guest" } if guest
+
+        cast = find_my_cast
+        return { id: cast.id, type: "cast" } if cast
+
+        nil
+      end
+
+      def find_blocker!
+        blocker = find_blocker
+        unless blocker
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "User profile not found")
+        end
+        blocker
+      end
+
+      def get_blocked_cast_ids
+        blocker = find_blocker
+        return [] unless blocker
+
+        block_repo.blocked_cast_ids(blocker_id: blocker[:id])
+      end
+
+      def get_blocked_user_ids
+        blocker = find_blocker
+        return [] unless blocker
+
+        # Get blocked profile IDs grouped by type
+        blocked_cast_ids = block_repo.blocked_cast_ids(blocker_id: blocker[:id])
+        blocked_guest_ids = block_repo.blocked_guest_ids(blocker_id: blocker[:id])
+
+        # Convert profile IDs to user IDs
+        user_ids = []
+        user_ids += cast_adapter.get_user_ids_by_cast_ids(blocked_cast_ids) unless blocked_cast_ids.empty?
+        user_ids += guest_adapter.get_user_ids_by_guest_ids(blocked_guest_ids) unless blocked_guest_ids.empty?
+        user_ids
+      end
+
+      def list_public_posts_with_following_filter(limit:, cursor:, cast_ids:, exclude_cast_ids: nil)
         return { posts: [], next_cursor: nil, has_more: false, authors: {} } if cast_ids.empty?
 
         # Use existing use case with filtering
@@ -467,7 +604,8 @@ module Social
           limit: limit,
           cursor: cursor,
           cast_id: nil,
-          cast_ids: cast_ids
+          cast_ids: cast_ids,
+          exclude_cast_ids: exclude_cast_ids
         )
       end
 

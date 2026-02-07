@@ -12,7 +12,7 @@ module Social
         DEFAULT_LIMIT = 20
         MAX_LIMIT = 50
 
-        def call(limit: DEFAULT_LIMIT, cursor: nil, cast_id: nil, cast_ids: nil)
+        def call(limit: DEFAULT_LIMIT, cursor: nil, cast_id: nil, cast_ids: nil, exclude_cast_ids: nil)
           limit = [[limit, 1].max, MAX_LIMIT].min
           decoded_cursor = decode_cursor(cursor)
 
@@ -20,7 +20,8 @@ module Social
             limit: limit,
             cursor: decoded_cursor,
             cast_id: cast_id,
-            cast_ids: cast_ids
+            cast_ids: cast_ids,
+            exclude_cast_ids: exclude_cast_ids
           )
           has_more = posts.length > limit
           posts = posts.first(limit) if has_more

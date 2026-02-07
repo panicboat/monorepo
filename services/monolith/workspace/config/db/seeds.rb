@@ -574,6 +574,34 @@ end
 puts "  Created #{follow_count} cast follows"
 
 # =============================================================================
+# Social: Blocks (Sample data for development)
+# =============================================================================
+
+puts "Seeding Social: Blocks..."
+
+block_count = 0
+
+# Guest 1 blocks Cast 3 (Rin)
+if guests.size >= 1 && casts.size >= 3
+  guest = guests[0]
+  cast = casts[2]
+
+  existing = db[:"social__blocks"].where(blocker_id: guest[:id], blocked_id: cast[:id]).first
+  unless existing
+    db[:"social__blocks"].insert(
+      blocker_id: guest[:id],
+      blocker_type: "guest",
+      blocked_id: cast[:id],
+      blocked_type: "cast",
+      created_at: Time.now,
+    )
+    block_count += 1
+  end
+end
+
+puts "  Created #{block_count} blocks"
+
+# =============================================================================
 # Summary
 # =============================================================================
 

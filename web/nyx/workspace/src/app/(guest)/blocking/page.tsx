@@ -1,85 +1,136 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { useBlock, BlockedUser } from "@/modules/social/hooks/useBlock";
+import { useAuthStore } from "@/stores/authStore";
+import { Button } from "@/components/ui/Button";
+import { Loader2, UserX } from "lucide-react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-
-import { useSocial } from "@/modules/social/hooks/useSocial";
-
-const MOCK_DB = [
-  {
-    id: "1",
-    name: "Yuna",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna",
-    area: "Roppongi",
-  },
-  {
-    id: "2",
-    name: "Maria",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
-    area: "Roppongi",
-  },
-  {
-    id: "3",
-    name: "Sarah",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-    area: "Shibuya",
-  },
-  {
-    id: "5",
-    name: "Rin",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rin",
-    area: "Ginza",
-  },
-  {
-    id: "6",
-    name: "Kila",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kila",
-    area: "Ebisu",
-  },
-];
+import { motion, AnimatePresence } from "motion/react";
 
 export default function BlockingPage() {
-  const { blocking, toggleBlock } = useSocial();
-  // Filter DB for blocked users. If user not in DB (e.g. unknown), we could show ID, but here we scan DB.
-  // Real app would fetch specific IDs.
-  const list = MOCK_DB.filter((cast) => blocking.includes(cast.id));
+  const { fetchBlockedList, unblock, blockedList, loading } = useBlock();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const [unblockingId, setUnblockingId] = useState<string | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    if (isHydrated && isAuthenticated()) {
+      fetchBlockedList().finally(() => setInitialLoading(false));
+    } else if (isHydrated) {
+      setInitialLoading(false);
+    }
+  }, [isHydrated, isAuthenticated, fetchBlockedList]);
+
+  const handleUnblock = async (userId: string) => {
+    setUnblockingId(userId);
+    try {
+      await unblock(userId);
+    } catch (e) {
+      console.error("Failed to unblock:", e);
+    } finally {
+      setUnblockingId(null);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ja-JP", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  if (!isHydrated || initialLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-surface">
+        <Loader2 className="w-8 h-8 animate-spin text-info" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated()) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-surface gap-4 px-6">
+        <p className="text-text-secondary">Please log in to manage blocked users.</p>
+        <Link href="/login">
+          <Button variant="primary">Log In</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface-secondary min-h-screen pb-20">
       <main className="px-4 pt-4">
-        {list.length > 0 ? (
-          <div className="space-y-3">
-            {list.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between rounded-xl bg-surface p-4 shadow-sm border border-border opacity-75"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-border flex-shrink-0 overflow-hidden">
-                    <img
-                      src={user.image}
-                      alt={user.name}
-                      className="h-full w-full object-cover opacity-80"
-                    />
-                  </div>
-                  <div>
-                    <div className="font-bold text-text-secondary">{user.name}</div>
-                    <div className="text-[10px] text-text-muted">Blocked</div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => toggleBlock(user.id)}
-                  className="text-xs font-bold text-text-secondary border border-border px-3 py-1.5 rounded-full hover:bg-surface-secondary active:scale-95 transition-all"
-                >
-                  Unblock
-                </button>
-              </div>
-            ))}
+        {blockedList.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-4">
+            <div className="w-16 h-16 rounded-full bg-surface-secondary flex items-center justify-center">
+              <UserX size={32} className="text-text-muted" />
+            </div>
+            <p className="text-text-secondary text-center">
+              You haven&apos;t blocked anyone yet.
+            </p>
           </div>
         ) : (
-          <div className="py-20 text-center text-text-muted">
-            <p>No blocked users.</p>
+          <div className="space-y-3">
+            <p className="text-sm text-text-muted mb-4">
+              {blockedList.length} blocked user{blockedList.length !== 1 ? "s" : ""}
+            </p>
+            <AnimatePresence mode="popLayout">
+              {blockedList.map((user: BlockedUser) => (
+                <motion.div
+                  key={user.id}
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  className="flex items-center gap-4 p-4 rounded-xl bg-surface shadow-sm border border-border"
+                >
+                  {/* Avatar */}
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden bg-surface-tertiary flex-shrink-0">
+                    {user.imageUrl && user.imageUrl.startsWith("http") ? (
+                      <img
+                        src={user.imageUrl}
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-text-muted">
+                        <UserX size={20} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-text-primary truncate">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-text-muted">
+                      Blocked on {formatDate(user.blockedAt)}
+                    </p>
+                  </div>
+
+                  {/* Unblock Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={unblockingId === user.id || loading}
+                    onClick={() => handleUnblock(user.id)}
+                    className="flex-shrink-0"
+                  >
+                    {unblockingId === user.id ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      "Unblock"
+                    )}
+                  </Button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </main>

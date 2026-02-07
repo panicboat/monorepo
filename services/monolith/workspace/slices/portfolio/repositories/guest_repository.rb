@@ -5,6 +5,16 @@ module Portfolio
     class GuestRepository < Portfolio::DB::Repo
       commands :create, update: :by_pk
 
+      def find_by_id(id)
+        guests.by_pk(id).one
+      end
+
+      def find_by_ids(ids)
+        return [] if ids.nil? || ids.empty?
+
+        guests.where(id: ids).to_a
+      end
+
       def find_by_user_id(user_id)
         guests.where(user_id: user_id).one
       end

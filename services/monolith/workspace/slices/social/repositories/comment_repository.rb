@@ -69,9 +69,10 @@ module Social
         post_comments.combine(:comment_media).where(id: id).one
       end
 
-      def list_by_post_id(post_id:, limit: 20, cursor: nil)
+      def list_by_post_id(post_id:, limit: 20, cursor: nil, exclude_user_ids: nil)
         scope = post_comments.combine(:comment_media)
           .where(post_id: post_id, parent_id: nil)
+        scope = scope.exclude(user_id: exclude_user_ids) if exclude_user_ids && !exclude_user_ids.empty?
 
         if cursor
           scope = scope.where {
@@ -83,9 +84,10 @@ module Social
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def list_replies(parent_id:, limit: 20, cursor: nil)
+      def list_replies(parent_id:, limit: 20, cursor: nil, exclude_user_ids: nil)
         scope = post_comments.combine(:comment_media)
           .where(parent_id: parent_id)
+        scope = scope.exclude(user_id: exclude_user_ids) if exclude_user_ids && !exclude_user_ids.empty?
 
         if cursor
           scope = scope.where {

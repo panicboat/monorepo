@@ -6,8 +6,8 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { use, useState, useEffect } from "react";
 import { MessageCircle, Heart, AlertTriangle, Loader2, UserPlus, UserCheck } from "lucide-react";
-import { useSocial } from "@/modules/social/hooks/useSocial";
 import { useFollow } from "@/modules/social/hooks/useFollow";
+import { useBlock } from "@/modules/social/hooks/useBlock";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
 import { CastProfile, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
@@ -19,19 +19,45 @@ interface CastData {
 }
 
 function BlockSection({ castId }: { castId: string }) {
-  const { isBlocking, toggleBlock } = useSocial();
+  const { isBlocking, toggleBlock, fetchBlockStatus, loading } = useBlock();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    if (isHydrated && isAuthenticated() && castId) {
+      fetchBlockStatus([castId]);
+    }
+  }, [isHydrated, isAuthenticated, castId, fetchBlockStatus]);
+
   const blocked = isBlocking(castId);
+
+  const handleClick = async () => {
+    if (!isAuthenticated()) {
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      await toggleBlock(castId, "cast");
+    } catch (e) {
+      console.error("Failed to toggle block:", e);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center gap-2 border-t border-border pt-8">
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => toggleBlock(castId)}
+        disabled={isProcessing || loading}
+        onClick={handleClick}
         className={`flex items-center gap-2 text-xs font-bold rounded-full transition-colors ${blocked
           ? "bg-info text-white hover:bg-info-hover hover:text-white"
           : "text-text-muted hover:text-text-secondary hover:bg-surface-secondary"
-          }`}
+          } ${isProcessing || loading ? "opacity-50" : ""}`}
       >
         <AlertTriangle size={14} />
         {blocked ? "Unblock Cast" : "Block / Report"}
@@ -126,7 +152,7 @@ export default function CastDetailPage({
       {/* TODO: ReviewList - implement reviews backend */}
 
       <div className="mt-8 mb-8 px-6">
-        <BlockSection castId={id} />
+        <BlockSection castId={data.profile.id} />
       </div>
 
       {/* Floating Action Buttons */}

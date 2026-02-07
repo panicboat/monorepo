@@ -33,6 +33,11 @@ module Social
         rpc :DeleteComment, ::Social::V1::DeleteCommentRequest, ::Social::V1::DeleteCommentResponse
         rpc :ListComments, ::Social::V1::ListCommentsRequest, ::Social::V1::ListCommentsResponse
         rpc :ListReplies, ::Social::V1::ListRepliesRequest, ::Social::V1::ListRepliesResponse
+        # Block RPCs
+        rpc :BlockUser, ::Social::V1::BlockUserRequest, ::Social::V1::BlockUserResponse
+        rpc :UnblockUser, ::Social::V1::UnblockUserRequest, ::Social::V1::UnblockUserResponse
+        rpc :ListBlocked, ::Social::V1::ListBlockedRequest, ::Social::V1::ListBlockedResponse
+        rpc :GetBlockStatus, ::Social::V1::GetBlockStatusRequest, ::Social::V1::GetBlockStatusResponse
       end
 
       Stub = Service.rpc_stub_class

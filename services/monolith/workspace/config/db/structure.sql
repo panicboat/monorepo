@@ -221,6 +221,20 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: blocks; Type: TABLE; Schema: social; Owner: -
+--
+
+CREATE TABLE social.blocks (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    blocker_id uuid NOT NULL,
+    blocker_type text NOT NULL,
+    blocked_id uuid NOT NULL,
+    blocked_type text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: cast_follows; Type: TABLE; Schema: social; Owner: -
 --
 
@@ -437,6 +451,22 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: blocks blocks_blocker_id_blocked_id_key; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.blocks
+    ADD CONSTRAINT blocks_blocker_id_blocked_id_key UNIQUE (blocker_id, blocked_id);
+
+
+--
+-- Name: blocks blocks_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.blocks
+    ADD CONSTRAINT blocks_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: cast_follows cast_follows_cast_id_guest_id_key; Type: CONSTRAINT; Schema: social; Owner: -
 --
 
@@ -611,6 +641,20 @@ CREATE INDEX idx_cast_posts_created_at_desc ON social.cast_posts USING btree (cr
 --
 
 CREATE INDEX idx_post_comments_created_at_desc ON social.post_comments USING btree (created_at DESC);
+
+
+--
+-- Name: social_blocks_blocked_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_blocks_blocked_id_index ON social.blocks USING btree (blocked_id);
+
+
+--
+-- Name: social_blocks_blocker_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_blocks_blocker_id_index ON social.blocks USING btree (blocker_id);
 
 
 --
@@ -849,4 +893,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260203000000_create_post_likes.rb'),
 ('20260203000001_create_cast_follows.rb'),
 ('20260205000000_create_post_comments.rb'),
-('20260205000001_create_comment_media.rb');
+('20260205000001_create_comment_media.rb'),
+('20260207000000_create_blocks.rb');

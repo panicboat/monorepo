@@ -49,6 +49,33 @@ module Social
         end
       end
 
+      # Find guest by guest ID (primary key).
+      #
+      # @param guest_id [String] the guest ID to look up
+      # @return [GuestInfo, nil] guest information or nil if not found
+      def find_by_id(guest_id)
+        guest = portfolio_guest_repository.find_by_id(guest_id)
+        return nil unless guest
+
+        GuestInfo.new(
+          id: guest.id,
+          user_id: guest.user_id,
+          name: guest.name,
+          avatar_path: guest.avatar_path
+        )
+      end
+
+      # Get user IDs for given guest IDs.
+      #
+      # @param guest_ids [Array<String>] the guest IDs to look up
+      # @return [Array<String>] array of user IDs
+      def get_user_ids_by_guest_ids(guest_ids)
+        return [] if guest_ids.nil? || guest_ids.empty?
+
+        guests = portfolio_guest_repository.find_by_ids(guest_ids)
+        guests.map(&:user_id)
+      end
+
       private
 
       def portfolio_guest_repository

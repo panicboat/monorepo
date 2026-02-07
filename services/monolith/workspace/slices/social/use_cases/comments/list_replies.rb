@@ -12,14 +12,15 @@ module Social
         DEFAULT_LIMIT = 20
         MAX_LIMIT = 50
 
-        def call(comment_id:, limit: DEFAULT_LIMIT, cursor: nil)
+        def call(comment_id:, limit: DEFAULT_LIMIT, cursor: nil, exclude_user_ids: nil)
           limit = [[limit, 1].max, MAX_LIMIT].min
           decoded_cursor = decode_cursor(cursor)
 
           replies = comment_repo.list_replies(
             parent_id: comment_id,
             limit: limit,
-            cursor: decoded_cursor
+            cursor: decoded_cursor,
+            exclude_user_ids: exclude_user_ids
           )
           has_more = replies.length > limit
           replies = replies.first(limit) if has_more

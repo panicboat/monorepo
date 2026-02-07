@@ -13,17 +13,7 @@ module Social
     #
     class CastAdapter
       # Immutable value object representing cast information needed by Social slice.
-      CastInfo = Data.define(:id, :user_id, :name, :image_path, :avatar_path, :handle) do
-        # @return [String, nil] full URL to the cast's image
-        def image_url
-          return nil if image_path.nil? || image_path.empty?
-
-          # TODO: Replace hardcoded CDN URL with configuration from environment or settings.
-          #       Current implementation assumes a fixed CDN pattern.
-          #       Should use ENV['CDN_BASE_URL'] or similar configuration.
-          "https://cdn.nyx.place/#{image_path}"
-        end
-      end
+      CastInfo = Data.define(:id, :user_id, :name, :image_path, :avatar_path, :handle)
 
       # Find cast by user ID.
       #
@@ -99,6 +89,25 @@ module Social
             handle: cast.handle
           )
         end
+      end
+
+      # Find cast by cast ID (primary key).
+      #
+      # @param cast_id [String] the cast ID to look up
+      # @return [CastInfo, nil] cast information or nil if not found
+      def find_by_id(cast_id)
+        find_by_cast_id(cast_id)
+      end
+
+      # Get user IDs for given cast IDs.
+      #
+      # @param cast_ids [Array<String>] the cast IDs to look up
+      # @return [Array<String>] array of user IDs
+      def get_user_ids_by_cast_ids(cast_ids)
+        return [] if cast_ids.nil? || cast_ids.empty?
+
+        casts = portfolio_cast_repository.find_by_ids(cast_ids)
+        casts.map(&:user_id)
       end
 
       private
