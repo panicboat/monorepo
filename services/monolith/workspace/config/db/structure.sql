@@ -235,6 +235,18 @@ CREATE TABLE social.blocks (
 
 
 --
+-- Name: cast_favorites; Type: TABLE; Schema: social; Owner: -
+--
+
+CREATE TABLE social.cast_favorites (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    cast_id uuid NOT NULL,
+    guest_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: cast_follows; Type: TABLE; Schema: social; Owner: -
 --
 
@@ -467,6 +479,22 @@ ALTER TABLE ONLY social.blocks
 
 
 --
+-- Name: cast_favorites cast_favorites_cast_id_guest_id_key; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.cast_favorites
+    ADD CONSTRAINT cast_favorites_cast_id_guest_id_key UNIQUE (cast_id, guest_id);
+
+
+--
+-- Name: cast_favorites cast_favorites_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.cast_favorites
+    ADD CONSTRAINT cast_favorites_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: cast_follows cast_follows_cast_id_guest_id_key; Type: CONSTRAINT; Schema: social; Owner: -
 --
 
@@ -655,6 +683,20 @@ CREATE INDEX social_blocks_blocked_id_index ON social.blocks USING btree (blocke
 --
 
 CREATE INDEX social_blocks_blocker_id_index ON social.blocks USING btree (blocker_id);
+
+
+--
+-- Name: social_cast_favorites_cast_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_cast_favorites_cast_id_index ON social.cast_favorites USING btree (cast_id);
+
+
+--
+-- Name: social_cast_favorites_guest_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_cast_favorites_guest_id_index ON social.cast_favorites USING btree (guest_id);
 
 
 --
@@ -894,4 +936,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260203000001_create_cast_follows.rb'),
 ('20260205000000_create_post_comments.rb'),
 ('20260205000001_create_comment_media.rb'),
-('20260207000000_create_blocks.rb');
+('20260207000000_create_blocks.rb'),
+('20260208000000_create_cast_favorites.rb');

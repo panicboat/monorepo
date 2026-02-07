@@ -127,12 +127,12 @@ Nyx.PLACE をプロダクションレディにするための実装計画。
 - Favorites: 特に気に入ったキャストを一覧で管理（検索しやすくする）
 
 **Tasks:**
-- [ ] `favorites` テーブル作成（migration）
-- [ ] Proto 定義追加（`AddFavorite`, `RemoveFavorite`, `ListFavorites`）
-- [ ] Backend UseCase 実装
-- [ ] Frontend API Route 作成
-- [ ] `useSocial` hook を API 対応に拡張
-- [ ] Favorites タブの実装
+- [x] `favorites` テーブル作成（migration）
+- [x] Proto 定義追加（`AddFavorite`, `RemoveFavorite`, `ListFavorites`）
+- [x] Backend UseCase 実装
+- [x] Frontend API Route 作成
+- [x] `useSocial` hook を API 対応に拡張
+- [x] Favorites タブの実装
 
 ### 1.6 Block Feature
 
@@ -141,12 +141,12 @@ Nyx.PLACE をプロダクションレディにするための実装計画。
 ユーザーのブロック機能を実装する。
 
 **Tasks:**
-- [ ] `blocks` テーブル作成（migration）
-- [ ] Proto 定義追加（`BlockUser`, `UnblockUser`, `ListBlocked`）
-- [ ] Backend UseCase 実装
-- [ ] Frontend API Route 作成
-- [ ] ブロックしたユーザーの投稿を非表示にする
-- [ ] ブロック管理画面の実装
+- [x] `blocks` テーブル作成（migration）
+- [x] Proto 定義追加（`BlockUser`, `UnblockUser`, `ListBlocked`）
+- [x] Backend UseCase 実装
+- [x] Frontend API Route 作成
+- [x] ブロックしたユーザーの投稿を非表示にする
+- [x] ブロック管理画面の実装
 
 **Backend:**
 - `slices/social/repositories/block_repository.rb` (new)

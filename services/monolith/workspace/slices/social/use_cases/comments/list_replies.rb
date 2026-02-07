@@ -2,6 +2,7 @@
 
 require "base64"
 require "json"
+require "storage"
 
 module Social
   module UseCases
@@ -64,10 +65,12 @@ module Social
             if user_type == "cast"
               cast = casts[user_id]
               if cast
+                # Use avatar_path if available, otherwise fall back to image_path
+                image_key = cast.avatar_path.to_s.empty? ? cast.image_path : cast.avatar_path
                 hash[user_id] = {
                   id: cast.id,
                   name: cast.name,
-                  image_url: cast.image_url,
+                  image_url: Storage.download_url(key: image_key),
                   user_type: "cast"
                 }
               else
@@ -84,7 +87,7 @@ module Social
                 hash[user_id] = {
                   id: guest.id,
                   name: guest.name,
-                  image_url: guest.avatar_path ? "https://cdn.nyx.place/#{guest.avatar_path}" : nil,
+                  image_url: Storage.download_url(key: guest.avatar_path),
                   user_type: "guest"
                 }
               else
