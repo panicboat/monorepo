@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Trash2, Banknote, Clock, Tag } from "lucide-react";
+import { Plus, Trash2, Banknote, Clock, Tag, Star } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -11,6 +10,7 @@ export type ServicePlan = {
   name: string;
   duration: number; // minutes
   price: number; // yen
+  isRecommended?: boolean;
 };
 
 interface PlanEditorProps {
@@ -25,6 +25,7 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
       name: "",
       duration: 0,
       price: 0,
+      isRecommended: false,
     };
     onChange([...plans, newPlan]);
   };
@@ -37,17 +38,41 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
     onChange(plans.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
   };
 
+  const setRecommended = (id: string) => {
+    onChange(
+      plans.map((p) => ({
+        ...p,
+        isRecommended: p.id === id ? !p.isRecommended : false,
+      }))
+    );
+  };
+
+  // Sort plans: recommended first, then by price descending
+  const sortedPlans = [...plans].sort((a, b) => {
+    if (a.isRecommended && !b.isRecommended) return -1;
+    if (!a.isRecommended && b.isRecommended) return 1;
+    return b.price - a.price;
+  });
+
   return (
     <div className="space-y-4">
-      {plans.map((plan, index) => (
+      {sortedPlans.map((plan, index) => (
         <div
           key={plan.id}
           className="relative flex flex-col gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm animate-in fade-in slide-in-from-top-2"
         >
           <div className="flex items-start justify-between">
-            <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider">
-              Plan #{index + 1}
-            </h4>
+            <div className="flex items-center gap-2">
+              <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider">
+                Plan #{index + 1}
+              </h4>
+              {plan.isRecommended && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-lighter text-warning text-xs font-bold">
+                  <Star size={10} className="fill-current" />
+                  おすすめ
+                </span>
+              )}
+            </div>
             <Button
               variant="ghost"
               size="icon"
@@ -126,6 +151,23 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
               </div>
             </div>
           </div>
+
+          <Button
+            type="button"
+            variant={plan.isRecommended ? "default" : "outline"}
+            onClick={() => setRecommended(plan.id)}
+            className={`w-full ${
+              plan.isRecommended
+                ? "bg-warning hover:bg-warning/90 text-white"
+                : "border-warning/50 text-warning hover:bg-warning-lighter hover:border-warning"
+            }`}
+          >
+            <Star
+              size={14}
+              className={`mr-2 ${plan.isRecommended ? "fill-current" : ""}`}
+            />
+            {plan.isRecommended ? "おすすめプランに設定中" : "おすすめプランに設定する"}
+          </Button>
         </div>
       ))}
 

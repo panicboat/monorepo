@@ -11,7 +11,8 @@ module Portfolio
             id: plan.id.to_s,
             name: plan.name,
             price: plan.price,
-            duration_minutes: plan.duration_minutes
+            duration_minutes: plan.duration_minutes,
+            is_recommended: plan.is_recommended || false
           )
         end
 

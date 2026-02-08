@@ -230,7 +230,12 @@ module Portfolio
         cast = find_my_cast!
 
         plans_data = request.message.plans.map do |p|
-          { name: p.name, price: p.price, duration_minutes: p.duration_minutes }
+          {
+            name: p.name,
+            price: p.price,
+            duration_minutes: p.duration_minutes,
+            is_recommended: p.is_recommended
+          }
         end
 
         result = save_plans_uc.call(cast_id: cast.id, plans: plans_data)

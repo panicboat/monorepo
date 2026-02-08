@@ -17,5 +17,21 @@ RSpec.describe Portfolio::UseCases::Cast::Plans::SavePlans do
       result = use_case.call(cast_id: cast_id, plans: plans)
       expect(result).to eq(cast_with_plans)
     end
+
+    context "with is_recommended flag" do
+      let(:plans_with_recommended) do
+        [
+          { name: "Plan A", price: 1000, duration_minutes: 60, is_recommended: true },
+          { name: "Plan B", price: 2000, duration_minutes: 90, is_recommended: false }
+        ]
+      end
+
+      it "saves plans with is_recommended flag" do
+        expect(repo).to receive(:save_plans).with(id: cast_id, plans_data: plans_with_recommended).and_return(cast_with_plans)
+
+        result = use_case.call(cast_id: cast_id, plans: plans_with_recommended)
+        expect(result).to eq(cast_with_plans)
+      end
+    end
   end
 end

@@ -5,6 +5,7 @@ export interface ServicePlan {
   name: string;
   duration: number; // minutes
   price: number;
+  isRecommended?: boolean;
 }
 
 export interface CastImage {

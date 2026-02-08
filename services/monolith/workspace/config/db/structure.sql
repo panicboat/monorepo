@@ -132,7 +132,8 @@ CREATE TABLE portfolio.cast_plans (
     price integer NOT NULL,
     duration_minutes integer NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    is_recommended boolean DEFAULT false NOT NULL
 );
 
 
@@ -949,4 +950,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260208000000_create_cast_favorites.rb'),
 ('20260209000000_add_registered_at_to_casts.rb'),
 ('20260209000001_migrate_cast_visibility_values.rb'),
-('20260209000002_add_status_to_cast_follows.rb');
+('20260209000002_add_status_to_cast_follows.rb'),
+('20260210000000_add_is_recommended_to_cast_plans.rb');

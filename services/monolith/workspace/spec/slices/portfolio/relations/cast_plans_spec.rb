@@ -12,6 +12,7 @@ RSpec.describe "Portfolio::Relations::CastPlans", type: :database do
     expect(attribute_names).to include(:name)
     expect(attribute_names).to include(:price)
     expect(attribute_names).to include(:duration_minutes)
+    expect(attribute_names).to include(:is_recommended)
   end
 
   it "maps to the correct table" do

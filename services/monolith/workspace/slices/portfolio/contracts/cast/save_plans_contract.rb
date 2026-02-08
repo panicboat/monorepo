@@ -18,6 +18,7 @@ module Portfolio
             required(:name).filled(:string)
             required(:price).filled(:integer)
             required(:duration_minutes).filled(:integer)
+            optional(:is_recommended).filled(:bool)
           end
         end
 

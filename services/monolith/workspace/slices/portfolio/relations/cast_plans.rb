@@ -7,6 +7,7 @@ module Portfolio
         attribute :name, Types::String
         attribute :price, Types::Integer
         attribute :duration_minutes, Types::Integer
+        attribute :is_recommended, Types::Bool
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 

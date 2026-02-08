@@ -256,9 +256,9 @@ cast_ids.each do |cast_id|
   next if existing > 0
 
   [
-    { name: "お試し", duration_minutes: 30, price: 5000 },
-    { name: "スタンダード", duration_minutes: 60, price: 10000 },
-    { name: "ロング", duration_minutes: 120, price: 18000 },
+    { name: "お試し", duration_minutes: 30, price: 5000, is_recommended: false },
+    { name: "スタンダード", duration_minutes: 60, price: 10000, is_recommended: true },
+    { name: "ロング", duration_minutes: 120, price: 18000, is_recommended: false },
   ].each do |plan|
     db[:portfolio__cast_plans].insert(
       plan.merge(

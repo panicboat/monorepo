@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { Star } from "lucide-react";
 import { ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
 
 interface PriceSystemProps {
   plans?: ServicePlan[];
+  selectedSchedules?: WeeklySchedule[];
+  hasDateSelected?: boolean;
 }
 
-export const PriceSystem = ({ plans }: PriceSystemProps) => {
+export const PriceSystem = ({
+  plans,
+  selectedSchedules = [],
+  hasDateSelected = false,
+}: PriceSystemProps) => {
   // If no plans provided, show placeholder
   if (!plans || plans.length === 0) {
     return (
@@ -26,55 +30,117 @@ export const PriceSystem = ({ plans }: PriceSystemProps) => {
     );
   }
 
+  const hasSchedules = selectedSchedules.length > 0;
+
+  // Sort plans: recommended first, then by price descending
+  const sortedPlans = [...plans].sort((a, b) => {
+    if (a.isRecommended && !b.isRecommended) return -1;
+    if (!a.isRecommended && b.isRecommended) return 1;
+    return b.price - a.price;
+  });
+
+  // Check if schedule has no planId (All Plan) or matches specific planId
+  const hasAllPlanSchedule = selectedSchedules.some((s) => !s.planId);
+  const specificPlanIds = selectedSchedules.filter((s) => s.planId).map((s) => s.planId);
+
+  // Get time ranges for each plan from selected schedules
+  // Include schedules with no planId (All Plan) for every plan
+  const getTimeRangesForPlan = (planId: string): string[] => {
+    return selectedSchedules
+      .filter((s) => !s.planId || s.planId === planId)
+      .map((s) => `${s.start} - ${s.end}`);
+  };
+
+  // Plan is active if:
+  // - No date selected: all plans active
+  // - Date selected with no schedules: all plans inactive
+  // - Date selected with schedules: active if has All Plan schedule or matches specific planId
+  const isPlanActive = (planId?: string): boolean => {
+    if (!hasDateSelected) return true;
+    if (!hasSchedules) return false;
+    if (hasAllPlanSchedule) return true;
+    return planId ? specificPlanIds.includes(planId) : false;
+  };
+
   return (
-    <div className="bg-surface-secondary px-6 py-8 space-y-6">
+    <div className="bg-surface-secondary px-6 py-8 space-y-4">
       <h3 className="font-serif font-bold text-lg text-text-primary">
         System & Plan
       </h3>
 
-      {plans.map((plan, idx) => (
-        <div
-          key={plan.id || idx}
-          className="rounded-xl bg-surface p-5 border border-border shadow-sm relative overflow-hidden"
-        >
-          {idx === 0 && (
-            <div className="absolute top-0 right-0 bg-role-cast text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
-              POPULAR
+      {sortedPlans.map((plan, idx) => {
+        const isActive = isPlanActive(plan.id);
+        const timeRanges = plan.id ? getTimeRangesForPlan(plan.id) : [];
+
+        return (
+          <div
+            key={plan.id || idx}
+            className={`
+              rounded-xl bg-surface p-5 border shadow-sm transition-all duration-200
+              ${isActive
+                ? "border-border opacity-100"
+                : "border-border/50 opacity-40"
+              }
+              ${timeRanges.length > 0 ? "border-success" : ""}
+            `}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm font-bold text-text-secondary uppercase">
+                {plan.name}
+              </span>
+              {plan.isRecommended && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning-lighter text-warning text-xs font-bold">
+                  <Star size={10} className="fill-current" />
+                  おすすめ
+                </span>
+              )}
             </div>
-          )}
-          <div className="text-sm font-bold text-text-secondary uppercase mb-2">
-            {plan.name}
+            {timeRanges.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {timeRanges.map((time, i) => (
+                  <span
+                    key={i}
+                    className="text-xs font-medium text-success bg-success-light/30 px-2 py-1 rounded"
+                  >
+                    {time}
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-text-primary">
+                ¥{plan.price.toLocaleString()}
+              </span>
+              <span className="text-sm text-text-muted">/ {plan.duration}min</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold text-text-primary">
-              ¥{plan.price.toLocaleString()}
-            </span>
-            <span className="text-sm text-text-muted">/ {plan.duration}min</span>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
 
 interface ScheduleCalendarProps {
   schedules?: WeeklySchedule[];
-  plans?: ServicePlan[];
+  selectedDate?: string;
+  onDateSelect?: (date: string) => void;
 }
 
 interface DayData {
   day: string;
   date: string;
   fullDate: string;
-  month: number;
   schedules: WeeklySchedule[];
   isWeekend: boolean;
   isToday: boolean;
   timeRange: string | null;
 }
 
-export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) => {
-  const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
+export const ScheduleCalendar = ({
+  schedules,
+  selectedDate,
+  onDateSelect,
+}: ScheduleCalendarProps) => {
 
   // Generate next 28 days (4 weeks)
   const today = new Date();
@@ -103,7 +169,6 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
       day: date.toLocaleDateString("ja-JP", { weekday: "short" }),
       date: date.getDate().toString(),
       fullDate: dateStr,
-      month: date.getMonth() + 1,
       schedules: daySchedules,
       isWeekend,
       isToday: i === 0,
@@ -111,10 +176,9 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
     };
   });
 
-  // Helper to get plan by ID
-  const getPlanById = (planId?: string) => {
-    if (!planId || !plans) return null;
-    return plans.find((p) => p.id === planId) || null;
+  const handleDateClick = (item: DayData) => {
+    // Select the clicked date (no toggle - always select)
+    onDateSelect?.(item.fullDate);
   };
 
   return (
@@ -126,20 +190,17 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
         <div className="flex gap-2 px-6" style={{ width: "max-content" }}>
           {days.map((item, idx) => {
             const hasSchedule = item.schedules.length > 0;
+            const isSelected = selectedDate === item.fullDate;
+
             return (
               <button
                 key={idx}
-                onClick={() => {
-                  if (!hasSchedule) return;
-                  // Toggle: close if same day selected, otherwise open new day
-                  setSelectedDay(selectedDay?.fullDate === item.fullDate ? null : item);
-                }}
-                disabled={!hasSchedule}
+                onClick={() => handleDateClick(item)}
                 className={`
-                  flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-colors
-                  ${item.isToday ? "bg-role-cast-light/30 border border-role-cast-light" : ""}
-                  ${selectedDay?.fullDate === item.fullDate ? "bg-success-light/30 border border-success" : ""}
-                  ${hasSchedule ? "hover:bg-surface-secondary cursor-pointer" : "opacity-50 cursor-default"}
+                  flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-colors cursor-pointer
+                  ${item.isToday && !isSelected ? "bg-role-cast-light/30 border border-role-cast-light" : ""}
+                  ${isSelected ? "bg-success-light/30 border border-success" : ""}
+                  ${!isSelected && !item.isToday ? "hover:bg-surface-secondary" : ""}
                 `}
               >
                 <div
@@ -175,72 +236,8 @@ export const ScheduleCalendar = ({ schedules, plans }: ScheduleCalendarProps) =>
         </div>
       </div>
       <p className="text-center text-xs text-text-muted mt-3 px-6">
-        タップで詳細を表示 / スクロールで4週間分
+        タップでプランを表示 / スクロールで4週間分
       </p>
-
-      {/* Inline Schedule Detail */}
-      <AnimatePresence>
-        {selectedDay && (
-          <motion.div
-            className="mx-6 mt-4 overflow-hidden"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-          >
-            <div className="bg-surface-secondary rounded-xl p-4">
-              <button
-                onClick={() => setSelectedDay(null)}
-                className="flex items-center justify-between w-full mb-3"
-              >
-                <h4 className="text-base font-bold text-text-primary">
-                  {selectedDay.month}/{selectedDay.date} ({selectedDay.day})
-                </h4>
-                <ChevronDown size={18} className="text-text-muted" />
-              </button>
-
-              <div className="space-y-2">
-                {selectedDay.schedules.map((schedule, idx) => {
-                  const plan = getPlanById(schedule.planId);
-                  return (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-3 bg-surface rounded-lg"
-                    >
-                      <div>
-                        <div className="text-sm font-bold text-text-primary">
-                          {schedule.start} - {schedule.end}
-                        </div>
-                        {plan && (
-                          <div className="text-xs text-text-secondary mt-0.5">
-                            {plan.name}
-                          </div>
-                        )}
-                      </div>
-                      {plan && (
-                        <div className="text-right">
-                          <div className="text-sm font-bold text-role-cast">
-                            ¥{plan.price.toLocaleString()}
-                          </div>
-                          <div className="text-[10px] text-text-muted">
-                            {plan.duration}min
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {selectedDay.schedules.length > 1 && (
-                <p className="text-[10px] text-text-muted text-center mt-3">
-                  {selectedDay.schedules.length}件の予約枠
-                </p>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

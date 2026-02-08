@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
       name: p.name,
       price: p.price,
       duration: p.durationMinutes,
+      isRecommended: p.isRecommended || false,
     }));
     const schedules = (response.schedules || []).map((s) => ({
       date: s.date,

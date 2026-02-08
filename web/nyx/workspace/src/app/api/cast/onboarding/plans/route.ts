@@ -21,6 +21,7 @@ export async function PUT(req: NextRequest) {
       name: p.name,
       price: p.price,
       duration: p.durationMinutes,
+      isRecommended: p.isRecommended || false,
     }));
 
     return NextResponse.json({ plans });

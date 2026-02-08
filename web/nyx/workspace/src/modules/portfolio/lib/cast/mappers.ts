@@ -114,6 +114,7 @@ export function mapApiToPlans(apiPlans: any[]): ServicePlan[] {
     name: p.name,
     price: p.price,
     duration: p.duration || p.durationMinutes,
+    isRecommended: p.isRecommended || false,
   }));
 }
 
@@ -126,6 +127,7 @@ export function mapPlansToApi(plans: ServicePlan[]) {
     name: p.name,
     price: p.price,
     durationMinutes: p.duration,
+    isRecommended: p.isRecommended || false,
   }));
 }
 

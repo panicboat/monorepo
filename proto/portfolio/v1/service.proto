@@ -84,6 +84,7 @@ message CastPlan {
   string name = 2;
   int32 price = 3; // JPY
   int32 duration_minutes = 4;
+  bool is_recommended = 5;
 }
 
 message GetCastProfileRequest {
