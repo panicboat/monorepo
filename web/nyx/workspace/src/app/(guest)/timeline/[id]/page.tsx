@@ -11,13 +11,9 @@ import { useAuthStore } from "@/stores/authStore";
 import { Badge } from "@/components/ui/Badge";
 import { CommentSection } from "@/modules/social/components/comments";
 import { formatTimeAgo } from "@/lib/utils/date";
+import type { Media } from "@/lib/types";
 
-type MediaItem = {
-  mediaType: "image" | "video";
-  url: string;
-};
-
-function MediaCarousel({ media }: { media: MediaItem[] }) {
+function MediaCarousel({ media }: { media: Media[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const goPrev = (e: React.MouseEvent) => {
@@ -179,7 +175,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     );
   }
 
-  const media: MediaItem[] = post.media.map((m) => ({
+  const media: Media[] = post.media.map((m) => ({
     mediaType: m.mediaType,
     url: m.url,
   }));

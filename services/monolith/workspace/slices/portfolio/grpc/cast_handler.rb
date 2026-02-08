@@ -279,7 +279,7 @@ module Portfolio
         area_id = request.message.area_id.to_s.empty? ? nil : request.message.area_id
         query = request.message.query.to_s.empty? ? nil : request.message.query
         limit = request.message.limit.zero? ? nil : request.message.limit
-        offset = request.message.offset.zero? ? nil : request.message.offset
+        cursor = request.message.cursor.to_s.empty? ? nil : request.message.cursor
 
         status_filter = case request.message.status_filter
         when :CAST_STATUS_FILTER_ONLINE then :online
@@ -288,7 +288,7 @@ module Portfolio
         else nil
         end
 
-        casts = list_casts_uc.call(
+        result = list_casts_uc.call(
           visibility_filter: visibility_filter,
           genre_id: genre_id,
           tag: tag,
@@ -296,8 +296,10 @@ module Portfolio
           area_id: area_id,
           query: query,
           limit: limit,
-          offset: offset
+          cursor: cursor
         )
+
+        casts = result[:casts]
 
         # Batch fetch online cast IDs for efficiency
         online_ids = repo.online_cast_ids.to_set
@@ -310,7 +312,9 @@ module Portfolio
               profile: ProfilePresenter.to_proto(c, genres: genres, is_online: online_ids.include?(c.id)),
               plans: PlanPresenter.many_to_proto(c.cast_plans)
             )
-          }
+          },
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more] || false
         )
       end
 

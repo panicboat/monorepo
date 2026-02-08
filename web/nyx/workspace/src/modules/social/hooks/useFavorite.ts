@@ -109,7 +109,7 @@ export function useFavorite() {
       return castIds;
     } catch (e) {
       console.error("Fetch favorites list error:", e);
-      return [];
+      throw e;
     } finally {
       setLoading(false);
     }
@@ -132,7 +132,7 @@ export function useFavorite() {
       return data.favorited;
     } catch (e) {
       console.error("Fetch favorite status error:", e);
-      return {};
+      throw e;
     }
   }, []);
 

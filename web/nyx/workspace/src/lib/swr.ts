@@ -13,31 +13,53 @@ export function getAuthToken(): string | null {
 
 /**
  * Default fetcher for SWR
- * Automatically includes authorization header if token exists
+ * Automatically includes authorization header if token exists.
+ * Uses cache: "no-store" for real-time data.
  */
 export const fetcher = async <T>(url: string): Promise<T> => {
-  const token = getAuthToken();
-  const headers: HeadersInit = {};
+  // Import authFetch dynamically to avoid circular dependency
+  const { authFetch, ApiError } = await import("@/lib/auth/fetch");
 
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const res = await fetch(url, {
-    headers,
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    const error = new Error("An error occurred while fetching the data.");
-    (error as unknown as { status: number }).status = res.status;
-    (error as unknown as { info: unknown }).info = await res
-      .json()
-      .catch(() => ({}));
+  try {
+    return await authFetch<T>(url, {
+      method: "GET",
+      requireAuth: false, // SWR handles cases where token is optional
+      cache: "no-store",
+    });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      // Re-throw with SWR-compatible format
+      const swrError = new Error(error.message);
+      (swrError as unknown as { status: number }).status = error.status;
+      (swrError as unknown as { info: unknown }).info = error.info;
+      throw swrError;
+    }
     throw error;
   }
+};
 
-  return res.json();
+/**
+ * Authenticated fetcher for SWR
+ * Requires authentication, throws if no token available.
+ */
+export const authFetcher = async <T>(url: string): Promise<T> => {
+  const { authFetch, ApiError } = await import("@/lib/auth/fetch");
+
+  try {
+    return await authFetch<T>(url, {
+      method: "GET",
+      requireAuth: true,
+      cache: "no-store",
+    });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      const swrError = new Error(error.message);
+      (swrError as unknown as { status: number }).status = error.status;
+      (swrError as unknown as { info: unknown }).info = error.info;
+      throw swrError;
+    }
+    throw error;
+  }
 };
 
 /**

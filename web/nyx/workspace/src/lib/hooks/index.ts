@@ -18,3 +18,5 @@ export {
   type UseApiMutationOptions,
   type UseApiMutationReturn,
 } from "./useApiMutation";
+
+export { useHydrated, useOnHydrated } from "./useHydrated";

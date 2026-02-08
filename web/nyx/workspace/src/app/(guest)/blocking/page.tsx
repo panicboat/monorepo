@@ -56,7 +56,7 @@ export default function BlockingPage() {
       <div className="flex flex-col items-center justify-center min-h-screen bg-surface gap-4 px-6">
         <p className="text-text-secondary">Please log in to manage blocked users.</p>
         <Link href="/login">
-          <Button variant="primary">Log In</Button>
+          <Button variant="guest">Log In</Button>
         </Link>
       </div>
     );

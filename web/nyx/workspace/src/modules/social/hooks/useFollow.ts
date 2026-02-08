@@ -109,7 +109,7 @@ export function useFollow() {
       return castIds;
     } catch (e) {
       console.error("Fetch following list error:", e);
-      return [];
+      throw e;
     } finally {
       setLoading(false);
     }
@@ -132,7 +132,7 @@ export function useFollow() {
       return data.following;
     } catch (e) {
       console.error("Fetch follow status error:", e);
-      return {};
+      throw e;
     }
   }, []);
 

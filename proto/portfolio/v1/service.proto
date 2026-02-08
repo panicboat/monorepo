@@ -206,9 +206,9 @@ message ListCastsRequest {
   CastStatusFilter status_filter = 4;
   // Filter by area ID
   string area_id = 5;
-  // Pagination
+  // Pagination (cursor-based)
   int32 limit = 6;
-  int32 offset = 7;
+  string cursor = 7; // Base64-encoded cursor for pagination
   // Text search query (searches name, tagline, tags)
   string query = 8;
 }
@@ -219,6 +219,9 @@ message ListCastsResponse {
     repeated CastPlan plans = 2;
   }
   repeated CastItem items = 1;
+  // Pagination
+  string next_cursor = 2; // Base64-encoded cursor for next page
+  bool has_more = 3;      // Whether more items are available
 }
 
 message GetCastProfileByHandleRequest {

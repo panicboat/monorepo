@@ -126,7 +126,7 @@ module Portfolio
         }
       end
 
-      def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, query: nil, limit: nil, offset: nil)
+      def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, query: nil, limit: nil, cursor: nil)
         scope = casts.combine(:cast_plans, :cast_schedules)
 
         # Visibility filter (default: published only for guest access)
@@ -181,9 +181,17 @@ module Portfolio
           # Future: by popularity (for now, just return all)
         end
 
-        # Pagination
-        scope = scope.limit(limit) if limit && limit > 0
-        scope = scope.offset(offset) if offset && offset > 0
+        # Cursor-based pagination
+        if cursor
+          scope = scope.where {
+            (created_at < cursor[:created_at]) |
+            ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+          }
+        end
+
+        # Order and limit (fetch limit + 1 for has_more check)
+        scope = scope.order { [created_at.desc, id.desc] }
+        scope = scope.limit(limit + 1) if limit && limit > 0
 
         scope.to_a
       end

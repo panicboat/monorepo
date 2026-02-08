@@ -1,10 +1,9 @@
 import { CastPost } from "@/modules/social/types";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { Media, MediaType } from "@/lib/types";
 
-export type FeedMediaItem = {
-  mediaType: "image" | "video";
-  url: string;
-};
+// Re-export for backwards compatibility
+export type FeedMediaItem = Media;
 
 export type FeedItem = {
   id: string;
@@ -13,9 +12,9 @@ export type FeedItem = {
   castImage: string;
   content: string;
   time: string;
-  media?: FeedMediaItem[];
+  media?: Media[];
   mediaUrl?: string;
-  mediaType?: "image" | "video";
+  mediaType?: MediaType;
   image?: string; // Legacy support
   likes: number;
   comments: number;
