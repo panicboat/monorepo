@@ -33,6 +33,7 @@ module Portfolio
         get_profile_uc: "use_cases.cast.profile.get_profile",
         save_profile_uc: "use_cases.cast.profile.save_profile",
         publish_uc: "use_cases.cast.profile.publish",
+        save_visibility_uc: "use_cases.save_cast_visibility",
         save_plans_uc: "use_cases.cast.plans.save_plans",
         save_schedules_uc: "use_cases.cast.schedules.save_schedules",
         save_images_uc: "use_cases.cast.images.save_images",
@@ -78,8 +79,8 @@ module Portfolio
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
         end
 
-        # Only return published profiles for public access
-        if result.visibility != "published"
+        # Only return registered profiles for public access
+        if result.registered_at.nil?
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
         end
 
@@ -204,13 +205,22 @@ module Portfolio
 
       def save_cast_visibility
         authenticate_user!
-        cast = find_my_cast!
 
         visibility_str = ProfilePresenter.visibility_from_enum(request.message.visibility)
-        publish_uc.call(cast_id: cast.id, visibility: visibility_str)
+        result = save_visibility_uc.call(user_id: current_user_id, visibility: visibility_str)
 
-        result = get_profile_uc.call(user_id: current_user_id)
-        ::Portfolio::V1::SaveCastVisibilityResponse.new(profile: ProfilePresenter.to_proto(result))
+        unless result[:success]
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Cast profile not found")
+        end
+
+        # Load areas and genres for response
+        ids = repo.find_area_and_genre_ids(result[:cast].id)
+        areas = area_repo.find_by_ids(ids[:area_ids])
+        genres = genre_repo.find_by_ids(ids[:genre_ids])
+
+        ::Portfolio::V1::SaveCastVisibilityResponse.new(
+          profile: ProfilePresenter.to_proto(result[:cast], areas: areas, genres: genres)
+        )
       end
 
       # === Cast Plans ===
@@ -296,7 +306,8 @@ module Portfolio
           area_id: area_id,
           query: query,
           limit: limit,
-          cursor: cursor
+          cursor: cursor,
+          registered_only: true
         )
 
         casts = result[:casts]

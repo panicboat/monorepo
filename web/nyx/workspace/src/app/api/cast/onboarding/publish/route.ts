@@ -9,9 +9,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Publish sets visibility to PUBLISHED
+    // Complete onboarding with public visibility
     const response = await castClient.saveCastVisibility(
-      { visibility: CastVisibility.PUBLISHED },
+      { visibility: CastVisibility.PUBLIC },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

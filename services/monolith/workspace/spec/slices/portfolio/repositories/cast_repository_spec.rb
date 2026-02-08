@@ -138,19 +138,23 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
   end
 
   describe "#list_casts_with_filters" do
-    let!(:published_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "Published", image_path: "pub", visibility: "published")
+    let!(:public_cast) do
+      repo.create(user_id: SecureRandom.uuid, name: "PublicCast", image_path: "pub", visibility: "public", registered_at: Time.now)
     end
 
-    let!(:unpublished_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "Unpublished", image_path: "unpub", visibility: "unpublished")
+    let!(:private_cast) do
+      repo.create(user_id: SecureRandom.uuid, name: "PrivateCast", image_path: "priv", visibility: "private", registered_at: Time.now)
+    end
+
+    let!(:unregistered_cast) do
+      repo.create(user_id: SecureRandom.uuid, name: "Unregistered", image_path: "unreg", visibility: "public", registered_at: nil)
     end
 
     it "filters by visibility" do
-      result = repo.list_casts_with_filters(visibility_filter: "published")
+      result = repo.list_casts_with_filters(visibility_filter: "public")
       names = result.map(&:name)
-      expect(names).to include("Published")
-      expect(names).not_to include("Unpublished")
+      expect(names).to include("PublicCast")
+      expect(names).not_to include("PrivateCast")
     end
 
     it "returns empty array when no casts match filters" do
@@ -158,18 +162,25 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       expect(result).to eq([])
     end
 
-    it "applies limit and offset" do
+    it "applies limit" do
       5.times do |i|
-        repo.create(user_id: SecureRandom.uuid, name: "Cast#{i}", image_path: "c#{i}", visibility: "published")
+        repo.create(user_id: SecureRandom.uuid, name: "Cast#{i}", image_path: "c#{i}", visibility: "public", registered_at: Time.now)
       end
 
-      result = repo.list_casts_with_filters(visibility_filter: "published", limit: 2, offset: 1)
-      expect(result.size).to eq(2)
+      result = repo.list_casts_with_filters(visibility_filter: "public", limit: 2)
+      expect(result.size).to eq(3) # limit + 1 for has_more check
+    end
+
+    it "filters by registered_only" do
+      result = repo.list_casts_with_filters(registered_only: true)
+      names = result.map(&:name)
+      expect(names).to include("PublicCast", "PrivateCast")
+      expect(names).not_to include("Unregistered")
     end
 
     context "with status filter :online" do
       let!(:online_cast) do
-        repo.create(user_id: SecureRandom.uuid, name: "OnlineNow", image_path: "on", visibility: "published")
+        repo.create(user_id: SecureRandom.uuid, name: "OnlineNow", image_path: "on", visibility: "public", registered_at: Time.now)
       end
 
       before do
@@ -193,7 +204,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     context "with status filter :new" do
       let!(:new_cast) do
-        repo.create(user_id: SecureRandom.uuid, name: "NewCast", image_path: "new", visibility: "published")
+        repo.create(user_id: SecureRandom.uuid, name: "NewCast", image_path: "new", visibility: "public", registered_at: Time.now)
       end
 
       it "returns casts created within 7 days" do
@@ -205,11 +216,11 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     context "with text search query" do
       let!(:cast_with_name) do
-        repo.create(user_id: SecureRandom.uuid, name: "かわいいキャスト", image_path: "c1", visibility: "published", tagline: "test")
+        repo.create(user_id: SecureRandom.uuid, name: "かわいいキャスト", image_path: "c1", visibility: "public", registered_at: Time.now, tagline: "test")
       end
 
       let!(:cast_with_tagline) do
-        repo.create(user_id: SecureRandom.uuid, name: "Normal", image_path: "c2", visibility: "published", tagline: "清楚系美少女")
+        repo.create(user_id: SecureRandom.uuid, name: "Normal", image_path: "c2", visibility: "public", registered_at: Time.now, tagline: "清楚系美少女")
       end
 
       let!(:cast_with_tag) do
@@ -217,13 +228,14 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
           user_id: SecureRandom.uuid,
           name: "Another",
           image_path: "c3",
-          visibility: "published",
+          visibility: "public",
+          registered_at: Time.now,
           tags: Sequel.pg_jsonb(["元アイドル", "美人"])
         )
       end
 
       let!(:unmatched_cast) do
-        repo.create(user_id: SecureRandom.uuid, name: "Unmatched", image_path: "c4", visibility: "published", tagline: "other")
+        repo.create(user_id: SecureRandom.uuid, name: "Unmatched", image_path: "c4", visibility: "public", registered_at: Time.now, tagline: "other")
       end
 
       it "finds casts by name (case insensitive)" do
@@ -259,19 +271,21 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
   describe "#get_popular_tags" do
     it "returns tags sorted by usage count" do
-      # Create casts with tags
+      # Create casts with tags (registered = has registered_at)
       repo.create(
         user_id: SecureRandom.uuid,
         name: "TaggedCast1",
         image_path: "t1",
-        visibility: "published",
+        visibility: "public",
+        registered_at: Time.now,
         tags: Sequel.pg_jsonb(["tag1", "tag2"])
       )
       repo.create(
         user_id: SecureRandom.uuid,
         name: "TaggedCast2",
         image_path: "t2",
-        visibility: "published",
+        visibility: "public",
+        registered_at: Time.now,
         tags: Sequel.pg_jsonb(["tag1", "tag3"])
       )
 
@@ -289,7 +303,8 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
         user_id: SecureRandom.uuid,
         name: "TaggedCast",
         image_path: "t",
-        visibility: "published",
+        visibility: "public",
+        registered_at: Time.now,
         tags: Sequel.pg_jsonb(["a", "b", "c"])
       )
 
@@ -297,19 +312,21 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       expect(result.size).to eq(1)
     end
 
-    it "only counts published casts" do
+    it "only counts registered casts" do
       repo.create(
         user_id: SecureRandom.uuid,
-        name: "Published",
+        name: "Registered",
         image_path: "p",
-        visibility: "published",
+        visibility: "public",
+        registered_at: Time.now,
         tags: Sequel.pg_jsonb(["visible"])
       )
       repo.create(
         user_id: SecureRandom.uuid,
-        name: "Unpublished",
+        name: "Unregistered",
         image_path: "u",
-        visibility: "unpublished",
+        visibility: "public",
+        registered_at: nil,
         tags: Sequel.pg_jsonb(["hidden"])
       )
 

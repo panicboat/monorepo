@@ -6,15 +6,20 @@ import { CastProfile, CastVisibility } from "@/stub/portfolio/v1/service_pb";
  */
 function visibilityToString(v: CastVisibility): string {
   switch (v) {
-    case CastVisibility.UNREGISTERED:
-      return "CAST_VISIBILITY_UNREGISTERED";
-    case CastVisibility.UNPUBLISHED:
-      return "CAST_VISIBILITY_UNPUBLISHED";
-    case CastVisibility.PUBLISHED:
-      return "CAST_VISIBILITY_PUBLISHED";
+    case CastVisibility.PUBLIC:
+      return "CAST_VISIBILITY_PUBLIC";
+    case CastVisibility.PRIVATE:
+      return "CAST_VISIBILITY_PRIVATE";
     default:
       return "CAST_VISIBILITY_UNSPECIFIED";
   }
+}
+
+/**
+ * Check if cast is private (requires follow approval)
+ */
+export function isPrivateCast(visibility: CastVisibility): boolean {
+  return visibility === CastVisibility.PRIVATE;
 }
 
 /**
@@ -87,6 +92,8 @@ export function mapCastProfileToFrontend(p: CastProfile) {
         }
       : undefined,
     isOnline: p.isOnline || false,
+    registeredAt: p.registeredAt || null,
+    isPrivate: p.visibility === CastVisibility.PRIVATE,
   };
 }
 

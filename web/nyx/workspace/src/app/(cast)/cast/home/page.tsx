@@ -65,14 +65,13 @@ export default function CastDashboardPage() {
              return;
         }
 
-        // Check visibility: UNREGISTERED means onboarding not complete
-        // visibility values: "unregistered", "unpublished", "published"
-        if (!profile.visibility || profile.visibility === "CAST_VISIBILITY_UNREGISTERED") {
+        // Check registeredAt: null means onboarding not complete
+        if (!profile.registeredAt) {
             window.location.href = "/cast/onboarding/step-1";
             return;
         }
 
-        // If visibility is UNPUBLISHED or PUBLISHED, user can access home
+        // If registeredAt is set, user has completed onboarding
         // Fetch dashboard data
         const [statsRes, reservationsRes] = await Promise.all([
           fetch("/api/cast/stats", { headers: authHeaders }),

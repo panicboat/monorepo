@@ -19,6 +19,8 @@ module Portfolio
 
         rpc :GetCastProfile, ::Portfolio::V1::GetCastProfileRequest, ::Portfolio::V1::GetCastProfileResponse
         rpc :GetCastProfileByHandle, ::Portfolio::V1::GetCastProfileByHandleRequest, ::Portfolio::V1::GetCastProfileResponse
+        rpc :GetCastsByIds, ::Portfolio::V1::GetCastsByIdsRequest, ::Portfolio::V1::GetCastsByIdsResponse
+        rpc :GetCastsByUserIds, ::Portfolio::V1::GetCastsByUserIdsRequest, ::Portfolio::V1::GetCastsByUserIdsResponse
         rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
         rpc :SaveCastProfile, ::Portfolio::V1::SaveCastProfileRequest, ::Portfolio::V1::SaveCastProfileResponse
         rpc :SaveCastVisibility, ::Portfolio::V1::SaveCastVisibilityRequest, ::Portfolio::V1::SaveCastVisibilityResponse

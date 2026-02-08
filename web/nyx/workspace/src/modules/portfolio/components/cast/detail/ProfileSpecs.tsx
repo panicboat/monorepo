@@ -1,7 +1,7 @@
 "use client";
 
 import { useSocial } from "@/modules/social/hooks/useSocial";
-import { motion } from "motion/react";
+import { Lock } from "lucide-react";
 
 import { CastProfile, ProfileFormData } from "@/modules/portfolio/types";
 
@@ -26,6 +26,7 @@ const getDisplayData = (data?: CastProfile | ProfileFormData) => {
           : null,
       tags: data.tags,
       socialLinks: data.socialLinks,
+      isPrivate: false, // Form data doesn't have isPrivate
     };
   } else {
     // CastProfile
@@ -42,6 +43,7 @@ const getDisplayData = (data?: CastProfile | ProfileFormData) => {
           : null,
       tags: data.tags?.map((t) => t.label) || [],
       socialLinks: data.socialLinks,
+      isPrivate: data.isPrivate || false,
     };
   }
 };
@@ -67,24 +69,18 @@ export const ProfileSpecs = ({
   const bwh = display?.bwh;
   const tags = display?.tags || [];
   const socialLinks = display?.socialLinks;
+  const isPrivate = display?.isPrivate || false;
 
   return (
     <div className="space-y-6 px-6 py-8 bg-surface rounded-t-3xl -mt-6 relative z-10">
       {/* Header Identity */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold font-serif text-text-primary mb-1 flex items-center justify-center gap-3">
+        {/* Name with Privacy Indicator */}
+        <h1 className="text-2xl font-bold text-text-primary mb-4 flex items-center justify-center gap-2">
           {name}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => toggleFollow(castId)}
-            className={`px-3 py-1 text-xs font-bold rounded-full border transition-colors ${
-              following
-                ? "bg-surface-secondary text-text-secondary border-border"
-                : "bg-surface text-role-cast border-role-cast hover:bg-role-cast-lighter"
-            }`}
-          >
-            {following ? "Following" : "Follow"}
-          </motion.button>
+          {isPrivate && (
+            <Lock size={18} className="text-text-muted" />
+          )}
         </h1>
 
         {/* One Liner Bubble */}

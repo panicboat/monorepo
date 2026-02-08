@@ -36,7 +36,9 @@ RSpec.describe Social::Grpc::Handler do
       name: "Yuna",
       image_path: "http://img.jpg",
       avatar_path: nil,
-      handle: "yuna"
+      handle: "yuna",
+      visibility: "public",
+      registered_at: Time.now
     )
   end
 
@@ -55,10 +57,18 @@ RSpec.describe Social::Grpc::Handler do
 
   before do
     allow(Current).to receive(:user_id).and_return(current_user_id)
-    # Mock cross-slice access to Portfolio
-    cast_repo = double(:cast_repo)
-    allow(cast_repo).to receive(:find_by_user_id).with("user-123").and_return(mock_cast)
-    allow(Portfolio::Slice).to receive(:[]).with("repositories.cast_repository").and_return(cast_repo)
+    # Mock cross-slice access to Portfolio via Query objects
+    cast_query = double(:cast_query)
+    allow(cast_query).to receive(:call).with(user_ids: ["user-123"]).and_return([mock_cast])
+    allow(cast_query).to receive(:call).with(cast_ids: anything).and_return([])
+    allow(Portfolio::Slice).to receive(:[]).with("use_cases.cast.queries.get_by_user_ids").and_return(cast_query)
+    allow(Portfolio::Slice).to receive(:[]).with("use_cases.cast.queries.get_by_ids").and_return(cast_query)
+
+    guest_query = double(:guest_query)
+    allow(guest_query).to receive(:call).and_return([])
+    allow(Portfolio::Slice).to receive(:[]).with("use_cases.guest.queries.get_by_user_ids").and_return(guest_query)
+    allow(Portfolio::Slice).to receive(:[]).with("use_cases.guest.queries.get_by_ids").and_return(guest_query)
+
     # Mock Storage
     allow(Storage).to receive(:download_url) { |key:| "/uploads/#{key}" }
   end
@@ -133,7 +143,7 @@ RSpec.describe Social::Grpc::Handler do
       )
 
       allow(list_public_posts_uc).to receive(:call)
-        .with(limit: 20, cursor: nil, cast_id: nil)
+        .with(limit: 20, cursor: nil, cast_id: nil, exclude_cast_ids: [])
         .and_return({ posts: [mock_post], next_cursor: nil, has_more: false, authors: { "cast-123" => mock_cast } })
       allow(like_repo).to receive(:likes_count_batch).and_return({})
       allow(like_repo).to receive(:liked_status_batch).and_return({})
@@ -286,9 +296,9 @@ RSpec.describe Social::Grpc::Handler do
     end
 
     it "raises NOT_FOUND when cast not found" do
-      cast_repo = double(:cast_repo)
-      allow(cast_repo).to receive(:find_by_user_id).with("user-123").and_return(nil)
-      allow(Portfolio::Slice).to receive(:[]).with("repositories.cast_repository").and_return(cast_repo)
+      cast_query = double(:cast_query)
+      allow(cast_query).to receive(:call).with(user_ids: ["user-123"]).and_return([])
+      allow(Portfolio::Slice).to receive(:[]).with("use_cases.cast.queries.get_by_user_ids").and_return(cast_query)
 
       expect { handler.delete_cast_post }.to raise_error(GRPC::BadStatus) { |e|
         expect(e.code).to eq(GRPC::Core::StatusCodes::NOT_FOUND)

@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: response.success,
+      status: response.status,
     });
   } catch (error: unknown) {
     if (error instanceof ConnectError && error.code === 16) {

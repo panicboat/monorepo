@@ -176,7 +176,8 @@ CREATE TABLE portfolio.casts (
     image_path text,
     three_sizes jsonb DEFAULT '{}'::jsonb,
     avatar_path text,
-    handle character varying(30)
+    handle character varying(30),
+    registered_at timestamp with time zone
 );
 
 
@@ -254,7 +255,8 @@ CREATE TABLE social.cast_follows (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     cast_id uuid NOT NULL,
     guest_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    status text DEFAULT 'approved'::text NOT NULL
 );
 
 
@@ -714,6 +716,13 @@ CREATE INDEX social_cast_follows_guest_id_index ON social.cast_follows USING btr
 
 
 --
+-- Name: social_cast_follows_status_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_cast_follows_status_index ON social.cast_follows USING btree (status);
+
+
+--
 -- Name: social_cast_post_hashtags_post_id_index; Type: INDEX; Schema: social; Owner: -
 --
 
@@ -937,4 +946,7 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260205000000_create_post_comments.rb'),
 ('20260205000001_create_comment_media.rb'),
 ('20260207000000_create_blocks.rb'),
-('20260208000000_create_cast_favorites.rb');
+('20260208000000_create_cast_favorites.rb'),
+('20260209000000_add_registered_at_to_casts.rb'),
+('20260209000001_migrate_cast_visibility_values.rb'),
+('20260209000002_add_status_to_cast_follows.rb');

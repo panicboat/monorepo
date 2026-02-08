@@ -100,6 +100,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
     [data?.schedules]
   );
 
+  const isPrivate = useMemo(() =>
+    data?.profile?.isPrivate ?? false,
+    [data?.profile]
+  );
+
   // Update functions that modify local cache
   const updateProfile = useCallback(
     (updates: Partial<ProfileFormData>) => {
@@ -355,6 +360,40 @@ export function useCastData(options: UseCastDataOptions = {}) {
     return res.json();
   }, [mutate]);
 
+  // Save visibility (public/private)
+  const saveVisibility = useCallback(
+    async (newIsPrivate: boolean) => {
+      const currentToken = getAuthToken();
+      if (!currentToken) throw new Error("No token");
+
+      const res = await fetch("/api/cast/visibility", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentToken}`,
+        },
+        body: JSON.stringify({ isPrivate: newIsPrivate }),
+      });
+
+      if (!res.ok) throw new Error("Failed to save visibility");
+
+      // Update local cache
+      mutate(
+        (currentData) => ({
+          ...currentData,
+          profile: {
+            ...currentData?.profile,
+            isPrivate: newIsPrivate,
+          },
+        }),
+        { revalidate: false }
+      );
+
+      return res.json();
+    },
+    [mutate]
+  );
+
   // Refetch
   const fetchData = useCallback(() => {
     mutate();
@@ -368,6 +407,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
     avatarPath,
     plans,
     schedules,
+    isPrivate,
 
     // Meta
     loading: isLoading,
@@ -390,6 +430,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
     saveSchedules,
     uploadImage,
     publishProfile,
+    saveVisibility,
 
     // SWR mutate
     mutate,

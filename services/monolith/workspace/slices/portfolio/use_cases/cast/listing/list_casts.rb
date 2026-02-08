@@ -12,7 +12,7 @@ module Portfolio
 
           MAX_LIMIT = 50
 
-          def call(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, query: nil, limit: DEFAULT_LIMIT, cursor: nil)
+          def call(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, query: nil, limit: DEFAULT_LIMIT, cursor: nil, registered_only: false)
             limit = normalize_limit(limit)
             decoded_cursor = decode_cursor(cursor)
 
@@ -24,7 +24,8 @@ module Portfolio
               area_id: area_id,
               query: query,
               limit: limit,
-              cursor: decoded_cursor
+              cursor: decoded_cursor,
+              registered_only: registered_only
             )
 
             has_more = casts.length > limit

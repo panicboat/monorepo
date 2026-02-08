@@ -3,12 +3,61 @@
 module Social
   module Repositories
     class FollowRepository < Social::DB::Repo
-      def follow(cast_id:, guest_id:)
+      def follow(cast_id:, guest_id:, status: "approved")
         existing = cast_follows.where(cast_id: cast_id, guest_id: guest_id).one
-        return false if existing
+        return { success: false, reason: :already_exists, status: existing.status } if existing
 
-        cast_follows.changeset(:create, cast_id: cast_id, guest_id: guest_id).commit
+        cast_follows.changeset(:create, cast_id: cast_id, guest_id: guest_id, status: status).commit
+        { success: true, status: status }
+      end
+
+      def request_follow(cast_id:, guest_id:)
+        follow(cast_id: cast_id, guest_id: guest_id, status: "pending")
+      end
+
+      def approve_follow(cast_id:, guest_id:)
+        record = cast_follows.where(cast_id: cast_id, guest_id: guest_id).one
+        return false unless record
+        return true if record.status == "approved"
+
+        cast_follows.dataset
+          .where(cast_id: cast_id, guest_id: guest_id)
+          .update(status: "approved")
         true
+      end
+
+      def reject_follow(cast_id:, guest_id:)
+        deleted = cast_follows.dataset
+          .where(cast_id: cast_id, guest_id: guest_id, status: "pending")
+          .delete
+        deleted > 0
+      end
+
+      def approve_all_pending(cast_id:)
+        cast_follows.dataset
+          .where(cast_id: cast_id, status: "pending")
+          .update(status: "approved")
+      end
+
+      def list_pending_requests(cast_id:, limit: 100, cursor: nil)
+        scope = cast_follows.where(cast_id: cast_id, status: "pending")
+
+        if cursor
+          scope = scope.where { created_at < cursor[:created_at] }
+        end
+
+        records = scope.order { created_at.desc }.limit(limit + 1).to_a
+        has_more = records.size > limit
+        records = records.first(limit) if has_more
+
+        {
+          requests: records,
+          has_more: has_more
+        }
+      end
+
+      def pending_count(cast_id:)
+        cast_follows.where(cast_id: cast_id, status: "pending").count
       end
 
       def unfollow(cast_id:, guest_id:)
@@ -17,11 +66,18 @@ module Social
       end
 
       def following?(cast_id:, guest_id:)
-        cast_follows.where(cast_id: cast_id, guest_id: guest_id).exist?
+        cast_follows.where(cast_id: cast_id, guest_id: guest_id, status: "approved").exist?
+      end
+
+      def follow_status(cast_id:, guest_id:)
+        record = cast_follows.where(cast_id: cast_id, guest_id: guest_id).one
+        return nil unless record
+
+        record.status
       end
 
       def list_following(guest_id:, limit: 100, cursor: nil)
-        scope = cast_follows.where(guest_id: guest_id)
+        scope = cast_follows.where(guest_id: guest_id, status: "approved")
 
         if cursor
           scope = scope.where { created_at < cursor[:created_at] }
@@ -39,19 +95,22 @@ module Social
 
       def following_cast_ids(guest_id:)
         cast_follows.dataset
-          .where(guest_id: guest_id)
+          .where(guest_id: guest_id, status: "approved")
           .select_map(:cast_id)
       end
 
       def following_status_batch(cast_ids:, guest_id:)
         return {} if cast_ids.empty? || guest_id.nil?
 
-        following_ids = cast_follows.dataset
+        records = cast_follows.dataset
           .where(cast_id: cast_ids, guest_id: guest_id)
-          .select_map(:cast_id)
+          .select(:cast_id, :status)
+          .to_a
+
+        status_map = records.each_with_object({}) { |r, h| h[r[:cast_id]] = r[:status] }
 
         cast_ids.each_with_object({}) do |id, hash|
-          hash[id] = following_ids.include?(id)
+          hash[id] = status_map[id] || "none"
         end
       end
     end

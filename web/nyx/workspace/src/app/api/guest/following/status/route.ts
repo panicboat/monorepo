@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const castIds = castIdsParam.split(",").filter(Boolean);
 
     if (castIds.length === 0) {
-      return NextResponse.json({ following: {} });
+      return NextResponse.json({ statuses: {} });
     }
 
     const response = await socialClient.getFollowStatus(
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     );
 
     return NextResponse.json({
-      following: response.following,
+      statuses: response.statuses,
     });
   } catch (error: unknown) {
     console.error("GetFollowStatus Error:", error);

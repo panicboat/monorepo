@@ -28,6 +28,12 @@ module Social
         rpc :UnfollowCast, ::Social::V1::UnfollowCastRequest, ::Social::V1::UnfollowCastResponse
         rpc :ListFollowing, ::Social::V1::ListFollowingRequest, ::Social::V1::ListFollowingResponse
         rpc :GetFollowStatus, ::Social::V1::GetFollowStatusRequest, ::Social::V1::GetFollowStatusResponse
+        rpc :CancelFollowRequest, ::Social::V1::CancelFollowRequestRequest, ::Social::V1::CancelFollowRequestResponse
+        # Follow Approval RPCs (for private casts)
+        rpc :ApproveFollow, ::Social::V1::ApproveFollowRequest, ::Social::V1::ApproveFollowResponse
+        rpc :RejectFollow, ::Social::V1::RejectFollowRequest, ::Social::V1::RejectFollowResponse
+        rpc :ListPendingFollowRequests, ::Social::V1::ListPendingFollowRequestsRequest, ::Social::V1::ListPendingFollowRequestsResponse
+        rpc :GetPendingFollowCount, ::Social::V1::GetPendingFollowCountRequest, ::Social::V1::GetPendingFollowCountResponse
         # Comment RPCs
         rpc :AddComment, ::Social::V1::AddCommentRequest, ::Social::V1::AddCommentResponse
         rpc :DeleteComment, ::Social::V1::DeleteCommentRequest, ::Social::V1::DeleteCommentResponse

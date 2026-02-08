@@ -6,6 +6,7 @@
 
 export { useSocial } from "./useSocial";
 export { useFollow } from "./useFollow";
+export { useFollowRequests } from "./useFollowRequests";
 export { useFavorite } from "./useFavorite";
 export { useGuestTimeline, useGuestPost } from "./useGuestTimeline";
 export { useLike } from "./useLike";

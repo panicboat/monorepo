@@ -2,15 +2,15 @@
 // @generated from file social/v1/service.proto (package social.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file social/v1/service.proto.
  */
 export const file_social_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("Chdzb2NpYWwvdjEvc2VydmljZS5wcm90bxIJc29jaWFsLnYxIj0KDkNhc3RQb3N0QXV0aG9yEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJIlMKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCSL/AQoIQ2FzdFBvc3QSCgoCaWQYASABKAkSDwoHY2FzdF9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEicKBW1lZGlhGAQgAygLMhguc29jaWFsLnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIpCgZhdXRob3IYBiABKAsyGS5zb2NpYWwudjEuQ2FzdFBvc3RBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSDwoHdmlzaWJsZRgJIAEoCBIQCghoYXNodGFncxgKIAMoCRINCgVsaWtlZBgLIAEoCCJWChRMaXN0Q2FzdFBvc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkSDwoHY2FzdF9pZBgDIAEoCRIOCgZmaWx0ZXIYBCABKAkiYgoVTGlzdENhc3RQb3N0c1Jlc3BvbnNlEiIKBXBvc3RzGAEgAygLMhMuc29jaWFsLnYxLkNhc3RQb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIn4KE1NhdmVDYXN0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkSDwoHY29udGVudBgCIAEoCRInCgVtZWRpYRgDIAMoCzIYLnNvY2lhbC52MS5DYXN0UG9zdE1lZGlhEg8KB3Zpc2libGUYBCABKAgSEAoIaGFzaHRhZ3MYBSADKAkiOQoUU2F2ZUNhc3RQb3N0UmVzcG9uc2USIQoEcG9zdBgBIAEoCzITLnNvY2lhbC52MS5DYXN0UG9zdCIgChJHZXRDYXN0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkiOAoTR2V0Q2FzdFBvc3RSZXNwb25zZRIhCgRwb3N0GAEgASgLMhMuc29jaWFsLnYxLkNhc3RQb3N0IiMKFURlbGV0ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSIYChZEZWxldGVDYXN0UG9zdFJlc3BvbnNlIiYKE0xpa2VDYXN0UG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSIrChRMaWtlQ2FzdFBvc3RSZXNwb25zZRITCgtsaWtlc19jb3VudBgBIAEoBSIoChVVbmxpa2VDYXN0UG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSItChZVbmxpa2VDYXN0UG9zdFJlc3BvbnNlEhMKC2xpa2VzX2NvdW50GAEgASgFIiwKGEdldFBvc3RMaWtlU3RhdHVzUmVxdWVzdBIQCghwb3N0X2lkcxgBIAMoCSKJAQoZR2V0UG9zdExpa2VTdGF0dXNSZXNwb25zZRI+CgVsaWtlZBgBIAMoCzIvLnNvY2lhbC52MS5HZXRQb3N0TGlrZVN0YXR1c1Jlc3BvbnNlLkxpa2VkRW50cnkaLAoKTGlrZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBIiQKEUZvbGxvd0Nhc3RSZXF1ZXN0Eg8KB2Nhc3RfaWQYASABKAkiJQoSRm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiJgoTVW5mb2xsb3dDYXN0UmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIicKFFVuZm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiNQoUTGlzdEZvbGxvd2luZ1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJIlAKFUxpc3RGb2xsb3dpbmdSZXNwb25zZRIQCghjYXN0X2lkcxgBIAMoCRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIqChZHZXRGb2xsb3dTdGF0dXNSZXF1ZXN0EhAKCGNhc3RfaWRzGAEgAygJIpEBChdHZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJECglmb2xsb3dpbmcYASADKAsyMS5zb2NpYWwudjEuR2V0Rm9sbG93U3RhdHVzUmVzcG9uc2UuRm9sbG93aW5nRW50cnkaMAoORm9sbG93aW5nRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgIOgI4ASJSCgxDb21tZW50TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCSJPCg1Db21tZW50QXV0aG9yEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJEhEKCXVzZXJfdHlwZRgEIAEoCSLYAQoHQ29tbWVudBIKCgJpZBgBIAEoCRIPCgdwb3N0X2lkGAIgASgJEhEKCXBhcmVudF9pZBgDIAEoCRIPCgd1c2VyX2lkGAQgASgJEg8KB2NvbnRlbnQYBSABKAkSEgoKY3JlYXRlZF9hdBgGIAEoCRIoCgZhdXRob3IYByABKAsyGC5zb2NpYWwudjEuQ29tbWVudEF1dGhvchImCgVtZWRpYRgIIAMoCzIXLnNvY2lhbC52MS5Db21tZW50TWVkaWESFQoNcmVwbGllc19jb3VudBgJIAEoBSJwChFBZGRDb21tZW50UmVxdWVzdBIPCgdwb3N0X2lkGAEgASgJEg8KB2NvbnRlbnQYAiABKAkSEQoJcGFyZW50X2lkGAMgASgJEiYKBW1lZGlhGAQgAygLMhcuc29jaWFsLnYxLkNvbW1lbnRNZWRpYSJRChJBZGRDb21tZW50UmVzcG9uc2USIwoHY29tbWVudBgBIAEoCzISLnNvY2lhbC52MS5Db21tZW50EhYKDmNvbW1lbnRzX2NvdW50GAIgASgFIioKFERlbGV0ZUNvbW1lbnRSZXF1ZXN0EhIKCmNvbW1lbnRfaWQYASABKAkiLwoVRGVsZXRlQ29tbWVudFJlc3BvbnNlEhYKDmNvbW1lbnRzX2NvdW50GAEgASgFIkUKE0xpc3RDb21tZW50c1JlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkiYwoUTGlzdENvbW1lbnRzUmVzcG9uc2USJAoIY29tbWVudHMYASADKAsyEi5zb2NpYWwudjEuQ29tbWVudBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCJHChJMaXN0UmVwbGllc1JlcXVlc3QSEgoKY29tbWVudF9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkiYQoTTGlzdFJlcGxpZXNSZXNwb25zZRIjCgdyZXBsaWVzGAEgAygLMhIuc29jaWFsLnYxLkNvbW1lbnQSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiYQoLQmxvY2tlZFVzZXISCgoCaWQYASABKAkSEQoJdXNlcl90eXBlGAIgASgJEgwKBG5hbWUYAyABKAkSEQoJaW1hZ2VfdXJsGAQgASgJEhIKCmJsb2NrZWRfYXQYBSABKAkiPAoQQmxvY2tVc2VyUmVxdWVzdBISCgpibG9ja2VkX2lkGAEgASgJEhQKDGJsb2NrZWRfdHlwZRgCIAEoCSIkChFCbG9ja1VzZXJSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIigKElVuYmxvY2tVc2VyUmVxdWVzdBISCgpibG9ja2VkX2lkGAEgASgJIiYKE1VuYmxvY2tVc2VyUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCIzChJMaXN0QmxvY2tlZFJlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJImMKE0xpc3RCbG9ja2VkUmVzcG9uc2USJQoFdXNlcnMYASADKAsyFi5zb2NpYWwudjEuQmxvY2tlZFVzZXISEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiKQoVR2V0QmxvY2tTdGF0dXNSZXF1ZXN0EhAKCHVzZXJfaWRzGAEgAygJIokBChZHZXRCbG9ja1N0YXR1c1Jlc3BvbnNlEj8KB2Jsb2NrZWQYASADKAsyLi5zb2NpYWwudjEuR2V0QmxvY2tTdGF0dXNSZXNwb25zZS5CbG9ja2VkRW50cnkaLgoMQmxvY2tlZEVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCDoCOAEiJQoSQWRkRmF2b3JpdGVSZXF1ZXN0Eg8KB2Nhc3RfaWQYASABKAkiJgoTQWRkRmF2b3JpdGVSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIigKFVJlbW92ZUZhdm9yaXRlUmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIikKFlJlbW92ZUZhdm9yaXRlUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCI1ChRMaXN0RmF2b3JpdGVzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkiUAoVTGlzdEZhdm9yaXRlc1Jlc3BvbnNlEhAKCGNhc3RfaWRzGAEgAygJEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIiwKGEdldEZhdm9yaXRlU3RhdHVzUmVxdWVzdBIQCghjYXN0X2lkcxgBIAMoCSKVAQoZR2V0RmF2b3JpdGVTdGF0dXNSZXNwb25zZRJGCglmYXZvcml0ZWQYASADKAsyMy5zb2NpYWwudjEuR2V0RmF2b3JpdGVTdGF0dXNSZXNwb25zZS5GYXZvcml0ZWRFbnRyeRowCg5GYXZvcml0ZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBMv8OCg9UaW1lbGluZVNlcnZpY2USUgoNTGlzdENhc3RQb3N0cxIfLnNvY2lhbC52MS5MaXN0Q2FzdFBvc3RzUmVxdWVzdBogLnNvY2lhbC52MS5MaXN0Q2FzdFBvc3RzUmVzcG9uc2USTAoLR2V0Q2FzdFBvc3QSHS5zb2NpYWwudjEuR2V0Q2FzdFBvc3RSZXF1ZXN0Gh4uc29jaWFsLnYxLkdldENhc3RQb3N0UmVzcG9uc2USTwoMU2F2ZUNhc3RQb3N0Eh4uc29jaWFsLnYxLlNhdmVDYXN0UG9zdFJlcXVlc3QaHy5zb2NpYWwudjEuU2F2ZUNhc3RQb3N0UmVzcG9uc2USVQoORGVsZXRlQ2FzdFBvc3QSIC5zb2NpYWwudjEuRGVsZXRlQ2FzdFBvc3RSZXF1ZXN0GiEuc29jaWFsLnYxLkRlbGV0ZUNhc3RQb3N0UmVzcG9uc2USTwoMTGlrZUNhc3RQb3N0Eh4uc29jaWFsLnYxLkxpa2VDYXN0UG9zdFJlcXVlc3QaHy5zb2NpYWwudjEuTGlrZUNhc3RQb3N0UmVzcG9uc2USVQoOVW5saWtlQ2FzdFBvc3QSIC5zb2NpYWwudjEuVW5saWtlQ2FzdFBvc3RSZXF1ZXN0GiEuc29jaWFsLnYxLlVubGlrZUNhc3RQb3N0UmVzcG9uc2USXgoRR2V0UG9zdExpa2VTdGF0dXMSIy5zb2NpYWwudjEuR2V0UG9zdExpa2VTdGF0dXNSZXF1ZXN0GiQuc29jaWFsLnYxLkdldFBvc3RMaWtlU3RhdHVzUmVzcG9uc2USSQoKRm9sbG93Q2FzdBIcLnNvY2lhbC52MS5Gb2xsb3dDYXN0UmVxdWVzdBodLnNvY2lhbC52MS5Gb2xsb3dDYXN0UmVzcG9uc2USTwoMVW5mb2xsb3dDYXN0Eh4uc29jaWFsLnYxLlVuZm9sbG93Q2FzdFJlcXVlc3QaHy5zb2NpYWwudjEuVW5mb2xsb3dDYXN0UmVzcG9uc2USUgoNTGlzdEZvbGxvd2luZxIfLnNvY2lhbC52MS5MaXN0Rm9sbG93aW5nUmVxdWVzdBogLnNvY2lhbC52MS5MaXN0Rm9sbG93aW5nUmVzcG9uc2USWAoPR2V0Rm9sbG93U3RhdHVzEiEuc29jaWFsLnYxLkdldEZvbGxvd1N0YXR1c1JlcXVlc3QaIi5zb2NpYWwudjEuR2V0Rm9sbG93U3RhdHVzUmVzcG9uc2USSQoKQWRkQ29tbWVudBIcLnNvY2lhbC52MS5BZGRDb21tZW50UmVxdWVzdBodLnNvY2lhbC52MS5BZGRDb21tZW50UmVzcG9uc2USUgoNRGVsZXRlQ29tbWVudBIfLnNvY2lhbC52MS5EZWxldGVDb21tZW50UmVxdWVzdBogLnNvY2lhbC52MS5EZWxldGVDb21tZW50UmVzcG9uc2USTwoMTGlzdENvbW1lbnRzEh4uc29jaWFsLnYxLkxpc3RDb21tZW50c1JlcXVlc3QaHy5zb2NpYWwudjEuTGlzdENvbW1lbnRzUmVzcG9uc2USTAoLTGlzdFJlcGxpZXMSHS5zb2NpYWwudjEuTGlzdFJlcGxpZXNSZXF1ZXN0Gh4uc29jaWFsLnYxLkxpc3RSZXBsaWVzUmVzcG9uc2USRgoJQmxvY2tVc2VyEhsuc29jaWFsLnYxLkJsb2NrVXNlclJlcXVlc3QaHC5zb2NpYWwudjEuQmxvY2tVc2VyUmVzcG9uc2USTAoLVW5ibG9ja1VzZXISHS5zb2NpYWwudjEuVW5ibG9ja1VzZXJSZXF1ZXN0Gh4uc29jaWFsLnYxLlVuYmxvY2tVc2VyUmVzcG9uc2USTAoLTGlzdEJsb2NrZWQSHS5zb2NpYWwudjEuTGlzdEJsb2NrZWRSZXF1ZXN0Gh4uc29jaWFsLnYxLkxpc3RCbG9ja2VkUmVzcG9uc2USVQoOR2V0QmxvY2tTdGF0dXMSIC5zb2NpYWwudjEuR2V0QmxvY2tTdGF0dXNSZXF1ZXN0GiEuc29jaWFsLnYxLkdldEJsb2NrU3RhdHVzUmVzcG9uc2USTAoLQWRkRmF2b3JpdGUSHS5zb2NpYWwudjEuQWRkRmF2b3JpdGVSZXF1ZXN0Gh4uc29jaWFsLnYxLkFkZEZhdm9yaXRlUmVzcG9uc2USVQoOUmVtb3ZlRmF2b3JpdGUSIC5zb2NpYWwudjEuUmVtb3ZlRmF2b3JpdGVSZXF1ZXN0GiEuc29jaWFsLnYxLlJlbW92ZUZhdm9yaXRlUmVzcG9uc2USUgoNTGlzdEZhdm9yaXRlcxIfLnNvY2lhbC52MS5MaXN0RmF2b3JpdGVzUmVxdWVzdBogLnNvY2lhbC52MS5MaXN0RmF2b3JpdGVzUmVzcG9uc2USXgoRR2V0RmF2b3JpdGVTdGF0dXMSIy5zb2NpYWwudjEuR2V0RmF2b3JpdGVTdGF0dXNSZXF1ZXN0GiQuc29jaWFsLnYxLkdldEZhdm9yaXRlU3RhdHVzUmVzcG9uc2ViBnByb3RvMw");
+  fileDesc("Chdzb2NpYWwvdjEvc2VydmljZS5wcm90bxIJc29jaWFsLnYxIj0KDkNhc3RQb3N0QXV0aG9yEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJIlMKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCSL/AQoIQ2FzdFBvc3QSCgoCaWQYASABKAkSDwoHY2FzdF9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEicKBW1lZGlhGAQgAygLMhguc29jaWFsLnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIpCgZhdXRob3IYBiABKAsyGS5zb2NpYWwudjEuQ2FzdFBvc3RBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSDwoHdmlzaWJsZRgJIAEoCBIQCghoYXNodGFncxgKIAMoCRINCgVsaWtlZBgLIAEoCCJWChRMaXN0Q2FzdFBvc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkSDwoHY2FzdF9pZBgDIAEoCRIOCgZmaWx0ZXIYBCABKAkiYgoVTGlzdENhc3RQb3N0c1Jlc3BvbnNlEiIKBXBvc3RzGAEgAygLMhMuc29jaWFsLnYxLkNhc3RQb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIn4KE1NhdmVDYXN0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkSDwoHY29udGVudBgCIAEoCRInCgVtZWRpYRgDIAMoCzIYLnNvY2lhbC52MS5DYXN0UG9zdE1lZGlhEg8KB3Zpc2libGUYBCABKAgSEAoIaGFzaHRhZ3MYBSADKAkiOQoUU2F2ZUNhc3RQb3N0UmVzcG9uc2USIQoEcG9zdBgBIAEoCzITLnNvY2lhbC52MS5DYXN0UG9zdCIgChJHZXRDYXN0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkiOAoTR2V0Q2FzdFBvc3RSZXNwb25zZRIhCgRwb3N0GAEgASgLMhMuc29jaWFsLnYxLkNhc3RQb3N0IiMKFURlbGV0ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSIYChZEZWxldGVDYXN0UG9zdFJlc3BvbnNlIiYKE0xpa2VDYXN0UG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSIrChRMaWtlQ2FzdFBvc3RSZXNwb25zZRITCgtsaWtlc19jb3VudBgBIAEoBSIoChVVbmxpa2VDYXN0UG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSItChZVbmxpa2VDYXN0UG9zdFJlc3BvbnNlEhMKC2xpa2VzX2NvdW50GAEgASgFIiwKGEdldFBvc3RMaWtlU3RhdHVzUmVxdWVzdBIQCghwb3N0X2lkcxgBIAMoCSKJAQoZR2V0UG9zdExpa2VTdGF0dXNSZXNwb25zZRI+CgVsaWtlZBgBIAMoCzIvLnNvY2lhbC52MS5HZXRQb3N0TGlrZVN0YXR1c1Jlc3BvbnNlLkxpa2VkRW50cnkaLAoKTGlrZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBIiQKEUZvbGxvd0Nhc3RSZXF1ZXN0Eg8KB2Nhc3RfaWQYASABKAkiTgoSRm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJwoGc3RhdHVzGAIgASgOMhcuc29jaWFsLnYxLkZvbGxvd1N0YXR1cyImChNVbmZvbGxvd0Nhc3RSZXF1ZXN0Eg8KB2Nhc3RfaWQYASABKAkiJwoUVW5mb2xsb3dDYXN0UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCI1ChRMaXN0Rm9sbG93aW5nUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkiUAoVTGlzdEZvbGxvd2luZ1Jlc3BvbnNlEhAKCGNhc3RfaWRzGAEgAygJEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIioKFkdldEZvbGxvd1N0YXR1c1JlcXVlc3QSEAoIY2FzdF9pZHMYASADKAkipwEKF0dldEZvbGxvd1N0YXR1c1Jlc3BvbnNlEkIKCHN0YXR1c2VzGAEgAygLMjAuc29jaWFsLnYxLkdldEZvbGxvd1N0YXR1c1Jlc3BvbnNlLlN0YXR1c2VzRW50cnkaSAoNU3RhdHVzZXNFbnRyeRILCgNrZXkYASABKAkSJgoFdmFsdWUYAiABKA4yFy5zb2NpYWwudjEuRm9sbG93U3RhdHVzOgI4ASItChpDYW5jZWxGb2xsb3dSZXF1ZXN0UmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIi4KG0NhbmNlbEZvbGxvd1JlcXVlc3RSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIigKFEFwcHJvdmVGb2xsb3dSZXF1ZXN0EhAKCGd1ZXN0X2lkGAEgASgJIigKFUFwcHJvdmVGb2xsb3dSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIicKE1JlamVjdEZvbGxvd1JlcXVlc3QSEAoIZ3Vlc3RfaWQYASABKAkiJwoUUmVqZWN0Rm9sbG93UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCJoChFGb2xsb3dSZXF1ZXN0SXRlbRIQCghndWVzdF9pZBgBIAEoCRISCgpndWVzdF9uYW1lGAIgASgJEhcKD2d1ZXN0X2ltYWdlX3VybBgDIAEoCRIUCgxyZXF1ZXN0ZWRfYXQYBCABKAkiQQogTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0c1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJInoKIUxpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHNSZXNwb25zZRIuCghyZXF1ZXN0cxgBIAMoCzIcLnNvY2lhbC52MS5Gb2xsb3dSZXF1ZXN0SXRlbRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIeChxHZXRQZW5kaW5nRm9sbG93Q291bnRSZXF1ZXN0Ii4KHUdldFBlbmRpbmdGb2xsb3dDb3VudFJlc3BvbnNlEg0KBWNvdW50GAEgASgFIlIKDENvbW1lbnRNZWRpYRIKCgJpZBgBIAEoCRISCgptZWRpYV90eXBlGAIgASgJEgsKA3VybBgDIAEoCRIVCg10aHVtYm5haWxfdXJsGAQgASgJIk8KDUNvbW1lbnRBdXRob3ISCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIRCglpbWFnZV91cmwYAyABKAkSEQoJdXNlcl90eXBlGAQgASgJItgBCgdDb21tZW50EgoKAmlkGAEgASgJEg8KB3Bvc3RfaWQYAiABKAkSEQoJcGFyZW50X2lkGAMgASgJEg8KB3VzZXJfaWQYBCABKAkSDwoHY29udGVudBgFIAEoCRISCgpjcmVhdGVkX2F0GAYgASgJEigKBmF1dGhvchgHIAEoCzIYLnNvY2lhbC52MS5Db21tZW50QXV0aG9yEiYKBW1lZGlhGAggAygLMhcuc29jaWFsLnYxLkNvbW1lbnRNZWRpYRIVCg1yZXBsaWVzX2NvdW50GAkgASgFInAKEUFkZENvbW1lbnRSZXF1ZXN0Eg8KB3Bvc3RfaWQYASABKAkSDwoHY29udGVudBgCIAEoCRIRCglwYXJlbnRfaWQYAyABKAkSJgoFbWVkaWEYBCADKAsyFy5zb2NpYWwudjEuQ29tbWVudE1lZGlhIlEKEkFkZENvbW1lbnRSZXNwb25zZRIjCgdjb21tZW50GAEgASgLMhIuc29jaWFsLnYxLkNvbW1lbnQSFgoOY29tbWVudHNfY291bnQYAiABKAUiKgoURGVsZXRlQ29tbWVudFJlcXVlc3QSEgoKY29tbWVudF9pZBgBIAEoCSIvChVEZWxldGVDb21tZW50UmVzcG9uc2USFgoOY29tbWVudHNfY291bnQYASABKAUiRQoTTGlzdENvbW1lbnRzUmVxdWVzdBIPCgdwb3N0X2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJjChRMaXN0Q29tbWVudHNSZXNwb25zZRIkCghjb21tZW50cxgBIAMoCzISLnNvY2lhbC52MS5Db21tZW50EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIkcKEkxpc3RSZXBsaWVzUmVxdWVzdBISCgpjb21tZW50X2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJhChNMaXN0UmVwbGllc1Jlc3BvbnNlEiMKB3JlcGxpZXMYASADKAsyEi5zb2NpYWwudjEuQ29tbWVudBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCJhCgtCbG9ja2VkVXNlchIKCgJpZBgBIAEoCRIRCgl1c2VyX3R5cGUYAiABKAkSDAoEbmFtZRgDIAEoCRIRCglpbWFnZV91cmwYBCABKAkSEgoKYmxvY2tlZF9hdBgFIAEoCSI8ChBCbG9ja1VzZXJSZXF1ZXN0EhIKCmJsb2NrZWRfaWQYASABKAkSFAoMYmxvY2tlZF90eXBlGAIgASgJIiQKEUJsb2NrVXNlclJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiKAoSVW5ibG9ja1VzZXJSZXF1ZXN0EhIKCmJsb2NrZWRfaWQYASABKAkiJgoTVW5ibG9ja1VzZXJSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjMKEkxpc3RCbG9ja2VkUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkiYwoTTGlzdEJsb2NrZWRSZXNwb25zZRIlCgV1c2VycxgBIAMoCzIWLnNvY2lhbC52MS5CbG9ja2VkVXNlchITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIpChVHZXRCbG9ja1N0YXR1c1JlcXVlc3QSEAoIdXNlcl9pZHMYASADKAkiiQEKFkdldEJsb2NrU3RhdHVzUmVzcG9uc2USPwoHYmxvY2tlZBgBIAMoCzIuLnNvY2lhbC52MS5HZXRCbG9ja1N0YXR1c1Jlc3BvbnNlLkJsb2NrZWRFbnRyeRouCgxCbG9ja2VkRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgIOgI4ASIlChJBZGRGYXZvcml0ZVJlcXVlc3QSDwoHY2FzdF9pZBgBIAEoCSImChNBZGRGYXZvcml0ZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiKAoVUmVtb3ZlRmF2b3JpdGVSZXF1ZXN0Eg8KB2Nhc3RfaWQYASABKAkiKQoWUmVtb3ZlRmF2b3JpdGVSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjUKFExpc3RGYXZvcml0ZXNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJQChVMaXN0RmF2b3JpdGVzUmVzcG9uc2USEAoIY2FzdF9pZHMYASADKAkSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiLAoYR2V0RmF2b3JpdGVTdGF0dXNSZXF1ZXN0EhAKCGNhc3RfaWRzGAEgAygJIpUBChlHZXRGYXZvcml0ZVN0YXR1c1Jlc3BvbnNlEkYKCWZhdm9yaXRlZBgBIAMoCzIzLnNvY2lhbC52MS5HZXRGYXZvcml0ZVN0YXR1c1Jlc3BvbnNlLkZhdm9yaXRlZEVudHJ5GjAKDkZhdm9yaXRlZEVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCDoCOAEqfAoMRm9sbG93U3RhdHVzEh0KGUZPTExPV19TVEFUVVNfVU5TUEVDSUZJRUQQABIWChJGT0xMT1dfU1RBVFVTX05PTkUQARIZChVGT0xMT1dfU1RBVFVTX1BFTkRJTkcQAhIaChZGT0xMT1dfU1RBVFVTX0FQUFJPVkVEEAMy7hIKD1RpbWVsaW5lU2VydmljZRJSCg1MaXN0Q2FzdFBvc3RzEh8uc29jaWFsLnYxLkxpc3RDYXN0UG9zdHNSZXF1ZXN0GiAuc29jaWFsLnYxLkxpc3RDYXN0UG9zdHNSZXNwb25zZRJMCgtHZXRDYXN0UG9zdBIdLnNvY2lhbC52MS5HZXRDYXN0UG9zdFJlcXVlc3QaHi5zb2NpYWwudjEuR2V0Q2FzdFBvc3RSZXNwb25zZRJPCgxTYXZlQ2FzdFBvc3QSHi5zb2NpYWwudjEuU2F2ZUNhc3RQb3N0UmVxdWVzdBofLnNvY2lhbC52MS5TYXZlQ2FzdFBvc3RSZXNwb25zZRJVCg5EZWxldGVDYXN0UG9zdBIgLnNvY2lhbC52MS5EZWxldGVDYXN0UG9zdFJlcXVlc3QaIS5zb2NpYWwudjEuRGVsZXRlQ2FzdFBvc3RSZXNwb25zZRJPCgxMaWtlQ2FzdFBvc3QSHi5zb2NpYWwudjEuTGlrZUNhc3RQb3N0UmVxdWVzdBofLnNvY2lhbC52MS5MaWtlQ2FzdFBvc3RSZXNwb25zZRJVCg5Vbmxpa2VDYXN0UG9zdBIgLnNvY2lhbC52MS5Vbmxpa2VDYXN0UG9zdFJlcXVlc3QaIS5zb2NpYWwudjEuVW5saWtlQ2FzdFBvc3RSZXNwb25zZRJeChFHZXRQb3N0TGlrZVN0YXR1cxIjLnNvY2lhbC52MS5HZXRQb3N0TGlrZVN0YXR1c1JlcXVlc3QaJC5zb2NpYWwudjEuR2V0UG9zdExpa2VTdGF0dXNSZXNwb25zZRJJCgpGb2xsb3dDYXN0Ehwuc29jaWFsLnYxLkZvbGxvd0Nhc3RSZXF1ZXN0Gh0uc29jaWFsLnYxLkZvbGxvd0Nhc3RSZXNwb25zZRJPCgxVbmZvbGxvd0Nhc3QSHi5zb2NpYWwudjEuVW5mb2xsb3dDYXN0UmVxdWVzdBofLnNvY2lhbC52MS5VbmZvbGxvd0Nhc3RSZXNwb25zZRJSCg1MaXN0Rm9sbG93aW5nEh8uc29jaWFsLnYxLkxpc3RGb2xsb3dpbmdSZXF1ZXN0GiAuc29jaWFsLnYxLkxpc3RGb2xsb3dpbmdSZXNwb25zZRJYCg9HZXRGb2xsb3dTdGF0dXMSIS5zb2NpYWwudjEuR2V0Rm9sbG93U3RhdHVzUmVxdWVzdBoiLnNvY2lhbC52MS5HZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJkChNDYW5jZWxGb2xsb3dSZXF1ZXN0EiUuc29jaWFsLnYxLkNhbmNlbEZvbGxvd1JlcXVlc3RSZXF1ZXN0GiYuc29jaWFsLnYxLkNhbmNlbEZvbGxvd1JlcXVlc3RSZXNwb25zZRJSCg1BcHByb3ZlRm9sbG93Eh8uc29jaWFsLnYxLkFwcHJvdmVGb2xsb3dSZXF1ZXN0GiAuc29jaWFsLnYxLkFwcHJvdmVGb2xsb3dSZXNwb25zZRJPCgxSZWplY3RGb2xsb3cSHi5zb2NpYWwudjEuUmVqZWN0Rm9sbG93UmVxdWVzdBofLnNvY2lhbC52MS5SZWplY3RGb2xsb3dSZXNwb25zZRJ2ChlMaXN0UGVuZGluZ0ZvbGxvd1JlcXVlc3RzEisuc29jaWFsLnYxLkxpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHNSZXF1ZXN0Giwuc29jaWFsLnYxLkxpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHNSZXNwb25zZRJqChVHZXRQZW5kaW5nRm9sbG93Q291bnQSJy5zb2NpYWwudjEuR2V0UGVuZGluZ0ZvbGxvd0NvdW50UmVxdWVzdBooLnNvY2lhbC52MS5HZXRQZW5kaW5nRm9sbG93Q291bnRSZXNwb25zZRJJCgpBZGRDb21tZW50Ehwuc29jaWFsLnYxLkFkZENvbW1lbnRSZXF1ZXN0Gh0uc29jaWFsLnYxLkFkZENvbW1lbnRSZXNwb25zZRJSCg1EZWxldGVDb21tZW50Eh8uc29jaWFsLnYxLkRlbGV0ZUNvbW1lbnRSZXF1ZXN0GiAuc29jaWFsLnYxLkRlbGV0ZUNvbW1lbnRSZXNwb25zZRJPCgxMaXN0Q29tbWVudHMSHi5zb2NpYWwudjEuTGlzdENvbW1lbnRzUmVxdWVzdBofLnNvY2lhbC52MS5MaXN0Q29tbWVudHNSZXNwb25zZRJMCgtMaXN0UmVwbGllcxIdLnNvY2lhbC52MS5MaXN0UmVwbGllc1JlcXVlc3QaHi5zb2NpYWwudjEuTGlzdFJlcGxpZXNSZXNwb25zZRJGCglCbG9ja1VzZXISGy5zb2NpYWwudjEuQmxvY2tVc2VyUmVxdWVzdBocLnNvY2lhbC52MS5CbG9ja1VzZXJSZXNwb25zZRJMCgtVbmJsb2NrVXNlchIdLnNvY2lhbC52MS5VbmJsb2NrVXNlclJlcXVlc3QaHi5zb2NpYWwudjEuVW5ibG9ja1VzZXJSZXNwb25zZRJMCgtMaXN0QmxvY2tlZBIdLnNvY2lhbC52MS5MaXN0QmxvY2tlZFJlcXVlc3QaHi5zb2NpYWwudjEuTGlzdEJsb2NrZWRSZXNwb25zZRJVCg5HZXRCbG9ja1N0YXR1cxIgLnNvY2lhbC52MS5HZXRCbG9ja1N0YXR1c1JlcXVlc3QaIS5zb2NpYWwudjEuR2V0QmxvY2tTdGF0dXNSZXNwb25zZRJMCgtBZGRGYXZvcml0ZRIdLnNvY2lhbC52MS5BZGRGYXZvcml0ZVJlcXVlc3QaHi5zb2NpYWwudjEuQWRkRmF2b3JpdGVSZXNwb25zZRJVCg5SZW1vdmVGYXZvcml0ZRIgLnNvY2lhbC52MS5SZW1vdmVGYXZvcml0ZVJlcXVlc3QaIS5zb2NpYWwudjEuUmVtb3ZlRmF2b3JpdGVSZXNwb25zZRJSCg1MaXN0RmF2b3JpdGVzEh8uc29jaWFsLnYxLkxpc3RGYXZvcml0ZXNSZXF1ZXN0GiAuc29jaWFsLnYxLkxpc3RGYXZvcml0ZXNSZXNwb25zZRJeChFHZXRGYXZvcml0ZVN0YXR1cxIjLnNvY2lhbC52MS5HZXRGYXZvcml0ZVN0YXR1c1JlcXVlc3QaJC5zb2NpYWwudjEuR2V0RmF2b3JpdGVTdGF0dXNSZXNwb25zZWIGcHJvdG8z");
 
 /**
  * @generated from message social.v1.CastPostAuthor
@@ -464,6 +464,13 @@ export type FollowCastResponse = Message<"social.v1.FollowCastResponse"> & {
    * @generated from field: bool success = 1;
    */
   success: boolean;
+
+  /**
+   * Resulting follow status
+   *
+   * @generated from field: social.v1.FollowStatus status = 2;
+   */
+  status: FollowStatus;
 };
 
 /**
@@ -578,11 +585,11 @@ export const GetFollowStatusRequestSchema: GenMessage<GetFollowStatusRequest> = 
  */
 export type GetFollowStatusResponse = Message<"social.v1.GetFollowStatusResponse"> & {
   /**
-   * cast_id -> is_following
+   * cast_id -> follow status
    *
-   * @generated from field: map<string, bool> following = 1;
+   * @generated from field: map<string, social.v1.FollowStatus> statuses = 1;
    */
-  following: { [key: string]: boolean };
+  statuses: { [key: string]: FollowStatus };
 };
 
 /**
@@ -591,6 +598,229 @@ export type GetFollowStatusResponse = Message<"social.v1.GetFollowStatusResponse
  */
 export const GetFollowStatusResponseSchema: GenMessage<GetFollowStatusResponse> = /*@__PURE__*/
   messageDesc(file_social_v1_service, 24);
+
+/**
+ * Cancel Follow Request (for guests to cancel pending requests)
+ *
+ * @generated from message social.v1.CancelFollowRequestRequest
+ */
+export type CancelFollowRequestRequest = Message<"social.v1.CancelFollowRequestRequest"> & {
+  /**
+   * @generated from field: string cast_id = 1;
+   */
+  castId: string;
+};
+
+/**
+ * Describes the message social.v1.CancelFollowRequestRequest.
+ * Use `create(CancelFollowRequestRequestSchema)` to create a new message.
+ */
+export const CancelFollowRequestRequestSchema: GenMessage<CancelFollowRequestRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 25);
+
+/**
+ * @generated from message social.v1.CancelFollowRequestResponse
+ */
+export type CancelFollowRequestResponse = Message<"social.v1.CancelFollowRequestResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message social.v1.CancelFollowRequestResponse.
+ * Use `create(CancelFollowRequestResponseSchema)` to create a new message.
+ */
+export const CancelFollowRequestResponseSchema: GenMessage<CancelFollowRequestResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 26);
+
+/**
+ * Follow Approval Messages (for private cast owners)
+ *
+ * @generated from message social.v1.ApproveFollowRequest
+ */
+export type ApproveFollowRequest = Message<"social.v1.ApproveFollowRequest"> & {
+  /**
+   * @generated from field: string guest_id = 1;
+   */
+  guestId: string;
+};
+
+/**
+ * Describes the message social.v1.ApproveFollowRequest.
+ * Use `create(ApproveFollowRequestSchema)` to create a new message.
+ */
+export const ApproveFollowRequestSchema: GenMessage<ApproveFollowRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 27);
+
+/**
+ * @generated from message social.v1.ApproveFollowResponse
+ */
+export type ApproveFollowResponse = Message<"social.v1.ApproveFollowResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message social.v1.ApproveFollowResponse.
+ * Use `create(ApproveFollowResponseSchema)` to create a new message.
+ */
+export const ApproveFollowResponseSchema: GenMessage<ApproveFollowResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 28);
+
+/**
+ * @generated from message social.v1.RejectFollowRequest
+ */
+export type RejectFollowRequest = Message<"social.v1.RejectFollowRequest"> & {
+  /**
+   * @generated from field: string guest_id = 1;
+   */
+  guestId: string;
+};
+
+/**
+ * Describes the message social.v1.RejectFollowRequest.
+ * Use `create(RejectFollowRequestSchema)` to create a new message.
+ */
+export const RejectFollowRequestSchema: GenMessage<RejectFollowRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 29);
+
+/**
+ * @generated from message social.v1.RejectFollowResponse
+ */
+export type RejectFollowResponse = Message<"social.v1.RejectFollowResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message social.v1.RejectFollowResponse.
+ * Use `create(RejectFollowResponseSchema)` to create a new message.
+ */
+export const RejectFollowResponseSchema: GenMessage<RejectFollowResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 30);
+
+/**
+ * @generated from message social.v1.FollowRequestItem
+ */
+export type FollowRequestItem = Message<"social.v1.FollowRequestItem"> & {
+  /**
+   * @generated from field: string guest_id = 1;
+   */
+  guestId: string;
+
+  /**
+   * @generated from field: string guest_name = 2;
+   */
+  guestName: string;
+
+  /**
+   * @generated from field: string guest_image_url = 3;
+   */
+  guestImageUrl: string;
+
+  /**
+   * ISO8601
+   *
+   * @generated from field: string requested_at = 4;
+   */
+  requestedAt: string;
+};
+
+/**
+ * Describes the message social.v1.FollowRequestItem.
+ * Use `create(FollowRequestItemSchema)` to create a new message.
+ */
+export const FollowRequestItemSchema: GenMessage<FollowRequestItem> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 31);
+
+/**
+ * @generated from message social.v1.ListPendingFollowRequestsRequest
+ */
+export type ListPendingFollowRequestsRequest = Message<"social.v1.ListPendingFollowRequestsRequest"> & {
+  /**
+   * default: 20
+   *
+   * @generated from field: int32 limit = 1;
+   */
+  limit: number;
+
+  /**
+   * optional
+   *
+   * @generated from field: string cursor = 2;
+   */
+  cursor: string;
+};
+
+/**
+ * Describes the message social.v1.ListPendingFollowRequestsRequest.
+ * Use `create(ListPendingFollowRequestsRequestSchema)` to create a new message.
+ */
+export const ListPendingFollowRequestsRequestSchema: GenMessage<ListPendingFollowRequestsRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 32);
+
+/**
+ * @generated from message social.v1.ListPendingFollowRequestsResponse
+ */
+export type ListPendingFollowRequestsResponse = Message<"social.v1.ListPendingFollowRequestsResponse"> & {
+  /**
+   * @generated from field: repeated social.v1.FollowRequestItem requests = 1;
+   */
+  requests: FollowRequestItem[];
+
+  /**
+   * @generated from field: string next_cursor = 2;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 3;
+   */
+  hasMore: boolean;
+};
+
+/**
+ * Describes the message social.v1.ListPendingFollowRequestsResponse.
+ * Use `create(ListPendingFollowRequestsResponseSchema)` to create a new message.
+ */
+export const ListPendingFollowRequestsResponseSchema: GenMessage<ListPendingFollowRequestsResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 33);
+
+/**
+ * @generated from message social.v1.GetPendingFollowCountRequest
+ */
+export type GetPendingFollowCountRequest = Message<"social.v1.GetPendingFollowCountRequest"> & {
+};
+
+/**
+ * Describes the message social.v1.GetPendingFollowCountRequest.
+ * Use `create(GetPendingFollowCountRequestSchema)` to create a new message.
+ */
+export const GetPendingFollowCountRequestSchema: GenMessage<GetPendingFollowCountRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 34);
+
+/**
+ * @generated from message social.v1.GetPendingFollowCountResponse
+ */
+export type GetPendingFollowCountResponse = Message<"social.v1.GetPendingFollowCountResponse"> & {
+  /**
+   * @generated from field: int32 count = 1;
+   */
+  count: number;
+};
+
+/**
+ * Describes the message social.v1.GetPendingFollowCountResponse.
+ * Use `create(GetPendingFollowCountResponseSchema)` to create a new message.
+ */
+export const GetPendingFollowCountResponseSchema: GenMessage<GetPendingFollowCountResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_service, 35);
 
 /**
  * Comment Messages
@@ -626,7 +856,7 @@ export type CommentMedia = Message<"social.v1.CommentMedia"> & {
  * Use `create(CommentMediaSchema)` to create a new message.
  */
 export const CommentMediaSchema: GenMessage<CommentMedia> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 25);
+  messageDesc(file_social_v1_service, 36);
 
 /**
  * @generated from message social.v1.CommentAuthor
@@ -660,7 +890,7 @@ export type CommentAuthor = Message<"social.v1.CommentAuthor"> & {
  * Use `create(CommentAuthorSchema)` to create a new message.
  */
 export const CommentAuthorSchema: GenMessage<CommentAuthor> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 26);
+  messageDesc(file_social_v1_service, 37);
 
 /**
  * @generated from message social.v1.Comment
@@ -723,7 +953,7 @@ export type Comment = Message<"social.v1.Comment"> & {
  * Use `create(CommentSchema)` to create a new message.
  */
 export const CommentSchema: GenMessage<Comment> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 27);
+  messageDesc(file_social_v1_service, 38);
 
 /**
  * @generated from message social.v1.AddCommentRequest
@@ -759,7 +989,7 @@ export type AddCommentRequest = Message<"social.v1.AddCommentRequest"> & {
  * Use `create(AddCommentRequestSchema)` to create a new message.
  */
 export const AddCommentRequestSchema: GenMessage<AddCommentRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 28);
+  messageDesc(file_social_v1_service, 39);
 
 /**
  * @generated from message social.v1.AddCommentResponse
@@ -783,7 +1013,7 @@ export type AddCommentResponse = Message<"social.v1.AddCommentResponse"> & {
  * Use `create(AddCommentResponseSchema)` to create a new message.
  */
 export const AddCommentResponseSchema: GenMessage<AddCommentResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 29);
+  messageDesc(file_social_v1_service, 40);
 
 /**
  * @generated from message social.v1.DeleteCommentRequest
@@ -800,7 +1030,7 @@ export type DeleteCommentRequest = Message<"social.v1.DeleteCommentRequest"> & {
  * Use `create(DeleteCommentRequestSchema)` to create a new message.
  */
 export const DeleteCommentRequestSchema: GenMessage<DeleteCommentRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 30);
+  messageDesc(file_social_v1_service, 41);
 
 /**
  * @generated from message social.v1.DeleteCommentResponse
@@ -817,7 +1047,7 @@ export type DeleteCommentResponse = Message<"social.v1.DeleteCommentResponse"> &
  * Use `create(DeleteCommentResponseSchema)` to create a new message.
  */
 export const DeleteCommentResponseSchema: GenMessage<DeleteCommentResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 31);
+  messageDesc(file_social_v1_service, 42);
 
 /**
  * @generated from message social.v1.ListCommentsRequest
@@ -848,7 +1078,7 @@ export type ListCommentsRequest = Message<"social.v1.ListCommentsRequest"> & {
  * Use `create(ListCommentsRequestSchema)` to create a new message.
  */
 export const ListCommentsRequestSchema: GenMessage<ListCommentsRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 32);
+  messageDesc(file_social_v1_service, 43);
 
 /**
  * @generated from message social.v1.ListCommentsResponse
@@ -877,7 +1107,7 @@ export type ListCommentsResponse = Message<"social.v1.ListCommentsResponse"> & {
  * Use `create(ListCommentsResponseSchema)` to create a new message.
  */
 export const ListCommentsResponseSchema: GenMessage<ListCommentsResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 33);
+  messageDesc(file_social_v1_service, 44);
 
 /**
  * @generated from message social.v1.ListRepliesRequest
@@ -910,7 +1140,7 @@ export type ListRepliesRequest = Message<"social.v1.ListRepliesRequest"> & {
  * Use `create(ListRepliesRequestSchema)` to create a new message.
  */
 export const ListRepliesRequestSchema: GenMessage<ListRepliesRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 34);
+  messageDesc(file_social_v1_service, 45);
 
 /**
  * @generated from message social.v1.ListRepliesResponse
@@ -937,7 +1167,7 @@ export type ListRepliesResponse = Message<"social.v1.ListRepliesResponse"> & {
  * Use `create(ListRepliesResponseSchema)` to create a new message.
  */
 export const ListRepliesResponseSchema: GenMessage<ListRepliesResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 35);
+  messageDesc(file_social_v1_service, 46);
 
 /**
  * Block Messages
@@ -980,7 +1210,7 @@ export type BlockedUser = Message<"social.v1.BlockedUser"> & {
  * Use `create(BlockedUserSchema)` to create a new message.
  */
 export const BlockedUserSchema: GenMessage<BlockedUser> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 36);
+  messageDesc(file_social_v1_service, 47);
 
 /**
  * @generated from message social.v1.BlockUserRequest
@@ -1004,7 +1234,7 @@ export type BlockUserRequest = Message<"social.v1.BlockUserRequest"> & {
  * Use `create(BlockUserRequestSchema)` to create a new message.
  */
 export const BlockUserRequestSchema: GenMessage<BlockUserRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 37);
+  messageDesc(file_social_v1_service, 48);
 
 /**
  * @generated from message social.v1.BlockUserResponse
@@ -1021,7 +1251,7 @@ export type BlockUserResponse = Message<"social.v1.BlockUserResponse"> & {
  * Use `create(BlockUserResponseSchema)` to create a new message.
  */
 export const BlockUserResponseSchema: GenMessage<BlockUserResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 38);
+  messageDesc(file_social_v1_service, 49);
 
 /**
  * @generated from message social.v1.UnblockUserRequest
@@ -1038,7 +1268,7 @@ export type UnblockUserRequest = Message<"social.v1.UnblockUserRequest"> & {
  * Use `create(UnblockUserRequestSchema)` to create a new message.
  */
 export const UnblockUserRequestSchema: GenMessage<UnblockUserRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 39);
+  messageDesc(file_social_v1_service, 50);
 
 /**
  * @generated from message social.v1.UnblockUserResponse
@@ -1055,7 +1285,7 @@ export type UnblockUserResponse = Message<"social.v1.UnblockUserResponse"> & {
  * Use `create(UnblockUserResponseSchema)` to create a new message.
  */
 export const UnblockUserResponseSchema: GenMessage<UnblockUserResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 40);
+  messageDesc(file_social_v1_service, 51);
 
 /**
  * @generated from message social.v1.ListBlockedRequest
@@ -1081,7 +1311,7 @@ export type ListBlockedRequest = Message<"social.v1.ListBlockedRequest"> & {
  * Use `create(ListBlockedRequestSchema)` to create a new message.
  */
 export const ListBlockedRequestSchema: GenMessage<ListBlockedRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 41);
+  messageDesc(file_social_v1_service, 52);
 
 /**
  * @generated from message social.v1.ListBlockedResponse
@@ -1108,7 +1338,7 @@ export type ListBlockedResponse = Message<"social.v1.ListBlockedResponse"> & {
  * Use `create(ListBlockedResponseSchema)` to create a new message.
  */
 export const ListBlockedResponseSchema: GenMessage<ListBlockedResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 42);
+  messageDesc(file_social_v1_service, 53);
 
 /**
  * @generated from message social.v1.GetBlockStatusRequest
@@ -1125,7 +1355,7 @@ export type GetBlockStatusRequest = Message<"social.v1.GetBlockStatusRequest"> &
  * Use `create(GetBlockStatusRequestSchema)` to create a new message.
  */
 export const GetBlockStatusRequestSchema: GenMessage<GetBlockStatusRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 43);
+  messageDesc(file_social_v1_service, 54);
 
 /**
  * @generated from message social.v1.GetBlockStatusResponse
@@ -1144,7 +1374,7 @@ export type GetBlockStatusResponse = Message<"social.v1.GetBlockStatusResponse">
  * Use `create(GetBlockStatusResponseSchema)` to create a new message.
  */
 export const GetBlockStatusResponseSchema: GenMessage<GetBlockStatusResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 44);
+  messageDesc(file_social_v1_service, 55);
 
 /**
  * Favorite Messages
@@ -1163,7 +1393,7 @@ export type AddFavoriteRequest = Message<"social.v1.AddFavoriteRequest"> & {
  * Use `create(AddFavoriteRequestSchema)` to create a new message.
  */
 export const AddFavoriteRequestSchema: GenMessage<AddFavoriteRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 45);
+  messageDesc(file_social_v1_service, 56);
 
 /**
  * @generated from message social.v1.AddFavoriteResponse
@@ -1180,7 +1410,7 @@ export type AddFavoriteResponse = Message<"social.v1.AddFavoriteResponse"> & {
  * Use `create(AddFavoriteResponseSchema)` to create a new message.
  */
 export const AddFavoriteResponseSchema: GenMessage<AddFavoriteResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 46);
+  messageDesc(file_social_v1_service, 57);
 
 /**
  * @generated from message social.v1.RemoveFavoriteRequest
@@ -1197,7 +1427,7 @@ export type RemoveFavoriteRequest = Message<"social.v1.RemoveFavoriteRequest"> &
  * Use `create(RemoveFavoriteRequestSchema)` to create a new message.
  */
 export const RemoveFavoriteRequestSchema: GenMessage<RemoveFavoriteRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 47);
+  messageDesc(file_social_v1_service, 58);
 
 /**
  * @generated from message social.v1.RemoveFavoriteResponse
@@ -1214,7 +1444,7 @@ export type RemoveFavoriteResponse = Message<"social.v1.RemoveFavoriteResponse">
  * Use `create(RemoveFavoriteResponseSchema)` to create a new message.
  */
 export const RemoveFavoriteResponseSchema: GenMessage<RemoveFavoriteResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 48);
+  messageDesc(file_social_v1_service, 59);
 
 /**
  * @generated from message social.v1.ListFavoritesRequest
@@ -1240,7 +1470,7 @@ export type ListFavoritesRequest = Message<"social.v1.ListFavoritesRequest"> & {
  * Use `create(ListFavoritesRequestSchema)` to create a new message.
  */
 export const ListFavoritesRequestSchema: GenMessage<ListFavoritesRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 49);
+  messageDesc(file_social_v1_service, 60);
 
 /**
  * @generated from message social.v1.ListFavoritesResponse
@@ -1267,7 +1497,7 @@ export type ListFavoritesResponse = Message<"social.v1.ListFavoritesResponse"> &
  * Use `create(ListFavoritesResponseSchema)` to create a new message.
  */
 export const ListFavoritesResponseSchema: GenMessage<ListFavoritesResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 50);
+  messageDesc(file_social_v1_service, 61);
 
 /**
  * @generated from message social.v1.GetFavoriteStatusRequest
@@ -1284,7 +1514,7 @@ export type GetFavoriteStatusRequest = Message<"social.v1.GetFavoriteStatusReque
  * Use `create(GetFavoriteStatusRequestSchema)` to create a new message.
  */
 export const GetFavoriteStatusRequestSchema: GenMessage<GetFavoriteStatusRequest> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 51);
+  messageDesc(file_social_v1_service, 62);
 
 /**
  * @generated from message social.v1.GetFavoriteStatusResponse
@@ -1303,7 +1533,46 @@ export type GetFavoriteStatusResponse = Message<"social.v1.GetFavoriteStatusResp
  * Use `create(GetFavoriteStatusResponseSchema)` to create a new message.
  */
 export const GetFavoriteStatusResponseSchema: GenMessage<GetFavoriteStatusResponse> = /*@__PURE__*/
-  messageDesc(file_social_v1_service, 52);
+  messageDesc(file_social_v1_service, 63);
+
+/**
+ * Follow Status Enum
+ *
+ * @generated from enum social.v1.FollowStatus
+ */
+export enum FollowStatus {
+  /**
+   * @generated from enum value: FOLLOW_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * Not following
+   *
+   * @generated from enum value: FOLLOW_STATUS_NONE = 1;
+   */
+  NONE = 1,
+
+  /**
+   * Follow request pending approval
+   *
+   * @generated from enum value: FOLLOW_STATUS_PENDING = 2;
+   */
+  PENDING = 2,
+
+  /**
+   * Following
+   *
+   * @generated from enum value: FOLLOW_STATUS_APPROVED = 3;
+   */
+  APPROVED = 3,
+}
+
+/**
+ * Describes the enum social.v1.FollowStatus.
+ */
+export const FollowStatusSchema: GenEnum<FollowStatus> = /*@__PURE__*/
+  enumDesc(file_social_v1_service, 0);
 
 /**
  * @generated from service social.v1.TimelineService
@@ -1400,6 +1669,48 @@ export const TimelineService: GenService<{
     methodKind: "unary";
     input: typeof GetFollowStatusRequestSchema;
     output: typeof GetFollowStatusResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.CancelFollowRequest
+   */
+  cancelFollowRequest: {
+    methodKind: "unary";
+    input: typeof CancelFollowRequestRequestSchema;
+    output: typeof CancelFollowRequestResponseSchema;
+  },
+  /**
+   * Follow Approval RPCs (for private casts)
+   *
+   * @generated from rpc social.v1.TimelineService.ApproveFollow
+   */
+  approveFollow: {
+    methodKind: "unary";
+    input: typeof ApproveFollowRequestSchema;
+    output: typeof ApproveFollowResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.RejectFollow
+   */
+  rejectFollow: {
+    methodKind: "unary";
+    input: typeof RejectFollowRequestSchema;
+    output: typeof RejectFollowResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.ListPendingFollowRequests
+   */
+  listPendingFollowRequests: {
+    methodKind: "unary";
+    input: typeof ListPendingFollowRequestsRequestSchema;
+    output: typeof ListPendingFollowRequestsResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.TimelineService.GetPendingFollowCount
+   */
+  getPendingFollowCount: {
+    methodKind: "unary";
+    input: typeof GetPendingFollowCountRequestSchema;
+    output: typeof GetPendingFollowCountResponseSchema;
   },
   /**
    * Comment RPCs

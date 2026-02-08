@@ -41,7 +41,7 @@ RSpec.describe Social::UseCases::Comments::ListReplies do
     allow(user_adapter).to receive(:get_user_types_batch)
       .and_return({ user_id_cast => "cast", user_id_guest => "guest" })
 
-    cast_info = double(:cast_info, id: "cast-1", name: "Yuna", image_url: "http://cdn/yuna.jpg")
+    cast_info = double(:cast_info, id: "cast-1", name: "Yuna", image_path: "casts/yuna.jpg", avatar_path: nil)
     allow(cast_adapter).to receive(:find_by_user_ids)
       .and_return({ user_id_cast => cast_info })
 
@@ -53,7 +53,7 @@ RSpec.describe Social::UseCases::Comments::ListReplies do
   describe "#call" do
     it "returns replies with authors" do
       allow(comment_repo).to receive(:list_replies)
-        .with(parent_id: comment_id, limit: 20, cursor: nil)
+        .with(parent_id: comment_id, limit: 20, cursor: nil, exclude_user_ids: nil)
         .and_return([reply1, reply2])
 
       result = use_case.call(comment_id: comment_id)
@@ -66,7 +66,7 @@ RSpec.describe Social::UseCases::Comments::ListReplies do
 
     it "respects limit parameter" do
       allow(comment_repo).to receive(:list_replies)
-        .with(parent_id: comment_id, limit: 5, cursor: nil)
+        .with(parent_id: comment_id, limit: 5, cursor: nil, exclude_user_ids: nil)
         .and_return([reply1])
 
       result = use_case.call(comment_id: comment_id, limit: 5)
@@ -76,31 +76,31 @@ RSpec.describe Social::UseCases::Comments::ListReplies do
 
     it "clamps limit to MAX_LIMIT" do
       allow(comment_repo).to receive(:list_replies)
-        .with(parent_id: comment_id, limit: 50, cursor: nil)
+        .with(parent_id: comment_id, limit: 50, cursor: nil, exclude_user_ids: nil)
         .and_return([])
 
       use_case.call(comment_id: comment_id, limit: 100)
 
       expect(comment_repo).to have_received(:list_replies)
-        .with(parent_id: comment_id, limit: 50, cursor: nil)
+        .with(parent_id: comment_id, limit: 50, cursor: nil, exclude_user_ids: nil)
     end
 
     it "clamps limit to minimum of 1" do
       allow(comment_repo).to receive(:list_replies)
-        .with(parent_id: comment_id, limit: 1, cursor: nil)
+        .with(parent_id: comment_id, limit: 1, cursor: nil, exclude_user_ids: nil)
         .and_return([])
 
       use_case.call(comment_id: comment_id, limit: 0)
 
       expect(comment_repo).to have_received(:list_replies)
-        .with(parent_id: comment_id, limit: 1, cursor: nil)
+        .with(parent_id: comment_id, limit: 1, cursor: nil, exclude_user_ids: nil)
     end
 
     it "sets has_more to true when more results exist" do
       # Return limit + 1 results to indicate more exist
       replies = [reply1, reply2, double(:reply3, id: "r3", user_id: user_id_cast, created_at: Time.now)]
       allow(comment_repo).to receive(:list_replies)
-        .with(parent_id: comment_id, limit: 2, cursor: nil)
+        .with(parent_id: comment_id, limit: 2, cursor: nil, exclude_user_ids: nil)
         .and_return(replies)
 
       result = use_case.call(comment_id: comment_id, limit: 2)
@@ -115,7 +115,7 @@ RSpec.describe Social::UseCases::Comments::ListReplies do
       encoded_cursor = Base64.urlsafe_encode64(JSON.generate(cursor_data), padding: false)
 
       allow(comment_repo).to receive(:list_replies)
-        .with(parent_id: comment_id, limit: 20, cursor: hash_including(:created_at, :id))
+        .with(parent_id: comment_id, limit: 20, cursor: hash_including(:created_at, :id), exclude_user_ids: nil)
         .and_return([])
 
       use_case.call(comment_id: comment_id, cursor: encoded_cursor)
@@ -125,7 +125,7 @@ RSpec.describe Social::UseCases::Comments::ListReplies do
 
     it "handles invalid cursor gracefully" do
       allow(comment_repo).to receive(:list_replies)
-        .with(parent_id: comment_id, limit: 20, cursor: nil)
+        .with(parent_id: comment_id, limit: 20, cursor: nil, exclude_user_ids: nil)
         .and_return([])
 
       result = use_case.call(comment_id: comment_id, cursor: "invalid-cursor")

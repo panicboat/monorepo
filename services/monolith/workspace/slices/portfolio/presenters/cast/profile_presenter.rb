@@ -35,7 +35,8 @@ module Portfolio
             tags: (cast.tags || []).to_a,
             areas: areas.map { |a| area_to_proto(a) },
             genres: genres.map { |g| genre_to_proto(g) },
-            is_online: is_online
+            is_online: is_online,
+            registered_at: cast.respond_to?(:registered_at) && cast.registered_at ? cast.registered_at.iso8601 : ""
           )
         end
 
@@ -63,19 +64,17 @@ module Portfolio
 
         def self.visibility_to_enum(str)
           case str
-          when "unregistered" then :CAST_VISIBILITY_UNREGISTERED
-          when "unpublished" then :CAST_VISIBILITY_UNPUBLISHED
-          when "published" then :CAST_VISIBILITY_PUBLISHED
+          when "public" then :CAST_VISIBILITY_PUBLIC
+          when "private" then :CAST_VISIBILITY_PRIVATE
           else :CAST_VISIBILITY_UNSPECIFIED
           end
         end
 
         def self.visibility_from_enum(enum_val)
           case enum_val
-          when :CAST_VISIBILITY_UNREGISTERED then "unregistered"
-          when :CAST_VISIBILITY_UNPUBLISHED then "unpublished"
-          when :CAST_VISIBILITY_PUBLISHED then "published"
-          else "unregistered"
+          when :CAST_VISIBILITY_PUBLIC then "public"
+          when :CAST_VISIBILITY_PRIVATE then "private"
+          else "public"
           end
         end
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Loader2, Image as ImageIcon, Tag, Eye, Camera } from "lucide-react";
+import { Loader2, Image as ImageIcon, Tag, Eye, Camera, Shield } from "lucide-react";
 
 import { ProfileFormData, MediaItem } from "@/modules/portfolio/types";
 import { ActionButton } from "@/components/ui/ActionButton";
@@ -12,6 +12,7 @@ import { PhysicalInputs } from "@/modules/portfolio/components/cast/PhysicalInpu
 import { TagSelector } from "@/modules/portfolio/components/cast/TagSelector";
 import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader";
 import { ProfilePreviewModal } from "@/modules/portfolio/components/cast/ProfilePreviewModal";
+import { VisibilityToggle } from "@/modules/portfolio/components/cast/VisibilityToggle";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { useToast } from "@/components/ui/Toast";
 import { useCastData } from "@/modules/portfolio/hooks";
@@ -32,11 +33,13 @@ export default function ProfileEditPage() {
     plans,
     schedules,
     loading,
+    isPrivate,
     updateProfile,
     updateImages,
     saveProfile,
     saveImages,
     uploadImage,
+    saveVisibility,
   } = useCastData({ apiPath: "/api/cast/profile" });
 
   // Initialize avatar from existing data
@@ -300,6 +303,20 @@ export default function ProfileEditPage() {
             onOtherChange={handleOtherChange}
             onAddOther={handleAddOther}
             onRemoveOther={handleRemoveOther}
+          />
+        </SectionCard>
+
+        {/* Visibility Settings (Order 7) */}
+        <SectionCard
+          id="visibility"
+          title="Privacy Settings"
+          icon={<Shield size={20} />}
+          collapsible
+          defaultOpen={false}
+        >
+          <VisibilityToggle
+            isPrivate={isPrivate}
+            onSave={saveVisibility}
           />
         </SectionCard>
       </div>

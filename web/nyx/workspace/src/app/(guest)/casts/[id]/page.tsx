@@ -5,7 +5,7 @@ import { CastTimeline } from "@/modules/social/components/guest/CastTimeline";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { use, useState, useEffect } from "react";
-import { MessageCircle, Heart, AlertTriangle, Loader2, UserPlus, UserCheck } from "lucide-react";
+import { MessageCircle, Heart, AlertTriangle, Loader2, UserPlus, UserCheck, Clock } from "lucide-react";
 import { useFollow } from "@/modules/social/hooks/useFollow";
 import { useFavorite } from "@/modules/social/hooks/useFavorite";
 import { useBlock } from "@/modules/social/hooks/useBlock";
@@ -180,7 +180,7 @@ export default function CastDetailPage({
 }
 
 function FollowButton({ castId }: { castId: string }) {
-  const { toggleFollow, fetchFollowStatus, isFollowing, loading } = useFollow();
+  const { toggleFollow, fetchFollowStatus, isFollowing, isPending, loading } = useFollow();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -193,6 +193,7 @@ function FollowButton({ castId }: { castId: string }) {
   }, [isHydrated, isAuthenticated, castId, fetchFollowStatus]);
 
   const following = isFollowing(castId);
+  const pending = isPending(castId);
 
   const handleClick = async () => {
     if (!isAuthenticated()) {
@@ -210,24 +211,43 @@ function FollowButton({ castId }: { castId: string }) {
     }
   };
 
+  const getButtonStyle = () => {
+    if (following) {
+      return "bg-info border-info text-white hover:bg-info-hover hover:text-white";
+    }
+    if (pending) {
+      return "bg-warning border-warning text-white hover:bg-warning-hover hover:text-white";
+    }
+    return "bg-surface border-info-light text-info hover:bg-info-lighter";
+  };
+
+  const getIcon = () => {
+    if (following) return <UserCheck size={24} />;
+    if (pending) return <Clock size={24} />;
+    return <UserPlus size={24} />;
+  };
+
+  const getAnimationKey = () => {
+    if (following) return "following";
+    if (pending) return "pending";
+    return "not-following";
+  };
+
   return (
     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
       <Button
         size="icon"
         disabled={isProcessing || loading}
-        className={`h-12 w-12 rounded-full shadow-xl shadow-border transition-colors border ${following
-          ? "bg-info border-info text-white hover:bg-info-hover hover:text-white"
-          : "bg-surface border-info-light text-info hover:bg-info-lighter"
-          } ${isProcessing || loading ? "opacity-50" : ""}`}
+        className={`h-12 w-12 rounded-full shadow-xl shadow-border transition-colors border ${getButtonStyle()} ${isProcessing || loading ? "opacity-50" : ""}`}
         onClick={handleClick}
       >
         <motion.div
-          key={following ? "following" : "not-following"}
+          key={getAnimationKey()}
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
-          {following ? <UserCheck size={24} /> : <UserPlus size={24} />}
+          {getIcon()}
         </motion.div>
       </Button>
     </motion.div>

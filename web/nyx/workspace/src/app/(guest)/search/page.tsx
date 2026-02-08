@@ -7,6 +7,7 @@ import {
   MapPin,
   Sparkles,
   Loader2,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -39,6 +40,7 @@ type CastProfile = {
   genres: { id: string; name: string; slug: string; displayOrder: number }[];
   tags: { label: string; count: number }[];
   isOnline?: boolean;
+  isPrivate?: boolean;
 };
 
 type CastItem = {
@@ -273,8 +275,11 @@ export default function SearchPage() {
                       </div>
                     )}
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                      <div className="text-white text-xs font-bold truncate">
+                      <div className="text-white text-xs font-bold truncate flex items-center gap-1">
                         {cast.name}
+                        {cast.isPrivate && (
+                          <Lock size={10} className="text-white/70" />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -391,8 +396,11 @@ const SearchCastCard = ({ cast }: { cast: CastProfile }) => {
         {/* Content */}
         <div className="p-3 flex-1 flex flex-col">
           <div className="flex justify-between items-end mb-1">
-            <h4 className="font-bold text-text-primary text-base">
+            <h4 className="font-bold text-text-primary text-base flex items-center gap-1">
               {cast.name}
+              {cast.isPrivate && (
+                <Lock size={12} className="text-text-muted" />
+              )}
               {cast.age && (
                 <span className="text-xs font-normal text-text-muted ml-1">
                   ({cast.age})

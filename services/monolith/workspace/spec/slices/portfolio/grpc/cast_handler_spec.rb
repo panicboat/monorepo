@@ -56,7 +56,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
       default_schedule_start: "10:00",
       default_schedule_end: "20:00",
       image_path: "path/img.jpg",
-      visibility: 'published',
+      visibility: "public",
       cast_plans: [],
       cast_schedules: [],
       images: [],
@@ -225,10 +225,10 @@ RSpec.describe Portfolio::Grpc::CastHandler do
   end
 
   describe "#list_casts" do
-    let(:message) { ::Portfolio::V1::ListCastsRequest.new(visibility_filter: :CAST_VISIBILITY_PUBLISHED) }
+    let(:message) { ::Portfolio::V1::ListCastsRequest.new(visibility_filter: :CAST_VISIBILITY_PUBLIC) }
 
     it "delegates to operation and returns list" do
-      expect(list_casts_uc).to receive(:call).with(hash_including(visibility_filter: "published")).and_return([mock_cast_entity])
+      expect(list_casts_uc).to receive(:call).with(hash_including(visibility_filter: "public")).and_return({ casts: [mock_cast_entity], next_cursor: nil, has_more: false })
 
       response = handler.list_casts
       expect(response).to be_a(::Portfolio::V1::ListCastsResponse)

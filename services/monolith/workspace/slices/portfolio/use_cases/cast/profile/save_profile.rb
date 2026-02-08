@@ -73,7 +73,7 @@ module Portfolio
               repo.create(
                 attrs.merge(
                   user_id: user_id,
-                  visibility: "unregistered"
+                  visibility: "public"
                 )
               )
             end

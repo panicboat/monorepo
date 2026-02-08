@@ -2,13 +2,15 @@
 
 import { useCallback, useState } from "react";
 import { authFetch, getAuthToken } from "@/lib/auth";
+import { FollowStatus } from "@/stub/social/v1/service_pb";
 
 interface FollowState {
-  [castId: string]: boolean;
+  [castId: string]: FollowStatus;
 }
 
 interface FollowResponse {
   success: boolean;
+  status: FollowStatus;
 }
 
 export interface FollowingCast {
@@ -24,7 +26,7 @@ interface FollowListResponse {
 }
 
 interface FollowStatusResponse {
-  following: Record<string, boolean>;
+  statuses: Record<string, FollowStatus>;
 }
 
 export function useFollow() {
@@ -36,7 +38,7 @@ export function useFollow() {
   const follow = useCallback(async (castId: string) => {
     if (!getAuthToken()) {
       console.warn("Cannot follow: not authenticated");
-      return false;
+      return { success: false, status: FollowStatus.NONE };
     }
 
     setLoading(true);
@@ -47,12 +49,14 @@ export function useFollow() {
       });
 
       if (data.success) {
-        setFollowState((prev) => ({ ...prev, [castId]: true }));
-        setFollowingList((prev) =>
-          prev.includes(castId) ? prev : [...prev, castId]
-        );
+        setFollowState((prev) => ({ ...prev, [castId]: data.status }));
+        if (data.status === FollowStatus.APPROVED) {
+          setFollowingList((prev) =>
+            prev.includes(castId) ? prev : [...prev, castId]
+          );
+        }
       }
-      return data.success;
+      return data;
     } catch (e) {
       console.error("Follow error:", e);
       throw e;
@@ -69,13 +73,13 @@ export function useFollow() {
 
     setLoading(true);
     try {
-      const data = await authFetch<FollowResponse>(
+      const data = await authFetch<{ success: boolean }>(
         `/api/guest/following?cast_id=${castId}`,
         { method: "DELETE" }
       );
 
       if (data.success) {
-        setFollowState((prev) => ({ ...prev, [castId]: false }));
+        setFollowState((prev) => ({ ...prev, [castId]: FollowStatus.NONE }));
         setFollowingList((prev) => prev.filter((id) => id !== castId));
       }
       return data.success;
@@ -89,7 +93,14 @@ export function useFollow() {
 
   const toggleFollow = useCallback(
     async (castId: string) => {
-      return followState[castId] ? unfollow(castId) : follow(castId);
+      const currentStatus = followState[castId];
+      if (
+        currentStatus === FollowStatus.APPROVED ||
+        currentStatus === FollowStatus.PENDING
+      ) {
+        return unfollow(castId);
+      }
+      return follow(castId);
     },
     [follow, unfollow, followState]
   );
@@ -113,9 +124,9 @@ export function useFollow() {
 
       const newState: FollowState = {};
       castIds.forEach((id) => {
-        newState[id] = true;
+        newState[id] = FollowStatus.APPROVED;
       });
-      setFollowState(newState);
+      setFollowState((prev) => ({ ...prev, ...newState }));
 
       return { castIds, casts };
     } catch (e) {
@@ -137,18 +148,28 @@ export function useFollow() {
 
       setFollowState((prev) => ({
         ...prev,
-        ...data.following,
+        ...data.statuses,
       }));
 
-      return data.following;
+      return data.statuses;
     } catch (e) {
       console.error("Fetch follow status error:", e);
       throw e;
     }
   }, []);
 
+  const getFollowStatus = useCallback(
+    (castId: string): FollowStatus => followState[castId] ?? FollowStatus.NONE,
+    [followState]
+  );
+
   const isFollowing = useCallback(
-    (castId: string) => followState[castId] ?? false,
+    (castId: string) => followState[castId] === FollowStatus.APPROVED,
+    [followState]
+  );
+
+  const isPending = useCallback(
+    (castId: string) => followState[castId] === FollowStatus.PENDING,
     [followState]
   );
 
@@ -158,7 +179,9 @@ export function useFollow() {
     toggleFollow,
     fetchFollowingList,
     fetchFollowStatus,
+    getFollowStatus,
     isFollowing,
+    isPending,
     followingList,
     followingCasts,
     loading,

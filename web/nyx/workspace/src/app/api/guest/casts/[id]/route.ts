@@ -3,7 +3,6 @@ import { castClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { ConnectError } from "@connectrpc/connect";
 import { mapCastProfileToFrontend } from "@/modules/portfolio/lib/cast/profile";
-import { CastVisibility } from "@/stub/portfolio/v1/service_pb";
 
 // UUID v4 format check
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -27,11 +26,7 @@ export async function GET(
       return NextResponse.json({ error: "Not Found" }, { status: 404 });
     }
 
-    // Only return published profiles to guests
-    if (response.profile.visibility !== CastVisibility.PUBLISHED) {
-      return NextResponse.json({ error: "Not Found" }, { status: 404 });
-    }
-
+    // Backend already checks registered_at for guest access
     const profile = mapCastProfileToFrontend(response.profile);
     const plans = (response.plans || []).map((p) => ({
       id: p.id,

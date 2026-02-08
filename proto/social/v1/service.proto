@@ -18,6 +18,13 @@ service TimelineService {
   rpc UnfollowCast(UnfollowCastRequest) returns (UnfollowCastResponse);
   rpc ListFollowing(ListFollowingRequest) returns (ListFollowingResponse);
   rpc GetFollowStatus(GetFollowStatusRequest) returns (GetFollowStatusResponse);
+  rpc CancelFollowRequest(CancelFollowRequestRequest) returns (CancelFollowRequestResponse);
+
+  // Follow Approval RPCs (for private casts)
+  rpc ApproveFollow(ApproveFollowRequest) returns (ApproveFollowResponse);
+  rpc RejectFollow(RejectFollowRequest) returns (RejectFollowResponse);
+  rpc ListPendingFollowRequests(ListPendingFollowRequestsRequest) returns (ListPendingFollowRequestsResponse);
+  rpc GetPendingFollowCount(GetPendingFollowCountRequest) returns (GetPendingFollowCountResponse);
 
   // Comment RPCs
   rpc AddComment(AddCommentRequest) returns (AddCommentResponse);
@@ -129,6 +136,14 @@ message GetPostLikeStatusResponse {
   map<string, bool> liked = 1; // post_id -> is_liked
 }
 
+// Follow Status Enum
+enum FollowStatus {
+  FOLLOW_STATUS_UNSPECIFIED = 0;
+  FOLLOW_STATUS_NONE = 1;      // Not following
+  FOLLOW_STATUS_PENDING = 2;   // Follow request pending approval
+  FOLLOW_STATUS_APPROVED = 3;  // Following
+}
+
 // Follow Messages
 message FollowCastRequest {
   string cast_id = 1;
@@ -136,6 +151,7 @@ message FollowCastRequest {
 
 message FollowCastResponse {
   bool success = 1;
+  FollowStatus status = 2; // Resulting follow status
 }
 
 message UnfollowCastRequest {
@@ -162,7 +178,57 @@ message GetFollowStatusRequest {
 }
 
 message GetFollowStatusResponse {
-  map<string, bool> following = 1; // cast_id -> is_following
+  map<string, FollowStatus> statuses = 1; // cast_id -> follow status
+}
+
+// Cancel Follow Request (for guests to cancel pending requests)
+message CancelFollowRequestRequest {
+  string cast_id = 1;
+}
+
+message CancelFollowRequestResponse {
+  bool success = 1;
+}
+
+// Follow Approval Messages (for private cast owners)
+message ApproveFollowRequest {
+  string guest_id = 1;
+}
+
+message ApproveFollowResponse {
+  bool success = 1;
+}
+
+message RejectFollowRequest {
+  string guest_id = 1;
+}
+
+message RejectFollowResponse {
+  bool success = 1;
+}
+
+message FollowRequestItem {
+  string guest_id = 1;
+  string guest_name = 2;
+  string guest_image_url = 3;
+  string requested_at = 4; // ISO8601
+}
+
+message ListPendingFollowRequestsRequest {
+  int32 limit = 1;   // default: 20
+  string cursor = 2; // optional
+}
+
+message ListPendingFollowRequestsResponse {
+  repeated FollowRequestItem requests = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message GetPendingFollowCountRequest {}
+
+message GetPendingFollowCountResponse {
+  int32 count = 1;
 }
 
 // Comment Messages

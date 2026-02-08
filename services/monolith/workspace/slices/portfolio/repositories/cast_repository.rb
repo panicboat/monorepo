@@ -83,6 +83,17 @@ module Portfolio
         update(id, visibility: visibility)
       end
 
+      def complete_registration(id)
+        update(id, registered_at: Time.now)
+      end
+
+      def is_registered?(id)
+        cast = casts.by_pk(id).one
+        return false unless cast
+
+        !cast.registered_at.nil?
+      end
+
       def list_by_visibility(visibility_filter = nil)
         scope = casts.combine(:cast_plans, :cast_schedules)
         scope = scope.where(visibility: visibility_filter) if visibility_filter
@@ -126,10 +137,13 @@ module Portfolio
         }
       end
 
-      def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, query: nil, limit: nil, cursor: nil)
+      def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, query: nil, limit: nil, cursor: nil, registered_only: false)
         scope = casts.combine(:cast_plans, :cast_schedules)
 
-        # Visibility filter (default: published only for guest access)
+        # Registered filter (for guest access, only show casts with registered_at set)
+        scope = scope.exclude(registered_at: nil) if registered_only
+
+        # Visibility filter (public/private)
         scope = scope.where(visibility: visibility_filter) if visibility_filter
 
         # Text search filter (name, tagline, or tags)
@@ -218,8 +232,8 @@ module Portfolio
       end
 
       def get_popular_tags(limit: 20)
-        # Aggregate tags from all published casts
-        result = casts.where(visibility: "published")
+        # Aggregate tags from all registered casts
+        result = casts.exclude(registered_at: nil)
           .exclude(tags: nil)
           .select(:tags)
           .to_a

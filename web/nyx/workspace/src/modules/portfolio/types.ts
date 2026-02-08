@@ -47,6 +47,7 @@ export interface CastProfile {
   message: string;
   tagline?: string; // Short catchphrase
   bio?: string; // Detailed self-intro
+  isPrivate?: boolean; // Whether this cast requires follow approval
 
   // Media
   images: CastImages;
@@ -97,6 +98,8 @@ export interface Genre {
   displayOrder: number;
 }
 
+export type CastVisibilityType = "public" | "private";
+
 export interface ProfileFormData {
   nickname: string;
   handle: string;
@@ -126,4 +129,7 @@ export interface ProfileFormData {
     cup: string;
   };
   tags: string[];
+
+  // Visibility setting
+  isPrivate?: boolean;
 }

@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
     const response = await castClient.listCasts(
       {
-        visibilityFilter: CastVisibility.PUBLISHED,
+        visibilityFilter: CastVisibility.UNSPECIFIED, // Show all registered casts (both public and private)
         genreId,
         tag,
         statusFilter: parseStatusFilter(status),
