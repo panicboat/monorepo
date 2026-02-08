@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, createContext, useContext, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, CheckCircle, AlertCircle } from "lucide-react";
+import { toastVariants, springTransition } from "@/lib/motion";
 
 type ToastVariant = "default" | "success" | "destructive";
 
@@ -102,9 +103,11 @@ function ToastItem({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+      variants={toastVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      transition={springTransition}
       className="pointer-events-auto bg-surface rounded-lg shadow-lg border border-border p-4 min-w-[280px] max-w-sm flex items-start gap-3"
     >
       <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${iconColor}`} />

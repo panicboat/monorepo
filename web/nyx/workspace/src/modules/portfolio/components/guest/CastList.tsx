@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
+import { slideUpFadeVariants } from "@/lib/motion";
 
 // Mock Data representing "Living Portfolio" (Realtime status)
 const MOCK_CASTS = [
@@ -104,8 +105,9 @@ export const CastList = () => {
 const CastCard = ({ cast }: { cast: (typeof MOCK_CASTS)[0] }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      variants={slideUpFadeVariants}
+      initial="hidden"
+      animate="visible"
       className="relative overflow-hidden rounded-md bg-surface shadow-sm"
     >
       {/* Image specific ratio - Hime-channel style is often vertical implementation 3:4 */}

@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
+import { overlayVariants, slideUpVariants, springTransition } from "@/lib/motion";
 
 // Mock Availabilities
 const MOCK_SLOTS = [
@@ -24,19 +25,21 @@ export const SmartDrawer = ({
         <>
           {/* Backdrop */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            exit={{ opacity: 0 }}
+            variants={overlayVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             onClick={onClose}
             className="fixed inset-0 z-40 bg-black"
           />
 
           {/* Drawer */}
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            variants={slideUpVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={springTransition}
             className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-surface p-6 shadow-xl"
             style={{ maxHeight: "80vh" }}
           >

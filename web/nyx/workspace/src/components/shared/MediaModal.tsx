@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
+import { fadeVariants, scaleFadeVariants, smoothTransition } from "@/lib/motion";
 
 export type MediaItem = {
   type: "image" | "video" | "gif";
@@ -23,9 +24,11 @@ export const MediaModal = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          variants={fadeVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={smoothTransition}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm"
           onClick={onClose}
         >
@@ -38,11 +41,13 @@ export const MediaModal = ({
           </button>
 
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+            variants={scaleFadeVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={smoothTransition}
             className="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-lg"
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
+            onClick={(e) => e.stopPropagation()}
           >
             {media.type === "video" ? (
               <video

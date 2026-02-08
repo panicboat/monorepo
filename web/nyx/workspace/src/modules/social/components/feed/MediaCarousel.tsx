@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FeedMediaItem } from "./types";
+import { fadeVariants, fastTransition } from "@/lib/motion";
 
 interface MediaCarouselProps {
   media: FeedMediaItem[];
@@ -35,10 +36,11 @@ export function MediaCarousel({ media, onClick }: MediaCarouselProps) {
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          variants={fadeVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={fastTransition}
         >
           {current.mediaType === "video" ? (
             <>

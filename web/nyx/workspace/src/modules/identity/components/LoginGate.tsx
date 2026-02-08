@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { Smartphone, CheckCircle, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { slideUpFadeLargeVariants } from "@/lib/motion";
 
 interface LoginGateProps {
   variant?: "guest" | "cast";
@@ -92,8 +93,9 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-surface p-6">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        variants={slideUpFadeLargeVariants}
+        initial="hidden"
+        animate="visible"
         className="w-full max-w-sm space-y-8"
       >
         <div className="text-center space-y-2">

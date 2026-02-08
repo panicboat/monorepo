@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Heart, MessageCircle, Trash2, Lock, LockOpen } from "lucide-react";
+import { slideUpFadeVariants, popVariants, popTransition } from "@/lib/motion";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useLike } from "@/modules/social/hooks/useLike";
@@ -83,8 +84,9 @@ export function TimelineItem({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      variants={slideUpFadeVariants}
+      initial="hidden"
+      animate="visible"
       layout
       onClick={onClick}
       className={`rounded-2xl border p-4 shadow-sm relative group ${
@@ -177,9 +179,10 @@ export function TimelineItem({
         >
           <motion.div
             key={liked ? "liked" : "unliked"}
-            initial={{ scale: 0.6 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            variants={popVariants}
+            initial="initial"
+            animate="animate"
+            transition={popTransition}
           >
             <Heart aria-hidden="true" className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
           </motion.div>

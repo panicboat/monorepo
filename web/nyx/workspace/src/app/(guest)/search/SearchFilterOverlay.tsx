@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { X, Search, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { fadeVariants, slideUpVariants, springTransition } from "@/lib/motion";
 
 type Genre = {
   id: string;
@@ -98,17 +99,19 @@ export function SearchFilterOverlay({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          variants={fadeVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           className="fixed inset-0 z-50 bg-surface"
         >
           {/* Content container with slide animation */}
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            variants={slideUpVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={springTransition}
             className="h-full flex flex-col"
           >
             {/* Header */}
