@@ -1,84 +1,99 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-
-import { useSocial } from "@/modules/social/hooks/useSocial";
-
-const MOCK_DB = [
-  {
-    id: "1",
-    name: "Yuna",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna",
-    area: "Roppongi",
-  }, // Added Yuna
-  {
-    id: "2",
-    name: "Maria",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
-    area: "Roppongi",
-  },
-  {
-    id: "3",
-    name: "Sarah",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-    area: "Shibuya",
-  },
-  {
-    id: "5",
-    name: "Rin",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rin",
-    area: "Ginza",
-  },
-  {
-    id: "6",
-    name: "Kila",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kila",
-    area: "Ebisu",
-  },
-];
+import { useFollow, FollowingCast } from "@/modules/social/hooks/useFollow";
+import { useAuthStore } from "@/stores/authStore";
+import { Button } from "@/components/ui/Button";
+import { UserListCard } from "@/components/ui/UserListCard";
+import { Loader2, Users } from "lucide-react";
 
 export default function FollowingPage() {
-  const { following } = useSocial();
-  const list = MOCK_DB.filter((cast) => following.includes(cast.id));
+  const { fetchFollowingList, unfollow, loading } = useFollow();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const [actionId, setActionId] = useState<string | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [localCasts, setLocalCasts] = useState<FollowingCast[]>([]);
+
+  useEffect(() => {
+    if (isHydrated && isAuthenticated()) {
+      fetchFollowingList()
+        .then(({ casts }) => setLocalCasts(casts))
+        .finally(() => setInitialLoading(false));
+    } else if (isHydrated) {
+      setInitialLoading(false);
+    }
+  }, [isHydrated, isAuthenticated, fetchFollowingList]);
+
+  const handleUnfollow = async (castId: string) => {
+    setActionId(castId);
+    try {
+      await unfollow(castId);
+      setLocalCasts((prev) => prev.filter((c) => c.id !== castId));
+    } catch (e) {
+      console.error("Failed to unfollow:", e);
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  if (!isHydrated || initialLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-surface">
+        <Loader2 className="w-8 h-8 animate-spin text-info" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated()) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-surface gap-4 px-6">
+        <p className="text-text-secondary">Please log in to see who you follow.</p>
+        <Link href="/login">
+          <Button variant="guest">Log In</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface-secondary min-h-screen pb-20">
       <main className="px-4 pt-4">
-        <div className="space-y-3">
-          {list.length > 0 ? (
-            list.map((cast, i) => (
-              <Link href={`/casts/${cast.id}`} key={cast.id}>
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="flex items-center gap-4 rounded-xl bg-surface p-3 shadow-sm border border-border"
-                >
-                  <div className="h-14 w-14 rounded-full bg-surface-secondary overflow-hidden border border-border">
-                    <img
-                      src={cast.image}
-                      alt={cast.name}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-text-primary">{cast.name}</h3>
-                    <p className="text-xs text-text-secondary">{cast.area}</p>
-                  </div>
-                  <button className="rounded-full bg-surface-secondary px-4 py-1.5 text-xs font-bold text-text-secondary">
-                    Following
-                  </button>
-                </motion.div>
-              </Link>
-            ))
-          ) : (
-            <div className="py-20 text-center text-text-muted">
-              <p>Not following anyone yet.</p>
+        {localCasts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-4">
+            <div className="w-16 h-16 rounded-full bg-surface-secondary flex items-center justify-center">
+              <Users size={32} className="text-text-muted" />
             </div>
-          )}
-        </div>
+            <p className="text-text-secondary text-center">
+              Not following anyone yet.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-text-muted mb-4">
+              {localCasts.length} following
+            </p>
+            <AnimatePresence mode="popLayout">
+              {localCasts.map((cast) => (
+                <UserListCard
+                  key={cast.id}
+                  user={{
+                    id: cast.id,
+                    name: cast.name,
+                    imageUrl: cast.imageUrl,
+                    subtitle: cast.area,
+                  }}
+                  href={`/casts/${cast.id}`}
+                  actionLabel="Unfollow"
+                  isLoading={actionId === cast.id || loading}
+                  onAction={handleUnfollow}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </main>
     </div>
   );

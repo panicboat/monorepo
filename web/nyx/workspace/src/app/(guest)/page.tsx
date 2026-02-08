@@ -3,8 +3,6 @@
 import { CastList } from "@/modules/portfolio/components/guest/CastList";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { GuestDashboard } from "@/modules/portfolio/components/guest/GuestDashboard";
-import { RankingWidget } from "@/modules/portfolio/components/guest/RankingWidget";
-import { EventSlider } from "@/modules/portfolio/components/guest/EventSlider";
 import { TimelineFeed } from "@/modules/social/components/guest/TimelineFeed";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -38,13 +36,6 @@ export default function Home() {
           {/* Header removed in favor of global MobileHeader */}
 
           <div className="space-y-2">
-            {/* Discovery Widgets */}
-            <EventSlider />
-
-            <section className="bg-surface py-2 shadow-sm">
-              <RankingWidget />
-            </section>
-
             {/* Tab Navigation */}
             <div className="sticky top-14 md:top-16 z-20 flex border-b border-border bg-surface shadow-sm">
               <button

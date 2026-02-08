@@ -11,8 +11,16 @@ interface FollowResponse {
   success: boolean;
 }
 
+export interface FollowingCast {
+  id: string;
+  name: string;
+  imageUrl: string;
+  area: string;
+}
+
 interface FollowListResponse {
   castIds: string[];
+  casts: FollowingCast[];
 }
 
 interface FollowStatusResponse {
@@ -22,6 +30,7 @@ interface FollowStatusResponse {
 export function useFollow() {
   const [followState, setFollowState] = useState<FollowState>({});
   const [followingList, setFollowingList] = useState<string[]>([]);
+  const [followingCasts, setFollowingCasts] = useState<FollowingCast[]>([]);
   const [loading, setLoading] = useState(false);
 
   const follow = useCallback(async (castId: string) => {
@@ -88,7 +97,7 @@ export function useFollow() {
   const fetchFollowingList = useCallback(async (limit: number = 100) => {
     if (!getAuthToken()) {
       console.warn("Cannot fetch following: not authenticated");
-      return [];
+      return { castIds: [], casts: [] };
     }
 
     setLoading(true);
@@ -98,7 +107,9 @@ export function useFollow() {
       );
 
       const castIds = data.castIds || [];
+      const casts = data.casts || [];
       setFollowingList(castIds);
+      setFollowingCasts(casts);
 
       const newState: FollowState = {};
       castIds.forEach((id) => {
@@ -106,7 +117,7 @@ export function useFollow() {
       });
       setFollowState(newState);
 
-      return castIds;
+      return { castIds, casts };
     } catch (e) {
       console.error("Fetch following list error:", e);
       throw e;
@@ -149,6 +160,7 @@ export function useFollow() {
     fetchFollowStatus,
     isFollowing,
     followingList,
+    followingCasts,
     loading,
   };
 }

@@ -11,8 +11,16 @@ interface FavoriteResponse {
   success: boolean;
 }
 
+export interface FavoriteCast {
+  id: string;
+  name: string;
+  imageUrl: string;
+  area: string;
+}
+
 interface FavoriteListResponse {
   castIds: string[];
+  casts: FavoriteCast[];
 }
 
 interface FavoriteStatusResponse {
@@ -22,6 +30,7 @@ interface FavoriteStatusResponse {
 export function useFavorite() {
   const [favoriteState, setFavoriteState] = useState<FavoriteState>({});
   const [favoritesList, setFavoritesList] = useState<string[]>([]);
+  const [favoriteCasts, setFavoriteCasts] = useState<FavoriteCast[]>([]);
   const [loading, setLoading] = useState(false);
 
   const addFavorite = useCallback(async (castId: string) => {
@@ -88,7 +97,7 @@ export function useFavorite() {
   const fetchFavoritesList = useCallback(async (limit: number = 100) => {
     if (!getAuthToken()) {
       console.warn("Cannot fetch favorites: not authenticated");
-      return [];
+      return { castIds: [], casts: [] };
     }
 
     setLoading(true);
@@ -98,7 +107,9 @@ export function useFavorite() {
       );
 
       const castIds = data.castIds || [];
+      const casts = data.casts || [];
       setFavoritesList(castIds);
+      setFavoriteCasts(casts);
 
       const newState: FavoriteState = {};
       castIds.forEach((id) => {
@@ -106,7 +117,7 @@ export function useFavorite() {
       });
       setFavoriteState(newState);
 
-      return castIds;
+      return { castIds, casts };
     } catch (e) {
       console.error("Fetch favorites list error:", e);
       throw e;
@@ -149,6 +160,7 @@ export function useFavorite() {
     fetchFavoriteStatus,
     isFavorite,
     favoritesList,
+    favoriteCasts,
     loading,
   };
 }

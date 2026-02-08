@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { socialClient, castClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
+
+interface FollowingCast {
+  id: string;
+  name: string;
+  imageUrl: string;
+  area: string;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,8 +24,34 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
+    const castIds = response.castIds || [];
+
+    // Fetch cast profiles for each castId
+    const casts: FollowingCast[] = [];
+    for (const castId of castIds) {
+      try {
+        const castResponse = await castClient.getCastProfile(
+          { userId: castId },
+          { headers: buildGrpcHeaders(req.headers) }
+        );
+        if (castResponse.profile) {
+          const firstArea = castResponse.profile.areas?.[0];
+          casts.push({
+            id: castId,
+            name: castResponse.profile.name,
+            imageUrl: castResponse.profile.avatarUrl || "",
+            area: firstArea?.name || "",
+          });
+        }
+      } catch (e) {
+        // Skip if cast profile not found
+        console.warn(`Failed to fetch cast profile for ${castId}:`, e);
+      }
+    }
+
     return NextResponse.json({
-      castIds: response.castIds,
+      castIds,
+      casts,
       nextCursor: response.nextCursor,
       hasMore: response.hasMore,
     });

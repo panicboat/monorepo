@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/modules/identity/hooks/useAuth";
+import { useGuestData } from "@/modules/portfolio/hooks/useGuestData";
 import { TopNavBar } from "../TopNavBar";
 
 export const GuestTopNavBar = () => {
-  const { user } = useAuth();
+  const { avatarUrl } = useGuestData();
   const pathname = usePathname();
 
   // Determine Title based on path
@@ -24,8 +24,6 @@ export const GuestTopNavBar = () => {
     title = "Favorites";
   } else if (pathname === "/following") {
     title = "Following";
-  } else if (pathname === "/footprints") {
-    title = "Footprints";
   } else if (pathname === "/blocking") {
     title = "Blocking";
   } else if (pathname.startsWith("/cast/")) {
@@ -98,9 +96,13 @@ export const GuestTopNavBar = () => {
       <Link
         href="/mypage"
         aria-label="My page"
-        className="h-8 w-8 rounded-full bg-surface-secondary overflow-hidden border border-border block transition-transform hover:scale-105 active:scale-95"
+        className="h-8 w-8 rounded-full bg-surface-secondary overflow-hidden border border-border block transition-transform hover:scale-105 active:scale-95 flex items-center justify-center"
       >
-        {user?.avatarUrl ? <img src={user.avatarUrl} alt="User avatar" /> : "👤"}
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="User avatar" className="h-full w-full object-cover" />
+        ) : (
+          <span className="text-sm">👤</span>
+        )}
       </Link>
     </>
   );

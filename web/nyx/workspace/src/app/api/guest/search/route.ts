@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     const areaId = searchParams.get("areaId") || "";
     const query = searchParams.get("query") || "";
     const limit = parseInt(searchParams.get("limit") || "50", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const cursor = searchParams.get("cursor") || "";
 
     const response = await castClient.listCasts(
       {
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
         areaId,
         query,
         limit,
-        offset,
+        cursor,
       },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -62,7 +62,11 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    return NextResponse.json({ items });
+    return NextResponse.json({
+      items,
+      nextCursor: response.nextCursor || "",
+      hasMore: response.hasMore || false,
+    });
   } catch (error: unknown) {
     console.error("ListCasts Error:", error);
     return NextResponse.json(

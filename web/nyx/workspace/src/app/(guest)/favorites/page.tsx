@@ -1,64 +1,99 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
-
-const FAVORITES = [
-  {
-    id: 1,
-    name: "Yuna",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuna",
-    area: "Shinjuku",
-    tags: ["Model"],
-  },
-  {
-    id: 4,
-    name: "Mio",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mio",
-    area: "Shinjuku",
-    tags: ["Rookie"],
-  },
-  {
-    id: 7,
-    name: "Elena",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena",
-    area: "Roppongi",
-    tags: ["VIP"],
-  },
-];
+import { useFavorite, FavoriteCast } from "@/modules/social/hooks/useFavorite";
+import { useAuthStore } from "@/stores/authStore";
+import { Button } from "@/components/ui/Button";
+import { UserListCard } from "@/components/ui/UserListCard";
+import { Loader2, Heart } from "lucide-react";
 
 export default function FavoritesPage() {
+  const { fetchFavoritesList, removeFavorite, loading } = useFavorite();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const [actionId, setActionId] = useState<string | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [localCasts, setLocalCasts] = useState<FavoriteCast[]>([]);
+
+  useEffect(() => {
+    if (isHydrated && isAuthenticated()) {
+      fetchFavoritesList()
+        .then(({ casts }) => setLocalCasts(casts))
+        .finally(() => setInitialLoading(false));
+    } else if (isHydrated) {
+      setInitialLoading(false);
+    }
+  }, [isHydrated, isAuthenticated, fetchFavoritesList]);
+
+  const handleRemove = async (castId: string) => {
+    setActionId(castId);
+    try {
+      await removeFavorite(castId);
+      setLocalCasts((prev) => prev.filter((c) => c.id !== castId));
+    } catch (e) {
+      console.error("Failed to remove favorite:", e);
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  if (!isHydrated || initialLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-surface">
+        <Loader2 className="w-8 h-8 animate-spin text-info" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated()) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-surface gap-4 px-6">
+        <p className="text-text-secondary">Please log in to see your favorites.</p>
+        <Link href="/login">
+          <Button variant="guest">Log In</Button>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-surface-secondary min-h-screen pb-20">
       <main className="px-4 pt-4">
-        <div className="grid grid-cols-2 gap-3">
-          {FAVORITES.map((cast, i) => (
-            <Link href={`/casts/${cast.id}`} key={cast.id}>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1 }}
-                className="relative overflow-hidden rounded-xl bg-surface shadow-sm"
-              >
-                <div className="aspect-[3/4] w-full bg-border relative">
-                  <Avatar className="h-full w-full rounded-none">
-                    <AvatarImage src={cast.image} alt={cast.name} className="object-cover" />
-                    <AvatarFallback className="rounded-none">C</AvatarFallback>
-                  </Avatar>
-                  <div className="absolute top-2 right-2 rounded-full bg-surface/20 p-1.5 backdrop-blur-sm">
-                    <span className="text-xs">❤️</span>
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 p-3 pt-8 text-white">
-                    <h3 className="font-bold">{cast.name}</h3>
-                    <p className="text-[10px] opacity-80">{cast.area}</p>
-                  </div>
-                </div>
-              </motion.div>
-            </Link>
-          ))}
-        </div>
+        {localCasts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-4">
+            <div className="w-16 h-16 rounded-full bg-surface-secondary flex items-center justify-center">
+              <Heart size={32} className="text-text-muted" />
+            </div>
+            <p className="text-text-secondary text-center">
+              No favorites yet.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-text-muted mb-4">
+              {localCasts.length} favorite{localCasts.length !== 1 ? "s" : ""}
+            </p>
+            <AnimatePresence mode="popLayout">
+              {localCasts.map((cast) => (
+                <UserListCard
+                  key={cast.id}
+                  user={{
+                    id: cast.id,
+                    name: cast.name,
+                    imageUrl: cast.imageUrl,
+                    subtitle: cast.area,
+                  }}
+                  href={`/casts/${cast.id}`}
+                  actionLabel="Remove"
+                  isLoading={actionId === cast.id || loading}
+                  onAction={handleRemove}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </main>
     </div>
   );
