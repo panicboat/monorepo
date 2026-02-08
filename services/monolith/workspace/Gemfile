@@ -19,7 +19,7 @@ gem "bcrypt"
 gem "pg"
 
 gem "dry-types", "~> 1.9", ">= 1.9.1"
-gem "dry-operation", ">= 1.0.1"
+gem "dry-operation", ">= 1.1.0"
 gem "puma"
 gem "rake"
 gem "sqlite3"
