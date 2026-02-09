@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { commentClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 
 export async function GET(
@@ -11,7 +11,7 @@ export async function GET(
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20", 10);
 
-    const response = await socialClient.listReplies(
+    const response = await commentClient.listReplies(
       { commentId: id, limit, cursor },
       { headers: buildGrpcHeaders(req.headers) }
     );

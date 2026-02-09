@@ -3,9 +3,11 @@
 require "spec_helper"
 require "lib/current"
 require "lib/storage"
+require "social/v1/post_service_pb"
 require "slices/social/grpc/handler"
+require "slices/social/grpc/post_handler"
 
-RSpec.describe Social::Grpc::Handler do
+RSpec.describe Social::Grpc::PostHandler do
   let(:handler) {
     described_class.new(
       method_key: :test,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { blockClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "50", 10);
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
 
-    const response = await socialClient.listBlocked(
+    const response = await blockClient.listBlocked(
       { limit, cursor },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const response = await socialClient.blockUser(
+    const response = await blockClient.blockUser(
       { blockedId, blockedType },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -87,7 +87,7 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const response = await socialClient.unblockUser(
+    const response = await blockClient.unblockUser(
       { blockedId },
       { headers: buildGrpcHeaders(req.headers) }
     );

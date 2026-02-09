@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { followClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
 
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20", 10);
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
 
-    const response = await socialClient.listPendingFollowRequests(
+    const response = await followClient.listPendingFollowRequests(
       { limit, cursor },
       { headers: buildGrpcHeaders(req.headers) }
     );

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "social/v1/service_pb"
+require "social/v1/post_service_pb"
 require "storage"
 
 RSpec.describe Social::Presenters::PostPresenter do

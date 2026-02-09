@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { likeClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
 
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "postId is required" }, { status: 400 });
     }
 
-    const response = await socialClient.likeCastPost(
+    const response = await likeClient.likeCastPost(
       { postId },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -51,7 +51,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "post_id is required" }, { status: 400 });
     }
 
-    const response = await socialClient.unlikeCastPost(
+    const response = await likeClient.unlikeCastPost(
       { postId },
       { headers: buildGrpcHeaders(req.headers) }
     );

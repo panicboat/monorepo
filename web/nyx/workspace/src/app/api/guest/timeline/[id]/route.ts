@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { postClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 
 interface RouteParams {
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    const response = await socialClient.getCastPost(
+    const response = await postClient.getCastPost(
       { id },
       { headers: buildGrpcHeaders(req.headers) }
     );

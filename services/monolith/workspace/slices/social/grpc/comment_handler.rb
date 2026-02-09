@@ -1,0 +1,128 @@
+# frozen_string_literal: true
+
+require "social/v1/comment_service_services_pb"
+require_relative "handler"
+
+module Social
+  module Grpc
+    class CommentHandler < Handler
+      self.marshal_class_method = :encode
+      self.unmarshal_class_method = :decode
+      self.service_name = "social.v1.CommentService"
+
+      bind ::Social::V1::CommentService::Service
+
+      self.rpc_descs.clear
+
+      rpc :AddComment, ::Social::V1::AddCommentRequest, ::Social::V1::AddCommentResponse
+      rpc :DeleteComment, ::Social::V1::DeleteCommentRequest, ::Social::V1::DeleteCommentResponse
+      rpc :ListComments, ::Social::V1::ListCommentsRequest, ::Social::V1::ListCommentsResponse
+      rpc :ListReplies, ::Social::V1::ListRepliesRequest, ::Social::V1::ListRepliesResponse
+
+      include Social::Deps[
+        add_comment_uc: "use_cases.comments.add_comment",
+        delete_comment_uc: "use_cases.comments.delete_comment",
+        list_comments_uc: "use_cases.comments.list_comments",
+        list_replies_uc: "use_cases.comments.list_replies"
+      ]
+
+      def add_comment
+        authenticate_user!
+
+        media_data = request.message.media.map do |m|
+          { media_type: m.media_type, url: m.url, thumbnail_url: m.thumbnail_url }
+        end
+
+        result = add_comment_uc.call(
+          post_id: request.message.post_id,
+          user_id: current_user_id,
+          content: request.message.content,
+          parent_id: request.message.parent_id.empty? ? nil : request.message.parent_id,
+          media: media_data
+        )
+
+        # Get author info
+        author = get_comment_author(current_user_id)
+
+        ::Social::V1::AddCommentResponse.new(
+          comment: CommentPresenter.to_proto(result[:comment], author: author),
+          comments_count: result[:comments_count]
+        )
+      rescue AddComment::PostNotFoundError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
+      rescue AddComment::EmptyContentError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Content cannot be empty")
+      rescue AddComment::ContentTooLongError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Content exceeds 1000 characters")
+      rescue AddComment::TooManyMediaError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Maximum 3 media attachments allowed")
+      rescue AddComment::ParentNotFoundError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Parent comment not found")
+      rescue AddComment::CannotReplyToReplyError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Cannot reply to a reply")
+      rescue AddComment::CreateFailedError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INTERNAL, "Failed to create comment")
+      end
+
+      def delete_comment
+        authenticate_user!
+
+        result = delete_comment_uc.call(
+          comment_id: request.message.comment_id,
+          user_id: current_user_id
+        )
+
+        ::Social::V1::DeleteCommentResponse.new(comments_count: result[:comments_count])
+      rescue DeleteComment::CommentNotFoundOrUnauthorizedError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Comment not found or unauthorized")
+      end
+
+      def list_comments
+        limit = request.message.limit.zero? ? 20 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        # Get blocked user IDs for filtering comments
+        blocked_user_ids = get_blocked_user_ids
+
+        result = list_comments_uc.call(
+          post_id: request.message.post_id,
+          limit: limit,
+          cursor: cursor,
+          exclude_user_ids: blocked_user_ids
+        )
+
+        ::Social::V1::ListCommentsResponse.new(
+          comments: CommentPresenter.many_to_proto(result[:comments], authors: result[:authors]),
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
+      end
+
+      def list_replies
+        limit = request.message.limit.zero? ? 20 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        # Get blocked user IDs for filtering replies
+        blocked_user_ids = get_blocked_user_ids
+
+        result = list_replies_uc.call(
+          comment_id: request.message.comment_id,
+          limit: limit,
+          cursor: cursor,
+          exclude_user_ids: blocked_user_ids
+        )
+
+        ::Social::V1::ListRepliesResponse.new(
+          replies: CommentPresenter.many_to_proto(result[:replies], authors: result[:authors]),
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
+      end
+
+      private
+
+      AddComment = Social::UseCases::Comments::AddComment
+      DeleteComment = Social::UseCases::Comments::DeleteComment
+    end
+  end
+end

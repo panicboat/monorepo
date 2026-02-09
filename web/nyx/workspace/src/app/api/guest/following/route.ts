@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient, castClient } from "@/lib/grpc";
+import { followClient, castClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
 
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "100", 10);
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
 
-    const response = await socialClient.listFollowing(
+    const response = await followClient.listFollowing(
       { limit, cursor },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "castId is required" }, { status: 400 });
     }
 
-    const response = await socialClient.followCast(
+    const response = await followClient.followCast(
       { castId },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -109,7 +109,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "cast_id is required" }, { status: 400 });
     }
 
-    const response = await socialClient.unfollowCast(
+    const response = await followClient.unfollowCast(
       { castId },
       { headers: buildGrpcHeaders(req.headers) }
     );

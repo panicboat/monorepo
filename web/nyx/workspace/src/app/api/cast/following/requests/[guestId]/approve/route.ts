@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { followClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
 
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "guestId is required" }, { status: 400 });
     }
 
-    const response = await socialClient.approveFollow(
+    const response = await followClient.approveFollow(
       { guestId },
       { headers: buildGrpcHeaders(req.headers) }
     );

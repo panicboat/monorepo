@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { followClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 
 export async function GET(req: NextRequest) {
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ statuses: {} });
     }
 
-    const response = await socialClient.getFollowStatus(
+    const response = await followClient.getFollowStatus(
       { castIds },
       { headers: buildGrpcHeaders(req.headers) }
     );

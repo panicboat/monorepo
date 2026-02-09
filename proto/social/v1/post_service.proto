@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package social.v1;
+
+service PostService {
+  rpc ListCastPosts(ListCastPostsRequest) returns (ListCastPostsResponse);
+  rpc GetCastPost(GetCastPostRequest) returns (GetCastPostResponse);
+  rpc SaveCastPost(SaveCastPostRequest) returns (SaveCastPostResponse);
+  rpc DeleteCastPost(DeleteCastPostRequest) returns (DeleteCastPostResponse);
+}
+
+message CastPostAuthor {
+  string id = 1;
+  string name = 2;
+  string image_url = 3;
+}
+
+message CastPostMedia {
+  string id = 1;
+  string media_type = 2; // "image" or "video"
+  string url = 3;
+  string thumbnail_url = 4;
+}
+
+message CastPost {
+  string id = 1;
+  string cast_id = 2;
+  string content = 3;
+  repeated CastPostMedia media = 4;
+  string created_at = 5; // ISO8601
+  CastPostAuthor author = 6;
+  int32 likes_count = 7;
+  int32 comments_count = 8;
+  string visibility = 9; // "public" or "private"
+  repeated string hashtags = 10;
+  bool liked = 11; // whether current user liked this post
+}
+
+message ListCastPostsRequest {
+  int32 limit = 1;   // default: 20, max: 50
+  string cursor = 2; // optional, base64 encoded
+  string cast_id = 3; // optional, filter by cast
+  string filter = 4; // optional, "following" or "favorites" to filter posts
+}
+
+message ListCastPostsResponse {
+  repeated CastPost posts = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message SaveCastPostRequest {
+  string id = 1; // empty for create, set for update
+  string content = 2;
+  repeated CastPostMedia media = 3;
+  string visibility = 4; // "public" or "private", defaults to "public"
+  repeated string hashtags = 5;
+}
+
+message SaveCastPostResponse {
+  CastPost post = 1;
+}
+
+message GetCastPostRequest {
+  string id = 1;
+}
+
+message GetCastPostResponse {
+  CastPost post = 1;
+}
+
+message DeleteCastPostRequest {
+  string id = 1;
+}
+
+message DeleteCastPostResponse {}

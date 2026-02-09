@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { postClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 
 export async function GET(req: NextRequest) {
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     // Only override if specific filter is requested (e.g., "following")
     const filter = filterParam || "public";
 
-    const response = await socialClient.listCastPosts(
+    const response = await postClient.listCastPosts(
       { castId, limit, cursor, filter },
       { headers: buildGrpcHeaders(req.headers) }
     );

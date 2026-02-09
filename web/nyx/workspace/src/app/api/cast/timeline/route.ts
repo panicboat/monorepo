@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { postClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 
 export async function GET(req: NextRequest) {
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20", 10);
 
-    const response = await socialClient.listCastPosts(
+    const response = await postClient.listCastPosts(
       { castId: "", limit, cursor },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -61,7 +61,7 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
 
-    const response = await socialClient.saveCastPost(
+    const response = await postClient.saveCastPost(
       {
         id: body.id || "",
         content: body.content,
@@ -87,7 +87,7 @@ export async function DELETE(req: NextRequest) {
 
     const body = await req.json();
 
-    await socialClient.deleteCastPost(
+    await postClient.deleteCastPost(
       { id: body.id },
       { headers: buildGrpcHeaders(req.headers) }
     );

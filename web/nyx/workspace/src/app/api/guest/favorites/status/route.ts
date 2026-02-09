@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { favoriteClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 
 export async function GET(req: NextRequest) {
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ favorited: {} });
     }
 
-    const response = await socialClient.getFavoriteStatus(
+    const response = await favoriteClient.getFavoriteStatus(
       { castIds },
       { headers: buildGrpcHeaders(req.headers) }
     );

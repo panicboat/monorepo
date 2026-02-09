@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { commentClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
 
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "post_id is required" }, { status: 400 });
     }
 
-    const response = await socialClient.listComments(
+    const response = await commentClient.listComments(
       { postId, limit, cursor },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "content is required" }, { status: 400 });
     }
 
-    const response = await socialClient.addComment(
+    const response = await commentClient.addComment(
       {
         postId,
         content,

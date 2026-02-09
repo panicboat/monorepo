@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { commentClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
 
@@ -14,7 +14,7 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const response = await socialClient.deleteComment(
+    const response = await commentClient.deleteComment(
       { commentId: id },
       { headers: buildGrpcHeaders(req.headers) }
     );

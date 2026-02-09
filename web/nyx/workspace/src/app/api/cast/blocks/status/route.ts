@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { socialClient } from "@/lib/grpc";
+import { blockClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 
 export async function GET(req: NextRequest) {
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ blocked: {} });
     }
 
-    const response = await socialClient.getBlockStatus(
+    const response = await blockClient.getBlockStatus(
       { userIds },
       { headers: buildGrpcHeaders(req.headers) }
     );
