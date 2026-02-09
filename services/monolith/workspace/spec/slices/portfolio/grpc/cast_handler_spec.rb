@@ -157,7 +157,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
       allow(get_profile_uc).to receive(:call).with(user_id: 1).and_return(mock_cast_entity)
       expect(save_plans_uc).to receive(:call).with(
         cast_id: 123,
-        plans: [{ name: "P1", price: 1000, duration_minutes: 60 }]
+        plans: [{ name: "P1", price: 1000, duration_minutes: 60, is_recommended: false }]
       ).and_return(mock_cast_entity)
 
       response = handler.save_cast_plans

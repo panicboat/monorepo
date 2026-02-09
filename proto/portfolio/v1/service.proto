@@ -7,8 +7,6 @@ package portfolio.v1;
 service CastService {
   rpc GetCastProfile(GetCastProfileRequest) returns (GetCastProfileResponse);
   rpc GetCastProfileByHandle(GetCastProfileByHandleRequest) returns (GetCastProfileResponse);
-  rpc GetCastsByIds(GetCastsByIdsRequest) returns (GetCastsByIdsResponse);
-  rpc GetCastsByUserIds(GetCastsByUserIdsRequest) returns (GetCastsByUserIdsResponse);
   rpc CreateCastProfile(CreateCastProfileRequest) returns (CreateCastProfileResponse);
   rpc SaveCastProfile(SaveCastProfileRequest) returns (SaveCastProfileResponse);
   rpc SaveCastVisibility(SaveCastVisibilityRequest) returns (SaveCastVisibilityResponse);
@@ -279,24 +277,4 @@ message ListPopularTagsRequest {
 
 message ListPopularTagsResponse {
   repeated PopularTag tags = 1;
-}
-
-// === Batch Queries (for cross-slice communication) ===
-
-message GetCastsByIdsRequest {
-  repeated string cast_ids = 1;
-}
-
-message GetCastsByIdsResponse {
-  // Map of cast_id to CastProfile
-  map<string, CastProfile> casts = 1;
-}
-
-message GetCastsByUserIdsRequest {
-  repeated string user_ids = 1;
-}
-
-message GetCastsByUserIdsResponse {
-  // Map of user_id to CastProfile
-  map<string, CastProfile> casts = 1;
 }

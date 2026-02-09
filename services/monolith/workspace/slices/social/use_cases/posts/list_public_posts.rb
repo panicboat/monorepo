@@ -16,11 +16,31 @@ module Social
           limit = [[limit, 1].max, MAX_LIMIT].min
           decoded_cursor = decode_cursor(cursor)
 
+          # Combined Visibility Rule:
+          # Only show posts where both cast.visibility == 'public' AND post.visibility == 'public'
+          adapter = Social::Adapters::CastAdapter.new
+          public_cast_ids = adapter.public_cast_ids
+
+          # If filtering by specific cast_id, check if it's a public cast
+          if cast_id && !public_cast_ids.include?(cast_id)
+            return { posts: [], next_cursor: nil, has_more: false, authors: {} }
+          end
+
+          # Merge filters: only include posts from public casts
+          effective_cast_ids = if cast_ids && !cast_ids.empty?
+            cast_ids & public_cast_ids
+          elsif cast_id
+            [cast_id]
+          else
+            public_cast_ids
+          end
+
+          return { posts: [], next_cursor: nil, has_more: false, authors: {} } if effective_cast_ids.empty?
+
           posts = repo.list_all_visible(
             limit: limit,
             cursor: decoded_cursor,
-            cast_id: cast_id,
-            cast_ids: cast_ids,
+            cast_ids: effective_cast_ids,
             exclude_cast_ids: exclude_cast_ids
           )
           has_more = posts.length > limit
@@ -32,8 +52,8 @@ module Social
           end
 
           # Load authors for all posts
-          cast_ids = posts.map(&:cast_id).uniq
-          authors = load_authors(cast_ids)
+          author_cast_ids = posts.map(&:cast_id).uniq
+          authors = load_authors(author_cast_ids)
 
           { posts: posts, next_cursor: next_cursor, has_more: has_more, authors: authors }
         end

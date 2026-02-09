@@ -248,6 +248,18 @@ module Portfolio
           .take(limit)
           .map { |name, count| { name: name, usage_count: count } }
       end
+
+      def public_cast_ids
+        casts.where(visibility: "public")
+          .exclude(registered_at: nil)
+          .pluck(:id)
+      end
+
+      def private_cast_ids
+        casts.where(visibility: "private")
+          .exclude(registered_at: nil)
+          .pluck(:id)
+      end
     end
   end
 end

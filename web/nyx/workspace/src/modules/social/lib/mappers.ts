@@ -24,7 +24,7 @@ interface ApiPost {
   author?: ApiAuthor;
   likesCount?: number;
   commentsCount?: number;
-  visible?: boolean;
+  visibility?: string;
   hashtags?: string[];
   liked?: boolean;
 }
@@ -45,7 +45,7 @@ export function mapApiToPost(apiPost: ApiPost): CastPost {
     author: apiPost.author ? mapApiToAuthor(apiPost.author) : undefined,
     likesCount: apiPost.likesCount || 0,
     commentsCount: apiPost.commentsCount || 0,
-    visible: apiPost.visible !== false,
+    visibility: (apiPost.visibility as "public" | "private") || "public",
     hashtags: apiPost.hashtags || [],
     liked: apiPost.liked || false,
   };
@@ -86,12 +86,12 @@ export function mapMediaToApi(media: PostMedia[]) {
   }));
 }
 
-export function mapPostToSavePayload(post: { id?: string; content: string; media: PostMedia[]; visible?: boolean; hashtags?: string[] }) {
+export function mapPostToSavePayload(post: { id?: string; content: string; media: PostMedia[]; visibility?: "public" | "private"; hashtags?: string[] }) {
   return {
     id: post.id || "",
     content: post.content,
     media: mapMediaToApi(post.media),
-    visible: post.visible !== false,
+    visibility: post.visibility || "public",
     hashtags: post.hashtags || [],
   };
 }

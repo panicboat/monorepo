@@ -19,9 +19,28 @@ module Social
       end
 
       def list_all_visible(limit: 20, cursor: nil, cast_id: nil, cast_ids: nil, exclude_cast_ids: nil)
-        scope = cast_posts.combine(:cast_post_media, :cast_post_hashtags).where(visible: true)
+        scope = cast_posts.combine(:cast_post_media, :cast_post_hashtags).where(visibility: "public")
         scope = scope.where(cast_id: cast_id) if cast_id
         scope = scope.where(cast_id: cast_ids) if cast_ids && !cast_ids.empty?
+        scope = scope.exclude(cast_id: exclude_cast_ids) if exclude_cast_ids && !exclude_cast_ids.empty?
+
+        if cursor
+          scope = scope.where {
+            (created_at < cursor[:created_at]) |
+              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+          }
+        end
+
+        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
+
+      # List all posts by cast IDs (no visibility filter).
+      # Used for approved followers who can see all posts from followed casts.
+      def list_all_by_cast_ids(cast_ids:, limit: 20, cursor: nil, exclude_cast_ids: nil)
+        return [] if cast_ids.nil? || cast_ids.empty?
+
+        scope = cast_posts.combine(:cast_post_media, :cast_post_hashtags)
+        scope = scope.where(cast_id: cast_ids)
         scope = scope.exclude(cast_id: exclude_cast_ids) if exclude_cast_ids && !exclude_cast_ids.empty?
 
         if cursor

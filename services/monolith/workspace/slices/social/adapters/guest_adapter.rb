@@ -88,13 +88,11 @@ module Social
       end
 
       # Portfolio slice Query for batch-fetching guests by IDs.
-      # In the future, this can be replaced with a gRPC client.
       def get_by_ids_query
         @get_by_ids_query ||= Portfolio::Slice["use_cases.guest.queries.get_by_ids"]
       end
 
       # Portfolio slice Query for batch-fetching guests by user IDs.
-      # In the future, this can be replaced with a gRPC client.
       def get_by_user_ids_query
         @get_by_user_ids_query ||= Portfolio::Slice["use_cases.guest.queries.get_by_user_ids"]
       end

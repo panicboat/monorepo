@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { castClient } from "@/lib/grpc";
+import { castClient, socialClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { ConnectError } from "@connectrpc/connect";
 import { mapCastProfileToFrontend } from "@/modules/portfolio/lib/cast/profile";
+import { FollowStatus } from "@/stub/social/v1/service_pb";
 
 // UUID v4 format check
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -28,19 +29,42 @@ export async function GET(
 
     // Backend already checks registered_at for guest access
     const profile = mapCastProfileToFrontend(response.profile);
-    const plans = (response.plans || []).map((p) => ({
-      id: p.id,
-      name: p.name,
-      price: p.price,
-      duration: p.durationMinutes,
-      isRecommended: p.isRecommended || false,
-    }));
-    const schedules = (response.schedules || []).map((s) => ({
-      date: s.date,
-      start: s.startTime,
-      end: s.endTime,
-      planId: s.planId,
-    }));
+
+    // Check if cast is private and if viewer is an approved follower
+    let canViewDetails = true;
+    if (response.profile.visibility === "private") {
+      // Try to get follow status (requires authentication)
+      try {
+        const followResponse = await socialClient.getFollowStatus(
+          { castIds: [response.profile.id] },
+          headers
+        );
+        const status = followResponse.statuses[response.profile.id];
+        canViewDetails = status === FollowStatus.APPROVED;
+      } catch {
+        // Not authenticated or error - can't view private details
+        canViewDetails = false;
+      }
+    }
+
+    const plans = canViewDetails
+      ? (response.plans || []).map((p) => ({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          duration: p.durationMinutes,
+          isRecommended: p.isRecommended || false,
+        }))
+      : [];
+
+    const schedules = canViewDetails
+      ? (response.schedules || []).map((s) => ({
+          date: s.date,
+          start: s.startTime,
+          end: s.endTime,
+          planId: s.planId,
+        }))
+      : [];
 
     return NextResponse.json({
       profile,

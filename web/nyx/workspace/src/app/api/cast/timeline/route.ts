@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
         : null,
       likesCount: post.likesCount,
       commentsCount: post.commentsCount,
-      visible: post.visible,
+      visibility: post.visibility,
       hashtags: post.hashtags,
       liked: post.liked,
     }));
@@ -66,7 +66,7 @@ export async function PUT(req: NextRequest) {
         id: body.id || "",
         content: body.content,
         media: body.media || [],
-        visible: body.visible !== false,
+        visibility: body.visibility || "public",
         hashtags: body.hashtags || [],
       },
       { headers: buildGrpcHeaders(req.headers) }

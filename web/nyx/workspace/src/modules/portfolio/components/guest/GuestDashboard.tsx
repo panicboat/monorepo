@@ -58,12 +58,6 @@ export const GuestDashboard = () => {
               color: "bg-info-lighter text-info",
               href: "/following",
             },
-            {
-              label: "Blocking",
-              icon: "⛔",
-              color: "bg-surface-secondary text-text-secondary",
-              href: "/blocking",
-            },
           ].map((action) => (
             <Link
               href={action.href}

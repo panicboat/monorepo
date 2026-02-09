@@ -299,7 +299,7 @@ CREATE TABLE social.cast_posts (
     content text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    visible boolean DEFAULT true NOT NULL
+    visibility text DEFAULT 'public'::text NOT NULL
 );
 
 
@@ -951,4 +951,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260209000000_add_registered_at_to_casts.rb'),
 ('20260209000001_migrate_cast_visibility_values.rb'),
 ('20260209000002_add_status_to_cast_follows.rb'),
-('20260210000000_add_is_recommended_to_cast_plans.rb');
+('20260210000000_add_is_recommended_to_cast_plans.rb'),
+('20260210100000_rename_visible_to_visibility_in_cast_posts.rb');

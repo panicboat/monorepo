@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "base64"
+require "json"
 require "social/v1/service_services_pb"
 require "gruf"
 require "storage"
@@ -81,6 +83,7 @@ module Social
         reject_follow_uc: "use_cases.follows.reject_follow",
         cancel_follow_request_uc: "use_cases.follows.cancel_follow_request",
         list_pending_requests_uc: "use_cases.follows.list_pending_requests",
+        post_repo: "repositories.post_repository",
         like_repo: "repositories.like_repository",
         follow_repo: "repositories.follow_repository",
         comment_repo: "repositories.comment_repository",
@@ -97,7 +100,8 @@ module Social
         remove_favorite_uc: "use_cases.favorites.remove_favorite",
         list_favorites_uc: "use_cases.favorites.list_favorites",
         get_favorite_status_uc: "use_cases.favorites.get_favorite_status",
-        favorite_repo: "repositories.favorite_repository"
+        favorite_repo: "repositories.favorite_repository",
+        access_policy: "policies.access_policy"
       ]
 
       # === Timeline ===
@@ -144,12 +148,13 @@ module Social
         # Get blocked cast IDs for filtering
         blocked_cast_ids = get_blocked_cast_ids
 
-        # Following filter: get posts from followed casts
+        # Following filter: get posts from followed casts (all posts, not just public)
+        # Approved followers can see all posts from the casts they follow
         if filter == "following" && current_user_id
           guest = find_my_guest
           if guest
             following_cast_ids = follow_repo.following_cast_ids(guest_id: guest.id)
-            result = list_public_posts_with_cast_ids_filter(
+            result = list_following_posts(
               limit: limit,
               cursor: cursor,
               cast_ids: following_cast_ids,
@@ -168,6 +173,22 @@ module Social
               limit: limit,
               cursor: cursor,
               cast_ids: favorite_cast_ids,
+              exclude_cast_ids: blocked_cast_ids
+            )
+            return build_list_response(result)
+          end
+        end
+
+        # If cast_id is specified, check if viewer is an approved follower
+        # Approved followers can see all posts, others see only public posts
+        if !cast_id.empty? && current_user_id
+          guest = find_my_guest
+          if guest && follow_repo.following?(cast_id: cast_id, guest_id: guest.id)
+            # Viewer is an approved follower, show all posts
+            result = list_following_posts(
+              limit: limit,
+              cursor: cursor,
+              cast_ids: [cast_id],
               exclude_cast_ids: blocked_cast_ids
             )
             return build_list_response(result)
@@ -193,6 +214,16 @@ module Social
         end
 
         guest = find_my_guest
+
+        # Check access permission using AccessPolicy
+        unless access_policy.can_view_post?(
+          post: result[:post],
+          cast: result[:author],
+          viewer_guest_id: guest&.id
+        )
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
+        end
+
         likes_count = like_repo.likes_count(post_id: result[:post].id)
         liked = guest ? like_repo.liked?(post_id: result[:post].id, guest_id: guest.id) : false
 
@@ -221,7 +252,7 @@ module Social
           id: request.message.id.empty? ? nil : request.message.id,
           content: request.message.content,
           media: media_data,
-          visible: request.message.visible,
+          visibility: request.message.visibility.empty? ? "public" : request.message.visibility,
           hashtags: hashtags
         )
 
@@ -808,6 +839,54 @@ module Social
           cast_ids: cast_ids,
           exclude_cast_ids: exclude_cast_ids
         )
+      end
+
+      # List posts from followed casts (all posts, not just public).
+      # Used for approved followers who can see all posts.
+      def list_following_posts(limit:, cursor:, cast_ids:, exclude_cast_ids: nil)
+        return { posts: [], next_cursor: nil, has_more: false, authors: {} } if cast_ids.empty?
+
+        decoded_cursor = decode_cursor(cursor)
+        posts = post_repo.list_all_by_cast_ids(
+          cast_ids: cast_ids,
+          limit: limit,
+          cursor: decoded_cursor,
+          exclude_cast_ids: exclude_cast_ids
+        )
+
+        has_more = posts.length > limit
+        posts = posts.first(limit) if has_more
+
+        next_cursor = if has_more && posts.any?
+          last = posts.last
+          encode_cursor(created_at: last.created_at.iso8601, id: last.id)
+        end
+
+        # Load authors for all posts
+        author_cast_ids = posts.map(&:cast_id).uniq
+        authors = load_authors(author_cast_ids)
+
+        { posts: posts, next_cursor: next_cursor, has_more: has_more, authors: authors }
+      end
+
+      def decode_cursor(cursor)
+        return nil if cursor.nil? || cursor.empty?
+
+        parsed = JSON.parse(Base64.urlsafe_decode64(cursor))
+        { created_at: Time.parse(parsed["created_at"]), id: parsed["id"] }
+      rescue StandardError
+        nil
+      end
+
+      def encode_cursor(data)
+        Base64.urlsafe_encode64(JSON.generate(data), padding: false)
+      end
+
+      def load_authors(cast_ids)
+        return {} if cast_ids.empty?
+
+        adapter = Social::Adapters::CastAdapter.new
+        adapter.find_by_cast_ids(cast_ids)
       end
 
       def build_list_response(result)

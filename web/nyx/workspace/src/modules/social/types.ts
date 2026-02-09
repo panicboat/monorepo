@@ -24,7 +24,7 @@ export type CastPost = {
   author?: Author;
   likesCount: number;
   commentsCount: number;
-  visible: boolean;
+  visibility: "public" | "private";
   hashtags: string[];
   liked: boolean;
 };

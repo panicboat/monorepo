@@ -10,7 +10,7 @@ RSpec.describe "Social::Relations::CastPosts", type: :database do
     attribute_names = relation.schema.attributes.map(&:name)
     expect(attribute_names).to include(:cast_id)
     expect(attribute_names).to include(:content)
-    expect(attribute_names).to include(:visible)
+    expect(attribute_names).to include(:visibility)
     expect(attribute_names).to include(:created_at)
     expect(attribute_names).to include(:updated_at)
   end

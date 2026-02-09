@@ -84,6 +84,13 @@ module Social
         casts.map(&:user_id)
       end
 
+      # Get all public, registered cast IDs.
+      #
+      # @return [Array<String>] array of cast IDs
+      def public_cast_ids
+        get_public_cast_ids_query.call
+      end
+
       private
 
       def build_cast_info(cast)
@@ -100,15 +107,18 @@ module Social
       end
 
       # Portfolio slice Query for batch-fetching casts by IDs.
-      # In the future, this can be replaced with a gRPC client.
       def get_by_ids_query
         @get_by_ids_query ||= Portfolio::Slice["use_cases.cast.queries.get_by_ids"]
       end
 
       # Portfolio slice Query for batch-fetching casts by user IDs.
-      # In the future, this can be replaced with a gRPC client.
       def get_by_user_ids_query
         @get_by_user_ids_query ||= Portfolio::Slice["use_cases.cast.queries.get_by_user_ids"]
+      end
+
+      # Portfolio slice Query for getting public cast IDs.
+      def get_public_cast_ids_query
+        @get_public_cast_ids_query ||= Portfolio::Slice["use_cases.cast.queries.get_public_cast_ids"]
       end
     end
   end

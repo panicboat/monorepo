@@ -124,6 +124,12 @@ puts "  Created #{genre_count} genres"
 puts "Seeding Identity: Users..."
 
 # Cast Users (role: 2)
+# =============================================================================
+# Visibility Test Scenario:
+#   Cast 1 (09011111111): Yuna - visibility: public
+#   Cast 2 (09022222222): Mio  - visibility: private
+#   Cast 3 (09033333333): Rin  - visibility: public
+# =============================================================================
 cast_user_ids = []
 [
   { phone_number: "09011111111", role: 2 },
@@ -145,10 +151,19 @@ cast_user_ids = []
 end
 
 # Guest Users (role: 1)
+# =============================================================================
+# Visibility Test Scenario:
+#   Guest 1 (08011111111): Taro   - フォロー済みゲスト
+#   Guest 2 (08022222222): Jiro   - 非フォローゲスト
+#   Guest 3 (08033333333): Saburo - プライベートキャストのフォロー承認待ちゲスト
+#   Guest 4 (08044444444): Shiro  - 複数キャストをフォローしているゲスト
+# =============================================================================
 guest_user_ids = []
 [
   { phone_number: "08011111111", role: 1 },
   { phone_number: "08022222222", role: 1 },
+  { phone_number: "08033333333", role: 1 },
+  { phone_number: "08044444444", role: 1 },
 ].each do |user_data|
   id = insert_unless_exists(
     :identity__users,
@@ -169,16 +184,23 @@ puts "  Created #{cast_user_ids.size} cast users, #{guest_user_ids.size} guest u
 # =============================================================================
 # Portfolio: Casts
 # =============================================================================
+#
+# Visibility Test Scenario:
+#   Cast 1 (09011111111): Yuna - visibility: public  → プロフィール全情報公開
+#   Cast 2 (09022222222): Mio  - visibility: private → 非フォロワーにはプラン/スケジュール非表示
+#   Cast 3 (09033333333): Rin  - visibility: public  → プロフィール全情報公開
+# =============================================================================
 
 puts "Seeding Portfolio: Casts..."
 
 cast_data = [
+  # Cast 1: Yuna (PUBLIC) - 誰でもプロフィール全情報を閲覧可能
   {
     name: "Yuna",
     handle: "yuna",
     tagline: "癒しの時間をお届けします 💕",
     bio: "はじめまして、Yunaです。一緒に楽しい時間を過ごしましょう。趣味は映画鑑賞とカフェ巡り。お話しするのが大好きです！",
-    visibility: "public",
+    visibility: "public",  # PUBLIC CAST
     registered_at: Time.now,
     age: 24,
     height: 158,
@@ -187,12 +209,13 @@ cast_data = [
     images: ["yuna_1.jpg", "yuna_2.jpg"].to_json,
     tags: ["癒し系", "話し上手", "初心者歓迎"].to_json,
   },
+  # Cast 2: Mio (PRIVATE) - 非フォロワーにはプラン/スケジュールが非表示
   {
     name: "Mio",
     handle: "mio",
     tagline: "今夜、特別な時間を ✨",
     bio: "Mioです。大人の会話を楽しみたい方、ぜひお待ちしています。ワインと音楽が好きです。",
-    visibility: "private",
+    visibility: "private",  # PRIVATE CAST
     registered_at: Time.now,
     age: 27,
     height: 165,
@@ -201,12 +224,13 @@ cast_data = [
     images: ["mio_1.jpg", "mio_2.jpg", "mio_3.jpg"].to_json,
     tags: ["大人の時間", "ワイン好き", "夜型"].to_json,
   },
+  # Cast 3: Rin (PUBLIC) - 誰でもプロフィール全情報を閲覧可能
   {
     name: "Rin",
     handle: "rin",
     tagline: "あなたの心に寄り添います 🌸",
     bio: "Rinと申します。読書とお散歩が趣味の、のんびりした性格です。ゆっくりお話ししましょう。",
-    visibility: "public",
+    visibility: "public",  # PUBLIC CAST
     registered_at: Time.now,
     age: 22,
     height: 155,
@@ -366,30 +390,56 @@ puts "  Created #{area_count} cast-area associations"
 # =============================================================================
 # Social: Cast Posts
 # =============================================================================
+#
+# Visibility Test Scenario (Combined Visibility Rule):
+#   1. Public Cast + Public Post  → 誰でも閲覧可能
+#   2. Public Cast + Private Post → フォロワーのみ閲覧可能
+#   3. Private Cast + Public Post → フォロワーのみ閲覧可能
+#   4. Private Cast + Private Post → フォロワーのみ閲覧可能
+#
+# Cast別の投稿:
+#   Yuna (Public):  public投稿 x 2, private投稿 x 1
+#   Mio (Private):  public投稿 x 1, private投稿 x 2
+#   Rin (Public):   public投稿 x 2, private投稿 x 1
+# =============================================================================
 
 puts "Seeding Social: Cast Posts..."
 
-post_data = [
-  { content: "今日も元気に出勤中！✨ 皆さんのお越しをお待ちしています。", visible: true, hashtags: ["出勤", "渋谷"] },
-  { content: "新しいドレスを買いました👗 次回お会いできるのを楽しみにしています！", visible: true, hashtags: ["新衣装", "ファッション"] },
-  { content: "雨の日は少し寂しいですね☔ でも、あなたに会えたら嬉しいな。", visible: true, hashtags: ["雨の日", "会いたい"] },
-  { content: "今夜23時まで空いています！ラスト1枠、お待ちしています💕", visible: true, hashtags: ["Tonight", "空き枠あり"] },
-  { content: "カフェでまったり☕ 美味しいケーキを見つけました！", visible: true, hashtags: ["カフェ", "オフショット"] },
-]
+# Cast-specific posts with visibility
+casts_post_data = {
+  # Yuna (Public Cast) - index 0
+  0 => [
+    { content: "[Yuna/Public/Public] 今日も元気に出勤中！✨ 皆さんのお越しをお待ちしています。", visibility: "public", hashtags: ["出勤", "渋谷"] },
+    { content: "[Yuna/Public/Public] 新しいドレスを買いました👗 次回お会いできるのを楽しみにしています！", visibility: "public", hashtags: ["新衣装", "ファッション"] },
+    { content: "[Yuna/Public/Private] フォロワー限定！来週のイベント情報お伝えします🎉", visibility: "private", hashtags: ["フォロワー限定", "イベント"] },
+  ],
+  # Mio (Private Cast) - index 1
+  1 => [
+    { content: "[Mio/Private/Public] 今夜23時まで空いています！ラスト1枠、お待ちしています💕", visibility: "public", hashtags: ["Tonight", "空き枠あり"] },
+    { content: "[Mio/Private/Private] メンバー限定の特別なお知らせです✨", visibility: "private", hashtags: ["メンバー限定"] },
+    { content: "[Mio/Private/Private] 承認されたフォロワーさんだけに見える投稿です💖", visibility: "private", hashtags: ["限定公開"] },
+  ],
+  # Rin (Public Cast) - index 2
+  2 => [
+    { content: "[Rin/Public/Public] カフェでまったり☕ 美味しいケーキを見つけました！", visibility: "public", hashtags: ["カフェ", "オフショット"] },
+    { content: "[Rin/Public/Public] 雨の日は少し寂しいですね☔ でも、あなたに会えたら嬉しいな。", visibility: "public", hashtags: ["雨の日", "会いたい"] },
+    { content: "[Rin/Public/Private] フォロワーさん限定のオフショットです📸", visibility: "private", hashtags: ["オフショット", "限定"] },
+  ],
+}
 
 post_count = 0
-cast_ids.each do |cast_id|
+cast_ids.each_with_index do |cast_id, cast_idx|
   next unless cast_id
 
   existing = db[:"social__cast_posts"].where(cast_id: cast_id).count
   next if existing > 0
 
-  # Create 2-3 posts per cast
-  post_data.sample(rand(2..3)).each_with_index do |data, idx|
+  posts = casts_post_data[cast_idx] || []
+  posts.each_with_index do |data, idx|
     post_id = db[:"social__cast_posts"].insert(
       cast_id: cast_id,
       content: data[:content],
-      visible: data[:visible],
+      visibility: data[:visibility],
       created_at: Time.now - (idx * 3600), # Stagger by 1 hour
       updated_at: Time.now - (idx * 3600),
     )
@@ -416,9 +466,18 @@ puts "  Created #{post_count} cast posts"
 
 puts "Seeding Portfolio: Guests..."
 
+# =============================================================================
+# Visibility Test Scenario:
+#   Guest 1: 太郎 (Taro)   - Public/Privateキャストをフォロー済み
+#   Guest 2: 次郎 (Jiro)   - 誰もフォローしていない
+#   Guest 3: 三郎 (Saburo) - Privateキャストにフォロー申請中（pending）
+#   Guest 4: 四郎 (Shiro)  - Publicキャストのみフォロー済み
+# =============================================================================
 guest_data = [
   { name: "太郎", avatar_path: nil },
   { name: "次郎", avatar_path: nil },
+  { name: "三郎", avatar_path: nil },
+  { name: "四郎", avatar_path: nil },
 ]
 
 guest_count = 0
@@ -551,28 +610,70 @@ puts "  Created #{comment_count} comments and #{reply_count} replies"
 # =============================================================================
 # Social: Cast Follows
 # =============================================================================
+#
+# Visibility Test Scenario:
+#   Guest 1 (太郎): Yuna(public)をフォロー済み, Mio(private)をフォロー済み
+#   Guest 2 (次郎): 誰もフォローしていない → public cast/public post のみ閲覧可能
+#   Guest 3 (三郎): Mio(private)にフォロー申請中(pending) → public cast/public post のみ閲覧可能
+#   Guest 4 (四郎): Rin(public)のみフォロー済み → Rin のprivate投稿も閲覧可能
+#
+# 閲覧可能な投稿マトリクス:
+#   |              | Yuna(public) | Mio(private) | Rin(public) |
+#   |              | pub  | priv  | pub  | priv  | pub  | priv |
+#   |--------------|------|-------|------|-------|------|------|
+#   | 太郎(follow両方) | ○    | ○     | ○    | ○     | ○    | ×    |
+#   | 次郎(非フォロー)  | ○    | ×     | ×    | ×     | ○    | ×    |
+#   | 三郎(Mio pending)| ○   | ×     | ×    | ×     | ○    | ×    |
+#   | 四郎(Rin follow) | ○   | ×     | ×    | ×     | ○    | ○    |
+#   | 未認証ユーザー    | ○   | ×     | ×    | ×     | ○    | ×    |
+# =============================================================================
 
 puts "Seeding Social: Cast Follows..."
 
-# Get all casts
-casts = db[:portfolio__casts].all.to_a
+# Get casts by handle (explicit lookup to avoid ordering issues)
+yuna = db[:portfolio__casts].where(handle: "yuna").first
+mio = db[:portfolio__casts].where(handle: "mio").first
+rin = db[:portfolio__casts].where(handle: "rin").first
+
+# Get guests by name (explicit lookup)
+taro = db[:portfolio__guests].where(name: "太郎").first
+jiro = db[:portfolio__guests].where(name: "次郎").first
+saburo = db[:portfolio__guests].where(name: "三郎").first
+shiro = db[:portfolio__guests].where(name: "四郎").first
 
 follow_count = 0
-guests.each do |guest|
-  # Each guest follows some random casts
-  casts_to_follow = casts.sample(rand(1..2))
-  casts_to_follow.each do |cast|
-    existing = db[:"social__cast_follows"].where(guest_id: guest[:id], cast_id: cast[:id]).first
-    next if existing
 
-    db[:"social__cast_follows"].insert(
-      guest_id: guest[:id],
-      cast_id: cast[:id],
-      status: "approved",
-      created_at: Time.now,
-    )
-    follow_count += 1
-  end
+# Define specific follow relationships
+follow_scenarios = []
+
+if yuna && mio && rin && taro && saburo && shiro
+  # 太郎: Yuna と Mio をフォロー済み (approved)
+  follow_scenarios << { guest: taro, cast: yuna, status: "approved" }
+  follow_scenarios << { guest: taro, cast: mio, status: "approved" }
+
+  # 次郎: 誰もフォローしていない (nothing)
+
+  # 三郎: Mio にフォロー申請中 (pending)
+  follow_scenarios << { guest: saburo, cast: mio, status: "pending" }
+
+  # 四郎: Rin のみフォロー済み (approved)
+  follow_scenarios << { guest: shiro, cast: rin, status: "approved" }
+end
+
+follow_scenarios.each do |scenario|
+  existing = db[:"social__cast_follows"].where(
+    guest_id: scenario[:guest][:id],
+    cast_id: scenario[:cast][:id]
+  ).first
+  next if existing
+
+  db[:"social__cast_follows"].insert(
+    guest_id: scenario[:guest][:id],
+    cast_id: scenario[:cast][:id],
+    status: scenario[:status],
+    created_at: Time.now,
+  )
+  follow_count += 1
 end
 
 puts "  Created #{follow_count} cast follows"
@@ -580,22 +681,26 @@ puts "  Created #{follow_count} cast follows"
 # =============================================================================
 # Social: Blocks (Sample data for development)
 # =============================================================================
+#
+# Note: Block UI has been removed but backend APIs remain.
+# This seed creates sample data for testing block functionality.
+# =============================================================================
 
 puts "Seeding Social: Blocks..."
 
 block_count = 0
 
-# Guest 1 blocks Cast 3 (Rin)
-if guests.size >= 1 && casts.size >= 3
-  guest = guests[0]
-  cast = casts[2]
+# Guest 太郎 blocks Cast Rin (for testing block functionality)
+taro_block = db[:portfolio__guests].where(name: "太郎").first
+rin_block = db[:portfolio__casts].where(handle: "rin").first
 
-  existing = db[:"social__blocks"].where(blocker_id: guest[:id], blocked_id: cast[:id]).first
+if taro_block && rin_block
+  existing = db[:"social__blocks"].where(blocker_id: taro_block[:id], blocked_id: rin_block[:id]).first
   unless existing
     db[:"social__blocks"].insert(
-      blocker_id: guest[:id],
+      blocker_id: taro_block[:id],
       blocker_type: "guest",
-      blocked_id: cast[:id],
+      blocked_id: rin_block[:id],
       blocked_type: "cast",
       created_at: Time.now,
     )
@@ -608,24 +713,50 @@ puts "  Created #{block_count} blocks"
 # =============================================================================
 # Social: Cast Favorites
 # =============================================================================
+#
+# Visibility Test Scenario:
+#   太郎: Yuna(public), Mio(private) をお気に入り
+#   四郎: Rin(public) をお気に入り
+# =============================================================================
 
 puts "Seeding Social: Cast Favorites..."
 
-favorite_count = 0
-guests.each do |guest|
-  # Each guest favorites some random casts
-  casts_to_favorite = casts.sample(rand(1..2))
-  casts_to_favorite.each do |cast|
-    existing = db[:"social__cast_favorites"].where(guest_id: guest[:id], cast_id: cast[:id]).first
-    next if existing
+# Get casts by handle (explicit lookup)
+yuna_fav = db[:portfolio__casts].where(handle: "yuna").first
+mio_fav = db[:portfolio__casts].where(handle: "mio").first
+rin_fav = db[:portfolio__casts].where(handle: "rin").first
 
-    db[:"social__cast_favorites"].insert(
-      guest_id: guest[:id],
-      cast_id: cast[:id],
-      created_at: Time.now,
-    )
-    favorite_count += 1
-  end
+# Get guests by name (explicit lookup)
+taro_fav = db[:portfolio__guests].where(name: "太郎").first
+shiro_fav = db[:portfolio__guests].where(name: "四郎").first
+
+favorite_count = 0
+
+# Define specific favorite relationships
+favorite_scenarios = []
+
+if yuna_fav && mio_fav && rin_fav && taro_fav && shiro_fav
+  # 太郎: Yuna と Mio をお気に入り
+  favorite_scenarios << { guest: taro_fav, cast: yuna_fav }
+  favorite_scenarios << { guest: taro_fav, cast: mio_fav }
+
+  # 四郎: Rin をお気に入り
+  favorite_scenarios << { guest: shiro_fav, cast: rin_fav }
+end
+
+favorite_scenarios.each do |scenario|
+  existing = db[:"social__cast_favorites"].where(
+    guest_id: scenario[:guest][:id],
+    cast_id: scenario[:cast][:id]
+  ).first
+  next if existing
+
+  db[:"social__cast_favorites"].insert(
+    guest_id: scenario[:guest][:id],
+    cast_id: scenario[:cast][:id],
+    created_at: Time.now,
+  )
+  favorite_count += 1
 end
 
 puts "  Created #{favorite_count} cast favorites"
@@ -635,11 +766,50 @@ puts "  Created #{favorite_count} cast favorites"
 # =============================================================================
 
 puts ""
-puts "=" * 60
+puts "=" * 80
 puts "Seed completed!"
-puts "=" * 60
+puts "=" * 80
 puts ""
 puts "Test Accounts (password: 0000):"
-puts "  Cast:  09011111111, 09022222222, 09033333333"
-puts "  Guest: 08011111111, 08022222222"
+puts ""
+puts "  CAST ACCOUNTS:"
+puts "    09011111111 - Yuna  (visibility: public)  - PublicキャストのPublic/Private投稿"
+puts "    09022222222 - Mio   (visibility: private) - PrivateキャストのPublic/Private投稿"
+puts "    09033333333 - Rin   (visibility: public)  - PublicキャストのPublic/Private投稿"
+puts ""
+puts "  GUEST ACCOUNTS:"
+puts "    08011111111 - 太郎 - Yuna+Mioをフォロー済み → 両キャストの全投稿閲覧可能"
+puts "    08022222222 - 次郎 - 誰もフォローしていない → PublicキャストのPublic投稿のみ"
+puts "    08033333333 - 三郎 - Mioにフォロー申請中(pending) → PublicキャストのPublic投稿のみ"
+puts "    08044444444 - 四郎 - Rinのみフォロー済み → Rinの全投稿 + 他PublicキャストのPublic投稿"
+puts ""
+puts "=" * 80
+puts "Visibility Test Matrix:"
+puts "=" * 80
+puts ""
+puts "  Combined Visibility Rule: cast.visibility='public' AND post.visibility='public'"
+puts "  → この条件を満たす投稿のみ、誰でも閲覧可能"
+puts "  → それ以外は、承認済みフォロワー(status='approved')のみ閲覧可能"
+puts "  → ブロックしているキャストの投稿は一切閲覧不可"
+puts ""
+puts "  |                    | Yuna(public)  | Mio(private)  | Rin(public)   |"
+puts "  |                    | pub   | priv  | pub   | priv  | pub   | priv  |"
+puts "  |--------------------|-------|-------|-------|-------|-------|-------|"
+puts "  | 太郎(Y+M follow)    |  ○    |   ○   |   ○   |   ○   |   ×   |   ×   | ※Rinをブロック"
+puts "  | 次郎(no follow)     |  ○    |   ×   |   ×   |   ×   |   ○   |   ×   |"
+puts "  | 三郎(M pending)     |  ○    |   ×   |   ×   |   ×   |   ○   |   ×   |"
+puts "  | 四郎(R follow)      |  ○    |   ×   |   ×   |   ×   |   ○   |   ○   |"
+puts "  | 未認証ユーザー        |  ○    |   ×   |   ×   |   ×   |   ○   |   ×   |"
+puts ""
+puts "  Follow relationships:"
+puts "    太郎 → Yuna(approved), Mio(approved), Rin(blocked)"
+puts "    次郎 → (none)"
+puts "    三郎 → Mio(pending)"
+puts "    四郎 → Rin(approved)"
+puts ""
+puts "  Legend:"
+puts "    pub  = post.visibility='public'"
+puts "    priv = post.visibility='private'"
+puts "    ○ = 閲覧可能"
+puts "    × = 閲覧不可 (404 Not Found)"
 puts ""

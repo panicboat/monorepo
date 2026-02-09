@@ -18,7 +18,7 @@ export type FeedItem = {
   image?: string; // Legacy support
   likes: number;
   comments: number;
-  visible?: boolean;
+  visibility?: "public" | "private";
   hashtags?: string[];
   liked?: boolean;
 };
@@ -37,7 +37,7 @@ export function mapPostToFeedItem(post: CastPost): FeedItem {
     })),
     likes: post.likesCount,
     comments: post.commentsCount,
-    visible: post.visible,
+    visibility: post.visibility,
     hashtags: post.hashtags,
     liked: post.liked,
   };

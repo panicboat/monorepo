@@ -73,7 +73,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
   }, [fetchPosts, nextCursor, hasMore]);
 
   const savePost = useCallback(
-    async (post: { id?: string; content: string; media: PostMedia[]; visible?: boolean; hashtags?: string[] }) => {
+    async (post: { id?: string; content: string; media: PostMedia[]; visibility?: "public" | "private"; hashtags?: string[] }) => {
       const token = getAuthToken();
       if (!token) throw new Error("No token");
 
@@ -108,7 +108,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
   );
 
   const toggleVisibility = useCallback(
-    async (postId: string, visible: boolean) => {
+    async (postId: string, visibility: "public" | "private") => {
       const token = getAuthToken();
       if (!token) throw new Error("No token");
 
@@ -119,7 +119,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
         id: post.id,
         content: post.content,
         media: [],
-        visible,
+        visibility,
       };
 
       const res = await fetch(apiPath, {

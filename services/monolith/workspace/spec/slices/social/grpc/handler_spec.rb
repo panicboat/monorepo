@@ -48,7 +48,7 @@ RSpec.describe Social::Grpc::Handler do
       id: "post-1",
       cast_id: "cast-123",
       content: "Hello world",
-      visible: true,
+      visibility: "public",
       cast_post_media: [],
       cast_post_hashtags: [],
       created_at: Time.parse("2026-01-01T10:00:00Z")
@@ -163,13 +163,13 @@ RSpec.describe Social::Grpc::Handler do
           id: "",
           content: "Hello world",
           media: [],
-          visible: true
+          visibility: "public"
         )
       end
 
       it "calls save use case and returns response" do
         expect(save_post_uc).to receive(:call)
-          .with(cast_id: "cast-123", id: nil, content: "Hello world", hashtags: [], media: [], visible: true)
+          .with(cast_id: "cast-123", id: nil, content: "Hello world", hashtags: [], media: [], visibility: "public")
           .and_return(mock_post)
 
         response = handler.save_cast_post
@@ -178,23 +178,23 @@ RSpec.describe Social::Grpc::Handler do
         expect(response.post.id).to eq("post-1")
         expect(response.post.content).to eq("Hello world")
         expect(response.post.author.name).to eq("Yuna")
-        expect(response.post.visible).to eq(true)
+        expect(response.post.visibility).to eq("public")
       end
     end
 
-    context "creating a hidden post" do
+    context "creating a private post" do
       let(:message) do
         ::Social::V1::SaveCastPostRequest.new(
           id: "",
-          content: "Hidden post",
+          content: "Private post",
           media: [],
-          visible: false
+          visibility: "private"
         )
       end
 
-      it "passes visible false to use case" do
+      it "passes visibility private to use case" do
         expect(save_post_uc).to receive(:call)
-          .with(cast_id: "cast-123", id: nil, content: "Hidden post", hashtags: [], media: [], visible: false)
+          .with(cast_id: "cast-123", id: nil, content: "Private post", hashtags: [], media: [], visibility: "private")
           .and_return(mock_post)
 
         handler.save_cast_post
@@ -207,13 +207,13 @@ RSpec.describe Social::Grpc::Handler do
           id: "post-1",
           content: "Updated content",
           media: [],
-          visible: true
+          visibility: "public"
         )
       end
 
       it "calls save use case with id" do
         expect(save_post_uc).to receive(:call)
-          .with(cast_id: "cast-123", id: "post-1", content: "Updated content", hashtags: [], media: [], visible: true)
+          .with(cast_id: "cast-123", id: "post-1", content: "Updated content", hashtags: [], media: [], visibility: "public")
           .and_return(mock_post)
 
         response = handler.save_cast_post
@@ -227,7 +227,7 @@ RSpec.describe Social::Grpc::Handler do
           id: "",
           content: "With media",
           media: [::Social::V1::CastPostMedia.new(media_type: "image", url: "http://img.jpg", thumbnail_url: "")],
-          visible: true
+          visibility: "public"
         )
       end
 
@@ -239,7 +239,7 @@ RSpec.describe Social::Grpc::Handler do
             content: "With media",
             hashtags: [],
             media: [{ media_type: "image", url: "http://img.jpg", thumbnail_url: "" }],
-            visible: true
+            visibility: "public"
           )
           .and_return(mock_post)
 
@@ -248,7 +248,7 @@ RSpec.describe Social::Grpc::Handler do
     end
 
     context "when unauthenticated" do
-      let(:message) { ::Social::V1::SaveCastPostRequest.new(id: "", content: "Test", visible: true) }
+      let(:message) { ::Social::V1::SaveCastPostRequest.new(id: "", content: "Test", visibility: "public") }
 
       it "raises unauthenticated when no user" do
         allow(Current).to receive(:user_id).and_return(nil)

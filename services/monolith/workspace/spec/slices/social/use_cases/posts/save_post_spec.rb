@@ -14,7 +14,7 @@ RSpec.describe Social::UseCases::Posts::SavePost do
   describe "#call - create" do
     it "creates a new post when id is nil" do
       expect(repo).to receive(:create_post)
-        .with(cast_id: cast_id, content: "Hello world", visible: true)
+        .with(cast_id: cast_id, content: "Hello world", visibility: "public")
         .and_return(post)
       expect(repo).to receive(:find_by_id).with("post-1").and_return(post)
 
@@ -24,7 +24,7 @@ RSpec.describe Social::UseCases::Posts::SavePost do
 
     it "creates a new post when id is empty" do
       expect(repo).to receive(:create_post)
-        .with(cast_id: cast_id, content: "Hello world", visible: true)
+        .with(cast_id: cast_id, content: "Hello world", visibility: "public")
         .and_return(post)
       expect(repo).to receive(:find_by_id).with("post-1").and_return(post)
 
@@ -32,13 +32,13 @@ RSpec.describe Social::UseCases::Posts::SavePost do
       expect(result).to eq(post)
     end
 
-    it "creates a new post with visible false" do
+    it "creates a new post with visibility private" do
       expect(repo).to receive(:create_post)
-        .with(cast_id: cast_id, content: "Hidden post", visible: false)
+        .with(cast_id: cast_id, content: "Hidden post", visibility: "private")
         .and_return(post)
       expect(repo).to receive(:find_by_id).with("post-1").and_return(post)
 
-      result = use_case.call(cast_id: cast_id, content: "Hidden post", visible: false)
+      result = use_case.call(cast_id: cast_id, content: "Hidden post", visibility: "private")
       expect(result).to eq(post)
     end
 
@@ -46,7 +46,7 @@ RSpec.describe Social::UseCases::Posts::SavePost do
       media_data = [{ media_type: "image", url: "http://example.com/img.jpg" }]
 
       expect(repo).to receive(:create_post)
-        .with(cast_id: cast_id, content: "With media", visible: true)
+        .with(cast_id: cast_id, content: "With media", visibility: "public")
         .and_return(post)
       expect(repo).to receive(:save_media)
         .with(post_id: "post-1", media_data: media_data)
@@ -64,7 +64,7 @@ RSpec.describe Social::UseCases::Posts::SavePost do
         .with(id: "post-1", cast_id: cast_id)
         .and_return(existing_post)
       expect(repo).to receive(:update_post)
-        .with("post-1", content: "Updated content", visible: true)
+        .with("post-1", content: "Updated content", visibility: "public")
       expect(repo).not_to receive(:save_media)
       expect(repo).to receive(:save_hashtags).with(post_id: "post-1", hashtags: [])
       expect(repo).to receive(:find_by_id).with("post-1").and_return(post)
@@ -80,7 +80,7 @@ RSpec.describe Social::UseCases::Posts::SavePost do
         .with(id: "post-1", cast_id: cast_id)
         .and_return(existing_post)
       expect(repo).to receive(:update_post)
-        .with("post-1", content: "Updated", visible: true)
+        .with("post-1", content: "Updated", visibility: "public")
       expect(repo).to receive(:save_media)
         .with(post_id: "post-1", media_data: media_data)
       expect(repo).to receive(:save_hashtags).with(post_id: "post-1", hashtags: [])
@@ -94,12 +94,12 @@ RSpec.describe Social::UseCases::Posts::SavePost do
         .with(id: "post-1", cast_id: cast_id)
         .and_return(existing_post)
       expect(repo).to receive(:update_post)
-        .with("post-1", content: "Updated content", visible: false)
+        .with("post-1", content: "Updated content", visibility: "private")
       expect(repo).not_to receive(:save_media)
       expect(repo).to receive(:save_hashtags).with(post_id: "post-1", hashtags: [])
       expect(repo).to receive(:find_by_id).with("post-1").and_return(post)
 
-      result = use_case.call(cast_id: cast_id, id: "post-1", content: "Updated content", visible: false)
+      result = use_case.call(cast_id: cast_id, id: "post-1", content: "Updated content", visibility: "private")
       expect(result).to eq(post)
     end
 

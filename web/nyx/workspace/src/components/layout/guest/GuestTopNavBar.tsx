@@ -24,8 +24,6 @@ export const GuestTopNavBar = () => {
     title = "Favorites";
   } else if (pathname === "/following") {
     title = "Following";
-  } else if (pathname === "/blocking") {
-    title = "Blocking";
   } else if (pathname.startsWith("/cast/")) {
     title = "Cast Profile";
   } else if (pathname.startsWith("/concierge/")) {

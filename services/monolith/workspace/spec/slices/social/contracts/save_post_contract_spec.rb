@@ -33,13 +33,13 @@ RSpec.describe Social::Contracts::SavePostContract do
       expect(result).to be_success
     end
 
-    it "succeeds with visible flag" do
-      result = contract.call(cast_id: "abc-123", content: "Hello world", visible: false)
+    it "succeeds with visibility flag" do
+      result = contract.call(cast_id: "abc-123", content: "Hello world", visibility: "private")
       expect(result).to be_success
     end
 
     it "succeeds with id and no content or media (visibility update)" do
-      result = contract.call(cast_id: "abc-123", id: "post-1", visible: false)
+      result = contract.call(cast_id: "abc-123", id: "post-1", visibility: "private")
       expect(result).to be_success
     end
 

@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
         : null,
       likesCount: post.likesCount,
       commentsCount: post.commentsCount,
-      visible: post.visible,
+      visibility: post.visibility,
       hashtags: post.hashtags,
       liked: post.liked,
     }));

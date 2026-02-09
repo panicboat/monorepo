@@ -21,7 +21,7 @@ RSpec.describe Social::Presenters::PostPresenter do
         id: "post-1",
         cast_id: "cast-1",
         content: "Hello world",
-        visible: true,
+        visibility: "public",
         cast_post_media: [media],
         created_at: Time.parse("2026-01-01T10:00:00Z")
       )
@@ -35,7 +35,7 @@ RSpec.describe Social::Presenters::PostPresenter do
       expect(proto.media.size).to eq(1)
       expect(proto.likes_count).to eq(0)
       expect(proto.comments_count).to eq(0)
-      expect(proto.visible).to eq(true)
+      expect(proto.visibility).to eq("public")
     end
 
     it "converts hidden post to proto" do
@@ -44,14 +44,14 @@ RSpec.describe Social::Presenters::PostPresenter do
         id: "post-1",
         cast_id: "cast-1",
         content: "Hidden",
-        visible: false,
+        visibility: "private",
         cast_post_media: [],
         created_at: Time.parse("2026-01-01T10:00:00Z")
       )
 
       proto = described_class.to_proto(post)
 
-      expect(proto.visible).to eq(false)
+      expect(proto.visibility).to eq("private")
     end
 
     it "includes author when provided" do
@@ -60,7 +60,7 @@ RSpec.describe Social::Presenters::PostPresenter do
         id: "post-1",
         cast_id: "cast-1",
         content: "Hello",
-        visible: true,
+        visibility: "public",
         cast_post_media: [],
         created_at: Time.now
       )

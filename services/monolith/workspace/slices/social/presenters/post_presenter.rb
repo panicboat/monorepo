@@ -18,7 +18,7 @@ module Social
           author: author_to_proto(author),
           likes_count: likes_count,
           comments_count: comments_count,
-          visible: post.respond_to?(:visible) ? post.visible : true,
+          visibility: post.respond_to?(:visibility) ? post.visibility : "public",
           hashtags: hashtags.sort_by(&:position).map(&:tag),
           liked: liked
         )

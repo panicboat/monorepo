@@ -67,7 +67,7 @@ message CastPost {
   CastPostAuthor author = 6;
   int32 likes_count = 7;
   int32 comments_count = 8;
-  bool visible = 9;
+  string visibility = 9; // "public" or "private"
   repeated string hashtags = 10;
   bool liked = 11; // whether current user liked this post
 }
@@ -89,7 +89,7 @@ message SaveCastPostRequest {
   string id = 1; // empty for create, set for update
   string content = 2;
   repeated CastPostMedia media = 3;
-  bool visible = 4;
+  string visibility = 4; // "public" or "private", defaults to "public"
   repeated string hashtags = 5;
 }
 

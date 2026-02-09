@@ -157,11 +157,11 @@ export default function CastTimelinePage() {
     }
   };
 
-  const handleToggleVisibility = async (id: string, visible: boolean) => {
+  const handleToggleVisibility = async (id: string, visibility: "public" | "private") => {
     try {
-      await toggleVisibility(id, visible);
+      await toggleVisibility(id, visibility);
       toast({
-        title: visible ? "Post is now public" : "Post is now hidden",
+        title: visibility === "public" ? "Post is now public" : "Post is now hidden",
         variant: "success",
       });
     } catch (e) {

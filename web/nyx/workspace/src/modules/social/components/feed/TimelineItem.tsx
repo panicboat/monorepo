@@ -15,7 +15,7 @@ interface TimelineItemProps {
   item: FeedItem;
   mode?: "guest" | "cast";
   onDelete?: (id: string) => void;
-  onToggleVisibility?: (id: string, visible: boolean) => void;
+  onToggleVisibility?: (id: string, visibility: "public" | "private") => void;
   onClick?: () => void;
 }
 
@@ -73,7 +73,7 @@ export function TimelineItem({
     }
   };
 
-  const isHidden = item.visible === false;
+  const isHidden = item.visibility === "private";
 
   // Resolve media: prefer new `media` array, fall back to legacy single fields
   const resolvedMedia: FeedMediaItem[] = item.media && item.media.length > 0
@@ -119,7 +119,7 @@ export function TimelineItem({
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onToggleVisibility(item.id, isHidden);
+                  onToggleVisibility(item.id, isHidden ? "public" : "private");
                 }}
                 title={isHidden ? "Make this post public" : "Hide this post from guests"}
                 className={`gap-1 text-xs ${isHidden ? "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50" : "text-text-muted hover:text-text-secondary hover:bg-surface-secondary"}`}

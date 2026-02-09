@@ -8,8 +8,6 @@ service GuestService {
   rpc GetGuestProfile(GetGuestProfileRequest) returns (GetGuestProfileResponse);
   rpc SaveGuestProfile(SaveGuestProfileRequest) returns (SaveGuestProfileResponse);
   rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
-  rpc GetGuestsByIds(GetGuestsByIdsRequest) returns (GetGuestsByIdsResponse);
-  rpc GetGuestsByUserIds(GetGuestsByUserIdsRequest) returns (GetGuestsByUserIdsResponse);
 }
 
 message GuestProfile {
@@ -36,24 +34,4 @@ message SaveGuestProfileRequest {
 
 message SaveGuestProfileResponse {
   GuestProfile profile = 1;
-}
-
-// === Batch Queries (for cross-slice communication) ===
-
-message GetGuestsByIdsRequest {
-  repeated string guest_ids = 1;
-}
-
-message GetGuestsByIdsResponse {
-  // Map of guest_id to GuestProfile
-  map<string, GuestProfile> guests = 1;
-}
-
-message GetGuestsByUserIdsRequest {
-  repeated string user_ids = 1;
-}
-
-message GetGuestsByUserIdsResponse {
-  // Map of user_id to GuestProfile
-  map<string, GuestProfile> guests = 1;
 }

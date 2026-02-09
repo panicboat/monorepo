@@ -14,7 +14,7 @@ module Social
         required(:cast_id).filled(:string)
         optional(:id).maybe(:string)
         optional(:content).maybe(:string)
-        optional(:visible).maybe(:bool)
+        optional(:visibility).maybe(:string, included_in?: %w[public private])
         optional(:media).array(:hash) do
           required(:media_type).filled(:string, included_in?: %w[image video])
           required(:url).filled(:string)

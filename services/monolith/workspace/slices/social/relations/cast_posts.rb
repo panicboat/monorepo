@@ -7,7 +7,7 @@ module Social
         attribute :id, Types::String
         attribute :cast_id, Types::String
         attribute :content, Types::String
-        attribute :visible, Types::Bool
+        attribute :visibility, Types::String
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 

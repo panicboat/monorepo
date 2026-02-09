@@ -9,7 +9,6 @@ module Social
         def call(id:)
           post = repo.find_by_id(id)
           return nil unless post
-          return nil unless post.visible
 
           author = load_author(post.cast_id)
           { post: post, author: author }

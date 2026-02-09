@@ -13,7 +13,7 @@ interface TimelineFeedProps {
   items?: FeedItem[];
   mode?: "guest" | "cast";
   onDelete?: (id: string) => void;
-  onToggleVisibility?: (id: string, visible: boolean) => void;
+  onToggleVisibility?: (id: string, visibility: "public" | "private") => void;
   onItemClick?: (id: string) => void;
 }
 
@@ -34,9 +34,14 @@ export function TimelineFeed({
   // Fetch posts on mount (only in guest mode without items prop)
   useEffect(() => {
     if (mode === "guest" && !items && isHydrated) {
-      fetchPosts();
+      // Default "all" filter uses "following" to include private posts from followed casts
+      if (isAuthenticated()) {
+        fetchPosts(undefined, "following");
+      } else {
+        fetchPosts();
+      }
     }
-  }, [mode, items, fetchPosts, isHydrated]);
+  }, [mode, items, fetchPosts, isHydrated, isAuthenticated]);
 
   // Handle filter change
   const handleFilterChange = useCallback(async (newFilter: FilterType) => {
@@ -51,7 +56,13 @@ export function TimelineFeed({
         await fetchPosts(undefined, "favorites");
       } else if (newFilter === "all") {
         setPosts([]);
-        await fetchPosts();
+        // "all" shows posts from followed casts (including private posts)
+        // Use "following" filter to include private posts from followed casts
+        if (isAuthenticated()) {
+          await fetchPosts(undefined, "following");
+        } else {
+          await fetchPosts();
+        }
       }
     }
   }, [mode, items, isAuthenticated, fetchPosts, setPosts]);
@@ -63,7 +74,9 @@ export function TimelineFeed({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          const filterParam = filter === "following" || filter === "favorites" ? filter : undefined;
+          // "all" filter uses "following" to include private posts from followed casts
+          const filterParam = filter === "favorites" ? "favorites" :
+            (filter === "following" || (filter === "all" && isAuthenticated())) ? "following" : undefined;
           loadMore(filterParam);
         }
       },
