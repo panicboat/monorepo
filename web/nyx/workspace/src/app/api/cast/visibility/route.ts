@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
-import { CastVisibility } from "@/stub/portfolio/v1/service_pb";
+import { CastVisibility } from "@/stub/portfolio/v1/cast_service_pb";
 import { buildGrpcHeaders } from "@/lib/request";
 
 export async function PUT(req: NextRequest) {

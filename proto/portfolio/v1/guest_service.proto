@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package portfolio.v1;
 
-import "portfolio/v1/service.proto";
+import "portfolio/v1/cast_service.proto";
 
 service GuestService {
   rpc GetGuestProfile(GetGuestProfileRequest) returns (GetGuestProfileResponse);

@@ -4,8 +4,8 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { GetUploadUrlRequestSchema, GetUploadUrlResponseSchema } from "./service_pb";
-import { file_portfolio_v1_service } from "./service_pb";
+import type { GetUploadUrlRequestSchema, GetUploadUrlResponseSchema } from "./cast_service_pb";
+import { file_portfolio_v1_service } from "./cast_service_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**

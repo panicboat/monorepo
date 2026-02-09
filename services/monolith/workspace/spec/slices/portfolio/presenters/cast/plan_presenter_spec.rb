@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "portfolio/v1/service_pb"
+require "portfolio/v1/cast_service_pb"
 
 RSpec.describe Portfolio::Presenters::Cast::PlanPresenter do
   describe ".to_proto" do

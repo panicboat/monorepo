@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "portfolio/v1/guest_services_pb"
+require "portfolio/v1/guest_service_services_pb"
 require_relative "handler"
 
 module Portfolio

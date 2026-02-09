@@ -1,8 +1,8 @@
 import { createClient } from "@connectrpc/connect";
 import { createGrpcTransport } from "@connectrpc/connect-node";
 import { IdentityService } from "@/stub/identity/v1/service_pb";
-import { CastService } from "@/stub/portfolio/v1/service_pb";
-import { GuestService } from "@/stub/portfolio/v1/guest_pb";
+import { CastService } from "@/stub/portfolio/v1/cast_service_pb";
+import { GuestService } from "@/stub/portfolio/v1/guest_service_pb";
 import { PostService } from "@/stub/social/v1/post_service_pb";
 import { LikeService } from "@/stub/social/v1/like_service_pb";
 import { FollowService } from "@/stub/social/v1/follow_service_pb";

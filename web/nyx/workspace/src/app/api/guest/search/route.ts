@@ -5,7 +5,7 @@ import { mapCastProfileToFrontend } from "@/modules/portfolio/lib/cast/profile";
 import {
   CastVisibility,
   CastStatusFilter,
-} from "@/stub/portfolio/v1/service_pb";
+} from "@/stub/portfolio/v1/cast_service_pb";
 
 function parseStatusFilter(status: string | null): CastStatusFilter {
   switch (status?.toLowerCase()) {

@@ -1,5 +1,5 @@
 import { getMediaType } from "@/lib/media";
-import { CastProfile, CastVisibility } from "@/stub/portfolio/v1/service_pb";
+import { CastProfile, CastVisibility } from "@/stub/portfolio/v1/cast_service_pb";
 
 /**
  * Convert CastVisibility enum to string representation
