@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   TimelineFeed,
   FeedItem,
@@ -8,16 +8,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { HashtagInput } from "@/components/ui/HashtagInput";
-import {
-  Send,
-  Image as ImageIcon,
-  Video,
-  X,
-  Lock,
-  LockOpen,
-  Loader2,
-} from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { Send, Lock, LockOpen, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCastPosts } from "@/modules/social/hooks/useCastPosts";
 import { CastPost } from "@/modules/social/types";
@@ -25,7 +16,10 @@ import { useToast } from "@/components/ui/Toast";
 import { useCastData } from "@/modules/portfolio/hooks";
 import { useAuthStore } from "@/stores/authStore";
 import { formatTimeAgo } from "@/lib/utils/date";
-import { getAuthToken } from "@/lib/swr";
+import { uploadFile } from "@/lib/media";
+import { MediaPicker, MediaFile, UploadProgress } from "@/components/shared/MediaPicker";
+
+const MAX_MEDIA = 10;
 
 function castPostToFeedItem(post: CastPost): FeedItem {
   return {
@@ -55,19 +49,14 @@ export default function CastTimelinePage() {
   const pendingDeletes = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const isHydrated = useAuthStore((state) => state.isHydrated);
 
-  const MAX_MEDIA = 10;
-
   const [content, setContent] = useState("");
   const [hashtags, setHashtags] = useState<string[]>([]);
-  const [mediaFiles, setMediaFiles] = useState<{ file: File; previewUrl: string; type: "image" | "video" }[]>([]);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [visible, setVisible] = useState(true);
   const [posting, setPosting] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Wait for hydration to ensure auth token is available
   useEffect(() => {
     if (isHydrated) {
       fetchPosts().catch(() => {});
@@ -81,7 +70,6 @@ export default function CastTimelinePage() {
     };
   }, []);
 
-  // Infinite scroll
   useEffect(() => {
     if (!loadMoreRef.current || !hasMore || loading) return;
 
@@ -97,32 +85,6 @@ export default function CastTimelinePage() {
     observer.observe(loadMoreRef.current);
     return () => observer.disconnect();
   }, [hasMore, loading, loadMore]);
-
-  const uploadFile = async (file: File): Promise<string | null> => {
-    const token = getAuthToken();
-    if (!token) return null;
-
-    const res = await fetch("/api/cast/onboarding/upload-url", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ filename: file.name, contentType: file.type }),
-    });
-
-    if (!res.ok) return null;
-    const { url, key } = await res.json();
-
-    const uploadRes = await fetch(url, {
-      method: "PUT",
-      headers: { "Content-Type": file.type },
-      body: file,
-    });
-
-    if (!uploadRes.ok) return null;
-    return key;
-  };
 
   const handlePost = async () => {
     if (!content.trim() && mediaFiles.length === 0) return;
@@ -206,33 +168,15 @@ export default function CastTimelinePage() {
     });
   }, [posts, removePostLocally, restorePostLocally, deletePost, toast]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const selected = Array.from(e.target.files);
-    const remaining = MAX_MEDIA - mediaFiles.length;
-
-    if (selected.length > remaining) {
+  const handleMediaChange = (files: MediaFile[]) => {
+    if (files.length > MAX_MEDIA) {
       toast({
         title: `Maximum ${MAX_MEDIA} files allowed`,
-        description: remaining > 0 ? `You can add ${remaining} more file(s).` : "Remove some files first.",
         variant: "destructive",
       });
+      return;
     }
-
-    const toAdd = selected.slice(0, remaining).map((file) => ({
-      file,
-      previewUrl: URL.createObjectURL(file),
-      type,
-    }));
-    setMediaFiles((prev) => [...prev, ...toAdd]);
-    e.target.value = "";
-  };
-
-  const removeMediaFile = (index: number) => {
-    setMediaFiles((prev) => {
-      URL.revokeObjectURL(prev[index].previewUrl);
-      return prev.filter((_, i) => i !== index);
-    });
+    setMediaFiles(files);
   };
 
   const feedItems = posts.map(castPostToFeedItem);
@@ -279,108 +223,17 @@ export default function CastTimelinePage() {
               maxTags={10}
             />
 
-            <AnimatePresence>
-              {mediaFiles.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  <div className="grid grid-cols-2 gap-2">
-                    {mediaFiles.map((mf, i) => (
-                      <div key={i} className="relative rounded-xl overflow-hidden bg-black/5 aspect-square">
-                        {mf.type === 'video' ? (
-                          <video
-                            src={mf.previewUrl}
-                            className="h-full w-full object-cover"
-                            muted
-                          />
-                        ) : (
-                          <img
-                            src={mf.previewUrl}
-                            alt={`Preview ${i + 1}`}
-                            className="h-full w-full object-cover"
-                          />
-                        )}
-                        <Button
-                          size="icon"
-                          variant="secondary"
-                          className="absolute top-1 right-1 h-6 w-6 bg-surface/80 hover:bg-surface text-text-secondary"
-                          onClick={() => removeMediaFile(i)}
-                        >
-                          <X size={12} />
-                        </Button>
-                        {mf.type === 'video' && (
-                          <div className="absolute bottom-1 left-1 bg-black/50 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                            VIDEO
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-[10px] text-text-muted mt-1">
-                    {mediaFiles.length}/{MAX_MEDIA} files
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <MediaPicker
+              files={mediaFiles}
+              onChange={handleMediaChange}
+              maxFiles={MAX_MEDIA}
+              disabled={posting}
+              progress={uploadProgress}
+              variant="default"
+              showLabels={true}
+            />
 
-            {uploadProgress && (
-              <div className="space-y-1">
-                <div className="h-1.5 bg-surface-secondary rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-role-cast rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </div>
-                <p className="text-[10px] text-text-muted">
-                  Uploading {uploadProgress.current}/{uploadProgress.total}...
-                </p>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => handleFileSelect(e, 'image')}
-                />
-                <input
-                  type="file"
-                  ref={videoInputRef}
-                  className="hidden"
-                  accept="video/*"
-                  multiple
-                  onChange={(e) => handleFileSelect(e, 'video')}
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-text-secondary hover:text-role-cast hover:bg-role-cast-lighter gap-2"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={mediaFiles.length >= MAX_MEDIA}
-                >
-                  <ImageIcon size={18} />
-                  <span className="text-xs font-bold">Photo</span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-text-secondary hover:text-role-cast hover:bg-role-cast-lighter gap-2"
-                  onClick={() => videoInputRef.current?.click()}
-                  disabled={mediaFiles.length >= MAX_MEDIA}
-                >
-                  <Video size={18} />
-                  <span className="text-xs font-bold">Video</span>
-                </Button>
-              </div>
-
+            <div className="flex items-center justify-end pt-2">
               <Button
                 variant="cast"
                 size="sm"

@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Send, Loader2 } from "lucide-react";
 import { CommentMedia } from "@/modules/social/types";
 import { Button } from "@/components/ui/Button";
+import { MediaPicker, MediaFile } from "@/components/shared/MediaPicker";
+import { uploadFile } from "@/lib/media";
 
 const MAX_CONTENT_LENGTH = 1000;
+const MAX_MEDIA = 3;
 
 type CommentFormProps = {
   onSubmit: (content: string, media: CommentMedia[]) => Promise<void>;
@@ -26,13 +29,14 @@ export function CommentForm({
 }: CommentFormProps) {
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!content.trim()) {
+    if (!content.trim() && mediaFiles.length === 0) {
       setError("Comment cannot be empty");
       return;
     }
@@ -43,10 +47,28 @@ export function CommentForm({
     }
 
     try {
-      await onSubmit(content.trim(), []);
+      setUploading(true);
+
+      const uploadedMedia: CommentMedia[] = [];
+      for (const mf of mediaFiles) {
+        const key = await uploadFile(mf.file);
+        if (key) {
+          uploadedMedia.push({
+            id: "",
+            mediaType: mf.type,
+            url: key,
+          });
+        }
+      }
+
+      await onSubmit(content.trim(), uploadedMedia);
       setContent("");
+      mediaFiles.forEach((mf) => URL.revokeObjectURL(mf.previewUrl));
+      setMediaFiles([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to post comment");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -60,26 +82,36 @@ export function CommentForm({
     }
   };
 
+  const handleMediaChange = (files: MediaFile[]) => {
+    if (files.length > MAX_MEDIA) {
+      setError(`Maximum ${MAX_MEDIA} files allowed`);
+      return;
+    }
+    setError(null);
+    setMediaFiles(files);
+  };
+
   const remainingChars = MAX_CONTENT_LENGTH - content.length;
   const isOverLimit = remainingChars < 0;
+  const isProcessing = isSubmitting || uploading;
+  const canSubmit =
+    (content.trim() || mediaFiles.length > 0) && !isOverLimit && !isProcessing;
 
   return (
     <form onSubmit={handleSubmit} className={`${isReply ? "ml-8 pl-4" : ""}`}>
       <div className="relative">
         <textarea
-          ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           aria-label={placeholder}
           autoFocus={autoFocus}
-          disabled={isSubmitting}
+          disabled={isProcessing}
           rows={isReply ? 2 : 3}
           className="w-full px-3 py-2 text-sm border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent disabled:bg-surface-secondary disabled:text-text-muted"
         />
 
-        {/* Character count */}
         {content.length > MAX_CONTENT_LENGTH * 0.8 && (
           <span
             className={`absolute bottom-2 right-2 text-xs ${
@@ -91,10 +123,21 @@ export function CommentForm({
         )}
       </div>
 
-      {/* Error message */}
       {error && <p className="mt-1 text-xs text-error">{error}</p>}
 
-      {/* Actions */}
+      {/* Media picker: shows previews (if any) + buttons */}
+      <div className="mt-2">
+        <MediaPicker
+          files={mediaFiles}
+          onChange={handleMediaChange}
+          maxFiles={MAX_MEDIA}
+          disabled={isProcessing}
+          variant="compact"
+          showLabels={false}
+        />
+      </div>
+
+      {/* Submit buttons */}
       <div className="flex items-center justify-end mt-2 gap-2">
         {onCancel && (
           <Button
@@ -102,7 +145,7 @@ export function CommentForm({
             variant="ghost"
             size="sm"
             onClick={onCancel}
-            disabled={isSubmitting}
+            disabled={isProcessing}
           >
             Cancel
           </Button>
@@ -110,16 +153,18 @@ export function CommentForm({
         <Button
           type="submit"
           size="sm"
-          disabled={isSubmitting || !content.trim() || isOverLimit}
+          disabled={!canSubmit}
           aria-label={isReply ? "Submit reply" : "Submit comment"}
           className="flex items-center gap-1"
         >
-          {isSubmitting ? (
+          {isProcessing ? (
             <Loader2 aria-hidden="true" size={14} className="animate-spin" />
           ) : (
             <Send aria-hidden="true" size={14} />
           )}
-          <span>{isReply ? "Reply" : "Post"}</span>
+          <span>
+            {uploading ? "Uploading..." : isReply ? "Reply" : "Post"}
+          </span>
         </Button>
       </div>
     </form>
