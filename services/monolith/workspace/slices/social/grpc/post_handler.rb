@@ -44,15 +44,18 @@ module Social
               cursor: cursor
             )
 
-            # Get likes count for cast's own posts
+            # Get likes count and comments count for cast's own posts
             post_ids = result[:posts].map(&:id)
             likes_counts = like_repo.likes_count_batch(post_ids: post_ids)
+            blocked_user_ids = get_blocked_user_ids
+            comments_counts = comment_repo.comments_count_batch(post_ids: post_ids, exclude_user_ids: blocked_user_ids)
 
             posts_proto = result[:posts].map do |post|
               PostPresenter.to_proto(
                 post,
                 author: cast,
                 likes_count: likes_counts[post.id] || 0,
+                comments_count: comments_counts[post.id] || 0,
                 liked: false # Cast viewing own posts doesn't need liked status
               )
             end

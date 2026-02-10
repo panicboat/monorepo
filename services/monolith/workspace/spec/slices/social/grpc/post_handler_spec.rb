@@ -18,7 +18,9 @@ RSpec.describe Social::Grpc::PostHandler do
       list_posts_uc: list_posts_uc,
       save_post_uc: save_post_uc,
       delete_post_uc: delete_post_uc,
-      like_repo: like_repo
+      like_repo: like_repo,
+      comment_repo: comment_repo,
+      block_repo: block_repo
     )
   }
   let(:message) { double(:message) }
@@ -29,6 +31,7 @@ RSpec.describe Social::Grpc::PostHandler do
   let(:delete_post_uc) { double(:delete_post_uc) }
   let(:like_repo) { double(:like_repo) }
   let(:comment_repo) { double(:comment_repo, comments_count_batch: {}) }
+  let(:block_repo) { double(:block_repo, blocked_cast_ids: [], blocked_guest_ids: []) }
 
   let(:mock_cast) do
     double(
@@ -101,7 +104,7 @@ RSpec.describe Social::Grpc::PostHandler do
         method_key: :test, service: double, rpc_desc: double, active_call: double,
         message: let_message,
         list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc,
-        like_repo: like_repo
+        like_repo: like_repo, comment_repo: comment_repo, block_repo: block_repo
       )
 
       expect(list_posts_uc).to receive(:call)
@@ -119,7 +122,7 @@ RSpec.describe Social::Grpc::PostHandler do
         method_key: :test, service: double, rpc_desc: double, active_call: double,
         message: message_zero,
         list_posts_uc: list_posts_uc, save_post_uc: save_post_uc, delete_post_uc: delete_post_uc,
-        like_repo: like_repo
+        like_repo: like_repo, comment_repo: comment_repo, block_repo: block_repo
       )
 
       expect(list_posts_uc).to receive(:call)
