@@ -5,7 +5,7 @@ import { CastTimeline } from "@/modules/social/components/guest/CastTimeline";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { use, useState, useEffect } from "react";
-import { MessageCircle, Heart, Loader2, UserPlus, UserCheck, Clock } from "lucide-react";
+import { Heart, Loader2, UserPlus, UserCheck, Clock } from "lucide-react";
 import { useFollow } from "@/modules/social/hooks/useFollow";
 import { useFavorite } from "@/modules/social/hooks/useFavorite";
 import { useAuthStore } from "@/stores/authStore";
@@ -101,17 +101,6 @@ export default function CastDetailPage({
           <FollowButton castId={data.profile.id} />
 
           <FavoriteButton castId={data.profile.id} />
-
-          <Link href={`/concierge/${id}`}>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                size="icon"
-                className="h-14 w-14 rounded-full bg-info text-white shadow-xl shadow-info/30 transition-colors hover:bg-info-hover"
-              >
-                <MessageCircle size={24} color="white" />
-              </Button>
-            </motion.div>
-          </Link>
         </div>
       </div>
     </div>

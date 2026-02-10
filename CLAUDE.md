@@ -80,16 +80,13 @@ monorepo/
 
 ### Domain Architecture
 
-6つのドメインに分離。詳細は `handbooks/docs/domains/` を参照。
+3つのドメインに分離。詳細は `handbooks/docs/domains/` を参照。
 
 | Domain | Role | Status |
 |--------|------|--------|
 | Identity | 認証・認可 | ✓ 実装済み |
 | Portfolio | プロフィール管理 | ✓ 実装済み |
 | Social | タイムライン | 実装中 |
-| Concierge | チャット | 未実装 |
-| Ritual | 予約 | 未実装 |
-| Trust | 評価・CRM | 未実装 |
 
 ### Frontend-Backend Communication
 

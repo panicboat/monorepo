@@ -41,7 +41,7 @@ function castPostToFeedItem(post: CastPost): FeedItem {
     })),
     likes: post.likesCount,
     comments: post.commentsCount,
-    visible: post.visible,
+    visibility: post.visibility,
     hashtags: post.hashtags,
     liked: post.liked,
   };
@@ -143,7 +143,7 @@ export default function CastTimelinePage() {
         }
       }
 
-      await savePost({ content: content.trim(), media, hashtags, visible });
+      await savePost({ content: content.trim(), media, hashtags, visibility: visible ? "public" : "private" });
       setContent("");
       setHashtags([]);
       setVisible(true);

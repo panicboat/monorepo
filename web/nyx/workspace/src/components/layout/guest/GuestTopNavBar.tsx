@@ -14,8 +14,6 @@ export const GuestTopNavBar = () => {
 
   if (pathname === "/") {
     title = "Nyx.";
-  } else if (pathname === "/concierge") {
-    title = "Concierge";
   } else if (pathname === "/search") {
     title = "Search";
   } else if (pathname === "/mypage") {
@@ -26,8 +24,6 @@ export const GuestTopNavBar = () => {
     title = "Following";
   } else if (pathname.startsWith("/cast/")) {
     title = "Cast Profile";
-  } else if (pathname.startsWith("/concierge/")) {
-    title = "Chat Room";
   } else if (pathname.startsWith("/timeline/")) {
     title = "Timeline";
   }
@@ -58,9 +54,6 @@ export const GuestTopNavBar = () => {
         </Link>
         <Link href="/search" aria-current={isActive("/search") ? "page" : undefined} className={linkClass("/search")}>
           Search
-        </Link>
-        <Link href="/concierge" aria-current={isActive("/concierge") ? "page" : undefined} className={linkClass("/concierge")}>
-          Concierge
         </Link>
       </nav>
 

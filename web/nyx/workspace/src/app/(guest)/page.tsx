@@ -1,6 +1,5 @@
 "use client";
 
-import { CastList } from "@/modules/portfolio/components/guest/CastList";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { GuestDashboard } from "@/modules/portfolio/components/guest/GuestDashboard";
 import { TimelineFeed } from "@/modules/social/components/guest/TimelineFeed";
@@ -11,7 +10,6 @@ export default function Home() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [view, setView] = useState<"home" | "mypage">("home");
-  const [tab, setTab] = useState<"cast" | "timeline">("timeline");
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -32,38 +30,9 @@ export default function Home() {
   return (
     <main className="pb-20">
       {view === "home" ? (
-        <>
-          {/* Header removed in favor of global MobileHeader */}
-
-          <div className="space-y-2">
-            {/* Tab Navigation */}
-            <div className="sticky top-14 md:top-16 z-20 flex border-b border-border bg-surface shadow-sm">
-              <button
-                onClick={() => setTab("timeline")}
-                className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === "timeline" ? "border-b-2 border-role-guest text-role-guest" : "text-text-muted"}`}
-              >
-                Timeline
-              </button>
-              <button
-                onClick={() => setTab("cast")}
-                className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === "cast" ? "border-b-2 border-role-guest text-role-guest" : "text-text-muted"}`}
-              >
-                Cast List
-              </button>
-            </div>
-
-            {/* Content Area */}
-            <div className="bg-surface-secondary">
-              {tab === "timeline" ? (
-                <TimelineFeed onItemClick={(id) => router.push(`/timeline/${id}`)} />
-              ) : (
-                <div className="px-1 py-2">
-                  <CastList />
-                </div>
-              )}
-            </div>
-          </div>
-        </>
+        <div className="bg-surface-secondary">
+          <TimelineFeed onItemClick={(id) => router.push(`/timeline/${id}`)} />
+        </div>
       ) : (
         <div>
           <button

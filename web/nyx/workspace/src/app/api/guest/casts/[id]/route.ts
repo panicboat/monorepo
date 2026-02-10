@@ -4,6 +4,7 @@ import { buildGrpcHeaders } from "@/lib/request";
 import { ConnectError } from "@connectrpc/connect";
 import { mapCastProfileToFrontend } from "@/modules/portfolio/lib/cast/profile";
 import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
+import { CastVisibility } from "@/stub/portfolio/v1/cast_service_pb";
 
 // UUID v4 format check
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -32,7 +33,7 @@ export async function GET(
 
     // Check if cast is private and if viewer is an approved follower
     let canViewDetails = true;
-    if (response.profile.visibility === "private") {
+    if (response.profile.visibility === CastVisibility.PRIVATE) {
       // Try to get follow status (requires authentication)
       try {
         const followResponse = await followClient.getFollowStatus(

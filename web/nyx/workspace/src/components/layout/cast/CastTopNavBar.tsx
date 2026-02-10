@@ -16,7 +16,6 @@ export const CastTopNavBar = () => {
     if (pathname.includes("/cast/plans")) return "Plan Settings";
     if (pathname.includes("/cast/schedules")) return "Schedule";
     if (pathname.includes("/cast/pledges")) return "Pledge Detail";
-    if (pathname.includes("/cast/concierge")) return "Concierge";
     if (pathname.includes("/cast/timeline")) return "Timeline";
     if (pathname.includes("/cast/reviews")) return "Reviews";
     if (pathname.includes("/cast/history")) return "History";
@@ -55,9 +54,6 @@ export const CastTopNavBar = () => {
         </Link>
         <Link href="/cast/timeline" aria-current={isActive("/cast/timeline") ? "page" : undefined} className={linkClass("/cast/timeline")}>
           Timeline
-        </Link>
-        <Link href="/cast/concierge" aria-current={isActive("/cast/concierge") ? "page" : undefined} className={linkClass("/cast/concierge")}>
-          Concierge
         </Link>
       </nav>
 
