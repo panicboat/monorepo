@@ -10,10 +10,7 @@ module Social
           result = comment_repo.delete_comment(id: comment_id, user_id: user_id)
           raise CommentNotFoundOrUnauthorizedError unless result
 
-          # Get updated comments count
-          comments_count = comment_repo.comments_count(post_id: result[:post_id])
-
-          { comments_count: comments_count }
+          { post_id: result[:post_id] }
         end
 
         class CommentNotFoundOrUnauthorizedError < StandardError; end

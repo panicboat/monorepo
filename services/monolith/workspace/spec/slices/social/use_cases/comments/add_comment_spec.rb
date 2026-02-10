@@ -15,7 +15,7 @@ RSpec.describe Social::UseCases::Comments::AddComment do
 
   describe "#call" do
     context "when creating a top-level comment" do
-      it "creates a comment and returns it with comments count" do
+      it "creates a comment and returns it with post_id" do
         allow(post_repo).to receive(:find_by_id).with(post_id).and_return(post)
         allow(comment_repo).to receive(:create_comment).with(
           post_id: post_id,
@@ -24,12 +24,11 @@ RSpec.describe Social::UseCases::Comments::AddComment do
           parent_id: nil,
           media: []
         ).and_return(comment)
-        allow(comment_repo).to receive(:comments_count).with(post_id: post_id).and_return(5)
 
         result = use_case.call(post_id: post_id, user_id: user_id, content: content)
 
         expect(result[:comment]).to eq(comment)
-        expect(result[:comments_count]).to eq(5)
+        expect(result[:post_id]).to eq(post_id)
       end
     end
 
@@ -41,7 +40,6 @@ RSpec.describe Social::UseCases::Comments::AddComment do
         allow(post_repo).to receive(:find_by_id).with(post_id).and_return(post)
         allow(comment_repo).to receive(:find_by_id).with(parent_id).and_return(parent)
         allow(comment_repo).to receive(:create_comment).and_return(comment)
-        allow(comment_repo).to receive(:comments_count).and_return(3)
 
         result = use_case.call(
           post_id: post_id,
@@ -51,6 +49,7 @@ RSpec.describe Social::UseCases::Comments::AddComment do
         )
 
         expect(result[:comment]).to eq(comment)
+        expect(result[:post_id]).to eq(post_id)
       end
 
       it "raises ParentNotFoundError when parent does not exist" do
@@ -85,11 +84,11 @@ RSpec.describe Social::UseCases::Comments::AddComment do
           parent_id: nil,
           media: [{ media_type: "image", url: "http://example.com/img.jpg", thumbnail_url: nil }]
         ).and_return(comment)
-        allow(comment_repo).to receive(:comments_count).and_return(1)
 
         result = use_case.call(post_id: post_id, user_id: user_id, content: content, media: media)
 
         expect(result[:comment]).to eq(comment)
+        expect(result[:post_id]).to eq(post_id)
       end
 
       it "raises TooManyMediaError when media exceeds limit" do

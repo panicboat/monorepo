@@ -44,9 +44,13 @@ module Social
         # Get author info
         author = get_comment_author(current_user_id)
 
+        # Get comments count excluding blocked users
+        blocked_user_ids = get_blocked_user_ids
+        comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_user_ids: blocked_user_ids)
+
         ::Social::V1::AddCommentResponse.new(
           comment: CommentPresenter.to_proto(result[:comment], author: author),
-          comments_count: result[:comments_count]
+          comments_count: comments_count
         )
       rescue AddComment::PostNotFoundError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
@@ -72,7 +76,11 @@ module Social
           user_id: current_user_id
         )
 
-        ::Social::V1::DeleteCommentResponse.new(comments_count: result[:comments_count])
+        # Get comments count excluding blocked users
+        blocked_user_ids = get_blocked_user_ids
+        comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_user_ids: blocked_user_ids)
+
+        ::Social::V1::DeleteCommentResponse.new(comments_count: comments_count)
       rescue DeleteComment::CommentNotFoundOrUnauthorizedError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Comment not found or unauthorized")
       end

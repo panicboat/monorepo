@@ -293,6 +293,16 @@ RSpec.describe "Social::Repositories::CommentRepository", type: :database do
 
       expect(repo.comments_count(post_id: post.id)).to eq(2)
     end
+
+    it "excludes comments from specified user IDs" do
+      other_user = create_user[:id]
+      repo.create_comment(post_id: post.id, user_id: user_id, content: "Comment 1")
+      repo.create_comment(post_id: post.id, user_id: other_user, content: "Comment 2")
+      repo.create_comment(post_id: post.id, user_id: other_user, content: "Comment 3")
+
+      expect(repo.comments_count(post_id: post.id)).to eq(3)
+      expect(repo.comments_count(post_id: post.id, exclude_user_ids: [other_user])).to eq(1)
+    end
   end
 
   describe "#comments_count_batch" do
@@ -312,6 +322,20 @@ RSpec.describe "Social::Repositories::CommentRepository", type: :database do
     it "returns empty hash for empty input" do
       expect(repo.comments_count_batch(post_ids: [])).to eq({})
       expect(repo.comments_count_batch(post_ids: nil)).to eq({})
+    end
+
+    it "excludes comments from specified user IDs" do
+      other_user = create_user[:id]
+      post2 = post_repo.create_post(cast_id: cast_id, content: "Post 2")
+
+      repo.create_comment(post_id: post.id, user_id: user_id, content: "C1")
+      repo.create_comment(post_id: post.id, user_id: other_user, content: "C2")
+      repo.create_comment(post_id: post2.id, user_id: other_user, content: "C3")
+
+      counts = repo.comments_count_batch(post_ids: [post.id, post2.id], exclude_user_ids: [other_user])
+
+      expect(counts[post.id]).to eq(1)
+      expect(counts[post2.id]).to be_nil # No comments left after exclusion
     end
   end
 end

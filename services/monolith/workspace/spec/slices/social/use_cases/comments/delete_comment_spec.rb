@@ -11,17 +11,14 @@ RSpec.describe Social::UseCases::Comments::DeleteComment do
   let(:post_id) { "post-1" }
 
   describe "#call" do
-    it "deletes a comment and returns updated comments count" do
+    it "deletes a comment and returns post_id" do
       allow(comment_repo).to receive(:delete_comment)
         .with(id: comment_id, user_id: user_id)
         .and_return({ post_id: post_id, deleted_count: 1 })
-      allow(comment_repo).to receive(:comments_count)
-        .with(post_id: post_id)
-        .and_return(4)
 
       result = use_case.call(comment_id: comment_id, user_id: user_id)
 
-      expect(result[:comments_count]).to eq(4)
+      expect(result[:post_id]).to eq(post_id)
     end
 
     it "raises CommentNotFoundOrUnauthorizedError when comment does not exist" do

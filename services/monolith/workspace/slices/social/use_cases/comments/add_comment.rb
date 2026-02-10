@@ -50,10 +50,7 @@ module Social
 
           raise CreateFailedError unless comment
 
-          # Get updated comments count
-          comments_count = comment_repo.comments_count(post_id: post_id)
-
-          { comment: comment, comments_count: comments_count }
+          { comment: comment, post_id: post_id }
         end
 
         class PostNotFoundError < StandardError; end

@@ -99,24 +99,29 @@ module Social
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def comments_count(post_id:)
-        post_comments.where(post_id: post_id, parent_id: nil).count
+      def comments_count(post_id:, exclude_user_ids: nil)
+        scope = post_comments.where(post_id: post_id, parent_id: nil)
+        scope = scope.exclude(user_id: exclude_user_ids) if exclude_user_ids && !exclude_user_ids.empty?
+        scope.count
       end
 
       # Batch get comments count for multiple posts.
       # Only counts top-level comments (parent_id is null).
       #
       # @param post_ids [Array<String>] the post IDs to count comments for
+      # @param exclude_user_ids [Array<String>, nil] user IDs to exclude from count
       # @return [Hash<String, Integer>] hash of post_id => count
-      def comments_count_batch(post_ids:)
+      def comments_count_batch(post_ids:, exclude_user_ids: nil)
         return {} if post_ids.nil? || post_ids.empty?
 
-        post_comments.dataset
+        scope = post_comments.dataset
           .unordered
           .select(:post_id)
           .where(post_id: post_ids, parent_id: nil)
-          .group_and_count(:post_id)
-          .to_hash(:post_id, :count)
+
+        scope = scope.exclude(user_id: exclude_user_ids) if exclude_user_ids && !exclude_user_ids.empty?
+
+        scope.group_and_count(:post_id).to_hash(:post_id, :count)
       end
 
       private

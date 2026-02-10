@@ -147,12 +147,15 @@ module Social
 
         likes_count = like_repo.likes_count(post_id: result[:post].id)
         liked = guest ? like_repo.liked?(post_id: result[:post].id, guest_id: guest.id) : false
+        blocked_user_ids = get_blocked_user_ids
+        comments_count = comment_repo.comments_count(post_id: result[:post].id, exclude_user_ids: blocked_user_ids)
 
         ::Social::V1::GetCastPostResponse.new(
           post: PostPresenter.to_proto(
             result[:post],
             author: result[:author],
             likes_count: likes_count,
+            comments_count: comments_count,
             liked: liked
           )
         )
@@ -242,9 +245,12 @@ module Social
         guest = find_my_guest
         post_ids = result[:posts].map(&:id)
 
+        # Get blocked user IDs for filtering comments count
+        blocked_user_ids = get_blocked_user_ids
+
         # Get likes count, comments count, and liked status in batch
         likes_counts = like_repo.likes_count_batch(post_ids: post_ids)
-        comments_counts = comment_repo.comments_count_batch(post_ids: post_ids)
+        comments_counts = comment_repo.comments_count_batch(post_ids: post_ids, exclude_user_ids: blocked_user_ids)
         liked_status = guest ? like_repo.liked_status_batch(post_ids: post_ids, guest_id: guest.id) : {}
 
         posts_with_authors = result[:posts].map do |post|
