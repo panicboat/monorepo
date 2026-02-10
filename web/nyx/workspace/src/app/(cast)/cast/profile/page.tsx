@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Loader2, Image as ImageIcon, Tag, Eye, Camera, Shield } from "lucide-react";
 
 import { ProfileFormData, MediaItem } from "@/modules/portfolio/types";
@@ -21,8 +21,9 @@ export default function ProfileEditPage() {
   const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string>("");
-  const [avatarKey, setAvatarKey] = useState<string>("");
+  // Local state for newly uploaded avatar (overrides external data)
+  const [localAvatarPreview, setLocalAvatarPreview] = useState<string | null>(null);
+  const [localAvatarKey, setLocalAvatarKey] = useState<string | null>(null);
 
   // Use combined hook with profile API path
   const {
@@ -42,18 +43,12 @@ export default function ProfileEditPage() {
     saveVisibility,
   } = useCastData({ apiPath: "/api/cast/profile" });
 
-  // Initialize avatar from existing data
-  useEffect(() => {
-    if (avatarUrl && !avatarPreview) {
-      setAvatarPreview(avatarUrl);
-    }
-    if (avatarPath && !avatarKey) {
-      setAvatarKey(avatarPath);
-    }
-  }, [avatarUrl, avatarPath, avatarPreview, avatarKey]);
+  // Derived values: use local upload if available, otherwise fall back to external data
+  const avatarPreview = localAvatarPreview ?? avatarUrl ?? "";
+  const avatarKey = localAvatarKey ?? avatarPath ?? "";
 
   // Handlers
-  const handleProfileChange = (key: keyof ProfileFormData, val: any) => {
+  const handleProfileChange = (key: keyof ProfileFormData, val: ProfileFormData[keyof ProfileFormData]) => {
     updateProfile({ [key]: val });
   };
 
@@ -103,8 +98,8 @@ export default function ProfileEditPage() {
 
     try {
       const { key } = await uploadImage(file);
-      setAvatarKey(key);
-      setAvatarPreview(URL.createObjectURL(file));
+      setLocalAvatarKey(key);
+      setLocalAvatarPreview(URL.createObjectURL(file));
     } catch (err) {
       console.error(err);
     }
@@ -177,7 +172,7 @@ export default function ProfileEditPage() {
           title="Avatar"
           icon={<Camera size={20} />}
           collapsible
-          defaultOpen={false}
+          defaultOpen={true}
         >
           <div className="flex items-center gap-4">
             <button
@@ -221,7 +216,7 @@ export default function ProfileEditPage() {
           title="Photos"
           icon={<ImageIcon size={20} />}
           collapsible
-          defaultOpen={false}
+          defaultOpen={true}
         >
           <PhotoUploader images={images} onChange={updateImages} onUpload={handleUpload} />
         </SectionCard>
@@ -232,7 +227,7 @@ export default function ProfileEditPage() {
           title="Identity"
           icon={<Tag size={20} />}
           collapsible
-          defaultOpen={false}
+          defaultOpen={true}
         >
           <ProfileInputs data={profileForm} onChange={handleProfileChange} />
         </SectionCard>
@@ -247,7 +242,7 @@ export default function ProfileEditPage() {
             </span>
           }
           collapsible
-          defaultOpen={false}
+          defaultOpen={true}
         >
           <StyleInputs
             data={profileForm}
@@ -265,7 +260,7 @@ export default function ProfileEditPage() {
             </span>
           }
           collapsible
-          defaultOpen={false}
+          defaultOpen={true}
         >
           <PhysicalInputs data={profileForm} onChange={handleProfileChange} />
         </SectionCard>
@@ -280,7 +275,7 @@ export default function ProfileEditPage() {
             </span>
           }
           collapsible
-          defaultOpen={false}
+          defaultOpen={true}
         >
           <TagSelector tags={profileForm.tags} onChange={handleTagsChange} />
         </SectionCard>
@@ -295,7 +290,7 @@ export default function ProfileEditPage() {
             </span>
           }
           collapsible
-          defaultOpen={false}
+          defaultOpen={true}
         >
           <SocialInputs
             data={profileForm}
@@ -312,7 +307,7 @@ export default function ProfileEditPage() {
           title="Privacy Settings"
           icon={<Shield size={20} />}
           collapsible
-          defaultOpen={false}
+          defaultOpen={true}
         >
           <VisibilityToggle
             isPrivate={isPrivate}

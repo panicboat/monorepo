@@ -61,68 +61,10 @@ export const handlers = [
     return HttpResponse.json(MOCK_PROFILE);
   }),
 
-  // Dashboard Stats
-  http.get("/api/cast/stats", () => {
-    return HttpResponse.json({
-      earningsToday: 45000,
-      earningsTodayChange: 15,
-      earningsThisWeek: 180000,
-      earningsThisMonth: 720000,
-      reservationsThisMonth: 12,
-      promiseRate: 100,
-      followers: 24,
-    });
-  }),
-
-  // Upcoming Reservations
-  http.get("/api/cast/upcoming-reservations", () => {
-    return HttpResponse.json({
-      reservations: [
-        {
-          id: "r1",
-          guestName: "panicboat",
-          date: "2026-01-10",
-          startTime: "19:00",
-          planName: "Standard Plan",
-          status: "confirmed",
-          duration: 60,
-          guestIcon:
-            "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop",
-        },
-        {
-          id: "r2",
-          guestName: "panicb0at",
-          date: "2026-01-10",
-          startTime: "21:00",
-          planName: "Standard Plan",
-          status: "confirmed",
-          duration: 60,
-          guestIcon:
-            "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=100&auto=format&fit=crop",
-        },
-      ],
-    });
-  }),
-
-  // Status Update
-  http.put("/api/cast/status", async ({ request }) => {
-    const body = (await request.json()) as { status: string };
-    console.log("Updated status to:", body.status);
-    return HttpResponse.json({ success: true, status: body.status });
-  }),
-
   http.get("/api/cast/mypage", () => {
     return HttpResponse.json({
-      sales: 420000,
       followers: 24,
-      promiseRate: 100,
     });
-  }),
-
-  http.post("/api/chats/:id/invitations", async ({ request }) => {
-    const data = await request.json();
-    console.log("Sent invitation:", data);
-    return HttpResponse.json({ success: true });
   }),
 
   // Mock Master Data for Onboarding
@@ -133,41 +75,32 @@ export const handlers = [
     ]);
   }),
 
-  // Reservation Detail
-  http.get("/api/cast/reservations/:id", ({ params }) => {
-    const { id } = params;
+  // Mock Followers List
+  http.get("/api/cast/followers", () => {
     return HttpResponse.json({
-      id,
-      guestName: "panicboat",
-      guestId: "g1",
-      status: "confirmed",
-      plan: "Standard 60min",
-      startAt: "2026-01-10 19:00",
-      endAt: "2026-01-10 20:00",
-      location: "Hotel Mets Shibuya",
-      address: "3-chōme-29-17 Shibuya, Tokyo",
-      amount: "¥15,000",
-      paymentStatus: "Authorized",
+      followers: [
+        {
+          id: "f1",
+          guestId: "g1",
+          guestName: "panicboat",
+          guestImageUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop",
+          followedAt: "2026-01-15T10:00:00Z",
+        },
+        {
+          id: "f2",
+          guestId: "g2",
+          guestName: "Guest User",
+          guestImageUrl: "",
+          followedAt: "2026-01-10T14:30:00Z",
+        },
+      ],
+      total: 2,
+      hasMore: false,
     });
   }),
 
-  // Guest Profile
-  http.get("/api/cast/guests/:id", ({ params }) => {
-    return HttpResponse.json({
-      id: params.id,
-      name: "panicboat",
-      age: "30s",
-      job: "IT Executive",
-      visits: 12,
-      lastVisit: "2025-12-20",
-      trustScore: "A",
-      tags: ["Gentleman", "Rich", "Wine Lover"],
-      memo: "Always brings expensive wine. Prefers quiet conversation.",
-      history: [
-        { date: "2025-12-20", cast: "Airi", plan: "Dinner 120min" },
-        { date: "2025-11-15", cast: "Yuna", plan: "Standard 60min" },
-        { date: "2025-10-01", cast: "Airi", plan: "Standard 90min" },
-      ],
-    });
+  // Mock Delete Follower
+  http.delete("/api/cast/followers/:guestId", () => {
+    return HttpResponse.json({ success: true });
   }),
 ];

@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/Toast";
 
 export default function FollowRequestsPage() {
   const { toast } = useToast();
-  const { requests, pendingCount, loading, approve, reject, refresh } = useFollowRequests();
+  const { requests, pendingCount, loading, approve, reject } = useFollowRequests();
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
   const handleApprove = async (guestId: string) => {

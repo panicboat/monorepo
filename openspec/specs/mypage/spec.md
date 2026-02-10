@@ -18,11 +18,11 @@ TBD - created by archiving change refactor-cast-layout. Update Purpose after arc
 
 #### Scenario: Profile Edit Transition
 1. "プロフィール編集" ボタンをタップする。
-2. 現在のプロフィール編集画面 (`/manage/profile`) に遷移することを確認する。
+2. 現在のプロフィール編集画面 (`/cast/profile`) に遷移することを確認する。
 
 #### Scenario: Plan Settings Transition
 1. "招待状プラン設定" ボタンをタップする。
-2. プラン設定画面 (`/manage/plans`) に遷移することを確認する。
+2. プラン設定画面 (`/cast/plans`) に遷移することを確認する。
 
 ### Requirement: Account Menu
 アカウント関連のメニューを表示しなければならない (MUST)。

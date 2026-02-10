@@ -10,8 +10,9 @@ import { useCastData } from "@/modules/portfolio/hooks";
 export default function OnboardingStep2() {
   const router = useRouter();
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string>("");
-  const [avatarKey, setAvatarKey] = useState<string>("");
+  // Local state for newly uploaded avatar (overrides external data)
+  const [localAvatarPreview, setLocalAvatarPreview] = useState<string | null>(null);
+  const [localAvatarKey, setLocalAvatarKey] = useState<string | null>(null);
 
   const {
     images,
@@ -25,15 +26,9 @@ export default function OnboardingStep2() {
     uploadImage,
   } = useCastData();
 
-  // Initialize avatar from existing data
-  useEffect(() => {
-    if (avatarUrl && !avatarPreview) {
-      setAvatarPreview(avatarUrl);
-    }
-    if (avatarPath && !avatarKey) {
-      setAvatarKey(avatarPath);
-    }
-  }, [avatarUrl, avatarPath, avatarPreview, avatarKey]);
+  // Derived values: use local upload if available, otherwise fall back to external data
+  const avatarPreview = localAvatarPreview ?? avatarUrl ?? "";
+  const avatarKey = localAvatarKey ?? avatarPath ?? "";
 
   // Initialize data on mount
   useEffect(() => {
@@ -63,8 +58,8 @@ export default function OnboardingStep2() {
 
     try {
       const { key } = await uploadImage(file);
-      setAvatarKey(key);
-      setAvatarPreview(URL.createObjectURL(file));
+      setLocalAvatarKey(key);
+      setLocalAvatarPreview(URL.createObjectURL(file));
     } catch (err) {
       console.error(err);
     }

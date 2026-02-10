@@ -5,22 +5,22 @@ TBD - created by archiving change refactor-cast-layout. Update Purpose after arc
 
 ## Requirements
 ### Requirement: Dashboard URL Change
-現在のダッシュボード画面の URL は `/manage/dashboard` から `/manage/home` に変更されなければならない (MUST)。
+現在のダッシュボード画面の URL は `/cast/dashboard` から `/cast/home` に変更されなければならない (MUST)。
 
 #### Scenario: Accessing Home
 1. ナビゲーションバーの "Home" をタップする。
-2. URL が `/manage/home` であることを確認する。
+2. URL が `/cast/home` であることを確認する。
 3. 以前のダッシュボードと同じ内容が表示されていることを確認する。
 
 #### Scenario: Legacy Redirect
-1. ブラウザで `/manage/dashboard` にアクセスする。
-2. `/manage/home` にリダイレクトされることを確認する。
+1. ブラウザで `/cast/dashboard` にアクセスする。
+2. `/cast/home` にリダイレクトされることを確認する。
 
 ### Requirement: Cast Home View
 キャストは、自身の現在の活動状況とパフォーマンスをまとめたホームビューにアクセスできなければならない (MUST be able to access)。
 
 #### Scenario: Home initial load
-- **WHEN** ログイン済みのキャストが `/manage/home` にアクセスする
+- **WHEN** ログイン済みのキャストが `/cast/home` にアクセスする
 - **THEN** システムは「Quick Stats」セクションを表示し、以下の情報を含む:
   - 本日の売上を円形式で表示（例: "¥45,000"）
   - 今週の売上
@@ -31,7 +31,7 @@ TBD - created by archiving change refactor-cast-layout. Update Purpose after arc
 - **AND** システムは「Upcoming Reservations」セクションに今後の予約リストを表示する
 
 #### Scenario: Home with no reservations
-- **WHEN** ログイン済みのキャストが `/manage/home` にアクセスし、今後の予約が存在しない
+- **WHEN** ログイン済みのキャストが `/cast/home` にアクセスし、今後の予約が存在しない
 - **THEN** システムは「Upcoming Reservations」セクションに空状態メッセージを表示する
 - **AND** メッセージはキャストにスケジュールの更新を促す内容である
 
@@ -101,11 +101,11 @@ TBD - created by archiving change refactor-cast-layout. Update Purpose after arc
 キャストのボトムナビゲーションバーは、キャストがホームにいる際に「Home」タブを正しくハイライト表示しなければならない (MUST correctly highlight)。
 
 #### Scenario: Home tab active on home
-- **WHEN** キャストが `/manage/home` にアクセスする
+- **WHEN** キャストが `/cast/home` にアクセスする
 - **THEN** ボトムナビゲーションバーの「Home」タブがアクティブとしてハイライトされる
 - **AND** 「Home」アイコンの下にアクティブインジケーターアニメーションが表示される
 
 #### Scenario: Home tab inactive on other pages
-- **WHEN** キャストが `/manage/schedule` または他のサブページに遷移する
+- **WHEN** キャストが `/cast/schedule` または他のサブページに遷移する
 - **THEN** 「Home」タブのハイライトが解除される
 - **AND** 現在のページに対応するタブがハイライトされる

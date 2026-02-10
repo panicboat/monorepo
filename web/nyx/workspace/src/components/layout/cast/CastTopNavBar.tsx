@@ -14,11 +14,8 @@ export const CastTopNavBar = () => {
     if (pathname.includes("/cast/onboarding")) return "Cast Onboarding";
     if (pathname.includes("/cast/profile")) return "Edit Profile";
     if (pathname.includes("/cast/plans")) return "Plan Settings";
-    if (pathname.includes("/cast/schedules")) return "Schedule";
-    if (pathname.includes("/cast/pledges")) return "Pledge Detail";
     if (pathname.includes("/cast/timeline")) return "Timeline";
-    if (pathname.includes("/cast/reviews")) return "Reviews";
-    if (pathname.includes("/cast/history")) return "History";
+    if (pathname.includes("/cast/followers")) return "Followers";
     if (pathname.includes("/cast/mypage")) return "Backstage";
     if (pathname.includes("/cast/home")) return "Nyx. Cast";
     return "Cast Manage";
@@ -48,9 +45,6 @@ export const CastTopNavBar = () => {
       <nav className="hidden md:flex items-center gap-6 text-sm font-medium mr-4" aria-label="Cast navigation">
         <Link href="/cast/home" aria-current={isActive("/cast/home") ? "page" : undefined} className={linkClass("/cast/home")}>
           Home
-        </Link>
-        <Link href="/cast/schedules" aria-current={isActive("/cast/schedules") ? "page" : undefined} className={linkClass("/cast/schedules")}>
-          Schedule
         </Link>
         <Link href="/cast/timeline" aria-current={isActive("/cast/timeline") ? "page" : undefined} className={linkClass("/cast/timeline")}>
           Timeline

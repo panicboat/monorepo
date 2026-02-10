@@ -29,7 +29,7 @@ export default function OnboardingStep1Page() {
   }, [initialized, fetchData]);
 
   // Handlers
-  const handleChange = (key: keyof ProfileFormData, val: any) => {
+  const handleChange = (key: keyof ProfileFormData, val: ProfileFormData[keyof ProfileFormData]) => {
     updateProfile({ [key]: val });
   };
 

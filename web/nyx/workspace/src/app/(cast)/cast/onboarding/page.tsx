@@ -10,7 +10,6 @@ export default function OnboardingWelcomePage() {
     profile,
     images,
     plans,
-    schedules,
     loading,
     initialized,
     fetchData,
@@ -27,8 +26,7 @@ export default function OnboardingWelcomePage() {
     if (!profile.nickname) return "/cast/onboarding/step-1";
     if (images.length === 0) return "/cast/onboarding/step-2";
     if (plans.length === 0) return "/cast/onboarding/step-3";
-    if (schedules.length === 0) return "/cast/onboarding/step-4";
-    return "/cast/onboarding/step-5";
+    return "/cast/onboarding/step-4";
   };
 
   const nextStep = getNextStep();
@@ -74,9 +72,9 @@ export default function OnboardingWelcomePage() {
             <CheckCircle2 size={16} />
           </div>
           <div>
-            <h3 className="font-bold text-text-primary">Smart Scheduling</h3>
+            <h3 className="font-bold text-text-primary">Build Your Brand</h3>
             <p className="text-xs text-text-secondary mt-1 leading-normal">
-              働きたい時間だけシフトを公開。無理な出勤強要は一切ありません。
+              タイムラインで日常を発信し、あなたのファンを増やしましょう。
             </p>
           </div>
         </div>
@@ -88,7 +86,7 @@ export default function OnboardingWelcomePage() {
           <div>
             <h3 className="font-bold text-text-primary">Safe & Trust</h3>
             <p className="text-xs text-text-secondary mt-1 leading-normal">
-              ゲストはSMS認証済み。評価システムにより、安心できるユーザーとのみマッチングします。
+              ゲストはSMS認証済み。安心できるユーザーとのみつながります。
             </p>
           </div>
         </div>

@@ -7,8 +7,6 @@ import {
   Ticket,
   ShieldAlert,
   LogOut,
-  Star,
-  History as HistoryIcon,
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
@@ -59,7 +57,10 @@ export default function CastMyPage() {
           <ChevronRight className="text-text-muted group-hover:text-text-secondary transition" />
         </Link>
 
-        <button className="w-full bg-surface hover:bg-surface-secondary border border-border rounded-xl p-4 flex items-center justify-between group transition shadow-sm">
+        <Link
+          href="/cast/followers"
+          className="w-full bg-surface hover:bg-surface-secondary border border-border rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
+        >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-warning-lighter flex items-center justify-center text-warning">
               <Users className="w-5 h-5" />
@@ -68,39 +69,7 @@ export default function CastMyPage() {
               <p className="text-sm font-bold text-text-primary">
                 フォロワーリスト
               </p>
-              <p className="text-xs text-text-secondary">顧客メモの管理・営業</p>
-            </div>
-          </div>
-          <ChevronRight className="text-text-muted group-hover:text-text-secondary transition" />
-        </button>
-
-        <Link
-          href="/cast/reviews"
-          className="w-full bg-surface hover:bg-surface-secondary border border-border rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-warning-lighter flex items-center justify-center text-warning">
-              <Star className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-bold text-text-primary">レビュー管理</p>
-              <p className="text-xs text-text-secondary">ゲストからの評価・承認</p>
-            </div>
-          </div>
-          <ChevronRight className="text-text-muted group-hover:text-text-secondary transition" />
-        </Link>
-
-        <Link
-          href="/cast/history"
-          className="w-full bg-surface hover:bg-surface-secondary border border-border rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-special-lighter flex items-center justify-center text-special">
-              <HistoryIcon className="w-5 h-5" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-bold text-text-primary">履歴・売上</p>
-              <p className="text-xs text-text-secondary">過去の予約履歴</p>
+              <p className="text-xs text-text-secondary">フォロワーの管理</p>
             </div>
           </div>
           <ChevronRight className="text-text-muted group-hover:text-text-secondary transition" />
