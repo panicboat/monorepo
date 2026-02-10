@@ -204,6 +204,27 @@ export default function SearchPage() {
         </div>
       </form>
 
+      {/* Popular Tags (Top) */}
+      {popularTags.length > 0 && (
+        <div className="px-4 mb-4">
+          <div className="flex flex-wrap gap-2">
+            {popularTags.map((tag) => (
+              <button
+                key={tag.name}
+                onClick={() => handleTagClick(tag.name)}
+                className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-colors
+                  ${activeTag === tag.name
+                    ? "bg-info text-white border-info"
+                    : "bg-surface text-text-secondary border-border hover:bg-surface-secondary"
+                  }`}
+              >
+                #{tag.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Active Filters Display */}
       {(filters.genreId || filters.status !== "all" || filters.query) && (
         <div className="px-4 mb-4">
@@ -324,29 +345,6 @@ export default function SearchPage() {
         )}
       </div>
 
-      {/* Popular Tags (Bottom) */}
-      {popularTags.length > 0 && (
-        <div className="px-4 mt-8">
-          <h3 className="mb-3 font-bold text-xs text-text-muted uppercase tracking-wider">
-            Trending Tags
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {popularTags.map((tag) => (
-              <button
-                key={tag.name}
-                onClick={() => handleTagClick(tag.name)}
-                className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-colors
-                  ${activeTag === tag.name
-                    ? "bg-info text-white border-info"
-                    : "bg-surface text-text-secondary border-border hover:bg-surface-secondary"
-                  }`}
-              >
-                #{tag.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Filter Overlay */}
       <SearchFilterOverlay

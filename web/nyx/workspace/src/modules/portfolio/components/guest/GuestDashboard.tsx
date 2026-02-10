@@ -1,92 +1,88 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { useGuestData } from "@/modules/portfolio/hooks/useGuestData";
+import { GuestProfileForm } from "./GuestProfileForm";
+import { useFavorite, FavoriteCast } from "@/modules/social/hooks/useFavorite";
+import { useFollow, FollowingCast } from "@/modules/social/hooks/useFollow";
+import { ChevronRight, Heart, Users } from "lucide-react";
+
+const PREVIEW_LIMIT = 3;
 
 export const GuestDashboard = () => {
-  const { user, logout } = useAuth();
-  const { profile, avatarUrl, hasProfile } = useGuestData();
+  const { logout } = useAuth();
+  const { profile, avatarUrl, saveProfile, uploadAvatar, loading } = useGuestData();
+  const { fetchFavoritesList, favoriteCasts, loading: favoritesLoading } = useFavorite();
+  const { fetchFollowingList, followingCasts, loading: followingLoading } = useFollow();
+
+  useEffect(() => {
+    fetchFavoritesList(PREVIEW_LIMIT);
+    fetchFollowingList(PREVIEW_LIMIT);
+  }, [fetchFavoritesList, fetchFollowingList]);
 
   return (
     <div className="bg-surface-secondary pb-24 md:pb-safe min-h-screen">
-      <main className="p-6 space-y-8 pt-4">
-        {/* Profile Header */}
-        <Link href="/mypage/profile" className="flex items-center gap-4 group">
-          <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-role-guest-light to-role-guest p-0.5 shadow-lg group-hover:shadow-xl transition-shadow">
-            <div className="h-full w-full rounded-full bg-surface p-0.5">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt="avatar"
-                  className="h-full w-full rounded-full object-cover"
-                />
-              ) : (
-                <div className="h-full w-full rounded-full bg-surface-secondary flex items-center justify-center text-2xl">
-                  👤
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="flex-1">
+      <main className="p-4 space-y-6 pt-4 max-w-2xl mx-auto">
+        {/* Favorites Preview Section */}
+        <section className="rounded-2xl bg-surface shadow-sm border border-border overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold font-serif text-text-primary">
-                {hasProfile ? profile.name : user?.name || "ゲスト"}
-              </h2>
-              <span className="text-text-muted group-hover:text-info transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-              </span>
+              <Heart className="w-5 h-5 text-role-cast" />
+              <h2 className="text-lg font-bold text-text-primary">Favorites</h2>
             </div>
-            <p className="text-xs text-text-secondary font-mono">ID: {user?.id?.slice(0, 8) || "--------"}</p>
-          </div>
-        </Link>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            {
-              label: "Favorites",
-              icon: "❤️",
-              color: "bg-info-lighter text-info",
-              href: "/favorites",
-            },
-            {
-              label: "Following",
-              icon: "👥",
-              color: "bg-info-lighter text-info",
-              href: "/following",
-            },
-          ].map((action) => (
             <Link
-              href={action.href}
-              key={action.label}
-              className="flex flex-col items-center gap-2 rounded-xl bg-surface p-3 shadow-sm border border-border transition-transform active:scale-95"
+              href="/favorites"
+              className="flex items-center gap-1 text-sm text-info hover:text-info-hover transition-colors"
             >
-              <div
-                className={`h-10 w-10 flex items-center justify-center rounded-full text-lg ${action.color}`}
-              >
-                {action.icon}
-              </div>
-              <span className="text-[10px] font-bold text-text-secondary">
-                {action.label}
-              </span>
+              <span>View All</span>
+              <ChevronRight className="w-4 h-4" />
             </Link>
-          ))}
-        </div>
+          </div>
+          <CastPreviewList
+            casts={favoriteCasts}
+            loading={favoritesLoading}
+            emptyMessage="No favorites yet"
+          />
+        </section>
 
-        {/* Menu List */}
-        <div className="rounded-2xl bg-surface shadow-sm border border-border overflow-hidden">
-          <Link
-            href="/mypage/profile"
-            className="w-full flex items-center justify-between px-5 py-4 text-sm font-medium text-text-secondary hover:bg-surface-secondary transition-colors"
-          >
-            <span>Profile Settings</span>
-            <span className="text-text-muted">›</span>
-          </Link>
-        </div>
+        {/* Following Preview Section */}
+        <section className="rounded-2xl bg-surface shadow-sm border border-border overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-info" />
+              <h2 className="text-lg font-bold text-text-primary">Following</h2>
+            </div>
+            <Link
+              href="/following"
+              className="flex items-center gap-1 text-sm text-info hover:text-info-hover transition-colors"
+            >
+              <span>View All</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <CastPreviewList
+            casts={followingCasts}
+            loading={followingLoading}
+            emptyMessage="Not following anyone yet"
+          />
+        </section>
 
+        {/* Profile Edit Section */}
+        <section className="rounded-2xl bg-surface shadow-sm border border-border p-5">
+          <h2 className="text-lg font-bold text-text-primary mb-4">Profile</h2>
+          <GuestProfileForm
+            initialData={profile}
+            initialAvatarUrl={avatarUrl}
+            onSubmit={saveProfile}
+            onUploadAvatar={uploadAvatar}
+            submitLabel="保存する"
+            loading={loading}
+          />
+        </section>
+
+        {/* Sign Out Button */}
         <button
           onClick={logout}
           className="w-full rounded-xl bg-surface-secondary py-3 text-sm font-bold text-text-secondary hover:bg-neutral-200 hover:text-text-secondary transition-colors"
@@ -97,3 +93,62 @@ export const GuestDashboard = () => {
     </div>
   );
 };
+
+interface CastPreviewListProps {
+  casts: (FavoriteCast | FollowingCast)[];
+  loading: boolean;
+  emptyMessage: string;
+}
+
+function CastPreviewList({ casts, loading, emptyMessage }: CastPreviewListProps) {
+  if (loading) {
+    return (
+      <div className="p-5 flex justify-center">
+        <div className="w-6 h-6 border-2 border-info/30 border-t-info rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (casts.length === 0) {
+    return (
+      <div className="p-5 text-center text-sm text-text-muted">
+        {emptyMessage}
+      </div>
+    );
+  }
+
+  return (
+    <div className="divide-y divide-border">
+      {casts.map((cast) => (
+        <Link
+          key={cast.id}
+          href={`/casts/${cast.id}`}
+          className="flex items-center gap-3 px-5 py-3 hover:bg-surface-secondary transition-colors"
+        >
+          <div className="w-10 h-10 rounded-full bg-surface-secondary overflow-hidden flex-shrink-0">
+            {cast.imageUrl ? (
+              <img
+                src={cast.imageUrl}
+                alt={cast.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-text-muted">
+                👤
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-text-primary truncate">
+              {cast.name}
+            </p>
+            {cast.area && (
+              <p className="text-xs text-text-muted truncate">{cast.area}</p>
+            )}
+          </div>
+          <ChevronRight className="w-4 h-4 text-text-muted flex-shrink-0" />
+        </Link>
+      ))}
+    </div>
+  );
+}
