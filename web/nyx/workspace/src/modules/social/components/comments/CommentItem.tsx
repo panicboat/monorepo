@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronUp, Trash2, MessageCircle, Loader2 } from "lucide-react";
 import { Comment } from "@/modules/social/types";
 import { Badge } from "@/components/ui/Badge";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { MediaModal } from "@/components/shared/MediaModal";
 
 type CommentItemProps = {
   comment: Comment;
@@ -35,11 +37,20 @@ export function CommentItem({
   onToggleReplies,
   onLoadMoreReplies,
 }: CommentItemProps) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalIndex, setModalIndex] = useState(0);
+
   const canDelete = currentUserId && comment.userId === currentUserId;
   const isCast = comment.author?.userType === "cast";
 
+  const handleMediaClick = (index: number) => {
+    setModalIndex(index);
+    setModalOpen(true);
+  };
+
   return (
-    <div className={`${isReply ? "ml-8 border-l-2 border-border pl-4" : ""}`}>
+    <>
+      <div className={`${isReply ? "ml-8 border-l-2 border-border pl-4" : ""}`}>
       <div className="py-3">
         {/* Author Info */}
         <div className="flex items-start gap-3">
@@ -80,12 +91,15 @@ export function CommentItem({
             {comment.media && comment.media.length > 0 && (
               <div className="mt-2 flex gap-2 flex-wrap">
                 {comment.media.map((m, i) => (
-                  <div key={m.id || i} className="relative rounded-lg overflow-hidden max-w-[200px]">
+                  <div
+                    key={m.id || i}
+                    className="relative rounded-lg overflow-hidden max-w-[200px] cursor-pointer"
+                    onClick={() => handleMediaClick(i)}
+                  >
                     {m.mediaType === "video" ? (
                       <video
                         src={m.url}
                         className="max-h-32 object-cover rounded-lg"
-                        controls
                         muted
                       />
                     ) : (
@@ -201,6 +215,16 @@ export function CommentItem({
           )}
         </AnimatePresence>
       )}
-    </div>
+      </div>
+
+      {comment.media && comment.media.length > 0 && (
+        <MediaModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          media={comment.media}
+          initialIndex={modalIndex}
+        />
+      )}
+    </>
   );
 }

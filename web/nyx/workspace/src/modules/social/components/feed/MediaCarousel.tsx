@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FeedMediaItem } from "./types";
 import { fadeVariants, fastTransition } from "@/lib/motion";
+import { MediaModal } from "@/components/shared/MediaModal";
 
 interface MediaCarouselProps {
   media: FeedMediaItem[];
@@ -13,6 +14,7 @@ interface MediaCarouselProps {
 
 export function MediaCarousel({ media, onClick }: MediaCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const goTo = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();
@@ -31,40 +33,49 @@ export function MediaCarousel({ media, onClick }: MediaCarouselProps) {
 
   const current = media[currentIndex];
 
+  const handleMediaClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setModalOpen(true);
+    onClick?.(e);
+  };
+
   return (
-    <div className="mb-3 overflow-hidden rounded-xl bg-black/5 relative" onClick={onClick}>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentIndex}
-          variants={fadeVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          transition={fastTransition}
-        >
-          {current.mediaType === "video" ? (
-            <>
-              <video
+    <>
+      <div className="mb-3 overflow-hidden rounded-xl bg-black/5 relative" onClick={onClick}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            variants={fadeVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={fastTransition}
+          >
+            {current.mediaType === "video" ? (
+              <>
+                <video
+                  src={current.url}
+                  className="h-full w-full object-cover max-h-[400px] cursor-pointer"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  onClick={handleMediaClick}
+                />
+                <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm">
+                  GIF Preview
+                </div>
+              </>
+            ) : (
+              <img
                 src={current.url}
-                className="h-full w-full object-cover max-h-[400px]"
-                autoPlay
-                muted
-                loop
-                playsInline
+                alt="Post"
+                className="h-full w-full object-cover max-h-[400px] cursor-pointer"
+                onClick={handleMediaClick}
               />
-              <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm">
-                GIF Preview
-              </div>
-            </>
-          ) : (
-            <img
-              src={current.url}
-              alt="Post"
-              className="h-full w-full object-cover max-h-[400px]"
-            />
-          )}
-        </motion.div>
-      </AnimatePresence>
+            )}
+          </motion.div>
+        </AnimatePresence>
 
       {media.length > 1 && (
         <>
@@ -98,6 +109,14 @@ export function MediaCarousel({ media, onClick }: MediaCarouselProps) {
           </div>
         </>
       )}
-    </div>
+      </div>
+
+      <MediaModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        media={media}
+        initialIndex={currentIndex}
+      />
+    </>
   );
 }
