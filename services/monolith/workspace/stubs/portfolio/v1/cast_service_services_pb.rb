@@ -18,7 +18,7 @@ module Portfolio
         self.service_name = 'portfolio.v1.CastService'
 
         rpc :GetCastProfile, ::Portfolio::V1::GetCastProfileRequest, ::Portfolio::V1::GetCastProfileResponse
-        rpc :GetCastProfileByHandle, ::Portfolio::V1::GetCastProfileByHandleRequest, ::Portfolio::V1::GetCastProfileResponse
+        rpc :GetCastProfileBySlug, ::Portfolio::V1::GetCastProfileBySlugRequest, ::Portfolio::V1::GetCastProfileResponse
         rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
         rpc :SaveCastProfile, ::Portfolio::V1::SaveCastProfileRequest, ::Portfolio::V1::SaveCastProfileResponse
         rpc :SaveCastVisibility, ::Portfolio::V1::SaveCastVisibilityRequest, ::Portfolio::V1::SaveCastVisibilityResponse
@@ -27,7 +27,7 @@ module Portfolio
         rpc :SaveCastSchedules, ::Portfolio::V1::SaveCastSchedulesRequest, ::Portfolio::V1::SaveCastSchedulesResponse
         rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
         rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
-        rpc :CheckHandleAvailability, ::Portfolio::V1::CheckHandleAvailabilityRequest, ::Portfolio::V1::CheckHandleAvailabilityResponse
+        rpc :CheckSlugAvailability, ::Portfolio::V1::CheckSlugAvailabilityRequest, ::Portfolio::V1::CheckSlugAvailabilityResponse
         rpc :ListAreas, ::Portfolio::V1::ListAreasRequest, ::Portfolio::V1::ListAreasResponse
         rpc :ListGenres, ::Portfolio::V1::ListGenresRequest, ::Portfolio::V1::ListGenresResponse
         rpc :ListPopularTags, ::Portfolio::V1::ListPopularTagsRequest, ::Portfolio::V1::ListPopularTagsResponse

@@ -30,7 +30,7 @@ type PopularTag = {
 
 type CastProfile = {
   name: string;
-  handle: string;
+  slug: string;
   tagline: string;
   bio: string;
   imageUrl: string;
@@ -280,8 +280,8 @@ export default function SearchPage() {
               const cast = item.profile;
               return (
                 <Link
-                  href={`/casts/${cast.handle || index}`}
-                  key={cast.handle || index}
+                  href={`/casts/${cast.slug || index}`}
+                  key={cast.slug || index}
                   className="flex-shrink-0 w-28 snap-center"
                 >
                   <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md">
@@ -336,7 +336,7 @@ export default function SearchPage() {
               if (!item.profile) return null;
               return (
                 <SearchCastCard
-                  key={item.profile.handle || index}
+                  key={item.profile.slug || index}
                   cast={item.profile}
                 />
               );
@@ -363,7 +363,7 @@ const SearchCastCard = ({ cast }: { cast: CastProfile }) => {
   const genreName = cast.genres?.[0]?.name || "";
 
   return (
-    <Link href={`/casts/${cast.handle || cast.name}`}>
+    <Link href={`/casts/${cast.slug || cast.name}`}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         whileInView={{ opacity: 1, scale: 1 }}

@@ -15,7 +15,7 @@ module Social
     #
     class CastAdapter
       # Immutable value object representing cast information needed by Social slice.
-      CastInfo = Data.define(:id, :user_id, :name, :image_path, :avatar_path, :handle, :visibility, :registered_at)
+      CastInfo = Data.define(:id, :user_id, :name, :image_path, :avatar_path, :slug, :visibility, :registered_at)
 
       # Find cast by user ID.
       #
@@ -100,7 +100,7 @@ module Social
           name: cast.name,
           image_path: cast.image_path,
           avatar_path: cast.avatar_path,
-          handle: cast.handle,
+          slug: cast.slug,
           visibility: cast.visibility,
           registered_at: cast.registered_at
         )

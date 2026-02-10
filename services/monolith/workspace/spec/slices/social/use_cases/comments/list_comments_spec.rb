@@ -46,7 +46,7 @@ RSpec.describe Social::UseCases::Comments::ListComments do
       .with([user_id_cast])
       .and_return({ user_id_cast => "cast" })
 
-    cast_info = double(:cast_info, id: "cast-1", user_id: user_id_cast, name: "Yuna", image_path: "casts/yuna.jpg", avatar_path: "avatars/yuna.jpg", handle: "yuna")
+    cast_info = double(:cast_info, id: "cast-1", user_id: user_id_cast, name: "Yuna", image_path: "casts/yuna.jpg", avatar_path: "avatars/yuna.jpg", slug: "yuna")
     allow(cast_adapter).to receive(:find_by_user_ids)
       .and_return({ user_id_cast => cast_info })
 

@@ -23,14 +23,14 @@ module Portfolio
         casts.where(user_id: user_ids).to_a
       end
 
-      def find_by_handle(handle)
+      def find_by_slug(slug)
         casts.combine(:cast_plans, :cast_schedules)
-          .where { Sequel.function(:lower, :handle) =~ handle.downcase }
+          .where { Sequel.function(:lower, :slug) =~ slug.downcase }
           .one
       end
 
-      def handle_available?(handle, exclude_user_id: nil)
-        scope = casts.where { Sequel.function(:lower, :handle) =~ handle.downcase }
+      def slug_available?(slug, exclude_user_id: nil)
+        scope = casts.where { Sequel.function(:lower, :slug) =~ slug.downcase }
         scope = scope.exclude(user_id: exclude_user_id) if exclude_user_id
         !scope.exist?
       end

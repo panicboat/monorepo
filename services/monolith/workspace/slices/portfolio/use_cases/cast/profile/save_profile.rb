@@ -19,15 +19,15 @@ module Portfolio
             contract: "contracts.cast.save_profile_contract"
           ]
 
-          class HandleNotAvailableError < StandardError; end
+          class SlugNotAvailableError < StandardError; end
 
-          def call(user_id:, name:, bio:, handle: nil, tagline: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil, age: nil, height: nil, blood_type: nil, three_sizes: nil, tags: nil, area_ids: nil, genre_ids: nil)
+          def call(user_id:, name:, bio:, slug: nil, tagline: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil, age: nil, height: nil, blood_type: nil, three_sizes: nil, tags: nil, area_ids: nil, genre_ids: nil)
             # 0. Input Validation
             params = {
               user_id: user_id,
               name: name,
               bio: bio,
-              handle: handle,
+              slug: slug,
               tagline: tagline,
               default_schedule_start: default_schedule_start,
               default_schedule_end: default_schedule_end,
@@ -43,9 +43,9 @@ module Portfolio
             validation = contract.call(params)
             raise ValidationError, validation.errors unless validation.success?
 
-            # Check handle uniqueness
-            if handle && !handle.empty? && !repo.handle_available?(handle, exclude_user_id: user_id)
-              raise HandleNotAvailableError, "この ID は既に使用されています"
+            # Check slug uniqueness
+            if slug && !slug.empty? && !repo.slug_available?(slug, exclude_user_id: user_id)
+              raise SlugNotAvailableError, "この ID は既に使用されています"
             end
 
             Hanami.logger.info("SaveProfile Args: tagline=#{tagline}, social_links=#{social_links}")
@@ -54,7 +54,7 @@ module Portfolio
             attrs = {
               name: name,
               bio: bio,
-              handle: handle&.downcase,
+              slug: slug&.downcase,
               tagline: tagline,
               default_schedule_start: default_schedule_start,
               default_schedule_end: default_schedule_end,

@@ -30,7 +30,7 @@ export function mapCastProfileToFrontend(p: CastProfile) {
     id: p.id,
     visibility: visibilityToString(p.visibility),
     name: p.name,
-    handle: p.handle || "",
+    slug: p.slug || "",
     tagline: p.tagline,
     bio: p.bio,
     areas: (p.areas || []).map((a) => ({
@@ -108,7 +108,7 @@ export function buildSaveProfileRequest(body: any) {
 
   return {
     name: body.name,
-    handle: body.handle || "",
+    slug: body.slug || "",
     bio: body.bio,
     imagePath: body.imagePath,
     tagline: body.tagline,

@@ -16,7 +16,7 @@ import { fetcher, getAuthToken } from "@/lib/swr";
 
 const INITIAL_PROFILE: ProfileFormData = {
   nickname: "",
-  handle: "",
+  slug: "",
   tagline: "",
   bio: "",
   areaIds: [],
@@ -116,7 +116,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
             profile: {
               ...existingProfile,
               name: updates.nickname ?? existingProfile.name,
-              handle: updates.handle ?? existingProfile.handle,
+              slug: updates.slug ?? existingProfile.slug,
               tagline: updates.tagline ?? existingProfile.tagline,
               bio: updates.bio ?? existingProfile.bio,
               areas: updates.areaIds

@@ -197,7 +197,7 @@ cast_data = [
   # Cast 1: Yuna (PUBLIC) - 誰でもプロフィール全情報を閲覧可能
   {
     name: "Yuna",
-    handle: "yuna",
+    slug: "yuna",
     tagline: "癒しの時間をお届けします 💕",
     bio: "はじめまして、Yunaです。一緒に楽しい時間を過ごしましょう。趣味は映画鑑賞とカフェ巡り。お話しするのが大好きです！",
     visibility: "public",  # PUBLIC CAST
@@ -212,7 +212,7 @@ cast_data = [
   # Cast 2: Mio (PRIVATE) - 非フォロワーにはプラン/スケジュールが非表示
   {
     name: "Mio",
-    handle: "mio",
+    slug: "mio",
     tagline: "今夜、特別な時間を ✨",
     bio: "Mioです。大人の会話を楽しみたい方、ぜひお待ちしています。ワインと音楽が好きです。",
     visibility: "private",  # PRIVATE CAST
@@ -227,7 +227,7 @@ cast_data = [
   # Cast 3: Rin (PUBLIC) - 誰でもプロフィール全情報を閲覧可能
   {
     name: "Rin",
-    handle: "rin",
+    slug: "rin",
     tagline: "あなたの心に寄り添います 🌸",
     bio: "Rinと申します。読書とお散歩が趣味の、のんびりした性格です。ゆっくりお話ししましょう。",
     visibility: "public",  # PUBLIC CAST
@@ -255,7 +255,7 @@ cast_data.each_with_index do |data, idx|
   id = db[:portfolio__casts].insert(
     data.merge(
       user_id: user_id,
-      avatar_path: "avatar_#{data[:handle]}.jpg",
+      avatar_path: "avatar_#{data[:slug]}.jpg",
       social_links: {}.to_json,
       created_at: Time.now,
       updated_at: Time.now,
@@ -631,9 +631,9 @@ puts "  Created #{comment_count} comments and #{reply_count} replies"
 puts "Seeding Social: Cast Follows..."
 
 # Get casts by handle (explicit lookup to avoid ordering issues)
-yuna = db[:portfolio__casts].where(handle: "yuna").first
-mio = db[:portfolio__casts].where(handle: "mio").first
-rin = db[:portfolio__casts].where(handle: "rin").first
+yuna = db[:portfolio__casts].where(slug: "yuna").first
+mio = db[:portfolio__casts].where(slug: "mio").first
+rin = db[:portfolio__casts].where(slug: "rin").first
 
 # Get guests by name (explicit lookup)
 taro = db[:portfolio__guests].where(name: "太郎").first
@@ -692,7 +692,7 @@ block_count = 0
 
 # Guest 太郎 blocks Cast Rin (for testing block functionality)
 taro_block = db[:portfolio__guests].where(name: "太郎").first
-rin_block = db[:portfolio__casts].where(handle: "rin").first
+rin_block = db[:portfolio__casts].where(slug: "rin").first
 
 if taro_block && rin_block
   existing = db[:"social__blocks"].where(blocker_id: taro_block[:id], blocked_id: rin_block[:id]).first
@@ -722,9 +722,9 @@ puts "  Created #{block_count} blocks"
 puts "Seeding Social: Cast Favorites..."
 
 # Get casts by handle (explicit lookup)
-yuna_fav = db[:portfolio__casts].where(handle: "yuna").first
-mio_fav = db[:portfolio__casts].where(handle: "mio").first
-rin_fav = db[:portfolio__casts].where(handle: "rin").first
+yuna_fav = db[:portfolio__casts].where(slug: "yuna").first
+mio_fav = db[:portfolio__casts].where(slug: "mio").first
+rin_fav = db[:portfolio__casts].where(slug: "rin").first
 
 # Get guests by name (explicit lookup)
 taro_fav = db[:portfolio__guests].where(name: "太郎").first

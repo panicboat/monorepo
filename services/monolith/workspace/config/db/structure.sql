@@ -177,7 +177,7 @@ CREATE TABLE portfolio.casts (
     image_path text,
     three_sizes jsonb DEFAULT '{}'::jsonb,
     avatar_path text,
-    handle character varying(30),
+    slug character varying(30),
     registered_at timestamp with time zone
 );
 
@@ -612,10 +612,10 @@ CREATE INDEX idx_cast_areas_area_id ON portfolio.cast_areas USING btree (area_id
 
 
 --
--- Name: idx_casts_handle_lower; Type: INDEX; Schema: portfolio; Owner: -
+-- Name: idx_casts_slug_lower; Type: INDEX; Schema: portfolio; Owner: -
 --
 
-CREATE UNIQUE INDEX idx_casts_handle_lower ON portfolio.casts USING btree (lower((handle)::text)) WHERE (handle IS NOT NULL);
+CREATE UNIQUE INDEX idx_casts_slug_lower ON portfolio.casts USING btree (lower((slug)::text)) WHERE (slug IS NOT NULL);
 
 
 --
@@ -952,4 +952,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260209000001_migrate_cast_visibility_values.rb'),
 ('20260209000002_add_status_to_cast_follows.rb'),
 ('20260210000000_add_is_recommended_to_cast_plans.rb'),
-('20260210100000_rename_visible_to_visibility_in_cast_posts.rb');
+('20260210100000_rename_visible_to_visibility_in_cast_posts.rb'),
+('20260211000000_rename_handle_to_slug_in_casts.rb');

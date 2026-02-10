@@ -11,7 +11,7 @@ import { fetcher, getAuthToken } from "@/lib/swr";
 
 const INITIAL_PROFILE: ProfileFormData = {
   nickname: "",
-  handle: "",
+  slug: "",
   tagline: "",
   bio: "",
   areaIds: [],

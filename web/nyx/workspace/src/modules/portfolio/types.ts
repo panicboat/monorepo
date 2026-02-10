@@ -43,7 +43,7 @@ export interface Area {
 export interface CastProfile {
   id: string;
   name: string;
-  handle?: string; // Unique user-defined ID (URL key)
+  slug?: string; // Unique user-defined ID (URL key)
   status: string; // CastStatus string for flexibility or strictly CastStatus
   message: string;
   tagline?: string; // Short catchphrase
@@ -103,7 +103,7 @@ export type CastVisibilityType = "public" | "private";
 
 export interface ProfileFormData {
   nickname: string;
-  handle: string;
+  slug: string;
   tagline: string;
   bio: string;
   areaIds: string[];

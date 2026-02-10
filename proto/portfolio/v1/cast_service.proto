@@ -6,7 +6,7 @@ package portfolio.v1;
 
 service CastService {
   rpc GetCastProfile(GetCastProfileRequest) returns (GetCastProfileResponse);
-  rpc GetCastProfileByHandle(GetCastProfileByHandleRequest) returns (GetCastProfileResponse);
+  rpc GetCastProfileBySlug(GetCastProfileBySlugRequest) returns (GetCastProfileResponse);
   rpc CreateCastProfile(CreateCastProfileRequest) returns (CreateCastProfileResponse);
   rpc SaveCastProfile(SaveCastProfileRequest) returns (SaveCastProfileResponse);
   rpc SaveCastVisibility(SaveCastVisibilityRequest) returns (SaveCastVisibilityResponse);
@@ -15,7 +15,7 @@ service CastService {
   rpc SaveCastSchedules(SaveCastSchedulesRequest) returns (SaveCastSchedulesResponse);
   rpc ListCasts(ListCastsRequest) returns (ListCastsResponse);
   rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
-  rpc CheckHandleAvailability(CheckHandleAvailabilityRequest) returns (CheckHandleAvailabilityResponse);
+  rpc CheckSlugAvailability(CheckSlugAvailabilityRequest) returns (CheckSlugAvailabilityResponse);
   rpc ListAreas(ListAreasRequest) returns (ListAreasResponse);
   rpc ListGenres(ListGenresRequest) returns (ListGenresResponse);
   rpc ListPopularTags(ListPopularTagsRequest) returns (ListPopularTagsResponse);
@@ -69,7 +69,7 @@ message CastProfile {
   repeated string tags = 16;
   string avatar_path = 17;
   string avatar_url = 18;
-  string handle = 19;
+  string slug = 19;
   repeated Area areas = 20;
   repeated Genre genres = 21;
   bool is_online = 22; // Currently within scheduled availability
@@ -129,7 +129,7 @@ message SaveCastProfileRequest {
   string blood_type = 11;
   ThreeSizes three_sizes = 12;
   repeated string tags = 13;
-  string handle = 14;
+  string slug = 14;
   repeated string area_ids = 15;
   repeated string genre_ids = 16;
 }
@@ -225,15 +225,15 @@ message ListCastsResponse {
   bool has_more = 3;      // Whether more items are available
 }
 
-message GetCastProfileByHandleRequest {
-  string handle = 1;
+message GetCastProfileBySlugRequest {
+  string slug = 1;
 }
 
-message CheckHandleAvailabilityRequest {
-  string handle = 1;
+message CheckSlugAvailabilityRequest {
+  string slug = 1;
 }
 
-message CheckHandleAvailabilityResponse {
+message CheckSlugAvailabilityResponse {
   bool available = 1;
   string message = 2;
 }

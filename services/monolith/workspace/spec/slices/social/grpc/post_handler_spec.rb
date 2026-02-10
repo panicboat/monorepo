@@ -41,7 +41,7 @@ RSpec.describe Social::Grpc::PostHandler do
       name: "Yuna",
       image_path: "http://img.jpg",
       avatar_path: nil,
-      handle: "yuna",
+      slug: "yuna",
       visibility: "public",
       registered_at: Time.now
     )

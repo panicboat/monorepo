@@ -19,7 +19,7 @@ module Portfolio
         attribute :three_sizes, Types::Hash
         attribute :tags, Types::Any
         attribute :avatar_path, Types::String
-        attribute :handle, Types::String
+        attribute :slug, Types::String
         attribute :registered_at, Types::Time
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time

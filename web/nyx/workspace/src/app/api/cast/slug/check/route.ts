@@ -8,13 +8,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const handle = req.nextUrl.searchParams.get("handle");
-    if (!handle) {
-      return NextResponse.json({ error: "Handle is required" }, { status: 400 });
+    const slug = req.nextUrl.searchParams.get("slug");
+    if (!slug) {
+      return NextResponse.json({ error: "Slug is required" }, { status: 400 });
     }
 
-    const response = await castClient.checkHandleAvailability(
-      { handle },
+    const response = await castClient.checkSlugAvailability(
+      { slug },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

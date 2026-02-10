@@ -29,10 +29,10 @@ export const ProfileInputs = ({ data, onChange }: ProfileInputsProps) => {
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">@</span>
             <Input
               type="text"
-              value={data.handle || ""}
+              value={data.slug || ""}
               onChange={(e) => {
                 const val = e.target.value.replace(/[^a-zA-Z0-9]/g, "");
-                onChange("handle", val);
+                onChange("slug", val);
               }}
               placeholder="nyx"
               className="pl-8 focus-visible:ring-role-cast"

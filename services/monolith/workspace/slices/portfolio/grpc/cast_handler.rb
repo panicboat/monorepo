@@ -15,7 +15,7 @@ module Portfolio
       self.rpc_descs.clear
 
       rpc :GetCastProfile, ::Portfolio::V1::GetCastProfileRequest, ::Portfolio::V1::GetCastProfileResponse
-      rpc :GetCastProfileByHandle, ::Portfolio::V1::GetCastProfileByHandleRequest, ::Portfolio::V1::GetCastProfileResponse
+      rpc :GetCastProfileBySlug, ::Portfolio::V1::GetCastProfileBySlugRequest, ::Portfolio::V1::GetCastProfileResponse
       rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
       rpc :SaveCastProfile, ::Portfolio::V1::SaveCastProfileRequest, ::Portfolio::V1::SaveCastProfileResponse
       rpc :SaveCastVisibility, ::Portfolio::V1::SaveCastVisibilityRequest, ::Portfolio::V1::SaveCastVisibilityResponse
@@ -24,7 +24,7 @@ module Portfolio
       rpc :SaveCastImages, ::Portfolio::V1::SaveCastImagesRequest, ::Portfolio::V1::SaveCastImagesResponse
       rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
       rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
-      rpc :CheckHandleAvailability, ::Portfolio::V1::CheckHandleAvailabilityRequest, ::Portfolio::V1::CheckHandleAvailabilityResponse
+      rpc :CheckSlugAvailability, ::Portfolio::V1::CheckSlugAvailabilityRequest, ::Portfolio::V1::CheckSlugAvailabilityResponse
       rpc :ListAreas, ::Portfolio::V1::ListAreasRequest, ::Portfolio::V1::ListAreasResponse
       rpc :ListGenres, ::Portfolio::V1::ListGenresRequest, ::Portfolio::V1::ListGenresResponse
       rpc :ListPopularTags, ::Portfolio::V1::ListPopularTagsRequest, ::Portfolio::V1::ListPopularTagsResponse
@@ -68,13 +68,13 @@ module Portfolio
         )
       end
 
-      def get_cast_profile_by_handle
-        handle = request.message.handle
-        if handle.nil? || handle.empty?
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Handle is required")
+      def get_cast_profile_by_slug
+        slug = request.message.slug
+        if slug.nil? || slug.empty?
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Slug is required")
         end
 
-        result = repo.find_by_handle(handle)
+        result = repo.find_by_slug(slug)
         unless result
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
         end
@@ -96,42 +96,42 @@ module Portfolio
         )
       end
 
-      def check_handle_availability
-        handle = request.message.handle
-        if handle.nil? || handle.empty?
-          return ::Portfolio::V1::CheckHandleAvailabilityResponse.new(
+      def check_slug_availability
+        slug = request.message.slug
+        if slug.nil? || slug.empty?
+          return ::Portfolio::V1::CheckSlugAvailabilityResponse.new(
             available: false,
             message: "ID は必須です"
           )
         end
 
         # Format validation
-        unless handle.match?(/\A[a-zA-Z][a-zA-Z0-9]*\z/)
-          msg = handle.match?(/\A[0-9]/) ? "先頭に数字は使用できません" : "英数字のみ使用できます"
-          return ::Portfolio::V1::CheckHandleAvailabilityResponse.new(
+        unless slug.match?(/\A[a-zA-Z][a-zA-Z0-9]*\z/)
+          msg = slug.match?(/\A[0-9]/) ? "先頭に数字は使用できません" : "英数字のみ使用できます"
+          return ::Portfolio::V1::CheckSlugAvailabilityResponse.new(
             available: false,
             message: msg
           )
         end
 
-        if handle.length < 3
-          return ::Portfolio::V1::CheckHandleAvailabilityResponse.new(
+        if slug.length < 3
+          return ::Portfolio::V1::CheckSlugAvailabilityResponse.new(
             available: false,
             message: "3文字以上で入力してください"
           )
         end
 
-        if handle.length > 30
-          return ::Portfolio::V1::CheckHandleAvailabilityResponse.new(
+        if slug.length > 30
+          return ::Portfolio::V1::CheckSlugAvailabilityResponse.new(
             available: false,
             message: "30文字以内で入力してください"
           )
         end
 
         exclude_user_id = current_user_id
-        available = repo.handle_available?(handle, exclude_user_id: exclude_user_id)
+        available = repo.slug_available?(slug, exclude_user_id: exclude_user_id)
 
-        ::Portfolio::V1::CheckHandleAvailabilityResponse.new(
+        ::Portfolio::V1::CheckSlugAvailabilityResponse.new(
           available: available,
           message: available ? "" : "この ID は既に使用されています"
         )
@@ -176,7 +176,7 @@ module Portfolio
           user_id: current_user_id,
           name: request.message.name,
           bio: request.message.bio,
-          handle: request.message.handle.to_s.empty? ? nil : request.message.handle,
+          slug: request.message.slug.to_s.empty? ? nil : request.message.slug,
           tagline: request.message.tagline,
           default_schedule_start: request.message.default_schedule_start,
           default_schedule_end: request.message.default_schedule_end,
@@ -197,7 +197,7 @@ module Portfolio
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
         ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres))
-      rescue SaveProfile::HandleNotAvailableError => e
+      rescue SaveProfile::SlugNotAvailableError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::ALREADY_EXISTS, e.message)
       rescue SaveProfile::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)

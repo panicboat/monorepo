@@ -9,15 +9,15 @@ module Portfolio
         MAX_NAME_LENGTH = 100
         MAX_BIO_LENGTH = 1000
         MAX_TAGLINE_LENGTH = 200
-        MIN_HANDLE_LENGTH = 3
-        MAX_HANDLE_LENGTH = 30
-        HANDLE_FORMAT = /\A[a-zA-Z][a-zA-Z0-9]*\z/
+        MIN_SLUG_LENGTH = 3
+        MAX_SLUG_LENGTH = 30
+        SLUG_FORMAT = /\A[a-zA-Z][a-zA-Z0-9]*\z/
 
         params do
           required(:user_id).filled(:string)
           required(:name).filled(:string)
           required(:bio).filled(:string)
-          optional(:handle).maybe(:string)
+          optional(:slug).maybe(:string)
           optional(:tagline).maybe(:string)
           optional(:default_schedule_start).maybe(:string)
           optional(:default_schedule_end).maybe(:string)
@@ -45,14 +45,14 @@ module Portfolio
           end
         end
 
-        rule(:handle) do
+        rule(:slug) do
           next unless key? && value
 
-          if value.length < MIN_HANDLE_LENGTH
-            key.failure("は#{MIN_HANDLE_LENGTH}文字以上で入力してください")
-          elsif value.length > MAX_HANDLE_LENGTH
-            key.failure("は#{MAX_HANDLE_LENGTH}文字以内で入力してください")
-          elsif !value.match?(HANDLE_FORMAT)
+          if value.length < MIN_SLUG_LENGTH
+            key.failure("は#{MIN_SLUG_LENGTH}文字以上で入力してください")
+          elsif value.length > MAX_SLUG_LENGTH
+            key.failure("は#{MAX_SLUG_LENGTH}文字以内で入力してください")
+          elsif !value.match?(SLUG_FORMAT)
             if value.match?(/\A[0-9]/)
               key.failure("は先頭に数字を使用できません")
             else

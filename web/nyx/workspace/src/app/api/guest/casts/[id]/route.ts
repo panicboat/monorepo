@@ -16,13 +16,13 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // If id matches UUID format, lookup by userId/castId; otherwise lookup by handle
+    // If id matches UUID format, lookup by userId/castId; otherwise lookup by slug
     // The backend will try user_id first, then cast_id
     const isUuid = UUID_REGEX.test(id);
     const headers = { headers: buildGrpcHeaders(req.headers) };
     const response = isUuid
       ? await castClient.getCastProfile({ userId: id }, headers)
-      : await castClient.getCastProfileByHandle({ handle: id }, headers);
+      : await castClient.getCastProfileBySlug({ slug: id }, headers);
 
     if (!response.profile) {
       return NextResponse.json({ error: "Not Found" }, { status: 404 });

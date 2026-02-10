@@ -82,7 +82,7 @@ export default function OnboardingStep1Page() {
 
   const isFormValid =
     profile.nickname.trim().length > 0 &&
-    profile.handle.trim().length >= 3 &&
+    profile.slug.trim().length >= 3 &&
     (profile.genreIds?.length || 0) > 0 &&
     (profile.areaIds?.length || 0) > 0 &&
     profile.tagline.trim().length > 0;
