@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file social/v1/follow_service.proto.
  */
 export const file_social_v1_follow_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch5zb2NpYWwvdjEvZm9sbG93X3NlcnZpY2UucHJvdG8SCXNvY2lhbC52MSIkChFGb2xsb3dDYXN0UmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIk4KEkZvbGxvd0Nhc3RSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEicKBnN0YXR1cxgCIAEoDjIXLnNvY2lhbC52MS5Gb2xsb3dTdGF0dXMiJgoTVW5mb2xsb3dDYXN0UmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIicKFFVuZm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiNQoUTGlzdEZvbGxvd2luZ1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJIlAKFUxpc3RGb2xsb3dpbmdSZXNwb25zZRIQCghjYXN0X2lkcxgBIAMoCRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIqChZHZXRGb2xsb3dTdGF0dXNSZXF1ZXN0EhAKCGNhc3RfaWRzGAEgAygJIqcBChdHZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJCCghzdGF0dXNlcxgBIAMoCzIwLnNvY2lhbC52MS5HZXRGb2xsb3dTdGF0dXNSZXNwb25zZS5TdGF0dXNlc0VudHJ5GkgKDVN0YXR1c2VzRW50cnkSCwoDa2V5GAEgASgJEiYKBXZhbHVlGAIgASgOMhcuc29jaWFsLnYxLkZvbGxvd1N0YXR1czoCOAEiLQoaQ2FuY2VsRm9sbG93UmVxdWVzdFJlcXVlc3QSDwoHY2FzdF9pZBgBIAEoCSIuChtDYW5jZWxGb2xsb3dSZXF1ZXN0UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCIoChRBcHByb3ZlRm9sbG93UmVxdWVzdBIQCghndWVzdF9pZBgBIAEoCSIoChVBcHByb3ZlRm9sbG93UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCInChNSZWplY3RGb2xsb3dSZXF1ZXN0EhAKCGd1ZXN0X2lkGAEgASgJIicKFFJlamVjdEZvbGxvd1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiaAoRRm9sbG93UmVxdWVzdEl0ZW0SEAoIZ3Vlc3RfaWQYASABKAkSEgoKZ3Vlc3RfbmFtZRgCIAEoCRIXCg9ndWVzdF9pbWFnZV91cmwYAyABKAkSFAoMcmVxdWVzdGVkX2F0GAQgASgJIkEKIExpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJ6CiFMaXN0UGVuZGluZ0ZvbGxvd1JlcXVlc3RzUmVzcG9uc2USLgoIcmVxdWVzdHMYASADKAsyHC5zb2NpYWwudjEuRm9sbG93UmVxdWVzdEl0ZW0SEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiHgocR2V0UGVuZGluZ0ZvbGxvd0NvdW50UmVxdWVzdCIuCh1HZXRQZW5kaW5nRm9sbG93Q291bnRSZXNwb25zZRINCgVjb3VudBgBIAEoBSp8CgxGb2xsb3dTdGF0dXMSHQoZRk9MTE9XX1NUQVRVU19VTlNQRUNJRklFRBAAEhYKEkZPTExPV19TVEFUVVNfTk9ORRABEhkKFUZPTExPV19TVEFUVVNfUEVORElORxACEhoKFkZPTExPV19TVEFUVVNfQVBQUk9WRUQQAzLIBgoNRm9sbG93U2VydmljZRJJCgpGb2xsb3dDYXN0Ehwuc29jaWFsLnYxLkZvbGxvd0Nhc3RSZXF1ZXN0Gh0uc29jaWFsLnYxLkZvbGxvd0Nhc3RSZXNwb25zZRJPCgxVbmZvbGxvd0Nhc3QSHi5zb2NpYWwudjEuVW5mb2xsb3dDYXN0UmVxdWVzdBofLnNvY2lhbC52MS5VbmZvbGxvd0Nhc3RSZXNwb25zZRJSCg1MaXN0Rm9sbG93aW5nEh8uc29jaWFsLnYxLkxpc3RGb2xsb3dpbmdSZXF1ZXN0GiAuc29jaWFsLnYxLkxpc3RGb2xsb3dpbmdSZXNwb25zZRJYCg9HZXRGb2xsb3dTdGF0dXMSIS5zb2NpYWwudjEuR2V0Rm9sbG93U3RhdHVzUmVxdWVzdBoiLnNvY2lhbC52MS5HZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJkChNDYW5jZWxGb2xsb3dSZXF1ZXN0EiUuc29jaWFsLnYxLkNhbmNlbEZvbGxvd1JlcXVlc3RSZXF1ZXN0GiYuc29jaWFsLnYxLkNhbmNlbEZvbGxvd1JlcXVlc3RSZXNwb25zZRJSCg1BcHByb3ZlRm9sbG93Eh8uc29jaWFsLnYxLkFwcHJvdmVGb2xsb3dSZXF1ZXN0GiAuc29jaWFsLnYxLkFwcHJvdmVGb2xsb3dSZXNwb25zZRJPCgxSZWplY3RGb2xsb3cSHi5zb2NpYWwudjEuUmVqZWN0Rm9sbG93UmVxdWVzdBofLnNvY2lhbC52MS5SZWplY3RGb2xsb3dSZXNwb25zZRJ2ChlMaXN0UGVuZGluZ0ZvbGxvd1JlcXVlc3RzEisuc29jaWFsLnYxLkxpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHNSZXF1ZXN0Giwuc29jaWFsLnYxLkxpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHNSZXNwb25zZRJqChVHZXRQZW5kaW5nRm9sbG93Q291bnQSJy5zb2NpYWwudjEuR2V0UGVuZGluZ0ZvbGxvd0NvdW50UmVxdWVzdBooLnNvY2lhbC52MS5HZXRQZW5kaW5nRm9sbG93Q291bnRSZXNwb25zZWIGcHJvdG8z");
+  fileDesc("Ch5zb2NpYWwvdjEvZm9sbG93X3NlcnZpY2UucHJvdG8SCXNvY2lhbC52MSIkChFGb2xsb3dDYXN0UmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIk4KEkZvbGxvd0Nhc3RSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEicKBnN0YXR1cxgCIAEoDjIXLnNvY2lhbC52MS5Gb2xsb3dTdGF0dXMiJgoTVW5mb2xsb3dDYXN0UmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIicKFFVuZm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiNQoUTGlzdEZvbGxvd2luZ1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJIlAKFUxpc3RGb2xsb3dpbmdSZXNwb25zZRIQCghjYXN0X2lkcxgBIAMoCRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIqChZHZXRGb2xsb3dTdGF0dXNSZXF1ZXN0EhAKCGNhc3RfaWRzGAEgAygJIqcBChdHZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJCCghzdGF0dXNlcxgBIAMoCzIwLnNvY2lhbC52MS5HZXRGb2xsb3dTdGF0dXNSZXNwb25zZS5TdGF0dXNlc0VudHJ5GkgKDVN0YXR1c2VzRW50cnkSCwoDa2V5GAEgASgJEiYKBXZhbHVlGAIgASgOMhcuc29jaWFsLnYxLkZvbGxvd1N0YXR1czoCOAEiLQoaQ2FuY2VsRm9sbG93UmVxdWVzdFJlcXVlc3QSDwoHY2FzdF9pZBgBIAEoCSIuChtDYW5jZWxGb2xsb3dSZXF1ZXN0UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCIoChRBcHByb3ZlRm9sbG93UmVxdWVzdBIQCghndWVzdF9pZBgBIAEoCSIoChVBcHByb3ZlRm9sbG93UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCInChNSZWplY3RGb2xsb3dSZXF1ZXN0EhAKCGd1ZXN0X2lkGAEgASgJIicKFFJlamVjdEZvbGxvd1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiaAoRRm9sbG93UmVxdWVzdEl0ZW0SEAoIZ3Vlc3RfaWQYASABKAkSEgoKZ3Vlc3RfbmFtZRgCIAEoCRIXCg9ndWVzdF9pbWFnZV91cmwYAyABKAkSFAoMcmVxdWVzdGVkX2F0GAQgASgJIkEKIExpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJ6CiFMaXN0UGVuZGluZ0ZvbGxvd1JlcXVlc3RzUmVzcG9uc2USLgoIcmVxdWVzdHMYASADKAsyHC5zb2NpYWwudjEuRm9sbG93UmVxdWVzdEl0ZW0SEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiHgocR2V0UGVuZGluZ0ZvbGxvd0NvdW50UmVxdWVzdCIuCh1HZXRQZW5kaW5nRm9sbG93Q291bnRSZXNwb25zZRINCgVjb3VudBgBIAEoBSJiCgxGb2xsb3dlckl0ZW0SEAoIZ3Vlc3RfaWQYASABKAkSEgoKZ3Vlc3RfbmFtZRgCIAEoCRIXCg9ndWVzdF9pbWFnZV91cmwYAyABKAkSEwoLZm9sbG93ZWRfYXQYBCABKAkiNQoUTGlzdEZvbGxvd2Vyc1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJInkKFUxpc3RGb2xsb3dlcnNSZXNwb25zZRIqCglmb2xsb3dlcnMYASADKAsyFy5zb2NpYWwudjEuRm9sbG93ZXJJdGVtEg0KBXRvdGFsGAIgASgFEhMKC25leHRfY3Vyc29yGAMgASgJEhAKCGhhc19tb3JlGAQgASgIKnwKDEZvbGxvd1N0YXR1cxIdChlGT0xMT1dfU1RBVFVTX1VOU1BFQ0lGSUVEEAASFgoSRk9MTE9XX1NUQVRVU19OT05FEAESGQoVRk9MTE9XX1NUQVRVU19QRU5ESU5HEAISGgoWRk9MTE9XX1NUQVRVU19BUFBST1ZFRBADMpwHCg1Gb2xsb3dTZXJ2aWNlEkkKCkZvbGxvd0Nhc3QSHC5zb2NpYWwudjEuRm9sbG93Q2FzdFJlcXVlc3QaHS5zb2NpYWwudjEuRm9sbG93Q2FzdFJlc3BvbnNlEk8KDFVuZm9sbG93Q2FzdBIeLnNvY2lhbC52MS5VbmZvbGxvd0Nhc3RSZXF1ZXN0Gh8uc29jaWFsLnYxLlVuZm9sbG93Q2FzdFJlc3BvbnNlElIKDUxpc3RGb2xsb3dpbmcSHy5zb2NpYWwudjEuTGlzdEZvbGxvd2luZ1JlcXVlc3QaIC5zb2NpYWwudjEuTGlzdEZvbGxvd2luZ1Jlc3BvbnNlElgKD0dldEZvbGxvd1N0YXR1cxIhLnNvY2lhbC52MS5HZXRGb2xsb3dTdGF0dXNSZXF1ZXN0GiIuc29jaWFsLnYxLkdldEZvbGxvd1N0YXR1c1Jlc3BvbnNlEmQKE0NhbmNlbEZvbGxvd1JlcXVlc3QSJS5zb2NpYWwudjEuQ2FuY2VsRm9sbG93UmVxdWVzdFJlcXVlc3QaJi5zb2NpYWwudjEuQ2FuY2VsRm9sbG93UmVxdWVzdFJlc3BvbnNlElIKDUFwcHJvdmVGb2xsb3cSHy5zb2NpYWwudjEuQXBwcm92ZUZvbGxvd1JlcXVlc3QaIC5zb2NpYWwudjEuQXBwcm92ZUZvbGxvd1Jlc3BvbnNlEk8KDFJlamVjdEZvbGxvdxIeLnNvY2lhbC52MS5SZWplY3RGb2xsb3dSZXF1ZXN0Gh8uc29jaWFsLnYxLlJlamVjdEZvbGxvd1Jlc3BvbnNlEnYKGUxpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHMSKy5zb2NpYWwudjEuTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0c1JlcXVlc3QaLC5zb2NpYWwudjEuTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0c1Jlc3BvbnNlEmoKFUdldFBlbmRpbmdGb2xsb3dDb3VudBInLnNvY2lhbC52MS5HZXRQZW5kaW5nRm9sbG93Q291bnRSZXF1ZXN0Giguc29jaWFsLnYxLkdldFBlbmRpbmdGb2xsb3dDb3VudFJlc3BvbnNlElIKDUxpc3RGb2xsb3dlcnMSHy5zb2NpYWwudjEuTGlzdEZvbGxvd2Vyc1JlcXVlc3QaIC5zb2NpYWwudjEuTGlzdEZvbGxvd2Vyc1Jlc3BvbnNlYgZwcm90bzM");
 
 /**
  * @generated from message social.v1.FollowCastRequest
@@ -392,6 +392,98 @@ export const GetPendingFollowCountResponseSchema: GenMessage<GetPendingFollowCou
   messageDesc(file_social_v1_follow_service, 18);
 
 /**
+ * @generated from message social.v1.FollowerItem
+ */
+export type FollowerItem = Message<"social.v1.FollowerItem"> & {
+  /**
+   * @generated from field: string guest_id = 1;
+   */
+  guestId: string;
+
+  /**
+   * @generated from field: string guest_name = 2;
+   */
+  guestName: string;
+
+  /**
+   * @generated from field: string guest_image_url = 3;
+   */
+  guestImageUrl: string;
+
+  /**
+   * ISO8601
+   *
+   * @generated from field: string followed_at = 4;
+   */
+  followedAt: string;
+};
+
+/**
+ * Describes the message social.v1.FollowerItem.
+ * Use `create(FollowerItemSchema)` to create a new message.
+ */
+export const FollowerItemSchema: GenMessage<FollowerItem> = /*@__PURE__*/
+  messageDesc(file_social_v1_follow_service, 19);
+
+/**
+ * @generated from message social.v1.ListFollowersRequest
+ */
+export type ListFollowersRequest = Message<"social.v1.ListFollowersRequest"> & {
+  /**
+   * default: 20
+   *
+   * @generated from field: int32 limit = 1;
+   */
+  limit: number;
+
+  /**
+   * optional
+   *
+   * @generated from field: string cursor = 2;
+   */
+  cursor: string;
+};
+
+/**
+ * Describes the message social.v1.ListFollowersRequest.
+ * Use `create(ListFollowersRequestSchema)` to create a new message.
+ */
+export const ListFollowersRequestSchema: GenMessage<ListFollowersRequest> = /*@__PURE__*/
+  messageDesc(file_social_v1_follow_service, 20);
+
+/**
+ * @generated from message social.v1.ListFollowersResponse
+ */
+export type ListFollowersResponse = Message<"social.v1.ListFollowersResponse"> & {
+  /**
+   * @generated from field: repeated social.v1.FollowerItem followers = 1;
+   */
+  followers: FollowerItem[];
+
+  /**
+   * @generated from field: int32 total = 2;
+   */
+  total: number;
+
+  /**
+   * @generated from field: string next_cursor = 3;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 4;
+   */
+  hasMore: boolean;
+};
+
+/**
+ * Describes the message social.v1.ListFollowersResponse.
+ * Use `create(ListFollowersResponseSchema)` to create a new message.
+ */
+export const ListFollowersResponseSchema: GenMessage<ListFollowersResponse> = /*@__PURE__*/
+  messageDesc(file_social_v1_follow_service, 21);
+
+/**
  * @generated from enum social.v1.FollowStatus
  */
 export enum FollowStatus {
@@ -507,6 +599,14 @@ export const FollowService: GenService<{
     methodKind: "unary";
     input: typeof GetPendingFollowCountRequestSchema;
     output: typeof GetPendingFollowCountResponseSchema;
+  },
+  /**
+   * @generated from rpc social.v1.FollowService.ListFollowers
+   */
+  listFollowers: {
+    methodKind: "unary";
+    input: typeof ListFollowersRequestSchema;
+    output: typeof ListFollowersResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_social_v1_follow_service, 0);

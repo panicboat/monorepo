@@ -79,7 +79,10 @@ export default function CastMyPage() {
           Account
         </p>
 
-        <button className="w-full bg-surface hover:bg-surface-secondary border border-border rounded-xl p-4 flex items-center justify-between group transition shadow-sm">
+        <Link
+          href="/cast/blocks"
+          className="w-full bg-surface hover:bg-surface-secondary border border-border rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
+        >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-surface-secondary flex items-center justify-center text-text-secondary">
               <ShieldAlert className="w-5 h-5" />
@@ -89,7 +92,7 @@ export default function CastMyPage() {
             </div>
           </div>
           <ChevronRight className="text-text-muted group-hover:text-text-secondary transition" />
-        </button>
+        </Link>
 
         <button
           onClick={logout}

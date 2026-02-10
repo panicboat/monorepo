@@ -26,6 +26,7 @@ module Social
       rpc :RejectFollow, ::Social::V1::RejectFollowRequest, ::Social::V1::RejectFollowResponse
       rpc :ListPendingFollowRequests, ::Social::V1::ListPendingFollowRequestsRequest, ::Social::V1::ListPendingFollowRequestsResponse
       rpc :GetPendingFollowCount, ::Social::V1::GetPendingFollowCountRequest, ::Social::V1::GetPendingFollowCountResponse
+      rpc :ListFollowers, ::Social::V1::ListFollowersRequest, ::Social::V1::ListFollowersResponse
 
       include Social::Deps[
         follow_cast_uc: "use_cases.follows.follow_cast",
@@ -35,7 +36,8 @@ module Social
         approve_follow_uc: "use_cases.follows.approve_follow",
         reject_follow_uc: "use_cases.follows.reject_follow",
         cancel_follow_request_uc: "use_cases.follows.cancel_follow_request",
-        list_pending_requests_uc: "use_cases.follows.list_pending_requests"
+        list_pending_requests_uc: "use_cases.follows.list_pending_requests",
+        list_followers_uc: "use_cases.follows.list_followers"
       ]
 
       def follow_cast
@@ -195,6 +197,40 @@ module Social
         count = follow_repo.pending_count(cast_id: cast.id)
 
         ::Social::V1::GetPendingFollowCountResponse.new(count: count)
+      end
+
+      def list_followers
+        authenticate_user!
+        cast = find_my_cast!
+
+        limit = request.message.limit.zero? ? 20 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        result = list_followers_uc.call(
+          cast_id: cast.id,
+          limit: limit,
+          cursor: cursor
+        )
+
+        guest_ids = result[:followers].map { |f| f[:guest_id] }
+        guests = guest_adapter.find_by_ids(guest_ids)
+
+        followers = result[:followers].map do |follower|
+          guest = guests[follower[:guest_id]]
+          ::Social::V1::FollowerItem.new(
+            guest_id: follower[:guest_id],
+            guest_name: guest&.name || "Guest",
+            guest_image_url: guest&.avatar_path ? Storage.download_url(key: guest.avatar_path) : "",
+            followed_at: follower[:followed_at]&.iso8601 || ""
+          )
+        end
+
+        ::Social::V1::ListFollowersResponse.new(
+          followers: followers,
+          total: result[:total],
+          next_cursor: result[:next_cursor] ? result[:next_cursor][:created_at].iso8601 : "",
+          has_more: result[:has_more]
+        )
       end
     end
   end

@@ -113,6 +113,27 @@ module Social
           hash[id] = status_map[id] || "none"
         end
       end
+
+      def list_followers(cast_id:, blocked_guest_ids: [], limit: 20, cursor: nil)
+        scope = cast_follows.where(cast_id: cast_id, status: "approved")
+
+        scope = scope.where { Sequel.~(guest_id: blocked_guest_ids) } if blocked_guest_ids.any?
+
+        if cursor
+          scope = scope.where { created_at < cursor[:created_at] }
+        end
+
+        total = scope.count
+        records = scope.order { created_at.desc }.limit(limit + 1).to_a
+        has_more = records.size > limit
+        records = records.first(limit) if has_more
+
+        {
+          followers: records,
+          total: total,
+          has_more: has_more
+        }
+      end
     end
   end
 end

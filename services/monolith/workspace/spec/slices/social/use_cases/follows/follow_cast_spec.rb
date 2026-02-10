@@ -3,11 +3,18 @@
 require "spec_helper"
 
 RSpec.describe Social::UseCases::Follows::FollowCast do
-  let(:use_case) { described_class.new(follow_repo: follow_repo) }
+  let(:use_case) { described_class.new(follow_repo: follow_repo, block_repo: block_repo) }
   let(:follow_repo) { double(:follow_repo) }
+  let(:block_repo) { double(:block_repo) }
 
   let(:cast_id) { SecureRandom.uuid }
   let(:guest_id) { SecureRandom.uuid }
+
+  before do
+    allow(block_repo).to receive(:blocked?)
+      .with(blocker_id: cast_id, blocked_id: guest_id)
+      .and_return(false)
+  end
 
   describe "#call" do
     context "when cast is public" do
@@ -60,6 +67,23 @@ RSpec.describe Social::UseCases::Follows::FollowCast do
 
         expect(result[:success]).to be true
         expect(result[:status]).to eq("approved")
+      end
+    end
+
+    context "when guest is blocked by cast" do
+      before do
+        allow(block_repo).to receive(:blocked?)
+          .with(blocker_id: cast_id, blocked_id: guest_id)
+          .and_return(true)
+      end
+
+      it "returns error without creating follow" do
+        expect(follow_repo).not_to receive(:follow)
+
+        result = use_case.call(cast_id: cast_id, guest_id: guest_id, visibility: "public")
+
+        expect(result[:success]).to be false
+        expect(result[:error]).to eq(:blocked)
       end
     end
   end

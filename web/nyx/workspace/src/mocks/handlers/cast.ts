@@ -74,33 +74,4 @@ export const handlers = [
       { id: "p2", name: "VIP 90min", duration: 90, price: 25000 },
     ]);
   }),
-
-  // Mock Followers List
-  http.get("/api/cast/followers", () => {
-    return HttpResponse.json({
-      followers: [
-        {
-          id: "f1",
-          guestId: "g1",
-          guestName: "panicboat",
-          guestImageUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop",
-          followedAt: "2026-01-15T10:00:00Z",
-        },
-        {
-          id: "f2",
-          guestId: "g2",
-          guestName: "Guest User",
-          guestImageUrl: "",
-          followedAt: "2026-01-10T14:30:00Z",
-        },
-      ],
-      total: 2,
-      hasMore: false,
-    });
-  }),
-
-  // Mock Delete Follower
-  http.delete("/api/cast/followers/:guestId", () => {
-    return HttpResponse.json({ success: true });
-  }),
 ];

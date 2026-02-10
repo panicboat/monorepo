@@ -1,60 +1,56 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Users, Ban } from "lucide-react";
+import { Loader2, ShieldAlert, UserX } from "lucide-react";
 import useSWR from "swr";
 import { fetcher, getAuthToken } from "@/lib/swr";
 import { useToast } from "@/components/ui/Toast";
 
-interface Follower {
-  guestId: string;
-  guestName: string;
-  guestImageUrl: string;
-  followedAt: string;
+interface BlockedUser {
+  id: string;
+  userType: string;
+  name: string;
+  imageUrl: string;
+  blockedAt: string;
 }
 
-interface FollowersResponse {
-  followers: Follower[];
-  total: number;
+interface BlockedResponse {
+  users: BlockedUser[];
+  nextCursor: string;
   hasMore: boolean;
 }
 
-export default function FollowersPage() {
+export default function BlocksPage() {
   const { toast } = useToast();
   const token = getAuthToken();
-  const [blockingIds, setBlockingIds] = useState<Set<string>>(new Set());
+  const [unblockingIds, setUnblockingIds] = useState<Set<string>>(new Set());
 
   const {
     data,
     error,
     isLoading,
     mutate,
-  } = useSWR<FollowersResponse>(
-    token ? "/api/cast/followers" : null,
+  } = useSWR<BlockedResponse>(
+    token ? "/api/cast/blocks" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
 
-  const handleBlock = async (guestId: string) => {
-    if (blockingIds.has(guestId)) return;
+  const handleUnblock = async (blockedId: string) => {
+    if (unblockingIds.has(blockedId)) return;
 
-    setBlockingIds((prev) => new Set([...prev, guestId]));
+    setUnblockingIds((prev) => new Set([...prev, blockedId]));
 
     try {
-      const res = await fetch("/api/cast/blocks", {
-        method: "POST",
+      const res = await fetch(`/api/cast/blocks?blocked_id=${blockedId}`, {
+        method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          blockedId: guestId,
-          blockedType: "guest",
-        }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to block user");
+        throw new Error("Failed to unblock user");
       }
 
       mutate(
@@ -62,29 +58,28 @@ export default function FollowersPage() {
           if (!current) return current;
           return {
             ...current,
-            followers: current.followers.filter((f) => f.guestId !== guestId),
-            total: current.total - 1,
+            users: current.users.filter((u) => u.id !== blockedId),
           };
         },
         { revalidate: false }
       );
 
       toast({
-        title: "ブロックしました",
-        description: "ユーザーをブロックしました",
+        title: "ブロック解除しました",
+        description: "ユーザーのブロックを解除しました",
         variant: "success",
       });
     } catch (error) {
-      console.error("Failed to block user:", error);
+      console.error("Failed to unblock user:", error);
       toast({
         title: "エラー",
-        description: "ブロックに失敗しました",
+        description: "ブロック解除に失敗しました",
         variant: "destructive",
       });
     } finally {
-      setBlockingIds((prev) => {
+      setUnblockingIds((prev) => {
         const next = new Set(prev);
-        next.delete(guestId);
+        next.delete(blockedId);
         return next;
       });
     }
@@ -106,66 +101,62 @@ export default function FollowersPage() {
     );
   }
 
-  const followers = data?.followers || [];
+  const users = data?.users || [];
 
   return (
     <div className="pb-24 bg-surface-secondary min-h-screen">
       <div className="px-4 py-6 space-y-4">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-1">フォロワー</h1>
+          <h1 className="text-2xl font-bold mb-1">ブロックリスト</h1>
           <p className="text-text-secondary text-sm">
-            {data?.total || 0} 人のフォロワー
+            {users.length} 人をブロック中
           </p>
         </div>
 
-        {followers.length === 0 ? (
+        {users.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Users className="h-12 w-12 text-text-muted mb-4" />
-            <p className="text-text-secondary font-medium">フォロワーはいません</p>
-            <p className="text-sm text-text-muted mt-1">
-              タイムラインを投稿してフォロワーを増やしましょう。
-            </p>
+            <ShieldAlert className="h-12 w-12 text-text-muted mb-4" />
+            <p className="text-text-secondary font-medium">ブロックしているユーザーはいません</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {followers.map((follower) => (
+            {users.map((user) => (
               <div
-                key={follower.guestId}
+                key={user.id}
                 className="flex items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm"
               >
                 <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-secondary">
-                  {follower.guestImageUrl ? (
+                  {user.imageUrl ? (
                     <img
-                      src={follower.guestImageUrl}
-                      alt={follower.guestName}
+                      src={user.imageUrl}
+                      alt={user.name}
                       className="h-full w-full object-cover"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-text-muted">
-                      <Users className="h-6 w-6" />
+                      <UserX className="h-6 w-6" />
                     </div>
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-text-primary truncate">
-                    {follower.guestName || "Guest"}
+                    {user.name || "Unknown"}
                   </p>
                   <p className="text-xs text-text-muted">
-                    {formatDate(follower.followedAt)} からフォロー中
+                    {formatDate(user.blockedAt)} にブロック
                   </p>
                 </div>
 
                 <button
-                  onClick={() => handleBlock(follower.guestId)}
-                  disabled={blockingIds.has(follower.guestId)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface text-text-secondary transition-colors hover:bg-surface-secondary hover:text-error disabled:opacity-50"
-                  title="ブロック"
+                  onClick={() => handleUnblock(user.id)}
+                  disabled={unblockingIds.has(user.id)}
+                  className="px-3 py-2 text-sm font-medium rounded-lg border border-border bg-surface text-text-secondary transition-colors hover:bg-surface-secondary disabled:opacity-50"
                 >
-                  {blockingIds.has(follower.guestId) ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                  {unblockingIds.has(user.id) ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Ban className="h-5 w-5" />
+                    "解除"
                   )}
                 </button>
               </div>
