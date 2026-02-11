@@ -34,9 +34,9 @@ export function TimelineFeed({
   // Fetch posts on mount (only in guest mode without items prop)
   useEffect(() => {
     if (mode === "guest" && !items && isHydrated) {
-      // Default "all" filter uses "following" to include private posts from followed casts
+      // "all" filter: public posts + private posts from followed casts
       if (isAuthenticated()) {
-        fetchPosts(undefined, "following");
+        fetchPosts(undefined, "all");
       } else {
         fetchPosts();
       }
@@ -56,10 +56,9 @@ export function TimelineFeed({
         await fetchPosts(undefined, "favorites");
       } else if (newFilter === "all") {
         setPosts([]);
-        // "all" shows posts from followed casts (including private posts)
-        // Use "following" filter to include private posts from followed casts
+        // "all" filter: public posts + private posts from followed casts
         if (isAuthenticated()) {
-          await fetchPosts(undefined, "following");
+          await fetchPosts(undefined, "all");
         } else {
           await fetchPosts();
         }
@@ -74,9 +73,10 @@ export function TimelineFeed({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          // "all" filter uses "following" to include private posts from followed casts
+          // Determine filter param for loadMore
           const filterParam = filter === "favorites" ? "favorites" :
-            (filter === "following" || (filter === "all" && isAuthenticated())) ? "following" : undefined;
+            filter === "following" ? "following" :
+            (filter === "all" && isAuthenticated()) ? "all" : undefined;
           loadMore(filterParam);
         }
       },

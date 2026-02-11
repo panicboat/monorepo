@@ -34,6 +34,38 @@ module Social
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
+      # List posts for authenticated user's "All" timeline.
+      # Returns: public posts from public casts + all posts from followed casts
+      def list_all_for_authenticated(public_cast_ids:, followed_cast_ids:, limit: 20, cursor: nil, exclude_cast_ids: nil)
+        scope = cast_posts.combine(:cast_post_media, :cast_post_hashtags)
+
+        # Build OR condition: (public cast + public post) OR (followed cast)
+        if followed_cast_ids.empty?
+          # No follows: only show public posts from public casts
+          scope = scope.where(cast_id: public_cast_ids, visibility: "public")
+        elsif public_cast_ids.empty?
+          # No public casts: only show posts from followed casts
+          scope = scope.where(cast_id: followed_cast_ids)
+        else
+          # Combine: (public cast + public post) OR (followed cast)
+          scope = scope.where {
+            ((Sequel.expr(cast_id: public_cast_ids) & Sequel.expr(visibility: "public")) |
+              Sequel.expr(cast_id: followed_cast_ids))
+          }
+        end
+
+        scope = scope.exclude(cast_id: exclude_cast_ids) if exclude_cast_ids && !exclude_cast_ids.empty?
+
+        if cursor
+          scope = scope.where {
+            (created_at < cursor[:created_at]) |
+              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+          }
+        end
+
+        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
+
       # List all posts by cast IDs (no visibility filter).
       # Used for approved followers who can see all posts from followed casts.
       def list_all_by_cast_ids(cast_ids:, limit: 20, cursor: nil, exclude_cast_ids: nil)

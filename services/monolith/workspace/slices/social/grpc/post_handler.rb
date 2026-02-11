@@ -72,6 +72,21 @@ module Social
         # Get blocked cast IDs for filtering
         blocked_cast_ids = get_blocked_cast_ids
 
+        # All filter: public posts from public casts + all posts from followed casts
+        # This is the default for authenticated users on the "All" tab
+        if filter == "all" && current_user_id
+          guest = find_my_guest
+          if guest
+            result = list_all_posts(
+              limit: limit,
+              cursor: cursor,
+              guest_id: guest.id,
+              exclude_cast_ids: blocked_cast_ids
+            )
+            return build_list_response(result)
+          end
+        end
+
         # Following filter: get posts from followed casts (all posts, not just public)
         # Approved followers can see all posts from the casts they follow
         if filter == "following" && current_user_id
@@ -214,6 +229,38 @@ module Social
           cast_ids: cast_ids,
           exclude_cast_ids: exclude_cast_ids
         )
+      end
+
+      # List all posts for authenticated user's "All" tab.
+      # Returns: public posts from public casts + all posts from followed casts
+      def list_all_posts(limit:, cursor:, guest_id:, exclude_cast_ids: nil)
+        decoded_cursor = decode_cursor(cursor)
+
+        # Get public cast IDs and followed cast IDs
+        public_cast_ids = cast_adapter.public_cast_ids
+        followed_cast_ids = follow_repo.following_cast_ids(guest_id: guest_id)
+
+        posts = post_repo.list_all_for_authenticated(
+          public_cast_ids: public_cast_ids,
+          followed_cast_ids: followed_cast_ids,
+          limit: limit,
+          cursor: decoded_cursor,
+          exclude_cast_ids: exclude_cast_ids
+        )
+
+        has_more = posts.length > limit
+        posts = posts.first(limit) if has_more
+
+        next_cursor = if has_more && posts.any?
+          last = posts.last
+          encode_cursor(created_at: last.created_at.iso8601, id: last.id)
+        end
+
+        # Load authors for all posts
+        author_cast_ids = posts.map(&:cast_id).uniq
+        authors = load_authors(author_cast_ids)
+
+        { posts: posts, next_cursor: next_cursor, has_more: has_more, authors: authors }
       end
 
       # List posts from followed casts (all posts, not just public).
