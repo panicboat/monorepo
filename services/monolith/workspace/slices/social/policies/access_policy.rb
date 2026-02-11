@@ -23,26 +23,6 @@ module Social
         approved_follower?(cast_id: cast.id, guest_id: viewer_guest_id)
       end
 
-      # Profile is viewable if not blocked
-      def can_view_profile?(cast:, viewer_guest_id: nil)
-        return true if viewer_guest_id.nil?
-
-        !blocked?(cast_id: cast.id, guest_id: viewer_guest_id)
-      end
-
-      # Profile details (plans, schedules) are hidden for private casts if not approved follower
-      def can_view_profile_details?(cast:, viewer_guest_id: nil)
-        return false if blocked?(cast_id: cast.id, guest_id: viewer_guest_id)
-
-        # Public cast = everyone can view details
-        return true if cast.visibility == "public"
-
-        # Private cast = only approved followers can view details
-        return false if viewer_guest_id.nil?
-
-        approved_follower?(cast_id: cast.id, guest_id: viewer_guest_id)
-      end
-
       # Batch check for multiple posts
       def filter_viewable_posts(posts:, casts_map:, viewer_guest_id: nil)
         return [] if posts.empty?

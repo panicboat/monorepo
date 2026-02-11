@@ -136,27 +136,44 @@ Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visi
 
 ### Location
 
-アクセスポリシーは **Social ドメイン** で管理：
+アクセスポリシーはドメインごとに分離：
 
-```
-slices/social/policies/access_policy.rb
-```
+| Domain | Policy | Purpose |
+|--------|--------|---------|
+| Social | `slices/social/policies/access_policy.rb` | 投稿のアクセス制御 |
+| Portfolio | `slices/portfolio/policies/profile_access_policy.rb` | プロフィールのアクセス制御 |
 
-### Key Methods
+### Social::Policies::AccessPolicy
 
 | Method | Purpose |
 |--------|---------|
 | `can_view_post?` | 投稿の閲覧可否 |
+| `filter_viewable_posts` | バッチ処理用（タイムライン） |
+
+### Portfolio::Policies::ProfileAccessPolicy
+
+| Method | Purpose |
+|--------|---------|
 | `can_view_profile?` | 基本プロフィールの閲覧可否 |
 | `can_view_profile_details?` | 詳細プロフィール（プラン等）の閲覧可否 |
-| `filter_viewable_posts` | バッチ処理用（タイムライン） |
+
+### Cross-Domain Access
+
+Portfolio から Social のデータにアクセスする場合は Adapter を使用：
+
+```
+Portfolio::Adapters::SocialAdapter
+├── blocked?(guest_id:, cast_id:)
+├── approved_follower?(guest_id:, cast_id:)
+└── follow_status(guest_id:, cast_id:)
+```
 
 ### Dependencies
 
-| Repository | Purpose |
-|------------|---------|
-| `follow_repository` | フォロー状態の取得 |
-| `block_repository` | ブロック状態の取得 |
+| Repository | Domain | Purpose |
+|------------|--------|---------|
+| `follow_repository` | Social | フォロー状態の取得 |
+| `block_repository` | Social | ブロック状態の取得 |
 
 ---
 
