@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion } from "motion/react";
 import { Heart, MessageCircle, Trash2, Lock, LockOpen } from "lucide-react";
 import { slideUpFadeVariants, popVariants, popTransition } from "@/lib/motion";
@@ -96,21 +97,45 @@ export function TimelineItem({
       } ${onClick ? "cursor-pointer hover:border-info-light transition-colors" : ""}`}
     >
       <div className="mb-3 flex items-center gap-3">
-        {item.castImage ? (
-          <img
-            src={item.castImage}
-            alt={item.castName}
-            className="h-10 w-10 rounded-full border border-border object-cover"
-          />
+        {mode === "guest" ? (
+          <Link
+            href={`/casts/${item.castId}`}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
+            {item.castImage ? (
+              <img
+                src={item.castImage}
+                alt={item.castName}
+                className="h-10 w-10 rounded-full border border-border object-cover"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-full border border-border bg-border shrink-0" />
+            )}
+            <div>
+              <div className="font-bold text-text-primary">{item.castName}</div>
+              <div className="text-xs text-text-muted">{item.time}</div>
+            </div>
+          </Link>
         ) : (
-          <div className="h-10 w-10 rounded-full border border-border bg-border shrink-0" />
+          <>
+            {item.castImage ? (
+              <img
+                src={item.castImage}
+                alt={item.castName}
+                className="h-10 w-10 rounded-full border border-border object-cover"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-full border border-border bg-border shrink-0" />
+            )}
+            <div className="flex items-center gap-2">
+              <div>
+                <div className="font-bold text-text-primary">{item.castName}</div>
+                <div className="text-xs text-text-muted">{item.time}</div>
+              </div>
+            </div>
+          </>
         )}
-        <div className="flex items-center gap-2">
-          <div>
-            <div className="font-bold text-text-primary">{item.castName}</div>
-            <div className="text-xs text-text-muted">{item.time}</div>
-          </div>
-        </div>
         {mode === "cast" && (
           <div className="absolute top-2 right-2 flex gap-1">
             {onToggleVisibility && (
