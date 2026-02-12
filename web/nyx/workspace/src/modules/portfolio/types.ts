@@ -89,7 +89,6 @@ export interface WeeklySchedule {
   date: string; // "YYYY-MM-DD"
   start: string;
   end: string;
-  planId?: string;
 }
 
 export interface Genre {

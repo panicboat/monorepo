@@ -10,8 +10,7 @@ module Portfolio
           ::Portfolio::V1::CastSchedule.new(
             date: schedule.date.to_s,
             start_time: schedule.start_time,
-            end_time: schedule.end_time,
-            plan_id: schedule.plan_id.to_s
+            end_time: schedule.end_time
           )
         end
 

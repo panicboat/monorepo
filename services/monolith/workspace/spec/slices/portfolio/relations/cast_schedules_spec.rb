@@ -9,7 +9,6 @@ RSpec.describe "Portfolio::Relations::CastSchedules", type: :database do
     expect(relation.schema.primary_key_name).to eq(:id)
     attribute_names = relation.schema.attributes.map(&:name)
     expect(attribute_names).to include(:cast_id)
-    expect(attribute_names).to include(:plan_id)
     expect(attribute_names).to include(:date)
     expect(attribute_names).to include(:start_time)
     expect(attribute_names).to include(:end_time)
@@ -22,6 +21,5 @@ RSpec.describe "Portfolio::Relations::CastSchedules", type: :database do
   it "defines associations" do
     associations = relation.schema.associations.elements
     expect(associations.keys).to include(:cast)
-    expect(associations.keys).to include(:cast_plan)
   end
 end

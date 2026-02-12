@@ -1,6 +1,6 @@
 "use client";
 
-import { User, LayoutList } from "lucide-react";
+import { User, LayoutList, Calendar } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard } from "lucide-react";
 import { BottomNavBar, BottomNavTab } from "../BottomNavBar";
@@ -23,6 +23,12 @@ export const CastBottomNavBar = () => {
       label: "Timeline",
       icon: LayoutList,
       href: "/cast/timeline",
+    },
+    {
+      id: "schedules",
+      label: "Schedules",
+      icon: Calendar,
+      href: "/cast/schedules",
     },
     {
       id: "mypage",

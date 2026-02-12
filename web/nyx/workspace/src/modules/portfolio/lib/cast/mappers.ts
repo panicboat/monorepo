@@ -139,21 +139,16 @@ export function mapApiToSchedules(apiSchedules: any[]): WeeklySchedule[] {
     date: s.date,
     start: s.start || s.startTime,
     end: s.end || s.endTime,
-    planId: s.planId,
   }));
 }
 
 /**
  * Map WeeklySchedule array to API request payload
  */
-export function mapSchedulesToApi(schedules: WeeklySchedule[], validPlanIds?: Set<string>) {
-  return schedules.map((s) => {
-    const planId = validPlanIds && s.planId && validPlanIds.has(s.planId) ? s.planId : s.planId;
-    return {
-      date: s.date,
-      startTime: s.start,
-      endTime: s.end,
-      planId,
-    };
-  });
+export function mapSchedulesToApi(schedules: WeeklySchedule[]) {
+  return schedules.map((s) => ({
+    date: s.date,
+    startTime: s.start,
+    endTime: s.end,
+  }));
 }

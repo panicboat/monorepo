@@ -63,7 +63,6 @@ export async function GET(
           date: s.date,
           start: s.startTime,
           end: s.endTime,
-          planId: s.planId,
         }))
       : [];
 

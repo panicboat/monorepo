@@ -147,7 +147,6 @@ CREATE TABLE portfolio.cast_schedules (
     date date NOT NULL,
     start_time text NOT NULL,
     end_time text NOT NULL,
-    plan_id uuid,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -850,14 +849,6 @@ ALTER TABLE ONLY portfolio.cast_schedules
 
 
 --
--- Name: cast_schedules cast_schedules_plan_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_schedules
-    ADD CONSTRAINT cast_schedules_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES portfolio.cast_plans(id) ON DELETE SET NULL;
-
-
---
 -- Name: cast_post_hashtags cast_post_hashtags_post_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
 --
 
@@ -953,4 +944,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260209000002_add_status_to_cast_follows.rb'),
 ('20260210000000_add_is_recommended_to_cast_plans.rb'),
 ('20260210100000_rename_visible_to_visibility_in_cast_posts.rb'),
-('20260211000000_rename_handle_to_slug_in_casts.rb');
+('20260211000000_rename_handle_to_slug_in_casts.rb'),
+('20260213014603_remove_plan_id_from_cast_schedules.rb');

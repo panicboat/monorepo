@@ -14,7 +14,6 @@ module Portfolio
             required(:date).filled(:date)
             required(:start_time).filled(:string)
             required(:end_time).filled(:string)
-            optional(:plan_id).maybe(:string)
           end
         end
 

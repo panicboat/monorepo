@@ -290,8 +290,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
       if (!currentToken) throw new Error("No token");
 
       const schedulesToSave = overrideSchedules || schedules;
-      const validPlanIds = new Set(plans.map((p) => p.id).filter(Boolean));
-      const payload = { schedules: mapSchedulesToApi(schedulesToSave, validPlanIds) };
+      const payload = { schedules: mapSchedulesToApi(schedulesToSave) };
 
       const res = await fetch("/api/cast/onboarding/schedules", {
         method: "PUT",

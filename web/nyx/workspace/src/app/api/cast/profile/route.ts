@@ -30,7 +30,6 @@ export async function GET(req: NextRequest) {
       date: s.date,
       start: s.startTime,
       end: s.endTime,
-      planId: s.planId,
     }));
 
     return NextResponse.json({ profile, plans, schedules });

@@ -48,7 +48,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
     end
 
     it "replaces future schedules" do
-      schedules_data = [{ date: Date.today, start_time: "10:00", end_time: "11:00", plan_id: nil }]
+      schedules_data = [{ date: Date.today, start_time: "10:00", end_time: "11:00" }]
       updated = repo.save_schedules(id: existing_cast.id, schedules: schedules_data)
 
       expect(updated.cast_schedules.size).to eq(1)
@@ -63,12 +63,11 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
         cast_id: existing_cast.id,
         date: past_date,
         start_time: "09:00",
-        end_time: "10:00",
-        plan_id: nil
+        end_time: "10:00"
       }).commit
 
       # Save new future schedules
-      future_schedules = [{ date: Date.today + 1, start_time: "14:00", end_time: "15:00", plan_id: nil }]
+      future_schedules = [{ date: Date.today + 1, start_time: "14:00", end_time: "15:00" }]
       updated = repo.save_schedules(id: existing_cast.id, schedules: future_schedules)
 
       # Should have both past and future schedules
@@ -95,8 +94,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
         cast_id: cast_with_schedule.id,
         date: Date.today,
         start_time: "00:00",
-        end_time: "23:59",
-        plan_id: nil
+        end_time: "23:59"
       }).commit
     end
 
@@ -125,8 +123,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
         cast_id: online_cast.id,
         date: Date.today,
         start_time: "00:00",
-        end_time: "23:59",
-        plan_id: nil
+        end_time: "23:59"
       }).commit
     end
 
@@ -190,8 +187,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
           cast_id: online_cast.id,
           date: Date.today,
           start_time: "00:00",
-          end_time: "23:59",
-          plan_id: nil
+          end_time: "23:59"
         }).commit
       end
 

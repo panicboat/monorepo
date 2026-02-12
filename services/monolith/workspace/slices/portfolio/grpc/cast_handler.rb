@@ -252,8 +252,7 @@ module Portfolio
         cast = find_my_cast!
 
         schedules_data = request.message.schedules.map do |s|
-          plan_id = s.plan_id.to_s.empty? ? nil : s.plan_id
-          { date: s.date, start_time: s.start_time, end_time: s.end_time, plan_id: plan_id }
+          { date: s.date, start_time: s.start_time, end_time: s.end_time }
         end
 
         result = save_schedules_uc.call(cast_id: cast.id, schedules: schedules_data)

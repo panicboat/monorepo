@@ -59,12 +59,12 @@ export function useCastSchedules(options: UseCastSchedulesOptions = {}) {
   }, []);
 
   const saveSchedules = useCallback(
-    async (overrideSchedules?: WeeklySchedule[], validPlanIds?: Set<string>) => {
+    async (overrideSchedules?: WeeklySchedule[]) => {
       const token = getAuthToken();
       if (!token) throw new Error("No token");
 
       const schedulesToSave = overrideSchedules || schedules;
-      const payload = { schedules: mapSchedulesToApi(schedulesToSave, validPlanIds) };
+      const payload = { schedules: mapSchedulesToApi(schedulesToSave) };
 
       const res = await fetch(apiPath, {
         method: "PUT",

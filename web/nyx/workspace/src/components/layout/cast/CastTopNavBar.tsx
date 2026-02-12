@@ -14,6 +14,7 @@ export const CastTopNavBar = () => {
     if (pathname.includes("/cast/onboarding")) return "Cast Onboarding";
     if (pathname.includes("/cast/profile")) return "Edit Profile";
     if (pathname.includes("/cast/plans")) return "Plan Settings";
+    if (pathname.includes("/cast/schedules")) return "Schedules";
     if (pathname.includes("/cast/timeline")) return "Timeline";
     if (pathname.includes("/cast/followers")) return "Followers";
     if (pathname.includes("/cast/mypage")) return "Backstage";
@@ -48,6 +49,9 @@ export const CastTopNavBar = () => {
         </Link>
         <Link href="/cast/timeline" aria-current={isActive("/cast/timeline") ? "page" : undefined} className={linkClass("/cast/timeline")}>
           Timeline
+        </Link>
+        <Link href="/cast/schedules" aria-current={isActive("/cast/schedules") ? "page" : undefined} className={linkClass("/cast/schedules")}>
+          Schedules
         </Link>
       </nav>
 

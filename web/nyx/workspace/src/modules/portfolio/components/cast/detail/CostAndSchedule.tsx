@@ -39,27 +39,18 @@ export const PriceSystem = ({
     return b.price - a.price;
   });
 
-  // Check if schedule has no planId (All Plan) or matches specific planId
-  const hasAllPlanSchedule = selectedSchedules.some((s) => !s.planId);
-  const specificPlanIds = selectedSchedules.filter((s) => s.planId).map((s) => s.planId);
-
-  // Get time ranges for each plan from selected schedules
-  // Include schedules with no planId (All Plan) for every plan
-  const getTimeRangesForPlan = (planId: string): string[] => {
-    return selectedSchedules
-      .filter((s) => !s.planId || s.planId === planId)
-      .map((s) => `${s.start} - ${s.end}`);
+  // Get time ranges from selected schedules (all schedules apply to all plans)
+  const getTimeRanges = (): string[] => {
+    return selectedSchedules.map((s) => `${s.start} - ${s.end}`);
   };
 
   // Plan is active if:
   // - No date selected: all plans active
-  // - Date selected with no schedules: all plans inactive
-  // - Date selected with schedules: active if has All Plan schedule or matches specific planId
-  const isPlanActive = (planId?: string): boolean => {
+  // - Date selected with schedules: all plans active
+  // - Date selected without schedules: all plans inactive
+  const isPlanActive = (): boolean => {
     if (!hasDateSelected) return true;
-    if (!hasSchedules) return false;
-    if (hasAllPlanSchedule) return true;
-    return planId ? specificPlanIds.includes(planId) : false;
+    return hasSchedules;
   };
 
   return (
@@ -69,8 +60,8 @@ export const PriceSystem = ({
       </h3>
 
       {sortedPlans.map((plan, idx) => {
-        const isActive = isPlanActive(plan.id);
-        const timeRanges = plan.id ? getTimeRangesForPlan(plan.id) : [];
+        const isActive = isPlanActive();
+        const timeRanges = hasDateSelected ? getTimeRanges() : [];
 
         return (
           <div

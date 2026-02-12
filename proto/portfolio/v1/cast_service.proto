@@ -186,7 +186,6 @@ message CastSchedule {
   string date = 1; // YYYY-MM-DD
   string start_time = 2; // HH:mm
   string end_time = 3; // HH:mm
-  string plan_id = 4; // Optional
 }
 
 enum CastStatusFilter {

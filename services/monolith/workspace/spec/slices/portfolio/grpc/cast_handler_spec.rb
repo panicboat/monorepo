@@ -168,7 +168,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
   describe "#save_cast_schedules" do
     let(:message) do
       ::Portfolio::V1::SaveCastSchedulesRequest.new(
-        schedules: [::Portfolio::V1::CastSchedule.new(date: "2023-01-01", start_time: "10:00", end_time: "12:00", plan_id: "p1")]
+        schedules: [::Portfolio::V1::CastSchedule.new(date: "2023-01-01", start_time: "10:00", end_time: "12:00")]
       )
     end
 
@@ -176,7 +176,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
       allow(get_profile_uc).to receive(:call).with(user_id: 1).and_return(mock_cast_entity)
       expect(save_schedules_uc).to receive(:call).with(
         cast_id: 123,
-        schedules: [{ date: "2023-01-01", start_time: "10:00", end_time: "12:00", plan_id: "p1" }]
+        schedules: [{ date: "2023-01-01", start_time: "10:00", end_time: "12:00" }]
       ).and_return(mock_cast_entity)
 
       response = handler.save_cast_schedules

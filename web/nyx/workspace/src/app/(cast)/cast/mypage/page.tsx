@@ -5,6 +5,7 @@ import {
   ImagePlus,
   Users,
   Ticket,
+  Calendar,
   ShieldAlert,
   LogOut,
   ChevronRight,
@@ -52,6 +53,24 @@ export default function CastMyPage() {
                 プラン設定
               </p>
               <p className="text-xs text-text-secondary">コース内容・料金の編集</p>
+            </div>
+          </div>
+          <ChevronRight className="text-text-muted group-hover:text-text-secondary transition" />
+        </Link>
+
+        <Link
+          href="/cast/schedules"
+          className="w-full bg-surface hover:bg-surface-secondary border border-border rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-success-light flex items-center justify-center text-success">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-text-primary">
+                スケジュール管理
+              </p>
+              <p className="text-xs text-text-secondary">出勤可能日の設定</p>
             </div>
           </div>
           <ChevronRight className="text-text-muted group-hover:text-text-secondary transition" />
