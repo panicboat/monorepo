@@ -4,7 +4,7 @@ export interface ServicePlan {
   id: string;
   name: string;
   duration: number; // minutes
-  price: number;
+  price: number; // 0 = Ask
   isRecommended?: boolean;
 }
 

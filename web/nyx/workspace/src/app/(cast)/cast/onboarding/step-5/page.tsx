@@ -186,7 +186,7 @@ export default function OnboardingStep5() {
                       </div>
                     </div>
                     <div className="font-mono font-bold text-text-primary">
-                      ¥{plan.price.toLocaleString()}
+                      {plan.price > 0 ? `¥${plan.price.toLocaleString()}` : "Ask"}
                     </div>
                   </div>
                 ))}

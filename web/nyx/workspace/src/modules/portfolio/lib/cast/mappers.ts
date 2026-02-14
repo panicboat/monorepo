@@ -112,7 +112,7 @@ export function mapApiToPlans(apiPlans: any[]): ServicePlan[] {
   return (apiPlans || []).map((p) => ({
     id: p.id,
     name: p.name,
-    price: p.price,
+    price: p.price ?? 0,
     duration: p.duration || p.durationMinutes,
     isRecommended: p.isRecommended || false,
   }));
@@ -125,7 +125,7 @@ export function mapPlansToApi(plans: ServicePlan[]) {
   return plans.map((p) => ({
     id: p.id,
     name: p.name,
-    price: p.price,
+    price: p.price ?? 0,
     durationMinutes: p.duration,
     isRecommended: p.isRecommended || false,
   }));

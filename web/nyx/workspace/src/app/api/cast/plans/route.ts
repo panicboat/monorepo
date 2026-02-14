@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const plans = (response.plans || []).map((p) => ({
       id: p.id,
       name: p.name,
-      price: p.price,
+      price: p.price ?? 0,
       duration: p.durationMinutes,
       isRecommended: p.isRecommended || false,
     }));
@@ -44,7 +44,7 @@ export async function PUT(req: NextRequest) {
     const plans = (response.plans || []).map((p) => ({
       id: p.id,
       name: p.name,
-      price: p.price,
+      price: p.price ?? 0,
       duration: p.durationMinutes,
       isRecommended: p.isRecommended || false,
     }));

@@ -945,4 +945,6 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260210000000_add_is_recommended_to_cast_plans.rb'),
 ('20260210100000_rename_visible_to_visibility_in_cast_posts.rb'),
 ('20260211000000_rename_handle_to_slug_in_casts.rb'),
-('20260213014603_remove_plan_id_from_cast_schedules.rb');
+('20260213014603_remove_plan_id_from_cast_schedules.rb'),
+('20260213020000_allow_null_price_on_cast_plans.rb'),
+('20260213030000_revert_null_price_on_cast_plans.rb');

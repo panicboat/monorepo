@@ -76,7 +76,8 @@ export function useCastPlans(options: UseCastPlansOptions = {}) {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to save plans");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to save plans");
       }
 
       const responseData = await res.json();

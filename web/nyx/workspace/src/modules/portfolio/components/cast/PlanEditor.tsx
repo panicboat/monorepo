@@ -9,7 +9,7 @@ export type ServicePlan = {
   id: string; // Temporary ID for list management
   name: string;
   duration: number; // minutes
-  price: number; // yen
+  price: number; // yen (0 = Ask)
   isRecommended?: boolean;
 };
 
@@ -23,8 +23,8 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
     const newPlan: ServicePlan = {
       id: crypto.randomUUID(),
       name: "",
-      duration: 0,
-      price: 0,
+      duration: 60, // Default to 60 minutes (minimum is 15)
+      price: 0, // 0 = Ask
       isRecommended: false,
     };
     onChange([...plans, newPlan]);
@@ -47,10 +47,13 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
     );
   };
 
-  // Sort plans: recommended first, then by price descending
+  // Sort plans: recommended first, then by price descending (0=Ask plans last)
   const sortedPlans = [...plans].sort((a, b) => {
     if (a.isRecommended && !b.isRecommended) return -1;
     if (!a.isRecommended && b.isRecommended) return 1;
+    // 0 (Ask) should be sorted last
+    if (a.price === 0 && b.price !== 0) return 1;
+    if (a.price !== 0 && b.price === 0) return -1;
     return b.price - a.price;
   });
 
@@ -116,8 +119,8 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
                   onChange={(e) =>
                     updatePlan(plan.id, "duration", Number(e.target.value))
                   }
-                  min={10}
-                  step={10}
+                  min={15}
+                  step={15}
                   className="focus-visible:ring-role-cast"
                 />
                 <span className="absolute right-3 top-2.5 text-xs text-text-muted font-bold pointer-events-none">
@@ -131,17 +134,17 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
                 <Banknote size={12} />
                 Price (JPY)
                 <span className="ml-2 text-xs font-normal text-text-muted">
-                  基本料金
+                  基本料金（0で Ask）
                 </span>
               </Label>
               <div className="relative">
                 <Input
                   type="number"
-                  value={plan.price || ""}
+                  value={plan.price}
                   onChange={(e) =>
-                    updatePlan(plan.id, "price", Number(e.target.value))
+                    updatePlan(plan.id, "price", Number(e.target.value) || 0)
                   }
-                  min={1000}
+                  min={0}
                   step={1000}
                   className="focus-visible:ring-role-cast"
                 />

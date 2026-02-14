@@ -10,7 +10,7 @@ module Portfolio
           ::Portfolio::V1::CastPlan.new(
             id: plan.id.to_s,
             name: plan.name,
-            price: plan.price,
+            price: plan.price || 0,
             duration_minutes: plan.duration_minutes,
             is_recommended: plan.is_recommended || false
           )

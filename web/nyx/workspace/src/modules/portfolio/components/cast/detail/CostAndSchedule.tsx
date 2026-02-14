@@ -32,10 +32,13 @@ export const PriceSystem = ({
 
   const hasSchedules = selectedSchedules.length > 0;
 
-  // Sort plans: recommended first, then by price descending
+  // Sort plans: recommended first, then by price descending (0=Ask plans last)
   const sortedPlans = [...plans].sort((a, b) => {
     if (a.isRecommended && !b.isRecommended) return -1;
     if (!a.isRecommended && b.isRecommended) return 1;
+    // 0 (Ask) should be sorted last
+    if (a.price === 0 && b.price !== 0) return 1;
+    if (a.price !== 0 && b.price === 0) return -1;
     return b.price - a.price;
   });
 
@@ -100,7 +103,7 @@ export const PriceSystem = ({
             )}
             <div className="flex items-baseline gap-1">
               <span className="text-2xl font-bold text-text-primary">
-                ¥{plan.price.toLocaleString()}
+                {plan.price > 0 ? `¥${plan.price.toLocaleString()}` : "Ask"}
               </span>
               <span className="text-sm text-text-muted">/ {plan.duration}min</span>
             </div>

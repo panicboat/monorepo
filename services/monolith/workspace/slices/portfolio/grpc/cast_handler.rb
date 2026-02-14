@@ -232,7 +232,7 @@ module Portfolio
         plans_data = request.message.plans.map do |p|
           {
             name: p.name,
-            price: p.price,
+            price: p.price || 0, # 0 = Ask
             duration_minutes: p.duration_minutes,
             is_recommended: p.is_recommended
           }

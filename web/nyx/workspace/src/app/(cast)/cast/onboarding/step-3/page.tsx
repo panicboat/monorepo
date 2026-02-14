@@ -39,7 +39,7 @@ export default function OnboardingStep3() {
   };
 
   const isNextEnabled = plans.every(
-    (p) => p.name.trim() !== "" && p.price > 0 && p.duration > 0
+    (p) => p.name.trim() !== "" && p.price >= 0 && p.duration > 0
   );
 
   if (loading) {

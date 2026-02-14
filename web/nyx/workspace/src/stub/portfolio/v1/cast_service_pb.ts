@@ -271,7 +271,7 @@ export type CastPlan = Message<"portfolio.v1.CastPlan"> & {
   name: string;
 
   /**
-   * JPY
+   * JPY (0 = Ask)
    *
    * @generated from field: int32 price = 3;
    */
