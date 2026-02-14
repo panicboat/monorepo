@@ -42,11 +42,6 @@ export const PriceSystem = ({
     return b.price - a.price;
   });
 
-  // Get time ranges from selected schedules (all schedules apply to all plans)
-  const getTimeRanges = (): string[] => {
-    return selectedSchedules.map((s) => `${s.start} - ${s.end}`);
-  };
-
   // Plan is active if:
   // - No date selected: all plans active
   // - Date selected with schedules: all plans active
@@ -64,7 +59,6 @@ export const PriceSystem = ({
 
       {sortedPlans.map((plan, idx) => {
         const isActive = isPlanActive();
-        const timeRanges = hasDateSelected ? getTimeRanges() : [];
 
         return (
           <div
@@ -75,7 +69,6 @@ export const PriceSystem = ({
                 ? "border-border opacity-100"
                 : "border-border/50 opacity-40"
               }
-              ${timeRanges.length > 0 ? "border-success" : ""}
             `}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -89,18 +82,6 @@ export const PriceSystem = ({
                 </span>
               )}
             </div>
-            {timeRanges.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-2">
-                {timeRanges.map((time, i) => (
-                  <span
-                    key={i}
-                    className="text-xs font-medium text-success bg-success-light/30 px-2 py-1 rounded"
-                  >
-                    {time}
-                  </span>
-                ))}
-              </div>
-            )}
             <div className="flex items-baseline gap-1">
               <span className="text-2xl font-bold text-text-primary">
                 {plan.price > 0 ? `¥${plan.price.toLocaleString()}` : "Ask"}
@@ -126,7 +107,6 @@ interface DayData {
   fullDate: string;
   schedules: WeeklySchedule[];
   isWeekend: boolean;
-  isToday: boolean;
   timeRange: string | null;
 }
 
@@ -165,7 +145,6 @@ export const ScheduleCalendar = ({
       fullDate: dateStr,
       schedules: daySchedules,
       isWeekend,
-      isToday: i === 0,
       timeRange,
     };
   });
@@ -192,9 +171,7 @@ export const ScheduleCalendar = ({
                 onClick={() => handleDateClick(item)}
                 className={`
                   flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-xl transition-colors cursor-pointer
-                  ${item.isToday && !isSelected ? "bg-role-cast-light/30 border border-role-cast-light" : ""}
-                  ${isSelected ? "bg-success-light/30 border border-success" : ""}
-                  ${!isSelected && !item.isToday ? "hover:bg-surface-secondary" : ""}
+                  ${isSelected ? "bg-success-light/30 border border-success" : "hover:bg-surface-secondary"}
                 `}
               >
                 <div
