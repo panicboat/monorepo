@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronUp, Trash2, MessageCircle, Loader2 } from "lucide-react";
 import { Comment } from "@/modules/social/types";
@@ -39,9 +41,13 @@ export function CommentItem({
 }: CommentItemProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalIndex, setModalIndex] = useState(0);
+  const pathname = usePathname();
 
   const canDelete = currentUserId && comment.userId === currentUserId;
   const isCast = comment.author?.userType === "cast";
+  const isGuest = comment.author?.userType === "guest";
+  const isCastPage = pathname?.startsWith("/cast/");
+  const showGuestLink = isCastPage && isGuest && comment.author?.id;
 
   const handleMediaClick = (index: number) => {
     setModalIndex(index);
@@ -54,24 +60,52 @@ export function CommentItem({
       <div className="py-3">
         {/* Author Info */}
         <div className="flex items-start gap-3">
-          {comment.author?.imageUrl && comment.author.imageUrl.trim() !== "" ? (
-            <img
-              src={comment.author.imageUrl}
-              alt={comment.author.name || ""}
-              className="h-8 w-8 rounded-full border border-border object-cover flex-shrink-0"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-                e.currentTarget.nextElementSibling?.classList.remove("hidden");
-              }}
-            />
-          ) : null}
-          <div className={`h-8 w-8 rounded-full bg-border border border-border flex-shrink-0 ${comment.author?.imageUrl && comment.author.imageUrl.trim() !== "" ? "hidden" : ""}`} />
+          {showGuestLink ? (
+            <Link
+              href={`/cast/guests/${comment.author?.id}`}
+              className="flex-shrink-0 hover:ring-2 hover:ring-role-cast/30 rounded-full transition-all"
+            >
+              {comment.author?.imageUrl && comment.author.imageUrl.trim() !== "" ? (
+                <img
+                  src={comment.author.imageUrl}
+                  alt={comment.author.name || ""}
+                  className="h-8 w-8 rounded-full border border-border object-cover"
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-border border border-border" />
+              )}
+            </Link>
+          ) : (
+            <>
+              {comment.author?.imageUrl && comment.author.imageUrl.trim() !== "" ? (
+                <img
+                  src={comment.author.imageUrl}
+                  alt={comment.author.name || ""}
+                  className="h-8 w-8 rounded-full border border-border object-cover flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                  }}
+                />
+              ) : null}
+              <div className={`h-8 w-8 rounded-full bg-border border border-border flex-shrink-0 ${comment.author?.imageUrl && comment.author.imageUrl.trim() !== "" ? "hidden" : ""}`} />
+            </>
+          )}
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-medium text-sm text-text-primary">
-                {comment.author?.name || "Unknown"}
-              </span>
+              {showGuestLink ? (
+                <Link
+                  href={`/cast/guests/${comment.author?.id}`}
+                  className="font-medium text-sm text-text-primary hover:opacity-80 transition-opacity"
+                >
+                  {comment.author?.name || "Unknown"}
+                </Link>
+              ) : (
+                <span className="font-medium text-sm text-text-primary">
+                  {comment.author?.name || "Unknown"}
+                </span>
+              )}
               {isCast && (
                 <Badge variant="secondary" className="text-xs bg-neutral-800 text-white">
                   Cast

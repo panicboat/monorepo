@@ -46,6 +46,28 @@ module Portfolio
         follow_repo.follow_status(cast_id: cast_id, guest_id: guest_id)
       end
 
+      # Get follow detail for a guest and cast.
+      #
+      # @param guest_id [String] the guest ID
+      # @param cast_id [String] the cast ID
+      # @return [Hash] { is_following: Boolean, followed_at: Time|nil }
+      def get_follow_detail(guest_id:, cast_id:)
+        return { is_following: false, followed_at: nil } if guest_id.nil?
+
+        follow_repo.get_follow_detail(cast_id: cast_id, guest_id: guest_id)
+      end
+
+      # Check if cast has blocked the guest.
+      #
+      # @param cast_id [String] the cast ID
+      # @param guest_id [String] the guest ID
+      # @return [Boolean] true if blocked
+      def cast_blocked_guest?(cast_id:, guest_id:)
+        return false if guest_id.nil? || cast_id.nil?
+
+        block_repo.blocked?(blocker_id: cast_id, blocked_id: guest_id)
+      end
+
       private
 
       def block_repo

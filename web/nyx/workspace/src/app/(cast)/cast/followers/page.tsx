@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Loader2, Users, Ban } from "lucide-react";
 import useSWR from "swr";
 import { fetcher, getAuthToken } from "@/lib/swr";
@@ -133,7 +134,10 @@ export default function FollowersPage() {
                 key={follower.guestId}
                 className="flex items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm"
               >
-                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-secondary">
+                <Link
+                  href={`/cast/guests/${follower.guestId}`}
+                  className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-secondary hover:ring-2 hover:ring-role-cast/30 transition-all"
+                >
                   {follower.guestImageUrl ? (
                     <img
                       src={follower.guestImageUrl}
@@ -145,16 +149,19 @@ export default function FollowersPage() {
                       <Users className="h-6 w-6" />
                     </div>
                   )}
-                </div>
+                </Link>
 
-                <div className="flex-1 min-w-0">
+                <Link
+                  href={`/cast/guests/${follower.guestId}`}
+                  className="flex-1 min-w-0 hover:opacity-80 transition-opacity"
+                >
                   <p className="font-medium text-text-primary truncate">
                     {follower.guestName || "Guest"}
                   </p>
                   <p className="text-xs text-text-muted">
                     {formatDate(follower.followedAt)} からフォロー中
                   </p>
-                </div>
+                </Link>
 
                 <button
                   onClick={() => handleBlock(follower.guestId)}

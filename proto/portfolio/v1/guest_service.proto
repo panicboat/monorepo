@@ -6,6 +6,7 @@ import "portfolio/v1/cast_service.proto";
 
 service GuestService {
   rpc GetGuestProfile(GetGuestProfileRequest) returns (GetGuestProfileResponse);
+  rpc GetGuestProfileById(GetGuestProfileByIdRequest) returns (GetGuestProfileByIdResponse);
   rpc SaveGuestProfile(SaveGuestProfileRequest) returns (SaveGuestProfileResponse);
   rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
 }
@@ -34,4 +35,25 @@ message SaveGuestProfileRequest {
 
 message SaveGuestProfileResponse {
   GuestProfile profile = 1;
+}
+
+message GetGuestProfileByIdRequest {
+  string guest_id = 1;  // Guest ID (UUID)
+}
+
+message GuestDetailProfile {
+  string id = 1;
+  string user_id = 2;
+  string name = 3;
+  string avatar_path = 4;
+  string avatar_url = 5;        // Read-only, download URL
+  string tagline = 6;           // Short introduction (max 100 chars)
+  string bio = 7;               // Self introduction (max 1000 chars)
+  bool is_following = 8;        // Whether the guest is following the cast
+  string followed_at = 9;       // ISO8601 timestamp when the guest followed
+  bool is_blocked = 10;         // Whether the cast has blocked this guest
+}
+
+message GetGuestProfileByIdResponse {
+  GuestDetailProfile profile = 1;
 }

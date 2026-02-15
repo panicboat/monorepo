@@ -114,7 +114,14 @@ module Social
         end
       end
 
-      def list_followers(cast_id:, blocked_guest_ids: [], limit: 20, cursor: nil)
+      def get_follow_detail(cast_id:, guest_id:)
+      record = cast_follows.where(cast_id: cast_id, guest_id: guest_id, status: "approved").one
+      return { is_following: false, followed_at: nil } unless record
+
+      { is_following: true, followed_at: record.created_at }
+    end
+
+    def list_followers(cast_id:, blocked_guest_ids: [], limit: 20, cursor: nil)
         scope = cast_follows.where(cast_id: cast_id, status: "approved")
 
         scope = scope.where { Sequel.~(guest_id: blocked_guest_ids) } if blocked_guest_ids.any?

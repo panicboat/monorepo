@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file portfolio/v1/guest_service.proto.
  */
 export const file_portfolio_v1_guest_service: GenFile = /*@__PURE__*/
-  fileDesc("CiBwb3J0Zm9saW8vdjEvZ3Vlc3Rfc2VydmljZS5wcm90bxIMcG9ydGZvbGlvLnYxInQKDEd1ZXN0UHJvZmlsZRIPCgd1c2VyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEwoLYXZhdGFyX3BhdGgYAyABKAkSEgoKYXZhdGFyX3VybBgEIAEoCRIPCgd0YWdsaW5lGAUgASgJEgsKA2JpbxgGIAEoCSIYChZHZXRHdWVzdFByb2ZpbGVSZXF1ZXN0IkYKF0dldEd1ZXN0UHJvZmlsZVJlc3BvbnNlEisKB3Byb2ZpbGUYASABKAsyGi5wb3J0Zm9saW8udjEuR3Vlc3RQcm9maWxlIloKF1NhdmVHdWVzdFByb2ZpbGVSZXF1ZXN0EgwKBG5hbWUYASABKAkSEwoLYXZhdGFyX3BhdGgYAiABKAkSDwoHdGFnbGluZRgDIAEoCRILCgNiaW8YBCABKAkiRwoYU2F2ZUd1ZXN0UHJvZmlsZVJlc3BvbnNlEisKB3Byb2ZpbGUYASABKAsyGi5wb3J0Zm9saW8udjEuR3Vlc3RQcm9maWxlMqgCCgxHdWVzdFNlcnZpY2USXgoPR2V0R3Vlc3RQcm9maWxlEiQucG9ydGZvbGlvLnYxLkdldEd1ZXN0UHJvZmlsZVJlcXVlc3QaJS5wb3J0Zm9saW8udjEuR2V0R3Vlc3RQcm9maWxlUmVzcG9uc2USYQoQU2F2ZUd1ZXN0UHJvZmlsZRIlLnBvcnRmb2xpby52MS5TYXZlR3Vlc3RQcm9maWxlUmVxdWVzdBomLnBvcnRmb2xpby52MS5TYXZlR3Vlc3RQcm9maWxlUmVzcG9uc2USVQoMR2V0VXBsb2FkVXJsEiEucG9ydGZvbGlvLnYxLkdldFVwbG9hZFVybFJlcXVlc3QaIi5wb3J0Zm9saW8udjEuR2V0VXBsb2FkVXJsUmVzcG9uc2ViBnByb3RvMw", [file_portfolio_v1_cast_service]);
+  fileDesc("CiBwb3J0Zm9saW8vdjEvZ3Vlc3Rfc2VydmljZS5wcm90bxIMcG9ydGZvbGlvLnYxInQKDEd1ZXN0UHJvZmlsZRIPCgd1c2VyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEwoLYXZhdGFyX3BhdGgYAyABKAkSEgoKYXZhdGFyX3VybBgEIAEoCRIPCgd0YWdsaW5lGAUgASgJEgsKA2JpbxgGIAEoCSIYChZHZXRHdWVzdFByb2ZpbGVSZXF1ZXN0IkYKF0dldEd1ZXN0UHJvZmlsZVJlc3BvbnNlEisKB3Byb2ZpbGUYASABKAsyGi5wb3J0Zm9saW8udjEuR3Vlc3RQcm9maWxlIloKF1NhdmVHdWVzdFByb2ZpbGVSZXF1ZXN0EgwKBG5hbWUYASABKAkSEwoLYXZhdGFyX3BhdGgYAiABKAkSDwoHdGFnbGluZRgDIAEoCRILCgNiaW8YBCABKAkiRwoYU2F2ZUd1ZXN0UHJvZmlsZVJlc3BvbnNlEisKB3Byb2ZpbGUYASABKAsyGi5wb3J0Zm9saW8udjEuR3Vlc3RQcm9maWxlIi4KGkdldEd1ZXN0UHJvZmlsZUJ5SWRSZXF1ZXN0EhAKCGd1ZXN0X2lkGAEgASgJIsUBChJHdWVzdERldGFpbFByb2ZpbGUSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhMKC2F2YXRhcl9wYXRoGAQgASgJEhIKCmF2YXRhcl91cmwYBSABKAkSDwoHdGFnbGluZRgGIAEoCRILCgNiaW8YByABKAkSFAoMaXNfZm9sbG93aW5nGAggASgIEhMKC2ZvbGxvd2VkX2F0GAkgASgJEhIKCmlzX2Jsb2NrZWQYCiABKAgiUAobR2V0R3Vlc3RQcm9maWxlQnlJZFJlc3BvbnNlEjEKB3Byb2ZpbGUYASABKAsyIC5wb3J0Zm9saW8udjEuR3Vlc3REZXRhaWxQcm9maWxlMpQDCgxHdWVzdFNlcnZpY2USXgoPR2V0R3Vlc3RQcm9maWxlEiQucG9ydGZvbGlvLnYxLkdldEd1ZXN0UHJvZmlsZVJlcXVlc3QaJS5wb3J0Zm9saW8udjEuR2V0R3Vlc3RQcm9maWxlUmVzcG9uc2USagoTR2V0R3Vlc3RQcm9maWxlQnlJZBIoLnBvcnRmb2xpby52MS5HZXRHdWVzdFByb2ZpbGVCeUlkUmVxdWVzdBopLnBvcnRmb2xpby52MS5HZXRHdWVzdFByb2ZpbGVCeUlkUmVzcG9uc2USYQoQU2F2ZUd1ZXN0UHJvZmlsZRIlLnBvcnRmb2xpby52MS5TYXZlR3Vlc3RQcm9maWxlUmVxdWVzdBomLnBvcnRmb2xpby52MS5TYXZlR3Vlc3RQcm9maWxlUmVzcG9uc2USVQoMR2V0VXBsb2FkVXJsEiEucG9ydGZvbGlvLnYxLkdldFVwbG9hZFVybFJlcXVlc3QaIi5wb3J0Zm9saW8udjEuR2V0VXBsb2FkVXJsUmVzcG9uc2ViBnByb3RvMw", [file_portfolio_v1_cast_service]);
 
 /**
  * @generated from message portfolio.v1.GuestProfile
@@ -146,6 +146,116 @@ export const SaveGuestProfileResponseSchema: GenMessage<SaveGuestProfileResponse
   messageDesc(file_portfolio_v1_guest_service, 4);
 
 /**
+ * @generated from message portfolio.v1.GetGuestProfileByIdRequest
+ */
+export type GetGuestProfileByIdRequest = Message<"portfolio.v1.GetGuestProfileByIdRequest"> & {
+  /**
+   * Guest ID (UUID)
+   *
+   * @generated from field: string guest_id = 1;
+   */
+  guestId: string;
+};
+
+/**
+ * Describes the message portfolio.v1.GetGuestProfileByIdRequest.
+ * Use `create(GetGuestProfileByIdRequestSchema)` to create a new message.
+ */
+export const GetGuestProfileByIdRequestSchema: GenMessage<GetGuestProfileByIdRequest> = /*@__PURE__*/
+  messageDesc(file_portfolio_v1_guest_service, 5);
+
+/**
+ * @generated from message portfolio.v1.GuestDetailProfile
+ */
+export type GuestDetailProfile = Message<"portfolio.v1.GuestDetailProfile"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string user_id = 2;
+   */
+  userId: string;
+
+  /**
+   * @generated from field: string name = 3;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string avatar_path = 4;
+   */
+  avatarPath: string;
+
+  /**
+   * Read-only, download URL
+   *
+   * @generated from field: string avatar_url = 5;
+   */
+  avatarUrl: string;
+
+  /**
+   * Short introduction (max 100 chars)
+   *
+   * @generated from field: string tagline = 6;
+   */
+  tagline: string;
+
+  /**
+   * Self introduction (max 1000 chars)
+   *
+   * @generated from field: string bio = 7;
+   */
+  bio: string;
+
+  /**
+   * Whether the guest is following the cast
+   *
+   * @generated from field: bool is_following = 8;
+   */
+  isFollowing: boolean;
+
+  /**
+   * ISO8601 timestamp when the guest followed
+   *
+   * @generated from field: string followed_at = 9;
+   */
+  followedAt: string;
+
+  /**
+   * Whether the cast has blocked this guest
+   *
+   * @generated from field: bool is_blocked = 10;
+   */
+  isBlocked: boolean;
+};
+
+/**
+ * Describes the message portfolio.v1.GuestDetailProfile.
+ * Use `create(GuestDetailProfileSchema)` to create a new message.
+ */
+export const GuestDetailProfileSchema: GenMessage<GuestDetailProfile> = /*@__PURE__*/
+  messageDesc(file_portfolio_v1_guest_service, 6);
+
+/**
+ * @generated from message portfolio.v1.GetGuestProfileByIdResponse
+ */
+export type GetGuestProfileByIdResponse = Message<"portfolio.v1.GetGuestProfileByIdResponse"> & {
+  /**
+   * @generated from field: portfolio.v1.GuestDetailProfile profile = 1;
+   */
+  profile?: GuestDetailProfile;
+};
+
+/**
+ * Describes the message portfolio.v1.GetGuestProfileByIdResponse.
+ * Use `create(GetGuestProfileByIdResponseSchema)` to create a new message.
+ */
+export const GetGuestProfileByIdResponseSchema: GenMessage<GetGuestProfileByIdResponse> = /*@__PURE__*/
+  messageDesc(file_portfolio_v1_guest_service, 7);
+
+/**
  * @generated from service portfolio.v1.GuestService
  */
 export const GuestService: GenService<{
@@ -156,6 +266,14 @@ export const GuestService: GenService<{
     methodKind: "unary";
     input: typeof GetGuestProfileRequestSchema;
     output: typeof GetGuestProfileResponseSchema;
+  },
+  /**
+   * @generated from rpc portfolio.v1.GuestService.GetGuestProfileById
+   */
+  getGuestProfileById: {
+    methodKind: "unary";
+    input: typeof GetGuestProfileByIdRequestSchema;
+    output: typeof GetGuestProfileByIdResponseSchema;
   },
   /**
    * @generated from rpc portfolio.v1.GuestService.SaveGuestProfile
