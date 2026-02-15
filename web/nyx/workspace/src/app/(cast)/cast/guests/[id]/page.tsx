@@ -84,15 +84,11 @@ export default function GuestDetailPage({
     setIsUnblocking(true);
 
     try {
-      const res = await fetch("/api/cast/blocks", {
+      const res = await fetch(`/api/cast/blocks?blocked_id=${data.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          blockedId: data.id,
-        }),
       });
 
       if (!res.ok) {
