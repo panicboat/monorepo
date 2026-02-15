@@ -12,15 +12,11 @@ sidebar_position: 20
 - ゲストのプロフィール情報（名前、アバター）の管理
 - リアルタイムステータス（Online/Tonight）の保持
 - 検索・フィルタリング
-- 料金プラン管理
-- スケジュール管理
 - 画像アップロード
 
 ## Database Tables
 
 - `casts` - キャストプロフィール
-- `cast_plans` - 料金プラン
-- `cast_schedules` - スケジュール
 - `guests` - ゲストプロフィール
 - `tags` - タグマスタ
 
@@ -44,8 +40,6 @@ sidebar_position: 20
 - `GetCastProfile` - キャストプロフィール取得
 - `SaveCastProfile` - キャストプロフィール保存
 - `SaveCastImages` - 画像保存
-- `SaveCastPlans` - 料金プラン保存
-- `SaveCastSchedules` - スケジュール保存
 - `ListCasts` - キャスト一覧取得
 - `GetUploadUrl` - 画像アップロード URL 取得
 
@@ -80,4 +74,3 @@ sidebar_position: 20
 ## Related Specs
 
 - `openspec/specs/portfolio/`
-- `openspec/specs/schedule/`

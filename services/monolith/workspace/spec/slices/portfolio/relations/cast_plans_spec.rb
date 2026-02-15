@@ -16,7 +16,8 @@ RSpec.describe "Portfolio::Relations::CastPlans", type: :database do
   end
 
   it "maps to the correct table" do
-    expect(relation.name.dataset).to eq(:"portfolio__cast_plans")
+    # Note: Table moved to offer schema but still accessed via Portfolio for read-only operations
+    expect(relation.name.dataset).to eq(:"offer__cast_plans")
   end
 
   it "defines associations" do

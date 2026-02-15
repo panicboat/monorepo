@@ -15,8 +15,6 @@ RSpec.describe Portfolio::Grpc::CastHandler do
       get_profile_uc: get_profile_uc,
       save_profile_uc: save_profile_uc,
       publish_uc: publish_uc,
-      save_plans_uc: save_plans_uc,
-      save_schedules_uc: save_schedules_uc,
       save_images_uc: save_images_uc,
       get_upload_url_uc: get_upload_url_uc,
       list_casts_uc: list_casts_uc,
@@ -32,8 +30,6 @@ RSpec.describe Portfolio::Grpc::CastHandler do
   let(:get_profile_uc) { double(:get_profile_uc) }
   let(:save_profile_uc) { double(:save_profile_uc) }
   let(:publish_uc) { double(:publish_uc) }
-  let(:save_plans_uc) { double(:save_plans_uc) }
-  let(:save_schedules_uc) { double(:save_schedules_uc) }
   let(:save_images_uc) { double(:save_images_uc) }
   let(:get_upload_url_uc) { double(:get_upload_url_uc) }
   let(:list_casts_uc) { double(:list_casts_uc) }
@@ -58,7 +54,6 @@ RSpec.describe Portfolio::Grpc::CastHandler do
       image_path: "path/img.jpg",
       visibility: "public",
       cast_plans: [],
-      cast_schedules: [],
       images: [],
       social_links: nil,
       age: 25,
@@ -146,43 +141,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
     end
   end
 
-  describe "#save_cast_plans" do
-    let(:message) do
-      ::Portfolio::V1::SaveCastPlansRequest.new(
-        plans: [::Portfolio::V1::CastPlan.new(name: "P1", price: 1000, duration_minutes: 60)]
-      )
-    end
-
-    it "calls operation and returns response" do
-      allow(get_profile_uc).to receive(:call).with(user_id: 1).and_return(mock_cast_entity)
-      expect(save_plans_uc).to receive(:call).with(
-        cast_id: 123,
-        plans: [{ name: "P1", price: 1000, duration_minutes: 60, is_recommended: false }]
-      ).and_return(mock_cast_entity)
-
-      response = handler.save_cast_plans
-      expect(response).to be_a(::Portfolio::V1::SaveCastPlansResponse)
-    end
-  end
-
-  describe "#save_cast_schedules" do
-    let(:message) do
-      ::Portfolio::V1::SaveCastSchedulesRequest.new(
-        schedules: [::Portfolio::V1::CastSchedule.new(date: "2023-01-01", start_time: "10:00", end_time: "12:00")]
-      )
-    end
-
-    it "calls operation and returns response" do
-      allow(get_profile_uc).to receive(:call).with(user_id: 1).and_return(mock_cast_entity)
-      expect(save_schedules_uc).to receive(:call).with(
-        cast_id: 123,
-        schedules: [{ date: "2023-01-01", start_time: "10:00", end_time: "12:00" }]
-      ).and_return(mock_cast_entity)
-
-      response = handler.save_cast_schedules
-      expect(response).to be_a(::Portfolio::V1::SaveCastSchedulesResponse)
-    end
-  end
+  # Note: save_cast_plans and save_cast_schedules moved to Offer slice
 
   describe "#save_cast_images" do
     let(:message) do

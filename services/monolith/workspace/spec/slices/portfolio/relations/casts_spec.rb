@@ -31,6 +31,6 @@ RSpec.describe "Portfolio::Relations::Casts", type: :database do
   it "defines associations" do
     associations = relation.schema.associations.elements
     expect(associations.keys).to include(:cast_plans)
-    expect(associations.keys).to include(:cast_schedules)
+    # Note: cast_schedules association moved to Offer slice
   end
 end

@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package offer.v1;
+
+service OfferService {
+  // Plan APIs
+  rpc GetPlans(GetPlansRequest) returns (GetPlansResponse);
+  rpc SavePlans(SavePlansRequest) returns (SavePlansResponse);
+
+  // Schedule APIs
+  rpc GetSchedules(GetSchedulesRequest) returns (GetSchedulesResponse);
+  rpc SaveSchedules(SaveSchedulesRequest) returns (SaveSchedulesResponse);
+}
+
+// === Plan ===
+
+message Plan {
+  string id = 1;
+  string name = 2;
+  int32 price = 3;           // JPY (0 = Ask)
+  int32 duration_minutes = 4;
+  bool is_recommended = 5;
+}
+
+message GetPlansRequest {
+  string cast_id = 1;        // Optional: if empty, use current user's cast
+}
+
+message GetPlansResponse {
+  repeated Plan plans = 1;
+}
+
+message SavePlansRequest {
+  repeated Plan plans = 1;
+}
+
+message SavePlansResponse {
+  repeated Plan plans = 1;
+}
+
+// === Schedule ===
+
+message Schedule {
+  string date = 1;           // YYYY-MM-DD
+  string start_time = 2;     // HH:mm
+  string end_time = 3;       // HH:mm
+}
+
+message GetSchedulesRequest {
+  string cast_id = 1;        // Optional: if empty, use current user's cast
+  string start_date = 2;     // Optional: YYYY-MM-DD
+  string end_date = 3;       // Optional: YYYY-MM-DD
+}
+
+message GetSchedulesResponse {
+  repeated Schedule schedules = 1;
+}
+
+message SaveSchedulesRequest {
+  repeated Schedule schedules = 1;
+}
+
+message SaveSchedulesResponse {
+  repeated Schedule schedules = 1;
+}

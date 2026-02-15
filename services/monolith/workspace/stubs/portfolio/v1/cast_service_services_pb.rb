@@ -23,8 +23,7 @@ module Portfolio
         rpc :SaveCastProfile, ::Portfolio::V1::SaveCastProfileRequest, ::Portfolio::V1::SaveCastProfileResponse
         rpc :SaveCastVisibility, ::Portfolio::V1::SaveCastVisibilityRequest, ::Portfolio::V1::SaveCastVisibilityResponse
         rpc :SaveCastImages, ::Portfolio::V1::SaveCastImagesRequest, ::Portfolio::V1::SaveCastImagesResponse
-        rpc :SaveCastPlans, ::Portfolio::V1::SaveCastPlansRequest, ::Portfolio::V1::SaveCastPlansResponse
-        rpc :SaveCastSchedules, ::Portfolio::V1::SaveCastSchedulesRequest, ::Portfolio::V1::SaveCastSchedulesResponse
+        # SaveCastPlans and SaveCastSchedules moved to OfferService
         rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
         rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
         rpc :CheckSlugAvailability, ::Portfolio::V1::CheckSlugAvailabilityRequest, ::Portfolio::V1::CheckSlugAvailabilityResponse

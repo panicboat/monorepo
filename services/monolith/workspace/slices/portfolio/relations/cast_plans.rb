@@ -1,7 +1,9 @@
 module Portfolio
   module Relations
+    # Read-only relation for ListCasts response.
+    # Write operations should use Offer::Repositories::OfferRepository.
     class CastPlans < Portfolio::DB::Relation
-      schema(:"portfolio__cast_plans", as: :cast_plans, infer: false) do
+      schema(:"offer__cast_plans", as: :cast_plans, infer: false) do
         attribute :id, Types::String      # UUID
         attribute :cast_id, Types::String  # UUID
         attribute :name, Types::String

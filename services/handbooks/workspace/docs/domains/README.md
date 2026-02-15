@@ -1,12 +1,13 @@
 # Domain Architecture
 
-本プロジェクトは **Modular Monolith** として構築されており、以下の3つのドメインに分離して実装します。
+本プロジェクトは **Modular Monolith** として構築されており、以下のドメインに分離して実装します。
 
 ## Domain Overview
 
 | Domain | Role | Backend | Frontend |
 |--------|------|---------|----------|
 | [Identity](./identity.md) | 認証・認可 (Cast/Guest分岐) | `slices/identity` | `modules/identity` |
+| [Offer](./offer.md) | スケジュール・料金プラン管理 | `slices/offer` | `modules/offer` |
 | [Portfolio](./portfolio.md) | カタログ、検索、プロフィール管理 | `slices/portfolio` | `modules/portfolio` |
 | [Social](./social.md) | タイムライン、いいね、コメント | `slices/social` | `modules/social` |
 
@@ -15,6 +16,7 @@
 | Domain | Backend | Frontend | Proto |
 |--------|:-------:|:--------:|:-----:|
 | Identity | ✓ | ✓ | ✓ |
+| Offer | ✓ | ✓ | ✓ |
 | Portfolio | ✓ | ✓ | ✓ |
 | Social | ✓ | ✓ | ✓ |
 

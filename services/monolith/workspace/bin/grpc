@@ -35,6 +35,7 @@ require_relative "../lib/interceptors/authentication_interceptor"
 $LOAD_PATH.unshift(File.expand_path("../stubs", __dir__))
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 require "identity/v1/service_services_pb"
+require "offer/v1/service_services_pb"
 require "portfolio/v1/cast_service_services_pb"
 require "portfolio/v1/guest_service_services_pb"
 require "social/v1/post_service_services_pb"
@@ -58,6 +59,8 @@ end
 
 # Ensure Handlers are loaded so `bind` logic executes!
 require_relative "../slices/identity/grpc/handler"
+require_relative "../slices/offer/grpc/handler"
+require_relative "../slices/offer/grpc/offer_handler"
 require_relative "../slices/portfolio/grpc/handler"
 require_relative "../slices/portfolio/grpc/cast_handler"
 require_relative "../slices/portfolio/grpc/guest_handler"

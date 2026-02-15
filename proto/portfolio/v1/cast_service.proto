@@ -11,8 +11,7 @@ service CastService {
   rpc SaveCastProfile(SaveCastProfileRequest) returns (SaveCastProfileResponse);
   rpc SaveCastVisibility(SaveCastVisibilityRequest) returns (SaveCastVisibilityResponse);
   rpc SaveCastImages(SaveCastImagesRequest) returns (SaveCastImagesResponse);
-  rpc SaveCastPlans(SaveCastPlansRequest) returns (SaveCastPlansResponse);
-  rpc SaveCastSchedules(SaveCastSchedulesRequest) returns (SaveCastSchedulesResponse);
+  // SaveCastPlans and SaveCastSchedules moved to OfferService
   rpc ListCasts(ListCastsRequest) returns (ListCastsResponse);
   rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
   rpc CheckSlugAvailability(CheckSlugAvailabilityRequest) returns (CheckSlugAvailabilityResponse);
@@ -91,8 +90,7 @@ message GetCastProfileRequest {
 
 message GetCastProfileResponse {
   CastProfile profile = 1;
-  repeated CastPlan plans = 2;
-  repeated CastSchedule schedules = 3;
+  // plans and schedules moved to OfferService.GetPlans/GetSchedules
 }
 
 message CreateCastProfileRequest {
@@ -156,21 +154,7 @@ message SaveCastImagesResponse {
   CastProfile profile = 1;
 }
 
-message SaveCastPlansRequest {
-  repeated CastPlan plans = 1;
-}
-
-message SaveCastPlansResponse {
-  repeated CastPlan plans = 1;
-}
-
-message SaveCastSchedulesRequest {
-  repeated CastSchedule schedules = 1;
-}
-
-message SaveCastSchedulesResponse {
-  repeated CastSchedule schedules = 1;
-}
+// SaveCastPlans and SaveCastSchedules moved to OfferService
 
 message GetUploadUrlRequest {
   string filename = 1;
@@ -182,11 +166,7 @@ message GetUploadUrlResponse {
   string key = 2;
 }
 
-message CastSchedule {
-  string date = 1; // YYYY-MM-DD
-  string start_time = 2; // HH:mm
-  string end_time = 3; // HH:mm
-}
+// CastSchedule moved to offer.v1.Schedule
 
 enum CastStatusFilter {
   CAST_STATUS_FILTER_UNSPECIFIED = 0;

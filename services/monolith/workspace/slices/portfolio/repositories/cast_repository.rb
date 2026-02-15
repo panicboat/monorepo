@@ -24,9 +24,7 @@ module Portfolio
       end
 
       def find_by_slug(slug)
-        casts.combine(:cast_plans, :cast_schedules)
-          .where { Sequel.function(:lower, :slug) =~ slug.downcase }
-          .one
+        casts.where { Sequel.function(:lower, :slug) =~ slug.downcase }.one
       end
 
       def slug_available?(slug, exclude_user_id: nil)
@@ -35,39 +33,15 @@ module Portfolio
         !scope.exist?
       end
 
-      def create_plan(data)
-        cast_plans.command(:create).call(data)
-      end
+      # Note: Plan/Schedule write operations moved to Offer slice.
+      # Use Offer::Repositories::OfferRepository for save_plans/save_schedules.
 
       def find_with_plans(id)
-        casts.combine(:cast_plans, :cast_schedules).by_pk(id).one
+        casts.combine(:cast_plans).by_pk(id).one
       end
 
       def find_by_user_id_with_plans(user_id)
-        casts.combine(:cast_plans, :cast_schedules).where(user_id: user_id).one
-      end
-
-      def save_plans(id:, plans_data:)
-        transaction do
-          cast_plans.where(cast_id: id).delete
-          plans_data.each do |plan|
-            cast_plans.changeset(:create, plan.merge(cast_id: id)).commit
-          end
-          find_with_plans(id)
-        end
-      end
-
-      def save_schedules(id:, schedules:)
-        transaction do
-          # Only delete schedules for today and future dates (preserve past schedules)
-          today = Date.today.to_s
-          cast_schedules.dataset.where(cast_id: id).where { date >= today }.delete
-          schedules.each do |schedule|
-            next if schedule[:date].to_s < today
-            cast_schedules.changeset(:create, schedule.merge(cast_id: id)).commit
-          end
-          find_with_plans(id)
-        end
+        casts.combine(:cast_plans).where(user_id: user_id).one
       end
 
       def save_images(id:, image_path:, images:, avatar_path: nil)
@@ -95,7 +69,7 @@ module Portfolio
       end
 
       def list_by_visibility(visibility_filter = nil)
-        scope = casts.combine(:cast_plans, :cast_schedules)
+        scope = casts.combine(:cast_plans)
         scope = scope.where(visibility: visibility_filter) if visibility_filter
         scope.to_a
       end
@@ -138,7 +112,7 @@ module Portfolio
       end
 
       def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, query: nil, limit: nil, cursor: nil, registered_only: false)
-        scope = casts.combine(:cast_plans, :cast_schedules)
+        scope = casts.combine(:cast_plans)
 
         # Registered filter (for guest access, only show casts with registered_at set)
         scope = scope.exclude(registered_at: nil) if registered_only

@@ -24,6 +24,13 @@ CREATE SCHEMA identity;
 
 
 --
+-- Name: offer; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA offer;
+
+
+--
 -- Name: portfolio; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -83,6 +90,37 @@ CREATE TABLE identity.users (
 
 
 --
+-- Name: cast_plans; Type: TABLE; Schema: offer; Owner: -
+--
+
+CREATE TABLE offer.cast_plans (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    cast_id uuid NOT NULL,
+    name text NOT NULL,
+    price integer NOT NULL,
+    duration_minutes integer NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    is_recommended boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: cast_schedules; Type: TABLE; Schema: offer; Owner: -
+--
+
+CREATE TABLE offer.cast_schedules (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    cast_id uuid NOT NULL,
+    date date NOT NULL,
+    start_time text NOT NULL,
+    end_time text NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
 -- Name: areas; Type: TABLE; Schema: portfolio; Owner: -
 --
 
@@ -118,37 +156,6 @@ CREATE TABLE portfolio.cast_genres (
     cast_id uuid NOT NULL,
     genre_id uuid NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
-
---
--- Name: cast_plans; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.cast_plans (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    cast_id uuid NOT NULL,
-    name text NOT NULL,
-    price integer NOT NULL,
-    duration_minutes integer NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    is_recommended boolean DEFAULT false NOT NULL
-);
-
-
---
--- Name: cast_schedules; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.cast_schedules (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    cast_id uuid NOT NULL,
-    date date NOT NULL,
-    start_time text NOT NULL,
-    end_time text NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -369,6 +376,22 @@ ALTER TABLE ONLY identity.users
 
 
 --
+-- Name: cast_plans cast_plans_pkey; Type: CONSTRAINT; Schema: offer; Owner: -
+--
+
+ALTER TABLE ONLY offer.cast_plans
+    ADD CONSTRAINT cast_plans_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cast_schedules cast_schedules_pkey; Type: CONSTRAINT; Schema: offer; Owner: -
+--
+
+ALTER TABLE ONLY offer.cast_schedules
+    ADD CONSTRAINT cast_schedules_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: areas areas_code_key; Type: CONSTRAINT; Schema: portfolio; Owner: -
 --
 
@@ -406,22 +429,6 @@ ALTER TABLE ONLY portfolio.cast_genres
 
 ALTER TABLE ONLY portfolio.cast_genres
     ADD CONSTRAINT cast_genres_pkey PRIMARY KEY (id);
-
-
---
--- Name: cast_plans cast_plans_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_plans
-    ADD CONSTRAINT cast_plans_pkey PRIMARY KEY (id);
-
-
---
--- Name: cast_schedules cast_schedules_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_schedules
-    ADD CONSTRAINT cast_schedules_pkey PRIMARY KEY (id);
 
 
 --
@@ -604,6 +611,20 @@ CREATE UNIQUE INDEX identity_users_phone_number_index ON identity.users USING bt
 
 
 --
+-- Name: portfolio_cast_plans_cast_id_index; Type: INDEX; Schema: offer; Owner: -
+--
+
+CREATE INDEX portfolio_cast_plans_cast_id_index ON offer.cast_plans USING btree (cast_id);
+
+
+--
+-- Name: portfolio_cast_schedules_cast_id_index; Type: INDEX; Schema: offer; Owner: -
+--
+
+CREATE INDEX portfolio_cast_schedules_cast_id_index ON offer.cast_schedules USING btree (cast_id);
+
+
+--
 -- Name: idx_cast_areas_area_id; Type: INDEX; Schema: portfolio; Owner: -
 --
 
@@ -629,20 +650,6 @@ CREATE INDEX portfolio_cast_genres_cast_id_index ON portfolio.cast_genres USING 
 --
 
 CREATE INDEX portfolio_cast_genres_genre_id_index ON portfolio.cast_genres USING btree (genre_id);
-
-
---
--- Name: portfolio_cast_plans_cast_id_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX portfolio_cast_plans_cast_id_index ON portfolio.cast_plans USING btree (cast_id);
-
-
---
--- Name: portfolio_cast_schedules_cast_id_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX portfolio_cast_schedules_cast_id_index ON portfolio.cast_schedules USING btree (cast_id);
 
 
 --
@@ -801,6 +808,22 @@ ALTER TABLE ONLY identity.refresh_tokens
 
 
 --
+-- Name: cast_plans cast_plans_cast_id_fkey; Type: FK CONSTRAINT; Schema: offer; Owner: -
+--
+
+ALTER TABLE ONLY offer.cast_plans
+    ADD CONSTRAINT cast_plans_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: cast_schedules cast_schedules_cast_id_fkey; Type: FK CONSTRAINT; Schema: offer; Owner: -
+--
+
+ALTER TABLE ONLY offer.cast_schedules
+    ADD CONSTRAINT cast_schedules_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
+
+
+--
 -- Name: cast_areas cast_areas_area_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
 --
 
@@ -830,22 +853,6 @@ ALTER TABLE ONLY portfolio.cast_genres
 
 ALTER TABLE ONLY portfolio.cast_genres
     ADD CONSTRAINT cast_genres_genre_id_fkey FOREIGN KEY (genre_id) REFERENCES portfolio.genres(id) ON DELETE CASCADE;
-
-
---
--- Name: cast_plans cast_plans_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_plans
-    ADD CONSTRAINT cast_plans_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
-
-
---
--- Name: cast_schedules cast_schedules_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_schedules
-    ADD CONSTRAINT cast_schedules_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
 
 
 --
@@ -947,4 +954,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260211000000_rename_handle_to_slug_in_casts.rb'),
 ('20260213014603_remove_plan_id_from_cast_schedules.rb'),
 ('20260213020000_allow_null_price_on_cast_plans.rb'),
-('20260213030000_revert_null_price_on_cast_plans.rb');
+('20260213030000_revert_null_price_on_cast_plans.rb'),
+('20260216000000_move_plans_schedules_to_offer.rb');

@@ -1,6 +1,7 @@
 import { createClient } from "@connectrpc/connect";
 import { createGrpcTransport } from "@connectrpc/connect-node";
 import { IdentityService } from "@/stub/identity/v1/service_pb";
+import { OfferService } from "@/stub/offer/v1/service_pb";
 import { CastService } from "@/stub/portfolio/v1/cast_service_pb";
 import { GuestService } from "@/stub/portfolio/v1/guest_service_pb";
 import { PostService } from "@/stub/social/v1/post_service_pb";
@@ -19,6 +20,7 @@ const transport = createGrpcTransport({
 });
 
 export const identityClient = createClient(IdentityService, transport);
+export const offerClient = createClient(OfferService, transport);
 export const castClient = createClient(CastService, transport);
 export const guestClient = createClient(GuestService, transport);
 

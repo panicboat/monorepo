@@ -14,7 +14,7 @@ Modules:
 
 | 原則 | 実現方法 |
 |------|----------|
-| **Slice 間の境界分離** | Identity, Portfolio, Ritual, Trust を独立した Slice として分離 |
+| **Slice 間の境界分離** | Identity, Offer, Portfolio, Social を独立した Slice として分離 |
 | **単一責務 (SRP)** | Use Case ごとにファイル分離（Register, Login, SaveProfile など） |
 | **依存性注入 (DI)** | `Deps[]` による Repository・Contract の注入 |
 | **型安全性** | gRPC/ConnectRPC + Proto による API 型定義 |

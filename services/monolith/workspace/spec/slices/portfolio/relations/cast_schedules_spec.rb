@@ -15,11 +15,9 @@ RSpec.describe "Portfolio::Relations::CastSchedules", type: :database do
   end
 
   it "maps to the correct table" do
-    expect(relation.name.dataset).to eq(:"portfolio__cast_schedules")
+    # Note: Table moved to offer schema but still accessed via Portfolio for read-only operations
+    expect(relation.name.dataset).to eq(:"offer__cast_schedules")
   end
 
-  it "defines associations" do
-    associations = relation.schema.associations.elements
-    expect(associations.keys).to include(:cast)
-  end
+  # Note: Association removed - this is now a read-only relation for online status queries
 end

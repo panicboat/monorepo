@@ -28,55 +28,8 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
     end
   end
 
-  describe "#save_plans" do
-    let!(:existing_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "Plan Test", image_path: "p", status: "online")
-    end
-
-    it "replaces plans" do
-      plans_data = [{ name: "New Plan", price: 2000, duration_minutes: 90 }]
-      updated = repo.save_plans(id: existing_cast.id, plans_data: plans_data)
-
-      expect(updated.cast_plans.size).to eq(1)
-      expect(updated.cast_plans.first.name).to eq("New Plan")
-    end
-  end
-
-  describe "#save_schedules" do
-    let!(:existing_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "Schedule Test", image_path: "s", status: "online")
-    end
-
-    it "replaces future schedules" do
-      schedules_data = [{ date: Date.today, start_time: "10:00", end_time: "11:00" }]
-      updated = repo.save_schedules(id: existing_cast.id, schedules: schedules_data)
-
-      expect(updated.cast_schedules.size).to eq(1)
-      expect(updated.cast_schedules.first.date).to eq(Date.today)
-    end
-
-    it "preserves past schedules when saving new ones" do
-      # Create a past schedule directly in the database
-      past_date = Date.today - 7
-      schedule_repo = Hanami.app.slices[:portfolio]["relations.cast_schedules"]
-      schedule_repo.changeset(:create, {
-        cast_id: existing_cast.id,
-        date: past_date,
-        start_time: "09:00",
-        end_time: "10:00"
-      }).commit
-
-      # Save new future schedules
-      future_schedules = [{ date: Date.today + 1, start_time: "14:00", end_time: "15:00" }]
-      updated = repo.save_schedules(id: existing_cast.id, schedules: future_schedules)
-
-      # Should have both past and future schedules
-      expect(updated.cast_schedules.size).to eq(2)
-      dates = updated.cast_schedules.map(&:date)
-      expect(dates).to include(past_date)
-      expect(dates).to include(Date.today + 1)
-    end
-  end
+  # Note: save_plans and save_schedules methods moved to Offer slice.
+  # See spec/slices/offer/repositories/offer_repository_spec.rb for those tests.
 
   describe "#is_online?" do
     let!(:cast_with_schedule) do
@@ -88,7 +41,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
     end
 
     before do
-      schedule_repo = Hanami.app.slices[:portfolio]["relations.cast_schedules"]
+      schedule_repo = Hanami.app.slices[:offer]["relations.cast_schedules"]
       # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
         cast_id: cast_with_schedule.id,
@@ -117,7 +70,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
     end
 
     before do
-      schedule_repo = Hanami.app.slices[:portfolio]["relations.cast_schedules"]
+      schedule_repo = Hanami.app.slices[:offer]["relations.cast_schedules"]
       # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
         cast_id: online_cast.id,
@@ -181,7 +134,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       end
 
       before do
-        schedule_repo = Hanami.app.slices[:portfolio]["relations.cast_schedules"]
+        schedule_repo = Hanami.app.slices[:offer]["relations.cast_schedules"]
         # Use fixed time range that works regardless of current time (00:00 - 23:59)
         schedule_repo.changeset(:create, {
           cast_id: online_cast.id,

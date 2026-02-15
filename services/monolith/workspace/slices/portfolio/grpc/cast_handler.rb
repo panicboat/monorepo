@@ -19,8 +19,6 @@ module Portfolio
       rpc :CreateCastProfile, ::Portfolio::V1::CreateCastProfileRequest, ::Portfolio::V1::CreateCastProfileResponse
       rpc :SaveCastProfile, ::Portfolio::V1::SaveCastProfileRequest, ::Portfolio::V1::SaveCastProfileResponse
       rpc :SaveCastVisibility, ::Portfolio::V1::SaveCastVisibilityRequest, ::Portfolio::V1::SaveCastVisibilityResponse
-      rpc :SaveCastPlans, ::Portfolio::V1::SaveCastPlansRequest, ::Portfolio::V1::SaveCastPlansResponse
-      rpc :SaveCastSchedules, ::Portfolio::V1::SaveCastSchedulesRequest, ::Portfolio::V1::SaveCastSchedulesResponse
       rpc :SaveCastImages, ::Portfolio::V1::SaveCastImagesRequest, ::Portfolio::V1::SaveCastImagesResponse
       rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
       rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
@@ -34,8 +32,6 @@ module Portfolio
         save_profile_uc: "use_cases.cast.profile.save_profile",
         publish_uc: "use_cases.cast.profile.publish",
         save_visibility_uc: "use_cases.save_cast_visibility",
-        save_plans_uc: "use_cases.cast.plans.save_plans",
-        save_schedules_uc: "use_cases.cast.schedules.save_schedules",
         save_images_uc: "use_cases.cast.images.save_images",
         list_casts_uc: "use_cases.cast.listing.list_casts",
         repo: "repositories.cast_repository",
@@ -62,9 +58,7 @@ module Portfolio
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
         ::Portfolio::V1::GetCastProfileResponse.new(
-          profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres),
-          plans: PlanPresenter.many_to_proto(result.cast_plans),
-          schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
+          profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres)
         )
       end
 
@@ -90,9 +84,7 @@ module Portfolio
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
         ::Portfolio::V1::GetCastProfileResponse.new(
-          profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres),
-          plans: PlanPresenter.many_to_proto(result.cast_plans),
-          schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
+          profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres)
         )
       end
 
@@ -223,45 +215,6 @@ module Portfolio
         )
       end
 
-      # === Cast Plans ===
-
-      def save_cast_plans
-        authenticate_user!
-        cast = find_my_cast!
-
-        plans_data = request.message.plans.map do |p|
-          {
-            name: p.name,
-            price: p.price || 0, # 0 = Ask
-            duration_minutes: p.duration_minutes,
-            is_recommended: p.is_recommended
-          }
-        end
-
-        result = save_plans_uc.call(cast_id: cast.id, plans: plans_data)
-
-        ::Portfolio::V1::SaveCastPlansResponse.new(
-          plans: PlanPresenter.many_to_proto(result.cast_plans)
-        )
-      end
-
-      # === Cast Schedules ===
-
-      def save_cast_schedules
-        authenticate_user!
-        cast = find_my_cast!
-
-        schedules_data = request.message.schedules.map do |s|
-          { date: s.date, start_time: s.start_time, end_time: s.end_time }
-        end
-
-        result = save_schedules_uc.call(cast_id: cast.id, schedules: schedules_data)
-
-        ::Portfolio::V1::SaveCastSchedulesResponse.new(
-          schedules: SchedulePresenter.many_to_proto(result.cast_schedules)
-        )
-      end
-
       # === Cast Images ===
 
       def save_cast_images
@@ -378,7 +331,6 @@ module Portfolio
 
       ProfilePresenter = Portfolio::Presenters::Cast::ProfilePresenter
       PlanPresenter = Portfolio::Presenters::Cast::PlanPresenter
-      SchedulePresenter = Portfolio::Presenters::Cast::SchedulePresenter
       SaveProfile = Portfolio::UseCases::Cast::Profile::SaveProfile
 
       def find_my_cast!

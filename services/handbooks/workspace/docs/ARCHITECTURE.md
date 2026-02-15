@@ -34,10 +34,8 @@
 | Domain | Backend | Frontend |
 |--------|---------|----------|
 | Identity | `slices/identity/` | `modules/identity/` |
+| Offer | `slices/offer/` | `modules/offer/` |
 | Portfolio | `slices/portfolio/` | `modules/portfolio/` |
-| Concierge | `slices/concierge/` | `modules/concierge/` |
-| Ritual | `slices/ritual/` | `modules/ritual/` |
-| Trust | `slices/trust/` | `modules/trust/` |
 | Social | `slices/social/` | `modules/social/` |
 
 ---
