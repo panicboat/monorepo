@@ -4,8 +4,44 @@
 
 Social ドメインを Post / Relationship / Feed の 3 ドメインに分割する。
 
-**Estimated Tasks**: 35
+**Estimated Tasks**: 45
 **Dependencies**: なし（既存機能の分割のため）
+
+---
+
+## Phase 0: Database Schema Migration
+
+### 0.1 Schema Creation
+
+- [ ] `post` スキーマを作成
+- [ ] `relationship` スキーマを作成
+- [ ] `feed` スキーマを作成（将来のキャッシュ用、現時点ではテーブルなし）
+
+### 0.2 Post Schema Migration
+
+- [ ] `public.cast_posts` → `post.posts` に移動・リネーム
+- [ ] `public.cast_post_media` → `post.media` に移動・リネーム
+- [ ] `public.cast_post_hashtags` → `post.hashtags` に移動・リネーム
+- [ ] `public.post_likes` → `post.likes` に移動・リネーム
+- [ ] `public.post_comments` → `post.comments` に移動・リネーム
+- [ ] `public.comment_media` → `post.comment_media` に移動・リネーム
+- [ ] 外部キー制約を更新
+- [ ] インデックスを再作成
+
+### 0.3 Relationship Schema Migration
+
+- [ ] `public.cast_follows` → `relationship.follows` に移動・リネーム
+- [ ] `public.blocks` → `relationship.blocks` に移動・リネーム
+- [ ] `public.cast_favorites` → `relationship.favorites` に移動・リネーム
+- [ ] 外部キー制約を更新
+- [ ] インデックスを再作成
+
+### 0.4 Application Layer Update
+
+- [ ] ROM relations の `schema` 設定を更新（`post` スキーマ用）
+- [ ] ROM relations の `schema` 設定を更新（`relationship` スキーマ用）
+- [ ] シードデータのテーブル参照を更新
+- [ ] テストを実行して動作確認
 
 ---
 
@@ -154,6 +190,7 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 ## Dependencies
 
 ```
+Phase 0 → Phase 1, Phase 2（DB マイグレーションが先）
 Phase 1.1 → Phase 1.2 → Phase 1.3
 Phase 2.1 → Phase 2.2 → Phase 2.3
 Phase 1 + Phase 2 → Phase 3

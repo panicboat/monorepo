@@ -89,6 +89,75 @@ proto/
     └── feed_service.proto
 ```
 
+## Database Migration
+
+### Strategy: Schema Separation + Table Rename
+
+ドメイン分割に伴い、PostgreSQL スキーマを分離し、テーブル名から冗長なプレフィックスを削除する。
+
+### Schema Structure
+
+```
+PostgreSQL
+├── post スキーマ
+│   ├── posts           (旧: public.cast_posts)
+│   ├── media           (旧: public.cast_post_media)
+│   ├── hashtags        (旧: public.cast_post_hashtags)
+│   ├── likes           (旧: public.post_likes)
+│   ├── comments        (旧: public.post_comments)
+│   └── comment_media   (旧: public.comment_media)
+│
+├── relationship スキーマ
+│   ├── follows         (旧: public.cast_follows)
+│   ├── blocks          (旧: public.blocks)
+│   └── favorites       (旧: public.cast_favorites)
+│
+└── feed スキーマ
+    └── (テーブルなし - 他スキーマを参照)
+```
+
+### Table Mapping
+
+| Current (public.) | New | Schema |
+|-------------------|-----|--------|
+| `cast_posts` | `posts` | post |
+| `cast_post_media` | `media` | post |
+| `cast_post_hashtags` | `hashtags` | post |
+| `post_likes` | `likes` | post |
+| `post_comments` | `comments` | post |
+| `comment_media` | `comment_media` | post |
+| `cast_follows` | `follows` | relationship |
+| `blocks` | `blocks` | relationship |
+| `cast_favorites` | `favorites` | relationship |
+
+### Migration Approach
+
+1. **新スキーマを作成** - `CREATE SCHEMA post; CREATE SCHEMA relationship;`
+2. **テーブルを移動・リネーム** - `ALTER TABLE public.cast_posts SET SCHEMA post; ALTER TABLE post.cast_posts RENAME TO posts;`
+3. **アプリケーション層を更新** - ROM relations の `schema` 設定を更新
+4. **旧テーブル参照を削除** - 全ての参照が新スキーマを向いていることを確認
+
+### ROM Configuration Example
+
+```ruby
+# slices/post/relations/posts.rb
+module Post
+  module Relations
+    class Posts < ROM::Relation[:sql]
+      schema(:posts, infer: true) do
+        attribute :id, Types::UUID
+        # ...
+      end
+
+      dataset do
+        # スキーマを明示的に指定
+        db.from(Sequel[:post][:posts])
+      end
+    end
+  end
+end
+```
+
 ## Domain Boundaries
 
 ### Post Domain
@@ -101,13 +170,13 @@ proto/
 | Like | 投稿へのいいね |
 | Comment | 投稿へのコメント・リプライ |
 
-**Database Tables**:
-- `cast_posts`
-- `cast_post_media`
-- `cast_post_hashtags`
-- `post_likes`
-- `post_comments`
-- `comment_media`
+**Database Tables** (`post` スキーマ):
+- `post.posts`
+- `post.media`
+- `post.hashtags`
+- `post.likes`
+- `post.comments`
+- `post.comment_media`
 
 **公開 API**:
 - `ListCastPosts(cast_id, cursor)` - キャストの投稿一覧
@@ -127,10 +196,10 @@ proto/
 | Block | ブロック関係 |
 | Favorite | お気に入り登録 |
 
-**Database Tables**:
-- `cast_follows`
-- `blocks`
-- `cast_favorites`
+**Database Tables** (`relationship` スキーマ):
+- `relationship.follows`
+- `relationship.blocks`
+- `relationship.favorites`
 
 **公開 API**:
 - `ListFollowing(guest_id)` - フォロー中キャスト一覧
@@ -142,6 +211,8 @@ proto/
 ### Feed Domain
 
 **責務**: 複数ドメインからのデータ集約（読み取り専用）
+
+**Database Tables**: なし（`post` と `relationship` スキーマを参照）
 
 **公開 API**:
 - `ListGuestFeed(guest_id, filter, cursor)` - ゲスト向けフィード
