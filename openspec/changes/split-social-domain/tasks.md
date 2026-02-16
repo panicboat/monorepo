@@ -95,31 +95,33 @@ Social ドメインを Media / Post / Relationship / Feed の 4 ドメインに�
 
 ## Phase 2: Relationship Domain Separation
 
-### 2.1 Proto Migration (Relationship)
+### 2.1 Proto Migration (Relationship) ✅
 
-- [ ] `proto/relationship/v1/` ディレクトリを作成
-- [ ] `follow_service.proto` を `relationship/v1/` にコピー（package を `relationship.v1` に変更）
-- [ ] `block_service.proto` を `relationship/v1/` にコピー
-- [ ] `favorite_service.proto` を `relationship/v1/` にコピー
-- [ ] proto をビルドして生成コードを確認
+- [x] `proto/relationship/v1/` ディレクトリを作成
+- [x] `follow_service.proto` を `relationship/v1/` にコピー（package を `relationship.v1` に変更）
+- [x] `block_service.proto` を `relationship/v1/` にコピー
+- [x] `favorite_service.proto` を `relationship/v1/` にコピー
+- [x] proto をビルドして生成コードを確認
 
-### 2.2 Backend Migration (Relationship)
+### 2.2 Backend Migration (Relationship) ✅
 
-- [ ] `slices/relationship/` ディレクトリ構造を作成
-- [ ] `slices/social/handlers/follow_service.rb` を移動
-- [ ] `slices/social/handlers/block_service.rb` を移動
-- [ ] `slices/social/handlers/favorite_service.rb` を移動
-- [ ] `slices/social/use_cases/follows/` を移動
-- [ ] `slices/social/use_cases/blocks/` を移動
-- [ ] `slices/social/use_cases/favorites/` を移動
-- [ ] `slices/social/repositories/follow_repository.rb` を移動
-- [ ] `slices/social/repositories/block_repository.rb` を移動
-- [ ] `slices/social/repositories/favorite_repository.rb` を移動
-- [ ] 関連する relations を移動
-- [ ] slice 設定ファイル（`config/slices/relationship.rb`）を作成
-- [ ] テストを実行して動作確認
+- [x] `slices/relationship/` ディレクトリ構造を作成
+- [x] `slices/social/handlers/follow_service.rb` を移動
+- [x] `slices/social/handlers/block_service.rb` を移動
+- [x] `slices/social/handlers/favorite_service.rb` を移動
+- [x] `slices/social/use_cases/follows/` を移動
+- [x] `slices/social/use_cases/blocks/` を移動
+- [x] `slices/social/use_cases/favorites/` を移動
+- [x] `slices/social/repositories/follow_repository.rb` を移動
+- [x] `slices/social/repositories/block_repository.rb` を移動
+- [x] `slices/social/repositories/favorite_repository.rb` を移動
+- [x] 関連する relations を移動
+- [x] slice 設定ファイル（`config/slices/relationship.rb`）を作成
+- [x] テストを実行して動作確認（548 examples, 0 failures）
 
 ### 2.3 Frontend Migration (Relationship)
+
+> Note: Frontend は Phase 3 完了後に Relationship API への移行を実施
 
 - [ ] `modules/relationship/` ディレクトリを作成
 - [ ] `useFollow.ts` を移動

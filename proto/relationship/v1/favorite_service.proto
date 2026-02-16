@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package relationship.v1;
+
+service FavoriteService {
+  rpc AddFavorite(AddFavoriteRequest) returns (AddFavoriteResponse);
+  rpc RemoveFavorite(RemoveFavoriteRequest) returns (RemoveFavoriteResponse);
+  rpc ListFavorites(ListFavoritesRequest) returns (ListFavoritesResponse);
+  rpc GetFavoriteStatus(GetFavoriteStatusRequest) returns (GetFavoriteStatusResponse);
+}
+
+message AddFavoriteRequest {
+  string cast_id = 1;
+}
+
+message AddFavoriteResponse {
+  bool success = 1;
+}
+
+message RemoveFavoriteRequest {
+  string cast_id = 1;
+}
+
+message RemoveFavoriteResponse {
+  bool success = 1;
+}
+
+message ListFavoritesRequest {
+  int32 limit = 1;   // default: 100, max: 200
+  string cursor = 2; // optional, for pagination
+}
+
+message ListFavoritesResponse {
+  repeated string cast_ids = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message GetFavoriteStatusRequest {
+  repeated string cast_ids = 1;
+}
+
+message GetFavoriteStatusResponse {
+  map<string, bool> favorited = 1; // cast_id -> is_favorited
+}
