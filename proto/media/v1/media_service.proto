@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package media.v1;
+
+service MediaService {
+  // Get a presigned URL for uploading a file
+  rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
+
+  // Register uploaded media after successful upload
+  rpc RegisterMedia(RegisterMediaRequest) returns (RegisterMediaResponse);
+
+  // Get media by ID
+  rpc GetMedia(GetMediaRequest) returns (GetMediaResponse);
+
+  // Get multiple media by IDs
+  rpc GetMediaBatch(GetMediaBatchRequest) returns (GetMediaBatchResponse);
+
+  // Delete media by ID
+  rpc DeleteMedia(DeleteMediaRequest) returns (DeleteMediaResponse);
+}
+
+enum MediaType {
+  MEDIA_TYPE_UNSPECIFIED = 0;
+  MEDIA_TYPE_IMAGE = 1;
+  MEDIA_TYPE_VIDEO = 2;
+}
+
+message Media {
+  string id = 1;
+  MediaType media_type = 2;
+  string url = 3;
+  string thumbnail_url = 4;
+  string filename = 5;
+  string content_type = 6;
+  int64 size_bytes = 7;
+  string created_at = 8; // ISO8601
+}
+
+message GetUploadUrlRequest {
+  string filename = 1;
+  string content_type = 2;
+  MediaType media_type = 3;
+}
+
+message GetUploadUrlResponse {
+  string upload_url = 1;    // Presigned URL for upload
+  string media_key = 2;     // S3 key (path) for the file
+  string media_id = 3;      // Pre-generated ID for the media record
+}
+
+message RegisterMediaRequest {
+  string media_id = 1;      // ID from GetUploadUrlResponse
+  string media_key = 2;     // Key from GetUploadUrlResponse
+  MediaType media_type = 3;
+  string filename = 4;
+  string content_type = 5;
+  int64 size_bytes = 6;
+  string thumbnail_key = 7; // Optional: key for thumbnail (for videos)
+}
+
+message RegisterMediaResponse {
+  Media media = 1;
+}
+
+message GetMediaRequest {
+  string id = 1;
+}
+
+message GetMediaResponse {
+  Media media = 1;
+}
+
+message GetMediaBatchRequest {
+  repeated string ids = 1;
+}
+
+message GetMediaBatchResponse {
+  repeated Media media = 1;
+}
+
+message DeleteMediaRequest {
+  string id = 1;
+}
+
+message DeleteMediaResponse {
+  bool success = 1;
+}

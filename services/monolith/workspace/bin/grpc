@@ -44,6 +44,7 @@ require "social/v1/follow_service_services_pb"
 require "social/v1/comment_service_services_pb"
 require "social/v1/block_service_services_pb"
 require "social/v1/favorite_service_services_pb"
+require "media/v1/media_service_services_pb"
 
 # Configure Gruf
 Gruf.configure do |c|
@@ -71,6 +72,7 @@ require_relative "../slices/social/grpc/follow_handler"
 require_relative "../slices/social/grpc/comment_handler"
 require_relative "../slices/social/grpc/block_handler"
 require_relative "../slices/social/grpc/favorite_handler"
+require_relative "../slices/media/grpc/handler"
 
 Hanami.logger.info("Starting gRPC Stub Server on #{Gruf.server_binding_url}")
 Hanami.logger.info("Services: #{Gruf.services}")

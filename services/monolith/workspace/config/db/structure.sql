@@ -111,6 +111,24 @@ CREATE TABLE identity.users (
 
 
 --
+-- Name: files; Type: TABLE; Schema: media; Owner: -
+--
+
+CREATE TABLE media.files (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    media_type character varying(10) NOT NULL,
+    url text NOT NULL,
+    thumbnail_url text,
+    filename character varying(255),
+    content_type character varying(100),
+    size_bytes bigint,
+    media_key text,
+    thumbnail_key text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: plans; Type: TABLE; Schema: offer; Owner: -
 --
 
@@ -397,6 +415,14 @@ ALTER TABLE ONLY identity.users
 
 
 --
+-- Name: files files_pkey; Type: CONSTRAINT; Schema: media; Owner: -
+--
+
+ALTER TABLE ONLY media.files
+    ADD CONSTRAINT files_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: plans cast_plans_pkey; Type: CONSTRAINT; Schema: offer; Owner: -
 --
 
@@ -629,6 +655,13 @@ CREATE INDEX identity_sms_verifications_phone_number_index ON identity.sms_verif
 --
 
 CREATE UNIQUE INDEX identity_users_phone_number_index ON identity.users USING btree (phone_number);
+
+
+--
+-- Name: media_files_media_key_index; Type: INDEX; Schema: media; Owner: -
+--
+
+CREATE UNIQUE INDEX media_files_media_key_index ON media.files USING btree (media_key) WHERE (media_key IS NOT NULL);
 
 
 --
@@ -978,4 +1011,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260213030000_revert_null_price_on_cast_plans.rb'),
 ('20260216000000_move_plans_schedules_to_offer.rb'),
 ('20260216000000_split_social_schema.rb'),
-('20260216100000_rename_offer_tables.rb');
+('20260216100000_rename_offer_tables.rb'),
+('20260217000000_create_media_files.rb');

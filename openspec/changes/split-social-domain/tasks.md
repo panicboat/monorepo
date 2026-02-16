@@ -58,25 +58,30 @@ Social ドメインを Media / Post / Relationship / Feed の 4 ドメインに�
 
 ## Phase 1: Media Domain Separation
 
-### 1.1 Proto Creation (Media)
+### 1.1 Proto Creation (Media) ✅
 
-- [ ] `proto/media/v1/` ディレクトリを作成
-- [ ] `media_service.proto` を作成（UploadMedia, DeleteMedia, GetMedia, GetMediaBatch）
-- [ ] proto をビルドして生成コードを確認
+- [x] `proto/media/v1/` ディレクトリを作成
+- [x] `media_service.proto` を作成（GetUploadUrl, RegisterMedia, GetMedia, GetMediaBatch, DeleteMedia）
+- [x] proto をビルドして生成コードを確認（Ruby + TypeScript）
 
-### 1.2 Backend Implementation (Media)
+### 1.2 Backend Implementation (Media) ✅
 
-- [ ] `slices/media/` ディレクトリ構造を作成
-- [ ] `slices/media/relations/files.rb` を作成
-- [ ] `slices/media/repositories/media_repository.rb` を作成
-- [ ] `slices/media/use_cases/upload_media.rb` を実装
-- [ ] `slices/media/use_cases/delete_media.rb` を実装
-- [ ] `slices/media/use_cases/get_media.rb` を実装
-- [ ] `slices/media/handlers/media_service.rb` を実装
-- [ ] slice 設定ファイル（`config/slices/media.rb`）を作成
-- [ ] テストを作成・実行
+- [x] `slices/media/` ディレクトリ構造を作成
+- [x] `media.files` テーブルのマイグレーションを作成
+- [x] `slices/media/relations/files.rb` を作成
+- [x] `slices/media/repositories/media_repository.rb` を作成
+- [x] `slices/media/use_cases/get_upload_url.rb` を実装
+- [x] `slices/media/use_cases/register_media.rb` を実装
+- [x] `slices/media/use_cases/get_media.rb` を実装
+- [x] `slices/media/use_cases/get_media_batch.rb` を実装
+- [x] `slices/media/use_cases/delete_media.rb` を実装
+- [x] `slices/media/grpc/handler.rb` を実装
+- [x] `slices/media/presenters/media_presenter.rb` を作成
+- [x] テストを作成・実行（548 examples, 0 failures）
 
 ### 1.3 Frontend Implementation (Media)
+
+> Note: Frontend は Phase 3 完了後に Media API への移行を実施
 
 - [ ] `modules/media/` ディレクトリを作成
 - [ ] `useMediaUpload.ts` を作成
