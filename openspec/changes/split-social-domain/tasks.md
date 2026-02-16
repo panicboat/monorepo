@@ -2,9 +2,9 @@
 
 ## Overview
 
-Social ドメインを Post / Relationship / Feed の 3 ドメインに分割する。
+Social ドメインを Media / Post / Relationship / Feed の 4 ドメインに分割する。
 
-**Estimated Tasks**: 45
+**Estimated Tasks**: 55
 **Dependencies**: なし（既存機能の分割のため）
 
 ---
@@ -13,22 +13,30 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 
 ### 0.1 Schema Creation
 
+- [ ] `media` スキーマを作成
 - [ ] `post` スキーマを作成
 - [ ] `relationship` スキーマを作成
 - [ ] `feed` スキーマを作成（将来のキャッシュ用、現時点ではテーブルなし）
 
-### 0.2 Post Schema Migration
+### 0.2 Media Schema Migration
+
+- [ ] `media.files` テーブルを作成（統一メディアテーブル）
+- [ ] `public.cast_post_media` のデータを `media.files` にマイグレーション
+- [ ] `public.comment_media` のデータを `media.files` にマイグレーション
+- [ ] インデックスを作成
+
+### 0.3 Post Schema Migration
 
 - [ ] `public.cast_posts` → `post.posts` に移動・リネーム
-- [ ] `public.cast_post_media` → `post.media` に移動・リネーム
 - [ ] `public.cast_post_hashtags` → `post.hashtags` に移動・リネーム
 - [ ] `public.post_likes` → `post.likes` に移動・リネーム
 - [ ] `public.post_comments` → `post.comments` に移動・リネーム
-- [ ] `public.comment_media` → `post.comment_media` に移動・リネーム
+- [ ] `post.post_media` 参照テーブルを作成（posts ↔ media.files）
+- [ ] `post.comment_media` 参照テーブルを作成（comments ↔ media.files）
 - [ ] 外部キー制約を更新
 - [ ] インデックスを再作成
 
-### 0.3 Relationship Schema Migration
+### 0.4 Relationship Schema Migration
 
 - [ ] `public.cast_follows` → `relationship.follows` に移動・リネーム
 - [ ] `public.blocks` → `relationship.blocks` に移動・リネーム
@@ -36,8 +44,9 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 - [ ] 外部キー制約を更新
 - [ ] インデックスを再作成
 
-### 0.4 Application Layer Update
+### 0.5 Application Layer Update
 
+- [ ] ROM relations の `schema` 設定を更新（`media` スキーマ用）
 - [ ] ROM relations の `schema` 設定を更新（`post` スキーマ用）
 - [ ] ROM relations の `schema` 設定を更新（`relationship` スキーマ用）
 - [ ] シードデータのテーブル参照を更新
@@ -45,9 +54,41 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 
 ---
 
-## Phase 1: Relationship Domain Separation
+## Phase 1: Media Domain Separation
 
-### 1.1 Proto Migration (Relationship)
+### 1.1 Proto Creation (Media)
+
+- [ ] `proto/media/v1/` ディレクトリを作成
+- [ ] `media_service.proto` を作成（UploadMedia, DeleteMedia, GetMedia, GetMediaBatch）
+- [ ] proto をビルドして生成コードを確認
+
+### 1.2 Backend Implementation (Media)
+
+- [ ] `slices/media/` ディレクトリ構造を作成
+- [ ] `slices/media/relations/files.rb` を作成
+- [ ] `slices/media/repositories/media_repository.rb` を作成
+- [ ] `slices/media/use_cases/upload_media.rb` を実装
+- [ ] `slices/media/use_cases/delete_media.rb` を実装
+- [ ] `slices/media/use_cases/get_media.rb` を実装
+- [ ] `slices/media/handlers/media_service.rb` を実装
+- [ ] slice 設定ファイル（`config/slices/media.rb`）を作成
+- [ ] テストを作成・実行
+
+### 1.3 Frontend Implementation (Media)
+
+- [ ] `modules/media/` ディレクトリを作成
+- [ ] `useMediaUpload.ts` を作成
+- [ ] `useMedia.ts` を作成
+- [ ] `MediaUploader` コンポーネントを作成
+- [ ] `MediaPreview` コンポーネントを作成
+- [ ] 既存の投稿・コメントフォームから Media API を利用するよう更新
+- [ ] 動作確認
+
+---
+
+## Phase 2: Relationship Domain Separation
+
+### 2.1 Proto Migration (Relationship)
 
 - [ ] `proto/relationship/v1/` ディレクトリを作成
 - [ ] `follow_service.proto` を `relationship/v1/` にコピー（package を `relationship.v1` に変更）
@@ -55,7 +96,7 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 - [ ] `favorite_service.proto` を `relationship/v1/` にコピー
 - [ ] proto をビルドして生成コードを確認
 
-### 1.2 Backend Migration (Relationship)
+### 2.2 Backend Migration (Relationship)
 
 - [ ] `slices/relationship/` ディレクトリ構造を作成
 - [ ] `slices/social/handlers/follow_service.rb` を移動
@@ -71,7 +112,7 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 - [ ] slice 設定ファイル（`config/slices/relationship.rb`）を作成
 - [ ] テストを実行して動作確認
 
-### 1.3 Frontend Migration (Relationship)
+### 2.3 Frontend Migration (Relationship)
 
 - [ ] `modules/relationship/` ディレクトリを作成
 - [ ] `useFollow.ts` を移動
@@ -83,9 +124,9 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 
 ---
 
-## Phase 2: Post Domain Separation
+## Phase 3: Post Domain Separation
 
-### 2.1 Proto Migration (Post)
+### 3.1 Proto Migration (Post)
 
 - [ ] `proto/post/v1/` ディレクトリを作成
 - [ ] `post_service.proto` を `post/v1/` にコピー（package を `post.v1` に変更）
@@ -94,7 +135,7 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 - [ ] `ListPublicPosts` に `exclude_user_ids` パラメータを追加
 - [ ] proto をビルドして生成コードを確認
 
-### 2.2 Backend Migration (Post)
+### 3.2 Backend Migration (Post)
 
 - [ ] `slices/post/` ディレクトリ構造を作成
 - [ ] `slices/social/handlers/post_service.rb` を移動
@@ -104,11 +145,12 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 - [ ] `slices/social/use_cases/likes/` を移動
 - [ ] `slices/social/use_cases/comments/` を移動
 - [ ] 関連するリポジトリ・relations を移動
+- [ ] Post が Media ドメインを利用するよう更新
 - [ ] `ListPublicPosts` に除外フィルタを実装
 - [ ] slice 設定ファイル（`config/slices/post.rb`）を作成
 - [ ] テストを実行して動作確認
 
-### 2.3 Frontend Migration (Post)
+### 3.3 Frontend Migration (Post)
 
 - [ ] `modules/post/` ディレクトリを作成
 - [ ] `useCastPosts.ts` を移動
@@ -120,16 +162,16 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 
 ---
 
-## Phase 3: Feed Domain Creation
+## Phase 4: Feed Domain Creation
 
-### 3.1 Proto Creation (Feed)
+### 4.1 Proto Creation (Feed)
 
 - [ ] `proto/feed/v1/feed_service.proto` を作成
 - [ ] `ListGuestFeed` RPC を定義（filter: all/following/favorites）
 - [ ] `ListCastFeed` RPC を定義
 - [ ] proto をビルドして生成コードを確認
 
-### 3.2 Backend Implementation (Feed)
+### 4.2 Backend Implementation (Feed)
 
 - [ ] `slices/feed/` ディレクトリ構造を作成
 - [ ] `adapters/post_adapter.rb` を作成（Post ドメインへの問い合わせ）
@@ -140,7 +182,7 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 - [ ] slice 設定ファイル（`config/slices/feed.rb`）を作成
 - [ ] テストを作成・実行
 
-### 3.3 Frontend Migration (Feed)
+### 4.3 Frontend Migration (Feed)
 
 - [ ] `modules/feed/` ディレクトリを作成
 - [ ] `useGuestFeed.ts` を作成（新規、Feed API を呼び出す）
@@ -151,27 +193,29 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 
 ---
 
-## Phase 4: Cleanup
+## Phase 5: Cleanup
 
-### 4.1 Social Domain Removal
+### 5.1 Social Domain Removal
 
 - [ ] `slices/social/` の残りファイルが空であることを確認
 - [ ] `slices/social/` を削除
 - [ ] `proto/social/v1/` を deprecated ディレクトリに移動（または削除）
 - [ ] 旧 import を検索して残っていないことを確認
 
-### 4.2 Documentation Update
+### 5.2 Documentation Update
 
 - [ ] `services/handbooks/workspace/docs/domains/social.md` を削除
+- [ ] `services/handbooks/workspace/docs/domains/media.md` を作成
 - [ ] `services/handbooks/workspace/docs/domains/post.md` を作成
 - [ ] `services/handbooks/workspace/docs/domains/relationship.md` を作成
 - [ ] `services/handbooks/workspace/docs/domains/feed.md` を作成
 - [ ] `services/handbooks/workspace/docs/domains/README.md` を更新
 - [ ] `openspec/project.md` のドメイン一覧を更新
 
-### 4.3 Final Verification
+### 5.3 Final Verification
 
 - [ ] 全テストがパスすることを確認
+- [ ] メディアアップロード機能の動作確認
 - [ ] ゲストフィードの表示確認（all/following/favorites）
 - [ ] キャストフィード管理の表示確認
 - [ ] フォロー・ブロック・お気に入り機能の動作確認
@@ -183,18 +227,19 @@ Social ドメインを Post / Relationship / Feed の 3 ドメインに分割す
 
 以下のタスクは並列実行可能：
 
-- Phase 1.1 (Proto) と Phase 1.2 (Backend) の準備作業
-- Phase 2.1 (Proto) と Phase 2.2 (Backend) の準備作業
-- Phase 1.3 (Frontend) と Phase 2.2 (Backend) は独立
+- Phase 1 (Media) 完了後、Phase 2 (Relationship) と Phase 3 (Post) は並列実行可能
+- 各 Phase 内の Proto と Backend の準備作業
+- Frontend Migration は Backend 完了後に実行
 
 ## Dependencies
 
 ```
-Phase 0 → Phase 1, Phase 2（DB マイグレーションが先）
-Phase 1.1 → Phase 1.2 → Phase 1.3
+Phase 0 → Phase 1, Phase 2, Phase 3（DB マイグレーションが先）
+Phase 1 → Phase 3（Post が Media を利用）
 Phase 2.1 → Phase 2.2 → Phase 2.3
-Phase 1 + Phase 2 → Phase 3
-Phase 3 → Phase 4
+Phase 3.1 → Phase 3.2 → Phase 3.3
+Phase 2 + Phase 3 → Phase 4
+Phase 4 → Phase 5
 ```
 
 ## Rollback Plan

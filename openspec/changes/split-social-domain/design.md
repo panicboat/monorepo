@@ -36,6 +36,16 @@ proto/social/v1/
 
 ```
 services/monolith/workspace/slices/
+├── media/                      # Media ドメイン（共通）
+│   ├── handlers/
+│   │   └── media_service.rb
+│   ├── use_cases/
+│   │   ├── upload_media.rb
+│   │   ├── delete_media.rb
+│   │   └── get_media.rb
+│   └── repositories/
+│       └── media_repository.rb
+│
 ├── post/                       # Post ドメイン
 │   ├── handlers/
 │   │   ├── post_service.rb
@@ -75,6 +85,9 @@ services/monolith/workspace/slices/
         └── relationship_adapter.rb # Relationship ドメインへの問い合わせ
 
 proto/
+├── media/v1/
+│   └── media_service.proto
+│
 ├── post/v1/
 │   ├── post_service.proto
 │   ├── like_service.proto
@@ -99,13 +112,16 @@ proto/
 
 ```
 PostgreSQL
+├── media スキーマ
+│   ├── files           (新規: 統一メディアテーブル)
+│
 ├── post スキーマ
 │   ├── posts           (旧: public.cast_posts)
-│   ├── media           (旧: public.cast_post_media)
 │   ├── hashtags        (旧: public.cast_post_hashtags)
 │   ├── likes           (旧: public.post_likes)
 │   ├── comments        (旧: public.post_comments)
-│   └── comment_media   (旧: public.comment_media)
+│   ├── post_media      (参照テーブル: posts ↔ media.files)
+│   └── comment_media   (参照テーブル: comments ↔ media.files)
 │
 ├── relationship スキーマ
 │   ├── follows         (旧: public.cast_follows)
@@ -120,15 +136,50 @@ PostgreSQL
 
 | Current (public.) | New | Schema |
 |-------------------|-----|--------|
+| `cast_post_media` | `files` | media |
+| `comment_media` | `files` | media |
 | `cast_posts` | `posts` | post |
-| `cast_post_media` | `media` | post |
 | `cast_post_hashtags` | `hashtags` | post |
 | `post_likes` | `likes` | post |
 | `post_comments` | `comments` | post |
-| `comment_media` | `comment_media` | post |
+| - | `post_media` | post (参照) |
+| - | `comment_media` | post (参照) |
 | `cast_follows` | `follows` | relationship |
 | `blocks` | `blocks` | relationship |
 | `cast_favorites` | `favorites` | relationship |
+
+### Media Table Design
+
+```sql
+-- media.files: 統一メディアテーブル
+CREATE TABLE media.files (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  media_type VARCHAR(10) NOT NULL,  -- 'image', 'video'
+  url TEXT NOT NULL,                 -- Storage key
+  thumbnail_url TEXT,
+  metadata JSONB DEFAULT '{}',       -- width, height, duration など
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- post.post_media: Post と Media の関連
+CREATE TABLE post.post_media (
+  post_id UUID NOT NULL REFERENCES post.posts(id) ON DELETE CASCADE,
+  media_id UUID NOT NULL REFERENCES media.files(id) ON DELETE CASCADE,
+  position INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (post_id, media_id)
+);
+
+-- post.comment_media: Comment と Media の関連
+CREATE TABLE post.comment_media (
+  comment_id UUID NOT NULL REFERENCES post.comments(id) ON DELETE CASCADE,
+  media_id UUID NOT NULL REFERENCES media.files(id) ON DELETE CASCADE,
+  position INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (comment_id, media_id)
+);
+
+-- portfolio.profile_media: Profile と Media の関連（将来）
+-- Portfolio ドメインからも media.files を参照可能
+```
 
 ### Migration Approach
 
@@ -160,6 +211,29 @@ end
 
 ## Domain Boundaries
 
+### Media Domain
+
+**責務**: メディアファイル（画像・動画）のライフサイクル管理
+
+| Entity | Description |
+|--------|-------------|
+| File | アップロードされたメディアファイル（URL、サムネイル、メタデータ） |
+
+**Database Tables** (`media` スキーマ):
+- `media.files`
+
+**公開 API**:
+- `UploadMedia(file, media_type)` - メディアアップロード
+- `DeleteMedia(media_id)` - メディア削除
+- `GetMedia(media_id)` - メディア取得
+- `GetMediaBatch(media_ids)` - バッチ取得
+
+**利用ドメイン**:
+- Post: 投稿・コメントに添付
+- Portfolio: プロフィール画像（将来）
+
+---
+
 ### Post Domain
 
 **責務**: 投稿とそれに対するアクションの管理
@@ -172,11 +246,11 @@ end
 
 **Database Tables** (`post` スキーマ):
 - `post.posts`
-- `post.media`
 - `post.hashtags`
 - `post.likes`
 - `post.comments`
-- `post.comment_media`
+- `post.post_media` (参照: `media.files`)
+- `post.comment_media` (参照: `media.files`)
 
 **公開 API**:
 - `ListCastPosts(cast_id, cursor)` - キャストの投稿一覧
@@ -235,7 +309,18 @@ ListGuestFeed(guest_id, filter="following")
 
 ## Migration Strategy
 
-### Phase 1: Relationship ドメイン分離
+### Phase 1: Media ドメイン分離
+
+メディア管理を独立ドメインとして切り出し。
+
+1. `media` スキーマを作成
+2. `media.files` テーブルを作成（統一メディアテーブル）
+3. 既存データをマイグレーション（`cast_post_media`, `comment_media` → `media.files`）
+4. `slices/media/` を作成
+5. proto を `proto/media/v1/` に作成
+6. テスト実行・動作確認
+
+### Phase 2: Relationship ドメイン分離
 
 Follow, Block, Favorite を新しい `relationship` slice に移動。
 
@@ -245,16 +330,17 @@ Follow, Block, Favorite を新しい `relationship` slice に移動。
 4. 既存の `social` からの参照を更新
 5. テスト実行・動作確認
 
-### Phase 2: Post ドメイン分離
+### Phase 3: Post ドメイン分離
 
 Post, Like, Comment を新しい `post` slice に移動。
 
 1. `slices/post/` を作成
 2. 関連ファイルを移動
 3. proto を `proto/post/v1/` に移動
-4. テスト実行・動作確認
+4. Post と Media の関連テーブル（`post.post_media`, `post.comment_media`）を作成
+5. テスト実行・動作確認
 
-### Phase 3: Feed ドメイン作成
+### Phase 4: Feed ドメイン作成
 
 集約ロジックを Feed ドメインに実装。
 
@@ -264,7 +350,7 @@ Post, Like, Comment を新しい `post` slice に移動。
 4. proto を `proto/feed/v1/` に作成
 5. フロントエンドの API 呼び出しを Feed に切り替え
 
-### Phase 4: Social ドメイン削除
+### Phase 5: Social ドメイン削除
 
 1. `slices/social/` を削除
 2. `proto/social/v1/` を削除（または deprecated に）
@@ -319,6 +405,14 @@ web/nyx/workspace/src/modules/social/
 
 ```
 web/nyx/workspace/src/modules/
+├── media/
+│   ├── hooks/
+│   │   ├── useMediaUpload.ts
+│   │   └── useMedia.ts
+│   └── components/
+│       ├── MediaUploader/
+│       └── MediaPreview/
+│
 ├── post/
 │   ├── hooks/
 │   │   ├── usePosts.ts
@@ -364,7 +458,8 @@ Feed ドメインを読み取り専用に制限することで、BFF 移行時�
 
 | Decision | Pros | Cons |
 |----------|------|------|
-| 3 ドメイン分割 | 責務明確、修正容易 | 初期コスト、ドメイン間通信のオーバーヘッド |
+| 4 ドメイン分割 | 責務明確、修正容易、Media 再利用可能 | 初期コスト、ドメイン間通信のオーバーヘッド |
+| Media を独立ドメインに | Portfolio からも利用可能、統一管理 | 既存テーブル構造の変更が必要 |
 | Feed を別ドメインに | BFF 移行容易、CQRS パターン | 一時的なコード重複 |
 | 新しい proto パッケージ | 段階的移行可能 | 一時的に 2 つの proto が共存 |
 
