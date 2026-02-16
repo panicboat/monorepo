@@ -143,17 +143,16 @@ Social ドメインを Media / Post / Relationship / Feed の 4 ドメインに�
 - [x] slice 設定ファイル（`config/slices/relationship.rb`）を作成
 - [x] テストを実行して動作確認（548 examples, 0 failures）
 
-### 2.3 Frontend Migration (Relationship)
+### 2.3 Frontend Migration (Relationship) ✅
 
-> Note: Frontend は Phase 3 完了後に Relationship API への移行を実施
-
-- [ ] `modules/relationship/` ディレクトリを作成
-- [ ] `useFollow.ts` を移動
-- [ ] `useBlock.ts` を移動
-- [ ] `useFavorite.ts` を移動
-- [ ] `useFollowRequests.ts` を移動
-- [ ] import パスを更新
-- [ ] 動作確認
+- [x] `modules/relationship/` ディレクトリを作成
+- [x] `modules/relationship/types.ts` 型定義を作成
+- [x] `useFollow.ts` を作成
+- [x] `useBlock.ts` を作成
+- [x] `useFavorite.ts` を作成
+- [x] `useFollowRequests.ts` を作成
+- [x] `modules/social/hooks/index.ts` から re-export（後方互換性）
+- [x] TypeScript 検証通過
 
 ---
 
