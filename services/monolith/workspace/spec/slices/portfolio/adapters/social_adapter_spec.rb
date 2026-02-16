@@ -4,12 +4,12 @@ require "spec_helper"
 
 RSpec.describe Portfolio::Adapters::SocialAdapter do
   let(:adapter) { described_class.new }
-  let(:block_repo) { instance_double(Social::Repositories::BlockRepository) }
-  let(:follow_repo) { instance_double(Social::Repositories::FollowRepository) }
+  let(:block_repo) { instance_double(Relationship::Repositories::BlockRepository) }
+  let(:follow_repo) { instance_double(Relationship::Repositories::FollowRepository) }
 
   before do
-    allow(Social::Slice).to receive(:[]).with("repositories.block_repository").and_return(block_repo)
-    allow(Social::Slice).to receive(:[]).with("repositories.follow_repository").and_return(follow_repo)
+    allow(Relationship::Slice).to receive(:[]).with("repositories.block_repository").and_return(block_repo)
+    allow(Relationship::Slice).to receive(:[]).with("repositories.follow_repository").and_return(follow_repo)
   end
 
   describe "#blocked?" do

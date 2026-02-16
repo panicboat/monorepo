@@ -2,9 +2,9 @@
 
 module Portfolio
   module Adapters
-    # Anti-Corruption Layer for accessing Social data from Portfolio slice.
+    # Anti-Corruption Layer for accessing Relationship data from Portfolio slice.
     #
-    # This adapter abstracts the dependency on Social slice,
+    # This adapter abstracts the dependency on Relationship slice,
     # providing a clean interface for Portfolio slice to access
     # block and follow information.
     #
@@ -71,11 +71,11 @@ module Portfolio
       private
 
       def block_repo
-        @block_repo ||= Social::Slice["repositories.block_repository"]
+        @block_repo ||= Relationship::Slice["repositories.block_repository"]
       end
 
       def follow_repo
-        @follow_repo ||= Social::Slice["repositories.follow_repository"]
+        @follow_repo ||= Relationship::Slice["repositories.follow_repository"]
       end
     end
   end
