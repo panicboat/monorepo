@@ -89,7 +89,7 @@ RSpec.describe "Social::Repositories::PostRepository", type: :database do
     before do
       base_time = Time.parse("2026-01-01T10:00:00Z")
       3.times do |i|
-        db[:social__cast_posts].insert(
+        db[:post__posts].insert(
           id: SecureRandom.uuid, cast_id: cast_id, content: "Post #{i}",
           created_at: base_time + (i * 60), updated_at: base_time + (i * 60)
         )

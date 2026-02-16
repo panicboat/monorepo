@@ -3,7 +3,7 @@
 module Social
   module Relations
     class CastFavorites < Social::DB::Relation
-      schema(:"social__cast_favorites", as: :cast_favorites, infer: false) do
+      schema(:"relationship__favorites", as: :cast_favorites, infer: false) do
         attribute :id, Types::String
         attribute :cast_id, Types::String
         attribute :guest_id, Types::String

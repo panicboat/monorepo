@@ -16,7 +16,7 @@ RSpec.describe "Social::Relations::CastPosts", type: :database do
   end
 
   it "maps to the correct table" do
-    expect(relation.name.dataset).to eq(:"social__cast_posts")
+    expect(relation.name.dataset).to eq(:"post__posts")
   end
 
   it "defines associations" do

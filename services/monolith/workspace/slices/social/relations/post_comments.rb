@@ -3,7 +3,7 @@
 module Social
   module Relations
     class PostComments < Social::DB::Relation
-      schema(:"social__post_comments", as: :post_comments, infer: false) do
+      schema(:"post__comments", as: :post_comments, infer: false) do
         attribute :id, Types::String
         attribute :post_id, Types::String
         attribute :parent_id, Types::String.optional

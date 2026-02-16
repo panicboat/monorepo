@@ -431,12 +431,12 @@ post_count = 0
 cast_ids.each_with_index do |cast_id, cast_idx|
   next unless cast_id
 
-  existing = db[:"social__cast_posts"].where(cast_id: cast_id).count
+  existing = db[:"post__posts"].where(cast_id: cast_id).count
   next if existing > 0
 
   posts = casts_post_data[cast_idx] || []
   posts.each_with_index do |data, idx|
-    post_id = db[:"social__cast_posts"].insert(
+    post_id = db[:"post__posts"].insert(
       cast_id: cast_id,
       content: data[:content],
       visibility: data[:visibility],
@@ -446,7 +446,7 @@ cast_ids.each_with_index do |cast_id, cast_idx|
 
     # Insert hashtags
     data[:hashtags].each_with_index do |hashtag, position|
-      db[:"social__cast_post_hashtags"].insert(
+      db[:"post__hashtags"].insert(
         post_id: post_id,
         tag: hashtag,
         position: position,
@@ -508,17 +508,17 @@ puts "Seeding Social: Post Likes..."
 
 # Get all guests and posts
 guests = db[:portfolio__guests].all.to_a
-posts = db[:"social__cast_posts"].all.to_a
+posts = db[:"post__posts"].all.to_a
 
 like_count = 0
 guests.each do |guest|
   # Each guest likes some random posts
   posts_to_like = posts.sample(rand(2..4))
   posts_to_like.each do |post|
-    existing = db[:"social__post_likes"].where(guest_id: guest[:id], post_id: post[:id]).first
+    existing = db[:"post__likes"].where(guest_id: guest[:id], post_id: post[:id]).first
     next if existing
 
-    db[:"social__post_likes"].insert(
+    db[:"post__likes"].insert(
       guest_id: guest[:id],
       post_id: post[:id],
       created_at: Time.now,
@@ -557,7 +557,7 @@ reply_count = 0
 all_user_ids = guest_user_ids + cast_user_ids
 
 posts.each do |post|
-  existing = db[:"social__post_comments"].where(post_id: post[:id]).count
+  existing = db[:"post__comments"].where(post_id: post[:id]).count
   next if existing > 0
 
   # Add 2-4 comments per post
@@ -568,7 +568,7 @@ posts.each do |post|
     user_id = all_user_ids.sample
     data = comment_data.sample
 
-    comment_id = db[:"social__post_comments"].insert(
+    comment_id = db[:"post__comments"].insert(
       post_id: post[:id],
       user_id: user_id,
       content: data[:content],
@@ -590,7 +590,7 @@ posts.each do |post|
     next unless cast_user_id
 
     reply = reply_data.sample
-    db[:"social__post_comments"].insert(
+    db[:"post__comments"].insert(
       post_id: post[:id],
       user_id: cast_user_id,
       content: reply[:content],
@@ -600,7 +600,7 @@ posts.each do |post|
     )
 
     # Update parent's replies_count
-    db[:"social__post_comments"].where(id: comment_id).update(replies_count: 1)
+    db[:"post__comments"].where(id: comment_id).update(replies_count: 1)
     reply_count += 1
   end
 end
@@ -661,13 +661,13 @@ if yuna && mio && rin && taro && saburo && shiro
 end
 
 follow_scenarios.each do |scenario|
-  existing = db[:"social__cast_follows"].where(
+  existing = db[:"relationship__follows"].where(
     guest_id: scenario[:guest][:id],
     cast_id: scenario[:cast][:id]
   ).first
   next if existing
 
-  db[:"social__cast_follows"].insert(
+  db[:"relationship__follows"].insert(
     guest_id: scenario[:guest][:id],
     cast_id: scenario[:cast][:id],
     status: scenario[:status],
@@ -695,9 +695,9 @@ taro_block = db[:portfolio__guests].where(name: "太郎").first
 rin_block = db[:portfolio__casts].where(slug: "rin").first
 
 if taro_block && rin_block
-  existing = db[:"social__blocks"].where(blocker_id: taro_block[:id], blocked_id: rin_block[:id]).first
+  existing = db[:"relationship__blocks"].where(blocker_id: taro_block[:id], blocked_id: rin_block[:id]).first
   unless existing
-    db[:"social__blocks"].insert(
+    db[:"relationship__blocks"].insert(
       blocker_id: taro_block[:id],
       blocker_type: "guest",
       blocked_id: rin_block[:id],
@@ -745,13 +745,13 @@ if yuna_fav && mio_fav && rin_fav && taro_fav && shiro_fav
 end
 
 favorite_scenarios.each do |scenario|
-  existing = db[:"social__cast_favorites"].where(
+  existing = db[:"relationship__favorites"].where(
     guest_id: scenario[:guest][:id],
     cast_id: scenario[:cast][:id]
   ).first
   next if existing
 
-  db[:"social__cast_favorites"].insert(
+  db[:"relationship__favorites"].insert(
     guest_id: scenario[:guest][:id],
     cast_id: scenario[:cast][:id],
     created_at: Time.now,

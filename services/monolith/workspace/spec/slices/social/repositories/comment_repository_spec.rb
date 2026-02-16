@@ -207,7 +207,7 @@ RSpec.describe "Social::Repositories::CommentRepository", type: :database do
     before do
       base_time = Time.parse("2026-01-01T10:00:00Z")
       3.times do |i|
-        db[:social__post_comments].insert(
+        db[:post__comments].insert(
           id: SecureRandom.uuid,
           post_id: post.id,
           user_id: user_id,
@@ -261,7 +261,7 @@ RSpec.describe "Social::Repositories::CommentRepository", type: :database do
     before do
       base_time = Time.parse("2026-01-01T10:00:00Z")
       3.times do |i|
-        db[:social__post_comments].insert(
+        db[:post__comments].insert(
           id: SecureRandom.uuid,
           post_id: post.id,
           user_id: user_id,

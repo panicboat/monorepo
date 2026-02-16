@@ -24,6 +24,13 @@ CREATE SCHEMA identity;
 
 
 --
+-- Name: media; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA media;
+
+
+--
 -- Name: offer; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -35,6 +42,20 @@ CREATE SCHEMA offer;
 --
 
 CREATE SCHEMA portfolio;
+
+
+--
+-- Name: post; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA post;
+
+
+--
+-- Name: relationship; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA relationship;
 
 
 --
@@ -220,100 +241,10 @@ CREATE TABLE portfolio.guests (
 
 
 --
--- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
+-- Name: comment_media; Type: TABLE; Schema: post; Owner: -
 --
 
-CREATE TABLE public.schema_migrations (
-    filename text NOT NULL
-);
-
-
---
--- Name: blocks; Type: TABLE; Schema: social; Owner: -
---
-
-CREATE TABLE social.blocks (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    blocker_id uuid NOT NULL,
-    blocker_type text NOT NULL,
-    blocked_id uuid NOT NULL,
-    blocked_type text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: cast_favorites; Type: TABLE; Schema: social; Owner: -
---
-
-CREATE TABLE social.cast_favorites (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    cast_id uuid NOT NULL,
-    guest_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: cast_follows; Type: TABLE; Schema: social; Owner: -
---
-
-CREATE TABLE social.cast_follows (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    cast_id uuid NOT NULL,
-    guest_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    status text DEFAULT 'approved'::text NOT NULL
-);
-
-
---
--- Name: cast_post_hashtags; Type: TABLE; Schema: social; Owner: -
---
-
-CREATE TABLE social.cast_post_hashtags (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    post_id uuid NOT NULL,
-    tag character varying(100) NOT NULL,
-    "position" integer DEFAULT 0 NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: cast_post_media; Type: TABLE; Schema: social; Owner: -
---
-
-CREATE TABLE social.cast_post_media (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    post_id uuid NOT NULL,
-    media_type character varying(10) NOT NULL,
-    url text NOT NULL,
-    thumbnail_url text,
-    "position" integer DEFAULT 0 NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: cast_posts; Type: TABLE; Schema: social; Owner: -
---
-
-CREATE TABLE social.cast_posts (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    cast_id uuid NOT NULL,
-    content text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    visibility text DEFAULT 'public'::text NOT NULL
-);
-
-
---
--- Name: comment_media; Type: TABLE; Schema: social; Owner: -
---
-
-CREATE TABLE social.comment_media (
+CREATE TABLE post.comment_media (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     comment_id uuid NOT NULL,
     media_type character varying(10) NOT NULL,
@@ -325,29 +256,119 @@ CREATE TABLE social.comment_media (
 
 
 --
--- Name: post_comments; Type: TABLE; Schema: social; Owner: -
+-- Name: comments; Type: TABLE; Schema: post; Owner: -
 --
 
-CREATE TABLE social.post_comments (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    post_id uuid NOT NULL,
+CREATE TABLE post.comments (
+    id uuid DEFAULT gen_random_uuid() CONSTRAINT post_comments_id_not_null NOT NULL,
+    post_id uuid CONSTRAINT post_comments_post_id_not_null NOT NULL,
     parent_id uuid,
-    user_id uuid NOT NULL,
-    content text NOT NULL,
-    replies_count integer DEFAULT 0 NOT NULL,
+    user_id uuid CONSTRAINT post_comments_user_id_not_null NOT NULL,
+    content text CONSTRAINT post_comments_content_not_null NOT NULL,
+    replies_count integer DEFAULT 0 CONSTRAINT post_comments_replies_count_not_null NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT post_comments_created_at_not_null NOT NULL
+);
+
+
+--
+-- Name: hashtags; Type: TABLE; Schema: post; Owner: -
+--
+
+CREATE TABLE post.hashtags (
+    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_post_hashtags_id_not_null NOT NULL,
+    post_id uuid CONSTRAINT cast_post_hashtags_post_id_not_null NOT NULL,
+    tag character varying(100) CONSTRAINT cast_post_hashtags_tag_not_null NOT NULL,
+    "position" integer DEFAULT 0 CONSTRAINT cast_post_hashtags_position_not_null NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_post_hashtags_created_at_not_null NOT NULL
+);
+
+
+--
+-- Name: likes; Type: TABLE; Schema: post; Owner: -
+--
+
+CREATE TABLE post.likes (
+    id uuid DEFAULT gen_random_uuid() CONSTRAINT post_likes_id_not_null NOT NULL,
+    post_id uuid CONSTRAINT post_likes_post_id_not_null NOT NULL,
+    guest_id uuid CONSTRAINT post_likes_guest_id_not_null NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT post_likes_created_at_not_null NOT NULL
+);
+
+
+--
+-- Name: post_media; Type: TABLE; Schema: post; Owner: -
+--
+
+CREATE TABLE post.post_media (
+    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_post_media_id_not_null NOT NULL,
+    post_id uuid CONSTRAINT cast_post_media_post_id_not_null NOT NULL,
+    media_type character varying(10) CONSTRAINT cast_post_media_media_type_not_null NOT NULL,
+    url text CONSTRAINT cast_post_media_url_not_null NOT NULL,
+    thumbnail_url text,
+    "position" integer DEFAULT 0 CONSTRAINT cast_post_media_position_not_null NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_post_media_created_at_not_null NOT NULL
+);
+
+
+--
+-- Name: posts; Type: TABLE; Schema: post; Owner: -
+--
+
+CREATE TABLE post.posts (
+    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_posts_id_not_null NOT NULL,
+    cast_id uuid CONSTRAINT cast_posts_cast_id_not_null NOT NULL,
+    content text CONSTRAINT cast_posts_content_not_null NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_posts_created_at_not_null NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() CONSTRAINT cast_posts_updated_at_not_null NOT NULL,
+    visibility text DEFAULT 'public'::text CONSTRAINT cast_posts_visibility_not_null NOT NULL
+);
+
+
+--
+-- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.schema_migrations (
+    filename text NOT NULL
+);
+
+
+--
+-- Name: blocks; Type: TABLE; Schema: relationship; Owner: -
+--
+
+CREATE TABLE relationship.blocks (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    blocker_id uuid NOT NULL,
+    blocker_type text NOT NULL,
+    blocked_id uuid NOT NULL,
+    blocked_type text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
 --
--- Name: post_likes; Type: TABLE; Schema: social; Owner: -
+-- Name: favorites; Type: TABLE; Schema: relationship; Owner: -
 --
 
-CREATE TABLE social.post_likes (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    post_id uuid NOT NULL,
-    guest_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+CREATE TABLE relationship.favorites (
+    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_favorites_id_not_null NOT NULL,
+    cast_id uuid CONSTRAINT cast_favorites_cast_id_not_null NOT NULL,
+    guest_id uuid CONSTRAINT cast_favorites_guest_id_not_null NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_favorites_created_at_not_null NOT NULL
+);
+
+
+--
+-- Name: follows; Type: TABLE; Schema: relationship; Owner: -
+--
+
+CREATE TABLE relationship.follows (
+    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_follows_id_not_null NOT NULL,
+    cast_id uuid CONSTRAINT cast_follows_cast_id_not_null NOT NULL,
+    guest_id uuid CONSTRAINT cast_follows_guest_id_not_null NOT NULL,
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_follows_created_at_not_null NOT NULL,
+    status text DEFAULT 'approved'::text CONSTRAINT cast_follows_status_not_null NOT NULL
 );
 
 
@@ -464,6 +485,62 @@ ALTER TABLE ONLY portfolio.guests
 
 
 --
+-- Name: hashtags cast_post_hashtags_pkey; Type: CONSTRAINT; Schema: post; Owner: -
+--
+
+ALTER TABLE ONLY post.hashtags
+    ADD CONSTRAINT cast_post_hashtags_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: post_media cast_post_media_pkey; Type: CONSTRAINT; Schema: post; Owner: -
+--
+
+ALTER TABLE ONLY post.post_media
+    ADD CONSTRAINT cast_post_media_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: posts cast_posts_pkey; Type: CONSTRAINT; Schema: post; Owner: -
+--
+
+ALTER TABLE ONLY post.posts
+    ADD CONSTRAINT cast_posts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: comment_media comment_media_pkey; Type: CONSTRAINT; Schema: post; Owner: -
+--
+
+ALTER TABLE ONLY post.comment_media
+    ADD CONSTRAINT comment_media_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: comments post_comments_pkey; Type: CONSTRAINT; Schema: post; Owner: -
+--
+
+ALTER TABLE ONLY post.comments
+    ADD CONSTRAINT post_comments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: likes post_likes_pkey; Type: CONSTRAINT; Schema: post; Owner: -
+--
+
+ALTER TABLE ONLY post.likes
+    ADD CONSTRAINT post_likes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: likes post_likes_post_id_guest_id_key; Type: CONSTRAINT; Schema: post; Owner: -
+--
+
+ALTER TABLE ONLY post.likes
+    ADD CONSTRAINT post_likes_post_id_guest_id_key UNIQUE (post_id, guest_id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -472,107 +549,51 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
--- Name: blocks blocks_blocker_id_blocked_id_key; Type: CONSTRAINT; Schema: social; Owner: -
+-- Name: blocks blocks_blocker_id_blocked_id_key; Type: CONSTRAINT; Schema: relationship; Owner: -
 --
 
-ALTER TABLE ONLY social.blocks
+ALTER TABLE ONLY relationship.blocks
     ADD CONSTRAINT blocks_blocker_id_blocked_id_key UNIQUE (blocker_id, blocked_id);
 
 
 --
--- Name: blocks blocks_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+-- Name: blocks blocks_pkey; Type: CONSTRAINT; Schema: relationship; Owner: -
 --
 
-ALTER TABLE ONLY social.blocks
+ALTER TABLE ONLY relationship.blocks
     ADD CONSTRAINT blocks_pkey PRIMARY KEY (id);
 
 
 --
--- Name: cast_favorites cast_favorites_cast_id_guest_id_key; Type: CONSTRAINT; Schema: social; Owner: -
+-- Name: favorites cast_favorites_cast_id_guest_id_key; Type: CONSTRAINT; Schema: relationship; Owner: -
 --
 
-ALTER TABLE ONLY social.cast_favorites
+ALTER TABLE ONLY relationship.favorites
     ADD CONSTRAINT cast_favorites_cast_id_guest_id_key UNIQUE (cast_id, guest_id);
 
 
 --
--- Name: cast_favorites cast_favorites_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+-- Name: favorites cast_favorites_pkey; Type: CONSTRAINT; Schema: relationship; Owner: -
 --
 
-ALTER TABLE ONLY social.cast_favorites
+ALTER TABLE ONLY relationship.favorites
     ADD CONSTRAINT cast_favorites_pkey PRIMARY KEY (id);
 
 
 --
--- Name: cast_follows cast_follows_cast_id_guest_id_key; Type: CONSTRAINT; Schema: social; Owner: -
+-- Name: follows cast_follows_cast_id_guest_id_key; Type: CONSTRAINT; Schema: relationship; Owner: -
 --
 
-ALTER TABLE ONLY social.cast_follows
+ALTER TABLE ONLY relationship.follows
     ADD CONSTRAINT cast_follows_cast_id_guest_id_key UNIQUE (cast_id, guest_id);
 
 
 --
--- Name: cast_follows cast_follows_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+-- Name: follows cast_follows_pkey; Type: CONSTRAINT; Schema: relationship; Owner: -
 --
 
-ALTER TABLE ONLY social.cast_follows
+ALTER TABLE ONLY relationship.follows
     ADD CONSTRAINT cast_follows_pkey PRIMARY KEY (id);
-
-
---
--- Name: cast_post_hashtags cast_post_hashtags_pkey; Type: CONSTRAINT; Schema: social; Owner: -
---
-
-ALTER TABLE ONLY social.cast_post_hashtags
-    ADD CONSTRAINT cast_post_hashtags_pkey PRIMARY KEY (id);
-
-
---
--- Name: cast_post_media cast_post_media_pkey; Type: CONSTRAINT; Schema: social; Owner: -
---
-
-ALTER TABLE ONLY social.cast_post_media
-    ADD CONSTRAINT cast_post_media_pkey PRIMARY KEY (id);
-
-
---
--- Name: cast_posts cast_posts_pkey; Type: CONSTRAINT; Schema: social; Owner: -
---
-
-ALTER TABLE ONLY social.cast_posts
-    ADD CONSTRAINT cast_posts_pkey PRIMARY KEY (id);
-
-
---
--- Name: comment_media comment_media_pkey; Type: CONSTRAINT; Schema: social; Owner: -
---
-
-ALTER TABLE ONLY social.comment_media
-    ADD CONSTRAINT comment_media_pkey PRIMARY KEY (id);
-
-
---
--- Name: post_comments post_comments_pkey; Type: CONSTRAINT; Schema: social; Owner: -
---
-
-ALTER TABLE ONLY social.post_comments
-    ADD CONSTRAINT post_comments_pkey PRIMARY KEY (id);
-
-
---
--- Name: post_likes post_likes_pkey; Type: CONSTRAINT; Schema: social; Owner: -
---
-
-ALTER TABLE ONLY social.post_likes
-    ADD CONSTRAINT post_likes_pkey PRIMARY KEY (id);
-
-
---
--- Name: post_likes post_likes_post_id_guest_id_key; Type: CONSTRAINT; Schema: social; Owner: -
---
-
-ALTER TABLE ONLY social.post_likes
-    ADD CONSTRAINT post_likes_post_id_guest_id_key UNIQUE (post_id, guest_id);
 
 
 --
@@ -667,136 +688,136 @@ CREATE UNIQUE INDEX portfolio_guests_user_id_index ON portfolio.guests USING btr
 
 
 --
--- Name: idx_cast_posts_created_at_desc; Type: INDEX; Schema: social; Owner: -
+-- Name: idx_cast_posts_created_at_desc; Type: INDEX; Schema: post; Owner: -
 --
 
-CREATE INDEX idx_cast_posts_created_at_desc ON social.cast_posts USING btree (created_at DESC);
-
-
---
--- Name: idx_post_comments_created_at_desc; Type: INDEX; Schema: social; Owner: -
---
-
-CREATE INDEX idx_post_comments_created_at_desc ON social.post_comments USING btree (created_at DESC);
+CREATE INDEX idx_cast_posts_created_at_desc ON post.posts USING btree (created_at DESC);
 
 
 --
--- Name: social_blocks_blocked_id_index; Type: INDEX; Schema: social; Owner: -
+-- Name: idx_post_comments_created_at_desc; Type: INDEX; Schema: post; Owner: -
 --
 
-CREATE INDEX social_blocks_blocked_id_index ON social.blocks USING btree (blocked_id);
-
-
---
--- Name: social_blocks_blocker_id_index; Type: INDEX; Schema: social; Owner: -
---
-
-CREATE INDEX social_blocks_blocker_id_index ON social.blocks USING btree (blocker_id);
+CREATE INDEX idx_post_comments_created_at_desc ON post.comments USING btree (created_at DESC);
 
 
 --
--- Name: social_cast_favorites_cast_id_index; Type: INDEX; Schema: social; Owner: -
+-- Name: social_cast_post_hashtags_post_id_index; Type: INDEX; Schema: post; Owner: -
 --
 
-CREATE INDEX social_cast_favorites_cast_id_index ON social.cast_favorites USING btree (cast_id);
-
-
---
--- Name: social_cast_favorites_guest_id_index; Type: INDEX; Schema: social; Owner: -
---
-
-CREATE INDEX social_cast_favorites_guest_id_index ON social.cast_favorites USING btree (guest_id);
+CREATE INDEX social_cast_post_hashtags_post_id_index ON post.hashtags USING btree (post_id);
 
 
 --
--- Name: social_cast_follows_cast_id_index; Type: INDEX; Schema: social; Owner: -
+-- Name: social_cast_post_hashtags_tag_index; Type: INDEX; Schema: post; Owner: -
 --
 
-CREATE INDEX social_cast_follows_cast_id_index ON social.cast_follows USING btree (cast_id);
-
-
---
--- Name: social_cast_follows_guest_id_index; Type: INDEX; Schema: social; Owner: -
---
-
-CREATE INDEX social_cast_follows_guest_id_index ON social.cast_follows USING btree (guest_id);
+CREATE INDEX social_cast_post_hashtags_tag_index ON post.hashtags USING btree (tag);
 
 
 --
--- Name: social_cast_follows_status_index; Type: INDEX; Schema: social; Owner: -
+-- Name: social_cast_post_media_post_id_index; Type: INDEX; Schema: post; Owner: -
 --
 
-CREATE INDEX social_cast_follows_status_index ON social.cast_follows USING btree (status);
-
-
---
--- Name: social_cast_post_hashtags_post_id_index; Type: INDEX; Schema: social; Owner: -
---
-
-CREATE INDEX social_cast_post_hashtags_post_id_index ON social.cast_post_hashtags USING btree (post_id);
+CREATE INDEX social_cast_post_media_post_id_index ON post.post_media USING btree (post_id);
 
 
 --
--- Name: social_cast_post_hashtags_tag_index; Type: INDEX; Schema: social; Owner: -
+-- Name: social_cast_posts_cast_id_index; Type: INDEX; Schema: post; Owner: -
 --
 
-CREATE INDEX social_cast_post_hashtags_tag_index ON social.cast_post_hashtags USING btree (tag);
-
-
---
--- Name: social_cast_post_media_post_id_index; Type: INDEX; Schema: social; Owner: -
---
-
-CREATE INDEX social_cast_post_media_post_id_index ON social.cast_post_media USING btree (post_id);
+CREATE INDEX social_cast_posts_cast_id_index ON post.posts USING btree (cast_id);
 
 
 --
--- Name: social_cast_posts_cast_id_index; Type: INDEX; Schema: social; Owner: -
+-- Name: social_comment_media_comment_id_index; Type: INDEX; Schema: post; Owner: -
 --
 
-CREATE INDEX social_cast_posts_cast_id_index ON social.cast_posts USING btree (cast_id);
-
-
---
--- Name: social_comment_media_comment_id_index; Type: INDEX; Schema: social; Owner: -
---
-
-CREATE INDEX social_comment_media_comment_id_index ON social.comment_media USING btree (comment_id);
+CREATE INDEX social_comment_media_comment_id_index ON post.comment_media USING btree (comment_id);
 
 
 --
--- Name: social_post_comments_parent_id_index; Type: INDEX; Schema: social; Owner: -
+-- Name: social_post_comments_parent_id_index; Type: INDEX; Schema: post; Owner: -
 --
 
-CREATE INDEX social_post_comments_parent_id_index ON social.post_comments USING btree (parent_id);
-
-
---
--- Name: social_post_comments_post_id_index; Type: INDEX; Schema: social; Owner: -
---
-
-CREATE INDEX social_post_comments_post_id_index ON social.post_comments USING btree (post_id);
+CREATE INDEX social_post_comments_parent_id_index ON post.comments USING btree (parent_id);
 
 
 --
--- Name: social_post_comments_user_id_index; Type: INDEX; Schema: social; Owner: -
+-- Name: social_post_comments_post_id_index; Type: INDEX; Schema: post; Owner: -
 --
 
-CREATE INDEX social_post_comments_user_id_index ON social.post_comments USING btree (user_id);
-
-
---
--- Name: social_post_likes_guest_id_index; Type: INDEX; Schema: social; Owner: -
---
-
-CREATE INDEX social_post_likes_guest_id_index ON social.post_likes USING btree (guest_id);
+CREATE INDEX social_post_comments_post_id_index ON post.comments USING btree (post_id);
 
 
 --
--- Name: social_post_likes_post_id_index; Type: INDEX; Schema: social; Owner: -
+-- Name: social_post_comments_user_id_index; Type: INDEX; Schema: post; Owner: -
 --
 
-CREATE INDEX social_post_likes_post_id_index ON social.post_likes USING btree (post_id);
+CREATE INDEX social_post_comments_user_id_index ON post.comments USING btree (user_id);
+
+
+--
+-- Name: social_post_likes_guest_id_index; Type: INDEX; Schema: post; Owner: -
+--
+
+CREATE INDEX social_post_likes_guest_id_index ON post.likes USING btree (guest_id);
+
+
+--
+-- Name: social_post_likes_post_id_index; Type: INDEX; Schema: post; Owner: -
+--
+
+CREATE INDEX social_post_likes_post_id_index ON post.likes USING btree (post_id);
+
+
+--
+-- Name: social_blocks_blocked_id_index; Type: INDEX; Schema: relationship; Owner: -
+--
+
+CREATE INDEX social_blocks_blocked_id_index ON relationship.blocks USING btree (blocked_id);
+
+
+--
+-- Name: social_blocks_blocker_id_index; Type: INDEX; Schema: relationship; Owner: -
+--
+
+CREATE INDEX social_blocks_blocker_id_index ON relationship.blocks USING btree (blocker_id);
+
+
+--
+-- Name: social_cast_favorites_cast_id_index; Type: INDEX; Schema: relationship; Owner: -
+--
+
+CREATE INDEX social_cast_favorites_cast_id_index ON relationship.favorites USING btree (cast_id);
+
+
+--
+-- Name: social_cast_favorites_guest_id_index; Type: INDEX; Schema: relationship; Owner: -
+--
+
+CREATE INDEX social_cast_favorites_guest_id_index ON relationship.favorites USING btree (guest_id);
+
+
+--
+-- Name: social_cast_follows_cast_id_index; Type: INDEX; Schema: relationship; Owner: -
+--
+
+CREATE INDEX social_cast_follows_cast_id_index ON relationship.follows USING btree (cast_id);
+
+
+--
+-- Name: social_cast_follows_guest_id_index; Type: INDEX; Schema: relationship; Owner: -
+--
+
+CREATE INDEX social_cast_follows_guest_id_index ON relationship.follows USING btree (guest_id);
+
+
+--
+-- Name: social_cast_follows_status_index; Type: INDEX; Schema: relationship; Owner: -
+--
+
+CREATE INDEX social_cast_follows_status_index ON relationship.follows USING btree (status);
 
 
 --
@@ -856,59 +877,59 @@ ALTER TABLE ONLY portfolio.cast_genres
 
 
 --
--- Name: cast_post_hashtags cast_post_hashtags_post_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+-- Name: hashtags cast_post_hashtags_post_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
 --
 
-ALTER TABLE ONLY social.cast_post_hashtags
-    ADD CONSTRAINT cast_post_hashtags_post_id_fkey FOREIGN KEY (post_id) REFERENCES social.cast_posts(id) ON DELETE CASCADE;
-
-
---
--- Name: cast_post_media cast_post_media_post_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
---
-
-ALTER TABLE ONLY social.cast_post_media
-    ADD CONSTRAINT cast_post_media_post_id_fkey FOREIGN KEY (post_id) REFERENCES social.cast_posts(id) ON DELETE CASCADE;
+ALTER TABLE ONLY post.hashtags
+    ADD CONSTRAINT cast_post_hashtags_post_id_fkey FOREIGN KEY (post_id) REFERENCES post.posts(id) ON DELETE CASCADE;
 
 
 --
--- Name: comment_media comment_media_comment_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+-- Name: post_media cast_post_media_post_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
 --
 
-ALTER TABLE ONLY social.comment_media
-    ADD CONSTRAINT comment_media_comment_id_fkey FOREIGN KEY (comment_id) REFERENCES social.post_comments(id) ON DELETE CASCADE;
-
-
---
--- Name: post_comments post_comments_parent_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
---
-
-ALTER TABLE ONLY social.post_comments
-    ADD CONSTRAINT post_comments_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES social.post_comments(id) ON DELETE CASCADE;
+ALTER TABLE ONLY post.post_media
+    ADD CONSTRAINT cast_post_media_post_id_fkey FOREIGN KEY (post_id) REFERENCES post.posts(id) ON DELETE CASCADE;
 
 
 --
--- Name: post_comments post_comments_post_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+-- Name: comment_media comment_media_comment_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
 --
 
-ALTER TABLE ONLY social.post_comments
-    ADD CONSTRAINT post_comments_post_id_fkey FOREIGN KEY (post_id) REFERENCES social.cast_posts(id) ON DELETE CASCADE;
+ALTER TABLE ONLY post.comment_media
+    ADD CONSTRAINT comment_media_comment_id_fkey FOREIGN KEY (comment_id) REFERENCES post.comments(id) ON DELETE CASCADE;
 
 
 --
--- Name: post_comments post_comments_user_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+-- Name: comments post_comments_parent_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
 --
 
-ALTER TABLE ONLY social.post_comments
+ALTER TABLE ONLY post.comments
+    ADD CONSTRAINT post_comments_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES post.comments(id) ON DELETE CASCADE;
+
+
+--
+-- Name: comments post_comments_post_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
+--
+
+ALTER TABLE ONLY post.comments
+    ADD CONSTRAINT post_comments_post_id_fkey FOREIGN KEY (post_id) REFERENCES post.posts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: comments post_comments_user_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
+--
+
+ALTER TABLE ONLY post.comments
     ADD CONSTRAINT post_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES identity.users(id) ON DELETE CASCADE;
 
 
 --
--- Name: post_likes post_likes_post_id_fkey; Type: FK CONSTRAINT; Schema: social; Owner: -
+-- Name: likes post_likes_post_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
 --
 
-ALTER TABLE ONLY social.post_likes
-    ADD CONSTRAINT post_likes_post_id_fkey FOREIGN KEY (post_id) REFERENCES social.cast_posts(id) ON DELETE CASCADE;
+ALTER TABLE ONLY post.likes
+    ADD CONSTRAINT post_likes_post_id_fkey FOREIGN KEY (post_id) REFERENCES post.posts(id) ON DELETE CASCADE;
 
 
 --
@@ -956,4 +977,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260213020000_allow_null_price_on_cast_plans.rb'),
 ('20260213030000_revert_null_price_on_cast_plans.rb'),
 ('20260216000000_move_plans_schedules_to_offer.rb'),
+('20260216000000_split_social_schema.rb'),
 ('20260216100000_rename_offer_tables.rb');

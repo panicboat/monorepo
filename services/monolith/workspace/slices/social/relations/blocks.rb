@@ -3,7 +3,7 @@
 module Social
   module Relations
     class Blocks < Social::DB::Relation
-      schema(:"social__blocks", as: :blocks, infer: false) do
+      schema(:"relationship__blocks", as: :blocks, infer: false) do
         attribute :id, Types::String
         attribute :blocker_id, Types::String
         attribute :blocker_type, Types::String

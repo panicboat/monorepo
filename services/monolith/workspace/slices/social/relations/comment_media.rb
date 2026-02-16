@@ -3,7 +3,7 @@
 module Social
   module Relations
     class CommentMedia < Social::DB::Relation
-      schema(:"social__comment_media", as: :comment_media, infer: false) do
+      schema(:"post__comment_media", as: :comment_media, infer: false) do
         attribute :id, Types::String
         attribute :comment_id, Types::String
         attribute :media_type, Types::String

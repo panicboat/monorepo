@@ -3,7 +3,7 @@
 module Social
   module Relations
     class CastPosts < Social::DB::Relation
-      schema(:"social__cast_posts", as: :cast_posts, infer: false) do
+      schema(:"post__posts", as: :cast_posts, infer: false) do
         attribute :id, Types::String
         attribute :cast_id, Types::String
         attribute :content, Types::String

@@ -3,7 +3,7 @@
 module Social
   module Relations
     class CastPostMedia < Social::DB::Relation
-      schema(:"social__cast_post_media", as: :cast_post_media, infer: false) do
+      schema(:"post__post_media", as: :cast_post_media, infer: false) do
         attribute :id, Types::String
         attribute :post_id, Types::String
         attribute :media_type, Types::String
@@ -15,7 +15,7 @@ module Social
         primary_key :id
 
         associations do
-          belongs_to :cast_post, foreign_key: :post_id
+          belongs_to :cast_posts, foreign_key: :post_id
         end
       end
     end

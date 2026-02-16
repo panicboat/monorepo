@@ -3,7 +3,7 @@
 module Social
   module Relations
     class CastPostHashtags < Social::DB::Relation
-      schema(:"social__cast_post_hashtags", as: :cast_post_hashtags, infer: false) do
+      schema(:"post__hashtags", as: :cast_post_hashtags, infer: false) do
         attribute :id, Types::String
         attribute :post_id, Types::String
         attribute :tag, Types::String

@@ -16,11 +16,11 @@ RSpec.describe "Social::Relations::CastPostMedia", type: :database do
   end
 
   it "maps to the correct table" do
-    expect(relation.name.dataset).to eq(:"social__cast_post_media")
+    expect(relation.name.dataset).to eq(:"post__post_media")
   end
 
   it "defines associations" do
     associations = relation.schema.associations.elements
-    expect(associations.keys).to include(:cast_post)
+    expect(associations.keys).to include(:cast_posts)
   end
 end

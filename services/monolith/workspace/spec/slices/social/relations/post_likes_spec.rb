@@ -11,27 +11,27 @@ RSpec.describe "Social::Relations::PostLikes", type: :database do
 
   describe "table structure" do
     it "can insert a like record" do
-      db[:social__post_likes].insert(
+      db[:post__likes].insert(
         post_id: post.id,
         guest_id: guest_id,
         created_at: Time.now
       )
 
-      like = db[:social__post_likes].where(post_id: post.id, guest_id: guest_id).first
+      like = db[:post__likes].where(post_id: post.id, guest_id: guest_id).first
       expect(like).not_to be_nil
       expect(like[:post_id]).to eq(post.id)
       expect(like[:guest_id]).to eq(guest_id)
     end
 
     it "enforces unique constraint on post_id and guest_id" do
-      db[:social__post_likes].insert(
+      db[:post__likes].insert(
         post_id: post.id,
         guest_id: guest_id,
         created_at: Time.now
       )
 
       expect {
-        db[:social__post_likes].insert(
+        db[:post__likes].insert(
           post_id: post.id,
           guest_id: guest_id,
           created_at: Time.now

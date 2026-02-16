@@ -3,7 +3,7 @@
 module Social
   module Relations
     class PostLikes < Social::DB::Relation
-      schema(:"social__post_likes", as: :post_likes, infer: false) do
+      schema(:"post__likes", as: :post_likes, infer: false) do
         attribute :id, Types::String
         attribute :post_id, Types::String
         attribute :guest_id, Types::String

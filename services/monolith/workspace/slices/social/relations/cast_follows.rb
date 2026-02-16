@@ -3,7 +3,7 @@
 module Social
   module Relations
     class CastFollows < Social::DB::Relation
-      schema(:"social__cast_follows", as: :cast_follows, infer: false) do
+      schema(:"relationship__follows", as: :cast_follows, infer: false) do
         attribute :id, Types::String
         attribute :cast_id, Types::String
         attribute :guest_id, Types::String

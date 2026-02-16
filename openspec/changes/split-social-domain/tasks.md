@@ -9,48 +9,50 @@ Social ドメインを Media / Post / Relationship / Feed の 4 ドメインに�
 
 ---
 
-## Phase 0: Database Schema Migration
+## Phase 0: Database Schema Migration ✅
+
+> **Note**: Simple Approach を採用。メディアテーブルの統合は Phase 1 で行う。
 
 ### 0.1 Schema Creation
 
-- [ ] `media` スキーマを作成
-- [ ] `post` スキーマを作成
-- [ ] `relationship` スキーマを作成
-- [ ] `feed` スキーマを作成（将来のキャッシュ用、現時点ではテーブルなし）
+- [x] `media` スキーマを作成
+- [x] `post` スキーマを作成
+- [x] `relationship` スキーマを作成
+- [x] `feed` スキーマを作成（将来のキャッシュ用、現時点ではテーブルなし）
 
 ### 0.2 Media Schema Migration
 
-- [ ] `media.files` テーブルを作成（統一メディアテーブル）
-- [ ] `public.cast_post_media` のデータを `media.files` にマイグレーション
-- [ ] `public.comment_media` のデータを `media.files` にマイグレーション
-- [ ] インデックスを作成
+- [ ] ~~`media.files` テーブルを作成（統一メディアテーブル）~~ → Phase 1 で実施
+- [ ] ~~`public.cast_post_media` のデータを `media.files` にマイグレーション~~ → Phase 1 で実施
+- [ ] ~~`public.comment_media` のデータを `media.files` にマイグレーション~~ → Phase 1 で実施
+- [ ] ~~インデックスを作成~~ → Phase 1 で実施
 
 ### 0.3 Post Schema Migration
 
-- [ ] `public.cast_posts` → `post.posts` に移動・リネーム
-- [ ] `public.cast_post_hashtags` → `post.hashtags` に移動・リネーム
-- [ ] `public.post_likes` → `post.likes` に移動・リネーム
-- [ ] `public.post_comments` → `post.comments` に移動・リネーム
-- [ ] `post.post_media` 参照テーブルを作成（posts ↔ media.files）
-- [ ] `post.comment_media` 参照テーブルを作成（comments ↔ media.files）
-- [ ] 外部キー制約を更新
-- [ ] インデックスを再作成
+- [x] `social.cast_posts` → `post.posts` に移動・リネーム
+- [x] `social.cast_post_hashtags` → `post.hashtags` に移動・リネーム
+- [x] `social.post_likes` → `post.likes` に移動・リネーム
+- [x] `social.post_comments` → `post.comments` に移動・リネーム
+- [x] `social.cast_post_media` → `post.post_media` に移動・リネーム（構造維持）
+- [x] `social.comment_media` → `post.comment_media` に移動（構造維持）
+- [x] 外部キー制約は自動で更新される（PostgreSQL SET SCHEMA）
+- [x] インデックスは自動で維持される
 
 ### 0.4 Relationship Schema Migration
 
-- [ ] `public.cast_follows` → `relationship.follows` に移動・リネーム
-- [ ] `public.blocks` → `relationship.blocks` に移動・リネーム
-- [ ] `public.cast_favorites` → `relationship.favorites` に移動・リネーム
-- [ ] 外部キー制約を更新
-- [ ] インデックスを再作成
+- [x] `social.cast_follows` → `relationship.follows` に移動・リネーム
+- [x] `social.blocks` → `relationship.blocks` に移動
+- [x] `social.cast_favorites` → `relationship.favorites` に移動・リネーム
+- [x] 外部キー制約は自動で更新される
+- [x] インデックスは自動で維持される
 
 ### 0.5 Application Layer Update
 
-- [ ] ROM relations の `schema` 設定を更新（`media` スキーマ用）
-- [ ] ROM relations の `schema` 設定を更新（`post` スキーマ用）
-- [ ] ROM relations の `schema` 設定を更新（`relationship` スキーマ用）
-- [ ] シードデータのテーブル参照を更新
-- [ ] テストを実行して動作確認
+- [x] ROM relations の `schema` 設定を更新（`post` スキーマ用）
+- [x] ROM relations の `schema` 設定を更新（`relationship` スキーマ用）
+- [x] シードデータのテーブル参照を更新
+- [x] テストファイルのテーブル参照を更新
+- [x] テストを実行して動作確認（540 examples, 0 failures）
 
 ---
 
