@@ -175,25 +175,29 @@ Social ドメインを Media / Post / Relationship / Feed の 4 ドメインに�
 
 ## Phase 4: Feed Domain Creation
 
-### 4.1 Proto Creation (Feed)
+### 4.1 Proto Creation (Feed) ✅
 
-- [ ] `proto/feed/v1/feed_service.proto` を作成
-- [ ] `ListGuestFeed` RPC を定義（filter: all/following/favorites）
-- [ ] `ListCastFeed` RPC を定義
-- [ ] proto をビルドして生成コードを確認
+- [x] `proto/feed/v1/feed_service.proto` を作成
+- [x] `ListGuestFeed` RPC を定義（filter: all/following/favorites）
+- [x] `ListCastFeed` RPC を定義
+- [x] proto をビルドして生成コードを確認
 
-### 4.2 Backend Implementation (Feed)
+### 4.2 Backend Implementation (Feed) ✅
 
-- [ ] `slices/feed/` ディレクトリ構造を作成
-- [ ] `adapters/post_adapter.rb` を作成（Post ドメインへの問い合わせ）
-- [ ] `adapters/relationship_adapter.rb` を作成（Relationship ドメインへの問い合わせ）
-- [ ] `use_cases/list_guest_feed.rb` を実装
-- [ ] `use_cases/list_cast_feed.rb` を実装
-- [ ] `handlers/feed_service.rb` を実装
-- [ ] slice 設定ファイル（`config/slices/feed.rb`）を作成
-- [ ] テストを作成・実行
+- [x] `slices/feed/` ディレクトリ構造を作成
+- [x] `adapters/post_adapter.rb` を作成（Post ドメインへの問い合わせ）
+- [x] `adapters/relationship_adapter.rb` を作成（Relationship ドメインへの問い合わせ）
+- [x] `adapters/cast_adapter.rb` を作成（Portfolio ドメインへの問い合わせ）
+- [x] `adapters/guest_adapter.rb` を作成（Portfolio ドメインへの問い合わせ）
+- [x] `use_cases/list_guest_feed.rb` を実装
+- [x] `use_cases/list_cast_feed.rb` を実装
+- [x] `grpc/handler.rb` を実装（FeedService）
+- [x] `presenters/feed_presenter.rb` を作成
+- [x] テストを実行して動作確認（548 examples, 0 failures）
 
 ### 4.3 Frontend Migration (Feed)
+
+> Note: Frontend は Phase 5 (Cleanup) 完了後に Feed API への移行を実施
 
 - [ ] `modules/feed/` ディレクトリを作成
 - [ ] `useGuestFeed.ts` を作成（新規、Feed API を呼び出す）

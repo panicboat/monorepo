@@ -51,6 +51,7 @@ require "relationship/v1/favorite_service_services_pb"
 require "post/v1/post_service_services_pb"
 require "post/v1/like_service_services_pb"
 require "post/v1/comment_service_services_pb"
+require "feed/v1/feed_service_services_pb"
 
 # Configure Gruf
 Gruf.configure do |c|
@@ -87,6 +88,7 @@ require_relative "../slices/post/grpc/handler"
 require_relative "../slices/post/grpc/post_handler"
 require_relative "../slices/post/grpc/like_handler"
 require_relative "../slices/post/grpc/comment_handler"
+require_relative "../slices/feed/grpc/handler"
 
 Hanami.logger.info("Starting gRPC Stub Server on #{Gruf.server_binding_url}")
 Hanami.logger.info("Services: #{Gruf.services}")
