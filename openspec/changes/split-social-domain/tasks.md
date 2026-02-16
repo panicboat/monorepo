@@ -135,31 +135,33 @@ Social ドメインを Media / Post / Relationship / Feed の 4 ドメインに�
 
 ## Phase 3: Post Domain Separation
 
-### 3.1 Proto Migration (Post)
+### 3.1 Proto Migration (Post) ✅
 
-- [ ] `proto/post/v1/` ディレクトリを作成
-- [ ] `post_service.proto` を `post/v1/` にコピー（package を `post.v1` に変更）
-- [ ] `like_service.proto` を `post/v1/` にコピー
-- [ ] `comment_service.proto` を `post/v1/` にコピー
-- [ ] `ListPublicPosts` に `exclude_user_ids` パラメータを追加
-- [ ] proto をビルドして生成コードを確認
+- [x] `proto/post/v1/` ディレクトリを作成
+- [x] `post_service.proto` を `post/v1/` にコピー（package を `post.v1` に変更）
+- [x] `like_service.proto` を `post/v1/` にコピー
+- [x] `comment_service.proto` を `post/v1/` にコピー
+- [x] `ListCastPosts` に `exclude_cast_ids` パラメータを追加
+- [x] proto をビルドして生成コードを確認
 
-### 3.2 Backend Migration (Post)
+### 3.2 Backend Migration (Post) ✅
 
-- [ ] `slices/post/` ディレクトリ構造を作成
-- [ ] `slices/social/handlers/post_service.rb` を移動
-- [ ] `slices/social/handlers/like_service.rb` を移動
-- [ ] `slices/social/handlers/comment_service.rb` を移動
-- [ ] `slices/social/use_cases/posts/` を移動
-- [ ] `slices/social/use_cases/likes/` を移動
-- [ ] `slices/social/use_cases/comments/` を移動
-- [ ] 関連するリポジトリ・relations を移動
-- [ ] Post が Media ドメインを利用するよう更新
-- [ ] `ListPublicPosts` に除外フィルタを実装
-- [ ] slice 設定ファイル（`config/slices/post.rb`）を作成
-- [ ] テストを実行して動作確認
+- [x] `slices/post/` ディレクトリ構造を作成
+- [x] `slices/social/handlers/post_service.rb` を移動
+- [x] `slices/social/handlers/like_service.rb` を移動
+- [x] `slices/social/handlers/comment_service.rb` を移動
+- [x] `slices/social/use_cases/posts/` を移動
+- [x] `slices/social/use_cases/likes/` を移動
+- [x] `slices/social/use_cases/comments/` を移動
+- [x] 関連するリポジトリ・relations を移動
+- [x] Post が Relationship ドメインを利用するよう更新（adapters/relationship_adapter.rb）
+- [x] `ListCastPosts` に除外フィルタを実装（exclude_cast_ids）
+- [x] slice 設定ファイル（Hanami 2.x 自動検出）
+- [x] テストを実行して動作確認（548 examples, 0 failures）
 
 ### 3.3 Frontend Migration (Post)
+
+> Note: Frontend は Phase 4 完了後に Post API への移行を実施
 
 - [ ] `modules/post/` ディレクトリを作成
 - [ ] `useCastPosts.ts` を移動
