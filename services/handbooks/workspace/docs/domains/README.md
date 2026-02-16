@@ -9,7 +9,10 @@
 | [Identity](./identity.md) | 認証・認可 (Cast/Guest分岐) | `slices/identity` | `modules/identity` |
 | [Offer](./offer.md) | スケジュール・料金プラン管理 | `slices/offer` | `modules/offer` |
 | [Portfolio](./portfolio.md) | カタログ、検索、プロフィール管理 | `slices/portfolio` | `modules/portfolio` |
-| [Social](./social.md) | タイムライン、いいね、コメント | `slices/social` | `modules/social` |
+| [Media](./media.md) | メディアファイル統一管理 | `slices/media` | `modules/media` |
+| [Post](./post.md) | 投稿、いいね、コメント | `slices/post` | `modules/post` |
+| [Relationship](./relationship.md) | フォロー、ブロック、お気に入り | `slices/relationship` | `modules/relationship` |
+| [Feed](./feed.md) | フィード集約 | `slices/feed` | `modules/feed` |
 
 ## Implementation Status
 
@@ -18,9 +21,25 @@
 | Identity | ✓ | ✓ | ✓ |
 | Offer | ✓ | ✓ | ✓ |
 | Portfolio | ✓ | ✓ | ✓ |
-| Social | ✓ | ✓ | ✓ |
+| Media | ✓ | - | ✓ |
+| Post | ✓ | - | ✓ |
+| Relationship | ✓ | - | ✓ |
+| Feed | ✓ | - | ✓ |
 
 - ✓: 実装済み
+- -: 未着手
+
+## Domain Dependencies
+
+```
+Identity
+    ↓
+Portfolio ← Relationship
+    ↓           ↓
+  Offer      Post ← Media
+               ↓
+             Feed (aggregator)
+```
 
 ## Adding a New Domain
 

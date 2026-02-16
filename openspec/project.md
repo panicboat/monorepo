@@ -29,7 +29,7 @@
 
 本プロジェクトは **Modular Monolith** として構築されていますが、将来的な分割を見据えてドメインに明確に分離して実装します。
 
-**現在は 4 ドメイン構成でコア機能の完成度を高めています。**
+**現在は 7 ドメイン構成でコア機能の完成度を高めています。**
 
 **詳細なドメイン定義は [`services/handbooks/workspace/docs/domains/`](../services/handbooks/workspace/docs/domains/README.md) を参照してください。**
 
@@ -38,7 +38,10 @@
 | [Identity](../services/handbooks/workspace/docs/domains/identity.md) | 認証・認可 (Cast/Guest分岐) | ✓ Active |
 | [Offer](../services/handbooks/workspace/docs/domains/offer.md) | スケジュール・料金プラン管理 | ✓ Active |
 | [Portfolio](../services/handbooks/workspace/docs/domains/portfolio.md) | カタログ、検索、プロフィール管理 | ✓ Active |
-| [Social](../services/handbooks/workspace/docs/domains/social.md) | タイムライン、いいね、コメント、フォロー | ✓ Active |
+| [Media](../services/handbooks/workspace/docs/domains/media.md) | メディアファイル統一管理 | ✓ Active |
+| [Post](../services/handbooks/workspace/docs/domains/post.md) | 投稿、いいね、コメント | ✓ Active |
+| [Relationship](../services/handbooks/workspace/docs/domains/relationship.md) | フォロー、ブロック、お気に入り | ✓ Active |
+| [Feed](../services/handbooks/workspace/docs/domains/feed.md) | フィード集約 | ✓ Active |
 
 **将来実装予定のドメイン:**
 

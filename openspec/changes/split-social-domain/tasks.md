@@ -4,8 +4,30 @@
 
 Social ドメインを Media / Post / Relationship / Feed の 4 ドメインに分割する。
 
+**Status**: Backend 完了 ✅ / Frontend 未着手
 **Estimated Tasks**: 55
 **Dependencies**: なし（既存機能の分割のため）
+
+### Progress Summary
+
+| Phase | Backend | Frontend |
+|-------|---------|----------|
+| Phase 0: DB Migration | ✅ Complete | N/A |
+| Phase 1: Media | ✅ Complete | ⏳ Pending |
+| Phase 2: Relationship | ✅ Complete | ⏳ Pending |
+| Phase 3: Post | ✅ Complete | ⏳ Pending |
+| Phase 4: Feed | ✅ Complete | ⏳ Pending |
+| Phase 5: Cleanup | ✅ Complete | N/A |
+
+### Commits
+
+- `394242a` feat(social): split schema into media/post/relationship (Phase 0)
+- `c702177` feat(media): add Media domain with unified media service (Phase 1)
+- `67d5c3b` feat(relationship): add Relationship domain with follow/block/favorite services (Phase 2)
+- `5eb362b` feat(post): add Post domain with post/like/comment services (Phase 3)
+- `189fc1f` feat(feed): add Feed domain with guest/cast feed services (Phase 4)
+- `3c63665` test: add tests for Post, Relationship, and Feed domains
+- `dce2bae` refactor: remove Social slice, migrate to new domain structure (Phase 5)
 
 ---
 
@@ -208,33 +230,37 @@ Social ドメインを Media / Post / Relationship / Feed の 4 ドメインに�
 
 ---
 
-## Phase 5: Cleanup
+## Phase 5: Cleanup ✅
 
-### 5.1 Social Domain Removal
+### 5.1 Social Domain Removal ✅
 
-- [ ] `slices/social/` の残りファイルが空であることを確認
-- [ ] `slices/social/` を削除
-- [ ] `proto/social/v1/` を deprecated ディレクトリに移動（または削除）
-- [ ] 旧 import を検索して残っていないことを確認
+- [x] `slices/social/` の残りファイルが空であることを確認
+- [x] `slices/social/` を削除
+- [x] `proto/social/v1/` を削除
+- [x] `stubs/social/v1/` を削除（Ruby + TypeScript）
+- [x] `spec/slices/social/` を削除
+- [x] `bin/grpc` から Social service bindings を削除
+- [x] `Portfolio::Adapters::SocialAdapter` を `Relationship::Slice` に更新
+- [x] 旧 import を検索して残っていないことを確認
 
-### 5.2 Documentation Update
+### 5.2 Documentation Update ✅
 
-- [ ] `services/handbooks/workspace/docs/domains/social.md` を削除
-- [ ] `services/handbooks/workspace/docs/domains/media.md` を作成
-- [ ] `services/handbooks/workspace/docs/domains/post.md` を作成
-- [ ] `services/handbooks/workspace/docs/domains/relationship.md` を作成
-- [ ] `services/handbooks/workspace/docs/domains/feed.md` を作成
-- [ ] `services/handbooks/workspace/docs/domains/README.md` を更新
-- [ ] `openspec/project.md` のドメイン一覧を更新
+- [x] `services/handbooks/workspace/docs/domains/social.md` を削除
+- [x] `services/handbooks/workspace/docs/domains/media.md` を作成
+- [x] `services/handbooks/workspace/docs/domains/post.md` を作成
+- [x] `services/handbooks/workspace/docs/domains/relationship.md` を作成
+- [x] `services/handbooks/workspace/docs/domains/feed.md` を作成
+- [x] `services/handbooks/workspace/docs/domains/README.md` を更新
+- [x] `openspec/project.md` のドメイン一覧を更新
 
-### 5.3 Final Verification
+### 5.3 Final Verification ✅
 
-- [ ] 全テストがパスすることを確認
-- [ ] メディアアップロード機能の動作確認
-- [ ] ゲストフィードの表示確認（all/following/favorites）
-- [ ] キャストフィード管理の表示確認
-- [ ] フォロー・ブロック・お気に入り機能の動作確認
-- [ ] いいね・コメント機能の動作確認
+- [x] 全テストがパスすることを確認（349 examples, 0 failures）
+- [ ] メディアアップロード機能の動作確認（E2E）
+- [ ] ゲストフィードの表示確認（E2E）
+- [ ] キャストフィード管理の表示確認（E2E）
+- [ ] フォロー・ブロック・お気に入り機能の動作確認（E2E）
+- [ ] いいね・コメント機能の動作確認（E2E）
 
 ---
 
