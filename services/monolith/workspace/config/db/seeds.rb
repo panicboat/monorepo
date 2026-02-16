@@ -267,16 +267,16 @@ end
 puts "  Created #{cast_ids.size} casts"
 
 # =============================================================================
-# Offer: Cast Plans
+# Offer: Plans
 # =============================================================================
 
-puts "Seeding Offer: Cast Plans..."
+puts "Seeding Offer: Plans..."
 
 plan_count = 0
 cast_ids.each do |cast_id|
   next unless cast_id
 
-  existing = db[:offer__cast_plans].where(cast_id: cast_id).count
+  existing = db[:offer__plans].where(cast_id: cast_id).count
   next if existing > 0
 
   [
@@ -284,7 +284,7 @@ cast_ids.each do |cast_id|
     { name: "スタンダード", duration_minutes: 60, price: 10000, is_recommended: true },
     { name: "ロング", duration_minutes: 120, price: 18000, is_recommended: false },
   ].each do |plan|
-    db[:offer__cast_plans].insert(
+    db[:offer__plans].insert(
       plan.merge(
         cast_id: cast_id,
         created_at: Time.now,
@@ -295,19 +295,19 @@ cast_ids.each do |cast_id|
   end
 end
 
-puts "  Created #{plan_count} cast plans"
+puts "  Created #{plan_count} plans"
 
 # =============================================================================
-# Offer: Cast Schedules
+# Offer: Schedules
 # =============================================================================
 
-puts "Seeding Offer: Cast Schedules..."
+puts "Seeding Offer: Schedules..."
 
 schedule_count = 0
 cast_ids.each do |cast_id|
   next unless cast_id
 
-  existing = db[:offer__cast_schedules].where(cast_id: cast_id).count
+  existing = db[:offer__schedules].where(cast_id: cast_id).count
   next if existing > 0
 
   # Create schedules for the next 7 days
@@ -315,7 +315,7 @@ cast_ids.each do |cast_id|
     date = Date.today + day_offset
     next if date.saturday? || date.sunday? # Skip weekends for variety
 
-    db[:offer__cast_schedules].insert(
+    db[:offer__schedules].insert(
       cast_id: cast_id,
       date: date,
       start_time: "18:00",
@@ -327,7 +327,7 @@ cast_ids.each do |cast_id|
   end
 end
 
-puts "  Created #{schedule_count} cast schedules"
+puts "  Created #{schedule_count} schedules"
 
 # =============================================================================
 # Portfolio: Cast Genres

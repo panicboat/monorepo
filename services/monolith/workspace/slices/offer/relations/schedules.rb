@@ -2,14 +2,13 @@
 
 module Offer
   module Relations
-    class CastPlans < Offer::DB::Relation
-      schema(:"offer__cast_plans", as: :cast_plans, infer: false) do
+    class Schedules < Offer::DB::Relation
+      schema(:"offer__schedules", as: :schedules, infer: false) do
         attribute :id, Types::String      # UUID
         attribute :cast_id, Types::String  # UUID (FK → casts)
-        attribute :name, Types::String
-        attribute :price, Types::Integer
-        attribute :duration_minutes, Types::Integer
-        attribute :is_recommended, Types::Bool
+        attribute :date, Types::Date
+        attribute :start_time, Types::String
+        attribute :end_time, Types::String
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 

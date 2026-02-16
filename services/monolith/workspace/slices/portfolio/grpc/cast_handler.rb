@@ -278,7 +278,7 @@ module Portfolio
             genres = genre_repo.find_by_ids(genre_ids)
             ::Portfolio::V1::ListCastsResponse::CastItem.new(
               profile: ProfilePresenter.to_proto(c, genres: genres, is_online: online_ids.include?(c.id)),
-              plans: PlanPresenter.many_to_proto(c.cast_plans)
+              plans: PlanPresenter.many_to_proto(c.plans)
             )
           },
           next_cursor: result[:next_cursor] || "",

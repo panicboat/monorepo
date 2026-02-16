@@ -53,7 +53,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
       default_schedule_end: "20:00",
       image_path: "path/img.jpg",
       visibility: "public",
-      cast_plans: [],
+      plans: [],
       images: [],
       social_links: nil,
       age: 25,

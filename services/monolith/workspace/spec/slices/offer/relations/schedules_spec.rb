@@ -2,8 +2,8 @@
 
 require "spec_helper"
 
-RSpec.describe "Offer::Relations::CastSchedules", type: :database do
-  let(:relation) { Hanami.app.slices[:offer]["relations.cast_schedules"] }
+RSpec.describe "Offer::Relations::Schedules", type: :database do
+  let(:relation) { Hanami.app.slices[:offer]["relations.schedules"] }
 
   it "defines the correct schema" do
     expect(relation.schema.primary_key_name).to eq(:id)
@@ -15,6 +15,6 @@ RSpec.describe "Offer::Relations::CastSchedules", type: :database do
   end
 
   it "maps to the correct table" do
-    expect(relation.name.dataset).to eq(:"offer__cast_schedules")
+    expect(relation.name.dataset).to eq(:"offer__schedules")
   end
 end

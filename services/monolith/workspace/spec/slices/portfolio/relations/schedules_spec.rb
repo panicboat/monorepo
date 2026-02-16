@@ -2,8 +2,8 @@
 
 require "spec_helper"
 
-RSpec.describe "Portfolio::Relations::CastSchedules", type: :database do
-  let(:relation) { Hanami.app.slices[:portfolio]["relations.cast_schedules"] }
+RSpec.describe "Portfolio::Relations::Schedules", type: :database do
+  let(:relation) { Hanami.app.slices[:portfolio]["relations.schedules"] }
 
   it "defines the correct schema" do
     expect(relation.schema.primary_key_name).to eq(:id)
@@ -15,8 +15,8 @@ RSpec.describe "Portfolio::Relations::CastSchedules", type: :database do
   end
 
   it "maps to the correct table" do
-    # Note: Table moved to offer schema but still accessed via Portfolio for read-only operations
-    expect(relation.name.dataset).to eq(:"offer__cast_schedules")
+    # Note: Table in offer schema but still accessed via Portfolio for read-only operations
+    expect(relation.name.dataset).to eq(:"offer__schedules")
   end
 
   # Note: Association removed - this is now a read-only relation for online status queries

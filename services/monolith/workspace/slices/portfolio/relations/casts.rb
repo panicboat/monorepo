@@ -28,9 +28,9 @@ module Portfolio
 
         associations do
           # belongs_to :user, relation: :'identity.relations.users', foreign_key: :user_id
-          has_many :cast_plans, foreign_key: :cast_id
+          has_many :plans, foreign_key: :cast_id
           has_many :cast_areas, foreign_key: :cast_id
-          # Note: cast_schedules association moved to Offer slice
+          # Note: schedules association moved to Offer slice
         end
       end
     end

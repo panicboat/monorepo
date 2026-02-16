@@ -30,7 +30,7 @@ module Offer
           raise CastNotFoundError, "Cast not found" unless portfolio_adapter.cast_exists?(cast_id)
 
           # 2. Save schedules
-          repo.save_schedules(cast_id: cast_id, schedules: schedules)
+          repo.save_schedules(cast_id: cast_id, schedules_data: schedules)
         end
       end
     end

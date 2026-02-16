@@ -74,7 +74,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
     end
 
     it "returns schedules ordered by date and time" do
-      repo.save_schedules(cast_id: cast.id, schedules: [
+      repo.save_schedules(cast_id: cast.id, schedules_data: [
         { date: Date.today + 2, start_time: "14:00", end_time: "18:00" },
         { date: Date.today + 1, start_time: "10:00", end_time: "14:00" },
         { date: Date.today + 1, start_time: "16:00", end_time: "20:00" }
@@ -87,7 +87,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
     end
 
     it "filters by date range" do
-      repo.save_schedules(cast_id: cast.id, schedules: [
+      repo.save_schedules(cast_id: cast.id, schedules_data: [
         { date: Date.today + 1, start_time: "10:00", end_time: "14:00" },
         { date: Date.today + 3, start_time: "10:00", end_time: "14:00" },
         { date: Date.today + 5, start_time: "10:00", end_time: "14:00" }
@@ -113,14 +113,14 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
         { date: Date.today + 1, start_time: "12:00", end_time: "18:00" }
       ]
 
-      result = repo.save_schedules(cast_id: cast.id, schedules: schedules_data)
+      result = repo.save_schedules(cast_id: cast.id, schedules_data: schedules_data)
       expect(result.size).to eq(2)
     end
 
     it "replaces future schedules but preserves past schedules" do
       # Create a past schedule directly
       past_date = Date.today - 7
-      schedules_relation = Hanami.app.slices[:offer]["relations.cast_schedules"]
+      schedules_relation = Hanami.app.slices[:offer]["relations.schedules"]
       schedules_relation.changeset(:create, {
         cast_id: cast.id,
         date: past_date,
@@ -129,7 +129,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
       }).commit
 
       # Save new future schedules
-      repo.save_schedules(cast_id: cast.id, schedules: [
+      repo.save_schedules(cast_id: cast.id, schedules_data: [
         { date: Date.today + 1, start_time: "14:00", end_time: "18:00" }
       ])
 
@@ -144,7 +144,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
       past_date = Date.today - 1
       future_date = Date.today + 1
 
-      result = repo.save_schedules(cast_id: cast.id, schedules: [
+      result = repo.save_schedules(cast_id: cast.id, schedules_data: [
         { date: past_date, start_time: "10:00", end_time: "14:00" },
         { date: future_date, start_time: "10:00", end_time: "14:00" }
       ])

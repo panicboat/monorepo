@@ -5,8 +5,8 @@
 
 module Portfolio
   module Relations
-    class CastSchedules < Portfolio::DB::Relation
-      schema(:"offer__cast_schedules", as: :cast_schedules, infer: false) do
+    class Schedules < Portfolio::DB::Relation
+      schema(:"offer__schedules", as: :schedules, infer: false) do
         attribute :id, Types::String
         attribute :cast_id, Types::String
         attribute :date, Types::Date

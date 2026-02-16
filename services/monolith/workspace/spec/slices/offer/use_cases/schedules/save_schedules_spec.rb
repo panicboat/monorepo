@@ -16,7 +16,7 @@ RSpec.describe Offer::UseCases::Schedules::SaveSchedules do
 
       before do
         allow(adapter).to receive(:cast_exists?).with(cast_id).and_return(true)
-        allow(repo).to receive(:save_schedules).with(cast_id: cast_id, schedules: schedules).and_return(saved_schedules)
+        allow(repo).to receive(:save_schedules).with(cast_id: cast_id, schedules_data: schedules).and_return(saved_schedules)
       end
 
       it "saves schedules and returns result" do

@@ -35,7 +35,7 @@
 * 予約可能枠（Availability）の計算。
 
 
-* **DB:** `cast_plans`, `cast_schedules`
+* **DB:** `plans`, `schedules`
 * **特性:** 予約機能（Booking Service）と密接に連携する。
 * **なぜ分ける？:** プロフィール（Portfolio）と提供情報（Offer）は責務が異なるため。
 

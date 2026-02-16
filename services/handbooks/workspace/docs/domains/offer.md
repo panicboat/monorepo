@@ -26,8 +26,8 @@ Portfolio は「キャストを見つける・知る」という**発見（Disco
 
 ## Database Tables
 
-- `cast_plans` - 料金プラン
-- `cast_schedules` - スケジュール
+- `plans` - 料金プラン
+- `schedules` - スケジュール
 
 ## Implementation
 

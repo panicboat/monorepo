@@ -90,33 +90,33 @@ CREATE TABLE identity.users (
 
 
 --
--- Name: cast_plans; Type: TABLE; Schema: offer; Owner: -
+-- Name: plans; Type: TABLE; Schema: offer; Owner: -
 --
 
-CREATE TABLE offer.cast_plans (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    cast_id uuid NOT NULL,
-    name text NOT NULL,
-    price integer NOT NULL,
-    duration_minutes integer NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    is_recommended boolean DEFAULT false NOT NULL
+CREATE TABLE offer.plans (
+    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_plans_id_not_null NOT NULL,
+    cast_id uuid CONSTRAINT cast_plans_cast_id_not_null NOT NULL,
+    name text CONSTRAINT cast_plans_name_not_null NOT NULL,
+    price integer CONSTRAINT cast_plans_price_not_null NOT NULL,
+    duration_minutes integer CONSTRAINT cast_plans_duration_minutes_not_null NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_plans_created_at_not_null NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_plans_updated_at_not_null NOT NULL,
+    is_recommended boolean DEFAULT false CONSTRAINT cast_plans_is_recommended_not_null NOT NULL
 );
 
 
 --
--- Name: cast_schedules; Type: TABLE; Schema: offer; Owner: -
+-- Name: schedules; Type: TABLE; Schema: offer; Owner: -
 --
 
-CREATE TABLE offer.cast_schedules (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    cast_id uuid NOT NULL,
-    date date NOT NULL,
-    start_time text NOT NULL,
-    end_time text NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+CREATE TABLE offer.schedules (
+    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_schedules_id_not_null NOT NULL,
+    cast_id uuid CONSTRAINT cast_schedules_cast_id_not_null NOT NULL,
+    date date CONSTRAINT cast_schedules_date_not_null NOT NULL,
+    start_time text CONSTRAINT cast_schedules_start_time_not_null NOT NULL,
+    end_time text CONSTRAINT cast_schedules_end_time_not_null NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_schedules_created_at_not_null NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_schedules_updated_at_not_null NOT NULL
 );
 
 
@@ -376,18 +376,18 @@ ALTER TABLE ONLY identity.users
 
 
 --
--- Name: cast_plans cast_plans_pkey; Type: CONSTRAINT; Schema: offer; Owner: -
+-- Name: plans cast_plans_pkey; Type: CONSTRAINT; Schema: offer; Owner: -
 --
 
-ALTER TABLE ONLY offer.cast_plans
+ALTER TABLE ONLY offer.plans
     ADD CONSTRAINT cast_plans_pkey PRIMARY KEY (id);
 
 
 --
--- Name: cast_schedules cast_schedules_pkey; Type: CONSTRAINT; Schema: offer; Owner: -
+-- Name: schedules cast_schedules_pkey; Type: CONSTRAINT; Schema: offer; Owner: -
 --
 
-ALTER TABLE ONLY offer.cast_schedules
+ALTER TABLE ONLY offer.schedules
     ADD CONSTRAINT cast_schedules_pkey PRIMARY KEY (id);
 
 
@@ -614,14 +614,14 @@ CREATE UNIQUE INDEX identity_users_phone_number_index ON identity.users USING bt
 -- Name: portfolio_cast_plans_cast_id_index; Type: INDEX; Schema: offer; Owner: -
 --
 
-CREATE INDEX portfolio_cast_plans_cast_id_index ON offer.cast_plans USING btree (cast_id);
+CREATE INDEX portfolio_cast_plans_cast_id_index ON offer.plans USING btree (cast_id);
 
 
 --
 -- Name: portfolio_cast_schedules_cast_id_index; Type: INDEX; Schema: offer; Owner: -
 --
 
-CREATE INDEX portfolio_cast_schedules_cast_id_index ON offer.cast_schedules USING btree (cast_id);
+CREATE INDEX portfolio_cast_schedules_cast_id_index ON offer.schedules USING btree (cast_id);
 
 
 --
@@ -808,18 +808,18 @@ ALTER TABLE ONLY identity.refresh_tokens
 
 
 --
--- Name: cast_plans cast_plans_cast_id_fkey; Type: FK CONSTRAINT; Schema: offer; Owner: -
+-- Name: plans cast_plans_cast_id_fkey; Type: FK CONSTRAINT; Schema: offer; Owner: -
 --
 
-ALTER TABLE ONLY offer.cast_plans
+ALTER TABLE ONLY offer.plans
     ADD CONSTRAINT cast_plans_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
 
 
 --
--- Name: cast_schedules cast_schedules_cast_id_fkey; Type: FK CONSTRAINT; Schema: offer; Owner: -
+-- Name: schedules cast_schedules_cast_id_fkey; Type: FK CONSTRAINT; Schema: offer; Owner: -
 --
 
-ALTER TABLE ONLY offer.cast_schedules
+ALTER TABLE ONLY offer.schedules
     ADD CONSTRAINT cast_schedules_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
 
 
@@ -955,4 +955,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260213014603_remove_plan_id_from_cast_schedules.rb'),
 ('20260213020000_allow_null_price_on_cast_plans.rb'),
 ('20260213030000_revert_null_price_on_cast_plans.rb'),
-('20260216000000_move_plans_schedules_to_offer.rb');
+('20260216000000_move_plans_schedules_to_offer.rb'),
+('20260216100000_rename_offer_tables.rb');

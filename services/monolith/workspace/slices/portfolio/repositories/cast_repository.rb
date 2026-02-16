@@ -37,11 +37,11 @@ module Portfolio
       # Use Offer::Repositories::OfferRepository for save_plans/save_schedules.
 
       def find_with_plans(id)
-        casts.combine(:cast_plans).by_pk(id).one
+        casts.combine(:plans).by_pk(id).one
       end
 
       def find_by_user_id_with_plans(user_id)
-        casts.combine(:cast_plans).where(user_id: user_id).one
+        casts.combine(:plans).where(user_id: user_id).one
       end
 
       def save_images(id:, image_path:, images:, avatar_path: nil)
@@ -69,7 +69,7 @@ module Portfolio
       end
 
       def list_by_visibility(visibility_filter = nil)
-        scope = casts.combine(:cast_plans)
+        scope = casts.combine(:plans)
         scope = scope.where(visibility: visibility_filter) if visibility_filter
         scope.to_a
       end
@@ -112,7 +112,7 @@ module Portfolio
       end
 
       def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, query: nil, limit: nil, cursor: nil, registered_only: false)
-        scope = casts.combine(:cast_plans)
+        scope = casts.combine(:plans)
 
         # Registered filter (for guest access, only show casts with registered_at set)
         scope = scope.exclude(registered_at: nil) if registered_only
@@ -154,7 +154,7 @@ module Portfolio
           # Has schedule today and current time is within the schedule time range
           today = Date.today.to_s
           now = Time.now.strftime("%H:%M")
-          cast_ids_online = cast_schedules
+          cast_ids_online = schedules
             .where(date: today)
             .where { start_time <= now }
             .where { end_time >= now }
@@ -187,7 +187,7 @@ module Portfolio
       def is_online?(cast_id)
         today = Date.today.to_s
         now = Time.now.strftime("%H:%M")
-        cast_schedules
+        schedules
           .where(cast_id: cast_id, date: today)
           .where { start_time <= now }
           .where { end_time >= now }
@@ -197,7 +197,7 @@ module Portfolio
       def online_cast_ids
         today = Date.today.to_s
         now = Time.now.strftime("%H:%M")
-        cast_schedules
+        schedules
           .where(date: today)
           .where { start_time <= now }
           .where { end_time >= now }

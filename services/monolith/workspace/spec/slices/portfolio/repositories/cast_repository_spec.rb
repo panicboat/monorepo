@@ -41,7 +41,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
     end
 
     before do
-      schedule_repo = Hanami.app.slices[:offer]["relations.cast_schedules"]
+      schedule_repo = Hanami.app.slices[:offer]["relations.schedules"]
       # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
         cast_id: cast_with_schedule.id,
@@ -70,7 +70,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
     end
 
     before do
-      schedule_repo = Hanami.app.slices[:offer]["relations.cast_schedules"]
+      schedule_repo = Hanami.app.slices[:offer]["relations.schedules"]
       # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
         cast_id: online_cast.id,
@@ -134,7 +134,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       end
 
       before do
-        schedule_repo = Hanami.app.slices[:offer]["relations.cast_schedules"]
+        schedule_repo = Hanami.app.slices[:offer]["relations.schedules"]
         # Use fixed time range that works regardless of current time (00:00 - 23:59)
         schedule_repo.changeset(:create, {
           cast_id: online_cast.id,
