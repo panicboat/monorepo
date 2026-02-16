@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { authFetch, getAuthToken } from "@/lib/auth";
-import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
+import { FollowStatus } from "@/stub/relationship/v1/follow_service_pb";
 
 interface FollowState {
   [castId: string]: FollowStatus;

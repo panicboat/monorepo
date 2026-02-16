@@ -3,7 +3,7 @@ import { castClient, offerClient, followClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { ConnectError } from "@connectrpc/connect";
 import { mapCastProfileToFrontend } from "@/modules/portfolio/lib/cast/profile";
-import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
+import { FollowStatus } from "@/stub/relationship/v1/follow_service_pb";
 import { CastVisibility } from "@/stub/portfolio/v1/cast_service_pb";
 
 // UUID v4 format check

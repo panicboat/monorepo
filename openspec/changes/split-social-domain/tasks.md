@@ -101,13 +101,15 @@ Social ドメインを Media / Post / Relationship / Feed の 4 ドメインに�
 - [x] `slices/media/presenters/media_presenter.rb` を作成
 - [x] テストを作成・実行（548 examples, 0 failures）
 
-### 1.3 Frontend Implementation (Media)
+### 1.3 Frontend Implementation (Media) 🚧
 
-> Note: Frontend は Phase 3 完了後に Media API への移行を実施
-
-- [ ] `modules/media/` ディレクトリを作成
-- [ ] `useMediaUpload.ts` を作成
-- [ ] `useMedia.ts` を作成
+- [x] `modules/media/` ディレクトリを作成
+- [x] `modules/media/types.ts` 型定義を作成
+- [x] `modules/media/lib/mappers.ts` マッパーを作成
+- [x] `modules/media/hooks/useMediaUpload.ts` を作成
+- [x] `modules/media/hooks/useMedia.ts` を作成
+- [x] `app/api/media/` API routes を作成
+- [x] `lib/grpc.ts` に mediaClient を追加
 - [ ] `MediaUploader` コンポーネントを作成
 - [ ] `MediaPreview` コンポーネントを作成
 - [ ] 既存の投稿・コメントフォームから Media API を利用するよう更新
