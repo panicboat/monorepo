@@ -5,9 +5,9 @@ require "json"
 require "gruf"
 require "storage"
 require_relative "../../../lib/grpc/authenticatable"
-require_relative "../../social/adapters/cast_adapter"
-require_relative "../../social/adapters/guest_adapter"
-require_relative "../../social/adapters/user_adapter"
+require_relative "../../post/adapters/cast_adapter"
+require_relative "../../post/adapters/guest_adapter"
+require_relative "../../post/adapters/user_adapter"
 
 module Relationship
   module Grpc
@@ -26,15 +26,15 @@ module Relationship
       protected
 
       def cast_adapter
-        @cast_adapter ||= Social::Adapters::CastAdapter.new
+        @cast_adapter ||= Post::Adapters::CastAdapter.new
       end
 
       def guest_adapter
-        @guest_adapter ||= Social::Adapters::GuestAdapter.new
+        @guest_adapter ||= Post::Adapters::GuestAdapter.new
       end
 
       def user_adapter
-        @user_adapter ||= Social::Adapters::UserAdapter.new
+        @user_adapter ||= Post::Adapters::UserAdapter.new
       end
 
       def find_my_cast
