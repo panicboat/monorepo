@@ -42,7 +42,7 @@ export const CastDetailView = ({
   return (
     <div className="bg-surface">
       <PhotoGallery castId={castId} images={images} />
-      <ProfileSpecs castId={castId} profileData={profileData} />
+      <ProfileSpecs profileData={profileData} />
       <ScheduleCalendar
         schedules={schedules}
         onDateSelect={handleDateSelect}

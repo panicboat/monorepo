@@ -1,6 +1,5 @@
 "use client";
 
-import { useSocial } from "@/modules/relationship";
 import { Lock } from "lucide-react";
 
 import { CastProfile, ProfileFormData } from "@/modules/portfolio/types";
@@ -49,15 +48,10 @@ const getDisplayData = (data?: CastProfile | ProfileFormData) => {
 };
 
 export const ProfileSpecs = ({
-  castId,
   profileData,
 }: {
-  castId: string;
   profileData?: CastProfile | ProfileFormData;
 }) => {
-  const { isFollowing, toggleFollow } = useSocial();
-  const following = isFollowing(castId);
-
   const display = getDisplayData(profileData);
 
   const name = display?.name || "Cast";
