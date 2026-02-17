@@ -70,7 +70,7 @@ Media ドメインはメディアの所有者を管理しないこと (MUST)。
 
 ### Requirement: Media Deletion
 
-メディア削除時に関連するストレージファイルも削除すべきである (SHOULD)。
+システムはメディア削除 API を提供しなければならない (MUST)。メディア削除時に関連するストレージファイルも削除すべきである (SHOULD)。
 
 #### Scenario: Delete Media
 
