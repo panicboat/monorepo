@@ -862,22 +862,6 @@ ALTER TABLE ONLY identity.refresh_tokens
 
 
 --
--- Name: plans cast_plans_cast_id_fkey; Type: FK CONSTRAINT; Schema: offer; Owner: -
---
-
-ALTER TABLE ONLY offer.plans
-    ADD CONSTRAINT cast_plans_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
-
-
---
--- Name: schedules cast_schedules_cast_id_fkey; Type: FK CONSTRAINT; Schema: offer; Owner: -
---
-
-ALTER TABLE ONLY offer.schedules
-    ADD CONSTRAINT cast_schedules_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
-
-
---
 -- Name: cast_areas cast_areas_area_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
 --
 
@@ -950,14 +934,6 @@ ALTER TABLE ONLY post.comments
 
 
 --
--- Name: comments post_comments_user_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
---
-
-ALTER TABLE ONLY post.comments
-    ADD CONSTRAINT post_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES identity.users(id) ON DELETE CASCADE;
-
-
---
 -- Name: likes post_likes_post_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
 --
 
@@ -1012,4 +988,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260216000000_move_plans_schedules_to_offer.rb'),
 ('20260216000000_split_social_schema.rb'),
 ('20260216100000_rename_offer_tables.rb'),
-('20260217000000_create_media_files.rb');
+('20260217000000_create_media_files.rb'),
+('20260218000000_remove_cross_schema_foreign_keys.rb');

@@ -6,13 +6,17 @@ module Post
       class AddComment
         include Post::Deps[
           comment_repo: "repositories.comment_repository",
-          post_repo: "repositories.post_repository"
+          post_repo: "repositories.post_repository",
+          user_adapter: "adapters.user_adapter"
         ]
 
         MAX_CONTENT_LENGTH = 1000
         MAX_MEDIA_COUNT = 3
 
         def call(post_id:, user_id:, content:, parent_id: nil, media: [])
+          # Validate user exists via adapter (cross-schema reference)
+          raise UserNotFoundError unless user_adapter.user_exists?(user_id)
+
           # Validate post exists
           post = post_repo.find_by_id(post_id)
           raise PostNotFoundError unless post
@@ -53,6 +57,7 @@ module Post
           { comment: comment, post_id: post_id }
         end
 
+        class UserNotFoundError < StandardError; end
         class PostNotFoundError < StandardError; end
         class EmptyContentError < StandardError; end
         class ContentTooLongError < StandardError; end

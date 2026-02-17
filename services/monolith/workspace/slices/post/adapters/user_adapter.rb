@@ -23,6 +23,10 @@ module Post
         end
       end
 
+      def user_exists?(user_id)
+        !identity_user_repository.find_by_id(user_id).nil?
+      end
+
       private
 
       def identity_user_repository
