@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, ChevronUp, Trash2, MessageCircle, Loader2 } from "lucide-react";
-import { Comment } from "@/modules/social/types";
+import { Comment } from "@/modules/post/types";
 import { Badge } from "@/components/ui/Badge";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { MediaModal } from "@/components/shared/MediaModal";

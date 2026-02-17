@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { castClient } from "@/lib/grpc";
+import { offerClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+
+interface PlanInput {
+  id?: string;
+  name: string;
+  price: number;
+  duration: number;
+  isRecommended?: boolean;
+}
 
 export async function PUT(req: NextRequest) {
   try {
@@ -10,8 +18,17 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
 
-    const response = await castClient.saveCastPlans(
-      { plans: body.plans },
+    // Map frontend format to proto format
+    const protoPlans = (body.plans || []).map((p: PlanInput) => ({
+      id: p.id || "",
+      name: p.name,
+      price: p.price,
+      durationMinutes: p.duration,
+      isRecommended: p.isRecommended || false,
+    }));
+
+    const response = await offerClient.savePlans(
+      { plans: protoPlans },
       { headers: buildGrpcHeaders(req.headers) }
     );
 
@@ -25,8 +42,9 @@ export async function PUT(req: NextRequest) {
     }));
 
     return NextResponse.json({ plans });
-  } catch (error: any) {
-    console.error("SaveCastPlans Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("SavePlans Error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

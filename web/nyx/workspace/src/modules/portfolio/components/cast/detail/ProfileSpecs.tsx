@@ -1,6 +1,6 @@
 "use client";
 
-import { useSocial } from "@/modules/social/hooks/useSocial";
+import { useSocial } from "@/modules/relationship";
 import { Lock } from "lucide-react";
 
 import { CastProfile, ProfileFormData } from "@/modules/portfolio/types";

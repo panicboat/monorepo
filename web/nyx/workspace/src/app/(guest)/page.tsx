@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { GuestDashboard } from "@/modules/portfolio/components/guest/GuestDashboard";
-import { TimelineFeed } from "@/modules/social/components/guest/TimelineFeed";
+import { TimelineFeed } from "@/modules/feed";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 

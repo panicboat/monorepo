@@ -1,4 +1,4 @@
-import { CastPost, PostMedia, PostAuthor, PostsListResult } from "@/modules/social/types";
+import { CastPost, PostMedia, PostAuthor, PostsListResult } from "@/modules/post/types";
 import type { MediaType } from "@/lib/types";
 
 // API Response Types

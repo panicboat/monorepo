@@ -7,7 +7,7 @@ import { Heart, MessageCircle, Trash2, Lock, LockOpen } from "lucide-react";
 import { slideUpFadeVariants, popVariants, popTransition } from "@/lib/motion";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { useLike } from "@/modules/social/hooks/useLike";
+import { useLike } from "@/modules/post";
 import { useAuthStore } from "@/stores/authStore";
 import { FeedItem, FeedMediaItem } from "./types";
 import { MediaCarousel } from "./MediaCarousel";

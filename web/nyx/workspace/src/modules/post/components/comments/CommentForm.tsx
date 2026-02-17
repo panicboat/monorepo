@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Send, Loader2 } from "lucide-react";
-import { CommentMedia } from "@/modules/social/types";
+import { CommentMedia } from "@/modules/post/types";
 import { Button } from "@/components/ui/Button";
 import { MediaPicker, MediaFile } from "@/components/shared/MediaPicker";
 import { uploadFile } from "@/lib/media";

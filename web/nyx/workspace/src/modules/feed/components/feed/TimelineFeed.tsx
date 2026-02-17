@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { useSocialStore, selectIsHydrated } from "@/stores/socialStore";
-import { useGuestTimeline } from "@/modules/social/hooks/useGuestTimeline";
+import { useGuestTimeline } from "@/modules/post";
 import { useAuthStore } from "@/stores/authStore";
 import { FeedItem, mapPostToFeedItem } from "./types";
 import { TimelineItem } from "./TimelineItem";

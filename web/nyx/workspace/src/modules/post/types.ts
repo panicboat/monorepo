@@ -1,5 +1,5 @@
 /**
- * Social Module Types
+ * Post Module Types
  *
  * Types for posts, comments, and social interactions.
  */
@@ -78,15 +78,4 @@ export type LikeState = {
 export type LikeResult = {
   success: boolean;
   likesCount: number;
-};
-
-// =============================================================================
-// Follow Types
-// =============================================================================
-
-export type FollowState = Record<string, boolean>;
-
-export type FollowResult = {
-  success: boolean;
-  isFollowing: boolean;
 };

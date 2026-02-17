@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { castClient } from "@/lib/grpc";
+import { offerClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+
+interface ScheduleInput {
+  date: string;
+  start: string;
+  end: string;
+}
 
 export async function PUT(req: NextRequest) {
   try {
@@ -10,8 +16,15 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
 
-    const response = await castClient.saveCastSchedules(
-      { schedules: body.schedules },
+    // Map frontend format to proto format
+    const protoSchedules = (body.schedules || []).map((s: ScheduleInput) => ({
+      date: s.date,
+      startTime: s.start,
+      endTime: s.end,
+    }));
+
+    const response = await offerClient.saveSchedules(
+      { schedules: protoSchedules },
       { headers: buildGrpcHeaders(req.headers) }
     );
 
@@ -23,8 +36,9 @@ export async function PUT(req: NextRequest) {
     }));
 
     return NextResponse.json({ schedules });
-  } catch (error: any) {
-    console.error("SaveCastSchedules Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("SaveSchedules Error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

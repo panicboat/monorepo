@@ -12,9 +12,8 @@ import {
   List as ListIcon,
   Play,
 } from "lucide-react";
-import { useGuestTimeline } from "@/modules/social/hooks/useGuestTimeline";
+import { useGuestTimeline, CastPost } from "@/modules/post";
 import { Badge } from "@/components/ui/Badge";
-import { CastPost } from "@/modules/social/types";
 import Link from "next/link";
 import { formatTimeAgo } from "@/lib/utils/date";
 

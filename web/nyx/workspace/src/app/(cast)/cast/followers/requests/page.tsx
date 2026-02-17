@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, UserPlus, Check, X, Users } from "lucide-react";
-import { useFollowRequests } from "@/modules/social/hooks";
+import { useFollowRequests } from "@/modules/relationship";
 import { useToast } from "@/components/ui/Toast";
 
 export default function FollowRequestsPage() {

@@ -4,10 +4,8 @@ import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { ChevronLeft, Heart, MessageCircle, Trash2, Calendar } from "lucide-react";
-import { useCastPosts } from "@/modules/social/hooks/useCastPosts";
-import { CastPost } from "@/modules/social/types";
+import { useCastPosts, CastPost, CommentSection } from "@/modules/post";
 import { useToast } from "@/components/ui/Toast";
-import { CommentSection } from "@/modules/social/components/comments";
 import { formatTimeAgo } from "@/lib/utils/date";
 
 export default function PostDetailPage({

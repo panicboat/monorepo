@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { castClient } from "@/lib/grpc";
+import { castClient, offerClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
 import {
@@ -13,33 +13,39 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const response = await castClient.getCastProfile(
-      { userId: "" },
-      { headers: buildGrpcHeaders(req.headers) }
-    );
+    const headers = buildGrpcHeaders(req.headers);
 
-    const profile = mapCastProfileToFrontend(response.profile!);
-    const plans = (response.plans || []).map((p) => ({
+    // Fetch profile and offer data in parallel
+    const [profileResponse, plansResponse, schedulesResponse] =
+      await Promise.all([
+        castClient.getCastProfile({ userId: "" }, { headers }),
+        offerClient.getPlans({ castId: "" }, { headers }),
+        offerClient.getSchedules({ castId: "", startDate: "", endDate: "" }, { headers }),
+      ]);
+
+    const profile = mapCastProfileToFrontend(profileResponse.profile!);
+    const plans = (plansResponse.plans || []).map((p) => ({
       id: p.id,
       name: p.name,
       price: p.price,
       duration: p.durationMinutes,
       isRecommended: p.isRecommended || false,
     }));
-    const schedules = (response.schedules || []).map((s) => ({
+    const schedules = (schedulesResponse.schedules || []).map((s) => ({
       date: s.date,
       start: s.startTime,
       end: s.endTime,
     }));
 
     return NextResponse.json({ profile, plans, schedules });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof ConnectError && error.code === 5) {
       // NotFound is expected during onboarding
       return NextResponse.json({ error: "Not Found" }, { status: 404 });
     }
     console.error("GetCastProfile Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

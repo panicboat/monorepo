@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { useFollow, FollowingCast } from "@/modules/social/hooks/useFollow";
+import { useFollow, FollowingCast } from "@/modules/relationship";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
 import { UserListCard } from "@/components/ui/UserListCard";

@@ -1,13 +1,12 @@
 "use client";
 
 import { CastDetailView } from "@/modules/portfolio/components/CastDetailView";
-import { CastTimeline } from "@/modules/social/components/guest/CastTimeline";
+import { CastTimeline } from "@/modules/feed";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { use, useState, useEffect } from "react";
 import { Heart, Loader2, UserPlus, UserCheck, Clock } from "lucide-react";
-import { useFollow } from "@/modules/social/hooks/useFollow";
-import { useFavorite } from "@/modules/social/hooks/useFavorite";
+import { useFollow, useFavorite } from "@/modules/relationship";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
 import { CastProfile, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";

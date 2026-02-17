@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { CastPost, PostMedia } from "@/modules/social/types";
-import { mapApiToPost, mapApiToPostsList, mapPostToSavePayload } from "@/modules/social/lib/mappers";
+import { CastPost, PostMedia } from "@/modules/post/types";
+import { mapApiToPost, mapApiToPostsList, mapPostToSavePayload } from "@/modules/post/lib/mappers";
 import { getAuthToken } from "@/lib/swr";
 
 interface UseCastPostsOptions {

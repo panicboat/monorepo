@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { CastPost } from "@/modules/social/types";
-import { mapApiToPost, mapApiToPostsList } from "@/modules/social/lib/mappers";
+import { CastPost } from "@/modules/post/types";
+import { mapApiToPost, mapApiToPostsList } from "@/modules/post/lib/mappers";
 import { useAuthStore } from "@/stores/authStore";
 
 interface UseGuestTimelineOptions {

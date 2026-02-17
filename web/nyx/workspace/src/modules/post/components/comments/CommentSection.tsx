@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { MessageCircle, Loader2 } from "lucide-react";
-import { useComments } from "@/modules/social/hooks/useComments";
+import { useComments } from "@/modules/post/hooks/useComments";
 import { useAuthStore } from "@/stores/authStore";
 import { CommentItem } from "./CommentItem";
 import { CommentForm } from "./CommentForm";

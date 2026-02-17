@@ -1,4 +1,4 @@
-import { CastPost } from "@/modules/social/types";
+import { CastPost } from "@/modules/post/types";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { Media, MediaType } from "@/lib/types";
 

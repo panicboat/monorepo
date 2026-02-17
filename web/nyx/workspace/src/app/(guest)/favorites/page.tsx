@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import Link from "next/link";
-import { useFavorite, FavoriteCast } from "@/modules/social/hooks/useFavorite";
+import { useFavorite, FavoriteCast } from "@/modules/relationship";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
 import { UserListCard } from "@/components/ui/UserListCard";

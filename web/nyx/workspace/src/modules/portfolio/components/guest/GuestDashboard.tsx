@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { useGuestData } from "@/modules/portfolio/hooks/useGuestData";
 import { GuestProfileForm } from "./GuestProfileForm";
-import { useFavorite, FavoriteCast } from "@/modules/social/hooks/useFavorite";
-import { useFollow, FollowingCast } from "@/modules/social/hooks/useFollow";
+import { useFavorite, FavoriteCast, useFollow, FollowingCast } from "@/modules/relationship";
 import { ChevronRight, Heart, Users } from "lucide-react";
 
 const PREVIEW_LIMIT = 3;

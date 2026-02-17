@@ -1,17 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import {
-  TimelineFeed,
-  FeedItem,
-} from "@/modules/social/components/guest/TimelineFeed";
+import { TimelineFeed, FeedItem } from "@/modules/feed";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { HashtagInput } from "@/components/ui/HashtagInput";
 import { Send, Lock, LockOpen, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCastPosts } from "@/modules/social/hooks/useCastPosts";
-import { CastPost } from "@/modules/social/types";
+import { useCastPosts, CastPost } from "@/modules/post";
 import { useToast } from "@/components/ui/Toast";
 import { useCastData } from "@/modules/portfolio/hooks";
 import { useAuthStore } from "@/stores/authStore";

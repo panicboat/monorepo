@@ -5,11 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronLeft, Heart, MessageCircle, Share2, Loader2, ChevronRight } from "lucide-react";
-import { useGuestPost } from "@/modules/social/hooks/useGuestTimeline";
-import { useLike } from "@/modules/social/hooks/useLike";
+import { useGuestPost, useLike, CommentSection } from "@/modules/post";
 import { useAuthStore } from "@/stores/authStore";
 import { Badge } from "@/components/ui/Badge";
-import { CommentSection } from "@/modules/social/components/comments";
 import { formatTimeAgo } from "@/lib/utils/date";
 import type { Media } from "@/lib/types";
 

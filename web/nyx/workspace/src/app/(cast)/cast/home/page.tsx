@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Loader2, UserPlus, Users, Check, X, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { getAuthToken } from "@/lib/swr";
-import { useFollowRequests } from "@/modules/social/hooks";
+import { useFollowRequests } from "@/modules/relationship";
 import { useToast } from "@/components/ui/Toast";
 
 export default function CastHomePage() {
