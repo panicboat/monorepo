@@ -5,7 +5,7 @@ module Portfolio
     module Cast
       module Queries
         # Query for batch-fetching casts by IDs.
-        # Intended for cross-slice communication (e.g., Social slice).
+        # Intended for cross-slice communication (e.g., Post, Relationship slice).
         class GetByIds
           include Portfolio::Deps[repo: "repositories.cast_repository"]
 

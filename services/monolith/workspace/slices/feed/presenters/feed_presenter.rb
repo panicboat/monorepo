@@ -62,7 +62,7 @@ module Feed
       end
 
       private_class_method def self.extract_media(post)
-        # Try both naming conventions (Post slice uses post_media, Social slice uses cast_post_media)
+        # Try both naming conventions (post_media vs cast_post_media)
         if post.respond_to?(:post_media)
           post.post_media || []
         elsif post.respond_to?(:cast_post_media)

@@ -5,7 +5,7 @@ module Portfolio
     module Cast
       module Queries
         # Query for getting IDs of all public, registered casts.
-        # Intended for cross-slice communication (e.g., Social slice).
+        # Intended for cross-slice communication (e.g., Feed slice).
         class GetPublicCastIds
           include Portfolio::Deps[repo: "repositories.cast_repository"]
 

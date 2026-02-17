@@ -388,7 +388,7 @@ end
 puts "  Created #{area_count} cast-area associations"
 
 # =============================================================================
-# Social: Cast Posts
+# Post: Posts
 # =============================================================================
 #
 # Visibility Test Scenario (Combined Visibility Rule):
@@ -403,7 +403,7 @@ puts "  Created #{area_count} cast-area associations"
 #   Rin (Public):   public投稿 x 2, private投稿 x 1
 # =============================================================================
 
-puts "Seeding Social: Cast Posts..."
+puts "Seeding Post: Posts..."
 
 # Cast-specific posts with visibility
 casts_post_data = {
@@ -501,10 +501,10 @@ end
 puts "  Created #{guest_count} guests"
 
 # =============================================================================
-# Social: Post Likes
+# Post: Likes
 # =============================================================================
 
-puts "Seeding Social: Post Likes..."
+puts "Seeding Post: Likes..."
 
 # Get all guests and posts
 guests = db[:portfolio__guests].all.to_a
@@ -530,10 +530,10 @@ end
 puts "  Created #{like_count} post likes"
 
 # =============================================================================
-# Social: Post Comments
+# Post: Comments
 # =============================================================================
 
-puts "Seeding Social: Post Comments..."
+puts "Seeding Post: Comments..."
 
 comment_data = [
   { content: "素敵な投稿ですね！✨" },
@@ -608,7 +608,7 @@ end
 puts "  Created #{comment_count} comments and #{reply_count} replies"
 
 # =============================================================================
-# Social: Cast Follows
+# Relationship: Follows
 # =============================================================================
 #
 # Visibility Test Scenario:
@@ -628,7 +628,7 @@ puts "  Created #{comment_count} comments and #{reply_count} replies"
 #   | 未認証ユーザー    | ○   | ×     | ×    | ×     | ○    | ×    |
 # =============================================================================
 
-puts "Seeding Social: Cast Follows..."
+puts "Seeding Relationship: Follows..."
 
 # Get casts by handle (explicit lookup to avoid ordering issues)
 yuna = db[:portfolio__casts].where(slug: "yuna").first
@@ -679,14 +679,14 @@ end
 puts "  Created #{follow_count} cast follows"
 
 # =============================================================================
-# Social: Blocks (Sample data for development)
+# Relationship: Blocks (Sample data for development)
 # =============================================================================
 #
 # Note: Block UI has been removed but backend APIs remain.
 # This seed creates sample data for testing block functionality.
 # =============================================================================
 
-puts "Seeding Social: Blocks..."
+puts "Seeding Relationship: Blocks..."
 
 block_count = 0
 
@@ -711,7 +711,7 @@ end
 puts "  Created #{block_count} blocks"
 
 # =============================================================================
-# Social: Cast Favorites
+# Relationship: Favorites
 # =============================================================================
 #
 # Visibility Test Scenario:
@@ -719,7 +719,7 @@ puts "  Created #{block_count} blocks"
 #   四郎: Rin(public) をお気に入り
 # =============================================================================
 
-puts "Seeding Social: Cast Favorites..."
+puts "Seeding Relationship: Favorites..."
 
 # Get casts by handle (explicit lookup)
 yuna_fav = db[:portfolio__casts].where(slug: "yuna").first

@@ -5,7 +5,7 @@ module Portfolio
     module Guest
       module Queries
         # Query for batch-fetching guests by user IDs.
-        # Intended for cross-slice communication (e.g., Social slice).
+        # Intended for cross-slice communication (e.g., Post, Relationship slice).
         class GetByUserIds
           include Portfolio::Deps[repo: "repositories.guest_repository"]
 
