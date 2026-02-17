@@ -62,25 +62,11 @@ module Feed
       end
 
       private_class_method def self.extract_media(post)
-        # Try both naming conventions (post_media vs cast_post_media)
-        if post.respond_to?(:post_media)
-          post.post_media || []
-        elsif post.respond_to?(:cast_post_media)
-          post.cast_post_media || []
-        else
-          []
-        end
+        post.post_media || []
       end
 
       private_class_method def self.extract_hashtags(post)
-        # Try both naming conventions
-        if post.respond_to?(:hashtags)
-          post.hashtags || []
-        elsif post.respond_to?(:cast_post_hashtags)
-          post.cast_post_hashtags || []
-        else
-          []
-        end
+        post.hashtags || []
       end
     end
   end
