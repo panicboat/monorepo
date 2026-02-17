@@ -75,13 +75,7 @@ export function TimelineItem({
   };
 
   const isHidden = item.visibility === "private";
-
-  // Resolve media: prefer new `media` array, fall back to legacy single fields
-  const resolvedMedia: FeedMediaItem[] = item.media && item.media.length > 0
-    ? item.media
-    : item.mediaUrl
-      ? [{ mediaType: item.mediaType || "image", url: item.mediaUrl }]
-      : [];
+  const resolvedMedia: FeedMediaItem[] = item.media || [];
 
   return (
     <motion.div

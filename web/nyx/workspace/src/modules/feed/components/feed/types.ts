@@ -1,6 +1,6 @@
 import { CastPost } from "@/modules/post/types";
 import { formatTimeAgo } from "@/lib/utils/date";
-import { Media, MediaType } from "@/lib/types";
+import { Media } from "@/lib/types";
 
 // Re-export for backwards compatibility
 export type FeedMediaItem = Media;
@@ -13,9 +13,6 @@ export type FeedItem = {
   content: string;
   time: string;
   media?: Media[];
-  mediaUrl?: string;
-  mediaType?: MediaType;
-  image?: string; // Legacy support
   likes: number;
   comments: number;
   visibility?: "public" | "private";
