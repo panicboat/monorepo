@@ -206,7 +206,6 @@ cast_data = [
     height: 158,
     three_sizes: { bust: 86, waist: 58, hip: 85, cup: "E" }.to_json,
     blood_type: "A",
-    images: ["yuna_1.jpg", "yuna_2.jpg"].to_json,
     tags: ["癒し系", "話し上手", "初心者歓迎"].to_json,
   },
   # Cast 2: Mio (PRIVATE) - 非フォロワーにはプラン/スケジュールが非表示
@@ -221,7 +220,6 @@ cast_data = [
     height: 165,
     three_sizes: { bust: 88, waist: 59, hip: 87, cup: "F" }.to_json,
     blood_type: "O",
-    images: ["mio_1.jpg", "mio_2.jpg", "mio_3.jpg"].to_json,
     tags: ["大人の時間", "ワイン好き", "夜型"].to_json,
   },
   # Cast 3: Rin (PUBLIC) - 誰でもプロフィール全情報を閲覧可能
@@ -236,7 +234,6 @@ cast_data = [
     height: 155,
     three_sizes: { bust: 82, waist: 56, hip: 83, cup: "C" }.to_json,
     blood_type: "B",
-    images: ["rin_1.jpg"].to_json,
     tags: ["癒し系", "読書好き", "のんびり"].to_json,
   },
 ]
@@ -255,7 +252,6 @@ cast_data.each_with_index do |data, idx|
   id = db[:portfolio__casts].insert(
     data.merge(
       user_id: user_id,
-      avatar_path: "avatar_#{data[:slug]}.jpg",
       social_links: {}.to_json,
       created_at: Time.now,
       updated_at: Time.now,
@@ -474,10 +470,10 @@ puts "Seeding Portfolio: Guests..."
 #   Guest 4: 四郎 (Shiro)  - Publicキャストのみフォロー済み
 # =============================================================================
 guest_data = [
-  { name: "太郎", avatar_path: nil },
-  { name: "次郎", avatar_path: nil },
-  { name: "三郎", avatar_path: nil },
-  { name: "四郎", avatar_path: nil },
+  { name: "太郎" },
+  { name: "次郎" },
+  { name: "三郎" },
+  { name: "四郎" },
 ]
 
 guest_count = 0
@@ -487,7 +483,7 @@ guest_user_ids.each_with_index do |user_id, idx|
   existing = db[:portfolio__guests].where(user_id: user_id).first
   next if existing
 
-  data = guest_data[idx] || { name: "Guest#{idx + 1}", avatar_path: nil }
+  data = guest_data[idx] || { name: "Guest#{idx + 1}" }
   db[:portfolio__guests].insert(
     data.merge(
       user_id: user_id,

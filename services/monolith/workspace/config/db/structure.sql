@@ -187,6 +187,19 @@ CREATE TABLE portfolio.cast_areas (
 
 
 --
+-- Name: cast_gallery_media; Type: TABLE; Schema: portfolio; Owner: -
+--
+
+CREATE TABLE portfolio.cast_gallery_media (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    cast_id uuid NOT NULL,
+    media_id uuid NOT NULL,
+    "position" integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: cast_genres; Type: TABLE; Schema: portfolio; Owner: -
 --
 
@@ -212,18 +225,17 @@ CREATE TABLE portfolio.casts (
     age integer,
     height integer,
     blood_type text,
-    images jsonb DEFAULT '[]'::jsonb,
     tags jsonb DEFAULT '[]'::jsonb,
     social_links jsonb DEFAULT '{}'::jsonb,
     default_schedule_start text,
     default_schedule_end text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    image_path text,
     three_sizes jsonb DEFAULT '{}'::jsonb,
-    avatar_path text,
     slug character varying(30),
-    registered_at timestamp with time zone
+    registered_at timestamp with time zone,
+    profile_media_id uuid,
+    avatar_media_id uuid
 );
 
 
@@ -250,11 +262,11 @@ CREATE TABLE portfolio.guests (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     name text NOT NULL,
-    avatar_path text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     tagline character varying(100),
-    bio text
+    bio text,
+    avatar_media_id uuid
 );
 
 
@@ -266,10 +278,9 @@ CREATE TABLE post.comment_media (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     comment_id uuid NOT NULL,
     media_type character varying(10) NOT NULL,
-    url text NOT NULL,
-    thumbnail_url text,
     "position" integer DEFAULT 0 NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    media_id uuid
 );
 
 
@@ -321,10 +332,9 @@ CREATE TABLE post.post_media (
     id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_post_media_id_not_null NOT NULL,
     post_id uuid CONSTRAINT cast_post_media_post_id_not_null NOT NULL,
     media_type character varying(10) CONSTRAINT cast_post_media_media_type_not_null NOT NULL,
-    url text CONSTRAINT cast_post_media_url_not_null NOT NULL,
-    thumbnail_url text,
     "position" integer DEFAULT 0 CONSTRAINT cast_post_media_position_not_null NOT NULL,
-    created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_post_media_created_at_not_null NOT NULL
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_post_media_created_at_not_null NOT NULL,
+    media_id uuid
 );
 
 
@@ -460,6 +470,14 @@ ALTER TABLE ONLY portfolio.areas
 
 ALTER TABLE ONLY portfolio.cast_areas
     ADD CONSTRAINT cast_areas_pkey PRIMARY KEY (cast_id, area_id);
+
+
+--
+-- Name: cast_gallery_media cast_gallery_media_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_gallery_media
+    ADD CONSTRAINT cast_gallery_media_pkey PRIMARY KEY (id);
 
 
 --
@@ -693,6 +711,27 @@ CREATE UNIQUE INDEX idx_casts_slug_lower ON portfolio.casts USING btree (lower((
 
 
 --
+-- Name: portfolio_cast_gallery_media_cast_id_index; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX portfolio_cast_gallery_media_cast_id_index ON portfolio.cast_gallery_media USING btree (cast_id);
+
+
+--
+-- Name: portfolio_cast_gallery_media_cast_id_position_index; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX portfolio_cast_gallery_media_cast_id_position_index ON portfolio.cast_gallery_media USING btree (cast_id, "position");
+
+
+--
+-- Name: portfolio_cast_gallery_media_media_id_index; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX portfolio_cast_gallery_media_media_id_index ON portfolio.cast_gallery_media USING btree (media_id);
+
+
+--
 -- Name: portfolio_cast_genres_cast_id_index; Type: INDEX; Schema: portfolio; Owner: -
 --
 
@@ -707,10 +746,31 @@ CREATE INDEX portfolio_cast_genres_genre_id_index ON portfolio.cast_genres USING
 
 
 --
+-- Name: portfolio_casts_avatar_media_id_index; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX portfolio_casts_avatar_media_id_index ON portfolio.casts USING btree (avatar_media_id);
+
+
+--
+-- Name: portfolio_casts_profile_media_id_index; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX portfolio_casts_profile_media_id_index ON portfolio.casts USING btree (profile_media_id);
+
+
+--
 -- Name: portfolio_casts_user_id_index; Type: INDEX; Schema: portfolio; Owner: -
 --
 
 CREATE UNIQUE INDEX portfolio_casts_user_id_index ON portfolio.casts USING btree (user_id);
+
+
+--
+-- Name: portfolio_guests_avatar_media_id_index; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX portfolio_guests_avatar_media_id_index ON portfolio.guests USING btree (avatar_media_id);
 
 
 --
@@ -732,6 +792,20 @@ CREATE INDEX idx_cast_posts_created_at_desc ON post.posts USING btree (created_a
 --
 
 CREATE INDEX idx_post_comments_created_at_desc ON post.comments USING btree (created_at DESC);
+
+
+--
+-- Name: post_comment_media_media_id_index; Type: INDEX; Schema: post; Owner: -
+--
+
+CREATE INDEX post_comment_media_media_id_index ON post.comment_media USING btree (media_id);
+
+
+--
+-- Name: post_post_media_media_id_index; Type: INDEX; Schema: post; Owner: -
+--
+
+CREATE INDEX post_post_media_media_id_index ON post.post_media USING btree (media_id);
 
 
 --
@@ -878,6 +952,14 @@ ALTER TABLE ONLY portfolio.cast_areas
 
 
 --
+-- Name: cast_gallery_media cast_gallery_media_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.cast_gallery_media
+    ADD CONSTRAINT cast_gallery_media_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
+
+
+--
 -- Name: cast_genres cast_genres_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
 --
 
@@ -989,4 +1071,9 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260216000000_split_social_schema.rb'),
 ('20260216100000_rename_offer_tables.rb'),
 ('20260217000000_create_media_files.rb'),
-('20260218000000_remove_cross_schema_foreign_keys.rb');
+('20260218000000_remove_cross_schema_foreign_keys.rb'),
+('20260218100000_add_media_id_to_post_media.rb'),
+('20260218100001_make_url_nullable_on_post_media.rb'),
+('20260218200000_add_media_id_to_casts.rb'),
+('20260218210000_add_avatar_media_id_to_guests.rb'),
+('20260218220000_remove_legacy_media_columns.rb');
