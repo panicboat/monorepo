@@ -85,20 +85,31 @@ export function mapProfileFormToApi(form: ProfileFormData, heroKey?: string, gal
 export function mapApiToImages(apiProfile: any): MediaItem[] {
   const images: MediaItem[] = [];
 
-  // Hero image
-  if (apiProfile.images?.hero && typeof apiProfile.images.hero === "object") {
-    images.push(apiProfile.images.hero as MediaItem);
-  } else if (apiProfile.imagePath) {
+  // Hero/Profile image - use new media_id based format
+  if (apiProfile.profileMediaId && apiProfile.imageUrl) {
     images.push({
       id: "hero",
-      url: `/uploads/${apiProfile.imagePath}`,
-      key: apiProfile.imagePath,
-      type: getMediaType(apiProfile.imagePath),
+      url: apiProfile.imageUrl,
+      mediaId: apiProfile.profileMediaId,
+      type: "image",
     });
+  } else if (apiProfile.images?.hero && typeof apiProfile.images.hero === "object") {
+    images.push(apiProfile.images.hero as MediaItem);
   }
 
-  // Portfolio images
-  if (apiProfile.images?.portfolio) {
+  // Gallery images - use new media_id based format
+  const galleryMediaIds = apiProfile.galleryMediaIds || [];
+  const galleryUrls = apiProfile.images || [];
+  if (galleryMediaIds.length > 0) {
+    galleryMediaIds.forEach((mediaId: string, idx: number) => {
+      images.push({
+        id: `gallery-${idx}`,
+        url: galleryUrls[idx] || "",
+        mediaId,
+        type: "image",
+      });
+    });
+  } else if (apiProfile.images?.portfolio) {
     images.push(...apiProfile.images.portfolio);
   }
 

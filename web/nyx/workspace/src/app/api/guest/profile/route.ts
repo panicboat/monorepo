@@ -18,8 +18,8 @@ export async function GET(req: NextRequest) {
       ? {
           userId: response.profile.userId,
           name: response.profile.name,
-          avatarPath: response.profile.avatarPath,
           avatarUrl: response.profile.avatarUrl,
+          avatarMediaId: response.profile.avatarMediaId,
           tagline: response.profile.tagline,
           bio: response.profile.bio,
         }
@@ -46,7 +46,7 @@ export async function PUT(req: NextRequest) {
     const response = await guestClient.saveGuestProfile(
       {
         name: body.name,
-        avatarPath: body.avatarPath || "",
+        avatarMediaId: body.avatarMediaId || "",
         tagline: body.tagline || "",
         bio: body.bio || "",
       },
@@ -57,8 +57,8 @@ export async function PUT(req: NextRequest) {
       ? {
           userId: response.profile.userId,
           name: response.profile.name,
-          avatarPath: response.profile.avatarPath,
           avatarUrl: response.profile.avatarUrl,
+          avatarMediaId: response.profile.avatarMediaId,
           tagline: response.profile.tagline,
           bio: response.profile.bio,
         }

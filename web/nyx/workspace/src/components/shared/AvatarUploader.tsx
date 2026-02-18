@@ -5,7 +5,7 @@ import { Camera, X } from "lucide-react";
 
 interface AvatarUploaderProps {
   mediaUrl?: string;
-  onUpload: (file: File) => Promise<{ key: string; url: string }>;
+  onUpload: (file: File) => Promise<{ url: string; mediaId?: string; key?: string }>;
   onClear?: () => void;
   accept?: string;
   size?: "sm" | "md" | "lg";

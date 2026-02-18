@@ -4,15 +4,13 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { GetUploadUrlRequestSchema, GetUploadUrlResponseSchema } from "./cast_service_pb";
-import { file_portfolio_v1_cast_service } from "./cast_service_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file portfolio/v1/guest_service.proto.
  */
 export const file_portfolio_v1_guest_service: GenFile = /*@__PURE__*/
-  fileDesc("CiBwb3J0Zm9saW8vdjEvZ3Vlc3Rfc2VydmljZS5wcm90bxIMcG9ydGZvbGlvLnYxInQKDEd1ZXN0UHJvZmlsZRIPCgd1c2VyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEwoLYXZhdGFyX3BhdGgYAyABKAkSEgoKYXZhdGFyX3VybBgEIAEoCRIPCgd0YWdsaW5lGAUgASgJEgsKA2JpbxgGIAEoCSIYChZHZXRHdWVzdFByb2ZpbGVSZXF1ZXN0IkYKF0dldEd1ZXN0UHJvZmlsZVJlc3BvbnNlEisKB3Byb2ZpbGUYASABKAsyGi5wb3J0Zm9saW8udjEuR3Vlc3RQcm9maWxlIloKF1NhdmVHdWVzdFByb2ZpbGVSZXF1ZXN0EgwKBG5hbWUYASABKAkSEwoLYXZhdGFyX3BhdGgYAiABKAkSDwoHdGFnbGluZRgDIAEoCRILCgNiaW8YBCABKAkiRwoYU2F2ZUd1ZXN0UHJvZmlsZVJlc3BvbnNlEisKB3Byb2ZpbGUYASABKAsyGi5wb3J0Zm9saW8udjEuR3Vlc3RQcm9maWxlIi4KGkdldEd1ZXN0UHJvZmlsZUJ5SWRSZXF1ZXN0EhAKCGd1ZXN0X2lkGAEgASgJIsUBChJHdWVzdERldGFpbFByb2ZpbGUSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhMKC2F2YXRhcl9wYXRoGAQgASgJEhIKCmF2YXRhcl91cmwYBSABKAkSDwoHdGFnbGluZRgGIAEoCRILCgNiaW8YByABKAkSFAoMaXNfZm9sbG93aW5nGAggASgIEhMKC2ZvbGxvd2VkX2F0GAkgASgJEhIKCmlzX2Jsb2NrZWQYCiABKAgiUAobR2V0R3Vlc3RQcm9maWxlQnlJZFJlc3BvbnNlEjEKB3Byb2ZpbGUYASABKAsyIC5wb3J0Zm9saW8udjEuR3Vlc3REZXRhaWxQcm9maWxlMpQDCgxHdWVzdFNlcnZpY2USXgoPR2V0R3Vlc3RQcm9maWxlEiQucG9ydGZvbGlvLnYxLkdldEd1ZXN0UHJvZmlsZVJlcXVlc3QaJS5wb3J0Zm9saW8udjEuR2V0R3Vlc3RQcm9maWxlUmVzcG9uc2USagoTR2V0R3Vlc3RQcm9maWxlQnlJZBIoLnBvcnRmb2xpby52MS5HZXRHdWVzdFByb2ZpbGVCeUlkUmVxdWVzdBopLnBvcnRmb2xpby52MS5HZXRHdWVzdFByb2ZpbGVCeUlkUmVzcG9uc2USYQoQU2F2ZUd1ZXN0UHJvZmlsZRIlLnBvcnRmb2xpby52MS5TYXZlR3Vlc3RQcm9maWxlUmVxdWVzdBomLnBvcnRmb2xpby52MS5TYXZlR3Vlc3RQcm9maWxlUmVzcG9uc2USVQoMR2V0VXBsb2FkVXJsEiEucG9ydGZvbGlvLnYxLkdldFVwbG9hZFVybFJlcXVlc3QaIi5wb3J0Zm9saW8udjEuR2V0VXBsb2FkVXJsUmVzcG9uc2ViBnByb3RvMw", [file_portfolio_v1_cast_service]);
+  fileDesc("CiBwb3J0Zm9saW8vdjEvZ3Vlc3Rfc2VydmljZS5wcm90bxIMcG9ydGZvbGlvLnYxIngKDEd1ZXN0UHJvZmlsZRIPCgd1c2VyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKYXZhdGFyX3VybBgDIAEoCRIXCg9hdmF0YXJfbWVkaWFfaWQYBCABKAkSDwoHdGFnbGluZRgFIAEoCRILCgNiaW8YBiABKAkiGAoWR2V0R3Vlc3RQcm9maWxlUmVxdWVzdCJGChdHZXRHdWVzdFByb2ZpbGVSZXNwb25zZRIrCgdwcm9maWxlGAEgASgLMhoucG9ydGZvbGlvLnYxLkd1ZXN0UHJvZmlsZSJeChdTYXZlR3Vlc3RQcm9maWxlUmVxdWVzdBIMCgRuYW1lGAEgASgJEhcKD2F2YXRhcl9tZWRpYV9pZBgCIAEoCRIPCgd0YWdsaW5lGAMgASgJEgsKA2JpbxgEIAEoCSJHChhTYXZlR3Vlc3RQcm9maWxlUmVzcG9uc2USKwoHcHJvZmlsZRgBIAEoCzIaLnBvcnRmb2xpby52MS5HdWVzdFByb2ZpbGUiLgoaR2V0R3Vlc3RQcm9maWxlQnlJZFJlcXVlc3QSEAoIZ3Vlc3RfaWQYASABKAkiyQEKEkd1ZXN0RGV0YWlsUHJvZmlsZRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSEgoKYXZhdGFyX3VybBgEIAEoCRIXCg9hdmF0YXJfbWVkaWFfaWQYBSABKAkSDwoHdGFnbGluZRgGIAEoCRILCgNiaW8YByABKAkSFAoMaXNfZm9sbG93aW5nGAggASgIEhMKC2ZvbGxvd2VkX2F0GAkgASgJEhIKCmlzX2Jsb2NrZWQYCiABKAgiUAobR2V0R3Vlc3RQcm9maWxlQnlJZFJlc3BvbnNlEjEKB3Byb2ZpbGUYASABKAsyIC5wb3J0Zm9saW8udjEuR3Vlc3REZXRhaWxQcm9maWxlMr0CCgxHdWVzdFNlcnZpY2USXgoPR2V0R3Vlc3RQcm9maWxlEiQucG9ydGZvbGlvLnYxLkdldEd1ZXN0UHJvZmlsZVJlcXVlc3QaJS5wb3J0Zm9saW8udjEuR2V0R3Vlc3RQcm9maWxlUmVzcG9uc2USagoTR2V0R3Vlc3RQcm9maWxlQnlJZBIoLnBvcnRmb2xpby52MS5HZXRHdWVzdFByb2ZpbGVCeUlkUmVxdWVzdBopLnBvcnRmb2xpby52MS5HZXRHdWVzdFByb2ZpbGVCeUlkUmVzcG9uc2USYQoQU2F2ZUd1ZXN0UHJvZmlsZRIlLnBvcnRmb2xpby52MS5TYXZlR3Vlc3RQcm9maWxlUmVxdWVzdBomLnBvcnRmb2xpby52MS5TYXZlR3Vlc3RQcm9maWxlUmVzcG9uc2ViBnByb3RvMw");
 
 /**
  * @generated from message portfolio.v1.GuestProfile
@@ -29,16 +27,18 @@ export type GuestProfile = Message<"portfolio.v1.GuestProfile"> & {
   name: string;
 
   /**
-   * @generated from field: string avatar_path = 3;
-   */
-  avatarPath: string;
-
-  /**
    * Read-only, download URL
    *
-   * @generated from field: string avatar_url = 4;
+   * @generated from field: string avatar_url = 3;
    */
   avatarUrl: string;
+
+  /**
+   * Reference to media__files.id
+   *
+   * @generated from field: string avatar_media_id = 4;
+   */
+  avatarMediaId: string;
 
   /**
    * Short introduction (max 100 chars)
@@ -102,9 +102,11 @@ export type SaveGuestProfileRequest = Message<"portfolio.v1.SaveGuestProfileRequ
   name: string;
 
   /**
-   * @generated from field: string avatar_path = 2;
+   * Reference to media__files.id
+   *
+   * @generated from field: string avatar_media_id = 2;
    */
-  avatarPath: string;
+  avatarMediaId: string;
 
   /**
    * Short introduction (max 100 chars)
@@ -184,16 +186,18 @@ export type GuestDetailProfile = Message<"portfolio.v1.GuestDetailProfile"> & {
   name: string;
 
   /**
-   * @generated from field: string avatar_path = 4;
-   */
-  avatarPath: string;
-
-  /**
    * Read-only, download URL
    *
-   * @generated from field: string avatar_url = 5;
+   * @generated from field: string avatar_url = 4;
    */
   avatarUrl: string;
+
+  /**
+   * Reference to media__files.id
+   *
+   * @generated from field: string avatar_media_id = 5;
+   */
+  avatarMediaId: string;
 
   /**
    * Short introduction (max 100 chars)
@@ -282,14 +286,6 @@ export const GuestService: GenService<{
     methodKind: "unary";
     input: typeof SaveGuestProfileRequestSchema;
     output: typeof SaveGuestProfileResponseSchema;
-  },
-  /**
-   * @generated from rpc portfolio.v1.GuestService.GetUploadUrl
-   */
-  getUploadUrl: {
-    methodKind: "unary";
-    input: typeof GetUploadUrlRequestSchema;
-    output: typeof GetUploadUrlResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_portfolio_v1_guest_service, 0);

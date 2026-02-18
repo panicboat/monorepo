@@ -15,7 +15,7 @@ RSpec.describe Portfolio::UseCases::Guest::SaveProfile do
       id: "guest-123",
       user_id: user_id,
       name: "Test Guest",
-      avatar_path: nil,
+      avatar_media_id: nil,
       created_at: Time.now,
       updated_at: Time.now
     )
@@ -38,14 +38,14 @@ RSpec.describe Portfolio::UseCases::Guest::SaveProfile do
         expect(result).to eq(mock_guest)
       end
 
-      it "creates with avatar_path" do
+      it "creates with avatar_media_id" do
         expect(guest_repository).to receive(:create).with(hash_including(
           user_id: user_id,
           name: "New Guest",
-          avatar_path: "path/to/avatar.jpg"
+          avatar_media_id: "media-123"
         ))
 
-        result = use_case.call(user_id: user_id, name: "New Guest", avatar_path: "path/to/avatar.jpg")
+        result = use_case.call(user_id: user_id, name: "New Guest", avatar_media_id: "media-123")
         expect(result).to eq(mock_guest)
       end
     end

@@ -2,7 +2,7 @@
 
 require "base64"
 require "json"
-require "storage"
+require_relative "../../../post/adapters/media_adapter"
 
 module Relationship
   module UseCases
@@ -30,15 +30,26 @@ module Relationship
           records = result[:records]
           has_more = result[:has_more]
 
-          # Fetch user details for blocked users
-          users = records.map do |record|
-            user_info = fetch_user_info(record.blocked_id, record.blocked_type)
+          # Collect media IDs for all blocked users
+          media_ids = []
+          user_data = records.map do |record|
+            info = fetch_user_basic_info(record.blocked_id, record.blocked_type)
+            media_ids << info[:media_id] if info[:media_id]
+            { record: record, info: info }
+          end
+
+          # Load all media files at once
+          media_files = media_ids.empty? ? {} : media_adapter.find_by_ids(media_ids.uniq)
+
+          # Build final user list with URLs
+          users = user_data.map do |data|
+            media_file = media_files[data[:info][:media_id]]
             {
-              id: record.blocked_id,
-              user_type: record.blocked_type,
-              name: user_info[:name],
-              image_url: user_info[:image_url],
-              blocked_at: record.created_at.iso8601
+              id: data[:record].blocked_id,
+              user_type: data[:record].blocked_type,
+              name: data[:info][:name],
+              image_url: media_file&.url || "",
+              blocked_at: data[:record].created_at.iso8601
             }
           end
 
@@ -53,21 +64,24 @@ module Relationship
 
         private
 
-        def fetch_user_info(user_id, user_type)
+        def media_adapter
+          @media_adapter ||= Post::Adapters::MediaAdapter.new
+        end
+
+        def fetch_user_basic_info(user_id, user_type)
           if user_type == "cast"
             cast = cast_adapter.find_by_id(user_id)
             if cast
-              # Use avatar_path if available, otherwise fall back to image_path
-              image_key = cast.avatar_path.to_s.empty? ? cast.image_path : cast.avatar_path
-              return { name: cast.name || "Unknown", image_url: Storage.download_url(key: image_key) }
+              media_id = cast.avatar_media_id.to_s.empty? ? cast.profile_media_id : cast.avatar_media_id
+              return { name: cast.name || "Unknown", media_id: media_id }
             end
           elsif user_type == "guest"
             guest = guest_adapter.find_by_id(user_id)
             if guest
-              return { name: guest.name || "Unknown", image_url: Storage.download_url(key: guest.avatar_path) }
+              return { name: guest.name || "Unknown", media_id: guest.avatar_media_id }
             end
           end
-          { name: "Unknown", image_url: nil }
+          { name: "Unknown", media_id: nil }
         end
 
         def decode_cursor(cursor)

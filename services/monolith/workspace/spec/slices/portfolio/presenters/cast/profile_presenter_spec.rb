@@ -54,6 +54,10 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
   end
 
   describe ".to_proto" do
+    let(:profile_media_id) { SecureRandom.uuid }
+    let(:avatar_media_id) { SecureRandom.uuid }
+    let(:gallery_media_id1) { SecureRandom.uuid }
+    let(:gallery_media_id2) { SecureRandom.uuid }
     let(:cast) do
       double(
         :cast,
@@ -65,20 +69,29 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
         tagline: "Test Tagline",
         default_schedule_start: "18:00",
         default_schedule_end: "23:00",
-        image_path: "path/to/image.jpg",
+        profile_media_id: profile_media_id,
+        avatar_media_id: avatar_media_id,
         visibility: "published",
-        images: %w[img1.jpg img2.jpg],
         social_links: { "x" => "@test", "instagram" => "test_ig" },
         age: 25,
         height: 165,
         blood_type: "A",
         three_sizes: { "bust" => 88, "waist" => 60, "hip" => 90, "cup" => "D" },
-        tags: %w[model bilingual]
+        tags: %w[model bilingual],
+        cast_gallery_media: [
+          double(media_id: gallery_media_id1, position: 0),
+          double(media_id: gallery_media_id2, position: 1)
+        ]
       )
     end
 
-    before do
-      allow(Storage).to receive(:download_url).and_return("http://example.com/image.jpg")
+    let(:media_files) do
+      {
+        profile_media_id => double(url: "http://example.com/profile.jpg"),
+        avatar_media_id => double(url: "http://example.com/avatar.jpg"),
+        gallery_media_id1 => double(url: "http://example.com/gallery1.jpg"),
+        gallery_media_id2 => double(url: "http://example.com/gallery2.jpg")
+      }
     end
 
     it "returns nil when cast is nil" do
@@ -86,7 +99,7 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
     end
 
     it "converts cast to proto with physical attributes" do
-      proto = described_class.to_proto(cast)
+      proto = described_class.to_proto(cast, media_files: media_files)
 
       expect(proto).to be_a(::Portfolio::V1::CastProfile)
       expect(proto.age).to eq(25)
@@ -96,13 +109,29 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
     end
 
     it "converts three_sizes to proto" do
-      proto = described_class.to_proto(cast)
+      proto = described_class.to_proto(cast, media_files: media_files)
 
       expect(proto.three_sizes).to be_a(::Portfolio::V1::ThreeSizes)
       expect(proto.three_sizes.bust).to eq(88)
       expect(proto.three_sizes.waist).to eq(60)
       expect(proto.three_sizes.hip).to eq(90)
       expect(proto.three_sizes.cup).to eq("D")
+    end
+
+    it "generates URLs from media_files" do
+      proto = described_class.to_proto(cast, media_files: media_files)
+
+      expect(proto.image_url).to eq("http://example.com/profile.jpg")
+      expect(proto.avatar_url).to eq("http://example.com/avatar.jpg")
+      expect(proto.images).to eq(["http://example.com/gallery1.jpg", "http://example.com/gallery2.jpg"])
+    end
+
+    it "includes media_ids in proto" do
+      proto = described_class.to_proto(cast, media_files: media_files)
+
+      expect(proto.profile_media_id).to eq(profile_media_id)
+      expect(proto.avatar_media_id).to eq(avatar_media_id)
+      expect(proto.gallery_media_ids).to eq([gallery_media_id1, gallery_media_id2])
     end
 
     context "when optional fields are nil" do
@@ -117,26 +146,30 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
           tagline: nil,
           default_schedule_start: nil,
           default_schedule_end: nil,
-          image_path: nil,
+          profile_media_id: nil,
+          avatar_media_id: nil,
           visibility: "unregistered",
-          images: nil,
           social_links: nil,
           age: nil,
           height: nil,
           blood_type: nil,
           three_sizes: nil,
-          tags: nil
+          tags: nil,
+          cast_gallery_media: nil
         )
       end
 
       it "handles nil values with defaults" do
-        proto = described_class.to_proto(cast_with_nils)
+        proto = described_class.to_proto(cast_with_nils, media_files: {})
 
         expect(proto.age).to eq(0)
         expect(proto.height).to eq(0)
         expect(proto.blood_type).to eq("")
         expect(proto.three_sizes).to be_nil
         expect(proto.tags).to eq([])
+        expect(proto.image_url).to eq("")
+        expect(proto.avatar_url).to eq("")
+        expect(proto.images).to eq([])
       end
     end
   end

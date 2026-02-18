@@ -8,6 +8,7 @@ require_relative "../adapters/cast_adapter"
 require_relative "../adapters/guest_adapter"
 require_relative "../adapters/user_adapter"
 require_relative "../adapters/relationship_adapter"
+require_relative "../adapters/media_adapter"
 
 module Post
   module Grpc
@@ -41,6 +42,10 @@ module Post
 
       def relationship_adapter
         @relationship_adapter ||= Post::Adapters::RelationshipAdapter.new
+      end
+
+      def media_adapter
+        @media_adapter ||= Post::Adapters::MediaAdapter.new
       end
 
       def access_policy
@@ -117,34 +122,36 @@ module Post
         user_ids
       end
 
-      def get_comment_author(user_id)
+      def get_comment_author(user_id, media_files: {})
         user_type = user_adapter.get_user_type(user_id)
         return nil unless user_type
 
         if user_type == "cast"
           cast = cast_adapter.find_by_user_id(user_id)
           if cast
-            image_key = cast.avatar_path.to_s.empty? ? cast.image_path : cast.avatar_path
+            media_id = cast.avatar_media_id.to_s.empty? ? cast.profile_media_id : cast.avatar_media_id
+            media_file = media_files[media_id]
             {
               id: cast.id,
               name: cast.name,
-              image_url: Storage.download_url(key: image_key),
+              image_url: media_file&.url || "",
               user_type: "cast"
             }
           else
-            { id: user_id, name: "Anonymous Cast", image_url: nil, user_type: "cast" }
+            { id: user_id, name: "Anonymous Cast", image_url: "", user_type: "cast" }
           end
         else
           guest = guest_adapter.find_by_user_id(user_id)
           if guest
+            media_file = media_files[guest.avatar_media_id]
             {
               id: guest.id,
               name: guest.name,
-              image_url: Storage.download_url(key: guest.avatar_path),
+              image_url: media_file&.url || "",
               user_type: "guest"
             }
           else
-            { id: user_id, name: "Guest", image_url: nil, user_type: "guest" }
+            { id: user_id, name: "Guest", image_url: "", user_type: "guest" }
           end
         end
       end

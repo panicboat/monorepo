@@ -4,10 +4,11 @@
  * Types for posts, comments, and social interactions.
  */
 
-import type { Media, Author, AuthorWithType, PaginatedResponse } from "@/lib/types";
+import type { Media, SaveMediaInput, Author, AuthorWithType, PaginatedResponse } from "@/lib/types";
 
 // Re-export base types for convenience
 export type { Media as PostMedia, Media as CommentMedia };
+export type { SaveMediaInput as SavePostMedia, SaveMediaInput as SaveCommentMedia };
 export type { Author as PostAuthor };
 export type { AuthorWithType as CommentAuthor };
 

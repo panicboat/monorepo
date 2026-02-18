@@ -1,4 +1,4 @@
-import { CastPost, PostMedia, PostAuthor, PostsListResult } from "@/modules/post/types";
+import { CastPost, PostMedia, SavePostMedia, PostAuthor, PostsListResult } from "@/modules/post/types";
 import type { MediaType } from "@/lib/types";
 
 // API Response Types
@@ -78,19 +78,18 @@ export function mapApiToPostsList(apiResponse: ApiPostsListResponse): PostsListR
   };
 }
 
-export function mapMediaToApi(media: PostMedia[]) {
+export function mapSaveMediaToApi(media: SavePostMedia[]) {
   return media.map((m) => ({
     mediaType: m.mediaType,
-    url: m.url,
-    thumbnailUrl: m.thumbnailUrl || "",
+    mediaId: m.mediaId,
   }));
 }
 
-export function mapPostToSavePayload(post: { id?: string; content: string; media: PostMedia[]; visibility?: "public" | "private"; hashtags?: string[] }) {
+export function mapPostToSavePayload(post: { id?: string; content: string; media: SavePostMedia[]; visibility?: "public" | "private"; hashtags?: string[] }) {
   return {
     id: post.id || "",
     content: post.content,
-    media: mapMediaToApi(post.media),
+    media: mapSaveMediaToApi(post.media),
     visibility: post.visibility || "public",
     hashtags: post.hashtags || [],
   };

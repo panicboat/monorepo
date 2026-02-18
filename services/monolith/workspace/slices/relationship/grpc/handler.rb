@@ -8,6 +8,7 @@ require_relative "../../../lib/grpc/authenticatable"
 require_relative "../../post/adapters/cast_adapter"
 require_relative "../../post/adapters/guest_adapter"
 require_relative "../../post/adapters/user_adapter"
+require_relative "../../post/adapters/media_adapter"
 
 module Relationship
   module Grpc
@@ -35,6 +36,10 @@ module Relationship
 
       def user_adapter
         @user_adapter ||= Post::Adapters::UserAdapter.new
+      end
+
+      def media_adapter
+        @media_adapter ||= Post::Adapters::MediaAdapter.new
       end
 
       def find_my_cast

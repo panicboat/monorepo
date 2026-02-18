@@ -16,9 +16,18 @@ export type MediaType = "image" | "video";
  */
 export type Media = {
   id?: string;
+  mediaId?: string; // Reference to media__files.id
   mediaType: MediaType;
   url: string;
   thumbnailUrl?: string;
+};
+
+/**
+ * Media input type for saving posts/comments (mediaId only, no url)
+ */
+export type SaveMediaInput = {
+  mediaType: MediaType;
+  mediaId: string;
 };
 
 /**

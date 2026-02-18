@@ -30,7 +30,7 @@ module Post
         authenticate_user!
 
         media_data = request.message.media.map do |m|
-          { media_type: m.media_type, url: m.url, thumbnail_url: m.thumbnail_url }
+          { media_id: m.media_id, media_type: m.media_type }
         end
 
         result = add_comment_uc.call(
@@ -41,15 +41,18 @@ module Post
           media: media_data
         )
 
-        # Get author info
-        author = get_comment_author(current_user_id)
-
         # Get comments count excluding blocked users
         blocked_user_ids = get_blocked_user_ids
         comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_user_ids: blocked_user_ids)
 
+        # Load media files for comment and author avatar
+        media_files = load_media_files_for_comments_with_authors([result[:comment]], [current_user_id])
+
+        # Get author info with loaded media
+        author = get_comment_author(current_user_id, media_files: media_files)
+
         ::Post::V1::AddCommentResponse.new(
-          comment: CommentPresenter.to_proto(result[:comment], author: author),
+          comment: CommentPresenter.to_proto(result[:comment], author: author, media_files: media_files),
           comments_count: comments_count
         )
       rescue AddComment::PostNotFoundError
@@ -99,8 +102,10 @@ module Post
           exclude_user_ids: blocked_user_ids
         )
 
+        media_files = load_media_files_for_comments(result[:comments])
+
         ::Post::V1::ListCommentsResponse.new(
-          comments: CommentPresenter.many_to_proto(result[:comments], authors: result[:authors]),
+          comments: CommentPresenter.many_to_proto(result[:comments], authors: result[:authors], media_files: media_files),
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -120,8 +125,10 @@ module Post
           exclude_user_ids: blocked_user_ids
         )
 
+        media_files = load_media_files_for_comments(result[:replies])
+
         ::Post::V1::ListRepliesResponse.new(
-          replies: CommentPresenter.many_to_proto(result[:replies], authors: result[:authors]),
+          replies: CommentPresenter.many_to_proto(result[:replies], authors: result[:authors], media_files: media_files),
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -131,6 +138,49 @@ module Post
 
       AddComment = Post::UseCases::Comments::AddComment
       DeleteComment = Post::UseCases::Comments::DeleteComment
+
+      def load_media_files_for_comments(comments)
+        media_ids = comments.flat_map do |comment|
+          next [] unless comment.respond_to?(:comment_media)
+
+          (comment.comment_media || []).filter_map(&:media_id)
+        end.uniq
+
+        return {} if media_ids.empty?
+
+        media_adapter.find_by_ids(media_ids)
+      end
+
+      def load_media_files_for_comments_with_authors(comments, user_ids)
+        media_ids = comments.flat_map do |comment|
+          next [] unless comment.respond_to?(:comment_media)
+
+          (comment.comment_media || []).filter_map(&:media_id)
+        end
+
+        # Collect author avatar media IDs
+        user_ids.each do |user_id|
+          user_type = user_adapter.get_user_type(user_id)
+          next unless user_type
+
+          if user_type == "cast"
+            cast = cast_adapter.find_by_user_id(user_id)
+            if cast
+              media_id = cast.avatar_media_id.to_s.empty? ? cast.profile_media_id : cast.avatar_media_id
+              media_ids << media_id if media_id
+            end
+          else
+            guest = guest_adapter.find_by_user_id(user_id)
+            media_ids << guest.avatar_media_id if guest&.avatar_media_id
+          end
+        end
+
+        media_ids.compact!
+        media_ids.uniq!
+        return {} if media_ids.empty?
+
+        media_adapter.find_by_ids(media_ids)
+      end
     end
   end
 end

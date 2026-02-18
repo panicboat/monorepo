@@ -16,7 +16,6 @@ RSpec.describe Portfolio::Grpc::CastHandler do
       save_profile_uc: save_profile_uc,
       publish_uc: publish_uc,
       save_images_uc: save_images_uc,
-      get_upload_url_uc: get_upload_url_uc,
       list_casts_uc: list_casts_uc,
       repo: repo,
       area_repo: area_repo,
@@ -31,16 +30,19 @@ RSpec.describe Portfolio::Grpc::CastHandler do
   let(:save_profile_uc) { double(:save_profile_uc) }
   let(:publish_uc) { double(:publish_uc) }
   let(:save_images_uc) { double(:save_images_uc) }
-  let(:get_upload_url_uc) { double(:get_upload_url_uc) }
   let(:list_casts_uc) { double(:list_casts_uc) }
-  let(:repo) { double(:repo, find_area_ids: [], find_genre_ids: [], online_cast_ids: [], find_area_and_genre_ids: { area_ids: [], genre_ids: [] }) }
+  let(:repo) { double(:repo, find_area_ids: [], find_genre_ids: [], online_cast_ids: [], find_area_and_genre_ids: { area_ids: [], genre_ids: [] }, find_gallery_media_ids: []) }
   let(:area_repo) { double(:area_repo, find_by_ids: []) }
   let(:genre_repo) { double(:genre_repo, find_by_ids: []) }
+  let(:media_adapter) { double(:media_adapter, find_by_ids: {}) }
 
   before do
     allow(Current).to receive(:user_id).and_return(current_user_id)
+    allow_any_instance_of(described_class).to receive(:media_adapter).and_return(media_adapter)
   end
 
+  let(:profile_media_id) { SecureRandom.uuid }
+  let(:avatar_media_id) { SecureRandom.uuid }
   let(:mock_cast_entity) do
     double(
       "CastWithPlans",
@@ -51,10 +53,11 @@ RSpec.describe Portfolio::Grpc::CastHandler do
       tagline: "Tagline",
       default_schedule_start: "10:00",
       default_schedule_end: "20:00",
-      image_path: "path/img.jpg",
+      profile_media_id: profile_media_id,
+      avatar_media_id: avatar_media_id,
       visibility: "public",
       plans: [],
-      images: [],
+      cast_gallery_media: [],
       social_links: nil,
       age: 25,
       height: 165,
@@ -68,8 +71,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
     let(:message) do
       ::Portfolio::V1::CreateCastProfileRequest.new(
         name: "New Name",
-        bio: "Bio",
-        image_path: "path/img.jpg"
+        bio: "Bio"
       )
     end
 
@@ -77,8 +79,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
       expect(save_profile_uc).to receive(:call).with(hash_including(
         user_id: 1,
         name: "New Name",
-        bio: "Bio",
-        image_path: "path/img.jpg"
+        bio: "Bio"
       )).and_return(mock_cast_entity)
 
       response = handler.create_cast_profile
@@ -144,10 +145,13 @@ RSpec.describe Portfolio::Grpc::CastHandler do
   # Note: save_cast_plans and save_cast_schedules moved to Offer slice
 
   describe "#save_cast_images" do
+    let(:new_profile_media_id) { SecureRandom.uuid }
+    let(:gallery_media_id1) { SecureRandom.uuid }
+    let(:gallery_media_id2) { SecureRandom.uuid }
     let(:message) do
       ::Portfolio::V1::SaveCastImagesRequest.new(
-        profile_image_path: "new/path.jpg",
-        gallery_images: ["img1.jpg", "img2.jpg"]
+        profile_media_id: new_profile_media_id,
+        gallery_media_ids: [gallery_media_id1, gallery_media_id2]
       )
     end
 
@@ -155,9 +159,9 @@ RSpec.describe Portfolio::Grpc::CastHandler do
       allow(get_profile_uc).to receive(:call).with(user_id: 1).and_return(mock_cast_entity)
       expect(save_images_uc).to receive(:call).with(
         cast_id: 123,
-        image_path: "new/path.jpg",
-        images: ["img1.jpg", "img2.jpg"],
-        avatar_path: nil
+        profile_media_id: new_profile_media_id,
+        gallery_media_ids: [gallery_media_id1, gallery_media_id2],
+        avatar_media_id: nil
       ).and_return(mock_cast_entity)
 
       response = handler.save_cast_images
@@ -196,23 +200,5 @@ RSpec.describe Portfolio::Grpc::CastHandler do
     end
   end
 
-  describe "#get_upload_url" do
-    let(:message) { ::Portfolio::V1::GetUploadUrlRequest.new(filename: "test.jpg", content_type: "image/jpeg") }
-
-    it "delegates to operation and returns url" do
-      success_result = Dry::Monads::Result::Success.call(url: "http://url", key: "key")
-      expect(get_upload_url_uc).to receive(:call).with(user_id: 1, filename: "test.jpg", content_type: "image/jpeg", prefix: "casts").and_return(success_result)
-
-      response = handler.get_upload_url
-      expect(response).to be_a(::Portfolio::V1::GetUploadUrlResponse)
-      expect(response.url).to eq("http://url")
-    end
-
-    it "handles failure" do
-      failure_result = Dry::Monads::Result::Failure.call(:invalid_input)
-      expect(get_upload_url_uc).to receive(:call).and_return(failure_result)
-
-      expect { handler.get_upload_url }.to raise_error(GRPC::BadStatus)
-    end
-  end
+  # Note: get_upload_url removed - use MediaService.GetUploadUrl instead
 end

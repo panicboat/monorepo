@@ -7,16 +7,40 @@ RSpec.describe Portfolio::UseCases::Cast::Images::SaveImages do
   let(:repo) { double(:repo) }
 
   describe "#call" do
-    let(:cast_id) { 1 }
-    let(:image_path) { "casts/1/profile.jpg" }
-    let(:images) { ["casts/1/gallery/1.jpg", "casts/1/gallery/2.jpg"] }
+    let(:cast_id) { SecureRandom.uuid }
+    let(:profile_media_id) { SecureRandom.uuid }
+    let(:gallery_media_ids) { [SecureRandom.uuid, SecureRandom.uuid] }
+    let(:avatar_media_id) { SecureRandom.uuid }
     let(:cast) { double(:cast) }
 
     it "saves images and returns cast" do
-      expect(repo).to receive(:save_images).with(id: cast_id, image_path: image_path, images: images, avatar_path: nil)
+      expect(repo).to receive(:save_images).with(
+        id: cast_id,
+        profile_media_id: profile_media_id,
+        gallery_media_ids: gallery_media_ids,
+        avatar_media_id: nil
+      )
       expect(repo).to receive(:find_with_plans).with(cast_id).and_return(cast)
 
-      result = use_case.call(cast_id: cast_id, image_path: image_path, images: images)
+      result = use_case.call(cast_id: cast_id, profile_media_id: profile_media_id, gallery_media_ids: gallery_media_ids)
+      expect(result).to eq(cast)
+    end
+
+    it "saves images with avatar_media_id" do
+      expect(repo).to receive(:save_images).with(
+        id: cast_id,
+        profile_media_id: profile_media_id,
+        gallery_media_ids: gallery_media_ids,
+        avatar_media_id: avatar_media_id
+      )
+      expect(repo).to receive(:find_with_plans).with(cast_id).and_return(cast)
+
+      result = use_case.call(
+        cast_id: cast_id,
+        profile_media_id: profile_media_id,
+        gallery_media_ids: gallery_media_ids,
+        avatar_media_id: avatar_media_id
+      )
       expect(result).to eq(cast)
     end
   end

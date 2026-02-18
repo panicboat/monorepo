@@ -4,7 +4,7 @@ module Post
   module Adapters
     # Anti-Corruption Layer for accessing Cast data from Portfolio slice.
     class CastAdapter
-      CastInfo = Data.define(:id, :user_id, :name, :image_path, :avatar_path, :slug, :visibility, :registered_at)
+      CastInfo = Data.define(:id, :user_id, :name, :profile_media_id, :avatar_media_id, :slug, :visibility, :registered_at)
 
       def find_by_user_id(user_id)
         casts = get_by_user_ids_query.call(user_ids: [user_id])
@@ -60,8 +60,8 @@ module Post
           id: cast.id,
           user_id: cast.user_id,
           name: cast.name,
-          image_path: cast.image_path,
-          avatar_path: cast.avatar_path,
+          profile_media_id: cast.profile_media_id,
+          avatar_media_id: cast.avatar_media_id,
           slug: cast.slug,
           visibility: cast.visibility,
           registered_at: cast.registered_at

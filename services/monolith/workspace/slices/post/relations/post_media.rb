@@ -6,9 +6,8 @@ module Post
       schema(:"post__post_media", as: :post_media, infer: false) do
         attribute :id, Types::String
         attribute :post_id, Types::String
+        attribute :media_id, Types::String.optional
         attribute :media_type, Types::String
-        attribute :url, Types::String
-        attribute :thumbnail_url, Types::String.optional
         attribute :position, Types::Integer
         attribute :created_at, Types::Time
 

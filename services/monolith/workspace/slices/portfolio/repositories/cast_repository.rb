@@ -37,20 +37,29 @@ module Portfolio
       # Use Offer::Repositories::OfferRepository for save_plans/save_schedules.
 
       def find_with_plans(id)
-        casts.combine(:plans).by_pk(id).one
+        casts.combine(:plans, :cast_gallery_media).by_pk(id).one
+      end
+
+      def find_gallery_media_ids(cast_id)
+        cast_gallery_media.where(cast_id: cast_id).order(:position).pluck(:media_id)
       end
 
       def find_by_user_id_with_plans(user_id)
         casts.combine(:plans).where(user_id: user_id).one
       end
 
-      def save_images(id:, image_path:, images:, avatar_path: nil)
-        updates = {
-          image_path: image_path,
-          images: Sequel.pg_jsonb(images || [])
-        }
-        updates[:avatar_path] = avatar_path unless avatar_path.nil?
-        casts.dataset.where(id: id).update(updates)
+      def save_images(id:, profile_media_id:, gallery_media_ids:, avatar_media_id: nil)
+        transaction do
+          updates = { profile_media_id: profile_media_id }
+          updates[:avatar_media_id] = avatar_media_id unless avatar_media_id.nil?
+          casts.dataset.where(id: id).update(updates)
+
+          # Save gallery media
+          cast_gallery_media.where(cast_id: id).delete
+          (gallery_media_ids || []).each_with_index do |media_id, idx|
+            cast_gallery_media.changeset(:create, cast_id: id, media_id: media_id, position: idx).commit
+          end
+        end
       end
 
       def save_visibility(id, visibility)

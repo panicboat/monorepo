@@ -48,6 +48,7 @@ module Post
             likes_counts = like_repo.likes_count_batch(post_ids: post_ids)
             blocked_user_ids = get_blocked_user_ids
             comments_counts = comment_repo.comments_count_batch(post_ids: post_ids, exclude_user_ids: blocked_user_ids)
+            media_files = load_media_files_for_posts(result[:posts])
 
             posts_proto = result[:posts].map do |post|
               PostPresenter.to_proto(
@@ -55,7 +56,8 @@ module Post
                 author: cast,
                 likes_count: likes_counts[post.id] || 0,
                 comments_count: comments_counts[post.id] || 0,
-                liked: false
+                liked: false,
+                media_files: media_files
               )
             end
 
@@ -161,6 +163,7 @@ module Post
         liked = guest ? like_repo.liked?(post_id: result[:post].id, guest_id: guest.id) : false
         blocked_user_ids = get_blocked_user_ids
         comments_count = comment_repo.comments_count(post_id: result[:post].id, exclude_user_ids: blocked_user_ids)
+        media_files = load_media_files_for_posts([result[:post]])
 
         ::Post::V1::GetCastPostResponse.new(
           post: PostPresenter.to_proto(
@@ -168,7 +171,8 @@ module Post
             author: result[:author],
             likes_count: likes_count,
             comments_count: comments_count,
-            liked: liked
+            liked: liked,
+            media_files: media_files
           )
         )
       end
@@ -178,7 +182,7 @@ module Post
         cast = find_my_cast!
 
         media_data = request.message.media.map do |m|
-          { media_type: m.media_type, url: m.url, thumbnail_url: m.thumbnail_url }
+          { media_id: m.media_id, media_type: m.media_type }
         end
 
         hashtags = request.message.hashtags.to_a
@@ -192,8 +196,10 @@ module Post
           hashtags: hashtags
         )
 
+        media_files = load_media_files_for_posts([post])
+
         ::Post::V1::SaveCastPostResponse.new(
-          post: PostPresenter.to_proto(post, author: cast)
+          post: PostPresenter.to_proto(post, author: cast, media_files: media_files)
         )
       rescue SavePost::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
@@ -286,6 +292,7 @@ module Post
         likes_counts = like_repo.likes_count_batch(post_ids: post_ids)
         comments_counts = comment_repo.comments_count_batch(post_ids: post_ids, exclude_user_ids: blocked_user_ids)
         liked_status = guest ? like_repo.liked_status_batch(post_ids: post_ids, guest_id: guest.id) : {}
+        media_files = load_media_files_for_posts(result[:posts])
 
         posts_with_authors = result[:posts].map do |post|
           author = result[:authors][post.cast_id]
@@ -294,7 +301,8 @@ module Post
             author: author,
             likes_count: likes_counts[post.id] || 0,
             comments_count: comments_counts[post.id] || 0,
-            liked: liked_status[post.id] || false
+            liked: liked_status[post.id] || false,
+            media_files: media_files
           )
         end
 
@@ -303,6 +311,18 @@ module Post
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
+      end
+
+      def load_media_files_for_posts(posts)
+        media_ids = posts.flat_map do |post|
+          next [] unless post.respond_to?(:post_media)
+
+          (post.post_media || []).filter_map(&:media_id)
+        end.uniq
+
+        return {} if media_ids.empty?
+
+        media_adapter.find_by_ids(media_ids)
       end
     end
   end

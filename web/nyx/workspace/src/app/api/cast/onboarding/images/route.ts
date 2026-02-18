@@ -11,11 +11,11 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
 
     const request: Record<string, any> = {
-      profileImagePath: body.profileImagePath,
-      galleryImages: body.galleryImages,
+      profileMediaId: body.profileMediaId,
+      galleryMediaIds: body.galleryMediaIds || [],
     };
-    if (body.avatarPath !== undefined) {
-      request.avatarPath = body.avatarPath;
+    if (body.avatarMediaId !== undefined) {
+      request.avatarMediaId = body.avatarMediaId;
     }
 
     const response = await castClient.saveCastImages(

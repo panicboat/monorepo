@@ -14,6 +14,7 @@ message CommentMedia {
   string media_type = 2; // "image" or "video"
   string url = 3;
   string thumbnail_url = 4;
+  string media_id = 5; // Reference to media__files.id (required for input)
 }
 
 message CommentAuthor {

@@ -17,7 +17,6 @@ module Portfolio
       rpc :GetGuestProfile, ::Portfolio::V1::GetGuestProfileRequest, ::Portfolio::V1::GetGuestProfileResponse
       rpc :GetGuestProfileById, ::Portfolio::V1::GetGuestProfileByIdRequest, ::Portfolio::V1::GetGuestProfileByIdResponse
       rpc :SaveGuestProfile, ::Portfolio::V1::SaveGuestProfileRequest, ::Portfolio::V1::SaveGuestProfileResponse
-      rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
 
       include Portfolio::Deps[
         get_profile_uc: "use_cases.guest.get_profile",
@@ -29,8 +28,10 @@ module Portfolio
         authenticate_user!
 
         result = get_profile_uc.call(user_id: current_user_id)
+        media_files = load_media_files_for_guest(result)
+
         ::Portfolio::V1::GetGuestProfileResponse.new(
-          profile: result ? GuestPresenter.to_proto(result) : nil
+          profile: result ? GuestPresenter.to_proto(result, media_files: media_files) : nil
         )
       end
 
@@ -53,12 +54,15 @@ module Portfolio
         follow_detail = social_adapter.get_follow_detail(guest_id: guest.id, cast_id: cast_id)
         is_blocked = social_adapter.cast_blocked_guest?(cast_id: cast_id, guest_id: guest.id)
 
+        media_files = load_media_files_for_guest(guest)
+
         ::Portfolio::V1::GetGuestProfileByIdResponse.new(
           profile: GuestDetailPresenter.to_proto(
             guest,
             is_following: follow_detail[:is_following],
             followed_at: follow_detail[:followed_at],
-            is_blocked: is_blocked
+            is_blocked: is_blocked,
+            media_files: media_files
           )
         )
       end
@@ -69,19 +73,18 @@ module Portfolio
         result = save_profile_uc.call(
           user_id: current_user_id,
           name: request.message.name,
-          avatar_path: request.message.avatar_path.to_s.empty? ? nil : request.message.avatar_path,
+          avatar_media_id: request.message.avatar_media_id.to_s.empty? ? nil : request.message.avatar_media_id,
           tagline: request.message.tagline.to_s.empty? ? nil : request.message.tagline,
           bio: request.message.bio.to_s.empty? ? nil : request.message.bio
         )
+
+        media_files = load_media_files_for_guest(result)
+
         ::Portfolio::V1::SaveGuestProfileResponse.new(
-          profile: GuestPresenter.to_proto(result)
+          profile: GuestPresenter.to_proto(result, media_files: media_files)
         )
       rescue SaveProfile::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
-      end
-
-      def get_upload_url
-        handle_upload_url(prefix: "guests")
       end
 
       private
@@ -92,6 +95,15 @@ module Portfolio
 
       def social_adapter
         @social_adapter ||= Portfolio::Adapters::SocialAdapter.new
+      end
+
+      def load_media_files_for_guest(guest)
+        return {} unless guest
+
+        media_ids = [guest.avatar_media_id].compact
+        return {} if media_ids.empty?
+
+        media_adapter.find_by_ids(media_ids)
       end
     end
   end

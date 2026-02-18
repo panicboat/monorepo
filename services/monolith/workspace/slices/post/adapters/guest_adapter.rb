@@ -4,7 +4,7 @@ module Post
   module Adapters
     # Anti-Corruption Layer for accessing Guest data from Portfolio slice.
     class GuestAdapter
-      GuestInfo = Data.define(:id, :user_id, :name, :avatar_path)
+      GuestInfo = Data.define(:id, :user_id, :name, :avatar_media_id)
 
       def find_by_user_id(user_id)
         guests = get_by_user_ids_query.call(user_ids: [user_id])
@@ -52,7 +52,7 @@ module Post
           id: guest.id,
           user_id: guest.user_id,
           name: guest.name,
-          avatar_path: guest.avatar_path
+          avatar_media_id: guest.avatar_media_id
         )
       end
 

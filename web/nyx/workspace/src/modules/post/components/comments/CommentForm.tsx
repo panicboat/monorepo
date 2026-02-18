@@ -51,12 +51,13 @@ export function CommentForm({
 
       const uploadedMedia: CommentMedia[] = [];
       for (const mf of mediaFiles) {
-        const key = await uploadFile(mf.file);
-        if (key) {
+        const result = await uploadFile(mf.file);
+        if (result) {
           uploadedMedia.push({
             id: "",
             mediaType: mf.type,
-            url: key,
+            url: "",
+            mediaId: result.mediaId,
           });
         }
       }

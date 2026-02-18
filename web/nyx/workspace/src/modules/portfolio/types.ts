@@ -17,6 +17,7 @@ export interface MediaItem {
   id?: string;
   url: string;
   key?: string;
+  mediaId?: string; // Media service ID for new uploads
   type: "image" | "video";
   thumbnail?: string;
 }

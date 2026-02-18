@@ -21,7 +21,7 @@ module Portfolio
 
           class SlugNotAvailableError < StandardError; end
 
-          def call(user_id:, name:, bio:, slug: nil, tagline: nil, default_schedule_start: nil, default_schedule_end: nil, image_path: nil, social_links: nil, age: nil, height: nil, blood_type: nil, three_sizes: nil, tags: nil, area_ids: nil, genre_ids: nil)
+          def call(user_id:, name:, bio:, slug: nil, tagline: nil, default_schedule_start: nil, default_schedule_end: nil, social_links: nil, age: nil, height: nil, blood_type: nil, three_sizes: nil, tags: nil, area_ids: nil, genre_ids: nil)
             # 0. Input Validation
             params = {
               user_id: user_id,
@@ -31,7 +31,6 @@ module Portfolio
               tagline: tagline,
               default_schedule_start: default_schedule_start,
               default_schedule_end: default_schedule_end,
-              image_path: image_path,
               social_links: social_links,
               age: age,
               height: height,
@@ -58,7 +57,6 @@ module Portfolio
               tagline: tagline,
               default_schedule_start: default_schedule_start,
               default_schedule_end: default_schedule_end,
-              image_path: image_path,
               social_links: social_links ? Sequel.pg_jsonb(social_links) : nil,
               age: age,
               height: height,

@@ -1,16 +1,22 @@
 # frozen_string_literal: true
 
-require "storage"
-
 module Portfolio
   module Presenters
     module Cast
       class ProfilePresenter
-        def self.to_proto(cast, areas: [], genres: [], is_online: false)
+        def self.to_proto(cast, areas: [], genres: [], is_online: false, media_files: {})
           return nil unless cast
 
-          avatar_key = cast.respond_to?(:avatar_path) ? cast.avatar_path : nil
-          avatar_key = nil if avatar_key.to_s.empty?
+          # Get profile image URL from media_files
+          profile_media = media_files[cast.profile_media_id]
+          profile_url = profile_media&.url || ""
+
+          # Get avatar URL from media_files (fallback to profile image)
+          avatar_media = media_files[cast.avatar_media_id]
+          avatar_url = avatar_media&.url || profile_url
+
+          # Get gallery media URLs
+          gallery_urls = gallery_media_urls(cast, media_files)
 
           ::Portfolio::V1::CastProfile.new(
             id: cast.id.to_s,
@@ -21,12 +27,13 @@ module Portfolio
             tagline: cast.tagline,
             default_schedule_start: cast.default_schedule_start,
             default_schedule_end: cast.default_schedule_end,
-            image_url: Storage.download_url(key: cast.image_path),
-            image_path: cast.image_path,
-            avatar_path: avatar_key || "",
-            avatar_url: Storage.download_url(key: avatar_key || cast.image_path),
+            image_url: profile_url,
+            profile_media_id: cast.profile_media_id || "",
+            avatar_media_id: cast.avatar_media_id || "",
+            avatar_url: avatar_url,
             visibility: visibility_to_enum(cast.visibility),
-            images: (cast.images || []).to_a,
+            gallery_media_ids: gallery_media_ids(cast),
+            images: gallery_urls,
             social_links: social_links_to_proto(cast.social_links),
             age: cast.age || 0,
             height: cast.height || 0,
@@ -38,6 +45,17 @@ module Portfolio
             is_online: is_online,
             registered_at: cast.respond_to?(:registered_at) && cast.registered_at ? cast.registered_at.iso8601 : ""
           )
+        end
+
+        def self.gallery_media_ids(cast)
+          return [] unless cast.respond_to?(:cast_gallery_media)
+          return [] unless cast.cast_gallery_media
+
+          cast.cast_gallery_media.sort_by(&:position).map(&:media_id)
+        end
+
+        def self.gallery_media_urls(cast, media_files)
+          gallery_media_ids(cast).map { |id| media_files[id]&.url || "" }
         end
 
         def self.area_to_proto(area)

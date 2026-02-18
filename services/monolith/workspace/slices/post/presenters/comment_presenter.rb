@@ -3,7 +3,7 @@
 module Post
   module Presenters
     class CommentPresenter
-      def self.to_proto(comment, author: nil)
+      def self.to_proto(comment, author: nil, media_files: {})
         return nil unless comment
 
         media = (comment.respond_to?(:comment_media) ? comment.comment_media : []) || []
@@ -16,24 +16,25 @@ module Post
           content: comment.content,
           created_at: comment.created_at.iso8601,
           author: author_to_proto(author),
-          media: media.sort_by(&:position).map { |m| media_to_proto(m) },
+          media: media.sort_by(&:position).map { |m| media_to_proto(m, media_files: media_files) },
           replies_count: comment.replies_count || 0
         )
       end
 
-      def self.many_to_proto(comments, authors: {})
+      def self.many_to_proto(comments, authors: {}, media_files: {})
         (comments || []).map do |c|
           author = authors[c.user_id]
-          to_proto(c, author: author)
+          to_proto(c, author: author, media_files: media_files)
         end
       end
 
-      def self.media_to_proto(media)
+      def self.media_to_proto(media, media_files: {})
+        media_file = media_files[media.media_id]
         ::Post::V1::CommentMedia.new(
           id: media.id.to_s,
           media_type: media.media_type,
-          url: Storage.download_url(key: media.url),
-          thumbnail_url: media.thumbnail_url ? Storage.download_url(key: media.thumbnail_url) : ""
+          url: media_file&.url || "",
+          thumbnail_url: media_file&.thumbnail_url || ""
         )
       end
 

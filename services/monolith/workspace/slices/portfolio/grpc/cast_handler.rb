@@ -21,7 +21,6 @@ module Portfolio
       rpc :SaveCastVisibility, ::Portfolio::V1::SaveCastVisibilityRequest, ::Portfolio::V1::SaveCastVisibilityResponse
       rpc :SaveCastImages, ::Portfolio::V1::SaveCastImagesRequest, ::Portfolio::V1::SaveCastImagesResponse
       rpc :ListCasts, ::Portfolio::V1::ListCastsRequest, ::Portfolio::V1::ListCastsResponse
-      rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
       rpc :CheckSlugAvailability, ::Portfolio::V1::CheckSlugAvailabilityRequest, ::Portfolio::V1::CheckSlugAvailabilityResponse
       rpc :ListAreas, ::Portfolio::V1::ListAreasRequest, ::Portfolio::V1::ListAreasResponse
       rpc :ListGenres, ::Portfolio::V1::ListGenresRequest, ::Portfolio::V1::ListGenresResponse
@@ -57,8 +56,11 @@ module Portfolio
         areas = area_repo.find_by_ids(ids[:area_ids])
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
+        # Load media files for URL generation
+        media_files = load_media_files_for_cast(result)
+
         ::Portfolio::V1::GetCastProfileResponse.new(
-          profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres)
+          profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres, media_files: media_files)
         )
       end
 
@@ -83,8 +85,11 @@ module Portfolio
         areas = area_repo.find_by_ids(ids[:area_ids])
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
+        # Load media files for URL generation
+        media_files = load_media_files_for_cast(result)
+
         ::Portfolio::V1::GetCastProfileResponse.new(
-          profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres)
+          profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres, media_files: media_files)
         )
       end
 
@@ -141,7 +146,6 @@ module Portfolio
           tagline: request.message.tagline,
           default_schedule_start: request.message.default_schedule_start,
           default_schedule_end: request.message.default_schedule_end,
-          image_path: request.message.image_path,
           social_links: ProfilePresenter.social_links_from_proto(request.message.social_links),
           age: request.message.age.zero? ? nil : request.message.age,
           height: request.message.height.zero? ? nil : request.message.height,
@@ -155,7 +159,10 @@ module Portfolio
         ids = repo.find_area_and_genre_ids(result.id)
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
-        ::Portfolio::V1::CreateCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, genres: genres))
+        # Load media files for URL generation
+        media_files = load_media_files_for_cast(result)
+
+        ::Portfolio::V1::CreateCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, genres: genres, media_files: media_files))
       end
 
       def save_cast_profile
@@ -172,7 +179,6 @@ module Portfolio
           tagline: request.message.tagline,
           default_schedule_start: request.message.default_schedule_start,
           default_schedule_end: request.message.default_schedule_end,
-          image_path: request.message.image_path,
           social_links: ProfilePresenter.social_links_from_proto(request.message.social_links),
           age: request.message.age.zero? ? nil : request.message.age,
           height: request.message.height.zero? ? nil : request.message.height,
@@ -188,7 +194,10 @@ module Portfolio
         areas = area_repo.find_by_ids(ids[:area_ids])
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
-        ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres))
+        # Load media files for URL generation
+        media_files = load_media_files_for_cast(result)
+
+        ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres, media_files: media_files))
       rescue SaveProfile::SlugNotAvailableError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::ALREADY_EXISTS, e.message)
       rescue SaveProfile::ValidationError => e
@@ -210,8 +219,11 @@ module Portfolio
         areas = area_repo.find_by_ids(ids[:area_ids])
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
+        # Load media files for URL generation
+        media_files = load_media_files_for_cast(result[:cast])
+
         ::Portfolio::V1::SaveCastVisibilityResponse.new(
-          profile: ProfilePresenter.to_proto(result[:cast], areas: areas, genres: genres)
+          profile: ProfilePresenter.to_proto(result[:cast], areas: areas, genres: genres, media_files: media_files)
         )
       end
 
@@ -221,20 +233,21 @@ module Portfolio
         authenticate_user!
         cast = find_my_cast!
 
-        images = request.message.gallery_images ? request.message.gallery_images.to_a : []
-        avatar = request.message.avatar_path.to_s.empty? ? nil : request.message.avatar_path
+        gallery_media_ids = request.message.gallery_media_ids ? request.message.gallery_media_ids.to_a : []
+        avatar_media_id = request.message.avatar_media_id.to_s.empty? ? nil : request.message.avatar_media_id
         result = save_images_uc.call(
           cast_id: cast.id,
-          image_path: request.message.profile_image_path,
-          images: images,
-          avatar_path: avatar
+          profile_media_id: request.message.profile_media_id,
+          gallery_media_ids: gallery_media_ids,
+          avatar_media_id: avatar_media_id
         )
 
-        ::Portfolio::V1::SaveCastImagesResponse.new(profile: ProfilePresenter.to_proto(result))
-      end
+        # Load media files for URL generation
+        media_files = load_media_files_for_cast(result)
 
-      def get_upload_url
-        handle_upload_url(prefix: "casts")
+        ::Portfolio::V1::SaveCastImagesResponse.new(
+          profile: ProfilePresenter.to_proto(result, media_files: media_files)
+        )
       end
 
       # === Listing ===
@@ -272,12 +285,17 @@ module Portfolio
         # Batch fetch online cast IDs for efficiency
         online_ids = repo.online_cast_ids.to_set
 
+        # Batch fetch media files for all casts
+        all_media_ids = casts.flat_map { |c| [c.profile_media_id, c.avatar_media_id].compact }
+        casts.each { |c| all_media_ids.concat(repo.find_gallery_media_ids(c.id)) }
+        media_files = media_adapter.find_by_ids(all_media_ids)
+
         ::Portfolio::V1::ListCastsResponse.new(
           items: casts.map { |c|
             genre_ids = repo.find_genre_ids(c.id)
             genres = genre_repo.find_by_ids(genre_ids)
             ::Portfolio::V1::ListCastsResponse::CastItem.new(
-              profile: ProfilePresenter.to_proto(c, genres: genres, is_online: online_ids.include?(c.id)),
+              profile: ProfilePresenter.to_proto(c, genres: genres, is_online: online_ids.include?(c.id), media_files: media_files),
               plans: PlanPresenter.many_to_proto(c.plans)
             )
           },
@@ -332,6 +350,13 @@ module Portfolio
       ProfilePresenter = Portfolio::Presenters::Cast::ProfilePresenter
       PlanPresenter = Portfolio::Presenters::Cast::PlanPresenter
       SaveProfile = Portfolio::UseCases::Cast::Profile::SaveProfile
+
+      def load_media_files_for_cast(cast)
+        media_ids = [cast.profile_media_id, cast.avatar_media_id].compact
+        gallery_ids = repo.find_gallery_media_ids(cast.id)
+        media_ids.concat(gallery_ids)
+        media_adapter.find_by_ids(media_ids)
+      end
 
       def find_my_cast!
         cast = get_profile_uc.call(user_id: current_user_id)

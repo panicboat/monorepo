@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { castClient } from "@/lib/grpc";
+import { mediaClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 
 export async function POST(req: NextRequest) {
@@ -10,18 +10,19 @@ export async function POST(req: NextRequest) {
 
     const { filename, contentType } = await req.json();
 
-    const response = await castClient.getUploadUrl(
+    const response = await mediaClient.getUploadUrl(
       { filename, contentType },
       { headers: buildGrpcHeaders(req.headers) }
     );
 
     // Rewrite URL to point to nyx's /storage/upload endpoint (BFF pattern)
-    const key = response.key;
-    const nyxUploadUrl = `/storage/upload?key=${encodeURIComponent(key)}&content_type=${encodeURIComponent(contentType)}`;
+    const mediaKey = response.mediaKey;
+    const nyxUploadUrl = `/storage/upload?key=${encodeURIComponent(mediaKey)}&content_type=${encodeURIComponent(contentType)}`;
 
     return NextResponse.json({
       url: nyxUploadUrl,
-      key: response.key,
+      key: mediaKey,
+      mediaId: response.mediaId,
     });
   } catch (error: any) {
     console.error("GetUploadUrl Error:", error);

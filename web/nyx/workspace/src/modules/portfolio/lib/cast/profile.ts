@@ -1,4 +1,3 @@
-import { getMediaType } from "@/lib/media";
 import { CastProfile, CastVisibility } from "@/stub/portfolio/v1/cast_service_pb";
 
 /**
@@ -48,27 +47,11 @@ export function mapCastProfileToFrontend(p: CastProfile) {
     defaultScheduleStart: p.defaultScheduleStart || "10:00",
     defaultScheduleEnd: p.defaultScheduleEnd || "22:00",
     imageUrl: p.imageUrl,
-    imagePath: p.imagePath,
-    avatarPath: p.avatarPath || "",
+    profileMediaId: p.profileMediaId || "",
+    avatarMediaId: p.avatarMediaId || "",
     avatarUrl: p.avatarUrl || p.imageUrl,
-    images: {
-      hero: p.imagePath
-        ? {
-            id: "hero",
-            url: `/uploads/${p.imagePath}`,
-            key: p.imagePath,
-            type: getMediaType(p.imagePath),
-          }
-        : null,
-      portfolio: p.images
-        ? p.images.map((key, index) => ({
-            id: `existing-${index}`,
-            url: `/uploads/${key}`,
-            key: key,
-            type: getMediaType(key),
-          }))
-        : [],
-    },
+    galleryMediaIds: p.galleryMediaIds || [],
+    galleryUrls: p.images || [],
     tags: (p.tags || []).map((t) => ({ label: t, count: 1 })),
     socialLinks: p.socialLinks
       ? {
@@ -110,7 +93,6 @@ export function buildSaveProfileRequest(body: any) {
     name: body.name,
     slug: body.slug || "",
     bio: body.bio,
-    imagePath: body.imagePath,
     tagline: body.tagline,
     areaIds: body.areaIds || [],
     genreIds: body.genreIds || [],

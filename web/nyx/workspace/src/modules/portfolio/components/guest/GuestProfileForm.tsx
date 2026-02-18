@@ -14,7 +14,7 @@ export interface GuestProfileFormProps {
   initialData?: GuestProfileFormData;
   initialAvatarUrl?: string;
   onSubmit: (data: GuestProfileFormData) => Promise<void>;
-  onUploadAvatar: (file: File) => Promise<{ key: string; url: string }>;
+  onUploadAvatar: (file: File) => Promise<{ mediaId: string; url: string }>;
   submitLabel: string;
   loading?: boolean;
 }
@@ -31,7 +31,7 @@ export const GuestProfileForm = ({
   const [tagline, setTagline] = useState("");
   const [bio, setBio] = useState("");
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | null>(null);
-  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const [avatarMediaId, setAvatarMediaId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +42,7 @@ export const GuestProfileForm = ({
       setName(initialData.name || "");
       setTagline(initialData.tagline || "");
       setBio(initialData.bio || "");
-      setAvatarPath(initialData.avatarPath || null);
+      setAvatarMediaId(initialData.avatarMediaId || null);
     }
   }, [initialData]);
 
@@ -79,7 +79,7 @@ export const GuestProfileForm = ({
       setError(null);
       try {
         const result = await onUploadAvatar(file);
-        setAvatarPath(result.key);
+        setAvatarMediaId(result.mediaId);
         setCurrentAvatarUrl(result.url);
         return result;
       } catch (e) {
@@ -95,7 +95,7 @@ export const GuestProfileForm = ({
 
   const handleAvatarClear = useCallback(() => {
     setCurrentAvatarUrl(null);
-    setAvatarPath(null);
+    setAvatarMediaId(null);
   }, []);
 
   const handleSubmit = async () => {
@@ -107,7 +107,7 @@ export const GuestProfileForm = ({
     try {
       await onSubmit({
         name: name.trim(),
-        avatarPath: avatarPath || "",
+        avatarMediaId: avatarMediaId || "",
         tagline: tagline.trim(),
         bio: bio.trim(),
       });

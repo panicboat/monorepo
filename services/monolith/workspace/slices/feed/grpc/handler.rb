@@ -7,6 +7,7 @@ require_relative "../adapters/post_adapter"
 require_relative "../adapters/relationship_adapter"
 require_relative "../adapters/cast_adapter"
 require_relative "../adapters/guest_adapter"
+require_relative "../adapters/media_adapter"
 require_relative "../presenters/feed_presenter"
 require_relative "../use_cases/list_guest_feed"
 require_relative "../use_cases/list_cast_feed"
@@ -60,13 +61,15 @@ module Feed
         likes_counts = post_adapter.likes_count_batch(post_ids: post_ids)
         comments_counts = post_adapter.comments_count_batch(post_ids: post_ids, exclude_user_ids: blocked_user_ids)
         liked_status = post_adapter.liked_status_batch(post_ids: post_ids, guest_id: guest.id)
+        media_files = load_media_files_for_posts_and_authors(result[:posts], result[:authors].values)
 
         posts_proto = FeedPresenter.many_to_proto(
           result[:posts],
           authors: result[:authors],
           likes_counts: likes_counts,
           comments_counts: comments_counts,
-          liked_status: liked_status
+          liked_status: liked_status,
+          media_files: media_files
         )
 
         ::Feed::V1::ListGuestFeedResponse.new(
@@ -96,6 +99,7 @@ module Feed
         blocked_user_ids = blocker ? get_blocked_user_ids(blocker[:id]) : []
         likes_counts = post_adapter.likes_count_batch(post_ids: post_ids)
         comments_counts = post_adapter.comments_count_batch(post_ids: post_ids, exclude_user_ids: blocked_user_ids)
+        media_files = load_media_files_for_posts_and_authors(result[:posts], [result[:author]].compact)
 
         # Build posts proto with single author
         posts_proto = result[:posts].map do |post|
@@ -104,7 +108,8 @@ module Feed
             author: result[:author],
             likes_count: likes_counts[post.id] || 0,
             comments_count: comments_counts[post.id] || 0,
-            liked: false # Cast viewing own posts doesn't need liked status
+            liked: false, # Cast viewing own posts doesn't need liked status
+            media_files: media_files
           )
         end
 
@@ -141,6 +146,10 @@ module Feed
 
       def guest_adapter
         @guest_adapter ||= Feed::Adapters::GuestAdapter.new
+      end
+
+      def media_adapter
+        @media_adapter ||= Feed::Adapters::MediaAdapter.new
       end
 
       def find_my_cast
@@ -195,6 +204,30 @@ module Feed
         user_ids += cast_adapter.get_user_ids_by_cast_ids(blocked_cast_ids) unless blocked_cast_ids.empty?
         user_ids += guest_adapter.get_user_ids_by_guest_ids(blocked_guest_ids) unless blocked_guest_ids.empty?
         user_ids
+      end
+
+      def load_media_files_for_posts_and_authors(posts, authors)
+        media_ids = posts.flat_map do |post|
+          next [] unless post.respond_to?(:post_media)
+
+          (post.post_media || []).filter_map(&:media_id)
+        end
+
+        # Collect author media IDs (avatar or profile)
+        authors.each do |author|
+          next unless author
+
+          if author.respond_to?(:avatar_media_id) && author.avatar_media_id.to_s != ""
+            media_ids << author.avatar_media_id
+          elsif author.respond_to?(:profile_media_id) && author.profile_media_id.to_s != ""
+            media_ids << author.profile_media_id
+          end
+        end
+
+        media_ids.uniq!
+        return {} if media_ids.empty?
+
+        media_adapter.find_by_ids(media_ids)
       end
     end
   end

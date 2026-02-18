@@ -59,26 +59,63 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
   end
 
   describe "#save_media" do
-    it "saves media for a post" do
+    let(:media_repo) { Hanami.app.slices[:media]["repositories.media_repository"] }
+
+    def create_media_file(media_type: "image")
+      media_id = SecureRandom.uuid
+      media_repo.create(
+        id: media_id,
+        media_type: media_type,
+        url: "https://example.com/#{media_id}.jpg",
+        media_key: "uploads/#{media_id}.jpg"
+      )
+      media_id
+    end
+
+    it "saves media with media_id for a post" do
       post = repo.create_post(cast_id: cast_id, content: "With media")
+      media_id = create_media_file(media_type: "image")
       media_data = [
-        { media_type: "image", url: "http://example.com/img.jpg", thumbnail_url: "" },
-        { media_type: "video", url: "http://example.com/vid.mp4", thumbnail_url: "http://example.com/thumb.jpg" }
+        { media_id: media_id, media_type: "image" }
+      ]
+      repo.save_media(post_id: post.id, media_data: media_data)
+
+      result = repo.find_by_id(post.id)
+      expect(result.post_media.size).to eq(1)
+      expect(result.post_media.first.media_id).to eq(media_id)
+      expect(result.post_media.first.media_type).to eq("image")
+    end
+
+    it "saves multiple media with media_ids preserving position" do
+      post = repo.create_post(cast_id: cast_id, content: "With media")
+      media_id1 = create_media_file(media_type: "image")
+      media_id2 = create_media_file(media_type: "video")
+      media_data = [
+        { media_id: media_id1, media_type: "image" },
+        { media_id: media_id2, media_type: "video" }
       ]
       repo.save_media(post_id: post.id, media_data: media_data)
 
       result = repo.find_by_id(post.id)
       expect(result.post_media.size).to eq(2)
-      expect(result.post_media.map(&:media_type)).to contain_exactly("image", "video")
+      sorted_media = result.post_media.sort_by(&:position)
+      expect(sorted_media[0].media_id).to eq(media_id1)
+      expect(sorted_media[0].position).to eq(0)
+      expect(sorted_media[1].media_id).to eq(media_id2)
+      expect(sorted_media[1].position).to eq(1)
     end
 
     it "replaces existing media" do
       post = repo.create_post(cast_id: cast_id, content: "With media")
-      repo.save_media(post_id: post.id, media_data: [{ media_type: "image", url: "http://old.jpg", thumbnail_url: "" }])
-      repo.save_media(post_id: post.id, media_data: [{ media_type: "video", url: "http://new.mp4", thumbnail_url: "" }])
+      old_media_id = create_media_file(media_type: "image")
+      new_media_id = create_media_file(media_type: "video")
+
+      repo.save_media(post_id: post.id, media_data: [{ media_id: old_media_id, media_type: "image" }])
+      repo.save_media(post_id: post.id, media_data: [{ media_id: new_media_id, media_type: "video" }])
 
       result = repo.find_by_id(post.id)
       expect(result.post_media.size).to eq(1)
+      expect(result.post_media.first.media_id).to eq(new_media_id)
       expect(result.post_media.first.media_type).to eq("video")
     end
   end

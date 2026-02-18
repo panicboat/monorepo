@@ -2,20 +2,17 @@ syntax = "proto3";
 
 package portfolio.v1;
 
-import "portfolio/v1/cast_service.proto";
-
 service GuestService {
   rpc GetGuestProfile(GetGuestProfileRequest) returns (GetGuestProfileResponse);
   rpc GetGuestProfileById(GetGuestProfileByIdRequest) returns (GetGuestProfileByIdResponse);
   rpc SaveGuestProfile(SaveGuestProfileRequest) returns (SaveGuestProfileResponse);
-  rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
 }
 
 message GuestProfile {
   string user_id = 1;
   string name = 2;
-  string avatar_path = 3;
-  string avatar_url = 4;  // Read-only, download URL
+  string avatar_url = 3;  // Read-only, download URL
+  string avatar_media_id = 4; // Reference to media__files.id
   string tagline = 5;     // Short introduction (max 100 chars)
   string bio = 6;         // Self introduction (max 1000 chars)
 }
@@ -28,7 +25,7 @@ message GetGuestProfileResponse {
 
 message SaveGuestProfileRequest {
   string name = 1;
-  string avatar_path = 2;
+  string avatar_media_id = 2; // Reference to media__files.id
   string tagline = 3;     // Short introduction (max 100 chars)
   string bio = 4;         // Self introduction (max 1000 chars)
 }
@@ -45,8 +42,8 @@ message GuestDetailProfile {
   string id = 1;
   string user_id = 2;
   string name = 3;
-  string avatar_path = 4;
-  string avatar_url = 5;        // Read-only, download URL
+  string avatar_url = 4;        // Read-only, download URL
+  string avatar_media_id = 5;   // Reference to media__files.id
   string tagline = 6;           // Short introduction (max 100 chars)
   string bio = 7;               // Self introduction (max 1000 chars)
   bool is_following = 8;        // Whether the guest is following the cast

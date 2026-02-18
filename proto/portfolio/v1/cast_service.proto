@@ -13,7 +13,7 @@ service CastService {
   rpc SaveCastImages(SaveCastImagesRequest) returns (SaveCastImagesResponse);
   // SaveCastPlans and SaveCastSchedules moved to OfferService
   rpc ListCasts(ListCastsRequest) returns (ListCastsResponse);
-  rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
+  // GetUploadUrl removed - use MediaService.GetUploadUrl instead
   rpc CheckSlugAvailability(CheckSlugAvailabilityRequest) returns (CheckSlugAvailabilityResponse);
   rpc ListAreas(ListAreasRequest) returns (ListAreasResponse);
   rpc ListGenres(ListGenresRequest) returns (ListGenresResponse);
@@ -55,8 +55,8 @@ message CastProfile {
   string bio = 3;
   string image_url = 4;
   CastVisibility visibility = 5;
-  repeated string images = 6;
-  string image_path = 7;
+  repeated string images = 6; // Gallery image URLs (populated from gallery_media_ids)
+  reserved 7; // was image_path (legacy)
   string tagline = 8;
   string default_schedule_start = 9;
   string default_schedule_end = 10;
@@ -66,7 +66,7 @@ message CastProfile {
   string blood_type = 14;
   ThreeSizes three_sizes = 15;
   repeated string tags = 16;
-  string avatar_path = 17;
+  reserved 17; // was avatar_path (legacy)
   string avatar_url = 18;
   string slug = 19;
   repeated Area areas = 20;
@@ -74,6 +74,9 @@ message CastProfile {
   bool is_online = 22; // Currently within scheduled availability
   string id = 23; // Cast profile ID
   string registered_at = 24; // Onboarding completion timestamp (empty if not registered)
+  string profile_media_id = 25; // Media ID for profile image
+  string avatar_media_id = 26; // Media ID for avatar image
+  repeated string gallery_media_ids = 27; // Media IDs for gallery images
 }
 
 message CastPlan {
@@ -96,7 +99,7 @@ message GetCastProfileResponse {
 message CreateCastProfileRequest {
   string name = 1;
   string bio = 2;
-  string image_path = 3;
+  reserved 3; // was image_path (use SaveCastImages instead)
   string tagline = 4;
   string default_schedule_start = 5;
   string default_schedule_end = 6;
@@ -116,7 +119,7 @@ message CreateCastProfileResponse {
 message SaveCastProfileRequest {
   string name = 1;
   string bio = 2;
-  string image_path = 3;
+  reserved 3; // was image_path (use SaveCastImages instead)
   string tagline = 4;
   string default_schedule_start = 5;
   string default_schedule_end = 6;
@@ -145,9 +148,9 @@ message SaveCastVisibilityResponse {
 }
 
 message SaveCastImagesRequest {
-  string profile_image_path = 1; // Cover/Profile image
-  repeated string gallery_images = 2; // List of image URLs or Paths
-  string avatar_path = 3;             // Square avatar image (S3 key)
+  string profile_media_id = 1; // Media ID for profile/cover image
+  repeated string gallery_media_ids = 2; // Media IDs for gallery images
+  string avatar_media_id = 3; // Media ID for avatar image
 }
 
 message SaveCastImagesResponse {
@@ -155,16 +158,7 @@ message SaveCastImagesResponse {
 }
 
 // SaveCastPlans and SaveCastSchedules moved to OfferService
-
-message GetUploadUrlRequest {
-  string filename = 1;
-  string content_type = 2;
-}
-
-message GetUploadUrlResponse {
-  string url = 1;
-  string key = 2;
-}
+// GetUploadUrl removed - use MediaService.GetUploadUrl instead
 
 // CastSchedule moved to offer.v1.Schedule
 

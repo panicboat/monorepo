@@ -15,10 +15,10 @@ module Portfolio
 
         # @param user_id [String]
         # @param name [String]
-        # @param avatar_path [String, nil]
+        # @param avatar_media_id [String, nil]
         # @param tagline [String, nil]
         # @param bio [String, nil]
-        def call(user_id:, name:, avatar_path: nil, tagline: nil, bio: nil)
+        def call(user_id:, name:, avatar_media_id: nil, tagline: nil, bio: nil)
           validate_name!(name)
           validate_tagline!(tagline) if tagline
           validate_bio!(bio) if bio
@@ -27,7 +27,7 @@ module Portfolio
 
           attrs = {
             name: name,
-            avatar_path: avatar_path,
+            avatar_media_id: avatar_media_id,
             tagline: tagline,
             bio: bio,
             updated_at: Time.now

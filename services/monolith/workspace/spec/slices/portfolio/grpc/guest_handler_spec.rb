@@ -13,8 +13,7 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
       active_call: double,
       message: message,
       get_profile_uc: get_profile_uc,
-      save_profile_uc: save_profile_uc,
-      get_upload_url_uc: get_upload_url_uc
+      save_profile_uc: save_profile_uc
     )
   }
   let(:message) { double(:message) }
@@ -22,10 +21,14 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
 
   let(:get_profile_uc) { double(:get_profile_uc) }
   let(:save_profile_uc) { double(:save_profile_uc) }
-  let(:get_upload_url_uc) { double(:get_upload_url_uc) }
+
+  let(:mock_media_adapter) { double(:media_adapter) }
+  let(:mock_media_file) { double(:media_file, url: "http://example.com/avatar.jpg") }
 
   before do
     allow(Current).to receive(:user_id).and_return(current_user_id)
+    allow_any_instance_of(described_class).to receive(:media_adapter).and_return(mock_media_adapter)
+    allow(mock_media_adapter).to receive(:find_by_ids).and_return({ "media-123" => mock_media_file })
   end
 
   let(:mock_guest_entity) do
@@ -34,7 +37,7 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
       id: "guest-123",
       user_id: "user-123",
       name: "Test Guest",
-      avatar_path: "guests/user-123/avatar.jpg",
+      avatar_media_id: "media-123",
       tagline: "Hello!",
       bio: "I am a test guest.",
       created_at: Time.now,
@@ -52,6 +55,7 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
       expect(response).to be_a(::Portfolio::V1::GetGuestProfileResponse)
       expect(response.profile.name).to eq("Test Guest")
       expect(response.profile.user_id).to eq("user-123")
+      expect(response.profile.avatar_url).to eq("http://example.com/avatar.jpg")
     end
 
     it "raises unauthenticated when no user" do
@@ -74,7 +78,7 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
     let(:message) do
       ::Portfolio::V1::SaveGuestProfileRequest.new(
         name: "New Name",
-        avatar_path: "guests/user-123/new-avatar.jpg",
+        avatar_media_id: "media-456",
         tagline: "Hello!",
         bio: "My bio"
       )
@@ -84,7 +88,7 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
       expect(save_profile_uc).to receive(:call).with(
         user_id: "user-123",
         name: "New Name",
-        avatar_path: "guests/user-123/new-avatar.jpg",
+        avatar_media_id: "media-456",
         tagline: "Hello!",
         bio: "My bio"
       ).and_return(mock_guest_entity)
@@ -101,10 +105,10 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
       }
     end
 
-    it "handles empty avatar_path" do
+    it "handles empty avatar_media_id" do
       message = ::Portfolio::V1::SaveGuestProfileRequest.new(
         name: "New Name",
-        avatar_path: "",
+        avatar_media_id: "",
         tagline: "",
         bio: ""
       )
@@ -116,14 +120,13 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
         active_call: double,
         message: message,
         get_profile_uc: get_profile_uc,
-        save_profile_uc: save_profile_uc,
-        get_upload_url_uc: get_upload_url_uc
+        save_profile_uc: save_profile_uc
       )
 
       expect(save_profile_uc).to receive(:call).with(
         user_id: "user-123",
         name: "New Name",
-        avatar_path: nil,
+        avatar_media_id: nil,
         tagline: nil,
         bio: nil
       ).and_return(mock_guest_entity)
@@ -141,32 +144,6 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
         expect(e.code).to eq(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
         expect(e.details).to eq("名前は必須です")
       }
-    end
-  end
-
-  describe "#get_upload_url" do
-    let(:message) { ::Portfolio::V1::GetUploadUrlRequest.new(filename: "test.jpg", content_type: "image/jpeg") }
-
-    it "delegates to operation and returns url" do
-      success_result = Dry::Monads::Result::Success.call(url: "http://url", key: "key")
-      expect(get_upload_url_uc).to receive(:call).with(
-        user_id: "user-123",
-        filename: "test.jpg",
-        content_type: "image/jpeg",
-        prefix: "guests"
-      ).and_return(success_result)
-
-      response = handler.get_upload_url
-      expect(response).to be_a(::Portfolio::V1::GetUploadUrlResponse)
-      expect(response.url).to eq("http://url")
-      expect(response.key).to eq("key")
-    end
-
-    it "handles failure" do
-      failure_result = Dry::Monads::Result::Failure.call(:invalid_input)
-      expect(get_upload_url_uc).to receive(:call).and_return(failure_result)
-
-      expect { handler.get_upload_url }.to raise_error(GRPC::BadStatus)
     end
   end
 end

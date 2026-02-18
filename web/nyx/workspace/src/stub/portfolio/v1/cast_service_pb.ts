@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file portfolio/v1/cast_service.proto.
  */
 export const file_portfolio_v1_cast_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch9wb3J0Zm9saW8vdjEvY2FzdF9zZXJ2aWNlLnByb3RvEgxwb3J0Zm9saW8udjEicAoLU29jaWFsTGlua3MSCQoBeBgBIAEoCRIRCglpbnN0YWdyYW0YAiABKAkSDgoGdGlrdG9rGAMgASgJEhIKCmNpdHloZWF2ZW4YBCABKAkSDwoHbGl0bGluaxgFIAEoCRIOCgZvdGhlcnMYBiADKAkiQwoKVGhyZWVTaXplcxIMCgRidXN0GAEgASgFEg0KBXdhaXN0GAIgASgFEgsKA2hpcBgDIAEoBRILCgNjdXAYBCABKAkiQgoEQXJlYRIKCgJpZBgBIAEoCRISCgpwcmVmZWN0dXJlGAIgASgJEgwKBG5hbWUYAyABKAkSDAoEY29kZRgEIAEoCSLFBAoLQ2FzdFByb2ZpbGUSDwoHdXNlcl9pZBgBIAEoCRIMCgRuYW1lGAIgASgJEgsKA2JpbxgDIAEoCRIRCglpbWFnZV91cmwYBCABKAkSMAoKdmlzaWJpbGl0eRgFIAEoDjIcLnBvcnRmb2xpby52MS5DYXN0VmlzaWJpbGl0eRIOCgZpbWFnZXMYBiADKAkSEgoKaW1hZ2VfcGF0aBgHIAEoCRIPCgd0YWdsaW5lGAggASgJEh4KFmRlZmF1bHRfc2NoZWR1bGVfc3RhcnQYCSABKAkSHAoUZGVmYXVsdF9zY2hlZHVsZV9lbmQYCiABKAkSLwoMc29jaWFsX2xpbmtzGAsgASgLMhkucG9ydGZvbGlvLnYxLlNvY2lhbExpbmtzEgsKA2FnZRgMIAEoBRIOCgZoZWlnaHQYDSABKAUSEgoKYmxvb2RfdHlwZRgOIAEoCRItCgt0aHJlZV9zaXplcxgPIAEoCzIYLnBvcnRmb2xpby52MS5UaHJlZVNpemVzEgwKBHRhZ3MYECADKAkSEwoLYXZhdGFyX3BhdGgYESABKAkSEgoKYXZhdGFyX3VybBgSIAEoCRIMCgRzbHVnGBMgASgJEiEKBWFyZWFzGBQgAygLMhIucG9ydGZvbGlvLnYxLkFyZWESIwoGZ2VucmVzGBUgAygLMhMucG9ydGZvbGlvLnYxLkdlbnJlEhEKCWlzX29ubGluZRgWIAEoCBIKCgJpZBgXIAEoCRIVCg1yZWdpc3RlcmVkX2F0GBggASgJImUKCENhc3RQbGFuEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDQoFcHJpY2UYAyABKAUSGAoQZHVyYXRpb25fbWludXRlcxgEIAEoBRIWCg5pc19yZWNvbW1lbmRlZBgFIAEoCCIoChVHZXRDYXN0UHJvZmlsZVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCSJEChZHZXRDYXN0UHJvZmlsZVJlc3BvbnNlEioKB3Byb2ZpbGUYASABKAsyGS5wb3J0Zm9saW8udjEuQ2FzdFByb2ZpbGUiygIKGENyZWF0ZUNhc3RQcm9maWxlUmVxdWVzdBIMCgRuYW1lGAEgASgJEgsKA2JpbxgCIAEoCRISCgppbWFnZV9wYXRoGAMgASgJEg8KB3RhZ2xpbmUYBCABKAkSHgoWZGVmYXVsdF9zY2hlZHVsZV9zdGFydBgFIAEoCRIcChRkZWZhdWx0X3NjaGVkdWxlX2VuZBgGIAEoCRIvCgxzb2NpYWxfbGlua3MYByABKAsyGS5wb3J0Zm9saW8udjEuU29jaWFsTGlua3MSCwoDYWdlGAggASgFEg4KBmhlaWdodBgJIAEoBRISCgpibG9vZF90eXBlGAogASgJEi0KC3RocmVlX3NpemVzGAsgASgLMhgucG9ydGZvbGlvLnYxLlRocmVlU2l6ZXMSDAoEdGFncxgMIAMoCRIRCglnZW5yZV9pZHMYDSADKAkiRwoZQ3JlYXRlQ2FzdFByb2ZpbGVSZXNwb25zZRIqCgdwcm9maWxlGAEgASgLMhkucG9ydGZvbGlvLnYxLkNhc3RQcm9maWxlIpoDChZTYXZlQ2FzdFByb2ZpbGVSZXF1ZXN0EgwKBG5hbWUYASABKAkSCwoDYmlvGAIgASgJEhIKCmltYWdlX3BhdGgYAyABKAkSDwoHdGFnbGluZRgEIAEoCRIeChZkZWZhdWx0X3NjaGVkdWxlX3N0YXJ0GAUgASgJEhwKFGRlZmF1bHRfc2NoZWR1bGVfZW5kGAYgASgJEi8KDHNvY2lhbF9saW5rcxgHIAEoCzIZLnBvcnRmb2xpby52MS5Tb2NpYWxMaW5rcxIwCgp2aXNpYmlsaXR5GAggASgOMhwucG9ydGZvbGlvLnYxLkNhc3RWaXNpYmlsaXR5EgsKA2FnZRgJIAEoBRIOCgZoZWlnaHQYCiABKAUSEgoKYmxvb2RfdHlwZRgLIAEoCRItCgt0aHJlZV9zaXplcxgMIAEoCzIYLnBvcnRmb2xpby52MS5UaHJlZVNpemVzEgwKBHRhZ3MYDSADKAkSDAoEc2x1ZxgOIAEoCRIQCghhcmVhX2lkcxgPIAMoCRIRCglnZW5yZV9pZHMYECADKAkiRQoXU2F2ZUNhc3RQcm9maWxlUmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSJNChlTYXZlQ2FzdFZpc2liaWxpdHlSZXF1ZXN0EjAKCnZpc2liaWxpdHkYASABKA4yHC5wb3J0Zm9saW8udjEuQ2FzdFZpc2liaWxpdHkiSAoaU2F2ZUNhc3RWaXNpYmlsaXR5UmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSJgChVTYXZlQ2FzdEltYWdlc1JlcXVlc3QSGgoScHJvZmlsZV9pbWFnZV9wYXRoGAEgASgJEhYKDmdhbGxlcnlfaW1hZ2VzGAIgAygJEhMKC2F2YXRhcl9wYXRoGAMgASgJIkQKFlNhdmVDYXN0SW1hZ2VzUmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSI9ChNHZXRVcGxvYWRVcmxSZXF1ZXN0EhAKCGZpbGVuYW1lGAEgASgJEhQKDGNvbnRlbnRfdHlwZRgCIAEoCSIwChRHZXRVcGxvYWRVcmxSZXNwb25zZRILCgN1cmwYASABKAkSCwoDa2V5GAIgASgJIuABChBMaXN0Q2FzdHNSZXF1ZXN0EjcKEXZpc2liaWxpdHlfZmlsdGVyGAEgASgOMhwucG9ydGZvbGlvLnYxLkNhc3RWaXNpYmlsaXR5EhAKCGdlbnJlX2lkGAIgASgJEgsKA3RhZxgDIAEoCRI1Cg1zdGF0dXNfZmlsdGVyGAQgASgOMh4ucG9ydGZvbGlvLnYxLkNhc3RTdGF0dXNGaWx0ZXISDwoHYXJlYV9pZBgFIAEoCRINCgVsaW1pdBgGIAEoBRIOCgZjdXJzb3IYByABKAkSDQoFcXVlcnkYCCABKAki0gEKEUxpc3RDYXN0c1Jlc3BvbnNlEjcKBWl0ZW1zGAEgAygLMigucG9ydGZvbGlvLnYxLkxpc3RDYXN0c1Jlc3BvbnNlLkNhc3RJdGVtEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIGl0KCENhc3RJdGVtEioKB3Byb2ZpbGUYASABKAsyGS5wb3J0Zm9saW8udjEuQ2FzdFByb2ZpbGUSJQoFcGxhbnMYAiADKAsyFi5wb3J0Zm9saW8udjEuQ2FzdFBsYW4iKwobR2V0Q2FzdFByb2ZpbGVCeVNsdWdSZXF1ZXN0EgwKBHNsdWcYASABKAkiLAocQ2hlY2tTbHVnQXZhaWxhYmlsaXR5UmVxdWVzdBIMCgRzbHVnGAEgASgJIkMKHUNoZWNrU2x1Z0F2YWlsYWJpbGl0eVJlc3BvbnNlEhEKCWF2YWlsYWJsZRgBIAEoCBIPCgdtZXNzYWdlGAIgASgJIiYKEExpc3RBcmVhc1JlcXVlc3QSEgoKcHJlZmVjdHVyZRgBIAEoCSI2ChFMaXN0QXJlYXNSZXNwb25zZRIhCgVhcmVhcxgBIAMoCzISLnBvcnRmb2xpby52MS5BcmVhIkYKBUdlbnJlEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDAoEc2x1ZxgDIAEoCRIVCg1kaXNwbGF5X29yZGVyGAQgASgFIhMKEUxpc3RHZW5yZXNSZXF1ZXN0IjkKEkxpc3RHZW5yZXNSZXNwb25zZRIjCgZnZW5yZXMYASADKAsyEy5wb3J0Zm9saW8udjEuR2VucmUiLwoKUG9wdWxhclRhZxIMCgRuYW1lGAEgASgJEhMKC3VzYWdlX2NvdW50GAIgASgFIicKFkxpc3RQb3B1bGFyVGFnc1JlcXVlc3QSDQoFbGltaXQYASABKAUiQQoXTGlzdFBvcHVsYXJUYWdzUmVzcG9uc2USJgoEdGFncxgBIAMoCzIYLnBvcnRmb2xpby52MS5Qb3B1bGFyVGFnKmoKDkNhc3RWaXNpYmlsaXR5Eh8KG0NBU1RfVklTSUJJTElUWV9VTlNQRUNJRklFRBAAEhoKFkNBU1RfVklTSUJJTElUWV9QVUJMSUMQARIbChdDQVNUX1ZJU0lCSUxJVFlfUFJJVkFURRACKpEBChBDYXN0U3RhdHVzRmlsdGVyEiIKHkNBU1RfU1RBVFVTX0ZJTFRFUl9VTlNQRUNJRklFRBAAEh0KGUNBU1RfU1RBVFVTX0ZJTFRFUl9PTkxJTkUQARIaChZDQVNUX1NUQVRVU19GSUxURVJfTkVXEAISHgoaQ0FTVF9TVEFUVVNfRklMVEVSX1JBTktJTkcQAzL1CAoLQ2FzdFNlcnZpY2USWwoOR2V0Q2FzdFByb2ZpbGUSIy5wb3J0Zm9saW8udjEuR2V0Q2FzdFByb2ZpbGVSZXF1ZXN0GiQucG9ydGZvbGlvLnYxLkdldENhc3RQcm9maWxlUmVzcG9uc2USZwoUR2V0Q2FzdFByb2ZpbGVCeVNsdWcSKS5wb3J0Zm9saW8udjEuR2V0Q2FzdFByb2ZpbGVCeVNsdWdSZXF1ZXN0GiQucG9ydGZvbGlvLnYxLkdldENhc3RQcm9maWxlUmVzcG9uc2USZAoRQ3JlYXRlQ2FzdFByb2ZpbGUSJi5wb3J0Zm9saW8udjEuQ3JlYXRlQ2FzdFByb2ZpbGVSZXF1ZXN0GicucG9ydGZvbGlvLnYxLkNyZWF0ZUNhc3RQcm9maWxlUmVzcG9uc2USXgoPU2F2ZUNhc3RQcm9maWxlEiQucG9ydGZvbGlvLnYxLlNhdmVDYXN0UHJvZmlsZVJlcXVlc3QaJS5wb3J0Zm9saW8udjEuU2F2ZUNhc3RQcm9maWxlUmVzcG9uc2USZwoSU2F2ZUNhc3RWaXNpYmlsaXR5EicucG9ydGZvbGlvLnYxLlNhdmVDYXN0VmlzaWJpbGl0eVJlcXVlc3QaKC5wb3J0Zm9saW8udjEuU2F2ZUNhc3RWaXNpYmlsaXR5UmVzcG9uc2USWwoOU2F2ZUNhc3RJbWFnZXMSIy5wb3J0Zm9saW8udjEuU2F2ZUNhc3RJbWFnZXNSZXF1ZXN0GiQucG9ydGZvbGlvLnYxLlNhdmVDYXN0SW1hZ2VzUmVzcG9uc2USTAoJTGlzdENhc3RzEh4ucG9ydGZvbGlvLnYxLkxpc3RDYXN0c1JlcXVlc3QaHy5wb3J0Zm9saW8udjEuTGlzdENhc3RzUmVzcG9uc2USVQoMR2V0VXBsb2FkVXJsEiEucG9ydGZvbGlvLnYxLkdldFVwbG9hZFVybFJlcXVlc3QaIi5wb3J0Zm9saW8udjEuR2V0VXBsb2FkVXJsUmVzcG9uc2UScAoVQ2hlY2tTbHVnQXZhaWxhYmlsaXR5EioucG9ydGZvbGlvLnYxLkNoZWNrU2x1Z0F2YWlsYWJpbGl0eVJlcXVlc3QaKy5wb3J0Zm9saW8udjEuQ2hlY2tTbHVnQXZhaWxhYmlsaXR5UmVzcG9uc2USTAoJTGlzdEFyZWFzEh4ucG9ydGZvbGlvLnYxLkxpc3RBcmVhc1JlcXVlc3QaHy5wb3J0Zm9saW8udjEuTGlzdEFyZWFzUmVzcG9uc2USTwoKTGlzdEdlbnJlcxIfLnBvcnRmb2xpby52MS5MaXN0R2VucmVzUmVxdWVzdBogLnBvcnRmb2xpby52MS5MaXN0R2VucmVzUmVzcG9uc2USXgoPTGlzdFBvcHVsYXJUYWdzEiQucG9ydGZvbGlvLnYxLkxpc3RQb3B1bGFyVGFnc1JlcXVlc3QaJS5wb3J0Zm9saW8udjEuTGlzdFBvcHVsYXJUYWdzUmVzcG9uc2ViBnByb3RvMw");
+  fileDesc("Ch9wb3J0Zm9saW8vdjEvY2FzdF9zZXJ2aWNlLnByb3RvEgxwb3J0Zm9saW8udjEicAoLU29jaWFsTGlua3MSCQoBeBgBIAEoCRIRCglpbnN0YWdyYW0YAiABKAkSDgoGdGlrdG9rGAMgASgJEhIKCmNpdHloZWF2ZW4YBCABKAkSDwoHbGl0bGluaxgFIAEoCRIOCgZvdGhlcnMYBiADKAkiQwoKVGhyZWVTaXplcxIMCgRidXN0GAEgASgFEg0KBXdhaXN0GAIgASgFEgsKA2hpcBgDIAEoBRILCgNjdXAYBCABKAkiQgoEQXJlYRIKCgJpZBgBIAEoCRISCgpwcmVmZWN0dXJlGAIgASgJEgwKBG5hbWUYAyABKAkSDAoEY29kZRgEIAEoCSL2BAoLQ2FzdFByb2ZpbGUSDwoHdXNlcl9pZBgBIAEoCRIMCgRuYW1lGAIgASgJEgsKA2JpbxgDIAEoCRIRCglpbWFnZV91cmwYBCABKAkSMAoKdmlzaWJpbGl0eRgFIAEoDjIcLnBvcnRmb2xpby52MS5DYXN0VmlzaWJpbGl0eRIOCgZpbWFnZXMYBiADKAkSDwoHdGFnbGluZRgIIAEoCRIeChZkZWZhdWx0X3NjaGVkdWxlX3N0YXJ0GAkgASgJEhwKFGRlZmF1bHRfc2NoZWR1bGVfZW5kGAogASgJEi8KDHNvY2lhbF9saW5rcxgLIAEoCzIZLnBvcnRmb2xpby52MS5Tb2NpYWxMaW5rcxILCgNhZ2UYDCABKAUSDgoGaGVpZ2h0GA0gASgFEhIKCmJsb29kX3R5cGUYDiABKAkSLQoLdGhyZWVfc2l6ZXMYDyABKAsyGC5wb3J0Zm9saW8udjEuVGhyZWVTaXplcxIMCgR0YWdzGBAgAygJEhIKCmF2YXRhcl91cmwYEiABKAkSDAoEc2x1ZxgTIAEoCRIhCgVhcmVhcxgUIAMoCzISLnBvcnRmb2xpby52MS5BcmVhEiMKBmdlbnJlcxgVIAMoCzITLnBvcnRmb2xpby52MS5HZW5yZRIRCglpc19vbmxpbmUYFiABKAgSCgoCaWQYFyABKAkSFQoNcmVnaXN0ZXJlZF9hdBgYIAEoCRIYChBwcm9maWxlX21lZGlhX2lkGBkgASgJEhcKD2F2YXRhcl9tZWRpYV9pZBgaIAEoCRIZChFnYWxsZXJ5X21lZGlhX2lkcxgbIAMoCUoECAcQCEoECBEQEiJlCghDYXN0UGxhbhIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEg0KBXByaWNlGAMgASgFEhgKEGR1cmF0aW9uX21pbnV0ZXMYBCABKAUSFgoOaXNfcmVjb21tZW5kZWQYBSABKAgiKAoVR2V0Q2FzdFByb2ZpbGVSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkiRAoWR2V0Q2FzdFByb2ZpbGVSZXNwb25zZRIqCgdwcm9maWxlGAEgASgLMhkucG9ydGZvbGlvLnYxLkNhc3RQcm9maWxlIsoCChhDcmVhdGVDYXN0UHJvZmlsZVJlcXVlc3QSDAoEbmFtZRgBIAEoCRILCgNiaW8YAiABKAkSEgoKaW1hZ2VfcGF0aBgDIAEoCRIPCgd0YWdsaW5lGAQgASgJEh4KFmRlZmF1bHRfc2NoZWR1bGVfc3RhcnQYBSABKAkSHAoUZGVmYXVsdF9zY2hlZHVsZV9lbmQYBiABKAkSLwoMc29jaWFsX2xpbmtzGAcgASgLMhkucG9ydGZvbGlvLnYxLlNvY2lhbExpbmtzEgsKA2FnZRgIIAEoBRIOCgZoZWlnaHQYCSABKAUSEgoKYmxvb2RfdHlwZRgKIAEoCRItCgt0aHJlZV9zaXplcxgLIAEoCzIYLnBvcnRmb2xpby52MS5UaHJlZVNpemVzEgwKBHRhZ3MYDCADKAkSEQoJZ2VucmVfaWRzGA0gAygJIkcKGUNyZWF0ZUNhc3RQcm9maWxlUmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSKaAwoWU2F2ZUNhc3RQcm9maWxlUmVxdWVzdBIMCgRuYW1lGAEgASgJEgsKA2JpbxgCIAEoCRISCgppbWFnZV9wYXRoGAMgASgJEg8KB3RhZ2xpbmUYBCABKAkSHgoWZGVmYXVsdF9zY2hlZHVsZV9zdGFydBgFIAEoCRIcChRkZWZhdWx0X3NjaGVkdWxlX2VuZBgGIAEoCRIvCgxzb2NpYWxfbGlua3MYByABKAsyGS5wb3J0Zm9saW8udjEuU29jaWFsTGlua3MSMAoKdmlzaWJpbGl0eRgIIAEoDjIcLnBvcnRmb2xpby52MS5DYXN0VmlzaWJpbGl0eRILCgNhZ2UYCSABKAUSDgoGaGVpZ2h0GAogASgFEhIKCmJsb29kX3R5cGUYCyABKAkSLQoLdGhyZWVfc2l6ZXMYDCABKAsyGC5wb3J0Zm9saW8udjEuVGhyZWVTaXplcxIMCgR0YWdzGA0gAygJEgwKBHNsdWcYDiABKAkSEAoIYXJlYV9pZHMYDyADKAkSEQoJZ2VucmVfaWRzGBAgAygJIkUKF1NhdmVDYXN0UHJvZmlsZVJlc3BvbnNlEioKB3Byb2ZpbGUYASABKAsyGS5wb3J0Zm9saW8udjEuQ2FzdFByb2ZpbGUiTQoZU2F2ZUNhc3RWaXNpYmlsaXR5UmVxdWVzdBIwCgp2aXNpYmlsaXR5GAEgASgOMhwucG9ydGZvbGlvLnYxLkNhc3RWaXNpYmlsaXR5IkgKGlNhdmVDYXN0VmlzaWJpbGl0eVJlc3BvbnNlEioKB3Byb2ZpbGUYASABKAsyGS5wb3J0Zm9saW8udjEuQ2FzdFByb2ZpbGUiZQoVU2F2ZUNhc3RJbWFnZXNSZXF1ZXN0EhgKEHByb2ZpbGVfbWVkaWFfaWQYASABKAkSGQoRZ2FsbGVyeV9tZWRpYV9pZHMYAiADKAkSFwoPYXZhdGFyX21lZGlhX2lkGAMgASgJIkQKFlNhdmVDYXN0SW1hZ2VzUmVzcG9uc2USKgoHcHJvZmlsZRgBIAEoCzIZLnBvcnRmb2xpby52MS5DYXN0UHJvZmlsZSLgAQoQTGlzdENhc3RzUmVxdWVzdBI3ChF2aXNpYmlsaXR5X2ZpbHRlchgBIAEoDjIcLnBvcnRmb2xpby52MS5DYXN0VmlzaWJpbGl0eRIQCghnZW5yZV9pZBgCIAEoCRILCgN0YWcYAyABKAkSNQoNc3RhdHVzX2ZpbHRlchgEIAEoDjIeLnBvcnRmb2xpby52MS5DYXN0U3RhdHVzRmlsdGVyEg8KB2FyZWFfaWQYBSABKAkSDQoFbGltaXQYBiABKAUSDgoGY3Vyc29yGAcgASgJEg0KBXF1ZXJ5GAggASgJItIBChFMaXN0Q2FzdHNSZXNwb25zZRI3CgVpdGVtcxgBIAMoCzIoLnBvcnRmb2xpby52MS5MaXN0Q2FzdHNSZXNwb25zZS5DYXN0SXRlbRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCBpdCghDYXN0SXRlbRIqCgdwcm9maWxlGAEgASgLMhkucG9ydGZvbGlvLnYxLkNhc3RQcm9maWxlEiUKBXBsYW5zGAIgAygLMhYucG9ydGZvbGlvLnYxLkNhc3RQbGFuIisKG0dldENhc3RQcm9maWxlQnlTbHVnUmVxdWVzdBIMCgRzbHVnGAEgASgJIiwKHENoZWNrU2x1Z0F2YWlsYWJpbGl0eVJlcXVlc3QSDAoEc2x1ZxgBIAEoCSJDCh1DaGVja1NsdWdBdmFpbGFiaWxpdHlSZXNwb25zZRIRCglhdmFpbGFibGUYASABKAgSDwoHbWVzc2FnZRgCIAEoCSImChBMaXN0QXJlYXNSZXF1ZXN0EhIKCnByZWZlY3R1cmUYASABKAkiNgoRTGlzdEFyZWFzUmVzcG9uc2USIQoFYXJlYXMYASADKAsyEi5wb3J0Zm9saW8udjEuQXJlYSJGCgVHZW5yZRIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEgwKBHNsdWcYAyABKAkSFQoNZGlzcGxheV9vcmRlchgEIAEoBSITChFMaXN0R2VucmVzUmVxdWVzdCI5ChJMaXN0R2VucmVzUmVzcG9uc2USIwoGZ2VucmVzGAEgAygLMhMucG9ydGZvbGlvLnYxLkdlbnJlIi8KClBvcHVsYXJUYWcSDAoEbmFtZRgBIAEoCRITCgt1c2FnZV9jb3VudBgCIAEoBSInChZMaXN0UG9wdWxhclRhZ3NSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFIkEKF0xpc3RQb3B1bGFyVGFnc1Jlc3BvbnNlEiYKBHRhZ3MYASADKAsyGC5wb3J0Zm9saW8udjEuUG9wdWxhclRhZypqCg5DYXN0VmlzaWJpbGl0eRIfChtDQVNUX1ZJU0lCSUxJVFlfVU5TUEVDSUZJRUQQABIaChZDQVNUX1ZJU0lCSUxJVFlfUFVCTElDEAESGwoXQ0FTVF9WSVNJQklMSVRZX1BSSVZBVEUQAiqRAQoQQ2FzdFN0YXR1c0ZpbHRlchIiCh5DQVNUX1NUQVRVU19GSUxURVJfVU5TUEVDSUZJRUQQABIdChlDQVNUX1NUQVRVU19GSUxURVJfT05MSU5FEAESGgoWQ0FTVF9TVEFUVVNfRklMVEVSX05FVxACEh4KGkNBU1RfU1RBVFVTX0ZJTFRFUl9SQU5LSU5HEAMynggKC0Nhc3RTZXJ2aWNlElsKDkdldENhc3RQcm9maWxlEiMucG9ydGZvbGlvLnYxLkdldENhc3RQcm9maWxlUmVxdWVzdBokLnBvcnRmb2xpby52MS5HZXRDYXN0UHJvZmlsZVJlc3BvbnNlEmcKFEdldENhc3RQcm9maWxlQnlTbHVnEikucG9ydGZvbGlvLnYxLkdldENhc3RQcm9maWxlQnlTbHVnUmVxdWVzdBokLnBvcnRmb2xpby52MS5HZXRDYXN0UHJvZmlsZVJlc3BvbnNlEmQKEUNyZWF0ZUNhc3RQcm9maWxlEiYucG9ydGZvbGlvLnYxLkNyZWF0ZUNhc3RQcm9maWxlUmVxdWVzdBonLnBvcnRmb2xpby52MS5DcmVhdGVDYXN0UHJvZmlsZVJlc3BvbnNlEl4KD1NhdmVDYXN0UHJvZmlsZRIkLnBvcnRmb2xpby52MS5TYXZlQ2FzdFByb2ZpbGVSZXF1ZXN0GiUucG9ydGZvbGlvLnYxLlNhdmVDYXN0UHJvZmlsZVJlc3BvbnNlEmcKElNhdmVDYXN0VmlzaWJpbGl0eRInLnBvcnRmb2xpby52MS5TYXZlQ2FzdFZpc2liaWxpdHlSZXF1ZXN0GigucG9ydGZvbGlvLnYxLlNhdmVDYXN0VmlzaWJpbGl0eVJlc3BvbnNlElsKDlNhdmVDYXN0SW1hZ2VzEiMucG9ydGZvbGlvLnYxLlNhdmVDYXN0SW1hZ2VzUmVxdWVzdBokLnBvcnRmb2xpby52MS5TYXZlQ2FzdEltYWdlc1Jlc3BvbnNlEkwKCUxpc3RDYXN0cxIeLnBvcnRmb2xpby52MS5MaXN0Q2FzdHNSZXF1ZXN0Gh8ucG9ydGZvbGlvLnYxLkxpc3RDYXN0c1Jlc3BvbnNlEnAKFUNoZWNrU2x1Z0F2YWlsYWJpbGl0eRIqLnBvcnRmb2xpby52MS5DaGVja1NsdWdBdmFpbGFiaWxpdHlSZXF1ZXN0GisucG9ydGZvbGlvLnYxLkNoZWNrU2x1Z0F2YWlsYWJpbGl0eVJlc3BvbnNlEkwKCUxpc3RBcmVhcxIeLnBvcnRmb2xpby52MS5MaXN0QXJlYXNSZXF1ZXN0Gh8ucG9ydGZvbGlvLnYxLkxpc3RBcmVhc1Jlc3BvbnNlEk8KCkxpc3RHZW5yZXMSHy5wb3J0Zm9saW8udjEuTGlzdEdlbnJlc1JlcXVlc3QaIC5wb3J0Zm9saW8udjEuTGlzdEdlbnJlc1Jlc3BvbnNlEl4KD0xpc3RQb3B1bGFyVGFncxIkLnBvcnRmb2xpby52MS5MaXN0UG9wdWxhclRhZ3NSZXF1ZXN0GiUucG9ydGZvbGlvLnYxLkxpc3RQb3B1bGFyVGFnc1Jlc3BvbnNlYgZwcm90bzM");
 
 /**
  * @generated from message portfolio.v1.SocialLinks
@@ -148,14 +148,11 @@ export type CastProfile = Message<"portfolio.v1.CastProfile"> & {
   visibility: CastVisibility;
 
   /**
+   * Gallery image URLs (populated from gallery_media_ids)
+   *
    * @generated from field: repeated string images = 6;
    */
   images: string[];
-
-  /**
-   * @generated from field: string image_path = 7;
-   */
-  imagePath: string;
 
   /**
    * @generated from field: string tagline = 8;
@@ -203,11 +200,6 @@ export type CastProfile = Message<"portfolio.v1.CastProfile"> & {
   tags: string[];
 
   /**
-   * @generated from field: string avatar_path = 17;
-   */
-  avatarPath: string;
-
-  /**
    * @generated from field: string avatar_url = 18;
    */
   avatarUrl: string;
@@ -247,6 +239,27 @@ export type CastProfile = Message<"portfolio.v1.CastProfile"> & {
    * @generated from field: string registered_at = 24;
    */
   registeredAt: string;
+
+  /**
+   * Media ID for profile image
+   *
+   * @generated from field: string profile_media_id = 25;
+   */
+  profileMediaId: string;
+
+  /**
+   * Media ID for avatar image
+   *
+   * @generated from field: string avatar_media_id = 26;
+   */
+  avatarMediaId: string;
+
+  /**
+   * Media IDs for gallery images
+   *
+   * @generated from field: repeated string gallery_media_ids = 27;
+   */
+  galleryMediaIds: string[];
 };
 
 /**
@@ -575,25 +588,25 @@ export const SaveCastVisibilityResponseSchema: GenMessage<SaveCastVisibilityResp
  */
 export type SaveCastImagesRequest = Message<"portfolio.v1.SaveCastImagesRequest"> & {
   /**
-   * Cover/Profile image
+   * Media ID for profile/cover image
    *
-   * @generated from field: string profile_image_path = 1;
+   * @generated from field: string profile_media_id = 1;
    */
-  profileImagePath: string;
+  profileMediaId: string;
 
   /**
-   * List of image URLs or Paths
+   * Media IDs for gallery images
    *
-   * @generated from field: repeated string gallery_images = 2;
+   * @generated from field: repeated string gallery_media_ids = 2;
    */
-  galleryImages: string[];
+  galleryMediaIds: string[];
 
   /**
-   * Square avatar image (S3 key)
+   * Media ID for avatar image
    *
-   * @generated from field: string avatar_path = 3;
+   * @generated from field: string avatar_media_id = 3;
    */
-  avatarPath: string;
+  avatarMediaId: string;
 };
 
 /**
@@ -619,50 +632,6 @@ export type SaveCastImagesResponse = Message<"portfolio.v1.SaveCastImagesRespons
  */
 export const SaveCastImagesResponseSchema: GenMessage<SaveCastImagesResponse> = /*@__PURE__*/
   messageDesc(file_portfolio_v1_cast_service, 14);
-
-/**
- * @generated from message portfolio.v1.GetUploadUrlRequest
- */
-export type GetUploadUrlRequest = Message<"portfolio.v1.GetUploadUrlRequest"> & {
-  /**
-   * @generated from field: string filename = 1;
-   */
-  filename: string;
-
-  /**
-   * @generated from field: string content_type = 2;
-   */
-  contentType: string;
-};
-
-/**
- * Describes the message portfolio.v1.GetUploadUrlRequest.
- * Use `create(GetUploadUrlRequestSchema)` to create a new message.
- */
-export const GetUploadUrlRequestSchema: GenMessage<GetUploadUrlRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 15);
-
-/**
- * @generated from message portfolio.v1.GetUploadUrlResponse
- */
-export type GetUploadUrlResponse = Message<"portfolio.v1.GetUploadUrlResponse"> & {
-  /**
-   * @generated from field: string url = 1;
-   */
-  url: string;
-
-  /**
-   * @generated from field: string key = 2;
-   */
-  key: string;
-};
-
-/**
- * Describes the message portfolio.v1.GetUploadUrlResponse.
- * Use `create(GetUploadUrlResponseSchema)` to create a new message.
- */
-export const GetUploadUrlResponseSchema: GenMessage<GetUploadUrlResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 16);
 
 /**
  * @generated from message portfolio.v1.ListCastsRequest
@@ -730,7 +699,7 @@ export type ListCastsRequest = Message<"portfolio.v1.ListCastsRequest"> & {
  * Use `create(ListCastsRequestSchema)` to create a new message.
  */
 export const ListCastsRequestSchema: GenMessage<ListCastsRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 17);
+  messageDesc(file_portfolio_v1_cast_service, 15);
 
 /**
  * @generated from message portfolio.v1.ListCastsResponse
@@ -763,7 +732,7 @@ export type ListCastsResponse = Message<"portfolio.v1.ListCastsResponse"> & {
  * Use `create(ListCastsResponseSchema)` to create a new message.
  */
 export const ListCastsResponseSchema: GenMessage<ListCastsResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 18);
+  messageDesc(file_portfolio_v1_cast_service, 16);
 
 /**
  * @generated from message portfolio.v1.ListCastsResponse.CastItem
@@ -785,7 +754,7 @@ export type ListCastsResponse_CastItem = Message<"portfolio.v1.ListCastsResponse
  * Use `create(ListCastsResponse_CastItemSchema)` to create a new message.
  */
 export const ListCastsResponse_CastItemSchema: GenMessage<ListCastsResponse_CastItem> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 18, 0);
+  messageDesc(file_portfolio_v1_cast_service, 16, 0);
 
 /**
  * @generated from message portfolio.v1.GetCastProfileBySlugRequest
@@ -802,7 +771,7 @@ export type GetCastProfileBySlugRequest = Message<"portfolio.v1.GetCastProfileBy
  * Use `create(GetCastProfileBySlugRequestSchema)` to create a new message.
  */
 export const GetCastProfileBySlugRequestSchema: GenMessage<GetCastProfileBySlugRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 19);
+  messageDesc(file_portfolio_v1_cast_service, 17);
 
 /**
  * @generated from message portfolio.v1.CheckSlugAvailabilityRequest
@@ -819,7 +788,7 @@ export type CheckSlugAvailabilityRequest = Message<"portfolio.v1.CheckSlugAvaila
  * Use `create(CheckSlugAvailabilityRequestSchema)` to create a new message.
  */
 export const CheckSlugAvailabilityRequestSchema: GenMessage<CheckSlugAvailabilityRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 20);
+  messageDesc(file_portfolio_v1_cast_service, 18);
 
 /**
  * @generated from message portfolio.v1.CheckSlugAvailabilityResponse
@@ -841,7 +810,7 @@ export type CheckSlugAvailabilityResponse = Message<"portfolio.v1.CheckSlugAvail
  * Use `create(CheckSlugAvailabilityResponseSchema)` to create a new message.
  */
 export const CheckSlugAvailabilityResponseSchema: GenMessage<CheckSlugAvailabilityResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 21);
+  messageDesc(file_portfolio_v1_cast_service, 19);
 
 /**
  * @generated from message portfolio.v1.ListAreasRequest
@@ -860,7 +829,7 @@ export type ListAreasRequest = Message<"portfolio.v1.ListAreasRequest"> & {
  * Use `create(ListAreasRequestSchema)` to create a new message.
  */
 export const ListAreasRequestSchema: GenMessage<ListAreasRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 22);
+  messageDesc(file_portfolio_v1_cast_service, 20);
 
 /**
  * @generated from message portfolio.v1.ListAreasResponse
@@ -877,7 +846,7 @@ export type ListAreasResponse = Message<"portfolio.v1.ListAreasResponse"> & {
  * Use `create(ListAreasResponseSchema)` to create a new message.
  */
 export const ListAreasResponseSchema: GenMessage<ListAreasResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 23);
+  messageDesc(file_portfolio_v1_cast_service, 21);
 
 /**
  * @generated from message portfolio.v1.Genre
@@ -909,7 +878,7 @@ export type Genre = Message<"portfolio.v1.Genre"> & {
  * Use `create(GenreSchema)` to create a new message.
  */
 export const GenreSchema: GenMessage<Genre> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 24);
+  messageDesc(file_portfolio_v1_cast_service, 22);
 
 /**
  * Empty for now, returns all active genres
@@ -924,7 +893,7 @@ export type ListGenresRequest = Message<"portfolio.v1.ListGenresRequest"> & {
  * Use `create(ListGenresRequestSchema)` to create a new message.
  */
 export const ListGenresRequestSchema: GenMessage<ListGenresRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 25);
+  messageDesc(file_portfolio_v1_cast_service, 23);
 
 /**
  * @generated from message portfolio.v1.ListGenresResponse
@@ -941,7 +910,7 @@ export type ListGenresResponse = Message<"portfolio.v1.ListGenresResponse"> & {
  * Use `create(ListGenresResponseSchema)` to create a new message.
  */
 export const ListGenresResponseSchema: GenMessage<ListGenresResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 26);
+  messageDesc(file_portfolio_v1_cast_service, 24);
 
 /**
  * @generated from message portfolio.v1.PopularTag
@@ -963,7 +932,7 @@ export type PopularTag = Message<"portfolio.v1.PopularTag"> & {
  * Use `create(PopularTagSchema)` to create a new message.
  */
 export const PopularTagSchema: GenMessage<PopularTag> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 27);
+  messageDesc(file_portfolio_v1_cast_service, 25);
 
 /**
  * @generated from message portfolio.v1.ListPopularTagsRequest
@@ -982,7 +951,7 @@ export type ListPopularTagsRequest = Message<"portfolio.v1.ListPopularTagsReques
  * Use `create(ListPopularTagsRequestSchema)` to create a new message.
  */
 export const ListPopularTagsRequestSchema: GenMessage<ListPopularTagsRequest> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 28);
+  messageDesc(file_portfolio_v1_cast_service, 26);
 
 /**
  * @generated from message portfolio.v1.ListPopularTagsResponse
@@ -999,7 +968,7 @@ export type ListPopularTagsResponse = Message<"portfolio.v1.ListPopularTagsRespo
  * Use `create(ListPopularTagsResponseSchema)` to create a new message.
  */
 export const ListPopularTagsResponseSchema: GenMessage<ListPopularTagsResponse> = /*@__PURE__*/
-  messageDesc(file_portfolio_v1_cast_service, 29);
+  messageDesc(file_portfolio_v1_cast_service, 27);
 
 /**
  * @generated from enum portfolio.v1.CastVisibility
@@ -1131,14 +1100,8 @@ export const CastService: GenService<{
     output: typeof ListCastsResponseSchema;
   },
   /**
-   * @generated from rpc portfolio.v1.CastService.GetUploadUrl
-   */
-  getUploadUrl: {
-    methodKind: "unary";
-    input: typeof GetUploadUrlRequestSchema;
-    output: typeof GetUploadUrlResponseSchema;
-  },
-  /**
+   * GetUploadUrl removed - use MediaService.GetUploadUrl instead
+   *
    * @generated from rpc portfolio.v1.CastService.CheckSlugAvailability
    */
   checkSlugAvailability: {

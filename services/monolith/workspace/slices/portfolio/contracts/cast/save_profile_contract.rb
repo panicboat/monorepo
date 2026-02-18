@@ -21,7 +21,6 @@ module Portfolio
           optional(:tagline).maybe(:string)
           optional(:default_schedule_start).maybe(:string)
           optional(:default_schedule_end).maybe(:string)
-          optional(:image_path).maybe(:string)
           optional(:social_links).maybe(:hash)
           optional(:age).maybe(:integer)
           optional(:height).maybe(:integer)

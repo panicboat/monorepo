@@ -7,7 +7,7 @@ module Portfolio
         attribute :id, Types::String      # UUID
         attribute :user_id, Types::String # UUID
         attribute :name, Types::String
-        attribute :avatar_path, Types::String
+        attribute :avatar_media_id, Types::String
         attribute :tagline, Types::String
         attribute :bio, Types::String
         attribute :created_at, Types::Time

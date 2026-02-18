@@ -173,12 +173,17 @@ module Relationship
         guest_ids = result[:requests].map { |r| r[:guest_id] }
         guests = guest_adapter.find_by_ids(guest_ids)
 
+        # Load media files for guest avatars
+        media_ids = guests.values.filter_map(&:avatar_media_id).uniq
+        media_files = media_ids.empty? ? {} : media_adapter.find_by_ids(media_ids)
+
         requests = result[:requests].map do |req|
           guest = guests[req[:guest_id]]
+          media_file = guest ? media_files[guest.avatar_media_id] : nil
           ::Relationship::V1::FollowRequestItem.new(
             guest_id: req[:guest_id],
             guest_name: guest&.name || "Guest",
-            guest_image_url: guest&.avatar_path ? Storage.download_url(key: guest.avatar_path) : "",
+            guest_image_url: media_file&.url || "",
             requested_at: req[:requested_at]&.iso8601 || ""
           )
         end
@@ -215,12 +220,17 @@ module Relationship
         guest_ids = result[:followers].map { |f| f[:guest_id] }
         guests = guest_adapter.find_by_ids(guest_ids)
 
+        # Load media files for guest avatars
+        media_ids = guests.values.filter_map(&:avatar_media_id).uniq
+        media_files = media_ids.empty? ? {} : media_adapter.find_by_ids(media_ids)
+
         followers = result[:followers].map do |follower|
           guest = guests[follower[:guest_id]]
+          media_file = guest ? media_files[guest.avatar_media_id] : nil
           ::Relationship::V1::FollowerItem.new(
             guest_id: follower[:guest_id],
             guest_name: guest&.name || "Guest",
-            guest_image_url: guest&.avatar_path ? Storage.download_url(key: guest.avatar_path) : "",
+            guest_image_url: media_file&.url || "",
             followed_at: follower[:followed_at]&.iso8601 || ""
           )
         end

@@ -179,15 +179,6 @@ export function TimelineItem({
       {resolvedMedia.length > 0 && (
         <MediaCarousel media={resolvedMedia} />
       )}
-      {resolvedMedia.length === 0 && item.image && (
-        <div className="mb-3 overflow-hidden rounded-xl">
-          <img
-            src={item.image}
-            alt="Post"
-            className="h-full w-full object-cover"
-          />
-        </div>
-      )}
       <div className="flex items-center gap-6 border-t border-border pt-3 text-text-muted">
         <button
           onClick={handleLike}

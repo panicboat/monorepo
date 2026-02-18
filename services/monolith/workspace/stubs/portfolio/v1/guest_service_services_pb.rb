@@ -18,7 +18,6 @@ module Portfolio
         rpc :GetGuestProfile, ::Portfolio::V1::GetGuestProfileRequest, ::Portfolio::V1::GetGuestProfileResponse
         rpc :GetGuestProfileById, ::Portfolio::V1::GetGuestProfileByIdRequest, ::Portfolio::V1::GetGuestProfileByIdResponse
         rpc :SaveGuestProfile, ::Portfolio::V1::SaveGuestProfileRequest, ::Portfolio::V1::SaveGuestProfileResponse
-        rpc :GetUploadUrl, ::Portfolio::V1::GetUploadUrlRequest, ::Portfolio::V1::GetUploadUrlResponse
       end
 
       Stub = Service.rpc_stub_class

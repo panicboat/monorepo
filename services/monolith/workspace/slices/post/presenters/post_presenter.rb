@@ -3,7 +3,7 @@
 module Post
   module Presenters
     class PostPresenter
-      def self.to_proto(post, author: nil, likes_count: 0, comments_count: 0, liked: false)
+      def self.to_proto(post, author: nil, likes_count: 0, comments_count: 0, liked: false, media_files: {})
         return nil unless post
 
         media = (post.respond_to?(:post_media) ? post.post_media : []) || []
@@ -13,9 +13,9 @@ module Post
           id: post.id.to_s,
           cast_id: post.cast_id.to_s,
           content: post.content,
-          media: media.sort_by(&:position).map { |m| media_to_proto(m) },
+          media: media.sort_by(&:position).map { |m| media_to_proto(m, media_files: media_files) },
           created_at: post.created_at.iso8601,
-          author: author_to_proto(author),
+          author: author_to_proto(author, media_files: media_files),
           likes_count: likes_count,
           comments_count: comments_count,
           visibility: post.respond_to?(:visibility) ? post.visibility : "public",
@@ -24,30 +24,31 @@ module Post
         )
       end
 
-      def self.many_to_proto(posts, author: nil, likes_count: 0, liked: false)
-        (posts || []).map { |p| to_proto(p, author: author, likes_count: likes_count, liked: liked) }
+      def self.many_to_proto(posts, author: nil, likes_count: 0, liked: false, media_files: {})
+        (posts || []).map { |p| to_proto(p, author: author, likes_count: likes_count, liked: liked, media_files: media_files) }
       end
 
-      def self.media_to_proto(media)
+      def self.media_to_proto(media, media_files: {})
+        media_file = media_files[media.media_id]
         ::Post::V1::CastPostMedia.new(
           id: media.id.to_s,
           media_type: media.media_type,
-          url: Storage.download_url(key: media.url),
-          thumbnail_url: media.thumbnail_url ? Storage.download_url(key: media.thumbnail_url) : ""
+          url: media_file&.url || "",
+          thumbnail_url: media_file&.thumbnail_url || ""
         )
       end
 
-      def self.author_to_proto(cast)
+      def self.author_to_proto(cast, media_files: {})
         return nil unless cast
 
-        avatar_key = cast.respond_to?(:avatar_path) ? cast.avatar_path : nil
-        avatar_key = nil if avatar_key.to_s.empty?
-        image_key = avatar_key || cast.image_path
+        # Use avatar_media_id first, then fall back to profile_media_id
+        media_id = cast.respond_to?(:avatar_media_id) && cast.avatar_media_id.to_s != "" ? cast.avatar_media_id : cast.profile_media_id
+        media_file = media_files[media_id]
 
         ::Post::V1::CastPostAuthor.new(
           id: cast.user_id.to_s,
           name: cast.name || "",
-          image_url: image_key ? Storage.download_url(key: image_key) : ""
+          image_url: media_file&.url || ""
         )
       end
     end

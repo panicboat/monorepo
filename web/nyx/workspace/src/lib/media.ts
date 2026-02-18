@@ -19,31 +19,41 @@ export function getMediaTypeFromMime(mimeType: string): MediaType {
   return mimeType.startsWith("video/") ? "video" : "image";
 }
 
+export interface UploadResult {
+  mediaId: string;
+  mediaKey: string;
+}
+
 /**
- * Upload a file to storage and return the storage key
+ * Upload a file to storage and return the media ID and key
  */
-export async function uploadFile(file: File): Promise<string | null> {
+export async function uploadFile(file: File): Promise<UploadResult | null> {
   const token = getAuthToken();
   if (!token) return null;
 
-  const res = await fetch("/api/cast/onboarding/upload-url", {
+  const mediaType = file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
+  const res = await fetch("/api/media/upload-url", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ filename: file.name, contentType: file.type }),
+    body: JSON.stringify({
+      filename: file.name,
+      contentType: file.type,
+      mediaType,
+    }),
   });
 
   if (!res.ok) return null;
-  const { url, key } = await res.json();
+  const { uploadUrl, mediaKey, mediaId } = await res.json();
 
-  const uploadRes = await fetch(url, {
+  const uploadRes = await fetch(uploadUrl, {
     method: "PUT",
     headers: { "Content-Type": file.type },
     body: file,
   });
 
   if (!uploadRes.ok) return null;
-  return key;
+  return { mediaId, mediaKey };
 }

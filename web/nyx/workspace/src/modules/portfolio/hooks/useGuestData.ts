@@ -12,22 +12,22 @@ import {
 export interface GuestProfile {
   userId: string;
   name: string;
-  avatarPath: string;
   avatarUrl: string;
+  avatarMediaId: string;
   tagline: string;
   bio: string;
 }
 
 export interface GuestProfileFormData {
   name: string;
-  avatarPath: string;
+  avatarMediaId: string;
   tagline: string;
   bio: string;
 }
 
 const INITIAL_PROFILE: GuestProfileFormData = {
   name: "",
-  avatarPath: "",
+  avatarMediaId: "",
   tagline: "",
   bio: "",
 };
@@ -40,8 +40,8 @@ interface GuestDataApiResponse {
   profile?: {
     userId: string;
     name: string;
-    avatarPath: string;
     avatarUrl: string;
+    avatarMediaId: string;
     tagline: string;
     bio: string;
   };
@@ -81,7 +81,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
       data?.profile
         ? {
             name: data.profile.name,
-            avatarPath: data.profile.avatarPath,
+            avatarMediaId: data.profile.avatarMediaId,
             tagline: data.profile.tagline,
             bio: data.profile.bio,
           }
@@ -101,8 +101,8 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
           const existingProfile = currentData?.profile || {
             userId: "",
             name: "",
-            avatarPath: "",
             avatarUrl: "",
+            avatarMediaId: "",
             tagline: "",
             bio: "",
           };
@@ -111,7 +111,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
             profile: {
               ...existingProfile,
               name: updates.name ?? existingProfile.name,
-              avatarPath: updates.avatarPath ?? existingProfile.avatarPath,
+              avatarMediaId: updates.avatarMediaId ?? existingProfile.avatarMediaId,
               tagline: updates.tagline ?? existingProfile.tagline,
               bio: updates.bio ?? existingProfile.bio,
             },
@@ -138,7 +138,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
         },
         body: JSON.stringify({
           name: profileToSave.name,
-          avatarPath: profileToSave.avatarPath || null,
+          avatarMediaId: profileToSave.avatarMediaId || null,
           tagline: profileToSave.tagline || null,
           bio: profileToSave.bio || null,
         }),
@@ -156,11 +156,11 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
   );
 
   const uploadAvatar = useCallback(
-    async (file: File): Promise<{ key: string; url: string }> => {
+    async (file: File): Promise<{ mediaId: string; url: string }> => {
       const currentToken = getAuthToken();
       if (!currentToken) throw new Error("ログインが必要です");
 
-      const res = await fetch("/api/guest/upload-url", {
+      const res = await fetch("/api/media/upload-url", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -174,7 +174,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
         throw new Error(err.error || "Failed to get upload URL");
       }
 
-      const { url, key } = await res.json();
+      const { url, key, mediaId } = await res.json();
 
       const uploadRes = await fetch(url, {
         method: "PUT",
@@ -184,7 +184,19 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
 
       if (!uploadRes.ok) throw new Error("Failed to upload image");
 
-      return { key, url: URL.createObjectURL(file) };
+      // Register the uploaded file to get the final URL
+      const registerRes = await fetch("/api/media/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentToken}`,
+        },
+        body: JSON.stringify({ mediaId, key }),
+      });
+
+      if (!registerRes.ok) throw new Error("Failed to register media");
+
+      return { mediaId, url: URL.createObjectURL(file) };
     },
     []
   );

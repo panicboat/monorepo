@@ -11,7 +11,8 @@ RSpec.describe "Portfolio::Relations::Casts", type: :database do
     expect(attribute_names).to include(:user_id)
     expect(attribute_names).to include(:name)
     expect(attribute_names).to include(:bio)
-    expect(attribute_names).to include(:image_path)
+    expect(attribute_names).to include(:profile_media_id)
+    expect(attribute_names).to include(:avatar_media_id)
     expect(attribute_names).to include(:visibility)
   end
 

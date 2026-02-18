@@ -65,11 +65,11 @@ export async function PUT(req: NextRequest) {
     );
 
     // Save images if provided
-    if (body.imagePath || (body.images && body.images.length > 0)) {
+    if (body.profileMediaId || (body.galleryMediaIds && body.galleryMediaIds.length > 0)) {
       await castClient.saveCastImages(
         {
-          profileImagePath: body.imagePath || "",
-          galleryImages: body.images || [],
+          profileMediaId: body.profileMediaId || "",
+          galleryMediaIds: body.galleryMediaIds || [],
         },
         { headers }
       );

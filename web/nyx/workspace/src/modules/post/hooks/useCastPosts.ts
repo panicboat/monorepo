@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { CastPost, PostMedia } from "@/modules/post/types";
+import { CastPost, SavePostMedia } from "@/modules/post/types";
 import { mapApiToPost, mapApiToPostsList, mapPostToSavePayload } from "@/modules/post/lib/mappers";
 import { getAuthToken } from "@/lib/swr";
 
@@ -73,7 +73,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
   }, [fetchPosts, nextCursor, hasMore]);
 
   const savePost = useCallback(
-    async (post: { id?: string; content: string; media: PostMedia[]; visibility?: "public" | "private"; hashtags?: string[] }) => {
+    async (post: { id?: string; content: string; media: SavePostMedia[]; visibility?: "public" | "private"; hashtags?: string[] }) => {
       const token = getAuthToken();
       if (!token) throw new Error("No token");
 

@@ -6,14 +6,12 @@ import { mapApiToImages } from "@/modules/portfolio/lib/cast/mappers";
 import { getAuthToken } from "@/lib/swr";
 
 interface UseCastImagesOptions {
-  uploadUrlPath?: string;
   savePath?: string;
   initialImages?: MediaItem[];
 }
 
 export function useCastImages(options: UseCastImagesOptions = {}) {
   const {
-    uploadUrlPath = "/api/cast/onboarding/upload-url",
     savePath = "/api/cast/onboarding/images",
     initialImages = [],
   } = options;
@@ -31,13 +29,19 @@ export function useCastImages(options: UseCastImagesOptions = {}) {
       setError(null);
 
       try {
-        const res = await fetch(uploadUrlPath, {
+        // Use Media service for upload
+        const mediaType = file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
+        const res = await fetch("/api/media/upload-url", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ filename: file.name, contentType: file.type }),
+          body: JSON.stringify({
+            filename: file.name,
+            contentType: file.type,
+            mediaType,
+          }),
         });
 
         if (!res.ok) {
@@ -45,9 +49,9 @@ export function useCastImages(options: UseCastImagesOptions = {}) {
           throw new Error(err.error || "Failed to get upload URL");
         }
 
-        const { url, key } = await res.json();
+        const { uploadUrl, mediaKey, mediaId } = await res.json();
 
-        const uploadRes = await fetch(url, {
+        const uploadRes = await fetch(uploadUrl, {
           method: "PUT",
           headers: { "Content-Type": file.type },
           body: file,
@@ -57,7 +61,8 @@ export function useCastImages(options: UseCastImagesOptions = {}) {
 
         return {
           url: URL.createObjectURL(file),
-          key: key,
+          key: mediaKey,
+          mediaId: mediaId,
           type: file.type.startsWith("video") ? "video" : "image",
         };
       } catch (e) {
@@ -68,7 +73,7 @@ export function useCastImages(options: UseCastImagesOptions = {}) {
         setUploading(false);
       }
     },
-    [uploadUrlPath]
+    []
   );
 
   const saveImages = useCallback(
@@ -80,9 +85,9 @@ export function useCastImages(options: UseCastImagesOptions = {}) {
       const heroImage = imagesToSave[0];
       const galleryImages = imagesToSave.slice(1);
 
-      const galleryKeys = galleryImages
-        .map((img) => img.key || img.url)
-        .filter(Boolean);
+      const galleryMediaIds = galleryImages
+        .map((img) => img.mediaId)
+        .filter((id): id is string => !!id);
 
       const res = await fetch(savePath, {
         method: "PUT",
@@ -91,8 +96,8 @@ export function useCastImages(options: UseCastImagesOptions = {}) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          profileImagePath: heroImage?.key,
-          galleryImages: galleryKeys,
+          profileMediaId: heroImage?.mediaId,
+          galleryMediaIds,
         }),
       });
 
@@ -118,9 +123,9 @@ export function useCastImages(options: UseCastImagesOptions = {}) {
   // Helper to get hero and gallery separately
   const getHeroImage = useCallback(() => images[0] || null, [images]);
   const getGalleryImages = useCallback(() => images.slice(1), [images]);
-  const getHeroKey = useCallback(() => images[0]?.key, [images]);
-  const getGalleryKeys = useCallback(
-    () => images.slice(1).map((img) => img.key || img.url).filter(Boolean),
+  const getHeroMediaId = useCallback(() => images[0]?.mediaId, [images]);
+  const getGalleryMediaIds = useCallback(
+    () => images.slice(1).map((img) => img.mediaId).filter((id): id is string => !!id),
     [images]
   );
 
@@ -135,7 +140,7 @@ export function useCastImages(options: UseCastImagesOptions = {}) {
     initializeFromApi,
     getHeroImage,
     getGalleryImages,
-    getHeroKey,
-    getGalleryKeys,
+    getHeroMediaId,
+    getGalleryMediaIds,
   };
 }

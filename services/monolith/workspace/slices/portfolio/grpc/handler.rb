@@ -2,6 +2,7 @@
 
 require "gruf"
 require_relative "../../../lib/grpc/authenticatable"
+require_relative "../adapters/media_adapter"
 
 module Portfolio
   module Grpc
@@ -11,30 +12,10 @@ module Portfolio
       include ::GRPC::GenericService
       include ::Grpc::Authenticatable
 
-      include Portfolio::Deps[
-        get_upload_url_uc: "use_cases.images.get_upload_url"
-      ]
-
       protected
 
-      # Handle upload URL generation for any service.
-      # @param prefix [String] 'casts' or 'guests'
-      def handle_upload_url(prefix:)
-        authenticate_user!
-
-        result = get_upload_url_uc.call(
-          user_id: current_user_id,
-          filename: request.message.filename,
-          content_type: request.message.content_type,
-          prefix: prefix
-        )
-
-        if result.success?
-          data = result.value!
-          ::Portfolio::V1::GetUploadUrlResponse.new(url: data[:url], key: data[:key])
-        else
-          fail!(:invalid_argument, "Invalid input")
-        end
+      def media_adapter
+        @media_adapter ||= Portfolio::Adapters::MediaAdapter.new
       end
     end
   end

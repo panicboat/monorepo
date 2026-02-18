@@ -87,16 +87,16 @@ export default function CastTimelinePage() {
 
     setPosting(true);
     try {
-      const media: { mediaType: "image" | "video"; url: string; thumbnailUrl?: string }[] = [];
+      const media: { mediaType: "image" | "video"; mediaId: string }[] = [];
 
       if (mediaFiles.length > 0) {
         setUploadProgress({ current: 0, total: mediaFiles.length });
         for (let i = 0; i < mediaFiles.length; i++) {
           const mf = mediaFiles[i];
           setUploadProgress({ current: i + 1, total: mediaFiles.length });
-          const key = await uploadFile(mf.file);
-          if (key) {
-            media.push({ mediaType: mf.type, url: key });
+          const result = await uploadFile(mf.file);
+          if (result) {
+            media.push({ mediaType: mf.type, mediaId: result.mediaId });
           }
         }
       }
