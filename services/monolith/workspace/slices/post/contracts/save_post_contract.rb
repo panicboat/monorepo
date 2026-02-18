@@ -17,8 +17,7 @@ module Post
         optional(:visibility).maybe(:string, included_in?: %w[public private])
         optional(:media).array(:hash) do
           required(:media_type).filled(:string, included_in?: %w[image video])
-          required(:url).filled(:string)
-          optional(:thumbnail_url).maybe(:string)
+          required(:media_id).filled(:string)
         end
         optional(:hashtags).array(:string)
       end

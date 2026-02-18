@@ -26,11 +26,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Convert mediaType to number (supports both string "IMAGE"/"VIDEO" and number 1/2)
+    let mediaTypeNum = 1; // default to IMAGE
+    if (typeof mediaType === "number") {
+      mediaTypeNum = mediaType;
+    } else if (typeof mediaType === "string") {
+      mediaTypeNum = mediaType.toUpperCase() === "VIDEO" ? 2 : 1;
+    }
+
     const response = await mediaClient.registerMedia(
       {
         mediaId,
         mediaKey,
-        mediaType: mediaType || 1,
+        mediaType: mediaTypeNum,
         filename: filename || "",
         contentType: contentType || "",
         sizeBytes: BigInt(sizeBytes || 0),

@@ -18,8 +18,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Convert mediaType to number (supports both string "IMAGE"/"VIDEO" and number 1/2)
+    let mediaTypeNum = 1; // default to IMAGE
+    if (typeof mediaType === "number") {
+      mediaTypeNum = mediaType;
+    } else if (typeof mediaType === "string") {
+      mediaTypeNum = mediaType.toUpperCase() === "VIDEO" ? 2 : 1;
+    }
+
     const response = await mediaClient.getUploadUrl(
-      { filename, contentType, mediaType: mediaType || 1 },
+      { filename, contentType, mediaType: mediaTypeNum },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

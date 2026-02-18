@@ -75,7 +75,8 @@ export function TimelineItem({
   };
 
   const isHidden = item.visibility === "private";
-  const resolvedMedia: FeedMediaItem[] = item.media || [];
+  // Filter out media with empty URLs (not yet registered in media__files)
+  const resolvedMedia: FeedMediaItem[] = (item.media || []).filter((m) => m.url);
 
   return (
     <motion.div

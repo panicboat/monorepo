@@ -55,5 +55,25 @@ export async function uploadFile(file: File): Promise<UploadResult | null> {
   });
 
   if (!uploadRes.ok) return null;
+
+  // Register the uploaded media in the database
+  const registerRes = await fetch("/api/media/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      mediaId,
+      mediaKey,
+      mediaType,
+      filename: file.name,
+      contentType: file.type,
+      sizeBytes: file.size,
+    }),
+  });
+
+  if (!registerRes.ok) return null;
+
   return { mediaId, mediaKey };
 }
