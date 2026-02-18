@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+package trust.v1;
+
+service TrustService {
+  // Tag CRUD (own tags)
+  rpc ListTags(ListTagsRequest) returns (ListTagsResponse);
+  rpc CreateTag(CreateTagRequest) returns (CreateTagResponse);
+  rpc DeleteTag(DeleteTagRequest) returns (DeleteTagResponse);
+
+  // Tagging operations
+  rpc ListTargetTags(ListTargetTagsRequest) returns (ListTargetTagsResponse);
+  rpc AddTagging(AddTaggingRequest) returns (AddTaggingResponse);
+  rpc RemoveTagging(RemoveTaggingRequest) returns (RemoveTaggingResponse);
+
+  // Approval operations (cast only)
+  rpc ApproveTagging(ApproveTaggingRequest) returns (ApproveTaggingResponse);
+  rpc RejectTagging(RejectTaggingRequest) returns (RejectTaggingResponse);
+  rpc ListPendingTaggings(ListPendingTaggingsRequest) returns (ListPendingTaggingsResponse);
+}
+
+enum TaggingStatus {
+  TAGGING_STATUS_UNSPECIFIED = 0;
+  TAGGING_STATUS_PENDING = 1;
+  TAGGING_STATUS_APPROVED = 2;
+  TAGGING_STATUS_REJECTED = 3;
+}
+
+// --- Tag CRUD ---
+
+message TagItem {
+  string id = 1;
+  string name = 2;
+  string created_at = 3;
+}
+
+message ListTagsRequest {}
+
+message ListTagsResponse {
+  repeated TagItem tags = 1;
+}
+
+message CreateTagRequest {
+  string name = 1;
+}
+
+message CreateTagResponse {
+  bool success = 1;
+  TagItem tag = 2;
+}
+
+message DeleteTagRequest {
+  string id = 1;
+}
+
+message DeleteTagResponse {
+  bool success = 1;
+}
+
+// --- Tagging operations ---
+
+message TaggingItem {
+  string id = 1;
+  string tag_name = 2;
+  string tagger_id = 3;
+  TaggingStatus status = 4;
+  string created_at = 5;
+}
+
+message ListTargetTagsRequest {
+  string target_id = 1;
+}
+
+message ListTargetTagsResponse {
+  repeated TaggingItem taggings = 1;
+}
+
+message AddTaggingRequest {
+  string tag_id = 1;
+  string target_id = 2;
+}
+
+message AddTaggingResponse {
+  bool success = 1;
+  TaggingStatus status = 2;
+}
+
+message RemoveTaggingRequest {
+  string id = 1;
+}
+
+message RemoveTaggingResponse {
+  bool success = 1;
+}
+
+// --- Approval operations ---
+
+message ApproveTaggingRequest {
+  string id = 1;
+}
+
+message ApproveTaggingResponse {
+  bool success = 1;
+}
+
+message RejectTaggingRequest {
+  string id = 1;
+}
+
+message RejectTaggingResponse {
+  bool success = 1;
+}
+
+message PendingTaggingItem {
+  string id = 1;
+  string tag_name = 2;
+  string tagger_id = 3;
+  string created_at = 4;
+}
+
+message ListPendingTaggingsRequest {
+  int32 limit = 1;
+  string cursor = 2;
+}
+
+message ListPendingTaggingsResponse {
+  repeated PendingTaggingItem taggings = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
