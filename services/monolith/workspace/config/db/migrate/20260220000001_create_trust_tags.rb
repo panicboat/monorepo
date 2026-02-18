@@ -2,6 +2,8 @@
 
 ROM::SQL.migration do
   up do
+    run "CREATE SCHEMA IF NOT EXISTS trust"
+
     create_table :"trust__tags" do
       column :id, :uuid, default: Sequel.lit("gen_random_uuid()"), null: false
       column :identity_id, :uuid, null: false
