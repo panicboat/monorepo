@@ -1,2 +1,2 @@
-// TODO: Hooks will be added in the next task
-export {};
+export { useTags } from "./useTags";
+export { useTaggings } from "./useTaggings";
