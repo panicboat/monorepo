@@ -8,7 +8,7 @@
 
 ### Requirement: Post Comment Feature
 
-認証済みユーザー（ゲストまたはキャスト）は投稿にコメントを追加できなければならない (MUST)。1つの投稿に対して複数のコメントを投稿できる。
+認証済みユーザー（ゲストまたはキャスト）は投稿にコメントを追加できなければならない (MUST)。1つの投稿に対して複数のコメントを投稿できる。コメントにはテキストまたはメディアのいずれかが必須。
 
 #### Scenario: ゲストが投稿にコメントを追加する
 
@@ -49,9 +49,20 @@
 
 - **GIVEN** 私はログイン済みのユーザーである
 - **AND** 私はコメント入力欄が空の状態である
+- **AND** メディアも添付されていない
 - **WHEN** 私が送信ボタンを押す
 - **THEN** コメントは投稿されない
 - **AND** エラーメッセージが表示される
+
+#### Scenario: メディアのみのコメントを投稿する
+
+- **GIVEN** 私はログイン済みのユーザーである
+- **AND** 私はコメント入力欄が空の状態である
+- **AND** メディアを1枚以上添付している
+- **WHEN** 私が送信ボタンを押す
+- **THEN** コメントがバックエンドに保存される
+- **AND** コメント一覧にメディア付きコメントが表示される
+- **AND** 投稿のコメント数が +1 される
 
 ### Requirement: Comment Media Attachment
 
@@ -134,7 +145,7 @@
 
 ### Requirement: Comment Reply Feature
 
-ユーザーはコメントに返信できなければならない (MUST)。返信は1階層のみサポートされ、返信への返信は不可。
+ユーザーはコメントに返信できなければならない (MUST)。返信は1階層のみサポートされ、返信への返信は不可。返信にもテキストまたはメディアのいずれかが必須。
 
 #### Scenario: ゲストがコメントに返信する
 
@@ -239,9 +250,22 @@
 #### Scenario: コメントの追加
 
 - **GIVEN** 認証済みのユーザー（ゲストまたはキャスト）
-- **WHEN** POST `/api/comments` を post_id, content, media（optional）を指定して呼び出す
+- **WHEN** POST `/api/comments` を post_id と content または media（いずれか必須）を指定して呼び出す
 - **THEN** コメントが保存され、作成されたコメントと最新の comments_count が返される
 - **AND** コメントには投稿者の user_type（"guest" or "cast"）が含まれる
+
+#### Scenario: メディアのみのコメント追加
+
+- **GIVEN** 認証済みのユーザー（ゲストまたはキャスト）
+- **WHEN** POST `/api/comments` を post_id と media のみを指定して呼び出す（content は空文字列または省略）
+- **THEN** コメントが保存され、作成されたコメントと最新の comments_count が返される
+
+#### Scenario: テキストもメディアもないコメントは拒否される
+
+- **GIVEN** 認証済みのユーザー（ゲストまたはキャスト）
+- **WHEN** POST `/api/comments` を post_id のみを指定して呼び出す（content は空、media も空）
+- **THEN** 400 Bad Request が返される
+- **AND** エラーメッセージ "Content or media is required" が返される
 
 #### Scenario: 返信の追加
 

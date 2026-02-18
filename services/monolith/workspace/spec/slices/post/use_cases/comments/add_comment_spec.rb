@@ -64,15 +64,36 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
       end
     end
 
-    context "when content is empty" do
+    context "when content and media are both empty" do
       it "raises EmptyContentError" do
         expect {
           use_case.call(
             post_id: post.id,
             user_id: user_id,
-            content: ""
+            content: "",
+            media: []
           )
         }.to raise_error(Post::UseCases::Comments::AddComment::EmptyContentError)
+      end
+    end
+
+    context "when only media is provided (no content)" do
+      it "creates a comment successfully with media_id" do
+        media_id = SecureRandom.uuid
+        media = [{ media_id: media_id, media_type: "image" }]
+
+        result = use_case.call(
+          post_id: post.id,
+          user_id: user_id,
+          content: "",
+          media: media
+        )
+
+        expect(result[:comment]).not_to be_nil
+        expect(result[:comment].content).to eq("")
+        expect(result[:comment].user_id).to eq(user_id)
+        expect(result[:comment].comment_media).not_to be_empty
+        expect(result[:comment].comment_media.first.media_id).to eq(media_id)
       end
     end
 

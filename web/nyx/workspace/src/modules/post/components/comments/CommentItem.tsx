@@ -124,27 +124,29 @@ export function CommentItem({
             {/* Media */}
             {comment.media && comment.media.length > 0 && (
               <div className="mt-2 flex gap-2 flex-wrap">
-                {comment.media.map((m, i) => (
-                  <div
-                    key={m.id || i}
-                    className="relative rounded-lg overflow-hidden max-w-[200px] cursor-pointer"
-                    onClick={() => handleMediaClick(i)}
-                  >
-                    {m.mediaType === "video" ? (
-                      <video
-                        src={m.url}
-                        className="max-h-32 object-cover rounded-lg"
-                        muted
-                      />
-                    ) : (
-                      <img
-                        src={m.url}
-                        alt=""
-                        className="max-h-32 object-cover rounded-lg"
-                      />
-                    )}
-                  </div>
-                ))}
+                {comment.media
+                  .filter((m) => m.url)
+                  .map((m, i) => (
+                    <div
+                      key={m.id || i}
+                      className="relative rounded-lg overflow-hidden max-w-[200px] cursor-pointer"
+                      onClick={() => handleMediaClick(i)}
+                    >
+                      {m.mediaType === "video" ? (
+                        <video
+                          src={m.url}
+                          className="max-h-32 object-cover rounded-lg"
+                          muted
+                        />
+                      ) : (
+                        <img
+                          src={m.url}
+                          alt=""
+                          className="max-h-32 object-cover rounded-lg"
+                        />
+                      )}
+                    </div>
+                  ))}
               </div>
             )}
 

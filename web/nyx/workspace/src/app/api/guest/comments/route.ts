@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { commentClient } from "@/lib/grpc";
 import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
+import { create } from "@bufbuild/protobuf";
+import { CommentMediaSchema } from "@/stub/post/v1/comment_service_pb";
 
 export async function GET(req: NextRequest) {
   try {
@@ -35,6 +37,7 @@ export async function GET(req: NextRequest) {
         : null,
       media: comment.media.map((m) => ({
         id: m.id,
+        mediaId: m.mediaId,
         mediaType: m.mediaType,
         url: m.url,
         thumbnailUrl: m.thumbnailUrl,
@@ -67,16 +70,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "postId is required" }, { status: 400 });
     }
 
-    if (!content || content.trim() === "") {
-      return NextResponse.json({ error: "content is required" }, { status: 400 });
+    const hasContent = content && content.trim() !== "";
+    const hasMedia = media && media.length > 0;
+    if (!hasContent && !hasMedia) {
+      return NextResponse.json({ error: "Content or media is required" }, { status: 400 });
     }
+
+    // Create proper protobuf messages for media to ensure all fields are serialized correctly
+    const mappedMedia = (media || []).map((m: { mediaId?: string; mediaType?: string }) =>
+      create(CommentMediaSchema, {
+        mediaId: m.mediaId || "",
+        mediaType: m.mediaType || "image",
+      })
+    );
 
     const response = await commentClient.addComment(
       {
         postId,
-        content,
+        content: content || "",
         parentId: parentId || "",
-        media: media || [],
+        media: mappedMedia,
       },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -101,6 +114,7 @@ export async function POST(req: NextRequest) {
               : null,
             media: comment.media.map((m) => ({
               id: m.id,
+              mediaId: m.mediaId,
               mediaType: m.mediaType,
               url: m.url,
               thumbnailUrl: m.thumbnailUrl,

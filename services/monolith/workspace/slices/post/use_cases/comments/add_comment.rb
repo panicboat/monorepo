@@ -21,12 +21,14 @@ module Post
           post = post_repo.find_by_id(post_id)
           raise PostNotFoundError unless post
 
-          # Validate content
-          raise EmptyContentError if content.nil? || content.strip.empty?
-          raise ContentTooLongError if content.length > MAX_CONTENT_LENGTH
+          # Validate content or media is required
+          empty_content = content.nil? || content.strip.empty?
+          empty_media = media.nil? || media.empty?
+          raise EmptyContentError if empty_content && empty_media
+          raise ContentTooLongError if !empty_content && content.length > MAX_CONTENT_LENGTH
 
           # Validate media count
-          raise TooManyMediaError if media.length > MAX_MEDIA_COUNT
+          raise TooManyMediaError if !empty_media && media.length > MAX_MEDIA_COUNT
 
           # Validate parent is a top-level comment (not a reply)
           if parent_id
@@ -38,9 +40,8 @@ module Post
           # Create comment
           media_data = media.map do |m|
             {
-              media_type: m[:media_type] || m["media_type"],
-              url: m[:url] || m["url"],
-              thumbnail_url: m[:thumbnail_url] || m["thumbnail_url"]
+              media_id: m[:media_id] || m["media_id"],
+              media_type: m[:media_type] || m["media_type"]
             }
           end
 

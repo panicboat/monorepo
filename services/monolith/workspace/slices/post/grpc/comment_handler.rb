@@ -58,7 +58,7 @@ module Post
       rescue AddComment::PostNotFoundError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
       rescue AddComment::EmptyContentError
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Content cannot be empty")
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Content or media is required")
       rescue AddComment::ContentTooLongError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Content exceeds 1000 characters")
       rescue AddComment::TooManyMediaError
