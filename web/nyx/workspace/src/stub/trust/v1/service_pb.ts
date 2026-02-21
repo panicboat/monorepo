@@ -2,367 +2,20 @@
 // @generated from file trust/v1/service.proto (package trust.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file trust/v1/service.proto.
  */
 export const file_trust_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("ChZ0cnVzdC92MS9zZXJ2aWNlLnByb3RvEgh0cnVzdC52MSI3CgdUYWdJdGVtEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKY3JlYXRlZF9hdBgDIAEoCSIRCg9MaXN0VGFnc1JlcXVlc3QiMwoQTGlzdFRhZ3NSZXNwb25zZRIfCgR0YWdzGAEgAygLMhEudHJ1c3QudjEuVGFnSXRlbSIgChBDcmVhdGVUYWdSZXF1ZXN0EgwKBG5hbWUYASABKAkiRAoRQ3JlYXRlVGFnUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIeCgN0YWcYAiABKAsyES50cnVzdC52MS5UYWdJdGVtIh4KEERlbGV0ZVRhZ1JlcXVlc3QSCgoCaWQYASABKAkiJAoRRGVsZXRlVGFnUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCJ7CgtUYWdnaW5nSXRlbRIKCgJpZBgBIAEoCRIQCgh0YWdfbmFtZRgCIAEoCRIRCgl0YWdnZXJfaWQYAyABKAkSJwoGc3RhdHVzGAQgASgOMhcudHJ1c3QudjEuVGFnZ2luZ1N0YXR1cxISCgpjcmVhdGVkX2F0GAUgASgJIioKFUxpc3RUYXJnZXRUYWdzUmVxdWVzdBIRCgl0YXJnZXRfaWQYASABKAkiQQoWTGlzdFRhcmdldFRhZ3NSZXNwb25zZRInCgh0YWdnaW5ncxgBIAMoCzIVLnRydXN0LnYxLlRhZ2dpbmdJdGVtIjYKEUFkZFRhZ2dpbmdSZXF1ZXN0Eg4KBnRhZ19pZBgBIAEoCRIRCgl0YXJnZXRfaWQYAiABKAkiTgoSQWRkVGFnZ2luZ1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJwoGc3RhdHVzGAIgASgOMhcudHJ1c3QudjEuVGFnZ2luZ1N0YXR1cyIiChRSZW1vdmVUYWdnaW5nUmVxdWVzdBIKCgJpZBgBIAEoCSIoChVSZW1vdmVUYWdnaW5nUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCIjChVBcHByb3ZlVGFnZ2luZ1JlcXVlc3QSCgoCaWQYASABKAkiKQoWQXBwcm92ZVRhZ2dpbmdSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIiIKFFJlamVjdFRhZ2dpbmdSZXF1ZXN0EgoKAmlkGAEgASgJIigKFVJlamVjdFRhZ2dpbmdSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIlkKElBlbmRpbmdUYWdnaW5nSXRlbRIKCgJpZBgBIAEoCRIQCgh0YWdfbmFtZRgCIAEoCRIRCgl0YWdnZXJfaWQYAyABKAkSEgoKY3JlYXRlZF9hdBgEIAEoCSI7ChpMaXN0UGVuZGluZ1RhZ2dpbmdzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkidAobTGlzdFBlbmRpbmdUYWdnaW5nc1Jlc3BvbnNlEi4KCHRhZ2dpbmdzGAEgAygLMhwudHJ1c3QudjEuUGVuZGluZ1RhZ2dpbmdJdGVtEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIKoUBCg1UYWdnaW5nU3RhdHVzEh4KGlRBR0dJTkdfU1RBVFVTX1VOU1BFQ0lGSUVEEAASGgoWVEFHR0lOR19TVEFUVVNfUEVORElORxABEhsKF1RBR0dJTkdfU1RBVFVTX0FQUFJPVkVEEAISGwoXVEFHR0lOR19TVEFUVVNfUkVKRUNURUQQAzLYBQoMVHJ1c3RTZXJ2aWNlEkEKCExpc3RUYWdzEhkudHJ1c3QudjEuTGlzdFRhZ3NSZXF1ZXN0GhoudHJ1c3QudjEuTGlzdFRhZ3NSZXNwb25zZRJECglDcmVhdGVUYWcSGi50cnVzdC52MS5DcmVhdGVUYWdSZXF1ZXN0GhsudHJ1c3QudjEuQ3JlYXRlVGFnUmVzcG9uc2USRAoJRGVsZXRlVGFnEhoudHJ1c3QudjEuRGVsZXRlVGFnUmVxdWVzdBobLnRydXN0LnYxLkRlbGV0ZVRhZ1Jlc3BvbnNlElMKDkxpc3RUYXJnZXRUYWdzEh8udHJ1c3QudjEuTGlzdFRhcmdldFRhZ3NSZXF1ZXN0GiAudHJ1c3QudjEuTGlzdFRhcmdldFRhZ3NSZXNwb25zZRJHCgpBZGRUYWdnaW5nEhsudHJ1c3QudjEuQWRkVGFnZ2luZ1JlcXVlc3QaHC50cnVzdC52MS5BZGRUYWdnaW5nUmVzcG9uc2USUAoNUmVtb3ZlVGFnZ2luZxIeLnRydXN0LnYxLlJlbW92ZVRhZ2dpbmdSZXF1ZXN0Gh8udHJ1c3QudjEuUmVtb3ZlVGFnZ2luZ1Jlc3BvbnNlElMKDkFwcHJvdmVUYWdnaW5nEh8udHJ1c3QudjEuQXBwcm92ZVRhZ2dpbmdSZXF1ZXN0GiAudHJ1c3QudjEuQXBwcm92ZVRhZ2dpbmdSZXNwb25zZRJQCg1SZWplY3RUYWdnaW5nEh4udHJ1c3QudjEuUmVqZWN0VGFnZ2luZ1JlcXVlc3QaHy50cnVzdC52MS5SZWplY3RUYWdnaW5nUmVzcG9uc2USYgoTTGlzdFBlbmRpbmdUYWdnaW5ncxIkLnRydXN0LnYxLkxpc3RQZW5kaW5nVGFnZ2luZ3NSZXF1ZXN0GiUudHJ1c3QudjEuTGlzdFBlbmRpbmdUYWdnaW5nc1Jlc3BvbnNlYgZwcm90bzM");
-
-/**
- * @generated from message trust.v1.TagItem
- */
-export type TagItem = Message<"trust.v1.TagItem"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
-
-  /**
-   * @generated from field: string created_at = 3;
-   */
-  createdAt: string;
-};
-
-/**
- * Describes the message trust.v1.TagItem.
- * Use `create(TagItemSchema)` to create a new message.
- */
-export const TagItemSchema: GenMessage<TagItem> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 0);
-
-/**
- * @generated from message trust.v1.ListTagsRequest
- */
-export type ListTagsRequest = Message<"trust.v1.ListTagsRequest"> & {
-};
-
-/**
- * Describes the message trust.v1.ListTagsRequest.
- * Use `create(ListTagsRequestSchema)` to create a new message.
- */
-export const ListTagsRequestSchema: GenMessage<ListTagsRequest> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 1);
-
-/**
- * @generated from message trust.v1.ListTagsResponse
- */
-export type ListTagsResponse = Message<"trust.v1.ListTagsResponse"> & {
-  /**
-   * @generated from field: repeated trust.v1.TagItem tags = 1;
-   */
-  tags: TagItem[];
-};
-
-/**
- * Describes the message trust.v1.ListTagsResponse.
- * Use `create(ListTagsResponseSchema)` to create a new message.
- */
-export const ListTagsResponseSchema: GenMessage<ListTagsResponse> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 2);
-
-/**
- * @generated from message trust.v1.CreateTagRequest
- */
-export type CreateTagRequest = Message<"trust.v1.CreateTagRequest"> & {
-  /**
-   * @generated from field: string name = 1;
-   */
-  name: string;
-};
-
-/**
- * Describes the message trust.v1.CreateTagRequest.
- * Use `create(CreateTagRequestSchema)` to create a new message.
- */
-export const CreateTagRequestSchema: GenMessage<CreateTagRequest> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 3);
-
-/**
- * @generated from message trust.v1.CreateTagResponse
- */
-export type CreateTagResponse = Message<"trust.v1.CreateTagResponse"> & {
-  /**
-   * @generated from field: bool success = 1;
-   */
-  success: boolean;
-
-  /**
-   * @generated from field: trust.v1.TagItem tag = 2;
-   */
-  tag?: TagItem;
-};
-
-/**
- * Describes the message trust.v1.CreateTagResponse.
- * Use `create(CreateTagResponseSchema)` to create a new message.
- */
-export const CreateTagResponseSchema: GenMessage<CreateTagResponse> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 4);
-
-/**
- * @generated from message trust.v1.DeleteTagRequest
- */
-export type DeleteTagRequest = Message<"trust.v1.DeleteTagRequest"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-};
-
-/**
- * Describes the message trust.v1.DeleteTagRequest.
- * Use `create(DeleteTagRequestSchema)` to create a new message.
- */
-export const DeleteTagRequestSchema: GenMessage<DeleteTagRequest> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 5);
-
-/**
- * @generated from message trust.v1.DeleteTagResponse
- */
-export type DeleteTagResponse = Message<"trust.v1.DeleteTagResponse"> & {
-  /**
-   * @generated from field: bool success = 1;
-   */
-  success: boolean;
-};
-
-/**
- * Describes the message trust.v1.DeleteTagResponse.
- * Use `create(DeleteTagResponseSchema)` to create a new message.
- */
-export const DeleteTagResponseSchema: GenMessage<DeleteTagResponse> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 6);
+  fileDesc("ChZ0cnVzdC92MS9zZXJ2aWNlLnByb3RvEgh0cnVzdC52MSJSCgtUYWdnaW5nSXRlbRIKCgJpZBgBIAEoCRIQCgh0YWdfbmFtZRgCIAEoCRIRCgl0YWdnZXJfaWQYAyABKAkSEgoKY3JlYXRlZF9hdBgEIAEoCSI4ChFBZGRUYWdnaW5nUmVxdWVzdBIQCgh0YWdfbmFtZRgBIAEoCRIRCgl0YXJnZXRfaWQYAiABKAkiJQoSQWRkVGFnZ2luZ1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiIgoUUmVtb3ZlVGFnZ2luZ1JlcXVlc3QSCgoCaWQYASABKAkiKAoVUmVtb3ZlVGFnZ2luZ1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiKgoVTGlzdFRhcmdldFRhZ3NSZXF1ZXN0EhEKCXRhcmdldF9pZBgBIAEoCSJBChZMaXN0VGFyZ2V0VGFnc1Jlc3BvbnNlEicKCHRhZ2dpbmdzGAEgAygLMhUudHJ1c3QudjEuVGFnZ2luZ0l0ZW0iFwoVTGlzdE15VGFnTmFtZXNSZXF1ZXN0IisKFkxpc3RNeVRhZ05hbWVzUmVzcG9uc2USEQoJdGFnX25hbWVzGAEgAygJMtMCCgxUcnVzdFNlcnZpY2USRwoKQWRkVGFnZ2luZxIbLnRydXN0LnYxLkFkZFRhZ2dpbmdSZXF1ZXN0GhwudHJ1c3QudjEuQWRkVGFnZ2luZ1Jlc3BvbnNlElAKDVJlbW92ZVRhZ2dpbmcSHi50cnVzdC52MS5SZW1vdmVUYWdnaW5nUmVxdWVzdBofLnRydXN0LnYxLlJlbW92ZVRhZ2dpbmdSZXNwb25zZRJTCg5MaXN0VGFyZ2V0VGFncxIfLnRydXN0LnYxLkxpc3RUYXJnZXRUYWdzUmVxdWVzdBogLnRydXN0LnYxLkxpc3RUYXJnZXRUYWdzUmVzcG9uc2USUwoOTGlzdE15VGFnTmFtZXMSHy50cnVzdC52MS5MaXN0TXlUYWdOYW1lc1JlcXVlc3QaIC50cnVzdC52MS5MaXN0TXlUYWdOYW1lc1Jlc3BvbnNlYgZwcm90bzM");
 
 /**
  * @generated from message trust.v1.TaggingItem
  */
 export type TaggingItem = Message<"trust.v1.TaggingItem"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-
-  /**
-   * @generated from field: string tag_name = 2;
-   */
-  tagName: string;
-
-  /**
-   * @generated from field: string tagger_id = 3;
-   */
-  taggerId: string;
-
-  /**
-   * @generated from field: trust.v1.TaggingStatus status = 4;
-   */
-  status: TaggingStatus;
-
-  /**
-   * @generated from field: string created_at = 5;
-   */
-  createdAt: string;
-};
-
-/**
- * Describes the message trust.v1.TaggingItem.
- * Use `create(TaggingItemSchema)` to create a new message.
- */
-export const TaggingItemSchema: GenMessage<TaggingItem> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 7);
-
-/**
- * @generated from message trust.v1.ListTargetTagsRequest
- */
-export type ListTargetTagsRequest = Message<"trust.v1.ListTargetTagsRequest"> & {
-  /**
-   * @generated from field: string target_id = 1;
-   */
-  targetId: string;
-};
-
-/**
- * Describes the message trust.v1.ListTargetTagsRequest.
- * Use `create(ListTargetTagsRequestSchema)` to create a new message.
- */
-export const ListTargetTagsRequestSchema: GenMessage<ListTargetTagsRequest> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 8);
-
-/**
- * @generated from message trust.v1.ListTargetTagsResponse
- */
-export type ListTargetTagsResponse = Message<"trust.v1.ListTargetTagsResponse"> & {
-  /**
-   * @generated from field: repeated trust.v1.TaggingItem taggings = 1;
-   */
-  taggings: TaggingItem[];
-};
-
-/**
- * Describes the message trust.v1.ListTargetTagsResponse.
- * Use `create(ListTargetTagsResponseSchema)` to create a new message.
- */
-export const ListTargetTagsResponseSchema: GenMessage<ListTargetTagsResponse> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 9);
-
-/**
- * @generated from message trust.v1.AddTaggingRequest
- */
-export type AddTaggingRequest = Message<"trust.v1.AddTaggingRequest"> & {
-  /**
-   * @generated from field: string tag_id = 1;
-   */
-  tagId: string;
-
-  /**
-   * @generated from field: string target_id = 2;
-   */
-  targetId: string;
-};
-
-/**
- * Describes the message trust.v1.AddTaggingRequest.
- * Use `create(AddTaggingRequestSchema)` to create a new message.
- */
-export const AddTaggingRequestSchema: GenMessage<AddTaggingRequest> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 10);
-
-/**
- * @generated from message trust.v1.AddTaggingResponse
- */
-export type AddTaggingResponse = Message<"trust.v1.AddTaggingResponse"> & {
-  /**
-   * @generated from field: bool success = 1;
-   */
-  success: boolean;
-
-  /**
-   * @generated from field: trust.v1.TaggingStatus status = 2;
-   */
-  status: TaggingStatus;
-};
-
-/**
- * Describes the message trust.v1.AddTaggingResponse.
- * Use `create(AddTaggingResponseSchema)` to create a new message.
- */
-export const AddTaggingResponseSchema: GenMessage<AddTaggingResponse> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 11);
-
-/**
- * @generated from message trust.v1.RemoveTaggingRequest
- */
-export type RemoveTaggingRequest = Message<"trust.v1.RemoveTaggingRequest"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-};
-
-/**
- * Describes the message trust.v1.RemoveTaggingRequest.
- * Use `create(RemoveTaggingRequestSchema)` to create a new message.
- */
-export const RemoveTaggingRequestSchema: GenMessage<RemoveTaggingRequest> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 12);
-
-/**
- * @generated from message trust.v1.RemoveTaggingResponse
- */
-export type RemoveTaggingResponse = Message<"trust.v1.RemoveTaggingResponse"> & {
-  /**
-   * @generated from field: bool success = 1;
-   */
-  success: boolean;
-};
-
-/**
- * Describes the message trust.v1.RemoveTaggingResponse.
- * Use `create(RemoveTaggingResponseSchema)` to create a new message.
- */
-export const RemoveTaggingResponseSchema: GenMessage<RemoveTaggingResponse> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 13);
-
-/**
- * @generated from message trust.v1.ApproveTaggingRequest
- */
-export type ApproveTaggingRequest = Message<"trust.v1.ApproveTaggingRequest"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-};
-
-/**
- * Describes the message trust.v1.ApproveTaggingRequest.
- * Use `create(ApproveTaggingRequestSchema)` to create a new message.
- */
-export const ApproveTaggingRequestSchema: GenMessage<ApproveTaggingRequest> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 14);
-
-/**
- * @generated from message trust.v1.ApproveTaggingResponse
- */
-export type ApproveTaggingResponse = Message<"trust.v1.ApproveTaggingResponse"> & {
-  /**
-   * @generated from field: bool success = 1;
-   */
-  success: boolean;
-};
-
-/**
- * Describes the message trust.v1.ApproveTaggingResponse.
- * Use `create(ApproveTaggingResponseSchema)` to create a new message.
- */
-export const ApproveTaggingResponseSchema: GenMessage<ApproveTaggingResponse> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 15);
-
-/**
- * @generated from message trust.v1.RejectTaggingRequest
- */
-export type RejectTaggingRequest = Message<"trust.v1.RejectTaggingRequest"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-};
-
-/**
- * Describes the message trust.v1.RejectTaggingRequest.
- * Use `create(RejectTaggingRequestSchema)` to create a new message.
- */
-export const RejectTaggingRequestSchema: GenMessage<RejectTaggingRequest> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 16);
-
-/**
- * @generated from message trust.v1.RejectTaggingResponse
- */
-export type RejectTaggingResponse = Message<"trust.v1.RejectTaggingResponse"> & {
-  /**
-   * @generated from field: bool success = 1;
-   */
-  success: boolean;
-};
-
-/**
- * Describes the message trust.v1.RejectTaggingResponse.
- * Use `create(RejectTaggingResponseSchema)` to create a new message.
- */
-export const RejectTaggingResponseSchema: GenMessage<RejectTaggingResponse> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 17);
-
-/**
- * @generated from message trust.v1.PendingTaggingItem
- */
-export type PendingTaggingItem = Message<"trust.v1.PendingTaggingItem"> & {
   /**
    * @generated from field: string id = 1;
    */
@@ -385,133 +38,156 @@ export type PendingTaggingItem = Message<"trust.v1.PendingTaggingItem"> & {
 };
 
 /**
- * Describes the message trust.v1.PendingTaggingItem.
- * Use `create(PendingTaggingItemSchema)` to create a new message.
+ * Describes the message trust.v1.TaggingItem.
+ * Use `create(TaggingItemSchema)` to create a new message.
  */
-export const PendingTaggingItemSchema: GenMessage<PendingTaggingItem> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 18);
+export const TaggingItemSchema: GenMessage<TaggingItem> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 0);
 
 /**
- * @generated from message trust.v1.ListPendingTaggingsRequest
+ * @generated from message trust.v1.AddTaggingRequest
  */
-export type ListPendingTaggingsRequest = Message<"trust.v1.ListPendingTaggingsRequest"> & {
+export type AddTaggingRequest = Message<"trust.v1.AddTaggingRequest"> & {
   /**
-   * @generated from field: int32 limit = 1;
+   * @generated from field: string tag_name = 1;
    */
-  limit: number;
+  tagName: string;
 
   /**
-   * @generated from field: string cursor = 2;
+   * @generated from field: string target_id = 2;
    */
-  cursor: string;
+  targetId: string;
 };
 
 /**
- * Describes the message trust.v1.ListPendingTaggingsRequest.
- * Use `create(ListPendingTaggingsRequestSchema)` to create a new message.
+ * Describes the message trust.v1.AddTaggingRequest.
+ * Use `create(AddTaggingRequestSchema)` to create a new message.
  */
-export const ListPendingTaggingsRequestSchema: GenMessage<ListPendingTaggingsRequest> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 19);
+export const AddTaggingRequestSchema: GenMessage<AddTaggingRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 1);
 
 /**
- * @generated from message trust.v1.ListPendingTaggingsResponse
+ * @generated from message trust.v1.AddTaggingResponse
  */
-export type ListPendingTaggingsResponse = Message<"trust.v1.ListPendingTaggingsResponse"> & {
+export type AddTaggingResponse = Message<"trust.v1.AddTaggingResponse"> & {
   /**
-   * @generated from field: repeated trust.v1.PendingTaggingItem taggings = 1;
+   * @generated from field: bool success = 1;
    */
-  taggings: PendingTaggingItem[];
-
-  /**
-   * @generated from field: string next_cursor = 2;
-   */
-  nextCursor: string;
-
-  /**
-   * @generated from field: bool has_more = 3;
-   */
-  hasMore: boolean;
+  success: boolean;
 };
 
 /**
- * Describes the message trust.v1.ListPendingTaggingsResponse.
- * Use `create(ListPendingTaggingsResponseSchema)` to create a new message.
+ * Describes the message trust.v1.AddTaggingResponse.
+ * Use `create(AddTaggingResponseSchema)` to create a new message.
  */
-export const ListPendingTaggingsResponseSchema: GenMessage<ListPendingTaggingsResponse> = /*@__PURE__*/
-  messageDesc(file_trust_v1_service, 20);
+export const AddTaggingResponseSchema: GenMessage<AddTaggingResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 2);
 
 /**
- * @generated from enum trust.v1.TaggingStatus
+ * @generated from message trust.v1.RemoveTaggingRequest
  */
-export enum TaggingStatus {
+export type RemoveTaggingRequest = Message<"trust.v1.RemoveTaggingRequest"> & {
   /**
-   * @generated from enum value: TAGGING_STATUS_UNSPECIFIED = 0;
+   * @generated from field: string id = 1;
    */
-  UNSPECIFIED = 0,
-
-  /**
-   * @generated from enum value: TAGGING_STATUS_PENDING = 1;
-   */
-  PENDING = 1,
-
-  /**
-   * @generated from enum value: TAGGING_STATUS_APPROVED = 2;
-   */
-  APPROVED = 2,
-
-  /**
-   * @generated from enum value: TAGGING_STATUS_REJECTED = 3;
-   */
-  REJECTED = 3,
-}
+  id: string;
+};
 
 /**
- * Describes the enum trust.v1.TaggingStatus.
+ * Describes the message trust.v1.RemoveTaggingRequest.
+ * Use `create(RemoveTaggingRequestSchema)` to create a new message.
  */
-export const TaggingStatusSchema: GenEnum<TaggingStatus> = /*@__PURE__*/
-  enumDesc(file_trust_v1_service, 0);
+export const RemoveTaggingRequestSchema: GenMessage<RemoveTaggingRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 3);
+
+/**
+ * @generated from message trust.v1.RemoveTaggingResponse
+ */
+export type RemoveTaggingResponse = Message<"trust.v1.RemoveTaggingResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message trust.v1.RemoveTaggingResponse.
+ * Use `create(RemoveTaggingResponseSchema)` to create a new message.
+ */
+export const RemoveTaggingResponseSchema: GenMessage<RemoveTaggingResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 4);
+
+/**
+ * @generated from message trust.v1.ListTargetTagsRequest
+ */
+export type ListTargetTagsRequest = Message<"trust.v1.ListTargetTagsRequest"> & {
+  /**
+   * @generated from field: string target_id = 1;
+   */
+  targetId: string;
+};
+
+/**
+ * Describes the message trust.v1.ListTargetTagsRequest.
+ * Use `create(ListTargetTagsRequestSchema)` to create a new message.
+ */
+export const ListTargetTagsRequestSchema: GenMessage<ListTargetTagsRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 5);
+
+/**
+ * @generated from message trust.v1.ListTargetTagsResponse
+ */
+export type ListTargetTagsResponse = Message<"trust.v1.ListTargetTagsResponse"> & {
+  /**
+   * @generated from field: repeated trust.v1.TaggingItem taggings = 1;
+   */
+  taggings: TaggingItem[];
+};
+
+/**
+ * Describes the message trust.v1.ListTargetTagsResponse.
+ * Use `create(ListTargetTagsResponseSchema)` to create a new message.
+ */
+export const ListTargetTagsResponseSchema: GenMessage<ListTargetTagsResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 6);
+
+/**
+ * @generated from message trust.v1.ListMyTagNamesRequest
+ */
+export type ListMyTagNamesRequest = Message<"trust.v1.ListMyTagNamesRequest"> & {
+};
+
+/**
+ * Describes the message trust.v1.ListMyTagNamesRequest.
+ * Use `create(ListMyTagNamesRequestSchema)` to create a new message.
+ */
+export const ListMyTagNamesRequestSchema: GenMessage<ListMyTagNamesRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 7);
+
+/**
+ * @generated from message trust.v1.ListMyTagNamesResponse
+ */
+export type ListMyTagNamesResponse = Message<"trust.v1.ListMyTagNamesResponse"> & {
+  /**
+   * @generated from field: repeated string tag_names = 1;
+   */
+  tagNames: string[];
+};
+
+/**
+ * Describes the message trust.v1.ListMyTagNamesResponse.
+ * Use `create(ListMyTagNamesResponseSchema)` to create a new message.
+ */
+export const ListMyTagNamesResponseSchema: GenMessage<ListMyTagNamesResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 8);
 
 /**
  * @generated from service trust.v1.TrustService
  */
 export const TrustService: GenService<{
   /**
-   * Tag CRUD (own tags)
-   *
-   * @generated from rpc trust.v1.TrustService.ListTags
-   */
-  listTags: {
-    methodKind: "unary";
-    input: typeof ListTagsRequestSchema;
-    output: typeof ListTagsResponseSchema;
-  },
-  /**
-   * @generated from rpc trust.v1.TrustService.CreateTag
-   */
-  createTag: {
-    methodKind: "unary";
-    input: typeof CreateTagRequestSchema;
-    output: typeof CreateTagResponseSchema;
-  },
-  /**
-   * @generated from rpc trust.v1.TrustService.DeleteTag
-   */
-  deleteTag: {
-    methodKind: "unary";
-    input: typeof DeleteTagRequestSchema;
-    output: typeof DeleteTagResponseSchema;
-  },
-  /**
    * Tagging operations
    *
-   * @generated from rpc trust.v1.TrustService.ListTargetTags
-   */
-  listTargetTags: {
-    methodKind: "unary";
-    input: typeof ListTargetTagsRequestSchema;
-    output: typeof ListTargetTagsResponseSchema;
-  },
-  /**
    * @generated from rpc trust.v1.TrustService.AddTagging
    */
   addTagging: {
@@ -528,30 +204,22 @@ export const TrustService: GenService<{
     output: typeof RemoveTaggingResponseSchema;
   },
   /**
-   * Approval operations (cast only)
+   * @generated from rpc trust.v1.TrustService.ListTargetTags
+   */
+  listTargetTags: {
+    methodKind: "unary";
+    input: typeof ListTargetTagsRequestSchema;
+    output: typeof ListTargetTagsResponseSchema;
+  },
+  /**
+   * Suggestions
    *
-   * @generated from rpc trust.v1.TrustService.ApproveTagging
+   * @generated from rpc trust.v1.TrustService.ListMyTagNames
    */
-  approveTagging: {
+  listMyTagNames: {
     methodKind: "unary";
-    input: typeof ApproveTaggingRequestSchema;
-    output: typeof ApproveTaggingResponseSchema;
-  },
-  /**
-   * @generated from rpc trust.v1.TrustService.RejectTagging
-   */
-  rejectTagging: {
-    methodKind: "unary";
-    input: typeof RejectTaggingRequestSchema;
-    output: typeof RejectTaggingResponseSchema;
-  },
-  /**
-   * @generated from rpc trust.v1.TrustService.ListPendingTaggings
-   */
-  listPendingTaggings: {
-    methodKind: "unary";
-    input: typeof ListPendingTaggingsRequestSchema;
-    output: typeof ListPendingTaggingsResponseSchema;
+    input: typeof ListMyTagNamesRequestSchema;
+    output: typeof ListMyTagNamesResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_trust_v1_service, 0);

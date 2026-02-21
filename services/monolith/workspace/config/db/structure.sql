@@ -413,25 +413,12 @@ CREATE TABLE relationship.follows (
 
 CREATE TABLE trust.taggings (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    tag_id uuid NOT NULL,
     tagger_id uuid NOT NULL,
     target_id uuid NOT NULL,
     status text DEFAULT 'approved'::text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: tags; Type: TABLE; Schema: trust; Owner: -
---
-
-CREATE TABLE trust.tags (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    identity_id uuid NOT NULL,
-    name character varying(100) NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    tag_name character varying(100) NOT NULL
 );
 
 
@@ -684,27 +671,11 @@ ALTER TABLE ONLY trust.taggings
 
 
 --
--- Name: taggings taggings_tag_id_target_id_tagger_id_key; Type: CONSTRAINT; Schema: trust; Owner: -
+-- Name: taggings taggings_tag_name_target_id_tagger_id_key; Type: CONSTRAINT; Schema: trust; Owner: -
 --
 
 ALTER TABLE ONLY trust.taggings
-    ADD CONSTRAINT taggings_tag_id_target_id_tagger_id_key UNIQUE (tag_id, target_id, tagger_id);
-
-
---
--- Name: tags tags_identity_id_name_key; Type: CONSTRAINT; Schema: trust; Owner: -
---
-
-ALTER TABLE ONLY trust.tags
-    ADD CONSTRAINT tags_identity_id_name_key UNIQUE (identity_id, name);
-
-
---
--- Name: tags tags_pkey; Type: CONSTRAINT; Schema: trust; Owner: -
---
-
-ALTER TABLE ONLY trust.tags
-    ADD CONSTRAINT tags_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT taggings_tag_name_target_id_tagger_id_key UNIQUE (tag_name, target_id, tagger_id);
 
 
 --
@@ -995,13 +966,6 @@ CREATE INDEX social_cast_follows_status_index ON relationship.follows USING btre
 
 
 --
--- Name: trust_taggings_tag_id_index; Type: INDEX; Schema: trust; Owner: -
---
-
-CREATE INDEX trust_taggings_tag_id_index ON trust.taggings USING btree (tag_id);
-
-
---
 -- Name: trust_taggings_tagger_id_index; Type: INDEX; Schema: trust; Owner: -
 --
 
@@ -1020,13 +984,6 @@ CREATE INDEX trust_taggings_target_id_index ON trust.taggings USING btree (targe
 --
 
 CREATE INDEX trust_taggings_target_id_status_index ON trust.taggings USING btree (target_id, status);
-
-
---
--- Name: trust_tags_identity_id_index; Type: INDEX; Schema: trust; Owner: -
---
-
-CREATE INDEX trust_tags_identity_id_index ON trust.tags USING btree (identity_id);
 
 
 --
@@ -1180,4 +1137,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260218210000_add_avatar_media_id_to_guests.rb'),
 ('20260218220000_remove_legacy_media_columns.rb'),
 ('20260220000001_create_trust_tags.rb'),
-('20260220000002_create_trust_taggings.rb');
+('20260220000002_create_trust_taggings.rb'),
+('20260221000001_refactor_trust_freeform_tagging.rb');

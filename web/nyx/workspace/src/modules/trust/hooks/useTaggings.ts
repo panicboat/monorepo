@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { authFetch, getAuthToken } from "@/lib/auth";
-import type { Tagging, PendingTagging } from "../types";
+import type { Tagging } from "../types";
 
 interface ListTargetTagsResponse {
   taggings: Tagging[];
@@ -10,18 +10,10 @@ interface ListTargetTagsResponse {
 
 interface AddTaggingResponse {
   success: boolean;
-  status: string;
-}
-
-interface ListPendingResponse {
-  taggings: PendingTagging[];
-  nextCursor: string;
-  hasMore: boolean;
 }
 
 export function useTaggings() {
   const [targetTaggings, setTargetTaggings] = useState<Tagging[]>([]);
-  const [pendingTaggings, setPendingTaggings] = useState<PendingTagging[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchTargetTags = useCallback(async (targetId: string) => {
@@ -42,14 +34,14 @@ export function useTaggings() {
     }
   }, []);
 
-  const addTagging = useCallback(async (tagId: string, targetId: string) => {
+  const addTagging = useCallback(async (tagName: string, targetId: string) => {
     if (!getAuthToken()) return null;
 
     setLoading(true);
     try {
       const data = await authFetch<AddTaggingResponse>(
         "/api/me/trust/taggings",
-        { method: "POST", body: { tagId, targetId } }
+        { method: "POST", body: { tagName, targetId } }
       );
       return data;
     } catch (e) {
@@ -82,71 +74,11 @@ export function useTaggings() {
     }
   }, []);
 
-  const fetchPendingTaggings = useCallback(async (limit: number = 20) => {
-    if (!getAuthToken()) return { taggings: [], hasMore: false };
-
-    setLoading(true);
-    try {
-      const data = await authFetch<ListPendingResponse>(
-        `/api/cast/trust/taggings/pending?limit=${limit}`
-      );
-      setPendingTaggings(data.taggings || []);
-      return data;
-    } catch (e) {
-      console.error("Fetch pending taggings error:", e);
-      throw e;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const approveTagging = useCallback(async (id: string) => {
-    if (!getAuthToken()) return false;
-
-    try {
-      const data = await authFetch<{ success: boolean }>(
-        `/api/cast/trust/taggings/${id}/approve`,
-        { method: "POST" }
-      );
-
-      if (data.success) {
-        setPendingTaggings((prev) => prev.filter((t) => t.id !== id));
-      }
-      return data.success;
-    } catch (e) {
-      console.error("Approve tagging error:", e);
-      throw e;
-    }
-  }, []);
-
-  const rejectTagging = useCallback(async (id: string) => {
-    if (!getAuthToken()) return false;
-
-    try {
-      const data = await authFetch<{ success: boolean }>(
-        `/api/cast/trust/taggings/${id}/reject`,
-        { method: "POST" }
-      );
-
-      if (data.success) {
-        setPendingTaggings((prev) => prev.filter((t) => t.id !== id));
-      }
-      return data.success;
-    } catch (e) {
-      console.error("Reject tagging error:", e);
-      throw e;
-    }
-  }, []);
-
   return {
     targetTaggings,
-    pendingTaggings,
     fetchTargetTags,
     addTagging,
     removeTagging,
-    fetchPendingTaggings,
-    approveTagging,
-    rejectTagging,
     loading,
   };
 }

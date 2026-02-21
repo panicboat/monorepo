@@ -15,18 +15,12 @@ module Trust
         self.unmarshal_class_method = :decode
         self.service_name = 'trust.v1.TrustService'
 
-        # Tag CRUD (own tags)
-        rpc :ListTags, ::Trust::V1::ListTagsRequest, ::Trust::V1::ListTagsResponse
-        rpc :CreateTag, ::Trust::V1::CreateTagRequest, ::Trust::V1::CreateTagResponse
-        rpc :DeleteTag, ::Trust::V1::DeleteTagRequest, ::Trust::V1::DeleteTagResponse
         # Tagging operations
-        rpc :ListTargetTags, ::Trust::V1::ListTargetTagsRequest, ::Trust::V1::ListTargetTagsResponse
         rpc :AddTagging, ::Trust::V1::AddTaggingRequest, ::Trust::V1::AddTaggingResponse
         rpc :RemoveTagging, ::Trust::V1::RemoveTaggingRequest, ::Trust::V1::RemoveTaggingResponse
-        # Approval operations (cast only)
-        rpc :ApproveTagging, ::Trust::V1::ApproveTaggingRequest, ::Trust::V1::ApproveTaggingResponse
-        rpc :RejectTagging, ::Trust::V1::RejectTaggingRequest, ::Trust::V1::RejectTaggingResponse
-        rpc :ListPendingTaggings, ::Trust::V1::ListPendingTaggingsRequest, ::Trust::V1::ListPendingTaggingsResponse
+        rpc :ListTargetTags, ::Trust::V1::ListTargetTagsRequest, ::Trust::V1::ListTargetTagsResponse
+        # Suggestions
+        rpc :ListMyTagNames, ::Trust::V1::ListMyTagNamesRequest, ::Trust::V1::ListMyTagNamesResponse
       end
 
       Stub = Service.rpc_stub_class

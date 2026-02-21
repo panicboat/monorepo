@@ -6,6 +6,7 @@ import { Loader2, Users, Ban, ArrowLeft, Check } from "lucide-react";
 import useSWR from "swr";
 import { fetcher, getAuthToken } from "@/lib/swr";
 import { useToast } from "@/components/ui/Toast";
+import { TrustTagsSection } from "@/modules/trust";
 
 interface GuestDetail {
   id: string;
@@ -199,6 +200,14 @@ export default function GuestDetailPage({
             <p className="text-text-primary whitespace-pre-wrap">{data.bio}</p>
           </div>
         )}
+
+        {/* Notes Section */}
+        <div className="bg-surface rounded-xl border border-border p-4 shadow-sm">
+          <h3 className="text-sm font-medium text-text-secondary mb-3">
+            ノート
+          </h3>
+          <TrustTagsSection targetId={id} />
+        </div>
 
         {/* Actions Section */}
         <div className="bg-surface rounded-xl border border-border p-4 shadow-sm space-y-3">

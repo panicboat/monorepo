@@ -23,7 +23,6 @@ export async function GET(req: NextRequest) {
       id: t.id,
       tagName: t.tagName,
       taggerId: t.taggerId,
-      status: t.status,
       createdAt: t.createdAt,
     }));
 
@@ -44,30 +43,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { tagId, targetId } = await req.json();
-    if (!tagId || !targetId) {
-      return NextResponse.json({ error: "tagId and targetId are required" }, { status: 400 });
+    const { tagName, targetId } = await req.json();
+    if (!tagName || !targetId) {
+      return NextResponse.json({ error: "tagName and targetId are required" }, { status: 400 });
     }
 
     const response = await trustClient.addTagging(
-      { tagId, targetId },
+      { tagName, targetId },
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    return NextResponse.json({
-      success: response.success,
-      status: response.status,
-    });
+    return NextResponse.json({ success: response.success });
   } catch (error: unknown) {
     if (error instanceof ConnectError) {
-      if (error.code === 5) {
-        return NextResponse.json({ error: "Tag not found" }, { status: 404 });
+      if (error.code === 3) {
+        return NextResponse.json({ error: "Tag name is required" }, { status: 400 });
       }
       if (error.code === 6) {
         return NextResponse.json({ error: "Tagging already exists" }, { status: 409 });
-      }
-      if (error.code === 7) {
-        return NextResponse.json({ error: "Permission denied" }, { status: 403 });
       }
       if (error.code === 16) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

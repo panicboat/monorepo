@@ -3,17 +3,13 @@
 module Trust
   module UseCases
     module Taggings
-      class AddTagging
+      class ListMyTagNames
         include Trust::Deps[
           tagging_repo: "repositories.tagging_repository"
         ]
 
-        def call(tag_name:, tagger_id:, target_id:)
-          tagging_repo.add(
-            tag_name: tag_name.strip,
-            tagger_id: tagger_id,
-            target_id: target_id
-          )
+        def call(tagger_id:)
+          tagging_repo.list_tagger_tag_names(tagger_id: tagger_id)
         end
       end
     end

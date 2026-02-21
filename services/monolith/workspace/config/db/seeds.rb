@@ -758,87 +758,51 @@ end
 puts "  Created #{favorite_count} cast favorites"
 
 # =============================================================================
-# Trust: Tags & Taggings
+# Trust: Taggings (freeform tag_name)
 # =============================================================================
 
-puts "Seeding Trust: Tags & Taggings..."
+puts "Seeding Trust: Taggings..."
 
-tag_count = 0
 tagging_count = 0
 
 # Get user IDs from existing users
 yuna_user = db[:identity__users].where(phone_number: "09011111111").first
-mio_user = db[:identity__users].where(phone_number: "09022222222").first
 taro_user = db[:identity__users].where(phone_number: "08011111111").first
 jiro_user = db[:identity__users].where(phone_number: "08022222222").first
 
 if yuna_user && taro_user && jiro_user
-  # Yuna's tags (cast tags for guests)
-  [
-    { identity_id: yuna_user[:id], name: "VIP" },
-    { identity_id: yuna_user[:id], name: "Regular" },
-    { identity_id: yuna_user[:id], name: "First-timer" },
-  ].each do |tag_data|
-    existing = db[:"trust__tags"].where(identity_id: tag_data[:identity_id], name: tag_data[:name]).first
-    unless existing
-      db[:"trust__tags"].insert(tag_data.merge(created_at: Time.now, updated_at: Time.now))
-      tag_count += 1
-    end
+  # Taggings: Yuna tags Taro as "VIP" (cast→guest)
+  existing = db[:"trust__taggings"].where(tag_name: "VIP", tagger_id: yuna_user[:id], target_id: taro_user[:id]).first
+  unless existing
+    db[:"trust__taggings"].insert(
+      tag_name: "VIP", tagger_id: yuna_user[:id], target_id: taro_user[:id],
+      status: "approved", created_at: Time.now, updated_at: Time.now
+    )
+    tagging_count += 1
   end
 
-  # Taro's tags (guest tags for casts)
-  [
-    { identity_id: taro_user[:id], name: "Friendly" },
-    { identity_id: taro_user[:id], name: "Recommended" },
-  ].each do |tag_data|
-    existing = db[:"trust__tags"].where(identity_id: tag_data[:identity_id], name: tag_data[:name]).first
-    unless existing
-      db[:"trust__tags"].insert(tag_data.merge(created_at: Time.now, updated_at: Time.now))
-      tag_count += 1
-    end
+  # Taggings: Yuna tags Jiro as "First-timer" (cast→guest)
+  existing = db[:"trust__taggings"].where(tag_name: "First-timer", tagger_id: yuna_user[:id], target_id: jiro_user[:id]).first
+  unless existing
+    db[:"trust__taggings"].insert(
+      tag_name: "First-timer", tagger_id: yuna_user[:id], target_id: jiro_user[:id],
+      status: "approved", created_at: Time.now, updated_at: Time.now
+    )
+    tagging_count += 1
   end
 
-  # Taggings: Yuna tags Taro as "VIP" (cast→guest, auto-approved)
-  vip_tag = db[:"trust__tags"].where(identity_id: yuna_user[:id], name: "VIP").first
-  if vip_tag
-    existing = db[:"trust__taggings"].where(tag_id: vip_tag[:id], tagger_id: yuna_user[:id], target_id: taro_user[:id]).first
-    unless existing
-      db[:"trust__taggings"].insert(
-        tag_id: vip_tag[:id], tagger_id: yuna_user[:id], target_id: taro_user[:id],
-        status: "approved", created_at: Time.now, updated_at: Time.now
-      )
-      tagging_count += 1
-    end
-  end
-
-  # Taggings: Yuna tags Jiro as "First-timer" (cast→guest, auto-approved)
-  first_tag = db[:"trust__tags"].where(identity_id: yuna_user[:id], name: "First-timer").first
-  if first_tag
-    existing = db[:"trust__taggings"].where(tag_id: first_tag[:id], tagger_id: yuna_user[:id], target_id: jiro_user[:id]).first
-    unless existing
-      db[:"trust__taggings"].insert(
-        tag_id: first_tag[:id], tagger_id: yuna_user[:id], target_id: jiro_user[:id],
-        status: "approved", created_at: Time.now, updated_at: Time.now
-      )
-      tagging_count += 1
-    end
-  end
-
-  # Taggings: Taro tags Yuna as "Recommended" (guest→cast, pending approval)
-  rec_tag = db[:"trust__tags"].where(identity_id: taro_user[:id], name: "Recommended").first
-  if rec_tag && yuna_user
-    existing = db[:"trust__taggings"].where(tag_id: rec_tag[:id], tagger_id: taro_user[:id], target_id: yuna_user[:id]).first
-    unless existing
-      db[:"trust__taggings"].insert(
-        tag_id: rec_tag[:id], tagger_id: taro_user[:id], target_id: yuna_user[:id],
-        status: "pending", created_at: Time.now, updated_at: Time.now
-      )
-      tagging_count += 1
-    end
+  # Taggings: Taro tags Yuna as "Recommended" (guest→cast)
+  existing = db[:"trust__taggings"].where(tag_name: "Recommended", tagger_id: taro_user[:id], target_id: yuna_user[:id]).first
+  unless existing
+    db[:"trust__taggings"].insert(
+      tag_name: "Recommended", tagger_id: taro_user[:id], target_id: yuna_user[:id],
+      status: "approved", created_at: Time.now, updated_at: Time.now
+    )
+    tagging_count += 1
   end
 end
 
-puts "  Created #{tag_count} tags, #{tagging_count} taggings"
+puts "  Created #{tagging_count} taggings"
 
 # =============================================================================
 # Summary
