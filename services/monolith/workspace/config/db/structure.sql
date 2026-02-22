@@ -408,6 +408,23 @@ CREATE TABLE relationship.follows (
 
 
 --
+-- Name: reviews; Type: TABLE; Schema: trust; Owner: -
+--
+
+CREATE TABLE trust.reviews (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    reviewer_id uuid NOT NULL,
+    reviewee_id uuid NOT NULL,
+    content text,
+    score integer NOT NULL,
+    status text DEFAULT 'approved'::text NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT score_range CHECK (((score >= 1) AND (score <= 5)))
+);
+
+
+--
 -- Name: taggings; Type: TABLE; Schema: trust; Owner: -
 --
 
@@ -660,6 +677,14 @@ ALTER TABLE ONLY relationship.follows
 
 ALTER TABLE ONLY relationship.follows
     ADD CONSTRAINT cast_follows_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reviews reviews_pkey; Type: CONSTRAINT; Schema: trust; Owner: -
+--
+
+ALTER TABLE ONLY trust.reviews
+    ADD CONSTRAINT reviews_pkey PRIMARY KEY (id);
 
 
 --
@@ -966,6 +991,27 @@ CREATE INDEX social_cast_follows_status_index ON relationship.follows USING btre
 
 
 --
+-- Name: trust_reviews_reviewee_id_index; Type: INDEX; Schema: trust; Owner: -
+--
+
+CREATE INDEX trust_reviews_reviewee_id_index ON trust.reviews USING btree (reviewee_id);
+
+
+--
+-- Name: trust_reviews_reviewer_id_index; Type: INDEX; Schema: trust; Owner: -
+--
+
+CREATE INDEX trust_reviews_reviewer_id_index ON trust.reviews USING btree (reviewer_id);
+
+
+--
+-- Name: trust_reviews_status_index; Type: INDEX; Schema: trust; Owner: -
+--
+
+CREATE INDEX trust_reviews_status_index ON trust.reviews USING btree (status);
+
+
+--
 -- Name: trust_taggings_tagger_id_index; Type: INDEX; Schema: trust; Owner: -
 --
 
@@ -1138,4 +1184,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260218220000_remove_legacy_media_columns.rb'),
 ('20260220000001_create_trust_tags.rb'),
 ('20260220000002_create_trust_taggings.rb'),
-('20260221000001_refactor_trust_freeform_tagging.rb');
+('20260221000001_refactor_trust_freeform_tagging.rb'),
+('20260222000001_create_trust_reviews.rb');
