@@ -6,3 +6,4 @@ export { ReviewCard } from "./ReviewCard";
 export { ReviewList } from "./ReviewList";
 export { WriteReviewModal } from "./WriteReviewModal";
 export { PendingReviewsSection } from "./PendingReviewsSection";
+export { TrustSection } from "./TrustSection";

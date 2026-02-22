@@ -5,6 +5,7 @@ import { Loader2, UserPlus, Users, Check, X, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { getAuthToken } from "@/lib/swr";
 import { useFollowRequests } from "@/modules/relationship";
+import { PendingReviewsSection } from "@/modules/trust";
 import { useToast } from "@/components/ui/Toast";
 
 export default function CastHomePage() {
@@ -207,6 +208,11 @@ export default function CastHomePage() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* Pending Reviews Section */}
+      <section className="bg-surface border border-border rounded-xl p-4 shadow-sm">
+        <PendingReviewsSection />
       </section>
 
       {/* New Followers Section - Placeholder for now */}

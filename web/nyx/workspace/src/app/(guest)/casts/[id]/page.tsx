@@ -2,7 +2,7 @@
 
 import { CastDetailView } from "@/modules/portfolio/components/CastDetailView";
 import { CastTimeline } from "@/modules/feed";
-import { TrustTagsSection } from "@/modules/trust";
+import { TrustSection } from "@/modules/trust";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { use, useState, useEffect } from "react";
@@ -92,8 +92,8 @@ export default function CastDetailPage({
         schedules={data.schedules}
       />
 
-      {/* Trust Tags Section */}
-      <TrustTagsSectionWrapper castId={data.profile.id} />
+      {/* Trust Section (Tags + Reviews) */}
+      <TrustSectionWrapper castId={data.profile.id} castName={data.profile.name} />
 
       {/* Cast Timeline */}
       <CastTimeline castId={data.profile.id} />
@@ -185,18 +185,17 @@ function FollowButton({ castId }: { castId: string }) {
   );
 }
 
-function TrustTagsSectionWrapper({ castId }: { castId: string }) {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const isHydrated = useAuthStore((state) => state.isHydrated);
-
-  if (!isHydrated || !isAuthenticated()) {
-    return null;
-  }
-
+function TrustSectionWrapper({
+  castId,
+  castName,
+}: {
+  castId: string;
+  castName?: string;
+}) {
   return (
     <div className="mx-4 my-4">
       <div className="bg-surface rounded-xl border border-border p-4 shadow-sm">
-        <TrustTagsSection targetId={castId} />
+        <TrustSection targetId={castId} targetName={castName} showWriteReview />
       </div>
     </div>
   );
