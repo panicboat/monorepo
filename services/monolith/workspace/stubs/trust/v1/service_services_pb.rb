@@ -21,6 +21,15 @@ module Trust
         rpc :ListTargetTags, ::Trust::V1::ListTargetTagsRequest, ::Trust::V1::ListTargetTagsResponse
         # Suggestions
         rpc :ListMyTagNames, ::Trust::V1::ListMyTagNamesRequest, ::Trust::V1::ListMyTagNamesResponse
+        # Review RPCs
+        rpc :CreateReview, ::Trust::V1::CreateReviewRequest, ::Trust::V1::CreateReviewResponse
+        rpc :UpdateReview, ::Trust::V1::UpdateReviewRequest, ::Trust::V1::UpdateReviewResponse
+        rpc :DeleteReview, ::Trust::V1::DeleteReviewRequest, ::Trust::V1::DeleteReviewResponse
+        rpc :ListReviews, ::Trust::V1::ListReviewsRequest, ::Trust::V1::ListReviewsResponse
+        rpc :GetReviewStats, ::Trust::V1::GetReviewStatsRequest, ::Trust::V1::GetReviewStatsResponse
+        rpc :ApproveReview, ::Trust::V1::ApproveReviewRequest, ::Trust::V1::ApproveReviewResponse
+        rpc :RejectReview, ::Trust::V1::RejectReviewRequest, ::Trust::V1::RejectReviewResponse
+        rpc :ListPendingReviews, ::Trust::V1::ListPendingReviewsRequest, ::Trust::V1::ListPendingReviewsResponse
       end
 
       Stub = Service.rpc_stub_class

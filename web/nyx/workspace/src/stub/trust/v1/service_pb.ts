@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file trust/v1/service.proto.
  */
 export const file_trust_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("ChZ0cnVzdC92MS9zZXJ2aWNlLnByb3RvEgh0cnVzdC52MSJSCgtUYWdnaW5nSXRlbRIKCgJpZBgBIAEoCRIQCgh0YWdfbmFtZRgCIAEoCRIRCgl0YWdnZXJfaWQYAyABKAkSEgoKY3JlYXRlZF9hdBgEIAEoCSI4ChFBZGRUYWdnaW5nUmVxdWVzdBIQCgh0YWdfbmFtZRgBIAEoCRIRCgl0YXJnZXRfaWQYAiABKAkiJQoSQWRkVGFnZ2luZ1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiIgoUUmVtb3ZlVGFnZ2luZ1JlcXVlc3QSCgoCaWQYASABKAkiKAoVUmVtb3ZlVGFnZ2luZ1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiKgoVTGlzdFRhcmdldFRhZ3NSZXF1ZXN0EhEKCXRhcmdldF9pZBgBIAEoCSJBChZMaXN0VGFyZ2V0VGFnc1Jlc3BvbnNlEicKCHRhZ2dpbmdzGAEgAygLMhUudHJ1c3QudjEuVGFnZ2luZ0l0ZW0iFwoVTGlzdE15VGFnTmFtZXNSZXF1ZXN0IisKFkxpc3RNeVRhZ05hbWVzUmVzcG9uc2USEQoJdGFnX25hbWVzGAEgAygJMtMCCgxUcnVzdFNlcnZpY2USRwoKQWRkVGFnZ2luZxIbLnRydXN0LnYxLkFkZFRhZ2dpbmdSZXF1ZXN0GhwudHJ1c3QudjEuQWRkVGFnZ2luZ1Jlc3BvbnNlElAKDVJlbW92ZVRhZ2dpbmcSHi50cnVzdC52MS5SZW1vdmVUYWdnaW5nUmVxdWVzdBofLnRydXN0LnYxLlJlbW92ZVRhZ2dpbmdSZXNwb25zZRJTCg5MaXN0VGFyZ2V0VGFncxIfLnRydXN0LnYxLkxpc3RUYXJnZXRUYWdzUmVxdWVzdBogLnRydXN0LnYxLkxpc3RUYXJnZXRUYWdzUmVzcG9uc2USUwoOTGlzdE15VGFnTmFtZXMSHy50cnVzdC52MS5MaXN0TXlUYWdOYW1lc1JlcXVlc3QaIC50cnVzdC52MS5MaXN0TXlUYWdOYW1lc1Jlc3BvbnNlYgZwcm90bzM");
+  fileDesc("ChZ0cnVzdC92MS9zZXJ2aWNlLnByb3RvEgh0cnVzdC52MSJSCgtUYWdnaW5nSXRlbRIKCgJpZBgBIAEoCRIQCgh0YWdfbmFtZRgCIAEoCRIRCgl0YWdnZXJfaWQYAyABKAkSEgoKY3JlYXRlZF9hdBgEIAEoCSI4ChFBZGRUYWdnaW5nUmVxdWVzdBIQCgh0YWdfbmFtZRgBIAEoCRIRCgl0YXJnZXRfaWQYAiABKAkiJQoSQWRkVGFnZ2luZ1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiIgoUUmVtb3ZlVGFnZ2luZ1JlcXVlc3QSCgoCaWQYASABKAkiKAoVUmVtb3ZlVGFnZ2luZ1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiKgoVTGlzdFRhcmdldFRhZ3NSZXF1ZXN0EhEKCXRhcmdldF9pZBgBIAEoCSJBChZMaXN0VGFyZ2V0VGFnc1Jlc3BvbnNlEicKCHRhZ2dpbmdzGAEgAygLMhUudHJ1c3QudjEuVGFnZ2luZ0l0ZW0iFwoVTGlzdE15VGFnTmFtZXNSZXF1ZXN0IisKFkxpc3RNeVRhZ05hbWVzUmVzcG9uc2USEQoJdGFnX25hbWVzGAEgAygJIpMBCgZSZXZpZXcSCgoCaWQYASABKAkSEwoLcmV2aWV3ZXJfaWQYAiABKAkSEwoLcmV2aWV3ZWVfaWQYAyABKAkSFAoHY29udGVudBgEIAEoCUgAiAEBEg0KBXNjb3JlGAUgASgFEg4KBnN0YXR1cxgGIAEoCRISCgpjcmVhdGVkX2F0GAcgASgJQgoKCF9jb250ZW50IlIKC1Jldmlld1N0YXRzEhUKDWF2ZXJhZ2Vfc2NvcmUYASABKAESFQoNdG90YWxfcmV2aWV3cxgCIAEoBRIVCg1hcHByb3ZhbF9yYXRlGAMgASgFIlsKE0NyZWF0ZVJldmlld1JlcXVlc3QSEwoLcmV2aWV3ZWVfaWQYASABKAkSFAoHY29udGVudBgCIAEoCUgAiAEBEg0KBXNjb3JlGAMgASgFQgoKCF9jb250ZW50IjMKFENyZWF0ZVJldmlld1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSCgoCaWQYAiABKAkiUgoTVXBkYXRlUmV2aWV3UmVxdWVzdBIKCgJpZBgBIAEoCRIUCgdjb250ZW50GAIgASgJSACIAQESDQoFc2NvcmUYAyABKAVCCgoIX2NvbnRlbnQiJwoUVXBkYXRlUmV2aWV3UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCIhChNEZWxldGVSZXZpZXdSZXF1ZXN0EgoKAmlkGAEgASgJIicKFERlbGV0ZVJldmlld1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiSQoSTGlzdFJldmlld3NSZXF1ZXN0EhMKC3Jldmlld2VlX2lkGAEgASgJEhMKBnN0YXR1cxgCIAEoCUgAiAEBQgkKB19zdGF0dXMiOAoTTGlzdFJldmlld3NSZXNwb25zZRIhCgdyZXZpZXdzGAEgAygLMhAudHJ1c3QudjEuUmV2aWV3IiwKFUdldFJldmlld1N0YXRzUmVxdWVzdBITCgtyZXZpZXdlZV9pZBgBIAEoCSI+ChZHZXRSZXZpZXdTdGF0c1Jlc3BvbnNlEiQKBXN0YXRzGAEgASgLMhUudHJ1c3QudjEuUmV2aWV3U3RhdHMiIgoUQXBwcm92ZVJldmlld1JlcXVlc3QSCgoCaWQYASABKAkiKAoVQXBwcm92ZVJldmlld1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiIQoTUmVqZWN0UmV2aWV3UmVxdWVzdBIKCgJpZBgBIAEoCSInChRSZWplY3RSZXZpZXdSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIhsKGUxpc3RQZW5kaW5nUmV2aWV3c1JlcXVlc3QiPwoaTGlzdFBlbmRpbmdSZXZpZXdzUmVzcG9uc2USIQoHcmV2aWV3cxgBIAMoCzIQLnRydXN0LnYxLlJldmlldzLjBwoMVHJ1c3RTZXJ2aWNlEkcKCkFkZFRhZ2dpbmcSGy50cnVzdC52MS5BZGRUYWdnaW5nUmVxdWVzdBocLnRydXN0LnYxLkFkZFRhZ2dpbmdSZXNwb25zZRJQCg1SZW1vdmVUYWdnaW5nEh4udHJ1c3QudjEuUmVtb3ZlVGFnZ2luZ1JlcXVlc3QaHy50cnVzdC52MS5SZW1vdmVUYWdnaW5nUmVzcG9uc2USUwoOTGlzdFRhcmdldFRhZ3MSHy50cnVzdC52MS5MaXN0VGFyZ2V0VGFnc1JlcXVlc3QaIC50cnVzdC52MS5MaXN0VGFyZ2V0VGFnc1Jlc3BvbnNlElMKDkxpc3RNeVRhZ05hbWVzEh8udHJ1c3QudjEuTGlzdE15VGFnTmFtZXNSZXF1ZXN0GiAudHJ1c3QudjEuTGlzdE15VGFnTmFtZXNSZXNwb25zZRJNCgxDcmVhdGVSZXZpZXcSHS50cnVzdC52MS5DcmVhdGVSZXZpZXdSZXF1ZXN0Gh4udHJ1c3QudjEuQ3JlYXRlUmV2aWV3UmVzcG9uc2USTQoMVXBkYXRlUmV2aWV3Eh0udHJ1c3QudjEuVXBkYXRlUmV2aWV3UmVxdWVzdBoeLnRydXN0LnYxLlVwZGF0ZVJldmlld1Jlc3BvbnNlEk0KDERlbGV0ZVJldmlldxIdLnRydXN0LnYxLkRlbGV0ZVJldmlld1JlcXVlc3QaHi50cnVzdC52MS5EZWxldGVSZXZpZXdSZXNwb25zZRJKCgtMaXN0UmV2aWV3cxIcLnRydXN0LnYxLkxpc3RSZXZpZXdzUmVxdWVzdBodLnRydXN0LnYxLkxpc3RSZXZpZXdzUmVzcG9uc2USUwoOR2V0UmV2aWV3U3RhdHMSHy50cnVzdC52MS5HZXRSZXZpZXdTdGF0c1JlcXVlc3QaIC50cnVzdC52MS5HZXRSZXZpZXdTdGF0c1Jlc3BvbnNlElAKDUFwcHJvdmVSZXZpZXcSHi50cnVzdC52MS5BcHByb3ZlUmV2aWV3UmVxdWVzdBofLnRydXN0LnYxLkFwcHJvdmVSZXZpZXdSZXNwb25zZRJNCgxSZWplY3RSZXZpZXcSHS50cnVzdC52MS5SZWplY3RSZXZpZXdSZXF1ZXN0Gh4udHJ1c3QudjEuUmVqZWN0UmV2aWV3UmVzcG9uc2USXwoSTGlzdFBlbmRpbmdSZXZpZXdzEiMudHJ1c3QudjEuTGlzdFBlbmRpbmdSZXZpZXdzUmVxdWVzdBokLnRydXN0LnYxLkxpc3RQZW5kaW5nUmV2aWV3c1Jlc3BvbnNlYgZwcm90bzM");
 
 /**
  * @generated from message trust.v1.TaggingItem
@@ -182,6 +182,380 @@ export const ListMyTagNamesResponseSchema: GenMessage<ListMyTagNamesResponse> = 
   messageDesc(file_trust_v1_service, 8);
 
 /**
+ * @generated from message trust.v1.Review
+ */
+export type Review = Message<"trust.v1.Review"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string reviewer_id = 2;
+   */
+  reviewerId: string;
+
+  /**
+   * @generated from field: string reviewee_id = 3;
+   */
+  revieweeId: string;
+
+  /**
+   * @generated from field: optional string content = 4;
+   */
+  content?: string;
+
+  /**
+   * @generated from field: int32 score = 5;
+   */
+  score: number;
+
+  /**
+   * @generated from field: string status = 6;
+   */
+  status: string;
+
+  /**
+   * @generated from field: string created_at = 7;
+   */
+  createdAt: string;
+};
+
+/**
+ * Describes the message trust.v1.Review.
+ * Use `create(ReviewSchema)` to create a new message.
+ */
+export const ReviewSchema: GenMessage<Review> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 9);
+
+/**
+ * @generated from message trust.v1.ReviewStats
+ */
+export type ReviewStats = Message<"trust.v1.ReviewStats"> & {
+  /**
+   * @generated from field: double average_score = 1;
+   */
+  averageScore: number;
+
+  /**
+   * @generated from field: int32 total_reviews = 2;
+   */
+  totalReviews: number;
+
+  /**
+   * @generated from field: int32 approval_rate = 3;
+   */
+  approvalRate: number;
+};
+
+/**
+ * Describes the message trust.v1.ReviewStats.
+ * Use `create(ReviewStatsSchema)` to create a new message.
+ */
+export const ReviewStatsSchema: GenMessage<ReviewStats> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 10);
+
+/**
+ * Review requests/responses
+ *
+ * @generated from message trust.v1.CreateReviewRequest
+ */
+export type CreateReviewRequest = Message<"trust.v1.CreateReviewRequest"> & {
+  /**
+   * @generated from field: string reviewee_id = 1;
+   */
+  revieweeId: string;
+
+  /**
+   * @generated from field: optional string content = 2;
+   */
+  content?: string;
+
+  /**
+   * @generated from field: int32 score = 3;
+   */
+  score: number;
+};
+
+/**
+ * Describes the message trust.v1.CreateReviewRequest.
+ * Use `create(CreateReviewRequestSchema)` to create a new message.
+ */
+export const CreateReviewRequestSchema: GenMessage<CreateReviewRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 11);
+
+/**
+ * @generated from message trust.v1.CreateReviewResponse
+ */
+export type CreateReviewResponse = Message<"trust.v1.CreateReviewResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+
+  /**
+   * @generated from field: string id = 2;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message trust.v1.CreateReviewResponse.
+ * Use `create(CreateReviewResponseSchema)` to create a new message.
+ */
+export const CreateReviewResponseSchema: GenMessage<CreateReviewResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 12);
+
+/**
+ * @generated from message trust.v1.UpdateReviewRequest
+ */
+export type UpdateReviewRequest = Message<"trust.v1.UpdateReviewRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: optional string content = 2;
+   */
+  content?: string;
+
+  /**
+   * @generated from field: int32 score = 3;
+   */
+  score: number;
+};
+
+/**
+ * Describes the message trust.v1.UpdateReviewRequest.
+ * Use `create(UpdateReviewRequestSchema)` to create a new message.
+ */
+export const UpdateReviewRequestSchema: GenMessage<UpdateReviewRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 13);
+
+/**
+ * @generated from message trust.v1.UpdateReviewResponse
+ */
+export type UpdateReviewResponse = Message<"trust.v1.UpdateReviewResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message trust.v1.UpdateReviewResponse.
+ * Use `create(UpdateReviewResponseSchema)` to create a new message.
+ */
+export const UpdateReviewResponseSchema: GenMessage<UpdateReviewResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 14);
+
+/**
+ * @generated from message trust.v1.DeleteReviewRequest
+ */
+export type DeleteReviewRequest = Message<"trust.v1.DeleteReviewRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message trust.v1.DeleteReviewRequest.
+ * Use `create(DeleteReviewRequestSchema)` to create a new message.
+ */
+export const DeleteReviewRequestSchema: GenMessage<DeleteReviewRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 15);
+
+/**
+ * @generated from message trust.v1.DeleteReviewResponse
+ */
+export type DeleteReviewResponse = Message<"trust.v1.DeleteReviewResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message trust.v1.DeleteReviewResponse.
+ * Use `create(DeleteReviewResponseSchema)` to create a new message.
+ */
+export const DeleteReviewResponseSchema: GenMessage<DeleteReviewResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 16);
+
+/**
+ * @generated from message trust.v1.ListReviewsRequest
+ */
+export type ListReviewsRequest = Message<"trust.v1.ListReviewsRequest"> & {
+  /**
+   * @generated from field: string reviewee_id = 1;
+   */
+  revieweeId: string;
+
+  /**
+   * @generated from field: optional string status = 2;
+   */
+  status?: string;
+};
+
+/**
+ * Describes the message trust.v1.ListReviewsRequest.
+ * Use `create(ListReviewsRequestSchema)` to create a new message.
+ */
+export const ListReviewsRequestSchema: GenMessage<ListReviewsRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 17);
+
+/**
+ * @generated from message trust.v1.ListReviewsResponse
+ */
+export type ListReviewsResponse = Message<"trust.v1.ListReviewsResponse"> & {
+  /**
+   * @generated from field: repeated trust.v1.Review reviews = 1;
+   */
+  reviews: Review[];
+};
+
+/**
+ * Describes the message trust.v1.ListReviewsResponse.
+ * Use `create(ListReviewsResponseSchema)` to create a new message.
+ */
+export const ListReviewsResponseSchema: GenMessage<ListReviewsResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 18);
+
+/**
+ * @generated from message trust.v1.GetReviewStatsRequest
+ */
+export type GetReviewStatsRequest = Message<"trust.v1.GetReviewStatsRequest"> & {
+  /**
+   * @generated from field: string reviewee_id = 1;
+   */
+  revieweeId: string;
+};
+
+/**
+ * Describes the message trust.v1.GetReviewStatsRequest.
+ * Use `create(GetReviewStatsRequestSchema)` to create a new message.
+ */
+export const GetReviewStatsRequestSchema: GenMessage<GetReviewStatsRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 19);
+
+/**
+ * @generated from message trust.v1.GetReviewStatsResponse
+ */
+export type GetReviewStatsResponse = Message<"trust.v1.GetReviewStatsResponse"> & {
+  /**
+   * @generated from field: trust.v1.ReviewStats stats = 1;
+   */
+  stats?: ReviewStats;
+};
+
+/**
+ * Describes the message trust.v1.GetReviewStatsResponse.
+ * Use `create(GetReviewStatsResponseSchema)` to create a new message.
+ */
+export const GetReviewStatsResponseSchema: GenMessage<GetReviewStatsResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 20);
+
+/**
+ * @generated from message trust.v1.ApproveReviewRequest
+ */
+export type ApproveReviewRequest = Message<"trust.v1.ApproveReviewRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message trust.v1.ApproveReviewRequest.
+ * Use `create(ApproveReviewRequestSchema)` to create a new message.
+ */
+export const ApproveReviewRequestSchema: GenMessage<ApproveReviewRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 21);
+
+/**
+ * @generated from message trust.v1.ApproveReviewResponse
+ */
+export type ApproveReviewResponse = Message<"trust.v1.ApproveReviewResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message trust.v1.ApproveReviewResponse.
+ * Use `create(ApproveReviewResponseSchema)` to create a new message.
+ */
+export const ApproveReviewResponseSchema: GenMessage<ApproveReviewResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 22);
+
+/**
+ * @generated from message trust.v1.RejectReviewRequest
+ */
+export type RejectReviewRequest = Message<"trust.v1.RejectReviewRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message trust.v1.RejectReviewRequest.
+ * Use `create(RejectReviewRequestSchema)` to create a new message.
+ */
+export const RejectReviewRequestSchema: GenMessage<RejectReviewRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 23);
+
+/**
+ * @generated from message trust.v1.RejectReviewResponse
+ */
+export type RejectReviewResponse = Message<"trust.v1.RejectReviewResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message trust.v1.RejectReviewResponse.
+ * Use `create(RejectReviewResponseSchema)` to create a new message.
+ */
+export const RejectReviewResponseSchema: GenMessage<RejectReviewResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 24);
+
+/**
+ * @generated from message trust.v1.ListPendingReviewsRequest
+ */
+export type ListPendingReviewsRequest = Message<"trust.v1.ListPendingReviewsRequest"> & {
+};
+
+/**
+ * Describes the message trust.v1.ListPendingReviewsRequest.
+ * Use `create(ListPendingReviewsRequestSchema)` to create a new message.
+ */
+export const ListPendingReviewsRequestSchema: GenMessage<ListPendingReviewsRequest> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 25);
+
+/**
+ * @generated from message trust.v1.ListPendingReviewsResponse
+ */
+export type ListPendingReviewsResponse = Message<"trust.v1.ListPendingReviewsResponse"> & {
+  /**
+   * @generated from field: repeated trust.v1.Review reviews = 1;
+   */
+  reviews: Review[];
+};
+
+/**
+ * Describes the message trust.v1.ListPendingReviewsResponse.
+ * Use `create(ListPendingReviewsResponseSchema)` to create a new message.
+ */
+export const ListPendingReviewsResponseSchema: GenMessage<ListPendingReviewsResponse> = /*@__PURE__*/
+  messageDesc(file_trust_v1_service, 26);
+
+/**
  * @generated from service trust.v1.TrustService
  */
 export const TrustService: GenService<{
@@ -220,6 +594,72 @@ export const TrustService: GenService<{
     methodKind: "unary";
     input: typeof ListMyTagNamesRequestSchema;
     output: typeof ListMyTagNamesResponseSchema;
+  },
+  /**
+   * Review RPCs
+   *
+   * @generated from rpc trust.v1.TrustService.CreateReview
+   */
+  createReview: {
+    methodKind: "unary";
+    input: typeof CreateReviewRequestSchema;
+    output: typeof CreateReviewResponseSchema;
+  },
+  /**
+   * @generated from rpc trust.v1.TrustService.UpdateReview
+   */
+  updateReview: {
+    methodKind: "unary";
+    input: typeof UpdateReviewRequestSchema;
+    output: typeof UpdateReviewResponseSchema;
+  },
+  /**
+   * @generated from rpc trust.v1.TrustService.DeleteReview
+   */
+  deleteReview: {
+    methodKind: "unary";
+    input: typeof DeleteReviewRequestSchema;
+    output: typeof DeleteReviewResponseSchema;
+  },
+  /**
+   * @generated from rpc trust.v1.TrustService.ListReviews
+   */
+  listReviews: {
+    methodKind: "unary";
+    input: typeof ListReviewsRequestSchema;
+    output: typeof ListReviewsResponseSchema;
+  },
+  /**
+   * @generated from rpc trust.v1.TrustService.GetReviewStats
+   */
+  getReviewStats: {
+    methodKind: "unary";
+    input: typeof GetReviewStatsRequestSchema;
+    output: typeof GetReviewStatsResponseSchema;
+  },
+  /**
+   * @generated from rpc trust.v1.TrustService.ApproveReview
+   */
+  approveReview: {
+    methodKind: "unary";
+    input: typeof ApproveReviewRequestSchema;
+    output: typeof ApproveReviewResponseSchema;
+  },
+  /**
+   * @generated from rpc trust.v1.TrustService.RejectReview
+   */
+  rejectReview: {
+    methodKind: "unary";
+    input: typeof RejectReviewRequestSchema;
+    output: typeof RejectReviewResponseSchema;
+  },
+  /**
+   * @generated from rpc trust.v1.TrustService.ListPendingReviews
+   */
+  listPendingReviews: {
+    methodKind: "unary";
+    input: typeof ListPendingReviewsRequestSchema;
+    output: typeof ListPendingReviewsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_trust_v1_service, 0);

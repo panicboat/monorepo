@@ -10,6 +10,16 @@ service TrustService {
 
   // Suggestions
   rpc ListMyTagNames(ListMyTagNamesRequest) returns (ListMyTagNamesResponse);
+
+  // Review RPCs
+  rpc CreateReview(CreateReviewRequest) returns (CreateReviewResponse);
+  rpc UpdateReview(UpdateReviewRequest) returns (UpdateReviewResponse);
+  rpc DeleteReview(DeleteReviewRequest) returns (DeleteReviewResponse);
+  rpc ListReviews(ListReviewsRequest) returns (ListReviewsResponse);
+  rpc GetReviewStats(GetReviewStatsRequest) returns (GetReviewStatsResponse);
+  rpc ApproveReview(ApproveReviewRequest) returns (ApproveReviewResponse);
+  rpc RejectReview(RejectReviewRequest) returns (RejectReviewResponse);
+  rpc ListPendingReviews(ListPendingReviewsRequest) returns (ListPendingReviewsResponse);
 }
 
 // --- Tagging operations ---
@@ -52,4 +62,91 @@ message ListMyTagNamesRequest {}
 
 message ListMyTagNamesResponse {
   repeated string tag_names = 1;
+}
+
+// --- Review messages ---
+
+message Review {
+  string id = 1;
+  string reviewer_id = 2;
+  string reviewee_id = 3;
+  optional string content = 4;
+  int32 score = 5;
+  string status = 6;
+  string created_at = 7;
+}
+
+message ReviewStats {
+  double average_score = 1;
+  int32 total_reviews = 2;
+  int32 approval_rate = 3;
+}
+
+// Review requests/responses
+message CreateReviewRequest {
+  string reviewee_id = 1;
+  optional string content = 2;
+  int32 score = 3;
+}
+
+message CreateReviewResponse {
+  bool success = 1;
+  string id = 2;
+}
+
+message UpdateReviewRequest {
+  string id = 1;
+  optional string content = 2;
+  int32 score = 3;
+}
+
+message UpdateReviewResponse {
+  bool success = 1;
+}
+
+message DeleteReviewRequest {
+  string id = 1;
+}
+
+message DeleteReviewResponse {
+  bool success = 1;
+}
+
+message ListReviewsRequest {
+  string reviewee_id = 1;
+  optional string status = 2;
+}
+
+message ListReviewsResponse {
+  repeated Review reviews = 1;
+}
+
+message GetReviewStatsRequest {
+  string reviewee_id = 1;
+}
+
+message GetReviewStatsResponse {
+  ReviewStats stats = 1;
+}
+
+message ApproveReviewRequest {
+  string id = 1;
+}
+
+message ApproveReviewResponse {
+  bool success = 1;
+}
+
+message RejectReviewRequest {
+  string id = 1;
+}
+
+message RejectReviewResponse {
+  bool success = 1;
+}
+
+message ListPendingReviewsRequest {}
+
+message ListPendingReviewsResponse {
+  repeated Review reviews = 1;
 }
