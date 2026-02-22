@@ -71,7 +71,7 @@ export function ReviewCard({
             variant="default"
             onClick={() => onApprove?.(review.id)}
             disabled={actionLoading}
-            className="flex-1"
+            className="flex-1 bg-role-cast hover:bg-role-cast-hover text-white"
           >
             {actionLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
