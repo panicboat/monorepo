@@ -116,8 +116,9 @@ module Trust
         result = create_review_uc.call(
           reviewer_id: current_user_id,
           reviewee_id: request.message.reviewee_id,
-          content: request.message.content.presence,
-          score: score
+          content: request.message.content.to_s.empty? ? nil : request.message.content,
+          score: score,
+          is_cast_reviewer: !!find_my_cast
         )
 
         if result[:error] == :already_reviewed
@@ -134,7 +135,7 @@ module Trust
         result = update_review_uc.call(
           id: request.message.id,
           reviewee_id: current_user_id,
-          content: request.message.content.presence,
+          content: request.message.content.to_s.empty? ? nil : request.message.content,
           score: request.message.score
         )
 
@@ -167,7 +168,7 @@ module Trust
       def list_reviews
         reviews = list_reviews_uc.call(
           reviewee_id: request.message.reviewee_id,
-          status: request.message.status.presence
+          status: request.message.status.to_s.empty? ? nil : request.message.status
         )
 
         items = reviews.map { |r| build_review_proto(r) }
@@ -241,15 +242,31 @@ module Trust
       private
 
       def build_review_proto(review)
+        # Support both ROM::Struct (method access) and Hash (symbol access)
+        id = review.respond_to?(:id) ? review.id : review[:id]
+        reviewer_id = review.respond_to?(:reviewer_id) ? review.reviewer_id : review[:reviewer_id]
+        reviewee_id = review.respond_to?(:reviewee_id) ? review.reviewee_id : review[:reviewee_id]
+        content = review.respond_to?(:content) ? review.content : review[:content]
+        score = review.respond_to?(:score) ? review.score : review[:score]
+        status = review.respond_to?(:status) ? review.status : review[:status]
+        created_at = review.respond_to?(:created_at) ? review.created_at : review[:created_at]
+
         ::Trust::V1::Review.new(
-          id: review[:id],
-          reviewer_id: review[:reviewer_id],
-          reviewee_id: review[:reviewee_id],
-          content: review[:content] || "",
-          score: review[:score],
-          status: review[:status],
-          created_at: review[:created_at]&.iso8601 || ""
+          id: id,
+          reviewer_id: reviewer_id,
+          reviewee_id: reviewee_id,
+          content: content || "",
+          score: score,
+          status: status,
+          created_at: format_time(created_at)
         )
+      end
+
+      def format_time(time)
+        return "" if time.nil?
+        return time if time.is_a?(String)
+
+        time.iso8601
       end
     end
   end
