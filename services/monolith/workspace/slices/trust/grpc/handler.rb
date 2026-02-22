@@ -30,6 +30,17 @@ module Trust
         cast_adapter.find_by_user_id(current_user_id)
       end
 
+      def authenticate_cast!
+        authenticate_user!
+
+        return if find_my_cast
+
+        raise GRPC::BadStatus.new(
+          GRPC::Core::StatusCodes::PERMISSION_DENIED,
+          "Cast access required"
+        )
+      end
+
       def find_my_guest
         return nil unless current_user_id
 
