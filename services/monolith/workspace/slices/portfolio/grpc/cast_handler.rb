@@ -144,8 +144,7 @@ module Portfolio
           name: request.message.name,
           bio: request.message.bio,
           tagline: request.message.tagline,
-          default_schedule_start: request.message.default_schedule_start,
-          default_schedule_end: request.message.default_schedule_end,
+          default_schedules: default_schedules_from_proto(request.message.default_schedules),
           social_links: ProfilePresenter.social_links_from_proto(request.message.social_links),
           age: request.message.age.zero? ? nil : request.message.age,
           height: request.message.height.zero? ? nil : request.message.height,
@@ -177,8 +176,7 @@ module Portfolio
           bio: request.message.bio,
           slug: request.message.slug.to_s.empty? ? nil : request.message.slug,
           tagline: request.message.tagline,
-          default_schedule_start: request.message.default_schedule_start,
-          default_schedule_end: request.message.default_schedule_end,
+          default_schedules: default_schedules_from_proto(request.message.default_schedules),
           social_links: ProfilePresenter.social_links_from_proto(request.message.social_links),
           age: request.message.age.zero? ? nil : request.message.age,
           height: request.message.height.zero? ? nil : request.message.height,
@@ -364,6 +362,14 @@ module Portfolio
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Cast profile not found")
         end
         cast
+      end
+
+      def default_schedules_from_proto(proto_schedules)
+        return nil if proto_schedules.nil? || proto_schedules.empty?
+
+        proto_schedules.map do |s|
+          { start: s.start, end: s.end }
+        end
       end
     end
   end
