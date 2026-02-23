@@ -6,6 +6,7 @@ import useSWR from "swr";
 import { fetcher, getAuthToken } from "@/lib/swr";
 import { useToast } from "@/components/ui/Toast";
 import { TrustTagsSection, WriteTrustModal, useReviews, useReviewStats, ReviewList, ReviewStatsDisplay } from "@/modules/trust";
+import { useBlockedBy } from "@/modules/relationship";
 
 interface GuestDetail {
   id: string;
@@ -39,6 +40,7 @@ export default function GuestDetailPage({
   const { createReview } = useReviews();
   const { reviews, fetchReviews, loading: reviewsLoading } = useReviews();
   const { stats, loading: statsLoading } = useReviewStats(id);
+  const { blockers, loading: blockersLoading } = useBlockedBy(id);
   const [showTrustModal, setShowTrustModal] = useState(false);
 
   useEffect(() => {
@@ -276,6 +278,48 @@ export default function GuestDetailPage({
             </button>
           )}
         </div>
+
+        {/* Blocked By Section */}
+        {blockers.length > 0 && (
+          <div className="bg-surface rounded-xl border border-border p-4 shadow-sm">
+            <h3 className="text-sm font-medium text-text-secondary mb-3">
+              ブロック中のキャスト
+            </h3>
+            {blockersLoading ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-text-muted" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {blockers.map((blocker) => (
+                  <div key={blocker.id} className="flex items-center gap-3">
+                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-secondary">
+                      {blocker.imageUrl ? (
+                        <img
+                          src={blocker.imageUrl}
+                          alt={blocker.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-text-muted">
+                          <Users className="h-5 w-5" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-text-primary truncate">
+                        {blocker.name}
+                      </p>
+                      <p className="text-xs text-text-muted">
+                        {formatDate(blocker.blockedAt)} からブロック中
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Write Trust Modal */}
