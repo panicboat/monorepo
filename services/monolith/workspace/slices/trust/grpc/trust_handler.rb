@@ -130,11 +130,10 @@ module Trust
 
       def update_review
         authenticate_user!
-        authenticate_cast!
 
         result = update_review_uc.call(
           id: request.message.id,
-          reviewee_id: current_user_id,
+          reviewer_id: current_user_id,
           content: request.message.content.to_s.empty? ? nil : request.message.content,
           score: request.message.score
         )
@@ -190,11 +189,11 @@ module Trust
 
       def approve_review
         authenticate_user!
-        authenticate_cast!
+        my_cast = authenticate_cast!
 
         result = approve_review_uc.call(
           id: request.message.id,
-          reviewee_id: current_user_id
+          reviewee_id: my_cast.id
         )
 
         if result[:error] == :not_found
@@ -210,11 +209,11 @@ module Trust
 
       def reject_review
         authenticate_user!
-        authenticate_cast!
+        my_cast = authenticate_cast!
 
         result = reject_review_uc.call(
           id: request.message.id,
-          reviewee_id: current_user_id
+          reviewee_id: my_cast.id
         )
 
         if result[:error] == :not_found
@@ -230,18 +229,41 @@ module Trust
 
       def list_pending_reviews
         authenticate_user!
-        authenticate_cast!
+        my_cast = authenticate_cast!
 
-        reviews = list_pending_reviews_uc.call(reviewee_id: current_user_id)
+        reviews = list_pending_reviews_uc.call(reviewee_id: my_cast.id)
 
-        items = reviews.map { |r| build_review_proto(r) }
+        # Collect reviewer IDs (these are user_ids from guests)
+        reviewer_ids = reviews.map do |r|
+          r.respond_to?(:reviewer_id) ? r.reviewer_id : r[:reviewer_id]
+        end.compact.uniq
+
+        # Fetch guest profiles by user IDs
+        guests_by_user_id = guest_adapter.find_by_user_ids(reviewer_ids)
+
+        # Fetch avatar media for guests
+        avatar_media_ids = guests_by_user_id.values.map(&:avatar_media_id).compact
+        media_files = media_adapter.find_by_ids(avatar_media_ids)
+
+        items = reviews.map do |r|
+          reviewer_id = r.respond_to?(:reviewer_id) ? r.reviewer_id : r[:reviewer_id]
+          guest = guests_by_user_id[reviewer_id]
+          avatar_url = guest&.avatar_media_id ? media_files[guest.avatar_media_id]&.url : nil
+
+          build_review_proto(
+            r,
+            reviewer_name: guest&.name,
+            reviewer_avatar_url: avatar_url,
+            reviewer_profile_id: guest&.id
+          )
+        end
 
         ::Trust::V1::ListPendingReviewsResponse.new(reviews: items)
       end
 
       private
 
-      def build_review_proto(review)
+      def build_review_proto(review, reviewer_name: nil, reviewer_avatar_url: nil, reviewer_profile_id: nil)
         # Support both ROM::Struct (method access) and Hash (symbol access)
         id = review.respond_to?(:id) ? review.id : review[:id]
         reviewer_id = review.respond_to?(:reviewer_id) ? review.reviewer_id : review[:reviewer_id]
@@ -258,7 +280,10 @@ module Trust
           content: content || "",
           score: score,
           status: status,
-          created_at: format_time(created_at)
+          created_at: format_time(created_at),
+          reviewer_name: reviewer_name,
+          reviewer_avatar_url: reviewer_avatar_url,
+          reviewer_profile_id: reviewer_profile_id
         )
       end
 

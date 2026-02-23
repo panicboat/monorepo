@@ -52,27 +52,19 @@ export function PendingReviewsSection() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-6">
-        <Loader2 className="h-5 w-5 animate-spin text-text-muted" />
-      </div>
-    );
-  }
-
-  if (pendingReviews.length === 0) {
+  if (loading || pendingReviews.length === 0) {
     return null;
   }
 
   return (
-    <div className="space-y-4">
+    <section className="bg-surface border border-border rounded-xl p-4 shadow-sm space-y-4">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <MessageSquare className="h-4 w-4 text-text-muted" />
+        <MessageSquare className="h-4 w-4 text-role-cast" />
         <h4 className="text-sm font-bold text-text-primary">
           承認待ちのレビュー
-          <span className="ml-1 text-xs text-text-muted font-normal">
-            ({pendingReviews.length}件)
+          <span className="ml-2 px-2 py-0.5 text-xs bg-role-cast text-white rounded-full">
+            {pendingReviews.length}
           </span>
         </h4>
       </div>
@@ -90,6 +82,6 @@ export function PendingReviewsSection() {
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 }

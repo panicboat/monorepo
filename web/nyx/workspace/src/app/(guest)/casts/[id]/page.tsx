@@ -2,11 +2,11 @@
 
 import { CastDetailView } from "@/modules/portfolio/components/CastDetailView";
 import { CastTimeline } from "@/modules/feed";
-import { TrustSection } from "@/modules/trust";
+import { TrustSection, WriteTrustModal, useReviews, useReviewStats } from "@/modules/trust";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { use, useState, useEffect } from "react";
-import { Heart, Loader2, UserPlus, UserCheck, Clock } from "lucide-react";
+import { use, useState, useEffect, useCallback } from "react";
+import { Heart, Loader2, UserPlus, UserCheck, Clock, Edit3 } from "lucide-react";
 import { useFollow, useFavorite } from "@/modules/relationship";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
@@ -99,13 +99,7 @@ export default function CastDetailPage({
       <CastTimeline castId={data.profile.id} />
 
       {/* Floating Action Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex w-full max-w-md justify-end px-4 pb-24 pointer-events-none">
-        <div className="flex flex-col gap-3 pointer-events-auto">
-          <FollowButton castId={data.profile.id} />
-
-          <FavoriteButton castId={data.profile.id} />
-        </div>
-      </div>
+      <FloatingActionButtons castId={data.profile.id} castName={data.profile.name} />
     </div>
   );
 }
@@ -195,7 +189,7 @@ function TrustSectionWrapper({
   return (
     <div className="mx-4 my-4">
       <div className="bg-surface rounded-xl border border-border p-4 shadow-sm">
-        <TrustSection targetId={castId} targetName={castName} showWriteReview />
+        <TrustSection targetId={castId} targetName={castName} showWriteReview={false} />
       </div>
     </div>
   );
@@ -252,5 +246,66 @@ function FavoriteButton({ castId }: { castId: string }) {
         </motion.div>
       </Button>
     </motion.div>
+  );
+}
+
+function FloatingActionButtons({
+  castId,
+  castName,
+}: {
+  castId: string;
+  castName?: string;
+}) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const [showTrustModal, setShowTrustModal] = useState(false);
+
+  const { createReview, fetchReviews } = useReviews();
+  const { mutate: refreshStats } = useReviewStats(castId);
+
+  const handleSubmitReview = useCallback(async (score: number, content: string) => {
+    await createReview({ revieweeId: castId, score, content });
+    await fetchReviews(castId, "approved");
+    refreshStats();
+  }, [createReview, castId, fetchReviews, refreshStats]);
+
+  const isLoggedIn = isHydrated && isAuthenticated();
+
+  return (
+    <>
+      <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex w-full max-w-md justify-end px-4 pb-24 pointer-events-none">
+        <div className="flex flex-col gap-3 pointer-events-auto">
+          <FollowButton castId={castId} />
+          <FavoriteButton castId={castId} />
+
+          {/* Write Trust Button */}
+          {isLoggedIn && (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="icon"
+                onClick={() => setShowTrustModal(true)}
+                className="h-12 w-12 rounded-full shadow-xl shadow-border transition-colors border bg-info border-info text-white hover:bg-info-hover"
+                aria-label="ノートを残す"
+              >
+                <Edit3 size={24} />
+              </Button>
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Write Trust Modal */}
+      {isLoggedIn && (
+        <WriteTrustModal
+          isOpen={showTrustModal}
+          onClose={() => setShowTrustModal(false)}
+          targetId={castId}
+          targetName={castName || "キャスト"}
+          onSubmitReview={handleSubmitReview}
+          contentRequired={true}
+          isCastReview={false}
+        />
+      )}
+    </>
   );
 }

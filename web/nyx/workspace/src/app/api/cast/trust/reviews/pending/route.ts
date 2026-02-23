@@ -22,6 +22,9 @@ export async function GET(req: NextRequest) {
       score: r.score,
       status: r.status,
       createdAt: r.createdAt,
+      reviewerName: r.reviewerName,
+      reviewerAvatarUrl: r.reviewerAvatarUrl,
+      reviewerProfileId: r.reviewerProfileId,
     }));
 
     return NextResponse.json({ reviews });

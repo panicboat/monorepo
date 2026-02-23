@@ -4,12 +4,19 @@ import { X, Loader2 } from "lucide-react";
 
 interface TagPillProps {
   name: string;
+  variant?: "default" | "cast" | "guest";
   onRemove?: () => void;
   removing?: boolean;
 }
 
-export function TagPill({ name, onRemove, removing }: TagPillProps) {
-  const baseClasses = "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold bg-surface-secondary text-text-secondary";
+export function TagPill({ name, variant = "default", onRemove, removing }: TagPillProps) {
+  const variantClasses = {
+    default: "bg-surface-secondary text-text-secondary",
+    cast: "bg-role-cast/10 text-role-cast",
+    guest: "bg-info/10 text-info",
+  };
+
+  const baseClasses = `inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold ${variantClasses[variant]}`;
 
   return (
     <span className={baseClasses}>

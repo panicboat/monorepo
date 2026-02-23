@@ -204,13 +204,13 @@ export const ProfileSpecs = ({
           </div>
         )}
 
-      {/* Tags */}
+      {/* Tags (Cast's own tags - displayed in pink/cast color) */}
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2 pt-2">
           {tags.map((tag) => (
             <span
               key={tag}
-              className="px-3 py-1 rounded-full bg-surface-secondary text-xs text-text-secondary font-medium"
+              className="px-3 py-1 rounded-full bg-role-cast/10 text-xs text-role-cast font-bold"
             >
               {tag.startsWith("#") ? tag : `#${tag}`}
             </span>

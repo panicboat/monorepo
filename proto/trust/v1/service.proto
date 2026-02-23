@@ -74,6 +74,10 @@ message Review {
   int32 score = 5;
   string status = 6;
   string created_at = 7;
+  // Reviewer profile info (populated for pending reviews)
+  optional string reviewer_name = 8;
+  optional string reviewer_avatar_url = 9;
+  optional string reviewer_profile_id = 10; // Guest profile ID for linking
 }
 
 message ReviewStats {

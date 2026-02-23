@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Plus, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -19,6 +19,7 @@ export function TagSelector({
   loading,
 }: TagSelectorProps) {
   const [input, setInput] = useState("");
+  const isComposingRef = useRef(false);
 
   const handleAdd = () => {
     const name = input.trim();
@@ -28,10 +29,18 @@ export function TagSelector({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !isComposingRef.current) {
       e.preventDefault();
       handleAdd();
     }
+  };
+
+  const handleCompositionStart = () => {
+    isComposingRef.current = true;
+  };
+
+  const handleCompositionEnd = () => {
+    isComposingRef.current = false;
   };
 
   const unappliedSuggestions = suggestions.filter(
@@ -51,6 +60,8 @@ export function TagSelector({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
             placeholder="タグを追加..."
             disabled={loading}
             className="pl-7 pr-4 font-bold focus-visible:ring-role-cast"

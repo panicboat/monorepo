@@ -1,6 +1,7 @@
 "use client";
 
-import { Star, Check, X, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Star, Check, X, Loader2, User } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import { Review } from "../types";
@@ -31,6 +32,23 @@ function StarRating({ score }: { score: number }) {
   );
 }
 
+function ReviewerAvatar({ url, name }: { url?: string; name?: string }) {
+  if (url) {
+    return (
+      <img
+        src={url}
+        alt={name || "Reviewer"}
+        className="h-8 w-8 rounded-full object-cover border border-border"
+      />
+    );
+  }
+  return (
+    <div className="h-8 w-8 rounded-full bg-info/10 flex items-center justify-center">
+      <User className="h-4 w-4 text-info" />
+    </div>
+  );
+}
+
 export function ReviewCard({
   review,
   showActions = false,
@@ -43,13 +61,48 @@ export function ReviewCard({
     locale: ja,
   });
 
+  const hasReviewerInfo = review.reviewerName || review.reviewerAvatarUrl;
+
   return (
     <div className="rounded-lg border border-border-primary bg-bg-primary p-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <StarRating score={review.score} />
-        <span className="text-xs text-text-muted">{timeAgo}</span>
-      </div>
+      {/* Reviewer Info (shown for pending reviews with reviewer data) */}
+      {hasReviewerInfo && (
+        <div className="flex items-center gap-3 mb-3">
+          {review.reviewerProfileId ? (
+            <Link
+              href={`/cast/guests/${review.reviewerProfileId}`}
+              className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+            >
+              <ReviewerAvatar url={review.reviewerAvatarUrl} name={review.reviewerName} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-text-primary truncate">
+                  {review.reviewerName || "ゲスト"}
+                </p>
+                <p className="text-xs text-text-muted">{timeAgo}</p>
+              </div>
+            </Link>
+          ) : (
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <ReviewerAvatar url={review.reviewerAvatarUrl} name={review.reviewerName} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-text-primary truncate">
+                  {review.reviewerName || "ゲスト"}
+                </p>
+                <p className="text-xs text-text-muted">{timeAgo}</p>
+              </div>
+            </div>
+          )}
+          <StarRating score={review.score} />
+        </div>
+      )}
+
+      {/* Header (shown when no reviewer info) */}
+      {!hasReviewerInfo && (
+        <div className="flex items-center justify-between mb-2">
+          <StarRating score={review.score} />
+          <span className="text-xs text-text-muted">{timeAgo}</span>
+        </div>
+      )}
 
       {/* Content */}
       {review.content && (

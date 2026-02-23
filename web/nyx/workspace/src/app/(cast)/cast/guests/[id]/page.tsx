@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, use } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2, Users, Ban, ArrowLeft, Check } from "lucide-react";
+import { Loader2, Users, Ban, Check, Edit3 } from "lucide-react";
 import useSWR from "swr";
 import { fetcher, getAuthToken } from "@/lib/swr";
 import { useToast } from "@/components/ui/Toast";
-import { TrustTagsSection } from "@/modules/trust";
+import { TrustTagsSection, WriteTrustModal, useReviews } from "@/modules/trust";
 
 interface GuestDetail {
   id: string;
@@ -26,7 +25,6 @@ export default function GuestDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const router = useRouter();
   const { toast } = useToast();
   const token = getAuthToken();
   const [isBlocking, setIsBlocking] = useState(false);
@@ -37,6 +35,13 @@ export default function GuestDetailPage({
     fetcher,
     { revalidateOnFocus: false }
   );
+
+  const { createReview } = useReviews();
+  const [showTrustModal, setShowTrustModal] = useState(false);
+
+  const handleSubmitReview = async (score: number, content: string) => {
+    await createReview({ revieweeId: id, score, content: content || undefined });
+  };
 
   const handleBlock = async () => {
     if (isBlocking || !data) return;
@@ -141,18 +146,10 @@ export default function GuestDetailPage({
 
   return (
     <div className="pb-24 bg-surface-secondary min-h-screen">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-surface border-b border-border px-4 py-3 flex items-center gap-3">
-        <button
-          onClick={() => router.back()}
-          className="p-2 -ml-2 rounded-full hover:bg-surface-secondary transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5 text-text-primary" />
-        </button>
-        <h1 className="text-lg font-bold">ゲスト詳細</h1>
-      </div>
-
       <div className="px-4 py-6 space-y-6">
+        <div className="mb-2">
+          <h1 className="text-2xl font-bold mb-1">ゲスト詳細</h1>
+        </div>
         {/* Profile Section */}
         <div className="bg-surface rounded-xl border border-border p-6 shadow-sm">
           <div className="flex flex-col items-center text-center">
@@ -188,6 +185,15 @@ export default function GuestDetailPage({
                 <span>{formatDate(data.followedAt)} からフォロー中</span>
               </div>
             )}
+
+            {/* Write Note Button */}
+            <button
+              onClick={() => setShowTrustModal(true)}
+              className="mt-4 flex items-center justify-center gap-2 w-12 h-12 rounded-full bg-info text-white shadow-lg hover:bg-info-hover transition-colors"
+              aria-label="ノートを残す"
+            >
+              <Edit3 className="h-5 w-5" />
+            </button>
           </div>
         </div>
 
@@ -248,6 +254,17 @@ export default function GuestDetailPage({
           )}
         </div>
       </div>
+
+      {/* Write Trust Modal */}
+      <WriteTrustModal
+        isOpen={showTrustModal}
+        onClose={() => setShowTrustModal(false)}
+        targetId={id}
+        targetName={data.name || "ゲスト"}
+        onSubmitReview={handleSubmitReview}
+        contentRequired={false}
+        isCastReview={true}
+      />
     </div>
   );
 }

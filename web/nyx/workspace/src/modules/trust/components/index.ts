@@ -5,5 +5,6 @@ export { ReviewStatsDisplay } from "./ReviewStatsDisplay";
 export { ReviewCard } from "./ReviewCard";
 export { ReviewList } from "./ReviewList";
 export { WriteReviewModal } from "./WriteReviewModal";
+export { WriteTrustModal } from "./WriteTrustModal";
 export { PendingReviewsSection } from "./PendingReviewsSection";
 export { TrustSection } from "./TrustSection";

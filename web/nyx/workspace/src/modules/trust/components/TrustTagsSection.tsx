@@ -114,13 +114,14 @@ export function TrustTagsSection({ targetId }: TrustTagsSectionProps) {
         <h4 className="text-sm font-bold text-text-primary">ノートタグ</h4>
       </div>
 
-      {/* Tags */}
+      {/* Tags (Cast's tags for the guest - displayed in pink/cast color) */}
       {targetTaggings.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {targetTaggings.map((tagging) => (
             <TagPill
               key={tagging.id}
               name={tagging.tagName}
+              variant="cast"
               onRemove={() => handleRemove(tagging.id)}
               removing={removingIds.has(tagging.id)}
             />

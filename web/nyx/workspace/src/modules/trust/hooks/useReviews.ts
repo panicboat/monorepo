@@ -9,7 +9,9 @@ export function useReviews() {
   const [loading, setLoading] = useState(false);
 
   const fetchReviews = useCallback(async (revieweeId: string, status?: string) => {
-    if (!getAuthToken()) return [];
+    if (!getAuthToken()) {
+      throw new Error("Authentication required");
+    }
 
     setLoading(true);
     try {
@@ -18,8 +20,8 @@ export function useReviews() {
         url += `&status=${status}`;
       }
       const data = await authFetch<ListReviewsResponse>(url);
-      setReviews(data.reviews || []);
-      return data.reviews || [];
+      setReviews(data.reviews);
+      return data.reviews;
     } catch (e) {
       console.error("Fetch reviews error:", e);
       throw e;
@@ -29,7 +31,9 @@ export function useReviews() {
   }, []);
 
   const createReview = useCallback(async (request: CreateReviewRequest) => {
-    if (!getAuthToken()) return null;
+    if (!getAuthToken()) {
+      throw new Error("Authentication required");
+    }
 
     setLoading(true);
     try {

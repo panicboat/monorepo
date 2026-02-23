@@ -13,6 +13,10 @@ export interface Review {
   score: number;
   status: "pending" | "approved" | "rejected";
   createdAt: string;
+  // Reviewer profile info (populated for pending reviews)
+  reviewerName?: string;
+  reviewerAvatarUrl?: string;
+  reviewerProfileId?: string; // Guest profile ID for linking
 }
 
 export interface ReviewStats {

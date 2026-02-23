@@ -156,7 +156,7 @@ export function CommentForm({
           size="sm"
           disabled={!canSubmit}
           aria-label={isReply ? "Submit reply" : "Submit comment"}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 bg-info text-white hover:bg-info-hover"
         >
           {isProcessing ? (
             <Loader2 aria-hidden="true" size={14} className="animate-spin" />

@@ -211,9 +211,7 @@ export default function CastHomePage() {
       </section>
 
       {/* Pending Reviews Section */}
-      <section className="bg-surface border border-border rounded-xl p-4 shadow-sm">
-        <PendingReviewsSection />
-      </section>
+      <PendingReviewsSection />
 
       {/* New Followers Section - Placeholder for now */}
       <section>

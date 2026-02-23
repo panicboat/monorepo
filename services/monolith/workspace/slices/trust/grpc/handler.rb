@@ -6,6 +6,7 @@ require "gruf"
 require_relative "../../../lib/grpc/authenticatable"
 require_relative "../../post/adapters/cast_adapter"
 require_relative "../../post/adapters/guest_adapter"
+require_relative "../../post/adapters/media_adapter"
 
 module Trust
   module Grpc
@@ -24,6 +25,10 @@ module Trust
         @guest_adapter ||= Post::Adapters::GuestAdapter.new
       end
 
+      def media_adapter
+        @media_adapter ||= Post::Adapters::MediaAdapter.new
+      end
+
       def find_my_cast
         return nil unless current_user_id
 
@@ -33,7 +38,8 @@ module Trust
       def authenticate_cast!
         authenticate_user!
 
-        return if find_my_cast
+        cast = find_my_cast
+        return cast if cast
 
         raise GRPC::BadStatus.new(
           GRPC::Core::StatusCodes::PERMISSION_DENIED,
