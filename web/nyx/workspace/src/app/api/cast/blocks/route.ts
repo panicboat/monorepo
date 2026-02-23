@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     }
 
     const response = await blockClient.blockUser(
-      { blockedId, blockedType },
+      { blockedId, blockedType, blockerType: "cast" },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

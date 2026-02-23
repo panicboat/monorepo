@@ -21,6 +21,7 @@ message BlockedUser {
 message BlockUserRequest {
   string blocked_id = 1;
   string blocked_type = 2; // "guest" or "cast"
+  string blocker_type = 3; // "guest" or "cast" (optional, specifies which profile is blocking)
 }
 
 message BlockUserResponse {

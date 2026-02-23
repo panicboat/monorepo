@@ -235,45 +235,6 @@ export default function GuestDetailPage({
           />
         </div>
 
-        {/* Actions Section */}
-        <div className="bg-surface rounded-xl border border-border p-4 shadow-sm space-y-3">
-          <h3 className="text-sm font-medium text-text-secondary mb-2">
-            アクション
-          </h3>
-
-          {data.isBlocked ? (
-            <button
-              onClick={handleUnblock}
-              disabled={isUnblocking}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-border bg-surface text-text-primary transition-colors hover:bg-surface-secondary disabled:opacity-50"
-            >
-              {isUnblocking ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <>
-                  <Ban className="h-5 w-5" />
-                  <span>ブロックを解除する</span>
-                </>
-              )}
-            </button>
-          ) : (
-            <button
-              onClick={handleBlock}
-              disabled={isBlocking}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-error/30 bg-error/5 text-error transition-colors hover:bg-error/10 disabled:opacity-50"
-            >
-              {isBlocking ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <>
-                  <Ban className="h-5 w-5" />
-                  <span>ブロックする</span>
-                </>
-              )}
-            </button>
-          )}
-        </div>
-
         {/* Blocked By Section */}
         {blockers.length > 0 && (
           <div className="bg-surface rounded-xl border border-border p-4 shadow-sm">
@@ -315,6 +276,45 @@ export default function GuestDetailPage({
             )}
           </div>
         )}
+
+        {/* Actions Section */}
+        <div className="bg-surface rounded-xl border border-border p-4 shadow-sm space-y-3">
+          <h3 className="text-sm font-medium text-text-secondary mb-2">
+            アクション
+          </h3>
+
+          {data.isBlocked ? (
+            <button
+              onClick={handleUnblock}
+              disabled={isUnblocking}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-border bg-surface text-text-primary transition-colors hover:bg-surface-secondary disabled:opacity-50"
+            >
+              {isUnblocking ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  <Ban className="h-5 w-5" />
+                  <span>ブロックを解除する</span>
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={handleBlock}
+              disabled={isBlocking}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-error/30 bg-error/5 text-error transition-colors hover:bg-error/10 disabled:opacity-50"
+            >
+              {isBlocking ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  <Ban className="h-5 w-5" />
+                  <span>ブロックする</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Write Trust Modal */}

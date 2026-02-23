@@ -2,6 +2,8 @@
 
 require "base64"
 require "json"
+require_relative "../../../post/adapters/cast_adapter"
+require_relative "../../../post/adapters/guest_adapter"
 require_relative "../../../post/adapters/media_adapter"
 
 module Relationship
@@ -9,9 +11,7 @@ module Relationship
     module Blocks
       class ListBlocked
         include Relationship::Deps[
-          block_repo: "repositories.block_repository",
-          cast_adapter: "adapters.cast_adapter",
-          guest_adapter: "adapters.guest_adapter"
+          block_repo: "repositories.block_repository"
         ]
 
         DEFAULT_LIMIT = 50
@@ -63,6 +63,14 @@ module Relationship
         end
 
         private
+
+        def cast_adapter
+          @cast_adapter ||= Post::Adapters::CastAdapter.new
+        end
+
+        def guest_adapter
+          @guest_adapter ||= Post::Adapters::GuestAdapter.new
+        end
 
         def media_adapter
           @media_adapter ||= Post::Adapters::MediaAdapter.new

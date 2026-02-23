@@ -29,7 +29,7 @@ module Relationship
 
       def block_user
         authenticate_user!
-        blocker = find_blocker!
+        blocker = find_blocker_by_type(request.message.blocker_type)
 
         result = block_user_uc.call(
           blocker_id: blocker[:id],
@@ -90,7 +90,7 @@ module Relationship
 
         # Get blocker (cast) info
         blocker_ids = blocks.map(&:blocker_id).uniq
-        casts = cast_adapter.find_by_ids(blocker_ids)
+        casts = cast_adapter.find_by_cast_ids(blocker_ids)
 
         # Get avatar media
         avatar_media_ids = casts.values.compact.map(&:avatar_media_id).compact

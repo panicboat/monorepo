@@ -90,6 +90,22 @@ module Relationship
         blocker
       end
 
+      def find_blocker_by_type(blocker_type)
+        # FALLBACK: If blocker_type is not specified, use the default find_blocker!
+        return find_blocker! if blocker_type.nil? || blocker_type.empty?
+
+        case blocker_type
+        when "cast"
+          cast = find_my_cast!
+          { id: cast.id, type: "cast" }
+        when "guest"
+          guest = find_my_guest!
+          { id: guest.id, type: "guest" }
+        else
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Invalid blocker_type: #{blocker_type}")
+        end
+      end
+
       def decode_cursor(cursor)
         return nil if cursor.nil? || cursor.empty?
 
