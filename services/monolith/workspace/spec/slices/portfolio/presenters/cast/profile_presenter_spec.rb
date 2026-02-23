@@ -67,8 +67,7 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
         name: "Test Cast",
         bio: "Test Bio",
         tagline: "Test Tagline",
-        default_schedule_start: "18:00",
-        default_schedule_end: "23:00",
+        default_schedules: [{ "start" => "12:00", "end" => "15:00" }, { "start" => "18:00", "end" => "23:00" }],
         profile_media_id: profile_media_id,
         avatar_media_id: avatar_media_id,
         visibility: "published",
@@ -144,8 +143,7 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
           name: "Test Cast",
           bio: nil,
           tagline: nil,
-          default_schedule_start: nil,
-          default_schedule_end: nil,
+          default_schedules: nil,
           profile_media_id: nil,
           avatar_media_id: nil,
           visibility: "unregistered",
@@ -171,6 +169,27 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
         expect(proto.avatar_url).to eq("")
         expect(proto.images).to eq([])
       end
+    end
+  end
+
+  describe ".default_schedules_to_proto" do
+    it "returns empty array when schedules is nil" do
+      expect(described_class.default_schedules_to_proto(nil)).to eq([])
+    end
+
+    it "converts hash array to proto array" do
+      schedules = [
+        { "start" => "12:00", "end" => "15:00" },
+        { "start" => "18:00", "end" => "23:00" }
+      ]
+      protos = described_class.default_schedules_to_proto(schedules)
+
+      expect(protos.size).to eq(2)
+      expect(protos[0]).to be_a(::Portfolio::V1::DefaultSchedule)
+      expect(protos[0].start).to eq("12:00")
+      expect(protos[0].end).to eq("15:00")
+      expect(protos[1].start).to eq("18:00")
+      expect(protos[1].end).to eq("23:00")
     end
   end
 end
