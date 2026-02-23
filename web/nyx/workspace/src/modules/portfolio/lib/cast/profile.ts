@@ -44,8 +44,9 @@ export function mapCastProfileToFrontend(p: CastProfile) {
       slug: g.slug,
       displayOrder: g.displayOrder,
     })),
-    defaultScheduleStart: p.defaultScheduleStart || "10:00",
-    defaultScheduleEnd: p.defaultScheduleEnd || "22:00",
+    defaultSchedules: (p.defaultSchedules || []).length > 0
+      ? p.defaultSchedules.map((ds: any) => ({ start: ds.start || "", end: ds.end || "" }))
+      : [{ start: "18:00", end: "23:00" }],
     imageUrl: p.imageUrl,
     profileMediaId: p.profileMediaId || "",
     avatarMediaId: p.avatarMediaId || "",
@@ -96,8 +97,10 @@ export function buildSaveProfileRequest(body: any) {
     tagline: body.tagline,
     areaIds: body.areaIds || [],
     genreIds: body.genreIds || [],
-    defaultScheduleStart: body.defaultScheduleStart,
-    defaultScheduleEnd: body.defaultScheduleEnd,
+    defaultSchedules: (body.defaultSchedules || []).map((s: any) => ({
+      start: s.start,
+      end: s.end,
+    })),
     socialLinks: body.socialLinks
       ? {
           x: body.socialLinks.x || "",

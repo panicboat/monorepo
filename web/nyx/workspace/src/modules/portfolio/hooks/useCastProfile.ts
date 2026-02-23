@@ -16,8 +16,7 @@ const INITIAL_PROFILE: ProfileFormData = {
   bio: "",
   areaIds: [],
   genreIds: [],
-  defaultScheduleStart: "10:00",
-  defaultScheduleEnd: "22:00",
+  defaultSchedules: [{ start: "18:00", end: "23:00" }],
   socialLinks: { others: [] },
   tags: [],
 };

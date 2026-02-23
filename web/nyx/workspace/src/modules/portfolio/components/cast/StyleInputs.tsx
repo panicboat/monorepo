@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
 import { AreaSelector } from "./AreaSelector";
 import { GenreSelector } from "./GenreSelector";
+import { DefaultSchedulesEditor } from "./DefaultSchedulesEditor";
 
 interface StyleInputsProps {
   data: ProfileFormData;
@@ -68,29 +69,10 @@ export const StyleInputs = ({
       </h3>
 
       {/* Default Schedule */}
-      <div>
-        <Label className="block text-sm font-bold text-text-secondary mb-1">
-          Standard Schedule Time
-          <span className="ml-2 text-xs font-normal text-text-muted">
-            基本の活動時間設定
-          </span>
-        </Label>
-        <div className="flex items-center gap-2 max-w-sm">
-          <input
-            type="time"
-            value={data.defaultScheduleStart}
-            onChange={(e) => onChange("defaultScheduleStart", e.target.value)}
-            className="flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-role-cast focus:border-transparent"
-          />
-          <span className="text-text-muted font-bold">~</span>
-          <input
-            type="time"
-            value={data.defaultScheduleEnd}
-            onChange={(e) => onChange("defaultScheduleEnd", e.target.value)}
-            className="flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-role-cast focus:border-transparent"
-          />
-        </div>
-      </div>
+      <DefaultSchedulesEditor
+        schedules={data.defaultSchedules || [{ start: "18:00", end: "23:00" }]}
+        onChange={(schedules) => onChange("defaultSchedules", schedules)}
+      />
 
       {/* Genre */}
       <div>

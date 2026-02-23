@@ -7,6 +7,7 @@ import { ActionButton } from "@/components/ui/ActionButton";
 import { useToast } from "@/components/ui/Toast";
 import { useCastSchedules } from "@/modules/portfolio/hooks";
 import { useCastProfile } from "@/modules/portfolio/hooks/useCastProfile";
+import { DefaultSchedule } from "@/modules/portfolio/types";
 
 export default function ManageSchedulesPage() {
   const { toast } = useToast();
@@ -14,8 +15,7 @@ export default function ManageSchedulesPage() {
   const { schedules, loading, fetchSchedules, updateSchedules, saveSchedules } =
     useCastSchedules();
 
-  const defaultScheduleStart = rawData?.profile?.defaultScheduleStart || "18:00";
-  const defaultScheduleEnd = rawData?.profile?.defaultScheduleEnd || "23:00";
+  const defaultSchedules: DefaultSchedule[] = rawData?.profile?.defaultSchedules || [{ start: "18:00", end: "23:00" }];
 
   useEffect(() => {
     fetchSchedules();
@@ -70,8 +70,7 @@ export default function ManageSchedulesPage() {
       <ScheduleEditor
         schedules={schedules}
         onChange={updateSchedules}
-        defaultStart={defaultScheduleStart}
-        defaultEnd={defaultScheduleEnd}
+        defaultSchedules={defaultSchedules}
       />
 
       <div className="flex flex-col gap-4 px-4 pb-12 items-center mt-8">

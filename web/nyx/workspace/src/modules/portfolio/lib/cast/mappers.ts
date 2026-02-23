@@ -1,5 +1,18 @@
 import { getMediaType } from "@/lib/media";
-import { ProfileFormData, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
+import { ProfileFormData, MediaItem, ServicePlan, WeeklySchedule, DefaultSchedule } from "@/modules/portfolio/types";
+
+/**
+ * Map API default schedules response to DefaultSchedule array
+ */
+export function mapApiToDefaultSchedules(apiSchedules: any[]): DefaultSchedule[] {
+  if (!apiSchedules || apiSchedules.length === 0) {
+    return [{ start: "18:00", end: "23:00" }];
+  }
+  return apiSchedules.map((s) => ({
+    start: s.start || "",
+    end: s.end || "",
+  }));
+}
 
 /**
  * Map API profile response to ProfileFormData
@@ -14,8 +27,7 @@ export function mapApiToProfileForm(apiProfile: any): ProfileFormData {
     bio: apiProfile.bio || "",
     areaIds: (apiProfile.areas || []).map((a: any) => a.id),
     genreIds: (apiProfile.genres || []).map((g: any) => g.id),
-    defaultScheduleStart: apiProfile.defaultScheduleStart || "10:00",
-    defaultScheduleEnd: apiProfile.defaultScheduleEnd || "22:00",
+    defaultSchedules: mapApiToDefaultSchedules(apiProfile.defaultSchedules),
     socialLinks: {
       x: socialLinks.x || "",
       instagram: socialLinks.instagram || "",
@@ -50,8 +62,10 @@ export function mapProfileFormToApi(form: ProfileFormData, heroKey?: string, gal
     bio: form.bio,
     areaIds: form.areaIds || [],
     genreIds: form.genreIds || [],
-    defaultScheduleStart: form.defaultScheduleStart,
-    defaultScheduleEnd: form.defaultScheduleEnd,
+    defaultSchedules: form.defaultSchedules.map((s) => ({
+      start: s.start,
+      end: s.end,
+    })),
     socialLinks: form.socialLinks
       ? {
           x: form.socialLinks.x || "",

@@ -6,7 +6,7 @@ import { ArrowRight, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { ScheduleEditor } from "@/modules/portfolio/components/cast/ScheduleEditor";
 import { useCastData } from "@/modules/portfolio/hooks";
-import { WeeklySchedule } from "@/modules/portfolio/types";
+import { WeeklySchedule, DefaultSchedule } from "@/modules/portfolio/types";
 
 export default function OnboardingStep4() {
   const router = useRouter();
@@ -28,8 +28,7 @@ export default function OnboardingStep4() {
     }
   }, [initialized, fetchData]);
 
-  const defaultScheduleStart = profile.defaultScheduleStart || "18:00";
-  const defaultScheduleEnd = profile.defaultScheduleEnd || "23:00";
+  const defaultSchedules: DefaultSchedule[] = profile.defaultSchedules || [{ start: "18:00", end: "23:00" }];
 
   const handleSchedulesChange = (newSchedules: WeeklySchedule[]) => {
     updateSchedules(newSchedules);
@@ -77,8 +76,7 @@ export default function OnboardingStep4() {
           <ScheduleEditor
             schedules={schedules}
             onChange={handleSchedulesChange}
-            defaultStart={defaultScheduleStart}
-            defaultEnd={defaultScheduleEnd}
+            defaultSchedules={defaultSchedules}
           />
         </div>
 

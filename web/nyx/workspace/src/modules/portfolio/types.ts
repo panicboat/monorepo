@@ -92,6 +92,11 @@ export interface WeeklySchedule {
   end: string;
 }
 
+export interface DefaultSchedule {
+  start: string; // HH:mm
+  end: string; // HH:mm
+}
+
 export interface Genre {
   id: string;
   name: string;
@@ -108,8 +113,7 @@ export interface ProfileFormData {
   bio: string;
   areaIds: string[];
   genreIds: string[];
-  defaultScheduleStart: string; // HH:mm
-  defaultScheduleEnd: string; // HH:mm
+  defaultSchedules: DefaultSchedule[];
   socialLinks: {
     x?: string;
     instagram?: string;

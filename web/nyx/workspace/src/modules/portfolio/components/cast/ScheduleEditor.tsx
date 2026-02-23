@@ -11,20 +11,18 @@ import {
   isBefore,
 } from "date-fns";
 import { ja } from "date-fns/locale";
-import { WeeklySchedule } from "@/modules/portfolio/types";
+import { WeeklySchedule, DefaultSchedule } from "@/modules/portfolio/types";
 
 interface ScheduleEditorProps {
   schedules: WeeklySchedule[];
   onChange: (schedules: WeeklySchedule[]) => void;
-  defaultStart?: string;
-  defaultEnd?: string;
+  defaultSchedules?: DefaultSchedule[];
 }
 
 export const ScheduleEditor = ({
   schedules,
   onChange,
-  defaultStart = "18:00",
-  defaultEnd = "23:00",
+  defaultSchedules = [{ start: "18:00", end: "23:00" }],
 }: ScheduleEditorProps) => {
   const [viewStartDate, setViewStartDate] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 })
@@ -43,12 +41,12 @@ export const ScheduleEditor = ({
   const goToNextWeek = () => setViewStartDate(addDays(viewStartDate, 7));
 
   const addSchedule = (dateStr: string) => {
-    const newSchedule: WeeklySchedule = {
+    const newSchedules: WeeklySchedule[] = defaultSchedules.map((ds) => ({
       date: dateStr,
-      start: defaultStart,
-      end: defaultEnd,
-    };
-    onChange([...schedules, newSchedule]);
+      start: ds.start,
+      end: ds.end,
+    }));
+    onChange([...schedules, ...newSchedules]);
   };
 
   const updateSchedule = (
