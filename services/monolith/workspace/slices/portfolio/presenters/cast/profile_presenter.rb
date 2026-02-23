@@ -27,8 +27,7 @@ module Portfolio
             name: cast.name,
             bio: cast.bio,
             tagline: cast.tagline,
-            default_schedule_start: cast.default_schedule_start,
-            default_schedule_end: cast.default_schedule_end,
+            default_schedules: default_schedules_to_proto(cast.default_schedules),
             image_url: profile_url,
             profile_media_id: cast.profile_media_id || "",
             avatar_media_id: cast.avatar_media_id || "",
@@ -146,6 +145,17 @@ module Portfolio
             "hip" => proto.hip,
             "cup" => proto.cup.to_s
           }
+        end
+
+        def self.default_schedules_to_proto(schedules)
+          return [] unless schedules
+
+          schedules.map do |s|
+            ::Portfolio::V1::DefaultSchedule.new(
+              start: s["start"] || "",
+              end: s["end"] || ""
+            )
+          end
         end
       end
     end
