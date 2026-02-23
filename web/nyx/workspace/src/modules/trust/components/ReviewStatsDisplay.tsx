@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, ThumbsUp } from "lucide-react";
+import { Star, Shield } from "lucide-react";
 import { ReviewStats as ReviewStatsType } from "../types";
 
 interface ReviewStatsProps {
@@ -42,7 +42,7 @@ export function ReviewStatsDisplay({ stats, loading }: ReviewStatsProps) {
 
       {/* Approval Rate */}
       <div className="flex items-center gap-1.5">
-        <ThumbsUp className="h-4 w-4 text-green-500" />
+        <Shield className="h-4 w-4 text-green-500" />
         <span className="text-sm text-text-secondary">
           {stats.approvalRate}%
         </span>
