@@ -3,6 +3,7 @@
 import { useEffect, useCallback } from "react";
 import { MessageSquare } from "lucide-react";
 import { useReviews, useReviewStats } from "../hooks";
+import { GuestTagsDisplay } from "./GuestTagsDisplay";
 import { ReviewStatsDisplay } from "./ReviewStatsDisplay";
 import { ReviewList } from "./ReviewList";
 
@@ -30,6 +31,9 @@ export function TrustSection({
 
   return (
     <div className="space-y-4">
+      {/* Guest Tags Section */}
+      <GuestTagsDisplay targetId={targetId} />
+
       {/* Header with Stats */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
