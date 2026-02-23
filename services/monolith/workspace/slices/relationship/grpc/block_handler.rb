@@ -17,6 +17,7 @@ module Relationship
       rpc :BlockUser, ::Relationship::V1::BlockUserRequest, ::Relationship::V1::BlockUserResponse
       rpc :UnblockUser, ::Relationship::V1::UnblockUserRequest, ::Relationship::V1::UnblockUserResponse
       rpc :ListBlocked, ::Relationship::V1::ListBlockedRequest, ::Relationship::V1::ListBlockedResponse
+      rpc :ListBlockedBy, ::Relationship::V1::ListBlockedByRequest, ::Relationship::V1::ListBlockedByResponse
       rpc :GetBlockStatus, ::Relationship::V1::GetBlockStatusRequest, ::Relationship::V1::GetBlockStatusResponse
 
       include Relationship::Deps[
@@ -80,6 +81,37 @@ module Relationship
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
+      end
+
+      def list_blocked_by
+        authenticate_user!
+
+        blocks = block_repo.list_by_blocked_id(blocked_id: request.message.target_id)
+
+        # Get blocker (cast) info
+        blocker_ids = blocks.map(&:blocker_id).uniq
+        casts = cast_adapter.find_by_ids(blocker_ids)
+
+        # Get avatar media
+        avatar_media_ids = casts.values.compact.map(&:avatar_media_id).compact
+        media_files = media_adapter.find_by_ids(avatar_media_ids)
+
+        blockers = blocks.map do |block|
+          cast = casts[block.blocker_id]
+          next nil unless cast
+
+          avatar_url = cast.avatar_media_id ? media_files[cast.avatar_media_id]&.url : nil
+
+          ::Relationship::V1::BlockedUser.new(
+            id: cast.id,
+            user_type: "cast",
+            name: cast.name || "",
+            image_url: avatar_url || "",
+            blocked_at: block.created_at&.iso8601 || ""
+          )
+        end.compact
+
+        ::Relationship::V1::ListBlockedByResponse.new(blockers: blockers)
       end
 
       def get_block_status
