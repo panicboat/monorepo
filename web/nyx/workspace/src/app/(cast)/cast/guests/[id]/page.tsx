@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
 import { Loader2, Users, Ban, Check, Edit3 } from "lucide-react";
 import useSWR from "swr";
 import { fetcher, getAuthToken } from "@/lib/swr";
 import { useToast } from "@/components/ui/Toast";
-import { TrustTagsSection, WriteTrustModal, useReviews } from "@/modules/trust";
+import { TrustTagsSection, WriteTrustModal, useReviews, useReviewStats, ReviewList, ReviewStatsDisplay } from "@/modules/trust";
 
 interface GuestDetail {
   id: string;
@@ -37,7 +37,15 @@ export default function GuestDetailPage({
   );
 
   const { createReview } = useReviews();
+  const { reviews, fetchReviews, loading: reviewsLoading } = useReviews();
+  const { stats, loading: statsLoading } = useReviewStats(id);
   const [showTrustModal, setShowTrustModal] = useState(false);
+
+  useEffect(() => {
+    if (id) {
+      fetchReviews(id, "approved").catch(console.error);
+    }
+  }, [id, fetchReviews]);
 
   const handleSubmitReview = async (score: number, content: string) => {
     await createReview({ revieweeId: id, score, content: content || undefined });
@@ -213,6 +221,21 @@ export default function GuestDetailPage({
             ノート
           </h3>
           <TrustTagsSection targetId={id} />
+        </div>
+
+        {/* Reviews Section */}
+        <div className="bg-surface rounded-xl border border-border p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-text-secondary">
+              このゲストのレビュー
+            </h3>
+            <ReviewStatsDisplay stats={stats} loading={statsLoading} />
+          </div>
+          <ReviewList
+            reviews={reviews}
+            loading={reviewsLoading}
+            emptyMessage="このゲストのレビューはまだありません"
+          />
         </div>
 
         {/* Actions Section */}
