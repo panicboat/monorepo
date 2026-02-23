@@ -19,8 +19,7 @@ module Portfolio
           required(:bio).filled(:string)
           optional(:slug).maybe(:string)
           optional(:tagline).maybe(:string)
-          optional(:default_schedule_start).maybe(:string)
-          optional(:default_schedule_end).maybe(:string)
+          optional(:default_schedules).maybe(:array)
           optional(:social_links).maybe(:hash)
           optional(:age).maybe(:integer)
           optional(:height).maybe(:integer)
@@ -60,16 +59,26 @@ module Portfolio
           end
         end
 
-        rule(:default_schedule_start, :default_schedule_end) do
-          if values[:default_schedule_start] && values[:default_schedule_end]
-            start_time = values[:default_schedule_start]
-            end_time = values[:default_schedule_end]
+        rule(:default_schedules) do
+          next unless key? && value
+
+          value.each_with_index do |schedule, idx|
+            unless schedule.is_a?(Hash) && schedule[:start] && schedule[:end]
+              key.failure("の#{idx + 1}番目は start と end が必要です")
+              next
+            end
+
+            start_time = schedule[:start].to_s
+            end_time = schedule[:end].to_s
 
             unless start_time.match?(/\A([01]?[0-9]|2[0-3]):[0-5][0-9]\z/)
-              key(:default_schedule_start).failure("は有効な時刻形式（HH:MM）で入力してください")
+              key.failure("の#{idx + 1}番目の開始時刻は有効な時刻形式（HH:MM）で入力してください")
             end
             unless end_time.match?(/\A([01]?[0-9]|2[0-3]):[0-5][0-9]\z/)
-              key(:default_schedule_end).failure("は有効な時刻形式（HH:MM）で入力してください")
+              key.failure("の#{idx + 1}番目の終了時刻は有効な時刻形式（HH:MM）で入力してください")
+            end
+            if start_time >= end_time
+              key.failure("の#{idx + 1}番目の開始時刻は終了時刻より前である必要があります")
             end
           end
         end
