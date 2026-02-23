@@ -26,6 +26,7 @@ export function useFollow() {
   const [loading, setLoading] = useState(false);
 
   const follow = useCallback(async (castId: string) => {
+    // FALLBACK: Returns failure status when not authenticated
     if (!getAuthToken()) {
       console.warn("Cannot follow: not authenticated");
       return { success: false, status: FollowStatus.NONE };
@@ -96,6 +97,7 @@ export function useFollow() {
   );
 
   const fetchFollowingList = useCallback(async (limit: number = 100) => {
+    // FALLBACK: Returns empty lists when not authenticated
     if (!getAuthToken()) {
       console.warn("Cannot fetch following: not authenticated");
       return { castIds: [], casts: [] };
@@ -107,6 +109,7 @@ export function useFollow() {
         `/api/guest/following?limit=${limit}`
       );
 
+      // FALLBACK: Returns empty array when response field is missing
       const castIds = data.castIds || [];
       const casts = data.casts || [];
       setFollowingList(castIds);
@@ -149,6 +152,7 @@ export function useFollow() {
   }, []);
 
   const getFollowStatus = useCallback(
+    // FALLBACK: Returns NONE status when follow state is not loaded
     (castId: string): FollowStatus => followState[castId] ?? FollowStatus.NONE,
     [followState]
   );

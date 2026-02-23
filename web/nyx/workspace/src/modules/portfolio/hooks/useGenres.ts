@@ -16,6 +16,7 @@ export function useGenres(): UseGenresResult {
     fetcher
   );
 
+  // FALLBACK: Returns empty array when data is not yet loaded
   const genres = (data?.genres || []).sort((a, b) => a.displayOrder - b.displayOrder);
 
   return {

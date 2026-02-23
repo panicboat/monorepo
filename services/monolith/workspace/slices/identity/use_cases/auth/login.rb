@@ -41,6 +41,7 @@ module Identity
           end
 
           payload = { sub: user.id, role: user.role, exp: Time.now.to_i + 3600 * 24 * 30 }
+          # FALLBACK: Uses default secret when JWT_SECRET is not configured
           token = JWT.encode(payload, ENV.fetch("JWT_SECRET", "pan1cb0at"), 'HS256')
 
           refresh_token = SecureRandom.hex(32)

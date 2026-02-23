@@ -20,6 +20,7 @@ export function useMyTagNames() {
   );
 
   return {
+    // FALLBACK: Returns empty array when data is not yet loaded
     tagNames: data?.tagNames || [],
     loading,
     error,

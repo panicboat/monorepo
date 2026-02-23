@@ -51,6 +51,7 @@ export function useReviews() {
   }, []);
 
   const updateReview = useCallback(async (id: string, content: string | undefined, score: number) => {
+    // FALLBACK: Returns false when not authenticated
     if (!getAuthToken()) return false;
 
     setLoading(true);
@@ -75,6 +76,7 @@ export function useReviews() {
   }, []);
 
   const deleteReview = useCallback(async (id: string) => {
+    // FALLBACK: Returns false when not authenticated
     if (!getAuthToken()) return false;
 
     setLoading(true);

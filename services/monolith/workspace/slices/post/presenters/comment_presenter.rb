@@ -33,6 +33,7 @@ module Post
         ::Post::V1::CommentMedia.new(
           id: media.id.to_s,
           media_type: media.media_type,
+          # FALLBACK: Returns empty string when media file URL is not available
           url: media_file&.url || "",
           thumbnail_url: media_file&.thumbnail_url || "",
           media_id: media.media_id.to_s

@@ -171,6 +171,7 @@ export function useComments(postId: string) {
   );
 
   const fetchReplies = useCallback(async (commentId: string, cursor?: string) => {
+    // FALLBACK: Returns empty/default values when replies state is not initialized
     setRepliesState((prev) => ({
       ...prev,
       [commentId]: {

@@ -20,6 +20,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
 
   const fetchPosts = useCallback(async (cursor?: string) => {
     const token = getAuthToken();
+    // FALLBACK: Returns empty array when not authenticated
     if (!token) {
       setPosts([]);
       return [];
@@ -39,10 +40,12 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
       });
 
       if (!res.ok) {
+        // FALLBACK: Returns empty array on 404 status
         if (res.status === 404) {
           setPosts([]);
           return [];
         }
+        // FALLBACK: Returns empty object when JSON parse fails
         const errBody = await res.json().catch(() => ({}));
         throw new Error(errBody.error || "Failed to fetch posts");
       }
@@ -89,6 +92,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
       });
 
       if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
         const errBody = await res.json().catch(() => ({}));
         throw new Error(errBody.error || "Failed to save post");
       }
@@ -132,6 +136,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
       });
 
       if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
         const errBody = await res.json().catch(() => ({}));
         throw new Error(errBody.error || "Failed to toggle visibility");
       }
@@ -159,6 +164,7 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
       });
 
       if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
         const errBody = await res.json().catch(() => ({}));
         throw new Error(errBody.error || "Failed to delete post");
       }

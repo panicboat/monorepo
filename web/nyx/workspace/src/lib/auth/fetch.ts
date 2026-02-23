@@ -70,6 +70,7 @@ export async function authFetch<T = unknown>(
   });
 
   if (!res.ok) {
+    // FALLBACK: Returns empty object when JSON parse fails
     const errBody = await res.json().catch(() => ({}));
     const message = errBody.error || `Request failed: ${res.status}`;
     throw new ApiError(message, res.status, errBody);

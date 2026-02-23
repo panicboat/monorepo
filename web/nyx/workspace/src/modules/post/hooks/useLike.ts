@@ -23,6 +23,7 @@ export function useLike() {
   const [loading, setLoading] = useState(false);
 
   const like = useCallback(async (postId: string) => {
+    // FALLBACK: Returns null when not authenticated
     if (!getAuthToken()) {
       console.warn("Cannot like: not authenticated");
       return null;
@@ -49,6 +50,7 @@ export function useLike() {
   }, []);
 
   const unlike = useCallback(async (postId: string) => {
+    // FALLBACK: Returns null when not authenticated
     if (!getAuthToken()) {
       console.warn("Cannot unlike: not authenticated");
       return null;
@@ -92,16 +94,19 @@ export function useLike() {
       return data.liked;
     } catch (e) {
       console.error("Fetch like status error:", e);
+      // FALLBACK: Returns empty object on error
       return {};
     }
   }, []);
 
   const isLiked = useCallback(
+    // FALLBACK: Returns false when like state is not loaded
     (postId: string) => likeState[postId]?.liked ?? false,
     [likeState]
   );
 
   const getLikesCount = useCallback(
+    // FALLBACK: Returns default count when like state is not loaded
     (postId: string, defaultCount: number = 0) =>
       likeState[postId]?.likesCount ?? defaultCount,
     [likeState]

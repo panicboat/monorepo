@@ -76,6 +76,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
     }
   );
 
+  // FALLBACK: Returns INITIAL_PROFILE when profile data is not available
   const profile = useMemo(
     (): GuestProfileFormData =>
       data?.profile
@@ -89,6 +90,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
     [data?.profile]
   );
 
+  // FALLBACK: Returns empty string when avatar URL is not available
   const avatarUrl = useMemo(
     () => data?.profile?.avatarUrl || "",
     [data?.profile]
@@ -98,6 +100,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
     (updates: Partial<GuestProfileFormData>) => {
       mutate(
         (currentData) => {
+          // FALLBACK: Returns empty profile when current data is not available
           const existingProfile = currentData?.profile || {
             userId: "",
             name: "",
@@ -145,6 +148,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
       });
 
       if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || "Failed to save profile");
       }

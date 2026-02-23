@@ -48,6 +48,7 @@ module Interceptors
            # Checking ENV logic.
 
            # Using HS256 for simplicity in this phase as per implementation
+           # FALLBACK: Uses default secret when JWT_SECRET is not configured
            secret = ENV.fetch('JWT_SECRET', 'pan1cb0at')
            payload = JWT.decode(token, secret, true, algorithm: 'HS256').first
            return payload['sub']

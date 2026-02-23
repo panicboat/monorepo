@@ -27,6 +27,7 @@ export function useCastFeed(options: UseCastFeedOptions) {
 
   const fetchFeed = useCallback(
     async (cursor?: string): Promise<FeedResult> => {
+      // FALLBACK: Returns empty state when castId is not provided
       if (!castId) {
         setPosts([]);
         return { posts: [], nextCursor: "", hasMore: false };
@@ -53,10 +54,12 @@ export function useCastFeed(options: UseCastFeedOptions) {
         });
 
         if (!res.ok) {
+          // FALLBACK: Returns empty state on 404 status
           if (res.status === 404) {
             setPosts([]);
             return { posts: [], nextCursor: "", hasMore: false };
           }
+          // FALLBACK: Returns empty object when JSON parse fails
           const errBody = await res.json().catch(() => ({}));
           throw new Error(errBody.error || "Failed to fetch feed");
         }
@@ -67,6 +70,7 @@ export function useCastFeed(options: UseCastFeedOptions) {
         // Set author if available
         if (data.author) {
           setAuthor({
+            // FALLBACK: Returns empty string for missing author fields
             id: data.author.id || "",
             name: data.author.name || "",
             imageUrl: data.author.imageUrl || "",

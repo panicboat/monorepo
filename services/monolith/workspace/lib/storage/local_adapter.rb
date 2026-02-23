@@ -7,6 +7,7 @@ module Storage
   # Works with Middleware::LocalUploader for handling uploads.
   class LocalAdapter < Adapter
     def initialize(base_url: nil, upload_path: "/storage/upload", download_path: "/uploads")
+      # FALLBACK: Uses localhost URL when APP_URL is not configured
       @base_url = base_url || ENV.fetch("APP_URL", "http://localhost:3000")
       @upload_path = upload_path
       @download_path = download_path
@@ -42,6 +43,7 @@ module Storage
       true
     rescue => e
       warn "[Storage::LocalAdapter] Failed to delete #{key}: #{e.message}"
+      # FALLBACK: Returns false on delete failure
       false
     end
   end

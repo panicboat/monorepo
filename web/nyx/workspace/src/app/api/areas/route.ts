@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
+    // FALLBACK: Returns empty array when response areas is missing
     const areas = (response.areas || []).map((a) => ({
       id: a.id,
       prefecture: a.prefecture,

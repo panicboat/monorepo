@@ -24,6 +24,7 @@ export function useFavorite() {
   const [loading, setLoading] = useState(false);
 
   const addFavorite = useCallback(async (castId: string) => {
+    // FALLBACK: Returns false when not authenticated
     if (!getAuthToken()) {
       console.warn("Cannot add favorite: not authenticated");
       return false;
@@ -52,6 +53,7 @@ export function useFavorite() {
   }, []);
 
   const removeFavorite = useCallback(async (castId: string) => {
+    // FALLBACK: Returns false when not authenticated
     if (!getAuthToken()) {
       console.warn("Cannot remove favorite: not authenticated");
       return false;
@@ -85,6 +87,7 @@ export function useFavorite() {
   );
 
   const fetchFavoritesList = useCallback(async (limit: number = 100) => {
+    // FALLBACK: Returns empty lists when not authenticated
     if (!getAuthToken()) {
       console.warn("Cannot fetch favorites: not authenticated");
       return { castIds: [], casts: [] };
@@ -96,6 +99,7 @@ export function useFavorite() {
         `/api/guest/favorites?limit=${limit}`
       );
 
+      // FALLBACK: Returns empty array when response field is missing
       const castIds = data.castIds || [];
       const casts = data.casts || [];
       setFavoritesList(castIds);
@@ -138,6 +142,7 @@ export function useFavorite() {
   }, []);
 
   const isFavorite = useCallback(
+    // FALLBACK: Returns false when favorite state is not loaded
     (castId: string) => favoriteState[castId] ?? false,
     [favoriteState]
   );

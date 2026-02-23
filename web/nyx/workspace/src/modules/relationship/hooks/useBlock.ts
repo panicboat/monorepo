@@ -25,6 +25,7 @@ export function useBlock() {
 
   const block = useCallback(
     async (blockedId: string, blockedType: "guest" | "cast") => {
+      // FALLBACK: Returns false when not authenticated
       if (!getAuthToken()) {
         console.warn("Cannot block: not authenticated");
         return false;
@@ -52,6 +53,7 @@ export function useBlock() {
   );
 
   const unblock = useCallback(async (blockedId: string) => {
+    // FALLBACK: Returns false when not authenticated
     if (!getAuthToken()) {
       console.warn("Cannot unblock: not authenticated");
       return false;
@@ -87,6 +89,7 @@ export function useBlock() {
   );
 
   const fetchBlockedList = useCallback(async (limit: number = 50) => {
+    // FALLBACK: Returns empty array when not authenticated
     if (!getAuthToken()) {
       console.warn("Cannot fetch blocked list: not authenticated");
       return [];
@@ -98,6 +101,7 @@ export function useBlock() {
         `/api/guest/blocks?limit=${limit}`
       );
 
+      // FALLBACK: Returns empty array when response field is missing
       const users = data.users || [];
       setBlockedList(users);
 
@@ -110,6 +114,7 @@ export function useBlock() {
       return users;
     } catch (e) {
       console.error("Fetch blocked list error:", e);
+      // FALLBACK: Returns empty array on error
       return [];
     } finally {
       setLoading(false);
@@ -133,11 +138,13 @@ export function useBlock() {
       return data.blocked;
     } catch (e) {
       console.error("Fetch block status error:", e);
+      // FALLBACK: Returns empty object on error
       return {};
     }
   }, []);
 
   const isBlocking = useCallback(
+    // FALLBACK: Returns false when block state is not loaded
     (userId: string) => blockState[userId] ?? false,
     [blockState]
   );

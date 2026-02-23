@@ -20,6 +20,7 @@ export function usePendingReviews() {
 
   const approveReview = useCallback(
     async (id: string) => {
+      // FALLBACK: Returns false when not authenticated
       if (!getAuthToken()) return false;
 
       try {
@@ -42,6 +43,7 @@ export function usePendingReviews() {
 
   const rejectReview = useCallback(
     async (id: string) => {
+      // FALLBACK: Returns false when not authenticated
       if (!getAuthToken()) return false;
 
       try {
@@ -63,6 +65,7 @@ export function usePendingReviews() {
   );
 
   return {
+    // FALLBACK: Returns empty array when data is not yet loaded
     pendingReviews: data?.reviews || [],
     loading,
     error,

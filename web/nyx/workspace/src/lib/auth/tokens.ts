@@ -21,6 +21,7 @@ const STORAGE_KEY = "nyx-auth";
  * Get all tokens from localStorage
  */
 export function getTokens(): TokenData | null {
+  // FALLBACK: Returns null during SSR since localStorage is unavailable
   if (typeof window === "undefined") return null;
 
   try {
@@ -35,6 +36,7 @@ export function getTokens(): TokenData | null {
 
     return { accessToken, refreshToken, role, userId };
   } catch {
+    // FALLBACK: Returns null on JSON parse failure or other errors
     return null;
   }
 }
@@ -44,6 +46,7 @@ export function getTokens(): TokenData | null {
  */
 export function getAccessToken(): string | null {
   const tokens = getTokens();
+  // FALLBACK: Returns null when token does not exist
   return tokens?.accessToken ?? null;
 }
 
@@ -52,6 +55,7 @@ export function getAccessToken(): string | null {
  */
 export function getRole(): Role | null {
   const tokens = getTokens();
+  // FALLBACK: Returns null when role does not exist
   return tokens?.role ?? null;
 }
 

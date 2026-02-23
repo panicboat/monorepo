@@ -149,6 +149,7 @@ export function useFollowRequests() {
 
   return {
     // Data
+    // FALLBACK: Returns empty/default values when data is not yet loaded
     requests: requestsData?.requests || [],
     hasMore: requestsData?.hasMore || false,
     nextCursor: requestsData?.nextCursor || "",

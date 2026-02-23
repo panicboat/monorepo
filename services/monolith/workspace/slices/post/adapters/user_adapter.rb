@@ -15,6 +15,7 @@ module Post
       end
 
       def get_user_types_batch(user_ids)
+        # FALLBACK: Returns empty hash when user_ids is nil or empty
         return {} if user_ids.nil? || user_ids.empty?
 
         users = identity_user_repository.find_by_ids(user_ids)

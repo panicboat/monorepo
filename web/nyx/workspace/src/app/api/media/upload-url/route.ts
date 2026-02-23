@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Convert mediaType to number (supports both string "IMAGE"/"VIDEO" and number 1/2)
-    let mediaTypeNum = 1; // default to IMAGE
+    // FALLBACK: Defaults to IMAGE (1) when mediaType is not specified
+    let mediaTypeNum = 1;
     if (typeof mediaType === "number") {
       mediaTypeNum = mediaType;
     } else if (typeof mediaType === "string") {

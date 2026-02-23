@@ -15,6 +15,7 @@ interface UseAreasResult {
 export function useAreas(): UseAreasResult {
   const { data, error, isLoading } = useSWR<{ areas: Area[] }>("/api/areas", fetcher);
 
+  // FALLBACK: Returns empty array when data is not yet loaded
   const areas = data?.areas || [];
 
   // Group areas by prefecture

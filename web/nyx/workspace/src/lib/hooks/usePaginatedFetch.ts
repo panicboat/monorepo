@@ -72,12 +72,14 @@ export function usePaginatedFetch<T, R = unknown>(
         });
 
         if (!res.ok) {
+          // FALLBACK: Returns empty state on 404 status
           if (res.status === 404) {
             setItems([]);
             setNextCursor("");
             setHasMore(false);
             return [];
           }
+          // FALLBACK: Returns empty object when JSON parse fails
           const errBody = await res.json().catch(() => ({}));
           throw new Error(errBody.error || `Failed to fetch from ${apiUrl}`);
         }

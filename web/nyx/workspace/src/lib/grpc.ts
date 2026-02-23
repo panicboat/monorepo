@@ -19,6 +19,7 @@ import { TrustService } from "@/stub/trust/v1/service_pb";
 // We should use ENV.
 // standard gRPC server requires createGrpcTransport
 const transport = createGrpcTransport({
+  // FALLBACK: Uses localhost when MONOLITH_URL is not configured
   baseUrl: process.env.MONOLITH_URL || "http://localhost:9001",
 });
 

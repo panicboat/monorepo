@@ -7,6 +7,7 @@ import { useAuthStore } from "@/stores/authStore";
  * Use this for all authenticated API calls in hooks.
  */
 export function getAuthToken(): string | null {
+  // FALLBACK: Returns null during SSR since browser APIs are unavailable
   if (typeof window === "undefined") return null;
   return useAuthStore.getState().accessToken;
 }

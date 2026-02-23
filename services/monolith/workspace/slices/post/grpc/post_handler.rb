@@ -29,6 +29,7 @@ module Post
 
       def list_cast_posts
         cast_id = request.message.cast_id
+        # FALLBACK: Uses default limit of 20 when not specified
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
         filter = request.message.filter
@@ -219,6 +220,7 @@ module Post
       SavePost = Post::UseCases::Posts::SavePost
 
       def list_public_posts_with_cast_ids_filter(limit:, cursor:, cast_ids:, exclude_cast_ids: nil)
+        # FALLBACK: Returns empty result when cast_ids is empty
         return { posts: [], next_cursor: nil, has_more: false, authors: {} } if cast_ids.empty?
 
         list_public_posts_uc.call(
@@ -259,6 +261,7 @@ module Post
       end
 
       def list_following_posts(limit:, cursor:, cast_ids:, exclude_cast_ids: nil)
+        # FALLBACK: Returns empty result when cast_ids is empty
         return { posts: [], next_cursor: nil, has_more: false, authors: {} } if cast_ids.empty?
 
         decoded_cursor = decode_cursor(cursor)

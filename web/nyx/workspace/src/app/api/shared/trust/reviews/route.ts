@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
+    // FALLBACK: Returns empty array when response reviews is missing
     const reviews = (response.reviews || []).map((r) => ({
       id: r.id,
       reviewerId: r.reviewerId,

@@ -83,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (res.ok) {
         const data = await res.json();
+        // FALLBACK: Supports multiple token field name formats from API
         const newAccessToken = data.accessToken || data.access_token;
         const newRefreshToken = data.refreshToken || data.refresh_token;
 
@@ -134,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearTokens();
       }
 
+      // FALLBACK: Returns null when authentication fails
       return null;
     },
     [refreshToken, clearTokens]
@@ -203,6 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Registration failed");
 
+    // FALLBACK: Supports multiple token field name formats from API
     const newAccessToken = data.accessToken || data.access_token;
     const newRefreshToken = data.refreshToken || data.refresh_token;
     const userRole = data.userProfile.role;
@@ -216,6 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Save tokens to authStore
     const tokenData: TokenData = {
       accessToken: newAccessToken,
+      // FALLBACK: Returns empty string when refresh token is missing
       refreshToken: newRefreshToken || "",
       role: toStoreRole(userRole),
       userId: data.userProfile.id,
@@ -253,6 +257,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Login failed");
 
+    // FALLBACK: Supports multiple token field name formats from API
     const newAccessToken = data.accessToken || data.access_token;
     const newRefreshToken = data.refreshToken || data.refresh_token;
     const userRole = data.userProfile.role;
@@ -266,6 +271,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Save tokens to authStore
     const tokenData: TokenData = {
       accessToken: newAccessToken,
+      // FALLBACK: Returns empty string when refresh token is missing
       refreshToken: newRefreshToken || "",
       role: toStoreRole(userRole),
       userId: data.userProfile.id,

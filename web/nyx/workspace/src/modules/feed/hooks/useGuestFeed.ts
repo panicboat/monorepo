@@ -57,6 +57,7 @@ export function useGuestFeed(options: UseGuestFeedOptions = {}) {
         });
 
         if (!res.ok) {
+          // FALLBACK: Returns empty object when JSON parse fails
           const errBody = await res.json().catch(() => ({}));
           throw new Error(errBody.error || "Failed to fetch feed");
         }

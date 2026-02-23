@@ -89,6 +89,7 @@ module Post
       end
 
       def list_comments
+        # FALLBACK: Uses default limit of 20 when not specified
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
@@ -112,6 +113,7 @@ module Post
       end
 
       def list_replies
+        # FALLBACK: Uses default limit of 20 when not specified
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 

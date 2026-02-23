@@ -17,6 +17,7 @@ export function useTaggings() {
   const [loading, setLoading] = useState(false);
 
   const fetchTargetTags = useCallback(async (targetId: string) => {
+    // FALLBACK: Returns empty array when not authenticated
     if (!getAuthToken()) return [];
 
     setLoading(true);
@@ -24,6 +25,7 @@ export function useTaggings() {
       const data = await authFetch<ListTargetTagsResponse>(
         `/api/me/trust/taggings?target_id=${targetId}`
       );
+      // FALLBACK: Returns empty array when response field is missing
       setTargetTaggings(data.taggings || []);
       return data.taggings || [];
     } catch (e) {
@@ -35,6 +37,7 @@ export function useTaggings() {
   }, []);
 
   const addTagging = useCallback(async (tagName: string, targetId: string) => {
+    // FALLBACK: Returns null when not authenticated
     if (!getAuthToken()) return null;
 
     setLoading(true);
@@ -53,6 +56,7 @@ export function useTaggings() {
   }, []);
 
   const removeTagging = useCallback(async (id: string) => {
+    // FALLBACK: Returns false when not authenticated
     if (!getAuthToken()) return false;
 
     setLoading(true);

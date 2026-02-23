@@ -45,7 +45,9 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
+    // FALLBACK: Returns empty array when response items is missing
     const items = (response.items || []).map((item) => {
+      // FALLBACK: Returns null when profile is missing
       const profile = item.profile
         ? mapCastProfileToFrontend(item.profile)
         : null;
@@ -65,6 +67,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       items,
+      // FALLBACK: Returns empty/false when pagination fields are missing
       nextCursor: response.nextCursor || "",
       hasMore: response.hasMore || false,
     });
