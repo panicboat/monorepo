@@ -42,6 +42,13 @@ module Relationship
         }
       end
 
+      def list_by_blocked_id(blocked_id:, limit: 50)
+        blocks.where(blocked_id: blocked_id)
+          .order { created_at.desc }
+          .limit(limit)
+          .to_a
+      end
+
       def blocked_user_ids(blocker_id:)
         blocks.dataset
           .where(blocker_id: blocker_id)
