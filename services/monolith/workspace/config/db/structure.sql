@@ -417,8 +417,8 @@ CREATE TABLE trust.reviews (
     content text,
     score integer NOT NULL,
     status text DEFAULT 'approved'::text NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT score_range CHECK (((score >= 1) AND (score <= 5)))
 );
 

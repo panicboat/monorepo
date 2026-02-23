@@ -18,6 +18,7 @@ interface CastDetailViewProps {
   images?: MediaItem[];
   plans?: ServicePlan[];
   schedules?: WeeklySchedule[];
+  canViewDetails?: boolean;
 }
 
 export const CastDetailView = ({
@@ -26,6 +27,7 @@ export const CastDetailView = ({
   images,
   plans = [],
   schedules = [],
+  canViewDetails = true,
 }: CastDetailViewProps) => {
   // Initialize with today's date selected
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDateStr);
@@ -43,16 +45,20 @@ export const CastDetailView = ({
     <div className="bg-surface">
       <PhotoGallery castId={castId} images={images} />
       <ProfileSpecs profileData={profileData} castId={castId} />
-      <ScheduleCalendar
-        schedules={schedules}
-        onDateSelect={handleDateSelect}
-        selectedDate={selectedDate}
-      />
-      <PriceSystem
-        plans={plans}
-        selectedSchedules={selectedSchedules}
-        hasDateSelected={true}
-      />
+      {canViewDetails && (
+        <>
+          <ScheduleCalendar
+            schedules={schedules}
+            onDateSelect={handleDateSelect}
+            selectedDate={selectedDate}
+          />
+          <PriceSystem
+            plans={plans}
+            selectedSchedules={selectedSchedules}
+            hasDateSelected={true}
+          />
+        </>
+      )}
     </div>
   );
 };

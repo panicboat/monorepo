@@ -32,13 +32,7 @@ export async function GET(
     const castId = profileResponse.profile.id;
     const profile = mapCastProfileToFrontend(profileResponse.profile);
 
-    // 2. Parallel fetch: plans, schedules from Offer
-    const [plansResponse, schedulesResponse] = await Promise.all([
-      offerClient.getPlans({ castId }, headers),
-      offerClient.getSchedules({ castId }, headers),
-    ]);
-
-    // 3. Check if cast is private and if viewer is an approved follower
+    // 2. Determine if viewer can see details (plans, schedules, etc.)
     let canViewDetails = true;
     if (profileResponse.profile.visibility === CastVisibility.PRIVATE) {
       try {
@@ -53,28 +47,36 @@ export async function GET(
       }
     }
 
-    const plans = canViewDetails
-      ? (plansResponse.plans || []).map((p) => ({
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          duration: p.durationMinutes,
-          isRecommended: p.isRecommended || false,
-        }))
-      : [];
+    // 3. Fetch plans and schedules only if viewer can see details
+    let plans: { id: string; name: string; price: number; duration: number; isRecommended: boolean }[] = [];
+    let schedules: { date: string; start: string; end: string }[] = [];
 
-    const schedules = canViewDetails
-      ? (schedulesResponse.schedules || []).map((s) => ({
-          date: s.date,
-          start: s.startTime,
-          end: s.endTime,
-        }))
-      : [];
+    if (canViewDetails) {
+      const [plansResponse, schedulesResponse] = await Promise.all([
+        offerClient.getPlans({ castId }, headers),
+        offerClient.getSchedules({ castId }, headers),
+      ]);
+
+      plans = (plansResponse.plans || []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        duration: p.durationMinutes,
+        isRecommended: p.isRecommended || false,
+      }));
+
+      schedules = (schedulesResponse.schedules || []).map((s) => ({
+        date: s.date,
+        start: s.startTime,
+        end: s.endTime,
+      }));
+    }
 
     return NextResponse.json({
       profile,
       plans,
       schedules,
+      canViewDetails,
     });
   } catch (error: unknown) {
     if (error instanceof ConnectError && error.code === 5) {

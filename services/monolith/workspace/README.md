@@ -92,6 +92,7 @@ bundle install
 docker-compose up -d db
 # Update config/app.rb or .env to point to your Postgres
 # Default: postgres
+bundle exec hanami db drop
 bundle exec hanami db create
 bundle exec hanami db migrate
 bundle exec hanami db seed

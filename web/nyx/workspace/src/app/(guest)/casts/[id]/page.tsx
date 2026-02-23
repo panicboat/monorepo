@@ -16,6 +16,7 @@ interface CastData {
   profile: CastProfile;
   plans: ServicePlan[];
   schedules: WeeklySchedule[];
+  canViewDetails: boolean;
 }
 
 export default function CastDetailPage({
@@ -90,13 +91,16 @@ export default function CastDetailPage({
         images={images}
         plans={data.plans}
         schedules={data.schedules}
+        canViewDetails={data.canViewDetails}
       />
 
-      {/* Trust Section (Tags + Reviews) */}
-      <TrustSectionWrapper castId={data.profile.id} castName={data.profile.name} />
-
-      {/* Cast Timeline */}
-      <CastTimeline castId={data.profile.id} />
+      {/* Details section - only visible for public casts or approved followers */}
+      {data.canViewDetails && (
+        <>
+          <TrustSectionWrapper castId={data.profile.id} castName={data.profile.name} />
+          <CastTimeline castId={data.profile.id} />
+        </>
+      )}
 
       {/* Floating Action Buttons */}
       <FloatingActionButtons castId={data.profile.id} castName={data.profile.name} />
