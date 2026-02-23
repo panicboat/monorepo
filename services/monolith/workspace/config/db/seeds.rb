@@ -207,6 +207,7 @@ cast_data = [
     three_sizes: { bust: 86, waist: 58, hip: 85, cup: "E" }.to_json,
     blood_type: "A",
     tags: ["癒し系", "話し上手", "初心者歓迎"].to_json,
+    default_schedules: [{ start: "12:00", end: "15:00" }, { start: "18:00", end: "23:00" }].to_json,
   },
   # Cast 2: Mio (PRIVATE) - 非フォロワーにはプラン/スケジュールが非表示
   {
@@ -221,6 +222,7 @@ cast_data = [
     three_sizes: { bust: 88, waist: 59, hip: 87, cup: "F" }.to_json,
     blood_type: "O",
     tags: ["大人の時間", "ワイン好き", "夜型"].to_json,
+    default_schedules: [{ start: "20:00", end: "02:00" }].to_json,
   },
   # Cast 3: Rin (PUBLIC) - 誰でもプロフィール全情報を閲覧可能
   {
@@ -235,6 +237,7 @@ cast_data = [
     three_sizes: { bust: 82, waist: 56, hip: 83, cup: "C" }.to_json,
     blood_type: "B",
     tags: ["癒し系", "読書好き", "のんびり"].to_json,
+    default_schedules: [{ start: "14:00", end: "18:00" }, { start: "19:00", end: "22:00" }].to_json,
   },
 ]
 
