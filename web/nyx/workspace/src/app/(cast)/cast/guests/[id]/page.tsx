@@ -37,8 +37,7 @@ export default function GuestDetailPage({
     { revalidateOnFocus: false }
   );
 
-  const { createReview } = useReviews();
-  const { reviews, fetchReviews, loading: reviewsLoading } = useReviews();
+  const { createReview, reviews, fetchReviews, loading: reviewsLoading } = useReviews();
   const { stats, loading: statsLoading } = useReviewStats(id);
   const { blockers, loading: blockersLoading } = useBlockedBy(id);
   const [showTrustModal, setShowTrustModal] = useState(false);
