@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 interface ReviewCardProps {
   review: Review;
   showActions?: boolean;
+  showReviewerLink?: boolean;
   onApprove?: (id: string) => Promise<void>;
   onReject?: (id: string) => Promise<void>;
   actionLoading?: boolean;
@@ -52,6 +53,7 @@ function ReviewerAvatar({ url, name }: { url?: string; name?: string }) {
 export function ReviewCard({
   review,
   showActions = false,
+  showReviewerLink = true,
   onApprove,
   onReject,
   actionLoading = false,
@@ -68,7 +70,7 @@ export function ReviewCard({
       {/* Reviewer Info (shown for pending reviews with reviewer data) */}
       {hasReviewerInfo && (
         <div className="flex items-center gap-3 mb-3">
-          {review.reviewerProfileId ? (
+          {showReviewerLink && review.reviewerProfileId ? (
             <Link
               href={`/cast/guests/${review.reviewerProfileId}`}
               className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"

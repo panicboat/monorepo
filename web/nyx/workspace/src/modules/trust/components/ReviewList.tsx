@@ -8,6 +8,7 @@ interface ReviewListProps {
   reviews: Review[];
   loading?: boolean;
   showActions?: boolean;
+  showReviewerLink?: boolean;
   onApprove?: (id: string) => Promise<void>;
   onReject?: (id: string) => Promise<void>;
   actionLoadingId?: string | null;
@@ -18,6 +19,7 @@ export function ReviewList({
   reviews,
   loading = false,
   showActions = false,
+  showReviewerLink = true,
   onApprove,
   onReject,
   actionLoadingId = null,
@@ -47,6 +49,7 @@ export function ReviewList({
           key={review.id}
           review={review}
           showActions={showActions}
+          showReviewerLink={showReviewerLink}
           onApprove={onApprove}
           onReject={onReject}
           actionLoading={actionLoadingId === review.id}

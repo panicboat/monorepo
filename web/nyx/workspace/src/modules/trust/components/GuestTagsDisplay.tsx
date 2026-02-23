@@ -48,10 +48,6 @@ export function GuestTagsDisplay({ targetId }: GuestTagsDisplayProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <TagIcon className="h-4 w-4 text-text-muted" />
-        <h4 className="text-sm font-bold text-text-primary">ゲストからのタグ</h4>
-      </div>
       <div className="flex flex-wrap gap-2">
         {targetTaggings.map((tagging) => (
           <TagPill

@@ -85,7 +85,7 @@ export default function CastDetailPage({
   return (
     <div className="relative bg-surface pb-24">
       <CastDetailView
-        castId={id}
+        castId={data.profile.id}
         profileData={data.profile}
         images={images}
         plans={data.plans}

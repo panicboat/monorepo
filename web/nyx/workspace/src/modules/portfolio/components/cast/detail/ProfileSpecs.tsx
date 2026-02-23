@@ -3,6 +3,7 @@
 import { Lock } from "lucide-react";
 
 import { CastProfile, ProfileFormData } from "@/modules/portfolio/types";
+import { GuestTagsDisplay } from "@/modules/trust/components/GuestTagsDisplay";
 
 // Helper to normalize data
 const getDisplayData = (data?: CastProfile | ProfileFormData) => {
@@ -49,8 +50,10 @@ const getDisplayData = (data?: CastProfile | ProfileFormData) => {
 
 export const ProfileSpecs = ({
   profileData,
+  castId,
 }: {
   profileData?: CastProfile | ProfileFormData;
+  castId?: string;
 }) => {
   const display = getDisplayData(profileData);
 
@@ -217,6 +220,9 @@ export const ProfileSpecs = ({
           ))}
         </div>
       )}
+
+      {/* Guest Tags (displayed directly below cast tags) */}
+      {castId && <GuestTagsDisplay targetId={castId} />}
     </div>
   );
 };
