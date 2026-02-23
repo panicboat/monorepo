@@ -23,6 +23,7 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 - **一貫性を保つ** - 既存コードのスタイル・パターンに従う
 - **TODO コメント** - 一時的な実装には必ず `// TODO:` を追加
+- **FALLBACK コメント** - フォールバック処理を追加する場合は必ず `// FALLBACK:` コメントを追加
 
 ## Development (Seed Data)
 
@@ -98,3 +99,9 @@ Browser → Next.js API Routes (BFF) → gRPC → Monolith
 
 - `proto/identity/v1/service.proto` - IdentityService (認証)
 - `proto/portfolio/v1/service.proto` - CastService (プロフィール)
+
+## Working in Services
+
+サービス内で作業する際は、**作業開始前にそのサービスの `workspace/README.md` を読むこと**。
+
+README には開発コマンド（proto 生成、ビルド、テストなど）が記載されている。
