@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file relationship/v1/block_service.proto.
  */
 export const file_relationship_v1_block_service: GenFile = /*@__PURE__*/
-  fileDesc("CiNyZWxhdGlvbnNoaXAvdjEvYmxvY2tfc2VydmljZS5wcm90bxIPcmVsYXRpb25zaGlwLnYxImEKC0Jsb2NrZWRVc2VyEgoKAmlkGAEgASgJEhEKCXVzZXJfdHlwZRgCIAEoCRIMCgRuYW1lGAMgASgJEhEKCWltYWdlX3VybBgEIAEoCRISCgpibG9ja2VkX2F0GAUgASgJIjwKEEJsb2NrVXNlclJlcXVlc3QSEgoKYmxvY2tlZF9pZBgBIAEoCRIUCgxibG9ja2VkX3R5cGUYAiABKAkiJAoRQmxvY2tVc2VyUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCIoChJVbmJsb2NrVXNlclJlcXVlc3QSEgoKYmxvY2tlZF9pZBgBIAEoCSImChNVbmJsb2NrVXNlclJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiMwoSTGlzdEJsb2NrZWRSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJpChNMaXN0QmxvY2tlZFJlc3BvbnNlEisKBXVzZXJzGAEgAygLMhwucmVsYXRpb25zaGlwLnYxLkJsb2NrZWRVc2VyEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIikKFUdldEJsb2NrU3RhdHVzUmVxdWVzdBIQCgh1c2VyX2lkcxgBIAMoCSKPAQoWR2V0QmxvY2tTdGF0dXNSZXNwb25zZRJFCgdibG9ja2VkGAEgAygLMjQucmVsYXRpb25zaGlwLnYxLkdldEJsb2NrU3RhdHVzUmVzcG9uc2UuQmxvY2tlZEVudHJ5Gi4KDEJsb2NrZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBMvkCCgxCbG9ja1NlcnZpY2USUgoJQmxvY2tVc2VyEiEucmVsYXRpb25zaGlwLnYxLkJsb2NrVXNlclJlcXVlc3QaIi5yZWxhdGlvbnNoaXAudjEuQmxvY2tVc2VyUmVzcG9uc2USWAoLVW5ibG9ja1VzZXISIy5yZWxhdGlvbnNoaXAudjEuVW5ibG9ja1VzZXJSZXF1ZXN0GiQucmVsYXRpb25zaGlwLnYxLlVuYmxvY2tVc2VyUmVzcG9uc2USWAoLTGlzdEJsb2NrZWQSIy5yZWxhdGlvbnNoaXAudjEuTGlzdEJsb2NrZWRSZXF1ZXN0GiQucmVsYXRpb25zaGlwLnYxLkxpc3RCbG9ja2VkUmVzcG9uc2USYQoOR2V0QmxvY2tTdGF0dXMSJi5yZWxhdGlvbnNoaXAudjEuR2V0QmxvY2tTdGF0dXNSZXF1ZXN0GicucmVsYXRpb25zaGlwLnYxLkdldEJsb2NrU3RhdHVzUmVzcG9uc2ViBnByb3RvMw");
+  fileDesc("CiNyZWxhdGlvbnNoaXAvdjEvYmxvY2tfc2VydmljZS5wcm90bxIPcmVsYXRpb25zaGlwLnYxImEKC0Jsb2NrZWRVc2VyEgoKAmlkGAEgASgJEhEKCXVzZXJfdHlwZRgCIAEoCRIMCgRuYW1lGAMgASgJEhEKCWltYWdlX3VybBgEIAEoCRISCgpibG9ja2VkX2F0GAUgASgJIjwKEEJsb2NrVXNlclJlcXVlc3QSEgoKYmxvY2tlZF9pZBgBIAEoCRIUCgxibG9ja2VkX3R5cGUYAiABKAkiJAoRQmxvY2tVc2VyUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCIoChJVbmJsb2NrVXNlclJlcXVlc3QSEgoKYmxvY2tlZF9pZBgBIAEoCSImChNVbmJsb2NrVXNlclJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiMwoSTGlzdEJsb2NrZWRSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJpChNMaXN0QmxvY2tlZFJlc3BvbnNlEisKBXVzZXJzGAEgAygLMhwucmVsYXRpb25zaGlwLnYxLkJsb2NrZWRVc2VyEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIikKFUdldEJsb2NrU3RhdHVzUmVxdWVzdBIQCgh1c2VyX2lkcxgBIAMoCSKPAQoWR2V0QmxvY2tTdGF0dXNSZXNwb25zZRJFCgdibG9ja2VkGAEgAygLMjQucmVsYXRpb25zaGlwLnYxLkdldEJsb2NrU3RhdHVzUmVzcG9uc2UuQmxvY2tlZEVudHJ5Gi4KDEJsb2NrZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBIikKFExpc3RCbG9ja2VkQnlSZXF1ZXN0EhEKCXRhcmdldF9pZBgBIAEoCSJHChVMaXN0QmxvY2tlZEJ5UmVzcG9uc2USLgoIYmxvY2tlcnMYASADKAsyHC5yZWxhdGlvbnNoaXAudjEuQmxvY2tlZFVzZXIy2QMKDEJsb2NrU2VydmljZRJSCglCbG9ja1VzZXISIS5yZWxhdGlvbnNoaXAudjEuQmxvY2tVc2VyUmVxdWVzdBoiLnJlbGF0aW9uc2hpcC52MS5CbG9ja1VzZXJSZXNwb25zZRJYCgtVbmJsb2NrVXNlchIjLnJlbGF0aW9uc2hpcC52MS5VbmJsb2NrVXNlclJlcXVlc3QaJC5yZWxhdGlvbnNoaXAudjEuVW5ibG9ja1VzZXJSZXNwb25zZRJYCgtMaXN0QmxvY2tlZBIjLnJlbGF0aW9uc2hpcC52MS5MaXN0QmxvY2tlZFJlcXVlc3QaJC5yZWxhdGlvbnNoaXAudjEuTGlzdEJsb2NrZWRSZXNwb25zZRJhCg5HZXRCbG9ja1N0YXR1cxImLnJlbGF0aW9uc2hpcC52MS5HZXRCbG9ja1N0YXR1c1JlcXVlc3QaJy5yZWxhdGlvbnNoaXAudjEuR2V0QmxvY2tTdGF0dXNSZXNwb25zZRJeCg1MaXN0QmxvY2tlZEJ5EiUucmVsYXRpb25zaGlwLnYxLkxpc3RCbG9ja2VkQnlSZXF1ZXN0GiYucmVsYXRpb25zaGlwLnYxLkxpc3RCbG9ja2VkQnlSZXNwb25zZWIGcHJvdG8z");
 
 /**
  * @generated from message relationship.v1.BlockedUser
@@ -218,6 +218,44 @@ export const GetBlockStatusResponseSchema: GenMessage<GetBlockStatusResponse> = 
   messageDesc(file_relationship_v1_block_service, 8);
 
 /**
+ * @generated from message relationship.v1.ListBlockedByRequest
+ */
+export type ListBlockedByRequest = Message<"relationship.v1.ListBlockedByRequest"> & {
+  /**
+   * Guest profile ID
+   *
+   * @generated from field: string target_id = 1;
+   */
+  targetId: string;
+};
+
+/**
+ * Describes the message relationship.v1.ListBlockedByRequest.
+ * Use `create(ListBlockedByRequestSchema)` to create a new message.
+ */
+export const ListBlockedByRequestSchema: GenMessage<ListBlockedByRequest> = /*@__PURE__*/
+  messageDesc(file_relationship_v1_block_service, 9);
+
+/**
+ * @generated from message relationship.v1.ListBlockedByResponse
+ */
+export type ListBlockedByResponse = Message<"relationship.v1.ListBlockedByResponse"> & {
+  /**
+   * Casts who blocked this guest
+   *
+   * @generated from field: repeated relationship.v1.BlockedUser blockers = 1;
+   */
+  blockers: BlockedUser[];
+};
+
+/**
+ * Describes the message relationship.v1.ListBlockedByResponse.
+ * Use `create(ListBlockedByResponseSchema)` to create a new message.
+ */
+export const ListBlockedByResponseSchema: GenMessage<ListBlockedByResponse> = /*@__PURE__*/
+  messageDesc(file_relationship_v1_block_service, 10);
+
+/**
  * @generated from service relationship.v1.BlockService
  */
 export const BlockService: GenService<{
@@ -252,6 +290,14 @@ export const BlockService: GenService<{
     methodKind: "unary";
     input: typeof GetBlockStatusRequestSchema;
     output: typeof GetBlockStatusResponseSchema;
+  },
+  /**
+   * @generated from rpc relationship.v1.BlockService.ListBlockedBy
+   */
+  listBlockedBy: {
+    methodKind: "unary";
+    input: typeof ListBlockedByRequestSchema;
+    output: typeof ListBlockedByResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_relationship_v1_block_service, 0);

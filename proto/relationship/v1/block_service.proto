@@ -7,6 +7,7 @@ service BlockService {
   rpc UnblockUser(UnblockUserRequest) returns (UnblockUserResponse);
   rpc ListBlocked(ListBlockedRequest) returns (ListBlockedResponse);
   rpc GetBlockStatus(GetBlockStatusRequest) returns (GetBlockStatusResponse);
+  rpc ListBlockedBy(ListBlockedByRequest) returns (ListBlockedByResponse);
 }
 
 message BlockedUser {
@@ -51,4 +52,12 @@ message GetBlockStatusRequest {
 
 message GetBlockStatusResponse {
   map<string, bool> blocked = 1; // user_id -> is_blocked
+}
+
+message ListBlockedByRequest {
+  string target_id = 1;  // Guest profile ID
+}
+
+message ListBlockedByResponse {
+  repeated BlockedUser blockers = 1;  // Casts who blocked this guest
 }

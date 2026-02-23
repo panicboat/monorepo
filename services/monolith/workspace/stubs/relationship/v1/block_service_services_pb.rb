@@ -19,6 +19,7 @@ module Relationship
         rpc :UnblockUser, ::Relationship::V1::UnblockUserRequest, ::Relationship::V1::UnblockUserResponse
         rpc :ListBlocked, ::Relationship::V1::ListBlockedRequest, ::Relationship::V1::ListBlockedResponse
         rpc :GetBlockStatus, ::Relationship::V1::GetBlockStatusRequest, ::Relationship::V1::GetBlockStatusResponse
+        rpc :ListBlockedBy, ::Relationship::V1::ListBlockedByRequest, ::Relationship::V1::ListBlockedByResponse
       end
 
       Stub = Service.rpc_stub_class
