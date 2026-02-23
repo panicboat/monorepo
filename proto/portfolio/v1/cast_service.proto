@@ -49,6 +49,11 @@ message Area {
   string code = 4;
 }
 
+message DefaultSchedule {
+  string start = 1;  // HH:mm
+  string end = 2;    // HH:mm
+}
+
 message CastProfile {
   string user_id = 1;
   string name = 2;
@@ -58,8 +63,8 @@ message CastProfile {
   repeated string images = 6; // Gallery image URLs (populated from gallery_media_ids)
   reserved 7; // was image_path (legacy)
   string tagline = 8;
-  string default_schedule_start = 9;
-  string default_schedule_end = 10;
+  repeated DefaultSchedule default_schedules = 9;
+  reserved 10;  // was default_schedule_end
   SocialLinks social_links = 11;
   int32 age = 12;
   int32 height = 13;
@@ -101,8 +106,8 @@ message CreateCastProfileRequest {
   string bio = 2;
   reserved 3; // was image_path (use SaveCastImages instead)
   string tagline = 4;
-  string default_schedule_start = 5;
-  string default_schedule_end = 6;
+  repeated DefaultSchedule default_schedules = 5;
+  reserved 6;  // was default_schedule_end
   SocialLinks social_links = 7;
   int32 age = 8;
   int32 height = 9;
@@ -121,8 +126,8 @@ message SaveCastProfileRequest {
   string bio = 2;
   reserved 3; // was image_path (use SaveCastImages instead)
   string tagline = 4;
-  string default_schedule_start = 5;
-  string default_schedule_end = 6;
+  repeated DefaultSchedule default_schedules = 5;
+  reserved 6;  // was default_schedule_end
   SocialLinks social_links = 7;
   CastVisibility visibility = 8;
   int32 age = 9;
