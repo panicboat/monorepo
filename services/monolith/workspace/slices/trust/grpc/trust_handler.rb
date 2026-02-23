@@ -170,7 +170,30 @@ module Trust
           status: request.message.status.to_s.empty? ? nil : request.message.status
         )
 
-        items = reviews.map { |r| build_review_proto(r) }
+        # Collect reviewer IDs
+        reviewer_ids = reviews.map do |r|
+          r.respond_to?(:reviewer_id) ? r.reviewer_id : r[:reviewer_id]
+        end.compact.uniq
+
+        # Fetch guest profiles by user IDs
+        guests_by_user_id = guest_adapter.find_by_user_ids(reviewer_ids)
+
+        # Fetch avatar media for guests
+        avatar_media_ids = guests_by_user_id.values.map(&:avatar_media_id).compact
+        media_files = media_adapter.find_by_ids(avatar_media_ids)
+
+        items = reviews.map do |r|
+          reviewer_id = r.respond_to?(:reviewer_id) ? r.reviewer_id : r[:reviewer_id]
+          guest = guests_by_user_id[reviewer_id]
+          avatar_url = guest&.avatar_media_id ? media_files[guest.avatar_media_id]&.url : nil
+
+          build_review_proto(
+            r,
+            reviewer_name: guest&.name,
+            reviewer_avatar_url: avatar_url,
+            reviewer_profile_id: guest&.id
+          )
+        end
 
         ::Trust::V1::ListReviewsResponse.new(reviews: items)
       end
