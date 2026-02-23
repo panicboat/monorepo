@@ -40,7 +40,8 @@ module Trust
         get_review_stats_uc: "use_cases.reviews.get_review_stats",
         approve_review_uc: "use_cases.reviews.approve_review",
         reject_review_uc: "use_cases.reviews.reject_review",
-        list_pending_reviews_uc: "use_cases.reviews.list_pending_reviews"
+        list_pending_reviews_uc: "use_cases.reviews.list_pending_reviews",
+        review_repo: "repositories.review_repository"
       ]
 
       # --- Tagging operations ---
@@ -165,10 +166,17 @@ module Trust
       end
 
       def list_reviews
-        reviews = list_reviews_uc.call(
-          reviewee_id: request.message.reviewee_id,
-          status: request.message.status.to_s.empty? ? nil : request.message.status
-        )
+        reviewee_id = request.message.reviewee_id.to_s.empty? ? nil : request.message.reviewee_id
+        reviewer_id = request.message.reviewer_id.to_s.empty? ? nil : request.message.reviewer_id
+        status = request.message.status.to_s.empty? ? nil : request.message.status
+
+        reviews = if reviewer_id
+          review_repo.list_by_reviewer(reviewer_id: reviewer_id, status: status)
+        elsif reviewee_id
+          list_reviews_uc.call(reviewee_id: reviewee_id, status: status)
+        else
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "reviewee_id or reviewer_id is required")
+        end
 
         # Collect reviewer IDs
         reviewer_ids = reviews.map do |r|

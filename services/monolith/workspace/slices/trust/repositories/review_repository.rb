@@ -55,8 +55,10 @@ module Trust
         list_by_reviewee(reviewee_id: reviewee_id, status: "pending")
       end
 
-      def list_by_reviewer(reviewer_id:)
-        reviews.where(reviewer_id: reviewer_id).order { created_at.desc }.to_a
+      def list_by_reviewer(reviewer_id:, status: nil)
+        query = reviews.where(reviewer_id: reviewer_id)
+        query = query.where(status: status) if status
+        query.order { created_at.desc }.to_a
       end
 
       def approve(id:, reviewee_id:)

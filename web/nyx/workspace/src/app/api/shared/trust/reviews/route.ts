@@ -10,17 +10,22 @@ export async function GET(req: NextRequest) {
     }
 
     const revieweeId = req.nextUrl.searchParams.get("reviewee_id");
+    const reviewerId = req.nextUrl.searchParams.get("reviewer_id");
     const status = req.nextUrl.searchParams.get("status");
 
-    if (!revieweeId) {
+    if (!revieweeId && !reviewerId) {
       return NextResponse.json(
-        { error: "reviewee_id is required" },
+        { error: "reviewee_id or reviewer_id is required" },
         { status: 400 }
       );
     }
 
     const response = await trustClient.listReviews(
-      { revieweeId, status: status || undefined },
+      {
+        revieweeId: revieweeId || undefined,
+        reviewerId: reviewerId || undefined,
+        status: status || undefined,
+      },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

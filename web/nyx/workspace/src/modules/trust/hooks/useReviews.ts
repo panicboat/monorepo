@@ -30,6 +30,28 @@ export function useReviews() {
     }
   }, []);
 
+  const fetchReviewsByReviewer = useCallback(async (reviewerId: string, status?: string) => {
+    if (!getAuthToken()) {
+      throw new Error("Authentication required");
+    }
+
+    setLoading(true);
+    try {
+      let url = `/api/shared/trust/reviews?reviewer_id=${reviewerId}`;
+      if (status) {
+        url += `&status=${status}`;
+      }
+      const data = await authFetch<ListReviewsResponse>(url);
+      setReviews(data.reviews);
+      return data.reviews;
+    } catch (e) {
+      console.error("Fetch reviews by reviewer error:", e);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const createReview = useCallback(async (request: CreateReviewRequest) => {
     if (!getAuthToken()) {
       throw new Error("Authentication required");
@@ -100,6 +122,7 @@ export function useReviews() {
   return {
     reviews,
     fetchReviews,
+    fetchReviewsByReviewer,
     createReview,
     updateReview,
     deleteReview,

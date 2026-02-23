@@ -117,8 +117,9 @@ message DeleteReviewResponse {
 }
 
 message ListReviewsRequest {
-  string reviewee_id = 1;
+  optional string reviewee_id = 1;
   optional string status = 2;
+  optional string reviewer_id = 3;
 }
 
 message ListReviewsResponse {

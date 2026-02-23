@@ -5,7 +5,7 @@ import { Loader2, Users, Ban, Check, Edit3 } from "lucide-react";
 import useSWR from "swr";
 import { fetcher, getAuthToken } from "@/lib/swr";
 import { useToast } from "@/components/ui/Toast";
-import { TrustTagsSection, WriteTrustModal, useReviews, useReviewStats, ReviewList, ReviewStatsDisplay } from "@/modules/trust";
+import { TrustTagsSection, WriteTrustModal, useReviews, ReviewList } from "@/modules/trust";
 import { useBlockedBy } from "@/modules/relationship";
 
 interface GuestDetail {
@@ -37,16 +37,15 @@ export default function GuestDetailPage({
     { revalidateOnFocus: false }
   );
 
-  const { createReview, reviews, fetchReviews, loading: reviewsLoading } = useReviews();
-  const { stats, loading: statsLoading } = useReviewStats(id);
+  const { createReview, reviews, fetchReviewsByReviewer, loading: reviewsLoading } = useReviews();
   const { blockers, loading: blockersLoading } = useBlockedBy(id);
   const [showTrustModal, setShowTrustModal] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      fetchReviews(id, "approved").catch(console.error);
+    if (data?.userId) {
+      fetchReviewsByReviewer(data.userId, "approved").catch(console.error);
     }
-  }, [id, fetchReviews]);
+  }, [data?.userId, fetchReviewsByReviewer]);
 
   const handleSubmitReview = async (score: number, content: string) => {
     await createReview({ revieweeId: id, score, content: content || undefined });
@@ -226,16 +225,13 @@ export default function GuestDetailPage({
 
         {/* Reviews Section */}
         <div className="bg-surface rounded-xl border border-border p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-medium text-text-secondary">
-              このゲストのレビュー
-            </h3>
-            <ReviewStatsDisplay stats={stats} loading={statsLoading} />
-          </div>
+          <h3 className="text-sm font-medium text-text-secondary mb-3">
+            このゲストが書いたレビュー
+          </h3>
           <ReviewList
             reviews={reviews}
             loading={reviewsLoading}
-            emptyMessage="このゲストのレビューはまだありません"
+            emptyMessage="このゲストはまだレビューを書いていません"
           />
         </div>
 
