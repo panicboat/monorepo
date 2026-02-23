@@ -234,15 +234,14 @@ CREATE TABLE portfolio.casts (
     blood_type text,
     tags jsonb DEFAULT '[]'::jsonb,
     social_links jsonb DEFAULT '{}'::jsonb,
-    default_schedule_start text,
-    default_schedule_end text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     three_sizes jsonb DEFAULT '{}'::jsonb,
     slug character varying(30),
     registered_at timestamp with time zone,
     profile_media_id uuid,
-    avatar_media_id uuid
+    avatar_media_id uuid,
+    default_schedules jsonb DEFAULT '[]'::jsonb
 );
 
 
@@ -1185,4 +1184,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260220000001_create_trust_tags.rb'),
 ('20260220000002_create_trust_taggings.rb'),
 ('20260221000001_refactor_trust_freeform_tagging.rb'),
-('20260222000001_create_trust_reviews.rb');
+('20260222000001_create_trust_reviews.rb'),
+('20260223092141_add_default_schedules_to_casts.rb');
