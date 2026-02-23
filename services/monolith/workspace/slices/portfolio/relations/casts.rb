@@ -7,8 +7,7 @@ module Portfolio
         attribute :name, Types::String
         attribute :bio, Types::String
         attribute :tagline, Types::String
-        attribute :default_schedule_start, Types::String
-        attribute :default_schedule_end, Types::String
+        attribute :default_schedules, Types::Any  # JSONB array
         attribute :visibility, Types::String
         attribute :social_links, Types::Hash
         attribute :age, Types::Integer
