@@ -137,6 +137,8 @@ GEM
       zeitwerk (~> 2.6)
     erb (6.0.1)
     erubi (1.13.1)
+    faker (3.6.0)
+      i18n (>= 1.8.11, < 2)
     ffi (1.17.3-aarch64-linux-gnu)
     ffi (1.17.3-aarch64-linux-musl)
     ffi (1.17.3-arm-linux-gnu)
@@ -480,6 +482,7 @@ DEPENDENCIES
   dotenv
   dry-operation (>= 1.1.0)
   dry-types (~> 1.9, >= 1.9.1)
+  faker (~> 3.2)
   grpc
   grpc-tools
   gruf
