@@ -482,7 +482,7 @@ DEPENDENCIES
   dotenv
   dry-operation (>= 1.1.0)
   dry-types (~> 1.9, >= 1.9.1)
-  faker (~> 3.2)
+  faker (~> 3.6)
   grpc
   grpc-tools
   gruf
