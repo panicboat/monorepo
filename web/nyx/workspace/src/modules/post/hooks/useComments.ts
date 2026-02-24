@@ -52,13 +52,17 @@ export function useComments(postId: string) {
           { requireAuth: false }
         );
 
-        setState((prev) => ({
-          ...prev,
-          comments: cursor ? [...prev.comments, ...data.comments] : data.comments,
-          nextCursor: data.nextCursor,
-          hasMore: data.hasMore,
-          loading: false,
-        }));
+        setState((prev) => {
+          const existingIds = new Set(prev.comments.map((c) => c.id));
+          const newComments = data.comments.filter((c) => !existingIds.has(c.id));
+          return {
+            ...prev,
+            comments: cursor ? [...prev.comments, ...newComments] : data.comments,
+            nextCursor: data.nextCursor,
+            hasMore: data.hasMore,
+            loading: false,
+          };
+        });
       } catch (e) {
         const message = e instanceof Error ? e.message : "Unknown error";
         setState((prev) => ({ ...prev, loading: false, error: message }));
@@ -193,18 +197,21 @@ export function useComments(postId: string) {
         { requireAuth: false }
       );
 
-      setRepliesState((prev) => ({
-        ...prev,
-        [commentId]: {
-          replies: cursor
-            ? [...(prev[commentId]?.replies || []), ...data.replies]
-            : data.replies,
-          nextCursor: data.nextCursor,
-          hasMore: data.hasMore,
-          loading: false,
-          expanded: true,
-        },
-      }));
+      setRepliesState((prev) => {
+        const existingReplies = prev[commentId]?.replies || [];
+        const existingIds = new Set(existingReplies.map((r) => r.id));
+        const newReplies = data.replies.filter((r) => !existingIds.has(r.id));
+        return {
+          ...prev,
+          [commentId]: {
+            replies: cursor ? [...existingReplies, ...newReplies] : data.replies,
+            nextCursor: data.nextCursor,
+            hasMore: data.hasMore,
+            loading: false,
+            expanded: true,
+          },
+        };
+      });
     } catch (e) {
       console.error("Fetch replies error:", e);
       setRepliesState((prev) => ({

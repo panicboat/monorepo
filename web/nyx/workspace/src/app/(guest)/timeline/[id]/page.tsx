@@ -96,6 +96,14 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [likesCount, setLikesCount] = useState(0);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
 
+  // Prevent browser scroll restoration from applying previous page's scroll position
+  useEffect(() => {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     fetchPost();
   }, [fetchPost]);
