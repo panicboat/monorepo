@@ -3,3 +3,4 @@ export { useMyTagNames } from "./useMyTagNames";
 export { useReviews } from "./useReviews";
 export { useReviewStats } from "./useReviewStats";
 export { usePendingReviews } from "./usePendingReviews";
+export { useInfiniteReviews } from "./useInfiniteReviews";
