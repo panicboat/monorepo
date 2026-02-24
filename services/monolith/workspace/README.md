@@ -100,6 +100,30 @@ bundle exec hanami db seed
 # example query
 docker-compose exec db psql -U postgres -d monolith -P pager=off -c "set search_path = 'identity'; select * from users";
 ```
+
+### Bulk Seed Data
+
+For UI/UX testing and demos, you can generate large-scale seed data:
+
+```bash
+# Run with bulk seed (adds ~500 users, ~15k posts)
+BULK_SEED=true bundle exec hanami db seed
+
+# Or reset and seed with bulk data
+bundle exec hanami db reset
+BULK_SEED=true bundle exec hanami db seed
+```
+
+This generates:
+- 100 casts with profiles, plans, schedules
+- 400 guests with activity patterns
+- ~15,000 posts with hashtags
+- ~3,000+ follow relationships
+- ~280,000+ likes, ~200,000+ comments
+- ~800 reviews
+
+Note: Bulk seed generation takes approximately 20 minutes.
+
 ### 3. Run the gRPC server
 
 ```bash
