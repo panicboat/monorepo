@@ -193,7 +193,12 @@ function TrustSectionWrapper({
   return (
     <div className="mx-4 my-4">
       <div className="bg-surface rounded-xl border border-border p-4 shadow-sm">
-        <TrustSection targetId={castId} targetName={castName} showWriteReview={false} />
+        <TrustSection
+          targetId={castId}
+          targetName={castName}
+          showWriteReview={false}
+          reviewsLinkHref={`/casts/${castId}/reviews`}
+        />
       </div>
     </div>
   );

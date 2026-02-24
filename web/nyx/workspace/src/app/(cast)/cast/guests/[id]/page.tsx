@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, use, useEffect } from "react";
-import { Loader2, Users, Ban, Check, Edit3 } from "lucide-react";
+import { Loader2, Users, Ban, Check, Edit3, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import useSWR from "swr";
 import { fetcher, getAuthToken } from "@/lib/swr";
 import { useToast } from "@/components/ui/Toast";
@@ -225,11 +226,22 @@ export default function GuestDetailPage({
 
         {/* Reviews Section */}
         <div className="bg-surface rounded-xl border border-border p-4 shadow-sm">
-          <h3 className="text-sm font-medium text-text-secondary mb-3">
-            このゲストが書いたレビュー
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-text-secondary">
+              このゲストが書いたレビュー
+            </h3>
+            {reviews.length > 0 && (
+              <Link
+                href={`/cast/guests/${id}/reviews`}
+                className="text-sm text-info hover:text-info-hover flex items-center gap-1"
+              >
+                すべて見る
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            )}
+          </div>
           <ReviewList
-            reviews={reviews}
+            reviews={reviews.slice(0, 3)}
             loading={reviewsLoading}
             emptyMessage="このゲストはまだレビューを書いていません"
           />
