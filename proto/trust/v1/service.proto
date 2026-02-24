@@ -120,10 +120,14 @@ message ListReviewsRequest {
   optional string reviewee_id = 1;
   optional string status = 2;
   optional string reviewer_id = 3;
+  int32 limit = 4;      // default: 20, max: 50
+  string cursor = 5;    // optional, for pagination
 }
 
 message ListReviewsResponse {
   repeated Review reviews = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
 }
 
 message GetReviewStatsRequest {
