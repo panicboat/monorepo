@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect } from "react";
 import { Loader2, ArrowLeft, Star } from "lucide-react";
 import Link from "next/link";
+import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 import { useInfiniteReviews } from "../hooks/useInfiniteReviews";
 import { ReviewCard } from "./ReviewCard";
 import type { ReviewStats } from "../types";
@@ -29,9 +30,6 @@ export function ReviewListPage({
       status: "approved",
     });
 
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
-
   // Prevent browser scroll restoration from applying previous page's scroll position
   useEffect(() => {
     if ("scrollRestoration" in history) {
@@ -43,32 +41,6 @@ export function ReviewListPage({
   useEffect(() => {
     fetchInitial();
   }, [fetchInitial]);
-
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const target = entries[0];
-      if (target.isIntersecting && hasMore && !loadingMore) {
-        fetchMore();
-      }
-    },
-    [hasMore, loadingMore, fetchMore]
-  );
-
-  useEffect(() => {
-    const element = loadMoreRef.current;
-    if (!element) return;
-
-    observerRef.current = new IntersectionObserver(handleObserver, {
-      rootMargin: "100px",
-    });
-    observerRef.current.observe(element);
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [handleObserver]);
 
   return (
     <div className="min-h-screen bg-surface-secondary pb-24">
@@ -107,30 +79,22 @@ export function ReviewListPage({
             <p className="text-sm">レビューはまだありません</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {reviews.map((review) => (
-              <ReviewCard
-                key={review.id}
-                review={review}
-                showReviewerLink={targetType === "cast"}
-              />
-            ))}
-
-            {/* Load more trigger */}
-            <div ref={loadMoreRef} className="h-4" />
-
-            {loadingMore && (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="h-5 w-5 animate-spin text-text-muted" />
-              </div>
-            )}
-
-            {!hasMore && reviews.length > 0 && (
-              <div className="text-center py-4 text-sm text-text-muted">
-                すべてのレビューを表示しました
-              </div>
-            )}
-          </div>
+          <InfiniteScroll
+            hasMore={hasMore}
+            loading={loadingMore}
+            onLoadMore={fetchMore}
+            endMessage="すべてのレビューを表示しました"
+          >
+            <div className="space-y-3">
+              {reviews.map((review) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  showReviewerLink={targetType === "cast"}
+                />
+              ))}
+            </div>
+          </InfiniteScroll>
         )}
       </div>
     </div>
