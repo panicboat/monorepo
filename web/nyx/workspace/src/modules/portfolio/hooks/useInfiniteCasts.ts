@@ -47,6 +47,12 @@ export function useInfiniteCasts(options: UseInfiniteCastsOptions) {
   const [initialized, setInitialized] = useState(false);
   const cursorRef = useRef<string | null>(null);
 
+  // Use refs to track state without triggering re-renders of callbacks
+  const loadingRef = useRef(false);
+  const loadingMoreRef = useRef(false);
+  const initializedRef = useRef(false);
+  const hasMoreRef = useRef(true);
+
   const buildUrl = useCallback(
     (cursor?: string | null) => {
       const params = new URLSearchParams();
@@ -72,10 +78,12 @@ export function useInfiniteCasts(options: UseInfiniteCastsOptions) {
   );
 
   const fetchInitial = useCallback(async () => {
-    if (initialized || loading) {
+    // Use refs to check state without dependency issues
+    if (initializedRef.current || loadingRef.current) {
       return;
     }
 
+    loadingRef.current = true;
     setLoading(true);
     try {
       const url = buildUrl();
@@ -85,23 +93,27 @@ export function useInfiniteCasts(options: UseInfiniteCastsOptions) {
       }
       const data: SearchResponse = await res.json();
       setCasts(data.items);
+      hasMoreRef.current = data.hasMore;
       setHasMore(data.hasMore);
       cursorRef.current = data.nextCursor || null;
+      initializedRef.current = true;
       setInitialized(true);
       return data;
     } catch (e) {
       console.error("Fetch casts error:", e);
       throw e;
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
-  }, [buildUrl, initialized, loading]);
+  }, [buildUrl]);
 
   const fetchMore = useCallback(async () => {
-    if (!initialized || !hasMore || loadingMore || !cursorRef.current) {
+    if (!initializedRef.current || !hasMoreRef.current || loadingMoreRef.current || !cursorRef.current) {
       return;
     }
 
+    loadingMoreRef.current = true;
     setLoadingMore(true);
     try {
       const url = buildUrl(cursorRef.current);
@@ -117,6 +129,7 @@ export function useInfiniteCasts(options: UseInfiniteCastsOptions) {
         );
         return [...prev, ...newCasts];
       });
+      hasMoreRef.current = data.hasMore;
       setHasMore(data.hasMore);
       cursorRef.current = data.nextCursor || null;
       return data;
@@ -124,14 +137,19 @@ export function useInfiniteCasts(options: UseInfiniteCastsOptions) {
       console.error("Fetch more casts error:", e);
       throw e;
     } finally {
+      loadingMoreRef.current = false;
       setLoadingMore(false);
     }
-  }, [buildUrl, initialized, hasMore, loadingMore]);
+  }, [buildUrl]);
 
   const reset = useCallback(() => {
     setCasts([]);
+    hasMoreRef.current = true;
     setHasMore(true);
     cursorRef.current = null;
+    initializedRef.current = false;
+    loadingRef.current = false;
+    loadingMoreRef.current = false;
     setInitialized(false);
   }, []);
 
