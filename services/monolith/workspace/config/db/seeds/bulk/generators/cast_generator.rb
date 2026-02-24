@@ -57,7 +57,12 @@ module Seeds
           genres = db[:portfolio__genres].all.to_a
           areas = db[:portfolio__areas].all.to_a
 
+          # Find highest existing cast slug number
+          existing_slugs = db[:portfolio__casts].select(:slug).all.map { |r| r[:slug] }
+          max_slug_num = existing_slugs.map { |s| s.match(/^cast_(\d+)$/)&.[](1)&.to_i || 0 }.max || 0
+
           cast_ids = []
+          created_count = 0
           user_ids.each_with_index do |user_id, idx|
             existing = db[:portfolio__casts].where(user_id: user_id).first
             if existing
@@ -66,7 +71,8 @@ module Seeds
             end
 
             name = names[idx % names.size]
-            slug = "cast_#{idx + 4}"  # Start from 4 (3 existing)
+            created_count += 1
+            slug = "cast_#{max_slug_num + created_count}"
             visibility = rand < Config::CAST_PRIVATE_RATE ? "private" : "public"
 
             bio = Data::CAST_BIO_TEMPLATES.sample % {
