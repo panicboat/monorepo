@@ -83,8 +83,8 @@ module Trust
         { success: updated.positive? }
       end
 
-      def list_by_reviewee_paginated(reviewee_id:, status: nil, limit: DEFAULT_LIMIT, cursor: nil)
-        limit = [[limit.to_i, 1].max, MAX_LIMIT].min
+      def list_by_reviewee_paginated(reviewee_id:, status: nil, limit: nil, cursor: nil)
+        limit = limit.nil? || limit <= 0 ? DEFAULT_LIMIT : [limit.to_i, MAX_LIMIT].min
         decoded_cursor = decode_cursor(cursor)
 
         dataset = reviews.dataset.where(reviewee_id: reviewee_id)
@@ -107,8 +107,8 @@ module Trust
         build_pagination_result(items: items, limit: limit)
       end
 
-      def list_by_reviewer_paginated(reviewer_id:, status: nil, limit: DEFAULT_LIMIT, cursor: nil)
-        limit = [[limit.to_i, 1].max, MAX_LIMIT].min
+      def list_by_reviewer_paginated(reviewer_id:, status: nil, limit: nil, cursor: nil)
+        limit = limit.nil? || limit <= 0 ? DEFAULT_LIMIT : [limit.to_i, MAX_LIMIT].min
         decoded_cursor = decode_cursor(cursor)
 
         dataset = reviews.dataset.where(reviewer_id: reviewer_id)

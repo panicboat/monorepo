@@ -43,6 +43,7 @@ export interface Area {
 
 export interface CastProfile {
   id: string;
+  userId: string;
   name: string;
   slug?: string; // Unique user-defined ID (URL key)
   status: string; // CastStatus string for flexibility or strictly CastStatus

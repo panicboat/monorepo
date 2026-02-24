@@ -222,7 +222,8 @@ export const ProfileSpecs = ({
       )}
 
       {/* Guest Tags (displayed directly below cast tags) */}
-      {castId && <GuestTagsDisplay targetId={castId} />}
+      {/* Skip GuestTagsDisplay in preview mode (castId="preview" is not a valid UUID) */}
+      {castId && castId !== "preview" && <GuestTagsDisplay targetId={castId} />}
     </div>
   );
 };

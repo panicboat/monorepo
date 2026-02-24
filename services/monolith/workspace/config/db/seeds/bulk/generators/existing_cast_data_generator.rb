@@ -22,7 +22,8 @@ module Seeds
           },
           viral_post_ratio: 0.05,        # 5% of posts are viral (many comments)
           reply_rate: 0.3,               # 30% of comments get a reply from cast
-          time_range_days: 365           # Posts spread over 1 year
+          time_range_days: 365,          # Posts spread over 1 year
+          reviews_per_cast: 80           # Number of reviews per cast (for pagination testing)
         }.freeze
 
         def call
@@ -64,11 +65,15 @@ module Seeds
             puts "  → Created #{post_count} posts, #{comment_count} comments"
           end
 
+          # Generate reviews for existing casts
+          total_reviews = generate_reviews_for_existing_casts(existing_casts, existing_guests)
+
           puts ""
           puts "=" * 80
           puts "Existing cast data generation completed!"
           puts "  Total posts: #{total_posts}"
           puts "  Total comments: #{total_comments}"
+          puts "  Total reviews: #{total_reviews}"
           puts "=" * 80
         end
 
@@ -217,6 +222,51 @@ module Seeds
           end
 
           count
+        end
+
+        def generate_reviews_for_existing_casts(casts, guests)
+          puts ""
+          puts "Generating reviews for existing casts..."
+
+          total_count = 0
+          guest_user_ids = guests.map { |g| g[:user_id] }.compact.shuffle
+          reviews_per_cast = EXISTING_CAST_CONFIG[:reviews_per_cast]
+
+          casts.each do |cast|
+            cast_user_id = cast[:user_id]
+            count = 0
+
+            # Select unique guests for this cast's reviews
+            selected_guests = guest_user_ids.take(reviews_per_cast)
+
+            selected_guests.each_with_index do |guest_user_id, idx|
+              next unless guest_user_id && cast_user_id
+
+              # Check for existing review
+              existing = db[:trust__reviews].where(
+                reviewer_id: guest_user_id, reviewee_id: cast_user_id
+              ).first
+              next if existing
+
+              # Create review (guest -> cast)
+              db[:trust__reviews].insert(
+                id: SecureRandom.uuid,
+                reviewer_id: guest_user_id,
+                reviewee_id: cast_user_id,
+                content: Data::GUEST_REVIEW_COMMENTS.sample,
+                score: weighted_sample([3, 4, 5], [10, 30, 60]),
+                status: rand < 0.95 ? "approved" : "pending",
+                created_at: random_time_in_past(days: 365),
+                updated_at: Time.now
+              )
+              count += 1
+            end
+
+            puts "  #{cast[:name]}: created #{count} reviews"
+            total_count += count
+          end
+
+          total_count
         end
       end
     end

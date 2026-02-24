@@ -7,6 +7,7 @@ import { ReviewListPage, useReviewStats } from "@/modules/trust";
 interface CastData {
   profile: {
     id: string;
+    userId: string;
     name: string;
   };
 }
@@ -20,7 +21,6 @@ export default function CastReviewsPage({
   const [castData, setCastData] = useState<CastData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { stats } = useReviewStats(id);
 
   useEffect(() => {
     async function fetchCast() {
@@ -41,6 +41,8 @@ export default function CastReviewsPage({
     fetchCast();
   }, [id]);
 
+  const { stats } = useReviewStats(castData?.profile.userId ?? null);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-surface">
@@ -59,7 +61,7 @@ export default function CastReviewsPage({
 
   return (
     <ReviewListPage
-      targetId={id}
+      targetId={castData.profile.userId}
       targetName={castData.profile.name}
       targetType="cast"
       backUrl={`/casts/${id}`}

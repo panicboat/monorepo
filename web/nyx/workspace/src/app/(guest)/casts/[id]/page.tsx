@@ -97,13 +97,13 @@ export default function CastDetailPage({
       {/* Details section - only visible for public casts or approved followers */}
       {data.canViewDetails && (
         <>
-          <TrustSectionWrapper castId={data.profile.id} castName={data.profile.name} />
+          <TrustSectionWrapper castId={data.profile.id} castUserId={data.profile.userId} castName={data.profile.name} />
           <CastTimeline castId={data.profile.id} />
         </>
       )}
 
       {/* Floating Action Buttons */}
-      <FloatingActionButtons castId={data.profile.id} castName={data.profile.name} />
+      <FloatingActionButtons castId={data.profile.id} castUserId={data.profile.userId} castName={data.profile.name} />
     </div>
   );
 }
@@ -185,16 +185,18 @@ function FollowButton({ castId }: { castId: string }) {
 
 function TrustSectionWrapper({
   castId,
+  castUserId,
   castName,
 }: {
   castId: string;
+  castUserId: string;
   castName?: string;
 }) {
   return (
     <div className="mx-4 my-4">
       <div className="bg-surface rounded-xl border border-border p-4 shadow-sm">
         <TrustSection
-          targetId={castId}
+          targetId={castUserId}
           targetName={castName}
           showWriteReview={false}
           reviewsLinkHref={`/casts/${castId}/reviews`}
@@ -260,9 +262,11 @@ function FavoriteButton({ castId }: { castId: string }) {
 
 function FloatingActionButtons({
   castId,
+  castUserId,
   castName,
 }: {
   castId: string;
+  castUserId: string;
   castName?: string;
 }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -270,13 +274,13 @@ function FloatingActionButtons({
   const [showTrustModal, setShowTrustModal] = useState(false);
 
   const { createReview, fetchReviews } = useReviews();
-  const { mutate: refreshStats } = useReviewStats(castId);
+  const { mutate: refreshStats } = useReviewStats(castUserId);
 
   const handleSubmitReview = useCallback(async (score: number, content: string) => {
-    await createReview({ revieweeId: castId, score, content });
-    await fetchReviews(castId, "approved");
+    await createReview({ revieweeId: castUserId, score, content });
+    await fetchReviews(castUserId, "approved");
     refreshStats();
-  }, [createReview, castId, fetchReviews, refreshStats]);
+  }, [createReview, castUserId, fetchReviews, refreshStats]);
 
   const isLoggedIn = isHydrated && isAuthenticated();
 
@@ -308,7 +312,7 @@ function FloatingActionButtons({
         <WriteTrustModal
           isOpen={showTrustModal}
           onClose={() => setShowTrustModal(false)}
-          targetId={castId}
+          targetId={castUserId}
           targetName={castName || "キャスト"}
           onSubmitReview={handleSubmitReview}
           contentRequired={true}

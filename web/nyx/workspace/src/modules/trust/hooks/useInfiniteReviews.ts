@@ -17,8 +17,8 @@ export function useInfiniteReviews(options: UseInfiniteReviewsOptions) {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const cursorRef = useRef<string | null>(null);
-  const initializedRef = useRef(false);
 
   const buildUrl = useCallback((cursor?: string | null) => {
     const params = new URLSearchParams();
@@ -43,6 +43,11 @@ export function useInfiniteReviews(options: UseInfiniteReviewsOptions) {
       throw new Error("Authentication required");
     }
 
+    // Prevent duplicate initial fetches
+    if (initialized || loading) {
+      return;
+    }
+
     setLoading(true);
     try {
       const url = buildUrl();
@@ -50,7 +55,7 @@ export function useInfiniteReviews(options: UseInfiniteReviewsOptions) {
       setReviews(data.reviews);
       setHasMore(data.hasMore || false);
       cursorRef.current = data.nextCursor || null;
-      initializedRef.current = true;
+      setInitialized(true);
       return data;
     } catch (e) {
       console.error("Fetch reviews error:", e);
@@ -58,10 +63,11 @@ export function useInfiniteReviews(options: UseInfiniteReviewsOptions) {
     } finally {
       setLoading(false);
     }
-  }, [buildUrl]);
+  }, [buildUrl, initialized, loading]);
 
   const fetchMore = useCallback(async () => {
-    if (!getAuthToken() || !hasMore || loadingMore || !cursorRef.current) {
+    // Wait for initial fetch to complete
+    if (!initialized || !getAuthToken() || !hasMore || loadingMore || !cursorRef.current) {
       return;
     }
 
@@ -84,13 +90,13 @@ export function useInfiniteReviews(options: UseInfiniteReviewsOptions) {
     } finally {
       setLoadingMore(false);
     }
-  }, [buildUrl, hasMore, loadingMore]);
+  }, [buildUrl, initialized, hasMore, loadingMore]);
 
   const reset = useCallback(() => {
     setReviews([]);
     setHasMore(true);
     cursorRef.current = null;
-    initializedRef.current = false;
+    setInitialized(false);
   }, []);
 
   return {
@@ -101,6 +107,6 @@ export function useInfiniteReviews(options: UseInfiniteReviewsOptions) {
     fetchInitial,
     fetchMore,
     reset,
-    initialized: initializedRef.current,
+    initialized,
   };
 }

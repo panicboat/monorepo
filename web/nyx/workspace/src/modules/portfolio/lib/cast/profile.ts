@@ -27,6 +27,7 @@ export function isPrivateCast(visibility: CastVisibility): boolean {
 export function mapCastProfileToFrontend(p: CastProfile) {
   return {
     id: p.id,
+    userId: p.userId,
     visibility: visibilityToString(p.visibility),
     name: p.name,
     slug: p.slug || "",
