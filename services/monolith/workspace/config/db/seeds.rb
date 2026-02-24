@@ -817,6 +817,20 @@ require_relative "seeds/trust_reviews"
 Seeds::TrustReviews.call
 
 # =============================================================================
+# Bulk Seed Data (Optional - Large Dataset)
+# =============================================================================
+
+if ENV["BULK_SEED"] == "true"
+  puts ""
+  puts "=" * 80
+  puts "Running Bulk Seed Generation..."
+  puts "=" * 80
+
+  require_relative "seeds/bulk/generator"
+  Seeds::Bulk::Generator.call
+end
+
+# =============================================================================
 # Summary
 # =============================================================================
 
