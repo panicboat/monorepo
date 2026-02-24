@@ -9,3 +9,4 @@ export { WriteReviewModal } from "./WriteReviewModal";
 export { WriteTrustModal } from "./WriteTrustModal";
 export { PendingReviewsSection } from "./PendingReviewsSection";
 export { TrustSection } from "./TrustSection";
+export { ReviewListPage } from "./ReviewListPage";
