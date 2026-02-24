@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   SlidersHorizontal,
@@ -15,6 +15,8 @@ import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { SearchFilterOverlay } from "./SearchFilterOverlay";
+import { useInfiniteCasts } from "@/modules/portfolio/hooks";
+import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 
 type Genre = {
   id: string;
@@ -68,11 +70,26 @@ export default function SearchPage() {
 
   const [genres, setGenres] = useState<Genre[]>([]);
   const [popularTags, setPopularTags] = useState<PopularTag[]>([]);
-  const [casts, setCasts] = useState<CastItem[]>([]);
   const [highlightCasts, setHighlightCasts] = useState<CastItem[]>([]);
 
   const [loading, setLoading] = useState(true);
-  const [loadingCasts, setLoadingCasts] = useState(false);
+
+  // useInfiniteCasts for paginated cast list
+  const {
+    casts,
+    loading: loadingCasts,
+    loadingMore,
+    hasMore,
+    fetchInitial,
+    fetchMore,
+    reset,
+    initialized,
+  } = useInfiniteCasts({
+    genreId: filters.genreId,
+    tag: activeTag,
+    status: filters.status,
+    query: filters.query,
+  });
 
   // Fetch genres and popular tags on mount
   useEffect(() => {
@@ -108,39 +125,11 @@ export default function SearchPage() {
     fetchInitialData();
   }, []);
 
-  // Fetch casts when filters change
-  const fetchCasts = useCallback(async () => {
-    setLoadingCasts(true);
-    try {
-      const params = new URLSearchParams();
-      if (filters.status !== "all") {
-        params.set("status", filters.status);
-      }
-      if (filters.genreId) {
-        params.set("genreId", filters.genreId);
-      }
-      if (filters.query.trim()) {
-        params.set("query", filters.query.trim());
-      }
-      if (activeTag) {
-        params.set("tag", activeTag);
-      }
-
-      const res = await fetch(`/api/guest/search?${params.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        setCasts(data.items || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch casts:", error);
-    } finally {
-      setLoadingCasts(false);
-    }
-  }, [filters, activeTag]);
-
+  // Fetch casts when filters or activeTag change
   useEffect(() => {
-    fetchCasts();
-  }, [fetchCasts]);
+    reset();
+    fetchInitial();
+  }, [filters, activeTag, reset, fetchInitial]);
 
   const handleTagClick = (tagName: string) => {
     if (activeTag === tagName) {
@@ -322,7 +311,7 @@ export default function SearchPage() {
           {activeTag && ` - #${activeTag}`}
         </h3>
 
-        {loadingCasts ? (
+        {loadingCasts && !initialized ? (
           <div className="flex justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin text-text-muted" />
           </div>
@@ -331,17 +320,24 @@ export default function SearchPage() {
             キャストが見つかりませんでした
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {casts.map((item, index) => {
-              if (!item.profile) return null;
-              return (
-                <SearchCastCard
-                  key={item.profile.slug || index}
-                  cast={item.profile}
-                />
-              );
-            })}
-          </div>
+          <InfiniteScroll
+            hasMore={hasMore}
+            loading={loadingMore}
+            onLoadMore={fetchMore}
+            endMessage="すべてのキャストを表示しました"
+          >
+            <div className="grid grid-cols-2 gap-3">
+              {casts.map((item, index) => {
+                if (!item.profile) return null;
+                return (
+                  <SearchCastCard
+                    key={item.profile.slug || index}
+                    cast={item.profile}
+                  />
+                );
+              })}
+            </div>
+          </InfiniteScroll>
         )}
       </div>
 
