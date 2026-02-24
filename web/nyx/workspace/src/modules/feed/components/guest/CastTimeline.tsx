@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Heart,
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useGuestTimeline, CastPost } from "@/modules/post";
 import { Badge } from "@/components/ui/Badge";
+import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 import Link from "next/link";
 import { formatTimeAgo } from "@/lib/utils/date";
 
@@ -235,28 +236,10 @@ export function CastTimeline({ castId }: CastTimelineProps) {
   const { posts, loading, error, hasMore, fetchPosts, loadMore } =
     useGuestTimeline({ castId });
   const [layout, setLayout] = useState<"list" | "grid">("list");
-  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
-
-  // Infinite scroll
-  useEffect(() => {
-    if (!loadMoreRef.current || !hasMore || loading) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(loadMoreRef.current);
-    return () => observer.disconnect();
-  }, [hasMore, loading, loadMore]);
 
   const isInitialLoading = loading && posts.length === 0;
 
@@ -306,35 +289,25 @@ export function CastTimeline({ castId }: CastTimelineProps) {
           No posts yet
         </div>
       ) : layout === "list" ? (
-        <div className="space-y-6">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-          {hasMore && (
-            <div ref={loadMoreRef} className="pt-4 text-center">
-              {loading && (
-                <div className="flex items-center justify-center gap-2 text-text-muted">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm">Loading...</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        <InfiniteScroll
+          hasMore={hasMore}
+          loading={loading && posts.length > 0}
+          onLoadMore={loadMore}
+        >
+          <div className="space-y-6">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+        </InfiniteScroll>
       ) : (
-        <>
+        <InfiniteScroll
+          hasMore={hasMore}
+          loading={loading && posts.length > 0}
+          onLoadMore={loadMore}
+        >
           <GridView posts={posts} />
-          {hasMore && (
-            <div ref={loadMoreRef} className="pt-4 text-center">
-              {loading && (
-                <div className="flex items-center justify-center gap-2 text-text-muted">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm">Loading...</span>
-                </div>
-              )}
-            </div>
-          )}
-        </>
+        </InfiniteScroll>
       )}
     </div>
   );
