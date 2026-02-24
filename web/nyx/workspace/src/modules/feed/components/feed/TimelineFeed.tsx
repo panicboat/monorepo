@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
+import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 import { useSocialStore, selectIsHydrated } from "@/stores/socialStore";
 import { useGuestTimeline } from "@/modules/post";
 import { useAuthStore } from "@/stores/authStore";
@@ -27,7 +28,6 @@ export function TimelineFeed({
   const [filter, setFilter] = useState<FilterType>("all");
   const isLoaded = useSocialStore(selectIsHydrated);
   const { posts, loading, error, hasMore, fetchPosts, loadMore, setPosts } = useGuestTimeline();
-  const loadMoreRef = useRef<HTMLDivElement>(null);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
 
@@ -66,26 +66,18 @@ export function TimelineFeed({
     }
   }, [mode, items, isAuthenticated, fetchPosts, setPosts]);
 
-  // Infinite scroll
-  useEffect(() => {
-    if (mode !== "guest" || items || !loadMoreRef.current || !hasMore || loading) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          // Determine filter param for loadMore
-          const filterParam = filter === "favorites" ? "favorites" :
-            filter === "following" ? "following" :
-            (filter === "all" && isAuthenticated()) ? "all" : undefined;
-          loadMore(filterParam);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(loadMoreRef.current);
-    return () => observer.disconnect();
-  }, [mode, items, hasMore, loading, loadMore, filter]);
+  // Load more handler for InfiniteScroll
+  const handleLoadMore = useCallback(() => {
+    const filterParam =
+      filter === "favorites"
+        ? "favorites"
+        : filter === "following"
+          ? "following"
+          : filter === "all" && isAuthenticated()
+            ? "all"
+            : undefined;
+    loadMore(filterParam);
+  }, [filter, isAuthenticated, loadMore]);
 
   // Convert API posts to FeedItem format
   const sourceFeed: FeedItem[] = items || posts.map(mapPostToFeedItem);
@@ -119,7 +111,11 @@ export function TimelineFeed({
             Failed to load posts. Please try again.
           </div>
         ) : filteredFeed.length > 0 ? (
-          <>
+          <InfiniteScroll
+            hasMore={mode === "guest" && !items && hasMore}
+            loading={loading && posts.length > 0}
+            onLoadMore={handleLoadMore}
+          >
             {filteredFeed.map((item: FeedItem) => (
               <TimelineItem
                 key={item.id}
@@ -130,17 +126,7 @@ export function TimelineFeed({
                 onClick={() => onItemClick?.(item.id)}
               />
             ))}
-            {mode === "guest" && !items && hasMore && (
-              <div ref={loadMoreRef} className="pt-4 text-center">
-                {loading && (
-                  <div className="flex items-center justify-center gap-2 text-text-muted">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm">Loading...</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </>
+          </InfiniteScroll>
         ) : (
           <div className="py-10 text-center text-text-muted text-sm">
             {renderEmptyState()}
