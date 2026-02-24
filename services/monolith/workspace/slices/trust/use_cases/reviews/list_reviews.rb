@@ -8,8 +8,13 @@ module Trust
           review_repo: "repositories.review_repository"
         ]
 
-        def call(reviewee_id:, status: nil)
-          review_repo.list_by_reviewee(reviewee_id: reviewee_id, status: status)
+        def call(reviewee_id:, status: nil, limit: nil, cursor: nil)
+          review_repo.list_by_reviewee_paginated(
+            reviewee_id: reviewee_id,
+            status: status,
+            limit: limit,
+            cursor: cursor
+          )
         end
       end
     end
