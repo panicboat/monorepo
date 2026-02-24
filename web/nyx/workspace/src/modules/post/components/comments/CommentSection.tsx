@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { MessageCircle, Loader2 } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { MessageCircle } from "lucide-react";
 import { useComments } from "@/modules/post/hooks/useComments";
 import { useAuthStore } from "@/stores/authStore";
+import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 import { CommentItem } from "./CommentItem";
 import { CommentForm } from "./CommentForm";
 
@@ -30,7 +31,6 @@ export function CommentSection({ postId, commentsCount: initialCount }: CommentS
   } = useComments(postId);
 
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const currentUserId = useAuthStore((state) => state.userId);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -42,24 +42,6 @@ export function CommentSection({ postId, commentsCount: initialCount }: CommentS
       fetchComments();
     }
   }, [fetchComments, isHydrated]);
-
-  // Infinite scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          fetchMoreComments();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasMore, loading, fetchMoreComments]);
 
   const handleAddComment = useCallback(
     async (content: string, media: { mediaType: "image" | "video"; url: string; thumbnailUrl?: string }[]) => {
@@ -130,47 +112,46 @@ export function CommentSection({ postId, commentsCount: initialCount }: CommentS
           <p className="text-sm text-text-muted">No comments yet</p>
         </div>
       ) : (
-        <div className="divide-y divide-border">
-          {comments.map((comment) => (
-            <div key={comment.id}>
-              <CommentItem
-                comment={comment}
-                currentUserId={currentUserId || undefined}
-                onDelete={handleDelete}
-                onReply={handleReply}
-                isDeleting={deletingCommentId === comment.id}
-                replies={repliesState[comment.id]?.replies || []}
-                repliesExpanded={repliesState[comment.id]?.expanded || false}
-                repliesLoading={repliesState[comment.id]?.loading || false}
-                hasMoreReplies={repliesState[comment.id]?.hasMore || false}
-                onToggleReplies={() => toggleReplies(comment.id)}
-                onLoadMoreReplies={() => fetchMoreReplies(comment.id)}
-              />
+        <InfiniteScroll
+          hasMore={hasMore}
+          loading={loading && comments.length > 0}
+          onLoadMore={fetchMoreComments}
+        >
+          <div className="divide-y divide-border">
+            {comments.map((comment) => (
+              <div key={comment.id}>
+                <CommentItem
+                  comment={comment}
+                  currentUserId={currentUserId || undefined}
+                  onDelete={handleDelete}
+                  onReply={handleReply}
+                  isDeleting={deletingCommentId === comment.id}
+                  replies={repliesState[comment.id]?.replies || []}
+                  repliesExpanded={repliesState[comment.id]?.expanded || false}
+                  repliesLoading={repliesState[comment.id]?.loading || false}
+                  hasMoreReplies={repliesState[comment.id]?.hasMore || false}
+                  onToggleReplies={() => toggleReplies(comment.id)}
+                  onLoadMoreReplies={() => fetchMoreReplies(comment.id)}
+                />
 
-              {/* Reply Form */}
-              {replyingTo === comment.id && isAuthenticated() && (
-                <div className="ml-8 pl-4 pb-3 border-l-2 border-border">
-                  <CommentForm
-                    onSubmit={(content, media) => handleAddReply(comment.id, content, media)}
-                    isSubmitting={addingComment}
-                    placeholder={`Reply to ${comment.author?.name || "this comment"}...`}
-                    autoFocus
-                    onCancel={() => setReplyingTo(null)}
-                    isReply
-                  />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+                {/* Reply Form */}
+                {replyingTo === comment.id && isAuthenticated() && (
+                  <div className="ml-8 pl-4 pb-3 border-l-2 border-border">
+                    <CommentForm
+                      onSubmit={(content, media) => handleAddReply(comment.id, content, media)}
+                      isSubmitting={addingComment}
+                      placeholder={`Reply to ${comment.author?.name || "this comment"}...`}
+                      autoFocus
+                      onCancel={() => setReplyingTo(null)}
+                      isReply
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </InfiniteScroll>
       )}
-
-      {/* Load More */}
-      <div ref={loadMoreRef} className="py-4 flex justify-center">
-        {loading && (
-          <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-text-muted" />
-        )}
-      </div>
     </section>
   );
 }
