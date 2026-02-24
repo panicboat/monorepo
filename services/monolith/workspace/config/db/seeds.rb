@@ -831,6 +831,18 @@ if ENV["BULK_SEED"] == "true"
 end
 
 # =============================================================================
+# Existing Cast Data (Large Dataset for Base Casts)
+# =============================================================================
+# Add large amounts of posts and comments to the 3 base casts (Yuna, Mio, Rin)
+# For pagination and performance testing
+
+puts ""
+puts "Generating large dataset for base casts..."
+
+require_relative "seeds/bulk/generators/existing_cast_data_generator"
+Seeds::Bulk::Generators::ExistingCastDataGenerator.new.call
+
+# =============================================================================
 # Summary
 # =============================================================================
 
