@@ -762,7 +762,12 @@ export function useInfiniteReviews(options: UseInfiniteReviewsOptions) {
     try {
       const url = buildUrl(cursorRef.current);
       const data = await authFetch<ListReviewsResponse>(url);
-      setReviews((prev) => [...prev, ...data.reviews]);
+      // Prevent duplicate entries during pagination
+      setReviews((prev) => {
+        const existingIds = new Set(prev.map((r) => r.id));
+        const newReviews = data.reviews.filter((r) => !existingIds.has(r.id));
+        return [...prev, ...newReviews];
+      });
       setHasMore(data.hasMore || false);
       cursorRef.current = data.nextCursor || null;
       return data;
@@ -853,6 +858,14 @@ export function ReviewListPage({
 
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  // Prevent browser scroll restoration from applying previous page's scroll position
+  useEffect(() => {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     fetchInitial();
