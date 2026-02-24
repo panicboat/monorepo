@@ -4,11 +4,22 @@ import { useCallback, useState } from "react";
 import { authFetch, getAuthToken } from "@/lib/auth";
 import type { Review, CreateReviewRequest, CreateReviewResponse, ListReviewsResponse } from "../types";
 
+interface FetchReviewsOptions {
+  limit?: number;
+  cursor?: string;
+}
+
 export function useReviews() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
 
-  const fetchReviews = useCallback(async (revieweeId: string, status?: string) => {
+  const fetchReviews = useCallback(async (
+    revieweeId: string,
+    status?: string,
+    options?: FetchReviewsOptions
+  ) => {
     if (!getAuthToken()) {
       throw new Error("Authentication required");
     }
@@ -19,8 +30,16 @@ export function useReviews() {
       if (status) {
         url += `&status=${status}`;
       }
+      if (options?.limit) {
+        url += `&limit=${options.limit}`;
+      }
+      if (options?.cursor) {
+        url += `&cursor=${options.cursor}`;
+      }
       const data = await authFetch<ListReviewsResponse>(url);
       setReviews(data.reviews);
+      setHasMore(data.hasMore || false);
+      setNextCursor(data.nextCursor || null);
       return data.reviews;
     } catch (e) {
       console.error("Fetch reviews error:", e);
@@ -30,7 +49,11 @@ export function useReviews() {
     }
   }, []);
 
-  const fetchReviewsByReviewer = useCallback(async (reviewerId: string, status?: string) => {
+  const fetchReviewsByReviewer = useCallback(async (
+    reviewerId: string,
+    status?: string,
+    options?: FetchReviewsOptions
+  ) => {
     if (!getAuthToken()) {
       throw new Error("Authentication required");
     }
@@ -41,8 +64,16 @@ export function useReviews() {
       if (status) {
         url += `&status=${status}`;
       }
+      if (options?.limit) {
+        url += `&limit=${options.limit}`;
+      }
+      if (options?.cursor) {
+        url += `&cursor=${options.cursor}`;
+      }
       const data = await authFetch<ListReviewsResponse>(url);
       setReviews(data.reviews);
+      setHasMore(data.hasMore || false);
+      setNextCursor(data.nextCursor || null);
       return data.reviews;
     } catch (e) {
       console.error("Fetch reviews by reviewer error:", e);
@@ -127,5 +158,7 @@ export function useReviews() {
     updateReview,
     deleteReview,
     loading,
+    hasMore,
+    nextCursor,
   };
 }

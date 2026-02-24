@@ -12,6 +12,9 @@ export async function GET(req: NextRequest) {
     const revieweeId = req.nextUrl.searchParams.get("reviewee_id");
     const reviewerId = req.nextUrl.searchParams.get("reviewer_id");
     const status = req.nextUrl.searchParams.get("status");
+    const limitParam = req.nextUrl.searchParams.get("limit");
+    const cursor = req.nextUrl.searchParams.get("cursor");
+    const limit = limitParam ? parseInt(limitParam, 10) : undefined;
 
     if (!revieweeId && !reviewerId) {
       return NextResponse.json(
@@ -25,6 +28,8 @@ export async function GET(req: NextRequest) {
         revieweeId: revieweeId || undefined,
         reviewerId: reviewerId || undefined,
         status: status || undefined,
+        limit: limit || 0,
+        cursor: cursor || undefined,
       },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -43,7 +48,11 @@ export async function GET(req: NextRequest) {
       reviewerProfileId: r.reviewerProfileId,
     }));
 
-    return NextResponse.json({ reviews });
+    return NextResponse.json({
+      reviews,
+      nextCursor: response.nextCursor || null,
+      hasMore: response.hasMore || false,
+    });
   } catch (error: unknown) {
     if (error instanceof ConnectError && error.code === 16) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

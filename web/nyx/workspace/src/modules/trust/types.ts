@@ -44,6 +44,8 @@ export interface UpdateReviewRequest {
 
 export interface ListReviewsResponse {
   reviews: Review[];
+  nextCursor?: string;
+  hasMore?: boolean;
 }
 
 export interface ReviewStatsResponse {
