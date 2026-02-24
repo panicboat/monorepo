@@ -302,6 +302,70 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
     end
   end
 
+  describe "#list_by_reviewee_paginated" do
+    let(:paginated_reviewee_id) { SecureRandom.uuid }
+
+    before do
+      # Create 5 reviews with different timestamps
+      5.times do |i|
+        repo.create(
+          reviewer_id: SecureRandom.uuid,
+          reviewee_id: paginated_reviewee_id,
+          content: "Review #{i}",
+          score: 4,
+          status: "approved"
+        )
+        sleep 0.01 # Ensure different created_at
+      end
+    end
+
+    it "returns reviews with limit" do
+      result = repo.list_by_reviewee_paginated(reviewee_id: paginated_reviewee_id, limit: 2)
+
+      expect(result[:items].length).to eq(2)
+      expect(result[:has_more]).to be true
+      expect(result[:next_cursor]).not_to be_nil
+    end
+
+    it "returns next page with cursor" do
+      first_page = repo.list_by_reviewee_paginated(reviewee_id: paginated_reviewee_id, limit: 2)
+      second_page = repo.list_by_reviewee_paginated(
+        reviewee_id: paginated_reviewee_id,
+        limit: 2,
+        cursor: first_page[:next_cursor]
+      )
+
+      expect(second_page[:items].length).to eq(2)
+      expect(second_page[:items].first.id).not_to eq(first_page[:items].first.id)
+    end
+
+    it "returns has_more false on last page" do
+      result = repo.list_by_reviewee_paginated(reviewee_id: paginated_reviewee_id, limit: 10)
+
+      expect(result[:items].length).to eq(5)
+      expect(result[:has_more]).to be false
+      expect(result[:next_cursor]).to be_nil
+    end
+
+    it "filters by status" do
+      repo.create(
+        reviewer_id: SecureRandom.uuid,
+        reviewee_id: paginated_reviewee_id,
+        content: "Pending review",
+        score: 3,
+        status: "pending"
+      )
+
+      result = repo.list_by_reviewee_paginated(
+        reviewee_id: paginated_reviewee_id,
+        status: "approved",
+        limit: 10
+      )
+
+      expect(result[:items].all? { |r| r.status == "approved" }).to be true
+    end
+  end
+
   describe "#get_stats" do
     it "returns zero stats for reviewee with no reviews" do
       stats = repo.get_stats(reviewee_id: SecureRandom.uuid)
