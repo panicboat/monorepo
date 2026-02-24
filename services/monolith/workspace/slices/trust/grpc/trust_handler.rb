@@ -169,14 +169,19 @@ module Trust
         reviewee_id = request.message.reviewee_id.to_s.empty? ? nil : request.message.reviewee_id
         reviewer_id = request.message.reviewer_id.to_s.empty? ? nil : request.message.reviewer_id
         status = request.message.status.to_s.empty? ? nil : request.message.status
+        limit = request.message.limit.to_i
+        limit = nil if limit <= 0
+        cursor = request.message.cursor.to_s.empty? ? nil : request.message.cursor
 
-        reviews = if reviewer_id
-          review_repo.list_by_reviewer(reviewer_id: reviewer_id, status: status)
+        result = if reviewer_id
+          review_repo.list_by_reviewer_paginated(reviewer_id: reviewer_id, status: status, limit: limit, cursor: cursor)
         elsif reviewee_id
-          list_reviews_uc.call(reviewee_id: reviewee_id, status: status)
+          list_reviews_uc.call(reviewee_id: reviewee_id, status: status, limit: limit, cursor: cursor)
         else
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "reviewee_id or reviewer_id is required")
         end
+
+        reviews = result[:items]
 
         # Collect reviewer IDs
         reviewer_ids = reviews.map do |r|
@@ -203,7 +208,11 @@ module Trust
           )
         end
 
-        ::Trust::V1::ListReviewsResponse.new(reviews: items)
+        ::Trust::V1::ListReviewsResponse.new(
+          reviews: items,
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more] || false
+        )
       end
 
       def get_review_stats
