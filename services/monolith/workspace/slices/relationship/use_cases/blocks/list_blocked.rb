@@ -14,6 +14,7 @@ module Relationship
         ]
         include Concerns::CursorPagination
 
+        DEFAULT_LIMIT = 50
         MAX_LIMIT = 100
 
         def call(blocker_id:, limit: DEFAULT_LIMIT, cursor: nil)

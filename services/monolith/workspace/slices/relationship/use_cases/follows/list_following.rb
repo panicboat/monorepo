@@ -9,6 +9,7 @@ module Relationship
         include Relationship::Deps[follow_repo: "repositories.follow_repository"]
         include Concerns::CursorPagination
 
+        DEFAULT_LIMIT = 100
         MAX_LIMIT = 500
 
         def call(guest_id:, limit: DEFAULT_LIMIT, cursor: nil)
