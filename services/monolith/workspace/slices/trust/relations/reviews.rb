@@ -14,6 +14,10 @@ module Trust
         attribute :updated_at, Types::Time
 
         primary_key :id
+
+        associations do
+          has_many :review_media
+        end
       end
     end
   end
