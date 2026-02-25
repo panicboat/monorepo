@@ -2,15 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { authFetch, getAuthToken } from "@/lib/auth";
+import { usePaginatedFetch, PaginatedResult } from "@/lib/hooks/usePaginatedFetch";
 import type { Comment, CommentMedia, CommentsListResult, RepliesListResult } from "../types";
-
-interface CommentsState {
-  comments: Comment[];
-  nextCursor: string;
-  hasMore: boolean;
-  loading: boolean;
-  error: string | null;
-}
 
 interface RepliesState {
   [commentId: string]: {
@@ -27,54 +20,51 @@ interface AddCommentResponse {
 }
 
 export function useComments(postId: string) {
-  const [state, setState] = useState<CommentsState>({
-    comments: [],
-    nextCursor: "",
-    hasMore: false,
-    loading: false,
-    error: null,
+  const buildParams = useCallback(
+    (params: URLSearchParams) => {
+      params.set("post_id", postId);
+    },
+    [postId]
+  );
+
+  const mapResponse = useCallback(
+    (data: CommentsListResult): PaginatedResult<Comment> => ({
+      items: data.comments,
+      hasMore: data.hasMore,
+      nextCursor: data.nextCursor || null,
+    }),
+    []
+  );
+
+  const getItemId = useCallback((comment: Comment) => comment.id, []);
+
+  const fetchFn = useCallback(
+    async (url: string): Promise<CommentsListResult> => {
+      return authFetch<CommentsListResult>(url, { requireAuth: false });
+    },
+    []
+  );
+
+  const {
+    items: comments,
+    setItems: setComments,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    fetchInitial,
+    fetchMore,
+  } = usePaginatedFetch<Comment, CommentsListResult>({
+    apiUrl: "/api/guest/comments",
+    mapResponse,
+    getItemId,
+    buildParams,
+    fetchFn,
   });
 
   const [repliesState, setRepliesState] = useState<RepliesState>({});
   const [addingComment, setAddingComment] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
-
-  const fetchComments = useCallback(
-    async (cursor?: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
-
-      try {
-        const params = new URLSearchParams({ post_id: postId });
-        if (cursor) params.set("cursor", cursor);
-
-        const data = await authFetch<CommentsListResult>(
-          `/api/guest/comments?${params}`,
-          { requireAuth: false }
-        );
-
-        setState((prev) => {
-          const existingIds = new Set(prev.comments.map((c) => c.id));
-          const newComments = data.comments.filter((c) => !existingIds.has(c.id));
-          return {
-            ...prev,
-            comments: cursor ? [...prev.comments, ...newComments] : data.comments,
-            nextCursor: data.nextCursor,
-            hasMore: data.hasMore,
-            loading: false,
-          };
-        });
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Unknown error";
-        setState((prev) => ({ ...prev, loading: false, error: message }));
-      }
-    },
-    [postId]
-  );
-
-  const fetchMoreComments = useCallback(async () => {
-    if (!state.hasMore || state.loading) return;
-    await fetchComments(state.nextCursor);
-  }, [fetchComments, state.hasMore, state.loading, state.nextCursor]);
 
   const addComment = useCallback(
     async (content: string, parentId?: string, media?: CommentMedia[]) => {
@@ -104,17 +94,13 @@ export function useComments(postId: string) {
                 replies: [data.comment, ...(prev[parentId]?.replies || [])],
               },
             }));
-            setState((prev) => ({
-              ...prev,
-              comments: prev.comments.map((c) =>
+            setComments((prev) =>
+              prev.map((c) =>
                 c.id === parentId ? { ...c, repliesCount: c.repliesCount + 1 } : c
-              ),
-            }));
+              )
+            );
           } else {
-            setState((prev) => ({
-              ...prev,
-              comments: [data.comment, ...prev.comments],
-            }));
+            setComments((prev) => [data.comment, ...prev]);
           }
         }
 
@@ -123,7 +109,7 @@ export function useComments(postId: string) {
         setAddingComment(false);
       }
     },
-    [postId]
+    [postId, setComments]
   );
 
   const deleteComment = useCallback(
@@ -148,17 +134,13 @@ export function useComments(postId: string) {
               replies: (prev[parentId]?.replies || []).filter((r) => r.id !== commentId),
             },
           }));
-          setState((prev) => ({
-            ...prev,
-            comments: prev.comments.map((c) =>
+          setComments((prev) =>
+            prev.map((c) =>
               c.id === parentId ? { ...c, repliesCount: Math.max(0, c.repliesCount - 1) } : c
-            ),
-          }));
+            )
+          );
         } else {
-          setState((prev) => ({
-            ...prev,
-            comments: prev.comments.filter((c) => c.id !== commentId),
-          }));
+          setComments((prev) => prev.filter((c) => c.id !== commentId));
           setRepliesState((prev) => {
             const newState = { ...prev };
             delete newState[commentId];
@@ -171,7 +153,7 @@ export function useComments(postId: string) {
         setDeletingCommentId(null);
       }
     },
-    []
+    [setComments]
   );
 
   const fetchReplies = useCallback(async (commentId: string, cursor?: string) => {
@@ -262,12 +244,13 @@ export function useComments(postId: string) {
   );
 
   return {
-    comments: state.comments,
-    loading: state.loading,
-    error: state.error,
-    hasMore: state.hasMore,
-    fetchComments,
-    fetchMoreComments,
+    comments,
+    loading,
+    loadingMore,
+    error: error?.message || null,
+    hasMore,
+    fetchInitial,
+    fetchMore,
     addComment,
     deleteComment,
     addingComment,

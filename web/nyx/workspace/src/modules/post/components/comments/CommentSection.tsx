@@ -17,10 +17,11 @@ export function CommentSection({ postId, commentsCount: initialCount }: CommentS
   const {
     comments,
     loading,
+    loadingMore,
     error,
     hasMore,
-    fetchComments,
-    fetchMoreComments,
+    fetchInitial,
+    fetchMore,
     addComment,
     deleteComment,
     addingComment,
@@ -39,9 +40,9 @@ export function CommentSection({ postId, commentsCount: initialCount }: CommentS
   // Fetch comments on mount
   useEffect(() => {
     if (isHydrated) {
-      fetchComments();
+      fetchInitial();
     }
-  }, [fetchComments, isHydrated]);
+  }, [fetchInitial, isHydrated]);
 
   const handleAddComment = useCallback(
     async (content: string, media: { mediaType: "image" | "video"; url: string; thumbnailUrl?: string }[]) => {
@@ -114,8 +115,8 @@ export function CommentSection({ postId, commentsCount: initialCount }: CommentS
       ) : (
         <InfiniteScroll
           hasMore={hasMore}
-          loading={loading && comments.length > 0}
-          onLoadMore={fetchMoreComments}
+          loading={loadingMore}
+          onLoadMore={fetchMore}
         >
           <div className="divide-y divide-border">
             {comments.map((comment) => (

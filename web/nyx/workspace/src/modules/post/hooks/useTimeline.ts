@@ -8,12 +8,12 @@ import { usePaginatedFetch, PaginatedResult } from "@/lib/hooks/usePaginatedFetc
 
 type TimelineResponse = Parameters<typeof mapApiToPostsList>[0];
 
-interface UseGuestTimelineOptions {
+interface UseTimelineOptions {
   castId?: string;
   filter?: string;
 }
 
-export function useTimeline(options: UseGuestTimelineOptions = {}) {
+export function useTimeline(options: UseTimelineOptions = {}) {
   const { castId, filter } = options;
   const accessToken = useAuthStore((state) => state.accessToken);
   const prevFilterRef = useRef(filter);
