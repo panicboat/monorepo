@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { postClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
+import { mapProtoPostsListToJson } from "@/modules/post/lib/api-mappers";
 
 export async function GET(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20", 10);
@@ -16,48 +17,16 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    // Explicitly map to ensure all fields are serialized
-    const posts = response.posts.map((post) => ({
-      id: post.id,
-      castId: post.castId,
-      content: post.content,
-      media: post.media.map((m) => ({
-        id: m.id,
-        mediaType: m.mediaType,
-        url: m.url,
-        thumbnailUrl: m.thumbnailUrl,
-      })),
-      createdAt: post.createdAt,
-      author: post.author
-        ? {
-            id: post.author.id,
-            name: post.author.name,
-            imageUrl: post.author.imageUrl,
-          }
-        : null,
-      likesCount: post.likesCount,
-      commentsCount: post.commentsCount,
-      visibility: post.visibility,
-      hashtags: post.hashtags,
-      liked: post.liked,
-    }));
-
-    return NextResponse.json({
-      posts,
-      nextCursor: response.nextCursor,
-      hasMore: response.hasMore,
-    });
-  } catch (error: any) {
-    console.error("ListCastPosts Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(mapProtoPostsListToJson(response));
+  } catch (error: unknown) {
+    return handleApiError(error, "ListCastPosts");
   }
 }
 
 export async function PUT(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
 
@@ -73,17 +42,15 @@ export async function PUT(req: NextRequest) {
     );
 
     return NextResponse.json({ post: response.post });
-  } catch (error: any) {
-    console.error("SaveCastPost Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return handleApiError(error, "SaveCastPost");
   }
 }
 
 export async function DELETE(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
 
@@ -93,8 +60,7 @@ export async function DELETE(req: NextRequest) {
     );
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("DeleteCastPost Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return handleApiError(error, "DeleteCastPost");
   }
 }

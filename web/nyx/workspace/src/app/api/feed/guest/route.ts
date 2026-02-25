@@ -3,6 +3,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { feedClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { FeedFilter } from "@/stub/feed/v1/feed_service_pb";
+import { mapProtoPostsListToJson } from "@/modules/post/lib/api-mappers";
 
 /**
  * GET /api/feed/guest
@@ -29,37 +30,7 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    // Map proto response to API response
-    const posts = response.posts.map((post) => ({
-      id: post.id,
-      castId: post.castId,
-      content: post.content,
-      media: post.media.map((m) => ({
-        id: m.id,
-        mediaType: m.mediaType,
-        url: m.url,
-        thumbnailUrl: m.thumbnailUrl,
-      })),
-      createdAt: post.createdAt,
-      author: post.author
-        ? {
-            id: post.author.id,
-            name: post.author.name,
-            imageUrl: post.author.imageUrl,
-          }
-        : undefined,
-      likesCount: post.likesCount,
-      commentsCount: post.commentsCount,
-      visibility: post.visibility,
-      hashtags: post.hashtags,
-      liked: post.liked,
-    }));
-
-    return NextResponse.json({
-      posts,
-      nextCursor: response.nextCursor,
-      hasMore: response.hasMore,
-    });
+    return NextResponse.json(mapProtoPostsListToJson(response));
   } catch (error: unknown) {
     if (error instanceof ConnectError) {
       if (error.code === 16) {
