@@ -120,11 +120,20 @@ export function ReviewCard({
                 <img src={m.url} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div className="relative w-full h-full">
-                  <img
-                    src={m.thumbnailUrl || m.url}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
+                  {m.thumbnailUrl ? (
+                    <img
+                      src={m.thumbnailUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <video
+                      src={m.url}
+                      className="w-full h-full object-cover"
+                      muted
+                      preload="metadata"
+                    />
+                  )}
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                     <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center">
                       <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-black border-b-[5px] border-b-transparent ml-0.5" />

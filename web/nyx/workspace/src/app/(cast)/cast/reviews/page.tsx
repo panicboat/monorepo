@@ -5,10 +5,9 @@ import { useCastProfile } from "@/modules/portfolio/hooks/useCastProfile";
 import { CastReviewsPage } from "@/modules/trust/components/CastReviewsPage";
 
 export default function CastReviewsRoute() {
-  const { rawData, loading } = useCastProfile();
-  const castId = rawData?.profile?.id;
+  const { userId, loading } = useCastProfile();
 
-  if (loading || !castId) {
+  if (loading || !userId) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-6 w-6 animate-spin text-text-muted" />
@@ -16,5 +15,5 @@ export default function CastReviewsRoute() {
     );
   }
 
-  return <CastReviewsPage castId={castId} />;
+  return <CastReviewsPage castId={userId} />;
 }

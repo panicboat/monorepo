@@ -407,6 +407,20 @@ CREATE TABLE relationship.follows (
 
 
 --
+-- Name: review_media; Type: TABLE; Schema: trust; Owner: -
+--
+
+CREATE TABLE trust.review_media (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    review_id uuid NOT NULL,
+    media_id uuid,
+    media_type character varying(10) NOT NULL,
+    "position" integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: reviews; Type: TABLE; Schema: trust; Owner: -
 --
 
@@ -676,6 +690,14 @@ ALTER TABLE ONLY relationship.follows
 
 ALTER TABLE ONLY relationship.follows
     ADD CONSTRAINT cast_follows_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: review_media review_media_pkey; Type: CONSTRAINT; Schema: trust; Owner: -
+--
+
+ALTER TABLE ONLY trust.review_media
+    ADD CONSTRAINT review_media_pkey PRIMARY KEY (id);
 
 
 --
@@ -990,6 +1012,20 @@ CREATE INDEX social_cast_follows_status_index ON relationship.follows USING btre
 
 
 --
+-- Name: trust_review_media_media_id_index; Type: INDEX; Schema: trust; Owner: -
+--
+
+CREATE INDEX trust_review_media_media_id_index ON trust.review_media USING btree (media_id);
+
+
+--
+-- Name: trust_review_media_review_id_index; Type: INDEX; Schema: trust; Owner: -
+--
+
+CREATE INDEX trust_review_media_review_id_index ON trust.review_media USING btree (review_id);
+
+
+--
 -- Name: trust_reviews_reviewee_id_index; Type: INDEX; Schema: trust; Owner: -
 --
 
@@ -1128,6 +1164,14 @@ ALTER TABLE ONLY post.likes
 
 
 --
+-- Name: review_media review_media_review_id_fkey; Type: FK CONSTRAINT; Schema: trust; Owner: -
+--
+
+ALTER TABLE ONLY trust.review_media
+    ADD CONSTRAINT review_media_review_id_fkey FOREIGN KEY (review_id) REFERENCES trust.reviews(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -1185,4 +1229,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260220000002_create_trust_taggings.rb'),
 ('20260221000001_refactor_trust_freeform_tagging.rb'),
 ('20260222000001_create_trust_reviews.rb'),
-('20260223092141_add_default_schedules_to_casts.rb');
+('20260223092141_add_default_schedules_to_casts.rb'),
+('20260225000001_create_trust_review_media.rb');

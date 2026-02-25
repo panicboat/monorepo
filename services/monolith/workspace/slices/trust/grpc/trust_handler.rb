@@ -249,11 +249,11 @@ module Trust
 
       def approve_review
         authenticate_user!
-        my_cast = authenticate_cast!
+        authenticate_cast!
 
         result = approve_review_uc.call(
           id: request.message.id,
-          reviewee_id: my_cast.id
+          reviewee_id: current_user_id
         )
 
         if result[:error] == :not_found
@@ -269,11 +269,11 @@ module Trust
 
       def reject_review
         authenticate_user!
-        my_cast = authenticate_cast!
+        authenticate_cast!
 
         result = reject_review_uc.call(
           id: request.message.id,
-          reviewee_id: my_cast.id
+          reviewee_id: current_user_id
         )
 
         if result[:error] == :not_found
@@ -289,9 +289,9 @@ module Trust
 
       def list_pending_reviews
         authenticate_user!
-        my_cast = authenticate_cast!
+        authenticate_cast!
 
-        reviews = list_pending_reviews_uc.call(reviewee_id: my_cast.id)
+        reviews = list_pending_reviews_uc.call(reviewee_id: current_user_id)
 
         # Fetch review media
         review_media_by_review_id = load_review_media(reviews)
