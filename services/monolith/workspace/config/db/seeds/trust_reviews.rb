@@ -51,6 +51,24 @@ module Seeds
 
       db[:trust__reviews].multi_insert(reviews_data)
       puts "  Created #{reviews_data.size} trust reviews"
+
+      # Seed review media for some reviews (first 3 reviews get media)
+      review_media_data = []
+      reviews_data.first(3).each_with_index do |review, i|
+        (0..[0, 1, 2].sample).each do |pos|
+          review_media_data << {
+            id: SecureRandom.uuid,
+            review_id: review[:id],
+            media_id: nil,
+            media_type: pos.zero? ? "image" : %w[image video].sample,
+            position: pos,
+            created_at: review[:created_at]
+          }
+        end
+      end
+
+      db[:trust__review_media].multi_insert(review_media_data) if review_media_data.any?
+      puts "  Created #{review_media_data.size} trust review media entries"
     end
   end
 end
