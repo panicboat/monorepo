@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require "base64"
-require "json"
+require "concerns/cursor_pagination"
 require "gruf"
 require_relative "../../../lib/grpc/authenticatable"
 require_relative "../../post/adapters/cast_adapter"
@@ -14,6 +13,7 @@ module Trust
     class Handler < ::Gruf::Controllers::Base
       include ::GRPC::GenericService
       include ::Grpc::Authenticatable
+      include Concerns::CursorPagination
 
       protected
 
@@ -60,18 +60,6 @@ module Trust
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
       end
 
-      def decode_cursor(cursor)
-        return nil if cursor.nil? || cursor.empty?
-
-        parsed = JSON.parse(Base64.urlsafe_decode64(cursor))
-        { created_at: Time.parse(parsed["created_at"]) }
-      rescue StandardError
-        nil
-      end
-
-      def encode_cursor(data)
-        Base64.urlsafe_encode64(JSON.generate(data), padding: false)
-      end
     end
   end
 end

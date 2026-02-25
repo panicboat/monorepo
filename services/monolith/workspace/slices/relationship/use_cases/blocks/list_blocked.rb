@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require "base64"
-require "json"
+require "concerns/cursor_pagination"
 require_relative "../../../post/adapters/cast_adapter"
 require_relative "../../../post/adapters/guest_adapter"
 require_relative "../../../post/adapters/media_adapter"
@@ -13,12 +12,12 @@ module Relationship
         include Relationship::Deps[
           block_repo: "repositories.block_repository"
         ]
+        include Concerns::CursorPagination
 
-        DEFAULT_LIMIT = 50
         MAX_LIMIT = 100
 
         def call(blocker_id:, limit: DEFAULT_LIMIT, cursor: nil)
-          limit = [[limit, 1].max, MAX_LIMIT].min
+          limit = normalize_limit(limit)
           decoded_cursor = decode_cursor(cursor)
 
           result = block_repo.list_blocked(
@@ -92,18 +91,6 @@ module Relationship
           { name: "Unknown", media_id: nil }
         end
 
-        def decode_cursor(cursor)
-          return nil if cursor.nil? || cursor.empty?
-
-          parsed = JSON.parse(Base64.urlsafe_decode64(cursor))
-          { created_at: Time.parse(parsed["created_at"]) }
-        rescue StandardError
-          nil
-        end
-
-        def encode_cursor(data)
-          Base64.urlsafe_encode64(JSON.generate(data), padding: false)
-        end
       end
     end
   end

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require "base64"
-require "json"
+require "concerns/cursor_pagination"
 require "gruf"
 require "storage"
 require_relative "../../../lib/grpc/authenticatable"
@@ -17,6 +16,7 @@ module Relationship
     class Handler < ::Gruf::Controllers::Base
       include ::GRPC::GenericService
       include ::Grpc::Authenticatable
+      include Concerns::CursorPagination
 
       include Relationship::Deps[
         follow_repo: "repositories.follow_repository",
@@ -106,18 +106,6 @@ module Relationship
         end
       end
 
-      def decode_cursor(cursor)
-        return nil if cursor.nil? || cursor.empty?
-
-        parsed = JSON.parse(Base64.urlsafe_decode64(cursor))
-        { created_at: Time.parse(parsed["created_at"]), id: parsed["id"] }
-      rescue StandardError
-        nil
-      end
-
-      def encode_cursor(data)
-        Base64.urlsafe_encode64(JSON.generate(data), padding: false)
-      end
     end
   end
 end

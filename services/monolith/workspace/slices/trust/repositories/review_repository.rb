@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require "base64"
-require "json"
+require "concerns/cursor_pagination"
 require "time"
 
 module Trust
   module Repositories
     class ReviewRepository < Trust::DB::Repo
-      DEFAULT_LIMIT = 20
+      include Concerns::CursorPagination
+
       MAX_LIMIT = 50
       def create(reviewer_id:, reviewee_id:, content:, score:, status:)
         id = SecureRandom.uuid
@@ -104,7 +104,9 @@ module Trust
           .all
 
         items = records.map { |record| reviews.mapper.call([record]).first }
-        build_pagination_result(items: items, limit: limit)
+        build_pagination_result(items: items, limit: limit) do |last|
+          encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
+        end
       end
 
       def list_by_reviewer_paginated(reviewer_id:, status: nil, limit: nil, cursor: nil)
@@ -128,7 +130,9 @@ module Trust
           .all
 
         items = records.map { |record| reviews.mapper.call([record]).first }
-        build_pagination_result(items: items, limit: limit)
+        build_pagination_result(items: items, limit: limit) do |last|
+          encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
+        end
       end
 
       def get_stats(reviewee_id:)
@@ -174,30 +178,6 @@ module Trust
 
       private
 
-      def decode_cursor(cursor)
-        return nil if cursor.nil? || cursor.empty?
-
-        parsed = JSON.parse(Base64.urlsafe_decode64(cursor))
-        { created_at: Time.parse(parsed["created_at"]), id: parsed["id"] }
-      rescue StandardError
-        nil
-      end
-
-      def encode_cursor(data)
-        Base64.urlsafe_encode64(JSON.generate(data), padding: false)
-      end
-
-      def build_pagination_result(items:, limit:)
-        has_more = items.length > limit
-        items = items.first(limit) if has_more
-
-        next_cursor = if has_more && items.any?
-          last = items.last
-          encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
-        end
-
-        { items: items, next_cursor: next_cursor, has_more: has_more }
-      end
     end
   end
 end
