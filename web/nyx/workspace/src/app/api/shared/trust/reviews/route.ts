@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { trustClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, handleApiError } from "@/lib/api-helpers";
+import { mapProtoReviewsListToJson } from "@/modules/trust/lib/api-mappers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -33,25 +34,7 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    // FALLBACK: Returns empty array when response reviews is missing
-    const reviews = (response.reviews || []).map((r) => ({
-      id: r.id,
-      reviewerId: r.reviewerId,
-      revieweeId: r.revieweeId,
-      content: r.content,
-      score: r.score,
-      status: r.status,
-      createdAt: r.createdAt,
-      reviewerName: r.reviewerName,
-      reviewerAvatarUrl: r.reviewerAvatarUrl,
-      reviewerProfileId: r.reviewerProfileId,
-    }));
-
-    return NextResponse.json({
-      reviews,
-      nextCursor: response.nextCursor || null,
-      hasMore: response.hasMore || false,
-    });
+    return NextResponse.json(mapProtoReviewsListToJson(response));
   } catch (error: unknown) {
     return handleApiError(error, "ListReviews");
   }

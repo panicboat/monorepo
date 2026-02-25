@@ -3,6 +3,7 @@ import { trustClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, handleApiError } from "@/lib/api-helpers";
 import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
+import { mapProtoTaggingsListToJson } from "@/modules/trust/lib/api-mappers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,14 +20,7 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    const taggings = (response.taggings || []).map((t) => ({
-      id: t.id,
-      tagName: t.tagName,
-      taggerId: t.taggerId,
-      createdAt: t.createdAt,
-    }));
-
-    return NextResponse.json({ taggings });
+    return NextResponse.json(mapProtoTaggingsListToJson(response));
   } catch (error: unknown) {
     return handleApiError(error, "ListTargetTags");
   }

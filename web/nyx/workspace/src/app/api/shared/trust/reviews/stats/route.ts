@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { trustClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, handleApiError } from "@/lib/api-helpers";
+import { mapProtoReviewStatsToJson } from "@/modules/trust/lib/api-mappers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -22,15 +23,9 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    const stats = response.stats
-      ? {
-          averageScore: response.stats.averageScore,
-          totalReviews: response.stats.totalReviews,
-          approvalRate: response.stats.approvalRate,
-        }
-      : null;
-
-    return NextResponse.json({ stats });
+    return NextResponse.json({
+      stats: mapProtoReviewStatsToJson(response.stats),
+    });
   } catch (error: unknown) {
     return handleApiError(error, "GetReviewStats");
   }
