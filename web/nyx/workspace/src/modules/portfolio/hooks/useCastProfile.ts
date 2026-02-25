@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import { useCallback } from "react";
-import { ProfileFormData } from "@/modules/portfolio/types";
+import { ProfileFormData, ApiProfile, ApiPlan, ApiSchedule } from "@/modules/portfolio/types";
 import {
   mapApiToProfileForm,
   mapProfileFormToApi,
@@ -26,9 +26,9 @@ interface UseCastProfileOptions {
 }
 
 interface ProfileApiResponse {
-  profile: any;
-  plans?: any[];
-  schedules?: any[];
+  profile: ApiProfile;
+  plans?: ApiPlan[];
+  schedules?: ApiSchedule[];
 }
 
 export function useCastProfile(options: UseCastProfileOptions = {}) {

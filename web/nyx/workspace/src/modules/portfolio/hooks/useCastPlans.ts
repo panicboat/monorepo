@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { ServicePlan } from "@/modules/portfolio/types";
+import { ServicePlan, ApiPlan } from "@/modules/portfolio/types";
 import { mapApiToPlans, mapPlansToApi } from "@/modules/portfolio/lib/cast/mappers";
 import { getAuthToken } from "@/lib/swr";
 
@@ -92,7 +92,7 @@ export function useCastPlans(options: UseCastPlansOptions = {}) {
     [apiPath, plans]
   );
 
-  const initializeFromApi = useCallback((apiPlans: any[]) => {
+  const initializeFromApi = useCallback((apiPlans: ApiPlan[]) => {
     const mappedPlans = mapApiToPlans(apiPlans);
     setPlans(mappedPlans);
     return mappedPlans;

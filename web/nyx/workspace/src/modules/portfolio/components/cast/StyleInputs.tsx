@@ -10,7 +10,7 @@ import { DefaultSchedulesEditor } from "./DefaultSchedulesEditor";
 
 interface StyleInputsProps {
   data: ProfileFormData;
-  onChange: (key: keyof ProfileFormData, value: any) => void;
+  onChange: (key: keyof ProfileFormData, value: ProfileFormData[keyof ProfileFormData]) => void;
 }
 
 // Simplified Select Component (Radio-like Button Group)
@@ -24,7 +24,7 @@ const SelectGroup = ({
   label: string;
   options: { label: string; value: string; desc?: string }[];
   value: string;
-  onChange: (val: any) => void;
+  onChange: (val: string) => void;
   description?: string;
 }) => (
   <div className="space-y-2">

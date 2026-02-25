@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { MediaItem } from "@/modules/portfolio/types";
+import { MediaItem, ApiProfile } from "@/modules/portfolio/types";
 import { mapApiToImages } from "@/modules/portfolio/lib/cast/mappers";
 import { getAuthToken } from "@/lib/swr";
 
@@ -114,7 +114,7 @@ export function useCastImages(options: UseCastImagesOptions = {}) {
     setImages(newImages);
   }, []);
 
-  const initializeFromApi = useCallback((apiProfile: any) => {
+  const initializeFromApi = useCallback((apiProfile: ApiProfile) => {
     const mappedImages = mapApiToImages(apiProfile);
     setImages(mappedImages);
     return mappedImages;

@@ -64,11 +64,11 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
       revalidateOnFocus: false,
       dedupingInterval: 5000,
       shouldRetryOnError: (err) => {
-        if ((err as any).status === 404) return false;
+        if ((err as { status?: number }).status === 404) return false;
         return true;
       },
       onError: (err) => {
-        if ((err as any).status === 404) {
+        if ((err as { status?: number }).status === 404) {
           return;
         }
         console.error("Failed to load guest data", err);

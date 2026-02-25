@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import { useCallback, useMemo } from "react";
-import { ProfileFormData, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
+import { ProfileFormData, MediaItem, ServicePlan, WeeklySchedule, ApiProfile, ApiPlan, ApiSchedule } from "@/modules/portfolio/types";
 import {
   mapApiToProfileForm,
   mapProfileFormToApi,
@@ -31,9 +31,9 @@ interface UseCastDataOptions {
 }
 
 interface CastDataApiResponse {
-  profile?: any;
-  plans?: any[];
-  schedules?: any[];
+  profile?: ApiProfile;
+  plans?: ApiPlan[];
+  schedules?: ApiSchedule[];
 }
 
 /**
@@ -55,12 +55,12 @@ export function useCastData(options: UseCastDataOptions = {}) {
       dedupingInterval: 5000,
       // Disable retry for 404 (expected for new users)
       shouldRetryOnError: (err) => {
-        if ((err as any).status === 404) return false;
+        if ((err as { status?: number }).status === 404) return false;
         return true;
       },
       onError: (err) => {
         // Handle 404 as expected state for new users
-        if ((err as any).status === 404) {
+        if ((err as { status?: number }).status === 404) {
           return;
         }
         console.error("Failed to load cast data", err);
@@ -224,7 +224,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
       const galleryImages = imagesToSave.slice(1);
       const galleryKeys = galleryImages.map((img) => img.key || img.url).filter(Boolean);
 
-      const payload: Record<string, any> = {
+      const payload: Record<string, string | string[] | undefined> = {
         profileImagePath: heroImage?.key,
         galleryImages: galleryKeys,
       };

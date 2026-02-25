@@ -10,7 +10,7 @@ const getDisplayData = (data?: CastProfile | ProfileFormData) => {
   if (!data) return null;
 
   // Type Guard or simple check
-  const isForm = (d: any): d is ProfileFormData => "nickname" in d;
+  const isForm = (d: CastProfile | ProfileFormData): d is ProfileFormData => "nickname" in d;
 
   if (isForm(data)) {
     return {

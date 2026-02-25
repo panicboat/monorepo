@@ -1,4 +1,5 @@
 import { CastProfile, CastVisibility } from "@/stub/portfolio/v1/cast_service_pb";
+import { SaveProfileRequestBody, ApiTag } from "@/modules/portfolio/types";
 
 /**
  * Convert CastVisibility enum to string representation
@@ -46,7 +47,7 @@ export function mapCastProfileToFrontend(p: CastProfile) {
       displayOrder: g.displayOrder,
     })),
     defaultSchedules: (p.defaultSchedules || []).length > 0
-      ? p.defaultSchedules.map((ds: any) => ({ start: ds.start || "", end: ds.end || "" }))
+      ? p.defaultSchedules.map((ds) => ({ start: ds.start || "", end: ds.end || "" }))
       : [{ start: "18:00", end: "23:00" }],
     imageUrl: p.imageUrl,
     profileMediaId: p.profileMediaId || "",
@@ -85,10 +86,10 @@ export function mapCastProfileToFrontend(p: CastProfile) {
 /**
  * Build SaveCastProfileRequest payload from frontend body
  */
-export function buildSaveProfileRequest(body: any) {
+export function buildSaveProfileRequest(body: SaveProfileRequestBody) {
   // Convert tags from {label, count}[] to string[]
   const tagsArray = Array.isArray(body.tags)
-    ? body.tags.map((t: any) => (typeof t === "string" ? t : t.label))
+    ? body.tags.map((t: ApiTag) => (typeof t === "string" ? t : t.label))
     : [];
 
   return {
@@ -98,7 +99,7 @@ export function buildSaveProfileRequest(body: any) {
     tagline: body.tagline,
     areaIds: body.areaIds || [],
     genreIds: body.genreIds || [],
-    defaultSchedules: (body.defaultSchedules || []).map((s: any) => ({
+    defaultSchedules: (body.defaultSchedules || []).map((s) => ({
       start: s.start,
       end: s.end,
     })),
@@ -117,9 +118,9 @@ export function buildSaveProfileRequest(body: any) {
     bloodType: body.bloodType || "",
     threeSizes: body.threeSizes
       ? {
-          bust: body.threeSizes.b || body.threeSizes.bust || 0,
-          waist: body.threeSizes.w || body.threeSizes.waist || 0,
-          hip: body.threeSizes.h || body.threeSizes.hip || 0,
+          bust: body.threeSizes.bust || 0,
+          waist: body.threeSizes.waist || 0,
+          hip: body.threeSizes.hip || 0,
           cup: body.threeSizes.cup || "",
         }
       : undefined,

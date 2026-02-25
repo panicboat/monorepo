@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { WeeklySchedule } from "@/modules/portfolio/types";
+import { WeeklySchedule, ApiSchedule } from "@/modules/portfolio/types";
 import { mapApiToSchedules, mapSchedulesToApi } from "@/modules/portfolio/lib/cast/mappers";
 import { getAuthToken } from "@/lib/swr";
 
@@ -84,7 +84,7 @@ export function useCastSchedules(options: UseCastSchedulesOptions = {}) {
     [apiPath, schedules]
   );
 
-  const initializeFromApi = useCallback((apiSchedules: any[]) => {
+  const initializeFromApi = useCallback((apiSchedules: ApiSchedule[]) => {
     const mappedSchedules = mapApiToSchedules(apiSchedules);
     setSchedules(mappedSchedules);
     return mappedSchedules;

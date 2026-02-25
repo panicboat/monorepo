@@ -12,7 +12,7 @@ import {
 
 interface PhysicalInputsProps {
   data: ProfileFormData;
-  onChange: (key: keyof ProfileFormData, val: any) => void;
+  onChange: (key: keyof ProfileFormData, val: ProfileFormData[keyof ProfileFormData]) => void;
 }
 
 export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
@@ -27,14 +27,14 @@ export const PhysicalInputs = ({ data, onChange }: PhysicalInputsProps) => {
 
   const handleSizeChange = (key: "b" | "w" | "h", value: string) => {
     onChange("threeSizes", {
-      ...(data.threeSizes || { b: 0, w: 0, h: 0 }),
+      ...(data.threeSizes || { b: 0, w: 0, h: 0, cup: "" }),
       [key]: value ? Number(value) : 0,
     });
   };
 
   const handleCupChange = (value: string) => {
     onChange("threeSizes", {
-      ...(data.threeSizes || { b: 0, w: 0, h: 0 }),
+      ...(data.threeSizes || { b: 0, w: 0, h: 0, cup: "" }),
       cup: value,
     });
   };

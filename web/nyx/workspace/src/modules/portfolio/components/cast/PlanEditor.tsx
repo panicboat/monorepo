@@ -34,7 +34,7 @@ export const PlanEditor = ({ plans, onChange }: PlanEditorProps) => {
     onChange(plans.filter((p) => p.id !== id));
   };
 
-  const updatePlan = (id: string, field: keyof ServicePlan, value: any) => {
+  const updatePlan = (id: string, field: keyof ServicePlan, value: string | number | boolean) => {
     onChange(plans.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
   };
 

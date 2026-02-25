@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/Textarea";
 
 interface ProfileInputsProps {
   data: ProfileFormData;
-  onChange: (key: keyof ProfileFormData, value: any) => void;
+  onChange: (key: keyof ProfileFormData, value: ProfileFormData[keyof ProfileFormData]) => void;
 }
 
 export const ProfileInputs = ({ data, onChange }: ProfileInputsProps) => {

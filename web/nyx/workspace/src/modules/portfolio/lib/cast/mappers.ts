@@ -1,10 +1,9 @@
-import { getMediaType } from "@/lib/media";
-import { ProfileFormData, MediaItem, ServicePlan, WeeklySchedule, DefaultSchedule } from "@/modules/portfolio/types";
+import { ProfileFormData, MediaItem, ServicePlan, WeeklySchedule, DefaultSchedule, ApiProfile, ApiPlan, ApiSchedule, ApiTag } from "@/modules/portfolio/types";
 
 /**
  * Map API default schedules response to DefaultSchedule array
  */
-export function mapApiToDefaultSchedules(apiSchedules: any[]): DefaultSchedule[] {
+export function mapApiToDefaultSchedules(apiSchedules: { start: string; end: string }[]): DefaultSchedule[] {
   if (!apiSchedules || apiSchedules.length === 0) {
     return [{ start: "18:00", end: "23:00" }];
   }
@@ -17,7 +16,7 @@ export function mapApiToDefaultSchedules(apiSchedules: any[]): DefaultSchedule[]
 /**
  * Map API profile response to ProfileFormData
  */
-export function mapApiToProfileForm(apiProfile: any): ProfileFormData {
+export function mapApiToProfileForm(apiProfile: ApiProfile): ProfileFormData {
   const socialLinks = apiProfile.socialLinks || {};
 
   return {
@@ -25,9 +24,9 @@ export function mapApiToProfileForm(apiProfile: any): ProfileFormData {
     slug: apiProfile.slug || "",
     tagline: apiProfile.tagline || "",
     bio: apiProfile.bio || "",
-    areaIds: (apiProfile.areas || []).map((a: any) => a.id),
-    genreIds: (apiProfile.genres || []).map((g: any) => g.id),
-    defaultSchedules: mapApiToDefaultSchedules(apiProfile.defaultSchedules),
+    areaIds: (apiProfile.areas || []).map((a) => a.id),
+    genreIds: (apiProfile.genres || []).map((g) => g.id),
+    defaultSchedules: mapApiToDefaultSchedules(apiProfile.defaultSchedules || []),
     socialLinks: {
       x: socialLinks.x || "",
       instagram: socialLinks.instagram || "",
@@ -38,7 +37,7 @@ export function mapApiToProfileForm(apiProfile: any): ProfileFormData {
     },
     age: apiProfile.age || undefined,
     height: apiProfile.height || undefined,
-    bloodType: apiProfile.bloodType || undefined,
+    bloodType: apiProfile.bloodType as ProfileFormData["bloodType"],
     threeSizes: apiProfile.threeSizes
       ? {
           b: apiProfile.threeSizes.b || apiProfile.threeSizes.bust || 0,
@@ -47,7 +46,7 @@ export function mapApiToProfileForm(apiProfile: any): ProfileFormData {
           cup: apiProfile.threeSizes.cup || "",
         }
       : { b: 0, w: 0, h: 0, cup: "" },
-    tags: apiProfile.tags?.map((t: any) => (typeof t === "string" ? t : t.label)) || [],
+    tags: apiProfile.tags?.map((t: ApiTag) => (typeof t === "string" ? t : t.label)) || [],
   };
 }
 
@@ -96,7 +95,7 @@ export function mapProfileFormToApi(form: ProfileFormData, heroKey?: string, gal
 /**
  * Map API images to MediaItem array
  */
-export function mapApiToImages(apiProfile: any): MediaItem[] {
+export function mapApiToImages(apiProfile: ApiProfile): MediaItem[] {
   const images: MediaItem[] = [];
 
   // Hero/Profile image - use new media_id based format
@@ -107,13 +106,13 @@ export function mapApiToImages(apiProfile: any): MediaItem[] {
       mediaId: apiProfile.profileMediaId,
       type: "image",
     });
-  } else if (apiProfile.images?.hero && typeof apiProfile.images.hero === "object") {
+  } else if (!Array.isArray(apiProfile.images) && apiProfile.images?.hero && typeof apiProfile.images.hero === "object") {
     images.push(apiProfile.images.hero as MediaItem);
   }
 
   // Gallery images - use new media_id based format
   const galleryMediaIds = apiProfile.galleryMediaIds || [];
-  const galleryUrls = apiProfile.images || [];
+  const galleryUrls = Array.isArray(apiProfile.images) ? apiProfile.images : [];
   if (galleryMediaIds.length > 0) {
     galleryMediaIds.forEach((mediaId: string, idx: number) => {
       images.push({
@@ -123,7 +122,7 @@ export function mapApiToImages(apiProfile: any): MediaItem[] {
         type: "image",
       });
     });
-  } else if (apiProfile.images?.portfolio) {
+  } else if (!Array.isArray(apiProfile.images) && apiProfile.images?.portfolio) {
     images.push(...apiProfile.images.portfolio);
   }
 
@@ -133,12 +132,12 @@ export function mapApiToImages(apiProfile: any): MediaItem[] {
 /**
  * Map API plans response to ServicePlan array
  */
-export function mapApiToPlans(apiPlans: any[]): ServicePlan[] {
+export function mapApiToPlans(apiPlans: ApiPlan[]): ServicePlan[] {
   return (apiPlans || []).map((p) => ({
     id: p.id,
     name: p.name,
     price: p.price ?? 0,
-    duration: p.duration || p.durationMinutes,
+    duration: p.duration || p.durationMinutes || 0,
     isRecommended: p.isRecommended || false,
   }));
 }
@@ -159,11 +158,11 @@ export function mapPlansToApi(plans: ServicePlan[]) {
 /**
  * Map API schedules response to WeeklySchedule array
  */
-export function mapApiToSchedules(apiSchedules: any[]): WeeklySchedule[] {
+export function mapApiToSchedules(apiSchedules: ApiSchedule[]): WeeklySchedule[] {
   return (apiSchedules || []).map((s) => ({
     date: s.date,
-    start: s.start || s.startTime,
-    end: s.end || s.endTime,
+    start: s.start || s.startTime || "",
+    end: s.end || s.endTime || "",
   }));
 }
 
