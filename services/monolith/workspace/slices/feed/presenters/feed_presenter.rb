@@ -44,7 +44,7 @@ module Feed
         ::Feed::V1::FeedMedia.new(
           id: media.id.to_s,
           media_type: media.media_type,
-          # FALLBACK: Returns empty string when media file URL is not available
+          # FALLBACK: Empty string when media file is not yet uploaded or was deleted
           url: media_file&.url || "",
           thumbnail_url: media_file&.thumbnail_url || ""
         )
@@ -59,7 +59,7 @@ module Feed
 
         ::Feed::V1::FeedAuthor.new(
           id: cast.user_id.to_s,
-          # FALLBACK: Returns empty string when name or image URL is not available
+          # FALLBACK: Empty string for author name/image when cast profile data is incomplete
           name: cast.name || "",
           image_url: media_file&.url || ""
         )

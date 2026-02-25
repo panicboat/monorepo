@@ -91,7 +91,7 @@ module Relationship
       end
 
       def find_blocker_by_type(blocker_type)
-        # FALLBACK: If blocker_type is not specified, use the default find_blocker!
+        # FALLBACK: When blocker_type is omitted, auto-detect from current user's profiles
         return find_blocker! if blocker_type.nil? || blocker_type.empty?
 
         case blocker_type

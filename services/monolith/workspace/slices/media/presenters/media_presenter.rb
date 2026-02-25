@@ -11,7 +11,7 @@ module Media
             id: media.id,
             media_type: media_type_to_enum(media.media_type),
             url: media.url,
-            # FALLBACK: Returns empty string or default values for optional fields
+            # FALLBACK: Empty string / zero for optional proto fields that may be nil in DB
             thumbnail_url: media.thumbnail_url || "",
             filename: media.filename || "",
             content_type: media.content_type || "",
@@ -35,7 +35,7 @@ module Media
           when "video"
             ::Media::V1::MediaType::MEDIA_TYPE_VIDEO
           else
-            # FALLBACK: Returns UNSPECIFIED for unknown media types
+            # FALLBACK: Treat unrecognized or nil media_type as UNSPECIFIED enum value
             ::Media::V1::MediaType::MEDIA_TYPE_UNSPECIFIED
           end
         end

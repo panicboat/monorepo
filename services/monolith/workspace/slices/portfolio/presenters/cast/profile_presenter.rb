@@ -9,12 +9,12 @@ module Portfolio
 
           # Get profile image URL from media_files
           profile_media = media_files[cast.profile_media_id]
-          # FALLBACK: Returns empty string when profile media URL is not available
+          # FALLBACK: Empty string when profile image has not been uploaded yet
           profile_url = profile_media&.url || ""
 
           # Get avatar URL from media_files (fallback to profile image)
           avatar_media = media_files[cast.avatar_media_id]
-          # FALLBACK: Returns profile URL when avatar media URL is not available
+          # FALLBACK: Use profile image as avatar when dedicated avatar has not been set
           avatar_url = avatar_media&.url || profile_url
 
           # Get gallery media URLs
@@ -56,7 +56,7 @@ module Portfolio
         end
 
         def self.gallery_media_urls(cast, media_files)
-          # FALLBACK: Returns empty string for missing gallery media URLs
+          # FALLBACK: Empty string for gallery slots whose media file was deleted or not yet uploaded
           gallery_media_ids(cast).map { |id| media_files[id]&.url || "" }
         end
 

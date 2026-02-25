@@ -29,8 +29,8 @@ module Post
 
       def list_cast_posts
         cast_id = request.message.cast_id
-        # FALLBACK: Uses default limit of 20 when not specified
-        limit = request.message.limit.zero? ? 20 : request.message.limit
+        # FALLBACK: Default pagination limit when client sends 0 (unset) for limit
+        limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
         filter = request.message.filter
         exclude_cast_ids_param = request.message.exclude_cast_ids.to_a
@@ -220,7 +220,7 @@ module Post
       SavePost = Post::UseCases::Posts::SavePost
 
       def list_public_posts_with_cast_ids_filter(limit:, cursor:, cast_ids:, exclude_cast_ids: nil)
-        # FALLBACK: Returns empty result when cast_ids is empty
+        # FALLBACK: Empty result when no cast_ids are provided (e.g., user follows nobody)
         return { posts: [], next_cursor: nil, has_more: false, authors: {} } if cast_ids.empty?
 
         list_public_posts_uc.call(
@@ -261,7 +261,7 @@ module Post
       end
 
       def list_following_posts(limit:, cursor:, cast_ids:, exclude_cast_ids: nil)
-        # FALLBACK: Returns empty result when cast_ids is empty
+        # FALLBACK: Empty result when no cast_ids are provided (e.g., user follows nobody)
         return { posts: [], next_cursor: nil, has_more: false, authors: {} } if cast_ids.empty?
 
         decoded_cursor = decode_cursor(cursor)

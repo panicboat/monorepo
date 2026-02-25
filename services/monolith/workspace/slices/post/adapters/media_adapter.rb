@@ -7,7 +7,7 @@ module Post
       MediaFile = Data.define(:id, :url, :thumbnail_url, :media_type, :media_key, :thumbnail_key)
 
       def find_by_ids(ids)
-        # FALLBACK: Returns empty hash when ids is nil or empty
+        # FALLBACK: Skip cross-slice call when no media ids are given
         return {} if ids.nil? || ids.empty?
 
         files = get_media_batch.call(ids: ids)

@@ -89,8 +89,8 @@ module Post
       end
 
       def list_comments
-        # FALLBACK: Uses default limit of 20 when not specified
-        limit = request.message.limit.zero? ? 20 : request.message.limit
+        # FALLBACK: Default pagination limit when client sends 0 (unset) for limit
+        limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         # Get blocked user IDs for filtering comments
@@ -113,8 +113,8 @@ module Post
       end
 
       def list_replies
-        # FALLBACK: Uses default limit of 20 when not specified
-        limit = request.message.limit.zero? ? 20 : request.message.limit
+        # FALLBACK: Default pagination limit when client sends 0 (unset) for limit
+        limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         # Get blocked user IDs for filtering replies

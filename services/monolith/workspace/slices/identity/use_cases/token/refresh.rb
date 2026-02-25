@@ -24,7 +24,8 @@ module Identity
 
           # Generate new tokens
           payload = { sub: user.id, role: user.role, exp: Time.now.to_i + 3600 * 24 * 30 }
-          # FALLBACK: Uses default secret when JWT_SECRET is not configured
+          # FALLBACK: Hardcoded secret for local development when JWT_SECRET env var is not set
+          # TODO: Remove hardcoded default; require JWT_SECRET in production
           new_access_token = JWT.encode(payload, ENV.fetch("JWT_SECRET", "pan1cb0at"), 'HS256')
 
           new_refresh_token = SecureRandom.hex(32)

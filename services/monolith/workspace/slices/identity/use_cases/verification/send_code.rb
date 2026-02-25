@@ -9,7 +9,7 @@ module Identity
         def call(phone_number:)
           # TODO: Implement real SMS sending logic (e.g. via Twilio or SNS).
           # Currently using Mock SMS Logic: Always use "0000" or random 4 digits
-          # FALLBACK: Uses "0000" when MOCK_SMS_CODE is not configured
+          # FALLBACK: Fixed code "0000" for local development when MOCK_SMS_CODE env var is not set
           code = ENV.fetch("MOCK_SMS_CODE", "0000")
           expires_at = Time.now + (60 * 10) # 10 minutes
 
