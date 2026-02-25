@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { MessageSquare, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useReviews, useReviewStats } from "../hooks";
+import { useInfiniteReviews, useReviewStats } from "../hooks";
 import { ReviewStatsDisplay } from "./ReviewStatsDisplay";
 import { ReviewList } from "./ReviewList";
 
@@ -20,18 +20,17 @@ export function TrustSection({
   targetId,
   reviewsLinkHref,
 }: TrustSectionProps) {
-  const { reviews, loading: reviewsLoading, fetchReviews, hasMore } = useReviews();
+  const { reviews, loading, hasMore, fetchInitial } = useInfiniteReviews({
+    revieweeId: targetId,
+    status: "approved",
+  });
   const { stats, loading: statsLoading } = useReviewStats(targetId);
 
-  const loadReviews = useCallback(async () => {
-    if (targetId) {
-      await fetchReviews(targetId, "approved", { limit: PREVIEW_LIMIT });
-    }
-  }, [targetId, fetchReviews]);
-
   useEffect(() => {
-    loadReviews();
-  }, [loadReviews]);
+    if (targetId) {
+      fetchInitial();
+    }
+  }, [targetId, fetchInitial]);
 
   const totalReviews = stats?.totalReviews || 0;
   const showSeeAllLink = reviewsLinkHref && (hasMore || totalReviews > PREVIEW_LIMIT);
@@ -49,8 +48,8 @@ export function TrustSection({
 
       {/* Review List */}
       <ReviewList
-        reviews={reviews}
-        loading={reviewsLoading}
+        reviews={reviews.slice(0, PREVIEW_LIMIT)}
+        loading={loading}
         showReviewerLink={false}
         emptyMessage="まだレビューはありません"
       />

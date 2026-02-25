@@ -6,7 +6,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { fetcher, getAuthToken } from "@/lib/swr";
 import { useToast } from "@/components/ui/Toast";
-import { TrustTagsSection, WriteTrustModal, useReviews, ReviewList } from "@/modules/trust";
+import { TrustTagsSection, WriteTrustModal, useReviews, useInfiniteReviews, ReviewList } from "@/modules/trust";
 import { useBlockedBy } from "@/modules/relationship";
 
 interface GuestDetail {
@@ -38,15 +38,19 @@ export default function GuestDetailPage({
     { revalidateOnFocus: false }
   );
 
-  const { createReview, reviews, fetchReviewsByReviewer, loading: reviewsLoading } = useReviews();
+  const { createReview } = useReviews();
+  const { reviews, loading: reviewsLoading, fetchInitial } = useInfiniteReviews({
+    reviewerId: data?.userId,
+    status: "approved",
+  });
   const { blockers, loading: blockersLoading } = useBlockedBy(id);
   const [showTrustModal, setShowTrustModal] = useState(false);
 
   useEffect(() => {
     if (data?.userId) {
-      fetchReviewsByReviewer(data.userId, "approved").catch(console.error);
+      fetchInitial();
     }
-  }, [data?.userId, fetchReviewsByReviewer]);
+  }, [data?.userId, fetchInitial]);
 
   const handleSubmitReview = async (score: number, content: string) => {
     await createReview({ revieweeId: id, score, content: content || undefined });

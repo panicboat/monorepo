@@ -2,7 +2,7 @@
 
 import { CastDetailView } from "@/modules/portfolio/components/CastDetailView";
 import { CastTimeline } from "@/modules/feed";
-import { TrustSection, WriteTrustModal, useReviews, useReviewStats } from "@/modules/trust";
+import { TrustSection, WriteTrustModal, useReviews } from "@/modules/trust";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { use, useState, useEffect, useCallback } from "react";
@@ -273,14 +273,11 @@ function FloatingActionButtons({
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const [showTrustModal, setShowTrustModal] = useState(false);
 
-  const { createReview, fetchReviews } = useReviews();
-  const { mutate: refreshStats } = useReviewStats(castUserId);
+  const { createReview } = useReviews();
 
   const handleSubmitReview = useCallback(async (score: number, content: string) => {
     await createReview({ revieweeId: castUserId, score, content });
-    await fetchReviews(castUserId, "approved");
-    refreshStats();
-  }, [createReview, castUserId, fetchReviews, refreshStats]);
+  }, [createReview, castUserId]);
 
   const isLoggedIn = isHydrated && isAuthenticated();
 

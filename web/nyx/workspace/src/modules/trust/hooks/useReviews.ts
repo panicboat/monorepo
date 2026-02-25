@@ -2,93 +2,17 @@
 
 import { useCallback, useState } from "react";
 import { authFetch, getAuthToken } from "@/lib/auth";
-import type { Review, CreateReviewRequest, CreateReviewResponse, ListReviewsResponse } from "../types";
-
-interface FetchReviewsOptions {
-  limit?: number;
-  cursor?: string;
-}
+import type { CreateReviewRequest, CreateReviewResponse } from "../types";
 
 export function useReviews() {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-
-  const fetchReviews = useCallback(async (
-    revieweeId: string,
-    status?: string,
-    options?: FetchReviewsOptions
-  ) => {
-    if (!getAuthToken()) {
-      throw new Error("Authentication required");
-    }
-
-    setLoading(true);
-    try {
-      let url = `/api/shared/trust/reviews?reviewee_id=${revieweeId}`;
-      if (status) {
-        url += `&status=${status}`;
-      }
-      if (options?.limit) {
-        url += `&limit=${options.limit}`;
-      }
-      if (options?.cursor) {
-        url += `&cursor=${options.cursor}`;
-      }
-      const data = await authFetch<ListReviewsResponse>(url);
-      setReviews(data.reviews);
-      setHasMore(data.hasMore || false);
-      setNextCursor(data.nextCursor || null);
-      return data.reviews;
-    } catch (e) {
-      console.error("Fetch reviews error:", e);
-      throw e;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchReviewsByReviewer = useCallback(async (
-    reviewerId: string,
-    status?: string,
-    options?: FetchReviewsOptions
-  ) => {
-    if (!getAuthToken()) {
-      throw new Error("Authentication required");
-    }
-
-    setLoading(true);
-    try {
-      let url = `/api/shared/trust/reviews?reviewer_id=${reviewerId}`;
-      if (status) {
-        url += `&status=${status}`;
-      }
-      if (options?.limit) {
-        url += `&limit=${options.limit}`;
-      }
-      if (options?.cursor) {
-        url += `&cursor=${options.cursor}`;
-      }
-      const data = await authFetch<ListReviewsResponse>(url);
-      setReviews(data.reviews);
-      setHasMore(data.hasMore || false);
-      setNextCursor(data.nextCursor || null);
-      return data.reviews;
-    } catch (e) {
-      console.error("Fetch reviews by reviewer error:", e);
-      throw e;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [mutating, setMutating] = useState(false);
 
   const createReview = useCallback(async (request: CreateReviewRequest) => {
     if (!getAuthToken()) {
       throw new Error("Authentication required");
     }
 
-    setLoading(true);
+    setMutating(true);
     try {
       const data = await authFetch<CreateReviewResponse>("/api/me/trust/reviews", {
         method: "POST",
@@ -99,7 +23,7 @@ export function useReviews() {
       console.error("Create review error:", e);
       throw e;
     } finally {
-      setLoading(false);
+      setMutating(false);
     }
   }, []);
 
@@ -107,24 +31,18 @@ export function useReviews() {
     // FALLBACK: Returns false when not authenticated
     if (!getAuthToken()) return false;
 
-    setLoading(true);
+    setMutating(true);
     try {
       const data = await authFetch<{ success: boolean }>(`/api/me/trust/reviews/${id}`, {
         method: "PATCH",
         body: { content, score },
       });
-
-      if (data.success) {
-        setReviews((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, content, score } : r))
-        );
-      }
       return data.success;
     } catch (e) {
       console.error("Update review error:", e);
       throw e;
     } finally {
-      setLoading(false);
+      setMutating(false);
     }
   }, []);
 
@@ -132,33 +50,24 @@ export function useReviews() {
     // FALLBACK: Returns false when not authenticated
     if (!getAuthToken()) return false;
 
-    setLoading(true);
+    setMutating(true);
     try {
       const data = await authFetch<{ success: boolean }>(`/api/me/trust/reviews/${id}`, {
         method: "DELETE",
       });
-
-      if (data.success) {
-        setReviews((prev) => prev.filter((r) => r.id !== id));
-      }
       return data.success;
     } catch (e) {
       console.error("Delete review error:", e);
       throw e;
     } finally {
-      setLoading(false);
+      setMutating(false);
     }
   }, []);
 
   return {
-    reviews,
-    fetchReviews,
-    fetchReviewsByReviewer,
     createReview,
     updateReview,
     deleteReview,
-    loading,
-    hasMore,
-    nextCursor,
+    mutating,
   };
 }
