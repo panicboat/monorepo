@@ -12,7 +12,7 @@ import {
   List as ListIcon,
   Play,
 } from "lucide-react";
-import { useGuestTimeline, CastPost } from "@/modules/post";
+import { useTimeline, CastPost } from "@/modules/post";
 import { Badge } from "@/components/ui/Badge";
 import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 import Link from "next/link";
@@ -233,13 +233,13 @@ function GridView({ posts }: { posts: CastPost[] }) {
 }
 
 export function CastTimeline({ castId }: CastTimelineProps) {
-  const { posts, loading, error, hasMore, fetchPosts, loadMore } =
-    useGuestTimeline({ castId });
+  const { posts, loading, loadingMore, error, hasMore, fetchInitial, fetchMore } =
+    useTimeline({ castId });
   const [layout, setLayout] = useState<"list" | "grid">("list");
 
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    fetchInitial();
+  }, [fetchInitial]);
 
   const isInitialLoading = loading && posts.length === 0;
 
@@ -291,8 +291,8 @@ export function CastTimeline({ castId }: CastTimelineProps) {
       ) : layout === "list" ? (
         <InfiniteScroll
           hasMore={hasMore}
-          loading={loading && posts.length > 0}
-          onLoadMore={loadMore}
+          loading={loadingMore}
+          onLoadMore={fetchMore}
         >
           <div className="space-y-6">
             {posts.map((post) => (
@@ -303,8 +303,8 @@ export function CastTimeline({ castId }: CastTimelineProps) {
       ) : (
         <InfiniteScroll
           hasMore={hasMore}
-          loading={loading && posts.length > 0}
-          onLoadMore={loadMore}
+          loading={loadingMore}
+          onLoadMore={fetchMore}
         >
           <GridView posts={posts} />
         </InfiniteScroll>

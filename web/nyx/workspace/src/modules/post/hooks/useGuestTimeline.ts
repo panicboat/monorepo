@@ -1,103 +1,101 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { CastPost } from "@/modules/post/types";
 import { mapApiToPost, mapApiToPostsList } from "@/modules/post/lib/mappers";
 import { useAuthStore } from "@/stores/authStore";
+import { usePaginatedFetch, PaginatedResult } from "@/lib/hooks/usePaginatedFetch";
+
+type TimelineResponse = Parameters<typeof mapApiToPostsList>[0];
 
 interface UseGuestTimelineOptions {
   castId?: string;
+  filter?: string;
 }
 
-export function useGuestTimeline(options: UseGuestTimelineOptions = {}) {
-  const { castId } = options;
-
-  const [posts, setPosts] = useState<CastPost[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [nextCursor, setNextCursor] = useState<string>("");
-  const [hasMore, setHasMore] = useState(false);
-  const [currentFilter, setCurrentFilter] = useState<string | undefined>(undefined);
+export function useTimeline(options: UseGuestTimelineOptions = {}) {
+  const { castId, filter } = options;
   const accessToken = useAuthStore((state) => state.accessToken);
+  const prevFilterRef = useRef(filter);
 
-  const fetchPosts = useCallback(
-    async (cursor?: string, filter?: string) => {
-      setLoading(true);
-      setError(null);
-
-      // Track current filter for loadMore
-      if (!cursor) {
-        setCurrentFilter(filter);
-      }
-
-      try {
-        const params = new URLSearchParams();
-        if (cursor) params.set("cursor", cursor);
-        if (castId) params.set("cast_id", castId);
-        if (filter) params.set("filter", filter);
-
-        const url = params.toString()
-          ? `/api/guest/timeline?${params}`
-          : "/api/guest/timeline";
-
-        const headers: Record<string, string> = {};
-        if (accessToken) {
-          headers.Authorization = `Bearer ${accessToken}`;
-        }
-
-        const res = await fetch(url, {
-          cache: "no-store",
-          headers,
-        });
-
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody.error || "Failed to fetch posts");
-        }
-
-        const data = await res.json();
-        const result = mapApiToPostsList(data);
-
-        if (cursor) {
-          setPosts((prev) => [...prev, ...result.posts]);
-        } else {
-          setPosts(result.posts);
-        }
-        setNextCursor(result.nextCursor);
-        setHasMore(result.hasMore);
-        return result.posts;
-      } catch (e) {
-        const err = e instanceof Error ? e : new Error("Unknown error");
-        setError(err);
-        throw err;
-      } finally {
-        setLoading(false);
-      }
+  const buildParams = useCallback(
+    (params: URLSearchParams) => {
+      if (castId) params.set("cast_id", castId);
+      if (filter) params.set("filter", filter);
     },
-    [castId, accessToken]
+    [castId, filter]
   );
 
-  const loadMore = useCallback(async (filter?: string) => {
-    if (!nextCursor || !hasMore) return;
-    // Use provided filter or fall back to current filter
-    return fetchPosts(nextCursor, filter ?? currentFilter);
-  }, [fetchPosts, nextCursor, hasMore, currentFilter]);
+  const mapResponse = useCallback(
+    (data: TimelineResponse): PaginatedResult<CastPost> => {
+      const result = mapApiToPostsList(data);
+      return {
+        items: result.items,
+        hasMore: result.hasMore,
+        nextCursor: result.nextCursor || null,
+      };
+    },
+    []
+  );
 
-  const refresh = useCallback(async () => {
-    setNextCursor("");
-    setCurrentFilter(undefined);
-    return fetchPosts();
-  }, [fetchPosts]);
+  const getItemId = useCallback((post: CastPost) => post.id, []);
+
+  const fetchFn = useCallback(
+    async (url: string): Promise<TimelineResponse> => {
+      const headers: Record<string, string> = {};
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
+      const res = await fetch(url, { cache: "no-store", headers });
+      if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || "Failed to fetch posts");
+      }
+      return res.json();
+    },
+    [accessToken]
+  );
+
+  const {
+    items: posts,
+    setItems: setPosts,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    initialized,
+    fetchInitial,
+    fetchMore,
+    reset,
+  } = usePaginatedFetch<CastPost, TimelineResponse>({
+    apiUrl: "/api/guest/timeline",
+    mapResponse,
+    getItemId,
+    buildParams,
+    fetchFn,
+  });
+
+  // Auto reset & refetch when filter changes
+  useEffect(() => {
+    if (prevFilterRef.current !== filter) {
+      prevFilterRef.current = filter;
+      reset();
+      fetchInitial();
+    }
+  }, [filter, reset, fetchInitial]);
 
   return {
     posts,
     setPosts,
     loading,
+    loadingMore,
     error,
     hasMore,
-    fetchPosts,
-    loadMore,
-    refresh,
+    fetchInitial,
+    fetchMore,
+    reset,
+    initialized,
   };
 }
 

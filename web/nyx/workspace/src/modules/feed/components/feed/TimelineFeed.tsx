@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 import { useSocialStore, selectIsHydrated } from "@/stores/socialStore";
-import { useGuestTimeline } from "@/modules/post";
+import { useTimeline } from "@/modules/post";
 import { useAuthStore } from "@/stores/authStore";
 import { FeedItem, mapPostToFeedItem } from "./types";
 import { TimelineItem } from "./TimelineItem";
@@ -27,57 +27,25 @@ export function TimelineFeed({
 }: TimelineFeedProps) {
   const [filter, setFilter] = useState<FilterType>("all");
   const isLoaded = useSocialStore(selectIsHydrated);
-  const { posts, loading, error, hasMore, fetchPosts, loadMore, setPosts } = useGuestTimeline();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
+
+  // Pass filter to hook; filter changes trigger auto reset & refetch
+  const timelineFilter = isHydrated && isAuthenticated() ? filter : undefined;
+  const { posts, loading, loadingMore, error, hasMore, fetchInitial, fetchMore } =
+    useTimeline({ filter: timelineFilter });
 
   // Fetch posts on mount (only in guest mode without items prop)
   useEffect(() => {
     if (mode === "guest" && !items && isHydrated) {
-      // "all" filter: public posts + private posts from followed casts
-      if (isAuthenticated()) {
-        fetchPosts(undefined, "all");
-      } else {
-        fetchPosts();
-      }
+      fetchInitial();
     }
-  }, [mode, items, fetchPosts, isHydrated, isAuthenticated]);
+  }, [mode, items, isHydrated, fetchInitial]);
 
   // Handle filter change
-  const handleFilterChange = useCallback(async (newFilter: FilterType) => {
+  const handleFilterChange = useCallback((newFilter: FilterType) => {
     setFilter(newFilter);
-
-    if (mode === "guest" && !items) {
-      if (newFilter === "following" && isAuthenticated()) {
-        setPosts([]);
-        await fetchPosts(undefined, "following");
-      } else if (newFilter === "favorites" && isAuthenticated()) {
-        setPosts([]);
-        await fetchPosts(undefined, "favorites");
-      } else if (newFilter === "all") {
-        setPosts([]);
-        // "all" filter: public posts + private posts from followed casts
-        if (isAuthenticated()) {
-          await fetchPosts(undefined, "all");
-        } else {
-          await fetchPosts();
-        }
-      }
-    }
-  }, [mode, items, isAuthenticated, fetchPosts, setPosts]);
-
-  // Load more handler for InfiniteScroll
-  const handleLoadMore = useCallback(() => {
-    const filterParam =
-      filter === "favorites"
-        ? "favorites"
-        : filter === "following"
-          ? "following"
-          : filter === "all" && isAuthenticated()
-            ? "all"
-            : undefined;
-    loadMore(filterParam);
-  }, [filter, isAuthenticated, loadMore]);
+  }, []);
 
   // Convert API posts to FeedItem format
   const sourceFeed: FeedItem[] = items || posts.map(mapPostToFeedItem);
@@ -113,8 +81,8 @@ export function TimelineFeed({
         ) : filteredFeed.length > 0 ? (
           <InfiniteScroll
             hasMore={mode === "guest" && !items && hasMore}
-            loading={loading && posts.length > 0}
-            onLoadMore={handleLoadMore}
+            loading={loadingMore}
+            onLoadMore={fetchMore}
           >
             {filteredFeed.map((item: FeedItem) => (
               <TimelineItem

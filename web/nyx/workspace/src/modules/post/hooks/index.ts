@@ -1,4 +1,4 @@
 export { useCastPosts } from "./useCastPosts";
 export { useLike } from "./useLike";
 export { useComments } from "./useComments";
-export { useGuestTimeline, useGuestPost } from "./useGuestTimeline";
+export { useTimeline, useGuestPost } from "./useGuestTimeline";
