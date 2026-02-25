@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { identityClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const response = await identityClient.getCurrentUser(
       {},
@@ -15,8 +14,7 @@ export async function GET(req: NextRequest) {
     );
 
     return NextResponse.json(response);
-  } catch (error: any) {
-    console.error("GetCurrentUser Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 401 });
+  } catch (error: unknown) {
+    return handleApiError(error, "GetCurrentUser");
   }
 }

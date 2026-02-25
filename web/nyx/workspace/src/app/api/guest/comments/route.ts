@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { commentClient } from "@/lib/grpc";
-import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
 import { create } from "@bufbuild/protobuf";
 import { CommentMediaSchema } from "@/stub/post/v1/comment_service_pb";
+import { requireAuth, extractPaginationParams, handleApiError } from "@/lib/api-helpers";
+import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 
 export async function GET(req: NextRequest) {
   try {
     const postId = req.nextUrl.searchParams.get("post_id") || "";
-    const cursor = req.nextUrl.searchParams.get("cursor") || "";
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20", 10);
+    const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
 
     if (!postId) {
       return NextResponse.json({ error: "post_id is required" }, { status: 400 });
@@ -51,17 +51,14 @@ export async function GET(req: NextRequest) {
       hasMore: response.hasMore,
     });
   } catch (error: unknown) {
-    console.error("ListComments Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "ListComments");
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
     const { postId, content, parentId, media } = body;
@@ -125,19 +122,14 @@ export async function POST(req: NextRequest) {
       commentsCount: response.commentsCount,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError) {
-      if (error.code === 3) {
+    if (isConnectError(error)) {
+      if (error.code === GrpcCode.INVALID_ARGUMENT) {
         return NextResponse.json({ error: error.message }, { status: 400 });
       }
-      if (error.code === 5) {
+      if (error.code === GrpcCode.NOT_FOUND) {
         return NextResponse.json({ error: "Post or parent comment not found" }, { status: 404 });
       }
-      if (error.code === 16) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
     }
-    console.error("AddComment Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "AddComment");
   }
 }

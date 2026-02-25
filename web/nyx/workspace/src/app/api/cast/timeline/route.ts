@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { postClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
-import { requireAuth, handleApiError } from "@/lib/api-helpers";
+import { requireAuth, extractPaginationParams, handleApiError } from "@/lib/api-helpers";
 import { mapProtoPostsListToJson } from "@/modules/post/lib/api-mappers";
 
 export async function GET(req: NextRequest) {
@@ -9,8 +9,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const cursor = req.nextUrl.searchParams.get("cursor") || "";
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20", 10);
+    const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
 
     const response = await postClient.listCastPosts(
       { castId: "", limit, cursor },

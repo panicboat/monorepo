@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ConnectError } from "@connectrpc/connect";
 import { feedClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { extractPaginationParams, handleApiError } from "@/lib/api-helpers";
 
 /**
  * GET /api/feed/cast
@@ -10,8 +10,7 @@ import { buildGrpcHeaders } from "@/lib/request";
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const cursor = searchParams.get("cursor") || "";
-    const limit = parseInt(searchParams.get("limit") || "20", 10);
+    const { limit, cursor } = extractPaginationParams(searchParams);
 
     const response = await feedClient.listCastFeed(
       {
@@ -53,16 +52,6 @@ export async function GET(req: NextRequest) {
       hasMore: response.hasMore,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError) {
-      if (error.code === 5) {
-        return NextResponse.json({ error: "Not found" }, { status: 404 });
-      }
-      if (error.code === 16) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    }
-    console.error("[Feed.ListCastFeed] Error:", error);
-    const message = error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "ListCastFeed");
   }
 }

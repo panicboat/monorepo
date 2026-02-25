@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { offerClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const response = await offerClient.getPlans(
       { castId: "" },
@@ -23,17 +23,14 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ plans });
   } catch (error: unknown) {
-    console.error("GetPlans Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "GetPlans");
   }
 }
 
 export async function PUT(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
 
@@ -52,8 +49,6 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ plans });
   } catch (error: unknown) {
-    console.error("SavePlans Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "SavePlans");
   }
 }

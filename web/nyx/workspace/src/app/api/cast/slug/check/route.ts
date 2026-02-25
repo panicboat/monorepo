@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const slug = req.nextUrl.searchParams.get("slug");
     if (!slug) {
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       available: response.available,
       message: response.message,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return handleApiError(error, "CheckSlugAvailability");
   }
 }

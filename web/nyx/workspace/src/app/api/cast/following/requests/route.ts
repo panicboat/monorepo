@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { followClient } from "@/lib/grpc";
-import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, extractPaginationParams, handleApiError } from "@/lib/api-helpers";
 
 export interface FollowRequest {
   guestId: string;
@@ -12,12 +12,10 @@ export interface FollowRequest {
 
 export async function GET(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20", 10);
-    const cursor = req.nextUrl.searchParams.get("cursor") || "";
+    const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
 
     const response = await followClient.listPendingFollowRequests(
       { limit, cursor },
@@ -37,11 +35,6 @@ export async function GET(req: NextRequest) {
       hasMore: response.hasMore,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 16) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("ListPendingFollowRequests Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "ListPendingFollowRequests");
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { commentClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { extractPaginationParams, handleApiError } from "@/lib/api-helpers";
 
 export async function GET(
   req: NextRequest,
@@ -8,8 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const cursor = req.nextUrl.searchParams.get("cursor") || "";
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20", 10);
+    const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
 
     const response = await commentClient.listReplies(
       { commentId: id, limit, cursor },
@@ -46,8 +46,6 @@ export async function GET(
       hasMore: response.hasMore,
     });
   } catch (error: unknown) {
-    console.error("ListReplies Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "ListReplies");
   }
 }

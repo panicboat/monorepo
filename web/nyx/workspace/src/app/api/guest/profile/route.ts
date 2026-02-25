@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { guestClient } from "@/lib/grpc";
-import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
+import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 
 export async function GET(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const response = await guestClient.getGuestProfile(
       {},
@@ -26,20 +26,18 @@ export async function GET(req: NextRequest) {
       : null;
 
     return NextResponse.json({ profile });
-  } catch (error: any) {
-    if (error instanceof ConnectError && error.code === 5) {
+  } catch (error: unknown) {
+    if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
       return NextResponse.json({ error: "Not Found" }, { status: 404 });
     }
-    console.error("GetGuestProfile Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "GetGuestProfile");
   }
 }
 
 export async function PUT(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
 
@@ -65,11 +63,10 @@ export async function PUT(req: NextRequest) {
       : null;
 
     return NextResponse.json({ profile });
-  } catch (error: any) {
-    if (error instanceof ConnectError && error.code === 3) {
+  } catch (error: unknown) {
+    if (isConnectError(error) && error.code === GrpcCode.INVALID_ARGUMENT) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    console.error("SaveGuestProfile Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, "SaveGuestProfile");
   }
 }

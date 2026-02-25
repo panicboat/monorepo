@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { likeClient } from "@/lib/grpc";
-import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
+import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 
 export async function POST(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
     const { postId } = body;
@@ -25,25 +25,17 @@ export async function POST(req: NextRequest) {
       likesCount: response.likesCount,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError) {
-      if (error.code === 5) {
-        return NextResponse.json({ error: "Post not found" }, { status: 404 });
-      }
-      if (error.code === 16) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
+    if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
-    console.error("LikeCastPost Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "LikeCastPost");
   }
 }
 
 export async function DELETE(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const postId = req.nextUrl.searchParams.get("post_id");
 
@@ -60,16 +52,9 @@ export async function DELETE(req: NextRequest) {
       likesCount: response.likesCount,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError) {
-      if (error.code === 5) {
-        return NextResponse.json({ error: "Post not found" }, { status: 404 });
-      }
-      if (error.code === 16) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
+    if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
-    console.error("UnlikeCastPost Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "UnlikeCastPost");
   }
 }

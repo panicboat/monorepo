@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ConnectError } from "@connectrpc/connect";
 import { mediaClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const { id } = await params;
 
@@ -34,17 +33,7 @@ export async function GET(
         : null,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError) {
-      if (error.code === 5) {
-        return NextResponse.json({ error: "Not found" }, { status: 404 });
-      }
-      if (error.code === 16) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    }
-    console.error("[Media.GetMedia] Error:", error);
-    const message = error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "GetMedia");
   }
 }
 
@@ -53,9 +42,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const { id } = await params;
 
@@ -68,16 +56,6 @@ export async function DELETE(
       success: response.success,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError) {
-      if (error.code === 5) {
-        return NextResponse.json({ error: "Not found" }, { status: 404 });
-      }
-      if (error.code === 16) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    }
-    console.error("[Media.DeleteMedia] Error:", error);
-    const message = error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "DeleteMedia");
   }
 }

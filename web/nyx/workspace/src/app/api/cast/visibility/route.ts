@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
 import { CastVisibility } from "@/stub/portfolio/v1/cast_service_pb";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
 
 export async function PUT(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
     const isPrivate = body.isPrivate === true;
@@ -24,8 +24,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({
       isPrivate: response.profile?.visibility === CastVisibility.PRIVATE,
     });
-  } catch (error: any) {
-    console.error("SaveCastVisibility Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return handleApiError(error, "SaveCastVisibility");
   }
 }

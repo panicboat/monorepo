@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { mediaClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
 
 export async function POST(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const { filename, contentType } = await req.json();
 
@@ -24,8 +24,7 @@ export async function POST(req: NextRequest) {
       key: mediaKey,
       mediaId: response.mediaId,
     });
-  } catch (error: any) {
-    console.error("GetUploadUrl Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return handleApiError(error, "GetUploadUrl");
   }
 }

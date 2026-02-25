@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { handleApiError } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json({ areas });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return handleApiError(error, "ListAreas");
   }
 }

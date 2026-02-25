@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient, offerClient } from "@/lib/grpc";
-import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
+import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 import {
   mapCastProfileToFrontend,
   buildSaveProfileRequest,
@@ -9,9 +10,8 @@ import {
 
 export async function GET(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const headers = buildGrpcHeaders(req.headers);
 
@@ -39,21 +39,18 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ profile, plans, schedules });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 5) {
+    if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
       // NotFound is expected during onboarding
       return NextResponse.json({ error: "Not Found" }, { status: 404 });
     }
-    console.error("GetCastProfile Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "GetCastProfile");
   }
 }
 
 export async function PUT(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
     const headers = buildGrpcHeaders(req.headers);
@@ -76,8 +73,7 @@ export async function PUT(req: NextRequest) {
     }
 
     return NextResponse.json(response);
-  } catch (error: any) {
-    console.error("SaveCastProfile Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return handleApiError(error, "SaveCastProfile");
   }
 }

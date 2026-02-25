@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { favoriteClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { handleApiError } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -25,8 +26,6 @@ export async function GET(req: NextRequest) {
       favorited: response.favorited,
     });
   } catch (error: unknown) {
-    console.error("GetFavoriteStatus Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "GetFavoriteStatus");
   }
 }

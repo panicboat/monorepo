@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { identityClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { handleApiError } from "@/lib/api-helpers";
+import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,11 +15,10 @@ export async function POST(req: NextRequest) {
     );
 
     return NextResponse.json(response);
-  } catch (error: any) {
-    if (error.code === 16) {
-       return NextResponse.json({ error: "Invalid refresh token" }, { status: 401 });
+  } catch (error: unknown) {
+    if (isConnectError(error) && error.code === GrpcCode.UNAUTHENTICATED) {
+      return NextResponse.json({ error: "Invalid refresh token" }, { status: 401 });
     }
-    console.error("RefreshToken Error:", error);
-    return NextResponse.json({ error: error.rawMessage || error.message }, { status: 500 });
+    return handleApiError(error, "RefreshToken");
   }
 }

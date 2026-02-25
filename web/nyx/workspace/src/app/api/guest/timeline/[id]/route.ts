@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { postClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { handleApiError } from "@/lib/api-helpers";
+import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -48,11 +50,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ post: mappedPost });
   } catch (error: unknown) {
-    console.error("GetCastPost Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    if (message.includes("NOT_FOUND")) {
+    if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "GetCastPost");
   }
 }

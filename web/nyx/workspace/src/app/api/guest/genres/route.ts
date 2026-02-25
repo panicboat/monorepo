@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { handleApiError } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,10 +19,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ genres });
   } catch (error: unknown) {
-    console.error("ListGenres Error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error, "ListGenres");
   }
 }

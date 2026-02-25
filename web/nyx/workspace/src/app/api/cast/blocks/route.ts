@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { blockClient } from "@/lib/grpc";
-import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, extractPaginationParams, handleApiError } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "50", 10);
-    const cursor = req.nextUrl.searchParams.get("cursor") || "";
+    const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams, 50);
 
     const response = await blockClient.listBlocked(
       { limit, cursor },
@@ -29,20 +27,14 @@ export async function GET(req: NextRequest) {
       hasMore: response.hasMore,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 16) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("ListBlocked Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "ListBlocked");
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
     const { blockedId, blockedType } = body;
@@ -63,20 +55,14 @@ export async function POST(req: NextRequest) {
       success: response.success,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 16) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("BlockUser Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "BlockUser");
   }
 }
 
 export async function DELETE(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const blockedId = req.nextUrl.searchParams.get("blocked_id");
 
@@ -96,11 +82,6 @@ export async function DELETE(req: NextRequest) {
       success: response.success,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 16) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("UnblockUser Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "UnblockUser");
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { offerClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
 
 interface ScheduleInput {
   date: string;
@@ -10,9 +11,8 @@ interface ScheduleInput {
 
 export async function PUT(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
 
@@ -37,8 +37,6 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ schedules });
   } catch (error: unknown) {
-    console.error("SaveSchedules Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "SaveSchedules");
   }
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { favoriteClient, castClient } from "@/lib/grpc";
-import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, extractPaginationParams, handleApiError } from "@/lib/api-helpers";
 
 interface FavoriteCast {
   id: string;
@@ -12,12 +12,10 @@ interface FavoriteCast {
 
 export async function GET(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "100", 10);
-    const cursor = req.nextUrl.searchParams.get("cursor") || "";
+    const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams, 100);
 
     const response = await favoriteClient.listFavorites(
       { limit, cursor },
@@ -56,20 +54,14 @@ export async function GET(req: NextRequest) {
       hasMore: response.hasMore,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 16) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("ListFavorites Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "ListFavorites");
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
     const { castId } = body;
@@ -87,20 +79,14 @@ export async function POST(req: NextRequest) {
       success: response.success,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 16) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("AddFavorite Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "AddFavorite");
   }
 }
 
 export async function DELETE(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const castId = req.nextUrl.searchParams.get("cast_id");
 
@@ -117,11 +103,6 @@ export async function DELETE(req: NextRequest) {
       success: response.success,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 16) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("RemoveFavorite Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "RemoveFavorite");
   }
 }

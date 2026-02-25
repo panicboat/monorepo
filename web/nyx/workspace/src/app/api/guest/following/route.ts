@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { followClient, castClient } from "@/lib/grpc";
-import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, extractPaginationParams, handleApiError } from "@/lib/api-helpers";
 
 interface FollowingCast {
   id: string;
@@ -12,12 +12,10 @@ interface FollowingCast {
 
 export async function GET(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "100", 10);
-    const cursor = req.nextUrl.searchParams.get("cursor") || "";
+    const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams, 100);
 
     const response = await followClient.listFollowing(
       { limit, cursor },
@@ -56,20 +54,14 @@ export async function GET(req: NextRequest) {
       hasMore: response.hasMore,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 16) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("ListFollowing Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "ListFollowing");
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const body = await req.json();
     const { castId } = body;
@@ -88,20 +80,14 @@ export async function POST(req: NextRequest) {
       status: response.status,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 16) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("FollowCast Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "FollowCast");
   }
 }
 
 export async function DELETE(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const castId = req.nextUrl.searchParams.get("cast_id");
 
@@ -118,11 +104,6 @@ export async function DELETE(req: NextRequest) {
       success: response.success,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 16) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("UnfollowCast Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "UnfollowCast");
   }
 }

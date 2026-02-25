@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { trustClient } from "@/lib/grpc";
-import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
+import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 
 export async function POST(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const { revieweeId, content, score } = await req.json();
     if (!revieweeId || score === undefined) {
@@ -24,16 +24,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: response.success, id: response.id });
   } catch (error: unknown) {
-    if (error instanceof ConnectError) {
-      if (error.code === 3) {
-        return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-      }
-      if (error.code === 16) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
+    if (isConnectError(error) && error.code === GrpcCode.INVALID_ARGUMENT) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
-    console.error("CreateReview Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "CreateReview");
   }
 }

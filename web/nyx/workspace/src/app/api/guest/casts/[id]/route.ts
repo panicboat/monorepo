@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { castClient, offerClient, followClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
-import { ConnectError } from "@connectrpc/connect";
+import { handleApiError } from "@/lib/api-helpers";
+import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 import { mapCastProfileToFrontend } from "@/modules/portfolio/lib/cast/profile";
 import { FollowStatus } from "@/stub/relationship/v1/follow_service_pb";
 import { CastVisibility } from "@/stub/portfolio/v1/cast_service_pb";
@@ -79,13 +80,9 @@ export async function GET(
       canViewDetails,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 5) {
+    if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
       return NextResponse.json({ error: "Not Found" }, { status: 404 });
     }
-    console.error("GetCastProfile Error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error, "GetCastProfile");
   }
 }

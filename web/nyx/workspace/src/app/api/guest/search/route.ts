@@ -6,6 +6,7 @@ import {
   CastVisibility,
   CastStatusFilter,
 } from "@/stub/portfolio/v1/cast_service_pb";
+import { extractPaginationParams, handleApiError } from "@/lib/api-helpers";
 
 function parseStatusFilter(status: string | null): CastStatusFilter {
   switch (status?.toLowerCase()) {
@@ -28,8 +29,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const areaId = searchParams.get("areaId") || "";
     const query = searchParams.get("query") || "";
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
-    const cursor = searchParams.get("cursor") || "";
+    const { limit, cursor } = extractPaginationParams(searchParams, 50);
 
     const response = await castClient.listCasts(
       {
@@ -72,10 +72,6 @@ export async function GET(req: NextRequest) {
       hasMore: response.hasMore || false,
     });
   } catch (error: unknown) {
-    console.error("ListCasts Error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error, "ListCasts");
   }
 }

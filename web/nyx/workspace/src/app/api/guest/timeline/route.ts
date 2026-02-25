@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { postClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { mapProtoPostsListToJson } from "@/modules/post/lib/api-mappers";
+import { extractPaginationParams, handleApiError } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
   try {
-    const cursor = req.nextUrl.searchParams.get("cursor") || "";
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20", 10);
+    const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
     const castId = req.nextUrl.searchParams.get("cast_id") || "";
     const filterParam = req.nextUrl.searchParams.get("filter") || "";
 
@@ -21,8 +21,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(mapProtoPostsListToJson(response));
   } catch (error: unknown) {
-    console.error("ListPublicPosts Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "ListPublicPosts");
   }
 }

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { trustClient } from "@/lib/grpc";
-import { ConnectError } from "@connectrpc/connect";
 import { buildGrpcHeaders } from "@/lib/request";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
   try {
-    if (!req.headers.get("authorization")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
     const revieweeId = req.nextUrl.searchParams.get("reviewee_id");
     const reviewerId = req.nextUrl.searchParams.get("reviewer_id");
@@ -54,11 +53,6 @@ export async function GET(req: NextRequest) {
       hasMore: response.hasMore || false,
     });
   } catch (error: unknown) {
-    if (error instanceof ConnectError && error.code === 16) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    console.error("ListReviews Error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, "ListReviews");
   }
 }
