@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
+require "errors/validation_error"
+
 module Portfolio
   module UseCases
     module Guest
       class SaveProfile
-        class ValidationError < StandardError; end
 
         include Deps["repositories.guest_repository"]
 
@@ -46,15 +47,15 @@ module Portfolio
 
         def validate_name!(name)
           if name.nil? || name.strip.empty?
-            raise ValidationError, "名前は必須です"
+            raise Errors::ValidationError, "名前は必須です"
           end
 
           if name.length < NAME_MIN_LENGTH
-            raise ValidationError, "名前は#{NAME_MIN_LENGTH}文字以上で入力してください"
+            raise Errors::ValidationError, "名前は#{NAME_MIN_LENGTH}文字以上で入力してください"
           end
 
           if name.length > NAME_MAX_LENGTH
-            raise ValidationError, "名前は#{NAME_MAX_LENGTH}文字以内で入力してください"
+            raise Errors::ValidationError, "名前は#{NAME_MAX_LENGTH}文字以内で入力してください"
           end
         end
 
@@ -62,7 +63,7 @@ module Portfolio
           return if tagline.nil? || tagline.empty?
 
           if tagline.length > TAGLINE_MAX_LENGTH
-            raise ValidationError, "一言紹介は#{TAGLINE_MAX_LENGTH}文字以内で入力してください"
+            raise Errors::ValidationError, "一言紹介は#{TAGLINE_MAX_LENGTH}文字以内で入力してください"
           end
         end
 
@@ -70,7 +71,7 @@ module Portfolio
           return if bio.nil? || bio.empty?
 
           if bio.length > BIO_MAX_LENGTH
-            raise ValidationError, "自己紹介は#{BIO_MAX_LENGTH}文字以内で入力してください"
+            raise Errors::ValidationError, "自己紹介は#{BIO_MAX_LENGTH}文字以内で入力してください"
           end
         end
       end

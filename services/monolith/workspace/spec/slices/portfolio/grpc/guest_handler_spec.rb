@@ -137,7 +137,7 @@ RSpec.describe Portfolio::Grpc::GuestHandler do
 
     it "raises invalid argument on validation error" do
       expect(save_profile_uc).to receive(:call).and_raise(
-        Portfolio::UseCases::Guest::SaveProfile::ValidationError.new("名前は必須です")
+        Errors::ValidationError.new("名前は必須です")
       )
 
       expect { handler.save_guest_profile }.to raise_error(GRPC::BadStatus) { |e|

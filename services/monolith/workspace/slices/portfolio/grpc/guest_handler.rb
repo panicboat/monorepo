@@ -83,7 +83,7 @@ module Portfolio
         ::Portfolio::V1::SaveGuestProfileResponse.new(
           profile: GuestPresenter.to_proto(result, media_files: media_files)
         )
-      rescue SaveProfile::ValidationError => e
+      rescue Errors::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
 

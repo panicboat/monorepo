@@ -2,20 +2,13 @@
 
 require 'bcrypt'
 require 'jwt'
+require "errors/validation_error"
 
 module Identity
   module UseCases
     module Auth
       class Register
         class RegistrationError < StandardError; end
-        class ValidationError < StandardError
-          attr_reader :errors
-
-          def initialize(errors)
-            @errors = errors
-            super(errors.to_h.to_s)
-          end
-        end
 
         include Identity::Deps[
           repo: "repositories.user_repository",
@@ -32,7 +25,7 @@ module Identity
             verification_token: verification_token,
             role: role
           )
-          raise ValidationError, validation.errors unless validation.success?
+          raise Errors::ValidationError, validation.errors unless validation.success?
 
           # 1. Verify Token
           verification = verification_repo.find_by_id(verification_token)

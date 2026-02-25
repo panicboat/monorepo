@@ -59,7 +59,7 @@ module Offer
         ::Offer::V1::SavePlansResponse.new(
           plans: PlanPresenter.many_to_proto(result)
         )
-      rescue SavePlans::ValidationError => e
+      rescue Errors::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       rescue SavePlans::CastNotFoundError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Cast not found")
@@ -94,7 +94,7 @@ module Offer
         ::Offer::V1::SaveSchedulesResponse.new(
           schedules: SchedulePresenter.many_to_proto(result)
         )
-      rescue SaveSchedules::ValidationError => e
+      rescue Errors::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       rescue SaveSchedules::CastNotFoundError
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Cast not found")

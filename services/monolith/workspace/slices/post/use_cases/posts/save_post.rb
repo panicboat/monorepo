@@ -1,17 +1,11 @@
 # frozen_string_literal: true
 
+require "errors/validation_error"
+
 module Post
   module UseCases
     module Posts
       class SavePost
-        class ValidationError < StandardError
-          attr_reader :errors
-
-          def initialize(errors)
-            @errors = errors
-            super(errors.to_h.to_s)
-          end
-        end
 
         include Post::Deps[
           repo: "repositories.post_repository",
@@ -20,7 +14,7 @@ module Post
 
         def call(cast_id:, id: nil, content: "", media: [], visibility: "public", hashtags: [])
           validation = contract.call(cast_id: cast_id, id: id, content: content, media: media, visibility: visibility, hashtags: hashtags)
-          raise ValidationError, validation.errors unless validation.success?
+          raise Errors::ValidationError, validation.errors unless validation.success?
 
           if id && !id.empty?
             update_post(cast_id: cast_id, id: id, content: content, media: media, visibility: visibility, hashtags: hashtags)

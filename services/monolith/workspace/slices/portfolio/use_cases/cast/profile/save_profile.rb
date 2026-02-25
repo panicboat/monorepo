@@ -1,18 +1,12 @@
 # frozen_string_literal: true
 
+require "errors/validation_error"
+
 module Portfolio
   module UseCases
     module Cast
       module Profile
         class SaveProfile
-          class ValidationError < StandardError
-            attr_reader :errors
-
-            def initialize(errors)
-              @errors = errors
-              super(errors.to_h.to_s)
-            end
-          end
 
           include Portfolio::Deps[
             repo: "repositories.cast_repository",
@@ -39,7 +33,7 @@ module Portfolio
             }.compact
 
             validation = contract.call(params)
-            raise ValidationError, validation.errors unless validation.success?
+            raise Errors::ValidationError, validation.errors unless validation.success?
 
             # Check slug uniqueness
             if slug && !slug.empty? && !repo.slug_available?(slug, exclude_user_id: user_id)

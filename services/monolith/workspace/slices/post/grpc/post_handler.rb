@@ -202,7 +202,7 @@ module Post
         ::Post::V1::SaveCastPostResponse.new(
           post: PostPresenter.to_proto(post, author: cast, media_files: media_files)
         )
-      rescue SavePost::ValidationError => e
+      rescue Errors::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
 

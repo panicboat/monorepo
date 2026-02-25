@@ -6,7 +6,7 @@ module Errors
 
     def initialize(errors)
       @errors = errors
-      super(errors.to_h.to_s)
+      super(errors.respond_to?(:to_h) ? errors.to_h.to_s : errors.to_s)
     end
   end
 end

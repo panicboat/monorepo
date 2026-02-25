@@ -70,26 +70,26 @@ RSpec.describe Portfolio::UseCases::Guest::SaveProfile do
       it "raises ValidationError when name is nil" do
         expect {
           use_case.call(user_id: user_id, name: nil)
-        }.to raise_error(described_class::ValidationError, "名前は必須です")
+        }.to raise_error(Errors::ValidationError, "名前は必須です")
       end
 
       it "raises ValidationError when name is empty" do
         expect {
           use_case.call(user_id: user_id, name: "")
-        }.to raise_error(described_class::ValidationError, "名前は必須です")
+        }.to raise_error(Errors::ValidationError, "名前は必須です")
       end
 
       it "raises ValidationError when name is only whitespace" do
         expect {
           use_case.call(user_id: user_id, name: "   ")
-        }.to raise_error(described_class::ValidationError, "名前は必須です")
+        }.to raise_error(Errors::ValidationError, "名前は必須です")
       end
 
       it "raises ValidationError when name exceeds maximum length" do
         long_name = "a" * 21
         expect {
           use_case.call(user_id: user_id, name: long_name)
-        }.to raise_error(described_class::ValidationError, "名前は20文字以内で入力してください")
+        }.to raise_error(Errors::ValidationError, "名前は20文字以内で入力してください")
       end
 
       it "accepts name at maximum length" do

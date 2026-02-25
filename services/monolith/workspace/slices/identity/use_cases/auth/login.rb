@@ -2,19 +2,12 @@
 
 require 'bcrypt'
 require 'jwt'
+require "errors/validation_error"
 
 module Identity
   module UseCases
     module Auth
       class Login
-        class ValidationError < StandardError
-          attr_reader :errors
-
-          def initialize(errors)
-            @errors = errors
-            super(errors.to_h.to_s)
-          end
-        end
 
         include Identity::Deps[
           repo: "repositories.user_repository",
@@ -28,7 +21,7 @@ module Identity
           params[:role] = role unless role.nil?
 
           validation = contract.call(params)
-          raise ValidationError, validation.errors unless validation.success?
+          raise Errors::ValidationError, validation.errors unless validation.success?
           user = repo.find_by_phone_number(phone_number)
 
           unless user && BCrypt::Password.new(user.password_digest) == password

@@ -41,7 +41,7 @@ RSpec.describe Offer::UseCases::Schedules::SaveSchedules do
 
       it "raises ValidationError" do
         expect { use_case.call(cast_id: cast_id, schedules: invalid_schedules) }
-          .to raise_error(described_class::ValidationError)
+          .to raise_error(Errors::ValidationError)
       end
     end
   end

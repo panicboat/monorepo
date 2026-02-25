@@ -1,18 +1,11 @@
 # frozen_string_literal: true
 
+require "errors/validation_error"
+
 module Offer
   module UseCases
     module Schedules
       class SaveSchedules
-        class ValidationError < StandardError
-          attr_reader :errors
-
-          def initialize(errors)
-            @errors = errors
-            super(errors.to_h.to_s)
-          end
-        end
-
         class CastNotFoundError < StandardError; end
 
         include Offer::Deps[
@@ -24,7 +17,7 @@ module Offer
         def call(cast_id:, schedules:)
           # 0. Input Validation
           validation = contract.call(cast_id: cast_id, schedules: schedules)
-          raise ValidationError, validation.errors unless validation.success?
+          raise Errors::ValidationError, validation.errors unless validation.success?
 
           # 1. Verify cast exists via adapter
           raise CastNotFoundError, "Cast not found" unless portfolio_adapter.cast_exists?(cast_id)

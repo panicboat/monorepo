@@ -198,7 +198,7 @@ module Portfolio
         ::Portfolio::V1::SaveCastProfileResponse.new(profile: ProfilePresenter.to_proto(result, areas: areas, genres: genres, media_files: media_files))
       rescue SaveProfile::SlugNotAvailableError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::ALREADY_EXISTS, e.message)
-      rescue SaveProfile::ValidationError => e
+      rescue Errors::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
 
