@@ -2,13 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { followClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, extractPaginationParams, handleApiError } from "@/lib/api-helpers";
-
-export interface FollowRequest {
-  guestId: string;
-  guestName: string;
-  guestImageUrl: string;
-  requestedAt: string;
-}
+import { mapProtoFollowRequestsListToJson } from "@/modules/relationship/lib/api-mappers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -22,18 +16,7 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    const requests: FollowRequest[] = (response.requests || []).map((r) => ({
-      guestId: r.guestId,
-      guestName: r.guestName,
-      guestImageUrl: r.guestImageUrl,
-      requestedAt: r.requestedAt,
-    }));
-
-    return NextResponse.json({
-      requests,
-      nextCursor: response.nextCursor,
-      hasMore: response.hasMore,
-    });
+    return NextResponse.json(mapProtoFollowRequestsListToJson(response));
   } catch (error: unknown) {
     return handleApiError(error, "ListPendingFollowRequests");
   }

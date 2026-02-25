@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { blockClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, extractPaginationParams, handleApiError } from "@/lib/api-helpers";
+import { mapProtoBlockedListToJson } from "@/modules/relationship/lib/api-mappers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,17 +16,7 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    return NextResponse.json({
-      users: response.users.map((user) => ({
-        id: user.id,
-        userType: user.userType,
-        name: user.name,
-        imageUrl: user.imageUrl,
-        blockedAt: user.blockedAt,
-      })),
-      nextCursor: response.nextCursor,
-      hasMore: response.hasMore,
-    });
+    return NextResponse.json(mapProtoBlockedListToJson(response));
   } catch (error: unknown) {
     return handleApiError(error, "ListBlocked");
   }
