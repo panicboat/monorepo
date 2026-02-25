@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { CastPost, SavePostMedia } from "@/modules/post/types";
 import { mapApiToPost, mapApiToPostsList, mapPostToSavePayload } from "@/modules/post/lib/mappers";
-import { getAuthToken } from "@/lib/swr";
+import { authFetch } from "@/lib/auth/fetch";
+import { usePaginatedFetch, PaginatedResult } from "@/lib/hooks/usePaginatedFetch";
+
+type CastPostsResponse = Parameters<typeof mapApiToPostsList>[0];
 
 interface UseCastPostsOptions {
   apiPath?: string;
@@ -12,92 +15,54 @@ interface UseCastPostsOptions {
 export function useCastPosts(options: UseCastPostsOptions = {}) {
   const { apiPath = "/api/cast/timeline" } = options;
 
-  const [posts, setPosts] = useState<CastPost[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [nextCursor, setNextCursor] = useState<string>("");
-  const [hasMore, setHasMore] = useState(false);
-
-  const fetchPosts = useCallback(async (cursor?: string) => {
-    const token = getAuthToken();
-    // FALLBACK: Returns empty array when not authenticated
-    if (!token) {
-      setPosts([]);
-      return [];
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const params = new URLSearchParams();
-      if (cursor) params.set("cursor", cursor);
-
-      const url = params.toString() ? `${apiPath}?${params}` : apiPath;
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
-
-      if (!res.ok) {
-        // FALLBACK: Returns empty array on 404 status
-        if (res.status === 404) {
-          setPosts([]);
-          return [];
-        }
-        // FALLBACK: Returns empty object when JSON parse fails
-        const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.error || "Failed to fetch posts");
-      }
-
-      const data = await res.json();
+  const mapResponse = useCallback(
+    (data: CastPostsResponse): PaginatedResult<CastPost> => {
       const result = mapApiToPostsList(data);
+      return {
+        items: result.items,
+        hasMore: result.hasMore,
+        nextCursor: result.nextCursor || null,
+      };
+    },
+    []
+  );
 
-      if (cursor) {
-        setPosts((prev) => [...prev, ...result.posts]);
-      } else {
-        setPosts(result.posts);
-      }
-      setNextCursor(result.nextCursor);
-      setHasMore(result.hasMore);
-      return result.posts;
-    } catch (e) {
-      const err = e instanceof Error ? e : new Error("Unknown error");
-      setError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [apiPath]);
+  const getItemId = useCallback((post: CastPost) => post.id, []);
 
-  const loadMore = useCallback(async () => {
-    if (!nextCursor || !hasMore) return;
-    return fetchPosts(nextCursor);
-  }, [fetchPosts, nextCursor, hasMore]);
+  const fetchFn = useCallback(
+    async (url: string): Promise<CastPostsResponse> => {
+      return authFetch<CastPostsResponse>(url, { cache: "no-store" });
+    },
+    []
+  );
+
+  const {
+    items: posts,
+    setItems: setPosts,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    initialized,
+    fetchInitial,
+    fetchMore,
+    reset,
+  } = usePaginatedFetch<CastPost, CastPostsResponse>({
+    apiUrl: apiPath,
+    mapResponse,
+    getItemId,
+    fetchFn,
+  });
 
   const savePost = useCallback(
     async (post: { id?: string; content: string; media: SavePostMedia[]; visibility?: "public" | "private"; hashtags?: string[] }) => {
-      const token = getAuthToken();
-      if (!token) throw new Error("No token");
-
       const payload = mapPostToSavePayload(post);
 
-      const res = await fetch(apiPath, {
+      const data = await authFetch<{ post: Parameters<typeof mapApiToPost>[0] }>(apiPath, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+        body: payload,
       });
 
-      if (!res.ok) {
-        // FALLBACK: Returns empty object when JSON parse fails
-        const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.error || "Failed to save post");
-      }
-
-      const data = await res.json();
       const savedPost = mapApiToPost(data.post);
 
       if (post.id) {
@@ -108,14 +73,11 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
 
       return savedPost;
     },
-    [apiPath]
+    [apiPath, setPosts]
   );
 
   const toggleVisibility = useCallback(
     async (postId: string, visibility: "public" | "private") => {
-      const token = getAuthToken();
-      if (!token) throw new Error("No token");
-
       const post = posts.find((p) => p.id === postId);
       if (!post) throw new Error("Post not found");
 
@@ -126,75 +88,60 @@ export function useCastPosts(options: UseCastPostsOptions = {}) {
         visibility,
       };
 
-      const res = await fetch(apiPath, {
+      const data = await authFetch<{ post: Parameters<typeof mapApiToPost>[0] }>(apiPath, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+        body: payload,
       });
 
-      if (!res.ok) {
-        // FALLBACK: Returns empty object when JSON parse fails
-        const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.error || "Failed to toggle visibility");
-      }
-
-      const data = await res.json();
       const updatedPost = mapApiToPost(data.post);
       setPosts((prev) => prev.map((p) => (p.id === updatedPost.id ? updatedPost : p)));
       return updatedPost;
     },
-    [apiPath, posts]
+    [apiPath, posts, setPosts]
   );
 
   const deletePost = useCallback(
     async (postId: string) => {
-      const token = getAuthToken();
-      if (!token) throw new Error("No token");
-
-      const res = await fetch(apiPath, {
+      await authFetch(apiPath, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ id: postId }),
+        body: { id: postId },
       });
-
-      if (!res.ok) {
-        // FALLBACK: Returns empty object when JSON parse fails
-        const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.error || "Failed to delete post");
-      }
 
       setPosts((prev) => prev.filter((p) => p.id !== postId));
     },
-    [apiPath]
+    [apiPath, setPosts]
   );
 
-  const removePostLocally = useCallback((postId: string) => {
-    setPosts((prev) => prev.filter((p) => p.id !== postId));
-  }, []);
+  const removePostLocally = useCallback(
+    (postId: string) => {
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+    },
+    [setPosts]
+  );
 
-  const restorePostLocally = useCallback((post: CastPost) => {
-    setPosts((prev) => {
-      if (prev.some((p) => p.id === post.id)) return prev;
-      const restored = [...prev, post].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-      return restored;
-    });
-  }, []);
+  const restorePostLocally = useCallback(
+    (post: CastPost) => {
+      setPosts((prev) => {
+        if (prev.some((p) => p.id === post.id)) return prev;
+        const restored = [...prev, post].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        return restored;
+      });
+    },
+    [setPosts]
+  );
 
   return {
     posts,
     loading,
+    loadingMore,
     error,
     hasMore,
-    fetchPosts,
-    loadMore,
+    initialized,
+    fetchInitial,
+    fetchMore,
+    reset,
     savePost,
     toggleVisibility,
     deletePost,

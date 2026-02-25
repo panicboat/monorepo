@@ -16,13 +16,13 @@ export default function PostDetailPage({
   const { id } = use(params);
   const router = useRouter();
   const { toast } = useToast();
-  const { posts, loading, fetchPosts, deletePost, removePostLocally, restorePostLocally } = useCastPosts();
+  const { posts, loading, fetchInitial, deletePost, removePostLocally, restorePostLocally } = useCastPosts();
   const [post, setPost] = useState<CastPost | null>(null);
   const pendingDelete = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    fetchPosts().catch(() => {});
-  }, [fetchPosts]);
+    fetchInitial().catch(() => {});
+  }, [fetchInitial]);
 
   useEffect(() => {
     const found = posts.find((p) => p.id === id);

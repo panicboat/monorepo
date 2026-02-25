@@ -40,7 +40,7 @@ function castPostToFeedItem(post: CastPost): FeedItem {
 export default function CastTimelinePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { posts, loading, hasMore, fetchPosts, loadMore, savePost, toggleVisibility, deletePost, removePostLocally, restorePostLocally } = useCastPosts();
+  const { posts, loading, loadingMore, hasMore, fetchInitial, fetchMore, savePost, toggleVisibility, deletePost, removePostLocally, restorePostLocally } = useCastPosts();
   const { avatarUrl } = useCastData({ apiPath: "/api/cast/profile" });
   const pendingDeletes = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const isHydrated = useAuthStore((state) => state.isHydrated);
@@ -55,9 +55,9 @@ export default function CastTimelinePage() {
 
   useEffect(() => {
     if (isHydrated) {
-      fetchPosts().catch(() => {});
+      fetchInitial().catch(() => {});
     }
-  }, [fetchPosts, isHydrated]);
+  }, [fetchInitial, isHydrated]);
 
   useEffect(() => {
     const timers = pendingDeletes.current;
@@ -67,12 +67,12 @@ export default function CastTimelinePage() {
   }, []);
 
   useEffect(() => {
-    if (!loadMoreRef.current || !hasMore || loading) return;
+    if (!loadMoreRef.current || !hasMore || loadingMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          loadMore();
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          fetchMore();
         }
       },
       { threshold: 0.1 }
@@ -80,7 +80,7 @@ export default function CastTimelinePage() {
 
     observer.observe(loadMoreRef.current);
     return () => observer.disconnect();
-  }, [hasMore, loading, loadMore]);
+  }, [hasMore, loadingMore, fetchMore]);
 
   const handlePost = async () => {
     if (!content.trim() && mediaFiles.length === 0) return;
@@ -263,7 +263,7 @@ export default function CastTimelinePage() {
             />
             {hasMore && (
               <div ref={loadMoreRef} className="pt-4 pb-8 text-center">
-                {loading && (
+                {loadingMore && (
                   <div className="flex items-center justify-center gap-2 text-text-muted">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span className="text-sm">Loading...</span>
