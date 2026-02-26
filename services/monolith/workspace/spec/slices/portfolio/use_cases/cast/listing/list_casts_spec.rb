@@ -5,7 +5,7 @@ require "spec_helper"
 RSpec.describe Portfolio::UseCases::Cast::Listing::ListCasts do
   let(:use_case) { described_class.new(repo: repo) }
   let(:repo) { double(:repo) }
-  let(:casts) { [double(:cast, id: "cast-1", created_at: Time.now)] }
+  let(:casts) { [double(:cast, user_id: "cast-1", created_at: Time.now)] }
 
   describe "#call" do
     it "calls repo.list_casts_with_filters with all parameters" do
@@ -147,7 +147,7 @@ RSpec.describe Portfolio::UseCases::Cast::Listing::ListCasts do
     context "with pagination" do
       it "returns next_cursor when there are more results" do
         created_at = Time.now
-        many_casts = (1..21).map { |i| double(:cast, id: "cast-#{i}", created_at: created_at) }
+        many_casts = (1..21).map { |i| double(:cast, user_id: "cast-#{i}", created_at: created_at) }
 
         allow(repo).to receive(:list_casts_with_filters).and_return(many_casts)
 

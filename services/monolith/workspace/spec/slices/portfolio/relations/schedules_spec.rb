@@ -8,7 +8,7 @@ RSpec.describe "Portfolio::Relations::Schedules", type: :database do
   it "defines the correct schema" do
     expect(relation.schema.primary_key_name).to eq(:id)
     attribute_names = relation.schema.attributes.map(&:name)
-    expect(attribute_names).to include(:cast_id)
+    expect(attribute_names).to include(:cast_user_id)
     expect(attribute_names).to include(:date)
     expect(attribute_names).to include(:start_time)
     expect(attribute_names).to include(:end_time)

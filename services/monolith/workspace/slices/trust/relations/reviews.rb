@@ -16,7 +16,7 @@ module Trust
         primary_key :id
 
         associations do
-          has_many :review_media
+          has_many :review_media, foreign_key: :review_id
         end
       end
     end

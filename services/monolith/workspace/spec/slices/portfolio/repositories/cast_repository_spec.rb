@@ -19,7 +19,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
     it "returns cast with plans when exists" do
       # Setup data
       uid = SecureRandom.uuid
-      cast_data = { user_id: uid, name: "Found", image_path: "test", status: "offline" }
+      cast_data = { user_id: uid, name: "Found", visibility: "public" }
       repo.create(cast_data)
 
       result = repo.find_by_user_id_with_plans(uid)
@@ -33,18 +33,18 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
   describe "#is_online?" do
     let!(:cast_with_schedule) do
-      repo.create(user_id: SecureRandom.uuid, name: "Online Cast", image_path: "o", status: "online")
+      repo.create(user_id: SecureRandom.uuid, name: "Online Cast", visibility: "public")
     end
 
     let!(:cast_without_schedule) do
-      repo.create(user_id: SecureRandom.uuid, name: "Offline Cast", image_path: "off", status: "online")
+      repo.create(user_id: SecureRandom.uuid, name: "Offline Cast", visibility: "public")
     end
 
     before do
       schedule_repo = Hanami.app.slices[:offer]["relations.schedules"]
       # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
-        cast_id: cast_with_schedule.id,
+        cast_user_id: cast_with_schedule.user_id,
         date: Date.today,
         start_time: "00:00",
         end_time: "23:59"
@@ -52,28 +52,28 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
     end
 
     it "returns true for cast with schedule within current time" do
-      expect(repo.is_online?(cast_with_schedule.id)).to be true
+      expect(repo.is_online?(cast_with_schedule.user_id)).to be true
     end
 
     it "returns false for cast without schedule" do
-      expect(repo.is_online?(cast_without_schedule.id)).to be false
+      expect(repo.is_online?(cast_without_schedule.user_id)).to be false
     end
   end
 
   describe "#online_cast_ids" do
     let!(:online_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "Online", image_path: "on", status: "online")
+      repo.create(user_id: SecureRandom.uuid, name: "Online", visibility: "public")
     end
 
     let!(:offline_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "Offline", image_path: "off", status: "online")
+      repo.create(user_id: SecureRandom.uuid, name: "Offline", visibility: "public")
     end
 
     before do
       schedule_repo = Hanami.app.slices[:offer]["relations.schedules"]
       # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
-        cast_id: online_cast.id,
+        cast_user_id: online_cast.user_id,
         date: Date.today,
         start_time: "00:00",
         end_time: "23:59"
@@ -82,22 +82,22 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     it "returns array of online cast IDs" do
       result = repo.online_cast_ids
-      expect(result).to include(online_cast.id)
-      expect(result).not_to include(offline_cast.id)
+      expect(result).to include(online_cast.user_id)
+      expect(result).not_to include(offline_cast.user_id)
     end
   end
 
   describe "#list_casts_with_filters" do
     let!(:public_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "PublicCast", image_path: "pub", visibility: "public", registered_at: Time.now)
+      repo.create(user_id: SecureRandom.uuid, name: "PublicCast", visibility: "public", registered_at: Time.now)
     end
 
     let!(:private_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "PrivateCast", image_path: "priv", visibility: "private", registered_at: Time.now)
+      repo.create(user_id: SecureRandom.uuid, name: "PrivateCast", visibility: "private", registered_at: Time.now)
     end
 
     let!(:unregistered_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "Unregistered", image_path: "unreg", visibility: "public", registered_at: nil)
+      repo.create(user_id: SecureRandom.uuid, name: "Unregistered", visibility: "public", registered_at: nil)
     end
 
     it "filters by visibility" do
@@ -114,7 +114,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     it "applies limit" do
       5.times do |i|
-        repo.create(user_id: SecureRandom.uuid, name: "Cast#{i}", image_path: "c#{i}", visibility: "public", registered_at: Time.now)
+        repo.create(user_id: SecureRandom.uuid, name: "Cast#{i}", visibility: "public", registered_at: Time.now)
       end
 
       result = repo.list_casts_with_filters(visibility_filter: "public", limit: 2)
@@ -130,14 +130,14 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     context "with status filter :online" do
       let!(:online_cast) do
-        repo.create(user_id: SecureRandom.uuid, name: "OnlineNow", image_path: "on", visibility: "public", registered_at: Time.now)
+        repo.create(user_id: SecureRandom.uuid, name: "OnlineNow", visibility: "public", registered_at: Time.now)
       end
 
       before do
         schedule_repo = Hanami.app.slices[:offer]["relations.schedules"]
         # Use fixed time range that works regardless of current time (00:00 - 23:59)
         schedule_repo.changeset(:create, {
-          cast_id: online_cast.id,
+          cast_user_id: online_cast.user_id,
           date: Date.today,
           start_time: "00:00",
           end_time: "23:59"
@@ -153,7 +153,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     context "with status filter :new" do
       let!(:new_cast) do
-        repo.create(user_id: SecureRandom.uuid, name: "NewCast", image_path: "new", visibility: "public", registered_at: Time.now)
+        repo.create(user_id: SecureRandom.uuid, name: "NewCast", visibility: "public", registered_at: Time.now)
       end
 
       it "returns casts created within 7 days" do
@@ -165,18 +165,18 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     context "with text search query" do
       let!(:cast_with_name) do
-        repo.create(user_id: SecureRandom.uuid, name: "かわいいキャスト", image_path: "c1", visibility: "public", registered_at: Time.now, tagline: "test")
+        repo.create(user_id: SecureRandom.uuid, name: "かわいいキャスト", visibility: "public", registered_at: Time.now, tagline: "test")
       end
 
       let!(:cast_with_tagline) do
-        repo.create(user_id: SecureRandom.uuid, name: "Normal", image_path: "c2", visibility: "public", registered_at: Time.now, tagline: "清楚系美少女")
+        repo.create(user_id: SecureRandom.uuid, name: "Normal", visibility: "public", registered_at: Time.now, tagline: "清楚系美少女")
       end
 
       let!(:cast_with_tag) do
         repo.create(
           user_id: SecureRandom.uuid,
           name: "Another",
-          image_path: "c3",
+
           visibility: "public",
           registered_at: Time.now,
           tags: Sequel.pg_jsonb(["元アイドル", "美人"])
@@ -184,7 +184,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       end
 
       let!(:unmatched_cast) do
-        repo.create(user_id: SecureRandom.uuid, name: "Unmatched", image_path: "c4", visibility: "public", registered_at: Time.now, tagline: "other")
+        repo.create(user_id: SecureRandom.uuid, name: "Unmatched", visibility: "public", registered_at: Time.now, tagline: "other")
       end
 
       it "finds casts by name (case insensitive)" do
@@ -224,7 +224,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       repo.create(
         user_id: SecureRandom.uuid,
         name: "TaggedCast1",
-        image_path: "t1",
+
         visibility: "public",
         registered_at: Time.now,
         tags: Sequel.pg_jsonb(["tag1", "tag2"])
@@ -232,7 +232,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       repo.create(
         user_id: SecureRandom.uuid,
         name: "TaggedCast2",
-        image_path: "t2",
+
         visibility: "public",
         registered_at: Time.now,
         tags: Sequel.pg_jsonb(["tag1", "tag3"])
@@ -251,7 +251,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       repo.create(
         user_id: SecureRandom.uuid,
         name: "TaggedCast",
-        image_path: "t",
+
         visibility: "public",
         registered_at: Time.now,
         tags: Sequel.pg_jsonb(["a", "b", "c"])
@@ -265,7 +265,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       repo.create(
         user_id: SecureRandom.uuid,
         name: "Registered",
-        image_path: "p",
+
         visibility: "public",
         registered_at: Time.now,
         tags: Sequel.pg_jsonb(["visible"])
@@ -273,7 +273,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       repo.create(
         user_id: SecureRandom.uuid,
         name: "Unregistered",
-        image_path: "u",
+
         visibility: "public",
         registered_at: nil,
         tags: Sequel.pg_jsonb(["hidden"])

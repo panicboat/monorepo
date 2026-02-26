@@ -34,13 +34,13 @@ RSpec.describe Offer::Grpc::OfferHandler do
   end
 
   let(:mock_cast) do
-    double("Cast", id: "cast-123", user_id: 1)
+    double("Cast", user_id: "cast-123")
   end
 
   let(:mock_plan) do
     double("Plan",
       id: "plan-123",
-      cast_id: "cast-123",
+      cast_user_id: "cast-123",
       name: "Plan A",
       price: 1000,
       duration_minutes: 60,
@@ -53,7 +53,7 @@ RSpec.describe Offer::Grpc::OfferHandler do
   let(:mock_schedule) do
     double("Schedule",
       id: "schedule-123",
-      cast_id: "cast-123",
+      cast_user_id: "cast-123",
       date: Date.today,
       start_time: "10:00",
       end_time: "18:00",
@@ -63,10 +63,10 @@ RSpec.describe Offer::Grpc::OfferHandler do
   end
 
   describe "#get_plans" do
-    let(:message) { ::Offer::V1::GetPlansRequest.new(cast_id: "cast-123") }
+    let(:message) { ::Offer::V1::GetPlansRequest.new(cast_user_id: "cast-123") }
 
     it "returns plans for the cast" do
-      expect(get_plans_uc).to receive(:call).with(cast_id: "cast-123").and_return([mock_plan])
+      expect(get_plans_uc).to receive(:call).with(cast_user_id: "cast-123").and_return([mock_plan])
 
       response = handler.get_plans
       expect(response).to be_a(::Offer::V1::GetPlansResponse)
@@ -93,7 +93,7 @@ RSpec.describe Offer::Grpc::OfferHandler do
     it "saves plans and returns response" do
       allow(portfolio_adapter).to receive(:find_cast_by_user_id).with(1).and_return(mock_cast)
       expect(save_plans_uc).to receive(:call).with(
-        cast_id: "cast-123",
+        cast_user_id: "cast-123",
         plans: [{ name: "New Plan", price: 2000, duration_minutes: 90, is_recommended: false }]
       ).and_return([mock_plan])
 
@@ -119,11 +119,11 @@ RSpec.describe Offer::Grpc::OfferHandler do
   end
 
   describe "#get_schedules" do
-    let(:message) { ::Offer::V1::GetSchedulesRequest.new(cast_id: "cast-123") }
+    let(:message) { ::Offer::V1::GetSchedulesRequest.new(cast_user_id: "cast-123") }
 
     it "returns schedules for the cast" do
       expect(get_schedules_uc).to receive(:call)
-        .with(cast_id: "cast-123", start_date: nil, end_date: nil)
+        .with(cast_user_id: "cast-123", start_date: nil, end_date: nil)
         .and_return([mock_schedule])
 
       response = handler.get_schedules
@@ -133,7 +133,7 @@ RSpec.describe Offer::Grpc::OfferHandler do
 
     it "passes date filters" do
       message_with_dates = ::Offer::V1::GetSchedulesRequest.new(
-        cast_id: "cast-123",
+        cast_user_id: "cast-123",
         start_date: "2026-01-01",
         end_date: "2026-01-31"
       )
@@ -151,7 +151,7 @@ RSpec.describe Offer::Grpc::OfferHandler do
       )
 
       expect(get_schedules_uc).to receive(:call)
-        .with(cast_id: "cast-123", start_date: "2026-01-01", end_date: "2026-01-31")
+        .with(cast_user_id: "cast-123", start_date: "2026-01-01", end_date: "2026-01-31")
         .and_return([])
 
       handler_with_dates.get_schedules
@@ -176,7 +176,7 @@ RSpec.describe Offer::Grpc::OfferHandler do
     it "saves schedules and returns response" do
       allow(portfolio_adapter).to receive(:find_cast_by_user_id).with(1).and_return(mock_cast)
       expect(save_schedules_uc).to receive(:call).with(
-        cast_id: "cast-123",
+        cast_user_id: "cast-123",
         schedules: [{ date: "2026-01-20", start_time: "10:00", end_time: "18:00" }]
       ).and_return([mock_schedule])
 

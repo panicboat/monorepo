@@ -8,12 +8,12 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::SaveProfile do
 
   describe "#call" do
     let(:user_id) { SecureRandom.uuid }
-    let(:cast) { double(id: 1, name: "Old", bio: "Bio") }
+    let(:cast) { double(user_id: user_id, name: "Old", bio: "Bio") }
 
     context "when cast exists" do
       it "updates the cast" do
         expect(repo).to receive(:find_by_user_id).with(user_id).and_return(cast)
-        expect(repo).to receive(:update).with(cast.id, hash_including(name: "New", bio: "New Bio"))
+        expect(repo).to receive(:update).with(cast.user_id, hash_including(name: "New", bio: "New Bio"))
 
         use_case.call(user_id: user_id, name: "New", bio: "New Bio")
       end
@@ -21,7 +21,7 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::SaveProfile do
       it "updates physical attributes" do
         expect(repo).to receive(:find_by_user_id).with(user_id).and_return(cast)
         expect(repo).to receive(:update).with(
-          cast.id,
+          cast.user_id,
           hash_including(
             age: 25,
             height: 165,
@@ -42,8 +42,8 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::SaveProfile do
       it "updates three_sizes as jsonb" do
         three_sizes = { "bust" => 88, "waist" => 60, "hip" => 90, "cup" => "D" }
         expect(repo).to receive(:find_by_user_id).with(user_id).and_return(cast)
-        expect(repo).to receive(:update) do |id, attrs|
-          expect(id).to eq(cast.id)
+        expect(repo).to receive(:update) do |uid, attrs|
+          expect(uid).to eq(cast.user_id)
           expect(attrs[:three_sizes]).to be_a(Sequel::Postgres::JSONBHash)
         end
 
@@ -53,8 +53,8 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::SaveProfile do
       it "updates tags as jsonb array" do
         tags = %w[model bilingual]
         expect(repo).to receive(:find_by_user_id).with(user_id).and_return(cast)
-        expect(repo).to receive(:update) do |id, attrs|
-          expect(id).to eq(cast.id)
+        expect(repo).to receive(:update) do |uid, attrs|
+          expect(uid).to eq(cast.user_id)
           expect(attrs[:tags]).to be_a(Sequel::Postgres::JSONBArray)
         end
 
@@ -63,7 +63,7 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::SaveProfile do
     end
 
     context "when cast does not exist" do
-      let(:new_cast) { double(id: 2, name: "New", bio: "New Bio") }
+      let(:new_cast) { double(user_id: SecureRandom.uuid, name: "New", bio: "New Bio") }
 
       it "creates the cast" do
         expect(repo).to receive(:find_by_user_id).with(user_id).and_return(nil)

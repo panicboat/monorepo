@@ -14,11 +14,11 @@ RSpec.describe Offer::UseCases::Plans::GetPlans do
 
       before do
         allow(adapter).to receive(:cast_exists?).with(cast_id).and_return(true)
-        allow(repo).to receive(:find_plans_by_cast_id).with(cast_id).and_return(plans)
+        allow(repo).to receive(:find_plans_by_cast_user_id).with(cast_id).and_return(plans)
       end
 
       it "returns plans for the cast" do
-        result = use_case.call(cast_id: cast_id)
+        result = use_case.call(cast_user_id: cast_id)
         expect(result).to eq(plans)
       end
     end
@@ -29,7 +29,7 @@ RSpec.describe Offer::UseCases::Plans::GetPlans do
       end
 
       it "raises CastNotFoundError" do
-        expect { use_case.call(cast_id: cast_id) }
+        expect { use_case.call(cast_user_id: cast_id) }
           .to raise_error(described_class::CastNotFoundError)
       end
     end

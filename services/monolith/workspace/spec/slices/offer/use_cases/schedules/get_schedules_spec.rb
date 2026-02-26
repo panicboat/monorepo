@@ -17,11 +17,11 @@ RSpec.describe Offer::UseCases::Schedules::GetSchedules do
       end
 
       it "returns schedules for the cast" do
-        allow(repo).to receive(:find_schedules_by_cast_id)
+        allow(repo).to receive(:find_schedules_by_cast_user_id)
           .with(cast_id, start_date: nil, end_date: nil)
           .and_return(schedules)
 
-        result = use_case.call(cast_id: cast_id)
+        result = use_case.call(cast_user_id: cast_id)
         expect(result).to eq(schedules)
       end
 
@@ -29,11 +29,11 @@ RSpec.describe Offer::UseCases::Schedules::GetSchedules do
         start_date = Date.today
         end_date = Date.today + 7
 
-        allow(repo).to receive(:find_schedules_by_cast_id)
+        allow(repo).to receive(:find_schedules_by_cast_user_id)
           .with(cast_id, start_date: start_date, end_date: end_date)
           .and_return(schedules)
 
-        result = use_case.call(cast_id: cast_id, start_date: start_date, end_date: end_date)
+        result = use_case.call(cast_user_id: cast_id, start_date: start_date, end_date: end_date)
         expect(result).to eq(schedules)
       end
     end
@@ -44,7 +44,7 @@ RSpec.describe Offer::UseCases::Schedules::GetSchedules do
       end
 
       it "raises CastNotFoundError" do
-        expect { use_case.call(cast_id: cast_id) }
+        expect { use_case.call(cast_user_id: cast_id) }
           .to raise_error(described_class::CastNotFoundError)
       end
     end

@@ -30,7 +30,7 @@ module Offer
       # === Plans ===
 
       def get_plans
-        cast_id = resolve_cast_id(request.message.cast_id)
+        cast_id = resolve_cast_id(request.message.cast_user_id)
 
         plans = get_plans_uc.call(cast_user_id: cast_id)
 
@@ -68,7 +68,7 @@ module Offer
       # === Schedules ===
 
       def get_schedules
-        cast_id = resolve_cast_id(request.message.cast_id)
+        cast_id = resolve_cast_id(request.message.cast_user_id)
         start_date = request.message.start_date.to_s.empty? ? nil : request.message.start_date
         end_date = request.message.end_date.to_s.empty? ? nil : request.message.end_date
 

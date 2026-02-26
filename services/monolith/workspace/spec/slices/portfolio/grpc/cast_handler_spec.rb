@@ -46,7 +46,6 @@ RSpec.describe Portfolio::Grpc::CastHandler do
   let(:mock_cast_entity) do
     double(
       "CastWithPlans",
-      id: 123,
       user_id: 1,
       name: "Cast Name",
       bio: "Bio",
@@ -157,7 +156,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
     it "calls operation and returns response" do
       allow(get_profile_uc).to receive(:call).with(user_id: 1).and_return(mock_cast_entity)
       expect(save_images_uc).to receive(:call).with(
-        cast_id: 123,
+        cast_user_id: 1,
         profile_media_id: new_profile_media_id,
         gallery_media_ids: [gallery_media_id1, gallery_media_id2],
         avatar_media_id: nil

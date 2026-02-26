@@ -13,7 +13,7 @@ module Feed
 
         ::Feed::V1::FeedPost.new(
           id: post.id.to_s,
-          cast_id: post.cast_user_id.to_s,
+          cast_user_id: post.cast_user_id.to_s,
           content: post.content,
           media: media.sort_by(&:position).map { |m| media_to_proto(m, media_files: media_files) },
           created_at: post.created_at.iso8601,
@@ -58,7 +58,7 @@ module Feed
         media_file = media_files[media_id]
 
         ::Feed::V1::FeedAuthor.new(
-          id: cast.user_id.to_s,
+          user_id: cast.user_id.to_s,
           # FALLBACK: Empty string for author name/image when cast profile data is incomplete
           name: cast.name || "",
           image_url: media_file&.url || ""

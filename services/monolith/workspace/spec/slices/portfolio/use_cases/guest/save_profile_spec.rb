@@ -12,7 +12,6 @@ RSpec.describe Portfolio::UseCases::Guest::SaveProfile do
   let(:mock_guest) do
     double(
       "Guest",
-      id: "guest-123",
       user_id: user_id,
       name: "Test Guest",
       avatar_media_id: nil,
@@ -57,7 +56,7 @@ RSpec.describe Portfolio::UseCases::Guest::SaveProfile do
       end
 
       it "updates the existing guest record" do
-        expect(guest_repository).to receive(:update).with("guest-123", hash_including(
+        expect(guest_repository).to receive(:update).with(user_id, hash_including(
           name: "Updated Guest"
         ))
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "portfolio/v1/cast_service_pb"
 
 RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
   describe ".three_sizes_to_proto" do
@@ -61,8 +62,7 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
     let(:cast) do
       double(
         :cast,
-        id: 1,
-        user_id: 123,
+        user_id: "123",
         slug: "test_cast",
         name: "Test Cast",
         bio: "Test Bio",
@@ -137,8 +137,7 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
       let(:cast_with_nils) do
         double(
           :cast,
-          id: 2,
-          user_id: 123,
+          user_id: "123",
           slug: nil,
           name: "Test Cast",
           bio: nil,

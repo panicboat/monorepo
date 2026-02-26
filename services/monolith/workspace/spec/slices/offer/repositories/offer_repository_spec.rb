@@ -11,7 +11,6 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
     portfolio_repo.create(
       user_id: SecureRandom.uuid,
       name: "Test Cast",
-      image_path: "test.jpg",
       visibility: "public"
     )
   end
@@ -19,18 +18,18 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
   describe "#find_plans_by_cast_id" do
     it "returns empty array when no plans exist" do
       cast = create_cast
-      result = repo.find_plans_by_cast_id(cast.id)
+      result = repo.find_plans_by_cast_id(cast.user_id)
       expect(result).to eq([])
     end
 
     it "returns plans for the cast" do
       cast = create_cast
-      repo.save_plans(cast_id: cast.id, plans_data: [
+      repo.save_plans(cast_user_id: cast.user_id, plans_data: [
         { name: "Plan A", price: 1000, duration_minutes: 60, is_recommended: true },
         { name: "Plan B", price: 2000, duration_minutes: 120, is_recommended: false }
       ])
 
-      result = repo.find_plans_by_cast_id(cast.id)
+      result = repo.find_plans_by_cast_id(cast.user_id)
       expect(result.size).to eq(2)
       expect(result.map(&:name)).to contain_exactly("Plan A", "Plan B")
     end
@@ -41,7 +40,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
 
     it "creates new plans" do
       plans_data = [{ name: "New Plan", price: 1500, duration_minutes: 90, is_recommended: false }]
-      result = repo.save_plans(cast_id: cast.id, plans_data: plans_data)
+      result = repo.save_plans(cast_user_id: cast.user_id, plans_data: plans_data)
 
       expect(result.size).to eq(1)
       expect(result.first.name).to eq("New Plan")
@@ -50,12 +49,12 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
 
     it "replaces existing plans" do
       # Create initial plans
-      repo.save_plans(cast_id: cast.id, plans_data: [
+      repo.save_plans(cast_user_id: cast.user_id, plans_data: [
         { name: "Old Plan", price: 1000, duration_minutes: 60, is_recommended: false }
       ])
 
       # Replace with new plans
-      result = repo.save_plans(cast_id: cast.id, plans_data: [
+      result = repo.save_plans(cast_user_id: cast.user_id, plans_data: [
         { name: "New Plan 1", price: 2000, duration_minutes: 90, is_recommended: true },
         { name: "New Plan 2", price: 3000, duration_minutes: 120, is_recommended: false }
       ])
@@ -69,32 +68,32 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
     let!(:cast) { create_cast }
 
     it "returns empty array when no schedules exist" do
-      result = repo.find_schedules_by_cast_id(cast.id)
+      result = repo.find_schedules_by_cast_id(cast.user_id)
       expect(result).to eq([])
     end
 
     it "returns schedules ordered by date and time" do
-      repo.save_schedules(cast_id: cast.id, schedules_data: [
+      repo.save_schedules(cast_user_id: cast.user_id, schedules_data: [
         { date: Date.today + 2, start_time: "14:00", end_time: "18:00" },
         { date: Date.today + 1, start_time: "10:00", end_time: "14:00" },
         { date: Date.today + 1, start_time: "16:00", end_time: "20:00" }
       ])
 
-      result = repo.find_schedules_by_cast_id(cast.id)
+      result = repo.find_schedules_by_cast_id(cast.user_id)
       expect(result.size).to eq(3)
       expect(result.first.date).to eq(Date.today + 1)
       expect(result.first.start_time).to eq("10:00")
     end
 
     it "filters by date range" do
-      repo.save_schedules(cast_id: cast.id, schedules_data: [
+      repo.save_schedules(cast_user_id: cast.user_id, schedules_data: [
         { date: Date.today + 1, start_time: "10:00", end_time: "14:00" },
         { date: Date.today + 3, start_time: "10:00", end_time: "14:00" },
         { date: Date.today + 5, start_time: "10:00", end_time: "14:00" }
       ])
 
       result = repo.find_schedules_by_cast_id(
-        cast.id,
+        cast.user_id,
         start_date: Date.today + 2,
         end_date: Date.today + 4
       )
@@ -113,7 +112,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
         { date: Date.today + 1, start_time: "12:00", end_time: "18:00" }
       ]
 
-      result = repo.save_schedules(cast_id: cast.id, schedules_data: schedules_data)
+      result = repo.save_schedules(cast_user_id: cast.user_id, schedules_data: schedules_data)
       expect(result.size).to eq(2)
     end
 
@@ -122,19 +121,19 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
       past_date = Date.today - 7
       schedules_relation = Hanami.app.slices[:offer]["relations.schedules"]
       schedules_relation.changeset(:create, {
-        cast_id: cast.id,
+        cast_user_id: cast.user_id,
         date: past_date,
         start_time: "09:00",
         end_time: "10:00"
       }).commit
 
       # Save new future schedules
-      repo.save_schedules(cast_id: cast.id, schedules_data: [
+      repo.save_schedules(cast_user_id: cast.user_id, schedules_data: [
         { date: Date.today + 1, start_time: "14:00", end_time: "18:00" }
       ])
 
       # Should have both past and future schedules
-      result = repo.find_schedules_by_cast_id(cast.id)
+      result = repo.find_schedules_by_cast_id(cast.user_id)
       dates = result.map(&:date)
       expect(dates).to include(past_date)
       expect(dates).to include(Date.today + 1)
@@ -144,7 +143,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
       past_date = Date.today - 1
       future_date = Date.today + 1
 
-      result = repo.save_schedules(cast_id: cast.id, schedules_data: [
+      result = repo.save_schedules(cast_user_id: cast.user_id, schedules_data: [
         { date: past_date, start_time: "10:00", end_time: "14:00" },
         { date: future_date, start_time: "10:00", end_time: "14:00" }
       ])
