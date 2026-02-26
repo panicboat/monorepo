@@ -6,7 +6,7 @@ module Post
       schema(:"post__likes", as: :likes, infer: false) do
         attribute :id, Types::String
         attribute :post_id, Types::String
-        attribute :guest_id, Types::String
+        attribute :guest_user_id, Types::String
         attribute :created_at, Types::Time
 
         primary_key :id

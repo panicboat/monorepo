@@ -5,7 +5,7 @@ module Post
     class Posts < Post::DB::Relation
       schema(:"post__posts", as: :posts, infer: false) do
         attribute :id, Types::String
-        attribute :cast_id, Types::String
+        attribute :cast_user_id, Types::String
         attribute :content, Types::String
         attribute :visibility, Types::String
         attribute :created_at, Types::Time

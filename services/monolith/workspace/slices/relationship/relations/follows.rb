@@ -5,8 +5,8 @@ module Relationship
     class Follows < Relationship::DB::Relation
       schema(:"relationship__follows", as: :follows, infer: false) do
         attribute :id, Types::String
-        attribute :cast_id, Types::String
-        attribute :guest_id, Types::String
+        attribute :cast_user_id, Types::String
+        attribute :guest_user_id, Types::String
         attribute :status, Types::String
         attribute :created_at, Types::Time
 

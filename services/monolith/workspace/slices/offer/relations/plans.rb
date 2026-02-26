@@ -5,7 +5,7 @@ module Offer
     class Plans < Offer::DB::Relation
       schema(:"offer__plans", as: :plans, infer: false) do
         attribute :id, Types::String      # UUID
-        attribute :cast_id, Types::String  # UUID (FK → casts)
+        attribute :cast_user_id, Types::String  # UUID (FK → casts)
         attribute :name, Types::String
         attribute :price, Types::Integer
         attribute :duration_minutes, Types::Integer

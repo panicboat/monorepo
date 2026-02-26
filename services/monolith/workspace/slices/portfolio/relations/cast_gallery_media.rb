@@ -5,7 +5,7 @@ module Portfolio
     class CastGalleryMedia < Portfolio::DB::Relation
       schema(:"portfolio__cast_gallery_media", as: :cast_gallery_media, infer: false) do
         attribute :id, Types::String
-        attribute :cast_id, Types::String
+        attribute :cast_user_id, Types::String
         attribute :media_id, Types::String
         attribute :position, Types::Integer
         attribute :created_at, Types::Time
@@ -13,7 +13,7 @@ module Portfolio
         primary_key :id
 
         associations do
-          belongs_to :casts, foreign_key: :cast_id
+          belongs_to :casts, foreign_key: :cast_user_id
         end
       end
     end
