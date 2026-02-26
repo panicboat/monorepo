@@ -5,8 +5,8 @@ module Post
     class PostRepository < Post::DB::Repo
       commands :create, update: :by_pk, delete: :by_pk
 
-      def list_by_cast_id(cast_id:, limit: 20, cursor: nil)
-        scope = posts.combine(:post_media, :hashtags).where(cast_id: cast_id)
+      def list_by_cast_user_id(cast_user_id:, limit: 20, cursor: nil)
+        scope = posts.combine(:post_media, :hashtags).where(cast_user_id: cast_user_id)
 
         if cursor
           scope = scope.where {
@@ -18,11 +18,11 @@ module Post
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def list_all_visible(limit: 20, cursor: nil, cast_id: nil, cast_ids: nil, exclude_cast_ids: nil)
+      def list_all_visible(limit: 20, cursor: nil, cast_user_id: nil, cast_user_ids: nil, exclude_cast_user_ids: nil)
         scope = posts.combine(:post_media, :hashtags).where(visibility: "public")
-        scope = scope.where(cast_id: cast_id) if cast_id
-        scope = scope.where(cast_id: cast_ids) if cast_ids && !cast_ids.empty?
-        scope = scope.exclude(cast_id: exclude_cast_ids) if exclude_cast_ids && !exclude_cast_ids.empty?
+        scope = scope.where(cast_user_id: cast_user_id) if cast_user_id
+        scope = scope.where(cast_user_id: cast_user_ids) if cast_user_ids && !cast_user_ids.empty?
+        scope = scope.exclude(cast_user_id: exclude_cast_user_ids) if exclude_cast_user_ids && !exclude_cast_user_ids.empty?
 
         if cursor
           scope = scope.where {
@@ -36,25 +36,25 @@ module Post
 
       # List posts for authenticated user's "All" timeline.
       # Returns: public posts from public casts + all posts from followed casts
-      def list_all_for_authenticated(public_cast_ids:, followed_cast_ids:, limit: 20, cursor: nil, exclude_cast_ids: nil)
+      def list_all_for_authenticated(public_cast_user_ids:, followed_cast_user_ids:, limit: 20, cursor: nil, exclude_cast_user_ids: nil)
         scope = posts.combine(:post_media, :hashtags)
 
         # Build OR condition: (public cast + public post) OR (followed cast)
-        if followed_cast_ids.empty?
+        if followed_cast_user_ids.empty?
           # No follows: only show public posts from public casts
-          scope = scope.where(cast_id: public_cast_ids, visibility: "public")
-        elsif public_cast_ids.empty?
+          scope = scope.where(cast_user_id: public_cast_user_ids, visibility: "public")
+        elsif public_cast_user_ids.empty?
           # No public casts: only show posts from followed casts
-          scope = scope.where(cast_id: followed_cast_ids)
+          scope = scope.where(cast_user_id: followed_cast_user_ids)
         else
           # Combine: (public cast + public post) OR (followed cast)
           scope = scope.where {
-            ((Sequel.expr(cast_id: public_cast_ids) & Sequel.expr(visibility: "public")) |
-              Sequel.expr(cast_id: followed_cast_ids))
+            ((Sequel.expr(cast_user_id: public_cast_user_ids) & Sequel.expr(visibility: "public")) |
+              Sequel.expr(cast_user_id: followed_cast_user_ids))
           }
         end
 
-        scope = scope.exclude(cast_id: exclude_cast_ids) if exclude_cast_ids && !exclude_cast_ids.empty?
+        scope = scope.exclude(cast_user_id: exclude_cast_user_ids) if exclude_cast_user_ids && !exclude_cast_user_ids.empty?
 
         if cursor
           scope = scope.where {
@@ -68,12 +68,12 @@ module Post
 
       # List all posts by cast IDs (no visibility filter).
       # Used for approved followers who can see all posts from followed casts.
-      def list_all_by_cast_ids(cast_ids:, limit: 20, cursor: nil, exclude_cast_ids: nil)
-        return [] if cast_ids.nil? || cast_ids.empty?
+      def list_all_by_cast_user_ids(cast_user_ids:, limit: 20, cursor: nil, exclude_cast_user_ids: nil)
+        return [] if cast_user_ids.nil? || cast_user_ids.empty?
 
         scope = posts.combine(:post_media, :hashtags)
-        scope = scope.where(cast_id: cast_ids)
-        scope = scope.exclude(cast_id: exclude_cast_ids) if exclude_cast_ids && !exclude_cast_ids.empty?
+        scope = scope.where(cast_user_id: cast_user_ids)
+        scope = scope.exclude(cast_user_id: exclude_cast_user_ids) if exclude_cast_user_ids && !exclude_cast_user_ids.empty?
 
         if cursor
           scope = scope.where {
@@ -89,8 +89,8 @@ module Post
         posts.combine(:post_media, :hashtags).by_pk(id).one
       end
 
-      def find_by_id_and_cast(id:, cast_id:)
-        posts.combine(:post_media, :hashtags).where(id: id, cast_id: cast_id).one
+      def find_by_id_and_cast(id:, cast_user_id:)
+        posts.combine(:post_media, :hashtags).where(id: id, cast_user_id: cast_user_id).one
       end
 
       def create_post(data)

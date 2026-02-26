@@ -12,28 +12,28 @@ module Post
           contract: "contracts.save_post_contract"
         ]
 
-        def call(cast_id:, id: nil, content: "", media: [], visibility: "public", hashtags: [])
-          validation = contract.call(cast_id: cast_id, id: id, content: content, media: media, visibility: visibility, hashtags: hashtags)
+        def call(cast_user_id:, id: nil, content: "", media: [], visibility: "public", hashtags: [])
+          validation = contract.call(cast_user_id: cast_user_id, id: id, content: content, media: media, visibility: visibility, hashtags: hashtags)
           raise Errors::ValidationError, validation.errors unless validation.success?
 
           if id && !id.empty?
-            update_post(cast_id: cast_id, id: id, content: content, media: media, visibility: visibility, hashtags: hashtags)
+            update_post(cast_user_id: cast_user_id, id: id, content: content, media: media, visibility: visibility, hashtags: hashtags)
           else
-            create_post(cast_id: cast_id, content: content, media: media, visibility: visibility, hashtags: hashtags)
+            create_post(cast_user_id: cast_user_id, content: content, media: media, visibility: visibility, hashtags: hashtags)
           end
         end
 
         private
 
-        def create_post(cast_id:, content:, media:, visibility:, hashtags:)
-          post = repo.create_post(cast_id: cast_id, content: content, visibility: visibility)
+        def create_post(cast_user_id:, content:, media:, visibility:, hashtags:)
+          post = repo.create_post(cast_user_id: cast_user_id, content: content, visibility: visibility)
           repo.save_media(post_id: post.id, media_data: media) if media.any?
           repo.save_hashtags(post_id: post.id, hashtags: hashtags) if hashtags.any?
           repo.find_by_id(post.id)
         end
 
-        def update_post(cast_id:, id:, content:, media:, visibility:, hashtags:)
-          existing = repo.find_by_id_and_cast(id: id, cast_id: cast_id)
+        def update_post(cast_user_id:, id:, content:, media:, visibility:, hashtags:)
+          existing = repo.find_by_id_and_cast(id: id, cast_user_id: cast_user_id)
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless existing
 
           repo.update_post(id, content: content, visibility: visibility)

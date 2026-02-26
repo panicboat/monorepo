@@ -40,7 +40,7 @@ module Post
           cast = find_my_cast
           if cast
             result = list_posts_uc.call(
-              cast_id: cast.id,
+              cast_user_id: cast.user_id,
               limit: limit,
               cursor: cursor
             )
@@ -81,7 +81,7 @@ module Post
             result = list_all_posts(
               limit: limit,
               cursor: cursor,
-              guest_id: guest.id,
+              guest_user_id: guest.user_id,
               exclude_cast_ids: exclude_cast_ids
             )
             return build_list_response(result)
@@ -92,11 +92,11 @@ module Post
         if filter == "following" && current_user_id
           guest = find_my_guest
           if guest
-            following_cast_ids = relationship_adapter.following_cast_ids(guest_id: guest.id)
+            following_cast_user_ids = relationship_adapter.following_cast_user_ids(guest_user_id: guest.user_id)
             result = list_following_posts(
               limit: limit,
               cursor: cursor,
-              cast_ids: following_cast_ids,
+              cast_ids: following_cast_user_ids,
               exclude_cast_ids: exclude_cast_ids
             )
             return build_list_response(result)
@@ -107,11 +107,11 @@ module Post
         if filter == "favorites" && current_user_id
           guest = find_my_guest
           if guest
-            favorite_cast_ids = relationship_adapter.favorite_cast_ids(guest_id: guest.id)
+            favorite_cast_user_ids = relationship_adapter.favorite_cast_user_ids(guest_user_id: guest.user_id)
             result = list_public_posts_with_cast_ids_filter(
               limit: limit,
               cursor: cursor,
-              cast_ids: favorite_cast_ids,
+              cast_ids: favorite_cast_user_ids,
               exclude_cast_ids: exclude_cast_ids
             )
             return build_list_response(result)
@@ -121,7 +121,7 @@ module Post
         # If cast_id is specified, check if viewer is an approved follower
         if !cast_id.empty? && current_user_id
           guest = find_my_guest
-          if guest && relationship_adapter.following?(cast_id: cast_id, guest_id: guest.id)
+          if guest && relationship_adapter.following?(cast_user_id: cast_id, guest_user_id: guest.user_id)
             result = list_following_posts(
               limit: limit,
               cursor: cursor,
@@ -136,8 +136,8 @@ module Post
         result = list_public_posts_uc.call(
           limit: limit,
           cursor: cursor,
-          cast_id: cast_id.empty? ? nil : cast_id,
-          exclude_cast_ids: exclude_cast_ids
+          cast_user_id: cast_id.empty? ? nil : cast_id,
+          exclude_cast_user_ids: exclude_cast_ids
         )
 
         build_list_response(result)
@@ -155,13 +155,13 @@ module Post
         unless access_policy.can_view_post?(
           post: result[:post],
           cast: result[:author],
-          viewer_guest_id: guest&.id
+          viewer_guest_id: guest&.user_id
         )
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
         end
 
         likes_count = like_repo.likes_count(post_id: result[:post].id)
-        liked = guest ? like_repo.liked?(post_id: result[:post].id, guest_id: guest.id) : false
+        liked = guest ? like_repo.liked?(post_id: result[:post].id, guest_user_id: guest.user_id) : false
         blocked_user_ids = get_blocked_user_ids
         comments_count = comment_repo.comments_count(post_id: result[:post].id, exclude_user_ids: blocked_user_ids)
         media_files = load_media_files_for_posts([result[:post]])
@@ -189,7 +189,7 @@ module Post
         hashtags = request.message.hashtags.to_a
 
         post = save_post_uc.call(
-          cast_id: cast.id,
+          cast_user_id: cast.user_id,
           id: request.message.id.empty? ? nil : request.message.id,
           content: request.message.content,
           media: media_data,
@@ -210,7 +210,7 @@ module Post
         authenticate_user!
         cast = find_my_cast!
 
-        delete_post_uc.call(cast_id: cast.id, post_id: request.message.id)
+        delete_post_uc.call(cast_user_id: cast.user_id, post_id: request.message.id)
 
         ::Post::V1::DeleteCastPostResponse.new
       end
@@ -226,24 +226,24 @@ module Post
         list_public_posts_uc.call(
           limit: limit,
           cursor: cursor,
-          cast_id: nil,
-          cast_ids: cast_ids,
-          exclude_cast_ids: exclude_cast_ids
+          cast_user_id: nil,
+          cast_user_ids: cast_ids,
+          exclude_cast_user_ids: exclude_cast_ids
         )
       end
 
-      def list_all_posts(limit:, cursor:, guest_id:, exclude_cast_ids: nil)
+      def list_all_posts(limit:, cursor:, guest_user_id:, exclude_cast_ids: nil)
         decoded_cursor = decode_cursor(cursor)
 
-        public_cast_ids = cast_adapter.public_cast_ids
-        followed_cast_ids = relationship_adapter.following_cast_ids(guest_id: guest_id)
+        public_cast_user_ids = cast_adapter.public_cast_ids
+        followed_cast_user_ids = relationship_adapter.following_cast_user_ids(guest_user_id: guest_user_id)
 
         posts = post_repo.list_all_for_authenticated(
-          public_cast_ids: public_cast_ids,
-          followed_cast_ids: followed_cast_ids,
+          public_cast_user_ids: public_cast_user_ids,
+          followed_cast_user_ids: followed_cast_user_ids,
           limit: limit,
           cursor: decoded_cursor,
-          exclude_cast_ids: exclude_cast_ids
+          exclude_cast_user_ids: exclude_cast_ids
         )
 
         has_more = posts.length > limit
@@ -254,8 +254,8 @@ module Post
           encode_cursor(created_at: last.created_at.iso8601, id: last.id)
         end
 
-        author_cast_ids = posts.map(&:cast_id).uniq
-        authors = load_authors(author_cast_ids)
+        author_cast_user_ids = posts.map(&:cast_user_id).uniq
+        authors = load_authors(author_cast_user_ids)
 
         { posts: posts, next_cursor: next_cursor, has_more: has_more, authors: authors }
       end
@@ -265,11 +265,11 @@ module Post
         return { posts: [], next_cursor: nil, has_more: false, authors: {} } if cast_ids.empty?
 
         decoded_cursor = decode_cursor(cursor)
-        posts = post_repo.list_all_by_cast_ids(
-          cast_ids: cast_ids,
+        posts = post_repo.list_all_by_cast_user_ids(
+          cast_user_ids: cast_ids,
           limit: limit,
           cursor: decoded_cursor,
-          exclude_cast_ids: exclude_cast_ids
+          exclude_cast_user_ids: exclude_cast_ids
         )
 
         has_more = posts.length > limit
@@ -280,8 +280,8 @@ module Post
           encode_cursor(created_at: last.created_at.iso8601, id: last.id)
         end
 
-        author_cast_ids = posts.map(&:cast_id).uniq
-        authors = load_authors(author_cast_ids)
+        author_cast_user_ids = posts.map(&:cast_user_id).uniq
+        authors = load_authors(author_cast_user_ids)
 
         { posts: posts, next_cursor: next_cursor, has_more: has_more, authors: authors }
       end
@@ -294,11 +294,11 @@ module Post
 
         likes_counts = like_repo.likes_count_batch(post_ids: post_ids)
         comments_counts = comment_repo.comments_count_batch(post_ids: post_ids, exclude_user_ids: blocked_user_ids)
-        liked_status = guest ? like_repo.liked_status_batch(post_ids: post_ids, guest_id: guest.id) : {}
+        liked_status = guest ? like_repo.liked_status_batch(post_ids: post_ids, guest_user_id: guest.user_id) : {}
         media_files = load_media_files_for_posts(result[:posts])
 
         posts_with_authors = result[:posts].map do |post|
-          author = result[:authors][post.cast_id]
+          author = result[:authors][post.cast_user_id]
           PostPresenter.to_proto(
             post,
             author: author,

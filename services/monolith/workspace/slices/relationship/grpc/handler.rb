@@ -74,10 +74,10 @@ module Relationship
         return nil unless current_user_id
 
         guest = find_my_guest
-        return { id: guest.id, type: "guest" } if guest
+        return { id: guest.user_id, type: "guest" } if guest
 
         cast = find_my_cast
-        return { id: cast.id, type: "cast" } if cast
+        return { id: cast.user_id, type: "cast" } if cast
 
         nil
       end
@@ -97,10 +97,10 @@ module Relationship
         case blocker_type
         when "cast"
           cast = find_my_cast!
-          { id: cast.id, type: "cast" }
+          { id: cast.user_id, type: "cast" }
         when "guest"
           guest = find_my_guest!
-          { id: guest.id, type: "guest" }
+          { id: guest.user_id, type: "guest" }
         else
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Invalid blocker_type: #{blocker_type}")
         end

@@ -8,7 +8,7 @@ module Portfolio
     class Schedules < Portfolio::DB::Relation
       schema(:"offer__schedules", as: :schedules, infer: false) do
         attribute :id, Types::String
-        attribute :cast_id, Types::String
+        attribute :cast_user_id, Types::String
         attribute :date, Types::Date
         attribute :start_time, Types::String
         attribute :end_time, Types::String

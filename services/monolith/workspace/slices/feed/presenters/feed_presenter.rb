@@ -13,7 +13,7 @@ module Feed
 
         ::Feed::V1::FeedPost.new(
           id: post.id.to_s,
-          cast_id: post.cast_id.to_s,
+          cast_id: post.cast_user_id.to_s,
           content: post.content,
           media: media.sort_by(&:position).map { |m| media_to_proto(m, media_files: media_files) },
           created_at: post.created_at.iso8601,
@@ -30,7 +30,7 @@ module Feed
         (posts || []).map do |post|
           to_proto(
             post,
-            author: authors[post.cast_id],
+            author: authors[post.cast_user_id],
             likes_count: likes_counts[post.id] || 0,
             comments_count: comments_counts[post.id] || 0,
             liked: liked_status[post.id] || false,

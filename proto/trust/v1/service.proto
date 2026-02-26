@@ -77,7 +77,7 @@ message Review {
   // Reviewer profile info (populated for pending reviews)
   optional string reviewer_name = 8;
   optional string reviewer_avatar_url = 9;
-  optional string reviewer_profile_id = 10; // Guest profile ID for linking
+  reserved 10; // was reviewer_profile_id (use reviewer_id instead)
   repeated ReviewMedia media = 11;
 }
 

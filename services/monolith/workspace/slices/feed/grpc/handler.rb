@@ -44,10 +44,10 @@ module Feed
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         # Get blocker ID for filtering blocked users' comments
-        blocker_id = guest.id
+        blocker_id = guest.user_id
 
         result = list_guest_feed_uc.call(
-          guest_id: guest.id,
+          guest_id: guest.user_id,
           filter: filter,
           limit: limit,
           cursor: cursor,
@@ -60,7 +60,7 @@ module Feed
 
         likes_counts = post_adapter.likes_count_batch(post_ids: post_ids)
         comments_counts = post_adapter.comments_count_batch(post_ids: post_ids, exclude_user_ids: blocked_user_ids)
-        liked_status = post_adapter.liked_status_batch(post_ids: post_ids, guest_id: guest.id)
+        liked_status = post_adapter.liked_status_batch(post_ids: post_ids, guest_user_id: guest.user_id)
         media_files = load_media_files_for_posts_and_authors(result[:posts], result[:authors].values)
 
         posts_proto = FeedPresenter.many_to_proto(
@@ -87,7 +87,7 @@ module Feed
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         result = list_cast_feed_uc.call(
-          cast_id: cast.id,
+          cast_user_id: cast.user_id,
           limit: limit,
           cursor: cursor
         )
@@ -184,10 +184,10 @@ module Feed
         return nil unless current_user_id
 
         guest = find_my_guest
-        return { id: guest.id, type: "guest" } if guest
+        return { id: guest.user_id, type: "guest" } if guest
 
         cast = find_my_cast
-        return { id: cast.id, type: "cast" } if cast
+        return { id: cast.user_id, type: "cast" } if cast
 
         nil
       end

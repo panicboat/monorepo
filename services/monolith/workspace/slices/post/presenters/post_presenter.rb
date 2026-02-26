@@ -11,7 +11,7 @@ module Post
 
         ::Post::V1::CastPost.new(
           id: post.id.to_s,
-          cast_id: post.cast_id.to_s,
+          cast_id: post.cast_user_id.to_s,
           content: post.content,
           media: media.sort_by(&:position).map { |m| media_to_proto(m, media_files: media_files) },
           created_at: post.created_at.iso8601,

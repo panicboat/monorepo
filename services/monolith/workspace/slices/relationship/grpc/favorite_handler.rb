@@ -31,8 +31,8 @@ module Relationship
         guest = find_my_guest!
 
         result = add_favorite_uc.call(
-          cast_id: request.message.cast_id,
-          guest_id: guest.id
+          cast_user_id: request.message.cast_id,
+          guest_user_id: guest.user_id
         )
 
         ::Relationship::V1::AddFavoriteResponse.new(success: result[:success])
@@ -43,8 +43,8 @@ module Relationship
         guest = find_my_guest!
 
         result = remove_favorite_uc.call(
-          cast_id: request.message.cast_id,
-          guest_id: guest.id
+          cast_user_id: request.message.cast_id,
+          guest_user_id: guest.user_id
         )
 
         ::Relationship::V1::RemoveFavoriteResponse.new(success: result[:success])
@@ -58,13 +58,13 @@ module Relationship
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         result = list_favorites_uc.call(
-          guest_id: guest.id,
+          guest_user_id: guest.user_id,
           limit: limit,
           cursor: cursor
         )
 
         ::Relationship::V1::ListFavoritesResponse.new(
-          cast_ids: result[:cast_ids],
+          cast_ids: result[:cast_user_ids],
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -75,7 +75,7 @@ module Relationship
         cast_ids = request.message.cast_ids.to_a
 
         favorited = if guest
-          get_favorite_status_uc.call(cast_ids: cast_ids, guest_id: guest.id)
+          get_favorite_status_uc.call(cast_user_ids: cast_ids, guest_user_id: guest.user_id)
         else
           cast_ids.each_with_object({}) { |id, h| h[id] = false }
         end

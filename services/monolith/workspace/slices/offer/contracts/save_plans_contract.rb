@@ -12,7 +12,7 @@ module Offer
       MAX_DURATION = 1440 # 24 hours
 
       params do
-        required(:cast_id).filled(:string)
+        required(:cast_user_id).filled(:string)
         required(:plans).array(:hash) do
           required(:name).filled(:string)
           required(:price).filled(:integer)

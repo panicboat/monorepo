@@ -10,16 +10,16 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file relationship/v1/favorite_service.proto.
  */
 export const file_relationship_v1_favorite_service: GenFile = /*@__PURE__*/
-  fileDesc("CiZyZWxhdGlvbnNoaXAvdjEvZmF2b3JpdGVfc2VydmljZS5wcm90bxIPcmVsYXRpb25zaGlwLnYxIiUKEkFkZEZhdm9yaXRlUmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIiYKE0FkZEZhdm9yaXRlUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCIoChVSZW1vdmVGYXZvcml0ZVJlcXVlc3QSDwoHY2FzdF9pZBgBIAEoCSIpChZSZW1vdmVGYXZvcml0ZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiNQoUTGlzdEZhdm9yaXRlc1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJIlAKFUxpc3RGYXZvcml0ZXNSZXNwb25zZRIQCghjYXN0X2lkcxgBIAMoCRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIsChhHZXRGYXZvcml0ZVN0YXR1c1JlcXVlc3QSEAoIY2FzdF9pZHMYASADKAkimwEKGUdldEZhdm9yaXRlU3RhdHVzUmVzcG9uc2USTAoJZmF2b3JpdGVkGAEgAygLMjkucmVsYXRpb25zaGlwLnYxLkdldEZhdm9yaXRlU3RhdHVzUmVzcG9uc2UuRmF2b3JpdGVkRW50cnkaMAoORmF2b3JpdGVkRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgIOgI4ATKaAwoPRmF2b3JpdGVTZXJ2aWNlElgKC0FkZEZhdm9yaXRlEiMucmVsYXRpb25zaGlwLnYxLkFkZEZhdm9yaXRlUmVxdWVzdBokLnJlbGF0aW9uc2hpcC52MS5BZGRGYXZvcml0ZVJlc3BvbnNlEmEKDlJlbW92ZUZhdm9yaXRlEiYucmVsYXRpb25zaGlwLnYxLlJlbW92ZUZhdm9yaXRlUmVxdWVzdBonLnJlbGF0aW9uc2hpcC52MS5SZW1vdmVGYXZvcml0ZVJlc3BvbnNlEl4KDUxpc3RGYXZvcml0ZXMSJS5yZWxhdGlvbnNoaXAudjEuTGlzdEZhdm9yaXRlc1JlcXVlc3QaJi5yZWxhdGlvbnNoaXAudjEuTGlzdEZhdm9yaXRlc1Jlc3BvbnNlEmoKEUdldEZhdm9yaXRlU3RhdHVzEikucmVsYXRpb25zaGlwLnYxLkdldEZhdm9yaXRlU3RhdHVzUmVxdWVzdBoqLnJlbGF0aW9uc2hpcC52MS5HZXRGYXZvcml0ZVN0YXR1c1Jlc3BvbnNlYgZwcm90bzM");
+  fileDesc("CiZyZWxhdGlvbnNoaXAvdjEvZmF2b3JpdGVfc2VydmljZS5wcm90bxIPcmVsYXRpb25zaGlwLnYxIioKEkFkZEZhdm9yaXRlUmVxdWVzdBIUCgxjYXN0X3VzZXJfaWQYASABKAkiJgoTQWRkRmF2b3JpdGVSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIi0KFVJlbW92ZUZhdm9yaXRlUmVxdWVzdBIUCgxjYXN0X3VzZXJfaWQYASABKAkiKQoWUmVtb3ZlRmF2b3JpdGVSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjUKFExpc3RGYXZvcml0ZXNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJVChVMaXN0RmF2b3JpdGVzUmVzcG9uc2USFQoNY2FzdF91c2VyX2lkcxgBIAMoCRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIxChhHZXRGYXZvcml0ZVN0YXR1c1JlcXVlc3QSFQoNY2FzdF91c2VyX2lkcxgBIAMoCSKbAQoZR2V0RmF2b3JpdGVTdGF0dXNSZXNwb25zZRJMCglmYXZvcml0ZWQYASADKAsyOS5yZWxhdGlvbnNoaXAudjEuR2V0RmF2b3JpdGVTdGF0dXNSZXNwb25zZS5GYXZvcml0ZWRFbnRyeRowCg5GYXZvcml0ZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBMpoDCg9GYXZvcml0ZVNlcnZpY2USWAoLQWRkRmF2b3JpdGUSIy5yZWxhdGlvbnNoaXAudjEuQWRkRmF2b3JpdGVSZXF1ZXN0GiQucmVsYXRpb25zaGlwLnYxLkFkZEZhdm9yaXRlUmVzcG9uc2USYQoOUmVtb3ZlRmF2b3JpdGUSJi5yZWxhdGlvbnNoaXAudjEuUmVtb3ZlRmF2b3JpdGVSZXF1ZXN0GicucmVsYXRpb25zaGlwLnYxLlJlbW92ZUZhdm9yaXRlUmVzcG9uc2USXgoNTGlzdEZhdm9yaXRlcxIlLnJlbGF0aW9uc2hpcC52MS5MaXN0RmF2b3JpdGVzUmVxdWVzdBomLnJlbGF0aW9uc2hpcC52MS5MaXN0RmF2b3JpdGVzUmVzcG9uc2USagoRR2V0RmF2b3JpdGVTdGF0dXMSKS5yZWxhdGlvbnNoaXAudjEuR2V0RmF2b3JpdGVTdGF0dXNSZXF1ZXN0GioucmVsYXRpb25zaGlwLnYxLkdldEZhdm9yaXRlU3RhdHVzUmVzcG9uc2ViBnByb3RvMw");
 
 /**
  * @generated from message relationship.v1.AddFavoriteRequest
  */
 export type AddFavoriteRequest = Message<"relationship.v1.AddFavoriteRequest"> & {
   /**
-   * @generated from field: string cast_id = 1;
+   * @generated from field: string cast_user_id = 1;
    */
-  castId: string;
+  castUserId: string;
 };
 
 /**
@@ -51,9 +51,9 @@ export const AddFavoriteResponseSchema: GenMessage<AddFavoriteResponse> = /*@__P
  */
 export type RemoveFavoriteRequest = Message<"relationship.v1.RemoveFavoriteRequest"> & {
   /**
-   * @generated from field: string cast_id = 1;
+   * @generated from field: string cast_user_id = 1;
    */
-  castId: string;
+  castUserId: string;
 };
 
 /**
@@ -111,9 +111,9 @@ export const ListFavoritesRequestSchema: GenMessage<ListFavoritesRequest> = /*@_
  */
 export type ListFavoritesResponse = Message<"relationship.v1.ListFavoritesResponse"> & {
   /**
-   * @generated from field: repeated string cast_ids = 1;
+   * @generated from field: repeated string cast_user_ids = 1;
    */
-  castIds: string[];
+  castUserIds: string[];
 
   /**
    * @generated from field: string next_cursor = 2;
@@ -138,9 +138,9 @@ export const ListFavoritesResponseSchema: GenMessage<ListFavoritesResponse> = /*
  */
 export type GetFavoriteStatusRequest = Message<"relationship.v1.GetFavoriteStatusRequest"> & {
   /**
-   * @generated from field: repeated string cast_ids = 1;
+   * @generated from field: repeated string cast_user_ids = 1;
    */
-  castIds: string[];
+  castUserIds: string[];
 };
 
 /**
@@ -155,7 +155,7 @@ export const GetFavoriteStatusRequestSchema: GenMessage<GetFavoriteStatusRequest
  */
 export type GetFavoriteStatusResponse = Message<"relationship.v1.GetFavoriteStatusResponse"> & {
   /**
-   * cast_id -> is_favorited
+   * cast_user_id -> is_favorited
    *
    * @generated from field: map<string, bool> favorited = 1;
    */

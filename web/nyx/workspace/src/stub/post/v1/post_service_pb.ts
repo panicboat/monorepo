@@ -10,16 +10,16 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file post/v1/post_service.proto.
  */
 export const file_post_v1_post_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpwb3N0L3YxL3Bvc3Rfc2VydmljZS5wcm90bxIHcG9zdC52MSI9Cg5DYXN0UG9zdEF1dGhvchIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEhEKCWltYWdlX3VybBgDIAEoCSJlCg1DYXN0UG9zdE1lZGlhEgoKAmlkGAEgASgJEhIKCm1lZGlhX3R5cGUYAiABKAkSCwoDdXJsGAMgASgJEhUKDXRodW1ibmFpbF91cmwYBCABKAkSEAoIbWVkaWFfaWQYBSABKAki/gEKCENhc3RQb3N0EgoKAmlkGAEgASgJEg8KB2Nhc3RfaWQYAiABKAkSDwoHY29udGVudBgDIAEoCRIlCgVtZWRpYRgEIAMoCzIWLnBvc3QudjEuQ2FzdFBvc3RNZWRpYRISCgpjcmVhdGVkX2F0GAUgASgJEicKBmF1dGhvchgGIAEoCzIXLnBvc3QudjEuQ2FzdFBvc3RBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSEgoKdmlzaWJpbGl0eRgJIAEoCRIQCghoYXNodGFncxgKIAMoCRINCgVsaWtlZBgLIAEoCCJwChRMaXN0Q2FzdFBvc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkSDwoHY2FzdF9pZBgDIAEoCRIOCgZmaWx0ZXIYBCABKAkSGAoQZXhjbHVkZV9jYXN0X2lkcxgFIAMoCSJgChVMaXN0Q2FzdFBvc3RzUmVzcG9uc2USIAoFcG9zdHMYASADKAsyES5wb3N0LnYxLkNhc3RQb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIn8KE1NhdmVDYXN0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkSDwoHY29udGVudBgCIAEoCRIlCgVtZWRpYRgDIAMoCzIWLnBvc3QudjEuQ2FzdFBvc3RNZWRpYRISCgp2aXNpYmlsaXR5GAQgASgJEhAKCGhhc2h0YWdzGAUgAygJIjcKFFNhdmVDYXN0UG9zdFJlc3BvbnNlEh8KBHBvc3QYASABKAsyES5wb3N0LnYxLkNhc3RQb3N0IiAKEkdldENhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSI2ChNHZXRDYXN0UG9zdFJlc3BvbnNlEh8KBHBvc3QYASABKAsyES5wb3N0LnYxLkNhc3RQb3N0IiMKFURlbGV0ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSIYChZEZWxldGVDYXN0UG9zdFJlc3BvbnNlMscCCgtQb3N0U2VydmljZRJOCg1MaXN0Q2FzdFBvc3RzEh0ucG9zdC52MS5MaXN0Q2FzdFBvc3RzUmVxdWVzdBoeLnBvc3QudjEuTGlzdENhc3RQb3N0c1Jlc3BvbnNlEkgKC0dldENhc3RQb3N0EhsucG9zdC52MS5HZXRDYXN0UG9zdFJlcXVlc3QaHC5wb3N0LnYxLkdldENhc3RQb3N0UmVzcG9uc2USSwoMU2F2ZUNhc3RQb3N0EhwucG9zdC52MS5TYXZlQ2FzdFBvc3RSZXF1ZXN0Gh0ucG9zdC52MS5TYXZlQ2FzdFBvc3RSZXNwb25zZRJRCg5EZWxldGVDYXN0UG9zdBIeLnBvc3QudjEuRGVsZXRlQ2FzdFBvc3RSZXF1ZXN0Gh8ucG9zdC52MS5EZWxldGVDYXN0UG9zdFJlc3BvbnNlYgZwcm90bzM");
+  fileDesc("Chpwb3N0L3YxL3Bvc3Rfc2VydmljZS5wcm90bxIHcG9zdC52MSJCCg5DYXN0UG9zdEF1dGhvchIPCgd1c2VyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJImUKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCRIQCghtZWRpYV9pZBgFIAEoCSKDAgoIQ2FzdFBvc3QSCgoCaWQYASABKAkSFAoMY2FzdF91c2VyX2lkGAIgASgJEg8KB2NvbnRlbnQYAyABKAkSJQoFbWVkaWEYBCADKAsyFi5wb3N0LnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRInCgZhdXRob3IYBiABKAsyFy5wb3N0LnYxLkNhc3RQb3N0QXV0aG9yEhMKC2xpa2VzX2NvdW50GAcgASgFEhYKDmNvbW1lbnRzX2NvdW50GAggASgFEhIKCnZpc2liaWxpdHkYCSABKAkSEAoIaGFzaHRhZ3MYCiADKAkSDQoFbGlrZWQYCyABKAgiegoUTGlzdENhc3RQb3N0c1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJEhQKDGNhc3RfdXNlcl9pZBgDIAEoCRIOCgZmaWx0ZXIYBCABKAkSHQoVZXhjbHVkZV9jYXN0X3VzZXJfaWRzGAUgAygJImAKFUxpc3RDYXN0UG9zdHNSZXNwb25zZRIgCgVwb3N0cxgBIAMoCzIRLnBvc3QudjEuQ2FzdFBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgifwoTU2F2ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEiUKBW1lZGlhGAMgAygLMhYucG9zdC52MS5DYXN0UG9zdE1lZGlhEhIKCnZpc2liaWxpdHkYBCABKAkSEAoIaGFzaHRhZ3MYBSADKAkiNwoUU2F2ZUNhc3RQb3N0UmVzcG9uc2USHwoEcG9zdBgBIAEoCzIRLnBvc3QudjEuQ2FzdFBvc3QiIAoSR2V0Q2FzdFBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIjYKE0dldENhc3RQb3N0UmVzcG9uc2USHwoEcG9zdBgBIAEoCzIRLnBvc3QudjEuQ2FzdFBvc3QiIwoVRGVsZXRlQ2FzdFBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIhgKFkRlbGV0ZUNhc3RQb3N0UmVzcG9uc2UyxwIKC1Bvc3RTZXJ2aWNlEk4KDUxpc3RDYXN0UG9zdHMSHS5wb3N0LnYxLkxpc3RDYXN0UG9zdHNSZXF1ZXN0Gh4ucG9zdC52MS5MaXN0Q2FzdFBvc3RzUmVzcG9uc2USSAoLR2V0Q2FzdFBvc3QSGy5wb3N0LnYxLkdldENhc3RQb3N0UmVxdWVzdBocLnBvc3QudjEuR2V0Q2FzdFBvc3RSZXNwb25zZRJLCgxTYXZlQ2FzdFBvc3QSHC5wb3N0LnYxLlNhdmVDYXN0UG9zdFJlcXVlc3QaHS5wb3N0LnYxLlNhdmVDYXN0UG9zdFJlc3BvbnNlElEKDkRlbGV0ZUNhc3RQb3N0Eh4ucG9zdC52MS5EZWxldGVDYXN0UG9zdFJlcXVlc3QaHy5wb3N0LnYxLkRlbGV0ZUNhc3RQb3N0UmVzcG9uc2ViBnByb3RvMw");
 
 /**
  * @generated from message post.v1.CastPostAuthor
  */
 export type CastPostAuthor = Message<"post.v1.CastPostAuthor"> & {
   /**
-   * @generated from field: string id = 1;
+   * @generated from field: string user_id = 1;
    */
-  id: string;
+  userId: string;
 
   /**
    * @generated from field: string name = 2;
@@ -90,9 +90,9 @@ export type CastPost = Message<"post.v1.CastPost"> & {
   id: string;
 
   /**
-   * @generated from field: string cast_id = 2;
+   * @generated from field: string cast_user_id = 2;
    */
-  castId: string;
+  castUserId: string;
 
   /**
    * @generated from field: string content = 3;
@@ -174,9 +174,9 @@ export type ListCastPostsRequest = Message<"post.v1.ListCastPostsRequest"> & {
   /**
    * optional, filter by cast
    *
-   * @generated from field: string cast_id = 3;
+   * @generated from field: string cast_user_id = 3;
    */
-  castId: string;
+  castUserId: string;
 
   /**
    * optional, "following" or "favorites" to filter posts
@@ -188,9 +188,9 @@ export type ListCastPostsRequest = Message<"post.v1.ListCastPostsRequest"> & {
   /**
    * optional, exclude posts from these casts
    *
-   * @generated from field: repeated string exclude_cast_ids = 5;
+   * @generated from field: repeated string exclude_cast_user_ids = 5;
    */
-  excludeCastIds: string[];
+  excludeCastUserIds: string[];
 };
 
 /**

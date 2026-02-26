@@ -14,16 +14,16 @@ module Offer
           portfolio_adapter: "adapters.portfolio_adapter"
         ]
 
-        def call(cast_id:, plans:)
+        def call(cast_user_id:, plans:)
           # 0. Input Validation
-          validation = contract.call(cast_id: cast_id, plans: plans)
+          validation = contract.call(cast_user_id: cast_user_id, plans: plans)
           raise Errors::ValidationError, validation.errors unless validation.success?
 
           # 1. Verify cast exists via adapter
-          raise CastNotFoundError, "Cast not found" unless portfolio_adapter.cast_exists?(cast_id)
+          raise CastNotFoundError, "Cast not found" unless portfolio_adapter.cast_exists?(cast_user_id)
 
           # 2. Save plans
-          repo.save_plans(cast_id: cast_id, plans_data: plans)
+          repo.save_plans(cast_user_id: cast_user_id, plans_data: plans)
         end
       end
     end

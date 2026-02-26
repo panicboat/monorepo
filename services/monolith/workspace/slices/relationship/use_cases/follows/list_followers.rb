@@ -9,19 +9,19 @@ module Relationship
           block_repo: "repositories.block_repository"
         ]
 
-        def call(cast_id:, limit: 20, cursor: nil)
-          blocked_guest_ids = block_repo.blocked_guest_ids(blocker_id: cast_id)
+        def call(cast_user_id:, limit: 20, cursor: nil)
+          blocked_guest_user_ids = block_repo.blocked_guest_ids(blocker_id: cast_user_id)
 
           result = follow_repo.list_followers(
-            cast_id: cast_id,
-            blocked_guest_ids: blocked_guest_ids,
+            cast_user_id: cast_user_id,
+            blocked_guest_user_ids: blocked_guest_user_ids,
             limit: limit,
             cursor: cursor
           )
 
           followers = result[:followers].map do |follower|
             {
-              guest_id: follower.guest_id,
+              guest_user_id: follower.guest_user_id,
               followed_at: follower.created_at
             }
           end

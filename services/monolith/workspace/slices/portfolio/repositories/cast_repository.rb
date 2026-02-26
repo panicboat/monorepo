@@ -3,20 +3,24 @@ module Portfolio
     class CastRepository < Portfolio::DB::Repo
       commands :create, update: :by_pk, delete: :by_pk
 
+      # PK is user_id (no separate id column)
       def find_by_user_id(user_id)
-        casts.where(user_id: user_id).one
+        casts.by_pk(user_id).one
       end
 
+      # find_by_id is now equivalent to find_by_user_id since PK = user_id
       def find_by_id(id)
         casts.by_pk(id).one
       end
 
+      # find_by_ids now uses user_id (which is the PK)
       def find_by_ids(ids)
         return [] if ids.nil? || ids.empty?
 
-        casts.where(id: ids).to_a
+        casts.where(user_id: ids).to_a
       end
 
+      # find_by_user_ids is equivalent to find_by_ids since PK = user_id
       def find_by_user_ids(user_ids)
         return [] if user_ids.nil? || user_ids.empty?
 
@@ -36,42 +40,42 @@ module Portfolio
       # Note: Plan/Schedule write operations moved to Offer slice.
       # Use Offer::Repositories::OfferRepository for save_plans/save_schedules.
 
-      def find_with_plans(id)
-        casts.combine(:plans, :cast_gallery_media).by_pk(id).one
+      def find_with_plans(user_id)
+        casts.combine(:plans, :cast_gallery_media).by_pk(user_id).one
       end
 
-      def find_gallery_media_ids(cast_id)
-        cast_gallery_media.where(cast_id: cast_id).order(:position).pluck(:media_id)
+      def find_gallery_media_ids(cast_user_id)
+        cast_gallery_media.where(cast_user_id: cast_user_id).order(:position).pluck(:media_id)
       end
 
       def find_by_user_id_with_plans(user_id)
         casts.combine(:plans).where(user_id: user_id).one
       end
 
-      def save_images(id:, profile_media_id:, gallery_media_ids:, avatar_media_id: nil)
+      def save_images(user_id:, profile_media_id:, gallery_media_ids:, avatar_media_id: nil)
         transaction do
           updates = { profile_media_id: profile_media_id }
           updates[:avatar_media_id] = avatar_media_id unless avatar_media_id.nil?
-          casts.dataset.where(id: id).update(updates)
+          casts.dataset.where(user_id: user_id).update(updates)
 
           # Save gallery media
-          cast_gallery_media.where(cast_id: id).delete
+          cast_gallery_media.where(cast_user_id: user_id).delete
           (gallery_media_ids || []).each_with_index do |media_id, idx|
-            cast_gallery_media.changeset(:create, cast_id: id, media_id: media_id, position: idx).commit
+            cast_gallery_media.changeset(:create, cast_user_id: user_id, media_id: media_id, position: idx).commit
           end
         end
       end
 
-      def save_visibility(id, visibility)
-        update(id, visibility: visibility)
+      def save_visibility(user_id, visibility)
+        update(user_id, visibility: visibility)
       end
 
-      def complete_registration(id)
-        update(id, registered_at: Time.now)
+      def complete_registration(user_id)
+        update(user_id, registered_at: Time.now)
       end
 
-      def is_registered?(id)
-        cast = casts.by_pk(id).one
+      def is_registered?(user_id)
+        cast = casts.by_pk(user_id).one
         return false unless cast
 
         !cast.registered_at.nil?
@@ -83,40 +87,40 @@ module Portfolio
         scope.to_a
       end
 
-      def save_areas(cast_id:, area_ids:)
+      def save_areas(cast_user_id:, area_ids:)
         transaction do
-          cast_areas.where(cast_id: cast_id).delete
+          cast_areas.where(cast_user_id: cast_user_id).delete
           area_ids.each do |area_id|
-            cast_areas.changeset(:create, cast_id: cast_id, area_id: area_id).commit
+            cast_areas.changeset(:create, cast_user_id: cast_user_id, area_id: area_id).commit
           end
         end
       end
 
-      def find_area_ids(cast_id)
-        cast_areas.where(cast_id: cast_id).pluck(:area_id)
+      def find_area_ids(cast_user_id)
+        cast_areas.where(cast_user_id: cast_user_id).pluck(:area_id)
       end
 
-      def save_genres(cast_id:, genre_ids:)
+      def save_genres(cast_user_id:, genre_ids:)
         transaction do
-          cast_genres.where(cast_id: cast_id).delete
+          cast_genres.where(cast_user_id: cast_user_id).delete
           genre_ids.each do |genre_id|
-            cast_genres.changeset(:create, cast_id: cast_id, genre_id: genre_id).commit
+            cast_genres.changeset(:create, cast_user_id: cast_user_id, genre_id: genre_id).commit
           end
         end
       end
 
-      def find_genre_ids(cast_id)
-        cast_genres.where(cast_id: cast_id).pluck(:genre_id)
+      def find_genre_ids(cast_user_id)
+        cast_genres.where(cast_user_id: cast_user_id).pluck(:genre_id)
       end
 
       # Load areas and genres together in minimal queries.
       #
-      # @param cast_id [String] the cast ID
+      # @param cast_user_id [String] the cast user ID
       # @return [Hash] { area_ids: [...], genre_ids: [...] }
-      def find_area_and_genre_ids(cast_id)
+      def find_area_and_genre_ids(cast_user_id)
         {
-          area_ids: cast_areas.where(cast_id: cast_id).pluck(:area_id),
-          genre_ids: cast_genres.where(cast_id: cast_id).pluck(:genre_id)
+          area_ids: cast_areas.where(cast_user_id: cast_user_id).pluck(:area_id),
+          genre_ids: cast_genres.where(cast_user_id: cast_user_id).pluck(:genre_id)
         }
       end
 
@@ -141,8 +145,8 @@ module Portfolio
 
         # Genre filter
         if genre_id && !genre_id.empty?
-          cast_ids_with_genre = cast_genres.where(genre_id: genre_id).pluck(:cast_id)
-          scope = scope.where(id: cast_ids_with_genre)
+          cast_user_ids_with_genre = cast_genres.where(genre_id: genre_id).pluck(:cast_user_id)
+          scope = scope.where(user_id: cast_user_ids_with_genre)
         end
 
         # Tag filter
@@ -153,8 +157,8 @@ module Portfolio
 
         # Area filter
         if area_id && !area_id.empty?
-          cast_ids_with_area = cast_areas.where(area_id: area_id).pluck(:cast_id)
-          scope = scope.where(id: cast_ids_with_area)
+          cast_user_ids_with_area = cast_areas.where(area_id: area_id).pluck(:cast_user_id)
+          scope = scope.where(user_id: cast_user_ids_with_area)
         end
 
         # Status filter
@@ -163,13 +167,13 @@ module Portfolio
           # Has schedule today and current time is within the schedule time range
           today = Date.today.to_s
           now = Time.now.strftime("%H:%M")
-          cast_ids_online = schedules
+          cast_user_ids_online = schedules
             .where(date: today)
             .where { start_time <= now }
             .where { end_time >= now }
-            .pluck(:cast_id)
+            .pluck(:cast_user_id)
             .uniq
-          scope = scope.where(id: cast_ids_online)
+          scope = scope.where(user_id: cast_user_ids_online)
         when :new
           # Created within 7 days
           seven_days_ago = (Date.today - 7).to_datetime
@@ -182,22 +186,22 @@ module Portfolio
         if cursor
           scope = scope.where {
             (created_at < cursor[:created_at]) |
-            ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+            ((created_at =~ cursor[:created_at]) & (user_id < cursor[:id]))
           }
         end
 
         # Order and limit (fetch limit + 1 for has_more check)
-        scope = scope.order { [created_at.desc, id.desc] }
+        scope = scope.order { [created_at.desc, user_id.desc] }
         scope = scope.limit(limit + 1) if limit && limit > 0
 
         scope.to_a
       end
 
-      def is_online?(cast_id)
+      def is_online?(cast_user_id)
         today = Date.today.to_s
         now = Time.now.strftime("%H:%M")
         schedules
-          .where(cast_id: cast_id, date: today)
+          .where(cast_user_id: cast_user_id, date: today)
           .where { start_time <= now }
           .where { end_time >= now }
           .exist?
@@ -210,7 +214,7 @@ module Portfolio
           .where(date: today)
           .where { start_time <= now }
           .where { end_time >= now }
-          .pluck(:cast_id)
+          .pluck(:cast_user_id)
           .uniq
       end
 
@@ -235,13 +239,13 @@ module Portfolio
       def public_cast_ids
         casts.where(visibility: "public")
           .exclude(registered_at: nil)
-          .pluck(:id)
+          .pluck(:user_id)
       end
 
       def private_cast_ids
         casts.where(visibility: "private")
           .exclude(registered_at: nil)
-          .pluck(:id)
+          .pluck(:user_id)
       end
     end
   end

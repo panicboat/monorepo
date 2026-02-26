@@ -227,7 +227,7 @@ module Trust
             r,
             reviewer_name: guest&.name,
             reviewer_avatar_url: avatar_url,
-            reviewer_profile_id: guest&.id,
+            reviewer_profile_id: guest&.user_id,
             media: media_proto
           )
         end
@@ -328,7 +328,7 @@ module Trust
             r,
             reviewer_name: guest&.name,
             reviewer_avatar_url: avatar_url,
-            reviewer_profile_id: guest&.id,
+            reviewer_profile_id: guest&.user_id,
             media: media_proto
           )
         end

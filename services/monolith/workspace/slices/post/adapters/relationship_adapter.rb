@@ -4,16 +4,16 @@ module Post
   module Adapters
     # Anti-Corruption Layer for accessing Relationship slice data.
     class RelationshipAdapter
-      def following?(cast_id:, guest_id:)
-        follow_repo.following?(cast_id: cast_id, guest_id: guest_id)
+      def following?(cast_user_id:, guest_user_id:)
+        follow_repo.following?(cast_user_id: cast_user_id, guest_user_id: guest_user_id)
       end
 
-      def following_status_batch(cast_ids:, guest_id:)
-        follow_repo.following_status_batch(cast_ids: cast_ids, guest_id: guest_id)
+      def following_status_batch(cast_user_ids:, guest_user_id:)
+        follow_repo.following_status_batch(cast_user_ids: cast_user_ids, guest_user_id: guest_user_id)
       end
 
-      def following_cast_ids(guest_id:)
-        follow_repo.following_cast_ids(guest_id: guest_id)
+      def following_cast_user_ids(guest_user_id:)
+        follow_repo.following_cast_user_ids(guest_user_id: guest_user_id)
       end
 
       def blocked?(blocker_id:, blocked_id:)
@@ -28,8 +28,8 @@ module Post
         block_repo.blocked_guest_ids(blocker_id: blocker_id)
       end
 
-      def favorite_cast_ids(guest_id:)
-        favorite_repo.favorite_cast_ids(guest_id: guest_id)
+      def favorite_cast_user_ids(guest_user_id:)
+        favorite_repo.favorite_cast_user_ids(guest_user_id: guest_user_id)
       end
 
       private

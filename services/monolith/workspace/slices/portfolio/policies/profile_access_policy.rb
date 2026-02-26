@@ -21,7 +21,7 @@ module Portfolio
       def can_view_profile?(cast:, viewer_guest_id: nil)
         return true if viewer_guest_id.nil?
 
-        !social_adapter.blocked?(guest_id: viewer_guest_id, cast_id: cast.id)
+        !social_adapter.blocked?(guest_user_id: viewer_guest_id, cast_user_id: cast.user_id)
       end
 
       # Check if viewer can see profile details (plans, schedules).
@@ -34,7 +34,7 @@ module Portfolio
       # @return [Boolean] true if profile details are viewable
       def can_view_profile_details?(cast:, viewer_guest_id: nil)
         # Blocked users cannot view details
-        if viewer_guest_id && social_adapter.blocked?(guest_id: viewer_guest_id, cast_id: cast.id)
+        if viewer_guest_id && social_adapter.blocked?(guest_user_id: viewer_guest_id, cast_user_id: cast.user_id)
           return false
         end
 
@@ -44,7 +44,7 @@ module Portfolio
         # Private cast = only approved followers can view details
         return false if viewer_guest_id.nil?
 
-        social_adapter.approved_follower?(guest_id: viewer_guest_id, cast_id: cast.id)
+        social_adapter.approved_follower?(guest_user_id: viewer_guest_id, cast_user_id: cast.user_id)
       end
 
       private

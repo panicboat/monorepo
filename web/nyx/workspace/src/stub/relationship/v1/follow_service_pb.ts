@@ -10,16 +10,16 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file relationship/v1/follow_service.proto.
  */
 export const file_relationship_v1_follow_service: GenFile = /*@__PURE__*/
-  fileDesc("CiRyZWxhdGlvbnNoaXAvdjEvZm9sbG93X3NlcnZpY2UucHJvdG8SD3JlbGF0aW9uc2hpcC52MSIkChFGb2xsb3dDYXN0UmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIlQKEkZvbGxvd0Nhc3RSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEi0KBnN0YXR1cxgCIAEoDjIdLnJlbGF0aW9uc2hpcC52MS5Gb2xsb3dTdGF0dXMiJgoTVW5mb2xsb3dDYXN0UmVxdWVzdBIPCgdjYXN0X2lkGAEgASgJIicKFFVuZm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiNQoUTGlzdEZvbGxvd2luZ1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJIlAKFUxpc3RGb2xsb3dpbmdSZXNwb25zZRIQCghjYXN0X2lkcxgBIAMoCRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIqChZHZXRGb2xsb3dTdGF0dXNSZXF1ZXN0EhAKCGNhc3RfaWRzGAEgAygJIrMBChdHZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJICghzdGF0dXNlcxgBIAMoCzI2LnJlbGF0aW9uc2hpcC52MS5HZXRGb2xsb3dTdGF0dXNSZXNwb25zZS5TdGF0dXNlc0VudHJ5Gk4KDVN0YXR1c2VzRW50cnkSCwoDa2V5GAEgASgJEiwKBXZhbHVlGAIgASgOMh0ucmVsYXRpb25zaGlwLnYxLkZvbGxvd1N0YXR1czoCOAEiLQoaQ2FuY2VsRm9sbG93UmVxdWVzdFJlcXVlc3QSDwoHY2FzdF9pZBgBIAEoCSIuChtDYW5jZWxGb2xsb3dSZXF1ZXN0UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCIoChRBcHByb3ZlRm9sbG93UmVxdWVzdBIQCghndWVzdF9pZBgBIAEoCSIoChVBcHByb3ZlRm9sbG93UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCInChNSZWplY3RGb2xsb3dSZXF1ZXN0EhAKCGd1ZXN0X2lkGAEgASgJIicKFFJlamVjdEZvbGxvd1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiaAoRRm9sbG93UmVxdWVzdEl0ZW0SEAoIZ3Vlc3RfaWQYASABKAkSEgoKZ3Vlc3RfbmFtZRgCIAEoCRIXCg9ndWVzdF9pbWFnZV91cmwYAyABKAkSFAoMcmVxdWVzdGVkX2F0GAQgASgJIkEKIExpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSKAAQohTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0c1Jlc3BvbnNlEjQKCHJlcXVlc3RzGAEgAygLMiIucmVsYXRpb25zaGlwLnYxLkZvbGxvd1JlcXVlc3RJdGVtEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIh4KHEdldFBlbmRpbmdGb2xsb3dDb3VudFJlcXVlc3QiLgodR2V0UGVuZGluZ0ZvbGxvd0NvdW50UmVzcG9uc2USDQoFY291bnQYASABKAUiYgoMRm9sbG93ZXJJdGVtEhAKCGd1ZXN0X2lkGAEgASgJEhIKCmd1ZXN0X25hbWUYAiABKAkSFwoPZ3Vlc3RfaW1hZ2VfdXJsGAMgASgJEhMKC2ZvbGxvd2VkX2F0GAQgASgJIjUKFExpc3RGb2xsb3dlcnNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJ/ChVMaXN0Rm9sbG93ZXJzUmVzcG9uc2USMAoJZm9sbG93ZXJzGAEgAygLMh0ucmVsYXRpb25zaGlwLnYxLkZvbGxvd2VySXRlbRINCgV0b3RhbBgCIAEoBRITCgtuZXh0X2N1cnNvchgDIAEoCRIQCghoYXNfbW9yZRgEIAEoCCp8CgxGb2xsb3dTdGF0dXMSHQoZRk9MTE9XX1NUQVRVU19VTlNQRUNJRklFRBAAEhYKEkZPTExPV19TVEFUVVNfTk9ORRABEhkKFUZPTExPV19TVEFUVVNfUEVORElORxACEhoKFkZPTExPV19TVEFUVVNfQVBQUk9WRUQQAzKVCAoNRm9sbG93U2VydmljZRJVCgpGb2xsb3dDYXN0EiIucmVsYXRpb25zaGlwLnYxLkZvbGxvd0Nhc3RSZXF1ZXN0GiMucmVsYXRpb25zaGlwLnYxLkZvbGxvd0Nhc3RSZXNwb25zZRJbCgxVbmZvbGxvd0Nhc3QSJC5yZWxhdGlvbnNoaXAudjEuVW5mb2xsb3dDYXN0UmVxdWVzdBolLnJlbGF0aW9uc2hpcC52MS5VbmZvbGxvd0Nhc3RSZXNwb25zZRJeCg1MaXN0Rm9sbG93aW5nEiUucmVsYXRpb25zaGlwLnYxLkxpc3RGb2xsb3dpbmdSZXF1ZXN0GiYucmVsYXRpb25zaGlwLnYxLkxpc3RGb2xsb3dpbmdSZXNwb25zZRJkCg9HZXRGb2xsb3dTdGF0dXMSJy5yZWxhdGlvbnNoaXAudjEuR2V0Rm9sbG93U3RhdHVzUmVxdWVzdBooLnJlbGF0aW9uc2hpcC52MS5HZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJwChNDYW5jZWxGb2xsb3dSZXF1ZXN0EisucmVsYXRpb25zaGlwLnYxLkNhbmNlbEZvbGxvd1JlcXVlc3RSZXF1ZXN0GiwucmVsYXRpb25zaGlwLnYxLkNhbmNlbEZvbGxvd1JlcXVlc3RSZXNwb25zZRJeCg1BcHByb3ZlRm9sbG93EiUucmVsYXRpb25zaGlwLnYxLkFwcHJvdmVGb2xsb3dSZXF1ZXN0GiYucmVsYXRpb25zaGlwLnYxLkFwcHJvdmVGb2xsb3dSZXNwb25zZRJbCgxSZWplY3RGb2xsb3cSJC5yZWxhdGlvbnNoaXAudjEuUmVqZWN0Rm9sbG93UmVxdWVzdBolLnJlbGF0aW9uc2hpcC52MS5SZWplY3RGb2xsb3dSZXNwb25zZRKCAQoZTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0cxIxLnJlbGF0aW9uc2hpcC52MS5MaXN0UGVuZGluZ0ZvbGxvd1JlcXVlc3RzUmVxdWVzdBoyLnJlbGF0aW9uc2hpcC52MS5MaXN0UGVuZGluZ0ZvbGxvd1JlcXVlc3RzUmVzcG9uc2USdgoVR2V0UGVuZGluZ0ZvbGxvd0NvdW50Ei0ucmVsYXRpb25zaGlwLnYxLkdldFBlbmRpbmdGb2xsb3dDb3VudFJlcXVlc3QaLi5yZWxhdGlvbnNoaXAudjEuR2V0UGVuZGluZ0ZvbGxvd0NvdW50UmVzcG9uc2USXgoNTGlzdEZvbGxvd2VycxIlLnJlbGF0aW9uc2hpcC52MS5MaXN0Rm9sbG93ZXJzUmVxdWVzdBomLnJlbGF0aW9uc2hpcC52MS5MaXN0Rm9sbG93ZXJzUmVzcG9uc2ViBnByb3RvMw");
+  fileDesc("CiRyZWxhdGlvbnNoaXAvdjEvZm9sbG93X3NlcnZpY2UucHJvdG8SD3JlbGF0aW9uc2hpcC52MSIpChFGb2xsb3dDYXN0UmVxdWVzdBIUCgxjYXN0X3VzZXJfaWQYASABKAkiVAoSRm9sbG93Q2FzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSLQoGc3RhdHVzGAIgASgOMh0ucmVsYXRpb25zaGlwLnYxLkZvbGxvd1N0YXR1cyIrChNVbmZvbGxvd0Nhc3RSZXF1ZXN0EhQKDGNhc3RfdXNlcl9pZBgBIAEoCSInChRVbmZvbGxvd0Nhc3RSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjUKFExpc3RGb2xsb3dpbmdSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJVChVMaXN0Rm9sbG93aW5nUmVzcG9uc2USFQoNY2FzdF91c2VyX2lkcxgBIAMoCRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIvChZHZXRGb2xsb3dTdGF0dXNSZXF1ZXN0EhUKDWNhc3RfdXNlcl9pZHMYASADKAkiswEKF0dldEZvbGxvd1N0YXR1c1Jlc3BvbnNlEkgKCHN0YXR1c2VzGAEgAygLMjYucmVsYXRpb25zaGlwLnYxLkdldEZvbGxvd1N0YXR1c1Jlc3BvbnNlLlN0YXR1c2VzRW50cnkaTgoNU3RhdHVzZXNFbnRyeRILCgNrZXkYASABKAkSLAoFdmFsdWUYAiABKA4yHS5yZWxhdGlvbnNoaXAudjEuRm9sbG93U3RhdHVzOgI4ASIyChpDYW5jZWxGb2xsb3dSZXF1ZXN0UmVxdWVzdBIUCgxjYXN0X3VzZXJfaWQYASABKAkiLgobQ2FuY2VsRm9sbG93UmVxdWVzdFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiLQoUQXBwcm92ZUZvbGxvd1JlcXVlc3QSFQoNZ3Vlc3RfdXNlcl9pZBgBIAEoCSIoChVBcHByb3ZlRm9sbG93UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCIsChNSZWplY3RGb2xsb3dSZXF1ZXN0EhUKDWd1ZXN0X3VzZXJfaWQYASABKAkiJwoUUmVqZWN0Rm9sbG93UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCJtChFGb2xsb3dSZXF1ZXN0SXRlbRIVCg1ndWVzdF91c2VyX2lkGAEgASgJEhIKCmd1ZXN0X25hbWUYAiABKAkSFwoPZ3Vlc3RfaW1hZ2VfdXJsGAMgASgJEhQKDHJlcXVlc3RlZF9hdBgEIAEoCSJBCiBMaXN0UGVuZGluZ0ZvbGxvd1JlcXVlc3RzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkigAEKIUxpc3RQZW5kaW5nRm9sbG93UmVxdWVzdHNSZXNwb25zZRI0CghyZXF1ZXN0cxgBIAMoCzIiLnJlbGF0aW9uc2hpcC52MS5Gb2xsb3dSZXF1ZXN0SXRlbRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIeChxHZXRQZW5kaW5nRm9sbG93Q291bnRSZXF1ZXN0Ii4KHUdldFBlbmRpbmdGb2xsb3dDb3VudFJlc3BvbnNlEg0KBWNvdW50GAEgASgFImcKDEZvbGxvd2VySXRlbRIVCg1ndWVzdF91c2VyX2lkGAEgASgJEhIKCmd1ZXN0X25hbWUYAiABKAkSFwoPZ3Vlc3RfaW1hZ2VfdXJsGAMgASgJEhMKC2ZvbGxvd2VkX2F0GAQgASgJIjUKFExpc3RGb2xsb3dlcnNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJ/ChVMaXN0Rm9sbG93ZXJzUmVzcG9uc2USMAoJZm9sbG93ZXJzGAEgAygLMh0ucmVsYXRpb25zaGlwLnYxLkZvbGxvd2VySXRlbRINCgV0b3RhbBgCIAEoBRITCgtuZXh0X2N1cnNvchgDIAEoCRIQCghoYXNfbW9yZRgEIAEoCCp8CgxGb2xsb3dTdGF0dXMSHQoZRk9MTE9XX1NUQVRVU19VTlNQRUNJRklFRBAAEhYKEkZPTExPV19TVEFUVVNfTk9ORRABEhkKFUZPTExPV19TVEFUVVNfUEVORElORxACEhoKFkZPTExPV19TVEFUVVNfQVBQUk9WRUQQAzKVCAoNRm9sbG93U2VydmljZRJVCgpGb2xsb3dDYXN0EiIucmVsYXRpb25zaGlwLnYxLkZvbGxvd0Nhc3RSZXF1ZXN0GiMucmVsYXRpb25zaGlwLnYxLkZvbGxvd0Nhc3RSZXNwb25zZRJbCgxVbmZvbGxvd0Nhc3QSJC5yZWxhdGlvbnNoaXAudjEuVW5mb2xsb3dDYXN0UmVxdWVzdBolLnJlbGF0aW9uc2hpcC52MS5VbmZvbGxvd0Nhc3RSZXNwb25zZRJeCg1MaXN0Rm9sbG93aW5nEiUucmVsYXRpb25zaGlwLnYxLkxpc3RGb2xsb3dpbmdSZXF1ZXN0GiYucmVsYXRpb25zaGlwLnYxLkxpc3RGb2xsb3dpbmdSZXNwb25zZRJkCg9HZXRGb2xsb3dTdGF0dXMSJy5yZWxhdGlvbnNoaXAudjEuR2V0Rm9sbG93U3RhdHVzUmVxdWVzdBooLnJlbGF0aW9uc2hpcC52MS5HZXRGb2xsb3dTdGF0dXNSZXNwb25zZRJwChNDYW5jZWxGb2xsb3dSZXF1ZXN0EisucmVsYXRpb25zaGlwLnYxLkNhbmNlbEZvbGxvd1JlcXVlc3RSZXF1ZXN0GiwucmVsYXRpb25zaGlwLnYxLkNhbmNlbEZvbGxvd1JlcXVlc3RSZXNwb25zZRJeCg1BcHByb3ZlRm9sbG93EiUucmVsYXRpb25zaGlwLnYxLkFwcHJvdmVGb2xsb3dSZXF1ZXN0GiYucmVsYXRpb25zaGlwLnYxLkFwcHJvdmVGb2xsb3dSZXNwb25zZRJbCgxSZWplY3RGb2xsb3cSJC5yZWxhdGlvbnNoaXAudjEuUmVqZWN0Rm9sbG93UmVxdWVzdBolLnJlbGF0aW9uc2hpcC52MS5SZWplY3RGb2xsb3dSZXNwb25zZRKCAQoZTGlzdFBlbmRpbmdGb2xsb3dSZXF1ZXN0cxIxLnJlbGF0aW9uc2hpcC52MS5MaXN0UGVuZGluZ0ZvbGxvd1JlcXVlc3RzUmVxdWVzdBoyLnJlbGF0aW9uc2hpcC52MS5MaXN0UGVuZGluZ0ZvbGxvd1JlcXVlc3RzUmVzcG9uc2USdgoVR2V0UGVuZGluZ0ZvbGxvd0NvdW50Ei0ucmVsYXRpb25zaGlwLnYxLkdldFBlbmRpbmdGb2xsb3dDb3VudFJlcXVlc3QaLi5yZWxhdGlvbnNoaXAudjEuR2V0UGVuZGluZ0ZvbGxvd0NvdW50UmVzcG9uc2USXgoNTGlzdEZvbGxvd2VycxIlLnJlbGF0aW9uc2hpcC52MS5MaXN0Rm9sbG93ZXJzUmVxdWVzdBomLnJlbGF0aW9uc2hpcC52MS5MaXN0Rm9sbG93ZXJzUmVzcG9uc2ViBnByb3RvMw");
 
 /**
  * @generated from message relationship.v1.FollowCastRequest
  */
 export type FollowCastRequest = Message<"relationship.v1.FollowCastRequest"> & {
   /**
-   * @generated from field: string cast_id = 1;
+   * @generated from field: string cast_user_id = 1;
    */
-  castId: string;
+  castUserId: string;
 };
 
 /**
@@ -58,9 +58,9 @@ export const FollowCastResponseSchema: GenMessage<FollowCastResponse> = /*@__PUR
  */
 export type UnfollowCastRequest = Message<"relationship.v1.UnfollowCastRequest"> & {
   /**
-   * @generated from field: string cast_id = 1;
+   * @generated from field: string cast_user_id = 1;
    */
-  castId: string;
+  castUserId: string;
 };
 
 /**
@@ -114,9 +114,9 @@ export const ListFollowingRequestSchema: GenMessage<ListFollowingRequest> = /*@_
  */
 export type ListFollowingResponse = Message<"relationship.v1.ListFollowingResponse"> & {
   /**
-   * @generated from field: repeated string cast_ids = 1;
+   * @generated from field: repeated string cast_user_ids = 1;
    */
-  castIds: string[];
+  castUserIds: string[];
 
   /**
    * @generated from field: string next_cursor = 2;
@@ -141,9 +141,9 @@ export const ListFollowingResponseSchema: GenMessage<ListFollowingResponse> = /*
  */
 export type GetFollowStatusRequest = Message<"relationship.v1.GetFollowStatusRequest"> & {
   /**
-   * @generated from field: repeated string cast_ids = 1;
+   * @generated from field: repeated string cast_user_ids = 1;
    */
-  castIds: string[];
+  castUserIds: string[];
 };
 
 /**
@@ -158,7 +158,7 @@ export const GetFollowStatusRequestSchema: GenMessage<GetFollowStatusRequest> = 
  */
 export type GetFollowStatusResponse = Message<"relationship.v1.GetFollowStatusResponse"> & {
   /**
-   * cast_id -> follow status
+   * cast_user_id -> follow status
    *
    * @generated from field: map<string, relationship.v1.FollowStatus> statuses = 1;
    */
@@ -177,9 +177,9 @@ export const GetFollowStatusResponseSchema: GenMessage<GetFollowStatusResponse> 
  */
 export type CancelFollowRequestRequest = Message<"relationship.v1.CancelFollowRequestRequest"> & {
   /**
-   * @generated from field: string cast_id = 1;
+   * @generated from field: string cast_user_id = 1;
    */
-  castId: string;
+  castUserId: string;
 };
 
 /**
@@ -211,9 +211,9 @@ export const CancelFollowRequestResponseSchema: GenMessage<CancelFollowRequestRe
  */
 export type ApproveFollowRequest = Message<"relationship.v1.ApproveFollowRequest"> & {
   /**
-   * @generated from field: string guest_id = 1;
+   * @generated from field: string guest_user_id = 1;
    */
-  guestId: string;
+  guestUserId: string;
 };
 
 /**
@@ -245,9 +245,9 @@ export const ApproveFollowResponseSchema: GenMessage<ApproveFollowResponse> = /*
  */
 export type RejectFollowRequest = Message<"relationship.v1.RejectFollowRequest"> & {
   /**
-   * @generated from field: string guest_id = 1;
+   * @generated from field: string guest_user_id = 1;
    */
-  guestId: string;
+  guestUserId: string;
 };
 
 /**
@@ -279,9 +279,9 @@ export const RejectFollowResponseSchema: GenMessage<RejectFollowResponse> = /*@_
  */
 export type FollowRequestItem = Message<"relationship.v1.FollowRequestItem"> & {
   /**
-   * @generated from field: string guest_id = 1;
+   * @generated from field: string guest_user_id = 1;
    */
-  guestId: string;
+  guestUserId: string;
 
   /**
    * @generated from field: string guest_name = 2;
@@ -396,9 +396,9 @@ export const GetPendingFollowCountResponseSchema: GenMessage<GetPendingFollowCou
  */
 export type FollowerItem = Message<"relationship.v1.FollowerItem"> & {
   /**
-   * @generated from field: string guest_id = 1;
+   * @generated from field: string guest_user_id = 1;
    */
-  guestId: string;
+  guestUserId: string;
 
   /**
    * @generated from field: string guest_name = 2;

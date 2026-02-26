@@ -23,7 +23,7 @@ message Plan {
 }
 
 message GetPlansRequest {
-  string cast_id = 1;        // Optional: if empty, use current user's cast
+  string cast_user_id = 1;   // Optional: if empty, use current user's cast
 }
 
 message GetPlansResponse {
@@ -47,7 +47,7 @@ message Schedule {
 }
 
 message GetSchedulesRequest {
-  string cast_id = 1;        // Optional: if empty, use current user's cast
+  string cast_user_id = 1;   // Optional: if empty, use current user's cast
   string start_date = 2;     // Optional: YYYY-MM-DD
   string end_date = 3;       // Optional: YYYY-MM-DD
 }

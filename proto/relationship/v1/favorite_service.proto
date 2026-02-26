@@ -10,7 +10,7 @@ service FavoriteService {
 }
 
 message AddFavoriteRequest {
-  string cast_id = 1;
+  string cast_user_id = 1;
 }
 
 message AddFavoriteResponse {
@@ -18,7 +18,7 @@ message AddFavoriteResponse {
 }
 
 message RemoveFavoriteRequest {
-  string cast_id = 1;
+  string cast_user_id = 1;
 }
 
 message RemoveFavoriteResponse {
@@ -31,15 +31,15 @@ message ListFavoritesRequest {
 }
 
 message ListFavoritesResponse {
-  repeated string cast_ids = 1;
+  repeated string cast_user_ids = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }
 
 message GetFavoriteStatusRequest {
-  repeated string cast_ids = 1;
+  repeated string cast_user_ids = 1;
 }
 
 message GetFavoriteStatusResponse {
-  map<string, bool> favorited = 1; // cast_id -> is_favorited
+  map<string, bool> favorited = 1; // cast_user_id -> is_favorited
 }

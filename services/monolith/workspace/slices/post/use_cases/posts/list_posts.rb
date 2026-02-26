@@ -11,11 +11,11 @@ module Post
 
         MAX_LIMIT = 50
 
-        def call(cast_id:, limit: DEFAULT_LIMIT, cursor: nil)
+        def call(cast_user_id:, limit: DEFAULT_LIMIT, cursor: nil)
           limit = normalize_limit(limit)
           decoded_cursor = decode_cursor(cursor)
 
-          posts = repo.list_by_cast_id(cast_id: cast_id, limit: limit, cursor: decoded_cursor)
+          posts = repo.list_by_cast_user_id(cast_user_id: cast_user_id, limit: limit, cursor: decoded_cursor)
           result = build_pagination_result(items: posts, limit: limit) do |last|
             encode_cursor(created_at: last.created_at.iso8601, id: last.id)
           end

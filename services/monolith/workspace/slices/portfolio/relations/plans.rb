@@ -7,7 +7,7 @@ module Portfolio
     class Plans < Portfolio::DB::Relation
       schema(:"offer__plans", as: :plans, infer: false) do
         attribute :id, Types::String      # UUID
-        attribute :cast_id, Types::String  # UUID
+        attribute :cast_user_id, Types::String  # UUID
         attribute :name, Types::String
         attribute :price, Types::Integer
         attribute :duration_minutes, Types::Integer
@@ -18,7 +18,7 @@ module Portfolio
         primary_key :id
 
         associations do
-          belongs_to :cast, foreign_key: :cast_id
+          belongs_to :cast, foreign_key: :cast_user_id
         end
       end
     end

@@ -32,7 +32,7 @@ module Offer
       def get_plans
         cast_id = resolve_cast_id(request.message.cast_id)
 
-        plans = get_plans_uc.call(cast_id: cast_id)
+        plans = get_plans_uc.call(cast_user_id: cast_id)
 
         ::Offer::V1::GetPlansResponse.new(
           plans: PlanPresenter.many_to_proto(plans)
@@ -54,7 +54,7 @@ module Offer
           }
         end
 
-        result = save_plans_uc.call(cast_id: cast.id, plans: plans_data)
+        result = save_plans_uc.call(cast_user_id: cast.user_id, plans: plans_data)
 
         ::Offer::V1::SavePlansResponse.new(
           plans: PlanPresenter.many_to_proto(result)
@@ -72,7 +72,7 @@ module Offer
         start_date = request.message.start_date.to_s.empty? ? nil : request.message.start_date
         end_date = request.message.end_date.to_s.empty? ? nil : request.message.end_date
 
-        schedules = get_schedules_uc.call(cast_id: cast_id, start_date: start_date, end_date: end_date)
+        schedules = get_schedules_uc.call(cast_user_id: cast_id, start_date: start_date, end_date: end_date)
 
         ::Offer::V1::GetSchedulesResponse.new(
           schedules: SchedulePresenter.many_to_proto(schedules)
@@ -89,7 +89,7 @@ module Offer
           { date: s.date, start_time: s.start_time, end_time: s.end_time }
         end
 
-        result = save_schedules_uc.call(cast_id: cast.id, schedules: schedules_data)
+        result = save_schedules_uc.call(cast_user_id: cast.user_id, schedules: schedules_data)
 
         ::Offer::V1::SaveSchedulesResponse.new(
           schedules: SchedulePresenter.many_to_proto(result)
@@ -116,7 +116,7 @@ module Offer
         # If no cast_id provided, try to get current user's cast
         if current_user_id
           cast = portfolio_adapter.find_cast_by_user_id(current_user_id)
-          return cast.id if cast
+          return cast.user_id if cast
         end
 
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "cast_id is required")

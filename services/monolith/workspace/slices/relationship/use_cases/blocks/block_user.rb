@@ -19,7 +19,7 @@ module Relationship
 
           # Remove follow relationship when blocking
           if blocker_type == "cast" && blocked_type == "guest"
-            follow_repo.unfollow(cast_id: blocker_id, guest_id: blocked_id)
+            follow_repo.unfollow(cast_user_id: blocker_id, guest_user_id: blocked_id)
           end
 
           { success: true }

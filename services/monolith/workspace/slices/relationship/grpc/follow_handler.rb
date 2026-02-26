@@ -54,8 +54,8 @@ module Relationship
         end
 
         result = follow_cast_uc.call(
-          cast_id: cast_id,
-          guest_id: guest.id,
+          cast_user_id: cast_id,
+          guest_user_id: guest.user_id,
           visibility: cast.visibility
         )
 
@@ -73,8 +73,8 @@ module Relationship
         guest = find_my_guest!
 
         result = unfollow_cast_uc.call(
-          cast_id: request.message.cast_id,
-          guest_id: guest.id
+          cast_user_id: request.message.cast_id,
+          guest_user_id: guest.user_id
         )
 
         ::Relationship::V1::UnfollowCastResponse.new(success: result[:success])
@@ -88,13 +88,13 @@ module Relationship
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         result = list_following_uc.call(
-          guest_id: guest.id,
+          guest_user_id: guest.user_id,
           limit: limit,
           cursor: cursor
         )
 
         ::Relationship::V1::ListFollowingResponse.new(
-          cast_ids: result[:cast_ids],
+          cast_ids: result[:cast_user_ids],
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -105,7 +105,7 @@ module Relationship
         cast_ids = request.message.cast_ids.to_a
 
         statuses = if guest
-          status_map = get_follow_status_uc.call(cast_ids: cast_ids, guest_id: guest.id)
+          status_map = get_follow_status_uc.call(cast_user_ids: cast_ids, guest_user_id: guest.user_id)
           status_map.transform_values do |status|
             case status
             when "approved" then :FOLLOW_STATUS_APPROVED
@@ -125,8 +125,8 @@ module Relationship
         guest = find_my_guest!
 
         result = cancel_follow_request_uc.call(
-          cast_id: request.message.cast_id,
-          guest_id: guest.id
+          cast_user_id: request.message.cast_id,
+          guest_user_id: guest.user_id
         )
 
         ::Relationship::V1::CancelFollowRequestResponse.new(success: result[:success])
@@ -137,8 +137,8 @@ module Relationship
         cast = find_my_cast!
 
         result = approve_follow_uc.call(
-          cast_id: cast.id,
-          guest_id: request.message.guest_id
+          cast_user_id: cast.user_id,
+          guest_user_id: request.message.guest_id
         )
 
         ::Relationship::V1::ApproveFollowResponse.new(success: result[:success])
@@ -149,8 +149,8 @@ module Relationship
         cast = find_my_cast!
 
         result = reject_follow_uc.call(
-          cast_id: cast.id,
-          guest_id: request.message.guest_id
+          cast_user_id: cast.user_id,
+          guest_user_id: request.message.guest_id
         )
 
         ::Relationship::V1::RejectFollowResponse.new(success: result[:success])
@@ -164,24 +164,24 @@ module Relationship
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         result = list_pending_requests_uc.call(
-          cast_id: cast.id,
+          cast_user_id: cast.user_id,
           limit: limit,
           cursor: cursor
         )
 
         # Fetch guest details using adapter
-        guest_ids = result[:requests].map { |r| r[:guest_id] }
-        guests = guest_adapter.find_by_ids(guest_ids)
+        guest_user_ids = result[:requests].map { |r| r[:guest_user_id] }
+        guests = guest_adapter.find_by_ids(guest_user_ids)
 
         # Load media files for guest avatars
         media_ids = guests.values.filter_map(&:avatar_media_id).uniq
         media_files = media_ids.empty? ? {} : media_adapter.find_by_ids(media_ids)
 
         requests = result[:requests].map do |req|
-          guest = guests[req[:guest_id]]
+          guest = guests[req[:guest_user_id]]
           media_file = guest ? media_files[guest.avatar_media_id] : nil
           ::Relationship::V1::FollowRequestItem.new(
-            guest_id: req[:guest_id],
+            guest_id: req[:guest_user_id],
             guest_name: guest&.name || "Guest",
             guest_image_url: media_file&.url || "",
             requested_at: req[:requested_at]&.iso8601 || ""
@@ -199,7 +199,7 @@ module Relationship
         authenticate_user!
         cast = find_my_cast!
 
-        count = follow_repo.pending_count(cast_id: cast.id)
+        count = follow_repo.pending_count(cast_user_id: cast.user_id)
 
         ::Relationship::V1::GetPendingFollowCountResponse.new(count: count)
       end
@@ -212,23 +212,23 @@ module Relationship
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         result = list_followers_uc.call(
-          cast_id: cast.id,
+          cast_user_id: cast.user_id,
           limit: limit,
           cursor: cursor
         )
 
-        guest_ids = result[:followers].map { |f| f[:guest_id] }
-        guests = guest_adapter.find_by_ids(guest_ids)
+        guest_user_ids = result[:followers].map { |f| f[:guest_user_id] }
+        guests = guest_adapter.find_by_ids(guest_user_ids)
 
         # Load media files for guest avatars
         media_ids = guests.values.filter_map(&:avatar_media_id).uniq
         media_files = media_ids.empty? ? {} : media_adapter.find_by_ids(media_ids)
 
         followers = result[:followers].map do |follower|
-          guest = guests[follower[:guest_id]]
+          guest = guests[follower[:guest_user_id]]
           media_file = guest ? media_files[guest.avatar_media_id] : nil
           ::Relationship::V1::FollowerItem.new(
-            guest_id: follower[:guest_id],
+            guest_id: follower[:guest_user_id],
             guest_name: guest&.name || "Guest",
             guest_image_url: media_file&.url || "",
             followed_at: follower[:followed_at]&.iso8601 || ""

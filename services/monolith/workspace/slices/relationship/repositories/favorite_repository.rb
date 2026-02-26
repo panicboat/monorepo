@@ -3,25 +3,25 @@
 module Relationship
   module Repositories
     class FavoriteRepository < Relationship::DB::Repo
-      def add_favorite(cast_id:, guest_id:)
-        existing = favorites.where(cast_id: cast_id, guest_id: guest_id).one
+      def add_favorite(cast_user_id:, guest_user_id:)
+        existing = favorites.where(cast_user_id: cast_user_id, guest_user_id: guest_user_id).one
         return false if existing
 
-        favorites.changeset(:create, cast_id: cast_id, guest_id: guest_id).commit
+        favorites.changeset(:create, cast_user_id: cast_user_id, guest_user_id: guest_user_id).commit
         true
       end
 
-      def remove_favorite(cast_id:, guest_id:)
-        deleted = favorites.dataset.where(cast_id: cast_id, guest_id: guest_id).delete
+      def remove_favorite(cast_user_id:, guest_user_id:)
+        deleted = favorites.dataset.where(cast_user_id: cast_user_id, guest_user_id: guest_user_id).delete
         deleted > 0
       end
 
-      def favorite?(cast_id:, guest_id:)
-        favorites.where(cast_id: cast_id, guest_id: guest_id).exist?
+      def favorite?(cast_user_id:, guest_user_id:)
+        favorites.where(cast_user_id: cast_user_id, guest_user_id: guest_user_id).exist?
       end
 
-      def list_favorites(guest_id:, limit: 100, cursor: nil)
-        scope = favorites.where(guest_id: guest_id)
+      def list_favorites(guest_user_id:, limit: 100, cursor: nil)
+        scope = favorites.where(guest_user_id: guest_user_id)
 
         if cursor
           scope = scope.where { created_at < cursor[:created_at] }
@@ -32,25 +32,25 @@ module Relationship
         records = records.first(limit) if has_more
 
         {
-          cast_ids: records.map(&:cast_id),
+          cast_user_ids: records.map(&:cast_user_id),
           has_more: has_more
         }
       end
 
-      def favorite_cast_ids(guest_id:)
+      def favorite_cast_user_ids(guest_user_id:)
         favorites.dataset
-          .where(guest_id: guest_id)
-          .select_map(:cast_id)
+          .where(guest_user_id: guest_user_id)
+          .select_map(:cast_user_id)
       end
 
-      def favorite_status_batch(cast_ids:, guest_id:)
-        return {} if cast_ids.empty? || guest_id.nil?
+      def favorite_status_batch(cast_user_ids:, guest_user_id:)
+        return {} if cast_user_ids.empty? || guest_user_id.nil?
 
         favorited_ids = favorites.dataset
-          .where(cast_id: cast_ids, guest_id: guest_id)
-          .select_map(:cast_id)
+          .where(cast_user_id: cast_user_ids, guest_user_id: guest_user_id)
+          .select_map(:cast_user_id)
 
-        cast_ids.each_with_object({}) do |id, hash|
+        cast_user_ids.each_with_object({}) do |id, hash|
           hash[id] = favorited_ids.include?(id)
         end
       end

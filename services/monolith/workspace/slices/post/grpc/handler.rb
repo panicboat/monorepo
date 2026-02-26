@@ -84,10 +84,10 @@ module Post
         return nil unless current_user_id
 
         guest = find_my_guest
-        return { id: guest.id, type: "guest" } if guest
+        return { id: guest.user_id, type: "guest" } if guest
 
         cast = find_my_cast
-        return { id: cast.id, type: "cast" } if cast
+        return { id: cast.user_id, type: "cast" } if cast
 
         nil
       end
@@ -132,7 +132,7 @@ module Post
             media_id = cast.avatar_media_id.to_s.empty? ? cast.profile_media_id : cast.avatar_media_id
             media_file = media_files[media_id]
             {
-              id: cast.id,
+              id: cast.user_id,
               name: cast.name,
               image_url: media_file&.url || "",
               user_type: "cast"
@@ -145,7 +145,7 @@ module Post
           if guest
             media_file = media_files[guest.avatar_media_id]
             {
-              id: guest.id,
+              id: guest.user_id,
               name: guest.name,
               image_url: media_file&.url || "",
               user_type: "guest"

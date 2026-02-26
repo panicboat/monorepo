@@ -6,8 +6,8 @@ module Relationship
       class UnfollowCast
         include Relationship::Deps[follow_repo: "repositories.follow_repository"]
 
-        def call(cast_id:, guest_id:)
-          follow_repo.unfollow(cast_id: cast_id, guest_id: guest_id)
+        def call(cast_user_id:, guest_user_id:)
+          follow_repo.unfollow(cast_user_id: cast_user_id, guest_user_id: guest_user_id)
           { success: true }
         end
       end

@@ -11,11 +11,11 @@ module Offer
           portfolio_adapter: "adapters.portfolio_adapter"
         ]
 
-        def call(cast_id:)
+        def call(cast_user_id:)
           # Verify cast exists via adapter
-          raise CastNotFoundError, "Cast not found" unless portfolio_adapter.cast_exists?(cast_id)
+          raise CastNotFoundError, "Cast not found" unless portfolio_adapter.cast_exists?(cast_user_id)
 
-          repo.find_plans_by_cast_id(cast_id)
+          repo.find_plans_by_cast_user_id(cast_user_id)
         end
       end
     end

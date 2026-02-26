@@ -14,16 +14,16 @@ module Feed
         @cast_adapter = Feed::Adapters::CastAdapter.new
       end
 
-      # @param cast_id [String] the cast ID
+      # @param cast_user_id [String] the cast user ID
       # @param limit [Integer] max posts to return
       # @param cursor [String, nil] pagination cursor
       # @return [Hash] { posts:, next_cursor:, has_more:, author: }
-      def call(cast_id:, limit: DEFAULT_LIMIT, cursor: nil)
+      def call(cast_user_id:, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
         decoded_cursor = decode_cursor(cursor)
 
         posts = @post_adapter.list_posts_for_cast(
-          cast_id: cast_id,
+          cast_user_id: cast_user_id,
           limit: limit,
           cursor: decoded_cursor
         )
@@ -32,7 +32,7 @@ module Feed
           encode_cursor(created_at: last.created_at.iso8601, id: last.id)
         end
 
-        author = @cast_adapter.find_by_cast_id(cast_id)
+        author = @cast_adapter.find_by_cast_id(cast_user_id)
 
         { posts: pagination[:items], next_cursor: pagination[:next_cursor], has_more: pagination[:has_more], author: author }
       end

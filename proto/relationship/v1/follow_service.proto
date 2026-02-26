@@ -26,7 +26,7 @@ enum FollowStatus {
 }
 
 message FollowCastRequest {
-  string cast_id = 1;
+  string cast_user_id = 1;
 }
 
 message FollowCastResponse {
@@ -35,7 +35,7 @@ message FollowCastResponse {
 }
 
 message UnfollowCastRequest {
-  string cast_id = 1;
+  string cast_user_id = 1;
 }
 
 message UnfollowCastResponse {
@@ -48,21 +48,21 @@ message ListFollowingRequest {
 }
 
 message ListFollowingResponse {
-  repeated string cast_ids = 1;
+  repeated string cast_user_ids = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }
 
 message GetFollowStatusRequest {
-  repeated string cast_ids = 1;
+  repeated string cast_user_ids = 1;
 }
 
 message GetFollowStatusResponse {
-  map<string, FollowStatus> statuses = 1; // cast_id -> follow status
+  map<string, FollowStatus> statuses = 1; // cast_user_id -> follow status
 }
 
 message CancelFollowRequestRequest {
-  string cast_id = 1;
+  string cast_user_id = 1;
 }
 
 message CancelFollowRequestResponse {
@@ -70,7 +70,7 @@ message CancelFollowRequestResponse {
 }
 
 message ApproveFollowRequest {
-  string guest_id = 1;
+  string guest_user_id = 1;
 }
 
 message ApproveFollowResponse {
@@ -78,7 +78,7 @@ message ApproveFollowResponse {
 }
 
 message RejectFollowRequest {
-  string guest_id = 1;
+  string guest_user_id = 1;
 }
 
 message RejectFollowResponse {
@@ -86,7 +86,7 @@ message RejectFollowResponse {
 }
 
 message FollowRequestItem {
-  string guest_id = 1;
+  string guest_user_id = 1;
   string guest_name = 2;
   string guest_image_url = 3;
   string requested_at = 4; // ISO8601
@@ -110,7 +110,7 @@ message GetPendingFollowCountResponse {
 }
 
 message FollowerItem {
-  string guest_id = 1;
+  string guest_user_id = 1;
   string guest_name = 2;
   string guest_image_url = 3;
   string followed_at = 4; // ISO8601

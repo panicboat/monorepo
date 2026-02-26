@@ -103,7 +103,7 @@ module Relationship
           avatar_url = cast.avatar_media_id ? media_files[cast.avatar_media_id]&.url : nil
 
           ::Relationship::V1::BlockedUser.new(
-            id: cast.id,
+            id: cast.user_id,
             user_type: "cast",
             name: cast.name || "",
             image_url: avatar_url || "",

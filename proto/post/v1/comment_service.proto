@@ -18,7 +18,7 @@ message CommentMedia {
 }
 
 message CommentAuthor {
-  string id = 1;
+  string user_id = 1;
   string name = 2;
   string image_url = 3;
   string user_type = 4; // "guest" or "cast"

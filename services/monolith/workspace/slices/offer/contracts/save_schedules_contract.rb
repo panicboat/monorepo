@@ -8,7 +8,7 @@ module Offer
       TIME_FORMAT_REGEX = /\A([01]?[0-9]|2[0-3]):[0-5][0-9]\z/
 
       params do
-        required(:cast_id).filled(:string)
+        required(:cast_user_id).filled(:string)
         required(:schedules).array(:hash) do
           required(:date).filled(:date)
           required(:start_time).filled(:string)

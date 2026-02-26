@@ -21,7 +21,7 @@ module Portfolio
           gallery_urls = gallery_media_urls(cast, media_files)
 
           ::Portfolio::V1::CastProfile.new(
-            id: cast.id.to_s,
+            id: cast.user_id.to_s,
             user_id: cast.user_id.to_s,
             slug: cast.respond_to?(:slug) ? (cast.slug || "") : "",
             name: cast.name,

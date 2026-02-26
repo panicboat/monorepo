@@ -3,31 +3,31 @@
 module Offer
   module Repositories
     class ScheduleRepository < Offer::DB::Repo
-      def find_by_cast_id(cast_id, start_date: nil, end_date: nil)
-        scope = schedules.where(cast_id: cast_id)
+      def find_by_cast_id(cast_user_id, start_date: nil, end_date: nil)
+        scope = schedules.where(cast_user_id: cast_user_id)
         scope = scope.where { date >= start_date } if start_date
         scope = scope.where { date <= end_date } if end_date
         scope.order(:date, :start_time).to_a
       end
 
-      def save_schedules(cast_id:, schedules_data:)
+      def save_schedules(cast_user_id:, schedules_data:)
         today = Date.today.to_s
         transaction do
           # Only delete schedules for today and future dates (preserve past schedules)
-          schedules.dataset.where(cast_id: cast_id).where { date >= today }.delete
+          schedules.dataset.where(cast_user_id: cast_user_id).where { date >= today }.delete
           schedules_data.each do |schedule|
             next if schedule[:date].to_s < today
-            schedules.changeset(:create, schedule.merge(cast_id: cast_id)).commit
+            schedules.changeset(:create, schedule.merge(cast_user_id: cast_user_id)).commit
           end
-          find_by_cast_id(cast_id)
+          find_by_cast_id(cast_user_id)
         end
       end
 
-      def is_online?(cast_id)
+      def is_online?(cast_user_id)
         today = Date.today.to_s
         now = Time.now.strftime("%H:%M")
         schedules
-          .where(cast_id: cast_id, date: today)
+          .where(cast_user_id: cast_user_id, date: today)
           .where { start_time <= now }
           .where { end_time >= now }
           .exist?

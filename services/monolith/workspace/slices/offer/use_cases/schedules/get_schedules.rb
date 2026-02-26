@@ -11,11 +11,11 @@ module Offer
           portfolio_adapter: "adapters.portfolio_adapter"
         ]
 
-        def call(cast_id:, start_date: nil, end_date: nil)
+        def call(cast_user_id:, start_date: nil, end_date: nil)
           # Verify cast exists via adapter
-          raise CastNotFoundError, "Cast not found" unless portfolio_adapter.cast_exists?(cast_id)
+          raise CastNotFoundError, "Cast not found" unless portfolio_adapter.cast_exists?(cast_user_id)
 
-          repo.find_schedules_by_cast_id(cast_id, start_date: start_date, end_date: end_date)
+          repo.find_schedules_by_cast_user_id(cast_user_id, start_date: start_date, end_date: end_date)
         end
       end
     end
