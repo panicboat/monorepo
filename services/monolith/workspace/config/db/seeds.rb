@@ -19,12 +19,12 @@ def db
   @db ||= Hanami.app["db.gateway"].connection
 end
 
-def insert_unless_exists(table, unique_column, unique_value, data)
+def insert_unless_exists(table, unique_column, unique_value, data, return_column: :id)
   existing = db[table].where(unique_column => unique_value).first
-  return existing[:id] if existing
+  return existing[return_column] if existing
 
   db[table].insert(data.merge(unique_column => unique_value))
-  db[table].where(unique_column => unique_value).first[:id]
+  db[table].where(unique_column => unique_value).first[return_column]
 end
 
 # =============================================================================
@@ -241,18 +241,14 @@ cast_data = [
   },
 ]
 
-cast_ids = []
 cast_data.each_with_index do |data, idx|
   user_id = cast_user_ids[idx]
   next unless user_id
 
   existing = db[:portfolio__casts].where(user_id: user_id).first
-  if existing
-    cast_ids << existing[:id]
-    next
-  end
+  next if existing
 
-  id = db[:portfolio__casts].insert(
+  db[:portfolio__casts].insert(
     data.merge(
       user_id: user_id,
       social_links: {}.to_json,
@@ -260,10 +256,9 @@ cast_data.each_with_index do |data, idx|
       updated_at: Time.now,
     )
   )
-  cast_ids << db[:portfolio__casts].where(user_id: user_id).first[:id]
 end
 
-puts "  Created #{cast_ids.size} casts"
+puts "  Created #{cast_user_ids.size} casts"
 
 # =============================================================================
 # Offer: Plans
@@ -272,10 +267,10 @@ puts "  Created #{cast_ids.size} casts"
 puts "Seeding Offer: Plans..."
 
 plan_count = 0
-cast_ids.each do |cast_id|
-  next unless cast_id
+cast_user_ids.each do |cast_user_id|
+  next unless cast_user_id
 
-  existing = db[:offer__plans].where(cast_id: cast_id).count
+  existing = db[:offer__plans].where(cast_user_id: cast_user_id).count
   next if existing > 0
 
   [
@@ -285,7 +280,7 @@ cast_ids.each do |cast_id|
   ].each do |plan|
     db[:offer__plans].insert(
       plan.merge(
-        cast_id: cast_id,
+        cast_user_id: cast_user_id,
         created_at: Time.now,
         updated_at: Time.now,
       )
@@ -303,10 +298,10 @@ puts "  Created #{plan_count} plans"
 puts "Seeding Offer: Schedules..."
 
 schedule_count = 0
-cast_ids.each do |cast_id|
-  next unless cast_id
+cast_user_ids.each do |cast_user_id|
+  next unless cast_user_id
 
-  existing = db[:offer__schedules].where(cast_id: cast_id).count
+  existing = db[:offer__schedules].where(cast_user_id: cast_user_id).count
   next if existing > 0
 
   # Create schedules for the next 7 days
@@ -315,7 +310,7 @@ cast_ids.each do |cast_id|
     next if date.saturday? || date.sunday? # Skip weekends for variety
 
     db[:offer__schedules].insert(
-      cast_id: cast_id,
+      cast_user_id: cast_user_id,
       date: date,
       start_time: "18:00",
       end_time: "23:00",
@@ -337,17 +332,17 @@ puts "Seeding Portfolio: Cast Genres..."
 genres = db[:portfolio__genres].all.to_a
 genre_count = 0
 
-cast_ids.each_with_index do |cast_id, idx|
-  next unless cast_id
+cast_user_ids.each_with_index do |cast_user_id, idx|
+  next unless cast_user_id
 
-  existing = db[:portfolio__cast_genres].where(cast_id: cast_id).count
+  existing = db[:portfolio__cast_genres].where(cast_user_id: cast_user_id).count
   next if existing > 0
 
   # Assign 1-2 genres per cast
   selected_genres = genres.sample(rand(1..2))
   selected_genres.each do |genre|
     db[:portfolio__cast_genres].insert(
-      cast_id: cast_id,
+      cast_user_id: cast_user_id,
       genre_id: genre[:id],
       created_at: Time.now,
     )
@@ -366,17 +361,17 @@ puts "Seeding Portfolio: Cast Areas..."
 areas = db[:portfolio__areas].all.to_a
 area_count = 0
 
-cast_ids.each_with_index do |cast_id, idx|
-  next unless cast_id
+cast_user_ids.each_with_index do |cast_user_id, idx|
+  next unless cast_user_id
 
-  existing = db[:portfolio__cast_areas].where(cast_id: cast_id).count
+  existing = db[:portfolio__cast_areas].where(cast_user_id: cast_user_id).count
   next if existing > 0
 
   # Assign 1-3 areas per cast
   selected_areas = areas.sample(rand(1..3))
   selected_areas.each do |area|
     db[:portfolio__cast_areas].insert(
-      cast_id: cast_id,
+      cast_user_id: cast_user_id,
       area_id: area[:id],
       created_at: Time.now,
     )
@@ -427,16 +422,16 @@ casts_post_data = {
 }
 
 post_count = 0
-cast_ids.each_with_index do |cast_id, cast_idx|
-  next unless cast_id
+cast_user_ids.each_with_index do |cast_user_id, cast_idx|
+  next unless cast_user_id
 
-  existing = db[:"post__posts"].where(cast_id: cast_id).count
+  existing = db[:"post__posts"].where(cast_user_id: cast_user_id).count
   next if existing > 0
 
   posts = casts_post_data[cast_idx] || []
   posts.each_with_index do |data, idx|
     post_id = db[:"post__posts"].insert(
-      cast_id: cast_id,
+      cast_user_id: cast_user_id,
       content: data[:content],
       visibility: data[:visibility],
       created_at: Time.now - (idx * 3600), # Stagger by 1 hour
@@ -514,11 +509,11 @@ guests.each do |guest|
   # Each guest likes some random posts
   posts_to_like = posts.sample(rand(2..4))
   posts_to_like.each do |post|
-    existing = db[:"post__likes"].where(guest_id: guest[:id], post_id: post[:id]).first
+    existing = db[:"post__likes"].where(guest_user_id: guest[:user_id], post_id: post[:id]).first
     next if existing
 
     db[:"post__likes"].insert(
-      guest_id: guest[:id],
+      guest_user_id: guest[:user_id],
       post_id: post[:id],
       created_at: Time.now,
     )
@@ -581,11 +576,8 @@ posts.each do |post|
 
   # Add 1-2 replies to some comments (from cast)
   comment_ids.sample(rand(1..2)).each do |comment_id|
-    # Get the cast who owns this post
-    cast_user_id = cast_user_ids.find do |uid|
-      cast = db[:portfolio__casts].where(user_id: uid).first
-      cast && cast[:id] == post[:cast_id]
-    end
+    # Get the cast who owns this post (cast_user_id IS the user_id)
+    cast_user_id = post[:cast_user_id]
     next unless cast_user_id
 
     reply = reply_data.sample
@@ -661,14 +653,14 @@ end
 
 follow_scenarios.each do |scenario|
   existing = db[:"relationship__follows"].where(
-    guest_id: scenario[:guest][:id],
-    cast_id: scenario[:cast][:id]
+    guest_user_id: scenario[:guest][:user_id],
+    cast_user_id: scenario[:cast][:user_id]
   ).first
   next if existing
 
   db[:"relationship__follows"].insert(
-    guest_id: scenario[:guest][:id],
-    cast_id: scenario[:cast][:id],
+    guest_user_id: scenario[:guest][:user_id],
+    cast_user_id: scenario[:cast][:user_id],
     status: scenario[:status],
     created_at: Time.now,
   )
@@ -694,12 +686,12 @@ taro_block = db[:portfolio__guests].where(name: "太郎").first
 rin_block = db[:portfolio__casts].where(slug: "rin").first
 
 if taro_block && rin_block
-  existing = db[:"relationship__blocks"].where(blocker_id: taro_block[:id], blocked_id: rin_block[:id]).first
+  existing = db[:"relationship__blocks"].where(blocker_id: taro_block[:user_id], blocked_id: rin_block[:user_id]).first
   unless existing
     db[:"relationship__blocks"].insert(
-      blocker_id: taro_block[:id],
+      blocker_id: taro_block[:user_id],
       blocker_type: "guest",
-      blocked_id: rin_block[:id],
+      blocked_id: rin_block[:user_id],
       blocked_type: "cast",
       created_at: Time.now,
     )
@@ -745,14 +737,14 @@ end
 
 favorite_scenarios.each do |scenario|
   existing = db[:"relationship__favorites"].where(
-    guest_id: scenario[:guest][:id],
-    cast_id: scenario[:cast][:id]
+    guest_user_id: scenario[:guest][:user_id],
+    cast_user_id: scenario[:cast][:user_id]
   ).first
   next if existing
 
   db[:"relationship__favorites"].insert(
-    guest_id: scenario[:guest][:id],
-    cast_id: scenario[:cast][:id],
+    guest_user_id: scenario[:guest][:user_id],
+    cast_user_id: scenario[:cast][:user_id],
     created_at: Time.now,
   )
   favorite_count += 1

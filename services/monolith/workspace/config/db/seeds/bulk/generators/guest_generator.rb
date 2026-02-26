@@ -13,12 +13,12 @@ module Seeds
           puts "Generating #{Config::GUEST_COUNT} new guests..."
 
           guest_user_ids = create_guest_users
-          guest_ids = create_guest_profiles(guest_user_ids)
-          activity_types = assign_activity_types(guest_ids)
+          create_guest_profiles(guest_user_ids)
+          activity_types = assign_activity_types(guest_user_ids)
 
-          puts "  Created #{guest_ids.size} guests with profiles"
+          puts "  Created #{guest_user_ids.size} guests with profiles"
 
-          { user_ids: guest_user_ids, guest_ids: guest_ids, activity_types: activity_types }
+          { user_ids: guest_user_ids, activity_types: activity_types }
         end
 
         private
@@ -55,13 +55,9 @@ module Seeds
           static_names = Data::GUEST_NAMES.shuffle
           Faker::Config.locale = "ja"
 
-          guest_ids = []
           user_ids.each_with_index do |user_id, idx|
             existing = db[:portfolio__guests].where(user_id: user_id).first
-            if existing
-              guest_ids << existing[:id]
-              next
-            end
+            next if existing
 
             name = if idx < static_names.size
                      static_names[idx]
@@ -82,20 +78,17 @@ module Seeds
               created_at: Time.now,
               updated_at: Time.now
             )
-            guest_ids << db[:portfolio__guests].where(user_id: user_id).first[:id]
           end
-
-          guest_ids
         end
 
-        def assign_activity_types(guest_ids)
+        def assign_activity_types(guest_user_ids)
           # Assign activity type to each guest based on distribution
           activity_types = {}
           types = Config::GUEST_ACTIVITY.keys
           weights = Config::GUEST_ACTIVITY.values.map { |v| v[:ratio] }
 
-          guest_ids.each do |guest_id|
-            activity_types[guest_id] = weighted_sample(types, weights)
+          guest_user_ids.each do |guest_user_id|
+            activity_types[guest_user_id] = weighted_sample(types, weights)
           end
 
           activity_types

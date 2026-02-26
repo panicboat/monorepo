@@ -108,7 +108,7 @@ module Seeds
             is_viral = rand < EXISTING_CAST_CONFIG[:viral_post_ratio]
 
             # Create post
-            post_id = create_post(cast[:id], i)
+            post_id = create_post(cast_user_id, i)
             post_count += 1
 
             # Create comments
@@ -129,14 +129,14 @@ module Seeds
           [post_count, comment_count]
         end
 
-        def create_post(cast_id, index)
+        def create_post(cast_user_id, index)
           template = Data::POST_TEMPLATES.sample
           content = format_template(template)
           visibility = rand < 0.1 ? "private" : "public"
           created_at = random_post_time(index)
 
           post_id = db[:"post__posts"].insert(
-            cast_id: cast_id,
+            cast_user_id: cast_user_id,
             content: content,
             visibility: visibility,
             created_at: created_at,

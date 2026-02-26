@@ -12,15 +12,15 @@ module Seeds
           puts "Generating #{Config::CAST_COUNT} new casts..."
 
           cast_user_ids = create_cast_users
-          cast_ids = create_cast_profiles(cast_user_ids)
-          assign_genres(cast_ids)
-          assign_areas(cast_ids)
-          create_plans(cast_ids)
-          create_schedules(cast_ids)
+          create_cast_profiles(cast_user_ids)
+          assign_genres(cast_user_ids)
+          assign_areas(cast_user_ids)
+          create_plans(cast_user_ids)
+          create_schedules(cast_user_ids)
 
-          puts "  Created #{cast_ids.size} casts with profiles, genres, areas, plans, and schedules"
+          puts "  Created #{cast_user_ids.size} casts with profiles, genres, areas, plans, and schedules"
 
-          { user_ids: cast_user_ids, cast_ids: cast_ids }
+          { user_ids: cast_user_ids }
         end
 
         private
@@ -61,14 +61,10 @@ module Seeds
           existing_slugs = db[:portfolio__casts].select(:slug).all.map { |r| r[:slug] }
           max_slug_num = existing_slugs.map { |s| s.match(/^cast_(\d+)$/)&.[](1)&.to_i || 0 }.max || 0
 
-          cast_ids = []
           created_count = 0
           user_ids.each_with_index do |user_id, idx|
             existing = db[:portfolio__casts].where(user_id: user_id).first
-            if existing
-              cast_ids << existing[:id]
-              next
-            end
+            next if existing
 
             name = names[idx % names.size]
             created_count += 1
@@ -101,10 +97,7 @@ module Seeds
               created_at: Time.now,
               updated_at: Time.now
             )
-            cast_ids << db[:portfolio__casts].where(user_id: user_id).first[:id]
           end
-
-          cast_ids
         end
 
         def generate_three_sizes
@@ -129,18 +122,18 @@ module Seeds
           schedules
         end
 
-        def assign_genres(cast_ids)
+        def assign_genres(cast_user_ids)
           genres = db[:portfolio__genres].all.to_a
           return if genres.empty?
 
-          cast_ids.each do |cast_id|
-            existing = db[:portfolio__cast_genres].where(cast_id: cast_id).count
+          cast_user_ids.each do |cast_user_id|
+            existing = db[:portfolio__cast_genres].where(cast_user_id: cast_user_id).count
             next if existing > 0
 
             selected = genres.sample(rand(1..3))
             selected.each do |genre|
               db[:portfolio__cast_genres].insert(
-                cast_id: cast_id,
+                cast_user_id: cast_user_id,
                 genre_id: genre[:id],
                 created_at: Time.now
               )
@@ -148,7 +141,7 @@ module Seeds
           end
         end
 
-        def assign_areas(cast_ids)
+        def assign_areas(cast_user_ids)
           areas = db[:portfolio__areas].all.to_a
           return if areas.empty?
 
@@ -157,8 +150,8 @@ module Seeds
           osaka_areas = areas.select { |a| a[:prefecture] == "大阪府" }
           other_areas = areas - tokyo_areas - osaka_areas
 
-          cast_ids.each do |cast_id|
-            existing = db[:portfolio__cast_areas].where(cast_id: cast_id).count
+          cast_user_ids.each do |cast_user_id|
+            existing = db[:portfolio__cast_areas].where(cast_user_id: cast_user_id).count
             next if existing > 0
 
             # 60% Tokyo, 25% Osaka, 15% other
@@ -176,7 +169,7 @@ module Seeds
 
             selected.each do |area|
               db[:portfolio__cast_areas].insert(
-                cast_id: cast_id,
+                cast_user_id: cast_user_id,
                 area_id: area[:id],
                 created_at: Time.now
               )
@@ -184,21 +177,21 @@ module Seeds
           end
         end
 
-        def create_plans(cast_ids)
+        def create_plans(cast_user_ids)
           plans = [
             { name: "お試し", duration_minutes: 30, price: 5000, is_recommended: false },
             { name: "スタンダード", duration_minutes: 60, price: 10000, is_recommended: true },
             { name: "ロング", duration_minutes: 120, price: 18000, is_recommended: false },
           ]
 
-          cast_ids.each do |cast_id|
-            existing = db[:offer__plans].where(cast_id: cast_id).count
+          cast_user_ids.each do |cast_user_id|
+            existing = db[:offer__plans].where(cast_user_id: cast_user_id).count
             next if existing > 0
 
             plans.each do |plan|
               db[:offer__plans].insert(
                 plan.merge(
-                  cast_id: cast_id,
+                  cast_user_id: cast_user_id,
                   created_at: Time.now,
                   updated_at: Time.now
                 )
@@ -207,9 +200,9 @@ module Seeds
           end
         end
 
-        def create_schedules(cast_ids)
-          cast_ids.each do |cast_id|
-            existing = db[:offer__schedules].where(cast_id: cast_id).count
+        def create_schedules(cast_user_ids)
+          cast_user_ids.each do |cast_user_id|
+            existing = db[:offer__schedules].where(cast_user_id: cast_user_id).count
             next if existing > 0
 
             (0..6).each do |day_offset|
@@ -217,7 +210,7 @@ module Seeds
               next if date.saturday? || date.sunday?
 
               db[:offer__schedules].insert(
-                cast_id: cast_id,
+                cast_user_id: cast_user_id,
                 date: date,
                 start_time: "18:00",
                 end_time: "23:00",
