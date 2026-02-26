@@ -111,6 +111,41 @@ export function ReviewCard({
         <p className="text-sm text-text-secondary mb-3">{review.content}</p>
       )}
 
+      {/* Media */}
+      {review.media && review.media.length > 0 && (
+        <div className="flex gap-2 mb-3 flex-wrap">
+          {review.media.map((m) => (
+            <div key={m.id} className="w-20 h-20 rounded-lg overflow-hidden border border-border-primary">
+              {m.mediaType === "image" ? (
+                <img src={m.url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="relative w-full h-full">
+                  {m.thumbnailUrl ? (
+                    <img
+                      src={m.thumbnailUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <video
+                      src={m.url}
+                      className="w-full h-full object-cover"
+                      muted
+                      preload="metadata"
+                    />
+                  )}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center">
+                      <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-black border-b-[5px] border-b-transparent ml-0.5" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Status badge for pending */}
       {review.status === "pending" && (
         <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-600 mb-3">

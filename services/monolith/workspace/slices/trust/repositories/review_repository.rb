@@ -9,28 +9,32 @@ module Trust
       include Concerns::CursorPagination
 
       MAX_LIMIT = 50
-      def create(reviewer_id:, reviewee_id:, content:, score:, status:)
-        id = SecureRandom.uuid
-        now = Time.now
+      def create(reviewer_id:, reviewee_id:, content:, score:, status:, media_data: [])
+        transaction do
+          id = SecureRandom.uuid
+          now = Time.now
 
-        reviews.dataset.insert(
-          id: id,
-          reviewer_id: reviewer_id,
-          reviewee_id: reviewee_id,
-          content: content,
-          score: score,
-          status: status,
-          created_at: now,
-          updated_at: now
-        )
+          reviews.dataset.insert(
+            id: id,
+            reviewer_id: reviewer_id,
+            reviewee_id: reviewee_id,
+            content: content,
+            score: score,
+            status: status,
+            created_at: now,
+            updated_at: now
+          )
 
-        { success: true, id: id }
+          save_media(review_id: id, media_data: media_data) if media_data.any?
+
+          { success: true, id: id }
+        end
       rescue Sequel::UniqueConstraintViolation
         { success: false, error: :already_exists }
       end
 
       def find_by_id(id)
-        reviews.where(id: id).one
+        reviews.combine(:review_media).where(id: id).one
       end
 
       def update(id:, reviewer_id:, content:, score:)
@@ -174,6 +178,24 @@ module Trust
           total_reviews: total_reviews,
           approval_rate: approval_rate
         }
+      end
+
+      def save_media(review_id:, media_data:)
+        review_media.dataset.where(review_id: review_id).delete
+        media_data.each_with_index do |media, index|
+          review_media.changeset(:create, media.merge(review_id: review_id, position: index)).commit
+        end
+      end
+
+      def delete_media(review_id:)
+        review_media.dataset.where(review_id: review_id).delete
+      end
+
+      def find_media_by_review_ids(review_ids)
+        return {} if review_ids.empty?
+
+        records = review_media.where(review_id: review_ids).order(:review_id, :position).to_a
+        records.group_by(&:review_id)
       end
 
       private

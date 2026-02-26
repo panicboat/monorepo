@@ -1,3 +1,5 @@
+import type { Media, SaveMediaInput } from "@/lib/types";
+
 export interface Tagging {
   id: string;
   tagName: string;
@@ -17,6 +19,7 @@ export interface Review {
   reviewerName?: string;
   reviewerAvatarUrl?: string;
   reviewerProfileId?: string; // Guest profile ID for linking
+  media?: Media[];
 }
 
 export interface ReviewStats {
@@ -29,6 +32,7 @@ export interface CreateReviewRequest {
   revieweeId: string;
   content?: string;
   score: number;
+  media?: SaveMediaInput[];
 }
 
 export interface CreateReviewResponse {

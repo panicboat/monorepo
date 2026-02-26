@@ -11,6 +11,7 @@ import { useFollow, useFavorite } from "@/modules/relationship";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
 import { CastProfile, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
+import type { SaveMediaInput } from "@/lib/types";
 
 interface CastData {
   profile: CastProfile;
@@ -275,8 +276,8 @@ function FloatingActionButtons({
 
   const { createReview } = useReviews();
 
-  const handleSubmitReview = useCallback(async (score: number, content: string) => {
-    await createReview({ revieweeId: castUserId, score, content });
+  const handleSubmitReview = useCallback(async (score: number, content: string, media: SaveMediaInput[]) => {
+    await createReview({ revieweeId: castUserId, score, content, media });
   }, [createReview, castUserId]);
 
   const isLoggedIn = isHydrated && isAuthenticated();

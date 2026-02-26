@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const { revieweeId, content, score } = await req.json();
+    const { revieweeId, content, score, media } = await req.json();
     if (!revieweeId || score === undefined) {
       return NextResponse.json(
         { error: "revieweeId and score are required" },
@@ -18,7 +18,15 @@ export async function POST(req: NextRequest) {
     }
 
     const response = await trustClient.createReview(
-      { revieweeId, content, score },
+      {
+        revieweeId,
+        content,
+        score,
+        media: (media || []).map((m: { mediaType: string; mediaId: string }) => ({
+          mediaType: m.mediaType,
+          mediaId: m.mediaId,
+        })),
+      },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

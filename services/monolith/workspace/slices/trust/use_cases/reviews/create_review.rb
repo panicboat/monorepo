@@ -4,11 +4,13 @@ module Trust
   module UseCases
     module Reviews
       class CreateReview
+        MAX_MEDIA = 3
+
         include Trust::Deps[
           review_repo: "repositories.review_repository"
         ]
 
-        def call(reviewer_id:, reviewee_id:, content:, score:, is_cast_reviewer:)
+        def call(reviewer_id:, reviewee_id:, content:, score:, is_cast_reviewer:, media: [])
           content = content&.strip
           content = nil if content&.empty?
 
@@ -20,12 +22,17 @@ module Trust
             return { success: false, error: :content_required }
           end
 
+          if media.size > MAX_MEDIA
+            return { success: false, error: :too_many_media }
+          end
+
           review_repo.create(
             reviewer_id: reviewer_id,
             reviewee_id: reviewee_id,
             content: content,
             score: score,
-            status: status
+            status: status,
+            media_data: media
           )
         end
       end

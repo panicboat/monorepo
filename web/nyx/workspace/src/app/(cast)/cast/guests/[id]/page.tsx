@@ -8,6 +8,7 @@ import { fetcher, getAuthToken } from "@/lib/swr";
 import { useToast } from "@/components/ui/Toast";
 import { TrustTagsSection, WriteTrustModal, useReviews, useInfiniteReviews, ReviewList } from "@/modules/trust";
 import { useBlockedBy } from "@/modules/relationship";
+import type { SaveMediaInput } from "@/lib/types";
 
 interface GuestDetail {
   id: string;
@@ -52,8 +53,9 @@ export default function GuestDetailPage({
     }
   }, [data?.userId, fetchInitial]);
 
-  const handleSubmitReview = async (score: number, content: string) => {
-    await createReview({ revieweeId: id, score, content: content || undefined });
+  const handleSubmitReview = async (score: number, content: string, media: SaveMediaInput[]) => {
+    if (!data?.userId) return;
+    await createReview({ revieweeId: data.userId, score, content: content || undefined, media });
   };
 
   const handleBlock = async () => {

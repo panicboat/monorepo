@@ -114,16 +114,29 @@ module Trust
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Score must be between 1 and 5")
         end
 
+        media_data = request.message.media.map do |m|
+          { media_id: m.media_id, media_type: m.media_type }
+        end
+
         result = create_review_uc.call(
           reviewer_id: current_user_id,
           reviewee_id: request.message.reviewee_id,
           content: request.message.content.to_s.empty? ? nil : request.message.content,
           score: score,
-          is_cast_reviewer: !!find_my_cast
+          is_cast_reviewer: !!find_my_cast,
+          media: media_data
         )
 
-        if result[:error] == :already_reviewed
+        if result[:error] == :already_exists
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::ALREADY_EXISTS, "Review already exists")
+        end
+
+        if result[:error] == :content_required
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Content is required for guest reviews")
+        end
+
+        if result[:error] == :too_many_media
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Maximum 3 media files allowed")
         end
 
         ::Trust::V1::CreateReviewResponse.new(success: result[:success], id: result[:id] || "")
@@ -183,6 +196,10 @@ module Trust
 
         reviews = result[:items]
 
+        # Fetch review media
+        review_media_by_review_id = load_review_media(reviews)
+        review_media_files = load_media_files_for_review_media(review_media_by_review_id)
+
         # Collect reviewer IDs
         reviewer_ids = reviews.map do |r|
           r.respond_to?(:reviewer_id) ? r.reviewer_id : r[:reviewer_id]
@@ -193,18 +210,25 @@ module Trust
 
         # Fetch avatar media for guests
         avatar_media_ids = guests_by_user_id.values.map(&:avatar_media_id).compact
-        media_files = media_adapter.find_by_ids(avatar_media_ids)
+        avatar_media_files = media_adapter.find_by_ids(avatar_media_ids)
 
         items = reviews.map do |r|
           reviewer_id = r.respond_to?(:reviewer_id) ? r.reviewer_id : r[:reviewer_id]
+          review_id = r.respond_to?(:id) ? r.id : r[:id]
           guest = guests_by_user_id[reviewer_id]
-          avatar_url = guest&.avatar_media_id ? media_files[guest.avatar_media_id]&.url : nil
+          avatar_url = guest&.avatar_media_id ? avatar_media_files[guest.avatar_media_id]&.url : nil
+
+          media_proto = build_review_media_proto(
+            review_media_by_review_id[review_id],
+            review_media_files
+          )
 
           build_review_proto(
             r,
             reviewer_name: guest&.name,
             reviewer_avatar_url: avatar_url,
-            reviewer_profile_id: guest&.id
+            reviewer_profile_id: guest&.id,
+            media: media_proto
           )
         end
 
@@ -229,11 +253,11 @@ module Trust
 
       def approve_review
         authenticate_user!
-        my_cast = authenticate_cast!
+        authenticate_cast!
 
         result = approve_review_uc.call(
           id: request.message.id,
-          reviewee_id: my_cast.id
+          reviewee_id: current_user_id
         )
 
         if result[:error] == :not_found
@@ -249,11 +273,11 @@ module Trust
 
       def reject_review
         authenticate_user!
-        my_cast = authenticate_cast!
+        authenticate_cast!
 
         result = reject_review_uc.call(
           id: request.message.id,
-          reviewee_id: my_cast.id
+          reviewee_id: current_user_id
         )
 
         if result[:error] == :not_found
@@ -269,9 +293,13 @@ module Trust
 
       def list_pending_reviews
         authenticate_user!
-        my_cast = authenticate_cast!
+        authenticate_cast!
 
-        reviews = list_pending_reviews_uc.call(reviewee_id: my_cast.id)
+        reviews = list_pending_reviews_uc.call(reviewee_id: current_user_id)
+
+        # Fetch review media
+        review_media_by_review_id = load_review_media(reviews)
+        review_media_files = load_media_files_for_review_media(review_media_by_review_id)
 
         # Collect reviewer IDs (these are user_ids from guests)
         reviewer_ids = reviews.map do |r|
@@ -283,18 +311,25 @@ module Trust
 
         # Fetch avatar media for guests
         avatar_media_ids = guests_by_user_id.values.map(&:avatar_media_id).compact
-        media_files = media_adapter.find_by_ids(avatar_media_ids)
+        avatar_media_files = media_adapter.find_by_ids(avatar_media_ids)
 
         items = reviews.map do |r|
           reviewer_id = r.respond_to?(:reviewer_id) ? r.reviewer_id : r[:reviewer_id]
+          review_id = r.respond_to?(:id) ? r.id : r[:id]
           guest = guests_by_user_id[reviewer_id]
-          avatar_url = guest&.avatar_media_id ? media_files[guest.avatar_media_id]&.url : nil
+          avatar_url = guest&.avatar_media_id ? avatar_media_files[guest.avatar_media_id]&.url : nil
+
+          media_proto = build_review_media_proto(
+            review_media_by_review_id[review_id],
+            review_media_files
+          )
 
           build_review_proto(
             r,
             reviewer_name: guest&.name,
             reviewer_avatar_url: avatar_url,
-            reviewer_profile_id: guest&.id
+            reviewer_profile_id: guest&.id,
+            media: media_proto
           )
         end
 
@@ -303,7 +338,7 @@ module Trust
 
       private
 
-      def build_review_proto(review, reviewer_name: nil, reviewer_avatar_url: nil, reviewer_profile_id: nil)
+      def build_review_proto(review, reviewer_name: nil, reviewer_avatar_url: nil, reviewer_profile_id: nil, media: [])
         # Support both ROM::Struct (method access) and Hash (symbol access)
         id = review.respond_to?(:id) ? review.id : review[:id]
         reviewer_id = review.respond_to?(:reviewer_id) ? review.reviewer_id : review[:reviewer_id]
@@ -323,8 +358,39 @@ module Trust
           created_at: format_time(created_at),
           reviewer_name: reviewer_name,
           reviewer_avatar_url: reviewer_avatar_url,
-          reviewer_profile_id: reviewer_profile_id
+          reviewer_profile_id: reviewer_profile_id,
+          media: media
         )
+      end
+
+      def load_review_media(reviews)
+        review_ids = reviews.map do |r|
+          r.respond_to?(:id) ? r.id : r[:id]
+        end.compact.uniq
+
+        return {} if review_ids.empty?
+
+        review_repo.find_media_by_review_ids(review_ids)
+      end
+
+      def load_media_files_for_review_media(review_media_by_review_id)
+        media_ids = review_media_by_review_id.values.flatten.filter_map(&:media_id).uniq
+        return {} if media_ids.empty?
+
+        media_adapter.find_by_ids(media_ids)
+      end
+
+      def build_review_media_proto(review_media_list, media_files)
+        (review_media_list || []).sort_by(&:position).map do |rm|
+          media_file = media_files[rm.media_id]
+          ::Trust::V1::ReviewMedia.new(
+            id: rm.id.to_s,
+            media_type: rm.media_type,
+            # FALLBACK: Empty string when media file is not yet uploaded or was deleted
+            url: media_file&.url || "",
+            thumbnail_url: media_file&.thumbnail_url || ""
+          )
+        end
       end
 
       def format_time(time)

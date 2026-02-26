@@ -8,6 +8,7 @@ import {
   Calendar,
   ShieldAlert,
   LogOut,
+  MessageSquare,
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
@@ -89,6 +90,25 @@ export default function CastMyPage() {
                 フォロワーリスト
               </p>
               <p className="text-xs text-text-secondary">フォロワーの管理</p>
+            </div>
+          </div>
+          <ChevronRight className="text-text-muted group-hover:text-text-secondary transition" />
+        </Link>
+
+
+        <Link
+          href="/cast/reviews"
+          className="w-full bg-surface hover:bg-surface-secondary border border-border rounded-xl p-4 flex items-center justify-between group transition shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center text-info">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-text-primary">
+                レビュー管理
+              </p>
+              <p className="text-xs text-text-secondary">レビューの確認・承認</p>
             </div>
           </div>
           <ChevronRight className="text-text-muted group-hover:text-text-secondary transition" />

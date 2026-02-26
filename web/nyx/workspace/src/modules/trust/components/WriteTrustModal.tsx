@@ -1,20 +1,25 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Star, Loader2, X, Tag as TagIcon } from "lucide-react";
+import { Star, Loader2, X, Tag as TagIcon, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { useMyTagNames } from "../hooks/useMyTagNames";
 import { useTaggings } from "../hooks/useTaggings";
 import { TagPill } from "./TagPill";
 import { TagSelector } from "./TagSelector";
+import { useMediaUpload } from "@/modules/media/hooks/useMediaUpload";
+import type { UploadedMedia } from "@/modules/media/types";
+import type { SaveMediaInput } from "@/lib/types";
+
+const MAX_MEDIA = 3;
 
 interface WriteTrustModalProps {
   isOpen: boolean;
   onClose: () => void;
   targetId: string;
   targetName?: string;
-  onSubmitReview?: (score: number, content: string) => Promise<void>;
+  onSubmitReview?: (score: number, content: string, media: SaveMediaInput[]) => Promise<void>;
   /** Cast→Guest reviews don't require content */
   contentRequired?: boolean;
   /** Cast→Guest reviews show different message */
@@ -51,6 +56,36 @@ export function WriteTrustModal({
   const [hoveredStar, setHoveredStar] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Media state
+  const { uploadMedia, registerMedia, uploading: mediaUploading } = useMediaUpload();
+  const [uploadedMedia, setUploadedMedia] = useState<UploadedMedia[]>([]);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const remaining = MAX_MEDIA - uploadedMedia.length;
+    const filesToUpload = Array.from(files).slice(0, remaining);
+
+    for (const file of filesToUpload) {
+      try {
+        const uploaded = await uploadMedia(file);
+        await registerMedia(uploaded);
+        setUploadedMedia((prev) => [...prev, uploaded]);
+      } catch {
+        toast({
+          title: "アップロードに失敗しました",
+          variant: "destructive",
+        });
+      }
+    }
+    e.target.value = "";
+  };
+
+  const handleRemoveMedia = (index: number) => {
+    setUploadedMedia((prev) => prev.filter((_, i) => i !== index));
+  };
+
   // Load tags when modal opens
   const loadTags = useCallback(async () => {
     try {
@@ -74,6 +109,7 @@ export function WriteTrustModal({
       setContent("");
       setScore(5);
       setHoveredStar(null);
+      setUploadedMedia([]);
     }
   }, [isOpen]);
 
@@ -138,7 +174,11 @@ export function WriteTrustModal({
 
     setSubmitting(true);
     try {
-      await onSubmitReview(score, content.trim());
+      const mediaInput: SaveMediaInput[] = uploadedMedia.map((m) => ({
+        mediaType: m.mediaType,
+        mediaId: m.mediaId,
+      }));
+      await onSubmitReview(score, content.trim(), mediaInput);
       toast({
         title: "レビューを送信しました",
         description: isCastReview ? "レビューが公開されました" : "承認後に公開されます",
@@ -146,6 +186,7 @@ export function WriteTrustModal({
       });
       setContent("");
       setScore(5);
+      setUploadedMedia([]);
       onClose();
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "送信に失敗しました";
@@ -292,19 +333,66 @@ export function WriteTrustModal({
                   </p>
                 )}
               </div>
+
+              {/* Media Upload */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-text-secondary">
+                  写真・動画（{uploadedMedia.length}/{MAX_MEDIA}）
+                </label>
+
+                {uploadedMedia.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {uploadedMedia.map((media, index) => (
+                      <div key={media.mediaId} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border-primary">
+                        {media.mediaType === "image" ? (
+                          <img src={media.localUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <video src={media.localUrl} className="w-full h-full object-cover" />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMedia(index)}
+                          className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-black/60 text-white hover:bg-black/80"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {uploadedMedia.length < MAX_MEDIA && (
+                  <label className="inline-flex items-center gap-2 px-3 py-2 text-sm text-text-secondary border border-border-primary rounded-lg cursor-pointer hover:bg-bg-secondary transition-colors">
+                    {mediaUploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ImagePlus className="h-4 w-4" />
+                    )}
+                    <span>{mediaUploading ? "アップロード中..." : "添付する"}</span>
+                    <input
+                      type="file"
+                      accept="image/*,video/*"
+                      multiple
+                      onChange={handleFileSelect}
+                      disabled={mediaUploading}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
             </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="sticky bottom-0 flex items-center justify-end gap-2 p-4 border-t border-border-primary bg-bg-primary">
-          <Button variant="ghost" onClick={onClose} disabled={submitting}>
+          <Button variant="ghost" onClick={onClose} disabled={submitting || mediaUploading}>
             キャンセル
           </Button>
           {onSubmitReview ? (
             <Button
               onClick={handleSubmitReview}
-              disabled={submitting || !canSubmitReview}
+              disabled={submitting || mediaUploading || !canSubmitReview}
               className={isCastReview ? "bg-role-cast hover:bg-role-cast-hover" : "bg-info hover:bg-info-hover"}
             >
               {submitting ? (
