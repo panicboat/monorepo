@@ -78,6 +78,19 @@ message Review {
   optional string reviewer_name = 8;
   optional string reviewer_avatar_url = 9;
   optional string reviewer_profile_id = 10; // Guest profile ID for linking
+  repeated ReviewMedia media = 11;
+}
+
+message ReviewMedia {
+  string id = 1;
+  string media_type = 2;
+  string url = 3;
+  string thumbnail_url = 4;
+}
+
+message MediaInput {
+  string media_type = 1;
+  string media_id = 2;
 }
 
 message ReviewStats {
@@ -91,6 +104,7 @@ message CreateReviewRequest {
   string reviewee_id = 1;
   optional string content = 2;
   int32 score = 3;
+  repeated MediaInput media = 4;
 }
 
 message CreateReviewResponse {

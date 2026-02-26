@@ -3,6 +3,13 @@
  * API route (BFF) で使用。
  */
 
+interface ProtoReviewMedia {
+  id: string;
+  mediaType: string;
+  url: string;
+  thumbnailUrl?: string;
+}
+
 interface ProtoReview {
   id: string;
   reviewerId: string;
@@ -14,6 +21,7 @@ interface ProtoReview {
   reviewerName?: string;
   reviewerAvatarUrl?: string;
   reviewerProfileId?: string;
+  media?: ProtoReviewMedia[];
 }
 
 interface ProtoReviewStats {
@@ -41,6 +49,12 @@ export function mapProtoReviewToJson(review: ProtoReview) {
     reviewerName: review.reviewerName,
     reviewerAvatarUrl: review.reviewerAvatarUrl,
     reviewerProfileId: review.reviewerProfileId,
+    media: (review.media || []).map((m) => ({
+      id: m.id,
+      mediaType: m.mediaType as "image" | "video",
+      url: m.url,
+      thumbnailUrl: m.thumbnailUrl,
+    })),
   };
 }
 
