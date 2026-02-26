@@ -26,19 +26,14 @@ module Trust
             return { success: false, error: :too_many_media }
           end
 
-          result = review_repo.create(
+          review_repo.create(
             reviewer_id: reviewer_id,
             reviewee_id: reviewee_id,
             content: content,
             score: score,
-            status: status
+            status: status,
+            media_data: media
           )
-
-          if result[:success] && media.any?
-            review_repo.save_media(review_id: result[:id], media_data: media)
-          end
-
-          result
         end
       end
     end

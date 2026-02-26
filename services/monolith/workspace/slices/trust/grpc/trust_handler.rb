@@ -127,8 +127,12 @@ module Trust
           media: media_data
         )
 
-        if result[:error] == :already_reviewed
+        if result[:error] == :already_exists
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::ALREADY_EXISTS, "Review already exists")
+        end
+
+        if result[:error] == :content_required
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Content is required for guest reviews")
         end
 
         if result[:error] == :too_many_media

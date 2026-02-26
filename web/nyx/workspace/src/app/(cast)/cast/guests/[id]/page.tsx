@@ -54,7 +54,8 @@ export default function GuestDetailPage({
   }, [data?.userId, fetchInitial]);
 
   const handleSubmitReview = async (score: number, content: string, media: SaveMediaInput[]) => {
-    await createReview({ revieweeId: id, score, content: content || undefined, media });
+    if (!data?.userId) return;
+    await createReview({ revieweeId: data.userId, score, content: content || undefined, media });
   };
 
   const handleBlock = async () => {

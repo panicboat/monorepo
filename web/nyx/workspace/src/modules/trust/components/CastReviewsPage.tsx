@@ -46,12 +46,9 @@ export function CastReviewsPage({ castId }: { castId: string }) {
   } = usePendingReviews();
 
   useEffect(() => {
-    fetchInitial();
-  }, [fetchInitial]);
-
-  useEffect(() => {
     reset();
-  }, [activeTab, reset]);
+    fetchInitial();
+  }, [activeTab, reset, fetchInitial]);
 
   const handleApprove = async (id: string) => {
     setActionLoadingId(id);

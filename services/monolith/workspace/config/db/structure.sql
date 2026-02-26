@@ -416,7 +416,9 @@ CREATE TABLE trust.review_media (
     media_id uuid,
     media_type character varying(10) NOT NULL,
     "position" integer DEFAULT 0 NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT review_media_media_type_check CHECK (((media_type)::text = ANY ((ARRAY['image'::character varying, 'video'::character varying])::text[]))),
+    CONSTRAINT review_media_position_range_check CHECK ((("position" >= 0) AND ("position" <= 2)))
 );
 
 
@@ -1019,10 +1021,10 @@ CREATE INDEX trust_review_media_media_id_index ON trust.review_media USING btree
 
 
 --
--- Name: trust_review_media_review_id_index; Type: INDEX; Schema: trust; Owner: -
+-- Name: trust_review_media_review_id_position_index; Type: INDEX; Schema: trust; Owner: -
 --
 
-CREATE INDEX trust_review_media_review_id_index ON trust.review_media USING btree (review_id);
+CREATE UNIQUE INDEX trust_review_media_review_id_position_index ON trust.review_media USING btree (review_id, "position");
 
 
 --
@@ -1230,4 +1232,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260221000001_refactor_trust_freeform_tagging.rb'),
 ('20260222000001_create_trust_reviews.rb'),
 ('20260223092141_add_default_schedules_to_casts.rb'),
-('20260225000001_create_trust_review_media.rb');
+('20260225000001_create_trust_review_media.rb'),
+('20260226000001_add_trust_review_media_constraints.rb');

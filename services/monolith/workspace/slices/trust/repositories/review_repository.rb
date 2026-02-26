@@ -9,22 +9,26 @@ module Trust
       include Concerns::CursorPagination
 
       MAX_LIMIT = 50
-      def create(reviewer_id:, reviewee_id:, content:, score:, status:)
-        id = SecureRandom.uuid
-        now = Time.now
+      def create(reviewer_id:, reviewee_id:, content:, score:, status:, media_data: [])
+        transaction do
+          id = SecureRandom.uuid
+          now = Time.now
 
-        reviews.dataset.insert(
-          id: id,
-          reviewer_id: reviewer_id,
-          reviewee_id: reviewee_id,
-          content: content,
-          score: score,
-          status: status,
-          created_at: now,
-          updated_at: now
-        )
+          reviews.dataset.insert(
+            id: id,
+            reviewer_id: reviewer_id,
+            reviewee_id: reviewee_id,
+            content: content,
+            score: score,
+            status: status,
+            created_at: now,
+            updated_at: now
+          )
 
-        { success: true, id: id }
+          save_media(review_id: id, media_data: media_data) if media_data.any?
+
+          { success: true, id: id }
+        end
       rescue Sequel::UniqueConstraintViolation
         { success: false, error: :already_exists }
       end
