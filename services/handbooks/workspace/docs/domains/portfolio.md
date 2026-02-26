@@ -6,6 +6,28 @@ sidebar_position: 20
 
 最もアクセス負荷が高い「参照系」のサービス。キャストの「生きた」プロフィールを管理する。
 
+## ID Convention
+
+cast/guest テーブルは `user_id` を PK として使用する。Identity ドメインの `users.id` と同一値。
+
+```
+identity__users.id = portfolio__casts.user_id (PK) = portfolio__guests.user_id (PK)
+```
+
+他ドメインからの FK カラムは `cast_user_id` / `guest_user_id` で統一:
+
+| 参照元テーブル | FK カラム | 参照先 |
+|---------------|-----------|--------|
+| `offer__plans` | `cast_user_id` | `portfolio__casts.user_id` |
+| `offer__schedules` | `cast_user_id` | `portfolio__casts.user_id` |
+| `post__posts` | `cast_user_id` | `portfolio__casts.user_id` |
+| `post__likes` | `guest_user_id` | `portfolio__guests.user_id` |
+| `relationship__follows` | `cast_user_id`, `guest_user_id` | 各テーブルの `user_id` |
+| `relationship__favorites` | `cast_user_id`, `guest_user_id` | 各テーブルの `user_id` |
+| `portfolio__cast_areas` | `cast_user_id` | `portfolio__casts.user_id` |
+| `portfolio__cast_genres` | `cast_user_id` | `portfolio__casts.user_id` |
+| `portfolio__cast_gallery_media` | `cast_user_id` | `portfolio__casts.user_id` |
+
 ## Responsibilities
 
 - キャストのプロフィール情報（写真、タグ）の管理
@@ -57,8 +79,7 @@ sidebar_position: 20
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | UUID | Primary key |
-| `user_id` | UUID | Identity Service の User ID（ユニーク） |
+| `user_id` | UUID | Primary key（Identity の `users.id` と同一） |
 | `name` | String | ニックネーム（1-20文字） |
 | `avatar_path` | String | アバター画像のパス（オプション） |
 

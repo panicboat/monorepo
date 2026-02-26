@@ -19,6 +19,12 @@ sidebar_position: 10
 - `users` - ユーザー基本情報
 - `auth_logs` - 認証ログ
 
+### Cross-Domain ID
+
+`identity__users.id` は全ドメインで統一 ID として使用される。Portfolio ドメインの `casts`/`guests` テーブルは `user_id` を PK として持ち、`users.id` と同一値を使用する。他ドメインの FK カラムは `cast_user_id`/`guest_user_id` で統一。
+
+詳細は [Portfolio Domain - ID Convention](./portfolio.md#id-convention) を参照。
+
 ## Why Separate?
 
 セキュリティリスクを局所化するため。また、将来的に店舗向け管理画面など別のフロントエンドができた際も共通利用するため。

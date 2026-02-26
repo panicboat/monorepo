@@ -54,9 +54,11 @@ sidebar_position: 60
 ### FeedService
 
 - `ListGuestFeed` - ゲスト向けフィード取得
-  - Parameters: `guest_id`, `filter` (all/following/favorites), `limit`, `cursor`
+  - Parameters: `filter` (all/following/favorites), `limit`, `cursor`
+  - ゲストの識別は認証コンテキストから取得
 - `ListCastFeed` - キャストフィード取得
-  - Parameters: `cast_id`, `limit`, `cursor`
+  - Parameters: `limit`, `cursor`
+  - キャストの識別は認証コンテキストから取得
 
 ## Architecture
 

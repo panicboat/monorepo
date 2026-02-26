@@ -163,9 +163,9 @@ Portfolio から Social のデータにアクセスする場合は Adapter を�
 
 ```
 Portfolio::Adapters::SocialAdapter
-├── blocked?(guest_id:, cast_id:)
-├── approved_follower?(guest_id:, cast_id:)
-└── follow_status(guest_id:, cast_id:)
+├── blocked?(guest_user_id:, cast_user_id:)
+├── approved_follower?(guest_user_id:, cast_user_id:)
+└── follow_status(guest_user_id:, cast_user_id:)
 ```
 
 ### Dependencies
