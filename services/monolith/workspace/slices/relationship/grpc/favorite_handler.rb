@@ -31,7 +31,7 @@ module Relationship
         guest = find_my_guest!
 
         result = add_favorite_uc.call(
-          cast_user_id: request.message.cast_id,
+          cast_user_id: request.message.cast_user_id,
           guest_user_id: guest.user_id
         )
 
@@ -43,7 +43,7 @@ module Relationship
         guest = find_my_guest!
 
         result = remove_favorite_uc.call(
-          cast_user_id: request.message.cast_id,
+          cast_user_id: request.message.cast_user_id,
           guest_user_id: guest.user_id
         )
 
@@ -64,7 +64,7 @@ module Relationship
         )
 
         ::Relationship::V1::ListFavoritesResponse.new(
-          cast_ids: result[:cast_user_ids],
+          cast_user_ids: result[:cast_user_ids],
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -72,7 +72,7 @@ module Relationship
 
       def get_favorite_status
         guest = find_my_guest
-        cast_ids = request.message.cast_ids.to_a
+        cast_ids = request.message.cast_user_ids.to_a
 
         favorited = if guest
           get_favorite_status_uc.call(cast_user_ids: cast_ids, guest_user_id: guest.user_id)

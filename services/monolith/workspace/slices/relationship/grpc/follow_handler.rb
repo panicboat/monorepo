@@ -44,7 +44,7 @@ module Relationship
         authenticate_user!
         guest = find_my_guest!
 
-        cast_id = request.message.cast_id
+        cast_id = request.message.cast_user_id
         cast = cast_adapter.find_by_cast_id(cast_id)
         unless cast
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Cast not found")
@@ -73,7 +73,7 @@ module Relationship
         guest = find_my_guest!
 
         result = unfollow_cast_uc.call(
-          cast_user_id: request.message.cast_id,
+          cast_user_id: request.message.cast_user_id,
           guest_user_id: guest.user_id
         )
 
@@ -94,7 +94,7 @@ module Relationship
         )
 
         ::Relationship::V1::ListFollowingResponse.new(
-          cast_ids: result[:cast_user_ids],
+          cast_user_ids: result[:cast_user_ids],
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -102,7 +102,7 @@ module Relationship
 
       def get_follow_status
         guest = find_my_guest
-        cast_ids = request.message.cast_ids.to_a
+        cast_ids = request.message.cast_user_ids.to_a
 
         statuses = if guest
           status_map = get_follow_status_uc.call(cast_user_ids: cast_ids, guest_user_id: guest.user_id)
@@ -125,7 +125,7 @@ module Relationship
         guest = find_my_guest!
 
         result = cancel_follow_request_uc.call(
-          cast_user_id: request.message.cast_id,
+          cast_user_id: request.message.cast_user_id,
           guest_user_id: guest.user_id
         )
 
@@ -138,7 +138,7 @@ module Relationship
 
         result = approve_follow_uc.call(
           cast_user_id: cast.user_id,
-          guest_user_id: request.message.guest_id
+          guest_user_id: request.message.guest_user_id
         )
 
         ::Relationship::V1::ApproveFollowResponse.new(success: result[:success])
@@ -150,7 +150,7 @@ module Relationship
 
         result = reject_follow_uc.call(
           cast_user_id: cast.user_id,
-          guest_user_id: request.message.guest_id
+          guest_user_id: request.message.guest_user_id
         )
 
         ::Relationship::V1::RejectFollowResponse.new(success: result[:success])
@@ -181,7 +181,7 @@ module Relationship
           guest = guests[req[:guest_user_id]]
           media_file = guest ? media_files[guest.avatar_media_id] : nil
           ::Relationship::V1::FollowRequestItem.new(
-            guest_id: req[:guest_user_id],
+            guest_user_id: req[:guest_user_id],
             guest_name: guest&.name || "Guest",
             guest_image_url: media_file&.url || "",
             requested_at: req[:requested_at]&.iso8601 || ""
@@ -228,7 +228,7 @@ module Relationship
           guest = guests[follower[:guest_user_id]]
           media_file = guest ? media_files[guest.avatar_media_id] : nil
           ::Relationship::V1::FollowerItem.new(
-            guest_id: follower[:guest_user_id],
+            guest_user_id: follower[:guest_user_id],
             guest_name: guest&.name || "Guest",
             guest_image_url: media_file&.url || "",
             followed_at: follower[:followed_at]&.iso8601 || ""

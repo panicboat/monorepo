@@ -28,12 +28,12 @@ module Post
       ]
 
       def list_cast_posts
-        cast_id = request.message.cast_id
+        cast_id = request.message.cast_user_id
         # FALLBACK: Default pagination limit when client sends 0 (unset) for limit
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
         filter = request.message.filter
-        exclude_cast_ids_param = request.message.exclude_cast_ids.to_a
+        exclude_cast_ids_param = request.message.exclude_cast_user_ids.to_a
 
         # If authenticated Cast user with no cast_id specified and no filter, return their own posts
         if current_user_id && cast_id.empty? && filter.empty?

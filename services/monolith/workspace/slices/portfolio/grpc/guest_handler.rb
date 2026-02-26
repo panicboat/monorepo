@@ -38,9 +38,9 @@ module Portfolio
       def get_guest_profile_by_id
         authenticate_user!
 
-        guest_id = request.message.guest_id
+        guest_id = request.message.user_id
         if guest_id.nil? || guest_id.empty?
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "guest_id is required")
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "user_id is required")
         end
 
         result = get_profile_by_id_uc.call(guest_id: guest_id, cast_user_id: current_user_id)
