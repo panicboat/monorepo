@@ -42,7 +42,6 @@ export interface Area {
 }
 
 export interface CastProfile {
-  id: string;
   userId: string;
   name: string;
   slug?: string; // Unique user-defined ID (URL key)
@@ -132,7 +131,6 @@ export interface ApiThreeSizes {
 
 /** Profile shape returned from /api/cast/profile and /api/cast/onboarding/profile */
 export interface ApiProfile {
-  id?: string;
   userId?: string;
   visibility?: string;
   name?: string;

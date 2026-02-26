@@ -30,7 +30,7 @@ export async function GET(
       return NextResponse.json({ error: "Not Found" }, { status: 404 });
     }
 
-    const castId = profileResponse.profile.id;
+    const castUserId = profileResponse.profile.userId;
     const profile = mapCastProfileToFrontend(profileResponse.profile);
 
     // 2. Determine if viewer can see details (plans, schedules, etc.)
@@ -38,10 +38,10 @@ export async function GET(
     if (profileResponse.profile.visibility === CastVisibility.PRIVATE) {
       try {
         const followResponse = await followClient.getFollowStatus(
-          { castIds: [castId] },
+          { castUserIds: [castUserId] },
           headers
         );
-        const status = followResponse.statuses[castId];
+        const status = followResponse.statuses[castUserId];
         canViewDetails = status === FollowStatus.APPROVED;
       } catch {
         canViewDetails = false;
@@ -54,8 +54,8 @@ export async function GET(
 
     if (canViewDetails) {
       const [plansResponse, schedulesResponse] = await Promise.all([
-        offerClient.getPlans({ castId }, headers),
-        offerClient.getSchedules({ castId }, headers),
+        offerClient.getPlans({ castUserId }, headers),
+        offerClient.getSchedules({ castUserId }, headers),
       ]);
 
       plans = (plansResponse.plans || []).map((p) => ({

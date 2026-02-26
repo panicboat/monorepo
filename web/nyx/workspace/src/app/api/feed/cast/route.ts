@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     // Map proto response to API response
     const posts = response.posts.map((post) => ({
       id: post.id,
-      castId: post.castId,
+      castId: post.castUserId,
       content: post.content,
       media: post.media.map((m) => ({
         id: m.id,
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       createdAt: post.createdAt,
       author: post.author
         ? {
-            id: post.author.id,
+            id: post.author.userId,
             name: post.author.name,
             imageUrl: post.author.imageUrl,
           }

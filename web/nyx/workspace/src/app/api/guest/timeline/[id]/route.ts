@@ -25,7 +25,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     // Explicitly map to ensure all fields are serialized
     const mappedPost = {
       id: post.id,
-      castId: post.castId,
+      castId: post.castUserId,
       content: post.content,
       media: post.media.map((m) => ({
         id: m.id,
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       createdAt: post.createdAt,
       author: post.author
         ? {
-            id: post.author.id,
+            id: post.author.userId,
             name: post.author.name,
             imageUrl: post.author.imageUrl,
           }

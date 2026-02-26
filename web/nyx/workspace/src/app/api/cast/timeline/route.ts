@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
 
     const response = await postClient.listCastPosts(
-      { castId: "", limit, cursor },
+      { castUserId: "", limit, cursor },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

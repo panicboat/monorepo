@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     if (authError) return authError;
 
     const response = await offerClient.getPlans(
-      { castId: "" },
+      { castUserId: "" },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

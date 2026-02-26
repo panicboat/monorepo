@@ -5,7 +5,6 @@ import { requireAuth, handleApiError } from "@/lib/api-helpers";
 import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 
 export interface GuestDetail {
-  id: string;
   userId: string;
   name: string;
   avatarUrl: string;
@@ -18,16 +17,16 @@ export interface GuestDetail {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const { id } = await params;
+    const { userId } = await params;
 
     const response = await guestClient.getGuestProfileById(
-      { guestId: id },
+      { userId },
       { headers: buildGrpcHeaders(req.headers) }
     );
 
@@ -37,7 +36,6 @@ export async function GET(
     }
 
     const guestDetail: GuestDetail = {
-      id: profile.id,
       userId: profile.userId,
       name: profile.name,
       avatarUrl: profile.avatarUrl,

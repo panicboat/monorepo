@@ -112,8 +112,6 @@ export function useCastProfile(options: UseCastProfileOptions = {}) {
 
   return {
     profile,
-    /** Portfolio プロフィール ID */
-    profileId: data?.profile?.id,
     /** Identity ユーザー ID（レビュー等の revieweeId にはこちらを使用） */
     userId: data?.profile?.userId,
     rawData: data,

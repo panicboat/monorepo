@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
     const [profileResponse, plansResponse, schedulesResponse] =
       await Promise.all([
         castClient.getCastProfile({ userId: "" }, { headers }),
-        offerClient.getPlans({ castId: "" }, { headers }),
-        offerClient.getSchedules({ castId: "", startDate: "", endDate: "" }, { headers }),
+        offerClient.getPlans({ castUserId: "" }, { headers }),
+        offerClient.getSchedules({ castUserId: "", startDate: "", endDate: "" }, { headers }),
       ]);
 
     const profile = mapCastProfileToFrontend(profileResponse.profile!);

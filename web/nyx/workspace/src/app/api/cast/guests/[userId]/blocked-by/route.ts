@@ -5,16 +5,16 @@ import { requireAuth, handleApiError } from "@/lib/api-helpers";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const { id } = await params;
+    const { userId } = await params;
 
     const response = await blockClient.listBlockedBy(
-      { targetId: id },
+      { targetUserId: userId },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

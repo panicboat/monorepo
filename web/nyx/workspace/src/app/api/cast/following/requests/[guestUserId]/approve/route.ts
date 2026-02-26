@@ -4,7 +4,7 @@ import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, handleApiError } from "@/lib/api-helpers";
 
 interface RouteParams {
-  params: Promise<{ guestId: string }>;
+  params: Promise<{ guestUserId: string }>;
 }
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
@@ -12,14 +12,14 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const { guestId } = await params;
+    const { guestUserId } = await params;
 
-    if (!guestId) {
-      return NextResponse.json({ error: "guestId is required" }, { status: 400 });
+    if (!guestUserId) {
+      return NextResponse.json({ error: "guestUserId is required" }, { status: 400 });
     }
 
     const response = await followClient.approveFollow(
-      { guestId },
+      { guestUserId },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

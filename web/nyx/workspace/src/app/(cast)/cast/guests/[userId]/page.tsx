@@ -11,7 +11,6 @@ import { useBlockedBy } from "@/modules/relationship";
 import type { SaveMediaInput } from "@/lib/types";
 
 interface GuestDetail {
-  id: string;
   userId: string;
   name: string;
   avatarUrl: string;
@@ -25,16 +24,16 @@ interface GuestDetail {
 export default function GuestDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ userId: string }>;
 }) {
-  const { id } = use(params);
+  const { userId } = use(params);
   const { toast } = useToast();
   const token = getAuthToken();
   const [isBlocking, setIsBlocking] = useState(false);
   const [isUnblocking, setIsUnblocking] = useState(false);
 
   const { data, error, isLoading, mutate } = useSWR<GuestDetail>(
-    token ? `/api/cast/guests/${id}` : null,
+    token ? `/api/cast/guests/${userId}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -44,7 +43,7 @@ export default function GuestDetailPage({
     reviewerId: data?.userId,
     status: "approved",
   });
-  const { blockers, loading: blockersLoading } = useBlockedBy(id);
+  const { blockers, loading: blockersLoading } = useBlockedBy(userId);
   const [showTrustModal, setShowTrustModal] = useState(false);
 
   useEffect(() => {
@@ -71,7 +70,7 @@ export default function GuestDetailPage({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          blockedId: data.id,
+          blockedId: data.userId,
           blockedType: "guest",
         }),
       });
@@ -105,7 +104,7 @@ export default function GuestDetailPage({
     setIsUnblocking(true);
 
     try {
-      const res = await fetch(`/api/cast/blocks?blocked_id=${data.id}`, {
+      const res = await fetch(`/api/cast/blocks?blocked_id=${data.userId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -227,7 +226,7 @@ export default function GuestDetailPage({
           <h3 className="text-sm font-medium text-text-secondary mb-3">
             ノート
           </h3>
-          <TrustTagsSection targetId={id} />
+          <TrustTagsSection targetId={userId} />
         </div>
 
         {/* Reviews Section */}
@@ -238,7 +237,7 @@ export default function GuestDetailPage({
             </h3>
             {reviews.length > 0 && (
               <Link
-                href={`/cast/guests/${id}/reviews`}
+                href={`/cast/guests/${userId}/reviews`}
                 className="text-sm text-info hover:text-info-hover flex items-center gap-1"
               >
                 すべて見る
@@ -339,7 +338,7 @@ export default function GuestDetailPage({
       <WriteTrustModal
         isOpen={showTrustModal}
         onClose={() => setShowTrustModal(false)}
-        targetId={id}
+        targetId={userId}
         targetName={data.name || "ゲスト"}
         onSubmitReview={handleSubmitReview}
         contentRequired={false}

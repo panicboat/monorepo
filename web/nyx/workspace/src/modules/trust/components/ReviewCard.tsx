@@ -70,9 +70,9 @@ export function ReviewCard({
       {/* Reviewer Info (shown for pending reviews with reviewer data) */}
       {hasReviewerInfo && (
         <div className="flex items-center gap-3 mb-3">
-          {showReviewerLink && review.reviewerProfileId ? (
+          {showReviewerLink && review.reviewerId ? (
             <Link
-              href={`/cast/guests/${review.reviewerProfileId}`}
+              href={`/cast/guests/${review.reviewerId}`}
               className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
             >
               <ReviewerAvatar url={review.reviewerAvatarUrl} name={review.reviewerName} />

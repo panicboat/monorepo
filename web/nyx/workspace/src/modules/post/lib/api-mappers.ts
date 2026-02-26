@@ -11,14 +11,14 @@ interface ProtoMedia {
 }
 
 interface ProtoAuthor {
-  id: string;
+  userId: string;
   name: string;
   imageUrl: string;
 }
 
 interface ProtoPost {
   id: string;
-  castId: string;
+  castUserId: string;
   content: string;
   media: ProtoMedia[];
   createdAt: string;
@@ -33,7 +33,7 @@ interface ProtoPost {
 export function mapProtoPostToJson(post: ProtoPost) {
   return {
     id: post.id,
-    castId: post.castId,
+    castId: post.castUserId,
     content: post.content,
     media: post.media.map((m) => ({
       id: m.id,
@@ -44,7 +44,7 @@ export function mapProtoPostToJson(post: ProtoPost) {
     createdAt: post.createdAt,
     author: post.author
       ? {
-          id: post.author.id,
+          id: post.author.userId,
           name: post.author.name,
           imageUrl: post.author.imageUrl,
         }
