@@ -15,10 +15,10 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
     )
   end
 
-  describe "#find_plans_by_cast_id" do
+  describe "#find_plans_by_cast_user_id" do
     it "returns empty array when no plans exist" do
       cast = create_cast
-      result = repo.find_plans_by_cast_id(cast.user_id)
+      result = repo.find_plans_by_cast_user_id(cast.user_id)
       expect(result).to eq([])
     end
 
@@ -29,7 +29,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
         { name: "Plan B", price: 2000, duration_minutes: 120, is_recommended: false }
       ])
 
-      result = repo.find_plans_by_cast_id(cast.user_id)
+      result = repo.find_plans_by_cast_user_id(cast.user_id)
       expect(result.size).to eq(2)
       expect(result.map(&:name)).to contain_exactly("Plan A", "Plan B")
     end
@@ -64,11 +64,11 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
     end
   end
 
-  describe "#find_schedules_by_cast_id" do
+  describe "#find_schedules_by_cast_user_id" do
     let!(:cast) { create_cast }
 
     it "returns empty array when no schedules exist" do
-      result = repo.find_schedules_by_cast_id(cast.user_id)
+      result = repo.find_schedules_by_cast_user_id(cast.user_id)
       expect(result).to eq([])
     end
 
@@ -79,7 +79,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
         { date: Date.today + 1, start_time: "16:00", end_time: "20:00" }
       ])
 
-      result = repo.find_schedules_by_cast_id(cast.user_id)
+      result = repo.find_schedules_by_cast_user_id(cast.user_id)
       expect(result.size).to eq(3)
       expect(result.first.date).to eq(Date.today + 1)
       expect(result.first.start_time).to eq("10:00")
@@ -92,7 +92,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
         { date: Date.today + 5, start_time: "10:00", end_time: "14:00" }
       ])
 
-      result = repo.find_schedules_by_cast_id(
+      result = repo.find_schedules_by_cast_user_id(
         cast.user_id,
         start_date: Date.today + 2,
         end_date: Date.today + 4
@@ -133,7 +133,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
       ])
 
       # Should have both past and future schedules
-      result = repo.find_schedules_by_cast_id(cast.user_id)
+      result = repo.find_schedules_by_cast_user_id(cast.user_id)
       dates = result.map(&:date)
       expect(dates).to include(past_date)
       expect(dates).to include(Date.today + 1)

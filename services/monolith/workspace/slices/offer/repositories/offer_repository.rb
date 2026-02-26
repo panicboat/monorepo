@@ -7,7 +7,7 @@ module Offer
 
       # === Plans ===
 
-      def find_plans_by_cast_id(cast_user_id)
+      def find_plans_by_cast_user_id(cast_user_id)
         plans.where(cast_user_id: cast_user_id).to_a
       end
 
@@ -17,13 +17,13 @@ module Offer
           plans_data.each do |plan|
             plans.changeset(:create, plan.merge(cast_user_id: cast_user_id)).commit
           end
-          find_plans_by_cast_id(cast_user_id)
+          find_plans_by_cast_user_id(cast_user_id)
         end
       end
 
       # === Schedules ===
 
-      def find_schedules_by_cast_id(cast_user_id, start_date: nil, end_date: nil)
+      def find_schedules_by_cast_user_id(cast_user_id, start_date: nil, end_date: nil)
         scope = schedules.where(cast_user_id: cast_user_id)
         scope = scope.where { date >= start_date } if start_date
         scope = scope.where { date <= end_date } if end_date
@@ -39,7 +39,7 @@ module Offer
             next if schedule[:date].to_s < today
             schedules.changeset(:create, schedule.merge(cast_user_id: cast_user_id)).commit
           end
-          find_schedules_by_cast_id(cast_user_id)
+          find_schedules_by_cast_user_id(cast_user_id)
         end
       end
     end
