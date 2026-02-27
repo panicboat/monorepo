@@ -312,7 +312,7 @@ cast_user_ids.each do |cast_user_id|
     db[:offer__schedules].insert(
       cast_user_id: cast_user_id,
       date: date,
-      start_time: "18:00",
+      start_time: "12:00",
       end_time: "23:00",
       created_at: Time.now,
       updated_at: Time.now,
