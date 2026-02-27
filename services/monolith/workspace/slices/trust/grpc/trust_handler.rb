@@ -227,7 +227,6 @@ module Trust
             r,
             reviewer_name: guest&.name,
             reviewer_avatar_url: avatar_url,
-            reviewer_profile_id: guest&.user_id,
             media: media_proto
           )
         end
@@ -328,7 +327,6 @@ module Trust
             r,
             reviewer_name: guest&.name,
             reviewer_avatar_url: avatar_url,
-            reviewer_profile_id: guest&.user_id,
             media: media_proto
           )
         end
@@ -338,7 +336,7 @@ module Trust
 
       private
 
-      def build_review_proto(review, reviewer_name: nil, reviewer_avatar_url: nil, reviewer_profile_id: nil, media: [])
+      def build_review_proto(review, reviewer_name: nil, reviewer_avatar_url: nil, media: [])
         # Support both ROM::Struct (method access) and Hash (symbol access)
         id = review.respond_to?(:id) ? review.id : review[:id]
         reviewer_id = review.respond_to?(:reviewer_id) ? review.reviewer_id : review[:reviewer_id]
@@ -358,7 +356,6 @@ module Trust
           created_at: format_time(created_at),
           reviewer_name: reviewer_name,
           reviewer_avatar_url: reviewer_avatar_url,
-          reviewer_profile_id: reviewer_profile_id,
           media: media
         )
       end
