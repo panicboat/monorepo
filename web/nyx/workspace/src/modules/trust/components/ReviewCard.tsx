@@ -112,9 +112,9 @@ export function ReviewCard({
       )}
 
       {/* Media */}
-      {review.media && review.media.length > 0 && (
+      {review.media && review.media.filter((m) => m.url).length > 0 && (
         <div className="flex gap-2 mb-3 flex-wrap">
-          {review.media.map((m) => (
+          {review.media.filter((m) => m.url).map((m) => (
             <div key={m.id} className="w-20 h-20 rounded-lg overflow-hidden border border-border-primary">
               {m.mediaType === "image" ? (
                 <img src={m.url} alt="" className="w-full h-full object-cover" />
