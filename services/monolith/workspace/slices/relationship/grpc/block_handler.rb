@@ -86,7 +86,7 @@ module Relationship
       def list_blocked_by
         authenticate_user!
 
-        blocks = block_repo.list_by_blocked_id(blocked_id: request.message.target_id)
+        blocks = block_repo.list_by_blocked_id(blocked_id: request.message.target_user_id)
 
         # Get blocker (cast) info
         blocker_ids = blocks.map(&:blocker_id).uniq
