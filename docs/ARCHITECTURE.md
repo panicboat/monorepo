@@ -27,19 +27,6 @@
 
 ---
 
-## Domain Architecture
-
-各ドメインの責務、データベーステーブル、実装パスの詳細は **[domains/](./domains/README.md)** を参照してください。
-
-| Domain | Backend | Frontend |
-|--------|---------|----------|
-| Identity | `slices/identity/` | `modules/identity/` |
-| Offer | `slices/offer/` | `modules/offer/` |
-| Portfolio | `slices/portfolio/` | `modules/portfolio/` |
-| Social | `slices/social/` | `modules/social/` |
-
----
-
 ## Service Documentation
 
 各サービスの詳細なアーキテクチャは個別の README を参照してください：
