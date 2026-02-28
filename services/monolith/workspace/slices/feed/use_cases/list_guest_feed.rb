@@ -25,13 +25,16 @@ module Feed
         limit = normalize_limit(limit)
         decoded_cursor = decode_cursor(cursor)
 
+        # Get cast IDs that have blocked this guest
+        blocked_by_cast_ids = @relationship_adapter.blocker_cast_ids_for_guest(guest_user_id: guest_id)
+
         posts, authors = case filter
         when "all"
-          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor)
+          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_by_cast_ids)
         when "following"
-          list_following_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor)
+          list_following_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_by_cast_ids)
         else
-          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor)
+          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_by_cast_ids)
         end
 
         pagination = build_pagination_result(items: posts, limit: limit) do |last|
@@ -43,7 +46,7 @@ module Feed
 
       private
 
-      def list_all_posts(guest_id:, limit:, cursor:)
+      def list_all_posts(guest_id:, limit:, cursor:, exclude_cast_ids: [])
         public_cast_user_ids = @cast_adapter.public_cast_ids
         followed_cast_user_ids = @relationship_adapter.following_cast_user_ids(guest_user_id: guest_id)
 
@@ -51,21 +54,23 @@ module Feed
           public_cast_user_ids: public_cast_user_ids,
           followed_cast_user_ids: followed_cast_user_ids,
           limit: limit,
-          cursor: cursor
+          cursor: cursor,
+          exclude_cast_user_ids: exclude_cast_ids
         )
 
         authors = load_authors(posts)
         [posts, authors]
       end
 
-      def list_following_posts(guest_id:, limit:, cursor:)
+      def list_following_posts(guest_id:, limit:, cursor:, exclude_cast_ids: [])
         cast_user_ids = @relationship_adapter.following_cast_user_ids(guest_user_id: guest_id)
         return [[], {}] if cast_user_ids.empty?
 
         posts = @post_adapter.list_all_by_cast_user_ids(
           cast_user_ids: cast_user_ids,
           limit: limit,
-          cursor: cursor
+          cursor: cursor,
+          exclude_cast_user_ids: exclude_cast_ids
         )
 
         authors = load_authors(posts)

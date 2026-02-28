@@ -67,6 +67,12 @@ module Relationship
           .select_map(:blocked_id)
       end
 
+      def blocker_ids_for_blocked(blocked_id:, blocker_type:)
+        blocks.dataset
+          .where(blocked_id: blocked_id, blocker_type: blocker_type)
+          .select_map(:blocker_id)
+      end
+
       def block_status_batch(user_ids:, blocker_id:)
         return {} if user_ids.empty? || blocker_id.nil?
 

@@ -20,6 +20,16 @@ module Post
         block_repo.blocked_guest_ids(blocker_id: blocker_id)
       end
 
+      # Check if cast has blocked this guest
+      def cast_blocked_guest?(cast_user_id:, guest_user_id:)
+        block_repo.blocked?(blocker_id: cast_user_id, blocked_id: guest_user_id)
+      end
+
+      # Get cast IDs that have blocked this guest (reverse lookup)
+      def blocked_by_cast_ids(guest_user_id:)
+        block_repo.blocker_ids_for_blocked(blocked_id: guest_user_id, blocker_type: "cast")
+      end
+
       private
 
       def follow_repo

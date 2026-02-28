@@ -12,6 +12,10 @@ module Feed
         block_repo.blocked_guest_ids(blocker_id: blocker_id)
       end
 
+      def blocker_cast_ids_for_guest(guest_user_id:)
+        block_repo.blocker_ids_for_blocked(blocked_id: guest_user_id, blocker_type: "cast")
+      end
+
       private
 
       def follow_repo
