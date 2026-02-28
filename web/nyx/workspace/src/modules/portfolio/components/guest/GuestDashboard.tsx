@@ -5,47 +5,23 @@ import Link from "next/link";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { useGuestData } from "@/modules/portfolio/hooks/useGuestData";
 import { GuestProfileForm } from "./GuestProfileForm";
-import { useFavorite, FavoriteCast, useFollow, FollowingCast } from "@/modules/relationship";
-import { ChevronRight, Heart, Users } from "lucide-react";
+import { useFollow, FollowingCast } from "@/modules/relationship";
+import { ChevronRight, Users } from "lucide-react";
 
 const PREVIEW_LIMIT = 3;
 
 export const GuestDashboard = () => {
   const { logout } = useAuth();
   const { profile, avatarUrl, saveProfile, uploadAvatar, loading } = useGuestData();
-  const { fetchFavoritesList, favoriteCasts, loading: favoritesLoading } = useFavorite();
   const { fetchFollowingList, followingCasts, loading: followingLoading } = useFollow();
 
   useEffect(() => {
-    fetchFavoritesList(PREVIEW_LIMIT);
     fetchFollowingList(PREVIEW_LIMIT);
-  }, [fetchFavoritesList, fetchFollowingList]);
+  }, [fetchFollowingList]);
 
   return (
     <div className="bg-surface-secondary pb-24 md:pb-safe min-h-screen">
       <main className="p-4 space-y-6 pt-4 max-w-2xl mx-auto">
-        {/* Favorites Preview Section */}
-        <section className="rounded-2xl bg-surface shadow-sm border border-border overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-            <div className="flex items-center gap-2">
-              <Heart className="w-5 h-5 text-role-cast" />
-              <h2 className="text-lg font-bold text-text-primary">Favorites</h2>
-            </div>
-            <Link
-              href="/favorites"
-              className="flex items-center gap-1 text-sm text-info hover:text-info-hover transition-colors"
-            >
-              <span>View All</span>
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-          <CastPreviewList
-            casts={favoriteCasts}
-            loading={favoritesLoading}
-            emptyMessage="No favorites yet"
-          />
-        </section>
-
         {/* Following Preview Section */}
         <section className="rounded-2xl bg-surface shadow-sm border border-border overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
@@ -94,7 +70,7 @@ export const GuestDashboard = () => {
 };
 
 interface CastPreviewListProps {
-  casts: (FavoriteCast | FollowingCast)[];
+  casts: FollowingCast[];
   loading: boolean;
   emptyMessage: string;
 }

@@ -3,7 +3,7 @@
 // Re-export post types since feed displays posts
 export type { CastPost, PostMedia, PostAuthor } from "@/modules/post/types";
 
-export type FeedFilter = "all" | "following" | "favorites";
+export type FeedFilter = "all" | "following";
 
 export interface FeedResult {
   posts: import("@/modules/post/types").CastPost[];

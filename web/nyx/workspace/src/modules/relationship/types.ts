@@ -37,14 +37,3 @@ export interface BlockState {
   [userId: string]: boolean;
 }
 
-// Favorite types
-export interface FavoriteCast {
-  id: string;
-  name: string;
-  imageUrl: string;
-  area: string;
-}
-
-export interface FavoriteState {
-  [castId: string]: boolean;
-}

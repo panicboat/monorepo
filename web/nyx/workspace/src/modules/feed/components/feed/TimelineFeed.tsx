@@ -50,7 +50,7 @@ export function TimelineFeed({
   // Convert API posts to FeedItem format
   const sourceFeed: FeedItem[] = items || posts.map(mapPostToFeedItem);
 
-  // No client-side filtering needed - server handles following/favorites filtering
+  // No client-side filtering needed - server handles following filtering
   const filteredFeed = sourceFeed;
 
   const isInitialLoading = loading && posts.length === 0;
@@ -58,8 +58,7 @@ export function TimelineFeed({
   const renderEmptyState = () => {
     if (mode === "cast") return "No posts yet. Share something!";
     if (filter === "all") return "No posts yet.";
-    if (filter === "following") return "You are not following anyone yet.";
-    return "No favorites yet.";
+    return "You are not following anyone yet.";
   };
 
   return (

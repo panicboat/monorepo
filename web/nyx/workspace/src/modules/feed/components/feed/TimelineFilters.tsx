@@ -1,6 +1,6 @@
 "use client";
 
-export type FilterType = "all" | "following" | "favorites";
+export type FilterType = "all" | "following";
 
 interface TimelineFiltersProps {
   filter: FilterType;
@@ -8,7 +8,7 @@ interface TimelineFiltersProps {
 }
 
 export function TimelineFilters({ filter, onChange }: TimelineFiltersProps) {
-  const filters: FilterType[] = ["all", "following", "favorites"];
+  const filters: FilterType[] = ["all", "following"];
 
   return (
     <div className="px-4 flex items-center justify-between">

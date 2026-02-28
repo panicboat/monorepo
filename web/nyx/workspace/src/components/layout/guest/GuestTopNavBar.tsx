@@ -18,8 +18,6 @@ export const GuestTopNavBar = () => {
     title = "Search";
   } else if (pathname === "/mypage") {
     title = "My Page";
-  } else if (pathname === "/favorites") {
-    title = "Favorites";
   } else if (pathname === "/following") {
     title = "Following";
   } else if (pathname.startsWith("/cast/")) {

@@ -6,8 +6,8 @@ import { TrustSection, WriteTrustModal, useReviews } from "@/modules/trust";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { use, useState, useEffect, useCallback } from "react";
-import { Heart, Loader2, UserPlus, UserCheck, Clock, Edit3 } from "lucide-react";
-import { useFollow, useFavorite } from "@/modules/relationship";
+import { Loader2, UserPlus, UserCheck, Clock, Edit3 } from "lucide-react";
+import { useFollow } from "@/modules/relationship";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
 import { CastProfile, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
@@ -205,60 +205,6 @@ function TrustSectionWrapper({
   );
 }
 
-function FavoriteButton({ castId }: { castId: string }) {
-  const { toggleFavorite, fetchFavoriteStatus, isFavorite, loading } = useFavorite();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const isHydrated = useAuthStore((state) => state.isHydrated);
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  // Fetch favorite status on mount
-  useEffect(() => {
-    if (isHydrated && isAuthenticated() && castId) {
-      fetchFavoriteStatus([castId]);
-    }
-  }, [isHydrated, isAuthenticated, castId, fetchFavoriteStatus]);
-
-  const favorited = isFavorite(castId);
-
-  const handleClick = async () => {
-    if (!isAuthenticated()) {
-      return;
-    }
-
-    setIsProcessing(true);
-    try {
-      await toggleFavorite(castId);
-    } catch (e) {
-      console.error("Failed to toggle favorite:", e);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  return (
-    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-      <Button
-        size="icon"
-        disabled={isProcessing || loading}
-        className={`h-12 w-12 rounded-full shadow-xl shadow-border transition-colors border ${favorited
-          ? "bg-role-cast border-role-cast text-white hover:bg-role-cast-hover hover:text-white"
-          : "bg-surface border-role-cast-light text-role-cast hover:bg-role-cast-lighter"
-          } ${isProcessing || loading ? "opacity-50" : ""}`}
-        onClick={handleClick}
-      >
-        <motion.div
-          key={favorited ? "fav" : "not-fav"}
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 10 }}
-        >
-          <Heart size={24} className={favorited ? "fill-current" : ""} />
-        </motion.div>
-      </Button>
-    </motion.div>
-  );
-}
-
 function FloatingActionButtons({
   castUserId,
   castName,
@@ -283,7 +229,6 @@ function FloatingActionButtons({
       <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex w-full max-w-md justify-end px-4 pb-24 pointer-events-none">
         <div className="flex flex-col gap-3 pointer-events-auto">
           <FollowButton castId={castUserId} />
-          <FavoriteButton castId={castUserId} />
 
           {/* Write Trust Button */}
           {isLoggedIn && (
