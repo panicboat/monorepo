@@ -7,7 +7,6 @@ import { fetcher, getAuthToken } from "@/lib/swr";
 import { ReviewListPage } from "@/modules/trust";
 
 interface GuestDetail {
-  id: string;
   userId: string;
   name: string;
 }
@@ -15,13 +14,13 @@ interface GuestDetail {
 export default function GuestReviewsPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ userId: string }>;
 }) {
-  const { id } = use(params);
+  const { userId } = use(params);
   const token = getAuthToken();
 
   const { data, error, isLoading } = useSWR<GuestDetail>(
-    token ? `/api/cast/guests/${id}` : null,
+    token ? `/api/cast/guests/${userId}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -47,7 +46,7 @@ export default function GuestReviewsPage({
       targetId={data.userId}
       targetName={data.name || "ゲスト"}
       targetType="guest"
-      backUrl={`/cast/guests/${id}`}
+      backUrl={`/cast/guests/${userId}`}
       stats={null}
     />
   );

@@ -141,13 +141,13 @@ CREATE TABLE media.files (
 
 CREATE TABLE offer.plans (
     id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_plans_id_not_null NOT NULL,
-    cast_id uuid CONSTRAINT cast_plans_cast_id_not_null NOT NULL,
     name text CONSTRAINT cast_plans_name_not_null NOT NULL,
     price integer CONSTRAINT cast_plans_price_not_null NOT NULL,
     duration_minutes integer CONSTRAINT cast_plans_duration_minutes_not_null NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_plans_created_at_not_null NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_plans_updated_at_not_null NOT NULL,
-    is_recommended boolean DEFAULT false CONSTRAINT cast_plans_is_recommended_not_null NOT NULL
+    is_recommended boolean DEFAULT false CONSTRAINT cast_plans_is_recommended_not_null NOT NULL,
+    cast_user_id uuid NOT NULL
 );
 
 
@@ -157,12 +157,12 @@ CREATE TABLE offer.plans (
 
 CREATE TABLE offer.schedules (
     id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_schedules_id_not_null NOT NULL,
-    cast_id uuid CONSTRAINT cast_schedules_cast_id_not_null NOT NULL,
     date date CONSTRAINT cast_schedules_date_not_null NOT NULL,
     start_time text CONSTRAINT cast_schedules_start_time_not_null NOT NULL,
     end_time text CONSTRAINT cast_schedules_end_time_not_null NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_schedules_created_at_not_null NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_schedules_updated_at_not_null NOT NULL
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_schedules_updated_at_not_null NOT NULL,
+    cast_user_id uuid NOT NULL
 );
 
 
@@ -187,9 +187,9 @@ CREATE TABLE portfolio.areas (
 --
 
 CREATE TABLE portfolio.cast_areas (
-    cast_id uuid NOT NULL,
     area_id uuid NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    cast_user_id uuid NOT NULL
 );
 
 
@@ -199,10 +199,10 @@ CREATE TABLE portfolio.cast_areas (
 
 CREATE TABLE portfolio.cast_gallery_media (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    cast_id uuid NOT NULL,
     media_id uuid NOT NULL,
     "position" integer DEFAULT 0 NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    cast_user_id uuid NOT NULL
 );
 
 
@@ -212,9 +212,9 @@ CREATE TABLE portfolio.cast_gallery_media (
 
 CREATE TABLE portfolio.cast_genres (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    cast_id uuid NOT NULL,
     genre_id uuid NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    cast_user_id uuid NOT NULL
 );
 
 
@@ -223,7 +223,6 @@ CREATE TABLE portfolio.cast_genres (
 --
 
 CREATE TABLE portfolio.casts (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     name text NOT NULL,
     tagline text,
@@ -265,7 +264,6 @@ CREATE TABLE portfolio.genres (
 --
 
 CREATE TABLE portfolio.guests (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     name text NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -325,8 +323,8 @@ CREATE TABLE post.hashtags (
 CREATE TABLE post.likes (
     id uuid DEFAULT gen_random_uuid() CONSTRAINT post_likes_id_not_null NOT NULL,
     post_id uuid CONSTRAINT post_likes_post_id_not_null NOT NULL,
-    guest_id uuid CONSTRAINT post_likes_guest_id_not_null NOT NULL,
-    created_at timestamp with time zone DEFAULT now() CONSTRAINT post_likes_created_at_not_null NOT NULL
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT post_likes_created_at_not_null NOT NULL,
+    guest_user_id uuid NOT NULL
 );
 
 
@@ -350,11 +348,11 @@ CREATE TABLE post.post_media (
 
 CREATE TABLE post.posts (
     id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_posts_id_not_null NOT NULL,
-    cast_id uuid CONSTRAINT cast_posts_cast_id_not_null NOT NULL,
     content text CONSTRAINT cast_posts_content_not_null NOT NULL,
     created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_posts_created_at_not_null NOT NULL,
     updated_at timestamp with time zone DEFAULT now() CONSTRAINT cast_posts_updated_at_not_null NOT NULL,
-    visibility text DEFAULT 'public'::text CONSTRAINT cast_posts_visibility_not_null NOT NULL
+    visibility text DEFAULT 'public'::text CONSTRAINT cast_posts_visibility_not_null NOT NULL,
+    cast_user_id uuid NOT NULL
 );
 
 
@@ -387,9 +385,9 @@ CREATE TABLE relationship.blocks (
 
 CREATE TABLE relationship.favorites (
     id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_favorites_id_not_null NOT NULL,
-    cast_id uuid CONSTRAINT cast_favorites_cast_id_not_null NOT NULL,
-    guest_id uuid CONSTRAINT cast_favorites_guest_id_not_null NOT NULL,
-    created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_favorites_created_at_not_null NOT NULL
+    created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_favorites_created_at_not_null NOT NULL,
+    cast_user_id uuid NOT NULL,
+    guest_user_id uuid NOT NULL
 );
 
 
@@ -399,10 +397,10 @@ CREATE TABLE relationship.favorites (
 
 CREATE TABLE relationship.follows (
     id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_follows_id_not_null NOT NULL,
-    cast_id uuid CONSTRAINT cast_follows_cast_id_not_null NOT NULL,
-    guest_id uuid CONSTRAINT cast_follows_guest_id_not_null NOT NULL,
     created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_follows_created_at_not_null NOT NULL,
-    status text DEFAULT 'approved'::text CONSTRAINT cast_follows_status_not_null NOT NULL
+    status text DEFAULT 'approved'::text CONSTRAINT cast_follows_status_not_null NOT NULL,
+    cast_user_id uuid NOT NULL,
+    guest_user_id uuid NOT NULL
 );
 
 
@@ -523,7 +521,7 @@ ALTER TABLE ONLY portfolio.areas
 --
 
 ALTER TABLE ONLY portfolio.cast_areas
-    ADD CONSTRAINT cast_areas_pkey PRIMARY KEY (cast_id, area_id);
+    ADD CONSTRAINT cast_areas_pkey PRIMARY KEY (cast_user_id, area_id);
 
 
 --
@@ -535,11 +533,11 @@ ALTER TABLE ONLY portfolio.cast_gallery_media
 
 
 --
--- Name: cast_genres cast_genres_cast_id_genre_id_key; Type: CONSTRAINT; Schema: portfolio; Owner: -
+-- Name: cast_genres cast_genres_cast_user_id_genre_id_key; Type: CONSTRAINT; Schema: portfolio; Owner: -
 --
 
 ALTER TABLE ONLY portfolio.cast_genres
-    ADD CONSTRAINT cast_genres_cast_id_genre_id_key UNIQUE (cast_id, genre_id);
+    ADD CONSTRAINT cast_genres_cast_user_id_genre_id_key UNIQUE (cast_user_id, genre_id);
 
 
 --
@@ -555,7 +553,7 @@ ALTER TABLE ONLY portfolio.cast_genres
 --
 
 ALTER TABLE ONLY portfolio.casts
-    ADD CONSTRAINT casts_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT casts_pkey PRIMARY KEY (user_id);
 
 
 --
@@ -579,7 +577,7 @@ ALTER TABLE ONLY portfolio.genres
 --
 
 ALTER TABLE ONLY portfolio.guests
-    ADD CONSTRAINT guests_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT guests_pkey PRIMARY KEY (user_id);
 
 
 --
@@ -631,11 +629,11 @@ ALTER TABLE ONLY post.likes
 
 
 --
--- Name: likes post_likes_post_id_guest_id_key; Type: CONSTRAINT; Schema: post; Owner: -
+-- Name: likes post_likes_post_id_guest_user_id_key; Type: CONSTRAINT; Schema: post; Owner: -
 --
 
 ALTER TABLE ONLY post.likes
-    ADD CONSTRAINT post_likes_post_id_guest_id_key UNIQUE (post_id, guest_id);
+    ADD CONSTRAINT post_likes_post_id_guest_user_id_key UNIQUE (post_id, guest_user_id);
 
 
 --
@@ -663,14 +661,6 @@ ALTER TABLE ONLY relationship.blocks
 
 
 --
--- Name: favorites cast_favorites_cast_id_guest_id_key; Type: CONSTRAINT; Schema: relationship; Owner: -
---
-
-ALTER TABLE ONLY relationship.favorites
-    ADD CONSTRAINT cast_favorites_cast_id_guest_id_key UNIQUE (cast_id, guest_id);
-
-
---
 -- Name: favorites cast_favorites_pkey; Type: CONSTRAINT; Schema: relationship; Owner: -
 --
 
@@ -679,19 +669,27 @@ ALTER TABLE ONLY relationship.favorites
 
 
 --
--- Name: follows cast_follows_cast_id_guest_id_key; Type: CONSTRAINT; Schema: relationship; Owner: -
---
-
-ALTER TABLE ONLY relationship.follows
-    ADD CONSTRAINT cast_follows_cast_id_guest_id_key UNIQUE (cast_id, guest_id);
-
-
---
 -- Name: follows cast_follows_pkey; Type: CONSTRAINT; Schema: relationship; Owner: -
 --
 
 ALTER TABLE ONLY relationship.follows
     ADD CONSTRAINT cast_follows_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: favorites favorites_cast_user_id_guest_user_id_key; Type: CONSTRAINT; Schema: relationship; Owner: -
+--
+
+ALTER TABLE ONLY relationship.favorites
+    ADD CONSTRAINT favorites_cast_user_id_guest_user_id_key UNIQUE (cast_user_id, guest_user_id);
+
+
+--
+-- Name: follows follows_cast_user_id_guest_user_id_key; Type: CONSTRAINT; Schema: relationship; Owner: -
+--
+
+ALTER TABLE ONLY relationship.follows
+    ADD CONSTRAINT follows_cast_user_id_guest_user_id_key UNIQUE (cast_user_id, guest_user_id);
 
 
 --
@@ -769,17 +767,17 @@ CREATE UNIQUE INDEX media_files_media_key_index ON media.files USING btree (medi
 
 
 --
--- Name: portfolio_cast_plans_cast_id_index; Type: INDEX; Schema: offer; Owner: -
+-- Name: offer_plans_cast_user_id_index; Type: INDEX; Schema: offer; Owner: -
 --
 
-CREATE INDEX portfolio_cast_plans_cast_id_index ON offer.plans USING btree (cast_id);
+CREATE INDEX offer_plans_cast_user_id_index ON offer.plans USING btree (cast_user_id);
 
 
 --
--- Name: portfolio_cast_schedules_cast_id_index; Type: INDEX; Schema: offer; Owner: -
+-- Name: offer_schedules_cast_user_id_index; Type: INDEX; Schema: offer; Owner: -
 --
 
-CREATE INDEX portfolio_cast_schedules_cast_id_index ON offer.schedules USING btree (cast_id);
+CREATE INDEX offer_schedules_cast_user_id_index ON offer.schedules USING btree (cast_user_id);
 
 
 --
@@ -797,17 +795,17 @@ CREATE UNIQUE INDEX idx_casts_slug_lower ON portfolio.casts USING btree (lower((
 
 
 --
--- Name: portfolio_cast_gallery_media_cast_id_index; Type: INDEX; Schema: portfolio; Owner: -
+-- Name: portfolio_cast_gallery_media_cast_user_id_index; Type: INDEX; Schema: portfolio; Owner: -
 --
 
-CREATE INDEX portfolio_cast_gallery_media_cast_id_index ON portfolio.cast_gallery_media USING btree (cast_id);
+CREATE INDEX portfolio_cast_gallery_media_cast_user_id_index ON portfolio.cast_gallery_media USING btree (cast_user_id);
 
 
 --
--- Name: portfolio_cast_gallery_media_cast_id_position_index; Type: INDEX; Schema: portfolio; Owner: -
+-- Name: portfolio_cast_gallery_media_cast_user_id_position_index; Type: INDEX; Schema: portfolio; Owner: -
 --
 
-CREATE INDEX portfolio_cast_gallery_media_cast_id_position_index ON portfolio.cast_gallery_media USING btree (cast_id, "position");
+CREATE INDEX portfolio_cast_gallery_media_cast_user_id_position_index ON portfolio.cast_gallery_media USING btree (cast_user_id, "position");
 
 
 --
@@ -818,10 +816,10 @@ CREATE INDEX portfolio_cast_gallery_media_media_id_index ON portfolio.cast_galle
 
 
 --
--- Name: portfolio_cast_genres_cast_id_index; Type: INDEX; Schema: portfolio; Owner: -
+-- Name: portfolio_cast_genres_cast_user_id_index; Type: INDEX; Schema: portfolio; Owner: -
 --
 
-CREATE INDEX portfolio_cast_genres_cast_id_index ON portfolio.cast_genres USING btree (cast_id);
+CREATE INDEX portfolio_cast_genres_cast_user_id_index ON portfolio.cast_genres USING btree (cast_user_id);
 
 
 --
@@ -846,24 +844,10 @@ CREATE INDEX portfolio_casts_profile_media_id_index ON portfolio.casts USING btr
 
 
 --
--- Name: portfolio_casts_user_id_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE UNIQUE INDEX portfolio_casts_user_id_index ON portfolio.casts USING btree (user_id);
-
-
---
 -- Name: portfolio_guests_avatar_media_id_index; Type: INDEX; Schema: portfolio; Owner: -
 --
 
 CREATE INDEX portfolio_guests_avatar_media_id_index ON portfolio.guests USING btree (avatar_media_id);
-
-
---
--- Name: portfolio_guests_user_id_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE UNIQUE INDEX portfolio_guests_user_id_index ON portfolio.guests USING btree (user_id);
 
 
 --
@@ -888,10 +872,24 @@ CREATE INDEX post_comment_media_media_id_index ON post.comment_media USING btree
 
 
 --
+-- Name: post_likes_guest_user_id_index; Type: INDEX; Schema: post; Owner: -
+--
+
+CREATE INDEX post_likes_guest_user_id_index ON post.likes USING btree (guest_user_id);
+
+
+--
 -- Name: post_post_media_media_id_index; Type: INDEX; Schema: post; Owner: -
 --
 
 CREATE INDEX post_post_media_media_id_index ON post.post_media USING btree (media_id);
+
+
+--
+-- Name: post_posts_cast_user_id_index; Type: INDEX; Schema: post; Owner: -
+--
+
+CREATE INDEX post_posts_cast_user_id_index ON post.posts USING btree (cast_user_id);
 
 
 --
@@ -913,13 +911,6 @@ CREATE INDEX social_cast_post_hashtags_tag_index ON post.hashtags USING btree (t
 --
 
 CREATE INDEX social_cast_post_media_post_id_index ON post.post_media USING btree (post_id);
-
-
---
--- Name: social_cast_posts_cast_id_index; Type: INDEX; Schema: post; Owner: -
---
-
-CREATE INDEX social_cast_posts_cast_id_index ON post.posts USING btree (cast_id);
 
 
 --
@@ -951,17 +942,38 @@ CREATE INDEX social_post_comments_user_id_index ON post.comments USING btree (us
 
 
 --
--- Name: social_post_likes_guest_id_index; Type: INDEX; Schema: post; Owner: -
---
-
-CREATE INDEX social_post_likes_guest_id_index ON post.likes USING btree (guest_id);
-
-
---
 -- Name: social_post_likes_post_id_index; Type: INDEX; Schema: post; Owner: -
 --
 
 CREATE INDEX social_post_likes_post_id_index ON post.likes USING btree (post_id);
+
+
+--
+-- Name: relationship_favorites_cast_user_id_index; Type: INDEX; Schema: relationship; Owner: -
+--
+
+CREATE INDEX relationship_favorites_cast_user_id_index ON relationship.favorites USING btree (cast_user_id);
+
+
+--
+-- Name: relationship_favorites_guest_user_id_index; Type: INDEX; Schema: relationship; Owner: -
+--
+
+CREATE INDEX relationship_favorites_guest_user_id_index ON relationship.favorites USING btree (guest_user_id);
+
+
+--
+-- Name: relationship_follows_cast_user_id_index; Type: INDEX; Schema: relationship; Owner: -
+--
+
+CREATE INDEX relationship_follows_cast_user_id_index ON relationship.follows USING btree (cast_user_id);
+
+
+--
+-- Name: relationship_follows_guest_user_id_index; Type: INDEX; Schema: relationship; Owner: -
+--
+
+CREATE INDEX relationship_follows_guest_user_id_index ON relationship.follows USING btree (guest_user_id);
 
 
 --
@@ -976,34 +988,6 @@ CREATE INDEX social_blocks_blocked_id_index ON relationship.blocks USING btree (
 --
 
 CREATE INDEX social_blocks_blocker_id_index ON relationship.blocks USING btree (blocker_id);
-
-
---
--- Name: social_cast_favorites_cast_id_index; Type: INDEX; Schema: relationship; Owner: -
---
-
-CREATE INDEX social_cast_favorites_cast_id_index ON relationship.favorites USING btree (cast_id);
-
-
---
--- Name: social_cast_favorites_guest_id_index; Type: INDEX; Schema: relationship; Owner: -
---
-
-CREATE INDEX social_cast_favorites_guest_id_index ON relationship.favorites USING btree (guest_id);
-
-
---
--- Name: social_cast_follows_cast_id_index; Type: INDEX; Schema: relationship; Owner: -
---
-
-CREATE INDEX social_cast_follows_cast_id_index ON relationship.follows USING btree (cast_id);
-
-
---
--- Name: social_cast_follows_guest_id_index; Type: INDEX; Schema: relationship; Owner: -
---
-
-CREATE INDEX social_cast_follows_guest_id_index ON relationship.follows USING btree (guest_id);
 
 
 --
@@ -1086,27 +1070,27 @@ ALTER TABLE ONLY portfolio.cast_areas
 
 
 --
--- Name: cast_areas cast_areas_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+-- Name: cast_areas cast_areas_cast_user_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
 --
 
 ALTER TABLE ONLY portfolio.cast_areas
-    ADD CONSTRAINT cast_areas_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
+    ADD CONSTRAINT cast_areas_cast_user_id_fkey FOREIGN KEY (cast_user_id) REFERENCES portfolio.casts(user_id) ON DELETE CASCADE;
 
 
 --
--- Name: cast_gallery_media cast_gallery_media_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+-- Name: cast_gallery_media cast_gallery_media_cast_user_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
 --
 
 ALTER TABLE ONLY portfolio.cast_gallery_media
-    ADD CONSTRAINT cast_gallery_media_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
+    ADD CONSTRAINT cast_gallery_media_cast_user_id_fkey FOREIGN KEY (cast_user_id) REFERENCES portfolio.casts(user_id) ON DELETE CASCADE;
 
 
 --
--- Name: cast_genres cast_genres_cast_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+-- Name: cast_genres cast_genres_cast_user_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
 --
 
 ALTER TABLE ONLY portfolio.cast_genres
-    ADD CONSTRAINT cast_genres_cast_id_fkey FOREIGN KEY (cast_id) REFERENCES portfolio.casts(id) ON DELETE CASCADE;
+    ADD CONSTRAINT cast_genres_cast_user_id_fkey FOREIGN KEY (cast_user_id) REFERENCES portfolio.casts(user_id) ON DELETE CASCADE;
 
 
 --
@@ -1233,4 +1217,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260222000001_create_trust_reviews.rb'),
 ('20260223092141_add_default_schedules_to_casts.rb'),
 ('20260225000001_create_trust_review_media.rb'),
-('20260226000001_add_trust_review_media_constraints.rb');
+('20260226000001_add_trust_review_media_constraints.rb'),
+('20260227000001_unify_user_id.rb');

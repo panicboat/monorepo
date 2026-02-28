@@ -4,7 +4,7 @@ module Post
   module Adapters
     # Anti-Corruption Layer for accessing Cast data from Portfolio slice.
     class CastAdapter
-      CastInfo = Data.define(:id, :user_id, :name, :profile_media_id, :avatar_media_id, :slug, :visibility, :registered_at)
+      CastInfo = Data.define(:user_id, :name, :profile_media_id, :avatar_media_id, :slug, :visibility, :registered_at)
 
       def find_by_user_id(user_id)
         casts = get_by_user_ids_query.call(user_ids: [user_id])
@@ -13,19 +13,19 @@ module Post
         build_cast_info(casts.first)
       end
 
-      def find_by_cast_id(cast_id)
-        casts = get_by_ids_query.call(cast_ids: [cast_id])
+      def find_by_cast_id(cast_user_id)
+        casts = get_by_ids_query.call(cast_ids: [cast_user_id])
         return nil if casts.empty?
 
         build_cast_info(casts.first)
       end
 
-      def find_by_cast_ids(cast_ids)
-        return {} if cast_ids.nil? || cast_ids.empty?
+      def find_by_cast_ids(cast_user_ids)
+        return {} if cast_user_ids.nil? || cast_user_ids.empty?
 
-        casts = get_by_ids_query.call(cast_ids: cast_ids)
+        casts = get_by_ids_query.call(cast_ids: cast_user_ids)
         casts.each_with_object({}) do |cast, hash|
-          hash[cast.id] = build_cast_info(cast)
+          hash[cast.user_id] = build_cast_info(cast)
         end
       end
 
@@ -38,15 +38,16 @@ module Post
         end
       end
 
-      def find_by_id(cast_id)
-        find_by_cast_id(cast_id)
+      def find_by_id(cast_user_id)
+        find_by_cast_id(cast_user_id)
       end
 
-      def get_user_ids_by_cast_ids(cast_ids)
-        return [] if cast_ids.nil? || cast_ids.empty?
+      # cast_id = user_id, so this is now a pass-through
+      def get_user_ids_by_cast_ids(cast_user_ids)
+        return [] if cast_user_ids.nil? || cast_user_ids.empty?
 
-        casts = get_by_ids_query.call(cast_ids: cast_ids)
-        casts.map(&:user_id)
+        # Since cast PK is user_id, cast_user_ids ARE user_ids
+        cast_user_ids
       end
 
       def public_cast_ids
@@ -57,7 +58,6 @@ module Post
 
       def build_cast_info(cast)
         CastInfo.new(
-          id: cast.id,
           user_id: cast.user_id,
           name: cast.name,
           profile_media_id: cast.profile_media_id,

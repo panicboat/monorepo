@@ -8,7 +8,7 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
   let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
   let(:cast_id) { SecureRandom.uuid }
   let(:user_id) { create_user[:id] }
-  let(:post) { post_repo.create_post(cast_id: cast_id, content: "Test post") }
+  let(:post) { post_repo.create_post(cast_user_id: cast_id, content: "Test post") }
 
   def create_user(role: 1)
     id = SecureRandom.uuid

@@ -35,7 +35,7 @@ module Portfolio
           }
 
           if guest
-            guest_repository.update(guest.id, attrs)
+            guest_repository.update(guest.user_id, attrs)
           else
             guest_repository.create(attrs.merge(user_id: user_id, created_at: Time.now))
           end

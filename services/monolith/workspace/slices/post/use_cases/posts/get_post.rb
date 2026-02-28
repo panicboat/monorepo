@@ -10,15 +10,15 @@ module Post
           post = repo.find_by_id(id)
           return nil unless post
 
-          author = load_author(post.cast_id)
+          author = load_author(post.cast_user_id)
           { post: post, author: author }
         end
 
         private
 
-        def load_author(cast_id)
+        def load_author(cast_user_id)
           adapter = Post::Adapters::CastAdapter.new
-          adapter.find_by_cast_id(cast_id)
+          adapter.find_by_cast_id(cast_user_id)
         end
       end
     end

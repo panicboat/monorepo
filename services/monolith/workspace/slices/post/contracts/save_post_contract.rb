@@ -11,7 +11,7 @@ module Post
       MAX_HASHTAGS = 10
 
       params do
-        required(:cast_id).filled(:string)
+        required(:cast_user_id).filled(:string)
         optional(:id).maybe(:string)
         optional(:content).maybe(:string)
         optional(:visibility).maybe(:string, included_in?: %w[public private])

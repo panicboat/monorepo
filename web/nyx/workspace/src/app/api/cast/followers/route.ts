@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     );
 
     const followers: Follower[] = (response.followers || []).map((f) => ({
-      guestId: f.guestId,
+      guestId: f.guestUserId,
       guestName: f.guestName,
       guestImageUrl: f.guestImageUrl,
       followedAt: f.followedAt,

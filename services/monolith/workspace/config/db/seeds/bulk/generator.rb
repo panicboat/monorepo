@@ -37,13 +37,13 @@ module Seeds
 
         # Generate posts
         post_result = Generators::PostGenerator.new.call(
-          cast_ids: cast_result[:cast_ids]
+          cast_user_ids: cast_result[:user_ids]
         )
 
         # Generate relationships
         relationship_result = Generators::RelationshipGenerator.new.call(
-          cast_ids: cast_result[:cast_ids],
-          guest_ids: guest_result[:guest_ids],
+          cast_user_ids: cast_result[:user_ids],
+          guest_user_ids: guest_result[:user_ids],
           activity_types: guest_result[:activity_types]
         )
 
@@ -51,8 +51,8 @@ module Seeds
         Generators::ActivityGenerator.new.call(
           post_ids: post_result[:post_ids],
           post_categories: post_result[:post_categories],
-          guest_ids: guest_result[:guest_ids],
-          cast_ids: cast_result[:cast_ids],
+          guest_user_ids: guest_result[:user_ids],
+          cast_user_ids: cast_result[:user_ids],
           blocks: relationship_result[:blocks]
         )
 

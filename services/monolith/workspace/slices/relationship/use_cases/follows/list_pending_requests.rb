@@ -6,12 +6,12 @@ module Relationship
       class ListPendingRequests
         include Relationship::Deps[follow_repo: "repositories.follow_repository"]
 
-        def call(cast_id:, limit: 20, cursor: nil)
-          result = follow_repo.list_pending_requests(cast_id: cast_id, limit: limit, cursor: cursor)
+        def call(cast_user_id:, limit: 20, cursor: nil)
+          result = follow_repo.list_pending_requests(cast_user_id: cast_user_id, limit: limit, cursor: cursor)
 
           requests = result[:requests].map do |request|
             {
-              guest_id: request.guest_id,
+              guest_user_id: request.guest_user_id,
               requested_at: request.created_at
             }
           end

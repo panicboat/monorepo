@@ -33,7 +33,7 @@ module Portfolio
 
             next_cursor = if has_more && casts.any?
               last = casts.last
-              encode_cursor(created_at: last.created_at.iso8601, id: last.id)
+              encode_cursor(created_at: last.created_at.iso8601, id: last.user_id)
             end
 
             { casts: casts, next_cursor: next_cursor, has_more: has_more }

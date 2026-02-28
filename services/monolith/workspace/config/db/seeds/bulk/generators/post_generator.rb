@@ -8,18 +8,18 @@ module Seeds
   module Bulk
     module Generators
       class PostGenerator < BaseGenerator
-        def call(cast_ids:)
-          puts "Generating posts for #{cast_ids.size} casts..."
+        def call(cast_user_ids:)
+          puts "Generating posts for #{cast_user_ids.size} casts..."
 
           all_post_ids = []
           post_categories = {}
 
-          cast_ids.each_with_index do |cast_id, idx|
-            existing = db[:"post__posts"].where(cast_id: cast_id).count
+          cast_user_ids.each_with_index do |cast_user_id, idx|
+            existing = db[:"post__posts"].where(cast_user_id: cast_user_id).count
             next if existing > 0
 
-            post_count = determine_post_count(idx, cast_ids.size)
-            post_ids = create_posts(cast_id, post_count)
+            post_count = determine_post_count(idx, cast_user_ids.size)
+            post_ids = create_posts(cast_user_id, post_count)
 
             all_post_ids.concat(post_ids)
             post_ids.each do |post_id|
@@ -51,7 +51,7 @@ module Seeds
           end
         end
 
-        def create_posts(cast_id, count)
+        def create_posts(cast_user_id, count)
           post_ids = []
           templates = Data::POST_TEMPLATES.dup
 
@@ -72,7 +72,7 @@ module Seeds
             )
 
             post_id = db[:"post__posts"].insert(
-              cast_id: cast_id,
+              cast_user_id: cast_user_id,
               content: content,
               visibility: visibility,
               created_at: created_at,

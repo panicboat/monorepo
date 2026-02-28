@@ -6,8 +6,8 @@ module Relationship
       class RemoveFavorite
         include Relationship::Deps[favorite_repo: "repositories.favorite_repository"]
 
-        def call(cast_id:, guest_id:)
-          favorite_repo.remove_favorite(cast_id: cast_id, guest_id: guest_id)
+        def call(cast_user_id:, guest_user_id:)
+          favorite_repo.remove_favorite(cast_user_id: cast_user_id, guest_user_id: guest_user_id)
           { success: true }
         end
       end

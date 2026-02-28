@@ -12,7 +12,6 @@ module Portfolio
             avatar_url = avatar_media&.url || ""
 
             ::Portfolio::V1::GuestDetailProfile.new(
-              id: guest.id.to_s,
               user_id: guest.user_id.to_s,
               name: guest.name || "",
               avatar_url: avatar_url,
@@ -29,7 +28,6 @@ module Portfolio
 
           def empty_profile
             ::Portfolio::V1::GuestDetailProfile.new(
-              id: "",
               user_id: "",
               name: "",
               avatar_url: "",

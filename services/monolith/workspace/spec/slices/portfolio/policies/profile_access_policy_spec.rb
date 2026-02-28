@@ -26,9 +26,9 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
   # =============================================================================
 
   # Casts
-  let(:yuna) { double(:cast, id: "yuna-id", visibility: "public") }
-  let(:mio) { double(:cast, id: "mio-id", visibility: "private") }
-  let(:rin) { double(:cast, id: "rin-id", visibility: "public") }
+  let(:yuna) { double(:cast, user_id: "yuna-id", visibility: "public") }
+  let(:mio) { double(:cast, user_id: "mio-id", visibility: "private") }
+  let(:rin) { double(:cast, user_id: "rin-id", visibility: "public") }
 
   # Guest IDs
   let(:taro_id) { "taro-guest-id" }
@@ -50,7 +50,7 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
 
     it "returns false when blocked" do
       allow(social_adapter).to receive(:blocked?)
-        .with(guest_id: taro_id, cast_id: "rin-id")
+        .with(guest_user_id: taro_id, cast_user_id: "rin-id")
         .and_return(true)
 
       result = policy.can_view_profile?(cast: rin, viewer_guest_id: taro_id)

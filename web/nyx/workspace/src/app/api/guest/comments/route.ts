@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       createdAt: comment.createdAt,
       author: comment.author
         ? {
-            id: comment.author.id,
+            id: comment.author.userId,
             name: comment.author.name,
             imageUrl: comment.author.imageUrl,
             userType: comment.author.userType,
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
             createdAt: comment.createdAt,
             author: comment.author
               ? {
-                  id: comment.author.id,
+                  id: comment.author.userId,
                   name: comment.author.name,
                   imageUrl: comment.author.imageUrl,
                   userType: comment.author.userType,

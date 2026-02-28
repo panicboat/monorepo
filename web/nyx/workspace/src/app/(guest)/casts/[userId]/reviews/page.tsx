@@ -6,7 +6,6 @@ import { ReviewListPage, useReviewStats } from "@/modules/trust";
 
 interface CastData {
   profile: {
-    id: string;
     userId: string;
     name: string;
   };
@@ -15,9 +14,9 @@ interface CastData {
 export default function CastReviewsPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ userId: string }>;
 }) {
-  const { id } = use(params);
+  const { userId: id } = use(params);
   const [castData, setCastData] = useState<CastData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

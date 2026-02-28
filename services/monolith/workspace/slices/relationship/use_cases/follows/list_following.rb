@@ -12,23 +12,23 @@ module Relationship
         DEFAULT_LIMIT = 100
         MAX_LIMIT = 500
 
-        def call(guest_id:, limit: DEFAULT_LIMIT, cursor: nil)
+        def call(guest_user_id:, limit: DEFAULT_LIMIT, cursor: nil)
           limit = normalize_limit(limit)
           decoded_cursor = decode_cursor(cursor)
 
           result = follow_repo.list_following(
-            guest_id: guest_id,
+            guest_user_id: guest_user_id,
             limit: limit,
             cursor: decoded_cursor
           )
 
-          # Repository now returns { cast_ids:, has_more: }
-          cast_ids = result[:cast_ids]
+          # Repository now returns { cast_user_ids:, has_more: }
+          cast_user_ids = result[:cast_user_ids]
           has_more = result[:has_more]
 
           next_cursor = nil # Cursor handling simplified since repo handles pagination
 
-          { cast_ids: cast_ids, next_cursor: next_cursor, has_more: has_more }
+          { cast_user_ids: cast_user_ids, next_cursor: next_cursor, has_more: has_more }
         end
 
         private

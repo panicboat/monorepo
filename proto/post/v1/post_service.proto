@@ -10,7 +10,7 @@ service PostService {
 }
 
 message CastPostAuthor {
-  string id = 1;
+  string user_id = 1;
   string name = 2;
   string image_url = 3;
 }
@@ -25,7 +25,7 @@ message CastPostMedia {
 
 message CastPost {
   string id = 1;
-  string cast_id = 2;
+  string cast_user_id = 2;
   string content = 3;
   repeated CastPostMedia media = 4;
   string created_at = 5; // ISO8601
@@ -40,9 +40,9 @@ message CastPost {
 message ListCastPostsRequest {
   int32 limit = 1;   // default: 20, max: 50
   string cursor = 2; // optional, base64 encoded
-  string cast_id = 3; // optional, filter by cast
+  string cast_user_id = 3; // optional, filter by cast
   string filter = 4; // optional, "following" or "favorites" to filter posts
-  repeated string exclude_cast_ids = 5; // optional, exclude posts from these casts
+  repeated string exclude_cast_user_ids = 5; // optional, exclude posts from these casts
 }
 
 message ListCastPostsResponse {

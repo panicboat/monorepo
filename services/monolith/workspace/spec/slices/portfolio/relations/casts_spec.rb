@@ -6,7 +6,7 @@ RSpec.describe "Portfolio::Relations::Casts", type: :database do
   let(:relation) { Hanami.app.slices[:portfolio]["relations.casts"] }
 
   it "defines the correct schema" do
-    expect(relation.schema.primary_key_name).to eq(:id)
+    expect(relation.schema.primary_key_name).to eq(:user_id)
     attribute_names = relation.schema.attributes.map(&:name)
     expect(attribute_names).to include(:user_id)
     expect(attribute_names).to include(:name)

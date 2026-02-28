@@ -4,7 +4,6 @@ module Portfolio
   module Relations
     class Guests < Portfolio::DB::Relation
       schema(:"portfolio__guests", as: :guests, infer: false) do
-        attribute :id, Types::String      # UUID
         attribute :user_id, Types::String # UUID
         attribute :name, Types::String
         attribute :avatar_media_id, Types::String
@@ -13,7 +12,7 @@ module Portfolio
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 
-        primary_key :id
+        primary_key :user_id
       end
     end
   end

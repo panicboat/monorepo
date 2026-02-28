@@ -18,7 +18,6 @@ export interface Review {
   // Reviewer profile info (populated for pending reviews)
   reviewerName?: string;
   reviewerAvatarUrl?: string;
-  reviewerProfileId?: string; // Guest profile ID for linking
   media?: Media[];
 }
 

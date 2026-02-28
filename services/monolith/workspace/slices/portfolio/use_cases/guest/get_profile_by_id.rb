@@ -16,7 +16,7 @@ module Portfolio
           guest = guest_repository.find_by_id(guest_id)
           return nil unless guest
 
-          { guest: guest, cast_id: cast.id }
+          { guest: guest, cast_user_id: cast.user_id }
         end
       end
     end

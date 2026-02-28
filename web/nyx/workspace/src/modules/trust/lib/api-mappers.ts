@@ -20,7 +20,6 @@ interface ProtoReview {
   createdAt: string;
   reviewerName?: string;
   reviewerAvatarUrl?: string;
-  reviewerProfileId?: string;
   media?: ProtoReviewMedia[];
 }
 
@@ -48,7 +47,6 @@ export function mapProtoReviewToJson(review: ProtoReview) {
     createdAt: review.createdAt,
     reviewerName: review.reviewerName,
     reviewerAvatarUrl: review.reviewerAvatarUrl,
-    reviewerProfileId: review.reviewerProfileId,
     media: (review.media || []).map((m) => ({
       id: m.id,
       mediaType: m.mediaType as "image" | "video",

@@ -6,8 +6,8 @@ module Relationship
       class GetFollowStatus
         include Relationship::Deps[follow_repo: "repositories.follow_repository"]
 
-        def call(cast_ids:, guest_id:)
-          follow_repo.following_status_batch(cast_ids: cast_ids, guest_id: guest_id)
+        def call(cast_user_ids:, guest_user_id:)
+          follow_repo.following_status_batch(cast_user_ids: cast_user_ids, guest_user_id: guest_user_id)
         end
       end
     end

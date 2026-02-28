@@ -44,7 +44,7 @@ module Post
         return nil unless author_info
 
         ::Post::V1::CommentAuthor.new(
-          id: author_info[:id].to_s,
+          user_id: author_info[:id].to_s,
           name: author_info[:name] || "",
           image_url: author_info[:image_url] || "",
           user_type: author_info[:user_type] || "guest"

@@ -38,9 +38,9 @@ module Portfolio
       def get_guest_profile_by_id
         authenticate_user!
 
-        guest_id = request.message.guest_id
+        guest_id = request.message.user_id
         if guest_id.nil? || guest_id.empty?
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "guest_id is required")
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "user_id is required")
         end
 
         result = get_profile_by_id_uc.call(guest_id: guest_id, cast_user_id: current_user_id)
@@ -49,10 +49,10 @@ module Portfolio
         end
 
         guest = result[:guest]
-        cast_id = result[:cast_id]
+        cast_user_id = result[:cast_user_id]
 
-        follow_detail = social_adapter.get_follow_detail(guest_id: guest.id, cast_id: cast_id)
-        is_blocked = social_adapter.cast_blocked_guest?(cast_id: cast_id, guest_id: guest.id)
+        follow_detail = social_adapter.get_follow_detail(guest_user_id: guest.user_id, cast_user_id: cast_user_id)
+        is_blocked = social_adapter.cast_blocked_guest?(cast_user_id: cast_user_id, guest_user_id: guest.user_id)
 
         media_files = load_media_files_for_guest(guest)
 

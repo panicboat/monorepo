@@ -11,7 +11,7 @@ RSpec.describe Feed::Presenters::FeedPresenter do
   let(:post) do
     double(
       id: post_id,
-      cast_id: cast_id,
+      cast_user_id: cast_id,
       content: "Test content",
       visibility: "public",
       created_at: Time.now,

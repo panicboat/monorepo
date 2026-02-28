@@ -4,12 +4,12 @@ module Feed
   module Adapters
     # Anti-Corruption Layer for accessing Relationship slice data.
     class RelationshipAdapter
-      def following_cast_ids(guest_id:)
-        follow_repo.following_cast_ids(guest_id: guest_id)
+      def following_cast_user_ids(guest_user_id:)
+        follow_repo.following_cast_user_ids(guest_user_id: guest_user_id)
       end
 
-      def favorite_cast_ids(guest_id:)
-        favorite_repo.favorite_cast_ids(guest_id: guest_id)
+      def favorite_cast_user_ids(guest_user_id:)
+        favorite_repo.favorite_cast_user_ids(guest_user_id: guest_user_id)
       end
 
       def blocked_cast_ids(blocker_id:)

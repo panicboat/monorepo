@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       { headers: buildGrpcHeaders(req.headers) }
     );
 
-    const castIds = response.castIds || [];
+    const castIds = response.castUserIds || [];
 
     // Fetch cast profiles for each castId
     const casts: FollowingCast[] = [];
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     }
 
     const response = await followClient.followCast(
-      { castId },
+      { castUserId: castId },
       { headers: buildGrpcHeaders(req.headers) }
     );
 
@@ -96,7 +96,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     const response = await followClient.unfollowCast(
-      { castId },
+      { castUserId: castId },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

@@ -52,7 +52,7 @@ module Portfolio
         end
 
         # Load areas and genres in combined call
-        ids = repo.find_area_and_genre_ids(result.id)
+        ids = repo.find_area_and_genre_ids(result.user_id)
         areas = area_repo.find_by_ids(ids[:area_ids])
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
@@ -81,7 +81,7 @@ module Portfolio
         end
 
         # Load areas and genres in combined call
-        ids = repo.find_area_and_genre_ids(result.id)
+        ids = repo.find_area_and_genre_ids(result.user_id)
         areas = area_repo.find_by_ids(ids[:area_ids])
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
@@ -155,7 +155,7 @@ module Portfolio
         )
 
         # Load genres for response
-        ids = repo.find_area_and_genre_ids(result.id)
+        ids = repo.find_area_and_genre_ids(result.user_id)
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
         # Load media files for URL generation
@@ -188,7 +188,7 @@ module Portfolio
         )
 
         # Load areas and genres in combined call
-        ids = repo.find_area_and_genre_ids(result.id)
+        ids = repo.find_area_and_genre_ids(result.user_id)
         areas = area_repo.find_by_ids(ids[:area_ids])
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
@@ -213,7 +213,7 @@ module Portfolio
         end
 
         # Load areas and genres for response
-        ids = repo.find_area_and_genre_ids(result[:cast].id)
+        ids = repo.find_area_and_genre_ids(result[:cast].user_id)
         areas = area_repo.find_by_ids(ids[:area_ids])
         genres = genre_repo.find_by_ids(ids[:genre_ids])
 
@@ -234,7 +234,7 @@ module Portfolio
         gallery_media_ids = request.message.gallery_media_ids ? request.message.gallery_media_ids.to_a : []
         avatar_media_id = request.message.avatar_media_id.to_s.empty? ? nil : request.message.avatar_media_id
         result = save_images_uc.call(
-          cast_id: cast.id,
+          cast_user_id: cast.user_id,
           profile_media_id: request.message.profile_media_id,
           gallery_media_ids: gallery_media_ids,
           avatar_media_id: avatar_media_id
@@ -285,15 +285,15 @@ module Portfolio
 
         # Batch fetch media files for all casts
         all_media_ids = casts.flat_map { |c| [c.profile_media_id, c.avatar_media_id].compact }
-        casts.each { |c| all_media_ids.concat(repo.find_gallery_media_ids(c.id)) }
+        casts.each { |c| all_media_ids.concat(repo.find_gallery_media_ids(c.user_id)) }
         media_files = media_adapter.find_by_ids(all_media_ids)
 
         ::Portfolio::V1::ListCastsResponse.new(
           items: casts.map { |c|
-            genre_ids = repo.find_genre_ids(c.id)
+            genre_ids = repo.find_genre_ids(c.user_id)
             genres = genre_repo.find_by_ids(genre_ids)
             ::Portfolio::V1::ListCastsResponse::CastItem.new(
-              profile: ProfilePresenter.to_proto(c, genres: genres, is_online: online_ids.include?(c.id), media_files: media_files),
+              profile: ProfilePresenter.to_proto(c, genres: genres, is_online: online_ids.include?(c.user_id), media_files: media_files),
               plans: PlanPresenter.many_to_proto(c.plans)
             )
           },
@@ -351,7 +351,7 @@ module Portfolio
 
       def load_media_files_for_cast(cast)
         media_ids = [cast.profile_media_id, cast.avatar_media_id].compact
-        gallery_ids = repo.find_gallery_media_ids(cast.id)
+        gallery_ids = repo.find_gallery_media_ids(cast.user_id)
         media_ids.concat(gallery_ids)
         media_adapter.find_by_ids(media_ids)
       end

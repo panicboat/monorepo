@@ -9,12 +9,12 @@ module Offer
         portfolio_cast_repository.find_by_user_id(user_id)
       end
 
-      def find_cast_by_id(cast_id)
-        portfolio_cast_repository.find_by_id(cast_id)
+      def find_cast_by_id(cast_user_id)
+        portfolio_cast_repository.find_by_id(cast_user_id)
       end
 
-      def cast_exists?(cast_id)
-        !portfolio_cast_repository.find_by_id(cast_id).nil?
+      def cast_exists?(cast_user_id)
+        !portfolio_cast_repository.find_by_id(cast_user_id).nil?
       end
 
       private

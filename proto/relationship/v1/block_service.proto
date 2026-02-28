@@ -56,7 +56,7 @@ message GetBlockStatusResponse {
 }
 
 message ListBlockedByRequest {
-  string target_id = 1;  // Guest profile ID
+  string target_user_id = 1;  // Guest user ID
 }
 
 message ListBlockedByResponse {

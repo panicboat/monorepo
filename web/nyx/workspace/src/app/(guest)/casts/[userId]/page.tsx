@@ -23,9 +23,9 @@ interface CastData {
 export default function CastDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ userId: string }>;
 }) {
-  const { id } = use(params);
+  const { userId: id } = use(params);
   const [data, setData] = useState<CastData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +87,7 @@ export default function CastDetailPage({
   return (
     <div className="relative bg-surface pb-24">
       <CastDetailView
-        castId={data.profile.id}
+        castId={data.profile.userId}
         profileData={data.profile}
         images={images}
         plans={data.plans}
@@ -98,13 +98,13 @@ export default function CastDetailPage({
       {/* Details section - only visible for public casts or approved followers */}
       {data.canViewDetails && (
         <>
-          <TrustSectionWrapper castId={data.profile.id} castUserId={data.profile.userId} castName={data.profile.name} />
-          <CastTimeline castId={data.profile.id} />
+          <TrustSectionWrapper castUserId={data.profile.userId} castName={data.profile.name} />
+          <CastTimeline castId={data.profile.userId} />
         </>
       )}
 
       {/* Floating Action Buttons */}
-      <FloatingActionButtons castId={data.profile.id} castUserId={data.profile.userId} castName={data.profile.name} />
+      <FloatingActionButtons castUserId={data.profile.userId} castName={data.profile.name} />
     </div>
   );
 }
@@ -185,11 +185,9 @@ function FollowButton({ castId }: { castId: string }) {
 }
 
 function TrustSectionWrapper({
-  castId,
   castUserId,
   castName,
 }: {
-  castId: string;
   castUserId: string;
   castName?: string;
 }) {
@@ -200,7 +198,7 @@ function TrustSectionWrapper({
           targetId={castUserId}
           targetName={castName}
           showWriteReview={false}
-          reviewsLinkHref={`/casts/${castId}/reviews`}
+          reviewsLinkHref={`/casts/${castUserId}/reviews`}
         />
       </div>
     </div>
@@ -262,11 +260,9 @@ function FavoriteButton({ castId }: { castId: string }) {
 }
 
 function FloatingActionButtons({
-  castId,
   castUserId,
   castName,
 }: {
-  castId: string;
   castUserId: string;
   castName?: string;
 }) {
@@ -286,8 +282,8 @@ function FloatingActionButtons({
     <>
       <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex w-full max-w-md justify-end px-4 pb-24 pointer-events-none">
         <div className="flex flex-col gap-3 pointer-events-auto">
-          <FollowButton castId={castId} />
-          <FavoriteButton castId={castId} />
+          <FollowButton castId={castUserId} />
+          <FavoriteButton castId={castUserId} />
 
           {/* Write Trust Button */}
           {isLoggedIn && (

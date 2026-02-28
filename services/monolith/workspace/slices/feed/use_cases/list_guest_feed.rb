@@ -50,15 +50,15 @@ module Feed
       private
 
       def list_all_posts(guest_id:, limit:, cursor:, exclude_cast_ids:)
-        public_cast_ids = @cast_adapter.public_cast_ids
-        followed_cast_ids = @relationship_adapter.following_cast_ids(guest_id: guest_id)
+        public_cast_user_ids = @cast_adapter.public_cast_ids
+        followed_cast_user_ids = @relationship_adapter.following_cast_user_ids(guest_user_id: guest_id)
 
         posts = @post_adapter.list_all_for_authenticated(
-          public_cast_ids: public_cast_ids,
-          followed_cast_ids: followed_cast_ids,
+          public_cast_user_ids: public_cast_user_ids,
+          followed_cast_user_ids: followed_cast_user_ids,
           limit: limit,
           cursor: cursor,
-          exclude_cast_ids: exclude_cast_ids
+          exclude_cast_user_ids: exclude_cast_ids
         )
 
         authors = load_authors(posts)
@@ -66,14 +66,14 @@ module Feed
       end
 
       def list_following_posts(guest_id:, limit:, cursor:, exclude_cast_ids:)
-        cast_ids = @relationship_adapter.following_cast_ids(guest_id: guest_id)
-        return [[], {}] if cast_ids.empty?
+        cast_user_ids = @relationship_adapter.following_cast_user_ids(guest_user_id: guest_id)
+        return [[], {}] if cast_user_ids.empty?
 
-        posts = @post_adapter.list_all_by_cast_ids(
-          cast_ids: cast_ids,
+        posts = @post_adapter.list_all_by_cast_user_ids(
+          cast_user_ids: cast_user_ids,
           limit: limit,
           cursor: cursor,
-          exclude_cast_ids: exclude_cast_ids
+          exclude_cast_user_ids: exclude_cast_ids
         )
 
         authors = load_authors(posts)
@@ -81,14 +81,14 @@ module Feed
       end
 
       def list_favorite_posts(guest_id:, limit:, cursor:, exclude_cast_ids:)
-        cast_ids = @relationship_adapter.favorite_cast_ids(guest_id: guest_id)
-        return [[], {}] if cast_ids.empty?
+        cast_user_ids = @relationship_adapter.favorite_cast_user_ids(guest_user_id: guest_id)
+        return [[], {}] if cast_user_ids.empty?
 
         posts = @post_adapter.list_public_posts(
           limit: limit,
           cursor: cursor,
-          cast_ids: cast_ids,
-          exclude_cast_ids: exclude_cast_ids
+          cast_user_ids: cast_user_ids,
+          exclude_cast_user_ids: exclude_cast_ids
         )
 
         authors = load_authors(posts)
@@ -98,8 +98,8 @@ module Feed
       def load_authors(posts)
         return {} if posts.empty?
 
-        cast_ids = posts.map(&:cast_id).uniq
-        @cast_adapter.find_by_cast_ids(cast_ids)
+        cast_user_ids = posts.map(&:cast_user_id).uniq
+        @cast_adapter.find_by_cast_ids(cast_user_ids)
       end
 
     end

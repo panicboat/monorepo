@@ -30,7 +30,7 @@ module Post
 
         result = like_post_uc.call(
           post_id: request.message.post_id,
-          guest_id: guest.id
+          guest_user_id: guest.user_id
         )
 
         ::Post::V1::LikeCastPostResponse.new(likes_count: result[:likes_count])
@@ -44,7 +44,7 @@ module Post
 
         result = unlike_post_uc.call(
           post_id: request.message.post_id,
-          guest_id: guest.id
+          guest_user_id: guest.user_id
         )
 
         ::Post::V1::UnlikeCastPostResponse.new(likes_count: result[:likes_count])
@@ -57,7 +57,7 @@ module Post
         post_ids = request.message.post_ids.to_a
 
         liked = if guest
-          get_like_status_uc.call(post_ids: post_ids, guest_id: guest.id)
+          get_like_status_uc.call(post_ids: post_ids, guest_user_id: guest.user_id)
         else
           post_ids.each_with_object({}) { |id, h| h[id] = false }
         end

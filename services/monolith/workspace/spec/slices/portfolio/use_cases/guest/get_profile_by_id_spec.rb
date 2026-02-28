@@ -16,10 +16,9 @@ RSpec.describe Portfolio::UseCases::Guest::GetProfileById do
 
   let(:cast_user_id) { "cast-user-123" }
   let(:guest_id) { "guest-456" }
-  let(:cast_id) { "cast-789" }
 
-  let(:cast) { double(:cast, id: cast_id) }
-  let(:guest) { double(:guest, id: guest_id, user_id: "guest-user-456", name: "Test Guest") }
+  let(:cast) { double(:cast, user_id: cast_user_id) }
+  let(:guest) { double(:guest, user_id: "guest-user-456", name: "Test Guest") }
 
   describe "#call" do
     context "when cast and guest exist" do
@@ -31,7 +30,7 @@ RSpec.describe Portfolio::UseCases::Guest::GetProfileById do
       it "returns guest and cast_id" do
         result = use_case.call(guest_id: guest_id, cast_user_id: cast_user_id)
 
-        expect(result).to eq({ guest: guest, cast_id: cast_id })
+        expect(result).to eq({ guest: guest, cast_user_id: cast_user_id })
       end
     end
 

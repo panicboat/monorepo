@@ -19,7 +19,7 @@ enum FeedFilter {
 }
 
 message FeedAuthor {
-  string id = 1;
+  string user_id = 1;
   string name = 2;
   string image_url = 3;
 }
@@ -34,7 +34,7 @@ message FeedMedia {
 
 message FeedPost {
   string id = 1;
-  string cast_id = 2;
+  string cast_user_id = 2;
   string content = 3;
   repeated FeedMedia media = 4;
   string created_at = 5; // ISO8601

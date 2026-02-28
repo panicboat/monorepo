@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     }
 
     const response = await followClient.getFollowStatus(
-      { castIds },
+      { castUserIds: castIds },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

@@ -58,7 +58,7 @@ module Portfolio
             }.compact
 
             result = if cast
-              repo.update(cast.id, attrs)
+              repo.update(cast.user_id, attrs)
             else
               repo.create(
                 attrs.merge(
@@ -68,16 +68,16 @@ module Portfolio
               )
             end
 
-            cast_id = result.respond_to?(:id) ? result.id : (cast&.id || repo.find_by_user_id(user_id)&.id)
+            cast_user_id = result.respond_to?(:user_id) ? result.user_id : (cast&.user_id || user_id)
 
             # Save area associations if provided
-            if area_ids && cast_id
-              repo.save_areas(cast_id: cast_id, area_ids: area_ids)
+            if area_ids && cast_user_id
+              repo.save_areas(cast_user_id: cast_user_id, area_ids: area_ids)
             end
 
             # Save genre associations if provided
-            if genre_ids && cast_id
-              repo.save_genres(cast_id: cast_id, genre_ids: genre_ids)
+            if genre_ids && cast_user_id
+              repo.save_genres(cast_user_id: cast_user_id, genre_ids: genre_ids)
             end
 
             result

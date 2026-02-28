@@ -12,7 +12,7 @@ interface ProtoBlockedUser {
 }
 
 interface ProtoFollowRequest {
-  guestId: string;
+  guestUserId: string;
   guestName: string;
   guestImageUrl: string;
   requestedAt: string;
@@ -42,7 +42,7 @@ export function mapProtoBlockedListToJson(response: {
 
 export function mapProtoFollowRequestToJson(request: ProtoFollowRequest) {
   return {
-    guestId: request.guestId,
+    guestId: request.guestUserId,
     guestName: request.guestName,
     guestImageUrl: request.guestImageUrl,
     requestedAt: request.requestedAt,

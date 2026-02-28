@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     }
 
     const response = await favoriteClient.getFavoriteStatus(
-      { castIds },
+      { castUserIds: castIds },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

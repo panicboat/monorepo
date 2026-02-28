@@ -3,17 +3,17 @@
 module Offer
   module Repositories
     class PlanRepository < Offer::DB::Repo
-      def find_by_cast_id(cast_id)
-        plans.where(cast_id: cast_id).to_a
+      def find_by_cast_id(cast_user_id)
+        plans.where(cast_user_id: cast_user_id).to_a
       end
 
-      def save_plans(cast_id:, plans_data:)
+      def save_plans(cast_user_id:, plans_data:)
         transaction do
-          plans.where(cast_id: cast_id).delete
+          plans.where(cast_user_id: cast_user_id).delete
           plans_data.each do |plan|
-            plans.changeset(:create, plan.merge(cast_id: cast_id)).commit
+            plans.changeset(:create, plan.merge(cast_user_id: cast_user_id)).commit
           end
-          find_by_cast_id(cast_id)
+          find_by_cast_id(cast_user_id)
         end
       end
     end

@@ -11,7 +11,7 @@ module Portfolio
         return { success: false, error: :cast_not_found } unless cast
 
         old_visibility = cast.visibility
-        cast_repo.save_visibility(cast.id, visibility)
+        cast_repo.save_visibility(cast.user_id, visibility)
 
         updated_cast = cast_repo.find_by_user_id_with_plans(user_id)
         {

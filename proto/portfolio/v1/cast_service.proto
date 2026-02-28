@@ -77,7 +77,7 @@ message CastProfile {
   repeated Area areas = 20;
   repeated Genre genres = 21;
   bool is_online = 22; // Currently within scheduled availability
-  string id = 23; // Cast profile ID
+  reserved 23; // was id (use user_id instead)
   string registered_at = 24; // Onboarding completion timestamp (empty if not registered)
   string profile_media_id = 25; // Media ID for profile image
   string avatar_media_id = 26; // Media ID for avatar image

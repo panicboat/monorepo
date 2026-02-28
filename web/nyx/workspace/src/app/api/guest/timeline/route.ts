@@ -7,7 +7,7 @@ import { extractPaginationParams, handleApiError } from "@/lib/api-helpers";
 export async function GET(req: NextRequest) {
   try {
     const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
-    const castId = req.nextUrl.searchParams.get("cast_id") || "";
+    const castUserId = req.nextUrl.searchParams.get("cast_id") || "";
     const filterParam = req.nextUrl.searchParams.get("filter") || "";
 
     // Use "public" filter by default to force public timeline even for Cast users
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const filter = filterParam || "public";
 
     const response = await postClient.listCastPosts(
-      { castId, limit, cursor, filter },
+      { castUserId, limit, cursor, filter },
       { headers: buildGrpcHeaders(req.headers) }
     );
 

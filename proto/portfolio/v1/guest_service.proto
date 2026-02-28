@@ -35,11 +35,11 @@ message SaveGuestProfileResponse {
 }
 
 message GetGuestProfileByIdRequest {
-  string guest_id = 1;  // Guest ID (UUID)
+  string user_id = 1;  // Guest user ID (UUID)
 }
 
 message GuestDetailProfile {
-  string id = 1;
+  reserved 1; // was id (use user_id instead)
   string user_id = 2;
   string name = 3;
   string avatar_url = 4;        // Read-only, download URL

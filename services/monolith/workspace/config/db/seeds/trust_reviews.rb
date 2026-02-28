@@ -18,12 +18,12 @@ module Seeds
       reviews_data = []
 
       # Guest -> Cast reviews (pending and approved)
-      guest_user_ids.first(3).each_with_index do |guest_id, i|
-        cast_user_ids.first(2).each do |cast_id|
+      guest_user_ids.first(3).each_with_index do |guest_user_id, i|
+        cast_user_ids.first(2).each do |cast_user_id|
           reviews_data << {
             id: SecureRandom.uuid,
-            reviewer_id: guest_id,
-            reviewee_id: cast_id,
+            reviewer_id: guest_user_id,
+            reviewee_id: cast_user_id,
             content: "Great service! Highly recommended. #{i + 1}",
             score: [4, 5].sample,
             status: i.zero? ? "pending" : "approved",
@@ -34,12 +34,12 @@ module Seeds
       end
 
       # Cast -> Guest reviews (always approved, content optional)
-      cast_user_ids.first(2).each do |cast_id|
-        guest_user_ids.first(3).each_with_index do |guest_id, i|
+      cast_user_ids.first(2).each do |cast_user_id|
+        guest_user_ids.first(3).each_with_index do |guest_user_id, i|
           reviews_data << {
             id: SecureRandom.uuid,
-            reviewer_id: cast_id,
-            reviewee_id: guest_id,
+            reviewer_id: cast_user_id,
+            reviewee_id: guest_user_id,
             content: i.even? ? "Good guest, punctual." : nil,
             score: [3, 4, 5].sample,
             status: "approved",

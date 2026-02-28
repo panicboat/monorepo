@@ -25,7 +25,7 @@ export async function GET(
       createdAt: reply.createdAt,
       author: reply.author
         ? {
-            id: reply.author.id,
+            id: reply.author.userId,
             name: reply.author.name,
             imageUrl: reply.author.imageUrl,
             userType: reply.author.userType,
