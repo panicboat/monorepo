@@ -22,9 +22,8 @@
 
 | Document | Purpose |
 |----------|---------|
-| `services/handbooks/workspace/docs/domains/` | **ドメイン定義（How）** |
-| `services/handbooks/workspace/docs/ARCHITECTURE.md` | 技術スタック、全体構成 |
-| `.claude/rules/*.md` | ルール（自動読み込み） |
+| `docs/ドメイン/` | **ドメイン定義（How）** |
+| `docs/ARCHITECTURE.md` | 技術スタック、全体構成 |
 
 ## Quick Reference
 
