@@ -1,7 +1,3 @@
----
-sidebar_position: 60
----
-
 # Feed Domain
 
 複数ドメインのデータを集約してフィードを生成するサービス。

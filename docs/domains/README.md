@@ -14,21 +14,6 @@
 | [Relationship](./relationship.md) | フォロー、ブロック、お気に入り | `slices/relationship` | `modules/relationship` |
 | [Feed](./feed.md) | フィード集約 | `slices/feed` | `modules/feed` |
 
-## Implementation Status
-
-| Domain | Backend | Frontend | Proto |
-|--------|:-------:|:--------:|:-----:|
-| Identity | ✓ | ✓ | ✓ |
-| Offer | ✓ | ✓ | ✓ |
-| Portfolio | ✓ | ✓ | ✓ |
-| Media | ✓ | - | ✓ |
-| Post | ✓ | - | ✓ |
-| Relationship | ✓ | - | ✓ |
-| Feed | ✓ | - | ✓ |
-
-- ✓: 実装済み
-- -: 未着手
-
 ## Domain Dependencies
 
 ```

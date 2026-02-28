@@ -1,7 +1,3 @@
----
-sidebar_position: 20
----
-
 # Authorization
 
 ## 認証 (Authentication) vs 認可 (Authorization)

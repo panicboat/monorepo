@@ -1,7 +1,3 @@
----
-sidebar_position: 15
----
-
 # Security for JWT
 
 Gateway で JWT 検証を導入すると Backendが x-user-id ヘッダーを無条件に信頼する設計になります。

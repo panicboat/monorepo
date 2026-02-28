@@ -1,7 +1,3 @@
----
-sidebar_position: 50
----
-
 # Relationship Domain
 
 キャストとゲスト間の関係性（フォロー、ブロック、お気に入り）を管理するサービス。

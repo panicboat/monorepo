@@ -1,7 +1,3 @@
----
-sidebar_position: 50
----
-
 # Access Policy
 
 アクセス制御の仕様と判定ルールを定義する。

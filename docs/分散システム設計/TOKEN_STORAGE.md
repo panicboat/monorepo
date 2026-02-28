@@ -1,7 +1,3 @@
----
-sidebar_position: 14
----
-
 # Storage for Access Token
 
 ## フロントエンドでのトークン保存

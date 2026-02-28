@@ -1,7 +1,3 @@
----
-sidebar_position: 40
----
-
 # Post Domain
 
 タイムライン投稿、いいね、コメント機能を管理するサービス。

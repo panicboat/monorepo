@@ -1,7 +1,3 @@
----
-sidebar_position: 10
----
-
 # Identity Domain
 
 全ての入り口となるゲートキーパー。

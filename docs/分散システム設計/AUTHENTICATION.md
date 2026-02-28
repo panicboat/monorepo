@@ -1,7 +1,3 @@
----
-sidebar_position: 10
----
-
 # Authentication
 
 ログイン後はコンポーネント間の通信で使用する認証トークンとして、JWT を使用します。

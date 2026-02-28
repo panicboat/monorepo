@@ -1,7 +1,3 @@
----
-sidebar_position: 30
----
-
 # Media Domain
 
 メディアファイル（画像・動画）の統一管理サービス。
