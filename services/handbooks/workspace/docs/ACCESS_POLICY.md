@@ -19,7 +19,29 @@ Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visi
 | Cast Visibility | キャストのプロフィール公開設定（`public` / `private`） |
 | Post Visibility | 投稿の公開設定（`public` / `private`） |
 | Follow Status | フォロー状態（`none` / `pending` / `approved`） |
-| Block | ゲストがキャストをブロックしている状態（一方向のみ） |
+| Block | ユーザー間のブロック状態（双方向：Guest → Cast / Cast → Guest） |
+
+## Block Policy
+
+ブロックは **双方向** で機能する。
+
+| 方向 | 説明 | Backend | Frontend UI |
+|------|------|---------|-------------|
+| Guest → Cast | ゲストがキャストをブロック | ✓ | 未実装（hook・API route は実装済み） |
+| Cast → Guest | キャストがゲストをブロック | ✓ | ✓（ゲスト詳細画面のブロックボタン） |
+
+### Block Effects
+
+**Guest → Cast ブロック時（Backend で制御）：**
+- 投稿の閲覧 → Deny
+- 基本プロフィールの閲覧 → Deny
+- フィードから除外
+- Like / Comment / Follow / Favorite → Deny
+
+**Cast → Guest ブロック時：**
+- フォロー関係を自動削除（`BlockUser` use case）
+- 以後そのゲストからのフォロー申請を拒否（`FollowCast` use case）
+- キャストの管理画面でブロック状態を表示
 
 ---
 
