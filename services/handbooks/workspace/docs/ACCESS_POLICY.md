@@ -203,10 +203,11 @@ Guest → Cast ブロックしている場合は常に Deny。
 
 | Domain | Policy | Purpose |
 |--------|--------|---------|
-| Social | `slices/social/policies/access_policy.rb` | 投稿のアクセス制御 |
+| Post | `slices/post/policies/access_policy.rb` | 投稿のアクセス制御 |
 | Portfolio | `slices/portfolio/policies/profile_access_policy.rb` | プロフィールのアクセス制御 |
+| Feed | `slices/feed/use_cases/list_guest_feed.rb` | フィードのフィルタリング |
 
-### Social::Policies::AccessPolicy
+### Post::Policies::AccessPolicy
 
 | Method | Purpose |
 |--------|---------|
@@ -220,23 +221,39 @@ Guest → Cast ブロックしている場合は常に Deny。
 | `can_view_profile?` | 基本プロフィールの閲覧可否 |
 | `can_view_profile_details?` | 詳細プロフィール（プラン等）の閲覧可否 |
 
-### Cross-Domain Access
+### Cross-Domain Adapters
 
-Portfolio から Social のデータにアクセスする場合は Adapter を使用：
+Portfolio → Relationship:
 
 ```
 Portfolio::Adapters::SocialAdapter
 ├── blocked?(guest_user_id:, cast_user_id:)
 ├── approved_follower?(guest_user_id:, cast_user_id:)
-└── follow_status(guest_user_id:, cast_user_id:)
+├── follow_status(guest_user_id:, cast_user_id:)
+├── get_follow_detail(guest_user_id:, cast_user_id:)
+└── cast_blocked_guest?(cast_user_id:, guest_user_id:)
+```
+
+Post → Relationship:
+
+```
+Post::Adapters::RelationshipAdapter
+├── following?(cast_user_id:, guest_user_id:)
+├── following_status_batch(cast_user_ids:, guest_user_id:)
+├── following_cast_user_ids(guest_user_id:)
+├── blocked?(blocker_id:, blocked_id:)
+├── blocked_cast_ids(blocker_id:)
+├── blocked_guest_ids(blocker_id:)
+└── favorite_cast_user_ids(guest_user_id:)
 ```
 
 ### Dependencies
 
 | Repository | Domain | Purpose |
 |------------|--------|---------|
-| `follow_repository` | Social | フォロー状態の取得 |
-| `block_repository` | Social | ブロック状態の取得 |
+| `follow_repository` | Relationship | フォロー状態の取得 |
+| `block_repository` | Relationship | ブロック状態の取得 |
+| `favorite_repository` | Relationship | お気に入り状態の取得 |
 
 ---
 
@@ -244,13 +261,24 @@ Portfolio::Adapters::SocialAdapter
 
 ### Block Direction
 
-ブロックは **一方向のみ**（ゲスト → キャスト）。キャストがゲストをブロックする機能は存在しない。
+ブロックは **双方向**。
+
+- Guest → Cast: ゲストがキャストをブロック。コンテンツアクセスを制御。
+- Cast → Guest: キャストがゲストをブロック。フォロー削除 + フォロー拒否。
 
 ### Onboarding Incomplete
 
 `registered_at = NULL` のキャストはオンボーディング未完了。現在の実装では AccessPolicy での明示的なチェックはないが、そもそも検索結果に表示されない。
 
+### Follow on Visibility Change
+
+キャストが visibility を変更した場合：
+- `public` → `private`: 既存の approved フォロワーはそのまま。新規フォローは pending になる。
+- `private` → `public`: `approve_all_pending` メソッドは存在するが **現在は呼ばれていない**。pending リクエストは自動承認されない。
+
 ### Future Considerations
 
+- Guest → Cast ブロックのフロントエンド UI 実装
+- `private` → `public` 切り替え時の pending リクエスト自動承認
 - ロールベースアクセス制御（RBAC）の導入時は別途検討
 - キャスト間のアクセス制御は現時点では対象外
