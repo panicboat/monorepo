@@ -139,7 +139,8 @@ Guest → Cast ブロックしている場合は常に Deny。
 | private | pending | No | **Allow** | Deny |
 | private | approved | No | **Allow** | **Allow** |
 | private | any | Yes | Deny | Deny |
-| any | - | 未認証 | **Allow** | cast.public のみ Allow |
+| public | - | 未認証 | **Allow** | **Allow** |
+| private | - | 未認証 | **Allow** | Deny |
 
 ### Feed Filtering Matrix
 
