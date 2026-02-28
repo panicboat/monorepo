@@ -1,6 +1,0 @@
-- [ ] Navigation Bar の更新 (Plan削除, MyPage追加)
-- [ ] `/manage/dashboard` を `/manage/home` に移動・リネーム
-- [ ] `/manage/page.tsx` やその他リダイレクトの更新
-- [ ] `/manage/mypage` ディレクトリと `page.tsx` の作成
-- [ ] `cast_mypage_demo.html` を参考に MyPage の実装
-- [ ] 未使用コンポーネントの確認と整理

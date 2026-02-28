@@ -1,6 +1,0 @@
-- [ ] `types.ts` の `ProfileFormData` と `CastProfile` 型を更新する <!-- id: 100 -->
-- [ ] `PhysicalInputs` コンポーネントを作成する <!-- id: 101 -->
-- [ ] `TagSelector` コンポーネントを作成する <!-- id: 102 -->
-- [ ] `ProfileEditPage` に新しいセクションを追加する <!-- id: 103 -->
-- [ ] `src/mocks/handlers/cast.ts` のMSWハンドラを更新して新しいフィールドをモックする <!-- id: 104 -->
-- [ ] 新しいフィールドの永続化を検証する <!-- id: 105 -->

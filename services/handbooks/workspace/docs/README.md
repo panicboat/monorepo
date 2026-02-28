@@ -19,7 +19,6 @@ sidebar_position: 0
 
 ## 3. Architecture & Codebase
 
-- **[Project Definition](https://github.com/panicboat/monorepo/blob/main/openspec/project.md):** プロジェクトの定義、ビジョン、要件。
 - **[Architecture Overview](ARCHITECTURE.md):** モジュラモノリス構成と技術スタックの解説。
 - **[Distributed System Design](分散システム設計/MICROSERVICE.md):** ドメイン境界とマイクロサービス設計の詳細。
 

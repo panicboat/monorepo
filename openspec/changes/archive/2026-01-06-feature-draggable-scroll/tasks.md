@@ -1,6 +1,0 @@
-- [ ] Refactor `EventSlider.tsx`
-    - [ ] Implement `framer-motion` drag constraints.
-    - [ ] Adjust card width/margin for "Peek" effect.
-- [ ] Refactor `app/search/page.tsx` (Highlights)
-    - [ ] Implement `framer-motion` drag props.
-    - [ ] Adjust styling for "Peek" effect.

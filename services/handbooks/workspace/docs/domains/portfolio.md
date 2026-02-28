@@ -91,7 +91,3 @@ identity__users.id = portfolio__casts.user_id (PK) = portfolio__guests.user_id (
 ### Hooks
 
 - `useGuestData` - ゲストデータの取得・更新・保存
-
-## Related Specs
-
-- `openspec/specs/portfolio/`

@@ -1,3 +1,0 @@
-- [ ] Move `slices/cast` to `slices/portfolio`
-- [ ] Rename `Cast` module to `Portfolio` in all files
-- [ ] Verify `bundle exec hanami rspec` passes

@@ -57,8 +57,3 @@ Portfolio (発見)          Offer (提供)
          ↓                      ↓
     「どんな人か」          「何を提供するか」
 ```
-
-## Related Specs
-
-- `openspec/specs/offer/`
-- `openspec/changes/add-offer-domain/`
