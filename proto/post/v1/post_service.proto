@@ -41,7 +41,7 @@ message ListCastPostsRequest {
   int32 limit = 1;   // default: 20, max: 50
   string cursor = 2; // optional, base64 encoded
   string cast_user_id = 3; // optional, filter by cast
-  string filter = 4; // optional, "following" or "favorites" to filter posts
+  string filter = 4; // optional, "following" to filter posts
   repeated string exclude_cast_user_ids = 5; // optional, exclude posts from these casts
 }
 

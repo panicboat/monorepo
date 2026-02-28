@@ -179,7 +179,7 @@ export type ListCastPostsRequest = Message<"post.v1.ListCastPostsRequest"> & {
   castUserId: string;
 
   /**
-   * optional, "following" or "favorites" to filter posts
+   * optional, "following" to filter posts
    *
    * @generated from field: string filter = 4;
    */
