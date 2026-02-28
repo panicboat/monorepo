@@ -7,6 +7,8 @@ require 'relationship/v1/block_service_pb'
 module Relationship
   module V1
     module BlockService
+      # BlockService handles Cast→Guest blocking.
+      # Only casts can block guests. Guest→Cast blocking is not supported.
       class Service
 
         include ::GRPC::GenericService
@@ -15,10 +17,15 @@ module Relationship
         self.unmarshal_class_method = :decode
         self.service_name = 'relationship.v1.BlockService'
 
+        # BlockUser blocks a guest. The caller must be a cast.
         rpc :BlockUser, ::Relationship::V1::BlockUserRequest, ::Relationship::V1::BlockUserResponse
+        # UnblockUser unblocks a previously blocked guest.
         rpc :UnblockUser, ::Relationship::V1::UnblockUserRequest, ::Relationship::V1::UnblockUserResponse
+        # ListBlocked returns the list of guests blocked by the calling cast.
         rpc :ListBlocked, ::Relationship::V1::ListBlockedRequest, ::Relationship::V1::ListBlockedResponse
+        # GetBlockStatus checks whether the calling cast has blocked the given guest(s).
         rpc :GetBlockStatus, ::Relationship::V1::GetBlockStatusRequest, ::Relationship::V1::GetBlockStatusResponse
+        # ListBlockedBy returns casts who have blocked a specific guest.
         rpc :ListBlockedBy, ::Relationship::V1::ListBlockedByRequest, ::Relationship::V1::ListBlockedByResponse
       end
 

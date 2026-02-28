@@ -55,12 +55,6 @@ module Relationship
           .select_map(:blocked_id)
       end
 
-      def blocked_cast_ids(blocker_id:)
-        blocks.dataset
-          .where(blocker_id: blocker_id, blocked_type: "cast")
-          .select_map(:blocked_id)
-      end
-
       def blocked_guest_ids(blocker_id:)
         blocks.dataset
           .where(blocker_id: blocker_id, blocked_type: "guest")

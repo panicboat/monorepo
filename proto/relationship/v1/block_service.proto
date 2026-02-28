@@ -2,26 +2,34 @@ syntax = "proto3";
 
 package relationship.v1;
 
+// BlockService handles Cast→Guest blocking.
+// Only casts can block guests. Guest→Cast blocking is not supported.
 service BlockService {
+  // BlockUser blocks a guest. The caller must be a cast.
   rpc BlockUser(BlockUserRequest) returns (BlockUserResponse);
+  // UnblockUser unblocks a previously blocked guest.
   rpc UnblockUser(UnblockUserRequest) returns (UnblockUserResponse);
+  // ListBlocked returns the list of guests blocked by the calling cast.
   rpc ListBlocked(ListBlockedRequest) returns (ListBlockedResponse);
+  // GetBlockStatus checks whether the calling cast has blocked the given guest(s).
   rpc GetBlockStatus(GetBlockStatusRequest) returns (GetBlockStatusResponse);
+  // ListBlockedBy returns casts who have blocked a specific guest.
   rpc ListBlockedBy(ListBlockedByRequest) returns (ListBlockedByResponse);
 }
 
+// BlockedUser represents a user involved in a block relationship.
 message BlockedUser {
   string id = 1;
-  string user_type = 2; // "guest" or "cast"
+  string user_type = 2; // "guest" (blocked target)
   string name = 3;
   string image_url = 4;
   string blocked_at = 5; // ISO8601
 }
 
 message BlockUserRequest {
-  string blocked_id = 1;
-  string blocked_type = 2; // "guest" or "cast"
-  string blocker_type = 3; // "guest" or "cast" (optional, specifies which profile is blocking)
+  string blocked_id = 1;   // Guest user ID to block
+  string blocked_type = 2; // Always "guest"
+  string blocker_type = 3; // Always "cast" (caller's role)
 }
 
 message BlockUserResponse {
@@ -29,7 +37,7 @@ message BlockUserResponse {
 }
 
 message UnblockUserRequest {
-  string blocked_id = 1;
+  string blocked_id = 1; // Guest user ID to unblock
 }
 
 message UnblockUserResponse {
@@ -48,17 +56,17 @@ message ListBlockedResponse {
 }
 
 message GetBlockStatusRequest {
-  repeated string user_ids = 1;
+  repeated string user_ids = 1; // Guest user IDs to check
 }
 
 message GetBlockStatusResponse {
-  map<string, bool> blocked = 1; // user_id -> is_blocked
+  map<string, bool> blocked = 1; // guest_user_id -> is_blocked
 }
 
 message ListBlockedByRequest {
-  string target_user_id = 1;  // Guest user ID
+  string target_user_id = 1; // Guest user ID
 }
 
 message ListBlockedByResponse {
-  repeated BlockedUser blockers = 1;  // Casts who blocked this guest
+  repeated BlockedUser blockers = 1; // Casts who blocked this guest
 }
