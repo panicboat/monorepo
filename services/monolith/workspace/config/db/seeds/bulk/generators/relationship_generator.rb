@@ -12,11 +12,10 @@ module Seeds
 
           follows = create_follows(cast_user_ids, guest_user_ids, activity_types)
           blocks = create_blocks(cast_user_ids, guest_user_ids, follows)
-          favorites = create_favorites(guest_user_ids, follows)
 
-          puts "  Created #{follows.size} follows, #{blocks.size} blocks, #{favorites.size} favorites"
+          puts "  Created #{follows.size} follows, #{blocks.size} blocks"
 
-          { follows: follows, blocks: blocks, favorites: favorites }
+          { follows: follows, blocks: blocks }
         end
 
         private
@@ -104,86 +103,30 @@ module Seeds
         def create_blocks(cast_user_ids, guest_user_ids, follows)
           blocks = []
 
-          # Get existing follows to avoid blocking followed casts
-          follow_pairs = follows.map { |f| [f[:guest_user_id], f[:cast_user_id]] }.to_set
-
           Config::BLOCK_COUNT.times do
-            # 80% guest blocks cast, 20% cast blocks guest
-            if rand < 0.8
-              guest_user_id = guest_user_ids.sample
-              cast_user_id = cast_user_ids.sample
-              next unless cast_user_id
+            # Only Cast→Guest blocks are supported
+            cast_user_id = cast_user_ids.sample
+            guest_user_id = guest_user_ids.sample
+            next unless cast_user_id && guest_user_id
 
-              # Skip if already following
-              next if follow_pairs.include?([guest_user_id, cast_user_id])
+            existing = db[:"relationship__blocks"].where(
+              blocker_id: cast_user_id, blocked_id: guest_user_id
+            ).first
+            next if existing
 
-              existing = db[:"relationship__blocks"].where(
-                blocker_id: guest_user_id, blocked_id: cast_user_id
-              ).first
-              next if existing
-
-              db[:"relationship__blocks"].insert(
-                blocker_id: guest_user_id,
-                blocker_type: "guest",
-                blocked_id: cast_user_id,
-                blocked_type: "cast",
-                created_at: Time.now
-              )
-              blocks << { blocker_id: guest_user_id, blocked_id: cast_user_id }
-            else
-              cast_user_id = cast_user_ids.sample
-              guest_user_id = guest_user_ids.sample
-              next unless cast_user_id && guest_user_id
-
-              existing = db[:"relationship__blocks"].where(
-                blocker_id: cast_user_id, blocked_id: guest_user_id
-              ).first
-              next if existing
-
-              db[:"relationship__blocks"].insert(
-                blocker_id: cast_user_id,
-                blocker_type: "cast",
-                blocked_id: guest_user_id,
-                blocked_type: "guest",
-                created_at: Time.now
-              )
-              blocks << { blocker_id: cast_user_id, blocked_id: guest_user_id }
-            end
+            db[:"relationship__blocks"].insert(
+              blocker_id: cast_user_id,
+              blocker_type: "cast",
+              blocked_id: guest_user_id,
+              blocked_type: "guest",
+              created_at: Time.now
+            )
+            blocks << { blocker_id: cast_user_id, blocked_id: guest_user_id }
           end
 
           blocks
         end
 
-        def create_favorites(guest_user_ids, follows)
-          favorites = []
-
-          # Group follows by guest
-          guest_follows = follows.select { |f| f[:status] == "approved" }
-                                 .group_by { |f| f[:guest_user_id] }
-
-          guest_follows.each do |guest_user_id, guest_follow_list|
-            # 30% of follows become favorites
-            favorite_count = (guest_follow_list.size * Config::FAVORITE_FROM_FOLLOW_RATE).to_i
-            next if favorite_count.zero?
-
-            selected = guest_follow_list.sample(favorite_count)
-            selected.each do |follow|
-              existing = db[:"relationship__favorites"].where(
-                guest_user_id: guest_user_id, cast_user_id: follow[:cast_user_id]
-              ).first
-              next if existing
-
-              db[:"relationship__favorites"].insert(
-                guest_user_id: guest_user_id,
-                cast_user_id: follow[:cast_user_id],
-                created_at: Time.now
-              )
-              favorites << { guest_user_id: guest_user_id, cast_user_id: follow[:cast_user_id] }
-            end
-          end
-
-          favorites
-        end
       end
     end
   end

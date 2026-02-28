@@ -35,7 +35,6 @@ module Seeds
 
       # Relationship settings
       FOLLOW_APPROVAL_RATE = 0.95  # 95% approved, 5% pending
-      FAVORITE_FROM_FOLLOW_RATE = 0.30  # 30% of follows become favorites
       BLOCK_COUNT = 50
 
       # Review settings

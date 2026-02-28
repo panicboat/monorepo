@@ -673,7 +673,8 @@ puts "  Created #{follow_count} cast follows"
 # Relationship: Blocks (Sample data for development)
 # =============================================================================
 #
-# Note: Block UI has been removed but backend APIs remain.
+# Note: Only Cast→Guest blocks are supported.
+# Guest→Cast blocking has been removed.
 # This seed creates sample data for testing block functionality.
 # =============================================================================
 
@@ -681,18 +682,15 @@ puts "Seeding Relationship: Blocks..."
 
 block_count = 0
 
-# Guest 太郎 blocks Cast Rin (for testing block functionality)
-taro_block = db[:portfolio__guests].where(name: "太郎").first
-rin_block = db[:portfolio__casts].where(slug: "rin").first
-
-if taro_block && rin_block
-  existing = db[:"relationship__blocks"].where(blocker_id: taro_block[:user_id], blocked_id: rin_block[:user_id]).first
+# Cast Rin blocks Guest 太郎 (Cast→Guest block)
+if rin && taro
+  existing = db[:"relationship__blocks"].where(blocker_id: rin[:user_id], blocked_id: taro[:user_id]).first
   unless existing
     db[:"relationship__blocks"].insert(
-      blocker_id: taro_block[:user_id],
-      blocker_type: "guest",
-      blocked_id: rin_block[:user_id],
-      blocked_type: "cast",
+      blocker_id: rin[:user_id],
+      blocker_type: "cast",
+      blocked_id: taro[:user_id],
+      blocked_type: "guest",
       created_at: Time.now,
     )
     block_count += 1
@@ -700,57 +698,6 @@ if taro_block && rin_block
 end
 
 puts "  Created #{block_count} blocks"
-
-# =============================================================================
-# Relationship: Favorites
-# =============================================================================
-#
-# Visibility Test Scenario:
-#   太郎: Yuna(public), Mio(private) をお気に入り
-#   四郎: Rin(public) をお気に入り
-# =============================================================================
-
-puts "Seeding Relationship: Favorites..."
-
-# Get casts by handle (explicit lookup)
-yuna_fav = db[:portfolio__casts].where(slug: "yuna").first
-mio_fav = db[:portfolio__casts].where(slug: "mio").first
-rin_fav = db[:portfolio__casts].where(slug: "rin").first
-
-# Get guests by name (explicit lookup)
-taro_fav = db[:portfolio__guests].where(name: "太郎").first
-shiro_fav = db[:portfolio__guests].where(name: "四郎").first
-
-favorite_count = 0
-
-# Define specific favorite relationships
-favorite_scenarios = []
-
-if yuna_fav && mio_fav && rin_fav && taro_fav && shiro_fav
-  # 太郎: Yuna と Mio をお気に入り
-  favorite_scenarios << { guest: taro_fav, cast: yuna_fav }
-  favorite_scenarios << { guest: taro_fav, cast: mio_fav }
-
-  # 四郎: Rin をお気に入り
-  favorite_scenarios << { guest: shiro_fav, cast: rin_fav }
-end
-
-favorite_scenarios.each do |scenario|
-  existing = db[:"relationship__favorites"].where(
-    guest_user_id: scenario[:guest][:user_id],
-    cast_user_id: scenario[:cast][:user_id]
-  ).first
-  next if existing
-
-  db[:"relationship__favorites"].insert(
-    guest_user_id: scenario[:guest][:user_id],
-    cast_user_id: scenario[:cast][:user_id],
-    created_at: Time.now,
-  )
-  favorite_count += 1
-end
-
-puts "  Created #{favorite_count} cast favorites"
 
 # =============================================================================
 # Trust: Taggings (freeform tag_name)
@@ -868,17 +815,20 @@ puts ""
 puts "  |                    | Yuna(public)  | Mio(private)  | Rin(public)   |"
 puts "  |                    | pub   | priv  | pub   | priv  | pub   | priv  |"
 puts "  |--------------------|-------|-------|-------|-------|-------|-------|"
-puts "  | 太郎(Y+M follow)    |  ○    |   ○   |   ○   |   ○   |   ×   |   ×   | ※Rinをブロック"
+puts "  | 太郎(Y+M follow)    |  ○    |   ○   |   ○   |   ○   |   ×   |   ×   | ※Rinにブロックされている"
 puts "  | 次郎(no follow)     |  ○    |   ×   |   ×   |   ×   |   ○   |   ×   |"
 puts "  | 三郎(M pending)     |  ○    |   ×   |   ×   |   ×   |   ○   |   ×   |"
 puts "  | 四郎(R follow)      |  ○    |   ×   |   ×   |   ×   |   ○   |   ○   |"
 puts "  | 未認証ユーザー        |  ○    |   ×   |   ×   |   ×   |   ○   |   ×   |"
 puts ""
 puts "  Follow relationships:"
-puts "    太郎 → Yuna(approved), Mio(approved), Rin(blocked)"
+puts "    太郎 → Yuna(approved), Mio(approved)"
 puts "    次郎 → (none)"
 puts "    三郎 → Mio(pending)"
 puts "    四郎 → Rin(approved)"
+puts ""
+puts "  Block relationships (Cast→Guest only):"
+puts "    Rin → 太郎(blocked)"
 puts ""
 puts "  Legend:"
 puts "    pub  = post.visibility='public'"
