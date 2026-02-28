@@ -17,7 +17,7 @@ module Feed
       end
 
       # @param guest_id [String] the guest ID
-      # @param filter [String] "all", "following", or "favorites"
+      # @param filter [String] "all" or "following"
       # @param limit [Integer] max posts to return
       # @param cursor [String, nil] pagination cursor
       # @param blocker_id [String, nil] ID of user to get blocked users for
@@ -34,8 +34,6 @@ module Feed
           list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_cast_ids)
         when "following"
           list_following_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_cast_ids)
-        when "favorites"
-          list_favorite_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_cast_ids)
         else
           list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_cast_ids)
         end
@@ -73,21 +71,6 @@ module Feed
           cast_user_ids: cast_user_ids,
           limit: limit,
           cursor: cursor,
-          exclude_cast_user_ids: exclude_cast_ids
-        )
-
-        authors = load_authors(posts)
-        [posts, authors]
-      end
-
-      def list_favorite_posts(guest_id:, limit:, cursor:, exclude_cast_ids:)
-        cast_user_ids = @relationship_adapter.favorite_cast_user_ids(guest_user_id: guest_id)
-        return [[], {}] if cast_user_ids.empty?
-
-        posts = @post_adapter.list_public_posts(
-          limit: limit,
-          cursor: cursor,
-          cast_user_ids: cast_user_ids,
           exclude_cast_user_ids: exclude_cast_ids
         )
 

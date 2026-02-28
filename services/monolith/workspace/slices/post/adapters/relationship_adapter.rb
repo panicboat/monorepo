@@ -28,10 +28,6 @@ module Post
         block_repo.blocked_guest_ids(blocker_id: blocker_id)
       end
 
-      def favorite_cast_user_ids(guest_user_id:)
-        favorite_repo.favorite_cast_user_ids(guest_user_id: guest_user_id)
-      end
-
       private
 
       def follow_repo
@@ -42,9 +38,6 @@ module Post
         @block_repo ||= Relationship::Slice["repositories.block_repository"]
       end
 
-      def favorite_repo
-        @favorite_repo ||= Relationship::Slice["repositories.favorite_repository"]
-      end
     end
   end
 end

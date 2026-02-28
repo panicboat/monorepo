@@ -36,7 +36,6 @@ module Feed
         filter = case request.message.filter
         when :FEED_FILTER_ALL then "all"
         when :FEED_FILTER_FOLLOWING then "following"
-        when :FEED_FILTER_FAVORITES then "favorites"
         else "all"
         end
 

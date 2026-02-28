@@ -8,10 +8,6 @@ module Feed
         follow_repo.following_cast_user_ids(guest_user_id: guest_user_id)
       end
 
-      def favorite_cast_user_ids(guest_user_id:)
-        favorite_repo.favorite_cast_user_ids(guest_user_id: guest_user_id)
-      end
-
       def blocked_cast_ids(blocker_id:)
         block_repo.blocked_cast_ids(blocker_id: blocker_id)
       end
@@ -24,10 +20,6 @@ module Feed
 
       def follow_repo
         @follow_repo ||= Relationship::Slice["repositories.follow_repository"]
-      end
-
-      def favorite_repo
-        @favorite_repo ||= Relationship::Slice["repositories.favorite_repository"]
       end
 
       def block_repo

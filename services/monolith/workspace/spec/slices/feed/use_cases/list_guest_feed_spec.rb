@@ -102,34 +102,6 @@ RSpec.describe "Feed::UseCases::ListGuestFeed", type: :database do
       end
     end
 
-    context "with filter: favorites" do
-      let(:favorite_repo) { Hanami.app.slices[:relationship]["repositories.favorite_repository"] }
-
-      before do
-        # Guest favorites the cast
-        favorite_repo.add_favorite(cast_user_id: cast_user_id, guest_user_id: guest_id)
-
-        # Create public posts for favorited cast
-        2.times do |i|
-          db[:post__posts].insert(
-            id: SecureRandom.uuid,
-            cast_user_id: cast_user_id,
-            content: "Favorite post #{i}",
-            visibility: "public",
-            created_at: Time.now - (i * 60),
-            updated_at: Time.now
-          )
-        end
-      end
-
-      it "returns posts from favorited casts" do
-        result = use_case.call(guest_id: guest_id, filter: "favorites", limit: 10)
-
-        expect(result[:posts]).not_to be_empty
-        expect(result[:posts].all? { |p| p.cast_user_id == cast_user_id }).to be true
-      end
-    end
-
     context "with blocked casts" do
       let(:block_repo) { Hanami.app.slices[:relationship]["repositories.block_repository"] }
       let(:blocked_cast_user_id) { SecureRandom.uuid }

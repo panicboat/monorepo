@@ -15,7 +15,6 @@ enum FeedFilter {
   FEED_FILTER_UNSPECIFIED = 0;
   FEED_FILTER_ALL = 1;        // Public posts + posts from followed casts
   FEED_FILTER_FOLLOWING = 2;  // Posts from followed casts only
-  FEED_FILTER_FAVORITES = 3;  // Posts from favorited casts only
 }
 
 message FeedAuthor {
@@ -47,7 +46,7 @@ message FeedPost {
 }
 
 message ListGuestFeedRequest {
-  FeedFilter filter = 1;  // required: all/following/favorites
+  FeedFilter filter = 1;  // required: all/following
   int32 limit = 2;        // default: 20, max: 50
   string cursor = 3;      // optional, for pagination
 }
