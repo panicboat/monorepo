@@ -15,28 +15,25 @@ Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visi
 | Cast Visibility | キャストのプロフィール公開設定（`public` / `private`） |
 | Post Visibility | 投稿の公開設定（`public` / `private`） |
 | Follow Status | フォロー状態（`none` / `pending` / `approved`） |
-| Block | ユーザー間のブロック状態（双方向：Guest → Cast / Cast → Guest） |
+| Block | キャストがゲストをブロックしている状態（Cast → Guest の単方向） |
 
 ## Block Policy
 
-ブロックは **双方向** で機能する。
+ブロックは **Cast → Guest の単方向** で機能する。
 
 | 方向 | 説明 | Backend | Frontend UI |
 |------|------|---------|-------------|
-| Guest → Cast | ゲストがキャストをブロック | ✓ | 未実装（hook・API route は実装済み） |
 | Cast → Guest | キャストがゲストをブロック | ✓ | ✓（ゲスト詳細画面のブロックボタン） |
 
 ### Block Effects
 
-**Guest → Cast ブロック時（Backend で制御）：**
-- 投稿の閲覧 → Deny
-- 基本プロフィールの閲覧 → Deny
-- フィードから除外
-- Like / Comment / Follow / Favorite → Deny
-
 **Cast → Guest ブロック時：**
 - フォロー関係を自動削除（`BlockUser` use case）
 - 以後そのゲストからのフォロー申請を拒否（`FollowCast` use case）
+- 詳細プロフィールの閲覧 → Deny
+- 投稿の閲覧 → Deny
+- フィードから除外
+- Like / Comment → Deny
 - キャストの管理画面でブロック状態を表示
 
 ---
@@ -48,7 +45,7 @@ Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visi
 投稿の閲覧可否は以下の優先順位で判定：
 
 ```
-1. Guest → Cast ブロック → Deny
+1. Cast → Guest ブロック → Deny
 2. cast.public && post.public → Allow（誰でも閲覧可）
 3. 未認証 → Deny
 4. follow.approved → Allow（全投稿閲覧可）
@@ -59,9 +56,8 @@ Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visi
 
 | リソース | 条件 | 結果 |
 |----------|------|------|
-| 基本プロフィール | Guest → Cast ブロック | Deny |
-| 基本プロフィール | not blocked（未認証含む） | Allow |
-| 詳細プロフィール（プラン・スケジュール・タイムライン） | Guest → Cast ブロック | Deny |
+| 基本プロフィール | any（未認証含む） | Allow |
+| 詳細プロフィール（プラン・スケジュール・タイムライン） | Cast → Guest ブロック | Deny |
 | 詳細プロフィール | cast.public | Allow |
 | 詳細プロフィール | cast.private && follow.approved | Allow |
 | 詳細プロフィール | cast.private && not follow.approved | Deny |
@@ -69,27 +65,24 @@ Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visi
 
 ### Feed Filtering
 
-ゲストのフィードは 3 種のフィルタで表示内容が異なる。
-全フィルタ共通で、Guest → Cast ブロック済みキャストは除外される。
+ゲストのフィードは 2 種のフィルタで表示内容が異なる。
+全フィルタ共通で、Cast → Guest ブロック済みキャストの投稿は除外される。
 
 | Filter | 表示対象 |
 |--------|---------|
 | ALL | public cast の public post + followed cast の全 post |
 | FOLLOWING | followed cast の全 post（public + private） |
-| FAVORITES | favorited cast の **public post のみ** |
 
 ### Action Permissions
 
 | アクション | 条件 | 結果 |
 |------------|------|------|
-| Like | Guest → Cast ブロック | Deny |
+| Like | Cast → Guest ブロック | Deny |
 | Like | 投稿を閲覧可能 | Allow |
-| Comment | Guest → Cast ブロック | Deny |
+| Comment | Cast → Guest ブロック | Deny |
 | Comment | 投稿を閲覧可能 | Allow |
 | Follow | Cast → Guest ブロック | Deny |
 | Follow | not blocked | Allow（public cast: approved / private cast: pending） |
-| Favorite | Guest → Cast ブロック | Deny |
-| Favorite | not blocked | Allow |
 
 ---
 
@@ -99,8 +92,8 @@ Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visi
 
 ゲストから見た投稿の閲覧可否：
 
-| Cast Visibility | Post Visibility | Follow Status | Blocked (G→C) | Result |
-|-----------------|-----------------|---------------|---------|--------|
+| Cast Visibility | Post Visibility | Follow Status | Blocked (C→G) | Result |
+|-----------------|-----------------|---------------|----------------|--------|
 | public | public | any | No | **Allow** |
 | public | public | any | Yes | Deny |
 | public | private | none | No | Deny |
@@ -123,24 +116,24 @@ Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visi
 | **public post** | 誰でも閲覧可 | approved フォロワーのみ |
 | **private post** | approved フォロワーのみ | approved フォロワーのみ |
 
-Guest → Cast ブロックしている場合は常に Deny。
+Cast → Guest ブロックしている場合は常に Deny。
 
 ### Profile Access Matrix
 
-| Cast Visibility | Follow Status | Blocked (G→C) | 基本プロフィール | 詳細プロフィール |
+| Cast Visibility | Follow Status | Blocked (C→G) | 基本プロフィール | 詳細プロフィール |
 |-----------------|---------------|----------------|------------------|------------------|
 | public | any | No | **Allow** | **Allow** |
-| public | any | Yes | Deny | Deny |
+| public | any | Yes | **Allow** | Deny |
 | private | none | No | **Allow** | Deny |
 | private | pending | No | **Allow** | Deny |
 | private | approved | No | **Allow** | **Allow** |
-| private | any | Yes | Deny | Deny |
+| private | any | Yes | **Allow** | Deny |
 | public | - | 未認証 | **Allow** | **Allow** |
 | private | - | 未認証 | **Allow** | Deny |
 
 ### Feed Filtering Matrix
 
-| Filter | Cast Visibility | Follow Status | Post Visibility | Blocked (G→C) | Result |
+| Filter | Cast Visibility | Follow Status | Post Visibility | Blocked (C→G) | Result |
 |--------|-----------------|---------------|-----------------|----------------|--------|
 | ALL | public | any | public | No | **Allow** |
 | ALL | public | approved | private | No | **Allow** |
@@ -150,9 +143,6 @@ Guest → Cast ブロックしている場合は常に Deny。
 | ALL | any | any | any | Yes | Deny |
 | FOLLOWING | any | approved | any | No | **Allow** |
 | FOLLOWING | any | approved | any | Yes | Deny |
-| FAVORITES | any (favorited) | any | public | No | **Allow** |
-| FAVORITES | any (favorited) | any | private | No | Deny |
-| FAVORITES | any (favorited) | any | any | Yes | Deny |
 
 ---
 
@@ -172,7 +162,7 @@ Guest → Cast ブロックしている場合は常に Deny。
 
 | Phone | Name | Follow Status | Block | 用途 |
 |-------|------|---------------|-------|------|
-| 08011111111 | 太郎 | Yuna: approved, Mio: approved | Rin をブロック | フォロー済み＋ブロックあり |
+| 08011111111 | 太郎 | Yuna: approved, Mio: approved | Rin が太郎をブロック | フォロー済み＋ブロックあり |
 | 08022222222 | 次郎 | none | none | 非フォロー |
 | 08033333333 | 三郎 | Mio: pending | none | フォロー申請中 |
 | 08044444444 | 四郎 | Rin: approved | none | 一部フォロー済み |
@@ -188,7 +178,7 @@ Guest → Cast ブロックしている場合は常に Deny。
 | 四郎 | Allow | Deny | Deny | Deny | Allow | Allow |
 | 未認証 | Allow | Deny | Deny | Deny | Allow | Deny |
 
-※ 太郎は Rin をブロックしているため、Rin の投稿は全て Deny
+※ Rin が太郎をブロック（Cast → Guest）しているため、太郎から Rin の投稿は全て Deny
 
 ---
 
@@ -224,7 +214,6 @@ Portfolio → Relationship:
 
 ```
 Portfolio::Adapters::SocialAdapter
-├── blocked?(guest_user_id:, cast_user_id:)
 ├── approved_follower?(guest_user_id:, cast_user_id:)
 ├── follow_status(guest_user_id:, cast_user_id:)
 ├── get_follow_detail(guest_user_id:, cast_user_id:)
@@ -238,10 +227,18 @@ Post::Adapters::RelationshipAdapter
 ├── following?(cast_user_id:, guest_user_id:)
 ├── following_status_batch(cast_user_ids:, guest_user_id:)
 ├── following_cast_user_ids(guest_user_id:)
-├── blocked?(blocker_id:, blocked_id:)
-├── blocked_cast_ids(blocker_id:)
 ├── blocked_guest_ids(blocker_id:)
-└── favorite_cast_user_ids(guest_user_id:)
+├── cast_blocked_guest?(cast_user_id:, guest_user_id:)
+└── blocked_by_cast_ids(guest_user_id:)
+```
+
+Feed → Relationship:
+
+```
+Feed::Adapters::RelationshipAdapter
+├── following_cast_user_ids(guest_user_id:)
+├── blocked_guest_ids(blocker_id:)
+└── blocker_cast_ids_for_guest(guest_user_id:)
 ```
 
 ### Dependencies
@@ -250,7 +247,6 @@ Post::Adapters::RelationshipAdapter
 |------------|--------|---------|
 | `follow_repository` | Relationship | フォロー状態の取得 |
 | `block_repository` | Relationship | ブロック状態の取得 |
-| `favorite_repository` | Relationship | お気に入り状態の取得 |
 
 ---
 
@@ -258,10 +254,11 @@ Post::Adapters::RelationshipAdapter
 
 ### Block Direction
 
-ブロックは **双方向**。
+ブロックは **Cast → Guest の単方向**。
 
-- Guest → Cast: ゲストがキャストをブロック。コンテンツアクセスを制御。
-- Cast → Guest: キャストがゲストをブロック。フォロー削除 + フォロー拒否。
+- Cast → Guest: キャストがゲストをブロック。フォロー自動削除 + フォロー拒否 + コンテンツアクセス制御（詳細プロフィール・投稿・フィード・アクション全て Deny）。
+
+ゲストからキャストをブロックする機能は存在しない。
 
 ### Onboarding Incomplete
 
@@ -275,7 +272,6 @@ Post::Adapters::RelationshipAdapter
 
 ### Future Considerations
 
-- Guest → Cast ブロックのフロントエンド UI 実装
 - `private` → `public` 切り替え時の pending リクエスト自動承認
 - ロールベースアクセス制御（RBAC）の導入時は別途検討
 - キャスト間のアクセス制御は現時点では対象外
