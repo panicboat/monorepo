@@ -24,16 +24,5 @@ export interface FollowRequest {
   requestedAt: string;
 }
 
-// Block types
-export interface BlockedUser {
-  id: string;
-  userType: "guest" | "cast";
-  name: string;
-  imageUrl: string;
-  blockedAt: string;
-}
 
-export interface BlockState {
-  [userId: string]: boolean;
-}
 
