@@ -52,34 +52,47 @@ Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visi
 投稿の閲覧可否は以下の優先順位で判定：
 
 ```
-1. blocked → Deny
-2. cast.public && post.public → Allow (誰でも閲覧可)
-3. follow.approved → Allow (全投稿閲覧可)
-4. Otherwise → Deny
+1. Guest → Cast ブロック → Deny
+2. cast.public && post.public → Allow（誰でも閲覧可）
+3. 未認証 → Deny
+4. follow.approved → Allow（全投稿閲覧可）
+5. Otherwise → Deny
 ```
 
 ### Profile Access
 
 | リソース | 条件 | 結果 |
 |----------|------|------|
-| 基本プロフィール | blocked | Deny |
-| 基本プロフィール | not blocked | Allow |
-| 詳細プロフィール（プラン・スケジュール） | blocked | Deny |
+| 基本プロフィール | Guest → Cast ブロック | Deny |
+| 基本プロフィール | not blocked（未認証含む） | Allow |
+| 詳細プロフィール（プラン・スケジュール・タイムライン） | Guest → Cast ブロック | Deny |
 | 詳細プロフィール | cast.public | Allow |
 | 詳細プロフィール | cast.private && follow.approved | Allow |
 | 詳細プロフィール | cast.private && not follow.approved | Deny |
+| 詳細プロフィール | 未認証 && cast.private | Deny |
+
+### Feed Filtering
+
+ゲストのフィードは 3 種のフィルタで表示内容が異なる。
+全フィルタ共通で、Guest → Cast ブロック済みキャストは除外される。
+
+| Filter | 表示対象 |
+|--------|---------|
+| ALL | public cast の public post + followed cast の全 post |
+| FOLLOWING | followed cast の全 post（public + private） |
+| FAVORITES | favorited cast の **public post のみ** |
 
 ### Action Permissions
 
 | アクション | 条件 | 結果 |
 |------------|------|------|
-| Like | blocked | Deny |
+| Like | Guest → Cast ブロック | Deny |
 | Like | 投稿を閲覧可能 | Allow |
-| Comment | blocked | Deny |
+| Comment | Guest → Cast ブロック | Deny |
 | Comment | 投稿を閲覧可能 | Allow |
-| Follow | blocked | Deny |
-| Follow | not blocked | Allow |
-| Favorite | blocked | Deny |
+| Follow | Cast → Guest ブロック | Deny |
+| Follow | not blocked | Allow（public cast: approved / private cast: pending） |
+| Favorite | Guest → Cast ブロック | Deny |
 | Favorite | not blocked | Allow |
 
 ---
@@ -90,7 +103,7 @@ Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visi
 
 ゲストから見た投稿の閲覧可否：
 
-| Cast Visibility | Post Visibility | Follow Status | Blocked | Result |
+| Cast Visibility | Post Visibility | Follow Status | Blocked (G→C) | Result |
 |-----------------|-----------------|---------------|---------|--------|
 | public | public | any | No | **Allow** |
 | public | public | any | Yes | Deny |
@@ -114,7 +127,35 @@ Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visi
 | **public post** | 誰でも閲覧可 | approved フォロワーのみ |
 | **private post** | approved フォロワーのみ | approved フォロワーのみ |
 
-ブロックしている場合は常に Deny。
+Guest → Cast ブロックしている場合は常に Deny。
+
+### Profile Access Matrix
+
+| Cast Visibility | Follow Status | Blocked (G→C) | 基本プロフィール | 詳細プロフィール |
+|-----------------|---------------|----------------|------------------|------------------|
+| public | any | No | **Allow** | **Allow** |
+| public | any | Yes | Deny | Deny |
+| private | none | No | **Allow** | Deny |
+| private | pending | No | **Allow** | Deny |
+| private | approved | No | **Allow** | **Allow** |
+| private | any | Yes | Deny | Deny |
+| any | - | 未認証 | **Allow** | cast.public のみ Allow |
+
+### Feed Filtering Matrix
+
+| Filter | Cast Visibility | Follow Status | Post Visibility | Blocked (G→C) | Result |
+|--------|-----------------|---------------|-----------------|----------------|--------|
+| ALL | public | any | public | No | **Allow** |
+| ALL | public | approved | private | No | **Allow** |
+| ALL | public | not approved | private | No | Deny |
+| ALL | private | approved | any | No | **Allow** |
+| ALL | private | not approved | any | No | Deny |
+| ALL | any | any | any | Yes | Deny |
+| FOLLOWING | any | approved | any | No | **Allow** |
+| FOLLOWING | any | approved | any | Yes | Deny |
+| FAVORITES | any (favorited) | any | public | No | **Allow** |
+| FAVORITES | any (favorited) | any | private | No | Deny |
+| FAVORITES | any (favorited) | any | any | Yes | Deny |
 
 ---
 
