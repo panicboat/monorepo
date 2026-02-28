@@ -100,22 +100,11 @@ module Post
         blocker
       end
 
-      def get_blocked_cast_ids
-        blocker = find_blocker
-        return [] unless blocker
-
-        relationship_adapter.blocked_cast_ids(blocker_id: blocker[:id])
-      end
-
       def get_blocked_user_ids
         blocker = find_blocker
         return [] unless blocker
 
-        # blocked_cast_ids / blocked_guest_ids are already user_ids (PK = user_id)
-        blocked_cast_ids = relationship_adapter.blocked_cast_ids(blocker_id: blocker[:id])
-        blocked_guest_ids = relationship_adapter.blocked_guest_ids(blocker_id: blocker[:id])
-
-        blocked_cast_ids + blocked_guest_ids
+        relationship_adapter.blocked_guest_ids(blocker_id: blocker[:id])
       end
 
       def get_comment_author(user_id, media_files: {})

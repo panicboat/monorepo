@@ -70,9 +70,7 @@ module Post
           end
         end
 
-        # Get blocked cast IDs for filtering
-        blocked_cast_ids = get_blocked_cast_ids
-        exclude_cast_ids = (blocked_cast_ids + exclude_cast_ids_param).uniq
+        exclude_cast_ids = exclude_cast_ids_param.uniq
 
         # All filter: public posts from public casts + all posts from followed casts
         if filter == "all" && current_user_id

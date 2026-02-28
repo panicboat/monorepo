@@ -102,43 +102,6 @@ RSpec.describe "Feed::UseCases::ListGuestFeed", type: :database do
       end
     end
 
-    context "with blocked casts" do
-      let(:block_repo) { Hanami.app.slices[:relationship]["repositories.block_repository"] }
-      let(:blocked_cast_user_id) { SecureRandom.uuid }
-
-      before do
-        # Create a blocked cast (user_id is PK, with registered_at for public_cast_ids query)
-        portfolio_db[:portfolio__casts].insert(
-          user_id: blocked_cast_user_id,
-          name: "Blocked Cast",
-          slug: "blocked-cast-#{SecureRandom.hex(4)}",
-          visibility: "public",
-          registered_at: Time.now,
-          created_at: Time.now,
-          updated_at: Time.now
-        )
-
-        # Block the cast
-        block_repo.block(blocker_id: guest_id, blocker_type: "guest", blocked_id: blocked_cast_user_id, blocked_type: "cast")
-
-        # Create posts for both casts
-        db[:post__posts].insert(
-          id: SecureRandom.uuid, cast_user_id: cast_user_id, content: "Normal post",
-          visibility: "public", created_at: Time.now, updated_at: Time.now
-        )
-        db[:post__posts].insert(
-          id: SecureRandom.uuid, cast_user_id: blocked_cast_user_id, content: "Blocked post",
-          visibility: "public", created_at: Time.now, updated_at: Time.now
-        )
-      end
-
-      it "excludes posts from blocked casts" do
-        result = use_case.call(guest_id: guest_id, filter: "all", limit: 10, blocker_id: guest_id)
-
-        expect(result[:posts].map(&:cast_user_id)).not_to include(blocked_cast_user_id)
-      end
-    end
-
     context "pagination" do
       before do
         # Create posts with different timestamps

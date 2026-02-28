@@ -20,22 +20,18 @@ module Feed
       # @param filter [String] "all" or "following"
       # @param limit [Integer] max posts to return
       # @param cursor [String, nil] pagination cursor
-      # @param blocker_id [String, nil] ID of user to get blocked users for
       # @return [Hash] { posts:, next_cursor:, has_more:, authors: }
-      def call(guest_id:, filter:, limit: DEFAULT_LIMIT, cursor: nil, blocker_id: nil)
+      def call(guest_id:, filter:, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
         decoded_cursor = decode_cursor(cursor)
 
-        # Get blocked cast IDs
-        blocked_cast_ids = blocker_id ? @relationship_adapter.blocked_cast_ids(blocker_id: blocker_id) : []
-
         posts, authors = case filter
         when "all"
-          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_cast_ids)
+          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor)
         when "following"
-          list_following_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_cast_ids)
+          list_following_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor)
         else
-          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_cast_ids)
+          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor)
         end
 
         pagination = build_pagination_result(items: posts, limit: limit) do |last|
@@ -47,7 +43,7 @@ module Feed
 
       private
 
-      def list_all_posts(guest_id:, limit:, cursor:, exclude_cast_ids:)
+      def list_all_posts(guest_id:, limit:, cursor:)
         public_cast_user_ids = @cast_adapter.public_cast_ids
         followed_cast_user_ids = @relationship_adapter.following_cast_user_ids(guest_user_id: guest_id)
 
@@ -55,23 +51,21 @@ module Feed
           public_cast_user_ids: public_cast_user_ids,
           followed_cast_user_ids: followed_cast_user_ids,
           limit: limit,
-          cursor: cursor,
-          exclude_cast_user_ids: exclude_cast_ids
+          cursor: cursor
         )
 
         authors = load_authors(posts)
         [posts, authors]
       end
 
-      def list_following_posts(guest_id:, limit:, cursor:, exclude_cast_ids:)
+      def list_following_posts(guest_id:, limit:, cursor:)
         cast_user_ids = @relationship_adapter.following_cast_user_ids(guest_user_id: guest_id)
         return [[], {}] if cast_user_ids.empty?
 
         posts = @post_adapter.list_all_by_cast_user_ids(
           cast_user_ids: cast_user_ids,
           limit: limit,
-          cursor: cursor,
-          exclude_cast_user_ids: exclude_cast_ids
+          cursor: cursor
         )
 
         authors = load_authors(posts)

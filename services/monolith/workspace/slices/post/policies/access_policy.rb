@@ -11,8 +11,6 @@ module Post
       # - cast.visibility == 'public' AND post.visibility == 'public' -> visible to everyone
       # - Otherwise -> approved followers only
       def can_view_post?(post:, cast:, viewer_guest_id: nil)
-        return false if blocked?(cast_user_id: cast.user_id, guest_user_id: viewer_guest_id)
-
         # Public cast + public post = visible to all
         return true if cast.visibility == "public" && post.visibility == "public"
 
@@ -28,13 +26,6 @@ module Post
 
         cast_user_ids = posts.map(&:cast_user_id).uniq
 
-        # Get blocked status for all casts
-        blocked_cast_ids = if viewer_guest_id
-          @relationship_adapter.blocked_cast_ids(blocker_id: viewer_guest_id)
-        else
-          []
-        end
-
         # Get follow status for all casts
         follow_statuses = if viewer_guest_id
           @relationship_adapter.following_status_batch(cast_user_ids: cast_user_ids, guest_user_id: viewer_guest_id)
@@ -45,7 +36,6 @@ module Post
         posts.select do |post|
           cast = casts_map[post.cast_user_id]
           next false if cast.nil?
-          next false if blocked_cast_ids.include?(cast.user_id)
 
           # Public cast + public post = visible
           if cast.visibility == "public" && post.visibility == "public"
@@ -58,12 +48,6 @@ module Post
       end
 
       private
-
-      def blocked?(cast_user_id:, guest_user_id:)
-        return false if guest_user_id.nil?
-
-        @relationship_adapter.blocked?(blocker_id: guest_user_id, blocked_id: cast_user_id)
-      end
 
       def approved_follower?(cast_user_id:, guest_user_id:)
         @relationship_adapter.following?(cast_user_id: cast_user_id, guest_user_id: guest_user_id)

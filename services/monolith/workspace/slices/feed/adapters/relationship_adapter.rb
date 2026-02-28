@@ -8,10 +8,6 @@ module Feed
         follow_repo.following_cast_user_ids(guest_user_id: guest_user_id)
       end
 
-      def blocked_cast_ids(blocker_id:)
-        block_repo.blocked_cast_ids(blocker_id: blocker_id)
-      end
-
       def blocked_guest_ids(blocker_id:)
         block_repo.blocked_guest_ids(blocker_id: blocker_id)
       end
