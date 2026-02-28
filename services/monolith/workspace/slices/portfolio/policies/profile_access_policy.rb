@@ -5,11 +5,9 @@ module Portfolio
     # Access policy for cast profile visibility.
     #
     # Determines whether a guest can view a cast's profile and profile details
-    # (plans, schedules) based on visibility settings and follow status.
-    #
-    # @example
-    #   policy = Portfolio::Policies::ProfileAccessPolicy.new
-    #   policy.can_view_profile?(cast: cast, viewer_guest_id: guest_id)
+    # (plans, schedules) based on block status, visibility settings, and follow status.
+    # - Basic profile: always visible
+    # - Details: denied if Cast blocked Guest; otherwise visibility + follow rules apply
     #
     class ProfileAccessPolicy
       # Check if viewer can see the basic profile.

@@ -212,7 +212,7 @@ Cast → Guest ブロックしている場合は常に Deny。
 
 Portfolio → Relationship:
 
-```
+```text
 Portfolio::Adapters::SocialAdapter
 ├── approved_follower?(guest_user_id:, cast_user_id:)
 ├── follow_status(guest_user_id:, cast_user_id:)
@@ -222,7 +222,7 @@ Portfolio::Adapters::SocialAdapter
 
 Post → Relationship:
 
-```
+```text
 Post::Adapters::RelationshipAdapter
 ├── following?(cast_user_id:, guest_user_id:)
 ├── following_status_batch(cast_user_ids:, guest_user_id:)
@@ -234,7 +234,7 @@ Post::Adapters::RelationshipAdapter
 
 Feed → Relationship:
 
-```
+```text
 Feed::Adapters::RelationshipAdapter
 ├── following_cast_user_ids(guest_user_id:)
 ├── blocked_guest_ids(blocker_id:)

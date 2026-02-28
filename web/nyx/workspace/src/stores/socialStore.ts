@@ -5,7 +5,7 @@
  * Handles following state synced with the backend API.
  *
  * Usage:
- *   const { following, toggleFollow, isFollowing, syncFollowing } = useSocialStore();
+ *   const { following, toggleFollow, isFollowing, setFollowing } = useSocialStore();
  */
 
 import { create } from "zustand";

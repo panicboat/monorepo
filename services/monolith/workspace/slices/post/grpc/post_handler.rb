@@ -70,11 +70,18 @@ module Post
           end
         end
 
-        exclude_cast_ids = exclude_cast_ids_param.uniq
+        # Merge blocked-by-cast IDs into exclusions (same pattern as Feed service)
+        blocked_by_cast_ids = if current_user_id
+          guest = find_my_guest
+          guest ? relationship_adapter.blocked_by_cast_ids(guest_user_id: guest.user_id) : []
+        else
+          []
+        end
+        exclude_cast_ids = (exclude_cast_ids_param + blocked_by_cast_ids).uniq
 
         # All filter: public posts from public casts + all posts from followed casts
         if filter == "all" && current_user_id
-          guest = find_my_guest
+          guest ||= find_my_guest
           if guest
             result = list_all_posts(
               limit: limit,
@@ -88,7 +95,7 @@ module Post
 
         # Following filter: get posts from followed casts
         if filter == "following" && current_user_id
-          guest = find_my_guest
+          guest ||= find_my_guest
           if guest
             following_cast_user_ids = relationship_adapter.following_cast_user_ids(guest_user_id: guest.user_id)
             result = list_following_posts(
@@ -103,7 +110,7 @@ module Post
 
         # If cast_id is specified, check if viewer is an approved follower
         if !cast_id.empty? && current_user_id
-          guest = find_my_guest
+          guest ||= find_my_guest
           if guest && relationship_adapter.following?(cast_user_id: cast_id, guest_user_id: guest.user_id)
             result = list_following_posts(
               limit: limit,
