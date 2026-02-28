@@ -23,6 +23,7 @@ module Portfolio
       end
 
       # Check if viewer can see profile details (plans, schedules).
+      # - Cast blocked this guest: deny details regardless of visibility
       # - Public cast: viewable by everyone
       # - Private cast: viewable only by approved followers
       #
@@ -30,6 +31,11 @@ module Portfolio
       # @param viewer_guest_id [String, nil] the viewing guest's ID
       # @return [Boolean] true if profile details are viewable
       def can_view_profile_details?(cast:, viewer_guest_id: nil)
+        # Cast blocked this guest → deny details
+        if viewer_guest_id && social_adapter.cast_blocked_guest?(cast_user_id: cast.user_id, guest_user_id: viewer_guest_id)
+          return false
+        end
+
         # Public cast = everyone can view details
         return true if cast.visibility == "public"
 
