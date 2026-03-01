@@ -150,7 +150,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
       if (!res.ok) {
         // FALLBACK: Returns empty object when JSON parse fails
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || "Failed to save profile");
+        throw new Error(errData.error || "プロフィールの保存に失敗しました");
       }
 
       mutate();
@@ -175,7 +175,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || "Failed to get upload URL");
+        throw new Error(err.error || "アップロードに失敗しました");
       }
 
       const { url, key, mediaId } = await res.json();
@@ -186,7 +186,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
         body: file,
       });
 
-      if (!uploadRes.ok) throw new Error("Failed to upload image");
+      if (!uploadRes.ok) throw new Error("画像のアップロードに失敗しました");
 
       // Register the uploaded file to get the final URL
       const registerRes = await fetch("/api/media/register", {
@@ -198,7 +198,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
         body: JSON.stringify({ mediaId, key }),
       });
 
-      if (!registerRes.ok) throw new Error("Failed to register media");
+      if (!registerRes.ok) throw new Error("メディアの登録に失敗しました");
 
       return { mediaId, url: URL.createObjectURL(file) };
     },
