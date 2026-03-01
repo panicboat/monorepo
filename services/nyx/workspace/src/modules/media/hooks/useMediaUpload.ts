@@ -50,7 +50,8 @@ export function useMediaUpload(): UseMediaUploadResult {
         });
 
         if (!res.ok) {
-          const err = await res.json();
+          // FALLBACK: Returns empty object when JSON parse fails
+          const err = await res.json().catch(() => ({} as { error?: string }));
           throw new Error(err.error || "アップロードに失敗しました");
         }
 
@@ -118,7 +119,8 @@ export function useMediaUpload(): UseMediaUploadResult {
     });
 
     if (!res.ok) {
-      const err = await res.json();
+      // FALLBACK: Returns empty object when JSON parse fails
+      const err = await res.json().catch(() => ({} as { error?: string }));
       throw new Error(err.error || "メディアの登録に失敗しました");
     }
   }, []);

@@ -64,9 +64,6 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ profile });
   } catch (error: unknown) {
-    if (isConnectError(error) && error.code === GrpcCode.INVALID_ARGUMENT) {
-      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
-    }
     return handleApiError(error, "SaveGuestProfile");
   }
 }

@@ -48,11 +48,18 @@ module Errors
       hash.each do |key, value|
         case value
         when Array
-          msg = value.first
-          next unless msg
+          value.each do |item|
+            case item
+            when Hash
+              result = extract_first_message(item)
+              return result if result
+            else
+              next unless item
 
-          return msg.to_s if key.nil? || key == :base
-          return "#{FIELD_NAMES.fetch(key, key.to_s)}#{msg}"
+              return item.to_s if key.nil? || key == :base
+              return "#{FIELD_NAMES.fetch(key, key.to_s)}#{item}"
+            end
+          end
         when Hash
           result = extract_first_message(value)
           return result if result

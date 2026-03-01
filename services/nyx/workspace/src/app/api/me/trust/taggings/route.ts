@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     if (isConnectError(error)) {
       if (error.code === GrpcCode.INVALID_ARGUMENT) {
-        return NextResponse.json({ error: "タグ名を入力してください" }, { status: 400 });
+        return NextResponse.json({ error: error.rawMessage || "タグ名を入力してください" }, { status: 400 });
       }
       if (error.code === GrpcCode.ALREADY_EXISTS) {
         return NextResponse.json({ error: "このタグは既に追加されています" }, { status: 409 });

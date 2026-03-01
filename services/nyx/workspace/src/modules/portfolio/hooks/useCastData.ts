@@ -207,7 +207,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("プロフィールの保存に失敗しました");
+      if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
+        const errData = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error(errData.error || "プロフィールの保存に失敗しました");
+      }
       mutate();
       return res.json();
     },
@@ -241,7 +245,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("画像の保存に失敗しました");
+      if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
+        const errData = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error(errData.error || "画像の保存に失敗しました");
+      }
       mutate();
       return res.json();
     },
@@ -265,7 +273,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("プランの保存に失敗しました");
+      if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
+        const errData = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error(errData.error || "プランの保存に失敗しました");
+      }
 
       const responseData = await res.json();
       if (responseData.plans) {
@@ -299,7 +311,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("スケジュールの保存に失敗しました");
+      if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
+        const errData = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error(errData.error || "スケジュールの保存に失敗しました");
+      }
       mutate();
       return res.json();
     },
@@ -321,7 +337,8 @@ export function useCastData(options: UseCastDataOptions = {}) {
     });
 
     if (!res.ok) {
-      const err = await res.json();
+      // FALLBACK: Returns empty object when JSON parse fails
+      const err = await res.json().catch(() => ({} as { error?: string }));
       throw new Error(err.error || "アップロードに失敗しました");
     }
 
@@ -352,7 +369,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
       body: JSON.stringify({ status: "online" }),
     });
 
-    if (!res.ok) throw new Error("プロフィールの公開に失敗しました");
+    if (!res.ok) {
+      // FALLBACK: Returns empty object when JSON parse fails
+      const errData = await res.json().catch(() => ({} as { error?: string }));
+      throw new Error(errData.error || "プロフィールの公開に失敗しました");
+    }
     mutate();
     return res.json();
   }, [mutate]);
@@ -372,7 +393,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
         body: JSON.stringify({ isPrivate: newIsPrivate }),
       });
 
-      if (!res.ok) throw new Error("公開設定の保存に失敗しました");
+      if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
+        const errData = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error(errData.error || "公開設定の保存に失敗しました");
+      }
 
       // Update local cache
       mutate(

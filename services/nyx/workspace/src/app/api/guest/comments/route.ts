@@ -122,13 +122,8 @@ export async function POST(req: NextRequest) {
       commentsCount: response.commentsCount,
     });
   } catch (error: unknown) {
-    if (isConnectError(error)) {
-      if (error.code === GrpcCode.INVALID_ARGUMENT) {
-        return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
-      }
-      if (error.code === GrpcCode.NOT_FOUND) {
-        return NextResponse.json({ error: "投稿またはコメントが見つかりませんでした" }, { status: 404 });
-      }
+    if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
+      return NextResponse.json({ error: "投稿またはコメントが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "AddComment");
   }
