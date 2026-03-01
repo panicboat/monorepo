@@ -69,7 +69,7 @@ export function useComments(postId: string) {
   const addComment = useCallback(
     async (content: string, parentId?: string, media?: CommentMedia[]) => {
       if (!getAuthToken()) {
-        throw new Error("Unauthorized");
+        throw new Error("ログインしてください");
       }
 
       setAddingComment(true);
@@ -115,7 +115,7 @@ export function useComments(postId: string) {
   const deleteComment = useCallback(
     async (commentId: string, parentId?: string) => {
       if (!getAuthToken()) {
-        throw new Error("Unauthorized");
+        throw new Error("ログインしてください");
       }
 
       setDeletingCommentId(commentId);

@@ -1,6 +1,8 @@
 "use client";
 
 import { getAuthToken } from "@/lib/swr";
+import { AppError, httpStatusToErrorCode } from "@/lib/errors";
+import { getDefaultMessage } from "@/lib/error-messages";
 
 export type AuthFetchOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -9,40 +11,6 @@ export type AuthFetchOptions = {
   cache?: RequestCache;
 };
 
-/**
- * API Error with status code and response info
- */
-export class ApiError extends Error {
-  status: number;
-  info: unknown;
-
-  constructor(message: string, status: number, info?: unknown) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.info = info;
-  }
-}
-
-/**
- * Authenticated fetch utility for API calls.
- * Handles token injection, JSON serialization, and error responses.
- *
- * @example
- * // GET request
- * const data = await authFetch<UserProfile>("/api/user/profile");
- *
- * @example
- * // POST request with body
- * const result = await authFetch<CreateResponse>("/api/posts", {
- *   method: "POST",
- *   body: { content: "Hello" },
- * });
- *
- * @example
- * // Request without caching (for real-time data)
- * const data = await authFetch<Timeline>("/api/timeline", { cache: "no-store" });
- */
 export async function authFetch<T = unknown>(
   url: string,
   options: AuthFetchOptions = {}
@@ -51,7 +19,7 @@ export async function authFetch<T = unknown>(
   const token = getAuthToken();
 
   if (requireAuth && !token) {
-    throw new ApiError("Authentication required", 401);
+    throw new AppError("UNAUTHORIZED", "ログインしてください", 401);
   }
 
   const headers: Record<string, string> = {};
@@ -62,18 +30,29 @@ export async function authFetch<T = unknown>(
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    cache,
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      cache,
+    });
+  } catch (cause) {
+    throw new AppError(
+      "NETWORK",
+      "ネットワーク接続を確認してください",
+      undefined,
+      cause
+    );
+  }
 
   if (!res.ok) {
     // FALLBACK: Returns empty object when JSON parse fails
     const errBody = await res.json().catch(() => ({}));
-    const message = errBody.error || `Request failed: ${res.status}`;
-    throw new ApiError(message, res.status, errBody);
+    const code = httpStatusToErrorCode(res.status);
+    const message = errBody.error || getDefaultMessage(code);
+    throw new AppError(code, message, res.status, errBody);
   }
 
   return res.json();

@@ -16,7 +16,7 @@ export async function PATCH(
     const { content, score } = await req.json();
 
     if (score === undefined) {
-      return NextResponse.json({ error: "score is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const response = await trustClient.updateReview(
@@ -27,7 +27,7 @@ export async function PATCH(
     return NextResponse.json({ success: response.success });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
-      return NextResponse.json({ error: "Review not found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "UpdateReview");
   }
@@ -51,7 +51,7 @@ export async function DELETE(
     return NextResponse.json({ success: response.success });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
-      return NextResponse.json({ error: "Review not found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "DeleteReview");
   }

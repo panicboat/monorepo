@@ -50,6 +50,7 @@ export default function CastHomePage() {
         }
       } catch (error) {
         console.error("Failed to check onboarding status:", error);
+        toast({ title: "読み込みに失敗しました", variant: "destructive" });
       } finally {
         setLoading(false);
       }

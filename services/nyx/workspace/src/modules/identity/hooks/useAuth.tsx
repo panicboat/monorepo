@@ -171,7 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phoneNumber }),
     });
-    if (!res.ok) throw new Error("Failed to send SMS");
+    if (!res.ok) throw new Error("SMSの送信に失敗しました");
     return true;
   };
 
@@ -182,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ phoneNumber, code }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Verification failed");
+    if (!res.ok) throw new Error(data.error || "認証コードの検証に失敗しました");
     return data.verificationToken;
   };
 
@@ -203,7 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Registration failed");
+    if (!res.ok) throw new Error(data.error || "登録に失敗しました");
 
     // FALLBACK: Supports multiple token field name formats from API
     const newAccessToken = data.accessToken || data.access_token;
@@ -213,7 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!newAccessToken) {
       console.error("Register Error: No access token found in response", data);
-      throw new Error("Registration failed: No access token");
+      throw new Error("登録に失敗しました");
     }
 
     // Save tokens to authStore
@@ -255,7 +255,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ phoneNumber, password, role: loginRole }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Login failed");
+    if (!res.ok) throw new Error(data.error || "ログインに失敗しました");
 
     // FALLBACK: Supports multiple token field name formats from API
     const newAccessToken = data.accessToken || data.access_token;
@@ -265,7 +265,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!newAccessToken) {
       console.error("Login Error: No access token found in response", data);
-      throw new Error("Login failed: No access token");
+      throw new Error("ログインに失敗しました");
     }
 
     // Save tokens to authStore

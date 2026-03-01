@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useCastData } from "@/modules/portfolio/hooks";
+import { useToast } from "@/components/ui/Toast";
 
 export default function OnboardingStep5() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isPublishing, setIsPublishing] = useState(false);
 
   const {
@@ -36,6 +38,7 @@ export default function OnboardingStep5() {
       router.push("/cast/home");
     } catch (e) {
       console.error(e);
+      toast({ title: "プロフィールの公開に失敗しました", variant: "destructive" });
       setIsPublishing(false);
     }
   };

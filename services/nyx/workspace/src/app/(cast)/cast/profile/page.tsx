@@ -102,6 +102,7 @@ export default function ProfileEditPage() {
       setLocalAvatarPreview(URL.createObjectURL(file));
     } catch (err) {
       console.error(err);
+      toast({ title: "画像のアップロードに失敗しました", variant: "destructive" });
     }
   };
 
@@ -117,6 +118,7 @@ export default function ProfileEditPage() {
       };
     } catch (e) {
       console.error(e);
+      toast({ title: "画像のアップロードに失敗しました", variant: "destructive" });
       return null;
     }
   };
@@ -128,15 +130,15 @@ export default function ProfileEditPage() {
       await saveImages(images, avatarKey || undefined);
 
       toast({
-        title: "Saved",
-        description: "Profile updated successfully",
+        title: "保存しました",
+        description: "プロフィールを更新しました",
         variant: "success",
       });
     } catch (e) {
       console.error(e);
       toast({
-        title: "Error",
-        description: "Failed to save profile",
+        title: "エラー",
+        description: "プロフィールの保存に失敗しました",
         variant: "destructive",
       });
     }

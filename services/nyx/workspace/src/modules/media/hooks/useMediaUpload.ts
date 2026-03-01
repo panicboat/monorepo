@@ -26,7 +26,7 @@ export function useMediaUpload(): UseMediaUploadResult {
     ): Promise<UploadedMedia> => {
       const token = getAuthToken();
       if (!token) {
-        throw new Error("No authentication token");
+        throw new Error("ログインしてください");
       }
 
       setUploading(true);
@@ -50,8 +50,9 @@ export function useMediaUpload(): UseMediaUploadResult {
         });
 
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || "Failed to get upload URL");
+          // FALLBACK: Returns empty object when JSON parse fails
+          const err = await res.json().catch(() => ({} as { error?: string }));
+          throw new Error(err.error || "アップロードに失敗しました");
         }
 
         const { uploadUrl, mediaKey, mediaId } = await res.json();
@@ -64,7 +65,7 @@ export function useMediaUpload(): UseMediaUploadResult {
         });
 
         if (!uploadRes.ok) {
-          throw new Error("Failed to upload file to storage");
+          throw new Error("ファイルのアップロードに失敗しました");
         }
 
         const uploaded: UploadedMedia = {
@@ -85,7 +86,7 @@ export function useMediaUpload(): UseMediaUploadResult {
 
         return uploaded;
       } catch (e) {
-        const err = e instanceof Error ? e : new Error("Upload failed");
+        const err = e instanceof Error ? e : new Error("アップロードに失敗しました");
         setError(err);
         throw err;
       } finally {
@@ -118,8 +119,9 @@ export function useMediaUpload(): UseMediaUploadResult {
     });
 
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || "Failed to register media");
+      // FALLBACK: Returns empty object when JSON parse fails
+      const err = await res.json().catch(() => ({} as { error?: string }));
+      throw new Error(err.error || "メディアの登録に失敗しました");
     }
   }, []);
 

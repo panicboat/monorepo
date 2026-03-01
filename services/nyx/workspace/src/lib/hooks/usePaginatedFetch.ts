@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useRef } from "react";
 import { getAuthToken } from "@/lib/swr";
+import { AppError, httpStatusToErrorCode } from "@/lib/errors";
+import { getDefaultMessage } from "@/lib/error-messages";
 
 export interface PaginatedResult<T> {
   items: T[];
@@ -29,7 +31,7 @@ export interface UsePaginatedFetchReturn<T> {
   setItems: React.Dispatch<React.SetStateAction<T[]>>;
   loading: boolean;
   loadingMore: boolean;
-  error: Error | null;
+  error: AppError | null;
   hasMore: boolean;
   initialized: boolean;
   fetchInitial: () => Promise<T[] | undefined>;
@@ -49,7 +51,7 @@ export function usePaginatedFetch<T, R = unknown>(
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<AppError | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
@@ -92,7 +94,8 @@ export function usePaginatedFetch<T, R = unknown>(
       if (!res.ok) {
         // FALLBACK: Returns empty object when JSON parse fails
         const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.error || `Failed to fetch from ${apiUrl}`);
+        const code = httpStatusToErrorCode(res.status);
+        throw new AppError(code, errBody.error || getDefaultMessage(code), res.status, errBody);
       }
 
       return res.json();
@@ -123,7 +126,7 @@ export function usePaginatedFetch<T, R = unknown>(
       setInitialized(true);
       return result.items;
     } catch (e) {
-      const err = e instanceof Error ? e : new Error("Unknown error");
+      const err = e instanceof AppError ? e : new AppError("UNKNOWN", "予期しないエラーが発生しました", undefined, e);
       setError(err);
       throw err;
     } finally {
@@ -155,7 +158,7 @@ export function usePaginatedFetch<T, R = unknown>(
       cursorRef.current = result.nextCursor;
       return result.items;
     } catch (e) {
-      const err = e instanceof Error ? e : new Error("Unknown error");
+      const err = e instanceof AppError ? e : new AppError("UNKNOWN", "予期しないエラーが発生しました", undefined, e);
       setError(err);
       throw err;
     } finally {

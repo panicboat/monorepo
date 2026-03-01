@@ -24,7 +24,7 @@ module Post
 
       rule do
         if values[:id].to_s.empty? && values[:content].to_s.empty? && (values[:media].nil? || values[:media].empty?)
-          base.failure("content or media is required")
+          base.failure("本文またはメディアが必要です")
         end
       end
 

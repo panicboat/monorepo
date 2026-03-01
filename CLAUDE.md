@@ -5,6 +5,25 @@
 - **一貫性を保つ** - 既存コードのスタイル・パターンに従う
 - **TODO コメント** - 一時的な実装には必ず `// TODO:` を追加
 - **FALLBACK コメント** - フォールバック処理を追加する場合は必ず `// FALLBACK:` コメントを追加
+- **SILENT コメント** - エラーを意図的に握りつぶす場合は必ず `// SILENT:` コメントで理由を記載
+
+## Error Handling
+
+### 言語ルール
+
+- **ユーザー向けメッセージ** → 日本語（`"ログインしてください"`）
+- **console.error / ログ** → 英語（`console.error("[context] gRPC error:", ...)`）
+
+### レイヤー別の責務
+
+- **Monolith (Contract)** — `key.failure("は...")` で日本語メッセージ。`ValidationError` の `FIELD_NAMES` でフィールド名を前置
+- **API Routes (BFF)** — `handleApiError` が gRPC → HTTP 変換。`INVALID_ARGUMENT` は `rawMessage` をそのまま通過、それ以外はデフォルトメッセージ
+- **Hooks** — `authFetch` が HTTP → `AppError` に変換。`errBody.error` を優先、なければ `getDefaultMessage(code)`
+- **Components** — catch した `AppError` の `message` を **Toast で表示**（フォーム含め全エラー Toast 統一）
+
+### サイレント処理の禁止
+
+エラーの握りつぶし（空 catch）は原則禁止。意図的にサイレントにする場合は `// SILENT:` コメントで理由を記載。
 
 ## Development (Seed Data)
 

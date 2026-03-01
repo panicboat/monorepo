@@ -24,7 +24,7 @@ export async function DELETE(
     });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
-      return NextResponse.json({ error: "Comment not found or unauthorized" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "DeleteComment");
   }

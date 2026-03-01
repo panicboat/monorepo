@@ -27,7 +27,7 @@ export async function GET(
       : await castClient.getCastProfileBySlug({ slug: id }, headers);
 
     if (!profileResponse.profile) {
-      return NextResponse.json({ error: "Not Found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
 
     const castUserId = profileResponse.profile.userId;
@@ -81,7 +81,7 @@ export async function GET(
     });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
-      return NextResponse.json({ error: "Not Found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "GetCastProfile");
   }

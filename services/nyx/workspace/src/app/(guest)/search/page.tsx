@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { SearchFilterOverlay } from "./SearchFilterOverlay";
 import { useInfiniteCasts } from "@/modules/portfolio/hooks";
 import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
+import { useToast } from "@/components/ui/Toast";
 
 type Genre = {
   id: string;
@@ -59,6 +60,7 @@ type FilterState = {
 };
 
 export default function SearchPage() {
+  const { toast } = useToast();
   const [filters, setFilters] = useState<FilterState>({
     query: "",
     genreId: "",
@@ -117,6 +119,7 @@ export default function SearchPage() {
         }
       } catch (error) {
         console.error("Failed to fetch initial data:", error);
+        toast({ title: "検索データの読み込みに失敗しました", variant: "destructive" });
       } finally {
         setLoading(false);
       }

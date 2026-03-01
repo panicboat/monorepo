@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const { revieweeId, content, score, media } = await req.json();
     if (!revieweeId || score === undefined) {
       return NextResponse.json(
-        { error: "revieweeId and score are required" },
+        { error: "入力内容を確認してください" },
         { status: 400 }
       );
     }
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: response.success, id: response.id });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.INVALID_ARGUMENT) {
-      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
     return handleApiError(error, "CreateReview");
   }

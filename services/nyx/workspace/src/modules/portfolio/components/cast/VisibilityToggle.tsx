@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Globe, Lock, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/Label";
+import { useToast } from "@/components/ui/Toast";
 
 interface VisibilityToggleProps {
   isPrivate: boolean;
@@ -15,6 +16,7 @@ export const VisibilityToggle = ({
   onSave,
   disabled = false,
 }: VisibilityToggleProps) => {
+  const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [localValue, setLocalValue] = useState(isPrivate);
 
@@ -30,6 +32,10 @@ export const VisibilityToggle = ({
       // Revert on error
       setLocalValue(!newValue);
       console.error("Failed to save visibility:", error);
+      toast({
+        title: "公開設定の保存に失敗しました",
+        variant: "destructive",
+      });
     } finally {
       setIsSaving(false);
     }

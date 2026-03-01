@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const { guestUserId } = await params;
 
     if (!guestUserId) {
-      return NextResponse.json({ error: "guestUserId is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const response = await followClient.approveFollow(

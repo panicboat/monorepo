@@ -27,15 +27,15 @@ export default function ManageSchedulesPage() {
       const futureSchedules = schedules.filter((s) => s.date >= today);
       await saveSchedules(futureSchedules);
       toast({
-        title: "Saved",
-        description: "Your schedules have been updated successfully.",
+        title: "保存しました",
+        description: "スケジュールを更新しました",
         variant: "success",
       });
     } catch (error) {
       console.error("Failed to save schedules:", error);
       toast({
-        title: "Error",
-        description: "Failed to save schedules. Please try again.",
+        title: "エラー",
+        description: "スケジュールの保存に失敗しました",
         variant: "destructive",
       });
     }

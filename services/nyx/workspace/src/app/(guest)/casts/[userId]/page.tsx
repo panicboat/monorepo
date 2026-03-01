@@ -10,6 +10,7 @@ import { Loader2, UserPlus, UserCheck, Clock, Edit3 } from "lucide-react";
 import { useFollow } from "@/modules/relationship";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
+import { useToast } from "@/components/ui/Toast";
 import { CastProfile, MediaItem, ServicePlan, WeeklySchedule } from "@/modules/portfolio/types";
 import type { SaveMediaInput } from "@/lib/types";
 
@@ -26,6 +27,7 @@ export default function CastDetailPage({
   params: Promise<{ userId: string }>;
 }) {
   const { userId: id } = use(params);
+  const { toast } = useToast();
   const [data, setData] = useState<CastData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,16 +38,16 @@ export default function CastDetailPage({
         const res = await fetch(`/api/guest/casts/${id}`);
         if (!res.ok) {
           if (res.status === 404) {
-            setError("Cast not found");
+            setError("キャストが見つかりませんでした");
           } else {
-            setError("Failed to load cast");
+            setError("キャスト情報の読み込みに失敗しました");
           }
           return;
         }
         const json = await res.json();
         setData(json);
       } catch (e) {
-        setError("Failed to load cast");
+        setError("キャスト情報の読み込みに失敗しました");
       } finally {
         setLoading(false);
       }
@@ -64,7 +66,7 @@ export default function CastDetailPage({
   if (error || !data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-surface gap-4">
-        <p className="text-text-secondary">{error || "Cast not found"}</p>
+        <p className="text-text-secondary">{error || "キャストが見つかりませんでした"}</p>
         <Link href="/">
           <Button variant="outline">Back to Home</Button>
         </Link>
@@ -111,6 +113,7 @@ export default function CastDetailPage({
 
 function FollowButton({ castId }: { castId: string }) {
   const { toggleFollow, fetchFollowStatus, isFollowing, isPending, loading } = useFollow();
+  const { toast } = useToast();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -136,6 +139,7 @@ function FollowButton({ castId }: { castId: string }) {
       await toggleFollow(castId);
     } catch (e) {
       console.error("Failed to toggle follow:", e);
+      toast({ title: "フォロー操作に失敗しました", variant: "destructive" });
     } finally {
       setIsProcessing(false);
     }

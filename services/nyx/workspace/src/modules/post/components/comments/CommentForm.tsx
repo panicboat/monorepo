@@ -22,7 +22,7 @@ type CommentFormProps = {
 export function CommentForm({
   onSubmit,
   isSubmitting,
-  placeholder = "Add a comment...",
+  placeholder = "コメントを入力...",
   autoFocus = false,
   onCancel,
   isReply = false,
@@ -37,12 +37,12 @@ export function CommentForm({
     setError(null);
 
     if (!content.trim() && mediaFiles.length === 0) {
-      setError("Comment cannot be empty");
+      setError("コメントを入力してください");
       return;
     }
 
     if (content.length > MAX_CONTENT_LENGTH) {
-      setError(`Comment must be ${MAX_CONTENT_LENGTH} characters or less`);
+      setError(`コメントは${MAX_CONTENT_LENGTH}文字以内で入力してください`);
       return;
     }
 
@@ -67,7 +67,7 @@ export function CommentForm({
       mediaFiles.forEach((mf) => URL.revokeObjectURL(mf.previewUrl));
       setMediaFiles([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to post comment");
+      setError(err instanceof Error ? err.message : "コメントの投稿に失敗しました");
     } finally {
       setUploading(false);
     }
@@ -85,7 +85,7 @@ export function CommentForm({
 
   const handleMediaChange = (files: MediaFile[]) => {
     if (files.length > MAX_MEDIA) {
-      setError(`Maximum ${MAX_MEDIA} files allowed`);
+      setError(`ファイルは${MAX_MEDIA}個までです`);
       return;
     }
     setError(null);
@@ -148,14 +148,14 @@ export function CommentForm({
             onClick={onCancel}
             disabled={isProcessing}
           >
-            Cancel
+            キャンセル
           </Button>
         )}
         <Button
           type="submit"
           size="sm"
           disabled={!canSubmit}
-          aria-label={isReply ? "Submit reply" : "Submit comment"}
+          aria-label={isReply ? "返信を送信" : "コメントを送信"}
           className="flex items-center gap-1 bg-info text-white hover:bg-info-hover"
         >
           {isProcessing ? (
@@ -164,7 +164,7 @@ export function CommentForm({
             <Send aria-hidden="true" size={14} />
           )}
           <span>
-            {uploading ? "Uploading..." : isReply ? "Reply" : "Post"}
+            {uploading ? "アップロード中..." : isReply ? "返信" : "投稿"}
           </span>
         </Button>
       </div>

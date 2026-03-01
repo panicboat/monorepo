@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
 
     if (!postId) {
-      return NextResponse.json({ error: "post_id is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const response = await commentClient.listComments(
@@ -64,13 +64,13 @@ export async function POST(req: NextRequest) {
     const { postId, content, parentId, media } = body;
 
     if (!postId) {
-      return NextResponse.json({ error: "postId is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const hasContent = content && content.trim() !== "";
     const hasMedia = media && media.length > 0;
     if (!hasContent && !hasMedia) {
-      return NextResponse.json({ error: "Content or media is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     // Create proper protobuf messages for media to ensure all fields are serialized correctly
@@ -122,13 +122,8 @@ export async function POST(req: NextRequest) {
       commentsCount: response.commentsCount,
     });
   } catch (error: unknown) {
-    if (isConnectError(error)) {
-      if (error.code === GrpcCode.INVALID_ARGUMENT) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
-      }
-      if (error.code === GrpcCode.NOT_FOUND) {
-        return NextResponse.json({ error: "Post or parent comment not found" }, { status: 404 });
-      }
+    if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
+      return NextResponse.json({ error: "投稿またはコメントが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "AddComment");
   }

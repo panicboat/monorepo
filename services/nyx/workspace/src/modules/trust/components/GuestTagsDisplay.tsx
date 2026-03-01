@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Loader2, Tag as TagIcon } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
+import { useToast } from "@/components/ui/Toast";
 import { useTaggings } from "../hooks/useTaggings";
 import { TagPill } from "./TagPill";
 
@@ -11,6 +12,7 @@ interface GuestTagsDisplayProps {
 }
 
 export function GuestTagsDisplay({ targetId }: GuestTagsDisplayProps) {
+  const { toast } = useToast();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const { targetTaggings, fetchTargetTags, loading } = useTaggings();
@@ -21,10 +23,14 @@ export function GuestTagsDisplay({ targetId }: GuestTagsDisplayProps) {
       await fetchTargetTags(targetId);
     } catch (e) {
       console.error("Failed to load tags:", e);
+      toast({
+        title: "タグの読み込みに失敗しました",
+        variant: "destructive",
+      });
     } finally {
       setInitialized(true);
     }
-  }, [fetchTargetTags, targetId]);
+  }, [fetchTargetTags, targetId, toast]);
 
   useEffect(() => {
     if (isHydrated && isAuthenticated()) {

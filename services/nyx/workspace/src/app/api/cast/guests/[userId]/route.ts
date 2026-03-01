@@ -32,7 +32,7 @@ export async function GET(
 
     const profile = response.profile;
     if (!profile) {
-      return NextResponse.json({ error: "Guest not found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
 
     const guestDetail: GuestDetail = {
@@ -49,7 +49,7 @@ export async function GET(
     return NextResponse.json(guestDetail);
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
-      return NextResponse.json({ error: "Guest not found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "GetGuestProfileById");
   }

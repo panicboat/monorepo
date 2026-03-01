@@ -192,7 +192,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
   const saveProfile = useCallback(
     async (overrideProfile?: ProfileFormData) => {
       const currentToken = getAuthToken();
-      if (!currentToken) throw new Error("No token");
+      if (!currentToken) throw new Error("ログインしてください");
 
       const profileToSave = overrideProfile || profile;
       const heroKey = images[0]?.key;
@@ -207,7 +207,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Failed to save profile");
+      if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
+        const errData = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error(errData.error || "プロフィールの保存に失敗しました");
+      }
       mutate();
       return res.json();
     },
@@ -217,7 +221,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
   const saveImages = useCallback(
     async (overrideImages?: MediaItem[], overrideAvatarPath?: string) => {
       const currentToken = getAuthToken();
-      if (!currentToken) throw new Error("No token");
+      if (!currentToken) throw new Error("ログインしてください");
 
       const imagesToSave = overrideImages || images;
       const heroImage = imagesToSave[0];
@@ -241,7 +245,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Failed to save images");
+      if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
+        const errData = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error(errData.error || "画像の保存に失敗しました");
+      }
       mutate();
       return res.json();
     },
@@ -251,7 +259,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
   const savePlans = useCallback(
     async (overridePlans?: ServicePlan[]) => {
       const currentToken = getAuthToken();
-      if (!currentToken) throw new Error("No token");
+      if (!currentToken) throw new Error("ログインしてください");
 
       const plansToSave = overridePlans || plans;
       const payload = { plans: mapPlansToApi(plansToSave) };
@@ -265,7 +273,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Failed to save plans");
+      if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
+        const errData = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error(errData.error || "プランの保存に失敗しました");
+      }
 
       const responseData = await res.json();
       if (responseData.plans) {
@@ -285,7 +297,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
   const saveSchedules = useCallback(
     async (overrideSchedules?: WeeklySchedule[]) => {
       const currentToken = getAuthToken();
-      if (!currentToken) throw new Error("No token");
+      if (!currentToken) throw new Error("ログインしてください");
 
       const schedulesToSave = overrideSchedules || schedules;
       const payload = { schedules: mapSchedulesToApi(schedulesToSave) };
@@ -299,7 +311,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Failed to save schedules");
+      if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
+        const errData = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error(errData.error || "スケジュールの保存に失敗しました");
+      }
       mutate();
       return res.json();
     },
@@ -309,7 +325,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
   // Image upload
   const uploadImage = useCallback(async (file: File): Promise<{ key: string; url: string }> => {
     const currentToken = getAuthToken();
-    if (!currentToken) throw new Error("No token");
+    if (!currentToken) throw new Error("ログインしてください");
 
     const res = await fetch("/api/cast/onboarding/upload-url", {
       method: "POST",
@@ -321,8 +337,9 @@ export function useCastData(options: UseCastDataOptions = {}) {
     });
 
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || "Failed to get upload URL");
+      // FALLBACK: Returns empty object when JSON parse fails
+      const err = await res.json().catch(() => ({} as { error?: string }));
+      throw new Error(err.error || "アップロードに失敗しました");
     }
 
     const { url, key } = await res.json();
@@ -333,7 +350,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
       body: file,
     });
 
-    if (!uploadRes.ok) throw new Error("Failed to upload image");
+    if (!uploadRes.ok) throw new Error("画像のアップロードに失敗しました");
 
     return { key, url: url.split("?")[0] };
   }, []);
@@ -341,7 +358,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
   // Publish
   const publishProfile = useCallback(async () => {
     const currentToken = getAuthToken();
-    if (!currentToken) throw new Error("No token");
+    if (!currentToken) throw new Error("ログインしてください");
 
     const res = await fetch("/api/cast/onboarding/publish", {
       method: "POST",
@@ -352,7 +369,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
       body: JSON.stringify({ status: "online" }),
     });
 
-    if (!res.ok) throw new Error("Failed to publish profile");
+    if (!res.ok) {
+      // FALLBACK: Returns empty object when JSON parse fails
+      const errData = await res.json().catch(() => ({} as { error?: string }));
+      throw new Error(errData.error || "プロフィールの公開に失敗しました");
+    }
     mutate();
     return res.json();
   }, [mutate]);
@@ -361,7 +382,7 @@ export function useCastData(options: UseCastDataOptions = {}) {
   const saveVisibility = useCallback(
     async (newIsPrivate: boolean) => {
       const currentToken = getAuthToken();
-      if (!currentToken) throw new Error("No token");
+      if (!currentToken) throw new Error("ログインしてください");
 
       const res = await fetch("/api/cast/visibility", {
         method: "PUT",
@@ -372,7 +393,11 @@ export function useCastData(options: UseCastDataOptions = {}) {
         body: JSON.stringify({ isPrivate: newIsPrivate }),
       });
 
-      if (!res.ok) throw new Error("Failed to save visibility");
+      if (!res.ok) {
+        // FALLBACK: Returns empty object when JSON parse fails
+        const errData = await res.json().catch(() => ({} as { error?: string }));
+        throw new Error(errData.error || "公開設定の保存に失敗しました");
+      }
 
       // Update local cache
       mutate(
