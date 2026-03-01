@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ConnectError } from "@connectrpc/connect";
 import { grpcCodeToHttpStatus } from "./grpc-errors";
+import { httpStatusToErrorCode } from "./errors";
+import { getDefaultMessage } from "./error-messages";
 
 export function requireAuth(req: NextRequest): NextResponse | null {
   if (!req.headers.get("authorization")) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "ログインしてください" },
+      { status: 401 }
+    );
   }
   return null;
 }
@@ -22,13 +27,19 @@ export function extractPaginationParams(
 export function handleApiError(error: unknown, context?: string): NextResponse {
   if (error instanceof ConnectError) {
     const status = grpcCodeToHttpStatus(error.code);
-    const message = error.rawMessage || error.message;
+    const code = httpStatusToErrorCode(status);
+    const message = getDefaultMessage(code);
+    if (context) {
+      console.error(`[${context}] gRPC error (${error.code}):`, error.rawMessage);
+    }
     return NextResponse.json({ error: message }, { status });
   }
 
   if (context) {
     console.error(`[${context}] Error:`, error);
   }
-  const message = error instanceof Error ? error.message : "Internal server error";
-  return NextResponse.json({ error: message }, { status: 500 });
+  return NextResponse.json(
+    { error: "予期しないエラーが発生しました" },
+    { status: 500 }
+  );
 }
