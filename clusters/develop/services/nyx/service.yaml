@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 5m0s
-  path: "./web/nyx/kubernetes/overlays/develop"
+  path: "./services/nyx/kubernetes/overlays/develop"
   prune: true
   sourceRef:
     kind: GitRepository
