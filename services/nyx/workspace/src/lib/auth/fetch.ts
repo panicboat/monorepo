@@ -11,9 +11,6 @@ export type AuthFetchOptions = {
   cache?: RequestCache;
 };
 
-// TODO: ApiError を使っている既存コードの移行期間中の後方互換性
-export { AppError as ApiError } from "@/lib/errors";
-
 export async function authFetch<T = unknown>(
   url: string,
   options: AuthFetchOptions = {}
