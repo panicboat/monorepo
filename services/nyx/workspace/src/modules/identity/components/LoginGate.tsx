@@ -38,7 +38,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
 
   const handleSMSRequest = async () => {
     if (phone.length < 10) {
-      setError("Please enter a valid phone number");
+      setError("有効な電話番号を入力してください");
       return;
     }
     setError("");
@@ -47,7 +47,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
       await requestSMS(phone);
       setMode("signup_verify");
     } catch (e: any) {
-      setError("Failed to send SMS. Try again.");
+      setError("SMSの送信に失敗しました。もう一度お試しください");
     } finally {
       setIsSubmitting(false);
     }
@@ -60,7 +60,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
       setVerificationToken(token);
       setMode("signup_password");
     } catch (e) {
-      setError("Invalid code.");
+      setError("認証コードが正しくありません");
     } finally {
       setIsSubmitting(false);
     }
@@ -72,7 +72,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
       const role = isCast ? 2 : 1; // 1=Guest, 2=Cast
       await register(phone, password, verificationToken, role);
     } catch (e: any) {
-      setError(e.message || "Registration failed");
+      setError(e.message || "登録に失敗しました");
     } finally {
       setIsSubmitting(false);
     }
@@ -84,7 +84,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
       const role = isCast ? 2 : 1;
       await login(phone, password, role);
     } catch (e: any) {
-      setError(e.message || "Login failed.");
+      setError(e.message || "ログインに失敗しました");
     } finally {
       setIsSubmitting(false);
     }
