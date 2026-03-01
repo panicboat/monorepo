@@ -199,4 +199,74 @@ RSpec.describe Portfolio::Grpc::CastHandler do
   end
 
   # Note: get_upload_url removed - use MediaService.GetUploadUrl instead
+
+  describe "#save_cast_visibility" do
+    let(:save_visibility_uc) { double(:save_visibility_uc) }
+    let(:follow_adapter) { double(:follow_adapter) }
+    let(:handler) {
+      described_class.new(
+        method_key: :test,
+        service: double,
+        rpc_desc: double,
+        active_call: double,
+        message: message,
+        get_profile_uc: get_profile_uc,
+        save_profile_uc: save_profile_uc,
+        publish_uc: publish_uc,
+        save_visibility_uc: save_visibility_uc,
+        save_images_uc: save_images_uc,
+        list_casts_uc: list_casts_uc,
+        repo: repo,
+        area_repo: area_repo,
+        genre_repo: genre_repo
+      )
+    }
+    let(:message) do
+      ::Portfolio::V1::SaveCastVisibilityRequest.new(visibility: :CAST_VISIBILITY_PUBLIC)
+    end
+
+    before do
+      allow_any_instance_of(described_class).to receive(:follow_adapter).and_return(follow_adapter)
+    end
+
+    context "when visibility changes from private to public" do
+      it "auto-approves all pending follow requests" do
+        expect(save_visibility_uc).to receive(:call)
+          .with(user_id: current_user_id, visibility: "public")
+          .and_return({ success: true, cast: mock_cast_entity, visibility_changed_to_public: true })
+        expect(follow_adapter).to receive(:approve_all_pending)
+          .with(cast_user_id: mock_cast_entity.user_id)
+
+        response = handler.save_cast_visibility
+        expect(response).to be_a(::Portfolio::V1::SaveCastVisibilityResponse)
+      end
+    end
+
+    context "when visibility stays the same or changes to private" do
+      let(:message) do
+        ::Portfolio::V1::SaveCastVisibilityRequest.new(visibility: :CAST_VISIBILITY_PRIVATE)
+      end
+
+      it "does not auto-approve pending follow requests" do
+        expect(save_visibility_uc).to receive(:call)
+          .with(user_id: current_user_id, visibility: "private")
+          .and_return({ success: true, cast: mock_cast_entity, visibility_changed_to_public: false })
+        expect(follow_adapter).not_to receive(:approve_all_pending)
+
+        response = handler.save_cast_visibility
+        expect(response).to be_a(::Portfolio::V1::SaveCastVisibilityResponse)
+      end
+    end
+
+    context "when cast not found" do
+      it "raises NOT_FOUND error" do
+        expect(save_visibility_uc).to receive(:call)
+          .and_return({ success: false, error: :cast_not_found })
+
+        expect { handler.save_cast_visibility }.to raise_error(GRPC::BadStatus) { |e|
+          expect(e.code).to eq(GRPC::Core::StatusCodes::NOT_FOUND)
+        }
+      end
+    end
+  end
 end
