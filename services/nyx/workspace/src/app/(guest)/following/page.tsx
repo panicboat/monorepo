@@ -6,10 +6,12 @@ import Link from "next/link";
 import { useFollow, FollowingCast } from "@/modules/relationship";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/Button";
+import { useToast } from "@/components/ui/Toast";
 import { UserListCard } from "@/components/ui/UserListCard";
 import { Loader2, Users } from "lucide-react";
 
 export default function FollowingPage() {
+  const { toast } = useToast();
   const { fetchFollowingList, unfollow, loading } = useFollow();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
@@ -34,6 +36,7 @@ export default function FollowingPage() {
       setLocalCasts((prev) => prev.filter((c) => c.id !== castId));
     } catch (e) {
       console.error("Failed to unfollow:", e);
+      toast({ title: "フォロー解除に失敗しました", variant: "destructive" });
     } finally {
       setActionId(null);
     }
