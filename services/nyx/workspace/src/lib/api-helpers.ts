@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ConnectError } from "@connectrpc/connect";
-import { grpcCodeToHttpStatus } from "./grpc-errors";
+import { GrpcCode, grpcCodeToHttpStatus } from "./grpc-errors";
 import { httpStatusToErrorCode } from "./errors";
 import { getDefaultMessage } from "./error-messages";
 
@@ -28,7 +28,10 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
   if (error instanceof ConnectError) {
     const status = grpcCodeToHttpStatus(error.code);
     const code = httpStatusToErrorCode(status);
-    const message = getDefaultMessage(code);
+    const message =
+      error.code === GrpcCode.INVALID_ARGUMENT && error.rawMessage
+        ? error.rawMessage
+        : getDefaultMessage(code);
     if (context) {
       console.error(`[${context}] gRPC error (${error.code}):`, error.rawMessage);
     }
