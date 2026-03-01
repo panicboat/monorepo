@@ -2,35 +2,27 @@
 
 import { useState, useCallback } from "react";
 import { getAuthToken } from "@/lib/swr";
+import { AppError, httpStatusToErrorCode } from "@/lib/errors";
+import { getDefaultMessage } from "@/lib/error-messages";
 
 export type HttpMethod = "POST" | "PUT" | "DELETE" | "PATCH";
 
 export interface UseApiMutationOptions<TPayload, TResponse> {
-  /** API URL */
   apiUrl: string;
-  /** HTTP method (default: POST) */
   method?: HttpMethod;
-  /** Transform response data */
   mapResponse?: (data: unknown) => TResponse;
-  /** Transform payload before sending */
   mapPayload?: (payload: TPayload) => unknown;
-  /** Callback on success */
   onSuccess?: (data: TResponse) => void;
-  /** Callback on error */
-  onError?: (error: Error) => void;
+  onError?: (error: AppError) => void;
 }
 
 export interface UseApiMutationReturn<TPayload, TResponse> {
   mutate: (payload: TPayload) => Promise<TResponse>;
   loading: boolean;
-  error: Error | null;
+  error: AppError | null;
   reset: () => void;
 }
 
-/**
- * Generic hook for API mutations (POST/PUT/DELETE).
- * Handles authentication, loading state, and error handling.
- */
 export function useApiMutation<TPayload = unknown, TResponse = unknown>(
   options: UseApiMutationOptions<TPayload, TResponse>
 ): UseApiMutationReturn<TPayload, TResponse> {
@@ -44,13 +36,13 @@ export function useApiMutation<TPayload = unknown, TResponse = unknown>(
   } = options;
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<AppError | null>(null);
 
   const mutate = useCallback(
     async (payload: TPayload): Promise<TResponse> => {
       const token = getAuthToken();
       if (!token) {
-        const err = new Error("Authentication required");
+        const err = new AppError("UNAUTHORIZED", "ログインしてください", 401);
         setError(err);
         onError?.(err);
         throw err;
@@ -71,7 +63,9 @@ export function useApiMutation<TPayload = unknown, TResponse = unknown>(
 
         if (!res.ok) {
           const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody.error || `Request failed: ${res.status}`);
+          const code = httpStatusToErrorCode(res.status);
+          const message = errBody.error || getDefaultMessage(code);
+          throw new AppError(code, message, res.status, errBody);
         }
 
         const data = await res.json();
@@ -79,7 +73,10 @@ export function useApiMutation<TPayload = unknown, TResponse = unknown>(
         onSuccess?.(result);
         return result;
       } catch (e) {
-        const err = e instanceof Error ? e : new Error("Unknown error");
+        const err =
+          e instanceof AppError
+            ? e
+            : new AppError("UNKNOWN", "予期しないエラーが発生しました", undefined, e);
         setError(err);
         onError?.(err);
         throw err;
@@ -94,17 +91,9 @@ export function useApiMutation<TPayload = unknown, TResponse = unknown>(
     setError(null);
   }, []);
 
-  return {
-    mutate,
-    loading,
-    error,
-    reset,
-  };
+  return { mutate, loading, error, reset };
 }
 
-/**
- * Helper for creating multiple mutation hooks with shared config.
- */
 export function createMutationHook<TPayload, TResponse>(
   baseOptions: Omit<UseApiMutationOptions<TPayload, TResponse>, "onSuccess" | "onError">
 ) {
