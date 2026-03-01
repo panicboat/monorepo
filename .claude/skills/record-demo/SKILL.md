@@ -83,6 +83,7 @@ cd test/e2e && npx playwright test demos/temp-demo.spec.ts \
   --project=chromium \
   --headed \
   --video=on \
+  --reporter=list \
   --output=test-results/demos/
 ```
 
@@ -109,19 +110,32 @@ ffmpeg がない場合は WebM をそのまま使用する。
 gh pr view --json number -q '.number'
 ```
 
-2. 動画をアップロード（GitHub Issue コメント経由）:
+2. 動画ファイルを GitHub にアップロード:
 ```bash
-# 一時コメントで画像/動画をアップロードし、URL を取得
-gh pr comment <PR_NUMBER> --body "![Demo](動画ファイルパス)"
+# GitHub REST API でアセットをアップロード
+# リポジトリのオーナーとリポジトリ名を取得
+REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
+
+# アップロード用の一時 Issue コメントを作成して URL を取得
+# gh api を使ってファイルをアップロード
+UPLOAD_URL=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" \
+  --method POST \
+  --field body="uploading demo..." \
+  --jq '.id')
+
+# コメント経由でアセット URL を取得後、コメントを削除
+gh api "repos/${REPO}/issues/comments/${UPLOAD_URL}" --method DELETE
 ```
+
+注意: `gh pr comment` はローカルファイルの直接アップロードに対応していないため、
+動画ファイルは手動でPRコメントにドラッグ&ドロップするか、GitHub Web UI 経由でアップロードする。
+アップロード後の URL を使って PR description を更新する。
 
 3. PR description に Demo Video セクションを追加:
 ```bash
-gh pr edit <PR_NUMBER> --body "$(既存body + Demo Video セクション)"
-```
+EXISTING_BODY=$(gh pr view --json body -q '.body')
+gh pr edit <PR_NUMBER> --body "${EXISTING_BODY}
 
-Demo Video セクションのフォーマット:
-```markdown
 ## Demo Video
 
 ![Demo: <変更内容の要約>](<動画 URL>)
@@ -129,10 +143,8 @@ Demo Video セクションのフォーマット:
 ### 操作手順
 1. <手順1>
 2. <手順2>
-3. <手順3>
+3. <手順3>"
 ```
-
-4. 一時コメントを削除
 
 ### Step 7: クリーンアップ
 
