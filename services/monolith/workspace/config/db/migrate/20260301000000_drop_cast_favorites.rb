@@ -2,6 +2,7 @@
 
 ROM::SQL.migration do
   up do
-    drop_table(:social__cast_favorites)
+    drop_table(:relationship__favorites)
+    run "DROP SCHEMA IF EXISTS social"
   end
 end

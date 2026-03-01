@@ -59,13 +59,6 @@ CREATE SCHEMA relationship;
 
 
 --
--- Name: social; Type: SCHEMA; Schema: -; Owner: -
---
-
-CREATE SCHEMA social;
-
-
---
 -- Name: trust; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -380,18 +373,6 @@ CREATE TABLE relationship.blocks (
 
 
 --
--- Name: favorites; Type: TABLE; Schema: relationship; Owner: -
---
-
-CREATE TABLE relationship.favorites (
-    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_favorites_id_not_null NOT NULL,
-    created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_favorites_created_at_not_null NOT NULL,
-    cast_user_id uuid NOT NULL,
-    guest_user_id uuid NOT NULL
-);
-
-
---
 -- Name: follows; Type: TABLE; Schema: relationship; Owner: -
 --
 
@@ -661,27 +642,11 @@ ALTER TABLE ONLY relationship.blocks
 
 
 --
--- Name: favorites cast_favorites_pkey; Type: CONSTRAINT; Schema: relationship; Owner: -
---
-
-ALTER TABLE ONLY relationship.favorites
-    ADD CONSTRAINT cast_favorites_pkey PRIMARY KEY (id);
-
-
---
 -- Name: follows cast_follows_pkey; Type: CONSTRAINT; Schema: relationship; Owner: -
 --
 
 ALTER TABLE ONLY relationship.follows
     ADD CONSTRAINT cast_follows_pkey PRIMARY KEY (id);
-
-
---
--- Name: favorites favorites_cast_user_id_guest_user_id_key; Type: CONSTRAINT; Schema: relationship; Owner: -
---
-
-ALTER TABLE ONLY relationship.favorites
-    ADD CONSTRAINT favorites_cast_user_id_guest_user_id_key UNIQUE (cast_user_id, guest_user_id);
 
 
 --
@@ -949,20 +914,6 @@ CREATE INDEX social_post_likes_post_id_index ON post.likes USING btree (post_id)
 
 
 --
--- Name: relationship_favorites_cast_user_id_index; Type: INDEX; Schema: relationship; Owner: -
---
-
-CREATE INDEX relationship_favorites_cast_user_id_index ON relationship.favorites USING btree (cast_user_id);
-
-
---
--- Name: relationship_favorites_guest_user_id_index; Type: INDEX; Schema: relationship; Owner: -
---
-
-CREATE INDEX relationship_favorites_guest_user_id_index ON relationship.favorites USING btree (guest_user_id);
-
-
---
 -- Name: relationship_follows_cast_user_id_index; Type: INDEX; Schema: relationship; Owner: -
 --
 
@@ -1218,4 +1169,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260223092141_add_default_schedules_to_casts.rb'),
 ('20260225000001_create_trust_review_media.rb'),
 ('20260226000001_add_trust_review_media_constraints.rb'),
-('20260227000001_unify_user_id.rb');
+('20260227000001_unify_user_id.rb'),
+('20260301000000_drop_cast_favorites.rb');
