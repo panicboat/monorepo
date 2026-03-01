@@ -271,11 +271,10 @@ Post::Adapters::RelationshipAdapter
 
 キャストが visibility を変更した場合：
 - `public` → `private`: 既存の approved フォロワーはそのまま。新規フォローは pending になる。
-- `private` → `public`: `approve_all_pending` メソッドは存在するが **現在は呼ばれていない**。pending リクエストは自動承認されない。
+- `private` → `public`: 全 pending フォローリクエストが自動承認される（`CastHandler#save_cast_visibility` → `FollowAdapter#approve_all_pending`）。
 
 ### Future Considerations
 
 - Guest → Cast ブロックのフロントエンド UI 実装
-- `private` → `public` 切り替え時の pending リクエスト自動承認
 - ロールベースアクセス制御（RBAC）の導入時は別途検討
 - キャスト間のアクセス制御は現時点では対象外
