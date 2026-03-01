@@ -18,15 +18,15 @@ export default function FollowRequestsPage() {
     try {
       await approve(guestId);
       toast({
-        title: "Approved",
-        description: "Follow request approved",
+        title: "承認しました",
+        description: "フォローリクエストを承認しました",
         variant: "success",
       });
     } catch (error) {
       console.error("Failed to approve:", error);
       toast({
-        title: "Error",
-        description: "Failed to approve follow request",
+        title: "エラー",
+        description: "承認に失敗しました",
         variant: "destructive",
       });
     } finally {
@@ -46,15 +46,15 @@ export default function FollowRequestsPage() {
     try {
       await reject(guestId);
       toast({
-        title: "Rejected",
-        description: "Follow request rejected",
+        title: "拒否しました",
+        description: "フォローリクエストを拒否しました",
         variant: "success",
       });
     } catch (error) {
       console.error("Failed to reject:", error);
       toast({
-        title: "Error",
-        description: "Failed to reject follow request",
+        title: "エラー",
+        description: "拒否に失敗しました",
         variant: "destructive",
       });
     } finally {

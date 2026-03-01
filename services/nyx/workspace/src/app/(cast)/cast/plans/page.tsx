@@ -18,15 +18,15 @@ export default function ManagePlanPage() {
     try {
       await savePlans(plans);
       toast({
-        title: "Saved",
-        description: "Your plans have been updated successfully.",
+        title: "保存しました",
+        description: "プランを更新しました",
         variant: "success",
       });
     } catch (error) {
       console.error("Failed to save plans:", error);
       toast({
-        title: "Error",
-        description: "Failed to save plans. Please try again.",
+        title: "エラー",
+        description: "プランの保存に失敗しました",
         variant: "destructive",
       });
     }

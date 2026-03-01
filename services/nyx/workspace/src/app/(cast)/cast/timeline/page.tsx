@@ -109,6 +109,7 @@ export default function CastTimelinePage() {
       setMediaFiles([]);
     } catch (e) {
       console.error("Failed to save post:", e);
+      toast({ title: "投稿の保存に失敗しました", variant: "destructive" });
     } finally {
       setPosting(false);
       setUploadProgress(null);
@@ -119,12 +120,12 @@ export default function CastTimelinePage() {
     try {
       await toggleVisibility(id, visibility);
       toast({
-        title: visibility === "public" ? "Post is now public" : "Post is now hidden",
+        title: visibility === "public" ? "投稿を公開しました" : "投稿を非公開にしました",
         variant: "success",
       });
     } catch (e) {
       console.error("Failed to toggle visibility:", e);
-      toast({ title: "Failed to update visibility", variant: "destructive" });
+      toast({ title: "公開設定の変更に失敗しました", variant: "destructive" });
     }
   };
 
@@ -144,7 +145,7 @@ export default function CastTimelinePage() {
       } catch (e) {
         console.error("Failed to delete post:", e);
         restorePostLocally(postToDelete);
-        toast({ title: "Failed to delete post", variant: "destructive" });
+        toast({ title: "投稿の削除に失敗しました", variant: "destructive" });
       }
     }, 5000);
 

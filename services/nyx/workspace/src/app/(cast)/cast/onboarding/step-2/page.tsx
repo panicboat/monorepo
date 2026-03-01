@@ -6,9 +6,11 @@ import { ArrowRight, Camera } from "lucide-react";
 import { PhotoUploader } from "@/modules/portfolio/components/cast/PhotoUploader";
 import { MediaItem } from "@/modules/portfolio/types";
 import { useCastData } from "@/modules/portfolio/hooks";
+import { useToast } from "@/components/ui/Toast";
 
 export default function OnboardingStep2() {
   const router = useRouter();
+  const { toast } = useToast();
   const avatarInputRef = useRef<HTMLInputElement>(null);
   // Local state for newly uploaded avatar (overrides external data)
   const [localAvatarPreview, setLocalAvatarPreview] = useState<string | null>(null);
@@ -48,6 +50,7 @@ export default function OnboardingStep2() {
       };
     } catch (e) {
       console.error(e);
+      toast({ title: "画像のアップロードに失敗しました", variant: "destructive" });
       return null;
     }
   };
@@ -62,6 +65,7 @@ export default function OnboardingStep2() {
       setLocalAvatarPreview(URL.createObjectURL(file));
     } catch (err) {
       console.error(err);
+      toast({ title: "画像のアップロードに失敗しました", variant: "destructive" });
     }
   };
 
