@@ -65,13 +65,13 @@ message CreateReviewRequest {
 Run: `cd services/monolith/workspace && bin/codegen`
 Expected: `stubs/trust/v1/service_pb.rb` と `service_services_pb.rb` が更新される
 
-Run: `cd web/nyx/workspace && npx buf generate ../../../proto`
+Run: `cd services/nyx/workspace && npx buf generate ../../../proto`
 Expected: フロントエンド用の生成コードが更新される（ConnectRPC クライアント）
 
 **Step 3: コミット**
 
 ```bash
-git add proto/trust/v1/service.proto services/monolith/workspace/stubs/trust/ web/nyx/workspace/
+git add proto/trust/v1/service.proto services/monolith/workspace/stubs/trust/ services/nyx/workspace/
 git commit -m "feat(trust): add ReviewMedia and MediaInput proto messages"
 ```
 
@@ -586,8 +586,8 @@ git commit -m "feat(trust): add review media seed data"
 ## Task 8: フロントエンド型定義の更新
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/types.ts`
-- Modify: `web/nyx/workspace/src/modules/trust/lib/api-mappers.ts`
+- Modify: `services/nyx/workspace/src/modules/trust/types.ts`
+- Modify: `services/nyx/workspace/src/modules/trust/lib/api-mappers.ts`
 
 **Step 1: `Review` と `CreateReviewRequest` にメディアフィールド追加**
 
@@ -671,7 +671,7 @@ export function mapProtoReviewToJson(review: ProtoReview) {
 **Step 3: コミット**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/types.ts web/nyx/workspace/src/modules/trust/lib/api-mappers.ts
+git add services/nyx/workspace/src/modules/trust/types.ts services/nyx/workspace/src/modules/trust/lib/api-mappers.ts
 git commit -m "feat(trust): add media fields to frontend Review types and mappers"
 ```
 
@@ -680,7 +680,7 @@ git commit -m "feat(trust): add media fields to frontend Review types and mapper
 ## Task 9: API Route — レビュー作成時のメディアデータ送信
 
 **Files:**
-- Modify: `web/nyx/workspace/src/app/api/me/trust/reviews/route.ts`
+- Modify: `services/nyx/workspace/src/app/api/me/trust/reviews/route.ts`
 
 **Step 1: POST ハンドラにメディアデータを追加**
 
@@ -724,7 +724,7 @@ export async function POST(req: NextRequest) {
 **Step 2: コミット**
 
 ```bash
-git add web/nyx/workspace/src/app/api/me/trust/reviews/route.ts
+git add services/nyx/workspace/src/app/api/me/trust/reviews/route.ts
 git commit -m "feat(trust): pass media data in CreateReview API route"
 ```
 
@@ -733,7 +733,7 @@ git commit -m "feat(trust): pass media data in CreateReview API route"
 ## Task 10: フロントエンド — `useReviews` フックにメディア送信対応
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/hooks/useReviews.ts`
+- Modify: `services/nyx/workspace/src/modules/trust/hooks/useReviews.ts`
 
 **Step 1: `createReview` にメディアパラメータを追加**
 
@@ -746,7 +746,7 @@ git commit -m "feat(trust): pass media data in CreateReview API route"
 ## Task 11: フロントエンド — `WriteReviewModal` にメディアアップロード追加
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/components/WriteReviewModal.tsx`
+- Modify: `services/nyx/workspace/src/modules/trust/components/WriteReviewModal.tsx`
 
 **Step 1: メディアアップロード機能を追加**
 
@@ -992,7 +992,7 @@ export function WriteReviewModal({
 **Step 3: コミット**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/components/WriteReviewModal.tsx
+git add services/nyx/workspace/src/modules/trust/components/WriteReviewModal.tsx
 git commit -m "feat(trust): add media upload to WriteReviewModal"
 ```
 
@@ -1001,7 +1001,7 @@ git commit -m "feat(trust): add media upload to WriteReviewModal"
 ## Task 12: フロントエンド — `WriteTrustModal` にもメディアアップロード追加
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/components/WriteTrustModal.tsx`
+- Modify: `services/nyx/workspace/src/modules/trust/components/WriteTrustModal.tsx`
 
 **Step 1: `onSubmitReview` のシグネチャにメディアを追加**
 
@@ -1017,7 +1017,7 @@ git commit -m "feat(trust): add media upload to WriteReviewModal"
 **Step 2: コミット**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/components/WriteTrustModal.tsx
+git add services/nyx/workspace/src/modules/trust/components/WriteTrustModal.tsx
 git commit -m "feat(trust): add media upload to WriteTrustModal"
 ```
 
@@ -1026,7 +1026,7 @@ git commit -m "feat(trust): add media upload to WriteTrustModal"
 ## Task 13: フロントエンド — `ReviewCard` にメディア表示追加
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/components/ReviewCard.tsx`
+- Modify: `services/nyx/workspace/src/modules/trust/components/ReviewCard.tsx`
 
 **Step 1: レビュー本文の下にメディアグリッドを追加**
 
@@ -1065,7 +1065,7 @@ git commit -m "feat(trust): add media upload to WriteTrustModal"
 **Step 2: コミット**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/components/ReviewCard.tsx
+git add services/nyx/workspace/src/modules/trust/components/ReviewCard.tsx
 git commit -m "feat(trust): add media display to ReviewCard"
 ```
 
@@ -1074,8 +1074,8 @@ git commit -m "feat(trust): add media display to ReviewCard"
 ## Task 14: フロントエンド — キャスト向けレビュー一覧ページ作成
 
 **Files:**
-- Create: `web/nyx/workspace/src/app/(cast)/cast/reviews/page.tsx`
-- Create: `web/nyx/workspace/src/modules/trust/components/CastReviewsPage.tsx`
+- Create: `services/nyx/workspace/src/app/(cast)/cast/reviews/page.tsx`
+- Create: `services/nyx/workspace/src/modules/trust/components/CastReviewsPage.tsx`
 
 **Step 1: `CastReviewsPage` コンポーネント作成**
 
@@ -1309,7 +1309,7 @@ export default function CastReviewsRoute() {
 **Step 3: コミット**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/components/CastReviewsPage.tsx web/nyx/workspace/src/app/\(cast\)/cast/reviews/page.tsx
+git add services/nyx/workspace/src/modules/trust/components/CastReviewsPage.tsx services/nyx/workspace/src/app/\(cast\)/cast/reviews/page.tsx
 git commit -m "feat(trust): add cast reviews management page"
 ```
 
@@ -1318,7 +1318,7 @@ git commit -m "feat(trust): add cast reviews management page"
 ## Task 15: フロントエンド — MyPage にレビュー管理リンク追加
 
 **Files:**
-- Modify: `web/nyx/workspace/src/app/(cast)/cast/mypage/page.tsx`
+- Modify: `services/nyx/workspace/src/app/(cast)/cast/mypage/page.tsx`
 
 **Step 1: フォロワーリストの後にレビュー管理リンクを追加**
 
@@ -1362,7 +1362,7 @@ import {
 **Step 2: コミット**
 
 ```bash
-git add web/nyx/workspace/src/app/\(cast\)/cast/mypage/page.tsx
+git add services/nyx/workspace/src/app/\(cast\)/cast/mypage/page.tsx
 git commit -m "feat(trust): add review management link to cast MyPage"
 ```
 
@@ -1377,7 +1377,7 @@ git commit -m "feat(trust): add review management link to cast MyPage"
 
 `WriteReviewModal` の `onSubmit` が `(score, content, media)` に変わったため、呼び出し側の `onSubmit` ハンドラに `media` パラメータを追加し、`createReview` に渡すようにする。
 
-検索コマンド: `grep -r "WriteReviewModal\|WriteTrustModal\|onSubmitReview" --include="*.tsx" --include="*.ts" web/nyx/workspace/src/`
+検索コマンド: `grep -r "WriteReviewModal\|WriteTrustModal\|onSubmitReview" --include="*.tsx" --include="*.ts" services/nyx/workspace/src/`
 
 各呼び出し箇所で:
 - `onSubmit` / `onSubmitReview` のコールバックに `media` パラメータを追加
@@ -1386,7 +1386,7 @@ git commit -m "feat(trust): add review management link to cast MyPage"
 **Step 2: コミット**
 
 ```bash
-git add -A web/nyx/workspace/src/
+git add -A services/nyx/workspace/src/
 git commit -m "feat(trust): update review modal consumers to pass media data"
 ```
 
@@ -1401,7 +1401,7 @@ Expected: 全テスト PASS
 
 **Step 2: フロントエンドビルド確認**
 
-Run: `cd web/nyx/workspace && npx next build`
+Run: `cd services/nyx/workspace && npx next build`
 Expected: ビルド成功
 
 **Step 3: 問題があれば修正してコミット**
@@ -1411,7 +1411,7 @@ Expected: ビルド成功
 ## Task 18: trust module の exports 更新
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/index.ts`
+- Modify: `services/nyx/workspace/src/modules/trust/index.ts`
 
 **Step 1: 新コンポーネントの export 追加**
 
@@ -1420,6 +1420,6 @@ Expected: ビルド成功
 **Step 2: コミット**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/index.ts
+git add services/nyx/workspace/src/modules/trust/index.ts
 git commit -m "feat(trust): export CastReviewsPage component"
 ```

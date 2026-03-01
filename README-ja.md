@@ -11,19 +11,14 @@
 ├── .github/            # GitHub Actions Workflows
 ├── clusters/           # Flux CD Cluster definitions
 ├── proto/              # Protocol Buffers definitions
-├── services/           # Microservices source code & manifests
+├── services/           # Services source code & manifests
 │   └── {service}/      # Service Name
 │       ├── workspace/  # Application Source Code
 │       ├── kubernetes/ # Kubernetes Manifests (Base/Overlays)
 │       └── terragrunt/ # Terraform & Terragrunt configurations
 ├── templates/          # Kubernetes templates
-├── tests/              # Tests
-│   └── e2e/            # End-to-End tests
-└── web/                # Frontend source code & manifests
-    └── {service}/      # Service Name
-        ├── workspace/  # Application Source Code
-        ├── kubernetes/ # Kubernetes Manifests (Base/Overlays)
-        └── terragrunt/ # Terraform & Terragrunt configurations
+└── tests/              # Tests
+    └── e2e/            # End-to-End tests
 ```
 ## 🛠 Prerequisites
 
@@ -59,7 +54,7 @@ kubectl apply -k services/monolith/kubernetes/overlays/develop
 kubectl apply -k services/reverse-proxy/kubernetes/overlays/develop
 
 # Nyx
-kubectl apply -k web/nyx/kubernetes/overlays/develop
+kubectl apply -k services/nyx/kubernetes/overlays/develop
 ```
 
 Flux による同期を再開（ローカルの変更は破棄されます）するには：
@@ -78,7 +73,7 @@ graph LR
   subgraph "Kubernetes Cluster"
     NginxPod -- "3. http://cilium-gateway<br>Internal" --> CiliumGw[Cilium Gateway]
     CiliumGw -- "4. HTTPRoute<br>Host: nginx.local" --> AppPod[App Pod<br>services/nginx]
-    CiliumGw -- "4. HTTPRoute<br>Host: nyx.local" --> NyxPod[Nyx Pod<br>web/nyx]
+    CiliumGw -- "4. HTTPRoute<br>Host: nyx.local" --> NyxPod[Nyx Pod<br>services/nyx]
     NyxPod -- "5. gRPC<br>Host: monolith.local" --> MonolithPod[Monolith Pod<br>services/monolith]
   end
 ```

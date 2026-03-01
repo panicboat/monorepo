@@ -8,7 +8,7 @@
 テストを実行する前に、ローカル環境でアプリケーション全体が起動している必要があります。
 
 1.  **Monolith Service**: `services/monolith/workspace` で `bin/grpc` を実行。
-2.  **Nyx Frontend**: `web/nyx/workspace` で `pnpm dev` を実行 (Port 3000)。
+2.  **Nyx Frontend**: `services/nyx/workspace` で `pnpm dev` を実行 (Port 3000)。
 
 または `local-apply.sh` を利用して Kubernetes 環境を起動する方法もあります。
 

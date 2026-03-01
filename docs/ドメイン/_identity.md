@@ -30,7 +30,7 @@
 | Layer | Path |
 |-------|------|
 | Backend | `services/monolith/workspace/slices/identity/` |
-| Frontend | `web/nyx/workspace/src/modules/identity/` |
+| Frontend | `services/nyx/workspace/src/modules/identity/` |
 | Proto | `proto/identity/v1/service.proto` |
 
 ## Key APIs

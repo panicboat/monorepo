@@ -531,7 +531,7 @@ git commit -m "feat(seeds): add default_schedules to cast seed data"
 ## Task 11: Update Frontend Types
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/portfolio/types.ts:104-136`
+- Modify: `services/nyx/workspace/src/modules/portfolio/types.ts:104-136`
 
 **Step 1: Add DefaultSchedule interface**
 
@@ -562,7 +562,7 @@ defaultSchedules: DefaultSchedule[];
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/portfolio/types.ts
+git add services/nyx/workspace/src/modules/portfolio/types.ts
 git commit -m "feat(frontend): update ProfileFormData for defaultSchedules array"
 ```
 
@@ -571,7 +571,7 @@ git commit -m "feat(frontend): update ProfileFormData for defaultSchedules array
 ## Task 12: Update Frontend Mappers
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/portfolio/lib/cast/mappers.ts:1-80`
+- Modify: `services/nyx/workspace/src/modules/portfolio/lib/cast/mappers.ts:1-80`
 
 **Step 1: Update mapApiToProfileForm**
 
@@ -630,7 +630,7 @@ Add `DefaultSchedule` to imports from types.
 **Step 5: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/portfolio/lib/cast/mappers.ts
+git add services/nyx/workspace/src/modules/portfolio/lib/cast/mappers.ts
 git commit -m "feat(frontend): update mappers for defaultSchedules"
 ```
 
@@ -639,7 +639,7 @@ git commit -m "feat(frontend): update mappers for defaultSchedules"
 ## Task 13: Update Schedules Page
 
 **Files:**
-- Modify: `web/nyx/workspace/src/app/(cast)/cast/schedules/page.tsx:17-18,70-75`
+- Modify: `services/nyx/workspace/src/app/(cast)/cast/schedules/page.tsx:17-18,70-75`
 
 **Step 1: Update default schedule extraction**
 
@@ -682,7 +682,7 @@ With:
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/(cast)/cast/schedules/page.tsx
+git add services/nyx/workspace/src/app/(cast)/cast/schedules/page.tsx
 git commit -m "feat(frontend): update schedules page for multiple defaults"
 ```
 
@@ -691,7 +691,7 @@ git commit -m "feat(frontend): update schedules page for multiple defaults"
 ## Task 14: Update ScheduleEditor Component
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/portfolio/components/cast/ScheduleEditor.tsx:14-28,45-51`
+- Modify: `services/nyx/workspace/src/modules/portfolio/components/cast/ScheduleEditor.tsx:14-28,45-51`
 
 **Step 1: Update props interface**
 
@@ -772,7 +772,7 @@ const addSchedule = (dateStr: string) => {
 **Step 4: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/portfolio/components/cast/ScheduleEditor.tsx
+git add services/nyx/workspace/src/modules/portfolio/components/cast/ScheduleEditor.tsx
 git commit -m "feat(frontend): update ScheduleEditor for multiple default schedules"
 ```
 
@@ -781,7 +781,7 @@ git commit -m "feat(frontend): update ScheduleEditor for multiple default schedu
 ## Task 15: Create DefaultSchedulesEditor Component
 
 **Files:**
-- Create: `web/nyx/workspace/src/modules/portfolio/components/cast/DefaultSchedulesEditor.tsx`
+- Create: `services/nyx/workspace/src/modules/portfolio/components/cast/DefaultSchedulesEditor.tsx`
 
 **Step 1: Create the component**
 
@@ -875,7 +875,7 @@ export const DefaultSchedulesEditor = ({
 
 **Step 2: Export from index**
 
-Add to `web/nyx/workspace/src/modules/portfolio/components/cast/index.ts`:
+Add to `services/nyx/workspace/src/modules/portfolio/components/cast/index.ts`:
 
 ```typescript
 export { DefaultSchedulesEditor } from "./DefaultSchedulesEditor";
@@ -884,8 +884,8 @@ export { DefaultSchedulesEditor } from "./DefaultSchedulesEditor";
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/portfolio/components/cast/DefaultSchedulesEditor.tsx
-git add web/nyx/workspace/src/modules/portfolio/components/cast/index.ts
+git add services/nyx/workspace/src/modules/portfolio/components/cast/DefaultSchedulesEditor.tsx
+git add services/nyx/workspace/src/modules/portfolio/components/cast/index.ts
 git commit -m "feat(frontend): add DefaultSchedulesEditor component"
 ```
 
@@ -924,7 +924,7 @@ git commit -m "feat(frontend): integrate DefaultSchedulesEditor into profile edi
 ## Task 17: Update useCastProfile Hook
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/portfolio/hooks/useCastProfile.ts`
+- Modify: `services/nyx/workspace/src/modules/portfolio/hooks/useCastProfile.ts`
 
 **Step 1: Update default form data**
 
@@ -946,7 +946,7 @@ defaultSchedules: [{ start: "18:00", end: "23:00" }],
 **Step 2: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/portfolio/hooks/useCastProfile.ts
+git add services/nyx/workspace/src/modules/portfolio/hooks/useCastProfile.ts
 git commit -m "feat(frontend): update useCastProfile default for defaultSchedules"
 ```
 
@@ -964,12 +964,12 @@ Expected: All tests pass
 
 **Step 2: Run frontend type check**
 
-Run: `cd web/nyx/workspace && pnpm tsc --noEmit`
+Run: `cd services/nyx/workspace && pnpm tsc --noEmit`
 Expected: No TypeScript errors
 
 **Step 3: Run frontend lint**
 
-Run: `cd web/nyx/workspace && pnpm lint`
+Run: `cd services/nyx/workspace && pnpm lint`
 Expected: No lint errors
 
 **Step 4: Manual test**

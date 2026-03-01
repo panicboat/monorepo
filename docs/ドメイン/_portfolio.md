@@ -47,7 +47,7 @@ identity__users.id = portfolio__casts.user_id (PK) = portfolio__guests.user_id (
 | Layer | Path |
 |-------|------|
 | Backend | `services/monolith/workspace/slices/portfolio/` |
-| Frontend | `web/nyx/workspace/src/modules/portfolio/` |
+| Frontend | `services/nyx/workspace/src/modules/portfolio/` |
 | Proto (Cast) | `proto/portfolio/v1/service.proto` |
 | Proto (Guest) | `proto/portfolio/v1/guest.proto` |
 

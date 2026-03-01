@@ -17,7 +17,7 @@
 ### Task 1: InfiniteScroll UIコンポーネント作成
 
 **Files:**
-- Create: `web/nyx/workspace/src/components/ui/InfiniteScroll.tsx`
+- Create: `services/nyx/workspace/src/components/ui/InfiniteScroll.tsx`
 
 **Step 1: InfiniteScroll コンポーネントを作成**
 
@@ -99,12 +99,12 @@ export function InfiniteScroll({
 
 **Step 2: コンポーネントをエクスポート**
 
-`web/nyx/workspace/src/components/ui/index.ts` を確認し、必要であれば InfiniteScroll をエクスポートに追加。
+`services/nyx/workspace/src/components/ui/index.ts` を確認し、必要であれば InfiniteScroll をエクスポートに追加。
 
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/components/ui/InfiniteScroll.tsx
+git add services/nyx/workspace/src/components/ui/InfiniteScroll.tsx
 git commit -m "feat(ui): add InfiniteScroll component"
 ```
 
@@ -115,8 +115,8 @@ git commit -m "feat(ui): add InfiniteScroll component"
 ### Task 2: useInfiniteCasts フック作成
 
 **Files:**
-- Create: `web/nyx/workspace/src/modules/portfolio/hooks/useInfiniteCasts.ts`
-- Modify: `web/nyx/workspace/src/modules/portfolio/hooks/index.ts`
+- Create: `services/nyx/workspace/src/modules/portfolio/hooks/useInfiniteCasts.ts`
+- Modify: `services/nyx/workspace/src/modules/portfolio/hooks/index.ts`
 
 **Step 1: useInfiniteCasts フックを作成**
 
@@ -273,7 +273,7 @@ export function useInfiniteCasts(options: UseInfiniteCastsOptions) {
 
 **Step 2: hooks/index.ts にエクスポートを追加**
 
-`web/nyx/workspace/src/modules/portfolio/hooks/index.ts` に以下を追加:
+`services/nyx/workspace/src/modules/portfolio/hooks/index.ts` に以下を追加:
 
 ```typescript
 export { useInfiniteCasts } from "./useInfiniteCasts";
@@ -282,8 +282,8 @@ export { useInfiniteCasts } from "./useInfiniteCasts";
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/portfolio/hooks/useInfiniteCasts.ts
-git add web/nyx/workspace/src/modules/portfolio/hooks/index.ts
+git add services/nyx/workspace/src/modules/portfolio/hooks/useInfiniteCasts.ts
+git add services/nyx/workspace/src/modules/portfolio/hooks/index.ts
 git commit -m "feat(portfolio): add useInfiniteCasts hook"
 ```
 
@@ -292,7 +292,7 @@ git commit -m "feat(portfolio): add useInfiniteCasts hook"
 ### Task 3: search/page.tsx を無限スクロール対応に改修
 
 **Files:**
-- Modify: `web/nyx/workspace/src/app/(guest)/search/page.tsx`
+- Modify: `services/nyx/workspace/src/app/(guest)/search/page.tsx`
 
 **Step 1: インポートを追加**
 
@@ -338,7 +338,7 @@ import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 **Step 5: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/\(guest\)/search/page.tsx
+git add services/nyx/workspace/src/app/\(guest\)/search/page.tsx
 git commit -m "feat(search): add infinite scroll to cast search"
 ```
 
@@ -349,7 +349,7 @@ git commit -m "feat(search): add infinite scroll to cast search"
 ### Task 4: ReviewListPage を InfiniteScroll 使用に変更
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/components/ReviewListPage.tsx`
+- Modify: `services/nyx/workspace/src/modules/trust/components/ReviewListPage.tsx`
 
 **Step 1: InfiniteScroll をインポート**
 
@@ -389,7 +389,7 @@ import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 **Step 5: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/components/ReviewListPage.tsx
+git add services/nyx/workspace/src/modules/trust/components/ReviewListPage.tsx
 git commit -m "refactor(trust): use InfiniteScroll component in ReviewListPage"
 ```
 
@@ -398,7 +398,7 @@ git commit -m "refactor(trust): use InfiniteScroll component in ReviewListPage"
 ### Task 5: TimelineFeed を InfiniteScroll 使用に変更
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/feed/components/feed/TimelineFeed.tsx`
+- Modify: `services/nyx/workspace/src/modules/feed/components/feed/TimelineFeed.tsx`
 
 **Step 1: InfiniteScroll をインポート**
 
@@ -439,7 +439,7 @@ import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 **Step 5: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/feed/components/feed/TimelineFeed.tsx
+git add services/nyx/workspace/src/modules/feed/components/feed/TimelineFeed.tsx
 git commit -m "refactor(feed): use InfiniteScroll component in TimelineFeed"
 ```
 
@@ -448,7 +448,7 @@ git commit -m "refactor(feed): use InfiniteScroll component in TimelineFeed"
 ### Task 6: CastTimeline を InfiniteScroll 使用に変更
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/feed/components/guest/CastTimeline.tsx`
+- Modify: `services/nyx/workspace/src/modules/feed/components/guest/CastTimeline.tsx`
 
 **Step 1: InfiniteScroll をインポート**
 
@@ -493,7 +493,7 @@ import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 **Step 5: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/feed/components/guest/CastTimeline.tsx
+git add services/nyx/workspace/src/modules/feed/components/guest/CastTimeline.tsx
 git commit -m "refactor(feed): use InfiniteScroll component in CastTimeline"
 ```
 
@@ -502,7 +502,7 @@ git commit -m "refactor(feed): use InfiniteScroll component in CastTimeline"
 ### Task 7: CommentSection を InfiniteScroll 使用に変更
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/post/components/comments/CommentSection.tsx`
+- Modify: `services/nyx/workspace/src/modules/post/components/comments/CommentSection.tsx`
 
 **Step 1: InfiniteScroll をインポート**
 
@@ -537,7 +537,7 @@ import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 **Step 5: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/post/components/comments/CommentSection.tsx
+git add services/nyx/workspace/src/modules/post/components/comments/CommentSection.tsx
 git commit -m "refactor(post): use InfiniteScroll component in CommentSection"
 ```
 

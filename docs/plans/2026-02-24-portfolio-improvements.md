@@ -15,7 +15,7 @@
 ### Task 1: Approval Rate Icon Change
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/components/ReviewStatsDisplay.tsx:3,45`
+- Modify: `services/nyx/workspace/src/modules/trust/components/ReviewStatsDisplay.tsx:3,45`
 
 **Step 1: Update import statement**
 
@@ -35,13 +35,13 @@ Replace `ThumbsUp` with `Shield` on line 45:
 
 **Step 3: Verify the change**
 
-Run: `cd web/nyx/workspace && pnpm dev`
+Run: `cd services/nyx/workspace && pnpm dev`
 Navigate to a cast detail page and verify the approval rate shows a shield icon.
 
 **Step 4: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/components/ReviewStatsDisplay.tsx
+git add services/nyx/workspace/src/modules/trust/components/ReviewStatsDisplay.tsx
 git commit -m "feat(trust): change approval rate icon from ThumbsUp to Shield"
 ```
 
@@ -50,7 +50,7 @@ git commit -m "feat(trust): change approval rate icon from ThumbsUp to Shield"
 ### Task 2: Create GuestTagsDisplay Component
 
 **Files:**
-- Create: `web/nyx/workspace/src/modules/trust/components/GuestTagsDisplay.tsx`
+- Create: `services/nyx/workspace/src/modules/trust/components/GuestTagsDisplay.tsx`
 
 **Step 1: Create the component**
 
@@ -125,7 +125,7 @@ export function GuestTagsDisplay({ targetId }: GuestTagsDisplayProps) {
 
 **Step 2: Export the component**
 
-Modify `web/nyx/workspace/src/modules/trust/components/index.ts`:
+Modify `services/nyx/workspace/src/modules/trust/components/index.ts`:
 
 ```typescript
 export * from "./GuestTagsDisplay";
@@ -134,8 +134,8 @@ export * from "./GuestTagsDisplay";
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/components/GuestTagsDisplay.tsx
-git add web/nyx/workspace/src/modules/trust/components/index.ts
+git add services/nyx/workspace/src/modules/trust/components/GuestTagsDisplay.tsx
+git add services/nyx/workspace/src/modules/trust/components/index.ts
 git commit -m "feat(trust): add GuestTagsDisplay component for read-only guest tags"
 ```
 
@@ -144,7 +144,7 @@ git commit -m "feat(trust): add GuestTagsDisplay component for read-only guest t
 ### Task 3: Add Guest Tags to TrustSection
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/components/TrustSection.tsx`
+- Modify: `services/nyx/workspace/src/modules/trust/components/TrustSection.tsx`
 
 **Step 1: Import GuestTagsDisplay**
 
@@ -185,13 +185,13 @@ return (
 
 **Step 3: Verify the change**
 
-Run: `cd web/nyx/workspace && pnpm dev`
+Run: `cd services/nyx/workspace && pnpm dev`
 Navigate to a cast detail page and verify guest tags appear above reviews.
 
 **Step 4: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/components/TrustSection.tsx
+git add services/nyx/workspace/src/modules/trust/components/TrustSection.tsx
 git commit -m "feat(trust): add guest tags section to TrustSection component"
 ```
 
@@ -200,7 +200,7 @@ git commit -m "feat(trust): add guest tags section to TrustSection component"
 ### Task 4: Add Approved Reviews to Guest Detail Page
 
 **Files:**
-- Modify: `web/nyx/workspace/src/app/(cast)/cast/guests/[id]/page.tsx`
+- Modify: `services/nyx/workspace/src/app/(cast)/cast/guests/[id]/page.tsx`
 
 **Step 1: Import ReviewList and useReviewStats**
 
@@ -256,13 +256,13 @@ import { useState, use, useEffect } from "react";
 
 **Step 5: Verify the change**
 
-Run: `cd web/nyx/workspace && pnpm dev`
+Run: `cd services/nyx/workspace && pnpm dev`
 Navigate to cast's guest detail page and verify reviews appear.
 
 **Step 6: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/(cast)/cast/guests/[id]/page.tsx
+git add services/nyx/workspace/src/app/(cast)/cast/guests/[id]/page.tsx
 git commit -m "feat(portfolio): add approved reviews section to guest detail page"
 ```
 
@@ -332,7 +332,7 @@ git commit -m "feat(trust): add reviewer info to list_reviews response"
 ### Task 6: Update Frontend API to Include Reviewer Info
 
 **Files:**
-- Modify: `web/nyx/workspace/src/app/api/shared/trust/reviews/route.ts:28-36`
+- Modify: `services/nyx/workspace/src/app/api/shared/trust/reviews/route.ts:28-36`
 
 **Step 1: Update response mapping**
 
@@ -355,13 +355,13 @@ const reviews = (response.reviews || []).map((r) => ({
 
 **Step 2: Verify the change**
 
-Run: `cd web/nyx/workspace && pnpm dev`
+Run: `cd services/nyx/workspace && pnpm dev`
 Navigate to cast detail page and verify reviewer avatars and names appear in reviews.
 
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/api/shared/trust/reviews/route.ts
+git add services/nyx/workspace/src/app/api/shared/trust/reviews/route.ts
 git commit -m "feat(trust): include reviewer info in reviews API response"
 ```
 
@@ -395,14 +395,14 @@ message ListBlockedByResponse {
 **Step 2: Generate stubs**
 
 Run: `cd services/monolith/workspace && ./bin/proto-gen`
-Run: `cd web/nyx/workspace && pnpm proto:gen`
+Run: `cd services/nyx/workspace && pnpm proto:gen`
 
 **Step 3: Commit**
 
 ```bash
 git add proto/relationship/v1/block_service.proto
 git add services/monolith/workspace/stubs/
-git add web/nyx/workspace/src/stub/
+git add services/nyx/workspace/src/stub/
 git commit -m "feat(proto): add ListBlockedBy RPC to block service"
 ```
 
@@ -524,7 +524,7 @@ git commit -m "feat(relationship): implement ListBlockedBy handler"
 ### Task 10: Create Frontend API Route for Blocked-By
 
 **Files:**
-- Create: `web/nyx/workspace/src/app/api/cast/guests/[id]/blocked-by/route.ts`
+- Create: `services/nyx/workspace/src/app/api/cast/guests/[id]/blocked-by/route.ts`
 
 **Step 1: Create the route**
 
@@ -573,7 +573,7 @@ export async function GET(
 **Step 2: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/api/cast/guests/[id]/blocked-by/route.ts
+git add services/nyx/workspace/src/app/api/cast/guests/[id]/blocked-by/route.ts
 git commit -m "feat(portfolio): add blocked-by API route for guest detail"
 ```
 
@@ -582,7 +582,7 @@ git commit -m "feat(portfolio): add blocked-by API route for guest detail"
 ### Task 11: Create useBlockedBy Hook
 
 **Files:**
-- Create: `web/nyx/workspace/src/modules/relationship/hooks/useBlockedBy.ts`
+- Create: `services/nyx/workspace/src/modules/relationship/hooks/useBlockedBy.ts`
 
 **Step 1: Create the hook**
 
@@ -622,7 +622,7 @@ export function useBlockedBy(guestId: string) {
 
 **Step 2: Export from hooks index**
 
-Modify `web/nyx/workspace/src/modules/relationship/hooks/index.ts`:
+Modify `services/nyx/workspace/src/modules/relationship/hooks/index.ts`:
 
 ```typescript
 export * from "./useBlockedBy";
@@ -631,8 +631,8 @@ export * from "./useBlockedBy";
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/relationship/hooks/useBlockedBy.ts
-git add web/nyx/workspace/src/modules/relationship/hooks/index.ts
+git add services/nyx/workspace/src/modules/relationship/hooks/useBlockedBy.ts
+git add services/nyx/workspace/src/modules/relationship/hooks/index.ts
 git commit -m "feat(relationship): add useBlockedBy hook"
 ```
 
@@ -641,7 +641,7 @@ git commit -m "feat(relationship): add useBlockedBy hook"
 ### Task 12: Add Blocked-By Section to Guest Detail Page
 
 **Files:**
-- Modify: `web/nyx/workspace/src/app/(cast)/cast/guests/[id]/page.tsx`
+- Modify: `services/nyx/workspace/src/app/(cast)/cast/guests/[id]/page.tsx`
 
 **Step 1: Import useBlockedBy**
 
@@ -709,13 +709,13 @@ After Actions section:
 
 **Step 4: Verify the change**
 
-Run: `cd web/nyx/workspace && pnpm dev`
+Run: `cd services/nyx/workspace && pnpm dev`
 Navigate to cast's guest detail page and verify blocked-by section appears.
 
 **Step 5: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/(cast)/cast/guests/[id]/page.tsx
+git add services/nyx/workspace/src/app/(cast)/cast/guests/[id]/page.tsx
 git commit -m "feat(portfolio): add blocked-by casts section to guest detail page"
 ```
 

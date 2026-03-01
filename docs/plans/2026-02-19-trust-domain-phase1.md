@@ -174,15 +174,15 @@ Verify: `services/monolith/workspace/stubs/trust/v1/service_services_pb.rb` exis
 **Step 2: Generate TypeScript stubs**
 
 ```bash
-cd web/nyx/workspace && pnpm proto:gen
+cd services/nyx/workspace && pnpm proto:gen
 ```
 
-Verify: `web/nyx/workspace/src/stub/trust/v1/service_pb.ts` exists.
+Verify: `services/nyx/workspace/src/stub/trust/v1/service_pb.ts` exists.
 
 **Step 3: Commit**
 
 ```bash
-git add services/monolith/workspace/stubs/trust/ web/nyx/workspace/src/stub/trust/
+git add services/monolith/workspace/stubs/trust/ services/nyx/workspace/src/stub/trust/
 git commit -m "chore(trust): generate proto stubs for Ruby and TypeScript"
 ```
 
@@ -1431,10 +1431,10 @@ git commit -m "feat(trust): register gRPC handler and add seed data"
 ## Task 11: Frontend Types + gRPC Client
 
 **Files:**
-- Create: `web/nyx/workspace/src/modules/trust/types.ts`
-- Create: `web/nyx/workspace/src/modules/trust/index.ts`
-- Create: `web/nyx/workspace/src/modules/trust/hooks/index.ts`
-- Modify: `web/nyx/workspace/src/lib/grpc.ts` (add trustClient)
+- Create: `services/nyx/workspace/src/modules/trust/types.ts`
+- Create: `services/nyx/workspace/src/modules/trust/index.ts`
+- Create: `services/nyx/workspace/src/modules/trust/hooks/index.ts`
+- Modify: `services/nyx/workspace/src/lib/grpc.ts` (add trustClient)
 
 **Step 1: Create module files**
 
@@ -1493,7 +1493,7 @@ export const trustClient = createClient(TrustService, transport);
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/ web/nyx/workspace/src/lib/grpc.ts
+git add services/nyx/workspace/src/modules/trust/ services/nyx/workspace/src/lib/grpc.ts
 git commit -m "feat(trust): add frontend module types and gRPC client"
 ```
 
@@ -1502,8 +1502,8 @@ git commit -m "feat(trust): add frontend module types and gRPC client"
 ## Task 12: Frontend Hooks
 
 **Files:**
-- Create: `web/nyx/workspace/src/modules/trust/hooks/useTags.ts`
-- Create: `web/nyx/workspace/src/modules/trust/hooks/useTaggings.ts`
+- Create: `services/nyx/workspace/src/modules/trust/hooks/useTags.ts`
+- Create: `services/nyx/workspace/src/modules/trust/hooks/useTaggings.ts`
 
 **Step 1: Create useTags hook**
 
@@ -1751,7 +1751,7 @@ export function useTaggings() {
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/hooks/
+git add services/nyx/workspace/src/modules/trust/hooks/
 git commit -m "feat(trust): add useTags and useTaggings hooks"
 ```
 
@@ -1760,10 +1760,10 @@ git commit -m "feat(trust): add useTags and useTaggings hooks"
 ## Task 13: Frontend API Routes (Shared / Me)
 
 **Files:**
-- Create: `web/nyx/workspace/src/app/api/me/trust/tags/route.ts`
-- Create: `web/nyx/workspace/src/app/api/me/trust/tags/[id]/route.ts`
-- Create: `web/nyx/workspace/src/app/api/me/trust/taggings/route.ts`
-- Create: `web/nyx/workspace/src/app/api/me/trust/taggings/[id]/route.ts`
+- Create: `services/nyx/workspace/src/app/api/me/trust/tags/route.ts`
+- Create: `services/nyx/workspace/src/app/api/me/trust/tags/[id]/route.ts`
+- Create: `services/nyx/workspace/src/app/api/me/trust/taggings/route.ts`
+- Create: `services/nyx/workspace/src/app/api/me/trust/taggings/[id]/route.ts`
 
 **Step 1: Create tags routes**
 
@@ -2004,7 +2004,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/api/me/trust/
+git add services/nyx/workspace/src/app/api/me/trust/
 git commit -m "feat(trust): add shared API routes for tags and taggings"
 ```
 
@@ -2013,9 +2013,9 @@ git commit -m "feat(trust): add shared API routes for tags and taggings"
 ## Task 14: Frontend API Routes (Cast-only: Approval)
 
 **Files:**
-- Create: `web/nyx/workspace/src/app/api/cast/trust/taggings/pending/route.ts`
-- Create: `web/nyx/workspace/src/app/api/cast/trust/taggings/[id]/approve/route.ts`
-- Create: `web/nyx/workspace/src/app/api/cast/trust/taggings/[id]/reject/route.ts`
+- Create: `services/nyx/workspace/src/app/api/cast/trust/taggings/pending/route.ts`
+- Create: `services/nyx/workspace/src/app/api/cast/trust/taggings/[id]/approve/route.ts`
+- Create: `services/nyx/workspace/src/app/api/cast/trust/taggings/[id]/reject/route.ts`
 
 **Step 1: Create pending list route**
 
@@ -2155,7 +2155,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/api/cast/trust/
+git add services/nyx/workspace/src/app/api/cast/trust/
 git commit -m "feat(trust): add cast-only API routes for tagging approval"
 ```
 
@@ -2174,7 +2174,7 @@ Expected: ALL PASS.
 **Step 2: Run frontend type check**
 
 ```bash
-cd web/nyx/workspace && pnpm tsc --noEmit
+cd services/nyx/workspace && pnpm tsc --noEmit
 ```
 
 Expected: No type errors.

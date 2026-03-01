@@ -30,7 +30,7 @@
 | Layer | Path |
 |-------|------|
 | Backend | `services/monolith/workspace/slices/post/` |
-| Frontend | `web/nyx/workspace/src/modules/post/` (planned) |
+| Frontend | `services/nyx/workspace/src/modules/post/` (planned) |
 | Proto | `proto/post/v1/post_service.proto` |
 | Proto | `proto/post/v1/like_service.proto` |
 | Proto | `proto/post/v1/comment_service.proto` |

@@ -32,7 +32,7 @@
 各サービスの詳細なアーキテクチャは個別の README を参照してください：
 
 - **Backend:** [services/monolith/README.md](../../../monolith/README.md)
-- **Frontend:** [web/nyx/README.md](../../../../web/nyx/README.md)
+- **Frontend:** [services/nyx/README.md](../../../services/nyx/README.md)
 
 ---
 

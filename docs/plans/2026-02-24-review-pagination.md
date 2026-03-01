@@ -43,12 +43,12 @@ Run: `cd services/monolith/workspace && bundle exec rake proto:generate`
 
 **Step 4: Generate frontend stubs**
 
-Run: `cd web/nyx/workspace && npm run proto:generate`
+Run: `cd services/nyx/workspace && npm run proto:generate`
 
 **Step 5: Commit**
 
 ```bash
-git add proto/trust/v1/service.proto services/monolith/workspace/stubs/ web/nyx/workspace/src/stub/
+git add proto/trust/v1/service.proto services/monolith/workspace/stubs/ services/nyx/workspace/src/stub/
 git commit -m "feat(proto): add pagination to ListReviews"
 ```
 
@@ -394,7 +394,7 @@ git commit -m "feat(trust): add pagination to list_reviews handler"
 ## Task 5: Frontend Types - Update ListReviewsResponse
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/types.ts:45-47`
+- Modify: `services/nyx/workspace/src/modules/trust/types.ts:45-47`
 
 **Step 1: Update ListReviewsResponse type**
 
@@ -409,7 +409,7 @@ export interface ListReviewsResponse {
 **Step 2: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/types.ts
+git add services/nyx/workspace/src/modules/trust/types.ts
 git commit -m "feat(trust): add pagination fields to ListReviewsResponse type"
 ```
 
@@ -418,7 +418,7 @@ git commit -m "feat(trust): add pagination fields to ListReviewsResponse type"
 ## Task 6: Frontend API Route - Add Pagination Params
 
 **Files:**
-- Modify: `web/nyx/workspace/src/app/api/shared/trust/reviews/route.ts`
+- Modify: `services/nyx/workspace/src/app/api/shared/trust/reviews/route.ts`
 
 **Step 1: Update GET handler to support pagination**
 
@@ -493,7 +493,7 @@ export async function GET(req: NextRequest) {
 **Step 2: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/api/shared/trust/reviews/route.ts
+git add services/nyx/workspace/src/app/api/shared/trust/reviews/route.ts
 git commit -m "feat(trust): add pagination params to reviews API route"
 ```
 
@@ -502,7 +502,7 @@ git commit -m "feat(trust): add pagination params to reviews API route"
 ## Task 7: Frontend Hook - Update useReviews with Pagination
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/hooks/useReviews.ts`
+- Modify: `services/nyx/workspace/src/modules/trust/hooks/useReviews.ts`
 
 **Step 1: Update useReviews to support limit param**
 
@@ -676,7 +676,7 @@ export function useReviews() {
 **Step 2: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/hooks/useReviews.ts
+git add services/nyx/workspace/src/modules/trust/hooks/useReviews.ts
 git commit -m "feat(trust): add pagination support to useReviews hook"
 ```
 
@@ -685,8 +685,8 @@ git commit -m "feat(trust): add pagination support to useReviews hook"
 ## Task 8: Frontend Hook - Create useInfiniteReviews
 
 **Files:**
-- Create: `web/nyx/workspace/src/modules/trust/hooks/useInfiniteReviews.ts`
-- Modify: `web/nyx/workspace/src/modules/trust/hooks/index.ts`
+- Create: `services/nyx/workspace/src/modules/trust/hooks/useInfiniteReviews.ts`
+- Modify: `services/nyx/workspace/src/modules/trust/hooks/index.ts`
 
 **Step 1: Create useInfiniteReviews hook**
 
@@ -810,7 +810,7 @@ export { useInfiniteReviews } from "./useInfiniteReviews";
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/hooks/useInfiniteReviews.ts web/nyx/workspace/src/modules/trust/hooks/index.ts
+git add services/nyx/workspace/src/modules/trust/hooks/useInfiniteReviews.ts services/nyx/workspace/src/modules/trust/hooks/index.ts
 git commit -m "feat(trust): add useInfiniteReviews hook for infinite scroll"
 ```
 
@@ -819,8 +819,8 @@ git commit -m "feat(trust): add useInfiniteReviews hook for infinite scroll"
 ## Task 9: Frontend Component - Create ReviewListPage
 
 **Files:**
-- Create: `web/nyx/workspace/src/modules/trust/components/ReviewListPage.tsx`
-- Modify: `web/nyx/workspace/src/modules/trust/components/index.ts`
+- Create: `services/nyx/workspace/src/modules/trust/components/ReviewListPage.tsx`
+- Modify: `services/nyx/workspace/src/modules/trust/components/index.ts`
 
 **Step 1: Create ReviewListPage component**
 
@@ -976,7 +976,7 @@ export { ReviewListPage } from "./ReviewListPage";
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/components/ReviewListPage.tsx web/nyx/workspace/src/modules/trust/components/index.ts
+git add services/nyx/workspace/src/modules/trust/components/ReviewListPage.tsx services/nyx/workspace/src/modules/trust/components/index.ts
 git commit -m "feat(trust): add ReviewListPage component with infinite scroll"
 ```
 
@@ -985,7 +985,7 @@ git commit -m "feat(trust): add ReviewListPage component with infinite scroll"
 ## Task 10: Frontend Component - Update TrustSection
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/components/TrustSection.tsx`
+- Modify: `services/nyx/workspace/src/modules/trust/components/TrustSection.tsx`
 
 **Step 1: Update TrustSection to show 3 reviews + link**
 
@@ -1065,7 +1065,7 @@ export function TrustSection({
 **Step 2: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/components/TrustSection.tsx
+git add services/nyx/workspace/src/modules/trust/components/TrustSection.tsx
 git commit -m "feat(trust): show 3 reviews with see-all link in TrustSection"
 ```
 
@@ -1074,7 +1074,7 @@ git commit -m "feat(trust): show 3 reviews with see-all link in TrustSection"
 ## Task 11: Frontend - Update Module Exports
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/index.ts`
+- Modify: `services/nyx/workspace/src/modules/trust/index.ts`
 
 **Step 1: Export new components and hooks**
 
@@ -1088,7 +1088,7 @@ export { ReviewListPage } from "./components";
 **Step 2: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/index.ts
+git add services/nyx/workspace/src/modules/trust/index.ts
 git commit -m "feat(trust): export infinite reviews hook and page component"
 ```
 
@@ -1097,7 +1097,7 @@ git commit -m "feat(trust): export infinite reviews hook and page component"
 ## Task 12: Frontend Page - Create Cast Reviews Page
 
 **Files:**
-- Create: `web/nyx/workspace/src/app/(guest)/casts/[id]/reviews/page.tsx`
+- Create: `services/nyx/workspace/src/app/(guest)/casts/[id]/reviews/page.tsx`
 
 **Step 1: Create the page**
 
@@ -1176,7 +1176,7 @@ export default function CastReviewsPage({
 **Step 2: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/\(guest\)/casts/\[id\]/reviews/page.tsx
+git add services/nyx/workspace/src/app/\(guest\)/casts/\[id\]/reviews/page.tsx
 git commit -m "feat(trust): add cast reviews page with infinite scroll"
 ```
 
@@ -1185,7 +1185,7 @@ git commit -m "feat(trust): add cast reviews page with infinite scroll"
 ## Task 13: Frontend Page - Create Guest Reviews Page
 
 **Files:**
-- Create: `web/nyx/workspace/src/app/(cast)/cast/guests/[id]/reviews/page.tsx`
+- Create: `services/nyx/workspace/src/app/(cast)/cast/guests/[id]/reviews/page.tsx`
 
 **Step 1: Create the page**
 
@@ -1249,7 +1249,7 @@ export default function GuestReviewsPage({
 **Step 2: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/\(cast\)/cast/guests/\[id\]/reviews/page.tsx
+git add services/nyx/workspace/src/app/\(cast\)/cast/guests/\[id\]/reviews/page.tsx
 git commit -m "feat(trust): add guest reviews page with infinite scroll"
 ```
 
@@ -1258,8 +1258,8 @@ git commit -m "feat(trust): add guest reviews page with infinite scroll"
 ## Task 14: Frontend - Update Profile Pages with Review Links
 
 **Files:**
-- Modify: `web/nyx/workspace/src/app/(guest)/casts/[id]/page.tsx`
-- Modify: `web/nyx/workspace/src/app/(cast)/cast/guests/[id]/page.tsx`
+- Modify: `services/nyx/workspace/src/app/(guest)/casts/[id]/page.tsx`
+- Modify: `services/nyx/workspace/src/app/(cast)/cast/guests/[id]/page.tsx`
 
 **Step 1: Update Cast Detail Page**
 
@@ -1327,7 +1327,7 @@ import Link from "next/link";
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/\(guest\)/casts/\[id\]/page.tsx web/nyx/workspace/src/app/\(cast\)/cast/guests/\[id\]/page.tsx
+git add services/nyx/workspace/src/app/\(guest\)/casts/\[id\]/page.tsx services/nyx/workspace/src/app/\(cast\)/cast/guests/\[id\]/page.tsx
 git commit -m "feat(trust): add review page links to profile pages"
 ```
 
@@ -1342,7 +1342,7 @@ Expected: All PASS
 
 **Step 2: Run frontend type check**
 
-Run: `cd web/nyx/workspace && npm run typecheck`
+Run: `cd services/nyx/workspace && npm run typecheck`
 Expected: No errors
 
 **Step 3: Manual test**

@@ -31,5 +31,5 @@ Portfolio ← Relationship
 1. `ドメイン/_{domain-name}.md` にドメイン定義を作成
 2. この README の一覧を更新
 3. Backend: `services/monolith/workspace/slices/{domain}/` を作成
-4. Frontend: `web/nyx/workspace/src/modules/{domain}/` を作成
+4. Frontend: `services/nyx/workspace/src/modules/{domain}/` を作成
 5. Proto: `proto/{domain}/v1/service.proto` を作成

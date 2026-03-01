@@ -30,7 +30,7 @@ Portfolio は「キャストを見つける・知る」という**発見（Disco
 | Layer | Path |
 |-------|------|
 | Backend | `services/monolith/workspace/slices/offer/` |
-| Frontend | `web/nyx/workspace/src/modules/offer/` |
+| Frontend | `services/nyx/workspace/src/modules/offer/` |
 | Proto | `proto/offer/v1/service.proto` |
 
 ## Key APIs

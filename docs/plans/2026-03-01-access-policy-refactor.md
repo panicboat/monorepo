@@ -145,44 +145,44 @@ git add -A && git commit -m "refactor: remove favorites from feed, adapters, and
 Frontend のお気に入り関連コード（hooks, routes, pages, store, components）を全て削除する。
 
 **Files:**
-- Delete: `web/nyx/workspace/src/modules/relationship/hooks/useFavorite.ts`
-- Delete: `web/nyx/workspace/src/app/api/guest/favorites/route.ts`
-- Delete: `web/nyx/workspace/src/app/api/guest/favorites/status/route.ts`
-- Delete: `web/nyx/workspace/src/app/(guest)/favorites/page.tsx`
-- Modify: `web/nyx/workspace/src/modules/relationship/hooks/index.ts`
-- Modify: `web/nyx/workspace/src/modules/relationship/types.ts`
-- Modify: `web/nyx/workspace/src/stores/socialStore.ts`
-- Modify: `web/nyx/workspace/src/modules/feed/types.ts`
-- Modify: `web/nyx/workspace/src/modules/feed/components/feed/TimelineFilters.tsx`
-- Modify: `web/nyx/workspace/src/app/api/feed/guest/route.ts`
-- Modify: `web/nyx/workspace/src/app/(guest)/casts/[userId]/page.tsx`
-- Modify: `web/nyx/workspace/src/modules/portfolio/components/guest/GuestDashboard.tsx`
+- Delete: `services/nyx/workspace/src/modules/relationship/hooks/useFavorite.ts`
+- Delete: `services/nyx/workspace/src/app/api/guest/favorites/route.ts`
+- Delete: `services/nyx/workspace/src/app/api/guest/favorites/status/route.ts`
+- Delete: `services/nyx/workspace/src/app/(guest)/favorites/page.tsx`
+- Modify: `services/nyx/workspace/src/modules/relationship/hooks/index.ts`
+- Modify: `services/nyx/workspace/src/modules/relationship/types.ts`
+- Modify: `services/nyx/workspace/src/stores/socialStore.ts`
+- Modify: `services/nyx/workspace/src/modules/feed/types.ts`
+- Modify: `services/nyx/workspace/src/modules/feed/components/feed/TimelineFilters.tsx`
+- Modify: `services/nyx/workspace/src/app/api/feed/guest/route.ts`
+- Modify: `services/nyx/workspace/src/app/(guest)/casts/[userId]/page.tsx`
+- Modify: `services/nyx/workspace/src/modules/portfolio/components/guest/GuestDashboard.tsx`
 
 **Step 1: ファイル削除**
 
 ```bash
-rm web/nyx/workspace/src/modules/relationship/hooks/useFavorite.ts
-rm web/nyx/workspace/src/app/api/guest/favorites/route.ts
-rm web/nyx/workspace/src/app/api/guest/favorites/status/route.ts
-rm web/nyx/workspace/src/app/\(guest\)/favorites/page.tsx
+rm services/nyx/workspace/src/modules/relationship/hooks/useFavorite.ts
+rm services/nyx/workspace/src/app/api/guest/favorites/route.ts
+rm services/nyx/workspace/src/app/api/guest/favorites/status/route.ts
+rm services/nyx/workspace/src/app/\(guest\)/favorites/page.tsx
 ```
 
 favorites ディレクトリが空になった場合は削除:
 ```bash
-rmdir web/nyx/workspace/src/app/api/guest/favorites 2>/dev/null
-rmdir web/nyx/workspace/src/app/\(guest\)/favorites 2>/dev/null
+rmdir services/nyx/workspace/src/app/api/guest/favorites 2>/dev/null
+rmdir services/nyx/workspace/src/app/\(guest\)/favorites 2>/dev/null
 ```
 
 **Step 2: hooks/index.ts から useFavorite の export 削除**
 
-`web/nyx/workspace/src/modules/relationship/hooks/index.ts` から以下を削除:
+`services/nyx/workspace/src/modules/relationship/hooks/index.ts` から以下を削除:
 ```typescript
 export { useFavorite } from "./useFavorite";
 ```
 
 **Step 3: types.ts からお気に入り型削除**
 
-`web/nyx/workspace/src/modules/relationship/types.ts` から以下を削除:
+`services/nyx/workspace/src/modules/relationship/types.ts` から以下を削除:
 ```typescript
 export interface FavoriteCast {
   id: string;
@@ -198,7 +198,7 @@ export interface FavoriteState {
 
 **Step 4: socialStore.ts からお気に入り関連の state/actions/selectors 削除**
 
-`web/nyx/workspace/src/stores/socialStore.ts` を修正:
+`services/nyx/workspace/src/stores/socialStore.ts` を修正:
 - State から削除: `favorites: string[]`, `isFavoritesSynced: boolean`
 - Actions から削除: `toggleFavorite`, `setFavorites`, `addFavorite`, `removeFavorite`, `setFavoritesSynced`
 - Computed から削除: `isFavorite`
@@ -208,7 +208,7 @@ export interface FavoriteState {
 
 **Step 5: Feed types から favorites 削除**
 
-`web/nyx/workspace/src/modules/feed/types.ts:6` を修正:
+`services/nyx/workspace/src/modules/feed/types.ts:6` を修正:
 ```typescript
 // Before:
 export type FeedFilter = "all" | "following" | "favorites";
@@ -218,7 +218,7 @@ export type FeedFilter = "all" | "following";
 
 **Step 6: TimelineFilters から favorites タブ削除**
 
-`web/nyx/workspace/src/modules/feed/components/feed/TimelineFilters.tsx` を修正:
+`services/nyx/workspace/src/modules/feed/components/feed/TimelineFilters.tsx` を修正:
 
 FilterType を修正:
 ```typescript
@@ -238,37 +238,37 @@ const filters: FilterType[] = ["all", "following"];
 
 **Step 7: Guest Feed API route から favorites mapping 削除**
 
-`web/nyx/workspace/src/app/api/feed/guest/route.ts` を修正:
+`services/nyx/workspace/src/app/api/feed/guest/route.ts` を修正:
 - `FeedFilter` の import から `FAVORITES` を考慮（Proto再生成後に値が消えるため、フォールバック行を削除）
 - `else if (filter === "favorites")` 行を削除
 
 **Step 8: Cast Detail Page から FavoriteButton 削除**
 
-`web/nyx/workspace/src/app/(guest)/casts/[userId]/page.tsx` を修正:
+`services/nyx/workspace/src/app/(guest)/casts/[userId]/page.tsx` を修正:
 - `useFavorite` の import を削除
 - `FavoriteButton` コンポーネントとその使用箇所を削除
 
 **Step 9: GuestDashboard からお気に入りセクション削除**
 
-`web/nyx/workspace/src/modules/portfolio/components/guest/GuestDashboard.tsx` を修正:
+`services/nyx/workspace/src/modules/portfolio/components/guest/GuestDashboard.tsx` を修正:
 - `useFavorite` の import を削除
 - `FavoriteCast` 型の import を削除
 - お気に入りプレビューセクションを削除
 
 **Step 10: GuestTopNavBar からお気に入りパス検出を削除**
 
-`web/nyx/workspace/src/components/layout/guest/GuestTopNavBar.tsx` から `/favorites` パス検出ロジックを削除（存在する場合）。
+`services/nyx/workspace/src/components/layout/guest/GuestTopNavBar.tsx` から `/favorites` パス検出ロジックを削除（存在する場合）。
 
 **Step 11: Proto 再生成（Frontend）**
 
 ```bash
-cd web/nyx/workspace && pnpm proto:gen
+cd services/nyx/workspace && pnpm proto:gen
 ```
 
 **Step 12: ビルド確認**
 
 ```bash
-cd web/nyx/workspace && pnpm build
+cd services/nyx/workspace && pnpm build
 ```
 
 Expected: Build succeeds with no type errors
@@ -476,30 +476,30 @@ git add -A && git commit -m "refactor: remove guest-to-cast block checks from ac
 Guest 側のブロック API route, hook, store を削除する。
 
 **Files:**
-- Delete: `web/nyx/workspace/src/app/api/guest/blocks/route.ts`
-- Delete: `web/nyx/workspace/src/app/api/guest/blocks/status/route.ts` (存在する場合)
-- Modify: `web/nyx/workspace/src/modules/relationship/hooks/useBlock.ts`
-- Modify: `web/nyx/workspace/src/stores/socialStore.ts`
-- Modify: `web/nyx/workspace/src/modules/relationship/types.ts`
+- Delete: `services/nyx/workspace/src/app/api/guest/blocks/route.ts`
+- Delete: `services/nyx/workspace/src/app/api/guest/blocks/status/route.ts` (存在する場合)
+- Modify: `services/nyx/workspace/src/modules/relationship/hooks/useBlock.ts`
+- Modify: `services/nyx/workspace/src/stores/socialStore.ts`
+- Modify: `services/nyx/workspace/src/modules/relationship/types.ts`
 
 **Step 1: Guest ブロック API route 削除**
 
 ```bash
-rm web/nyx/workspace/src/app/api/guest/blocks/route.ts
-rm -f web/nyx/workspace/src/app/api/guest/blocks/status/route.ts
-rmdir web/nyx/workspace/src/app/api/guest/blocks 2>/dev/null
+rm services/nyx/workspace/src/app/api/guest/blocks/route.ts
+rm -f services/nyx/workspace/src/app/api/guest/blocks/status/route.ts
+rmdir services/nyx/workspace/src/app/api/guest/blocks 2>/dev/null
 ```
 
 **Step 2: useBlock hook から Guest ブロックロジック削除**
 
-`web/nyx/workspace/src/modules/relationship/hooks/useBlock.ts` を修正:
+`services/nyx/workspace/src/modules/relationship/hooks/useBlock.ts` を修正:
 - Guest 側の API 呼び出し（`/api/guest/blocks` エンドポイント）を削除
 - Cast 側のブロック機能は残す（`/api/cast/blocks` エンドポイント）
 - hook の API が Cast ブロック専用になるよう整理
 
 **Step 3: socialStore から blocking state 削除**
 
-`web/nyx/workspace/src/stores/socialStore.ts` から以下を削除:
+`services/nyx/workspace/src/stores/socialStore.ts` から以下を削除:
 - State: `blocking: string[]`
 - Actions: `toggleBlock(targetId: string)`
 - Computed: `isBlocking(targetId: string)`
@@ -510,14 +510,14 @@ rmdir web/nyx/workspace/src/app/api/guest/blocks 2>/dev/null
 
 **Step 4: types.ts から BlockedUser/BlockState 削除（Guest 専用の場合）**
 
-`web/nyx/workspace/src/modules/relationship/types.ts` を確認:
+`services/nyx/workspace/src/modules/relationship/types.ts` を確認:
 - `BlockedUser` と `BlockState` が Guest ブロックにのみ使われている場合は削除
 - Cast のブロックリスト画面で使われている場合は残す（Cast blocks page は独自に型定義している可能性あり。実装時に確認）
 
 **Step 5: ビルド確認**
 
 ```bash
-cd web/nyx/workspace && pnpm build
+cd services/nyx/workspace && pnpm build
 ```
 
 Expected: Build succeeds
@@ -945,7 +945,7 @@ Expected: All tests pass
 **Step 2: Frontend ビルド**
 
 ```bash
-cd web/nyx/workspace && pnpm build
+cd services/nyx/workspace && pnpm build
 ```
 
 Expected: Build succeeds
@@ -954,7 +954,7 @@ Expected: Build succeeds
 
 ```bash
 cd services/monolith/workspace && ./bin/codegen
-cd web/nyx/workspace && pnpm proto:gen
+cd services/nyx/workspace && pnpm proto:gen
 ```
 
 Expected: No changes (already up to date)

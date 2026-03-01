@@ -11,7 +11,7 @@ if ! echo "$TOOL_INPUT" | grep -q "gh pr create"; then
 fi
 
 # main ブランチとの差分で UI 影響があるか判定
-UI_CHANGES=$(git diff main...HEAD --name-only 2>/dev/null | grep -E '^(web/nyx/workspace/src/|proto/|services/monolith/workspace/slices/.*/actions/)' | head -20)
+UI_CHANGES=$(git diff main...HEAD --name-only 2>/dev/null | grep -E '^(services/nyx/workspace/src/|proto/|services/monolith/workspace/slices/.*/actions/)' | head -20)
 
 if [ -z "$UI_CHANGES" ]; then
   exit 0

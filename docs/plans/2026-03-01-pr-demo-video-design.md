@@ -37,7 +37,7 @@ PR作成フック発火
 
 | Path Pattern | Reason |
 |-------------|--------|
-| `web/nyx/workspace/src/**` | フロントエンド直接変更 |
+| `services/nyx/workspace/src/**` | フロントエンド直接変更 |
 | `proto/**/*.proto` | API スキーマ変更 → UI に反映される可能性 |
 | `services/monolith/workspace/slices/*/actions/**` | API レスポンス変更の可能性 |
 
@@ -45,7 +45,7 @@ PR作成フック発火
 
 Claude が diff を読み、以下の情報を抽出：
 
-1. **変更されたページ/コンポーネント**: `web/nyx/workspace/src/app/` 配下のルート構造から対象ページを特定
+1. **変更されたページ/コンポーネント**: `services/nyx/workspace/src/app/` 配下のルート構造から対象ページを特定
 2. **変更の種類**: 新規画面追加 / 既存画面修正 / レイアウト変更 / データ表示変更
 3. **操作シナリオ**: 変更に到達するために必要なユーザー操作を推定
 

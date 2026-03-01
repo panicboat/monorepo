@@ -24,11 +24,3 @@ directory_conventions:
       - name: kubernetes
         directory: kubernetes/overlays/{environment}
 
-  - root: web/{service}
-    stacks:
-      - name: docker
-        directory: workspace
-      - name: terragrunt
-        directory: terragrunt/envs/{environment}
-      - name: kubernetes
-        directory: kubernetes/overlays/{environment}

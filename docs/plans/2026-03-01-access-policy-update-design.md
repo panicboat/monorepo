@@ -109,8 +109,8 @@ Cast → Guest ブロック効果: フォロー自動削除 + フォロー拒否
 - `slices/portfolio/adapters/social_adapter.rb`
 - `slices/post/adapters/relationship_adapter.rb`
 - `slices/portfolio/use_cases/save_cast_visibility.rb`
-- `web/nyx/workspace/src/app/(cast)/cast/guests/[userId]/page.tsx`
-- `web/nyx/workspace/src/app/(cast)/cast/blocks/page.tsx`
-- `web/nyx/workspace/src/modules/relationship/hooks/useBlock.ts`
-- `web/nyx/workspace/src/app/api/guest/blocks/route.ts`
-- `web/nyx/workspace/src/app/api/cast/blocks/route.ts`
+- `services/nyx/workspace/src/app/(cast)/cast/guests/[userId]/page.tsx`
+- `services/nyx/workspace/src/app/(cast)/cast/blocks/page.tsx`
+- `services/nyx/workspace/src/modules/relationship/hooks/useBlock.ts`
+- `services/nyx/workspace/src/app/api/guest/blocks/route.ts`
+- `services/nyx/workspace/src/app/api/cast/blocks/route.ts`

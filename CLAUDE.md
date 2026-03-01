@@ -41,7 +41,7 @@
 ```
 monorepo/
 ├── services/monolith/workspace/    # Backend (Ruby/Hanami)
-├── web/nyx/workspace/              # Frontend (Next.js)
+├── services/nyx/workspace/         # Frontend (Next.js)
 ├── proto/                          # Protocol Buffers
 └── .claude/                        # Claude Code rules & commands
 ```

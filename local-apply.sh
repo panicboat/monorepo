@@ -28,4 +28,4 @@ deploy "services/monolith/kubernetes/overlays/develop"
 deploy "services/reverse-proxy/kubernetes/overlays/develop"
 
 # Nyx
-deploy "web/nyx/kubernetes/overlays/develop"
+deploy "services/nyx/kubernetes/overlays/develop"

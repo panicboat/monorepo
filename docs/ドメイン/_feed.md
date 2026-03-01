@@ -42,7 +42,7 @@
 | Layer | Path |
 |-------|------|
 | Backend | `services/monolith/workspace/slices/feed/` |
-| Frontend | `web/nyx/workspace/src/modules/feed/` (planned) |
+| Frontend | `services/nyx/workspace/src/modules/feed/` (planned) |
 | Proto | `proto/feed/v1/feed_service.proto` |
 
 ## Key APIs

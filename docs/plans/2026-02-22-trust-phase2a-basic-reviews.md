@@ -1127,7 +1127,7 @@ Expected: Proto files generated without errors
 ```bash
 git add proto/trust/v1/service.proto
 git add services/monolith/workspace/lib/protos/
-git add web/nyx/workspace/src/stub/
+git add services/nyx/workspace/src/stub/
 git commit -m "feat(trust): add review proto definitions"
 ```
 
@@ -1318,7 +1318,7 @@ git commit -m "feat(trust): add review gRPC handlers"
 ## Task 11: Frontend Types
 
 **Files:**
-- Modify: `web/nyx/workspace/src/modules/trust/types.ts`
+- Modify: `services/nyx/workspace/src/modules/trust/types.ts`
 
 **Step 1: Add Review types**
 
@@ -1389,8 +1389,8 @@ export type {
 **Step 3: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/types.ts
-git add web/nyx/workspace/src/modules/trust/index.ts
+git add services/nyx/workspace/src/modules/trust/types.ts
+git add services/nyx/workspace/src/modules/trust/index.ts
 git commit -m "feat(trust): add review frontend types"
 ```
 
@@ -1399,10 +1399,10 @@ git commit -m "feat(trust): add review frontend types"
 ## Task 12: Frontend Hooks
 
 **Files:**
-- Create: `web/nyx/workspace/src/modules/trust/hooks/useReviews.ts`
-- Create: `web/nyx/workspace/src/modules/trust/hooks/useReviewStats.ts`
-- Create: `web/nyx/workspace/src/modules/trust/hooks/usePendingReviews.ts`
-- Modify: `web/nyx/workspace/src/modules/trust/hooks/index.ts`
+- Create: `services/nyx/workspace/src/modules/trust/hooks/useReviews.ts`
+- Create: `services/nyx/workspace/src/modules/trust/hooks/useReviewStats.ts`
+- Create: `services/nyx/workspace/src/modules/trust/hooks/usePendingReviews.ts`
+- Modify: `services/nyx/workspace/src/modules/trust/hooks/index.ts`
 
 **Step 1: Create useReviews hook**
 
@@ -1589,7 +1589,7 @@ export { usePendingReviews } from "./usePendingReviews";
 **Step 5: Commit**
 
 ```bash
-git add web/nyx/workspace/src/modules/trust/hooks/
+git add services/nyx/workspace/src/modules/trust/hooks/
 git commit -m "feat(trust): add review frontend hooks"
 ```
 
@@ -1598,13 +1598,13 @@ git commit -m "feat(trust): add review frontend hooks"
 ## Task 13: API Routes
 
 **Files:**
-- Create: `web/nyx/workspace/src/app/api/me/trust/reviews/route.ts`
-- Create: `web/nyx/workspace/src/app/api/me/trust/reviews/[id]/route.ts`
-- Create: `web/nyx/workspace/src/app/api/cast/trust/reviews/pending/route.ts`
-- Create: `web/nyx/workspace/src/app/api/cast/trust/reviews/[id]/approve/route.ts`
-- Create: `web/nyx/workspace/src/app/api/cast/trust/reviews/[id]/reject/route.ts`
-- Create: `web/nyx/workspace/src/app/api/shared/trust/reviews/route.ts`
-- Create: `web/nyx/workspace/src/app/api/shared/trust/reviews/stats/route.ts`
+- Create: `services/nyx/workspace/src/app/api/me/trust/reviews/route.ts`
+- Create: `services/nyx/workspace/src/app/api/me/trust/reviews/[id]/route.ts`
+- Create: `services/nyx/workspace/src/app/api/cast/trust/reviews/pending/route.ts`
+- Create: `services/nyx/workspace/src/app/api/cast/trust/reviews/[id]/approve/route.ts`
+- Create: `services/nyx/workspace/src/app/api/cast/trust/reviews/[id]/reject/route.ts`
+- Create: `services/nyx/workspace/src/app/api/shared/trust/reviews/route.ts`
+- Create: `services/nyx/workspace/src/app/api/shared/trust/reviews/stats/route.ts`
 
 **Step 1: Create me/trust/reviews/route.ts**
 
@@ -1938,9 +1938,9 @@ export async function GET(req: NextRequest) {
 **Step 8: Commit**
 
 ```bash
-git add web/nyx/workspace/src/app/api/me/trust/reviews/
-git add web/nyx/workspace/src/app/api/cast/trust/reviews/
-git add web/nyx/workspace/src/app/api/shared/trust/reviews/
+git add services/nyx/workspace/src/app/api/me/trust/reviews/
+git add services/nyx/workspace/src/app/api/cast/trust/reviews/
+git add services/nyx/workspace/src/app/api/shared/trust/reviews/
 git commit -m "feat(trust): add review API routes"
 ```
 
@@ -1955,7 +1955,7 @@ Expected: Server starts on port 2300
 
 **Step 2: Start frontend server**
 
-Run: `cd web/nyx/workspace && pnpm dev`
+Run: `cd services/nyx/workspace && pnpm dev`
 Expected: Server starts on port 3000
 
 **Step 3: Test via curl**
