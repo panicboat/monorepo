@@ -6,3 +6,9 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Demo recording temporary files
+demos/temp-*.spec.ts
+
+# Recording output
+test-results/demos/
