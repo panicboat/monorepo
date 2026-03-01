@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
     const targetId = req.nextUrl.searchParams.get("target_id");
     if (!targetId) {
-      return NextResponse.json({ error: "target_id is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const response = await trustClient.listTargetTags(
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     const { tagName, targetId } = await req.json();
     if (!tagName || !targetId) {
-      return NextResponse.json({ error: "tagName and targetId are required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const response = await trustClient.addTagging(
@@ -45,10 +45,10 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     if (isConnectError(error)) {
       if (error.code === GrpcCode.INVALID_ARGUMENT) {
-        return NextResponse.json({ error: "Tag name is required" }, { status: 400 });
+        return NextResponse.json({ error: "タグ名を入力してください" }, { status: 400 });
       }
       if (error.code === GrpcCode.ALREADY_EXISTS) {
-        return NextResponse.json({ error: "Tagging already exists" }, { status: 409 });
+        return NextResponse.json({ error: "このタグは既に追加されています" }, { status: 409 });
       }
     }
     return handleApiError(error, "AddTagging");

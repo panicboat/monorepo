@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     const { castId } = body;
 
     if (!castId) {
-      return NextResponse.json({ error: "castId is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const response = await followClient.followCast(
@@ -92,7 +92,7 @@ export async function DELETE(req: NextRequest) {
     const castId = req.nextUrl.searchParams.get("cast_id");
 
     if (!castId) {
-      return NextResponse.json({ error: "cast_id is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const response = await followClient.unfollowCast(

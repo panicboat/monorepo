@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     if (isConnectError(error) && error.code === GrpcCode.UNAUTHENTICATED) {
       // Clean log for expected failures
       console.warn(`Login failed for ${(body?.phoneNumber as string) || 'unknown'}: ${error.rawMessage || error.message}`);
-      return NextResponse.json({ error: error.rawMessage || error.message }, { status: 401 });
+      return NextResponse.json({ error: "電話番号または認証コードが正しくありません" }, { status: 401 });
     }
 
     return handleApiError(error, "Login");

@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ profile });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
-      return NextResponse.json({ error: "Not Found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "GetGuestProfile");
   }
@@ -65,7 +65,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ profile });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.INVALID_ARGUMENT) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
     return handleApiError(error, "SaveGuestProfile");
   }

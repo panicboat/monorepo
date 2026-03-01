@@ -22,7 +22,7 @@ export async function POST(
     return NextResponse.json({ success: response.success });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
-      return NextResponse.json({ error: "Review not found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "RejectReview");
   }

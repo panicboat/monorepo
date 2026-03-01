@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     );
 
     if (!response.post) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
 
     const post = response.post;
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ post: mappedPost });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "GetCastPost");
   }

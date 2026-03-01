@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
       // NotFound is expected during onboarding
-      return NextResponse.json({ error: "Not Found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "GetCastProfile");
   }

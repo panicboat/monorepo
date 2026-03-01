@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
     const slug = req.nextUrl.searchParams.get("slug");
     if (!slug) {
-      return NextResponse.json({ error: "Slug is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const response = await castClient.checkSlugAvailability(

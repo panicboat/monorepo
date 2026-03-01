@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ profile, plans, schedules });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
-      return NextResponse.json({ error: "Not Found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "GetCastProfile");
   }

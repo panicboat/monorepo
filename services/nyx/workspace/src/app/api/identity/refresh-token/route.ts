@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(response);
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.UNAUTHENTICATED) {
-      return NextResponse.json({ error: "Invalid refresh token" }, { status: 401 });
+      return NextResponse.json({ error: "ログインしてください" }, { status: 401 });
     }
     return handleApiError(error, "RefreshToken");
   }

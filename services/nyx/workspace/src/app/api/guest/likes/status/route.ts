@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const postIdsParam = req.nextUrl.searchParams.get("post_ids");
 
     if (!postIdsParam) {
-      return NextResponse.json({ error: "post_ids is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const postIds = postIdsParam.split(",").filter(Boolean);

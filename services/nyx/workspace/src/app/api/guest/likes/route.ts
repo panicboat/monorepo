@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const { postId } = body;
 
     if (!postId) {
-      return NextResponse.json({ error: "postId is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const response = await likeClient.likeCastPost(
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "LikeCastPost");
   }
@@ -40,7 +40,7 @@ export async function DELETE(req: NextRequest) {
     const postId = req.nextUrl.searchParams.get("post_id");
 
     if (!postId) {
-      return NextResponse.json({ error: "post_id is required" }, { status: 400 });
+      return NextResponse.json({ error: "入力内容を確認してください" }, { status: 400 });
     }
 
     const response = await likeClient.unlikeCastPost(
@@ -53,7 +53,7 @@ export async function DELETE(req: NextRequest) {
     });
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.NOT_FOUND) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+      return NextResponse.json({ error: "データが見つかりませんでした" }, { status: 404 });
     }
     return handleApiError(error, "UnlikeCastPost");
   }
