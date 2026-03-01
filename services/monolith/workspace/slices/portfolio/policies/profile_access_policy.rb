@@ -5,27 +5,23 @@ module Portfolio
     # Access policy for cast profile visibility.
     #
     # Determines whether a guest can view a cast's profile and profile details
-    # (plans, schedules) based on visibility settings, follow status, and block status.
-    #
-    # @example
-    #   policy = Portfolio::Policies::ProfileAccessPolicy.new
-    #   policy.can_view_profile?(cast: cast, viewer_guest_id: guest_id)
+    # (plans, schedules) based on block status, visibility settings, and follow status.
+    # - Basic profile: always visible
+    # - Details: denied if Cast blocked Guest; otherwise visibility + follow rules apply
     #
     class ProfileAccessPolicy
       # Check if viewer can see the basic profile.
-      # Basic profile is visible unless blocked.
+      # Basic profile is always visible.
       #
       # @param cast [Object] the cast object
       # @param viewer_guest_id [String, nil] the viewing guest's ID
       # @return [Boolean] true if profile is viewable
       def can_view_profile?(cast:, viewer_guest_id: nil)
-        return true if viewer_guest_id.nil?
-
-        !social_adapter.blocked?(guest_user_id: viewer_guest_id, cast_user_id: cast.user_id)
+        true
       end
 
       # Check if viewer can see profile details (plans, schedules).
-      # - Blocked: not viewable
+      # - Cast blocked this guest: deny details regardless of visibility
       # - Public cast: viewable by everyone
       # - Private cast: viewable only by approved followers
       #
@@ -33,8 +29,8 @@ module Portfolio
       # @param viewer_guest_id [String, nil] the viewing guest's ID
       # @return [Boolean] true if profile details are viewable
       def can_view_profile_details?(cast:, viewer_guest_id: nil)
-        # Blocked users cannot view details
-        if viewer_guest_id && social_adapter.blocked?(guest_user_id: viewer_guest_id, cast_user_id: cast.user_id)
+        # Cast blocked this guest → deny details
+        if viewer_guest_id && social_adapter.cast_blocked_guest?(cast_user_id: cast.user_id, guest_user_id: viewer_guest_id)
           return false
         end
 

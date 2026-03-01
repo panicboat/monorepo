@@ -13,6 +13,8 @@ export const file_relationship_v1_block_service: GenFile = /*@__PURE__*/
   fileDesc("CiNyZWxhdGlvbnNoaXAvdjEvYmxvY2tfc2VydmljZS5wcm90bxIPcmVsYXRpb25zaGlwLnYxImEKC0Jsb2NrZWRVc2VyEgoKAmlkGAEgASgJEhEKCXVzZXJfdHlwZRgCIAEoCRIMCgRuYW1lGAMgASgJEhEKCWltYWdlX3VybBgEIAEoCRISCgpibG9ja2VkX2F0GAUgASgJIlIKEEJsb2NrVXNlclJlcXVlc3QSEgoKYmxvY2tlZF9pZBgBIAEoCRIUCgxibG9ja2VkX3R5cGUYAiABKAkSFAoMYmxvY2tlcl90eXBlGAMgASgJIiQKEUJsb2NrVXNlclJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiKAoSVW5ibG9ja1VzZXJSZXF1ZXN0EhIKCmJsb2NrZWRfaWQYASABKAkiJgoTVW5ibG9ja1VzZXJSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjMKEkxpc3RCbG9ja2VkUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkiaQoTTGlzdEJsb2NrZWRSZXNwb25zZRIrCgV1c2VycxgBIAMoCzIcLnJlbGF0aW9uc2hpcC52MS5CbG9ja2VkVXNlchITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIpChVHZXRCbG9ja1N0YXR1c1JlcXVlc3QSEAoIdXNlcl9pZHMYASADKAkijwEKFkdldEJsb2NrU3RhdHVzUmVzcG9uc2USRQoHYmxvY2tlZBgBIAMoCzI0LnJlbGF0aW9uc2hpcC52MS5HZXRCbG9ja1N0YXR1c1Jlc3BvbnNlLkJsb2NrZWRFbnRyeRouCgxCbG9ja2VkRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgIOgI4ASIuChRMaXN0QmxvY2tlZEJ5UmVxdWVzdBIWCg50YXJnZXRfdXNlcl9pZBgBIAEoCSJHChVMaXN0QmxvY2tlZEJ5UmVzcG9uc2USLgoIYmxvY2tlcnMYASADKAsyHC5yZWxhdGlvbnNoaXAudjEuQmxvY2tlZFVzZXIy2QMKDEJsb2NrU2VydmljZRJSCglCbG9ja1VzZXISIS5yZWxhdGlvbnNoaXAudjEuQmxvY2tVc2VyUmVxdWVzdBoiLnJlbGF0aW9uc2hpcC52MS5CbG9ja1VzZXJSZXNwb25zZRJYCgtVbmJsb2NrVXNlchIjLnJlbGF0aW9uc2hpcC52MS5VbmJsb2NrVXNlclJlcXVlc3QaJC5yZWxhdGlvbnNoaXAudjEuVW5ibG9ja1VzZXJSZXNwb25zZRJYCgtMaXN0QmxvY2tlZBIjLnJlbGF0aW9uc2hpcC52MS5MaXN0QmxvY2tlZFJlcXVlc3QaJC5yZWxhdGlvbnNoaXAudjEuTGlzdEJsb2NrZWRSZXNwb25zZRJhCg5HZXRCbG9ja1N0YXR1cxImLnJlbGF0aW9uc2hpcC52MS5HZXRCbG9ja1N0YXR1c1JlcXVlc3QaJy5yZWxhdGlvbnNoaXAudjEuR2V0QmxvY2tTdGF0dXNSZXNwb25zZRJeCg1MaXN0QmxvY2tlZEJ5EiUucmVsYXRpb25zaGlwLnYxLkxpc3RCbG9ja2VkQnlSZXF1ZXN0GiYucmVsYXRpb25zaGlwLnYxLkxpc3RCbG9ja2VkQnlSZXNwb25zZWIGcHJvdG8z");
 
 /**
+ * BlockedUser represents a user involved in a block relationship.
+ *
  * @generated from message relationship.v1.BlockedUser
  */
 export type BlockedUser = Message<"relationship.v1.BlockedUser"> & {
@@ -22,7 +24,7 @@ export type BlockedUser = Message<"relationship.v1.BlockedUser"> & {
   id: string;
 
   /**
-   * "guest" or "cast"
+   * "guest" (blocked target)
    *
    * @generated from field: string user_type = 2;
    */
@@ -58,19 +60,21 @@ export const BlockedUserSchema: GenMessage<BlockedUser> = /*@__PURE__*/
  */
 export type BlockUserRequest = Message<"relationship.v1.BlockUserRequest"> & {
   /**
+   * Guest user ID to block
+   *
    * @generated from field: string blocked_id = 1;
    */
   blockedId: string;
 
   /**
-   * "guest" or "cast"
+   * Always "guest"
    *
    * @generated from field: string blocked_type = 2;
    */
   blockedType: string;
 
   /**
-   * "guest" or "cast" (optional, specifies which profile is blocking)
+   * Always "cast" (caller's role)
    *
    * @generated from field: string blocker_type = 3;
    */
@@ -106,6 +110,8 @@ export const BlockUserResponseSchema: GenMessage<BlockUserResponse> = /*@__PURE_
  */
 export type UnblockUserRequest = Message<"relationship.v1.UnblockUserRequest"> & {
   /**
+   * Guest user ID to unblock
+   *
    * @generated from field: string blocked_id = 1;
    */
   blockedId: string;
@@ -193,6 +199,8 @@ export const ListBlockedResponseSchema: GenMessage<ListBlockedResponse> = /*@__P
  */
 export type GetBlockStatusRequest = Message<"relationship.v1.GetBlockStatusRequest"> & {
   /**
+   * Guest user IDs to check
+   *
    * @generated from field: repeated string user_ids = 1;
    */
   userIds: string[];
@@ -210,7 +218,7 @@ export const GetBlockStatusRequestSchema: GenMessage<GetBlockStatusRequest> = /*
  */
 export type GetBlockStatusResponse = Message<"relationship.v1.GetBlockStatusResponse"> & {
   /**
-   * user_id -> is_blocked
+   * guest_user_id -> is_blocked
    *
    * @generated from field: map<string, bool> blocked = 1;
    */
@@ -263,10 +271,15 @@ export const ListBlockedByResponseSchema: GenMessage<ListBlockedByResponse> = /*
   messageDesc(file_relationship_v1_block_service, 10);
 
 /**
+ * BlockService handles Cast→Guest blocking.
+ * Only casts can block guests. Guest→Cast blocking is not supported.
+ *
  * @generated from service relationship.v1.BlockService
  */
 export const BlockService: GenService<{
   /**
+   * BlockUser blocks a guest. The caller must be a cast.
+   *
    * @generated from rpc relationship.v1.BlockService.BlockUser
    */
   blockUser: {
@@ -275,6 +288,8 @@ export const BlockService: GenService<{
     output: typeof BlockUserResponseSchema;
   },
   /**
+   * UnblockUser unblocks a previously blocked guest.
+   *
    * @generated from rpc relationship.v1.BlockService.UnblockUser
    */
   unblockUser: {
@@ -283,6 +298,8 @@ export const BlockService: GenService<{
     output: typeof UnblockUserResponseSchema;
   },
   /**
+   * ListBlocked returns the list of guests blocked by the calling cast.
+   *
    * @generated from rpc relationship.v1.BlockService.ListBlocked
    */
   listBlocked: {
@@ -291,6 +308,8 @@ export const BlockService: GenService<{
     output: typeof ListBlockedResponseSchema;
   },
   /**
+   * GetBlockStatus checks whether the calling cast has blocked the given guest(s).
+   *
    * @generated from rpc relationship.v1.BlockService.GetBlockStatus
    */
   getBlockStatus: {
@@ -299,6 +318,8 @@ export const BlockService: GenService<{
     output: typeof GetBlockStatusResponseSchema;
   },
   /**
+   * ListBlockedBy returns casts who have blocked a specific guest.
+   *
    * @generated from rpc relationship.v1.BlockService.ListBlockedBy
    */
   listBlockedBy: {

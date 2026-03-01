@@ -78,18 +78,6 @@ RSpec.describe "Relationship::Repositories::BlockRepository", type: :database do
     end
   end
 
-  describe "#blocked_cast_ids" do
-    it "returns only blocked cast IDs" do
-      cast_id = SecureRandom.uuid
-      guest_id = SecureRandom.uuid
-      repo.block(blocker_id: blocker_id, blocker_type: "guest", blocked_id: cast_id, blocked_type: "cast")
-      repo.block(blocker_id: blocker_id, blocker_type: "guest", blocked_id: guest_id, blocked_type: "guest")
-
-      ids = repo.blocked_cast_ids(blocker_id: blocker_id)
-      expect(ids).to eq([cast_id])
-    end
-  end
-
   describe "#blocked_guest_ids" do
     it "returns only blocked guest IDs" do
       cast_id = SecureRandom.uuid

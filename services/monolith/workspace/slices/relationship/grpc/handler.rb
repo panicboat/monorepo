@@ -20,8 +20,7 @@ module Relationship
 
       include Relationship::Deps[
         follow_repo: "repositories.follow_repository",
-        block_repo: "repositories.block_repository",
-        favorite_repo: "repositories.favorite_repository"
+        block_repo: "repositories.block_repository"
       ]
 
       protected

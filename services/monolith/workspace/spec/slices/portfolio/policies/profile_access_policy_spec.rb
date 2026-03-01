@@ -20,7 +20,7 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
   #   Rin  (public)  - visibility: "public"
   #
   # Guests:
-  #   太郎 (id: "taro")   - follows Yuna(approved), Mio(approved), blocks Rin
+  #   太郎 (id: "taro")   - follows Yuna(approved), Mio(approved)
   #   次郎 (id: "jiro")   - no follows
   #   三郎 (id: "saburo") - follows Mio(pending)
   # =============================================================================
@@ -41,24 +41,52 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
       expect(result).to eq(true)
     end
 
-    it "returns true when not blocked" do
-      allow(social_adapter).to receive(:blocked?).and_return(false)
+    it "returns true for authenticated user" do
+      result = policy.can_view_profile?(cast: yuna, viewer_guest_id: jiro_id)
+      expect(result).to eq(true)
+    end
+  end
+
+  describe "#can_view_profile? (with cast-blocked-guest)" do
+    it "returns true even when cast blocked the guest (basic profile always visible)" do
+      allow(social_adapter).to receive(:cast_blocked_guest?)
+        .with(cast_user_id: "yuna-id", guest_user_id: jiro_id)
+        .and_return(true)
 
       result = policy.can_view_profile?(cast: yuna, viewer_guest_id: jiro_id)
       expect(result).to eq(true)
     end
+  end
 
-    it "returns false when blocked" do
-      allow(social_adapter).to receive(:blocked?)
-        .with(guest_user_id: taro_id, cast_user_id: "rin-id")
-        .and_return(true)
+  describe "#can_view_profile_details? with cast-to-guest block" do
+    context "public cast (Yuna) blocks guest" do
+      it "returns false when cast blocked the guest" do
+        allow(social_adapter).to receive(:cast_blocked_guest?)
+          .with(cast_user_id: "yuna-id", guest_user_id: jiro_id)
+          .and_return(true)
 
-      result = policy.can_view_profile?(cast: rin, viewer_guest_id: taro_id)
-      expect(result).to eq(false)
+        result = policy.can_view_profile_details?(cast: yuna, viewer_guest_id: jiro_id)
+        expect(result).to eq(false)
+      end
+    end
+
+    context "private cast (Mio) blocks approved follower" do
+      it "returns false when cast blocked the guest even if approved follower" do
+        allow(social_adapter).to receive(:cast_blocked_guest?)
+          .with(cast_user_id: "mio-id", guest_user_id: taro_id)
+          .and_return(true)
+
+        result = policy.can_view_profile_details?(cast: mio, viewer_guest_id: taro_id)
+        expect(result).to eq(false)
+      end
     end
   end
 
   describe "#can_view_profile_details? (plans, schedules)" do
+    before do
+      allow(social_adapter).to receive(:cast_blocked_guest?).and_return(false)
+    end
+
     context "public cast (Yuna)" do
       it "returns true for unauthenticated user" do
         result = policy.can_view_profile_details?(cast: yuna, viewer_guest_id: nil)
@@ -66,17 +94,8 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
       end
 
       it "returns true for non-follower" do
-        allow(social_adapter).to receive(:blocked?).and_return(false)
-
         result = policy.can_view_profile_details?(cast: yuna, viewer_guest_id: jiro_id)
         expect(result).to eq(true)
-      end
-
-      it "returns false when blocked" do
-        allow(social_adapter).to receive(:blocked?).and_return(true)
-
-        result = policy.can_view_profile_details?(cast: yuna, viewer_guest_id: taro_id)
-        expect(result).to eq(false)
       end
     end
 
@@ -87,7 +106,6 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
       end
 
       it "returns false for non-follower" do
-        allow(social_adapter).to receive(:blocked?).and_return(false)
         allow(social_adapter).to receive(:approved_follower?).and_return(false)
 
         result = policy.can_view_profile_details?(cast: mio, viewer_guest_id: jiro_id)
@@ -95,7 +113,6 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
       end
 
       it "returns false for pending follower" do
-        allow(social_adapter).to receive(:blocked?).and_return(false)
         allow(social_adapter).to receive(:approved_follower?).and_return(false)
 
         result = policy.can_view_profile_details?(cast: mio, viewer_guest_id: saburo_id)
@@ -103,7 +120,6 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
       end
 
       it "returns true for approved follower" do
-        allow(social_adapter).to receive(:blocked?).and_return(false)
         allow(social_adapter).to receive(:approved_follower?).and_return(true)
 
         result = policy.can_view_profile_details?(cast: mio, viewer_guest_id: taro_id)

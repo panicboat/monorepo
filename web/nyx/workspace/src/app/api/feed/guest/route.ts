@@ -7,7 +7,7 @@ import { extractPaginationParams, handleApiError } from "@/lib/api-helpers";
 
 /**
  * GET /api/feed/guest
- * Guest feed with filter (all/following/favorites)
+ * Guest feed with filter (all/following)
  */
 export async function GET(req: NextRequest) {
   try {
@@ -18,7 +18,6 @@ export async function GET(req: NextRequest) {
     // Map filter string to proto enum value
     let filterValue = FeedFilter.ALL;
     if (filter === "following") filterValue = FeedFilter.FOLLOWING;
-    else if (filter === "favorites") filterValue = FeedFilter.FAVORITES;
 
     const response = await feedClient.listGuestFeed(
       {

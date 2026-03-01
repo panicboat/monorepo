@@ -16,20 +16,18 @@ module Post
         follow_repo.following_cast_user_ids(guest_user_id: guest_user_id)
       end
 
-      def blocked?(blocker_id:, blocked_id:)
-        block_repo.blocked?(blocker_id: blocker_id, blocked_id: blocked_id)
-      end
-
-      def blocked_cast_ids(blocker_id:)
-        block_repo.blocked_cast_ids(blocker_id: blocker_id)
-      end
-
       def blocked_guest_ids(blocker_id:)
         block_repo.blocked_guest_ids(blocker_id: blocker_id)
       end
 
-      def favorite_cast_user_ids(guest_user_id:)
-        favorite_repo.favorite_cast_user_ids(guest_user_id: guest_user_id)
+      # Check if cast has blocked this guest
+      def cast_blocked_guest?(cast_user_id:, guest_user_id:)
+        block_repo.blocked?(blocker_id: cast_user_id, blocked_id: guest_user_id)
+      end
+
+      # Get cast IDs that have blocked this guest (reverse lookup)
+      def blocked_by_cast_ids(guest_user_id:)
+        block_repo.blocker_ids_for_blocked(blocked_id: guest_user_id, blocker_type: "cast")
       end
 
       private
@@ -42,9 +40,6 @@ module Post
         @block_repo ||= Relationship::Slice["repositories.block_repository"]
       end
 
-      def favorite_repo
-        @favorite_repo ||= Relationship::Slice["repositories.favorite_repository"]
-      end
     end
   end
 end

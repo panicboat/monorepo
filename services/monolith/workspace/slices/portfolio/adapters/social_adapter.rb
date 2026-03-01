@@ -10,20 +10,9 @@ module Portfolio
     #
     # @example
     #   adapter = Portfolio::Adapters::SocialAdapter.new
-    #   adapter.blocked?(guest_user_id: "guest-123", cast_user_id: "cast-456")
+    #   adapter.approved_follower?(guest_user_id: "guest-123", cast_user_id: "cast-456")
     #
     class SocialAdapter
-      # Check if guest has blocked the cast.
-      #
-      # @param guest_user_id [String, nil] the guest user ID
-      # @param cast_user_id [String] the cast user ID
-      # @return [Boolean] true if blocked
-      def blocked?(guest_user_id:, cast_user_id:)
-        return false if guest_user_id.nil?
-
-        block_repo.blocked?(blocker_id: guest_user_id, blocked_id: cast_user_id)
-      end
-
       # Check if guest is an approved follower of the cast.
       #
       # @param guest_user_id [String, nil] the guest user ID

@@ -36,22 +36,19 @@ module Feed
         filter = case request.message.filter
         when :FEED_FILTER_ALL then "all"
         when :FEED_FILTER_FOLLOWING then "following"
-        when :FEED_FILTER_FAVORITES then "favorites"
         else "all"
         end
 
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        # Get blocker ID for filtering blocked users' comments
         blocker_id = guest.user_id
 
         result = list_guest_feed_uc.call(
           guest_id: guest.user_id,
           filter: filter,
           limit: limit,
-          cursor: cursor,
-          blocker_id: blocker_id
+          cursor: cursor
         )
 
         # Get engagement data
@@ -195,11 +192,7 @@ module Feed
       def get_blocked_user_ids(blocker_id)
         return [] unless blocker_id
 
-        # blocked_cast_ids / blocked_guest_ids are already user_ids (PK = user_id)
-        blocked_cast_ids = relationship_adapter.blocked_cast_ids(blocker_id: blocker_id)
-        blocked_guest_ids = relationship_adapter.blocked_guest_ids(blocker_id: blocker_id)
-
-        blocked_cast_ids + blocked_guest_ids
+        relationship_adapter.blocked_guest_ids(blocker_id: blocker_id)
       end
 
       def load_media_files_for_posts_and_authors(posts, authors)

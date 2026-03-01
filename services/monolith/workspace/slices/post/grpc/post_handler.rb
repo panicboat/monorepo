@@ -70,13 +70,18 @@ module Post
           end
         end
 
-        # Get blocked cast IDs for filtering
-        blocked_cast_ids = get_blocked_cast_ids
-        exclude_cast_ids = (blocked_cast_ids + exclude_cast_ids_param).uniq
+        # Merge blocked-by-cast IDs into exclusions (same pattern as Feed service)
+        blocked_by_cast_ids = if current_user_id
+          guest = find_my_guest
+          guest ? relationship_adapter.blocked_by_cast_ids(guest_user_id: guest.user_id) : []
+        else
+          []
+        end
+        exclude_cast_ids = (exclude_cast_ids_param + blocked_by_cast_ids).uniq
 
         # All filter: public posts from public casts + all posts from followed casts
         if filter == "all" && current_user_id
-          guest = find_my_guest
+          guest ||= find_my_guest
           if guest
             result = list_all_posts(
               limit: limit,
@@ -90,7 +95,7 @@ module Post
 
         # Following filter: get posts from followed casts
         if filter == "following" && current_user_id
-          guest = find_my_guest
+          guest ||= find_my_guest
           if guest
             following_cast_user_ids = relationship_adapter.following_cast_user_ids(guest_user_id: guest.user_id)
             result = list_following_posts(
@@ -103,24 +108,9 @@ module Post
           end
         end
 
-        # Favorites filter: get posts from favorited casts
-        if filter == "favorites" && current_user_id
-          guest = find_my_guest
-          if guest
-            favorite_cast_user_ids = relationship_adapter.favorite_cast_user_ids(guest_user_id: guest.user_id)
-            result = list_public_posts_with_cast_ids_filter(
-              limit: limit,
-              cursor: cursor,
-              cast_ids: favorite_cast_user_ids,
-              exclude_cast_ids: exclude_cast_ids
-            )
-            return build_list_response(result)
-          end
-        end
-
         # If cast_id is specified, check if viewer is an approved follower
         if !cast_id.empty? && current_user_id
-          guest = find_my_guest
+          guest ||= find_my_guest
           if guest && relationship_adapter.following?(cast_user_id: cast_id, guest_user_id: guest.user_id)
             result = list_following_posts(
               limit: limit,
@@ -218,19 +208,6 @@ module Post
       private
 
       SavePost = Post::UseCases::Posts::SavePost
-
-      def list_public_posts_with_cast_ids_filter(limit:, cursor:, cast_ids:, exclude_cast_ids: nil)
-        # FALLBACK: Empty result when no cast_ids are provided (e.g., user follows nobody)
-        return { posts: [], next_cursor: nil, has_more: false, authors: {} } if cast_ids.empty?
-
-        list_public_posts_uc.call(
-          limit: limit,
-          cursor: cursor,
-          cast_user_id: nil,
-          cast_user_ids: cast_ids,
-          exclude_cast_user_ids: exclude_cast_ids
-        )
-      end
 
       def list_all_posts(limit:, cursor:, guest_user_id:, exclude_cast_ids: nil)
         decoded_cursor = decode_cursor(cursor)
