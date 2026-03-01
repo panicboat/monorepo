@@ -2,13 +2,11 @@
 
 require "spec_helper"
 
-RSpec.describe Portfolio::Adapters::SocialAdapter do
+RSpec.describe Portfolio::Adapters::FollowAdapter do
   let(:adapter) { described_class.new }
-  let(:block_repo) { instance_double(Relationship::Repositories::BlockRepository) }
   let(:follow_repo) { instance_double(Relationship::Repositories::FollowRepository) }
 
   before do
-    allow(Relationship::Slice).to receive(:[]).with("repositories.block_repository").and_return(block_repo)
     allow(Relationship::Slice).to receive(:[]).with("repositories.follow_repository").and_return(follow_repo)
   end
 
@@ -41,6 +39,32 @@ RSpec.describe Portfolio::Adapters::SocialAdapter do
 
       result = adapter.follow_status(guest_user_id: "guest-123", cast_user_id: "cast-456")
       expect(result).to eq("pending")
+    end
+  end
+
+  describe "#get_follow_detail" do
+    it "returns default when guest_user_id is nil" do
+      result = adapter.get_follow_detail(guest_user_id: nil, cast_user_id: "cast-123")
+      expect(result).to eq({ is_following: false, followed_at: nil })
+    end
+
+    it "delegates to follow_repo.get_follow_detail" do
+      follow_detail = { is_following: true, followed_at: Time.now }
+      allow(follow_repo).to receive(:get_follow_detail)
+        .with(cast_user_id: "cast-456", guest_user_id: "guest-123")
+        .and_return(follow_detail)
+
+      result = adapter.get_follow_detail(guest_user_id: "guest-123", cast_user_id: "cast-456")
+      expect(result).to eq(follow_detail)
+    end
+  end
+
+  describe "#approve_all_pending" do
+    it "delegates to follow_repo.approve_all_pending" do
+      expect(follow_repo).to receive(:approve_all_pending)
+        .with(cast_user_id: "cast-123")
+
+      adapter.approve_all_pending(cast_user_id: "cast-123")
     end
   end
 end

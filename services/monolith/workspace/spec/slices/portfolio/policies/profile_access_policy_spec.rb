@@ -4,10 +4,12 @@ require "spec_helper"
 
 RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
   let(:policy) { described_class.new }
-  let(:social_adapter) { instance_double(Portfolio::Adapters::SocialAdapter) }
+  let(:follow_adapter) { instance_double(Portfolio::Adapters::FollowAdapter) }
+  let(:block_adapter) { instance_double(Portfolio::Adapters::BlockAdapter) }
 
   before do
-    allow(Portfolio::Adapters::SocialAdapter).to receive(:new).and_return(social_adapter)
+    allow(Portfolio::Adapters::FollowAdapter).to receive(:new).and_return(follow_adapter)
+    allow(Portfolio::Adapters::BlockAdapter).to receive(:new).and_return(block_adapter)
   end
 
   # =============================================================================
@@ -49,7 +51,7 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
 
   describe "#can_view_profile? (with cast-blocked-guest)" do
     it "returns true even when cast blocked the guest (basic profile always visible)" do
-      allow(social_adapter).to receive(:cast_blocked_guest?)
+      allow(block_adapter).to receive(:cast_blocked_guest?)
         .with(cast_user_id: "yuna-id", guest_user_id: jiro_id)
         .and_return(true)
 
@@ -61,7 +63,7 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
   describe "#can_view_profile_details? with cast-to-guest block" do
     context "public cast (Yuna) blocks guest" do
       it "returns false when cast blocked the guest" do
-        allow(social_adapter).to receive(:cast_blocked_guest?)
+        allow(block_adapter).to receive(:cast_blocked_guest?)
           .with(cast_user_id: "yuna-id", guest_user_id: jiro_id)
           .and_return(true)
 
@@ -72,7 +74,7 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
 
     context "private cast (Mio) blocks approved follower" do
       it "returns false when cast blocked the guest even if approved follower" do
-        allow(social_adapter).to receive(:cast_blocked_guest?)
+        allow(block_adapter).to receive(:cast_blocked_guest?)
           .with(cast_user_id: "mio-id", guest_user_id: taro_id)
           .and_return(true)
 
@@ -84,7 +86,7 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
 
   describe "#can_view_profile_details? (plans, schedules)" do
     before do
-      allow(social_adapter).to receive(:cast_blocked_guest?).and_return(false)
+      allow(block_adapter).to receive(:cast_blocked_guest?).and_return(false)
     end
 
     context "public cast (Yuna)" do
@@ -106,21 +108,21 @@ RSpec.describe Portfolio::Policies::ProfileAccessPolicy do
       end
 
       it "returns false for non-follower" do
-        allow(social_adapter).to receive(:approved_follower?).and_return(false)
+        allow(follow_adapter).to receive(:approved_follower?).and_return(false)
 
         result = policy.can_view_profile_details?(cast: mio, viewer_guest_id: jiro_id)
         expect(result).to eq(false)
       end
 
       it "returns false for pending follower" do
-        allow(social_adapter).to receive(:approved_follower?).and_return(false)
+        allow(follow_adapter).to receive(:approved_follower?).and_return(false)
 
         result = policy.can_view_profile_details?(cast: mio, viewer_guest_id: saburo_id)
         expect(result).to eq(false)
       end
 
       it "returns true for approved follower" do
-        allow(social_adapter).to receive(:approved_follower?).and_return(true)
+        allow(follow_adapter).to receive(:approved_follower?).and_return(true)
 
         result = policy.can_view_profile_details?(cast: mio, viewer_guest_id: taro_id)
         expect(result).to eq(true)

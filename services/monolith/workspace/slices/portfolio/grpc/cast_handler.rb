@@ -212,6 +212,11 @@ module Portfolio
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Cast profile not found")
         end
 
+        # Auto-approve all pending follow requests when changing to public
+        if result[:visibility_changed_to_public]
+          follow_adapter.approve_all_pending(cast_user_id: result[:cast].user_id)
+        end
+
         # Load areas and genres for response
         ids = repo.find_area_and_genre_ids(result[:cast].user_id)
         areas = area_repo.find_by_ids(ids[:area_ids])
@@ -348,6 +353,10 @@ module Portfolio
       ProfilePresenter = Portfolio::Presenters::Cast::ProfilePresenter
       PlanPresenter = Portfolio::Presenters::Cast::PlanPresenter
       SaveProfile = Portfolio::UseCases::Cast::Profile::SaveProfile
+
+      def follow_adapter
+        @follow_adapter ||= Portfolio::Adapters::FollowAdapter.new
+      end
 
       def load_media_files_for_cast(cast)
         media_ids = [cast.profile_media_id, cast.avatar_media_id].compact

@@ -51,8 +51,8 @@ module Portfolio
         guest = result[:guest]
         cast_user_id = result[:cast_user_id]
 
-        follow_detail = social_adapter.get_follow_detail(guest_user_id: guest.user_id, cast_user_id: cast_user_id)
-        is_blocked = social_adapter.cast_blocked_guest?(cast_user_id: cast_user_id, guest_user_id: guest.user_id)
+        follow_detail = follow_adapter.get_follow_detail(guest_user_id: guest.user_id, cast_user_id: cast_user_id)
+        is_blocked = block_adapter.cast_blocked_guest?(cast_user_id: cast_user_id, guest_user_id: guest.user_id)
 
         media_files = load_media_files_for_guest(guest)
 
@@ -93,8 +93,12 @@ module Portfolio
       GuestDetailPresenter = Portfolio::Presenters::Guest::DetailPresenter
       SaveProfile = Portfolio::UseCases::Guest::SaveProfile
 
-      def social_adapter
-        @social_adapter ||= Portfolio::Adapters::SocialAdapter.new
+      def follow_adapter
+        @follow_adapter ||= Portfolio::Adapters::FollowAdapter.new
+      end
+
+      def block_adapter
+        @block_adapter ||= Portfolio::Adapters::BlockAdapter.new
       end
 
       def load_media_files_for_guest(guest)

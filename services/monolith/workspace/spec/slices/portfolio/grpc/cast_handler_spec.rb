@@ -15,6 +15,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
       get_profile_uc: get_profile_uc,
       save_profile_uc: save_profile_uc,
       publish_uc: publish_uc,
+      save_visibility_uc: save_visibility_uc,
       save_images_uc: save_images_uc,
       list_casts_uc: list_casts_uc,
       repo: repo,
@@ -29,6 +30,7 @@ RSpec.describe Portfolio::Grpc::CastHandler do
   let(:get_profile_uc) { double(:get_profile_uc) }
   let(:save_profile_uc) { double(:save_profile_uc) }
   let(:publish_uc) { double(:publish_uc) }
+  let(:save_visibility_uc) { double(:save_visibility_uc) }
   let(:save_images_uc) { double(:save_images_uc) }
   let(:list_casts_uc) { double(:list_casts_uc) }
   let(:repo) { double(:repo, find_area_ids: [], find_genre_ids: [], online_cast_ids: [], find_area_and_genre_ids: { area_ids: [], genre_ids: [] }, find_gallery_media_ids: []) }
@@ -137,6 +139,46 @@ RSpec.describe Portfolio::Grpc::CastHandler do
         expect(response.profile.three_sizes.bust).to eq(88)
         expect(response.profile.tags).to eq(%w[model bilingual])
       end
+    end
+  end
+
+  describe "#save_cast_visibility" do
+    let(:message) { ::Portfolio::V1::SaveCastVisibilityRequest.new(visibility: :CAST_VISIBILITY_PUBLIC) }
+    let(:follow_adapter) { double(:follow_adapter) }
+
+    before do
+      allow_any_instance_of(described_class).to receive(:follow_adapter).and_return(follow_adapter)
+    end
+
+    it "auto-approves pending follows when changing to public" do
+      allow(save_visibility_uc).to receive(:call)
+        .with(user_id: 1, visibility: "public")
+        .and_return({ success: true, cast: mock_cast_entity, visibility_changed_to_public: true })
+
+      expect(follow_adapter).to receive(:approve_all_pending).with(cast_user_id: 1)
+
+      response = handler.save_cast_visibility
+      expect(response).to be_a(::Portfolio::V1::SaveCastVisibilityResponse)
+    end
+
+    it "does not auto-approve when not changing to public" do
+      allow(save_visibility_uc).to receive(:call)
+        .with(user_id: 1, visibility: "public")
+        .and_return({ success: true, cast: mock_cast_entity, visibility_changed_to_public: false })
+
+      expect(follow_adapter).not_to receive(:approve_all_pending)
+
+      handler.save_cast_visibility
+    end
+
+    it "raises NOT_FOUND when cast not found" do
+      allow(save_visibility_uc).to receive(:call)
+        .with(user_id: 1, visibility: "public")
+        .and_return({ success: false, error: :cast_not_found })
+
+      expect { handler.save_cast_visibility }.to raise_error(GRPC::BadStatus) { |e|
+        expect(e.code).to eq(GRPC::Core::StatusCodes::NOT_FOUND)
+      }
     end
   end
 

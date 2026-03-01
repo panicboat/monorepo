@@ -213,10 +213,14 @@ Cast → Guest ブロックしている場合は常に Deny。
 Portfolio → Relationship:
 
 ```text
-Portfolio::Adapters::SocialAdapter
+Portfolio::Adapters::FollowAdapter
 ├── approved_follower?(guest_user_id:, cast_user_id:)
 ├── follow_status(guest_user_id:, cast_user_id:)
 ├── get_follow_detail(guest_user_id:, cast_user_id:)
+└── approve_all_pending(cast_user_id:)
+
+Portfolio::Adapters::BlockAdapter
+├── blocked?(guest_user_id:, cast_user_id:)
 └── cast_blocked_guest?(cast_user_id:, guest_user_id:)
 ```
 
@@ -268,10 +272,9 @@ Feed::Adapters::RelationshipAdapter
 
 キャストが visibility を変更した場合：
 - `public` → `private`: 既存の approved フォロワーはそのまま。新規フォローは pending になる。
-- `private` → `public`: `approve_all_pending` メソッドは存在するが **現在は呼ばれていない**。pending リクエストは自動承認されない。
+- `private` → `public`: `FollowAdapter.approve_all_pending` により、全 pending リクエストが自動承認される。
 
 ### Future Considerations
 
-- `private` → `public` 切り替え時の pending リクエスト自動承認
 - ロールベースアクセス制御（RBAC）の導入時は別途検討
 - キャスト間のアクセス制御は現時点では対象外
