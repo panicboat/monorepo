@@ -11,7 +11,8 @@ module Feed
 
       def initialize
         @post_adapter = Feed::Adapters::PostAdapter.new
-        @relationship_adapter = Feed::Adapters::RelationshipAdapter.new
+        @follow_adapter = Feed::Adapters::FollowAdapter.new
+        @block_adapter = Feed::Adapters::BlockAdapter.new
         @cast_adapter = Feed::Adapters::CastAdapter.new
         @guest_adapter = Feed::Adapters::GuestAdapter.new
       end
@@ -26,7 +27,7 @@ module Feed
         decoded_cursor = decode_cursor(cursor)
 
         # Get cast IDs that have blocked this guest
-        blocked_by_cast_ids = @relationship_adapter.blocker_cast_ids_for_guest(guest_user_id: guest_id)
+        blocked_by_cast_ids = @block_adapter.blocker_cast_ids_for_guest(guest_user_id: guest_id)
 
         posts, authors = case filter
         when "all"
@@ -48,7 +49,7 @@ module Feed
 
       def list_all_posts(guest_id:, limit:, cursor:, exclude_cast_ids: [])
         public_cast_user_ids = @cast_adapter.public_cast_ids
-        followed_cast_user_ids = @relationship_adapter.following_cast_user_ids(guest_user_id: guest_id)
+        followed_cast_user_ids = @follow_adapter.following_cast_user_ids(guest_user_id: guest_id)
 
         posts = @post_adapter.list_all_for_authenticated(
           public_cast_user_ids: public_cast_user_ids,
@@ -63,7 +64,7 @@ module Feed
       end
 
       def list_following_posts(guest_id:, limit:, cursor:, exclude_cast_ids: [])
-        cast_user_ids = @relationship_adapter.following_cast_user_ids(guest_user_id: guest_id)
+        cast_user_ids = @follow_adapter.following_cast_user_ids(guest_user_id: guest_id)
         return [[], {}] if cast_user_ids.empty?
 
         posts = @post_adapter.list_all_by_cast_user_ids(

@@ -4,7 +4,8 @@ module Post
   module Policies
     class AccessPolicy
       def initialize
-        @relationship_adapter = Post::Adapters::RelationshipAdapter.new
+        @follow_adapter = Post::Adapters::FollowAdapter.new
+        @block_adapter = Post::Adapters::BlockAdapter.new
       end
 
       # Combined Visibility Rule:
@@ -31,14 +32,14 @@ module Post
 
         # Get cast IDs that have blocked this guest
         blocked_by_cast_ids = if viewer_guest_id
-          @relationship_adapter.blocked_by_cast_ids(guest_user_id: viewer_guest_id)
+          @block_adapter.blocked_by_cast_ids(guest_user_id: viewer_guest_id)
         else
           []
         end
 
         # Get follow status for all casts
         follow_statuses = if viewer_guest_id
-          @relationship_adapter.following_status_batch(cast_user_ids: cast_user_ids, guest_user_id: viewer_guest_id)
+          @follow_adapter.following_status_batch(cast_user_ids: cast_user_ids, guest_user_id: viewer_guest_id)
         else
           {}
         end
@@ -63,11 +64,11 @@ module Post
       def cast_blocked_guest?(cast_user_id:, guest_user_id:)
         return false if guest_user_id.nil?
 
-        @relationship_adapter.cast_blocked_guest?(cast_user_id: cast_user_id, guest_user_id: guest_user_id)
+        @block_adapter.cast_blocked_guest?(cast_user_id: cast_user_id, guest_user_id: guest_user_id)
       end
 
       def approved_follower?(cast_user_id:, guest_user_id:)
-        @relationship_adapter.following?(cast_user_id: cast_user_id, guest_user_id: guest_user_id)
+        @follow_adapter.following?(cast_user_id: cast_user_id, guest_user_id: guest_user_id)
       end
     end
   end

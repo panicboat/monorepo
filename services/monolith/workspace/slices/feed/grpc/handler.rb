@@ -4,7 +4,8 @@ require "gruf"
 require "feed/v1/feed_service_services_pb"
 require_relative "../../../lib/grpc/authenticatable"
 require_relative "../adapters/post_adapter"
-require_relative "../adapters/relationship_adapter"
+require_relative "../adapters/follow_adapter"
+require_relative "../adapters/block_adapter"
 require_relative "../adapters/cast_adapter"
 require_relative "../adapters/guest_adapter"
 require_relative "../adapters/media_adapter"
@@ -133,8 +134,12 @@ module Feed
         @post_adapter ||= Feed::Adapters::PostAdapter.new
       end
 
-      def relationship_adapter
-        @relationship_adapter ||= Feed::Adapters::RelationshipAdapter.new
+      def follow_adapter
+        @follow_adapter ||= Feed::Adapters::FollowAdapter.new
+      end
+
+      def block_adapter
+        @block_adapter ||= Feed::Adapters::BlockAdapter.new
       end
 
       def cast_adapter
@@ -192,7 +197,7 @@ module Feed
       def get_blocked_user_ids(blocker_id)
         return [] unless blocker_id
 
-        relationship_adapter.blocked_guest_ids(blocker_id: blocker_id)
+        block_adapter.blocked_guest_ids(blocker_id: blocker_id)
       end
 
       def load_media_files_for_posts_and_authors(posts, authors)

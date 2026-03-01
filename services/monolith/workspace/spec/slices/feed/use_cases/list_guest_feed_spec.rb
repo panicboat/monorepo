@@ -2,7 +2,8 @@
 
 require "spec_helper"
 require_relative "../../../../slices/feed/adapters/post_adapter"
-require_relative "../../../../slices/feed/adapters/relationship_adapter"
+require_relative "../../../../slices/feed/adapters/follow_adapter"
+require_relative "../../../../slices/feed/adapters/block_adapter"
 require_relative "../../../../slices/feed/adapters/cast_adapter"
 require_relative "../../../../slices/feed/adapters/guest_adapter"
 require_relative "../../../../slices/feed/use_cases/list_guest_feed"

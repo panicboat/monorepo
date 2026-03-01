@@ -6,7 +6,8 @@ require "storage"
 require_relative "../adapters/cast_adapter"
 require_relative "../adapters/guest_adapter"
 require_relative "../adapters/user_adapter"
-require_relative "../adapters/relationship_adapter"
+require_relative "../adapters/follow_adapter"
+require_relative "../adapters/block_adapter"
 require_relative "../adapters/media_adapter"
 
 module Post
@@ -40,8 +41,12 @@ module Post
         @user_adapter ||= Post::Adapters::UserAdapter.new
       end
 
-      def relationship_adapter
-        @relationship_adapter ||= Post::Adapters::RelationshipAdapter.new
+      def follow_adapter
+        @follow_adapter ||= Post::Adapters::FollowAdapter.new
+      end
+
+      def block_adapter
+        @block_adapter ||= Post::Adapters::BlockAdapter.new
       end
 
       def media_adapter
@@ -104,7 +109,7 @@ module Post
         blocker = find_blocker
         return [] unless blocker
 
-        relationship_adapter.blocked_guest_ids(blocker_id: blocker[:id])
+        block_adapter.blocked_guest_ids(blocker_id: blocker[:id])
       end
 
       def get_comment_author(user_id, media_files: {})

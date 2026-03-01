@@ -227,10 +227,12 @@ Portfolio::Adapters::BlockAdapter
 Post → Relationship:
 
 ```text
-Post::Adapters::RelationshipAdapter
+Post::Adapters::FollowAdapter
 ├── following?(cast_user_id:, guest_user_id:)
 ├── following_status_batch(cast_user_ids:, guest_user_id:)
-├── following_cast_user_ids(guest_user_id:)
+└── following_cast_user_ids(guest_user_id:)
+
+Post::Adapters::BlockAdapter
 ├── blocked_guest_ids(blocker_id:)
 ├── cast_blocked_guest?(cast_user_id:, guest_user_id:)
 └── blocked_by_cast_ids(guest_user_id:)
@@ -239,8 +241,10 @@ Post::Adapters::RelationshipAdapter
 Feed → Relationship:
 
 ```text
-Feed::Adapters::RelationshipAdapter
-├── following_cast_user_ids(guest_user_id:)
+Feed::Adapters::FollowAdapter
+└── following_cast_user_ids(guest_user_id:)
+
+Feed::Adapters::BlockAdapter
 ├── blocked_guest_ids(blocker_id:)
 └── blocker_cast_ids_for_guest(guest_user_id:)
 ```

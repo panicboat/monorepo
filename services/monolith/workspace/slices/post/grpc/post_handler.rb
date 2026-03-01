@@ -73,7 +73,7 @@ module Post
         # Merge blocked-by-cast IDs into exclusions (same pattern as Feed service)
         blocked_by_cast_ids = if current_user_id
           guest = find_my_guest
-          guest ? relationship_adapter.blocked_by_cast_ids(guest_user_id: guest.user_id) : []
+          guest ? block_adapter.blocked_by_cast_ids(guest_user_id: guest.user_id) : []
         else
           []
         end
@@ -97,7 +97,7 @@ module Post
         if filter == "following" && current_user_id
           guest ||= find_my_guest
           if guest
-            following_cast_user_ids = relationship_adapter.following_cast_user_ids(guest_user_id: guest.user_id)
+            following_cast_user_ids = follow_adapter.following_cast_user_ids(guest_user_id: guest.user_id)
             result = list_following_posts(
               limit: limit,
               cursor: cursor,
@@ -111,7 +111,7 @@ module Post
         # If cast_id is specified, check if viewer is an approved follower
         if !cast_id.empty? && current_user_id
           guest ||= find_my_guest
-          if guest && relationship_adapter.following?(cast_user_id: cast_id, guest_user_id: guest.user_id)
+          if guest && follow_adapter.following?(cast_user_id: cast_id, guest_user_id: guest.user_id)
             result = list_following_posts(
               limit: limit,
               cursor: cursor,
@@ -213,7 +213,7 @@ module Post
         decoded_cursor = decode_cursor(cursor)
 
         public_cast_user_ids = cast_adapter.public_cast_ids
-        followed_cast_user_ids = relationship_adapter.following_cast_user_ids(guest_user_id: guest_user_id)
+        followed_cast_user_ids = follow_adapter.following_cast_user_ids(guest_user_id: guest_user_id)
 
         posts = post_repo.list_all_for_authenticated(
           public_cast_user_ids: public_cast_user_ids,
