@@ -57,7 +57,13 @@ export function SearchFilterOverlay({
   const [areaId, setAreaId] = useState(initialFilters.areaId);
   const [resultCount, setResultCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(false);
-  const [expandedPrefectures, setExpandedPrefectures] = useState<Set<string>>(new Set());
+  const [expandedPrefectures, setExpandedPrefectures] = useState<Set<string>>(() => {
+    if (initialFilters.areaId) {
+      const selectedArea = areas.find((a) => a.id === initialFilters.areaId);
+      if (selectedArea) return new Set([selectedArea.prefecture]);
+    }
+    return new Set();
+  });
 
   const togglePrefecture = (prefecture: string) => {
     setExpandedPrefectures((prev) => {
@@ -88,6 +94,7 @@ export function SearchFilterOverlay({
         setResultCount(data.items?.length >= 1 ? null : 0);
       }
     } catch {
+      // SILENT: Result count is a non-critical UI hint; network errors should not block filter interaction
       setResultCount(null);
     } finally {
       setLoadingCount(false);
@@ -108,8 +115,16 @@ export function SearchFilterOverlay({
       setGenreId(initialFilters.genreId);
       setStatus(initialFilters.status);
       setAreaId(initialFilters.areaId);
+      if (initialFilters.areaId) {
+        const selectedArea = areas.find((a) => a.id === initialFilters.areaId);
+        if (selectedArea) {
+          setExpandedPrefectures(new Set([selectedArea.prefecture]));
+        }
+      } else {
+        setExpandedPrefectures(new Set());
+      }
     }
-  }, [isOpen, initialFilters]);
+  }, [isOpen, initialFilters, areas]);
 
   const handleReset = () => {
     setQuery("");
