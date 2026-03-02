@@ -14,8 +14,6 @@ function parseStatusFilter(status: string | null): CastStatusFilter {
       return CastStatusFilter.ONLINE;
     case "new":
       return CastStatusFilter.NEW;
-    case "ranking":
-      return CastStatusFilter.RANKING;
     default:
       return CastStatusFilter.UNSPECIFIED;
   }
