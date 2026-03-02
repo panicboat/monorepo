@@ -6,6 +6,7 @@ import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { Smartphone, CheckCircle, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { slideUpFadeLargeVariants } from "@/lib/motion";
+import { useToast } from "@/components/ui/Toast";
 
 interface LoginGateProps {
   variant?: "guest" | "cast";
@@ -13,6 +14,7 @@ interface LoginGateProps {
 
 export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
   const { requestSMS, verifySMS, register, login, isLoading: isAuthLoading } = useAuth();
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mode, setMode] = useState<
     "select" | "signin" | "signup_phone" | "signup_verify" | "signup_password"
@@ -21,7 +23,6 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [verificationToken, setVerificationToken] = useState("");
-  const [error, setError] = useState("");
 
   const isCast = variant === "cast";
 
@@ -38,16 +39,16 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
 
   const handleSMSRequest = async () => {
     if (phone.length < 10) {
-      setError("有効な電話番号を入力してください");
+      toast({ title: "エラー", description: "有効な電話番号を入力してください", variant: "destructive" });
       return;
     }
-    setError("");
     setIsSubmitting(true);
     try {
       await requestSMS(phone);
       setMode("signup_verify");
-    } catch (e: any) {
-      setError("SMSの送信に失敗しました。もう一度お試しください");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "SMSの送信に失敗しました";
+      toast({ title: "エラー", description: message, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -59,8 +60,9 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
       const token = await verifySMS(phone, code);
       setVerificationToken(token);
       setMode("signup_password");
-    } catch (e) {
-      setError("認証コードが正しくありません");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "認証コードが正しくありません";
+      toast({ title: "エラー", description: message, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -71,8 +73,9 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
     try {
       const role = isCast ? 2 : 1; // 1=Guest, 2=Cast
       await register(phone, password, verificationToken, role);
-    } catch (e: any) {
-      setError(e.message || "登録に失敗しました");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "登録に失敗しました";
+      toast({ title: "エラー", description: message, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -83,8 +86,9 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
     try {
       const role = isCast ? 2 : 1;
       await login(phone, password, role);
-    } catch (e: any) {
-      setError(e.message || "ログインに失敗しました");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "ログインに失敗しました";
+      toast({ title: "エラー", description: message, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -153,7 +157,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
                 focusRingClass,
               )}
             />
-            {error && <p className="text-sm text-error">{error}</p>}
+
             <button
               onClick={handleLogin}
               disabled={isSubmitting}
@@ -192,7 +196,6 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
                 )}
               />
             </div>
-            {error && <p className="text-sm text-error">{error}</p>}
 
             <button
               onClick={handleSMSRequest}
@@ -232,7 +235,6 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
                 )}
               />
             </div>
-            {error && <p className="text-sm text-error">{error}</p>}
 
             <button
               onClick={handleSMSVerify}
@@ -271,7 +273,7 @@ export const LoginGate = ({ variant = "guest" }: LoginGateProps) => {
                 )}
               />
             </div>
-            {error && <p className="text-sm text-error">{error}</p>}
+
             <button
               onClick={handleRegister}
               disabled={isSubmitting}

@@ -61,8 +61,8 @@ module Identity
         )
 
         AuthPresenter.to_register_response(result)
-      rescue => e
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INTERNAL, e.message)
+      rescue Errors::ValidationError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
 
       def login
@@ -79,6 +79,8 @@ module Identity
         else
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Invalid credentials or role mismatch")
         end
+      rescue Errors::ValidationError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
 
       def refresh_token
