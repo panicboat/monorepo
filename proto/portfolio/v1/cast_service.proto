@@ -171,7 +171,6 @@ enum CastStatusFilter {
   CAST_STATUS_FILTER_UNSPECIFIED = 0;
   CAST_STATUS_FILTER_ONLINE = 1;      // Has active schedule today
   CAST_STATUS_FILTER_NEW = 2;         // Created within 7 days
-  CAST_STATUS_FILTER_RANKING = 3;     // By popularity (future)
 }
 
 message ListCastsRequest {
@@ -181,7 +180,7 @@ message ListCastsRequest {
   string genre_id = 2;
   // Filter by tag name
   string tag = 3;
-  // Filter by status (online, new, ranking)
+  // Filter by status (online, new)
   CastStatusFilter status_filter = 4;
   // Filter by area ID
   string area_id = 5;
