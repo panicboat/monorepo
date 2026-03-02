@@ -178,8 +178,6 @@ module Portfolio
           # Created within 7 days
           seven_days_ago = (Date.today - 7).to_datetime
           scope = scope.where { created_at >= seven_days_ago }
-        when :ranking
-          # Future: by popularity (for now, just return all)
         end
 
         # Cursor-based pagination
