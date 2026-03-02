@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Search, RotateCcw } from "lucide-react";
+import { X, Search, RotateCcw, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { fadeVariants, slideUpVariants, springTransition } from "@/lib/motion";
@@ -14,12 +14,20 @@ type Genre = {
   displayOrder: number;
 };
 
-type StatusFilter = "all" | "online" | "new" | "ranking";
+type Area = {
+  id: string;
+  prefecture: string;
+  name: string;
+  code: string;
+};
+
+type StatusFilter = "all" | "online" | "new";
 
 type FilterState = {
   query: string;
   genreId: string;
   status: StatusFilter;
+  areaId: string;
 };
 
 type SearchFilterOverlayProps = {
@@ -27,6 +35,9 @@ type SearchFilterOverlayProps = {
   onClose: () => void;
   onApply: (filters: FilterState) => void;
   genres: Genre[];
+  areas: Area[];
+  areasByPrefecture: Map<string, Area[]>;
+  prefectures: string[];
   initialFilters: FilterState;
 };
 
@@ -35,13 +46,30 @@ export function SearchFilterOverlay({
   onClose,
   onApply,
   genres,
+  areas,
+  areasByPrefecture,
+  prefectures,
   initialFilters,
 }: SearchFilterOverlayProps) {
   const [query, setQuery] = useState(initialFilters.query);
   const [genreId, setGenreId] = useState(initialFilters.genreId);
   const [status, setStatus] = useState<StatusFilter>(initialFilters.status);
+  const [areaId, setAreaId] = useState(initialFilters.areaId);
   const [resultCount, setResultCount] = useState<number | null>(null);
   const [loadingCount, setLoadingCount] = useState(false);
+  const [expandedPrefectures, setExpandedPrefectures] = useState<Set<string>>(new Set());
+
+  const togglePrefecture = (prefecture: string) => {
+    setExpandedPrefectures((prev) => {
+      const next = new Set(prev);
+      if (next.has(prefecture)) {
+        next.delete(prefecture);
+      } else {
+        next.add(prefecture);
+      }
+      return next;
+    });
+  };
 
   // Fetch result count when filters change
   const fetchResultCount = useCallback(async () => {
@@ -51,6 +79,7 @@ export function SearchFilterOverlay({
       if (query.trim()) params.set("query", query.trim());
       if (genreId) params.set("genreId", genreId);
       if (status !== "all") params.set("status", status);
+      if (areaId) params.set("areaId", areaId);
       params.set("limit", "1");
 
       const res = await fetch(`/api/guest/search?${params.toString()}`);
@@ -63,14 +92,14 @@ export function SearchFilterOverlay({
     } finally {
       setLoadingCount(false);
     }
-  }, [query, genreId, status]);
+  }, [query, genreId, status, areaId]);
 
   useEffect(() => {
     if (isOpen) {
       const debounce = setTimeout(fetchResultCount, 300);
       return () => clearTimeout(debounce);
     }
-  }, [isOpen, query, genreId, status, fetchResultCount]);
+  }, [isOpen, query, genreId, status, areaId, fetchResultCount]);
 
   // Reset local state when overlay opens
   useEffect(() => {
@@ -78,6 +107,7 @@ export function SearchFilterOverlay({
       setQuery(initialFilters.query);
       setGenreId(initialFilters.genreId);
       setStatus(initialFilters.status);
+      setAreaId(initialFilters.areaId);
     }
   }, [isOpen, initialFilters]);
 
@@ -85,15 +115,16 @@ export function SearchFilterOverlay({
     setQuery("");
     setGenreId("");
     setStatus("all");
+    setAreaId("");
   };
 
   const handleApply = () => {
-    onApply({ query, genreId, status });
+    onApply({ query, genreId, status, areaId });
     onClose();
   };
 
   const activeFilterCount =
-    (query.trim() ? 1 : 0) + (genreId ? 1 : 0) + (status !== "all" ? 1 : 0);
+    (query.trim() ? 1 : 0) + (genreId ? 1 : 0) + (status !== "all" ? 1 : 0) + (areaId ? 1 : 0);
 
   return (
     <AnimatePresence>
@@ -200,7 +231,6 @@ export function SearchFilterOverlay({
                       { key: "all", label: "すべて" },
                       { key: "online", label: "オンライン" },
                       { key: "new", label: "新着" },
-                      { key: "ranking", label: "ランキング" },
                     ] as const
                   ).map((item) => (
                     <button
@@ -215,6 +245,60 @@ export function SearchFilterOverlay({
                     >
                       {item.label}
                     </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Area Selection */}
+              <div>
+                <label className="block text-sm font-bold text-text-secondary mb-3">
+                  エリア
+                </label>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setAreaId("")}
+                    className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors border text-left
+                      ${
+                        areaId === ""
+                          ? "bg-info text-white border-info"
+                          : "bg-surface text-text-secondary border-border hover:bg-surface-secondary"
+                      }`}
+                  >
+                    すべてのエリア
+                  </button>
+                  {prefectures.map((prefecture) => (
+                    <div key={prefecture}>
+                      <button
+                        onClick={() => togglePrefecture(prefecture)}
+                        className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-text-primary hover:bg-surface-secondary rounded-lg transition-colors"
+                      >
+                        <span>{prefecture}</span>
+                        <ChevronDown
+                          size={16}
+                          className={`text-text-muted transition-transform ${
+                            expandedPrefectures.has(prefecture) ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {expandedPrefectures.has(prefecture) && (
+                        <div className="grid grid-cols-3 gap-2 mt-1 ml-2">
+                          {(areasByPrefecture.get(prefecture) || []).map((area) => (
+                            <button
+                              key={area.id}
+                              onClick={() => setAreaId(area.id)}
+                              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border
+                                ${
+                                  areaId === area.id
+                                    ? "bg-info text-white border-info"
+                                    : "bg-surface text-text-secondary border-border hover:bg-surface-secondary"
+                                }`}
+                            >
+                              {area.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
