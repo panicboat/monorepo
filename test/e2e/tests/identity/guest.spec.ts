@@ -27,7 +27,6 @@ test.describe('Guest Authentication Flow', () => {
 
     await expect(page.locator('.text-red-500')).toBeHidden();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByText('Ranking')).toBeVisible();
   });
 
   test('Guest Login (Success & Logout)', async ({ page }) => {

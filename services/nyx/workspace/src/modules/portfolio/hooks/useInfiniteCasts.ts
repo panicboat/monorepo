@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { usePaginatedFetch, PaginatedResult } from "@/lib/hooks/usePaginatedFetch";
 
-type StatusFilter = "all" | "online" | "new" | "ranking";
+type StatusFilter = "all" | "online" | "new";
 
 type CastProfile = {
   name: string;
@@ -38,6 +38,7 @@ interface UseInfiniteCastsOptions {
   tag?: string;
   status?: StatusFilter;
   query?: string;
+  areaId?: string;
 }
 
 export function useInfiniteCasts(options: UseInfiniteCastsOptions) {
@@ -56,8 +57,11 @@ export function useInfiniteCasts(options: UseInfiniteCastsOptions) {
       if (options.tag) {
         params.set("tag", options.tag);
       }
+      if (options.areaId) {
+        params.set("areaId", options.areaId);
+      }
     },
-    [options.genreId, options.tag, options.status, options.query]
+    [options.genreId, options.tag, options.status, options.query, options.areaId]
   );
 
   const mapResponse = useCallback((data: SearchResponse): PaginatedResult<CastItem> => ({
