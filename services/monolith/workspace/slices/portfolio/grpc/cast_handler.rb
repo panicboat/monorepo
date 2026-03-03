@@ -267,7 +267,6 @@ module Portfolio
         status_filter = case request.message.status_filter
         when :CAST_STATUS_FILTER_ONLINE then :online
         when :CAST_STATUS_FILTER_NEW then :new
-        when :CAST_STATUS_FILTER_RANKING then :ranking
         else nil
         end
 

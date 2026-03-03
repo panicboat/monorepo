@@ -15,7 +15,7 @@ import { HorizontalScroll } from "@/components/ui/HorizontalScroll";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { SearchFilterOverlay } from "./SearchFilterOverlay";
-import { useInfiniteCasts } from "@/modules/portfolio/hooks";
+import { useInfiniteCasts, useAreas } from "@/modules/portfolio/hooks";
 import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 import { useToast } from "@/components/ui/Toast";
 
@@ -51,12 +51,13 @@ type CastItem = {
   plans: { id: string; name: string; price: number; duration: number }[];
 };
 
-type StatusFilter = "all" | "online" | "new" | "ranking";
+type StatusFilter = "all" | "online" | "new";
 
 type FilterState = {
   query: string;
   genreId: string;
   status: StatusFilter;
+  areaId: string;
 };
 
 export default function SearchPage() {
@@ -65,6 +66,7 @@ export default function SearchPage() {
     query: "",
     genreId: "",
     status: "all",
+    areaId: "",
   });
   const [activeTag, setActiveTag] = useState<string>("");
   const [searchInput, setSearchInput] = useState<string>("");
@@ -75,6 +77,7 @@ export default function SearchPage() {
   const [highlightCasts, setHighlightCasts] = useState<CastItem[]>([]);
 
   const [loading, setLoading] = useState(true);
+  const { areas, areasByPrefecture, prefectures } = useAreas();
 
   // useInfiniteCasts for paginated cast list
   const {
@@ -91,6 +94,7 @@ export default function SearchPage() {
     tag: activeTag,
     status: filters.status,
     query: filters.query,
+    areaId: filters.areaId,
   });
 
   // Fetch genres and popular tags on mount
@@ -156,7 +160,8 @@ export default function SearchPage() {
   const activeFilterCount =
     (filters.query.trim() ? 1 : 0) +
     (filters.genreId ? 1 : 0) +
-    (filters.status !== "all" ? 1 : 0);
+    (filters.status !== "all" ? 1 : 0) +
+    (filters.areaId ? 1 : 0);
 
   if (loading) {
     return (
@@ -218,7 +223,7 @@ export default function SearchPage() {
       )}
 
       {/* Active Filters Display */}
-      {(filters.genreId || filters.status !== "all" || filters.query) && (
+      {(filters.genreId || filters.status !== "all" || filters.query || filters.areaId) && (
         <div className="px-4 mb-4">
           <div className="flex flex-wrap gap-2">
             {filters.query && (
@@ -235,14 +240,17 @@ export default function SearchPage() {
               <span className="px-3 py-1 bg-info text-white rounded-full text-xs font-medium">
                 {filters.status === "online"
                   ? "オンライン"
-                  : filters.status === "new"
-                    ? "新着"
-                    : "ランキング"}
+                  : "新着"}
+              </span>
+            )}
+            {filters.areaId && (
+              <span className="px-3 py-1 bg-info text-white rounded-full text-xs font-medium">
+                {areas.find((a) => a.id === filters.areaId)?.name}
               </span>
             )}
             <button
               onClick={() => {
-                setFilters({ query: "", genreId: "", status: "all" });
+                setFilters({ query: "", genreId: "", status: "all", areaId: "" });
                 setSearchInput("");
               }}
               className="px-3 py-1 bg-surface-secondary text-text-secondary rounded-full text-xs font-medium hover:bg-border"
@@ -351,6 +359,9 @@ export default function SearchPage() {
         onClose={() => setFilterOverlayOpen(false)}
         onApply={handleFilterApply}
         genres={genres}
+        areas={areas}
+        areasByPrefecture={areasByPrefecture}
+        prefectures={prefectures}
         initialFilters={filters}
       />
     </div>
