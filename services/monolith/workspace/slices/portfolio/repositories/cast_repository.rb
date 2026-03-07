@@ -294,6 +294,16 @@ module Portfolio
           .pluck(:user_id)
       end
 
+      def area_ids_by_prefecture(prefecture)
+        areas.where(prefecture: prefecture, active: true).pluck(:id)
+      end
+
+      def cast_user_ids_by_area_ids(area_ids)
+        return [] if area_ids.empty?
+
+        cast_areas.where(area_id: area_ids).pluck(:cast_user_id).uniq
+      end
+
       def private_cast_ids
         casts.where(visibility: "private")
           .exclude(registered_at: nil)

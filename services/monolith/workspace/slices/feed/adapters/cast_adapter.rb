@@ -41,6 +41,10 @@ module Feed
         get_public_cast_ids_query.call
       end
 
+      def public_cast_ids_in_prefecture(prefecture)
+        get_public_cast_ids_in_prefecture_query.call(prefecture: prefecture)
+      end
+
       private
 
       def build_cast_info(cast)
@@ -65,6 +69,10 @@ module Feed
 
       def get_public_cast_ids_query
         @get_public_cast_ids_query ||= Portfolio::Slice["use_cases.cast.queries.get_public_cast_ids"]
+      end
+
+      def get_public_cast_ids_in_prefecture_query
+        @get_public_cast_ids_in_prefecture_query ||= Portfolio::Slice["use_cases.cast.queries.get_public_cast_ids_in_prefecture"]
       end
     end
   end
