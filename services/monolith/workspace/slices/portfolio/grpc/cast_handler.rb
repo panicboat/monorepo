@@ -25,6 +25,7 @@ module Portfolio
       rpc :ListAreas, ::Portfolio::V1::ListAreasRequest, ::Portfolio::V1::ListAreasResponse
       rpc :ListGenres, ::Portfolio::V1::ListGenresRequest, ::Portfolio::V1::ListGenresResponse
       rpc :ListPopularTags, ::Portfolio::V1::ListPopularTagsRequest, ::Portfolio::V1::ListPopularTagsResponse
+      rpc :GetCastCount, ::Portfolio::V1::GetCastCountRequest, ::Portfolio::V1::GetCastCountResponse
 
       include Portfolio::Deps[
         get_profile_uc: "use_cases.cast.profile.get_profile",
@@ -33,6 +34,7 @@ module Portfolio
         save_visibility_uc: "use_cases.save_cast_visibility",
         save_images_uc: "use_cases.cast.images.save_images",
         list_casts_uc: "use_cases.cast.listing.list_casts",
+        get_cast_count_uc: "use_cases.cast.listing.get_cast_count",
         repo: "repositories.cast_repository",
         area_repo: "repositories.area_repository",
         genre_repo: "repositories.genre_repository"
@@ -260,6 +262,7 @@ module Portfolio
         genre_id = request.message.genre_id.to_s.empty? ? nil : request.message.genre_id
         tag = request.message.tag.to_s.empty? ? nil : request.message.tag
         area_id = request.message.area_id.to_s.empty? ? nil : request.message.area_id
+        prefecture = request.message.prefecture.to_s.empty? ? nil : request.message.prefecture
         query = request.message.query.to_s.empty? ? nil : request.message.query
         limit = request.message.limit.zero? ? nil : request.message.limit
         cursor = request.message.cursor.to_s.empty? ? nil : request.message.cursor
@@ -276,6 +279,7 @@ module Portfolio
           tag: tag,
           status_filter: status_filter,
           area_id: area_id,
+          prefecture: prefecture,
           query: query,
           limit: limit,
           cursor: cursor,
@@ -345,6 +349,31 @@ module Portfolio
             )
           }
         )
+      end
+
+      # === Cast Count ===
+
+      def get_cast_count
+        prefecture = request.message.prefecture.to_s.empty? ? nil : request.message.prefecture
+        area_id = request.message.area_id.to_s.empty? ? nil : request.message.area_id
+        genre_id = request.message.genre_id.to_s.empty? ? nil : request.message.genre_id
+        query = request.message.query.to_s.empty? ? nil : request.message.query
+
+        status_filter = case request.message.status_filter
+        when :CAST_STATUS_FILTER_ONLINE then "online"
+        when :CAST_STATUS_FILTER_NEW then "new"
+        else nil
+        end
+
+        count = get_cast_count_uc.call(
+          prefecture: prefecture,
+          area_id: area_id,
+          status_filter: status_filter,
+          genre_id: genre_id,
+          query: query
+        )
+
+        ::Portfolio::V1::GetCastCountResponse.new(count: count)
       end
 
       private
