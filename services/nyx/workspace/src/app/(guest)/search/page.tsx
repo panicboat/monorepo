@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { SearchFilterOverlay } from "./SearchFilterOverlay";
 import { useInfiniteCasts, useAreas } from "@/modules/portfolio/hooks";
+import { useGuestData } from "@/modules/portfolio/hooks/useGuestData";
 import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 import { useToast } from "@/components/ui/Toast";
 
@@ -64,6 +65,7 @@ type FilterState = {
 
 export default function SearchPage() {
   const { toast } = useToast();
+  const { profile } = useGuestData();
   const [filters, setFilters] = useState<FilterState>({
     query: "",
     genreId: "",
@@ -81,6 +83,15 @@ export default function SearchPage() {
 
   const [loading, setLoading] = useState(true);
   const { areas, areasByPrefecture, prefectures } = useAreas();
+
+  // Set prefecture from guest profile on first load
+  const [prefectureInitialized, setPrefectureInitialized] = useState(false);
+  useEffect(() => {
+    if (profile?.prefecture && !prefectureInitialized) {
+      setFilters((prev) => ({ ...prev, prefecture: profile.prefecture }));
+      setPrefectureInitialized(true);
+    }
+  }, [profile?.prefecture, prefectureInitialized]);
 
   // useInfiniteCasts for paginated cast list
   const {
