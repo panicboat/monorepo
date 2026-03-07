@@ -49,6 +49,7 @@ message ListGuestFeedRequest {
   FeedFilter filter = 1;  // required: all/following
   int32 limit = 2;        // default: 20, max: 50
   string cursor = 3;      // optional, for pagination
+  string prefecture = 4;  // Filter "all" tab by cast area prefecture
 }
 
 message ListGuestFeedResponse {
