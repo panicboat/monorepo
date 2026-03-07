@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { motion } from "motion/react";
 import { AvatarUploader } from "@/components/shared/AvatarUploader";
 import { GuestProfileFormData } from "@/modules/portfolio/hooks/useGuestData";
+import { useAreas } from "@/modules/portfolio/hooks/useAreas";
 
 const NAME_MIN_LENGTH = 1;
 const NAME_MAX_LENGTH = 20;
@@ -17,6 +18,7 @@ export interface GuestProfileFormProps {
   onUploadAvatar: (file: File) => Promise<{ mediaId: string; url: string }>;
   submitLabel: string;
   loading?: boolean;
+  requirePrefecture?: boolean;
 }
 
 export const GuestProfileForm = ({
@@ -26,10 +28,13 @@ export const GuestProfileForm = ({
   onUploadAvatar,
   submitLabel,
   loading: externalLoading = false,
+  requirePrefecture = false,
 }: GuestProfileFormProps) => {
   const [name, setName] = useState("");
   const [tagline, setTagline] = useState("");
   const [bio, setBio] = useState("");
+  const [prefecture, setPrefecture] = useState("");
+  const { prefectures } = useAreas();
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | null>(null);
   const [avatarMediaId, setAvatarMediaId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -42,6 +47,7 @@ export const GuestProfileForm = ({
       setName(initialData.name || "");
       setTagline(initialData.tagline || "");
       setBio(initialData.bio || "");
+      setPrefecture(initialData.prefecture || "");
       setAvatarMediaId(initialData.avatarMediaId || null);
     }
   }, [initialData]);
@@ -71,7 +77,8 @@ export const GuestProfileForm = ({
     name.trim().length >= NAME_MIN_LENGTH &&
     name.length <= NAME_MAX_LENGTH &&
     tagline.length <= TAGLINE_MAX_LENGTH &&
-    bio.length <= BIO_MAX_LENGTH;
+    bio.length <= BIO_MAX_LENGTH &&
+    (!requirePrefecture || prefecture !== "");
 
   const handleAvatarUpload = useCallback(
     async (file: File) => {
@@ -101,6 +108,11 @@ export const GuestProfileForm = ({
   const handleSubmit = async () => {
     if (!isValid || saving) return;
 
+    if (requirePrefecture && !prefecture) {
+      setError("エリアを選択してください");
+      return;
+    }
+
     setSaving(true);
     setError(null);
     setSuccess(false);
@@ -110,6 +122,7 @@ export const GuestProfileForm = ({
         avatarMediaId: avatarMediaId || "",
         tagline: tagline.trim(),
         bio: bio.trim(),
+        prefecture,
       });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
@@ -232,6 +245,24 @@ export const GuestProfileForm = ({
             {bio.length}/{BIO_MAX_LENGTH}
           </p>
         </div>
+      </div>
+
+      {/* Prefecture Selector */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-text-secondary">
+          エリア{requirePrefecture && <span className="text-error ml-1">*</span>}
+        </label>
+        <select
+          value={prefecture}
+          onChange={(e) => setPrefecture(e.target.value)}
+          className="w-full px-4 py-3 rounded-xl border border-border focus:ring-info focus:border-info focus:outline-none focus:ring-2 transition-colors bg-surface"
+          disabled={isLoading}
+        >
+          <option value="">選択してください</option>
+          {prefectures.map((pref) => (
+            <option key={pref} value={pref}>{pref}</option>
+          ))}
+        </select>
       </div>
 
       {/* Error Message */}
