@@ -5,7 +5,7 @@ module Portfolio
     module Guest
       class ProfilePresenter
         class << self
-          def to_proto(guest, media_files: {})
+          def to_proto(guest, media_files: {}, prefecture: nil)
             return empty_profile unless guest
 
             avatar_media = media_files[guest.avatar_media_id]
@@ -17,7 +17,8 @@ module Portfolio
               avatar_url: avatar_url,
               avatar_media_id: guest.avatar_media_id || "",
               tagline: guest.respond_to?(:tagline) ? (guest.tagline || "") : "",
-              bio: guest.respond_to?(:bio) ? (guest.bio || "") : ""
+              bio: guest.respond_to?(:bio) ? (guest.bio || "") : "",
+              prefecture: prefecture || ""
             )
           end
 
@@ -30,7 +31,8 @@ module Portfolio
               avatar_url: "",
               avatar_media_id: "",
               tagline: "",
-              bio: ""
+              bio: "",
+              prefecture: ""
             )
           end
         end

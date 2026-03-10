@@ -43,6 +43,7 @@ export const GuestOnboarding = () => {
             onUploadAvatar={uploadAvatar}
             submitLabel="はじめる"
             loading={dataLoading}
+            requirePrefecture={true}
           />
 
           {/* Skip Option */}

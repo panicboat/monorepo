@@ -19,7 +19,8 @@ module Portfolio
         # @param avatar_media_id [String, nil]
         # @param tagline [String, nil]
         # @param bio [String, nil]
-        def call(user_id:, name:, avatar_media_id: nil, tagline: nil, bio: nil)
+        # @param prefecture [String, nil]
+        def call(user_id:, name:, avatar_media_id: nil, tagline: nil, bio: nil, prefecture: nil)
           validate_name!(name)
           validate_tagline!(tagline) if tagline
           validate_bio!(bio) if bio
@@ -40,7 +41,14 @@ module Portfolio
             guest_repository.create(attrs.merge(user_id: user_id, created_at: Time.now))
           end
 
-          guest_repository.find_by_user_id(user_id)
+          saved_guest = guest_repository.find_by_user_id(user_id)
+
+          # Save prefecture if provided
+          unless prefecture.nil?
+            guest_repository.save_prefecture(user_id: user_id, prefecture: prefecture)
+          end
+
+          saved_guest
         end
 
         private

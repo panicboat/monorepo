@@ -36,6 +36,19 @@ module Portfolio
       def update(user_id, attrs)
         guests.by_pk(user_id).changeset(:update, attrs).commit
       end
+
+      def find_prefecture(user_id)
+        guest_prefectures.where(guest_user_id: user_id).pluck(:prefecture).first
+      end
+
+      def save_prefecture(user_id:, prefecture:)
+        transaction do
+          guest_prefectures.where(guest_user_id: user_id).delete
+          if prefecture && !prefecture.strip.empty?
+            guest_prefectures.changeset(:create, guest_user_id: user_id, prefecture: prefecture).commit
+          end
+        end
+      end
     end
   end
 end

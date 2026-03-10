@@ -6,6 +6,7 @@ import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 import { useSocialStore, selectIsHydrated } from "@/stores/socialStore";
 import { useTimeline } from "@/modules/post";
 import { useAuthStore } from "@/stores/authStore";
+import { useGuestData } from "@/modules/portfolio/hooks/useGuestData";
 import { FeedItem, mapPostToFeedItem } from "./types";
 import { TimelineItem } from "./TimelineItem";
 import { TimelineFilters, FilterType } from "./TimelineFilters";
@@ -29,11 +30,15 @@ export function TimelineFeed({
   const isLoaded = useSocialStore(selectIsHydrated);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
+  const { profile } = useGuestData();
 
   // Pass filter to hook; filter changes trigger auto reset & refetch
   const timelineFilter = isHydrated && isAuthenticated() ? filter : undefined;
   const { posts, loading, loadingMore, error, hasMore, fetchInitial, fetchMore } =
-    useTimeline({ filter: timelineFilter });
+    useTimeline({
+      filter: timelineFilter,
+      prefecture: mode === "guest" ? profile?.prefecture : undefined,
+    });
 
   // Fetch posts on mount (only in guest mode without items prop)
   useEffect(() => {

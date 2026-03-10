@@ -42,6 +42,7 @@ module Feed
 
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
+        prefecture = request.message.prefecture.to_s.empty? ? nil : request.message.prefecture
 
         blocker_id = guest.user_id
 
@@ -49,7 +50,8 @@ module Feed
           guest_id: guest.user_id,
           filter: filter,
           limit: limit,
-          cursor: cursor
+          cursor: cursor,
+          prefecture: prefecture
         )
 
         # Get engagement data

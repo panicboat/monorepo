@@ -124,7 +124,7 @@ module Portfolio
         }
       end
 
-      def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, query: nil, limit: nil, cursor: nil, registered_only: false)
+      def list_casts_with_filters(visibility_filter: nil, genre_id: nil, tag: nil, status_filter: nil, area_id: nil, prefecture: nil, query: nil, limit: nil, cursor: nil, registered_only: false)
         scope = casts.combine(:plans)
 
         # Registered filter (for guest access, only show casts with registered_at set)
@@ -155,10 +155,18 @@ module Portfolio
           scope = scope.where { Sequel.pg_jsonb(:tags).contains(Sequel.pg_jsonb([tag])) }
         end
 
-        # Area filter
+        # Area filter (specific area or by prefecture)
         if area_id && !area_id.empty?
           cast_user_ids_with_area = cast_areas.where(area_id: area_id).pluck(:cast_user_id)
           scope = scope.where(user_id: cast_user_ids_with_area)
+        elsif prefecture && !prefecture.empty?
+          area_ids_in_prefecture = areas.where(prefecture: prefecture, active: true).pluck(:id)
+          if area_ids_in_prefecture.any?
+            cast_user_ids_in_prefecture = cast_areas.where(area_id: area_ids_in_prefecture).pluck(:cast_user_id).uniq
+            scope = scope.where(user_id: cast_user_ids_in_prefecture)
+          else
+            return []
+          end
         end
 
         # Status filter
@@ -193,6 +201,52 @@ module Portfolio
         scope = scope.limit(limit + 1) if limit && limit > 0
 
         scope.to_a
+      end
+
+      def count_casts_with_filters(prefecture: nil, area_id: nil, status_filter: nil, genre_id: nil, query: nil)
+        scope = casts.exclude(registered_at: nil)
+
+        # Text search filter (name, tagline, or tags)
+        if query && !query.strip.empty?
+          q = "%#{query.strip}%"
+          scope = scope.where {
+            (Sequel.ilike(:name, q)) |
+            (Sequel.ilike(:tagline, q)) |
+            Sequel.pg_jsonb(:tags).contains(Sequel.pg_jsonb([query.strip]))
+          }
+        end
+
+        # Genre filter
+        if genre_id && !genre_id.empty?
+          cast_user_ids_with_genre = cast_genres.where(genre_id: genre_id).pluck(:cast_user_id)
+          scope = scope.where(user_id: cast_user_ids_with_genre)
+        end
+
+        # Area filter (specific area or by prefecture)
+        if area_id && !area_id.empty?
+          cast_user_ids_with_area = cast_areas.where(area_id: area_id).pluck(:cast_user_id)
+          scope = scope.where(user_id: cast_user_ids_with_area)
+        elsif prefecture && !prefecture.empty?
+          area_ids_in_prefecture = areas.where(prefecture: prefecture, active: true).pluck(:id)
+          if area_ids_in_prefecture.any?
+            cast_user_ids_in_prefecture = cast_areas.where(area_id: area_ids_in_prefecture).pluck(:cast_user_id).uniq
+            scope = scope.where(user_id: cast_user_ids_in_prefecture)
+          else
+            return 0
+          end
+        end
+
+        # Status filter
+        if status_filter
+          case status_filter
+          when "online"
+            scope = scope.where(user_id: online_cast_ids)
+          when "new"
+            scope = scope.where { created_at > Time.now - 7 * 24 * 60 * 60 }
+          end
+        end
+
+        scope.count
       end
 
       def is_online?(cast_user_id)
@@ -238,6 +292,16 @@ module Portfolio
         casts.where(visibility: "public")
           .exclude(registered_at: nil)
           .pluck(:user_id)
+      end
+
+      def area_ids_by_prefecture(prefecture)
+        areas.where(prefecture: prefecture, active: true).pluck(:id)
+      end
+
+      def cast_user_ids_by_area_ids(area_ids)
+        return [] if area_ids.empty?
+
+        cast_areas.where(area_id: area_ids).pluck(:cast_user_id).uniq
       end
 
       def private_cast_ids

@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const { limit, cursor } = extractPaginationParams(searchParams);
     const filter = searchParams.get("filter") || "all";
+    const prefecture = searchParams.get("prefecture") || "";
 
     // Map filter string to proto enum value
     let filterValue = FeedFilter.ALL;
@@ -24,6 +25,7 @@ export async function GET(req: NextRequest) {
         cursor,
         limit,
         filter: filterValue,
+        prefecture,
       },
       { headers: buildGrpcHeaders(req.headers) }
     );
