@@ -1,4 +1,4 @@
-FROM ruby:3.4.9-slim
+FROM ruby:4.0.2-slim
 
 # Install system dependencies
 RUN apt-get update -qq && \
