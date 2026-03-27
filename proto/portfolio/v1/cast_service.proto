@@ -18,6 +18,7 @@ service CastService {
   rpc ListAreas(ListAreasRequest) returns (ListAreasResponse);
   rpc ListGenres(ListGenresRequest) returns (ListGenresResponse);
   rpc ListPopularTags(ListPopularTagsRequest) returns (ListPopularTagsResponse);
+  rpc GetCastCount(GetCastCountRequest) returns (GetCastCountResponse);
 }
 
 enum CastVisibility {
@@ -189,6 +190,8 @@ message ListCastsRequest {
   string cursor = 7; // Base64-encoded cursor for pagination
   // Text search query (searches name, tagline, tags)
   string query = 8;
+  // Filter by prefecture (broader than area_id)
+  string prefecture = 9;
 }
 
 message ListCastsResponse {
@@ -254,4 +257,16 @@ message ListPopularTagsRequest {
 
 message ListPopularTagsResponse {
   repeated PopularTag tags = 1;
+}
+
+message GetCastCountRequest {
+  string prefecture = 1;
+  string area_id = 2;
+  CastStatusFilter status_filter = 3;
+  string genre_id = 4;
+  string query = 5;
+}
+
+message GetCastCountResponse {
+  int32 count = 1;
 }

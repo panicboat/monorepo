@@ -39,6 +39,7 @@ interface UseInfiniteCastsOptions {
   status?: StatusFilter;
   query?: string;
   areaId?: string;
+  prefecture?: string;
 }
 
 export function useInfiniteCasts(options: UseInfiniteCastsOptions) {
@@ -60,8 +61,11 @@ export function useInfiniteCasts(options: UseInfiniteCastsOptions) {
       if (options.areaId) {
         params.set("areaId", options.areaId);
       }
+      if (options.prefecture) {
+        params.set("prefecture", options.prefecture);
+      }
     },
-    [options.genreId, options.tag, options.status, options.query, options.areaId]
+    [options.genreId, options.tag, options.status, options.query, options.areaId, options.prefecture]
   );
 
   const mapResponse = useCallback((data: SearchResponse): PaginatedResult<CastItem> => ({

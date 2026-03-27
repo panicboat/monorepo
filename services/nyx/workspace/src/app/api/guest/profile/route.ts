@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
           avatarMediaId: response.profile.avatarMediaId,
           tagline: response.profile.tagline,
           bio: response.profile.bio,
+          prefecture: response.profile.prefecture || "",
         }
       : null;
 
@@ -47,6 +48,7 @@ export async function PUT(req: NextRequest) {
         avatarMediaId: body.avatarMediaId || "",
         tagline: body.tagline || "",
         bio: body.bio || "",
+        prefecture: body.prefecture || "",
       },
       { headers: buildGrpcHeaders(req.headers) }
     );
@@ -59,6 +61,7 @@ export async function PUT(req: NextRequest) {
           avatarMediaId: response.profile.avatarMediaId,
           tagline: response.profile.tagline,
           bio: response.profile.bio,
+          prefecture: response.profile.prefecture || "",
         }
       : null;
 

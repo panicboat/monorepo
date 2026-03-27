@@ -22,7 +22,7 @@ module Feed
       # @param limit [Integer] max posts to return
       # @param cursor [String, nil] pagination cursor
       # @return [Hash] { posts:, next_cursor:, has_more:, authors: }
-      def call(guest_id:, filter:, limit: DEFAULT_LIMIT, cursor: nil)
+      def call(guest_id:, filter:, limit: DEFAULT_LIMIT, cursor: nil, prefecture: nil)
         limit = normalize_limit(limit)
         decoded_cursor = decode_cursor(cursor)
 
@@ -31,11 +31,11 @@ module Feed
 
         posts, authors = case filter
         when "all"
-          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_by_cast_ids)
+          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_by_cast_ids, prefecture: prefecture)
         when "following"
           list_following_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_by_cast_ids)
         else
-          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_by_cast_ids)
+          list_all_posts(guest_id: guest_id, limit: limit, cursor: decoded_cursor, exclude_cast_ids: blocked_by_cast_ids, prefecture: prefecture)
         end
 
         pagination = build_pagination_result(items: posts, limit: limit) do |last|
@@ -47,8 +47,12 @@ module Feed
 
       private
 
-      def list_all_posts(guest_id:, limit:, cursor:, exclude_cast_ids: [])
-        public_cast_user_ids = @cast_adapter.public_cast_ids
+      def list_all_posts(guest_id:, limit:, cursor:, exclude_cast_ids: [], prefecture: nil)
+        public_cast_user_ids = if prefecture && !prefecture.empty?
+          @cast_adapter.public_cast_ids_in_prefecture(prefecture)
+        else
+          @cast_adapter.public_cast_ids
+        end
         followed_cast_user_ids = @follow_adapter.following_cast_user_ids(guest_user_id: guest_id)
 
         posts = @post_adapter.list_all_for_authenticated(

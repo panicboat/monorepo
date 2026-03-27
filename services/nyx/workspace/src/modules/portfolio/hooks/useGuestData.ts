@@ -16,6 +16,7 @@ export interface GuestProfile {
   avatarMediaId: string;
   tagline: string;
   bio: string;
+  prefecture: string;
 }
 
 export interface GuestProfileFormData {
@@ -23,6 +24,7 @@ export interface GuestProfileFormData {
   avatarMediaId: string;
   tagline: string;
   bio: string;
+  prefecture: string;
 }
 
 const INITIAL_PROFILE: GuestProfileFormData = {
@@ -30,6 +32,7 @@ const INITIAL_PROFILE: GuestProfileFormData = {
   avatarMediaId: "",
   tagline: "",
   bio: "",
+  prefecture: "",
 };
 
 interface UseGuestDataOptions {
@@ -44,6 +47,7 @@ interface GuestDataApiResponse {
     avatarMediaId: string;
     tagline: string;
     bio: string;
+    prefecture: string;
   };
 }
 
@@ -85,6 +89,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
             avatarMediaId: data.profile.avatarMediaId,
             tagline: data.profile.tagline,
             bio: data.profile.bio,
+            prefecture: data.profile.prefecture || "",
           }
         : INITIAL_PROFILE,
     [data?.profile]
@@ -108,6 +113,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
             avatarMediaId: "",
             tagline: "",
             bio: "",
+            prefecture: "",
           };
           return {
             ...currentData,
@@ -117,6 +123,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
               avatarMediaId: updates.avatarMediaId ?? existingProfile.avatarMediaId,
               tagline: updates.tagline ?? existingProfile.tagline,
               bio: updates.bio ?? existingProfile.bio,
+              prefecture: updates.prefecture ?? existingProfile.prefecture,
             },
           };
         },
@@ -144,6 +151,7 @@ export function useGuestData(options: UseGuestDataOptions = {}) {
           avatarMediaId: profileToSave.avatarMediaId || null,
           tagline: profileToSave.tagline || null,
           bio: profileToSave.bio || null,
+          prefecture: profileToSave.prefecture || null,
         }),
       });
 

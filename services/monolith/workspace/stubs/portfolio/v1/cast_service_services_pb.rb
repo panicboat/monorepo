@@ -30,6 +30,7 @@ module Portfolio
         rpc :ListAreas, ::Portfolio::V1::ListAreasRequest, ::Portfolio::V1::ListAreasResponse
         rpc :ListGenres, ::Portfolio::V1::ListGenresRequest, ::Portfolio::V1::ListGenresResponse
         rpc :ListPopularTags, ::Portfolio::V1::ListPopularTagsRequest, ::Portfolio::V1::ListPopularTagsResponse
+        rpc :GetCastCount, ::Portfolio::V1::GetCastCountRequest, ::Portfolio::V1::GetCastCountResponse
       end
 
       Stub = Service.rpc_stub_class

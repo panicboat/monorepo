@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const areaId = searchParams.get("areaId") || "";
     const query = searchParams.get("query") || "";
+    const prefecture = searchParams.get("prefecture") || "";
     const { limit, cursor } = extractPaginationParams(searchParams, 50);
 
     const response = await castClient.listCasts(
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest) {
         statusFilter: parseStatusFilter(status),
         areaId,
         query,
+        prefecture,
         limit,
         cursor,
       },

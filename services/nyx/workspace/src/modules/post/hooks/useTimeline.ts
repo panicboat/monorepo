@@ -11,19 +11,25 @@ type TimelineResponse = Parameters<typeof mapApiToPostsList>[0];
 interface UseTimelineOptions {
   castId?: string;
   filter?: string;
+  prefecture?: string; // Auto-filter for guest "all" tab
 }
 
 export function useTimeline(options: UseTimelineOptions = {}) {
-  const { castId, filter } = options;
+  const { castId, filter, prefecture } = options;
   const accessToken = useAuthStore((state) => state.accessToken);
   const prevFilterRef = useRef(filter);
+  const prevPrefectureRef = useRef(prefecture);
+
+  // Use Feed service for guest home feed (no castId), Post service for cast-specific timelines
+  const apiUrl = castId ? "/api/guest/timeline" : "/api/feed/guest";
 
   const buildParams = useCallback(
     (params: URLSearchParams) => {
       if (castId) params.set("cast_id", castId);
       if (filter) params.set("filter", filter);
+      if (prefecture && !castId) params.set("prefecture", prefecture);
     },
-    [castId, filter]
+    [castId, filter, prefecture]
   );
 
   const mapResponse = useCallback(
@@ -69,21 +75,22 @@ export function useTimeline(options: UseTimelineOptions = {}) {
     fetchMore,
     reset,
   } = usePaginatedFetch<CastPost, TimelineResponse>({
-    apiUrl: "/api/guest/timeline",
+    apiUrl,
     mapResponse,
     getItemId,
     buildParams,
     fetchFn,
   });
 
-  // Auto reset & refetch when filter changes
+  // Auto reset & refetch when filter or prefecture changes
   useEffect(() => {
-    if (prevFilterRef.current !== filter) {
+    if (prevFilterRef.current !== filter || prevPrefectureRef.current !== prefecture) {
       prevFilterRef.current = filter;
+      prevPrefectureRef.current = prefecture;
       reset();
       fetchInitial();
     }
-  }, [filter, reset, fetchInitial]);
+  }, [filter, prefecture, reset, fetchInitial]);
 
   return {
     posts,
