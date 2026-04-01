@@ -15,6 +15,7 @@ message GuestProfile {
   string avatar_media_id = 4; // Reference to media__files.id
   string tagline = 5;     // Short introduction (max 100 chars)
   string bio = 6;         // Self introduction (max 1000 chars)
+  string prefecture = 7;  // Guest's prefecture (e.g. "東京都")
 }
 
 message GetGuestProfileRequest {}  // user_id is obtained from authentication
@@ -28,6 +29,7 @@ message SaveGuestProfileRequest {
   string avatar_media_id = 2; // Reference to media__files.id
   string tagline = 3;     // Short introduction (max 100 chars)
   string bio = 4;         // Self introduction (max 1000 chars)
+  string prefecture = 5;  // Guest's prefecture (e.g. "東京都")
 }
 
 message SaveGuestProfileResponse {

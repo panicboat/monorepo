@@ -21,7 +21,8 @@ module Portfolio
       include Portfolio::Deps[
         get_profile_uc: "use_cases.guest.get_profile",
         get_profile_by_id_uc: "use_cases.guest.get_profile_by_id",
-        save_profile_uc: "use_cases.guest.save_profile"
+        save_profile_uc: "use_cases.guest.save_profile",
+        guest_repository: "repositories.guest_repository"
       ]
 
       def get_guest_profile
@@ -29,9 +30,10 @@ module Portfolio
 
         result = get_profile_uc.call(user_id: current_user_id)
         media_files = load_media_files_for_guest(result)
+        prefecture = result ? guest_repository.find_prefecture(current_user_id) : nil
 
         ::Portfolio::V1::GetGuestProfileResponse.new(
-          profile: result ? GuestPresenter.to_proto(result, media_files: media_files) : nil
+          profile: result ? GuestPresenter.to_proto(result, media_files: media_files, prefecture: prefecture) : nil
         )
       end
 
@@ -70,18 +72,22 @@ module Portfolio
       def save_guest_profile
         authenticate_user!
 
+        prefecture_value = request.message.prefecture.to_s.empty? ? nil : request.message.prefecture
+
         result = save_profile_uc.call(
           user_id: current_user_id,
           name: request.message.name,
           avatar_media_id: request.message.avatar_media_id.to_s.empty? ? nil : request.message.avatar_media_id,
           tagline: request.message.tagline.to_s.empty? ? nil : request.message.tagline,
-          bio: request.message.bio.to_s.empty? ? nil : request.message.bio
+          bio: request.message.bio.to_s.empty? ? nil : request.message.bio,
+          prefecture: prefecture_value
         )
 
         media_files = load_media_files_for_guest(result)
+        prefecture = guest_repository.find_prefecture(current_user_id)
 
         ::Portfolio::V1::SaveGuestProfileResponse.new(
-          profile: GuestPresenter.to_proto(result, media_files: media_files)
+          profile: GuestPresenter.to_proto(result, media_files: media_files, prefecture: prefecture)
         )
       rescue Errors::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)

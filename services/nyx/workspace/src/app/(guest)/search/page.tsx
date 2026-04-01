@@ -8,6 +8,7 @@ import {
   Sparkles,
   Loader2,
   Lock,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -16,6 +17,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { SearchFilterOverlay } from "./SearchFilterOverlay";
 import { useInfiniteCasts, useAreas } from "@/modules/portfolio/hooks";
+import { useGuestData } from "@/modules/portfolio/hooks/useGuestData";
 import { InfiniteScroll } from "@/components/ui/InfiniteScroll";
 import { useToast } from "@/components/ui/Toast";
 
@@ -58,15 +60,18 @@ type FilterState = {
   genreId: string;
   status: StatusFilter;
   areaId: string;
+  prefecture: string;
 };
 
 export default function SearchPage() {
   const { toast } = useToast();
+  const { profile } = useGuestData();
   const [filters, setFilters] = useState<FilterState>({
     query: "",
     genreId: "",
     status: "all",
     areaId: "",
+    prefecture: "",
   });
   const [activeTag, setActiveTag] = useState<string>("");
   const [searchInput, setSearchInput] = useState<string>("");
@@ -78,6 +83,15 @@ export default function SearchPage() {
 
   const [loading, setLoading] = useState(true);
   const { areas, areasByPrefecture, prefectures } = useAreas();
+
+  // Set prefecture from guest profile on first load
+  const [prefectureInitialized, setPrefectureInitialized] = useState(false);
+  useEffect(() => {
+    if (profile?.prefecture && !prefectureInitialized) {
+      setFilters((prev) => ({ ...prev, prefecture: profile.prefecture }));
+      setPrefectureInitialized(true);
+    }
+  }, [profile?.prefecture, prefectureInitialized]);
 
   // useInfiniteCasts for paginated cast list
   const {
@@ -95,6 +109,7 @@ export default function SearchPage() {
     status: filters.status,
     query: filters.query,
     areaId: filters.areaId,
+    prefecture: filters.prefecture,
   });
 
   // Fetch genres and popular tags on mount
@@ -161,7 +176,7 @@ export default function SearchPage() {
     (filters.query.trim() ? 1 : 0) +
     (filters.genreId ? 1 : 0) +
     (filters.status !== "all" ? 1 : 0) +
-    (filters.areaId ? 1 : 0);
+    (filters.areaId || filters.prefecture ? 1 : 0);
 
   if (loading) {
     return (
@@ -223,7 +238,7 @@ export default function SearchPage() {
       )}
 
       {/* Active Filters Display */}
-      {(filters.genreId || filters.status !== "all" || filters.query || filters.areaId) && (
+      {(filters.genreId || filters.status !== "all" || filters.query || filters.areaId || filters.prefecture) && (
         <div className="px-4 mb-4">
           <div className="flex flex-wrap gap-2">
             {filters.query && (
@@ -243,6 +258,15 @@ export default function SearchPage() {
                   : "新着"}
               </span>
             )}
+            {filters.prefecture && !filters.areaId && (
+              <button
+                onClick={() => setFilters(prev => ({ ...prev, prefecture: "" }))}
+                className="px-3 py-1 bg-info text-white rounded-full text-xs font-medium flex items-center gap-1"
+              >
+                {filters.prefecture}
+                <X size={12} />
+              </button>
+            )}
             {filters.areaId && (
               <span className="px-3 py-1 bg-info text-white rounded-full text-xs font-medium">
                 {areas.find((a) => a.id === filters.areaId)?.name}
@@ -250,7 +274,7 @@ export default function SearchPage() {
             )}
             <button
               onClick={() => {
-                setFilters({ query: "", genreId: "", status: "all", areaId: "" });
+                setFilters({ query: "", genreId: "", status: "all", areaId: "", prefecture: "" });
                 setSearchInput("");
               }}
               className="px-3 py-1 bg-surface-secondary text-text-secondary rounded-full text-xs font-medium hover:bg-border"
