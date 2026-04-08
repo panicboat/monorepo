@@ -92,10 +92,7 @@ bundle install
 docker-compose up -d db
 # Update config/app.rb or .env to point to your Postgres
 # Default: postgres
-bundle exec hanami db drop
-bundle exec hanami db create
-bundle exec hanami db migrate
-bundle exec hanami db seed
+docker-compose run --rm app bundle exec rake db:drop db:create db:migrate db:seed
 
 # example query
 docker-compose exec db psql -U postgres -d monolith -P pager=off -c "set search_path = 'identity'; select * from users";
