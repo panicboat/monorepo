@@ -6,7 +6,7 @@ RSpec.describe Offer::UseCases::Schedules::GetSchedules do
   let(:use_case) { described_class.new(repo: repo, portfolio_adapter: adapter) }
   let(:repo) { double(:repo) }
   let(:adapter) { double(:adapter) }
-  let(:cast_id) { SecureRandom.uuid }
+  let(:cast_id) { SecureRandom.uuid_v7 }
 
   describe "#call" do
     context "when cast exists" do

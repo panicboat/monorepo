@@ -6,12 +6,12 @@ RSpec.describe "Post::Repositories::CommentRepository", type: :database do
   let(:repo) { Hanami.app.slices[:post]["repositories.comment_repository"] }
   let(:post_repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
   let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
-  let(:cast_id) { SecureRandom.uuid }
+  let(:cast_id) { SecureRandom.uuid_v7 }
   let(:user_id) { create_user[:id] }
   let(:post) { post_repo.create_post(cast_user_id: cast_id, content: "Test post") }
 
   def create_user(role: 1)
-    id = SecureRandom.uuid
+    id = SecureRandom.uuid_v7
     db[:identity__users].insert(
       id: id,
       phone_number: "090#{rand(10000000..99999999)}",

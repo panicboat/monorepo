@@ -7,7 +7,7 @@ RSpec.describe "Post::Adapters::UserAdapter", type: :database do
   let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
 
   def create_user(role: 1)
-    id = SecureRandom.uuid
+    id = SecureRandom.uuid_v7
     db[:identity__users].insert(
       id: id,
       phone_number: "090#{rand(10000000..99999999)}",
@@ -29,7 +29,7 @@ RSpec.describe "Post::Adapters::UserAdapter", type: :database do
 
     context "when user does not exist" do
       it "returns false" do
-        expect(adapter.user_exists?(SecureRandom.uuid)).to be false
+        expect(adapter.user_exists?(SecureRandom.uuid_v7)).to be false
       end
     end
   end
@@ -46,7 +46,7 @@ RSpec.describe "Post::Adapters::UserAdapter", type: :database do
     end
 
     it "returns nil for non-existent user" do
-      expect(adapter.get_user_type(SecureRandom.uuid)).to be_nil
+      expect(adapter.get_user_type(SecureRandom.uuid_v7)).to be_nil
     end
   end
 

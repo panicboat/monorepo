@@ -48,7 +48,7 @@ reviews_data = []
 guest_user_ids.each_with_index do |guest_user_id, gi|
   cast_user_ids.each_with_index do |cast_user_id, ci|
     reviews_data << {
-      id: SecureRandom.uuid,
+      id: SecureRandom.uuid_v7,
       reviewer_id: guest_user_id,
       reviewee_id: cast_user_id,
       content: guest_review_comments[(gi * 3 + ci) % guest_review_comments.size],
@@ -64,7 +64,7 @@ end
 cast_user_ids.each_with_index do |cast_user_id, ci|
   guest_user_ids.each_with_index do |guest_user_id, gi|
     reviews_data << {
-      id: SecureRandom.uuid,
+      id: SecureRandom.uuid_v7,
       reviewer_id: cast_user_id,
       reviewee_id: guest_user_id,
       content: cast_review_comments[(ci * 4 + gi) % cast_review_comments.size],
@@ -84,7 +84,7 @@ review_media_data = []
 reviews_data.first(3).each_with_index do |review, i|
   (0..i).each do |pos|
     review_media_data << {
-      id: SecureRandom.uuid,
+      id: SecureRandom.uuid_v7,
       review_id: review[:id],
       media_id: nil,
       media_type: pos.zero? ? "image" : "video",

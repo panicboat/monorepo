@@ -7,7 +7,7 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::Publish do
   let(:repo) { double(:repo) }
 
   describe "#call" do
-    let(:cast_user_id) { SecureRandom.uuid }
+    let(:cast_user_id) { SecureRandom.uuid_v7 }
     let(:visibility) { "public" }
 
     context "when cast exists and already registered" do

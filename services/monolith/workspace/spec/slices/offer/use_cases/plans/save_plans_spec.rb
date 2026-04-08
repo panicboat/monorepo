@@ -7,7 +7,7 @@ RSpec.describe Offer::UseCases::Plans::SavePlans do
   let(:repo) { double(:repo) }
   let(:contract) { Offer::Contracts::SavePlansContract.new }
   let(:adapter) { double(:adapter) }
-  let(:cast_id) { SecureRandom.uuid }
+  let(:cast_id) { SecureRandom.uuid_v7 }
   let(:plans) { [{ name: "Plan A", price: 1000, duration_minutes: 60, is_recommended: false }] }
 
   describe "#call" do

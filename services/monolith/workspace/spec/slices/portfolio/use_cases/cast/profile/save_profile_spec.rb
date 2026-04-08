@@ -7,7 +7,7 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::SaveProfile do
   let(:repo) { double(:repo) }
 
   describe "#call" do
-    let(:user_id) { SecureRandom.uuid }
+    let(:user_id) { SecureRandom.uuid_v7 }
     let(:cast) { double(user_id: user_id, name: "Old", bio: "Bio") }
 
     context "when cast exists" do
@@ -63,7 +63,7 @@ RSpec.describe Portfolio::UseCases::Cast::Profile::SaveProfile do
     end
 
     context "when cast does not exist" do
-      let(:new_cast) { double(user_id: SecureRandom.uuid, name: "New", bio: "New Bio") }
+      let(:new_cast) { double(user_id: SecureRandom.uuid_v7, name: "New", bio: "New Bio") }
 
       it "creates the cast" do
         expect(repo).to receive(:find_by_user_id).with(user_id).and_return(nil)

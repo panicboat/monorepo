@@ -9,7 +9,7 @@ RSpec.describe "Offer::Repositories::OfferRepository", type: :database do
   # Helper to create a cast in Portfolio (required for FK constraint)
   def create_cast
     portfolio_repo.create(
-      user_id: SecureRandom.uuid,
+      user_id: SecureRandom.uuid_v7,
       name: "Test Cast",
       visibility: "public"
     )

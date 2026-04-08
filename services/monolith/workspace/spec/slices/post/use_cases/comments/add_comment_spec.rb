@@ -6,12 +6,12 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
   let(:use_case) { Hanami.app.slices[:post]["use_cases.comments.add_comment"] }
   let(:post_repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
   let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
-  let(:cast_id) { SecureRandom.uuid }
+  let(:cast_id) { SecureRandom.uuid_v7 }
   let(:user_id) { create_user[:id] }
   let(:post) { post_repo.create_post(cast_user_id: cast_id, content: "Test post") }
 
   def create_user(role: 1)
-    id = SecureRandom.uuid
+    id = SecureRandom.uuid_v7
     db[:identity__users].insert(
       id: id,
       phone_number: "090#{rand(10000000..99999999)}",
@@ -26,7 +26,7 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
   describe "#call" do
     context "when user does not exist" do
       it "raises UserNotFoundError" do
-        non_existent_user_id = SecureRandom.uuid
+        non_existent_user_id = SecureRandom.uuid_v7
 
         expect {
           use_case.call(
@@ -56,7 +56,7 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
       it "raises PostNotFoundError" do
         expect {
           use_case.call(
-            post_id: SecureRandom.uuid,
+            post_id: SecureRandom.uuid_v7,
             user_id: user_id,
             content: "Test comment"
           )
@@ -79,7 +79,7 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
 
     context "when only media is provided (no content)" do
       it "creates a comment successfully with media_id" do
-        media_id = SecureRandom.uuid
+        media_id = SecureRandom.uuid_v7
         media = [{ media_id: media_id, media_type: "image" }]
 
         result = use_case.call(

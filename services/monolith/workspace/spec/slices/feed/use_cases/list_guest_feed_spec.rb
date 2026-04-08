@@ -10,8 +10,8 @@ require_relative "../../../../slices/feed/use_cases/list_guest_feed"
 
 RSpec.describe "Feed::UseCases::ListGuestFeed", type: :database do
   let(:use_case) { Feed::UseCases::ListGuestFeed.new }
-  let(:guest_id) { SecureRandom.uuid }
-  let(:cast_user_id) { SecureRandom.uuid }
+  let(:guest_id) { SecureRandom.uuid_v7 }
+  let(:cast_user_id) { SecureRandom.uuid_v7 }
 
   # Helper to create a post directly in the database
   let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
@@ -35,7 +35,7 @@ RSpec.describe "Feed::UseCases::ListGuestFeed", type: :database do
       before do
         3.times do |i|
           db[:post__posts].insert(
-            id: SecureRandom.uuid,
+            id: SecureRandom.uuid_v7,
             cast_user_id: cast_user_id,
             content: "Public post #{i}",
             visibility: "public",
@@ -78,7 +78,7 @@ RSpec.describe "Feed::UseCases::ListGuestFeed", type: :database do
         # Create posts for followed cast
         2.times do |i|
           db[:post__posts].insert(
-            id: SecureRandom.uuid,
+            id: SecureRandom.uuid_v7,
             cast_user_id: cast_user_id,
             content: "Followed post #{i}",
             visibility: "public",
@@ -96,7 +96,7 @@ RSpec.describe "Feed::UseCases::ListGuestFeed", type: :database do
       end
 
       it "returns empty when not following anyone" do
-        other_guest_id = SecureRandom.uuid
+        other_guest_id = SecureRandom.uuid_v7
         result = use_case.call(guest_id: other_guest_id, filter: "following", limit: 10)
 
         expect(result[:posts]).to be_empty
@@ -108,7 +108,7 @@ RSpec.describe "Feed::UseCases::ListGuestFeed", type: :database do
         # Create posts with different timestamps
         5.times do |i|
           db[:post__posts].insert(
-            id: SecureRandom.uuid,
+            id: SecureRandom.uuid_v7,
             cast_user_id: cast_user_id,
             content: "Post #{i}",
             visibility: "public",

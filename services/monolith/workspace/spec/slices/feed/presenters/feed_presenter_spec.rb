@@ -4,9 +4,9 @@ require "spec_helper"
 require "feed/v1/feed_service_pb"
 
 RSpec.describe Feed::Presenters::FeedPresenter do
-  let(:post_id) { SecureRandom.uuid }
-  let(:cast_id) { SecureRandom.uuid }
-  let(:media_id) { SecureRandom.uuid }
+  let(:post_id) { SecureRandom.uuid_v7 }
+  let(:cast_id) { SecureRandom.uuid_v7 }
+  let(:media_id) { SecureRandom.uuid_v7 }
 
   let(:post) do
     double(
@@ -22,11 +22,11 @@ RSpec.describe Feed::Presenters::FeedPresenter do
 
   let(:post_media) { [] }
 
-  let(:author_media_id) { SecureRandom.uuid }
+  let(:author_media_id) { SecureRandom.uuid_v7 }
 
   let(:author) do
     double(
-      user_id: SecureRandom.uuid,
+      user_id: SecureRandom.uuid_v7,
       name: "Test Cast",
       profile_media_id: author_media_id,
       avatar_media_id: author_media_id
@@ -65,7 +65,7 @@ RSpec.describe Feed::Presenters::FeedPresenter do
       let(:post_media) do
         [
           double(
-            id: SecureRandom.uuid,
+            id: SecureRandom.uuid_v7,
             media_id: media_id,
             media_type: "image",
             position: 0
@@ -89,7 +89,7 @@ RSpec.describe Feed::Presenters::FeedPresenter do
       let(:post_media) do
         [
           double(
-            id: SecureRandom.uuid,
+            id: SecureRandom.uuid_v7,
             media_id: media_id,
             media_type: "image",
             position: 0
@@ -119,7 +119,7 @@ RSpec.describe Feed::Presenters::FeedPresenter do
     let(:post_media) do
       [
         double(
-          id: SecureRandom.uuid,
+          id: SecureRandom.uuid_v7,
           media_id: media_id,
           media_type: "image",
           position: 0

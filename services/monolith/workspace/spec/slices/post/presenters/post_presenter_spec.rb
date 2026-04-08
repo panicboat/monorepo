@@ -4,9 +4,9 @@ require "spec_helper"
 require "post/v1/post_service_pb"
 
 RSpec.describe Post::Presenters::PostPresenter do
-  let(:post_id) { SecureRandom.uuid }
-  let(:cast_id) { SecureRandom.uuid }
-  let(:media_id) { SecureRandom.uuid }
+  let(:post_id) { SecureRandom.uuid_v7 }
+  let(:cast_id) { SecureRandom.uuid_v7 }
+  let(:media_id) { SecureRandom.uuid_v7 }
 
   let(:post) do
     double(
@@ -21,11 +21,11 @@ RSpec.describe Post::Presenters::PostPresenter do
   end
 
   let(:post_media) { [] }
-  let(:author_media_id) { SecureRandom.uuid }
+  let(:author_media_id) { SecureRandom.uuid_v7 }
 
   let(:author) do
     double(
-      user_id: SecureRandom.uuid,
+      user_id: SecureRandom.uuid_v7,
       name: "Test Cast",
       profile_media_id: author_media_id,
       avatar_media_id: author_media_id
@@ -64,7 +64,7 @@ RSpec.describe Post::Presenters::PostPresenter do
       let(:post_media) do
         [
           double(
-            id: SecureRandom.uuid,
+            id: SecureRandom.uuid_v7,
             media_id: media_id,
             media_type: "image",
             position: 0
@@ -88,7 +88,7 @@ RSpec.describe Post::Presenters::PostPresenter do
       let(:post_media) do
         [
           double(
-            id: SecureRandom.uuid,
+            id: SecureRandom.uuid_v7,
             media_id: media_id,
             media_type: "image",
             position: 0
@@ -109,7 +109,7 @@ RSpec.describe Post::Presenters::PostPresenter do
   describe ".media_to_proto" do
     let(:media) do
       double(
-        id: SecureRandom.uuid,
+        id: SecureRandom.uuid_v7,
         media_id: media_id,
         media_type: "image"
       )

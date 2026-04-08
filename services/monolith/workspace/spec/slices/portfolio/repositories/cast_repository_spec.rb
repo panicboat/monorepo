@@ -4,7 +4,7 @@ require "spec_helper"
 
 RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
   let(:repo) { Hanami.app.slices[:portfolio]["repositories.cast_repository"] }
-  let(:user_id) { SecureRandom.uuid }
+  let(:user_id) { SecureRandom.uuid_v7 }
   let(:cast) { repo.find_by_user_id(user_id) }
 
   before do
@@ -13,12 +13,12 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
   describe "#find_by_user_id_with_plans" do
     it "returns nil when cast does not exist" do
-      expect(repo.find_by_user_id_with_plans(SecureRandom.uuid)).to be_nil
+      expect(repo.find_by_user_id_with_plans(SecureRandom.uuid_v7)).to be_nil
     end
 
     it "returns cast with plans when exists" do
       # Setup data
-      uid = SecureRandom.uuid
+      uid = SecureRandom.uuid_v7
       cast_data = { user_id: uid, name: "Found", visibility: "public" }
       repo.create(cast_data)
 
@@ -33,11 +33,11 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
   describe "#is_online?" do
     let!(:cast_with_schedule) do
-      repo.create(user_id: SecureRandom.uuid, name: "Online Cast", visibility: "public")
+      repo.create(user_id: SecureRandom.uuid_v7, name: "Online Cast", visibility: "public")
     end
 
     let!(:cast_without_schedule) do
-      repo.create(user_id: SecureRandom.uuid, name: "Offline Cast", visibility: "public")
+      repo.create(user_id: SecureRandom.uuid_v7, name: "Offline Cast", visibility: "public")
     end
 
     before do
@@ -62,11 +62,11 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
   describe "#online_cast_ids" do
     let!(:online_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "Online", visibility: "public")
+      repo.create(user_id: SecureRandom.uuid_v7, name: "Online", visibility: "public")
     end
 
     let!(:offline_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "Offline", visibility: "public")
+      repo.create(user_id: SecureRandom.uuid_v7, name: "Offline", visibility: "public")
     end
 
     before do
@@ -89,15 +89,15 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
   describe "#list_casts_with_filters" do
     let!(:public_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "PublicCast", visibility: "public", registered_at: Time.now)
+      repo.create(user_id: SecureRandom.uuid_v7, name: "PublicCast", visibility: "public", registered_at: Time.now)
     end
 
     let!(:private_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "PrivateCast", visibility: "private", registered_at: Time.now)
+      repo.create(user_id: SecureRandom.uuid_v7, name: "PrivateCast", visibility: "private", registered_at: Time.now)
     end
 
     let!(:unregistered_cast) do
-      repo.create(user_id: SecureRandom.uuid, name: "Unregistered", visibility: "public", registered_at: nil)
+      repo.create(user_id: SecureRandom.uuid_v7, name: "Unregistered", visibility: "public", registered_at: nil)
     end
 
     it "filters by visibility" do
@@ -114,7 +114,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     it "applies limit" do
       5.times do |i|
-        repo.create(user_id: SecureRandom.uuid, name: "Cast#{i}", visibility: "public", registered_at: Time.now)
+        repo.create(user_id: SecureRandom.uuid_v7, name: "Cast#{i}", visibility: "public", registered_at: Time.now)
       end
 
       result = repo.list_casts_with_filters(visibility_filter: "public", limit: 2)
@@ -130,7 +130,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     context "with status filter :online" do
       let!(:online_cast) do
-        repo.create(user_id: SecureRandom.uuid, name: "OnlineNow", visibility: "public", registered_at: Time.now)
+        repo.create(user_id: SecureRandom.uuid_v7, name: "OnlineNow", visibility: "public", registered_at: Time.now)
       end
 
       before do
@@ -153,7 +153,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     context "with status filter :new" do
       let!(:new_cast) do
-        repo.create(user_id: SecureRandom.uuid, name: "NewCast", visibility: "public", registered_at: Time.now)
+        repo.create(user_id: SecureRandom.uuid_v7, name: "NewCast", visibility: "public", registered_at: Time.now)
       end
 
       it "returns casts created within 7 days" do
@@ -165,16 +165,16 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     context "with text search query" do
       let!(:cast_with_name) do
-        repo.create(user_id: SecureRandom.uuid, name: "かわいいキャスト", visibility: "public", registered_at: Time.now, tagline: "test")
+        repo.create(user_id: SecureRandom.uuid_v7, name: "かわいいキャスト", visibility: "public", registered_at: Time.now, tagline: "test")
       end
 
       let!(:cast_with_tagline) do
-        repo.create(user_id: SecureRandom.uuid, name: "Normal", visibility: "public", registered_at: Time.now, tagline: "清楚系美少女")
+        repo.create(user_id: SecureRandom.uuid_v7, name: "Normal", visibility: "public", registered_at: Time.now, tagline: "清楚系美少女")
       end
 
       let!(:cast_with_tag) do
         repo.create(
-          user_id: SecureRandom.uuid,
+          user_id: SecureRandom.uuid_v7,
           name: "Another",
 
           visibility: "public",
@@ -184,7 +184,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
       end
 
       let!(:unmatched_cast) do
-        repo.create(user_id: SecureRandom.uuid, name: "Unmatched", visibility: "public", registered_at: Time.now, tagline: "other")
+        repo.create(user_id: SecureRandom.uuid_v7, name: "Unmatched", visibility: "public", registered_at: Time.now, tagline: "other")
       end
 
       it "finds casts by name (case insensitive)" do
@@ -222,7 +222,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
     it "returns tags sorted by usage count" do
       # Create casts with tags (registered = has registered_at)
       repo.create(
-        user_id: SecureRandom.uuid,
+        user_id: SecureRandom.uuid_v7,
         name: "TaggedCast1",
 
         visibility: "public",
@@ -230,7 +230,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
         tags: Sequel.pg_jsonb(["tag1", "tag2"])
       )
       repo.create(
-        user_id: SecureRandom.uuid,
+        user_id: SecureRandom.uuid_v7,
         name: "TaggedCast2",
 
         visibility: "public",
@@ -249,7 +249,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     it "respects limit parameter" do
       repo.create(
-        user_id: SecureRandom.uuid,
+        user_id: SecureRandom.uuid_v7,
         name: "TaggedCast",
 
         visibility: "public",
@@ -263,7 +263,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
 
     it "only counts registered casts" do
       repo.create(
-        user_id: SecureRandom.uuid,
+        user_id: SecureRandom.uuid_v7,
         name: "Registered",
 
         visibility: "public",
@@ -271,7 +271,7 @@ RSpec.describe "Portfolio::Repositories::CastRepository", type: :database do
         tags: Sequel.pg_jsonb(["visible"])
       )
       repo.create(
-        user_id: SecureRandom.uuid,
+        user_id: SecureRandom.uuid_v7,
         name: "Unregistered",
 
         visibility: "public",
