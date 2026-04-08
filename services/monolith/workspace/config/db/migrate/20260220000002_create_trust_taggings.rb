@@ -3,7 +3,7 @@
 ROM::SQL.migration do
   up do
     create_table :"trust__taggings" do
-      column :id, :uuid, default: Sequel.lit("gen_random_uuid()"), null: false
+      column :id, :uuid, default: Sequel.lit("uuidv7()"), null: false
       column :tag_id, :uuid, null: false
       column :tagger_id, :uuid, null: false
       column :target_id, :uuid, null: false

@@ -3,7 +3,7 @@
 ROM::SQL.migration do
   change do
     create_table :identity__sms_verifications do
-      column :id, :uuid, default: Sequel.function(:gen_random_uuid), primary_key: true
+      column :id, :uuid, default: Sequel.function(:uuidv7), primary_key: true
       column :phone_number, String, null: false
       column :code, String, null: false
       column :expires_at, DateTime, null: false

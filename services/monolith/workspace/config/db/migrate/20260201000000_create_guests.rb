@@ -3,7 +3,7 @@
 ROM::SQL.migration do
   up do
     create_table :portfolio__guests do
-      column :id, :uuid, default: Sequel.function(:gen_random_uuid), primary_key: true
+      column :id, :uuid, default: Sequel.function(:uuidv7), primary_key: true
       column :user_id, :uuid, null: false
       column :name, String, null: false
       column :avatar_path, String

@@ -37,7 +37,7 @@ ROM::SQL.migration do
   down do
     # Recreate tags table
     create_table :"trust__tags" do
-      column :id, :uuid, default: Sequel.lit("gen_random_uuid()"), null: false
+      column :id, :uuid, default: Sequel.lit("uuidv7()"), null: false
       column :identity_id, :uuid, null: false
       column :name, String, size: 100, null: false
       column :created_at, :timestamptz, null: false, default: Sequel.lit("now()")

@@ -3,7 +3,7 @@
 ROM::SQL.migration do
   up do
     create_table :"social__cast_post_hashtags" do
-      column :id, :uuid, default: Sequel.lit("gen_random_uuid()"), null: false
+      column :id, :uuid, default: Sequel.lit("uuidv7()"), null: false
       column :post_id, :uuid, null: false
       column :tag, :varchar, size: 100, null: false
       column :position, :integer, null: false, default: 0

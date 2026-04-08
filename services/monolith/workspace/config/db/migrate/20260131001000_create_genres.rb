@@ -5,7 +5,7 @@ ROM::SQL.migration do
     run "CREATE SCHEMA IF NOT EXISTS portfolio"
 
     create_table(:portfolio__genres) do
-      column :id, :uuid, null: false, default: Sequel.lit("gen_random_uuid()")
+      column :id, :uuid, null: false, default: Sequel.lit("uuidv7()")
       column :name, :varchar, size: 100, null: false
       column :slug, :varchar, size: 100, null: false
       column :display_order, :integer, null: false, default: 0
