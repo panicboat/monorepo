@@ -4,8 +4,8 @@ require "spec_helper"
 
 RSpec.describe "Relationship::Repositories::FollowRepository", type: :database do
   let(:repo) { Hanami.app.slices[:relationship]["repositories.follow_repository"] }
-  let(:cast_user_id) { SecureRandom.uuid }
-  let(:guest_user_id) { SecureRandom.uuid }
+  let(:cast_user_id) { SecureRandom.uuid_v7 }
+  let(:guest_user_id) { SecureRandom.uuid_v7 }
 
   describe "#follow" do
     it "creates an approved follow" do
@@ -105,7 +105,7 @@ RSpec.describe "Relationship::Repositories::FollowRepository", type: :database d
 
   describe "#following_cast_user_ids" do
     it "returns cast user IDs the guest is following" do
-      cast_user_id2 = SecureRandom.uuid
+      cast_user_id2 = SecureRandom.uuid_v7
       repo.follow(cast_user_id: cast_user_id, guest_user_id: guest_user_id)
       repo.follow(cast_user_id: cast_user_id2, guest_user_id: guest_user_id)
 
@@ -122,8 +122,8 @@ RSpec.describe "Relationship::Repositories::FollowRepository", type: :database d
 
   describe "#following_status_batch" do
     it "returns status for multiple casts" do
-      cast_user_id2 = SecureRandom.uuid
-      cast_user_id3 = SecureRandom.uuid
+      cast_user_id2 = SecureRandom.uuid_v7
+      cast_user_id3 = SecureRandom.uuid_v7
       repo.follow(cast_user_id: cast_user_id, guest_user_id: guest_user_id)
       repo.request_follow(cast_user_id: cast_user_id2, guest_user_id: guest_user_id)
 
@@ -137,7 +137,7 @@ RSpec.describe "Relationship::Repositories::FollowRepository", type: :database d
   describe "#list_pending_requests" do
     it "returns pending follow requests" do
       3.times do |i|
-        repo.request_follow(cast_user_id: cast_user_id, guest_user_id: SecureRandom.uuid)
+        repo.request_follow(cast_user_id: cast_user_id, guest_user_id: SecureRandom.uuid_v7)
       end
 
       result = repo.list_pending_requests(cast_user_id: cast_user_id, limit: 10)
@@ -147,8 +147,8 @@ RSpec.describe "Relationship::Repositories::FollowRepository", type: :database d
 
   describe "#pending_count" do
     it "returns count of pending requests" do
-      2.times { repo.request_follow(cast_user_id: cast_user_id, guest_user_id: SecureRandom.uuid) }
-      repo.follow(cast_user_id: cast_user_id, guest_user_id: SecureRandom.uuid)
+      2.times { repo.request_follow(cast_user_id: cast_user_id, guest_user_id: SecureRandom.uuid_v7) }
+      repo.follow(cast_user_id: cast_user_id, guest_user_id: SecureRandom.uuid_v7)
 
       expect(repo.pending_count(cast_user_id: cast_user_id)).to eq(2)
     end

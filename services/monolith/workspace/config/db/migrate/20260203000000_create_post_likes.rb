@@ -3,7 +3,7 @@
 ROM::SQL.migration do
   up do
     create_table :"social__post_likes" do
-      column :id, :uuid, default: Sequel.lit("gen_random_uuid()"), null: false
+      column :id, :uuid, default: Sequel.lit("uuidv7()"), null: false
       column :post_id, :uuid, null: false
       column :guest_id, :uuid, null: false
       column :created_at, :timestamptz, null: false, default: Sequel.lit("now()")

@@ -7,7 +7,7 @@ require_relative "../../../../slices/feed/use_cases/list_cast_feed"
 
 RSpec.describe "Feed::UseCases::ListCastFeed", type: :database do
   let(:use_case) { Feed::UseCases::ListCastFeed.new }
-  let(:cast_user_id) { SecureRandom.uuid }
+  let(:cast_user_id) { SecureRandom.uuid_v7 }
 
   let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
   let(:portfolio_db) { Hanami.app.slices[:portfolio]["db.rom"].gateways[:default].connection }
@@ -28,15 +28,15 @@ RSpec.describe "Feed::UseCases::ListCastFeed", type: :database do
     before do
       # Create posts for the cast (mix of public and private)
       db[:post__posts].insert(
-        id: SecureRandom.uuid, cast_user_id: cast_user_id, content: "Public post",
+        id: SecureRandom.uuid_v7, cast_user_id: cast_user_id, content: "Public post",
         visibility: "public", created_at: Time.now - 120, updated_at: Time.now
       )
       db[:post__posts].insert(
-        id: SecureRandom.uuid, cast_user_id: cast_user_id, content: "Private post",
+        id: SecureRandom.uuid_v7, cast_user_id: cast_user_id, content: "Private post",
         visibility: "private", created_at: Time.now - 60, updated_at: Time.now
       )
       db[:post__posts].insert(
-        id: SecureRandom.uuid, cast_user_id: cast_user_id, content: "Recent post",
+        id: SecureRandom.uuid_v7, cast_user_id: cast_user_id, content: "Recent post",
         visibility: "public", created_at: Time.now, updated_at: Time.now
       )
     end
@@ -80,7 +80,7 @@ RSpec.describe "Feed::UseCases::ListCastFeed", type: :database do
     end
 
     context "when cast has no posts" do
-      let(:empty_cast_user_id) { SecureRandom.uuid }
+      let(:empty_cast_user_id) { SecureRandom.uuid_v7 }
 
       before do
         portfolio_db[:portfolio__casts].insert(

@@ -4,8 +4,8 @@ require "spec_helper"
 
 RSpec.describe "Trust::Repositories::TaggingRepository", type: :database do
   let(:repo) { Hanami.app.slices[:trust]["repositories.tagging_repository"] }
-  let(:tagger_id) { SecureRandom.uuid }
-  let(:target_id) { SecureRandom.uuid }
+  let(:tagger_id) { SecureRandom.uuid_v7 }
+  let(:target_id) { SecureRandom.uuid_v7 }
 
   describe "#add" do
     it "creates an approved tagging" do
@@ -22,14 +22,14 @@ RSpec.describe "Trust::Repositories::TaggingRepository", type: :database do
     end
 
     it "allows same tag name from different taggers" do
-      other_tagger = SecureRandom.uuid
+      other_tagger = SecureRandom.uuid_v7
       repo.add(tag_name: "VIP", tagger_id: tagger_id, target_id: target_id)
       result = repo.add(tag_name: "VIP", tagger_id: other_tagger, target_id: target_id)
       expect(result[:success]).to be true
     end
 
     it "allows same tag name for different targets" do
-      other_target = SecureRandom.uuid
+      other_target = SecureRandom.uuid_v7
       repo.add(tag_name: "VIP", tagger_id: tagger_id, target_id: target_id)
       result = repo.add(tag_name: "VIP", tagger_id: tagger_id, target_id: other_target)
       expect(result[:success]).to be true
@@ -44,7 +44,7 @@ RSpec.describe "Trust::Repositories::TaggingRepository", type: :database do
 
     it "does not remove another tagger's tagging" do
       result = repo.add(tag_name: "temp", tagger_id: tagger_id, target_id: target_id)
-      expect(repo.remove(id: result[:id], tagger_id: SecureRandom.uuid)).to be false
+      expect(repo.remove(id: result[:id], tagger_id: SecureRandom.uuid_v7)).to be false
     end
   end
 
@@ -57,7 +57,7 @@ RSpec.describe "Trust::Repositories::TaggingRepository", type: :database do
     end
 
     it "returns taggings from multiple taggers" do
-      other_tagger = SecureRandom.uuid
+      other_tagger = SecureRandom.uuid_v7
       repo.add(tag_name: "VIP", tagger_id: tagger_id, target_id: target_id)
       repo.add(tag_name: "Regular", tagger_id: other_tagger, target_id: target_id)
       taggings = repo.list_by_target(target_id: target_id)
@@ -67,7 +67,7 @@ RSpec.describe "Trust::Repositories::TaggingRepository", type: :database do
 
   describe "#list_tagger_tag_names" do
     it "returns distinct tag names used by a tagger" do
-      target2 = SecureRandom.uuid
+      target2 = SecureRandom.uuid_v7
       repo.add(tag_name: "VIP", tagger_id: tagger_id, target_id: target_id)
       repo.add(tag_name: "Regular", tagger_id: tagger_id, target_id: target_id)
       repo.add(tag_name: "VIP", tagger_id: tagger_id, target_id: target2)
@@ -77,7 +77,7 @@ RSpec.describe "Trust::Repositories::TaggingRepository", type: :database do
     end
 
     it "does not return other tagger's tag names" do
-      other_tagger = SecureRandom.uuid
+      other_tagger = SecureRandom.uuid_v7
       repo.add(tag_name: "VIP", tagger_id: tagger_id, target_id: target_id)
       repo.add(tag_name: "Secret", tagger_id: other_tagger, target_id: target_id)
 

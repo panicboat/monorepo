@@ -32,7 +32,7 @@ namespace :migrate do
     puts "Found #{records.count} records to migrate"
 
     records.each do |record|
-      media_id = SecureRandom.uuid
+      media_id = SecureRandom.uuid_v7
       url = record[:url]
       media_type = record[:media_type] || "image"
 
@@ -64,7 +64,7 @@ namespace :migrate do
     puts "Found #{records.count} records to migrate"
 
     records.each do |record|
-      media_id = SecureRandom.uuid
+      media_id = SecureRandom.uuid_v7
       url = record[:url]
       media_type = record[:media_type] || "image"
 
@@ -102,7 +102,7 @@ namespace :migrate do
     records.each do |record|
       # Migrate profile image
       if record[:image_path] && !record[:image_path].empty?
-        profile_media_id = SecureRandom.uuid
+        profile_media_id = SecureRandom.uuid_v7
         db[:"media__files"].insert(
           id: profile_media_id,
           media_type: "image",
@@ -118,7 +118,7 @@ namespace :migrate do
 
       # Migrate avatar image
       if record[:avatar_path] && !record[:avatar_path].empty?
-        avatar_media_id = SecureRandom.uuid
+        avatar_media_id = SecureRandom.uuid_v7
         db[:"media__files"].insert(
           id: avatar_media_id,
           media_type: "image",
@@ -138,7 +138,7 @@ namespace :migrate do
         images.each_with_index do |img_path, idx|
           next if img_path.nil? || img_path.empty?
 
-          gallery_media_id = SecureRandom.uuid
+          gallery_media_id = SecureRandom.uuid_v7
           db[:"media__files"].insert(
             id: gallery_media_id,
             media_type: "image",
@@ -151,7 +151,7 @@ namespace :migrate do
           )
 
           db[:"portfolio__cast_gallery_media"].insert(
-            id: SecureRandom.uuid,
+            id: SecureRandom.uuid_v7,
             cast_id: record[:id],
             media_id: gallery_media_id,
             position: idx,
@@ -178,7 +178,7 @@ namespace :migrate do
     puts "Found #{records.count} guests with avatar_path to migrate"
 
     records.each do |record|
-      media_id = SecureRandom.uuid
+      media_id = SecureRandom.uuid_v7
       avatar_path = record[:avatar_path]
 
       # Create media__files record

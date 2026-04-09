@@ -8,14 +8,14 @@ RSpec.describe "Media::Repositories::MediaRepository", type: :database do
   describe "#create" do
     it "creates a new media record" do
       media = repo.create(
-        id: SecureRandom.uuid,
+        id: SecureRandom.uuid_v7,
         media_type: "image",
         url: "https://example.com/image.jpg",
         thumbnail_url: "https://example.com/thumb.jpg",
         filename: "image.jpg",
         content_type: "image/jpeg",
         size_bytes: 1024,
-        media_key: "media/image/#{SecureRandom.uuid}.jpg"
+        media_key: "media/image/#{SecureRandom.uuid_v7}.jpg"
       )
 
       expect(media.id).not_to be_nil
@@ -28,7 +28,7 @@ RSpec.describe "Media::Repositories::MediaRepository", type: :database do
   describe "#find_by_id" do
     let!(:created_media) do
       repo.create(
-        id: SecureRandom.uuid,
+        id: SecureRandom.uuid_v7,
         media_type: "video",
         url: "https://example.com/video.mp4",
         filename: "video.mp4",
@@ -43,7 +43,7 @@ RSpec.describe "Media::Repositories::MediaRepository", type: :database do
     end
 
     it "returns nil when not found" do
-      media = repo.find_by_id(SecureRandom.uuid)
+      media = repo.find_by_id(SecureRandom.uuid_v7)
       expect(media).to be_nil
     end
   end
@@ -51,7 +51,7 @@ RSpec.describe "Media::Repositories::MediaRepository", type: :database do
   describe "#find_by_ids" do
     let!(:media1) do
       repo.create(
-        id: SecureRandom.uuid,
+        id: SecureRandom.uuid_v7,
         media_type: "image",
         url: "https://example.com/1.jpg"
       )
@@ -59,7 +59,7 @@ RSpec.describe "Media::Repositories::MediaRepository", type: :database do
 
     let!(:media2) do
       repo.create(
-        id: SecureRandom.uuid,
+        id: SecureRandom.uuid_v7,
         media_type: "image",
         url: "https://example.com/2.jpg"
       )
@@ -79,7 +79,7 @@ RSpec.describe "Media::Repositories::MediaRepository", type: :database do
   describe "#delete" do
     let!(:media) do
       repo.create(
-        id: SecureRandom.uuid,
+        id: SecureRandom.uuid_v7,
         media_type: "image",
         url: "https://example.com/delete.jpg"
       )

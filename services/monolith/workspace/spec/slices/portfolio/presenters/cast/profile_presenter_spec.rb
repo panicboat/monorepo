@@ -55,10 +55,10 @@ RSpec.describe Portfolio::Presenters::Cast::ProfilePresenter do
   end
 
   describe ".to_proto" do
-    let(:profile_media_id) { SecureRandom.uuid }
-    let(:avatar_media_id) { SecureRandom.uuid }
-    let(:gallery_media_id1) { SecureRandom.uuid }
-    let(:gallery_media_id2) { SecureRandom.uuid }
+    let(:profile_media_id) { SecureRandom.uuid_v7 }
+    let(:avatar_media_id) { SecureRandom.uuid_v7 }
+    let(:gallery_media_id1) { SecureRandom.uuid_v7 }
+    let(:gallery_media_id2) { SecureRandom.uuid_v7 }
     let(:cast) do
       double(
         :cast,

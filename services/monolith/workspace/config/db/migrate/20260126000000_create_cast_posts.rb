@@ -5,7 +5,7 @@ ROM::SQL.migration do
     create_schema :social
 
     create_table :"social__cast_posts" do
-      column :id, :uuid, default: Sequel.lit("gen_random_uuid()"), null: false
+      column :id, :uuid, default: Sequel.lit("uuidv7()"), null: false
       column :cast_id, :uuid, null: false
       column :content, :text, null: false
       column :created_at, :timestamptz, null: false, default: Sequel.lit("now()")
@@ -18,7 +18,7 @@ ROM::SQL.migration do
     end
 
     create_table :"social__cast_post_media" do
-      column :id, :uuid, default: Sequel.lit("gen_random_uuid()"), null: false
+      column :id, :uuid, default: Sequel.lit("uuidv7()"), null: false
       column :post_id, :uuid, null: false
       column :media_type, :varchar, size: 10, null: false
       column :url, :text, null: false

@@ -14,7 +14,7 @@ ROM::SQL.migration do
     # Create cast_gallery_media table for gallery images
     # NOTE: cast_id FK is same-slice, media_id is cross-slice soft reference
     create_table :"portfolio__cast_gallery_media" do
-      column :id, :uuid, primary_key: true, default: Sequel.function(:gen_random_uuid)
+      column :id, :uuid, primary_key: true, default: Sequel.function(:uuidv7)
       column :cast_id, :uuid, null: false
       column :media_id, :uuid, null: false
       column :position, :integer, null: false, default: 0

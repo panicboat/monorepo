@@ -9,7 +9,7 @@ module Media
       def call(filename:, content_type:, media_type:)
         return nil if filename.to_s.empty? || content_type.to_s.empty?
 
-        media_id = SecureRandom.uuid
+        media_id = SecureRandom.uuid_v7
         ext = File.extname(filename)
         key = "media/#{media_type}/#{media_id}#{ext}"
 

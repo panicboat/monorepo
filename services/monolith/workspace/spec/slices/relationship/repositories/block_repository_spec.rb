@@ -4,8 +4,8 @@ require "spec_helper"
 
 RSpec.describe "Relationship::Repositories::BlockRepository", type: :database do
   let(:repo) { Hanami.app.slices[:relationship]["repositories.block_repository"] }
-  let(:blocker_id) { SecureRandom.uuid }
-  let(:blocked_id) { SecureRandom.uuid }
+  let(:blocker_id) { SecureRandom.uuid_v7 }
+  let(:blocked_id) { SecureRandom.uuid_v7 }
 
   describe "#block" do
     it "creates a block" do
@@ -50,7 +50,7 @@ RSpec.describe "Relationship::Repositories::BlockRepository", type: :database do
   describe "#list_blocked" do
     it "returns blocked users" do
       3.times do |i|
-        repo.block(blocker_id: blocker_id, blocker_type: "guest", blocked_id: SecureRandom.uuid, blocked_type: "cast")
+        repo.block(blocker_id: blocker_id, blocker_type: "guest", blocked_id: SecureRandom.uuid_v7, blocked_type: "cast")
       end
 
       result = repo.list_blocked(blocker_id: blocker_id, limit: 10)
@@ -58,7 +58,7 @@ RSpec.describe "Relationship::Repositories::BlockRepository", type: :database do
     end
 
     it "respects limit and returns has_more flag" do
-      3.times { repo.block(blocker_id: blocker_id, blocker_type: "guest", blocked_id: SecureRandom.uuid, blocked_type: "cast") }
+      3.times { repo.block(blocker_id: blocker_id, blocker_type: "guest", blocked_id: SecureRandom.uuid_v7, blocked_type: "cast") }
 
       result = repo.list_blocked(blocker_id: blocker_id, limit: 2)
       expect(result[:records].size).to eq(2)
@@ -68,8 +68,8 @@ RSpec.describe "Relationship::Repositories::BlockRepository", type: :database do
 
   describe "#blocked_user_ids" do
     it "returns all blocked user IDs" do
-      id1 = SecureRandom.uuid
-      id2 = SecureRandom.uuid
+      id1 = SecureRandom.uuid_v7
+      id2 = SecureRandom.uuid_v7
       repo.block(blocker_id: blocker_id, blocker_type: "guest", blocked_id: id1, blocked_type: "cast")
       repo.block(blocker_id: blocker_id, blocker_type: "guest", blocked_id: id2, blocked_type: "guest")
 
@@ -80,8 +80,8 @@ RSpec.describe "Relationship::Repositories::BlockRepository", type: :database do
 
   describe "#blocked_guest_ids" do
     it "returns only blocked guest IDs" do
-      cast_id = SecureRandom.uuid
-      guest_id = SecureRandom.uuid
+      cast_id = SecureRandom.uuid_v7
+      guest_id = SecureRandom.uuid_v7
       repo.block(blocker_id: blocker_id, blocker_type: "guest", blocked_id: cast_id, blocked_type: "cast")
       repo.block(blocker_id: blocker_id, blocker_type: "guest", blocked_id: guest_id, blocked_type: "guest")
 
@@ -92,9 +92,9 @@ RSpec.describe "Relationship::Repositories::BlockRepository", type: :database do
 
   describe "#block_status_batch" do
     it "returns block status for multiple users" do
-      id1 = SecureRandom.uuid
-      id2 = SecureRandom.uuid
-      id3 = SecureRandom.uuid
+      id1 = SecureRandom.uuid_v7
+      id2 = SecureRandom.uuid_v7
+      id3 = SecureRandom.uuid_v7
       repo.block(blocker_id: blocker_id, blocker_type: "guest", blocked_id: id1, blocked_type: "cast")
 
       status = repo.block_status_batch(user_ids: [id1, id2, id3], blocker_id: blocker_id)

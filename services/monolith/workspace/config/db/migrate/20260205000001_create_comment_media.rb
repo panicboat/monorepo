@@ -3,7 +3,7 @@
 ROM::SQL.migration do
   up do
     create_table :"social__comment_media" do
-      column :id, :uuid, default: Sequel.lit("gen_random_uuid()"), null: false
+      column :id, :uuid, default: Sequel.lit("uuidv7()"), null: false
       column :comment_id, :uuid, null: false
       column :media_type, :varchar, size: 10, null: false
       column :url, :text, null: false

@@ -4,8 +4,8 @@ require "spec_helper"
 
 RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
   let(:repo) { Hanami.app.slices[:trust]["repositories.review_repository"] }
-  let(:reviewer_id) { SecureRandom.uuid }
-  let(:reviewee_id) { SecureRandom.uuid }
+  let(:reviewer_id) { SecureRandom.uuid_v7 }
+  let(:reviewee_id) { SecureRandom.uuid_v7 }
 
   describe "#create" do
     it "creates a review with all attributes" do
@@ -33,7 +33,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
     end
 
     it "allows same reviewer to review different reviewees" do
-      other_reviewee = SecureRandom.uuid
+      other_reviewee = SecureRandom.uuid_v7
       repo.create(
         reviewer_id: reviewer_id,
         reviewee_id: reviewee_id,
@@ -68,7 +68,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
     end
 
     it "returns nil for non-existent id" do
-      found = repo.find_by_id(SecureRandom.uuid)
+      found = repo.find_by_id(SecureRandom.uuid_v7)
       expect(found).to be_nil
     end
   end
@@ -108,7 +108,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
 
       result = repo.update(
         id: create_result[:id],
-        reviewer_id: SecureRandom.uuid,
+        reviewer_id: SecureRandom.uuid_v7,
         content: "Hacked content",
         score: 1
       )
@@ -119,7 +119,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
 
     it "returns error for non-existent review" do
       result = repo.update(
-        id: SecureRandom.uuid,
+        id: SecureRandom.uuid_v7,
         reviewer_id: reviewer_id,
         content: "New content",
         score: 4
@@ -155,7 +155,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
         status: "pending"
       )
 
-      result = repo.delete(id: create_result[:id], reviewer_id: SecureRandom.uuid)
+      result = repo.delete(id: create_result[:id], reviewer_id: SecureRandom.uuid_v7)
       expect(result[:success]).to be false
 
       found = repo.find_by_id(create_result[:id])
@@ -167,7 +167,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
     it "returns reviews for a reviewee ordered by created_at desc" do
       repo.create(reviewer_id: reviewer_id, reviewee_id: reviewee_id, content: "First", score: 4, status: "approved")
       sleep(0.01) # Ensure different timestamps
-      repo.create(reviewer_id: SecureRandom.uuid, reviewee_id: reviewee_id, content: "Second", score: 5, status: "approved")
+      repo.create(reviewer_id: SecureRandom.uuid_v7, reviewee_id: reviewee_id, content: "Second", score: 5, status: "approved")
 
       reviews = repo.list_by_reviewee(reviewee_id: reviewee_id)
       expect(reviews.size).to eq(2)
@@ -177,7 +177,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
 
     it "filters by status when provided" do
       repo.create(reviewer_id: reviewer_id, reviewee_id: reviewee_id, content: "Approved", score: 5, status: "approved")
-      repo.create(reviewer_id: SecureRandom.uuid, reviewee_id: reviewee_id, content: "Pending", score: 4, status: "pending")
+      repo.create(reviewer_id: SecureRandom.uuid_v7, reviewee_id: reviewee_id, content: "Pending", score: 4, status: "pending")
 
       approved_reviews = repo.list_by_reviewee(reviewee_id: reviewee_id, status: "approved")
       expect(approved_reviews.size).to eq(1)
@@ -185,7 +185,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
     end
 
     it "returns empty array for reviewee with no reviews" do
-      reviews = repo.list_by_reviewee(reviewee_id: SecureRandom.uuid)
+      reviews = repo.list_by_reviewee(reviewee_id: SecureRandom.uuid_v7)
       expect(reviews).to eq([])
     end
   end
@@ -193,7 +193,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
   describe "#list_pending_by_reviewee" do
     it "returns only pending reviews for a reviewee" do
       repo.create(reviewer_id: reviewer_id, reviewee_id: reviewee_id, content: "Pending", score: 4, status: "pending")
-      repo.create(reviewer_id: SecureRandom.uuid, reviewee_id: reviewee_id, content: "Approved", score: 5, status: "approved")
+      repo.create(reviewer_id: SecureRandom.uuid_v7, reviewee_id: reviewee_id, content: "Approved", score: 5, status: "approved")
 
       pending_reviews = repo.list_pending_by_reviewee(reviewee_id: reviewee_id)
       expect(pending_reviews.size).to eq(1)
@@ -203,7 +203,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
 
   describe "#list_by_reviewer" do
     it "returns reviews written by a reviewer ordered by created_at desc" do
-      other_reviewee = SecureRandom.uuid
+      other_reviewee = SecureRandom.uuid_v7
       repo.create(reviewer_id: reviewer_id, reviewee_id: reviewee_id, content: "First", score: 4, status: "pending")
       sleep(0.01)
       repo.create(reviewer_id: reviewer_id, reviewee_id: other_reviewee, content: "Second", score: 5, status: "pending")
@@ -214,7 +214,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
     end
 
     it "does not return other reviewers' reviews" do
-      other_reviewer = SecureRandom.uuid
+      other_reviewer = SecureRandom.uuid_v7
       repo.create(reviewer_id: reviewer_id, reviewee_id: reviewee_id, content: "Mine", score: 4, status: "pending")
       repo.create(reviewer_id: other_reviewer, reviewee_id: reviewee_id, content: "Other", score: 5, status: "pending")
 
@@ -250,7 +250,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
         status: "pending"
       )
 
-      result = repo.approve(id: create_result[:id], reviewee_id: SecureRandom.uuid)
+      result = repo.approve(id: create_result[:id], reviewee_id: SecureRandom.uuid_v7)
       expect(result[:success]).to be false
 
       found = repo.find_by_id(create_result[:id])
@@ -297,19 +297,19 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
         status: "pending"
       )
 
-      result = repo.reject(id: create_result[:id], reviewee_id: SecureRandom.uuid)
+      result = repo.reject(id: create_result[:id], reviewee_id: SecureRandom.uuid_v7)
       expect(result[:success]).to be false
     end
   end
 
   describe "#list_by_reviewee_paginated" do
-    let(:paginated_reviewee_id) { SecureRandom.uuid }
+    let(:paginated_reviewee_id) { SecureRandom.uuid_v7 }
 
     before do
       # Create 5 reviews with different timestamps
       5.times do |i|
         repo.create(
-          reviewer_id: SecureRandom.uuid,
+          reviewer_id: SecureRandom.uuid_v7,
           reviewee_id: paginated_reviewee_id,
           content: "Review #{i}",
           score: 4,
@@ -349,7 +349,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
 
     it "filters by status" do
       repo.create(
-        reviewer_id: SecureRandom.uuid,
+        reviewer_id: SecureRandom.uuid_v7,
         reviewee_id: paginated_reviewee_id,
         content: "Pending review",
         score: 3,
@@ -368,7 +368,7 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
 
   describe "#get_stats" do
     it "returns zero stats for reviewee with no reviews" do
-      stats = repo.get_stats(reviewee_id: SecureRandom.uuid)
+      stats = repo.get_stats(reviewee_id: SecureRandom.uuid_v7)
       expect(stats[:average_score]).to eq(0.0)
       expect(stats[:total_reviews]).to eq(0)
       expect(stats[:approval_rate]).to eq(100)
@@ -376,8 +376,8 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
 
     it "calculates average score from approved reviews only" do
       repo.create(reviewer_id: reviewer_id, reviewee_id: reviewee_id, content: "A", score: 4, status: "approved")
-      repo.create(reviewer_id: SecureRandom.uuid, reviewee_id: reviewee_id, content: "B", score: 2, status: "approved")
-      repo.create(reviewer_id: SecureRandom.uuid, reviewee_id: reviewee_id, content: "C", score: 1, status: "pending")
+      repo.create(reviewer_id: SecureRandom.uuid_v7, reviewee_id: reviewee_id, content: "B", score: 2, status: "approved")
+      repo.create(reviewer_id: SecureRandom.uuid_v7, reviewee_id: reviewee_id, content: "C", score: 1, status: "pending")
 
       stats = repo.get_stats(reviewee_id: reviewee_id)
       expect(stats[:total_reviews]).to eq(2)
@@ -388,8 +388,8 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
       # User A: scores 4, 4, 4 → average 4.0
       # User B: scores 2 → average 2.0
       # Overall average = (4.0 + 2.0) / 2 = 3.0
-      user_a = SecureRandom.uuid
-      user_b = SecureRandom.uuid
+      user_a = SecureRandom.uuid_v7
+      user_b = SecureRandom.uuid_v7
 
       repo.create(reviewer_id: user_a, reviewee_id: reviewee_id, content: "A1", score: 4, status: "approved")
       repo.create(reviewer_id: user_a, reviewee_id: reviewee_id, content: "A2", score: 4, status: "approved")
@@ -404,10 +404,10 @@ RSpec.describe "Trust::Repositories::ReviewRepository", type: :database do
     it "calculates approval rate based on approved and rejected only" do
       # 2 approved, 1 rejected, 1 pending
       # Approval rate = 2 / (2 + 1) = 66.67% → 67%
-      repo.create(reviewer_id: SecureRandom.uuid, reviewee_id: reviewee_id, content: "A", score: 5, status: "approved")
-      repo.create(reviewer_id: SecureRandom.uuid, reviewee_id: reviewee_id, content: "B", score: 4, status: "approved")
-      repo.create(reviewer_id: SecureRandom.uuid, reviewee_id: reviewee_id, content: "C", score: 3, status: "rejected")
-      repo.create(reviewer_id: SecureRandom.uuid, reviewee_id: reviewee_id, content: "D", score: 2, status: "pending")
+      repo.create(reviewer_id: SecureRandom.uuid_v7, reviewee_id: reviewee_id, content: "A", score: 5, status: "approved")
+      repo.create(reviewer_id: SecureRandom.uuid_v7, reviewee_id: reviewee_id, content: "B", score: 4, status: "approved")
+      repo.create(reviewer_id: SecureRandom.uuid_v7, reviewee_id: reviewee_id, content: "C", score: 3, status: "rejected")
+      repo.create(reviewer_id: SecureRandom.uuid_v7, reviewee_id: reviewee_id, content: "D", score: 2, status: "pending")
 
       stats = repo.get_stats(reviewee_id: reviewee_id)
       expect(stats[:approval_rate]).to eq(67)

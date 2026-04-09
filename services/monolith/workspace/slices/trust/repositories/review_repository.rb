@@ -11,7 +11,7 @@ module Trust
       MAX_LIMIT = 50
       def create(reviewer_id:, reviewee_id:, content:, score:, status:, media_data: [])
         transaction do
-          id = SecureRandom.uuid
+          id = SecureRandom.uuid_v7
           now = Time.now
 
           reviews.dataset.insert(

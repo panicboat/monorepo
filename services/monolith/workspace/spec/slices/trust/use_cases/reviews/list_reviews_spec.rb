@@ -5,13 +5,13 @@ require "spec_helper"
 RSpec.describe Trust::UseCases::Reviews::ListReviews do
   subject(:use_case) { described_class.new }
 
-  let(:reviewee_id) { SecureRandom.uuid }
+  let(:reviewee_id) { SecureRandom.uuid_v7 }
   let(:review_repo) { Trust::Slice["repositories.review_repository"] }
 
   before do
     5.times do |i|
       review_repo.create(
-        reviewer_id: SecureRandom.uuid,
+        reviewer_id: SecureRandom.uuid_v7,
         reviewee_id: reviewee_id,
         content: "Review #{i}",
         score: 4,

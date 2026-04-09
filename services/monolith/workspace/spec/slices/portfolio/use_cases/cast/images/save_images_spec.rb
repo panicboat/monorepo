@@ -7,10 +7,10 @@ RSpec.describe Portfolio::UseCases::Cast::Images::SaveImages do
   let(:repo) { double(:repo) }
 
   describe "#call" do
-    let(:cast_user_id) { SecureRandom.uuid }
-    let(:profile_media_id) { SecureRandom.uuid }
-    let(:gallery_media_ids) { [SecureRandom.uuid, SecureRandom.uuid] }
-    let(:avatar_media_id) { SecureRandom.uuid }
+    let(:cast_user_id) { SecureRandom.uuid_v7 }
+    let(:profile_media_id) { SecureRandom.uuid_v7 }
+    let(:gallery_media_ids) { [SecureRandom.uuid_v7, SecureRandom.uuid_v7] }
+    let(:avatar_media_id) { SecureRandom.uuid_v7 }
     let(:cast) { double(:cast) }
 
     it "saves images and returns cast" do

@@ -7,7 +7,7 @@ RSpec.describe Offer::UseCases::Schedules::SaveSchedules do
   let(:repo) { double(:repo) }
   let(:contract) { Offer::Contracts::SaveSchedulesContract.new }
   let(:adapter) { double(:adapter) }
-  let(:cast_id) { SecureRandom.uuid }
+  let(:cast_id) { SecureRandom.uuid_v7 }
   let(:schedules) { [{ date: Date.today.to_s, start_time: "10:00", end_time: "18:00" }] }
 
   describe "#call" do

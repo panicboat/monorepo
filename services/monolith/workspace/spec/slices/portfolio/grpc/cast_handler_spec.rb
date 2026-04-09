@@ -43,8 +43,8 @@ RSpec.describe Portfolio::Grpc::CastHandler do
     allow_any_instance_of(described_class).to receive(:media_adapter).and_return(media_adapter)
   end
 
-  let(:profile_media_id) { SecureRandom.uuid }
-  let(:avatar_media_id) { SecureRandom.uuid }
+  let(:profile_media_id) { SecureRandom.uuid_v7 }
+  let(:avatar_media_id) { SecureRandom.uuid_v7 }
   let(:mock_cast_entity) do
     double(
       "CastWithPlans",
@@ -185,9 +185,9 @@ RSpec.describe Portfolio::Grpc::CastHandler do
   # Note: save_cast_plans and save_cast_schedules moved to Offer slice
 
   describe "#save_cast_images" do
-    let(:new_profile_media_id) { SecureRandom.uuid }
-    let(:gallery_media_id1) { SecureRandom.uuid }
-    let(:gallery_media_id2) { SecureRandom.uuid }
+    let(:new_profile_media_id) { SecureRandom.uuid_v7 }
+    let(:gallery_media_id1) { SecureRandom.uuid_v7 }
+    let(:gallery_media_id2) { SecureRandom.uuid_v7 }
     let(:message) do
       ::Portfolio::V1::SaveCastImagesRequest.new(
         profile_media_id: new_profile_media_id,

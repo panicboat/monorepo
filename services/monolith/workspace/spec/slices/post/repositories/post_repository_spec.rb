@@ -4,7 +4,7 @@ require "spec_helper"
 
 RSpec.describe "Post::Repositories::PostRepository", type: :database do
   let(:repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
-  let(:cast_id) { SecureRandom.uuid }
+  let(:cast_id) { SecureRandom.uuid_v7 }
 
   describe "#create_post" do
     it "creates a post and returns it" do
@@ -17,7 +17,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
 
   describe "#find_by_id" do
     it "returns nil when post does not exist" do
-      expect(repo.find_by_id(SecureRandom.uuid)).to be_nil
+      expect(repo.find_by_id(SecureRandom.uuid_v7)).to be_nil
     end
 
     it "returns post with media when exists" do
@@ -31,7 +31,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
   describe "#find_by_id_and_cast" do
     it "returns nil when post does not belong to cast" do
       post = repo.create_post(cast_user_id: cast_id, content: "Test")
-      expect(repo.find_by_id_and_cast(id: post.id, cast_user_id: SecureRandom.uuid)).to be_nil
+      expect(repo.find_by_id_and_cast(id: post.id, cast_user_id: SecureRandom.uuid_v7)).to be_nil
     end
 
     it "returns post when it belongs to cast" do
@@ -62,7 +62,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     let(:media_repo) { Hanami.app.slices[:media]["repositories.media_repository"] }
 
     def create_media_file(media_type: "image")
-      media_id = SecureRandom.uuid
+      media_id = SecureRandom.uuid_v7
       media_repo.create(
         id: media_id,
         media_type: media_type,
@@ -127,7 +127,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
       base_time = Time.parse("2026-01-01T10:00:00Z")
       3.times do |i|
         db[:post__posts].insert(
-          id: SecureRandom.uuid, cast_user_id: cast_id, content: "Post #{i}",
+          id: SecureRandom.uuid_v7, cast_user_id: cast_id, content: "Post #{i}",
           created_at: base_time + (i * 60), updated_at: base_time + (i * 60)
         )
       end
@@ -146,7 +146,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     end
 
     it "does not return posts from other casts" do
-      other_cast_id = SecureRandom.uuid
+      other_cast_id = SecureRandom.uuid_v7
       repo.create_post(cast_user_id: other_cast_id, content: "Other cast post")
 
       posts = repo.list_by_cast_user_id(cast_user_id: cast_id, limit: 10)
@@ -156,12 +156,12 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
 
   describe "#list_all_visible" do
     let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
-    let(:cast1_id) { SecureRandom.uuid }
-    let(:cast2_id) { SecureRandom.uuid }
+    let(:cast1_id) { SecureRandom.uuid_v7 }
+    let(:cast2_id) { SecureRandom.uuid_v7 }
 
     before do
-      db[:post__posts].insert(id: SecureRandom.uuid, cast_user_id: cast1_id, content: "Public post", visibility: "public", created_at: Time.now, updated_at: Time.now)
-      db[:post__posts].insert(id: SecureRandom.uuid, cast_user_id: cast2_id, content: "Private post", visibility: "private", created_at: Time.now, updated_at: Time.now)
+      db[:post__posts].insert(id: SecureRandom.uuid_v7, cast_user_id: cast1_id, content: "Public post", visibility: "public", created_at: Time.now, updated_at: Time.now)
+      db[:post__posts].insert(id: SecureRandom.uuid_v7, cast_user_id: cast2_id, content: "Private post", visibility: "private", created_at: Time.now, updated_at: Time.now)
     end
 
     it "returns only public posts" do
