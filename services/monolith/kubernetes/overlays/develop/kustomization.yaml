@@ -6,6 +6,4 @@ resources:
 patches:
   - path: configmap.yaml
   - path: deployment.yaml
-labels:
-  - pairs:
-      ci.test/verification: "true"
+# Test diff for deploy-kubernetes verification
