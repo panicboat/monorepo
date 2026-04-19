@@ -113,3 +113,36 @@ jobs:
           else
             echo "no-diff=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Compose diff comment
+        id: compose
+        env:
+          NO_DIFF: ${{ steps.dyff.outputs.no-diff }}
+          SERVICE: ${{ inputs.service-name }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          WORKING_DIR: ${{ inputs.working-directory }}
+        run: |
+          {
+            echo "### Kubernetes Diff: \`${SERVICE}\` (\`${ENVIRONMENT}\`)"
+            echo ""
+            echo "Overlay: \`${WORKING_DIR}\`"
+            echo ""
+            if [ "$NO_DIFF" = "true" ]; then
+              echo "差分なし"
+            else
+              echo "<details><summary>kustomize build diff (dyff between)</summary>"
+              echo ""
+              echo '```diff'
+              cat diff.txt
+              echo '```'
+              echo ""
+              echo "</details>"
+            fi
+          } > comment.md
+
+      - name: Post sticky comment
+        uses: marocchino/sticky-pull-request-comment@v3.0.4
+        with:
+          header: kubernetes-diff-${{ inputs.service-name }}-${{ inputs.environment }}
+          path: comment.md
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
