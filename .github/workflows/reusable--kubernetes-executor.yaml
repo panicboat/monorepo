@@ -1,0 +1,37 @@
+name: 'Reusable - Kubernetes Executor'
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+        description: 'Service name (e.g. monolith)'
+      environment:
+        required: true
+        type: string
+        description: 'Environment name (develop, staging, production, etc.)'
+      working-directory:
+        required: true
+        type: string
+        description: 'Path to kustomize overlay (e.g. services/monolith/kubernetes/overlays/develop)'
+      app-id:
+        required: true
+        type: string
+        description: 'GitHub App ID for authentication'
+    secrets:
+      private-key:
+        required: true
+        description: 'GitHub App private key for authentication'
+
+jobs:
+  kubernetes-diff:
+    name: 'Kubernetes Diff'
+    if: inputs.working-directory != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Placeholder
+        run: echo "kubernetes-diff for ${{ inputs.service-name }}:${{ inputs.environment }}"
