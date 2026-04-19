@@ -67,3 +67,31 @@ jobs:
           curl -sSL "https://github.com/homeport/dyff/releases/download/v${DYFF_VERSION}/dyff_${DYFF_VERSION}_linux_amd64.tar.gz" | sudo tar -xz -C /usr/local/bin dyff
           sudo chmod +x /usr/local/bin/dyff
           dyff version
+
+      - name: Build kustomize manifests (base)
+        id: build-base
+        run: |
+          if [ -d "base/${{ inputs.working-directory }}" ]; then
+            if ! kustomize build "base/${{ inputs.working-directory }}" > base.yaml 2> _kustomize_base.log; then
+              echo "build-failed=true" >> "$GITHUB_OUTPUT"
+              cat _kustomize_base.log
+              exit 1
+            fi
+          else
+            echo "Overlay not present in base ref; treating as empty."
+            : > base.yaml
+          fi
+
+      - name: Build kustomize manifests (head)
+        id: build-head
+        run: |
+          if [ -d "head/${{ inputs.working-directory }}" ]; then
+            if ! kustomize build "head/${{ inputs.working-directory }}" > head.yaml 2> _kustomize_head.log; then
+              echo "build-failed=true" >> "$GITHUB_OUTPUT"
+              cat _kustomize_head.log
+              exit 1
+            fi
+          else
+            echo "Overlay not present in head ref; treating as empty."
+            : > head.yaml
+          fi
