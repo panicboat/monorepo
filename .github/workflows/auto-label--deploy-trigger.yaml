@@ -92,6 +92,26 @@ jobs:
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
+  deploy-kubernetes:
+    name: 'Deploy Kubernetes (${{ matrix.target.service }}:${{ matrix.target.environment }})'
+    needs: deploy-trigger
+    if: |
+      github.event_name == 'pull_request' &&
+      needs.deploy-trigger.outputs.has-targets == 'true' &&
+      contains(needs.deploy-trigger.outputs.targets, '"stack":"kubernetes"')
+    strategy:
+      matrix:
+        target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
+      fail-fast: false
+    uses: ./.github/workflows/reusable--kubernetes-executor.yaml
+    with:
+      service-name: ${{ matrix.target.service }}
+      environment: ${{ matrix.target.environment }}
+      working-directory: ${{ matrix.target.stack == 'kubernetes' && matrix.target.working_directory || '' }}
+      app-id: ${{ vars.APP_ID }}
+    secrets:
+      private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
   # cleanup-container:
   #   name: 'Cleanup Container'
   #   needs: deploy-trigger
