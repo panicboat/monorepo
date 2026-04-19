@@ -56,9 +56,11 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Install kustomize
+        env:
+          KUSTOMIZE_VERSION: '5.4.3'
         run: |
           sudo rm -f /usr/local/bin/kustomize
-          curl -sSL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s 5.4.3 /usr/local/bin
+          curl -sSL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s "${KUSTOMIZE_VERSION}" /usr/local/bin
           kustomize version
 
       - name: Install dyff
@@ -116,7 +118,6 @@ jobs:
           fi
 
       - name: Compose diff comment
-        id: compose
         env:
           NO_DIFF: ${{ steps.dyff.outputs.no-diff }}
           SERVICE: ${{ inputs.service-name }}
@@ -148,15 +149,26 @@ jobs:
           path: comment.md
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
+      - name: Compose failure comment
+        if: failure() && (steps.build-base.outputs.build-failed == 'true' || steps.build-head.outputs.build-failed == 'true' || steps.dyff.outputs.dyff-failed == 'true')
+        env:
+          SERVICE: ${{ inputs.service-name }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          WORKING_DIR: ${{ inputs.working-directory }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo "### Kubernetes Diff: \`${SERVICE}\` (\`${ENVIRONMENT}\`)"
+            echo ""
+            echo "Overlay: \`${WORKING_DIR}\`"
+            echo ""
+            echo "kustomize build または dyff の実行に失敗しました。Actions ログで詳細を確認してください: ${RUN_URL}"
+          } > comment.md
+
       - name: Post failure comment
         if: failure() && (steps.build-base.outputs.build-failed == 'true' || steps.build-head.outputs.build-failed == 'true' || steps.dyff.outputs.dyff-failed == 'true')
         uses: marocchino/sticky-pull-request-comment@v3.0.4
         with:
           header: kubernetes-diff-${{ inputs.service-name }}-${{ inputs.environment }}
+          path: comment.md
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          message: |
-            ### Kubernetes Diff: `${{ inputs.service-name }}` (`${{ inputs.environment }}`)
-
-            Overlay: `${{ inputs.working-directory }}`
-
-            kustomize build または dyff の実行に失敗しました。Actions ログで詳細を確認してください: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
