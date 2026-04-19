@@ -109,7 +109,7 @@ jobs:
             cat _dyff.log
             exit "$status"
           fi
-          if [ ! -s diff.txt ]; then
+          if ! grep -q '[^[:space:]]' diff.txt; then
             echo "no-diff=true" >> "$GITHUB_OUTPUT"
           else
             echo "no-diff=false" >> "$GITHUB_OUTPUT"
