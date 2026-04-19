@@ -146,3 +146,16 @@ jobs:
           header: kubernetes-diff-${{ inputs.service-name }}-${{ inputs.environment }}
           path: comment.md
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Post failure comment
+        if: failure() && (steps.build-base.outputs.build-failed == 'true' || steps.build-head.outputs.build-failed == 'true' || steps.dyff.outputs.dyff-failed == 'true')
+        uses: marocchino/sticky-pull-request-comment@v3.0.4
+        with:
+          header: kubernetes-diff-${{ inputs.service-name }}-${{ inputs.environment }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          message: |
+            ### Kubernetes Diff: `${{ inputs.service-name }}` (`${{ inputs.environment }}`)
+
+            Overlay: `${{ inputs.working-directory }}`
+
+            kustomize build または dyff の実行に失敗しました。Actions ログで詳細を確認してください: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
