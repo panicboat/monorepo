@@ -54,3 +54,16 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha }}
           path: base
           token: ${{ steps.app-token.outputs.token }}
+
+      - name: Install kustomize
+        run: |
+          curl -sSL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s 5.4.3 /usr/local/bin
+          kustomize version
+
+      - name: Install dyff
+        env:
+          DYFF_VERSION: '1.11.3'
+        run: |
+          curl -sSL "https://github.com/homeport/dyff/releases/download/v${DYFF_VERSION}/dyff_${DYFF_VERSION}_linux_amd64.tar.gz" | sudo tar -xz -C /usr/local/bin dyff
+          sudo chmod +x /usr/local/bin/dyff
+          dyff version
