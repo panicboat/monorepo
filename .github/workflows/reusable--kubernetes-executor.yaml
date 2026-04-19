@@ -95,3 +95,21 @@ jobs:
             echo "Overlay not present in head ref; treating as empty."
             : > head.yaml
           fi
+
+      - name: Run dyff between
+        id: dyff
+        run: |
+          set +e
+          dyff between --omit-header --color off base.yaml head.yaml > diff.txt 2> _dyff.log
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ]; then
+            echo "dyff-failed=true" >> "$GITHUB_OUTPUT"
+            cat _dyff.log
+            exit "$status"
+          fi
+          if [ ! -s diff.txt ]; then
+            echo "no-diff=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "no-diff=false" >> "$GITHUB_OUTPUT"
+          fi
