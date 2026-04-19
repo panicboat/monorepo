@@ -6,4 +6,3 @@ resources:
 patches:
   - path: configmap.yaml
   - path: deployment.yaml
-# Test diff for deploy-kubernetes verification
