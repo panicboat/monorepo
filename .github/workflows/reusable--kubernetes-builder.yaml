@@ -1,4 +1,4 @@
-name: 'Reusable - Kubernetes Executor'
+name: 'Reusable - Kubernetes Builder'
 
 on:
   workflow_call:

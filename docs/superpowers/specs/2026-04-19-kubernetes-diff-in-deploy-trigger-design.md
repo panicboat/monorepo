@@ -27,7 +27,7 @@ auto-label--deploy-trigger.yaml
 ├── deploy-trigger    (既存) — label-resolver で targets 算出
 ├── deploy-terragrunt (既存) → reusable--terragrunt-executor.yaml
 ├── deploy-container  (既存) → reusable--container-builder.yaml
-├── deploy-kubernetes (新規) → reusable--kubernetes-executor.yaml
+├── deploy-kubernetes (新規) → reusable--kubernetes-builder.yaml
 └── deployment-summary (更新) — deploy-kubernetes も needs に追加
 ```
 
@@ -49,7 +49,7 @@ deploy-kubernetes:
     matrix:
       target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
     fail-fast: false
-  uses: ./.github/workflows/reusable--kubernetes-executor.yaml
+  uses: ./.github/workflows/reusable--kubernetes-builder.yaml
   with:
     service-name: ${{ matrix.target.service }}
     environment: ${{ matrix.target.environment }}
@@ -61,7 +61,7 @@ deploy-kubernetes:
 
 `working-directory` が空文字列の場合 reusable 側で no-op となるガードを設ける（`deploy-container` の `image-name` 空文字列ガードと同パターン）。
 
-### 2. `reusable--kubernetes-executor.yaml`（新規）
+### 2. `reusable--kubernetes-builder.yaml`（新規）
 
 #### Inputs
 
@@ -104,7 +104,7 @@ PR push
   → label-dispatcher が stack ラベルを付与
   → deploy-trigger が label-resolver で targets JSON を生成
   → deploy-kubernetes ジョブが matrix 展開（kubernetes 以外は no-op）
-  → reusable--kubernetes-executor.yaml が
+  → reusable--kubernetes-builder.yaml が
       base/head の kustomize build を実行
       → dyff between で意味的差分を抽出
       → PR にコメント投稿（sticky）
