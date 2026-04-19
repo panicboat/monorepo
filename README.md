@@ -76,7 +76,54 @@ graph LR
   end
 ```
 
-## 📝 Contribution Guide
+## 🚢 Deployment
 
-- [handbook](services/handbooks/workspace/docs)
-- [blog](services/handbooks/workspace/blog)
+### Trigger
+
+- PR labels or push to `main` activate the pipeline in `.github/workflows/auto-label--deploy-trigger.yaml`.
+- Deployment targets are resolved from labels by `panicboat/deploy-actions/label-resolver` against `workflow-config.yaml`.
+
+### Stacks
+
+| Stack | Path Convention | Tooling |
+|-------|-----------------|---------|
+| Container | `services/{service}/workspace` | Docker → GHCR (`ghcr.io/panicboat/monorepo`), built on `ubuntu-24.04-arm` |
+| Infrastructure | `services/{service}/terragrunt/envs/{environment}` | Terragrunt via AWS OIDC |
+| Kubernetes | `services/{service}/kubernetes/overlays/{environment}` | Kustomize, reconciled by Flux CD |
+
+### Environments
+
+Defined in `workflow-config.yaml`. Only `develop` is active; `staging` / `production` entries are reserved and currently commented out.
+
+| Environment | AWS Region | AWS Account | Status |
+|-------------|------------|-------------|--------|
+| develop | ap-northeast-1 | 559744160976 | Active |
+| staging | - | - | Reserved |
+| production | - | - | Reserved |
+
+### Pipeline Flow
+
+```mermaid
+flowchart LR
+  Trigger[PR / push main] --> Resolver[label-resolver]
+  Resolver -->|stack: docker| Builder[container-builder<br/>ubuntu-24.04-arm]
+  Resolver -->|stack: terragrunt| Terragrunt[terragrunt-executor<br/>plan on PR / apply on main]
+  Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
+  Terragrunt --> AWS[(AWS)]
+  GHCR --> Flux[Flux CD]
+  Main[Commit on main] --> Flux
+  Flux --> K8s[(Kubernetes)]
+```
+
+### GitOps Sync (Flux CD)
+
+- Flux `GitRepository` watches this repo's `main` branch.
+- Per-service `Kustomization` in `clusters/{environment}/services/{service}/service.yaml` reconciles every 5 minutes against `services/{service}/kubernetes/overlays/{environment}`.
+- `nginx` additionally uses `ImageRepository` + `ImagePolicy` + `ImageUpdateAutomation` to auto-bump image tags from Docker Hub every 30 minutes.
+
+### Related Repositories
+
+- [panicboat/platform](https://github.com/panicboat/platform) — cluster bootstrap, shared components, and IAM for OIDC.
+- [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — reusable GitHub Actions: `label-resolver`, `container-builder`, `terragrunt`, `auto-approve`.
+
+## 📝 Contribution Guide
