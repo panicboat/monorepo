@@ -133,7 +133,7 @@ jobs:
 
   deployment-summary:
     name: 'Deployment Summary'
-    needs: [deploy-trigger, deploy-terragrunt, deploy-container]
+    needs: [deploy-trigger, deploy-terragrunt, deploy-container, deploy-kubernetes]
     if: always() && needs.deploy-trigger.outputs.has-targets == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -147,4 +147,5 @@ jobs:
           echo "Targets: ${{ needs.deploy-trigger.outputs.targets }}"
           echo "Terragrunt Job Status: ${{ needs.deploy-terragrunt.result }}"
           echo "Container Job Status: ${{ needs.deploy-container.result }}"
+          echo "Kubernetes Job Status: ${{ needs.deploy-kubernetes.result }}"
           echo "Cleanup Job Status: ${{ needs.cleanup-container.result }}"
