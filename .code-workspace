@@ -1,13 +1,15 @@
 {
   "folders": [
-    { "path": "." }
+    {
+      "path": "."
+    }
   ],
   "settings": {
     "search.exclude": {
-      ".worktrees": true
+      ".claude/worktrees": true
     },
     "files.watcherExclude": {
-      "**/.worktrees/**": true
+      ".claude/worktrees/**": true
     }
   }
 }
