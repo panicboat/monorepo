@@ -5,3 +5,4 @@ metadata:
 data:
   HANAMI_ENV: development
   DATABASE_URL: postgres://postgres:password@postgresql:5432/monolith
+  LOG_LEVEL: info
