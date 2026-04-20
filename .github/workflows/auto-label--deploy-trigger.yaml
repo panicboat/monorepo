@@ -107,7 +107,7 @@ jobs:
     with:
       service-name: ${{ matrix.target.service }}
       environment: ${{ matrix.target.environment }}
-      working-directory: ${{ matrix.target.stack == 'kubernetes' && matrix.target.working_directory || '' }}
+      path: ${{ matrix.target.stack == 'kubernetes' && matrix.target.working_directory || '' }}
       app-id: ${{ vars.APP_ID }}
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
