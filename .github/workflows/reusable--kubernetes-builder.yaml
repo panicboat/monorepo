@@ -11,7 +11,7 @@ on:
         required: true
         type: string
         description: 'Environment name (develop, staging, production, etc.)'
-      working-directory:
+      path:
         required: true
         type: string
         description: 'Path to kustomize overlay (e.g. services/monolith/kubernetes/overlays/develop)'
@@ -27,7 +27,7 @@ on:
 jobs:
   kubernetes-diff:
     name: 'Kubernetes Diff'
-    if: inputs.working-directory != ''
+    if: inputs.path != ''
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -41,134 +41,24 @@ jobs:
           private-key: ${{ secrets.private-key }}
           owner: ${{ github.repository_owner }}
 
-      - name: Checkout PR head
-        uses: actions/checkout@v6
+      - name: Get PR information
+        id: pr-info
+        uses: jwalton/gh-find-current-pr@v1
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          path: head
+          github-token: ${{ steps.app-token.outputs.token }}
+          state: all
+        continue-on-error: true
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Checkout PR base
-        uses: actions/checkout@v6
+      - name: Kubernetes Diff
+        uses: panicboat/deploy-actions/kubernetes@main
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          path: base
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Install kustomize
-        env:
-          KUSTOMIZE_VERSION: '5.4.3'
-        run: |
-          sudo rm -f /usr/local/bin/kustomize
-          curl -sSL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s "${KUSTOMIZE_VERSION}" /usr/local/bin
-          kustomize version
-
-      - name: Install dyff
-        env:
-          DYFF_VERSION: '1.11.3'
-        run: |
-          curl -sSL "https://github.com/homeport/dyff/releases/download/v${DYFF_VERSION}/dyff_${DYFF_VERSION}_linux_amd64.tar.gz" | sudo tar -xz -C /usr/local/bin dyff
-          sudo chmod +x /usr/local/bin/dyff
-          dyff version
-
-      - name: Build kustomize manifests (base)
-        id: build-base
-        run: |
-          if [ -d "base/${{ inputs.working-directory }}" ]; then
-            if ! kustomize build "base/${{ inputs.working-directory }}" > base.yaml 2> _kustomize_base.log; then
-              echo "build-failed=true" >> "$GITHUB_OUTPUT"
-              cat _kustomize_base.log
-              exit 1
-            fi
-          else
-            echo "Overlay not present in base ref; treating as empty."
-            : > base.yaml
-          fi
-
-      - name: Build kustomize manifests (head)
-        id: build-head
-        run: |
-          if [ -d "head/${{ inputs.working-directory }}" ]; then
-            if ! kustomize build "head/${{ inputs.working-directory }}" > head.yaml 2> _kustomize_head.log; then
-              echo "build-failed=true" >> "$GITHUB_OUTPUT"
-              cat _kustomize_head.log
-              exit 1
-            fi
-          else
-            echo "Overlay not present in head ref; treating as empty."
-            : > head.yaml
-          fi
-
-      - name: Run dyff between
-        id: dyff
-        run: |
-          set +e
-          dyff between --omit-header --color off base.yaml head.yaml > diff.txt 2> _dyff.log
-          status=$?
-          set -e
-          if [ "$status" -ne 0 ]; then
-            echo "dyff-failed=true" >> "$GITHUB_OUTPUT"
-            cat _dyff.log
-            exit "$status"
-          fi
-          if ! grep -q '[^[:space:]]' diff.txt; then
-            echo "no-diff=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "no-diff=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Compose diff comment
-        env:
-          NO_DIFF: ${{ steps.dyff.outputs.no-diff }}
-          SERVICE: ${{ inputs.service-name }}
-          ENVIRONMENT: ${{ inputs.environment }}
-          WORKING_DIR: ${{ inputs.working-directory }}
-        run: |
-          {
-            echo "### Kubernetes Diff: \`${SERVICE}\` (\`${ENVIRONMENT}\`)"
-            echo ""
-            echo "Overlay: \`${WORKING_DIR}\`"
-            echo ""
-            if [ "$NO_DIFF" = "true" ]; then
-              echo "差分なし"
-            else
-              echo "<details><summary>kustomize build diff (dyff between)</summary>"
-              echo ""
-              echo '```diff'
-              cat diff.txt
-              echo '```'
-              echo ""
-              echo "</details>"
-            fi
-          } > comment.md
-
-      - name: Post sticky comment
-        uses: marocchino/sticky-pull-request-comment@v3.0.4
-        with:
-          header: kubernetes-diff-${{ inputs.service-name }}-${{ inputs.environment }}
-          path: comment.md
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-
-      - name: Compose failure comment
-        if: failure() && (steps.build-base.outputs.build-failed == 'true' || steps.build-head.outputs.build-failed == 'true' || steps.dyff.outputs.dyff-failed == 'true')
-        env:
-          SERVICE: ${{ inputs.service-name }}
-          ENVIRONMENT: ${{ inputs.environment }}
-          WORKING_DIR: ${{ inputs.working-directory }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          {
-            echo "### Kubernetes Diff: \`${SERVICE}\` (\`${ENVIRONMENT}\`)"
-            echo ""
-            echo "Overlay: \`${WORKING_DIR}\`"
-            echo ""
-            echo "kustomize build または dyff の実行に失敗しました。Actions ログで詳細を確認してください: ${RUN_URL}"
-          } > comment.md
-
-      - name: Post failure comment
-        if: failure() && (steps.build-base.outputs.build-failed == 'true' || steps.build-head.outputs.build-failed == 'true' || steps.dyff.outputs.dyff-failed == 'true')
-        uses: marocchino/sticky-pull-request-comment@v3.0.4
-        with:
-          header: kubernetes-diff-${{ inputs.service-name }}-${{ inputs.environment }}
-          path: comment.md
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          github-token: ${{ steps.app-token.outputs.token }}
+          service-name: ${{ inputs.service-name }}
+          environment: ${{ inputs.environment }}
+          path: ${{ inputs.path }}
+          pr-number: ${{ steps.pr-info.outputs.number }}
