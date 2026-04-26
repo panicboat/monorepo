@@ -38,7 +38,7 @@ jobs:
           owner: ${{ github.repository_owner }}
 
       - name: Build and push container with custom tags
-        uses: panicboat/deploy-actions/container-builder@main
+        uses: panicboat/panicboat-actions/container-builder@main
         with:
           # Use GITHUB_TOKEN to ensure permission to create new packages
           token: ${{ secrets.GITHUB_TOKEN }}

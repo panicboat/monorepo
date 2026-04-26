@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Cleanup container images
-        uses: panicboat/deploy-actions/container-cleaner@main
+        uses: panicboat/panicboat-actions/container-cleaner@main
         with:
           # GitHub Container Registry requires PERSONAL_ACCESS_TOKEN, not Fine-grained personal access tokens
           token: ${{ secrets.GITHUB_TOKEN }}

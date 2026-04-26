@@ -124,7 +124,7 @@ jobs:
   #       target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
   #     fail-fast: false
   #   steps:
-  #     - uses: panicboat/deploy-actions/container-cleaner@main
+  #     - uses: panicboat/panicboat-actions/container-cleaner@main
   #       if: matrix.target.stack == 'docker'
   #       with:
   #         token: ${{ secrets.GITHUB_TOKEN }}
