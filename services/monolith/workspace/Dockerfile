@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Install gems
 COPY Gemfile Gemfile.lock ./
-RUN bundle install
+RUN bundle config set --local frozen true && bundle install
 
 # Copy application code
 COPY . .
