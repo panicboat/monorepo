@@ -19,13 +19,42 @@ jobs:
         service: ["handbooks", "monolith", "nyx"]
       fail-fast: false
     steps:
-      - name: Cleanup container images
-        uses: panicboat/panicboat-actions/container-cleaner@main
+      # Step 1: Clean old PR tags (pr-*, older than retention days)
+      - name: Clean old PR tags
+        uses: dataaxiom/ghcr-cleanup-action@v1.0.16
         with:
-          # GitHub Container Registry requires PERSONAL_ACCESS_TOKEN, not Fine-grained personal access tokens
           token: ${{ secrets.GITHUB_TOKEN }}
-          image-name: ${{ matrix.service }}
-          pr-retention-days: 1
+          package: ${{ github.event.repository.name }}/${{ matrix.service }}
+          delete-tags: ^pr-
+          older-than: 1 days
+          exclude-tags: ^(latest|v\d+\.\d+\.\d+.*)$
+          use-regex: true
+          validate: true
+
+      # Step 2: Clean all SHA tags (sha-*, regardless of age)
+      - name: Clean SHA tags
+        uses: dataaxiom/ghcr-cleanup-action@v1.0.16
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: ${{ github.event.repository.name }}/${{ matrix.service }}
+          delete-tags: ^sha-
+          exclude-tags: ^(latest|v\d+\.\d+\.\d+.*)$
+          use-regex: true
+          validate: true
+
+      # Step 3: Clean all untagged images and orphaned images
+      - name: Clean untagged images
+        uses: dataaxiom/ghcr-cleanup-action@v1.0.16
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: ${{ github.event.repository.name }}/${{ matrix.service }}
+          keep-n-untagged: 0
+          delete-orphaned-images: true
+          delete-ghost-images: true
+          delete-partial-images: true
+          exclude-tags: ^(latest|v\d+\.\d+\.\d+.*)$
+          use-regex: true
+          validate: true
 
   summary:
     name: 'Cleanup Summary'

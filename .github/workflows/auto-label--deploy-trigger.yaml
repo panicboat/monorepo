@@ -124,11 +124,14 @@ jobs:
   #       target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
   #     fail-fast: false
   #   steps:
-  #     - uses: panicboat/panicboat-actions/container-cleaner@main
+  #     - name: Cleanup container
+  #       uses: dataaxiom/ghcr-cleanup-action@v1.0.16
   #       if: matrix.target.stack == 'docker'
   #       with:
   #         token: ${{ secrets.GITHUB_TOKEN }}
-  #         image-name: monorepo/${{ matrix.target.service }}
+  #         package: monorepo/${{ matrix.target.service }}
+  #         keep-n-untagged: 0
+  #         use-regex: true
   #   continue-on-error: true
 
   deployment-summary:
