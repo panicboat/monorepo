@@ -8,7 +8,8 @@ WORKDIR /app
 
 # Install gems
 COPY Gemfile Gemfile.lock ./
-RUN bundle config set --local frozen true && bundle install
+# TODO: re-enable `bundle config set --local frozen true` once google-protobuf gemspec supports Ruby 4.0
+RUN bundle install
 
 # Copy application code
 COPY . .
