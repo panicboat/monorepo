@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ["handbooks", "monolith", "nyx"]
+        service: ["monolith", "nyx"]
       fail-fast: false
     steps:
       # Step 1: Clean old PR tags (pr-*, older than retention days)
