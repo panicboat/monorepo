@@ -35,7 +35,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
-    "@bufbuild/protoc-gen-es": "^2.11.0",
+    "@bufbuild/protoc-gen-es": "^2.12.0",
     "@tailwindcss/postcss": "^4.2.4",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
