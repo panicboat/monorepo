@@ -208,7 +208,7 @@ GEM
       google-protobuf (>= 3.25, < 5.0)
       googleapis-common-protos-types (~> 1.0)
     grpc-tools (1.76.0)
-    gruf (2.21.1)
+    gruf (2.22.0)
       activesupport (> 4)
       concurrent-ruby (> 1)
       grpc (~> 1.10)
