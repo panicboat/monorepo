@@ -54,10 +54,10 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Kubernetes Diff
-        uses: panicboat/panicboat-actions/kubernetes@main
+      - name: Kustomize Diff
+        uses: panicboat/panicboat-actions/kustomize-diff@main
         with:
-          github-token: ${{ steps.app-token.outputs.token }}
+          token: ${{ steps.app-token.outputs.token }}
           service-name: ${{ inputs.service-name }}
           environment: ${{ inputs.environment }}
           path: ${{ inputs.path }}
