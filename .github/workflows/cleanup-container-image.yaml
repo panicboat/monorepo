@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ["monolith", "nyx"]
+        service: ["monolith", "frontend"]
       fail-fast: false
     steps:
       # Step 1: Clean old PR tags (pr-*, older than retention days)
@@ -65,5 +65,5 @@ jobs:
       - name: Summary
         run: |
           echo "📊 Cleanup Summary"
-          echo "Services: monorepo/handbooks, monorepo/monolith, monorepo/nyx"
+          echo "Services: monorepo/handbooks, monorepo/monolith, monorepo/frontend"
           echo "Cleanup job status: ${{ needs.cleanup-container.result }}"

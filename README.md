@@ -30,7 +30,7 @@ Add the following to `/etc/hosts`.
 
 ```bash
 127.0.0.1 nginx.local
-127.0.0.1 nyx.local
+127.0.0.1 frontend.local
 127.0.0.1 handbooks.local
 ```
 
@@ -39,7 +39,7 @@ Add the following to `/etc/hosts`.
 To edit manifests locally without Flux overwriting changes, suspend the Kustomizations:
 
 ```bash
-flux suspend kustomization monolith reverse-proxy nyx -n flux-system
+flux suspend kustomization monolith reverse-proxy frontend -n flux-system
 ```
 
 Then apply your local changes:
@@ -51,14 +51,14 @@ kubectl apply -k services/monolith/kubernetes/overlays/develop
 # Reverse Proxy
 kubectl apply -k services/reverse-proxy/kubernetes/overlays/develop
 
-# Nyx
-kubectl apply -k services/nyx/kubernetes/overlays/develop
+# Frontend
+kubectl apply -k services/frontend/kubernetes/overlays/develop
 ```
 
 To resume Flux synchronization (discarding local changes):
 
 ```bash
-flux resume kustomization monolith reverse-proxy nyx -n flux-system
+flux resume kustomization monolith reverse-proxy frontend -n flux-system
 ```
 
 ## 🏗 Architecture
@@ -71,8 +71,8 @@ graph LR
   subgraph "Kubernetes Cluster"
     NginxPod -- "3. http://cilium-gateway<br>Internal" --> CiliumGw[Cilium Gateway]
     CiliumGw -- "4. HTTPRoute<br>Host: nginx.local" --> AppPod[App Pod<br>services/nginx]
-    CiliumGw -- "4. HTTPRoute<br>Host: nyx.local" --> NyxPod[Nyx Pod<br>services/nyx]
-    NyxPod -- "5. gRPC<br>Host: monolith.local" --> MonolithPod[Monolith Pod<br>services/monolith]
+    CiliumGw -- "4. HTTPRoute<br>Host: frontend.local" --> FrontendPod[Frontend Pod<br>services/frontend]
+    FrontendPod -- "5. gRPC<br>Host: monolith.local" --> MonolithPod[Monolith Pod<br>services/monolith]
   end
 ```
 

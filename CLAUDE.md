@@ -35,7 +35,7 @@
 
 ## Overview
 
-**Nyx.PLACE** - キャスト個人が「時間」「信頼」「顧客」を資産として管理・運用できる CtoCプラットフォーム。
+**dystopia.city** - キャスト個人が「時間」「信頼」「顧客」を資産として管理・運用できる CtoCプラットフォーム。
 
 ## Key References
 
@@ -60,7 +60,7 @@
 ```
 monorepo/
 ├── services/monolith/workspace/    # Backend (Ruby/Hanami)
-├── services/nyx/workspace/         # Frontend (Next.js)
+├── services/frontend/workspace/         # Frontend (Next.js)
 ├── proto/                          # Protocol Buffers
 └── .claude/                        # Claude Code rules & commands
 ```

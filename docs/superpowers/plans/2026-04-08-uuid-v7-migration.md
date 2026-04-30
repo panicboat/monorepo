@@ -21,7 +21,7 @@
 
 非対象（明示的に触らない）:
 - `lib/interceptors/authentication_interceptor.rb` — リクエストID用
-- `services/nyx/workspace/src/lib/request.ts` — リクエストID用
+- `services/frontend/workspace/src/lib/request.ts` — リクエストID用
 - 全 proto ファイルの `string.uuid` バリデーション
 
 ---

@@ -88,8 +88,8 @@ test.describe('Guest Authentication Flow', () => {
 
     // Verify tokens are stored
     const tokensBefore = await page.evaluate(() => ({
-      access: localStorage.getItem('nyx_guest_access_token'),
-      refresh: localStorage.getItem('nyx_guest_refresh_token'),
+      access: localStorage.getItem('frontend_guest_access_token'),
+      refresh: localStorage.getItem('frontend_guest_refresh_token'),
     }));
     expect(tokensBefore.access).toBeTruthy();
     expect(tokensBefore.refresh).toBeTruthy();
@@ -147,8 +147,8 @@ test.describe('Guest Authentication Flow', () => {
 
     // 6. Verify tokens were updated
     const tokensAfter = await page.evaluate(() => ({
-      access: localStorage.getItem('nyx_guest_access_token'),
-      refresh: localStorage.getItem('nyx_guest_refresh_token'),
+      access: localStorage.getItem('frontend_guest_access_token'),
+      refresh: localStorage.getItem('frontend_guest_refresh_token'),
     }));
     expect(tokensAfter.access).toBe('new-mock-access-token');
     expect(tokensAfter.refresh).toBe('new-mock-refresh-token');
@@ -175,8 +175,8 @@ test.describe('Guest Authentication Flow', () => {
 
     // Verify tokens are stored
     const tokensBefore = await page.evaluate(() => ({
-      access: localStorage.getItem('nyx_guest_access_token'),
-      refresh: localStorage.getItem('nyx_guest_refresh_token'),
+      access: localStorage.getItem('frontend_guest_access_token'),
+      refresh: localStorage.getItem('frontend_guest_refresh_token'),
     }));
     expect(tokensBefore.access).toBeTruthy();
     expect(tokensBefore.refresh).toBeTruthy();
@@ -206,16 +206,16 @@ test.describe('Guest Authentication Flow', () => {
     // Use waitForFunction to poll until tokens are cleared (more reliable than fixed timeout)
     await page.waitForFunction(
       () => {
-        const access = localStorage.getItem('nyx_guest_access_token');
-        const refresh = localStorage.getItem('nyx_guest_refresh_token');
+        const access = localStorage.getItem('frontend_guest_access_token');
+        const refresh = localStorage.getItem('frontend_guest_refresh_token');
         return access === null && refresh === null;
       },
       { timeout: 10000 }
     );
 
     const tokensAfter = await page.evaluate(() => ({
-      access: localStorage.getItem('nyx_guest_access_token'),
-      refresh: localStorage.getItem('nyx_guest_refresh_token'),
+      access: localStorage.getItem('frontend_guest_access_token'),
+      refresh: localStorage.getItem('frontend_guest_refresh_token'),
     }));
 
     // Tokens should be cleared after refresh failure

@@ -168,7 +168,7 @@ services/monolith/workspace/slices/trust/
 ### Frontend Structure
 
 ```
-services/nyx/workspace/src/
+services/frontend/workspace/src/
 ├── modules/trust/
 │   ├── components/
 │   │   ├── ReviewModal.tsx         # Tags + reviews integrated modal (cast)

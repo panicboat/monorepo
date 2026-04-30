@@ -8,7 +8,7 @@ pkill -f next
 cd "$BASE_DIR/services/monolith/workspace"
 bundle install && bin/codegen && bin/grpc &
 
-cd "$BASE_DIR/services/nyx/workspace"
+cd "$BASE_DIR/services/frontend/workspace"
 pnpm install && pnpm proto:gen && pnpm dev &
 
 wait

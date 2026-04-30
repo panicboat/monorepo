@@ -25,7 +25,7 @@ test.describe('Cast Authentication Flow', () => {
 
     // New Cast -> Onboarding
     await expect(page).toHaveURL(/\/cast\/onboarding/);
-    await expect(page.getByRole('heading', { name: 'Welcome to Nyx' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Welcome to Frontend' })).toBeVisible();
   });
 
   // Skip on webkit-based browsers due to localStorage/cookie handling differences after session clear
@@ -103,8 +103,8 @@ test.describe('Cast Authentication Flow', () => {
 
     // Verify tokens are stored
     const tokensBefore = await page.evaluate(() => ({
-      access: localStorage.getItem('nyx_cast_access_token'),
-      refresh: localStorage.getItem('nyx_cast_refresh_token'),
+      access: localStorage.getItem('frontend_cast_access_token'),
+      refresh: localStorage.getItem('frontend_cast_refresh_token'),
     }));
     expect(tokensBefore.access).toBeTruthy();
     expect(tokensBefore.refresh).toBeTruthy();
@@ -162,8 +162,8 @@ test.describe('Cast Authentication Flow', () => {
 
     // 6. Verify tokens were updated
     const tokensAfter = await page.evaluate(() => ({
-      access: localStorage.getItem('nyx_cast_access_token'),
-      refresh: localStorage.getItem('nyx_cast_refresh_token'),
+      access: localStorage.getItem('frontend_cast_access_token'),
+      refresh: localStorage.getItem('frontend_cast_refresh_token'),
     }));
     expect(tokensAfter.access).toBe('new-mock-access-token');
     expect(tokensAfter.refresh).toBe('new-mock-refresh-token');
@@ -194,8 +194,8 @@ test.describe('Cast Authentication Flow', () => {
 
     // Verify tokens are stored
     const tokensBefore = await page.evaluate(() => ({
-      access: localStorage.getItem('nyx_cast_access_token'),
-      refresh: localStorage.getItem('nyx_cast_refresh_token'),
+      access: localStorage.getItem('frontend_cast_access_token'),
+      refresh: localStorage.getItem('frontend_cast_refresh_token'),
     }));
     expect(tokensBefore.access).toBeTruthy();
     expect(tokensBefore.refresh).toBeTruthy();
@@ -225,8 +225,8 @@ test.describe('Cast Authentication Flow', () => {
     await page.waitForTimeout(2000); // Give time for auth flow to complete
 
     const tokensAfter = await page.evaluate(() => ({
-      access: localStorage.getItem('nyx_cast_access_token'),
-      refresh: localStorage.getItem('nyx_cast_refresh_token'),
+      access: localStorage.getItem('frontend_cast_access_token'),
+      refresh: localStorage.getItem('frontend_cast_refresh_token'),
     }));
 
     // Tokens should be cleared after refresh failure
