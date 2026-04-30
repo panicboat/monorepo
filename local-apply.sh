@@ -13,7 +13,7 @@ COMMAND=${1:-apply} # apply or delete
 
 # FluxCD suspend the Kustomizations
 if [ "$COMMAND" == "apply" ]; then
-    flux suspend kustomization monolith reverse-proxy nyx -n flux-system
+    flux suspend kustomization monolith reverse-proxy frontend -n flux-system
 fi
 
 deploy() {
@@ -27,5 +27,5 @@ deploy "services/monolith/kubernetes/overlays/develop"
 # Reverse Proxy
 deploy "services/reverse-proxy/kubernetes/overlays/develop"
 
-# Nyx
-deploy "services/nyx/kubernetes/overlays/develop"
+# Frontend
+deploy "services/frontend/kubernetes/overlays/develop"

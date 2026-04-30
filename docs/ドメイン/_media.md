@@ -35,7 +35,7 @@
 | Layer | Path |
 |-------|------|
 | Backend | `services/monolith/workspace/slices/media/` |
-| Frontend | `services/nyx/workspace/src/modules/media/` (planned) |
+| Frontend | `services/frontend/workspace/src/modules/media/` (planned) |
 | Proto | `proto/media/v1/media_service.proto` |
 
 ## Key APIs

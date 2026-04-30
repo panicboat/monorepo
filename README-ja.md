@@ -30,7 +30,7 @@
 
 ```bash
 127.0.0.1 nginx.local
-127.0.0.1 nyx.local
+127.0.0.1 frontend.local
 127.0.0.1 handbooks.local
 ```
 
@@ -41,7 +41,7 @@ Flux による自動同期を停止して、ローカルのマニフェストを
 まずは対象の Kustomization を停止します：
 
 ```bash
-flux suspend kustomization monolith reverse-proxy nyx -n flux-system
+flux suspend kustomization monolith reverse-proxy frontend -n flux-system
 ```
 
 次にローカルの変更を適用します：
@@ -53,14 +53,14 @@ kubectl apply -k services/monolith/kubernetes/overlays/develop
 # Reverse Proxy
 kubectl apply -k services/reverse-proxy/kubernetes/overlays/develop
 
-# Nyx
-kubectl apply -k services/nyx/kubernetes/overlays/develop
+# Frontend
+kubectl apply -k services/frontend/kubernetes/overlays/develop
 ```
 
 Flux による同期を再開（ローカルの変更は破棄されます）するには：
 
 ```bash
-flux resume kustomization monolith reverse-proxy nyx -n flux-system
+flux resume kustomization monolith reverse-proxy frontend -n flux-system
 ```
 
 ## 🏗 Architecture
@@ -73,8 +73,8 @@ graph LR
   subgraph "Kubernetes Cluster"
     NginxPod -- "3. http://cilium-gateway<br>Internal" --> CiliumGw[Cilium Gateway]
     CiliumGw -- "4. HTTPRoute<br>Host: nginx.local" --> AppPod[App Pod<br>services/nginx]
-    CiliumGw -- "4. HTTPRoute<br>Host: nyx.local" --> NyxPod[Nyx Pod<br>services/nyx]
-    NyxPod -- "5. gRPC<br>Host: monolith.local" --> MonolithPod[Monolith Pod<br>services/monolith]
+    CiliumGw -- "4. HTTPRoute<br>Host: frontend.local" --> FrontendPod[Frontend Pod<br>services/frontend]
+    FrontendPod -- "5. gRPC<br>Host: monolith.local" --> MonolithPod[Monolith Pod<br>services/monolith]
   end
 ```
 

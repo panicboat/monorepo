@@ -150,7 +150,7 @@ slices/trust/
 ### Frontend Structure
 
 ```
-services/nyx/workspace/src/
+services/frontend/workspace/src/
 ├── modules/trust/
 │   ├── types.ts
 │   ├── hooks/

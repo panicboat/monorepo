@@ -15,13 +15,13 @@
 ## Task 1: AppError クラスと ERROR_MESSAGES 定数の作成
 
 **Files:**
-- Create: `services/nyx/workspace/src/lib/errors.ts`
-- Create: `services/nyx/workspace/src/lib/error-messages.ts`
+- Create: `services/frontend/workspace/src/lib/errors.ts`
+- Create: `services/frontend/workspace/src/lib/error-messages.ts`
 
 **Step 1: `errors.ts` を作成**
 
 ```typescript
-// services/nyx/workspace/src/lib/errors.ts
+// services/frontend/workspace/src/lib/errors.ts
 
 export type ErrorCode =
   | "UNAUTHORIZED"
@@ -70,7 +70,7 @@ export function httpStatusToErrorCode(status: number): ErrorCode {
 **Step 2: `error-messages.ts` を作成**
 
 ```typescript
-// services/nyx/workspace/src/lib/error-messages.ts
+// services/frontend/workspace/src/lib/error-messages.ts
 import type { ErrorCode } from "./errors";
 
 export const ERROR_MESSAGES: Record<ErrorCode, string> = {
@@ -92,13 +92,13 @@ export function getDefaultMessage(code: ErrorCode): string {
 
 **Step 3: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 Expected: エラーなし
 
 **Step 4: コミット**
 
 ```bash
-git add services/nyx/workspace/src/lib/errors.ts services/nyx/workspace/src/lib/error-messages.ts
+git add services/frontend/workspace/src/lib/errors.ts services/frontend/workspace/src/lib/error-messages.ts
 git commit -m "feat: add AppError class and error message constants"
 ```
 
@@ -107,14 +107,14 @@ git commit -m "feat: add AppError class and error message constants"
 ## Task 2: api-helpers.ts の更新
 
 **Files:**
-- Modify: `services/nyx/workspace/src/lib/api-helpers.ts`
+- Modify: `services/frontend/workspace/src/lib/api-helpers.ts`
 
 **Step 1: `handleApiError` を改修**
 
 `handleApiError` がエラーメッセージを日本語で返すようにする。レスポンス形式 `{ error: string }` は維持（クライアント側の読み取りコードに影響しないため）。
 
 ```typescript
-// services/nyx/workspace/src/lib/api-helpers.ts
+// services/frontend/workspace/src/lib/api-helpers.ts
 import { NextRequest, NextResponse } from "next/server";
 import { ConnectError } from "@connectrpc/connect";
 import { grpcCodeToHttpStatus } from "./grpc-errors";
@@ -164,13 +164,13 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
 
 **Step 2: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 Expected: エラーなし
 
 **Step 3: コミット**
 
 ```bash
-git add services/nyx/workspace/src/lib/api-helpers.ts
+git add services/frontend/workspace/src/lib/api-helpers.ts
 git commit -m "refactor: update handleApiError to return Japanese messages"
 ```
 
@@ -179,12 +179,12 @@ git commit -m "refactor: update handleApiError to return Japanese messages"
 ## Task 3: authFetch を AppError に統合
 
 **Files:**
-- Modify: `services/nyx/workspace/src/lib/auth/fetch.ts`
+- Modify: `services/frontend/workspace/src/lib/auth/fetch.ts`
 
 **Step 1: `ApiError` を `AppError` に置き換え**
 
 ```typescript
-// services/nyx/workspace/src/lib/auth/fetch.ts
+// services/frontend/workspace/src/lib/auth/fetch.ts
 "use client";
 
 import { getAuthToken } from "@/lib/swr";
@@ -251,13 +251,13 @@ export async function authFetch<T = unknown>(
 
 **Step 2: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -30`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -30`
 Expected: エラーなし（`ApiError` の re-export で後方互換性を維持しているため）
 
 **Step 3: コミット**
 
 ```bash
-git add services/nyx/workspace/src/lib/auth/fetch.ts
+git add services/frontend/workspace/src/lib/auth/fetch.ts
 git commit -m "refactor: replace ApiError with AppError in authFetch"
 ```
 
@@ -266,14 +266,14 @@ git commit -m "refactor: replace ApiError with AppError in authFetch"
 ## Task 4: SWR fetcher の更新
 
 **Files:**
-- Modify: `services/nyx/workspace/src/lib/swr.ts`
+- Modify: `services/frontend/workspace/src/lib/swr.ts`
 
 **Step 1: fetcher を簡素化**
 
 `AppError` は既に `Error` を継承しているため、SWR 互換のための変換が不要になる。`status` と `info` プロパティは `AppError` の `status` と `cause` で代替する。
 
 ```typescript
-// services/nyx/workspace/src/lib/swr.ts
+// services/frontend/workspace/src/lib/swr.ts
 import { SWRConfiguration } from "swr";
 
 import { useAuthStore } from "@/stores/authStore";
@@ -315,20 +315,20 @@ export const swrConfig: SWRConfiguration = {
 
 以下のファイルで `(err as { status?: number }).status` パターンを使っている。`AppError` は `status` プロパティを持つので互換性あり。
 
-- `services/nyx/workspace/src/modules/portfolio/hooks/useCastData.ts`
-- `services/nyx/workspace/src/modules/portfolio/hooks/useGuestData.ts`
+- `services/frontend/workspace/src/modules/portfolio/hooks/useCastData.ts`
+- `services/frontend/workspace/src/modules/portfolio/hooks/useGuestData.ts`
 
 確認のみ、変更不要。
 
 **Step 3: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 Expected: エラーなし
 
 **Step 4: コミット**
 
 ```bash
-git add services/nyx/workspace/src/lib/swr.ts
+git add services/frontend/workspace/src/lib/swr.ts
 git commit -m "refactor: simplify SWR fetchers with AppError"
 ```
 
@@ -337,12 +337,12 @@ git commit -m "refactor: simplify SWR fetchers with AppError"
 ## Task 5: useApiMutation の更新
 
 **Files:**
-- Modify: `services/nyx/workspace/src/lib/hooks/useApiMutation.ts`
+- Modify: `services/frontend/workspace/src/lib/hooks/useApiMutation.ts`
 
 **Step 1: AppError を使用し、エラーメッセージを日本語化**
 
 ```typescript
-// services/nyx/workspace/src/lib/hooks/useApiMutation.ts
+// services/frontend/workspace/src/lib/hooks/useApiMutation.ts
 "use client";
 
 import { useState, useCallback } from "react";
@@ -455,13 +455,13 @@ export function createMutationHook<TPayload, TResponse>(
 
 **Step 2: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -30`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -30`
 Expected: `onError` の型が `Error` → `AppError` に変わったことで呼び出し元にエラーが出る可能性あり。Task 8 以降で対応。
 
 **Step 3: コミット**
 
 ```bash
-git add services/nyx/workspace/src/lib/hooks/useApiMutation.ts
+git add services/frontend/workspace/src/lib/hooks/useApiMutation.ts
 git commit -m "refactor: update useApiMutation to use AppError"
 ```
 
@@ -470,7 +470,7 @@ git commit -m "refactor: update useApiMutation to use AppError"
 ## Task 6: usePaginatedFetch の更新
 
 **Files:**
-- Modify: `services/nyx/workspace/src/lib/hooks/usePaginatedFetch.ts`
+- Modify: `services/frontend/workspace/src/lib/hooks/usePaginatedFetch.ts`
 
 **Step 1: エラーメッセージを日本語化**
 
@@ -502,13 +502,13 @@ git commit -m "refactor: update useApiMutation to use AppError"
 
 **Step 2: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 Expected: エラーなし
 
 **Step 3: コミット**
 
 ```bash
-git add services/nyx/workspace/src/lib/hooks/usePaginatedFetch.ts
+git add services/frontend/workspace/src/lib/hooks/usePaginatedFetch.ts
 git commit -m "refactor: update usePaginatedFetch to use AppError"
 ```
 
@@ -517,15 +517,15 @@ git commit -m "refactor: update usePaginatedFetch to use AppError"
 ## Task 7: ErrorFallback コンポーネントと error.tsx の作成
 
 **Files:**
-- Create: `services/nyx/workspace/src/components/shared/ErrorFallback.tsx`
-- Create: `services/nyx/workspace/src/app/error.tsx`
-- Create: `services/nyx/workspace/src/app/(cast)/error.tsx`
-- Create: `services/nyx/workspace/src/app/(guest)/error.tsx`
+- Create: `services/frontend/workspace/src/components/shared/ErrorFallback.tsx`
+- Create: `services/frontend/workspace/src/app/error.tsx`
+- Create: `services/frontend/workspace/src/app/(cast)/error.tsx`
+- Create: `services/frontend/workspace/src/app/(guest)/error.tsx`
 
 **Step 1: `ErrorFallback` コンポーネントを作成**
 
 ```tsx
-// services/nyx/workspace/src/components/shared/ErrorFallback.tsx
+// services/frontend/workspace/src/components/shared/ErrorFallback.tsx
 "use client";
 
 import { AlertCircle, RefreshCw } from "lucide-react";
@@ -558,7 +558,7 @@ export function ErrorFallback({ error, reset }: ErrorFallbackProps) {
 **Step 2: `src/app/error.tsx` を作成**
 
 ```tsx
-// services/nyx/workspace/src/app/error.tsx
+// services/frontend/workspace/src/app/error.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -582,7 +582,7 @@ export default function GlobalError({
 **Step 3: `src/app/(cast)/error.tsx` を作成**
 
 ```tsx
-// services/nyx/workspace/src/app/(cast)/error.tsx
+// services/frontend/workspace/src/app/(cast)/error.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -606,7 +606,7 @@ export default function CastError({
 **Step 4: `src/app/(guest)/error.tsx` を作成**
 
 ```tsx
-// services/nyx/workspace/src/app/(guest)/error.tsx
+// services/frontend/workspace/src/app/(guest)/error.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -629,16 +629,16 @@ export default function GuestError({
 
 **Step 5: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 Expected: エラーなし
 
 **Step 6: コミット**
 
 ```bash
-git add services/nyx/workspace/src/components/shared/ErrorFallback.tsx \
-      services/nyx/workspace/src/app/error.tsx \
-      services/nyx/workspace/src/app/\(cast\)/error.tsx \
-      services/nyx/workspace/src/app/\(guest\)/error.tsx
+git add services/frontend/workspace/src/components/shared/ErrorFallback.tsx \
+      services/frontend/workspace/src/app/error.tsx \
+      services/frontend/workspace/src/app/\(cast\)/error.tsx \
+      services/frontend/workspace/src/app/\(guest\)/error.tsx
 git commit -m "feat: add Error Boundary with ErrorFallback component"
 ```
 
@@ -647,8 +647,8 @@ git commit -m "feat: add Error Boundary with ErrorFallback component"
 ## Task 8: Identity モジュールのエラー修正
 
 **Files:**
-- Modify: `services/nyx/workspace/src/modules/identity/hooks/useAuth.tsx`
-- Modify: `services/nyx/workspace/src/modules/identity/components/LoginGate.tsx`
+- Modify: `services/frontend/workspace/src/modules/identity/hooks/useAuth.tsx`
+- Modify: `services/frontend/workspace/src/modules/identity/components/LoginGate.tsx`
 
 **Step 1: `useAuth.tsx` のエラーメッセージを日本語化**
 
@@ -677,12 +677,12 @@ git commit -m "feat: add Error Boundary with ErrorFallback component"
 
 **Step 3: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 
 **Step 4: コミット**
 
 ```bash
-git add services/nyx/workspace/src/modules/identity/
+git add services/frontend/workspace/src/modules/identity/
 git commit -m "fix: unify identity module error messages to Japanese"
 ```
 
@@ -691,9 +691,9 @@ git commit -m "fix: unify identity module error messages to Japanese"
 ## Task 9: Post モジュールのエラー修正
 
 **Files:**
-- Modify: `services/nyx/workspace/src/modules/post/hooks/useLike.ts`
-- Modify: `services/nyx/workspace/src/modules/post/hooks/useComments.ts`
-- Modify: `services/nyx/workspace/src/modules/post/components/comments/CommentForm.tsx`
+- Modify: `services/frontend/workspace/src/modules/post/hooks/useLike.ts`
+- Modify: `services/frontend/workspace/src/modules/post/hooks/useComments.ts`
+- Modify: `services/frontend/workspace/src/modules/post/components/comments/CommentForm.tsx`
 
 **Step 1: `useLike.ts` — `console.error` のみの箇所に throw を追加**
 
@@ -725,12 +725,12 @@ git commit -m "fix: unify identity module error messages to Japanese"
 
 **Step 4: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 
 **Step 5: コミット**
 
 ```bash
-git add services/nyx/workspace/src/modules/post/
+git add services/frontend/workspace/src/modules/post/
 git commit -m "fix: unify post module error messages to Japanese"
 ```
 
@@ -739,7 +739,7 @@ git commit -m "fix: unify post module error messages to Japanese"
 ## Task 10: Relationship モジュールのエラー修正
 
 **Files:**
-- Modify: `services/nyx/workspace/src/modules/relationship/hooks/useFollow.ts`
+- Modify: `services/frontend/workspace/src/modules/relationship/hooks/useFollow.ts`
 
 **Step 1: エラー修正**
 
@@ -756,9 +756,9 @@ git commit -m "fix: unify post module error messages to Japanese"
 ## Task 11: Portfolio モジュールのエラー修正
 
 **Files:**
-- Modify: `services/nyx/workspace/src/modules/portfolio/hooks/useCastData.ts`
-- Modify: `services/nyx/workspace/src/modules/portfolio/hooks/useGuestData.ts`
-- Modify: `services/nyx/workspace/src/modules/portfolio/components/cast/VisibilityToggle.tsx`
+- Modify: `services/frontend/workspace/src/modules/portfolio/hooks/useCastData.ts`
+- Modify: `services/frontend/workspace/src/modules/portfolio/hooks/useGuestData.ts`
+- Modify: `services/frontend/workspace/src/modules/portfolio/components/cast/VisibilityToggle.tsx`
 
 **Step 1: `useCastData.ts` のエラーメッセージを日本語化**
 
@@ -802,12 +802,12 @@ git commit -m "fix: unify post module error messages to Japanese"
 
 **Step 4: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 
 **Step 5: コミット**
 
 ```bash
-git add services/nyx/workspace/src/modules/portfolio/
+git add services/frontend/workspace/src/modules/portfolio/
 git commit -m "fix: unify portfolio module error messages to Japanese and add toast"
 ```
 
@@ -816,8 +816,8 @@ git commit -m "fix: unify portfolio module error messages to Japanese and add to
 ## Task 12: Media モジュールのエラー修正
 
 **Files:**
-- Modify: `services/nyx/workspace/src/modules/media/hooks/useMediaUpload.ts`
-- Modify: `services/nyx/workspace/src/components/shared/AvatarUploader.tsx`
+- Modify: `services/frontend/workspace/src/modules/media/hooks/useMediaUpload.ts`
+- Modify: `services/frontend/workspace/src/components/shared/AvatarUploader.tsx`
 
 **Step 1: `useMediaUpload.ts` のエラーメッセージを日本語化**
 
@@ -847,12 +847,12 @@ git commit -m "fix: unify portfolio module error messages to Japanese and add to
 
 **Step 3: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 
 **Step 4: コミット**
 
 ```bash
-git add services/nyx/workspace/src/modules/media/
+git add services/frontend/workspace/src/modules/media/
 git commit -m "fix: unify media module error messages to Japanese"
 ```
 
@@ -861,9 +861,9 @@ git commit -m "fix: unify media module error messages to Japanese"
 ## Task 13: Trust モジュールのエラー修正
 
 **Files:**
-- Modify: `services/nyx/workspace/src/modules/trust/hooks/usePendingReviews.ts`
-- Modify: `services/nyx/workspace/src/modules/trust/hooks/useTaggings.ts`
-- Modify: `services/nyx/workspace/src/modules/trust/components/GuestTagsDisplay.tsx`
+- Modify: `services/frontend/workspace/src/modules/trust/hooks/usePendingReviews.ts`
+- Modify: `services/frontend/workspace/src/modules/trust/hooks/useTaggings.ts`
+- Modify: `services/frontend/workspace/src/modules/trust/components/GuestTagsDisplay.tsx`
 
 **Step 1: `usePendingReviews.ts` — 既に re-throw しているので呼び出し元で対応**
 
@@ -891,12 +891,12 @@ git commit -m "fix: unify media module error messages to Japanese"
 
 **Step 4: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 
 **Step 5: コミット**
 
 ```bash
-git add services/nyx/workspace/src/modules/trust/
+git add services/frontend/workspace/src/modules/trust/
 git commit -m "fix: add toast notification to trust module error handling"
 ```
 
@@ -905,16 +905,16 @@ git commit -m "fix: add toast notification to trust module error handling"
 ## Task 14: Cast ページのエラー修正
 
 **Files:**
-- Modify: `services/nyx/workspace/src/app/(cast)/cast/timeline/page.tsx`
-- Modify: `services/nyx/workspace/src/app/(cast)/cast/home/page.tsx`
-- Modify: `services/nyx/workspace/src/app/(cast)/cast/profile/page.tsx`
-- Modify: `services/nyx/workspace/src/app/(cast)/cast/schedules/page.tsx`
-- Modify: `services/nyx/workspace/src/app/(cast)/cast/plans/page.tsx`
-- Modify: `services/nyx/workspace/src/app/(cast)/cast/blocks/page.tsx`
-- Modify: `services/nyx/workspace/src/app/(cast)/cast/followers/page.tsx`
-- Modify: `services/nyx/workspace/src/app/(cast)/cast/followers/requests/page.tsx`
-- Modify: `services/nyx/workspace/src/app/(cast)/cast/onboarding/step-2/page.tsx`
-- Modify: `services/nyx/workspace/src/app/(cast)/cast/onboarding/step-5/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(cast)/cast/timeline/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(cast)/cast/home/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(cast)/cast/profile/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(cast)/cast/schedules/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(cast)/cast/plans/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(cast)/cast/blocks/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(cast)/cast/followers/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(cast)/cast/followers/requests/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(cast)/cast/onboarding/step-2/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(cast)/cast/onboarding/step-5/page.tsx`
 
 **Step 1: 各ページの `console.error` のみの箇所に Toast を追加し、英語メッセージを日本語化**
 
@@ -981,12 +981,12 @@ toast({ title: "投稿の保存に失敗しました", variant: "destructive" })
 
 **Step 2: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -30`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -30`
 
 **Step 3: コミット**
 
 ```bash
-git add services/nyx/workspace/src/app/\(cast\)/
+git add services/frontend/workspace/src/app/\(cast\)/
 git commit -m "fix: add toast notifications and Japanese messages to cast pages"
 ```
 
@@ -995,9 +995,9 @@ git commit -m "fix: add toast notifications and Japanese messages to cast pages"
 ## Task 15: Guest ページのエラー修正
 
 **Files:**
-- Modify: `services/nyx/workspace/src/app/(guest)/casts/[userId]/page.tsx`
-- Modify: `services/nyx/workspace/src/app/(guest)/search/page.tsx`
-- Modify: `services/nyx/workspace/src/app/(guest)/following/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(guest)/casts/[userId]/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(guest)/search/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(guest)/following/page.tsx`
 
 **Step 1: 各ページの `console.error` のみの箇所に Toast を追加し、英語メッセージを日本語化**
 
@@ -1027,12 +1027,12 @@ toast({ title: "フォロー解除に失敗しました", variant: "destructive"
 
 **Step 2: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 
 **Step 3: コミット**
 
 ```bash
-git add services/nyx/workspace/src/app/\(guest\)/
+git add services/frontend/workspace/src/app/\(guest\)/
 git commit -m "fix: add toast notifications and Japanese messages to guest pages"
 ```
 
@@ -1068,12 +1068,12 @@ return NextResponse.json({ error: "メールアドレスまたはパスワード
 
 **Step 3: ビルド確認**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty 2>&1 | head -20`
 
 **Step 4: コミット**
 
 ```bash
-git add services/nyx/workspace/src/app/api/
+git add services/frontend/workspace/src/app/api/
 git commit -m "fix: unify API route error messages to Japanese"
 ```
 
@@ -1083,12 +1083,12 @@ git commit -m "fix: unify API route error messages to Japanese"
 
 **Step 1: TypeScript 型チェック**
 
-Run: `cd services/nyx/workspace && npx tsc --noEmit --pretty`
+Run: `cd services/frontend/workspace && npx tsc --noEmit --pretty`
 Expected: エラーなし
 
 **Step 2: Next.js ビルド**
 
-Run: `cd services/nyx/workspace && npx next build`
+Run: `cd services/frontend/workspace && npx next build`
 Expected: ビルド成功
 
 **Step 3: 未使用の `ApiError` インポートを削除**

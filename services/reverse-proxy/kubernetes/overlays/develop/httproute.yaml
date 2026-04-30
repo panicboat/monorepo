@@ -4,4 +4,4 @@ metadata:
   name: reverse-proxy
 spec:
   hostnames:
-  - nyx.local
+  - frontend.local

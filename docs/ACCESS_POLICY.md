@@ -4,7 +4,7 @@
 
 ## Overview
 
-Nyx.PLACE では、キャストの visibility（公開設定）と投稿の visibility、フォロー状態、ブロック状態の組み合わせでアクセス可否を判定する。
+dystopia.city では、キャストの visibility（公開設定）と投稿の visibility、フォロー状態、ブロック状態の組み合わせでアクセス可否を判定する。
 
 ## Terminology
 

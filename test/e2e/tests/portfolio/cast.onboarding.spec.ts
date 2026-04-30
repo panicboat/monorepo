@@ -21,7 +21,7 @@ test.describe('Cast Onboarding Flow', () => {
     await expect(page).toHaveURL(/\/cast\/onboarding/);
 
     // Wait for welcome page to load and click "Create Profile" button
-    await expect(page.getByRole('heading', { name: 'Welcome to Nyx' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'Welcome to Frontend' })).toBeVisible({ timeout: 10000 });
     await page.getByRole('link', { name: /プロフィールを作成する/ }).click();
 
     // Should be on step-1

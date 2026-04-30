@@ -515,12 +515,12 @@ git commit -m "refactor: update gRPC handlers for user_id unification"
 **Step 5: Proto スタブ再生成**
 
 Run (backend): `cd services/monolith/workspace && bundle exec rake proto:generate`
-Run (frontend): `cd services/nyx/workspace && npm run proto:generate`
+Run (frontend): `cd services/frontend/workspace && npm run proto:generate`
 
 **Step 6: コミット**
 
 ```bash
-git add proto/ services/monolith/workspace/lib/protos/ services/nyx/workspace/src/lib/gen/
+git add proto/ services/monolith/workspace/lib/protos/ services/frontend/workspace/src/lib/gen/
 git commit -m "refactor: update proto definitions for user_id unification"
 ```
 
@@ -529,9 +529,9 @@ git commit -m "refactor: update proto definitions for user_id unification"
 ## Task 7: フロントエンド型定義・API マッパー更新
 
 **Files:**
-- Modify: `services/nyx/workspace/src/modules/portfolio/types.ts`
-- Modify: `services/nyx/workspace/src/modules/trust/types.ts`
-- Modify: `services/nyx/workspace/src/modules/trust/lib/api-mappers.ts`
+- Modify: `services/frontend/workspace/src/modules/portfolio/types.ts`
+- Modify: `services/frontend/workspace/src/modules/trust/types.ts`
+- Modify: `services/frontend/workspace/src/modules/trust/lib/api-mappers.ts`
 
 **Step 1: Portfolio types 更新**
 
@@ -551,7 +551,7 @@ git commit -m "refactor: update proto definitions for user_id unification"
 **Step 3: コミット**
 
 ```bash
-git add services/nyx/workspace/src/modules/*/types.ts services/nyx/workspace/src/modules/trust/lib/
+git add services/frontend/workspace/src/modules/*/types.ts services/frontend/workspace/src/modules/trust/lib/
 git commit -m "refactor: update frontend types for user_id unification"
 ```
 
@@ -560,9 +560,9 @@ git commit -m "refactor: update frontend types for user_id unification"
 ## Task 8: フロントエンド Hooks 更新
 
 **Files:**
-- Modify: `services/nyx/workspace/src/modules/portfolio/hooks/useCastProfile.ts`
-- Modify: `services/nyx/workspace/src/modules/trust/hooks/useInfiniteReviews.ts`
-- Modify: `services/nyx/workspace/src/modules/trust/hooks/useReviewStats.ts`
+- Modify: `services/frontend/workspace/src/modules/portfolio/hooks/useCastProfile.ts`
+- Modify: `services/frontend/workspace/src/modules/trust/hooks/useInfiniteReviews.ts`
+- Modify: `services/frontend/workspace/src/modules/trust/hooks/useReviewStats.ts`
 - Modify: 他の trust/portfolio hooks
 
 **Step 1: useCastProfile 更新**
@@ -578,7 +578,7 @@ git commit -m "refactor: update frontend types for user_id unification"
 **Step 3: コミット**
 
 ```bash
-git add services/nyx/workspace/src/modules/*/hooks/*.ts
+git add services/frontend/workspace/src/modules/*/hooks/*.ts
 git commit -m "refactor: update frontend hooks for user_id unification"
 ```
 
@@ -587,18 +587,18 @@ git commit -m "refactor: update frontend hooks for user_id unification"
 ## Task 9: フロントエンド ページ・コンポーネント更新
 
 **Files:**
-- Modify: `services/nyx/workspace/src/app/(cast)/cast/guests/[id]/page.tsx` → `[userId]/page.tsx` にリネーム
-- Modify: `services/nyx/workspace/src/app/(guest)/casts/[id]/page.tsx` → `[userId]/page.tsx` にリネーム
-- Modify: `services/nyx/workspace/src/modules/trust/components/ReviewCard.tsx`
-- Modify: `services/nyx/workspace/src/modules/trust/components/CastReviewsPage.tsx`
-- Modify: `services/nyx/workspace/src/modules/trust/components/WriteTrustModal.tsx`
+- Modify: `services/frontend/workspace/src/app/(cast)/cast/guests/[id]/page.tsx` → `[userId]/page.tsx` にリネーム
+- Modify: `services/frontend/workspace/src/app/(guest)/casts/[id]/page.tsx` → `[userId]/page.tsx` にリネーム
+- Modify: `services/frontend/workspace/src/modules/trust/components/ReviewCard.tsx`
+- Modify: `services/frontend/workspace/src/modules/trust/components/CastReviewsPage.tsx`
+- Modify: `services/frontend/workspace/src/modules/trust/components/WriteTrustModal.tsx`
 
 **Step 1: URL ルーティングのリネーム**
 
 ```bash
 # ディレクトリ名変更
-mv services/nyx/workspace/src/app/\(cast\)/cast/guests/\[id\] services/nyx/workspace/src/app/\(cast\)/cast/guests/\[userId\]
-mv services/nyx/workspace/src/app/\(guest\)/casts/\[id\] services/nyx/workspace/src/app/\(guest\)/casts/\[userId\]
+mv services/frontend/workspace/src/app/\(cast\)/cast/guests/\[id\] services/frontend/workspace/src/app/\(cast\)/cast/guests/\[userId\]
+mv services/frontend/workspace/src/app/\(guest\)/casts/\[id\] services/frontend/workspace/src/app/\(guest\)/casts/\[userId\]
 ```
 
 **Step 2: ページコンポーネント内のパラメータ名更新**
@@ -626,7 +626,7 @@ mv services/nyx/workspace/src/app/\(guest\)/casts/\[id\] services/nyx/workspace/
 **Step 5: コミット**
 
 ```bash
-git add services/nyx/workspace/src/app/ services/nyx/workspace/src/modules/trust/components/
+git add services/frontend/workspace/src/app/ services/frontend/workspace/src/modules/trust/components/
 git commit -m "refactor: update frontend pages and components for user_id unification"
 ```
 
@@ -635,13 +635,13 @@ git commit -m "refactor: update frontend pages and components for user_id unific
 ## Task 10: フロントエンド API ルート更新
 
 **Files:**
-- Modify: `services/nyx/workspace/src/app/api/cast/guests/[id]/route.ts` → `[userId]/route.ts` にリネーム
+- Modify: `services/frontend/workspace/src/app/api/cast/guests/[id]/route.ts` → `[userId]/route.ts` にリネーム
 - Modify: 他の API ルートで `cast_id`/`guest_id` を使用しているもの
 
 **Step 1: API ルートのリネーム**
 
 ```bash
-mv services/nyx/workspace/src/app/api/cast/guests/\[id\] services/nyx/workspace/src/app/api/cast/guests/\[userId\]
+mv services/frontend/workspace/src/app/api/cast/guests/\[id\] services/frontend/workspace/src/app/api/cast/guests/\[userId\]
 ```
 
 **Step 2: ルート内のパラメータ参照更新**
@@ -653,13 +653,13 @@ mv services/nyx/workspace/src/app/api/cast/guests/\[id\] services/nyx/workspace/
 **Step 3: 他の API ルートでプロフィール ID を使っている箇所を全検索**
 
 ```bash
-grep -rn "profileId\|profile_id\|\.id" services/nyx/workspace/src/app/api/ --include="*.ts"
+grep -rn "profileId\|profile_id\|\.id" services/frontend/workspace/src/app/api/ --include="*.ts"
 ```
 
 **Step 4: コミット**
 
 ```bash
-git add services/nyx/workspace/src/app/api/
+git add services/frontend/workspace/src/app/api/
 git commit -m "refactor: update API routes for user_id unification"
 ```
 
@@ -674,8 +674,8 @@ git commit -m "refactor: update API routes for user_id unification"
 **Step 1: グローバル検索でリンク更新箇所を特定**
 
 ```bash
-grep -rn "cast/guests/" services/nyx/workspace/src/ --include="*.tsx" --include="*.ts"
-grep -rn "/casts/" services/nyx/workspace/src/ --include="*.tsx" --include="*.ts"
+grep -rn "cast/guests/" services/frontend/workspace/src/ --include="*.tsx" --include="*.ts"
+grep -rn "/casts/" services/frontend/workspace/src/ --include="*.tsx" --include="*.ts"
 ```
 
 **Step 2: 各リンクの ID ソースを user_id に変更**
@@ -683,7 +683,7 @@ grep -rn "/casts/" services/nyx/workspace/src/ --include="*.tsx" --include="*.ts
 **Step 3: コミット**
 
 ```bash
-git add services/nyx/workspace/src/
+git add services/frontend/workspace/src/
 git commit -m "refactor: update all profile links to use user_id"
 ```
 
@@ -774,12 +774,12 @@ Run: `cd services/monolith/workspace && bundle exec rspec`
 
 **Step 2: フロントエンドのビルド確認**
 
-Run: `cd services/nyx/workspace && npm run build`
+Run: `cd services/frontend/workspace && npm run build`
 
 **Step 3: Proto の整合性確認**
 
 Run: `cd services/monolith/workspace && bundle exec rake proto:generate`
-Run: `cd services/nyx/workspace && npm run proto:generate`
+Run: `cd services/frontend/workspace && npm run proto:generate`
 
 **Step 4: シードデータの再生成テスト**
 

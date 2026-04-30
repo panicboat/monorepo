@@ -4,5 +4,5 @@ kind: Kustomization
 resources:
   - monolith
   - nginx
-  - nyx
+  - frontend
   - reverse-proxy

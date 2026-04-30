@@ -1,6 +1,6 @@
 # End-to-End Testing (Playwright)
 
-このディレクトリには、システム全体（Monolith Backend + Nyx Frontend）の動作を検証するための End-to-End (E2E) テストが含まれています。
+このディレクトリには、システム全体（Monolith Backend + Frontend Frontend）の動作を検証するための End-to-End (E2E) テストが含まれています。
 テストフレームワークには [Playwright](https://playwright.dev/) を使用しています。
 
 ## Prerequisites
@@ -8,7 +8,7 @@
 テストを実行する前に、ローカル環境でアプリケーション全体が起動している必要があります。
 
 1.  **Monolith Service**: `services/monolith/workspace` で `bin/grpc` を実行。
-2.  **Nyx Frontend**: `services/nyx/workspace` で `pnpm dev` を実行 (Port 3000)。
+2.  **Frontend Frontend**: `services/frontend/workspace` で `pnpm dev` を実行 (Port 3000)。
 
 または `local-apply.sh` を利用して Kubernetes 環境を起動する方法もあります。
 
@@ -34,15 +34,15 @@ pnpm exec playwright test
 
 ### Run against Local Kubernetes (k8s)
 
-`BASE_URL` 環境変数を指定することで、ポートフォワーディングされたローカル k8s 環境 (`nyx.local` など) に対してテストを実行可能です。
+`BASE_URL` 環境変数を指定することで、ポートフォワーディングされたローカル k8s 環境 (`frontend.local` など) に対してテストを実行可能です。
 自己署名証明書による SSL エラーは設定で無視するようにしています。
 
 ```bash
-# Example: http://nyx.local
-BASE_URL=http://nyx.local pnpm exec playwright test
+# Example: http://frontend.local
+BASE_URL=http://frontend.local pnpm exec playwright test
 
-# Example: https://nyx.local (SSL)
-BASE_URL=https://nyx.local pnpm exec playwright test
+# Example: https://frontend.local (SSL)
+BASE_URL=https://frontend.local pnpm exec playwright test
 ```
 
 ### Run with UI Mode (Recommended for Dev)

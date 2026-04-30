@@ -2,7 +2,7 @@
 
 ## Overview
 
-monolith (Backend) と nyx (Frontend) の全コードを対象とした包括的リファクタリング。
+monolith (Backend) と frontend (Frontend) の全コードを対象とした包括的リファクタリング。
 パターン統一・命名整理・技術的負債解消を、**基盤優先アプローチ**で実施する。
 
 ## Design Principles
@@ -66,7 +66,7 @@ lib/errors/
 
 ---
 
-## Phase 2: Nyx 共通基盤の整備
+## Phase 2: Frontend 共通基盤の整備
 
 ### 2-1. gRPC エラーコード定数 + HTTP マッピング
 
@@ -113,7 +113,7 @@ modules/trust/lib/mappers.ts         — Review 変換
 
 ---
 
-## Phase 3: Nyx フック・状態管理の整理
+## Phase 3: Frontend フック・状態管理の整理
 
 ### 3-1. デッドコード削除
 
@@ -153,12 +153,12 @@ modules/trust/lib/mappers.ts         — Review 変換
 - 共通エラークラスへの移行（26 Use Case）
 - 各スライスのフォールバック値整理
 
-### Nyx API ルート適用
+### Frontend API ルート適用
 - 30+ ルートに新ユーティリティ（認証チェック、エラーハンドリング）を適用
 - 既存 mapper を API ルートから参照
 - 新規 mapper（Relationship, Trust）を作成・適用
 
-### Nyx フック適用
+### Frontend フック適用
 - デッドコード削除
 - レガシーフック移行
 - 型修正
@@ -182,5 +182,5 @@ modules/trust/lib/mappers.ts         — Review 変換
 | レイヤー | 方針 |
 |---------|------|
 | Monolith | スライス独立性を尊重。共通化は純粋ユーティリティ（エラー構造体・ページネーションconcern）のみ |
-| Nyx API Routes | ボイラープレート削減。mapper はモジュール内に配置 |
-| Nyx Hooks | `usePaginatedFetch` + `authFetch` パターンに統一。デッドコード除去 |
+| Frontend API Routes | ボイラープレート削減。mapper はモジュール内に配置 |
+| Frontend Hooks | `usePaginatedFetch` + `authFetch` パターンに統一。デッドコード除去 |

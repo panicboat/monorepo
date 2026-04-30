@@ -102,7 +102,7 @@ Expected: Ruby proto files regenerated under `lib/` directories.
 **Step 5: Generate frontend proto code**
 
 ```bash
-cd services/nyx/workspace && pnpm proto:gen
+cd services/frontend/workspace && pnpm proto:gen
 ```
 
 Expected: TypeScript proto files regenerated under `src/stub/`.
@@ -110,7 +110,7 @@ Expected: TypeScript proto files regenerated under `src/stub/`.
 **Step 6: Commit**
 
 ```bash
-git add proto/ services/monolith/workspace/lib/ services/nyx/workspace/src/stub/
+git add proto/ services/monolith/workspace/lib/ services/frontend/workspace/src/stub/
 git commit -m "feat(proto): add prefecture support to guest, cast search, and feed"
 ```
 
@@ -885,14 +885,14 @@ git commit -m "feat(feed): add prefecture filter to guest feed all tab"
 バックエンドの新しいエンドポイントに対応する API Routes を更新・作成。
 
 **Files:**
-- Modify: `services/nyx/workspace/src/app/api/guest/profile/route.ts`
-- Modify: `services/nyx/workspace/src/app/api/guest/search/route.ts`
-- Create: `services/nyx/workspace/src/app/api/guest/search/count/route.ts`
-- Modify: `services/nyx/workspace/src/app/api/feed/guest/route.ts`
+- Modify: `services/frontend/workspace/src/app/api/guest/profile/route.ts`
+- Modify: `services/frontend/workspace/src/app/api/guest/search/route.ts`
+- Create: `services/frontend/workspace/src/app/api/guest/search/count/route.ts`
+- Modify: `services/frontend/workspace/src/app/api/feed/guest/route.ts`
 
 **Step 1: Update /api/guest/profile to handle prefecture**
 
-Modify `services/nyx/workspace/src/app/api/guest/profile/route.ts`:
+Modify `services/frontend/workspace/src/app/api/guest/profile/route.ts`:
 
 GET レスポンスに `prefecture` を含める:
 
@@ -925,7 +925,7 @@ const response = await guestClient.saveGuestProfile(
 
 **Step 2: Update /api/guest/search to handle prefecture**
 
-Modify `services/nyx/workspace/src/app/api/guest/search/route.ts`:
+Modify `services/frontend/workspace/src/app/api/guest/search/route.ts`:
 
 ```ts
 // Add prefecture extraction:
@@ -942,7 +942,7 @@ const response = await castClient.listCasts(
 
 **Step 3: Create /api/guest/search/count route**
 
-File: `services/nyx/workspace/src/app/api/guest/search/count/route.ts`
+File: `services/frontend/workspace/src/app/api/guest/search/count/route.ts`
 
 ```ts
 import { NextRequest, NextResponse } from "next/server";
@@ -988,7 +988,7 @@ export async function GET(req: NextRequest) {
 
 **Step 4: Update /api/feed/guest to handle prefecture**
 
-Modify `services/nyx/workspace/src/app/api/feed/guest/route.ts`:
+Modify `services/frontend/workspace/src/app/api/feed/guest/route.ts`:
 
 ```ts
 const prefecture = searchParams.get("prefecture") || "";
@@ -1007,8 +1007,8 @@ const response = await feedClient.listGuestFeed(
 **Step 5: Commit**
 
 ```bash
-git add services/nyx/workspace/src/app/api/
-git commit -m "feat(nyx): update API routes for prefecture support and add cast count route"
+git add services/frontend/workspace/src/app/api/
+git commit -m "feat(frontend): update API routes for prefecture support and add cast count route"
 ```
 
 ---
@@ -1018,14 +1018,14 @@ git commit -m "feat(nyx): update API routes for prefecture support and add cast 
 ゲストのプロフィールフォームに都道府県選択を追加。
 
 **Files:**
-- Modify: `services/nyx/workspace/src/modules/portfolio/types.ts`
-- Modify: `services/nyx/workspace/src/modules/portfolio/hooks/useGuestData.ts`
-- Modify: `services/nyx/workspace/src/modules/portfolio/components/guest/GuestProfileForm.tsx`
-- Modify: `services/nyx/workspace/src/modules/portfolio/components/guest/GuestOnboarding.tsx`
+- Modify: `services/frontend/workspace/src/modules/portfolio/types.ts`
+- Modify: `services/frontend/workspace/src/modules/portfolio/hooks/useGuestData.ts`
+- Modify: `services/frontend/workspace/src/modules/portfolio/components/guest/GuestProfileForm.tsx`
+- Modify: `services/frontend/workspace/src/modules/portfolio/components/guest/GuestOnboarding.tsx`
 
 **Step 1: Update types**
 
-Modify `services/nyx/workspace/src/modules/portfolio/types.ts`:
+Modify `services/frontend/workspace/src/modules/portfolio/types.ts`:
 
 `useGuestData.ts` の `GuestProfileFormData` を確認して `prefecture` を追加:
 
@@ -1042,13 +1042,13 @@ export interface GuestProfileFormData {
 
 **Step 2: Update useGuestData hook**
 
-Modify `services/nyx/workspace/src/modules/portfolio/hooks/useGuestData.ts`:
+Modify `services/frontend/workspace/src/modules/portfolio/hooks/useGuestData.ts`:
 
 `INITIAL_PROFILE` に `prefecture: ""` を追加。`saveProfile` の PUT ボディに `prefecture` を含める。API レスポンスから `prefecture` を取り出す。
 
 **Step 3: Update GuestProfileForm**
 
-Modify `services/nyx/workspace/src/modules/portfolio/components/guest/GuestProfileForm.tsx`:
+Modify `services/frontend/workspace/src/modules/portfolio/components/guest/GuestProfileForm.tsx`:
 
 都道府県セレクトを追加。`useAreas` フックの `prefectures` を使う:
 
@@ -1083,7 +1083,7 @@ await onSubmit({ name, avatarMediaId, tagline, bio, prefecture });
 
 **Step 4: Update GuestOnboarding for required prefecture**
 
-Modify `services/nyx/workspace/src/modules/portfolio/components/guest/GuestOnboarding.tsx`:
+Modify `services/frontend/workspace/src/modules/portfolio/components/guest/GuestOnboarding.tsx`:
 
 `GuestProfileForm` に `requirePrefecture` prop を渡すか、またはフォーム内のバリデーションで対応。
 
@@ -1113,8 +1113,8 @@ if (requirePrefecture && !prefecture) {
 **Step 5: Commit**
 
 ```bash
-git add services/nyx/workspace/src/modules/portfolio/
-git commit -m "feat(nyx): add prefecture selector to guest profile form and onboarding"
+git add services/frontend/workspace/src/modules/portfolio/
+git commit -m "feat(frontend): add prefecture selector to guest profile form and onboarding"
 ```
 
 ---
@@ -1124,13 +1124,13 @@ git commit -m "feat(nyx): add prefecture selector to guest profile form and onbo
 検索フィルターの都道府県選択と件数表示を実装。
 
 **Files:**
-- Modify: `services/nyx/workspace/src/modules/portfolio/hooks/useInfiniteCasts.ts`
-- Modify: `services/nyx/workspace/src/app/(guest)/search/SearchFilterOverlay.tsx`
-- Modify: `services/nyx/workspace/src/app/(guest)/search/page.tsx`
+- Modify: `services/frontend/workspace/src/modules/portfolio/hooks/useInfiniteCasts.ts`
+- Modify: `services/frontend/workspace/src/app/(guest)/search/SearchFilterOverlay.tsx`
+- Modify: `services/frontend/workspace/src/app/(guest)/search/page.tsx`
 
 **Step 1: Update useInfiniteCasts to accept prefecture**
 
-Modify `services/nyx/workspace/src/modules/portfolio/hooks/useInfiniteCasts.ts`:
+Modify `services/frontend/workspace/src/modules/portfolio/hooks/useInfiniteCasts.ts`:
 
 ```ts
 interface UseInfiniteCastsOptions {
@@ -1150,7 +1150,7 @@ if (options.prefecture) params.set("prefecture", options.prefecture);
 
 **Step 2: Update FilterState type and SearchFilterOverlay**
 
-Modify `services/nyx/workspace/src/app/(guest)/search/SearchFilterOverlay.tsx`:
+Modify `services/frontend/workspace/src/app/(guest)/search/SearchFilterOverlay.tsx`:
 
 `FilterState` に `prefecture` を追加:
 
@@ -1290,7 +1290,7 @@ const activeFilterCount = (query.trim() ? 1 : 0) + (genreId ? 1 : 0) + (status !
 
 **Step 5: Update search page**
 
-Modify `services/nyx/workspace/src/app/(guest)/search/page.tsx`:
+Modify `services/frontend/workspace/src/app/(guest)/search/page.tsx`:
 
 `FilterState` に `prefecture` を追加:
 
@@ -1329,8 +1329,8 @@ const { casts, ... } = useInfiniteCasts({
 **Step 6: Commit**
 
 ```bash
-git add services/nyx/workspace/src/
-git commit -m "feat(nyx): add prefecture selection and cast count to search filter"
+git add services/frontend/workspace/src/
+git commit -m "feat(frontend): add prefecture selection and cast count to search filter"
 ```
 
 ---
@@ -1340,13 +1340,13 @@ git commit -m "feat(nyx): add prefecture selection and cast count to search filt
 ゲスト Timeline の "All" タブにエリアフィルターを自動適用。
 
 **Files:**
-- Modify: `services/nyx/workspace/src/modules/post/hooks/useTimeline.ts`
-- Modify: `services/nyx/workspace/src/modules/feed/components/feed/TimelineFeed.tsx`
-- Modify: `services/nyx/workspace/src/app/(guest)/page.tsx`
+- Modify: `services/frontend/workspace/src/modules/post/hooks/useTimeline.ts`
+- Modify: `services/frontend/workspace/src/modules/feed/components/feed/TimelineFeed.tsx`
+- Modify: `services/frontend/workspace/src/app/(guest)/page.tsx`
 
 **Step 1: Update useTimeline to support prefecture and Feed API**
 
-Modify `services/nyx/workspace/src/modules/post/hooks/useTimeline.ts`:
+Modify `services/frontend/workspace/src/modules/post/hooks/useTimeline.ts`:
 
 `useTimeline` に `prefecture` option を追加。`castId` がない場合（ゲストフィード）は `/api/feed/guest` を使用:
 
@@ -1400,7 +1400,7 @@ export function useTimeline(options: UseTimelineOptions = {}) {
 
 **Step 2: Update TimelineFeed to pass guest prefecture**
 
-Modify `services/nyx/workspace/src/modules/feed/components/feed/TimelineFeed.tsx`:
+Modify `services/frontend/workspace/src/modules/feed/components/feed/TimelineFeed.tsx`:
 
 ゲストの prefecture を取得して `useTimeline` に渡す:
 
@@ -1419,13 +1419,13 @@ const { posts, loading, loadingMore, error, hasMore, fetchInitial, fetchMore } =
 
 **Step 3: Verify guest homepage**
 
-ゲストのホームページ (`services/nyx/workspace/src/app/(guest)/page.tsx`) は `TimelineFeed` を使っており、`mode="guest"` がデフォルト。変更不要。
+ゲストのホームページ (`services/frontend/workspace/src/app/(guest)/page.tsx`) は `TimelineFeed` を使っており、`mode="guest"` がデフォルト。変更不要。
 
 **Step 4: Commit**
 
 ```bash
-git add services/nyx/workspace/src/
-git commit -m "feat(nyx): auto-apply guest prefecture filter to timeline all tab"
+git add services/frontend/workspace/src/
+git commit -m "feat(frontend): auto-apply guest prefecture filter to timeline all tab"
 ```
 
 ---
@@ -1435,11 +1435,11 @@ git commit -m "feat(nyx): auto-apply guest prefecture filter to timeline all tab
 検索ページのデフォルトフィルターにゲストの都道府県を適用。
 
 **Files:**
-- Modify: `services/nyx/workspace/src/app/(guest)/search/page.tsx`
+- Modify: `services/frontend/workspace/src/app/(guest)/search/page.tsx`
 
 **Step 1: Set guest's prefecture as default search filter**
 
-Modify `services/nyx/workspace/src/app/(guest)/search/page.tsx`:
+Modify `services/frontend/workspace/src/app/(guest)/search/page.tsx`:
 
 ゲストの prefecture を取得して初期フィルターに設定:
 
@@ -1467,7 +1467,7 @@ useEffect(() => {
 **Step 2: Run frontend dev server and verify**
 
 ```bash
-cd services/nyx/workspace && pnpm dev
+cd services/frontend/workspace && pnpm dev
 ```
 
 手動確認項目:
@@ -1491,6 +1491,6 @@ Expected: All tests pass.
 **Step 4: Final commit**
 
 ```bash
-git add services/nyx/workspace/src/
-git commit -m "feat(nyx): use guest prefecture as default search filter"
+git add services/frontend/workspace/src/
+git commit -m "feat(frontend): use guest prefecture as default search filter"
 ```
