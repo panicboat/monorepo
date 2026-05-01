@@ -4,7 +4,7 @@
 
 **Goal:** panicboat 配下の 4 リポジトリ (`deploy-actions` / `panicboat-actions` / `monorepo` / `platform`) に SHA pinning 強制 + Conventional Commits 強制 + Renovate 自動 SHA pin 維持を導入し、`deploy-actions` には semver タグ運用 (release-please) を追加する。
 
-**Architecture:** 4 リポ共通で `semantic-pull-request.yml` (PR タイトル検証) と `lint-actions.yml` (`zgosalvez/github-actions-ensure-sha-pinned-actions`) を追加し、`renovate.json` に `helpers:pinGitHubActionDigests` を足す。`deploy-actions` のみ `release-please.yml` + manifest を追加して semver タグを切る。既存 `@v4` 等は `pinact` ローカル実行で SHA pin に一括変換し、以降は Renovate に維持を委任する。
+**Architecture:** 4 リポ共通で `semantic-pull-request.yml` (PR タイトル検証) と `lint-actions.yml` (`zgosalvez/github-actions-ensure-sha-pinned-actions`) を追加し、`renovate.json` に `helpers:pinGitHubActionDigests` を足す。`deploy-actions` のみ `release.yml` + manifest を追加して semver タグを切る。既存 `@v4` 等は `pinact` ローカル実行で SHA pin に一括変換し、以降は Renovate に維持を委任する。
 
 **Tech Stack:** GitHub Actions, Renovate, `zgosalvez/github-actions-ensure-sha-pinned-actions`, `amannn/action-semantic-pull-request`, `googleapis/release-please-action`, `pinact`, `actions/create-github-app-token`
 
@@ -214,12 +214,12 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/lint-actions.yml
 ### Task 5: release-please workflow 追加
 
 **Files:**
-- Create: `.github/workflows/release-please.yml`
+- Create: `.github/workflows/release.yml`
 
 - [ ] **Step 1: ファイル作成**
 
 ```yaml
-name: Release Please
+name: Release
 
 on:
   push:
@@ -265,7 +265,7 @@ jobs:
 - [ ] **Step 2: YAML 妥当性確認**
 
 ```bash
-python3 -c "import yaml; yaml.safe_load(open('.github/workflows/release-please.yml'))"
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/release.yml'))"
 ```
 
 期待: エラーなし
@@ -301,7 +301,7 @@ jq '.extends' .github/renovate.json
 **Files:**
 - Modify: `.github/workflows/semantic-pull-request.yml`
 - Modify: `.github/workflows/lint-actions.yml`
-- Modify: `.github/workflows/release-please.yml`
+- Modify: `.github/workflows/release.yml`
 - Modify: `.github/workflows/check.yaml` (既存、変更があれば)
 
 - [ ] **Step 1: pinact をインストール**
@@ -327,7 +327,7 @@ pinact run
 git diff .github/workflows/
 ```
 
-期待: 新規 3 ファイル (`semantic-pull-request.yml`, `lint-actions.yml`, `release-please.yml`) の `uses:` がすべて SHA pin されている
+期待: 新規 3 ファイル (`semantic-pull-request.yml`, `lint-actions.yml`, `release.yml`) の `uses:` がすべて SHA pin されている
 
 - [ ] **Step 4: pinact をアンインストール**
 
@@ -364,7 +364,7 @@ git diff --stat
 ```bash
 git add .github/workflows/semantic-pull-request.yml \
         .github/workflows/lint-actions.yml \
-        .github/workflows/release-please.yml \
+        .github/workflows/release.yml \
         .github/workflows/check.yaml \
         .github/renovate.json \
         .release-please-manifest.json \
@@ -380,7 +380,7 @@ gh pr create --draft --title "ci: add SHA pinning and release-please infrastruct
 ## Summary
 - Add `semantic-pull-request.yml` to enforce Conventional Commits PR titles
 - Add `lint-actions.yml` with `ensure-sha-pinned-actions` CI gate
-- Add `release-please.yml` for semver tag automation
+- Add `release.yml` for semver tag automation
 - Add `release-please-config.json` and `.release-please-manifest.json`
 - Update `renovate.json` with `helpers:pinGitHubActionDigests`
 - Convert all existing `uses:` to SHA pin via one-shot `pinact run`
@@ -390,7 +390,7 @@ Part of the SHA pinning rollout. See `docs/superpowers/specs/2026-05-01-github-a
 ## Test plan
 - [ ] `Validate PR title` check passes on this PR
 - [ ] `Ensure actions are pinned to SHAs` check passes
-- [ ] After merge, `Release Please` workflow runs and opens an Initial Release PR
+- [ ] After merge, `Release` workflow runs and opens an Initial Release PR
 EOF
 )"
 ```
@@ -467,7 +467,7 @@ gh pr merge --squash --delete-branch
 gh run list --branch main --limit 5
 ```
 
-期待: `Lint GitHub Actions` と `Release Please` が main で実行される
+期待: `Lint GitHub Actions` と `Release` が main で実行される
 
 - [ ] **Step 3: release-please が出した PR を確認**
 
@@ -505,7 +505,7 @@ git push origin main
 - [ ] **Step 3: release-please workflow が新しい commit で再実行されることを確認**
 
 ```bash
-gh run list --workflow=release-please.yml --limit 3
+gh run list --workflow=release.yml --limit 3
 ```
 
 期待: 新しい run が in_progress または completed
@@ -629,8 +629,8 @@ test -f .github/workflows/semantic-pull-request.yml && echo "OK 1"
 # DoD 2: lint-actions.yml が存在
 test -f .github/workflows/lint-actions.yml && echo "OK 2"
 
-# DoD 3: release-please.yml が存在
-test -f .github/workflows/release-please.yml && echo "OK 3"
+# DoD 3: release.yml が存在
+test -f .github/workflows/release.yml && echo "OK 3"
 
 # DoD 4: renovate.json に helpers:pinGitHubActionDigests
 jq -e '.extends | index("helpers:pinGitHubActionDigests")' .github/renovate.json && echo "OK 4"

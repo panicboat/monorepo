@@ -13,7 +13,7 @@ panicboat 配下のリポジトリ群（`deploy-actions` / `panicboat-actions` /
   - `lint-actions.yml` — `zgosalvez/github-actions-ensure-sha-pinned-actions` による SHA pin 強制
   - `.github/renovate.json` への `helpers:pinGitHubActionDigests` 追加
 - **追加コンポーネント** (`deploy-actions` のみ):
-  - `release-please.yml` — `googleapis/release-please-action` による semver タグ運用
+  - `release.yml` — `googleapis/release-please-action` による semver タグ運用
 - **ワンショット移行**: `pinact` をローカルで一度実行し、既存の `@v4` 等を SHA pin に変換する PR を出す。`pinact` 自体は CI に常駐させず実行後にアンインストールする。
 
 ## Non-Goals
@@ -138,10 +138,10 @@ jobs:
 
 `panicboat/deploy-actions/*` はどのリポでも allowlist に入れない（Phase 1 完了後に semver タグが切られるため SHA pin 可能）。
 
-### 3. `.github/workflows/release-please.yml`（`deploy-actions` のみ）
+### 3. `.github/workflows/release.yml`（`deploy-actions` のみ）
 
 ```yaml
-name: Release Please
+name: Release
 
 on:
   push:
@@ -355,7 +355,7 @@ rm /tmp/pinact.yaml
 
 **`deploy-actions` 追加:**
 
-- [ ] `.github/workflows/release-please.yml` が存在し、main で green
+- [ ] `.github/workflows/release.yml` が存在し、main で green
 - [ ] `v1.0.0` タグと `v1` メジャータグが存在
 - [ ] `vars.APP_ID` / `secrets.APP_PRIVATE_KEY` が設定されている
 - [ ] README の利用例が `@v1` 形式
@@ -370,7 +370,7 @@ rm /tmp/pinact.yaml
 | 問題 | 戻し方 |
 |---|---|
 | `lint-actions` が誤検知で main を赤にする | Required check 指定を解除し、allowlist を調整。workflow 自体は残す |
-| `release-please` の挙動が想定と異なる | `release-please.yml` を削除する PR。既に切られたタグ・リリースは残す（消すと利用側の `@v1` 参照が壊れる） |
+| `release-please` の挙動が想定と異なる | `release.yml` を削除する PR。既に切られたタグ・リリースは残す（消すと利用側の `@v1` 参照が壊れる） |
 | `semantic-pull-request` が運用フローを阻害 | Required check から外し、advisory な扱いに変更（PR をブロックしない） |
 | `pinact` 一括 PR で何かが壊れた | 該当 PR を revert し、個別に問題のある action だけ手動修正 |
 
