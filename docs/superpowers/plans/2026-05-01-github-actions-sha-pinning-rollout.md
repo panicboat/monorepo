@@ -227,41 +227,7 @@ gh secret list -R panicboat/deploy-actions | grep APP_PRIVATE_KEY || echo "missi
 
 ---
 
-### Task 2: release-please bootstrap ファイル作成
-
-**Files:**
-- Create: `.release-please-manifest.json`
-- Create: `release-please-config.json`
-
-- [ ] **Step 1: `.release-please-manifest.json` 作成**
-
-```json
-{
-  ".": "0.0.0"
-}
-```
-
-- [ ] **Step 2: `release-please-config.json` 作成**
-
-```json
-{
-  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "release-type": "simple",
-  "include-component-in-tag": false,
-  "packages": {
-    ".": {}
-  }
-}
-```
-
-- [ ] **Step 3: JSON 妥当性を確認**
-
-```bash
-jq . .release-please-manifest.json
-jq . release-please-config.json
-```
-
-期待: 整形された JSON が出力される (エラーなし)
+### Task 2: (削除) — release-please は manifest mode を使わず、`release-type: simple` を with に直接渡す方式に簡略化したため bootstrap ファイル不要
 
 ---
 
@@ -382,8 +348,7 @@ jobs:
         id: release
         with:
           token: ${{ steps.app-token.outputs.token }}
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
+          release-type: simple
 
       - name: Checkout for major tag update
         if: ${{ steps.release.outputs.release_created }}
@@ -505,9 +470,7 @@ git add .github/workflows/semantic-pull-request.yml \
         .github/workflows/lint-actions.yml \
         .github/workflows/release.yml \
         .github/workflows/check.yaml \
-        .github/renovate.json \
-        .release-please-manifest.json \
-        release-please-config.json
+        .github/renovate.json
 git commit -s -m "ci: add SHA pinning and release-please infrastructure"
 ```
 
@@ -520,7 +483,6 @@ gh pr create --draft --title "ci: add SHA pinning and release-please infrastruct
 - Add `semantic-pull-request.yml` to enforce Conventional Commits PR titles
 - Add `lint-actions.yml` with `ensure-sha-pinned-actions` CI gate
 - Add `release.yml` for semver tag automation
-- Add `release-please-config.json` and `.release-please-manifest.json`
 - Update `renovate.json` with `helpers:pinGitHubActionDigests`
 - Convert all existing `uses:` to SHA pin via one-shot `pinact run`
 

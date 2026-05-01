@@ -183,31 +183,8 @@ jobs:
           git push origin v${{ steps.release.outputs.major }} --force
 ```
 
-- `release-type: simple` を採用（リポ全体で 1 つの semver、`version.txt` のみ更新）
+- `release-type: simple` を `with` に直接渡す。manifest mode (`config-file` / `manifest-file`) は使わず、release-please が `version.txt` を自動生成・管理する最小構成
 - メジャータグ (`v1`) を別 step で force-update し、利用側が `@v1` で参照しても Renovate が SHA を自動追従できるようにする
-
-#### 補助ファイル
-
-`.release-please-manifest.json`:
-
-```json
-{
-  ".": "0.0.0"
-}
-```
-
-`release-please-config.json`:
-
-```json
-{
-  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "release-type": "simple",
-  "include-component-in-tag": false,
-  "packages": {
-    ".": {}
-  }
-}
-```
 
 #### 必要な GitHub App 設定（`deploy-actions` 限定の事前作業）
 
@@ -311,7 +288,7 @@ locals {
 | Step | 内容 |
 |---|---|
 | 1.1 | App 事前準備: `vars.APP_ID` / `secrets.APP_PRIVATE_KEY` 登録、deploy-actions リポを App に install、permissions 確認 |
-| 1.2 | 4 つの workflow + `.release-please-manifest.json` + `release-please-config.json` + Renovate `extends` 追加（1 PR） |
+| 1.2 | 3 つの workflow + Renovate `extends` 追加（1 PR） |
 | 1.3 | `pinact` ローカル実行（後述）で既存 `uses:` を SHA pin に変換する PR をマージ |
 | 1.4 | release-please が出す Initial Release PR で `Release-As: 1.0.0` を指定してマージ → `v1.0.0` + `v1` タグ作成 |
 | 1.5 | `README.md` / `README-ja.md` の利用例を `@main` → `@v1` に更新する PR |
