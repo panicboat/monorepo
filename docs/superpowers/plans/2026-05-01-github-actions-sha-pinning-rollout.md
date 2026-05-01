@@ -875,8 +875,10 @@ brew install pinact
 
 ```bash
 cat > /tmp/pinact.yaml <<'EOF'
+version: 3
 ignore_actions:
-  - name: panicboat/panicboat-actions/*
+  - name: panicboat/panicboat-actions/.*
+    ref: .*
 EOF
 ```
 
@@ -1161,8 +1163,10 @@ brew install pinact
 
 ```bash
 cat > /tmp/pinact.yaml <<'EOF'
+version: 3
 ignore_actions:
-  - name: panicboat/panicboat-actions/*
+  - name: panicboat/panicboat-actions/.*
+    ref: .*
 EOF
 ```
 
@@ -1449,8 +1453,10 @@ brew install pinact
 
 ```bash
 cat > /tmp/pinact.yaml <<'EOF'
+version: 3
 ignore_actions:
-  - name: panicboat/panicboat-actions/*
+  - name: panicboat/panicboat-actions/.*
+    ref: .*
 EOF
 ```
 
