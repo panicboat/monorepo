@@ -19,9 +19,10 @@
 
 ## Phase ordering
 
-Phase 1 (`deploy-actions`) を必ず最初に完了させる。Phase 3 (`monorepo` / `platform`) で `panicboat/deploy-actions/*` 参照を `@v1` に切り替えるために、`v1.0.0` タグが事前に存在している必要があるため。
-
 ```
+Phase 0: platform — マージ戦略を Squash 強制 (allow_rebase_merge=false)
+    │
+    ▼
 Phase 1: deploy-actions  (semver タグ運用の確立)
     │
     ▼
@@ -31,9 +32,147 @@ Phase 2: panicboat-actions  (Phase 1 と独立、いつでも実施可)
 Phase 3a: monorepo  ┐
                     ├─ Phase 1 完了後、並列実施可
 Phase 3b: platform  ┘
+    │
+    ▼
+Phase 4: platform — Required check 追加
 ```
 
-実際は Phase 2 は Phase 1 と独立なので、Phase 1 と並列でもよい。ただし plan の記述順は上記とする。
+- **Phase 0** は Phase 1 開始前に完了させる (deploy-actions のマージ戦略が `release-please` の前提)
+- **Phase 1** は Phase 3 より前に完了させる (`panicboat/deploy-actions/*@v1` 参照のため `v1.0.0` タグが必要)
+- **Phase 2** は Phase 1 と独立、いつでも実施可
+- **Phase 4** は Phase 1〜3b 全完了後に実施 (Required 化する check が main で 1 度成功している必要があるため)
+
+---
+
+## Phase 0: platform — マージ戦略を Squash 強制に
+
+### Task P0.1: platform worktree 作成
+
+**Files:**
+- Create: `~/GitHub/panicboat/platform/.claude/worktrees/feat-merge-strategy/`
+
+- [ ] **Step 1: 状態確認と worktree 作成**
+
+```bash
+cd ~/GitHub/panicboat/platform
+git fetch origin
+git status
+grep -E '^\/?\.claude\/worktrees\/?$' .git/info/exclude || echo "/.claude/worktrees/" >> .git/info/exclude
+git worktree add -b feat/squash-merge-only .claude/worktrees/feat-merge-strategy origin/main
+cd .claude/worktrees/feat-merge-strategy
+```
+
+---
+
+### Task P0.2: マージ戦略を Squash のみに変更
+
+**Files:**
+- Modify: `github/repository/modules/main.tf:17`
+
+- [ ] **Step 1: 現状確認**
+
+```bash
+grep -n "allow_rebase_merge" github/repository/modules/main.tf
+```
+
+期待: `17:  allow_rebase_merge     = true`
+
+- [ ] **Step 2: `true` → `false` に変更**
+
+`github/repository/modules/main.tf` の `allow_rebase_merge` の行を以下に変更:
+
+```diff
+   allow_merge_commit     = false
+   allow_squash_merge     = true
+-  allow_rebase_merge     = true
++  allow_rebase_merge     = false
+   allow_update_branch    = true
+```
+
+- [ ] **Step 3: 変更確認**
+
+```bash
+git diff github/repository/modules/main.tf
+```
+
+期待: 1 行の変更のみ (`true` → `false`)
+
+---
+
+### Task P0.3: PR 作成と terragrunt apply
+
+- [ ] **Step 1: コミットと push**
+
+```bash
+git add github/repository/modules/main.tf
+git commit -s -m "feat(github/repository): disable rebase merge for all panicboat repos"
+git push -u origin HEAD
+```
+
+- [ ] **Step 2: ドラフト PR 作成**
+
+```bash
+gh pr create --draft --title "feat(github/repository): disable rebase merge for all panicboat repos" --body "$(cat <<'EOF'
+## Summary
+- Disable `allow_rebase_merge` for all repositories managed by `github/repository` module
+- Enforces Squash-only merge strategy across all panicboat repos
+- Required for upcoming `release-please` rollout in `deploy-actions` (commit history must align 1:1 with PR titles for Conventional Commits parsing)
+
+Part of the SHA pinning rollout. See `monorepo:docs/superpowers/specs/2026-05-01-github-actions-sha-pinning-rollout-design.md`.
+
+## Test plan
+- [ ] Terragrunt plan shows `allow_rebase_merge: true → false` for all repos
+- [ ] After merge, `gh repo view --json rebaseMergeAllowed` returns `false` for sample repos
+EOF
+)"
+```
+
+- [ ] **Step 3: terragrunt plan の結果を確認 (PR 上の deploy-trigger workflow)**
+
+```bash
+gh pr checks --watch
+```
+
+期待: terragrunt plan の job が success、plan 出力で `allow_rebase_merge: true → false` (× 6 リポ) が確認できる
+
+- [ ] **Step 4: PR を Ready にしてマージ**
+
+```bash
+gh pr ready
+gh pr merge --squash --delete-branch
+```
+
+- [ ] **Step 5: terragrunt apply の結果を確認 (main の deploy-trigger workflow)**
+
+```bash
+gh run list --branch main --workflow=auto-label--deploy-trigger.yaml --limit 3
+```
+
+期待: 最新 run が success
+
+- [ ] **Step 6: 実際のリポ設定を確認**
+
+```bash
+for repo in deploy-actions panicboat-actions monorepo platform ansible dotfiles; do
+  echo -n "$repo: "
+  gh repo view panicboat/$repo --json rebaseMergeAllowed --jq '.rebaseMergeAllowed'
+done
+```
+
+期待: 全リポで `false`
+
+---
+
+### Task P0.4: worktree 削除
+
+- [ ] **Step 1: worktree 削除**
+
+```bash
+cd ~/GitHub/panicboat/platform
+git worktree remove .claude/worktrees/feat-merge-strategy
+git branch -D feat/squash-merge-only 2>/dev/null
+git worktree prune
+```
 
 ---
 
@@ -411,45 +550,7 @@ gh pr ready
 
 ---
 
-### Task 9: リポジトリ設定変更 (manual)
-
-**Files:**
-- (リポジトリ設定: GitHub Web UI)
-
-- [ ] **Step 1: マージ戦略を Squash のみにする**
-
-```bash
-gh repo edit panicboat/deploy-actions \
-  --enable-merge-commit=false \
-  --enable-squash-merge=true \
-  --enable-rebase-merge=false
-```
-
-- [ ] **Step 2: 確認**
-
-```bash
-gh repo view panicboat/deploy-actions --json mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed
-```
-
-期待: `{"mergeCommitAllowed":false,"squashMergeAllowed":true,"rebaseMergeAllowed":false}`
-
-- [ ] **Step 3: branch protection に Required check を追加**
-
-```bash
-gh api repos/panicboat/deploy-actions/branches/main/protection \
-  --jq '.required_status_checks.contexts'
-```
-
-既存 contexts を確認した上で、以下のコマンドで `Validate PR title` と `Ensure actions are pinned to SHAs` を追加:
-
-```bash
-# 既存 contexts に追記する形で更新 (例: 既存が空配列の場合)
-gh api -X PATCH repos/panicboat/deploy-actions/branches/main/protection/required_status_checks \
-  -f 'contexts[]=Validate PR title' \
-  -f 'contexts[]=Ensure actions are pinned to SHAs'
-```
-
-既存 contexts がある場合は、既存項目を保持したまま 2 つを追加すること。
+### Task 9: (削除) — マージ戦略は Phase 0、Required check は Phase 4 で Terragrunt 経由
 
 ---
 
@@ -635,25 +736,21 @@ test -f .github/workflows/release.yml && echo "OK 3"
 # DoD 4: renovate.json に helpers:pinGitHubActionDigests
 jq -e '.extends | index("helpers:pinGitHubActionDigests")' .github/renovate.json && echo "OK 4"
 
-# DoD 5: Squash merge のみ
-gh repo view --json mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed \
-  --jq 'select(.mergeCommitAllowed==false and .squashMergeAllowed==true and .rebaseMergeAllowed==false)' && echo "OK 5"
+# DoD 5: v1.0.0 と v1 タグ
+git tag -l v1.0.0 v1 | wc -l | grep -q 2 && echo "OK 5"
 
-# DoD 6: v1.0.0 と v1 タグ
-git tag -l v1.0.0 v1 | wc -l | grep -q 2 && echo "OK 6"
+# DoD 6: APP_ID/APP_PRIVATE_KEY 設定
+gh variable list | grep -q APP_ID && echo "OK 6a"
+gh secret list | grep -q APP_PRIVATE_KEY && echo "OK 6b"
 
-# DoD 7: APP_ID/APP_PRIVATE_KEY 設定
-gh variable list | grep -q APP_ID && echo "OK 7a"
-gh secret list | grep -q APP_PRIVATE_KEY && echo "OK 7b"
+# DoD 7: README が @v1 形式
+! grep -rE 'panicboat/deploy-actions/[a-z-]+@main' README.md README-ja.md action-scripts/ && echo "OK 7"
 
-# DoD 8: README が @v1 形式
-! grep -rE 'panicboat/deploy-actions/[a-z-]+@main' README.md README-ja.md action-scripts/ && echo "OK 8"
-
-# DoD 9: SHA 未 pin の uses: が存在しない
-! grep -rE "uses:\s+\w+/\w+(/\w+)*@(v[0-9]|main)" .github/workflows/ && echo "OK 9"
+# DoD 8: SHA 未 pin の uses: が存在しない
+! grep -rE "uses:\s+\w+/\w+(/\w+)*@(v[0-9]|main)" .github/workflows/ && echo "OK 8"
 ```
 
-期待: `OK 1` から `OK 9` までがすべて出力される (allowlist 対象がないので例外なし)
+期待: `OK 1` から `OK 8` までがすべて出力される (allowlist 対象がないので例外なし)。Squash merge / Required check は Phase 0 / Phase 4 の DoD で別途確認。
 
 - [ ] **Step 2: worktree を削除**
 
@@ -897,34 +994,7 @@ gh pr merge --squash --delete-branch
 
 ---
 
-### Task 20: リポジトリ設定変更
-
-- [ ] **Step 1: Squash merge のみ**
-
-```bash
-gh repo edit panicboat/panicboat-actions \
-  --enable-merge-commit=false \
-  --enable-squash-merge=true \
-  --enable-rebase-merge=false
-```
-
-- [ ] **Step 2: 確認**
-
-```bash
-gh repo view panicboat/panicboat-actions --json mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed
-```
-
-- [ ] **Step 3: Required check 追加**
-
-```bash
-gh api repos/panicboat/panicboat-actions/branches/main/protection/required_status_checks \
-  --jq '.contexts'
-
-# 既存 contexts を確認した上で 2 つを追加
-gh api -X PATCH repos/panicboat/panicboat-actions/branches/main/protection/required_status_checks \
-  -f 'contexts[]=Validate PR title' \
-  -f 'contexts[]=Ensure actions are pinned to SHAs'
-```
+### Task 20: (削除) — マージ戦略は Phase 0、Required check は Phase 4 で Terragrunt 経由
 
 ---
 
@@ -939,15 +1009,13 @@ git checkout main && git pull
 test -f .github/workflows/semantic-pull-request.yml && echo "OK 1"
 test -f .github/workflows/lint-actions.yml && echo "OK 2"
 jq -e '.extends | index("helpers:pinGitHubActionDigests")' .github/renovate.json && echo "OK 3"
-gh repo view --json mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed \
-  --jq 'select(.mergeCommitAllowed==false and .squashMergeAllowed==true and .rebaseMergeAllowed==false)' && echo "OK 4"
 
 # 非 allowlist 対象がすべて SHA pin されている
 RESULT=$(grep -rE "uses:\s+\w+/\w+(/\w+)*@(v[0-9]|main)" .github/workflows/ | grep -v "panicboat/panicboat-actions/" || echo "")
-test -z "$RESULT" && echo "OK 5"
+test -z "$RESULT" && echo "OK 4"
 ```
 
-期待: `OK 1` から `OK 5` までがすべて出力される
+期待: `OK 1` から `OK 4` までがすべて出力される。Squash merge / Required check は Phase 0 / Phase 4 の DoD で別途確認。
 
 - [ ] **Step 2: worktree 削除**
 
@@ -1215,29 +1283,7 @@ gh pr merge --squash --delete-branch
 
 ---
 
-### Task 29: リポジトリ設定変更
-
-- [ ] **Step 1: Squash merge のみ**
-
-```bash
-gh repo edit panicboat/monorepo \
-  --enable-merge-commit=false \
-  --enable-squash-merge=true \
-  --enable-rebase-merge=false
-gh repo view panicboat/monorepo --json mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed
-```
-
-- [ ] **Step 2: Required check 追加**
-
-```bash
-gh api repos/panicboat/monorepo/branches/main/protection/required_status_checks \
-  --jq '.contexts'
-
-# 既存 contexts を確認した上で 2 つを追加
-gh api -X PATCH repos/panicboat/monorepo/branches/main/protection/required_status_checks \
-  -f 'contexts[]=Validate PR title' \
-  -f 'contexts[]=Ensure actions are pinned to SHAs'
-```
+### Task 29: (削除) — マージ戦略は Phase 0、Required check は Phase 4 で Terragrunt 経由
 
 ---
 
@@ -1252,21 +1298,19 @@ git checkout main && git pull
 test -f .github/workflows/semantic-pull-request.yml && echo "OK 1"
 test -f .github/workflows/lint-actions.yml && echo "OK 2"
 jq -e '.extends | index("helpers:pinGitHubActionDigests")' .github/renovate.json && echo "OK 3"
-gh repo view --json mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed \
-  --jq 'select(.mergeCommitAllowed==false and .squashMergeAllowed==true and .rebaseMergeAllowed==false)' && echo "OK 4"
 
 # 非 allowlist 対象がすべて SHA pin
 RESULT=$(grep -rE "uses:\s+\w+/\w+(/\w+)*@(v[0-9]|main)" .github/workflows/ | grep -v "panicboat/panicboat-actions/" || echo "")
-test -z "$RESULT" && echo "OK 5"
+test -z "$RESULT" && echo "OK 4"
 
 # panicboat/deploy-actions/*@main 参照ゼロ
-! grep -rn "panicboat/deploy-actions/[a-z-]*@main" .github/workflows/ && echo "OK 6"
+! grep -rn "panicboat/deploy-actions/[a-z-]*@main" .github/workflows/ && echo "OK 5"
 
 # panicboat/deploy-actions/* がすべて SHA + v1.x コメント形式
-grep -rn "panicboat/deploy-actions/" .github/workflows/ | grep -v "@[0-9a-f]\{40\} # v1" && echo "FAIL 7" || echo "OK 7"
+grep -rn "panicboat/deploy-actions/" .github/workflows/ | grep -v "@[0-9a-f]\{40\} # v1" && echo "FAIL 6" || echo "OK 6"
 ```
 
-期待: `OK 1` から `OK 7` までがすべて出力される
+期待: `OK 1` から `OK 6` までがすべて出力される。Squash merge / Required check は Phase 0 / Phase 4 の DoD で別途確認。
 
 - [ ] **Step 2: worktree 削除**
 
@@ -1523,28 +1567,7 @@ gh pr merge --squash --delete-branch
 
 ---
 
-### Task 38: リポジトリ設定変更
-
-- [ ] **Step 1: Squash merge のみ**
-
-```bash
-gh repo edit panicboat/platform \
-  --enable-merge-commit=false \
-  --enable-squash-merge=true \
-  --enable-rebase-merge=false
-gh repo view panicboat/platform --json mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed
-```
-
-- [ ] **Step 2: Required check 追加**
-
-```bash
-gh api repos/panicboat/platform/branches/main/protection/required_status_checks \
-  --jq '.contexts'
-
-gh api -X PATCH repos/panicboat/platform/branches/main/protection/required_status_checks \
-  -f 'contexts[]=Validate PR title' \
-  -f 'contexts[]=Ensure actions are pinned to SHAs'
-```
+### Task 38: (削除) — マージ戦略は Phase 0、Required check は Phase 4 で Terragrunt 経由
 
 ---
 
@@ -1559,17 +1582,15 @@ git checkout main && git pull
 test -f .github/workflows/semantic-pull-request.yml && echo "OK 1"
 test -f .github/workflows/lint-actions.yml && echo "OK 2"
 jq -e '.extends | index("helpers:pinGitHubActionDigests")' .github/renovate.json && echo "OK 3"
-gh repo view --json mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed \
-  --jq 'select(.mergeCommitAllowed==false and .squashMergeAllowed==true and .rebaseMergeAllowed==false)' && echo "OK 4"
 
 RESULT=$(grep -rE "uses:\s+\w+/\w+(/\w+)*@(v[0-9]|main)" .github/workflows/ | grep -v "panicboat/panicboat-actions/" || echo "")
-test -z "$RESULT" && echo "OK 5"
+test -z "$RESULT" && echo "OK 4"
 
-! grep -rn "panicboat/deploy-actions/[a-z-]*@main" .github/workflows/ && echo "OK 6"
-grep -rn "panicboat/deploy-actions/" .github/workflows/ | grep -v "@[0-9a-f]\{40\} # v1" && echo "FAIL 7" || echo "OK 7"
+! grep -rn "panicboat/deploy-actions/[a-z-]*@main" .github/workflows/ && echo "OK 5"
+grep -rn "panicboat/deploy-actions/" .github/workflows/ | grep -v "@[0-9a-f]\{40\} # v1" && echo "FAIL 6" || echo "OK 6"
 ```
 
-期待: `OK 1` から `OK 7` までがすべて出力される
+期待: `OK 1` から `OK 6` までがすべて出力される。Squash merge / Required check は Phase 0 / Phase 4 の DoD で別途確認。
 
 - [ ] **Step 2: worktree 削除**
 
@@ -1577,6 +1598,165 @@ grep -rn "panicboat/deploy-actions/" .github/workflows/ | grep -v "@[0-9a-f]\{40
 cd ~/GitHub/panicboat/platform
 git worktree remove .claude/worktrees/feat-sha-pin
 git branch -D feat/sha-pin 2>/dev/null
+git worktree prune
+```
+
+---
+
+## Phase 4: platform — Required check 追加
+
+Phase 1〜3b 完了後に実施。Required に指定する check 名 (`Validate PR title`, `Ensure actions are pinned to SHAs`) は、各リポの main で 1 度でも success していないと branch protection 側で「unknown check」状態になるため、Phase 1〜3b の workflow PR がマージされていることが前提。
+
+### Task P4.1: platform worktree 作成
+
+- [ ] **Step 1: 状態確認と worktree 作成**
+
+```bash
+cd ~/GitHub/panicboat/platform
+git fetch origin
+git status
+git worktree add -b feat/required-status-checks .claude/worktrees/feat-required-checks origin/main
+cd .claude/worktrees/feat-required-checks
+```
+
+---
+
+### Task P4.2: 4 リポの hcl に required_status_checks を追加
+
+**Files:**
+- Modify: `github/branch/envs/develop/deploy-actions.hcl`
+- Modify: `github/branch/envs/develop/panicboat-actions.hcl`
+- Modify: `github/branch/envs/develop/monorepo.hcl`
+- Modify: `github/branch/envs/develop/platform.hcl`
+
+- [ ] **Step 1: 既存 hcl の構造を確認**
+
+```bash
+cat github/branch/envs/develop/deploy-actions.hcl
+```
+
+期待: `branch_protection.main` が `merge(local.defaults.locals.branch_protection.main, {})` のような構造
+
+- [ ] **Step 2: 4 ファイルを更新**
+
+各ファイルの `merge(...)` の第 2 引数の `{}` を以下に置き換え:
+
+```hcl
+{
+  required_status_checks = [
+    "Validate PR title",
+    "Ensure actions are pinned to SHAs",
+  ]
+}
+```
+
+例 (`deploy-actions.hcl`):
+
+```hcl
+locals {
+  defaults = read_terragrunt_config("defaults.hcl")
+
+  repository = {
+    name              = "deploy-actions"
+    branch_protection = {
+      main = merge(
+        local.defaults.locals.branch_protection.main,
+        {
+          required_status_checks = [
+            "Validate PR title",
+            "Ensure actions are pinned to SHAs",
+          ]
+        }
+      )
+    }
+  }
+}
+```
+
+panicboat-actions / monorepo / platform も同様に更新 (`name` のみ各リポ名に応じて変える)。
+
+- [ ] **Step 3: 変更内容を確認**
+
+```bash
+git diff github/branch/envs/develop/
+```
+
+期待: 4 ファイルで `{}` が `required_status_checks` ブロックに置き換わっている
+
+---
+
+### Task P4.3: PR 作成と terragrunt apply
+
+- [ ] **Step 1: コミットと push**
+
+```bash
+git add github/branch/envs/develop/
+git commit -s -m "feat(github/branch): require Validate PR title and SHA pin checks on main"
+git push -u origin HEAD
+```
+
+- [ ] **Step 2: ドラフト PR 作成**
+
+```bash
+gh pr create --draft --title "feat(github/branch): require Validate PR title and SHA pin checks on main" --body "$(cat <<'EOF'
+## Summary
+- Add `required_status_checks` to branch protection ruleset for `deploy-actions`, `panicboat-actions`, `monorepo`, `platform`
+- Required checks: `Validate PR title`, `Ensure actions are pinned to SHAs`
+- Both checks have run successfully on each repo's main following Phase 1〜3b completion
+
+Part of the SHA pinning rollout. See `monorepo:docs/superpowers/specs/2026-05-01-github-actions-sha-pinning-rollout-design.md`.
+
+## Test plan
+- [ ] Terragrunt plan shows ruleset updates with new `required_check` entries for the 4 repos
+- [ ] After apply, `gh api repos/<owner>/<repo>/branches/main/protection/required_status_checks` returns the 2 contexts for each repo
+EOF
+)"
+```
+
+- [ ] **Step 3: terragrunt plan の結果を確認**
+
+```bash
+gh pr checks --watch
+```
+
+期待: terragrunt plan の job が success、plan 出力で 4 リポの ruleset 更新が確認できる
+
+- [ ] **Step 4: PR を Ready にしてマージ**
+
+```bash
+gh pr ready
+gh pr merge --squash --delete-branch
+```
+
+- [ ] **Step 5: terragrunt apply の結果を確認**
+
+```bash
+gh run list --branch main --workflow=auto-label--deploy-trigger.yaml --limit 3
+```
+
+期待: 最新 run が success
+
+- [ ] **Step 6: 実際の branch protection を確認**
+
+```bash
+for repo in deploy-actions panicboat-actions monorepo platform; do
+  echo "=== $repo ==="
+  gh api repos/panicboat/$repo/branches/main/protection/required_status_checks --jq '.contexts'
+done
+```
+
+期待: 全リポで `["Validate PR title", "Ensure actions are pinned to SHAs"]` を含む
+
+---
+
+### Task P4.4: worktree 削除
+
+- [ ] **Step 1: worktree 削除**
+
+```bash
+cd ~/GitHub/panicboat/platform
+git worktree remove .claude/worktrees/feat-required-checks
+git branch -D feat/required-status-checks 2>/dev/null
 git worktree prune
 ```
 
@@ -1609,6 +1789,12 @@ done
 
 このプランの作成後、以下を確認した:
 
-- **Spec coverage:** spec の Phase 1 / 2 / 3 / Verification / Definition of Done / Rollback / Risks の全セクションが Task に対応している
+- **Spec coverage:** spec の Phase 0 / 1 / 2 / 3 / 4 / Verification / Definition of Done / Rollback / Risks の全セクションが Task に対応している
 - **Placeholder scan:** `TBD`, `TODO` なし。`<sha>` プレースホルダは pinact が埋める設計のため意図的
 - **Type consistency:** workflow ファイル名・job 名・check 名 (`Validate PR title`, `Ensure actions are pinned to SHAs`) は全 Task で一貫
+- **Task numbering:** 設計変更で削除になった Task 9 / 20 / 29 / 38 は欠番として残し、Phase 0 / Phase 4 は `P0.x` / `P4.x` で識別
+
+## Revision history
+
+- 初版: `gh repo edit` でリポジトリ設定変更、`gh api` で branch protection 設定 (各 Phase 内)
+- 修正: `platform/github/` の Terragrunt 管理に合わせて Phase 0 (マージ戦略変更) と Phase 4 (Required check 追加) を新設、各 Phase の `gh repo edit` / `gh api` タスクを削除
