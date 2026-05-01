@@ -62,7 +62,7 @@ jobs:
       matrix:
         target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
       fail-fast: false
-    uses: ./.github/workflows/reusable--terragrunt-executor.yaml
+    uses: panicboat/panicboat-actions/.github/workflows/reusable--terragrunt-executor.yaml@main
     with:
       service-name: ${{ matrix.target.service }}
       environment: ${{ matrix.target.environment }}
@@ -84,7 +84,7 @@ jobs:
       matrix:
         target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
       fail-fast: false
-    uses: ./.github/workflows/reusable--container-builder.yaml
+    uses: panicboat/panicboat-actions/.github/workflows/reusable--container-builder.yaml@main
     with:
       image-name: ${{ matrix.target.stack == 'docker' && matrix.target.service || '' }}
       working-directory: ${{ matrix.target.working_directory }}
@@ -103,7 +103,7 @@ jobs:
       matrix:
         target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
       fail-fast: false
-    uses: ./.github/workflows/reusable--kubernetes-builder.yaml
+    uses: panicboat/panicboat-actions/.github/workflows/reusable--kubernetes-builder.yaml@main
     with:
       service-name: ${{ matrix.target.service }}
       environment: ${{ matrix.target.environment }}
