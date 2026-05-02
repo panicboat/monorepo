@@ -55,7 +55,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Kustomize Diff
-        uses: panicboat/panicboat-actions/kustomize-diff@main
+        uses: panicboat/panicboat-actions/kustomize-diff@59b545c31107530786232a2121cace451a5a3649 # main
         with:
           token: ${{ steps.app-token.outputs.token }}
           service-name: ${{ inputs.service-name }}
