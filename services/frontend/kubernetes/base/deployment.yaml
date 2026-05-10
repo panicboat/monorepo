@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
+  annotations:
+    reloader.stakater.com/auto: "true"
 spec:
   replicas: 1
   revisionHistoryLimit: 1
@@ -12,10 +14,12 @@ spec:
     metadata:
       labels:
         app: frontend
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "default/panicboat-application"
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/panicboat/monorepo/frontend:latest
+          image: ghcr.io/panicboat/monorepo/frontend:latest # {"$imagepolicy": "flux-system:frontend"}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
