@@ -1,0 +1,16 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: frontend
+  namespace: flux-system
+  labels:
+    service: frontend
+spec:
+  imageRepositoryRef:
+    name: frontend
+  digestReflectionPolicy: Always
+  filterTags:
+    pattern: '^latest$'
+  policy:
+    alphabetical:
+      order: asc
