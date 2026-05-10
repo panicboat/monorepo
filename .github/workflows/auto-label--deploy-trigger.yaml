@@ -61,6 +61,7 @@ jobs:
       aws-region: ${{ matrix.target.aws_region }}
       working-directory: ${{ matrix.target.working_directory }}
       app-id: ${{ vars.APP_ID }}
+      pr-number: ${{ github.event.pull_request.number }}
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
@@ -99,6 +100,7 @@ jobs:
       environment: ${{ matrix.target.environment }}
       path: ${{ matrix.target.stack == 'kubernetes' && matrix.target.working_directory || '' }}
       app-id: ${{ vars.APP_ID }}
+      pr-number: ${{ github.event.pull_request.number }}
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
