@@ -1,7 +1,7 @@
 # terraform.tf - Terraform configuration for monolith RDS module
 
 terraform {
-  required_version = "1.15.1"
+  required_version = ">= 1.11.0"
 
   required_providers {
     aws = {
