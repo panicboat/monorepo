@@ -29,7 +29,6 @@
 `/etc/hosts` に以下を設定
 
 ```bash
-127.0.0.1 nginx.local
 127.0.0.1 frontend.local
 127.0.0.1 handbooks.local
 ```
@@ -72,9 +71,9 @@ graph LR
 
   subgraph "Kubernetes Cluster"
     NginxPod -- "3. http://cilium-gateway<br>Internal" --> CiliumGw[Cilium Gateway]
-    CiliumGw -- "4. HTTPRoute<br>Host: nginx.local" --> AppPod[App Pod<br>services/nginx]
     CiliumGw -- "4. HTTPRoute<br>Host: frontend.local" --> FrontendPod[Frontend Pod<br>services/frontend]
     FrontendPod -- "5. gRPC<br>Host: monolith.local" --> MonolithPod[Monolith Pod<br>services/monolith]
+    MonolithPod -- "6. PostgreSQL<br>5432" --> RDS[(AWS RDS<br>monolith-develop)]
   end
 ```
 
@@ -121,7 +120,7 @@ flowchart LR
 
 - Flux の `GitRepository` が本リポジトリの `main` ブランチを監視する。
 - `clusters/{environment}/services/{service}/service.yaml` に定義された `Kustomization` が 5 分間隔で `services/{service}/kubernetes/overlays/{environment}` を reconcile する。
-- `nginx` のみ `ImageRepository` + `ImagePolicy` + `ImageUpdateAutomation` を併用し、Docker Hub を 30 分間隔でポーリングしてイメージタグを自動更新する。
+- `monolith` と `frontend` は Flux Image Update Automation (`digestReflectionPolicy: Always` + `latest` タグ pin) により main merge をトリガーに自動デプロイされる。`ImageRepository` が GHCR を 5 分間隔でポーリングして新規 digest を取得し、`ImageUpdateAutomation` が 30 分以内に `image:latest@sha256:<digest>` を `deployment.yaml` にコミットする。その後 Flux が reconcile し、Pod の rolling update が発火する。
 
 ### Related Repositories
 

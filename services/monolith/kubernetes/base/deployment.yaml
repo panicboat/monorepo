@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: monolith
+  annotations:
+    reloader.stakater.com/auto: "true"
 spec:
   replicas: 1
   revisionHistoryLimit: 1
@@ -12,10 +14,12 @@ spec:
     metadata:
       labels:
         app: monolith
+      annotations:
+        instrumentation.opentelemetry.io/inject-ruby: "default/panicboat-application"
     spec:
       containers:
         - name: monolith
-          image: ghcr.io/panicboat/monorepo/monolith:latest
+          image: ghcr.io/panicboat/monorepo/monolith:latest # {"$imagepolicy": "flux-system:monolith"}
           imagePullPolicy: IfNotPresent
           command: ["./bin/start"]
           ports:
@@ -23,3 +27,5 @@ spec:
           envFrom:
             - configMapRef:
                 name: monolith
+            - secretRef:
+                name: monolith-database

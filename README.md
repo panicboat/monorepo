@@ -29,7 +29,6 @@
 Add the following to `/etc/hosts`.
 
 ```bash
-127.0.0.1 nginx.local
 127.0.0.1 frontend.local
 127.0.0.1 handbooks.local
 ```
@@ -70,9 +69,9 @@ graph LR
 
   subgraph "Kubernetes Cluster"
     NginxPod -- "3. http://cilium-gateway<br>Internal" --> CiliumGw[Cilium Gateway]
-    CiliumGw -- "4. HTTPRoute<br>Host: nginx.local" --> AppPod[App Pod<br>services/nginx]
     CiliumGw -- "4. HTTPRoute<br>Host: frontend.local" --> FrontendPod[Frontend Pod<br>services/frontend]
     FrontendPod -- "5. gRPC<br>Host: monolith.local" --> MonolithPod[Monolith Pod<br>services/monolith]
+    MonolithPod -- "6. PostgreSQL<br>5432" --> RDS[(AWS RDS<br>monolith-develop)]
   end
 ```
 
@@ -119,7 +118,7 @@ flowchart LR
 
 - Flux `GitRepository` watches this repo's `main` branch.
 - Per-service `Kustomization` in `clusters/{environment}/services/{service}/service.yaml` reconciles every 5 minutes against `services/{service}/kubernetes/overlays/{environment}`.
-- `nginx` additionally uses `ImageRepository` + `ImagePolicy` + `ImageUpdateAutomation` to auto-bump image tags from Docker Hub every 30 minutes.
+- `monolith` and `frontend` use Flux Image Update Automation (`digestReflectionPolicy: Always` + `latest` tag pin) for auto-deploy on main merge. `ImageRepository` polls GHCR every 5 minutes for new digest, `ImageUpdateAutomation` commits `image:latest@sha256:<digest>` to `deployment.yaml` within 30 minutes, and Flux reconciles to trigger Pod rolling update.
 
 ### Related Repositories
 

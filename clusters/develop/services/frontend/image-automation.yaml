@@ -1,0 +1,25 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: frontend
+  namespace: flux-system
+spec:
+  interval: 30m
+  sourceRef:
+    kind: GitRepository
+    name: monorepo
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: panicboat@gmail.com
+        name: panicboat
+      messageTemplate: |
+        chore(frontend): bump image to {{range .Updated.Images}}{{println .}}{{end}}
+    push:
+      branch: main
+  update:
+    path: ./services/frontend/kubernetes
+    strategy: Setters
