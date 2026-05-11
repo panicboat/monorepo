@@ -14,8 +14,6 @@ spec:
     metadata:
       labels:
         app: monolith
-      annotations:
-        instrumentation.opentelemetry.io/inject-ruby: "default/panicboat-application"
     spec:
       containers:
         - name: monolith
@@ -24,6 +22,16 @@ spec:
           command: ["./bin/start"]
           ports:
             - containerPort: 9001
+          env:
+            # OTel SDK auto-detect 用 env vars (= platform 側 OTel Operator chart 0.112.1 では
+            # Ruby auto-injection (= spec.ruby) 未 support のため、 ここで hardcode する。
+            # application code (= config/initializers/opentelemetry.rb) は env vars を
+            # auto-detect で SDK config。 引き継ぎ事項 #25 (= chart upgrade) で本 env
+            # hardcode 撤去 + inject-ruby annotation 復活予定。)
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://opentelemetry-collector.monitoring.svc.cluster.local:4317
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.name=monolith
           envFrom:
             - configMapRef:
                 name: monolith
