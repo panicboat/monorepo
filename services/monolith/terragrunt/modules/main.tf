@@ -53,6 +53,14 @@ resource "aws_secretsmanager_secret_version" "monolith_database" {
     database = "monolith"
     url      = "postgres://postgres:${random_password.monolith_db_master.result}@${aws_db_instance.monolith.address}:${aws_db_instance.monolith.port}/monolith"
   })
+
+  lifecycle {
+    # plan role (= github-oidc-auth-develop-github-actions-plan-role) は read-only 思想で
+    # secretsmanager:GetSecretValue 権限なし。 plan 時の refresh で AccessDeniedException
+    # を回避するため secret_string の change を ignore。
+    # rotation は terragrunt 外で manage (= AWS Console / Lambda 等、 IaC scope 外)。
+    ignore_changes = [secret_string]
+  }
 }
 
 resource "aws_security_group" "monolith_db" {
