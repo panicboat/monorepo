@@ -17,6 +17,7 @@ spec:
   imageRepositoryRef:
     name: monolith
   digestReflectionPolicy: Always
+  interval: 10m
   filterTags:
     pattern: '^latest$'
   policy:
