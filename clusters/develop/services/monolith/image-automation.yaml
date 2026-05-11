@@ -17,7 +17,7 @@ spec:
         email: panicboat@gmail.com
         name: panicboat
       messageTemplate: |
-        chore(monolith): bump image to {{range .Updated.Images}}{{println .}}{{end}}
+        chore(monolith): bump image to {{range .Changed.Changes}}{{ println .NewValue }}{{end}}
     push:
       branch: main
   update:
