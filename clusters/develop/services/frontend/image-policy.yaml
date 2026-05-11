@@ -9,6 +9,7 @@ spec:
   imageRepositoryRef:
     name: frontend
   digestReflectionPolicy: Always
+  interval: 10m
   filterTags:
     pattern: '^latest$'
   policy:
