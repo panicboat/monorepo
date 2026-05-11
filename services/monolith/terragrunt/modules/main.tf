@@ -36,23 +36,26 @@ resource "random_password" "monolith_db_master" {
   override_special = "!*-_.~"
 }
 
+# =============================================================================
+# AWS Secrets Manager secret container (= empty)
+# =============================================================================
+# secret value (= username / password / host / port / database / url JSON) は
+# terragrunt scope 外で manual provision (= AWS CLI / Console、 ESO で K8s Secret
+# monolith-database に inject)。 plan role の secretsmanager:GetSecretValue 権限不要
+# 設計、 secret rotation も terragrunt 外で manage (= Lambda / Secrets Manager
+# Automatic Rotation 等)。
+#
+# Initial secret value provision (= PR merge 後の manual operation):
+# 1. aws secretsmanager put-secret-value \
+#      --secret-id panicboat/monolith/database \
+#      --secret-string '{"username":"postgres","password":"<rds-master-pw>","host":"<rds-endpoint>","port":5432,"database":"monolith","url":"postgres://..."}'
+# 2. ESO ExternalSecret monolith-database が AWS から sync、 K8s Secret に inject。
+# =============================================================================
 resource "aws_secretsmanager_secret" "monolith_database" {
   name                    = "panicboat/monolith/database"
   description             = "PostgreSQL credentials for monolith service"
   recovery_window_in_days = 0
   tags                    = var.common_tags
-}
-
-resource "aws_secretsmanager_secret_version" "monolith_database" {
-  secret_id = aws_secretsmanager_secret.monolith_database.id
-  secret_string = jsonencode({
-    username = "postgres"
-    password = random_password.monolith_db_master.result
-    host     = aws_db_instance.monolith.address
-    port     = aws_db_instance.monolith.port
-    database = "monolith"
-    url      = "postgres://postgres:${random_password.monolith_db_master.result}@${aws_db_instance.monolith.address}:${aws_db_instance.monolith.port}/monolith"
-  })
 }
 
 resource "aws_security_group" "monolith_db" {
