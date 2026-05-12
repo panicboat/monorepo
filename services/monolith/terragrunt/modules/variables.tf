@@ -22,15 +22,15 @@ variable "common_tags" {
 
 variable "db_identifier" {
   type        = string
-  description = "RDS DB instance identifier (= 環境別に envs/{env}/terragrunt.hcl で指定、 module 側で環境名 hardcode しない)"
+  description = "RDS DB instance identifier (= 環境別に envs/{env}/terragrunt.hcl で指定)"
 }
 
 variable "db_subnet_group_name" {
   type        = string
-  description = "RDS DB subnet group name (= 環境別、 modules 環境名 hardcode 回避)"
+  description = "RDS DB subnet group name (= 環境別に envs/{env}/terragrunt.hcl で指定)"
 }
 
 variable "db_security_group_name" {
   type        = string
-  description = "RDS DB security group name (= 環境別、 modules 環境名 hardcode 回避)"
+  description = "RDS DB security group name (= 環境別に envs/{env}/terragrunt.hcl で指定)"
 }

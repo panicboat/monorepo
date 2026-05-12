@@ -60,6 +60,9 @@ resource "aws_secretsmanager_secret" "monolith_database" {
 
 resource "aws_security_group" "monolith_db" {
   name        = var.db_security_group_name
+  # FALLBACK: description は AWS SG の immutable field、 var.db_security_group_name
+  # 参照に変更すると terraform が forces replacement と判定して SG 再作成 → DB 一時
+  # downtime のため、 module 内で唯一 var.environment 直接参照を残す。
   description = "Security group for monolith RDS database (= ${var.environment})"
   vpc_id      = data.aws_vpc.eks_production.id
   tags        = var.common_tags
