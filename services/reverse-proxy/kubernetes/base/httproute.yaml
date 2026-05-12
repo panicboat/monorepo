@@ -6,7 +6,8 @@ spec:
   parentRefs:
   - name: cilium-gateway
     namespace: default
-  hostnames: []
+  hostnames:
+  - develop.panicboat.net
   rules:
   - matches:
     - path:

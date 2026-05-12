@@ -2,11 +2,27 @@ apiVersion: v1
 kind: Service
 metadata:
   name: reverse-proxy
+  annotations:
+    # NLB internet-facing で develop.panicboat.net を公開
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+    # *.panicboat.net ワイルドカード cert で TLS termination
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:ap-northeast-1:559744160976:certificate/0cb475d4-8185-459b-a34c-43a6f62c6226"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+    # ExternalDNS で Route53 ALIAS record auto-create
+    external-dns.alpha.kubernetes.io/hostname: "develop.panicboat.net"
 spec:
   selector:
     app: reverse-proxy
   ports:
-  - protocol: TCP
+  - name: http
+    protocol: TCP
     port: 80
+    targetPort: 80
+  - name: https
+    protocol: TCP
+    port: 443
     targetPort: 80
   type: LoadBalancer
