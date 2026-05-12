@@ -4,4 +4,4 @@ metadata:
   name: reverse-proxy
 spec:
   hostnames:
-  - frontend.local
+  - develop.panicboat.net
