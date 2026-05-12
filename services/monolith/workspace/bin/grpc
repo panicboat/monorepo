@@ -30,6 +30,7 @@ require_relative "../lib/current"
 require_relative "../lib/types"
 require_relative "../lib/interceptors/access_log_interceptor"
 require_relative "../lib/interceptors/authentication_interceptor"
+require_relative "../lib/interceptors/opentelemetry_interceptor"
 
 # Ensure Proto files are loaded (they are in lib/)
 $LOAD_PATH.unshift(File.expand_path("../stubs", __dir__))
@@ -54,6 +55,9 @@ Gruf.configure do |c|
 
   # Bind to 0.0.0.0 to ensure Docker/External access if needed, but client tests via localhost
   c.server_binding_url = ENV.fetch("GRPC_BIND_ADDRESS", "0.0.0.0:9001")
+  # OpenTelemetry interceptor を最先頭で register (= 後段 interceptor + handler
+  # の span を child として include)
+  c.interceptors.use(Interceptors::OpenTelemetryInterceptor)
   c.interceptors.use(Interceptors::AccessLogInterceptor)
   c.interceptors.use(Interceptors::AuthenticationInterceptor)
   # c.services.clear
