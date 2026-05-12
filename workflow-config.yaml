@@ -5,26 +5,6 @@ environments:
         aws_region: ap-northeast-1
         iam_role_plan: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-plan-role
         iam_role_apply: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-apply-role
-      kubernetes: {}
-      docker: {}
-
-  # - environment: staging
-  #   stacks:
-  #     terragrunt:
-  #       aws_region: ap-northeast-1
-  #       iam_role_plan: arn:aws:iam::123456789012:role/terragrunt-plan-staging-role
-  #       iam_role_apply: arn:aws:iam::123456789012:role/terragrunt-apply-staging-role
-  #     kubernetes: {}
-  #     docker: {}
-
-  # - environment: production
-  #   stacks:
-  #     terragrunt:
-  #       aws_region: ap-northeast-1
-  #       iam_role_plan: arn:aws:iam::123456789012:role/terragrunt-plan-production-role
-  #       iam_role_apply: arn:aws:iam::123456789012:role/terragrunt-apply-production-role
-  #     kubernetes: {}
-  #     docker: {}
 
 stack_conventions:
   - root: services/{service}
