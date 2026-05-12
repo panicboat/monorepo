@@ -32,7 +32,7 @@ CAST_USER_IDS.each_with_index do |cast_user_id, idx|
     next unless gid
 
     db[:portfolio__cast_genres].insert(
-      cast_user_id: cast_user_id, genre_id: gid, created_at: Time.now
+      id: SecureRandom.uuid_v7, cast_user_id: cast_user_id, genre_id: gid, created_at: Time.now
     )
     genre_count += 1
   end

@@ -7,7 +7,7 @@ module Post
         existing = likes.where(post_id: post_id, guest_user_id: guest_user_id).one
         return if existing
 
-        likes.changeset(:create, post_id: post_id, guest_user_id: guest_user_id).commit
+        likes.changeset(:create, id: SecureRandom.uuid_v7, post_id: post_id, guest_user_id: guest_user_id).commit
       end
 
       def unlike(post_id:, guest_user_id:)

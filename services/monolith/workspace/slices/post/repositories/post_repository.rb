@@ -94,7 +94,7 @@ module Post
       end
 
       def create_post(data)
-        posts.changeset(:create, data).commit
+        posts.changeset(:create, data.merge(id: SecureRandom.uuid_v7)).commit
       end
 
       def update_post(id, data)
@@ -109,7 +109,7 @@ module Post
       def save_media(post_id:, media_data:)
         post_media.dataset.where(post_id: post_id).delete
         media_data.each_with_index do |media, index|
-          post_media.changeset(:create, media.merge(post_id: post_id, position: index)).commit
+          post_media.changeset(:create, media.merge(id: SecureRandom.uuid_v7, post_id: post_id, position: index)).commit
         end
       end
 
@@ -118,7 +118,7 @@ module Post
         hashtags.each_with_index do |tag, index|
           next if tag.nil? || tag.strip.empty?
 
-          self.hashtags.changeset(:create, post_id: post_id, tag: tag.strip, position: index).commit
+          self.hashtags.changeset(:create, id: SecureRandom.uuid_v7, post_id: post_id, tag: tag.strip, position: index).commit
         end
       end
     end

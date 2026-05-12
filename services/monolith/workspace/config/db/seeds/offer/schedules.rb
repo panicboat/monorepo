@@ -16,6 +16,7 @@ CAST_USER_IDS.each do |cast_user_id|
     next if date.saturday? || date.sunday?
 
     db[:offer__schedules].insert(
+      id: SecureRandom.uuid_v7,
       cast_user_id: cast_user_id,
       date: date,
       start_time: "12:00",

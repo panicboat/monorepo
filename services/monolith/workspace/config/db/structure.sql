@@ -74,7 +74,7 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE identity.refresh_tokens (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     user_id uuid NOT NULL,
     token text NOT NULL,
     expires_at timestamp without time zone NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE identity.refresh_tokens (
 --
 
 CREATE TABLE identity.sms_verifications (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     phone_number text NOT NULL,
     code text NOT NULL,
     expires_at timestamp without time zone NOT NULL,
@@ -101,7 +101,7 @@ CREATE TABLE identity.sms_verifications (
 --
 
 CREATE TABLE identity.users (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     phone_number text NOT NULL,
     password_digest text NOT NULL,
     role integer DEFAULT 1 NOT NULL,
@@ -115,7 +115,7 @@ CREATE TABLE identity.users (
 --
 
 CREATE TABLE media.files (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     media_type character varying(10) NOT NULL,
     url text NOT NULL,
     thumbnail_url text,
@@ -133,7 +133,7 @@ CREATE TABLE media.files (
 --
 
 CREATE TABLE offer.plans (
-    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_plans_id_not_null NOT NULL,
+    id uuid CONSTRAINT cast_plans_id_not_null NOT NULL,
     name text CONSTRAINT cast_plans_name_not_null NOT NULL,
     price integer CONSTRAINT cast_plans_price_not_null NOT NULL,
     duration_minutes integer CONSTRAINT cast_plans_duration_minutes_not_null NOT NULL,
@@ -149,7 +149,7 @@ CREATE TABLE offer.plans (
 --
 
 CREATE TABLE offer.schedules (
-    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_schedules_id_not_null NOT NULL,
+    id uuid CONSTRAINT cast_schedules_id_not_null NOT NULL,
     date date CONSTRAINT cast_schedules_date_not_null NOT NULL,
     start_time text CONSTRAINT cast_schedules_start_time_not_null NOT NULL,
     end_time text CONSTRAINT cast_schedules_end_time_not_null NOT NULL,
@@ -164,7 +164,7 @@ CREATE TABLE offer.schedules (
 --
 
 CREATE TABLE portfolio.areas (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     prefecture character varying(50) NOT NULL,
     name character varying(100) NOT NULL,
     code character varying(50) NOT NULL,
@@ -191,7 +191,7 @@ CREATE TABLE portfolio.cast_areas (
 --
 
 CREATE TABLE portfolio.cast_gallery_media (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     media_id uuid NOT NULL,
     "position" integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -204,7 +204,7 @@ CREATE TABLE portfolio.cast_gallery_media (
 --
 
 CREATE TABLE portfolio.cast_genres (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     genre_id uuid NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     cast_user_id uuid NOT NULL
@@ -242,13 +242,24 @@ CREATE TABLE portfolio.casts (
 --
 
 CREATE TABLE portfolio.genres (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     name character varying(100) NOT NULL,
     slug character varying(100) NOT NULL,
     display_order integer DEFAULT 0 NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: guest_prefectures; Type: TABLE; Schema: portfolio; Owner: -
+--
+
+CREATE TABLE portfolio.guest_prefectures (
+    guest_user_id uuid NOT NULL,
+    prefecture character varying(50) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -272,7 +283,7 @@ CREATE TABLE portfolio.guests (
 --
 
 CREATE TABLE post.comment_media (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     comment_id uuid NOT NULL,
     media_type character varying(10) NOT NULL,
     "position" integer DEFAULT 0 NOT NULL,
@@ -286,7 +297,7 @@ CREATE TABLE post.comment_media (
 --
 
 CREATE TABLE post.comments (
-    id uuid DEFAULT gen_random_uuid() CONSTRAINT post_comments_id_not_null NOT NULL,
+    id uuid CONSTRAINT post_comments_id_not_null NOT NULL,
     post_id uuid CONSTRAINT post_comments_post_id_not_null NOT NULL,
     parent_id uuid,
     user_id uuid CONSTRAINT post_comments_user_id_not_null NOT NULL,
@@ -301,7 +312,7 @@ CREATE TABLE post.comments (
 --
 
 CREATE TABLE post.hashtags (
-    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_post_hashtags_id_not_null NOT NULL,
+    id uuid CONSTRAINT cast_post_hashtags_id_not_null NOT NULL,
     post_id uuid CONSTRAINT cast_post_hashtags_post_id_not_null NOT NULL,
     tag character varying(100) CONSTRAINT cast_post_hashtags_tag_not_null NOT NULL,
     "position" integer DEFAULT 0 CONSTRAINT cast_post_hashtags_position_not_null NOT NULL,
@@ -314,7 +325,7 @@ CREATE TABLE post.hashtags (
 --
 
 CREATE TABLE post.likes (
-    id uuid DEFAULT gen_random_uuid() CONSTRAINT post_likes_id_not_null NOT NULL,
+    id uuid CONSTRAINT post_likes_id_not_null NOT NULL,
     post_id uuid CONSTRAINT post_likes_post_id_not_null NOT NULL,
     created_at timestamp with time zone DEFAULT now() CONSTRAINT post_likes_created_at_not_null NOT NULL,
     guest_user_id uuid NOT NULL
@@ -326,7 +337,7 @@ CREATE TABLE post.likes (
 --
 
 CREATE TABLE post.post_media (
-    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_post_media_id_not_null NOT NULL,
+    id uuid CONSTRAINT cast_post_media_id_not_null NOT NULL,
     post_id uuid CONSTRAINT cast_post_media_post_id_not_null NOT NULL,
     media_type character varying(10) CONSTRAINT cast_post_media_media_type_not_null NOT NULL,
     "position" integer DEFAULT 0 CONSTRAINT cast_post_media_position_not_null NOT NULL,
@@ -340,7 +351,7 @@ CREATE TABLE post.post_media (
 --
 
 CREATE TABLE post.posts (
-    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_posts_id_not_null NOT NULL,
+    id uuid CONSTRAINT cast_posts_id_not_null NOT NULL,
     content text CONSTRAINT cast_posts_content_not_null NOT NULL,
     created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_posts_created_at_not_null NOT NULL,
     updated_at timestamp with time zone DEFAULT now() CONSTRAINT cast_posts_updated_at_not_null NOT NULL,
@@ -363,7 +374,7 @@ CREATE TABLE public.schema_migrations (
 --
 
 CREATE TABLE relationship.blocks (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     blocker_id uuid NOT NULL,
     blocker_type text NOT NULL,
     blocked_id uuid NOT NULL,
@@ -377,7 +388,7 @@ CREATE TABLE relationship.blocks (
 --
 
 CREATE TABLE relationship.follows (
-    id uuid DEFAULT gen_random_uuid() CONSTRAINT cast_follows_id_not_null NOT NULL,
+    id uuid CONSTRAINT cast_follows_id_not_null NOT NULL,
     created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_follows_created_at_not_null NOT NULL,
     status text DEFAULT 'approved'::text CONSTRAINT cast_follows_status_not_null NOT NULL,
     cast_user_id uuid NOT NULL,
@@ -390,7 +401,7 @@ CREATE TABLE relationship.follows (
 --
 
 CREATE TABLE trust.review_media (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     review_id uuid NOT NULL,
     media_id uuid,
     media_type character varying(10) NOT NULL,
@@ -406,7 +417,7 @@ CREATE TABLE trust.review_media (
 --
 
 CREATE TABLE trust.reviews (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     reviewer_id uuid NOT NULL,
     reviewee_id uuid NOT NULL,
     content text,
@@ -423,7 +434,7 @@ CREATE TABLE trust.reviews (
 --
 
 CREATE TABLE trust.taggings (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid NOT NULL,
     tagger_id uuid NOT NULL,
     target_id uuid NOT NULL,
     status text DEFAULT 'approved'::text NOT NULL,
@@ -551,6 +562,14 @@ ALTER TABLE ONLY portfolio.genres
 
 ALTER TABLE ONLY portfolio.genres
     ADD CONSTRAINT genres_slug_key UNIQUE (slug);
+
+
+--
+-- Name: guest_prefectures guest_prefectures_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.guest_prefectures
+    ADD CONSTRAINT guest_prefectures_pkey PRIMARY KEY (guest_user_id, prefecture);
 
 
 --
@@ -757,6 +776,13 @@ CREATE INDEX idx_cast_areas_area_id ON portfolio.cast_areas USING btree (area_id
 --
 
 CREATE UNIQUE INDEX idx_casts_slug_lower ON portfolio.casts USING btree (lower((slug)::text)) WHERE (slug IS NOT NULL);
+
+
+--
+-- Name: idx_guest_prefectures_prefecture; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX idx_guest_prefectures_prefecture ON portfolio.guest_prefectures USING btree (prefecture);
 
 
 --
@@ -1053,6 +1079,14 @@ ALTER TABLE ONLY portfolio.cast_genres
 
 
 --
+-- Name: guest_prefectures guest_prefectures_guest_user_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.guest_prefectures
+    ADD CONSTRAINT guest_prefectures_guest_user_id_fkey FOREIGN KEY (guest_user_id) REFERENCES portfolio.guests(user_id) ON DELETE CASCADE;
+
+
+--
 -- Name: hashtags cast_post_hashtags_post_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
 --
 
@@ -1170,4 +1204,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260225000001_create_trust_review_media.rb'),
 ('20260226000001_add_trust_review_media_constraints.rb'),
 ('20260227000001_unify_user_id.rb'),
-('20260301000000_drop_cast_favorites.rb');
+('20260301000000_drop_cast_favorites.rb'),
+('20260307000000_create_guest_prefectures.rb');

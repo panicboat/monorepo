@@ -12,6 +12,7 @@ module Post
         end
 
         comment_data = {
+          id: SecureRandom.uuid_v7,
           post_id: post_id,
           user_id: user_id,
           content: content,
@@ -128,7 +129,7 @@ module Post
 
       def save_media(comment_id:, media_data:)
         media_data.each_with_index do |media, index|
-          comment_media.changeset(:create, media.merge(comment_id: comment_id, position: index)).commit
+          comment_media.changeset(:create, media.merge(id: SecureRandom.uuid_v7, comment_id: comment_id, position: index)).commit
         end
       end
     end

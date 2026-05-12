@@ -17,7 +17,7 @@ module Seeds
       existing = db[table].where(unique_column => unique_value).first
       return existing[return_column] if existing
 
-      db[table].insert(data.merge(unique_column => unique_value))
+      db[table].insert(data.merge(id: SecureRandom.uuid_v7, unique_column => unique_value))
       db[table].where(unique_column => unique_value).first[return_column]
     end
 

@@ -32,6 +32,7 @@ follow_scenarios.each do |scenario|
   next if existing
 
   db[:"relationship__follows"].insert(
+    id: SecureRandom.uuid_v7,
     guest_user_id: scenario[:guest][:user_id],
     cast_user_id: scenario[:cast][:user_id],
     status: scenario[:status],

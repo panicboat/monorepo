@@ -8,6 +8,7 @@ module Relationship
         return false if existing
 
         blocks.changeset(:create,
+          id: SecureRandom.uuid_v7,
           blocker_id: blocker_id,
           blocker_type: blocker_type,
           blocked_id: blocked_id,

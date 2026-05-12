@@ -17,6 +17,7 @@ module Identity
 
       def create(phone_number:, password_digest:, role: 1)
         users.command(:create).call(
+          id: SecureRandom.uuid_v7,
           phone_number: phone_number,
           password_digest: password_digest,
           role: role

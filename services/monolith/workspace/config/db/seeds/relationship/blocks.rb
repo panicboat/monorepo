@@ -13,6 +13,7 @@ if rin && taro
   existing = db[:"relationship__blocks"].where(blocker_id: rin[:user_id], blocked_id: taro[:user_id]).first
   unless existing
     db[:"relationship__blocks"].insert(
+      id: SecureRandom.uuid_v7,
       blocker_id: rin[:user_id],
       blocker_type: "cast",
       blocked_id: taro[:user_id],

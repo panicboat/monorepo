@@ -11,7 +11,7 @@ module Offer
         transaction do
           plans.where(cast_user_id: cast_user_id).delete
           plans_data.each do |plan|
-            plans.changeset(:create, plan.merge(cast_user_id: cast_user_id)).commit
+            plans.changeset(:create, plan.merge(id: SecureRandom.uuid_v7, cast_user_id: cast_user_id)).commit
           end
           find_by_cast_id(cast_user_id)
         end

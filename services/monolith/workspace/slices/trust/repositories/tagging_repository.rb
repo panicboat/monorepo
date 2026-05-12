@@ -8,6 +8,7 @@ module Trust
         return { success: false, error: :already_exists } if existing
 
         record = taggings.changeset(:create,
+          id: SecureRandom.uuid_v7,
           tag_name: tag_name,
           tagger_id: tagger_id,
           target_id: target_id,

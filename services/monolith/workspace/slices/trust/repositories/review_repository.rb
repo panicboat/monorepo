@@ -183,7 +183,7 @@ module Trust
       def save_media(review_id:, media_data:)
         review_media.dataset.where(review_id: review_id).delete
         media_data.each_with_index do |media, index|
-          review_media.changeset(:create, media.merge(review_id: review_id, position: index)).commit
+          review_media.changeset(:create, media.merge(id: SecureRandom.uuid_v7, review_id: review_id, position: index)).commit
         end
       end
 

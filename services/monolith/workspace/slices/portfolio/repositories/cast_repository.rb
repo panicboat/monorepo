@@ -61,7 +61,7 @@ module Portfolio
           # Save gallery media
           cast_gallery_media.where(cast_user_id: user_id).delete
           (gallery_media_ids || []).each_with_index do |media_id, idx|
-            cast_gallery_media.changeset(:create, cast_user_id: user_id, media_id: media_id, position: idx).commit
+            cast_gallery_media.changeset(:create, id: SecureRandom.uuid_v7, cast_user_id: user_id, media_id: media_id, position: idx).commit
           end
         end
       end
@@ -104,7 +104,7 @@ module Portfolio
         transaction do
           cast_genres.where(cast_user_id: cast_user_id).delete
           genre_ids.each do |genre_id|
-            cast_genres.changeset(:create, cast_user_id: cast_user_id, genre_id: genre_id).commit
+            cast_genres.changeset(:create, id: SecureRandom.uuid_v7, cast_user_id: cast_user_id, genre_id: genre_id).commit
           end
         end
       end
