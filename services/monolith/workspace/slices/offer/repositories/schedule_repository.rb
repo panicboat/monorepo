@@ -17,7 +17,7 @@ module Offer
           schedules.dataset.where(cast_user_id: cast_user_id).where { date >= today }.delete
           schedules_data.each do |schedule|
             next if schedule[:date].to_s < today
-            schedules.changeset(:create, schedule.merge(cast_user_id: cast_user_id)).commit
+            schedules.changeset(:create, schedule.merge(id: SecureRandom.uuid_v7, cast_user_id: cast_user_id)).commit
           end
           find_by_cast_id(cast_user_id)
         end

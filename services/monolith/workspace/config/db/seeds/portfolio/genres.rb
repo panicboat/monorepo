@@ -18,7 +18,7 @@ genres_data.each do |data|
   next if existing
 
   Seeds::Helper.db[:portfolio__genres].insert(
-    data.merge(is_active: true, created_at: Time.now, updated_at: Time.now)
+    data.merge(id: SecureRandom.uuid_v7, is_active: true, created_at: Time.now, updated_at: Time.now)
   )
   count += 1
 end

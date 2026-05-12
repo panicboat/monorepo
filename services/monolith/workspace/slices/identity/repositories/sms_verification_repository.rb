@@ -3,6 +3,7 @@ module Identity
     class SmsVerificationRepository < Identity::DB::Repo
       def create(phone_number:, code:, expires_at:)
         sms_verifications.command(:create).call(
+          id: SecureRandom.uuid_v7,
           phone_number: phone_number,
           code: code,
           expires_at: expires_at

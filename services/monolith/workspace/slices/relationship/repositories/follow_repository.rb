@@ -7,7 +7,7 @@ module Relationship
         existing = follows.where(cast_user_id: cast_user_id, guest_user_id: guest_user_id).one
         return { success: false, reason: :already_exists, status: existing.status } if existing
 
-        follows.changeset(:create, cast_user_id: cast_user_id, guest_user_id: guest_user_id, status: status).commit
+        follows.changeset(:create, id: SecureRandom.uuid_v7, cast_user_id: cast_user_id, guest_user_id: guest_user_id, status: status).commit
         { success: true, status: status }
       end
 

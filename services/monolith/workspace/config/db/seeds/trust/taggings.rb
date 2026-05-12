@@ -24,7 +24,7 @@ if yuna_user && taro_user && jiro_user
     next if existing
 
     db[:"trust__taggings"].insert(
-      t.merge(status: "approved", created_at: Time.now, updated_at: Time.now)
+      t.merge(id: SecureRandom.uuid_v7, status: "approved", created_at: Time.now, updated_at: Time.now)
     )
     count += 1
   end

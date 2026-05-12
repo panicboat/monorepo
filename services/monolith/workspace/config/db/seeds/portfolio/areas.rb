@@ -42,7 +42,7 @@ areas_data.each do |data|
   next if existing
 
   Seeds::Helper.db[:portfolio__areas].insert(
-    data.merge(active: true, created_at: Time.now, updated_at: Time.now)
+    data.merge(id: SecureRandom.uuid_v7, active: true, created_at: Time.now, updated_at: Time.now)
   )
   count += 1
 end

@@ -91,7 +91,9 @@ CAST_USER_IDS.each_with_index do |cast_user_id, cast_idx|
 
   all_posts = (base_posts[cast_idx] || []) + (extra_posts[cast_idx] || [])
   all_posts.each_with_index do |data, idx|
-    post_id = db[:"post__posts"].insert(
+    post_id = SecureRandom.uuid_v7
+    db[:"post__posts"].insert(
+      id: post_id,
       cast_user_id: cast_user_id,
       content: data[:content],
       visibility: data[:visibility],
@@ -101,6 +103,7 @@ CAST_USER_IDS.each_with_index do |cast_user_id, cast_idx|
 
     data[:hashtags].each_with_index do |hashtag, position|
       db[:"post__hashtags"].insert(
+        id: SecureRandom.uuid_v7,
         post_id: post_id,
         tag: hashtag,
         position: position,

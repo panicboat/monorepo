@@ -7,6 +7,7 @@ module Identity
 
       def create(token:, user_id:, expires_at:)
         refresh_tokens.command(:create).call(
+          id: SecureRandom.uuid_v7,
           token: token,
           user_id: user_id,
           expires_at: expires_at

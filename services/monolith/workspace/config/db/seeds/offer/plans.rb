@@ -17,7 +17,7 @@ CAST_USER_IDS.each do |cast_user_id|
     { name: "ロング", duration_minutes: 120, price: 18000, is_recommended: false },
   ].each do |plan|
     db[:offer__plans].insert(
-      plan.merge(cast_user_id: cast_user_id, created_at: Time.now, updated_at: Time.now)
+      plan.merge(id: SecureRandom.uuid_v7, cast_user_id: cast_user_id, created_at: Time.now, updated_at: Time.now)
     )
     count += 1
   end

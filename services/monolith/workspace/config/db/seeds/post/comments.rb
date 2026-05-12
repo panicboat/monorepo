@@ -60,7 +60,9 @@ posts.each_with_index do |post, post_i|
     user_id = all_user_ids[(comment_idx + i) % all_user_ids.size]
     content = guest_comments[comment_idx % guest_comments.size]
 
-    c_id = db[:"post__comments"].insert(
+    c_id = SecureRandom.uuid_v7
+    db[:"post__comments"].insert(
+      id: c_id,
       post_id: post[:id],
       user_id: user_id,
       content: content,
@@ -76,6 +78,7 @@ posts.each_with_index do |post, post_i|
       reply_content = cast_replies[reply_idx % cast_replies.size]
 
       db[:"post__comments"].insert(
+        id: SecureRandom.uuid_v7,
         post_id: post[:id],
         user_id: cast_user_id,
         content: reply_content,
