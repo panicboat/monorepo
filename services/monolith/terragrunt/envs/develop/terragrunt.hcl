@@ -34,4 +34,7 @@ inputs = {
     },
     include.env.locals.additional_tags
   )
+  db_identifier          = "monolith-develop"
+  db_subnet_group_name   = "monolith-develop"
+  db_security_group_name = "monolith-database-develop"
 }
