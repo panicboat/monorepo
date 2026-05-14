@@ -4,4 +4,3 @@ kind: Kustomization
 resources:
   - monolith
   - frontend
-  - reverse-proxy

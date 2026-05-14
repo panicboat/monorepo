@@ -1,12 +1,8 @@
-# =============================================================================
-# Frontend HTTPRoute (= Cilium Gateway 経由 develop.panicboat.net routing)
-# =============================================================================
 # Cilium Gateway (= namespace default、 listener http:8080) を parentRef、
 # host develop.panicboat.net への traffic を frontend Service:80 に backend
 # する。 ingress 経路: client → ALB (= application IngressGroup、 platform 側
 # kubernetes/components/cilium/) → cilium-envoy hostNetwork :8080 → 本
 # HTTPRoute → frontend。
-# =============================================================================
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -25,4 +21,5 @@ spec:
             value: /
       backendRefs:
         - name: frontend
+          namespace: default
           port: 80
