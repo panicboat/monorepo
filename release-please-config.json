@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "d43ec31de05d1da9767b8fde516328e0356c8a1c",
+  "separate-pull-requests": true,
+  "packages": {
+    "services/monolith": {
+      "release-type": "simple",
+      "component": "monolith",
+      "include-component-in-tag": true
+    },
+    "services/frontend": {
+      "release-type": "simple",
+      "component": "frontend",
+      "include-component-in-tag": true
+    }
+  }
+}
