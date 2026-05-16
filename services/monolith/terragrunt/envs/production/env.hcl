@@ -1,11 +1,11 @@
-# env.hcl - Development environment configuration
+# env.hcl - Production environment configuration
 locals {
   # Environment metadata
-  environment = "develop"
+  environment = "production"
   aws_region  = "ap-northeast-1"
-  # Develop-specific resource tags
+  # Production-specific resource tags
   additional_tags = {
-    CostCenter   = "develop"
+    CostCenter   = "production"
     Owner        = "panicboat"
     Purpose      = "monolith"
     AutoShutdown = "enabled"
