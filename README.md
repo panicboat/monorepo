@@ -38,26 +38,23 @@ Add the following to `/etc/hosts`.
 To edit manifests locally without Flux overwriting changes, suspend the Kustomizations:
 
 ```bash
-flux suspend kustomization monolith reverse-proxy frontend -n flux-system
+flux suspend kustomization monolith frontend -n flux-system
 ```
 
 Then apply your local changes:
 
 ```bash
 # Monolith
-kubectl apply -k services/monolith/kubernetes/overlays/develop
-
-# Reverse Proxy
-kubectl apply -k services/reverse-proxy/kubernetes/overlays/develop
+kubectl apply -k services/monolith/kubernetes/overlays/production
 
 # Frontend
-kubectl apply -k services/frontend/kubernetes/overlays/develop
+kubectl apply -k services/frontend/kubernetes/overlays/production
 ```
 
 To resume Flux synchronization (discarding local changes):
 
 ```bash
-flux resume kustomization monolith reverse-proxy frontend -n flux-system
+flux resume kustomization monolith frontend -n flux-system
 ```
 
 ## 🏗 Architecture
