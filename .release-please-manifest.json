@@ -1,4 +1,4 @@
 {
-  "services/monolith": "0.1.0",
-  "services/frontend": "0.1.0"
+  "services/monolith": "0.0.0",
+  "services/frontend": "0.0.0"
 }
