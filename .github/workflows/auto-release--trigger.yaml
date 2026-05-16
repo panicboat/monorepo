@@ -1,0 +1,52 @@
+name: 'Auto Release - Trigger'
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to (re-)build (e.g. monolith-v0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: auto-release-trigger-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  detect-component:
+    runs-on: ubuntu-latest
+    outputs:
+      service: ${{ steps.parse.outputs.service }}
+      version: ${{ steps.parse.outputs.version }}
+    steps:
+      - name: Parse tag
+        id: parse
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$TAG" =~ ^([a-z-]+)-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "::error::Tag '$TAG' does not match expected pattern <service>-v<X.Y.Z>"
+            exit 1
+          fi
+          SERVICE="${BASH_REMATCH[1]}"
+          VERSION="v${BASH_REMATCH[2]}"
+          echo "service=$SERVICE" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  container-build:
+    needs: detect-component
+    uses: ./.github/workflows/reusable--container-builder.yaml
+    with:
+      image-name: ${{ needs.detect-component.outputs.service }}
+      working-directory: services/${{ needs.detect-component.outputs.service }}/workspace
+      app-id: ${{ vars.APP_ID }}
+      semver-tag: ${{ needs.detect-component.outputs.version }}
+    secrets:
+      private-key: ${{ secrets.APP_PRIVATE_KEY }}
