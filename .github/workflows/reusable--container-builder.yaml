@@ -15,6 +15,11 @@ on:
         required: true
         type: string
         description: 'GitHub App ID for authentication'
+      semver-tag:
+        required: false
+        type: string
+        default: ''
+        description: 'Optional semver tag (e.g. v0.1.0) to add to the built image. Only set when called from release event flow.'
     secrets:
       private-key:
         required: true
@@ -63,6 +68,7 @@ jobs:
             type=ref,event=pr
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=${{ github.actor }}
+            type=semver,pattern={{raw}},value=${{ inputs.semver-tag }},enable=${{ inputs.semver-tag != '' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
