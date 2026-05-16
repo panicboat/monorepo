@@ -65,6 +65,16 @@
         "digest"
       ],
       "automerge": true
+    },
+    {
+      "description": "Track OpenTofu releases instead of Terraform for required_version",
+      "matchDepTypes": [
+        "required_version"
+      ],
+      "matchDepNames": [
+        "hashicorp/terraform"
+      ],
+      "overridePackageName": "opentofu/opentofu"
     }
   ]
 }
