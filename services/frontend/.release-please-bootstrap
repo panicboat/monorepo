@@ -1,0 +1,9 @@
+This file exists to bootstrap release-please's path-based commit routing for the
+frontend component. release-please tracks releases per package by inspecting which
+paths each commit touches, so a brand-new component with no prior changes never
+produces a release PR on its own.
+
+After the initial `frontend-v0.1.0` tag is created, remove this file in a follow-up
+PR. The removal commit must use `chore(frontend):` (or any scope routing to
+services/frontend) so release-please attributes the change to the correct component
+on subsequent runs.
