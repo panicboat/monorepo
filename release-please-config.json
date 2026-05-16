@@ -6,12 +6,14 @@
     "services/monolith": {
       "release-type": "simple",
       "component": "monolith",
-      "include-component-in-tag": true
+      "include-component-in-tag": true,
+      "release-as": "0.1.0"
     },
     "services/frontend": {
       "release-type": "simple",
       "component": "frontend",
-      "include-component-in-tag": true
+      "include-component-in-tag": true,
+      "release-as": "0.1.0"
     }
   }
 }
