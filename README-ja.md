@@ -40,26 +40,23 @@ Flux による自動同期を停止して、ローカルのマニフェストを
 まずは対象の Kustomization を停止します：
 
 ```bash
-flux suspend kustomization monolith reverse-proxy frontend -n flux-system
+flux suspend kustomization monolith frontend -n flux-system
 ```
 
 次にローカルの変更を適用します：
 
 ```bash
 # Monolith
-kubectl apply -k services/monolith/kubernetes/overlays/develop
-
-# Reverse Proxy
-kubectl apply -k services/reverse-proxy/kubernetes/overlays/develop
+kubectl apply -k services/monolith/kubernetes/overlays/production
 
 # Frontend
-kubectl apply -k services/frontend/kubernetes/overlays/develop
+kubectl apply -k services/frontend/kubernetes/overlays/production
 ```
 
 Flux による同期を再開（ローカルの変更は破棄されます）するには：
 
 ```bash
-flux resume kustomization monolith reverse-proxy frontend -n flux-system
+flux resume kustomization monolith frontend -n flux-system
 ```
 
 ## 🏗 Architecture
