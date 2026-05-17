@@ -1,5 +1,5 @@
 # Cilium Gateway (= namespace default、 listener http:8080) を parentRef、
-# host develop.panicboat.net への traffic を frontend Service:80 に backend
+# host dystopia.city (apex) への traffic を frontend Service:80 に backend
 # する。 ingress 経路: client → ALB (= application IngressGroup、 platform 側
 # kubernetes/components/cilium/) → cilium-envoy hostNetwork :8080 → 本
 # HTTPRoute → frontend。
@@ -13,7 +13,7 @@ spec:
     - name: cilium-gateway
       namespace: default
   hostnames:
-    - develop.panicboat.net
+    - dystopia.city
   rules:
     - matches:
         - path:
