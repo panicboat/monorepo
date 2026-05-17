@@ -4,5 +4,4 @@ resources:
   - ../../base
   - external-secret.yaml
 patches:
-  - path: configmap.yaml
   - path: deployment.yaml
