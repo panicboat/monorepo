@@ -7,4 +7,4 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/panicboat/monorepo/frontend:v0.1.0 # {"$imagepolicy": "flux-system:frontend"}
+          image: ghcr.io/panicboat/monorepo/frontend:v0.2.0 # {"$imagepolicy": "flux-system:frontend"}
