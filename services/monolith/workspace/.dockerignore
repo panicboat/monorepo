@@ -1,0 +1,13 @@
+.git
+log/
+tmp/
+spec/
+test/
+coverage/
+node_modules/
+vendor/bundle/
+.bundle/
+*.log
+.rspec_status
+.dockerignore
+Dockerfile
