@@ -4,4 +4,4 @@ metadata:
   name: frontend
 data:
   NODE_ENV: development
-  GRPC_BACKEND_URL: http://monolith:9001
+  MONOLITH_URL: http://monolith:9001
