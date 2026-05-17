@@ -14,34 +14,21 @@ spec:
     metadata:
       labels:
         app: monolith
+      annotations:
+        # OTel Operator が Ruby auto-injection native support 後に effective に。
+        # 現状 (= chart 0.113.0) では Operator が unknown annotation として silently
+        # ignore、 monolith Pod の trace 取得は停止。 upstream PR の merge + chart
+        # upgrade で auto 復活する。
+        # 引き継ぎ #25 / spec: docs/superpowers/specs/2026-05-17-monolith-otel-preempt-design.md
+        instrumentation.opentelemetry.io/inject-ruby: default/panicboat-application
     spec:
       containers:
         - name: monolith
-          image: ghcr.io/panicboat/monorepo/monolith:latest
+          image: ghcr.io/panicboat/monorepo/monolith:latest # {"$imagepolicy": "flux-system:monolith"}
           imagePullPolicy: IfNotPresent
           command: ["./bin/start"]
           ports:
             - containerPort: 9001
-          env:
-            # OTel SDK auto-detect 用 env vars (= platform 側 OTel Operator chart 0.112.1 では
-            # Ruby auto-injection (= spec.ruby) 未 support のため、 ここで hardcode する。
-            # application code (= config/initializers/opentelemetry.rb) は env vars を
-            # auto-detect で SDK config。 引き継ぎ事項 #25 (= chart upgrade) で本 env
-            # hardcode 撤去 + inject-ruby annotation 復活予定。)
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://opentelemetry-collector.monitoring.svc.cluster.local:4317
-            - name: OTEL_RESOURCE_ATTRIBUTES
-              value: service.name=monolith
-            # exporter / propagator を明示しないと OTel SDK Ruby default = noop で span 消失。
-            # OTel Operator inject-ruby が auto 設定するはずの env vars を hardcode で 補完。
-            - name: OTEL_TRACES_EXPORTER
-              value: otlp
-            - name: OTEL_METRICS_EXPORTER
-              value: otlp
-            - name: OTEL_LOGS_EXPORTER
-              value: otlp
-            - name: OTEL_PROPAGATORS
-              value: tracecontext,baggage
           envFrom:
             - configMapRef:
                 name: monolith
