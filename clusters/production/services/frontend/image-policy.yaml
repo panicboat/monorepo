@@ -8,7 +8,6 @@ metadata:
 spec:
   imageRepositoryRef:
     name: frontend
-  interval: 10m
   filterTags:
     pattern: '^v(?P<version>\d+\.\d+\.\d+)$'
     extract: '$version'
