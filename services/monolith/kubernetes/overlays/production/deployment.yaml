@@ -14,4 +14,4 @@ spec:
     spec:
       containers:
         - name: monolith
-          image: ghcr.io/panicboat/monorepo/monolith:v0.1.0 # {"$imagepolicy": "flux-system:monolith"}
+          image: ghcr.io/panicboat/monorepo/monolith:v0.2.0 # {"$imagepolicy": "flux-system:monolith"}
