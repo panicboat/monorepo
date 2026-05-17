@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/panicboat/monorepo/compare/frontend-v0.2.0...frontend-v0.2.1) (2026-05-17)
+
+
+### Bug Fixes
+
+* **frontend:** align gRPC backend env name with code ([#633](https://github.com/panicboat/monorepo/issues/633)) ([03c72c9](https://github.com/panicboat/monorepo/commit/03c72c9b461c14008ca57fdc997b687b41eba959))
+
 ## [0.2.0](https://github.com/panicboat/monorepo/compare/frontend-v0.1.0...frontend-v0.2.0) (2026-05-17)
 
 
