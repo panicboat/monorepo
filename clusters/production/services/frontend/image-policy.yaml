@@ -8,10 +8,10 @@ metadata:
 spec:
   imageRepositoryRef:
     name: frontend
-  digestReflectionPolicy: Always
   interval: 10m
   filterTags:
-    pattern: '^latest$'
+    pattern: '^v(?P<version>\d+\.\d+\.\d+)$'
+    extract: '$version'
   policy:
-    alphabetical:
-      order: asc
+    semver:
+      range: '>=0.0.0'

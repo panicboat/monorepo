@@ -1,10 +1,9 @@
 # =============================================================================
-# ImagePolicy for monolith (= digest reflection pattern)
+# ImagePolicy for monolith (= semver tag pattern)
 # =============================================================================
-# Flux v1.1.1 の digestReflectionPolicy: Always で latest tag の digest を
-# auto-track。 sha tag (= deploy-actions container-builder の type=sha
-# default short 7chars) は random で alphabetical / numerical order で
-# 最新 pick 不可のため、 latest tag pin + digest reflection を採用。
+# release-please tag (monolith-vX.Y.Z) を起点に build される ghcr semver tag
+# (vX.Y.Z) を Flux が pickup する。 main push 由来の latest / sha tag は
+# filterTags pattern で除外される (= Flux が見るのは semver のみ)。
 # =============================================================================
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
@@ -16,10 +15,10 @@ metadata:
 spec:
   imageRepositoryRef:
     name: monolith
-  digestReflectionPolicy: Always
   interval: 10m
   filterTags:
-    pattern: '^latest$'
+    pattern: '^v(?P<version>\d+\.\d+\.\d+)$'
+    extract: '$version'
   policy:
-    alphabetical:
-      order: asc
+    semver:
+      range: '>=0.0.0'

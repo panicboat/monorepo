@@ -1,0 +1,17 @@
+# =============================================================================
+# Deployment patch for monolith (production overlay)
+# =============================================================================
+# Flux ImageUpdateAutomation (= Setters strategy) が image 行を semver tag に
+# 書き換える対象。 base/deployment.yaml は :latest を保持するが、 production
+# cluster では本 patch で必ず上書きされる。
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monolith
+spec:
+  template:
+    spec:
+      containers:
+        - name: monolith
+          image: ghcr.io/panicboat/monorepo/monolith:v0.1.0 # {"$imagepolicy": "flux-system:monolith"}

@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/panicboat/monorepo/frontend:v0.1.0 # {"$imagepolicy": "flux-system:frontend"}
