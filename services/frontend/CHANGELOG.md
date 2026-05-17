@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/panicboat/monorepo/compare/frontend-v0.1.0...frontend-v0.2.0) (2026-05-17)
+
+
+### Features
+
+* **flux:** cut over production deploy to semver image tags ([#624](https://github.com/panicboat/monorepo/issues/624)) ([cd6768f](https://github.com/panicboat/monorepo/commit/cd6768f0beb5246d076cc1175e2d8fb8bc15b680))
+
 ## 0.1.0 (2026-05-16)
 
 
