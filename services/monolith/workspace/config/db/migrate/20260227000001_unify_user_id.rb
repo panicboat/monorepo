@@ -195,7 +195,7 @@ ROM::SQL.migration do
 
     run <<-SQL
       ALTER TABLE offer.plans
-      DROP CONSTRAINT cast_plans_cast_id_not_null;
+      DROP CONSTRAINT IF EXISTS cast_plans_cast_id_not_null;
     SQL
 
     run <<-SQL
@@ -239,7 +239,7 @@ ROM::SQL.migration do
 
     run <<-SQL
       ALTER TABLE offer.schedules
-      DROP CONSTRAINT cast_schedules_cast_id_not_null;
+      DROP CONSTRAINT IF EXISTS cast_schedules_cast_id_not_null;
     SQL
 
     run <<-SQL
@@ -283,7 +283,7 @@ ROM::SQL.migration do
 
     run <<-SQL
       ALTER TABLE post.posts
-      DROP CONSTRAINT cast_posts_cast_id_not_null;
+      DROP CONSTRAINT IF EXISTS cast_posts_cast_id_not_null;
     SQL
 
     run <<-SQL
@@ -332,7 +332,7 @@ ROM::SQL.migration do
 
     run <<-SQL
       ALTER TABLE post.likes
-      DROP CONSTRAINT post_likes_guest_id_not_null;
+      DROP CONSTRAINT IF EXISTS post_likes_guest_id_not_null;
     SQL
 
     run <<-SQL
@@ -398,12 +398,12 @@ ROM::SQL.migration do
 
     run <<-SQL
       ALTER TABLE relationship.follows
-      DROP CONSTRAINT cast_follows_cast_id_not_null;
+      DROP CONSTRAINT IF EXISTS cast_follows_cast_id_not_null;
     SQL
 
     run <<-SQL
       ALTER TABLE relationship.follows
-      DROP CONSTRAINT cast_follows_guest_id_not_null;
+      DROP CONSTRAINT IF EXISTS cast_follows_guest_id_not_null;
     SQL
 
     run <<-SQL
@@ -476,12 +476,12 @@ ROM::SQL.migration do
 
     run <<-SQL
       ALTER TABLE relationship.favorites
-      DROP CONSTRAINT cast_favorites_cast_id_not_null;
+      DROP CONSTRAINT IF EXISTS cast_favorites_cast_id_not_null;
     SQL
 
     run <<-SQL
       ALTER TABLE relationship.favorites
-      DROP CONSTRAINT cast_favorites_guest_id_not_null;
+      DROP CONSTRAINT IF EXISTS cast_favorites_guest_id_not_null;
     SQL
 
     run <<-SQL

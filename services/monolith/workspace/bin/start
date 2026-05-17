@@ -8,7 +8,7 @@ echo "Running migrations..."
 # Check if hanami exists before running
 if [ -f "Gemfile" ]; then
   bundle exec hanami db create
-  bundle exec hanami db migrate || echo "Migration failed (possibly no migrations), continuing..."
+  bundle exec hanami db migrate
 else
   echo "Gemfile not found, skipping migrations."
 fi
