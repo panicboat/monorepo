@@ -3,5 +3,4 @@ kind: ConfigMap
 metadata:
   name: frontend
 data:
-  NODE_ENV: development
   MONOLITH_URL: http://monolith:9001
