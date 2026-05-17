@@ -15,7 +15,6 @@ metadata:
 spec:
   imageRepositoryRef:
     name: monolith
-  interval: 10m
   filterTags:
     pattern: '^v(?P<version>\d+\.\d+\.\d+)$'
     extract: '$version'
