@@ -58,6 +58,7 @@ jobs:
     if: |
       needs.deploy-trigger.outputs.has-targets == 'true' &&
       contains(needs.deploy-trigger.outputs.targets, '"stack":"terragrunt"')
+      && true == 'false' # TODO: Terragrunt deployment is currently disabled as we have no active Terragrunt targets; re-enable when needed by removing this line
     strategy:
       matrix:
         target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
@@ -114,28 +115,6 @@ jobs:
       app-id: ${{ vars.APP_ID }}
     secrets:
       private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-  # cleanup-container:
-  #   name: 'Cleanup Container'
-  #   needs: deploy-trigger
-  #   runs-on: ubuntu-latest
-  #   if: |
-  #     needs.deploy-trigger.outputs.has-targets == 'true' &&
-  #     contains(needs.deploy-trigger.outputs.targets, '"stack":"docker"')
-  #   strategy:
-  #     matrix:
-  #       target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
-  #     fail-fast: false
-  #   steps:
-  #     - name: Cleanup container
-  #       uses: dataaxiom/ghcr-cleanup-action@v1.0.16
-  #       if: matrix.target.stack == 'docker'
-  #       with:
-  #         token: ${{ secrets.GITHUB_TOKEN }}
-  #         package: monorepo/${{ matrix.target.service }}
-  #         keep-n-untagged: 0
-  #         use-regex: true
-  #   continue-on-error: true
 
   deployment-summary:
     name: 'Deployment Summary'
