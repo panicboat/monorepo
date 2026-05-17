@@ -37,6 +37,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 WORKDIR /app
 ENV BUNDLE_PATH=/usr/local/bundle
+ENV HANAMI_ENV=production
 COPY --from=builder /usr/local/bundle /usr/local/bundle
 COPY . .
 
