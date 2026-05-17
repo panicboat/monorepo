@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/panicboat/monorepo/frontend:latest # {"$imagepolicy": "flux-system:frontend"}
+          image: ghcr.io/panicboat/monorepo/frontend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
