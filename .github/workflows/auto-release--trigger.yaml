@@ -42,6 +42,9 @@ jobs:
 
   container-build:
     needs: detect-component
+    concurrency:
+      group: image-build-${{ needs.detect-component.outputs.service }}-${{ github.sha }}
+      cancel-in-progress: false
     uses: ./.github/workflows/reusable--container-builder.yaml
     with:
       image-name: ${{ needs.detect-component.outputs.service }}
