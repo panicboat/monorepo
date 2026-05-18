@@ -4,122 +4,71 @@
 
 ## 📖 Overview
 
+Application code, Kubernetes manifests, and (when relevant) infrastructure-as-code for the panicboat platform's services, kept in a single repository so one PR can ship a coherent change. Production is GitOps-driven: Flux CD reconciles the cluster against this repo's `main` branch.
+
 ## 📂 Structure
 
 ```
 .
-├── .github/            # GitHub Actions Workflows
-├── clusters/           # Flux CD Cluster definitions
-├── proto/              # Protocol Buffers definitions
-├── services/           # Services source code & manifests
-│   └── {service}/      # Service Name
-│       ├── workspace/  # Application Source Code
-│       ├── kubernetes/ # Kubernetes Manifests (Base/Overlays)
-│       └── terragrunt/ # Terraform & Terragrunt configurations
-├── templates/          # Kubernetes templates
-└── tests/              # Tests
-    └── e2e/            # End-to-End tests
+├── .github/workflows/   # CI: auto-label, deploy trigger, reusable builders
+├── clusters/            # Flux CD sources per environment (Kustomization, ImagePolicy)
+├── docs/                # Architecture & access policy
+├── proto/               # gRPC contracts shared between services
+└── services/            # One directory per service
+    └── {service}/
+        ├── workspace/   # Application source
+        ├── kubernetes/  # Kustomize base & overlays
+        └── README.md    # Service-specific notes
 ```
+
 ## 🛠 Prerequisites
 
-- https://github.com/panicboat/platform/tree/main/kubernetes
-
-## 🚀 Getting Started
-
-Add the following to `/etc/hosts`.
-
-```bash
-127.0.0.1 frontend.local
-127.0.0.1 handbooks.local
-```
-
-### 🚀 Running Locally
-
-To edit manifests locally without Flux overwriting changes, suspend the Kustomizations:
-
-```bash
-flux suspend kustomization monolith frontend -n flux-system
-```
-
-Then apply your local changes:
-
-```bash
-# Monolith
-kubectl apply -k services/monolith/kubernetes/overlays/production
-
-# Frontend
-kubectl apply -k services/frontend/kubernetes/overlays/production
-```
-
-To resume Flux synchronization (discarding local changes):
-
-```bash
-flux resume kustomization monolith frontend -n flux-system
-```
+Cluster bootstrap, shared platform components, and the OIDC IAM that CI assumes live in [panicboat/platform](https://github.com/panicboat/platform/tree/main/kubernetes). Bring up the platform before targeting the cluster from this repo.
 
 ## 🏗 Architecture
 
 ```mermaid
 graph LR
   User[User - Browser] -- "1. External IP<br>LoadBalancer" --> NginxLB[Cloud Load Balancer]
-  NginxLB -- "2. Port 80<br>TargetGroupBinding" --> NginxPod[Nginx Pod<br>Reverse Proxy]
+  NginxLB -- "2. TargetGroupBinding" --> NginxPod[Nginx Reverse Proxy]
 
   subgraph "Kubernetes Cluster"
-    NginxPod -- "3. http://cilium-gateway<br>Internal" --> CiliumGw[Cilium Gateway]
-    CiliumGw -- "4. HTTPRoute<br>Host: frontend.local" --> FrontendPod[Frontend Pod<br>services/frontend]
-    FrontendPod -- "5. gRPC<br>Host: monolith.local" --> MonolithPod[Monolith Pod<br>services/monolith]
-    MonolithPod -- "6. PostgreSQL<br>5432" --> RDS[(AWS RDS<br>monolith-develop)]
+    NginxPod -- "3. Internal" --> CiliumGw[Cilium Gateway]
+    CiliumGw -- "4. HTTPRoute" --> FrontendPod[Frontend Pod<br>services/frontend]
+    FrontendPod -- "5. gRPC" --> MonolithPod[Monolith Pod<br>services/monolith]
+    MonolithPod -- "6. PostgreSQL" --> RDS[(AWS RDS)]
   end
 ```
 
+Service-internal architecture is documented in each `services/<service>/README.md` and in `docs/ARCHITECTURE.md`.
+
 ## 🚢 Deployment
 
-### Trigger
-
-- PR labels or push to `main` activate the pipeline in `.github/workflows/auto-label--deploy-trigger.yaml`.
-- Deployment targets are resolved from labels by `panicboat/deploy-actions/label-resolver` against `workflow-config.yaml`.
-
-### Stacks
-
-| Stack | Path Convention | Tooling |
-|-------|-----------------|---------|
-| Container | `services/{service}/workspace` | Docker → GHCR (`ghcr.io/panicboat/monorepo`), built on `ubuntu-24.04-arm` |
-| Infrastructure | `services/{service}/terragrunt/envs/{environment}` | Terragrunt via AWS OIDC |
-| Kubernetes | `services/{service}/kubernetes/overlays/{environment}` | Kustomize, reconciled by Flux CD |
-
-### Environments
-
-Defined in `workflow-config.yaml`. Only `develop` is active; `staging` / `production` entries are reserved and currently commented out.
-
-| Environment | AWS Region | AWS Account | Status |
-|-------------|------------|-------------|--------|
-| develop | ap-northeast-1 | 559744160976 | Active |
-| staging | - | - | Reserved |
-| production | - | - | Reserved |
+A PR-label / push-driven CI pipeline produces container images; Flux pulls them from GHCR into the cluster. release-please owns service versioning, so a production deploy is pinned to a semver tag rather than to a moving target.
 
 ### Pipeline Flow
 
 ```mermaid
 flowchart LR
-  Trigger[PR / push main] --> Resolver[label-resolver]
-  Resolver -->|stack: docker| Builder[container-builder<br/>ubuntu-24.04-arm]
-  Resolver -->|stack: terragrunt| Terragrunt[terragrunt-executor<br/>plan on PR / apply on main]
+  PR[PR / push main] --> Resolver[label-resolver]
+  Resolver -->|stack: docker| Builder[container-builder]
+  Resolver -->|stack: kubernetes| Diff[kubernetes diff<br/>PR comment]
   Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
-  Terragrunt --> AWS[(AWS)]
   GHCR --> Flux[Flux CD]
   Main[Commit on main] --> Flux
   Flux --> K8s[(Kubernetes)]
 ```
 
-### GitOps Sync (Flux CD)
+### Mechanics
 
-- Flux `GitRepository` watches this repo's `main` branch.
-- Per-service `Kustomization` in `clusters/{environment}/services/{service}/service.yaml` reconciles every 5 minutes against `services/{service}/kubernetes/overlays/{environment}`.
-- `monolith` and `frontend` use Flux Image Update Automation (`digestReflectionPolicy: Always` + `latest` tag pin) for auto-deploy on main merge. `ImageRepository` polls GHCR every 5 minutes for new digest, `ImageUpdateAutomation` commits `image:latest@sha256:<digest>` to `deployment.yaml` within 30 minutes, and Flux reconciles to trigger Pod rolling update.
+- **Trigger**: `.github/workflows/auto-label--deploy-trigger.yaml` runs on PR labels and main pushes. `panicboat/deploy-actions/label-resolver` reads `workflow-config.yaml` and dispatches to the matching stack workflow.
+- **Stacks** (see `stack_conventions` in `workflow-config.yaml`):
+  - `docker` → builds `services/{service}/workspace` and pushes to GHCR.
+  - `kubernetes` → posts a kustomize diff on the PR. Apply is delegated to Flux; CI does not run `kubectl apply`.
+- **Versioning**: release-please (`release-please-config.json`) raises per-service release PRs. Merging the release PR creates a `<service>-vX.Y.Z` tag, which triggers the container build under that tag.
+- **GitOps**: `clusters/<environment>/services/<service>/image-policy.yaml` selects the latest matching semver from GHCR. `ImageUpdateAutomation` commits the new tag back into the overlay, keeping what runs in the cluster identical to what is checked in.
 
 ### Related Repositories
 
-- [panicboat/platform](https://github.com/panicboat/platform) — cluster bootstrap, shared components, and IAM for OIDC.
-- [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — reusable GitHub Actions: `label-resolver`, `container-builder`, `terragrunt`, `auto-approve`.
-
-## 📝 Contribution Guide
+- [panicboat/platform](https://github.com/panicboat/platform) — cluster bootstrap, shared components, OIDC IAM.
+- [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — reusable GitHub Actions (`label-resolver`, `container-builder`, `terragrunt`, `auto-approve`).
