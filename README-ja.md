@@ -8,120 +8,64 @@
 
 ```
 .
-├── .github/            # GitHub Actions Workflows
-├── clusters/           # Flux CD Cluster definitions
-├── proto/              # Protocol Buffers definitions
-├── services/           # Services source code & manifests
-│   └── {service}/      # Service Name
-│       ├── workspace/  # Application Source Code
-│       ├── kubernetes/ # Kubernetes Manifests (Base/Overlays)
-│       └── terragrunt/ # Terraform & Terragrunt configurations
-├── templates/          # Kubernetes templates
-└── tests/              # Tests
-    └── e2e/            # End-to-End tests
+├── .github/workflows/   # CI ワークフロー（auto-label / deploy trigger / reusable builders）
+├── clusters/            # 環境ごとの Flux CD ソース（Kustomization / ImagePolicy）
+├── docs/                # アーキテクチャ・アクセスポリシー
+├── proto/               # サービス間で共有する gRPC コントラクト
+└── services/            # サービス単位のディレクトリ
+    └── {service}/
+        ├── workspace/   # アプリケーションソース
+        ├── kubernetes/  # Kustomize base / overlays
+        └── README.md    # サービス固有のドキュメント
 ```
+
 ## 🛠 Prerequisites
 
-- https://github.com/panicboat/platform/tree/main/kubernetes
-
-## 🚀 Getting Started
-
-`/etc/hosts` に以下を設定
-
-```bash
-127.0.0.1 frontend.local
-127.0.0.1 handbooks.local
-```
-
-### 🔧 Local Development
-
-Flux による自動同期を停止して、ローカルのマニフェストを直接適用するには以下の手順を実行します。
-
-まずは対象の Kustomization を停止します：
-
-```bash
-flux suspend kustomization monolith frontend -n flux-system
-```
-
-次にローカルの変更を適用します：
-
-```bash
-# Monolith
-kubectl apply -k services/monolith/kubernetes/overlays/production
-
-# Frontend
-kubectl apply -k services/frontend/kubernetes/overlays/production
-```
-
-Flux による同期を再開（ローカルの変更は破棄されます）するには：
-
-```bash
-flux resume kustomization monolith frontend -n flux-system
-```
+クラスタの bootstrap、共通プラットフォームコンポーネント、CI が assume する OIDC IAM は [panicboat/platform](https://github.com/panicboat/platform/tree/main/kubernetes) で構成する。本リポジトリからクラスタを操作する前に platform 側を立ち上げておく。
 
 ## 🏗 Architecture
 
 ```mermaid
 graph LR
-  User[User - Browser] -- "1. External IP<br>LoadBalancer" --> NginxLB[Cloud Load Balancer]
-  NginxLB -- "2. Port 80<br>TargetGroupBinding" --> NginxPod[Nginx Pod<br>Reverse Proxy]
+  User[User - Browser] -- "1. HTTPS" --> ALB[AWS ALB<br>application IngressGroup]
 
   subgraph "Kubernetes Cluster"
-    NginxPod -- "3. http://cilium-gateway<br>Internal" --> CiliumGw[Cilium Gateway]
-    CiliumGw -- "4. HTTPRoute<br>Host: frontend.local" --> FrontendPod[Frontend Pod<br>services/frontend]
-    FrontendPod -- "5. gRPC<br>Host: monolith.local" --> MonolithPod[Monolith Pod<br>services/monolith]
-    MonolithPod -- "6. PostgreSQL<br>5432" --> RDS[(AWS RDS<br>monolith-develop)]
+    ALB -- "2. hostNetwork :8080" --> Envoy[cilium-envoy]
+    Envoy -- "3. HTTPRoute via cilium-gateway" --> FrontendPod[Frontend Pod<br>services/frontend]
+    FrontendPod -- "4. gRPC" --> MonolithPod[Monolith Pod<br>services/monolith]
+    MonolithPod -- "5. PostgreSQL" --> RDS[(AWS RDS)]
   end
 ```
 
+サービス内部のアーキテクチャは各 `services/<service>/README.md` および `docs/ARCHITECTURE.md` を参照する。
+
 ## 🚢 Deployment
 
-### Trigger
-
-- PR ラベルまたは `main` への push で `.github/workflows/auto-label--deploy-trigger.yaml` が起動する。
-- `panicboat/deploy-actions/label-resolver` が `workflow-config.yaml` を参照してデプロイ対象を解決する。
-
-### Stacks
-
-| Stack | Path Convention | Tooling |
-|-------|-----------------|---------|
-| Container | `services/{service}/workspace` | Docker → GHCR (`ghcr.io/panicboat/monorepo`)、`ubuntu-24.04-arm` でビルド |
-| Infrastructure | `services/{service}/terragrunt/envs/{environment}` | Terragrunt (AWS OIDC) |
-| Kubernetes | `services/{service}/kubernetes/overlays/{environment}` | Kustomize（Flux CD で reconcile） |
-
-### Environments
-
-`workflow-config.yaml` で定義。現状 `develop` のみ有効で、`staging` / `production` は予約済み（コメントアウト）。
-
-| Environment | AWS Region | AWS Account | Status |
-|-------------|------------|-------------|--------|
-| develop | ap-northeast-1 | 559744160976 | Active |
-| staging | - | - | Reserved |
-| production | - | - | Reserved |
+PR ラベルおよび `main` への push を起点とした CI が GHCR にコンテナイメージを push し、Flux がそれをクラスタに反映する。release-please がサービスごとのバージョニングを担っているため、production のデプロイは moving tag ではなく semver tag に固定される。
 
 ### Pipeline Flow
 
 ```mermaid
 flowchart LR
-  Trigger[PR / push main] --> Resolver[label-resolver]
-  Resolver -->|stack: docker| Builder[container-builder<br/>ubuntu-24.04-arm]
-  Resolver -->|stack: terragrunt| Terragrunt[terragrunt-executor<br/>PR は plan / main は apply]
+  PR[PR / push main] --> Resolver[label-resolver]
+  Resolver -->|stack: docker| Builder[container-builder]
+  Resolver -->|stack: kubernetes| Diff[kubernetes diff<br/>PR comment]
   Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
-  Terragrunt --> AWS[(AWS)]
   GHCR --> Flux[Flux CD]
   Main[Commit on main] --> Flux
   Flux --> K8s[(Kubernetes)]
 ```
 
-### GitOps Sync (Flux CD)
+### Mechanics
 
-- Flux の `GitRepository` が本リポジトリの `main` ブランチを監視する。
-- `clusters/{environment}/services/{service}/service.yaml` に定義された `Kustomization` が 5 分間隔で `services/{service}/kubernetes/overlays/{environment}` を reconcile する。
-- `monolith` と `frontend` は Flux Image Update Automation (`digestReflectionPolicy: Always` + `latest` タグ pin) により main merge をトリガーに自動デプロイされる。`ImageRepository` が GHCR を 5 分間隔でポーリングして新規 digest を取得し、`ImageUpdateAutomation` が 30 分以内に `image:latest@sha256:<digest>` を `deployment.yaml` にコミットする。その後 Flux が reconcile し、Pod の rolling update が発火する。
+- **Trigger**: `.github/workflows/auto-label--deploy-trigger.yaml` が PR ラベルと main への push を起点に起動する。`panicboat/deploy-actions/label-resolver` が `workflow-config.yaml` を読み、該当の stack ワークフローへディスパッチする。
+- **Stacks**（`workflow-config.yaml` の `stack_conventions` を参照）:
+  - `docker` → `services/{service}/workspace` をビルドして GHCR に push。
+  - `kubernetes` → PR に kustomize diff をコメントする。apply は Flux に委譲しており、CI 側で `kubectl apply` は実行しない。
+- **Versioning**: release-please（`release-please-config.json`）がサービスごとに release PR を起票する。release PR のマージで `<service>-vX.Y.Z` の semver tag が打たれ、その tag 起点でコンテナビルドが走る。
+- **GitOps**: `clusters/<environment>/services/<service>/image-policy.yaml` が GHCR から最新の semver tag を選び、`ImageUpdateAutomation` がその tag を overlay にコミットバックする。クラスタで稼働しているものとリポジトリにコミットされているものを一致させるための構成。
 
 ### Related Repositories
 
-- [panicboat/platform](https://github.com/panicboat/platform) — クラスタの bootstrap、共通コンポーネント、OIDC 用 IAM を提供。
-- [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — 再利用可能な GitHub Actions (`label-resolver` / `container-builder` / `terragrunt` / `auto-approve`)。
-
-## 📝 Contribution Guide
+- [panicboat/platform](https://github.com/panicboat/platform) — クラスタ bootstrap、共通コンポーネント、OIDC IAM。
+- [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — 再利用可能な GitHub Actions（`label-resolver` / `container-builder` / `terragrunt` / `auto-approve`）。
