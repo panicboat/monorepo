@@ -11,8 +11,9 @@ stack_conventions:
     stacks:
       - name: docker
         directory: workspace
-      - name: terragrunt
-        directory: terragrunt/envs/{environment}
-        required_attributes: [aws_region, iam_role_plan, iam_role_apply]
+      # TODO: Define conventions for Terragrunt stacks when we have active Terragrunt targets.
+      # - name: terragrunt
+      #   directory: terragrunt/envs/{environment}
+      #   required_attributes: [aws_region, iam_role_plan, iam_role_apply]
       - name: kubernetes
         directory: kubernetes/overlays/{environment}
