@@ -4,8 +4,6 @@
 
 ## 📖 Overview
 
-Application code, Kubernetes manifests, and (when relevant) infrastructure-as-code for the panicboat platform's services, kept in a single repository so one PR can ship a coherent change. Production is GitOps-driven: Flux CD reconciles the cluster against this repo's `main` branch.
-
 ## 📂 Structure
 
 ```
@@ -29,14 +27,13 @@ Cluster bootstrap, shared platform components, and the OIDC IAM that CI assumes 
 
 ```mermaid
 graph LR
-  User[User - Browser] -- "1. External IP<br>LoadBalancer" --> NginxLB[Cloud Load Balancer]
-  NginxLB -- "2. TargetGroupBinding" --> NginxPod[Nginx Reverse Proxy]
+  User[User - Browser] -- "1. HTTPS" --> ALB[AWS ALB<br>application IngressGroup]
 
   subgraph "Kubernetes Cluster"
-    NginxPod -- "3. Internal" --> CiliumGw[Cilium Gateway]
-    CiliumGw -- "4. HTTPRoute" --> FrontendPod[Frontend Pod<br>services/frontend]
-    FrontendPod -- "5. gRPC" --> MonolithPod[Monolith Pod<br>services/monolith]
-    MonolithPod -- "6. PostgreSQL" --> RDS[(AWS RDS)]
+    ALB -- "2. hostNetwork :8080" --> Envoy[cilium-envoy]
+    Envoy -- "3. HTTPRoute via cilium-gateway" --> FrontendPod[Frontend Pod<br>services/frontend]
+    FrontendPod -- "4. gRPC" --> MonolithPod[Monolith Pod<br>services/monolith]
+    MonolithPod -- "5. PostgreSQL" --> RDS[(AWS RDS)]
   end
 ```
 
