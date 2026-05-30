@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { Avatar } from "./avatar";
 import { Button } from "./button";
