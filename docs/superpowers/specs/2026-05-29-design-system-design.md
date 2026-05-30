@@ -42,32 +42,32 @@ color / typography / spacing / radius / shadow tokens、layout system、navigati
 
 ### 3.1 Color
 
-色は `R G B` 形式（Tailwind v4 の alpha 合成のため）。
+色は hex で定義する。Tailwind v4 は opacity modifier（`bg-x/50` 等）を `color-mix()` で解決するため、v3 の `R G B` チャンネル形式は不要。`@theme` に bare channel（`248 250 252`）を入れると `bg-x` が `background-color: 248 250 252`（無効 CSS）になり描画されない。現行 frontend も hex token に alpha modifier を多用して動作しているため、その方式に揃える。
 
 ```css
 @theme inline {
   /* Neutral scale */
-  --color-neutral-50:  248 250 252;
-  --color-neutral-100: 241 245 249;
-  --color-neutral-200: 226 232 240;
-  --color-neutral-300: 203 213 225;
-  --color-neutral-400: 148 163 184;
-  --color-neutral-500: 100 116 139;
-  --color-neutral-600: 71 85 105;
-  --color-neutral-700: 51 65 85;
-  --color-neutral-800: 30 41 59;
-  --color-neutral-900: 15 23 42;
-  --color-neutral-950: 20 22 26;
+  --color-neutral-50:  #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+  --color-neutral-950: #14161a;
 
   /* Brand */
-  --color-brand-primary:   168 85 247;   /* purple #A855F7 */
-  --color-brand-secondary: 236 72 153;   /* pink   #EC4899 */
-  --color-brand-tertiary:  249 115 22;   /* orange #F97316 — 3-stop gradient 限定 */
+  --color-brand-primary:   #a855f7;   /* purple */
+  --color-brand-secondary: #ec4899;   /* pink */
+  --color-brand-tertiary:  #f97316;   /* orange — 3-stop gradient 限定 */
 
   /* Functional */
-  --color-input-bg:       48 48 48;
-  --color-success-bg:     22 101 52;
-  --color-success-text:   74 222 128;
+  --color-input-bg:       #303030;
+  --color-success-bg:     #166534;
+  --color-success-text:   #4ade80;
 
   /* Semantic aliases */
   --color-bg:             var(--color-neutral-950);
@@ -83,10 +83,10 @@ color / typography / spacing / radius / shadow tokens、layout system、navigati
 
 **Gradient utilities:**
 
-- `--gradient-brand-2`: `linear-gradient(to right, rgb(var(--color-brand-primary)), rgb(var(--color-brand-secondary)))` — CTA 全般・フォロー・ブランドマーク
-- `--gradient-brand-3`: `linear-gradient(135deg, rgb(var(--color-brand-primary)), rgb(var(--color-brand-secondary)), rgb(var(--color-brand-tertiary)))` — 投稿 (compose) CTA 限定
+- `--gradient-brand-2`: `linear-gradient(to right, var(--color-brand-primary), var(--color-brand-secondary))` — CTA 全般・フォロー・ブランドマーク
+- `--gradient-brand-3`: `linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-secondary), var(--color-brand-tertiary))` — 投稿 (compose) CTA 限定
 
-**Brand glow shadow:** `0 10px 15px -3px rgb(var(--color-brand-primary) / 0.2), 0 4px 6px -4px rgb(var(--color-brand-primary) / 0.2)`
+**Brand glow shadow:** hex token は `rgb(var(--token) / α)` に展開できないため、既存 `--shadow-*` と同じく channel をハードコードする: `0 10px 15px -3px rgb(168 85 247 / 0.2), 0 4px 6px -4px rgb(168 85 247 / 0.2)`
 
 **Semantic usage:**
 
