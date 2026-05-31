@@ -16,7 +16,6 @@ export const metadata: Metadata = {
 
 import { AuthProvider } from "@/modules/identity/hooks/useAuth";
 import { SWRProvider } from "@/components/providers/SWRProvider";
-import { ToastProvider } from "@/components/ui/Toast";
 
 export default function RootLayout({
   children,
@@ -27,9 +26,7 @@ export default function RootLayout({
     <html lang="ja" className={notoSansJP.variable} suppressHydrationWarning>
       <body className="antialiased bg-bg">
         <AuthProvider>
-          <SWRProvider>
-            <ToastProvider>{children}</ToastProvider>
-          </SWRProvider>
+          <SWRProvider>{children}</SWRProvider>
         </AuthProvider>
       </body>
     </html>

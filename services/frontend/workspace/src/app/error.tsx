@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { ErrorFallback } from "@/components/shared/ErrorFallback";
 
-export default function GlobalError({
+export default function Error({
   error,
   reset,
 }: {
@@ -11,8 +10,18 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Unhandled error:", error);
+    console.error(error);
   }, [error]);
 
-  return <ErrorFallback error={error} reset={reset} />;
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg p-6 text-center">
+      <p className="text-text-primary">エラーが発生しました</p>
+      <button
+        onClick={reset}
+        className="rounded-full border border-accent px-4 py-2 text-accent"
+      >
+        再試行
+      </button>
+    </div>
+  );
 }
