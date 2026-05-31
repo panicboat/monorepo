@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const response = await identityClient.getCurrentUser(
+    const response = await identityClient.getCurrentAccount(
       {},
       { headers: buildGrpcHeaders(req.headers) }
     );

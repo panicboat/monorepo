@@ -208,7 +208,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // FALLBACK: Supports multiple token field name formats from API
     const newAccessToken = data.accessToken || data.access_token;
     const newRefreshToken = data.refreshToken || data.refresh_token;
-    const userRole = data.userProfile.role;
+    const userRole = data.account.role;
     const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
 
     if (!newAccessToken) {
@@ -222,7 +222,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // FALLBACK: Returns empty string when refresh token is missing
       refreshToken: newRefreshToken || "",
       role: toStoreRole(userRole),
-      userId: data.userProfile.id,
+      userId: data.account.id,
     };
     setTokens(tokenData);
 
@@ -230,8 +230,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setNewUserFlag(true);
     mutate(
       {
-        id: data.userProfile.id,
-        phoneNumber: data.userProfile.phoneNumber,
+        id: data.account.id,
+        phoneNumber: data.account.phoneNumber,
         role: userRole,
       },
       { revalidate: false }
@@ -260,7 +260,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // FALLBACK: Supports multiple token field name formats from API
     const newAccessToken = data.accessToken || data.access_token;
     const newRefreshToken = data.refreshToken || data.refresh_token;
-    const userRole = data.userProfile.role;
+    const userRole = data.account.role;
     const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
 
     if (!newAccessToken) {
@@ -274,7 +274,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // FALLBACK: Returns empty string when refresh token is missing
       refreshToken: newRefreshToken || "",
       role: toStoreRole(userRole),
-      userId: data.userProfile.id,
+      userId: data.account.id,
     };
     setTokens(tokenData);
 
@@ -282,8 +282,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setNewUserFlag(false);
     mutate(
       {
-        id: data.userProfile.id,
-        phoneNumber: data.userProfile.phoneNumber,
+        id: data.account.id,
+        phoneNumber: data.account.phoneNumber,
         role: userRole,
       },
       { revalidate: false }
