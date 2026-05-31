@@ -80,7 +80,7 @@ RSpec.describe Identity::Grpc::Handler do
       result = {
         access_token: "access",
         refresh_token: "refresh",
-        user_profile: { id: "1", phone_number: "123", role: 2 }
+        account: { id: "1", phone_number: "123", role: 2 }
       }
       expect(register_uc).to receive(:call).with(
         phone_number: "123",
@@ -92,7 +92,7 @@ RSpec.describe Identity::Grpc::Handler do
       response = handler.register
       expect(response).to be_a(Identity::V1::RegisterResponse)
       expect(response.access_token).to eq("access")
-      expect(response.user_profile.role).to eq(:ROLE_CAST)
+      expect(response.account.role).to eq(:ROLE_CAST)
     end
   end
 
@@ -103,7 +103,7 @@ RSpec.describe Identity::Grpc::Handler do
       result = {
         access_token: "access",
         refresh_token: "refresh",
-        user_profile: { id: "1", phone_number: "123", role: 2 }
+        account: { id: "1", phone_number: "123", role: 2 }
       }
       expect(login_uc).to receive(:call).with(phone_number: "123", password: "pass", role: 2).and_return(result)
 
@@ -138,20 +138,20 @@ RSpec.describe Identity::Grpc::Handler do
     end
   end
 
-  describe "#get_current_user" do
+  describe "#get_current_account" do
     before { allow(Current).to receive(:user_id).and_return(1) }
 
     it "returns user profile" do
       expect(get_profile_uc).to receive(:call).with(user_id: 1).and_return({ id: "1", phone_number: "123", role: 2 })
 
-      response = handler.get_current_user
-      expect(response).to be_a(Identity::V1::UserProfile)
+      response = handler.get_current_account
+      expect(response).to be_a(Identity::V1::Account)
       expect(response.role).to eq(:ROLE_CAST)
     end
 
     it "raises unauthenticated if no current user" do
       allow(Current).to receive(:user_id).and_return(nil)
-      expect { handler.get_current_user }.to raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(GRPC::Core::StatusCodes::UNAUTHENTICATED) }
+      expect { handler.get_current_account }.to raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(GRPC::Core::StatusCodes::UNAUTHENTICATED) }
     end
   end
 end

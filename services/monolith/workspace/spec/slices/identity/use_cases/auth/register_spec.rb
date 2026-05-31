@@ -49,7 +49,7 @@ RSpec.describe Identity::UseCases::Auth::Register do
 
         expect(result[:access_token]).not_to be_nil
         expect(result[:refresh_token]).not_to be_nil
-        expect(result[:user_profile][:id]).to eq("user-123")
+        expect(result[:account][:id]).to eq("user-123")
       end
     end
 

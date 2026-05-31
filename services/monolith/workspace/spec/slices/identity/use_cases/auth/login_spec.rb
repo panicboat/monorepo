@@ -35,7 +35,7 @@ RSpec.describe Identity::UseCases::Auth::Login do
         result = use_case.call(phone_number: phone_number, password: password, role: role)
 
         expect(result[:access_token]).not_to be_nil
-        expect(result[:user_profile][:id]).to eq("user-123")
+        expect(result[:account][:id]).to eq("user-123")
       end
     end
 
