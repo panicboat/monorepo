@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'securerandom'
-require 'jwt'
+require "auth/jwt_codec"
 
 module Identity
   module UseCases
@@ -23,13 +23,10 @@ module Identity
           return nil unless user
 
           # Generate new tokens
-          payload = { sub: user.id, role: user.role, exp: Time.now.to_i + 3600 * 24 * 30 }
-          # FALLBACK: Hardcoded secret for local development when JWT_SECRET env var is not set
-          # TODO: Remove hardcoded default; require JWT_SECRET in production
-          new_access_token = JWT.encode(payload, ENV.fetch("JWT_SECRET", "pan1cb0at"), 'HS256')
+          new_access_token = ::Auth::JwtCodec.encode(sub: user.id, role: user.role)
 
           new_refresh_token = SecureRandom.hex(32)
-          repo.create(token: new_refresh_token, user_id: user.id, expires_at: Time.now + 3600 * 24 * 30)
+          repo.create(token: new_refresh_token, user_id: user.id, expires_at: Time.now + 3600 * 24 * 60)
 
           { access_token: new_access_token, refresh_token: new_refresh_token }
         end

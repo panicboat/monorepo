@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'bcrypt'
-require 'jwt'
+require "auth/jwt_codec"
 require "errors/validation_error"
 
 module Identity
@@ -52,16 +52,13 @@ module Identity
           )
 
           # 4. JWT Generation
-          payload = { sub: user.id, role: user.role, exp: Time.now.to_i + 3600 * 24 * 30 }
-          # FALLBACK: Hardcoded secret for local development when JWT_SECRET env var is not set
-          # TODO: Remove hardcoded default; require JWT_SECRET in production
-          token = JWT.encode(payload, ENV.fetch("JWT_SECRET", "pan1cb0at"), 'HS256')
+          token = ::Auth::JwtCodec.encode(sub: user.id, role: user.role)
 
           refresh_token = SecureRandom.hex(32)
-          refresh_repo.create(token: refresh_token, user_id: user.id, expires_at: Time.now + 3600 * 24 * 30)
+          refresh_repo.create(token: refresh_token, user_id: user.id, expires_at: Time.now + 3600 * 24 * 60)
 
           # Return result
-          { access_token: token, refresh_token: refresh_token, user_profile: { id: user.id, phone_number: user.phone_number, role: user.role } }
+          { access_token: token, refresh_token: refresh_token, account: { id: user.id, phone_number: user.phone_number, role: user.role } }
         end
       end
     end

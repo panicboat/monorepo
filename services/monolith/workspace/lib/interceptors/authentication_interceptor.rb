@@ -1,6 +1,6 @@
 require 'gruf'
-require 'jwt'
 require 'securerandom'
+require "auth/jwt_codec"
 
 module Interceptors
   class AuthenticationInterceptor < Gruf::Interceptors::ServerInterceptor
@@ -38,23 +38,9 @@ module Interceptors
         return uid
       end
 
-      # Case 2: Direct JWT (Current / App Middleware)
+      # Case 2: Direct JWT (App / BFF)
       if (token = request.metadata['authorization']&.sub('Bearer ', ''))
-        begin
-           # In a real app, strict verification with a public key is needed.
-           # For this production-ready implementation, we assume JWT_PUBLIC_KEY is available or we use a shared secret.
-           # If keys are not set up, we might fail.
-           # However, given the environment, we might be using a dummy key or similar for now if not provided.
-           # Checking ENV logic.
-
-           # Using HS256 for simplicity in this phase as per implementation
-           # FALLBACK: Uses default secret when JWT_SECRET is not configured
-           secret = ENV.fetch('JWT_SECRET', 'pan1cb0at')
-           payload = JWT.decode(token, secret, true, algorithm: 'HS256').first
-           return payload['sub']
-        rescue JWT::DecodeError
-          return nil
-        end
+        return ::Auth::JwtCodec.decode_sub(token)
       end
 
       nil

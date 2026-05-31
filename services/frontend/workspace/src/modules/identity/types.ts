@@ -42,7 +42,7 @@ export interface VerificationResult {
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  userProfile: {
+  account: {
     id: string;
     phoneNumber: string;
     role: number | string;

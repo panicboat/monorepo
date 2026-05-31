@@ -2,14 +2,14 @@
 
 module Identity
   module Presenters
-    class UserPresenter
-      def self.to_proto(profile)
-        return nil unless profile
+    class AccountPresenter
+      def self.to_proto(account)
+        return nil unless account
 
-        ::Identity::V1::UserProfile.new(
-          id: profile[:id],
-          phone_number: profile[:phone_number],
-          role: role_int_to_enum(profile[:role])
+        ::Identity::V1::Account.new(
+          id: account[:id],
+          phone_number: account[:phone_number],
+          role: role_int_to_enum(account[:role])
         )
       end
 
