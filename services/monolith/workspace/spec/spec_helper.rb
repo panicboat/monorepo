@@ -6,6 +6,7 @@ $LOAD_PATH.unshift(File.expand_path("..", __dir__))
 $LOAD_PATH.unshift(File.expand_path("../stubs", __dir__))
 
 ENV["HANAMI_ENV"] ||= "test"
+require_relative "support/jwt_keys"
 require "hanami/prepare"
 
 require "hanami/rspec"
