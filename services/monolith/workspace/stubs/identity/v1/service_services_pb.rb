@@ -28,8 +28,8 @@ module Identity
         rpc :RefreshToken, ::Identity::V1::RefreshTokenRequest, ::Identity::V1::RefreshTokenResponse
         # Logout by revoking refresh token
         rpc :Logout, ::Identity::V1::LogoutRequest, ::Identity::V1::LogoutResponse
-        # Get current user session
-        rpc :GetCurrentUser, ::Google::Protobuf::Empty, ::Identity::V1::UserProfile
+        # Get current account session
+        rpc :GetCurrentAccount, ::Google::Protobuf::Empty, ::Identity::V1::Account
       end
 
       Stub = Service.rpc_stub_class

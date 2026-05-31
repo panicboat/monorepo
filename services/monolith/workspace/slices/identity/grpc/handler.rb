@@ -19,7 +19,7 @@ module Identity
       rpc :VerifySms, ::Identity::V1::VerifySmsRequest, ::Identity::V1::VerifySmsResponse
       rpc :Register, ::Identity::V1::RegisterRequest, ::Identity::V1::RegisterResponse
       rpc :Login, ::Identity::V1::LoginRequest, ::Identity::V1::LoginResponse
-      rpc :GetCurrentUser, ::Google::Protobuf::Empty, ::Identity::V1::UserProfile
+      rpc :GetCurrentAccount, ::Google::Protobuf::Empty, ::Identity::V1::Account
 
       include Identity::Deps[
         login_uc: "use_cases.auth.login",
@@ -51,7 +51,7 @@ module Identity
       end
 
       def register
-        role_int = UserPresenter.role_enum_to_int(request.message.role) || 1
+        role_int = AccountPresenter.role_enum_to_int(request.message.role) || 1
 
         result = register_uc.call(
           phone_number: request.message.phone_number,
@@ -66,7 +66,7 @@ module Identity
       end
 
       def login
-        role_int = UserPresenter.role_enum_to_int(request.message.role)
+        role_int = AccountPresenter.role_enum_to_int(request.message.role)
 
         result = login_uc.call(
           phone_number: request.message.phone_number,
@@ -98,7 +98,7 @@ module Identity
         ::Identity::V1::LogoutResponse.new(success: true)
       end
 
-      def get_current_user
+      def get_current_account
         user_id = ::Current.user_id
 
         unless user_id
@@ -111,12 +111,12 @@ module Identity
            raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "User not found")
         end
 
-        UserPresenter.to_proto(result)
+        AccountPresenter.to_proto(result)
       end
 
       private
 
-      UserPresenter = Identity::Presenters::UserPresenter
+      AccountPresenter = Identity::Presenters::AccountPresenter
       AuthPresenter = Identity::Presenters::AuthPresenter
     end
   end

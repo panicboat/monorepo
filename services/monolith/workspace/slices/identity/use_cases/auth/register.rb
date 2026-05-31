@@ -61,7 +61,7 @@ module Identity
           refresh_repo.create(token: refresh_token, user_id: user.id, expires_at: Time.now + 3600 * 24 * 30)
 
           # Return result
-          { access_token: token, refresh_token: refresh_token, user_profile: { id: user.id, phone_number: user.phone_number, role: user.role } }
+          { access_token: token, refresh_token: refresh_token, account: { id: user.id, phone_number: user.phone_number, role: user.role } }
         end
       end
     end

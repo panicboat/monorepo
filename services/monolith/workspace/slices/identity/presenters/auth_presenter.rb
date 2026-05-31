@@ -7,7 +7,7 @@ module Identity
         ::Identity::V1::RegisterResponse.new(
           access_token: result[:access_token],
           refresh_token: result[:refresh_token],
-          user_profile: UserPresenter.to_proto(result[:user_profile])
+          account: AccountPresenter.to_proto(result[:account])
         )
       end
 
@@ -15,7 +15,7 @@ module Identity
         ::Identity::V1::LoginResponse.new(
           access_token: result[:access_token],
           refresh_token: result[:refresh_token],
-          user_profile: UserPresenter.to_proto(result[:user_profile])
+          account: AccountPresenter.to_proto(result[:account])
         )
       end
 
