@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package profile.v1;
+
+// Unified profile service (replaces portfolio CastService + GuestService).
+// One Profile per account (1:1 with identity.Account). role-specific fields are
+// optional (cast extras). Escort commerce dimension (plans/schedules/genres) dropped.
+service ProfileService {
+  rpc GetProfile (GetProfileRequest) returns (GetProfileResponse);
+  rpc GetProfileByUsername (GetProfileByUsernameRequest) returns (GetProfileResponse);
+  rpc SaveProfile (SaveProfileRequest) returns (SaveProfileResponse);
+  rpc CheckUsernameAvailability (CheckUsernameAvailabilityRequest) returns (CheckUsernameAvailabilityResponse);
+  rpc SaveProfileMedia (SaveProfileMediaRequest) returns (SaveProfileMediaResponse);
+  rpc ListAreas (ListAreasRequest) returns (ListAreasResponse);
+}
+
+message Profile {
+  string account_id = 1;       // 1:1 with identity.Account
+  string username = 2;         // @handle, case-insensitive unique
+  string display_name = 3;
+  string bio = 4;              // max 160 (enforced in monolith)
+  string avatar_media_id = 5;
+  string avatar_url = 6;       // read-only download URL
+  string cover_media_id = 7;
+  string cover_url = 8;        // read-only download URL
+  string website = 9;
+  SnsLinks sns_links = 10;
+  string prefecture = 11;      // location (guest 都道府県 / display)
+  bool is_private = 12;        // 鍵アカウント
+  string registered_at = 13;   // onboarding completion (empty if not)
+
+  // cast extras (role = cast)
+  int32 age = 14;
+  int32 height_cm = 15;
+  string cup_size = 16;
+  string industry = 17;        // 業種 / service category (enum 値は §10 で確定)
+  repeated Area areas = 18;    // 活動エリア (max 2)
+  string shop_id = 19;         // 所属店舗 ref (shop domain は §10 で defer)
+}
+
+message SnsLinks {
+  string x = 1;          // X (Twitter)
+  string instagram = 2;
+  string tiktok = 3;
+  string bluesky = 4;
+  string line = 5;
+}
+
+message Area {
+  string id = 1;
+  string region = 2;       // 地方
+  string prefecture = 3;   // 都道府県
+  string name = 4;         // エリアクラスタ (例: 池袋・赤羽・日暮里エリア)
+  string code = 5;
+}
+
+message GetProfileRequest { string account_id = 1; }
+message GetProfileByUsernameRequest { string username = 1; }
+message GetProfileResponse { Profile profile = 1; }
+
+message SaveProfileRequest {
+  string username = 1;          // 変更時。空なら据え置き
+  string display_name = 2;
+  string bio = 3;
+  string website = 4;
+  SnsLinks sns_links = 5;
+  string prefecture = 6;
+  bool is_private = 7;
+  // cast extras
+  int32 age = 8;
+  int32 height_cm = 9;
+  string cup_size = 10;
+  string industry = 11;
+  repeated string area_ids = 12; // max 2
+  string shop_id = 13;
+}
+message SaveProfileResponse { Profile profile = 1; }
+
+message CheckUsernameAvailabilityRequest { string username = 1; }
+message CheckUsernameAvailabilityResponse {
+  bool available = 1;
+  string message = 2;
+}
+
+message SaveProfileMediaRequest {
+  string avatar_media_id = 1;
+  string cover_media_id = 2;
+}
+message SaveProfileMediaResponse { Profile profile = 1; }
+
+message ListAreasRequest { string prefecture = 1; } // optional filter
+message ListAreasResponse { repeated Area areas = 1; }
