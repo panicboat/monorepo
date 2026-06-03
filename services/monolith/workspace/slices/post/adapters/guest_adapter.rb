@@ -2,7 +2,7 @@
 
 module Post
   module Adapters
-    # Anti-Corruption Layer for accessing Guest data from Portfolio slice.
+    # Anti-Corruption Layer for accessing Guest data from Profile slice.
     class GuestAdapter
       GuestInfo = Data.define(:user_id, :name, :avatar_media_id)
 
@@ -57,11 +57,11 @@ module Post
       end
 
       def get_by_ids_query
-        @get_by_ids_query ||= Portfolio::Slice["use_cases.guest.queries.get_by_ids"]
+        @get_by_ids_query ||= Profile::Slice["use_cases.guest.queries.get_by_ids"]
       end
 
       def get_by_user_ids_query
-        @get_by_user_ids_query ||= Portfolio::Slice["use_cases.guest.queries.get_by_user_ids"]
+        @get_by_user_ids_query ||= Profile::Slice["use_cases.guest.queries.get_by_user_ids"]
       end
     end
   end

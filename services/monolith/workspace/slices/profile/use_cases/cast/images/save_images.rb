@@ -1,0 +1,23 @@
+# frozen_string_literal: true
+
+module Profile
+  module UseCases
+    module Cast
+      module Images
+        class SaveImages
+          include ::Profile::Deps[repo: "repositories.cast_repository"]
+
+          def call(cast_user_id:, profile_media_id:, gallery_media_ids:, avatar_media_id: nil)
+            repo.save_images(
+              user_id: cast_user_id,
+              profile_media_id: profile_media_id,
+              gallery_media_ids: gallery_media_ids,
+              avatar_media_id: avatar_media_id
+            )
+            repo.find_with_plans(cast_user_id)
+          end
+        end
+      end
+    end
+  end
+end

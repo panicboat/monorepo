@@ -2,7 +2,7 @@
 
 module Offer
   module Adapters
-    # Adapter for accessing Portfolio domain data.
+    # Adapter for accessing Profile domain data.
     # Maintains domain boundary while allowing necessary cross-domain references.
     class PortfolioAdapter
       def find_cast_by_user_id(user_id)
@@ -20,7 +20,7 @@ module Offer
       private
 
       def portfolio_cast_repository
-        @portfolio_cast_repository ||= Portfolio::Slice["repositories.cast_repository"]
+        @portfolio_cast_repository ||= Profile::Slice["repositories.cast_repository"]
       end
     end
   end
