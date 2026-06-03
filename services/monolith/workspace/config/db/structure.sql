@@ -171,7 +171,8 @@ CREATE TABLE portfolio.areas (
     sort_order integer DEFAULT 0 NOT NULL,
     active boolean DEFAULT true NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    region character varying(50)
 );
 
 
@@ -275,6 +276,43 @@ CREATE TABLE portfolio.guests (
     tagline character varying(100),
     bio text,
     avatar_media_id uuid
+);
+
+
+--
+-- Name: profile_areas; Type: TABLE; Schema: portfolio; Owner: -
+--
+
+CREATE TABLE portfolio.profile_areas (
+    profile_id uuid NOT NULL,
+    area_id uuid NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: profiles; Type: TABLE; Schema: portfolio; Owner: -
+--
+
+CREATE TABLE portfolio.profiles (
+    account_id uuid NOT NULL,
+    username character varying(30),
+    display_name text NOT NULL,
+    bio text,
+    avatar_media_id uuid,
+    cover_media_id uuid,
+    website text,
+    sns_links jsonb DEFAULT '{}'::jsonb NOT NULL,
+    prefecture character varying(50),
+    is_private boolean DEFAULT false NOT NULL,
+    registered_at timestamp with time zone,
+    age integer,
+    height_cm integer,
+    cup_size character varying(10),
+    industry character varying(50),
+    shop_id uuid,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -581,6 +619,22 @@ ALTER TABLE ONLY portfolio.guests
 
 
 --
+-- Name: profile_areas profile_areas_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.profile_areas
+    ADD CONSTRAINT profile_areas_pkey PRIMARY KEY (profile_id, area_id);
+
+
+--
+-- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.profiles
+    ADD CONSTRAINT profiles_pkey PRIMARY KEY (account_id);
+
+
+--
 -- Name: hashtags cast_post_hashtags_pkey; Type: CONSTRAINT; Schema: post; Owner: -
 --
 
@@ -783,6 +837,20 @@ CREATE UNIQUE INDEX idx_casts_slug_lower ON portfolio.casts USING btree (lower((
 --
 
 CREATE INDEX idx_guest_prefectures_prefecture ON portfolio.guest_prefectures USING btree (prefecture);
+
+
+--
+-- Name: idx_profile_areas_area_id; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE INDEX idx_profile_areas_area_id ON portfolio.profile_areas USING btree (area_id);
+
+
+--
+-- Name: idx_profiles_username_lower; Type: INDEX; Schema: portfolio; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_profiles_username_lower ON portfolio.profiles USING btree (lower((username)::text)) WHERE (username IS NOT NULL);
 
 
 --
@@ -1087,6 +1155,22 @@ ALTER TABLE ONLY portfolio.guest_prefectures
 
 
 --
+-- Name: profile_areas profile_areas_area_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.profile_areas
+    ADD CONSTRAINT profile_areas_area_id_fkey FOREIGN KEY (area_id) REFERENCES portfolio.areas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: profile_areas profile_areas_profile_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
+--
+
+ALTER TABLE ONLY portfolio.profile_areas
+    ADD CONSTRAINT profile_areas_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES portfolio.profiles(account_id) ON DELETE CASCADE;
+
+
+--
 -- Name: hashtags cast_post_hashtags_post_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
 --
 
@@ -1205,4 +1289,7 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260226000001_add_trust_review_media_constraints.rb'),
 ('20260227000001_unify_user_id.rb'),
 ('20260301000000_drop_cast_favorites.rb'),
-('20260307000000_create_guest_prefectures.rb');
+('20260307000000_create_guest_prefectures.rb'),
+('20260604000001_add_region_to_areas.rb'),
+('20260604000002_create_profiles.rb'),
+('20260604000003_create_profile_areas.rb');

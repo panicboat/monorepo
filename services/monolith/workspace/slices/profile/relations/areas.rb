@@ -6,6 +6,7 @@ module Profile
         attribute :prefecture, Types::String
         attribute :name, Types::String
         attribute :code, Types::String
+        attribute :region, Types::String.optional
         attribute :sort_order, Types::Integer
         attribute :active, Types::Bool
         attribute :created_at, Types::Time
@@ -15,6 +16,7 @@ module Profile
 
         associations do
           has_many :cast_areas, foreign_key: :area_id
+          has_many :profile_areas, foreign_key: :area_id
         end
       end
     end
