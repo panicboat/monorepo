@@ -2,18 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { profileClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, handleApiError } from "@/lib/api-helpers";
-import { mapAreaToView } from "@/modules/profile/lib/mappers";
 
 export async function GET(req: NextRequest) {
   try {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const prefecture = req.nextUrl.searchParams.get("prefecture") || "";
+    const username = req.nextUrl.searchParams.get("username") || "";
     const headers = buildGrpcHeaders(req.headers);
-    const res = await profileClient.listAreas({ prefecture }, { headers });
-    return NextResponse.json({ areas: (res.areas || []).map(mapAreaToView) });
+    const res = await profileClient.checkUsernameAvailability({ username }, { headers });
+    return NextResponse.json({ available: res.available, message: res.message });
   } catch (error: unknown) {
-    return handleApiError(error, "ListAreas");
+    return handleApiError(error, "CheckUsernameAvailability");
   }
 }
