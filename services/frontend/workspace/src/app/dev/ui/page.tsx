@@ -154,6 +154,10 @@ export default function DevUiPage() {
       <section>
         <AreaAccordion areas={mockAreas} selectedIds={areaSel} onChange={setAreaSel} max={2} />
       </section>
+
+      <section className="border border-divider rounded-lg">
+        <ProfileHeader profile={mockProfile} role="cast" />
+      </section>
     </main>
   );
 }
