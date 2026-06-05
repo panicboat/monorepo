@@ -13,7 +13,8 @@ import { Select } from "@/components/ui/select";
 import { FormField } from "@/components/ui/form-field";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
 import { EditProfileModal } from "@/modules/profile/components/EditProfileModal";
-import type { ProfileView } from "@/modules/profile/types";
+import { AreaAccordion } from "@/modules/profile/components/AreaAccordion";
+import type { ProfileView, AreaView } from "@/modules/profile/types";
 
 export default function DevUiPage() {
   const [tab, setTab] = useState("home");
@@ -22,6 +23,14 @@ export default function DevUiPage() {
   const [bio, setBio] = useState("");
   const [prefecture, setPrefecture] = useState("東京都");
   const [editOpen, setEditOpen] = useState(false);
+  const [areaSel, setAreaSel] = useState<string[]>(["1"]);
+  const mockAreas: AreaView[] = [
+    { id: "1", region: "関東", prefecture: "東京都", name: "渋谷", code: "shibuya" },
+    { id: "2", region: "関東", prefecture: "東京都", name: "新宿", code: "shinjuku" },
+    { id: "3", region: "関東", prefecture: "神奈川県", name: "横浜", code: "yokohama" },
+    { id: "4", region: "関西", prefecture: "大阪府", name: "難波", code: "namba" },
+    { id: "5", region: "九州・沖縄", prefecture: "福岡県", name: "中洲", code: "nakasu" },
+  ];
   const mockProfile: ProfileView = {
     accountId: "demo",
     username: "yuna",
@@ -140,6 +149,10 @@ export default function DevUiPage() {
           isCast
           onSave={async () => {}}
         />
+      </section>
+
+      <section>
+        <AreaAccordion areas={mockAreas} selectedIds={areaSel} onChange={setAreaSel} max={2} />
       </section>
     </main>
   );

@@ -53,6 +53,24 @@ export function mapProfileToView(p: Profile): ProfileView {
   };
 }
 
+export function profileViewToSavePayload(p: ProfileView): SaveProfilePayload {
+  return {
+    username: p.username,
+    displayName: p.displayName,
+    bio: p.bio,
+    website: p.website,
+    snsLinks: { ...p.snsLinks },
+    prefecture: p.prefecture,
+    isPrivate: p.isPrivate,
+    age: p.age,
+    heightCm: p.heightCm,
+    cupSize: p.cupSize,
+    industry: p.industry,
+    areaIds: p.areas.map((a) => a.id),
+    shopId: p.shopId,
+  };
+}
+
 export function buildSaveProfileRequest(payload: SaveProfilePayload) {
   const sns = payload.snsLinks;
   return {
