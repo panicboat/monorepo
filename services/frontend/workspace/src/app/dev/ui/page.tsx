@@ -11,6 +11,9 @@ import { PostCard } from "@/components/ui/post-card";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { FormField } from "@/components/ui/form-field";
+import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
+import { EditProfileModal } from "@/modules/profile/components/EditProfileModal";
+import type { ProfileView } from "@/modules/profile/types";
 
 export default function DevUiPage() {
   const [tab, setTab] = useState("home");
@@ -18,6 +21,28 @@ export default function DevUiPage() {
   const [following, setFollowing] = useState(false);
   const [bio, setBio] = useState("");
   const [prefecture, setPrefecture] = useState("東京都");
+  const [editOpen, setEditOpen] = useState(false);
+  const mockProfile: ProfileView = {
+    accountId: "demo",
+    username: "yuna",
+    displayName: "ゆな",
+    bio: "はじめまして、ゆなです。\nよろしくお願いします。",
+    avatarMediaId: "",
+    avatarUrl: "",
+    coverMediaId: "",
+    coverUrl: "",
+    website: "https://example.com",
+    snsLinks: { x: "https://x.com/yuna", instagram: "", tiktok: "", bluesky: "", line: "" },
+    prefecture: "東京都",
+    isPrivate: false,
+    registeredAt: "",
+    age: 23,
+    heightCm: 158,
+    cupSize: "D",
+    industry: "デリヘル",
+    areas: [{ id: "a1", region: "関東", prefecture: "東京都", name: "渋谷", code: "shibuya" }],
+    shopId: "",
+  };
 
   return (
     <main className="mx-auto flex max-w-xl flex-col gap-8 bg-bg p-6 text-text-primary">
@@ -104,6 +129,17 @@ export default function DevUiPage() {
         >
           <Input id="un" placeholder="username" />
         </FormField>
+      </section>
+
+      <section className="flex flex-col gap-3 border border-divider rounded-lg">
+        <ProfileHeader profile={mockProfile} role="cast" onEdit={() => setEditOpen(true)} />
+        <EditProfileModal
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          profile={mockProfile}
+          isCast
+          onSave={async () => {}}
+        />
       </section>
     </main>
   );
