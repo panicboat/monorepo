@@ -9,6 +9,7 @@ import { Select } from "@/components/ui/select";
 import { FormField } from "@/components/ui/form-field";
 import { PREFECTURES, CUP_SIZES, INDUSTRIES } from "@/modules/profile/lib/constants";
 import type { ProfileView, SaveProfilePayload } from "@/modules/profile/types";
+import { ImageUpload } from "@/modules/profile/components/ImageUpload";
 
 interface EditProfileModalProps {
   open: boolean;
@@ -16,6 +17,7 @@ interface EditProfileModalProps {
   profile: ProfileView;
   isCast: boolean;
   onSave: (payload: SaveProfilePayload) => Promise<void>;
+  onSaveMedia: (payload: { avatarMediaId?: string; coverMediaId?: string }) => Promise<void>;
 }
 
 interface FormState {
@@ -77,10 +79,12 @@ function buildPayload(current: ProfileView, f: FormState, isCast: boolean): Save
   };
 }
 
-export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave }: EditProfileModalProps) {
+export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, onSaveMedia }: EditProfileModalProps) {
   const [form, setForm] = useState<FormState>(() => toForm(profile));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
+  const [coverUrl, setCoverUrl] = useState(profile.coverUrl);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -110,6 +114,24 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave }
           </div>
 
           <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4">
+            <div className="flex flex-col gap-3">
+              <ImageUpload
+                shape="cover"
+                url={coverUrl || undefined}
+                onUploaded={async (mediaId, url) => {
+                  setCoverUrl(url);
+                  await onSaveMedia({ coverMediaId: mediaId });
+                }}
+              />
+              <ImageUpload
+                shape="avatar"
+                url={avatarUrl || undefined}
+                onUploaded={async (mediaId, url) => {
+                  setAvatarUrl(url);
+                  await onSaveMedia({ avatarMediaId: mediaId });
+                }}
+              />
+            </div>
             <FormField label="表示名" htmlFor="displayName" required>
               <Input id="displayName" value={form.displayName} onChange={(e) => set("displayName", e.target.value)} />
             </FormField>

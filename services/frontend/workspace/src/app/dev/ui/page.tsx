@@ -14,6 +14,7 @@ import { FormField } from "@/components/ui/form-field";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
 import { EditProfileModal } from "@/modules/profile/components/EditProfileModal";
 import { AreaAccordion } from "@/modules/profile/components/AreaAccordion";
+import { ImageUpload } from "@/modules/profile/components/ImageUpload";
 import type { ProfileView, AreaView } from "@/modules/profile/types";
 
 export default function DevUiPage() {
@@ -148,6 +149,7 @@ export default function DevUiPage() {
           profile={mockProfile}
           isCast
           onSave={async () => {}}
+          onSaveMedia={async () => {}}
         />
       </section>
 
@@ -157,6 +159,11 @@ export default function DevUiPage() {
 
       <section className="border border-divider rounded-lg">
         <ProfileHeader profile={mockProfile} role="cast" />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <ImageUpload shape="cover" onUploaded={() => {}} />
+        <ImageUpload shape="avatar" onUploaded={() => {}} />
       </section>
     </main>
   );

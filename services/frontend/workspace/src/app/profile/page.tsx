@@ -9,7 +9,7 @@ import { EditProfileModal } from "@/modules/profile/components/EditProfileModal"
 export default function ProfilePage() {
   const isHydrated = useAuthStore(selectIsHydrated);
   const role = useAuthStore(selectRole);
-  const { profile, loading, error, saveProfile } = useProfile();
+  const { profile, loading, error, saveProfile, saveMedia } = useProfile();
   const [editing, setEditing] = useState(false);
 
   if (!isHydrated || loading) {
@@ -33,6 +33,9 @@ export default function ProfilePage() {
         isCast={role === "cast"}
         onSave={async (payload) => {
           await saveProfile(payload);
+        }}
+        onSaveMedia={async (payload) => {
+          await saveMedia(payload);
         }}
       />
     </main>
