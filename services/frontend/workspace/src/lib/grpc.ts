@@ -12,6 +12,7 @@ import { FollowService } from "@/stub/relationship/v1/follow_service_pb";
 import { BlockService } from "@/stub/relationship/v1/block_service_pb";
 import { FeedService } from "@/stub/feed/v1/feed_service_pb";
 import { TrustService } from "@/stub/trust/v1/service_pb";
+import { ProfileService } from "@/stub/profile/v1/service_pb";
 
 // In server environment (Next.js API Routes), we connect to Monolith directly.
 // Monolith is at 'http://monolith:9001' or 'http://localhost:9001' depending on Docker/Local.
@@ -44,3 +45,6 @@ export const feedClient = createClient(FeedService, transport);
 
 // Trust domain client
 export const trustClient = createClient(TrustService, transport);
+
+// Profile domain client
+export const profileClient = createClient(ProfileService, transport);

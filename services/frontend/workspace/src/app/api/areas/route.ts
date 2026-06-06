@@ -1,24 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { castClient } from "@/lib/grpc";
+import { profileClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
-import { handleApiError } from "@/lib/api-helpers";
+import { requireAuth, handleApiError } from "@/lib/api-helpers";
+import { mapAreaToView } from "@/modules/profile/lib/mappers";
 
 export async function GET(req: NextRequest) {
   try {
-    const response = await castClient.listAreas(
-      {},
-      { headers: buildGrpcHeaders(req.headers) }
-    );
+    const authError = requireAuth(req);
+    if (authError) return authError;
 
-    // FALLBACK: Returns empty array when response areas is missing
-    const areas = (response.areas || []).map((a) => ({
-      id: a.id,
-      prefecture: a.prefecture,
-      name: a.name,
-      code: a.code,
-    }));
-
-    return NextResponse.json({ areas });
+    const prefecture = req.nextUrl.searchParams.get("prefecture") || "";
+    const headers = buildGrpcHeaders(req.headers);
+    const res = await profileClient.listAreas({ prefecture }, { headers });
+    return NextResponse.json({ areas: (res.areas || []).map(mapAreaToView) });
   } catch (error: unknown) {
     return handleApiError(error, "ListAreas");
   }

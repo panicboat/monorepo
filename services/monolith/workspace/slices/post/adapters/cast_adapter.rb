@@ -2,7 +2,7 @@
 
 module Post
   module Adapters
-    # Anti-Corruption Layer for accessing Cast data from Portfolio slice.
+    # Anti-Corruption Layer for accessing Cast data from Profile slice.
     class CastAdapter
       CastInfo = Data.define(:user_id, :name, :profile_media_id, :avatar_media_id, :slug, :visibility, :registered_at)
 
@@ -69,15 +69,15 @@ module Post
       end
 
       def get_by_ids_query
-        @get_by_ids_query ||= Portfolio::Slice["use_cases.cast.queries.get_by_ids"]
+        @get_by_ids_query ||= Profile::Slice["use_cases.cast.queries.get_by_ids"]
       end
 
       def get_by_user_ids_query
-        @get_by_user_ids_query ||= Portfolio::Slice["use_cases.cast.queries.get_by_user_ids"]
+        @get_by_user_ids_query ||= Profile::Slice["use_cases.cast.queries.get_by_user_ids"]
       end
 
       def get_public_cast_ids_query
-        @get_public_cast_ids_query ||= Portfolio::Slice["use_cases.cast.queries.get_public_cast_ids"]
+        @get_public_cast_ids_query ||= Profile::Slice["use_cases.cast.queries.get_public_cast_ids"]
       end
     end
   end

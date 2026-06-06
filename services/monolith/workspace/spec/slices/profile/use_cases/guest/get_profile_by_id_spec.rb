@@ -1,0 +1,62 @@
+# frozen_string_literal: true
+
+require "spec_helper"
+require "slices/profile/use_cases/guest/get_profile_by_id"
+
+RSpec.describe Profile::UseCases::Guest::GetProfileById do
+  subject(:use_case) do
+    described_class.new(
+      guest_repository: guest_repository,
+      cast_repository: cast_repository
+    )
+  end
+
+  let(:guest_repository) { instance_double(Profile::Repositories::GuestRepository) }
+  let(:cast_repository) { instance_double(Profile::Repositories::CastRepository) }
+
+  let(:cast_user_id) { "cast-user-123" }
+  let(:guest_id) { "guest-456" }
+
+  let(:cast) { double(:cast, user_id: cast_user_id) }
+  let(:guest) { double(:guest, user_id: "guest-user-456", name: "Test Guest") }
+
+  describe "#call" do
+    context "when cast and guest exist" do
+      before do
+        allow(cast_repository).to receive(:find_by_user_id).with(cast_user_id).and_return(cast)
+        allow(guest_repository).to receive(:find_by_id).with(guest_id).and_return(guest)
+      end
+
+      it "returns guest and cast_id" do
+        result = use_case.call(guest_id: guest_id, cast_user_id: cast_user_id)
+
+        expect(result).to eq({ guest: guest, cast_user_id: cast_user_id })
+      end
+    end
+
+    context "when cast does not exist" do
+      before do
+        allow(cast_repository).to receive(:find_by_user_id).with(cast_user_id).and_return(nil)
+      end
+
+      it "returns nil" do
+        result = use_case.call(guest_id: guest_id, cast_user_id: cast_user_id)
+
+        expect(result).to be_nil
+      end
+    end
+
+    context "when guest does not exist" do
+      before do
+        allow(cast_repository).to receive(:find_by_user_id).with(cast_user_id).and_return(cast)
+        allow(guest_repository).to receive(:find_by_id).with(guest_id).and_return(nil)
+      end
+
+      it "returns nil" do
+        result = use_case.call(guest_id: guest_id, cast_user_id: cast_user_id)
+
+        expect(result).to be_nil
+      end
+    end
+  end
+end
