@@ -6,6 +6,11 @@ service LikeService {
   rpc LikeCastPost(LikeCastPostRequest) returns (LikeCastPostResponse);
   rpc UnlikeCastPost(UnlikeCastPostRequest) returns (UnlikeCastPostResponse);
   rpc GetPostLikeStatus(GetPostLikeStatusRequest) returns (GetPostLikeStatusResponse);
+
+  // Symmetric (account-based). Old LikeCastPost RPCs above are kept until cleanup.
+  rpc LikePost(LikePostRequest) returns (LikePostResponse);
+  rpc UnlikePost(UnlikePostRequest) returns (UnlikePostResponse);
+  rpc GetLikeStatus(GetLikeStatusRequest) returns (GetLikeStatusResponse);
 }
 
 message LikeCastPostRequest {
@@ -29,5 +34,31 @@ message GetPostLikeStatusRequest {
 }
 
 message GetPostLikeStatusResponse {
+  map<string, bool> liked = 1; // post_id -> is_liked
+}
+
+// ---- Symmetric (account-based) messages ----
+
+message LikePostRequest {
+  string post_id = 1;
+}
+
+message LikePostResponse {
+  int32 likes_count = 1;
+}
+
+message UnlikePostRequest {
+  string post_id = 1;
+}
+
+message UnlikePostResponse {
+  int32 likes_count = 1;
+}
+
+message GetLikeStatusRequest {
+  repeated string post_ids = 1;
+}
+
+message GetLikeStatusResponse {
   map<string, bool> liked = 1; // post_id -> is_liked
 }

@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file post/v1/post_service.proto.
  */
 export const file_post_v1_post_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpwb3N0L3YxL3Bvc3Rfc2VydmljZS5wcm90bxIHcG9zdC52MSJCCg5DYXN0UG9zdEF1dGhvchIPCgd1c2VyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJImUKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCRIQCghtZWRpYV9pZBgFIAEoCSKDAgoIQ2FzdFBvc3QSCgoCaWQYASABKAkSFAoMY2FzdF91c2VyX2lkGAIgASgJEg8KB2NvbnRlbnQYAyABKAkSJQoFbWVkaWEYBCADKAsyFi5wb3N0LnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRInCgZhdXRob3IYBiABKAsyFy5wb3N0LnYxLkNhc3RQb3N0QXV0aG9yEhMKC2xpa2VzX2NvdW50GAcgASgFEhYKDmNvbW1lbnRzX2NvdW50GAggASgFEhIKCnZpc2liaWxpdHkYCSABKAkSEAoIaGFzaHRhZ3MYCiADKAkSDQoFbGlrZWQYCyABKAgiegoUTGlzdENhc3RQb3N0c1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJEhQKDGNhc3RfdXNlcl9pZBgDIAEoCRIOCgZmaWx0ZXIYBCABKAkSHQoVZXhjbHVkZV9jYXN0X3VzZXJfaWRzGAUgAygJImAKFUxpc3RDYXN0UG9zdHNSZXNwb25zZRIgCgVwb3N0cxgBIAMoCzIRLnBvc3QudjEuQ2FzdFBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgifwoTU2F2ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEiUKBW1lZGlhGAMgAygLMhYucG9zdC52MS5DYXN0UG9zdE1lZGlhEhIKCnZpc2liaWxpdHkYBCABKAkSEAoIaGFzaHRhZ3MYBSADKAkiNwoUU2F2ZUNhc3RQb3N0UmVzcG9uc2USHwoEcG9zdBgBIAEoCzIRLnBvc3QudjEuQ2FzdFBvc3QiIAoSR2V0Q2FzdFBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIjYKE0dldENhc3RQb3N0UmVzcG9uc2USHwoEcG9zdBgBIAEoCzIRLnBvc3QudjEuQ2FzdFBvc3QiIwoVRGVsZXRlQ2FzdFBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIhgKFkRlbGV0ZUNhc3RQb3N0UmVzcG9uc2UyxwIKC1Bvc3RTZXJ2aWNlEk4KDUxpc3RDYXN0UG9zdHMSHS5wb3N0LnYxLkxpc3RDYXN0UG9zdHNSZXF1ZXN0Gh4ucG9zdC52MS5MaXN0Q2FzdFBvc3RzUmVzcG9uc2USSAoLR2V0Q2FzdFBvc3QSGy5wb3N0LnYxLkdldENhc3RQb3N0UmVxdWVzdBocLnBvc3QudjEuR2V0Q2FzdFBvc3RSZXNwb25zZRJLCgxTYXZlQ2FzdFBvc3QSHC5wb3N0LnYxLlNhdmVDYXN0UG9zdFJlcXVlc3QaHS5wb3N0LnYxLlNhdmVDYXN0UG9zdFJlc3BvbnNlElEKDkRlbGV0ZUNhc3RQb3N0Eh4ucG9zdC52MS5EZWxldGVDYXN0UG9zdFJlcXVlc3QaHy5wb3N0LnYxLkRlbGV0ZUNhc3RQb3N0UmVzcG9uc2ViBnByb3RvMw");
+  fileDesc("Chpwb3N0L3YxL3Bvc3Rfc2VydmljZS5wcm90bxIHcG9zdC52MSJCCg5DYXN0UG9zdEF1dGhvchIPCgd1c2VyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJImUKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCRIQCghtZWRpYV9pZBgFIAEoCSKDAgoIQ2FzdFBvc3QSCgoCaWQYASABKAkSFAoMY2FzdF91c2VyX2lkGAIgASgJEg8KB2NvbnRlbnQYAyABKAkSJQoFbWVkaWEYBCADKAsyFi5wb3N0LnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRInCgZhdXRob3IYBiABKAsyFy5wb3N0LnYxLkNhc3RQb3N0QXV0aG9yEhMKC2xpa2VzX2NvdW50GAcgASgFEhYKDmNvbW1lbnRzX2NvdW50GAggASgFEhIKCnZpc2liaWxpdHkYCSABKAkSEAoIaGFzaHRhZ3MYCiADKAkSDQoFbGlrZWQYCyABKAgiegoUTGlzdENhc3RQb3N0c1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJEhQKDGNhc3RfdXNlcl9pZBgDIAEoCRIOCgZmaWx0ZXIYBCABKAkSHQoVZXhjbHVkZV9jYXN0X3VzZXJfaWRzGAUgAygJImAKFUxpc3RDYXN0UG9zdHNSZXNwb25zZRIgCgVwb3N0cxgBIAMoCzIRLnBvc3QudjEuQ2FzdFBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgifwoTU2F2ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEiUKBW1lZGlhGAMgAygLMhYucG9zdC52MS5DYXN0UG9zdE1lZGlhEhIKCnZpc2liaWxpdHkYBCABKAkSEAoIaGFzaHRhZ3MYBSADKAkiNwoUU2F2ZUNhc3RQb3N0UmVzcG9uc2USHwoEcG9zdBgBIAEoCzIRLnBvc3QudjEuQ2FzdFBvc3QiIAoSR2V0Q2FzdFBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIjYKE0dldENhc3RQb3N0UmVzcG9uc2USHwoEcG9zdBgBIAEoCzIRLnBvc3QudjEuQ2FzdFBvc3QiIwoVRGVsZXRlQ2FzdFBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIhgKFkRlbGV0ZUNhc3RQb3N0UmVzcG9uc2UiXAoKUG9zdEF1dGhvchISCgphY2NvdW50X2lkGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRIQCgh1c2VybmFtZRgDIAEoCRISCgphdmF0YXJfdXJsGAQgASgJImEKCVBvc3RNZWRpYRIKCgJpZBgBIAEoCRISCgptZWRpYV90eXBlGAIgASgJEgsKA3VybBgDIAEoCRIVCg10aHVtYm5haWxfdXJsGAQgASgJEhAKCG1lZGlhX2lkGAUgASgJIvQBCgRQb3N0EgoKAmlkGAEgASgJEhEKCWF1dGhvcl9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEiEKBW1lZGlhGAQgAygLMhIucG9zdC52MS5Qb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIjCgZhdXRob3IYBiABKAsyEy5wb3N0LnYxLlBvc3RBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSEgoKdmlzaWJpbGl0eRgJIAEoCRIQCghoYXNodGFncxgKIAMoCRINCgVsaWtlZBgLIAEoCCJUChBMaXN0UG9zdHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCRIRCglhdXRob3JfaWQYAyABKAkSDgoGZmlsdGVyGAQgASgJIlgKEUxpc3RQb3N0c1Jlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIncKD1NhdmVQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEiEKBW1lZGlhGAMgAygLMhIucG9zdC52MS5Qb3N0TWVkaWESEgoKdmlzaWJpbGl0eRgEIAEoCRIQCghoYXNodGFncxgFIAMoCSIvChBTYXZlUG9zdFJlc3BvbnNlEhsKBHBvc3QYASABKAsyDS5wb3N0LnYxLlBvc3QiHAoOR2V0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkiLgoPR2V0UG9zdFJlc3BvbnNlEhsKBHBvc3QYASABKAsyDS5wb3N0LnYxLlBvc3QiHwoRRGVsZXRlUG9zdFJlcXVlc3QSCgoCaWQYASABKAkiFAoSRGVsZXRlUG9zdFJlc3BvbnNlMtEECgtQb3N0U2VydmljZRJOCg1MaXN0Q2FzdFBvc3RzEh0ucG9zdC52MS5MaXN0Q2FzdFBvc3RzUmVxdWVzdBoeLnBvc3QudjEuTGlzdENhc3RQb3N0c1Jlc3BvbnNlEkgKC0dldENhc3RQb3N0EhsucG9zdC52MS5HZXRDYXN0UG9zdFJlcXVlc3QaHC5wb3N0LnYxLkdldENhc3RQb3N0UmVzcG9uc2USSwoMU2F2ZUNhc3RQb3N0EhwucG9zdC52MS5TYXZlQ2FzdFBvc3RSZXF1ZXN0Gh0ucG9zdC52MS5TYXZlQ2FzdFBvc3RSZXNwb25zZRJRCg5EZWxldGVDYXN0UG9zdBIeLnBvc3QudjEuRGVsZXRlQ2FzdFBvc3RSZXF1ZXN0Gh8ucG9zdC52MS5EZWxldGVDYXN0UG9zdFJlc3BvbnNlEkIKCUxpc3RQb3N0cxIZLnBvc3QudjEuTGlzdFBvc3RzUmVxdWVzdBoaLnBvc3QudjEuTGlzdFBvc3RzUmVzcG9uc2USPAoHR2V0UG9zdBIXLnBvc3QudjEuR2V0UG9zdFJlcXVlc3QaGC5wb3N0LnYxLkdldFBvc3RSZXNwb25zZRI/CghTYXZlUG9zdBIYLnBvc3QudjEuU2F2ZVBvc3RSZXF1ZXN0GhkucG9zdC52MS5TYXZlUG9zdFJlc3BvbnNlEkUKCkRlbGV0ZVBvc3QSGi5wb3N0LnYxLkRlbGV0ZVBvc3RSZXF1ZXN0GhsucG9zdC52MS5EZWxldGVQb3N0UmVzcG9uc2ViBnByb3RvMw");
 
 /**
  * @generated from message post.v1.CastPostAuthor
@@ -350,6 +350,343 @@ export const DeleteCastPostResponseSchema: GenMessage<DeleteCastPostResponse> = 
   messageDesc(file_post_v1_post_service, 10);
 
 /**
+ * @generated from message post.v1.PostAuthor
+ */
+export type PostAuthor = Message<"post.v1.PostAuthor"> & {
+  /**
+   * @generated from field: string account_id = 1;
+   */
+  accountId: string;
+
+  /**
+   * @generated from field: string display_name = 2;
+   */
+  displayName: string;
+
+  /**
+   * @generated from field: string username = 3;
+   */
+  username: string;
+
+  /**
+   * @generated from field: string avatar_url = 4;
+   */
+  avatarUrl: string;
+};
+
+/**
+ * Describes the message post.v1.PostAuthor.
+ * Use `create(PostAuthorSchema)` to create a new message.
+ */
+export const PostAuthorSchema: GenMessage<PostAuthor> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 11);
+
+/**
+ * @generated from message post.v1.PostMedia
+ */
+export type PostMedia = Message<"post.v1.PostMedia"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * "image" or "video"
+   *
+   * @generated from field: string media_type = 2;
+   */
+  mediaType: string;
+
+  /**
+   * @generated from field: string url = 3;
+   */
+  url: string;
+
+  /**
+   * @generated from field: string thumbnail_url = 4;
+   */
+  thumbnailUrl: string;
+
+  /**
+   * Reference to media__files.id (required for input)
+   *
+   * @generated from field: string media_id = 5;
+   */
+  mediaId: string;
+};
+
+/**
+ * Describes the message post.v1.PostMedia.
+ * Use `create(PostMediaSchema)` to create a new message.
+ */
+export const PostMediaSchema: GenMessage<PostMedia> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 12);
+
+/**
+ * @generated from message post.v1.Post
+ */
+export type Post = Message<"post.v1.Post"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * account id (any role)
+   *
+   * @generated from field: string author_id = 2;
+   */
+  authorId: string;
+
+  /**
+   * @generated from field: string content = 3;
+   */
+  content: string;
+
+  /**
+   * @generated from field: repeated post.v1.PostMedia media = 4;
+   */
+  media: PostMedia[];
+
+  /**
+   * ISO8601
+   *
+   * @generated from field: string created_at = 5;
+   */
+  createdAt: string;
+
+  /**
+   * @generated from field: post.v1.PostAuthor author = 6;
+   */
+  author?: PostAuthor | undefined;
+
+  /**
+   * @generated from field: int32 likes_count = 7;
+   */
+  likesCount: number;
+
+  /**
+   * @generated from field: int32 comments_count = 8;
+   */
+  commentsCount: number;
+
+  /**
+   * "public" or "private"
+   *
+   * @generated from field: string visibility = 9;
+   */
+  visibility: string;
+
+  /**
+   * @generated from field: repeated string hashtags = 10;
+   */
+  hashtags: string[];
+
+  /**
+   * whether current account liked this post
+   *
+   * @generated from field: bool liked = 11;
+   */
+  liked: boolean;
+};
+
+/**
+ * Describes the message post.v1.Post.
+ * Use `create(PostSchema)` to create a new message.
+ */
+export const PostSchema: GenMessage<Post> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 13);
+
+/**
+ * @generated from message post.v1.ListPostsRequest
+ */
+export type ListPostsRequest = Message<"post.v1.ListPostsRequest"> & {
+  /**
+   * default: 20, max: 50
+   *
+   * @generated from field: int32 limit = 1;
+   */
+  limit: number;
+
+  /**
+   * optional, base64 encoded
+   *
+   * @generated from field: string cursor = 2;
+   */
+  cursor: string;
+
+  /**
+   * optional, filter by author account
+   *
+   * @generated from field: string author_id = 3;
+   */
+  authorId: string;
+
+  /**
+   * optional, e.g. "following"
+   *
+   * @generated from field: string filter = 4;
+   */
+  filter: string;
+};
+
+/**
+ * Describes the message post.v1.ListPostsRequest.
+ * Use `create(ListPostsRequestSchema)` to create a new message.
+ */
+export const ListPostsRequestSchema: GenMessage<ListPostsRequest> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 14);
+
+/**
+ * @generated from message post.v1.ListPostsResponse
+ */
+export type ListPostsResponse = Message<"post.v1.ListPostsResponse"> & {
+  /**
+   * @generated from field: repeated post.v1.Post posts = 1;
+   */
+  posts: Post[];
+
+  /**
+   * @generated from field: string next_cursor = 2;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 3;
+   */
+  hasMore: boolean;
+};
+
+/**
+ * Describes the message post.v1.ListPostsResponse.
+ * Use `create(ListPostsResponseSchema)` to create a new message.
+ */
+export const ListPostsResponseSchema: GenMessage<ListPostsResponse> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 15);
+
+/**
+ * @generated from message post.v1.SavePostRequest
+ */
+export type SavePostRequest = Message<"post.v1.SavePostRequest"> & {
+  /**
+   * empty for create, set for update
+   *
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string content = 2;
+   */
+  content: string;
+
+  /**
+   * @generated from field: repeated post.v1.PostMedia media = 3;
+   */
+  media: PostMedia[];
+
+  /**
+   * "public" or "private", defaults to "public"
+   *
+   * @generated from field: string visibility = 4;
+   */
+  visibility: string;
+
+  /**
+   * @generated from field: repeated string hashtags = 5;
+   */
+  hashtags: string[];
+};
+
+/**
+ * Describes the message post.v1.SavePostRequest.
+ * Use `create(SavePostRequestSchema)` to create a new message.
+ */
+export const SavePostRequestSchema: GenMessage<SavePostRequest> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 16);
+
+/**
+ * @generated from message post.v1.SavePostResponse
+ */
+export type SavePostResponse = Message<"post.v1.SavePostResponse"> & {
+  /**
+   * @generated from field: post.v1.Post post = 1;
+   */
+  post?: Post | undefined;
+};
+
+/**
+ * Describes the message post.v1.SavePostResponse.
+ * Use `create(SavePostResponseSchema)` to create a new message.
+ */
+export const SavePostResponseSchema: GenMessage<SavePostResponse> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 17);
+
+/**
+ * @generated from message post.v1.GetPostRequest
+ */
+export type GetPostRequest = Message<"post.v1.GetPostRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message post.v1.GetPostRequest.
+ * Use `create(GetPostRequestSchema)` to create a new message.
+ */
+export const GetPostRequestSchema: GenMessage<GetPostRequest> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 18);
+
+/**
+ * @generated from message post.v1.GetPostResponse
+ */
+export type GetPostResponse = Message<"post.v1.GetPostResponse"> & {
+  /**
+   * @generated from field: post.v1.Post post = 1;
+   */
+  post?: Post | undefined;
+};
+
+/**
+ * Describes the message post.v1.GetPostResponse.
+ * Use `create(GetPostResponseSchema)` to create a new message.
+ */
+export const GetPostResponseSchema: GenMessage<GetPostResponse> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 19);
+
+/**
+ * @generated from message post.v1.DeletePostRequest
+ */
+export type DeletePostRequest = Message<"post.v1.DeletePostRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message post.v1.DeletePostRequest.
+ * Use `create(DeletePostRequestSchema)` to create a new message.
+ */
+export const DeletePostRequestSchema: GenMessage<DeletePostRequest> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 20);
+
+/**
+ * @generated from message post.v1.DeletePostResponse
+ */
+export type DeletePostResponse = Message<"post.v1.DeletePostResponse"> & {
+};
+
+/**
+ * Describes the message post.v1.DeletePostResponse.
+ * Use `create(DeletePostResponseSchema)` to create a new message.
+ */
+export const DeletePostResponseSchema: GenMessage<DeletePostResponse> = /*@__PURE__*/
+  messageDesc(file_post_v1_post_service, 21);
+
+/**
  * @generated from service post.v1.PostService
  */
 export const PostService: GenService<{
@@ -384,6 +721,40 @@ export const PostService: GenService<{
     methodKind: "unary";
     input: typeof DeleteCastPostRequestSchema;
     output: typeof DeleteCastPostResponseSchema;
+  },
+  /**
+   * Symmetric (account-authored) API. Old CastPost RPCs above are kept until cleanup.
+   *
+   * @generated from rpc post.v1.PostService.ListPosts
+   */
+  listPosts: {
+    methodKind: "unary";
+    input: typeof ListPostsRequestSchema;
+    output: typeof ListPostsResponseSchema;
+  },
+  /**
+   * @generated from rpc post.v1.PostService.GetPost
+   */
+  getPost: {
+    methodKind: "unary";
+    input: typeof GetPostRequestSchema;
+    output: typeof GetPostResponseSchema;
+  },
+  /**
+   * @generated from rpc post.v1.PostService.SavePost
+   */
+  savePost: {
+    methodKind: "unary";
+    input: typeof SavePostRequestSchema;
+    output: typeof SavePostResponseSchema;
+  },
+  /**
+   * @generated from rpc post.v1.PostService.DeletePost
+   */
+  deletePost: {
+    methodKind: "unary";
+    input: typeof DeletePostRequestSchema;
+    output: typeof DeletePostResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_post_v1_post_service, 0);
