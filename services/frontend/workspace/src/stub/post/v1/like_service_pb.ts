@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file post/v1/like_service.proto.
  */
 export const file_post_v1_like_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpwb3N0L3YxL2xpa2Vfc2VydmljZS5wcm90bxIHcG9zdC52MSImChNMaWtlQ2FzdFBvc3RSZXF1ZXN0Eg8KB3Bvc3RfaWQYASABKAkiKwoUTGlrZUNhc3RQb3N0UmVzcG9uc2USEwoLbGlrZXNfY291bnQYASABKAUiKAoVVW5saWtlQ2FzdFBvc3RSZXF1ZXN0Eg8KB3Bvc3RfaWQYASABKAkiLQoWVW5saWtlQ2FzdFBvc3RSZXNwb25zZRITCgtsaWtlc19jb3VudBgBIAEoBSIsChhHZXRQb3N0TGlrZVN0YXR1c1JlcXVlc3QSEAoIcG9zdF9pZHMYASADKAkihwEKGUdldFBvc3RMaWtlU3RhdHVzUmVzcG9uc2USPAoFbGlrZWQYASADKAsyLS5wb3N0LnYxLkdldFBvc3RMaWtlU3RhdHVzUmVzcG9uc2UuTGlrZWRFbnRyeRosCgpMaWtlZEVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCDoCOAEyiQIKC0xpa2VTZXJ2aWNlEksKDExpa2VDYXN0UG9zdBIcLnBvc3QudjEuTGlrZUNhc3RQb3N0UmVxdWVzdBodLnBvc3QudjEuTGlrZUNhc3RQb3N0UmVzcG9uc2USUQoOVW5saWtlQ2FzdFBvc3QSHi5wb3N0LnYxLlVubGlrZUNhc3RQb3N0UmVxdWVzdBofLnBvc3QudjEuVW5saWtlQ2FzdFBvc3RSZXNwb25zZRJaChFHZXRQb3N0TGlrZVN0YXR1cxIhLnBvc3QudjEuR2V0UG9zdExpa2VTdGF0dXNSZXF1ZXN0GiIucG9zdC52MS5HZXRQb3N0TGlrZVN0YXR1c1Jlc3BvbnNlYgZwcm90bzM");
+  fileDesc("Chpwb3N0L3YxL2xpa2Vfc2VydmljZS5wcm90bxIHcG9zdC52MSImChNMaWtlQ2FzdFBvc3RSZXF1ZXN0Eg8KB3Bvc3RfaWQYASABKAkiKwoUTGlrZUNhc3RQb3N0UmVzcG9uc2USEwoLbGlrZXNfY291bnQYASABKAUiKAoVVW5saWtlQ2FzdFBvc3RSZXF1ZXN0Eg8KB3Bvc3RfaWQYASABKAkiLQoWVW5saWtlQ2FzdFBvc3RSZXNwb25zZRITCgtsaWtlc19jb3VudBgBIAEoBSIsChhHZXRQb3N0TGlrZVN0YXR1c1JlcXVlc3QSEAoIcG9zdF9pZHMYASADKAkihwEKGUdldFBvc3RMaWtlU3RhdHVzUmVzcG9uc2USPAoFbGlrZWQYASADKAsyLS5wb3N0LnYxLkdldFBvc3RMaWtlU3RhdHVzUmVzcG9uc2UuTGlrZWRFbnRyeRosCgpMaWtlZEVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCDoCOAEiIgoPTGlrZVBvc3RSZXF1ZXN0Eg8KB3Bvc3RfaWQYASABKAkiJwoQTGlrZVBvc3RSZXNwb25zZRITCgtsaWtlc19jb3VudBgBIAEoBSIkChFVbmxpa2VQb3N0UmVxdWVzdBIPCgdwb3N0X2lkGAEgASgJIikKElVubGlrZVBvc3RSZXNwb25zZRITCgtsaWtlc19jb3VudBgBIAEoBSIoChRHZXRMaWtlU3RhdHVzUmVxdWVzdBIQCghwb3N0X2lkcxgBIAMoCSJ/ChVHZXRMaWtlU3RhdHVzUmVzcG9uc2USOAoFbGlrZWQYASADKAsyKS5wb3N0LnYxLkdldExpa2VTdGF0dXNSZXNwb25zZS5MaWtlZEVudHJ5GiwKCkxpa2VkRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgIOgI4ATLhAwoLTGlrZVNlcnZpY2USSwoMTGlrZUNhc3RQb3N0EhwucG9zdC52MS5MaWtlQ2FzdFBvc3RSZXF1ZXN0Gh0ucG9zdC52MS5MaWtlQ2FzdFBvc3RSZXNwb25zZRJRCg5Vbmxpa2VDYXN0UG9zdBIeLnBvc3QudjEuVW5saWtlQ2FzdFBvc3RSZXF1ZXN0Gh8ucG9zdC52MS5Vbmxpa2VDYXN0UG9zdFJlc3BvbnNlEloKEUdldFBvc3RMaWtlU3RhdHVzEiEucG9zdC52MS5HZXRQb3N0TGlrZVN0YXR1c1JlcXVlc3QaIi5wb3N0LnYxLkdldFBvc3RMaWtlU3RhdHVzUmVzcG9uc2USPwoITGlrZVBvc3QSGC5wb3N0LnYxLkxpa2VQb3N0UmVxdWVzdBoZLnBvc3QudjEuTGlrZVBvc3RSZXNwb25zZRJFCgpVbmxpa2VQb3N0EhoucG9zdC52MS5Vbmxpa2VQb3N0UmVxdWVzdBobLnBvc3QudjEuVW5saWtlUG9zdFJlc3BvbnNlEk4KDUdldExpa2VTdGF0dXMSHS5wb3N0LnYxLkdldExpa2VTdGF0dXNSZXF1ZXN0Gh4ucG9zdC52MS5HZXRMaWtlU3RhdHVzUmVzcG9uc2ViBnByb3RvMw");
 
 /**
  * @generated from message post.v1.LikeCastPostRequest
@@ -117,6 +117,110 @@ export const GetPostLikeStatusResponseSchema: GenMessage<GetPostLikeStatusRespon
   messageDesc(file_post_v1_like_service, 5);
 
 /**
+ * @generated from message post.v1.LikePostRequest
+ */
+export type LikePostRequest = Message<"post.v1.LikePostRequest"> & {
+  /**
+   * @generated from field: string post_id = 1;
+   */
+  postId: string;
+};
+
+/**
+ * Describes the message post.v1.LikePostRequest.
+ * Use `create(LikePostRequestSchema)` to create a new message.
+ */
+export const LikePostRequestSchema: GenMessage<LikePostRequest> = /*@__PURE__*/
+  messageDesc(file_post_v1_like_service, 6);
+
+/**
+ * @generated from message post.v1.LikePostResponse
+ */
+export type LikePostResponse = Message<"post.v1.LikePostResponse"> & {
+  /**
+   * @generated from field: int32 likes_count = 1;
+   */
+  likesCount: number;
+};
+
+/**
+ * Describes the message post.v1.LikePostResponse.
+ * Use `create(LikePostResponseSchema)` to create a new message.
+ */
+export const LikePostResponseSchema: GenMessage<LikePostResponse> = /*@__PURE__*/
+  messageDesc(file_post_v1_like_service, 7);
+
+/**
+ * @generated from message post.v1.UnlikePostRequest
+ */
+export type UnlikePostRequest = Message<"post.v1.UnlikePostRequest"> & {
+  /**
+   * @generated from field: string post_id = 1;
+   */
+  postId: string;
+};
+
+/**
+ * Describes the message post.v1.UnlikePostRequest.
+ * Use `create(UnlikePostRequestSchema)` to create a new message.
+ */
+export const UnlikePostRequestSchema: GenMessage<UnlikePostRequest> = /*@__PURE__*/
+  messageDesc(file_post_v1_like_service, 8);
+
+/**
+ * @generated from message post.v1.UnlikePostResponse
+ */
+export type UnlikePostResponse = Message<"post.v1.UnlikePostResponse"> & {
+  /**
+   * @generated from field: int32 likes_count = 1;
+   */
+  likesCount: number;
+};
+
+/**
+ * Describes the message post.v1.UnlikePostResponse.
+ * Use `create(UnlikePostResponseSchema)` to create a new message.
+ */
+export const UnlikePostResponseSchema: GenMessage<UnlikePostResponse> = /*@__PURE__*/
+  messageDesc(file_post_v1_like_service, 9);
+
+/**
+ * @generated from message post.v1.GetLikeStatusRequest
+ */
+export type GetLikeStatusRequest = Message<"post.v1.GetLikeStatusRequest"> & {
+  /**
+   * @generated from field: repeated string post_ids = 1;
+   */
+  postIds: string[];
+};
+
+/**
+ * Describes the message post.v1.GetLikeStatusRequest.
+ * Use `create(GetLikeStatusRequestSchema)` to create a new message.
+ */
+export const GetLikeStatusRequestSchema: GenMessage<GetLikeStatusRequest> = /*@__PURE__*/
+  messageDesc(file_post_v1_like_service, 10);
+
+/**
+ * @generated from message post.v1.GetLikeStatusResponse
+ */
+export type GetLikeStatusResponse = Message<"post.v1.GetLikeStatusResponse"> & {
+  /**
+   * post_id -> is_liked
+   *
+   * @generated from field: map<string, bool> liked = 1;
+   */
+  liked: { [key: string]: boolean };
+};
+
+/**
+ * Describes the message post.v1.GetLikeStatusResponse.
+ * Use `create(GetLikeStatusResponseSchema)` to create a new message.
+ */
+export const GetLikeStatusResponseSchema: GenMessage<GetLikeStatusResponse> = /*@__PURE__*/
+  messageDesc(file_post_v1_like_service, 11);
+
+/**
  * @generated from service post.v1.LikeService
  */
 export const LikeService: GenService<{
@@ -143,6 +247,32 @@ export const LikeService: GenService<{
     methodKind: "unary";
     input: typeof GetPostLikeStatusRequestSchema;
     output: typeof GetPostLikeStatusResponseSchema;
+  },
+  /**
+   * Symmetric (account-based). Old LikeCastPost RPCs above are kept until cleanup.
+   *
+   * @generated from rpc post.v1.LikeService.LikePost
+   */
+  likePost: {
+    methodKind: "unary";
+    input: typeof LikePostRequestSchema;
+    output: typeof LikePostResponseSchema;
+  },
+  /**
+   * @generated from rpc post.v1.LikeService.UnlikePost
+   */
+  unlikePost: {
+    methodKind: "unary";
+    input: typeof UnlikePostRequestSchema;
+    output: typeof UnlikePostResponseSchema;
+  },
+  /**
+   * @generated from rpc post.v1.LikeService.GetLikeStatus
+   */
+  getLikeStatus: {
+    methodKind: "unary";
+    input: typeof GetLikeStatusRequestSchema;
+    output: typeof GetLikeStatusResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_post_v1_like_service, 0);

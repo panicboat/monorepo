@@ -121,6 +121,24 @@ module Post
           self.hashtags.changeset(:create, id: SecureRandom.uuid_v7, post_id: post_id, tag: tag.strip, position: index).commit
         end
       end
+
+      def list_posts(limit: 20, cursor: nil, author_id: nil)
+        scope = posts.combine(:post_media, :hashtags).exclude(author_id: nil).where(visibility: "public")
+        scope = scope.where(author_id: author_id) if author_id
+
+        if cursor
+          scope = scope.where {
+            (created_at < cursor[:created_at]) |
+              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+          }
+        end
+
+        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
+
+      def find_by_id_and_author(id:, author_id:)
+        posts.combine(:post_media, :hashtags).where(id: id, author_id: author_id).one
+      end
     end
   end
 end

@@ -95,6 +95,7 @@ CAST_USER_IDS.each_with_index do |cast_user_id, cast_idx|
     db[:"post__posts"].insert(
       id: post_id,
       cast_user_id: cast_user_id,
+      author_id: cast_user_id,
       content: data[:content],
       visibility: data[:visibility],
       created_at: Time.now - (idx * 3600),
