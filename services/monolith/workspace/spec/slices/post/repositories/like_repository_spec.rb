@@ -82,4 +82,32 @@ RSpec.describe "Post::Repositories::LikeRepository", type: :database do
       expect(repo.liked_status_batch(post_ids: [], guest_user_id: guest_id)).to eq({})
     end
   end
+
+  describe "account-based likes (symmetric)" do
+    let(:account_id) { SecureRandom.uuid_v7 }
+    let(:post2) { post_repo.create_post(author_id: SecureRandom.uuid_v7, content: "sym post", visibility: "public") }
+
+    it "creates and detects a like by account" do
+      repo.account_like(post_id: post2.id, account_id: account_id)
+      expect(repo.account_liked?(post_id: post2.id, account_id: account_id)).to be true
+    end
+
+    it "does not duplicate" do
+      repo.account_like(post_id: post2.id, account_id: account_id)
+      repo.account_like(post_id: post2.id, account_id: account_id)
+      expect(repo.likes_count(post_id: post2.id)).to eq(1)
+    end
+
+    it "unlikes" do
+      repo.account_like(post_id: post2.id, account_id: account_id)
+      repo.account_unlike(post_id: post2.id, account_id: account_id)
+      expect(repo.account_liked?(post_id: post2.id, account_id: account_id)).to be false
+    end
+
+    it "batch status" do
+      repo.account_like(post_id: post2.id, account_id: account_id)
+      status = repo.account_liked_status_batch(post_ids: [post2.id], account_id: account_id)
+      expect(status[post2.id]).to be true
+    end
+  end
 end

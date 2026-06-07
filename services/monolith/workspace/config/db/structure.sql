@@ -366,7 +366,8 @@ CREATE TABLE post.likes (
     id uuid CONSTRAINT post_likes_id_not_null NOT NULL,
     post_id uuid CONSTRAINT post_likes_post_id_not_null NOT NULL,
     created_at timestamp with time zone DEFAULT now() CONSTRAINT post_likes_created_at_not_null NOT NULL,
-    guest_user_id uuid NOT NULL
+    guest_user_id uuid,
+    account_id uuid
 );
 
 
@@ -394,7 +395,8 @@ CREATE TABLE post.posts (
     created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_posts_created_at_not_null NOT NULL,
     updated_at timestamp with time zone DEFAULT now() CONSTRAINT cast_posts_updated_at_not_null NOT NULL,
     visibility text DEFAULT 'public'::text CONSTRAINT cast_posts_visibility_not_null NOT NULL,
-    cast_user_id uuid NOT NULL
+    cast_user_id uuid,
+    author_id uuid
 );
 
 
@@ -924,6 +926,13 @@ CREATE INDEX idx_post_comments_created_at_desc ON post.comments USING btree (cre
 
 
 --
+-- Name: idx_post_likes_post_account; Type: INDEX; Schema: post; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_post_likes_post_account ON post.likes USING btree (post_id, account_id) WHERE (account_id IS NOT NULL);
+
+
+--
 -- Name: post_comment_media_media_id_index; Type: INDEX; Schema: post; Owner: -
 --
 
@@ -1292,4 +1301,6 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260307000000_create_guest_prefectures.rb'),
 ('20260604000001_add_region_to_areas.rb'),
 ('20260604000002_create_profiles.rb'),
-('20260604000003_create_profile_areas.rb');
+('20260604000003_create_profile_areas.rb'),
+('20260607000001_add_author_id_to_posts.rb'),
+('20260607000002_add_account_id_to_likes.rb');

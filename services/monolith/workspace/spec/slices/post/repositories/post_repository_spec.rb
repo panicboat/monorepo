@@ -193,4 +193,23 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
       expect(result.hashtags.map(&:tag)).to eq(["new"])
     end
   end
+
+  describe "author-based queries (symmetric)" do
+    let(:author_id) { SecureRandom.uuid_v7 }
+
+    it "creates a post with author_id (no cast_user_id) and finds it" do
+      created = repo.create_post(author_id: author_id, content: "hello", visibility: "public")
+      found = repo.find_by_id_and_author(id: created.id, author_id: author_id)
+      expect(found).not_to be_nil
+      expect(found.content).to eq("hello")
+    end
+
+    it "lists public posts by author_id" do
+      repo.create_post(author_id: author_id, content: "p1", visibility: "public")
+      repo.create_post(author_id: author_id, content: "p2", visibility: "private")
+      result = repo.list_posts(author_id: author_id)
+      expect(result.map(&:content)).to include("p1")
+      expect(result.map(&:content)).not_to include("p2")
+    end
+  end
 end

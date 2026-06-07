@@ -43,6 +43,33 @@ module Post
           hash[id] = liked_ids.include?(id)
         end
       end
+
+      def account_like(post_id:, account_id:)
+        existing = likes.where(post_id: post_id, account_id: account_id).one
+        return if existing
+
+        likes.changeset(:create, id: SecureRandom.uuid_v7, post_id: post_id, account_id: account_id).commit
+      end
+
+      def account_unlike(post_id:, account_id:)
+        likes.dataset.where(post_id: post_id, account_id: account_id).delete
+      end
+
+      def account_liked?(post_id:, account_id:)
+        likes.where(post_id: post_id, account_id: account_id).exist?
+      end
+
+      def account_liked_status_batch(post_ids:, account_id:)
+        return {} if post_ids.empty? || account_id.nil?
+
+        liked_ids = likes.dataset
+          .where(post_id: post_ids, account_id: account_id)
+          .select_map(:post_id)
+
+        post_ids.each_with_object({}) do |id, hash|
+          hash[id] = liked_ids.include?(id)
+        end
+      end
     end
   end
 end

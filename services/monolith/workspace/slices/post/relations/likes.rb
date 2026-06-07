@@ -7,6 +7,7 @@ module Post
         attribute :id, Types::String
         attribute :post_id, Types::String
         attribute :guest_user_id, Types::String
+        attribute :account_id, Types::String.optional
         attribute :created_at, Types::Time
 
         primary_key :id

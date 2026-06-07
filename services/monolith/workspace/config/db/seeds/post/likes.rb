@@ -21,6 +21,7 @@ guests.each_with_index do |guest, guest_idx|
     db[:"post__likes"].insert(
       id: SecureRandom.uuid_v7,
       guest_user_id: guest[:user_id],
+      account_id: guest[:user_id],
       post_id: post[:id],
       created_at: Time.now - (post_idx * 1800),
     )
