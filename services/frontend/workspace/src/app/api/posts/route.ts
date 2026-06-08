@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { postClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
-import { requireAuth, handleApiError } from "@/lib/api-helpers";
+import { requireAuth, handleApiError, extractPaginationParams } from "@/lib/api-helpers";
 import {
   mapPostToView,
   mapPostsListResponse,
@@ -15,12 +15,10 @@ export async function GET(req: NextRequest) {
     if (authError) return authError;
 
     const headers = buildGrpcHeaders(req.headers);
-    const limitParam = req.nextUrl.searchParams.get("limit");
-    const cursor = req.nextUrl.searchParams.get("cursor") || "";
+    const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
     const authorId = req.nextUrl.searchParams.get("author_id") || "";
     const filter = req.nextUrl.searchParams.get("filter") || "";
 
-    const limit = limitParam ? Math.max(1, Math.min(50, parseInt(limitParam, 10) || 20)) : 20;
     const res = await postClient.listPosts(
       { limit, cursor, authorId, filter },
       { headers }
@@ -38,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     const body = (await req.json()) as SavePostPayload;
     const headers = buildGrpcHeaders(req.headers);
-    const res = await postClient.savePost(buildSavePostRequest({ ...body, id: "" }), { headers });
+    const res = await postClient.savePost(buildSavePostRequest(body), { headers });
     if (!res.post) {
       return NextResponse.json({ error: "保存に失敗しました" }, { status: 500 });
     }

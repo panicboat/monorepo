@@ -42,7 +42,7 @@ export interface SavePostPayload {
 
 export interface PostsListView {
   posts: PostView[];
-  nextCursor: string;
+  nextCursor: string | null;
   hasMore: boolean;
 }
 

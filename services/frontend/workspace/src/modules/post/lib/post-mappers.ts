@@ -22,10 +22,9 @@ export function mapPostAuthorToView(a: PostAuthor | undefined): PostAuthorView |
 }
 
 export function mapPostMediaToView(m: PostMedia): PostMediaView {
-  const t = (m.mediaType || "image") as "image" | "video";
   return {
     id: m.id || "",
-    mediaType: t === "video" ? "video" : "image",
+    mediaType: m.mediaType === "video" ? "video" : "image",
     url: m.url || "",
     thumbnailUrl: m.thumbnailUrl || "",
     mediaId: m.mediaId || "",
@@ -33,9 +32,8 @@ export function mapPostMediaToView(m: PostMedia): PostMediaView {
 }
 
 export function mapPostToView(p: Post): PostView {
-  const v = (p.visibility || "public").toLowerCase();
   return {
-    id: p.id,
+    id: p.id || "",
     authorId: p.authorId || "",
     content: p.content || "",
     media: (p.media || []).map(mapPostMediaToView),
@@ -43,7 +41,7 @@ export function mapPostToView(p: Post): PostView {
     author: mapPostAuthorToView(p.author),
     likesCount: p.likesCount || 0,
     commentsCount: p.commentsCount || 0,
-    visibility: v === "private" ? "private" : "public",
+    visibility: (p.visibility || "").toLowerCase() === "private" ? "private" : "public",
     hashtags: p.hashtags || [],
     liked: p.liked || false,
   };
@@ -56,7 +54,7 @@ export function mapPostsListResponse(res: {
 }): PostsListView {
   return {
     posts: (res.posts || []).map(mapPostToView),
-    nextCursor: res.nextCursor || "",
+    nextCursor: res.nextCursor || null,
     hasMore: res.hasMore || false,
   };
 }

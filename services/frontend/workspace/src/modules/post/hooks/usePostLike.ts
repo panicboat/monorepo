@@ -38,6 +38,9 @@ export function usePostLike() {
         [postId]: { liked: true, likesCount: data.likesCount },
       }));
       return data.likesCount;
+    } catch (e) {
+      console.error("Like error:", e);
+      throw e;
     } finally {
       setLoading(false);
     }
@@ -60,6 +63,9 @@ export function usePostLike() {
         [postId]: { liked: false, likesCount: data.likesCount },
       }));
       return data.likesCount;
+    } catch (e) {
+      console.error("Unlike error:", e);
+      throw e;
     } finally {
       setLoading(false);
     }

@@ -21,7 +21,7 @@ export function usePosts(options: UsePostsOptions = {}) {
     (data: PostsListView): PaginatedResult<PostView> => ({
       items: data.posts,
       hasMore: data.hasMore,
-      nextCursor: data.nextCursor || null,
+      nextCursor: data.nextCursor,
     }),
     []
   );

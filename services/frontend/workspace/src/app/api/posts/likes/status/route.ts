@@ -15,11 +15,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ liked: {} });
     }
     const res = await likeClient.getLikeStatus({ postIds }, { headers });
-    const liked: Record<string, boolean> = {};
-    for (const [k, v] of Object.entries(res.liked || {})) {
-      liked[k] = Boolean(v);
-    }
-    return NextResponse.json({ liked });
+    return NextResponse.json({ liked: res.liked || {} });
   } catch (error: unknown) {
     return handleApiError(error, "GetLikeStatus");
   }
