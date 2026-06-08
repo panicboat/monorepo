@@ -19,7 +19,10 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
 
   useEffect(() => {
     setInitialState(post.id, post.liked, post.likesCount);
-  }, [post.id, post.liked, post.likesCount, setInitialState]);
+    // Intentionally only depend on post.id: re-running on liked/likesCount changes
+    // would clobber the user's most recent like toggle when SWR re-injects a stale snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post.id]);
 
   const liked = isLiked(post.id, post.liked);
   const likesCount = getLikesCount(post.id, post.likesCount);
