@@ -16,6 +16,9 @@ import { EditProfileModal } from "@/modules/profile/components/EditProfileModal"
 import { AreaAccordion } from "@/modules/profile/components/AreaAccordion";
 import { ImageUpload } from "@/modules/profile/components/ImageUpload";
 import type { ProfileView, AreaView } from "@/modules/profile/types";
+import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
+import { PostComposer } from "@/modules/post/components/PostComposer";
+import type { PostView, SavePostPayload } from "@/modules/post/lib/post-view";
 
 export default function DevUiPage() {
   const [tab, setTab] = useState("home");
@@ -52,6 +55,49 @@ export default function DevUiPage() {
     industry: "デリヘル",
     areas: [{ id: "a1", region: "関東", prefecture: "東京都", name: "渋谷", code: "shibuya" }],
     shopId: "",
+  };
+
+  const mockPosts: PostView[] = [
+    {
+      id: "mock-1",
+      authorId: "demo",
+      content: "新作のお洋服届きました！今日はこれで出勤します🌷",
+      media: [],
+      createdAt: "2026-06-08T11:55:00Z",
+      author: {
+        accountId: "demo",
+        displayName: "ゆな",
+        username: "yuna",
+        avatarUrl: "",
+      },
+      likesCount: 12,
+      commentsCount: 3,
+      visibility: "public",
+      hashtags: ["新作", "渋谷"],
+      liked: false,
+    },
+    {
+      id: "mock-2",
+      authorId: "guest-1",
+      content: "今度の週末空いてる方いますか？",
+      media: [],
+      createdAt: "2026-06-08T11:00:00Z",
+      author: {
+        accountId: "guest-1",
+        displayName: "ぱにっく",
+        username: "panicboat",
+        avatarUrl: "",
+      },
+      likesCount: 1,
+      commentsCount: 0,
+      visibility: "private",
+      hashtags: [],
+      liked: true,
+    },
+  ];
+
+  const handleMockSubmit = async (payload: SavePostPayload) => {
+    console.log("[dev/ui] mock submit:", payload);
   };
 
   return (
@@ -164,6 +210,18 @@ export default function DevUiPage() {
       <section className="flex flex-col gap-3">
         <ImageUpload shape="cover" onUploaded={() => {}} />
         <ImageUpload shape="avatar" onUploaded={() => {}} />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-bold text-text-secondary">PostComposer</h2>
+        <PostComposer onSubmit={handleMockSubmit} />
+      </section>
+
+      <section className="flex flex-col">
+        <h2 className="px-4 pb-3 text-sm font-bold text-text-secondary">PostCardBinding</h2>
+        {mockPosts.map((p) => (
+          <PostCardBinding key={p.id} post={p} />
+        ))}
       </section>
     </main>
   );
