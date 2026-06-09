@@ -1,122 +1,43 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { authFetch } from "@/lib/auth/fetch";
-import { getAuthToken } from "@/lib/swr";
+import { useShallow } from "zustand/react/shallow";
 
-interface LikeEntry {
-  liked: boolean;
-  likesCount: number;
-}
+import { usePostLikeStore } from "@/stores/postLikeStore";
 
-interface LikeResponse {
-  likesCount: number;
-}
-
-interface LikeStatusResponse {
-  liked: Record<string, boolean>;
-}
-
+/**
+ * Subscribes to the shared post-like store.
+ * Returns the same shape as before the Zustand hoist (Q4b follow-up):
+ * state is now singleton across instances, so multiple PostCardBinding rendering
+ * the same post stay in sync after a like toggle.
+ *
+ * `setInitialState` has idempotent seed semantics: it only writes when the entry
+ * is absent. Re-mounts and SWR revalidates that re-inject the original snapshot
+ * therefore cannot clobber the user's latest toggle.
+ */
 export function usePostLike() {
-  const [state, setState] = useState<Record<string, LikeEntry>>({});
-  const [loading, setLoading] = useState(false);
-
-  const like = useCallback(async (postId: string) => {
-    if (!getAuthToken()) {
-      // FALLBACK: Returns null when not authenticated
-      console.warn("Cannot like: not authenticated");
-      return null;
-    }
-    setLoading(true);
-    try {
-      const data = await authFetch<LikeResponse>(
-        `/api/posts/${encodeURIComponent(postId)}/like`,
-        { method: "POST" }
-      );
-      setState((prev) => ({
-        ...prev,
-        [postId]: { liked: true, likesCount: data.likesCount },
-      }));
-      return data.likesCount;
-    } catch (e) {
-      console.error("Like error:", e);
-      throw e;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const unlike = useCallback(async (postId: string) => {
-    if (!getAuthToken()) {
-      // FALLBACK: Returns null when not authenticated
-      console.warn("Cannot unlike: not authenticated");
-      return null;
-    }
-    setLoading(true);
-    try {
-      const data = await authFetch<LikeResponse>(
-        `/api/posts/${encodeURIComponent(postId)}/like`,
-        { method: "DELETE" }
-      );
-      setState((prev) => ({
-        ...prev,
-        [postId]: { liked: false, likesCount: data.likesCount },
-      }));
-      return data.likesCount;
-    } catch (e) {
-      console.error("Unlike error:", e);
-      throw e;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const toggleLike = useCallback(
-    async (postId: string, currentlyLiked: boolean) =>
-      currentlyLiked ? unlike(postId) : like(postId),
-    [like, unlike]
+  // Reactive selectors — re-render only when shallow-equal slice changes.
+  const { entries, loading } = usePostLikeStore(
+    useShallow((s) => ({ entries: s.entries, loading: s.loading }))
   );
 
-  const fetchLikeStatus = useCallback(
-    async (postIds: string[]): Promise<Record<string, boolean>> => {
-      if (postIds.length === 0) return {};
-      const data = await authFetch<LikeStatusResponse>(
-        `/api/posts/likes/status?post_ids=${encodeURIComponent(postIds.join(","))}`,
-        { method: "GET" }
-      );
-      return data.liked || {};
-    },
-    []
-  );
-
-  const setInitialState = useCallback(
-    (postId: string, liked: boolean, likesCount: number) => {
-      setState((prev) => ({
-        ...prev,
-        [postId]: { liked, likesCount },
-      }));
-    },
-    []
-  );
-
-  const isLiked = useCallback(
-    (postId: string, fallback = false) => state[postId]?.liked ?? fallback,
-    [state]
-  );
-  const getLikesCount = useCallback(
-    (postId: string, fallback = 0) => state[postId]?.likesCount ?? fallback,
-    [state]
-  );
+  // Stable action handles (zustand store functions are referentially stable).
+  const like = usePostLikeStore((s) => s.like);
+  const unlike = usePostLikeStore((s) => s.unlike);
+  const toggleLike = usePostLikeStore((s) => s.toggleLike);
+  const fetchLikeStatus = usePostLikeStore((s) => s.fetchLikeStatus);
+  const seed = usePostLikeStore((s) => s.seed);
 
   return {
     like,
     unlike,
     toggleLike,
     fetchLikeStatus,
-    setInitialState,
-    isLiked,
-    getLikesCount,
-    state,
+    /** Alias preserved for callers that expect setInitialState. Behavior is idempotent seed. */
+    setInitialState: seed,
+    isLiked: (postId: string, fallback = false) => entries[postId]?.liked ?? fallback,
+    getLikesCount: (postId: string, fallback = 0) =>
+      entries[postId]?.likesCount ?? fallback,
+    state: entries,
     loading,
   };
 }
