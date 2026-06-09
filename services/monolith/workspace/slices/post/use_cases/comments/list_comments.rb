@@ -8,6 +8,7 @@ module Post
       class ListComments
         include Post::Deps[comment_repo: "repositories.comment_repository"]
         include Concerns::CursorPagination
+        include Post::Concerns::ProfileAuthorResolvable
 
         MAX_LIMIT = 50
 
@@ -55,10 +56,6 @@ module Post
               user_type: ""
             }
           end
-        end
-
-        def profile_author_adapter
-          @profile_author_adapter ||= Post::Adapters::ProfileAuthorAdapter.new
         end
       end
     end

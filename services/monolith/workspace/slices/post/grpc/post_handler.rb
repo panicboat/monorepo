@@ -30,6 +30,7 @@ module Post
         save_post_uc: "use_cases.posts.save_post",
         delete_post_uc: "use_cases.posts.delete_post"
       ]
+      include Post::Concerns::ProfileAuthorResolvable
 
       def list_cast_posts
         cast_id = request.message.cast_user_id
@@ -380,10 +381,6 @@ module Post
         return {} if media_ids.empty?
 
         media_adapter.find_by_ids(media_ids)
-      end
-
-      def profile_author_adapter
-        @profile_author_adapter ||= Post::Adapters::ProfileAuthorAdapter.new
       end
 
       def present_posts(rows)
