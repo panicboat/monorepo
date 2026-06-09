@@ -141,6 +141,28 @@ module Post
       AddComment = Post::UseCases::Comments::AddComment
       DeleteComment = Post::UseCases::Comments::DeleteComment
 
+      # Symmetric author resolution via Profile slice (account-based).
+      # Overrides the base handler's role-aware implementation.
+      # `media_files` is retained for signature compatibility but unused —
+      # ProfileAuthorAdapter resolves avatar URLs internally.
+      # Returns a Hash matching the shape expected by CommentPresenter.author_to_proto.
+      def get_comment_author(user_id, media_files: {})
+        infos = profile_author_adapter.load([user_id]).transform_keys(&:to_s)
+        info = infos[user_id.to_s]
+        return nil unless info
+
+        {
+          id: user_id,
+          name: info.display_name || "",
+          image_url: info.avatar_url || "",
+          user_type: ""
+        }
+      end
+
+      def profile_author_adapter
+        @profile_author_adapter ||= Post::Adapters::ProfileAuthorAdapter.new
+      end
+
       def load_media_files_for_comments(comments)
         media_ids = comments.flat_map do |comment|
           next [] unless comment.respond_to?(:comment_media)
