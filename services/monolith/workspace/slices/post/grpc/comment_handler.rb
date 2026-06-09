@@ -46,7 +46,7 @@ module Post
         comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_user_ids: blocked_user_ids)
 
         # Load media files for comment and author avatar
-        media_files = load_media_files_for_comments_with_authors([result[:comment]], [current_user_id])
+        media_files = load_media_files_for_comments([result[:comment]])
 
         # Get author info with loaded media
         author = get_comment_author(current_user_id, media_files: media_files)
@@ -149,12 +149,16 @@ module Post
       def get_comment_author(user_id, media_files: {})
         infos = profile_author_adapter.load([user_id]).transform_keys(&:to_s)
         info = infos[user_id.to_s]
+        # Intentional nil return: when the profile is missing (e.g. account sync lag),
+        # we surface absence to the client rather than fabricating a "Anonymous" placeholder
+        # like the legacy cast/guest path. The presenter passes `author: nil` to proto,
+        # which the frontend tolerates (no UI conditional on author presence today).
         return nil unless info
 
         {
           id: user_id,
-          name: info.display_name || "",
-          image_url: info.avatar_url || "",
+          name: info.display_name,
+          image_url: info.avatar_url,
           user_type: ""
         }
       end
