@@ -25,6 +25,7 @@ module Post
         list_comments_uc: "use_cases.comments.list_comments",
         list_replies_uc: "use_cases.comments.list_replies"
       ]
+      include Post::Concerns::ProfileAuthorResolvable
 
       def add_comment
         authenticate_user!
@@ -161,10 +162,6 @@ module Post
           image_url: info.avatar_url,
           user_type: ""
         }
-      end
-
-      def profile_author_adapter
-        @profile_author_adapter ||= Post::Adapters::ProfileAuthorAdapter.new
       end
 
       def load_media_files_for_comments(comments)
