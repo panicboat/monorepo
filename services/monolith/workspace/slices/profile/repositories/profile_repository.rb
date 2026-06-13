@@ -44,6 +44,17 @@ module Profile
         profile_areas.where(profile_id: account_id).pluck(:area_id)
       end
 
+      # Cross-slice query for feed AREA tab. Returns account_ids whose
+      # profile.prefecture matches the input. NULL prefecture rows are
+      # naturally excluded (Sequel where uses = which doesn't match NULL).
+      # is_private (account 鍵) follow-gate is NOT applied here — that is
+      # the social slice's responsibility, deferred per feed spec.
+      def account_ids_by_prefecture(prefecture)
+        return [] if prefecture.nil? || prefecture.to_s.empty?
+
+        profiles.where(prefecture: prefecture).pluck(:account_id)
+      end
+
       def save_media(account_id:, avatar_media_id: nil, cover_media_id: nil)
         attrs = {}
         attrs[:avatar_media_id] = avatar_media_id unless avatar_media_id.nil?
