@@ -99,6 +99,15 @@ module Relationship
           .select_map(:cast_user_id)
       end
 
+      # Symmetric alias of following_cast_user_ids. In the symmetric model,
+      # follows.guest_user_id is the follower's account_id and cast_user_id is
+      # the followee's account_id (column names are legacy; semantics are account ↔ account).
+      def following_account_ids(account_id:)
+        follows.dataset
+          .where(guest_user_id: account_id, status: "approved")
+          .select_map(:cast_user_id)
+      end
+
       def following_status_batch(cast_user_ids:, guest_user_id:)
         return {} if cast_user_ids.empty? || guest_user_id.nil?
 
