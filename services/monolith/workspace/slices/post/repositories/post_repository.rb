@@ -148,6 +148,28 @@ module Post
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
+      # Symmetric public post id query for feed slice (cursor-paginated).
+      # Returns an array of post ids (String) ordered by created_at DESC, id DESC.
+      # Filters: visibility='public', author_ids whitelist (if provided), excluded_author_ids blocklist.
+      # Returns limit + 1 ids so caller can detect has_more.
+      # author_ids semantics: nil = no whitelist (all authors), [] = whitelist of nothing (return empty).
+      def list_public_post_ids(limit: 20, cursor: nil, author_ids: nil, excluded_author_ids: [])
+        return [] if !author_ids.nil? && author_ids.empty?
+
+        scope = posts.dataset.where(visibility: "public")
+        scope = scope.where(author_id: author_ids) if author_ids
+        scope = scope.exclude(author_id: excluded_author_ids) if excluded_author_ids && !excluded_author_ids.empty?
+
+        if cursor
+          scope = scope.where {
+            (created_at < cursor[:created_at]) |
+              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+          }
+        end
+
+        scope.order(Sequel.desc(:created_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
+      end
+
       def find_by_id_and_author(id:, author_id:)
         posts.combine(:post_media, :hashtags).where(id: id, author_id: author_id).one
       end

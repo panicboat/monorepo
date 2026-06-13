@@ -12,6 +12,7 @@ require_relative "../adapters/media_adapter"
 require_relative "../presenters/feed_presenter"
 require_relative "../use_cases/list_guest_feed"
 require_relative "../use_cases/list_cast_feed"
+require_relative "../use_cases/list_feed"
 
 module Feed
   module Grpc
@@ -29,6 +30,7 @@ module Feed
 
       rpc :ListGuestFeed, ::Feed::V1::ListGuestFeedRequest, ::Feed::V1::ListGuestFeedResponse
       rpc :ListCastFeed, ::Feed::V1::ListCastFeedRequest, ::Feed::V1::ListCastFeedResponse
+      rpc :ListFeed, ::Feed::V1::ListFeedRequest, ::Feed::V1::ListFeedResponse
 
       def list_guest_feed
         authenticate_user!
@@ -120,6 +122,49 @@ module Feed
         )
       end
 
+      # Symmetric (account-authored) feed handler. Cross-slice:
+      # - Feed::UseCases::ListFeed builds ordered post_ids + pagination metadata
+      # - Post::Slice["use_cases.posts.list_posts_by_ids"] hydrates ids to Post::V1::Post
+      def list_feed
+        authenticate_user!
+
+        filter = case request.message.filter
+        when :FEED_FILTER_ALL then "all"
+        when :FEED_FILTER_AREA then "area"
+        when :FEED_FILTER_FOLLOWING then "following"
+        else
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "filter is required")
+        end
+
+        prefecture = request.message.prefecture.to_s
+        if filter == "area" && prefecture.empty?
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "prefecture is required for AREA filter")
+        end
+
+        limit = request.message.limit.zero? ? 20 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        result = list_feed_uc.call(
+          filter: filter,
+          viewer_account_id: current_user_id,
+          prefecture: filter == "area" ? prefecture : nil,
+          limit: limit,
+          cursor: cursor
+        )
+
+        # Hydrate via posts cross-slice (F2)
+        hydrated = list_posts_by_ids_uc.call(post_ids: result[:post_ids], viewer_account_id: current_user_id)
+
+        # Preserve order; drop entries that disappeared between query and hydration
+        posts = result[:post_ids].map { |id| hydrated[id] }.compact
+
+        ::Feed::V1::ListFeedResponse.new(
+          posts: posts,
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
+      end
+
       private
 
       FeedPresenter = Feed::Presenters::FeedPresenter
@@ -130,6 +175,14 @@ module Feed
 
       def list_cast_feed_uc
         @list_cast_feed_uc ||= Feed::UseCases::ListCastFeed.new
+      end
+
+      def list_feed_uc
+        @list_feed_uc ||= Feed::UseCases::ListFeed.new
+      end
+
+      def list_posts_by_ids_uc
+        @list_posts_by_ids_uc ||= Post::Slice["use_cases.posts.list_posts_by_ids"]
       end
 
       def post_adapter

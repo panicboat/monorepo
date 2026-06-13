@@ -68,6 +68,16 @@ module Relationship
           .select_map(:blocker_id)
       end
 
+      # Symmetric (type-agnostic) version of blocker_ids_for_blocked.
+      # Returns account ids of all accounts that have blocked this account_id,
+      # regardless of legacy blocker_type. Used by feed slice for bidirectional
+      # block evaluation.
+      def blocker_ids_of(blocked_id:)
+        blocks.dataset
+          .where(blocked_id: blocked_id)
+          .select_map(:blocker_id)
+      end
+
       def block_status_batch(user_ids:, blocker_id:)
         return {} if user_ids.empty? || blocker_id.nil?
 
