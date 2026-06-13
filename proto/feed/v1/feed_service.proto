@@ -2,12 +2,17 @@ syntax = "proto3";
 
 package feed.v1;
 
+import "post/v1/post_service.proto";
+
 service FeedService {
   // Guest feed: personalized feed based on filter
   rpc ListGuestFeed(ListGuestFeedRequest) returns (ListGuestFeedResponse);
 
   // Cast feed: cast's own posts for management
   rpc ListCastFeed(ListCastFeedRequest) returns (ListCastFeedResponse);
+
+  // Symmetric (account-authored) feed. Old ListGuestFeed / ListCastFeed above are kept until cleanup.
+  rpc ListFeed(ListFeedRequest) returns (ListFeedResponse);
 }
 
 // Feed filter options for guest timeline
@@ -15,6 +20,7 @@ enum FeedFilter {
   FEED_FILTER_UNSPECIFIED = 0;
   FEED_FILTER_ALL = 1;        // Public posts + posts from followed casts
   FEED_FILTER_FOLLOWING = 2;  // Posts from followed casts only
+  FEED_FILTER_AREA = 3;       // Symmetric ListFeed: posts from authors whose profile.prefecture matches request.prefecture
 }
 
 message FeedAuthor {
@@ -65,6 +71,21 @@ message ListCastFeedRequest {
 
 message ListCastFeedResponse {
   repeated FeedPost posts = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+// ---- Symmetric (account-authored) messages ----
+
+message ListFeedRequest {
+  FeedFilter filter = 1;       // FEED_FILTER_ALL / FEED_FILTER_AREA / FEED_FILTER_FOLLOWING
+  int32 limit = 2;             // default: 20, max: 50
+  string cursor = 3;           // optional, base64 encoded (created_at, id)
+  string prefecture = 4;       // required when filter == FEED_FILTER_AREA; ignored otherwise
+}
+
+message ListFeedResponse {
+  repeated post.v1.Post posts = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }

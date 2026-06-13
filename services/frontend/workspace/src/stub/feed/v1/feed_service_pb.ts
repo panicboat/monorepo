@@ -4,13 +4,15 @@
 
 import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Post } from "../../post/v1/post_service_pb";
+import { file_post_v1_post_service } from "../../post/v1/post_service_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file feed/v1/feed_service.proto.
  */
 export const file_feed_v1_feed_service: GenFile = /*@__PURE__*/
-  fileDesc("ChpmZWVkL3YxL2ZlZWRfc2VydmljZS5wcm90bxIHZmVlZC52MSI+CgpGZWVkQXV0aG9yEg8KB3VzZXJfaWQYASABKAkSDAoEbmFtZRgCIAEoCRIRCglpbWFnZV91cmwYAyABKAkiYQoJRmVlZE1lZGlhEgoKAmlkGAEgASgJEhIKCm1lZGlhX3R5cGUYAiABKAkSCwoDdXJsGAMgASgJEhUKDXRodW1ibmFpbF91cmwYBCABKAkSEAoIbWVkaWFfaWQYBSABKAki+wEKCEZlZWRQb3N0EgoKAmlkGAEgASgJEhQKDGNhc3RfdXNlcl9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEiEKBW1lZGlhGAQgAygLMhIuZmVlZC52MS5GZWVkTWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIjCgZhdXRob3IYBiABKAsyEy5mZWVkLnYxLkZlZWRBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSEgoKdmlzaWJpbGl0eRgJIAEoCRIQCghoYXNodGFncxgKIAMoCRINCgVsaWtlZBgLIAEoCCJuChRMaXN0R3Vlc3RGZWVkUmVxdWVzdBIjCgZmaWx0ZXIYASABKA4yEy5mZWVkLnYxLkZlZWRGaWx0ZXISDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJEhIKCnByZWZlY3R1cmUYBCABKAkiYAoVTGlzdEd1ZXN0RmVlZFJlc3BvbnNlEiAKBXBvc3RzGAEgAygLMhEuZmVlZC52MS5GZWVkUG9zdBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCI0ChNMaXN0Q2FzdEZlZWRSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJfChRMaXN0Q2FzdEZlZWRSZXNwb25zZRIgCgVwb3N0cxgBIAMoCzIRLmZlZWQudjEuRmVlZFBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgqWQoKRmVlZEZpbHRlchIbChdGRUVEX0ZJTFRFUl9VTlNQRUNJRklFRBAAEhMKD0ZFRURfRklMVEVSX0FMTBABEhkKFUZFRURfRklMVEVSX0ZPTExPV0lORxACMqoBCgtGZWVkU2VydmljZRJOCg1MaXN0R3Vlc3RGZWVkEh0uZmVlZC52MS5MaXN0R3Vlc3RGZWVkUmVxdWVzdBoeLmZlZWQudjEuTGlzdEd1ZXN0RmVlZFJlc3BvbnNlEksKDExpc3RDYXN0RmVlZBIcLmZlZWQudjEuTGlzdENhc3RGZWVkUmVxdWVzdBodLmZlZWQudjEuTGlzdENhc3RGZWVkUmVzcG9uc2ViBnByb3RvMw");
+  fileDesc("ChpmZWVkL3YxL2ZlZWRfc2VydmljZS5wcm90bxIHZmVlZC52MSI+CgpGZWVkQXV0aG9yEg8KB3VzZXJfaWQYASABKAkSDAoEbmFtZRgCIAEoCRIRCglpbWFnZV91cmwYAyABKAkiYQoJRmVlZE1lZGlhEgoKAmlkGAEgASgJEhIKCm1lZGlhX3R5cGUYAiABKAkSCwoDdXJsGAMgASgJEhUKDXRodW1ibmFpbF91cmwYBCABKAkSEAoIbWVkaWFfaWQYBSABKAki+wEKCEZlZWRQb3N0EgoKAmlkGAEgASgJEhQKDGNhc3RfdXNlcl9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEiEKBW1lZGlhGAQgAygLMhIuZmVlZC52MS5GZWVkTWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIjCgZhdXRob3IYBiABKAsyEy5mZWVkLnYxLkZlZWRBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSEgoKdmlzaWJpbGl0eRgJIAEoCRIQCghoYXNodGFncxgKIAMoCRINCgVsaWtlZBgLIAEoCCJuChRMaXN0R3Vlc3RGZWVkUmVxdWVzdBIjCgZmaWx0ZXIYASABKA4yEy5mZWVkLnYxLkZlZWRGaWx0ZXISDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJEhIKCnByZWZlY3R1cmUYBCABKAkiYAoVTGlzdEd1ZXN0RmVlZFJlc3BvbnNlEiAKBXBvc3RzGAEgAygLMhEuZmVlZC52MS5GZWVkUG9zdBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCI0ChNMaXN0Q2FzdEZlZWRSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJfChRMaXN0Q2FzdEZlZWRSZXNwb25zZRIgCgVwb3N0cxgBIAMoCzIRLmZlZWQudjEuRmVlZFBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiaQoPTGlzdEZlZWRSZXF1ZXN0EiMKBmZpbHRlchgBIAEoDjITLmZlZWQudjEuRmVlZEZpbHRlchINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkSEgoKcHJlZmVjdHVyZRgEIAEoCSJXChBMaXN0RmVlZFJlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIKm8KCkZlZWRGaWx0ZXISGwoXRkVFRF9GSUxURVJfVU5TUEVDSUZJRUQQABITCg9GRUVEX0ZJTFRFUl9BTEwQARIZChVGRUVEX0ZJTFRFUl9GT0xMT1dJTkcQAhIUChBGRUVEX0ZJTFRFUl9BUkVBEAMy6wEKC0ZlZWRTZXJ2aWNlEk4KDUxpc3RHdWVzdEZlZWQSHS5mZWVkLnYxLkxpc3RHdWVzdEZlZWRSZXF1ZXN0Gh4uZmVlZC52MS5MaXN0R3Vlc3RGZWVkUmVzcG9uc2USSwoMTGlzdENhc3RGZWVkEhwuZmVlZC52MS5MaXN0Q2FzdEZlZWRSZXF1ZXN0Gh0uZmVlZC52MS5MaXN0Q2FzdEZlZWRSZXNwb25zZRI/CghMaXN0RmVlZBIYLmZlZWQudjEuTGlzdEZlZWRSZXF1ZXN0GhkuZmVlZC52MS5MaXN0RmVlZFJlc3BvbnNlYgZwcm90bzM", [file_post_v1_post_service]);
 
 /**
  * @generated from message feed.v1.FeedAuthor
@@ -274,6 +276,73 @@ export const ListCastFeedResponseSchema: GenMessage<ListCastFeedResponse> = /*@_
   messageDesc(file_feed_v1_feed_service, 6);
 
 /**
+ * @generated from message feed.v1.ListFeedRequest
+ */
+export type ListFeedRequest = Message<"feed.v1.ListFeedRequest"> & {
+  /**
+   * FEED_FILTER_ALL / FEED_FILTER_AREA / FEED_FILTER_FOLLOWING
+   *
+   * @generated from field: feed.v1.FeedFilter filter = 1;
+   */
+  filter: FeedFilter;
+
+  /**
+   * default: 20, max: 50
+   *
+   * @generated from field: int32 limit = 2;
+   */
+  limit: number;
+
+  /**
+   * optional, base64 encoded (created_at, id)
+   *
+   * @generated from field: string cursor = 3;
+   */
+  cursor: string;
+
+  /**
+   * required when filter == FEED_FILTER_AREA; ignored otherwise
+   *
+   * @generated from field: string prefecture = 4;
+   */
+  prefecture: string;
+};
+
+/**
+ * Describes the message feed.v1.ListFeedRequest.
+ * Use `create(ListFeedRequestSchema)` to create a new message.
+ */
+export const ListFeedRequestSchema: GenMessage<ListFeedRequest> = /*@__PURE__*/
+  messageDesc(file_feed_v1_feed_service, 7);
+
+/**
+ * @generated from message feed.v1.ListFeedResponse
+ */
+export type ListFeedResponse = Message<"feed.v1.ListFeedResponse"> & {
+  /**
+   * @generated from field: repeated post.v1.Post posts = 1;
+   */
+  posts: Post[];
+
+  /**
+   * @generated from field: string next_cursor = 2;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 3;
+   */
+  hasMore: boolean;
+};
+
+/**
+ * Describes the message feed.v1.ListFeedResponse.
+ * Use `create(ListFeedResponseSchema)` to create a new message.
+ */
+export const ListFeedResponseSchema: GenMessage<ListFeedResponse> = /*@__PURE__*/
+  messageDesc(file_feed_v1_feed_service, 8);
+
+/**
  * Feed filter options for guest timeline
  *
  * @generated from enum feed.v1.FeedFilter
@@ -297,6 +366,13 @@ export enum FeedFilter {
    * @generated from enum value: FEED_FILTER_FOLLOWING = 2;
    */
   FOLLOWING = 2,
+
+  /**
+   * Symmetric ListFeed: posts from authors whose profile.prefecture matches request.prefecture
+   *
+   * @generated from enum value: FEED_FILTER_AREA = 3;
+   */
+  AREA = 3,
 }
 
 /**
@@ -328,6 +404,16 @@ export const FeedService: GenService<{
     methodKind: "unary";
     input: typeof ListCastFeedRequestSchema;
     output: typeof ListCastFeedResponseSchema;
+  },
+  /**
+   * Symmetric (account-authored) feed. Old ListGuestFeed / ListCastFeed above are kept until cleanup.
+   *
+   * @generated from rpc feed.v1.FeedService.ListFeed
+   */
+  listFeed: {
+    methodKind: "unary";
+    input: typeof ListFeedRequestSchema;
+    output: typeof ListFeedResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_feed_v1_feed_service, 0);
