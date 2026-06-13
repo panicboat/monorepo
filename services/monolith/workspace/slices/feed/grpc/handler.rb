@@ -136,23 +136,26 @@ module Feed
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "filter is required")
         end
 
-        prefecture = request.message.prefecture.to_s
-        if filter == "area" && prefecture.empty?
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "prefecture is required for AREA filter")
+        prefecture = nil
+        if filter == "area"
+          prefecture = request.message.prefecture.to_s
+          if prefecture.empty?
+            raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "prefecture is required for AREA filter")
+          end
         end
 
-        limit = request.message.limit.zero? ? 20 : request.message.limit
+        limit = request.message.limit.zero? ? ::Concerns::CursorPagination::DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         result = list_feed_uc.call(
           filter: filter,
           viewer_account_id: current_user_id,
-          prefecture: filter == "area" ? prefecture : nil,
+          prefecture: prefecture,
           limit: limit,
           cursor: cursor
         )
 
-        # Hydrate via posts cross-slice (F2)
+        # Hydrate via the posts cross-slice contract (list_posts_by_ids).
         hydrated = list_posts_by_ids_uc.call(post_ids: result[:post_ids], viewer_account_id: current_user_id)
 
         # Preserve order; drop entries that disappeared between query and hydration

@@ -12,10 +12,6 @@ module Feed
 
       MAX_LIMIT = 50
 
-      FILTER_ALL = "all"
-      FILTER_AREA = "area"
-      FILTER_FOLLOWING = "following"
-
       def initialize
         @block_adapter = Feed::Adapters::BlockAdapter.new
         @follow_adapter = Feed::Adapters::FollowAdapter.new
@@ -33,14 +29,14 @@ module Feed
         excluded = @block_adapter.bidirectionally_blocked_account_ids(account_id: viewer_account_id)
 
         author_ids = case filter
-        when FILTER_ALL
+        when "all"
           nil # no whitelist = all public posts
-        when FILTER_AREA
+        when "area"
           list_account_ids_by_prefecture_uc.call(prefecture: prefecture)
-        when FILTER_FOLLOWING
+        when "following"
           @follow_adapter.following_account_ids(account_id: viewer_account_id)
         else
-          nil
+          raise ArgumentError, "unknown filter: #{filter.inspect}"
         end
 
         post_ids = post_repo.list_public_post_ids(
@@ -55,6 +51,10 @@ module Feed
 
         next_cursor = if has_more && truncated.any?
           # Fetch the last post's created_at to encode cursor (we only have ids).
+          # TODO: find_by_id eagerly loads post_media + hashtags via combine,
+          # which is wasted work — we only need created_at for cursor. Consider
+          # adding post_repo.created_at_for_id(id) or returning tuples from
+          # list_public_post_ids to drop this overhead.
           last_post = post_repo.find_by_id(truncated.last)
           last_post ? encode_cursor(created_at: last_post.created_at.iso8601, id: last_post.id) : nil
         end
