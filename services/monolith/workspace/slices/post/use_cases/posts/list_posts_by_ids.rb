@@ -28,6 +28,9 @@ module Post
           ids = posts.map(&:id)
           authors = profile_author_adapter.load(posts.map(&:author_id))
           likes_counts = like_repo.likes_count_batch(post_ids: ids)
+          # Block list applies to post-level display (caller's responsibility); comment
+          # count is a per-post aggregate so we intentionally pass an empty exclude list
+          # rather than relying on the default to make the design choice explicit.
           comments_counts = comment_repo.comments_count_batch(post_ids: ids, exclude_user_ids: [])
           liked = if viewer_account_id
             like_repo.account_liked_status_batch(post_ids: ids, account_id: viewer_account_id)

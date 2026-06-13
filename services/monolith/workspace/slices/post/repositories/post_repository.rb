@@ -92,6 +92,9 @@ module Post
       # Batch fetch posts by id list. Used by cross-slice consumers (e.g. feed slice)
       # that have already determined which posts to display and need full hydration.
       # Returns an unordered array — caller is responsible for re-ordering if needed.
+      # Caller MUST pre-filter for visibility (e.g. only "public") and any soft-delete
+      # scoping; this method intentionally does not apply visibility filters so it can
+      # serve owner-view / admin paths uniformly.
       def find_by_ids(ids:)
         return [] if ids.nil? || ids.empty?
 
