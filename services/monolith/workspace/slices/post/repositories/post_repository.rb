@@ -89,6 +89,18 @@ module Post
         posts.combine(:post_media, :hashtags).by_pk(id).one
       end
 
+      # Batch fetch posts by id list. Used by cross-slice consumers (e.g. feed slice)
+      # that have already determined which posts to display and need full hydration.
+      # Returns an unordered array — caller is responsible for re-ordering if needed.
+      # Caller MUST pre-filter for visibility (e.g. only "public") and any soft-delete
+      # scoping; this method intentionally does not apply visibility filters so it can
+      # serve owner-view / admin paths uniformly.
+      def find_by_ids(ids:)
+        return [] if ids.nil? || ids.empty?
+
+        posts.combine(:post_media, :hashtags).where(id: ids).to_a
+      end
+
       def find_by_id_and_cast(id:, cast_user_id:)
         posts.combine(:post_media, :hashtags).where(id: id, cast_user_id: cast_user_id).one
       end
