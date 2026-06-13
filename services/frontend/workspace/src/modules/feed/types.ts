@@ -1,18 +1,14 @@
-// Feed module types
+import type { PostView } from "@/modules/post/lib/post-view";
 
-// Re-export post types since feed displays posts
-export type { CastPost, PostMedia, PostAuthor } from "@/modules/post/types";
+export type FeedFilterValue = "all" | "area" | "following";
 
-export type FeedFilter = "all" | "following";
-
-export interface FeedResult {
-  posts: import("@/modules/post/types").CastPost[];
-  nextCursor: string;
+export interface FeedListView {
+  posts: PostView[];
+  nextCursor: string | null;
   hasMore: boolean;
 }
 
-export interface FeedAuthor {
-  id: string;
-  name: string;
-  imageUrl: string;
+export interface UseFeedOptions {
+  filter?: FeedFilterValue;
+  prefecture?: string;
 }
