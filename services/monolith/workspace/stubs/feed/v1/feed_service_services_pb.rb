@@ -15,11 +15,6 @@ module Feed
         self.unmarshal_class_method = :decode
         self.service_name = 'feed.v1.FeedService'
 
-        # Guest feed: personalized feed based on filter
-        rpc :ListGuestFeed, ::Feed::V1::ListGuestFeedRequest, ::Feed::V1::ListGuestFeedResponse
-        # Cast feed: cast's own posts for management
-        rpc :ListCastFeed, ::Feed::V1::ListCastFeedRequest, ::Feed::V1::ListCastFeedResponse
-        # Symmetric (account-authored) feed. Old ListGuestFeed / ListCastFeed above are kept until cleanup.
         rpc :ListFeed, ::Feed::V1::ListFeedRequest, ::Feed::V1::ListFeedResponse
       end
 

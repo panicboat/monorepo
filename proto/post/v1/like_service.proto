@@ -3,41 +3,10 @@ syntax = "proto3";
 package post.v1;
 
 service LikeService {
-  rpc LikeCastPost(LikeCastPostRequest) returns (LikeCastPostResponse);
-  rpc UnlikeCastPost(UnlikeCastPostRequest) returns (UnlikeCastPostResponse);
-  rpc GetPostLikeStatus(GetPostLikeStatusRequest) returns (GetPostLikeStatusResponse);
-
-  // Symmetric (account-based). Old LikeCastPost RPCs above are kept until cleanup.
   rpc LikePost(LikePostRequest) returns (LikePostResponse);
   rpc UnlikePost(UnlikePostRequest) returns (UnlikePostResponse);
   rpc GetLikeStatus(GetLikeStatusRequest) returns (GetLikeStatusResponse);
 }
-
-message LikeCastPostRequest {
-  string post_id = 1;
-}
-
-message LikeCastPostResponse {
-  int32 likes_count = 1;
-}
-
-message UnlikeCastPostRequest {
-  string post_id = 1;
-}
-
-message UnlikeCastPostResponse {
-  int32 likes_count = 1;
-}
-
-message GetPostLikeStatusRequest {
-  repeated string post_ids = 1;
-}
-
-message GetPostLikeStatusResponse {
-  map<string, bool> liked = 1; // post_id -> is_liked
-}
-
-// ---- Symmetric (account-based) messages ----
 
 message LikePostRequest {
   string post_id = 1;
