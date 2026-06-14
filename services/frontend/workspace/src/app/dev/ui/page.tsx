@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs } from "@/components/ui/tab";
+import { Tabs, type TabItem } from "@/components/ui/tab";
 import { Toggle } from "@/components/ui/toggle";
 import { Avatar } from "@/components/ui/avatar";
 import { UserCard } from "@/components/ui/user-card";
@@ -19,6 +19,7 @@ import type { ProfileView, AreaView } from "@/modules/profile/types";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { PostComposer } from "@/modules/post/components/PostComposer";
 import type { PostView, SavePostPayload } from "@/modules/post/lib/post-view";
+import type { FeedFilterValue } from "@/modules/feed/types";
 
 export default function DevUiPage() {
   const [tab, setTab] = useState("home");
@@ -28,6 +29,12 @@ export default function DevUiPage() {
   const [prefecture, setPrefecture] = useState("東京都");
   const [editOpen, setEditOpen] = useState(false);
   const [areaSel, setAreaSel] = useState<string[]>(["1"]);
+  const [feedFilter, setFeedFilter] = useState<FeedFilterValue>("all");
+  const FEED_TAB_ITEMS: TabItem[] = [
+    { id: "all", label: "全員" },
+    { id: "area", label: "エリア" },
+    { id: "following", label: "フォロー中" },
+  ];
   const mockAreas: AreaView[] = [
     { id: "1", region: "関東", prefecture: "東京都", name: "渋谷", code: "shibuya" },
     { id: "2", region: "関東", prefecture: "東京都", name: "新宿", code: "shinjuku" },
@@ -222,6 +229,20 @@ export default function DevUiPage() {
         {mockPosts.map((p) => (
           <PostCardBinding key={p.id} post={p} />
         ))}
+      </section>
+
+      <section className="flex flex-col">
+        <h2 className="px-4 pb-3 text-sm font-bold text-text-secondary">Feed (3-tab home)</h2>
+        <Tabs
+          items={FEED_TAB_ITEMS}
+          value={feedFilter}
+          onValueChange={(id) => setFeedFilter(id as FeedFilterValue)}
+        />
+        <div>
+          {mockPosts.map((p) => (
+            <PostCardBinding key={`feed-${feedFilter}-${p.id}`} post={p} />
+          ))}
+        </div>
       </section>
     </main>
   );
