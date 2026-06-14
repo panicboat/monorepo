@@ -94,8 +94,6 @@ module Post
 
       private
 
-      SavePost = Post::UseCases::Posts::SavePost
-
       def load_media_files_for_posts(posts)
         media_ids = posts.flat_map do |post|
           next [] unless post.respond_to?(:post_media)
