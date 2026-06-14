@@ -5,13 +5,6 @@ package feed.v1;
 import "post/v1/post_service.proto";
 
 service FeedService {
-  // Guest feed: personalized feed based on filter
-  rpc ListGuestFeed(ListGuestFeedRequest) returns (ListGuestFeedResponse);
-
-  // Cast feed: cast's own posts for management
-  rpc ListCastFeed(ListCastFeedRequest) returns (ListCastFeedResponse);
-
-  // Symmetric (account-authored) feed. Old ListGuestFeed / ListCastFeed above are kept until cleanup.
   rpc ListFeed(ListFeedRequest) returns (ListFeedResponse);
 }
 
@@ -22,60 +15,6 @@ enum FeedFilter {
   FEED_FILTER_FOLLOWING = 2;  // Posts from followed casts only
   FEED_FILTER_AREA = 3;       // Symmetric ListFeed: posts from authors whose profile.prefecture matches request.prefecture
 }
-
-message FeedAuthor {
-  string user_id = 1;
-  string name = 2;
-  string image_url = 3;
-}
-
-message FeedMedia {
-  string id = 1;
-  string media_type = 2; // "image" or "video"
-  string url = 3;
-  string thumbnail_url = 4;
-  string media_id = 5; // Reference to media__files.id
-}
-
-message FeedPost {
-  string id = 1;
-  string cast_user_id = 2;
-  string content = 3;
-  repeated FeedMedia media = 4;
-  string created_at = 5; // ISO8601
-  FeedAuthor author = 6;
-  int32 likes_count = 7;
-  int32 comments_count = 8;
-  string visibility = 9; // "public" or "private"
-  repeated string hashtags = 10;
-  bool liked = 11; // whether current user liked this post
-}
-
-message ListGuestFeedRequest {
-  FeedFilter filter = 1;  // required: all/following
-  int32 limit = 2;        // default: 20, max: 50
-  string cursor = 3;      // optional, for pagination
-  string prefecture = 4;  // Filter "all" tab by cast area prefecture
-}
-
-message ListGuestFeedResponse {
-  repeated FeedPost posts = 1;
-  string next_cursor = 2;
-  bool has_more = 3;
-}
-
-message ListCastFeedRequest {
-  int32 limit = 1;        // default: 20, max: 50
-  string cursor = 2;      // optional, for pagination
-}
-
-message ListCastFeedResponse {
-  repeated FeedPost posts = 1;
-  string next_cursor = 2;
-  bool has_more = 3;
-}
-
-// ---- Symmetric (account-authored) messages ----
 
 message ListFeedRequest {
   FeedFilter filter = 1;       // FEED_FILTER_ALL / FEED_FILTER_AREA / FEED_FILTER_FOLLOWING

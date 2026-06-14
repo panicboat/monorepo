@@ -15,11 +15,6 @@ module Post
         self.unmarshal_class_method = :decode
         self.service_name = 'post.v1.PostService'
 
-        rpc :ListCastPosts, ::Post::V1::ListCastPostsRequest, ::Post::V1::ListCastPostsResponse
-        rpc :GetCastPost, ::Post::V1::GetCastPostRequest, ::Post::V1::GetCastPostResponse
-        rpc :SaveCastPost, ::Post::V1::SaveCastPostRequest, ::Post::V1::SaveCastPostResponse
-        rpc :DeleteCastPost, ::Post::V1::DeleteCastPostRequest, ::Post::V1::DeleteCastPostResponse
-        # Symmetric (account-authored) API. Old CastPost RPCs above are kept until cleanup.
         rpc :ListPosts, ::Post::V1::ListPostsRequest, ::Post::V1::ListPostsResponse
         rpc :GetPost, ::Post::V1::GetPostRequest, ::Post::V1::GetPostResponse
         rpc :SavePost, ::Post::V1::SavePostRequest, ::Post::V1::SavePostResponse

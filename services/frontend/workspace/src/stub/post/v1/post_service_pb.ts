@@ -10,344 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file post/v1/post_service.proto.
  */
 export const file_post_v1_post_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpwb3N0L3YxL3Bvc3Rfc2VydmljZS5wcm90bxIHcG9zdC52MSJCCg5DYXN0UG9zdEF1dGhvchIPCgd1c2VyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEQoJaW1hZ2VfdXJsGAMgASgJImUKDUNhc3RQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCRIQCghtZWRpYV9pZBgFIAEoCSKDAgoIQ2FzdFBvc3QSCgoCaWQYASABKAkSFAoMY2FzdF91c2VyX2lkGAIgASgJEg8KB2NvbnRlbnQYAyABKAkSJQoFbWVkaWEYBCADKAsyFi5wb3N0LnYxLkNhc3RQb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRInCgZhdXRob3IYBiABKAsyFy5wb3N0LnYxLkNhc3RQb3N0QXV0aG9yEhMKC2xpa2VzX2NvdW50GAcgASgFEhYKDmNvbW1lbnRzX2NvdW50GAggASgFEhIKCnZpc2liaWxpdHkYCSABKAkSEAoIaGFzaHRhZ3MYCiADKAkSDQoFbGlrZWQYCyABKAgiegoUTGlzdENhc3RQb3N0c1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJEhQKDGNhc3RfdXNlcl9pZBgDIAEoCRIOCgZmaWx0ZXIYBCABKAkSHQoVZXhjbHVkZV9jYXN0X3VzZXJfaWRzGAUgAygJImAKFUxpc3RDYXN0UG9zdHNSZXNwb25zZRIgCgVwb3N0cxgBIAMoCzIRLnBvc3QudjEuQ2FzdFBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgifwoTU2F2ZUNhc3RQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEiUKBW1lZGlhGAMgAygLMhYucG9zdC52MS5DYXN0UG9zdE1lZGlhEhIKCnZpc2liaWxpdHkYBCABKAkSEAoIaGFzaHRhZ3MYBSADKAkiNwoUU2F2ZUNhc3RQb3N0UmVzcG9uc2USHwoEcG9zdBgBIAEoCzIRLnBvc3QudjEuQ2FzdFBvc3QiIAoSR2V0Q2FzdFBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIjYKE0dldENhc3RQb3N0UmVzcG9uc2USHwoEcG9zdBgBIAEoCzIRLnBvc3QudjEuQ2FzdFBvc3QiIwoVRGVsZXRlQ2FzdFBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJIhgKFkRlbGV0ZUNhc3RQb3N0UmVzcG9uc2UiXAoKUG9zdEF1dGhvchISCgphY2NvdW50X2lkGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRIQCgh1c2VybmFtZRgDIAEoCRISCgphdmF0YXJfdXJsGAQgASgJImEKCVBvc3RNZWRpYRIKCgJpZBgBIAEoCRISCgptZWRpYV90eXBlGAIgASgJEgsKA3VybBgDIAEoCRIVCg10aHVtYm5haWxfdXJsGAQgASgJEhAKCG1lZGlhX2lkGAUgASgJIvQBCgRQb3N0EgoKAmlkGAEgASgJEhEKCWF1dGhvcl9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEiEKBW1lZGlhGAQgAygLMhIucG9zdC52MS5Qb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIjCgZhdXRob3IYBiABKAsyEy5wb3N0LnYxLlBvc3RBdXRob3ISEwoLbGlrZXNfY291bnQYByABKAUSFgoOY29tbWVudHNfY291bnQYCCABKAUSEgoKdmlzaWJpbGl0eRgJIAEoCRIQCghoYXNodGFncxgKIAMoCRINCgVsaWtlZBgLIAEoCCJUChBMaXN0UG9zdHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCRIRCglhdXRob3JfaWQYAyABKAkSDgoGZmlsdGVyGAQgASgJIlgKEUxpc3RQb3N0c1Jlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIncKD1NhdmVQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEiEKBW1lZGlhGAMgAygLMhIucG9zdC52MS5Qb3N0TWVkaWESEgoKdmlzaWJpbGl0eRgEIAEoCRIQCghoYXNodGFncxgFIAMoCSIvChBTYXZlUG9zdFJlc3BvbnNlEhsKBHBvc3QYASABKAsyDS5wb3N0LnYxLlBvc3QiHAoOR2V0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkiLgoPR2V0UG9zdFJlc3BvbnNlEhsKBHBvc3QYASABKAsyDS5wb3N0LnYxLlBvc3QiHwoRRGVsZXRlUG9zdFJlcXVlc3QSCgoCaWQYASABKAkiFAoSRGVsZXRlUG9zdFJlc3BvbnNlMtEECgtQb3N0U2VydmljZRJOCg1MaXN0Q2FzdFBvc3RzEh0ucG9zdC52MS5MaXN0Q2FzdFBvc3RzUmVxdWVzdBoeLnBvc3QudjEuTGlzdENhc3RQb3N0c1Jlc3BvbnNlEkgKC0dldENhc3RQb3N0EhsucG9zdC52MS5HZXRDYXN0UG9zdFJlcXVlc3QaHC5wb3N0LnYxLkdldENhc3RQb3N0UmVzcG9uc2USSwoMU2F2ZUNhc3RQb3N0EhwucG9zdC52MS5TYXZlQ2FzdFBvc3RSZXF1ZXN0Gh0ucG9zdC52MS5TYXZlQ2FzdFBvc3RSZXNwb25zZRJRCg5EZWxldGVDYXN0UG9zdBIeLnBvc3QudjEuRGVsZXRlQ2FzdFBvc3RSZXF1ZXN0Gh8ucG9zdC52MS5EZWxldGVDYXN0UG9zdFJlc3BvbnNlEkIKCUxpc3RQb3N0cxIZLnBvc3QudjEuTGlzdFBvc3RzUmVxdWVzdBoaLnBvc3QudjEuTGlzdFBvc3RzUmVzcG9uc2USPAoHR2V0UG9zdBIXLnBvc3QudjEuR2V0UG9zdFJlcXVlc3QaGC5wb3N0LnYxLkdldFBvc3RSZXNwb25zZRI/CghTYXZlUG9zdBIYLnBvc3QudjEuU2F2ZVBvc3RSZXF1ZXN0GhkucG9zdC52MS5TYXZlUG9zdFJlc3BvbnNlEkUKCkRlbGV0ZVBvc3QSGi5wb3N0LnYxLkRlbGV0ZVBvc3RSZXF1ZXN0GhsucG9zdC52MS5EZWxldGVQb3N0UmVzcG9uc2ViBnByb3RvMw");
-
-/**
- * @generated from message post.v1.CastPostAuthor
- */
-export type CastPostAuthor = Message<"post.v1.CastPostAuthor"> & {
-  /**
-   * @generated from field: string user_id = 1;
-   */
-  userId: string;
-
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
-
-  /**
-   * @generated from field: string image_url = 3;
-   */
-  imageUrl: string;
-};
-
-/**
- * Describes the message post.v1.CastPostAuthor.
- * Use `create(CastPostAuthorSchema)` to create a new message.
- */
-export const CastPostAuthorSchema: GenMessage<CastPostAuthor> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 0);
-
-/**
- * @generated from message post.v1.CastPostMedia
- */
-export type CastPostMedia = Message<"post.v1.CastPostMedia"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-
-  /**
-   * "image" or "video"
-   *
-   * @generated from field: string media_type = 2;
-   */
-  mediaType: string;
-
-  /**
-   * @generated from field: string url = 3;
-   */
-  url: string;
-
-  /**
-   * @generated from field: string thumbnail_url = 4;
-   */
-  thumbnailUrl: string;
-
-  /**
-   * Reference to media__files.id (required for input)
-   *
-   * @generated from field: string media_id = 5;
-   */
-  mediaId: string;
-};
-
-/**
- * Describes the message post.v1.CastPostMedia.
- * Use `create(CastPostMediaSchema)` to create a new message.
- */
-export const CastPostMediaSchema: GenMessage<CastPostMedia> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 1);
-
-/**
- * @generated from message post.v1.CastPost
- */
-export type CastPost = Message<"post.v1.CastPost"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-
-  /**
-   * @generated from field: string cast_user_id = 2;
-   */
-  castUserId: string;
-
-  /**
-   * @generated from field: string content = 3;
-   */
-  content: string;
-
-  /**
-   * @generated from field: repeated post.v1.CastPostMedia media = 4;
-   */
-  media: CastPostMedia[];
-
-  /**
-   * ISO8601
-   *
-   * @generated from field: string created_at = 5;
-   */
-  createdAt: string;
-
-  /**
-   * @generated from field: post.v1.CastPostAuthor author = 6;
-   */
-  author?: CastPostAuthor | undefined;
-
-  /**
-   * @generated from field: int32 likes_count = 7;
-   */
-  likesCount: number;
-
-  /**
-   * @generated from field: int32 comments_count = 8;
-   */
-  commentsCount: number;
-
-  /**
-   * "public" or "private"
-   *
-   * @generated from field: string visibility = 9;
-   */
-  visibility: string;
-
-  /**
-   * @generated from field: repeated string hashtags = 10;
-   */
-  hashtags: string[];
-
-  /**
-   * whether current user liked this post
-   *
-   * @generated from field: bool liked = 11;
-   */
-  liked: boolean;
-};
-
-/**
- * Describes the message post.v1.CastPost.
- * Use `create(CastPostSchema)` to create a new message.
- */
-export const CastPostSchema: GenMessage<CastPost> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 2);
-
-/**
- * @generated from message post.v1.ListCastPostsRequest
- */
-export type ListCastPostsRequest = Message<"post.v1.ListCastPostsRequest"> & {
-  /**
-   * default: 20, max: 50
-   *
-   * @generated from field: int32 limit = 1;
-   */
-  limit: number;
-
-  /**
-   * optional, base64 encoded
-   *
-   * @generated from field: string cursor = 2;
-   */
-  cursor: string;
-
-  /**
-   * optional, filter by cast
-   *
-   * @generated from field: string cast_user_id = 3;
-   */
-  castUserId: string;
-
-  /**
-   * optional, "following" to filter posts
-   *
-   * @generated from field: string filter = 4;
-   */
-  filter: string;
-
-  /**
-   * optional, exclude posts from these casts
-   *
-   * @generated from field: repeated string exclude_cast_user_ids = 5;
-   */
-  excludeCastUserIds: string[];
-};
-
-/**
- * Describes the message post.v1.ListCastPostsRequest.
- * Use `create(ListCastPostsRequestSchema)` to create a new message.
- */
-export const ListCastPostsRequestSchema: GenMessage<ListCastPostsRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 3);
-
-/**
- * @generated from message post.v1.ListCastPostsResponse
- */
-export type ListCastPostsResponse = Message<"post.v1.ListCastPostsResponse"> & {
-  /**
-   * @generated from field: repeated post.v1.CastPost posts = 1;
-   */
-  posts: CastPost[];
-
-  /**
-   * @generated from field: string next_cursor = 2;
-   */
-  nextCursor: string;
-
-  /**
-   * @generated from field: bool has_more = 3;
-   */
-  hasMore: boolean;
-};
-
-/**
- * Describes the message post.v1.ListCastPostsResponse.
- * Use `create(ListCastPostsResponseSchema)` to create a new message.
- */
-export const ListCastPostsResponseSchema: GenMessage<ListCastPostsResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 4);
-
-/**
- * @generated from message post.v1.SaveCastPostRequest
- */
-export type SaveCastPostRequest = Message<"post.v1.SaveCastPostRequest"> & {
-  /**
-   * empty for create, set for update
-   *
-   * @generated from field: string id = 1;
-   */
-  id: string;
-
-  /**
-   * @generated from field: string content = 2;
-   */
-  content: string;
-
-  /**
-   * @generated from field: repeated post.v1.CastPostMedia media = 3;
-   */
-  media: CastPostMedia[];
-
-  /**
-   * "public" or "private", defaults to "public"
-   *
-   * @generated from field: string visibility = 4;
-   */
-  visibility: string;
-
-  /**
-   * @generated from field: repeated string hashtags = 5;
-   */
-  hashtags: string[];
-};
-
-/**
- * Describes the message post.v1.SaveCastPostRequest.
- * Use `create(SaveCastPostRequestSchema)` to create a new message.
- */
-export const SaveCastPostRequestSchema: GenMessage<SaveCastPostRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 5);
-
-/**
- * @generated from message post.v1.SaveCastPostResponse
- */
-export type SaveCastPostResponse = Message<"post.v1.SaveCastPostResponse"> & {
-  /**
-   * @generated from field: post.v1.CastPost post = 1;
-   */
-  post?: CastPost | undefined;
-};
-
-/**
- * Describes the message post.v1.SaveCastPostResponse.
- * Use `create(SaveCastPostResponseSchema)` to create a new message.
- */
-export const SaveCastPostResponseSchema: GenMessage<SaveCastPostResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 6);
-
-/**
- * @generated from message post.v1.GetCastPostRequest
- */
-export type GetCastPostRequest = Message<"post.v1.GetCastPostRequest"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-};
-
-/**
- * Describes the message post.v1.GetCastPostRequest.
- * Use `create(GetCastPostRequestSchema)` to create a new message.
- */
-export const GetCastPostRequestSchema: GenMessage<GetCastPostRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 7);
-
-/**
- * @generated from message post.v1.GetCastPostResponse
- */
-export type GetCastPostResponse = Message<"post.v1.GetCastPostResponse"> & {
-  /**
-   * @generated from field: post.v1.CastPost post = 1;
-   */
-  post?: CastPost | undefined;
-};
-
-/**
- * Describes the message post.v1.GetCastPostResponse.
- * Use `create(GetCastPostResponseSchema)` to create a new message.
- */
-export const GetCastPostResponseSchema: GenMessage<GetCastPostResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 8);
-
-/**
- * @generated from message post.v1.DeleteCastPostRequest
- */
-export type DeleteCastPostRequest = Message<"post.v1.DeleteCastPostRequest"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-};
-
-/**
- * Describes the message post.v1.DeleteCastPostRequest.
- * Use `create(DeleteCastPostRequestSchema)` to create a new message.
- */
-export const DeleteCastPostRequestSchema: GenMessage<DeleteCastPostRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 9);
-
-/**
- * @generated from message post.v1.DeleteCastPostResponse
- */
-export type DeleteCastPostResponse = Message<"post.v1.DeleteCastPostResponse"> & {
-};
-
-/**
- * Describes the message post.v1.DeleteCastPostResponse.
- * Use `create(DeleteCastPostResponseSchema)` to create a new message.
- */
-export const DeleteCastPostResponseSchema: GenMessage<DeleteCastPostResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 10);
+  fileDesc("Chpwb3N0L3YxL3Bvc3Rfc2VydmljZS5wcm90bxIHcG9zdC52MSJcCgpQb3N0QXV0aG9yEhIKCmFjY291bnRfaWQYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJEhAKCHVzZXJuYW1lGAMgASgJEhIKCmF2YXRhcl91cmwYBCABKAkiYQoJUG9zdE1lZGlhEgoKAmlkGAEgASgJEhIKCm1lZGlhX3R5cGUYAiABKAkSCwoDdXJsGAMgASgJEhUKDXRodW1ibmFpbF91cmwYBCABKAkSEAoIbWVkaWFfaWQYBSABKAki9AEKBFBvc3QSCgoCaWQYASABKAkSEQoJYXV0aG9yX2lkGAIgASgJEg8KB2NvbnRlbnQYAyABKAkSIQoFbWVkaWEYBCADKAsyEi5wb3N0LnYxLlBvc3RNZWRpYRISCgpjcmVhdGVkX2F0GAUgASgJEiMKBmF1dGhvchgGIAEoCzITLnBvc3QudjEuUG9zdEF1dGhvchITCgtsaWtlc19jb3VudBgHIAEoBRIWCg5jb21tZW50c19jb3VudBgIIAEoBRISCgp2aXNpYmlsaXR5GAkgASgJEhAKCGhhc2h0YWdzGAogAygJEg0KBWxpa2VkGAsgASgIIlQKEExpc3RQb3N0c1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJEhEKCWF1dGhvcl9pZBgDIAEoCRIOCgZmaWx0ZXIYBCABKAkiWAoRTGlzdFBvc3RzUmVzcG9uc2USHAoFcG9zdHMYASADKAsyDS5wb3N0LnYxLlBvc3QSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgidwoPU2F2ZVBvc3RSZXF1ZXN0EgoKAmlkGAEgASgJEg8KB2NvbnRlbnQYAiABKAkSIQoFbWVkaWEYAyADKAsyEi5wb3N0LnYxLlBvc3RNZWRpYRISCgp2aXNpYmlsaXR5GAQgASgJEhAKCGhhc2h0YWdzGAUgAygJIi8KEFNhdmVQb3N0UmVzcG9uc2USGwoEcG9zdBgBIAEoCzINLnBvc3QudjEuUG9zdCIcCg5HZXRQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSIuCg9HZXRQb3N0UmVzcG9uc2USGwoEcG9zdBgBIAEoCzINLnBvc3QudjEuUG9zdCIfChFEZWxldGVQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCSIUChJEZWxldGVQb3N0UmVzcG9uc2UylwIKC1Bvc3RTZXJ2aWNlEkIKCUxpc3RQb3N0cxIZLnBvc3QudjEuTGlzdFBvc3RzUmVxdWVzdBoaLnBvc3QudjEuTGlzdFBvc3RzUmVzcG9uc2USPAoHR2V0UG9zdBIXLnBvc3QudjEuR2V0UG9zdFJlcXVlc3QaGC5wb3N0LnYxLkdldFBvc3RSZXNwb25zZRI/CghTYXZlUG9zdBIYLnBvc3QudjEuU2F2ZVBvc3RSZXF1ZXN0GhkucG9zdC52MS5TYXZlUG9zdFJlc3BvbnNlEkUKCkRlbGV0ZVBvc3QSGi5wb3N0LnYxLkRlbGV0ZVBvc3RSZXF1ZXN0GhsucG9zdC52MS5EZWxldGVQb3N0UmVzcG9uc2ViBnByb3RvMw");
 
 /**
  * @generated from message post.v1.PostAuthor
@@ -379,7 +42,7 @@ export type PostAuthor = Message<"post.v1.PostAuthor"> & {
  * Use `create(PostAuthorSchema)` to create a new message.
  */
 export const PostAuthorSchema: GenMessage<PostAuthor> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 11);
+  messageDesc(file_post_v1_post_service, 0);
 
 /**
  * @generated from message post.v1.PostMedia
@@ -420,7 +83,7 @@ export type PostMedia = Message<"post.v1.PostMedia"> & {
  * Use `create(PostMediaSchema)` to create a new message.
  */
 export const PostMediaSchema: GenMessage<PostMedia> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 12);
+  messageDesc(file_post_v1_post_service, 1);
 
 /**
  * @generated from message post.v1.Post
@@ -495,7 +158,7 @@ export type Post = Message<"post.v1.Post"> & {
  * Use `create(PostSchema)` to create a new message.
  */
 export const PostSchema: GenMessage<Post> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 13);
+  messageDesc(file_post_v1_post_service, 2);
 
 /**
  * @generated from message post.v1.ListPostsRequest
@@ -535,7 +198,7 @@ export type ListPostsRequest = Message<"post.v1.ListPostsRequest"> & {
  * Use `create(ListPostsRequestSchema)` to create a new message.
  */
 export const ListPostsRequestSchema: GenMessage<ListPostsRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 14);
+  messageDesc(file_post_v1_post_service, 3);
 
 /**
  * @generated from message post.v1.ListPostsResponse
@@ -562,7 +225,7 @@ export type ListPostsResponse = Message<"post.v1.ListPostsResponse"> & {
  * Use `create(ListPostsResponseSchema)` to create a new message.
  */
 export const ListPostsResponseSchema: GenMessage<ListPostsResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 15);
+  messageDesc(file_post_v1_post_service, 4);
 
 /**
  * @generated from message post.v1.SavePostRequest
@@ -603,7 +266,7 @@ export type SavePostRequest = Message<"post.v1.SavePostRequest"> & {
  * Use `create(SavePostRequestSchema)` to create a new message.
  */
 export const SavePostRequestSchema: GenMessage<SavePostRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 16);
+  messageDesc(file_post_v1_post_service, 5);
 
 /**
  * @generated from message post.v1.SavePostResponse
@@ -620,7 +283,7 @@ export type SavePostResponse = Message<"post.v1.SavePostResponse"> & {
  * Use `create(SavePostResponseSchema)` to create a new message.
  */
 export const SavePostResponseSchema: GenMessage<SavePostResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 17);
+  messageDesc(file_post_v1_post_service, 6);
 
 /**
  * @generated from message post.v1.GetPostRequest
@@ -637,7 +300,7 @@ export type GetPostRequest = Message<"post.v1.GetPostRequest"> & {
  * Use `create(GetPostRequestSchema)` to create a new message.
  */
 export const GetPostRequestSchema: GenMessage<GetPostRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 18);
+  messageDesc(file_post_v1_post_service, 7);
 
 /**
  * @generated from message post.v1.GetPostResponse
@@ -654,7 +317,7 @@ export type GetPostResponse = Message<"post.v1.GetPostResponse"> & {
  * Use `create(GetPostResponseSchema)` to create a new message.
  */
 export const GetPostResponseSchema: GenMessage<GetPostResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 19);
+  messageDesc(file_post_v1_post_service, 8);
 
 /**
  * @generated from message post.v1.DeletePostRequest
@@ -671,7 +334,7 @@ export type DeletePostRequest = Message<"post.v1.DeletePostRequest"> & {
  * Use `create(DeletePostRequestSchema)` to create a new message.
  */
 export const DeletePostRequestSchema: GenMessage<DeletePostRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 20);
+  messageDesc(file_post_v1_post_service, 9);
 
 /**
  * @generated from message post.v1.DeletePostResponse
@@ -684,47 +347,13 @@ export type DeletePostResponse = Message<"post.v1.DeletePostResponse"> & {
  * Use `create(DeletePostResponseSchema)` to create a new message.
  */
 export const DeletePostResponseSchema: GenMessage<DeletePostResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 21);
+  messageDesc(file_post_v1_post_service, 10);
 
 /**
  * @generated from service post.v1.PostService
  */
 export const PostService: GenService<{
   /**
-   * @generated from rpc post.v1.PostService.ListCastPosts
-   */
-  listCastPosts: {
-    methodKind: "unary";
-    input: typeof ListCastPostsRequestSchema;
-    output: typeof ListCastPostsResponseSchema;
-  },
-  /**
-   * @generated from rpc post.v1.PostService.GetCastPost
-   */
-  getCastPost: {
-    methodKind: "unary";
-    input: typeof GetCastPostRequestSchema;
-    output: typeof GetCastPostResponseSchema;
-  },
-  /**
-   * @generated from rpc post.v1.PostService.SaveCastPost
-   */
-  saveCastPost: {
-    methodKind: "unary";
-    input: typeof SaveCastPostRequestSchema;
-    output: typeof SaveCastPostResponseSchema;
-  },
-  /**
-   * @generated from rpc post.v1.PostService.DeleteCastPost
-   */
-  deleteCastPost: {
-    methodKind: "unary";
-    input: typeof DeleteCastPostRequestSchema;
-    output: typeof DeleteCastPostResponseSchema;
-  },
-  /**
-   * Symmetric (account-authored) API. Old CastPost RPCs above are kept until cleanup.
-   *
    * @generated from rpc post.v1.PostService.ListPosts
    */
   listPosts: {

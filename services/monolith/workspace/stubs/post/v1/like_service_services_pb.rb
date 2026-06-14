@@ -15,10 +15,6 @@ module Post
         self.unmarshal_class_method = :decode
         self.service_name = 'post.v1.LikeService'
 
-        rpc :LikeCastPost, ::Post::V1::LikeCastPostRequest, ::Post::V1::LikeCastPostResponse
-        rpc :UnlikeCastPost, ::Post::V1::UnlikeCastPostRequest, ::Post::V1::UnlikeCastPostResponse
-        rpc :GetPostLikeStatus, ::Post::V1::GetPostLikeStatusRequest, ::Post::V1::GetPostLikeStatusResponse
-        # Symmetric (account-based). Old LikeCastPost RPCs above are kept until cleanup.
         rpc :LikePost, ::Post::V1::LikePostRequest, ::Post::V1::LikePostResponse
         rpc :UnlikePost, ::Post::V1::UnlikePostRequest, ::Post::V1::UnlikePostResponse
         rpc :GetLikeStatus, ::Post::V1::GetLikeStatusRequest, ::Post::V1::GetLikeStatusResponse
