@@ -10,8 +10,6 @@ require_relative "../adapters/cast_adapter"
 require_relative "../adapters/guest_adapter"
 require_relative "../adapters/media_adapter"
 require_relative "../presenters/feed_presenter"
-require_relative "../use_cases/list_guest_feed"
-require_relative "../use_cases/list_cast_feed"
 require_relative "../use_cases/list_feed"
 
 module Feed
@@ -28,99 +26,7 @@ module Feed
 
       self.rpc_descs.clear
 
-      rpc :ListGuestFeed, ::Feed::V1::ListGuestFeedRequest, ::Feed::V1::ListGuestFeedResponse
-      rpc :ListCastFeed, ::Feed::V1::ListCastFeedRequest, ::Feed::V1::ListCastFeedResponse
       rpc :ListFeed, ::Feed::V1::ListFeedRequest, ::Feed::V1::ListFeedResponse
-
-      def list_guest_feed
-        authenticate_user!
-        guest = find_my_guest!
-
-        filter = case request.message.filter
-        when :FEED_FILTER_ALL then "all"
-        when :FEED_FILTER_FOLLOWING then "following"
-        else "all"
-        end
-
-        limit = request.message.limit.zero? ? 20 : request.message.limit
-        cursor = request.message.cursor.empty? ? nil : request.message.cursor
-        prefecture = request.message.prefecture.to_s.empty? ? nil : request.message.prefecture
-
-        blocker_id = guest.user_id
-
-        result = list_guest_feed_uc.call(
-          guest_id: guest.user_id,
-          filter: filter,
-          limit: limit,
-          cursor: cursor,
-          prefecture: prefecture
-        )
-
-        # Get engagement data
-        post_ids = result[:posts].map(&:id)
-        blocked_user_ids = get_blocked_user_ids(blocker_id)
-
-        likes_counts = post_adapter.likes_count_batch(post_ids: post_ids)
-        comments_counts = post_adapter.comments_count_batch(post_ids: post_ids, exclude_user_ids: blocked_user_ids)
-        liked_status = post_adapter.liked_status_batch(post_ids: post_ids, guest_user_id: guest.user_id)
-        media_files = load_media_files_for_posts_and_authors(result[:posts], result[:authors].values)
-
-        posts_proto = FeedPresenter.many_to_proto(
-          result[:posts],
-          authors: result[:authors],
-          likes_counts: likes_counts,
-          comments_counts: comments_counts,
-          liked_status: liked_status,
-          media_files: media_files
-        )
-
-        ::Feed::V1::ListGuestFeedResponse.new(
-          posts: posts_proto,
-          next_cursor: result[:next_cursor] || "",
-          has_more: result[:has_more]
-        )
-      end
-
-      def list_cast_feed
-        authenticate_user!
-        cast = find_my_cast!
-
-        limit = request.message.limit.zero? ? 20 : request.message.limit
-        cursor = request.message.cursor.empty? ? nil : request.message.cursor
-
-        result = list_cast_feed_uc.call(
-          cast_user_id: cast.user_id,
-          limit: limit,
-          cursor: cursor
-        )
-
-        # Get engagement data
-        post_ids = result[:posts].map(&:id)
-        blocker = find_blocker
-
-        blocked_user_ids = blocker ? get_blocked_user_ids(blocker[:id]) : []
-        likes_counts = post_adapter.likes_count_batch(post_ids: post_ids)
-        comments_counts = post_adapter.comments_count_batch(post_ids: post_ids, exclude_user_ids: blocked_user_ids)
-        media_files = load_media_files_for_posts_and_authors(result[:posts], [result[:author]].compact)
-
-        # Build posts proto with single author
-        posts_proto = result[:posts].map do |post|
-          FeedPresenter.to_proto(
-            post,
-            author: result[:author],
-            likes_count: likes_counts[post.id] || 0,
-            comments_count: comments_counts[post.id] || 0,
-            liked: false, # Cast viewing own posts doesn't need liked status
-            media_files: media_files
-          )
-        end
-
-        ::Feed::V1::ListCastFeedResponse.new(
-          posts: posts_proto,
-          next_cursor: result[:next_cursor] || "",
-          has_more: result[:has_more]
-        )
-      end
 
       # Symmetric (account-authored) feed handler. Cross-slice:
       # - Feed::UseCases::ListFeed builds ordered post_ids + pagination metadata
@@ -171,14 +77,6 @@ module Feed
       private
 
       FeedPresenter = Feed::Presenters::FeedPresenter
-
-      def list_guest_feed_uc
-        @list_guest_feed_uc ||= Feed::UseCases::ListGuestFeed.new
-      end
-
-      def list_cast_feed_uc
-        @list_cast_feed_uc ||= Feed::UseCases::ListCastFeed.new
-      end
 
       def list_feed_uc
         @list_feed_uc ||= Feed::UseCases::ListFeed.new
