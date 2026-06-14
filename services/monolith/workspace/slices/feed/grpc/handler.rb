@@ -3,13 +3,8 @@
 require "gruf"
 require "feed/v1/feed_service_services_pb"
 require_relative "../../../lib/grpc/authenticatable"
-require_relative "../adapters/post_adapter"
 require_relative "../adapters/follow_adapter"
 require_relative "../adapters/block_adapter"
-require_relative "../adapters/cast_adapter"
-require_relative "../adapters/guest_adapter"
-require_relative "../adapters/media_adapter"
-require_relative "../presenters/feed_presenter"
 require_relative "../use_cases/list_feed"
 
 module Feed
@@ -76,8 +71,6 @@ module Feed
 
       private
 
-      FeedPresenter = Feed::Presenters::FeedPresenter
-
       def list_feed_uc
         @list_feed_uc ||= Feed::UseCases::ListFeed.new
       end
@@ -86,98 +79,12 @@ module Feed
         @list_posts_by_ids_uc ||= Post::Slice["use_cases.posts.list_posts_by_ids"]
       end
 
-      def post_adapter
-        @post_adapter ||= Feed::Adapters::PostAdapter.new
-      end
-
       def follow_adapter
         @follow_adapter ||= Feed::Adapters::FollowAdapter.new
       end
 
       def block_adapter
         @block_adapter ||= Feed::Adapters::BlockAdapter.new
-      end
-
-      def cast_adapter
-        @cast_adapter ||= Feed::Adapters::CastAdapter.new
-      end
-
-      def guest_adapter
-        @guest_adapter ||= Feed::Adapters::GuestAdapter.new
-      end
-
-      def media_adapter
-        @media_adapter ||= Feed::Adapters::MediaAdapter.new
-      end
-
-      def find_my_cast
-        return nil unless current_user_id
-
-        cast_adapter.find_by_user_id(current_user_id)
-      end
-
-      def find_my_cast!
-        cast = find_my_cast
-        unless cast
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Cast profile not found")
-        end
-        cast
-      end
-
-      def find_my_guest
-        return nil unless current_user_id
-
-        guest_adapter.find_by_user_id(current_user_id)
-      end
-
-      def find_my_guest!
-        guest = find_my_guest
-        unless guest
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Guest profile not found")
-        end
-        guest
-      end
-
-      def find_blocker
-        return nil unless current_user_id
-
-        guest = find_my_guest
-        return { id: guest.user_id, type: "guest" } if guest
-
-        cast = find_my_cast
-        return { id: cast.user_id, type: "cast" } if cast
-
-        nil
-      end
-
-      def get_blocked_user_ids(blocker_id)
-        return [] unless blocker_id
-
-        block_adapter.blocked_guest_ids(blocker_id: blocker_id)
-      end
-
-      def load_media_files_for_posts_and_authors(posts, authors)
-        media_ids = posts.flat_map do |post|
-          next [] unless post.respond_to?(:post_media)
-
-          (post.post_media || []).filter_map(&:media_id)
-        end
-
-        # Collect author media IDs (avatar or profile)
-        authors.each do |author|
-          next unless author
-
-          if author.respond_to?(:avatar_media_id) && author.avatar_media_id.to_s != ""
-            media_ids << author.avatar_media_id
-          elsif author.respond_to?(:profile_media_id) && author.profile_media_id.to_s != ""
-            media_ids << author.profile_media_id
-          end
-        end
-
-        media_ids.uniq!
-        return {} if media_ids.empty?
-
-        media_adapter.find_by_ids(media_ids)
       end
     end
   end
