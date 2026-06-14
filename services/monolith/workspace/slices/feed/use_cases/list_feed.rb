@@ -51,12 +51,8 @@ module Feed
 
         next_cursor = if has_more && truncated.any?
           # Fetch the last post's created_at to encode cursor (we only have ids).
-          # TODO: find_by_id eagerly loads post_media + hashtags via combine,
-          # which is wasted work — we only need created_at for cursor. Consider
-          # adding post_repo.created_at_for_id(id) or returning tuples from
-          # list_public_post_ids to drop this overhead.
-          last_post = post_repo.find_by_id(truncated.last)
-          last_post ? encode_cursor(created_at: last_post.created_at.iso8601, id: last_post.id) : nil
+          last_created_at = post_repo.created_at_for_id(truncated.last)
+          last_created_at ? encode_cursor(created_at: last_created_at.iso8601, id: truncated.last) : nil
         end
 
         { post_ids: truncated, next_cursor: next_cursor, has_more: has_more }
