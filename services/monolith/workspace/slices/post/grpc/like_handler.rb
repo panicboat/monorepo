@@ -14,61 +14,9 @@ module Post
 
       self.rpc_descs.clear
 
-      rpc :LikeCastPost, ::Post::V1::LikeCastPostRequest, ::Post::V1::LikeCastPostResponse
-      rpc :UnlikeCastPost, ::Post::V1::UnlikeCastPostRequest, ::Post::V1::UnlikeCastPostResponse
-      rpc :GetPostLikeStatus, ::Post::V1::GetPostLikeStatusRequest, ::Post::V1::GetPostLikeStatusResponse
       rpc :LikePost, ::Post::V1::LikePostRequest, ::Post::V1::LikePostResponse
       rpc :UnlikePost, ::Post::V1::UnlikePostRequest, ::Post::V1::UnlikePostResponse
       rpc :GetLikeStatus, ::Post::V1::GetLikeStatusRequest, ::Post::V1::GetLikeStatusResponse
-
-      include Post::Deps[
-        like_post_uc: "use_cases.likes.like_post",
-        unlike_post_uc: "use_cases.likes.unlike_post",
-        get_like_status_uc: "use_cases.likes.get_like_status"
-      ]
-
-      def like_cast_post
-        authenticate_user!
-        guest = find_my_guest!
-
-        result = like_post_uc.call(
-          post_id: request.message.post_id,
-          guest_user_id: guest.user_id
-        )
-
-        ::Post::V1::LikeCastPostResponse.new(likes_count: result[:likes_count])
-      rescue LikePost::PostNotFoundError
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
-      end
-
-      def unlike_cast_post
-        authenticate_user!
-        guest = find_my_guest!
-
-        result = unlike_post_uc.call(
-          post_id: request.message.post_id,
-          guest_user_id: guest.user_id
-        )
-
-        ::Post::V1::UnlikeCastPostResponse.new(likes_count: result[:likes_count])
-      rescue UnlikePost::PostNotFoundError
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
-      end
-
-      def get_post_like_status
-        guest = find_my_guest
-        post_ids = request.message.post_ids.to_a
-
-        liked = if guest
-          get_like_status_uc.call(post_ids: post_ids, guest_user_id: guest.user_id)
-        else
-          post_ids.each_with_object({}) { |id, h| h[id] = false }
-        end
-
-        ::Post::V1::GetPostLikeStatusResponse.new(liked: liked)
-      end
-
-      # ---- Symmetric (account-based) API ----
 
       def like_post
         authenticate_user!
@@ -98,11 +46,6 @@ module Post
 
         ::Post::V1::GetLikeStatusResponse.new(liked: liked)
       end
-
-      private
-
-      LikePost = Post::UseCases::Likes::LikePost
-      UnlikePost = Post::UseCases::Likes::UnlikePost
     end
   end
 end
