@@ -89,6 +89,13 @@ module Post
         posts.combine(:post_media, :hashtags).by_pk(id).one
       end
 
+      # Lightweight lookup for cursor pagination: returns just the created_at
+      # for an id without eager-loading post_media / hashtags. Used by feed
+      # slice cursor encoding (see Feed::UseCases::ListFeed).
+      def created_at_for_id(id)
+        posts.dataset.where(id: id).get(:created_at)
+      end
+
       # Batch fetch posts by id list. Used by cross-slice consumers (e.g. feed slice)
       # that have already determined which posts to display and need full hydration.
       # Returns an unordered array — caller is responsible for re-ordering if needed.
