@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // protoc-gen-es output: generator emits `/* eslint-disable */` which ESLint
+    // 9 flags as `Unused eslint-disable directive` since none of the rules below
+    // would fire on the generated code. Easiest to exclude entirely.
+    "src/stub/**",
   ]),
 ]);
 

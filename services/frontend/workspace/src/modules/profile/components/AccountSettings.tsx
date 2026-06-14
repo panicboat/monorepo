@@ -15,33 +15,42 @@ interface PanelProps {
 
 export function AccountSettings({ profile, save }: PanelProps) {
   const [username, setUsername] = useState(profile.username);
-  const [status, setStatus] = useState<{ available: boolean; message: string } | null>(null);
+  const [fetchedStatus, setFetchedStatus] = useState<{ available: boolean; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  // Derive `saved` from the last saved username instead of a separate state.
+  // WHY: react-hooks/set-state-in-effect forbids resetting `saved` from the
+  // username-watch effect; tracking the saved username lets `saved` flip back
+  // to false automatically whenever the user edits the input.
+  const [lastSavedUsername, setLastSavedUsername] = useState<string | null>(null);
+  const saved = lastSavedUsername !== null && lastSavedUsername === username;
+
+  // Treat the fetched status as null whenever the input is empty or unchanged
+  // from the persisted username; deriving here avoids a synchronous setState
+  // inside the debounce effect, which react-hooks/set-state-in-effect forbids.
+  const isUsernameDirty = !!username && username !== profile.username;
+  const status = isUsernameDirty ? fetchedStatus : null;
 
   useEffect(() => {
-    setSaved(false);
     if (!username || username === profile.username) {
-      setStatus(null);
       return;
     }
     const t = setTimeout(async () => {
       try {
-        setStatus(await checkUsernameAvailability(username));
+        setFetchedStatus(await checkUsernameAvailability(username));
       } catch {
-        setStatus(null);
+        setFetchedStatus(null);
       }
     }, 400);
     return () => clearTimeout(t);
   }, [username, profile.username]);
 
-  const blocked = !!username && username !== profile.username && status !== null && !status.available;
+  const blocked = isUsernameDirty && status !== null && !status.available;
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await save({ ...profileViewToSavePayload(profile), username });
-      setSaved(true);
+      setLastSavedUsername(username);
     } finally {
       setSaving(false);
     }

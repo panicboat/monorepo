@@ -19,6 +19,35 @@ export function useMediaUpload(): UseMediaUploadResult {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  const registerMedia = useCallback(async (uploaded: UploadedMedia) => {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error("No authentication token");
+    }
+
+    const res = await fetch("/api/media/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        mediaId: uploaded.mediaId,
+        mediaKey: uploaded.mediaKey,
+        mediaType: toProtoMediaType(uploaded.mediaType),
+        filename: uploaded.filename,
+        contentType: uploaded.contentType,
+        sizeBytes: uploaded.sizeBytes,
+      }),
+    });
+
+    if (!res.ok) {
+      // FALLBACK: Returns empty object when JSON parse fails
+      const err = await res.json().catch(() => ({} as { error?: string }));
+      throw new Error(err.error || "メディアの登録に失敗しました");
+    }
+  }, []);
+
   const uploadMedia = useCallback(
     async (
       file: File,
@@ -95,35 +124,6 @@ export function useMediaUpload(): UseMediaUploadResult {
     },
     []
   );
-
-  const registerMedia = useCallback(async (uploaded: UploadedMedia) => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("No authentication token");
-    }
-
-    const res = await fetch("/api/media/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        mediaId: uploaded.mediaId,
-        mediaKey: uploaded.mediaKey,
-        mediaType: toProtoMediaType(uploaded.mediaType),
-        filename: uploaded.filename,
-        contentType: uploaded.contentType,
-        sizeBytes: uploaded.sizeBytes,
-      }),
-    });
-
-    if (!res.ok) {
-      // FALLBACK: Returns empty object when JSON parse fails
-      const err = await res.json().catch(() => ({} as { error?: string }));
-      throw new Error(err.error || "メディアの登録に失敗しました");
-    }
-  }, []);
 
   return {
     uploading,
