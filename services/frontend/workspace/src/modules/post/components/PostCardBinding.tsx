@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import { PostCard } from "@/components/ui/post-card";
 import { formatTimeAgo } from "@/lib/utils/date";
@@ -15,14 +14,7 @@ export interface PostCardBindingProps {
 }
 
 export function PostCardBinding({ post, detailHref, className }: PostCardBindingProps) {
-  const { isLiked, getLikesCount, toggleLike, setInitialState, loading } = usePostLike();
-
-  useEffect(() => {
-    setInitialState(post.id, post.liked, post.likesCount);
-    // Intentionally only depend on post.id: re-running on liked/likesCount changes
-    // would clobber the user's most recent like toggle when SWR re-injects a stale snapshot.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [post.id]);
+  const { isLiked, getLikesCount, toggleLike, loading } = usePostLike();
 
   const liked = isLiked(post.id, post.liked);
   const likesCount = getLikesCount(post.id, post.likesCount);
