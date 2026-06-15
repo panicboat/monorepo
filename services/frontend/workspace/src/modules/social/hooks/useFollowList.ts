@@ -1,23 +1,35 @@
 "use client";
 
-import useSWR from "swr";
+import useSWRInfinite from "swr/infinite";
 import { fetcher, getAuthToken } from "@/lib/swr";
 import type { PaginatedProfilesResponse } from "../types";
 
 export function useFollowList(accountId?: string) {
   const token = getAuthToken();
-  const qs = accountId ? `?account_id=${encodeURIComponent(accountId)}` : "";
-  const { data, error, isLoading, mutate } = useSWR<PaginatedProfilesResponse>(
-    token ? `/api/social/following${qs}` : null,
-    fetcher,
-    { revalidateOnFocus: false }
-  );
+
+  const getKey = (pageIndex: number, prev: PaginatedProfilesResponse | null): string | null => {
+    if (!token) return null;
+    if (prev && !prev.hasMore) return null;
+    const accountQs = accountId ? `account_id=${encodeURIComponent(accountId)}` : "";
+    const cursorQs = pageIndex === 0 ? "" : `cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
+    const sep = accountQs && cursorQs ? "&" : "";
+    const qs = (accountQs || cursorQs) ? `?${accountQs}${sep}${cursorQs}` : "";
+    return `/api/social/following${qs}`;
+  };
+
+  const { data, error, size, setSize, isLoading, isValidating, mutate } =
+    useSWRInfinite<PaginatedProfilesResponse>(getKey, fetcher, { revalidateOnFocus: false });
+
+  const pages = data || [];
+  const profiles = pages.flatMap((p) => p.profiles || []);
+  const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
+
   return {
-    profiles: data?.profiles || [],
-    nextCursor: data?.nextCursor || "",
-    hasMore: data?.hasMore || false,
-    loading: isLoading,
+    profiles,
+    hasMore,
+    loading: isLoading || isValidating,
     error,
+    loadMore: () => setSize(size + 1),
     refresh: () => mutate(),
   };
 }

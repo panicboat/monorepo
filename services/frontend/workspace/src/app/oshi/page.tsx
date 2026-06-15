@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { useFollowList, useFollowerList, FollowButton } from "@/modules/social";
 import type { SocialAccountView } from "@/modules/social/types";
@@ -44,6 +45,13 @@ export default function OshiPage() {
       {active.profiles.map((p) => (
         <ProfileRow key={p.accountId} profile={p} />
       ))}
+      {active.hasMore && (
+        <div className="flex justify-center px-4 py-6">
+          <Button variant="secondary" size="md" onClick={() => active.loadMore()} disabled={active.loading}>
+            もっと見る
+          </Button>
+        </div>
+      )}
     </main>
   );
 }
