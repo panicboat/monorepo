@@ -46,8 +46,11 @@ module Post
         post = post_repo.find_by_id(request.message.id)
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless post
 
-        # post-level visibility only (account-level follow-gate is social slice's concern)
         if post.visibility == "private" && post.author_id != current_user_id
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
+        end
+
+        unless viewer_can_see_post.call(viewer_account_id: current_user_id, post: post)
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
         end
 
@@ -141,6 +144,10 @@ module Post
           liked: liked,
           media_files: media_files
         )
+      end
+
+      def viewer_can_see_post
+        @viewer_can_see_post ||= Social::Slice["use_cases.viewer_can_see_post"]
       end
     end
   end

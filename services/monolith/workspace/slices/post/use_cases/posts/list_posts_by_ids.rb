@@ -25,6 +25,9 @@ module Post
           posts = post_repo.find_by_ids(ids: post_ids)
           return {} if posts.empty?
 
+          posts = visibility_filter.call(viewer_account_id: viewer_account_id, posts: posts)
+          return {} if posts.empty?
+
           ids = posts.map(&:id)
           authors = profile_author_adapter.load(posts.map(&:author_id))
           likes_counts = like_repo.likes_count_batch(post_ids: ids)
@@ -70,6 +73,10 @@ module Post
 
         def media_adapter
           @media_adapter ||= Post::Adapters::MediaAdapter.new
+        end
+
+        def visibility_filter
+          @visibility_filter ||= Social::Slice["use_cases.filter_visible_posts"]
         end
       end
     end
