@@ -52,13 +52,6 @@ CREATE SCHEMA post;
 
 
 --
--- Name: relationship; Type: SCHEMA; Schema: -; Owner: -
---
-
-CREATE SCHEMA relationship;
-
-
---
 -- Name: social; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -417,33 +410,6 @@ CREATE TABLE public.schema_migrations (
 
 
 --
--- Name: blocks; Type: TABLE; Schema: relationship; Owner: -
---
-
-CREATE TABLE relationship.blocks (
-    id uuid NOT NULL,
-    blocker_id uuid NOT NULL,
-    blocker_type text NOT NULL,
-    blocked_id uuid NOT NULL,
-    blocked_type text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: follows; Type: TABLE; Schema: relationship; Owner: -
---
-
-CREATE TABLE relationship.follows (
-    id uuid CONSTRAINT cast_follows_id_not_null NOT NULL,
-    created_at timestamp with time zone DEFAULT now() CONSTRAINT cast_follows_created_at_not_null NOT NULL,
-    status text DEFAULT 'approved'::text CONSTRAINT cast_follows_status_not_null NOT NULL,
-    cast_user_id uuid NOT NULL,
-    guest_user_id uuid NOT NULL
-);
-
-
---
 -- Name: blocks; Type: TABLE; Schema: social; Owner: -
 --
 
@@ -731,38 +697,6 @@ ALTER TABLE ONLY post.likes
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (filename);
-
-
---
--- Name: blocks blocks_blocker_id_blocked_id_key; Type: CONSTRAINT; Schema: relationship; Owner: -
---
-
-ALTER TABLE ONLY relationship.blocks
-    ADD CONSTRAINT blocks_blocker_id_blocked_id_key UNIQUE (blocker_id, blocked_id);
-
-
---
--- Name: blocks blocks_pkey; Type: CONSTRAINT; Schema: relationship; Owner: -
---
-
-ALTER TABLE ONLY relationship.blocks
-    ADD CONSTRAINT blocks_pkey PRIMARY KEY (id);
-
-
---
--- Name: follows cast_follows_pkey; Type: CONSTRAINT; Schema: relationship; Owner: -
---
-
-ALTER TABLE ONLY relationship.follows
-    ADD CONSTRAINT cast_follows_pkey PRIMARY KEY (id);
-
-
---
--- Name: follows follows_cast_user_id_guest_user_id_key; Type: CONSTRAINT; Schema: relationship; Owner: -
---
-
-ALTER TABLE ONLY relationship.follows
-    ADD CONSTRAINT follows_cast_user_id_guest_user_id_key UNIQUE (cast_user_id, guest_user_id);
 
 
 --
@@ -1082,41 +1016,6 @@ CREATE INDEX social_post_likes_post_id_index ON post.likes USING btree (post_id)
 
 
 --
--- Name: relationship_follows_cast_user_id_index; Type: INDEX; Schema: relationship; Owner: -
---
-
-CREATE INDEX relationship_follows_cast_user_id_index ON relationship.follows USING btree (cast_user_id);
-
-
---
--- Name: relationship_follows_guest_user_id_index; Type: INDEX; Schema: relationship; Owner: -
---
-
-CREATE INDEX relationship_follows_guest_user_id_index ON relationship.follows USING btree (guest_user_id);
-
-
---
--- Name: social_blocks_blocked_id_index; Type: INDEX; Schema: relationship; Owner: -
---
-
-CREATE INDEX social_blocks_blocked_id_index ON relationship.blocks USING btree (blocked_id);
-
-
---
--- Name: social_blocks_blocker_id_index; Type: INDEX; Schema: relationship; Owner: -
---
-
-CREATE INDEX social_blocks_blocker_id_index ON relationship.blocks USING btree (blocker_id);
-
-
---
--- Name: social_cast_follows_status_index; Type: INDEX; Schema: relationship; Owner: -
---
-
-CREATE INDEX social_cast_follows_status_index ON relationship.follows USING btree (status);
-
-
---
 -- Name: social_blocks_blocked_id_index; Type: INDEX; Schema: social; Owner: -
 --
 
@@ -1404,4 +1303,6 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260604000003_create_profile_areas.rb'),
 ('20260607000001_add_author_id_to_posts.rb'),
 ('20260607000002_add_account_id_to_likes.rb'),
-('20260615000000_create_social_schema.rb');
+('20260615000000_create_social_schema.rb'),
+('20260615180000_migrate_relationship_to_social.rb'),
+('20260616000000_drop_relationship_schema.rb');
