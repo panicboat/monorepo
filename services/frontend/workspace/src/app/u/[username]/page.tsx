@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { usePublicProfile } from "@/modules/profile/hooks";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
+import { FollowButton } from "@/modules/social";
 
 export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
@@ -24,6 +25,9 @@ export default function PublicProfilePage() {
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <ProfileHeader profile={profile} role={role} />
+      <div className="px-4 pt-3">
+        <FollowButton targetAccountId={profile.accountId} />
+      </div>
     </main>
   );
 }

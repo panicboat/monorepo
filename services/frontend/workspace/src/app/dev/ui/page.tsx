@@ -244,6 +244,29 @@ export default function DevUiPage() {
           ))}
         </div>
       </section>
+
+      <section className="px-4 pt-8">
+        <h2 className="pb-3 text-lg font-bold">Social</h2>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <span className="w-24 text-sm text-text-secondary">NONE</span>
+            <Button variant="primary" size="sm">フォロー</Button>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="w-24 text-sm text-text-secondary">PENDING</span>
+            <Button variant="secondary" size="sm">申請中</Button>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="w-24 text-sm text-text-secondary">APPROVED</span>
+            <Button variant="secondary" size="sm">フォロー中</Button>
+          </div>
+          <div className="flex items-center gap-3 pt-2">
+            <span className="w-24 text-sm text-text-secondary">申請 1 件</span>
+            <Button variant="primary" size="sm">承認</Button>
+            <Button variant="secondary" size="sm">拒否</Button>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
