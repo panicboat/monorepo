@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { castClient, offerClient, followClient } from "@/lib/grpc";
+import { castClient, offerClient, socialFollowClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError } from "@/lib/api-helpers";
 import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 import { mapCastProfileToFrontend } from "@/modules/portfolio/lib/cast/profile";
-import { FollowStatus } from "@/stub/relationship/v1/follow_service_pb";
+import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
 import { CastVisibility } from "@/stub/portfolio/v1/cast_service_pb";
 
 // UUID v4 format check
@@ -37,8 +37,8 @@ export async function GET(
     let canViewDetails = true;
     if (profileResponse.profile.visibility === CastVisibility.PRIVATE) {
       try {
-        const followResponse = await followClient.getFollowStatus(
-          { castUserIds: [castUserId] },
+        const followResponse = await socialFollowClient.getFollowStatus(
+          { targetAccountIds: [castUserId] },
           headers
         );
         const status = followResponse.statuses[castUserId];
