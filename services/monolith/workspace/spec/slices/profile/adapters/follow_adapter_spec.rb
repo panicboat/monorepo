@@ -4,10 +4,10 @@ require "spec_helper"
 
 RSpec.describe Profile::Adapters::FollowAdapter do
   let(:adapter) { described_class.new }
-  let(:follow_repo) { instance_double(Relationship::Repositories::FollowRepository) }
+  let(:follow_repo) { instance_double(Social::Repositories::FollowRepository) }
 
   before do
-    allow(Relationship::Slice).to receive(:[]).with("repositories.follow_repository").and_return(follow_repo)
+    allow(Social::Slice).to receive(:[]).with("repositories.follow_repository").and_return(follow_repo)
   end
 
   describe "#approved_follower?" do
@@ -16,13 +16,33 @@ RSpec.describe Profile::Adapters::FollowAdapter do
       expect(result).to eq(false)
     end
 
-    it "delegates to follow_repo.following?" do
-      allow(follow_repo).to receive(:following?)
-        .with(cast_user_id: "cast-456", guest_user_id: "guest-123")
-        .and_return(true)
+    it "returns true when an approved follow row exists" do
+      row = double("FollowRow", status: "approved")
+      allow(follow_repo).to receive(:find)
+        .with(follower_id: "guest-123", followee_id: "cast-456")
+        .and_return(row)
 
       result = adapter.approved_follower?(guest_user_id: "guest-123", cast_user_id: "cast-456")
       expect(result).to eq(true)
+    end
+
+    it "returns false when the follow row is pending" do
+      row = double("FollowRow", status: "pending")
+      allow(follow_repo).to receive(:find)
+        .with(follower_id: "guest-123", followee_id: "cast-456")
+        .and_return(row)
+
+      result = adapter.approved_follower?(guest_user_id: "guest-123", cast_user_id: "cast-456")
+      expect(result).to eq(false)
+    end
+
+    it "returns false when no row exists" do
+      allow(follow_repo).to receive(:find)
+        .with(follower_id: "guest-123", followee_id: "cast-456")
+        .and_return(nil)
+
+      result = adapter.approved_follower?(guest_user_id: "guest-123", cast_user_id: "cast-456")
+      expect(result).to eq(false)
     end
   end
 
@@ -32,13 +52,23 @@ RSpec.describe Profile::Adapters::FollowAdapter do
       expect(result).to be_nil
     end
 
-    it "delegates to follow_repo.follow_status" do
-      allow(follow_repo).to receive(:follow_status)
-        .with(cast_user_id: "cast-456", guest_user_id: "guest-123")
-        .and_return("pending")
+    it "returns the status of the existing row" do
+      row = double("FollowRow", status: "pending")
+      allow(follow_repo).to receive(:find)
+        .with(follower_id: "guest-123", followee_id: "cast-456")
+        .and_return(row)
 
       result = adapter.follow_status(guest_user_id: "guest-123", cast_user_id: "cast-456")
       expect(result).to eq("pending")
+    end
+
+    it "returns nil when no row exists" do
+      allow(follow_repo).to receive(:find)
+        .with(follower_id: "guest-123", followee_id: "cast-456")
+        .and_return(nil)
+
+      result = adapter.follow_status(guest_user_id: "guest-123", cast_user_id: "cast-456")
+      expect(result).to be_nil
     end
   end
 
@@ -48,21 +78,41 @@ RSpec.describe Profile::Adapters::FollowAdapter do
       expect(result).to eq({ is_following: false, followed_at: nil })
     end
 
-    it "delegates to follow_repo.get_follow_detail" do
-      follow_detail = { is_following: true, followed_at: Time.now }
-      allow(follow_repo).to receive(:get_follow_detail)
-        .with(cast_user_id: "cast-456", guest_user_id: "guest-123")
-        .and_return(follow_detail)
+    it "returns is_following true with followed_at when approved" do
+      followed_at = Time.now
+      row = double("FollowRow", status: "approved", created_at: followed_at)
+      allow(follow_repo).to receive(:find)
+        .with(follower_id: "guest-123", followee_id: "cast-456")
+        .and_return(row)
 
       result = adapter.get_follow_detail(guest_user_id: "guest-123", cast_user_id: "cast-456")
-      expect(result).to eq(follow_detail)
+      expect(result).to eq({ is_following: true, followed_at: followed_at })
+    end
+
+    it "returns default when status is pending" do
+      row = double("FollowRow", status: "pending", created_at: Time.now)
+      allow(follow_repo).to receive(:find)
+        .with(follower_id: "guest-123", followee_id: "cast-456")
+        .and_return(row)
+
+      result = adapter.get_follow_detail(guest_user_id: "guest-123", cast_user_id: "cast-456")
+      expect(result).to eq({ is_following: false, followed_at: nil })
+    end
+
+    it "returns default when no row exists" do
+      allow(follow_repo).to receive(:find)
+        .with(follower_id: "guest-123", followee_id: "cast-456")
+        .and_return(nil)
+
+      result = adapter.get_follow_detail(guest_user_id: "guest-123", cast_user_id: "cast-456")
+      expect(result).to eq({ is_following: false, followed_at: nil })
     end
   end
 
   describe "#approve_all_pending" do
-    it "delegates to follow_repo.approve_all_pending" do
+    it "delegates to follow_repo.approve_all_pending with account_id" do
       expect(follow_repo).to receive(:approve_all_pending)
-        .with(cast_user_id: "cast-123")
+        .with(account_id: "cast-123")
 
       adapter.approve_all_pending(cast_user_id: "cast-123")
     end

@@ -2,6 +2,7 @@
 
 module Profile
   module Adapters
+    # Cross-slice block check from Profile slice. Backed by the new social schema.
     class BlockAdapter
       def blocked?(guest_user_id:, cast_user_id:)
         return false if guest_user_id.nil?
@@ -18,7 +19,7 @@ module Profile
       private
 
       def block_repo
-        @block_repo ||= Relationship::Slice["repositories.block_repository"]
+        @block_repo ||= Social::Slice["repositories.block_repository"]
       end
     end
   end

@@ -4,10 +4,10 @@ require "spec_helper"
 
 RSpec.describe Profile::Adapters::BlockAdapter do
   let(:adapter) { described_class.new }
-  let(:block_repo) { instance_double(Relationship::Repositories::BlockRepository) }
+  let(:block_repo) { instance_double(Social::Repositories::BlockRepository) }
 
   before do
-    allow(Relationship::Slice).to receive(:[]).with("repositories.block_repository").and_return(block_repo)
+    allow(Social::Slice).to receive(:[]).with("repositories.block_repository").and_return(block_repo)
   end
 
   describe "#blocked?" do
