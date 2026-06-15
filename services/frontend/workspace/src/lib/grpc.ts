@@ -8,8 +8,6 @@ import { MediaService } from "@/stub/media/v1/media_service_pb";
 import { PostService } from "@/stub/post/v1/post_service_pb";
 import { LikeService } from "@/stub/post/v1/like_service_pb";
 import { CommentService } from "@/stub/post/v1/comment_service_pb";
-import { FollowService } from "@/stub/relationship/v1/follow_service_pb";
-import { BlockService } from "@/stub/relationship/v1/block_service_pb";
 import { FollowService as SocialFollowService } from "@/stub/social/v1/follow_service_pb";
 import { BlockService as SocialBlockService } from "@/stub/social/v1/block_service_pb";
 import { FeedService } from "@/stub/feed/v1/feed_service_pb";
@@ -38,11 +36,7 @@ export const postClient = createClient(PostService, transport);
 export const likeClient = createClient(LikeService, transport);
 export const commentClient = createClient(CommentService, transport);
 
-// Relationship domain clients (legacy relationship.v1 — kept for old /api/cast/*, /api/guest/* BFFs)
-export const followClient = createClient(FollowService, transport);
-export const blockClient = createClient(BlockService, transport);
-
-// Social domain clients (social.v1 — new symmetric account-based follow/block)
+// Social domain clients (social.v1 — symmetric account-based follow/block)
 export const socialFollowClient = createClient(SocialFollowService, transport);
 export const socialBlockClient = createClient(SocialBlockService, transport);
 
