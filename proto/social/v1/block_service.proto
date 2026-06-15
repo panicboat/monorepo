@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package social.v1;
+
+import "profile/v1/service.proto";
+
+service BlockService {
+  rpc Block(BlockRequest) returns (BlockResponse);
+  rpc Unblock(UnblockRequest) returns (UnblockResponse);
+  rpc ListBlocked(ListBlockedRequest) returns (ListBlockedResponse);
+  rpc GetBlockStatus(GetBlockStatusRequest) returns (GetBlockStatusResponse);
+}
+
+message BlockRequest {
+  string target_account_id = 1;
+}
+
+message BlockResponse {}
+
+message UnblockRequest {
+  string target_account_id = 1;
+}
+
+message UnblockResponse {}
+
+message ListBlockedRequest {
+  int32 limit = 1;       // default 20, max 50
+  string cursor = 2;
+}
+
+message ListBlockedResponse {
+  repeated profile.v1.Profile profiles = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message GetBlockStatusRequest {
+  repeated string target_account_ids = 1;
+}
+
+message GetBlockStatusResponse {
+  map<string, bool> blocked = 1;  // target_account_id -> bool (viewer blocked them?)
+}
