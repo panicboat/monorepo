@@ -24,6 +24,7 @@ module Social
       rpc :ListPendingFollowRequests, ::Social::V1::ListPendingFollowRequestsRequest, ::Social::V1::ListPendingFollowRequestsResponse
       rpc :GetFollowStatus, ::Social::V1::GetFollowStatusRequest, ::Social::V1::GetFollowStatusResponse
       rpc :GetPendingFollowCount, ::Social::V1::GetPendingFollowCountRequest, ::Social::V1::GetPendingFollowCountResponse
+      rpc :GetSocialCounts, ::Social::V1::GetSocialCountsRequest, ::Social::V1::GetSocialCountsResponse
 
       include Social::Deps[
         follow_uc: "use_cases.follows.follow",
@@ -35,7 +36,8 @@ module Social
         list_followers_uc: "use_cases.follows.list_followers",
         list_pending_follow_requests_uc: "use_cases.follows.list_pending_follow_requests",
         get_follow_status_uc: "use_cases.follows.get_follow_status",
-        get_pending_follow_count_uc: "use_cases.follows.get_pending_follow_count"
+        get_pending_follow_count_uc: "use_cases.follows.get_pending_follow_count",
+        get_social_counts_uc: "use_cases.follows.get_social_counts"
       ]
 
       def follow
@@ -123,6 +125,16 @@ module Social
         authenticate_user!
         count = get_pending_follow_count_uc.call(account_id: current_user_id)
         ::Social::V1::GetPendingFollowCountResponse.new(count: count)
+      end
+
+      def get_social_counts
+        authenticate_user!
+        account_id = request.message.account_id.empty? ? current_user_id : request.message.account_id
+        result = get_social_counts_uc.call(account_id: account_id)
+        ::Social::V1::GetSocialCountsResponse.new(
+          following_count: result[:following_count],
+          followers_count: result[:followers_count]
+        )
       end
 
       private

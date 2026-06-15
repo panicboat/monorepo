@@ -99,6 +99,14 @@ module Social
           .select_map(:followee_id)
       end
 
+      def count_following(account_id:)
+        follows.where(follower_id: account_id, status: "approved").count
+      end
+
+      def count_followers(account_id:)
+        follows.where(followee_id: account_id, status: "approved").count
+      end
+
       private
 
       def apply_cursor(scope, cursor)
