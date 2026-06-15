@@ -29,10 +29,6 @@ require_relative "seeds/post/posts"
 require_relative "seeds/post/likes"
 require_relative "seeds/post/comments"
 
-# === Relationships ===
-require_relative "seeds/relationship/follows"
-require_relative "seeds/relationship/blocks"
-
 # === Trust ===
 require_relative "seeds/trust/taggings"
 require_relative "seeds/trust/reviews"

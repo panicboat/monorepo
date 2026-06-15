@@ -2,12 +2,9 @@
 
 module Feed
   module Adapters
+    # Wraps Social::Repositories::FollowRepository for the feed slice's
+    # "following" tab whitelist.
     class FollowAdapter
-      def following_cast_user_ids(guest_user_id:)
-        follow_repo.following_cast_user_ids(guest_user_id: guest_user_id)
-      end
-
-      # Symmetric: returns account ids followed by this account.
       def following_account_ids(account_id:)
         return [] if account_id.nil? || account_id.to_s.empty?
 
@@ -17,7 +14,7 @@ module Feed
       private
 
       def follow_repo
-        @follow_repo ||= Relationship::Slice["repositories.follow_repository"]
+        @follow_repo ||= Social::Slice["repositories.follow_repository"]
       end
     end
   end
