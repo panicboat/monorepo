@@ -59,6 +59,13 @@ CREATE SCHEMA relationship;
 
 
 --
+-- Name: social; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA social;
+
+
+--
 -- Name: trust; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -437,6 +444,32 @@ CREATE TABLE relationship.follows (
 
 
 --
+-- Name: blocks; Type: TABLE; Schema: social; Owner: -
+--
+
+CREATE TABLE social.blocks (
+    id uuid NOT NULL,
+    blocker_id uuid NOT NULL,
+    blocked_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: follows; Type: TABLE; Schema: social; Owner: -
+--
+
+CREATE TABLE social.follows (
+    id uuid NOT NULL,
+    follower_id uuid NOT NULL,
+    followee_id uuid NOT NULL,
+    status text DEFAULT 'approved'::text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: review_media; Type: TABLE; Schema: trust; Owner: -
 --
 
@@ -730,6 +763,38 @@ ALTER TABLE ONLY relationship.follows
 
 ALTER TABLE ONLY relationship.follows
     ADD CONSTRAINT follows_cast_user_id_guest_user_id_key UNIQUE (cast_user_id, guest_user_id);
+
+
+--
+-- Name: blocks blocks_blocker_id_blocked_id_key; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.blocks
+    ADD CONSTRAINT blocks_blocker_id_blocked_id_key UNIQUE (blocker_id, blocked_id);
+
+
+--
+-- Name: blocks blocks_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.blocks
+    ADD CONSTRAINT blocks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: follows follows_follower_id_followee_id_key; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.follows
+    ADD CONSTRAINT follows_follower_id_followee_id_key UNIQUE (follower_id, followee_id);
+
+
+--
+-- Name: follows follows_pkey; Type: CONSTRAINT; Schema: social; Owner: -
+--
+
+ALTER TABLE ONLY social.follows
+    ADD CONSTRAINT follows_pkey PRIMARY KEY (id);
 
 
 --
@@ -1052,6 +1117,41 @@ CREATE INDEX social_cast_follows_status_index ON relationship.follows USING btre
 
 
 --
+-- Name: social_blocks_blocked_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_blocks_blocked_id_index ON social.blocks USING btree (blocked_id);
+
+
+--
+-- Name: social_blocks_blocker_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_blocks_blocker_id_index ON social.blocks USING btree (blocker_id);
+
+
+--
+-- Name: social_follows_followee_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_follows_followee_id_index ON social.follows USING btree (followee_id);
+
+
+--
+-- Name: social_follows_followee_id_status_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_follows_followee_id_status_index ON social.follows USING btree (followee_id, status);
+
+
+--
+-- Name: social_follows_follower_id_index; Type: INDEX; Schema: social; Owner: -
+--
+
+CREATE INDEX social_follows_follower_id_index ON social.follows USING btree (follower_id);
+
+
+--
 -- Name: trust_review_media_media_id_index; Type: INDEX; Schema: trust; Owner: -
 --
 
@@ -1303,4 +1403,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260604000002_create_profiles.rb'),
 ('20260604000003_create_profile_areas.rb'),
 ('20260607000001_add_author_id_to_posts.rb'),
-('20260607000002_add_account_id_to_likes.rb');
+('20260607000002_add_account_id_to_likes.rb'),
+('20260615000000_create_social_schema.rb');
