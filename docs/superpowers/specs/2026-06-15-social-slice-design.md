@@ -73,7 +73,7 @@ service BlockService {
   rpc GetBlockStatus(GetBlockStatusRequest) returns (GetBlockStatusResponse);
 }
 
-enum FollowStatusValue {
+enum FollowStatus {
   FOLLOW_STATUS_UNSPECIFIED = 0;
   FOLLOW_STATUS_NONE = 1;       // 未フォロー
   FOLLOW_STATUS_PENDING = 2;    // 承認待ち
@@ -82,7 +82,7 @@ enum FollowStatusValue {
 
 // ---- Follow messages ----
 message FollowRequest { string target_account_id = 1; }
-message FollowResponse { FollowStatusValue status = 1; }
+message FollowResponse { FollowStatus status = 1; }
 
 message UnfollowRequest { string target_account_id = 1; }
 message UnfollowResponse {}
@@ -129,7 +129,7 @@ message ListPendingFollowRequestsResponse {
 }
 
 message GetFollowStatusRequest { repeated string target_account_ids = 1; }
-message GetFollowStatusResponse { map<string, FollowStatusValue> statuses = 1; }
+message GetFollowStatusResponse { map<string, FollowStatus> statuses = 1; }
 
 message GetPendingFollowCountRequest {}
 message GetPendingFollowCountResponse { int32 count = 1; }
@@ -209,7 +209,7 @@ Social::Slice["use_cases.filter_visible_posts"]
 ## Frontend
 
 - **data 層** (`src/modules/social`):
-  - `types.ts`: `FollowStatusValue` literal union、`FollowingProfileView`、`UseFollowOptions`、等
+  - `types.ts`: `FollowStatus` literal union、`FollowingProfileView`、`UseFollowOptions`、等
   - `lib/mappers.ts`: proto → view 変換
   - `hooks/`:
     - `useFollow(targetAccountId)`: status state + follow / unfollow / cancel handler

@@ -17,11 +17,11 @@ service FollowService {
   rpc GetPendingFollowCount(GetPendingFollowCountRequest) returns (GetPendingFollowCountResponse);
 }
 
-enum FollowStatusValue {
-  FOLLOW_STATUS_VALUE_UNSPECIFIED = 0;
-  FOLLOW_STATUS_VALUE_NONE = 1;       // not following
-  FOLLOW_STATUS_VALUE_PENDING = 2;    // follow request pending approval
-  FOLLOW_STATUS_VALUE_APPROVED = 3;   // approved follower
+enum FollowStatus {
+  FOLLOW_STATUS_UNSPECIFIED = 0;
+  FOLLOW_STATUS_NONE = 1;       // not following
+  FOLLOW_STATUS_PENDING = 2;    // follow request pending approval
+  FOLLOW_STATUS_APPROVED = 3;   // approved follower
 }
 
 // ---- mutation requests ----
@@ -31,7 +31,7 @@ message FollowRequest {
 }
 
 message FollowResponse {
-  FollowStatusValue status = 1;  // PENDING (target is_private) or APPROVED (public)
+  FollowStatus status = 1;  // PENDING (target is_private) or APPROVED (public)
 }
 
 message UnfollowRequest {
@@ -102,7 +102,7 @@ message GetFollowStatusRequest {
 }
 
 message GetFollowStatusResponse {
-  map<string, FollowStatusValue> statuses = 1;  // target_account_id -> status
+  map<string, FollowStatus> statuses = 1;  // target_account_id -> status
 }
 
 message GetPendingFollowCountRequest {}
