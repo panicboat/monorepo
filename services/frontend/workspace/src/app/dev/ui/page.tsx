@@ -265,6 +265,14 @@ export default function DevUiPage() {
             <Button variant="primary" size="sm">承認</Button>
             <Button variant="secondary" size="sm">拒否</Button>
           </div>
+          <div className="flex items-center gap-3 pt-2">
+            <span className="w-24 text-sm text-text-secondary">未ブロック</span>
+            <Button variant="secondary" size="sm">ブロック</Button>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="w-24 text-sm text-text-secondary">ブロック中</span>
+            <Button variant="secondary" size="sm">ブロック解除</Button>
+          </div>
         </div>
       </section>
     </main>
