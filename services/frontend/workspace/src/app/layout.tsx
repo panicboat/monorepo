@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 
 import { AuthProvider } from "@/modules/identity/hooks/useAuth";
 import { SWRProvider } from "@/components/providers/SWRProvider";
+import { AppShell } from "@/components/shell";
 
 export default function RootLayout({
   children,
@@ -26,7 +27,9 @@ export default function RootLayout({
     <html lang="ja" className={notoSansJP.variable} suppressHydrationWarning>
       <body className="antialiased bg-bg">
         <AuthProvider>
-          <SWRProvider>{children}</SWRProvider>
+          <SWRProvider>
+            <AppShell>{children}</AppShell>
+          </SWRProvider>
         </AuthProvider>
       </body>
     </html>
