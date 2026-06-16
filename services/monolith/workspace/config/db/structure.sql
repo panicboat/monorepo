@@ -31,6 +31,13 @@ CREATE SCHEMA media;
 
 
 --
+-- Name: notifications; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA notifications;
+
+
+--
 -- Name: offer; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -124,6 +131,23 @@ CREATE TABLE media.files (
     size_bytes bigint,
     media_key text,
     thumbnail_key text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: notifications; Type: TABLE; Schema: notifications; Owner: -
+--
+
+CREATE TABLE notifications.notifications (
+    id uuid NOT NULL,
+    recipient_id uuid NOT NULL,
+    type text NOT NULL,
+    target_resource_id uuid NOT NULL,
+    actor_count integer DEFAULT 1 NOT NULL,
+    latest_actor_id uuid NOT NULL,
+    latest_event_at timestamp with time zone DEFAULT now() NOT NULL,
+    read_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
@@ -516,6 +540,22 @@ ALTER TABLE ONLY media.files
 
 
 --
+-- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: notifications; Owner: -
+--
+
+ALTER TABLE ONLY notifications.notifications
+    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: notifications uq_notifications_group; Type: CONSTRAINT; Schema: notifications; Owner: -
+--
+
+ALTER TABLE ONLY notifications.notifications
+    ADD CONSTRAINT uq_notifications_group UNIQUE (recipient_id, type, target_resource_id);
+
+
+--
 -- Name: plans cast_plans_pkey; Type: CONSTRAINT; Schema: offer; Owner: -
 --
 
@@ -803,6 +843,20 @@ CREATE UNIQUE INDEX identity_users_phone_number_index ON identity.users USING bt
 --
 
 CREATE UNIQUE INDEX media_files_media_key_index ON media.files USING btree (media_key) WHERE (media_key IS NOT NULL);
+
+
+--
+-- Name: idx_notifications_recipient_latest; Type: INDEX; Schema: notifications; Owner: -
+--
+
+CREATE INDEX idx_notifications_recipient_latest ON notifications.notifications USING btree (recipient_id, latest_event_at DESC);
+
+
+--
+-- Name: idx_notifications_recipient_unread; Type: INDEX; Schema: notifications; Owner: -
+--
+
+CREATE INDEX idx_notifications_recipient_unread ON notifications.notifications USING btree (recipient_id) WHERE (read_at IS NULL);
 
 
 --
@@ -1305,4 +1359,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260607000002_add_account_id_to_likes.rb'),
 ('20260615000000_create_social_schema.rb'),
 ('20260615180000_migrate_relationship_to_social.rb'),
-('20260616000000_drop_relationship_schema.rb');
+('20260616000000_drop_relationship_schema.rb'),
+('20260616240000_create_notifications_schema.rb');
