@@ -25,6 +25,7 @@ module Social
         rpc :ListPendingFollowRequests, ::Social::V1::ListPendingFollowRequestsRequest, ::Social::V1::ListPendingFollowRequestsResponse
         rpc :GetFollowStatus, ::Social::V1::GetFollowStatusRequest, ::Social::V1::GetFollowStatusResponse
         rpc :GetPendingFollowCount, ::Social::V1::GetPendingFollowCountRequest, ::Social::V1::GetPendingFollowCountResponse
+        rpc :GetSocialCounts, ::Social::V1::GetSocialCountsRequest, ::Social::V1::GetSocialCountsResponse
       end
 
       Stub = Service.rpc_stub_class

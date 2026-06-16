@@ -15,6 +15,7 @@ service FollowService {
   rpc ListPendingFollowRequests(ListPendingFollowRequestsRequest) returns (ListPendingFollowRequestsResponse);
   rpc GetFollowStatus(GetFollowStatusRequest) returns (GetFollowStatusResponse);
   rpc GetPendingFollowCount(GetPendingFollowCountRequest) returns (GetPendingFollowCountResponse);
+  rpc GetSocialCounts(GetSocialCountsRequest) returns (GetSocialCountsResponse);
 }
 
 enum FollowStatus {
@@ -109,4 +110,13 @@ message GetPendingFollowCountRequest {}
 
 message GetPendingFollowCountResponse {
   int32 count = 1;
+}
+
+message GetSocialCountsRequest {
+  string account_id = 1;  // empty = viewer (current account)
+}
+
+message GetSocialCountsResponse {
+  int32 following_count = 1;
+  int32 followers_count = 2;
 }

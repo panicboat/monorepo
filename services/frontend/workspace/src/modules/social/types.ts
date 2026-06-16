@@ -30,3 +30,8 @@ export interface FollowRequestItem {
   displayName: string;
   avatarUrl: string;
 }
+
+export interface SocialCounts {
+  followingCount: number;
+  followersCount: number;
+}

@@ -6,3 +6,4 @@ export * from "./useFollowerList";
 export * from "./useFollowStatusBatch";
 export * from "./useBlockStatusBatch";
 export * from "./useBlockedList";
+export * from "./useSocialCounts";
