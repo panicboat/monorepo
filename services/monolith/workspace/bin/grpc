@@ -48,6 +48,7 @@ require "post/v1/comment_service_services_pb"
 require "feed/v1/feed_service_services_pb"
 require "trust/v1/service_services_pb"
 require "notifications/v1/notification_service_services_pb"
+require "bookmarks/v1/bookmark_service_services_pb"
 
 # Configure Gruf
 Gruf.configure do |c|
@@ -82,6 +83,8 @@ require_relative "../slices/trust/grpc/handler"
 require_relative "../slices/trust/grpc/trust_handler"
 require_relative "../slices/notifications/grpc/handler"
 require_relative "../slices/notifications/grpc/notification_handler"
+require_relative "../slices/bookmarks/grpc/handler"
+require_relative "../slices/bookmarks/grpc/bookmark_handler"
 
 Hanami.logger.info("Starting gRPC Stub Server on #{Gruf.server_binding_url}")
 Hanami.logger.info("Services: #{Gruf.services}")

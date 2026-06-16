@@ -17,6 +17,13 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: bookmarks; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA bookmarks;
+
+
+--
 -- Name: identity; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -75,6 +82,18 @@ CREATE SCHEMA trust;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: bookmarks; Type: TABLE; Schema: bookmarks; Owner: -
+--
+
+CREATE TABLE bookmarks.bookmarks (
+    id uuid NOT NULL,
+    account_id uuid NOT NULL,
+    post_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
 
 --
 -- Name: refresh_tokens; Type: TABLE; Schema: identity; Owner: -
@@ -508,6 +527,22 @@ CREATE TABLE trust.taggings (
 
 
 --
+-- Name: bookmarks bookmarks_pkey; Type: CONSTRAINT; Schema: bookmarks; Owner: -
+--
+
+ALTER TABLE ONLY bookmarks.bookmarks
+    ADD CONSTRAINT bookmarks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: bookmarks uq_bookmarks_account_post; Type: CONSTRAINT; Schema: bookmarks; Owner: -
+--
+
+ALTER TABLE ONLY bookmarks.bookmarks
+    ADD CONSTRAINT uq_bookmarks_account_post UNIQUE (account_id, post_id);
+
+
+--
 -- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: identity; Owner: -
 --
 
@@ -801,6 +836,13 @@ ALTER TABLE ONLY trust.taggings
 
 ALTER TABLE ONLY trust.taggings
     ADD CONSTRAINT taggings_tag_name_target_id_tagger_id_key UNIQUE (tag_name, target_id, tagger_id);
+
+
+--
+-- Name: idx_bookmarks_account_created; Type: INDEX; Schema: bookmarks; Owner: -
+--
+
+CREATE INDEX idx_bookmarks_account_created ON bookmarks.bookmarks USING btree (account_id, created_at DESC);
 
 
 --
@@ -1360,4 +1402,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260615000000_create_social_schema.rb'),
 ('20260615180000_migrate_relationship_to_social.rb'),
 ('20260616000000_drop_relationship_schema.rb'),
-('20260616240000_create_notifications_schema.rb');
+('20260616240000_create_notifications_schema.rb'),
+('20260617120000_create_bookmarks_schema.rb');
