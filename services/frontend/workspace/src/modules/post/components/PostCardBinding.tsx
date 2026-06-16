@@ -5,6 +5,7 @@ import { PostCard } from "@/components/ui/post-card";
 import { formatTimeAgo } from "@/lib/utils/date";
 import type { PostView } from "@/modules/post/lib/post-view";
 import { usePostLike } from "@/modules/post/hooks/usePostLike";
+import { useBookmark } from "@/modules/bookmarks";
 
 export interface PostCardBindingProps {
   post: PostView;
@@ -15,6 +16,7 @@ export interface PostCardBindingProps {
 
 export function PostCardBinding({ post, detailHref, className }: PostCardBindingProps) {
   const { isLiked, getLikesCount, toggleLike, loading } = usePostLike();
+  const { isBookmarked, toggle: toggleBookmark, loading: bookmarkLoading } = useBookmark(post.id);
 
   const liked = isLiked(post.id, post.liked);
   const likesCount = getLikesCount(post.id, post.likesCount);
@@ -32,6 +34,12 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
     e.preventDefault();
     e.stopPropagation();
     toggleLike(post.id, liked).catch(() => {});
+  };
+
+  const handleBookmarkClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleBookmark().catch(() => {});
   };
 
   const reactions = (
@@ -55,6 +63,16 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
         <span aria-hidden="true">💬</span>
         <span>{post.commentsCount}</span>
       </Link>
+      <button
+        type="button"
+        onClick={handleBookmarkClick}
+        disabled={bookmarkLoading}
+        className="flex items-center gap-1 hover:text-text-primary disabled:opacity-50"
+        aria-pressed={isBookmarked}
+        aria-label={isBookmarked ? "ブックマークを解除" : "ブックマーク"}
+      >
+        <span aria-hidden="true">{isBookmarked ? "🔖" : "🏷"}</span>
+      </button>
       {post.visibility === "private" && (
         <span className="text-text-muted" aria-label="非公開">🔒</span>
       )}

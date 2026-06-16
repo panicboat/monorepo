@@ -14,6 +14,7 @@ import { FeedService } from "@/stub/feed/v1/feed_service_pb";
 import { TrustService } from "@/stub/trust/v1/service_pb";
 import { ProfileService } from "@/stub/profile/v1/service_pb";
 import { NotificationService } from "@/stub/notifications/v1/notification_service_pb";
+import { BookmarkService } from "@/stub/bookmarks/v1/bookmark_service_pb";
 
 // In server environment (Next.js API Routes), we connect to Monolith directly.
 // Monolith is at 'http://monolith:9001' or 'http://localhost:9001' depending on Docker/Local.
@@ -52,3 +53,6 @@ export const profileClient = createClient(ProfileService, transport);
 
 // Notifications domain client (notifications.v1)
 export const notificationClient = createClient(NotificationService, transport);
+
+// Bookmarks domain client (bookmarks.v1)
+export const bookmarkClient = createClient(BookmarkService, transport);
