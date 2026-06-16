@@ -20,6 +20,15 @@ module Social
           status = is_private ? "pending" : "approved"
 
           result = follow_repo.follow(follower_id: follower_id, followee_id: target_account_id, status: status)
+
+          notification_type = result[:status] == "approved" ? "follow_approved" : "follow_request"
+          notifications_emit.call(
+            recipient_id: target_account_id,
+            type: notification_type,
+            target_resource_id: follower_id,
+            actor_id: follower_id
+          )
+
           { status: result[:status] }
         end
 
@@ -27,6 +36,10 @@ module Social
 
         def get_profile
           @get_profile ||= Profile::Slice["use_cases.get_profile"]
+        end
+
+        def notifications_emit
+          @notifications_emit ||= Notifications::Slice["use_cases.emit"]
         end
       end
     end
