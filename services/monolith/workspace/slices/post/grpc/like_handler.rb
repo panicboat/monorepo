@@ -25,6 +25,14 @@ module Post
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless post
 
         like_repo.account_like(post_id: request.message.post_id, account_id: current_user_id)
+
+        notifications_emit.call(
+          recipient_id: post.author_id,
+          type: "like",
+          target_resource_id: post.id,
+          actor_id: current_user_id
+        )
+
         ::Post::V1::LikePostResponse.new(likes_count: like_repo.likes_count(post_id: request.message.post_id))
       end
 
@@ -45,6 +53,12 @@ module Post
         end
 
         ::Post::V1::GetLikeStatusResponse.new(liked: liked)
+      end
+
+      private
+
+      def notifications_emit
+        @notifications_emit ||= Notifications::Slice["use_cases.emit"]
       end
     end
   end

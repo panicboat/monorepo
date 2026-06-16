@@ -31,6 +31,7 @@ module Post
           raise TooManyMediaError if !empty_media && media.length > MAX_MEDIA_COUNT
 
           # Validate parent is a top-level comment (not a reply)
+          parent = nil
           if parent_id
             parent = comment_repo.find_by_id(parent_id)
             raise ParentNotFoundError unless parent
@@ -55,8 +56,32 @@ module Post
 
           raise CreateFailedError unless comment
 
+          if parent
+            notifications_emit.call(
+              recipient_id: parent.user_id,
+              type: "reply",
+              target_resource_id: parent.id,
+              actor_id: user_id
+            )
+          else
+            notifications_emit.call(
+              recipient_id: post.author_id,
+              type: "comment",
+              target_resource_id: post.id,
+              actor_id: user_id
+            )
+          end
+
           { comment: comment, post_id: post_id }
         end
+
+        private
+
+        def notifications_emit
+          @notifications_emit ||= Notifications::Slice["use_cases.emit"]
+        end
+
+        public
 
         class UserNotFoundError < StandardError; end
         class PostNotFoundError < StandardError; end

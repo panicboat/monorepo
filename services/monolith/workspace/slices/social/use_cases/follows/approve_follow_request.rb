@@ -14,7 +14,21 @@ module Social
             followee_id: target_account_id,
             status: "approved"
           )
+
+          notifications_emit.call(
+            recipient_id: requester_account_id,
+            type: "follow_approved",
+            target_resource_id: target_account_id,
+            actor_id: target_account_id
+          )
+
           {}
+        end
+
+        private
+
+        def notifications_emit
+          @notifications_emit ||= Notifications::Slice["use_cases.emit"]
         end
       end
     end
