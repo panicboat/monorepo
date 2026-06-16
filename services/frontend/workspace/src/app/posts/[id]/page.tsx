@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { usePost } from "@/modules/post/hooks/usePost";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { CommentList } from "@/modules/post/components/CommentList";
+import { CommentComposer } from "@/modules/post/components/CommentComposer";
 
 export default function PostDetailPage() {
   const params = useParams<{ id: string }>();
@@ -24,6 +25,7 @@ export default function PostDetailPage() {
         <h2 className="px-4 py-3 text-sm font-bold text-text-secondary">
           コメント（{post.commentsCount} 件）
         </h2>
+        <CommentComposer postId={post.id} />
         <CommentList postId={post.id} />
       </section>
     </main>
