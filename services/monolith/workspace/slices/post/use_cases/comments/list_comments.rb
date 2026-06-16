@@ -7,7 +7,7 @@ module Post
     module Comments
       class ListComments
         include Post::Deps[comment_repo: "repositories.comment_repository"]
-        include Concerns::CursorPagination
+        include ::Concerns::CursorPagination
         include Post::Concerns::ProfileAuthorResolvable
 
         MAX_LIMIT = 50

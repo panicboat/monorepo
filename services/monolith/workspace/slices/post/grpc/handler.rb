@@ -15,7 +15,7 @@ module Post
     class Handler < ::Gruf::Controllers::Base
       include ::GRPC::GenericService
       include ::Grpc::Authenticatable
-      include Concerns::CursorPagination
+      include ::Concerns::CursorPagination
 
       include Post::Deps[
         post_repo: "repositories.post_repository",
