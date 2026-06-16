@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { usePost } from "@/modules/post/hooks/usePost";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
+import { CommentList } from "@/modules/post/components/CommentList";
 
 export default function PostDetailPage() {
   const params = useParams<{ id: string }>();
@@ -19,9 +20,12 @@ export default function PostDetailPage() {
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <PostCardBinding post={post} />
-      <p className="px-4 py-6 text-sm text-text-muted">
-        コメント（{post.commentsCount} 件）の表示はコメントスライス UI 更新後に対応。
-      </p>
+      <section className="border-t border-divider">
+        <h2 className="px-4 py-3 text-sm font-bold text-text-secondary">
+          コメント（{post.commentsCount} 件）
+        </h2>
+        <CommentList postId={post.id} />
+      </section>
     </main>
   );
 }
