@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package discovery.v1;
+
+import "profile/v1/service.proto";
+import "post/v1/post_service.proto";
+
+service DiscoveryService {
+  rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse);
+  rpc SearchPosts(SearchPostsRequest) returns (SearchPostsResponse);
+  rpc RankPosts(RankPostsRequest) returns (RankPostsResponse);
+}
+
+enum RankPeriod {
+  RANK_PERIOD_UNSPECIFIED = 0;
+  RANK_PERIOD_DAY = 1;       // last 24 hours
+  RANK_PERIOD_WEEK = 2;      // last 7 days
+  RANK_PERIOD_ALL = 3;       // all-time
+}
+
+message SearchUsersRequest {
+  string query = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+
+message SearchUsersResponse {
+  repeated profile.v1.Profile profiles = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message SearchPostsRequest {
+  string query = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+
+message SearchPostsResponse {
+  repeated post.v1.Post posts = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message RankPostsRequest {
+  RankPeriod period = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+
+message RankPostsResponse {
+  repeated post.v1.Post posts = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}

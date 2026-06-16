@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require "concerns/cursor_pagination"
+
 module Profile
   module Repositories
     class ProfileRepository < Profile::DB::Repo
+      include ::Concerns::CursorPagination
+
       commands :create, update: :by_pk
 
       def find_by_account_id(account_id)
@@ -62,6 +66,34 @@ module Profile
         return if attrs.empty?
 
         update(account_id, attrs.merge(updated_at: Time.now))
+      end
+
+      # Cross-slice query for discovery slice. Case-insensitive partial match
+      # on username or display_name. Cursor pagination over (created_at, account_id)
+      # — profiles has no separate id column, account_id is the PK.
+      def search_by_query(query:, limit: 20, cursor: nil)
+        q = query.to_s.strip
+        return [] if q.empty?
+
+        pattern = "%#{q}%"
+        scope = profiles.where(
+          Sequel.|(
+            Sequel.lit("username ILIKE ?", pattern),
+            Sequel.lit("display_name ILIKE ?", pattern)
+          )
+        )
+
+        if cursor
+          decoded = decode_cursor(cursor)
+          if decoded
+            scope = scope.where {
+              (created_at < decoded[:created_at]) |
+                ((created_at =~ decoded[:created_at]) & (account_id < decoded[:id]))
+            }
+          end
+        end
+
+        scope.order { [created_at.desc, account_id.desc] }.limit(limit + 1).to_a
       end
     end
   end
