@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package bookmarks.v1;
+
+import "post/v1/post_service.proto";
+
+service BookmarkService {
+  rpc Bookmark(BookmarkRequest) returns (BookmarkResponse);
+  rpc Unbookmark(UnbookmarkRequest) returns (UnbookmarkResponse);
+  rpc ListBookmarks(ListBookmarksRequest) returns (ListBookmarksResponse);
+  rpc GetBookmarkStatus(GetBookmarkStatusRequest) returns (GetBookmarkStatusResponse);
+}
+
+message BookmarkRequest {
+  string post_id = 1;
+}
+
+message BookmarkResponse {}
+
+message UnbookmarkRequest {
+  string post_id = 1;
+}
+
+message UnbookmarkResponse {}
+
+message ListBookmarksRequest {
+  int32 limit = 1;      // default 20, max 50
+  string cursor = 2;    // base64 (created_at, id)
+}
+
+message ListBookmarksResponse {
+  repeated post.v1.Post posts = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message GetBookmarkStatusRequest {
+  repeated string post_ids = 1;
+}
+
+message GetBookmarkStatusResponse {
+  map<string, bool> bookmarked = 1;  // post_id -> true if bookmarked by viewer
+}
