@@ -80,6 +80,8 @@ require_relative "../slices/post/grpc/comment_handler"
 require_relative "../slices/feed/grpc/handler"
 require_relative "../slices/trust/grpc/handler"
 require_relative "../slices/trust/grpc/trust_handler"
+require_relative "../slices/notifications/grpc/handler"
+require_relative "../slices/notifications/grpc/notification_handler"
 
 Hanami.logger.info("Starting gRPC Stub Server on #{Gruf.server_binding_url}")
 Hanami.logger.info("Services: #{Gruf.services}")
