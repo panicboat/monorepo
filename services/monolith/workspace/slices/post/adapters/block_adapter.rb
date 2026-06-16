@@ -2,22 +2,12 @@
 
 module Post
   module Adapters
-    # Cross-slice block view from Post slice. Backed by the new social schema
-    # (symmetric model). The legacy "blocked_guest" / "blocker_cast" semantics
-    # are preserved at the public API level but the underlying queries are
-    # type-agnostic — returns all blocked / all blockers regardless of legacy
-    # cast/guest classification.
+    # Cross-slice block view from Post slice. Wraps the new social schema's
+    # block repository. Used by Post::Grpc::Handler#get_blocked_user_ids to
+    # exclude blocked accounts from comment hydration.
     class BlockAdapter
-      def blocked_guest_ids(blocker_id:)
-        block_repo.blocked_ids(account_id: blocker_id)
-      end
-
-      def cast_blocked_guest?(cast_user_id:, guest_user_id:)
-        block_repo.blocked?(blocker_id: cast_user_id, blocked_id: guest_user_id)
-      end
-
-      def blocked_by_cast_ids(guest_user_id:)
-        block_repo.blocker_ids(account_id: guest_user_id)
+      def blocked_ids(account_id:)
+        block_repo.blocked_ids(account_id: account_id)
       end
 
       private
