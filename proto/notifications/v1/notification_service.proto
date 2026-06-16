@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package notifications.v1;
+
+import "google/protobuf/timestamp.proto";
+import "profile/v1/service.proto";
+
+service NotificationService {
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
+  rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse);
+  rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
+}
+
+enum NotificationType {
+  NOTIFICATION_TYPE_UNSPECIFIED = 0;
+  NOTIFICATION_TYPE_LIKE = 1;
+  NOTIFICATION_TYPE_COMMENT = 2;
+  NOTIFICATION_TYPE_REPLY = 3;
+  NOTIFICATION_TYPE_FOLLOW_REQUEST = 4;
+  NOTIFICATION_TYPE_FOLLOW_APPROVED = 5;
+}
+
+message Notification {
+  string id = 1;
+  NotificationType type = 2;
+  string target_resource_id = 3;             // post_id | comment_id | actor_account_id (per type)
+  int32 actor_count = 4;                     // >= 1
+  profile.v1.Profile latest_actor = 5;        // cross-slice hydration
+  google.protobuf.Timestamp latest_event_at = 6;
+  google.protobuf.Timestamp read_at = 7;      // unset = unread
+}
+
+message ListNotificationsRequest {
+  int32 limit = 1;       // default 20, max 50
+  string cursor = 2;     // base64 (latest_event_at, id)
+}
+
+message ListNotificationsResponse {
+  repeated Notification notifications = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+  int32 unread_count = 4;  // bundled to avoid 2x round-trip
+}
+
+message GetUnreadCountRequest {}
+
+message GetUnreadCountResponse {
+  int32 count = 1;
+}
+
+message MarkReadRequest {
+  string id = 1;
+}
+
+message MarkReadResponse {}
