@@ -180,6 +180,69 @@ module Post
       def find_by_id_and_author(id:, author_id:)
         posts.combine(:post_media, :hashtags).where(id: id, author_id: author_id).one
       end
+
+      # Cross-slice query for discovery slice. Case-insensitive content match
+      # on public posts. Cursor (already-decoded hash) is over (created_at, id) DESC.
+      # Returns limit + 1 ids so caller can detect has_more.
+      def search_by_content(query:, limit: 20, cursor: nil)
+        q = query.to_s.strip
+        return [] if q.empty?
+
+        pattern = "%#{q}%"
+        scope = posts.dataset.where(visibility: "public").where(Sequel.lit("content ILIKE ?", pattern))
+
+        if cursor
+          scope = scope.where {
+            (created_at < cursor[:created_at]) |
+              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+          }
+        end
+
+        scope.order(Sequel.desc(:created_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
+      end
+
+      # Cross-slice query for discovery ranking. Top public posts by like count
+      # within the period. period: 'day' | 'week' | 'all'.
+      # likes_count is aggregated from post__likes via LEFT JOIN — posts table
+      # has no denormalized counter column.
+      # Cursor (already-decoded hash) is semantically (likes_count, id) DESC —
+      # cursor[:created_at] is reused to carry likes_count as an integer-string.
+      # Returns [[id, likes_count], ...] so caller can encode the next cursor
+      # without an additional lookup.
+      def top_by_likes(period:, limit: 20, cursor: nil)
+        ds = posts.dataset.where(visibility: "public")
+
+        case period.to_s
+        when "day"
+          ds = ds.where { created_at >= Sequel.lit("NOW() - INTERVAL '1 day'") }
+        when "week"
+          ds = ds.where { created_at >= Sequel.lit("NOW() - INTERVAL '7 days'") }
+        when "all"
+          # no period filter
+        else
+          return []
+        end
+
+        likes_count_expr = Sequel.function(:coalesce, Sequel.function(:count, Sequel[:post__likes][:id]), 0)
+
+        scope = ds
+          .left_join(:post__likes, post_id: Sequel[:post__posts][:id])
+          .group(Sequel[:post__posts][:id])
+          .select(Sequel[:post__posts][:id], likes_count_expr.as(:likes_count))
+
+        if cursor
+          likes_at = cursor[:created_at].to_i
+          scope = scope.having {
+            (likes_count_expr < likes_at) |
+              ((likes_count_expr =~ likes_at) & (Sequel[:post__posts][:id] < cursor[:id]))
+          }
+        end
+
+        scope
+          .order(Sequel.desc(:likes_count), Sequel.desc(Sequel[:post__posts][:id]))
+          .limit(limit + 1)
+          .map { |row| [row[:id].to_s, row[:likes_count].to_i] }
+      end
     end
   end
 end
