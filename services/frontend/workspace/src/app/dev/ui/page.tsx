@@ -275,6 +275,56 @@ export default function DevUiPage() {
           </div>
         </div>
       </section>
+
+      <section className="px-4 pt-8">
+        <h2 className="pb-3 text-lg font-bold">Notifications</h2>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3 rounded border border-border bg-bg-secondary/50 px-3 py-2">
+            <span className="text-xl" aria-hidden="true">🔔</span>
+            <div className="flex-1 text-sm">
+              <p className="text-text-primary">A さん他 3 人がいいねしました</p>
+              <p className="text-xs text-text-secondary">2 分前 / 未読</p>
+            </div>
+            <span className="h-2 w-2 rounded-full bg-accent" />
+          </div>
+          <div className="flex items-center gap-3 rounded border border-border px-3 py-2">
+            <span className="text-xl" aria-hidden="true">💬</span>
+            <div className="flex-1 text-sm">
+              <p className="text-text-primary">B さんがコメントしました</p>
+              <p className="text-xs text-text-secondary">15 分前 / 既読</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 rounded border border-border px-3 py-2">
+            <span className="text-xl" aria-hidden="true">↩</span>
+            <div className="flex-1 text-sm">
+              <p className="text-text-primary">C さんが返信しました</p>
+              <p className="text-xs text-text-secondary">1 時間前 / 既読</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 rounded border border-border bg-bg-secondary/50 px-3 py-2">
+            <span className="text-xl" aria-hidden="true">➕</span>
+            <div className="flex-1 text-sm">
+              <p className="text-text-primary">D さんからフォロー申請が届きました</p>
+              <p className="text-xs text-text-secondary">3 時間前 / 未読</p>
+            </div>
+            <span className="h-2 w-2 rounded-full bg-accent" />
+          </div>
+          <div className="flex items-center gap-3 rounded border border-border px-3 py-2">
+            <span className="text-xl" aria-hidden="true">✅</span>
+            <div className="flex-1 text-sm">
+              <p className="text-text-primary">E さんがフォロー承認しました</p>
+              <p className="text-xs text-text-secondary">昨日 / 既読</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 pt-3">
+            <span className="w-24 text-sm text-text-secondary">Bell badge</span>
+            <span className="relative inline-flex items-center justify-center rounded-full p-2 text-xl text-text-primary">
+              🔔
+              <span className="absolute -right-1 -top-1 min-w-[1.25rem] rounded-full bg-accent px-1 text-center text-xs font-bold text-white">5</span>
+            </span>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
