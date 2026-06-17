@@ -43,7 +43,7 @@ module Post
           media_files = load_media_files(posts)
 
           posts.each_with_object({}) do |post, hash|
-            proto = PostPresenter.to_post_proto(
+            proto = Post::Presenters::PostPresenter.to_post_proto(
               post,
               author: authors[post.author_id],
               likes_count: likes_counts[post.id] || 0,
