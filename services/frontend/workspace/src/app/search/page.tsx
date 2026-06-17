@@ -1,9 +1,102 @@
 "use client";
 
+import { useState } from "react";
+import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, type TabItem } from "@/components/ui/tab";
+import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
+import { FollowButton } from "@/modules/social";
+import { useSearchUsers, useSearchPosts } from "@/modules/discovery";
+
+const TABS: TabItem[] = [
+  { id: "users", label: "ユーザー" },
+  { id: "posts", label: "投稿" },
+];
+
 export default function SearchPage() {
+  const [query, setQuery] = useState("");
+  const [tab, setTab] = useState("users");
+
+  const users = useSearchUsers(tab === "users" ? query : "");
+  const posts = useSearchPosts(tab === "posts" ? query : "");
+
+  const trimmed = query.trim();
+
   return (
-    <main className="mx-auto max-w-xl p-6 text-center text-text-secondary">
-      検索機能は準備中です。
+    <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
+      <div className="sticky top-0 z-10 bg-bg/95 px-4 py-3 backdrop-blur">
+        <Input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="ユーザーや投稿を検索"
+          aria-label="検索"
+        />
+      </div>
+      <Tabs items={TABS} value={tab} onValueChange={setTab} />
+
+      {trimmed.length === 0 && (
+        <div className="flex flex-col items-center px-4 py-12 text-center">
+          <span className="text-4xl" aria-hidden="true">🔍</span>
+          <p className="pt-3 text-text-primary">ユーザーや投稿を検索</p>
+          <p className="pt-1 text-sm text-text-secondary">
+            ユーザー名や投稿内容で検索できます
+          </p>
+        </div>
+      )}
+
+      {tab === "users" && trimmed.length > 0 && (
+        <>
+          {users.loading && users.profiles.length === 0 && (
+            <p className="px-4 py-6 text-text-secondary">検索中…</p>
+          )}
+          {!users.loading && users.profiles.length === 0 && (
+            <p className="px-4 py-6 text-text-secondary">該当するユーザーがいません</p>
+          )}
+          {users.profiles.map((p) => (
+            <div
+              key={p.accountId}
+              className="flex items-center gap-3 border-b border-border px-4 py-3"
+            >
+              <Avatar src={p.avatarUrl || undefined} fallback={p.displayName.slice(0, 1) || "?"} size="md" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-bold text-text-primary">{p.displayName}</p>
+                <p className="truncate text-sm text-text-secondary">@{p.username}</p>
+              </div>
+              <FollowButton targetAccountId={p.accountId} />
+            </div>
+          ))}
+          {users.hasMore && (
+            <div className="flex justify-center px-4 py-6">
+              <Button variant="secondary" size="md" onClick={() => users.loadMore()} disabled={users.loading}>
+                もっと見る
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+
+      {tab === "posts" && trimmed.length > 0 && (
+        <>
+          {posts.loading && posts.posts.length === 0 && (
+            <p className="px-4 py-6 text-text-secondary">検索中…</p>
+          )}
+          {!posts.loading && posts.posts.length === 0 && (
+            <p className="px-4 py-6 text-text-secondary">該当する投稿がありません</p>
+          )}
+          {posts.posts.map((post) => (
+            <PostCardBinding key={post.id} post={post} />
+          ))}
+          {posts.hasMore && (
+            <div className="flex justify-center px-4 py-6">
+              <Button variant="secondary" size="md" onClick={() => posts.loadMore()} disabled={posts.loading}>
+                もっと見る
+              </Button>
+            </div>
+          )}
+        </>
+      )}
     </main>
   );
 }
