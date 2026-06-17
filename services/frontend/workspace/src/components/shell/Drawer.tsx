@@ -48,19 +48,22 @@ export function Drawer({ open, onClose }: DrawerProps) {
     router.push("/");
   };
 
-  if (!open) return null;
-
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-black/60"
+        className={`fixed inset-0 z-40 bg-black/60 transition-opacity duration-200 ${
+          open ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
         onClick={onClose}
         aria-hidden="true"
       />
       <aside
-        className="fixed left-0 top-0 z-50 flex h-full w-80 max-w-[80vw] flex-col bg-bg shadow-2xl"
+        className={`fixed left-0 top-0 z-50 flex h-full w-80 max-w-[80vw] flex-col bg-bg shadow-2xl transition-transform duration-300 ease-out ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
         role="dialog"
         aria-label="メニュー"
+        aria-hidden={!open}
       >
         <div className="border-b border-border px-4 py-4">
           <Avatar

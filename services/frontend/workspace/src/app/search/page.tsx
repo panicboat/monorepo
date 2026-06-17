@@ -26,13 +26,26 @@ export default function SearchPage() {
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <div className="sticky top-0 z-10 bg-bg/95 px-4 py-3 backdrop-blur">
-        <Input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="ユーザーや投稿を検索"
-          aria-label="検索"
-        />
+        <div className="relative">
+          <Input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="ユーザーや投稿を検索"
+            aria-label="検索"
+            className="pr-9"
+          />
+          {query.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-text-secondary hover:text-text-primary"
+              aria-label="検索をクリア"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
       <Tabs items={TABS} value={tab} onValueChange={setTab} />
 

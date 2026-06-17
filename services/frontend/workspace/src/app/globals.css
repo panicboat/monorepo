@@ -32,6 +32,7 @@
 
   /* Semantic aliases */
   --color-bg: var(--color-neutral-950);
+  --color-bg-secondary: var(--color-neutral-800);
   --color-surface: var(--color-neutral-900);
   --color-divider: var(--color-neutral-800);
   --color-border: var(--color-neutral-700);
@@ -95,6 +96,7 @@ html {
 
   /* Semantic */
   --color-bg: var(--color-bg);
+  --color-bg-secondary: var(--color-bg-secondary);
   --color-surface: var(--color-surface);
   --color-divider: var(--color-divider);
   --color-border: var(--color-border);
