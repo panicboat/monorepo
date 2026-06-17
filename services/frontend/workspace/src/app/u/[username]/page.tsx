@@ -5,6 +5,7 @@ import { usePublicProfile } from "@/modules/profile/hooks";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
 import { FollowButton, BlockButton, useSocialCounts } from "@/modules/social";
 import { StartChatButton } from "@/modules/messaging";
+import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs";
 
 export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
@@ -40,6 +41,7 @@ export default function PublicProfilePage() {
           <strong className="text-text-primary">{counts.followersCount}</strong> フォロワー
         </span>
       </div>
+      <ProfileContentTabs accountId={profile.accountId} />
     </main>
   );
 }
