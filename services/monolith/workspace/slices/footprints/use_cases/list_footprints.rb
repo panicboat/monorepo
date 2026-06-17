@@ -54,10 +54,8 @@ module Footprints
 
       # Union of: visitors viewer has blocked + visitors who have blocked viewer.
       def excluded_visitor_ids_for(viewer_id)
-        block_repo = Social::Slice["repositories.block_repository"]
-        outbound = block_repo.list_blocked_ids(blocker_id: viewer_id)
-        inbound = block_repo.list_blocker_ids(blocked_id: viewer_id)
-        (outbound + inbound).uniq
+        Social::Slice["repositories.block_repository"]
+          .bidirectionally_blocked_ids(account_id: viewer_id)
       end
     end
   end
