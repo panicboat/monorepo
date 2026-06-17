@@ -49,6 +49,17 @@ module Social
         blocks.dataset.where(blocked_id: account_id).select_map(:blocker_id)
       end
 
+      # Outbound: ids that blocker_id has blocked. Named-by-direction variant for callers
+      # (e.g. Footprints::ListFootprints) that compose both directions explicitly.
+      def list_blocked_ids(blocker_id:)
+        blocks.dataset.where(blocker_id: blocker_id).select_map(:blocked_id).map(&:to_s)
+      end
+
+      # Inbound: ids that have blocked blocked_id.
+      def list_blocker_ids(blocked_id:)
+        blocks.dataset.where(blocked_id: blocked_id).select_map(:blocker_id).map(&:to_s)
+      end
+
       # Union: anyone in a bidirectional block with account_id
       def bidirectionally_blocked_ids(account_id:)
         (blocked_ids(account_id: account_id) + blocker_ids(account_id: account_id)).uniq
