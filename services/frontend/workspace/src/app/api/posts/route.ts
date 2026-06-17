@@ -18,9 +18,10 @@ export async function GET(req: NextRequest) {
     const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
     const authorId = req.nextUrl.searchParams.get("author_id") || "";
     const filter = req.nextUrl.searchParams.get("filter") || "";
+    const mediaOnly = req.nextUrl.searchParams.get("media_only") === "1";
 
     const res = await postClient.listPosts(
-      { limit, cursor, authorId, filter },
+      { limit, cursor, authorId, filter, mediaOnly },
       { headers }
     );
     return NextResponse.json(mapPostsListResponse(res));
