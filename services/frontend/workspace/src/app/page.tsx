@@ -9,7 +9,7 @@ import { useProfile } from "@/modules/profile/hooks/useProfile";
 import type { FeedFilterValue } from "@/modules/feed/types";
 
 const TAB_ITEMS: TabItem[] = [
-  { id: "all", label: "全員" },
+  { id: "all", label: "全国" },
   { id: "area", label: "エリア" },
   { id: "following", label: "フォロー中" },
 ];

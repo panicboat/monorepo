@@ -22,7 +22,7 @@ export function TopBar({ onAvatarClick }: TopBarProps) {
       >
         <Avatar src={avatarUrl} fallback={fallback} size="sm" />
       </button>
-      <div className="text-base font-bold text-text-primary tracking-tight">dystopia.city</div>
+      <div aria-hidden="true" />
       <div className="w-8" aria-hidden="true" />
     </header>
   );
