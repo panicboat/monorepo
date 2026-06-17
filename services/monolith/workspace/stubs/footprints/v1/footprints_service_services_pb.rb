@@ -15,7 +15,7 @@ module Footprints
         self.unmarshal_class_method = :decode
         self.service_name = 'footprints.v1.FootprintsService'
 
-        # Record that the authenticated viewer visited `visited_id`'s profile.
+        # Record that the authenticated viewer visited `visited_account_id`'s profile.
         # No-op (returns OK) when visitor == visited or either side blocks the other.
         rpc :RecordVisit, ::Footprints::V1::RecordVisitRequest, ::Footprints::V1::RecordVisitResponse
         # Cursor-paginated list of accounts who have visited the authenticated viewer.

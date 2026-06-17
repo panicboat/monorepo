@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "profile/v1/service.proto";
 
 service FootprintsService {
-  // Record that the authenticated viewer visited `visited_id`'s profile.
+  // Record that the authenticated viewer visited `visited_account_id`'s profile.
   // No-op (returns OK) when visitor == visited or either side blocks the other.
   rpc RecordVisit(RecordVisitRequest) returns (RecordVisitResponse);
 
@@ -22,7 +22,7 @@ service FootprintsService {
 }
 
 message RecordVisitRequest {
-  string visited_id = 1;  // visitor は metadata sub から取得
+  string visited_account_id = 1;  // visitor derived from gRPC metadata sub claim
 }
 
 message RecordVisitResponse {}
@@ -38,6 +38,7 @@ message ListFootprintsResponse {
   bool has_more = 3;
 }
 
+// is_unread = last_visited_at > viewer.last_read_visit_at
 message Footprint {
   profile.v1.Profile visitor = 1;
   google.protobuf.Timestamp last_visited_at = 2;

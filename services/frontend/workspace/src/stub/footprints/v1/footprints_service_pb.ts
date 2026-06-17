@@ -14,18 +14,18 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file footprints/v1/footprints_service.proto.
  */
 export const file_footprints_v1_footprints_service: GenFile = /*@__PURE__*/
-  fileDesc("CiZmb290cHJpbnRzL3YxL2Zvb3RwcmludHNfc2VydmljZS5wcm90bxINZm9vdHByaW50cy52MSIoChJSZWNvcmRWaXNpdFJlcXVlc3QSEgoKdmlzaXRlZF9pZBgBIAEoCSIVChNSZWNvcmRWaXNpdFJlc3BvbnNlIjYKFUxpc3RGb290cHJpbnRzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkibQoWTGlzdEZvb3RwcmludHNSZXNwb25zZRIsCgpmb290cHJpbnRzGAEgAygLMhguZm9vdHByaW50cy52MS5Gb290cHJpbnQSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgieQoJRm9vdHByaW50EiQKB3Zpc2l0b3IYASABKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUSMwoPbGFzdF92aXNpdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCglpc191bnJlYWQYAyABKAgiFwoVR2V0VW5yZWFkQ291bnRSZXF1ZXN0IicKFkdldFVucmVhZENvdW50UmVzcG9uc2USDQoFY291bnQYASABKAUiEQoPTWFya1JlYWRSZXF1ZXN0IhIKEE1hcmtSZWFkUmVzcG9uc2Uy9AIKEUZvb3RwcmludHNTZXJ2aWNlElQKC1JlY29yZFZpc2l0EiEuZm9vdHByaW50cy52MS5SZWNvcmRWaXNpdFJlcXVlc3QaIi5mb290cHJpbnRzLnYxLlJlY29yZFZpc2l0UmVzcG9uc2USXQoOTGlzdEZvb3RwcmludHMSJC5mb290cHJpbnRzLnYxLkxpc3RGb290cHJpbnRzUmVxdWVzdBolLmZvb3RwcmludHMudjEuTGlzdEZvb3RwcmludHNSZXNwb25zZRJdCg5HZXRVbnJlYWRDb3VudBIkLmZvb3RwcmludHMudjEuR2V0VW5yZWFkQ291bnRSZXF1ZXN0GiUuZm9vdHByaW50cy52MS5HZXRVbnJlYWRDb3VudFJlc3BvbnNlEksKCE1hcmtSZWFkEh4uZm9vdHByaW50cy52MS5NYXJrUmVhZFJlcXVlc3QaHy5mb290cHJpbnRzLnYxLk1hcmtSZWFkUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_profile_v1_service]);
+  fileDesc("CiZmb290cHJpbnRzL3YxL2Zvb3RwcmludHNfc2VydmljZS5wcm90bxINZm9vdHByaW50cy52MSIwChJSZWNvcmRWaXNpdFJlcXVlc3QSGgoSdmlzaXRlZF9hY2NvdW50X2lkGAEgASgJIhUKE1JlY29yZFZpc2l0UmVzcG9uc2UiNgoVTGlzdEZvb3RwcmludHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJtChZMaXN0Rm9vdHByaW50c1Jlc3BvbnNlEiwKCmZvb3RwcmludHMYASADKAsyGC5mb290cHJpbnRzLnYxLkZvb3RwcmludBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCJ5CglGb290cHJpbnQSJAoHdmlzaXRvchgBIAEoCzITLnByb2ZpbGUudjEuUHJvZmlsZRIzCg9sYXN0X3Zpc2l0ZWRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhEKCWlzX3VucmVhZBgDIAEoCCIXChVHZXRVbnJlYWRDb3VudFJlcXVlc3QiJwoWR2V0VW5yZWFkQ291bnRSZXNwb25zZRINCgVjb3VudBgBIAEoBSIRCg9NYXJrUmVhZFJlcXVlc3QiEgoQTWFya1JlYWRSZXNwb25zZTL0AgoRRm9vdHByaW50c1NlcnZpY2USVAoLUmVjb3JkVmlzaXQSIS5mb290cHJpbnRzLnYxLlJlY29yZFZpc2l0UmVxdWVzdBoiLmZvb3RwcmludHMudjEuUmVjb3JkVmlzaXRSZXNwb25zZRJdCg5MaXN0Rm9vdHByaW50cxIkLmZvb3RwcmludHMudjEuTGlzdEZvb3RwcmludHNSZXF1ZXN0GiUuZm9vdHByaW50cy52MS5MaXN0Rm9vdHByaW50c1Jlc3BvbnNlEl0KDkdldFVucmVhZENvdW50EiQuZm9vdHByaW50cy52MS5HZXRVbnJlYWRDb3VudFJlcXVlc3QaJS5mb290cHJpbnRzLnYxLkdldFVucmVhZENvdW50UmVzcG9uc2USSwoITWFya1JlYWQSHi5mb290cHJpbnRzLnYxLk1hcmtSZWFkUmVxdWVzdBofLmZvb3RwcmludHMudjEuTWFya1JlYWRSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_profile_v1_service]);
 
 /**
  * @generated from message footprints.v1.RecordVisitRequest
  */
 export type RecordVisitRequest = Message<"footprints.v1.RecordVisitRequest"> & {
   /**
-   * visitor は metadata sub から取得
+   * visitor derived from gRPC metadata sub claim
    *
-   * @generated from field: string visited_id = 1;
+   * @generated from field: string visited_account_id = 1;
    */
-  visitedId: string;
+  visitedAccountId: string;
 };
 
 /**
@@ -102,6 +102,8 @@ export const ListFootprintsResponseSchema: GenMessage<ListFootprintsResponse> = 
   messageDesc(file_footprints_v1_footprints_service, 3);
 
 /**
+ * is_unread = last_visited_at > viewer.last_read_visit_at
+ *
  * @generated from message footprints.v1.Footprint
  */
 export type Footprint = Message<"footprints.v1.Footprint"> & {
@@ -189,7 +191,7 @@ export const MarkReadResponseSchema: GenMessage<MarkReadResponse> = /*@__PURE__*
  */
 export const FootprintsService: GenService<{
   /**
-   * Record that the authenticated viewer visited `visited_id`'s profile.
+   * Record that the authenticated viewer visited `visited_account_id`'s profile.
    * No-op (returns OK) when visitor == visited or either side blocks the other.
    *
    * @generated from rpc footprints.v1.FootprintsService.RecordVisit
