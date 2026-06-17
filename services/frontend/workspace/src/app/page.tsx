@@ -5,6 +5,7 @@ import { Tabs, type TabItem } from "@/components/ui/tab";
 import { Button } from "@/components/ui/button";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { useFeed } from "@/modules/feed/hooks/useFeed";
+import { HomeOshiRow } from "@/modules/feed/components/HomeOshiRow";
 import { useProfile } from "@/modules/profile/hooks/useProfile";
 import type { FeedFilterValue } from "@/modules/feed/types";
 
@@ -82,6 +83,7 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto flex max-w-xl flex-col bg-bg text-text-primary">
+      <HomeOshiRow />
       <header className="sticky top-0 z-10 bg-bg">
         <Tabs
           items={TAB_ITEMS}
