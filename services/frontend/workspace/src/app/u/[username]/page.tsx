@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { usePublicProfile } from "@/modules/profile/hooks";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
 import { FollowButton, BlockButton, useSocialCounts } from "@/modules/social";
+import { StartChatButton } from "@/modules/messaging";
 
 export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
@@ -28,6 +29,7 @@ export default function PublicProfilePage() {
       <ProfileHeader profile={profile} role={role} />
       <div className="flex items-center gap-2 px-4 pt-3">
         <FollowButton targetAccountId={profile.accountId} />
+        <StartChatButton targetAccountId={profile.accountId} />
         <BlockButton targetAccountId={profile.accountId} />
       </div>
       <div className="flex gap-4 px-4 pt-3 text-sm text-text-secondary">
