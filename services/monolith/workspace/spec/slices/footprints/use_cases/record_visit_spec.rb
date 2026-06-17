@@ -11,11 +11,6 @@ RSpec.describe Footprints::UseCases::RecordVisit do
   let(:visit_records) { Footprints::Slice["relations.visit_records"] }
   let(:blocks) { Social::Slice["relations.blocks"] }
 
-  before do
-    visit_records.dataset.delete
-    blocks.dataset.delete
-  end
-
   def insert_block(blocker_id:, blocked_id:)
     blocks.dataset.insert(
       id: SecureRandom.uuid_v7,
