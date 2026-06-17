@@ -16,6 +16,7 @@ import { ProfileService } from "@/stub/profile/v1/service_pb";
 import { NotificationService } from "@/stub/notifications/v1/notification_service_pb";
 import { BookmarkService } from "@/stub/bookmarks/v1/bookmark_service_pb";
 import { DiscoveryService } from "@/stub/discovery/v1/discovery_service_pb";
+import { MessagingService } from "@/stub/messaging/v1/messaging_service_pb";
 
 // In server environment (Next.js API Routes), we connect to Monolith directly.
 // Monolith is at 'http://monolith:9001' or 'http://localhost:9001' depending on Docker/Local.
@@ -60,3 +61,6 @@ export const bookmarkClient = createClient(BookmarkService, transport);
 
 // Discovery domain client (discovery.v1)
 export const discoveryClient = createClient(DiscoveryService, transport);
+
+// Messaging domain client (messaging.v1)
+export const messagingClient = createClient(MessagingService, transport);
