@@ -2,10 +2,13 @@ syntax = "proto3";
 
 package post.v1;
 
+import "post/v1/post_service.proto";
+
 service LikeService {
   rpc LikePost(LikePostRequest) returns (LikePostResponse);
   rpc UnlikePost(UnlikePostRequest) returns (UnlikePostResponse);
   rpc GetLikeStatus(GetLikeStatusRequest) returns (GetLikeStatusResponse);
+  rpc ListLikedPostsByAccount(ListLikedPostsByAccountRequest) returns (ListLikedPostsByAccountResponse);
 }
 
 message LikePostRequest {
@@ -30,4 +33,16 @@ message GetLikeStatusRequest {
 
 message GetLikeStatusResponse {
   map<string, bool> liked = 1; // post_id -> is_liked
+}
+
+message ListLikedPostsByAccountRequest {
+  string account_id = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+
+message ListLikedPostsByAccountResponse {
+  repeated post.v1.Post posts = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
 }

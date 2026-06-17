@@ -4,13 +4,15 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Post } from "./post_service_pb";
+import { file_post_v1_post_service } from "./post_service_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file post/v1/like_service.proto.
  */
 export const file_post_v1_like_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpwb3N0L3YxL2xpa2Vfc2VydmljZS5wcm90bxIHcG9zdC52MSIiCg9MaWtlUG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSInChBMaWtlUG9zdFJlc3BvbnNlEhMKC2xpa2VzX2NvdW50GAEgASgFIiQKEVVubGlrZVBvc3RSZXF1ZXN0Eg8KB3Bvc3RfaWQYASABKAkiKQoSVW5saWtlUG9zdFJlc3BvbnNlEhMKC2xpa2VzX2NvdW50GAEgASgFIigKFEdldExpa2VTdGF0dXNSZXF1ZXN0EhAKCHBvc3RfaWRzGAEgAygJIn8KFUdldExpa2VTdGF0dXNSZXNwb25zZRI4CgVsaWtlZBgBIAMoCzIpLnBvc3QudjEuR2V0TGlrZVN0YXR1c1Jlc3BvbnNlLkxpa2VkRW50cnkaLAoKTGlrZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBMuUBCgtMaWtlU2VydmljZRI/CghMaWtlUG9zdBIYLnBvc3QudjEuTGlrZVBvc3RSZXF1ZXN0GhkucG9zdC52MS5MaWtlUG9zdFJlc3BvbnNlEkUKClVubGlrZVBvc3QSGi5wb3N0LnYxLlVubGlrZVBvc3RSZXF1ZXN0GhsucG9zdC52MS5Vbmxpa2VQb3N0UmVzcG9uc2USTgoNR2V0TGlrZVN0YXR1cxIdLnBvc3QudjEuR2V0TGlrZVN0YXR1c1JlcXVlc3QaHi5wb3N0LnYxLkdldExpa2VTdGF0dXNSZXNwb25zZWIGcHJvdG8z");
+  fileDesc("Chpwb3N0L3YxL2xpa2Vfc2VydmljZS5wcm90bxIHcG9zdC52MSIiCg9MaWtlUG9zdFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCSInChBMaWtlUG9zdFJlc3BvbnNlEhMKC2xpa2VzX2NvdW50GAEgASgFIiQKEVVubGlrZVBvc3RSZXF1ZXN0Eg8KB3Bvc3RfaWQYASABKAkiKQoSVW5saWtlUG9zdFJlc3BvbnNlEhMKC2xpa2VzX2NvdW50GAEgASgFIigKFEdldExpa2VTdGF0dXNSZXF1ZXN0EhAKCHBvc3RfaWRzGAEgAygJIn8KFUdldExpa2VTdGF0dXNSZXNwb25zZRI4CgVsaWtlZBgBIAMoCzIpLnBvc3QudjEuR2V0TGlrZVN0YXR1c1Jlc3BvbnNlLkxpa2VkRW50cnkaLAoKTGlrZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBIlMKHkxpc3RMaWtlZFBvc3RzQnlBY2NvdW50UmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJmCh9MaXN0TGlrZWRQb3N0c0J5QWNjb3VudFJlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIMtMCCgtMaWtlU2VydmljZRI/CghMaWtlUG9zdBIYLnBvc3QudjEuTGlrZVBvc3RSZXF1ZXN0GhkucG9zdC52MS5MaWtlUG9zdFJlc3BvbnNlEkUKClVubGlrZVBvc3QSGi5wb3N0LnYxLlVubGlrZVBvc3RSZXF1ZXN0GhsucG9zdC52MS5Vbmxpa2VQb3N0UmVzcG9uc2USTgoNR2V0TGlrZVN0YXR1cxIdLnBvc3QudjEuR2V0TGlrZVN0YXR1c1JlcXVlc3QaHi5wb3N0LnYxLkdldExpa2VTdGF0dXNSZXNwb25zZRJsChdMaXN0TGlrZWRQb3N0c0J5QWNjb3VudBInLnBvc3QudjEuTGlzdExpa2VkUG9zdHNCeUFjY291bnRSZXF1ZXN0GigucG9zdC52MS5MaXN0TGlrZWRQb3N0c0J5QWNjb3VudFJlc3BvbnNlYgZwcm90bzM", [file_post_v1_post_service]);
 
 /**
  * @generated from message post.v1.LikePostRequest
@@ -117,6 +119,60 @@ export const GetLikeStatusResponseSchema: GenMessage<GetLikeStatusResponse> = /*
   messageDesc(file_post_v1_like_service, 5);
 
 /**
+ * @generated from message post.v1.ListLikedPostsByAccountRequest
+ */
+export type ListLikedPostsByAccountRequest = Message<"post.v1.ListLikedPostsByAccountRequest"> & {
+  /**
+   * @generated from field: string account_id = 1;
+   */
+  accountId: string;
+
+  /**
+   * @generated from field: int32 limit = 2;
+   */
+  limit: number;
+
+  /**
+   * @generated from field: string cursor = 3;
+   */
+  cursor: string;
+};
+
+/**
+ * Describes the message post.v1.ListLikedPostsByAccountRequest.
+ * Use `create(ListLikedPostsByAccountRequestSchema)` to create a new message.
+ */
+export const ListLikedPostsByAccountRequestSchema: GenMessage<ListLikedPostsByAccountRequest> = /*@__PURE__*/
+  messageDesc(file_post_v1_like_service, 6);
+
+/**
+ * @generated from message post.v1.ListLikedPostsByAccountResponse
+ */
+export type ListLikedPostsByAccountResponse = Message<"post.v1.ListLikedPostsByAccountResponse"> & {
+  /**
+   * @generated from field: repeated post.v1.Post posts = 1;
+   */
+  posts: Post[];
+
+  /**
+   * @generated from field: string next_cursor = 2;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 3;
+   */
+  hasMore: boolean;
+};
+
+/**
+ * Describes the message post.v1.ListLikedPostsByAccountResponse.
+ * Use `create(ListLikedPostsByAccountResponseSchema)` to create a new message.
+ */
+export const ListLikedPostsByAccountResponseSchema: GenMessage<ListLikedPostsByAccountResponse> = /*@__PURE__*/
+  messageDesc(file_post_v1_like_service, 7);
+
+/**
  * @generated from service post.v1.LikeService
  */
 export const LikeService: GenService<{
@@ -143,6 +199,14 @@ export const LikeService: GenService<{
     methodKind: "unary";
     input: typeof GetLikeStatusRequestSchema;
     output: typeof GetLikeStatusResponseSchema;
+  },
+  /**
+   * @generated from rpc post.v1.LikeService.ListLikedPostsByAccount
+   */
+  listLikedPostsByAccount: {
+    methodKind: "unary";
+    input: typeof ListLikedPostsByAccountRequestSchema;
+    output: typeof ListLikedPostsByAccountResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_post_v1_like_service, 0);

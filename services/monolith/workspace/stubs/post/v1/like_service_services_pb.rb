@@ -18,6 +18,7 @@ module Post
         rpc :LikePost, ::Post::V1::LikePostRequest, ::Post::V1::LikePostResponse
         rpc :UnlikePost, ::Post::V1::UnlikePostRequest, ::Post::V1::UnlikePostResponse
         rpc :GetLikeStatus, ::Post::V1::GetLikeStatusRequest, ::Post::V1::GetLikeStatusResponse
+        rpc :ListLikedPostsByAccount, ::Post::V1::ListLikedPostsByAccountRequest, ::Post::V1::ListLikedPostsByAccountResponse
       end
 
       Stub = Service.rpc_stub_class

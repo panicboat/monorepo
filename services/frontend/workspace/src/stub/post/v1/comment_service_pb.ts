@@ -4,13 +4,15 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Post } from "./post_service_pb";
+import { file_post_v1_post_service } from "./post_service_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file post/v1/comment_service.proto.
  */
 export const file_post_v1_comment_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch1wb3N0L3YxL2NvbW1lbnRfc2VydmljZS5wcm90bxIHcG9zdC52MSJkCgxDb21tZW50TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCRIQCghtZWRpYV9pZBgFIAEoCSJUCg1Db21tZW50QXV0aG9yEg8KB3VzZXJfaWQYASABKAkSDAoEbmFtZRgCIAEoCRIRCglpbWFnZV91cmwYAyABKAkSEQoJdXNlcl90eXBlGAQgASgJItQBCgdDb21tZW50EgoKAmlkGAEgASgJEg8KB3Bvc3RfaWQYAiABKAkSEQoJcGFyZW50X2lkGAMgASgJEg8KB3VzZXJfaWQYBCABKAkSDwoHY29udGVudBgFIAEoCRISCgpjcmVhdGVkX2F0GAYgASgJEiYKBmF1dGhvchgHIAEoCzIWLnBvc3QudjEuQ29tbWVudEF1dGhvchIkCgVtZWRpYRgIIAMoCzIVLnBvc3QudjEuQ29tbWVudE1lZGlhEhUKDXJlcGxpZXNfY291bnQYCSABKAUibgoRQWRkQ29tbWVudFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEhEKCXBhcmVudF9pZBgDIAEoCRIkCgVtZWRpYRgEIAMoCzIVLnBvc3QudjEuQ29tbWVudE1lZGlhIk8KEkFkZENvbW1lbnRSZXNwb25zZRIhCgdjb21tZW50GAEgASgLMhAucG9zdC52MS5Db21tZW50EhYKDmNvbW1lbnRzX2NvdW50GAIgASgFIioKFERlbGV0ZUNvbW1lbnRSZXF1ZXN0EhIKCmNvbW1lbnRfaWQYASABKAkiLwoVRGVsZXRlQ29tbWVudFJlc3BvbnNlEhYKDmNvbW1lbnRzX2NvdW50GAEgASgFIkUKE0xpc3RDb21tZW50c1JlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkiYQoUTGlzdENvbW1lbnRzUmVzcG9uc2USIgoIY29tbWVudHMYASADKAsyEC5wb3N0LnYxLkNvbW1lbnQSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiRwoSTGlzdFJlcGxpZXNSZXF1ZXN0EhIKCmNvbW1lbnRfaWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJIl8KE0xpc3RSZXBsaWVzUmVzcG9uc2USIQoHcmVwbGllcxgBIAMoCzIQLnBvc3QudjEuQ29tbWVudBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCDK+AgoOQ29tbWVudFNlcnZpY2USRQoKQWRkQ29tbWVudBIaLnBvc3QudjEuQWRkQ29tbWVudFJlcXVlc3QaGy5wb3N0LnYxLkFkZENvbW1lbnRSZXNwb25zZRJOCg1EZWxldGVDb21tZW50Eh0ucG9zdC52MS5EZWxldGVDb21tZW50UmVxdWVzdBoeLnBvc3QudjEuRGVsZXRlQ29tbWVudFJlc3BvbnNlEksKDExpc3RDb21tZW50cxIcLnBvc3QudjEuTGlzdENvbW1lbnRzUmVxdWVzdBodLnBvc3QudjEuTGlzdENvbW1lbnRzUmVzcG9uc2USSAoLTGlzdFJlcGxpZXMSGy5wb3N0LnYxLkxpc3RSZXBsaWVzUmVxdWVzdBocLnBvc3QudjEuTGlzdFJlcGxpZXNSZXNwb25zZWIGcHJvdG8z");
+  fileDesc("Ch1wb3N0L3YxL2NvbW1lbnRfc2VydmljZS5wcm90bxIHcG9zdC52MSJkCgxDb21tZW50TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCRIQCghtZWRpYV9pZBgFIAEoCSJUCg1Db21tZW50QXV0aG9yEg8KB3VzZXJfaWQYASABKAkSDAoEbmFtZRgCIAEoCRIRCglpbWFnZV91cmwYAyABKAkSEQoJdXNlcl90eXBlGAQgASgJItQBCgdDb21tZW50EgoKAmlkGAEgASgJEg8KB3Bvc3RfaWQYAiABKAkSEQoJcGFyZW50X2lkGAMgASgJEg8KB3VzZXJfaWQYBCABKAkSDwoHY29udGVudBgFIAEoCRISCgpjcmVhdGVkX2F0GAYgASgJEiYKBmF1dGhvchgHIAEoCzIWLnBvc3QudjEuQ29tbWVudEF1dGhvchIkCgVtZWRpYRgIIAMoCzIVLnBvc3QudjEuQ29tbWVudE1lZGlhEhUKDXJlcGxpZXNfY291bnQYCSABKAUibgoRQWRkQ29tbWVudFJlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEhEKCXBhcmVudF9pZBgDIAEoCRIkCgVtZWRpYRgEIAMoCzIVLnBvc3QudjEuQ29tbWVudE1lZGlhIk8KEkFkZENvbW1lbnRSZXNwb25zZRIhCgdjb21tZW50GAEgASgLMhAucG9zdC52MS5Db21tZW50EhYKDmNvbW1lbnRzX2NvdW50GAIgASgFIioKFERlbGV0ZUNvbW1lbnRSZXF1ZXN0EhIKCmNvbW1lbnRfaWQYASABKAkiLwoVRGVsZXRlQ29tbWVudFJlc3BvbnNlEhYKDmNvbW1lbnRzX2NvdW50GAEgASgFIkUKE0xpc3RDb21tZW50c1JlcXVlc3QSDwoHcG9zdF9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkiYQoUTGlzdENvbW1lbnRzUmVzcG9uc2USIgoIY29tbWVudHMYASADKAsyEC5wb3N0LnYxLkNvbW1lbnQSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiRwoSTGlzdFJlcGxpZXNSZXF1ZXN0EhIKCmNvbW1lbnRfaWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJIl8KE0xpc3RSZXBsaWVzUmVzcG9uc2USIQoHcmVwbGllcxgBIAMoCzIQLnBvc3QudjEuQ29tbWVudBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCJPChtMaXN0Q29tbWVudHNCeUF1dGhvclJlcXVlc3QSEQoJYXV0aG9yX2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSL1AQocTGlzdENvbW1lbnRzQnlBdXRob3JSZXNwb25zZRIiCghjb21tZW50cxgBIAMoCzIQLnBvc3QudjEuQ29tbWVudBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCBJJCgtwb3N0c19ieV9pZBgEIAMoCzI0LnBvc3QudjEuTGlzdENvbW1lbnRzQnlBdXRob3JSZXNwb25zZS5Qb3N0c0J5SWRFbnRyeRo/Cg5Qb3N0c0J5SWRFbnRyeRILCgNrZXkYASABKAkSHAoFdmFsdWUYAiABKAsyDS5wb3N0LnYxLlBvc3Q6AjgBMqMDCg5Db21tZW50U2VydmljZRJFCgpBZGRDb21tZW50EhoucG9zdC52MS5BZGRDb21tZW50UmVxdWVzdBobLnBvc3QudjEuQWRkQ29tbWVudFJlc3BvbnNlEk4KDURlbGV0ZUNvbW1lbnQSHS5wb3N0LnYxLkRlbGV0ZUNvbW1lbnRSZXF1ZXN0Gh4ucG9zdC52MS5EZWxldGVDb21tZW50UmVzcG9uc2USSwoMTGlzdENvbW1lbnRzEhwucG9zdC52MS5MaXN0Q29tbWVudHNSZXF1ZXN0Gh0ucG9zdC52MS5MaXN0Q29tbWVudHNSZXNwb25zZRJICgtMaXN0UmVwbGllcxIbLnBvc3QudjEuTGlzdFJlcGxpZXNSZXF1ZXN0GhwucG9zdC52MS5MaXN0UmVwbGllc1Jlc3BvbnNlEmMKFExpc3RDb21tZW50c0J5QXV0aG9yEiQucG9zdC52MS5MaXN0Q29tbWVudHNCeUF1dGhvclJlcXVlc3QaJS5wb3N0LnYxLkxpc3RDb21tZW50c0J5QXV0aG9yUmVzcG9uc2ViBnByb3RvMw", [file_post_v1_post_service]);
 
 /**
  * @generated from message post.v1.CommentMedia
@@ -365,6 +367,68 @@ export const ListRepliesResponseSchema: GenMessage<ListRepliesResponse> = /*@__P
   messageDesc(file_post_v1_comment_service, 10);
 
 /**
+ * @generated from message post.v1.ListCommentsByAuthorRequest
+ */
+export type ListCommentsByAuthorRequest = Message<"post.v1.ListCommentsByAuthorRequest"> & {
+  /**
+   * @generated from field: string author_id = 1;
+   */
+  authorId: string;
+
+  /**
+   * @generated from field: int32 limit = 2;
+   */
+  limit: number;
+
+  /**
+   * @generated from field: string cursor = 3;
+   */
+  cursor: string;
+};
+
+/**
+ * Describes the message post.v1.ListCommentsByAuthorRequest.
+ * Use `create(ListCommentsByAuthorRequestSchema)` to create a new message.
+ */
+export const ListCommentsByAuthorRequestSchema: GenMessage<ListCommentsByAuthorRequest> = /*@__PURE__*/
+  messageDesc(file_post_v1_comment_service, 11);
+
+/**
+ * @generated from message post.v1.ListCommentsByAuthorResponse
+ */
+export type ListCommentsByAuthorResponse = Message<"post.v1.ListCommentsByAuthorResponse"> & {
+  /**
+   * @generated from field: repeated post.v1.Comment comments = 1;
+   */
+  comments: Comment[];
+
+  /**
+   * @generated from field: string next_cursor = 2;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 3;
+   */
+  hasMore: boolean;
+
+  /**
+   * Parent posts keyed by post_id (for the "返信" tab UI to render quoted parent posts).
+   * Frontend joins by comment.post_id.
+   *
+   * @generated from field: map<string, post.v1.Post> posts_by_id = 4;
+   */
+  postsById: { [key: string]: Post };
+};
+
+/**
+ * Describes the message post.v1.ListCommentsByAuthorResponse.
+ * Use `create(ListCommentsByAuthorResponseSchema)` to create a new message.
+ */
+export const ListCommentsByAuthorResponseSchema: GenMessage<ListCommentsByAuthorResponse> = /*@__PURE__*/
+  messageDesc(file_post_v1_comment_service, 12);
+
+/**
  * @generated from service post.v1.CommentService
  */
 export const CommentService: GenService<{
@@ -399,6 +463,14 @@ export const CommentService: GenService<{
     methodKind: "unary";
     input: typeof ListRepliesRequestSchema;
     output: typeof ListRepliesResponseSchema;
+  },
+  /**
+   * @generated from rpc post.v1.CommentService.ListCommentsByAuthor
+   */
+  listCommentsByAuthor: {
+    methodKind: "unary";
+    input: typeof ListCommentsByAuthorRequestSchema;
+    output: typeof ListCommentsByAuthorResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_post_v1_comment_service, 0);

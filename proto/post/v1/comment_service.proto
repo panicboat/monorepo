@@ -2,11 +2,14 @@ syntax = "proto3";
 
 package post.v1;
 
+import "post/v1/post_service.proto";
+
 service CommentService {
   rpc AddComment(AddCommentRequest) returns (AddCommentResponse);
   rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
   rpc ListReplies(ListRepliesRequest) returns (ListRepliesResponse);
+  rpc ListCommentsByAuthor(ListCommentsByAuthorRequest) returns (ListCommentsByAuthorResponse);
 }
 
 message CommentMedia {
@@ -78,4 +81,19 @@ message ListRepliesResponse {
   repeated Comment replies = 1;
   string next_cursor = 2;
   bool has_more = 3;
+}
+
+message ListCommentsByAuthorRequest {
+  string author_id = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+
+message ListCommentsByAuthorResponse {
+  repeated Comment comments = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+  // Parent posts keyed by post_id (for the "返信" tab UI to render quoted parent posts).
+  // Frontend joins by comment.post_id.
+  map<string, post.v1.Post> posts_by_id = 4;
 }

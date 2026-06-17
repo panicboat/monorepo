@@ -17,6 +17,11 @@ module Post
       rpc :LikePost, ::Post::V1::LikePostRequest, ::Post::V1::LikePostResponse
       rpc :UnlikePost, ::Post::V1::UnlikePostRequest, ::Post::V1::UnlikePostResponse
       rpc :GetLikeStatus, ::Post::V1::GetLikeStatusRequest, ::Post::V1::GetLikeStatusResponse
+      rpc :ListLikedPostsByAccount, ::Post::V1::ListLikedPostsByAccountRequest, ::Post::V1::ListLikedPostsByAccountResponse
+
+      include Post::Deps[
+        list_liked_posts_by_account_uc: "use_cases.likes.list_liked_posts_by_account"
+      ]
 
       def like_post
         authenticate_user!
@@ -53,6 +58,27 @@ module Post
         end
 
         ::Post::V1::GetLikeStatusResponse.new(liked: liked)
+      end
+
+      def list_liked_posts_by_account
+        authenticate_user!
+
+        # FALLBACK: Default pagination limit when client sends 0 (unset) for limit
+        limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        result = list_liked_posts_by_account_uc.call(
+          account_id: request.message.account_id,
+          viewer_account_id: current_user_id,
+          limit: limit,
+          cursor: cursor
+        )
+
+        ::Post::V1::ListLikedPostsByAccountResponse.new(
+          posts: result[:posts],
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
       end
 
       private

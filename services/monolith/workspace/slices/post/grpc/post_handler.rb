@@ -26,7 +26,7 @@ module Post
         cursor = request.message.cursor.empty? ? nil : decode_cursor(request.message.cursor)
         author_id = request.message.author_id.empty? ? nil : request.message.author_id
 
-        rows = post_repo.list_posts(limit: limit, cursor: cursor, author_id: author_id)
+        rows = post_repo.list_posts(limit: limit, cursor: cursor, author_id: author_id, media_only: request.message.media_only)
         has_more = rows.length > limit
         rows = rows.first(limit) if has_more
         next_cursor = if has_more && rows.any?
