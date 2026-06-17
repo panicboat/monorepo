@@ -18,9 +18,17 @@ interface ProfileHeaderProps {
   onEdit?: () => void;
 }
 
+function formatRegisteredAt(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${d.getFullYear()}年${d.getMonth() + 1}月に登録`;
+}
+
 export function ProfileHeader({ profile, role, onEdit }: ProfileHeaderProps) {
   const isCast = role === "cast";
   const sns = SNS_LABELS.filter(({ key }) => profile.snsLinks[key]);
+  const registeredLabel = formatRegisteredAt(profile.registeredAt);
 
   return (
     <div className="flex flex-col">
@@ -52,12 +60,19 @@ export function ProfileHeader({ profile, role, onEdit }: ProfileHeaderProps) {
       <div className="flex flex-col gap-1 px-4 pt-2">
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-text-primary">{profile.displayName}</h1>
-          {isCast && (
-            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs text-accent">セラピスト</span>
-          )}
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs ${
+              isCast ? "bg-accent/15 text-accent" : "bg-text-secondary/10 text-text-secondary"
+            }`}
+          >
+            {isCast ? "セラピスト" : "ユーザー"}
+          </span>
         </div>
         <p className="text-sm text-text-secondary">@{profile.username || "—"}</p>
-        {profile.prefecture && <p className="text-sm text-text-secondary">📍 {profile.prefecture}</p>}
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-text-secondary">
+          {profile.prefecture && <span>📍 {profile.prefecture}</span>}
+          {registeredLabel && <span>🗓 {registeredLabel}</span>}
+        </div>
         {profile.bio && <p className="whitespace-pre-wrap pt-1 text-sm text-text-primary">{profile.bio}</p>}
         {profile.website && (
           <a

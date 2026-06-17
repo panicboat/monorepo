@@ -11,7 +11,7 @@ import { useTotalUnread } from "@/modules/messaging";
 import { useAuthStore } from "@/stores/authStore";
 
 const NAV_ITEMS = [
-  { path: "/profile", label: "プロフィール", icon: "👤" },
+  { path: "__profile__", label: "プロフィール", icon: "👤" },
   { path: "/search", label: "検索", icon: "🔍" },
   { path: "/notifications", label: "通知", icon: "🔔", badgeKey: "unread" as const },
   { path: "/footprints", label: "足跡", icon: "👣" },
@@ -87,10 +87,14 @@ export function Drawer({ open, onClose }: DrawerProps) {
               item.badgeKey === "messaging_unread" ? msgUnread :
               0;
             const showBadge = badgeCount > 0;
+            const href =
+              item.path === "__profile__"
+                ? (profile?.username ? `/u/${encodeURIComponent(profile.username)}` : "/profile")
+                : item.path;
             return (
               <Link
                 key={item.path}
-                href={item.path}
+                href={href}
                 onClick={onClose}
                 className="flex items-center gap-3 px-4 py-3 text-text-primary hover:bg-bg-secondary"
               >
