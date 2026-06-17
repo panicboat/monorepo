@@ -39,18 +39,18 @@ module Footprints
 
       # Number of visits with last_visited_at > viewer.last_read_visit_at.
       # If no read_state row exists, last_read_visit_at defaults to nil (= all unread).
-      def count_unread_for(account_id:)
+      def count_unread(account_id:)
         last_read = read_state_records.where(account_id: account_id).one&.last_read_visit_at
         scope = visit_records.where(visited_id: account_id)
         scope = scope.where { last_visited_at > last_read } if last_read
         scope.count
       end
 
-      def get_last_read_at(account_id:)
+      def last_read_at(account_id:)
         read_state_records.where(account_id: account_id).one&.last_read_visit_at
       end
 
-      # Upsert read_state row with last_read_visit_at = now().
+      # Upsert read_state row with last_read_visit_at = now(). Returns row hash.
       def set_last_read_now(account_id:)
         now = Time.now
 
@@ -66,7 +66,6 @@ module Footprints
 
         ds = read_state_records.dataset.db
         ds.fetch(sql, account_id, now, now, now).first
-        nil
       end
 
       private
