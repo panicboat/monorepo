@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "json"
 require "messaging/v1/messaging_service_services_pb"
 require_relative "handler"
 
@@ -8,9 +9,8 @@ module Messaging
     # MessagingHandler binds the 8 RPCs of messaging.v1.MessagingService.
     # The 7 unary methods (SendMessage / ListThreads / GetOrCreateThread /
     # ListMessages / MarkRead / GetTotalUnreadCount / SendTyping) are fully
-    # implemented. StreamEvents is a noop stub for M1 — the method is bound so
-    # Gruf.services lists the service, but yields nothing; subscriber bridges
-    # land in M2.
+    # implemented. StreamEvents is a server-streaming RPC backed by a
+    # PG LISTEN/NOTIFY subscriber loop on channel `messaging_user_<viewer_id>`.
     class MessagingHandler < Handler
       self.marshal_class_method = :encode
       self.unmarshal_class_method = :decode
@@ -163,11 +163,40 @@ module Messaging
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, e.message)
       end
 
-      # Noop stub. M2 will replace this with a PG LISTEN loop that yields
-      # proto Event messages. Returning without yielding closes the stream cleanly
-      # — clients reconnect on EOF.
+      # Server-streaming RPC. Subscribes to PG LISTEN/NOTIFY channel
+      # `messaging_user_<viewer_id>` (published by SendMessage/MarkRead/SendTyping)
+      # and yields proto Event messages to the client.
+      #
+      # Loop exits when:
+      #   - client disconnects (yield raises GRPC error)
+      #   - the conn is closed by PG side
+      #
+      # UNLISTEN + connection return-to-pool always run via ensure block.
       def stream_events
-        # intentionally empty for M1
+        authenticate_user!
+        viewer = current_user_id
+        channel = "messaging_user_#{viewer}"
+
+        db = messaging_repo.send(:thread_records).dataset.db
+
+        db.synchronize do |conn|
+          quoted_channel = conn.escape_identifier(channel)
+          conn.async_exec("LISTEN #{quoted_channel}")
+          begin
+            loop do
+              conn.wait_for_notify(0.5) do |_chan, _pid, payload|
+                event = parse_payload_to_event(payload)
+                yield event if event
+              end
+            end
+          ensure
+            begin
+              conn.async_exec("UNLISTEN #{quoted_channel}")
+            rescue StandardError
+              # connection may already be in error state, ignore
+            end
+          end
+        end
       end
 
       private
@@ -235,6 +264,51 @@ module Messaging
         return nil unless t
 
         Google::Protobuf::Timestamp.new(seconds: t.to_i, nanos: (t.respond_to?(:nsec) ? (t.nsec || 0) : 0))
+      end
+
+      # Parse JSON payload produced by NOTIFY senders and build proto Event.
+      # Returns nil for unknown types or malformed payloads (silently drop bad payloads).
+      def parse_payload_to_event(payload)
+        return nil if payload.nil? || payload.empty?
+
+        parsed = JSON.parse(payload)
+        data = parsed["data"] || {}
+
+        case parsed["type"]
+        when "message"
+          msg = ::Messaging::V1::Message.new(
+            id: data["id"].to_s,
+            thread_id: data["thread_id"].to_s,
+            sender_id: data["sender_id"].to_s,
+            content: data["content"].to_s,
+            created_at: parse_iso8601_timestamp(data["created_at"])
+          )
+          ::Messaging::V1::Event.new(message_event: msg)
+        when "read_state"
+          rs = ::Messaging::V1::ReadStateEvent.new(
+            thread_id: data["thread_id"].to_s,
+            account_id: data["account_id"].to_s,
+            last_read_message_id: data["last_read_message_id"].to_s
+          )
+          ::Messaging::V1::Event.new(read_state: rs)
+        when "typing"
+          typing = ::Messaging::V1::TypingEvent.new(
+            thread_id: data["thread_id"].to_s,
+            account_id: data["account_id"].to_s
+          )
+          ::Messaging::V1::Event.new(typing: typing)
+        end
+      rescue JSON::ParserError, ArgumentError => e
+        Hanami.logger.warn("Messaging::StreamEvents bad payload: #{e.class}: #{e.message}")
+        nil
+      end
+
+      def parse_iso8601_timestamp(s)
+        return nil if s.nil? || s.empty?
+        t = Time.iso8601(s)
+        Google::Protobuf::Timestamp.new(seconds: t.to_i, nanos: t.nsec || 0)
+      rescue ArgumentError
+        nil
       end
     end
   end
