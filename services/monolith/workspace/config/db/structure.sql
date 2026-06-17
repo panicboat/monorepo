@@ -38,6 +38,13 @@ CREATE SCHEMA media;
 
 
 --
+-- Name: messaging; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA messaging;
+
+
+--
 -- Name: notifications; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -151,6 +158,45 @@ CREATE TABLE media.files (
     media_key text,
     thumbnail_key text,
     created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: messages; Type: TABLE; Schema: messaging; Owner: -
+--
+
+CREATE TABLE messaging.messages (
+    id uuid NOT NULL,
+    thread_id uuid NOT NULL,
+    sender_id uuid NOT NULL,
+    content text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: read_states; Type: TABLE; Schema: messaging; Owner: -
+--
+
+CREATE TABLE messaging.read_states (
+    thread_id uuid NOT NULL,
+    account_id uuid NOT NULL,
+    last_read_message_id uuid,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: threads; Type: TABLE; Schema: messaging; Owner: -
+--
+
+CREATE TABLE messaging.threads (
+    id uuid NOT NULL,
+    account_a uuid NOT NULL,
+    account_b uuid NOT NULL,
+    last_message_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT chk_threads_account_order CHECK ((account_a < account_b))
 );
 
 
@@ -575,6 +621,38 @@ ALTER TABLE ONLY media.files
 
 
 --
+-- Name: messages messages_pkey; Type: CONSTRAINT; Schema: messaging; Owner: -
+--
+
+ALTER TABLE ONLY messaging.messages
+    ADD CONSTRAINT messages_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: read_states read_states_pkey; Type: CONSTRAINT; Schema: messaging; Owner: -
+--
+
+ALTER TABLE ONLY messaging.read_states
+    ADD CONSTRAINT read_states_pkey PRIMARY KEY (thread_id, account_id);
+
+
+--
+-- Name: threads threads_pkey; Type: CONSTRAINT; Schema: messaging; Owner: -
+--
+
+ALTER TABLE ONLY messaging.threads
+    ADD CONSTRAINT threads_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: threads uq_threads_account_pair; Type: CONSTRAINT; Schema: messaging; Owner: -
+--
+
+ALTER TABLE ONLY messaging.threads
+    ADD CONSTRAINT uq_threads_account_pair UNIQUE (account_a, account_b);
+
+
+--
 -- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: notifications; Owner: -
 --
 
@@ -885,6 +963,27 @@ CREATE UNIQUE INDEX identity_users_phone_number_index ON identity.users USING bt
 --
 
 CREATE UNIQUE INDEX media_files_media_key_index ON media.files USING btree (media_key) WHERE (media_key IS NOT NULL);
+
+
+--
+-- Name: idx_messages_thread_created; Type: INDEX; Schema: messaging; Owner: -
+--
+
+CREATE INDEX idx_messages_thread_created ON messaging.messages USING btree (thread_id, created_at DESC, id DESC);
+
+
+--
+-- Name: idx_threads_account_a_last; Type: INDEX; Schema: messaging; Owner: -
+--
+
+CREATE INDEX idx_threads_account_a_last ON messaging.threads USING btree (account_a, last_message_at DESC);
+
+
+--
+-- Name: idx_threads_account_b_last; Type: INDEX; Schema: messaging; Owner: -
+--
+
+CREATE INDEX idx_threads_account_b_last ON messaging.threads USING btree (account_b, last_message_at DESC);
 
 
 --
@@ -1403,4 +1502,5 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260615180000_migrate_relationship_to_social.rb'),
 ('20260616000000_drop_relationship_schema.rb'),
 ('20260616240000_create_notifications_schema.rb'),
-('20260617120000_create_bookmarks_schema.rb');
+('20260617120000_create_bookmarks_schema.rb'),
+('20260617130000_create_messaging_schema.rb');
