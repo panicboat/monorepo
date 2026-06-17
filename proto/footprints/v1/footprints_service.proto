@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package footprints.v1;
+
+import "google/protobuf/timestamp.proto";
+import "profile/v1/service.proto";
+
+service FootprintsService {
+  // Record that the authenticated viewer visited `visited_id`'s profile.
+  // No-op (returns OK) when visitor == visited or either side blocks the other.
+  rpc RecordVisit(RecordVisitRequest) returns (RecordVisitResponse);
+
+  // Cursor-paginated list of accounts who have visited the authenticated viewer.
+  // Excludes visitors who are mutually blocked with the viewer.
+  rpc ListFootprints(ListFootprintsRequest) returns (ListFootprintsResponse);
+
+  // Number of visits whose last_visited_at > viewer.last_read_visit_at.
+  rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse);
+
+  // Set viewer.last_read_visit_at = now(). Used when /footprints page is opened.
+  rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
+}
+
+message RecordVisitRequest {
+  string visited_id = 1;  // visitor は metadata sub から取得
+}
+
+message RecordVisitResponse {}
+
+message ListFootprintsRequest {
+  int32 limit = 1;     // default 20, max 50
+  string cursor = 2;   // base64(last_visited_at, id)
+}
+
+message ListFootprintsResponse {
+  repeated Footprint footprints = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message Footprint {
+  profile.v1.Profile visitor = 1;
+  google.protobuf.Timestamp last_visited_at = 2;
+  bool is_unread = 3;
+}
+
+message GetUnreadCountRequest {}
+message GetUnreadCountResponse {
+  int32 count = 1;
+}
+
+message MarkReadRequest {}
+message MarkReadResponse {}
