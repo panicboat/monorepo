@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+package messaging.v1;
+
+import "google/protobuf/timestamp.proto";
+import "profile/v1/service.proto";
+
+service MessagingService {
+  // Unary
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc ListThreads(ListThreadsRequest) returns (ListThreadsResponse);
+  rpc GetOrCreateThread(GetOrCreateThreadRequest) returns (GetOrCreateThreadResponse);
+  rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
+  rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
+  rpc GetTotalUnreadCount(GetTotalUnreadCountRequest) returns (GetTotalUnreadCountResponse);
+  rpc SendTyping(SendTypingRequest) returns (SendTypingResponse);
+
+  // Streaming
+  rpc StreamEvents(StreamEventsRequest) returns (stream Event);
+}
+
+message Message {
+  string id = 1;
+  string thread_id = 2;
+  string sender_id = 3;
+  string content = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message Thread {
+  string id = 1;
+  profile.v1.Profile counterpart = 2;
+  Message last_message = 3;
+  int32 unread_count = 4;
+  google.protobuf.Timestamp last_message_at = 5;
+}
+
+message SendMessageRequest {
+  string thread_id = 1;
+  string recipient_account_id = 2;
+  string content = 3;
+}
+
+message SendMessageResponse {
+  Message message = 1;
+  string thread_id = 2;
+}
+
+message ListThreadsRequest {
+  int32 limit = 1;
+  string cursor = 2;
+}
+
+message ListThreadsResponse {
+  repeated Thread threads = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+  int32 total_unread_count = 4;
+}
+
+message GetOrCreateThreadRequest {
+  string recipient_account_id = 1;
+}
+
+message GetOrCreateThreadResponse {
+  Thread thread = 1;
+}
+
+message ListMessagesRequest {
+  string thread_id = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+
+message ListMessagesResponse {
+  repeated Message messages = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message MarkReadRequest {
+  string thread_id = 1;
+  string message_id = 2;
+}
+
+message MarkReadResponse {}
+
+message GetTotalUnreadCountRequest {}
+
+message GetTotalUnreadCountResponse {
+  int32 count = 1;
+}
+
+message SendTypingRequest {
+  string thread_id = 1;
+}
+
+message SendTypingResponse {}
+
+message StreamEventsRequest {}
+
+message Event {
+  oneof payload {
+    Message message_event = 1;
+    ReadStateEvent read_state = 2;
+    TypingEvent typing = 3;
+  }
+}
+
+message ReadStateEvent {
+  string thread_id = 1;
+  string account_id = 2;
+  string last_read_message_id = 3;
+}
+
+message TypingEvent {
+  string thread_id = 1;
+  string account_id = 2;
+}
