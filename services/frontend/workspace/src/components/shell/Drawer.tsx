@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { useProfile } from "@/modules/profile/hooks";
 import { useSocialCounts } from "@/modules/social";
 import { useUnreadCount } from "@/modules/notifications/hooks";
+import { useTotalUnread } from "@/modules/messaging";
 import { useAuthStore } from "@/stores/authStore";
 
 const NAV_ITEMS = [
@@ -14,7 +15,7 @@ const NAV_ITEMS = [
   { path: "/search", label: "検索", icon: "🔍" },
   { path: "/notifications", label: "通知", icon: "🔔", badgeKey: "unread" as const },
   { path: "/footprints", label: "足跡", icon: "👣" },
-  { path: "/messages", label: "メッセージ", icon: "💬" },
+  { path: "/messages", label: "メッセージ", icon: "💬", badgeKey: "messaging_unread" as const },
   { path: "/bookmarks", label: "ブックマーク", icon: "🔖" },
   { path: "/oshi", label: "推し！", icon: "⭐" },
   { path: "/ranking", label: "ランキング", icon: "🏆" },
@@ -31,6 +32,7 @@ export function Drawer({ open, onClose }: DrawerProps) {
   const { profile } = useProfile();
   const { followingCount, followersCount } = useSocialCounts(profile?.accountId);
   const { count: unread } = useUnreadCount();
+  const { count: msgUnread } = useTotalUnread();
   const clearTokens = useAuthStore((s) => s.clearTokens);
 
   useEffect(() => {
@@ -77,7 +79,11 @@ export function Drawer({ open, onClose }: DrawerProps) {
 
         <nav className="flex-1 overflow-y-auto py-2">
           {NAV_ITEMS.map((item) => {
-            const showBadge = item.badgeKey === "unread" && unread > 0;
+            const badgeCount =
+              item.badgeKey === "unread" ? unread :
+              item.badgeKey === "messaging_unread" ? msgUnread :
+              0;
+            const showBadge = badgeCount > 0;
             return (
               <Link
                 key={item.path}
@@ -89,7 +95,7 @@ export function Drawer({ open, onClose }: DrawerProps) {
                 <span className="flex-1">{item.label}</span>
                 {showBadge && (
                   <span className="min-w-[1.25rem] rounded-full bg-accent px-1 text-center text-xs font-bold text-white">
-                    {unread > 99 ? "99+" : unread}
+                    {badgeCount > 99 ? "99+" : badgeCount}
                   </span>
                 )}
               </Link>
