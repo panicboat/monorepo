@@ -43,6 +43,7 @@ message ListPostsRequest {
   string cursor = 2;         // optional, base64 encoded
   string author_id = 3;      // optional, filter by author account
   string filter = 4;         // optional, e.g. "following"
+  bool media_only = 5;       // optional, filter posts with at least 1 media attachment
 }
 
 message ListPostsResponse {

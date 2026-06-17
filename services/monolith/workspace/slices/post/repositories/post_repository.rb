@@ -141,9 +141,18 @@ module Post
         end
       end
 
-      def list_posts(limit: 20, cursor: nil, author_id: nil)
+      def list_posts(limit: 20, cursor: nil, author_id: nil, media_only: false)
         scope = posts.combine(:post_media, :hashtags).exclude(author_id: nil).where(visibility: "public")
         scope = scope.where(author_id: author_id) if author_id
+
+        if media_only
+          # Filter to posts that have at least one media attachment.
+          # `post_media` relation reader is not exposed on this repo, so we go via the
+          # underlying Sequel dataset to build a distinct subquery of post_ids that
+          # have media rows.
+          media_post_ids = posts.dataset.db[:post__post_media].select(:post_id).distinct
+          scope = scope.where(id: media_post_ids)
+        end
 
         if cursor
           scope = scope.where {

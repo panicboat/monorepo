@@ -4,8 +4,10 @@
 
 require 'google/protobuf'
 
+require 'post/v1/post_service_pb'
 
-descriptor_data = "\n\x1apost/v1/like_service.proto\x12\x07post.v1\"*\n\x0fLikePostRequest\x12\x17\n\x07post_id\x18\x01 \x01(\tR\x06postId\"3\n\x10LikePostResponse\x12\x1f\n\x0blikes_count\x18\x01 \x01(\x05R\nlikesCount\",\n\x11UnlikePostRequest\x12\x17\n\x07post_id\x18\x01 \x01(\tR\x06postId\"5\n\x12UnlikePostResponse\x12\x1f\n\x0blikes_count\x18\x01 \x01(\x05R\nlikesCount\"1\n\x14GetLikeStatusRequest\x12\x19\n\x08post_ids\x18\x01 \x03(\tR\x07postIds\"\x92\x01\n\x15GetLikeStatusResponse\x12?\n\x05liked\x18\x01 \x03(\x0b\x32).post.v1.GetLikeStatusResponse.LikedEntryR\x05liked\x1a\x38\n\nLikedEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\x08R\x05value:\x02\x38\x01\x32\xe5\x01\n\x0bLikeService\x12?\n\x08LikePost\x12\x18.post.v1.LikePostRequest\x1a\x19.post.v1.LikePostResponse\x12\x45\n\nUnlikePost\x12\x1a.post.v1.UnlikePostRequest\x1a\x1b.post.v1.UnlikePostResponse\x12N\n\rGetLikeStatus\x12\x1d.post.v1.GetLikeStatusRequest\x1a\x1e.post.v1.GetLikeStatusResponseb\x06proto3"
+
+descriptor_data = "\n\x1apost/v1/like_service.proto\x12\x07post.v1\x1a\x1apost/v1/post_service.proto\"\"\n\x0fLikePostRequest\x12\x0f\n\x07post_id\x18\x01 \x01(\t\"\'\n\x10LikePostResponse\x12\x13\n\x0blikes_count\x18\x01 \x01(\x05\"$\n\x11UnlikePostRequest\x12\x0f\n\x07post_id\x18\x01 \x01(\t\")\n\x12UnlikePostResponse\x12\x13\n\x0blikes_count\x18\x01 \x01(\x05\"(\n\x14GetLikeStatusRequest\x12\x10\n\x08post_ids\x18\x01 \x03(\t\"\x7f\n\x15GetLikeStatusResponse\x12\x38\n\x05liked\x18\x01 \x03(\x0b\x32).post.v1.GetLikeStatusResponse.LikedEntry\x1a,\n\nLikedEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x08:\x02\x38\x01\"S\n\x1eListLikedPostsByAccountRequest\x12\x12\n\naccount_id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x0e\n\x06\x63ursor\x18\x03 \x01(\t\"f\n\x1fListLikedPostsByAccountResponse\x12\x1c\n\x05posts\x18\x01 \x03(\x0b\x32\r.post.v1.Post\x12\x13\n\x0bnext_cursor\x18\x02 \x01(\t\x12\x10\n\x08has_more\x18\x03 \x01(\x08\x32\xd3\x02\n\x0bLikeService\x12?\n\x08LikePost\x12\x18.post.v1.LikePostRequest\x1a\x19.post.v1.LikePostResponse\x12\x45\n\nUnlikePost\x12\x1a.post.v1.UnlikePostRequest\x1a\x1b.post.v1.UnlikePostResponse\x12N\n\rGetLikeStatus\x12\x1d.post.v1.GetLikeStatusRequest\x1a\x1e.post.v1.GetLikeStatusResponse\x12l\n\x17ListLikedPostsByAccount\x12\'.post.v1.ListLikedPostsByAccountRequest\x1a(.post.v1.ListLikedPostsByAccountResponseb\x06proto3"
 
 pool = ::Google::Protobuf::DescriptorPool.generated_pool
 pool.add_serialized_file(descriptor_data)
@@ -18,5 +20,7 @@ module Post
     UnlikePostResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("post.v1.UnlikePostResponse").msgclass
     GetLikeStatusRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("post.v1.GetLikeStatusRequest").msgclass
     GetLikeStatusResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("post.v1.GetLikeStatusResponse").msgclass
+    ListLikedPostsByAccountRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("post.v1.ListLikedPostsByAccountRequest").msgclass
+    ListLikedPostsByAccountResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("post.v1.ListLikedPostsByAccountResponse").msgclass
   end
 end

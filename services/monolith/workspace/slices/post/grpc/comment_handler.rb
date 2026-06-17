@@ -18,12 +18,14 @@ module Post
       rpc :DeleteComment, ::Post::V1::DeleteCommentRequest, ::Post::V1::DeleteCommentResponse
       rpc :ListComments, ::Post::V1::ListCommentsRequest, ::Post::V1::ListCommentsResponse
       rpc :ListReplies, ::Post::V1::ListRepliesRequest, ::Post::V1::ListRepliesResponse
+      rpc :ListCommentsByAuthor, ::Post::V1::ListCommentsByAuthorRequest, ::Post::V1::ListCommentsByAuthorResponse
 
       include Post::Deps[
         add_comment_uc: "use_cases.comments.add_comment",
         delete_comment_uc: "use_cases.comments.delete_comment",
         list_comments_uc: "use_cases.comments.list_comments",
-        list_replies_uc: "use_cases.comments.list_replies"
+        list_replies_uc: "use_cases.comments.list_replies",
+        list_comments_by_author_uc: "use_cases.comments.list_comments_by_author"
       ]
       include Post::Concerns::ProfileAuthorResolvable
 
@@ -134,6 +136,33 @@ module Post
           replies: CommentPresenter.many_to_proto(result[:replies], authors: result[:authors], media_files: media_files),
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
+        )
+      end
+
+      def list_comments_by_author
+        authenticate_user!
+
+        # FALLBACK: Default pagination limit when client sends 0 (unset) for limit
+        limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        result = list_comments_by_author_uc.call(
+          author_id: request.message.author_id,
+          viewer_account_id: current_user_id,
+          limit: limit,
+          cursor: cursor
+        )
+
+        media_files = load_media_files_for_comments(result[:comments])
+
+        # author hydration is intentionally empty for this RPC — the "返信" tab page already
+        # knows the author (it's the profile being viewed), so the UI doesn't depend on
+        # CommentAuthor here. We can layer it on in a follow-up if a use case appears.
+        ::Post::V1::ListCommentsByAuthorResponse.new(
+          comments: CommentPresenter.many_to_proto(result[:comments], authors: {}, media_files: media_files),
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more],
+          posts_by_id: result[:posts_by_id] || {}
         )
       end
 

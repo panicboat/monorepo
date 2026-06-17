@@ -100,6 +100,22 @@ module Post
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
+      # List comments authored by a single user_id (account id), newest first.
+      # Used by the "返信" tab on /u/[username]. cursor is the already-decoded hash
+      # produced by `Concerns::CursorPagination#decode_cursor` in the use_case layer.
+      def list_by_author(author_id:, limit: 20, cursor: nil)
+        scope = comments.combine(:comment_media).where(user_id: author_id)
+
+        if cursor
+          scope = scope.where {
+            (created_at < cursor[:created_at]) |
+              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+          }
+        end
+
+        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
+
       def comments_count(post_id:, exclude_user_ids: nil)
         scope = comments.where(post_id: post_id, parent_id: nil)
         scope = scope.exclude(user_id: exclude_user_ids) if exclude_user_ids && !exclude_user_ids.empty?
