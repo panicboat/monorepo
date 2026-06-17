@@ -8,13 +8,14 @@ import { useProfile } from "@/modules/profile/hooks";
 import { useSocialCounts } from "@/modules/social";
 import { useUnreadCount } from "@/modules/notifications/hooks";
 import { useTotalUnread } from "@/modules/messaging";
+import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { useAuthStore } from "@/stores/authStore";
 
 const NAV_ITEMS = [
   { path: "__profile__", label: "プロフィール", icon: "👤" },
   { path: "/search", label: "検索", icon: "🔍" },
   { path: "/notifications", label: "通知", icon: "🔔", badgeKey: "unread" as const },
-  { path: "/footprints", label: "足跡", icon: "👣" },
+  { path: "/footprints", label: "足跡", icon: "👣", badgeKey: "footprints_unread" as const },
   { path: "/messages", label: "メッセージ", icon: "💬", badgeKey: "messaging_unread" as const },
   { path: "/bookmarks", label: "ブックマーク", icon: "🔖" },
   { path: "/oshi", label: "推し！", icon: "⭐" },
@@ -33,6 +34,7 @@ export function Drawer({ open, onClose }: DrawerProps) {
   const { followingCount, followersCount } = useSocialCounts(profile?.accountId);
   const { count: unread } = useUnreadCount();
   const { count: msgUnread } = useTotalUnread();
+  const { count: footprintsUnread } = useFootprintsUnreadCount();
   const clearTokens = useAuthStore((s) => s.clearTokens);
 
   useEffect(() => {
@@ -85,6 +87,7 @@ export function Drawer({ open, onClose }: DrawerProps) {
             const badgeCount =
               item.badgeKey === "unread" ? unread :
               item.badgeKey === "messaging_unread" ? msgUnread :
+              item.badgeKey === "footprints_unread" ? footprintsUnread :
               0;
             const showBadge = badgeCount > 0;
             const href =
