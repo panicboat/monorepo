@@ -122,7 +122,7 @@ export function useMediaUpload(): UseMediaUploadResult {
         setUploading(false);
       }
     },
-    []
+    [registerMedia]
   );
 
   return {

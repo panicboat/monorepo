@@ -100,7 +100,8 @@ export function usePaginatedFetch<T, R = unknown>(
 
       return res.json();
     },
-    [apiUrl, authenticated, fetchFn]
+    // apiUrl is unused inside the body — url comes via parameter.
+    [authenticated, fetchFn]
   );
 
   const fetchInitial = useCallback(async () => {
