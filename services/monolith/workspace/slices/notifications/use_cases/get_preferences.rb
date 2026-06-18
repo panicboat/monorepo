@@ -17,7 +17,8 @@ module Notifications
         mention: true,
         message: true,
         oshi: true,
-        footprint_unread_badge: true
+        footprint_unread_badge: true,
+        footprints_record_my_visits: true
       }.freeze
 
       include Notifications::Deps[notification_repo: "repositories.notification_repository"]

@@ -98,7 +98,8 @@ module Notifications
           mention: input.mention,
           message: input.message,
           oshi: input.oshi,
-          footprint_unread_badge: input.footprint_unread_badge
+          footprint_unread_badge: input.footprint_unread_badge,
+          footprints_record_my_visits: input.footprints_record_my_visits
         }
         prefs = update_preferences_uc.call(account_id: current_user_id, preferences: attrs)
         ::Notifications::V1::UpdateNotificationPreferencesResponse.new(
@@ -120,7 +121,8 @@ module Notifications
           mention: prefs[:mention],
           message: prefs[:message],
           oshi: prefs[:oshi],
-          footprint_unread_badge: prefs[:footprint_unread_badge]
+          footprint_unread_badge: prefs[:footprint_unread_badge],
+          footprints_record_my_visits: prefs[:footprints_record_my_visits]
         )
       end
 

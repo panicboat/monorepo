@@ -75,6 +75,7 @@ message NotificationPreferences {
   bool message = 9;
   bool oshi = 10;
   bool footprint_unread_badge = 11;
+  bool footprints_record_my_visits = 12;  // false = visitor opts out — visits are not recorded into footprints
 }
 
 message GetNotificationPreferencesRequest {}

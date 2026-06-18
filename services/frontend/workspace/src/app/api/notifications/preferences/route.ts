@@ -16,6 +16,7 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
   message: true,
   oshi: true,
   footprintUnreadBadge: true,
+  footprintsRecordMyVisits: true,
 };
 
 function toView(prefs: {
@@ -30,6 +31,7 @@ function toView(prefs: {
   message?: boolean;
   oshi?: boolean;
   footprintUnreadBadge?: boolean;
+  footprintsRecordMyVisits?: boolean;
 } | undefined): NotificationPreferences {
   if (!prefs) return { ...DEFAULT_PREFERENCES };
   return {
@@ -44,6 +46,7 @@ function toView(prefs: {
     message: !!prefs.message,
     oshi: !!prefs.oshi,
     footprintUnreadBadge: !!prefs.footprintUnreadBadge,
+    footprintsRecordMyVisits: !!prefs.footprintsRecordMyVisits,
   };
 }
 

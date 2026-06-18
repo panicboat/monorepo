@@ -18,6 +18,7 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
   message: true,
   oshi: true,
   footprintUnreadBadge: true,
+  footprintsRecordMyVisits: true,
 };
 
 const KEY = "/api/notifications/preferences";
