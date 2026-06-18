@@ -14,9 +14,9 @@ module Discovery
 
       MAX_LIMIT = 50
 
-      def call(query:, limit: DEFAULT_LIMIT, cursor: nil)
+      def call(query:, limit: DEFAULT_LIMIT, cursor: nil, role_filter: nil)
         limit = normalize_limit(limit)
-        rows = profile_repo.search_by_query(query: query, limit: limit, cursor: cursor)
+        rows = profile_repo.search_by_query(query: query, limit: limit, cursor: cursor, role_filter: role_filter)
 
         result = build_pagination_result(items: rows, limit: limit) do |last|
           encode_cursor(created_at: last.created_at.iso8601, id: last.account_id)

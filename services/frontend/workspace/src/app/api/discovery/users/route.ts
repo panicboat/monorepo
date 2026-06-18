@@ -13,8 +13,12 @@ export async function GET(req: NextRequest) {
     const query = req.nextUrl.searchParams.get("q") || "";
     const limit = Number(req.nextUrl.searchParams.get("limit") || "20");
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
+    const roleFilter = Number(req.nextUrl.searchParams.get("role") || "0");
 
-    const res = await discoveryClient.searchUsers({ query, limit, cursor }, { headers });
+    const res = await discoveryClient.searchUsers(
+      { query, limit, cursor, roleFilter },
+      { headers }
+    );
     return NextResponse.json({
       profiles: (res.profiles || []).map(profileToSocialAccount),
       nextCursor: res.nextCursor || "",

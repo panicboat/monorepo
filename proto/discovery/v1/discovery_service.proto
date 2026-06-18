@@ -22,6 +22,8 @@ message SearchUsersRequest {
   string query = 1;
   int32 limit = 2;
   string cursor = 3;
+  // 0 = no filter (return all roles), 1 = guest only, 2 = cast only
+  int32 role_filter = 4;
 }
 
 message SearchUsersResponse {
