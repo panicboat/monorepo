@@ -1,4 +1,5 @@
 import * as React from "react";
+import Image from "next/image";
 import { Avatar } from "./avatar";
 import { cn } from "@/lib/utils";
 
@@ -38,12 +39,15 @@ export function PostCard({
               )}
             >
               {images.slice(0, 4).map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt=""
-                  className="aspect-video w-full object-cover"
-                />
+                <div key={i} className="relative aspect-video w-full">
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    sizes="(min-width: 640px) 320px, 50vw"
+                    className="object-cover"
+                  />
+                </div>
               ))}
             </div>
           )}
