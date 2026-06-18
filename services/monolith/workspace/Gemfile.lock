@@ -151,33 +151,33 @@ GEM
     ffi (1.17.3-x86_64-linux-musl)
     formatador (1.2.3)
       reline
-    google-protobuf (4.33.2)
+    google-protobuf (4.35.1)
       bigdecimal
-      rake (>= 13)
-    google-protobuf (4.33.2-aarch64-linux-gnu)
+      rake (~> 13.3)
+    google-protobuf (4.35.1-aarch64-linux-gnu)
       bigdecimal
-      rake (>= 13)
-    google-protobuf (4.33.2-aarch64-linux-musl)
+      rake (~> 13.3)
+    google-protobuf (4.35.1-aarch64-linux-musl)
       bigdecimal
-      rake (>= 13)
-    google-protobuf (4.33.2-arm64-darwin)
+      rake (~> 13.3)
+    google-protobuf (4.35.1-arm64-darwin)
       bigdecimal
-      rake (>= 13)
-    google-protobuf (4.33.2-x86-linux-gnu)
+      rake (~> 13.3)
+    google-protobuf (4.35.1-x86-linux-gnu)
       bigdecimal
-      rake (>= 13)
-    google-protobuf (4.33.2-x86-linux-musl)
+      rake (~> 13.3)
+    google-protobuf (4.35.1-x86-linux-musl)
       bigdecimal
-      rake (>= 13)
-    google-protobuf (4.33.2-x86_64-darwin)
+      rake (~> 13.3)
+    google-protobuf (4.35.1-x86_64-darwin)
       bigdecimal
-      rake (>= 13)
-    google-protobuf (4.33.2-x86_64-linux-gnu)
+      rake (~> 13.3)
+    google-protobuf (4.35.1-x86_64-linux-gnu)
       bigdecimal
-      rake (>= 13)
-    google-protobuf (4.33.2-x86_64-linux-musl)
+      rake (~> 13.3)
+    google-protobuf (4.35.1-x86_64-linux-musl)
       bigdecimal
-      rake (>= 13)
+      rake (~> 13.3)
     googleapis-common-protos-types (1.22.0)
       google-protobuf (~> 4.26)
     grpc (1.76.0)
