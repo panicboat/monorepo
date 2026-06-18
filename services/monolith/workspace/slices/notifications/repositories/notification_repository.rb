@@ -52,6 +52,14 @@ module Notifications
         updated > 0
       end
 
+      # Marks all currently-unread notifications for `recipient_id` as read.
+      # Returns the number of rows affected.
+      def mark_all_read(recipient_id:)
+        notification_records.dataset
+          .where(recipient_id: recipient_id, read_at: nil)
+          .update(read_at: Time.now)
+      end
+
       # --- Preferences ----
 
       PREFERENCE_COLUMNS = %i[

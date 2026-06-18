@@ -23,6 +23,30 @@ export function useNotifications() {
   const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
   const unreadCount = pages.length > 0 ? pages[0].unreadCount : 0;
 
+  const markAllRead = useCallback(async () => {
+    const t = getAuthToken();
+    if (!t) throw new Error("No token");
+    const res = await fetch(`/api/notifications/mark-all-read`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Failed to mark all read");
+    }
+    // optimistic: set readAt on all unread + zero unreadCount across pages
+    const now = new Date().toISOString();
+    mutate(
+      (cur) =>
+        cur?.map((page) => ({
+          ...page,
+          notifications: page.notifications.map((n) => (n.readAt ? n : { ...n, readAt: now })),
+          unreadCount: 0,
+        })),
+      { revalidate: false }
+    );
+  }, [mutate]);
+
   const markRead = useCallback(async (id: string) => {
     const t = getAuthToken();
     if (!t) throw new Error("No token");
@@ -55,6 +79,7 @@ export function useNotifications() {
     error,
     loadMore: () => setSize(size + 1),
     markRead,
+    markAllRead,
     refresh: () => mutate(),
   };
 }

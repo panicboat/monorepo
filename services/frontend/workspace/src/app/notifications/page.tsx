@@ -50,7 +50,7 @@ function formatDate(iso: string): string {
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const { notifications, hasMore, unreadCount, loading, loadMore, markRead } = useNotifications();
+  const { notifications, hasMore, unreadCount, loading, loadMore, markRead, markAllRead } = useNotifications();
 
   const handleClick = (n: NotificationView) => {
     if (!n.readAt) {
@@ -62,9 +62,19 @@ export default function NotificationsPage() {
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
-      <div className="px-4 pt-4">
-        <h1 className="text-xl font-bold">通知</h1>
-        <p className="pt-1 text-sm text-text-secondary">未読 {unreadCount} 件</p>
+      <div className="flex items-start justify-between px-4 pt-4">
+        <div>
+          <h1 className="text-xl font-bold">通知</h1>
+          <p className="pt-1 text-sm text-text-secondary">未読 {unreadCount} 件</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => markAllRead().catch(() => {})}
+          disabled={unreadCount === 0}
+          className="text-xs text-text-secondary underline-offset-2 hover:text-text-primary hover:underline disabled:opacity-40 disabled:no-underline"
+        >
+          全て既読にする
+        </button>
       </div>
 
       {loading && notifications.length === 0 && (

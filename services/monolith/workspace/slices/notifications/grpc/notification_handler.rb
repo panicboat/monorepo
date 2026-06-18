@@ -17,6 +17,7 @@ module Notifications
       rpc :ListNotifications, ::Notifications::V1::ListNotificationsRequest, ::Notifications::V1::ListNotificationsResponse
       rpc :GetUnreadCount, ::Notifications::V1::GetUnreadCountRequest, ::Notifications::V1::GetUnreadCountResponse
       rpc :MarkRead, ::Notifications::V1::MarkReadRequest, ::Notifications::V1::MarkReadResponse
+      rpc :MarkAllRead, ::Notifications::V1::MarkAllReadRequest, ::Notifications::V1::MarkAllReadResponse
       rpc :GetNotificationPreferences, ::Notifications::V1::GetNotificationPreferencesRequest, ::Notifications::V1::GetNotificationPreferencesResponse
       rpc :UpdateNotificationPreferences, ::Notifications::V1::UpdateNotificationPreferencesRequest, ::Notifications::V1::UpdateNotificationPreferencesResponse
 
@@ -24,6 +25,7 @@ module Notifications
         list_uc: "use_cases.list_notifications",
         unread_count_uc: "use_cases.get_unread_count",
         mark_read_uc: "use_cases.mark_read",
+        mark_all_read_uc: "use_cases.mark_all_read",
         get_preferences_uc: "use_cases.get_preferences",
         update_preferences_uc: "use_cases.update_preferences"
       ]
@@ -65,6 +67,12 @@ module Notifications
         authenticate_user!
         mark_read_uc.call(id: request.message.id, recipient_id: current_user_id)
         ::Notifications::V1::MarkReadResponse.new
+      end
+
+      def mark_all_read
+        authenticate_user!
+        affected = mark_all_read_uc.call(recipient_id: current_user_id)
+        ::Notifications::V1::MarkAllReadResponse.new(affected: affected)
       end
 
       def get_notification_preferences
