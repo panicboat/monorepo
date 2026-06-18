@@ -7,6 +7,7 @@ import { formatTimeAgo } from "@/lib/utils/date";
 import { useComments } from "@/modules/post/hooks/useComments";
 import { useDeleteComment } from "@/modules/post/hooks/useDeleteComment";
 import { ReplyList } from "./ReplyList";
+import { ReplyComposer } from "./ReplyComposer";
 import { useAuthStore, selectUserId } from "@/stores/authStore";
 
 interface CommentListProps {
@@ -18,6 +19,7 @@ export function CommentList({ postId }: CommentListProps) {
   const { comments, hasMore, loading, error, loadMore } = useComments(postId);
   const { deleteComment, submitting: deleting } = useDeleteComment(postId);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [replying, setReplying] = useState<string | null>(null);
 
   if (loading && comments.length === 0) {
     return <p className="px-4 py-4 text-text-secondary">読み込み中…</p>;
@@ -54,6 +56,13 @@ export function CommentList({ postId }: CommentListProps) {
                 </div>
                 <p className="mt-1 whitespace-pre-wrap text-text-primary">{c.content}</p>
                 <div className="mt-2 flex items-center gap-4 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setReplying((cur) => (cur === c.id ? null : c.id))}
+                    className="text-text-secondary hover:text-text-primary"
+                  >
+                    {replying === c.id ? "返信を閉じる" : "返信する"}
+                  </button>
                   {c.repliesCount > 0 && (
                     <button
                       type="button"
@@ -79,6 +88,17 @@ export function CommentList({ postId }: CommentListProps) {
                 </div>
               </div>
             </article>
+            {replying === c.id && (
+              <ReplyComposer
+                postId={postId}
+                parentId={c.id}
+                onCancel={() => setReplying(null)}
+                onSubmitted={() => {
+                  setReplying(null);
+                  setExpanded((prev) => ({ ...prev, [c.id]: true }));
+                }}
+              />
+            )}
             {isExpanded && <ReplyList postId={postId} commentId={c.id} />}
           </div>
         );

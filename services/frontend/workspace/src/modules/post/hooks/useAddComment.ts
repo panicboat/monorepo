@@ -10,7 +10,7 @@ export function useAddComment(postId: string | null | undefined) {
   const [error, setError] = useState<Error | null>(null);
 
   const addComment = useCallback(
-    async (content: string) => {
+    async (content: string, parentId?: string) => {
       if (!postId) return;
       const trimmed = content.trim();
       if (trimmed.length === 0) return;
@@ -20,14 +20,27 @@ export function useAddComment(postId: string | null | undefined) {
       try {
         await authFetch(`/api/posts/${encodeURIComponent(postId)}/comments`, {
           method: "POST",
-          body: { content: trimmed },
+          body: { content: trimmed, parentId: parentId || "" },
         });
-        // Refresh: comment list (useSWRInfinite cache keys start with this path) + post detail (commentsCount)
-        mutate(
-          (key) =>
-            typeof key === "string" &&
-            key.startsWith(`/api/posts/${encodeURIComponent(postId)}/comments`)
-        );
+        if (parentId) {
+          // Refresh reply list for this parent + top-level comment row (repliesCount bump).
+          const repliesPrefix = `/api/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(parentId)}/replies`;
+          mutate(
+            (key) => typeof key === "string" && key.startsWith(repliesPrefix)
+          );
+          mutate(
+            (key) =>
+              typeof key === "string" &&
+              key.startsWith(`/api/posts/${encodeURIComponent(postId)}/comments`) &&
+              !key.includes("/replies")
+          );
+        } else {
+          mutate(
+            (key) =>
+              typeof key === "string" &&
+              key.startsWith(`/api/posts/${encodeURIComponent(postId)}/comments`)
+          );
+        }
         mutate(`/api/posts/${encodeURIComponent(postId)}`);
       } catch (e) {
         setError(e as Error);
