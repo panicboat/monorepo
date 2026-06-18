@@ -36,7 +36,9 @@ group :development do
   # Pinned to match the version used to commit checked-in stubs.
   # Different grpc-tools versions emit different `R<jsonName>` annotations
   # in the descriptor blob, causing spurious churn on `bin/codegen`.
-  gem "grpc-tools", "1.76.0"
+  # 1.81.1 is the minimum that supports Ruby 4.0 (earlier versions cap at
+  # `< 3.5.dev` on Linux platform gemspecs).
+  gem "grpc-tools", "1.81.1"
 end
 
 group :development, :test do
