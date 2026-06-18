@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file notifications/v1/notification_service.proto.
  */
 export const file_notifications_v1_notification_service: GenFile = /*@__PURE__*/
-  fileDesc("Citub3RpZmljYXRpb25zL3YxL25vdGlmaWNhdGlvbl9zZXJ2aWNlLnByb3RvEhBub3RpZmljYXRpb25zLnYxIooCCgxOb3RpZmljYXRpb24SCgoCaWQYASABKAkSMAoEdHlwZRgCIAEoDjIiLm5vdGlmaWNhdGlvbnMudjEuTm90aWZpY2F0aW9uVHlwZRIaChJ0YXJnZXRfcmVzb3VyY2VfaWQYAyABKAkSEwoLYWN0b3JfY291bnQYBCABKAUSKQoMbGF0ZXN0X2FjdG9yGAUgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlEjMKD2xhdGVzdF9ldmVudF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASKwoHcmVhZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiOQoYTGlzdE5vdGlmaWNhdGlvbnNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSKPAQoZTGlzdE5vdGlmaWNhdGlvbnNSZXNwb25zZRI1Cg1ub3RpZmljYXRpb25zGAEgAygLMh4ubm90aWZpY2F0aW9ucy52MS5Ob3RpZmljYXRpb24SEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgSFAoMdW5yZWFkX2NvdW50GAQgASgFIhcKFUdldFVucmVhZENvdW50UmVxdWVzdCInChZHZXRVbnJlYWRDb3VudFJlc3BvbnNlEg0KBWNvdW50GAEgASgFIh0KD01hcmtSZWFkUmVxdWVzdBIKCgJpZBgBIAEoCSISChBNYXJrUmVhZFJlc3BvbnNlKtoBChBOb3RpZmljYXRpb25UeXBlEiEKHU5PVElGSUNBVElPTl9UWVBFX1VOU1BFQ0lGSUVEEAASGgoWTk9USUZJQ0FUSU9OX1RZUEVfTElLRRABEh0KGU5PVElGSUNBVElPTl9UWVBFX0NPTU1FTlQQAhIbChdOT1RJRklDQVRJT05fVFlQRV9SRVBMWRADEiQKIE5PVElGSUNBVElPTl9UWVBFX0ZPTExPV19SRVFVRVNUEAQSJQohTk9USUZJQ0FUSU9OX1RZUEVfRk9MTE9XX0FQUFJPVkVEEAUyuwIKE05vdGlmaWNhdGlvblNlcnZpY2USbAoRTGlzdE5vdGlmaWNhdGlvbnMSKi5ub3RpZmljYXRpb25zLnYxLkxpc3ROb3RpZmljYXRpb25zUmVxdWVzdBorLm5vdGlmaWNhdGlvbnMudjEuTGlzdE5vdGlmaWNhdGlvbnNSZXNwb25zZRJjCg5HZXRVbnJlYWRDb3VudBInLm5vdGlmaWNhdGlvbnMudjEuR2V0VW5yZWFkQ291bnRSZXF1ZXN0Gigubm90aWZpY2F0aW9ucy52MS5HZXRVbnJlYWRDb3VudFJlc3BvbnNlElEKCE1hcmtSZWFkEiEubm90aWZpY2F0aW9ucy52MS5NYXJrUmVhZFJlcXVlc3QaIi5ub3RpZmljYXRpb25zLnYxLk1hcmtSZWFkUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_profile_v1_service]);
+  fileDesc("Citub3RpZmljYXRpb25zL3YxL25vdGlmaWNhdGlvbl9zZXJ2aWNlLnByb3RvEhBub3RpZmljYXRpb25zLnYxIooCCgxOb3RpZmljYXRpb24SCgoCaWQYASABKAkSMAoEdHlwZRgCIAEoDjIiLm5vdGlmaWNhdGlvbnMudjEuTm90aWZpY2F0aW9uVHlwZRIaChJ0YXJnZXRfcmVzb3VyY2VfaWQYAyABKAkSEwoLYWN0b3JfY291bnQYBCABKAUSKQoMbGF0ZXN0X2FjdG9yGAUgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlEjMKD2xhdGVzdF9ldmVudF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASKwoHcmVhZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiOQoYTGlzdE5vdGlmaWNhdGlvbnNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSKPAQoZTGlzdE5vdGlmaWNhdGlvbnNSZXNwb25zZRI1Cg1ub3RpZmljYXRpb25zGAEgAygLMh4ubm90aWZpY2F0aW9ucy52MS5Ob3RpZmljYXRpb24SEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgSFAoMdW5yZWFkX2NvdW50GAQgASgFIhcKFUdldFVucmVhZENvdW50UmVxdWVzdCInChZHZXRVbnJlYWRDb3VudFJlc3BvbnNlEg0KBWNvdW50GAEgASgFIh0KD01hcmtSZWFkUmVxdWVzdBIKCgJpZBgBIAEoCSISChBNYXJrUmVhZFJlc3BvbnNlItkBChdOb3RpZmljYXRpb25QcmVmZXJlbmNlcxIUCgxwdXNoX2VuYWJsZWQYASABKAgSDAoEcG9zdBgCIAEoCBIMCgRsaWtlGAMgASgIEg4KBnJlcG9zdBgEIAEoCBINCgVxdW90ZRgFIAEoCBINCgVyZXBseRgGIAEoCBIOCgZmb2xsb3cYByABKAgSDwoHbWVudGlvbhgIIAEoCBIPCgdtZXNzYWdlGAkgASgIEgwKBG9zaGkYCiABKAgSHgoWZm9vdHByaW50X3VucmVhZF9iYWRnZRgLIAEoCCIjCiFHZXROb3RpZmljYXRpb25QcmVmZXJlbmNlc1JlcXVlc3QiZAoiR2V0Tm90aWZpY2F0aW9uUHJlZmVyZW5jZXNSZXNwb25zZRI+CgtwcmVmZXJlbmNlcxgBIAEoCzIpLm5vdGlmaWNhdGlvbnMudjEuTm90aWZpY2F0aW9uUHJlZmVyZW5jZXMiZgokVXBkYXRlTm90aWZpY2F0aW9uUHJlZmVyZW5jZXNSZXF1ZXN0Ej4KC3ByZWZlcmVuY2VzGAEgASgLMikubm90aWZpY2F0aW9ucy52MS5Ob3RpZmljYXRpb25QcmVmZXJlbmNlcyJnCiVVcGRhdGVOb3RpZmljYXRpb25QcmVmZXJlbmNlc1Jlc3BvbnNlEj4KC3ByZWZlcmVuY2VzGAEgASgLMikubm90aWZpY2F0aW9ucy52MS5Ob3RpZmljYXRpb25QcmVmZXJlbmNlcyraAQoQTm90aWZpY2F0aW9uVHlwZRIhCh1OT1RJRklDQVRJT05fVFlQRV9VTlNQRUNJRklFRBAAEhoKFk5PVElGSUNBVElPTl9UWVBFX0xJS0UQARIdChlOT1RJRklDQVRJT05fVFlQRV9DT01NRU5UEAISGwoXTk9USUZJQ0FUSU9OX1RZUEVfUkVQTFkQAxIkCiBOT1RJRklDQVRJT05fVFlQRV9GT0xMT1dfUkVRVUVTVBAEEiUKIU5PVElGSUNBVElPTl9UWVBFX0ZPTExPV19BUFBST1ZFRBAFMtgEChNOb3RpZmljYXRpb25TZXJ2aWNlEmwKEUxpc3ROb3RpZmljYXRpb25zEioubm90aWZpY2F0aW9ucy52MS5MaXN0Tm90aWZpY2F0aW9uc1JlcXVlc3QaKy5ub3RpZmljYXRpb25zLnYxLkxpc3ROb3RpZmljYXRpb25zUmVzcG9uc2USYwoOR2V0VW5yZWFkQ291bnQSJy5ub3RpZmljYXRpb25zLnYxLkdldFVucmVhZENvdW50UmVxdWVzdBooLm5vdGlmaWNhdGlvbnMudjEuR2V0VW5yZWFkQ291bnRSZXNwb25zZRJRCghNYXJrUmVhZBIhLm5vdGlmaWNhdGlvbnMudjEuTWFya1JlYWRSZXF1ZXN0GiIubm90aWZpY2F0aW9ucy52MS5NYXJrUmVhZFJlc3BvbnNlEocBChpHZXROb3RpZmljYXRpb25QcmVmZXJlbmNlcxIzLm5vdGlmaWNhdGlvbnMudjEuR2V0Tm90aWZpY2F0aW9uUHJlZmVyZW5jZXNSZXF1ZXN0GjQubm90aWZpY2F0aW9ucy52MS5HZXROb3RpZmljYXRpb25QcmVmZXJlbmNlc1Jlc3BvbnNlEpABCh1VcGRhdGVOb3RpZmljYXRpb25QcmVmZXJlbmNlcxI2Lm5vdGlmaWNhdGlvbnMudjEuVXBkYXRlTm90aWZpY2F0aW9uUHJlZmVyZW5jZXNSZXF1ZXN0Gjcubm90aWZpY2F0aW9ucy52MS5VcGRhdGVOb3RpZmljYXRpb25QcmVmZXJlbmNlc1Jlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_profile_v1_service]);
 
 /**
  * @generated from message notifications.v1.Notification
@@ -192,6 +192,137 @@ export const MarkReadResponseSchema: GenMessage<MarkReadResponse> = /*@__PURE__*
   messageDesc(file_notifications_v1_notification_service, 6);
 
 /**
+ * @generated from message notifications.v1.NotificationPreferences
+ */
+export type NotificationPreferences = Message<"notifications.v1.NotificationPreferences"> & {
+  /**
+   * @generated from field: bool push_enabled = 1;
+   */
+  pushEnabled: boolean;
+
+  /**
+   * @generated from field: bool post = 2;
+   */
+  post: boolean;
+
+  /**
+   * @generated from field: bool like = 3;
+   */
+  like: boolean;
+
+  /**
+   * @generated from field: bool repost = 4;
+   */
+  repost: boolean;
+
+  /**
+   * @generated from field: bool quote = 5;
+   */
+  quote: boolean;
+
+  /**
+   * @generated from field: bool reply = 6;
+   */
+  reply: boolean;
+
+  /**
+   * @generated from field: bool follow = 7;
+   */
+  follow: boolean;
+
+  /**
+   * @generated from field: bool mention = 8;
+   */
+  mention: boolean;
+
+  /**
+   * @generated from field: bool message = 9;
+   */
+  message: boolean;
+
+  /**
+   * @generated from field: bool oshi = 10;
+   */
+  oshi: boolean;
+
+  /**
+   * @generated from field: bool footprint_unread_badge = 11;
+   */
+  footprintUnreadBadge: boolean;
+};
+
+/**
+ * Describes the message notifications.v1.NotificationPreferences.
+ * Use `create(NotificationPreferencesSchema)` to create a new message.
+ */
+export const NotificationPreferencesSchema: GenMessage<NotificationPreferences> = /*@__PURE__*/
+  messageDesc(file_notifications_v1_notification_service, 7);
+
+/**
+ * @generated from message notifications.v1.GetNotificationPreferencesRequest
+ */
+export type GetNotificationPreferencesRequest = Message<"notifications.v1.GetNotificationPreferencesRequest"> & {
+};
+
+/**
+ * Describes the message notifications.v1.GetNotificationPreferencesRequest.
+ * Use `create(GetNotificationPreferencesRequestSchema)` to create a new message.
+ */
+export const GetNotificationPreferencesRequestSchema: GenMessage<GetNotificationPreferencesRequest> = /*@__PURE__*/
+  messageDesc(file_notifications_v1_notification_service, 8);
+
+/**
+ * @generated from message notifications.v1.GetNotificationPreferencesResponse
+ */
+export type GetNotificationPreferencesResponse = Message<"notifications.v1.GetNotificationPreferencesResponse"> & {
+  /**
+   * @generated from field: notifications.v1.NotificationPreferences preferences = 1;
+   */
+  preferences?: NotificationPreferences | undefined;
+};
+
+/**
+ * Describes the message notifications.v1.GetNotificationPreferencesResponse.
+ * Use `create(GetNotificationPreferencesResponseSchema)` to create a new message.
+ */
+export const GetNotificationPreferencesResponseSchema: GenMessage<GetNotificationPreferencesResponse> = /*@__PURE__*/
+  messageDesc(file_notifications_v1_notification_service, 9);
+
+/**
+ * @generated from message notifications.v1.UpdateNotificationPreferencesRequest
+ */
+export type UpdateNotificationPreferencesRequest = Message<"notifications.v1.UpdateNotificationPreferencesRequest"> & {
+  /**
+   * @generated from field: notifications.v1.NotificationPreferences preferences = 1;
+   */
+  preferences?: NotificationPreferences | undefined;
+};
+
+/**
+ * Describes the message notifications.v1.UpdateNotificationPreferencesRequest.
+ * Use `create(UpdateNotificationPreferencesRequestSchema)` to create a new message.
+ */
+export const UpdateNotificationPreferencesRequestSchema: GenMessage<UpdateNotificationPreferencesRequest> = /*@__PURE__*/
+  messageDesc(file_notifications_v1_notification_service, 10);
+
+/**
+ * @generated from message notifications.v1.UpdateNotificationPreferencesResponse
+ */
+export type UpdateNotificationPreferencesResponse = Message<"notifications.v1.UpdateNotificationPreferencesResponse"> & {
+  /**
+   * @generated from field: notifications.v1.NotificationPreferences preferences = 1;
+   */
+  preferences?: NotificationPreferences | undefined;
+};
+
+/**
+ * Describes the message notifications.v1.UpdateNotificationPreferencesResponse.
+ * Use `create(UpdateNotificationPreferencesResponseSchema)` to create a new message.
+ */
+export const UpdateNotificationPreferencesResponseSchema: GenMessage<UpdateNotificationPreferencesResponse> = /*@__PURE__*/
+  messageDesc(file_notifications_v1_notification_service, 11);
+
+/**
  * @generated from enum notifications.v1.NotificationType
  */
 export enum NotificationType {
@@ -259,6 +390,22 @@ export const NotificationService: GenService<{
     methodKind: "unary";
     input: typeof MarkReadRequestSchema;
     output: typeof MarkReadResponseSchema;
+  },
+  /**
+   * @generated from rpc notifications.v1.NotificationService.GetNotificationPreferences
+   */
+  getNotificationPreferences: {
+    methodKind: "unary";
+    input: typeof GetNotificationPreferencesRequestSchema;
+    output: typeof GetNotificationPreferencesResponseSchema;
+  },
+  /**
+   * @generated from rpc notifications.v1.NotificationService.UpdateNotificationPreferences
+   */
+  updateNotificationPreferences: {
+    methodKind: "unary";
+    input: typeof UpdateNotificationPreferencesRequestSchema;
+    output: typeof UpdateNotificationPreferencesResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_notifications_v1_notification_service, 0);

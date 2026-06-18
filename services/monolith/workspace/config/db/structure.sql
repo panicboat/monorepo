@@ -24,6 +24,13 @@ CREATE SCHEMA bookmarks;
 
 
 --
+-- Name: footprints; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA footprints;
+
+
+--
 -- Name: identity; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -99,6 +106,33 @@ CREATE TABLE bookmarks.bookmarks (
     account_id uuid NOT NULL,
     post_id uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: read_states; Type: TABLE; Schema: footprints; Owner: -
+--
+
+CREATE TABLE footprints.read_states (
+    account_id uuid NOT NULL,
+    last_read_visit_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: visits; Type: TABLE; Schema: footprints; Owner: -
+--
+
+CREATE TABLE footprints.visits (
+    id uuid NOT NULL,
+    visitor_id uuid NOT NULL,
+    visited_id uuid NOT NULL,
+    first_visited_at timestamp with time zone DEFAULT now() NOT NULL,
+    last_visited_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -214,6 +248,28 @@ CREATE TABLE notifications.notifications (
     latest_event_at timestamp with time zone DEFAULT now() NOT NULL,
     read_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: preferences; Type: TABLE; Schema: notifications; Owner: -
+--
+
+CREATE TABLE notifications.preferences (
+    account_id uuid NOT NULL,
+    push_enabled boolean DEFAULT true NOT NULL,
+    post boolean DEFAULT true NOT NULL,
+    "like" boolean DEFAULT true NOT NULL,
+    repost boolean DEFAULT true NOT NULL,
+    quote boolean DEFAULT true NOT NULL,
+    reply boolean DEFAULT true NOT NULL,
+    follow boolean DEFAULT true NOT NULL,
+    mention boolean DEFAULT true NOT NULL,
+    message boolean DEFAULT true NOT NULL,
+    oshi boolean DEFAULT true NOT NULL,
+    footprint_unread_badge boolean DEFAULT true NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -589,6 +645,30 @@ ALTER TABLE ONLY bookmarks.bookmarks
 
 
 --
+-- Name: read_states read_states_pkey; Type: CONSTRAINT; Schema: footprints; Owner: -
+--
+
+ALTER TABLE ONLY footprints.read_states
+    ADD CONSTRAINT read_states_pkey PRIMARY KEY (account_id);
+
+
+--
+-- Name: visits uq_footprints_visits_pair; Type: CONSTRAINT; Schema: footprints; Owner: -
+--
+
+ALTER TABLE ONLY footprints.visits
+    ADD CONSTRAINT uq_footprints_visits_pair UNIQUE (visitor_id, visited_id);
+
+
+--
+-- Name: visits visits_pkey; Type: CONSTRAINT; Schema: footprints; Owner: -
+--
+
+ALTER TABLE ONLY footprints.visits
+    ADD CONSTRAINT visits_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: identity; Owner: -
 --
 
@@ -658,6 +738,14 @@ ALTER TABLE ONLY messaging.threads
 
 ALTER TABLE ONLY notifications.notifications
     ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: preferences preferences_pkey; Type: CONSTRAINT; Schema: notifications; Owner: -
+--
+
+ALTER TABLE ONLY notifications.preferences
+    ADD CONSTRAINT preferences_pkey PRIMARY KEY (account_id);
 
 
 --
@@ -921,6 +1009,13 @@ ALTER TABLE ONLY trust.taggings
 --
 
 CREATE INDEX idx_bookmarks_account_created ON bookmarks.bookmarks USING btree (account_id, created_at DESC);
+
+
+--
+-- Name: idx_footprints_visits_visited_last; Type: INDEX; Schema: footprints; Owner: -
+--
+
+CREATE INDEX idx_footprints_visits_visited_last ON footprints.visits USING btree (visited_id, last_visited_at DESC);
 
 
 --
@@ -1503,4 +1598,6 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260616000000_drop_relationship_schema.rb'),
 ('20260616240000_create_notifications_schema.rb'),
 ('20260617120000_create_bookmarks_schema.rb'),
-('20260617130000_create_messaging_schema.rb');
+('20260617130000_create_messaging_schema.rb'),
+('20260618000000_create_footprints_schema.rb'),
+('20260618200000_create_notification_preferences.rb');

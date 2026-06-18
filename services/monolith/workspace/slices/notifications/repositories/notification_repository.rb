@@ -52,6 +52,39 @@ module Notifications
         updated > 0
       end
 
+      # --- Preferences ----
+
+      PREFERENCE_COLUMNS = %i[
+        push_enabled post like repost quote reply follow mention message oshi footprint_unread_badge
+      ].freeze
+
+      def get_preferences(account_id:)
+        preference_records.where(account_id: account_id).one
+      end
+
+      # Idempotent upsert. Inserts a new row with the supplied 11 bool attrs, or updates
+      # all 11 columns on the existing row keyed by account_id. Returns the resulting row.
+      # Column names are double-quoted because `like` and `message` collide with PG reserved words.
+      def upsert_preferences(account_id:, attrs:)
+        now = Time.now
+        values = PREFERENCE_COLUMNS.map { |c| attrs.fetch(c) }
+        quoted_cols = PREFERENCE_COLUMNS.map { |c| %("#{c}") }.join(", ")
+        update_assignments = PREFERENCE_COLUMNS.map { |c| %("#{c}" = EXCLUDED."#{c}") }.join(", ")
+
+        sql = <<~SQL
+          INSERT INTO notifications.preferences
+            (account_id, #{quoted_cols}, created_at, updated_at)
+          VALUES (?, #{(['?'] * PREFERENCE_COLUMNS.size).join(', ')}, ?, ?)
+          ON CONFLICT (account_id) DO UPDATE SET
+            #{update_assignments},
+            updated_at = EXCLUDED.updated_at
+          RETURNING *
+        SQL
+
+        ds = preference_records.dataset.db
+        ds.fetch(sql, account_id, *values, now, now).first
+      end
+
       private
 
       def apply_cursor(scope, cursor)

@@ -17,11 +17,15 @@ module Notifications
       rpc :ListNotifications, ::Notifications::V1::ListNotificationsRequest, ::Notifications::V1::ListNotificationsResponse
       rpc :GetUnreadCount, ::Notifications::V1::GetUnreadCountRequest, ::Notifications::V1::GetUnreadCountResponse
       rpc :MarkRead, ::Notifications::V1::MarkReadRequest, ::Notifications::V1::MarkReadResponse
+      rpc :GetNotificationPreferences, ::Notifications::V1::GetNotificationPreferencesRequest, ::Notifications::V1::GetNotificationPreferencesResponse
+      rpc :UpdateNotificationPreferences, ::Notifications::V1::UpdateNotificationPreferencesRequest, ::Notifications::V1::UpdateNotificationPreferencesResponse
 
       include Notifications::Deps[
         list_uc: "use_cases.list_notifications",
         unread_count_uc: "use_cases.get_unread_count",
-        mark_read_uc: "use_cases.mark_read"
+        mark_read_uc: "use_cases.mark_read",
+        get_preferences_uc: "use_cases.get_preferences",
+        update_preferences_uc: "use_cases.update_preferences"
       ]
 
       def list_notifications
@@ -63,7 +67,53 @@ module Notifications
         ::Notifications::V1::MarkReadResponse.new
       end
 
+      def get_notification_preferences
+        authenticate_user!
+        prefs = get_preferences_uc.call(account_id: current_user_id)
+        ::Notifications::V1::GetNotificationPreferencesResponse.new(
+          preferences: preferences_to_proto(prefs)
+        )
+      end
+
+      def update_notification_preferences
+        authenticate_user!
+        input = request.message.preferences
+        attrs = {
+          push_enabled: input.push_enabled,
+          post: input.post,
+          like: input.like,
+          repost: input.repost,
+          quote: input.quote,
+          reply: input.reply,
+          follow: input.follow,
+          mention: input.mention,
+          message: input.message,
+          oshi: input.oshi,
+          footprint_unread_badge: input.footprint_unread_badge
+        }
+        prefs = update_preferences_uc.call(account_id: current_user_id, preferences: attrs)
+        ::Notifications::V1::UpdateNotificationPreferencesResponse.new(
+          preferences: preferences_to_proto(prefs)
+        )
+      end
+
       private
+
+      def preferences_to_proto(prefs)
+        ::Notifications::V1::NotificationPreferences.new(
+          push_enabled: prefs[:push_enabled],
+          post: prefs[:post],
+          like: prefs[:like],
+          repost: prefs[:repost],
+          quote: prefs[:quote],
+          reply: prefs[:reply],
+          follow: prefs[:follow],
+          mention: prefs[:mention],
+          message: prefs[:message],
+          oshi: prefs[:oshi],
+          footprint_unread_badge: prefs[:footprint_unread_badge]
+        )
+      end
 
       def type_to_enum(type)
         case type
