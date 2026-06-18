@@ -26,8 +26,9 @@ export default function Icon() {
         background: "transparent",
       }}
     >
-      {/* Render SVG as an image */}
+      {/* Render SVG as an image (alt empty: decorative — this IS the icon). */}
       <img
+        alt=""
         src={`data:image/svg+xml;base64,${svg.toString("base64")}`}
         style={{ width: "100%", height: "100%" }}
       />
