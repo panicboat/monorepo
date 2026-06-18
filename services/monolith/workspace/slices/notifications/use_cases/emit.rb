@@ -9,7 +9,22 @@ module Notifications
     # Callers (cross-slice from Post / Social use_cases) should NOT rescue or branch
     # on the return value -- emit must never disrupt the source action.
     class Emit
-      include Notifications::Deps[notification_repo: "repositories.notification_repository"]
+      include Notifications::Deps[
+        notification_repo: "repositories.notification_repository",
+        get_preferences: "use_cases.get_preferences"
+      ]
+
+      # Mapping notification type → preferences toggle field.
+      # COMMENT maps to `post` because rx-sns lacks a dedicated comment-on-post
+      # toggle; ポスト is the closest equivalent. FOLLOW_REQUEST + FOLLOW_APPROVED
+      # share the single `follow` toggle.
+      PREFERENCE_FIELD_BY_TYPE = {
+        "like" => :like,
+        "comment" => :post,
+        "reply" => :reply,
+        "follow_request" => :follow,
+        "follow_approved" => :follow
+      }.freeze
 
       # @param recipient_id [String] account_id receiving the notification
       # @param type [String] one of: 'like' | 'comment' | 'reply' | 'follow_request' | 'follow_approved'
@@ -21,6 +36,7 @@ module Notifications
         return nil if recipient_id.to_s == actor_id.to_s
 
         return nil if block_repo.blocked?(blocker_id: recipient_id, blocked_id: actor_id)
+        return nil unless type_enabled_for?(recipient_id, type)
 
         notification_repo.emit(
           recipient_id: recipient_id,
@@ -34,6 +50,14 @@ module Notifications
       end
 
       private
+
+      def type_enabled_for?(recipient_id, type)
+        field = PREFERENCE_FIELD_BY_TYPE[type.to_s]
+        return true unless field  # unknown type → fail open (don't suppress)
+
+        prefs = get_preferences.call(account_id: recipient_id)
+        prefs[field] != false
+      end
 
       def block_repo
         @block_repo ||= Social::Slice["repositories.block_repository"]
