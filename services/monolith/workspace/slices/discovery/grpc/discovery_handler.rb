@@ -17,11 +17,13 @@ module Discovery
       rpc :SearchUsers, ::Discovery::V1::SearchUsersRequest, ::Discovery::V1::SearchUsersResponse
       rpc :SearchPosts, ::Discovery::V1::SearchPostsRequest, ::Discovery::V1::SearchPostsResponse
       rpc :RankPosts, ::Discovery::V1::RankPostsRequest, ::Discovery::V1::RankPostsResponse
+      rpc :SuggestUsers, ::Discovery::V1::SuggestUsersRequest, ::Discovery::V1::SuggestUsersResponse
 
       include Discovery::Deps[
         search_users_uc: "use_cases.search_users",
         search_posts_uc: "use_cases.search_posts",
-        rank_posts_uc: "use_cases.rank_posts"
+        rank_posts_uc: "use_cases.rank_posts",
+        suggest_users_uc: "use_cases.suggest_users"
       ]
 
       def search_users
@@ -37,6 +39,23 @@ module Discovery
           role_filter: role_filter
         )
         ::Discovery::V1::SearchUsersResponse.new(
+          profiles: result[:profiles],
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
+      end
+
+      def suggest_users
+        authenticate_user!
+        limit = request.message.limit.zero? ? 10 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+
+        result = suggest_users_uc.call(
+          viewer_account_id: current_user_id,
+          limit: limit,
+          cursor: cursor
+        )
+        ::Discovery::V1::SuggestUsersResponse.new(
           profiles: result[:profiles],
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
