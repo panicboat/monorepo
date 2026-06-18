@@ -416,3 +416,106 @@ ls bin/codegen
 3. handoff doc Section 5 A (autonomous backlog) は並行進行
 4. closed alpha 用 **minimal feature freeze** を定義 (= release MVP 範囲)
 
+---
+
+## 12. Development Approach (合意済)
+
+「各項目で都度議論する」より **「大方針を先決めて autonomous run で消化する」** A 寄り路線を採用する (本人合意済、本セッション内で決定)。
+
+### 12.1 採用理由 (Why A)
+
+1. **法務 lead time が長い** (Cast 本人確認 / karte レビュー = 弁護士込みで 1-3 ヶ月)。都度議論だと release 後ろ倒し → 法務だけ別 track 先行
+2. **4 軸並行が必要**。大方針があれば各軸独立進行、都度議論だと並行性消える
+3. **autonomous run の効率**。本セッションで 25 PR 実証済。Section 5 A の backlog は議論ゼロで機械消化可
+
+### 12.2 軸別の確度差 (運用上の重み付け)
+
+| 軸 | 大方針先決めの確度 | 運用 |
+|---|---|---|
+| 法務 | 中 (弁護士の意見で揺れる) | **別 track / 都度判断 OK** |
+| 運用 (infra/scaling) | 高 | 大方針で十分 |
+| プロダクト MVP 必須 UX (Login/Onboarding/Push 等) | 高 (rx-sns + 国内 SNS 慣習) | 大方針で十分 |
+| プロダクト polish (外観 / brand mark) | 低 | デザイン判断は都度 |
+| 商業 (収益化 / 集客) | 中 | 戦略判断は都度 |
+| Section 5 A autonomous backlog | 完全 A | autonomous run で消化 |
+
+### 12.3 大方針 (master plan) で決めるべき項目
+
+次セッション初手で確定する。これが決まれば autonomous run に移れる。
+
+#### 法務 track
+- [ ] 弁護士 (個人情報保護 / IT / 風営法) コンタクト先
+- [ ] 顧問契約スケジュール
+- [ ] 質問リスト (Cast 本人確認方式 / Privacy Policy 骨子 / karte 法的整理 / モデレーションフロー)
+
+#### release target
+- [ ] **Closed alpha** target date (現実: 1-2 週間以内が可能)
+- [ ] **Closed beta** target date (現実: 法務 6 項目クリア後、2-3 ヶ月)
+- [ ] **Open beta / GA** target date (現実: 追加 3-6 ヶ月)
+
+#### MVP feature freeze (= closed beta release 範囲)
+- [ ] Login/Signup UI (再構築要、現状 authStore 直注入 only)
+- [ ] Cast 本人確認 (eKYC 等)
+- [ ] Guest 18+ 自己申告
+- [ ] Privacy Policy / Terms of Service / 18+ confirmation
+- [ ] Onboarding flow (Cast / Guest 別)
+- [ ] Push provider (FCM / APNS / Web Push どれか or 無し)
+- [ ] SMS provider (Twilio 等、現状 "0000" mock)
+- [ ] Content moderation 最低限 (報告 + ban)
+- [ ] karte は含めるか否か (Phase 3 法務ゲート、含めない決定もあり)
+- [ ] Desktop 3-col layout (Phase 1b-B) は含めるか否か
+
+#### 商業
+- [ ] 収益化モデル: karte 主軸 / 投げ銭併用 / サブスク / 広告 (NG channel 多) — どれか
+- [ ] 支払い provider (Stripe / SBPS / GMO PG)
+- [ ] Cold start 戦略 (初期 Cast 確保 + 初期 Guest 確保)
+- [ ] Web か native か (App Store / Play Store は風俗系 NG 確率高い → PWA 推奨か)
+
+#### 運用
+- [ ] 本番 infra (AWS / GCP / Azure / 国内 vendor)
+- [ ] DB (RDS / Cloud SQL / etc)
+- [ ] 監視 stack (Datadog / Grafana Cloud / NewRelic 等)
+- [ ] Error tracking (Sentry / Bugsnag)
+- [ ] Analytics (GA4 / Mixpanel / Amplitude)
+- [ ] Secrets management (KMS / Vault)
+- [ ] CDN / domain / DNS
+
+### 12.4 大方針確定後の autonomous run シナリオ
+
+```
+ステークホルダー方針確定
+    ↓
+master plan を docs/superpowers/ に commit (本ドキュメントの Section 12 update or 別 doc)
+    ↓
+私 (AI) が autonomous run:
+  - handoff doc Section 5 A の backlog 消化 (Phase 1b-B / Notifications spec / post-card next/image / 訪問回数)
+  - MVP 必須 UX の確度高い項目 (Login UI 再構築 / Onboarding / SMS provider / error tracking 接続 等)
+  - 運用の確度高い項目 (Sentry / Datadog 接続 / Cloudflare 設定 等)
+    ↓
+私からのフィードバック / 都度判断項目だけ ユーザーへエスカレ:
+  - 法務確認次第のもの
+  - design 判断 (theme / brand mark / 細かい UX wording)
+  - 商業戦略
+    ↓
+3 ヶ月ごとに方針 review session
+```
+
+### 12.5 落とし穴 (B 寄りで進めた場合のリスク)
+
+参考までに B (都度議論) 路線のリスクを記録しておく。採用しないが選定時の比較材料:
+
+- handoff cost が毎セッション継続発生 (私の context が毎回切れる、過去 25 PR の議論が毎回再演)
+- 4 軸の依存関係が見えないまま個別最適に走るリスク
+- 法務確定が遅れて全体 release date がずるずる
+- ステークホルダー (本人 + 弁護士 + infra 等) との同期コストが累積
+- autonomous run の利点が消える
+
+### 12.6 即時 next action
+
+次セッション開始時:
+
+1. **本ドキュメント Section 12.3 のチェックリストを上から潰す** (大方針決定セッション)
+2. 確定したものは Section 12.3 のチェックを埋めて commit
+3. 確定できなかったものは括弧書きで条件を明記 ("法務 X 確認次第" 等)
+4. autonomous run target に切り替え可能になったら、handoff doc Section 5 A から消化開始
+
