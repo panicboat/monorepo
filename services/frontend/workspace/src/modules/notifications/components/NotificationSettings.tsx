@@ -72,6 +72,13 @@ export function NotificationSettings() {
           onCheckedChange={onToggle("footprintUnreadBadge")}
           disabled={updating}
         />
+        <ToggleRow
+          label="他人のプロフィール訪問時に足跡を残す"
+          description="オフにすると訪問先のユーザーに自分の足跡が残りません"
+          checked={preferences.footprintsRecordMyVisits}
+          onCheckedChange={onToggle("footprintsRecordMyVisits")}
+          disabled={updating}
+        />
       </section>
     </div>
   );
