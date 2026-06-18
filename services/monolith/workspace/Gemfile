@@ -33,7 +33,10 @@ gem "dotenv"
 
 group :development do
   gem "hanami-webconsole", "~> 2.3.1"
-  gem "grpc-tools"
+  # Pinned to match the version used to commit checked-in stubs.
+  # Different grpc-tools versions emit different `R<jsonName>` annotations
+  # in the descriptor blob, causing spurious churn on `bin/codegen`.
+  gem "grpc-tools", "1.76.0"
 end
 
 group :development, :test do
