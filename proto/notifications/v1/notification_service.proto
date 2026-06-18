@@ -9,6 +9,7 @@ service NotificationService {
   rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
   rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse);
   rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
+  rpc MarkAllRead(MarkAllReadRequest) returns (MarkAllReadResponse);
   rpc GetNotificationPreferences(GetNotificationPreferencesRequest) returns (GetNotificationPreferencesResponse);
   rpc UpdateNotificationPreferences(UpdateNotificationPreferencesRequest) returns (UpdateNotificationPreferencesResponse);
 }
@@ -55,6 +56,11 @@ message MarkReadRequest {
 }
 
 message MarkReadResponse {}
+
+message MarkAllReadRequest {}
+message MarkAllReadResponse {
+  int32 affected = 1;  // number of unread rows updated
+}
 
 message NotificationPreferences {
   bool push_enabled = 1;
