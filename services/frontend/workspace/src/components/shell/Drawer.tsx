@@ -9,6 +9,7 @@ import { useSocialCounts } from "@/modules/social";
 import { useUnreadCount } from "@/modules/notifications/hooks";
 import { useTotalUnread } from "@/modules/messaging";
 import { useFootprintsUnreadCount } from "@/modules/footprints";
+import { useNotificationPreferences } from "@/modules/notifications/hooks";
 import { useAuthStore } from "@/stores/authStore";
 
 const NAV_ITEMS = [
@@ -35,7 +36,9 @@ export function Drawer({ open, onClose }: DrawerProps) {
   const { count: unread } = useUnreadCount();
   const { count: msgUnread } = useTotalUnread();
   const { count: footprintsUnread } = useFootprintsUnreadCount();
+  const { preferences } = useNotificationPreferences();
   const clearTokens = useAuthStore((s) => s.clearTokens);
+  const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
 
   useEffect(() => {
     if (!open) return;
@@ -87,7 +90,7 @@ export function Drawer({ open, onClose }: DrawerProps) {
             const badgeCount =
               item.badgeKey === "unread" ? unread :
               item.badgeKey === "messaging_unread" ? msgUnread :
-              item.badgeKey === "footprints_unread" ? footprintsUnread :
+              item.badgeKey === "footprints_unread" ? (footprintsBadgeEnabled ? footprintsUnread : 0) :
               0;
             const showBadge = badgeCount > 0;
             const href =
