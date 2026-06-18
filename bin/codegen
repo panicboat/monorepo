@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Regenerate Ruby + TypeScript proto stubs from `proto/`.
+#
+# Why this exists: the monolith and the frontend each have their own codegen
+# entry point (`services/monolith/workspace/bin/codegen` for Ruby via buf +
+# grpc-tools, `pnpm proto:gen` inside `services/frontend/workspace` for TS via
+# @bufbuild/protoc-gen-es). After a proto change, both must run, otherwise the
+# Ruby and TS stubs drift. This wrapper runs them in order from the repo root.
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$REPO_ROOT"
+
+if [ -z "${NODE_OPTIONS+x}" ]; then
+  # Pass through.
+  RUN_PREFIX=""
+else
+  # The cmux harness sets NODE_OPTIONS for its own preload; unset for tool runs.
+  RUN_PREFIX="env -u NODE_OPTIONS"
+fi
+
+echo "[codegen] regenerating Ruby stubs (monolith)..."
+(cd services/monolith/workspace && $RUN_PREFIX bundle exec ./bin/codegen)
+
+echo "[codegen] regenerating TypeScript stubs (frontend)..."
+(cd services/frontend/workspace && $RUN_PREFIX pnpm proto:gen)
+
+echo "[codegen] done."
