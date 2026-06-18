@@ -318,3 +318,101 @@ ls bin/codegen
 ```
 
 全部期待通りなら、このドキュメントは valid。
+
+---
+
+## 11. Release Readiness (重要)
+
+**本ドキュメント Section 2-7 を全消化しても production release はできない。** 上記は **engineering scope** であり、release には **法務 / 運用 / プロダクト / 商業** の 4 軸が別途必要。本セクションでそれを明示する。
+
+### 11.1 法務 (Legal — hard gate)
+
+風俗業界 SNS は法務リスクが他業種比 1 桁多い。**弁護士レビュー必須**、design 確定前にやる。
+
+| 項目 | 状態 | Impact |
+|---|---|---|
+| **Cast 本人確認 (年齢/身分)** | ❌ 未実装 | 未成年登録 = 児童福祉法/出会い系規制法等の重大犯罪。自己申告では弱い。eKYC (運転免許/マイナンバー写真) 等が標準 |
+| **Guest 年齢確認** | ❌ 未実装 | 利用規約ベース自己申告で進める方針 (memory 既決) だが、明示的 UI flow が要 |
+| **Privacy Policy / Terms of Service / 18+ confirmation** | ❌ 未作成 | 法務作成 + UI 統合。風営法 / 売春防止法 / 個人情報保護法 / 名誉毀損 すべて触れる |
+| **karte (Phase 3) 設計確定前のレビュー** | ⛔ defer 中 | 要配慮個人情報 (性生活) に該当しうる + 名誉毀損リスク。memory `project_redesign_2026_05.md` 法務フレーム参照 |
+| **コンテンツモデレーション (報告 / abuse flow / ban)** | ❌ 未実装 | 違法投稿 / 児童ポルノ / 売春斡旋等の検知と対応。本人通報 + 自動検出 + 運用者操作の三段構え |
+| **データ削除要求対応 (個人情報保護法 + GDPR 風)** | ❌ 未実装 | account deletion flow / データエクスポート / 削除証跡 |
+| **特商法 / 資金決済法表記** | ❌ 商業 dimension 整理後 | 投げ銭 / サブスク導入時は必須 |
+| **広告審査 (Google/Apple/SNS 広告 NG 業種)** | ⚠ ドメイン特性 | 広告チャンネル制限あり。集客戦略への影響 |
+
+**Action**: release 1-2 ヶ月前に法務専任を入れる前提でスケジュール組む。本セッション ROADMAP には含めず別 track。
+
+### 11.2 運用 (Operations)
+
+| 項目 | 状態 | 必要 |
+|---|---|---|
+| **本番 deploy pipeline** | ⚠ 一応動く | Deploy Container は GitHub Actions で稼働、但し **production target account / cluster / domain 未確定** |
+| **DNS / SSL / CDN** | ❌ 未調達 | サービスドメイン取得、Cloudflare 等の CDN、TLS 証明書 |
+| **本番 DB** | ❌ 未調達 | RDS / Cloud SQL / etc。シード / マイグレーション戦略、bk |
+| **監視 (metrics / logs / traces)** | ⚠ OpenTelemetry SDK 入ってる | exporter 接続先未設定 (Datadog / Grafana / NewRelic 等) |
+| **アラート** | ❌ 未設定 | error rate / latency / queue / DB connection saturation 等 |
+| **runbook / incident response** | ❌ 未作成 | on-call ローテ、escalation、事故対応 |
+| **rate limiting / abuse防御** | ❌ 未実装 | API rate limit / login brute force 防御 / DDoS 対策 |
+| **secrets management** | ⚠ JWT key 自前生成 | KMS / Vault 等で本番 key rotation 設計 |
+| **backup / DR** | ❌ 未設計 | DB backup、リカバリ手順、RTO/RPO 定義 |
+| **scaling 設計** | ❌ 未試算 | 初期 DAU 想定 → 必要 instance 数、PG Listen/Notify は connection-per-viewer なので Redis 移行検討余地 (memory `messaging slice` の Concerns 参照) |
+| **GDPR / 個人情報保護法 体制** | ❌ 未整備 | データ処理同意、cross-border transfer、保管期間ポリシー |
+
+### 11.3 プロダクト (Product UX 完成度)
+
+| 項目 | 状態 | Memo |
+|---|---|---|
+| **Login / Signup UI** | ❌ 解体済 | memory: "login UI は解体済で存在しない"。authStore 直注入経由でしか動かない (dev only) |
+| **Onboarding flow** | ❌ 未設計 | Cast: 業種選択 + プロフィール作成 + 年齢確認 / Guest: 簡易確認 + プロフィール |
+| **Password reset / SMS verification 本番化** | ❌ モック "0000" のまま | SMS provider (Twilio 等) 選定 + 本番接続 |
+| **Push notification 接続** | ❌ toggle のみ | FCM / APNS / Web Push 選定 + service worker (Web) or native 実装 |
+| **Brand mark / Logo** | ❌ design 未定 | Top header center 空 (#102) |
+| **Theme switcher (light mode)** | ❌ design 未定 | #101 |
+| **Desktop 3-col layout** | ❌ 未実装 | Phase 1b-B、capture はある |
+| **画像最適化 (next/image)** | ⚠ 一部 `<img>` 残 | post-card.tsx、ユーザー画像の sizing 戦略 + remotePatterns 設定 |
+| **Empty / error / loading 状態の質** | ⚠ 機能ベース | UX writer のレビューが居ない |
+| **Accessibility (WCAG)** | ⚠ baseline | jsx-a11y rules 通してるが、scrren reader 検証 / keyboard nav / contrast 監査 未実施 |
+| **i18n / l10n** | ❌ 日本語 hardcoded | release は日本のみ前提で 当面 OK だが、コードはハードコード散在 |
+| **error tracking (Sentry 等)** | ❌ 未接続 | frontend / backend 両方 |
+| **analytics (GA4 / Mixpanel 等)** | ❌ 未接続 | KPI 計測 |
+
+### 11.4 商業 (Business / Monetization / Distribution)
+
+| 項目 | 状態 | Memo |
+|---|---|---|
+| **収益化モデル確定** | ⚠ 部分決定 | memory: "Cast 間 Guest 評価共有 = karte" が主収益源、karte 自体 Phase 3 法務 hard gate。投げ銭 / サブスク / 広告 のどれを併用するか未決 |
+| **支払い系** | ❌ 未実装 | 商取引次元 drop 済の名残。投げ銭・サブスク導入時は Stripe / SBPS / GMO PG 等 + 特商法対応 |
+| **Web vs Native** | ⚠ 既定 Web | PWA で行くか、native app (iOS App Store 風俗系は審査 NG 確率高い、Android 同様) は別軸 |
+| **集客 / マーケ** | ❌ 未着手 | 風俗業界向け広告 channel 限定。SNS / Google 広告 NG、業界専門誌 or インフルエンサー |
+| **初期 Cast 確保戦略** | ❌ 未着手 | Cold start: Cast 居ないと Guest 来ない、Guest 居ないと Cast 残らない。クローズドベータ + 招待制等 |
+| **初期 Guest 確保戦略** | ❌ 未着手 | 既存風俗情報サイトからの誘導? アフィリエイト? |
+| **クロスボーダー法務 (海外配信)** | ❌ 未検討 | 日本ドメイン特化なら海外 IP block 等の設計 |
+| **コンプライアンス保険 / 弁護士顧問契約** | ❌ 未着手 | 業界特性的に高リスク → 保険 + 顧問必須 |
+
+### 11.5 まとめ: handoff doc 完走 → release への gap
+
+```
+[handoff doc 完走 = engineering done]
+    ↓ ここから release まで:
+        + 法務 8 項目 (1-3 ヶ月 + 弁護士費用)
+        + 運用 11 項目 (2-3 ヶ月 + infra 費用)
+        + プロダクト 13 項目 (1-2 ヶ月 + design 費用)
+        + 商業 8 項目 (継続的、ローンチ前提作業)
+```
+
+現実的タイムライン:
+- **Closed alpha** (社内動作確認): handoff doc Section 5 A backlog 消化で可。**1-2 週間**
+- **Closed beta** (限定 cast 招待): + 法務 6 項目 (本人確認 + privacy/ToS + モデレーション基礎) + 運用 5 項目 (deploy/監視/secrets/backup/rate limit) + プロダクト 5 項目 (login/signup/onboarding/error tracking/push)。**2-3 ヶ月**
+- **Open beta / GA**: + 残法務 + 残運用 + 集客戦略 + 弁護士顧問契約。**追加 3-6 ヶ月**
+
+**結論**: handoff doc は engineering ロードマップで、release には別 3 軸 (法務 / 運用+UX / 商業) のロードマップが必要。それぞれ別ドキュメントとして起こすことを推奨。
+
+### 11.6 Next-step recommendation
+
+このセクションを踏まえた次セッション初手:
+
+1. ステークホルダー (法務 / プロダクトオーナー / インフラ) と **release target date** を確認
+2. release date から逆算して **法務 review schedule** を真っ先に確保 (lead time 長い)
+3. handoff doc Section 5 A (autonomous backlog) は並行進行
+4. closed alpha 用 **minimal feature freeze** を定義 (= release MVP 範囲)
+
