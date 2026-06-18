@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Read-only relation for online status queries.
-# Write operations should use Offer::Repositories::OfferRepository.
+# Write operations were removed in 2026-05-29 commerce dimension drop.
 
 module Profile
   module Relations

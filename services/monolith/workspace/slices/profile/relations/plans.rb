@@ -3,7 +3,7 @@
 module Profile
   module Relations
     # Read-only relation for ListCasts response.
-    # Write operations should use Offer::Repositories::OfferRepository.
+    # Write operations were removed in 2026-05-29 commerce dimension drop.
     class Plans < Profile::DB::Relation
       schema(:"offer__plans", as: :plans, infer: false) do
         attribute :id, Types::String      # UUID
