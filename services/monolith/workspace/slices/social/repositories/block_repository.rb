@@ -15,7 +15,7 @@ module Social
       # --- Mutations ----
 
       def block(blocker_id:, blocked_id:)
-        rom.gateways[:default].transaction do
+        transaction do
           existing = blocks.where(blocker_id: blocker_id, blocked_id: blocked_id).one
           unless existing
             blocks.changeset(:create,
