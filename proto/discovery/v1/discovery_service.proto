@@ -9,6 +9,7 @@ service DiscoveryService {
   rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse);
   rpc SearchPosts(SearchPostsRequest) returns (SearchPostsResponse);
   rpc RankPosts(RankPostsRequest) returns (RankPostsResponse);
+  rpc SuggestUsers(SuggestUsersRequest) returns (SuggestUsersResponse);
 }
 
 enum RankPeriod {
@@ -52,6 +53,17 @@ message RankPostsRequest {
 
 message RankPostsResponse {
   repeated post.v1.Post posts = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message SuggestUsersRequest {
+  int32 limit = 1;     // default 10, max 50
+  string cursor = 2;   // base64 (created_at, account_id)
+}
+
+message SuggestUsersResponse {
+  repeated profile.v1.Profile profiles = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }

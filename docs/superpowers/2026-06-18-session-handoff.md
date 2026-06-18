@@ -13,7 +13,7 @@
 **Current state (2026-06-19 進行中):**
 
 - **Phase 0 token 基盤** ✅ / **Phase 1a component vocabulary** ✅ / **Phase 1b-A app shell** ✅
-- **Phase 1b-B desktop 3-col layout** 🔄 進行中 (PR1 = 左 nav sidebar + 中央 feed、右「おすすめユーザー」pane は PR2)
+- **Phase 1b-B desktop 3-col layout** ✅ (PR1 #752 = 左 nav sidebar + 中央 feed、PR2 = 右「おすすめユーザー」pane = SuggestUsers RPC)
 - **Phase 2 各ページ刷新** 🔄 進行中 (rx-sns parity polish per page)
 - **Phase 3 karte** ⛔ 法務 hard gate
 - **Domain slices**: identity / profile / media / post / feed / social / discovery / bookmarks / notifications / messaging / footprints 全 ✅ / trust 凍結中
@@ -28,7 +28,7 @@
 | **0** | token foundation (color / typography) | ✅ | #645 (squash bd67c616), `docs/superpowers/specs/2026-05-29-design-system-design.md` |
 | **1a** | component vocabulary (7 components: Button/Input/Tab/Toggle/Avatar/UserCard/PostCard) | ✅ | `src/components/ui/`, `/dev/ui` mock |
 | **1b-A** | mobile app shell (TopBar + BottomTab + Drawer + FAB) | ✅ | #698 spec / #699 impl |
-| **1b-B** | desktop 3-col layout (left nav + center feed + right おすすめユーザー) | 🔄 **進行中** | PR1 = `SideNav` 左 nav + 中央 feed (AppShell 3-col 化、TopBar を `md:hidden`)。右 pane は PR2 (SuggestUsers data source 設計が要、未着手) |
+| **1b-B** | desktop 3-col layout (left nav + center feed + right おすすめユーザー) | ✅ | PR1 #752 = `SideNav` 左 nav + 中央 feed (AppShell 3-col 化、TopBar `md:hidden`)。PR2 = 右「おすすめユーザー」pane (discovery `SuggestUsers` RPC = 反対ロール新着順 + `SuggestedUsersPane` を `xl:` 配置) |
 | **2** | per-page rebuilds (rx-sns parity polish) | 🔄 部分着地 | 監査 rev2 で大半着地、残 P2 (`#101`, `#102`) |
 | **3** | karte (cast→guest private 記録 / Cast 間共有) | ⛔ 法務 hard gate | 設計確定前に弁護士レビュー必須 |
 
@@ -81,11 +81,12 @@ handoff doc Section 5 A の backlog を A 路線で消化中。
 
 | PR | スコープ | 状態 |
 |---|---|---|
-| #750 | post-card.tsx `<img>` → `next/image` (fill + `NEXT_PUBLIC_MEDIA_URL` 由来 remotePatterns)。lint baseline **0e/0w** 達成 | auto-merge 済 |
-| #751 | Notifications preferences spec backfill (`docs/superpowers/specs/2026-06-18-notification-preferences-design.md`) | auto-merge 済 |
-| (本 PR) | Phase 1b-B PR1: `SideNav` desktop 左 nav + AppShell 3-col 化 (TopBar `md:hidden`)。右「おすすめユーザー」pane は PR2 | 進行中 |
+| #750 | post-card.tsx `<img>` → `next/image` (fill + `NEXT_PUBLIC_MEDIA_URL` 由来 remotePatterns)。lint baseline **0e/0w** 達成 | merged |
+| #751 | Notifications preferences spec backfill (`docs/superpowers/specs/2026-06-18-notification-preferences-design.md`) | merged |
+| #752 | Phase 1b-B PR1: `SideNav` desktop 左 nav + AppShell 3-col 化 (TopBar `md:hidden`) | merged |
+| (本 PR) | Phase 1b-B PR2: discovery `SuggestUsers` RPC (反対ロール新着順、自分/フォロー中/双方向 block 除外) + `useSuggestedUsers` hook + BFF + `SuggestedUsersPane` を AppShell 右カラム (`xl:`) に配置。spec `2026-06-19-suggested-users-design.md` / plan `2026-06-19-suggested-users.md` | 進行中 |
 
-**残 backlog (Section 5 A)**: Phase 1b-B PR2 (右 pane + SuggestUsers data source)、Footprints 訪問回数 column (Non-Goals なので保留)。
+**残 backlog (Section 5 A)**: Footprints 訪問回数 column のみ (F0 spec Non-Goals なので保留推奨)。autonomous-friendly backlog は消化完了。
 
 ### Session 2026-06-18 Deliverables (#718-#746, 計 25 PR)
 
@@ -157,7 +158,7 @@ handoff doc Section 5 A の backlog を A 路線で消化中。
 | 項目 | スコープ | 推定 | Why |
 |---|---|---|---|
 | ~~post-card.tsx `<img>` → `next/image`~~ | ✅ **#750 完了** (fill + `NEXT_PUBLIC_MEDIA_URL` 由来 remotePatterns)。lint baseline 0e/0w | — | — |
-| Phase 1b-B desktop 3-col layout | 🔄 PR1 進行中 (`SideNav` 左 nav + 中央 feed)。**PR2 残**: 右「おすすめユーザー」pane。data source が無いため discovery slice に `SuggestUsers` RPC 新設が要 (backend 設計判断 → brainstorming 推奨) | 残 1-2 PR medium | capture 揃ってる (`.superpowers/rx-sns-render/cast-{search,oshi,settings,ranking,bookmarks}.png`)。左+中央は design 確定済、右 pane の data source のみ未決 |
+| ~~Phase 1b-B desktop 3-col layout~~ | ✅ **完了** (PR1 #752 = `SideNav` 左 nav + 中央 feed、PR2 本 PR = discovery `SuggestUsers` RPC 反対ロール新着順 + `SuggestedUsersPane` を `xl:` 配置) | — | — |
 | Footprints 訪問回数 column | `footprints.visits.visit_count` 追加 + upsert で increment + UI で badge 表示 | 1 PR small | F0 spec Non-Goals に書いた item の 1 つ (= **保留推奨**)。雛形は `notifications.notifications.actor_count` 同型 |
 | ~~Notifications spec backfill~~ | ✅ **#751 完了** (`docs/superpowers/specs/2026-06-18-notification-preferences-design.md`) | — | — |
 

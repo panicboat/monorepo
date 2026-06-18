@@ -7,6 +7,7 @@ import { BottomTab } from "./BottomTab";
 import { ComposerFAB } from "./ComposerFAB";
 import { Drawer } from "./Drawer";
 import { SideNav } from "./SideNav";
+import { SuggestedUsersPane } from "./SuggestedUsersPane";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -27,13 +28,13 @@ export function AppShell({ children }: AppShellProps) {
       <div className="md:hidden">
         <TopBar onAvatarClick={() => setDrawerOpen(true)} />
       </div>
-      {/* Desktop: persistent left nav + center column. The space to the right of
-          the center column is reserved for the おすすめユーザー pane (Phase 1b-B PR2). */}
+      {/* Desktop 3-col: persistent left nav + center column + おすすめユーザー pane (xl:). */}
       <div className="mx-auto flex w-full max-w-screen-xl">
         <SideNav />
         <main className="min-w-0 flex-1 pb-24 md:max-w-2xl md:border-x md:border-border md:pb-0">
           {children}
         </main>
+        <SuggestedUsersPane />
       </div>
       <BottomTab />
       <ComposerFAB />
