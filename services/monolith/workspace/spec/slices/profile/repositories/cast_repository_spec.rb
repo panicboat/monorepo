@@ -28,8 +28,7 @@ RSpec.describe "Profile::Repositories::CastRepository", type: :database do
     end
   end
 
-  # Note: save_plans and save_schedules methods moved to Offer slice.
-  # See spec/slices/offer/repositories/offer_repository_spec.rb for those tests.
+  # Note: save_plans and save_schedules methods were removed in 2026-05-29 commerce dimension drop.
 
   describe "#is_online?" do
     let!(:cast_with_schedule) do
@@ -41,7 +40,7 @@ RSpec.describe "Profile::Repositories::CastRepository", type: :database do
     end
 
     before do
-      schedule_repo = Hanami.app.slices[:offer]["relations.schedules"]
+      schedule_repo = Hanami.app.slices[:profile]["relations.schedules"]
       # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
         cast_user_id: cast_with_schedule.user_id,
@@ -70,7 +69,7 @@ RSpec.describe "Profile::Repositories::CastRepository", type: :database do
     end
 
     before do
-      schedule_repo = Hanami.app.slices[:offer]["relations.schedules"]
+      schedule_repo = Hanami.app.slices[:profile]["relations.schedules"]
       # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
         cast_user_id: online_cast.user_id,
@@ -134,7 +133,7 @@ RSpec.describe "Profile::Repositories::CastRepository", type: :database do
       end
 
       before do
-        schedule_repo = Hanami.app.slices[:offer]["relations.schedules"]
+        schedule_repo = Hanami.app.slices[:profile]["relations.schedules"]
         # Use fixed time range that works regardless of current time (00:00 - 23:59)
         schedule_repo.changeset(:create, {
           cast_user_id: online_cast.user_id,

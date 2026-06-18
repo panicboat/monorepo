@@ -37,8 +37,7 @@ module Profile
         !scope.exist?
       end
 
-      # Note: Plan/Schedule write operations moved to Offer slice.
-      # Use Offer::Repositories::OfferRepository for save_plans/save_schedules.
+      # Note: Plan/Schedule write operations were removed in 2026-05-29 commerce dimension drop.
 
       def find_with_plans(user_id)
         casts.combine(:plans, :cast_gallery_media).by_pk(user_id).one
