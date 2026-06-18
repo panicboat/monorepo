@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file discovery/v1/discovery_service.proto.
  */
 export const file_discovery_v1_discovery_service: GenFile = /*@__PURE__*/
-  fileDesc("CiRkaXNjb3ZlcnkvdjEvZGlzY292ZXJ5X3NlcnZpY2UucHJvdG8SDGRpc2NvdmVyeS52MSJXChJTZWFyY2hVc2Vyc1JlcXVlc3QSDQoFcXVlcnkYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJEhMKC3JvbGVfZmlsdGVyGAQgASgFImMKE1NlYXJjaFVzZXJzUmVzcG9uc2USJQoIcHJvZmlsZXMYASADKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiQgoSU2VhcmNoUG9zdHNSZXF1ZXN0Eg0KBXF1ZXJ5GAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJaChNTZWFyY2hQb3N0c1Jlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIlsKEFJhbmtQb3N0c1JlcXVlc3QSKAoGcGVyaW9kGAEgASgOMhguZGlzY292ZXJ5LnYxLlJhbmtQZXJpb2QSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJIlgKEVJhbmtQb3N0c1Jlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIKmkKClJhbmtQZXJpb2QSGwoXUkFOS19QRVJJT0RfVU5TUEVDSUZJRUQQABITCg9SQU5LX1BFUklPRF9EQVkQARIUChBSQU5LX1BFUklPRF9XRUVLEAISEwoPUkFOS19QRVJJT0RfQUxMEAMyiAIKEERpc2NvdmVyeVNlcnZpY2USUgoLU2VhcmNoVXNlcnMSIC5kaXNjb3ZlcnkudjEuU2VhcmNoVXNlcnNSZXF1ZXN0GiEuZGlzY292ZXJ5LnYxLlNlYXJjaFVzZXJzUmVzcG9uc2USUgoLU2VhcmNoUG9zdHMSIC5kaXNjb3ZlcnkudjEuU2VhcmNoUG9zdHNSZXF1ZXN0GiEuZGlzY292ZXJ5LnYxLlNlYXJjaFBvc3RzUmVzcG9uc2USTAoJUmFua1Bvc3RzEh4uZGlzY292ZXJ5LnYxLlJhbmtQb3N0c1JlcXVlc3QaHy5kaXNjb3ZlcnkudjEuUmFua1Bvc3RzUmVzcG9uc2ViBnByb3RvMw", [file_profile_v1_service, file_post_v1_post_service]);
+  fileDesc("CiRkaXNjb3ZlcnkvdjEvZGlzY292ZXJ5X3NlcnZpY2UucHJvdG8SDGRpc2NvdmVyeS52MSJXChJTZWFyY2hVc2Vyc1JlcXVlc3QSDQoFcXVlcnkYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJEhMKC3JvbGVfZmlsdGVyGAQgASgFImMKE1NlYXJjaFVzZXJzUmVzcG9uc2USJQoIcHJvZmlsZXMYASADKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiQgoSU2VhcmNoUG9zdHNSZXF1ZXN0Eg0KBXF1ZXJ5GAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJaChNTZWFyY2hQb3N0c1Jlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIlsKEFJhbmtQb3N0c1JlcXVlc3QSKAoGcGVyaW9kGAEgASgOMhguZGlzY292ZXJ5LnYxLlJhbmtQZXJpb2QSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJIlgKEVJhbmtQb3N0c1Jlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIjQKE1N1Z2dlc3RVc2Vyc1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJImQKFFN1Z2dlc3RVc2Vyc1Jlc3BvbnNlEiUKCHByb2ZpbGVzGAEgAygLMhMucHJvZmlsZS52MS5Qcm9maWxlEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIKmkKClJhbmtQZXJpb2QSGwoXUkFOS19QRVJJT0RfVU5TUEVDSUZJRUQQABITCg9SQU5LX1BFUklPRF9EQVkQARIUChBSQU5LX1BFUklPRF9XRUVLEAISEwoPUkFOS19QRVJJT0RfQUxMEAMy3wIKEERpc2NvdmVyeVNlcnZpY2USUgoLU2VhcmNoVXNlcnMSIC5kaXNjb3ZlcnkudjEuU2VhcmNoVXNlcnNSZXF1ZXN0GiEuZGlzY292ZXJ5LnYxLlNlYXJjaFVzZXJzUmVzcG9uc2USUgoLU2VhcmNoUG9zdHMSIC5kaXNjb3ZlcnkudjEuU2VhcmNoUG9zdHNSZXF1ZXN0GiEuZGlzY292ZXJ5LnYxLlNlYXJjaFBvc3RzUmVzcG9uc2USTAoJUmFua1Bvc3RzEh4uZGlzY292ZXJ5LnYxLlJhbmtQb3N0c1JlcXVlc3QaHy5kaXNjb3ZlcnkudjEuUmFua1Bvc3RzUmVzcG9uc2USVQoMU3VnZ2VzdFVzZXJzEiEuZGlzY292ZXJ5LnYxLlN1Z2dlc3RVc2Vyc1JlcXVlc3QaIi5kaXNjb3ZlcnkudjEuU3VnZ2VzdFVzZXJzUmVzcG9uc2ViBnByb3RvMw", [file_profile_v1_service, file_post_v1_post_service]);
 
 /**
  * @generated from message discovery.v1.SearchUsersRequest
@@ -186,6 +186,59 @@ export const RankPostsResponseSchema: GenMessage<RankPostsResponse> = /*@__PURE_
   messageDesc(file_discovery_v1_discovery_service, 5);
 
 /**
+ * @generated from message discovery.v1.SuggestUsersRequest
+ */
+export type SuggestUsersRequest = Message<"discovery.v1.SuggestUsersRequest"> & {
+  /**
+   * default 10, max 50
+   *
+   * @generated from field: int32 limit = 1;
+   */
+  limit: number;
+
+  /**
+   * base64 (created_at, account_id)
+   *
+   * @generated from field: string cursor = 2;
+   */
+  cursor: string;
+};
+
+/**
+ * Describes the message discovery.v1.SuggestUsersRequest.
+ * Use `create(SuggestUsersRequestSchema)` to create a new message.
+ */
+export const SuggestUsersRequestSchema: GenMessage<SuggestUsersRequest> = /*@__PURE__*/
+  messageDesc(file_discovery_v1_discovery_service, 6);
+
+/**
+ * @generated from message discovery.v1.SuggestUsersResponse
+ */
+export type SuggestUsersResponse = Message<"discovery.v1.SuggestUsersResponse"> & {
+  /**
+   * @generated from field: repeated profile.v1.Profile profiles = 1;
+   */
+  profiles: Profile[];
+
+  /**
+   * @generated from field: string next_cursor = 2;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 3;
+   */
+  hasMore: boolean;
+};
+
+/**
+ * Describes the message discovery.v1.SuggestUsersResponse.
+ * Use `create(SuggestUsersResponseSchema)` to create a new message.
+ */
+export const SuggestUsersResponseSchema: GenMessage<SuggestUsersResponse> = /*@__PURE__*/
+  messageDesc(file_discovery_v1_discovery_service, 7);
+
+/**
  * @generated from enum discovery.v1.RankPeriod
  */
 export enum RankPeriod {
@@ -249,6 +302,14 @@ export const DiscoveryService: GenService<{
     methodKind: "unary";
     input: typeof RankPostsRequestSchema;
     output: typeof RankPostsResponseSchema;
+  },
+  /**
+   * @generated from rpc discovery.v1.DiscoveryService.SuggestUsers
+   */
+  suggestUsers: {
+    methodKind: "unary";
+    input: typeof SuggestUsersRequestSchema;
+    output: typeof SuggestUsersResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_discovery_v1_discovery_service, 0);
