@@ -43,6 +43,7 @@ RSpec.describe "Profile::Repositories::CastRepository", type: :database do
       schedule_repo = Hanami.app.slices[:profile]["relations.schedules"]
       # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
+        id: SecureRandom.uuid_v7,
         cast_user_id: cast_with_schedule.user_id,
         date: Date.today,
         start_time: "00:00",
@@ -72,6 +73,7 @@ RSpec.describe "Profile::Repositories::CastRepository", type: :database do
       schedule_repo = Hanami.app.slices[:profile]["relations.schedules"]
       # Use fixed time range that works regardless of current time (00:00 - 23:59)
       schedule_repo.changeset(:create, {
+        id: SecureRandom.uuid_v7,
         cast_user_id: online_cast.user_id,
         date: Date.today,
         start_time: "00:00",
@@ -136,6 +138,7 @@ RSpec.describe "Profile::Repositories::CastRepository", type: :database do
         schedule_repo = Hanami.app.slices[:profile]["relations.schedules"]
         # Use fixed time range that works regardless of current time (00:00 - 23:59)
         schedule_repo.changeset(:create, {
+          id: SecureRandom.uuid_v7,
           cast_user_id: online_cast.user_id,
           date: Date.today,
           start_time: "00:00",
