@@ -20,3 +20,21 @@ export interface PaginatedNotificationsResponse {
   hasMore: boolean;
   unreadCount: number;
 }
+
+// Per-account notification preferences (11 booleans).
+// `pushEnabled` is the master toggle. The middle 9 fields control per-type
+// push delivery. `footprintUnreadBadge` is in-app only (badge visibility).
+// Persistence-only in v1; gating is deferred.
+export interface NotificationPreferences {
+  pushEnabled: boolean;
+  post: boolean;
+  like: boolean;
+  repost: boolean;
+  quote: boolean;
+  reply: boolean;
+  follow: boolean;
+  mention: boolean;
+  message: boolean;
+  oshi: boolean;
+  footprintUnreadBadge: boolean;
+}

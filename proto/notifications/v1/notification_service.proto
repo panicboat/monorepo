@@ -9,6 +9,8 @@ service NotificationService {
   rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
   rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse);
   rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
+  rpc GetNotificationPreferences(GetNotificationPreferencesRequest) returns (GetNotificationPreferencesResponse);
+  rpc UpdateNotificationPreferences(UpdateNotificationPreferencesRequest) returns (UpdateNotificationPreferencesResponse);
 }
 
 enum NotificationType {
@@ -53,3 +55,31 @@ message MarkReadRequest {
 }
 
 message MarkReadResponse {}
+
+message NotificationPreferences {
+  bool push_enabled = 1;
+  bool post = 2;
+  bool like = 3;
+  bool repost = 4;
+  bool quote = 5;
+  bool reply = 6;
+  bool follow = 7;
+  bool mention = 8;
+  bool message = 9;
+  bool oshi = 10;
+  bool footprint_unread_badge = 11;
+}
+
+message GetNotificationPreferencesRequest {}
+
+message GetNotificationPreferencesResponse {
+  NotificationPreferences preferences = 1;
+}
+
+message UpdateNotificationPreferencesRequest {
+  NotificationPreferences preferences = 1;
+}
+
+message UpdateNotificationPreferencesResponse {
+  NotificationPreferences preferences = 1;
+}
