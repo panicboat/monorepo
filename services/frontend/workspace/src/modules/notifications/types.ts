@@ -12,6 +12,7 @@ export interface NotificationView {
   latestActor: SocialAccountView | null;
   latestEventAt: string;  // ISO8601
   readAt: string | null;  // ISO8601 | null = unread
+  targetPostId: string | null;  // populated for COMMENT/REPLY for deep-link
 }
 
 export interface PaginatedNotificationsResponse {

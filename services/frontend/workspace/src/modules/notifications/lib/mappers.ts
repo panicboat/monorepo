@@ -18,5 +18,6 @@ export function notificationToView(n: Notification): NotificationView {
     latestActor: n.latestActor ? profileToSocialAccount(n.latestActor) : null,
     latestEventAt: timestampToIso(n.latestEventAt),
     readAt: n.readAt ? timestampToIso(n.readAt) : null,
+    targetPostId: n.targetPostId || null,
   };
 }

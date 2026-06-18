@@ -31,6 +31,7 @@ message Notification {
   profile.v1.Profile latest_actor = 5;        // cross-slice hydration
   google.protobuf.Timestamp latest_event_at = 6;
   google.protobuf.Timestamp read_at = 7;      // unset = unread
+  string target_post_id = 8;                 // non-empty only for COMMENT / REPLY notifications (= the parent post for deep-link)
 }
 
 message ListNotificationsRequest {

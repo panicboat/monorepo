@@ -61,14 +61,16 @@ module Post
               recipient_id: parent.user_id,
               type: "reply",
               target_resource_id: parent.id,
-              actor_id: user_id
+              actor_id: user_id,
+              target_post_id: post.id
             )
           else
             notifications_emit.call(
               recipient_id: post.author_id,
               type: "comment",
               target_resource_id: post.id,
-              actor_id: user_id
+              actor_id: user_id,
+              target_post_id: post.id
             )
           end
 

@@ -13,6 +13,7 @@ module Notifications
         attribute :latest_event_at, Types::Time
         attribute :read_at, Types::Time.optional
         attribute :created_at, Types::Time
+        attribute :target_post_id, Types::String.optional
 
         primary_key :id
       end

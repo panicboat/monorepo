@@ -30,8 +30,9 @@ module Notifications
       # @param type [String] one of: 'like' | 'comment' | 'reply' | 'follow_request' | 'follow_approved'
       # @param target_resource_id [String] post_id | comment_id | actor_account_id (per type)
       # @param actor_id [String] account_id who triggered the event
+      # @param target_post_id [String, nil] parent post_id for COMMENT/REPLY deep-link; nil otherwise
       # @return [Object, nil] row or nil
-      def call(recipient_id:, type:, target_resource_id:, actor_id:)
+      def call(recipient_id:, type:, target_resource_id:, actor_id:, target_post_id: nil)
         return nil if recipient_id.nil? || actor_id.nil?
         return nil if recipient_id.to_s == actor_id.to_s
 
@@ -42,7 +43,8 @@ module Notifications
           recipient_id: recipient_id,
           type: type,
           target_resource_id: target_resource_id,
-          actor_id: actor_id
+          actor_id: actor_id,
+          target_post_id: target_post_id
         )
       rescue StandardError => e
         Hanami.logger.warn("Notifications::Emit failed: #{e.class}: #{e.message}")
