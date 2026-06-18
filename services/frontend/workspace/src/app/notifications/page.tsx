@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useNotifications, NotificationType } from "@/modules/notifications";
@@ -24,13 +25,40 @@ function describe(n: NotificationView): string {
   }
 }
 
+// Returns the destination URL for a notification tap, or null when no
+// deep-link is possible (e.g. COMMENT/REPLY where target_resource_id is the
+// comment_id and the post_id is not on the notification view).
+function targetHref(n: NotificationView): string | null {
+  switch (n.type) {
+    case NotificationType.LIKE:
+      return `/posts/${encodeURIComponent(n.targetResourceId)}`;
+    case NotificationType.FOLLOW_REQUEST:
+      return "/settings/follow-requests";
+    case NotificationType.FOLLOW_APPROVED:
+      return n.latestActor?.username
+        ? `/u/${encodeURIComponent(n.latestActor.username)}`
+        : null;
+    default:
+      return null;
+  }
+}
+
 function formatDate(iso: string): string {
   if (!iso) return "";
   return new Date(iso).toLocaleString("ja-JP");
 }
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const { notifications, hasMore, unreadCount, loading, loadMore, markRead } = useNotifications();
+
+  const handleClick = (n: NotificationView) => {
+    if (!n.readAt) {
+      markRead(n.id).catch(() => {});
+    }
+    const href = targetHref(n);
+    if (href) router.push(href);
+  };
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
@@ -52,7 +80,7 @@ export default function NotificationsPage() {
           <button
             key={n.id}
             type="button"
-            onClick={() => markRead(n.id)}
+            onClick={() => handleClick(n)}
             className={`flex w-full items-start gap-3 border-b border-border px-4 py-3 text-left hover:bg-bg-secondary ${
               isUnread ? "bg-bg-secondary/50" : ""
             }`}
