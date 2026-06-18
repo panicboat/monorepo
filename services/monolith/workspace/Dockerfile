@@ -19,8 +19,12 @@ COPY Gemfile Gemfile.lock ./
 ENV BUNDLE_PATH=/usr/local/bundle \
     BUNDLE_JOBS=4 \
     BUNDLE_RETRY=3
-# TODO: re-enable `bundle config set --local frozen true` once google-protobuf gemspec supports Ruby 4.0
+# Enforce Gemfile.lock parity. google-protobuf >= 4.33 dropped its Ruby ceiling
+# so the older blocker no longer applies. A drift between Gemfile and
+# Gemfile.lock fails the build immediately rather than silently mutating
+# the lock at runtime.
 RUN --mount=type=cache,target=/var/cache/bundle,sharing=locked \
+    bundle config set --local frozen true && \
     bundle install
 
 # =============================================================================
