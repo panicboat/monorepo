@@ -12,25 +12,26 @@ module Notifications
 
       # Idempotent emit. Aggregates into existing group row if present, else inserts new.
       # Returns the resulting row.
-      def emit(recipient_id:, type:, target_resource_id:, actor_id:)
+      def emit(recipient_id:, type:, target_resource_id:, actor_id:, target_post_id: nil)
         new_id = SecureRandom.uuid_v7
         now = Time.now
 
         sql = <<~SQL
           INSERT INTO notifications.notifications
             (id, recipient_id, type, target_resource_id, actor_count,
-             latest_actor_id, latest_event_at, read_at, created_at)
-          VALUES (?, ?, ?, ?, 1, ?, ?, NULL, ?)
+             latest_actor_id, latest_event_at, read_at, created_at, target_post_id)
+          VALUES (?, ?, ?, ?, 1, ?, ?, NULL, ?, ?)
           ON CONFLICT (recipient_id, type, target_resource_id) DO UPDATE SET
             actor_count = notifications.notifications.actor_count + 1,
             latest_actor_id = EXCLUDED.latest_actor_id,
             latest_event_at = EXCLUDED.latest_event_at,
-            read_at = NULL
+            read_at = NULL,
+            target_post_id = EXCLUDED.target_post_id
           RETURNING *
         SQL
 
         ds = notification_records.dataset.db
-        result = ds.fetch(sql, new_id, recipient_id, type, target_resource_id, actor_id, now, now).first
+        result = ds.fetch(sql, new_id, recipient_id, type, target_resource_id, actor_id, now, now, target_post_id).first
         result
       end
 

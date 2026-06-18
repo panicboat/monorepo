@@ -26,12 +26,15 @@ function describe(n: NotificationView): string {
 }
 
 // Returns the destination URL for a notification tap, or null when no
-// deep-link is possible (e.g. COMMENT/REPLY where target_resource_id is the
-// comment_id and the post_id is not on the notification view).
+// deep-link is possible. COMMENT/REPLY route to the parent post via
+// `targetPostId` (target_resource_id itself is the comment_id).
 function targetHref(n: NotificationView): string | null {
   switch (n.type) {
     case NotificationType.LIKE:
       return `/posts/${encodeURIComponent(n.targetResourceId)}`;
+    case NotificationType.COMMENT:
+    case NotificationType.REPLY:
+      return n.targetPostId ? `/posts/${encodeURIComponent(n.targetPostId)}` : null;
     case NotificationType.FOLLOW_REQUEST:
       return "/settings/follow-requests";
     case NotificationType.FOLLOW_APPROVED:

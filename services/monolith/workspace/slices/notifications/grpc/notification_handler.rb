@@ -45,7 +45,8 @@ module Notifications
             actor_count: row.actor_count,
             latest_actor: result[:profiles_by_actor_id][row.latest_actor_id],
             latest_event_at: time_to_timestamp(row.latest_event_at),
-            read_at: row.read_at ? time_to_timestamp(row.read_at) : nil
+            read_at: row.read_at ? time_to_timestamp(row.read_at) : nil,
+            target_post_id: row.target_post_id || ""
           )
         end
 
