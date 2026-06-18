@@ -68,6 +68,33 @@ module Profile
         update(account_id, attrs.merge(updated_at: Time.now))
       end
 
+      # Newest-first profiles for the suggested-users feature.
+      # role_filter: nil = no filter, 1 = guest only, 2 = cast only (subquery against identity.users).
+      # exclude_account_ids: viewer self + already-following + bidirectionally-blocked.
+      # Cursor pagination over (created_at, account_id) — same shape as search_by_query.
+      def list_recent(limit:, cursor: nil, exclude_account_ids: [], role_filter: nil)
+        scope = profiles
+        scope = scope.exclude(account_id: exclude_account_ids) unless exclude_account_ids.empty?
+
+        if role_filter && [1, 2].include?(role_filter)
+          scope = scope.where(
+            account_id: profiles.dataset.db[:identity__users].where(role: role_filter).select(:id)
+          )
+        end
+
+        if cursor
+          decoded = decode_cursor(cursor)
+          if decoded
+            scope = scope.where {
+              (created_at < decoded[:created_at]) |
+                ((created_at =~ decoded[:created_at]) & (account_id < decoded[:id]))
+            }
+          end
+        end
+
+        scope.order { [created_at.desc, account_id.desc] }.limit(limit + 1).to_a
+      end
+
       # Cross-slice query for discovery slice. Case-insensitive partial match
       # on username or display_name. Cursor pagination over (created_at, account_id)
       # — profiles has no separate id column, account_id is the PK.
