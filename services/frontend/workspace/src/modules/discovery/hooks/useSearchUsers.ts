@@ -7,7 +7,10 @@ import type { PaginatedUsersResponse } from "../types";
 
 const DEBOUNCE_MS = 300;
 
-export function useSearchUsers(query: string) {
+// 0 = all, 1 = guest only, 2 = cast only
+export type SearchUsersRoleFilter = 0 | 1 | 2;
+
+export function useSearchUsers(query: string, roleFilter: SearchUsersRoleFilter = 0) {
   const token = getAuthToken();
   const [debounced, setDebounced] = useState(query);
 
@@ -22,7 +25,8 @@ export function useSearchUsers(query: string) {
     if (trimmed.length === 0) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    return `/api/discovery/users?q=${encodeURIComponent(trimmed)}${cursorQs}`;
+    const roleQs = roleFilter > 0 ? `&role=${roleFilter}` : "";
+    return `/api/discovery/users?q=${encodeURIComponent(trimmed)}${cursorQs}${roleQs}`;
   };
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =

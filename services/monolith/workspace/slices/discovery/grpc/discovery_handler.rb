@@ -28,8 +28,14 @@ module Discovery
         authenticate_user!
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
+        role_filter = request.message.role_filter.zero? ? nil : request.message.role_filter
 
-        result = search_users_uc.call(query: request.message.query, limit: limit, cursor: cursor)
+        result = search_users_uc.call(
+          query: request.message.query,
+          limit: limit,
+          cursor: cursor,
+          role_filter: role_filter
+        )
         ::Discovery::V1::SearchUsersResponse.new(
           profiles: result[:profiles],
           next_cursor: result[:next_cursor] || "",

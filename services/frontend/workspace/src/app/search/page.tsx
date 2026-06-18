@@ -8,6 +8,14 @@ import { Tabs, type TabItem } from "@/components/ui/tab";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { FollowButton } from "@/modules/social";
 import { useSearchUsers, useSearchPosts } from "@/modules/discovery";
+import type { SearchUsersRoleFilter } from "@/modules/discovery/hooks/useSearchUsers";
+import { cn } from "@/lib/utils";
+
+const ROLE_CHIPS: Array<{ id: SearchUsersRoleFilter; label: string }> = [
+  { id: 0, label: "全て" },
+  { id: 2, label: "キャスト" },
+  { id: 1, label: "ゲスト" },
+];
 
 const TABS: TabItem[] = [
   { id: "users", label: "ユーザー" },
@@ -17,8 +25,9 @@ const TABS: TabItem[] = [
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("users");
+  const [roleFilter, setRoleFilter] = useState<SearchUsersRoleFilter>(0);
 
-  const users = useSearchUsers(tab === "users" ? query : "");
+  const users = useSearchUsers(tab === "users" ? query : "", roleFilter);
   const posts = useSearchPosts(tab === "posts" ? query : "");
 
   const trimmed = query.trim();
@@ -48,6 +57,30 @@ export default function SearchPage() {
         </div>
       </div>
       <Tabs items={TABS} value={tab} onValueChange={setTab} />
+
+      {tab === "users" && (
+        <div className="flex gap-2 overflow-x-auto px-4 py-2">
+          {ROLE_CHIPS.map((chip) => {
+            const active = roleFilter === chip.id;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => setRoleFilter(chip.id)}
+                className={cn(
+                  "shrink-0 rounded-full border px-3 py-1 text-xs",
+                  active
+                    ? "border-transparent bg-gradient-brand text-white"
+                    : "border-divider text-text-secondary hover:text-text-primary"
+                )}
+                aria-pressed={active}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {trimmed.length === 0 && (
         <div className="flex flex-col items-center px-4 py-12 text-center">

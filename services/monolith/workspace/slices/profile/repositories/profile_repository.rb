@@ -71,7 +71,9 @@ module Profile
       # Cross-slice query for discovery slice. Case-insensitive partial match
       # on username or display_name. Cursor pagination over (created_at, account_id)
       # — profiles has no separate id column, account_id is the PK.
-      def search_by_query(query:, limit: 20, cursor: nil)
+      # role_filter: nil/0 = no filter, 1 = guest only, 2 = cast only.
+      # Implemented via subquery against identity.users (account.id == users.id).
+      def search_by_query(query:, limit: 20, cursor: nil, role_filter: nil)
         q = query.to_s.strip
         return [] if q.empty?
 
@@ -82,6 +84,12 @@ module Profile
             Sequel.lit("display_name ILIKE ?", pattern)
           )
         )
+
+        if role_filter && [1, 2].include?(role_filter)
+          scope = scope.where(
+            account_id: profiles.dataset.db[:identity__users].where(role: role_filter).select(:id)
+          )
+        end
 
         if cursor
           decoded = decode_cursor(cursor)
