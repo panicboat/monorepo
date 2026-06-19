@@ -180,7 +180,7 @@ handoff doc Section 5 A の backlog を A 路線で消化中。
 | 項目 | Memo |
 |---|---|
 | ~~`cast_repository.rb` の `is_online?` / `online_cast_ids` / `list_casts_with_filters`~~ | ✅ **完了** (本 PR)。裏取りの結果 writer も caller も無い完全な dead code だった (「書き込んでる」は不正確)。4 メソッド + `schedules` relation 削除 + `offer.schedules` テーブル drop migration。`offer.plans` は別 concern で残置 |
-| `portfolio.profiles` 旧 DB schema | profile P3-P4 で論理的に `profiles` に統合済だが、物理テーブルは `portfolio.profiles` 名で残る (rename = 高コスト migration deferred)。実害なしだが命名汚染 |
+| ~~`portfolio.profiles` 旧 DB schema~~ | ✅ **完了** (本 PR)。実は profile slice の **全 10 テーブルが `portfolio` schema に同居**していた (単独テーブルでなく schema 全体)。「高コスト migration」の据え置き理由は**誤り** — `ALTER SCHEMA portfolio RENAME TO profile` は metadata-only の瞬時 op、FK 自動追従、cross-schema FK ゼロ。コード変更は 10 relation 宣言の `portfolio__`→`profile__` のみ。`portfolio` schema 消滅 |
 | ~~protoc-gen-es version pin~~ | ✅ **#755 完了** (caret → exact `2.12.0` pin。`@bufbuild/buf`/grpc-tools と同方針) |
 
 ## 6. Quick-Start for Next Session
