@@ -457,6 +457,10 @@ ls bin/codegen
 
 ### 12.3 大方針 (master plan) で決めるべき項目
 
+> **2026-06-20 決定済 → `docs/superpowers/specs/2026-06-20-product-direction-mvp-design.md` 参照。**
+> プロダクト方向を確定: **法務は考慮対象外**（プロダクト確立後に落とし込む）。中核課題は 2 柱（A. 集客力の安定 = 凍結しない durable presence + audience export、B. 問題のある Guest からの自己防衛 = karte）、両方 MVP 必須。収益化は課金結合なし・設計に含める。ビルド順 = Auth/Onboarding → karte → durability/export。
+> 以下の元チェックリストは、product スコープについては上記 direction doc に置き換わる（法務 track は本計画では不要、運用インフラは別トラック）。
+
 次セッション初手で確定する。これが決まれば autonomous run に移れる。
 
 #### 法務 track
