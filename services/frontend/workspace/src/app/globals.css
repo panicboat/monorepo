@@ -58,6 +58,21 @@
     0 4px 6px -4px rgb(168 85 247 / 0.2);
 }
 
+/* Light theme: override only the semantic aliases. Neutral/brand scales,
+   gradients, and radius stay shared in :root (dark default). */
+[data-theme="light"] {
+  --color-bg: #ffffff;
+  --color-surface: var(--color-neutral-100);
+  --color-bg-secondary: var(--color-neutral-200);
+  --color-divider: var(--color-neutral-200);
+  --color-border: var(--color-neutral-300);
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-500);
+  --color-text-muted: var(--color-neutral-400);
+  --color-input-bg: var(--color-neutral-100);
+  /* accent/brand stay shared with :root — no override needed */
+}
+
 /* root font-size 15px — spec §3.2 が全 rem token の前提とする */
 html {
   font-size: 93.75%;
