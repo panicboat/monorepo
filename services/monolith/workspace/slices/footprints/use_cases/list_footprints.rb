@@ -14,7 +14,7 @@ module Footprints
 
       MAX_LIMIT = 50
 
-      # @return [Hash] { rows: Array<{visitor_id, last_visited_at, is_unread}>, next_cursor:, has_more: }
+      # @return [Hash] { rows: Array<{visitor_id, last_visited_at, visit_count, is_unread}>, next_cursor:, has_more: }
       def call(viewer_id:, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
         exclude_ids = excluded_visitor_ids_for(viewer_id)
@@ -39,6 +39,7 @@ module Footprints
           {
             visitor_id: row[:visitor_id],
             last_visited_at: row[:last_visited_at],
+            visit_count: row[:visit_count],
             is_unread: last_read.nil? || row[:last_visited_at] > last_read
           }
         end

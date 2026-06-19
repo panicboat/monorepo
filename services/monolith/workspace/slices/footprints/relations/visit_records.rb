@@ -9,6 +9,7 @@ module Footprints
         attribute :visited_id, Types::String
         attribute :first_visited_at, Types::Time
         attribute :last_visited_at, Types::Time
+        attribute :visit_count, Types::Integer
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 

@@ -84,9 +84,10 @@ handoff doc Section 5 A の backlog を A 路線で消化中。
 | #750 | post-card.tsx `<img>` → `next/image` (fill + `NEXT_PUBLIC_MEDIA_URL` 由来 remotePatterns)。lint baseline **0e/0w** 達成 | merged |
 | #751 | Notifications preferences spec backfill (`docs/superpowers/specs/2026-06-18-notification-preferences-design.md`) | merged |
 | #752 | Phase 1b-B PR1: `SideNav` desktop 左 nav + AppShell 3-col 化 (TopBar `md:hidden`) | merged |
-| (本 PR) | Phase 1b-B PR2: discovery `SuggestUsers` RPC (反対ロール新着順、自分/フォロー中/双方向 block 除外) + `useSuggestedUsers` hook + BFF + `SuggestedUsersPane` を AppShell 右カラム (`xl:`) に配置。spec `2026-06-19-suggested-users-design.md` / plan `2026-06-19-suggested-users.md` | 進行中 |
+| #753 | Phase 1b-B PR2: discovery `SuggestUsers` RPC (反対ロール新着順、自分/フォロー中/双方向 block 除外) + `useSuggestedUsers` hook + BFF + `SuggestedUsersPane` を AppShell 右カラム (`xl:`) に配置。spec `2026-06-19-suggested-users-design.md` / plan `2026-06-19-suggested-users.md` | merged |
+| (本 PR) | Footprints 訪問回数: `footprints.visits.visit_count` 列追加 + `upsert_visit` で increment + `Footprint.visit_count` proto + `/footprints` UI で「N回訪問」表示 | 進行中 |
 
-**残 backlog (Section 5 A)**: Footprints 訪問回数 column のみ (F0 spec Non-Goals なので保留推奨)。autonomous-friendly backlog は消化完了。
+**残 backlog (Section 5 A)**: なし。autonomous-friendly backlog 全消化。次は Section 12.3 大方針決定 (ステークホルダー判断) or B/C の design・tech debt 項目。
 
 ### Session 2026-06-18 Deliverables (#718-#746, 計 25 PR)
 
@@ -158,8 +159,8 @@ handoff doc Section 5 A の backlog を A 路線で消化中。
 | 項目 | スコープ | 推定 | Why |
 |---|---|---|---|
 | ~~post-card.tsx `<img>` → `next/image`~~ | ✅ **#750 完了** (fill + `NEXT_PUBLIC_MEDIA_URL` 由来 remotePatterns)。lint baseline 0e/0w | — | — |
-| ~~Phase 1b-B desktop 3-col layout~~ | ✅ **完了** (PR1 #752 = `SideNav` 左 nav + 中央 feed、PR2 本 PR = discovery `SuggestUsers` RPC 反対ロール新着順 + `SuggestedUsersPane` を `xl:` 配置) | — | — |
-| Footprints 訪問回数 column | `footprints.visits.visit_count` 追加 + upsert で increment + UI で badge 表示 | 1 PR small | F0 spec Non-Goals に書いた item の 1 つ (= **保留推奨**)。雛形は `notifications.notifications.actor_count` 同型 |
+| ~~Phase 1b-B desktop 3-col layout~~ | ✅ **完了** (PR1 #752 = `SideNav` 左 nav + 中央 feed、PR2 #753 = discovery `SuggestUsers` RPC 反対ロール新着順 + `SuggestedUsersPane` を `xl:` 配置) | — | — |
+| ~~Footprints 訪問回数 column~~ | ✅ **完了** (本 PR、`footprints.visits.visit_count` + upsert increment + `Footprint.visit_count` proto + `/footprints` で「N回訪問」表示)。F0 spec Non-Goals だったが回収 | — | — |
 | ~~Notifications spec backfill~~ | ✅ **#751 完了** (`docs/superpowers/specs/2026-06-18-notification-preferences-design.md`) | — | — |
 
 ### B. Design / 戦略判断が要る
