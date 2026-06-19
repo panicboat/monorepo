@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
+import { BrandMark } from "./BrandMark";
 import { PostComposerModal } from "@/modules/post/components/PostComposerModal";
 import { useProfile } from "@/modules/profile/hooks";
 import { useUnreadCount, useNotificationPreferences } from "@/modules/notifications/hooks";
@@ -51,6 +52,7 @@ export function SideNav() {
 
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col px-3 py-4 md:flex">
+      <BrandMark className="px-4 pb-4 text-xl" />
       <nav className="flex-1 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
           const href = item.path === "__profile__" ? profileHref : item.path;
