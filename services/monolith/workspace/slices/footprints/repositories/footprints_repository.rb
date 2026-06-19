@@ -8,20 +8,22 @@ module Footprints
       include ::Concerns::CursorPagination
 
       # Idempotent upsert per (visitor_id, visited_id) pair.
-      # On conflict, refresh last_visited_at + updated_at; first_visited_at stays.
-      # Returns row hash with :first_visited_at and :last_visited_at.
+      # First visit inserts visit_count = 1; each repeat visit increments it and
+      # refreshes last_visited_at + updated_at; first_visited_at stays.
+      # Returns row hash with :first_visited_at, :last_visited_at, :visit_count.
       def upsert_visit(visitor_id:, visited_id:)
         new_id = SecureRandom.uuid_v7
         now = Time.now
 
         sql = <<~SQL
           INSERT INTO footprints.visits
-            (id, visitor_id, visited_id, first_visited_at, last_visited_at, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
+            (id, visitor_id, visited_id, first_visited_at, last_visited_at, visit_count, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, 1, ?, ?)
           ON CONFLICT (visitor_id, visited_id) DO UPDATE
             SET last_visited_at = EXCLUDED.last_visited_at,
-                updated_at = EXCLUDED.updated_at
-          RETURNING first_visited_at, last_visited_at
+                updated_at = EXCLUDED.updated_at,
+                visit_count = footprints.visits.visit_count + 1
+          RETURNING first_visited_at, last_visited_at, visit_count
         SQL
 
         ds = visit_records.dataset.db

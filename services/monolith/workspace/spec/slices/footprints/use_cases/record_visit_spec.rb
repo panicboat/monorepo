@@ -37,12 +37,13 @@ RSpec.describe Footprints::UseCases::RecordVisit do
     expect(visit_records.dataset.count).to eq(0)
   end
 
-  it "inserts a row on first visit" do
+  it "inserts a row with visit_count 1 on first visit" do
     use_case.call(visitor_id: visitor, visited_id: visited)
     expect(visit_records.dataset.count).to eq(1)
+    expect(visit_records.dataset.first[:visit_count]).to eq(1)
   end
 
-  it "upserts (single row, last_visited_at refreshed) on second visit" do
+  it "upserts (single row, last_visited_at refreshed, visit_count incremented) on second visit" do
     use_case.call(visitor_id: visitor, visited_id: visited)
     row1 = visit_records.dataset.first
     sleep 0.05
@@ -51,5 +52,6 @@ RSpec.describe Footprints::UseCases::RecordVisit do
     expect(rows.size).to eq(1)
     expect(rows.first[:last_visited_at]).to be > row1[:last_visited_at]
     expect(rows.first[:first_visited_at]).to eq(row1[:first_visited_at])
+    expect(rows.first[:visit_count]).to eq(2)
   end
 end

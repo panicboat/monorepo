@@ -58,7 +58,8 @@ module Footprints
           ::Footprints::V1::Footprint.new(
             visitor: profile,
             last_visited_at: to_proto_ts(row[:last_visited_at]),
-            is_unread: row[:is_unread]
+            is_unread: row[:is_unread],
+            visit_count: row[:visit_count]
           )
         end
 

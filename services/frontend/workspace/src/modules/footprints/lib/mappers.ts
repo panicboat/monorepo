@@ -20,5 +20,6 @@ export function mapFootprintToView(proto: FootprintProto): FootprintView {
     },
     lastVisitedAt: lastVisitedAtIso,
     isUnread: !!proto.isUnread,
+    visitCount: proto.visitCount || 0,
   };
 }

@@ -10,7 +10,7 @@ export interface FootprintRowProps {
 }
 
 export function FootprintRow({ footprint }: FootprintRowProps) {
-  const { visitor, lastVisitedAt, isUnread } = footprint;
+  const { visitor, lastVisitedAt, isUnread, visitCount } = footprint;
   const href = visitor.username ? `/u/${encodeURIComponent(visitor.username)}` : "#";
 
   return (
@@ -30,9 +30,14 @@ export function FootprintRow({ footprint }: FootprintRowProps) {
         <p className="truncate font-bold text-text-primary">{visitor.displayName || "—"}</p>
         <p className="truncate text-sm text-text-secondary">@{visitor.username || "—"}</p>
       </div>
-      <span className="text-xs text-text-muted">
-        {lastVisitedAt ? formatTimeAgo(lastVisitedAt) : ""}
-      </span>
+      <div className="flex flex-col items-end gap-0.5">
+        <span className="text-xs text-text-muted">
+          {lastVisitedAt ? formatTimeAgo(lastVisitedAt) : ""}
+        </span>
+        {visitCount > 1 && (
+          <span className="text-xs text-text-secondary">{visitCount}回訪問</span>
+        )}
+      </div>
     </Link>
   );
 }

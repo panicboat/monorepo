@@ -43,6 +43,7 @@ message Footprint {
   profile.v1.Profile visitor = 1;
   google.protobuf.Timestamp last_visited_at = 2;
   bool is_unread = 3;
+  int32 visit_count = 4;  // total visits by this visitor (>= 1)
 }
 
 message GetUnreadCountRequest {}

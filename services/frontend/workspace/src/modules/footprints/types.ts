@@ -12,6 +12,7 @@ export interface FootprintView {
   visitor: FootprintVisitorView;
   lastVisitedAt: string; // ISO8601
   isUnread: boolean;
+  visitCount: number;
 }
 
 export interface PaginatedFootprintsResponse {
