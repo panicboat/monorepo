@@ -1,7 +1,7 @@
 module Profile
   module Relations
     class CastAreas < Profile::DB::Relation
-      schema(:"portfolio__cast_areas", as: :cast_areas, infer: false) do
+      schema(:"profile__cast_areas", as: :cast_areas, infer: false) do
         attribute :cast_user_id, Types::String
         attribute :area_id, Types::String
         attribute :created_at, Types::Time

@@ -26,7 +26,7 @@ RSpec.describe "Profile::Relations::Casts", type: :database do
   end
 
   it "maps to the correct table" do
-    expect(relation.name.dataset).to eq(:"portfolio__casts")
+    expect(relation.name.dataset).to eq(:"profile__casts")
   end
 
   it "defines associations" do

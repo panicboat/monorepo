@@ -1,7 +1,7 @@
 module Profile
   module Relations
     class CastGenres < Profile::DB::Relation
-      schema(:"portfolio__cast_genres", as: :cast_genres, infer: false) do
+      schema(:"profile__cast_genres", as: :cast_genres, infer: false) do
         attribute :id, Types::String
         attribute :cast_user_id, Types::String
         attribute :genre_id, Types::String

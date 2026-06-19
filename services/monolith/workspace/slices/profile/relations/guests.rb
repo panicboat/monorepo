@@ -3,7 +3,7 @@
 module Profile
   module Relations
     class Guests < Profile::DB::Relation
-      schema(:"portfolio__guests", as: :guests, infer: false) do
+      schema(:"profile__guests", as: :guests, infer: false) do
         attribute :user_id, Types::String # UUID
         attribute :name, Types::String
         attribute :avatar_media_id, Types::String
