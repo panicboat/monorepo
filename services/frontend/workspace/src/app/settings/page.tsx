@@ -8,6 +8,7 @@ import { AreaSettings } from "@/modules/profile/components/AreaSettings";
 import { PrivacySettings } from "@/modules/profile/components/PrivacySettings";
 import { AccountSettings } from "@/modules/profile/components/AccountSettings";
 import { NotificationSettings } from "@/modules/notifications/components/NotificationSettings";
+import { AppearanceSettings } from "@/modules/profile/components/AppearanceSettings";
 
 export default function SettingsPage() {
   const isHydrated = useAuthStore(selectIsHydrated);
@@ -18,6 +19,7 @@ export default function SettingsPage() {
     { id: "notifications", label: "通知設定" },
     ...(role === "cast" ? [{ id: "area", label: "エリア" }] : []),
     { id: "privacy", label: "プライバシー" },
+    { id: "appearance", label: "外観" },
     { id: "account", label: "アカウント" },
   ];
   const [tab, setTab] = useState("notifications");
@@ -41,6 +43,7 @@ export default function SettingsPage() {
         {tab === "notifications" && <NotificationSettings />}
         {tab === "area" && role === "cast" && <AreaSettings profile={profile} save={saveProfile} />}
         {tab === "privacy" && <PrivacySettings profile={profile} save={saveProfile} />}
+        {tab === "appearance" && <AppearanceSettings />}
         {tab === "account" && <AccountSettings profile={profile} save={saveProfile} />}
       </div>
     </main>
