@@ -167,7 +167,7 @@ handoff doc Section 5 A の backlog を A 路線で消化中。
 
 | 項目 | 必要なもの | Memo |
 |---|---|---|
-| **#101 Settings 外観 tab** (theme switcher) | light mode 色トークン設計 + ThemeProvider + localStorage 永続化 | rx-sns capture: `.superpowers/rx-sns-render/p04-settings-外観.png` (3 radio: ライト/ダーク/システム)。token は `src/app/globals.css` の `--color-*` を CSS variable で出し分け |
+| ~~**#101 Settings 外観 tab** (theme switcher)~~ | ✅ **完了** (本 PR) | 自前テーマ基盤（no-flash inline script + `ThemeProvider`/`useTheme`、依存なし。next-themes は ~13ヶ月 dormant、@wrksz/themes は若く単独メンテナで不採用）。`[data-theme="light"]` で semantic alias 上書き、外観 tab (ライト/ダーク/システム)。spec `2026-06-19-theme-switcher-design.md` / plan `2026-06-19-theme-switcher.md` |
 | ~~**#102 Top header brand mark**~~ | ✅ **完了** (本 PR) | サービス名 = **dystopia.city** で確定。`BrandMark` (brand-gradient wordmark) を SideNav 上部 + mobile TopBar center に配置。本ロゴ確定時は `BrandMark` 差し替えで対応 |
 | Messaging media attach | spec (proto + storage 設計 + UI) | M-spec deferred item |
 | Messaging reactions / quote-reply / edit-delete | spec | M-spec deferred |
