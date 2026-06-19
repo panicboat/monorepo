@@ -168,7 +168,7 @@ handoff doc Section 5 A の backlog を A 路線で消化中。
 | 項目 | 必要なもの | Memo |
 |---|---|---|
 | **#101 Settings 外観 tab** (theme switcher) | light mode 色トークン設計 + ThemeProvider + localStorage 永続化 | rx-sns capture: `.superpowers/rx-sns-render/p04-settings-外観.png` (3 radio: ライト/ダーク/システム)。token は `src/app/globals.css` の `--color-*` を CSS variable で出し分け |
-| **#102 Top header brand mark** | brand logo asset (現状 `dystopia.city` 文字撤去後の center が空) | rx-sns の R-mark 相当。design 判断要 |
+| ~~**#102 Top header brand mark**~~ | ✅ **完了** (本 PR) | サービス名 = **dystopia.city** で確定。`BrandMark` (brand-gradient wordmark) を SideNav 上部 + mobile TopBar center に配置。本ロゴ確定時は `BrandMark` 差し替えで対応 |
 | Messaging media attach | spec (proto + storage 設計 + UI) | M-spec deferred item |
 | Messaging reactions / quote-reply / edit-delete | spec | M-spec deferred |
 | Push provider 接続 (FCM/APNS) | infra 判断 (Firebase か, native のみか, web push か) | preferences `push_enabled` は currently UI のみ、実 push なし |

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
+import { BrandMark } from "./BrandMark";
 import { useProfile } from "@/modules/profile/hooks";
 import { useUnreadCount } from "@/modules/notifications/hooks";
 
@@ -25,7 +26,7 @@ export function TopBar({ onAvatarClick }: TopBarProps) {
       >
         <Avatar src={avatarUrl} fallback={fallback} size="sm" />
       </button>
-      <div aria-hidden="true" />
+      <BrandMark className="text-base" />
       <Link
         href="/notifications"
         className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-xl hover:bg-bg-secondary"
