@@ -3,7 +3,7 @@
 module Profile
   module Relations
     class CastGalleryMedia < Profile::DB::Relation
-      schema(:"portfolio__cast_gallery_media", as: :cast_gallery_media, infer: false) do
+      schema(:"profile__cast_gallery_media", as: :cast_gallery_media, infer: false) do
         attribute :id, Types::String
         attribute :cast_user_id, Types::String
         attribute :media_id, Types::String

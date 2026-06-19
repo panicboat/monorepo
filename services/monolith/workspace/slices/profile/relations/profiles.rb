@@ -1,7 +1,7 @@
 module Profile
   module Relations
     class Profiles < Profile::DB::Relation
-      schema(:"portfolio__profiles", as: :profiles, infer: false) do
+      schema(:"profile__profiles", as: :profiles, infer: false) do
         attribute :account_id, Types::String       # UUID, PK = identity.Account
         attribute :username, Types::String.optional
         attribute :display_name, Types::String

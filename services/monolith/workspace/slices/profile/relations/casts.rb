@@ -1,7 +1,7 @@
 module Profile
   module Relations
     class Casts < Profile::DB::Relation
-      schema(:"portfolio__casts", as: :casts, infer: false) do
+      schema(:"profile__casts", as: :casts, infer: false) do
         attribute :user_id, Types::String  # UUID
         attribute :name, Types::String
         attribute :bio, Types::String

@@ -1,7 +1,7 @@
 module Profile
   module Relations
     class Areas < Profile::DB::Relation
-      schema(:"portfolio__areas", as: :areas, infer: false) do
+      schema(:"profile__areas", as: :areas, infer: false) do
         attribute :id, Types::String
         attribute :prefecture, Types::String
         attribute :name, Types::String
