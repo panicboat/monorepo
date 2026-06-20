@@ -7,7 +7,7 @@ module Identity
     module Verification
       class VerifyCodeContract < Dry::Validation::Contract
         PHONE_NUMBER_REGEX = /\A\+?[0-9]{10,15}\z/
-        CODE_LENGTH = 4
+        CODE_LENGTH = 6
 
         params do
           required(:phone_number).filled(:string)

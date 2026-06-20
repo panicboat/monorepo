@@ -18,7 +18,8 @@ RSpec.describe Identity::Grpc::Handler do
       refresh_token_uc: refresh_token_uc,
       send_code_uc: send_code_uc,
       verify_code_uc: verify_code_uc,
-      get_profile_uc: get_profile_uc
+      get_profile_uc: get_profile_uc,
+      reset_password_uc: reset_password_uc
     )
   }
   let(:message) { double(:message) }
@@ -31,6 +32,7 @@ RSpec.describe Identity::Grpc::Handler do
   let(:send_code_uc) { double(:send_code_uc) }
   let(:verify_code_uc) { double(:verify_code_uc) }
   let(:get_profile_uc) { double(:get_profile_uc) }
+  let(:reset_password_uc) { double(:reset_password_uc) }
 
   describe "#health_check" do
     it "returns serving status" do
