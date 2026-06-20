@@ -1,17 +1,19 @@
 # frozen_string_literal: true
 
+require "securerandom"
+require "sms"
+
 module Identity
   module UseCases
     module Verification
       class SendCode
         include Identity::Deps[repo: "repositories.sms_verification_repository"]
 
+        CODE_TTL_SECONDS = 60 * 10
+
         def call(phone_number:)
-          # TODO: Implement real SMS sending logic (e.g. via Twilio or SNS).
-          # Currently using Mock SMS Logic: Always use "0000" or random 4 digits
-          # FALLBACK: Fixed code "0000" for local development when MOCK_SMS_CODE env var is not set
-          code = ENV.fetch("MOCK_SMS_CODE", "0000")
-          expires_at = Time.now + (60 * 10) # 10 minutes
+          code = format("%06d", SecureRandom.random_number(1_000_000))
+          expires_at = Time.now + CODE_TTL_SECONDS
 
           verification = repo.create(
             phone_number: phone_number,
@@ -19,8 +21,7 @@ module Identity
             expires_at: expires_at
           )
 
-          # In a real app, call Twilio/SNS here.
-          puts "[SMS MOCK] Sending code #{code} to #{phone_number}"
+          Sms.send(phone_number: phone_number, body: "認証コード: #{code}")
 
           verification
         end
