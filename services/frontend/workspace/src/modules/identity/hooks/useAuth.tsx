@@ -44,6 +44,11 @@ type AuthContextType = {
     role?: number
   ) => Promise<void>;
   logout: () => Promise<void>;
+  resetPassword: (
+    phoneNumber: string,
+    newPassword: string,
+    verificationToken: string
+  ) => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -209,7 +214,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const newAccessToken = data.accessToken || data.access_token;
     const newRefreshToken = data.refreshToken || data.refresh_token;
     const userRole = data.account.role;
-    const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
 
     if (!newAccessToken) {
       console.error("Register Error: No access token found in response", data);
@@ -237,11 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       { revalidate: false }
     );
 
-    if (isGuest) {
-      router.push("/onboarding");
-    } else {
-      router.push("/cast/onboarding");
-    }
+    router.push("/onboarding");
   };
 
   const login = async (
@@ -261,7 +261,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const newAccessToken = data.accessToken || data.access_token;
     const newRefreshToken = data.refreshToken || data.refresh_token;
     const userRole = data.account.role;
-    const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
 
     if (!newAccessToken) {
       console.error("Login Error: No access token found in response", data);
@@ -289,11 +288,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       { revalidate: false }
     );
 
-    if (isGuest) {
-      router.push("/");
-    } else {
-      router.push("/cast/home");
-    }
+    router.push("/");
+  };
+
+  const resetPassword = async (
+    phoneNumber: string,
+    newPassword: string,
+    verificationToken: string
+  ) => {
+    const res = await fetch("/api/identity/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber, newPassword, verificationToken }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "パスワードの再設定に失敗しました");
+    return true;
   };
 
   const logout = async () => {
@@ -317,12 +327,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setNewUserFlag(false);
     mutate(null, { revalidate: false });
 
-    // Navigate based on current role (from store, not pathname)
-    if (role === "cast") {
-      router.push("/cast/login");
-    } else {
-      router.push("/login");
-    }
+    router.push("/login");
   };
 
   return (
@@ -335,6 +340,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         login,
         logout,
+        resetPassword,
       }}
     >
       {children}

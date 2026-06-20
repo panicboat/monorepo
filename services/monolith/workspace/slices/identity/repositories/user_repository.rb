@@ -1,6 +1,8 @@
 module Identity
   module Repositories
     class UserRepository < Identity::DB::Repo
+      commands update: :by_pk
+
       def find_by_phone_number(phone_number)
         users.where(phone_number: phone_number).one
       end
@@ -22,6 +24,10 @@ module Identity
           password_digest: password_digest,
           role: role
         )
+      end
+
+      def update_password(user_id:, password_digest:)
+        update(user_id, password_digest: password_digest, updated_at: Time.now)
       end
     end
   end

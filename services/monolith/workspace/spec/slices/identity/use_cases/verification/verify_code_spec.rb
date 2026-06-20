@@ -8,7 +8,7 @@ RSpec.describe Identity::UseCases::Verification::VerifyCode do
 
   describe "#call" do
     let(:phone_number) { "+1234567890" }
-    let(:code) { "0000" }
+    let(:code) { "000000" }
 
     context "when code is valid" do
       let(:verification) do
