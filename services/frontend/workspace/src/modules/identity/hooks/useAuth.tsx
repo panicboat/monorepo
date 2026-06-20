@@ -44,6 +44,11 @@ type AuthContextType = {
     role?: number
   ) => Promise<void>;
   logout: () => Promise<void>;
+  resetPassword: (
+    phoneNumber: string,
+    newPassword: string,
+    verificationToken: string
+  ) => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -286,6 +291,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/");
   };
 
+  const resetPassword = async (
+    phoneNumber: string,
+    newPassword: string,
+    verificationToken: string
+  ) => {
+    const res = await fetch("/api/identity/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber, newPassword, verificationToken }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "パスワードの再設定に失敗しました");
+    return true;
+  };
+
   const logout = async () => {
     const rToken = refreshTokenFromStore;
     if (rToken) {
@@ -320,6 +340,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         login,
         logout,
+        resetPassword,
       }}
     >
       {children}
