@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore, selectUserId, selectIsHydrated } from "@/stores/authStore";
 import { TopBar } from "./TopBar";
 import { BottomTab } from "./BottomTab";
@@ -9,18 +10,38 @@ import { Drawer } from "./Drawer";
 import { SideNav } from "./SideNav";
 import { SuggestedUsersPane } from "./SuggestedUsersPane";
 
+const AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/onboarding"];
+
 interface AppShellProps {
   children: React.ReactNode;
 }
 
 export function AppShell({ children }: AppShellProps) {
+  // All hooks run unconditionally at the top (rules-of-hooks).
   const isHydrated = useAuthStore(selectIsHydrated);
   const viewerId = useAuthStore(selectUserId);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
 
-  // hydration 前 or 未認証 = shell bypass
-  if (!isHydrated || !viewerId) {
-    return <>{children}</>;
+  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
+
+  // Redirect unauthenticated users to /login after hydration, except on auth routes.
+  useEffect(() => {
+    if (isHydrated && !viewerId && !isAuthRoute) {
+      router.replace("/login");
+    }
+  }, [isHydrated, viewerId, isAuthRoute, router]);
+
+  // Before hydration: auth routes still render their SSR content (avoid a blank
+  // flash on /login etc.); other routes wait to avoid flashing shell-less content.
+  if (!isHydrated) {
+    return isAuthRoute ? <>{children}</> : null;
+  }
+
+  // Hydrated but unauthenticated: auth routes render their own page; others wait for redirect.
+  if (!viewerId) {
+    return isAuthRoute ? <>{children}</> : null;
   }
 
   return (
