@@ -25,6 +25,9 @@ service IdentityService {
   // Logout by revoking refresh token
   rpc Logout (LogoutRequest) returns (LogoutResponse);
 
+  // Reset password using SMS-verified token
+  rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse);
+
   // Get current account session
   rpc GetCurrentAccount (google.protobuf.Empty) returns (Account);
 }
@@ -92,6 +95,16 @@ message LogoutRequest {
 }
 
 message LogoutResponse {
+  bool success = 1;
+}
+
+message ResetPasswordRequest {
+  string phone_number = 1;
+  string new_password = 2;
+  string verification_token = 3; // Must match the one from VerifySms
+}
+
+message ResetPasswordResponse {
   bool success = 1;
 }
 

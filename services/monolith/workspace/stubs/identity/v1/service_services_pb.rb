@@ -28,6 +28,8 @@ module Identity
         rpc :RefreshToken, ::Identity::V1::RefreshTokenRequest, ::Identity::V1::RefreshTokenResponse
         # Logout by revoking refresh token
         rpc :Logout, ::Identity::V1::LogoutRequest, ::Identity::V1::LogoutResponse
+        # Reset password using SMS-verified token
+        rpc :ResetPassword, ::Identity::V1::ResetPasswordRequest, ::Identity::V1::ResetPasswordResponse
         # Get current account session
         rpc :GetCurrentAccount, ::Google::Protobuf::Empty, ::Identity::V1::Account
       end

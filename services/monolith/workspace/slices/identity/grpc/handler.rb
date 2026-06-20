@@ -19,12 +19,14 @@ module Identity
       rpc :VerifySms, ::Identity::V1::VerifySmsRequest, ::Identity::V1::VerifySmsResponse
       rpc :Register, ::Identity::V1::RegisterRequest, ::Identity::V1::RegisterResponse
       rpc :Login, ::Identity::V1::LoginRequest, ::Identity::V1::LoginResponse
+      rpc :ResetPassword, ::Identity::V1::ResetPasswordRequest, ::Identity::V1::ResetPasswordResponse
       rpc :GetCurrentAccount, ::Google::Protobuf::Empty, ::Identity::V1::Account
 
       include Identity::Deps[
         login_uc: "use_cases.auth.login",
         logout_uc: "use_cases.auth.logout",
         register_uc: "use_cases.auth.register",
+        reset_password_uc: "use_cases.auth.reset_password",
         refresh_token_uc: "use_cases.token.refresh",
         send_code_uc: "use_cases.verification.send_code",
         verify_code_uc: "use_cases.verification.verify_code",
@@ -96,6 +98,17 @@ module Identity
       def logout
         logout_uc.call(refresh_token: request.message.refresh_token)
         ::Identity::V1::LogoutResponse.new(success: true)
+      end
+
+      def reset_password
+        result = reset_password_uc.call(
+          phone_number: request.message.phone_number,
+          new_password: request.message.new_password,
+          verification_token: request.message.verification_token
+        )
+        ::Identity::V1::ResetPasswordResponse.new(success: result[:success])
+      rescue Identity::UseCases::Auth::ResetPassword::ResetError => e
+        raise GRPC::InvalidArgument, e.message
       end
 
       def get_current_account
