@@ -378,9 +378,9 @@ ls bin/codegen
 
 | 項目 | 状態 | Memo |
 |---|---|---|
-| **Login / Signup UI** | ❌ 解体済 | memory: "login UI は解体済で存在しない"。authStore 直注入経由でしか動かない (dev only) |
-| **Onboarding flow** | ❌ 未設計 | Cast: 業種選択 + プロフィール作成 + 年齢確認 / Guest: 簡易確認 + プロフィール |
-| **Password reset / SMS verification 本番化** | ❌ モック "0000" のまま | SMS provider (Twilio 等) 選定 + 本番接続 |
+| ~~**Login / Signup UI**~~ | ✅ **再建 (本 PR)** | sub-project #1。`/login` `/signup` ページ + 未認証 redirect。既存 identity backend + useAuth に接続。単一ルート (role prefix なし、`/cast/*` 負の遺産除去)。spec `2026-06-20-auth-onboarding-rebuild-design.md` |
+| ~~**Onboarding flow**~~ | ✅ **ミニマル再建 (本 PR)** | `/onboarding` (両ロール共通、表示名 + handle のみ)。業種/エリア/avatar は既存 profile 編集で後追加 |
+| ~~**Password reset / SMS verification 本番化**~~ | ✅ **本 PR** | SMS = **Amazon SNS** (`lib/sms` adapter、全環境ランダム生成、test のみ送信 fake、mock "0000" 撤去)。`ResetPassword` RPC + `/reset-password` フロー追加。⚠ 残: SMS レート制限 / verification token 単回使用化 (ops/hardening track) |
 | **Push notification 接続** | ❌ toggle のみ | FCM / APNS / Web Push 選定 + service worker (Web) or native 実装 |
 | **Brand mark / Logo** | ❌ design 未定 | Top header center 空 (#102) |
 | **Theme switcher (light mode)** | ❌ design 未定 | #101 |
