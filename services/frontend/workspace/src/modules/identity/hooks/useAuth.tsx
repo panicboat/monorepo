@@ -209,7 +209,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const newAccessToken = data.accessToken || data.access_token;
     const newRefreshToken = data.refreshToken || data.refresh_token;
     const userRole = data.account.role;
-    const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
 
     if (!newAccessToken) {
       console.error("Register Error: No access token found in response", data);
@@ -237,11 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       { revalidate: false }
     );
 
-    if (isGuest) {
-      router.push("/onboarding");
-    } else {
-      router.push("/cast/onboarding");
-    }
+    router.push("/onboarding");
   };
 
   const login = async (
@@ -261,7 +256,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const newAccessToken = data.accessToken || data.access_token;
     const newRefreshToken = data.refreshToken || data.refresh_token;
     const userRole = data.account.role;
-    const isGuest = userRole === 1 || userRole === "ROLE_GUEST";
 
     if (!newAccessToken) {
       console.error("Login Error: No access token found in response", data);
@@ -289,11 +283,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       { revalidate: false }
     );
 
-    if (isGuest) {
-      router.push("/");
-    } else {
-      router.push("/cast/home");
-    }
+    router.push("/");
   };
 
   const logout = async () => {
@@ -317,12 +307,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setNewUserFlag(false);
     mutate(null, { revalidate: false });
 
-    // Navigate based on current role (from store, not pathname)
-    if (role === "cast") {
-      router.push("/cast/login");
-    } else {
-      router.push("/login");
-    }
+    router.push("/login");
   };
 
   return (
