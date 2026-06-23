@@ -29,22 +29,23 @@ monorepo のアプリ（frontend / monolith）は、これまで本番 EKS（`pl
 ## 4. Architecture overview
 
 ```
-host ──(kubectl port-forward)──▶ cilium-gateway (Envoy, HTTP listener)
-                                        │
-            ┌───────────────────────────┼────────────────────────────┐
-            ▼                           ▼                            ▼
-   HTTPRoute: frontend          HTTPRoute: echo               (将来追加サービス)
-   (dystopia.city /)            + CiliumEnvoyConfig:
-            │                     jwt_authn(local_jwks)
-            ▼                     + Lua(sub→x-user-id, authz除去)
-        frontend(:3000) ─gRPC─▶ monolith(:9001) ─▶ postgres
-                                        │
-                                        ▼
-                                  echo backend(:80)  ← Gateway単体信号の的
+[host アクセス経路]
+host ─(kubectl port-forward)─▶ cilium-gateway (Envoy, HTTP listener)
+                                     │ HTTPRoute: frontend (dystopia.city /)
+                                     ▼
+                               frontend(:3000) ─gRPC─▶ monolith(:9001) ─▶ postgres
+
+[Gateway 単体信号の経路]
+in-cluster curl ─▶ echo Service ClusterIP
+                        │ CiliumEnvoyConfig service-redirect
+                        ▼
+                   Envoy: jwt_authn(local_jwks) + Lua(sub→x-user-id, authz除去)
+                        ▼
+                   echo backend(:80)  ← 注入ヘッダーを JSON 反射
 ```
 
 - frontend は base の HTTPRoute で `cilium-gateway` 配下に入り、host アクセス確認に使う。
-- echo backend は `CiliumEnvoyConfig` を当てる的で、ヘッダー注入の有無を JSON で反射し、**Gateway 単体の信号**を提供する。
+- echo backend は `CiliumEnvoyConfig` の service-redirect 対象で、echo Service ClusterIP 宛トラフィックを Envoy に通す。注入ヘッダーの有無を JSON で反射し、**Gateway 単体の信号**を提供する（HTTPRoute ExtensionRef は現行 Cilium で未サポートのため service-redirect を採る）。
 - monolith は frontend からの gRPC を受け、Postgres に接続して自己マイグレーション後に gRPC サーバを起動する。
 
 ## 5. Directory layout
@@ -60,7 +61,7 @@ monorepo/k3d/
     sign-jwt.sh                   # ローカル private key でテスト JWT を発行
     verify-gateway.sh             # ヘッダー注入の3ケース判定（主信号）
   cluster/
-    k3d-config.yaml               # traefik/servicelb/flannel/kube-proxy 無効・port map
+    k3d-config.yaml               # traefik/servicelb/flannel/network-policy 無効（kube-proxy 維持）
   infra/
     cilium/values.yaml            # gatewayAPI.enabled / kubeProxyReplacement
     gateway/
@@ -74,7 +75,7 @@ monorepo/k3d/
     frontend/                     # services/frontend/kubernetes/base を参照 + 上書き
     monolith/                     # base 参照 + 平文 Secret / external-secret 除外
     postgres/                     # ローカル Postgres + Secret
-    echo/                         # echo backend + HTTPRoute
+    echo/                         # echo backend（CiliumEnvoyConfig redirect の的）
 ```
 
 サービス追加時は `apps/<svc>/` に overlay を1つ足し `apps/kustomization.yaml` に追記するだけで済む構造とする。
@@ -82,15 +83,16 @@ monorepo/k3d/
 ## 6. Cluster (k3d)
 
 - クラスタ名 `panicboat-local`、server 1 台。
-- Cilium と競合する k3s 内蔵を無効化する: Traefik、servicelb（klipper）、flannel（`--flannel-backend=none`）、組込み NetworkPolicy、kube-proxy。これらは Cilium が置き換える。
-  - why: `CiliumEnvoyConfig` と Gateway を Cilium に担わせるため、CNI / LB / kube-proxy を Cilium に一本化する。flannel と Cilium の二重 CNI は競合する。
+- Cilium と競合する k3s 内蔵を無効化する: Traefik、servicelb（klipper）、flannel（`--flannel-backend=none`）、組込み NetworkPolicy。CNI / Gateway は Cilium が担う。
+  - why CNI 一本化: `CiliumEnvoyConfig` と Gateway を Cilium に担わせるため、CNI を Cilium に寄せる。flannel と Cilium の二重 CNI は競合する。
+  - why kube-proxy 維持: kube-proxy を無効化すると Cilium の `kubeProxyReplacement=true` が必須になり、k3d では `k8sServiceHost` 解決が環境依存で不安定。kube-proxy はそのまま使い、Cilium は `kubeProxyReplacement=false` で導入する。
 - Gateway への host アクセスは `kubectl port-forward` を採用する。
   - why: ローカルでは LoadBalancer IP 割当（L2 アナウンス等）が不安定になりやすく、port-forward が最も確実で DX が安定する。
 
 ## 7. CNI + Gateway (Cilium)
 
 - Gateway API CRD を Cilium インストール前に導入する（Cilium の Gateway 機能の前提）。
-- Cilium を Helm で導入する。最小値: `gatewayAPI.enabled=true`、`kubeProxyReplacement=true`、k8s API への接続情報。観測系（Hubble 等）は最小構成では無効。
+- Cilium を Helm で導入する。最小値: `gatewayAPI.enabled=true`、`l7Proxy=true`、`envoy.enabled=true`、`kubeProxyReplacement=false`。観測系（Hubble 等）は最小構成では無効。
 - `GatewayClass: cilium` と `Gateway: cilium-gateway`（namespace `default`、HTTP listener）を適用する。両者は `platform/kubernetes/components/cilium/production/kustomization/` の定義を適合させる。
   - hostNetwork は EKS 固有事情（eks-pod-identity-agent の port 競合回避）なのでローカルでは外す。listener は素直な HTTP ポートにする。
   - why Cilium: 検証対象の `CiliumEnvoyConfig` が Cilium 固有 CRD であり、他 Gateway 実装では同一マニフェストを検証できない。
@@ -116,8 +118,8 @@ monorepo/k3d/
 
 ### 8.4 echo backend
 - `ealen/echo-server`（受信リクエストヘッダーを JSON で反射する public image）を Deployment + Service で用意する。
-- 専用 HTTPRoute を `cilium-gateway` に生やす（host ベースで frontend と分離）。
-- この Service を `CiliumEnvoyConfig` のターゲットにし、Gateway 単体のヘッダー注入信号を取得する的とする。
+- この Service を `CiliumEnvoyConfig` の service-redirect 対象にし、Gateway 単体のヘッダー注入信号を取得する的とする。
+- HTTPRoute は生やさない。検証は echo Service ClusterIP へのクラスタ内 curl で行う（service-redirect は ClusterIP 宛トラフィックを Envoy に通すため、pod IP を直接叩く port-forward では intercept されない）。
 
 ## 9. Header-signing verification (option 1) — the primary signal
 
@@ -130,11 +132,12 @@ monorepo/k3d/
 - private key は `bin/sign-jwt.sh` がテスト JWT 発行に使う生成物で、`.gitignore` 対象。
 
 ### 9.2 CiliumEnvoyConfig
-- Envoy `jwt_authn` フィルタ: プロバイダは `local_jwks`、`from_headers`（`Authorization: Bearer`）、`payload_in_metadata` に検証済み payload を出す。echo Service をターゲットにする。
+- `services` で echo Service を redirect 対象にし、Envoy listener に通す（HTTPRoute ExtensionRef は使わない）。
+- Envoy `jwt_authn` フィルタ: プロバイダは `local_jwks`、`from_headers`（`Authorization: Bearer`）、`payload_in_metadata` に検証済み payload を出す。
 - Envoy Lua フィルタ: dynamic metadata から検証済み payload を読み、`sub` を `x-user-id` として注入。`authorization` ヘッダーは除去（パターンB の整理に合わせる）。
 
 ### 9.3 Verification signal（`bin/verify-gateway.sh`）
-monolith の稼働状態に依存しない、決定的な3ケース判定:
+monolith の稼働状態に依存しない、決定的な3ケース判定。検証 curl は echo Service ClusterIP へクラスタ内（`kubectl run` の一時 pod）から行う:
 
 | 入力 | 期待される信号 | 確認できること |
 |---|---|---|
@@ -170,6 +173,6 @@ option 1 の弱点は、monolith が `x-user-id` を信頼する根拠が「Gate
 
 ## 13. Risks & open questions
 
-- Cilium Gateway on k3d は LB IP 割当 / kube-proxy 置換まわりが環境依存になりうる。port-forward でアクセス経路を固定してリスクを下げる。
+- Cilium Gateway on k3d は LB IP 割当が環境依存になりうる。port-forward でアクセス経路を固定してリスクを下げる。`CiliumEnvoyConfig` の service-redirect が intercept しない場合は、`kubeProxyReplacement=true` + `k8sServiceHost`/`k8sServicePort` への切替を実装時の分岐として持つ。
 - Cilium 同梱 Envoy の `jwt_authn` / Lua フィルタの細部（`local_jwks` インラインの受理、dynamic metadata のキー名）は実装時に実機検証する。
 - echo backend のヘッダー反射が gRPC ではなく HTTP 経路である点に注意する。ヘッダー注入機構は HTTP 層で動くため、Gateway 単体検証は HTTP echo で十分だが、monolith への gRPC 経路でも別途到達確認する。
