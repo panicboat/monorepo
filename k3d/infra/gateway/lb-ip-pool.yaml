@@ -1,0 +1,10 @@
+# k3d でservicelbを無効化した環境で LoadBalancer Service に IP を付与する。
+# Cilium LB IPAM が Gateway の Programmed 条件を満たすために使用する。
+# CIDR は k3d のデフォルト bridge ネットワーク(172.19.0.0/24) から外れた範囲を割り当てる。
+apiVersion: "cilium.io/v2"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: default-pool
+spec:
+  blocks:
+    - cidr: "172.19.0.100/28"
