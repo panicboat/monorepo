@@ -39,7 +39,6 @@ spec:
                         local:
                           issuer: "local"
                           audiences: ["monolith"]
-                          payloadInMetadata: "jwt_payload"
                           fromHeaders:
                             - name: Authorization
                               valuePrefix: "Bearer "

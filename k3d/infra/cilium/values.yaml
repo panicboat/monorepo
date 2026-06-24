@@ -11,9 +11,7 @@ ipam:
   mode: kubernetes
 operator:
   replicas: 1
-# LB IPAM + L2 announcement assign IPs to LoadBalancer Services.
+# LB IPAM assigns IPs to LoadBalancer Services.
 # Needed so the Gateway gets a Programmed address even with servicelb disabled in the k3d local environment.
-l2announcements:
-  enabled: true
 externalIPs:
   enabled: true
