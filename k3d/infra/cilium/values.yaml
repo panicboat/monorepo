@@ -1,7 +1,7 @@
-# Cilium 1.16+ では Gateway API に kubeProxyReplacement: true が必須（1.19.5 で確認）。
-# kube-proxy は k3d ノード上で動作し続けるが、Cilium が LB/Gateway を担当する。
+# kubeProxyReplacement: true is required for Gateway API on Cilium 1.16+ (confirmed on 1.19.5).
+# kube-proxy keeps running on the k3d node, but Cilium handles LB/Gateway.
 kubeProxyReplacement: true
-# Gateway API + CiliumEnvoyConfig には Envoy(L7 proxy) が必要。
+# Envoy (L7 proxy) is required for Gateway API + CiliumEnvoyConfig.
 l7Proxy: true
 envoy:
   enabled: true
@@ -11,8 +11,8 @@ ipam:
   mode: kubernetes
 operator:
   replicas: 1
-# LB IPAM と L2 アナウンスにより LoadBalancer Service に IP を付与する。
-# servicelb を無効化した k3d ローカル環境でも Gateway に Programmed アドレスを割り当てるため必要。
+# LB IPAM + L2 announcement assign IPs to LoadBalancer Services.
+# Needed so the Gateway gets a Programmed address even with servicelb disabled in the k3d local environment.
 l2announcements:
   enabled: true
 externalIPs:

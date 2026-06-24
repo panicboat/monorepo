@@ -1,4 +1,4 @@
-# Application-shared Gateway。HTTP listener port 80（ローカルは hostNetwork 不要）。
+# Application-shared Gateway, HTTP listener port 80 (no hostNetwork needed locally).
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:

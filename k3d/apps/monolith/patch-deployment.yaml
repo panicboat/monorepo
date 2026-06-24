@@ -6,7 +6,7 @@ spec:
   template:
     metadata:
       annotations:
-        # OTel operator はローカルに入れないため inject annotation を無効化。
+        # Disabling the OTel inject annotation because the OTel operator is not installed locally.
         instrumentation.opentelemetry.io/inject-ruby: "false"
     spec:
       containers:

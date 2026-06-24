@@ -7,8 +7,8 @@ agents: 0
 options:
   k3s:
     extraArgs:
-      # Cilium に CNI / LB / NetworkPolicy を一本化するため k3s 内蔵を無効化。
-      # kube-proxy は維持する（Refinements from spec #1）。
+      # Disabling k3s built-ins so Cilium owns CNI / LB / NetworkPolicy.
+      # kube-proxy is kept (Refinements from spec #1).
       - arg: --flannel-backend=none
         nodeFilters: [server:*]
       - arg: --disable-network-policy
