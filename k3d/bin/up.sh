@@ -32,7 +32,6 @@ kubectl wait --for=condition=Ready node --all --timeout=180s
 
 echo "==> Gateway"
 kubectl apply -f "$HERE/infra/gateway/lb-ip-pool.yaml"
-kubectl apply -f "$HERE/infra/gateway/gateway-class.yaml"
 kubectl apply -f "$HERE/infra/gateway/gateway.yaml"
 kubectl wait --for=condition=Programmed gateway/cilium-gateway -n default --timeout=120s
 
