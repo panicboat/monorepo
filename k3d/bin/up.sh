@@ -42,4 +42,19 @@ kubectl wait --for=condition=Ready pod -l app=postgres --timeout=120s
 kubectl rollout status deploy/monolith --timeout=180s
 kubectl rollout status deploy/frontend --timeout=180s
 
+echo "==> JWT keys + CiliumEnvoyConfig"
+[ -f "$HERE/infra/jwt/priv.pem" ] || "$HERE/bin/gen-keys.sh"
+# Rewrite the CEC inlineString from jwks.json before applying (tracks key regeneration)
+python3 - "$HERE/infra/jwt/cilium-envoy-config.yaml" "$HERE/infra/jwt/jwks.json" <<'PY'
+import sys, re
+cec_path, jwks_path = sys.argv[1], sys.argv[2]
+jwks = open(jwks_path).read().strip()
+text = open(cec_path).read()
+# Replace the single-line JSON inside the inlineString block scalar with jwks
+text = re.sub(r'(inlineString:\s*\|\n)(\s+)\{.*\}', lambda m: f'{m.group(1)}{m.group(2)}{jwks}', text)
+open(cec_path, 'w').write(text)
+PY
+kubectl apply -f "$HERE/infra/jwt/cilium-envoy-config.yaml"
+sleep 5
+
 echo "==> Cluster foundation ready"

@@ -1,0 +1,75 @@
+apiVersion: cilium.io/v2
+kind: CiliumEnvoyConfig
+metadata:
+  name: jwt-authn-echo
+  namespace: default
+spec:
+  services:
+    - name: echo
+      namespace: default
+      listener: jwt-authn-listener
+  backendServices:
+    - name: echo
+      namespace: default
+      number: ["80"]
+  resources:
+    - "@type": type.googleapis.com/envoy.config.listener.v3.Listener
+      name: jwt-authn-listener
+      filterChains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                statPrefix: jwt_authn
+                routeConfig:
+                  name: echo_route
+                  virtualHosts:
+                    - name: echo
+                      domains: ["*"]
+                      routes:
+                        - match:
+                            prefix: "/"
+                          route:
+                            cluster: "default:echo:80"
+                httpFilters:
+                  - name: envoy.filters.http.jwt_authn
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
+                      providers:
+                        local:
+                          issuer: "local"
+                          audiences: ["monolith"]
+                          payloadInMetadata: "jwt_payload"
+                          fromHeaders:
+                            - name: Authorization
+                              valuePrefix: "Bearer "
+                          # Drop the verified token instead of forwarding it upstream
+                          forward: false
+                          # Copy the JWT 'sub' claim into x-user-id (Cilium Envoy build excludes the Lua filter)
+                          claimToHeaders:
+                            - headerName: x-user-id
+                              claimName: sub
+                          localJwks:
+                            # Rewritten from infra/jwt/jwks.json by up.sh; keep in sync with priv.pem
+                            inlineString: |
+                              {"keys":[{"kty":"RSA","kid":"local","alg":"RS256","use":"sig","n":"5CpMn2-1cAGWCQdTsh6pSGSMUNTBqkMiFtfMtZkt8CHT73wTRcsGUvTQYbRt6YCHBlIvpnaYOjFOKs59ulp5pRwvtxsDHINE4kvpO3oTWiObxmgHsz_5gClXt3dcC33BHQ0DMmuBAY00uNOJTnU2f1QhDWgsC-zwAflgg-fCvRiiQgtROtmhGaM8rWe_Ri3uAgeI-8CoGMY58IMcCSKpdH-K3pGuy-kisWber9m-4rGaRxTZPfyultBIsw5dh3hh2kjZdWBe4YRnqN-AUD-w30RgdvB53JUZqtghn05ofzujwPO1GhWtCtJnMuuu5OWfPK-03SEsZSdcxAyFP1zxCQ","e":"AQAB"}]}
+                      rules:
+                        - match:
+                            prefix: "/"
+                          requires:
+                            providerName: local
+                  - name: envoy.filters.http.router
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+    # Explicit EDS cluster; backendServices feeds endpoints under serviceName, route refers to name
+    - "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+      name: "default:echo:80"
+      type: EDS
+      edsClusterConfig:
+        serviceName: "default/echo:80"
+      connectTimeout: 5s
+      typedExtensionProtocolOptions:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          useDownstreamProtocolConfig:
+            http2ProtocolOptions: {}
