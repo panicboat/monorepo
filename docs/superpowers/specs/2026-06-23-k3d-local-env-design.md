@@ -11,7 +11,7 @@ monorepo のアプリ（frontend / monolith）は、これまで本番 EKS（`pl
 - frontend / monolith を最小構成のクラスタにデプロイして動作確認する。
 - `monorepo/docs/分散システム設計/AUTHENTICATION.md` の **パターンB**（Cilium Gateway(Envoy) が JWT 署名を検証し、`x-user-id` 等の信頼ヘッダーを backend に注入する）を、本番に出す前にローカルで検証する。
 
-検証対象の中核は Cilium 固有の `CiliumEnvoyConfig`（Envoy `jwt_authn` フィルタ + Lua ヘッダー注入）であるため、忠実な検証には **Cilium Gateway API をローカルでも動かす**必要がある。k3d 既定の Traefik / flannel では `CiliumEnvoyConfig` を検証できない。
+検証対象の中核は Cilium 固有の `CiliumEnvoyConfig`（Envoy `jwt_authn` フィルタによるヘッダー注入）であるため、忠実な検証には **Cilium Gateway API をローカルでも動かす**必要がある。k3d 既定の Traefik / flannel では `CiliumEnvoyConfig` を検証できない。
 
 ## 2. Goals
 
@@ -29,22 +29,21 @@ monorepo のアプリ（frontend / monolith）は、これまで本番 EKS（`pl
 ## 4. Architecture overview
 
 ```
-[host アクセス経路]
-host ─(kubectl port-forward)─▶ cilium-gateway (Envoy, HTTP listener)
-                                     │ HTTPRoute: frontend (dystopia.city /)
-                                     ▼
-                               frontend(:3000) ─gRPC─▶ monolith(:9001) ─▶ postgres
-
 [Gateway 単体信号の経路]
 in-cluster curl ─▶ echo Service ClusterIP
                         │ CiliumEnvoyConfig service-redirect
                         ▼
-                   Envoy: jwt_authn(local_jwks) + Lua(sub→x-user-id, authz除去)
+                   Envoy: jwt_authn(local_jwks, claimToHeaders: sub→x-user-id, forward: false)
                         ▼
                    echo backend(:80)  ← 注入ヘッダーを JSON 反射
+
+[frontend 到達確認の経路]
+in-cluster curl ─▶ cilium-gateway ClusterIP ─▶ HTTPRoute: frontend (dystopia.city /)
+                                                     ▼
+                                               frontend(:3000) ─gRPC─▶ monolith(:9001) ─▶ postgres
 ```
 
-- frontend は base の HTTPRoute で `cilium-gateway` 配下に入り、host アクセス確認に使う。
+- frontend は base の HTTPRoute で `cilium-gateway` 配下に入り、クラスタ内 curl で到達確認する。host ブラウザ / curl からのアクセスはスコープ外（k3d 作成時の `--port "80:80@loadbalancer"` マッピングが別途必要）。
 - echo backend は `CiliumEnvoyConfig` の service-redirect 対象で、echo Service ClusterIP 宛トラフィックを Envoy に通す。注入ヘッダーの有無を JSON で反射し、**Gateway 単体の信号**を提供する（HTTPRoute ExtensionRef は現行 Cilium で未サポートのため service-redirect を採る）。
 - monolith は frontend からの gRPC を受け、Postgres に接続して自己マイグレーション後に gRPC サーバを起動する。
 
@@ -68,7 +67,7 @@ monorepo/k3d/
       gateway-class.yaml          # GatewayClass(cilium)（platform から適合）
       gateway.yaml                # Gateway(cilium-gateway, default, HTTP listener)
     jwt/
-      cilium-envoy-config.yaml    # jwt_authn(local_jwks) + Lua header 注入
+      cilium-envoy-config.yaml    # jwt_authn(local_jwks, claimToHeaders + forward: false)
       jwks.json                   # 公開鍵（private key は生成物で .gitignore）
   apps/
     kustomization.yaml            # frontend / monolith / postgres / echo を集約
@@ -85,14 +84,14 @@ monorepo/k3d/
 - クラスタ名 `panicboat-local`、server 1 台。
 - Cilium と競合する k3s 内蔵を無効化する: Traefik、servicelb（klipper）、flannel（`--flannel-backend=none`）、組込み NetworkPolicy。CNI / Gateway は Cilium が担う。
   - why CNI 一本化: `CiliumEnvoyConfig` と Gateway を Cilium に担わせるため、CNI を Cilium に寄せる。flannel と Cilium の二重 CNI は競合する。
-  - why kube-proxy 維持: kube-proxy を無効化すると Cilium の `kubeProxyReplacement=true` が必須になり、k3d では `k8sServiceHost` 解決が環境依存で不安定。kube-proxy はそのまま使い、Cilium は `kubeProxyReplacement=false` で導入する。
-- Gateway への host アクセスは `kubectl port-forward` を採用する。
-  - why: ローカルでは LoadBalancer IP 割当（L2 アナウンス等）が不安定になりやすく、port-forward が最も確実で DX が安定する。
+  - why kube-proxy 維持: Cilium 1.16+ は Gateway API に `kubeProxyReplacement: true` を要求する（true でなければ Cilium controller が起動しない）。k3s の kube-proxy はそのまま稼働し、Cilium と並存する。
+- Gateway / frontend への到達確認はクラスタ内 curl（`kubectl run` 一時 pod）で行う。
+  - why: Cilium Gateway の Service は selector-less（eBPF 管理）のため `kubectl port-forward` が機能しない。また colima + k3d 構成では k3d の docker-bridge IP がホストからルーティングできない。host ブラウザ / curl アクセスは本スコープ外。
 
 ## 7. CNI + Gateway (Cilium)
 
 - Gateway API CRD を Cilium インストール前に導入する（Cilium の Gateway 機能の前提）。
-- Cilium を Helm で導入する。最小値: `gatewayAPI.enabled=true`、`l7Proxy=true`、`envoy.enabled=true`、`kubeProxyReplacement=false`。観測系（Hubble 等）は最小構成では無効。
+- Cilium を Helm で導入する。最小値: `gatewayAPI.enabled=true`、`l7Proxy=true`、`envoy.enabled=true`、`kubeProxyReplacement=true`。観測系（Hubble 等）は最小構成では無効。
 - `GatewayClass: cilium` と `Gateway: cilium-gateway`（namespace `default`、HTTP listener）を適用する。両者は `platform/kubernetes/components/cilium/production/kustomization/` の定義を適合させる。
   - hostNetwork は EKS 固有事情（eks-pod-identity-agent の port 競合回避）なのでローカルでは外す。listener は素直な HTTP ポートにする。
   - why Cilium: 検証対象の `CiliumEnvoyConfig` が Cilium 固有 CRD であり、他 Gateway 実装では同一マニフェストを検証できない。
@@ -133,8 +132,9 @@ monorepo/k3d/
 
 ### 9.2 CiliumEnvoyConfig
 - `services` で echo Service を redirect 対象にし、Envoy listener に通す（HTTPRoute ExtensionRef は使わない）。
-- Envoy `jwt_authn` フィルタ: プロバイダは `local_jwks`、`from_headers`（`Authorization: Bearer`）、`payload_in_metadata` に検証済み payload を出す。
-- Envoy Lua フィルタ: dynamic metadata から検証済み payload を読み、`sub` を `x-user-id` として注入。`authorization` ヘッダーは除去（パターンB の整理に合わせる）。
+- Envoy `jwt_authn` フィルタ: プロバイダは `local_jwks`（インライン）、`from_headers`（`Authorization: Bearer`）、`claimToHeaders`（`sub` → `x-user-id`）、`forward: false`（検証済み Authorization トークンを upstream に転送しない）。
+  - why claimToHeaders: Cilium 同梱の Envoy は `envoy.filters.http.lua` を含まないビルド（`extensions_build_config.bzl` で除外済）のため listener が NACK する。`claimToHeaders` は jwt_authn ネイティブ機能で Lua 不要。セキュリティ特性として、`claimToHeaders` は署名検証成功後にのみ注入しクライアント供給の `x-user-id` を上書きするため、信頼ヘッダーの偽造は不可能。
+- CEC は Envoy EDS `Cluster` リソースを明示的に定義する必要がある。ルート参照はコロン形式（`<ns>:<svc>:<port>`）、`edsClusterConfig.serviceName` はスラッシュ形式（`<ns>/<svc>:<port>`）を使う（Cilium CEC の命名規則）。
 
 ### 9.3 Verification signal（`bin/verify-gateway.sh`）
 monolith の稼働状態に依存しない、決定的な3ケース判定。検証 curl は echo Service ClusterIP へクラスタ内（`kubectl run` の一時 pod）から行う:
@@ -154,7 +154,7 @@ option 1 の弱点は、monolith が `x-user-id` を信頼する根拠が「Gate
 - Gateway の **ext_authz** から小さな `signer` サービスを呼ぶ。
 - `signer` は JWT を検証し、検証済み identity に対する**署名済みアサーション**（短命の内部 JWT もしくは HMAC ヘッダー）を返す。
 - backend は署名を検証してから identity を信頼する。
-- why ext_authz: Envoy(Cilium 同梱) は JWT の「検証」は native だが「署名 / 発行」は native でない。Lua / Wasm で HMAC を自前実装するより、ext_authz で署名サービスに委ねる方が明快かつ検証しやすい。
+- why ext_authz: Envoy(Cilium 同梱) は JWT の「検証」は native だが「署名 / 発行」は native でない。Lua は Cilium の Envoy ビルドに含まれないため選択肢から外れる。Wasm で HMAC を自前実装するより、ext_authz で署名サービスに委ねる方が明快かつ検証しやすい。
 
 本スコープ（M1 + M2）では設計のみとし、実装は後続フェーズに送る。option 1 の検証経路は option 3a の前半と共通なので、上に積む形で拡張する。
 
@@ -167,12 +167,12 @@ option 1 の弱点は、monolith が `x-user-id` を信頼する根拠が「Gate
 
 ## 12. Success criteria
 
-- M1: 全 Pod が Ready。frontend が `cilium-gateway` 経由で 200。monolith ログにマイグレーション完了と gRPC 起動。
+- M1: 全 Pod が Ready。クラスタ内 curl で frontend が `cilium-gateway` 経由で 200。monolith ログにマイグレーション完了と gRPC 起動。
 - M2: `verify-gateway.sh` の3ケースが期待通り（有効→200+`x-user-id`、改ざん→401、無→401）。
 - M3（後続）: 署名済みヘッダーを backend が検証し、署名なしの `x-user-id` を拒否する。
 
 ## 13. Risks & open questions
 
-- Cilium Gateway on k3d は LB IP 割当が環境依存になりうる。port-forward でアクセス経路を固定してリスクを下げる。`CiliumEnvoyConfig` の service-redirect が intercept しない場合は、`kubeProxyReplacement=true` + `k8sServiceHost`/`k8sServicePort` への切替を実装時の分岐として持つ。
-- Cilium 同梱 Envoy の `jwt_authn` / Lua フィルタの細部（`local_jwks` インラインの受理、dynamic metadata のキー名）は実装時に実機検証する。
+- Cilium Gateway on k3d の LB IP は CiliumLoadBalancerIPPool による IPAM で割り当てる。L2 アナウンスは不要（到達確認はクラスタ内 curl のため）。
+- `CiliumEnvoyConfig` の service-redirect の細部（`local_jwks` インラインの受理、`claimToHeaders` のキー名、EDS Cluster 命名）は実装時に実機で経験的に調整が必要だった。
 - echo backend のヘッダー反射が gRPC ではなく HTTP 経路である点に注意する。ヘッダー注入機構は HTTP 層で動くため、Gateway 単体検証は HTTP echo で十分だが、monolith への gRPC 経路でも別途到達確認する。
