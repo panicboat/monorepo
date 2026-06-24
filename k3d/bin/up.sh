@@ -36,4 +36,10 @@ kubectl apply -f "$HERE/infra/gateway/gateway-class.yaml"
 kubectl apply -f "$HERE/infra/gateway/gateway.yaml"
 kubectl wait --for=condition=Programmed gateway/cilium-gateway -n default --timeout=120s
 
+echo "==> Apps (postgres / monolith / frontend)"
+kubectl apply -k "$HERE/apps"
+kubectl wait --for=condition=Ready pod -l app=postgres --timeout=120s
+kubectl rollout status deploy/monolith --timeout=180s
+kubectl rollout status deploy/frontend --timeout=180s
+
 echo "==> Cluster foundation ready"
