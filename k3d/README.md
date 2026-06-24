@@ -44,7 +44,7 @@ does not work. Use an in-cluster curl pod instead:
 ```bash
 GW_IP=$(kubectl get svc -n default cilium-gateway-cilium-gateway \
   -o jsonpath='{.spec.clusterIP}')
-kubectl run gw-check --rm -i --restart=Never --image=curlimages/curl -- \
+kubectl run gw-check --rm -i --restart=Never --image=curlimages/curl:8.11.0 -- \
   -s -o /dev/null -w "%{http_code}\n" -H "Host: dystopia.city" "http://$GW_IP/"
 # expect 200
 ```
