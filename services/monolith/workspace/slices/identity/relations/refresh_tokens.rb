@@ -4,7 +4,7 @@ module Identity
       schema(:"identity__refresh_tokens", as: :refresh_tokens, infer: false) do
         attribute :id, Types::String      # UUID
         attribute :user_id, Types::String  # UUID
-        attribute :token, Types::String
+        attribute :token_digest, Types::String
         attribute :expires_at, Types::Time
         attribute :created_at, Types::Time
 

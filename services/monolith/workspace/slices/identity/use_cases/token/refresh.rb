@@ -26,7 +26,7 @@ module Identity
           new_access_token = ::Auth::JwtCodec.encode(sub: user.id, role: user.role)
 
           new_refresh_token = SecureRandom.hex(32)
-          repo.create(token: new_refresh_token, user_id: user.id, expires_at: Time.now + 3600 * 24 * 60)
+          repo.create(token: new_refresh_token, user_id: user.id, expires_at: Time.now + 3600 * 24 * 30)
 
           { access_token: new_access_token, refresh_token: new_refresh_token }
         end
