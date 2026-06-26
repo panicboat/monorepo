@@ -18,6 +18,23 @@ module Identity
           .one
       end
 
+      def recent_for(phone_number, since:)
+        sms_verifications
+          .where(phone_number: phone_number)
+          .where { created_at >= since }
+          .to_a
+      end
+
+      def invalidate_active(phone_number)
+        # Expire (but keep) any unverified/unconsumed verification so the stale
+        # code cannot be verified, while preserving the row for send-rate accounting.
+        sms_verifications
+          .where(phone_number: phone_number)
+          .where(verified_at: nil, consumed_at: nil)
+          .dataset
+          .update(expires_at: Time.now)
+      end
+
       def mark_as_verified(id)
         sms_verifications
           .by_pk(id)
