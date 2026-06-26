@@ -45,14 +45,22 @@ module Identity
           end
 
           # 2. Hash Password
-          password_digest = BCrypt::Password.create(password)
+          # cost: 12 pinned so we have a known work factor regardless of BCrypt default drift.
+          password_digest = BCrypt::Password.create(password, cost: 12)
 
           # 3. Create User
-          user = repo.create(
-            phone_number: phone_number,
-            password_digest: password_digest,
-            role: role
-          )
+          # The unique-phone DB constraint is the source of truth — collapse a violation into
+          # a generic error so the response cannot be used to enumerate existing accounts.
+          user =
+            begin
+              repo.create(
+                phone_number: phone_number,
+                password_digest: password_digest,
+                role: role
+              )
+            rescue Sequel::UniqueConstraintViolation
+              raise RegistrationError, "Registration failed"
+            end
 
           # Single-use: mark verification consumed so the same token cannot register twice.
           verification_repo.mark_as_consumed(verification.id)

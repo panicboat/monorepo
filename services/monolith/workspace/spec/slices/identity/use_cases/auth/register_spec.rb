@@ -134,5 +134,33 @@ RSpec.describe Identity::UseCases::Auth::Register do
         }.to raise_error(Identity::UseCases::Auth::Register::RegistrationError, "Phone number mismatch")
       end
     end
+
+    context "when phone number is already registered" do
+      let(:verification) do
+        double(
+          :verification,
+          id: verification_token,
+          phone_number: phone_number,
+          verified_at: Time.now,
+          consumed_at: nil
+        )
+      end
+
+      before do
+        allow(verification_repo).to receive(:find_by_id).with(verification_token).and_return(verification)
+        allow(repo).to receive(:create).and_raise(Sequel::UniqueConstraintViolation.new("duplicate phone_number"))
+      end
+
+      it "raises a generic RegistrationError so the existing phone number is not disclosed" do
+        expect {
+          use_case.call(
+            phone_number: phone_number,
+            password: password,
+            verification_token: verification_token,
+            role: role
+          )
+        }.to raise_error(Identity::UseCases::Auth::Register::RegistrationError, "Registration failed")
+      end
+    end
   end
 end

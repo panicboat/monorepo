@@ -8,6 +8,8 @@ module Identity
   module UseCases
     module Auth
       class Login
+        MAX_FAILED_LOGIN_ATTEMPTS = 5
+        LOCKOUT_DURATION_SECONDS = 60 * 15
 
         include Identity::Deps[
           repo: "repositories.user_repository",
@@ -24,7 +26,14 @@ module Identity
           raise Errors::ValidationError, validation.errors unless validation.success?
           user = repo.find_by_phone_number(phone_number)
 
-          unless user && BCrypt::Password.new(user.password_digest) == password
+          return nil unless user
+          return nil if user.locked_until && user.locked_until > Time.now
+
+          unless BCrypt::Password.new(user.password_digest) == password
+            repo.record_failed_login(user.id)
+            if user.failed_login_attempts + 1 >= MAX_FAILED_LOGIN_ATTEMPTS
+              repo.lock_until(user.id, Time.now + LOCKOUT_DURATION_SECONDS)
+            end
             return nil
           end
 
@@ -32,6 +41,8 @@ module Identity
           if role && user.role != role
             return nil
           end
+
+          repo.reset_login_attempts(user.id)
 
           token = ::Auth::JwtCodec.encode(sub: user.id, role: user.role)
 
