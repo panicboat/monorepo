@@ -1,7 +1,12 @@
 # Session Handoff: Auth Hardening sub-project (2026-06-24)
 
 ▎ 新セッションがこの作業を正確に引き継ぐための単一情報源。まずこれを読む。
-▎ 前セッションでツール呼び出しの発行ミスが頻発し信頼を損ねたため引き継ぎ。技術的な作業状態は以下に正確に残す。
+
+Status (2026-06-26): H1〜H9 すべて実装完了、Draft PR #763 に push 済。
+- backend (H1〜H7): SMS verification hardening + Login lockout + Register enumeration 抑止 + password 強度 + refresh token digest + TTL 30d。identity slice rspec で全 H 新規 spec green、pre-existing 失敗 1 件のみ (sms_verification_repository_spec.rb:40 = #761 から持ち越し)。
+- frontend (H8a/H8b/H9): BFF cookie mediation 完了、client は token 非保持。tsc / pnpm lint (0e/0w) / pnpm build all green。
+- §0 (gateway 整合) は「BFF↔backend 層と client↔BFF 層は独立、cookie mediation は gateway と矛盾しない」と結論済 (Section C を維持)。
+- §2 残: gateway 導入時の運用要件 = (1) gateway が client 由来 x-user-id を strip、(2) gRPC を gateway 以外から到達不能に。これは feat-k3d-local-env 側で扱う。
 
 0. 最重要・未解決の論点（次セッションが最初に解くべき）
 

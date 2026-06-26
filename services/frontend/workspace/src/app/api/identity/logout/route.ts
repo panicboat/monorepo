@@ -6,22 +6,10 @@ import { getRefreshCookie, clearAuthCookies } from "@/lib/auth/cookies";
 
 export async function POST(req: NextRequest) {
   try {
-    let refreshToken = getRefreshCookie(req);
-    if (!refreshToken) {
-      // FALLBACK: accept the legacy { refreshToken } body while H8b migrates
-      // the client off localStorage. Removed in H9.
-      try {
-        const body = await req.json();
-        if (body && typeof body.refreshToken === "string") {
-          refreshToken = body.refreshToken;
-        }
-      } catch {
-        // FALLBACK: empty body is fine — cookie was already checked above.
-      }
-    }
+    const refreshToken = getRefreshCookie(req);
 
-    // Always attempt server revoke (when we have a token) and always clear cookies,
-    // so a missing token does not leave the session live on the device.
+    // Always clear cookies, even if there is no upstream token to revoke,
+    // so a missing refresh cookie does not leave a stale session on the device.
     if (refreshToken) {
       await identityClient.logout(
         { refreshToken },

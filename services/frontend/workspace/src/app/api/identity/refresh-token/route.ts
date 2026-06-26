@@ -7,20 +7,7 @@ import { getRefreshCookie, setAuthCookies, clearAuthCookies } from "@/lib/auth/c
 
 export async function POST(req: NextRequest) {
   try {
-    let refreshToken = getRefreshCookie(req);
-    if (!refreshToken) {
-      // FALLBACK: accept the legacy { refreshToken } body while H8b migrates
-      // the client off localStorage. Removed in H9.
-      try {
-        const body = await req.json();
-        if (body && typeof body.refreshToken === "string") {
-          refreshToken = body.refreshToken;
-        }
-      } catch {
-        // FALLBACK: empty body is fine — cookie was already checked above.
-      }
-    }
-
+    const refreshToken = getRefreshCookie(req);
     if (!refreshToken) {
       return NextResponse.json({ error: "ログインしてください" }, { status: 401 });
     }
@@ -30,13 +17,17 @@ export async function POST(req: NextRequest) {
       { headers: buildGrpcHeaders(req) }
     );
 
-    const res = NextResponse.json(response);
-    if (response.accessToken && response.refreshToken) {
-      setAuthCookies(res, {
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-      });
+    if (!response.accessToken || !response.refreshToken) {
+      const res = NextResponse.json({ error: "ログインしてください" }, { status: 401 });
+      clearAuthCookies(res);
+      return res;
     }
+
+    const res = NextResponse.json({ ok: true });
+    setAuthCookies(res, {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    });
     return res;
   } catch (error: unknown) {
     if (isConnectError(error) && error.code === GrpcCode.UNAUTHENTICATED) {

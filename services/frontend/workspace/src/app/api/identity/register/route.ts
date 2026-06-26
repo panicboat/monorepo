@@ -19,16 +19,15 @@ export async function POST(req: NextRequest) {
       { headers: buildGrpcHeaders(req) }
     );
 
-    // FALLBACK: response body still carries accessToken/refreshToken for the
-    // current client (authStore reads them). H8b moves the client off body
-    // tokens; H9 then strips the tokens from the response.
-    const res = NextResponse.json(response);
-    if (response.accessToken && response.refreshToken) {
-      setAuthCookies(res, {
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-      });
+    if (!response.accessToken || !response.refreshToken) {
+      return NextResponse.json({ error: "登録に失敗しました" }, { status: 500 });
     }
+
+    const res = NextResponse.json({ account: response.account });
+    setAuthCookies(res, {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    });
     return res;
   } catch (error: unknown) {
     return handleApiError(error, "Register");

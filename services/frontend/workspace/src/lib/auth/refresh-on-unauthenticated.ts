@@ -15,7 +15,6 @@ import {
   getRefreshCookie,
   setAuthCookies,
   clearAuthCookies,
-  ACCESS_COOKIE,
 } from "./cookies";
 
 export type CallWithRefreshResult<T> =
@@ -64,11 +63,11 @@ export async function callWithRefresh<T>(
     }
 
     // Retry the original call with the freshly issued access token.
-    // We override the cookie on the headers built from req so the upstream
-    // call uses the new token without waiting for the next client request.
+    // We override the Authorization header here because the access cookie on
+    // `req` is still the old one — the new cookie reaches the client only via
+    // the outgoing response.
     const retryHeaders = buildGrpcHeaders(req);
     retryHeaders.Authorization = `Bearer ${refreshed.accessToken}`;
-    void ACCESS_COOKIE; // Silence unused-import in environments that tree-shake.
     const data = await call(retryHeaders);
     return { ok: true, data, refreshed };
   }

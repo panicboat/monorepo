@@ -6,11 +6,7 @@ import { getDefaultMessage } from "./error-messages";
 import { ACCESS_COOKIE } from "./auth/cookies";
 
 export function requireAuth(req: NextRequest): NextResponse | null {
-  // Treat either the access cookie or an Authorization header as authenticated.
-  // The header path is kept while H8b migrates the client off localStorage and
-  // removed in H9.
   if (req.cookies.get(ACCESS_COOKIE)?.value) return null;
-  if (req.headers.get("authorization")) return null;
   return NextResponse.json(
     { error: "ログインしてください" },
     { status: 401 }

@@ -45,15 +45,6 @@ export function buildGrpcHeaders(req: NextRequest): Record<string, string> {
   const accessFromCookie = req.cookies.get(ACCESS_COOKIE)?.value;
   if (accessFromCookie) {
     headers[HEADER_NAMES.AUTHORIZATION] = `Bearer ${accessFromCookie}`;
-    return headers;
-  }
-
-  // FALLBACK: client-sent Authorization header is honored while H8b migrates
-  // the client off Bearer-from-localStorage. Removed in H9 once the client
-  // stops sending it.
-  const authHeader = req.headers.get(HEADER_NAMES.AUTHORIZATION);
-  if (authHeader) {
-    headers[HEADER_NAMES.AUTHORIZATION] = authHeader;
   }
 
   return headers;
