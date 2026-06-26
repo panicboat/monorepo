@@ -40,6 +40,9 @@ module Identity
           unless verification.verified_at
             raise RegistrationError, "Phone number not verified"
           end
+          if verification.consumed_at
+            raise RegistrationError, "Verification token already used"
+          end
 
           # 2. Hash Password
           password_digest = BCrypt::Password.create(password)
@@ -50,6 +53,9 @@ module Identity
             password_digest: password_digest,
             role: role
           )
+
+          # Single-use: mark verification consumed so the same token cannot register twice.
+          verification_repo.mark_as_consumed(verification.id)
 
           # 4. JWT Generation
           token = ::Auth::JwtCodec.encode(sub: user.id, role: user.role)

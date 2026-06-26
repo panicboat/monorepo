@@ -25,6 +25,13 @@ module Identity
           .call(verified_at: Time.now)
       end
 
+      def mark_as_consumed(id)
+        sms_verifications
+          .by_pk(id)
+          .command(:update)
+          .call(consumed_at: Time.now)
+      end
+
       def increment_failed_attempts(id)
         sms_verifications
           .by_pk(id)
