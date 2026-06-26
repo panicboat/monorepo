@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { authFetch, getAuthToken } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 
 interface TypingDetail {
   type: "typing";
@@ -29,7 +30,7 @@ export function useTyping(threadId: string | null | undefined) {
   }, [threadId]);
 
   const sendTyping = useCallback(async () => {
-    if (!threadId || !getAuthToken()) return;
+    if (!threadId || !useAuthStore.getState().userId) return;
     try {
       await authFetch(`/api/messaging/threads/${encodeURIComponent(threadId)}/typing`, {
         method: "POST",

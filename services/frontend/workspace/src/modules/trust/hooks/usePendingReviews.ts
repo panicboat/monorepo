@@ -2,15 +2,16 @@
 
 import { useCallback } from "react";
 import useSWR from "swr";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import { authFetch } from "@/lib/auth";
 import type { PendingReviewsResponse } from "../types";
 
 export function usePendingReviews() {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
 
   const { data, error, isLoading: loading, mutate } = useSWR<PendingReviewsResponse>(
-    token ? "/api/cast/trust/reviews/pending" : null,
+    userId ? "/api/cast/trust/reviews/pending" : null,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -21,7 +22,7 @@ export function usePendingReviews() {
   const approveReview = useCallback(
     async (id: string) => {
       // FALLBACK: Returns false when not authenticated
-      if (!getAuthToken()) return false;
+      if (!useAuthStore.getState().userId) return false;
 
       try {
         const response = await authFetch<{ success: boolean }>(
@@ -44,7 +45,7 @@ export function usePendingReviews() {
   const rejectReview = useCallback(
     async (id: string) => {
       // FALLBACK: Returns false when not authenticated
-      if (!getAuthToken()) return false;
+      if (!useAuthStore.getState().userId) return false;
 
       try {
         const response = await authFetch<{ success: boolean }>(

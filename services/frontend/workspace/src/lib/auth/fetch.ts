@@ -1,6 +1,6 @@
 "use client";
 
-import { getAuthToken } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import { AppError, httpStatusToErrorCode } from "@/lib/errors";
 import { getDefaultMessage } from "@/lib/error-messages";
 
@@ -16,16 +16,12 @@ export async function authFetch<T = unknown>(
   options: AuthFetchOptions = {}
 ): Promise<T> {
   const { method = "GET", body, requireAuth = true, cache } = options;
-  const token = getAuthToken();
 
-  if (requireAuth && !token) {
+  if (requireAuth && !useAuthStore.getState().userId) {
     throw new AppError("UNAUTHORIZED", "ログインしてください", 401);
   }
 
   const headers: Record<string, string> = {};
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
   if (body !== undefined) {
     headers["Content-Type"] = "application/json";
   }

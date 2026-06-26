@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { authFetch, getAuthToken } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 import type { BookmarkStatusMap } from "../types";
 
 interface Response { bookmarked: BookmarkStatusMap }
@@ -13,7 +14,7 @@ export function useBookmarkStatusBatch(postIds: string[]) {
   const key = postIds.join(",");
 
   useEffect(() => {
-    if (!getAuthToken() || postIds.length === 0) return;
+    if (!useAuthStore.getState().userId || postIds.length === 0) return;
     let cancelled = false;
     (async () => {
       if (cancelled) return;

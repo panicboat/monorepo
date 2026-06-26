@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 import { authFetch } from "@/lib/auth/fetch";
-import { getAuthToken } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 
 export interface LikeEntry {
   liked: boolean;
@@ -63,7 +63,7 @@ export const usePostLikeStore = create<PostLikeState>()((set, get) => ({
   },
 
   like: async (postId) => {
-    if (!getAuthToken()) {
+    if (!useAuthStore.getState().userId) {
       // FALLBACK: Returns null when not authenticated
       console.warn("Cannot like: not authenticated");
       return null;
@@ -87,7 +87,7 @@ export const usePostLikeStore = create<PostLikeState>()((set, get) => ({
   },
 
   unlike: async (postId) => {
-    if (!getAuthToken()) {
+    if (!useAuthStore.getState().userId) {
       // FALLBACK: Returns null when not authenticated
       console.warn("Cannot unlike: not authenticated");
       return null;

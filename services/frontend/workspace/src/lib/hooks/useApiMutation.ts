@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { getAuthToken } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import { AppError, httpStatusToErrorCode } from "@/lib/errors";
 import { getDefaultMessage } from "@/lib/error-messages";
 
@@ -40,8 +40,7 @@ export function useApiMutation<TPayload = unknown, TResponse = unknown>(
 
   const mutate = useCallback(
     async (payload: TPayload): Promise<TResponse> => {
-      const token = getAuthToken();
-      if (!token) {
+      if (!useAuthStore.getState().userId) {
         const err = new AppError("UNAUTHORIZED", "ログインしてください", 401);
         setError(err);
         onError?.(err);
@@ -56,7 +55,6 @@ export function useApiMutation<TPayload = unknown, TResponse = unknown>(
           method,
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(mapPayload(payload)),
         });

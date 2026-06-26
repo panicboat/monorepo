@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { authFetch, getAuthToken } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
 import type { FollowStatusMap } from "../types";
 
@@ -14,7 +15,7 @@ export function useFollowStatusBatch(targetAccountIds: string[]) {
   const key = targetAccountIds.join(",");
 
   useEffect(() => {
-    if (!getAuthToken() || targetAccountIds.length === 0) return;
+    if (!useAuthStore.getState().userId || targetAccountIds.length === 0) return;
     let cancelled = false;
     (async () => {
       if (cancelled) return;

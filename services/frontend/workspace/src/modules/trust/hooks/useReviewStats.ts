@@ -1,14 +1,15 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { ReviewStatsResponse } from "../types";
 
 export function useReviewStats(revieweeId: string | null) {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
 
   const { data, error, isLoading: loading, mutate } = useSWR<ReviewStatsResponse>(
-    token && revieweeId ? `/api/shared/trust/reviews/stats?reviewee_id=${revieweeId}` : null,
+    userId && revieweeId ? `/api/shared/trust/reviews/stats?reviewee_id=${revieweeId}` : null,
     fetcher,
     {
       revalidateOnFocus: false,

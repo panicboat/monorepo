@@ -2,14 +2,15 @@
 
 import useSWRInfinite from "swr/infinite";
 import { useCallback } from "react";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedNotificationsResponse } from "../types";
 
 export function useNotifications() {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
 
   const getKey = (pageIndex: number, prev: PaginatedNotificationsResponse | null): string | null => {
-    if (!token) return null;
+    if (!userId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
     return `/api/notifications${cursorQs}`;
@@ -24,11 +25,10 @@ export function useNotifications() {
   const unreadCount = pages.length > 0 ? pages[0].unreadCount : 0;
 
   const markAllRead = useCallback(async () => {
-    const t = getAuthToken();
-    if (!t) throw new Error("No token");
+    if (!useAuthStore.getState().userId) throw new Error("Not authenticated");
     const res = await fetch(`/api/notifications/mark-all-read`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+      headers: { "Content-Type": "application/json" },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -48,11 +48,10 @@ export function useNotifications() {
   }, [mutate]);
 
   const markRead = useCallback(async (id: string) => {
-    const t = getAuthToken();
-    if (!t) throw new Error("No token");
+    if (!useAuthStore.getState().userId) throw new Error("Not authenticated");
     const res = await fetch(`/api/notifications/${id}/read`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+      headers: { "Content-Type": "application/json" },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

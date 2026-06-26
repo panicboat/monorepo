@@ -1,16 +1,17 @@
 "use client";
 
 import useSWRInfinite from "swr/infinite";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import { authFetch } from "@/lib/auth";
 import { useCallback } from "react";
 import type { PaginatedMessagesResponse } from "../types";
 
 export function useMessages(threadId: string | null | undefined) {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
 
   const getKey = (pageIndex: number, prev: PaginatedMessagesResponse | null): string | null => {
-    if (!token || !threadId) return null;
+    if (!userId || !threadId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
     return `/api/messaging/threads/${encodeURIComponent(threadId)}/messages${cursorQs}`;

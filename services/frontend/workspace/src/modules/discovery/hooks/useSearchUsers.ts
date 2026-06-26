@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import useSWRInfinite from "swr/infinite";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedUsersResponse } from "../types";
 
 const DEBOUNCE_MS = 300;
@@ -11,7 +12,7 @@ const DEBOUNCE_MS = 300;
 export type SearchUsersRoleFilter = 0 | 1 | 2;
 
 export function useSearchUsers(query: string, roleFilter: SearchUsersRoleFilter = 0) {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
   const [debounced, setDebounced] = useState(query);
 
   useEffect(() => {
@@ -20,7 +21,7 @@ export function useSearchUsers(query: string, roleFilter: SearchUsersRoleFilter 
   }, [query]);
 
   const getKey = (pageIndex: number, prev: PaginatedUsersResponse | null): string | null => {
-    if (!token) return null;
+    if (!userId) return null;
     const trimmed = debounced.trim();
     if (trimmed.length === 0) return null;
     if (prev && !prev.hasMore) return null;

@@ -1,14 +1,15 @@
 "use client";
 
 import useSWRInfinite from "swr/infinite";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedAuthorPostsResponse } from "@/modules/post/lib/author-tab-view";
 
 export function useAuthorPosts(accountId: string | null | undefined, mediaOnly: boolean) {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
 
   const getKey = (pageIndex: number, prev: PaginatedAuthorPostsResponse | null): string | null => {
-    if (!token || !accountId) return null;
+    if (!userId || !accountId) return null;
     if (prev && !prev.hasMore) return null;
     const params = new URLSearchParams();
     params.set("author_id", accountId);

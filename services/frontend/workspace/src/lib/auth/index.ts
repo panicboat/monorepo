@@ -1,28 +1,11 @@
 /**
  * Auth Module
  *
- * Centralized authentication token management.
- *
- * Usage:
- * - For hooks/API calls: use `getAuthToken()` (recommended)
- * - For React components: use `useAuthStore` from stores/authStore
- * - For low-level localStorage: use `getAccessToken()` from tokens.ts
+ * Tokens are held in httpOnly cookies set by the BFF (see ./cookies.ts).
+ * Client JS does not read or attach them. authFetch is just an error-handling
+ * fetch wrapper; cookies ride along automatically (same-origin).
  */
 
-// Recommended: Get token from Zustand store (synced with localStorage)
-export { getAuthToken } from "../swr";
-
-// Authenticated fetch utility
 export { authFetch, type AuthFetchOptions } from "./fetch";
 
-// Low-level token operations (direct localStorage access)
-export {
-  getAccessToken,
-  getRole,
-  getTokens,
-  setTokens,
-  clearTokens,
-  isAuthenticated,
-  type Role,
-  type TokenData,
-} from "./tokens";
+export type Role = "guest" | "cast";

@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import useSWRInfinite from "swr/infinite";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedPostsResponse } from "../types";
 
 const DEBOUNCE_MS = 300;
 
 export function useSearchPosts(query: string) {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
   const [debounced, setDebounced] = useState(query);
 
   useEffect(() => {
@@ -17,7 +18,7 @@ export function useSearchPosts(query: string) {
   }, [query]);
 
   const getKey = (pageIndex: number, prev: PaginatedPostsResponse | null): string | null => {
-    if (!token) return null;
+    if (!userId) return null;
     const trimmed = debounced.trim();
     if (trimmed.length === 0) return null;
     if (prev && !prev.hasMore) return null;

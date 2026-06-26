@@ -2,14 +2,14 @@
 
 import { useEffect } from "react";
 import { useSWRConfig } from "swr";
-import { getAuthToken } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 import type { StreamEventPayload } from "../types";
 
 export function MessagingStreamProvider({ children }: { children: React.ReactNode }) {
   const { mutate } = useSWRConfig();
 
   useEffect(() => {
-    if (!getAuthToken()) return;
+    if (!useAuthStore.getState().userId) return;
     const es = new EventSource("/api/messaging/stream");
     es.onmessage = (msg) => {
       try {
