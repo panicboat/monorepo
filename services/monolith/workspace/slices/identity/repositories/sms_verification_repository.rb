@@ -25,6 +25,20 @@ module Identity
           .call(verified_at: Time.now)
       end
 
+      def increment_failed_attempts(id)
+        sms_verifications
+          .by_pk(id)
+          .dataset
+          .update(failed_attempts: Sequel[:failed_attempts] + 1)
+      end
+
+      def invalidate(id)
+        sms_verifications
+          .by_pk(id)
+          .command(:update)
+          .call(expires_at: Time.now)
+      end
+
       def find_by_id(id)
         sms_verifications.by_pk(id).one
       end
