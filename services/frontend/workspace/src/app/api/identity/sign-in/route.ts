@@ -3,6 +3,7 @@ import { identityClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError } from "@/lib/api-helpers";
 import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
+import { setAuthCookies } from "@/lib/auth/cookies";
 
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown> = {};
@@ -16,10 +17,20 @@ export async function POST(req: NextRequest) {
         password,
         role,
       },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
-    return NextResponse.json(response);
+    // FALLBACK: response body still carries accessToken/refreshToken for the
+    // current client (authStore reads them). H8b moves the client off body
+    // tokens; H9 then strips the tokens from the response.
+    const res = NextResponse.json(response);
+    if (response.accessToken && response.refreshToken) {
+      setAuthCookies(res, {
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      });
+    }
+    return res;
   } catch (error: unknown) {
     // Code 16 is Unauthenticated (ConnectRPC/gRPC)
     if (isConnectError(error) && error.code === GrpcCode.UNAUTHENTICATED) {

@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await notificationClient.getNotificationPreferences({}, { headers });
     return NextResponse.json(toView(res.preferences));
   } catch (error: unknown) {
@@ -68,7 +68,7 @@ export async function PUT(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const body = (await req.json()) as Partial<NotificationPreferences>;
     // Merge with defaults so a partial body still produces a complete proto payload.
     const merged: NotificationPreferences = { ...DEFAULT_PREFERENCES, ...body };

@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     if (authError) return authError;
 
     const body = (await req.json()) as SaveProfileMediaPayload;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await profileClient.saveProfileMedia(
       { avatarMediaId: body.avatarMediaId || "", coverMediaId: body.coverMediaId || "" },
       { headers }

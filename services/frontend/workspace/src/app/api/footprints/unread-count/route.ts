@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await footprintsClient.getUnreadCount({}, { headers });
     return NextResponse.json({ count: res.count || 0 });
   } catch (error: unknown) {

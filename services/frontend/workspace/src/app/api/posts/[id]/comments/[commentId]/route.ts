@@ -12,7 +12,7 @@ export async function DELETE(
     if (authError) return authError;
 
     const { commentId } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await commentClient.deleteComment({ commentId }, { headers });
     return NextResponse.json({ commentsCount: res.commentsCount });
   } catch (error: unknown) {

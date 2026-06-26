@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
     const response = await identityClient.resetPassword(
       { phoneNumber, newPassword, verificationToken },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json(response);

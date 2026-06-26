@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
           mediaId: m.mediaId,
         })),
       },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json({ success: response.success, id: response.id });

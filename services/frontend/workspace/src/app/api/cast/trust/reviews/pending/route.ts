@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
     const response = await trustClient.listPendingReviews(
       {},
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     const { reviews } = mapProtoReviewsListToJson(response);

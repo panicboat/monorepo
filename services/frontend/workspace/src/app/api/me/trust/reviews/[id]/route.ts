@@ -21,7 +21,7 @@ export async function PATCH(
 
     const response = await trustClient.updateReview(
       { id, content, score },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json({ success: response.success });
@@ -45,7 +45,7 @@ export async function DELETE(
 
     const response = await trustClient.deleteReview(
       { id },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json({ success: response.success });

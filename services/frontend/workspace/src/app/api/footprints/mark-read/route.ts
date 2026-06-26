@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     await footprintsClient.markRead({}, { headers });
     return NextResponse.json({});
   } catch (error: unknown) {

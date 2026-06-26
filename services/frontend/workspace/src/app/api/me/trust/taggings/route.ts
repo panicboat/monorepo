@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     const response = await trustClient.listTargetTags(
       { targetId },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json(mapProtoTaggingsListToJson(response));
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     const response = await trustClient.addTagging(
       { tagName, targetId },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json({ success: response.success });

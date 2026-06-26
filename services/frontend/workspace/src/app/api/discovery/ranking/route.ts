@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const period = periodFromString(req.nextUrl.searchParams.get("period") || "week");
     const limit = Number(req.nextUrl.searchParams.get("limit") || "20");
     const cursor = req.nextUrl.searchParams.get("cursor") || "";

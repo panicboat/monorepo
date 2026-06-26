@@ -31,7 +31,7 @@ export async function GET(
     if (authError) return authError;
 
     const { id } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const limit = Number(req.nextUrl.searchParams.get("limit") || "20");
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
     const res = await messagingClient.listMessages(

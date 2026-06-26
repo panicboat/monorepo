@@ -12,7 +12,7 @@ export async function POST(
     if (authError) return authError;
 
     const { postId } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     await bookmarkClient.bookmark({ postId }, { headers });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
@@ -29,7 +29,7 @@ export async function DELETE(
     if (authError) return authError;
 
     const { postId } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     await bookmarkClient.unbookmark({ postId }, { headers });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

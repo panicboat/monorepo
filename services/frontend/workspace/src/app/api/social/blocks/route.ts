@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const body = await req.json();
     const targetAccountId = body?.targetAccountId ?? "";
     if (!targetAccountId) {
@@ -27,7 +27,7 @@ export async function DELETE(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const targetAccountId = req.nextUrl.searchParams.get("target_account_id") || "";
     if (!targetAccountId) {
       return NextResponse.json({ error: "target_account_id required" }, { status: 400 });
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const limit = Number(req.nextUrl.searchParams.get("limit") || "20");
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
 

@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await notificationClient.markAllRead({}, { headers });
     return NextResponse.json({ affected: res.affected || 0 });
   } catch (error: unknown) {

@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const raw = req.nextUrl.searchParams.get("post_ids") || "";
     const postIds = raw.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
     if (postIds.length === 0) {

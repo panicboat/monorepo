@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     const response = await mediaClient.getUploadUrl(
       { filename, contentType, mediaType: mediaTypeNum },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json({

@@ -12,7 +12,7 @@ export async function POST(
     if (authError) return authError;
 
     const { requesterAccountId } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     await socialFollowClient.rejectFollowRequest({ requesterAccountId }, { headers });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

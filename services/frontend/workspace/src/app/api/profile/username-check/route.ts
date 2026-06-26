@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     if (authError) return authError;
 
     const username = req.nextUrl.searchParams.get("username") || "";
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await profileClient.checkUsernameAvailability({ username }, { headers });
     return NextResponse.json({ available: res.available, message: res.message });
   } catch (error: unknown) {

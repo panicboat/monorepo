@@ -15,7 +15,7 @@ export async function GET(
     if (authError) return authError;
 
     const { id } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await postClient.getPost({ id }, { headers });
     if (!res.post) {
       return NextResponse.json({ error: "投稿が見つかりませんでした" }, { status: 404 });
@@ -39,7 +39,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = (await req.json()) as SavePostPayload;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await postClient.savePost(buildSavePostRequest({ ...body, id }), { headers });
     if (!res.post) {
       return NextResponse.json({ error: "保存に失敗しました" }, { status: 500 });
@@ -62,7 +62,7 @@ export async function DELETE(
     if (authError) return authError;
 
     const { id } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     await postClient.deletePost({ id }, { headers });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

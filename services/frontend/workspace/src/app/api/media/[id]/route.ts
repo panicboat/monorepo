@@ -15,7 +15,7 @@ export async function GET(
 
     const response = await mediaClient.getMedia(
       { id },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json({
@@ -49,7 +49,7 @@ export async function DELETE(
 
     const response = await mediaClient.deleteMedia(
       { id },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json({

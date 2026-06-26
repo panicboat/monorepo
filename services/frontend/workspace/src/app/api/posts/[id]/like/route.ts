@@ -12,7 +12,7 @@ export async function POST(
     if (authError) return authError;
 
     const { id } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await likeClient.likePost({ postId: id }, { headers });
     return NextResponse.json({ likesCount: res.likesCount });
   } catch (error: unknown) {
@@ -29,7 +29,7 @@ export async function DELETE(
     if (authError) return authError;
 
     const { id } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await likeClient.unlikePost({ postId: id }, { headers });
     return NextResponse.json({ likesCount: res.likesCount });
   } catch (error: unknown) {

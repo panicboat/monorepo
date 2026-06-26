@@ -13,7 +13,7 @@ export async function GET(
     if (authError) return authError;
 
     const { id } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const limit = Number(req.nextUrl.searchParams.get("limit") || "20");
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
 
@@ -33,7 +33,7 @@ export async function POST(
     if (authError) return authError;
 
     const { id } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const body = await req.json();
     const content = typeof body?.content === "string" ? body.content : "";
     const parentId = typeof body?.parentId === "string" ? body.parentId : "";

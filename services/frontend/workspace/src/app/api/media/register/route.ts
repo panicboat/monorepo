@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
         sizeBytes: BigInt(sizeBytes || 0),
         thumbnailKey: thumbnailKey || "",
       },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json({

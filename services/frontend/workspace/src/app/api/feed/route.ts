@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
     const filterRaw = (req.nextUrl.searchParams.get("filter") || "all") as FeedFilterValue;
     const prefecture = req.nextUrl.searchParams.get("prefecture") || "";

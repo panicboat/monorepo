@@ -6,6 +6,9 @@
  * - Authorization header handling
  */
 
+import type { NextRequest } from "next/server";
+import { ACCESS_COOKIE } from "@/lib/auth/cookies";
+
 /**
  * Generates a unique request ID for request tracing.
  * Uses crypto.randomUUID (available in Node.js 19+ and modern browsers).
@@ -24,20 +27,31 @@ export const HEADER_NAMES = {
 
 /**
  * Builds headers for gRPC calls from the BFF to the backend.
- * Propagates Authorization and X-Request-ID from the incoming request.
  *
- * @param incomingHeaders - Headers from the incoming Next.js request
+ * Reads the access token from the access_token httpOnly cookie so client JS
+ * never holds or transmits the token. The cookie was set by sign-in / register
+ * / refresh-token BFFs.
+ *
+ * @param req - Incoming Next.js request (used for cookies + request id)
  * @returns Headers object for gRPC call
  */
-export function buildGrpcHeaders(incomingHeaders: Headers): Record<string, string> {
+export function buildGrpcHeaders(req: NextRequest): Record<string, string> {
   const headers: Record<string, string> = {};
 
   // Propagate or generate X-Request-ID
-  const requestId = incomingHeaders.get(HEADER_NAMES.REQUEST_ID) || generateRequestId();
+  const requestId = req.headers.get(HEADER_NAMES.REQUEST_ID) || generateRequestId();
   headers[HEADER_NAMES.REQUEST_ID] = requestId;
 
-  // Propagate Authorization if present
-  const authHeader = incomingHeaders.get(HEADER_NAMES.AUTHORIZATION);
+  const accessFromCookie = req.cookies.get(ACCESS_COOKIE)?.value;
+  if (accessFromCookie) {
+    headers[HEADER_NAMES.AUTHORIZATION] = `Bearer ${accessFromCookie}`;
+    return headers;
+  }
+
+  // FALLBACK: client-sent Authorization header is honored while H8b migrates
+  // the client off Bearer-from-localStorage. Removed in H9 once the client
+  // stops sending it.
+  const authHeader = req.headers.get(HEADER_NAMES.AUTHORIZATION);
   if (authHeader) {
     headers[HEADER_NAMES.AUTHORIZATION] = authHeader;
   }

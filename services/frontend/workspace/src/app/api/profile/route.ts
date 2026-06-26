@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await profileClient.getProfile({ accountId: "" }, { headers });
     if (!res.profile) {
       return NextResponse.json({ error: "プロフィールが見つかりませんでした" }, { status: 404 });
@@ -31,7 +31,7 @@ export async function PUT(req: NextRequest) {
     if (authError) return authError;
 
     const body = (await req.json()) as SaveProfilePayload;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await profileClient.saveProfile(buildSaveProfileRequest(body), { headers });
     if (!res.profile) {
       return NextResponse.json({ error: "保存に失敗しました" }, { status: 500 });
