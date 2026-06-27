@@ -25,7 +25,7 @@
 
 ---
 
-### Task K1: Add `karte/v1` proto and regenerate stubs
+### Task 1: K1 — Add `karte/v1` proto and regenerate stubs
 
 **Files:**
 - Create: `proto/karte/v1/service.proto`
@@ -174,7 +174,7 @@ nothing wired."
 
 ---
 
-### Task K2: Schema + relations (`karte__entries`, `karte__access`, `karte__reports`)
+### Task 2: K2 — Schema + relations (`karte__entries`, `karte__access`, `karte__reports`)
 
 **Files:**
 - Create: `services/monolith/workspace/config/db/migrate/20260628000000_create_karte_schema.rb`
@@ -410,7 +410,7 @@ collision with the slice name."
 
 ---
 
-### Task K3: Repositories
+### Task 3: K3 — Repositories
 
 **Files:**
 - Create: `services/monolith/workspace/slices/karte/repositories/entry_repository.rb`
@@ -587,7 +587,7 @@ idempotent via ON CONFLICT DO NOTHING on (entry_id, reporter_account_id)."
 
 ---
 
-### Task K4: Use cases (TDD)
+### Task 4: K4 — Use cases (TDD)
 
 **Files:**
 - Create: `services/monolith/workspace/slices/karte/use_cases/create_entry.rb`
@@ -878,7 +878,7 @@ MediaAdapter. flagged = reported_count >= 3."
 
 ---
 
-### Task K5: gRPC handler + `bin/grpc` registration + dev seed
+### Task 5: K5 — gRPC handler + `bin/grpc` registration + dev seed
 
 **Files:**
 - Create: `services/monolith/workspace/slices/karte/grpc/handler.rb`
@@ -1217,7 +1217,7 @@ to the first Cast for local testing."
 
 ---
 
-### Task K6: Frontend data layer (types + 7 BFFs + grpc client + 6 hooks)
+### Task 6: K6 — Frontend data layer (types + 7 BFFs + grpc client + 6 hooks)
 
 **Files:**
 - Modify: `services/frontend/workspace/src/lib/grpc.ts` (add karteClient)
@@ -1687,7 +1687,7 @@ cookie-mediation helpers established in #763."
 
 ---
 
-### Task K7: Frontend UI (guest profile tab, /karte/my page, composer, badges, drawer link, /dev/ui mock)
+### Task 7: K7 — Frontend UI (guest profile tab, /karte/my page, composer, badges, drawer link, /dev/ui mock)
 
 **Files:**
 - Create: `services/frontend/workspace/src/modules/karte/components/KarteEntryCard.tsx`
@@ -2058,7 +2058,7 @@ access; /karte/my shows a friendly upsell when not gated. Aggregate
 
 ---
 
-### Task K-push-and-draft-PR: Push and open the Draft PR for the karte build segment
+### Task 8: K-push-and-draft-PR — Push and open the Draft PR for the karte build segment
 
 - [ ] **Step 1: Switch remote to ssh**
 
@@ -2089,7 +2089,7 @@ Capture the PR number for the trust destroy commits that follow on the same bran
 
 ---
 
-### Task T1: Frontend trust removal
+### Task 9: T1 — Frontend trust removal
 
 **Files:**
 - Delete: `services/frontend/workspace/src/modules/trust/` (entire directory)
@@ -2159,7 +2159,7 @@ the trustClient export as part of the trust slice destroy."
 
 ---
 
-### Task T2: Monolith trust slice removal
+### Task 10: T2 — Monolith trust slice removal
 
 **Files:**
 - Delete: `services/monolith/workspace/slices/trust/` (entire directory)
@@ -2229,7 +2229,7 @@ until T3 regenerates without trust/v1."
 
 ---
 
-### Task T3: Proto trust removal + stub regeneration
+### Task 11: T3 — Proto trust removal + stub regeneration
 
 **Files:**
 - Delete: `proto/trust/` (entire directory)
@@ -2289,7 +2289,7 @@ removed explicitly (codegen does not prune)."
 
 ---
 
-### Task T4: DB DROP of trust schema (pre-prod, data loss tolerated)
+### Task 12: T4 — DB DROP of trust schema (pre-prod, data loss tolerated)
 
 **Files:**
 - Create: `services/monolith/workspace/config/db/migrate/20260628010000_drop_trust_schema.rb`
