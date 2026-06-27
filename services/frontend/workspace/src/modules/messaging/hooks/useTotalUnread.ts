@@ -1,16 +1,17 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 
 interface Response {
   count: number;
 }
 
 export function useTotalUnread() {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
   const { data, isLoading, mutate } = useSWR<Response>(
-    token ? "/api/messaging/unread-count" : null,
+    userId ? "/api/messaging/unread-count" : null,
     fetcher,
     { refreshInterval: 30000, revalidateOnFocus: false }
   );

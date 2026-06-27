@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { getAuthToken } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 import type { UploadedMedia, MediaType, MediaUploadOptions } from "../types";
 import { getMediaTypeFromMime, toProtoMediaType } from "../lib/mappers";
 
@@ -20,16 +20,14 @@ export function useMediaUpload(): UseMediaUploadResult {
   const [error, setError] = useState<Error | null>(null);
 
   const registerMedia = useCallback(async (uploaded: UploadedMedia) => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("No authentication token");
+    if (!useAuthStore.getState().userId) {
+      throw new Error("ログインしてください");
     }
 
     const res = await fetch("/api/media/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         mediaId: uploaded.mediaId,
@@ -53,8 +51,7 @@ export function useMediaUpload(): UseMediaUploadResult {
       file: File,
       options: MediaUploadOptions = {}
     ): Promise<UploadedMedia> => {
-      const token = getAuthToken();
-      if (!token) {
+      if (!useAuthStore.getState().userId) {
         throw new Error("ログインしてください");
       }
 
@@ -69,7 +66,6 @@ export function useMediaUpload(): UseMediaUploadResult {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             filename: file.name,

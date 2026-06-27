@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 require "errors/validation_error"
+require "rack/utils"
 
 module Identity
   module UseCases
     module Verification
       class VerifyCode
         class VerificationError < StandardError; end
+
+        MAX_FAILED_ATTEMPTS = 5
 
         include Identity::Deps[
           repo: "repositories.sms_verification_repository",
@@ -22,7 +25,16 @@ module Identity
 
           raise VerificationError, "Verification not found" unless verification
           raise VerificationError, "Code expired" if verification.expires_at < Time.now
-          raise VerificationError, "Invalid code" if verification.code != code
+          raise VerificationError, "Too many attempts" if verification.failed_attempts >= MAX_FAILED_ATTEMPTS
+
+          unless Rack::Utils.secure_compare(verification.code, code)
+            repo.increment_failed_attempts(verification.id)
+            if verification.failed_attempts + 1 >= MAX_FAILED_ATTEMPTS
+              repo.invalidate(verification.id)
+              raise VerificationError, "Too many attempts"
+            end
+            raise VerificationError, "Invalid code"
+          end
 
           # Mark as verified
           repo.mark_as_verified(verification.id)

@@ -1,73 +1,46 @@
 /**
  * Auth Store
  *
- * Zustand store for authentication state management.
- * Uses persist middleware for localStorage persistence.
- *
- * Usage:
- *   const { accessToken, role, setTokens, clearTokens } = useAuthStore();
+ * Identity-only state. Tokens live exclusively in httpOnly cookies set by the
+ * BFF; client JS never holds them. The store remembers who is logged in
+ * (userId/role) so the UI can render shell + nav decisions synchronously,
+ * even before /api/identity/me resolves.
  */
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { type Role, type TokenData } from "@/lib/auth";
+import type { Role } from "@/lib/auth";
 
 interface AuthState {
-  // State
-  accessToken: string | null;
-  refreshToken: string | null;
   role: Role | null;
   userId: string | null;
   isHydrated: boolean;
 
-  // Actions
-  setTokens: (tokens: TokenData) => void;
-  clearTokens: () => void;
+  setIdentity: (identity: { userId: string; role: Role }) => void;
+  clearIdentity: () => void;
   setHydrated: () => void;
 
-  // Computed (implemented as getters via selectors)
   isAuthenticated: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      // Initial state
-      accessToken: null,
-      refreshToken: null,
       role: null,
       userId: null,
       isHydrated: false,
 
-      // Actions
-      setTokens: (tokens: TokenData) =>
-        set({
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
-          role: tokens.role,
-          userId: tokens.userId,
-        }),
-
-      clearTokens: () =>
-        set({
-          accessToken: null,
-          refreshToken: null,
-          role: null,
-          userId: null,
-        }),
-
+      setIdentity: ({ userId, role }) => set({ userId, role }),
+      clearIdentity: () => set({ userId: null, role: null }),
       setHydrated: () => set({ isHydrated: true }),
 
-      // Computed
-      isAuthenticated: () => !!get().accessToken,
+      isAuthenticated: () => !!get().userId,
     }),
     {
       name: "frontend-auth",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
         role: state.role,
         userId: state.userId,
       }),
@@ -78,11 +51,7 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
-/**
- * Selectors for common use cases
- */
-export const selectAccessToken = (state: AuthState) => state.accessToken;
 export const selectRole = (state: AuthState) => state.role;
 export const selectUserId = (state: AuthState) => state.userId;
-export const selectIsAuthenticated = (state: AuthState) => !!state.accessToken;
+export const selectIsAuthenticated = (state: AuthState) => !!state.userId;
 export const selectIsHydrated = (state: AuthState) => state.isHydrated;

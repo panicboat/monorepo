@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { authFetch, getAuthToken } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
 
 interface FollowResponse { status: FollowStatus }
@@ -13,7 +14,7 @@ export function useFollow(targetAccountId: string | null | undefined) {
 
   // Initial fetch
   useEffect(() => {
-    if (!targetAccountId || !getAuthToken()) return;
+    if (!targetAccountId || !useAuthStore.getState().userId) return;
     let cancelled = false;
     (async () => {
       try {
@@ -31,7 +32,7 @@ export function useFollow(targetAccountId: string | null | undefined) {
   }, [targetAccountId]);
 
   const follow = useCallback(async () => {
-    if (!targetAccountId || !getAuthToken()) return;
+    if (!targetAccountId || !useAuthStore.getState().userId) return;
     setLoading(true);
     try {
       const res = await authFetch<FollowResponse>(
@@ -46,7 +47,7 @@ export function useFollow(targetAccountId: string | null | undefined) {
   }, [targetAccountId]);
 
   const unfollow = useCallback(async () => {
-    if (!targetAccountId || !getAuthToken()) return;
+    if (!targetAccountId || !useAuthStore.getState().userId) return;
     setLoading(true);
     try {
       await authFetch(`/api/social/follow?target_account_id=${encodeURIComponent(targetAccountId)}`, { method: "DELETE" });
@@ -57,7 +58,7 @@ export function useFollow(targetAccountId: string | null | undefined) {
   }, [targetAccountId]);
 
   const cancelRequest = useCallback(async () => {
-    if (!targetAccountId || !getAuthToken()) return;
+    if (!targetAccountId || !useAuthStore.getState().userId) return;
     setLoading(true);
     try {
       await authFetch(`/api/social/follow?target_account_id=${encodeURIComponent(targetAccountId)}&cancel=1`, { method: "DELETE" });

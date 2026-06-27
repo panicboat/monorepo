@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
     const response = await identityClient.verifySms(
       { phoneNumber, code },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json(response);

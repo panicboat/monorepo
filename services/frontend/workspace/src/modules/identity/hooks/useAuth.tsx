@@ -12,11 +12,11 @@ import useSWR from "swr";
 
 import {
   useAuthStore,
-  selectAccessToken,
   selectRole,
   selectIsHydrated,
+  selectUserId,
 } from "@/stores/authStore";
-import type { Role, TokenData } from "@/lib/auth";
+import type { Role } from "@/lib/auth";
 
 export type User = {
   id: string;
@@ -67,99 +67,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [newUserFlag, setNewUserFlag] = useState(false);
   const router = useRouter();
 
-  // Zustand store
-  const accessToken = useAuthStore(selectAccessToken);
+  // Identity-only zustand state. The access/refresh tokens live in httpOnly
+  // cookies set by the BFF; React never holds them.
+  const userId = useAuthStore(selectUserId);
   const role = useAuthStore(selectRole);
   const isHydrated = useAuthStore(selectIsHydrated);
-  const setTokens = useAuthStore((state) => state.setTokens);
-  const clearTokens = useAuthStore((state) => state.clearTokens);
-  const refreshTokenFromStore = useAuthStore((state) => state.refreshToken);
+  const setIdentity = useAuthStore((state) => state.setIdentity);
+  const clearIdentity = useAuthStore((state) => state.clearIdentity);
 
-  // Token refresh function
-  const refreshToken = useCallback(async (): Promise<boolean> => {
-    const rToken = refreshTokenFromStore;
-    if (!rToken) return false;
-
-    try {
-      const res = await fetch("/api/identity/refresh-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: rToken }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        // FALLBACK: Supports multiple token field name formats from API
-        const newAccessToken = data.accessToken || data.access_token;
-        const newRefreshToken = data.refreshToken || data.refresh_token;
-
-        if (newAccessToken && newRefreshToken && role) {
-          setTokens({
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken,
-            role,
-            userId: useAuthStore.getState().userId || "",
-          });
-          return true;
-        }
-      }
-    } catch (e) {
-      console.error("Refresh failed", e);
+  // SWR fetcher for /api/identity/me. The cookie rides along automatically
+  // (same-origin). The BFF refreshes transparently on UNAUTHENTICATED, so the
+  // client does not have to orchestrate refresh-retry itself.
+  const meFetcher = useCallback(async (url: string) => {
+    const res = await fetch(url, { cache: "no-store" });
+    if (res.ok) return res.json();
+    if (res.status === 401) {
+      // Cookie missing or refresh failed — drop identity so the shell redirects.
+      clearIdentity();
     }
-    return false;
-  }, [refreshTokenFromStore, role, setTokens]);
+    // FALLBACK: Returns null when authentication fails
+    return null;
+  }, [clearIdentity]);
 
-  // SWR fetcher for /api/identity/me with token refresh support
-  const authFetcher = useCallback(
-    async (url: string) => {
-      const token = useAuthStore.getState().accessToken;
-      if (!token) return null;
-
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.ok) {
-        return res.json();
-      }
-
-      // Handle 401 with token refresh
-      if (res.status === 401) {
-        const refreshed = await refreshToken();
-        if (refreshed) {
-          const newToken = useAuthStore.getState().accessToken;
-          if (newToken) {
-            const retryRes = await fetch(url, {
-              headers: { Authorization: `Bearer ${newToken}` },
-            });
-            if (retryRes.ok) {
-              return retryRes.json();
-            }
-          }
-        }
-        // Token refresh failed - clear tokens
-        clearTokens();
-      }
-
-      // FALLBACK: Returns null when authentication fails
-      return null;
-    },
-    [refreshToken, clearTokens]
-  );
-
-  // Use SWR for user data fetching (only when hydrated and has token)
   const {
     data: userData,
     isLoading: swrLoading,
     mutate,
-  } = useSWR(isHydrated && accessToken ? "/api/identity/me" : null, authFetcher, {
+  } = useSWR(isHydrated && userId ? "/api/identity/me" : null, meFetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 5000,
   });
 
-  // Loading state includes hydration
   const isLoading = !isHydrated || swrLoading;
 
-  // Derive user from SWR data
   const user: User | null = userData
     ? {
         id: userData.id,
@@ -191,6 +131,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.verificationToken;
   };
 
+  // The BFF sets access/refresh cookies on a 2xx response from register / login.
+  // We seed identity from response.account so the shell can render synchronously.
+  void role; // kept as a reactive subscription so role changes re-render.
+  void userId;
+
   const register = async (
     phoneNumber: string,
     password: string,
@@ -210,33 +155,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "登録に失敗しました");
 
-    // FALLBACK: Supports multiple token field name formats from API
-    const newAccessToken = data.accessToken || data.access_token;
-    const newRefreshToken = data.refreshToken || data.refresh_token;
-    const userRole = data.account.role;
-
-    if (!newAccessToken) {
-      console.error("Register Error: No access token found in response", data);
+    if (!data.account?.id) {
       throw new Error("登録に失敗しました");
     }
 
-    // Save tokens to authStore
-    const tokenData: TokenData = {
-      accessToken: newAccessToken,
-      // FALLBACK: Returns empty string when refresh token is missing
-      refreshToken: newRefreshToken || "",
-      role: toStoreRole(userRole),
+    setIdentity({
       userId: data.account.id,
-    };
-    setTokens(tokenData);
+      role: toStoreRole(data.account.role),
+    });
 
-    // Set new user flag and update SWR cache
     setNewUserFlag(true);
     mutate(
       {
         id: data.account.id,
         phoneNumber: data.account.phoneNumber,
-        role: userRole,
+        role: data.account.role,
       },
       { revalidate: false }
     );
@@ -257,33 +190,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "ログインに失敗しました");
 
-    // FALLBACK: Supports multiple token field name formats from API
-    const newAccessToken = data.accessToken || data.access_token;
-    const newRefreshToken = data.refreshToken || data.refresh_token;
-    const userRole = data.account.role;
-
-    if (!newAccessToken) {
-      console.error("Login Error: No access token found in response", data);
+    if (!data.account?.id) {
       throw new Error("ログインに失敗しました");
     }
 
-    // Save tokens to authStore
-    const tokenData: TokenData = {
-      accessToken: newAccessToken,
-      // FALLBACK: Returns empty string when refresh token is missing
-      refreshToken: newRefreshToken || "",
-      role: toStoreRole(userRole),
+    setIdentity({
       userId: data.account.id,
-    };
-    setTokens(tokenData);
+      role: toStoreRole(data.account.role),
+    });
 
-    // Update SWR cache with user data
     setNewUserFlag(false);
     mutate(
       {
         id: data.account.id,
         phoneNumber: data.account.phoneNumber,
-        role: userRole,
+        role: data.account.role,
       },
       { revalidate: false }
     );
@@ -307,23 +228,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    const rToken = refreshTokenFromStore;
-    if (rToken) {
-      try {
-        await fetch("/api/identity/logout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken: rToken }),
-        });
-      } catch {
-        // Ignore logout errors
-      }
+    // The BFF reads refresh from cookie and clears both cookies on success.
+    // Always call it (even with no userId) so a stale cookie is cleared.
+    try {
+      await fetch("/api/identity/logout", { method: "POST" });
+    } catch {
+      // SILENT: logout failures still must clear local identity below.
     }
 
-    // Clear tokens from authStore
-    clearTokens();
+    clearIdentity();
 
-    // Clear SWR cache
     setNewUserFlag(false);
     mutate(null, { revalidate: false });
 

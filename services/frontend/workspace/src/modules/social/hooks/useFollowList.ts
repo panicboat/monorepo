@@ -1,14 +1,15 @@
 "use client";
 
 import useSWRInfinite from "swr/infinite";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedProfilesResponse } from "../types";
 
 export function useFollowList(accountId?: string) {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
 
   const getKey = (pageIndex: number, prev: PaginatedProfilesResponse | null): string | null => {
-    if (!token) return null;
+    if (!userId) return null;
     if (prev && !prev.hasMore) return null;
     const accountQs = accountId ? `account_id=${encodeURIComponent(accountId)}` : "";
     const cursorQs = pageIndex === 0 ? "" : `cursor=${encodeURIComponent(prev?.nextCursor || "")}`;

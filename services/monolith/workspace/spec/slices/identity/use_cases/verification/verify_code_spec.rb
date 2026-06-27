@@ -16,7 +16,8 @@ RSpec.describe Identity::UseCases::Verification::VerifyCode do
           :verification,
           id: "ver-123",
           code: code,
-          expires_at: Time.now + 300
+          expires_at: Time.now + 300,
+          failed_attempts: 0
         )
       end
 
@@ -77,7 +78,63 @@ RSpec.describe Identity::UseCases::Verification::VerifyCode do
           :verification,
           id: "ver-123",
           code: "different",
-          expires_at: Time.now + 300
+          expires_at: Time.now + 300,
+          failed_attempts: 0
+        )
+      end
+
+      before do
+        allow(repo).to receive(:find_latest_by_phone_number).with(phone_number).and_return(verification)
+        allow(repo).to receive(:increment_failed_attempts)
+      end
+
+      it "raises VerificationError with Invalid code" do
+        expect {
+          use_case.call(phone_number: phone_number, code: code)
+        }.to raise_error(Identity::UseCases::Verification::VerifyCode::VerificationError, "Invalid code")
+      end
+
+      it "increments failed_attempts" do
+        expect(repo).to receive(:increment_failed_attempts).with("ver-123")
+        expect {
+          use_case.call(phone_number: phone_number, code: code)
+        }.to raise_error(Identity::UseCases::Verification::VerifyCode::VerificationError)
+      end
+    end
+
+    context "when code does not match and failed_attempts reached the limit" do
+      let(:verification) do
+        double(
+          :verification,
+          id: "ver-123",
+          code: "different",
+          expires_at: Time.now + 300,
+          failed_attempts: 4
+        )
+      end
+
+      before do
+        allow(repo).to receive(:find_latest_by_phone_number).with(phone_number).and_return(verification)
+        allow(repo).to receive(:increment_failed_attempts)
+        allow(repo).to receive(:invalidate)
+      end
+
+      it "invalidates the verification" do
+        expect(repo).to receive(:invalidate).with("ver-123")
+        expect {
+          use_case.call(phone_number: phone_number, code: code)
+        }.to raise_error(Identity::UseCases::Verification::VerifyCode::VerificationError, "Too many attempts")
+      end
+    end
+
+    context "when verification has already exceeded the attempt limit" do
+      let(:verification) do
+        double(
+          :verification,
+          id: "ver-123",
+          code: code,
+          expires_at: Time.now + 300,
+          failed_attempts: 5
         )
       end
 
@@ -85,10 +142,10 @@ RSpec.describe Identity::UseCases::Verification::VerifyCode do
         allow(repo).to receive(:find_latest_by_phone_number).with(phone_number).and_return(verification)
       end
 
-      it "raises VerificationError" do
+      it "raises Too many attempts even if code is correct" do
         expect {
           use_case.call(phone_number: phone_number, code: code)
-        }.to raise_error(Identity::UseCases::Verification::VerifyCode::VerificationError, "Invalid code")
+        }.to raise_error(Identity::UseCases::Verification::VerifyCode::VerificationError, "Too many attempts")
       end
     end
   end

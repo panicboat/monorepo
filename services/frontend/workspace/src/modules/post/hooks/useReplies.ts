@@ -1,7 +1,8 @@
 "use client";
 
 import useSWRInfinite from "swr/infinite";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedCommentsResponse } from "@/modules/post/lib/comment-view";
 
 export function useReplies(
@@ -9,10 +10,10 @@ export function useReplies(
   commentId: string | null | undefined,
   enabled: boolean
 ) {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
 
   const getKey = (pageIndex: number, prev: PaginatedCommentsResponse | null): string | null => {
-    if (!enabled || !token || !postId || !commentId) return null;
+    if (!enabled || !userId || !postId || !commentId) return null;
     if (prev && !prev.hasMore) return null;
     const base = `/api/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(commentId)}/replies`;
     return pageIndex === 0 ? base : `${base}?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;

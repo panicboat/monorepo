@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { authFetch } from "@/lib/auth/fetch";
-import { getAuthToken } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 
 export interface UploadResult {
   mediaId: string;
@@ -14,7 +14,7 @@ export function useMediaUpload() {
   const [error, setError] = useState<string | null>(null);
 
   const upload = async (file: File): Promise<UploadResult | null> => {
-    if (!getAuthToken()) {
+    if (!useAuthStore.getState().userId) {
       setError("ログインが必要です");
       return null;
     }

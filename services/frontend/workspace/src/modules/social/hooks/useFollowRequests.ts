@@ -2,7 +2,8 @@
 
 import useSWR from "swr";
 import { useCallback } from "react";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { FollowRequestItem } from "../types";
 
 interface ListResponse {
@@ -14,26 +15,25 @@ interface ListResponse {
 interface CountResponse { count: number }
 
 export function useFollowRequests() {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
 
   const { data: list, error: listError, isLoading, mutate: mutateList } = useSWR<ListResponse>(
-    token ? "/api/social/follow/requests" : null,
+    userId ? "/api/social/follow/requests" : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 5000 }
   );
 
   const { data: countData, mutate: mutateCount } = useSWR<CountResponse>(
-    token ? "/api/social/follow/requests/count" : null,
+    userId ? "/api/social/follow/requests/count" : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 10000 }
   );
 
   const approve = useCallback(async (requesterAccountId: string) => {
-    const t = getAuthToken();
-    if (!t) throw new Error("No token");
+    if (!useAuthStore.getState().userId) throw new Error("Not authenticated");
     const res = await fetch(`/api/social/follow/requests/${requesterAccountId}/approve`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+      headers: { "Content-Type": "application/json" },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -44,11 +44,10 @@ export function useFollowRequests() {
   }, [mutateList, mutateCount]);
 
   const reject = useCallback(async (requesterAccountId: string) => {
-    const t = getAuthToken();
-    if (!t) throw new Error("No token");
+    if (!useAuthStore.getState().userId) throw new Error("Not authenticated");
     const res = await fetch(`/api/social/follow/requests/${requesterAccountId}/reject`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+      headers: { "Content-Type": "application/json" },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

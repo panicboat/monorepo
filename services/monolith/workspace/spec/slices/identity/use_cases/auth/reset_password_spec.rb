@@ -43,4 +43,15 @@ RSpec.describe Identity::UseCases::Auth::ResetPassword do
       use_case.call(phone_number: phone, new_password: "newpass2", verification_token: unverified.id)
     }.to raise_error(Identity::UseCases::Auth::ResetPassword::ResetError)
   end
+
+  it "rejects a token that was already consumed" do
+    create_user(password: "oldpass1")
+    token = verified_token
+
+    use_case.call(phone_number: phone, new_password: "newpass2", verification_token: token)
+
+    expect {
+      use_case.call(phone_number: phone, new_password: "newpass3", verification_token: token)
+    }.to raise_error(Identity::UseCases::Auth::ResetPassword::ResetError, "Verification token already used")
+  end
 end

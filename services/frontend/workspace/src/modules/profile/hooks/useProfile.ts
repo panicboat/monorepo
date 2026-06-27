@@ -2,7 +2,8 @@
 
 import useSWR from "swr";
 import { useCallback } from "react";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import { authFetch } from "@/lib/auth/fetch";
 import type {
   ProfileView,
@@ -15,9 +16,9 @@ interface ProfileResponse {
 }
 
 export function useProfile() {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
   const { data, error, isLoading, mutate } = useSWR<ProfileResponse>(
-    token ? "/api/profile" : null,
+    userId ? "/api/profile" : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 5000 }
   );

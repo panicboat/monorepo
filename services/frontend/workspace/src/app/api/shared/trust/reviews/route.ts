@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
         limit: limit || 0,
         cursor: cursor || undefined,
       },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json(mapProtoReviewsListToJson(response));

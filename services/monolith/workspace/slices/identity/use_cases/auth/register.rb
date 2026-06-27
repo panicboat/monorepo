@@ -40,22 +40,36 @@ module Identity
           unless verification.verified_at
             raise RegistrationError, "Phone number not verified"
           end
+          if verification.consumed_at
+            raise RegistrationError, "Verification token already used"
+          end
 
           # 2. Hash Password
-          password_digest = BCrypt::Password.create(password)
+          # cost: 12 pinned so we have a known work factor regardless of BCrypt default drift.
+          password_digest = BCrypt::Password.create(password, cost: 12)
 
           # 3. Create User
-          user = repo.create(
-            phone_number: phone_number,
-            password_digest: password_digest,
-            role: role
-          )
+          # The unique-phone DB constraint is the source of truth — collapse a violation into
+          # a generic error so the response cannot be used to enumerate existing accounts.
+          user =
+            begin
+              repo.create(
+                phone_number: phone_number,
+                password_digest: password_digest,
+                role: role
+              )
+            rescue Sequel::UniqueConstraintViolation
+              raise RegistrationError, "Registration failed"
+            end
+
+          # Single-use: mark verification consumed so the same token cannot register twice.
+          verification_repo.mark_as_consumed(verification.id)
 
           # 4. JWT Generation
           token = ::Auth::JwtCodec.encode(sub: user.id, role: user.role)
 
           refresh_token = SecureRandom.hex(32)
-          refresh_repo.create(token: refresh_token, user_id: user.id, expires_at: Time.now + 3600 * 24 * 60)
+          refresh_repo.create(token: refresh_token, user_id: user.id, expires_at: Time.now + 3600 * 24 * 30)
 
           # Return result
           { access_token: token, refresh_token: refresh_token, account: { id: user.id, phone_number: user.phone_number, role: user.role } }

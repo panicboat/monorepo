@@ -1,14 +1,15 @@
 "use client";
 
 import useSWRInfinite from "swr/infinite";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedCommentsResponse } from "@/modules/post/lib/comment-view";
 
 export function useComments(postId: string | null | undefined) {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
 
   const getKey = (pageIndex: number, prev: PaginatedCommentsResponse | null): string | null => {
-    if (!token || !postId) return null;
+    if (!userId || !postId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
     return `/api/posts/${encodeURIComponent(postId)}/comments${cursorQs}`;

@@ -1,4 +1,5 @@
 require "spec_helper"
+require "digest"
 require "slices/identity/repositories/refresh_token_repository"
 require "slices/identity/repositories/user_repository"
 
@@ -13,14 +14,23 @@ RSpec.describe Identity::Repositories::RefreshTokenRepository do
   end
 
   context "#create" do
-    it "creates a refresh token" do
+    it "creates a refresh token and stores only the digest" do
       token = SecureRandom.hex(32)
       repo.create(token: token, user_id: user.id, expires_at: Time.now + 3600)
 
       found = repo.find_by_token(token)
       expect(found).not_to be_nil
-      expect(found.token).to eq(token)
       expect(found.user_id).to eq(user.id)
+
+      row = repo.refresh_tokens.where(user_id: user.id).one
+      expect(row.token_digest).to eq(Digest::SHA256.hexdigest(token))
+    end
+
+    it "does not persist the raw token anywhere on the row" do
+      token = SecureRandom.hex(32)
+      repo.create(token: token, user_id: user.id, expires_at: Time.now + 3600)
+      row = repo.refresh_tokens.where(user_id: user.id).one
+      expect(row.to_h.values).not_to include(token)
     end
   end
 
@@ -32,9 +42,7 @@ RSpec.describe Identity::Repositories::RefreshTokenRepository do
     end
 
     it "finds the token" do
-      found = repo.find_by_token(token)
-      expect(found).not_to be_nil
-      expect(found.token).to eq(token)
+      expect(repo.find_by_token(token)).not_to be_nil
     end
 
     it "returns nil for non-existent token" do

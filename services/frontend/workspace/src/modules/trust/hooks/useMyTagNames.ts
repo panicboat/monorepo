@@ -1,17 +1,18 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 
 interface MyTagNamesResponse {
   tagNames: string[];
 }
 
 export function useMyTagNames() {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
 
   const { data, error, isLoading: loading } = useSWR<MyTagNamesResponse>(
-    token ? "/api/me/trust/tag-names" : null,
+    userId ? "/api/me/trust/tag-names" : null,
     fetcher,
     {
       revalidateOnFocus: false,

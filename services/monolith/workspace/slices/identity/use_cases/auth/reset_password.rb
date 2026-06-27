@@ -18,6 +18,7 @@ module Identity
           raise ResetError, "Invalid verification token" unless verification
           raise ResetError, "Phone number mismatch" if verification.phone_number != phone_number
           raise ResetError, "Phone number not verified" unless verification.verified_at
+          raise ResetError, "Verification token already used" if verification.consumed_at
 
           user = repo.find_by_phone_number(phone_number)
           raise ResetError, "User not found" unless user
@@ -26,6 +27,9 @@ module Identity
             user_id: user.id,
             password_digest: BCrypt::Password.create(new_password)
           )
+
+          # Single-use: mark verification consumed so the same token cannot reset twice.
+          verification_repo.mark_as_consumed(verification.id)
 
           { success: true }
         end

@@ -1,4 +1,4 @@
-import { getAuthToken } from "./auth";
+import { useAuthStore } from "@/stores/authStore";
 
 const VIDEO_EXTENSIONS = ["mp4", "webm", "mov", "avi", "m4v", "mkv"];
 
@@ -28,15 +28,13 @@ export interface UploadResult {
  * Upload a file to storage and return the media ID and key
  */
 export async function uploadFile(file: File): Promise<UploadResult | null> {
-  const token = getAuthToken();
-  if (!token) return null;
+  if (!useAuthStore.getState().userId) return null;
 
   const mediaType = file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
   const res = await fetch("/api/media/upload-url", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       filename: file.name,
@@ -61,7 +59,6 @@ export async function uploadFile(file: File): Promise<UploadResult | null> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       mediaId,

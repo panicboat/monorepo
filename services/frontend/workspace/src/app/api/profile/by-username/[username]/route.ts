@@ -14,7 +14,7 @@ export async function GET(
     if (authError) return authError;
 
     const { username } = await params;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await profileClient.getProfileByUsername({ username }, { headers });
     if (!res.profile) {
       return NextResponse.json({ error: "プロフィールが見つかりませんでした" }, { status: 404 });

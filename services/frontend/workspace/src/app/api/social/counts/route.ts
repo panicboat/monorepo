@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const accountId = req.nextUrl.searchParams.get("account_id") || "";
 
     const res = await socialFollowClient.getSocialCounts({ accountId }, { headers });

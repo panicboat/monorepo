@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
     const response = await trustClient.listMyTagNames(
       {},
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json({ tagNames: response.tagNames || [] });

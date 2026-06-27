@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
     const authorId = req.nextUrl.searchParams.get("author_id") || "";
     const filter = req.nextUrl.searchParams.get("filter") || "";
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     if (authError) return authError;
 
     const body = (await req.json()) as SavePostPayload;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await postClient.savePost(buildSavePostRequest(body), { headers });
     if (!res.post) {
       return NextResponse.json({ error: "保存に失敗しました" }, { status: 500 });

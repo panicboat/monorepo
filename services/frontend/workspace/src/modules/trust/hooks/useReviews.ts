@@ -1,14 +1,15 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { authFetch, getAuthToken } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 import type { CreateReviewRequest, CreateReviewResponse } from "../types";
 
 export function useReviews() {
   const [mutating, setMutating] = useState(false);
 
   const createReview = useCallback(async (request: CreateReviewRequest) => {
-    if (!getAuthToken()) {
+    if (!useAuthStore.getState().userId) {
       throw new Error("Authentication required");
     }
 
@@ -29,7 +30,7 @@ export function useReviews() {
 
   const updateReview = useCallback(async (id: string, content: string | undefined, score: number) => {
     // FALLBACK: Returns false when not authenticated
-    if (!getAuthToken()) return false;
+    if (!useAuthStore.getState().userId) return false;
 
     setMutating(true);
     try {
@@ -48,7 +49,7 @@ export function useReviews() {
 
   const deleteReview = useCallback(async (id: string) => {
     // FALLBACK: Returns false when not authenticated
-    if (!getAuthToken()) return false;
+    if (!useAuthStore.getState().userId) return false;
 
     setMutating(true);
     try {

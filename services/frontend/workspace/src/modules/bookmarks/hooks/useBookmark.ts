@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { authFetch, getAuthToken } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 
 interface StatusResponse { bookmarked: Record<string, boolean> }
 
@@ -10,7 +11,7 @@ export function useBookmark(postId: string | null | undefined) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!postId || !getAuthToken()) return;
+    if (!postId || !useAuthStore.getState().userId) return;
     let cancelled = false;
     (async () => {
       try {
@@ -28,7 +29,7 @@ export function useBookmark(postId: string | null | undefined) {
   }, [postId]);
 
   const bookmark = useCallback(async () => {
-    if (!postId || !getAuthToken()) return;
+    if (!postId || !useAuthStore.getState().userId) return;
     setLoading(true);
     try {
       await authFetch(`/api/bookmarks/${encodeURIComponent(postId)}`, { method: "POST" });
@@ -39,7 +40,7 @@ export function useBookmark(postId: string | null | undefined) {
   }, [postId]);
 
   const unbookmark = useCallback(async () => {
-    if (!postId || !getAuthToken()) return;
+    if (!postId || !useAuthStore.getState().userId) return;
     setLoading(true);
     try {
       await authFetch(`/api/bookmarks/${encodeURIComponent(postId)}`, { method: "DELETE" });

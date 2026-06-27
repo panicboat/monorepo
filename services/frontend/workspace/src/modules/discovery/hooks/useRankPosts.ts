@@ -1,14 +1,15 @@
 "use client";
 
 import useSWRInfinite from "swr/infinite";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedPostsResponse, RankPeriodLiteral } from "../types";
 
 export function useRankPosts(period: RankPeriodLiteral) {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
 
   const getKey = (pageIndex: number, prev: PaginatedPostsResponse | null): string | null => {
-    if (!token) return null;
+    if (!userId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
     return `/api/discovery/ranking?period=${encodeURIComponent(period)}${cursorQs}`;

@@ -3,6 +3,7 @@ import { identityClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError } from "@/lib/api-helpers";
 import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
+import { setAuthCookies } from "@/lib/auth/cookies";
 
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown> = {};
@@ -16,10 +17,19 @@ export async function POST(req: NextRequest) {
         password,
         role,
       },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
-    return NextResponse.json(response);
+    if (!response.accessToken || !response.refreshToken) {
+      return NextResponse.json({ error: "ログインに失敗しました" }, { status: 500 });
+    }
+
+    const res = NextResponse.json({ account: response.account });
+    setAuthCookies(res, {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    });
+    return res;
   } catch (error: unknown) {
     // Code 16 is Unauthenticated (ConnectRPC/gRPC)
     if (isConnectError(error) && error.code === GrpcCode.UNAUTHENTICATED) {

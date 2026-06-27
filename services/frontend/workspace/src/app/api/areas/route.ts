@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     if (authError) return authError;
 
     const prefecture = req.nextUrl.searchParams.get("prefecture") || "";
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const res = await profileClient.listAreas({ prefecture }, { headers });
     return NextResponse.json({ areas: (res.areas || []).map(mapAreaToView) });
   } catch (error: unknown) {

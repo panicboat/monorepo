@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   try {
     const authError = requireAuth(req);
     if (authError) return authError;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const limit = Number(req.nextUrl.searchParams.get("limit") || "20");
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
     const res = await messagingClient.listThreads({ limit, cursor }, { headers });
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   try {
     const authError = requireAuth(req);
     if (authError) return authError;
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const body = await req.json();
     const recipientAccountId = body?.recipientAccountId ?? "";
     if (!recipientAccountId) {

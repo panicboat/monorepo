@@ -1,13 +1,14 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedProfilesResponse } from "../types";
 
 export function useBlockedList() {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
   const { data, error, isLoading, mutate } = useSWR<PaginatedProfilesResponse>(
-    token ? "/api/social/blocks" : null,
+    userId ? "/api/social/blocks" : null,
     fetcher,
     { revalidateOnFocus: false }
   );

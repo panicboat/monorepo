@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { authFetch, getAuthToken } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 import type { Tagging } from "../types";
 
 interface ListTargetTagsResponse {
@@ -18,7 +19,7 @@ export function useTaggings() {
 
   const fetchTargetTags = useCallback(async (targetId: string) => {
     // FALLBACK: Returns empty array when not authenticated
-    if (!getAuthToken()) return [];
+    if (!useAuthStore.getState().userId) return [];
 
     setLoading(true);
     try {
@@ -38,7 +39,7 @@ export function useTaggings() {
 
   const addTagging = useCallback(async (tagName: string, targetId: string) => {
     // FALLBACK: Returns null when not authenticated
-    if (!getAuthToken()) return null;
+    if (!useAuthStore.getState().userId) return null;
 
     setLoading(true);
     try {
@@ -57,7 +58,7 @@ export function useTaggings() {
 
   const removeTagging = useCallback(async (id: string) => {
     // FALLBACK: Returns false when not authenticated
-    if (!getAuthToken()) return false;
+    if (!useAuthStore.getState().userId) return false;
 
     setLoading(true);
     try {

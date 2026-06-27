@@ -20,7 +20,8 @@ RSpec.describe Identity::UseCases::Auth::Register do
           :verification,
           id: verification_token,
           phone_number: phone_number,
-          verified_at: Time.now
+          verified_at: Time.now,
+          consumed_at: nil
         )
       end
 
@@ -35,6 +36,7 @@ RSpec.describe Identity::UseCases::Auth::Register do
 
       before do
         allow(verification_repo).to receive(:find_by_id).with(verification_token).and_return(verification)
+        allow(verification_repo).to receive(:mark_as_consumed)
         allow(repo).to receive(:create).and_return(user)
         allow(refresh_repo).to receive(:create)
       end
@@ -50,6 +52,43 @@ RSpec.describe Identity::UseCases::Auth::Register do
         expect(result[:access_token]).not_to be_nil
         expect(result[:refresh_token]).not_to be_nil
         expect(result[:account][:id]).to eq("user-123")
+      end
+
+      it "marks verification as consumed" do
+        expect(verification_repo).to receive(:mark_as_consumed).with(verification_token)
+        use_case.call(
+          phone_number: phone_number,
+          password: password,
+          verification_token: verification_token,
+          role: role
+        )
+      end
+    end
+
+    context "when verification token has already been consumed" do
+      let(:verification) do
+        double(
+          :verification,
+          id: verification_token,
+          phone_number: phone_number,
+          verified_at: Time.now,
+          consumed_at: Time.now
+        )
+      end
+
+      before do
+        allow(verification_repo).to receive(:find_by_id).with(verification_token).and_return(verification)
+      end
+
+      it "raises RegistrationError" do
+        expect {
+          use_case.call(
+            phone_number: phone_number,
+            password: password,
+            verification_token: verification_token,
+            role: role
+          )
+        }.to raise_error(Identity::UseCases::Auth::Register::RegistrationError, "Verification token already used")
       end
     end
 
@@ -93,6 +132,34 @@ RSpec.describe Identity::UseCases::Auth::Register do
             role: role
           )
         }.to raise_error(Identity::UseCases::Auth::Register::RegistrationError, "Phone number mismatch")
+      end
+    end
+
+    context "when phone number is already registered" do
+      let(:verification) do
+        double(
+          :verification,
+          id: verification_token,
+          phone_number: phone_number,
+          verified_at: Time.now,
+          consumed_at: nil
+        )
+      end
+
+      before do
+        allow(verification_repo).to receive(:find_by_id).with(verification_token).and_return(verification)
+        allow(repo).to receive(:create).and_raise(Sequel::UniqueConstraintViolation.new("duplicate phone_number"))
+      end
+
+      it "raises a generic RegistrationError so the existing phone number is not disclosed" do
+        expect {
+          use_case.call(
+            phone_number: phone_number,
+            password: password,
+            verification_token: verification_token,
+            role: role
+          )
+        }.to raise_error(Identity::UseCases::Auth::Register::RegistrationError, "Registration failed")
       end
     end
   end

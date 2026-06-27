@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { getAuthToken } from "@/lib/swr";
 import { AppError, httpStatusToErrorCode } from "@/lib/errors";
 import { getDefaultMessage } from "@/lib/error-messages";
 
@@ -18,8 +17,6 @@ export interface UsePaginatedFetchOptions<T, R> {
   mapResponse: (data: R) => PaginatedResult<T>;
   /** Get unique identifier from item (for deduplication) */
   getItemId: (item: T) => string;
-  /** Whether to include auth token (default: true) */
-  authenticated?: boolean;
   /** Additional query params builder */
   buildParams?: (params: URLSearchParams) => void;
   /** Custom fetch function (for authFetch support) */
@@ -46,7 +43,7 @@ export interface UsePaginatedFetchReturn<T> {
 export function usePaginatedFetch<T, R = unknown>(
   options: UsePaginatedFetchOptions<T, R>
 ): UsePaginatedFetchReturn<T> {
-  const { apiUrl, mapResponse, getItemId, authenticated = true, buildParams, fetchFn } = options;
+  const { apiUrl, mapResponse, getItemId, buildParams, fetchFn } = options;
 
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
@@ -78,18 +75,7 @@ export function usePaginatedFetch<T, R = unknown>(
         return fetchFn(url);
       }
 
-      const headers: Record<string, string> = {};
-      if (authenticated) {
-        const token = getAuthToken();
-        if (token) {
-          headers.Authorization = `Bearer ${token}`;
-        }
-      }
-
-      const res = await fetch(url, {
-        cache: "no-store",
-        headers,
-      });
+      const res = await fetch(url, { cache: "no-store" });
 
       if (!res.ok) {
         // FALLBACK: Returns empty object when JSON parse fails
@@ -101,7 +87,7 @@ export function usePaginatedFetch<T, R = unknown>(
       return res.json();
     },
     // apiUrl is unused inside the body — url comes via parameter.
-    [authenticated, fetchFn]
+    [fetchFn]
   );
 
   const fetchInitial = useCallback(async () => {

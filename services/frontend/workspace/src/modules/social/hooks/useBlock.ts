@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { authFetch, getAuthToken } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 
 interface StatusResponse { blocked: Record<string, boolean> }
 
@@ -10,7 +11,7 @@ export function useBlock(targetAccountId: string | null | undefined) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!targetAccountId || !getAuthToken()) return;
+    if (!targetAccountId || !useAuthStore.getState().userId) return;
     let cancelled = false;
     (async () => {
       try {
@@ -28,7 +29,7 @@ export function useBlock(targetAccountId: string | null | undefined) {
   }, [targetAccountId]);
 
   const block = useCallback(async () => {
-    if (!targetAccountId || !getAuthToken()) return;
+    if (!targetAccountId || !useAuthStore.getState().userId) return;
     setLoading(true);
     try {
       await authFetch("/api/social/blocks", { method: "POST", body: { targetAccountId } });
@@ -39,7 +40,7 @@ export function useBlock(targetAccountId: string | null | undefined) {
   }, [targetAccountId]);
 
   const unblock = useCallback(async () => {
-    if (!targetAccountId || !getAuthToken()) return;
+    if (!targetAccountId || !useAuthStore.getState().userId) return;
     setLoading(true);
     try {
       await authFetch(`/api/social/blocks?target_account_id=${encodeURIComponent(targetAccountId)}`, { method: "DELETE" });

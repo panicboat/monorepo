@@ -37,7 +37,7 @@ export function Drawer({ open, onClose }: DrawerProps) {
   const { count: msgUnread } = useTotalUnread();
   const { count: footprintsUnread } = useFootprintsUnreadCount();
   const { preferences } = useNotificationPreferences();
-  const clearTokens = useAuthStore((s) => s.clearTokens);
+  const clearIdentity = useAuthStore((s) => s.clearIdentity);
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export function Drawer({ open, onClose }: DrawerProps) {
   }, [open, onClose]);
 
   const onLogout = () => {
-    clearTokens();
+    clearIdentity();
     onClose();
     router.push("/");
   };

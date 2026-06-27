@@ -7,6 +7,8 @@ module Identity
         attribute :code, Types::String
         attribute :expires_at, Types::Time
         attribute :verified_at, Types::Time
+        attribute :consumed_at, Types::Time
+        attribute :failed_attempts, Types::Integer
         attribute :created_at, Types::Time
 
         primary_key :id

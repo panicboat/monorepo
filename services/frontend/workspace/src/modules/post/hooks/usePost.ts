@@ -1,7 +1,8 @@
 "use client";
 
 import useSWR from "swr";
-import { fetcher, getAuthToken } from "@/lib/swr";
+import { fetcher } from "@/lib/swr";
+import { useAuthStore } from "@/stores/authStore";
 import type { PostView } from "@/modules/post/lib/post-view";
 
 interface PostResponse {
@@ -9,9 +10,9 @@ interface PostResponse {
 }
 
 export function usePost(id: string | null) {
-  const token = getAuthToken();
+  const userId = useAuthStore((s) => s.userId);
   const { data, error, isLoading, mutate } = useSWR<PostResponse>(
-    token && id ? `/api/posts/${encodeURIComponent(id)}` : null,
+    userId && id ? `/api/posts/${encodeURIComponent(id)}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );

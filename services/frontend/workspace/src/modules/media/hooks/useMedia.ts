@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { getAuthToken } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 import type { MediaItem } from "../types";
 import { mapApiToMediaItem, mapApiToMediaList } from "../lib/mappers";
 
@@ -18,20 +18,15 @@ export function useMedia(): UseMediaResult {
   const [error, setError] = useState<Error | null>(null);
 
   const getMedia = useCallback(async (id: string): Promise<MediaItem | null> => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("No authentication token");
+    if (!useAuthStore.getState().userId) {
+      throw new Error("ログインしてください");
     }
 
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch(`/api/media/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(`/api/media/${id}`);
 
       if (res.status === 404) {
         return null;
@@ -57,9 +52,8 @@ export function useMedia(): UseMediaResult {
     async (ids: string[]): Promise<MediaItem[]> => {
       if (ids.length === 0) return [];
 
-      const token = getAuthToken();
-      if (!token) {
-        throw new Error("No authentication token");
+      if (!useAuthStore.getState().userId) {
+        throw new Error("ログインしてください");
       }
 
       setLoading(true);
@@ -70,7 +64,6 @@ export function useMedia(): UseMediaResult {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ ids }),
         });
@@ -94,9 +87,8 @@ export function useMedia(): UseMediaResult {
   );
 
   const deleteMedia = useCallback(async (id: string): Promise<boolean> => {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error("No authentication token");
+    if (!useAuthStore.getState().userId) {
+      throw new Error("ログインしてください");
     }
 
     setLoading(true);
@@ -105,9 +97,6 @@ export function useMedia(): UseMediaResult {
     try {
       const res = await fetch(`/api/media/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (!res.ok) {

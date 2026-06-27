@@ -16,7 +16,7 @@ export async function POST(
 
     const response = await trustClient.rejectReview(
       { id },
-      { headers: buildGrpcHeaders(req.headers) }
+      { headers: buildGrpcHeaders(req) }
     );
 
     return NextResponse.json({ success: response.success });

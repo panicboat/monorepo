@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback } from "react";
-import { authFetch, getAuthToken } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
+import { useAuthStore } from "@/stores/authStore";
 import { usePaginatedFetch, PaginatedResult } from "@/lib/hooks/usePaginatedFetch";
 import type { Review, ListReviewsResponse } from "../types";
 
@@ -39,7 +40,7 @@ export function useInfiniteReviews(options: UseInfiniteReviewsOptions) {
   const getItemId = useCallback((review: Review) => review.id, []);
 
   const fetchFn = useCallback(async (url: string): Promise<ListReviewsResponse> => {
-    if (!getAuthToken()) {
+    if (!useAuthStore.getState().userId) {
       throw new Error("Authentication required");
     }
     return authFetch<ListReviewsResponse>(url);
@@ -58,7 +59,6 @@ export function useInfiniteReviews(options: UseInfiniteReviewsOptions) {
     apiUrl: "/api/shared/trust/reviews",
     mapResponse,
     getItemId,
-    authenticated: true,
     buildParams,
     fetchFn,
   });

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const headers = buildGrpcHeaders(req.headers);
+    const headers = buildGrpcHeaders(req);
     const body = await req.json();
     const threadId: string = body?.threadId ?? "";
     const recipientAccountId: string = body?.recipientAccountId ?? "";
