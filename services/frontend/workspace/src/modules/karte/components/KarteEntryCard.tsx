@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useDeleteKarte } from "../hooks/useDeleteKarte";
 import { useReportKarte } from "../hooks/useReportKarte";
 import { useAuthStore } from "@/stores/authStore";
+import { formatTimeAgo } from "@/lib/utils/date";
 import type { KarteEntry } from "../types";
 
 interface Props {
@@ -34,15 +35,13 @@ export function KarteEntryCard({ entry, onChanged }: Props) {
           <div className="size-8 rounded-full bg-muted" />
         )}
         <span className="font-medium">{entry.authorUsername || "(no username)"}</span>
-        <span className="text-muted-foreground">
-          {new Date(entry.createdAt).toLocaleString("ja-JP")}
-        </span>
+        <span className="text-muted-foreground">{formatTimeAgo(entry.createdAt)}</span>
         {entry.flagged && (
           <span
             className="ml-auto text-xs text-amber-600"
             title="他 Cast から複数件 report されています"
           >
-            ⚠︎ flagged
+            ⚠︎
           </span>
         )}
       </div>
@@ -92,7 +91,7 @@ export function KarteEntryCard({ entry, onChanged }: Props) {
             onClick={() => setReportOpen(true)}
             className="hover:text-foreground"
           >
-            report
+            報告
           </button>
         )}
       </div>

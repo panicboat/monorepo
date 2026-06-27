@@ -7,9 +7,8 @@ export function KarteAggregateHeader({ aggregate }: { aggregate: KarteAggregate 
   return (
     <div className="px-4 py-3 text-sm">
       <span className="font-medium">{aggregate.count} 件</span>
-      <span className="ml-2 text-muted-foreground">
-        平均 ★{aggregate.avgRating.toFixed(1)}
-      </span>
+      <span className="mx-1 text-muted-foreground">/</span>
+      <span className="text-muted-foreground">平均 ★{aggregate.avgRating.toFixed(1)}</span>
     </div>
   );
 }
