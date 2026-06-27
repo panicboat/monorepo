@@ -49,6 +49,7 @@ require "bookmarks/v1/bookmark_service_services_pb"
 require "discovery/v1/discovery_service_services_pb"
 require "messaging/v1/messaging_service_services_pb"
 require "footprints/v1/footprints_service_services_pb"
+require "karte/v1/service_services_pb"
 
 # Configure Gruf
 Gruf.configure do |c|
@@ -87,6 +88,8 @@ require_relative "../slices/messaging/grpc/handler"
 require_relative "../slices/messaging/grpc/messaging_handler"
 require_relative "../slices/footprints/grpc/handler"
 require_relative "../slices/footprints/grpc/footprints_handler"
+require_relative "../slices/karte/grpc/handler"
+require_relative "../slices/karte/grpc/karte_handler"
 
 Hanami.logger.info("Starting gRPC Stub Server on #{Gruf.server_binding_url}")
 Hanami.logger.info("Services: #{Gruf.services}")
