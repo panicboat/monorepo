@@ -8,7 +8,6 @@ import { CommentService } from "@/stub/post/v1/comment_service_pb";
 import { FollowService as SocialFollowService } from "@/stub/social/v1/follow_service_pb";
 import { BlockService as SocialBlockService } from "@/stub/social/v1/block_service_pb";
 import { FeedService } from "@/stub/feed/v1/feed_service_pb";
-import { TrustService } from "@/stub/trust/v1/service_pb";
 import { ProfileService } from "@/stub/profile/v1/service_pb";
 import { NotificationService } from "@/stub/notifications/v1/notification_service_pb";
 import { BookmarkService } from "@/stub/bookmarks/v1/bookmark_service_pb";
@@ -42,9 +41,6 @@ export const socialBlockClient = createClient(SocialBlockService, transport);
 
 // Feed domain client
 export const feedClient = createClient(FeedService, transport);
-
-// Trust domain client
-export const trustClient = createClient(TrustService, transport);
 
 // Profile domain client
 export const profileClient = createClient(ProfileService, transport);
