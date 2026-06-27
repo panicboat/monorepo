@@ -7,8 +7,6 @@ module Karte
     class ListMyEntries
       class AccessError < StandardError; end
 
-      MIN_FLAG_REPORTS = 3
-
       include Concerns::CursorPagination
       include Karte::Deps[
         entry_repo: "repositories.entry_repository",
@@ -51,7 +49,7 @@ module Karte
           author_avatar_url: avatar_url_for(profile),
           rating: e.rating,
           body: e.body,
-          flagged: e.reported_count >= MIN_FLAG_REPORTS,
+          flagged: e.reported_count >= ListEntriesByTarget::MIN_FLAG_REPORTS,
           created_at: e.created_at,
           updated_at: e.updated_at
         }
