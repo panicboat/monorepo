@@ -152,7 +152,7 @@ Expected: both list `service_pb.rb` (+ `service_services_pb.rb` on the monolith 
 cd services/monolith/workspace && env -u NODE_OPTIONS bundle exec rspec spec/slices/identity 2>&1 | tail -5
 ```
 
-Expected: same baseline as `e894f36c` (62 examples, 1 pre-existing failure in `sms_verification_repository_spec.rb:40`). Any new failure means the proto change broke loading; investigate.
+Expected: same baseline as `e894f36c` (63 examples, 1 pre-existing failure in `sms_verification_repository_spec.rb:40`). Any new failure means the proto change broke loading; investigate.
 
 ```bash
 cd services/frontend/workspace && env -u NODE_OPTIONS ./node_modules/.bin/tsc --noEmit 2>&1 | tail -5
@@ -393,7 +393,7 @@ Expected: `=> database monolith_test migrated in 0.XXXXs` and `=> database monol
 cd services/monolith/workspace && env -u NODE_OPTIONS bundle exec rspec spec/slices/identity 2>&1 | tail -5
 ```
 
-Expected: same baseline as K1 (62 examples, 1 pre-existing failure). New relation must not regress identity loading.
+Expected: same baseline as K1 (63 examples, 1 pre-existing failure). New relation must not regress identity loading.
 
 - [ ] **Step 6: Commit**
 
@@ -572,7 +572,7 @@ end
 cd services/monolith/workspace && env -u NODE_OPTIONS bundle exec rspec spec/slices/identity 2>&1 | tail -5
 ```
 
-Expected: still 62 examples, 1 pre-existing failure. Adding the karte repositories must not break container boot.
+Expected: still 63 examples, 1 pre-existing failure. Adding the karte repositories must not break container boot.
 
 - [ ] **Step 5: Commit**
 
@@ -861,7 +861,7 @@ Expected: all karte specs pass.
 cd services/monolith/workspace && env -u NODE_OPTIONS bundle exec rspec spec/slices/identity 2>&1 | tail -5
 ```
 
-Expected: 62 examples, 1 pre-existing failure (no regression).
+Expected: 63 examples, 1 pre-existing failure (no regression).
 
 - [ ] **Step 9: Commit**
 
@@ -1200,7 +1200,7 @@ end
 cd services/monolith/workspace && env -u NODE_OPTIONS bundle exec rspec spec/slices/identity 2>&1 | tail -5
 ```
 
-Expected: 62 / 1 pre-existing failure.
+Expected: 63 / 1 pre-existing failure.
 
 - [ ] **Step 7: Commit**
 
@@ -2208,7 +2208,7 @@ rm -rf services/monolith/workspace/config/db/seeds/trust 2>/dev/null || true
 cd services/monolith/workspace && env -u NODE_OPTIONS bundle exec rspec spec/slices/identity 2>&1 | tail -5
 ```
 
-Expected: 62 examples, 1 pre-existing failure. No new errors from missing trust constants.
+Expected: 63 examples, 1 pre-existing failure. No new errors from missing trust constants.
 
 ```bash
 cd services/monolith/workspace && env -u NODE_OPTIONS bundle exec rspec spec/slices/karte 2>&1 | tail -5
@@ -2347,7 +2347,7 @@ Expected: `nil` (= schema is gone).
 cd services/monolith/workspace && env -u NODE_OPTIONS bundle exec rspec spec/slices/identity spec/slices/karte 2>&1 | tail -5
 ```
 
-Expected: 62 + N_karte examples, 1 pre-existing failure.
+Expected: 63 + N_karte examples, 1 pre-existing failure.
 
 - [ ] **Step 5: Commit and push**
 
