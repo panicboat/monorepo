@@ -35,6 +35,10 @@ module Media
       def delete(id)
         files.by_pk(id).command(:delete).call
       end
+
+      def delete_by_uploader(account_id)
+        files.where(uploader_account_id: account_id).command(:delete).call
+      end
     end
   end
 end
