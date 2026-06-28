@@ -44,6 +44,18 @@ module Identity
       def reset_login_attempts(user_id)
         update(user_id, failed_login_attempts: 0, locked_until: nil, updated_at: Time.now)
       end
+
+      def deactivate(user_id)
+        update(user_id, deactivated_at: Time.now, updated_at: Time.now)
+      end
+
+      def reactivate(user_id)
+        update(user_id, deactivated_at: nil, updated_at: Time.now)
+      end
+
+      def list_deactivated_before(cutoff)
+        users.where { deactivated_at < cutoff }.to_a
+      end
     end
   end
 end

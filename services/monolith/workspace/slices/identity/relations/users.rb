@@ -8,6 +8,7 @@ module Identity
         attribute :role, Types::Integer
         attribute :failed_login_attempts, Types::Integer
         attribute :locked_until, Types::Time
+        attribute :deactivated_at, Types::Time.optional
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 
