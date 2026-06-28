@@ -141,6 +141,10 @@ module Post
         scope.group_and_count(:post_id).to_hash(:post_id, :count)
       end
 
+      def delete_by_account(account_id)
+        comments.dataset.where(user_id: account_id).delete
+      end
+
       private
 
       def save_media(comment_id:, media_data:)
