@@ -17,7 +17,7 @@ module Media
         files.where(media_key: media_key).one
       end
 
-      def create(id:, media_type:, url:, thumbnail_url: nil, filename: nil, content_type: nil, size_bytes: nil, media_key: nil, thumbnail_key: nil)
+      def create(id:, media_type:, url:, thumbnail_url: nil, filename: nil, content_type: nil, size_bytes: nil, media_key: nil, thumbnail_key: nil, uploader_account_id: nil)
         files.command(:create).call(
           id: id,
           media_type: media_type,
@@ -27,7 +27,8 @@ module Media
           content_type: content_type,
           size_bytes: size_bytes,
           media_key: media_key,
-          thumbnail_key: thumbnail_key
+          thumbnail_key: thumbnail_key,
+          uploader_account_id: uploader_account_id
         )
       end
 
