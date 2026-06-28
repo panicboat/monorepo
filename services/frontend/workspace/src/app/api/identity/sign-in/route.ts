@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "ログインに失敗しました" }, { status: 500 });
     }
 
-    const res = NextResponse.json({ account: response.account });
+    const res = NextResponse.json({ account: response.account, reactivated: !!response.reactivated });
     setAuthCookies(res, {
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,
