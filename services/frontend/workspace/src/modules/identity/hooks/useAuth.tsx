@@ -199,6 +199,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: toStoreRole(data.account.role),
     });
 
+    if (data.reactivated === true) {
+      // Lightweight UX hint; alert is enough for MVP, replace with a proper
+      // toast component if the codebase has one and it's already wired.
+      if (typeof window !== "undefined") {
+        window.alert("お帰りなさい。アカウントは復活しました。");
+      }
+    }
+
     setNewUserFlag(false);
     mutate(
       {
