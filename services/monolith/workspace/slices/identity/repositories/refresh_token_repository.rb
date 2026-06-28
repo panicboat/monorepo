@@ -20,6 +20,10 @@ module Identity
         refresh_tokens.where(token_digest: digest(token)).delete
       end
 
+      def delete_by_user_id(user_id)
+        refresh_tokens.where(user_id: user_id).command(:delete).call
+      end
+
       private
 
       def digest(raw)

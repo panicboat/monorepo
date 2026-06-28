@@ -66,6 +66,10 @@ module Identity
       def find_by_id(id)
         sms_verifications.by_pk(id).one
       end
+
+      def delete_by_phone_number(phone_number)
+        sms_verifications.where(phone_number: phone_number).command(:delete).call
+      end
     end
   end
 end

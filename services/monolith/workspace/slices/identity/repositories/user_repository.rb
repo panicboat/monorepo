@@ -56,6 +56,10 @@ module Identity
       def list_deactivated_before(cutoff)
         users.where { deactivated_at < cutoff }.to_a
       end
+
+      def delete(user_id)
+        users.where(id: user_id).command(:delete).call
+      end
     end
   end
 end
