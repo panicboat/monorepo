@@ -44,12 +44,26 @@ module Identity
 
           repo.reset_login_attempts(user.id)
 
+          # Auto-reactivate if the account is in soft-deleted (deactivated) state.
+          # Same-phone + correct password is treated as the user's intent to come back.
+          reactivated = false
+          if user.deactivated_at
+            repo.reactivate(user.id)
+            reactivated = true
+          end
+
           token = ::Auth::JwtCodec.encode(sub: user.id, role: user.role)
 
           refresh_token = SecureRandom.hex(32)
           refresh_repo.create(token: refresh_token, user_id: user.id, expires_at: Time.now + 3600 * 24 * 30)
 
-          { access_token: token, refresh_token: refresh_token, account: { id: user.id, phone_number: user.phone_number, role: user.role } }
+          result = {
+            access_token: token,
+            refresh_token: refresh_token,
+            account: { id: user.id, phone_number: user.phone_number, role: user.role }
+          }
+          result[:reactivated] = true if reactivated
+          result
         end
       end
     end
