@@ -56,7 +56,7 @@ module Social
 
       def delete_by_account(account_id)
         blocks.dataset
-          .where(Sequel.|(blocker_id: account_id, blocked_id: account_id))
+          .where(Sequel.|({blocker_id: account_id}, {blocked_id: account_id}))
           .delete
       end
 

@@ -109,7 +109,7 @@ module Social
 
       def delete_by_account(account_id)
         follows.dataset
-          .where(Sequel.|(follower_id: account_id, followee_id: account_id))
+          .where(Sequel.|({follower_id: account_id}, {followee_id: account_id}))
           .delete
       end
 

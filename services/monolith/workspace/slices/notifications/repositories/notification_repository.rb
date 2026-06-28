@@ -96,7 +96,7 @@ module Notifications
 
       def delete_notifications_by_account(account_id)
         notification_records.dataset
-          .where(Sequel.|(recipient_id: account_id, latest_actor_id: account_id))
+          .where(Sequel.|({recipient_id: account_id}, {latest_actor_id: account_id}))
           .delete
       end
 

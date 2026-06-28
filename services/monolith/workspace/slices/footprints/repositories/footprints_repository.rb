@@ -72,7 +72,7 @@ module Footprints
 
       def delete_visits_by_account(account_id)
         visit_records.dataset
-          .where(Sequel.|(visitor_id: account_id, visited_id: account_id))
+          .where(Sequel.|({visitor_id: account_id}, {visited_id: account_id}))
           .delete
       end
 
