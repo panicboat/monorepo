@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package karte.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service KarteService {
+  rpc CreateEntry(CreateEntryRequest) returns (CreateEntryResponse);
+  rpc UpdateEntry(UpdateEntryRequest) returns (UpdateEntryResponse);
+  rpc DeleteEntry(DeleteEntryRequest) returns (DeleteEntryResponse);
+  rpc ListEntriesByTarget(ListEntriesByTargetRequest) returns (ListEntriesByTargetResponse);
+  rpc ListMyEntries(ListMyEntriesRequest) returns (ListMyEntriesResponse);
+  rpc ReportEntry(ReportEntryRequest) returns (ReportEntryResponse);
+  rpc GetMyAccess(GetMyAccessRequest) returns (GetMyAccessResponse);
+}
+
+message KarteEntry {
+  string id = 1;
+  string author_account_id = 2;
+  string target_account_id = 3;
+  string author_username = 4;
+  string author_avatar_url = 5;
+  int32 rating = 6;
+  string body = 7;
+  bool flagged = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message Aggregate {
+  int32 count = 1;
+  double avg_rating = 2;
+}
+
+message CreateEntryRequest {
+  string target_account_id = 1;
+  int32 rating = 2;
+  string body = 3;
+}
+message CreateEntryResponse { KarteEntry entry = 1; }
+
+message UpdateEntryRequest {
+  string entry_id = 1;
+  int32 rating = 2;   // 0 = unchanged
+  string body = 3;    // empty = unchanged
+}
+message UpdateEntryResponse { KarteEntry entry = 1; }
+
+message DeleteEntryRequest { string entry_id = 1; }
+message DeleteEntryResponse {}
+
+message ListEntriesByTargetRequest {
+  string target_account_id = 1;
+  int32 limit = 2;     // default 20
+  string cursor = 3;
+}
+message ListEntriesByTargetResponse {
+  repeated KarteEntry entries = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+  Aggregate aggregate = 4;
+}
+
+message ListMyEntriesRequest {
+  int32 limit = 1;
+  string cursor = 2;
+}
+message ListMyEntriesResponse {
+  repeated KarteEntry entries = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message ReportEntryRequest {
+  string entry_id = 1;
+  string reason = 2;
+}
+message ReportEntryResponse {}
+
+message GetMyAccessRequest {}
+message GetMyAccessResponse {
+  bool has_access = 1;
+  google.protobuf.Timestamp granted_at = 2;
+}

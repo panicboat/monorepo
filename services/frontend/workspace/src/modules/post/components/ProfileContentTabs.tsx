@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { Tabs } from "@/components/ui/tab";
 import { Button } from "@/components/ui/button";
 import { PostCardBinding } from "./PostCardBinding";
@@ -8,7 +9,6 @@ import { ReplyWithParentRow } from "./ReplyWithParentRow";
 import { useAuthorPosts } from "@/modules/post/hooks/useAuthorPosts";
 import { useAuthorComments } from "@/modules/post/hooks/useAuthorComments";
 import { useAuthorLikedPosts } from "@/modules/post/hooks/useAuthorLikedPosts";
-import type { ProfileTabKind } from "@/modules/post/lib/author-tab-view";
 
 const TAB_ITEMS = [
   { id: "posts", label: "投稿" },
@@ -17,25 +17,38 @@ const TAB_ITEMS = [
   { id: "likes", label: "いいね" },
 ] as const;
 
-export interface ProfileContentTabsProps {
-  accountId: string;
+export interface ExtraTab {
+  id: string;
+  label: string;
+  content: ReactNode;
 }
 
-export function ProfileContentTabs({ accountId }: ProfileContentTabsProps) {
-  const [tab, setTab] = useState<ProfileTabKind>("posts");
+export interface ProfileContentTabsProps {
+  accountId: string;
+  extraTabs?: ExtraTab[];
+}
+
+export function ProfileContentTabs({ accountId, extraTabs = [] }: ProfileContentTabsProps) {
+  const [tab, setTab] = useState<string>("posts");
+  const allItems = [
+    ...(TAB_ITEMS as unknown as { id: string; label: string }[]),
+    ...extraTabs.map((t) => ({ id: t.id, label: t.label })),
+  ];
+  const extraTab = extraTabs.find((t) => t.id === tab);
 
   return (
     <section className="mt-4">
       <Tabs
-        items={TAB_ITEMS as unknown as { id: string; label: string }[]}
+        items={allItems}
         value={tab}
-        onValueChange={(id) => setTab(id as ProfileTabKind)}
+        onValueChange={setTab}
       />
       <div>
         {tab === "posts" && <AuthorPostsPane accountId={accountId} mediaOnly={false} />}
         {tab === "replies" && <AuthorRepliesPane accountId={accountId} />}
         {tab === "media" && <AuthorPostsPane accountId={accountId} mediaOnly={true} />}
         {tab === "likes" && <AuthorLikesPane accountId={accountId} />}
+        {extraTab?.content}
       </div>
     </section>
   );

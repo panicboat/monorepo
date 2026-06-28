@@ -9,6 +9,8 @@ import { StartChatButton } from "@/modules/messaging";
 import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs";
 import { useRecordVisit } from "@/modules/footprints";
 import { useAuthStore, selectUserId } from "@/stores/authStore";
+import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
+import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
 
 export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
@@ -17,6 +19,7 @@ export default function PublicProfilePage() {
   const counts = useSocialCounts(profile?.accountId);
   const viewerId = useAuthStore(selectUserId);
   const recordVisit = useRecordVisit();
+  const { hasAccess: karteAccess } = useMyKarteAccess();
 
   useEffect(() => {
     if (!viewerId || !profile?.accountId) return;
@@ -52,7 +55,14 @@ export default function PublicProfilePage() {
           <strong className="text-text-primary">{counts.followersCount}</strong> フォロワー
         </span>
       </div>
-      <ProfileContentTabs accountId={profile.accountId} />
+      <ProfileContentTabs
+        accountId={profile.accountId}
+        extraTabs={
+          role === "guest" && karteAccess
+            ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guestAccountId={profile.accountId} /> }]
+            : []
+        }
+      />
     </main>
   );
 }

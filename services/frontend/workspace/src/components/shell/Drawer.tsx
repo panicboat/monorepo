@@ -11,6 +11,7 @@ import { useTotalUnread } from "@/modules/messaging";
 import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { useNotificationPreferences } from "@/modules/notifications/hooks";
 import { useAuthStore } from "@/stores/authStore";
+import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 
 const NAV_ITEMS = [
   { path: "__profile__", label: "プロフィール", icon: "👤" },
@@ -39,6 +40,7 @@ export function Drawer({ open, onClose }: DrawerProps) {
   const { preferences } = useNotificationPreferences();
   const clearIdentity = useAuthStore((s) => s.clearIdentity);
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
+  const { hasAccess: karteAccess } = useMyKarteAccess();
 
   useEffect(() => {
     if (!open) return;
@@ -114,6 +116,16 @@ export function Drawer({ open, onClose }: DrawerProps) {
               </Link>
             );
           })}
+          {karteAccess && (
+            <Link
+              href="/karte/my"
+              onClick={onClose}
+              className="flex items-center gap-3 px-4 py-3 text-text-primary hover:bg-bg-secondary"
+            >
+              <span className="text-xl" aria-hidden="true">📋</span>
+              <span className="flex-1">カルテ</span>
+            </Link>
+          )}
         </nav>
 
         <div className="border-t border-border px-4 py-3">
