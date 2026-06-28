@@ -132,6 +132,21 @@ module Messaging
         scope.count
       end
 
+      # --- PurgeAccount helpers ----
+
+      def delete_read_states_by_account(account_id)
+        read_state_records.where(account_id: account_id).command(:delete).call
+      end
+
+      def null_out_sender(account_id)
+        message_records.where(sender_id: account_id).dataset.update(sender_id: nil)
+      end
+
+      def null_out_thread_participants(account_id)
+        thread_records.where(account_a: account_id).dataset.update(account_a: nil)
+        thread_records.where(account_b: account_id).dataset.update(account_b: nil)
+      end
+
       # Sums unread across all threads the account participates in. SQL-level
       # aggregation avoids loading every thread into Ruby.
       def total_unread_count(account_id:)
