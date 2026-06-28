@@ -94,6 +94,16 @@ module Notifications
         ds.fetch(sql, account_id, *values, now, now).first
       end
 
+      def delete_notifications_by_account(account_id)
+        notification_records.dataset
+          .where(Sequel.|(recipient_id: account_id, latest_actor_id: account_id))
+          .delete
+      end
+
+      def delete_preferences_by_account(account_id)
+        preference_records.dataset.where(account_id: account_id).delete
+      end
+
       private
 
       def apply_cursor(scope, cursor)
