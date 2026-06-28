@@ -80,7 +80,14 @@ export default function SettingsPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
         >
           <div className="w-full max-w-sm rounded bg-bg p-4 shadow-lg">
-            <p className="text-sm">本当に退会しますか？</p>
+            <p className="text-sm font-medium">本当に退会しますか？</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              30 日以内に同じ電話番号で login すれば自動的に復活します。
+              30 日経過後はデータが消えます。
+              <span className="mt-1 block">
+                ※ カルテに残した記録は、他の Cast の安全情報として残ります。
+              </span>
+            </p>
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
@@ -93,8 +100,8 @@ export default function SettingsPage() {
                 type="button"
                 disabled={deactivating}
                 onClick={async () => {
-                  await deactivate();
-                  setConfirmOpen(false);
+                  const ok = await deactivate();
+                  if (ok) setConfirmOpen(false);
                 }}
                 className="rounded bg-red-600 px-3 py-1 text-sm text-white disabled:opacity-50"
               >
