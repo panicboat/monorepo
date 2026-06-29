@@ -39,7 +39,7 @@ module Discovery
           role_filter: role_filter
         )
         ::Discovery::V1::SearchUsersResponse.new(
-          profiles: result[:profiles],
+          profiles: result[:profiles].map { |p| present_profile(p) },
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -56,7 +56,7 @@ module Discovery
           cursor: cursor
         )
         ::Discovery::V1::SuggestUsersResponse.new(
-          profiles: result[:profiles],
+          profiles: result[:profiles].map { |p| present_profile(p) },
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -100,6 +100,26 @@ module Discovery
       end
 
       private
+
+      # User-list responses carry profile.v1.Profile submessages, but the
+      # Profile use_cases return Profile::Structs::Profile. Without an
+      # explicit presenter step the proto layer raised
+      # Google::Protobuf::TypeError: Invalid type Profile::Structs::Profile
+      # to assign to submessage field 'profiles'.
+      def present_profile(profile)
+        ::Profile::Presenters::ProfilePresenter.to_proto(
+          profile,
+          role: role_for(profile.account_id)
+        )
+      end
+
+      def role_for(account_id)
+        identity_user_repo.find_by_id(account_id)&.role || 0
+      end
+
+      def identity_user_repo
+        @identity_user_repo ||= ::Identity::Slice["repositories.user_repository"]
+      end
 
       # Default period is "week" when the RPC sends UNSPECIFIED — matches the
       # /ranking surface default tab in D2.
