@@ -27,7 +27,7 @@ gem "puma"
 # =============================================================================
 gem "opentelemetry-sdk", "~> 1.4"
 gem "opentelemetry-instrumentation-all", "~> 0.61"
-gem "opentelemetry-exporter-otlp", "~> 0.27"
+gem "opentelemetry-exporter-otlp", "~> 0.34"
 gem "rake"
 gem "sqlite3"
 gem "dotenv"
