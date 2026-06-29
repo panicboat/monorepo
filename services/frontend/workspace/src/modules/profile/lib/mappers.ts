@@ -50,6 +50,7 @@ export function mapProfileToView(p: Profile): ProfileView {
     industry: p.industry || "",
     areas: (p.areas || []).map(mapAreaToView),
     shopId: p.shopId || "",
+    role: p.role || 0,
   };
 }
 

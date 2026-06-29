@@ -18,6 +18,7 @@ import { AuthProvider } from "@/modules/identity/hooks/useAuth";
 import { SWRProvider } from "@/components/providers/SWRProvider";
 import { AppShell } from "@/components/shell";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { ToastHost } from "@/components/ui/ToastHost";
 
 export default function RootLayout({
   children,
@@ -43,6 +44,7 @@ export default function RootLayout({
             </SWRProvider>
           </AuthProvider>
         </ThemeProvider>
+        <ToastHost />
       </body>
     </html>
   );

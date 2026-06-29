@@ -42,21 +42,19 @@ module Identity
           users = user_repo.list_deactivated_before(cutoff)
 
           users.each do |u|
-            begin
-              purge_notifications.call(account_id: u.id)
-              purge_footprints.call(account_id: u.id)
-              purge_bookmarks.call(account_id: u.id)
-              purge_karte.call(account_id: u.id)
-              purge_messaging.call(account_id: u.id)
-              purge_social.call(account_id: u.id)
-              purge_post.call(account_id: u.id)
-              purge_media.call(account_id: u.id)
-              purge_profile.call(account_id: u.id)
-              purge_identity.call(account_id: u.id)
-              logger&.info("[purge] account #{u.id} fully purged")
-            rescue => e
-              logger&.error("[purge] account #{u.id} failed: #{e.class}: #{e.message}")
-            end
+            purge_notifications.call(account_id: u.id)
+            purge_footprints.call(account_id: u.id)
+            purge_bookmarks.call(account_id: u.id)
+            purge_karte.call(account_id: u.id)
+            purge_messaging.call(account_id: u.id)
+            purge_social.call(account_id: u.id)
+            purge_post.call(account_id: u.id)
+            purge_media.call(account_id: u.id)
+            purge_profile.call(account_id: u.id)
+            purge_identity.call(account_id: u.id)
+            logger&.info("[purge] account #{u.id} fully purged")
+          rescue => e
+            logger&.error("[purge] account #{u.id} failed: #{e.class}: #{e.message}")
           end
           nil
         end

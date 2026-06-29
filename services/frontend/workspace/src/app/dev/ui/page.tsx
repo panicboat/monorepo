@@ -62,6 +62,7 @@ export default function DevUiPage() {
     industry: "デリヘル",
     areas: [{ id: "a1", region: "関東", prefecture: "東京都", name: "渋谷", code: "shibuya" }],
     shopId: "",
+    role: 2,
   };
 
   const mockPosts: PostView[] = [

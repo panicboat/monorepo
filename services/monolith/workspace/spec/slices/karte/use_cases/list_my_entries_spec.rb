@@ -59,4 +59,39 @@ RSpec.describe Karte::UseCases::ListMyEntries do
       use_case.call(viewer_account_id: viewer_id)
     }.to raise_error(Karte::UseCases::ListMyEntries::AccessError)
   end
+
+  it "sets has_more and next_cursor when the repo returns limit + 1 rows" do
+    entry2 = double(:entry,
+      id: "e-2",
+      author_account_id: viewer_id,
+      target_account_id: "target-2",
+      rating: 5,
+      body: "ok",
+      reported_count: 0,
+      created_at: now - 200,
+      updated_at: now - 150)
+    entry3 = double(:entry,
+      id: "e-3",
+      author_account_id: viewer_id,
+      target_account_id: "target-3",
+      rating: 3,
+      body: "meh",
+      reported_count: 0,
+      created_at: now - 300,
+      updated_at: now - 250)
+
+    # limit = 2, repo returns 3 rows -> use_case detects has_more and
+    # encodes the cursor from the last *visible* (= 2nd) entry.
+    allow(entry_repo).to receive(:list_by_author)
+      .with(author_account_id: viewer_id, limit: 2, cursor: nil)
+      .and_return([entry1, entry2, entry3])
+    allow(get_profile_uc).to receive(:call).with(account_id: viewer_id).and_return(profile)
+
+    result = use_case.call(viewer_account_id: viewer_id, limit: 2)
+
+    expect(result[:entries].length).to eq(2)
+    expect(result[:entries].map { |e| e[:id] }).to eq(["e-1", "e-2"])
+    expect(result[:has_more]).to be(true)
+    expect(result[:next_cursor]).not_to be_nil
+  end
 end

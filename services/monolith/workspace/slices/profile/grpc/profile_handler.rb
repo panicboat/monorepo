@@ -121,7 +121,20 @@ module Profile
         area_ids = profile_repository.find_area_ids(profile.account_id)
         area_records = area_repository.find_by_ids(area_ids)
         media_files = load_media_files(profile)
-        Presenter.to_proto(profile, area_records: area_records, media_files: media_files)
+        role = role_for(profile.account_id)
+        Presenter.to_proto(profile, area_records: area_records, media_files: media_files, role: role)
+      end
+
+      def role_for(account_id)
+        # Mirror identity__users.role onto the Profile proto so the UI does
+        # not have to infer role from cast-only attributes (heuristic was
+        # the post-merge follow-up from PR #765).
+        user = identity_user_repo.find_by_id(account_id)
+        user&.role || 0
+      end
+
+      def identity_user_repo
+        @identity_user_repo ||= ::Identity::Slice["repositories.user_repository"]
       end
 
       def load_media_files(profile)
