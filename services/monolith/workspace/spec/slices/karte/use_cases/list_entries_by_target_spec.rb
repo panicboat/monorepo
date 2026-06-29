@@ -113,4 +113,32 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
       use_case.call(viewer_account_id: viewer_id, target_account_id: target_id)
     }.to raise_error(Karte::UseCases::ListEntriesByTarget::AccessError)
   end
+
+  it "dedupes author lookups within a page (calls get_profile once per unique author)" do
+    # Two entries from the same author + one entry from another author should
+    # produce two get_profile calls, not three, thanks to the per-call cache.
+    entry_same_author = double(:entry,
+      id: "e-3",
+      author_account_id: "author-1",
+      target_account_id: target_id,
+      rating: 4,
+      body: "another entry by author-1",
+      reported_count: 0,
+      created_at: now - 300,
+      updated_at: now - 200)
+
+    allow(entry_repo).to receive(:list_by_target)
+      .with(target_account_id: target_id, limit: 20, cursor: nil)
+      .and_return([entry_flagged, entry_same_author, entry_clean])
+    allow(entry_repo).to receive(:aggregate)
+      .with(target_account_id: target_id)
+      .and_return(aggregate)
+    allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
+
+    # author-1 appears in two entries but get_profile must be called exactly once.
+    expect(get_profile_uc).to receive(:call).with(account_id: "author-1").once.and_return(profile1)
+    expect(get_profile_uc).to receive(:call).with(account_id: "author-2").once.and_return(profile2)
+
+    use_case.call(viewer_account_id: viewer_id, target_account_id: target_id)
+  end
 end

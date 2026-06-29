@@ -4,7 +4,7 @@ module Profile
   module Presenters
     class ProfilePresenter
       class << self
-        def to_proto(profile, area_records: [], media_files: {})
+        def to_proto(profile, area_records: [], media_files: {}, role: 0)
           return nil unless profile
 
           ::Profile::V1::Profile.new(
@@ -26,7 +26,8 @@ module Profile
             cup_size: profile.cup_size || "",
             industry: profile.industry || "",
             areas: area_records.map { |a| area_to_proto(a) },
-            shop_id: profile.shop_id || ""
+            shop_id: profile.shop_id || "",
+            role: role || 0
           )
         end
 

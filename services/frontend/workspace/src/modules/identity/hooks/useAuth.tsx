@@ -16,6 +16,7 @@ import {
   selectIsHydrated,
   selectUserId,
 } from "@/stores/authStore";
+import { useToastStore } from "@/stores/toastStore";
 import type { Role } from "@/lib/auth";
 
 export type User = {
@@ -200,11 +201,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (data.reactivated === true) {
-      // Lightweight UX hint; alert is enough for MVP, replace with a proper
-      // toast component if the codebase has one and it's already wired.
-      if (typeof window !== "undefined") {
-        window.alert("お帰りなさい。アカウントは復活しました。");
-      }
+      // Non-blocking toast; mobile browsers can silently suppress repeat
+      // window.alert dialogs, which would drop this feedback entirely.
+      useToastStore.getState().show("お帰りなさい。アカウントは復活しました。");
     }
 
     setNewUserFlag(false);

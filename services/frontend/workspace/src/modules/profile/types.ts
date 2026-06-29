@@ -34,6 +34,7 @@ export interface ProfileView {
   industry: string;
   areas: AreaView[];
   shopId: string;
+  role: number; // identity role mirror: 1 = GUEST, 2 = CAST, 0 = unknown
 }
 
 export interface SaveProfilePayload {

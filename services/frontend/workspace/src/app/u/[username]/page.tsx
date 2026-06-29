@@ -34,10 +34,10 @@ export default function PublicProfilePage() {
     return <main className="mx-auto max-w-xl p-6 text-text-secondary">プロフィールが見つかりませんでした。</main>;
   }
 
-  const role =
-    profile.industry || profile.age > 0 || profile.heightCm > 0 || profile.cupSize || profile.areas.length > 0
-      ? "cast"
-      : "guest";
+  // 2 = CAST per identity__users.role, mirrored onto profile.role by the
+  // monolith presenter. 0 (unknown) is treated as guest so the karte tab
+  // stays hidden until identity is fully resolved.
+  const role = profile.role === 2 ? "cast" : "guest";
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">

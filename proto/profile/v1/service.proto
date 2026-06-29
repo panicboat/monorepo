@@ -36,6 +36,11 @@ message Profile {
   string industry = 17;        // 業種 / service category (enum 値は §10 で確定)
   repeated Area areas = 18;    // 活動エリア (max 2)
   string shop_id = 19;         // 所属店舗 ref (shop domain は §10 で defer)
+
+  // identity role mirror: 1 = GUEST, 2 = CAST (0 = unknown / not joined yet).
+  // Sourced from identity__users.role at presentation time so UI does not
+  // have to infer the role from cast-only attributes.
+  int32 role = 20;
 }
 
 message SnsLinks {
