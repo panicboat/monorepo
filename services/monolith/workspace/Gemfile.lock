@@ -678,7 +678,7 @@ DEPENDENCIES
   jwt
   opentelemetry-exporter-otlp (~> 0.34)
   opentelemetry-instrumentation-all (~> 0.61)
-  opentelemetry-sdk (~> 1.4)
+  opentelemetry-sdk (~> 1.12)
   pg
   puma
   rack-test
