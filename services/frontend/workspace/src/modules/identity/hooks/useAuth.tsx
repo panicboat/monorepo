@@ -189,7 +189,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ phoneNumber, password, role: loginRole }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "ログインに失敗しました");
+    // 423 Locked carries a friendly message in `data.message` (with retry minutes);
+    // fall back to `data.error` for other failure codes.
+    if (!res.ok) throw new Error(data.message || data.error || "ログインに失敗しました");
 
     if (!data.account?.id) {
       throw new Error("ログインに失敗しました");

@@ -5,6 +5,7 @@ export const GrpcCode = {
   NOT_FOUND: 5,
   ALREADY_EXISTS: 6,
   PERMISSION_DENIED: 7,
+  FAILED_PRECONDITION: 9,
   UNAUTHENTICATED: 16,
 } as const;
 
@@ -13,6 +14,7 @@ const GRPC_TO_HTTP: Record<number, number> = {
   [GrpcCode.NOT_FOUND]: 404,
   [GrpcCode.ALREADY_EXISTS]: 409,
   [GrpcCode.PERMISSION_DENIED]: 403,
+  [GrpcCode.FAILED_PRECONDITION]: 422,
   [GrpcCode.UNAUTHENTICATED]: 401,
 };
 
