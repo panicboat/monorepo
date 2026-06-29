@@ -42,9 +42,15 @@ module Karte
       end
 
       def aggregate(target_account_id:)
+        # .unordered strips the relation's implicit ORDER BY id that ROM
+        # carries from the schema's primary_key. Without it, the aggregate
+        # query becomes SELECT count(id), avg(rating) ... ORDER BY id, and
+        # Postgres rejects it with PG::GroupingError because id is not
+        # grouped on or wrapped in an aggregate.
         row = entry_records
           .where(target_account_id: target_account_id)
           .dataset
+          .unordered
           .select { [count(id).as(:count), avg(rating).as(:avg)] }
           .first
         {
