@@ -11,6 +11,17 @@ module Identity
         MAX_FAILED_LOGIN_ATTEMPTS = 5
         LOCKOUT_DURATION_SECONDS = 60 * 15
 
+        # Raised when the user record is in a brute-force lockout window.
+        # Carries the remaining seconds so callers can show a precise wait time.
+        class LockedError < StandardError
+          attr_reader :retry_after_seconds, :locked_until
+          def initialize(locked_until:)
+            @locked_until = locked_until
+            @retry_after_seconds = [(locked_until - Time.now).to_i, 0].max
+            super("Account is temporarily locked")
+          end
+        end
+
         include Identity::Deps[
           repo: "repositories.user_repository",
           refresh_repo: "repositories.refresh_token_repository",
@@ -27,7 +38,9 @@ module Identity
           user = repo.find_by_phone_number(phone_number)
 
           return nil unless user
-          return nil if user.locked_until && user.locked_until > Time.now
+          if user.locked_until && user.locked_until > Time.now
+            raise LockedError.new(locked_until: user.locked_until)
+          end
 
           unless BCrypt::Password.new(user.password_digest) == password
             repo.record_failed_login(user.id)

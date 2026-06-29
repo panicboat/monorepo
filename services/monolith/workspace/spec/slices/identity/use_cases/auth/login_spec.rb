@@ -151,10 +151,14 @@ RSpec.describe Identity::UseCases::Auth::Login do
         allow(repo).to receive(:find_by_phone_number).with(phone_number).and_return(user)
       end
 
-      it "returns nil without checking the password" do
+      it "raises LockedError without checking the password, carrying retry_after_seconds" do
         expect(BCrypt::Password).not_to receive(:new)
-        result = use_case.call(phone_number: phone_number, password: password, role: role)
-        expect(result).to be_nil
+        expect {
+          use_case.call(phone_number: phone_number, password: password, role: role)
+        }.to raise_error(Identity::UseCases::Auth::Login::LockedError) { |e|
+          # 600 seconds left at definition; allow a couple seconds slack for test runtime.
+          expect(e.retry_after_seconds).to be_between(595, 600).inclusive
+        }
       end
     end
 

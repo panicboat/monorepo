@@ -83,6 +83,14 @@ module Identity
         else
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Invalid credentials or role mismatch")
         end
+      rescue Identity::UseCases::Auth::Login::LockedError => e
+        # Distinct from UNAUTHENTICATED so the BFF/UI can tell the user to wait
+        # instead of letting them keep retrying wrong passwords through the
+        # 15-minute lockout window. Body carries the remaining seconds.
+        raise GRPC::BadStatus.new(
+          GRPC::Core::StatusCodes::FAILED_PRECONDITION,
+          "ACCOUNT_LOCKED:#{e.retry_after_seconds}"
+        )
       rescue Errors::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
