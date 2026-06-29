@@ -15,7 +15,8 @@ module Identity
         ::Identity::V1::LoginResponse.new(
           access_token: result[:access_token],
           refresh_token: result[:refresh_token],
-          account: AccountPresenter.to_proto(result[:account])
+          account: AccountPresenter.to_proto(result[:account]),
+          reactivated: result[:reactivated] == true
         )
       end
 

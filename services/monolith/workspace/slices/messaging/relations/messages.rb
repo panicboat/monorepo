@@ -6,7 +6,7 @@ module Messaging
       schema(:"messaging__messages", as: :message_records, infer: false) do
         attribute :id, Types::String
         attribute :thread_id, Types::String
-        attribute :sender_id, Types::String
+        attribute :sender_id, Types::String.optional
         attribute :content, Types::String
         attribute :created_at, Types::Time
 

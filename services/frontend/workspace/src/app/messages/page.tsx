@@ -12,7 +12,7 @@ function timeAgo(iso: string): string {
 }
 
 function ThreadRow({ thread }: { thread: ThreadView }) {
-  const name = thread.counterpart?.displayName || "—";
+  const name = thread.counterpart?.displayName || "(退会)";
   const preview = thread.lastMessage?.content || "（メッセージなし）";
   const isUnread = thread.unreadCount > 0;
 

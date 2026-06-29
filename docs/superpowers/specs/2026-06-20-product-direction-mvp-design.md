@@ -34,7 +34,7 @@ Supersedes the legal-led framing of the session handoff (`2026-06-18-session-han
 | Onboarding（Cast / Guest 別） | ✅ 必須 | Cast は業種選択 + プロフィール作成等、Guest は簡易 |
 | **凍結しない（永久 BAN 機構を持たない）** | ✅ 必須（**絶対**） | mainstream との決定的差別化。プラットフォームに永久アカウント停止の機構を設けない |
 | アカウント / オーディエンスの永続性 | ✅ 必須 | followers / profile / 投稿 / 履歴は Cast の資産。運営が消さない |
-| オーディエンス / データのエクスポート（携帯性） | ✅ 必須 | 積み上げた資産を Cast が持ち出せる＝「顧客を失わない」保証 |
+| オーディエンス / データのエクスポート（携帯性） | ❌ MVP 外 | 「凍結しない」自体が顧客を失わない保証を満たすため、export は将来検討に降格（`docs/superpowers/specs/2026-06-29-account-durability-design.md` で判断） |
 | reach / discovery（feed / ranking / search / おすすめ） | ✅ 実装済 | 既存 engagement 層 |
 | 一時ペナルティ（一定期間の制限） | ❌ MVP 外 | 将来の運用。永久 BAN の代替として時限的措置を設計するが MVP では不要 |
 
@@ -67,7 +67,7 @@ Supersedes the legal-led framing of the session handoff (`2026-06-18-session-han
 |---|---|---|---|
 | 1 | Auth / Onboarding 再建 | 未着手 | well-understood・標準。real Login/Signup + Cast/Guest onboarding |
 | 2 | karte（Guest 評価共有） | 未着手 | 最大の未知。独立 brainstorm/spec が必要（記録項目・共有範囲・Cast 間可視性・濫用防止・将来 paywall 境界） |
-| 3 | Account durability + audience/data export | 未着手 | 凍結しない方針の product 化 + エクスポート機構 |
+| 3 | Account durability + self deactivation | ✅ 完了予定（本 PR） | 凍結しない方針の product 化 + 本人退会（2-stage soft → hard）。export は MVP 外。`docs/superpowers/specs/2026-06-29-account-durability-design.md` |
 | — | engagement 層（feed/profile/social/discovery/messaging/footprints/notifications/bookmarks） | ✅ 完了 | 既存実装 |
 
 ## 推奨ビルド順
@@ -87,7 +87,7 @@ Supersedes the legal-led framing of the session handoff (`2026-06-18-session-han
 ## 成功基準（MVP）
 
 - Cast が real account を作成・onboarding し、凍結の恐れなく集客に使える。
-- Cast が自分のオーディエンス / データをエクスポートできる。
+- Cast が自分の意思で退会でき、30 日以内なら復活できる（**export は MVP 外に降格**、`docs/superpowers/specs/2026-06-29-account-durability-design.md` 参照）。
 - Cast が karte で問題のある Guest を Cast 間共有し、自己防衛できる。
 - 永久 BAN 機構が存在しない。
 - karte の data/権限設計が将来の課金結合を阻害しない。

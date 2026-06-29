@@ -16,6 +16,34 @@ RSpec.describe Identity::UseCases::Auth::Login do
     let(:password) { "password" }
     let(:role) { 1 }
 
+    context "when account is deactivated and credentials are valid" do
+      let(:user) do
+        double(
+          :user,
+          id: "user-123",
+          phone_number: phone_number,
+          password_digest: BCrypt::Password.create(password),
+          role: role,
+          failed_login_attempts: 0,
+          locked_until: nil,
+          deactivated_at: Time.now - 86_400 # 1 day ago, within 30-day grace
+        )
+      end
+
+      before do
+        allow(repo).to receive(:find_by_phone_number).with(phone_number).and_return(user)
+        allow(repo).to receive(:reset_login_attempts)
+        allow(repo).to receive(:reactivate)
+      end
+
+      it "auto-reactivates and returns a normal session plus reactivated: true" do
+        expect(repo).to receive(:reactivate).with("user-123")
+        result = use_case.call(phone_number: phone_number, password: password, role: role)
+        expect(result[:access_token]).not_to be_nil
+        expect(result[:reactivated]).to be(true)
+      end
+    end
+
     context "when credentials are valid" do
       let(:user) do
         double(
@@ -25,7 +53,8 @@ RSpec.describe Identity::UseCases::Auth::Login do
           password_digest: BCrypt::Password.create(password),
           role: role,
           failed_login_attempts: 0,
-          locked_until: nil
+          locked_until: nil,
+          deactivated_at: nil
         )
       end
 
@@ -56,7 +85,8 @@ RSpec.describe Identity::UseCases::Auth::Login do
           password_digest: BCrypt::Password.create("wrong_password"),
           role: role,
           failed_login_attempts: 0,
-          locked_until: nil
+          locked_until: nil,
+          deactivated_at: nil
         )
       end
 
@@ -85,7 +115,8 @@ RSpec.describe Identity::UseCases::Auth::Login do
           password_digest: BCrypt::Password.create("wrong_password"),
           role: role,
           failed_login_attempts: 4,
-          locked_until: nil
+          locked_until: nil,
+          deactivated_at: nil
         )
       end
 
@@ -111,7 +142,8 @@ RSpec.describe Identity::UseCases::Auth::Login do
           password_digest: BCrypt::Password.create(password),
           role: role,
           failed_login_attempts: 5,
-          locked_until: Time.now + 600
+          locked_until: Time.now + 600,
+          deactivated_at: nil
         )
       end
 

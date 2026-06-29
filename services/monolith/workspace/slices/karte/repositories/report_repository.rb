@@ -19,6 +19,10 @@ module Karte
         result = ds.fetch(sql, new_id, entry_id, reporter_account_id, reason, Time.now).first
         !result.nil?
       end
+
+      def delete_by_reporter(account_id)
+        report_records.dataset.where(reporter_account_id: account_id).delete
+      end
     end
   end
 end

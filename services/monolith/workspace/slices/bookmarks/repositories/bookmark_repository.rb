@@ -53,6 +53,10 @@ module Bookmarks
         bookmark_records.where(account_id: account_id, post_id: post_id).exist?
       end
 
+      def delete_by_account(account_id)
+        bookmark_records.dataset.where(account_id: account_id).delete
+      end
+
       private
 
       def apply_cursor(scope, cursor)

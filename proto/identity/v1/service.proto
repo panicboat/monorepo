@@ -30,6 +30,9 @@ service IdentityService {
 
   // Get current account session
   rpc GetCurrentAccount (google.protobuf.Empty) returns (Account);
+
+  // Deactivate (soft-delete) the current account. 30-day grace, then hard-delete via cron.
+  rpc DeactivateAccount (DeactivateAccountRequest) returns (DeactivateAccountResponse);
 }
 
 message HealthCheckRequest {}
@@ -79,6 +82,7 @@ message LoginResponse {
   string access_token = 1;
   Account account = 2;
   string refresh_token = 3;
+  bool reactivated = 4;
 }
 
 message RefreshTokenRequest {
@@ -119,3 +123,6 @@ message Account {
   string phone_number = 2;
   Role role = 3;
 }
+
+message DeactivateAccountRequest {}
+message DeactivateAccountResponse {}

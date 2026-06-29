@@ -70,6 +70,16 @@ module Footprints
         ds.fetch(sql, account_id, now, now, now).first
       end
 
+      def delete_visits_by_account(account_id)
+        visit_records.dataset
+          .where(Sequel.|({visitor_id: account_id}, {visited_id: account_id}))
+          .delete
+      end
+
+      def delete_read_state_by_account(account_id)
+        read_state_records.dataset.where(account_id: account_id).delete
+      end
+
       private
 
       # Cursor is encoded under the :created_at JSON key (Concerns::CursorPagination

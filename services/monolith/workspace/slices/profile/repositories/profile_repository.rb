@@ -130,6 +130,14 @@ module Profile
 
         scope.order { [created_at.desc, account_id.desc] }.limit(limit + 1).to_a
       end
+
+      def delete_profile_areas_by_account(account_id)
+        profile_areas.where(profile_id: account_id).delete
+      end
+
+      def delete_by_account(account_id)
+        profiles.dataset.where(account_id: account_id).delete
+      end
     end
   end
 end

@@ -32,6 +32,8 @@ module Identity
         rpc :ResetPassword, ::Identity::V1::ResetPasswordRequest, ::Identity::V1::ResetPasswordResponse
         # Get current account session
         rpc :GetCurrentAccount, ::Google::Protobuf::Empty, ::Identity::V1::Account
+        # Deactivate (soft-delete) the current account. 30-day grace, then hard-delete via cron.
+        rpc :DeactivateAccount, ::Identity::V1::DeactivateAccountRequest, ::Identity::V1::DeactivateAccountResponse
       end
 
       Stub = Service.rpc_stub_class

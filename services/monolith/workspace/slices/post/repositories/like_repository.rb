@@ -87,6 +87,10 @@ module Post
           hash[id] = liked_ids.include?(id)
         end
       end
+
+      def delete_by_account(account_id)
+        likes.dataset.where(Sequel.|({guest_user_id: account_id}, {account_id: account_id})).delete
+      end
     end
   end
 end

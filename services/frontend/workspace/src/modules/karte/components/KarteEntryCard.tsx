@@ -34,7 +34,7 @@ export function KarteEntryCard({ entry, onChanged }: Props) {
         ) : (
           <div className="size-8 rounded-full bg-muted" />
         )}
-        <span className="font-medium">{entry.authorUsername || "(no username)"}</span>
+        <span className="font-medium">{entry.authorUsername || "(退会済)"}</span>
         <span className="text-muted-foreground">{formatTimeAgo(entry.createdAt)}</span>
         {entry.flagged && (
           <span

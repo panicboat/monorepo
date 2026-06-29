@@ -252,6 +252,10 @@ module Post
           .limit(limit + 1)
           .map { |row| [row[:id].to_s, row[:likes_count].to_i] }
       end
+
+      def delete_by_author(account_id)
+        posts.dataset.where(Sequel.|({cast_user_id: account_id}, {author_id: account_id})).delete
+      end
     end
   end
 end

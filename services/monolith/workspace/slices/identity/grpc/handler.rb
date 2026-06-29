@@ -21,6 +21,7 @@ module Identity
       rpc :Login, ::Identity::V1::LoginRequest, ::Identity::V1::LoginResponse
       rpc :ResetPassword, ::Identity::V1::ResetPasswordRequest, ::Identity::V1::ResetPasswordResponse
       rpc :GetCurrentAccount, ::Google::Protobuf::Empty, ::Identity::V1::Account
+      rpc :DeactivateAccount, ::Identity::V1::DeactivateAccountRequest, ::Identity::V1::DeactivateAccountResponse
 
       include Identity::Deps[
         login_uc: "use_cases.auth.login",
@@ -30,7 +31,8 @@ module Identity
         refresh_token_uc: "use_cases.token.refresh",
         send_code_uc: "use_cases.verification.send_code",
         verify_code_uc: "use_cases.verification.verify_code",
-        get_profile_uc: "use_cases.user.get_profile"
+        get_profile_uc: "use_cases.user.get_profile",
+        deactivate_account_uc: "use_cases.auth.deactivate_account"
       ]
 
       def health_check
@@ -125,6 +127,18 @@ module Identity
         end
 
         AccountPresenter.to_proto(result)
+      end
+
+      def deactivate_account
+        user_id = ::Current.user_id
+        unless user_id
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::UNAUTHENTICATED, "Unauthenticated")
+        end
+
+        deactivate_account_uc.call(viewer_account_id: user_id)
+        ::Identity::V1::DeactivateAccountResponse.new
+      rescue Identity::UseCases::Auth::DeactivateAccount::DeactivationError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
 
       private

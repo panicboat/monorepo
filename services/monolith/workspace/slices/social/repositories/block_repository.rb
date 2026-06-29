@@ -54,6 +54,12 @@ module Social
         (blocked_ids(account_id: account_id) + blocker_ids(account_id: account_id)).uniq
       end
 
+      def delete_by_account(account_id)
+        blocks.dataset
+          .where(Sequel.|({blocker_id: account_id}, {blocked_id: account_id}))
+          .delete
+      end
+
       # cursor pagination for ListBlocked
       def list_blocked(blocker_id:, limit: 20, cursor: nil)
         scope = blocks.where(blocker_id: blocker_id)

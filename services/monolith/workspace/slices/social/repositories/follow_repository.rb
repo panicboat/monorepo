@@ -107,6 +107,12 @@ module Social
         follows.where(followee_id: account_id, status: "approved").count
       end
 
+      def delete_by_account(account_id)
+        follows.dataset
+          .where(Sequel.|({follower_id: account_id}, {followee_id: account_id}))
+          .delete
+      end
+
       private
 
       def apply_cursor(scope, cursor)
