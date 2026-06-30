@@ -20,23 +20,23 @@ const REFRESH_MAX_AGE = 60 * 60 * 24 * 30;
 
 const isProd = process.env.NODE_ENV === "production";
 
-// Dogfood escape: production build (`pnpm build && pnpm start`) sets
+// Local-HTTP escape: production build (`pnpm build && pnpm start`) sets
 // secure=true, which Chrome refuses to persist over http://localhost.
 // Local headless e2e runs need a way to override that — only that.
 // Why a separate env var instead of relaxing on NODE_ENV alone: we
 // still want a deployed `pnpm start` instance to be secure by default;
 // the escape must be explicit and noisy.
-const insecureCookieEscape = process.env.DOGFOOD_INSECURE_COOKIES === "true";
-if (isProd && insecureCookieEscape) {
+const allowLocalHttpCookies = process.env.DEV_HTTP_COOKIES === "true";
+if (isProd && allowLocalHttpCookies) {
   // Fail-loud at boot so a stray env var in a deployed environment is
   // obvious in the logs. Never silently downgrade cookie security.
   console.warn(
-    "[cookies] DOGFOOD_INSECURE_COOKIES=true detected with NODE_ENV=production. " +
+    "[cookies] DEV_HTTP_COOKIES=true detected with NODE_ENV=production. " +
       "Cookies will NOT have the Secure flag. This must ONLY happen in local " +
-      "dogfood — production deploys must keep this env var unset."
+      "HTTP dogfood — deployed instances must keep this env var unset."
   );
 }
-const cookieSecure = isProd && !insecureCookieEscape;
+const cookieSecure = isProd && !allowLocalHttpCookies;
 
 type CookieOptions = {
   httpOnly: true;
