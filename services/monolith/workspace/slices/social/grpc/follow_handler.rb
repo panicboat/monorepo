@@ -78,7 +78,7 @@ module Social
 
         result = list_following_uc.call(account_id: account_id, limit: limit, cursor: cursor)
         ::Social::V1::ListFollowingResponse.new(
-          profiles: result[:profiles],
+          profiles: result[:profiles].map { |p| present_profile(p) },
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -92,7 +92,7 @@ module Social
 
         result = list_followers_uc.call(account_id: account_id, limit: limit, cursor: cursor)
         ::Social::V1::ListFollowersResponse.new(
-          profiles: result[:profiles],
+          profiles: result[:profiles].map { |p| present_profile(p) },
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -105,7 +105,7 @@ module Social
 
         result = list_pending_follow_requests_uc.call(account_id: current_user_id, limit: limit, cursor: cursor)
         ::Social::V1::ListPendingFollowRequestsResponse.new(
-          profiles: result[:profiles],
+          profiles: result[:profiles].map { |p| present_profile(p) },
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -138,6 +138,26 @@ module Social
       end
 
       private
+
+      # Same Struct→proto fix as PR #770 (discovery). list_following /
+      # list_followers / list_pending_follow_requests all assign profile
+      # structs straight to repeated profile.v1.Profile fields and would
+      # otherwise raise Google::Protobuf::TypeError: Invalid type
+      # Profile::Structs::Profile to assign to submessage field 'profiles'.
+      def present_profile(profile)
+        ::Profile::Presenters::ProfilePresenter.to_proto(
+          profile,
+          role: role_for(profile.account_id)
+        )
+      end
+
+      def role_for(account_id)
+        identity_user_repo.find_by_id(account_id)&.role || 0
+      end
+
+      def identity_user_repo
+        @identity_user_repo ||= ::Identity::Slice["repositories.user_repository"]
+      end
 
       def status_to_enum(status)
         case status

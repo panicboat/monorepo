@@ -45,7 +45,7 @@ module Social
 
         result = list_blocked_uc.call(blocker_id: current_user_id, limit: limit, cursor: cursor)
         ::Social::V1::ListBlockedResponse.new(
-          profiles: result[:profiles],
+          profiles: result[:profiles].map { |p| present_profile(p) },
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -58,6 +58,26 @@ module Social
           target_account_ids: request.message.target_account_ids.to_a
         )
         ::Social::V1::GetBlockStatusResponse.new(blocked: statuses)
+      end
+
+      private
+
+      # Same Struct→proto fix as PR #770 (discovery). list_blocked assigns
+      # profile structs straight to repeated profile.v1.Profile and would
+      # otherwise raise Google::Protobuf::TypeError.
+      def present_profile(profile)
+        ::Profile::Presenters::ProfilePresenter.to_proto(
+          profile,
+          role: role_for(profile.account_id)
+        )
+      end
+
+      def role_for(account_id)
+        identity_user_repo.find_by_id(account_id)&.role || 0
+      end
+
+      def identity_user_repo
+        @identity_user_repo ||= ::Identity::Slice["repositories.user_repository"]
       end
     end
   end
