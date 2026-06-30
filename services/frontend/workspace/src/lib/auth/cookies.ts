@@ -20,23 +20,23 @@ const REFRESH_MAX_AGE = 60 * 60 * 24 * 30;
 
 const isProd = process.env.NODE_ENV === "production";
 
-// Local-HTTP escape: production build (`pnpm build && pnpm start`) sets
-// secure=true, which Chrome refuses to persist over http://localhost.
-// Local headless e2e runs need a way to override that — only that.
-// Why a separate env var instead of relaxing on NODE_ENV alone: we
-// still want a deployed `pnpm start` instance to be secure by default;
-// the escape must be explicit and noisy.
-const allowLocalHttpCookies = process.env.DEV_HTTP_COOKIES === "true";
-if (isProd && allowLocalHttpCookies) {
+// Production build (`pnpm build && pnpm start`) sets secure=true, which
+// Chrome refuses to persist over http://localhost. Local headless e2e
+// runs need a way to override that — only that. The name is deliberately
+// blunt: anyone reviewing a deploy config and seeing INSECURE_COOKIES=true
+// should immediately treat it as a misconfiguration to fix, not a knob to
+// experiment with. Negative language is the guard, not a smell.
+const insecureCookies = process.env.INSECURE_COOKIES === "true";
+if (isProd && insecureCookies) {
   // Fail-loud at boot so a stray env var in a deployed environment is
   // obvious in the logs. Never silently downgrade cookie security.
   console.warn(
-    "[cookies] DEV_HTTP_COOKIES=true detected with NODE_ENV=production. " +
-      "Cookies will NOT have the Secure flag. This must ONLY happen in local " +
-      "HTTP dogfood — deployed instances must keep this env var unset."
+    "[cookies] INSECURE_COOKIES=true detected with NODE_ENV=production. " +
+      "Cookies will NOT have the Secure flag. This must ONLY happen on a " +
+      "local HTTP-only host — deployed instances must keep this env var unset."
   );
 }
-const cookieSecure = isProd && !allowLocalHttpCookies;
+const cookieSecure = isProd && !insecureCookies;
 
 type CookieOptions = {
   httpOnly: true;
