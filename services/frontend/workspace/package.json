@@ -40,7 +40,7 @@
   "devDependencies": {
     "@bufbuild/protoc-gen-es": "2.12.1",
     "@tailwindcss/postcss": "^4.3.2",
-    "@types/node": "^24.12.3",
+    "@types/node": "^24.13.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.0.0",
