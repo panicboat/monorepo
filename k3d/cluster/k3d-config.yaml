@@ -1,0 +1,19 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: panicboat-local
+servers: 1
+agents: 0
+options:
+  k3s:
+    extraArgs:
+      # Disabling k3s built-ins so Cilium owns CNI / LB / NetworkPolicy.
+      # kube-proxy is kept (Refinements from spec #1).
+      - arg: --flannel-backend=none
+        nodeFilters: [server:*]
+      - arg: --disable-network-policy
+        nodeFilters: [server:*]
+      - arg: --disable=traefik
+        nodeFilters: [server:*]
+      - arg: --disable=servicelb
+        nodeFilters: [server:*]

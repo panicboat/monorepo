@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monolith
+spec:
+  template:
+    metadata:
+      annotations:
+        # Disabling the OTel inject annotation because the OTel operator is not installed locally.
+        instrumentation.opentelemetry.io/inject-ruby: "false"
+    spec:
+      containers:
+        - name: monolith
+          image: ghcr.io/panicboat/monorepo/monolith:latest
+          imagePullPolicy: IfNotPresent

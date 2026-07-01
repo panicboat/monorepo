@@ -1,0 +1,10 @@
+# Assigns IPs to LoadBalancer Services in the servicelb-disabled k3d environment.
+# Used by Cilium LB IPAM to satisfy the Gateway's Programmed condition.
+# CIDR is chosen outside k3d's default bridge network (172.19.0.0/24).
+apiVersion: "cilium.io/v2"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: default-pool
+spec:
+  blocks:
+    - cidr: "172.19.0.100/28"

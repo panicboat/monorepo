@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "false"
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/panicboat/monorepo/frontend:latest
+          imagePullPolicy: IfNotPresent
