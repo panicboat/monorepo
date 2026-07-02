@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { Button } from "@/components/ui/button";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
@@ -32,8 +32,20 @@ export default function HomePage() {
     reset,
   } = useFeed({ filter, prefecture });
 
-  // Re-fetch when filter or prefecture changes.
+  // Re-fetch when filter or prefecture actually change.
+  //
+  // Guard against duplicate fetches on initial mount: production builds
+  // running under Next.js/Turbopack have been observed firing this effect
+  // twice for the same (filter, prefecture) tuple, which spawns a second
+  // request while the first is still in flight (usePaginatedFetch resets
+  // its refs on `reset()`, defeating its own gate). The fingerprint check
+  // skips the second invocation while still letting a real tab switch or
+  // profile-loaded prefecture refresh the list.
+  const lastFetchFingerprint = useRef<string>("");
   useEffect(() => {
+    const fingerprint = `${filter}::${prefecture ?? ""}`;
+    if (lastFetchFingerprint.current === fingerprint) return;
+    lastFetchFingerprint.current = fingerprint;
     reset();
     fetchInitial();
     // fetchInitial / reset are stable from usePaginatedFetch; we intentionally depend on
