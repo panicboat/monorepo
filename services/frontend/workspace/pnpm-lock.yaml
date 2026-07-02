@@ -23,14 +23,14 @@ importers:
         specifier: 1.69.0
         version: 1.69.0
       '@bufbuild/protobuf':
-        specifier: ^2.12.0
-        version: 2.12.0
+        specifier: ^2.12.1
+        version: 2.12.1
       '@connectrpc/connect':
         specifier: ^2.1.1
-        version: 2.1.1(@bufbuild/protobuf@2.12.0)
+        version: 2.1.1(@bufbuild/protobuf@2.12.1)
       '@connectrpc/connect-node':
         specifier: ^2.1.1
-        version: 2.1.1(@bufbuild/protobuf@2.12.0)(@connectrpc/connect@2.1.1(@bufbuild/protobuf@2.12.0))
+        version: 2.1.1(@bufbuild/protobuf@2.12.1)(@connectrpc/connect@2.1.1(@bufbuild/protobuf@2.12.1))
       '@opentelemetry/auto-instrumentations-node':
         specifier: ^0.75.0
         version: 0.75.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.7.1(@opentelemetry/api@1.9.1))
@@ -94,7 +94,7 @@ importers:
     devDependencies:
       '@bufbuild/protoc-gen-es':
         specifier: 2.12.1
-        version: 2.12.1(@bufbuild/protobuf@2.12.0)
+        version: 2.12.1(@bufbuild/protobuf@2.12.1)
       '@tailwindcss/postcss':
         specifier: ^4.3.2
         version: 4.3.2
@@ -242,9 +242,6 @@ packages:
     resolution: {integrity: sha512-hWk7cW6Z/7g6jpybePaf15QUUFd2+s4lJCeaAkBeo3tWPGoSgNJaJdMqIUy2y99uYy4yMjq9GYmjc5dSrfIn5A==}
     engines: {node: '>=12'}
     hasBin: true
-
-  '@bufbuild/protobuf@2.12.0':
-    resolution: {integrity: sha512-B/XlCaFIP8LOwzo+bz5uFzATYokcwCKQcghqnlfwSmM5eX/qTkvDBnDPs+gXtX/RyjxJ4DRikECcPJbyALA8FA==}
 
   '@bufbuild/protobuf@2.12.1':
     resolution: {integrity: sha512-BvAMfS6LrgZiryOAZ4pBYucu4wG/Ei/9o9DZ9akbREnMLbPJiom2i8b9C8IsKErQoiKqVhrerzt3kOT/RrzLHg==}
@@ -3545,15 +3542,13 @@ snapshots:
       '@bufbuild/buf-win32-arm64': 1.69.0
       '@bufbuild/buf-win32-x64': 1.69.0
 
-  '@bufbuild/protobuf@2.12.0': {}
-
   '@bufbuild/protobuf@2.12.1': {}
 
-  '@bufbuild/protoc-gen-es@2.12.1(@bufbuild/protobuf@2.12.0)':
+  '@bufbuild/protoc-gen-es@2.12.1(@bufbuild/protobuf@2.12.1)':
     dependencies:
       '@bufbuild/protoplugin': 2.12.1
     optionalDependencies:
-      '@bufbuild/protobuf': 2.12.0
+      '@bufbuild/protobuf': 2.12.1
     transitivePeerDependencies:
       - supports-color
 
@@ -3565,14 +3560,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@connectrpc/connect-node@2.1.1(@bufbuild/protobuf@2.12.0)(@connectrpc/connect@2.1.1(@bufbuild/protobuf@2.12.0))':
+  '@connectrpc/connect-node@2.1.1(@bufbuild/protobuf@2.12.1)(@connectrpc/connect@2.1.1(@bufbuild/protobuf@2.12.1))':
     dependencies:
-      '@bufbuild/protobuf': 2.12.0
-      '@connectrpc/connect': 2.1.1(@bufbuild/protobuf@2.12.0)
+      '@bufbuild/protobuf': 2.12.1
+      '@connectrpc/connect': 2.1.1(@bufbuild/protobuf@2.12.1)
 
-  '@connectrpc/connect@2.1.1(@bufbuild/protobuf@2.12.0)':
+  '@connectrpc/connect@2.1.1(@bufbuild/protobuf@2.12.1)':
     dependencies:
-      '@bufbuild/protobuf': 2.12.0
+      '@bufbuild/protobuf': 2.12.1
 
   '@emnapi/core@1.10.0':
     dependencies:
