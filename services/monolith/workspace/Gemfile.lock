@@ -654,7 +654,7 @@ PLATFORMS
 
 DEPENDENCIES
   aws-sdk-s3 (~> 1.226)
-  aws-sdk-sns (~> 1.100)
+  aws-sdk-sns (~> 1.117)
   bcrypt
   capybara
   database_cleaner-sequel
