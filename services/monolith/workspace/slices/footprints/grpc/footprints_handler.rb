@@ -56,7 +56,7 @@ module Footprints
           next nil unless profile
 
           ::Footprints::V1::Footprint.new(
-            visitor: profile,
+            visitor: present_profile(profile),
             last_visited_at: to_proto_ts(row[:last_visited_at]),
             is_unread: row[:is_unread],
             visit_count: row[:visit_count]
@@ -83,6 +83,26 @@ module Footprints
       end
 
       private
+
+      # Same Struct→proto fix as PR #770 / #791. Footprint carries a
+      # single profile.v1.Profile field (visitor); the earlier sweep grep
+      # on `profiles:` missed it because the field is singular.
+      # nil-safe: ProfilePresenter.to_proto returns nil for nil input.
+      def present_profile(profile)
+        return nil unless profile
+        ::Profile::Presenters::ProfilePresenter.to_proto(
+          profile,
+          role: role_for(profile.account_id)
+        )
+      end
+
+      def role_for(account_id)
+        identity_user_repo.find_by_id(account_id)&.role || 0
+      end
+
+      def identity_user_repo
+        @identity_user_repo ||= ::Identity::Slice["repositories.user_repository"]
+      end
 
       def get_profile
         @get_profile ||= Profile::Slice["use_cases.get_profile"]
