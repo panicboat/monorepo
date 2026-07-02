@@ -43,7 +43,7 @@ module Notifications
             type: type_to_enum(row.type),
             target_resource_id: row.target_resource_id,
             actor_count: row.actor_count,
-            latest_actor: result[:profiles_by_actor_id][row.latest_actor_id],
+            latest_actor: present_profile(result[:profiles_by_actor_id][row.latest_actor_id]),
             latest_event_at: time_to_timestamp(row.latest_event_at),
             read_at: row.read_at ? time_to_timestamp(row.read_at) : nil,
             target_post_id: row.target_post_id || ""
@@ -108,6 +108,26 @@ module Notifications
       end
 
       private
+
+      # Same Struct→proto fix as PR #770 / #791. Notifications carries a
+      # single profile.v1.Profile field (latest_actor) rather than a
+      # repeated one, so the earlier sweep grep on `profiles:` missed it.
+      # nil-safe: ProfilePresenter.to_proto returns nil for nil input.
+      def present_profile(profile)
+        return nil unless profile
+        ::Profile::Presenters::ProfilePresenter.to_proto(
+          profile,
+          role: role_for(profile.account_id)
+        )
+      end
+
+      def role_for(account_id)
+        identity_user_repo.find_by_id(account_id)&.role || 0
+      end
+
+      def identity_user_repo
+        @identity_user_repo ||= ::Identity::Slice["repositories.user_repository"]
+      end
 
       def preferences_to_proto(prefs)
         ::Notifications::V1::NotificationPreferences.new(
