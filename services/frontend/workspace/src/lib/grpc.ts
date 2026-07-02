@@ -23,6 +23,11 @@ import { FootprintsService } from "@/stub/footprints/v1/footprints_service_pb";
 const transport = createGrpcTransport({
   // FALLBACK: Uses localhost when MONOLITH_URL is not configured
   baseUrl: process.env.MONOLITH_URL || "http://localhost:9001",
+  // Every non-streaming BFF call inherits this deadline. Without it a
+  // hung monolith call blocks the BFF route forever, which the UI then
+  // observes as a permanently-spinning loading state. Streaming routes
+  // (messaging/stream) opt out by passing a per-call signal.
+  defaultTimeoutMs: 15_000,
 });
 
 export const identityClient = createClient(IdentityService, transport);
