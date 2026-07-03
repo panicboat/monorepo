@@ -19,16 +19,22 @@ import { FootprintsService } from "@/stub/footprints/v1/footprints_service_pb";
 // In server environment (Next.js API Routes), we connect to Monolith directly.
 // Monolith is at 'http://monolith:9001' or 'http://localhost:9001' depending on Docker/Local.
 // We should use ENV.
-// standard gRPC server requires createGrpcTransport
-const transport = createGrpcTransport({
-  // FALLBACK: Uses localhost when MONOLITH_URL is not configured
-  baseUrl: process.env.MONOLITH_URL || "http://localhost:9001",
-  // Every non-streaming BFF call inherits this deadline. Without it a
-  // hung monolith call blocks the BFF route forever, which the UI then
-  // observes as a permanently-spinning loading state. Streaming routes
-  // (messaging/stream) opt out by passing a per-call signal.
-  defaultTimeoutMs: 15_000,
-});
+// Two transports on purpose:
+// - `transport` for regular (unary) RPCs
+// - `streamingTransport` for long-lived server-streaming RPCs
+//   (e.g. /api/messaging/stream)
+//
+// @connectrpc/connect-node opens one HTTP/2 connection per transport
+// instance and multiplexes streams on it. If a long-lived SSE stream
+// shares the same transport as unary RPCs, the SSE stream keeps the
+// connection open forever and can wedge subsequent unary RPCs (feed,
+// follow, etc.) so they never receive response frames — puppet
+// reproduces this after opening /messages then navigating back home.
+// Isolating the streaming client onto its own connection keeps the
+// unary path free.
+const baseUrl = process.env.MONOLITH_URL || "http://localhost:9001";
+const transport = createGrpcTransport({ baseUrl });
+const streamingTransport = createGrpcTransport({ baseUrl });
 
 export const identityClient = createClient(IdentityService, transport);
 
@@ -61,6 +67,9 @@ export const discoveryClient = createClient(DiscoveryService, transport);
 
 // Messaging domain client (messaging.v1)
 export const messagingClient = createClient(MessagingService, transport);
+// Server-streaming client. `/api/messaging/stream` uses this so the long-poll
+// SSE keeps its own HTTP/2 connection and never blocks unary RPCs.
+export const messagingStreamingClient = createClient(MessagingService, streamingTransport);
 
 // Footprints domain client (footprints.v1)
 export const footprintsClient = createClient(FootprintsService, transport);
