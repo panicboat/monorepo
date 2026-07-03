@@ -177,24 +177,43 @@ module Messaging
         viewer = current_user_id
         channel = "messaging_user_#{viewer}"
 
+        # Open a dedicated PG connection for the LISTEN loop instead of
+        # borrowing a Sequel-pool slot for the lifetime of the subscription.
+        # `db.synchronize` used to hold the slot for the whole loop; every
+        # open SSE subscription then locked up one of the pool's
+        # connections indefinitely, and any other RPC that needed SQL
+        # (login, feed, ...) would block waiting on the pool once the
+        # slots were saturated — which puppet reproduced as a total
+        # server hang after a single /messages visit.
         db = messaging_repo.send(:thread_records).dataset.db
+        opts = db.opts
+        conn = PG.connect(
+          host: opts[:host] || "localhost",
+          port: opts[:port] || 5432,
+          dbname: opts[:database],
+          user: opts[:user],
+          password: opts[:password]
+        )
 
-        db.synchronize do |conn|
+        begin
           quoted_channel = conn.escape_identifier(channel)
           conn.async_exec("LISTEN #{quoted_channel}")
+          loop do
+            conn.wait_for_notify(0.5) do |_chan, _pid, payload|
+              event = parse_payload_to_event(payload)
+              yield event if event
+            end
+          end
+        ensure
           begin
-            loop do
-              conn.wait_for_notify(0.5) do |_chan, _pid, payload|
-                event = parse_payload_to_event(payload)
-                yield event if event
-              end
-            end
-          ensure
-            begin
-              conn.async_exec("UNLISTEN #{quoted_channel}")
-            rescue StandardError
-              # connection may already be in error state, ignore
-            end
+            conn.async_exec("UNLISTEN #{quoted_channel}")
+          rescue StandardError
+            # connection may already be in error state, ignore
+          end
+          begin
+            conn.close
+          rescue StandardError
+            # already closed, ignore
           end
         end
       end

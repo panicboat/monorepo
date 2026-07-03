@@ -59,6 +59,16 @@ Gruf.configure do |c|
   c.server_binding_url = ENV.fetch("GRPC_BIND_ADDRESS", "0.0.0.0:9001")
   c.interceptors.use(Interceptors::AccessLogInterceptor)
   c.interceptors.use(Interceptors::AuthenticationInterceptor)
+
+  # HTTP/2 concurrent-streams cap on the server side. The gRPC gem's
+  # default (100) sounds comfortable but a long-lived server-streaming
+  # RPC (messaging StreamEvents) combined with the frontend Node.js gRPC
+  # client's connection-reuse behaviour wedged every subsequent unary
+  # RPC on the same connection in puppet. Lifting the cap gives the
+  # mixed workload room to breathe.
+  c.server_options = {
+    "grpc.max_concurrent_streams" => 1024,
+  }
   # c.services.clear
 end
 
