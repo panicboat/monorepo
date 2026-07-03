@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { messagingClient } from "@/lib/grpc";
+import { messagingStreamingClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth } from "@/lib/api-helpers";
 import type { Event } from "@/stub/messaging/v1/messaging_service_pb";
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
     async start(controller) {
       const enc = new TextEncoder();
       try {
-        for await (const event of messagingClient.streamEvents(
+        for await (const event of messagingStreamingClient.streamEvents(
           {},
           { headers, signal: req.signal }
         )) {
