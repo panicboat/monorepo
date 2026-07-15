@@ -1,11 +1,5 @@
-# Pin @typescript-eslint/* to versions that declare TypeScript 6 in their
-# peerDependencies. eslint-config-next@16.2.6 pulls typescript-eslint@8.52.0
-# transitively, whose peerDependencies cap `typescript <5.9.0` and break under
-# TS 6 with parser load failures. v8.58.0 is the first release that accepts
-# `typescript <6.1.0`; we pin to ^8.61.0 (the current latest in that line),
-# whose `eslint` peer `^8 || ^9 || ^10` covers our pinned ESLint 9.
 overrides:
-  '@typescript-eslint/eslint-plugin': ^8.61.0
+  '@typescript-eslint/eslint-plugin': ^8.64.0
   '@typescript-eslint/parser': ^8.61.0
   '@typescript-eslint/utils': ^8.61.0
   '@typescript-eslint/type-utils': ^8.61.0
