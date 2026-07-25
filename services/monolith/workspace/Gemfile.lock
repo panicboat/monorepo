@@ -248,7 +248,7 @@ GEM
       json (>= 2.7.2)
       rack-session
       zeitwerk (~> 2.6)
-    hanami-assets (2.3.0)
+    hanami-assets (3.0.0)
       zeitwerk (~> 2.6)
     hanami-cli (2.3.4)
       bundler (>= 2.1)
@@ -638,7 +638,7 @@ GEM
     uri (1.1.1)
     xpath (3.2.0)
       nokogiri (~> 1.8)
-    zeitwerk (2.7.5)
+    zeitwerk (2.8.2)
 
 PLATFORMS
   aarch64-linux-gnu
@@ -666,7 +666,7 @@ DEPENDENCIES
   grpc-tools (= 1.83.0)
   gruf
   hanami (~> 2.3.2)
-  hanami-assets (~> 2.3.0)
+  hanami-assets (~> 3.0.0)
   hanami-controller (~> 2.3.2)
   hanami-db (~> 2.3.0)
   hanami-reloader (~> 2.3.0)
