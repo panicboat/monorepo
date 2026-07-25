@@ -16,7 +16,7 @@
     "@bufbuild/protobuf": "^2.12.1",
     "@connectrpc/connect": "^2.1.2",
     "@connectrpc/connect-node": "^2.1.2",
-    "@opentelemetry/auto-instrumentations-node": "^0.75.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.79.0",
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.217.0",
     "@opentelemetry/sdk-node": "^0.217.0",
     "@radix-ui/react-avatar": "^1.1.11",
