@@ -33,8 +33,8 @@ GEM
       aws-sdk-core (~> 3, >= 3.254.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
-    aws-sdk-sns (1.117.0)
-      aws-sdk-core (~> 3, >= 3.248.0)
+    aws-sdk-sns (1.118.0)
+      aws-sdk-core (~> 3, >= 3.254.0)
       aws-sigv4 (~> 1.5)
     aws-sigv4 (1.12.1)
       aws-eventstream (~> 1, >= 1.0.2)
@@ -654,7 +654,7 @@ PLATFORMS
 
 DEPENDENCIES
   aws-sdk-s3 (~> 1.228, >= 1.228.1)
-  aws-sdk-sns (~> 1.117)
+  aws-sdk-sns (~> 1.118)
   bcrypt
   capybara
   database_cleaner-sequel
