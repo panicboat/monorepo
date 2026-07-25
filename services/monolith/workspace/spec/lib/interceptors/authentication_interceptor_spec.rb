@@ -33,9 +33,11 @@ RSpec.describe Interceptors::AuthenticationInterceptor do
     end
 
     context "when authorization header is present" do
-      let(:secret) { 'pan1cb0at' }
       let(:user_id) { 'user-456' }
-      let(:token) { JWT.encode({ sub: user_id }, secret, 'HS256') }
+      # Auth::JwtCodec verifies with RS256 against ENV["JWT_PUBLIC_KEY"], so the
+      # token has to be signed with the matching RSA private key, not an HS256 secret.
+      let(:private_key) { OpenSSL::PKey::RSA.new(ENV.fetch("JWT_PRIVATE_KEY")) }
+      let(:token) { JWT.encode({ sub: user_id }, private_key, 'RS256') }
       let(:metadata) { { 'authorization' => "Bearer #{token}" } }
 
       it "decodes JWT and sets Current.user_id" do
