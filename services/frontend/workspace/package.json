@@ -17,7 +17,7 @@
     "@connectrpc/connect": "^2.1.2",
     "@connectrpc/connect-node": "^2.1.2",
     "@opentelemetry/auto-instrumentations-node": "^0.75.0",
-    "@opentelemetry/exporter-trace-otlp-grpc": "^0.217.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.221.0",
     "@opentelemetry/sdk-node": "^0.217.0",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.20",
