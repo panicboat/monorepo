@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "securerandom"
 require "slices/identity/repositories/sms_verification_repository"
 
 RSpec.describe Identity::Repositories::SmsVerificationRepository, type: :database do
@@ -24,12 +25,14 @@ RSpec.describe Identity::Repositories::SmsVerificationRepository, type: :databas
     context "when multiple records exist" do
       before do
         repo.sms_verifications.command(:create).call(
+          id: SecureRandom.uuid_v7,
           phone_number: "+1234567890",
           code: "111111",
           expires_at: Time.now - 300,
           created_at: Time.now - 100
         )
         repo.sms_verifications.command(:create).call(
+          id: SecureRandom.uuid_v7,
           phone_number: "+1234567890",
           code: "222222",
           expires_at: Time.now + 300,
