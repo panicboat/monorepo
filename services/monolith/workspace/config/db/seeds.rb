@@ -22,16 +22,11 @@ require_relative "seeds/portfolio/assignments"
 
 # === Offer ===
 require_relative "seeds/offer/plans"
-require_relative "seeds/offer/schedules"
 
 # === Content ===
 require_relative "seeds/post/posts"
 require_relative "seeds/post/likes"
 require_relative "seeds/post/comments"
-
-# === Trust ===
-require_relative "seeds/trust/taggings"
-require_relative "seeds/trust/reviews"
 
 # === Summary ===
 Seeds::Helper.print_summary

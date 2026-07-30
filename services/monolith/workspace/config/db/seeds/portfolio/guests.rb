@@ -13,11 +13,11 @@ count = 0
 GUEST_USER_IDS.each_with_index do |user_id, idx|
   next unless user_id
 
-  existing = Seeds::Helper.db[:portfolio__guests].where(user_id: user_id).first
+  existing = Seeds::Helper.db[:profile__guests].where(user_id: user_id).first
   next if existing
 
   data = guest_data[idx] || { name: "Guest#{idx + 1}" }
-  Seeds::Helper.db[:portfolio__guests].insert(
+  Seeds::Helper.db[:profile__guests].insert(
     data.merge(user_id: user_id, created_at: Time.now, updated_at: Time.now)
   )
   count += 1

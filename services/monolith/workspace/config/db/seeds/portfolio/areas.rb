@@ -39,16 +39,16 @@ areas_data = [
 count = 0
 updated = 0
 areas_data.each do |data|
-  existing = Seeds::Helper.db[:portfolio__areas].where(code: data[:code]).first
+  existing = Seeds::Helper.db[:profile__areas].where(code: data[:code]).first
   if existing
     if existing[:region].nil? && data[:region]
-      Seeds::Helper.db[:portfolio__areas].where(code: data[:code]).update(region: data[:region], updated_at: Time.now)
+      Seeds::Helper.db[:profile__areas].where(code: data[:code]).update(region: data[:region], updated_at: Time.now)
       updated += 1
     end
     next
   end
 
-  Seeds::Helper.db[:portfolio__areas].insert(
+  Seeds::Helper.db[:profile__areas].insert(
     data.merge(id: SecureRandom.uuid_v7, active: true, created_at: Time.now, updated_at: Time.now)
   )
   count += 1

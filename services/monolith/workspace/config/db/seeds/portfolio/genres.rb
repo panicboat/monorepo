@@ -14,10 +14,10 @@ genres_data = [
 
 count = 0
 genres_data.each do |data|
-  existing = Seeds::Helper.db[:portfolio__genres].where(slug: data[:slug]).first
+  existing = Seeds::Helper.db[:profile__genres].where(slug: data[:slug]).first
   next if existing
 
-  Seeds::Helper.db[:portfolio__genres].insert(
+  Seeds::Helper.db[:profile__genres].insert(
     data.merge(id: SecureRandom.uuid_v7, is_active: true, created_at: Time.now, updated_at: Time.now)
   )
   count += 1

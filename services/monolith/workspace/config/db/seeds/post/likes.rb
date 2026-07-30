@@ -4,7 +4,7 @@ puts "Seeding Post: Likes..."
 
 db = Seeds::Helper.db
 
-guests = db[:portfolio__guests].all.to_a
+guests = db[:profile__guests].all.to_a
 posts = db[:"post__posts"].order(:id).all.to_a
 
 like_count = 0

@@ -51,10 +51,10 @@ cast_data.each_with_index do |data, idx|
   user_id = CAST_USER_IDS[idx]
   next unless user_id
 
-  existing = Seeds::Helper.db[:portfolio__casts].where(user_id: user_id).first
+  existing = Seeds::Helper.db[:profile__casts].where(user_id: user_id).first
   next if existing
 
-  Seeds::Helper.db[:portfolio__casts].insert(
+  Seeds::Helper.db[:profile__casts].insert(
     data.merge(
       user_id: user_id,
       social_links: {}.to_json,
