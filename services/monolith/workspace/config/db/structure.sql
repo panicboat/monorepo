@@ -38,6 +38,13 @@ CREATE SCHEMA identity;
 
 
 --
+-- Name: karte; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA karte;
+
+
+--
 -- Name: media; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -66,13 +73,6 @@ CREATE SCHEMA offer;
 
 
 --
--- Name: portfolio; Type: SCHEMA; Schema: -; Owner: -
---
-
-CREATE SCHEMA portfolio;
-
-
---
 -- Name: post; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -80,17 +80,17 @@ CREATE SCHEMA post;
 
 
 --
+-- Name: profile; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA profile;
+
+
+--
 -- Name: social; Type: SCHEMA; Schema: -; Owner: -
 --
 
 CREATE SCHEMA social;
-
-
---
--- Name: trust; Type: SCHEMA; Schema: -; Owner: -
---
-
-CREATE SCHEMA trust;
 
 
 SET default_tablespace = '';
@@ -132,7 +132,8 @@ CREATE TABLE footprints.visits (
     first_visited_at timestamp with time zone DEFAULT now() NOT NULL,
     last_visited_at timestamp with time zone DEFAULT now() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    visit_count integer DEFAULT 1 NOT NULL
 );
 
 
@@ -143,9 +144,9 @@ CREATE TABLE footprints.visits (
 CREATE TABLE identity.refresh_tokens (
     id uuid NOT NULL,
     user_id uuid NOT NULL,
-    token text NOT NULL,
     expires_at timestamp without time zone NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    token_digest text NOT NULL
 );
 
 
@@ -159,7 +160,9 @@ CREATE TABLE identity.sms_verifications (
     code text NOT NULL,
     expires_at timestamp without time zone NOT NULL,
     verified_at timestamp without time zone,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    consumed_at timestamp without time zone,
+    failed_attempts integer DEFAULT 0 NOT NULL
 );
 
 
@@ -173,7 +176,51 @@ CREATE TABLE identity.users (
     password_digest text NOT NULL,
     role integer DEFAULT 1 NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    failed_login_attempts integer DEFAULT 0 NOT NULL,
+    locked_until timestamp without time zone,
+    deactivated_at timestamp without time zone
+);
+
+
+--
+-- Name: access; Type: TABLE; Schema: karte; Owner: -
+--
+
+CREATE TABLE karte.access (
+    account_id uuid NOT NULL,
+    granted_at timestamp with time zone DEFAULT now() NOT NULL,
+    granted_by text
+);
+
+
+--
+-- Name: entries; Type: TABLE; Schema: karte; Owner: -
+--
+
+CREATE TABLE karte.entries (
+    id uuid NOT NULL,
+    author_account_id uuid NOT NULL,
+    target_account_id uuid NOT NULL,
+    rating integer NOT NULL,
+    body text,
+    reported_count integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT rating_range CHECK (((rating >= 1) AND (rating <= 5)))
+);
+
+
+--
+-- Name: reports; Type: TABLE; Schema: karte; Owner: -
+--
+
+CREATE TABLE karte.reports (
+    id uuid NOT NULL,
+    entry_id uuid NOT NULL,
+    reporter_account_id uuid NOT NULL,
+    reason text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -191,7 +238,8 @@ CREATE TABLE media.files (
     size_bytes bigint,
     media_key text,
     thumbnail_key text,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    uploader_account_id uuid
 );
 
 
@@ -202,7 +250,7 @@ CREATE TABLE media.files (
 CREATE TABLE messaging.messages (
     id uuid NOT NULL,
     thread_id uuid NOT NULL,
-    sender_id uuid NOT NULL,
+    sender_id uuid,
     content text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -226,8 +274,8 @@ CREATE TABLE messaging.read_states (
 
 CREATE TABLE messaging.threads (
     id uuid NOT NULL,
-    account_a uuid NOT NULL,
-    account_b uuid NOT NULL,
+    account_a uuid,
+    account_b uuid,
     last_message_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT chk_threads_account_order CHECK ((account_a < account_b))
@@ -247,7 +295,8 @@ CREATE TABLE notifications.notifications (
     latest_actor_id uuid NOT NULL,
     latest_event_at timestamp with time zone DEFAULT now() NOT NULL,
     read_at timestamp with time zone,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    target_post_id uuid
 );
 
 
@@ -269,7 +318,8 @@ CREATE TABLE notifications.preferences (
     oshi boolean DEFAULT true NOT NULL,
     footprint_unread_badge boolean DEFAULT true NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    footprints_record_my_visits boolean DEFAULT true NOT NULL
 );
 
 
@@ -286,178 +336,6 @@ CREATE TABLE offer.plans (
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_plans_updated_at_not_null NOT NULL,
     is_recommended boolean DEFAULT false CONSTRAINT cast_plans_is_recommended_not_null NOT NULL,
     cast_user_id uuid NOT NULL
-);
-
-
---
--- Name: schedules; Type: TABLE; Schema: offer; Owner: -
---
-
-CREATE TABLE offer.schedules (
-    id uuid CONSTRAINT cast_schedules_id_not_null NOT NULL,
-    date date CONSTRAINT cast_schedules_date_not_null NOT NULL,
-    start_time text CONSTRAINT cast_schedules_start_time_not_null NOT NULL,
-    end_time text CONSTRAINT cast_schedules_end_time_not_null NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_schedules_created_at_not_null NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP CONSTRAINT cast_schedules_updated_at_not_null NOT NULL,
-    cast_user_id uuid NOT NULL
-);
-
-
---
--- Name: areas; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.areas (
-    id uuid NOT NULL,
-    prefecture character varying(50) NOT NULL,
-    name character varying(100) NOT NULL,
-    code character varying(50) NOT NULL,
-    sort_order integer DEFAULT 0 NOT NULL,
-    active boolean DEFAULT true NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    region character varying(50)
-);
-
-
---
--- Name: cast_areas; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.cast_areas (
-    area_id uuid NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    cast_user_id uuid NOT NULL
-);
-
-
---
--- Name: cast_gallery_media; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.cast_gallery_media (
-    id uuid NOT NULL,
-    media_id uuid NOT NULL,
-    "position" integer DEFAULT 0 NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    cast_user_id uuid NOT NULL
-);
-
-
---
--- Name: cast_genres; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.cast_genres (
-    id uuid NOT NULL,
-    genre_id uuid NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    cast_user_id uuid NOT NULL
-);
-
-
---
--- Name: casts; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.casts (
-    user_id uuid NOT NULL,
-    name text NOT NULL,
-    tagline text,
-    bio text,
-    visibility text DEFAULT 'offline'::text,
-    age integer,
-    height integer,
-    blood_type text,
-    tags jsonb DEFAULT '[]'::jsonb,
-    social_links jsonb DEFAULT '{}'::jsonb,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    three_sizes jsonb DEFAULT '{}'::jsonb,
-    slug character varying(30),
-    registered_at timestamp with time zone,
-    profile_media_id uuid,
-    avatar_media_id uuid,
-    default_schedules jsonb DEFAULT '[]'::jsonb
-);
-
-
---
--- Name: genres; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.genres (
-    id uuid NOT NULL,
-    name character varying(100) NOT NULL,
-    slug character varying(100) NOT NULL,
-    display_order integer DEFAULT 0 NOT NULL,
-    is_active boolean DEFAULT true NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
-
---
--- Name: guest_prefectures; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.guest_prefectures (
-    guest_user_id uuid NOT NULL,
-    prefecture character varying(50) NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
-
---
--- Name: guests; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.guests (
-    user_id uuid NOT NULL,
-    name text NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    tagline character varying(100),
-    bio text,
-    avatar_media_id uuid
-);
-
-
---
--- Name: profile_areas; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.profile_areas (
-    profile_id uuid NOT NULL,
-    area_id uuid NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
-
---
--- Name: profiles; Type: TABLE; Schema: portfolio; Owner: -
---
-
-CREATE TABLE portfolio.profiles (
-    account_id uuid NOT NULL,
-    username character varying(30),
-    display_name text NOT NULL,
-    bio text,
-    avatar_media_id uuid,
-    cover_media_id uuid,
-    website text,
-    sns_links jsonb DEFAULT '{}'::jsonb NOT NULL,
-    prefecture character varying(50),
-    is_private boolean DEFAULT false NOT NULL,
-    registered_at timestamp with time zone,
-    age integer,
-    height_cm integer,
-    cup_size character varying(10),
-    industry character varying(50),
-    shop_id uuid,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -546,6 +424,163 @@ CREATE TABLE post.posts (
 
 
 --
+-- Name: areas; Type: TABLE; Schema: profile; Owner: -
+--
+
+CREATE TABLE profile.areas (
+    id uuid NOT NULL,
+    prefecture character varying(50) NOT NULL,
+    name character varying(100) NOT NULL,
+    code character varying(50) NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    region character varying(50)
+);
+
+
+--
+-- Name: cast_areas; Type: TABLE; Schema: profile; Owner: -
+--
+
+CREATE TABLE profile.cast_areas (
+    area_id uuid NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    cast_user_id uuid NOT NULL
+);
+
+
+--
+-- Name: cast_gallery_media; Type: TABLE; Schema: profile; Owner: -
+--
+
+CREATE TABLE profile.cast_gallery_media (
+    id uuid NOT NULL,
+    media_id uuid NOT NULL,
+    "position" integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    cast_user_id uuid NOT NULL
+);
+
+
+--
+-- Name: cast_genres; Type: TABLE; Schema: profile; Owner: -
+--
+
+CREATE TABLE profile.cast_genres (
+    id uuid NOT NULL,
+    genre_id uuid NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    cast_user_id uuid NOT NULL
+);
+
+
+--
+-- Name: casts; Type: TABLE; Schema: profile; Owner: -
+--
+
+CREATE TABLE profile.casts (
+    user_id uuid NOT NULL,
+    name text NOT NULL,
+    tagline text,
+    bio text,
+    visibility text DEFAULT 'offline'::text,
+    age integer,
+    height integer,
+    blood_type text,
+    tags jsonb DEFAULT '[]'::jsonb,
+    social_links jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    three_sizes jsonb DEFAULT '{}'::jsonb,
+    slug character varying(30),
+    registered_at timestamp with time zone,
+    profile_media_id uuid,
+    avatar_media_id uuid,
+    default_schedules jsonb DEFAULT '[]'::jsonb
+);
+
+
+--
+-- Name: genres; Type: TABLE; Schema: profile; Owner: -
+--
+
+CREATE TABLE profile.genres (
+    id uuid NOT NULL,
+    name character varying(100) NOT NULL,
+    slug character varying(100) NOT NULL,
+    display_order integer DEFAULT 0 NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: guest_prefectures; Type: TABLE; Schema: profile; Owner: -
+--
+
+CREATE TABLE profile.guest_prefectures (
+    guest_user_id uuid NOT NULL,
+    prefecture character varying(50) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: guests; Type: TABLE; Schema: profile; Owner: -
+--
+
+CREATE TABLE profile.guests (
+    user_id uuid NOT NULL,
+    name text NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    tagline character varying(100),
+    bio text,
+    avatar_media_id uuid
+);
+
+
+--
+-- Name: profile_areas; Type: TABLE; Schema: profile; Owner: -
+--
+
+CREATE TABLE profile.profile_areas (
+    profile_id uuid NOT NULL,
+    area_id uuid NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: profiles; Type: TABLE; Schema: profile; Owner: -
+--
+
+CREATE TABLE profile.profiles (
+    account_id uuid NOT NULL,
+    username character varying(30),
+    display_name text NOT NULL,
+    bio text,
+    avatar_media_id uuid,
+    cover_media_id uuid,
+    website text,
+    sns_links jsonb DEFAULT '{}'::jsonb NOT NULL,
+    prefecture character varying(50),
+    is_private boolean DEFAULT false NOT NULL,
+    registered_at timestamp with time zone,
+    age integer,
+    height_cm integer,
+    cup_size character varying(10),
+    industry character varying(50),
+    shop_id uuid,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -577,54 +612,6 @@ CREATE TABLE social.follows (
     status text DEFAULT 'approved'::text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: review_media; Type: TABLE; Schema: trust; Owner: -
---
-
-CREATE TABLE trust.review_media (
-    id uuid NOT NULL,
-    review_id uuid NOT NULL,
-    media_id uuid,
-    media_type character varying(10) NOT NULL,
-    "position" integer DEFAULT 0 NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT review_media_media_type_check CHECK (((media_type)::text = ANY ((ARRAY['image'::character varying, 'video'::character varying])::text[]))),
-    CONSTRAINT review_media_position_range_check CHECK ((("position" >= 0) AND ("position" <= 2)))
-);
-
-
---
--- Name: reviews; Type: TABLE; Schema: trust; Owner: -
---
-
-CREATE TABLE trust.reviews (
-    id uuid NOT NULL,
-    reviewer_id uuid NOT NULL,
-    reviewee_id uuid NOT NULL,
-    content text,
-    score integer NOT NULL,
-    status text DEFAULT 'approved'::text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT score_range CHECK (((score >= 1) AND (score <= 5)))
-);
-
-
---
--- Name: taggings; Type: TABLE; Schema: trust; Owner: -
---
-
-CREATE TABLE trust.taggings (
-    id uuid NOT NULL,
-    tagger_id uuid NOT NULL,
-    target_id uuid NOT NULL,
-    status text DEFAULT 'approved'::text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    tag_name character varying(100) NOT NULL
 );
 
 
@@ -690,6 +677,38 @@ ALTER TABLE ONLY identity.sms_verifications
 
 ALTER TABLE ONLY identity.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: access access_pkey; Type: CONSTRAINT; Schema: karte; Owner: -
+--
+
+ALTER TABLE ONLY karte.access
+    ADD CONSTRAINT access_pkey PRIMARY KEY (account_id);
+
+
+--
+-- Name: entries entries_pkey; Type: CONSTRAINT; Schema: karte; Owner: -
+--
+
+ALTER TABLE ONLY karte.entries
+    ADD CONSTRAINT entries_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reports reports_pkey; Type: CONSTRAINT; Schema: karte; Owner: -
+--
+
+ALTER TABLE ONLY karte.reports
+    ADD CONSTRAINT reports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reports uq_karte_reports_entry_reporter; Type: CONSTRAINT; Schema: karte; Owner: -
+--
+
+ALTER TABLE ONLY karte.reports
+    ADD CONSTRAINT uq_karte_reports_entry_reporter UNIQUE (entry_id, reporter_account_id);
 
 
 --
@@ -765,118 +784,6 @@ ALTER TABLE ONLY offer.plans
 
 
 --
--- Name: schedules cast_schedules_pkey; Type: CONSTRAINT; Schema: offer; Owner: -
---
-
-ALTER TABLE ONLY offer.schedules
-    ADD CONSTRAINT cast_schedules_pkey PRIMARY KEY (id);
-
-
---
--- Name: areas areas_code_key; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.areas
-    ADD CONSTRAINT areas_code_key UNIQUE (code);
-
-
---
--- Name: areas areas_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.areas
-    ADD CONSTRAINT areas_pkey PRIMARY KEY (id);
-
-
---
--- Name: cast_areas cast_areas_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_areas
-    ADD CONSTRAINT cast_areas_pkey PRIMARY KEY (cast_user_id, area_id);
-
-
---
--- Name: cast_gallery_media cast_gallery_media_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_gallery_media
-    ADD CONSTRAINT cast_gallery_media_pkey PRIMARY KEY (id);
-
-
---
--- Name: cast_genres cast_genres_cast_user_id_genre_id_key; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_genres
-    ADD CONSTRAINT cast_genres_cast_user_id_genre_id_key UNIQUE (cast_user_id, genre_id);
-
-
---
--- Name: cast_genres cast_genres_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_genres
-    ADD CONSTRAINT cast_genres_pkey PRIMARY KEY (id);
-
-
---
--- Name: casts casts_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.casts
-    ADD CONSTRAINT casts_pkey PRIMARY KEY (user_id);
-
-
---
--- Name: genres genres_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.genres
-    ADD CONSTRAINT genres_pkey PRIMARY KEY (id);
-
-
---
--- Name: genres genres_slug_key; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.genres
-    ADD CONSTRAINT genres_slug_key UNIQUE (slug);
-
-
---
--- Name: guest_prefectures guest_prefectures_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.guest_prefectures
-    ADD CONSTRAINT guest_prefectures_pkey PRIMARY KEY (guest_user_id, prefecture);
-
-
---
--- Name: guests guests_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.guests
-    ADD CONSTRAINT guests_pkey PRIMARY KEY (user_id);
-
-
---
--- Name: profile_areas profile_areas_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.profile_areas
-    ADD CONSTRAINT profile_areas_pkey PRIMARY KEY (profile_id, area_id);
-
-
---
--- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.profiles
-    ADD CONSTRAINT profiles_pkey PRIMARY KEY (account_id);
-
-
---
 -- Name: hashtags cast_post_hashtags_pkey; Type: CONSTRAINT; Schema: post; Owner: -
 --
 
@@ -933,6 +840,110 @@ ALTER TABLE ONLY post.likes
 
 
 --
+-- Name: areas areas_code_key; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.areas
+    ADD CONSTRAINT areas_code_key UNIQUE (code);
+
+
+--
+-- Name: areas areas_pkey; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.areas
+    ADD CONSTRAINT areas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cast_areas cast_areas_pkey; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.cast_areas
+    ADD CONSTRAINT cast_areas_pkey PRIMARY KEY (cast_user_id, area_id);
+
+
+--
+-- Name: cast_gallery_media cast_gallery_media_pkey; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.cast_gallery_media
+    ADD CONSTRAINT cast_gallery_media_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cast_genres cast_genres_cast_user_id_genre_id_key; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.cast_genres
+    ADD CONSTRAINT cast_genres_cast_user_id_genre_id_key UNIQUE (cast_user_id, genre_id);
+
+
+--
+-- Name: cast_genres cast_genres_pkey; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.cast_genres
+    ADD CONSTRAINT cast_genres_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: casts casts_pkey; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.casts
+    ADD CONSTRAINT casts_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: genres genres_pkey; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.genres
+    ADD CONSTRAINT genres_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: genres genres_slug_key; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.genres
+    ADD CONSTRAINT genres_slug_key UNIQUE (slug);
+
+
+--
+-- Name: guest_prefectures guest_prefectures_pkey; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.guest_prefectures
+    ADD CONSTRAINT guest_prefectures_pkey PRIMARY KEY (guest_user_id, prefecture);
+
+
+--
+-- Name: guests guests_pkey; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.guests
+    ADD CONSTRAINT guests_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: profile_areas profile_areas_pkey; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.profile_areas
+    ADD CONSTRAINT profile_areas_pkey PRIMARY KEY (profile_id, area_id);
+
+
+--
+-- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.profiles
+    ADD CONSTRAINT profiles_pkey PRIMARY KEY (account_id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -973,38 +984,6 @@ ALTER TABLE ONLY social.follows
 
 
 --
--- Name: review_media review_media_pkey; Type: CONSTRAINT; Schema: trust; Owner: -
---
-
-ALTER TABLE ONLY trust.review_media
-    ADD CONSTRAINT review_media_pkey PRIMARY KEY (id);
-
-
---
--- Name: reviews reviews_pkey; Type: CONSTRAINT; Schema: trust; Owner: -
---
-
-ALTER TABLE ONLY trust.reviews
-    ADD CONSTRAINT reviews_pkey PRIMARY KEY (id);
-
-
---
--- Name: taggings taggings_pkey; Type: CONSTRAINT; Schema: trust; Owner: -
---
-
-ALTER TABLE ONLY trust.taggings
-    ADD CONSTRAINT taggings_pkey PRIMARY KEY (id);
-
-
---
--- Name: taggings taggings_tag_name_target_id_tagger_id_key; Type: CONSTRAINT; Schema: trust; Owner: -
---
-
-ALTER TABLE ONLY trust.taggings
-    ADD CONSTRAINT taggings_tag_name_target_id_tagger_id_key UNIQUE (tag_name, target_id, tagger_id);
-
-
---
 -- Name: idx_bookmarks_account_created; Type: INDEX; Schema: bookmarks; Owner: -
 --
 
@@ -1019,10 +998,10 @@ CREATE INDEX idx_footprints_visits_visited_last ON footprints.visits USING btree
 
 
 --
--- Name: identity_refresh_tokens_token_index; Type: INDEX; Schema: identity; Owner: -
+-- Name: identity_refresh_tokens_token_digest_index; Type: INDEX; Schema: identity; Owner: -
 --
 
-CREATE UNIQUE INDEX identity_refresh_tokens_token_index ON identity.refresh_tokens USING btree (token);
+CREATE UNIQUE INDEX identity_refresh_tokens_token_digest_index ON identity.refresh_tokens USING btree (token_digest);
 
 
 --
@@ -1051,6 +1030,27 @@ CREATE INDEX identity_sms_verifications_phone_number_index ON identity.sms_verif
 --
 
 CREATE UNIQUE INDEX identity_users_phone_number_index ON identity.users USING btree (phone_number);
+
+
+--
+-- Name: idx_karte_entries_author_created; Type: INDEX; Schema: karte; Owner: -
+--
+
+CREATE INDEX idx_karte_entries_author_created ON karte.entries USING btree (author_account_id, created_at DESC, id DESC);
+
+
+--
+-- Name: idx_karte_entries_target_created; Type: INDEX; Schema: karte; Owner: -
+--
+
+CREATE INDEX idx_karte_entries_target_created ON karte.entries USING btree (target_account_id, created_at DESC, id DESC);
+
+
+--
+-- Name: idx_media_files_uploader; Type: INDEX; Schema: media; Owner: -
+--
+
+CREATE INDEX idx_media_files_uploader ON media.files USING btree (uploader_account_id);
 
 
 --
@@ -1100,104 +1100,6 @@ CREATE INDEX idx_notifications_recipient_unread ON notifications.notifications U
 --
 
 CREATE INDEX offer_plans_cast_user_id_index ON offer.plans USING btree (cast_user_id);
-
-
---
--- Name: offer_schedules_cast_user_id_index; Type: INDEX; Schema: offer; Owner: -
---
-
-CREATE INDEX offer_schedules_cast_user_id_index ON offer.schedules USING btree (cast_user_id);
-
-
---
--- Name: idx_cast_areas_area_id; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX idx_cast_areas_area_id ON portfolio.cast_areas USING btree (area_id);
-
-
---
--- Name: idx_casts_slug_lower; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE UNIQUE INDEX idx_casts_slug_lower ON portfolio.casts USING btree (lower((slug)::text)) WHERE (slug IS NOT NULL);
-
-
---
--- Name: idx_guest_prefectures_prefecture; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX idx_guest_prefectures_prefecture ON portfolio.guest_prefectures USING btree (prefecture);
-
-
---
--- Name: idx_profile_areas_area_id; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX idx_profile_areas_area_id ON portfolio.profile_areas USING btree (area_id);
-
-
---
--- Name: idx_profiles_username_lower; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE UNIQUE INDEX idx_profiles_username_lower ON portfolio.profiles USING btree (lower((username)::text)) WHERE (username IS NOT NULL);
-
-
---
--- Name: portfolio_cast_gallery_media_cast_user_id_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX portfolio_cast_gallery_media_cast_user_id_index ON portfolio.cast_gallery_media USING btree (cast_user_id);
-
-
---
--- Name: portfolio_cast_gallery_media_cast_user_id_position_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX portfolio_cast_gallery_media_cast_user_id_position_index ON portfolio.cast_gallery_media USING btree (cast_user_id, "position");
-
-
---
--- Name: portfolio_cast_gallery_media_media_id_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX portfolio_cast_gallery_media_media_id_index ON portfolio.cast_gallery_media USING btree (media_id);
-
-
---
--- Name: portfolio_cast_genres_cast_user_id_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX portfolio_cast_genres_cast_user_id_index ON portfolio.cast_genres USING btree (cast_user_id);
-
-
---
--- Name: portfolio_cast_genres_genre_id_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX portfolio_cast_genres_genre_id_index ON portfolio.cast_genres USING btree (genre_id);
-
-
---
--- Name: portfolio_casts_avatar_media_id_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX portfolio_casts_avatar_media_id_index ON portfolio.casts USING btree (avatar_media_id);
-
-
---
--- Name: portfolio_casts_profile_media_id_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX portfolio_casts_profile_media_id_index ON portfolio.casts USING btree (profile_media_id);
-
-
---
--- Name: portfolio_guests_avatar_media_id_index; Type: INDEX; Schema: portfolio; Owner: -
---
-
-CREATE INDEX portfolio_guests_avatar_media_id_index ON portfolio.guests USING btree (avatar_media_id);
 
 
 --
@@ -1306,6 +1208,97 @@ CREATE INDEX social_post_likes_post_id_index ON post.likes USING btree (post_id)
 
 
 --
+-- Name: idx_cast_areas_area_id; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE INDEX idx_cast_areas_area_id ON profile.cast_areas USING btree (area_id);
+
+
+--
+-- Name: idx_casts_slug_lower; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_casts_slug_lower ON profile.casts USING btree (lower((slug)::text)) WHERE (slug IS NOT NULL);
+
+
+--
+-- Name: idx_guest_prefectures_prefecture; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE INDEX idx_guest_prefectures_prefecture ON profile.guest_prefectures USING btree (prefecture);
+
+
+--
+-- Name: idx_profile_areas_area_id; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE INDEX idx_profile_areas_area_id ON profile.profile_areas USING btree (area_id);
+
+
+--
+-- Name: idx_profiles_username_lower; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_profiles_username_lower ON profile.profiles USING btree (lower((username)::text)) WHERE (username IS NOT NULL);
+
+
+--
+-- Name: portfolio_cast_gallery_media_cast_user_id_index; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE INDEX portfolio_cast_gallery_media_cast_user_id_index ON profile.cast_gallery_media USING btree (cast_user_id);
+
+
+--
+-- Name: portfolio_cast_gallery_media_cast_user_id_position_index; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE INDEX portfolio_cast_gallery_media_cast_user_id_position_index ON profile.cast_gallery_media USING btree (cast_user_id, "position");
+
+
+--
+-- Name: portfolio_cast_gallery_media_media_id_index; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE INDEX portfolio_cast_gallery_media_media_id_index ON profile.cast_gallery_media USING btree (media_id);
+
+
+--
+-- Name: portfolio_cast_genres_cast_user_id_index; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE INDEX portfolio_cast_genres_cast_user_id_index ON profile.cast_genres USING btree (cast_user_id);
+
+
+--
+-- Name: portfolio_cast_genres_genre_id_index; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE INDEX portfolio_cast_genres_genre_id_index ON profile.cast_genres USING btree (genre_id);
+
+
+--
+-- Name: portfolio_casts_avatar_media_id_index; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE INDEX portfolio_casts_avatar_media_id_index ON profile.casts USING btree (avatar_media_id);
+
+
+--
+-- Name: portfolio_casts_profile_media_id_index; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE INDEX portfolio_casts_profile_media_id_index ON profile.casts USING btree (profile_media_id);
+
+
+--
+-- Name: portfolio_guests_avatar_media_id_index; Type: INDEX; Schema: profile; Owner: -
+--
+
+CREATE INDEX portfolio_guests_avatar_media_id_index ON profile.guests USING btree (avatar_media_id);
+
+
+--
 -- Name: social_blocks_blocked_id_index; Type: INDEX; Schema: social; Owner: -
 --
 
@@ -1341,131 +1334,11 @@ CREATE INDEX social_follows_follower_id_index ON social.follows USING btree (fol
 
 
 --
--- Name: trust_review_media_media_id_index; Type: INDEX; Schema: trust; Owner: -
---
-
-CREATE INDEX trust_review_media_media_id_index ON trust.review_media USING btree (media_id);
-
-
---
--- Name: trust_review_media_review_id_position_index; Type: INDEX; Schema: trust; Owner: -
---
-
-CREATE UNIQUE INDEX trust_review_media_review_id_position_index ON trust.review_media USING btree (review_id, "position");
-
-
---
--- Name: trust_reviews_reviewee_id_index; Type: INDEX; Schema: trust; Owner: -
---
-
-CREATE INDEX trust_reviews_reviewee_id_index ON trust.reviews USING btree (reviewee_id);
-
-
---
--- Name: trust_reviews_reviewer_id_index; Type: INDEX; Schema: trust; Owner: -
---
-
-CREATE INDEX trust_reviews_reviewer_id_index ON trust.reviews USING btree (reviewer_id);
-
-
---
--- Name: trust_reviews_status_index; Type: INDEX; Schema: trust; Owner: -
---
-
-CREATE INDEX trust_reviews_status_index ON trust.reviews USING btree (status);
-
-
---
--- Name: trust_taggings_tagger_id_index; Type: INDEX; Schema: trust; Owner: -
---
-
-CREATE INDEX trust_taggings_tagger_id_index ON trust.taggings USING btree (tagger_id);
-
-
---
--- Name: trust_taggings_target_id_index; Type: INDEX; Schema: trust; Owner: -
---
-
-CREATE INDEX trust_taggings_target_id_index ON trust.taggings USING btree (target_id);
-
-
---
--- Name: trust_taggings_target_id_status_index; Type: INDEX; Schema: trust; Owner: -
---
-
-CREATE INDEX trust_taggings_target_id_status_index ON trust.taggings USING btree (target_id, status);
-
-
---
 -- Name: refresh_tokens refresh_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: identity; Owner: -
 --
 
 ALTER TABLE ONLY identity.refresh_tokens
     ADD CONSTRAINT refresh_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES identity.users(id) ON DELETE CASCADE;
-
-
---
--- Name: cast_areas cast_areas_area_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_areas
-    ADD CONSTRAINT cast_areas_area_id_fkey FOREIGN KEY (area_id) REFERENCES portfolio.areas(id) ON DELETE CASCADE;
-
-
---
--- Name: cast_areas cast_areas_cast_user_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_areas
-    ADD CONSTRAINT cast_areas_cast_user_id_fkey FOREIGN KEY (cast_user_id) REFERENCES portfolio.casts(user_id) ON DELETE CASCADE;
-
-
---
--- Name: cast_gallery_media cast_gallery_media_cast_user_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_gallery_media
-    ADD CONSTRAINT cast_gallery_media_cast_user_id_fkey FOREIGN KEY (cast_user_id) REFERENCES portfolio.casts(user_id) ON DELETE CASCADE;
-
-
---
--- Name: cast_genres cast_genres_cast_user_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_genres
-    ADD CONSTRAINT cast_genres_cast_user_id_fkey FOREIGN KEY (cast_user_id) REFERENCES portfolio.casts(user_id) ON DELETE CASCADE;
-
-
---
--- Name: cast_genres cast_genres_genre_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.cast_genres
-    ADD CONSTRAINT cast_genres_genre_id_fkey FOREIGN KEY (genre_id) REFERENCES portfolio.genres(id) ON DELETE CASCADE;
-
-
---
--- Name: guest_prefectures guest_prefectures_guest_user_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.guest_prefectures
-    ADD CONSTRAINT guest_prefectures_guest_user_id_fkey FOREIGN KEY (guest_user_id) REFERENCES portfolio.guests(user_id) ON DELETE CASCADE;
-
-
---
--- Name: profile_areas profile_areas_area_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.profile_areas
-    ADD CONSTRAINT profile_areas_area_id_fkey FOREIGN KEY (area_id) REFERENCES portfolio.areas(id) ON DELETE CASCADE;
-
-
---
--- Name: profile_areas profile_areas_profile_id_fkey; Type: FK CONSTRAINT; Schema: portfolio; Owner: -
---
-
-ALTER TABLE ONLY portfolio.profile_areas
-    ADD CONSTRAINT profile_areas_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES portfolio.profiles(account_id) ON DELETE CASCADE;
 
 
 --
@@ -1517,11 +1390,67 @@ ALTER TABLE ONLY post.likes
 
 
 --
--- Name: review_media review_media_review_id_fkey; Type: FK CONSTRAINT; Schema: trust; Owner: -
+-- Name: cast_areas cast_areas_area_id_fkey; Type: FK CONSTRAINT; Schema: profile; Owner: -
 --
 
-ALTER TABLE ONLY trust.review_media
-    ADD CONSTRAINT review_media_review_id_fkey FOREIGN KEY (review_id) REFERENCES trust.reviews(id) ON DELETE CASCADE;
+ALTER TABLE ONLY profile.cast_areas
+    ADD CONSTRAINT cast_areas_area_id_fkey FOREIGN KEY (area_id) REFERENCES profile.areas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: cast_areas cast_areas_cast_user_id_fkey; Type: FK CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.cast_areas
+    ADD CONSTRAINT cast_areas_cast_user_id_fkey FOREIGN KEY (cast_user_id) REFERENCES profile.casts(user_id) ON DELETE CASCADE;
+
+
+--
+-- Name: cast_gallery_media cast_gallery_media_cast_user_id_fkey; Type: FK CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.cast_gallery_media
+    ADD CONSTRAINT cast_gallery_media_cast_user_id_fkey FOREIGN KEY (cast_user_id) REFERENCES profile.casts(user_id) ON DELETE CASCADE;
+
+
+--
+-- Name: cast_genres cast_genres_cast_user_id_fkey; Type: FK CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.cast_genres
+    ADD CONSTRAINT cast_genres_cast_user_id_fkey FOREIGN KEY (cast_user_id) REFERENCES profile.casts(user_id) ON DELETE CASCADE;
+
+
+--
+-- Name: cast_genres cast_genres_genre_id_fkey; Type: FK CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.cast_genres
+    ADD CONSTRAINT cast_genres_genre_id_fkey FOREIGN KEY (genre_id) REFERENCES profile.genres(id) ON DELETE CASCADE;
+
+
+--
+-- Name: guest_prefectures guest_prefectures_guest_user_id_fkey; Type: FK CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.guest_prefectures
+    ADD CONSTRAINT guest_prefectures_guest_user_id_fkey FOREIGN KEY (guest_user_id) REFERENCES profile.guests(user_id) ON DELETE CASCADE;
+
+
+--
+-- Name: profile_areas profile_areas_area_id_fkey; Type: FK CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.profile_areas
+    ADD CONSTRAINT profile_areas_area_id_fkey FOREIGN KEY (area_id) REFERENCES profile.areas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: profile_areas profile_areas_profile_id_fkey; Type: FK CONSTRAINT; Schema: profile; Owner: -
+--
+
+ALTER TABLE ONLY profile.profile_areas
+    ADD CONSTRAINT profile_areas_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES profile.profiles(account_id) ON DELETE CASCADE;
 
 
 --
@@ -1600,4 +1529,17 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260617120000_create_bookmarks_schema.rb'),
 ('20260617130000_create_messaging_schema.rb'),
 ('20260618000000_create_footprints_schema.rb'),
-('20260618200000_create_notification_preferences.rb');
+('20260618200000_create_notification_preferences.rb'),
+('20260618220000_add_target_post_id_to_notifications.rb'),
+('20260618230000_add_footprints_record_my_visits_to_preferences.rb'),
+('20260619000000_add_visit_count_to_footprints_visits.rb'),
+('20260619010000_drop_offer_schedules.rb'),
+('20260620000000_rename_portfolio_schema_to_profile.rb'),
+('20260626000000_add_consumed_at_and_failed_attempts_to_sms_verifications.rb'),
+('20260626000001_add_failed_login_attempts_and_locked_until_to_users.rb'),
+('20260626000002_rename_refresh_token_to_digest.rb'),
+('20260628000000_create_karte_schema.rb'),
+('20260628010000_drop_trust_schema.rb'),
+('20260629000000_add_deactivated_at_to_users.rb'),
+('20260629010000_relax_messaging_columns_for_deactivation.rb'),
+('20260629020000_add_uploader_account_id_to_media_files.rb');
