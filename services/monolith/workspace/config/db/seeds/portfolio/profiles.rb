@@ -17,10 +17,10 @@ profiles_data.each do |data|
   account_id = data[:account_id]
   next unless account_id
 
-  existing = Seeds::Helper.db[:portfolio__profiles].where(account_id: account_id).first
+  existing = Seeds::Helper.db[:profile__profiles].where(account_id: account_id).first
   next if existing
 
-  Seeds::Helper.db[:portfolio__profiles].insert(
+  Seeds::Helper.db[:profile__profiles].insert(
     account_id: account_id,
     username: data[:username],
     display_name: data[:display_name],
