@@ -11,7 +11,7 @@ gem "hanami-view", "~> 3.0"
 
 gem "grpc"
 gem "gruf"
-gem "aws-sdk-s3", "~> 1.228", ">= 1.228.1"
+gem "aws-sdk-s3", "~> 1.228", ">= 1.228.2"
 gem "aws-sdk-sns", "~> 1.118"
 
 gem "jwt"
