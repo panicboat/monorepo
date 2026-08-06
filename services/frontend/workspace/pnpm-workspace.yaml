@@ -4,7 +4,7 @@ allowBuilds:
   sharp: false
   unrs-resolver: false
 overrides:
-  '@typescript-eslint/eslint-plugin': ^8.65.0
+  '@typescript-eslint/eslint-plugin': ^8.66.0
   '@typescript-eslint/parser': ^8.65.0
   '@typescript-eslint/utils': ^8.65.0
   '@typescript-eslint/type-utils': ^8.65.0
