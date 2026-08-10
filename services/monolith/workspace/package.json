@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "esbuild": "^0.28.1",
+    "esbuild": "^0.28.2",
     "hanami-assets": "^3.0.0"
   }
 }
