@@ -28,6 +28,7 @@ remote_state {
 
 inputs = {
   environment = include.env.locals.environment
+  aws_region  = include.env.locals.aws_region
   common_tags = merge(
     {
       Environment = include.env.locals.environment
