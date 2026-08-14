@@ -30,6 +30,7 @@ type alertmanagerHandler struct {
 func (h *alertmanagerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	auth := r.Header.Get("Authorization")
 	if !hmac.Equal([]byte(auth), []byte("Bearer "+h.cfg.AlertmanagerToken)) {
+		log.Printf("alertmanager auth token rejected")
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}

@@ -38,6 +38,7 @@ func (h *slackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := verifySlackSignature(h.cfg.SlackSigningSecret, r.Header, body, time.Now()); err != nil {
+		log.Printf("slack signature verification failed: %v", err)
 		http.Error(w, "invalid signature", http.StatusUnauthorized)
 		return
 	}
