@@ -1,3 +1,3 @@
 module github.com/panicboat/monorepo/services/holmes-relay
 
-go 1.26.5
+go 1.24
