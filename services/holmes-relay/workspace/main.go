@@ -19,6 +19,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 	mux.Handle("/slack/events", &slackHandler{cfg: cfg, holmes: holmes, client: slackClient})
+	mux.Handle("/alertmanager/webhook", &alertmanagerHandler{cfg: cfg, holmes: holmes, client: slackClient})
 
 	addr := ":8080"
 	log.Printf("holmes-relay listening on %s", addr)
