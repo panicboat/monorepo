@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: holmes-relay
+data:
+  HOLMES_API_URL: http://holmesgpt-holmes.holmesgpt.svc.cluster.local
+  HOLMES_MODEL: sonnet-4-6
