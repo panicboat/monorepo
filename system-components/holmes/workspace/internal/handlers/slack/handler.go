@@ -1,4 +1,4 @@
-package main
+package slack
 
 import (
 	"encoding/json"
@@ -7,7 +7,19 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	slackclient "github.com/panicboat/monorepo/system-components/holmes/internal/clients/slack"
+	"github.com/panicboat/monorepo/system-components/holmes/internal/config"
 )
+
+type investigator interface {
+	Investigate(ask string) (string, error)
+}
+
+type messagePoster interface {
+	PostMessage(channel, threadTs, text string) error
+	ConversationsReplies(channel, threadTs string) ([]slackclient.Message, error)
+}
 
 type slackEventPayload struct {
 	Type      string           `json:"type"`
@@ -24,20 +36,20 @@ type slackInnerEvent struct {
 	ThreadTs string `json:"thread_ts,omitempty"`
 }
 
-type slackHandler struct {
-	cfg    Config
-	holmes *HolmesClient
-	client *slackAPIClient
+type Handler struct {
+	Cfg    config.Config
+	Holmes investigator
+	Client messagePoster
 }
 
-func (h *slackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "cannot read body", http.StatusBadRequest)
 		return
 	}
 
-	if err := verifySlackSignature(h.cfg.SlackSigningSecret, r.Header, body, time.Now()); err != nil {
+	if err := slackclient.VerifySignature(h.Cfg.SlackSigningSecret, r.Header, body, time.Now()); err != nil {
 		log.Printf("slack signature verification failed: %v", err)
 		http.Error(w, "invalid signature", http.StatusUnauthorized)
 		return
@@ -64,36 +76,36 @@ func (h *slackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *slackHandler) handleMention(evt slackInnerEvent) {
+func (h *Handler) handleMention(evt slackInnerEvent) {
 	threadTs := evt.ThreadTs
 	if threadTs == "" {
 		threadTs = evt.Ts
 	}
 
-	ask := stripMention(evt.Text)
+	ask := slackclient.StripMention(evt.Text)
 
 	if evt.ThreadTs != "" {
-		history, err := h.client.ConversationsReplies(evt.Channel, evt.ThreadTs)
+		history, err := h.Client.ConversationsReplies(evt.Channel, evt.ThreadTs)
 		if err != nil {
 			log.Printf("failed to fetch thread history: %v", err)
 		} else if len(history) > 0 {
-			ask = buildAskWithHistory(history, ask)
+			ask = slackclient.BuildAskWithHistory(history, ask)
 		}
 	}
 
-	if err := h.client.PostMessage(evt.Channel, threadTs, "🔍 investigating..."); err != nil {
+	if err := h.Client.PostMessage(evt.Channel, threadTs, "🔍 investigating..."); err != nil {
 		log.Printf("failed to post ack message: %v", err)
 	}
 
-	analysis, err := h.holmes.Investigate(ask)
+	analysis, err := h.Holmes.Investigate(ask)
 	if err != nil {
-		if postErr := h.client.PostMessage(evt.Channel, threadTs, fmt.Sprintf("investigation failed: %v", err)); postErr != nil {
+		if postErr := h.Client.PostMessage(evt.Channel, threadTs, fmt.Sprintf("investigation failed: %v", err)); postErr != nil {
 			log.Printf("failed to post error message: %v", postErr)
 		}
 		return
 	}
 
-	if err := h.client.PostMessage(evt.Channel, threadTs, analysis); err != nil {
+	if err := h.Client.PostMessage(evt.Channel, threadTs, analysis); err != nil {
 		log.Printf("failed to post analysis: %v", err)
 	}
 }

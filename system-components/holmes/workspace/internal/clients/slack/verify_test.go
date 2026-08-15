@@ -1,4 +1,4 @@
-package main
+package slack
 
 import (
 	"crypto/hmac"
@@ -18,7 +18,7 @@ func sign(secret, tsStr string, body []byte) string {
 	return "v0=" + hex.EncodeToString(mac.Sum(nil))
 }
 
-func TestVerifySlackSignature_Valid(t *testing.T) {
+func TestVerifySignature_Valid(t *testing.T) {
 	secret := "test-signing-secret"
 	body := []byte(`{"type":"url_verification","challenge":"abc"}`)
 	now := time.Now()
@@ -28,22 +28,22 @@ func TestVerifySlackSignature_Valid(t *testing.T) {
 	header.Set("X-Slack-Request-Timestamp", tsStr)
 	header.Set("X-Slack-Signature", sign(secret, tsStr, body))
 
-	if err := verifySlackSignature(secret, header, body, now); err != nil {
+	if err := VerifySignature(secret, header, body, now); err != nil {
 		t.Fatalf("expected valid signature, got error: %v", err)
 	}
 }
 
-func TestVerifySlackSignature_Invalid(t *testing.T) {
+func TestVerifySignature_Invalid(t *testing.T) {
 	header := http.Header{}
 	header.Set("X-Slack-Request-Timestamp", strconv.FormatInt(time.Now().Unix(), 10))
 	header.Set("X-Slack-Signature", "v0=deadbeef")
 
-	if err := verifySlackSignature("secret", header, []byte("body"), time.Now()); err == nil {
+	if err := VerifySignature("secret", header, []byte("body"), time.Now()); err == nil {
 		t.Fatal("expected error for invalid signature, got nil")
 	}
 }
 
-func TestVerifySlackSignature_TooOld(t *testing.T) {
+func TestVerifySignature_TooOld(t *testing.T) {
 	secret := "test-signing-secret"
 	body := []byte("body")
 	old := time.Now().Add(-10 * time.Minute)
@@ -53,7 +53,7 @@ func TestVerifySlackSignature_TooOld(t *testing.T) {
 	header.Set("X-Slack-Request-Timestamp", tsStr)
 	header.Set("X-Slack-Signature", sign(secret, tsStr, body))
 
-	if err := verifySlackSignature(secret, header, body, time.Now()); err == nil {
+	if err := VerifySignature(secret, header, body, time.Now()); err == nil {
 		t.Fatal("expected error for stale timestamp, got nil")
 	}
 }
@@ -65,18 +65,18 @@ func TestStripMention(t *testing.T) {
 		"no mention here":                         "no mention here",
 	}
 	for input, want := range cases {
-		if got := stripMention(input); got != want {
-			t.Errorf("stripMention(%q) = %q, want %q", input, got, want)
+		if got := StripMention(input); got != want {
+			t.Errorf("StripMention(%q) = %q, want %q", input, got, want)
 		}
 	}
 }
 
 func TestBuildAskWithHistory(t *testing.T) {
-	history := []slackMessage{
+	history := []Message{
 		{Text: "frontend pods are crashlooping", User: "U1"},
 		{Text: "started 10 minutes ago", User: "U1"},
 	}
-	got := buildAskWithHistory(history, "what's the root cause?")
+	got := BuildAskWithHistory(history, "what's the root cause?")
 	if !strings.Contains(got, "frontend pods are crashlooping") {
 		t.Errorf("expected history text in result, got: %s", got)
 	}

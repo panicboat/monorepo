@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"os"
@@ -18,14 +18,14 @@ func setEnv(t *testing.T, key, value string) {
 	})
 }
 
-func TestLoadConfig_AllRequiredPresent(t *testing.T) {
+func TestLoad_AllRequiredPresent(t *testing.T) {
 	setEnv(t, "SLACK_SIGNING_SECRET", "sig-secret")
 	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
 	setEnv(t, "ALERTMANAGER_SHARED_TOKEN", "am-token")
 	setEnv(t, "HOLMES_API_URL", "http://holmesgpt-holmes.holmesgpt.svc.cluster.local")
 	os.Unsetenv("HOLMES_MODEL")
 
-	cfg, err := loadConfig()
+	cfg, err := Load()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -34,13 +34,13 @@ func TestLoadConfig_AllRequiredPresent(t *testing.T) {
 	}
 }
 
-func TestLoadConfig_MissingRequired(t *testing.T) {
+func TestLoad_MissingRequired(t *testing.T) {
 	setEnv(t, "SLACK_SIGNING_SECRET", "")
 	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
 	setEnv(t, "ALERTMANAGER_SHARED_TOKEN", "am-token")
 	setEnv(t, "HOLMES_API_URL", "http://example.invalid")
 
-	if _, err := loadConfig(); err == nil {
+	if _, err := Load(); err == nil {
 		t.Fatal("expected error when SLACK_SIGNING_SECRET is missing, got nil")
 	}
 }

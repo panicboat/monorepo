@@ -1,4 +1,4 @@
-package main
+package slack
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestSlackAPIClient_PostMessage(t *testing.T) {
+func TestClient_PostMessage(t *testing.T) {
 	var gotBody map[string]string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/chat.postMessage" {
@@ -21,7 +21,7 @@ func TestSlackAPIClient_PostMessage(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c := newSlackAPIClient("xoxb-test")
+	c := New("xoxb-test")
 	c.BaseURL = server.URL
 	if err := c.PostMessage("C123", "T123", "hello"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -31,7 +31,7 @@ func TestSlackAPIClient_PostMessage(t *testing.T) {
 	}
 }
 
-func TestSlackAPIClient_PostMessage_NoThread(t *testing.T) {
+func TestClient_PostMessage_NoThread(t *testing.T) {
 	var gotBody map[string]string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewDecoder(r.Body).Decode(&gotBody)
@@ -39,7 +39,7 @@ func TestSlackAPIClient_PostMessage_NoThread(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c := newSlackAPIClient("xoxb-test")
+	c := New("xoxb-test")
 	c.BaseURL = server.URL
 	if err := c.PostMessage("C123", "", "hello"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -49,14 +49,14 @@ func TestSlackAPIClient_PostMessage_NoThread(t *testing.T) {
 	}
 }
 
-func TestSlackAPIClient_ConversationsReplies(t *testing.T) {
+func TestClient_ConversationsReplies(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/conversations.replies" {
 			t.Errorf("unexpected path: %s", r.URL.Path)
 		}
 		json.NewEncoder(w).Encode(map[string]any{
 			"ok": true,
-			"messages": []slackMessage{
+			"messages": []Message{
 				{Text: "first message", User: "U1", Ts: "1"},
 				{Text: "second message", User: "U2", Ts: "2"},
 			},
@@ -64,7 +64,7 @@ func TestSlackAPIClient_ConversationsReplies(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c := newSlackAPIClient("xoxb-test")
+	c := New("xoxb-test")
 	c.BaseURL = server.URL
 	msgs, err := c.ConversationsReplies("C123", "1")
 	if err != nil {
@@ -75,13 +75,13 @@ func TestSlackAPIClient_ConversationsReplies(t *testing.T) {
 	}
 }
 
-func TestSlackAPIClient_PostMessage_APIError(t *testing.T) {
+func TestClient_PostMessage_APIError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]any{"ok": false, "error": "channel_not_found"})
 	}))
 	defer server.Close()
 
-	c := newSlackAPIClient("xoxb-test")
+	c := New("xoxb-test")
 	c.BaseURL = server.URL
 	if err := c.PostMessage("C123", "", "hello"); err == nil {
 		t.Fatal("expected error, got nil")

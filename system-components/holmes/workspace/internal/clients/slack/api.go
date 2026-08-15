@@ -1,4 +1,4 @@
-package main
+package slack
 
 import (
 	"bytes"
@@ -9,21 +9,21 @@ import (
 	"time"
 )
 
-type slackAPIClient struct {
+type Client struct {
 	BotToken   string
 	BaseURL    string
 	HTTPClient *http.Client
 }
 
-func newSlackAPIClient(botToken string) *slackAPIClient {
-	return &slackAPIClient{
+func New(botToken string) *Client {
+	return &Client{
 		BotToken:   botToken,
 		BaseURL:    "https://slack.com/api",
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
-func (c *slackAPIClient) PostMessage(channel, threadTs, text string) error {
+func (c *Client) PostMessage(channel, threadTs, text string) error {
 	payload := map[string]string{
 		"channel": channel,
 		"text":    text,
@@ -46,7 +46,7 @@ func (c *slackAPIClient) PostMessage(channel, threadTs, text string) error {
 	return c.doSlackRequest(req)
 }
 
-func (c *slackAPIClient) ConversationsReplies(channel, threadTs string) ([]slackMessage, error) {
+func (c *Client) ConversationsReplies(channel, threadTs string) ([]Message, error) {
 	url := fmt.Sprintf("%s/conversations.replies?channel=%s&ts=%s",
 		c.BaseURL, neturl.QueryEscape(channel), neturl.QueryEscape(threadTs))
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -62,9 +62,9 @@ func (c *slackAPIClient) ConversationsReplies(channel, threadTs string) ([]slack
 	defer resp.Body.Close()
 
 	var result struct {
-		OK       bool           `json:"ok"`
-		Error    string         `json:"error"`
-		Messages []slackMessage `json:"messages"`
+		OK       bool      `json:"ok"`
+		Error    string    `json:"error"`
+		Messages []Message `json:"messages"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("decode response: %w", err)
@@ -75,7 +75,7 @@ func (c *slackAPIClient) ConversationsReplies(channel, threadTs string) ([]slack
 	return result.Messages, nil
 }
 
-func (c *slackAPIClient) doSlackRequest(req *http.Request) error {
+func (c *Client) doSlackRequest(req *http.Request) error {
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("call slack api: %w", err)

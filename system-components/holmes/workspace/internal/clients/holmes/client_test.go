@@ -1,4 +1,4 @@
-package main
+package holmes
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestHolmesClient_Investigate(t *testing.T) {
+func TestClient_Investigate(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/api/chat" {
 			t.Errorf("unexpected path: %s", r.URL.Path)
@@ -26,7 +26,7 @@ func TestHolmesClient_Investigate(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewHolmesClient(server.URL, "sonnet-4-6")
+	client := New(server.URL, "sonnet-4-6")
 	analysis, err := client.Investigate("why is pod crashing")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -36,13 +36,13 @@ func TestHolmesClient_Investigate(t *testing.T) {
 	}
 }
 
-func TestHolmesClient_Investigate_ErrorStatus(t *testing.T) {
+func TestClient_Investigate_ErrorStatus(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
 	defer server.Close()
 
-	client := NewHolmesClient(server.URL, "sonnet-4-6")
+	client := New(server.URL, "sonnet-4-6")
 	if _, err := client.Investigate("test"); err == nil {
 		t.Fatal("expected error, got nil")
 	}

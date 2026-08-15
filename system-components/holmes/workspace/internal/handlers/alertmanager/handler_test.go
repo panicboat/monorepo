@@ -1,4 +1,4 @@
-package main
+package alertmanager
 
 import (
 	"bytes"
@@ -8,10 +8,14 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	holmesclient "github.com/panicboat/monorepo/system-components/holmes/internal/clients/holmes"
+	slackclient "github.com/panicboat/monorepo/system-components/holmes/internal/clients/slack"
+	"github.com/panicboat/monorepo/system-components/holmes/internal/config"
 )
 
-func TestAlertmanagerHandler_Unauthorized(t *testing.T) {
-	h := &alertmanagerHandler{cfg: Config{AlertmanagerToken: "secret-token"}}
+func TestHandler_Unauthorized(t *testing.T) {
+	h := &Handler{Cfg: config.Config{AlertmanagerToken: "secret-token"}}
 	req := httptest.NewRequest(http.MethodPost, "/alertmanager/webhook?channel=test", bytes.NewReader([]byte(`{}`)))
 	req.Header.Set("Authorization", "Bearer wrong-token")
 	w := httptest.NewRecorder()
@@ -23,8 +27,8 @@ func TestAlertmanagerHandler_Unauthorized(t *testing.T) {
 	}
 }
 
-func TestAlertmanagerHandler_MissingChannel(t *testing.T) {
-	h := &alertmanagerHandler{cfg: Config{AlertmanagerToken: "secret-token"}}
+func TestHandler_MissingChannel(t *testing.T) {
+	h := &Handler{Cfg: config.Config{AlertmanagerToken: "secret-token"}}
 	req := httptest.NewRequest(http.MethodPost, "/alertmanager/webhook", bytes.NewReader([]byte(`{"alerts":[]}`)))
 	req.Header.Set("Authorization", "Bearer secret-token")
 	w := httptest.NewRecorder()
@@ -36,14 +40,14 @@ func TestAlertmanagerHandler_MissingChannel(t *testing.T) {
 	}
 }
 
-func TestAlertmanagerHandler_Accepted(t *testing.T) {
-	// h.holmes and h.client must be real (non-nil) here: ServeHTTP spawns
+func TestHandler_Accepted(t *testing.T) {
+	// h.Holmes and h.Client must be real (non-nil) here: ServeHTTP spawns
 	// investigateAlert in a goroutine, and a nil-pointer panic inside a
 	// goroutine crashes the whole test binary, not just this test.
 	posted := make(chan string, 1)
 
 	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(holmesChatResponse{Analysis: "found the cause"})
+		json.NewEncoder(w).Encode(map[string]string{"analysis": "found the cause"})
 	}))
 	defer holmesServer.Close()
 
@@ -55,13 +59,13 @@ func TestAlertmanagerHandler_Accepted(t *testing.T) {
 	}))
 	defer slackServer.Close()
 
-	slackClient := newSlackAPIClient("xoxb-test")
+	slackClient := slackclient.New("xoxb-test")
 	slackClient.BaseURL = slackServer.URL
 
-	h := &alertmanagerHandler{
-		cfg:    Config{AlertmanagerToken: "secret-token"},
-		holmes: NewHolmesClient(holmesServer.URL, "sonnet-4-6"),
-		client: slackClient,
+	h := &Handler{
+		Cfg:    config.Config{AlertmanagerToken: "secret-token"},
+		Holmes: holmesclient.New(holmesServer.URL, "sonnet-4-6"),
+		Client: slackClient,
 	}
 	body := []byte(`{"alerts":[{"status":"firing","labels":{"alertname":"KubePodCrashLooping","severity":"critical"},"annotations":{"summary":"pod is crash looping"}}]}`)
 	req := httptest.NewRequest(http.MethodPost, "/alertmanager/webhook?channel=incidents", bytes.NewReader(body))

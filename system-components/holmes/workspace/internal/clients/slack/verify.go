@@ -1,4 +1,4 @@
-package main
+package slack
 
 import (
 	"crypto/hmac"
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func verifySlackSignature(signingSecret string, header http.Header, body []byte, now time.Time) error {
+func VerifySignature(signingSecret string, header http.Header, body []byte, now time.Time) error {
 	tsStr := header.Get("X-Slack-Request-Timestamp")
 	sig := header.Get("X-Slack-Signature")
 	if tsStr == "" || sig == "" {
@@ -40,17 +40,17 @@ func verifySlackSignature(signingSecret string, header http.Header, body []byte,
 
 var mentionPrefix = regexp.MustCompile(`^\s*(<@[A-Z0-9]+>\s*)+`)
 
-func stripMention(text string) string {
+func StripMention(text string) string {
 	return strings.TrimSpace(mentionPrefix.ReplaceAllString(text, ""))
 }
 
-type slackMessage struct {
+type Message struct {
 	Text string `json:"text"`
 	User string `json:"user"`
 	Ts   string `json:"ts"`
 }
 
-func buildAskWithHistory(history []slackMessage, ask string) string {
+func BuildAskWithHistory(history []Message, ask string) string {
 	var b strings.Builder
 	b.WriteString("Slack thread context:\n")
 	for _, m := range history {

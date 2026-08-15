@@ -1,4 +1,4 @@
-package main
+package slack
 
 import (
 	"bytes"
@@ -12,7 +12,18 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	holmesclient "github.com/panicboat/monorepo/system-components/holmes/internal/clients/holmes"
+	slackclient "github.com/panicboat/monorepo/system-components/holmes/internal/clients/slack"
+	"github.com/panicboat/monorepo/system-components/holmes/internal/config"
 )
+
+func sign(secret, tsStr string, body []byte) string {
+	baseString := "v0:" + tsStr + ":" + string(body)
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write([]byte(baseString))
+	return "v0=" + hex.EncodeToString(mac.Sum(nil))
+}
 
 func signedRequest(t *testing.T, secret string, body []byte) *http.Request {
 	t.Helper()
@@ -23,14 +34,14 @@ func signedRequest(t *testing.T, secret string, body []byte) *http.Request {
 	return req
 }
 
-func TestSlackHandler_URLVerification(t *testing.T) {
+func TestHandler_URLVerification(t *testing.T) {
 	secret := "sig-secret"
 	body, _ := json.Marshal(map[string]string{
 		"type":      "url_verification",
 		"challenge": "abc123",
 	})
 
-	h := &slackHandler{cfg: Config{SlackSigningSecret: secret}}
+	h := &Handler{Cfg: config.Config{SlackSigningSecret: secret}}
 	req := signedRequest(t, secret, body)
 	w := httptest.NewRecorder()
 
@@ -44,8 +55,8 @@ func TestSlackHandler_URLVerification(t *testing.T) {
 	}
 }
 
-func TestSlackHandler_InvalidSignature(t *testing.T) {
-	h := &slackHandler{cfg: Config{SlackSigningSecret: "sig-secret"}}
+func TestHandler_InvalidSignature(t *testing.T) {
+	h := &Handler{Cfg: config.Config{SlackSigningSecret: "sig-secret"}}
 	req := httptest.NewRequest(http.MethodPost, "/slack/events", bytes.NewReader([]byte(`{}`)))
 	req.Header.Set("X-Slack-Request-Timestamp", strconv.FormatInt(time.Now().Unix(), 10))
 	req.Header.Set("X-Slack-Signature", "v0=wrong")
@@ -56,16 +67,6 @@ func TestSlackHandler_InvalidSignature(t *testing.T) {
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("got status %d, want %d", w.Code, http.StatusUnauthorized)
 	}
-}
-
-func TestStripMentionUsedBySignHelper(t *testing.T) {
-	// sanity check that the sign() helper from slack_verify_test.go is in scope
-	if sign("s", "1", []byte("b")) == "" {
-		t.Fatal("sign helper returned empty string")
-	}
-	_ = hmac.Equal
-	_ = sha256.New
-	_ = hex.EncodeToString
 }
 
 func TestHandleMention_TopLevelMention(t *testing.T) {
@@ -90,9 +91,9 @@ func TestHandleMention_TopLevelMention(t *testing.T) {
 	}))
 	defer holmesServer.Close()
 
-	h := &slackHandler{
-		holmes: NewHolmesClient(holmesServer.URL, "test-model"),
-		client: &slackAPIClient{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
 	}
 
 	evt := slackInnerEvent{
@@ -128,7 +129,7 @@ func TestHandleMention_ThreadHistory(t *testing.T) {
 			repliesCalled = true
 			json.NewEncoder(w).Encode(map[string]any{
 				"ok": true,
-				"messages": []slackMessage{
+				"messages": []slackclient.Message{
 					{Text: "frontend pods are crashlooping", User: "U1", Ts: "50"},
 				},
 			})
@@ -151,9 +152,9 @@ func TestHandleMention_ThreadHistory(t *testing.T) {
 	}))
 	defer holmesServer.Close()
 
-	h := &slackHandler{
-		holmes: NewHolmesClient(holmesServer.URL, "test-model"),
-		client: &slackAPIClient{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
 	}
 
 	evt := slackInnerEvent{
@@ -207,9 +208,9 @@ func TestHandleMention_ConversationsRepliesFailure(t *testing.T) {
 	}))
 	defer holmesServer.Close()
 
-	h := &slackHandler{
-		holmes: NewHolmesClient(holmesServer.URL, "test-model"),
-		client: &slackAPIClient{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
 	}
 
 	evt := slackInnerEvent{
@@ -256,9 +257,9 @@ func TestHandleMention_InvestigateFailure(t *testing.T) {
 	}))
 	defer holmesServer.Close()
 
-	h := &slackHandler{
-		holmes: NewHolmesClient(holmesServer.URL, "test-model"),
-		client: &slackAPIClient{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
 	}
 
 	evt := slackInnerEvent{

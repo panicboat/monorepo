@@ -1,4 +1,4 @@
-package main
+package alertmanager
 
 import (
 	"crypto/hmac"
@@ -8,7 +8,17 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/panicboat/monorepo/system-components/holmes/internal/config"
 )
+
+type investigator interface {
+	Investigate(ask string) (string, error)
+}
+
+type messagePoster interface {
+	PostMessage(channel, threadTs, text string) error
+}
 
 type alertmanagerWebhook struct {
 	Status string              `json:"status"`
@@ -21,15 +31,15 @@ type alertmanagerAlert struct {
 	Annotations map[string]string `json:"annotations"`
 }
 
-type alertmanagerHandler struct {
-	cfg    Config
-	holmes *HolmesClient
-	client *slackAPIClient
+type Handler struct {
+	Cfg    config.Config
+	Holmes investigator
+	Client messagePoster
 }
 
-func (h *alertmanagerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	auth := r.Header.Get("Authorization")
-	if !hmac.Equal([]byte(auth), []byte("Bearer "+h.cfg.AlertmanagerToken)) {
+	if !hmac.Equal([]byte(auth), []byte("Bearer "+h.Cfg.AlertmanagerToken)) {
 		log.Printf("alertmanager auth token rejected")
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
@@ -63,18 +73,18 @@ func (h *alertmanagerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (h *alertmanagerHandler) investigateAlert(alert alertmanagerAlert, channel string) {
+func (h *Handler) investigateAlert(alert alertmanagerAlert, channel string) {
 	ask := buildAlertAsk(alert)
 
-	analysis, err := h.holmes.Investigate(ask)
+	analysis, err := h.Holmes.Investigate(ask)
 	if err != nil {
-		if postErr := h.client.PostMessage(channel, "", fmt.Sprintf("investigation failed for alert %s: %v", alert.Labels["alertname"], err)); postErr != nil {
+		if postErr := h.Client.PostMessage(channel, "", fmt.Sprintf("investigation failed for alert %s: %v", alert.Labels["alertname"], err)); postErr != nil {
 			log.Printf("failed to post error message: %v", postErr)
 		}
 		return
 	}
 
-	if err := h.client.PostMessage(channel, "", fmt.Sprintf("*Alert: %s*\n%s", alert.Labels["alertname"], analysis)); err != nil {
+	if err := h.Client.PostMessage(channel, "", fmt.Sprintf("*Alert: %s*\n%s", alert.Labels["alertname"], analysis)); err != nil {
 		log.Printf("failed to post analysis: %v", err)
 	}
 }

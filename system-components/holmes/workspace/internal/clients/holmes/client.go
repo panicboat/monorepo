@@ -1,4 +1,4 @@
-package main
+package holmes
 
 import (
 	"bytes"
@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-type HolmesClient struct {
+type Client struct {
 	BaseURL    string
 	Model      string
 	HTTPClient *http.Client
 }
 
-func NewHolmesClient(baseURL, model string) *HolmesClient {
-	return &HolmesClient{
+func New(baseURL, model string) *Client {
+	return &Client{
 		BaseURL: baseURL,
 		Model:   model,
 		HTTPClient: &http.Client{
@@ -33,7 +33,7 @@ type holmesChatResponse struct {
 	Analysis string `json:"analysis"`
 }
 
-func (c *HolmesClient) Investigate(ask string) (string, error) {
+func (c *Client) Investigate(ask string) (string, error) {
 	reqBody, err := json.Marshal(holmesChatRequest{Ask: ask, Model: c.Model})
 	if err != nil {
 		return "", fmt.Errorf("marshal request: %w", err)

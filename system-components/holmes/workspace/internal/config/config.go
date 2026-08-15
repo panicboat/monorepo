@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ type Config struct {
 	HolmesModel        string
 }
 
-func loadConfig() (Config, error) {
+func Load() (Config, error) {
 	cfg := Config{
 		SlackSigningSecret: os.Getenv("SLACK_SIGNING_SECRET"),
 		SlackBotToken:      os.Getenv("SLACK_BOT_TOKEN"),
