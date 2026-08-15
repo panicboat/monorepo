@@ -12,11 +12,12 @@
 ├── clusters/            # Flux CD sources per environment (Kustomization, ImagePolicy)
 ├── docs/                # Architecture & access policy
 ├── proto/               # gRPC contracts shared between services
-└── services/            # One directory per service
-    └── {service}/
-        ├── workspace/   # Application source
-        ├── kubernetes/  # Kustomize base & overlays
-        └── README.md    # Service-specific notes
+├── services/            # One directory per service
+│   └── {service}/
+│       ├── workspace/   # Application source
+│       ├── kubernetes/  # Kustomize base & overlays
+│       └── README.md    # Service-specific notes
+└── system-components/   # Internal/ops tooling, not customer-facing — same per-service structure as services/
 ```
 
 ## 🛠 Prerequisites
@@ -60,7 +61,7 @@ flowchart LR
 
 - **Trigger**: `.github/workflows/auto-label--deploy-trigger.yaml` runs on PR labels and main pushes. `panicboat/deploy-actions/label-resolver` reads `workflow-config.yaml` and dispatches to the matching stack workflow.
 - **Stacks** (see `stack_conventions` in `workflow-config.yaml`):
-  - `docker` → builds `services/{service}/workspace` and pushes to GHCR.
+  - `docker` → builds `services/{service}/workspace` or `system-components/{service}/workspace` and pushes to GHCR.
   - `kubernetes` → posts a kustomize diff on the PR. Apply is delegated to Flux; CI does not run `kubectl apply`.
 - **Versioning**: release-please (`.github/release-please-config.json`) raises per-service release PRs. Merging the release PR creates a `<service>-vX.Y.Z` tag, which triggers the container build under that tag.
 - **GitOps**: `clusters/<environment>/services/<service>/image-policy.yaml` selects the latest matching semver from GHCR. `ImageUpdateAutomation` commits the new tag back into the overlay, keeping what runs in the cluster identical to what is checked in.

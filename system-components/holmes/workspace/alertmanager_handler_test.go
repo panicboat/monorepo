@@ -80,7 +80,7 @@ func TestAlertmanagerHandler_Accepted(t *testing.T) {
 			t.Errorf("expected posted text to contain the analysis, got: %s", text)
 		}
 	case <-time.After(2 * time.Second):
-		t.Fatal("timed out waiting for holmes-relay to post to Slack")
+		t.Fatal("timed out waiting for holmes to post to Slack")
 	}
 }
 
