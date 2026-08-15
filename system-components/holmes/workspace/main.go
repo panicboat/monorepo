@@ -3,23 +3,29 @@ package main
 import (
 	"log"
 	"net/http"
+
+	"github.com/panicboat/monorepo/system-components/holmes/internal/clients/holmes"
+	"github.com/panicboat/monorepo/system-components/holmes/internal/clients/slack"
+	"github.com/panicboat/monorepo/system-components/holmes/internal/config"
+	"github.com/panicboat/monorepo/system-components/holmes/internal/handlers/alertmanager"
+	slackhandler "github.com/panicboat/monorepo/system-components/holmes/internal/handlers/slack"
 )
 
 func main() {
-	cfg, err := loadConfig()
+	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("config error: %v", err)
 	}
 
-	holmes := NewHolmesClient(cfg.HolmesAPIURL, cfg.HolmesModel)
-	slackClient := newSlackAPIClient(cfg.SlackBotToken)
+	holmesClient := holmes.New(cfg.HolmesAPIURL, cfg.HolmesModel)
+	slackClient := slack.New(cfg.SlackBotToken)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-	mux.Handle("/slack/events", &slackHandler{cfg: cfg, holmes: holmes, client: slackClient})
-	mux.Handle("/alertmanager/webhook", &alertmanagerHandler{cfg: cfg, holmes: holmes, client: slackClient})
+	mux.Handle("/slack/events", &slackhandler.Handler{Cfg: cfg, Holmes: holmesClient, Client: slackClient})
+	mux.Handle("/alertmanager/webhook", &alertmanager.Handler{Cfg: cfg, Holmes: holmesClient, Client: slackClient})
 
 	addr := ":8080"
 	log.Printf("holmes listening on %s", addr)
