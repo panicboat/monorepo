@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: holmes
+spec:
+  template:
+    spec:
+      containers:
+        - name: holmes
+          image: ghcr.io/panicboat/monorepo/holmes:v0.1.0 # {"$imagepolicy": "flux-system:holmes"}

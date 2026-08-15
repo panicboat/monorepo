@@ -22,7 +22,7 @@ func main() {
 	mux.Handle("/alertmanager/webhook", &alertmanagerHandler{cfg: cfg, holmes: holmes, client: slackClient})
 
 	addr := ":8080"
-	log.Printf("holmes-relay listening on %s", addr)
+	log.Printf("holmes listening on %s", addr)
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatal(err)
 	}

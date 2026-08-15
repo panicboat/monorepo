@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: holmes-relay
+  name: holmes
   annotations:
     reloader.stakater.com/auto: "true"
 spec:
@@ -9,22 +9,22 @@ spec:
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: holmes-relay
+      app: holmes
   template:
     metadata:
       labels:
-        app: holmes-relay
+        app: holmes
     spec:
       containers:
-        - name: holmes-relay
-          image: ghcr.io/panicboat/monorepo/holmes-relay:latest
+        - name: holmes
+          image: ghcr.io/panicboat/monorepo/holmes:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           envFrom:
             - configMapRef:
-                name: holmes-relay
+                name: holmes
             - secretRef:
-                name: holmes-relay-slack
+                name: holmes-slack
             - secretRef:
-                name: holmes-relay-alertmanager
+                name: holmes-alertmanager

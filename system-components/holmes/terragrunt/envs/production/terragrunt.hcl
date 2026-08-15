@@ -19,7 +19,7 @@ remote_state {
   }
   config = {
     bucket         = "terragrunt-state-${get_aws_account_id()}"
-    key            = "services/holmes-relay/${include.env.locals.environment}/terraform.tfstate"
+    key            = "system-components/holmes/${include.env.locals.environment}/terraform.tfstate"
     region         = "ap-northeast-1"
     dynamodb_table = "terragrunt-state-locks"
     encrypt        = true

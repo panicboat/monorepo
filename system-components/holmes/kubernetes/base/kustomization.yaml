@@ -7,4 +7,4 @@ resources:
   - service.yaml
 labels:
   - pairs:
-      app: holmes-relay
+      app: holmes
