@@ -22,7 +22,7 @@ aws secretsmanager put-secret-value \
 ### 2. Create the Slack app (api.slack.com)
 
 1. Create a new app.
-2. Event Subscriptions: enable, set Request URL to `https://holmes.dystopia.city/slack/events`.
+2. Event Subscriptions: enable, set Request URL to `https://holmes.panicboat.net/slack/events`.
 3. Bot Token Scopes: `app_mentions:read`, `chat:write`, `channels:history`, `groups:history`.
 4. Subscribe to bot events: `app_mention`.
 5. Install to workspace. Copy the signing secret (Basic Information) and bot token (OAuth & Permissions) into the secret above.
@@ -31,8 +31,8 @@ aws secretsmanager put-secret-value \
 
 Add a route/receiver in `kubernetes/components/prometheus-operator/production/values.yaml.gotmpl`
 matching `severity: critical`, with a `webhook_configs` URL of
-`https://holmes.dystopia.city/alertmanager/webhook?channel=<slack-channel>`
+`https://holmes.panicboat.net/alertmanager/webhook?channel=<slack-channel>`
 and `http_config.authorization` set to the `shared_token` from the secret above.
 See the separate plan: `docs/superpowers/plans/2026-08-14-holmes-relay-alertmanager-route.md` (this plan still
-references the old `holmes-relay.dystopia.city` hostname and `holmes-relay` naming — update it to match this
+references the old `holmes-relay` naming and `holmes-relay.dystopia.city` hostname — update it to match this
 rename when it is executed).

@@ -1,0 +1,33 @@
+# holmes は Slack / Alertmanager からの直接 POST を受けるため、oauth2-proxy
+# 経由の monitoring-uis 系 Ingress とは違い認証を挟まない。ホストは非公開
+# ツール用ゾーン panicboat.net を使い、公開プロダクト用の dystopia.city /
+# cilium Gateway API 経路（frontend/monolith 向け、未完成）とは切り離す。
+# ALB は platform 側 kubernetes/components/cilium の application Ingress と
+# group.name: application で共有する。
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: holmes
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/group.name: application
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    external-dns.alpha.kubernetes.io/hostname: holmes.panicboat.net
+spec:
+  ingressClassName: alb
+  rules:
+    - host: holmes.panicboat.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: holmes
+                port:
+                  number: 80

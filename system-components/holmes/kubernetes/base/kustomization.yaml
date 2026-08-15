@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - configmap.yaml
   - deployment.yaml
-  - httproute.yaml
+  - ingress.yaml
   - service.yaml
 labels:
   - pairs:
