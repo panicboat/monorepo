@@ -4,6 +4,6 @@ locals {
   additional_tags = {
     CostCenter = "production"
     Owner      = "panicboat"
-    Purpose    = "holmes-relay"
+    Purpose    = "holmes"
   }
 }
