@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: holmes-relay
+  name: holmes
 spec:
   template:
     spec:
       containers:
-        - name: holmes-relay
-          image: ghcr.io/panicboat/monorepo/holmes-relay:v0.1.0 # {"$imagepolicy": "flux-system:holmes-relay"}
+        - name: holmes
+          image: ghcr.io/panicboat/monorepo/holmes:v0.1.0 # {"$imagepolicy": "flux-system:holmes"}
