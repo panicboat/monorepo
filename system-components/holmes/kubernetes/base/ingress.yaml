@@ -1,9 +1,10 @@
-# holmes は Slack / Alertmanager からの直接 POST を受けるため、oauth2-proxy
-# 経由の monitoring-uis 系 Ingress とは違い認証を挟まない。ホストは非公開
-# ツール用ゾーン panicboat.net を使い、公開プロダクト用の dystopia.city /
-# cilium Gateway API 経路（frontend/monolith 向け、未完成）とは切り離す。
-# ALB は platform 側 kubernetes/components/cilium の application Ingress と
-# group.name: application で共有する。
+# holmes takes direct POSTs from Slack and Alertmanager, so unlike the
+# oauth2-proxy-fronted monitoring-uis Ingresses it has no auth in front.
+# Uses the panicboat.net private-tooling zone, kept separate from the
+# public product's dystopia.city / cilium Gateway API path
+# (frontend/monolith, still incomplete). Shares the ALB with platform's
+# kubernetes/components/cilium application Ingress via group.name:
+# application.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
