@@ -1,8 +1,8 @@
-# holmes-relay Package Layout Refactor
+# holmes Package Layout Refactor
 
 ## Background
 
-`services/holmes-relay/workspace/` は `package main` の1パッケージに全ファイルがフラットに置かれている（`config.go`, `holmes.go`, `slack_verify.go`, `slack_api.go`, `slack_handler.go`, `alertmanager_handler.go` とそれぞれのテスト）。今後 integration（例: PagerDuty）を追加する際に同じ調子でファイルが積み上がり、パッケージ境界も無いため拡張性が低い。
+`system-components/holmes/workspace/`（旧 `services/holmes-relay/workspace/` — 別 PR で `system-components/holmes` へ移動・`holmes-relay` から `holmes` へリネーム済み）は `package main` の1パッケージに全ファイルがフラットに置かれている（`config.go`, `holmes.go`, `slack_verify.go`, `slack_api.go`, `slack_handler.go`, `alertmanager_handler.go` とそれぞれのテスト）。今後 integration（例: PagerDuty）を追加する際に同じ調子でファイルが積み上がり、パッケージ境界も無いため拡張性が低い。
 
 ## Goal
 
@@ -21,7 +21,7 @@ Clean Architecture（entities/usecases/adapters/frameworks の4層）も検討�
 ### Directory Layout
 
 ```
-services/holmes-relay/workspace/
+system-components/holmes/workspace/
 ├── main.go                          (配線のみの薄い entrypoint)
 ├── internal/
 │   ├── config/
