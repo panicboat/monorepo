@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -21,6 +22,12 @@ func TestClient_Investigate(t *testing.T) {
 		}
 		if req.Ask != "why is pod crashing" {
 			t.Errorf("unexpected ask: %s", req.Ask)
+		}
+		if !strings.Contains(req.AdditionalSystemPrompt, "Japanese") {
+			t.Errorf("expected additional_system_prompt to request Japanese, got: %q", req.AdditionalSystemPrompt)
+		}
+		if !strings.Contains(req.AdditionalSystemPrompt, "mrkdwn") {
+			t.Errorf("expected additional_system_prompt to request Slack mrkdwn formatting, got: %q", req.AdditionalSystemPrompt)
 		}
 		json.NewEncoder(w).Encode(holmesChatResponse{Analysis: "root cause found"})
 	}))
