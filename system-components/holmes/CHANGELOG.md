@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/panicboat/monorepo/compare/holmes-v0.5.0...holmes-v0.6.0) (2026-08-16)
+
+
+### Features
+
+* **system-components/holmes:** link issues to their Slack thread and label by severity ([#992](https://github.com/panicboat/monorepo/issues/992)) ([6454918](https://github.com/panicboat/monorepo/commit/6454918c2a2817e5ddbaceb678657c145a32c06e))
+
 ## [0.5.0](https://github.com/panicboat/monorepo/compare/holmes-v0.4.0...holmes-v0.5.0) (2026-08-16)
 
 
