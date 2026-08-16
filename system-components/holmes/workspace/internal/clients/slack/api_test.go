@@ -110,6 +110,40 @@ func TestClient_ConversationsHistory(t *testing.T) {
 	}
 }
 
+func TestClient_ConversationsHistory_WithAttachments(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{
+			"ok": true,
+			"messages": [
+				{
+					"text": "",
+					"ts": "1786859390.110479",
+					"attachments": [
+						{"text": "*HolmesE2ETest4* fingerprint: ` + "`" + `e3be599194200b94` + "`" + `"}
+					]
+				}
+			]
+		}`))
+	}))
+	defer server.Close()
+
+	c := New("xoxb-test")
+	c.BaseURL = server.URL
+	msgs, err := c.ConversationsHistory("C123", "1700000000")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(msgs) != 1 {
+		t.Fatalf("expected 1 message, got %d", len(msgs))
+	}
+	if len(msgs[0].Attachments) != 1 {
+		t.Fatalf("expected 1 attachment, got %d", len(msgs[0].Attachments))
+	}
+	if !strings.Contains(msgs[0].Attachments[0].Text, "e3be599194200b94") {
+		t.Errorf("expected attachment text to contain the fingerprint, got: %q", msgs[0].Attachments[0].Text)
+	}
+}
+
 func TestClient_PostMessage_APIError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]any{"ok": false, "error": "channel_not_found"})

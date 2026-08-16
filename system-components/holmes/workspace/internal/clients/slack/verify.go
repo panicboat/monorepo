@@ -45,9 +45,18 @@ func StripMention(text string) string {
 }
 
 type Message struct {
+	Text        string       `json:"text"`
+	User        string       `json:"user"`
+	Ts          string       `json:"ts"`
+	Attachments []Attachment `json:"attachments,omitempty"`
+}
+
+// Attachment is Slack's legacy attachments format. Alertmanager's
+// slack_configs posts notifications this way — the message's top-level
+// Text is empty and the actual content (including anything a search needs
+// to match against) lives here instead.
+type Attachment struct {
 	Text string `json:"text"`
-	User string `json:"user"`
-	Ts   string `json:"ts"`
 }
 
 func BuildAskWithHistory(history []Message, ask string) string {
