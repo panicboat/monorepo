@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -17,14 +18,18 @@ func TestClient_PostMessage(t *testing.T) {
 			t.Errorf("unexpected authorization header: %s", auth)
 		}
 		json.NewDecoder(r.Body).Decode(&gotBody)
-		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		json.NewEncoder(w).Encode(map[string]any{"ok": true, "ts": "123.456"})
 	}))
 	defer server.Close()
 
 	c := New("xoxb-test")
 	c.BaseURL = server.URL
-	if err := c.PostMessage("C123", "T123", "hello"); err != nil {
+	ts, err := c.PostMessage("C123", "T123", "hello")
+	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if ts != "123.456" {
+		t.Errorf("got ts %q, want %q", ts, "123.456")
 	}
 	if gotBody["channel"] != "C123" || gotBody["thread_ts"] != "T123" || gotBody["text"] != "hello" {
 		t.Errorf("unexpected body: %+v", gotBody)
@@ -35,13 +40,13 @@ func TestClient_PostMessage_NoThread(t *testing.T) {
 	var gotBody map[string]string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewDecoder(r.Body).Decode(&gotBody)
-		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		json.NewEncoder(w).Encode(map[string]any{"ok": true, "ts": "1.1"})
 	}))
 	defer server.Close()
 
 	c := New("xoxb-test")
 	c.BaseURL = server.URL
-	if err := c.PostMessage("C123", "", "hello"); err != nil {
+	if _, err := c.PostMessage("C123", "", "hello"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if _, present := gotBody["thread_ts"]; present {
@@ -75,6 +80,36 @@ func TestClient_ConversationsReplies(t *testing.T) {
 	}
 }
 
+func TestClient_ConversationsHistory(t *testing.T) {
+	var gotQuery string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/conversations.history" {
+			t.Errorf("unexpected path: %s", r.URL.Path)
+		}
+		gotQuery = r.URL.RawQuery
+		json.NewEncoder(w).Encode(map[string]any{
+			"ok": true,
+			"messages": []Message{
+				{Text: "critical alert fingerprint: `abc123`", Ts: "999.111"},
+			},
+		})
+	}))
+	defer server.Close()
+
+	c := New("xoxb-test")
+	c.BaseURL = server.URL
+	msgs, err := c.ConversationsHistory("C123", "1700000000")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(msgs) != 1 || msgs[0].Ts != "999.111" {
+		t.Fatalf("unexpected messages: %+v", msgs)
+	}
+	if !strings.Contains(gotQuery, "oldest=1700000000") {
+		t.Errorf("expected oldest param in query, got: %s", gotQuery)
+	}
+}
+
 func TestClient_PostMessage_APIError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]any{"ok": false, "error": "channel_not_found"})
@@ -83,7 +118,7 @@ func TestClient_PostMessage_APIError(t *testing.T) {
 
 	c := New("xoxb-test")
 	c.BaseURL = server.URL
-	if err := c.PostMessage("C123", "", "hello"); err == nil {
+	if _, err := c.PostMessage("C123", "", "hello"); err == nil {
 		t.Fatal("expected error, got nil")
 	}
 }
