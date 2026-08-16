@@ -1,6 +1,6 @@
 # holmes Alertmanager Thread Search Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** When holmes investigates a `severity: critical` alert, it should find the Alertmanager-native Slack notification for that alert (by `fingerprint`) and thread its investigation result under it — falling back to posting its own notification if the native one can't be found in time.
 
@@ -29,7 +29,7 @@
 - Produces: `(*slack.Client) PostMessage(channel, threadTs, text string) (string, error)` — return value is the posted message's `ts`. `(*slack.Client) ConversationsHistory(channel, oldest string) ([]Message, error)` — `oldest` is a Slack ts-format Unix timestamp string; returns messages no older than it, newest first, same `Message` struct as `ConversationsReplies`.
 - Consumed by: Task 2's `alertmanager` handler.
 
-- [ ] **Step 1: Update the failing tests first**
+- [x] **Step 1: Update the failing tests first**
 
 Replace the full contents of `system-components/holmes/workspace/internal/clients/slack/api_test.go`:
 
@@ -160,12 +160,12 @@ func TestClient_PostMessage_APIError(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail to compile**
+- [x] **Step 2: Run tests to verify they fail to compile**
 
 Run: `cd system-components/holmes/workspace && go test ./internal/clients/slack/...`
 Expected: compile error — `c.PostMessage(...)` returns 2 values but is used as 1 (the old `api.go` hasn't changed yet).
 
-- [ ] **Step 3: Rewrite `api.go`**
+- [x] **Step 3: Rewrite `api.go`**
 
 Replace the full contents of `system-components/holmes/workspace/internal/clients/slack/api.go`:
 
@@ -281,12 +281,12 @@ func (c *Client) getMessages(url string) ([]Message, error) {
 
 This removes the old `doSlackRequest` helper (it only served `PostMessage`, which now needs the extra `Ts` field and decodes its response directly) and extracts a shared `getMessages` helper for `ConversationsReplies`/`ConversationsHistory`, which are now identical except for the URL.
 
-- [ ] **Step 4: Run tests to verify the slack package passes**
+- [x] **Step 4: Run tests to verify the slack package passes**
 
 Run: `cd system-components/holmes/workspace && go test ./internal/clients/slack/... -v`
 Expected: PASS, all tests including the two new ones.
 
-- [ ] **Step 5: Update the slack handler for the new `PostMessage` signature**
+- [x] **Step 5: Update the slack handler for the new `PostMessage` signature**
 
 `system-components/holmes/workspace/internal/handlers/slack/handler.go` currently fails to compile because its `messagePoster` interface and call sites still expect `PostMessage` to return only `error`. Modify:
 
@@ -350,12 +350,12 @@ Replace with (discard the returned ts with `_` — this handler already knows it
 
 No changes needed to `handler_test.go` in this package — its tests exercise `handleMention` end-to-end via a real `*slackclient.Client` against an `httptest` server and never inspect `PostMessage`'s return value directly, so they keep passing once the package compiles.
 
-- [ ] **Step 6: Run the full holmes test suite**
+- [x] **Step 6: Run the full holmes test suite**
 
 Run: `cd system-components/holmes/workspace && go build ./... && go test ./...`
 Expected: builds clean, all packages PASS.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add system-components/holmes/workspace/internal/clients/slack/api.go system-components/holmes/workspace/internal/clients/slack/api_test.go system-components/holmes/workspace/internal/handlers/slack/handler.go
@@ -374,7 +374,7 @@ git commit -s -m "feat(system-components/holmes): return message ts from PostMes
 - Consumes: `(*slack.Client) PostMessage(channel, threadTs, text string) (string, error)` and `ConversationsHistory(channel, oldest string) ([]slack.Message, error)` (Task 1).
 - Produces: `alertmanagerAlert.Fingerprint string` field (JSON key `fingerprint`) — no other package reads this yet, but it's part of Alertmanager's standard webhook payload shape.
 
-- [ ] **Step 1: Write the new/updated tests first**
+- [x] **Step 1: Write the new/updated tests first**
 
 Replace the full contents of `system-components/holmes/workspace/internal/handlers/alertmanager/handler_test.go`:
 
@@ -726,12 +726,12 @@ func TestInvestigateAlert_NotFound_PostsFallbackAndThreads(t *testing.T) {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail to compile**
+- [x] **Step 2: Run tests to verify they fail to compile**
 
 Run: `cd system-components/holmes/workspace && go test ./internal/handlers/alertmanager/...`
 Expected: compile errors — `alertmanagerAlert` has no field `Fingerprint`, `Handler` has no field `Sleep`, `findNotificationTs`/`investigateAlert`/`buildFallbackNotification` signatures don't match what the tests call, `messagePoster` has no `ConversationsHistory` method.
 
-- [ ] **Step 3: Rewrite `handler.go`**
+- [x] **Step 3: Rewrite `handler.go`**
 
 Replace the full contents of `system-components/holmes/workspace/internal/handlers/alertmanager/handler.go`:
 
@@ -919,17 +919,17 @@ func buildAlertAsk(alert alertmanagerAlert) string {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd system-components/holmes/workspace && go test ./internal/handlers/alertmanager/... -v`
 Expected: PASS, all tests including the 6 new ones (`TestBuildFallbackNotification`, `TestFindNotificationTs_FoundImmediately`, `TestFindNotificationTs_FoundAfterRetry`, `TestFindNotificationTs_NeverFound_GivesUp`, `TestFindNotificationTs_EmptyFingerprint_SkipsSearch`, `TestInvestigateAlert_FoundNotification_ThreadsReply`, `TestInvestigateAlert_NotFound_PostsFallbackAndThreads`). All should complete in well under a second — none of them perform a real `time.Sleep`.
 
-- [ ] **Step 5: Run the full holmes test suite and build**
+- [x] **Step 5: Run the full holmes test suite and build**
 
 Run: `cd system-components/holmes/workspace && go build ./... && go vet ./... && go test ./...`
 Expected: builds clean, `go vet` clean, all packages PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add system-components/holmes/workspace/internal/handlers/alertmanager/handler.go system-components/holmes/workspace/internal/handlers/alertmanager/handler_test.go
@@ -942,13 +942,13 @@ git commit -s -m "feat(system-components/holmes): thread Alertmanager investigat
 
 **Files:** none (git/GitHub operations only)
 
-- [ ] **Step 1: Push the branch**
+- [x] **Step 1: Push the branch**
 
 ```bash
 git push -u origin feat/holmes-alertmanager-thread
 ```
 
-- [ ] **Step 2: Open a Draft PR**
+- [x] **Step 2: Open a Draft PR**
 
 ```bash
 gh pr create --draft --title "feat(system-components/holmes): thread Alertmanager investigations under the notification" --body "$(cat <<'EOF'
@@ -962,14 +962,14 @@ gh pr create --draft --title "feat(system-components/holmes): thread Alertmanage
 
 ## Test plan
 - [x] `go build ./... && go vet ./... && go test ./...` — all pass, no real sleeps in the test suite
-- [ ] After merge and deploy: fire a test critical alert and confirm the investigation result threads under the existing Alertmanager notification in #platform-alert-p1
+- [x] After merge and deploy: fire a test critical alert and confirm the investigation result threads under the existing Alertmanager notification in #platform-alert-p1
 
 Design: docs/superpowers/specs/2026-08-14-holmes-relay-design.md (panicboat/platform repo)
 EOF
 )"
 ```
 
-- [ ] **Step 3: Report the PR URL back to the user.**
+- [x] **Step 3: Report the PR URL back to the user.**
 
 ---
 
