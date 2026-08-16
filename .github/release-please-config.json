@@ -13,9 +13,9 @@
       "component": "frontend",
       "include-component-in-tag": true
     },
-    "system-components/holms": {
+    "system-components/holmes": {
       "release-type": "simple",
-      "component": "holms",
+      "component": "holmes",
       "include-component-in-tag": true
     }
   }
