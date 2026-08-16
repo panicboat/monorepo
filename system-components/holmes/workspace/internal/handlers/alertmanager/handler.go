@@ -165,6 +165,11 @@ func (h *Handler) searchByFingerprint(channel, oldest, fingerprint string) strin
 		if strings.Contains(m.Text, fingerprint) {
 			return m.Ts
 		}
+		for _, a := range m.Attachments {
+			if strings.Contains(a.Text, fingerprint) {
+				return m.Ts
+			}
+		}
 	}
 	return ""
 }

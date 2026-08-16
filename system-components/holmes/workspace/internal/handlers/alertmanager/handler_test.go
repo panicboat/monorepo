@@ -189,6 +189,37 @@ func TestFindNotificationTs_FoundImmediately(t *testing.T) {
 	}
 }
 
+func TestFindNotificationTs_FoundInAttachmentText(t *testing.T) {
+	// Regression test: Alertmanager's native slack_configs notification uses
+	// the legacy Slack attachments format — its top-level Text is empty and
+	// the real content lives in Attachments[0].Text. Verified against a real
+	// notification captured live 2026-08-16; searching only m.Text (the
+	// original implementation) never matched these messages at all.
+	mock := &mockPoster{
+		historyResponses: [][]slackclient.Message{
+			{
+				{
+					Text: "",
+					Ts:   "1786859390.110479",
+					Attachments: []slackclient.Attachment{
+						{Text: "*HolmesE2ETest4* (holmes-e2e-test-4)\nFresh group to bypass group_interval throttling\nfingerprint: `e3be599194200b94`"},
+					},
+				},
+			},
+		},
+	}
+	h := &Handler{Client: mock, Sleep: func(time.Duration) {}}
+
+	ts := h.findNotificationTs("C1", "e3be599194200b94")
+
+	if ts != "1786859390.110479" {
+		t.Errorf("got ts %q, want %q", ts, "1786859390.110479")
+	}
+	if mock.historyCallCount != 1 {
+		t.Errorf("expected 1 history call, got %d", mock.historyCallCount)
+	}
+}
+
 func TestFindNotificationTs_FoundAfterRetry(t *testing.T) {
 	var sleeps []time.Duration
 	now, advance := newFakeClock(time.Now())
