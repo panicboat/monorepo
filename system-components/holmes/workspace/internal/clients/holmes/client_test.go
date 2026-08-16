@@ -29,6 +29,12 @@ func TestClient_Investigate(t *testing.T) {
 		if !strings.Contains(req.AdditionalSystemPrompt, "mrkdwn") {
 			t.Errorf("expected additional_system_prompt to request Slack mrkdwn formatting, got: %q", req.AdditionalSystemPrompt)
 		}
+		if !strings.Contains(req.AdditionalSystemPrompt, "github.com/panicboat/monorepo") {
+			t.Errorf("expected additional_system_prompt to mention the monorepo repo, got: %q", req.AdditionalSystemPrompt)
+		}
+		if !strings.Contains(req.AdditionalSystemPrompt, "github.com/panicboat/platform") {
+			t.Errorf("expected additional_system_prompt to mention the platform repo, got: %q", req.AdditionalSystemPrompt)
+		}
 		json.NewEncoder(w).Encode(holmesChatResponse{Analysis: "root cause found"})
 	}))
 	defer server.Close()

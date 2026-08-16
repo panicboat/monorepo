@@ -14,14 +14,27 @@ import (
 // with no reformatting, so it must ask HolmesGPT to produce Slack's mrkdwn
 // dialect directly (Slack does not render **bold**, #-headings, or
 // [text](url) links — see the mismatches this fixes) and to respond in
-// Japanese, the team's operating language.
+// Japanese, the team's operating language. It also names the two source
+// repositories HolmesGPT can read via its bash toolset's git allowlist
+// (see panicboat/platform's kubernetes/components/holmesgpt component) —
+// HolmesGPT has no other way to learn these repos exist or when to use them.
 const slackFormattingInstructions = `Respond in Japanese.
 
 Format your response using Slack's mrkdwn syntax, not standard Markdown:
 - Bold: *text* (single asterisks, not **text**)
 - No markdown headings (#, ##, ###) — use *bold* text as a section label instead
 - Links: <https://example.com|link text>, not [link text](https://example.com)
-- Bullet lists: start each line with "• " (not "- " or "* ")`
+- Bullet lists: start each line with "• " (not "- " or "* ")
+
+For root cause investigation, you have read-only access to two source repositories via
+git (both public, no authentication needed):
+- https://github.com/panicboat/monorepo
+- https://github.com/panicboat/platform
+
+Investigate cluster state first (logs, metrics, resource status). Only clone and read
+source code when cluster state alone doesn't explain the root cause — for example, when
+a bug or misconfiguration appears to originate in application code rather than runtime
+state.`
 
 type Client struct {
 	BaseURL    string
