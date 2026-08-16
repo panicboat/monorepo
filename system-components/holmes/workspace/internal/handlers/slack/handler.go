@@ -18,12 +18,13 @@ type investigator interface {
 }
 
 type issueCreator interface {
-	CreateIssue(repo, title, body string) (string, error)
+	CreateIssue(repo, title, body string, labels []string) (string, error)
 }
 
 type messagePoster interface {
 	PostMessage(channel, threadTs, text string) (string, error)
 	ConversationsReplies(channel, threadTs string) ([]slackclient.Message, error)
+	GetPermalink(channel, ts string) (string, error)
 }
 
 type slackEventPayload struct {
@@ -42,12 +43,13 @@ type slackInnerEvent struct {
 }
 
 type issueAction struct {
-	Action string `json:"action"`
-	Repo   string `json:"repo"`
-	Title  string `json:"title"`
-	Body   string `json:"body"`
-	Ready  bool   `json:"ready"`
-	Reason string `json:"reason"`
+	Action   string `json:"action"`
+	Repo     string `json:"repo"`
+	Title    string `json:"title"`
+	Body     string `json:"body"`
+	Ready    bool   `json:"ready"`
+	Reason   string `json:"reason"`
+	Severity string `json:"severity"`
 }
 
 type Handler struct {
@@ -142,7 +144,20 @@ func (h *Handler) handleIssueAction(channel, threadTs string, action issueAction
 		return
 	}
 
-	url, err := h.GitHub.CreateIssue(action.Repo, action.Title, action.Body)
+	body := action.Body
+	if permalink, err := h.Client.GetPermalink(channel, threadTs); err != nil {
+		// FALLBACK: issue creation must not depend on the optional thread link.
+		log.Printf("failed to get thread permalink: %v", err)
+	} else {
+		body = fmt.Sprintf("%s\n\n---\n**元スレッド:** %s", body, permalink)
+	}
+
+	var labels []string
+	if action.Severity != "" {
+		labels = []string{action.Severity}
+	}
+
+	url, err := h.GitHub.CreateIssue(action.Repo, action.Title, body, labels)
 	if err != nil {
 		if _, postErr := h.Client.PostMessage(channel, threadTs, fmt.Sprintf("issue creation failed: %v", err)); postErr != nil {
 			log.Printf("failed to post issue creation error: %v", postErr)
