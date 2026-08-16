@@ -12,6 +12,11 @@
       "release-type": "simple",
       "component": "frontend",
       "include-component-in-tag": true
+    },
+    "system-components/holms": {
+      "release-type": "simple",
+      "component": "holms",
+      "include-component-in-tag": true
     }
   }
 }
