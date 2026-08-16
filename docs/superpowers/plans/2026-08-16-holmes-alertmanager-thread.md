@@ -12,7 +12,7 @@
 
 - Code elements (names, comments, commit messages) in English — this applies regardless of any other file's existing style.
 - `git commit -s`, no `Co-Authored-By`.
-- Backoff schedule: initial interval 1 second, multiplier x2, give up (return no match) once the *next* planned wait would push past a 60-second total budget from the search's start. This yields real attempts at approximately t=0s, 1s, 3s, 7s, 15s, 31s (6 sleeps: 1s, 2s, 4s, 8s, 16s, 32s) before giving up — 7 search attempts total.
+- Backoff schedule: initial interval 1 second, multiplier x2, give up (return no match) once the *next* planned wait would push past a 60-second total budget from the search's start. With real elapsed time (production's actual `time.Sleep`), this yields attempts at t=0s, 1s, 3s, 7s, 15s, 31s (5 sleeps: 1s, 2s, 4s, 8s, 16s) before giving up — 6 search attempts total (the next planned 32s sleep would push cumulative elapsed to 63s, exceeding the 60s budget, so it's never taken).
 - Search matches by finding the alert's `fingerprint` as a substring of a message's `text` — this is the same value Alertmanager's Slack notification template embeds (`panicboat/platform` side, already shipped).
 - An alert with an empty `fingerprint` skips search entirely and goes straight to the fallback notification (defensive: production Alertmanager always sends a fingerprint, but nothing should hang searching for an empty string).
 
@@ -582,20 +582,40 @@ func TestFindNotificationTs_FoundAfterRetry(t *testing.T) {
 	}
 }
 
+// newFakeClock returns a Now/advance pair for tests that exercise
+// findNotificationTs's deadline logic: the returned sleep function must be
+// wired into Handler.Sleep so backoff waits advance the same clock Now
+// reads — otherwise the loop's attempt count diverges from what real
+// time.Sleep would produce (a bug caught during this plan's implementation:
+// a bare time.Now() call meant a no-op-Sleep test exercised 7 attempts/6
+// sleeps while real time.Sleep only ever reaches 6 attempts/5 sleeps, since
+// genuinely-elapsed time reaches the 60s budget one sleep sooner).
+func newFakeClock(start time.Time) (now func() time.Time, sleep func(time.Duration)) {
+	current := start
+	now = func() time.Time { return current }
+	sleep = func(d time.Duration) { current = current.Add(d) }
+	return
+}
+
 func TestFindNotificationTs_NeverFound_GivesUp(t *testing.T) {
 	var sleeps []time.Duration
+	now, advance := newFakeClock(time.Now())
 	mock := &mockPoster{historyResponses: [][]slackclient.Message{{}}}
-	h := &Handler{Client: mock, Sleep: func(d time.Duration) { sleeps = append(sleeps, d) }}
+	h := &Handler{
+		Client: mock,
+		Now:    now,
+		Sleep:  func(d time.Duration) { sleeps = append(sleeps, d); advance(d) },
+	}
 
 	ts := h.findNotificationTs("C1", "never-matches")
 
 	if ts != "" {
 		t.Errorf("expected empty ts when nothing matches, got %q", ts)
 	}
-	if mock.historyCallCount != 7 {
-		t.Errorf("expected 7 history calls (initial + 6 retries), got %d", mock.historyCallCount)
+	if mock.historyCallCount != 6 {
+		t.Errorf("expected 6 history calls (initial + 5 retries), got %d", mock.historyCallCount)
 	}
-	want := []time.Duration{time.Second, 2 * time.Second, 4 * time.Second, 8 * time.Second, 16 * time.Second, 32 * time.Second}
+	want := []time.Duration{time.Second, 2 * time.Second, 4 * time.Second, 8 * time.Second, 16 * time.Second}
 	if len(sleeps) != len(want) {
 		t.Fatalf("expected %d sleeps, got %d: %v", len(want), len(sleeps), sleeps)
 	}
@@ -958,4 +978,4 @@ EOF
 - **Spec coverage**: fingerprint search via `conversations.history` (design's "検索キー" bullet), exponential backoff ~1 minute total (design's "リトライ" bullet, this plan's Global Constraints spell out the exact schedule the design left approximate), fallback self-post (design's "フォールバック" bullet), threading either way (design's final bullet) are all covered by Task 2.
 - **Placeholder scan**: none — every code block is the complete file content or a complete find/replace pair, no TBD markers.
 - **Type/naming consistency**: `PostMessage`'s new `(string, error)` signature is introduced in Task 1 and consumed identically by both `handlers/slack/handler.go` (Task 1, discards the ts) and `handlers/alertmanager/handler.go` (Task 2, uses the ts for threading). `ConversationsHistory(channel, oldest string) ([]Message, error)` is defined in Task 1 and consumed by Task 2's `messagePoster` interface and `searchByFingerprint` with matching parameter order and types.
-- **Testability**: the `Handler.Sleep` field (Task 2) is the mechanism that keeps `TestFindNotificationTs_NeverFound_GivesUp` and `TestInvestigateAlert_NotFound_PostsFallbackAndThreads` fast despite exercising the full 7-attempt/6-sleep backoff schedule — worth calling out explicitly since it's not obvious from the production code path alone (production never sets `Sleep`, so `h.sleep` falls through to real `time.Sleep`).
+- **Testability**: the `Handler.Sleep` field (Task 2) is the mechanism that keeps `TestFindNotificationTs_NeverFound_GivesUp` and `TestInvestigateAlert_NotFound_PostsFallbackAndThreads` fast despite exercising the full 6-attempt/5-sleep backoff schedule — worth calling out explicitly since it's not obvious from the production code path alone (production never sets `Sleep`, so `h.sleep` falls through to real `time.Sleep`). **Addendum from implementation**: a bare `time.Now()` call in the original design meant a no-op `Sleep` alone was insufficient — it produced a different (wrong, 7-attempt/6-sleep) count than real `time.Sleep` does, since genuinely-elapsed time reaches the 60s budget one sleep sooner than an unmoving clock does. The actual implementation adds a paired `Handler.Now func() time.Time`, with tests using a fake clock where the injected `Sleep` advances the same time `Now` reads — see `newFakeClock` in Task 2's test code above.
