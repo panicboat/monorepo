@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/panicboat/monorepo/system-components/holmes/internal/clients/github"
 	"github.com/panicboat/monorepo/system-components/holmes/internal/clients/holmes"
 	"github.com/panicboat/monorepo/system-components/holmes/internal/clients/slack"
 	"github.com/panicboat/monorepo/system-components/holmes/internal/config"
@@ -19,12 +20,16 @@ func main() {
 
 	holmesClient := holmes.New(cfg.HolmesAPIURL, cfg.HolmesModel)
 	slackClient := slack.New(cfg.SlackBotToken)
+	githubClient, err := github.New(cfg.GitHubAppID, cfg.GitHubAppPrivateKey, cfg.GitHubAppInstallationID)
+	if err != nil {
+		log.Fatalf("github client error: %v", err)
+	}
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-	mux.Handle("/slack/events", &slackhandler.Handler{Cfg: cfg, Holmes: holmesClient, Client: slackClient})
+	mux.Handle("/slack/events", &slackhandler.Handler{Cfg: cfg, Holmes: holmesClient, Client: slackClient, GitHub: githubClient})
 	mux.Handle("/alertmanager/webhook", &alertmanager.Handler{Cfg: cfg, Holmes: holmesClient, Client: slackClient})
 
 	addr := ":8080"

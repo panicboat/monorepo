@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	slackclient "github.com/panicboat/monorepo/system-components/holmes/internal/clients/slack"
@@ -13,7 +14,11 @@ import (
 )
 
 type investigator interface {
-	Investigate(ask string) (string, error)
+	Chat(ask string) (string, error)
+}
+
+type issueCreator interface {
+	CreateIssue(repo, title, body string) (string, error)
 }
 
 type messagePoster interface {
@@ -36,10 +41,20 @@ type slackInnerEvent struct {
 	ThreadTs string `json:"thread_ts,omitempty"`
 }
 
+type issueAction struct {
+	Action string `json:"action"`
+	Repo   string `json:"repo"`
+	Title  string `json:"title"`
+	Body   string `json:"body"`
+	Ready  bool   `json:"ready"`
+	Reason string `json:"reason"`
+}
+
 type Handler struct {
 	Cfg    config.Config
 	Holmes investigator
 	Client messagePoster
+	GitHub issueCreator
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +112,7 @@ func (h *Handler) handleMention(evt slackInnerEvent) {
 		log.Printf("failed to post ack message: %v", err)
 	}
 
-	analysis, err := h.Holmes.Investigate(ask)
+	response, err := h.Holmes.Chat(ask)
 	if err != nil {
 		if _, postErr := h.Client.PostMessage(evt.Channel, threadTs, fmt.Sprintf("investigation failed: %v", err)); postErr != nil {
 			log.Printf("failed to post error message: %v", postErr)
@@ -105,7 +120,50 @@ func (h *Handler) handleMention(evt slackInnerEvent) {
 		return
 	}
 
-	if _, err := h.Client.PostMessage(evt.Channel, threadTs, analysis); err != nil {
+	var action issueAction
+	if err := json.Unmarshal([]byte(stripCodeFence(response)), &action); err == nil && action.Action == "create_issue" {
+		h.handleIssueAction(evt.Channel, threadTs, action)
+		return
+	}
+
+	if _, err := h.Client.PostMessage(evt.Channel, threadTs, response); err != nil {
 		log.Printf("failed to post analysis: %v", err)
 	}
+}
+
+// handleIssueAction either asks the user to confirm an inferred repo, or
+// creates the issue and reports the result — never both.
+func (h *Handler) handleIssueAction(channel, threadTs string, action issueAction) {
+	if !action.Ready {
+		msg := fmt.Sprintf("推定した repo は `%s` です（理由: %s）。作成してよければ「はい」と返信してください。", action.Repo, action.Reason)
+		if _, err := h.Client.PostMessage(channel, threadTs, msg); err != nil {
+			log.Printf("failed to post confirmation request: %v", err)
+		}
+		return
+	}
+
+	url, err := h.GitHub.CreateIssue(action.Repo, action.Title, action.Body)
+	if err != nil {
+		if _, postErr := h.Client.PostMessage(channel, threadTs, fmt.Sprintf("issue creation failed: %v", err)); postErr != nil {
+			log.Printf("failed to post issue creation error: %v", postErr)
+		}
+		return
+	}
+
+	if _, err := h.Client.PostMessage(channel, threadTs, fmt.Sprintf("Issue を作成しました: %s", url)); err != nil {
+		log.Printf("failed to post issue creation result: %v", err)
+	}
+}
+
+// stripCodeFence removes a surrounding markdown code fence (```json ... ```
+// or ``` ... ```), if present. issueIntentInstructions tells HolmesGPT not
+// to wrap its JSON envelope in one, but LLMs commonly do anyway — this
+// keeps that response parseable instead of silently falling back to
+// posting the raw fenced text as if it were a normal analysis.
+func stripCodeFence(s string) string {
+	trimmed := strings.TrimSpace(s)
+	trimmed = strings.TrimPrefix(trimmed, "```json")
+	trimmed = strings.TrimPrefix(trimmed, "```")
+	trimmed = strings.TrimSuffix(trimmed, "```")
+	return strings.TrimSpace(trimmed)
 }

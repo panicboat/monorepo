@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -236,7 +237,7 @@ func TestHandleMention_ConversationsRepliesFailure(t *testing.T) {
 	}
 }
 
-func TestHandleMention_InvestigateFailure(t *testing.T) {
+func TestHandleMention_ChatFailure(t *testing.T) {
 	var posted []map[string]string
 
 	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -278,5 +279,185 @@ func TestHandleMention_InvestigateFailure(t *testing.T) {
 	final := posted[len(posted)-1]
 	if !strings.Contains(final["text"], "investigation failed") {
 		t.Errorf("expected a failure message to be posted, got: %+v", final)
+	}
+}
+
+type fakeGitHub struct {
+	createIssueFunc func(repo, title, body string) (string, error)
+	calledRepo      string
+	calledTitle     string
+	calledBody      string
+}
+
+func (f *fakeGitHub) CreateIssue(repo, title, body string) (string, error) {
+	f.calledRepo = repo
+	f.calledTitle = title
+	f.calledBody = body
+	return f.createIssueFunc(repo, title, body)
+}
+
+func TestHandleMention_CreateIssue_ReadyTrue(t *testing.T) {
+	var posted []map[string]string
+
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]string
+		json.NewDecoder(r.Body).Decode(&body)
+		posted = append(posted, body)
+		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+	}))
+	defer slackServer.Close()
+
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]string{
+			"analysis": `{"action":"create_issue","repo":"panicboat/monorepo","title":"bug title","body":"bug body","ready":true}`,
+		})
+	}))
+	defer holmesServer.Close()
+
+	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string) (string, error) {
+		return "https://github.com/panicboat/monorepo/issues/42", nil
+	}}
+
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub: gh,
+	}
+
+	h.handleMention(slackInnerEvent{
+		Type: "app_mention", Channel: "C123", User: "U1",
+		Text: "<@BOT> create an issue in panicboat/monorepo", Ts: "100",
+	})
+
+	if gh.calledRepo != "panicboat/monorepo" || gh.calledTitle != "bug title" || gh.calledBody != "bug body" {
+		t.Errorf("unexpected CreateIssue call: repo=%q title=%q body=%q", gh.calledRepo, gh.calledTitle, gh.calledBody)
+	}
+	final := posted[len(posted)-1]
+	if !strings.Contains(final["text"], "https://github.com/panicboat/monorepo/issues/42") {
+		t.Errorf("expected the final post to contain the issue URL, got: %+v", final)
+	}
+}
+
+func TestHandleMention_CreateIssue_CodeFenceWrapped(t *testing.T) {
+	var posted []map[string]string
+
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]string
+		json.NewDecoder(r.Body).Decode(&body)
+		posted = append(posted, body)
+		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+	}))
+	defer slackServer.Close()
+
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]string{
+			"analysis": "```json\n" + `{"action":"create_issue","repo":"panicboat/monorepo","title":"t","body":"b","ready":true}` + "\n```",
+		})
+	}))
+	defer holmesServer.Close()
+
+	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string) (string, error) {
+		return "https://github.com/panicboat/monorepo/issues/1", nil
+	}}
+
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub: gh,
+	}
+
+	h.handleMention(slackInnerEvent{
+		Type: "app_mention", Channel: "C123", User: "U1",
+		Text: "<@BOT> create an issue", Ts: "100",
+	})
+
+	if gh.calledRepo != "panicboat/monorepo" {
+		t.Errorf("expected CreateIssue to be called despite the code-fence wrapping, got repo=%q", gh.calledRepo)
+	}
+	final := posted[len(posted)-1]
+	if !strings.Contains(final["text"], "https://github.com/panicboat/monorepo/issues/1") {
+		t.Errorf("expected the final post to contain the issue URL, got: %+v", final)
+	}
+}
+
+func TestHandleMention_CreateIssue_ReadyFalse(t *testing.T) {
+	var posted []map[string]string
+
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]string
+		json.NewDecoder(r.Body).Decode(&body)
+		posted = append(posted, body)
+		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+	}))
+	defer slackServer.Close()
+
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]string{
+			"analysis": `{"action":"create_issue","repo":"panicboat/platform","ready":false,"reason":"source investigation found the bug there"}`,
+		})
+	}))
+	defer holmesServer.Close()
+
+	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string) (string, error) {
+		t.Fatal("CreateIssue must not be called when ready is false")
+		return "", nil
+	}}
+
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub: gh,
+	}
+
+	h.handleMention(slackInnerEvent{
+		Type: "app_mention", Channel: "C123", User: "U1",
+		Text: "<@BOT> create an issue for this", Ts: "100",
+	})
+
+	final := posted[len(posted)-1]
+	if !strings.Contains(final["text"], "panicboat/platform") {
+		t.Errorf("expected the confirmation message to name the inferred repo, got: %+v", final)
+	}
+	if !strings.Contains(final["text"], "source investigation found the bug there") {
+		t.Errorf("expected the confirmation message to include the reason, got: %+v", final)
+	}
+}
+
+func TestHandleMention_CreateIssue_GitHubError(t *testing.T) {
+	var posted []map[string]string
+
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]string
+		json.NewDecoder(r.Body).Decode(&body)
+		posted = append(posted, body)
+		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+	}))
+	defer slackServer.Close()
+
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]string{
+			"analysis": `{"action":"create_issue","repo":"panicboat/monorepo","title":"t","body":"b","ready":true}`,
+		})
+	}))
+	defer holmesServer.Close()
+
+	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string) (string, error) {
+		return "", fmt.Errorf("github api returned status 404 creating issue in panicboat/monorepo")
+	}}
+
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub: gh,
+	}
+
+	h.handleMention(slackInnerEvent{
+		Type: "app_mention", Channel: "C123", User: "U1",
+		Text: "<@BOT> create an issue", Ts: "100",
+	})
+
+	final := posted[len(posted)-1]
+	if !strings.Contains(final["text"], "404") {
+		t.Errorf("expected the GitHub error to be reported in the thread, got: %+v", final)
 	}
 }
