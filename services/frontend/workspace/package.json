@@ -35,7 +35,7 @@
     "react-dom": "19.2.8",
     "swr": "^2.4.2",
     "tailwind-merge": "^3.6.0",
-    "zustand": "^5.0.14"
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@bufbuild/protoc-gen-es": "2.13.0",
