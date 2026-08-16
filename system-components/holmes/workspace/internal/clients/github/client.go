@@ -117,21 +117,22 @@ func (c *Client) installationToken() (string, error) {
 }
 
 type createIssueRequest struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	Title  string   `json:"title"`
+	Body   string   `json:"body"`
+	Labels []string `json:"labels,omitempty"`
 }
 
 type createIssueResponse struct {
 	HTMLURL string `json:"html_url"`
 }
 
-func (c *Client) CreateIssue(repo, title, body string) (string, error) {
+func (c *Client) CreateIssue(repo, title, body string, labels []string) (string, error) {
 	token, err := c.installationToken()
 	if err != nil {
 		return "", fmt.Errorf("get installation token: %w", err)
 	}
 
-	reqBody, err := json.Marshal(createIssueRequest{Title: title, Body: body})
+	reqBody, err := json.Marshal(createIssueRequest{Title: title, Body: body, Labels: labels})
 	if err != nil {
 		return "", fmt.Errorf("marshal request: %w", err)
 	}

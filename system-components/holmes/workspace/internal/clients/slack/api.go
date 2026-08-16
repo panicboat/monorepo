@@ -79,6 +79,39 @@ func (c *Client) ConversationsHistory(channel, oldest string) ([]Message, error)
 	return c.getMessages(url)
 }
 
+// GetPermalink returns a shareable URL for the message at ts in channel,
+// via Slack's chat.getPermalink. Used to link a created GitHub issue back
+// to the Slack thread it came from.
+func (c *Client) GetPermalink(channel, ts string) (string, error) {
+	url := fmt.Sprintf("%s/chat.getPermalink?channel=%s&message_ts=%s",
+		c.BaseURL, neturl.QueryEscape(channel), neturl.QueryEscape(ts))
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", fmt.Errorf("build request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+c.BotToken)
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("call slack api: %w", err)
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		OK        bool   `json:"ok"`
+		Error     string `json:"error"`
+		Permalink string `json:"permalink"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("decode response: %w", err)
+	}
+	if !result.OK {
+		return "", fmt.Errorf("slack api error: %s", result.Error)
+	}
+	return result.Permalink, nil
+}
+
 func (c *Client) getMessages(url string) ([]Message, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {

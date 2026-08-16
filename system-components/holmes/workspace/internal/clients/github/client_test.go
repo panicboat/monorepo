@@ -30,7 +30,7 @@ func TestNew_InvalidPrivateKey(t *testing.T) {
 func TestClient_CreateIssue_Success(t *testing.T) {
 	var tokenRequests int
 	var gotJWTAuth, gotInstallationAuth string
-	var gotIssueBody map[string]string
+	var gotIssueBody map[string]any
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
@@ -60,7 +60,7 @@ func TestClient_CreateIssue_Success(t *testing.T) {
 	}
 	client.BaseURL = server.URL
 
-	url, err := client.CreateIssue("panicboat/monorepo", "found a bug", "details here")
+	url, err := client.CreateIssue("panicboat/monorepo", "found a bug", "details here", []string{"critical"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -76,8 +76,47 @@ func TestClient_CreateIssue_Success(t *testing.T) {
 	if gotIssueBody["title"] != "found a bug" || gotIssueBody["body"] != "details here" {
 		t.Errorf("unexpected issue body sent: %+v", gotIssueBody)
 	}
+	gotLabels, ok := gotIssueBody["labels"].([]any)
+	if !ok || len(gotLabels) != 1 || gotLabels[0] != "critical" {
+		t.Errorf("expected labels [\"critical\"] in the request body, got: %+v", gotIssueBody["labels"])
+	}
 	if tokenRequests != 1 {
 		t.Errorf("expected exactly 1 token-exchange request, got %d", tokenRequests)
+	}
+}
+
+func TestClient_CreateIssue_NoLabels(t *testing.T) {
+	var gotIssueBody map[string]any
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/app/installations/999/access_tokens":
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(map[string]string{
+				"token":      "installation-token",
+				"expires_at": "2099-01-01T00:00:00Z",
+			})
+		case r.URL.Path == "/repos/panicboat/monorepo/issues":
+			json.NewDecoder(r.Body).Decode(&gotIssueBody)
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(map[string]string{"html_url": "https://github.com/panicboat/monorepo/issues/1"})
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	client, err := New("123", testPrivateKeyPEM(t), "999")
+	if err != nil {
+		t.Fatalf("unexpected error from New: %v", err)
+	}
+	client.BaseURL = server.URL
+
+	if _, err := client.CreateIssue("panicboat/monorepo", "t", "b", nil); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, present := gotIssueBody["labels"]; present {
+		t.Errorf("expected no \"labels\" field in the request body when labels is nil, got: %+v", gotIssueBody["labels"])
 	}
 }
 
@@ -108,10 +147,10 @@ func TestClient_CreateIssue_TokenCachedAcrossCalls(t *testing.T) {
 	}
 	client.BaseURL = server.URL
 
-	if _, err := client.CreateIssue("panicboat/monorepo", "t1", "b1"); err != nil {
+	if _, err := client.CreateIssue("panicboat/monorepo", "t1", "b1", nil); err != nil {
 		t.Fatalf("unexpected error on first call: %v", err)
 	}
-	if _, err := client.CreateIssue("panicboat/monorepo", "t2", "b2"); err != nil {
+	if _, err := client.CreateIssue("panicboat/monorepo", "t2", "b2", nil); err != nil {
 		t.Fatalf("unexpected error on second call: %v", err)
 	}
 	if tokenRequests != 1 {
@@ -142,7 +181,7 @@ func TestClient_CreateIssue_GitHubError(t *testing.T) {
 	}
 	client.BaseURL = server.URL
 
-	if _, err := client.CreateIssue("panicboat/does-not-exist", "t", "b"); err == nil {
+	if _, err := client.CreateIssue("panicboat/does-not-exist", "t", "b", nil); err == nil {
 		t.Fatal("expected an error for a 404 response, got nil")
 	}
 }

@@ -144,6 +144,53 @@ func TestClient_ConversationsHistory_WithAttachments(t *testing.T) {
 	}
 }
 
+func TestClient_GetPermalink(t *testing.T) {
+	var gotChannel, gotTs string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/chat.getPermalink" {
+			t.Errorf("unexpected path: %s", r.URL.Path)
+		}
+		gotChannel = r.URL.Query().Get("channel")
+		gotTs = r.URL.Query().Get("message_ts")
+		json.NewEncoder(w).Encode(map[string]any{
+			"ok":        true,
+			"channel":   gotChannel,
+			"permalink": "https://panicboat.slack.com/archives/C123/p1234567890123456",
+		})
+	}))
+	defer server.Close()
+
+	client := &Client{BotToken: "xoxb-test", BaseURL: server.URL, HTTPClient: &http.Client{}}
+
+	permalink, err := client.GetPermalink("C123", "1234567890.123456")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if permalink != "https://panicboat.slack.com/archives/C123/p1234567890123456" {
+		t.Errorf("got permalink %q, want the stubbed URL", permalink)
+	}
+	if gotChannel != "C123" {
+		t.Errorf("expected channel=C123 query param, got %q", gotChannel)
+	}
+	if gotTs != "1234567890.123456" {
+		t.Errorf("expected message_ts=1234567890.123456 query param, got %q", gotTs)
+	}
+}
+
+func TestClient_GetPermalink_Error(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]any{"ok": false, "error": "message_not_found"})
+	}))
+	defer server.Close()
+
+	client := &Client{BotToken: "xoxb-test", BaseURL: server.URL, HTTPClient: &http.Client{}}
+
+	if _, err := client.GetPermalink("C123", "999.999"); err == nil {
+		t.Fatal("expected an error, got nil")
+	}
+}
+
 func TestClient_PostMessage_APIError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]any{"ok": false, "error": "channel_not_found"})

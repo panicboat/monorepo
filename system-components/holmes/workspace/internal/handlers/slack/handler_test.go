@@ -283,27 +283,34 @@ func TestHandleMention_ChatFailure(t *testing.T) {
 }
 
 type fakeGitHub struct {
-	createIssueFunc func(repo, title, body string) (string, error)
+	createIssueFunc func(repo, title, body string, labels []string) (string, error)
 	calledRepo      string
 	calledTitle     string
 	calledBody      string
+	calledLabels    []string
 }
 
-func (f *fakeGitHub) CreateIssue(repo, title, body string) (string, error) {
+func (f *fakeGitHub) CreateIssue(repo, title, body string, labels []string) (string, error) {
 	f.calledRepo = repo
 	f.calledTitle = title
 	f.calledBody = body
-	return f.createIssueFunc(repo, title, body)
+	f.calledLabels = labels
+	return f.createIssueFunc(repo, title, body, labels)
 }
 
 func TestHandleMention_CreateIssue_ReadyTrue(t *testing.T) {
 	var posted []map[string]string
 
 	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var body map[string]string
-		json.NewDecoder(r.Body).Decode(&body)
-		posted = append(posted, body)
-		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		switch r.URL.Path {
+		case "/chat.getPermalink":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true, "permalink": "https://panicboat.slack.com/archives/C123/p100"})
+		default:
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		}
 	}))
 	defer slackServer.Close()
 
@@ -314,7 +321,9 @@ func TestHandleMention_CreateIssue_ReadyTrue(t *testing.T) {
 	}))
 	defer holmesServer.Close()
 
-	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string) (string, error) {
+	var gotLabels []string
+	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string, labels []string) (string, error) {
+		gotLabels = labels
 		return "https://github.com/panicboat/monorepo/issues/42", nil
 	}}
 
@@ -329,12 +338,66 @@ func TestHandleMention_CreateIssue_ReadyTrue(t *testing.T) {
 		Text: "<@BOT> create an issue in panicboat/monorepo", Ts: "100",
 	})
 
-	if gh.calledRepo != "panicboat/monorepo" || gh.calledTitle != "bug title" || gh.calledBody != "bug body" {
-		t.Errorf("unexpected CreateIssue call: repo=%q title=%q body=%q", gh.calledRepo, gh.calledTitle, gh.calledBody)
+	if gh.calledRepo != "panicboat/monorepo" || gh.calledTitle != "bug title" {
+		t.Errorf("unexpected CreateIssue call: repo=%q title=%q", gh.calledRepo, gh.calledTitle)
+	}
+	if !strings.Contains(gh.calledBody, "bug body") {
+		t.Errorf("expected the issue body to still contain the synthesized content, got: %q", gh.calledBody)
+	}
+	if !strings.Contains(gh.calledBody, "https://panicboat.slack.com/archives/C123/p100") {
+		t.Errorf("expected the issue body to contain the thread permalink, got: %q", gh.calledBody)
+	}
+	if len(gotLabels) != 0 {
+		t.Errorf("expected no labels when the envelope has no severity, got: %v", gotLabels)
 	}
 	final := posted[len(posted)-1]
 	if !strings.Contains(final["text"], "https://github.com/panicboat/monorepo/issues/42") {
 		t.Errorf("expected the final post to contain the issue URL, got: %+v", final)
+	}
+}
+
+func TestHandleMention_CreateIssue_SeverityLabel(t *testing.T) {
+	var posted []map[string]string
+
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/chat.getPermalink":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true, "permalink": "https://panicboat.slack.com/archives/C123/p100"})
+		default:
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		}
+	}))
+	defer slackServer.Close()
+
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]string{
+			"analysis": `{"action":"create_issue","repo":"panicboat/platform","title":"t","body":"b","ready":true,"severity":"critical"}`,
+		})
+	}))
+	defer holmesServer.Close()
+
+	var gotLabels []string
+	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string, labels []string) (string, error) {
+		gotLabels = labels
+		return "https://github.com/panicboat/platform/issues/1", nil
+	}}
+
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub: gh,
+	}
+
+	h.handleMention(slackInnerEvent{
+		Type: "app_mention", Channel: "C123", User: "U1",
+		Text: "<@BOT> create an issue", Ts: "100",
+	})
+
+	if len(gotLabels) != 1 || gotLabels[0] != "critical" {
+		t.Errorf("expected labels [\"critical\"], got: %v", gotLabels)
 	}
 }
 
@@ -356,7 +419,7 @@ func TestHandleMention_CreateIssue_CodeFenceWrapped(t *testing.T) {
 	}))
 	defer holmesServer.Close()
 
-	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string) (string, error) {
+	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string, labels []string) (string, error) {
 		return "https://github.com/panicboat/monorepo/issues/1", nil
 	}}
 
@@ -398,7 +461,7 @@ func TestHandleMention_CreateIssue_ReadyFalse(t *testing.T) {
 	}))
 	defer holmesServer.Close()
 
-	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string) (string, error) {
+	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string, labels []string) (string, error) {
 		t.Fatal("CreateIssue must not be called when ready is false")
 		return "", nil
 	}}
@@ -441,7 +504,7 @@ func TestHandleMention_CreateIssue_GitHubError(t *testing.T) {
 	}))
 	defer holmesServer.Close()
 
-	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string) (string, error) {
+	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string, labels []string) (string, error) {
 		return "", fmt.Errorf("github api returned status 404 creating issue in panicboat/monorepo")
 	}}
 

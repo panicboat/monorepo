@@ -47,7 +47,7 @@ If it does not, ignore the rest of this section and respond exactly as instructe
 
 If it does, respond with ONLY this JSON object and nothing else — no surrounding text, no
 mrkdwn, no code fence:
-{"action":"create_issue","repo":"owner/repo","title":"...","body":"...","ready":true,"reason":"..."}
+{"action":"create_issue","repo":"owner/repo","title":"...","body":"...","ready":true,"reason":"...","severity":"..."}
 
 - "repo": the target repository. Use the repository the user explicitly named in their
   message. If they did not name one, infer it from the investigation context (for example,
@@ -60,7 +60,11 @@ mrkdwn, no code fence:
   must use standard GitHub Markdown (headings with #, **bold**, [text](url) links, "- "
   bullets), not Slack mrkdwn, since it becomes a GitHub issue body.
 - "reason": required only when ready is false — a short explanation of why you inferred
-  this repo, so the user can judge whether to confirm it. Omit when ready is true.`
+  this repo, so the user can judge whether to confirm it. Omit when ready is true.
+- "severity": only when ready is true, and only if a severity value is already present
+  somewhere in this thread (for example, an Alertmanager notification's severity label or
+  a mention of "critical"/"warning" in the conversation). Copy that existing value exactly
+  — never invent or guess one. Omit entirely if the thread contains no severity signal.`
 
 type Client struct {
 	BaseURL    string
