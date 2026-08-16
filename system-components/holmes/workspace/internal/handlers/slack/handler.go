@@ -17,7 +17,7 @@ type investigator interface {
 }
 
 type messagePoster interface {
-	PostMessage(channel, threadTs, text string) error
+	PostMessage(channel, threadTs, text string) (string, error)
 	ConversationsReplies(channel, threadTs string) ([]slackclient.Message, error)
 }
 
@@ -93,19 +93,19 @@ func (h *Handler) handleMention(evt slackInnerEvent) {
 		}
 	}
 
-	if err := h.Client.PostMessage(evt.Channel, threadTs, "🔍 investigating..."); err != nil {
+	if _, err := h.Client.PostMessage(evt.Channel, threadTs, "🔍 investigating..."); err != nil {
 		log.Printf("failed to post ack message: %v", err)
 	}
 
 	analysis, err := h.Holmes.Investigate(ask)
 	if err != nil {
-		if postErr := h.Client.PostMessage(evt.Channel, threadTs, fmt.Sprintf("investigation failed: %v", err)); postErr != nil {
+		if _, postErr := h.Client.PostMessage(evt.Channel, threadTs, fmt.Sprintf("investigation failed: %v", err)); postErr != nil {
 			log.Printf("failed to post error message: %v", postErr)
 		}
 		return
 	}
 
-	if err := h.Client.PostMessage(evt.Channel, threadTs, analysis); err != nil {
+	if _, err := h.Client.PostMessage(evt.Channel, threadTs, analysis); err != nil {
 		log.Printf("failed to post analysis: %v", err)
 	}
 }
