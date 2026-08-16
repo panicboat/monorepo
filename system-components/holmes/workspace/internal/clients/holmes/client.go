@@ -36,6 +36,32 @@ source code when cluster state alone doesn't explain the root cause — for exam
 a bug or misconfiguration appears to originate in application code rather than runtime
 state.`
 
+// issueIntentInstructions is appended to Chat's additional_system_prompt only
+// (never Investigate's — Alertmanager's fixed alert-investigation ask never
+// carries human issue-creation intent, so keeping this off that path means it
+// can never receive or need to parse a create_issue envelope).
+const issueIntentInstructions = `Additionally, decide whether the message (in the context of the
+full thread above) requests creating a GitHub issue.
+
+If it does not, ignore the rest of this section and respond exactly as instructed above.
+
+If it does, respond with ONLY this JSON object and nothing else — no surrounding text, no
+mrkdwn, no code fence:
+{"action":"create_issue","repo":"owner/repo","title":"...","body":"...","ready":true,"reason":"..."}
+
+- "repo": the target repository. Use the repository the user explicitly named in their
+  message. If they did not name one, infer it from the investigation context (for example,
+  where source-investigation located the relevant code).
+- "ready": true if the user explicitly named the repo, or if the thread shows they already
+  confirmed a repo you previously proposed. false if you inferred the repo and it has not
+  yet been confirmed.
+- "title", "body": required only when ready is true. Synthesize them from the full
+  investigation in this thread — do not just copy the single most recent message. "body"
+  must use standard GitHub Markdown (headings with #, **bold**, [text](url) links, "- "
+  bullets), not Slack mrkdwn, since it becomes a GitHub issue body.
+- "reason": required only when ready is false — a short explanation of why you inferred
+  this repo, so the user can judge whether to confirm it. Omit when ready is true.`
+
 type Client struct {
 	BaseURL    string
 	Model      string
@@ -63,10 +89,21 @@ type holmesChatResponse struct {
 }
 
 func (c *Client) Investigate(ask string) (string, error) {
+	return c.chat(ask, slackFormattingInstructions)
+}
+
+// Chat is used by the Slack mention flow — same request/response shape as
+// Investigate, but its additional_system_prompt also asks HolmesGPT to
+// detect GitHub issue-creation intent (see issueIntentInstructions).
+func (c *Client) Chat(ask string) (string, error) {
+	return c.chat(ask, slackFormattingInstructions+"\n\n"+issueIntentInstructions)
+}
+
+func (c *Client) chat(ask, additionalSystemPrompt string) (string, error) {
 	reqBody, err := json.Marshal(holmesChatRequest{
 		Ask:                    ask,
 		Model:                  c.Model,
-		AdditionalSystemPrompt: slackFormattingInstructions,
+		AdditionalSystemPrompt: additionalSystemPrompt,
 	})
 	if err != nil {
 		return "", fmt.Errorf("marshal request: %w", err)

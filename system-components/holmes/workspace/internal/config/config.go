@@ -6,20 +6,26 @@ import (
 )
 
 type Config struct {
-	SlackSigningSecret string
-	SlackBotToken      string
-	AlertmanagerToken  string
-	HolmesAPIURL       string
-	HolmesModel        string
+	SlackSigningSecret      string
+	SlackBotToken           string
+	AlertmanagerToken       string
+	HolmesAPIURL            string
+	HolmesModel             string
+	GitHubAppID             string
+	GitHubAppPrivateKey     string
+	GitHubAppInstallationID string
 }
 
 func Load() (Config, error) {
 	cfg := Config{
-		SlackSigningSecret: os.Getenv("SLACK_SIGNING_SECRET"),
-		SlackBotToken:      os.Getenv("SLACK_BOT_TOKEN"),
-		AlertmanagerToken:  os.Getenv("ALERTMANAGER_SHARED_TOKEN"),
-		HolmesAPIURL:       os.Getenv("HOLMES_API_URL"),
-		HolmesModel:        os.Getenv("HOLMES_MODEL"),
+		SlackSigningSecret:      os.Getenv("SLACK_SIGNING_SECRET"),
+		SlackBotToken:           os.Getenv("SLACK_BOT_TOKEN"),
+		AlertmanagerToken:       os.Getenv("ALERTMANAGER_SHARED_TOKEN"),
+		HolmesAPIURL:            os.Getenv("HOLMES_API_URL"),
+		HolmesModel:             os.Getenv("HOLMES_MODEL"),
+		GitHubAppID:             os.Getenv("GITHUB_APP_ID"),
+		GitHubAppPrivateKey:     os.Getenv("GITHUB_APP_PRIVATE_KEY"),
+		GitHubAppInstallationID: os.Getenv("GITHUB_APP_INSTALLATION_ID"),
 	}
 	if cfg.SlackSigningSecret == "" {
 		return cfg, fmt.Errorf("SLACK_SIGNING_SECRET is required")
@@ -32,6 +38,15 @@ func Load() (Config, error) {
 	}
 	if cfg.HolmesAPIURL == "" {
 		return cfg, fmt.Errorf("HOLMES_API_URL is required")
+	}
+	if cfg.GitHubAppID == "" {
+		return cfg, fmt.Errorf("GITHUB_APP_ID is required")
+	}
+	if cfg.GitHubAppPrivateKey == "" {
+		return cfg, fmt.Errorf("GITHUB_APP_PRIVATE_KEY is required")
+	}
+	if cfg.GitHubAppInstallationID == "" {
+		return cfg, fmt.Errorf("GITHUB_APP_INSTALLATION_ID is required")
 	}
 	if cfg.HolmesModel == "" {
 		cfg.HolmesModel = "sonnet-4-6"
