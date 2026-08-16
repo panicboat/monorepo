@@ -28,3 +28,5 @@ spec:
                 name: holmes-slack
             - secretRef:
                 name: holmes-alertmanager
+            - secretRef:
+                name: holmes-github
