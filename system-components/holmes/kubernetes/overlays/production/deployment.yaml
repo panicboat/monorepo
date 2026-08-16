@@ -7,4 +7,4 @@ spec:
     spec:
       containers:
         - name: holmes
-          image: ghcr.io/panicboat/monorepo/holmes:v0.5.0 # {"$imagepolicy": "flux-system:holmes"}
+          image: ghcr.io/panicboat/monorepo/holmes:v0.6.0 # {"$imagepolicy": "flux-system:holmes"}
