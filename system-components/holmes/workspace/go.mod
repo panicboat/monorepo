@@ -1,3 +1,3 @@
 module github.com/panicboat/monorepo/system-components/holmes
 
-go 1.24
+go 1.27.0
