@@ -27,6 +27,22 @@
   ],
   "minimumReleaseAge": "1 day",
   "separateMinorPatch": false,
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "go.mod's go directive as a docker-datasource dep, so it shares depName/packageFileDir with its Dockerfile's golang base image and the default grouping rule below bundles them into one PR",
+      "fileMatch": [
+        "(^|/)go\\.mod$"
+      ],
+      "matchStrings": [
+        "^go (?<currentValue>\\d+\\.\\d+\\.\\d+)\\s*$"
+      ],
+      "depNameTemplate": "golang",
+      "packageNameTemplate": "golang",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    }
+  ],
   "packageRules": [
     {
       "description": "Default: separate PRs per package",
@@ -34,6 +50,19 @@
       "matchPackageNames": [
         "*"
       ]
+    },
+    {
+      "description": "go.mod's go directive is owned by the custom manager above, not the stock gomod manager",
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchDepTypes": [
+        "golang"
+      ],
+      "matchDepNames": [
+        "go"
+      ],
+      "enabled": false
     },
     {
       "description": "🚫 Production environments - disable automerge",
