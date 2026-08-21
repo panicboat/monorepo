@@ -14,7 +14,7 @@ on:
       path:
         required: true
         type: string
-        description: 'Path to kustomize overlay (e.g. services/monolith/kubernetes/overlays/develop)'
+        description: 'Path to kustomize overlay (e.g. dystopia/monolith/kubernetes/overlays/develop)'
       app-id:
         required: true
         type: string
