@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 5m0s
-  path: "./services/monolith/kubernetes/overlays/production"
+  path: "./dystopia/monolith/kubernetes/overlays/production"
   prune: true
   sourceRef:
     kind: GitRepository
