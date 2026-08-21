@@ -11,6 +11,9 @@ metadata:
   name: monolith
 spec:
   template:
+    metadata:
+      annotations:
+        verify.panicboat/kustomize-diff-check: "true"
     spec:
       containers:
         - name: monolith
