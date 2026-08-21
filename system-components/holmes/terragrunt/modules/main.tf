@@ -12,7 +12,7 @@ resource "aws_secretsmanager_secret" "holmes_alertmanager" {
   tags                    = var.common_tags
 }
 
-# secret value provision (manual, post-merge, mirrors services/monolith's pattern):
+# secret value provision (manual, post-merge, mirrors dystopia/monolith's pattern):
 # 1. aws secretsmanager put-secret-value \
 #      --secret-id panicboat/holmes/slack \
 #      --secret-string '{"signing_secret":"<from Slack app Basic Information page>","bot_token":"<xoxb-... from OAuth & Permissions page>"}'

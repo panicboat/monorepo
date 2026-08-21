@@ -145,7 +145,7 @@ To update Ruby code from Proto definitions (`proto/**/*.proto`):
 
 ### Automated Specs
 ```bash
-# From services/monolith directory
+# From dystopia/monolith directory
 bundle exec rspec
 ```
 

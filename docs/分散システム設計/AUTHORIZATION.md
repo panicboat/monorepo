@@ -23,7 +23,7 @@ end
 ### パターン1: サービス層での認可（推奨）
 
 ```ruby
-# slices/cast/services/get_cast_service.rb
+# slices/cast/dystopia/get_cast_service.rb
 module Cast
   module Services
     class GetCastService

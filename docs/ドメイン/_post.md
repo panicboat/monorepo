@@ -29,8 +29,8 @@
 
 | Layer | Path |
 |-------|------|
-| Backend | `services/monolith/workspace/slices/post/` |
-| Frontend | `services/frontend/workspace/src/modules/post/` (planned) |
+| Backend | `dystopia/monolith/workspace/slices/post/` |
+| Frontend | `dystopia/frontend/workspace/src/modules/post/` (planned) |
 | Proto | `proto/post/v1/post_service.proto` |
 | Proto | `proto/post/v1/like_service.proto` |
 | Proto | `proto/post/v1/comment_service.proto` |

@@ -31,8 +31,8 @@
 
 各サービスの詳細なアーキテクチャは個別の README を参照してください：
 
-- **Backend:** [services/monolith/README.md](../../../monolith/README.md)
-- **Frontend:** [services/frontend/README.md](../../../services/frontend/README.md)
+- **Backend:** [dystopia/monolith/README.md](../../../monolith/README.md)
+- **Frontend:** [dystopia/frontend/README.md](../../../dystopia/frontend/README.md)
 
 ---
 
