@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/panicboat/monorepo/compare/holmes-v0.6.0...holmes-v0.6.1) (2026-08-21)
+
+
+### Bug Fixes
+
+* **renovate:** keep a Go module's toolchain and builder image in lockstep ([#1000](https://github.com/panicboat/monorepo/issues/1000)) ([ead1414](https://github.com/panicboat/monorepo/commit/ead1414d7798ff839b66a252860693f256100dfe))
+
 ## [0.6.0](https://github.com/panicboat/monorepo/compare/holmes-v0.5.0...holmes-v0.6.0) (2026-08-16)
 
 
