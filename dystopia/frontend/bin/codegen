@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Regenerate TypeScript proto stubs via @bufbuild/protoc-gen-es.
+#
+# Why this exists: the repo-root orchestrator discovers codegen targets by
+# looking for an executable bin/codegen in each service, so the pnpm script
+# needs a file to be discovered through.
+
+set -euo pipefail
+cd "$(dirname "$0")/.."
+exec pnpm proto:gen
