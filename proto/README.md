@@ -21,7 +21,7 @@ This directory contains the shared Protocol Buffers (`.proto`) definitions for t
 
 ## Code Generation
 
-Code generation is **decentralized**. Each service workspace maintains its own `buf.gen.yaml` configuration and generation implementation.
+Code generation is **decentralized**. Each service maintains its own `buf.gen.yaml` configuration and generation implementation.
 
 ## Tools
 

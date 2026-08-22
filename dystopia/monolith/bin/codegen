@@ -28,9 +28,9 @@ rescue Gem::GemNotFoundException
 end
 
 # Run buf generate, pointing to the proto definitions at root
-# Command runs from current dir (workspace), using local buf.gen.yaml
-# Input: ../../../proto (relative to workspace)
-system("buf generate ../../../proto")
+# Command runs from the service root, using local buf.gen.yaml
+# Input: ../../proto (relative to the service root)
+system("buf generate ../../proto")
 
 if $?.success?
   puts "✅ Done."

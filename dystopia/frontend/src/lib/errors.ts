@@ -1,4 +1,4 @@
-// dystopia/frontend/workspace/src/lib/errors.ts
+// dystopia/frontend/src/lib/errors.ts
 
 export type ErrorCode =
   | "UNAUTHORIZED"

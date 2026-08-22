@@ -90,7 +90,6 @@ import { colors } from '@/config/theme';
 ## 🚀 Running Locally
 
 ```bash
-cd workspace
 npm install
 npm run dev
 ```

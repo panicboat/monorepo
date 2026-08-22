@@ -49,12 +49,12 @@ jobs:
         run: |
           set -euo pipefail
           for root in dystopia system-components; do
-            if [ -d "$root/$SERVICE/workspace" ]; then
-              echo "working-directory=$root/$SERVICE/workspace" >> "$GITHUB_OUTPUT"
+            if [ -d "$root/$SERVICE" ]; then
+              echo "working-directory=$root/$SERVICE" >> "$GITHUB_OUTPUT"
               exit 0
             fi
           done
-          echo "::error::No workspace directory found for service '$SERVICE' under dystopia/ or system-components/"
+          echo "::error::No directory found for service '$SERVICE' under dystopia/ or system-components/"
           exit 1
 
   container-build:

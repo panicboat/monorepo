@@ -1,4 +1,4 @@
-// dystopia/frontend/workspace/src/lib/error-messages.ts
+// dystopia/frontend/src/lib/error-messages.ts
 import type { ErrorCode } from "./errors";
 
 export const ERROR_MESSAGES: Record<ErrorCode, string> = {
