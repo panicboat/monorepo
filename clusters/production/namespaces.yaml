@@ -1,0 +1,27 @@
+---
+# =============================================================================
+# Product namespaces
+# =============================================================================
+# monorepo が deploy する workload を配置する namespace。 platform 側は
+# component ごとに専用 namespace を切る規約 (holmesgpt / keycloak /
+# cert-manager 等) だが、 monorepo 側は product 責務ごとに束ねる。
+#
+# 追加/削除はこのファイルで完結する。 platform の 00-namespaces には
+# 触らない (= platform component の namespace のみ責務)。 root Flux
+# Kustomization (platform/kubernetes/clusters/production/repositories/
+# monorepo.yaml) は targetNamespace を持たないため、ここに書いた
+# Namespace リソースはそのまま apply される。
+# =============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dystopia
+  labels:
+    app.kubernetes.io/part-of: dystopia
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: system-components
+  labels:
+    app.kubernetes.io/part-of: system-components
