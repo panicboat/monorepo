@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/panicboat/monorepo/compare/frontend-v0.2.1...frontend-v0.3.0) (2026-08-22)
+
+
+### Features
+
+* **clusters/production:** move workloads out of default namespace ([#1007](https://github.com/panicboat/monorepo/issues/1007)) ([38ad079](https://github.com/panicboat/monorepo/commit/38ad07911cfe31549dab783576fc00cb4c46b57c))
+
 ## [0.2.1](https://github.com/panicboat/monorepo/compare/frontend-v0.2.0...frontend-v0.2.1) (2026-05-17)
 
 
