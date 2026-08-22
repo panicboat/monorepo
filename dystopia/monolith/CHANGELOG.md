@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/panicboat/monorepo/compare/monolith-v0.2.1...monolith-v0.3.0) (2026-08-22)
+
+
+### Features
+
+* **clusters/production:** move workloads out of default namespace ([#1007](https://github.com/panicboat/monorepo/issues/1007)) ([38ad079](https://github.com/panicboat/monorepo/commit/38ad07911cfe31549dab783576fc00cb4c46b57c))
+
+
+### Bug Fixes
+
+* Fix database secret key ([#1009](https://github.com/panicboat/monorepo/issues/1009)) ([e921abd](https://github.com/panicboat/monorepo/commit/e921abdd966465d0ce0628861502cc9d78382829))
+
 ## [0.2.1](https://github.com/panicboat/monorepo/compare/monolith-v0.2.0...monolith-v0.2.1) (2026-05-17)
 
 
