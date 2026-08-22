@@ -29,8 +29,8 @@ Portfolio は「キャストを見つける・知る」という**発見（Disco
 
 | Layer | Path |
 |-------|------|
-| Backend | `dystopia/monolith/workspace/slices/offer/` |
-| Frontend | `dystopia/frontend/workspace/src/modules/offer/` |
+| Backend | `dystopia/monolith/slices/offer/` |
+| Frontend | `dystopia/frontend/src/modules/offer/` |
 | Proto | `proto/offer/v1/service.proto` |
 
 ## Key APIs

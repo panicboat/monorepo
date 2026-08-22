@@ -4,11 +4,11 @@
 
 ## Overview
 
-このディレクトリはリポジトリ全体の共通 Protocol Buffers (`.proto`) 定義を管理します。サービス間で共有されるAPIやデータ構造はここで定義してください。
+このディレクトリは product ごとに名前空間を分けた Protocol Buffers (`.proto`) 定義を管理します。各 product ディレクトリ（`dystopia/` など）は独立した buf module であり、その product 内のサービス間で共有する API やデータ構造の唯一の情報源です。
 
 ## Development Workflow
 
-1.  **編集**: このディレクトリ内の `.proto` ファイルを編集・追加します。
+1.  **編集**: product のディレクトリ（例: `dystopia/`）配下の `.proto` ファイルを編集・追加します。
 2.  **Lint**: 定義がルールに従っているか確認します。
     ```bash
     buf lint

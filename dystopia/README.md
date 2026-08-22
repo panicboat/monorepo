@@ -20,7 +20,7 @@ Secure cookie 制約の回避に一手間が要る (`INSECURE_COOKIES` を参照
 
 - macOS + Homebrew
 - PostgreSQL 18 (`brew install postgresql@18`)
-- Ruby 3.4.5 (rbenv 経由。`dystopia/monolith/workspace/.ruby-version` に定義)
+- Ruby 3.4.5 (rbenv 経由。`dystopia/monolith/.ruby-version` に定義)
 - Node.js + pnpm 10.x
 - OpenSSL (macOS 標準 or `brew install openssl`)
 
@@ -50,7 +50,7 @@ brew services stop postgresql@18
 初回セットアップ (schema 作成):
 
 ```bash
-cd dystopia/monolith/workspace
+cd dystopia/monolith
 bundle exec hanami db migrate
 ```
 
@@ -60,7 +60,7 @@ bundle exec hanami db migrate
 
 ## Monolith — Ruby gRPC :9001
 
-`dystopia/monolith/workspace` は Hanami slice 構成の gRPC server。Gruf で
+`dystopia/monolith` は Hanami slice 構成の gRPC server。Gruf で
 15 の Service (Identity / Profile / Karte / Social / Post / Feed /
 Discovery / Messaging / Footprints / Notifications / Bookmarks /
 Media / Karte) を bind する。
@@ -99,7 +99,7 @@ verify で reject される)。
 ### Startup
 
 ```bash
-cd dystopia/monolith/workspace
+cd dystopia/monolith
 bundle install    # Renovate 経由で gem が更新されるので新しい main では毎回
 
 export DATABASE_URL=postgres://postgres:password@localhost:5432/monolith
@@ -127,7 +127,7 @@ kill -9 <PID>
 
 ## Frontend — Next.js :3000
 
-`dystopia/frontend/workspace` は Next.js 16 (Turbopack) + App Router。
+`dystopia/frontend` は Next.js 16 (Turbopack) + App Router。
 `MONOLITH_URL` は既定で `localhost:9001` を見る。
 
 ### Dev mode (`pnpm dev`)
@@ -136,7 +136,7 @@ kill -9 <PID>
 即座に反映される。
 
 ```bash
-cd dystopia/frontend/workspace
+cd dystopia/frontend
 pnpm install --prefer-offline
 pnpm dev
 ```
@@ -155,7 +155,7 @@ Puppet / 実機 dogfood で長時間触るならこちら。SSE long-poll が de
 connection pool を圧迫しない。
 
 ```bash
-cd dystopia/frontend/workspace
+cd dystopia/frontend
 pnpm build
 INSECURE_COOKIES=true pnpm start
 ```
@@ -173,7 +173,7 @@ cookie を発行する。Chrome は Secure cookie を `http://localhost` に保�
 secure context の話であって scheme の話ではない)、そのままだと sign-in は 200
 を返すが以降の request が unauthenticated になる。
 
-`dystopia/frontend/workspace/src/lib/auth/cookies.ts` にこの escape が
+`dystopia/frontend/src/lib/auth/cookies.ts` にこの escape が
 入っている:
 
 ```ts

@@ -9,21 +9,19 @@ environments:
 stack_conventions:
   - root: dystopia/{service}
     stacks:
-      - name: docker
-        directory: workspace
-      # TODO: Define conventions for Terragrunt stacks when we have active Terragrunt targets.
-      # - name: terragrunt
-      #   directory: terragrunt/envs/{environment}
-      #   required_attributes: [aws_region, iam_role_plan, iam_role_apply]
+      - name: container
+        directory: .
+      - name: terragrunt
+        directory: aws/envs/{environment}
+        required_attributes: [aws_region, iam_role_plan, iam_role_apply]
       - name: kubernetes
         directory: kubernetes/overlays/{environment}
   - root: system-components/{service}
     stacks:
-      - name: docker
-        directory: workspace
-      # TODO: Define conventions for Terragrunt stacks when we have active Terragrunt targets.
-      # - name: terragrunt
-      #   directory: terragrunt/envs/{environment}
-      #   required_attributes: [aws_region, iam_role_plan, iam_role_apply]
+      - name: container
+        directory: .
+      - name: terragrunt
+        directory: aws/envs/{environment}
+        required_attributes: [aws_region, iam_role_plan, iam_role_apply]
       - name: kubernetes
         directory: kubernetes/overlays/{environment}

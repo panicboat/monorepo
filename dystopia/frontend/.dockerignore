@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.DS_Store
+*.log
+
+# Deployment concerns — not part of the image build context.
+kubernetes/
+aws/
+CHANGELOG.md
+README.md
+README-ja.md

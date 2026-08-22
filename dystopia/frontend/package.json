@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "proto:gen": "buf generate ../../../proto"
+    "proto:gen": "buf generate ../../proto/dystopia"
   },
   "dependencies": {
     "@bufbuild/buf": "1.72.0",

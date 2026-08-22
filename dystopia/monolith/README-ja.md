@@ -72,7 +72,6 @@ end
 ## 🚀 Running Locally
 
 ```bash
-cd workspace
 bundle install
 bundle exec hanami server
 ```

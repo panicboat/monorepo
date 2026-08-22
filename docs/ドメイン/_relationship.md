@@ -46,8 +46,8 @@
 
 | Layer | Path |
 |-------|------|
-| Backend | `dystopia/monolith/workspace/slices/relationship/` |
-| Frontend | `dystopia/frontend/workspace/src/modules/relationship/` (planned) |
+| Backend | `dystopia/monolith/slices/relationship/` |
+| Frontend | `dystopia/frontend/src/modules/relationship/` (planned) |
 | Proto | `proto/relationship/v1/follow_service.proto` |
 | Proto | `proto/relationship/v1/block_service.proto` |
 | Proto | `proto/relationship/v1/favorite_service.proto` |

@@ -41,8 +41,8 @@
 
 | Layer | Path |
 |-------|------|
-| Backend | `dystopia/monolith/workspace/slices/feed/` |
-| Frontend | `dystopia/frontend/workspace/src/modules/feed/` (planned) |
+| Backend | `dystopia/monolith/slices/feed/` |
+| Frontend | `dystopia/frontend/src/modules/feed/` (planned) |
 | Proto | `proto/feed/v1/feed_service.proto` |
 
 ## Key APIs
