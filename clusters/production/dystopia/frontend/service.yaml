@@ -11,7 +11,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: monorepo
-  targetNamespace: default
+  targetNamespace: dystopia
   postBuild:
     substitute:
       service_name: frontend
