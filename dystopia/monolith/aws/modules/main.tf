@@ -47,12 +47,12 @@ resource "random_password" "monolith_db_master" {
 #
 # Initial secret value provision (= PR merge 後の manual operation):
 # 1. aws secretsmanager put-secret-value \
-#      --secret-id panicboat/monolith/database \
+#      --secret-id dystopia/monolith/database \
 #      --secret-string '{"username":"postgres","password":"<rds-master-pw>","host":"<rds-endpoint>","port":5432,"database":"monolith","url":"postgres://..."}'
 # 2. ESO ExternalSecret monolith-database が AWS から sync、 K8s Secret に inject。
 # =============================================================================
 resource "aws_secretsmanager_secret" "monolith_database" {
-  name                    = "panicboat/monolith/database"
+  name                    = "dystopia/monolith/database"
   description             = "PostgreSQL credentials for monolith service"
   recovery_window_in_days = 0
   tags                    = var.common_tags
