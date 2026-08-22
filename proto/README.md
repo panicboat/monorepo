@@ -4,11 +4,11 @@
 
 ## Overview
 
-This directory contains the shared Protocol Buffers (`.proto`) definitions for the entire repository. Use this single source of truth to define APIs and data structures shared across services.
+This directory holds Protocol Buffers (`.proto`) definitions, namespaced per product (`dystopia/`, ...). Each product directory is its own buf module and is the single source of truth for the APIs shared between that product's services.
 
 ## Development Workflow
 
-1.  **Edit**: Modify or add `.proto` files in this directory.
+1.  **Edit**: Modify or add `.proto` files under the product's directory (e.g. `dystopia/`).
 2.  **Lint**: Ensure your definitions follow the rules.
     ```bash
     buf lint
