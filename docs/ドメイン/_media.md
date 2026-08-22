@@ -34,8 +34,8 @@
 
 | Layer | Path |
 |-------|------|
-| Backend | `services/monolith/workspace/slices/media/` |
-| Frontend | `services/frontend/workspace/src/modules/media/` (planned) |
+| Backend | `dystopia/monolith/workspace/slices/media/` |
+| Frontend | `dystopia/frontend/workspace/src/modules/media/` (planned) |
 | Proto | `proto/media/v1/media_service.proto` |
 
 ## Key APIs

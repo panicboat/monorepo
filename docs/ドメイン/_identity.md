@@ -29,8 +29,8 @@
 
 | Layer | Path |
 |-------|------|
-| Backend | `services/monolith/workspace/slices/identity/` |
-| Frontend | `services/frontend/workspace/src/modules/identity/` |
+| Backend | `dystopia/monolith/workspace/slices/identity/` |
+| Frontend | `dystopia/frontend/workspace/src/modules/identity/` |
 | Proto | `proto/identity/v1/service.proto` |
 
 ## Key APIs

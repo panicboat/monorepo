@@ -48,13 +48,13 @@ jobs:
           SERVICE: ${{ steps.parse.outputs.service }}
         run: |
           set -euo pipefail
-          for root in services system-components; do
+          for root in dystopia system-components; do
             if [ -d "$root/$SERVICE/workspace" ]; then
               echo "working-directory=$root/$SERVICE/workspace" >> "$GITHUB_OUTPUT"
               exit 0
             fi
           done
-          echo "::error::No workspace directory found for service '$SERVICE' under services/ or system-components/"
+          echo "::error::No workspace directory found for service '$SERVICE' under dystopia/ or system-components/"
           exit 1
 
   container-build:

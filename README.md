@@ -12,12 +12,12 @@
 ├── clusters/            # Flux CD sources per environment (Kustomization, ImagePolicy)
 ├── docs/                # Architecture & access policy
 ├── proto/               # gRPC contracts shared between services
-├── services/            # One directory per service
+├── dystopia/            # One directory per service
 │   └── {service}/
 │       ├── workspace/   # Application source
 │       ├── kubernetes/  # Kustomize base & overlays
 │       └── README.md    # Service-specific notes
-└── system-components/   # Internal/ops tooling, not customer-facing — same per-service structure as services/
+└── system-components/   # Internal/ops tooling, not customer-facing — same per-service structure as dystopia/
 ```
 
 ## 🛠 Prerequisites
@@ -32,13 +32,13 @@ graph LR
 
   subgraph "Kubernetes Cluster"
     ALB -- "2. hostNetwork :8080" --> Envoy[cilium-envoy]
-    Envoy -- "3. HTTPRoute via cilium-gateway" --> FrontendPod[Frontend Pod<br>services/frontend]
-    FrontendPod -- "4. gRPC" --> MonolithPod[Monolith Pod<br>services/monolith]
+    Envoy -- "3. HTTPRoute via cilium-gateway" --> FrontendPod[Frontend Pod<br>dystopia/frontend]
+    FrontendPod -- "4. gRPC" --> MonolithPod[Monolith Pod<br>dystopia/monolith]
     MonolithPod -- "5. PostgreSQL" --> RDS[(AWS RDS)]
   end
 ```
 
-Service-internal architecture is documented in each `services/<service>/README.md` and in `docs/ARCHITECTURE.md`.
+Service-internal architecture is documented in each `dystopia/<service>/README.md` and in `docs/ARCHITECTURE.md`.
 
 ## 🚢 Deployment
 
@@ -61,10 +61,10 @@ flowchart LR
 
 - **Trigger**: `.github/workflows/auto-label--deploy-trigger.yaml` runs on PR labels and main pushes. `panicboat/deploy-actions/label-resolver` reads `workflow-config.yaml` and dispatches to the matching stack workflow.
 - **Stacks** (see `stack_conventions` in `workflow-config.yaml`):
-  - `docker` → builds `services/{service}/workspace` or `system-components/{service}/workspace` and pushes to GHCR.
+  - `docker` → builds `dystopia/{service}/workspace` or `system-components/{service}/workspace` and pushes to GHCR.
   - `kubernetes` → posts a kustomize diff on the PR. Apply is delegated to Flux; CI does not run `kubectl apply`.
 - **Versioning**: release-please (`.github/release-please-config.json`) raises per-service release PRs. Merging the release PR creates a `<service>-vX.Y.Z` tag, which triggers the container build under that tag.
-- **GitOps**: `clusters/<environment>/services/<service>/image-policy.yaml` selects the latest matching semver from GHCR. `ImageUpdateAutomation` commits the new tag back into the overlay, keeping what runs in the cluster identical to what is checked in.
+- **GitOps**: `clusters/<environment>/dystopia/<service>/image-policy.yaml` selects the latest matching semver from GHCR. `ImageUpdateAutomation` commits the new tag back into the overlay, keeping what runs in the cluster identical to what is checked in.
 
 ### Related Repositories
 

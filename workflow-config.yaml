@@ -7,7 +7,7 @@ environments:
         iam_role_apply: arn:aws:iam::559744160976:role/github-oidc-auth-develop-github-actions-apply-role
 
 stack_conventions:
-  - root: services/{service}
+  - root: dystopia/{service}
     stacks:
       - name: docker
         directory: workspace
