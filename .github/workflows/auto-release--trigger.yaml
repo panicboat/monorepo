@@ -48,13 +48,16 @@ jobs:
           SERVICE: ${{ steps.parse.outputs.service }}
         run: |
           set -euo pipefail
-          for root in dystopia system-components; do
-            if [ -d "$root/$SERVICE" ]; then
-              echo "working-directory=$root/$SERVICE" >> "$GITHUB_OUTPUT"
+          # workflow-config.yaml が stack convention の source of truth。
+          # root を列挙して {service} を展開し、実在するものを採用する。
+          while IFS= read -r root_pattern; do
+            dir="${root_pattern//\{service\}/$SERVICE}"
+            if [ -d "$dir" ]; then
+              echo "working-directory=$dir" >> "$GITHUB_OUTPUT"
               exit 0
             fi
-          done
-          echo "::error::No directory found for service '$SERVICE' under dystopia/ or system-components/"
+          done < <(yq -r '.stack_conventions[].root' workflow-config.yaml)
+          echo "::error::No directory found for service '$SERVICE' under any stack_conventions root in workflow-config.yaml"
           exit 1
 
   container-build:

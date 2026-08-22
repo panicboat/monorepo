@@ -79,7 +79,7 @@ jobs:
     needs: deploy-trigger
     if: |
       needs.deploy-trigger.outputs.has-targets == 'true' &&
-      contains(needs.deploy-trigger.outputs.targets, '"stack":"docker"')
+      contains(needs.deploy-trigger.outputs.targets, '"stack":"container"')
     strategy:
       matrix:
         target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
@@ -89,7 +89,7 @@ jobs:
       cancel-in-progress: false
     uses: ./.github/workflows/reusable--container-builder.yaml
     with:
-      image-name: ${{ matrix.target.stack == 'docker' && matrix.target.service || '' }}
+      image-name: ${{ matrix.target.stack == 'container' && matrix.target.service || '' }}
       working-directory: ${{ matrix.target.working_directory }}
       app-id: ${{ vars.APP_ID }}
     secrets:
