@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "hanami", "~> 3.0", ">= 3.0.1"
+gem "hanami", "~> 3.0", ">= 3.0.2"
 gem "hanami-action", "~> 3.0", ">= 3.0.1"
 gem "hanami-assets", "~> 3.0"
 gem "hanami-db", "~> 3.0"
