@@ -7,7 +7,7 @@ gem "hanami-action", "~> 3.0", ">= 3.0.1"
 gem "hanami-assets", "~> 3.0"
 gem "hanami-db", "~> 3.0"
 gem "hanami-router", "~> 3.0"
-gem "hanami-view", "~> 3.0", ">= 3.0.1"
+gem "hanami-view", "~> 3.0", ">= 3.0.2"
 
 gem "grpc"
 gem "gruf"
