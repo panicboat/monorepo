@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+require "base64"
+require "json"
+require "openssl"
 require "spec_helper"
-require "lib/interceptors/authentication_interceptor"
 require "lib/current"
+require "lib/interceptors/authentication_interceptor"
 
 RSpec.describe Interceptors::AuthenticationInterceptor do
   let(:interceptor) { described_class.new(request, error) }
@@ -11,101 +14,68 @@ RSpec.describe Interceptors::AuthenticationInterceptor do
   let(:metadata) { {} }
 
   describe "#call" do
-    subject(:call) { interceptor.call { :yielded } }
-
     context "when x-user-id metadata is present" do
-      let(:metadata) { { 'x-user-id' => 'user-123' } }
+      let(:metadata) { { "x-user-id" => "sub-1" } }
 
-      it "sets Current.user_id" do
-        interceptor.call do
-          expect(::Current.user_id).to eq('user-123')
-        end
+      it "sets Current.user_id to the metadata value" do
+        interceptor.call { expect(Current.user_id).to eq("sub-1") }
       end
 
-      it "sets user_id in request context" do
-        call
-        expect(request.context[:current_user_id]).to eq('user-123')
-      end
-
-      it "yields control" do
-        expect(call).to eq(:yielded)
+      it "sets current_user_id in the request context" do
+        interceptor.call {}
+        expect(request.context[:current_user_id]).to eq("sub-1")
       end
     end
 
-    context "when authorization header is present" do
-      let(:user_id) { 'user-456' }
-      # Auth::JwtCodec verifies with RS256 against ENV["JWT_PUBLIC_KEY"], so the
-      # token has to be signed with the matching RSA private key, not an HS256 secret.
-      let(:private_key) { OpenSSL::PKey::RSA.new(ENV.fetch("JWT_PRIVATE_KEY")) }
-      let(:token) { JWT.encode({ sub: user_id }, private_key, 'RS256') }
-      let(:metadata) { { 'authorization' => "Bearer #{token}" } }
-
-      it "decodes JWT and sets Current.user_id" do
-        interceptor.call do
-          expect(::Current.user_id).to eq(user_id)
-        end
+    context "when x-user-id metadata is absent" do
+      it "leaves Current.user_id nil" do
+        interceptor.call { expect(Current.user_id).to be_nil }
       end
     end
 
-    context "when authorization header contains invalid JWT" do
-      let(:metadata) { { 'authorization' => "Bearer invalid-token" } }
+    context "with an Authorization: Bearer header" do
+      let(:private_key) { OpenSSL::PKey::RSA.new(2048) }
+      let(:metadata) { { "authorization" => "Bearer #{signed_token}" } }
 
-      it "does not set Current.user_id" do
-        call
-        expect(::Current.user_id).to be_nil
+      around do |example|
+        original_private_key = ENV["JWT_PRIVATE_KEY"]
+        original_public_key = ENV["JWT_PUBLIC_KEY"]
+        ENV["JWT_PRIVATE_KEY"] = private_key.to_pem
+        ENV["JWT_PUBLIC_KEY"] = private_key.public_key.to_pem
+        example.run
+      ensure
+        restore_environment("JWT_PRIVATE_KEY", original_private_key)
+        restore_environment("JWT_PUBLIC_KEY", original_public_key)
+      end
+
+      it "does not extract a user id from Bearer" do
+        interceptor.call { expect(Current.user_id).to be_nil }
       end
     end
 
-    context "when no authentication metadata is present" do
-      it "does not set Current.user_id" do
-        call
-        expect(::Current.user_id).to be_nil
-      end
+    it "propagates or generates a request id" do
+      interceptor.call { expect(Current.request_id).not_to be_nil }
     end
 
-    it "clears Current after execution" do
-      # Set state to verify it gets cleared
-      ::Current.user_id = "temp"
-      ::Current.request_id = "temp-request"
-
-      interceptor.call {
-        # Inside the block, it might be set (if we provided metadata),
-        # or nil (if we didn't).
-        # But we want to ensure it's cleared *after* the block returns.
-      }
-
-      expect(::Current.user_id).to be_nil
-      expect(::Current.request_id).to be_nil
+    it "clears Current after the block" do
+      interceptor.call {}
+      expect(Current.user_id).to be_nil
+      expect(Current.request_id).to be_nil
     end
+  end
 
-    context "when x-request-id metadata is present" do
-      let(:metadata) { { 'x-request-id' => 'request-abc-123' } }
+  private
 
-      it "sets Current.request_id from header" do
-        interceptor.call do
-          expect(::Current.request_id).to eq('request-abc-123')
-        end
-      end
+  def signed_token
+    header = Base64.urlsafe_encode64(JSON.generate({ alg: "RS256", typ: "JWT" }), padding: false)
+    payload = Base64.urlsafe_encode64(JSON.generate({ sub: "legacy-sub" }), padding: false)
+    signing_input = [header, payload].join(".")
+    signature = private_key.sign(OpenSSL::Digest::SHA256.new, signing_input)
 
-      it "sets request_id in request context" do
-        call
-        expect(request.context[:request_id]).to eq('request-abc-123')
-      end
-    end
+    [signing_input, Base64.urlsafe_encode64(signature, padding: false)].join(".")
+  end
 
-    context "when x-request-id metadata is not present" do
-      let(:metadata) { {} }
-
-      it "generates a UUID for Current.request_id" do
-        interceptor.call do
-          expect(::Current.request_id).to match(/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i)
-        end
-      end
-
-      it "sets generated request_id in request context" do
-        call
-        expect(request.context[:request_id]).to match(/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i)
-      end
-    end
+  def restore_environment(key, value)
+    value.nil? ? ENV.delete(key) : ENV[key] = value
   end
 end

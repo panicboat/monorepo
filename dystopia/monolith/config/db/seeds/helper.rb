@@ -1,16 +1,11 @@
 # frozen_string_literal: true
 
-require "bcrypt"
 require "securerandom"
 
 module Seeds
   module Helper
     def self.db
       @db ||= Hanami.app["db.gateway"].connection
-    end
-
-    def self.password_digest
-      @password_digest ||= BCrypt::Password.create("0000")
     end
 
     def self.insert_unless_exists(table, unique_column, unique_value, data, return_column: :id)

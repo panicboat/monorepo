@@ -36,13 +36,9 @@ GEM
       aws-sdk-core (~> 3, >= 3.254.1)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
-    aws-sdk-sns (1.118.0)
-      aws-sdk-core (~> 3, >= 3.254.0)
-      aws-sigv4 (~> 1.5)
     aws-sigv4 (1.12.1)
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.3.0)
-    bcrypt (3.1.22)
     better_errors (2.10.1)
       erubi (>= 1.0.0)
       rack (>= 0.9.0)
@@ -311,8 +307,6 @@ GEM
       reline (>= 0.4.2)
     jmespath (1.6.2)
     json (2.18.1)
-    jwt (3.2.0)
-      base64
     listen (3.9.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
@@ -649,8 +643,6 @@ PLATFORMS
 DEPENDENCIES
   aws-sdk-cognitoidentityprovider (~> 1.0)
   aws-sdk-s3 (~> 1.229)
-  aws-sdk-sns (~> 1.118)
-  bcrypt
   capybara
   database_cleaner-sequel
   dotenv
@@ -670,7 +662,6 @@ DEPENDENCIES
   hanami-rspec (~> 3.0)
   hanami-view (~> 3.0, >= 3.0.2)
   hanami-webconsole (~> 3.0)
-  jwt
   opentelemetry-exporter-otlp (~> 0.34, >= 0.34.1)
   opentelemetry-instrumentation-all (~> 0.96)
   opentelemetry-sdk (~> 1.13)
