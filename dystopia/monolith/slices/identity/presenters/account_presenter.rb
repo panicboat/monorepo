@@ -3,29 +3,26 @@
 module Identity
   module Presenters
     class AccountPresenter
+      ROLE_ENUM_TO_INT = {
+        ROLE_UNSPECIFIED: 0,
+        ROLE_GUEST: 1,
+        ROLE_CAST: 2
+      }.freeze
+      ROLE_INT_TO_ENUM = ROLE_ENUM_TO_INT.invert.freeze
+
+      def self.role_enum_to_int(enum)
+        ROLE_ENUM_TO_INT[enum]
+      end
+
+      def self.role_int_to_enum(int)
+        ROLE_INT_TO_ENUM[int] || :ROLE_UNSPECIFIED
+      end
+
       def self.to_proto(account)
-        return nil unless account
-
-        ::Identity::V1::Account.new(
-          id: account[:id],
-          phone_number: account[:phone_number],
-          role: role_int_to_enum(account[:role])
+        Identity::V1::Account.new(
+          id: account.id,
+          role: role_int_to_enum(account.role)
         )
-      end
-
-      def self.role_int_to_enum(role_int)
-        case role_int
-        when 2 then :ROLE_CAST
-        else :ROLE_GUEST
-        end
-      end
-
-      def self.role_enum_to_int(role_enum)
-        case role_enum
-        when :ROLE_CAST, 2 then 2
-        when :ROLE_GUEST, 1 then 1
-        else nil
-        end
       end
     end
   end
