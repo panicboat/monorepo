@@ -5,19 +5,17 @@ require "spec_helper"
 RSpec.describe Discovery::UseCases::SuggestUsers do
   subject(:use_case) { Discovery::Slice["use_cases.suggest_users"] }
 
-  let(:users) { Identity::Slice["relations.users"] }
+  let(:accounts) { Identity::Slice["relations.accounts"] }
   let(:follows) { Social::Slice["relations.follows"] }
   let(:blocks) { Social::Slice["relations.blocks"] }
   let(:profile_repo) { Profile::Slice["repositories.profile_repository"] }
 
-  # identity.users.role: 1 = guest, 2 = cast. Raw insert so we control the id
-  # (profiles.account_id == users.id) and the role.
-  def insert_user(role:)
+  # identity.accounts.role: 1 = guest, 2 = cast. Raw insert so we control the id
+  # (profiles.account_id == accounts.id) and the role.
+  def insert_account(role:)
     id = SecureRandom.uuid_v7
-    users.dataset.insert(
+    accounts.dataset.insert(
       id: id,
-      phone_number: "0#{rand(10**10)}",
-      password_digest: "x",
       role: role,
       created_at: Time.now,
       updated_at: Time.now
@@ -25,16 +23,16 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
     id
   end
 
-  # Creates a user + a profile. profile_repo.create relies on DB defaults for
+  # Creates an account + a profile. profile_repo.create relies on DB defaults for
   # sns_links / is_private (created_at defaults to now()).
   def make(role:, display_name:)
-    id = insert_user(role: role)
+    id = insert_account(role: role)
     profile_repo.create(account_id: id, display_name: display_name, username: "u#{id.delete('-')[8, 20]}")
     id
   end
 
   it "returns the opposite role of the viewer (cast viewer → guests)" do
-    viewer = insert_user(role: 2) # cast
+    viewer = insert_account(role: 2) # cast
     guest = make(role: 1, display_name: "G")
     other_cast = make(role: 2, display_name: "C")
 
@@ -45,7 +43,7 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
   end
 
   it "returns the opposite role of the viewer (guest viewer → casts)" do
-    viewer = insert_user(role: 1) # guest
+    viewer = insert_account(role: 1) # guest
     cast = make(role: 2, display_name: "C")
     other_guest = make(role: 1, display_name: "G")
 
@@ -56,7 +54,7 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
   end
 
   it "excludes self, already-following, and bidirectionally-blocked accounts" do
-    viewer = insert_user(role: 2) # cast
+    viewer = insert_account(role: 2) # cast
     followed = make(role: 1, display_name: "F")
     blocked = make(role: 1, display_name: "B")
     visible = make(role: 1, display_name: "V")
@@ -80,7 +78,7 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
   end
 
   it "orders newest-first" do
-    viewer = insert_user(role: 2) # cast
+    viewer = insert_account(role: 2) # cast
     older = make(role: 1, display_name: "old")
     sleep 0.05
     newer = make(role: 1, display_name: "new")

@@ -12,10 +12,8 @@ RSpec.describe "Post::Repositories::CommentRepository", type: :database do
 
   def create_user(role: 1)
     id = SecureRandom.uuid_v7
-    db[:identity__users].insert(
+    db[:identity__accounts].insert(
       id: id,
-      phone_number: "090#{rand(10000000..99999999)}",
-      password_digest: "$2a$12$K0ByB.6YI2/OYrB4fQOYLe6Tv0datUVf6VZ/2Jzwm879BW5K1cHey",
       role: role,
       created_at: Time.now,
       updated_at: Time.now

@@ -73,11 +73,11 @@ module Social
       end
 
       def role_for(account_id)
-        identity_user_repo.find_by_id(account_id)&.role || 0
+        identity_account_repo.find_by_id(account_id)&.role || 0
       end
 
-      def identity_user_repo
-        @identity_user_repo ||= ::Identity::Slice["repositories.user_repository"]
+      def identity_account_repo
+        @identity_account_repo ||= ::Identity::Slice["repositories.account_repository"]
       end
     end
   end

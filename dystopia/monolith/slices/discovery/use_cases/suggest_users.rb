@@ -65,7 +65,7 @@ module Discovery
       end
 
       def user_repo
-        @user_repo ||= Identity::Slice["repositories.user_repository"]
+        @user_repo ||= Identity::Slice["repositories.account_repository"]
       end
     end
   end

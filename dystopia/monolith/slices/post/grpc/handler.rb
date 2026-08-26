@@ -5,7 +5,7 @@ require "gruf"
 require "storage"
 require_relative "../adapters/cast_adapter"
 require_relative "../adapters/guest_adapter"
-require_relative "../adapters/user_adapter"
+require_relative "../adapters/account_adapter"
 require_relative "../adapters/block_adapter"
 require_relative "../adapters/media_adapter"
 
@@ -36,8 +36,8 @@ module Post
         @guest_adapter ||= Post::Adapters::GuestAdapter.new
       end
 
-      def user_adapter
-        @user_adapter ||= Post::Adapters::UserAdapter.new
+      def account_adapter
+        @account_adapter ||= Post::Adapters::AccountAdapter.new
       end
 
       def block_adapter
@@ -104,7 +104,7 @@ module Post
       end
 
       def get_comment_author(user_id, media_files: {})
-        user_type = user_adapter.get_user_type(user_id)
+        user_type = account_adapter.get_user_type(user_id)
         return nil unless user_type
 
         if user_type == "cast"
