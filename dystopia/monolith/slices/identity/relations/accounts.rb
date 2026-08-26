@@ -1,13 +1,11 @@
+# frozen_string_literal: true
+
 module Identity
   module Relations
-    class Users < Identity::DB::Relation
-      schema(:"identity__users", as: :users, infer: false) do
+    class Accounts < Identity::DB::Relation
+      schema(:identity__accounts, as: :accounts, infer: false) do
         attribute :id, Types::String
-        attribute :phone_number, Types::String
-        attribute :password_digest, Types::String
         attribute :role, Types::Integer
-        attribute :failed_login_attempts, Types::Integer
-        attribute :locked_until, Types::Time
         attribute :deactivated_at, Types::Time.optional
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
