@@ -19,7 +19,6 @@ ROM::SQL.migration do
       index Sequel.desc(:created_at), name: :idx_post_comments_created_at_desc
       foreign_key [:post_id], :"social__cast_posts", on_delete: :cascade
       foreign_key [:parent_id], :"social__post_comments", on_delete: :cascade
-      foreign_key [:user_id], :"identity__users", on_delete: :cascade
     end
   end
 
