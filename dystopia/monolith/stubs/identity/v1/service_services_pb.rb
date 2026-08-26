@@ -16,24 +16,10 @@ module Identity
         self.service_name = 'identity.v1.IdentityService'
 
         rpc :HealthCheck, ::Identity::V1::HealthCheckRequest, ::Identity::V1::HealthCheckResponse
-        # Use Phone Number to send SMS verification code
-        rpc :SendSms, ::Identity::V1::SendSmsRequest, ::Identity::V1::SendSmsResponse
-        # Verify SMS code to get a verification token
-        rpc :VerifySms, ::Identity::V1::VerifySmsRequest, ::Identity::V1::VerifySmsResponse
-        # Register with Phone (verified) and Password
-        rpc :Register, ::Identity::V1::RegisterRequest, ::Identity::V1::RegisterResponse
-        # Login with Phone and Password
-        rpc :Login, ::Identity::V1::LoginRequest, ::Identity::V1::LoginResponse
-        # Refresh access token using refresh token
-        rpc :RefreshToken, ::Identity::V1::RefreshTokenRequest, ::Identity::V1::RefreshTokenResponse
-        # Logout by revoking refresh token
-        rpc :Logout, ::Identity::V1::LogoutRequest, ::Identity::V1::LogoutResponse
-        # Reset password using SMS-verified token
-        rpc :ResetPassword, ::Identity::V1::ResetPasswordRequest, ::Identity::V1::ResetPasswordResponse
-        # Get current account session
-        rpc :GetCurrentAccount, ::Google::Protobuf::Empty, ::Identity::V1::Account
-        # Deactivate (soft-delete) the current account. 30-day grace, then hard-delete via cron.
+        rpc :CreateAccount, ::Identity::V1::CreateAccountRequest, ::Identity::V1::CreateAccountResponse
+        rpc :GetAccount, ::Identity::V1::GetAccountRequest, ::Identity::V1::GetAccountResponse
         rpc :DeactivateAccount, ::Identity::V1::DeactivateAccountRequest, ::Identity::V1::DeactivateAccountResponse
+        rpc :ReactivateAccount, ::Identity::V1::ReactivateAccountRequest, ::Identity::V1::ReactivateAccountResponse
       end
 
       Stub = Service.rpc_stub_class
