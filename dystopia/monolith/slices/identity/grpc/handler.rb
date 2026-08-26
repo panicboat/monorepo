@@ -22,10 +22,10 @@ module Identity
       rpc :ReactivateAccount, ::Identity::V1::ReactivateAccountRequest, ::Identity::V1::ReactivateAccountResponse
 
       include Identity::Deps[
-        create_account: "use_cases.account.create_account",
-        get_account: "use_cases.account.get_account",
-        deactivate_account: "use_cases.account.deactivate_account",
-        reactivate_account: "use_cases.account.reactivate_account"
+        create_account_uc: "use_cases.account.create_account",
+        get_account_uc: "use_cases.account.get_account",
+        deactivate_account_uc: "use_cases.account.deactivate_account",
+        reactivate_account_uc: "use_cases.account.reactivate_account"
       ]
 
       def health_check
@@ -33,8 +33,9 @@ module Identity
       end
 
       def create_account
-        role = Identity::Presenters::AccountPresenter.role_enum_to_int(request.message.role) || 1
-        account = @create_account.call(sub: request.message.sub, role: role)
+        role = Identity::Presenters::AccountPresenter.role_enum_to_int(request.message.role)
+        role = 1 if role.nil? || role.zero? # SILENT: legacy fallback to Guest for unspecified/unknown roles
+        account = create_account_uc.call(sub: request.message.sub, role: role)
 
         Identity::V1::CreateAccountResponse.new(
           account: Identity::Presenters::AccountPresenter.to_proto(account)
@@ -44,7 +45,7 @@ module Identity
       end
 
       def get_account
-        account = @get_account.call(sub: request.message.sub)
+        account = get_account_uc.call(sub: request.message.sub)
         raise GRPC::NotFound.new("account not found") unless account
 
         Identity::V1::GetAccountResponse.new(
@@ -56,12 +57,13 @@ module Identity
         sub = Current.user_id
         raise GRPC::Unauthenticated.new("no current user") unless sub
 
-        @deactivate_account.call(sub: sub)
+        deactivate_account_uc.call(sub: sub)
         Identity::V1::DeactivateAccountResponse.new
       end
 
       def reactivate_account
-        account = @reactivate_account.call(sub: request.message.sub)
+        account = reactivate_account_uc.call(sub: request.message.sub)
+        raise GRPC::NotFound.new("account not found") unless account
 
         Identity::V1::ReactivateAccountResponse.new(
           account: Identity::Presenters::AccountPresenter.to_proto(account)

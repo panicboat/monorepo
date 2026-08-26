@@ -12,17 +12,17 @@ RSpec.describe Identity::Grpc::Handler do
       rpc_desc: double,
       active_call: double,
       message: message,
-      create_account: create_account,
-      get_account: get_account,
-      deactivate_account: deactivate_account,
-      reactivate_account: reactivate_account
+      create_account_uc: create_account_uc,
+      get_account_uc: get_account_uc,
+      deactivate_account_uc: deactivate_account_uc,
+      reactivate_account_uc: reactivate_account_uc
     )
   end
   let(:message) { double(:message) }
-  let(:create_account) { double(:create_account) }
-  let(:get_account) { double(:get_account) }
-  let(:deactivate_account) { double(:deactivate_account) }
-  let(:reactivate_account) { double(:reactivate_account) }
+  let(:create_account_uc) { double(:create_account_uc) }
+  let(:get_account_uc) { double(:get_account_uc) }
+  let(:deactivate_account_uc) { double(:deactivate_account_uc) }
+  let(:reactivate_account_uc) { double(:reactivate_account_uc) }
 
   after { Current.clear }
 
@@ -40,7 +40,7 @@ RSpec.describe Identity::Grpc::Handler do
 
     it "creates an account and returns it in the response wrapper" do
       account = Struct.new(:id, :role).new("sub-1", 1)
-      expect(create_account).to receive(:call).with(sub: "sub-1", role: 1).and_return(account)
+      expect(create_account_uc).to receive(:call).with(sub: "sub-1", role: 1).and_return(account)
 
       response = handler.create_account
 
@@ -50,10 +50,19 @@ RSpec.describe Identity::Grpc::Handler do
     end
 
     it "returns ALREADY_EXISTS when the account exists" do
-      allow(create_account).to receive(:call)
+      allow(create_account_uc).to receive(:call)
         .and_raise(Identity::UseCases::Account::CreateAccount::AccountAlreadyExists)
 
       expect { handler.create_account }.to raise_error(GRPC::AlreadyExists, /account already exists/)
+    end
+
+    it "uses Guest for an unspecified role" do
+      request = double(:request, message: Identity::V1::CreateAccountRequest.new(sub: "sub-1", role: :ROLE_UNSPECIFIED))
+      account = Struct.new(:id, :role).new("sub-1", 1)
+      expect(create_account_uc).to receive(:call).with(sub: "sub-1", role: 1).and_return(account)
+      handler.instance_variable_set(:@request, request)
+
+      handler.create_account
     end
   end
 
@@ -62,7 +71,7 @@ RSpec.describe Identity::Grpc::Handler do
 
     it "returns the account in the response wrapper when found" do
       account = Struct.new(:id, :role).new("sub-1", 2)
-      expect(get_account).to receive(:call).with(sub: "sub-1").and_return(account)
+      expect(get_account_uc).to receive(:call).with(sub: "sub-1").and_return(account)
 
       response = handler.get_account
 
@@ -71,7 +80,7 @@ RSpec.describe Identity::Grpc::Handler do
     end
 
     it "raises NOT_FOUND when missing" do
-      allow(get_account).to receive(:call).with(sub: "sub-1").and_return(nil)
+      allow(get_account_uc).to receive(:call).with(sub: "sub-1").and_return(nil)
 
       expect { handler.get_account }.to raise_error(GRPC::NotFound, /account not found/)
     end
@@ -80,7 +89,7 @@ RSpec.describe Identity::Grpc::Handler do
   describe "#deactivate_account" do
     it "deactivates the current user's account" do
       Current.user_id = "sub-1"
-      expect(deactivate_account).to receive(:call).with(sub: "sub-1")
+      expect(deactivate_account_uc).to receive(:call).with(sub: "sub-1")
 
       response = handler.deactivate_account
 
@@ -97,12 +106,18 @@ RSpec.describe Identity::Grpc::Handler do
 
     it "reactivates an account and returns it in the response wrapper" do
       account = Struct.new(:id, :role).new("sub-1", 1)
-      expect(reactivate_account).to receive(:call).with(sub: "sub-1").and_return(account)
+      expect(reactivate_account_uc).to receive(:call).with(sub: "sub-1").and_return(account)
 
       response = handler.reactivate_account
 
       expect(response).to be_a(Identity::V1::ReactivateAccountResponse)
       expect(response.account.id).to eq("sub-1")
+    end
+
+    it "raises NOT_FOUND when the account is missing" do
+      allow(reactivate_account_uc).to receive(:call).with(sub: "sub-1").and_return(nil)
+
+      expect { handler.reactivate_account }.to raise_error(GRPC::NotFound, /account not found/)
     end
   end
 end
