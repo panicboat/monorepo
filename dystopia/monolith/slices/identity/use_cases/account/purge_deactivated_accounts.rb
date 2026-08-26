@@ -2,14 +2,14 @@
 
 module Identity
   module UseCases
-    module User
+    module Account
       class PurgeDeactivatedAccounts
         GRACE_PERIOD_SECONDS = 30 * 24 * 3600
 
-        include Identity::Deps[user_repo: "repositories.user_repository"]
+        include Identity::Deps[account_repo: "repositories.account_repository"]
 
         def initialize(
-          user_repo: nil,
+          account_repo: nil,
           purge_notifications: nil,
           purge_footprints: nil,
           purge_bookmarks: nil,
@@ -23,7 +23,7 @@ module Identity
           logger: nil,
           **kwargs
         )
-          super(**kwargs.merge(user_repo: user_repo).compact)
+          super(**kwargs.merge(account_repo: account_repo).compact)
           @purge_notifications = purge_notifications
           @purge_footprints = purge_footprints
           @purge_bookmarks = purge_bookmarks
@@ -39,27 +39,36 @@ module Identity
 
         def call(now:)
           cutoff = now - GRACE_PERIOD_SECONDS
-          users = user_repo.list_deactivated_before(cutoff)
+          count = 0
 
-          users.each do |u|
-            purge_notifications.call(account_id: u.id)
-            purge_footprints.call(account_id: u.id)
-            purge_bookmarks.call(account_id: u.id)
-            purge_karte.call(account_id: u.id)
-            purge_messaging.call(account_id: u.id)
-            purge_social.call(account_id: u.id)
-            purge_post.call(account_id: u.id)
-            purge_media.call(account_id: u.id)
-            purge_profile.call(account_id: u.id)
-            purge_identity.call(account_id: u.id)
-            logger&.info("[purge] account #{u.id} fully purged")
-          rescue => e
-            logger&.error("[purge] account #{u.id} failed: #{e.class}: #{e.message}")
+          account_repo.deactivated_before(cutoff).each do |account|
+            purge_identity.call(sub: account.id)
+            count += 1
+            logger&.info("[purge] account #{account.id} fully purged")
+          rescue => error
+            logger&.error("[purge] account #{account.id} failed: #{error.class}: #{error.message}")
           end
-          nil
+
+          count
         end
 
         private
+
+        # Slices retain ownership of their data, so this boundary supplies each
+        # slice's purge use case instead of coupling repositories across slices.
+        def cascades
+          [
+            purge_notifications,
+            purge_footprints,
+            purge_bookmarks,
+            purge_karte,
+            purge_messaging,
+            purge_social,
+            purge_post,
+            purge_media,
+            purge_profile
+          ]
+        end
 
         def purge_notifications
           @purge_notifications ||= ::Notifications::Slice["use_cases.purge_account"]
@@ -98,7 +107,7 @@ module Identity
         end
 
         def purge_identity
-          @purge_identity ||= Identity::Slice["use_cases.user.purge_identity"]
+          @purge_identity ||= PurgeIdentity.new(account_repo: account_repo, cascades: cascades)
         end
 
         def logger
