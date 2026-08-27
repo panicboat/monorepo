@@ -113,3 +113,18 @@ resource "aws_db_instance" "monolith" {
 
   tags = var.common_tags
 }
+
+resource "aws_iam_policy" "monolith_cognito_admin_delete" {
+  name = "monolith-${var.environment}-cognito-admin-delete"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["cognito-idp:AdminDeleteUser"]
+      Resource = var.cognito_user_pool_arn
+    }]
+  })
+
+  tags = var.common_tags
+}
