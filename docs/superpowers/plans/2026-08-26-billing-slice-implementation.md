@@ -4,7 +4,7 @@
 
 **Goal:** monolith に `billing` slice を追加し、Guest / Cast それぞれ 1 tier の月額 Stripe subscription 基盤 (Checkout + Customer Portal + webhook mirror + entitlement query) を提供する。
 
-**Architecture:** Hanami 3 slice。karte slice をテンプレートに `db/{relation,repo,struct}.rb` + `repositories/` + `use_cases/` + `grpc/handler` + `adapters/` + `actions/webhooks/` を作る。Stripe SDK 呼び出しは `Billing::Adapters::StripeClient` に集約し spec では `FakeStripeClient` に差し替え。DB への書き込み口を webhook のみに絞り、event dedupe + `canceled` 終端ルールで冪等・out-of-order 耐性を持たせる。
+**Architecture:** Hanami 3 slice。karte slice をテンプレートに `db/{relation,repo,struct}.rb` + `relations/*.rb` + `repositories/` + `use_cases/` + `grpc/handler` + `adapters/` + `actions/webhooks/` を作る。Stripe SDK 呼び出しは `Billing::Adapters::StripeClient` に集約し spec では `FakeStripeClient` に差し替え。DB への書き込み口を webhook のみに絞り、event dedupe + `canceled` 終端ルールで冪等・out-of-order 耐性を持たせる。
 
 **Tech Stack:** Ruby, Hanami 3 (slice), Gruf (gRPC), ROM-SQL + Sequel, PostgreSQL, dry-operation / dry-validation, Stripe Ruby SDK, RSpec + database_cleaner-sequel, protoc + grpc_ruby_plugin (buf).
 
@@ -12,78 +12,74 @@
 
 ## Global Constraints
 
-- Ruby version は monolith の既存 `.ruby-version` に従う (勝手に上げない)
+- Ruby は worktree の `.ruby-version` に従う (勝手に上げない)
 - Hanami は `~> 3.0`、`hanami-*` gem 群は既存の Gemfile pin を維持
-- 新規追加 gem: `stripe` (バージョンは実装時に latest stable を採用、Gemfile.lock を締める)
-- 全ての Ruby ファイル冒頭に `# frozen_string_literal: true` を置く
-- モジュール名: 常に `Billing::…` (例: `Billing::Repositories::CustomerRepository`)
+- 新規追加 gem: `stripe` のみ (バージョンは実装時に latest stable、Gemfile.lock を締める)
+- 全ての Ruby ファイル冒頭に `# frozen_string_literal: true`
+- モジュール名: 常に `Billing::…`
 - DB schema 名 / table 名: `billing__customers` / `billing__subscriptions` / `billing__stripe_events` (Postgres schema `billing` の下)
 - gRPC service 名: `billing.v1.BillingService`
+- **canonical identifier: `account_id`** (Cognito sub = `identity__accounts.id`)。billing の repository / use case / handler / migration / metadata / Idempotency-Key すべて `account_id`。`user_id` という名前を billing で使わない (`Current.user_id` は歴史名で identity 側管轄、handler 境界で `current_user_id` を `account_id:` として use case に渡す)
+- **Identity 参照経路: `Identity::Slice["repositories.account_repository"]#find_by_id(sub) -> Struct(id, role, deactivated_at, ...)`**
 - Stripe status enum は文字列で DB 保存 (`trialing / active / incomplete / incomplete_expired / past_due / canceled / unpaid / paused`)
-- Proto の Subscription.Status enum は spec §Architecture に列挙 (`STATUS_UNSPECIFIED=0` から)
+- Proto の Subscription.Status enum は spec §Architecture 参照 (`STATUS_UNSPECIFIED=0` から)
 - Stripe API 呼び出しは全て `Billing::Adapters::StripeClient` 経由 (直接 `::Stripe::…` を触るのは adapter とテスト用 fake のみ)
 - Stripe → DB の書き込み口は webhook のみ (`process_webhook_event` use case)。他 use case / rake task が subscription 行を作ることは禁止 (reconcile task を除く)
 - webhook 対象 event: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `customer.subscription.trial_will_end`, `checkout.session.completed`
-- Idempotency-Key: Customer 作成 = `"billing:create_customer:<user_id>"`、Checkout Session = `"billing:create_checkout:<user_id>:<yyyymmddhh>"`、Portal Session = `"billing:create_portal:<user_id>:<yyyymmddhh>"`
-- コミット: `-s` 必須、`Co-Authored-By` 付与禁止 (AGENTS.md)
-- 出力言語: 日本語 (コード内 identifier / commit message / PR title は英語) (AGENTS.md)
-- テストコード内の期待値の meaning は日本語コメント可、identifier は英語
-- CI は rspec を回さない (memory "Monolith verification")。**各タスクの完了条件に "ローカルで対象 spec を green" を含める**
-- Gemfile を触ったら push 前に `bundle install --frozen` で lockfile 整合性を確認 (memory "Bundle freeze check")
+- Idempotency-Key: Customer 作成 = `"billing:create_customer:<account_id>"`、Checkout Session = `"billing:create_checkout:<account_id>:<yyyymmddhh>"`、Portal Session = `"billing:create_portal:<account_id>:<yyyymmddhh>"`
+- コミット: `-s` 必須、`Co-Authored-By` 付与禁止
+- 出力言語: 日本語 (コード内 identifier / commit message / PR title は英語)
+- CI は rspec を回さない。**各タスクの完了条件に「ローカルで対象 spec を green」を含める**
+- Gemfile を触ったら push 前に `bundle install --frozen` で lockfile 整合性を確認
 
-## Reference (implementation-time にこれらを見ろ)
+## Reference (implementation-time に見ろ)
 
-- **spec**: `docs/superpowers/specs/2026-08-26-billing-slice-design.md` (全ての決定はここに書かれている)
-- **slice template**: `dystopia/monolith/slices/karte/` を全面参照。DB scaffolding / grpc handler / use_case / adapter パターン全部同じ
+- **spec**: `docs/superpowers/specs/2026-08-26-billing-slice-design.md`
+- **slice template**: `dystopia/monolith/slices/karte/` を全面参照
+- **relations file 例**: `dystopia/monolith/slices/karte/relations/{entries,access,reports}.rb` — `schema(:table, as: :xxx_records, infer: false) do ... end` で ROM alias 宣言
 - **gRPC handler の base**: `dystopia/monolith/slices/karte/grpc/{handler,karte_handler}.rb`
-- **use_case DI パターン**: `dystopia/monolith/slices/karte/use_cases/get_my_access.rb` (最小例)
+- **identity account repository**: `dystopia/monolith/slices/identity/repositories/account_repository.rb` (`#find_by_id(sub) -> Struct`, `#create(sub:, role:)`, etc.)
+- **identity accounts relation**: `dystopia/monolith/slices/identity/relations/accounts.rb`
+- **他 slice の accounts 参照例**: `dystopia/monolith/slices/karte/use_cases/create_entry.rb:41`、`slices/discovery/use_cases/suggest_users.rb:68`
+- **use_case DI パターン**: `dystopia/monolith/slices/karte/use_cases/get_my_access.rb`
 - **repository パターン**: `dystopia/monolith/slices/karte/repositories/{access,entry}_repository.rb`
 - **use_case spec パターン**: `dystopia/monolith/spec/slices/karte/use_cases/get_my_access_spec.rb`
-- **repository spec パターン**: `dystopia/monolith/spec/slices/karte/repositories/entry_repository_spec.rb` (type: :database、実 DB)
-- **migration 例**: `dystopia/monolith/config/db/migrate/20260628000000_create_karte_schema.rb`
+- **repository spec パターン**: `dystopia/monolith/spec/slices/karte/repositories/entry_repository_spec.rb` (`type: :database`)
+- **migration 例**: `dystopia/monolith/config/db/migrate/20260628000000_create_karte_schema.rb`、`20260826132540_create_identity_accounts.rb`
 - **rake task 例**: `dystopia/monolith/lib/tasks/account.rake`
-- **gRPC server 登録**: `dystopia/monolith/bin/grpc` の proto require 部分に追加
-- **spec_helper**: `dystopia/monolith/spec/spec_helper.rb` (DatabaseCleaner setup 済)
+- **gRPC server 登録**: `dystopia/monolith/bin/grpc`
+- **spec_helper**: `dystopia/monolith/spec/spec_helper.rb`
+- **`Current` module**: `dystopia/monolith/lib/current.rb` (`Current.user_id` は Cognito sub を保持)
 
 ---
 
-## Task 1: Add stripe gem + monolith settings scaffolding
+## Task 1: stripe gem + monolith settings scaffolding
 
 **Files:**
 - Modify: `dystopia/monolith/Gemfile`
-- Modify: `dystopia/monolith/Gemfile.lock` (bundler が更新)
+- Modify: `dystopia/monolith/Gemfile.lock`
 - Modify: `dystopia/monolith/config/settings.rb`
+- Create: `dystopia/monolith/.env.test`
+- Create: `dystopia/monolith/spec/config/settings_spec.rb`
 
 **Interfaces:**
 - Consumes: —
 - Produces:
-  - `Hanami.app["settings"].stripe_api_key : String`
-  - `Hanami.app["settings"].stripe_webhook_secret : String`
-  - `Hanami.app["settings"].stripe_price_id_guest : String`
-  - `Hanami.app["settings"].stripe_price_id_cast : String`
-  - `Hanami.app["settings"].billing_success_url : String`
-  - `Hanami.app["settings"].billing_cancel_url : String`
-  - `Hanami.app["settings"].billing_portal_return_url : String`
+  - `Hanami.app["settings"]` に `stripe_api_key`, `stripe_webhook_secret`, `stripe_price_id_guest`, `stripe_price_id_cast`, `billing_success_url`, `billing_cancel_url`, `billing_portal_return_url` (全 `String`)
   - `::Stripe` (gem loaded)
 
-- [ ] **Step 1: Gemfile に stripe gem を追加**
+- [ ] **Step 1: Gemfile に `gem "stripe"` 追加** (jwt の近く)
 
-`dystopia/monolith/Gemfile` の `gem "jwt"` の下あたり (外部 API 群) に追加:
-
-```ruby
-gem "stripe"
-```
-
-- [ ] **Step 2: bundle install で lockfile 更新**
+- [ ] **Step 2: bundle install**
 
 ```bash
 cd dystopia/monolith
 bundle install
 ```
 
-- [ ] **Step 3: settings.rb に STRIPE_* / BILLING_* を追加**
+worktree で bundle が未完了なら依存全体が入る (期待動作)。
 
-`dystopia/monolith/config/settings.rb` を以下に差し替える:
+- [ ] **Step 3: settings.rb**
 
 ```ruby
 # frozen_string_literal: true
@@ -101,11 +97,9 @@ module Monolith
 end
 ```
 
-`Types::String` は Hanami 標準 (`Hanami::Settings` 内で参照可能)。既存 slice で使用例が無ければ `Dry::Types['string']` を代替として使う (実装時に verify)。
+`Types::String` は `lib/types.rb` 定義。無ければ `Dry::Types['string']` で代替 (実装時 verify)。
 
-- [ ] **Step 4: `.env.test` (existing) と `.env.development` (existing) に dummy 値を追加**
-
-各 env ファイルを Read で確認し、以下を追加 (既存の env ファイルを探して format に従う):
+- [ ] **Step 4: `dystopia/monolith/.env.test` 新規作成**
 
 ```
 STRIPE_API_KEY=sk_test_dummy_replace_via_stripe_dashboard
@@ -117,20 +111,13 @@ BILLING_CANCEL_URL=http://localhost:3000/settings/billing?checkout=cancel
 BILLING_PORTAL_RETURN_URL=http://localhost:3000/settings/billing
 ```
 
-env ファイルが存在しない場合はスキップ (実装時に判断)。
+既存 `dystopia/monolith/.env` が git 管理下で開発共通値を持つのと同じ流儀。すべて placeholder であり本物の secret ではない。
 
-- [ ] **Step 5: bundle install --frozen で lockfile 整合性確認**
+- [ ] **Step 5: `bundle install --frozen`**
 
-```bash
-cd dystopia/monolith
-bundle install --frozen
-```
+- [ ] **Step 6: spec を作成**
 
-Expected: エラーなく完了
-
-- [ ] **Step 6: 動作確認スペック (settings が読める)**
-
-`dystopia/monolith/spec/config/settings_spec.rb` を新規作成:
+`dystopia/monolith/spec/config/settings_spec.rb`:
 
 ```ruby
 # frozen_string_literal: true
@@ -161,42 +148,32 @@ end
 - [ ] **Step 7: spec を green で実行**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/config/settings_spec.rb
 ```
-
-Expected: PASS (dummy 値がロードされる)
 
 - [ ] **Step 8: Commit**
 
 ```bash
 git add dystopia/monolith/Gemfile dystopia/monolith/Gemfile.lock \
         dystopia/monolith/config/settings.rb \
+        dystopia/monolith/.env.test \
         dystopia/monolith/spec/config/settings_spec.rb
 git commit -s -m "feat(monolith/billing): add stripe gem and billing settings scaffolding"
 ```
 
 ---
 
-## Task 2: Proto definition + codegen + gRPC boot wiring
+## Task 2: Proto + codegen + gRPC boot wiring
 
 **Files:**
 - Create: `proto/dystopia/billing/v1/service.proto`
-- Modify: `dystopia/monolith/bin/grpc` (proto require 追加)
-- Generated (via `bin/codegen`): `dystopia/monolith/stubs/billing/**`
+- Modify: `dystopia/monolith/bin/grpc`
+- Generated: `dystopia/monolith/stubs/billing/v1/*`
 
 **Interfaces:**
-- Consumes: —
-- Produces:
-  - `::Billing::V1::BillingService::Service` (gRPC service class)
-  - `::Billing::V1::Subscription` (with `Status` enum)
-  - `::Billing::V1::GetMySubscriptionRequest / Response`
-  - `::Billing::V1::CreateCheckoutSessionRequest / Response`
-  - `::Billing::V1::CreateCustomerPortalSessionRequest / Response`
+- Produces: `::Billing::V1::BillingService::Service`、`::Billing::V1::Subscription` (with `Status` enum)、3 対の Request/Response
 
-- [ ] **Step 1: Proto を作成**
-
-`proto/dystopia/billing/v1/service.proto` を新規作成:
+- [ ] **Step 1: `proto/dystopia/billing/v1/service.proto`**
 
 ```proto
 syntax = "proto3";
@@ -243,40 +220,36 @@ message CreateCustomerPortalSessionRequest {}
 message CreateCustomerPortalSessionResponse { string url = 1; }
 ```
 
-- [ ] **Step 2: codegen を実行して stubs を生成**
+- [ ] **Step 2: codegen 実行**
 
 ```bash
 cd dystopia/monolith
 bundle exec bin/codegen
 ```
 
-Expected: `dystopia/monolith/stubs/billing/v1/service_pb.rb` と `service_services_pb.rb` が生成される
+生成物: `stubs/billing/v1/service_pb.rb`, `service_services_pb.rb`
 
-- [ ] **Step 3: bin/grpc に proto require を追加**
+- [ ] **Step 3: `bin/grpc` に require 追加**
 
-`dystopia/monolith/bin/grpc` を Read し、既存の `require "karte/v1/service_services_pb"` の下 (アルファ順的には近い位置) に追加:
+既存の `require "karte/v1/service_services_pb"` 近くに:
 
 ```ruby
 require "billing/v1/service_services_pb"
 ```
 
-- [ ] **Step 4: 生成物の smoke 確認**
+- [ ] **Step 4: 生成物 smoke 確認**
 
 ```bash
-cd dystopia/monolith
 bundle exec ruby -Istubs -e 'require "billing/v1/service_services_pb"; puts ::Billing::V1::BillingService::Service.rpc_descs.keys.inspect'
 ```
 
 Expected: `[:GetMySubscription, :CreateCheckoutSession, :CreateCustomerPortalSession]`
 
-- [ ] **Step 5: enum 値の確認**
+- [ ] **Step 5: enum 値確認**
 
 ```bash
-cd dystopia/monolith
 bundle exec ruby -Istubs -e 'require "billing/v1/service_services_pb"; puts ::Billing::V1::Subscription::Status.constants.inspect'
 ```
-
-Expected: 全 status 値が並ぶ
 
 - [ ] **Step 6: Commit**
 
@@ -292,21 +265,12 @@ git commit -s -m "feat(proto/billing): define BillingService v1 proto and wire m
 ## Task 3: DB migration for billing schema
 
 **Files:**
-- Create: `dystopia/monolith/config/db/migrate/YYYYMMDDHHMMSS_create_billing_schema.rb` (実装時のタイムスタンプで命名)
+- Create: `dystopia/monolith/config/db/migrate/<TS>_create_billing_schema.rb` (`<TS>` = `date -u '+%Y%m%d%H%M%S'`)
 
 **Interfaces:**
-- Consumes: —
-- Produces: `billing.customers` / `billing.subscriptions` / `billing.stripe_events` テーブル (Postgres schema `billing`)
+- Produces: Postgres schema `billing` と 3 テーブル (`customers` / `subscriptions` / `stripe_events`)
 
 - [ ] **Step 1: migration ファイル作成**
-
-タイムスタンプ生成:
-
-```bash
-date -u '+%Y%m%d%H%M%S'
-```
-
-そのタイムスタンプを prefix にして `dystopia/monolith/config/db/migrate/<TS>_create_billing_schema.rb` を作成 (karte migration に倣う):
 
 ```ruby
 # frozen_string_literal: true
@@ -317,19 +281,19 @@ ROM::SQL.migration do
 
     create_table :"billing__customers" do
       column :id, :uuid, null: false
-      column :user_id, :uuid, null: false
+      column :account_id, :uuid, null: false
       column :stripe_customer_id, :text, null: false
       column :created_at, :timestamptz, null: false, default: Sequel.lit("now()")
       column :updated_at, :timestamptz, null: false, default: Sequel.lit("now()")
 
       primary_key [:id]
-      unique [:user_id], name: :uq_billing_customers_user_id
+      unique [:account_id], name: :uq_billing_customers_account_id
       unique [:stripe_customer_id], name: :uq_billing_customers_stripe_customer_id
     end
 
     create_table :"billing__subscriptions" do
       column :id, :uuid, null: false
-      column :user_id, :uuid, null: false
+      column :account_id, :uuid, null: false
       column :stripe_subscription_id, :text, null: false
       column :stripe_price_id, :text, null: false
       column :status, :text, null: false
@@ -340,7 +304,7 @@ ROM::SQL.migration do
       column :updated_at, :timestamptz, null: false, default: Sequel.lit("now()")
 
       primary_key [:id]
-      unique [:user_id], name: :uq_billing_subscriptions_user_id
+      unique [:account_id], name: :uq_billing_subscriptions_account_id
       unique [:stripe_subscription_id], name: :uq_billing_subscriptions_stripe_subscription_id
     end
     run <<~SQL
@@ -382,16 +346,12 @@ end
 - [ ] **Step 2: test DB に migration 適用**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rake db:migrate
 ```
-
-Expected: エラーなく完了。3 テーブルが `billing` schema に作られる
 
 - [ ] **Step 3: schema 確認**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec ruby -e '
   require "hanami/prepare"
   db = Hanami.app["db.gateway"].connection
@@ -399,17 +359,14 @@ HANAMI_ENV=test bundle exec ruby -e '
 '
 ```
 
-Expected: `["customers", "subscriptions", "stripe_events"]` (順不同)
+Expected: `["customers", "subscriptions", "stripe_events"]`
 
-- [ ] **Step 4: rollback / re-migrate で down 動作確認**
+- [ ] **Step 4: rollback / re-migrate**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rake db:rollback
 HANAMI_ENV=test bundle exec rake db:migrate
 ```
-
-Expected: 両方エラーなく完了
 
 - [ ] **Step 5: Commit**
 
@@ -423,22 +380,14 @@ git commit -s -m "feat(monolith/billing): add migration for billing schema (cust
 ## Task 4: Billing slice DB scaffolding
 
 **Files:**
-- Create: `dystopia/monolith/slices/billing/db/relation.rb`
-- Create: `dystopia/monolith/slices/billing/db/repo.rb`
-- Create: `dystopia/monolith/slices/billing/db/struct.rb`
+- Create: `dystopia/monolith/slices/billing/db/{relation,repo,struct}.rb`
 
 **Interfaces:**
-- Consumes: `Monolith::DB::{Relation,Repo,Struct}` (既存)
-- Produces:
-  - `Billing::DB::Relation < Monolith::DB::Relation`
-  - `Billing::DB::Repo < Monolith::DB::Repo`
-  - `Billing::DB::Struct < Monolith::DB::Struct`
+- Produces: `Billing::DB::{Relation,Repo,Struct}` (Monolith 版の subclass、空)
 
-これらは karte と同じく空の subclass。以降のタスクで作る repository が継承する。
+- [ ] **Step 1: 3 ファイル作成**
 
-- [ ] **Step 1: 3 ファイルを作成**
-
-`dystopia/monolith/slices/billing/db/relation.rb`:
+`relation.rb`:
 
 ```ruby
 # frozen_string_literal: true
@@ -451,7 +400,7 @@ module Billing
 end
 ```
 
-`dystopia/monolith/slices/billing/db/repo.rb`:
+`repo.rb`:
 
 ```ruby
 # frozen_string_literal: true
@@ -464,7 +413,7 @@ module Billing
 end
 ```
 
-`dystopia/monolith/slices/billing/db/struct.rb`:
+`struct.rb`:
 
 ```ruby
 # frozen_string_literal: true
@@ -477,10 +426,9 @@ module Billing
 end
 ```
 
-- [ ] **Step 2: slice boot smoke 確認 (Hanami が slice を認識するか)**
+- [ ] **Step 2: slice boot smoke**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec ruby -e '
   require "hanami/prepare"
   puts ::Billing::Slice.class.name
@@ -488,7 +436,7 @@ HANAMI_ENV=test bundle exec ruby -e '
 '
 ```
 
-Expected: `Hanami::Slice` (または継承クラス名) と `Monolith::DB::Repo`
+Expected: `Hanami::Slice` 系のクラス名 と `Monolith::DB::Repo`
 
 - [ ] **Step 3: Commit**
 
@@ -499,23 +447,48 @@ git commit -s -m "feat(monolith/billing): add DB scaffolding for billing slice"
 
 ---
 
-## Task 5: CustomerRepository (TDD)
+## Task 5: CustomerRepository + relation (TDD)
 
 **Files:**
+- Create: `dystopia/monolith/slices/billing/relations/customers.rb`
 - Create: `dystopia/monolith/spec/slices/billing/repositories/customer_repository_spec.rb`
 - Create: `dystopia/monolith/slices/billing/repositories/customer_repository.rb`
 
 **Interfaces:**
-- Consumes: `Billing::DB::Repo`
-- Produces: `Billing::Repositories::CustomerRepository` with:
-  - `#upsert_by_user_id(user_id:, stripe_customer_id:) -> Struct` (行 upsert、既存なら stripe_customer_id 更新)
-  - `#find_by_user_id(user_id) -> Struct | nil`
+- Consumes: `Billing::DB::{Relation,Repo}`
+- Produces: `Billing::Repositories::CustomerRepository`
+  - `#upsert_by_account_id(account_id:, stripe_customer_id:) -> Struct`
+  - `#find_by_account_id(account_id) -> Struct | nil`
   - `#find_by_stripe_customer_id(stripe_customer_id) -> Struct | nil`
-  - `#all -> Array<Struct>` (reconcile task 用)
+  - `#all -> Array<Struct>`
 
-- [ ] **Step 1: 失敗する spec を書く**
+- [ ] **Step 1: relation**
 
-`dystopia/monolith/spec/slices/billing/repositories/customer_repository_spec.rb`:
+`slices/billing/relations/customers.rb`:
+
+```ruby
+# frozen_string_literal: true
+
+module Billing
+  module Relations
+    class Customers < Billing::DB::Relation
+      schema(:billing__customers, as: :customer_records, infer: false) do
+        attribute :id, Types::String
+        attribute :account_id, Types::String
+        attribute :stripe_customer_id, Types::String
+        attribute :created_at, Types::Time
+        attribute :updated_at, Types::Time
+
+        primary_key :id
+      end
+    end
+  end
+end
+```
+
+- [ ] **Step 2: 失敗する spec**
+
+`spec/slices/billing/repositories/customer_repository_spec.rb`:
 
 ```ruby
 # frozen_string_literal: true
@@ -526,42 +499,42 @@ require "slices/billing/repositories/customer_repository"
 RSpec.describe Billing::Repositories::CustomerRepository, type: :database do
   subject(:repo) { described_class.new }
 
-  let(:user_id) { SecureRandom.uuid_v7 }
+  let(:account_id) { SecureRandom.uuid_v7 }
   let(:stripe_customer_id) { "cus_test_#{SecureRandom.hex(8)}" }
 
-  describe "#upsert_by_user_id" do
-    it "creates a new row when user is new" do
-      row = repo.upsert_by_user_id(user_id: user_id, stripe_customer_id: stripe_customer_id)
-      expect(row.user_id).to eq(user_id)
+  describe "#upsert_by_account_id" do
+    it "creates a new row when account is new" do
+      row = repo.upsert_by_account_id(account_id: account_id, stripe_customer_id: stripe_customer_id)
+      expect(row.account_id).to eq(account_id)
       expect(row.stripe_customer_id).to eq(stripe_customer_id)
       expect(row.id).not_to be_nil
     end
 
-    it "updates stripe_customer_id when a row for user already exists" do
-      repo.upsert_by_user_id(user_id: user_id, stripe_customer_id: "cus_old")
-      updated = repo.upsert_by_user_id(user_id: user_id, stripe_customer_id: "cus_new")
+    it "updates stripe_customer_id when a row for account already exists" do
+      repo.upsert_by_account_id(account_id: account_id, stripe_customer_id: "cus_old")
+      updated = repo.upsert_by_account_id(account_id: account_id, stripe_customer_id: "cus_new")
       expect(updated.stripe_customer_id).to eq("cus_new")
-      expect(repo.find_by_user_id(user_id).stripe_customer_id).to eq("cus_new")
+      expect(repo.find_by_account_id(account_id).stripe_customer_id).to eq("cus_new")
     end
   end
 
-  describe "#find_by_user_id" do
+  describe "#find_by_account_id" do
     it "returns nil when no row exists" do
-      expect(repo.find_by_user_id(user_id)).to be_nil
+      expect(repo.find_by_account_id(account_id)).to be_nil
     end
 
     it "returns the row when it exists" do
-      repo.upsert_by_user_id(user_id: user_id, stripe_customer_id: stripe_customer_id)
-      row = repo.find_by_user_id(user_id)
+      repo.upsert_by_account_id(account_id: account_id, stripe_customer_id: stripe_customer_id)
+      row = repo.find_by_account_id(account_id)
       expect(row.stripe_customer_id).to eq(stripe_customer_id)
     end
   end
 
   describe "#find_by_stripe_customer_id" do
     it "returns the row when it exists" do
-      repo.upsert_by_user_id(user_id: user_id, stripe_customer_id: stripe_customer_id)
+      repo.upsert_by_account_id(account_id: account_id, stripe_customer_id: stripe_customer_id)
       row = repo.find_by_stripe_customer_id(stripe_customer_id)
-      expect(row.user_id).to eq(user_id)
+      expect(row.account_id).to eq(account_id)
     end
 
     it "returns nil when not found" do
@@ -571,25 +544,22 @@ RSpec.describe Billing::Repositories::CustomerRepository, type: :database do
 
   describe "#all" do
     it "returns every customer row" do
-      3.times { |i| repo.upsert_by_user_id(user_id: SecureRandom.uuid_v7, stripe_customer_id: "cus_#{i}") }
+      3.times { |i| repo.upsert_by_account_id(account_id: SecureRandom.uuid_v7, stripe_customer_id: "cus_#{i}") }
       expect(repo.all.size).to eq(3)
     end
   end
 end
 ```
 
-- [ ] **Step 2: spec を実行して失敗を確認**
+- [ ] **Step 3: 実行して FAIL 確認**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/repositories/customer_repository_spec.rb
 ```
 
-Expected: FAIL (`uninitialized constant Billing::Repositories::CustomerRepository`)
+- [ ] **Step 4: repository**
 
-- [ ] **Step 3: repository を実装**
-
-`dystopia/monolith/slices/billing/repositories/customer_repository.rb`:
+`slices/billing/repositories/customer_repository.rb`:
 
 ```ruby
 # frozen_string_literal: true
@@ -597,78 +567,97 @@ Expected: FAIL (`uninitialized constant Billing::Repositories::CustomerRepositor
 module Billing
   module Repositories
     class CustomerRepository < Billing::DB::Repo
-      def upsert_by_user_id(user_id:, stripe_customer_id:)
-        now = Time.now
-        existing = customers.where(user_id: user_id).one
+      def upsert_by_account_id(account_id:, stripe_customer_id:)
+        existing = customer_records.where(account_id: account_id).one
         if existing
-          customers.by_pk(existing.id).command(:update).call(
+          customer_records.by_pk(existing.id).command(:update).call(
             stripe_customer_id: stripe_customer_id,
-            updated_at: now
+            updated_at: Time.now
           )
         else
-          customers.command(:create).call(
+          customer_records.command(:create).call(
             id: SecureRandom.uuid_v7,
-            user_id: user_id,
+            account_id: account_id,
             stripe_customer_id: stripe_customer_id
           )
         end
       end
 
-      def find_by_user_id(user_id)
-        customers.where(user_id: user_id).one
+      def find_by_account_id(account_id)
+        customer_records.where(account_id: account_id).one
       end
 
       def find_by_stripe_customer_id(stripe_customer_id)
-        customers.where(stripe_customer_id: stripe_customer_id).one
+        customer_records.where(stripe_customer_id: stripe_customer_id).one
       end
 
       def all
-        customers.to_a
+        customer_records.to_a
       end
     end
   end
 end
 ```
 
-注: `customers` は ROM の relation。karte では `entry_records` / `access_records` のように `_records` suffix を使用しているが、これは karte の relation クラス側で自動命名を上書きしている可能性がある。実装時に karte の relation を確認し、同じ命名規約 (`customers` そのまま or `customer_records`) を採用する。
-
-- [ ] **Step 4: spec を実行して pass を確認**
+- [ ] **Step 5: PASS 確認 + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/repositories/customer_repository_spec.rb
-```
-
-Expected: 全 PASS
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add dystopia/monolith/slices/billing/repositories/customer_repository.rb \
+git add dystopia/monolith/slices/billing/relations/customers.rb \
+        dystopia/monolith/slices/billing/repositories/customer_repository.rb \
         dystopia/monolith/spec/slices/billing/repositories/customer_repository_spec.rb
-git commit -s -m "feat(monolith/billing): add CustomerRepository"
+git commit -s -m "feat(monolith/billing): add CustomerRepository and customers relation"
 ```
 
 ---
 
-## Task 6: SubscriptionRepository (TDD)
+## Task 6: SubscriptionRepository + relation (TDD)
 
 **Files:**
-- Create: `dystopia/monolith/spec/slices/billing/repositories/subscription_repository_spec.rb`
-- Create: `dystopia/monolith/slices/billing/repositories/subscription_repository.rb`
+- Create: `slices/billing/relations/subscriptions.rb`
+- Create: `spec/slices/billing/repositories/subscription_repository_spec.rb`
+- Create: `slices/billing/repositories/subscription_repository.rb`
 
 **Interfaces:**
-- Consumes: `Billing::DB::Repo`
-- Produces: `Billing::Repositories::SubscriptionRepository` with:
-  - `#upsert_by_stripe_id(user_id:, stripe_subscription_id:, stripe_price_id:, status:, current_period_end:, cancel_at_period_end:) -> Struct`
-  - `#find_by_user_id(user_id) -> Struct | nil`
+- Produces: `Billing::Repositories::SubscriptionRepository`
+  - `#upsert_by_stripe_id(account_id:, stripe_subscription_id:, stripe_price_id:, status:, current_period_end:, cancel_at_period_end:, canceled_at: nil) -> Struct`
+  - `#find_by_account_id(account_id) -> Struct | nil`
   - `#find_by_stripe_subscription_id(id) -> Struct | nil`
-  - `#find_active_by_user_id(user_id) -> Struct | nil` (`status IN ('trialing','active') AND current_period_end > now()`)
-  - `#mark_canceled(stripe_subscription_id:, canceled_at:)` (status=canceled, canceled_at セット)
+  - `#find_active_by_account_id(account_id) -> Struct | nil` (`status IN ('trialing','active') AND current_period_end > now()`)
+  - `#mark_canceled(stripe_subscription_id:, canceled_at:)`
 
-- [ ] **Step 1: 失敗する spec を書く**
+- [ ] **Step 1: relation**
 
-`dystopia/monolith/spec/slices/billing/repositories/subscription_repository_spec.rb`:
+`slices/billing/relations/subscriptions.rb`:
+
+```ruby
+# frozen_string_literal: true
+
+module Billing
+  module Relations
+    class Subscriptions < Billing::DB::Relation
+      schema(:billing__subscriptions, as: :subscription_records, infer: false) do
+        attribute :id, Types::String
+        attribute :account_id, Types::String
+        attribute :stripe_subscription_id, Types::String
+        attribute :stripe_price_id, Types::String
+        attribute :status, Types::String
+        attribute :current_period_end, Types::Time
+        attribute :cancel_at_period_end, Types::Bool
+        attribute :canceled_at, Types::Time.optional
+        attribute :created_at, Types::Time
+        attribute :updated_at, Types::Time
+
+        primary_key :id
+      end
+    end
+  end
+end
+```
+
+- [ ] **Step 2: 失敗する spec**
+
+`spec/slices/billing/repositories/subscription_repository_spec.rb`:
 
 ```ruby
 # frozen_string_literal: true
@@ -679,14 +668,14 @@ require "slices/billing/repositories/subscription_repository"
 RSpec.describe Billing::Repositories::SubscriptionRepository, type: :database do
   subject(:repo) { described_class.new }
 
-  let(:user_id) { SecureRandom.uuid_v7 }
+  let(:account_id) { SecureRandom.uuid_v7 }
   let(:sub_id) { "sub_#{SecureRandom.hex(8)}" }
   let(:price_id) { "price_test_guest" }
   let(:period_end) { Time.now + 30 * 24 * 60 * 60 }
 
   def upsert(overrides = {})
     repo.upsert_by_stripe_id(
-      user_id: user_id,
+      account_id: account_id,
       stripe_subscription_id: sub_id,
       stripe_price_id: price_id,
       status: "active",
@@ -709,30 +698,29 @@ RSpec.describe Billing::Repositories::SubscriptionRepository, type: :database do
       updated = upsert(status: "past_due", cancel_at_period_end: true)
       expect(updated.status).to eq("past_due")
       expect(updated.cancel_at_period_end).to be(true)
-      # 1 user 1 subscription 前提の unique(user_id) が守られていること
-      expect(repo.find_by_user_id(user_id).stripe_subscription_id).to eq(sub_id)
+      expect(repo.find_by_account_id(account_id).stripe_subscription_id).to eq(sub_id)
     end
   end
 
-  describe "#find_active_by_user_id" do
+  describe "#find_active_by_account_id" do
     it "returns row when status=active and current_period_end in future" do
       upsert(status: "active", current_period_end: Time.now + 3600)
-      expect(repo.find_active_by_user_id(user_id)).not_to be_nil
+      expect(repo.find_active_by_account_id(account_id)).not_to be_nil
     end
 
     it "returns row when status=trialing and current_period_end in future" do
       upsert(status: "trialing", current_period_end: Time.now + 3600)
-      expect(repo.find_active_by_user_id(user_id)).not_to be_nil
+      expect(repo.find_active_by_account_id(account_id)).not_to be_nil
     end
 
     it "returns nil when status=past_due" do
       upsert(status: "past_due", current_period_end: Time.now + 3600)
-      expect(repo.find_active_by_user_id(user_id)).to be_nil
+      expect(repo.find_active_by_account_id(account_id)).to be_nil
     end
 
     it "returns nil when current_period_end is in the past even if status=active" do
       upsert(status: "active", current_period_end: Time.now - 3600)
-      expect(repo.find_active_by_user_id(user_id)).to be_nil
+      expect(repo.find_active_by_account_id(account_id)).to be_nil
     end
   end
 
@@ -749,18 +737,9 @@ RSpec.describe Billing::Repositories::SubscriptionRepository, type: :database do
 end
 ```
 
-- [ ] **Step 2: spec を実行して失敗を確認**
+- [ ] **Step 3: 実装**
 
-```bash
-cd dystopia/monolith
-HANAMI_ENV=test bundle exec rspec spec/slices/billing/repositories/subscription_repository_spec.rb
-```
-
-Expected: FAIL
-
-- [ ] **Step 3: repository を実装**
-
-`dystopia/monolith/slices/billing/repositories/subscription_repository.rb`:
+`slices/billing/repositories/subscription_repository.rb`:
 
 ```ruby
 # frozen_string_literal: true
@@ -768,45 +747,44 @@ Expected: FAIL
 module Billing
   module Repositories
     class SubscriptionRepository < Billing::DB::Repo
-      def upsert_by_stripe_id(user_id:, stripe_subscription_id:, stripe_price_id:, status:,
+      def upsert_by_stripe_id(account_id:, stripe_subscription_id:, stripe_price_id:, status:,
                               current_period_end:, cancel_at_period_end:, canceled_at: nil)
-        now = Time.now
-        existing = subscriptions.where(stripe_subscription_id: stripe_subscription_id).one
+        existing = subscription_records.where(stripe_subscription_id: stripe_subscription_id).one
         attrs = {
-          user_id: user_id,
+          account_id: account_id,
           stripe_price_id: stripe_price_id,
           status: status,
           current_period_end: current_period_end,
           cancel_at_period_end: cancel_at_period_end,
           canceled_at: canceled_at,
-          updated_at: now
+          updated_at: Time.now
         }
         if existing
-          subscriptions.by_pk(existing.id).command(:update).call(attrs)
+          subscription_records.by_pk(existing.id).command(:update).call(attrs)
         else
-          subscriptions.command(:create).call(
+          subscription_records.command(:create).call(
             attrs.merge(id: SecureRandom.uuid_v7, stripe_subscription_id: stripe_subscription_id)
           )
         end
       end
 
-      def find_by_user_id(user_id)
-        subscriptions.where(user_id: user_id).one
+      def find_by_account_id(account_id)
+        subscription_records.where(account_id: account_id).one
       end
 
       def find_by_stripe_subscription_id(stripe_subscription_id)
-        subscriptions.where(stripe_subscription_id: stripe_subscription_id).one
+        subscription_records.where(stripe_subscription_id: stripe_subscription_id).one
       end
 
-      def find_active_by_user_id(user_id)
-        subscriptions
-          .where(user_id: user_id, status: %w[trialing active])
+      def find_active_by_account_id(account_id)
+        subscription_records
+          .where(account_id: account_id, status: %w[trialing active])
           .where { current_period_end > Time.now }
           .one
       end
 
       def mark_canceled(stripe_subscription_id:, canceled_at:)
-        subscriptions
+        subscription_records
           .where(stripe_subscription_id: stripe_subscription_id)
           .command(:update)
           .call(status: "canceled", canceled_at: canceled_at, updated_at: Time.now)
@@ -816,42 +794,57 @@ module Billing
 end
 ```
 
-- [ ] **Step 4: spec を実行して pass を確認**
+- [ ] **Step 4: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/repositories/subscription_repository_spec.rb
-```
-
-Expected: 全 PASS
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add dystopia/monolith/slices/billing/repositories/subscription_repository.rb \
+git add dystopia/monolith/slices/billing/relations/subscriptions.rb \
+        dystopia/monolith/slices/billing/repositories/subscription_repository.rb \
         dystopia/monolith/spec/slices/billing/repositories/subscription_repository_spec.rb
-git commit -s -m "feat(monolith/billing): add SubscriptionRepository"
+git commit -s -m "feat(monolith/billing): add SubscriptionRepository and subscriptions relation"
 ```
 
 ---
 
-## Task 7: StripeEventRepository (TDD)
+## Task 7: StripeEventRepository + relation (TDD)
 
 **Files:**
-- Create: `dystopia/monolith/spec/slices/billing/repositories/stripe_event_repository_spec.rb`
-- Create: `dystopia/monolith/slices/billing/repositories/stripe_event_repository.rb`
+- Create: `slices/billing/relations/stripe_events.rb`
+- Create: `spec/slices/billing/repositories/stripe_event_repository_spec.rb`
+- Create: `slices/billing/repositories/stripe_event_repository.rb`
 
 **Interfaces:**
-- Consumes: `Billing::DB::Repo`
-- Produces: `Billing::Repositories::StripeEventRepository` with:
+- Produces: `Billing::Repositories::StripeEventRepository`
   - `#find_by_stripe_event_id(id) -> Struct | nil`
   - `#insert_received(stripe_event_id:, event_type:, payload:) -> Struct` (`processed_at` は nil)
-  - `#mark_processed(stripe_event_id:)` (processed_at=now, error_message=nil)
-  - `#mark_failed(stripe_event_id:, error_message:)` (processed_at は nil のまま、error_message セット)
+  - `#mark_processed(stripe_event_id:)`
+  - `#mark_failed(stripe_event_id:, error_message:)`
 
-- [ ] **Step 1: 失敗する spec を書く**
+- [ ] **Step 1: relation**
 
-`dystopia/monolith/spec/slices/billing/repositories/stripe_event_repository_spec.rb`:
+```ruby
+# frozen_string_literal: true
+
+module Billing
+  module Relations
+    class StripeEvents < Billing::DB::Relation
+      schema(:billing__stripe_events, as: :stripe_event_records, infer: false) do
+        attribute :id, Types::String
+        attribute :stripe_event_id, Types::String
+        attribute :event_type, Types::String
+        attribute :payload, Types::Hash
+        attribute :processed_at, Types::Time.optional
+        attribute :error_message, Types::String.optional
+        attribute :received_at, Types::Time
+
+        primary_key :id
+      end
+    end
+  end
+end
+```
+
+- [ ] **Step 2: 失敗する spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -916,18 +909,7 @@ RSpec.describe Billing::Repositories::StripeEventRepository, type: :database do
 end
 ```
 
-- [ ] **Step 2: spec を実行して失敗を確認**
-
-```bash
-cd dystopia/monolith
-HANAMI_ENV=test bundle exec rspec spec/slices/billing/repositories/stripe_event_repository_spec.rb
-```
-
-Expected: FAIL
-
-- [ ] **Step 3: repository を実装**
-
-`dystopia/monolith/slices/billing/repositories/stripe_event_repository.rb`:
+- [ ] **Step 3: 実装**
 
 ```ruby
 # frozen_string_literal: true
@@ -936,11 +918,11 @@ module Billing
   module Repositories
     class StripeEventRepository < Billing::DB::Repo
       def find_by_stripe_event_id(stripe_event_id)
-        stripe_events.where(stripe_event_id: stripe_event_id).one
+        stripe_event_records.where(stripe_event_id: stripe_event_id).one
       end
 
       def insert_received(stripe_event_id:, event_type:, payload:)
-        stripe_events.command(:create).call(
+        stripe_event_records.command(:create).call(
           id: SecureRandom.uuid_v7,
           stripe_event_id: stripe_event_id,
           event_type: event_type,
@@ -949,14 +931,14 @@ module Billing
       end
 
       def mark_processed(stripe_event_id:)
-        stripe_events
+        stripe_event_records
           .where(stripe_event_id: stripe_event_id)
           .command(:update)
           .call(processed_at: Time.now, error_message: nil)
       end
 
       def mark_failed(stripe_event_id:, error_message:)
-        stripe_events
+        stripe_event_records
           .where(stripe_event_id: stripe_event_id)
           .command(:update)
           .call(error_message: error_message)
@@ -966,23 +948,16 @@ module Billing
 end
 ```
 
-注: `Sequel.pg_jsonb(payload)` は Postgres jsonb 列への insert に必要な wrapper。実装時に他 slice で jsonb を扱っている箇所があれば同じ方式を採用。無ければ `payload.to_json` + カラム型変換に頼る (要 verify)。
+注: `Sequel.pg_jsonb(payload)` は Postgres jsonb 列への insert に必要な wrapper (他 slice で jsonb を扱っている箇所があれば同じ方式を採用)。
 
-- [ ] **Step 4: spec を実行して pass を確認**
+- [ ] **Step 4: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/repositories/stripe_event_repository_spec.rb
-```
-
-Expected: 全 PASS
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add dystopia/monolith/slices/billing/repositories/stripe_event_repository.rb \
+git add dystopia/monolith/slices/billing/relations/stripe_events.rb \
+        dystopia/monolith/slices/billing/repositories/stripe_event_repository.rb \
         dystopia/monolith/spec/slices/billing/repositories/stripe_event_repository_spec.rb
-git commit -s -m "feat(monolith/billing): add StripeEventRepository"
+git commit -s -m "feat(monolith/billing): add StripeEventRepository and stripe_events relation"
 ```
 
 ---
@@ -990,20 +965,15 @@ git commit -s -m "feat(monolith/billing): add StripeEventRepository"
 ## Task 8: PlanRegistry config
 
 **Files:**
-- Create: `dystopia/monolith/spec/slices/billing/config/plan_registry_spec.rb`
-- Create: `dystopia/monolith/slices/billing/config/plan_registry.rb`
+- Create: `spec/slices/billing/config/plan_registry_spec.rb`
+- Create: `slices/billing/config/plan_registry.rb`
 
 **Interfaces:**
-- Consumes: `Hanami.app["settings"]`
 - Produces: `Billing::Config::PlanRegistry`
-  - `#price_id_for(role) -> String` (`role` は Integer: 1=Guest, 2=Cast)
-  - `UnsupportedRoleError` 例外クラス
+  - `#price_id_for(role) -> String` (`role` は Integer: 1=Guest, 2=Cast — identity proto Role enum に一致)
+  - `UnsupportedRoleError` 例外
 
-`identity__users.role` は Integer で `1 = Guest`。Cast の値は既存 code の実装を実装時に確認 (`Identity::Slice` 内の enum 定義を参照)。本 plan では `1=Guest`, `2=Cast` を仮定するが verify する。
-
-- [ ] **Step 1: 失敗する spec を書く**
-
-`dystopia/monolith/spec/slices/billing/config/plan_registry_spec.rb`:
+- [ ] **Step 1: 失敗する spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -1013,10 +983,7 @@ require "slices/billing/config/plan_registry"
 
 RSpec.describe Billing::Config::PlanRegistry do
   subject(:registry) do
-    described_class.new(
-      guest_price_id: "price_g",
-      cast_price_id: "price_c"
-    )
+    described_class.new(guest_price_id: "price_g", cast_price_id: "price_c")
   end
 
   it "returns guest price for role=1 (Guest)" do
@@ -1033,18 +1000,7 @@ RSpec.describe Billing::Config::PlanRegistry do
 end
 ```
 
-- [ ] **Step 2: spec を実行して失敗を確認**
-
-```bash
-cd dystopia/monolith
-HANAMI_ENV=test bundle exec rspec spec/slices/billing/config/plan_registry_spec.rb
-```
-
-Expected: FAIL
-
-- [ ] **Step 3: 実装**
-
-`dystopia/monolith/slices/billing/config/plan_registry.rb`:
+- [ ] **Step 2: 実装**
 
 ```ruby
 # frozen_string_literal: true
@@ -1075,18 +1031,10 @@ module Billing
 end
 ```
 
-- [ ] **Step 4: spec を実行して pass を確認**
+- [ ] **Step 3: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/config/plan_registry_spec.rb
-```
-
-Expected: 全 PASS
-
-- [ ] **Step 5: Commit**
-
-```bash
 git add dystopia/monolith/slices/billing/config/plan_registry.rb \
         dystopia/monolith/spec/slices/billing/config/plan_registry_spec.rb
 git commit -s -m "feat(monolith/billing): add PlanRegistry for role→price_id mapping"
@@ -1094,24 +1042,21 @@ git commit -s -m "feat(monolith/billing): add PlanRegistry for role→price_id m
 
 ---
 
-## Task 9: StripeClient adapter (real ::Stripe wrapper)
+## Task 9: StripeClient adapter
 
 **Files:**
-- Create: `dystopia/monolith/slices/billing/adapters/stripe_client.rb`
-- Create: `dystopia/monolith/spec/slices/billing/adapters/stripe_client_spec.rb` (interface のみ検証、real API は呼ばない)
+- Create: `slices/billing/adapters/stripe_client.rb`
+- Create: `spec/slices/billing/adapters/stripe_client_spec.rb` (signature 検証のみ)
 
 **Interfaces:**
-- Consumes: `::Stripe` (gem)、`Hanami.app["settings"]`
-- Produces: `Billing::Adapters::StripeClient` with:
-  - `#create_customer(user_id:, idempotency_key:) -> ::Stripe::Customer`
+- Produces: `Billing::Adapters::StripeClient`
+  - `#create_customer(account_id:, idempotency_key:) -> ::Stripe::Customer`
   - `#create_checkout_session(customer_id:, price_id:, success_url:, cancel_url:, idempotency_key:) -> ::Stripe::Checkout::Session`
   - `#create_billing_portal_session(customer_id:, return_url:, idempotency_key:) -> ::Stripe::BillingPortal::Session`
   - `#retrieve_subscription(stripe_subscription_id:) -> ::Stripe::Subscription`
-  - `#construct_webhook_event(payload:, sig_header:, secret:) -> ::Stripe::Event` (raises `Stripe::SignatureVerificationError` / `JSON::ParserError`)
+  - `#construct_webhook_event(payload:, sig_header:, secret:) -> ::Stripe::Event`
 
-- [ ] **Step 1: spec を書く (interface / signature 検証のみ)**
-
-`dystopia/monolith/spec/slices/billing/adapters/stripe_client_spec.rb`:
+- [ ] **Step 1: spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -1146,8 +1091,6 @@ end
 
 - [ ] **Step 2: 実装**
 
-`dystopia/monolith/slices/billing/adapters/stripe_client.rb`:
-
 ```ruby
 # frozen_string_literal: true
 
@@ -1160,9 +1103,9 @@ module Billing
         @api_key = api_key
       end
 
-      def create_customer(user_id:, idempotency_key:)
+      def create_customer(account_id:, idempotency_key:)
         ::Stripe::Customer.create(
-          { metadata: { user_id: user_id.to_s } },
+          { metadata: { account_id: account_id.to_s } },
           { api_key: @api_key, idempotency_key: idempotency_key }
         )
       end
@@ -1199,18 +1142,10 @@ module Billing
 end
 ```
 
-- [ ] **Step 3: spec を実行**
+- [ ] **Step 3: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/adapters/stripe_client_spec.rb
-```
-
-Expected: 全 PASS
-
-- [ ] **Step 4: Commit**
-
-```bash
 git add dystopia/monolith/slices/billing/adapters/stripe_client.rb \
         dystopia/monolith/spec/slices/billing/adapters/stripe_client_spec.rb
 git commit -s -m "feat(monolith/billing): add StripeClient adapter around the Stripe SDK"
@@ -1221,21 +1156,14 @@ git commit -s -m "feat(monolith/billing): add StripeClient adapter around the St
 ## Task 10: FakeStripeClient (spec support)
 
 **Files:**
-- Create: `dystopia/monolith/spec/support/billing/fake_stripe_client.rb`
-- Create: `dystopia/monolith/spec/support/billing/fake_stripe_client_spec.rb`
+- Create: `spec/support/billing/fake_stripe_client.rb`
+- Create: `spec/support/billing/fake_stripe_client_spec.rb`
 
 **Interfaces:**
-- Consumes: `Billing::Adapters::StripeClient` (interface parity)
-- Produces: `Spec::Billing::FakeStripeClient` (namespace は spec 内)
-  - StripeClient と同じ method signature
-  - in-memory hash で customer / subscription / checkout_session / portal_session を保持
-  - decisive な id (`cus_fake_<n>`, `sub_fake_<n>`, `cs_fake_<n>`, `ps_fake_<n>`) を返す
-  - `#construct_webhook_event` は fixed secret (`whsec_fake`) + 実 HMAC で通す実装 (`Stripe::Webhook::Signature` を使い実 SDK ロジックを再利用)
-  - test-only 補助: `#inject_subscription(user_id:, ...)`, `#raise_on_next_call(error)`, `#recorded_calls`, `#reset!`
+- Produces: `Spec::Billing::FakeStripeClient` (interface parity with `Billing::Adapters::StripeClient`)
+  - test 用補助: `#inject_subscription(id:, customer_id:, price_id:, status:, current_period_end:, cancel_at_period_end: false)`, `#raise_on_next_call(error)`, `#recorded_calls`, `#reset!`, `#generate_test_signature(payload:, timestamp:, secret:)`
 
-- [ ] **Step 1: fake の interface parity spec を書く**
-
-`dystopia/monolith/spec/support/billing/fake_stripe_client_spec.rb`:
+- [ ] **Step 1: parity + 挙動 spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -1247,29 +1175,27 @@ require "slices/billing/adapters/stripe_client"
 RSpec.describe Spec::Billing::FakeStripeClient do
   subject(:fake) { described_class.new }
 
-  it "has the same public interface as the real StripeClient" do
-    real_methods = Billing::Adapters::StripeClient.instance_methods(false).sort
-    fake_methods = (described_class.instance_methods(false) - described_class.instance_methods(true)).sort
-    # fake 側は test-only 補助 method を持つので、real の method 集合を include していれば OK
+  it "has every public method the real StripeClient exposes" do
+    real_methods = Billing::Adapters::StripeClient.instance_methods(false)
     real_methods.each do |m|
       expect(described_class.instance_methods).to include(m), "fake is missing #{m}"
     end
   end
 
-  it "create_customer returns a customer-like object with id and metadata" do
-    result = fake.create_customer(user_id: "user-1", idempotency_key: "k1")
+  it "create_customer returns a customer-like object with id and account_id metadata" do
+    result = fake.create_customer(account_id: "acct-1", idempotency_key: "k1")
     expect(result.id).to match(/\Acus_fake_/)
-    expect(result.metadata["user_id"]).to eq("user-1")
+    expect(result.metadata["account_id"]).to eq("acct-1")
   end
 
   it "create_customer is idempotent by idempotency_key" do
-    a = fake.create_customer(user_id: "user-1", idempotency_key: "same-key")
-    b = fake.create_customer(user_id: "user-1", idempotency_key: "same-key")
+    a = fake.create_customer(account_id: "acct-1", idempotency_key: "same-key")
+    b = fake.create_customer(account_id: "acct-1", idempotency_key: "same-key")
     expect(a.id).to eq(b.id)
   end
 
   it "create_checkout_session returns object with .url" do
-    fake.create_customer(user_id: "user-1", idempotency_key: "k1")
+    fake.create_customer(account_id: "acct-1", idempotency_key: "k1")
     session = fake.create_checkout_session(
       customer_id: "cus_fake_1", price_id: "price_x",
       success_url: "https://s", cancel_url: "https://c", idempotency_key: "k2"
@@ -1293,23 +1219,13 @@ RSpec.describe Spec::Billing::FakeStripeClient do
 end
 ```
 
-- [ ] **Step 2: spec 実行して失敗確認**
-
-```bash
-cd dystopia/monolith
-HANAMI_ENV=test bundle exec rspec spec/support/billing/fake_stripe_client_spec.rb
-```
-
-Expected: FAIL
-
-- [ ] **Step 3: FakeStripeClient を実装**
-
-`dystopia/monolith/spec/support/billing/fake_stripe_client.rb`:
+- [ ] **Step 2: 実装**
 
 ```ruby
 # frozen_string_literal: true
 
 require "stripe"
+require "ostruct"
 require "openssl"
 
 module Spec
@@ -1322,9 +1238,9 @@ module Spec
       end
 
       def reset!
-        @customers = {}          # cus_id -> {id, metadata}
-        @customers_by_key = {}   # idempotency_key -> cus_id
-        @subscriptions = {}      # sub_id -> Struct
+        @customers = {}
+        @customers_by_key = {}
+        @subscriptions = {}
         @sessions = {}
         @portal_sessions = {}
         @seq = { customer: 0, subscription: 0, session: 0, portal: 0 }
@@ -1352,16 +1268,14 @@ module Spec
         )
       end
 
-      # ---- StripeClient interface ----
-
-      def create_customer(user_id:, idempotency_key:)
+      def create_customer(account_id:, idempotency_key:)
         maybe_raise!
-        record(:create_customer, user_id: user_id, idempotency_key: idempotency_key)
+        record(:create_customer, account_id: account_id, idempotency_key: idempotency_key)
         return @customers[@customers_by_key[idempotency_key]] if @customers_by_key.key?(idempotency_key)
 
         @seq[:customer] += 1
         id = "cus_fake_#{@seq[:customer]}"
-        cus = OpenStruct.new(id: id, metadata: { "user_id" => user_id.to_s })
+        cus = OpenStruct.new(id: id, metadata: { "account_id" => account_id.to_s })
         @customers[id] = cus
         @customers_by_key[idempotency_key] = id
         cus
@@ -1401,8 +1315,6 @@ module Spec
         ::Stripe::Webhook.construct_event(payload, sig_header, secret)
       end
 
-      # ---- helpers for tests ----
-
       def generate_test_signature(payload:, timestamp: Time.now.to_i, secret: FAKE_SECRET)
         signed = "#{timestamp}.#{payload}"
         v1 = OpenSSL::HMAC.hexdigest("SHA256", secret, signed)
@@ -1426,18 +1338,10 @@ module Spec
 end
 ```
 
-- [ ] **Step 4: spec を実行して pass 確認**
+- [ ] **Step 3: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/support/billing/fake_stripe_client_spec.rb
-```
-
-Expected: 全 PASS
-
-- [ ] **Step 5: Commit**
-
-```bash
 git add dystopia/monolith/spec/support/billing/
 git commit -s -m "test(monolith/billing): add FakeStripeClient for spec-level Stripe substitution"
 ```
@@ -1447,17 +1351,13 @@ git commit -s -m "test(monolith/billing): add FakeStripeClient for spec-level St
 ## Task 11: Queries::ActiveSubscription (TDD)
 
 **Files:**
-- Create: `dystopia/monolith/spec/slices/billing/queries/active_subscription_spec.rb`
-- Create: `dystopia/monolith/slices/billing/queries/active_subscription.rb`
+- Create: `spec/slices/billing/queries/active_subscription_spec.rb`
+- Create: `slices/billing/queries/active_subscription.rb`
 
 **Interfaces:**
-- Consumes: `Billing::Repositories::SubscriptionRepository`
-- Produces: `Billing::Queries::ActiveSubscription`
-  - `#call(user_id) -> Struct | nil` (`SubscriptionRepository#find_active_by_user_id` の thin wrapper。他 slice から `::Billing::Slice["queries.active_subscription"]` で参照される entitlement 判定原型)
+- Produces: `Billing::Queries::ActiveSubscription#call(account_id) -> Struct | nil`
 
-- [ ] **Step 1: spec を書く**
-
-`dystopia/monolith/spec/slices/billing/queries/active_subscription_spec.rb`:
+- [ ] **Step 1: spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -1469,29 +1369,20 @@ RSpec.describe Billing::Queries::ActiveSubscription do
   let(:sub_repo) { double(:subscription_repo) }
   subject(:query) { described_class.new(subscription_repo: sub_repo) }
 
-  it "returns row from find_active_by_user_id" do
+  it "returns row from find_active_by_account_id" do
     row = double(:sub)
-    allow(sub_repo).to receive(:find_active_by_user_id).with("u1").and_return(row)
-    expect(query.call("u1")).to be(row)
+    allow(sub_repo).to receive(:find_active_by_account_id).with("a1").and_return(row)
+    expect(query.call("a1")).to be(row)
   end
 
   it "returns nil when repo returns nil" do
-    allow(sub_repo).to receive(:find_active_by_user_id).with("u1").and_return(nil)
-    expect(query.call("u1")).to be_nil
+    allow(sub_repo).to receive(:find_active_by_account_id).with("a1").and_return(nil)
+    expect(query.call("a1")).to be_nil
   end
 end
 ```
 
-- [ ] **Step 2: spec を実行して失敗確認**
-
-```bash
-cd dystopia/monolith
-HANAMI_ENV=test bundle exec rspec spec/slices/billing/queries/active_subscription_spec.rb
-```
-
-- [ ] **Step 3: 実装**
-
-`dystopia/monolith/slices/billing/queries/active_subscription.rb`:
+- [ ] **Step 2: 実装**
 
 ```ruby
 # frozen_string_literal: true
@@ -1507,24 +1398,18 @@ module Billing
         super(**kwargs.merge(subscription_repo: subscription_repo).compact)
       end
 
-      def call(user_id)
-        subscription_repo.find_active_by_user_id(user_id)
+      def call(account_id)
+        subscription_repo.find_active_by_account_id(account_id)
       end
     end
   end
 end
 ```
 
-- [ ] **Step 4: pass 確認**
+- [ ] **Step 3: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/queries/active_subscription_spec.rb
-```
-
-- [ ] **Step 5: Commit**
-
-```bash
 git add dystopia/monolith/slices/billing/queries/ \
         dystopia/monolith/spec/slices/billing/queries/
 git commit -s -m "feat(monolith/billing): add ActiveSubscription query for entitlement lookups"
@@ -1535,19 +1420,14 @@ git commit -s -m "feat(monolith/billing): add ActiveSubscription query for entit
 ## Task 12: GetMySubscription use case (TDD)
 
 **Files:**
-- Create: `dystopia/monolith/spec/slices/billing/use_cases/get_my_subscription_spec.rb`
-- Create: `dystopia/monolith/slices/billing/use_cases/get_my_subscription.rb`
+- Create: `spec/slices/billing/use_cases/get_my_subscription_spec.rb`
+- Create: `slices/billing/use_cases/get_my_subscription.rb`
 
 **Interfaces:**
-- Consumes: `Billing::Repositories::SubscriptionRepository`
-- Produces: `Billing::UseCases::GetMySubscription`
-  - `#call(user_id:) -> Hash | nil` — 未加入なら nil、そうでなければ `{ status: String, current_period_end: Time, cancel_at_period_end: Boolean, price_id: String }`
+- Produces: `Billing::UseCases::GetMySubscription#call(account_id:) -> Hash | nil`
+  - 未加入 nil、そうでなければ `{ status:, current_period_end:, cancel_at_period_end:, price_id: }`
 
-Handler 側で proto enum への変換を行う (`STATUS_UNSPECIFIED` 等)。use_case はドメイン形式のまま返す。
-
-- [ ] **Step 1: spec を書く**
-
-`dystopia/monolith/spec/slices/billing/use_cases/get_my_subscription_spec.rb`:
+- [ ] **Step 1: spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -1559,11 +1439,11 @@ RSpec.describe Billing::UseCases::GetMySubscription do
   let(:sub_repo) { double(:subscription_repo) }
   subject(:use_case) { described_class.new(subscription_repo: sub_repo) }
 
-  let(:user_id) { "u1" }
+  let(:account_id) { "a1" }
 
   it "returns nil when no subscription row exists" do
-    allow(sub_repo).to receive(:find_by_user_id).with(user_id).and_return(nil)
-    expect(use_case.call(user_id: user_id)).to be_nil
+    allow(sub_repo).to receive(:find_by_account_id).with(account_id).and_return(nil)
+    expect(use_case.call(account_id: account_id)).to be_nil
   end
 
   it "returns a hash mirroring the row" do
@@ -1574,9 +1454,9 @@ RSpec.describe Billing::UseCases::GetMySubscription do
       cancel_at_period_end: false,
       stripe_price_id: "price_g"
     )
-    allow(sub_repo).to receive(:find_by_user_id).with(user_id).and_return(row)
+    allow(sub_repo).to receive(:find_by_account_id).with(account_id).and_return(row)
 
-    result = use_case.call(user_id: user_id)
+    result = use_case.call(account_id: account_id)
     expect(result).to eq(
       status: "trialing",
       current_period_end: period_end,
@@ -1587,9 +1467,7 @@ RSpec.describe Billing::UseCases::GetMySubscription do
 end
 ```
 
-- [ ] **Step 2: 失敗確認 → 実装**
-
-`dystopia/monolith/slices/billing/use_cases/get_my_subscription.rb`:
+- [ ] **Step 2: 実装**
 
 ```ruby
 # frozen_string_literal: true
@@ -1605,8 +1483,8 @@ module Billing
         super(**kwargs.merge(subscription_repo: subscription_repo).compact)
       end
 
-      def call(user_id:)
-        row = subscription_repo.find_by_user_id(user_id)
+      def call(account_id:)
+        row = subscription_repo.find_by_account_id(account_id)
         return nil unless row
 
         {
@@ -1621,10 +1499,9 @@ module Billing
 end
 ```
 
-- [ ] **Step 3: pass 確認 + commit**
+- [ ] **Step 3: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/use_cases/get_my_subscription_spec.rb
 git add dystopia/monolith/slices/billing/use_cases/get_my_subscription.rb \
         dystopia/monolith/spec/slices/billing/use_cases/get_my_subscription_spec.rb
@@ -1636,24 +1513,15 @@ git commit -s -m "feat(monolith/billing): add GetMySubscription use case"
 ## Task 13: CreateCheckoutSession use case (TDD)
 
 **Files:**
-- Create: `dystopia/monolith/spec/slices/billing/use_cases/create_checkout_session_spec.rb`
-- Create: `dystopia/monolith/slices/billing/use_cases/create_checkout_session.rb`
+- Create: `spec/slices/billing/use_cases/create_checkout_session_spec.rb`
+- Create: `slices/billing/use_cases/create_checkout_session.rb`
 
 **Interfaces:**
-- Consumes:
-  - `Billing::Repositories::CustomerRepository`
-  - `Billing::Repositories::SubscriptionRepository`
-  - `Billing::Adapters::StripeClient` (fake 差し替え)
-  - `Billing::Config::PlanRegistry`
-  - `Hanami.app["settings"]` の `billing_success_url` / `billing_cancel_url`
-  - `Identity::Slice["repositories.user_repository"]` で `role` を取得 (実装時 verify、karte `create_entry.rb` に同 pattern あり)
-- Produces: `Billing::UseCases::CreateCheckoutSession`
-  - `#call(user_id:) -> Hash({ url: String })`
-  - 例外: `Billing::UseCases::CreateCheckoutSession::AlreadyActiveError` / `UnsupportedRoleError` / `UserNotFoundError`
+- Consumes: `CustomerRepository`, `SubscriptionRepository`, `StripeClient`, `PlanRegistry`, settings, `Identity::Slice["repositories.account_repository"]#find_by_id(sub)`
+- Produces: `Billing::UseCases::CreateCheckoutSession#call(account_id:) -> { url: String }`
+  - 例外: `AlreadyActiveError` / `AccountNotFoundError` / `UnsupportedRoleError`
 
-- [ ] **Step 1: spec を書く**
-
-`dystopia/monolith/spec/slices/billing/use_cases/create_checkout_session_spec.rb`:
+- [ ] **Step 1: spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -1665,7 +1533,7 @@ require "support/billing/fake_stripe_client"
 RSpec.describe Billing::UseCases::CreateCheckoutSession do
   let(:customer_repo) { double(:customer_repo) }
   let(:subscription_repo) { double(:subscription_repo) }
-  let(:user_repo) { double(:user_repo) }
+  let(:account_repo) { double(:account_repo) }
   let(:plan_registry) { Billing::Config::PlanRegistry.new(guest_price_id: "price_g", cast_price_id: "price_c") }
   let(:stripe_client) { Spec::Billing::FakeStripeClient.new }
 
@@ -1673,7 +1541,7 @@ RSpec.describe Billing::UseCases::CreateCheckoutSession do
     described_class.new(
       customer_repo: customer_repo,
       subscription_repo: subscription_repo,
-      user_repo: user_repo,
+      account_repo: account_repo,
       plan_registry: plan_registry,
       stripe_client: stripe_client,
       success_url: "https://app/success",
@@ -1681,106 +1549,104 @@ RSpec.describe Billing::UseCases::CreateCheckoutSession do
     )
   end
 
-  let(:user_id) { "u1" }
-  let(:guest_user) { OpenStruct.new(id: user_id, role: 1) }
-  let(:cast_user)  { OpenStruct.new(id: user_id, role: 2) }
+  let(:account_id) { "a1" }
+  let(:guest_account) { OpenStruct.new(id: account_id, role: 1) }
+  let(:cast_account)  { OpenStruct.new(id: account_id, role: 2) }
 
   before do
-    allow(subscription_repo).to receive(:find_active_by_user_id).with(user_id).and_return(nil)
+    allow(subscription_repo).to receive(:find_active_by_account_id).with(account_id).and_return(nil)
   end
 
-  context "when user is a guest with no prior customer" do
+  context "when account is a guest with no prior customer" do
     before do
-      allow(user_repo).to receive(:find_by_id).with(user_id).and_return(guest_user)
-      allow(customer_repo).to receive(:find_by_user_id).with(user_id).and_return(nil)
-      allow(customer_repo).to receive(:upsert_by_user_id)
+      allow(account_repo).to receive(:find_by_id).with(account_id).and_return(guest_account)
+      allow(customer_repo).to receive(:find_by_account_id).with(account_id).and_return(nil)
+      allow(customer_repo).to receive(:upsert_by_account_id)
     end
 
     it "creates a Stripe customer, upserts, and returns checkout url" do
-      expect(customer_repo).to receive(:upsert_by_user_id).with(user_id: user_id, stripe_customer_id: match(/\Acus_fake_/))
-      result = use_case.call(user_id: user_id)
+      expect(customer_repo).to receive(:upsert_by_account_id).with(account_id: account_id, stripe_customer_id: match(/\Acus_fake_/))
+      result = use_case.call(account_id: account_id)
       expect(result[:url]).to match(%r{\Ahttps://checkout\.stripe\.test/})
       calls = stripe_client.recorded_calls.map { |c| c[:method] }
       expect(calls).to include(:create_customer, :create_checkout_session)
     end
 
     it "uses the guest price id for role=1" do
-      use_case.call(user_id: user_id)
+      use_case.call(account_id: account_id)
       checkout_call = stripe_client.recorded_calls.find { |c| c[:method] == :create_checkout_session }
       expect(checkout_call[:args][:price_id]).to eq("price_g")
     end
   end
 
-  context "when user is a cast with existing customer" do
-    let(:existing_customer) { OpenStruct.new(user_id: user_id, stripe_customer_id: "cus_existing") }
+  context "when account is a cast with existing customer" do
+    let(:existing_customer) { OpenStruct.new(account_id: account_id, stripe_customer_id: "cus_existing") }
 
     before do
-      allow(user_repo).to receive(:find_by_id).with(user_id).and_return(cast_user)
-      allow(customer_repo).to receive(:find_by_user_id).with(user_id).and_return(existing_customer)
+      allow(account_repo).to receive(:find_by_id).with(account_id).and_return(cast_account)
+      allow(customer_repo).to receive(:find_by_account_id).with(account_id).and_return(existing_customer)
     end
 
     it "does NOT create a new Stripe customer" do
-      use_case.call(user_id: user_id)
+      use_case.call(account_id: account_id)
       call_methods = stripe_client.recorded_calls.map { |c| c[:method] }
       expect(call_methods).not_to include(:create_customer)
       expect(call_methods).to include(:create_checkout_session)
     end
 
     it "uses the cast price id and existing customer id" do
-      use_case.call(user_id: user_id)
+      use_case.call(account_id: account_id)
       checkout_call = stripe_client.recorded_calls.find { |c| c[:method] == :create_checkout_session }
       expect(checkout_call[:args][:price_id]).to eq("price_c")
       expect(checkout_call[:args][:customer_id]).to eq("cus_existing")
     end
   end
 
-  context "when user already has an active subscription" do
+  context "when account already has an active subscription" do
     before do
-      allow(user_repo).to receive(:find_by_id).with(user_id).and_return(guest_user)
-      allow(subscription_repo).to receive(:find_active_by_user_id).with(user_id).and_return(OpenStruct.new)
+      allow(account_repo).to receive(:find_by_id).with(account_id).and_return(guest_account)
+      allow(subscription_repo).to receive(:find_active_by_account_id).with(account_id).and_return(OpenStruct.new)
     end
 
     it "raises AlreadyActiveError" do
-      expect { use_case.call(user_id: user_id) }.to raise_error(described_class::AlreadyActiveError)
+      expect { use_case.call(account_id: account_id) }.to raise_error(described_class::AlreadyActiveError)
     end
   end
 
-  context "when user is unknown" do
-    before { allow(user_repo).to receive(:find_by_id).with(user_id).and_return(nil) }
+  context "when account is unknown" do
+    before { allow(account_repo).to receive(:find_by_id).with(account_id).and_return(nil) }
 
-    it "raises UserNotFoundError" do
-      expect { use_case.call(user_id: user_id) }.to raise_error(described_class::UserNotFoundError)
+    it "raises AccountNotFoundError" do
+      expect { use_case.call(account_id: account_id) }.to raise_error(described_class::AccountNotFoundError)
     end
   end
 
-  context "when user role has no billing plan" do
+  context "when account role has no billing plan" do
     before do
-      allow(user_repo).to receive(:find_by_id).with(user_id).and_return(OpenStruct.new(id: user_id, role: 99))
+      allow(account_repo).to receive(:find_by_id).with(account_id).and_return(OpenStruct.new(id: account_id, role: 99))
     end
 
     it "raises UnsupportedRoleError" do
-      expect { use_case.call(user_id: user_id) }.to raise_error(described_class::UnsupportedRoleError)
+      expect { use_case.call(account_id: account_id) }.to raise_error(described_class::UnsupportedRoleError)
     end
   end
 
   context "when Stripe raises APIConnectionError" do
     before do
-      allow(user_repo).to receive(:find_by_id).with(user_id).and_return(guest_user)
-      allow(customer_repo).to receive(:find_by_user_id).with(user_id).and_return(nil)
-      allow(customer_repo).to receive(:upsert_by_user_id)
+      allow(account_repo).to receive(:find_by_id).with(account_id).and_return(guest_account)
+      allow(customer_repo).to receive(:find_by_account_id).with(account_id).and_return(nil)
+      allow(customer_repo).to receive(:upsert_by_account_id)
       stripe_client.raise_on_next_call(Stripe::APIConnectionError.new("network"))
     end
 
     it "propagates the Stripe error" do
-      expect { use_case.call(user_id: user_id) }.to raise_error(Stripe::APIConnectionError)
+      expect { use_case.call(account_id: account_id) }.to raise_error(Stripe::APIConnectionError)
     end
   end
 end
 ```
 
-- [ ] **Step 2: 失敗確認 → 実装**
-
-`dystopia/monolith/slices/billing/use_cases/create_checkout_session.rb`:
+- [ ] **Step 2: 実装**
 
 ```ruby
 # frozen_string_literal: true
@@ -1789,7 +1655,7 @@ module Billing
   module UseCases
     class CreateCheckoutSession
       class AlreadyActiveError < StandardError; end
-      class UserNotFoundError < StandardError; end
+      class AccountNotFoundError < StandardError; end
       class UnsupportedRoleError < StandardError; end
 
       include Billing::Deps[
@@ -1800,7 +1666,7 @@ module Billing
       ]
 
       def initialize(customer_repo: nil, subscription_repo: nil, stripe_client: nil,
-                     plan_registry: nil, user_repo: nil,
+                     plan_registry: nil, account_repo: nil,
                      success_url: nil, cancel_url: nil, **kwargs)
         super(**kwargs.merge(
           customer_repo: customer_repo,
@@ -1808,32 +1674,32 @@ module Billing
           stripe_client: stripe_client,
           plan_registry: plan_registry
         ).compact)
-        @user_repo = user_repo
+        @account_repo = account_repo
         @success_url = success_url || Hanami.app["settings"].billing_success_url
         @cancel_url  = cancel_url  || Hanami.app["settings"].billing_cancel_url
       end
 
-      def call(user_id:)
-        user = user_repo.find_by_id(user_id)
-        raise UserNotFoundError, "user=#{user_id} not found" unless user
+      def call(account_id:)
+        account = account_repo.find_by_id(account_id)
+        raise AccountNotFoundError, "account=#{account_id} not found" unless account
 
         price_id = begin
-          plan_registry.price_id_for(user.role)
+          plan_registry.price_id_for(account.role)
         rescue Billing::Config::PlanRegistry::UnsupportedRoleError => e
           raise UnsupportedRoleError, e.message
         end
 
-        raise AlreadyActiveError, "user=#{user_id} already has active subscription" if subscription_repo.find_active_by_user_id(user_id)
+        raise AlreadyActiveError, "account=#{account_id} already has active subscription" if subscription_repo.find_active_by_account_id(account_id)
 
-        existing = customer_repo.find_by_user_id(user_id)
+        existing = customer_repo.find_by_account_id(account_id)
         stripe_customer_id = existing&.stripe_customer_id
         unless stripe_customer_id
           customer = stripe_client.create_customer(
-            user_id: user_id,
-            idempotency_key: "billing:create_customer:#{user_id}"
+            account_id: account_id,
+            idempotency_key: "billing:create_customer:#{account_id}"
           )
           stripe_customer_id = customer.id
-          customer_repo.upsert_by_user_id(user_id: user_id, stripe_customer_id: stripe_customer_id)
+          customer_repo.upsert_by_account_id(account_id: account_id, stripe_customer_id: stripe_customer_id)
         end
 
         session = stripe_client.create_checkout_session(
@@ -1841,25 +1707,24 @@ module Billing
           price_id: price_id,
           success_url: @success_url,
           cancel_url: @cancel_url,
-          idempotency_key: "billing:create_checkout:#{user_id}:#{Time.now.strftime('%Y%m%d%H')}"
+          idempotency_key: "billing:create_checkout:#{account_id}:#{Time.now.strftime('%Y%m%d%H')}"
         )
         { url: session.url }
       end
 
       private
 
-      def user_repo
-        @user_repo ||= ::Identity::Slice["repositories.user_repository"]
+      def account_repo
+        @account_repo ||= ::Identity::Slice["repositories.account_repository"]
       end
     end
   end
 end
 ```
 
-- [ ] **Step 3: pass + commit**
+- [ ] **Step 3: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/use_cases/create_checkout_session_spec.rb
 git add dystopia/monolith/slices/billing/use_cases/create_checkout_session.rb \
         dystopia/monolith/spec/slices/billing/use_cases/create_checkout_session_spec.rb
@@ -1871,21 +1736,14 @@ git commit -s -m "feat(monolith/billing): add CreateCheckoutSession use case"
 ## Task 14: CreateCustomerPortalSession use case (TDD)
 
 **Files:**
-- Create: `dystopia/monolith/spec/slices/billing/use_cases/create_customer_portal_session_spec.rb`
-- Create: `dystopia/monolith/slices/billing/use_cases/create_customer_portal_session.rb`
+- Create: `spec/slices/billing/use_cases/create_customer_portal_session_spec.rb`
+- Create: `slices/billing/use_cases/create_customer_portal_session.rb`
 
 **Interfaces:**
-- Consumes:
-  - `Billing::Repositories::CustomerRepository`
-  - `Billing::Adapters::StripeClient`
-  - `Hanami.app["settings"].billing_portal_return_url`
-- Produces: `Billing::UseCases::CreateCustomerPortalSession`
-  - `#call(user_id:) -> Hash({ url: String })`
+- Produces: `Billing::UseCases::CreateCustomerPortalSession#call(account_id:) -> { url: String }`
   - 例外: `CustomerNotCreatedError`
 
-- [ ] **Step 1: spec を書く**
-
-`dystopia/monolith/spec/slices/billing/use_cases/create_customer_portal_session_spec.rb`:
+- [ ] **Step 1: spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -1906,18 +1764,18 @@ RSpec.describe Billing::UseCases::CreateCustomerPortalSession do
     )
   end
 
-  let(:user_id) { "u1" }
+  let(:account_id) { "a1" }
 
-  it "raises when no customer row exists for the user" do
-    allow(customer_repo).to receive(:find_by_user_id).with(user_id).and_return(nil)
-    expect { use_case.call(user_id: user_id) }.to raise_error(described_class::CustomerNotCreatedError)
+  it "raises when no customer row exists for the account" do
+    allow(customer_repo).to receive(:find_by_account_id).with(account_id).and_return(nil)
+    expect { use_case.call(account_id: account_id) }.to raise_error(described_class::CustomerNotCreatedError)
   end
 
   it "returns a portal url when customer exists" do
-    allow(customer_repo).to receive(:find_by_user_id).with(user_id).and_return(
+    allow(customer_repo).to receive(:find_by_account_id).with(account_id).and_return(
       OpenStruct.new(stripe_customer_id: "cus_existing")
     )
-    result = use_case.call(user_id: user_id)
+    result = use_case.call(account_id: account_id)
     expect(result[:url]).to match(%r{\Ahttps://billing\.stripe\.test/})
     call = stripe_client.recorded_calls.first
     expect(call[:args][:customer_id]).to eq("cus_existing")
@@ -1927,8 +1785,6 @@ end
 ```
 
 - [ ] **Step 2: 実装**
-
-`dystopia/monolith/slices/billing/use_cases/create_customer_portal_session.rb`:
 
 ```ruby
 # frozen_string_literal: true
@@ -1948,14 +1804,14 @@ module Billing
         @return_url = return_url || Hanami.app["settings"].billing_portal_return_url
       end
 
-      def call(user_id:)
-        row = customer_repo.find_by_user_id(user_id)
-        raise CustomerNotCreatedError, "user=#{user_id} has no Stripe customer" unless row
+      def call(account_id:)
+        row = customer_repo.find_by_account_id(account_id)
+        raise CustomerNotCreatedError, "account=#{account_id} has no Stripe customer" unless row
 
         session = stripe_client.create_billing_portal_session(
           customer_id: row.stripe_customer_id,
           return_url: @return_url,
-          idempotency_key: "billing:create_portal:#{user_id}:#{Time.now.strftime('%Y%m%d%H')}"
+          idempotency_key: "billing:create_portal:#{account_id}:#{Time.now.strftime('%Y%m%d%H')}"
         )
         { url: session.url }
       end
@@ -1964,10 +1820,9 @@ module Billing
 end
 ```
 
-- [ ] **Step 3: pass + commit**
+- [ ] **Step 3: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/use_cases/create_customer_portal_session_spec.rb
 git add dystopia/monolith/slices/billing/use_cases/create_customer_portal_session.rb \
         dystopia/monolith/spec/slices/billing/use_cases/create_customer_portal_session_spec.rb
@@ -1979,25 +1834,17 @@ git commit -s -m "feat(monolith/billing): add CreateCustomerPortalSession use ca
 ## Task 15: ProcessWebhookEvent use case (TDD)
 
 **Files:**
-- Create: `dystopia/monolith/spec/slices/billing/use_cases/process_webhook_event_spec.rb`
-- Create: `dystopia/monolith/slices/billing/use_cases/process_webhook_event.rb`
+- Create: `spec/slices/billing/use_cases/process_webhook_event_spec.rb`
+- Create: `slices/billing/use_cases/process_webhook_event.rb`
 
 **Interfaces:**
-- Consumes:
-  - `Billing::Repositories::StripeEventRepository`
-  - `Billing::Repositories::CustomerRepository`
-  - `Billing::Repositories::SubscriptionRepository`
-- Produces: `Billing::UseCases::ProcessWebhookEvent`
-  - `#call(event:) -> Symbol` — 戻り値は `:processed` / `:duplicate` / `:ignored`。例外は上位に伝播 (webhook action 側で 500 応答)
-  - `event` は `::Stripe::Event` (Adapter が構築したもの)
+- Produces: `Billing::UseCases::ProcessWebhookEvent#call(event:) -> Symbol`
+  - `:processed` / `:duplicate` / `:ignored`
 
-Transaction は Sequel 経由: `Hanami.app["db.gateway"].connection.transaction { ... }`。
+Transaction: `Hanami.app["db.gateway"].connection.transaction { ... }`。
+Out-of-order defense: 既存 `billing__subscriptions.status == 'canceled'` なら upsert しない (`customer.subscription.updated` は無視)。
 
-Out-of-order defense: 既存 `billing__subscriptions` の `status` が `canceled` の場合、`customer.subscription.updated` を受けても upsert しない (canceled 終端ルール)。
-
-- [ ] **Step 1: spec を書く**
-
-`dystopia/monolith/spec/slices/billing/use_cases/process_webhook_event_spec.rb`:
+- [ ] **Step 1: spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -2018,13 +1865,13 @@ RSpec.describe Billing::UseCases::ProcessWebhookEvent, type: :database do
   let(:customer_repo) { Billing::Repositories::CustomerRepository.new }
   let(:subscription_repo) { Billing::Repositories::SubscriptionRepository.new }
 
-  let(:user_id) { SecureRandom.uuid_v7 }
+  let(:account_id) { SecureRandom.uuid_v7 }
   let(:stripe_customer_id) { "cus_1" }
   let(:stripe_subscription_id) { "sub_1" }
   let(:period_end) { Time.now + 3600 }
 
   before do
-    customer_repo.upsert_by_user_id(user_id: user_id, stripe_customer_id: stripe_customer_id)
+    customer_repo.upsert_by_account_id(account_id: account_id, stripe_customer_id: stripe_customer_id)
   end
 
   def make_event(type, subscription_status: "active", cancel_at_period_end: false, canceled_at: nil, price_id: "price_g")
@@ -2047,22 +1894,18 @@ RSpec.describe Billing::UseCases::ProcessWebhookEvent, type: :database do
   describe "customer.subscription.created" do
     it "upserts subscription and marks event processed" do
       event = make_event("customer.subscription.created", subscription_status: "trialing")
-      result = use_case.call(event: event)
-      expect(result).to eq(:processed)
+      expect(use_case.call(event: event)).to eq(:processed)
       sub = subscription_repo.find_by_stripe_subscription_id(stripe_subscription_id)
       expect(sub.status).to eq("trialing")
-      expect(sub.user_id).to eq(user_id)
-      stored = stripe_event_repo.find_by_stripe_event_id(event.id)
-      expect(stored.processed_at).not_to be_nil
+      expect(sub.account_id).to eq(account_id)
+      expect(stripe_event_repo.find_by_stripe_event_id(event.id).processed_at).not_to be_nil
     end
   end
 
   describe "customer.subscription.updated" do
     it "updates status to past_due" do
-      created = make_event("customer.subscription.created", subscription_status: "active")
-      use_case.call(event: created)
-      updated = make_event("customer.subscription.updated", subscription_status: "past_due")
-      use_case.call(event: updated)
+      use_case.call(event: make_event("customer.subscription.created", subscription_status: "active"))
+      use_case.call(event: make_event("customer.subscription.updated", subscription_status: "past_due"))
       expect(subscription_repo.find_by_stripe_subscription_id(stripe_subscription_id).status).to eq("past_due")
     end
   end
@@ -2090,8 +1933,7 @@ RSpec.describe Billing::UseCases::ProcessWebhookEvent, type: :database do
     it "returns :duplicate on the second call with the same event id" do
       event = make_event("customer.subscription.created")
       use_case.call(event: event)
-      second = use_case.call(event: event)
-      expect(second).to eq(:duplicate)
+      expect(use_case.call(event: event)).to eq(:duplicate)
     end
   end
 
@@ -2120,9 +1962,7 @@ RSpec.describe Billing::UseCases::ProcessWebhookEvent, type: :database do
 end
 ```
 
-- [ ] **Step 2: 失敗確認 → 実装**
-
-`dystopia/monolith/slices/billing/use_cases/process_webhook_event.rb`:
+- [ ] **Step 2: 実装**
 
 ```ruby
 # frozen_string_literal: true
@@ -2197,7 +2037,6 @@ module Billing
           )
           :processed
         else
-          # customer.subscription.trial_will_end / checkout.session.completed / それ以外は受信ログのみ
           :ignored
         end
       end
@@ -2210,7 +2049,7 @@ module Billing
         raise "no billing__customers row for stripe customer=#{object.customer}" unless customer
 
         subscription_repo.upsert_by_stripe_id(
-          user_id: customer.user_id,
+          account_id: customer.account_id,
           stripe_subscription_id: object.id,
           stripe_price_id: object.items.data.first.price.id,
           status: object.status,
@@ -2224,12 +2063,11 @@ module Billing
 end
 ```
 
-注: `current_period_end` は Stripe API version により Subscription 直下か Item 側に来る可能性 (spec §Open Items)。実装時に採用 API version を確認し、Item 側なら `object.items.data.first.current_period_end` を使う。
+注: `current_period_end` は Stripe API version により Subscription 直下か Item 側に来る可能性。実装時に採用 API version を確認し、Item 側なら `object.items.data.first.current_period_end` を使う。
 
-- [ ] **Step 3: pass + commit**
+- [ ] **Step 3: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/use_cases/process_webhook_event_spec.rb
 git add dystopia/monolith/slices/billing/use_cases/process_webhook_event.rb \
         dystopia/monolith/spec/slices/billing/use_cases/process_webhook_event_spec.rb
@@ -2241,18 +2079,16 @@ git commit -s -m "feat(monolith/billing): add ProcessWebhookEvent use case with 
 ## Task 16: BillingHandler (gRPC) + gRPC boot registration
 
 **Files:**
-- Create: `dystopia/monolith/slices/billing/grpc/handler.rb`
-- Create: `dystopia/monolith/slices/billing/grpc/billing_handler.rb`
-- Modify: `dystopia/monolith/bin/grpc` (BillingHandler の register)
-- Create: `dystopia/monolith/spec/slices/billing/grpc/billing_handler_spec.rb`
+- Create: `slices/billing/grpc/handler.rb`
+- Create: `slices/billing/grpc/billing_handler.rb`
+- Modify: `dystopia/monolith/bin/grpc`
+- Create: `spec/slices/billing/grpc/billing_handler_spec.rb`
 
 **Interfaces:**
-- Consumes: use cases (get_my_subscription / create_checkout_session / create_customer_portal_session)、`::Billing::V1::*` proto messages
 - Produces: `Billing::Grpc::BillingHandler` (Gruf handler)
+- Handler 境界: `current_user_id` (Cognito sub) を use case に `account_id:` で渡す
 
-- [ ] **Step 1: handler base を作る**
-
-`dystopia/monolith/slices/billing/grpc/handler.rb`:
+- [ ] **Step 1: handler base**
 
 ```ruby
 # frozen_string_literal: true
@@ -2270,9 +2106,7 @@ module Billing
 end
 ```
 
-- [ ] **Step 2: BillingHandler を実装**
-
-`dystopia/monolith/slices/billing/grpc/billing_handler.rb`:
+- [ ] **Step 2: BillingHandler**
 
 ```ruby
 # frozen_string_literal: true
@@ -2304,7 +2138,7 @@ module Billing
 
       def get_my_subscription
         authenticate_user!
-        result = get_uc.call(user_id: current_user_id)
+        result = get_uc.call(account_id: current_user_id)
         response = ::Billing::V1::GetMySubscriptionResponse.new
         response.subscription = subscription_to_proto(result) if result
         response
@@ -2312,13 +2146,13 @@ module Billing
 
       def create_checkout_session
         authenticate_user!
-        result = wrap_errors { checkout_uc.call(user_id: current_user_id) }
+        result = wrap_errors { checkout_uc.call(account_id: current_user_id) }
         ::Billing::V1::CreateCheckoutSessionResponse.new(url: result[:url])
       end
 
       def create_customer_portal_session
         authenticate_user!
-        result = wrap_errors { portal_uc.call(user_id: current_user_id) }
+        result = wrap_errors { portal_uc.call(account_id: current_user_id) }
         ::Billing::V1::CreateCustomerPortalSessionResponse.new(url: result[:url])
       end
 
@@ -2351,9 +2185,8 @@ module Billing
 
       def wrap_errors
         yield
-      rescue Billing::UseCases::CreateCheckoutSession::AlreadyActiveError => e
-        fail!(:failed_precondition, :failed_precondition, e.message)
-      rescue Billing::UseCases::CreateCheckoutSession::UserNotFoundError,
+      rescue Billing::UseCases::CreateCheckoutSession::AlreadyActiveError,
+             Billing::UseCases::CreateCheckoutSession::AccountNotFoundError,
              Billing::UseCases::CreateCheckoutSession::UnsupportedRoleError,
              Billing::UseCases::CreateCustomerPortalSession::CustomerNotCreatedError => e
         fail!(:failed_precondition, :failed_precondition, e.message)
@@ -2369,20 +2202,14 @@ module Billing
 end
 ```
 
-- [ ] **Step 3: bin/grpc に handler register を追加**
-
-`dystopia/monolith/bin/grpc` を Read して、他 handler が register される場所を探し (`Gruf.configure` 前後)、以下を該当箇所に追加:
+- [ ] **Step 3: `bin/grpc` に register 追加**
 
 ```ruby
 require_relative "../slices/billing/grpc/handler"
 require_relative "../slices/billing/grpc/billing_handler"
 ```
 
-karte 等が同様に手動 require されている場合その並びに沿う。
-
-- [ ] **Step 4: handler の light-weight spec (proto mapping と error dispatch のみ)**
-
-`dystopia/monolith/spec/slices/billing/grpc/billing_handler_spec.rb`:
+- [ ] **Step 4: light-weight spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -2402,12 +2229,9 @@ RSpec.describe Billing::Grpc::BillingHandler do
 end
 ```
 
-Handler の RPC 動作全体は Gruf の in-process test が必要で複雑なため、MVP では STATUS_MAP と静的 wire のみを spec で守り、実 RPC は Task 19 の dogfood で検証する。
-
-- [ ] **Step 5: pass + commit**
+- [ ] **Step 5: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/grpc/billing_handler_spec.rb
 git add dystopia/monolith/slices/billing/grpc/ \
         dystopia/monolith/spec/slices/billing/grpc/ \
@@ -2420,17 +2244,14 @@ git commit -s -m "feat(monolith/billing): add gRPC BillingHandler and register i
 ## Task 17: Webhook HTTP action + route
 
 **Files:**
-- Create: `dystopia/monolith/slices/billing/actions/webhooks/stripe.rb`
+- Create: `slices/billing/actions/webhooks/stripe.rb`
 - Modify: `dystopia/monolith/config/routes.rb`
-- Create: `dystopia/monolith/spec/slices/billing/actions/webhooks/stripe_spec.rb`
+- Create: `spec/slices/billing/actions/webhooks/stripe_spec.rb`
 
 **Interfaces:**
-- Consumes: `Billing::UseCases::ProcessWebhookEvent`, `Billing::Adapters::StripeClient#construct_webhook_event`, `Hanami.app["settings"].stripe_webhook_secret`
 - Produces: Hanami action at `POST /billing/webhooks/stripe`
 
-- [ ] **Step 1: action spec を書く**
-
-`dystopia/monolith/spec/slices/billing/actions/webhooks/stripe_spec.rb`:
+- [ ] **Step 1: action spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -2450,7 +2271,6 @@ RSpec.describe "POST /billing/webhooks/stripe", type: :database do
   let(:process_uc) { double(:process_uc) }
 
   before do
-    # Deps 差し替え。実装時に Billing::Slice の register override 方法を確認して差し替える。
     allow(Billing::Slice).to receive(:[]).and_call_original
     allow(Billing::Slice).to receive(:[]).with("adapters.stripe_client").and_return(fake_stripe)
     allow(Billing::Slice).to receive(:[]).with("use_cases.process_webhook_event").and_return(process_uc)
@@ -2490,9 +2310,7 @@ RSpec.describe "POST /billing/webhooks/stripe", type: :database do
 end
 ```
 
-- [ ] **Step 2: action を実装**
-
-`dystopia/monolith/slices/billing/actions/webhooks/stripe.rb`:
+- [ ] **Step 2: action**
 
 ```ruby
 # frozen_string_literal: true
@@ -2532,7 +2350,6 @@ module Billing
           rescue StandardError => e
             response.status = 500
             response.body = "handler error: #{e.class}"
-            # Stripe が retry (最大 3 日) するので例外は上に投げない
           end
         end
       end
@@ -2541,11 +2358,9 @@ module Billing
 end
 ```
 
-注: `Billing::Action` の base クラスが存在するかは実装時に verify。他 slice が Hanami action を持っているか (`identity` slice の routes.rb の TODO コメントから推測)。無ければ `Hanami::Action` を直接継承 (`class Stripe < ::Hanami::Action`) し、必要な base 定義は `slices/billing/action.rb` に置く。
+注: `Billing::Action` base の有無を実装時 verify。無ければ `::Hanami::Action` を直接継承し、`slices/billing/action.rb` に base を置く。
 
-- [ ] **Step 3: route を追加**
-
-`dystopia/monolith/config/routes.rb` を修正:
+- [ ] **Step 3: route**
 
 ```ruby
 # frozen_string_literal: true
@@ -2563,26 +2378,22 @@ module Monolith
 end
 ```
 
-- [ ] **Step 4: spec 実行 → pass**
+- [ ] **Step 4: PASS**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/actions/webhooks/stripe_spec.rb
 ```
 
-- [ ] **Step 5: raw body 保持の verify**
-
-Hanami の middleware chain が body を消費していないことを確認するため、以下を実行:
+- [ ] **Step 5: raw body 保持を verify**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec ruby -e '
   require "hanami/prepare"
   puts Hanami.app.config.middleware.stack.map(&:first).inspect
 '
 ```
 
-reader は出力を見て、body を触るような middleware (CSRF、body-parser 系) が action より前に居ないか確認。居る場合は billing action の path をこれらから除外する middleware 設定を追加 (実装時判断)。
+出力を見て body を触る middleware (CSRF、body-parser 系) が居ないか確認。居る場合は billing webhook path を除外する middleware 設定を追加 (実装時判断)。
 
 - [ ] **Step 6: Commit**
 
@@ -2599,15 +2410,13 @@ git commit -s -m "feat(monolith/billing): add Stripe webhook HTTP action and rou
 
 **Files:**
 - Create: `dystopia/monolith/lib/tasks/billing.rake`
-- Create: `dystopia/monolith/spec/slices/billing/tasks/reconcile_spec.rb`
+- Create: `slices/billing/tasks/reconcile.rb`
+- Create: `spec/slices/billing/tasks/reconcile_spec.rb`
 
 **Interfaces:**
-- Consumes: `Billing::Repositories::CustomerRepository#all`, `Billing::Repositories::SubscriptionRepository`, `Billing::Adapters::StripeClient#retrieve_subscription`
-- Produces: `rake billing:reconcile` task
+- Produces: `rake billing:reconcile` + `Billing::Tasks::Reconcile#call -> { checked:, updated:, errors: }`
 
-- [ ] **Step 1: reconcile ロジックを spec で駆動**
-
-`dystopia/monolith/spec/slices/billing/tasks/reconcile_spec.rb`:
+- [ ] **Step 1: spec**
 
 ```ruby
 # frozen_string_literal: true
@@ -2629,24 +2438,27 @@ RSpec.describe "billing:reconcile", type: :database do
     )
   end
 
-  it "creates mirror rows for subscriptions Stripe knows but DB does not" do
-    user = SecureRandom.uuid_v7
-    customer_repo.upsert_by_user_id(user_id: user, stripe_customer_id: "cus_1")
+  it "updates local mirror when Stripe status differs from DB" do
+    account = SecureRandom.uuid_v7
+    customer_repo.upsert_by_account_id(account_id: account, stripe_customer_id: "cus_1")
+    sub_repo.upsert_by_stripe_id(
+      account_id: account, stripe_subscription_id: "sub_x", stripe_price_id: "price_g",
+      status: "trialing", current_period_end: Time.now + 3600, cancel_at_period_end: false
+    )
     fake.inject_subscription(
       id: "sub_x", customer_id: "cus_1", price_id: "price_g",
       status: "active", current_period_end: Time.now + 3600
     )
-    # DB has no subscription row yet
     diff = reconcile.call
     expect(diff[:updated]).to eq(1)
     expect(sub_repo.find_by_stripe_subscription_id("sub_x").status).to eq("active")
   end
 
-  it "updates status when Stripe and DB differ" do
-    user = SecureRandom.uuid_v7
-    customer_repo.upsert_by_user_id(user_id: user, stripe_customer_id: "cus_2")
+  it "propagates status transition to past_due" do
+    account = SecureRandom.uuid_v7
+    customer_repo.upsert_by_account_id(account_id: account, stripe_customer_id: "cus_2")
     sub_repo.upsert_by_stripe_id(
-      user_id: user, stripe_subscription_id: "sub_y", stripe_price_id: "price_g",
+      account_id: account, stripe_subscription_id: "sub_y", stripe_price_id: "price_g",
       status: "active", current_period_end: Time.now + 3600, cancel_at_period_end: false
     )
     fake.inject_subscription(
@@ -2659,9 +2471,9 @@ RSpec.describe "billing:reconcile", type: :database do
 end
 ```
 
-- [ ] **Step 2: reconcile class を実装**
+**Note (spec 内で意図的に外している):** MVP スコープでは `known_id` (DB に既に mirror がある subscription) のみを Stripe に照会する。DB に customer 行はあるが subscription 行が無いケース (Stripe → DB 一方向欠落) は今回の reconcile では検出しない。webhook 消失は Stripe Dashboard の event resend で対応する。
 
-`dystopia/monolith/slices/billing/tasks/reconcile.rb`:
+- [ ] **Step 2: reconcile 実装**
 
 ```ruby
 # frozen_string_literal: true
@@ -2682,14 +2494,14 @@ module Billing
 
         @customer_repo.all.each do |customer|
           begin
-            local_sub = @subscription_repo.find_by_user_id(customer.user_id)
-            stripe_sub = fetch_stripe_subscription(local_sub&.stripe_subscription_id, customer.stripe_customer_id)
+            local_sub = @subscription_repo.find_by_account_id(customer.account_id)
+            stripe_sub = fetch_stripe_subscription(local_sub&.stripe_subscription_id)
             checked += 1
             next unless stripe_sub
 
             if needs_update?(local_sub, stripe_sub)
               @subscription_repo.upsert_by_stripe_id(
-                user_id: customer.user_id,
+                account_id: customer.account_id,
                 stripe_subscription_id: stripe_sub.id,
                 stripe_price_id: stripe_sub.items.data.first.price.id,
                 status: stripe_sub.status,
@@ -2701,7 +2513,7 @@ module Billing
             end
           rescue => e
             errors += 1
-            warn "reconcile error for user=#{customer.user_id}: #{e.class}: #{e.message}"
+            warn "reconcile error for account=#{customer.account_id}: #{e.class}: #{e.message}"
           end
         end
 
@@ -2710,7 +2522,7 @@ module Billing
 
       private
 
-      def fetch_stripe_subscription(known_id, _customer_id)
+      def fetch_stripe_subscription(known_id)
         return nil unless known_id
         @stripe_client.retrieve_subscription(stripe_subscription_id: known_id)
       rescue Stripe::InvalidRequestError
@@ -2728,11 +2540,7 @@ module Billing
 end
 ```
 
-**Note:** MVP スコープでは `known_id` (DB に既に mirror がある subscription) のみを Stripe に照会し、DB に無い subscription の発見 (Stripe → DB 一方向欠落) はスコープ外とする。DB 側に customer だが subscription 行が無い状態は「まだ購入していない or webhook 未着」で、後者は Stripe Dashboard の event resend で個別対応する。
-
-- [ ] **Step 3: rake task を作る**
-
-`dystopia/monolith/lib/tasks/billing.rake`:
+- [ ] **Step 3: rake task**
 
 ```ruby
 # frozen_string_literal: true
@@ -2751,10 +2559,9 @@ namespace :billing do
 end
 ```
 
-- [ ] **Step 4: pass + commit**
+- [ ] **Step 4: PASS + Commit**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing/tasks/reconcile_spec.rb
 git add dystopia/monolith/slices/billing/tasks/ \
         dystopia/monolith/spec/slices/billing/tasks/ \
@@ -2767,100 +2574,64 @@ git commit -s -m "feat(monolith/billing): add reconcile rake task for Stripe/DB 
 ## Task 19: Full-suite green + manual dogfood + Stripe dashboard checklist
 
 **Files:**
-- Modify: `docs/superpowers/specs/2026-08-26-billing-slice-design.md` — 「Rollout Considerations」に完了時の Dashboard 設定チェックリストを補足
+- Modify: `docs/superpowers/specs/2026-08-26-billing-slice-design.md` (Rollout Considerations に完了時の Dashboard 設定を追記)
 
 **Interfaces:** —
 
-- [ ] **Step 1: 全 billing spec を一括で回して green を確認**
+- [ ] **Step 1: 全 billing spec を一括 green**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec spec/slices/billing spec/support/billing spec/config/settings_spec.rb
 ```
 
-Expected: 全 PASS。1 個でも fail していれば実装に戻る。
-
-- [ ] **Step 2: 既存 spec suite に regression を出していないか確認**
+- [ ] **Step 2: 既存 suite regression check**
 
 ```bash
-cd dystopia/monolith
 HANAMI_ENV=test bundle exec rspec
 ```
 
-Expected: 全 PASS (billing 追加以前と同数以上の green)。既存 spec が壊れた場合は原因を特定して修正 (billing 追加が原因なら本 plan の task 内で修正)。
-
 - [ ] **Step 3: bundle install --frozen で lockfile 締め**
-
-```bash
-cd dystopia/monolith
-bundle install --frozen
-```
 
 - [ ] **Step 4: manual dogfood 前準備 (Stripe test mode)**
 
-Stripe Dashboard (test mode) で以下を作成:
+Stripe Dashboard (test mode) で以下を作成し、`.env.development` に値を投入:
 
 1. Product 2 つ ("Guest Premium", "Cast Premium")
-2. 各 product に月額 Price を作成 (JPY、trial period days = 7 で仮設定)
-3. Price ID を控える (`price_...`)
-4. Customer Portal 設定: cancel / update payment method / view invoices を enable、plan change を disable
-5. Webhook endpoint を追加 (URL は Stripe CLI forward の localhost で OK): `customer.subscription.created` / `.updated` / `.deleted` / `.trial_will_end` / `checkout.session.completed` を enable、signing secret を控える
-6. Secret key を控える
-
-`.env.development` に控えた値を投入:
-
-```
-STRIPE_API_KEY=sk_test_<controlled>
-STRIPE_WEBHOOK_SECRET=whsec_<controlled>
-STRIPE_PRICE_ID_GUEST=price_<guest>
-STRIPE_PRICE_ID_CAST=price_<cast>
-```
+2. 各 product に月額 Price (JPY、trial period days = 7)
+3. Customer Portal 設定: cancel / update payment method / view invoices を enable、plan change を disable
+4. Webhook endpoint: `customer.subscription.created` / `.updated` / `.deleted` / `.trial_will_end` / `checkout.session.completed` を enable
 
 - [ ] **Step 5: dogfood scenario 1 (Guest でサインアップ→trial→active)**
 
-以下は memory reference `reference_local_e2e_run` に従って monolith + frontend + Stripe CLI forward を起動して手動で確認する:
-
-```bash
-# ターミナル 1
-stripe listen --forward-to localhost:3001/billing/webhooks/stripe
-```
-
-以下 3 つを手動で確認 (該当画面が frontend に未実装なら gRPC call で直接叩く。frontend 統合は次フェーズ):
-
-1. Guest test user (role=1) を作り、`CreateCheckoutSession` を呼ぶ → 返ってきた URL に browser で遷移
-2. test card `4242 4242 4242 4242` で決済完了 → Stripe が webhook を送信 → monolith 側で `customer.subscription.created` が処理される
-3. `GetMySubscription` を呼ぶ → `status = TRIALING` が返る
-4. Stripe CLI: `stripe trigger customer.subscription.updated` (status=active に fixture 上変わるようなら active、そうでなければ Dashboard から手動で subscription を更新) → `GetMySubscription` で `ACTIVE` に遷移
+1. `stripe listen --forward-to localhost:<port>/billing/webhooks/stripe`
+2. Guest test account (Cognito 上に用意) で `CreateCheckoutSession` → 返却 URL に browser で遷移
+3. test card `4242 4242 4242 4242` で決済完了 → webhook 処理
+4. `GetMySubscription` で `TRIALING` 確認
+5. Dashboard から subscription を強制 active 化 → `GetMySubscription` で `ACTIVE` 遷移確認
 
 - [ ] **Step 6: dogfood scenario 2 (Portal cancel)**
 
-1. `CreateCustomerPortalSession` を呼び URL 取得 → browser 遷移
+1. `CreateCustomerPortalSession` → browser 遷移
 2. Portal で "Cancel subscription" (期末解約)
-3. return_url に戻る
-4. `GetMySubscription` を呼ぶ → `cancel_at_period_end = true`, status は変化なし (`ACTIVE`)
+3. `GetMySubscription` で `cancel_at_period_end = true`, status は `ACTIVE`
 
 - [ ] **Step 7: dogfood scenario 3 (out-of-order defense)**
 
-1. Stripe CLI: `stripe trigger customer.subscription.deleted` (現在の sub に対して発火する trigger は fixture で難しい場合、Dashboard で手動 cancel を実行)
-2. その直後に `stripe trigger customer.subscription.updated`
-3. `GetMySubscription` を呼ぶ → status は `CANCELED` のまま (updated で active に戻らないこと)
+1. Dashboard で subscription を手動 cancel → `customer.subscription.deleted` 発火
+2. Stripe CLI: `stripe trigger customer.subscription.updated`
+3. `GetMySubscription` で status は `CANCELED` のまま
 
 - [ ] **Step 8: dogfood scenario 4 (Cast plan)**
 
-Cast test user (role=2) を作って scenario 1〜2 を繰り返す。price_id が cast plan を指すことを確認。
+Cast test account で scenario 1〜2 を繰り返す。
 
 - [ ] **Step 9: gap があれば spec を追加して修正**
 
-dogfood で見つかった不整合は「症状 → 原因 → 対応 spec」の順で追記し、対応 task を新設して修正。memory `feedback_dogfood_finds_unit_gaps` に従う。
-
-- [ ] **Step 10: spec の Rollout Considerations に Dashboard 設定手順を反映**
-
-`docs/superpowers/specs/2026-08-26-billing-slice-design.md` の Rollout Considerations に、Step 4 で実際に設定した項目 (trial 日数の実値、Portal の実 config など) を反映する。仕様と実運用の乖離を防ぐ。
+- [ ] **Step 10: spec の Rollout Considerations に Dashboard 設定を反映**
 
 - [ ] **Step 11: PR 更新 + Ready for review 化**
 
 ```bash
-cd dystopia/monolith
 git add docs/superpowers/specs/2026-08-26-billing-slice-design.md
 git commit -s -m "docs(billing): reflect actual Stripe dashboard setup in rollout section"
 git push
@@ -2873,41 +2644,33 @@ Draft → Ready 化を Human に諮る (作業自動化ではなく、承認後�
 
 ## Self-Review Notes
 
-以下を実装者が Task 19 実行前に必ず確認する:
-
-1. **Spec の各節がタスクにマップされているか**:
-   - §Architecture → Task 2 (proto), Task 4 (DB scaffolding), Task 16 (gRPC), Task 17 (webhook action)
-   - §Data Model → Task 3 (migration), Task 5〜7 (repositories)
-   - §Mirror Rule → Task 13, 14, 15 (use cases)
+1. **Spec 各節 → task マッピング**:
+   - §Architecture → Task 2, 4, 5-7 (relations), 16, 17
+   - §Data Model → Task 3, 5-7
+   - §Mirror Rule → Task 13, 14, 15
    - §Data Flows → Task 13, 14, 15
    - §Error Handling → Task 13〜17 の各 spec
-   - §Testing → 各 task の TDD 内、Task 10 (FakeStripeClient), Task 19 (dogfood)
+   - §Testing → 各 task の TDD + Task 10 + Task 19
    - §Configuration → Task 1
    - §Rollout Considerations → Task 19
 
-2. **型・名前の一貫性**:
-   - `Billing::Repositories::CustomerRepository`, `SubscriptionRepository`, `StripeEventRepository`
-   - `Billing::UseCases::{GetMySubscription, CreateCheckoutSession, CreateCustomerPortalSession, ProcessWebhookEvent}`
-   - `Billing::Queries::ActiveSubscription`
-   - `Billing::Adapters::StripeClient`
-   - `Billing::Config::PlanRegistry`
-   - `Billing::Grpc::{Handler, BillingHandler}`
-   - `Billing::Actions::Webhooks::Stripe`
-   - `Billing::Tasks::Reconcile`
-   - `Spec::Billing::FakeStripeClient`
+2. **`account_id` 統一 check**:
+   - Repository param: `account_id:`、column: `account_id`
+   - Use case param: `account_id:`
+   - Handler: `current_user_id` (歴史名) を `account_id:` として use case に渡す
+   - Stripe metadata: `metadata: { account_id: <sub> }`
+   - Idempotency-Key: `"billing:*:<account_id>[:<ts>]"`
+   - Identity 参照: `Identity::Slice["repositories.account_repository"]#find_by_id(sub)` (Task 13)
 
-3. **未確定事項** (実装時に verify):
+3. **未確定事項** (実装時 verify):
    - `Types::String` が Hanami settings で使えるか (Task 1)
-   - relation 命名 (`customers` vs `customer_records`) — karte を verify (Task 5)
+   - relation の `Types::Bool` / `Types::Hash` 使用可否 (Task 6/7)
    - jsonb write の Sequel wrapper (Task 7)
-   - `identity__users.role` の Cast 値 (Task 8 で 2 と仮定、identity slice で verify)
-   - `Billing::Deps[]` が Hanami slice で auto-generate されるか (karte の書き方から yes と推測、Task 11 以降で verify)
+   - `Billing::Deps[]` の auto-generate (Task 11 以降)
    - `Billing::Action` base クラスの有無 (Task 17)
-   - Hanami middleware chain が raw body を保持するか (Task 17 Step 5)
+   - Hanami middleware chain の raw body 保持 (Task 17 Step 5)
    - Stripe API version と `current_period_end` の位置 (Task 15)
 
-4. **verify されるべき path** (実装時 sanity check):
-   - `dystopia/monolith/lib/tasks/*.rake` が rake から自動で load される仕組み (existing account.rake の load path を確認)
-   - `bin/grpc` の handler register 順序 (karte がどう入っているか)
-
-これらは実装時に対応し、想定と異なれば該当 task 内で spec / 実装を調整する。
+4. **verify されるべき path**:
+   - `lib/tasks/*.rake` が rake から自動 load される仕組み (existing account.rake で確認)
+   - `bin/grpc` の handler register 位置 (karte 参照)

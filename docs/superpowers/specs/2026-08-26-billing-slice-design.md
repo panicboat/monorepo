@@ -1,6 +1,6 @@
 # Billing Slice Design (Stripe Monthly Subscription)
 
-Date: 2026-08-26
+Date: 2026-08-26 (revised 2026-08-28 to reflect Cognito-based identity)
 Slice: `billing` (new)
 
 ## Overview
@@ -29,15 +29,24 @@ Slice: `billing` (new)
 
 ## Product Context
 
-- 対象アプリ: cast / guest 型サービス。1 user は `identity__users.role` カラムで Guest か Cast のどちらか一方に区別される (アプリレイヤで保証。DB 上は `casts.user_id` / `guests.user_id` にそれぞれ unique 制約が入り 1 user あたり最大 1 cast / 1 guest レコードだが、両テーブルへの同時登録を禁じる DB 制約はなく `role` カラムの排他運用で担保する)
+- 対象アプリ: cast / guest 型サービス。1 アカウントは `identity__accounts.role` により Guest か Cast のどちらか一方に区別される (アプリレイヤで保証)
 - 通貨: JPY 固定
 - 課金サイクル: 月次のみ
-- サブスクリプション形態: 1 user 高々 1 subscription (Free 時 0、Paid 中 1)
+- サブスクリプション形態: 1 account 高々 1 subscription (Free 時 0、Paid 中 1)
 - trial: あり (期間は Stripe Price 側で設定)
 - Stripe Customer 作成タイミング: 初回 Checkout 呼び出し時に lazy
 - 支払い UI: Stripe hosted (Checkout Session + Customer Portal)
 
-Cognito 移行と本 slice は破壊的変更を許容できる状態 (未運用) のため、identity 側の `user_id` 表現が将来変わっても再構築を許容する前提で、本設計は現行の `identity__users.id` (UUID) を billing 側の user 識別子として直接使用する。
+### Identity model (post-Cognito)
+
+`feat/identity-cognito-migration` (PR #1016, merged 2026-08-26) 後の identity は以下の形:
+
+- テーブル: `identity__accounts (id :uuid, role Integer, deactivated_at, created_at, updated_at)`
+- `accounts.id` は **Cognito user pool の `sub`** (UUID フォーマットの string)。認証は Cognito に完全委譲、監視すべき最小限のプロファイル (role + deactivated_at) のみ monolith が保持
+- 参照経路: `Identity::Slice["repositories.account_repository"]#find_by_id(sub) -> Struct(id, role, deactivated_at, ...)`
+- gRPC 認証層 (`Interceptors::AuthenticationInterceptor` + `lib/grpc/authenticatable.rb`) は Cognito sub を `Current.user_id` に格納する (module 名は歴史的経緯で `user_id` のままだが、値は Cognito sub = accounts.id)
+
+Billing はこの `accounts.id` を canonical な identifier として使う。billing 内の識別子名は `account_id` に統一する。`Current.user_id` (歴史名) を handler 境界で `account_id` に読み替える。
 
 ## Architecture
 
@@ -48,10 +57,13 @@ dystopia/monolith/slices/billing/
   adapters/
     stripe_client.rb              # ::Stripe SDK を薄くラップ (test で差し替え可能)
   config/
-    plan_registry.rb              # role → stripe_price_id マッピング (settings 経由)
-  contracts/                      # dry-validation contracts
+    plan_registry.rb              # role → stripe_price_id マッピング
   db/
     relation.rb / repo.rb / struct.rb
+  relations/
+    customers.rb                  # schema(:billing__customers, as: :customer_records, ...)
+    subscriptions.rb              # schema(:billing__subscriptions, as: :subscription_records, ...)
+    stripe_events.rb              # schema(:billing__stripe_events, as: :stripe_event_records, ...)
   grpc/
     billing_handler.rb            # Gruf handler
     handler.rb                    # Gruf 登録
@@ -69,6 +81,8 @@ dystopia/monolith/slices/billing/
     stripe_event_repository.rb
   queries/
     active_subscription.rb        # 他 slice からの entitlement 判定原型
+  tasks/
+    reconcile.rb                  # reconcile 実装 (rake から呼び出し)
 ```
 
 ### Proto (`proto/dystopia/billing/v1/service.proto`)
@@ -99,11 +113,15 @@ message Subscription {
   }
 }
 
+message GetMySubscriptionRequest {}
 message GetMySubscriptionResponse {
-  optional Subscription subscription = 1;  // 未加入 (完全 Free) は unset
+  Subscription subscription = 1;  // 未加入 (完全 Free) は unset
 }
 
+message CreateCheckoutSessionRequest {}
 message CreateCheckoutSessionResponse { string url = 1; }
+
+message CreateCustomerPortalSessionRequest {}
 message CreateCustomerPortalSessionResponse { string url = 1; }
 ```
 
@@ -137,54 +155,70 @@ ROM::SQL.migration do
   change do
     create_schema :billing
 
-    create_table :billing__customers do
-      column :id, :uuid, primary_key: true
-      column :user_id, :uuid, null: false
-      column :stripe_customer_id, String, null: false
-      column :created_at, DateTime, null: false, default: Sequel::CURRENT_TIMESTAMP
-      column :updated_at, DateTime, null: false, default: Sequel::CURRENT_TIMESTAMP
+    create_table :"billing__customers" do
+      column :id, :uuid, null: false
+      column :account_id, :uuid, null: false
+      column :stripe_customer_id, :text, null: false
+      column :created_at, :timestamptz, null: false, default: Sequel.lit("now()")
+      column :updated_at, :timestamptz, null: false, default: Sequel.lit("now()")
 
-      index :user_id, unique: true
-      index :stripe_customer_id, unique: true
+      primary_key [:id]
+      unique [:account_id], name: :uq_billing_customers_account_id
+      unique [:stripe_customer_id], name: :uq_billing_customers_stripe_customer_id
     end
 
-    create_table :billing__subscriptions do
-      column :id, :uuid, primary_key: true
-      column :user_id, :uuid, null: false
-      column :stripe_subscription_id, String, null: false
-      column :stripe_price_id, String, null: false
-      column :status, String, null: false
-      column :current_period_end, DateTime, null: false
-      column :cancel_at_period_end, TrueClass, null: false, default: false
-      column :canceled_at, DateTime, null: true
-      column :created_at, DateTime, null: false, default: Sequel::CURRENT_TIMESTAMP
-      column :updated_at, DateTime, null: false, default: Sequel::CURRENT_TIMESTAMP
+    create_table :"billing__subscriptions" do
+      column :id, :uuid, null: false
+      column :account_id, :uuid, null: false
+      column :stripe_subscription_id, :text, null: false
+      column :stripe_price_id, :text, null: false
+      column :status, :text, null: false
+      column :current_period_end, :timestamptz, null: false
+      column :cancel_at_period_end, :boolean, null: false, default: false
+      column :canceled_at, :timestamptz
+      column :created_at, :timestamptz, null: false, default: Sequel.lit("now()")
+      column :updated_at, :timestamptz, null: false, default: Sequel.lit("now()")
 
-      index :user_id, unique: true
-      index :stripe_subscription_id, unique: true
-      index :status
+      primary_key [:id]
+      unique [:account_id], name: :uq_billing_subscriptions_account_id
+      unique [:stripe_subscription_id], name: :uq_billing_subscriptions_stripe_subscription_id
     end
+    run <<~SQL
+      CREATE INDEX idx_billing_subscriptions_status
+        ON billing.subscriptions (status)
+    SQL
 
-    create_table :billing__stripe_events do
-      column :id, :uuid, primary_key: true
-      column :stripe_event_id, String, null: false
-      column :event_type, String, null: false
+    create_table :"billing__stripe_events" do
+      column :id, :uuid, null: false
+      column :stripe_event_id, :text, null: false
+      column :event_type, :text, null: false
       column :payload, :jsonb, null: false
-      column :processed_at, DateTime, null: true
-      column :error_message, String, null: true
-      column :received_at, DateTime, null: false, default: Sequel::CURRENT_TIMESTAMP
+      column :processed_at, :timestamptz
+      column :error_message, :text
+      column :received_at, :timestamptz, null: false, default: Sequel.lit("now()")
 
-      index :stripe_event_id, unique: true
-      index :event_type
-      index :processed_at
+      primary_key [:id]
+      unique [:stripe_event_id], name: :uq_billing_stripe_events_stripe_event_id
     end
+    run <<~SQL
+      CREATE INDEX idx_billing_stripe_events_event_type
+        ON billing.stripe_events (event_type)
+    SQL
+    run <<~SQL
+      CREATE INDEX idx_billing_stripe_events_processed_at
+        ON billing.stripe_events (processed_at)
+    SQL
   end
 end
 ```
 
-`billing__subscriptions.user_id` を unique にする根拠: 「1 user 高々 1 subscription」という product 前提。将来 tier や複数プラン購入が必要になったら unique を外し `(user_id, stripe_subscription_id)` の複合キー運用に切り替える。
+`billing__customers.account_id` / `billing__subscriptions.account_id` を unique にする根拠: 1 account = 1 role = 1 subscription という product 前提。将来 tier や複数プラン購入が必要になったら unique を外し `(account_id, stripe_subscription_id)` の複合キー運用に切り替える。
 
 `status` は Stripe の subscription status enum の文字列表現をそのまま格納: `trialing`, `active`, `incomplete`, `incomplete_expired`, `past_due`, `canceled`, `unpaid`, `paused`。
+
+### Relation namespace
+
+karte を含む既存 slice に倣い、各テーブルごとに `relations/<name>.rb` を作成して `schema(:table, as: :<name>_records, infer: false) do ... end` で ROM alias を宣言する。repository は `customer_records` / `subscription_records` / `stripe_event_records` を参照する。
 
 ## Mirror Rule
 
@@ -192,46 +226,47 @@ Stripe → DB の書き込み口は **webhook のみ** に限定する。write �
 
 | 契機 | 動作 |
 |---|---|
-| `CreateCheckoutSession` | `billing__customers` を lookup。未作成なら Stripe Customer API で作成 (metadata.user_id 付与) し upsert。Checkout Session を作成して URL 返却。subscription 行は作らない |
+| `CreateCheckoutSession` | `billing__customers` を lookup。未作成なら Stripe Customer API で作成 (`metadata.account_id` 付与) し upsert。Checkout Session を作成して URL 返却。subscription 行は作らない |
 | `CreateCustomerPortalSession` | `billing__customers` を lookup。Stripe Billing Portal Session を作成し URL 返却。DB 変更なし |
-| webhook `customer.subscription.created` | `billing__subscriptions` を upsert (user_id は `billing__customers.stripe_customer_id` 逆引き) |
+| webhook `customer.subscription.created` | `billing__subscriptions` を upsert (account_id は `billing__customers.stripe_customer_id` 逆引き) |
 | webhook `customer.subscription.updated` | 同 upsert (status / current_period_end / cancel_at_period_end 更新) |
 | webhook `customer.subscription.deleted` | `status = 'canceled'`, `canceled_at = now()` |
 | webhook `customer.subscription.trial_will_end` | 受信ログのみ (`stripe_events` に processed_at セット)。通知処理は次フェーズ |
 | webhook `checkout.session.completed` | 受信ログのみ。subscription 状態は `subscription.created` を authoritative とする (Stripe 公式推奨) |
 | webhook 未対応 event type | 受信ログのみで無視 |
 
-### Stripe Customer への user_id 引き渡し
+### Stripe Customer への account_id 引き渡し
 
-Customer 作成時に `metadata: { user_id: <uuid> }` を付与し、webhook 側では `stripe_customer_id` から `billing__customers` を引いて `user_id` を得る (metadata に依存しない逆引き経路を主とする。metadata は運用時の確認用)。
+Customer 作成時に `metadata: { account_id: <sub> }` を付与。webhook 側では `stripe_customer_id` から `billing__customers` を引いて `account_id` を得る (metadata に依存しない逆引き経路を主とし、metadata は運用時の確認用)。
 
 ### Idempotency
 
 Stripe API 呼び出しには Idempotency-Key を付ける:
-- Customer 作成: `"billing:create_customer:<user_id>"`
-- Checkout Session 作成: `"billing:create_checkout:<user_id>:<yyyymmddhh>"` (1 時間粒度)
-- Portal Session 作成: `"billing:create_portal:<user_id>:<yyyymmddhh>"`
+- Customer 作成: `"billing:create_customer:<account_id>"`
+- Checkout Session 作成: `"billing:create_checkout:<account_id>:<yyyymmddhh>"` (1 時間粒度)
+- Portal Session 作成: `"billing:create_portal:<account_id>:<yyyymmddhh>"`
 
 Frontend の重複クリック / DB upsert 失敗後の再試行時に、Stripe 側で重複 Customer を作らないことを保証する。
 
-### Free 状態の判定
+### Active subscription 判定
 
-- 完全 Free / trial 中 / paid の区別が必要な UI: `subscription_repository.find_by_user_id(user_id)` の行有無 + `status` を使用
-- entitlement 判定 (次フェーズ用の原型): `Billing::Queries::ActiveSubscription#call(user_id)` は `status IN ('trialing', 'active') AND current_period_end > now()` の 1 行を返す。`cancel_at_period_end` は entitlement 有効性に影響しない (期末までは有効)
+- 完全 Free / trial 中 / paid の区別が必要な UI: `subscription_repository.find_by_account_id(account_id)` の行有無 + `status` を使用
+- entitlement 判定 (次フェーズ用の原型): `Billing::Queries::ActiveSubscription#call(account_id)` は `status IN ('trialing', 'active') AND current_period_end > now()` の 1 行を返す。`cancel_at_period_end` は entitlement 有効性に影響しない (期末までは有効)
 
 ## Data Flows
 
 ### Flow A: Subscribe (Free → Trial/Paid)
 
 1. Frontend: `Upgrade` ボタン → gRPC `CreateCheckoutSession`
-2. Monolith: user role に対応する price_id を `PlanRegistry` から解決
-3. Monolith: `billing__customers` を lookup。未作成なら Stripe `POST /v1/customers` で作成 (metadata.user_id 付与) → `billing__customers` upsert
-4. Monolith: Stripe `POST /v1/checkout/sessions` を発行 (`mode=subscription`, `customer=<cus_...>`, `line_items=[{price_id, quantity=1}]`, `success_url`, `cancel_url`)
-5. Frontend: 返却 URL に `window.location` で redirect
-6. Stripe hosted: user が決済 or trial 開始 → success_url に redirect
-7. Stripe → Monolith: `checkout.session.completed` / `customer.subscription.created` webhook
-8. Monolith: subscription を mirror upsert
-9. Frontend: success_url 帰還後に `GetMySubscription` で最新状態取得
+2. Monolith handler: `Current.user_id` (Cognito sub) を `account_id` として use case に渡す
+3. Monolith: `Identity::Slice["repositories.account_repository"]#find_by_id(account_id)` で account.role を取得。role に対応する price_id を `PlanRegistry` から解決
+4. Monolith: `billing__customers` を lookup。未作成なら Stripe `POST /v1/customers` で作成 (`metadata: { account_id: <sub> }`) → `billing__customers` upsert
+5. Monolith: Stripe `POST /v1/checkout/sessions` を発行 (`mode=subscription`, `customer=<cus_...>`, `line_items=[{price_id, quantity=1}]`, `success_url`, `cancel_url`)
+6. Frontend: 返却 URL に `window.location` で redirect
+7. Stripe hosted: user が決済 or trial 開始 → success_url に redirect
+8. Stripe → Monolith: `checkout.session.completed` / `customer.subscription.created` webhook
+9. Monolith: subscription を mirror upsert
+10. Frontend: success_url 帰還後に `GetMySubscription` で最新状態取得
 
 Success URL は frontend settings 画面 (例: `/settings/billing?checkout=success`)。webhook 到達が redirect より遅れうるため、frontend は反映されるまで 3〜5 秒間隔で最大 3 回 re-fetch する UX を実装する。
 
@@ -262,7 +297,7 @@ POST /billing/webhooks/stripe
      - 既存 & processed_at == null → 再処理
      - 未登録 → payload 込みで insert
   4. event_type で dispatch (transaction 内):
-     - customer.subscription.created / .updated → subscription upsert
+     - customer.subscription.created / .updated → subscription upsert (account_id は customer 逆引き)
      - customer.subscription.deleted → status=canceled, canceled_at=now
      - customer.subscription.trial_will_end → 受信ログのみ
      - checkout.session.completed → 受信ログのみ
@@ -313,9 +348,9 @@ MVP では以下の 3 経路を用意:
 
 ### Observability
 
-monolith は既に OpenTelemetry SDK + auto-instrumentation 導入済み (Gemfile 確認済)。billing 側で追加する span attributes:
+monolith は既に OpenTelemetry SDK + auto-instrumentation 導入済み。billing 側で追加する span attributes:
 
-- `billing.user_id`
+- `billing.account_id`
 - `billing.stripe_customer_id`
 - `billing.stripe_subscription_id`
 - `billing.event_type` (webhook)
@@ -350,7 +385,7 @@ Price / Product は Stripe Dashboard で手動作成 (2 product × 各 1 price)�
 
 ### 差し替え戦略
 
-`Billing::Adapters::StripeClient` で Stripe SDK 呼び出しを一元化。spec では `Billing::Adapters::FakeStripeClient` (in-memory hash 実装) を Hanami DI で差し替える。webhook 署名は fake が固定 secret + 実 HMAC で通す挙動を再現。VCR / stub library には依存しない (fake は自前・最小)。
+`Billing::Adapters::StripeClient` で Stripe SDK 呼び出しを一元化。spec では `Spec::Billing::FakeStripeClient` (in-memory hash 実装) を Hanami DI で差し替える。webhook 署名は fake が固定 secret + 実 HMAC で通す挙動を再現。VCR / stub library には依存しない (fake は自前・最小)。
 
 ### Layers
 
@@ -382,7 +417,7 @@ Price / Product は Stripe Dashboard で手動作成 (2 product × 各 1 price)�
 - `cancel_at_period_end`, `current_period_end`, `price_id` の透過
 
 **`process_webhook_event`**
-- `customer.subscription.created` (新規 user) → upsert
+- `customer.subscription.created` (新規 account) → upsert
 - `customer.subscription.updated` (status 遷移) → 更新
 - `customer.subscription.deleted` → canceled + canceled_at
 - **out-of-order**: `deleted` 後の `updated` (status=active) → mirror を canceled のまま維持
@@ -399,21 +434,21 @@ Price / Product は Stripe Dashboard で手動作成 (2 product × 各 1 price)�
 
 ### Manual dogfood (MVP 受け入れ条件)
 
-memory の "Dogfood finds unit gaps" 教訓に従い、実装完了後に Stripe test mode で 1 セッション実機通しを必須とする:
+実装完了後に Stripe test mode で 1 セッション実機通しを必須とする:
 
 1. Stripe CLI で `stripe listen --forward-to localhost:<port>/billing/webhooks/stripe`
-2. frontend 起動、Guest test user で Upgrade → hosted checkout (test card `4242 4242 4242 4242`) → 成功
+2. frontend 起動、Guest test account (Cognito 上に用意) で Upgrade → hosted checkout (test card `4242 4242 4242 4242`) → 成功
 3. `GetMySubscription` で `TRIALING` 返却確認
-4. `stripe trigger customer.subscription.updated` (status=active 化) → ACTIVE 遷移確認
+4. `stripe trigger customer.subscription.updated` → ACTIVE 遷移確認
 5. Portal → cancel → `cancel_at_period_end=true` mirror 反映確認
-6. `stripe trigger invoice.payment_failed` → 呼び出しの受信のみ (MVP 実装で status 変更は subscription.updated 経由なのでこの trigger 単体では state 変わらないことも確認)
-7. Cast test user で同じフローを Cast price で実行
+6. `stripe trigger invoice.payment_failed` → 受信ログのみ (subscription state は subscription.updated 経由なのでこの trigger 単体では state 変わらないことも確認)
+7. Cast test account で同じフローを Cast price で実行
 
 上記全てが unit spec + dogfood で pass することが完了条件。dogfood で新たな gap が出た場合、spec を追加してから修正 (TDD)。
 
 ### CI
 
-monolith CI は現在 `bundle install --frozen` + image build のみで rspec を回さない (memory "Monolith verification"、"Bundle freeze check")。billing 導入時:
+monolith CI は `bundle install --frozen` + image build のみで rspec を回さない。billing 導入時:
 
 - Gemfile に `stripe` gem を追加 → `bundle install` → Gemfile.lock 更新
 - push 前にローカルで `bundle exec rspec slices/billing spec/slices/billing` を実行し green を確認 (CI 通過 ≠ テスト green)
@@ -421,7 +456,7 @@ monolith CI は現在 `bundle install --frozen` + image build のみで rspec �
 
 ## Rollout Considerations
 
-- **Feature flag は使わない**: この機能は未運用アプリへの追加であり、段階的 rollout / 既存ユーザー保護の要件がない (feedback "[Destroy and recreate]" 準拠)
+- **Feature flag は使わない**: この機能は未運用アプリへの追加であり、段階的 rollout / 既存アカウント保護の要件がない
 - **Stripe Dashboard 設定**: 実装完了後、以下を Dashboard で行う (実装 PR とは別作業):
   - Product / Price 作成 (Guest 用、Cast 用、それぞれ trial period 設定)
   - Customer Portal 設定 (cancel / update payment method / view invoices を有効、plan 変更を無効)
@@ -436,3 +471,4 @@ monolith CI は現在 `bundle install --frozen` + image build のみで rspec �
 - FakeStripeClient の具体 API 面 (実装時に Stripe SDK signatures と一致させる)
 - reconcile rake task の差分検出出力形式 (CLI stdout + OTel span attribute)
 - `current_period_end` の取得元 (使用する Stripe API version で Subscription object 直下か、Subscription Item 側にあるかを実装時に確認し、mirror 側の source を決定)
+- Hanami settings の string 型宣言方法 (`Types::String` が使えるか、他 slice の慣例を verify)
