@@ -13,7 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const text = typeof body.body === "string" ? body.body : "";
     const res = await karteClient.updateEntry(
       { entryId: id, rating, body: text },
-      { headers: buildGrpcHeaders(req) }
+      { headers: await buildGrpcHeaders(req) }
     );
     const e = res.entry;
     if (!e) {
@@ -47,7 +47,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const authError = requireAuth(req);
     if (authError) return authError;
     const { id } = await params;
-    await karteClient.deleteEntry({ entryId: id }, { headers: buildGrpcHeaders(req) });
+    await karteClient.deleteEntry({ entryId: id }, { headers: await buildGrpcHeaders(req) });
     return NextResponse.json({ ok: true });
   } catch (error: unknown) {
     return handleApiError(error, "DeleteKarte");

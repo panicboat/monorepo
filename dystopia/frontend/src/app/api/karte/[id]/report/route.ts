@@ -10,7 +10,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const { id } = await params;
     const body = await req.json().catch(() => ({}));
     const reason = typeof body.reason === "string" ? body.reason : "";
-    await karteClient.reportEntry({ entryId: id, reason }, { headers: buildGrpcHeaders(req) });
+    await karteClient.reportEntry({ entryId: id, reason }, { headers: await buildGrpcHeaders(req) });
     return NextResponse.json({ ok: true });
   } catch (error: unknown) {
     return handleApiError(error, "ReportKarte");

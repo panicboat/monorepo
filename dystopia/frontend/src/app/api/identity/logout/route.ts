@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { identityClient } from "@/lib/grpc";
-import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError } from "@/lib/api-helpers";
-import { getRefreshCookie, clearAuthCookies } from "@/lib/auth/cookies";
+import { getAccessCookie, clearAuthCookies } from "@/lib/auth/cookies";
+import { cognito } from "@/lib/cognito/adapter";
 
 export async function POST(req: NextRequest) {
   try {
-    const refreshToken = getRefreshCookie(req);
-
-    // Always clear cookies, even if there is no upstream token to revoke,
-    // so a missing refresh cookie does not leave a stale session on the device.
-    if (refreshToken) {
-      await identityClient.logout(
-        { refreshToken },
-        { headers: buildGrpcHeaders(req) }
-      );
+    const accessToken = getAccessCookie(req);
+    if (accessToken) {
+      await cognito().globalSignOut(accessToken).catch(() => {
+        // SILENT: local cookie removal must complete when Cognito sign-out fails.
+      });
     }
 
     const res = NextResponse.json({ ok: true });

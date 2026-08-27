@@ -138,48 +138,15 @@ CREATE TABLE footprints.visits (
 
 
 --
--- Name: refresh_tokens; Type: TABLE; Schema: identity; Owner: -
+-- Name: accounts; Type: TABLE; Schema: identity; Owner: -
 --
 
-CREATE TABLE identity.refresh_tokens (
+CREATE TABLE identity.accounts (
     id uuid NOT NULL,
-    user_id uuid NOT NULL,
-    expires_at timestamp without time zone NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    token_digest text NOT NULL
-);
-
-
---
--- Name: sms_verifications; Type: TABLE; Schema: identity; Owner: -
---
-
-CREATE TABLE identity.sms_verifications (
-    id uuid NOT NULL,
-    phone_number text NOT NULL,
-    code text NOT NULL,
-    expires_at timestamp without time zone NOT NULL,
-    verified_at timestamp without time zone,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    consumed_at timestamp without time zone,
-    failed_attempts integer DEFAULT 0 NOT NULL
-);
-
-
---
--- Name: users; Type: TABLE; Schema: identity; Owner: -
---
-
-CREATE TABLE identity.users (
-    id uuid NOT NULL,
-    phone_number text NOT NULL,
-    password_digest text NOT NULL,
-    role integer DEFAULT 1 NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    failed_login_attempts integer DEFAULT 0 NOT NULL,
-    locked_until timestamp without time zone,
-    deactivated_at timestamp without time zone
+    role integer NOT NULL,
+    deactivated_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -656,27 +623,11 @@ ALTER TABLE ONLY footprints.visits
 
 
 --
--- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: identity; Owner: -
+-- Name: accounts accounts_pkey; Type: CONSTRAINT; Schema: identity; Owner: -
 --
 
-ALTER TABLE ONLY identity.refresh_tokens
-    ADD CONSTRAINT refresh_tokens_pkey PRIMARY KEY (id);
-
-
---
--- Name: sms_verifications sms_verifications_pkey; Type: CONSTRAINT; Schema: identity; Owner: -
---
-
-ALTER TABLE ONLY identity.sms_verifications
-    ADD CONSTRAINT sms_verifications_pkey PRIMARY KEY (id);
-
-
---
--- Name: users users_pkey; Type: CONSTRAINT; Schema: identity; Owner: -
---
-
-ALTER TABLE ONLY identity.users
-    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY identity.accounts
+    ADD CONSTRAINT accounts_pkey PRIMARY KEY (id);
 
 
 --
@@ -998,38 +949,10 @@ CREATE INDEX idx_footprints_visits_visited_last ON footprints.visits USING btree
 
 
 --
--- Name: identity_refresh_tokens_token_digest_index; Type: INDEX; Schema: identity; Owner: -
+-- Name: idx_identity_accounts_deactivated_at; Type: INDEX; Schema: identity; Owner: -
 --
 
-CREATE UNIQUE INDEX identity_refresh_tokens_token_digest_index ON identity.refresh_tokens USING btree (token_digest);
-
-
---
--- Name: identity_refresh_tokens_user_id_index; Type: INDEX; Schema: identity; Owner: -
---
-
-CREATE INDEX identity_refresh_tokens_user_id_index ON identity.refresh_tokens USING btree (user_id);
-
-
---
--- Name: identity_sms_verifications_code_index; Type: INDEX; Schema: identity; Owner: -
---
-
-CREATE INDEX identity_sms_verifications_code_index ON identity.sms_verifications USING btree (code);
-
-
---
--- Name: identity_sms_verifications_phone_number_index; Type: INDEX; Schema: identity; Owner: -
---
-
-CREATE INDEX identity_sms_verifications_phone_number_index ON identity.sms_verifications USING btree (phone_number);
-
-
---
--- Name: identity_users_phone_number_index; Type: INDEX; Schema: identity; Owner: -
---
-
-CREATE UNIQUE INDEX identity_users_phone_number_index ON identity.users USING btree (phone_number);
+CREATE INDEX idx_identity_accounts_deactivated_at ON identity.accounts USING btree (deactivated_at) WHERE (deactivated_at IS NOT NULL);
 
 
 --
@@ -1334,14 +1257,6 @@ CREATE INDEX social_follows_follower_id_index ON social.follows USING btree (fol
 
 
 --
--- Name: refresh_tokens refresh_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: identity; Owner: -
---
-
-ALTER TABLE ONLY identity.refresh_tokens
-    ADD CONSTRAINT refresh_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES identity.users(id) ON DELETE CASCADE;
-
-
---
 -- Name: hashtags cast_post_hashtags_post_id_fkey; Type: FK CONSTRAINT; Schema: post; Owner: -
 --
 
@@ -1461,10 +1376,7 @@ ALTER TABLE ONLY profile.profile_areas
 SET search_path TO "$user", public;
 
 INSERT INTO schema_migrations (filename) VALUES
-('20260114002209_create_users.rb'),
-('20260114003157_create_sms_verifications.rb'),
 ('20260117030200_create_casts_table.rb'),
-('20260118000000_create_refresh_tokens.rb'),
 ('20260118120000_create_cast_plans_and_schedules.rb'),
 ('20260118130000_add_image_path_to_casts.rb'),
 ('20260120100000_rename_status_to_visibility.rb'),
@@ -1535,11 +1447,8 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260619000000_add_visit_count_to_footprints_visits.rb'),
 ('20260619010000_drop_offer_schedules.rb'),
 ('20260620000000_rename_portfolio_schema_to_profile.rb'),
-('20260626000000_add_consumed_at_and_failed_attempts_to_sms_verifications.rb'),
-('20260626000001_add_failed_login_attempts_and_locked_until_to_users.rb'),
-('20260626000002_rename_refresh_token_to_digest.rb'),
 ('20260628000000_create_karte_schema.rb'),
 ('20260628010000_drop_trust_schema.rb'),
-('20260629000000_add_deactivated_at_to_users.rb'),
 ('20260629010000_relax_messaging_columns_for_deactivation.rb'),
-('20260629020000_add_uploader_account_id_to_media_files.rb');
+('20260629020000_add_uploader_account_id_to_media_files.rb'),
+('20260826132540_create_identity_accounts.rb');

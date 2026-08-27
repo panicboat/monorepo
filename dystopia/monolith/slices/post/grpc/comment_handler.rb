@@ -214,7 +214,7 @@ module Post
 
         # Collect author avatar media IDs
         user_ids.each do |user_id|
-          user_type = user_adapter.get_user_type(user_id)
+          user_type = account_adapter.get_user_type(user_id)
           next unless user_type
 
           if user_type == "cast"

@@ -12,7 +12,7 @@ export async function POST(
     if (authError) return authError;
 
     const { id } = await params;
-    const headers = buildGrpcHeaders(req);
+    const headers = await buildGrpcHeaders(req);
     await notificationClient.markRead({ id }, { headers });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

@@ -69,7 +69,7 @@ module Profile
       end
 
       # Newest-first profiles for the suggested-users feature.
-      # role_filter: nil = no filter, 1 = guest only, 2 = cast only (subquery against identity.users).
+      # role_filter: nil = no filter, 1 = guest only, 2 = cast only (subquery against identity.accounts).
       # exclude_account_ids: viewer self + already-following + bidirectionally-blocked.
       # Cursor pagination over (created_at, account_id) — same shape as search_by_query.
       def list_recent(limit:, cursor: nil, exclude_account_ids: [], role_filter: nil)
@@ -78,7 +78,7 @@ module Profile
 
         if role_filter && [1, 2].include?(role_filter)
           scope = scope.where(
-            account_id: profiles.dataset.db[:identity__users].where(role: role_filter).select(:id)
+            account_id: profiles.dataset.db[:identity__accounts].where(role: role_filter).select(:id)
           )
         end
 
@@ -99,7 +99,7 @@ module Profile
       # on username or display_name. Cursor pagination over (created_at, account_id)
       # — profiles has no separate id column, account_id is the PK.
       # role_filter: nil/0 = no filter, 1 = guest only, 2 = cast only.
-      # Implemented via subquery against identity.users (account.id == users.id).
+      # Implemented via subquery against identity.accounts (account.id == accounts.id).
       def search_by_query(query:, limit: 20, cursor: nil, role_filter: nil)
         q = query.to_s.strip
         return [] if q.empty?
@@ -114,7 +114,7 @@ module Profile
 
         if role_filter && [1, 2].include?(role_filter)
           scope = scope.where(
-            account_id: profiles.dataset.db[:identity__users].where(role: role_filter).select(:id)
+            account_id: profiles.dataset.db[:identity__accounts].where(role: role_filter).select(:id)
           )
         end
 

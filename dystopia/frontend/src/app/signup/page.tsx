@@ -6,29 +6,27 @@ import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-type Step = "phone" | "code" | "details";
+type Step = "credentials" | "code";
 
 export default function SignupPage() {
-  const { requestSMS, verifySMS, register } = useAuth();
-
-  const [step, setStep] = useState<Step>("phone");
+  const { register, verify } = useAuth();
+  const [step, setStep] = useState<Step>("credentials");
   const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
-  const [verificationToken, setVerificationToken] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<1 | 2>(1);
+  const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
+  const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
-      await requestSMS(phone);
+      await register(phone, password);
       setStep("code");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "SMSの送信に失敗しました");
+      setError(err instanceof Error ? err.message : "登録に失敗しました");
     } finally {
       setSubmitting(false);
     }
@@ -39,26 +37,12 @@ export default function SignupPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const token = await verifySMS(phone, code);
-      setVerificationToken(token);
-      setStep("details");
+      await verify(phone, code, password, role);
+      window.location.href = "/onboarding";
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "認証コードの検証に失敗しました"
+        err instanceof Error ? err.message : "認証コードの検証に失敗しました",
       );
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleDetailsSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
-    try {
-      await register(phone, password, verificationToken, role);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "登録に失敗しました");
     } finally {
       setSubmitting(false);
     }
@@ -71,8 +55,8 @@ export default function SignupPage() {
           新規登録
         </h1>
 
-        {step === "phone" && (
-          <form onSubmit={handlePhoneSubmit} className="space-y-4">
+        {step === "credentials" && (
+          <form onSubmit={handleCredentialsSubmit} className="space-y-4">
             <div className="space-y-1">
               <label
                 htmlFor="phone"
@@ -91,71 +75,6 @@ export default function SignupPage() {
               />
             </div>
 
-            {error && (
-              <p role="alert" className="text-sm text-error">
-                {error}
-              </p>
-            )}
-
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? "送信中…" : "認証コードを送信"}
-            </Button>
-          </form>
-        )}
-
-        {step === "code" && (
-          <form onSubmit={handleCodeSubmit} className="space-y-4">
-            <p className="text-sm text-text-secondary">
-              {phone} に送信した6桁のコードを入力してください。
-            </p>
-
-            <div className="space-y-1">
-              <label
-                htmlFor="code"
-                className="text-sm font-medium text-text-primary"
-              >
-                認証コード
-              </label>
-              <Input
-                id="code"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]{6}"
-                maxLength={6}
-                placeholder="123456"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                required
-                autoComplete="one-time-code"
-              />
-            </div>
-
-            {error && (
-              <p role="alert" className="text-sm text-error">
-                {error}
-              </p>
-            )}
-
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? "確認中…" : "確認"}
-            </Button>
-
-            <button
-              type="button"
-              className="w-full text-sm text-text-secondary hover:text-text-primary"
-              onClick={() => {
-                setStep("phone");
-                setError(null);
-                setCode("");
-              }}
-            >
-              電話番号を変更
-            </button>
-          </form>
-        )}
-
-        {step === "details" && (
-          <form onSubmit={handleDetailsSubmit} className="space-y-4">
             <div className="space-y-1">
               <label
                 htmlFor="password"
@@ -211,8 +130,59 @@ export default function SignupPage() {
             )}
 
             <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? "登録中…" : "登録する"}
+              {submitting ? "送信中…" : "SMS を送信"}
             </Button>
+          </form>
+        )}
+
+        {step === "code" && (
+          <form onSubmit={handleCodeSubmit} className="space-y-4">
+            <p className="text-sm text-text-secondary">
+              {phone} に送信した6桁のコードを入力してください。
+            </p>
+
+            <div className="space-y-1">
+              <label
+                htmlFor="code"
+                className="text-sm font-medium text-text-primary"
+              >
+                認証コード
+              </label>
+              <Input
+                id="code"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                placeholder="123456"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                required
+                autoComplete="one-time-code"
+              />
+            </div>
+
+            {error && (
+              <p role="alert" className="text-sm text-error">
+                {error}
+              </p>
+            )}
+
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? "確認中…" : "登録を完了"}
+            </Button>
+
+            <button
+              type="button"
+              className="w-full text-sm text-text-secondary hover:text-text-primary"
+              onClick={() => {
+                setStep("credentials");
+                setError(null);
+                setCode("");
+              }}
+            >
+              入力内容を変更
+            </button>
           </form>
         )}
 

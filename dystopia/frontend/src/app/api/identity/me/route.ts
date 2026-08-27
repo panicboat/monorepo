@@ -1,24 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
 import { identityClient } from "@/lib/grpc";
-import { requireAuth, handleApiError } from "@/lib/api-helpers";
+import { buildGrpcHeaders, HEADER_NAMES } from "@/lib/request";
+import { handleApiError } from "@/lib/api-helpers";
 import {
-  callWithRefresh,
-  applyRefreshedCookies,
-} from "@/lib/auth/refresh-on-unauthenticated";
+  clearAuthCookies,
+  getAccessCookie,
+  getRefreshCookie,
+  setAuthCookies,
+} from "@/lib/auth/cookies";
+import { cognito } from "@/lib/cognito/adapter";
+import { verifyAccessToken } from "@/lib/cognito/jwks";
 
 export async function GET(req: NextRequest) {
   try {
-    const authError = requireAuth(req);
-    if (authError) return authError;
+    const accessToken = getAccessCookie(req);
+    if (!accessToken) {
+      const res = NextResponse.json({ error: "ログインしてください" }, { status: 401 });
+      clearAuthCookies(res);
+      return res;
+    }
 
-    const result = await callWithRefresh(req, (headers) =>
-      identityClient.getCurrentAccount({}, { headers })
+    let sub: string;
+    let refreshed: { accessToken: string; refreshToken: string } | null = null;
+    try {
+      ({ sub } = await verifyAccessToken(accessToken));
+    } catch {
+      const refreshToken = getRefreshCookie(req);
+      if (!refreshToken) {
+        const res = NextResponse.json({ error: "ログインしてください" }, { status: 401 });
+        clearAuthCookies(res);
+        return res;
+      }
+
+      try {
+        const tokens = await cognito().refreshTokens(refreshToken);
+        ({ sub } = await verifyAccessToken(tokens.accessToken));
+        refreshed = { accessToken: tokens.accessToken, refreshToken };
+      } catch {
+        const res = NextResponse.json({ error: "ログインしてください" }, { status: 401 });
+        clearAuthCookies(res);
+        return res;
+      }
+    }
+
+    const headers = await buildGrpcHeaders(req);
+    if (refreshed) headers[HEADER_NAMES.USER_ID] = sub;
+    const { account } = await identityClient.getAccount(
+      { sub },
+      { headers },
     );
-    if (!result.ok) return result.response;
-
-    const res = NextResponse.json(result.data);
-    return applyRefreshedCookies(res, result.refreshed);
-  } catch (error: unknown) {
-    return handleApiError(error, "GetCurrentUser");
+    const res = NextResponse.json({ account: { id: account!.id, role: account!.role } });
+    if (refreshed) setAuthCookies(res, refreshed);
+    return res;
+  } catch (error) {
+    return handleApiError(error, "Me");
   }
 }

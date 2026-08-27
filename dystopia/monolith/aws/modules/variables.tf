@@ -34,3 +34,8 @@ variable "db_security_group_name" {
   type        = string
   description = "RDS DB security group name (= 環境別に envs/{env}/terragrunt.hcl で指定)"
 }
+
+variable "cognito_user_pool_arn" {
+  type        = string
+  description = "Cognito User Pool ARN for administrative user deletion"
+}

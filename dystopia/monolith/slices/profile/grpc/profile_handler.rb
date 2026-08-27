@@ -126,15 +126,15 @@ module Profile
       end
 
       def role_for(account_id)
-        # Mirror identity__users.role onto the Profile proto so the UI does
+        # Mirror identity__accounts.role onto the Profile proto so the UI does
         # not have to infer role from cast-only attributes (heuristic was
         # the post-merge follow-up from PR #765).
-        user = identity_user_repo.find_by_id(account_id)
+        user = identity_account_repo.find_by_id(account_id)
         user&.role || 0
       end
 
-      def identity_user_repo
-        @identity_user_repo ||= ::Identity::Slice["repositories.user_repository"]
+      def identity_account_repo
+        @identity_account_repo ||= ::Identity::Slice["repositories.account_repository"]
       end
 
       def load_media_files(profile)

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { identityClient } from "@/lib/grpc";
-import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError } from "@/lib/api-helpers";
-import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 import { getRefreshCookie, setAuthCookies, clearAuthCookies } from "@/lib/auth/cookies";
+import { cognito } from "@/lib/cognito/adapter";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,12 +10,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "ログインしてください" }, { status: 401 });
     }
 
-    const response = await identityClient.refreshToken(
-      { refreshToken },
-      { headers: buildGrpcHeaders(req) }
-    );
-
-    if (!response.accessToken || !response.refreshToken) {
+    let refreshed;
+    try {
+      refreshed = await cognito().refreshTokens(refreshToken);
+    } catch {
       const res = NextResponse.json({ error: "ログインしてください" }, { status: 401 });
       clearAuthCookies(res);
       return res;
@@ -25,16 +21,11 @@ export async function POST(req: NextRequest) {
 
     const res = NextResponse.json({ ok: true });
     setAuthCookies(res, {
-      accessToken: response.accessToken,
-      refreshToken: response.refreshToken,
+      accessToken: refreshed.accessToken,
+      refreshToken,
     });
     return res;
-  } catch (error: unknown) {
-    if (isConnectError(error) && error.code === GrpcCode.UNAUTHENTICATED) {
-      const res = NextResponse.json({ error: "ログインしてください" }, { status: 401 });
-      clearAuthCookies(res);
-      return res;
-    }
+  } catch (error) {
     return handleApiError(error, "RefreshToken");
   }
 }

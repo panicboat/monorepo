@@ -12,7 +12,7 @@ export async function POST(
     if (authError) return authError;
 
     const { id } = await params;
-    const headers = buildGrpcHeaders(req);
+    const headers = await buildGrpcHeaders(req);
     const body = await req.json();
     const messageId: string = body?.messageId ?? "";
     if (!messageId) {

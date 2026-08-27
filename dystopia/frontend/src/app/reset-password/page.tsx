@@ -1,35 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-type Step = "phone" | "code" | "password";
+type Step = "phone" | "code" | "complete";
 
 export default function ResetPasswordPage() {
-  const { requestSMS, verifySMS, resetPassword } = useAuth();
+  const { forgotPassword, confirmForgotPassword } = useAuth();
   const router = useRouter();
-
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
-  const [verificationToken, setVerificationToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (step !== "complete") return;
+
+    const redirectTimer = window.setTimeout(() => {
+      router.push("/login");
+    }, 2000);
+
+    return () => window.clearTimeout(redirectTimer);
+  }, [router, step]);
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
-      await requestSMS(phone);
+      await forgotPassword(phone);
       setStep("code");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "SMSの送信に失敗しました");
+      setError(
+        err instanceof Error ? err.message : "認証コードの送信に失敗しました",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -40,28 +50,11 @@ export default function ResetPasswordPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const token = await verifySMS(phone, code);
-      setVerificationToken(token);
-      setStep("password");
+      await confirmForgotPassword(phone, code, newPassword);
+      setStep("complete");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "認証コードの検証に失敗しました"
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
-    try {
-      await resetPassword(phone, newPassword, verificationToken);
-      router.push("/login");
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "パスワードの再設定に失敗しました"
+        err instanceof Error ? err.message : "パスワードの再設定に失敗しました",
       );
     } finally {
       setSubmitting(false);
@@ -110,7 +103,8 @@ export default function ResetPasswordPage() {
         {step === "code" && (
           <form onSubmit={handleCodeSubmit} className="space-y-4">
             <p className="text-sm text-text-secondary">
-              {phone} に送信した6桁のコードを入力してください。
+              {phone}{" "}
+              に送信した6桁のコードと新しいパスワードを入力してください。
             </p>
 
             <div className="space-y-1">
@@ -134,32 +128,6 @@ export default function ResetPasswordPage() {
               />
             </div>
 
-            {error && (
-              <p role="alert" className="text-sm text-error">
-                {error}
-              </p>
-            )}
-
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? "確認中…" : "確認"}
-            </Button>
-
-            <button
-              type="button"
-              className="w-full text-sm text-text-secondary hover:text-text-primary"
-              onClick={() => {
-                setStep("phone");
-                setError(null);
-                setCode("");
-              }}
-            >
-              電話番号を変更
-            </button>
-          </form>
-        )}
-
-        {step === "password" && (
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div className="space-y-1">
               <label
                 htmlFor="new-password"
@@ -185,9 +153,28 @@ export default function ResetPasswordPage() {
             )}
 
             <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? "設定中…" : "パスワードを再設定する"}
+              {submitting ? "再設定中…" : "パスワードを再設定する"}
             </Button>
+
+            <button
+              type="button"
+              className="w-full text-sm text-text-secondary hover:text-text-primary"
+              onClick={() => {
+                setStep("phone");
+                setError(null);
+                setCode("");
+                setNewPassword("");
+              }}
+            >
+              電話番号を変更
+            </button>
           </form>
+        )}
+
+        {step === "complete" && (
+          <p className="text-center text-sm text-text-secondary">
+            パスワードを再設定しました。ログイン画面に移動します。
+          </p>
         )}
 
         <p className="mt-6 text-center text-sm text-text-secondary">

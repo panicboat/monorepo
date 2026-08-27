@@ -1,35 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { identityClient } from "@/lib/grpc";
-import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError } from "@/lib/api-helpers";
-import { setAuthCookies } from "@/lib/auth/cookies";
+import { cognito } from "@/lib/cognito/adapter";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { phoneNumber, password, verificationToken, role } = body;
+    const { phoneNumber, password } = (await req.json()) as {
+      phoneNumber: string;
+      password: string;
+    };
 
-    const response = await identityClient.register(
-      {
-        phoneNumber,
-        password,
-        verificationToken,
-        role,
-      },
-      { headers: buildGrpcHeaders(req) }
-    );
-
-    if (!response.accessToken || !response.refreshToken) {
-      return NextResponse.json({ error: "登録に失敗しました" }, { status: 500 });
+    try {
+      await cognito().signUp(phoneNumber, password);
+    } catch (err) {
+      if (err instanceof Error && err.name === "UsernameExistsException") {
+        return NextResponse.json(
+          { error: "この電話番号は既に登録されています" },
+          { status: 409 },
+        );
+      }
+      throw err;
     }
 
-    const res = NextResponse.json({ account: response.account });
-    setAuthCookies(res, {
-      accessToken: response.accessToken,
-      refreshToken: response.refreshToken,
-    });
-    return res;
-  } catch (error: unknown) {
+    return NextResponse.json({ ok: true });
+  } catch (error) {
     return handleApiError(error, "Register");
   }
 }

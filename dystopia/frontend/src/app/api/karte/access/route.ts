@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   try {
     const authError = requireAuth(req);
     if (authError) return authError;
-    const res = await karteClient.getMyAccess({}, { headers: buildGrpcHeaders(req) });
+    const res = await karteClient.getMyAccess({}, { headers: await buildGrpcHeaders(req) });
     return NextResponse.json({
       hasAccess: !!res.hasAccess,
       grantedAt: res.grantedAt

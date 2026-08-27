@@ -11,6 +11,15 @@ terraform {
   source = "../../modules"
 }
 
+dependency "cognito" {
+  config_path = "../../../../frontend/aws/envs/production"
+
+  mock_outputs = {
+    user_pool_arn = "arn:aws:cognito-idp:ap-northeast-1:000000000000:userpool/mock"
+  }
+  mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
+}
+
 remote_state {
   backend = "s3"
   generate = {
@@ -37,4 +46,5 @@ inputs = {
   db_identifier          = "monolith-production"
   db_subnet_group_name   = "monolith-production"
   db_security_group_name = "monolith-database-production"
+  cognito_user_pool_arn  = dependency.cognito.outputs.user_pool_arn
 }

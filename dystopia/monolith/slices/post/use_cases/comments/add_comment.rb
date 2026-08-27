@@ -7,7 +7,7 @@ module Post
         include Post::Deps[
           comment_repo: "repositories.comment_repository",
           post_repo: "repositories.post_repository",
-          user_adapter: "adapters.user_adapter"
+          account_adapter: "adapters.account_adapter"
         ]
 
         MAX_CONTENT_LENGTH = 1000
@@ -15,7 +15,7 @@ module Post
 
         def call(post_id:, user_id:, content:, parent_id: nil, media: [])
           # Validate user exists via adapter (cross-schema reference)
-          raise UserNotFoundError unless user_adapter.user_exists?(user_id)
+          raise UserNotFoundError unless account_adapter.user_exists?(user_id)
 
           # Validate post exists
           post = post_repo.find_by_id(post_id)
