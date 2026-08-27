@@ -22,13 +22,63 @@ describe("createFakeAdapter", () => {
     const adapter = createFakeAdapter();
     await adapter.signUp("+15551234567", "Passw0rd!");
 
-    await expect(adapter.initiateAuth("+15551234567", "Passw0rd!")).rejects.toThrow(/UserNotConfirmed/);
+    await expect(adapter.initiateAuth("+15551234567", "Passw0rd!")).rejects.toMatchObject({
+      name: "UserNotConfirmedException",
+    });
   });
 
   it("rejects an incorrect confirmation code", async () => {
     const adapter = createFakeAdapter();
     await adapter.signUp("+15551234567", "Passw0rd!");
 
-    await expect(adapter.confirmSignUp("+15551234567", "999999")).rejects.toThrow(/CodeMismatch/);
+    await expect(adapter.confirmSignUp("+15551234567", "999999")).rejects.toMatchObject({
+      name: "CodeMismatchException",
+    });
+  });
+
+  it("uses the AWS SDK exception name for a duplicate sign-up", async () => {
+    const adapter = createFakeAdapter();
+    await adapter.signUp("+15551234567", "Passw0rd!");
+
+    await expect(adapter.signUp("+15551234567", "Passw0rd!")).rejects.toMatchObject({
+      name: "UsernameExistsException",
+    });
+  });
+
+  it("uses the AWS SDK exception name for an unknown user", async () => {
+    const adapter = createFakeAdapter();
+
+    await expect(adapter.confirmSignUp("+15551234567", FAKE_CONFIRMATION_CODE)).rejects.toMatchObject({
+      name: "UserNotFoundException",
+    });
+    await expect(adapter.initiateAuth("+15551234567", "Passw0rd!")).rejects.toMatchObject({
+      name: "UserNotFoundException",
+    });
+    await expect(adapter.forgotPassword("+15551234567")).rejects.toMatchObject({
+      name: "UserNotFoundException",
+    });
+    await expect(
+      adapter.confirmForgotPassword("+15551234567", FAKE_CONFIRMATION_CODE, "AnotherPass!"),
+    ).rejects.toMatchObject({
+      name: "UserNotFoundException",
+    });
+  });
+
+  it("uses the AWS SDK exception name for invalid credentials", async () => {
+    const adapter = createFakeAdapter();
+    await adapter.signUp("+15551234567", "Passw0rd!");
+    await adapter.confirmSignUp("+15551234567", FAKE_CONFIRMATION_CODE);
+
+    await expect(adapter.initiateAuth("+15551234567", "WrongPassw0rd!")).rejects.toMatchObject({
+      name: "NotAuthorizedException",
+    });
+    await expect(adapter.refreshTokens("not-a-refresh-token")).rejects.toMatchObject({
+      name: "NotAuthorizedException",
+    });
+    await expect(
+      adapter.confirmForgotPassword("+15551234567", "999999", "AnotherPass!"),
+    ).rejects.toMatchObject({
+      name: "CodeMismatchException",
+    });
   });
 });

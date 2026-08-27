@@ -28,10 +28,18 @@ async function signAccessToken(sub: string, expSeconds = 3600): Promise<string> 
     .sign(privateKey);
 }
 
+function cognitoError(name: string, message: string): Error {
+  const error = new Error(message);
+  error.name = name;
+  return error;
+}
+
 export function createFakeAdapter(): CognitoAdapter {
   return {
     async signUp(phone, password) {
-      if (users.has(phone)) throw new Error("UsernameExistsException");
+      if (users.has(phone)) {
+        throw cognitoError("UsernameExistsException", "User already exists");
+      }
 
       const sub = randomUUID();
       users.set(phone, { sub, password, confirmed: false });
@@ -39,16 +47,22 @@ export function createFakeAdapter(): CognitoAdapter {
     },
     async confirmSignUp(phone, code) {
       const user = users.get(phone);
-      if (!user) throw new Error("UserNotFoundException");
-      if (code !== FAKE_CONFIRMATION_CODE) throw new Error("CodeMismatchException");
+      if (!user) throw cognitoError("UserNotFoundException", "User not found");
+      if (code !== FAKE_CONFIRMATION_CODE) {
+        throw cognitoError("CodeMismatchException", "Confirmation code is invalid");
+      }
 
       user.confirmed = true;
     },
     async initiateAuth(phone, password): Promise<Tokens> {
       const user = users.get(phone);
-      if (!user) throw new Error("UserNotFoundException");
-      if (!user.confirmed) throw new Error("UserNotConfirmedException");
-      if (user.password !== password) throw new Error("NotAuthorizedException");
+      if (!user) throw cognitoError("UserNotFoundException", "User not found");
+      if (!user.confirmed) {
+        throw cognitoError("UserNotConfirmedException", "User is not confirmed");
+      }
+      if (user.password !== password) {
+        throw cognitoError("NotAuthorizedException", "Incorrect username or password");
+      }
 
       const accessToken = await signAccessToken(user.sub);
       const idToken = await signAccessToken(user.sub);
@@ -62,7 +76,9 @@ export function createFakeAdapter(): CognitoAdapter {
       const sub = refreshToken.startsWith("fake-refresh:")
         ? refreshToken.slice("fake-refresh:".length)
         : null;
-      if (!sub) throw new Error("NotAuthorizedException");
+      if (!sub) {
+        throw cognitoError("NotAuthorizedException", "Invalid refresh token");
+      }
 
       const accessToken = await signAccessToken(sub);
       const idToken = await signAccessToken(sub);
@@ -70,12 +86,16 @@ export function createFakeAdapter(): CognitoAdapter {
     },
     async globalSignOut() {},
     async forgotPassword(phone) {
-      if (!users.has(phone)) throw new Error("UserNotFoundException");
+      if (!users.has(phone)) {
+        throw cognitoError("UserNotFoundException", "User not found");
+      }
     },
     async confirmForgotPassword(phone, code, newPassword) {
       const user = users.get(phone);
-      if (!user) throw new Error("UserNotFoundException");
-      if (code !== FAKE_CONFIRMATION_CODE) throw new Error("CodeMismatchException");
+      if (!user) throw cognitoError("UserNotFoundException", "User not found");
+      if (code !== FAKE_CONFIRMATION_CODE) {
+        throw cognitoError("CodeMismatchException", "Confirmation code is invalid");
+      }
 
       user.password = newPassword;
     },

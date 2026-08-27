@@ -77,4 +77,30 @@ describe("POST /api/identity/verify", () => {
     expect(res.status).toBe(400);
     expect(identity.createAccount).not.toHaveBeenCalled();
   });
+
+  it("returns 400 when Cognito provides the exception class in name", async () => {
+    const error = new Error("Confirmation code is invalid");
+    error.name = "CodeMismatchException";
+    cognitoMocks.adapter = {
+      ...createFakeAdapter(),
+      confirmSignUp: async () => {
+        throw error;
+      },
+    };
+    const { POST } = await import("./route");
+    const req = new NextRequest("http://localhost/api/identity/verify", {
+      method: "POST",
+      body: JSON.stringify({
+        phoneNumber: "+15551234567",
+        code: "999999",
+        password: "Passw0rd!Passw0rd!",
+        role: 1,
+      }),
+    });
+
+    const res = await POST(req);
+
+    expect(res.status).toBe(400);
+    expect(identity.createAccount).not.toHaveBeenCalled();
+  });
 });

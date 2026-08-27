@@ -41,4 +41,23 @@ describe("POST /api/identity/register", () => {
     const res = await POST(req2);
     expect(res.status).toBe(409);
   });
+
+  it("returns 409 when Cognito provides the exception class in name", async () => {
+    const error = new Error("User already exists");
+    error.name = "UsernameExistsException";
+    cognitoMocks.adapter = {
+      ...createFakeAdapter(),
+      signUp: async () => {
+        throw error;
+      },
+    };
+    const req = new NextRequest("http://localhost/api/identity/register", {
+      method: "POST",
+      body: JSON.stringify({ phoneNumber: "+15551234567", password: "Passw0rd!Passw0rd!" }),
+    });
+
+    const res = await POST(req);
+
+    expect(res.status).toBe(409);
+  });
 });

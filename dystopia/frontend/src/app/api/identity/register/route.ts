@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     try {
       await cognito().signUp(phoneNumber, password);
     } catch (err) {
-      if (err instanceof Error && /UsernameExistsException/.test(err.message)) {
+      if (err instanceof Error && err.name === "UsernameExistsException") {
         return NextResponse.json(
           { error: "この電話番号は既に登録されています" },
           { status: 409 },

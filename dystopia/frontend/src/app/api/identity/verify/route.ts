@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
     try {
       await cognito().confirmSignUp(phoneNumber, code);
     } catch (err) {
-      if (err instanceof Error && /CodeMismatch|ExpiredCode/.test(err.message)) {
+      if (
+        err instanceof Error &&
+        (err.name === "CodeMismatchException" || err.name === "ExpiredCodeException")
+      ) {
         return NextResponse.json(
           { error: "認証コードが正しくありません" },
           { status: 400 },
