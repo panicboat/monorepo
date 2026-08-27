@@ -38,7 +38,7 @@ export default function SignupPage() {
     setSubmitting(true);
     try {
       await verify(phone, code, password, role);
-      window.location.href = "/";
+      window.location.href = "/onboarding";
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "認証コードの検証に失敗しました",
