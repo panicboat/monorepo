@@ -616,6 +616,9 @@ GEM
     sqlite3 (2.9.5-x86_64-linux-gnu)
     sqlite3 (2.9.5-x86_64-linux-musl)
     stringio (3.2.0)
+    stripe (19.6.0)
+      bigdecimal
+      logger
     temple (0.10.7)
     thor (1.4.0)
     tilt (2.6.1)
@@ -670,6 +673,7 @@ DEPENDENCIES
   rack-test
   rake
   sqlite3
+  stripe
 
 BUNDLED WITH
    2.6.9

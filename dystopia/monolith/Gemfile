@@ -11,6 +11,7 @@ gem "hanami-view", "~> 3.0", ">= 3.0.2"
 
 gem "grpc"
 gem "gruf"
+gem "stripe"
 gem "aws-sdk-s3", "~> 1.229"
 gem "aws-sdk-cognitoidentityprovider", "~> 1.149"
 
