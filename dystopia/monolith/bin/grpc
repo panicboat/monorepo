@@ -49,6 +49,7 @@ require "discovery/v1/discovery_service_services_pb"
 require "messaging/v1/messaging_service_services_pb"
 require "footprints/v1/footprints_service_services_pb"
 require "karte/v1/service_services_pb"
+require "billing/v1/service_services_pb"
 
 # Configure Gruf
 Gruf.configure do |c|
