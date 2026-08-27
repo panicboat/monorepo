@@ -31,25 +31,27 @@ export type User = {
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
-  requestSMS: (phoneNumber: string) => Promise<boolean>;
-  verifySMS: (phoneNumber: string, code: string) => Promise<string>;
-  register: (
+  register: (phoneNumber: string, password: string) => Promise<void>;
+  verify: (
+    phoneNumber: string,
+    code: string,
+    password: string,
+    role: 1 | 2,
+  ) => Promise<void>;
+  signIn: (
     phoneNumber: string,
     password: string,
-    verificationToken: string,
-    role?: number
-  ) => Promise<void>;
-  login: (
-    phoneNumber: string,
-    password: string,
-    role?: number
-  ) => Promise<void>;
+    role: 1 | 2,
+  ) => Promise<{ reactivated: boolean }>;
+  login: (phoneNumber: string, password: string, role?: 1 | 2) => Promise<void>;
+  signOut: () => Promise<void>;
   logout: () => Promise<void>;
-  resetPassword: (
+  forgotPassword: (phoneNumber: string) => Promise<void>;
+  confirmForgotPassword: (
     phoneNumber: string,
+    code: string,
     newPassword: string,
-    verificationToken: string
-  ) => Promise<boolean>;
+  ) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -79,16 +81,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // SWR fetcher for /api/identity/me. The cookie rides along automatically
   // (same-origin). The BFF refreshes transparently on UNAUTHENTICATED, so the
   // client does not have to orchestrate refresh-retry itself.
-  const meFetcher = useCallback(async (url: string) => {
-    const res = await fetch(url, { cache: "no-store" });
-    if (res.ok) return res.json();
-    if (res.status === 401) {
-      // Cookie missing or refresh failed — drop identity so the shell redirects.
-      clearIdentity();
-    }
-    // FALLBACK: Returns null when authentication fails
-    return null;
-  }, [clearIdentity]);
+  const meFetcher = useCallback(
+    async (url: string) => {
+      const res = await fetch(url, { cache: "no-store" });
+      if (res.ok) return res.json();
+      if (res.status === 401) {
+        // Cookie missing or refresh failed — drop identity so the shell redirects.
+        clearIdentity();
+      }
+      // FALLBACK: Returns null when authentication fails
+      return null;
+    },
+    [clearIdentity],
+  );
 
   const {
     data: userData,
@@ -111,50 +116,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     : null;
 
-  const requestSMS = async (phoneNumber: string) => {
-    const res = await fetch("/api/identity/send-sms", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber }),
-    });
-    if (!res.ok) throw new Error("SMSの送信に失敗しました");
-    return true;
-  };
-
-  const verifySMS = async (phoneNumber: string, code: string) => {
-    const res = await fetch("/api/identity/verify-sms", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, code }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "認証コードの検証に失敗しました");
-    return data.verificationToken;
-  };
-
-  // The BFF sets access/refresh cookies on a 2xx response from register / login.
+  // The BFF sets access/refresh cookies on verify / sign-in.
   // We seed identity from response.account so the shell can render synchronously.
   void role; // kept as a reactive subscription so role changes re-render.
   void userId;
 
-  const register = async (
-    phoneNumber: string,
-    password: string,
-    verificationToken: string,
-    registerRole: number = 1
-  ) => {
+  const register = async (phoneNumber: string, password: string) => {
     const res = await fetch("/api/identity/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        phoneNumber,
-        password,
-        verificationToken,
-        role: registerRole,
-      }),
+      body: JSON.stringify({ phoneNumber, password }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "登録に失敗しました");
+  };
+
+  const verify = async (
+    phoneNumber: string,
+    code: string,
+    password: string,
+    verifyRole: 1 | 2,
+  ) => {
+    const res = await fetch("/api/identity/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber, code, password, role: verifyRole }),
+    });
+    const data = await res.json();
+    if (!res.ok)
+      throw new Error(data.error || "認証コードの検証に失敗しました");
 
     if (!data.account?.id) {
       throw new Error("登録に失敗しました");
@@ -169,29 +159,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutate(
       {
         id: data.account.id,
-        phoneNumber: data.account.phoneNumber,
+        phoneNumber,
         role: data.account.role,
       },
-      { revalidate: false }
+      { revalidate: false },
     );
-
-    router.push("/onboarding");
   };
 
-  const login = async (
+  const signIn = async (
     phoneNumber: string,
     password: string,
-    loginRole?: number
+    signInRole: 1 | 2,
   ) => {
     const res = await fetch("/api/identity/sign-in", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, password, role: loginRole }),
+      body: JSON.stringify({ phoneNumber, password, role: signInRole }),
     });
     const data = await res.json();
     // 423 Locked carries a friendly message in `data.message` (with retry minutes);
     // fall back to `data.error` for other failure codes.
-    if (!res.ok) throw new Error(data.message || data.error || "ログインに失敗しました");
+    if (!res.ok)
+      throw new Error(data.message || data.error || "ログインに失敗しました");
 
     if (!data.account?.id) {
       throw new Error("ログインに失敗しました");
@@ -212,31 +201,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutate(
       {
         id: data.account.id,
-        phoneNumber: data.account.phoneNumber,
+        phoneNumber,
         role: data.account.role,
       },
-      { revalidate: false }
+      { revalidate: false },
     );
 
     router.push("/");
+    return { reactivated: data.reactivated === true };
   };
 
-  const resetPassword = async (
+  const login = async (
     phoneNumber: string,
-    newPassword: string,
-    verificationToken: string
+    password: string,
+    loginRole: 1 | 2 = 1,
   ) => {
-    const res = await fetch("/api/identity/reset-password", {
+    await signIn(phoneNumber, password, loginRole);
+  };
+
+  const forgotPassword = async (phoneNumber: string) => {
+    const res = await fetch("/api/identity/forgot-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, newPassword, verificationToken }),
+      body: JSON.stringify({ phoneNumber }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "パスワードの再設定に失敗しました");
-    return true;
+    if (!res.ok)
+      throw new Error(data.error || "認証コードの送信に失敗しました");
   };
 
-  const logout = async () => {
+  const confirmForgotPassword = async (
+    phoneNumber: string,
+    code: string,
+    newPassword: string,
+  ) => {
+    const res = await fetch("/api/identity/confirm-forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber, code, newPassword }),
+    });
+    const data = await res.json();
+    if (!res.ok)
+      throw new Error(data.error || "パスワードの再設定に失敗しました");
+  };
+
+  const signOut = async () => {
     // The BFF reads refresh from cookie and clears both cookies on success.
     // Always call it (even with no userId) so a stale cookie is cleared.
     try {
@@ -253,17 +262,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/login");
   };
 
+  const logout = signOut;
+
   return (
     <AuthContext.Provider
       value={{
         user,
         isLoading,
-        requestSMS,
-        verifySMS,
         register,
+        verify,
+        signIn,
         login,
+        signOut,
         logout,
-        resetPassword,
+        forgotPassword,
+        confirmForgotPassword,
       }}
     >
       {children}

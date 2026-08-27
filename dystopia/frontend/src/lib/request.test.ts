@@ -12,12 +12,12 @@ import { GrpcCode } from "./grpc-errors";
 import { buildGrpcHeaders } from "./request";
 import { callWithRefresh } from "./auth/refresh-on-unauthenticated";
 
-const grpcMocks = vi.hoisted(() => ({ refreshToken: vi.fn() }));
+const cognitoMocks = vi.hoisted(() => ({
+  adapter: null as ReturnType<typeof createFakeAdapter> | null,
+}));
 
-vi.mock("@/lib/grpc", () => ({
-  identityClient: {
-    refreshToken: grpcMocks.refreshToken,
-  },
+vi.mock("@/lib/cognito/adapter", () => ({
+  cognito: () => cognitoMocks.adapter!,
 }));
 
 const originalCognitoAdapter = process.env.COGNITO_ADAPTER;
@@ -26,7 +26,7 @@ describe("buildGrpcHeaders", () => {
   beforeEach(() => {
     _resetFakePool();
     process.env.COGNITO_ADAPTER = "fake";
-    grpcMocks.refreshToken.mockReset();
+    cognitoMocks.adapter = null;
   });
 
   afterEach(() => {
@@ -84,6 +84,7 @@ describe("buildGrpcHeaders", () => {
 
   it("retries with x-user-id from a refreshed access token", async () => {
     const adapter = createFakeAdapter();
+    cognitoMocks.adapter = adapter;
     const { userSub } = await adapter.signUp(
       "+15551234567",
       "Passw0rd!Passw0rd!",
@@ -97,11 +98,7 @@ describe("buildGrpcHeaders", () => {
       method: "POST",
     });
     req.cookies.set(ACCESS_COOKIE, "not.a.jwt");
-    req.cookies.set(REFRESH_COOKIE, "refresh-token");
-    grpcMocks.refreshToken.mockResolvedValue({
-      accessToken: refreshedTokens.accessToken,
-      refreshToken: refreshedTokens.refreshToken,
-    });
+    req.cookies.set(REFRESH_COOKIE, refreshedTokens.refreshToken);
 
     const result = await callWithRefresh(req, async (headers) => {
       if (!headers["x-user-id"]) {
@@ -116,7 +113,7 @@ describe("buildGrpcHeaders", () => {
       ok: true,
       data: "retried",
       refreshed: {
-        accessToken: refreshedTokens.accessToken,
+        accessToken: expect.any(String),
         refreshToken: refreshedTokens.refreshToken,
       },
     });

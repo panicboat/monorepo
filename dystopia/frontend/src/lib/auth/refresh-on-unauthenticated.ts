@@ -3,13 +3,14 @@
  * refresh the access token using the refresh cookie, then retry the call once.
  *
  * Tokens stay in httpOnly cookies; the client never sees them. New cookies
- * (rotated refresh + fresh access) are set on the outgoing response so the
+ * (existing refresh + fresh access) are set on the outgoing response so the
  * next request from the same client uses the refreshed token.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { identityClient } from "@/lib/grpc";
 import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
+import { cognito } from "@/lib/cognito/adapter";
 import { verifyAccessToken } from "@/lib/cognito/jwks";
 import { buildGrpcHeaders, HEADER_NAMES } from "@/lib/request";
 import { getRefreshCookie, setAuthCookies, clearAuthCookies } from "./cookies";
@@ -47,14 +48,11 @@ export async function callWithRefresh<T>(
     let refreshed: { accessToken: string; refreshToken: string };
     let refreshedUserId: string;
     try {
-      const r = await identityClient.refreshToken(
-        { refreshToken },
-        { headers: await buildGrpcHeaders(req) },
-      );
-      if (!r.accessToken || !r.refreshToken) {
+      const r = await cognito().refreshTokens(refreshToken);
+      if (!r.accessToken) {
         throw new Error("refresh response missing tokens");
       }
-      refreshed = { accessToken: r.accessToken, refreshToken: r.refreshToken };
+      refreshed = { accessToken: r.accessToken, refreshToken };
       ({ sub: refreshedUserId } = await verifyAccessToken(
         refreshed.accessToken,
       ));
