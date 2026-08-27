@@ -54,4 +54,13 @@ describe("GET /api/identity/me", () => {
 
     expect(res.status).toBe(401);
   });
+
+  it("access token を検証できない場合は 401 を返す", async () => {
+    const req = new NextRequest("http://localhost/api/identity/me");
+    req.cookies.set(ACCESS_COOKIE, "not.a.jwt");
+
+    const res = await GET(req);
+
+    expect(res.status).toBe(401);
+  });
 });

@@ -48,4 +48,16 @@ describe("POST /api/identity/refresh-token", () => {
 
     expect(res.status).toBe(401);
   });
+
+  it("refresh が失敗した場合は cookie を clear して 401 を返す", async () => {
+    const req = new NextRequest("http://localhost/api/identity/refresh-token", {
+      method: "POST",
+    });
+    req.cookies.set(REFRESH_COOKIE, "invalid-refresh-token");
+
+    const res = await POST(req);
+
+    expect(res.status).toBe(401);
+    expect(res.headers.get("Set-Cookie")).toMatch(/access_token=;/);
+  });
 });
