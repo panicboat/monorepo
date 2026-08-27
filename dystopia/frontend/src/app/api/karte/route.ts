@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     }
     const res = await karteClient.createEntry(
       { targetAccountId, rating, body: text },
-      { headers: buildGrpcHeaders(req) }
+      { headers: await buildGrpcHeaders(req) }
     );
     const e = res.entry;
     if (!e) {

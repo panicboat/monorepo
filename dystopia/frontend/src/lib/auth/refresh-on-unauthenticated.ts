@@ -10,23 +10,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { identityClient } from "@/lib/grpc";
 import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
-import { buildGrpcHeaders } from "@/lib/request";
-import {
-  getRefreshCookie,
-  setAuthCookies,
-  clearAuthCookies,
-} from "./cookies";
+import { verifyAccessToken } from "@/lib/cognito/jwks";
+import { buildGrpcHeaders, HEADER_NAMES } from "@/lib/request";
+import { getRefreshCookie, setAuthCookies, clearAuthCookies } from "./cookies";
 
 export type CallWithRefreshResult<T> =
-  | { ok: true; data: T; refreshed: { accessToken: string; refreshToken: string } | null }
+  | {
+      ok: true;
+      data: T;
+      refreshed: { accessToken: string; refreshToken: string } | null;
+    }
   | { ok: false; response: NextResponse };
 
 export async function callWithRefresh<T>(
   req: NextRequest,
-  call: (headers: Record<string, string>) => Promise<T>
+  call: (headers: Record<string, string>) => Promise<T>,
 ): Promise<CallWithRefreshResult<T>> {
   try {
-    const data = await call(buildGrpcHeaders(req));
+    const data = await call(await buildGrpcHeaders(req));
     return { ok: true, data, refreshed: null };
   } catch (error: unknown) {
     if (!isConnectError(error) || error.code !== GrpcCode.UNAUTHENTICATED) {
@@ -37,37 +38,39 @@ export async function callWithRefresh<T>(
     if (!refreshToken) {
       const res = NextResponse.json(
         { error: "ログインしてください" },
-        { status: 401 }
+        { status: 401 },
       );
       clearAuthCookies(res);
       return { ok: false, response: res };
     }
 
     let refreshed: { accessToken: string; refreshToken: string };
+    let refreshedUserId: string;
     try {
       const r = await identityClient.refreshToken(
         { refreshToken },
-        { headers: buildGrpcHeaders(req) }
+        { headers: await buildGrpcHeaders(req) },
       );
       if (!r.accessToken || !r.refreshToken) {
         throw new Error("refresh response missing tokens");
       }
       refreshed = { accessToken: r.accessToken, refreshToken: r.refreshToken };
+      ({ sub: refreshedUserId } = await verifyAccessToken(
+        refreshed.accessToken,
+      ));
     } catch {
       const res = NextResponse.json(
         { error: "ログインしてください" },
-        { status: 401 }
+        { status: 401 },
       );
       clearAuthCookies(res);
       return { ok: false, response: res };
     }
 
-    // Retry the original call with the freshly issued access token.
-    // We override the Authorization header here because the access cookie on
-    // `req` is still the old one — the new cookie reaches the client only via
-    // the outgoing response.
-    const retryHeaders = buildGrpcHeaders(req);
-    retryHeaders.Authorization = `Bearer ${refreshed.accessToken}`;
+    // The request still contains the old cookie, so replace its user metadata
+    // with the subject from the newly issued and verified access token.
+    const retryHeaders = await buildGrpcHeaders(req);
+    retryHeaders[HEADER_NAMES.USER_ID] = refreshedUserId;
     const data = await call(retryHeaders);
     return { ok: true, data, refreshed };
   }
@@ -75,7 +78,7 @@ export async function callWithRefresh<T>(
 
 export function applyRefreshedCookies(
   res: NextResponse,
-  refreshed: { accessToken: string; refreshToken: string } | null
+  refreshed: { accessToken: string; refreshToken: string } | null,
 ): NextResponse {
   if (refreshed) setAuthCookies(res, refreshed);
   return res;

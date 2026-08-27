@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   try {
     const authError = requireAuth(req);
     if (authError) return authError;
-    const headers = buildGrpcHeaders(req);
+    const headers = await buildGrpcHeaders(req);
     const targetAccountId = req.nextUrl.searchParams.get("account_id") || "";
     if (!targetAccountId) {
       return NextResponse.json({ error: "account_id required" }, { status: 400 });

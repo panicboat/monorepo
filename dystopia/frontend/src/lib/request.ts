@@ -1,13 +1,12 @@
 /**
  * Request utilities for consistent header handling across the application.
  *
- * Provides:
- * - X-Request-ID generation for request tracing
- * - Authorization header handling
+ * Verifies Cognito access tokens and forwards their subject as gRPC metadata.
  */
 
 import type { NextRequest } from "next/server";
 import { ACCESS_COOKIE } from "@/lib/auth/cookies";
+import { verifyAccessToken } from "@/lib/cognito/jwks";
 
 /**
  * Generates a unique request ID for request tracing.
@@ -22,29 +21,37 @@ export function generateRequestId(): string {
  */
 export const HEADER_NAMES = {
   REQUEST_ID: "X-Request-ID",
-  AUTHORIZATION: "Authorization",
+  USER_ID: "x-user-id",
 } as const;
 
 /**
  * Builds headers for gRPC calls from the BFF to the backend.
  *
- * Reads the access token from the access_token httpOnly cookie so client JS
- * never holds or transmits the token. The cookie was set by sign-in / register
- * / refresh-token BFFs.
+ * Verifies the access token in the httpOnly cookie before forwarding its
+ * subject. Invalid tokens omit user metadata so the downstream handler can
+ * return the appropriate unauthenticated response.
  *
  * @param req - Incoming Next.js request (used for cookies + request id)
  * @returns Headers object for gRPC call
  */
-export function buildGrpcHeaders(req: NextRequest): Record<string, string> {
+export async function buildGrpcHeaders(
+  req: NextRequest,
+): Promise<Record<string, string>> {
   const headers: Record<string, string> = {};
 
   // Propagate or generate X-Request-ID
-  const requestId = req.headers.get(HEADER_NAMES.REQUEST_ID) || generateRequestId();
+  const requestId =
+    req.headers.get(HEADER_NAMES.REQUEST_ID) || generateRequestId();
   headers[HEADER_NAMES.REQUEST_ID] = requestId;
 
-  const accessFromCookie = req.cookies.get(ACCESS_COOKIE)?.value;
-  if (accessFromCookie) {
-    headers[HEADER_NAMES.AUTHORIZATION] = `Bearer ${accessFromCookie}`;
+  const accessToken = req.cookies.get(ACCESS_COOKIE)?.value;
+  if (accessToken) {
+    try {
+      const { sub } = await verifyAccessToken(accessToken);
+      headers[HEADER_NAMES.USER_ID] = sub;
+    } catch {
+      // Invalid tokens intentionally omit user metadata for the caller's 401 flow.
+    }
   }
 
   return headers;
