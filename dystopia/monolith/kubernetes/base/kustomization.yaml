@@ -4,6 +4,7 @@ resources:
   - configmap.yaml
   - deployment.yaml
   - service.yaml
+  - serviceaccount.yaml
 labels:
   - pairs:
       app: monolith

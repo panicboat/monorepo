@@ -20,6 +20,7 @@ spec:
         # 引き継ぎ #25 / spec: docs/superpowers/specs/2026-05-17-monolith-otel-preempt-design.md
         instrumentation.opentelemetry.io/inject-ruby: default/panicboat-application
     spec:
+      serviceAccountName: monolith
       containers:
         - name: monolith
           image: ghcr.io/panicboat/monorepo/monolith:latest
