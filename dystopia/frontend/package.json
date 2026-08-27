@@ -9,9 +9,12 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "proto:gen": "buf generate ../../proto/dystopia"
+    "proto:gen": "buf generate ../../proto/dystopia",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.1118.0",
     "@bufbuild/buf": "1.72.0",
     "@bufbuild/protobuf": "^2.14.0",
     "@connectrpc/connect": "^2.1.2",
@@ -28,6 +31,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
+    "jose": "^6.2.10",
     "lucide-react": "^1.33.0",
     "motion": "^12.43.0",
     "next": "16.3.2",
@@ -43,10 +47,13 @@
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.8.1",
     "eslint-config-next": "16.3.2",
+    "happy-dom": "^20.11.6",
     "prettier": "^3.9.6",
     "tailwindcss": "^4.3.3",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.11"
   }
 }
