@@ -20,9 +20,11 @@ export function cognito(): CognitoAdapter {
   if (instance) return instance;
 
   if (process.env.COGNITO_ADAPTER === "aws") {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mod = require("./aws") as { createAwsAdapter: () => CognitoAdapter };
     instance = mod.createAwsAdapter();
   } else {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const mod = require("./fake") as { createFakeAdapter: () => CognitoAdapter };
     instance = mod.createFakeAdapter();
   }
