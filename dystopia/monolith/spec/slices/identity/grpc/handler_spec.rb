@@ -39,7 +39,7 @@ RSpec.describe Identity::Grpc::Handler do
     let(:message) { Identity::V1::CreateAccountRequest.new(sub: "sub-1", role: :ROLE_GUEST) }
 
     it "creates an account and returns it in the response wrapper" do
-      account = Struct.new(:id, :role).new("sub-1", 1)
+      account = Struct.new(:id, :role, :deactivated_at).new("sub-1", 1, nil)
       expect(create_account_uc).to receive(:call).with(sub: "sub-1", role: 1).and_return(account)
 
       response = handler.create_account
@@ -58,7 +58,7 @@ RSpec.describe Identity::Grpc::Handler do
 
     it "uses Guest for an unspecified role" do
       request = double(:request, message: Identity::V1::CreateAccountRequest.new(sub: "sub-1", role: :ROLE_UNSPECIFIED))
-      account = Struct.new(:id, :role).new("sub-1", 1)
+      account = Struct.new(:id, :role, :deactivated_at).new("sub-1", 1, nil)
       expect(create_account_uc).to receive(:call).with(sub: "sub-1", role: 1).and_return(account)
       handler.instance_variable_set(:@request, request)
 
@@ -70,7 +70,7 @@ RSpec.describe Identity::Grpc::Handler do
     let(:message) { Identity::V1::GetAccountRequest.new(sub: "sub-1") }
 
     it "returns the account in the response wrapper when found" do
-      account = Struct.new(:id, :role).new("sub-1", 2)
+      account = Struct.new(:id, :role, :deactivated_at).new("sub-1", 2, nil)
       expect(get_account_uc).to receive(:call).with(sub: "sub-1").and_return(account)
 
       response = handler.get_account
@@ -105,7 +105,7 @@ RSpec.describe Identity::Grpc::Handler do
     let(:message) { Identity::V1::ReactivateAccountRequest.new(sub: "sub-1") }
 
     it "reactivates an account and returns it in the response wrapper" do
-      account = Struct.new(:id, :role).new("sub-1", 1)
+      account = Struct.new(:id, :role, :deactivated_at).new("sub-1", 1, nil)
       expect(reactivate_account_uc).to receive(:call).with(sub: "sub-1").and_return(account)
 
       response = handler.reactivate_account

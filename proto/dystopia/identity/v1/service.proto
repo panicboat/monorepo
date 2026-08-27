@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package identity.v1;
 
+import "google/protobuf/timestamp.proto";
+
 service IdentityService {
   rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse);
   rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse);
@@ -53,4 +55,5 @@ enum Role {
 message Account {
   string id = 1;
   Role role = 2;
+  google.protobuf.Timestamp deactivated_at = 3;
 }

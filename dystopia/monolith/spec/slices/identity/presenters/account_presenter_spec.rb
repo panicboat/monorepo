@@ -26,8 +26,10 @@ RSpec.describe Identity::Presenters::AccountPresenter do
   end
 
   describe ".to_proto" do
+    let(:account_struct) { Struct.new(:id, :role, :deactivated_at) }
+
     it "returns an Account proto without a phone number" do
-      account = Struct.new(:id, :role).new("sub-1", 2)
+      account = account_struct.new("sub-1", 2, nil)
 
       proto = described_class.to_proto(account)
 
@@ -35,6 +37,17 @@ RSpec.describe Identity::Presenters::AccountPresenter do
       expect(proto.id).to eq("sub-1")
       expect(proto.role).to eq(:ROLE_CAST)
       expect(proto).not_to respond_to(:phone_number)
+      expect(proto.deactivated_at).to be_nil
+    end
+
+    it "serializes deactivated_at as a Timestamp when present" do
+      t = Time.utc(2026, 8, 27, 3, 45, 0)
+      account = account_struct.new("sub-2", 1, t)
+
+      proto = described_class.to_proto(account)
+
+      expect(proto.deactivated_at).to be_a(Google::Protobuf::Timestamp)
+      expect(proto.deactivated_at.seconds).to eq(t.to_i)
     end
   end
 end

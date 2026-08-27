@@ -21,7 +21,8 @@ module Identity
       def self.to_proto(account)
         Identity::V1::Account.new(
           id: account.id,
-          role: role_int_to_enum(account.role)
+          role: role_int_to_enum(account.role),
+          deactivated_at: account.deactivated_at && Google::Protobuf::Timestamp.new(seconds: account.deactivated_at.to_i)
         )
       end
     end
