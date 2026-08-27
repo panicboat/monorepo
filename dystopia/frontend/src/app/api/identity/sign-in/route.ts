@@ -21,7 +21,9 @@ export async function POST(req: NextRequest) {
     let tokens: Tokens;
     try {
       tokens = await cognito().initiateAuth(phoneNumber, password);
-    } catch {
+    } catch (err) {
+      const info = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+      console.warn(`sign-in initiateAuth failed: ${info}`);
       return NextResponse.json(invalidCredentials, { status: 401 });
     }
 

@@ -30,9 +30,9 @@ RSpec.describe Identity::UseCases::Account::PurgeIdentity do
     use_case.call(sub: sub)
   end
 
-  it "deletes the identity account before deleting the Cognito user" do
-    expect(account_repo).to receive(:delete).with(sub).ordered
+  it "deletes the Cognito user before deleting the identity account" do
     expect(cognito_adapter).to receive(:admin_delete_user).with(sub: sub).ordered
+    expect(account_repo).to receive(:delete).with(sub).ordered
 
     use_case.call(sub: sub)
   end

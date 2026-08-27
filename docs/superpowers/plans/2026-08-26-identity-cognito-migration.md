@@ -3643,7 +3643,9 @@ Manual: BFF pod の env に `COGNITO_ADAPTER=aws`, `COGNITO_USER_POOL_ID`, `COGN
 - [ ] **Step 4: Terraform apply (monolith/aws)**
 
 Run: `cd dystopia/monolith/aws/envs/production && terragrunt apply`
-Expected: monolith pod IRSA に AdminDeleteUser 権限、旧 SNS 権限が削除される。`COGNITO_USER_POOL_ID` / `COGNITO_REGION` env を monolith pod に注入
+Expected: `aws_iam_policy.monolith_cognito_admin_delete` が作成され、旧 SNS 権限が削除される。`COGNITO_USER_POOL_ID` / `COGNITO_REGION` env を monolith pod に注入
+
+**NOTE**: The `aws_iam_policy.monolith_cognito_admin_delete` is declared but NOT attached to any IAM role (there's no IRSA role Terraform resource in monolith aws module yet). Before enabling the purge cron in prod, a separate PR must (a) add IRSA role Terraform resource and (b) create `aws_iam_role_policy_attachment` linking the policy to the role. Until then, `bundle exec rake account:purge_deactivated` will call `Cognito.admin_delete_user` without permission and Cognito user records will not be deleted.
 
 - [ ] **Step 5: Prod DB destroy + recreate**
 

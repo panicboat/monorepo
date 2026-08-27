@@ -109,4 +109,17 @@ describe("POST /api/identity/sign-in", () => {
       error: "電話番号または認証コードが正しくありません",
     });
   });
+
+  it("logs initiateAuth failures before returning invalid credentials", async () => {
+    const adapter = cognitoMocks.adapter!;
+    vi.spyOn(adapter, "initiateAuth").mockRejectedValue(new Error("adapter unavailable"));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    const res = await POST(signInRequest(1));
+
+    expect(res.status).toBe(401);
+    expect(warn).toHaveBeenCalledWith(
+      "sign-in initiateAuth failed: Error: adapter unavailable",
+    );
+  });
 });

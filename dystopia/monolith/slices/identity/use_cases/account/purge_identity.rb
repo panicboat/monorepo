@@ -17,8 +17,8 @@ module Identity
 
         def call(sub:)
           @cascades.each { |cascade| cascade.call(account_id: sub) rescue nil } # SILENT: A failed slice purge must not prevent remaining account data from being removed.
-          account_repo.delete(sub)
           Cognito.admin_delete_user(sub: sub)
+          account_repo.delete(sub)
           nil
         end
       end
