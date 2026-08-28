@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "slices/billing/config/plan_registry"
-
 module Billing
   module UseCases
     class CreateCheckoutSession
@@ -13,7 +11,7 @@ module Billing
         customer_repo: "repositories.customer_repository",
         subscription_repo: "repositories.subscription_repository",
         stripe_client: "adapters.stripe_client",
-        plan_registry: "config.plan_registry"
+        plan_registry: "plan_registry"
       ]
 
       def initialize(customer_repo: nil, subscription_repo: nil, stripe_client: nil,
@@ -36,7 +34,7 @@ module Billing
 
         price_id = begin
           plan_registry.price_id_for(account.role)
-        rescue Billing::Config::PlanRegistry::UnsupportedRoleError => e
+        rescue Billing::PlanRegistry::UnsupportedRoleError => e
           raise UnsupportedRoleError, e.message
         end
 

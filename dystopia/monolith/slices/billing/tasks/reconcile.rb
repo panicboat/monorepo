@@ -27,7 +27,7 @@ module Billing
                 stripe_subscription_id: stripe_sub.id,
                 stripe_price_id: stripe_sub.items.data.first.price.id,
                 status: stripe_sub.status,
-                current_period_end: Time.at(stripe_sub.current_period_end),
+                current_period_end: Time.at(stripe_sub.items.data.first.current_period_end),
                 cancel_at_period_end: stripe_sub.cancel_at_period_end,
                 canceled_at: stripe_sub.canceled_at ? Time.at(stripe_sub.canceled_at) : nil
               )
@@ -57,7 +57,7 @@ module Billing
 
         local.status != remote.status ||
           local.cancel_at_period_end != remote.cancel_at_period_end ||
-          local.current_period_end.to_i != remote.current_period_end
+          local.current_period_end.to_i != remote.items.data.first.current_period_end
       end
     end
   end

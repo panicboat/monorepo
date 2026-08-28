@@ -59,10 +59,27 @@ module Billing
           :processed
         when "customer.subscription.deleted"
           object = event.data.object
-          subscription_repo.mark_canceled(
-            stripe_subscription_id: object.id,
-            canceled_at: object.canceled_at ? Time.at(object.canceled_at) : Time.now
-          )
+          existing = subscription_repo.find_by_stripe_subscription_id(object.id)
+          if existing
+            subscription_repo.mark_canceled(
+              stripe_subscription_id: object.id,
+              canceled_at: object.canceled_at ? Time.at(object.canceled_at) : Time.now
+            )
+          else
+            customer = customer_repo.find_by_stripe_customer_id(object.customer)
+            raise "no billing__customers row for stripe customer=#{object.customer}" unless customer
+
+            item = object.items.data.first
+            subscription_repo.upsert_by_stripe_id(
+              account_id: customer.account_id,
+              stripe_subscription_id: object.id,
+              stripe_price_id: item.price.id,
+              status: "canceled",
+              current_period_end: Time.at(item.current_period_end),
+              cancel_at_period_end: false,
+              canceled_at: object.canceled_at ? Time.at(object.canceled_at) : Time.now
+            )
+          end
           :processed
         when *IGNORED_TYPES
           :ignored

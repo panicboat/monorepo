@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "slices/billing/plan_registry"
 require "slices/billing/use_cases/create_checkout_session"
 require "support/billing/fake_stripe_client"
 
@@ -8,7 +9,7 @@ RSpec.describe Billing::UseCases::CreateCheckoutSession do
   let(:customer_repo) { double(:customer_repo) }
   let(:subscription_repo) { double(:subscription_repo) }
   let(:account_repo) { double(:account_repo) }
-  let(:plan_registry) { Billing::Config::PlanRegistry.new(guest_price_id: "price_g", cast_price_id: "price_c") }
+  let(:plan_registry) { Billing::PlanRegistry.new(guest_price_id: "price_g", cast_price_id: "price_c") }
   let(:stripe_client) { Spec::Billing::FakeStripeClient.new }
 
   subject(:use_case) do

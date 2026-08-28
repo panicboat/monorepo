@@ -75,6 +75,15 @@ RSpec.describe Billing::UseCases::ProcessWebhookEvent, type: :database do
       expect(sub.status).to eq("canceled")
       expect(sub.canceled_at).not_to be_nil
     end
+
+    it "creates a canceled sentinel when deleted arrives before created and preserves it" do
+      use_case.call(event: make_event("customer.subscription.deleted"))
+      use_case.call(event: make_event("customer.subscription.created", subscription_status: "active"))
+
+      sub = subscription_repo.find_by_stripe_subscription_id(stripe_subscription_id)
+      expect(sub.status).to eq("canceled")
+      expect(sub.canceled_at).not_to be_nil
+    end
   end
 
   describe "out-of-order: updated after deleted" do

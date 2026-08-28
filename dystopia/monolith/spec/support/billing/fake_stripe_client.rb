@@ -36,7 +36,10 @@ module Spec
                               cancel_at_period_end: false)
         @subscriptions[id] = OpenStruct.new(
           id: id, customer: customer_id,
-          items: OpenStruct.new(data: [OpenStruct.new(price: OpenStruct.new(id: price_id))]),
+          items: OpenStruct.new(data: [OpenStruct.new(
+            price: OpenStruct.new(id: price_id),
+            current_period_end: current_period_end.to_i
+          )]),
           status: status,
           current_period_end: current_period_end.to_i,
           cancel_at_period_end: cancel_at_period_end,

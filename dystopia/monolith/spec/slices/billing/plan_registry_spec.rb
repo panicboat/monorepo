@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "slices/billing/config/plan_registry"
+require "slices/billing/plan_registry"
 
-RSpec.describe Billing::Config::PlanRegistry do
+RSpec.describe Billing::PlanRegistry do
   subject(:registry) do
     described_class.new(guest_price_id: "price_g", cast_price_id: "price_c")
   end
@@ -17,6 +17,6 @@ RSpec.describe Billing::Config::PlanRegistry do
   end
 
   it "raises for unsupported role" do
-    expect { registry.price_id_for(99) }.to raise_error(Billing::Config::PlanRegistry::UnsupportedRoleError)
+    expect { registry.price_id_for(99) }.to raise_error(Billing::PlanRegistry::UnsupportedRoleError)
   end
 end
