@@ -7,5 +7,9 @@ module Monolith
     slice :identity, at: "/identity" do
       # TODO: Implement OAuth callback endpoint (HTTP)
     end
+
+    slice :billing, at: "/billing" do
+      post "/webhooks/stripe", to: "webhooks.stripe"
+    end
   end
 end
