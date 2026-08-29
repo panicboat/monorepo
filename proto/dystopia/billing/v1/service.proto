@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package billing.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service BillingService {
+  rpc GetMySubscription(GetMySubscriptionRequest) returns (GetMySubscriptionResponse);
+  rpc CreateCheckoutSession(CreateCheckoutSessionRequest) returns (CreateCheckoutSessionResponse);
+  rpc CreateCustomerPortalSession(CreateCustomerPortalSessionRequest) returns (CreateCustomerPortalSessionResponse);
+}
+
+message Subscription {
+  Status status = 1;
+  google.protobuf.Timestamp current_period_end = 2;
+  bool cancel_at_period_end = 3;
+  string price_id = 4;
+
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    TRIALING = 1;
+    ACTIVE = 2;
+    INCOMPLETE = 3;
+    INCOMPLETE_EXPIRED = 4;
+    PAST_DUE = 5;
+    CANCELED = 6;
+    UNPAID = 7;
+    PAUSED = 8;
+  }
+}
+
+message GetMySubscriptionRequest {}
+message GetMySubscriptionResponse {
+  // 未加入 (完全 Free) は unset。TRIALING / ACTIVE / その他 status は Subscription を返す。
+  Subscription subscription = 1;
+}
+
+message CreateCheckoutSessionRequest {}
+message CreateCheckoutSessionResponse { string url = 1; }
+
+message CreateCustomerPortalSessionRequest {}
+message CreateCustomerPortalSessionResponse { string url = 1; }
