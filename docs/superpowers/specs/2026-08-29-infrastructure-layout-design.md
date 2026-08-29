@@ -336,6 +336,7 @@ README を触るスタンス:
 | deploy-actions の silent dedupe を残す config が他に存在 | 発火時に validation error で fail-fast | 検査は monorepo / platform 内のみ確認。他リポは deploy-actions を消費していないことを事前検索で verify 済み |
 | README 更新で古い記述が残る | doc drift | grep で `envs/` `aws/envs/` `envs/production` を全リポでゼロ確認 |
 | workflow-config validation が deploy-actions 更新前に config を先出しすると壊す | fail-fast が deploy time に起きる | monorepo / platform の PR はデプロイ順序を明確化: deploy-actions v1.3.0 リリース → 各リポで pin 更新 → workflow-config 変更 |
+| `environments:` に sibling directory 名と衝突する env（例: `modules`, `lookup`）を追加すると label-resolver が誤って target 生成する | terragrunt が `terragrunt.hcl` の無いディレクトリで init しようとして runtime fail | env 名は sibling directory（`modules`, `lookup`, `root.hcl` などの静的ファイル/ディレクトリ）と衝突させない。この規約は README に注記。将来的には deploy-actions に「terragrunt stack なら `terragrunt.hcl` 存在必須」のガードを入れる余地あり（今回の scope 外） |
 
 ## Validation
 
