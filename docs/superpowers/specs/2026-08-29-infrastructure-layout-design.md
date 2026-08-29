@@ -179,14 +179,20 @@ platform は同一 convention 内で `name: terragrunt` が重複することは
 
 `name` は「どの reusable workflow へ dispatch するか」を決める category、`id` は「convention 内での instance identity」という役割分離。monorepo/monolith の `name: terragrunt, id: aws` と `name: terragrunt, id: stripe` は、reusable--terragrunt-executor.yaml に同一 dispatch されつつ working_directory と matrix.target.stack_id で下流が識別できる構造になる。
 
+**convention をまたぐ dedupe は変えない**: 上表の unique 制約は「同一 convention 内」に閉じたスコープであり、`aws/{service}` convention と `github/{service}` convention のように**別々の convention**がそれぞれ 1 個ずつ `name: terragrunt`（id 無し）を持つケース（platform の既存構成）は対象外。この場合の matrix 生成側の dedupe（`matching_conventions.flat_map { ... }.uniq { |s| s['id'] || s['name'] }`）は convention をまたいで動作するため、id が両方とも無ければ identity は両方とも `'terragrunt'` になり、v1.2.0 と同じく「1 target・first wins」のまま変わらない（VERIFIED: scratch 環境で実行し確認）。新しい複数 target 機能は「同一 convention 内で `id` により明示的に区別する」場合にのみ働く。
+
 ### `WorkflowConfig` (shared/entities/workflow_config.rb)
 
 | 場所 | 変更 |
 |---|---|
-| L19-23 `stack_attributes_for(env, id_or_name)` | `env.stacks[id]` を優先し、無ければ `env.stacks[name]` に fallback |
+| L19-23 `stack_attributes_for(env, id_or_name)` | `env.stacks[id]` を優先し、無ければ `env.stacks[name]` に fallback。どちらも解決しない場合は `nil` ではなく必ず `{}` を返す（`DeploymentTarget.new(attributes: nil)` の crash を防ぐ） |
 | L26-33 `required_attributes_for(id_or_name)` | 同じく id 優先、name fallback |
-| L36-63 `stack_conventions_for(service, stack)` | 現状 `.find` で 1 件返却 → 削除。呼び出し側が stack instance を直接引き回すよう API 変更 |
+| L36-63 `stack_conventions_for(service, stack)` | 現状 `.find { |s| s['name'] == stack }` を `.find { |s| (s['id'] || s['name']) == stack }` に変更（**訂正**: 当初「削除」の予定だったが、`config-manager`（`config_manager_controller.rb:75` の `test_service_configuration`）がこの API を `stack_convention_for` 経由で直接呼んでおり、削除すると `bin/config-manager test` が壊れることが plan 作成時の検証で判明した。identity ベースの matching に変えることで維持する） |
 | L114-145 `validate!` | 各 convention の `stacks` で `id || name` が unique であることを検査。重複時 `stack_conventions[i].stacks has duplicate identity '<value>' (entries with the same 'name' need distinct 'id' values)` を raise |
+
+### `ConfigManagerController` (config-manager/controllers/config_manager_controller.rb)
+
+plan 作成時に発見した既存バグ（VERIFIED、scratch 環境で再現・修正確認済み）: `test_service_configuration`（`bin/config-manager test <service> <env>` の実装）は `stack_directories[stack_def['name']] = ...` のように **`stack_def['name']` だけをキー**にしてハッシュを組み立てている。convention 内に `name: terragrunt` が 2 エントリ（`id: aws` / `id: stripe`）あると、同じキーに 2 回書き込まれ後勝ちで片方が消える。`stack_def['id'] || stack_def['name']` をキーにするよう修正する。
 
 ### `DeploymentTarget` (shared/entities/deployment_target.rb)
 
