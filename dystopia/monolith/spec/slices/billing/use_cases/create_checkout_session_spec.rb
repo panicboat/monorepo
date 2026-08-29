@@ -52,6 +52,12 @@ RSpec.describe Billing::UseCases::CreateCheckoutSession do
       checkout_call = stripe_client.recorded_calls.find { |call| call[:method] == :create_checkout_session }
       expect(checkout_call[:args][:price_id]).to eq("price_g")
     end
+
+    it "tags the Stripe Checkout session with the billing integration_identifier" do
+      use_case.call(account_id: account_id)
+      checkout_call = stripe_client.recorded_calls.find { |call| call[:method] == :create_checkout_session }
+      expect(checkout_call[:args]).to include(integration_identifier: "billing-EXeWm39u")
+    end
   end
 
   context "when account is a cast with existing customer" do

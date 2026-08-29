@@ -10,6 +10,8 @@ module Billing
       IGNORED_TYPES = %w[
         customer.subscription.trial_will_end
         checkout.session.completed
+        invoice.paid
+        invoice.payment_failed
       ].freeze
 
       include Billing::Deps[

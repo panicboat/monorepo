@@ -116,6 +116,17 @@ RSpec.describe Billing::UseCases::ProcessWebhookEvent, type: :database do
       expect(use_case.call(event: event)).to eq(:ignored)
       expect(stripe_event_repo.find_by_stripe_event_id("evt_x1").processed_at).not_to be_nil
     end
+
+    it "records invoice.payment_failed as ignored" do
+      event = OpenStruct.new(
+        id: "evt_invoice_failed", type: "invoice.payment_failed",
+        data: OpenStruct.new(object: OpenStruct.new),
+        to_hash: { "id" => "evt_invoice_failed", "type" => "invoice.payment_failed" }
+      )
+
+      expect(use_case.call(event: event)).to eq(:ignored)
+      expect(stripe_event_repo.find_by_stripe_event_id(event.id).processed_at).not_to be_nil
+    end
   end
 
   describe "handler failure" do

@@ -64,6 +64,7 @@ module Spec
         maybe_raise!
         record(:create_checkout_session, customer_id: customer_id, price_id: price_id,
                                           success_url: success_url, cancel_url: cancel_url,
+                                          integration_identifier: "billing-EXeWm39u",
                                           idempotency_key: idempotency_key)
         @seq[:session] += 1
         id = "cs_fake_#{@seq[:session]}"

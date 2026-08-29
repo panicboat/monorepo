@@ -22,6 +22,7 @@ Slice: `billing` (new)
 - 他 slice からの entitlement 適用 (機能ゲート実装)
 - Multi-tier plan、annual plan、proration
 - コンビニ / 銀行振込などカード以外の決済手段
+- **`checkout.session.async_payment_succeeded` handler**: 上記の非同期決済手段 (bank transfer, konbini, etc.) を将来追加する時点で、`ProcessWebhookEvent` の HANDLED_TYPES に `checkout.session.async_payment_succeeded` を追加する必要がある。カード決済のみの MVP では不要。
 - Invoice / PaymentMethod のミラー
 - Trial 濫用防止 (2 回目 trial 制限)
 - reconcile task の cron 化 (MVP は手動起動)
@@ -380,6 +381,7 @@ Price / Product は Stripe Dashboard で手動作成 (2 product × 各 1 price)�
 - 署名検証を primary defense とする (`Stripe::Webhook.construct_event`)
 - Stripe 公開 IP レンジからのみ受け付ける allowlist を k8s Ingress または NetworkPolicy で defense-in-depth として設定
 - webhook route の Hanami middleware chain が raw request body を改変しないことを実装時に verify (署名検証は raw body 必須)
+- Restricted API Key (RAK) を使用し、Customers write、Checkout Sessions write、Billing Portal Sessions write、Subscriptions read、Webhooks の最小権限のみ付与する
 
 ## Testing
 
@@ -461,6 +463,7 @@ monolith CI は `bundle install --frozen` + image build のみで rspec を回�
   - Product / Price 作成 (Guest 用、Cast 用、それぞれ trial period 設定)
   - Customer Portal 設定 (cancel / update payment method / view invoices を有効、plan 変更を無効)
   - Webhook endpoint 登録 (test/staging/production の URL 個別)
+- **Stripe Tax (消費税) 検討**: JPY subscription を本番運用する前に、消費税の税務登録有無を確認する。`automatic_tax: { enabled: true }` を有効化しても、Stripe に active な税務登録がなければ税は 0 円で徴収される (Stripe Tax で最も多い設定ミス per 公式ベストプラクティス)。日本国内の登録事業者要件と設定手順は https://docs.stripe.com/billing/taxes/collect-taxes.md 参照。今回 MVP では `automatic_tax` を有効化しない (税額は subscription price に含める前提)。
 - **k8s Secret 投入**: `STRIPE_API_KEY`, `STRIPE_WEBHOOK_SECRET` を各環境の k8s Secret に追加
 - **Ingress / NetworkPolicy**: `/billing/webhooks/stripe` の公開設定 + Stripe 公開 IP allowlist の追加
 
