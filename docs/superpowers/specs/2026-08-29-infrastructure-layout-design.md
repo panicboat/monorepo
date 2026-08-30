@@ -348,13 +348,22 @@ README を触るスタンス:
 
 - `git grep -F "aws/envs" -- ':!.claude/worktrees' ':!docs/superpowers'` の残存ゼロ（monorepo）
 - `git grep -E 'envs/(production|master|develop)' -- ':!.claude/worktrees' ':!docs/superpowers'` の残存ゼロ（両リポ）
-- monorepo: `cd dystopia/monolith/infrastructure/aws/production && terragrunt hclvalidate && terragrunt init && terragrunt validate`
-- monorepo: `cd dystopia/monolith/infrastructure/stripe/production && terragrunt hclvalidate && terragrunt init && terragrunt validate`（空 modules で no-op 通過）
-- monorepo: `cd dystopia/frontend/infrastructure/aws/production && terragrunt hclvalidate && terragrunt init && terragrunt validate`
-- monorepo: `cd system-components/holmes/infrastructure/aws/production && terragrunt hclvalidate && terragrunt init && terragrunt validate`
-- platform: aws 側 (`aws/{svc}/{production または master または develop}/`) と github 側 (`github/{svc}/master/`) で `terragrunt hclvalidate && terragrunt init && terragrunt validate` を走らせる。env 名はサービスごとに異なる（`production`: alb, eks 群, vpc, iam-service-linked-roles、`master`: cost-management, route53, github-oidc-auth, github/repository, github/branch、`develop`/`production`: github-oidc-auth）ため、`find aws github -name env.hcl` で発見して全網羅する
+### terragrunt 検証コマンド (実測で確定)
+
+`terragrunt hclvalidate` は terragrunt 1.1.3 で廃止されており（`terragrunt hcl validate` に改名、未知コマンドの forward も停止）、`terragrunt init` を backend 付きで走らせると実 AWS の S3 / DynamoDB に到達する。ローカル検証では以下を使う。
+
+- 全 stack: `terragrunt hcl validate` — HCL 構文。monolith ではこれが `dependency` block を実際に解決し、frontend config を読んで mock outputs 適用の警告を出す（＝ `config_path` が正しいことの証明になる）
+- dependency を持たない stack (frontend / holmes / stripe): `terragrunt run -- init -backend=false` → `terragrunt run -- validate`。`source = "../modules"` が新しい深さで解決することを実証する
+- monolith: `-backend=false` では `dependency` が解決できず `Unknown variable; There is no variable named "dependency"` で落ちるため init/validate は行わない。代わりに `test -d ../modules` と `test -f ../../../../frontend/infrastructure/aws/production/terragrunt.hcl` で構造検証する
+- **ローカルでは実行しない**: backend 付き `terragrunt init`、`terragrunt plan`、`terragrunt apply`。実 state に対する plan 検証は CI もしくは開発者の手元に委ねる（既知の限界として PR に明記する）
+
+対象 stack:
+
+- monorepo: `dystopia/monolith/infrastructure/aws/production`、`dystopia/monolith/infrastructure/stripe/production`、`dystopia/frontend/infrastructure/aws/production`、`system-components/holmes/infrastructure/aws/production`
+- platform: aws 側 (`aws/{svc}/{production または master または develop}/`) と github 側 (`github/{svc}/master/`)。env 名はサービスごとに異なる（`production`: alb, eks 群, vpc, iam-service-linked-roles、`master`: cost-management, route53, github-oidc-auth, github/repository, github/branch、`develop`/`production`: github-oidc-auth）ため、`find aws github -name env.hcl` で発見して全網羅する
 - deploy-actions: `cd action-scripts && bundle exec rspec`（追加 spec 込みで green）
-- deploy-actions: `bin/config-manager validate` を monorepo / platform 両方の workflow-config.yaml に対して実行し、id validation が動くことを実測
+- deploy-actions: `bin/config-manager validate` を platform の workflow-config.yaml に対して実行し、既存 config が変更後も success で通ることを確認（VERIFIED: 現行 config で事前に success 確認済み）
+- deploy-actions: monorepo の workflow-config.yaml は `environments: []` が空のままなので `bin/config-manager validate` は本 refactor 前後を問わず `"No environments defined"` で fail する（VERIFIED: 現行 config で再現確認済み、本 refactor と無関係の pre-existing 状態）。id validation 自体は scratch config（`environments:` を populate した最小構成）に対して `bin/config-manager validate` または rspec で確認する
 - monorepo / platform の PR で label-dispatcher / label-resolver actions が実 CI で新 config を解決できることを Draft PR で verify
 - monorepo: `deploy:monolith` label 付き PR で terragrunt matrix に AWS / Stripe の 2 target が現れることを Draft PR で verify
 
