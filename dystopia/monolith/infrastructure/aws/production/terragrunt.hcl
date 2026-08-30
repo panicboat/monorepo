@@ -8,11 +8,11 @@ include "env" {
 }
 
 terraform {
-  source = "../../modules"
+  source = "../modules"
 }
 
 dependency "cognito" {
-  config_path = "../../../../frontend/aws/envs/production"
+  config_path = "../../../../frontend/infrastructure/aws/production"
 
   mock_outputs = {
     user_pool_arn = "arn:aws:cognito-idp:ap-northeast-1:000000000000:userpool/mock"
