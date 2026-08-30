@@ -19,7 +19,12 @@ stack_conventions:
       - name: container
         directory: .
       - name: terragrunt
-        directory: aws/envs/{environment}
+        id: aws
+        directory: infrastructure/aws/{environment}
+        required_attributes: [aws_region, iam_role_plan, iam_role_apply]
+      - name: terragrunt
+        id: stripe
+        directory: infrastructure/stripe/{environment}
         required_attributes: [aws_region, iam_role_plan, iam_role_apply]
       - name: kubernetes
         directory: kubernetes/overlays/{environment}
@@ -29,7 +34,7 @@ stack_conventions:
       - name: container
         directory: .
       - name: terragrunt
-        directory: aws/envs/{environment}
+        directory: infrastructure/aws/{environment}
         required_attributes: [aws_region, iam_role_plan, iam_role_apply]
       - name: kubernetes
         directory: kubernetes/overlays/{environment}
