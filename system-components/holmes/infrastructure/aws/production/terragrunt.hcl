@@ -8,7 +8,7 @@ include "env" {
 }
 
 terraform {
-  source = "../../modules"
+  source = "../modules"
 }
 
 remote_state {
