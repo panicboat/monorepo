@@ -11,5 +11,5 @@ overrides:
   '@typescript-eslint/types': ^8.68.0
   '@typescript-eslint/typescript-estree': ^8.68.0
   '@typescript-eslint/scope-manager': ^8.68.0
-  '@typescript-eslint/visitor-keys': ^8.67.0
+  '@typescript-eslint/visitor-keys': ^8.68.0
   typescript-eslint: ^8.68.0
