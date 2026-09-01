@@ -39,7 +39,7 @@ group :development do
   # in the descriptor blob, causing spurious churn on `bin/codegen`.
   # 1.81.1 is the minimum that supports Ruby 4.0 (earlier versions cap at
   # `< 3.5.dev` on Linux platform gemspecs).
-  gem "grpc-tools", "1.83.0"
+  gem "grpc-tools", "1.83.1"
 end
 
 group :development, :test do
