@@ -221,6 +221,13 @@ To update Ruby code from Proto definitions (`proto/**/*.proto`):
 bundle exec rspec
 ```
 
+## Infrastructure
+
+Terragrunt stacks live under `infrastructure/`:
+
+- `infrastructure/aws/production/` — RDS, Cognito Pod Identity, IAM policies (depends on `dystopia/frontend/infrastructure/aws/production` for the Cognito user pool ARN).
+- `infrastructure/stripe/production/` — empty scaffold; Stripe Terraform provider and resources land in a follow-up PR.
+
 ## Useful links
 
 - [Hanami](http://hanamirb.org)

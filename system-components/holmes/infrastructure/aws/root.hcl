@@ -3,10 +3,10 @@
 
 locals {
   # Project metadata
-  project_name = "frontend"
+  project_name = "services"
 
   # Parse environment from the directory path
-  # This assumes environments are in envs/<environment>/ directories
+  # The environment is the last path segment (e.g. .../production)
   path_parts  = split("/", path_relative_to_include())
   environment = element(local.path_parts, length(local.path_parts) - 1)
 
@@ -16,7 +16,7 @@ locals {
     Environment = local.environment
     ManagedBy   = "terragrunt"
     Repository  = "monorepo"
-    Component   = "frontend"
+    Component   = "services"
     Team        = "panicboat"
   }
 }
@@ -32,8 +32,8 @@ remote_state {
     # Shared bucket for all monorepo services
     bucket = "terragrunt-state-${get_aws_account_id()}"
 
-    # Service-specific path: dystopia/frontend/<environment>/terraform.tfstate
-    key    = "dystopia/frontend/${local.environment}/terraform.tfstate"
+    # Service-specific path: system-components/template/<environment>/terraform.tfstate
+    key    = "system-components/template/${local.environment}/terraform.tfstate"
     region = "ap-northeast-1"
 
     # Shared DynamoDB table for state locking across all services
@@ -46,7 +46,8 @@ remote_state {
 
 # Common inputs passed to all Terraform modules
 inputs = {
-  environment = local.environment
-  common_tags = local.common_tags
-  aws_region  = "ap-northeast-1"
+  project_name = local.project_name
+  environment  = local.environment
+  common_tags  = local.common_tags
+  aws_region   = "ap-northeast-1"
 }

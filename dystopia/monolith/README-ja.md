@@ -75,3 +75,10 @@ end
 bundle install
 bundle exec hanami server
 ```
+
+## Infrastructure
+
+Terragrunt stack は `infrastructure/` 配下にあります。
+
+- `infrastructure/aws/production/` — RDS、Cognito Pod Identity、IAM ポリシー（Cognito user pool ARN は `dystopia/frontend/infrastructure/aws/production` に依存）。
+- `infrastructure/stripe/production/` — 空の scaffold。Stripe Terraform provider とリソースは後続の PR で追加します。

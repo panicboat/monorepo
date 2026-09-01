@@ -62,6 +62,7 @@ flowchart LR
 - **Trigger**: `.github/workflows/auto-label--deploy-trigger.yaml` runs on PR labels and main pushes. `panicboat/deploy-actions/label-resolver` reads `workflow-config.yaml` and dispatches to the matching stack workflow.
 - **Stacks** (see `stack_conventions` in `workflow-config.yaml`):
   - `container` → builds `dystopia/{service}` or `system-components/{service}` and pushes to GHCR.
+  - `terragrunt` → runs `terragrunt plan/apply` under `dystopia/{service}/infrastructure/{aws,stripe}/{environment}` or `system-components/{service}/infrastructure/aws/{environment}`. `dystopia/monolith` carries two instances (`id: aws` and `id: stripe`); other services carry a single AWS instance.
   - `kubernetes` → posts a kustomize diff on the PR. Apply is delegated to Flux; CI does not run `kubectl apply`.
 - **Versioning**: release-please (`.github/release-please-config.json`) raises per-service release PRs. Merging the release PR creates a `<service>-vX.Y.Z` tag, which triggers the container build under that tag.
 - **GitOps**: `clusters/<environment>/dystopia/<service>/image-policy.yaml` selects the latest matching semver from GHCR. `ImageUpdateAutomation` commits the new tag back into the overlay, keeping what runs in the cluster identical to what is checked in.

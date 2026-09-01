@@ -8,7 +8,7 @@ include "env" {
 }
 
 terraform {
-  source = "../../modules"
+  source = "../modules"
 }
 
 remote_state {
@@ -19,7 +19,7 @@ remote_state {
   }
   config = {
     bucket         = "terragrunt-state-${get_aws_account_id()}"
-    key            = "system-components/holmes/${include.env.locals.environment}/terraform.tfstate"
+    key            = "dystopia/monolith-stripe/${include.env.locals.environment}/terraform.tfstate"
     region         = "ap-northeast-1"
     dynamodb_table = "terragrunt-state-locks"
     encrypt        = true
@@ -27,8 +27,7 @@ remote_state {
 }
 
 inputs = {
-  environment = include.env.locals.environment
-  aws_region  = include.env.locals.aws_region
+  aws_region = include.env.locals.aws_region
   common_tags = merge(
     {
       Environment = include.env.locals.environment

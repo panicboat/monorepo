@@ -6,7 +6,7 @@ locals {
   project_name = "services"
 
   # Parse environment from the directory path
-  # This assumes environments are in envs/<environment>/ directories
+  # The environment is the last path segment (e.g. .../production)
   path_parts  = split("/", path_relative_to_include())
   environment = element(local.path_parts, length(local.path_parts) - 1)
 
@@ -32,8 +32,8 @@ remote_state {
     # Shared bucket for all monorepo services
     bucket = "terragrunt-state-${get_aws_account_id()}"
 
-    # Service-specific path: system-components/template/<environment>/terraform.tfstate
-    key    = "system-components/template/${local.environment}/terraform.tfstate"
+    # Service-specific path: dystopia/template/<environment>/terraform.tfstate
+    key    = "dystopia/template/${local.environment}/terraform.tfstate"
     region = "ap-northeast-1"
 
     # Shared DynamoDB table for state locking across all services
