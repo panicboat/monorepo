@@ -209,7 +209,7 @@ GEM
     grpc (1.81.1-x86_64-linux-musl)
       google-protobuf (>= 3.25, < 5.0)
       googleapis-common-protos-types (~> 1.0)
-    grpc-tools (1.83.0)
+    grpc-tools (1.83.1)
     gruf (2.22.0)
       activesupport (> 4)
       concurrent-ruby (> 1)
@@ -654,7 +654,7 @@ DEPENDENCIES
   dry-validation
   faker (~> 3.8)
   grpc
-  grpc-tools (= 1.83.0)
+  grpc-tools (= 1.83.1)
   gruf
   hanami (~> 3.0, >= 3.0.2)
   hanami-action (~> 3.0, >= 3.0.1)
