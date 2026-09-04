@@ -8,12 +8,11 @@ import (
 	"github.com/panicboat/monorepo/system-components/holmes/internal/clients/holmes"
 	"github.com/panicboat/monorepo/system-components/holmes/internal/clients/slack"
 	"github.com/panicboat/monorepo/system-components/holmes/internal/config"
-	"github.com/panicboat/monorepo/system-components/holmes/internal/handlers/alertmanager"
 	slackhandler "github.com/panicboat/monorepo/system-components/holmes/internal/handlers/slack"
 )
 
 func main() {
-	cfg, err := config.Load()
+	cfg, err := config.LoadSlack()
 	if err != nil {
 		log.Fatalf("config error: %v", err)
 	}
@@ -30,10 +29,9 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 	mux.Handle("/slack/events", &slackhandler.Handler{Cfg: cfg, Holmes: holmesClient, Client: slackClient, GitHub: githubClient})
-	mux.Handle("/alertmanager/webhook", &alertmanager.Handler{Cfg: cfg, Holmes: holmesClient, Client: slackClient})
 
 	addr := ":8080"
-	log.Printf("holmes listening on %s", addr)
+	log.Printf("holmes-slack listening on %s", addr)
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatal(err)
 	}
