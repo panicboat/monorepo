@@ -101,10 +101,18 @@ CI（Dockerfile の場所、release-please component、
   `app: holmes-alertmanager` に分け、Service の selector もそれぞれに
   合わせる（`app: holmes` 1つを両方に付けると Service selector が
   曖昧になる）。
-- `/healthz` は両バイナリが個別に実装しているので、ALB の
-  `alb.ingress.kubernetes.io/healthcheck-path` annotation は Ingress
-  全体ではなく Service 単位のアノテーションとして各 Service に
-  `/healthz` を設定する。
+- `/healthz` は両バイナリが個別に実装しており、ALB の
+  `alb.ingress.kubernetes.io/healthcheck-path: /healthz` は Ingress
+  annotation としてそのグループ内の全 target group（= 両 Service）に
+  適用されるため、変更不要。
+- `clusters/production/system-components/holmes/` の Flux
+  Kustomization は `path:
+  ./system-components/holmes/kubernetes/overlays/production`
+  ディレクトリ全体を1つの unit として apply しているので、Deployment/
+  Service が2つに増えても Flux 側（Kustomization,
+  ImageUpdateAutomation, ImagePolicy, ImageRepository）は変更不要。
+  `$imagepolicy: "flux-system:holmes"` マーカーは2つの Deployment
+  ファイルの両方に置き、Flux の Setters 戦略が両方を更新する。
 
 ### 2. Action envelope — `{action, ready, reason, payload}`
 
