@@ -18,17 +18,28 @@ func setEnv(t *testing.T, key, value string) {
 	})
 }
 
-func TestLoad_AllRequiredPresent(t *testing.T) {
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	old, hadOld := os.LookupEnv(key)
+	os.Unsetenv(key)
+	t.Cleanup(func() {
+		if hadOld {
+			os.Setenv(key, old)
+		}
+	})
+}
+
+func TestLoadSlack_AllRequiredPresent(t *testing.T) {
 	setEnv(t, "SLACK_SIGNING_SECRET", "sig-secret")
 	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
-	setEnv(t, "ALERTMANAGER_SHARED_TOKEN", "am-token")
 	setEnv(t, "HOLMES_API_URL", "http://holmesgpt-holmes.holmesgpt.svc.cluster.local")
 	setEnv(t, "GITHUB_APP_ID", "123")
 	setEnv(t, "GITHUB_APP_PRIVATE_KEY", "test-key")
 	setEnv(t, "GITHUB_APP_INSTALLATION_ID", "456")
-	os.Unsetenv("HOLMES_MODEL")
+	unsetEnv(t, "HOLMES_MODEL")
+	unsetEnv(t, "ALERTMANAGER_SHARED_TOKEN")
 
-	cfg, err := Load()
+	cfg, err := LoadSlack()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -46,13 +57,86 @@ func TestLoad_AllRequiredPresent(t *testing.T) {
 	}
 }
 
-func TestLoad_MissingRequired(t *testing.T) {
-	setEnv(t, "SLACK_SIGNING_SECRET", "")
+func TestLoadSlack_MissingSigningSecret(t *testing.T) {
+	unsetEnv(t, "SLACK_SIGNING_SECRET")
 	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
+	setEnv(t, "HOLMES_API_URL", "http://example.invalid")
+	setEnv(t, "GITHUB_APP_ID", "123")
+	setEnv(t, "GITHUB_APP_PRIVATE_KEY", "test-key")
+	setEnv(t, "GITHUB_APP_INSTALLATION_ID", "456")
+
+	if _, err := LoadSlack(); err == nil {
+		t.Fatal("expected error when SLACK_SIGNING_SECRET is missing, got nil")
+	}
+}
+
+func TestLoadSlack_MissingGitHubAppID(t *testing.T) {
+	setEnv(t, "SLACK_SIGNING_SECRET", "sig-secret")
+	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
+	setEnv(t, "HOLMES_API_URL", "http://example.invalid")
+	unsetEnv(t, "GITHUB_APP_ID")
+	setEnv(t, "GITHUB_APP_PRIVATE_KEY", "test-key")
+	setEnv(t, "GITHUB_APP_INSTALLATION_ID", "456")
+
+	if _, err := LoadSlack(); err == nil {
+		t.Fatal("expected error when GITHUB_APP_ID is missing, got nil")
+	}
+}
+
+func TestLoadSlack_DoesNotRequireAlertmanagerToken(t *testing.T) {
+	setEnv(t, "SLACK_SIGNING_SECRET", "sig-secret")
+	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
+	setEnv(t, "HOLMES_API_URL", "http://example.invalid")
+	setEnv(t, "GITHUB_APP_ID", "123")
+	setEnv(t, "GITHUB_APP_PRIVATE_KEY", "test-key")
+	setEnv(t, "GITHUB_APP_INSTALLATION_ID", "456")
+	unsetEnv(t, "ALERTMANAGER_SHARED_TOKEN")
+
+	if _, err := LoadSlack(); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestLoadAlertmanager_AllRequiredPresent(t *testing.T) {
 	setEnv(t, "ALERTMANAGER_SHARED_TOKEN", "am-token")
+	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
+	setEnv(t, "HOLMES_API_URL", "http://holmesgpt-holmes.holmesgpt.svc.cluster.local")
+	unsetEnv(t, "HOLMES_MODEL")
+	unsetEnv(t, "SLACK_SIGNING_SECRET")
+	unsetEnv(t, "GITHUB_APP_ID")
+
+	cfg, err := LoadAlertmanager()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.HolmesModel != "sonnet-4-6" {
+		t.Errorf("expected default model sonnet-4-6, got %q", cfg.HolmesModel)
+	}
+	if cfg.AlertmanagerToken != "am-token" {
+		t.Errorf("expected AlertmanagerToken %q, got %q", "am-token", cfg.AlertmanagerToken)
+	}
+}
+
+func TestLoadAlertmanager_MissingToken(t *testing.T) {
+	unsetEnv(t, "ALERTMANAGER_SHARED_TOKEN")
+	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
 	setEnv(t, "HOLMES_API_URL", "http://example.invalid")
 
-	if _, err := Load(); err == nil {
-		t.Fatal("expected error when SLACK_SIGNING_SECRET is missing, got nil")
+	if _, err := LoadAlertmanager(); err == nil {
+		t.Fatal("expected error when ALERTMANAGER_SHARED_TOKEN is missing, got nil")
+	}
+}
+
+func TestLoadAlertmanager_DoesNotRequireGitHubApp(t *testing.T) {
+	setEnv(t, "ALERTMANAGER_SHARED_TOKEN", "am-token")
+	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
+	setEnv(t, "HOLMES_API_URL", "http://example.invalid")
+	unsetEnv(t, "GITHUB_APP_ID")
+	unsetEnv(t, "GITHUB_APP_PRIVATE_KEY")
+	unsetEnv(t, "GITHUB_APP_INSTALLATION_ID")
+	unsetEnv(t, "SLACK_SIGNING_SECRET")
+
+	if _, err := LoadAlertmanager(); err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
