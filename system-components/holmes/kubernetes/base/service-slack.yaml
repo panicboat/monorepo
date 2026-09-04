@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: holmes
+  name: holmes-slack
 spec:
   selector:
-    app: holmes
+    app: holmes-slack
   ports:
     - protocol: TCP
       port: 80
