@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: pennyworth-slack
-          image: ghcr.io/panicboat/monorepo/pennyworth:v0.0.1 # {"$imagepolicy": "flux-system:pennyworth"}
+          image: ghcr.io/panicboat/monorepo/pennyworth:v1.0.0 # {"$imagepolicy": "flux-system:pennyworth"}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -18,4 +18,4 @@ spec:
     spec:
       containers:
         - name: pennyworth-alertmanager
-          image: ghcr.io/panicboat/monorepo/pennyworth:v0.0.1 # {"$imagepolicy": "flux-system:pennyworth"}
+          image: ghcr.io/panicboat/monorepo/pennyworth:v1.0.0 # {"$imagepolicy": "flux-system:pennyworth"}
