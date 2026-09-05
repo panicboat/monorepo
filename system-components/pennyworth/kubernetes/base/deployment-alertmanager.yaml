@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pennyworth-alertmanager
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: pennyworth-alertmanager
+  template:
+    metadata:
+      labels:
+        app: pennyworth-alertmanager
+    spec:
+      containers:
+        - name: pennyworth-alertmanager
+          image: ghcr.io/panicboat/monorepo/pennyworth:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/pennyworth-alertmanager"]
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: pennyworth
+            - secretRef:
+                name: pennyworth-slack
+            - secretRef:
+                name: pennyworth-alertmanager

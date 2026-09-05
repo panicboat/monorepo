@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pennyworth
+data:
+  HOLMESGPT_API_URL: http://holmesgpt-holmes.holmesgpt.svc.cluster.local
+  HOLMESGPT_MODEL: sonnet-4-6

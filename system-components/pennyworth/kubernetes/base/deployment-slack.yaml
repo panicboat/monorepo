@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pennyworth-slack
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: pennyworth-slack
+  template:
+    metadata:
+      labels:
+        app: pennyworth-slack
+    spec:
+      containers:
+        - name: pennyworth-slack
+          image: ghcr.io/panicboat/monorepo/pennyworth:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/pennyworth-slack"]
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: pennyworth
+            - secretRef:
+                name: pennyworth-slack
+            - secretRef:
+                name: pennyworth-github
