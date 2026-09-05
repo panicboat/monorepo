@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: holmes-slack
+  name: pennyworth-slack
 spec:
   template:
     spec:
       containers:
-        - name: holmes-slack
-          image: ghcr.io/panicboat/monorepo/holmes:v0.6.0 # {"$imagepolicy": "flux-system:holmes"}
+        - name: pennyworth-slack
+          image: ghcr.io/panicboat/monorepo/pennyworth:v0.0.1 # {"$imagepolicy": "flux-system:pennyworth"}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: holmes-alertmanager
+  name: pennyworth-alertmanager
 spec:
   template:
     spec:
       containers:
-        - name: holmes-alertmanager
-          image: ghcr.io/panicboat/monorepo/holmes:v0.6.0 # {"$imagepolicy": "flux-system:holmes"}
+        - name: pennyworth-alertmanager
+          image: ghcr.io/panicboat/monorepo/pennyworth:v0.0.1 # {"$imagepolicy": "flux-system:pennyworth"}

@@ -1,4 +1,4 @@
-# holmes takes direct POSTs from Slack and Alertmanager, so unlike the
+# pennyworth takes direct POSTs from Slack and Alertmanager, so unlike the
 # oauth2-proxy-fronted monitoring-uis Ingresses it has no auth in front.
 # Uses the panicboat.net private-tooling zone, kept separate from the
 # public product's dystopia.city / cilium Gateway API path
@@ -7,13 +7,13 @@
 # application.
 #
 # healthcheck-path is an Ingress-level annotation applied to every
-# target group in this Ingress (both holmes-slack and
-# holmes-alertmanager), so one /healthz setting covers both Services —
+# target group in this Ingress (both pennyworth-slack and
+# pennyworth-alertmanager), so one /healthz setting covers both Services —
 # both binaries implement that path.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: holmes
+  name: pennyworth
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
@@ -23,24 +23,24 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
     alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
     alb.ingress.kubernetes.io/ssl-redirect: "443"
-    external-dns.alpha.kubernetes.io/hostname: holmes.panicboat.net
+    external-dns.alpha.kubernetes.io/hostname: pennyworth.panicboat.net
 spec:
   ingressClassName: alb
   rules:
-    - host: holmes.panicboat.net
+    - host: pennyworth.panicboat.net
       http:
         paths:
           - path: /slack
             pathType: Prefix
             backend:
               service:
-                name: holmes-slack
+                name: pennyworth-slack
                 port:
                   number: 80
           - path: /alertmanager
             pathType: Prefix
             backend:
               service:
-                name: holmes-alertmanager
+                name: pennyworth-alertmanager
                 port:
                   number: 80

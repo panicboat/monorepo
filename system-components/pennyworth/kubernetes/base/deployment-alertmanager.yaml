@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: holmes-alertmanager
+  name: pennyworth-alertmanager
   annotations:
     reloader.stakater.com/auto: "true"
 spec:
@@ -9,23 +9,23 @@ spec:
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: holmes-alertmanager
+      app: pennyworth-alertmanager
   template:
     metadata:
       labels:
-        app: holmes-alertmanager
+        app: pennyworth-alertmanager
     spec:
       containers:
-        - name: holmes-alertmanager
-          image: ghcr.io/panicboat/monorepo/holmes:latest
+        - name: pennyworth-alertmanager
+          image: ghcr.io/panicboat/monorepo/pennyworth:latest
           imagePullPolicy: IfNotPresent
-          command: ["/holmes-alertmanager"]
+          command: ["/pennyworth-alertmanager"]
           ports:
             - containerPort: 8080
           envFrom:
             - configMapRef:
-                name: holmes
+                name: pennyworth
             - secretRef:
-                name: holmes-slack
+                name: pennyworth-slack
             - secretRef:
-                name: holmes-alertmanager
+                name: pennyworth-alertmanager

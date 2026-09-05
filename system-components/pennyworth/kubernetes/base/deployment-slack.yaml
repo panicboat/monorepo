@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: holmes-slack
+  name: pennyworth-slack
   annotations:
     reloader.stakater.com/auto: "true"
 spec:
@@ -9,23 +9,23 @@ spec:
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: holmes-slack
+      app: pennyworth-slack
   template:
     metadata:
       labels:
-        app: holmes-slack
+        app: pennyworth-slack
     spec:
       containers:
-        - name: holmes-slack
-          image: ghcr.io/panicboat/monorepo/holmes:latest
+        - name: pennyworth-slack
+          image: ghcr.io/panicboat/monorepo/pennyworth:latest
           imagePullPolicy: IfNotPresent
-          command: ["/holmes-slack"]
+          command: ["/pennyworth-slack"]
           ports:
             - containerPort: 8080
           envFrom:
             - configMapRef:
-                name: holmes
+                name: pennyworth
             - secretRef:
-                name: holmes-slack
+                name: pennyworth-slack
             - secretRef:
-                name: holmes-github
+                name: pennyworth-github
