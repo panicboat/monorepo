@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/panicboat/monorepo/compare/holmes-v0.6.1...holmes-v0.7.0) (2026-09-05)
+
+
+### Features
+
+* **system-components/holmes:** replace investigating message with reactions ([#1047](https://github.com/panicboat/monorepo/issues/1047)) ([56f32d2](https://github.com/panicboat/monorepo/commit/56f32d2cbaa437b1cbafd2eefbf20a072991ea19))
+
 ## [0.6.1](https://github.com/panicboat/monorepo/compare/holmes-v0.6.0...holmes-v0.6.1) (2026-08-21)
 
 
