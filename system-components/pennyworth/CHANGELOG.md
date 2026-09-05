@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 (2026-09-05)
+
+
+### Bug Fixes
+
+* **system-components/pennyworth:** point Slack and GitHub secrets back at existing paths ([#1052](https://github.com/panicboat/monorepo/issues/1052)) ([513cf6c](https://github.com/panicboat/monorepo/commit/513cf6c367938a0c0d2da35f0809f0f7ca20f8d1))
+
 ## [0.6.1](https://github.com/panicboat/monorepo/compare/holmes-v0.6.0...holmes-v0.6.1) (2026-08-21)
 
 
