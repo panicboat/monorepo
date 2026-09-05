@@ -1,4 +1,4 @@
-# terraform.tf - Terraform configuration for holmes secrets module
+# terraform.tf - Terraform configuration for pennyworth secrets module
 
 terraform {
   required_version = "1.12.6"

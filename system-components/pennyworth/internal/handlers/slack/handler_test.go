@@ -191,7 +191,7 @@ func TestHandleMention_ThreadHistory(t *testing.T) {
 		t.Fatal("expected conversations.replies to be called for a threaded mention")
 	}
 	if !strings.Contains(gotAsk, "frontend pods are crashlooping") {
-		t.Errorf("expected ask sent to holmes to include thread history, got: %q", gotAsk)
+		t.Errorf("expected ask sent to HolmesGPT to include thread history, got: %q", gotAsk)
 	}
 	if len(posted) != 1 {
 		t.Fatalf("expected exactly 1 posted message, got %d: %+v", len(posted), posted)

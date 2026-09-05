@@ -169,7 +169,7 @@ func (h *Handler) dispatchAction(channel, threadTs string, env actionEnvelope) {
 	case "create_issue":
 		h.handleCreateIssue(channel, threadTs, env)
 	default:
-		log.Printf("unknown action %q from holmes response", env.Action)
+		log.Printf("unknown action %q from HolmesGPT response", env.Action)
 		if _, err := h.Client.PostMessage(channel, threadTs, "アクションの解析に失敗しました（不明な action です）"); err != nil {
 			log.Printf("failed to post unknown-action message: %v", err)
 		}

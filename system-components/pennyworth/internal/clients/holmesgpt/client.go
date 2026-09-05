@@ -11,7 +11,7 @@ import (
 
 // formattingPrompt is sent as HolmesGPT's additional_system_prompt on
 // every request. HolmesGPT's default output is standard Markdown and
-// English; holmes relays the response into Slack chat.postMessage
+// English; pennyworth relays the response into Slack chat.postMessage
 // verbatim with no reformatting, so it must ask HolmesGPT to produce
 // Slack's mrkdwn dialect directly (Slack does not render **bold**,
 // #-headings, or [text](url) links) and to respond in Japanese, the
@@ -88,12 +88,12 @@ func (c *Client) chat(ask, additionalSystemPrompt string) (string, error) {
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("call holmes api: %w", err)
+		return "", fmt.Errorf("call HolmesGPT api: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("holmes api returned status %d", resp.StatusCode)
+		return "", fmt.Errorf("HolmesGPT api returned status %d", resp.StatusCode)
 	}
 
 	var chatResp holmesChatResponse
