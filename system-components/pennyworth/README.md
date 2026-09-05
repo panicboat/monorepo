@@ -7,26 +7,32 @@ Design: `docs/superpowers/specs/2026-09-05-holmes-to-pennyworth-rename-design.md
 
 ## Manual setup (cannot be automated)
 
-Slack, GitHub App, and Alertmanager credentials all pre-date this rename and
-already exist in Secrets Manager under their original (`holmes`-era) paths.
-This service does not provision them — it only reads:
+pennyworth owns its Slack and GitHub App secret containers
+(`system-components/pennyworth/slack`, `github-app/pennyworth-bot` — created
+by this directory's Terraform, values put manually). Alertmanager's secret
+predates pennyworth and is shared with `panicboat/platform`.
 
-- Slack: `eks/holmesgpt/slack` (`signing_secret`, `bot_token`)
-- GitHub App: `github-app/holmes-bot` (`app_id`, `private_key`, `installation_id`)
-- Alertmanager: `eks/holmesgpt/alertmanager` (`shared_token`), shared with
-  `panicboat/platform`'s own Alertmanager notification config
+### 1. Provision the Slack secret (after `terragrunt apply` creates it empty)
 
-### 1. Update the existing Slack app (api.slack.com)
+```bash
+aws secretsmanager put-secret-value \
+  --secret-id system-components/pennyworth/slack \
+  --secret-string '{"signing_secret":"<...>","bot_token":"<xoxb-...>"}'
+```
 
-The Slack app already exists (installed under the pre-rename name). Update
-its settings to match the new identity:
+The Alertmanager shared token is not provisioned here — pennyworth reads
+`eks/holmesgpt/alertmanager`, a secret shared with `panicboat/platform`'s own
+Alertmanager notification config.
+
+### 2. Slack app (api.slack.com)
 
 1. Display name: `Alfred Pennyworth`.
 2. Event Subscriptions Request URL: `https://pennyworth.panicboat.net/slack/events`.
 3. Bot Token Scopes: `app_mentions:read`, `chat:write`, `channels:history`, `groups:history`.
 4. Subscribed bot events: `app_mention`.
+5. Install to workspace. Copy the signing secret (Basic Information) and bot token (OAuth & Permissions) into the secret above.
 
-### 2. Wire Alertmanager (panicboat/platform repo)
+### 3. Wire Alertmanager (panicboat/platform repo)
 
 Add a route/receiver in `kubernetes/components/prometheus-operator/production/values.yaml.gotmpl`
 matching `severity: critical`, with a `webhook_configs` URL of
@@ -34,8 +40,14 @@ matching `severity: critical`, with a `webhook_configs` URL of
 and `http_config.authorization` set to the `shared_token` from
 `eks/holmesgpt/alertmanager`.
 
-### 3. GitHub App
+### 4. GitHub App
 
-Uses the existing `panicboat-holmesgpt-bot` GitHub App — this rename does not
-create or rename a GitHub App. Credentials are read from Secrets Manager at
-`github-app/holmes-bot`.
+Uses `panicboat-pennyworth-bot` (renamed from `panicboat-holmesgpt-bot` — the
+App ID is unchanged, only its display name/slug). Credentials are read from
+Secrets Manager at `github-app/pennyworth-bot`:
+
+```bash
+aws secretsmanager put-secret-value \
+  --secret-id github-app/pennyworth-bot \
+  --secret-string '{"app_id":"<...>","installation_id":"<...>","private_key":"<...>"}'
+```
