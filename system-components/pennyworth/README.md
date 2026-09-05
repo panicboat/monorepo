@@ -28,7 +28,9 @@ Alertmanager notification config.
 
 1. Display name: `Alfred Pennyworth`.
 2. Event Subscriptions Request URL: `https://pennyworth.panicboat.net/slack/events`.
-3. Bot Token Scopes: `app_mentions:read`, `chat:write`, `channels:history`, `groups:history`.
+3. Bot Token Scopes: `app_mentions:read`, `chat:write`, `channels:history`, `groups:history`,
+   `reactions:write` (investigating/done/failed reactions on the mention), `channels:read`,
+   `groups:read` (`chat.getPermalink`, used to link a created GitHub issue back to the thread).
 4. Subscribed bot events: `app_mention`.
 5. Install to workspace. Copy the signing secret (Basic Information) and bot token (OAuth & Permissions) into the secret above.
 
