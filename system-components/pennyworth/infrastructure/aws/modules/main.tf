@@ -20,8 +20,8 @@ resource "aws_secretsmanager_secret" "pennyworth_slack" {
 }
 
 resource "aws_secretsmanager_secret" "pennyworth_github" {
-  name                    = "github-app/holmesgpt-bot"
-  description             = "GitHub App credentials for panicboat-holmesgpt-bot"
+  name                    = "github-app/pennyworth-bot"
+  description             = "GitHub App credentials for panicboat-pennyworth-bot"
   recovery_window_in_days = 0
   tags                    = var.common_tags
 }
@@ -32,5 +32,5 @@ resource "aws_secretsmanager_secret" "pennyworth_github" {
 #   --secret-id system-components/pennyworth/slack \
 #   --secret-string '{"signing_secret":"<from Slack app Basic Information page>","bot_token":"<xoxb-... from OAuth & Permissions page>"}'
 # aws secretsmanager put-secret-value \
-#   --secret-id github-app/holmesgpt-bot \
+#   --secret-id github-app/pennyworth-bot \
 #   --secret-string '{"app_id":"<...>","installation_id":"<...>","private_key":"<...>"}'

@@ -8,7 +8,7 @@ Design: `docs/superpowers/specs/2026-09-05-holmes-to-pennyworth-rename-design.md
 ## Manual setup (cannot be automated)
 
 pennyworth owns its Slack and GitHub App secret containers
-(`system-components/pennyworth/slack`, `github-app/holmesgpt-bot` — created
+(`system-components/pennyworth/slack`, `github-app/pennyworth-bot` — created
 by this directory's Terraform, values put manually). Alertmanager's secret
 predates pennyworth and is shared with `panicboat/platform`.
 
@@ -42,12 +42,12 @@ and `http_config.authorization` set to the `shared_token` from
 
 ### 4. GitHub App
 
-Uses the existing `panicboat-holmesgpt-bot` GitHub App — this rename does not
-create or rename a GitHub App. Credentials are read from Secrets Manager at
-`github-app/holmesgpt-bot`:
+Uses `panicboat-pennyworth-bot` (renamed from `panicboat-holmesgpt-bot` — the
+App ID is unchanged, only its display name/slug). Credentials are read from
+Secrets Manager at `github-app/pennyworth-bot`:
 
 ```bash
 aws secretsmanager put-secret-value \
-  --secret-id github-app/holmesgpt-bot \
+  --secret-id github-app/pennyworth-bot \
   --secret-string '{"app_id":"<...>","installation_id":"<...>","private_key":"<...>"}'
 ```
