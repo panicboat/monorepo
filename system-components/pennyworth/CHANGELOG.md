@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/panicboat/monorepo/compare/pennyworth-v1.0.0...pennyworth-v1.1.0) (2026-09-05)
+
+
+### Features
+
+* **system-components/pennyworth:** own Slack and GitHub App secrets ([#1055](https://github.com/panicboat/monorepo/issues/1055)) ([c81f194](https://github.com/panicboat/monorepo/commit/c81f19456531880eff8f98b133b1d781d23063b4))
+
 ## 1.0.0 (2026-09-05)
 
 
