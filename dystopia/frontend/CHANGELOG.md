@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0](https://github.com/panicboat/monorepo/compare/frontend-v0.2.1...frontend-v0.3.0) (2026-09-05)
+
+
+### Features
+
+* **clusters/production:** move workloads out of default namespace ([#1007](https://github.com/panicboat/monorepo/issues/1007)) ([38ad079](https://github.com/panicboat/monorepo/commit/38ad07911cfe31549dab783576fc00cb4c46b57c))
+* migrate identity management from self-hosted to Cognito ([#1016](https://github.com/panicboat/monorepo/issues/1016)) ([9295fa2](https://github.com/panicboat/monorepo/commit/9295fa2b2727839bd919387210f3d3d17ab81489))
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** update dependency next to v16.3.2 ([#1014](https://github.com/panicboat/monorepo/issues/1014)) ([3c9957a](https://github.com/panicboat/monorepo/commit/3c9957acda9acc1a85a0d2a753dfb6eb945f9b03))
+* **dystopia/frontend:** update dependency next to v16.3.3 ([#1020](https://github.com/panicboat/monorepo/issues/1020)) ([158a593](https://github.com/panicboat/monorepo/commit/158a593ff1e5c06159e4d7d318ae20d75cb5736c))
+
 ## [0.2.1](https://github.com/panicboat/monorepo/compare/frontend-v0.2.0...frontend-v0.2.1) (2026-05-17)
 
 
