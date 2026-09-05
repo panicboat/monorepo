@@ -2,11 +2,11 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: holmes
+  name: pennyworth
   namespace: flux-system
 spec:
   interval: 5m0s
-  path: "./system-components/holmes/kubernetes/overlays/production"
+  path: "./system-components/pennyworth/kubernetes/overlays/production"
   prune: true
   sourceRef:
     kind: GitRepository
@@ -14,4 +14,4 @@ spec:
   targetNamespace: system-components
   postBuild:
     substitute:
-      service_name: holmes
+      service_name: pennyworth

@@ -1,20 +1,20 @@
 # =============================================================================
-# ImagePolicy for holmes (= semver tag pattern)
+# ImagePolicy for pennyworth (= semver tag pattern)
 # =============================================================================
-# release tag (holmes-vX.Y.Z) を起点に build される ghcr semver tag (vX.Y.Z) を
+# release tag (pennyworth-vX.Y.Z) を起点に build される ghcr semver tag (vX.Y.Z) を
 # Flux が pickup する。main push 由来の latest / sha tag は filterTags pattern
 # で除外される (= Flux が見るのは semver のみ)。
 # =============================================================================
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
-  name: holmes
+  name: pennyworth
   namespace: flux-system
   labels:
-    service: holmes
+    service: pennyworth
 spec:
   imageRepositoryRef:
-    name: holmes
+    name: pennyworth
   filterTags:
     pattern: '^v(?P<version>\d+\.\d+\.\d+)$'
     extract: '$version'

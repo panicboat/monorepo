@@ -1,7 +1,7 @@
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageUpdateAutomation
 metadata:
-  name: holmes
+  name: pennyworth
   namespace: flux-system
 spec:
   interval: 30m
@@ -17,9 +17,9 @@ spec:
         email: panicboat@gmail.com
         name: panicboat
       messageTemplate: |
-        chore(holmes): bump image to {{range .Changed.Changes}}{{ println .NewValue }}{{end}}
+        chore(pennyworth): bump image to {{range .Changed.Changes}}{{ println .NewValue }}{{end}}
     push:
       branch: main
   update:
-    path: ./system-components/holmes/kubernetes/overlays/production
+    path: ./system-components/pennyworth/kubernetes/overlays/production
     strategy: Setters
