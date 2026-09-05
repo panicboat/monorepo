@@ -1,0 +1,14 @@
+---
+# aqua - Declarative CLI Version Manager
+# https://aquaproj.github.io/
+#
+# repository root に置く。aqua は設定ファイルを cwd から root 方向にしか探さないため、
+# .github/ 配下だと AQUA_CONFIG を明示した実行でしか pin が効かない
+# (panicboat/platform の aqua.yaml も同じ理由でルート直下)。
+registries:
+  - type: standard
+    ref: v4.311.0 # renovate: github_release aquaproj/aqua-registry
+
+packages:
+  - name: opentofu/opentofu@v1.12.0
+  - name: gruntwork-io/terragrunt@v1.0.2
