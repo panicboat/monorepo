@@ -13,9 +13,9 @@
       "component": "frontend",
       "include-component-in-tag": true
     },
-    "system-components/holmes": {
+    "system-components/pennyworth": {
       "release-type": "simple",
-      "component": "holmes",
+      "component": "pennyworth",
       "include-component-in-tag": true
     }
   }
