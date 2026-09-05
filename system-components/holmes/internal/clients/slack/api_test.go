@@ -203,3 +203,40 @@ func TestClient_PostMessage_APIError(t *testing.T) {
 		t.Fatal("expected error, got nil")
 	}
 }
+
+func TestClient_AddReaction(t *testing.T) {
+	var gotBody map[string]string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/reactions.add" {
+			t.Errorf("unexpected path: %s", r.URL.Path)
+		}
+		if auth := r.Header.Get("Authorization"); auth != "Bearer xoxb-test" {
+			t.Errorf("unexpected authorization header: %s", auth)
+		}
+		json.NewDecoder(r.Body).Decode(&gotBody)
+		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+	}))
+	defer server.Close()
+
+	c := New("xoxb-test")
+	c.BaseURL = server.URL
+	if err := c.AddReaction("C123", "100.001", "eyes"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if gotBody["channel"] != "C123" || gotBody["timestamp"] != "100.001" || gotBody["name"] != "eyes" {
+		t.Errorf("unexpected body: %+v", gotBody)
+	}
+}
+
+func TestClient_AddReaction_APIError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]any{"ok": false, "error": "invalid_name"})
+	}))
+	defer server.Close()
+
+	c := New("xoxb-test")
+	c.BaseURL = server.URL
+	if err := c.AddReaction("C123", "100.001", "not-a-real-emoji"); err == nil {
+		t.Fatal("expected error, got nil")
+	}
+}

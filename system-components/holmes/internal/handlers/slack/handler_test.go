@@ -72,12 +72,18 @@ func TestHandler_InvalidSignature(t *testing.T) {
 
 func TestHandleMention_TopLevelMention(t *testing.T) {
 	var posted []map[string]string
+	var reactions []map[string]string
 	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/chat.postMessage":
 			var body map[string]string
 			json.NewDecoder(r.Body).Decode(&body)
 			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		case "/reactions.add":
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			reactions = append(reactions, body)
 			json.NewEncoder(w).Encode(map[string]any{"ok": true})
 		case "/conversations.replies":
 			t.Errorf("conversations.replies should not be called for a top-level mention")
@@ -107,8 +113,8 @@ func TestHandleMention_TopLevelMention(t *testing.T) {
 
 	h.handleMention(evt)
 
-	if len(posted) < 2 {
-		t.Fatalf("expected at least 2 posted messages (ack + result), got %d: %+v", len(posted), posted)
+	if len(posted) != 1 {
+		t.Fatalf("expected exactly 1 posted message (the result, no ack message), got %d: %+v", len(posted), posted)
 	}
 	final := posted[len(posted)-1]
 	if final["thread_ts"] != "100.001" {
@@ -117,12 +123,21 @@ func TestHandleMention_TopLevelMention(t *testing.T) {
 	if final["text"] != "root cause found" {
 		t.Errorf("expected final post text=%q, got %q", "root cause found", final["text"])
 	}
+
+	if len(reactions) != 2 {
+		t.Fatalf("expected exactly 2 reactions (eyes, white_check_mark), got %d: %+v", len(reactions), reactions)
+	}
+	if reactions[0]["name"] != "eyes" || reactions[0]["timestamp"] != "100.001" {
+		t.Errorf("expected first reaction eyes on evt.Ts, got: %+v", reactions[0])
+	}
+	if reactions[1]["name"] != "white_check_mark" || reactions[1]["timestamp"] != "100.001" {
+		t.Errorf("expected second reaction white_check_mark on evt.Ts, got: %+v", reactions[1])
+	}
 }
 
 func TestHandleMention_ThreadHistory(t *testing.T) {
 	var repliesCalled bool
 	var posted []map[string]string
-	var gotAsk string
 
 	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -139,12 +154,15 @@ func TestHandleMention_ThreadHistory(t *testing.T) {
 			json.NewDecoder(r.Body).Decode(&body)
 			posted = append(posted, body)
 			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		case "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
 		default:
 			t.Errorf("unexpected slack path: %s", r.URL.Path)
 		}
 	}))
 	defer slackServer.Close()
 
+	var gotAsk string
 	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req map[string]string
 		json.NewDecoder(r.Body).Decode(&req)
@@ -175,8 +193,8 @@ func TestHandleMention_ThreadHistory(t *testing.T) {
 	if !strings.Contains(gotAsk, "frontend pods are crashlooping") {
 		t.Errorf("expected ask sent to holmes to include thread history, got: %q", gotAsk)
 	}
-	if len(posted) < 2 {
-		t.Fatalf("expected at least 2 posted messages, got %d: %+v", len(posted), posted)
+	if len(posted) != 1 {
+		t.Fatalf("expected exactly 1 posted message, got %d: %+v", len(posted), posted)
 	}
 	final := posted[len(posted)-1]
 	if final["thread_ts"] != "50" {
@@ -195,6 +213,8 @@ func TestHandleMention_ConversationsRepliesFailure(t *testing.T) {
 			var body map[string]string
 			json.NewDecoder(r.Body).Decode(&body)
 			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		case "/reactions.add":
 			json.NewEncoder(w).Encode(map[string]any{"ok": true})
 		default:
 			t.Errorf("unexpected slack path: %s", r.URL.Path)
@@ -228,8 +248,8 @@ func TestHandleMention_ConversationsRepliesFailure(t *testing.T) {
 	if !holmesCalled {
 		t.Fatal("expected the investigation to proceed despite the conversations.replies failure")
 	}
-	if len(posted) < 2 {
-		t.Fatalf("expected at least 2 posted messages despite the conversations.replies failure, got %d: %+v", len(posted), posted)
+	if len(posted) != 1 {
+		t.Fatalf("expected exactly 1 posted message despite the conversations.replies failure, got %d: %+v", len(posted), posted)
 	}
 	final := posted[len(posted)-1]
 	if final["text"] != "investigated anyway" {
@@ -239,6 +259,7 @@ func TestHandleMention_ConversationsRepliesFailure(t *testing.T) {
 
 func TestHandleMention_ChatFailure(t *testing.T) {
 	var posted []map[string]string
+	var reactions []map[string]string
 
 	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -246,6 +267,11 @@ func TestHandleMention_ChatFailure(t *testing.T) {
 			var body map[string]string
 			json.NewDecoder(r.Body).Decode(&body)
 			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		case "/reactions.add":
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			reactions = append(reactions, body)
 			json.NewEncoder(w).Encode(map[string]any{"ok": true})
 		default:
 			t.Errorf("unexpected slack path: %s", r.URL.Path)
@@ -273,12 +299,60 @@ func TestHandleMention_ChatFailure(t *testing.T) {
 
 	h.handleMention(evt)
 
-	if len(posted) < 2 {
-		t.Fatalf("expected at least 2 posted messages (ack + failure), got %d: %+v", len(posted), posted)
+	if len(posted) != 1 {
+		t.Fatalf("expected exactly 1 posted message (the failure), got %d: %+v", len(posted), posted)
 	}
 	final := posted[len(posted)-1]
 	if !strings.Contains(final["text"], "investigation failed") {
 		t.Errorf("expected a failure message to be posted, got: %+v", final)
+	}
+
+	if len(reactions) != 2 {
+		t.Fatalf("expected exactly 2 reactions (eyes, face_vomiting), got %d: %+v", len(reactions), reactions)
+	}
+	if reactions[0]["name"] != "eyes" {
+		t.Errorf("expected first reaction eyes, got: %+v", reactions[0])
+	}
+	if reactions[1]["name"] != "face_vomiting" {
+		t.Errorf("expected second reaction face_vomiting on Chat failure, got: %+v", reactions[1])
+	}
+}
+
+func TestHandleMention_ReactionFailureDoesNotBlockInvestigation(t *testing.T) {
+	var posted []map[string]string
+
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/reactions.add":
+			w.WriteHeader(http.StatusInternalServerError)
+		case "/chat.postMessage":
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		default:
+			t.Errorf("unexpected slack path: %s", r.URL.Path)
+		}
+	}))
+	defer slackServer.Close()
+
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]string{"analysis": "found it anyway"})
+	}))
+	defer holmesServer.Close()
+
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+	}
+
+	h.handleMention(slackInnerEvent{
+		Type: "app_mention", Channel: "C123", User: "U1",
+		Text: "<@BOT> investigate this", Ts: "100",
+	})
+
+	if len(posted) != 1 || posted[0]["text"] != "found it anyway" {
+		t.Fatalf("expected the analysis to still be posted despite reaction failures, got: %+v", posted)
 	}
 }
 
@@ -305,6 +379,8 @@ func TestHandleMention_CreateIssue_ReadyTrue(t *testing.T) {
 		switch r.URL.Path {
 		case "/chat.getPermalink":
 			json.NewEncoder(w).Encode(map[string]any{"ok": true, "permalink": "https://panicboat.slack.com/archives/C123/p100"})
+		case "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
 		default:
 			var body map[string]string
 			json.NewDecoder(r.Body).Decode(&body)
@@ -363,6 +439,8 @@ func TestHandleMention_CreateIssue_SeverityLabel(t *testing.T) {
 		switch r.URL.Path {
 		case "/chat.getPermalink":
 			json.NewEncoder(w).Encode(map[string]any{"ok": true, "permalink": "https://panicboat.slack.com/archives/C123/p100"})
+		case "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
 		default:
 			var body map[string]string
 			json.NewDecoder(r.Body).Decode(&body)
@@ -405,10 +483,15 @@ func TestHandleMention_CreateIssue_CodeFenceWrapped(t *testing.T) {
 	var posted []map[string]string
 
 	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var body map[string]string
-		json.NewDecoder(r.Body).Decode(&body)
-		posted = append(posted, body)
-		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		switch r.URL.Path {
+		case "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		default:
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		}
 	}))
 	defer slackServer.Close()
 
@@ -447,10 +530,15 @@ func TestHandleMention_CreateIssue_ReadyFalse(t *testing.T) {
 	var posted []map[string]string
 
 	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var body map[string]string
-		json.NewDecoder(r.Body).Decode(&body)
-		posted = append(posted, body)
-		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		switch r.URL.Path {
+		case "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		default:
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		}
 	}))
 	defer slackServer.Close()
 
@@ -490,10 +578,15 @@ func TestHandleMention_CreateIssue_GitHubError(t *testing.T) {
 	var posted []map[string]string
 
 	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var body map[string]string
-		json.NewDecoder(r.Body).Decode(&body)
-		posted = append(posted, body)
-		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		switch r.URL.Path {
+		case "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		default:
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		}
 	}))
 	defer slackServer.Close()
 
@@ -529,10 +622,15 @@ func TestHandleMention_UnknownAction(t *testing.T) {
 	var posted []map[string]string
 
 	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var body map[string]string
-		json.NewDecoder(r.Body).Decode(&body)
-		posted = append(posted, body)
-		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		switch r.URL.Path {
+		case "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		default:
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		}
 	}))
 	defer slackServer.Close()
 
@@ -572,10 +670,15 @@ func TestHandleMention_MalformedCreateIssuePayload(t *testing.T) {
 	var posted []map[string]string
 
 	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var body map[string]string
-		json.NewDecoder(r.Body).Decode(&body)
-		posted = append(posted, body)
-		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		switch r.URL.Path {
+		case "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		default:
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		}
 	}))
 	defer slackServer.Close()
 

@@ -25,6 +25,7 @@ type messagePoster interface {
 	PostMessage(channel, threadTs, text string) (string, error)
 	ConversationsReplies(channel, threadTs string) ([]slackclient.Message, error)
 	GetPermalink(channel, ts string) (string, error)
+	AddReaction(channel, ts, name string) error
 }
 
 type slackEventPayload struct {
@@ -120,16 +121,23 @@ func (h *Handler) handleMention(evt slackInnerEvent) {
 		}
 	}
 
-	if _, err := h.Client.PostMessage(evt.Channel, threadTs, "🔍 investigating..."); err != nil {
-		log.Printf("failed to post ack message: %v", err)
+	if err := h.Client.AddReaction(evt.Channel, evt.Ts, "eyes"); err != nil {
+		log.Printf("failed to add eyes reaction: %v", err)
 	}
 
 	response, err := h.Holmes.Chat(ask)
 	if err != nil {
+		if reactErr := h.Client.AddReaction(evt.Channel, evt.Ts, "face_vomiting"); reactErr != nil {
+			log.Printf("failed to add face_vomiting reaction: %v", reactErr)
+		}
 		if _, postErr := h.Client.PostMessage(evt.Channel, threadTs, fmt.Sprintf("investigation failed: %v", err)); postErr != nil {
 			log.Printf("failed to post error message: %v", postErr)
 		}
 		return
+	}
+
+	if err := h.Client.AddReaction(evt.Channel, evt.Ts, "white_check_mark"); err != nil {
+		log.Printf("failed to add white_check_mark reaction: %v", err)
 	}
 
 	env, ok := parseActionEnvelope(response)
