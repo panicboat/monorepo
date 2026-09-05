@@ -85,7 +85,7 @@ jobs:
         target: ${{ fromJson(needs.deploy-trigger.outputs.targets) }}
       fail-fast: false
     concurrency:
-      group: image-build-${{ matrix.target.service }}-${{ github.sha }}
+      group: image-build-${{ matrix.target.stack_id }}-${{ matrix.target.service }}-${{ github.sha }}
       cancel-in-progress: false
     uses: ./.github/workflows/reusable--container-builder.yaml
     with:
