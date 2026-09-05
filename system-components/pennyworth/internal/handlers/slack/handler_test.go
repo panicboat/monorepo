@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	holmesclient "github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/holmes"
+	holmesgptclient "github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/holmesgpt"
 	slackclient "github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/slack"
 	"github.com/panicboat/monorepo/system-components/pennyworth/internal/config"
 )
@@ -99,8 +99,8 @@ func TestHandleMention_TopLevelMention(t *testing.T) {
 	defer holmesServer.Close()
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
 	}
 
 	evt := slackInnerEvent{
@@ -172,8 +172,8 @@ func TestHandleMention_ThreadHistory(t *testing.T) {
 	defer holmesServer.Close()
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
 	}
 
 	evt := slackInnerEvent{
@@ -230,8 +230,8 @@ func TestHandleMention_ConversationsRepliesFailure(t *testing.T) {
 	defer holmesServer.Close()
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
 	}
 
 	evt := slackInnerEvent{
@@ -285,8 +285,8 @@ func TestHandleMention_ChatFailure(t *testing.T) {
 	defer holmesServer.Close()
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
 	}
 
 	evt := slackInnerEvent{
@@ -342,8 +342,8 @@ func TestHandleMention_ReactionFailureDoesNotBlockInvestigation(t *testing.T) {
 	defer holmesServer.Close()
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
 	}
 
 	h.handleMention(slackInnerEvent{
@@ -404,9 +404,9 @@ func TestHandleMention_CreateIssue_ReadyTrue(t *testing.T) {
 	}}
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
-		GitHub: gh,
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub:    gh,
 	}
 
 	h.handleMention(slackInnerEvent{
@@ -464,9 +464,9 @@ func TestHandleMention_CreateIssue_SeverityLabel(t *testing.T) {
 	}}
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
-		GitHub: gh,
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub:    gh,
 	}
 
 	h.handleMention(slackInnerEvent{
@@ -507,9 +507,9 @@ func TestHandleMention_CreateIssue_CodeFenceWrapped(t *testing.T) {
 	}}
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
-		GitHub: gh,
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub:    gh,
 	}
 
 	h.handleMention(slackInnerEvent{
@@ -555,9 +555,9 @@ func TestHandleMention_CreateIssue_ReadyFalse(t *testing.T) {
 	}}
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
-		GitHub: gh,
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub:    gh,
 	}
 
 	h.handleMention(slackInnerEvent{
@@ -602,9 +602,9 @@ func TestHandleMention_CreateIssue_GitHubError(t *testing.T) {
 	}}
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
-		GitHub: gh,
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub:    gh,
 	}
 
 	h.handleMention(slackInnerEvent{
@@ -647,9 +647,9 @@ func TestHandleMention_UnknownAction(t *testing.T) {
 	}}
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
-		GitHub: gh,
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub:    gh,
 	}
 
 	h.handleMention(slackInnerEvent{
@@ -695,9 +695,9 @@ func TestHandleMention_MalformedCreateIssuePayload(t *testing.T) {
 	}}
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
-		GitHub: gh,
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub:    gh,
 	}
 
 	h.handleMention(slackInnerEvent{

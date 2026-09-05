@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	holmesclient "github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/holmes"
+	holmesgptclient "github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/holmesgpt"
 	slackclient "github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/slack"
 	"github.com/panicboat/monorepo/system-components/pennyworth/internal/config"
 )
@@ -41,7 +41,7 @@ func TestHandler_MissingChannel(t *testing.T) {
 }
 
 func TestHandler_Accepted(t *testing.T) {
-	// h.Holmes and h.Client must be real (non-nil) here: ServeHTTP spawns
+	// h.HolmesGPT and h.Client must be real (non-nil) here: ServeHTTP spawns
 	// investigateAlert in a goroutine, and a nil-pointer panic inside a
 	// goroutine crashes the whole test binary, not just this test.
 	posted := make(chan string, 2)
@@ -63,9 +63,9 @@ func TestHandler_Accepted(t *testing.T) {
 	slackClient.BaseURL = slackServer.URL
 
 	h := &Handler{
-		Cfg:    config.Config{AlertmanagerToken: "secret-token"},
-		Holmes: holmesclient.New(holmesServer.URL, "sonnet-4-6"),
-		Client: slackClient,
+		Cfg:       config.Config{AlertmanagerToken: "secret-token"},
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "sonnet-4-6"),
+		Client:    slackClient,
 	}
 	// No "fingerprint" in the payload, so investigateAlert skips the
 	// search and posts a fallback notification before threading the
@@ -306,9 +306,9 @@ func TestInvestigateAlert_FoundNotification_ThreadsReply(t *testing.T) {
 	}
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: mock,
-		Sleep:  func(time.Duration) {},
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    mock,
+		Sleep:     func(time.Duration) {},
 	}
 
 	alert := alertmanagerAlert{
@@ -344,9 +344,9 @@ func TestInvestigateAlert_NotFound_PostsFallbackAndThreads(t *testing.T) {
 	}
 
 	h := &Handler{
-		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
-		Client: mock,
-		Sleep:  func(time.Duration) {},
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    mock,
+		Sleep:     func(time.Duration) {},
 	}
 
 	alert := alertmanagerAlert{

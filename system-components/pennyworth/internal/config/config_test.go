@@ -32,19 +32,19 @@ func unsetEnv(t *testing.T, key string) {
 func TestLoadSlack_AllRequiredPresent(t *testing.T) {
 	setEnv(t, "SLACK_SIGNING_SECRET", "sig-secret")
 	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
-	setEnv(t, "HOLMES_API_URL", "http://holmesgpt-holmes.holmesgpt.svc.cluster.local")
+	setEnv(t, "HOLMESGPT_API_URL", "http://holmesgpt-holmes.holmesgpt.svc.cluster.local")
 	setEnv(t, "GITHUB_APP_ID", "123")
 	setEnv(t, "GITHUB_APP_PRIVATE_KEY", "test-key")
 	setEnv(t, "GITHUB_APP_INSTALLATION_ID", "456")
-	unsetEnv(t, "HOLMES_MODEL")
+	unsetEnv(t, "HOLMESGPT_MODEL")
 	unsetEnv(t, "ALERTMANAGER_SHARED_TOKEN")
 
 	cfg, err := LoadSlack()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if cfg.HolmesModel != "sonnet-4-6" {
-		t.Errorf("expected default model sonnet-4-6, got %q", cfg.HolmesModel)
+	if cfg.HolmesGPTModel != "sonnet-4-6" {
+		t.Errorf("expected default model sonnet-4-6, got %q", cfg.HolmesGPTModel)
 	}
 	if cfg.GitHubAppID != "123" {
 		t.Errorf("expected GitHubAppID %q, got %q", "123", cfg.GitHubAppID)
@@ -60,7 +60,7 @@ func TestLoadSlack_AllRequiredPresent(t *testing.T) {
 func TestLoadSlack_MissingSigningSecret(t *testing.T) {
 	unsetEnv(t, "SLACK_SIGNING_SECRET")
 	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
-	setEnv(t, "HOLMES_API_URL", "http://example.invalid")
+	setEnv(t, "HOLMESGPT_API_URL", "http://example.invalid")
 	setEnv(t, "GITHUB_APP_ID", "123")
 	setEnv(t, "GITHUB_APP_PRIVATE_KEY", "test-key")
 	setEnv(t, "GITHUB_APP_INSTALLATION_ID", "456")
@@ -73,7 +73,7 @@ func TestLoadSlack_MissingSigningSecret(t *testing.T) {
 func TestLoadSlack_MissingGitHubAppID(t *testing.T) {
 	setEnv(t, "SLACK_SIGNING_SECRET", "sig-secret")
 	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
-	setEnv(t, "HOLMES_API_URL", "http://example.invalid")
+	setEnv(t, "HOLMESGPT_API_URL", "http://example.invalid")
 	unsetEnv(t, "GITHUB_APP_ID")
 	setEnv(t, "GITHUB_APP_PRIVATE_KEY", "test-key")
 	setEnv(t, "GITHUB_APP_INSTALLATION_ID", "456")
@@ -86,7 +86,7 @@ func TestLoadSlack_MissingGitHubAppID(t *testing.T) {
 func TestLoadSlack_DoesNotRequireAlertmanagerToken(t *testing.T) {
 	setEnv(t, "SLACK_SIGNING_SECRET", "sig-secret")
 	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
-	setEnv(t, "HOLMES_API_URL", "http://example.invalid")
+	setEnv(t, "HOLMESGPT_API_URL", "http://example.invalid")
 	setEnv(t, "GITHUB_APP_ID", "123")
 	setEnv(t, "GITHUB_APP_PRIVATE_KEY", "test-key")
 	setEnv(t, "GITHUB_APP_INSTALLATION_ID", "456")
@@ -100,8 +100,8 @@ func TestLoadSlack_DoesNotRequireAlertmanagerToken(t *testing.T) {
 func TestLoadAlertmanager_AllRequiredPresent(t *testing.T) {
 	setEnv(t, "ALERTMANAGER_SHARED_TOKEN", "am-token")
 	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
-	setEnv(t, "HOLMES_API_URL", "http://holmesgpt-holmes.holmesgpt.svc.cluster.local")
-	unsetEnv(t, "HOLMES_MODEL")
+	setEnv(t, "HOLMESGPT_API_URL", "http://holmesgpt-holmes.holmesgpt.svc.cluster.local")
+	unsetEnv(t, "HOLMESGPT_MODEL")
 	unsetEnv(t, "SLACK_SIGNING_SECRET")
 	unsetEnv(t, "GITHUB_APP_ID")
 
@@ -109,8 +109,8 @@ func TestLoadAlertmanager_AllRequiredPresent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if cfg.HolmesModel != "sonnet-4-6" {
-		t.Errorf("expected default model sonnet-4-6, got %q", cfg.HolmesModel)
+	if cfg.HolmesGPTModel != "sonnet-4-6" {
+		t.Errorf("expected default model sonnet-4-6, got %q", cfg.HolmesGPTModel)
 	}
 	if cfg.AlertmanagerToken != "am-token" {
 		t.Errorf("expected AlertmanagerToken %q, got %q", "am-token", cfg.AlertmanagerToken)
@@ -120,7 +120,7 @@ func TestLoadAlertmanager_AllRequiredPresent(t *testing.T) {
 func TestLoadAlertmanager_MissingToken(t *testing.T) {
 	unsetEnv(t, "ALERTMANAGER_SHARED_TOKEN")
 	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
-	setEnv(t, "HOLMES_API_URL", "http://example.invalid")
+	setEnv(t, "HOLMESGPT_API_URL", "http://example.invalid")
 
 	if _, err := LoadAlertmanager(); err == nil {
 		t.Fatal("expected error when ALERTMANAGER_SHARED_TOKEN is missing, got nil")
@@ -130,7 +130,7 @@ func TestLoadAlertmanager_MissingToken(t *testing.T) {
 func TestLoadAlertmanager_DoesNotRequireGitHubApp(t *testing.T) {
 	setEnv(t, "ALERTMANAGER_SHARED_TOKEN", "am-token")
 	setEnv(t, "SLACK_BOT_TOKEN", "xoxb-test")
-	setEnv(t, "HOLMES_API_URL", "http://example.invalid")
+	setEnv(t, "HOLMESGPT_API_URL", "http://example.invalid")
 	unsetEnv(t, "GITHUB_APP_ID")
 	unsetEnv(t, "GITHUB_APP_PRIVATE_KEY")
 	unsetEnv(t, "GITHUB_APP_INSTALLATION_ID")

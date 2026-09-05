@@ -64,10 +64,10 @@ type createIssuePayload struct {
 }
 
 type Handler struct {
-	Cfg    config.Config
-	Holmes investigator
-	Client messagePoster
-	GitHub issueCreator
+	Cfg       config.Config
+	HolmesGPT investigator
+	Client    messagePoster
+	GitHub    issueCreator
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -125,7 +125,7 @@ func (h *Handler) handleMention(evt slackInnerEvent) {
 		log.Printf("failed to add eyes reaction: %v", err)
 	}
 
-	response, err := h.Holmes.Chat(ask)
+	response, err := h.HolmesGPT.Chat(ask)
 	if err != nil {
 		if reactErr := h.Client.AddReaction(evt.Channel, evt.Ts, "face_vomiting"); reactErr != nil {
 			log.Printf("failed to add face_vomiting reaction: %v", reactErr)

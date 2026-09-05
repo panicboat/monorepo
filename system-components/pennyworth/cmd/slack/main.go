@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/github"
-	"github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/holmes"
+	"github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/holmesgpt"
 	"github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/slack"
 	"github.com/panicboat/monorepo/system-components/pennyworth/internal/config"
 	slackhandler "github.com/panicboat/monorepo/system-components/pennyworth/internal/handlers/slack"
@@ -17,7 +17,7 @@ func main() {
 		log.Fatalf("config error: %v", err)
 	}
 
-	holmesClient := holmes.New(cfg.HolmesAPIURL, cfg.HolmesModel)
+	holmesGPTClient := holmesgpt.New(cfg.HolmesGPTAPIURL, cfg.HolmesGPTModel)
 	slackClient := slack.New(cfg.SlackBotToken)
 	githubClient, err := github.New(cfg.GitHubAppID, cfg.GitHubAppPrivateKey, cfg.GitHubAppInstallationID)
 	if err != nil {
@@ -28,7 +28,7 @@ func main() {
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-	mux.Handle("/slack/events", &slackhandler.Handler{Cfg: cfg, Holmes: holmesClient, Client: slackClient, GitHub: githubClient})
+	mux.Handle("/slack/events", &slackhandler.Handler{Cfg: cfg, HolmesGPT: holmesGPTClient, Client: slackClient, GitHub: githubClient})
 
 	addr := ":8080"
 	log.Printf("pennyworth-slack listening on %s", addr)

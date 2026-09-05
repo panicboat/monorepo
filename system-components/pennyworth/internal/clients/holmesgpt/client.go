@@ -1,4 +1,4 @@
-package holmes
+package holmesgpt
 
 import (
 	"bytes"

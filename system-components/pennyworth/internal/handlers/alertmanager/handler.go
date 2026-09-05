@@ -42,9 +42,9 @@ const (
 )
 
 type Handler struct {
-	Cfg    config.Config
-	Holmes investigator
-	Client messagePoster
+	Cfg       config.Config
+	HolmesGPT investigator
+	Client    messagePoster
 	// Sleep defaults to time.Sleep. Tests inject a call-recording no-op so
 	// the retry loop's attempt count and deadline handling run without
 	// real waiting.
@@ -115,7 +115,7 @@ func (h *Handler) investigateAlert(alert alertmanagerAlert, channel string) {
 
 	ask := buildAlertAsk(alert)
 
-	analysis, err := h.Holmes.Investigate(ask)
+	analysis, err := h.HolmesGPT.Investigate(ask)
 	if err != nil {
 		if _, postErr := h.Client.PostMessage(channel, ts, fmt.Sprintf("investigation failed for alert %s: %v", alert.Labels["alertname"], err)); postErr != nil {
 			log.Printf("failed to post error message: %v", postErr)
