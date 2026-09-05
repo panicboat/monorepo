@@ -42,13 +42,23 @@ type slackInnerEvent struct {
 	ThreadTs string `json:"thread_ts,omitempty"`
 }
 
-type issueAction struct {
-	Action   string `json:"action"`
+// actionEnvelope is the common wrapper HolmesGPT returns when it decides
+// a message requests an action, instead of a plain analysis. Action is
+// empty when the response is a plain analysis — callers check that
+// before treating the rest of the envelope as meaningful. Payload stays
+// raw until the action name is known, so each action's fields live in
+// their own struct instead of piling into one shared one.
+type actionEnvelope struct {
+	Action  string          `json:"action"`
+	Ready   bool            `json:"ready"`
+	Reason  string          `json:"reason"`
+	Payload json.RawMessage `json:"payload"`
+}
+
+type createIssuePayload struct {
 	Repo     string `json:"repo"`
 	Title    string `json:"title"`
 	Body     string `json:"body"`
-	Ready    bool   `json:"ready"`
-	Reason   string `json:"reason"`
 	Severity string `json:"severity"`
 }
 
@@ -122,29 +132,63 @@ func (h *Handler) handleMention(evt slackInnerEvent) {
 		return
 	}
 
-	var action issueAction
-	if err := json.Unmarshal([]byte(stripCodeFence(response)), &action); err == nil && action.Action == "create_issue" {
-		h.handleIssueAction(evt.Channel, threadTs, action)
+	env, ok := parseActionEnvelope(response)
+	if !ok {
+		if _, err := h.Client.PostMessage(evt.Channel, threadTs, response); err != nil {
+			log.Printf("failed to post analysis: %v", err)
+		}
 		return
 	}
 
-	if _, err := h.Client.PostMessage(evt.Channel, threadTs, response); err != nil {
-		log.Printf("failed to post analysis: %v", err)
+	h.dispatchAction(evt.Channel, threadTs, env)
+}
+
+// parseActionEnvelope reports ok=false when response carries no action
+// field — meaning HolmesGPT judged no action was requested, so response
+// is a plain analysis to post as-is rather than an envelope to dispatch.
+func parseActionEnvelope(response string) (env actionEnvelope, ok bool) {
+	if err := json.Unmarshal([]byte(stripCodeFence(response)), &env); err != nil {
+		return actionEnvelope{}, false
+	}
+	if env.Action == "" {
+		return actionEnvelope{}, false
+	}
+	return env, true
+}
+
+func (h *Handler) dispatchAction(channel, threadTs string, env actionEnvelope) {
+	switch env.Action {
+	case "create_issue":
+		h.handleCreateIssue(channel, threadTs, env)
+	default:
+		log.Printf("unknown action %q from holmes response", env.Action)
+		if _, err := h.Client.PostMessage(channel, threadTs, "アクションの解析に失敗しました（不明な action です）"); err != nil {
+			log.Printf("failed to post unknown-action message: %v", err)
+		}
 	}
 }
 
-// handleIssueAction either asks the user to confirm an inferred repo, or
+// handleCreateIssue either asks the user to confirm an inferred repo, or
 // creates the issue and reports the result — never both.
-func (h *Handler) handleIssueAction(channel, threadTs string, action issueAction) {
-	if !action.Ready {
-		msg := fmt.Sprintf("推定した repo は `%s` です（理由: %s）。作成してよければ「はい」と返信してください。", action.Repo, action.Reason)
+func (h *Handler) handleCreateIssue(channel, threadTs string, env actionEnvelope) {
+	var payload createIssuePayload
+	if err := json.Unmarshal(env.Payload, &payload); err != nil {
+		log.Printf("failed to decode create_issue payload: %v", err)
+		if _, postErr := h.Client.PostMessage(channel, threadTs, "アクションの解析に失敗しました（create_issue の内容が不正です）"); postErr != nil {
+			log.Printf("failed to post payload-decode-failure message: %v", postErr)
+		}
+		return
+	}
+
+	if !env.Ready {
+		msg := fmt.Sprintf("推定した repo は `%s` です（理由: %s）。作成してよければ「はい」と返信してください。", payload.Repo, env.Reason)
 		if _, err := h.Client.PostMessage(channel, threadTs, msg); err != nil {
 			log.Printf("failed to post confirmation request: %v", err)
 		}
 		return
 	}
 
-	body := action.Body
+	body := payload.Body
 	if permalink, err := h.Client.GetPermalink(channel, threadTs); err != nil {
 		// FALLBACK: issue creation must not depend on the optional thread link.
 		log.Printf("failed to get thread permalink: %v", err)
@@ -153,11 +197,11 @@ func (h *Handler) handleIssueAction(channel, threadTs string, action issueAction
 	}
 
 	var labels []string
-	if action.Severity != "" {
-		labels = []string{action.Severity}
+	if payload.Severity != "" {
+		labels = []string{payload.Severity}
 	}
 
-	url, err := h.GitHub.CreateIssue(action.Repo, action.Title, body, labels)
+	url, err := h.GitHub.CreateIssue(payload.Repo, payload.Title, body, labels)
 	if err != nil {
 		if _, postErr := h.Client.PostMessage(channel, threadTs, fmt.Sprintf("issue creation failed: %v", err)); postErr != nil {
 			log.Printf("failed to post issue creation error: %v", postErr)
@@ -171,10 +215,9 @@ func (h *Handler) handleIssueAction(channel, threadTs string, action issueAction
 }
 
 // stripCodeFence removes a surrounding markdown code fence (```json ... ```
-// or ``` ... ```), if present. issueIntentInstructions tells HolmesGPT not
-// to wrap its JSON envelope in one, but LLMs commonly do anyway — this
-// keeps that response parseable instead of silently falling back to
-// posting the raw fenced text as if it were a normal analysis.
+// or ``` ... ```), if present. The create_issue prompt instructs HolmesGPT
+// not to wrap its JSON envelope in one, but LLMs commonly do anyway — this
+// keeps that response parseable instead of failing to detect the action.
 func stripCodeFence(s string) string {
 	trimmed := strings.TrimSpace(s)
 	trimmed = strings.TrimPrefix(trimmed, "```json")

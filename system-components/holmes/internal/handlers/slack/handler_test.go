@@ -316,7 +316,7 @@ func TestHandleMention_CreateIssue_ReadyTrue(t *testing.T) {
 
 	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{
-			"analysis": `{"action":"create_issue","repo":"panicboat/monorepo","title":"bug title","body":"bug body","ready":true}`,
+			"analysis": `{"action":"create_issue","ready":true,"payload":{"repo":"panicboat/monorepo","title":"bug title","body":"bug body"}}`,
 		})
 	}))
 	defer holmesServer.Close()
@@ -348,7 +348,7 @@ func TestHandleMention_CreateIssue_ReadyTrue(t *testing.T) {
 		t.Errorf("expected the issue body to contain the thread permalink, got: %q", gh.calledBody)
 	}
 	if len(gotLabels) != 0 {
-		t.Errorf("expected no labels when the envelope has no severity, got: %v", gotLabels)
+		t.Errorf("expected no labels when the payload has no severity, got: %v", gotLabels)
 	}
 	final := posted[len(posted)-1]
 	if !strings.Contains(final["text"], "https://github.com/panicboat/monorepo/issues/42") {
@@ -374,7 +374,7 @@ func TestHandleMention_CreateIssue_SeverityLabel(t *testing.T) {
 
 	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{
-			"analysis": `{"action":"create_issue","repo":"panicboat/platform","title":"t","body":"b","ready":true,"severity":"critical"}`,
+			"analysis": `{"action":"create_issue","ready":true,"payload":{"repo":"panicboat/platform","title":"t","body":"b","severity":"critical"}}`,
 		})
 	}))
 	defer holmesServer.Close()
@@ -414,7 +414,7 @@ func TestHandleMention_CreateIssue_CodeFenceWrapped(t *testing.T) {
 
 	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{
-			"analysis": "```json\n" + `{"action":"create_issue","repo":"panicboat/monorepo","title":"t","body":"b","ready":true}` + "\n```",
+			"analysis": "```json\n" + `{"action":"create_issue","ready":true,"payload":{"repo":"panicboat/monorepo","title":"t","body":"b"}}` + "\n```",
 		})
 	}))
 	defer holmesServer.Close()
@@ -456,7 +456,7 @@ func TestHandleMention_CreateIssue_ReadyFalse(t *testing.T) {
 
 	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{
-			"analysis": `{"action":"create_issue","repo":"panicboat/platform","ready":false,"reason":"source investigation found the bug there"}`,
+			"analysis": `{"action":"create_issue","ready":false,"reason":"source investigation found the bug there","payload":{"repo":"panicboat/platform"}}`,
 		})
 	}))
 	defer holmesServer.Close()
@@ -499,7 +499,7 @@ func TestHandleMention_CreateIssue_GitHubError(t *testing.T) {
 
 	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{
-			"analysis": `{"action":"create_issue","repo":"panicboat/monorepo","title":"t","body":"b","ready":true}`,
+			"analysis": `{"action":"create_issue","ready":true,"payload":{"repo":"panicboat/monorepo","title":"t","body":"b"}}`,
 		})
 	}))
 	defer holmesServer.Close()
@@ -522,5 +522,88 @@ func TestHandleMention_CreateIssue_GitHubError(t *testing.T) {
 	final := posted[len(posted)-1]
 	if !strings.Contains(final["text"], "404") {
 		t.Errorf("expected the GitHub error to be reported in the thread, got: %+v", final)
+	}
+}
+
+func TestHandleMention_UnknownAction(t *testing.T) {
+	var posted []map[string]string
+
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]string
+		json.NewDecoder(r.Body).Decode(&body)
+		posted = append(posted, body)
+		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+	}))
+	defer slackServer.Close()
+
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]string{
+			"analysis": `{"action":"close_issue","ready":true,"payload":{}}`,
+		})
+	}))
+	defer holmesServer.Close()
+
+	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string, labels []string) (string, error) {
+		t.Fatal("CreateIssue must not be called for an unrecognized action")
+		return "", nil
+	}}
+
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub: gh,
+	}
+
+	h.handleMention(slackInnerEvent{
+		Type: "app_mention", Channel: "C123", User: "U1",
+		Text: "<@BOT> close this issue", Ts: "100",
+	})
+
+	final := posted[len(posted)-1]
+	if final["text"] == `{"action":"close_issue","ready":true,"payload":{}}` {
+		t.Fatalf("unrecognized action must not fall through to posting the raw JSON as text, got: %+v", final)
+	}
+	if !strings.Contains(final["text"], "アクションの解析に失敗しました") {
+		t.Errorf("expected an action-parse-failure message for an unrecognized action, got: %+v", final)
+	}
+}
+
+func TestHandleMention_MalformedCreateIssuePayload(t *testing.T) {
+	var posted []map[string]string
+
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]string
+		json.NewDecoder(r.Body).Decode(&body)
+		posted = append(posted, body)
+		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+	}))
+	defer slackServer.Close()
+
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]string{
+			"analysis": `{"action":"create_issue","ready":true,"payload":"not an object"}`,
+		})
+	}))
+	defer holmesServer.Close()
+
+	gh := &fakeGitHub{createIssueFunc: func(repo, title, body string, labels []string) (string, error) {
+		t.Fatal("CreateIssue must not be called when the payload fails to decode")
+		return "", nil
+	}}
+
+	h := &Handler{
+		Holmes: holmesclient.New(holmesServer.URL, "test-model"),
+		Client: &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+		GitHub: gh,
+	}
+
+	h.handleMention(slackInnerEvent{
+		Type: "app_mention", Channel: "C123", User: "U1",
+		Text: "<@BOT> create an issue", Ts: "100",
+	})
+
+	final := posted[len(posted)-1]
+	if !strings.Contains(final["text"], "アクションの解析に失敗しました") {
+		t.Errorf("expected an action-parse-failure message when the payload fails to decode, got: %+v", final)
 	}
 }

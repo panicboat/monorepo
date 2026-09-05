@@ -90,6 +90,9 @@ func TestClient_Chat(t *testing.T) {
 		if !strings.Contains(req.AdditionalSystemPrompt, "severity") {
 			t.Errorf("expected Chat's additional_system_prompt to mention severity extraction, got: %q", req.AdditionalSystemPrompt)
 		}
+		if !strings.Contains(req.AdditionalSystemPrompt, "payload") {
+			t.Errorf("expected Chat's additional_system_prompt to describe the payload envelope, got: %q", req.AdditionalSystemPrompt)
+		}
 		json.NewEncoder(w).Encode(holmesChatResponse{Analysis: `{"action":"create_issue","repo":"panicboat/monorepo","ready":false,"reason":"test"}`})
 	}))
 	defer server.Close()
