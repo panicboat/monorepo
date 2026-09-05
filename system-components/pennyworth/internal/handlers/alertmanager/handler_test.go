@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	holmesclient "github.com/panicboat/monorepo/system-components/holmes/internal/clients/holmes"
-	slackclient "github.com/panicboat/monorepo/system-components/holmes/internal/clients/slack"
-	"github.com/panicboat/monorepo/system-components/holmes/internal/config"
+	holmesclient "github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/holmes"
+	slackclient "github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/slack"
+	"github.com/panicboat/monorepo/system-components/pennyworth/internal/config"
 )
 
 func TestHandler_Unauthorized(t *testing.T) {

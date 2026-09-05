@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/panicboat/monorepo/system-components/holmes/internal/clients/github"
-	"github.com/panicboat/monorepo/system-components/holmes/internal/clients/holmes"
-	"github.com/panicboat/monorepo/system-components/holmes/internal/clients/slack"
-	"github.com/panicboat/monorepo/system-components/holmes/internal/config"
-	slackhandler "github.com/panicboat/monorepo/system-components/holmes/internal/handlers/slack"
+	"github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/github"
+	"github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/holmes"
+	"github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/slack"
+	"github.com/panicboat/monorepo/system-components/pennyworth/internal/config"
+	slackhandler "github.com/panicboat/monorepo/system-components/pennyworth/internal/handlers/slack"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 	mux.Handle("/slack/events", &slackhandler.Handler{Cfg: cfg, Holmes: holmesClient, Client: slackClient, GitHub: githubClient})
 
 	addr := ":8080"
-	log.Printf("holmes-slack listening on %s", addr)
+	log.Printf("pennyworth-slack listening on %s", addr)
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatal(err)
 	}

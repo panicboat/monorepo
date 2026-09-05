@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	slackclient "github.com/panicboat/monorepo/system-components/holmes/internal/clients/slack"
-	"github.com/panicboat/monorepo/system-components/holmes/internal/config"
+	slackclient "github.com/panicboat/monorepo/system-components/pennyworth/internal/clients/slack"
+	"github.com/panicboat/monorepo/system-components/pennyworth/internal/config"
 )
 
 type investigator interface {
