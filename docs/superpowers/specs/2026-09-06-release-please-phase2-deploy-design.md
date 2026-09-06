@@ -126,23 +126,28 @@ platform で最終的に採用した方式をそのまま踏襲する。`environ
           # 戻して stack_conventions.root のテンプレート形にする。
           root_pattern="${ROOT%"$SERVICE"}{service}"
 
+          # 1 stack = 1 行の compact JSON(JSONL)で受け取る。TSV + bash read
+          # は tab が IFS の "whitespace" 扱いのため、id 未設定(空文字列)の
+          # ような連続区切り文字がある行でフィールドが1つ吸収されてズレる
+          # (system-components の terragrunt stack で実際に踏んだ)。
           targets='[]'
-          while IFS=$'\t' read -r stack_name stack_id directory; do
+          while IFS= read -r stack_json; do
+            stack_name=$(echo "$stack_json" | jq -r '.name')
             [ "$stack_name" = "terragrunt" ] || continue
+            stack_id=$(echo "$stack_json" | jq -r '.id // "terragrunt"')
+            directory=$(echo "$stack_json" | jq -r '.directory')
             dir="${directory//\{environment\}/production}"
             full_dir="${ROOT}/${dir}"
             [ -d "$full_dir" ] || continue
-            id="${stack_id:-terragrunt}"
             targets=$(echo "$targets" | jq -c \
               --arg service "$SERVICE" \
-              --arg stack_id "$id" \
+              --arg stack_id "$stack_id" \
               --arg dir "$full_dir" \
               --arg region "$aws_region" \
               --arg role "$iam_role_apply" \
               '. + [{"service":$service,"stack_id":$stack_id,"working_directory":$dir,"aws_region":$region,"iam_role_apply":$role}]')
-          done < <(ROOT_PATTERN="$root_pattern" yq -r '
-            .stack_conventions[] | select(.root == env(ROOT_PATTERN)) | .stacks[] |
-            [.name, (.id // ""), .directory] | @tsv
+          done < <(ROOT_PATTERN="$root_pattern" yq -o=json -I=0 '
+            .stack_conventions[] | select(.root == env(ROOT_PATTERN)) | .stacks[]
           ' workflow-config.yaml)
 
           echo "targets=$targets" >> "$GITHUB_OUTPUT"
