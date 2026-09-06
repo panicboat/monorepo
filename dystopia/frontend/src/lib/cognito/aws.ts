@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   AuthFlowType,
   CognitoIdentityProviderClient,
@@ -26,13 +27,17 @@ function clientId(): string {
 export function createAwsAdapter(): CognitoAdapter {
   return {
     async signUp(phone, password) {
-      const username = normalizePhoneNumber(phone);
+      // The user pool aliases phone_number, and Cognito rejects an alias
+      // value as the SignUp Username ("Username cannot be of phone number
+      // format, since user pool is configured for phone number alias").
+      // A random Username is fine here — ConfirmSignUp/InitiateAuth/etc.
+      // all accept the phone number itself once the alias exists.
       const response = await client().send(
         new SignUpCommand({
           ClientId: clientId(),
-          Username: username,
+          Username: randomUUID(),
           Password: password,
-          UserAttributes: [{ Name: "phone_number", Value: username }],
+          UserAttributes: [{ Name: "phone_number", Value: normalizePhoneNumber(phone) }],
         }),
       );
 
