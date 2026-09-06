@@ -86,8 +86,9 @@ platform で最終的に採用した方式をそのまま踏襲する。`environ
           SERVICE: ${{ steps.parse.outputs.service }}
         run: |
           set -euo pipefail
-          path=$(yq -r --arg component "$SERVICE" \
-            '.packages | to_entries[] | select(.value.component == $component) | .key' \
+          # mikefarah/yq に jq の --arg は無い。env(NAME) で環境変数を参照する。
+          path=$(yq -r \
+            '.packages | to_entries[] | select(.value.component == env(SERVICE)) | .key' \
             .github/release-please-config.json)
           if [ -z "$path" ]; then
             echo "::error::No release-please package found with component '$SERVICE'"
@@ -139,8 +140,8 @@ platform で最終的に採用した方式をそのまま踏襲する。`environ
               --arg region "$aws_region" \
               --arg role "$iam_role_apply" \
               '. + [{"service":$service,"stack_id":$stack_id,"working_directory":$dir,"aws_region":$region,"iam_role_apply":$role}]')
-          done < <(yq -r --arg root "$root_pattern" '
-            .stack_conventions[] | select(.root == $root) | .stacks[] |
+          done < <(ROOT_PATTERN="$root_pattern" yq -r '
+            .stack_conventions[] | select(.root == env(ROOT_PATTERN)) | .stacks[] |
             [.name, (.id // ""), .directory] | @tsv
           ' workflow-config.yaml)
 
