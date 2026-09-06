@@ -9,6 +9,7 @@ import {
   SignUpCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import type { CognitoAdapter, Tokens } from "./adapter";
+import { normalizePhoneNumber } from "./phone";
 
 function client(): CognitoIdentityProviderClient {
   return new CognitoIdentityProviderClient({
@@ -25,12 +26,13 @@ function clientId(): string {
 export function createAwsAdapter(): CognitoAdapter {
   return {
     async signUp(phone, password) {
+      const username = normalizePhoneNumber(phone);
       const response = await client().send(
         new SignUpCommand({
           ClientId: clientId(),
-          Username: phone,
+          Username: username,
           Password: password,
-          UserAttributes: [{ Name: "phone_number", Value: phone }],
+          UserAttributes: [{ Name: "phone_number", Value: username }],
         }),
       );
 
@@ -41,7 +43,7 @@ export function createAwsAdapter(): CognitoAdapter {
       await client().send(
         new ConfirmSignUpCommand({
           ClientId: clientId(),
-          Username: phone,
+          Username: normalizePhoneNumber(phone),
           ConfirmationCode: code,
         }),
       );
@@ -52,7 +54,7 @@ export function createAwsAdapter(): CognitoAdapter {
           AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
           ClientId: clientId(),
           AuthParameters: {
-            USERNAME: phone,
+            USERNAME: normalizePhoneNumber(phone),
             PASSWORD: password,
           },
         }),
@@ -89,13 +91,15 @@ export function createAwsAdapter(): CognitoAdapter {
       await client().send(new GlobalSignOutCommand({ AccessToken: accessToken }));
     },
     async forgotPassword(phone) {
-      await client().send(new ForgotPasswordCommand({ ClientId: clientId(), Username: phone }));
+      await client().send(
+        new ForgotPasswordCommand({ ClientId: clientId(), Username: normalizePhoneNumber(phone) }),
+      );
     },
     async confirmForgotPassword(phone, code, newPassword) {
       await client().send(
         new ConfirmForgotPasswordCommand({
           ClientId: clientId(),
-          Username: phone,
+          Username: normalizePhoneNumber(phone),
           ConfirmationCode: code,
           Password: newPassword,
         }),
