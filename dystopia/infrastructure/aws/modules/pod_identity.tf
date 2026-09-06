@@ -1,7 +1,3 @@
-data "aws_eks_cluster" "this" {
-  name = "eks-${var.environment}"
-}
-
 resource "aws_iam_role" "monolith" {
   name = "monolith-${var.environment}"
 
