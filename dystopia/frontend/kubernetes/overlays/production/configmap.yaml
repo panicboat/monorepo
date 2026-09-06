@@ -4,3 +4,7 @@ metadata:
   name: frontend
 data:
   MONOLITH_URL: http://monolith:9001
+  COGNITO_ADAPTER: aws
+  COGNITO_REGION: ap-northeast-1
+  COGNITO_USER_POOL_ID: ap-northeast-1_yo09r1LOq
+  COGNITO_CLIENT_ID: 2gef898ik07a9e3rijc7uc479
