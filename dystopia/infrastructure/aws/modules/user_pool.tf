@@ -33,7 +33,6 @@ resource "aws_cognito_user_pool" "this" {
     sns_region     = var.aws_region
   }
 
-  # Guard against terraform destroy wiping the pool by accident.
   deletion_protection = "ACTIVE"
 
   tags = var.common_tags
