@@ -242,10 +242,11 @@ Expected: 1行マッチ(現行のディレクトリ probe ループ)
           SERVICE: ${{ steps.parse.outputs.service }}
         run: |
           set -euo pipefail
-          # .github/release-please-config.json の packages が component -> path
-          # の一次情報(release-please 自身が tag/release 名の生成に使っている)。
-          # ディレクトリを probe するより単純かつ確実。mikefarah/yq に jq の
-          # --arg は無いため env(NAME) で環境変数を参照する。
+          # .github/release-please-config.json's packages is the primary
+          # component -> path mapping (release-please itself uses it to
+          # generate tag/release names). Simpler and more reliable than
+          # probing directories. mikefarah/yq has no jq --arg, so reference
+          # the env var via env(NAME) instead.
           path=$(yq -r \
             '.packages | to_entries[] | select(.value.component == env(SERVICE)) | .key' \
             .github/release-please-config.json)
@@ -355,9 +356,9 @@ permissions:
     name: 'Resolve Production Infra Targets'
     needs: detect-component
     runs-on: ubuntu-latest
-    # workflow_dispatch は「component の image を再ビルドするだけ」の経路として
-    # 元々存在しており(container-build 用)、production terragrunt apply の
-    # トリガーには含めない。release published だけを対象にする。
+    # workflow_dispatch pre-exists as a "rebuild this component's image" escape
+    # hatch (for container-build) and must not also trigger a production
+    # terragrunt apply — only release published does.
     if: github.event_name == 'release'
     outputs:
       targets: ${{ steps.resolve.outputs.targets }}
@@ -376,15 +377,15 @@ permissions:
           aws_region=$(yq '.environments[] | select(.environment == "production") | .stacks.terragrunt.aws_region' workflow-config.yaml)
           iam_role_apply=$(yq '.environments[] | select(.environment == "production") | .stacks.terragrunt.iam_role_apply' workflow-config.yaml)
 
-          # ROOT (例: "dystopia/monolith") の末尾の service 名を "{service}" に
-          # 戻して stack_conventions.root のテンプレート形にする。
+          # Strip the trailing service name off ROOT (e.g. "dystopia/monolith")
+          # and put "{service}" back, recovering the stack_conventions.root template.
           root_pattern="${ROOT%"$SERVICE"}{service}"
 
-          # root_pattern が stack_conventions のどの root とも一致しなければ、
-          # ROOT/SERVICE の導出そのものが壊れているバグである。1件もマッチしない
-          # まま以下のループに入ると "この component には terragrunt stack が無い"
-          # (正常系、has-targets=false) と区別が付かず、production への反映が
-          # 静かにスキップされてしまう。ここで明示的に fail させる。
+          # If root_pattern matches no stack_conventions root at all, the
+          # ROOT/SERVICE derivation itself is broken. Entering the loop below
+          # with zero matches would be indistinguishable from "this component
+          # legitimately has no terragrunt stack" (has-targets=false), silently
+          # skipping the production deploy. Fail loudly instead.
           matched_root=$(ROOT_PATTERN="$root_pattern" yq -o=json -I=0 \
             '.stack_conventions[] | select(.root == env(ROOT_PATTERN))' workflow-config.yaml)
           if [ -z "$matched_root" ]; then
@@ -392,10 +393,11 @@ permissions:
             exit 1
           fi
 
-          # 1 stack = 1 行の compact JSON(JSONL)で受け取る。TSV + bash read
-          # は tab が IFS の "whitespace" 扱いのため、id 未設定(空文字列)の
-          # ような連続区切り文字がある行でフィールドが1つ吸収されてズレる
-          # (system-components の terragrunt stack で実際に踏んだ)。
+          # Read one compact JSON object per stack (JSONL). TSV + bash's
+          # `IFS=$'\t' read` silently drops a field when a stack has no
+          # explicit id (tab is bash's IFS *whitespace*, so adjacent tabs
+          # collapse instead of preserving the empty field) — hit in
+          # practice for system-components' unnamed terragrunt stack.
           targets='[]'
           while IFS= read -r stack_json; do
             stack_name=$(echo "$stack_json" | jq -r '.name')
