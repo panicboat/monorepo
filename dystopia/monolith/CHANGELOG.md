@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/panicboat/monorepo/compare/monolith-v0.3.0...monolith-v0.3.1) (2026-09-06)
+
+
+### Bug Fixes
+
+* **monolith:** skip structure.sql dump on startup migrate ([#1065](https://github.com/panicboat/monorepo/issues/1065)) ([f6bc8de](https://github.com/panicboat/monorepo/commit/f6bc8de616248b8b787ebcd80e9bf7ac98ba6142))
+
 ## [0.3.0](https://github.com/panicboat/monorepo/compare/monolith-v0.2.1...monolith-v0.3.0) (2026-09-05)
 
 
