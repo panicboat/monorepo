@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/panicboat/monorepo/compare/frontend-v0.3.1...frontend-v0.3.2) (2026-09-06)
+
+
+### Bug Fixes
+
+* **frontend:** normalize phone numbers to E.164 before Cognito calls ([#1076](https://github.com/panicboat/monorepo/issues/1076)) ([fbb3552](https://github.com/panicboat/monorepo/commit/fbb355223f378846a5e9254e16b94bc9250aa529))
+
 ## [0.3.1](https://github.com/panicboat/monorepo/compare/frontend-v0.3.0...frontend-v0.3.1) (2026-09-06)
 
 
