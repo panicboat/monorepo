@@ -40,7 +40,7 @@ resource "aws_db_subnet_group" "monolith" {
 resource "aws_db_instance" "monolith" {
   identifier     = var.db_identifier
   engine         = "postgres"
-  engine_version = "17.4"
+  engine_version = "18.6"
   instance_class = "db.t4g.micro"
 
   allocated_storage     = 20
