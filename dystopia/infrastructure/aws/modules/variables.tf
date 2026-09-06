@@ -20,6 +20,11 @@ variable "common_tags" {
   default     = {}
 }
 
+variable "user_pool_name" {
+  type        = string
+  description = "Cognito User Pool name"
+}
+
 variable "db_identifier" {
   type        = string
   description = "RDS DB instance identifier (= 環境別に {env}/terragrunt.hcl で指定)"
@@ -33,9 +38,4 @@ variable "db_subnet_group_name" {
 variable "db_security_group_name" {
   type        = string
   description = "RDS DB security group name (= 環境別に {env}/terragrunt.hcl で指定)"
-}
-
-variable "cognito_user_pool_arn" {
-  type        = string
-  description = "Cognito User Pool ARN for administrative user deletion"
 }

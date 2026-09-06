@@ -223,10 +223,9 @@ bundle exec rspec
 
 ## Infrastructure
 
-Terragrunt stacks live under `infrastructure/`:
-
-- `infrastructure/aws/production/` — RDS, Cognito Pod Identity, IAM policies (depends on `dystopia/frontend/infrastructure/aws/production` for the Cognito user pool ARN).
-- `infrastructure/stripe/production/` — empty scaffold; Stripe Terraform provider and resources land in a follow-up PR.
+monolith has no Terragrunt stack of its own. Its AWS resources (RDS, Cognito Pod
+Identity, IAM policies) live in `dystopia/infrastructure/aws/production/`, shared
+with `dystopia/frontend` (Cognito).
 
 ## Useful links
 

@@ -78,7 +78,6 @@ bundle exec hanami server
 
 ## Infrastructure
 
-Terragrunt stack は `infrastructure/` 配下にあります。
-
-- `infrastructure/aws/production/` — RDS、Cognito Pod Identity、IAM ポリシー（Cognito user pool ARN は `dystopia/frontend/infrastructure/aws/production` に依存）。
-- `infrastructure/stripe/production/` — 空の scaffold。Stripe Terraform provider とリソースは後続の PR で追加します。
+monolith 自身の Terragrunt stack は無い。AWS リソース（RDS、Cognito Pod Identity、
+IAM ポリシー）は `dystopia/infrastructure/aws/production/` にあり、`dystopia/frontend`
+（Cognito）と共有している。

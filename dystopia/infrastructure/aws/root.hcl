@@ -1,9 +1,8 @@
-# root.hcl - Root Terragrunt configuration
-# This file contains common settings shared across all environments
+# root.hcl - Root Terragrunt configuration for dystopia's shared AWS infrastructure
 
 locals {
   # Project metadata
-  project_name = "services"
+  project_name = "dystopia"
 
   # Parse environment from the directory path
   # The environment is the last path segment (e.g. .../production)
@@ -16,7 +15,7 @@ locals {
     Environment = local.environment
     ManagedBy   = "terragrunt"
     Repository  = "monorepo"
-    Component   = "services"
+    Component   = "infrastructure"
     Team        = "panicboat"
   }
 }
@@ -32,8 +31,8 @@ remote_state {
     # Shared bucket for all monorepo services
     bucket = "terragrunt-state-${get_aws_account_id()}"
 
-    # Service-specific path: dystopia/template/<environment>/terraform.tfstate
-    key    = "dystopia/template/${local.environment}/terraform.tfstate"
+    # dystopia/infrastructure/<environment>/terraform.tfstate
+    key    = "dystopia/infrastructure/${local.environment}/terraform.tfstate"
     region = "ap-northeast-1"
 
     # Shared DynamoDB table for state locking across all services

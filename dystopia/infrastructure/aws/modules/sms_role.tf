@@ -1,5 +1,3 @@
-data "aws_caller_identity" "current" {}
-
 resource "aws_iam_role" "cognito_sms" {
   name = "${var.user_pool_name}-cognito-sms"
 

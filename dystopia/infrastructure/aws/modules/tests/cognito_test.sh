@@ -8,7 +8,7 @@ assert_contains() {
   file=$1
   expected=$2
 
-  if ! rg --fixed-strings --quiet -- "$expected" "$file"; then
+  if ! grep -F --quiet -- "$expected" "$file"; then
     printf 'Expected %s to contain: %s\n' "$file" "$expected" >&2
     exit 1
   fi
