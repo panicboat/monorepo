@@ -8,7 +8,9 @@ echo "Running migrations..."
 # Check if hanami exists before running
 if [ -f "Gemfile" ]; then
   bundle exec hanami db create
-  bundle exec hanami db migrate
+  # --no-dump: the runtime image ships postgresql-client-17; RDS runs
+  # PostgreSQL 18, and pg_dump refuses to dump a newer server than itself.
+  bundle exec hanami db migrate --no-dump
 else
   echo "Gemfile not found, skipping migrations."
 fi
