@@ -37,3 +37,13 @@ output "secret_name" {
   value       = aws_secretsmanager_secret.monolith_database.name
   description = "AWS Secrets Manager secret name (= ESO ExternalSecret で参照)"
 }
+
+output "billing_secret_arn" {
+  value       = aws_secretsmanager_secret.monolith_billing.arn
+  description = "AWS Secrets Manager secret ARN for billing configuration"
+}
+
+output "billing_secret_name" {
+  value       = aws_secretsmanager_secret.monolith_billing.name
+  description = "AWS Secrets Manager secret name (= ESO ExternalSecret で参照)"
+}

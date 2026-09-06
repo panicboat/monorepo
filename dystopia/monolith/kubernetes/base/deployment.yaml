@@ -33,3 +33,5 @@ spec:
                 name: monolith
             - secretRef:
                 name: monolith-database
+            - secretRef:
+                name: monolith-billing
