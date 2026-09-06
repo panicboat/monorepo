@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.4](https://github.com/panicboat/monorepo/compare/frontend-v0.3.3...frontend-v0.3.4) (2026-09-06)
+
+
+### Bug Fixes
+
+* **frontend:** use a random Username for Cognito SignUp ([#1084](https://github.com/panicboat/monorepo/issues/1084)) ([be6103d](https://github.com/panicboat/monorepo/commit/be6103daf6bf956e3a958faf80dc46d313061a84))
+
 ## [0.3.3](https://github.com/panicboat/monorepo/compare/frontend-v0.3.2...frontend-v0.3.3) (2026-09-06)
 
 
