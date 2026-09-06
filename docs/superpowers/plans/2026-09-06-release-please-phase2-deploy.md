@@ -244,9 +244,10 @@ Expected: 1行マッチ(現行のディレクトリ probe ループ)
           set -euo pipefail
           # .github/release-please-config.json の packages が component -> path
           # の一次情報(release-please 自身が tag/release 名の生成に使っている)。
-          # ディレクトリを probe するより単純かつ確実。
-          path=$(yq -r --arg component "$SERVICE" \
-            '.packages | to_entries[] | select(.value.component == $component) | .key' \
+          # ディレクトリを probe するより単純かつ確実。mikefarah/yq に jq の
+          # --arg は無いため env(NAME) で環境変数を参照する。
+          path=$(yq -r \
+            '.packages | to_entries[] | select(.value.component == env(SERVICE)) | .key' \
             .github/release-please-config.json)
           if [ -z "$path" ]; then
             echo "::error::No release-please package found with component '$SERVICE'"
@@ -273,7 +274,7 @@ Run:
 ```bash
 cd /Users/takanokenichi/GitHub/panicboat/monorepo/.claude/worktrees/feat-release-please-phase2-deploy
 for c in monolith frontend pennyworth; do
-  path=$(yq -r --arg component "$c" '.packages | to_entries[] | select(.value.component == $component) | .key' .github/release-please-config.json)
+  path=$(SERVICE="$c" yq -r '.packages | to_entries[] | select(.value.component == env(SERVICE)) | .key' .github/release-please-config.json)
   echo "$c -> $path"
   [ -d "$path" ] && echo "  exists: OK" || echo "  exists: MISSING"
 done
@@ -389,8 +390,8 @@ permissions:
               --arg region "$aws_region" \
               --arg role "$iam_role_apply" \
               '. + [{"service":$service,"stack_id":$stack_id,"working_directory":$dir,"aws_region":$region,"iam_role_apply":$role}]')
-          done < <(yq -r --arg root "$root_pattern" '
-            .stack_conventions[] | select(.root == $root) | .stacks[] |
+          done < <(ROOT_PATTERN="$root_pattern" yq -r '
+            .stack_conventions[] | select(.root == env(ROOT_PATTERN)) | .stacks[] |
             [.name, (.id // ""), .directory] | @tsv
           ' workflow-config.yaml)
 
@@ -456,8 +457,8 @@ for entry in "monolith:dystopia/monolith" "frontend:dystopia/frontend" "pennywor
       --arg service "$SERVICE" --arg stack_id "$id" --arg dir "$full_dir" \
       --arg region "$aws_region" --arg role "$iam_role_apply" \
       '. + [{"service":$service,"stack_id":$stack_id,"working_directory":$dir,"aws_region":$region,"iam_role_apply":$role}]')
-  done < <(yq -r --arg root "$root_pattern" '
-    .stack_conventions[] | select(.root == $root) | .stacks[] |
+  done < <(ROOT_PATTERN="$root_pattern" yq -r '
+    .stack_conventions[] | select(.root == env(ROOT_PATTERN)) | .stacks[] |
     [.name, (.id // ""), .directory] | @tsv
   ' workflow-config.yaml)
   echo "$targets" | jq .
