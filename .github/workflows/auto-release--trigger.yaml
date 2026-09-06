@@ -49,10 +49,10 @@ jobs:
           SERVICE: ${{ steps.parse.outputs.service }}
         run: |
           set -euo pipefail
-          # .github/release-please-config.json の packages が component -> path
-          # の一次情報(release-please 自身が tag/release 名の生成に使っている)。
-          # ディレクトリを probe するより単純かつ確実。mikefarah/yq に jq の
-          # --arg は無いため env(NAME) で環境変数を参照する。
+          # .github/release-please-config.json packages are the source of truth for
+          # component-to-path mapping, which release-please itself uses for tag and
+          # release-name generation. This avoids directory probing; mikefarah/yq
+          # lacks jq's --arg, so it reads the environment variable via env(NAME).
           path=$(yq -r \
             '.packages | to_entries[] | select(.value.component == env(SERVICE)) | .key' \
             .github/release-please-config.json)
@@ -80,6 +80,9 @@ jobs:
     name: 'Resolve Production Infra Targets'
     needs: detect-component
     runs-on: ubuntu-latest
+    # workflow_dispatch is the existing escape hatch for rebuilding a component
+    # image; it must not also trigger a production terragrunt apply.
+    if: github.event_name == 'release'
     outputs:
       targets: ${{ steps.resolve.outputs.targets }}
       has-targets: ${{ steps.resolve.outputs.has-targets }}
@@ -97,14 +100,23 @@ jobs:
           aws_region=$(yq '.environments[] | select(.environment == "production") | .stacks.terragrunt.aws_region' workflow-config.yaml)
           iam_role_apply=$(yq '.environments[] | select(.environment == "production") | .stacks.terragrunt.iam_role_apply' workflow-config.yaml)
 
-          # ROOT (例: "dystopia/monolith") の末尾の service 名を "{service}" に
-          # 戻して stack_conventions.root のテンプレート形にする。
+          # Convert ROOT's service-name suffix (for example, "dystopia/monolith")
+          # back to the template form used by stack_conventions.root.
           root_pattern="${ROOT%"$SERVICE"}{service}"
 
-          # 1 stack = 1 行の compact JSON(JSONL)で受け取る。TSV + bash read
-          # は tab が IFS の "whitespace" 扱いのため、id 未設定(空文字列)の
-          # ような連続区切り文字がある行でフィールドが1つ吸収されてズレる
-          # (system-components の terragrunt stack で実際に踏んだ)。
+          # A missing matching root means ROOT/SERVICE derivation is broken. Entering
+          # the loop without a match would silently turn that bug into the normal
+          # has-targets=false case for a component without terragrunt stacks.
+          matched_root=$(ROOT_PATTERN="$root_pattern" yq -o=json -I=0 \
+            '.stack_conventions[] | select(.root == env(ROOT_PATTERN))' workflow-config.yaml)
+          if [ -z "$matched_root" ]; then
+            echo "::error::No stack_conventions entry found for root pattern '$root_pattern' (derived from working-directory '$ROOT' and service '$SERVICE')"
+            exit 1
+          fi
+
+          # Consume one compact JSON object per line. TSV plus bash read treats tabs
+          # as IFS whitespace, collapsing an empty stack id and shifting fields; this
+          # occurred in a system-components terragrunt stack.
           targets='[]'
           while IFS= read -r stack_json; do
             stack_name=$(echo "$stack_json" | jq -r '.name')
