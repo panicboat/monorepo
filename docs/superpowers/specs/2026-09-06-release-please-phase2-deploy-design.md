@@ -75,7 +75,30 @@ platform で最終的に採用した方式をそのまま踏襲する。`environ
 
 ### 実装方針
 
-`detect-component` job の後に、production 向け terragrunt target を JSON 配列として組み立てる新規 job `resolve-infra-targets` を追加する。
+`detect-component` job の `resolve-dir` ステップは、現在 `stack_conventions[].root` を1つずつ試して実在するディレクトリを探すループになっている。これを **`.github/release-please-config.json` の `packages` を直接引く方式に置き換える**。この config の `key`(例: `"dystopia/monolith"`)は component 名から path への対応そのものであり、release-please 自身が tag/release を作る際に使っている一次情報。ディレクトリを probe するより単純かつ確実(仮に同名 service が2つの root に存在するような取り違えも起きない)。
+
+既存 `resolve-dir` ステップの置き換え:
+
+```yaml
+      - name: Resolve working directory
+        id: resolve-dir
+        env:
+          SERVICE: ${{ steps.parse.outputs.service }}
+        run: |
+          set -euo pipefail
+          path=$(yq -r --arg component "$SERVICE" \
+            '.packages | to_entries[] | select(.value.component == $component) | .key' \
+            .github/release-please-config.json)
+          if [ -z "$path" ]; then
+            echo "::error::No release-please package found with component '$SERVICE'"
+            exit 1
+          fi
+          echo "working-directory=$path" >> "$GITHUB_OUTPUT"
+```
+
+(`detect-component` job の `outputs.working-directory` はそのまま、内部実装だけが変わる。)
+
+その後、production 向け terragrunt target を JSON 配列として組み立てる新規 job `resolve-infra-targets` を追加する。root テンプレート(`dystopia/{service}` 等)は、`working-directory` の末尾から `service` 名を取り除いた文字列操作だけで求まる(`workflow-config.yaml` の `stack_conventions` を hardcode で列挙する必要はない)。
 
 ```yaml
   resolve-infra-targets:
@@ -98,16 +121,9 @@ platform で最終的に採用した方式をそのまま踏襲する。`environ
           aws_region=$(yq '.environments[] | select(.environment == "production") | .stacks.terragrunt.aws_region' workflow-config.yaml)
           iam_role_apply=$(yq '.environments[] | select(.environment == "production") | .stacks.terragrunt.iam_role_apply' workflow-config.yaml)
 
-          # ROOT (detect-component が解決した working-directory, 例: "dystopia/monolith")
-          # の先頭セグメントから、対応する stack_conventions の root テンプレートを
-          # 特定する。root は現状 "dystopia/{service}" と "system-components/{service}"
-          # の2つしかなく、どちらも "{service}" 直前までが固定文字列なので、正規表現で
-          # 逆引きするより先頭セグメントの単純な case 分岐の方が読みやすく壊れにくい。
-          case "$ROOT" in
-            dystopia/*) root_pattern='dystopia/{service}' ;;
-            system-components/*) root_pattern='system-components/{service}' ;;
-            *) echo "::error::Unknown root '$ROOT' — add a case for it here"; exit 1 ;;
-          esac
+          # ROOT (例: "dystopia/monolith") の末尾の "/$SERVICE" を "{service}" に
+          # 戻して stack_conventions.root のテンプレート形にする。
+          root_pattern="${ROOT%"$SERVICE"}{service}"
 
           targets='[]'
           while IFS=$'\t' read -r stack_name stack_id directory; do
