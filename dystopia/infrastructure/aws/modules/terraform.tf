@@ -1,7 +1,7 @@
 # terraform.tf - Terraform configuration for dystopia's shared AWS infrastructure module
 
 terraform {
-  required_version = "1.12.6"
+  required_version = ">= 1.12.6"
 
   required_providers {
     aws = {
