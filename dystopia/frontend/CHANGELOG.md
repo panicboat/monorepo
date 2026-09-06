@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/panicboat/monorepo/compare/frontend-v0.3.0...frontend-v0.3.1) (2026-09-06)
+
+
+### Bug Fixes
+
+* **frontend:** wire real Cognito user pool config in production ([#1069](https://github.com/panicboat/monorepo/issues/1069)) ([88054c1](https://github.com/panicboat/monorepo/commit/88054c1bed145ef1e300f19c3e390170a08e831d))
+
 ## [0.3.0](https://github.com/panicboat/monorepo/compare/frontend-v0.2.1...frontend-v0.3.0) (2026-09-05)
 
 
