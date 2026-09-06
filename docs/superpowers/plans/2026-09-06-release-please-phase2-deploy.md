@@ -355,6 +355,10 @@ permissions:
     name: 'Resolve Production Infra Targets'
     needs: detect-component
     runs-on: ubuntu-latest
+    # workflow_dispatch は「component の image を再ビルドするだけ」の経路として
+    # 元々存在しており(container-build 用)、production terragrunt apply の
+    # トリガーには含めない。release published だけを対象にする。
+    if: github.event_name == 'release'
     outputs:
       targets: ${{ steps.resolve.outputs.targets }}
       has-targets: ${{ steps.resolve.outputs.has-targets }}
@@ -375,6 +379,18 @@ permissions:
           # ROOT (例: "dystopia/monolith") の末尾の service 名を "{service}" に
           # 戻して stack_conventions.root のテンプレート形にする。
           root_pattern="${ROOT%"$SERVICE"}{service}"
+
+          # root_pattern が stack_conventions のどの root とも一致しなければ、
+          # ROOT/SERVICE の導出そのものが壊れているバグである。1件もマッチしない
+          # まま以下のループに入ると "この component には terragrunt stack が無い"
+          # (正常系、has-targets=false) と区別が付かず、production への反映が
+          # 静かにスキップされてしまう。ここで明示的に fail させる。
+          matched_root=$(ROOT_PATTERN="$root_pattern" yq -o=json -I=0 \
+            '.stack_conventions[] | select(.root == env(ROOT_PATTERN))' workflow-config.yaml)
+          if [ -z "$matched_root" ]; then
+            echo "::error::No stack_conventions entry found for root pattern '$root_pattern' (derived from working-directory '$ROOT' and service '$SERVICE')"
+            exit 1
+          fi
 
           # 1 stack = 1 行の compact JSON(JSONL)で受け取る。TSV + bash read
           # は tab が IFS の "whitespace" 扱いのため、id 未設定(空文字列)の
