@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/panicboat/monorepo/compare/monolith-v0.3.1...monolith-v0.4.0) (2026-09-06)
+
+
+### Features
+
+* **monolith:** wire billing settings from Secrets Manager ([#1067](https://github.com/panicboat/monorepo/issues/1067)) ([78f705f](https://github.com/panicboat/monorepo/commit/78f705ffc4fa682aa9a3ad937b4af08773bff83e))
+
 ## [0.3.1](https://github.com/panicboat/monorepo/compare/monolith-v0.3.0...monolith-v0.3.1) (2026-09-06)
 
 
