@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.3](https://github.com/panicboat/monorepo/compare/frontend-v0.3.2...frontend-v0.3.3) (2026-09-06)
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** update dependency @bufbuild/protobuf to ^2.14.1 ([#1078](https://github.com/panicboat/monorepo/issues/1078)) ([bc68e6c](https://github.com/panicboat/monorepo/commit/bc68e6c96872bb822951cf6ae53b750f6a5ee99f))
+* **dystopia/frontend:** update dependency jose to ^6.2.12 ([#1079](https://github.com/panicboat/monorepo/issues/1079)) ([c20da25](https://github.com/panicboat/monorepo/commit/c20da25a46a24576ddf575a0142810eb9bda5339))
+* **dystopia/frontend:** update dependency next to v16.3.4 ([#1080](https://github.com/panicboat/monorepo/issues/1080)) ([2f5016a](https://github.com/panicboat/monorepo/commit/2f5016a904cea2e5611fdaa418ba7719a7284f8f))
+
 ## [0.3.2](https://github.com/panicboat/monorepo/compare/frontend-v0.3.1...frontend-v0.3.2) (2026-09-06)
 
 
