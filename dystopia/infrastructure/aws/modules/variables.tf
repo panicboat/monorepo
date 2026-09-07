@@ -34,8 +34,3 @@ variable "db_subnet_group_name" {
   type        = string
   description = "RDS DB subnet group name (= 環境別に {env}/terragrunt.hcl で指定)"
 }
-
-variable "db_security_group_name" {
-  type        = string
-  description = "RDS DB security group name (= 環境別に {env}/terragrunt.hcl で指定)"
-}
