@@ -27,6 +27,7 @@ end
 
 require "gruf"
 require_relative "../lib/current"
+require_relative "../lib/telemetry"
 require_relative "../lib/types"
 require_relative "../lib/interceptors/access_log_interceptor"
 require_relative "../lib/interceptors/authentication_interceptor"
@@ -51,6 +52,10 @@ require "footprints/v1/footprints_service_services_pb"
 require "karte/v1/service_services_pb"
 require "billing/v1/service_services_pb"
 
+# Boot the OTel SDK before Gruf so the gruf instrumentation has required its
+# interceptor classes by the time the chain below is built.
+otel_enabled = Telemetry.configure
+
 # Configure Gruf
 Gruf.configure do |c|
   # Use Hanami logger
@@ -58,6 +63,12 @@ Gruf.configure do |c|
 
   # Bind to 0.0.0.0 to ensure Docker/External access if needed, but client tests via localhost
   c.server_binding_url = ENV.fetch("GRPC_BIND_ADDRESS", "0.0.0.0:9001")
+  # 認証失敗も 1 span に収めるため chain の先頭に置く。 interceptor class は
+  # instrumentation の install 時に require されるので、 SDK を起動していない
+  # 環境では定数自体が存在しない。
+  if otel_enabled
+    c.interceptors.use(OpenTelemetry::Instrumentation::Gruf::Interceptors::Server)
+  end
   c.interceptors.use(Interceptors::AccessLogInterceptor)
   c.interceptors.use(Interceptors::AuthenticationInterceptor)
 
