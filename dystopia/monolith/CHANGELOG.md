@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/panicboat/monorepo/compare/monolith-v0.4.0...monolith-v0.5.0) (2026-09-07)
+
+
+### Features
+
+* **dystopia/monolith:** emit gRPC traces via the OpenTelemetry SDK ([#1093](https://github.com/panicboat/monorepo/issues/1093)) ([59811cc](https://github.com/panicboat/monorepo/commit/59811ccccd56ffc0936810429884bc9f2633fb6d))
+
 ## [0.4.0](https://github.com/panicboat/monorepo/compare/monolith-v0.3.1...monolith-v0.4.0) (2026-09-06)
 
 
