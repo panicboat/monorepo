@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.5](https://github.com/panicboat/monorepo/compare/frontend-v0.3.4...frontend-v0.3.5) (2026-09-07)
+
+
+### Bug Fixes
+
+* **frontend:** use a deterministic Username for ConfirmSignUp too ([#1086](https://github.com/panicboat/monorepo/issues/1086)) ([7217ae2](https://github.com/panicboat/monorepo/commit/7217ae213ed0b4615d705d8f794bbf0f84204f8e))
+
 ## [0.3.4](https://github.com/panicboat/monorepo/compare/frontend-v0.3.3...frontend-v0.3.4) (2026-09-06)
 
 
