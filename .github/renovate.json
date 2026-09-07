@@ -31,8 +31,8 @@
     {
       "customType": "regex",
       "description": "go.mod's go directive as a docker-datasource dep, so it shares depName/packageFileDir with its Dockerfile's golang base image and the default grouping rule below bundles them into one PR",
-      "fileMatch": [
-        "(^|/)go\\.mod$"
+      "managerFilePatterns": [
+        "/(^|/)go\\.mod$/"
       ],
       "matchStrings": [
         "^go (?<currentValue>\\d+\\.\\d+\\.\\d+)\\s*$"
