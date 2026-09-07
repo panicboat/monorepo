@@ -1,11 +1,7 @@
 mock_provider "aws" {
   mock_data "aws_security_group" {
     defaults = {
-      id     = "sg-private-trust"
-      vpc_id = "vpc-test"
-      tags = {
-        Name = "private-trust-production"
-      }
+      id = "sg-private-trust"
     }
   }
 
@@ -83,5 +79,15 @@ run "attaches_private_trust_security_group_alongside_rds" {
   assert {
     condition     = contains(aws_db_instance.monolith.vpc_security_group_ids, data.aws_security_group.private_trust.id)
     error_message = "RDS must attach the private trust SG during the attachment phase."
+  }
+
+  assert {
+    condition     = data.aws_security_group.private_trust.vpc_id == data.aws_vpc.eks_production.id
+    error_message = "The private trust security group must be constrained to the production VPC."
+  }
+
+  assert {
+    condition     = length(data.aws_security_group.private_trust.tags) == 1 && data.aws_security_group.private_trust.tags["Name"] == "private-trust-production"
+    error_message = "The private trust lookup must select exactly the production Name tag."
   }
 }
