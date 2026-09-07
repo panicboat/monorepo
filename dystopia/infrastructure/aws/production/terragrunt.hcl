@@ -17,7 +17,6 @@ inputs = {
   user_pool_name          = "dystopia-production"
   db_identifier           = "monolith-production"
   db_subnet_group_name    = "monolith-production"
-  db_security_group_name  = "monolith-database-production"
   common_tags = merge(
     include.root.locals.common_tags,
     include.env.locals.additional_tags

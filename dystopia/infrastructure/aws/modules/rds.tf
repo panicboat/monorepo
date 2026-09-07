@@ -11,26 +11,6 @@ resource "aws_secretsmanager_secret" "monolith_database" {
   tags                    = var.common_tags
 }
 
-resource "aws_security_group" "monolith_db" {
-  name = var.db_security_group_name
-  # FALLBACK: description は AWS SG の immutable field、 var.db_security_group_name
-  # 参照に変更すると terraform が forces replacement と判定して SG 再作成 → DB 一時
-  # downtime のため、 module 内で唯一 var.environment 直接参照を残す。
-  description = "Security group for monolith RDS database (= ${var.environment})"
-  vpc_id      = data.aws_vpc.eks_production.id
-  tags        = var.common_tags
-}
-
-resource "aws_security_group_rule" "monolith_db_ingress" {
-  type              = "ingress"
-  from_port         = 5432
-  to_port           = 5432
-  protocol          = "tcp"
-  cidr_blocks       = [for s in data.aws_subnet.private_details : s.cidr_block]
-  security_group_id = aws_security_group.monolith_db.id
-  description       = "PostgreSQL access from private subnets (= monolith Pod via VPC CNI)"
-}
-
 resource "aws_db_subnet_group" "monolith" {
   name       = var.db_subnet_group_name
   subnet_ids = data.aws_subnets.private.ids
@@ -52,14 +32,10 @@ resource "aws_db_instance" "monolith" {
   username = "postgres"
   password = random_password.monolith_db_master.result
 
-  db_subnet_group_name = aws_db_subnet_group.monolith.name
-  // TODO: Remove the dedicated RDS SG after the private trust runtime checkpoint passes.
-  vpc_security_group_ids = [
-    aws_security_group.monolith_db.id,
-    data.aws_security_group.private_trust.id,
-  ]
-  publicly_accessible = false
-  multi_az            = false
+  db_subnet_group_name   = aws_db_subnet_group.monolith.name
+  vpc_security_group_ids = [data.aws_security_group.private_trust.id]
+  publicly_accessible    = false
+  multi_az               = false
 
   backup_retention_period = 7
   backup_window           = "16:00-17:00"

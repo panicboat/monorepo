@@ -5,12 +5,6 @@ mock_provider "aws" {
     }
   }
 
-  mock_data "aws_subnet" {
-    defaults = {
-      cidr_block = "10.0.32.0/19"
-    }
-  }
-
   mock_resource "aws_iam_policy" {
     defaults = {
       arn = "arn:aws:iam::337169763788:policy/test"
@@ -51,34 +45,26 @@ override_resource {
 }
 
 variables {
-  project_name           = "services"
-  environment            = "production"
-  user_pool_name         = "services-production"
-  aws_region             = "ap-northeast-1"
-  db_identifier          = "monolith-production"
-  db_subnet_group_name   = "monolith-production"
-  db_security_group_name = "monolith-database-production"
+  project_name         = "services"
+  environment          = "production"
+  user_pool_name       = "services-production"
+  aws_region           = "ap-northeast-1"
+  db_identifier        = "monolith-production"
+  db_subnet_group_name = "monolith-production"
   common_tags = {
     Environment = "production"
   }
 }
 
-run "attaches_private_trust_security_group_alongside_rds" {
+run "uses_private_trust_security_group_for_rds" {
   command = plan
 
   assert {
-    condition     = length(aws_db_instance.monolith.vpc_security_group_ids) == 2
-    error_message = "RDS must retain the dedicated SG while adding the private trust SG."
-  }
-
-  assert {
-    condition     = contains(aws_db_instance.monolith.vpc_security_group_ids, aws_security_group.monolith_db.id)
-    error_message = "RDS must retain the dedicated SG during the attachment phase."
-  }
-
-  assert {
-    condition     = contains(aws_db_instance.monolith.vpc_security_group_ids, data.aws_security_group.private_trust.id)
-    error_message = "RDS must attach the private trust SG during the attachment phase."
+    condition = (
+      length(aws_db_instance.monolith.vpc_security_group_ids) == 1 &&
+      contains(aws_db_instance.monolith.vpc_security_group_ids, data.aws_security_group.private_trust.id)
+    )
+    error_message = "RDS must use only the private trust security group."
   }
 
   assert {

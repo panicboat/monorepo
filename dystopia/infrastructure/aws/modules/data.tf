@@ -22,11 +22,6 @@ data "aws_subnets" "private" {
   }
 }
 
-data "aws_subnet" "private_details" {
-  for_each = toset(data.aws_subnets.private.ids)
-  id       = each.value
-}
-
 data "aws_eks_cluster" "this" {
   name = "eks-${var.environment}"
 }
