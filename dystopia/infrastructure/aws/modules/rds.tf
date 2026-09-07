@@ -11,14 +11,6 @@ resource "aws_secretsmanager_secret" "monolith_database" {
   tags                    = var.common_tags
 }
 
-// TODO: Remove after RDS uses only the private trust security group and this SG has no ENI attachments.
-resource "aws_security_group" "monolith_db" {
-  name        = "monolith-database-${var.environment}"
-  description = "Security group for monolith RDS database (= ${var.environment})"
-  vpc_id      = data.aws_vpc.eks_production.id
-  tags        = var.common_tags
-}
-
 resource "aws_db_subnet_group" "monolith" {
   name       = var.db_subnet_group_name
   subnet_ids = data.aws_subnets.private.ids
