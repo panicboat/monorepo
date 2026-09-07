@@ -35,7 +35,7 @@ importers:
         specifier: ^2.1.2
         version: 2.1.2(@bufbuild/protobuf@2.14.1)(@connectrpc/connect@2.1.2(@bufbuild/protobuf@2.14.1))
       '@opentelemetry/api':
-        specifier: ^1.9.0
+        specifier: ^1.9.1
         version: 1.9.1
       '@opentelemetry/auto-instrumentations-node':
         specifier: ^0.79.0
