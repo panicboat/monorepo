@@ -52,10 +52,14 @@ resource "aws_db_instance" "monolith" {
   username = "postgres"
   password = random_password.monolith_db_master.result
 
-  db_subnet_group_name   = aws_db_subnet_group.monolith.name
-  vpc_security_group_ids = [aws_security_group.monolith_db.id]
-  publicly_accessible    = false
-  multi_az               = false
+  db_subnet_group_name = aws_db_subnet_group.monolith.name
+  // TODO: Remove the dedicated RDS SG after the private trust runtime checkpoint passes.
+  vpc_security_group_ids = [
+    aws_security_group.monolith_db.id,
+    data.aws_security_group.private_trust.id,
+  ]
+  publicly_accessible = false
+  multi_az            = false
 
   backup_retention_period = 7
   backup_window           = "16:00-17:00"

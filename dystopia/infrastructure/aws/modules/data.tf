@@ -4,6 +4,14 @@ data "aws_vpc" "eks_production" {
   }
 }
 
+data "aws_security_group" "private_trust" {
+  vpc_id = data.aws_vpc.eks_production.id
+
+  tags = {
+    Name = "private-trust-${var.environment}"
+  }
+}
+
 data "aws_subnets" "private" {
   filter {
     name   = "vpc-id"
