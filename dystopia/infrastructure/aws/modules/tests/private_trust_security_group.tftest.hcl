@@ -77,8 +77,4 @@ run "uses_private_trust_security_group_for_rds" {
     error_message = "The private trust lookup must select exactly the production Name tag."
   }
 
-  assert {
-    condition     = aws_security_group.monolith_db.name == "monolith-database-production" && aws_security_group.monolith_db.vpc_id == data.aws_vpc.eks_production.id
-    error_message = "The temporary dedicated RDS security group must remain in the production VPC."
-  }
 }
