@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import {
   AuthFlowType,
   CognitoIdentityProviderClient,
@@ -10,7 +9,7 @@ import {
   SignUpCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import type { CognitoAdapter, Tokens } from "./adapter";
-import { normalizePhoneNumber } from "./phone";
+import { normalizePhoneNumber, usernameForPhone } from "./phone";
 
 function client(): CognitoIdentityProviderClient {
   return new CognitoIdentityProviderClient({
@@ -27,15 +26,16 @@ function clientId(): string {
 export function createAwsAdapter(): CognitoAdapter {
   return {
     async signUp(phone, password) {
-      // The user pool aliases phone_number, and Cognito rejects an alias
-      // value as the SignUp Username ("Username cannot be of phone number
-      // format, since user pool is configured for phone number alias").
-      // A random Username is fine here — ConfirmSignUp/InitiateAuth/etc.
-      // all accept the phone number itself once the alias exists.
+      // The user pool aliases phone_number, but SignUp rejects an alias
+      // value as the Username outright ("Username cannot be of phone
+      // number format, since user pool is configured for phone number
+      // alias"). Use a deterministic, non-phone-shaped Username derived
+      // from the phone number instead — see usernameForPhone for why
+      // ConfirmSignUp needs the same value rather than the phone number.
       const response = await client().send(
         new SignUpCommand({
           ClientId: clientId(),
-          Username: randomUUID(),
+          Username: usernameForPhone(phone),
           Password: password,
           UserAttributes: [{ Name: "phone_number", Value: normalizePhoneNumber(phone) }],
         }),
@@ -45,10 +45,14 @@ export function createAwsAdapter(): CognitoAdapter {
       return { userSub: response.UserSub };
     },
     async confirmSignUp(phone, code) {
+      // Must match the Username SignUp used — phone_number isn't a
+      // resolvable alias yet (phone_number_verified is still false), so
+      // passing the phone number here targets no user. See
+      // usernameForPhone for the full explanation.
       await client().send(
         new ConfirmSignUpCommand({
           ClientId: clientId(),
-          Username: normalizePhoneNumber(phone),
+          Username: usernameForPhone(phone),
           ConfirmationCode: code,
         }),
       );
