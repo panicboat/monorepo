@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/panicboat/monorepo/compare/frontend-v0.3.5...frontend-v0.4.0) (2026-09-07)
+
+
+### Features
+
+* **dystopia/frontend:** propagate trace context on gRPC calls to monolith ([#1095](https://github.com/panicboat/monorepo/issues/1095)) ([b67a1be](https://github.com/panicboat/monorepo/commit/b67a1bed604a29f64ebb1bad51d0909b062a6e78))
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** update dependency @opentelemetry/api to ^1.9.1 ([#1102](https://github.com/panicboat/monorepo/issues/1102)) ([0e7c2fa](https://github.com/panicboat/monorepo/commit/0e7c2fa1e72068502b9f4efea0d3ed6a371fb075))
+
 ## [0.3.5](https://github.com/panicboat/monorepo/compare/frontend-v0.3.4...frontend-v0.3.5) (2026-09-07)
 
 
