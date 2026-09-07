@@ -1,5 +1,6 @@
 import { createClient } from "@connectrpc/connect";
 import { createGrpcTransport } from "@connectrpc/connect-node";
+import { traceContextInterceptor } from "@/lib/otel-interceptor";
 import { IdentityService } from "@/stub/identity/v1/service_pb";
 import { MediaService } from "@/stub/media/v1/media_service_pb";
 import { PostService } from "@/stub/post/v1/post_service_pb";
@@ -33,8 +34,14 @@ import { FootprintsService } from "@/stub/footprints/v1/footprints_service_pb";
 // Isolating the streaming client onto its own connection keeps the
 // unary path free.
 const baseUrl = process.env.MONOLITH_URL || "http://localhost:9001";
-const transport = createGrpcTransport({ baseUrl });
-const streamingTransport = createGrpcTransport({ baseUrl });
+const transport = createGrpcTransport({
+  baseUrl,
+  interceptors: [traceContextInterceptor],
+});
+const streamingTransport = createGrpcTransport({
+  baseUrl,
+  interceptors: [traceContextInterceptor],
+});
 
 export const identityClient = createClient(IdentityService, transport);
 
