@@ -11,12 +11,20 @@
 - **先方の英語 → 日本語字幕**: 自分だけが見る。聞き取りの補助
 - **自分の日本語 → 英訳**: 画面共有で先方に見せる。発話の代わりになる
 
-利用者は作者 1 人、実行はローカルの Mac のみで、デプロイしない。会議ツールは
-Google Meet / Teams をブラウザタブで開く運用に限定する。この前提が
-`getDisplayMedia` によるタブ音声キャプチャを成立させており、Zoom などの
-デスクトップアプリを使う場合は仮想オーディオデバイスが別途必要になるため
-対象外とする（macOS の Chrome は `getDisplayMedia` でシステム音声を取得できず、
-タブ音声のみ対応するため）。
+利用者は作者 1 人、実行はローカルの Mac のみで、デプロイしない。
+
+会議は Zoom で行い、**先方は Zoom デスクトップアプリ、自分は Zoom Web Client
+（ブラウザ）で参加する**。双方がリモートでそれぞれ自分のマイクを使うため、
+先方の音声はネットワーク越しにデジタルのまま Zoom タブへ届く。これを
+`getDisplayMedia` のタブ音声として取得することが本設計の前提であり、音質の
+劣化なしに言語を決め打ちできる根拠になっている。
+
+**ブラウザは Chrome または Edge に限定する。** Firefox と Safari は
+`getDisplayMedia` の audio 指定を無視するため、タブ音声を取得できない。
+
+自分が Zoom をデスクトップアプリで使う場合、macOS の Chrome はシステム音声を
+取得できずタブ音声のみ対応するため、この経路は成立しない。仮想オーディオ
+デバイスの導入が必要になり、「追加ソフトウェアなし」という前提が崩れる。
 
 ## Verified Findings
 
@@ -37,6 +45,23 @@ Google Meet / Teams をブラウザタブで開く運用に限定する。この
   regional availability ドキュメントは Tokyo に Claude の in-region 提供がないと
   読めるが、実アカウントでは `jp.*` プロファイルが利用可能で、`global.*` を
   経由する必要がない
+- **Zoom Web Client が使えるかは先方（ホスト）の設定に依存する。** 「Join from
+  your browser」リンクは 2026-02-07 から既定で有効になったが、それ以前に無効かつ
+  ロックされていた設定は無効のまま残る。会議当日にブラウザ参加ができない可能性が
+  あるため、事前に会議 URL を開いてリンクの有無を確認する運用が要る
+  （[Zoom KB0084678](https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0084678)）
+- **タブ音声キャプチャは Chrome / Edge のみ。** Firefox と Safari は
+  `getDisplayMedia` の audio を無視する
+  （[MDN Screen Capture API](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Capture_API/Using_Screen_Capture)）
+- **1 本のマイクで両者の音声を拾う構成も技術的には成立するが採用しない。**
+  `echoCancellation: false` でスピーカー由来の音を拾え、Transcribe の
+  `identify-multiple-languages` で日英混在ストリームも扱える（PCM 限定）。
+  採用しないのは、スピーカー→空気→マイクの経路で認識精度が落ちること、言語識別に
+  最低 1 秒の発話を要してレイテンシが増えること、そして誤識別時に翻訳の向きが
+  逆転しうることによる。**言語の決め打ちという構造的な保証を、確率的な判定に
+  置き換えることになる**のが決定的な理由
+  （[lang-id-stream](https://docs.aws.amazon.com/transcribe/latest/dg/lang-id-stream.html)、
+  [MDN echoCancellation](https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints/echoCancellation)）
 - **`sts:GetFederationToken` に session policy を付けて権限を絞れる。**
   `transcribe:StartStreamTranscription` のみを許可した一時クレデンシャルが実際に
   発行できることを実機で確認した
@@ -77,7 +102,7 @@ route handler がそれを最小の記述で与えるため。`dystopia/frontend
 | ソース | 取得 API | 言語 | 用途 |
 |---|---|---|---|
 | 自分のマイク | `getUserMedia({ audio: true })` | `ja-JP` 固定 | 英訳して共有画面へ |
-| 会議タブの音声 | `getDisplayMedia({ audio: true, video: true })` | `en-US` 固定 | 和訳して自分の画面へ |
+| Zoom タブの音声 | `getDisplayMedia({ audio: true, video: true })` | `en-US` 固定 | 和訳して自分の画面へ |
 
 `getDisplayMedia` で `video: true` を指定するのは、Chrome がタブ共有時に video
 トラックを要求するためであり、受け取った video トラックは即座に停止して破棄する。
@@ -149,8 +174,14 @@ graph LR
 | オペレータ画面 | 先方の英語＋和訳 / 自分の日本語＋英訳 / 開始停止・音声ソース選択 | 自分だけ |
 | 共有画面 | 自分の発言の英訳のみ。大きく表示、直近 3 件 | 画面共有で先方 |
 
-共有画面は別タブで開き、Meet の「タブを共有」で指定する。先方の音声取得に使う
-`getDisplayMedia` とは別々の共有なので競合しない。
+共有画面は別タブで開き、Zoom の「画面の共有」でそのタブを指定する。先方の音声
+取得に使う `getDisplayMedia` とは別々の共有なので競合しない。
+
+**ただし常時共有を前提にしない。** 画面共有は本来「資料を見せるとき」の動作で、
+会議中ずっと出しっぱなしにすると先方の画面で共有内容が主役になり、顔が小さくなって
+会話の質が落ちる。相手が資料を共有したい場面とも競合する。普段は自分の画面で英訳を
+見ながら話し、**長い説明や誤解が生じた場面だけ共有に切り替える**運用とする。
+共有画面は独立したページなので、共有しない会議で開かなくても他の機能に影響しない。
 
 タブ間の状態同期は `BroadcastChannel`（同一オリジンのタブ間通信）で行い、サーバを
 経由しない。
@@ -213,7 +244,11 @@ AWS 呼び出し自体はモックせず、実機確認に委ねる。Transcribe
 
 - **TTS による音声出力**: 英訳を合成音声で会議に流すこと。仮想オーディオデバイスの
   導入が必要になり、「追加ソフトウェアなし」という前提が崩れる
-- **対面会議（1 マイクで両者を拾う）への対応**: 話者分離または言語自動判定が必要になり、
-  言語固定という本設計の前提が成立しなくなる
+- **1 マイクに両者の音声を混ぜる構成**: 対面会議、またはスピーカーから出る先方の声を
+  自分のマイクで拾う形。技術的には成立するが、Verified Findings に記した理由
+  （音質の劣化・言語識別の遅延・翻訳の向きの逆転）により採用しない
+- **仮想オーディオデバイスを使う構成**: 自分が Zoom をデスクトップアプリで使う場合の
+  経路。「追加ソフトウェアなし」という前提を捨てれば精度は保てるが、本設計では
+  Zoom Web Client での参加を前提とする
 - **認証とデプロイ**: 利用者が 1 人でローカル実行に限るため不要
 - **議事録の保存・書き出し**: 会議中の翻訳に用途を絞る
