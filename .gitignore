@@ -44,3 +44,4 @@ pids
 
 # Git worktrees
 .claude/worktrees/
+.worktrees/
