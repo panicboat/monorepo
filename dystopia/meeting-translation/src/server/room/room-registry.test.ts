@@ -202,6 +202,28 @@ describe("RoomRegistry", () => {
     expect(registry.writeAudio(participantId, new Uint8Array([1]))).toBe(true);
   });
 
+  it.each(["resolve", "reject"] as const)("coalesces starts while audio stop will %s", async (outcome) => {
+    const { recognizer, registry, participantId } = createDelayedRoom();
+    const start = registry.handle(participantId, { type: "audio:start" });
+    await flushOperations();
+    recognizer.finishStart(0);
+    await start;
+    const stop = registry.handle(participantId, { type: "audio:stop" });
+    const restarts = [1, 2, 3].map(() => observeCompletion(registry.handle(participantId, { type: "audio:start" })));
+    await flushOperations();
+
+    expect(recognizer.starts).toHaveLength(1);
+    if (outcome === "resolve") recognizer.finishStop(0);
+    else recognizer.rejectStop(0);
+    await flushOperations();
+
+    expect(recognizer.starts).toHaveLength(2);
+    expect(restarts.map((restart) => restart.completed)).toEqual([false, false, false]);
+    recognizer.finishStart(1);
+    await Promise.all([stop, ...restarts.map((restart) => restart.promise)]);
+    expect(registry.writeAudio(participantId, new Uint8Array([1]))).toBe(true);
+  });
+
   it("cancels a queued restart when a later audio stop arrives", async () => {
     const { recognizer, registry, participantId } = createDelayedRoom();
     const start = registry.handle(participantId, { type: "audio:start" });
@@ -291,12 +313,38 @@ describe("RoomRegistry", () => {
     await Promise.all([start, disconnect, destroy.promise, repeatedDestroy.promise]);
   });
 
-  it.each(["audio:stop", "destroyAll"] as const)("settles a rejected start racing with %s without exposing provider errors", async (operation) => {
+  it("serializes recognition errors after a pending start", async () => {
+    const { recognizer, registry, participantId, connection } = createDelayedRoom();
+    const start = registry.handle(participantId, { type: "audio:start" });
+    await flushOperations();
+
+    recognizer.emitError(0);
+    const reportedBeforeStartSettled = connection.messages.some(
+      (message) => message.type === "status" && message.code === "recognition_unavailable",
+    );
+    recognizer.finishStart(0);
+    await flushOperations();
+
+    expect(recognizer.sessions[0]?.stopped).toBe(true);
+    expect(connection.messages).toContainEqual({ type: "status", code: "recognition_unavailable" });
+    recognizer.finishStop(0);
+    await start;
+    await flushOperations();
+
+    expect(reportedBeforeStartSettled).toBe(false);
+  });
+
+  it.each(["audio:stop", "disconnect", "destroyAll"] as const)("settles a rejected start racing with %s without exposing provider errors", async (operation) => {
     const { recognizer, registry, participantId, connection } = createDelayedRoom();
     const start = observeCompletion(registry.handle(participantId, { type: "audio:start" }));
     await flushOperations();
-    const cleanup = observeCompletion(operation === "audio:stop"
-      ? registry.handle(participantId, { type: "audio:stop" }) : registry.destroyAll());
+    const cleanup = observeCompletion(
+      operation === "audio:stop"
+        ? registry.handle(participantId, { type: "audio:stop" })
+        : operation === "disconnect"
+          ? registry.disconnect(participantId)
+          : registry.destroyAll(),
+    );
     await flushOperations();
     expect(cleanup.completed).toBe(false);
     recognizer.rejectStart(0);
@@ -528,7 +576,7 @@ describe("RoomRegistry", () => {
     expect(recognizer.starts).toHaveLength(1);
 
     recognizer.finishStart(0);
-    await Promise.resolve();
+    await flushOperations();
 
     expect(recognizer.sessions[0]?.stopped).toBe(true);
     expect(recognizer.starts).toHaveLength(1);
@@ -554,7 +602,7 @@ describe("RoomRegistry", () => {
     await Promise.resolve();
     const stop = registry.handle(joined.participant.id, { type: "audio:stop" });
     recognizer.finishStart(0);
-    await Promise.resolve();
+    await flushOperations();
 
     expect(recognizer.sessions[0]?.stopped).toBe(true);
     expect(registry.writeAudio(joined.participant.id, new Uint8Array([1]))).toBe(false);

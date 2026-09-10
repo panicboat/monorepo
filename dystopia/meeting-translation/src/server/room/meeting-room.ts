@@ -23,16 +23,26 @@ export interface MeetingRoomDependencies {
 interface ActiveParticipant {
   participant: Participant;
   connection: RoomConnection;
-  recognition: {
-    generation: number;
-    completion: Promise<void>;
-    startRequest?: { generation: number; completion: Promise<void> };
-    attempt?: RecognitionAttempt;
-  };
+  recognition: RecognitionLifecycle;
+}
+
+interface RecognitionLifecycle {
+  generation: number;
+  operations: RecognitionOperation[];
+  processing: boolean;
+  startRequest?: { generation: number; completion: Promise<void> };
+  attempt?: RecognitionAttempt;
+}
+
+interface RecognitionOperation {
+  run(): Promise<void>;
+  resolve(): void;
+  reject(error: unknown): void;
 }
 
 interface RecognitionAttempt {
   active: boolean;
+  failureReported?: boolean;
   session?: RecognitionSession;
   stopping?: Promise<void>;
 }
@@ -73,7 +83,7 @@ export class MeetingRoom {
     const activeParticipant: ActiveParticipant = {
       participant,
       connection,
-      recognition: { generation: 0, completion: Promise.resolve() },
+      recognition: { generation: 0, operations: [], processing: false },
     };
     this.participants.set(participant.id, activeParticipant);
     this.participantLifecycles.add(activeParticipant);
@@ -219,10 +229,13 @@ export class MeetingRoom {
   ): Promise<void> {
     const lifecycle = activeParticipant.recognition;
     if (lifecycle.startRequest?.generation === lifecycle.generation) return lifecycle.startRequest.completion;
-    if (lifecycle.attempt?.active) return lifecycle.completion;
+    if (lifecycle.attempt?.active) {
+      return this.enqueueRecognitionOperation(lifecycle, async () => undefined);
+    }
 
     const request = { generation: lifecycle.generation, completion: Promise.resolve() };
-    request.completion = lifecycle.completion.then(async () => {
+    lifecycle.startRequest = request;
+    request.completion = this.enqueueRecognitionOperation(lifecycle, async () => {
       try {
         if (request.generation !== lifecycle.generation || this.destroyed || !this.participants.has(participantId)) return;
         const attempt: RecognitionAttempt = { active: true };
@@ -232,8 +245,6 @@ export class MeetingRoom {
         if (lifecycle.startRequest === request) lifecycle.startRequest = undefined;
       }
     });
-    lifecycle.startRequest = request;
-    lifecycle.completion = request.completion;
     return request.completion;
   }
 
@@ -262,30 +273,78 @@ export class MeetingRoom {
           });
         },
         onError: () => {
-          if (!attempt.active) return;
-          void this.stopRecognition(activeParticipant);
-          this.broadcast({ type: "status", code: "recognition_unavailable" });
+          this.failRecognition(activeParticipant, attempt);
         },
       });
-
-      if (!attempt.active) await this.stopRecognitionSession(attempt);
     } catch {
       attempt.active = false;
-      this.broadcast({ type: "status", code: "recognition_unavailable" });
+      if (!attempt.failureReported) {
+        attempt.failureReported = true;
+        this.broadcast({ type: "status", code: "recognition_unavailable" });
+      }
     }
   }
 
   private stopRecognition(activeParticipant: ActiveParticipant): Promise<void> {
     const lifecycle = activeParticipant.recognition;
     lifecycle.generation += 1;
-    lifecycle.startRequest = undefined;
     const attempt = lifecycle.attempt;
     if (attempt) attempt.active = false;
-    const stop = attempt ? this.stopRecognitionSession(attempt) : Promise.resolve();
-    lifecycle.completion = Promise.all([lifecycle.completion, stop]).then(async () => {
+
+    return this.enqueueRecognitionOperation(lifecycle, async () => {
       if (attempt) await this.stopRecognitionSession(attempt);
     });
-    return lifecycle.completion;
+  }
+
+  private failRecognition(activeParticipant: ActiveParticipant, attempt: RecognitionAttempt): void {
+    if (!attempt.active || attempt.failureReported) return;
+    attempt.active = false;
+    attempt.failureReported = true;
+    const lifecycle = activeParticipant.recognition;
+    lifecycle.generation += 1;
+
+    const completion = this.enqueueRecognitionOperation(lifecycle, async () => {
+      this.broadcast({ type: "status", code: "recognition_unavailable" });
+      await this.stopRecognitionSession(attempt);
+    });
+    void completion.catch(() => {
+      // SILENT: provider callbacks cannot return lifecycle failures to their caller.
+    });
+  }
+
+  private enqueueRecognitionOperation(
+    lifecycle: RecognitionLifecycle,
+    run: () => Promise<void>,
+  ): Promise<void> {
+    let resolveOperation: () => void = () => undefined;
+    let rejectOperation: (error: unknown) => void = () => undefined;
+    const completion = new Promise<void>((resolve, reject) => {
+      resolveOperation = resolve;
+      rejectOperation = reject;
+    });
+    lifecycle.operations.push({ run, resolve: resolveOperation, reject: rejectOperation });
+    this.processRecognitionOperations(lifecycle);
+    return completion;
+  }
+
+  private processRecognitionOperations(lifecycle: RecognitionLifecycle): void {
+    if (lifecycle.processing) return;
+    lifecycle.processing = true;
+    void this.drainRecognitionOperations(lifecycle);
+  }
+
+  private async drainRecognitionOperations(lifecycle: RecognitionLifecycle): Promise<void> {
+    while (lifecycle.operations.length > 0) {
+      const operation = lifecycle.operations.shift();
+      if (!operation) continue;
+      try {
+        await operation.run();
+        operation.resolve();
+      } catch (error) {
+        operation.reject(error);
+      }
+    }
+    lifecycle.processing = false;
   }
 
   private stopRecognitionSession(
