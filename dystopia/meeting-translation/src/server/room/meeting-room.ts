@@ -24,6 +24,7 @@ interface ActiveParticipant {
   participant: Participant;
   connection: RoomConnection;
   recognitionSession?: RecognitionSession;
+  stoppingRecognition?: Promise<void>;
 }
 
 export type RoomJoinResult =
@@ -74,7 +75,7 @@ export class MeetingRoom {
     if (!activeParticipant) return undefined;
 
     this.participants.delete(participantId);
-    if (activeParticipant.recognitionSession) await activeParticipant.recognitionSession.stop();
+    await this.stopRecognition(activeParticipant);
     this.broadcast({ type: "participant:left", participant: activeParticipant.participant });
     return activeParticipant.participant;
   }
@@ -162,14 +163,14 @@ export class MeetingRoom {
 
   async destroy(): Promise<void> {
     this.destroyed = true;
-    const sessions = [...this.participants.values()]
-      .map(({ recognitionSession }) => recognitionSession)
-      .filter((session): session is RecognitionSession => session !== undefined);
+    const stops = [...this.participants.values()].map((activeParticipant) =>
+      this.stopRecognition(activeParticipant),
+    );
     this.participants.clear();
     this.captions.clear();
     this.context.length = 0;
     this.translationQueue.clear();
-    await Promise.all(sessions.map((session) => session.stop()));
+    await Promise.all(stops);
   }
 
   private matchesJoinToken(message: Extract<ClientMessage, { type: "join" }>): boolean {
@@ -196,6 +197,8 @@ export class MeetingRoom {
     activeParticipant: ActiveParticipant,
   ): Promise<void> {
     if (activeParticipant.recognitionSession) return;
+    if (activeParticipant.stoppingRecognition) await activeParticipant.stoppingRecognition;
+    if (activeParticipant.recognitionSession || this.destroyed || !this.participants.has(participantId)) return;
 
     let recognitionSession: RecognitionSession | undefined;
     let recognitionFailed = false;
@@ -227,7 +230,7 @@ export class MeetingRoom {
       });
 
       if (recognitionFailed || this.destroyed || !this.participants.has(participantId)) {
-        await recognitionSession.stop();
+        await this.stopRecognitionSession(activeParticipant, recognitionSession);
         return;
       }
       activeParticipant.recognitionSession = recognitionSession;
@@ -244,15 +247,42 @@ export class MeetingRoom {
     if (recognitionSession && activeParticipant.recognitionSession !== recognitionSession) return;
 
     activeParticipant.recognitionSession = undefined;
-    if (recognitionSession) void recognitionSession.stop();
+    if (recognitionSession) void this.stopRecognitionSession(activeParticipant, recognitionSession);
     this.broadcast({ type: "status", code: "recognition_unavailable" });
   }
 
   private async stopRecognition(activeParticipant: ActiveParticipant): Promise<void> {
     const recognitionSession = activeParticipant.recognitionSession;
-    if (!recognitionSession) return;
+    if (!recognitionSession) {
+      if (activeParticipant.stoppingRecognition) await activeParticipant.stoppingRecognition;
+      return;
+    }
     activeParticipant.recognitionSession = undefined;
-    await recognitionSession.stop();
+    await this.stopRecognitionSession(activeParticipant, recognitionSession);
+  }
+
+  private stopRecognitionSession(
+    activeParticipant: ActiveParticipant,
+    recognitionSession: RecognitionSession,
+  ): Promise<void> {
+    let stopPromise: Promise<void>;
+    try {
+      stopPromise = recognitionSession.stop();
+    } catch {
+      // SILENT: recognition failures use stable status codes instead of provider error details.
+      stopPromise = Promise.resolve();
+    }
+
+    const stoppingRecognition = stopPromise.catch(() => {
+      // SILENT: recognition failures use stable status codes instead of provider error details.
+    });
+    activeParticipant.stoppingRecognition = stoppingRecognition;
+    void stoppingRecognition.then(() => {
+      if (activeParticipant.stoppingRecognition === stoppingRecognition) {
+        activeParticipant.stoppingRecognition = undefined;
+      }
+    });
+    return stoppingRecognition;
   }
 
   private requestClarification(requester: Participant, captionId: string): void {

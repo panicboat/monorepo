@@ -54,6 +54,43 @@ class FakeRecognizer implements SpeechRecognizer {
   }
 }
 
+class DelayedStopRecognizer implements SpeechRecognizer {
+  readonly sessions: Array<{ options: RecognitionOptions; stopped: boolean }> = [];
+  private readonly stopResolvers: Array<() => void> = [];
+  private readonly stopRejectors: Array<(reason: Error) => void> = [];
+
+  async start(options: RecognitionOptions): Promise<RecognitionSession> {
+    const session = { options, stopped: false };
+    this.sessions.push(session);
+    return {
+      write: () => undefined,
+      stop: () => {
+        session.stopped = true;
+        return new Promise((resolve, reject) => {
+          this.stopResolvers.push(resolve);
+          this.stopRejectors.push(reject);
+        });
+      },
+    };
+  }
+
+  emitError(session: number): void {
+    this.sessions[session]?.options.onError("recognition_unavailable");
+  }
+
+  finishStop(session: number): void {
+    const resolve = this.stopResolvers[session];
+    if (!resolve) throw new Error("recognition stop was not pending");
+    resolve();
+  }
+
+  rejectStop(session: number): void {
+    const reject = this.stopRejectors[session];
+    if (!reject) throw new Error("recognition stop was not pending");
+    reject(new Error("provider stop failure"));
+  }
+}
+
 const joinMessage = (
   roomId: string,
   token: string,
@@ -217,6 +254,57 @@ describe("RoomRegistry", () => {
     await registry.handle(joined.participant.id, { type: "audio:start" });
 
     expect(registry.writeAudio(joined.participant.id, new Uint8Array([3]))).toBe(true);
+  });
+
+  it("waits for a failed recognition session to stop before starting another session", async () => {
+    const recognizer = new DelayedStopRecognizer();
+    const registry = new RoomRegistry({ translator: new DeferredTranslator(), recognizer });
+    const created = registry.create();
+    const joined = registry.join(new RecordingConnection(), joinMessage(created.roomId, created.joinToken, "A"));
+
+    if (!joined.ok) throw new Error("test participant did not join");
+
+    await registry.handle(joined.participant.id, { type: "audio:start" });
+    recognizer.emitError(0);
+
+    let restarted = false;
+    const restart = registry.handle(joined.participant.id, { type: "audio:start" }).then(() => {
+      restarted = true;
+    });
+    await Promise.resolve();
+
+    expect(restarted).toBe(false);
+    expect(recognizer.sessions).toHaveLength(1);
+
+    recognizer.finishStop(0);
+    await restart;
+
+    expect(recognizer.sessions).toHaveLength(2);
+    expect(registry.writeAudio(joined.participant.id, new Uint8Array([1]))).toBe(true);
+  });
+
+  it("starts another session after a failed recognition stop rejects", async () => {
+    const recognizer = new DelayedStopRecognizer();
+    const registry = new RoomRegistry({ translator: new DeferredTranslator(), recognizer });
+    const created = registry.create();
+    const connection = new RecordingConnection();
+    const joined = registry.join(connection, joinMessage(created.roomId, created.joinToken, "A"));
+
+    if (!joined.ok) throw new Error("test participant did not join");
+
+    await registry.handle(joined.participant.id, { type: "audio:start" });
+    recognizer.emitError(0);
+    const restart = registry.handle(joined.participant.id, { type: "audio:start" });
+    await Promise.resolve();
+
+    expect(recognizer.sessions).toHaveLength(1);
+
+    recognizer.rejectStop(0);
+    await restart;
+
+    expect(connection.messages).toContainEqual({ type: "status", code: "recognition_unavailable" });
+    expect(recognizer.sessions).toHaveLength(2);
+    expect(registry.writeAudio(joined.participant.id, new Uint8Array([1]))).toBe(true);
   });
 
   it("stops an active session and rejects audio after the final participant disconnects", async () => {
