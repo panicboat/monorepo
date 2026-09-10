@@ -1,4 +1,4 @@
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -31,7 +31,8 @@ const config: ServiceConfig = {
 const createPublicDir = async (): Promise<string> => {
   const publicDir = await mkdtemp(join(tmpdir(), "meeting-translation-public-"));
   await writeFile(join(publicDir, "index.html"), "<main>meeting translation</main>");
-  await writeFile(join(publicDir, "app-Z9xY8wV7.js"), "console.log('meeting')");
+  await mkdir(join(publicDir, "assets"));
+  await writeFile(join(publicDir, "assets", "app-Z9xY8wV7.js"), "console.log('meeting')");
   return publicDir;
 };
 

@@ -1,4 +1,4 @@
-import { basename } from "node:path";
+import { basename, join } from "node:path";
 
 import fastify, { LogController, type FastifyInstance, type FastifyReply, type FastifyRequest, type RawServerDefault } from "fastify";
 import fastifyStatic from "@fastify/static";
@@ -62,7 +62,7 @@ export const createApp = (dependencies: AppDependencies): FastifyInstance => {
   });
 
   app.register(fastifyStatic, {
-    root: dependencies.publicDir,
+    root: join(dependencies.publicDir, "assets"),
     prefix: `${basePath}/assets/`,
     cacheControl: false,
     setHeaders: (reply, filePath) => {
