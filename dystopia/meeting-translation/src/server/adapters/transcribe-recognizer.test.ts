@@ -103,6 +103,60 @@ describe("TranscribeRecognizer", () => {
     await session.stop();
   });
 
+  it.each([
+    ["missing", undefined, 429],
+    ["unsupported", "UnrecognizedProviderEvent", 503],
+  ])("uses a stream provider event status code with a %s name", async (_nameType, name, statusCode) => {
+    let readAfterProviderEvent = false;
+    const final = vi.fn();
+    const send = vi.fn().mockResolvedValue({
+      TranscriptResultStream: (async function* () {
+        yield { LimitExceededException: { name, Message: "private provider details", $metadata: { httpStatusCode: statusCode } } };
+        readAfterProviderEvent = true;
+        yield { TranscriptEvent: { Transcript: { Results: [{ IsPartial: false, Alternatives: [{ Transcript: "must not route" }] }] } } };
+      })(),
+    });
+    const onError = vi.fn();
+    const recognizer = new TranscribeRecognizer(
+      { awsRegion: "ap-northeast-1" },
+      () => ({ send, destroy: vi.fn() }),
+    );
+
+    const session = await recognizer.start({ language: "ja-JP", onPartial: vi.fn(), onFinal: final, onError });
+    await flush();
+
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledWith("recognition_unavailable");
+    expect(final).not.toHaveBeenCalled();
+    expect(readAfterProviderEvent).toBe(false);
+    await session.stop();
+  });
+
+  it.each([
+    ["missing", undefined, 429],
+    ["unsupported", "UnrecognizedProviderError", 503],
+  ])("uses a rejected request status code with a %s name", async (_nameType, name, statusCode) => {
+    const final = vi.fn();
+    const onError = vi.fn();
+    const send = vi.fn().mockRejectedValue({
+      name,
+      message: "private provider details",
+      $metadata: { httpStatusCode: statusCode },
+    });
+    const recognizer = new TranscribeRecognizer(
+      { awsRegion: "ap-northeast-1" },
+      () => ({ send, destroy: vi.fn() }),
+    );
+
+    const session = await recognizer.start({ language: "ja-JP", onPartial: vi.fn(), onFinal: final, onError });
+    await flush();
+
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledWith("recognition_unavailable");
+    expect(final).not.toHaveBeenCalled();
+    await session.stop();
+  });
+
   it("closes queued audio before aborting and destroys only after the result loop finishes", async () => {
     const events: string[] = [];
     let resultLoopFinished = false;

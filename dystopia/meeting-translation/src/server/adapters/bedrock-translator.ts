@@ -40,7 +40,9 @@ export class BedrockTranslator implements Translator {
       }],
       inferenceConfig: { temperature: 0, maxTokens: 512 },
     }));
-    const text = response.output?.message?.content?.find((part) => part.text)?.text?.trim();
+    const text = response.output?.message?.content
+      ?.map((part) => part.text?.trim())
+      .find((part): part is string => part !== undefined && part.length > 0);
     if (!text) throw new Error("Bedrock returned no translation text");
     return text;
   }

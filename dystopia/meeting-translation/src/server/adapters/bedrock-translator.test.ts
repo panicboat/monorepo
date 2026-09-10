@@ -78,6 +78,18 @@ describe("BedrockTranslator", () => {
     );
   });
 
+  it("skips blank text blocks before returning the first usable translation", async () => {
+    const send = vi.fn().mockResolvedValue({
+      output: { message: { content: [{ text: "   " }, { text: " translated after blank " }] } },
+    });
+    const translator = new BedrockTranslator(
+      { send } as unknown as Pick<BedrockRuntimeClient, "send">,
+      { awsRegion: "ap-northeast-1", bedrockModelId: "amazon.nova-lite-v1:0", glossary: [] },
+    );
+
+    await expect(translator.translate(request)).resolves.toBe("translated after blank");
+  });
+
   it("treats source, context, and glossary instructions as literal untrusted translation data", async () => {
     const send = vi.fn().mockResolvedValue({
       output: { message: { content: [{ text: "translated" }] } },
