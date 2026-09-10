@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import type { RecognitionOptions, RecognitionSession, SpeechRecognizer, Translator } from "./adapters/contracts.js";
-import { createApp } from "./app.js";
+import { createApp, shutdownApp } from "./app.js";
 import type { ServiceConfig } from "./config.js";
 import { RoomRegistry } from "./room/room-registry.js";
 
@@ -53,27 +53,49 @@ afterEach(async () => {
 });
 
 describe("createApp", () => {
+  it("waits for Fastify close before destroying all rooms", async () => {
+    const events: string[] = [];
+    let resolveClose: (() => void) | undefined;
+    const completion = shutdownApp(
+      {
+        close: () => new Promise<void>((resolve) => {
+          events.push("close");
+          resolveClose = resolve;
+        }),
+      },
+      {
+        destroyAll: async () => {
+          events.push("destroyAll");
+        },
+      },
+    );
+
+    expect(events).toEqual(["close"]);
+    resolveClose?.();
+    await completion;
+    expect(events).toEqual(["close", "destroyAll"]);
+  });
+
   it("creates no more than five rooms for one IP in a rate window", async () => {
     const app = await createTestApp();
-
-    const created = await Promise.all(
-      Array.from({ length: 5 }, () => app.inject({
-        method: "POST",
-        url: "/translate/api/rooms",
-        headers: { "x-forwarded-for": "203.0.113.4" },
-      })),
-    );
-    const limited = await app.inject({
+    const createRoom = (remoteAddress: string) => app.inject({
       method: "POST",
       url: "/translate/api/rooms",
-      headers: { "x-forwarded-for": "203.0.113.4" },
+      remoteAddress,
     });
+
+    const created = await Promise.all(
+      Array.from({ length: 5 }, () => createRoom("203.0.113.4")),
+    );
+    const limited = await createRoom("203.0.113.4");
+    const anotherIp = await createRoom("203.0.113.5");
 
     expect(created.map((response) => response.statusCode)).toEqual([201, 201, 201, 201, 201]);
     for (const response of created) {
       expect(response.json()).toEqual({ roomId: expect.any(String), joinToken: expect.any(String) });
     }
     expect(limited.statusCode).toBe(429);
+    expect(anotherIp.statusCode).toBe(201);
   });
 
   it("serves health and entry HTML without caching participant state", async () => {

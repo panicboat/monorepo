@@ -15,7 +15,23 @@ export interface AppDependencies {
   publicDir: string;
 }
 
+export const shutdownApp = async (
+  app: { close(): Promise<unknown> },
+  registry: Pick<RoomRegistry, "destroyAll">,
+): Promise<void> => {
+  await app.close();
+  await registry.destroyAll();
+};
+
 const isHashedAsset = (filePath: string): boolean => /-[A-Za-z0-9_-]{6,}\./.test(basename(filePath));
+
+const logFields = (value: unknown): { eventCode: string; participantId?: string } => {
+  const fields = typeof value === "object" && value !== null ? value as Record<string, unknown> : undefined;
+  return {
+    eventCode: typeof fields?.eventCode === "string" ? fields.eventCode : "internal_error",
+    ...(typeof fields?.participantId === "string" ? { participantId: fields.participantId } : {}),
+  };
+};
 
 export const createApp = (dependencies: AppDependencies): FastifyInstance => {
   const basePath = dependencies.config.basePath.replace(/\/$/, "");
@@ -23,8 +39,10 @@ export const createApp = (dependencies: AppDependencies): FastifyInstance => {
     logger: {
       level: "error",
       base: undefined,
-      serializers: {
-        err: () => ({ type: "internal_error", message: "internal_error", stack: "" }),
+      hooks: {
+        logMethod(args, method) {
+          method.apply(this, [logFields(args[0])]);
+        },
       },
     },
     logController: new LogController({ disableRequestLogging: true }),

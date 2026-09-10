@@ -4,7 +4,7 @@ import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
 
 import { BedrockTranslator } from "./adapters/bedrock-translator.js";
 import { TranscribeRecognizer } from "./adapters/transcribe-recognizer.js";
-import { createApp } from "./app.js";
+import { createApp, shutdownApp } from "./app.js";
 import { loadConfig } from "./config.js";
 import { RoomRegistry } from "./room/room-registry.js";
 
@@ -20,10 +20,7 @@ export const startServer = async (): Promise<void> => {
   let shutdownCompletion: Promise<void> | undefined;
 
   const shutdown = (): Promise<void> => {
-    shutdownCompletion ??= (async () => {
-      await app.close();
-      await registry.destroyAll();
-    })();
+    shutdownCompletion ??= shutdownApp(app, registry);
     return shutdownCompletion;
   };
 

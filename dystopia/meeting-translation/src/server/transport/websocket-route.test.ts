@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type WebSocket from "ws";
 
 import type { RecognitionOptions, RecognitionSession, SpeechRecognizer, Translator } from "../adapters/contracts.js";
@@ -84,6 +84,30 @@ afterEach(async () => {
 });
 
 describe("meeting WebSocket route", () => {
+  it("normalizes WebSocket errors before writing structured logs", async () => {
+    const logLines: string[] = [];
+    const write = vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+      logLines.push(String(chunk));
+      return true;
+    });
+
+    try {
+      const { app } = await createTestApp();
+      await app.injectWS("/translate/ws");
+      const serverSocket = [...app.websocketServer.clients][0];
+      if (!serverSocket) throw new Error("test WebSocket was not registered");
+      serverSocket.emit("error", new Error("join-token transcript binary-audio"));
+
+      const logs = logLines.map((line) => JSON.parse(line) as Record<string, unknown>);
+      expect(JSON.stringify(logs)).not.toContain("join-token transcript binary-audio");
+      for (const log of logs) {
+        expect(Object.keys(log).sort()).toEqual(["eventCode", "level", "time"]);
+      }
+    } finally {
+      write.mockRestore();
+    }
+  });
+
   it("joins with a fragment-supplied token that never appears in an HTTP URL", async () => {
     const { app } = await createTestApp();
     const created = await app.inject({ method: "POST", url: "/translate/api/rooms" });
@@ -107,6 +131,23 @@ describe("meeting WebSocket route", () => {
     await once(socket, "close");
   });
 
+  it("accepts a join frame sent during WebSocket open", async () => {
+    const { app } = await createTestApp();
+    const created = await app.inject({ method: "POST", url: "/translate/api/rooms" });
+    const { roomId, joinToken } = created.json<{ roomId: string; joinToken: string }>();
+    const socket = await app.injectWS("/translate/ws", {}, {
+      onOpen: (opened) => {
+        opened.send(JSON.stringify({
+          type: "join", roomId, token: joinToken, displayName: "Ken", speechLanguage: "ja-JP", displayLanguage: "ja", consent: true,
+        }));
+      },
+    });
+
+    await expect(nextMessage(socket)).resolves.toMatchObject({ type: "room:joined", participants: [{ displayName: "Ken" }] });
+    socket.close();
+    await once(socket, "close");
+  });
+
   it("returns stable invalid_message statuses for malformed text and inactive audio", async () => {
     const { app } = await createTestApp();
     const socket = await app.injectWS("/translate/ws");
@@ -120,6 +161,25 @@ describe("meeting WebSocket route", () => {
     await expect(inactiveAudio).resolves.toEqual({ type: "status", code: "invalid_message" });
     socket.close();
     await once(socket, "close");
+  });
+
+  it("closes an actual WebSocket when one frame exceeds 64 KiB", async () => {
+    const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+    try {
+      const { app } = await createTestApp();
+      await app.listen({ port: 0, host: "127.0.0.1" });
+      const address = app.server.address() as AddressInfo;
+      const socket = new globalThis.WebSocket(`ws://127.0.0.1:${address.port}/translate/ws`);
+      await nextEvent(socket, "open");
+      const closed = nextEvent(socket, "close");
+
+      socket.send(new Uint8Array(64 * 1_024 + 1));
+
+      expect((await closed as CloseEvent).code).toBe(1009);
+    } finally {
+      write.mockRestore();
+    }
   });
 
   it("forwards binary PCM only after the joined participant starts recognition", async () => {
