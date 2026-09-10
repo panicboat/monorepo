@@ -1,6 +1,7 @@
 import type { DisplayLanguage } from "../../shared/meeting.js";
 import type { MeetingJoinDetails, MeetingSocket } from "../hooks/use-meeting-socket.js";
 import { useMicrophone } from "../hooks/use-microphone.js";
+import { clarificationRequestCopy } from "../lib/clarification-copy.js";
 import { toPcm16 } from "../lib/pcm.js";
 import { serverStatusCopy } from "../lib/status-copy.js";
 import { CaptionList } from "./caption-list.js";
@@ -60,6 +61,11 @@ export const MeetingView = ({ displayLanguage, socket }: MeetingViewProps) => {
       </section>
       <section>
         <h2>{displayLanguage === "ja" ? "字幕" : "Captions"}</h2>
+        {socket.clarificationRequest && (
+          <p role="status">
+            {clarificationRequestCopy(socket.clarificationRequest, displayLanguage)}
+          </p>
+        )}
         <CaptionList captions={socket.captions} displayLanguage={displayLanguage} onClarification={(captionId) => socket.send({ type: "clarification:request", captionId })} />
       </section>
       <ManualCaptionForm displayLanguage={displayLanguage} onSend={(text) => socket.send({ type: "caption:manual", text })} />

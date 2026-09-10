@@ -66,7 +66,7 @@ const nextEvent = (target: EventTarget, type: string): Promise<Event> => new Pro
   target.addEventListener(type, resolve, { once: true });
 });
 
-const apps: ReturnType<typeof createApp>[] = [];
+const apps: Array<{ app: ReturnType<typeof createApp>; registry: RoomRegistry }> = [];
 
 const createTestApp = async () => {
   const publicDir = await mkdtemp(join(tmpdir(), "meeting-translation-public-"));
@@ -75,12 +75,15 @@ const createTestApp = async () => {
   const registry = new RoomRegistry({ translator: new FakeTranslator(), recognizer });
   const app = createApp({ config, registry, publicDir });
   await app.ready();
-  apps.push(app);
+  apps.push({ app, registry });
   return { app, recognizer, registry };
 };
 
 afterEach(async () => {
-  await Promise.all(apps.splice(0).map((app) => app.close()));
+  await Promise.all(apps.splice(0).map(async ({ app, registry }) => {
+    await app.close();
+    await registry.destroyAll();
+  }));
 });
 
 describe("meeting WebSocket route", () => {
@@ -203,7 +206,7 @@ describe("meeting WebSocket route", () => {
     await once(socket, "close");
   });
 
-  it("stops recognition and removes the room when its socket closes", async () => {
+  it("stops recognition, reconnects during grace, and receives captions from the new connection", async () => {
     const { app, recognizer } = await createTestApp();
     const created = await app.inject({ method: "POST", url: "/translate/api/rooms" });
     const { roomId, joinToken } = created.json<{ roomId: string; joinToken: string }>();
@@ -224,12 +227,34 @@ describe("meeting WebSocket route", () => {
     await waitFor(() => recognizer.sessions[0]?.stopped === true);
 
     const reconnect = await app.injectWS("/translate/ws");
-    const roomMissing = nextMessage(reconnect);
+    const rejoined = nextMessage(reconnect);
     reconnect.send(JSON.stringify({
       type: "join", roomId, token: joinToken, displayName: "Ken", speechLanguage: "ja-JP", displayLanguage: "ja", consent: true,
     }));
-    await expect(roomMissing).resolves.toEqual({ type: "status", code: "room_not_found" });
+    await expect(rejoined).resolves.toMatchObject({
+      type: "room:joined",
+      participants: [{ displayName: "Ken" }],
+    });
+
+    const caption = nextMessage(reconnect);
+    reconnect.send(JSON.stringify({ type: "caption:manual", text: "再接続後" }));
+    await expect(caption).resolves.toMatchObject({
+      type: "caption:pending",
+      caption: { sourceText: "再接続後" },
+    });
+
+    const reconnectClosed = once(reconnect, "close");
+    reconnect.send(JSON.stringify({ type: "leave" }));
     reconnect.close();
-    await once(reconnect, "close");
+    await reconnectClosed;
+    const afterLeave = await app.injectWS("/translate/ws");
+    const roomMissing = nextMessage(afterLeave);
+    afterLeave.send(JSON.stringify({
+      type: "join", roomId, token: joinToken, displayName: "Ken", speechLanguage: "ja-JP", displayLanguage: "ja", consent: true,
+    }));
+    await expect(roomMissing).resolves.toEqual({ type: "status", code: "room_not_found" });
+
+    afterLeave.close();
+    await once(afterLeave, "close");
   });
 });

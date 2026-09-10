@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type {
   RecognitionOptions,
@@ -448,6 +448,64 @@ describe("RoomRegistry", () => {
       ok: false,
       code: "room_not_found",
     });
+  });
+
+  it("retains an empty room during reconnect grace and cancels expiry after a successful rejoin", async () => {
+    vi.useFakeTimers();
+    try {
+      const registry = new RoomRegistry({
+        translator: new DeferredTranslator(),
+        recognizer: new FakeRecognizer(),
+      });
+      const created = registry.create();
+      const first = registry.join(
+        new RecordingConnection(),
+        joinMessage(created.roomId, created.joinToken, "A"),
+      );
+      if (!first.ok) throw new Error("test participant did not join");
+
+      await registry.disconnectForReconnect(first.participant.id);
+      await vi.advanceTimersByTimeAsync(4_999);
+      const rejoined = registry.join(
+        new RecordingConnection(),
+        joinMessage(created.roomId, created.joinToken, "A"),
+      );
+
+      expect(rejoined.ok).toBe(true);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(registry.join(
+        new RecordingConnection(),
+        joinMessage(created.roomId, created.joinToken, "B"),
+      ).ok).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("destroys an empty reconnectable room after the grace expires", async () => {
+    vi.useFakeTimers();
+    try {
+      const registry = new RoomRegistry({
+        translator: new DeferredTranslator(),
+        recognizer: new FakeRecognizer(),
+      });
+      const created = registry.create();
+      const joined = registry.join(
+        new RecordingConnection(),
+        joinMessage(created.roomId, created.joinToken, "A"),
+      );
+      if (!joined.ok) throw new Error("test participant did not join");
+
+      await registry.disconnectForReconnect(joined.participant.id);
+      await vi.advanceTimersByTimeAsync(5_000);
+
+      expect(registry.join(
+        new RecordingConnection(),
+        joinMessage(created.roomId, created.joinToken, "A"),
+      )).toEqual({ ok: false, code: "room_not_found" });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("stops recognition when audio stops", async () => {

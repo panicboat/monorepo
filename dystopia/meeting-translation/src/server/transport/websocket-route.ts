@@ -47,12 +47,17 @@ export const registerWebsocketRoute = (
 
     const connection: RoomConnection = { send: (message) => sendMessage(socket, message) };
 
-    const disconnect = (): Promise<void> => {
+    const disconnect = (reconnectable: boolean): Promise<void> => {
       if (disconnectCompletion) return disconnectCompletion;
       disconnected = true;
       const id = participantId;
       participantId = undefined;
-      disconnectCompletion = id ? registry.disconnect(id) : Promise.resolve();
+      if (!id) disconnectCompletion = Promise.resolve();
+      else {
+        disconnectCompletion = reconnectable
+          ? registry.disconnectForReconnect(id)
+          : registry.disconnect(id);
+      }
       return disconnectCompletion;
     };
 
@@ -89,6 +94,11 @@ export const registerWebsocketRoute = (
         return;
       }
 
+      if (parsed.value.type === "leave") {
+        await disconnect(false);
+        return;
+      }
+
       await registry.handle(participantId, parsed.value);
     };
 
@@ -101,7 +111,7 @@ export const registerWebsocketRoute = (
         });
     });
     socket.once("close", () => {
-      void disconnect().catch(() => {
+      void disconnect(true).catch(() => {
         app.log.error({ eventCode: "websocket_disconnect_error", participantId });
       });
     });

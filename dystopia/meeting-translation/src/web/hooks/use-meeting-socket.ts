@@ -1,26 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 
 import type { Caption, ClientMessage, Participant, ServerMessage } from "../../shared/meeting.js";
-import { AudioConnectionState, reconnectDelay } from "../lib/audio-connection.js";
+import type { ClarificationRequest } from "../lib/clarification-copy.js";
+import {
+  MeetingSocketClient,
+  type MeetingJoinDetails,
+  type MeetingSocketStatus,
+} from "./meeting-socket-client.js";
 
-type JoinMessage = Extract<ClientMessage, { type: "join" }>;
 type MeetingControlMessage = Exclude<
   ClientMessage,
   { type: "join" } | { type: "audio:start" } | { type: "audio:stop" }
 >;
 
-export type MeetingSocketStatus = "connecting" | "connected" | "reconnecting" | "manual_reconnect" | "closed";
-
-export interface MeetingJoinDetails {
-  roomId: string;
-  token: string;
-  displayName: string;
-  speechLanguage: JoinMessage["speechLanguage"];
-  displayLanguage: JoinMessage["displayLanguage"];
-}
+export type { MeetingJoinDetails, MeetingSocketStatus } from "./meeting-socket-client.js";
 
 export interface MeetingSocket {
   captions: Caption[];
+  clarificationRequest?: ClarificationRequest;
   participants: Participant[];
   serverStatus?: Extract<ServerMessage, { type: "status" }>["code"];
   status: MeetingSocketStatus;
@@ -31,7 +28,52 @@ export interface MeetingSocket {
   stopAudio: () => void;
 }
 
-const isNetworkClose = (code: number): boolean => code === 1006 || code === 1012 || code === 1013;
+export interface MeetingSocketData {
+  captions: Caption[];
+  clarificationRequest?: ClarificationRequest;
+  participants: Participant[];
+  serverStatus?: Extract<ServerMessage, { type: "status" }>["code"];
+}
+
+type MeetingSocketDataAction = ServerMessage | { type: "client:reconnect" };
+
+export const reduceMeetingSocketData = (
+  state: MeetingSocketData,
+  message: MeetingSocketDataAction,
+): MeetingSocketData => {
+  switch (message.type) {
+    case "room:joined":
+      return { ...state, participants: message.participants };
+    case "participant:joined":
+      return { ...state, participants: [...state.participants, message.participant] };
+    case "participant:left":
+      return {
+        ...state,
+        participants: state.participants.filter(
+          (participant) => participant.id !== message.participant.id,
+        ),
+      };
+    case "caption:pending":
+    case "caption:final":
+    case "caption:failed": {
+      const captions = state.captions.filter((caption) => caption.id !== message.caption.id);
+      return {
+        ...state,
+        captions: [...captions, message.caption].sort(
+          (left, right) => left.sequence - right.sequence,
+        ),
+      };
+    }
+    case "clarification:requested":
+      return { ...state, clarificationRequest: message };
+    case "status":
+      return { ...state, serverStatus: message.code };
+    case "client:reconnect":
+      return { ...state, serverStatus: undefined };
+    default:
+      return state;
+  }
+};
 
 const socketUrl = (): string => {
   const url = new URL("/translate/ws", window.location.origin);
@@ -39,148 +81,63 @@ const socketUrl = (): string => {
   return url.toString();
 };
 
-const parseServerMessage = (data: unknown): ServerMessage | undefined => {
-  if (typeof data !== "string") return undefined;
-  try {
-    return JSON.parse(data) as ServerMessage;
-  } catch {
-    // SILENT: malformed server frames cannot be recovered by the browser client.
-    return undefined;
-  }
-};
-
 export const useMeetingSocket = (join: MeetingJoinDetails): MeetingSocket => {
-  const socketRef = useRef<WebSocket | undefined>(undefined);
-  const audioStateRef = useRef(new AudioConnectionState());
-  const retryRef = useRef(0);
-  const retryTimerRef = useRef<number | undefined>(undefined);
-  const [connectionVersion, setConnectionVersion] = useState(0);
-  const [captions, setCaptions] = useState<Caption[]>([]);
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [serverStatus, setServerStatus] = useState<MeetingSocket["serverStatus"]>();
+  const clientRef = useRef<MeetingSocketClient | undefined>(undefined);
+  const [data, dispatch] = useReducer(reduceMeetingSocketData, {
+    captions: [],
+    participants: [],
+  });
   const [status, setStatus] = useState<MeetingSocketStatus>("connecting");
 
   const send = useCallback((message: MeetingControlMessage) => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify(message));
-    }
+    clientRef.current?.send(message);
   }, []);
 
   const sendAudio = useCallback((audio: ArrayBuffer) => {
-    if (
-      audioStateRef.current.canSendAudio()
-      && socketRef.current?.readyState === WebSocket.OPEN
-    ) {
-      socketRef.current.send(audio);
-    }
+    clientRef.current?.sendAudio(audio);
   }, []);
 
   const startAudio = useCallback(() => {
-    if (
-      audioStateRef.current.startCapture()
-      && socketRef.current?.readyState === WebSocket.OPEN
-    ) {
-      socketRef.current.send(JSON.stringify({ type: "audio:start" } satisfies ClientMessage));
-    }
+    clientRef.current?.startAudio();
   }, []);
 
   const stopAudio = useCallback(() => {
-    if (
-      audioStateRef.current.stopCapture()
-      && socketRef.current?.readyState === WebSocket.OPEN
-    ) {
-      socketRef.current.send(JSON.stringify({ type: "audio:stop" } satisfies ClientMessage));
-    }
+    clientRef.current?.stopAudio();
   }, []);
 
   const reconnect = useCallback(() => {
-    retryRef.current = 0;
-    setServerStatus(undefined);
-    setStatus("connecting");
-    setConnectionVersion((version) => version + 1);
+    dispatch({ type: "client:reconnect" });
+    clientRef.current?.reconnect();
   }, []);
 
   useEffect(() => {
-    let disposed = false;
-    audioStateRef.current.beginConnection();
-    const socket = new WebSocket(socketUrl());
-    socket.binaryType = "arraybuffer";
-    socketRef.current = socket;
-
-    socket.addEventListener("open", () => {
-      if (disposed) return;
-      socket.send(JSON.stringify({ type: "join", ...join, consent: true } satisfies ClientMessage));
-    });
-
-    socket.addEventListener("message", (event) => {
-      const message = parseServerMessage(event.data);
-      if (!message || disposed) return;
-
-      switch (message.type) {
-        case "room:joined":
-          retryRef.current = 0;
-          setStatus("connected");
-          setParticipants(message.participants);
-          if (audioStateRef.current.markJoined()) {
-            socket.send(JSON.stringify({ type: "audio:start" } satisfies ClientMessage));
-          }
-          return;
-        case "participant:joined":
-          setParticipants((current) => [...current, message.participant]);
-          return;
-        case "participant:left":
-          setParticipants((current) => current.filter((participant) => participant.id !== message.participant.id));
-          return;
-        case "caption:pending":
-        case "caption:final":
-        case "caption:failed":
-          setCaptions((current) => {
-            const next = current.filter((caption) => caption.id !== message.caption.id);
-            return [...next, message.caption].sort((left, right) => left.sequence - right.sequence);
-          });
-          return;
-        case "status":
-          setServerStatus(message.code);
-          return;
-        default:
-          return;
-      }
-    });
-
-    socket.addEventListener("close", (event) => {
-      if (disposed) return;
-      audioStateRef.current.beginConnection();
-      if (!isNetworkClose(event.code)) {
-        setStatus("closed");
-        return;
-      }
-
-      const delay = reconnectDelay(retryRef.current);
-      if (delay === undefined) {
-        setStatus("manual_reconnect");
-        return;
-      }
-
-      retryRef.current += 1;
-      setStatus("reconnecting");
-      retryTimerRef.current = window.setTimeout(() => {
-        if (!disposed) setConnectionVersion((version) => version + 1);
-      }, delay);
-    });
+    const client = new MeetingSocketClient(
+      socketUrl(),
+      join,
+      {
+        cancelTimer: (timerId) => window.clearTimeout(timerId),
+        createSocket: (url) => new WebSocket(url),
+        schedule: (run, delay) => window.setTimeout(run, delay),
+      },
+      {
+        onMessage: dispatch,
+        onStatus: setStatus,
+      },
+    );
+    clientRef.current = client;
+    client.start();
 
     return () => {
-      disposed = true;
-      if (retryTimerRef.current !== undefined) window.clearTimeout(retryTimerRef.current);
-      if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: "leave" }));
-      socket.close(1000);
-      if (socketRef.current === socket) socketRef.current = undefined;
+      client.dispose();
+      if (clientRef.current === client) clientRef.current = undefined;
     };
-  }, [connectionVersion, join]);
+  }, [join]);
 
   return {
-    captions,
-    participants,
-    serverStatus,
+    captions: data.captions,
+    clarificationRequest: data.clarificationRequest,
+    participants: data.participants,
+    serverStatus: data.serverStatus,
     status,
     reconnect,
     send,
