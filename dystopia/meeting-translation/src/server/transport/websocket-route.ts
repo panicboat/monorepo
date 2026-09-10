@@ -42,6 +42,7 @@ export const registerWebsocketRoute = (
   app.get(path, { websocket: true }, (socket) => {
     let participantId: string | undefined;
     let disconnected = false;
+    let explicitLeaveRequested = false;
     let disconnectCompletion: Promise<void> | undefined;
     let messages = Promise.resolve();
 
@@ -103,6 +104,10 @@ export const registerWebsocketRoute = (
     };
 
     socket.on("message", (data, isBinary) => {
+      if (!isBinary) {
+        const parsed = parseClientMessage(parseTextFrame(data));
+        if (parsed.ok && parsed.value.type === "leave") explicitLeaveRequested = true;
+      }
       messages = messages
         .then(() => processMessage(data, isBinary))
         .catch(() => {
@@ -111,7 +116,7 @@ export const registerWebsocketRoute = (
         });
     });
     socket.once("close", () => {
-      void disconnect(true).catch(() => {
+      void disconnect(!explicitLeaveRequested).catch(() => {
         app.log.error({ eventCode: "websocket_disconnect_error", participantId });
       });
     });

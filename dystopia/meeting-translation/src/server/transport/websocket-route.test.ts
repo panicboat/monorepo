@@ -34,6 +34,27 @@ class FakeRecognizer implements SpeechRecognizer {
   }
 }
 
+class DelayedStopRecognizer extends FakeRecognizer {
+  private stopResolver?: () => void;
+
+  override async start(_options: RecognitionOptions): Promise<RecognitionSession> {
+    const session: { writes: Uint8Array[]; stopped: boolean } = { writes: [], stopped: false };
+    this.sessions.push(session);
+    return {
+      write: (chunk) => session.writes.push(chunk),
+      stop: () => {
+        session.stopped = true;
+        return new Promise<void>((resolve) => { this.stopResolver = resolve; });
+      },
+    };
+  }
+
+  finishStop(): void {
+    if (!this.stopResolver) throw new Error("recognition stop was not pending");
+    this.stopResolver();
+  }
+}
+
 const config: ServiceConfig = {
   awsRegion: "ap-northeast-1",
   bedrockModelId: "test-model",
@@ -68,10 +89,9 @@ const nextEvent = (target: EventTarget, type: string): Promise<Event> => new Pro
 
 const apps: Array<{ app: ReturnType<typeof createApp>; registry: RoomRegistry }> = [];
 
-const createTestApp = async () => {
+const createTestApp = async (recognizer: FakeRecognizer = new FakeRecognizer()) => {
   const publicDir = await mkdtemp(join(tmpdir(), "meeting-translation-public-"));
   await writeFile(join(publicDir, "index.html"), "<main>meeting translation</main>");
-  const recognizer = new FakeRecognizer();
   const registry = new RoomRegistry({ translator: new FakeTranslator(), recognizer });
   const app = createApp({ config, registry, publicDir });
   await app.ready();
@@ -254,6 +274,48 @@ describe("meeting WebSocket route", () => {
     }));
     await expect(roomMissing).resolves.toEqual({ type: "status", code: "room_not_found" });
 
+    afterLeave.close();
+    await once(afterLeave, "close");
+  });
+
+  it("keeps explicit leave immediate while an earlier audio stop is pending", async () => {
+    const recognizer = new DelayedStopRecognizer();
+    const { app } = await createTestApp(recognizer);
+    const created = await app.inject({ method: "POST", url: "/translate/api/rooms" });
+    const { roomId, joinToken } = created.json<{ roomId: string; joinToken: string }>();
+    await app.listen({ port: 0, host: "127.0.0.1" });
+    const address = app.server.address() as AddressInfo;
+    const socket = new globalThis.WebSocket(`ws://127.0.0.1:${address.port}/translate/ws`);
+    await nextEvent(socket, "open");
+    const joined = nextBrowserMessage(socket);
+    socket.send(JSON.stringify({
+      type: "join", roomId, token: joinToken, displayName: "Ken", speechLanguage: "ja-JP", displayLanguage: "ja", consent: true,
+    }));
+    await joined;
+    socket.send(JSON.stringify({ type: "audio:start" }));
+    await waitFor(() => recognizer.sessions.length === 1);
+
+    socket.send(JSON.stringify({ type: "audio:stop" }));
+    await waitFor(() => recognizer.sessions[0]?.stopped === true);
+    const serverSocket = [...app.websocketServer.clients][0];
+    if (!serverSocket) throw new Error("test WebSocket was not registered");
+    const leaveReceived = once(serverSocket, "message");
+    socket.send(JSON.stringify({ type: "leave" }));
+    await leaveReceived;
+    const closed = nextEvent(socket, "close");
+    const serverClosed = once(serverSocket, "close");
+    socket.close();
+    await Promise.all([closed, serverClosed]);
+
+    const afterLeave = await app.injectWS("/translate/ws");
+    const response = nextMessage(afterLeave);
+    afterLeave.send(JSON.stringify({
+      type: "join", roomId, token: joinToken, displayName: "Ken", speechLanguage: "ja-JP", displayLanguage: "ja", consent: true,
+    }));
+    const rejoinResult = await response;
+    recognizer.finishStop();
+
+    expect(rejoinResult).toEqual({ type: "status", code: "room_not_found" });
     afterLeave.close();
     await once(afterLeave, "close");
   });

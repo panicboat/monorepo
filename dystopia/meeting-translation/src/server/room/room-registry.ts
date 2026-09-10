@@ -81,16 +81,23 @@ export class RoomRegistry {
     this.roomIdByParticipantId.delete(participantId);
     if (!room) return;
 
-    await room.disconnect(participantId);
-    if (!room.isEmpty) return;
+    const disconnection = room.disconnect(participantId);
+    const becameEmpty = room.isEmpty;
+    if (!becameEmpty) {
+      await disconnection;
+      return;
+    }
 
     if (retainForReconnect) {
       this.scheduleReconnectExpiry(roomId, room);
+      await disconnection;
       return;
     }
 
     this.cancelReconnectExpiry(roomId);
-    await room.destroy();
+    const destruction = room.destroy();
+    await disconnection;
+    await destruction;
     if (this.rooms.get(roomId) === room) this.rooms.delete(roomId);
   }
 

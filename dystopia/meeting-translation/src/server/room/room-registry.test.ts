@@ -508,6 +508,43 @@ describe("RoomRegistry", () => {
     }
   });
 
+  it.each(["resolve", "reject"] as const)(
+    "starts reconnect grace when the participant is removed while recognition stop will %s",
+    async (outcome) => {
+      vi.useFakeTimers();
+      try {
+        const recognizer = new DelayedStopRecognizer();
+        const registry = new RoomRegistry({ translator: new DeferredTranslator(), recognizer });
+        const created = registry.create();
+        const joined = registry.join(
+          new RecordingConnection(),
+          joinMessage(created.roomId, created.joinToken, "A"),
+        );
+        if (!joined.ok) throw new Error("test participant did not join");
+        await registry.handle(joined.participant.id, { type: "audio:start" });
+
+        const disconnect = observeCompletion(
+          registry.disconnectForReconnect(joined.participant.id),
+        );
+        await vi.advanceTimersByTimeAsync(5_000);
+        const joinAtExpiry = registry.join(
+          new RecordingConnection(),
+          joinMessage(created.roomId, created.joinToken, "A"),
+        );
+
+        expect(disconnect.completed).toBe(false);
+        if (outcome === "resolve") recognizer.finishStop(0);
+        else recognizer.rejectStop(0);
+        await disconnect.promise;
+
+        expect(joinAtExpiry).toEqual({ ok: false, code: "room_not_found" });
+        expect(disconnect.completed).toBe(true);
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
+
   it("stops recognition when audio stops", async () => {
     const recognizer = new FakeRecognizer();
     const registry = new RoomRegistry({ translator: new DeferredTranslator(), recognizer });
