@@ -4,6 +4,16 @@
 
 レビューの Important 6 項目を修正した。preview reducer と README trailing slash の minor 指摘は、今回の安全性修正と独立しているため変更していない。
 
+実装 commit は `b937e51bb3a800ffc6d81ef69baf455c1c044058` (`fix(meeting-translation): own provider failure lifecycles`)。`Signed-off-by` を含み、`Co-Authored-By` は含まない。
+
+## Changed Files
+
+- Server adapter: `contracts.ts`、`transcribe-recognizer.ts` と test、`bedrock-translator.ts` と test。
+- Room lifecycle: `meeting-room.ts` と test、`translation-queue.ts` と新規 test。
+- Shared protocol: `meeting.ts`。
+- Browser: `entry-form.tsx`、`manual-caption-form.tsx` と新規 test、`meeting-socket-client.ts` と test、`use-meeting-socket.ts`、`status-copy.ts` と test。
+- Evidence: 本 report。
+
 ## Design Decisions
 
 - Transcribe adapter が provider retry を所有する。再接続可能な 429、503、`LimitExceededException`、`ServiceUnavailableException` に対し、250、500、1,000、2,000、4,000 ms の待機後に新しい client と audio queue で再開する。
