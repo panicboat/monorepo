@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "strict": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist/shared",
+    "rootDir": "src/shared",
+    "noEmit": false,
+    "composite": true,
+    "tsBuildInfoFile": "dist/shared/.tsbuildinfo",
+    "types": ["node"],
+    "skipLibCheck": true
+  },
+  "include": ["src/shared/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "node_modules", "dist"]
+}
