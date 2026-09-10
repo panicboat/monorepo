@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "strict": true,
+    "noEmit": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "types": ["node"],
+    "skipLibCheck": true
+  },
+  "include": ["src/server/**/*.ts", "src/shared/**/*.ts", "src/web/**/*.ts", "src/web/**/*.tsx"],
+  "exclude": ["node_modules", "dist"]
+}
