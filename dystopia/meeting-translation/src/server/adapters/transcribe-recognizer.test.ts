@@ -74,4 +74,73 @@ describe("TranscribeRecognizer", () => {
     expect(requestSignal?.aborted).toBe(true);
     expect(destroy).toHaveBeenCalledOnce();
   });
+
+  it.each([
+    { event: { LimitExceededException: { name: "LimitExceededException", Message: "private quota details", $metadata: { httpStatusCode: 429 } } } },
+    { event: { ServiceUnavailableException: { name: "ServiceUnavailableException", Message: "private availability details", $metadata: { httpStatusCode: 503 } } } },
+  ])("ends the result stream after a reconnectable provider event", async ({ event }) => {
+    let readAfterProviderEvent = false;
+    const send = vi.fn().mockResolvedValue({
+      TranscriptResultStream: (async function* () {
+        yield event;
+        readAfterProviderEvent = true;
+        yield { TranscriptEvent: { Transcript: { Results: [{ IsPartial: false, Alternatives: [{ Transcript: "ignored" }] }] } } };
+      })(),
+    });
+    const onError = vi.fn();
+    const recognizer = new TranscribeRecognizer(
+      { awsRegion: "ap-northeast-1" },
+      () => ({ send, destroy: vi.fn() }),
+    );
+
+    const session = await recognizer.start({ language: "ja-JP", onPartial: vi.fn(), onFinal: vi.fn(), onError });
+    await flush();
+
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledWith("recognition_unavailable");
+    expect(onError).not.toHaveBeenCalledWith(expect.stringContaining("private"));
+    expect(readAfterProviderEvent).toBe(false);
+    await session.stop();
+  });
+
+  it("closes queued audio before aborting and destroys only after the result loop finishes", async () => {
+    const events: string[] = [];
+    let resultLoopFinished = false;
+    const send = vi.fn((command: StartStreamTranscriptionCommand, options?: { abortSignal?: AbortSignal }) => {
+      const audioStream = command.input.AudioStream;
+      if (!audioStream) throw new Error("audio stream was not provided");
+      const close = vi.spyOn(audioStream as unknown as { close: () => void }, "close");
+      const audioEnded = (async () => {
+        const item = await audioStream[Symbol.asyncIterator]().next();
+        expect(item.done).toBe(true);
+        events.push("audio_closed");
+      })();
+      options?.abortSignal?.addEventListener("abort", () => {
+        expect(close).toHaveBeenCalledOnce();
+        events.push("aborted");
+      });
+
+      return Promise.resolve({
+        $metadata: {},
+        TranscriptResultStream: (async function* () {
+          await audioEnded;
+          resultLoopFinished = true;
+          events.push("result_loop_finished");
+        })(),
+      });
+    });
+    const destroy = () => {
+      expect(resultLoopFinished).toBe(true);
+      events.push("destroyed");
+    };
+    const recognizer = new TranscribeRecognizer(
+      { awsRegion: "ap-northeast-1" },
+      () => ({ send, destroy }),
+    );
+
+    const session = await recognizer.start({ language: "ja-JP", onPartial: vi.fn(), onFinal: vi.fn(), onError: vi.fn() });
+    await session.stop();
+
+    expect(events).toEqual(["aborted", "audio_closed", "result_loop_finished", "destroyed"]);
+  });
 });

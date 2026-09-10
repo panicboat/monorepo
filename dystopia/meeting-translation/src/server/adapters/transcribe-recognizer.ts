@@ -3,6 +3,7 @@ import {
   TranscribeStreamingClient,
   type AudioStream,
   type StartStreamTranscriptionCommandOutput,
+  type TranscriptResultStream,
 } from "@aws-sdk/client-transcribe-streaming";
 
 import type { ServiceConfig } from "../config.js";
@@ -63,6 +64,10 @@ const isReconnectableProviderError = (error: unknown): boolean => {
     || providerError.name === "ServiceUnavailableException";
 };
 
+const isReconnectableProviderEvent = (event: TranscriptResultStream): boolean =>
+  isReconnectableProviderError(event.LimitExceededException)
+  || isReconnectableProviderError(event.ServiceUnavailableException);
+
 export class TranscribeRecognizer implements SpeechRecognizer {
   constructor(
     private readonly config: Pick<ServiceConfig, "awsRegion">,
@@ -108,6 +113,10 @@ export class TranscribeRecognizer implements SpeechRecognizer {
       }), { abortSignal: abortController.signal });
 
       for await (const event of response.TranscriptResultStream ?? []) {
+        if (isReconnectableProviderEvent(event)) {
+          options.onError("recognition_unavailable");
+          return;
+        }
         for (const result of event.TranscriptEvent?.Transcript?.Results ?? []) {
           const text = result.Alternatives?.[0]?.Transcript?.trim();
           if (!text) continue;
