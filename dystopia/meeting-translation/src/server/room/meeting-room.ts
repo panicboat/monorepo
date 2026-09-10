@@ -24,7 +24,10 @@ interface ActiveParticipant {
   participant: Participant;
   connection: RoomConnection;
   recognitionSession?: RecognitionSession;
+  startingRecognition?: Promise<void>;
   stoppingRecognition?: Promise<void>;
+  stoppingRecognitionSession?: RecognitionSession;
+  stopRequested: boolean;
 }
 
 export type RoomJoinResult =
@@ -58,7 +61,7 @@ export class MeetingRoom {
       speechLanguage: message.speechLanguage,
       displayLanguage: message.displayLanguage,
     };
-    this.participants.set(participant.id, { participant, connection });
+    this.participants.set(participant.id, { participant, connection, stopRequested: false });
 
     connection.send({
       type: "room:joined",
@@ -197,11 +200,27 @@ export class MeetingRoom {
     activeParticipant: ActiveParticipant,
   ): Promise<void> {
     if (activeParticipant.recognitionSession) return;
+    if (activeParticipant.startingRecognition) await activeParticipant.startingRecognition;
     if (activeParticipant.stoppingRecognition) await activeParticipant.stoppingRecognition;
     if (activeParticipant.recognitionSession || this.destroyed || !this.participants.has(participantId)) return;
 
+    activeParticipant.stopRequested = false;
+    const startingRecognition = this.startRecognitionSession(participantId, activeParticipant);
+    activeParticipant.startingRecognition = startingRecognition;
+    try {
+      await startingRecognition;
+    } finally {
+      if (activeParticipant.startingRecognition === startingRecognition) {
+        activeParticipant.startingRecognition = undefined;
+      }
+    }
+  }
+
+  private async startRecognitionSession(
+    participantId: string,
+    activeParticipant: ActiveParticipant,
+  ): Promise<void> {
     let recognitionSession: RecognitionSession | undefined;
-    let recognitionFailed = false;
 
     try {
       recognitionSession = await this.dependencies.recognizer.start({
@@ -224,12 +243,11 @@ export class MeetingRoom {
           });
         },
         onError: () => {
-          recognitionFailed = true;
           this.failRecognition(activeParticipant, recognitionSession);
         },
       });
 
-      if (recognitionFailed || this.destroyed || !this.participants.has(participantId)) {
+      if (activeParticipant.stopRequested || this.destroyed || !this.participants.has(participantId)) {
         await this.stopRecognitionSession(activeParticipant, recognitionSession);
         return;
       }
@@ -244,27 +262,42 @@ export class MeetingRoom {
     activeParticipant: ActiveParticipant,
     recognitionSession: RecognitionSession | undefined,
   ): void {
-    if (recognitionSession && activeParticipant.recognitionSession !== recognitionSession) return;
+    if (
+      recognitionSession &&
+      activeParticipant.recognitionSession !== recognitionSession &&
+      activeParticipant.stoppingRecognitionSession !== recognitionSession
+    ) {
+      return;
+    }
 
+    activeParticipant.stopRequested = true;
     activeParticipant.recognitionSession = undefined;
     if (recognitionSession) void this.stopRecognitionSession(activeParticipant, recognitionSession);
     this.broadcast({ type: "status", code: "recognition_unavailable" });
   }
 
   private async stopRecognition(activeParticipant: ActiveParticipant): Promise<void> {
+    activeParticipant.stopRequested = true;
     const recognitionSession = activeParticipant.recognitionSession;
-    if (!recognitionSession) {
-      if (activeParticipant.stoppingRecognition) await activeParticipant.stoppingRecognition;
-      return;
+    if (recognitionSession) {
+      activeParticipant.recognitionSession = undefined;
+      await this.stopRecognitionSession(activeParticipant, recognitionSession);
     }
-    activeParticipant.recognitionSession = undefined;
-    await this.stopRecognitionSession(activeParticipant, recognitionSession);
+    if (activeParticipant.startingRecognition) await activeParticipant.startingRecognition;
+    if (activeParticipant.stoppingRecognition) await activeParticipant.stoppingRecognition;
   }
 
   private stopRecognitionSession(
     activeParticipant: ActiveParticipant,
     recognitionSession: RecognitionSession,
   ): Promise<void> {
+    if (
+      activeParticipant.stoppingRecognitionSession === recognitionSession &&
+      activeParticipant.stoppingRecognition
+    ) {
+      return activeParticipant.stoppingRecognition;
+    }
+
     let stopPromise: Promise<void>;
     try {
       stopPromise = recognitionSession.stop();
@@ -276,10 +309,12 @@ export class MeetingRoom {
     const stoppingRecognition = stopPromise.catch(() => {
       // SILENT: recognition failures use stable status codes instead of provider error details.
     });
+    activeParticipant.stoppingRecognitionSession = recognitionSession;
     activeParticipant.stoppingRecognition = stoppingRecognition;
     void stoppingRecognition.then(() => {
       if (activeParticipant.stoppingRecognition === stoppingRecognition) {
         activeParticipant.stoppingRecognition = undefined;
+        activeParticipant.stoppingRecognitionSession = undefined;
       }
     });
     return stoppingRecognition;
