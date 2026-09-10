@@ -1,7 +1,7 @@
 import type { TranslationRequest, Translator } from "../adapters/contracts.js";
 
 interface TranslationJob {
-  request: TranslationRequest;
+  getRequest(): TranslationRequest;
   onTranslated(text: string): void;
   onFailed(): void;
 }
@@ -29,7 +29,7 @@ export class TranslationQueue {
       if (!job) continue;
 
       try {
-        job.onTranslated(await this.translator.translate(job.request));
+        job.onTranslated(await this.translator.translate(job.getRequest()));
       } catch {
         job.onFailed();
       }

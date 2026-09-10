@@ -136,13 +136,13 @@ export class MeetingRoom {
     this.broadcastCaption("caption:pending", caption);
 
     this.translationQueue.enqueue({
-      request: {
+      getRequest: () => ({
         sourceText: caption.sourceText,
         sourceLanguage: caption.sourceLanguage,
         targetLanguage: this.oppositeLanguage(caption.sourceLanguage),
         context: this.context.slice(),
         glossary: this.dependencies.glossary ?? [],
-      },
+      }),
       onTranslated: (translatedText) => {
         if (this.destroyed) return;
         caption.translatedText = translatedText;
@@ -197,8 +197,11 @@ export class MeetingRoom {
   ): Promise<void> {
     if (activeParticipant.recognitionSession) return;
 
+    let recognitionSession: RecognitionSession | undefined;
+    let recognitionFailed = false;
+
     try {
-      const recognitionSession = await this.dependencies.recognizer.start({
+      recognitionSession = await this.dependencies.recognizer.start({
         language: activeParticipant.participant.speechLanguage,
         onPartial: (text) => {
           if (!this.destroyed) {
@@ -217,17 +220,32 @@ export class MeetingRoom {
             kind: "speech",
           });
         },
-        onError: () => this.broadcast({ type: "status", code: "recognition_unavailable" }),
+        onError: () => {
+          recognitionFailed = true;
+          this.failRecognition(activeParticipant, recognitionSession);
+        },
       });
 
-      if (this.destroyed || !this.participants.has(participantId)) {
+      if (recognitionFailed || this.destroyed || !this.participants.has(participantId)) {
         await recognitionSession.stop();
         return;
       }
       activeParticipant.recognitionSession = recognitionSession;
     } catch {
+      activeParticipant.recognitionSession = undefined;
       this.broadcast({ type: "status", code: "recognition_unavailable" });
     }
+  }
+
+  private failRecognition(
+    activeParticipant: ActiveParticipant,
+    recognitionSession: RecognitionSession | undefined,
+  ): void {
+    if (recognitionSession && activeParticipant.recognitionSession !== recognitionSession) return;
+
+    activeParticipant.recognitionSession = undefined;
+    if (recognitionSession) void recognitionSession.stop();
+    this.broadcast({ type: "status", code: "recognition_unavailable" });
   }
 
   private async stopRecognition(activeParticipant: ActiveParticipant): Promise<void> {

@@ -110,6 +110,53 @@ describe("MeetingRoom", () => {
     ]);
   });
 
+  it("builds a later translation request with the earlier final caption as context", async () => {
+    const translator = new DeferredTranslator();
+    const registry = new RoomRegistry({ translator, recognizer: new FakeRecognizer() });
+    const created = registry.create();
+    const joined = registry.join(
+      new RecordingConnection(),
+      joinMessage(created.roomId, created.joinToken, "A", "ja-JP"),
+    );
+
+    if (!joined.ok) throw new Error("test participant did not join");
+
+    await registry.handle(joined.participant.id, { type: "caption:manual", text: "最初の発話" });
+    await registry.handle(joined.participant.id, { type: "caption:manual", text: "次の発話" });
+    await translator.resolveInRequestOrder("first translation", "second translation");
+
+    expect(translator.requests[1]?.context).toMatchObject([
+      {
+        sourceText: "最初の発話",
+        translatedText: "first translation",
+        state: "final",
+      },
+    ]);
+  });
+
+  it("keeps only the latest twelve final captions in a later translation request", async () => {
+    const translator = new DeferredTranslator();
+    const registry = new RoomRegistry({ translator, recognizer: new FakeRecognizer() });
+    const created = registry.create();
+    const joined = registry.join(
+      new RecordingConnection(),
+      joinMessage(created.roomId, created.joinToken, "A", "ja-JP"),
+    );
+
+    if (!joined.ok) throw new Error("test participant did not join");
+
+    const sourceTexts = Array.from({ length: 13 }, (_, index) => `発話 ${index + 1}`);
+    for (const sourceText of sourceTexts) {
+      await registry.handle(joined.participant.id, { type: "caption:manual", text: sourceText });
+    }
+    await translator.resolveInRequestOrder(...sourceTexts.map((sourceText) => `${sourceText} translation`));
+
+    expect(translator.requests[12]?.context).toMatchObject(
+      sourceTexts.slice(0, 12).map((sourceText) => ({ sourceText, state: "final" })),
+    );
+    expect(translator.requests[12]?.context).toHaveLength(12);
+  });
+
   it("keeps manual source text when translation rejects", async () => {
     const translator = new DeferredTranslator();
     const registry = new RoomRegistry({ translator, recognizer: new FakeRecognizer() });
