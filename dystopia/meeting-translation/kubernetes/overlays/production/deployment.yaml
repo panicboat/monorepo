@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meeting-translation
+spec:
+  template:
+    spec:
+      containers:
+        - name: meeting-translation
+          image: ghcr.io/panicboat/monorepo/meeting-translation:v0.1.0 # {"$imagepolicy": "flux-system:meeting-translation"}

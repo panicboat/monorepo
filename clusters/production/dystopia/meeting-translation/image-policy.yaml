@@ -1,0 +1,16 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: meeting-translation
+  namespace: flux-system
+  labels:
+    service: meeting-translation
+spec:
+  imageRepositoryRef:
+    name: meeting-translation
+  filterTags:
+    pattern: '^v(?P<version>\d+\.\d+\.\d+)$'
+    extract: '$version'
+  policy:
+    semver:
+      range: '>=0.0.0'
