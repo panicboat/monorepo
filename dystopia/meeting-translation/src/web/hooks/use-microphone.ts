@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type MicrophoneStatus = "idle" | "starting" | "active" | "microphone_unavailable";
+import pcmProcessorUrl from "../audio/pcm-processor.ts?worker&url";
+import {
+  initializeMicrophone,
+  MicrophoneResourceOwner,
+} from "../lib/microphone-session.js";
 
-interface MicrophoneResources {
-  context: AudioContext;
-  node: AudioWorkletNode;
-  source: MediaStreamAudioSourceNode;
-  stream: MediaStream;
-}
+export type MicrophoneStatus = "idle" | "starting" | "active" | "microphone_unavailable";
 
 interface UseMicrophoneOptions {
   onAudioStart: () => void;
@@ -22,8 +21,10 @@ export interface MicrophoneControls {
 }
 
 export const useMicrophone = ({ onAudioStart, onAudioStop, onFrame }: UseMicrophoneOptions): MicrophoneControls => {
-  const resourcesRef = useRef<MicrophoneResources | undefined>(undefined);
+  const resourcesRef = useRef<MicrophoneResourceOwner | undefined>(undefined);
   const callbacksRef = useRef({ onAudioStart, onAudioStop, onFrame });
+  const activeRef = useRef(false);
+  const mountedRef = useRef(true);
   const [status, setStatus] = useState<MicrophoneStatus>("idle");
 
   callbacksRef.current = { onAudioStart, onAudioStop, onFrame };
@@ -33,17 +34,17 @@ export const useMicrophone = ({ onAudioStart, onAudioStop, onFrame }: UseMicroph
     if (!resources) return;
 
     resourcesRef.current = undefined;
-    callbacksRef.current.onAudioStop();
-    resources.node.port.onmessage = null;
-    resources.node.disconnect();
-    resources.source.disconnect();
-    resources.stream.getTracks().forEach((track) => track.stop());
-    await resources.context.close();
-    setStatus("idle");
+    if (activeRef.current) callbacksRef.current.onAudioStop();
+    activeRef.current = false;
+    try {
+      await resources.dispose();
+    } finally {
+      if (mountedRef.current) setStatus("idle");
+    }
   }, []);
 
   const start = useCallback(async () => {
-    if (resourcesRef.current || status === "starting") return;
+    if (resourcesRef.current) return;
 
     // FALLBACK: manual text remains available when getUserMedia is denied or unavailable.
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -52,31 +53,37 @@ export const useMicrophone = ({ onAudioStart, onAudioStop, onFrame }: UseMicroph
     }
 
     setStatus("starting");
+    const resources = new MicrophoneResourceOwner();
+    resourcesRef.current = resources;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const context = new AudioContext();
-      await context.audioWorklet.addModule(new URL("../audio/pcm-processor.ts", import.meta.url));
-      const source = context.createMediaStreamSource(stream);
-      const node = new AudioWorkletNode(context, "pcm-processor");
-      node.port.onmessage = (event: MessageEvent<Float32Array>) => callbacksRef.current.onFrame(event.data);
-      source.connect(node);
-      node.connect(context.destination);
-      resourcesRef.current = { context, node, source, stream };
+      await initializeMicrophone(resources, {
+        createAudioContext: () => new AudioContext(),
+        createAudioWorkletNode: (context) => new AudioWorkletNode(context, "pcm-processor"),
+        getUserMedia: () => navigator.mediaDevices.getUserMedia({ audio: true }),
+        moduleUrl: pcmProcessorUrl,
+      }, (frame) => callbacksRef.current.onFrame(frame));
+      if (resourcesRef.current !== resources) return;
+      activeRef.current = true;
       callbacksRef.current.onAudioStart();
-      setStatus("active");
+      if (mountedRef.current) setStatus("active");
     } catch {
+      activeRef.current = false;
+      if (resourcesRef.current !== resources) return;
+      resourcesRef.current = undefined;
       // FALLBACK: microphone permission failures leave manual captions available.
-      setStatus("microphone_unavailable");
+      if (mountedRef.current) setStatus("microphone_unavailable");
     }
-  }, [status]);
+  }, []);
 
   useEffect(() => {
+    mountedRef.current = true;
     const cleanup = () => {
       // SILENT: page lifecycle cleanup cannot display an asynchronous shutdown error.
       void stop().catch(() => undefined);
     };
     window.addEventListener("pagehide", cleanup);
     return () => {
+      mountedRef.current = false;
       window.removeEventListener("pagehide", cleanup);
       cleanup();
     };

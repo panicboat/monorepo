@@ -2,6 +2,7 @@ import type { DisplayLanguage } from "../../shared/meeting.js";
 import type { MeetingJoinDetails, MeetingSocket } from "../hooks/use-meeting-socket.js";
 import { useMicrophone } from "../hooks/use-microphone.js";
 import { toPcm16 } from "../lib/pcm.js";
+import { serverStatusCopy } from "../lib/status-copy.js";
 import { CaptionList } from "./caption-list.js";
 import { ManualCaptionForm } from "./manual-caption-form.js";
 
@@ -32,8 +33,8 @@ const statusCopy = {
 export const MeetingView = ({ displayLanguage, socket }: MeetingViewProps) => {
   const text = statusCopy[displayLanguage];
   const microphone = useMicrophone({
-    onAudioStart: () => socket.send({ type: "audio:start" }),
-    onAudioStop: () => socket.send({ type: "audio:stop" }),
+    onAudioStart: socket.startAudio,
+    onAudioStop: socket.stopAudio,
     onFrame: (frame) => socket.sendAudio(toPcm16(frame)),
   });
 
@@ -55,7 +56,7 @@ export const MeetingView = ({ displayLanguage, socket }: MeetingViewProps) => {
         {socket.status === "reconnecting" && <p role="status">{text.reconnecting}</p>}
         {socket.status === "manual_reconnect" && <button type="button" onClick={socket.reconnect}>{text.reconnect}</button>}
         {socket.status === "closed" && <p role="alert">{text.socketClosed}</p>}
-        {socket.serverStatus && <p role="status">{socket.serverStatus}</p>}
+        {socket.serverStatus && <p role="status">{serverStatusCopy(socket.serverStatus, displayLanguage)}</p>}
       </section>
       <section>
         <h2>{displayLanguage === "ja" ? "字幕" : "Captions"}</h2>

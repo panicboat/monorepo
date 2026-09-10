@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { Caption, ClientMessage, Participant, ServerMessage } from "../../shared/meeting.js";
+import { AudioConnectionState, reconnectDelay } from "../lib/audio-connection.js";
 
-const reconnectDelays = [250, 500, 1_000, 2_000, 4_000] as const;
 type JoinMessage = Extract<ClientMessage, { type: "join" }>;
+type MeetingControlMessage = Exclude<
+  ClientMessage,
+  { type: "join" } | { type: "audio:start" } | { type: "audio:stop" }
+>;
 
 export type MeetingSocketStatus = "connecting" | "connected" | "reconnecting" | "manual_reconnect" | "closed";
 
@@ -21,8 +25,10 @@ export interface MeetingSocket {
   serverStatus?: Extract<ServerMessage, { type: "status" }>["code"];
   status: MeetingSocketStatus;
   reconnect: () => void;
-  send: (message: Exclude<ClientMessage, { type: "join" }>) => void;
+  send: (message: MeetingControlMessage) => void;
   sendAudio: (audio: ArrayBuffer) => void;
+  startAudio: () => void;
+  stopAudio: () => void;
 }
 
 const isNetworkClose = (code: number): boolean => code === 1006 || code === 1012 || code === 1013;
@@ -45,6 +51,7 @@ const parseServerMessage = (data: unknown): ServerMessage | undefined => {
 
 export const useMeetingSocket = (join: MeetingJoinDetails): MeetingSocket => {
   const socketRef = useRef<WebSocket | undefined>(undefined);
+  const audioStateRef = useRef(new AudioConnectionState());
   const retryRef = useRef(0);
   const retryTimerRef = useRef<number | undefined>(undefined);
   const [connectionVersion, setConnectionVersion] = useState(0);
@@ -53,14 +60,37 @@ export const useMeetingSocket = (join: MeetingJoinDetails): MeetingSocket => {
   const [serverStatus, setServerStatus] = useState<MeetingSocket["serverStatus"]>();
   const [status, setStatus] = useState<MeetingSocketStatus>("connecting");
 
-  const send = useCallback((message: Exclude<ClientMessage, { type: "join" }>) => {
+  const send = useCallback((message: MeetingControlMessage) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify(message));
     }
   }, []);
 
   const sendAudio = useCallback((audio: ArrayBuffer) => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) socketRef.current.send(audio);
+    if (
+      audioStateRef.current.canSendAudio()
+      && socketRef.current?.readyState === WebSocket.OPEN
+    ) {
+      socketRef.current.send(audio);
+    }
+  }, []);
+
+  const startAudio = useCallback(() => {
+    if (
+      audioStateRef.current.startCapture()
+      && socketRef.current?.readyState === WebSocket.OPEN
+    ) {
+      socketRef.current.send(JSON.stringify({ type: "audio:start" } satisfies ClientMessage));
+    }
+  }, []);
+
+  const stopAudio = useCallback(() => {
+    if (
+      audioStateRef.current.stopCapture()
+      && socketRef.current?.readyState === WebSocket.OPEN
+    ) {
+      socketRef.current.send(JSON.stringify({ type: "audio:stop" } satisfies ClientMessage));
+    }
   }, []);
 
   const reconnect = useCallback(() => {
@@ -72,14 +102,13 @@ export const useMeetingSocket = (join: MeetingJoinDetails): MeetingSocket => {
 
   useEffect(() => {
     let disposed = false;
+    audioStateRef.current.beginConnection();
     const socket = new WebSocket(socketUrl());
     socket.binaryType = "arraybuffer";
     socketRef.current = socket;
 
     socket.addEventListener("open", () => {
       if (disposed) return;
-      retryRef.current = 0;
-      setStatus("connected");
       socket.send(JSON.stringify({ type: "join", ...join, consent: true } satisfies ClientMessage));
     });
 
@@ -89,7 +118,12 @@ export const useMeetingSocket = (join: MeetingJoinDetails): MeetingSocket => {
 
       switch (message.type) {
         case "room:joined":
+          retryRef.current = 0;
+          setStatus("connected");
           setParticipants(message.participants);
+          if (audioStateRef.current.markJoined()) {
+            socket.send(JSON.stringify({ type: "audio:start" } satisfies ClientMessage));
+          }
           return;
         case "participant:joined":
           setParticipants((current) => [...current, message.participant]);
@@ -115,12 +149,13 @@ export const useMeetingSocket = (join: MeetingJoinDetails): MeetingSocket => {
 
     socket.addEventListener("close", (event) => {
       if (disposed) return;
+      audioStateRef.current.beginConnection();
       if (!isNetworkClose(event.code)) {
         setStatus("closed");
         return;
       }
 
-      const delay = reconnectDelays[retryRef.current];
+      const delay = reconnectDelay(retryRef.current);
       if (delay === undefined) {
         setStatus("manual_reconnect");
         return;
@@ -142,5 +177,15 @@ export const useMeetingSocket = (join: MeetingJoinDetails): MeetingSocket => {
     };
   }, [connectionVersion, join]);
 
-  return { captions, participants, serverStatus, status, reconnect, send, sendAudio };
+  return {
+    captions,
+    participants,
+    serverStatus,
+    status,
+    reconnect,
+    send,
+    sendAudio,
+    startAudio,
+    stopAudio,
+  };
 };
