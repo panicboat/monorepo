@@ -73,9 +73,11 @@ export class RoomRegistry {
   }
 
   async destroyAll(): Promise<void> {
-    const rooms = [...this.rooms.values()];
-    this.rooms.clear();
+    const rooms = [...this.rooms.entries()];
     this.roomIdByParticipantId.clear();
-    await Promise.all(rooms.map((room) => room.destroy()));
+    await Promise.all(rooms.map(async ([roomId, room]) => {
+      await room.destroy();
+      this.rooms.delete(roomId);
+    }));
   }
 }

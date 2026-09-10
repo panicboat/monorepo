@@ -95,12 +95,15 @@ class DelayedStartStopRecognizer implements SpeechRecognizer {
   readonly starts: RecognitionOptions[] = [];
   readonly sessions: Array<{ stopped: boolean }> = [];
   private readonly startResolvers: Array<(session: RecognitionSession) => void> = [];
+  private readonly startRejectors: Array<(reason: Error) => void> = [];
   private readonly stopResolvers: Array<() => void> = [];
+  private readonly stopRejectors: Array<(reason: Error) => void> = [];
 
   start(options: RecognitionOptions): Promise<RecognitionSession> {
     this.starts.push(options);
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.startResolvers.push(resolve);
+      this.startRejectors.push(reject);
     });
   }
 
@@ -118,8 +121,9 @@ class DelayedStartStopRecognizer implements SpeechRecognizer {
       write: () => undefined,
       stop: () => {
         session.stopped = true;
-        return new Promise((stopResolve) => {
+        return new Promise((stopResolve, stopReject) => {
           this.stopResolvers.push(stopResolve);
+          this.stopRejectors.push(stopReject);
         });
       },
     });
@@ -130,7 +134,37 @@ class DelayedStartStopRecognizer implements SpeechRecognizer {
     if (!resolve) throw new Error("recognition stop was not pending");
     resolve();
   }
+
+  rejectStart(start: number): void {
+    const reject = this.startRejectors[start];
+    if (!reject) throw new Error("recognition start was not pending");
+    reject(new Error("private provider start failure"));
+  }
+
+  rejectStop(stop: number): void {
+    const reject = this.stopRejectors[stop];
+    if (!reject) throw new Error("recognition stop was not pending");
+    reject(new Error("private provider stop failure"));
+  }
 }
+
+const flushOperations = (): Promise<void> => new Promise((resolve) => setImmediate(resolve));
+
+const observeCompletion = (promise: Promise<void>) => {
+  const result = { completed: false, promise: Promise.resolve() };
+  result.promise = promise.then(() => { result.completed = true; });
+  return result;
+};
+
+const createDelayedRoom = () => {
+  const recognizer = new DelayedStartStopRecognizer();
+  const registry = new RoomRegistry({ translator: new DeferredTranslator(), recognizer });
+  const created = registry.create();
+  const connection = new RecordingConnection();
+  const joined = registry.join(connection, joinMessage(created.roomId, created.joinToken, "A"));
+  if (!joined.ok) throw new Error("test participant did not join");
+  return { recognizer, registry, created, connection, participantId: joined.participant.id };
+};
 
 const joinMessage = (
   roomId: string,
@@ -147,6 +181,135 @@ const joinMessage = (
 });
 
 describe("RoomRegistry", () => {
+  it.each(["resolve", "reject"] as const)("coalesces restarts while the previous stop will %s", async (outcome) => {
+    const { recognizer, registry, participantId } = createDelayedRoom();
+    const start = registry.handle(participantId, { type: "audio:start" });
+    await flushOperations();
+    recognizer.finishStart(0);
+    await start;
+    recognizer.emitError(0);
+    const restarts = [1, 2, 3].map(() => observeCompletion(registry.handle(participantId, { type: "audio:start" })));
+    await flushOperations();
+    expect(recognizer.starts).toHaveLength(1);
+    if (outcome === "resolve") recognizer.finishStop(0);
+    else recognizer.rejectStop(0);
+    await flushOperations();
+
+    expect(recognizer.starts).toHaveLength(2);
+    expect(restarts.map((restart) => restart.completed)).toEqual([false, false, false]);
+    recognizer.finishStart(1);
+    await Promise.all(restarts.map((restart) => restart.promise));
+    expect(registry.writeAudio(participantId, new Uint8Array([1]))).toBe(true);
+  });
+
+  it("cancels a queued restart when a later audio stop arrives", async () => {
+    const { recognizer, registry, participantId } = createDelayedRoom();
+    const start = registry.handle(participantId, { type: "audio:start" });
+    await flushOperations();
+    recognizer.finishStart(0);
+    await start;
+    recognizer.emitError(0);
+    const restart = observeCompletion(registry.handle(participantId, { type: "audio:start" }));
+    const stop = observeCompletion(registry.handle(participantId, { type: "audio:stop" }));
+    await flushOperations();
+    recognizer.finishStop(0);
+    await flushOperations();
+
+    expect(recognizer.starts).toHaveLength(1);
+    await Promise.all([restart.promise, stop.promise]);
+    expect(registry.writeAudio(participantId, new Uint8Array([1]))).toBe(false);
+  });
+
+  for (const phase of ["starting", "active", "stopping"] as const) {
+    for (const operation of ["audio:stop", "disconnect", "destroyAll"] as const) {
+      it.each(["resolve", "reject"] as const)(`awaits ${phase} recognition cleanup on ${operation} when stop will %s`, async (outcome) => {
+        const { recognizer, registry, participantId } = createDelayedRoom();
+        const start = registry.handle(participantId, { type: "audio:start" });
+        await flushOperations();
+        if (phase !== "starting") {
+          recognizer.finishStart(0);
+          await start;
+        }
+        if (phase === "stopping") recognizer.emitError(0);
+        const cleanup = observeCompletion(operation === "audio:stop"
+          ? registry.handle(participantId, { type: "audio:stop" })
+          : operation === "disconnect" ? registry.disconnect(participantId) : registry.destroyAll());
+        await flushOperations();
+        expect(cleanup.completed).toBe(false);
+        if (phase === "starting") recognizer.finishStart(0);
+        await flushOperations();
+        expect(cleanup.completed).toBe(false);
+        expect(recognizer.sessions[0]?.stopped).toBe(true);
+        expect(registry.writeAudio(participantId, new Uint8Array([1]))).toBe(false);
+        if (outcome === "resolve") recognizer.finishStop(0);
+        else recognizer.rejectStop(0);
+        await Promise.all([start, cleanup.promise]);
+        expect(cleanup.completed).toBe(true);
+      });
+    }
+  }
+
+  it("waits for an earlier disconnect when the final participant stops first", async () => {
+    const { recognizer, registry, created, participantId } = createDelayedRoom();
+    const second = registry.join(new RecordingConnection(), joinMessage(created.roomId, created.joinToken, "B"));
+    if (!second.ok) throw new Error("test participant did not join");
+    const starts = [participantId, second.participant.id].map((id) => registry.handle(id, { type: "audio:start" }));
+    await flushOperations();
+    recognizer.finishStart(0);
+    recognizer.finishStart(1);
+    await Promise.all(starts);
+    const firstDisconnect = observeCompletion(registry.disconnect(participantId));
+    const lastDisconnect = observeCompletion(registry.disconnect(second.participant.id));
+    await flushOperations();
+    recognizer.finishStop(1);
+    await flushOperations();
+
+    expect(lastDisconnect.completed).toBe(false);
+    expect(firstDisconnect.completed).toBe(false);
+    recognizer.finishStop(0);
+    await Promise.all([firstDisconnect.promise, lastDisconnect.promise]);
+    expect(registry.join(new RecordingConnection(), joinMessage(created.roomId, created.joinToken, "C"))).toEqual({
+      ok: false, code: "room_not_found",
+    });
+  });
+
+  it("includes an exiting participant in concurrent room destruction", async () => {
+    const { recognizer, registry, participantId } = createDelayedRoom();
+    const start = registry.handle(participantId, { type: "audio:start" });
+    await flushOperations();
+    const disconnect = registry.disconnect(participantId);
+    const destroy = observeCompletion(registry.destroyAll());
+    const repeatedDestroy = observeCompletion(registry.destroyAll());
+    await flushOperations();
+    expect(destroy.completed).toBe(false);
+    expect(repeatedDestroy.completed).toBe(false);
+    recognizer.finishStart(0);
+    await flushOperations();
+    expect(recognizer.sessions[0]?.stopped).toBe(true);
+    expect(destroy.completed).toBe(false);
+    recognizer.rejectStop(0);
+    await Promise.all([start, disconnect, destroy.promise, repeatedDestroy.promise]);
+  });
+
+  it.each(["audio:stop", "destroyAll"] as const)("settles a rejected start racing with %s without exposing provider errors", async (operation) => {
+    const { recognizer, registry, participantId, connection } = createDelayedRoom();
+    const start = observeCompletion(registry.handle(participantId, { type: "audio:start" }));
+    await flushOperations();
+    const cleanup = observeCompletion(operation === "audio:stop"
+      ? registry.handle(participantId, { type: "audio:stop" }) : registry.destroyAll());
+    await flushOperations();
+    expect(cleanup.completed).toBe(false);
+    recognizer.rejectStart(0);
+    await Promise.all([start.promise, cleanup.promise]);
+    expect(registry.writeAudio(participantId, new Uint8Array([1]))).toBe(false);
+    expect(JSON.stringify(connection.messages)).not.toContain("private provider");
+    if (operation === "audio:stop") {
+      expect(connection.messages.filter((message) => message.type === "status")).toEqual([
+        { type: "status", code: "recognition_unavailable" },
+      ]);
+    }
+  });
+
   it("allows five room creations per IP address in a ten-minute window", () => {
     const limiter = new RoomCreationLimiter();
 
@@ -372,7 +535,7 @@ describe("RoomRegistry", () => {
 
     recognizer.finishStop(0);
     await firstStart;
-    await Promise.resolve();
+    await flushOperations();
 
     expect(recognizer.starts).toHaveLength(2);
     recognizer.finishStart(1);

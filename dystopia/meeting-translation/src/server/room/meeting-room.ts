@@ -23,11 +23,18 @@ export interface MeetingRoomDependencies {
 interface ActiveParticipant {
   participant: Participant;
   connection: RoomConnection;
-  recognitionSession?: RecognitionSession;
-  startingRecognition?: Promise<void>;
-  stoppingRecognition?: Promise<void>;
-  stoppingRecognitionSession?: RecognitionSession;
-  stopRequested: boolean;
+  recognition: {
+    generation: number;
+    completion: Promise<void>;
+    startRequest?: { generation: number; completion: Promise<void> };
+    attempt?: RecognitionAttempt;
+  };
+}
+
+interface RecognitionAttempt {
+  active: boolean;
+  session?: RecognitionSession;
+  stopping?: Promise<void>;
 }
 
 export type RoomJoinResult =
@@ -36,11 +43,13 @@ export type RoomJoinResult =
 
 export class MeetingRoom {
   private readonly participants = new Map<string, ActiveParticipant>();
+  private readonly participantLifecycles = new Set<ActiveParticipant>();
   private readonly captions = new Map<string, Caption>();
   private readonly context: Caption[] = [];
   private readonly translationQueue: TranslationQueue;
   private sequence = 0;
   private destroyed = false;
+  private destroying?: Promise<void>;
 
   constructor(private readonly dependencies: MeetingRoomDependencies) {
     this.translationQueue = new TranslationQueue(dependencies.translator);
@@ -61,7 +70,13 @@ export class MeetingRoom {
       speechLanguage: message.speechLanguage,
       displayLanguage: message.displayLanguage,
     };
-    this.participants.set(participant.id, { participant, connection, stopRequested: false });
+    const activeParticipant: ActiveParticipant = {
+      participant,
+      connection,
+      recognition: { generation: 0, completion: Promise.resolve() },
+    };
+    this.participants.set(participant.id, activeParticipant);
+    this.participantLifecycles.add(activeParticipant);
 
     connection.send({
       type: "room:joined",
@@ -79,6 +94,7 @@ export class MeetingRoom {
 
     this.participants.delete(participantId);
     await this.stopRecognition(activeParticipant);
+    this.participantLifecycles.delete(activeParticipant);
     this.broadcast({ type: "participant:left", participant: activeParticipant.participant });
     return activeParticipant.participant;
   }
@@ -112,9 +128,9 @@ export class MeetingRoom {
   }
 
   writeAudio(participantId: string, chunk: Uint8Array): boolean {
-    const session = this.participants.get(participantId)?.recognitionSession;
-    if (!session || this.destroyed) return false;
-    session.write(chunk);
+    const attempt = this.participants.get(participantId)?.recognition.attempt;
+    if (!attempt?.active || !attempt.session || this.destroyed) return false;
+    attempt.session.write(chunk);
     return true;
   }
 
@@ -164,16 +180,18 @@ export class MeetingRoom {
     });
   }
 
-  async destroy(): Promise<void> {
+  destroy(): Promise<void> {
+    if (this.destroying) return this.destroying;
     this.destroyed = true;
-    const stops = [...this.participants.values()].map((activeParticipant) =>
+    const stops = [...this.participantLifecycles].map((activeParticipant) =>
       this.stopRecognition(activeParticipant),
     );
     this.participants.clear();
     this.captions.clear();
     this.context.length = 0;
     this.translationQueue.clear();
-    await Promise.all(stops);
+    this.destroying = Promise.all(stops).then(() => { this.participantLifecycles.clear(); });
+    return this.destroying;
   }
 
   private matchesJoinToken(message: Extract<ClientMessage, { type: "join" }>): boolean {
@@ -195,39 +213,40 @@ export class MeetingRoom {
     );
   }
 
-  private async startRecognition(
+  private startRecognition(
     participantId: string,
     activeParticipant: ActiveParticipant,
   ): Promise<void> {
-    if (activeParticipant.recognitionSession) return;
-    if (activeParticipant.startingRecognition) await activeParticipant.startingRecognition;
-    if (activeParticipant.stoppingRecognition) await activeParticipant.stoppingRecognition;
-    if (activeParticipant.recognitionSession || this.destroyed || !this.participants.has(participantId)) return;
+    const lifecycle = activeParticipant.recognition;
+    if (lifecycle.startRequest?.generation === lifecycle.generation) return lifecycle.startRequest.completion;
+    if (lifecycle.attempt?.active) return lifecycle.completion;
 
-    activeParticipant.stopRequested = false;
-    const startingRecognition = this.startRecognitionSession(participantId, activeParticipant);
-    activeParticipant.startingRecognition = startingRecognition;
-    try {
-      await startingRecognition;
-    } finally {
-      if (activeParticipant.startingRecognition === startingRecognition) {
-        activeParticipant.startingRecognition = undefined;
+    const request = { generation: lifecycle.generation, completion: Promise.resolve() };
+    request.completion = lifecycle.completion.then(async () => {
+      try {
+        if (request.generation !== lifecycle.generation || this.destroyed || !this.participants.has(participantId)) return;
+        const attempt: RecognitionAttempt = { active: true };
+        lifecycle.attempt = attempt;
+        await this.startRecognitionSession(activeParticipant, attempt);
+      } finally {
+        if (lifecycle.startRequest === request) lifecycle.startRequest = undefined;
       }
-    }
+    });
+    lifecycle.startRequest = request;
+    lifecycle.completion = request.completion;
+    return request.completion;
   }
 
   private async startRecognitionSession(
-    participantId: string,
     activeParticipant: ActiveParticipant,
+    attempt: RecognitionAttempt,
   ): Promise<void> {
-    let recognitionSession: RecognitionSession | undefined;
-
     try {
-      recognitionSession = await this.dependencies.recognizer.start({
+      attempt.session = await this.dependencies.recognizer.start({
         language: activeParticipant.participant.speechLanguage,
         onPartial: (text) => {
-          if (!this.destroyed) {
-            this.broadcast({
+          if (attempt.active && !this.destroyed) {
+            activeParticipant.connection.send({
               type: "caption:preview",
               speakerId: activeParticipant.participant.id,
               sourceText: text,
@@ -243,81 +262,50 @@ export class MeetingRoom {
           });
         },
         onError: () => {
-          this.failRecognition(activeParticipant, recognitionSession);
+          if (!attempt.active) return;
+          void this.stopRecognition(activeParticipant);
+          this.broadcast({ type: "status", code: "recognition_unavailable" });
         },
       });
 
-      if (activeParticipant.stopRequested || this.destroyed || !this.participants.has(participantId)) {
-        await this.stopRecognitionSession(activeParticipant, recognitionSession);
-        return;
-      }
-      activeParticipant.recognitionSession = recognitionSession;
+      if (!attempt.active) await this.stopRecognitionSession(attempt);
     } catch {
-      activeParticipant.recognitionSession = undefined;
+      attempt.active = false;
       this.broadcast({ type: "status", code: "recognition_unavailable" });
     }
   }
 
-  private failRecognition(
-    activeParticipant: ActiveParticipant,
-    recognitionSession: RecognitionSession | undefined,
-  ): void {
-    if (
-      recognitionSession &&
-      activeParticipant.recognitionSession !== recognitionSession &&
-      activeParticipant.stoppingRecognitionSession !== recognitionSession
-    ) {
-      return;
-    }
-
-    activeParticipant.stopRequested = true;
-    activeParticipant.recognitionSession = undefined;
-    if (recognitionSession) void this.stopRecognitionSession(activeParticipant, recognitionSession);
-    this.broadcast({ type: "status", code: "recognition_unavailable" });
-  }
-
-  private async stopRecognition(activeParticipant: ActiveParticipant): Promise<void> {
-    activeParticipant.stopRequested = true;
-    const recognitionSession = activeParticipant.recognitionSession;
-    if (recognitionSession) {
-      activeParticipant.recognitionSession = undefined;
-      await this.stopRecognitionSession(activeParticipant, recognitionSession);
-    }
-    if (activeParticipant.startingRecognition) await activeParticipant.startingRecognition;
-    if (activeParticipant.stoppingRecognition) await activeParticipant.stoppingRecognition;
+  private stopRecognition(activeParticipant: ActiveParticipant): Promise<void> {
+    const lifecycle = activeParticipant.recognition;
+    lifecycle.generation += 1;
+    lifecycle.startRequest = undefined;
+    const attempt = lifecycle.attempt;
+    if (attempt) attempt.active = false;
+    const stop = attempt ? this.stopRecognitionSession(attempt) : Promise.resolve();
+    lifecycle.completion = Promise.all([lifecycle.completion, stop]).then(async () => {
+      if (attempt) await this.stopRecognitionSession(attempt);
+    });
+    return lifecycle.completion;
   }
 
   private stopRecognitionSession(
-    activeParticipant: ActiveParticipant,
-    recognitionSession: RecognitionSession,
+    attempt: RecognitionAttempt,
   ): Promise<void> {
-    if (
-      activeParticipant.stoppingRecognitionSession === recognitionSession &&
-      activeParticipant.stoppingRecognition
-    ) {
-      return activeParticipant.stoppingRecognition;
-    }
+    if (attempt.stopping) return attempt.stopping;
+    if (!attempt.session) return Promise.resolve();
 
     let stopPromise: Promise<void>;
     try {
-      stopPromise = recognitionSession.stop();
+      stopPromise = attempt.session.stop();
     } catch {
       // SILENT: recognition failures use stable status codes instead of provider error details.
       stopPromise = Promise.resolve();
     }
 
-    const stoppingRecognition = stopPromise.catch(() => {
+    attempt.stopping = stopPromise.catch(() => {
       // SILENT: recognition failures use stable status codes instead of provider error details.
     });
-    activeParticipant.stoppingRecognitionSession = recognitionSession;
-    activeParticipant.stoppingRecognition = stoppingRecognition;
-    void stoppingRecognition.then(() => {
-      if (activeParticipant.stoppingRecognition === stoppingRecognition) {
-        activeParticipant.stoppingRecognition = undefined;
-        activeParticipant.stoppingRecognitionSession = undefined;
-      }
-    });
-    return stoppingRecognition;
+    return attempt.stopping;
   }
 
   private requestClarification(requester: Participant, captionId: string): void {

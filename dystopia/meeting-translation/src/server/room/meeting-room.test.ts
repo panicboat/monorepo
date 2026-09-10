@@ -145,16 +145,36 @@ describe("MeetingRoom", () => {
 
     if (!joined.ok) throw new Error("test participant did not join");
 
-    const sourceTexts = Array.from({ length: 13 }, (_, index) => `発話 ${index + 1}`);
+    const sourceTexts = Array.from({ length: 14 }, (_, index) => `発話 ${index + 1}`);
     for (const sourceText of sourceTexts) {
       await registry.handle(joined.participant.id, { type: "caption:manual", text: sourceText });
     }
     await translator.resolveInRequestOrder(...sourceTexts.map((sourceText) => `${sourceText} translation`));
 
-    expect(translator.requests[12]?.context).toMatchObject(
-      sourceTexts.slice(0, 12).map((sourceText) => ({ sourceText, state: "final" })),
-    );
-    expect(translator.requests[12]?.context).toHaveLength(12);
+    expect(translator.requests[13]?.context.map((caption) => caption.sequence)).toEqual([
+      2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+    ]);
+  });
+
+  it("sends recognition previews only to the speaker", async () => {
+    const translator = new DeferredTranslator();
+    const recognizer = new FakeRecognizer();
+    const registry = new RoomRegistry({ translator, recognizer });
+    const created = registry.create();
+    const speakerConnection = new RecordingConnection();
+    const listenerConnection = new RecordingConnection();
+    const speaker = registry.join(speakerConnection, joinMessage(created.roomId, created.joinToken, "A", "ja-JP"));
+    registry.join(listenerConnection, joinMessage(created.roomId, created.joinToken, "B", "en-US"));
+    if (!speaker.ok) throw new Error("test participant did not join");
+
+    await registry.handle(speaker.participant.id, { type: "audio:start" });
+    recognizer.sessions[0]?.onPartial("未確定の発話");
+
+    expect(speakerConnection.messages).toContainEqual({
+      type: "caption:preview", speakerId: speaker.participant.id, sourceText: "未確定の発話",
+    });
+    expect(listenerConnection.messages.filter((message) => message.type === "caption:preview")).toEqual([]);
+    expect(translator.requests).toEqual([]);
   });
 
   it("keeps manual source text when translation rejects", async () => {
