@@ -11,7 +11,7 @@
     "dev:web": "vite --host 0.0.0.0",
     "dev:server": "PORT=3001 tsx watch src/server/main.ts",
     "start": "node dist/server/main.js",
-    "test": "vitest run",
+    "test": "vitest run --root .",
     "verify:server-output": "test -f dist/server/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
