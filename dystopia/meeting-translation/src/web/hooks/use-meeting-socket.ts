@@ -22,7 +22,7 @@ export interface MeetingSocket {
   serverStatus?: Extract<ServerMessage, { type: "status" }>["code"];
   status: MeetingSocketStatus;
   reconnect: () => void;
-  send: (message: MeetingControlMessage) => void;
+  send: (message: MeetingControlMessage) => boolean;
   sendAudio: (audio: ArrayBuffer) => void;
   startAudio: () => void;
   stopAudio: () => void;
@@ -90,7 +90,7 @@ export const useMeetingSocket = (join: MeetingJoinDetails): MeetingSocket => {
   const [status, setStatus] = useState<MeetingSocketStatus>("connecting");
 
   const send = useCallback((message: MeetingControlMessage) => {
-    clientRef.current?.send(message);
+    return clientRef.current?.send(message) ?? false;
   }, []);
 
   const sendAudio = useCallback((audio: ArrayBuffer) => {

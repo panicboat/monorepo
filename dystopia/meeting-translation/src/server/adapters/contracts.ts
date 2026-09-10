@@ -8,8 +8,12 @@ export interface TranslationRequest {
   glossary: readonly string[];
 }
 
+export interface TranslationOptions {
+  signal: AbortSignal;
+}
+
 export interface Translator {
-  translate(request: TranslationRequest): Promise<string>;
+  translate(request: TranslationRequest, options: TranslationOptions): Promise<string>;
 }
 
 export interface RecognitionSession {
@@ -22,6 +26,8 @@ export interface RecognitionOptions {
   onPartial(text: string): void;
   onFinal(text: string): void;
   onError(code: "recognition_unavailable"): void;
+  onReconnected?(): void;
+  onReconnecting?(): void;
 }
 
 export interface SpeechRecognizer {

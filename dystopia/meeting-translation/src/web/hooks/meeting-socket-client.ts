@@ -55,6 +55,7 @@ const parseServerMessage = (data: unknown): ServerMessage | undefined => {
 export class MeetingSocketClient {
   private readonly audioState = new AudioConnectionState();
   private disposed = false;
+  private joined = false;
   private retryCount = 0;
   private socket?: MeetingWebSocket;
   private timerId?: number;
@@ -78,9 +79,14 @@ export class MeetingSocketClient {
     this.openConnection();
   }
 
-  send(message: MeetingControlMessage): void {
-    if (this.socket?.readyState === SOCKET_OPEN) {
+  send(message: MeetingControlMessage): boolean {
+    if (!this.joined || this.socket?.readyState !== SOCKET_OPEN) return false;
+    try {
       this.socket.send(JSON.stringify(message));
+      return true;
+    } catch {
+      // FALLBACK: a false result keeps typed input available when socket state changes during send.
+      return false;
     }
   }
 
@@ -107,6 +113,7 @@ export class MeetingSocketClient {
     this.cancelReconnectTimer();
     const socket = this.socket;
     this.socket = undefined;
+    this.joined = false;
     this.audioState.beginConnection();
     if (!socket) return;
     socket.onclose = null;
@@ -120,6 +127,7 @@ export class MeetingSocketClient {
 
   private openConnection(): void {
     if (this.disposed) return;
+    this.joined = false;
     this.audioState.beginConnection();
     const socket = this.dependencies.createSocket(this.url);
     socket.binaryType = "arraybuffer";
@@ -134,6 +142,7 @@ export class MeetingSocketClient {
       const message = parseServerMessage(event.data);
       if (!message) return;
       if (message.type === "room:joined") {
+        this.joined = true;
         this.retryCount = 0;
         this.callbacks.onStatus("connected");
         if (this.audioState.markJoined()) {
@@ -145,6 +154,7 @@ export class MeetingSocketClient {
     socket.onclose = (event) => {
       if (!this.isCurrent(socket)) return;
       this.socket = undefined;
+      this.joined = false;
       this.audioState.beginConnection();
       if (!isNetworkClose(event.code)) {
         this.callbacks.onStatus("closed");
@@ -180,6 +190,7 @@ export class MeetingSocketClient {
   private detachSocket(): void {
     const socket = this.socket;
     this.socket = undefined;
+    this.joined = false;
     this.audioState.beginConnection();
     if (!socket) return;
     socket.onclose = null;

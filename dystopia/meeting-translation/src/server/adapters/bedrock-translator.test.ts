@@ -23,6 +23,7 @@ const request: TranslationRequest = {
   ],
   glossary: ["Request term"],
 };
+const translationOptions = () => ({ signal: new AbortController().signal });
 
 describe("BedrockTranslator", () => {
   it("sends the complete translation context to Converse and returns its first text response", async () => {
@@ -34,7 +35,7 @@ describe("BedrockTranslator", () => {
       { awsRegion: "ap-northeast-1", bedrockModelId: "amazon.nova-lite-v1:0", glossary: ["Panicboat"] },
     );
 
-    await expect(translator.translate(request)).resolves.toBe("It is Friday at 3 PM.");
+    await expect(translator.translate(request, translationOptions())).resolves.toBe("It is Friday at 3 PM.");
 
     expect(send).toHaveBeenCalledOnce();
     const command = send.mock.calls[0]?.[0] as ConverseCommand;
@@ -73,7 +74,7 @@ describe("BedrockTranslator", () => {
       { awsRegion: "ap-northeast-1", bedrockModelId: "amazon.nova-lite-v1:0", glossary: [] },
     );
 
-    await expect(translator.translate({ ...request, context: [], glossary: [] })).rejects.toThrow(
+    await expect(translator.translate({ ...request, context: [], glossary: [] }, translationOptions())).rejects.toThrow(
       "Bedrock returned no translation text",
     );
   });
@@ -87,7 +88,20 @@ describe("BedrockTranslator", () => {
       { awsRegion: "ap-northeast-1", bedrockModelId: "amazon.nova-lite-v1:0", glossary: [] },
     );
 
-    await expect(translator.translate(request)).resolves.toBe("translated after blank");
+    await expect(translator.translate(request, translationOptions())).resolves.toBe("translated after blank");
+  });
+
+  it("rejects text when Bedrock stops because the output reached the token limit", async () => {
+    const send = vi.fn().mockResolvedValue({
+      output: { message: { content: [{ text: "This translation is truncated" }] } },
+      stopReason: "max_tokens",
+    });
+    const translator = new BedrockTranslator(
+      { send } as unknown as Pick<BedrockRuntimeClient, "send">,
+      { awsRegion: "ap-northeast-1", bedrockModelId: "amazon.nova-lite-v1:0", glossary: [] },
+    );
+
+    await expect(translator.translate(request, translationOptions())).rejects.toThrow("Bedrock translation was truncated");
   });
 
   it("treats source, context, and glossary instructions as literal untrusted translation data", async () => {
@@ -107,7 +121,7 @@ describe("BedrockTranslator", () => {
       sourceText: untrustedSource,
       context: [{ ...request.context[0]!, sourceText: untrustedContext }],
       glossary: [untrustedGlossary],
-    });
+    }, translationOptions());
 
     const command = send.mock.calls[0]?.[0] as ConverseCommand;
     const systemText = command.input.system?.flatMap((part) => part.text ?? []).join("\n") ?? "";

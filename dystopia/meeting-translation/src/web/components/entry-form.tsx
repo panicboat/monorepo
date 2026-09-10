@@ -18,14 +18,14 @@ interface CreatedRoom {
 
 const languageNames: Record<DisplayLanguage, { consent: string; create: string; display: string; name: string; speech: string }> = {
   ja: {
-    consent: "音声を字幕と翻訳のために処理することに同意します。",
+    consent: "音声と字幕を外部サービスの Amazon Transcribe と Amazon Bedrock に送信し、文字起こしと翻訳のために処理することに同意します。",
     create: "会議を作成",
     display: "表示言語",
     name: "表示名",
     speech: "話す言語",
   },
   en: {
-    consent: "I consent to processing my audio for captions and translation.",
+    consent: "I consent to sending audio and captions to the external services Amazon Transcribe and Amazon Bedrock for transcription and translation processing.",
     create: "Create meeting",
     display: "Display language",
     name: "Display name",

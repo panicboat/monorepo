@@ -50,6 +50,7 @@ export type ServerMessage =
         | "room_full"
         | "room_not_found"
         | "microphone_unavailable"
+        | "recognition_available"
         | "recognition_unavailable"
         | "translation_unavailable"
         | "reconnecting";

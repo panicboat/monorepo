@@ -265,6 +265,7 @@ export class MeetingRoom {
           }
         },
         onFinal: (text) => {
+          if (!attempt.active || this.destroyed) return;
           void this.enqueueCaption({
             speaker: activeParticipant.participant,
             sourceLanguage: activeParticipant.participant.speechLanguage,
@@ -274,6 +275,16 @@ export class MeetingRoom {
         },
         onError: () => {
           this.failRecognition(activeParticipant, attempt);
+        },
+        onReconnected: () => {
+          if (attempt.active && !this.destroyed) {
+            this.broadcast({ type: "status", code: "recognition_available" });
+          }
+        },
+        onReconnecting: () => {
+          if (attempt.active && !this.destroyed) {
+            this.broadcast({ type: "status", code: "reconnecting" });
+          }
         },
       });
     } catch {

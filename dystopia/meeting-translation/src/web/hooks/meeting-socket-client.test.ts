@@ -98,6 +98,29 @@ const sentTypes = (socket: FakeWebSocket): string[] => socket.sent
   .map((data) => (JSON.parse(data) as { type: string }).type);
 
 describe("MeetingSocketClient", () => {
+  it("reports success only after the current socket has joined the room", () => {
+    const harness = createHarness();
+
+    harness.client.start();
+    expect(harness.client.send({ type: "caption:manual", text: "keep me" })).toBe(false);
+    harness.sockets[0]!.open();
+    expect(harness.client.send({ type: "caption:manual", text: "still keep me" })).toBe(false);
+    harness.sockets[0]!.receive(roomJoined);
+    expect(harness.client.send({ type: "caption:manual", text: "send me" })).toBe(true);
+    expect(sentTypes(harness.sockets[0]!)).toEqual(["join", "caption:manual"]);
+  });
+
+  it("reports failure when the current socket rejects a manual caption", () => {
+    const harness = createHarness();
+    harness.client.start();
+    const socket = harness.sockets[0]!;
+    socket.open();
+    socket.receive(roomJoined);
+    socket.send = () => { throw new Error("socket became unavailable"); };
+
+    expect(harness.client.send({ type: "caption:manual", text: "keep me" })).toBe(false);
+  });
+
   it("sends join before one audio start and gates binary frames until room join", () => {
     const harness = createHarness();
     const frame = new ArrayBuffer(4);

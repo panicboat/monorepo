@@ -1,7 +1,7 @@
 import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
 
 import type { ServiceConfig } from "../config.js";
-import type { TranslationRequest, Translator } from "./contracts.js";
+import type { TranslationOptions, TranslationRequest, Translator } from "./contracts.js";
 
 const systemInstruction = [
   "Return the translation only.",
@@ -19,7 +19,7 @@ export class BedrockTranslator implements Translator {
     private readonly config: Pick<ServiceConfig, "awsRegion" | "bedrockModelId" | "glossary">,
   ) {}
 
-  async translate(request: TranslationRequest): Promise<string> {
+  async translate(request: TranslationRequest, options: TranslationOptions): Promise<string> {
     const response = await this.client.send(new ConverseCommand({
       modelId: this.config.bedrockModelId,
       system: [{ text: systemInstruction }],
@@ -39,7 +39,10 @@ export class BedrockTranslator implements Translator {
         }) }],
       }],
       inferenceConfig: { temperature: 0, maxTokens: 512 },
-    }));
+    }), { abortSignal: options.signal });
+    if (response.stopReason === "max_tokens") {
+      throw new Error("Bedrock translation was truncated");
+    }
     const text = response.output?.message?.content
       ?.map((part) => part.text?.trim())
       .find((part): part is string => part !== undefined && part.length > 0);

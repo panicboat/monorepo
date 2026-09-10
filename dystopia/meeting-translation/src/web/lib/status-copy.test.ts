@@ -12,6 +12,7 @@ describe("serverStatusCopy", () => {
     ["room_not_found", "会議が見つからないか、招待リンクが無効です。", "The meeting was not found or the invitation link is invalid."],
     ["microphone_unavailable", "マイクを使用できません。テキスト入力をご利用ください。", "Microphone is unavailable. Use text input instead."],
     ["recognition_unavailable", "音声認識を利用できません。テキスト入力をご利用ください。", "Speech recognition is unavailable. Use text input instead."],
+    ["recognition_available", "音声認識が復旧しました。", "Speech recognition has been restored."],
     ["translation_unavailable", "翻訳を利用できません。原文を表示します。", "Translation is unavailable. The source text is shown."],
     ["reconnecting", "接続を復旧しています…", "Restoring the connection…"],
   ])("maps %s to fixed Japanese and English copy", (code, japanese, english) => {

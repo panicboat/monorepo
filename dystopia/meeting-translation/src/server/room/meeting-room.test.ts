@@ -36,7 +36,7 @@ class DeferredTranslator implements Translator {
       const pending = this.pending.shift();
       if (!pending) throw new Error("translation request was not pending");
       pending.resolve(translation);
-      await Promise.resolve();
+      await new Promise<void>((resolve) => setImmediate(resolve));
     }
   }
 
@@ -45,7 +45,7 @@ class DeferredTranslator implements Translator {
     const pending = this.pending.shift();
     if (!pending) throw new Error("translation request was not pending");
     pending.reject();
-    await Promise.resolve();
+    await new Promise<void>((resolve) => setImmediate(resolve));
   }
 }
 
@@ -59,6 +59,14 @@ class FakeRecognizer implements SpeechRecognizer {
 
   emitFinal(session: number, text: string): void {
     this.sessions[session]?.onFinal(text);
+  }
+
+  emitReconnecting(session: number): void {
+    this.sessions[session]?.onReconnecting?.();
+  }
+
+  emitReconnected(session: number): void {
+    this.sessions[session]?.onReconnected?.();
   }
 }
 
@@ -86,6 +94,41 @@ const joinMessage = (
 });
 
 describe("MeetingRoom", () => {
+  it("reports recognition reconnecting while preserving the active audio session", async () => {
+    const recognizer = new FakeRecognizer();
+    const registry = new RoomRegistry({ translator: new DeferredTranslator(), recognizer });
+    const created = registry.create();
+    const connection = new RecordingConnection();
+    const joined = registry.join(connection, joinMessage(created.roomId, created.joinToken, "A", "ja-JP"));
+    if (!joined.ok) throw new Error("test participant did not join");
+
+    await registry.handle(joined.participant.id, { type: "audio:start" });
+    recognizer.emitReconnecting(0);
+    recognizer.emitReconnected(0);
+
+    expect(connection.messages).toContainEqual({ type: "status", code: "reconnecting" });
+    expect(connection.messages).toContainEqual({ type: "status", code: "recognition_available" });
+    expect(registry.writeAudio(joined.participant.id, new Uint8Array([1]))).toBe(true);
+  });
+
+  it("ignores a final transcript delivered after intentional audio stop", async () => {
+    const translator = new DeferredTranslator();
+    const recognizer = new FakeRecognizer();
+    const registry = new RoomRegistry({ translator, recognizer });
+    const created = registry.create();
+    const joined = registry.join(
+      new RecordingConnection(),
+      joinMessage(created.roomId, created.joinToken, "A", "ja-JP"),
+    );
+    if (!joined.ok) throw new Error("test participant did not join");
+
+    await registry.handle(joined.participant.id, { type: "audio:start" });
+    await registry.handle(joined.participant.id, { type: "audio:stop" });
+    recognizer.emitFinal(0, "stale transcript");
+
+    expect(translator.requests).toEqual([]);
+  });
+
   it("keeps a later completed translation after an earlier pending caption", async () => {
     const translator = new DeferredTranslator();
     const recognizer = new FakeRecognizer();
