@@ -45,8 +45,7 @@ override_resource {
 }
 
 override_resource {
-  target          = aws_iam_role.meeting_translation
-  override_during = plan
+  target = aws_iam_role.meeting_translation
   values = {
     arn = "arn:aws:iam::337169763788:role/meeting-translation-production"
   }
@@ -65,7 +64,7 @@ variables {
 }
 
 run "grants_only_streaming_transcription_and_configured_model_invocation" {
-  command = plan
+  command = apply
 
   assert {
     condition = jsondecode(aws_iam_policy.meeting_translation.policy).Statement == [
