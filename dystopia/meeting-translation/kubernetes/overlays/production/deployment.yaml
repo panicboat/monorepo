@@ -7,4 +7,4 @@ spec:
     spec:
       containers:
         - name: meeting-translation
-          image: ghcr.io/panicboat/monorepo/meeting-translation:v0.1.0 # {"$imagepolicy": "flux-system:meeting-translation"}
+          image: ghcr.io/panicboat/monorepo/meeting-translation:v1.0.0 # {"$imagepolicy": "flux-system:meeting-translation"}
