@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meeting-translation
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: meeting-translation
+  template:
+    metadata:
+      labels:
+        app: meeting-translation
+    spec:
+      serviceAccountName: meeting-translation
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: meeting-translation
+          image: ghcr.io/panicboat/monorepo/meeting-translation:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+          envFrom:
+            - configMapRef:
+                name: meeting-translation
+          readinessProbe:
+            httpGet:
+              path: /translate/healthz
+              port: 3000
+          livenessProbe:
+            httpGet:
+              path: /translate/healthz
+              port: 3000

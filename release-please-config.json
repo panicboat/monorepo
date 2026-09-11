@@ -13,6 +13,11 @@
       "component": "frontend",
       "include-component-in-tag": true
     },
+    "dystopia/meeting-translation": {
+      "release-type": "simple",
+      "component": "meeting-translation",
+      "include-component-in-tag": true
+    },
     "system-components/pennyworth": {
       "release-type": "simple",
       "component": "pennyworth",

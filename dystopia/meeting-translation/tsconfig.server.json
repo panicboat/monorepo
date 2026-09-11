@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "strict": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist/server",
+    "rootDir": "src/server",
+    "noEmit": false,
+    "composite": true,
+    "disableSourceOfProjectReferenceRedirect": true,
+    "tsBuildInfoFile": "dist/server/.tsbuildinfo",
+    "types": ["node"],
+    "skipLibCheck": true
+  },
+  "include": ["src/server/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "node_modules", "dist"],
+  "references": [{ "path": "./tsconfig.shared.json" }]
+}
