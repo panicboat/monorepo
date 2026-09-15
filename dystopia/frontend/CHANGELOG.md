@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/panicboat/monorepo/compare/frontend-v0.4.0...frontend-v0.4.1) (2026-09-15)
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** update dependency next to v16.3.5 ([#1133](https://github.com/panicboat/monorepo/issues/1133)) ([021cc0e](https://github.com/panicboat/monorepo/commit/021cc0e3c2c98fa110fd914e2e8f832f048b88b9))
+
 ## [0.4.0](https://github.com/panicboat/monorepo/compare/frontend-v0.3.5...frontend-v0.4.0) (2026-09-07)
 
 
