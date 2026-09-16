@@ -30,11 +30,11 @@ GEM
       jmespath (~> 1, >= 1.6.1)
       logger
       rexml (~> 3.4, >= 3.4.2)
-    aws-sdk-kms (1.130.0)
-      aws-sdk-core (~> 3, >= 3.254.0)
+    aws-sdk-kms (1.132.0)
+      aws-sdk-core (~> 3, >= 3.256.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.229.0)
-      aws-sdk-core (~> 3, >= 3.254.1)
+    aws-sdk-s3 (1.232.1)
+      aws-sdk-core (~> 3, >= 3.256.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
     aws-sigv4 (1.12.1)
@@ -647,7 +647,7 @@ PLATFORMS
 
 DEPENDENCIES
   aws-sdk-cognitoidentityprovider (~> 1.153)
-  aws-sdk-s3 (~> 1.229)
+  aws-sdk-s3 (~> 1.232)
   capybara
   database_cleaner-sequel
   dotenv
