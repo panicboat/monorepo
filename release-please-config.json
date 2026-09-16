@@ -13,7 +13,7 @@
       "component": "frontend",
       "include-component-in-tag": true
     },
-    "dystopia/meeting-translation": {
+    "tools/meeting-translation": {
       "release-type": "simple",
       "component": "meeting-translation",
       "include-component-in-tag": true
