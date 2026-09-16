@@ -4,9 +4,9 @@
 
 **Goal:** Zoom と並行して利用できる、最大 3 人向けの日英双方向リアルタイム翻訳字幕アプリを追加する。
 
-**Architecture:** `dystopia/meeting-translation` に、React/Vite の公開 Web UI と Fastify/WebSocket のリアルタイム API を同居させた独立サービスを作る。サービスが各参加者の PCM 音声を Amazon Transcribe Streaming へ中継し、確定原文を順序保証付きで Amazon Bedrock に送って字幕イベントを配信する。会議状態はプロセス内だけに置き、最後の参加者が退出した時点で破棄する。
+**Architecture:** `tools/meeting-translation` に、React/Vite の公開 Web UI と Fastify/WebSocket のリアルタイム API を同居させた独立サービスを作る。サービスが各参加者の PCM 音声を Amazon Transcribe Streaming へ中継し、確定原文を順序保証付きで Amazon Bedrock に送って字幕イベントを配信する。会議状態はプロセス内だけに置き、最後の参加者が退出した時点で破棄する。
 
-**Tech Stack:** Node.js 24.20.0, TypeScript 6.0.3, React 19.2.8, Vite 8.2.2, Vitest 4.1.11, Fastify 5.12.3, `@fastify/websocket` 11.3.0, `@fastify/static` 10.1.3, AWS SDK for JavaScript v3 3.1128.0, Amazon Transcribe Streaming, Amazon Bedrock Converse API, Kubernetes, Terraform, Flux CD.
+**Tech Stack:** Node.js 24.20.0, TypeScript 6.0.3, React 19.2.8, Vite 8.2.2, Vitest 4.1.11, Fastify 5.12.3, `@fastify/websocket` 11.3.0, `@fastify/static` 10.1.3, AWS SDK for JavaScript v3 3.1128.0, Amazon Transcribe Streaming, Amazon Bedrock Converse API.
 
 **Spec:** `docs/superpowers/specs/2026-09-10-meeting-translation-design.md`
 
@@ -14,7 +14,7 @@
 
 - 参加者は最大 3 人とし、各自が表示名、発話言語、表示言語を指定する。対応言語は `ja-JP` と `en-US` だけとする。
 - Zoom API、Zoom の混合音声、翻訳音声を扱わない。各参加者は Zoom と本アプリで自分のマイクを使う。
-- ブラウザへ AWS 認証情報を渡さない。Pod Identity を持つサービスだけが AWS API を呼び出す。
+- ブラウザへ AWS 認証情報を渡さず、server process の AWS SDK credential provider chain を使う。
 - 参加トークンは URL fragment にだけ置く。HTTP URL、ログ、永続ストレージへ音声・原文・訳文・トークンを保存しない。
 - Amazon Transcribe の途中結果は発話者だけに表示し、Bedrock には確定原文だけを渡す。字幕は原文と訳文を照合可能にする。
 - 翻訳は確定原文の順序で 1 会議ごとに直列化し、直近 12 発話だけを Bedrock 文脈へ含める。通常の発話終了から確定訳文の表示は 3 秒以内を目標にする。
@@ -28,7 +28,7 @@
 ## File Structure
 
 ```text
-dystopia/meeting-translation/
+tools/meeting-translation/
 ├── package.json                         # 独立サービスのスクリプトと依存関係
 ├── pnpm-lock.yaml                       # このサービスの依存解決結果
 ├── tsconfig.json                        # server と web の型検査設定
@@ -75,38 +75,24 @@ dystopia/meeting-translation/
 │           ├── meeting-view.tsx          # 字幕、接続状態、参加者、マイク操作
 │           ├── caption-list.tsx          # 原文展開と確認要求
 │           └── manual-caption-form.tsx   # 音声処理が使えない時の入力
-├── kubernetes/
-│   ├── base/
-│   │   ├── configmap.yaml                # 非機密の実行設定
-│   │   ├── deployment.yaml               # 1 replica、probe、Pod Identity
-│   │   ├── service.yaml                  # HTTP/WebSocket service
-│   │   ├── serviceaccount.yaml           # Pod Identity の対象
-│   │   ├── httproute.yaml                # dystopia.city/translate の経路
-│   │   └── kustomization.yaml
-│   └── overlays/production/
-│       ├── deployment.yaml               # Flux が書き換える image tag
-│       └── kustomization.yaml
 ├── src/**/*.test.ts                      # server、adapter、browser helper のテスト
-└── ../infrastructure/aws/modules/pod_identity.tf
-                                             # 実行 role、最小 IAM policy、association
 ```
 
-クラスタ側では `clusters/production/dystopia/meeting-translation/` に Flux の ImageRepository、ImagePolicy、ImageUpdateAutomation、Kustomization を追加し、`clusters/production/dystopia/kustomization.yaml` と `release-please-config.json` へ新サービスを登録する。
 
 ## Tasks
 
 ### Task 1: Service Scaffold and Protocol Contracts
 
 **Files:**
-- Create: `dystopia/meeting-translation/package.json`
-- Create: `dystopia/meeting-translation/tsconfig.json`
-- Create: `dystopia/meeting-translation/tsconfig.server.json`
-- Create: `dystopia/meeting-translation/vite.config.ts`
-- Create: `dystopia/meeting-translation/src/shared/meeting.ts`
-- Create: `dystopia/meeting-translation/src/shared/protocol.ts`
-- Create: `dystopia/meeting-translation/src/shared/protocol.test.ts`
-- Create: `dystopia/meeting-translation/src/server/config.ts`
-- Create: `dystopia/meeting-translation/src/server/config.test.ts`
+- Create: `tools/meeting-translation/package.json`
+- Create: `tools/meeting-translation/tsconfig.json`
+- Create: `tools/meeting-translation/tsconfig.server.json`
+- Create: `tools/meeting-translation/vite.config.ts`
+- Create: `tools/meeting-translation/src/shared/meeting.ts`
+- Create: `tools/meeting-translation/src/shared/protocol.ts`
+- Create: `tools/meeting-translation/src/shared/protocol.test.ts`
+- Create: `tools/meeting-translation/src/server/config.ts`
+- Create: `tools/meeting-translation/src/server/config.test.ts`
 
 **Interfaces:**
 - Produces `SpeechLanguage = "ja-JP" | "en-US"`, `DisplayLanguage = "ja" | "en"`, `Caption`, `Participant`, and `ServerMessage` from `src/shared/meeting.ts`.
@@ -224,20 +210,20 @@ Expected: PASS. The tests prove invalid public inputs cannot enter the room coor
 - [ ] **Step 5: Commit the scaffold and contracts**
 
 ```bash
-git add dystopia/meeting-translation/package.json dystopia/meeting-translation/pnpm-lock.yaml dystopia/meeting-translation/tsconfig.json dystopia/meeting-translation/tsconfig.server.json dystopia/meeting-translation/vite.config.ts dystopia/meeting-translation/src/shared dystopia/meeting-translation/src/server/config.ts dystopia/meeting-translation/src/server/config.test.ts
+git add tools/meeting-translation/package.json tools/meeting-translation/pnpm-lock.yaml tools/meeting-translation/tsconfig.json tools/meeting-translation/tsconfig.server.json tools/meeting-translation/vite.config.ts tools/meeting-translation/src/shared tools/meeting-translation/src/server/config.ts tools/meeting-translation/src/server/config.test.ts
 git commit -s -m "feat(meeting-translation): add service contracts"
 ```
 
 ### Task 2: Ephemeral Room Coordination and Ordered Captions
 
 **Files:**
-- Create: `dystopia/meeting-translation/src/server/adapters/contracts.ts`
-- Create: `dystopia/meeting-translation/src/server/room/room-creation-limiter.ts`
-- Create: `dystopia/meeting-translation/src/server/room/translation-queue.ts`
-- Create: `dystopia/meeting-translation/src/server/room/meeting-room.ts`
-- Create: `dystopia/meeting-translation/src/server/room/room-registry.ts`
-- Test: `dystopia/meeting-translation/src/server/room/room-registry.test.ts`
-- Test: `dystopia/meeting-translation/src/server/room/meeting-room.test.ts`
+- Create: `tools/meeting-translation/src/server/adapters/contracts.ts`
+- Create: `tools/meeting-translation/src/server/room/room-creation-limiter.ts`
+- Create: `tools/meeting-translation/src/server/room/translation-queue.ts`
+- Create: `tools/meeting-translation/src/server/room/meeting-room.ts`
+- Create: `tools/meeting-translation/src/server/room/room-registry.ts`
+- Test: `tools/meeting-translation/src/server/room/room-registry.test.ts`
+- Test: `tools/meeting-translation/src/server/room/meeting-room.test.ts`
 
 **Interfaces:**
 - Consumes `Caption`, `ClientMessage`, `Participant`, and `SpeechLanguage` from Task 1.
@@ -356,17 +342,17 @@ Expected: PASS. The tests demonstrate the participant cap, secret validation, fi
 - [ ] **Step 5: Commit room coordination**
 
 ```bash
-git add dystopia/meeting-translation/src/server/adapters/contracts.ts dystopia/meeting-translation/src/server/room
+git add tools/meeting-translation/src/server/adapters/contracts.ts tools/meeting-translation/src/server/room
 git commit -s -m "feat(meeting-translation): coordinate ephemeral rooms"
 ```
 
 ### Task 3: Amazon Transcribe and Bedrock Adapters
 
 **Files:**
-- Create: `dystopia/meeting-translation/src/server/adapters/bedrock-translator.ts`
-- Create: `dystopia/meeting-translation/src/server/adapters/bedrock-translator.test.ts`
-- Create: `dystopia/meeting-translation/src/server/adapters/transcribe-recognizer.ts`
-- Create: `dystopia/meeting-translation/src/server/adapters/transcribe-recognizer.test.ts`
+- Create: `tools/meeting-translation/src/server/adapters/bedrock-translator.ts`
+- Create: `tools/meeting-translation/src/server/adapters/bedrock-translator.test.ts`
+- Create: `tools/meeting-translation/src/server/adapters/transcribe-recognizer.ts`
+- Create: `tools/meeting-translation/src/server/adapters/transcribe-recognizer.test.ts`
 
 **Interfaces:**
 - Consumes `Translator`, `SpeechRecognizer`, `RecognitionSession`, and `TranslationRequest` from Task 2.
@@ -456,18 +442,18 @@ Expected: PASS. The tests prove finalized speech is the only input to the transl
 - [ ] **Step 6: Commit AWS adapters**
 
 ```bash
-git add dystopia/meeting-translation/src/server/adapters
+git add tools/meeting-translation/src/server/adapters
 git commit -s -m "feat(meeting-translation): add AWS speech adapters"
 ```
 
 ### Task 4: HTTP, WebSocket, and Lifecycle Transport
 
 **Files:**
-- Create: `dystopia/meeting-translation/src/server/transport/websocket-route.ts`
-- Create: `dystopia/meeting-translation/src/server/app.ts`
-- Create: `dystopia/meeting-translation/src/server/main.ts`
-- Test: `dystopia/meeting-translation/src/server/app.test.ts`
-- Test: `dystopia/meeting-translation/src/server/transport/websocket-route.test.ts`
+- Create: `tools/meeting-translation/src/server/transport/websocket-route.ts`
+- Create: `tools/meeting-translation/src/server/app.ts`
+- Create: `tools/meeting-translation/src/server/main.ts`
+- Test: `tools/meeting-translation/src/server/app.test.ts`
+- Test: `tools/meeting-translation/src/server/transport/websocket-route.test.ts`
 
 **Interfaces:**
 - Consumes `RoomRegistry` from Task 2 and concrete AWS adapters from Task 3.
@@ -543,30 +529,30 @@ Expected: PASS. The test suite proves that the token stays out of the HTTP route
 - [ ] **Step 5: Commit the transport layer**
 
 ```bash
-git add dystopia/meeting-translation/src/server/app.ts dystopia/meeting-translation/src/server/app.test.ts dystopia/meeting-translation/src/server/main.ts dystopia/meeting-translation/src/server/transport
+git add tools/meeting-translation/src/server/app.ts tools/meeting-translation/src/server/app.test.ts tools/meeting-translation/src/server/main.ts tools/meeting-translation/src/server/transport
 git commit -s -m "feat(meeting-translation): serve realtime meetings"
 ```
 
 ### Task 5: Browser Meeting Experience and PCM Capture
 
 **Files:**
-- Create: `dystopia/meeting-translation/src/web/index.html`
-- Create: `dystopia/meeting-translation/src/web/main.tsx`
-- Create: `dystopia/meeting-translation/src/web/app.tsx`
-- Create: `dystopia/meeting-translation/src/web/styles.css`
-- Create: `dystopia/meeting-translation/src/web/lib/caption-display.ts`
-- Create: `dystopia/meeting-translation/src/web/lib/caption-display.test.ts`
-- Create: `dystopia/meeting-translation/src/web/lib/pcm.ts`
-- Create: `dystopia/meeting-translation/src/web/lib/pcm.test.ts`
-- Create: `dystopia/meeting-translation/src/web/lib/room-link.ts`
-- Create: `dystopia/meeting-translation/src/web/lib/room-link.test.ts`
-- Create: `dystopia/meeting-translation/src/web/hooks/use-meeting-socket.ts`
-- Create: `dystopia/meeting-translation/src/web/hooks/use-microphone.ts`
-- Create: `dystopia/meeting-translation/src/web/audio/pcm-processor.ts`
-- Create: `dystopia/meeting-translation/src/web/components/entry-form.tsx`
-- Create: `dystopia/meeting-translation/src/web/components/meeting-view.tsx`
-- Create: `dystopia/meeting-translation/src/web/components/caption-list.tsx`
-- Create: `dystopia/meeting-translation/src/web/components/manual-caption-form.tsx`
+- Create: `tools/meeting-translation/src/web/index.html`
+- Create: `tools/meeting-translation/src/web/main.tsx`
+- Create: `tools/meeting-translation/src/web/app.tsx`
+- Create: `tools/meeting-translation/src/web/styles.css`
+- Create: `tools/meeting-translation/src/web/lib/caption-display.ts`
+- Create: `tools/meeting-translation/src/web/lib/caption-display.test.ts`
+- Create: `tools/meeting-translation/src/web/lib/pcm.ts`
+- Create: `tools/meeting-translation/src/web/lib/pcm.test.ts`
+- Create: `tools/meeting-translation/src/web/lib/room-link.ts`
+- Create: `tools/meeting-translation/src/web/lib/room-link.test.ts`
+- Create: `tools/meeting-translation/src/web/hooks/use-meeting-socket.ts`
+- Create: `tools/meeting-translation/src/web/hooks/use-microphone.ts`
+- Create: `tools/meeting-translation/src/web/audio/pcm-processor.ts`
+- Create: `tools/meeting-translation/src/web/components/entry-form.tsx`
+- Create: `tools/meeting-translation/src/web/components/meeting-view.tsx`
+- Create: `tools/meeting-translation/src/web/components/caption-list.tsx`
+- Create: `tools/meeting-translation/src/web/components/manual-caption-form.tsx`
 
 **Interfaces:**
 - Consumes `Caption`, `Participant`, `ClientMessage`, and `ServerMessage` from Task 1.
@@ -635,145 +621,52 @@ Expected: PASS. `dist/public` contains the Web UI and `dist/server/main.js` star
 - [ ] **Step 5: Commit the browser application**
 
 ```bash
-git add dystopia/meeting-translation/src/web
+git add tools/meeting-translation/src/web
 git commit -s -m "feat(meeting-translation): add live caption interface"
 ```
 
-### Task 6: Container, AWS Permissions, Kubernetes, Flux, and Release Registration
+### Task 6: Container and Local AWS Configuration
 
-**Files:**
-- Create: `dystopia/meeting-translation/Dockerfile`
-- Create: `dystopia/meeting-translation/.dockerignore`
-- Create: `dystopia/meeting-translation/kubernetes/base/configmap.yaml`
-- Create: `dystopia/meeting-translation/kubernetes/base/deployment.yaml`
-- Create: `dystopia/meeting-translation/kubernetes/base/service.yaml`
-- Create: `dystopia/meeting-translation/kubernetes/base/serviceaccount.yaml`
-- Create: `dystopia/meeting-translation/kubernetes/base/httproute.yaml`
-- Create: `dystopia/meeting-translation/kubernetes/base/kustomization.yaml`
-- Create: `dystopia/meeting-translation/kubernetes/overlays/production/deployment.yaml`
-- Create: `dystopia/meeting-translation/kubernetes/overlays/production/kustomization.yaml`
-- Modify: `dystopia/infrastructure/aws/modules/pod_identity.tf`
-- Modify: `clusters/production/dystopia/kustomization.yaml`
-- Create: `clusters/production/dystopia/meeting-translation/kustomization.yaml`
-- Create: `clusters/production/dystopia/meeting-translation/service.yaml`
-- Create: `clusters/production/dystopia/meeting-translation/image-repository.yaml`
-- Create: `clusters/production/dystopia/meeting-translation/image-policy.yaml`
-- Create: `clusters/production/dystopia/meeting-translation/image-automation.yaml`
-- Modify: `release-please-config.json`
+サービスはローカル実行用のコンテナ build と AWS client 設定を保持する。EKS、Kubernetes、Flux、Pod Identity 統合は現行の対象外とする。
 
-**Interfaces:**
-- Consumes the service's `pnpm build` and `node dist/server/main.js` scripts from Tasks 1–5.
-- Provides a Pod Identity role for `meeting-translation`, an internal Service on port 80 to container port 3000, and a public `dystopia.city/translate` prefix route.
-- The container receives `AWS_REGION`, `BEDROCK_MODEL_ID`, `MEETING_BASE_PATH`, and `TRANSLATION_GLOSSARY` only through its ConfigMap.
+- [ ] **Step 1: Verify the production container build**
 
-- [ ] **Step 1: Write the failing manifest and policy checks**
+Build the container from `tools/meeting-translation/Dockerfile` and verify that it contains only the application output and production dependencies. The image must run as a non-root user and must not contain AWS credentials.
 
-Before creating the manifests, record the commands that must initially fail because their directories and role do not exist:
+- [ ] **Step 2: Verify local AWS configuration**
+
+Use the standard AWS SDK credential provider chain from the server process. Keep `AWS_REGION`, `BEDROCK_MODEL_ID`, `MEETING_BASE_PATH`, and `TRANSLATION_GLOSSARY` as runtime configuration; do not expose credentials to browser code.
+
+- [ ] **Step 3: Run local verification**
 
 ```bash
-kustomize build dystopia/meeting-translation/kubernetes/overlays/production
-kustomize build clusters/production/dystopia
-terraform -chdir=dystopia/infrastructure/aws/modules fmt -check
-```
-
-Expected: the two Kustomize builds fail because the service manifests do not exist; Terraform formatting is unchanged before the policy edit.
-
-- [ ] **Step 2: Build a production container without development dependencies**
-
-Base the Dockerfile on `node:24.20.0-alpine`, matching the existing frontend image. In the builder stage enable Corepack, copy `package.json` and `pnpm-lock.yaml`, run `pnpm install --frozen-lockfile`, copy the source, run `pnpm build`, then run `pnpm prune --prod`. In the runner stage copy only `dist`, production `node_modules`, and `package.json`; create a non-root `nodejs` user; expose port 3000; and run `node dist/server/main.js`.
-
-Create `.dockerignore` to exclude `node_modules`, `dist`, `.git`, `.worktrees`, coverage output, and local environment files. Do not place AWS credentials or a model ID in the image.
-
-- [ ] **Step 3: Add Kubernetes resources and same-host routing**
-
-Create a single-replica Deployment named `meeting-translation` with `serviceAccountName: meeting-translation`, `terminationGracePeriodSeconds: 30`, port 3000, and `GET /translate/healthz` liveness/readiness probes. `replicas: 1` is required because room state is intentionally process-local. The Service exposes port 80 to target port 3000.
-
-Create an `HTTPRoute` on `cilium-gateway` for hostname `dystopia.city` and `PathPrefix` `/translate`, pointing to the new Service. This more-specific prefix coexists with the existing `/` frontend route and preserves one public origin for the fragment-based meeting links and WebSocket upgrades.
-
-Set the base ConfigMap values to:
-
-```yaml
-data:
-  AWS_REGION: ap-northeast-1
-  BEDROCK_MODEL_ID: amazon.nova-lite-v1:0
-  MEETING_BASE_PATH: /translate
-  TRANSLATION_GLOSSARY: ""
-```
-
-`amazon.nova-lite-v1:0` is selected because the Bedrock model card documents `Converse` support and in-region availability in `ap-northeast-1`; the service keeps this as configuration rather than embedding it in translation code. Add a production image patch using `ghcr.io/panicboat/monorepo/meeting-translation:v0.1.0` and the existing Flux image-policy comment pattern.
-
-- [ ] **Step 4: Add least-privilege Pod Identity resources**
-
-In `dystopia/infrastructure/aws/modules/pod_identity.tf`, add an IAM role and EKS Pod Identity association for service account `meeting-translation` in namespace `dystopia`, following the existing monolith role pattern. Attach one policy with exactly these statements:
-
-```hcl
-Statement = [
-  {
-    Effect   = "Allow"
-    Action   = ["transcribe:StartStreamTranscription"]
-    Resource = "*"
-  },
-  {
-    Effect   = "Allow"
-    Action   = ["bedrock:InvokeModel"]
-    Resource = "arn:aws:bedrock:${var.aws_region}::foundation-model/amazon.nova-lite-v1:0"
-  },
-]
-```
-
-The application uses `ConverseCommand`; Bedrock authorizes that inference through `bedrock:InvokeModel`. Do not grant database, S3, Cognito, `bedrock:List*`, or generic AWS permissions. Add the ServiceAccount manifest to the service Kustomization.
-
-- [ ] **Step 5: Register GitOps image automation and release versioning**
-
-Add the `meeting-translation` resource to `clusters/production/dystopia/kustomization.yaml`. Mirror the existing frontend's Flux resources with service-specific names, image `ghcr.io/panicboat/monorepo/meeting-translation`, semver ImagePolicy, and image automation path `./dystopia/meeting-translation/kubernetes/overlays/production`.
-
-Register `dystopia/meeting-translation` in `release-please-config.json` with `release-type: "simple"`, `component: "meeting-translation"`, and `include-component-in-tag: true`. This aligns the container tag, Flux policy, and release component.
-
-- [ ] **Step 6: Run container, manifest, and infrastructure verification**
-
-Run:
-
-```bash
+pnpm test
+pnpm typecheck
 pnpm build
-docker build -t meeting-translation:local dystopia/meeting-translation
-kustomize build dystopia/meeting-translation/kubernetes/overlays/production
-kustomize build clusters/production/dystopia
-terraform -chdir=dystopia/infrastructure/aws/modules fmt -check
-terraform -chdir=dystopia/infrastructure/aws/modules init -backend=false
-terraform -chdir=dystopia/infrastructure/aws/modules validate
 ```
 
-Expected: PASS. The image runs as non-root, all Kustomizations render, and Terraform validates a role that can invoke only the configured speech and translation APIs.
-
-- [ ] **Step 7: Commit deployment integration**
-
-```bash
-git add dystopia/meeting-translation/Dockerfile dystopia/meeting-translation/.dockerignore dystopia/meeting-translation/kubernetes dystopia/infrastructure/aws/modules/pod_identity.tf clusters/production/dystopia release-please-config.json
-git commit -s -m "feat(meeting-translation): deploy translation service"
-```
+Expected: all service tests, type checks, and production builds pass.
 
 ### Task 7: Service Documentation and Acceptance Verification
 
 **Files:**
-- Create: `dystopia/meeting-translation/README.md`
+- Create: `tools/meeting-translation/README.md`
 
 **Interfaces:**
-- Consumes the finished local service commands and deployed endpoint from Tasks 1–6.
-- Produces operational instructions that state how a meeting is created, which configuration is required, and how to perform the acceptance session without duplicating implementation details from the design spec.
+- Consumes the finished local service commands from Tasks 1–6.
+- Produces operational instructions that state how a meeting is created and which configuration is required without duplicating implementation details from the design spec.
 
 - [ ] **Step 1: Write the documentation acceptance checklist before the final run**
 
-In `README.md`, use English headings and Japanese body text. Include: required AWS model access and Pod Identity apply order; required environment variables; local commands `pnpm install`, `pnpm dev`, `pnpm test`, and `pnpm build`; the fact that each participant opens the shared link and permits their own microphone; and the manual acceptance procedure below.
+In `README.md`, use English headings and Japanese body text. Include: required AWS model access; required environment variables; local commands `pnpm install`, `pnpm dev`, `pnpm test`, and `pnpm build`; and the fact that each participant opens the shared link and permits their own microphone.
 
 ```text
-1. Open one Zoom meeting and three browsers at /translate.
+1. Start the local server and open `/translate` in three browsers.
 2. Create a room, share the copied fragment link, and join as one Japanese and two English speakers.
 3. Start all microphones and speak Japanese and English sentences containing a date, a number, a name, and a negation.
-4. Confirm the other-language subtitle appears within the three-second target and expand its source text.
+4. Confirm the other-language subtitle appears and expand its source text.
 5. Request clarification on one caption and confirm the original speaker receives the localized prompt.
-6. Stop one microphone, use manual text translation, then close and rejoin that participant's tab.
-7. Confirm the remaining two participants continue receiving captions and the rejoined participant receives only new captions.
-8. Close all tabs, reopen the same room URL, and confirm it returns `room_not_found` without replaying a caption.
+6. Stop one microphone and use manual text translation.
 ```
 
 Expected: the checklist is specific enough to run without the design document and does not contain source transcript values or AWS credentials.
@@ -786,26 +679,15 @@ Run:
 pnpm test
 pnpm typecheck
 pnpm build
-docker build -t meeting-translation:local dystopia/meeting-translation
-kustomize build dystopia/meeting-translation/kubernetes/overlays/production
-kustomize build clusters/production/dystopia
-terraform -chdir=dystopia/infrastructure/aws/modules fmt -check
-terraform -chdir=dystopia/infrastructure/aws/modules validate
 git diff --check
 git status --short
 ```
 
 Expected: every automated command succeeds and `git status --short` lists only the intended README (and any deliberate design correction).
 
-- [ ] **Step 3: Run the three-person Zoom acceptance session after deployment**
-
-Apply the reviewed Terraform and Kubernetes changes through the repository's existing PR-triggered deployment workflow. Then perform all eight README acceptance steps using the production URL. Record only outcome, elapsed translation time, and error codes in the PR description; do not record spoken content, captions, or join tokens.
-
-Expected: the participants can maintain a bilingual conversation, inspect original text, request clarification, survive one participant's departure, and use manual input when microphone processing is unavailable.
-
-- [ ] **Step 4: Commit documentation and verification instructions**
+- [ ] **Step 3: Commit documentation and verification instructions**
 
 ```bash
-git add dystopia/meeting-translation/README.md
+git add tools/meeting-translation/README.md
 git commit -s -m "docs(meeting-translation): add operating guide"
 ```
