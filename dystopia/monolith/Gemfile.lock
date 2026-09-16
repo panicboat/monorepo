@@ -17,11 +17,11 @@ GEM
     addressable (2.8.8)
       public_suffix (>= 2.0.2, < 8.0)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1283.0)
-    aws-sdk-cognitoidentityprovider (1.151.0)
-      aws-sdk-core (~> 3, >= 3.254.0)
+    aws-partitions (1.1287.0)
+    aws-sdk-cognitoidentityprovider (1.153.0)
+      aws-sdk-core (~> 3, >= 3.256.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-core (3.254.1)
+    aws-sdk-core (3.257.0)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
@@ -29,6 +29,7 @@ GEM
       bigdecimal
       jmespath (~> 1, >= 1.6.1)
       logger
+      rexml (~> 3.4, >= 3.4.2)
     aws-sdk-kms (1.130.0)
       aws-sdk-core (~> 3, >= 3.254.0)
       aws-sigv4 (~> 1.5)
@@ -560,6 +561,7 @@ GEM
     regexp_parser (2.11.3)
     reline (0.6.3)
       io-console (~> 0.5)
+    rexml (3.4.4)
     rom (5.4.3)
       rom-changeset (~> 5.4)
       rom-core (~> 5.4)
@@ -644,7 +646,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  aws-sdk-cognitoidentityprovider (~> 1.151)
+  aws-sdk-cognitoidentityprovider (~> 1.153)
   aws-sdk-s3 (~> 1.229)
   capybara
   database_cleaner-sequel
