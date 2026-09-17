@@ -25,3 +25,10 @@ metadata:
   name: system-components
   labels:
     app.kubernetes.io/part-of: system-components
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tools
+  labels:
+    app.kubernetes.io/part-of: tools

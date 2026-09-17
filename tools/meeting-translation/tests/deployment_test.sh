@@ -8,7 +8,7 @@ rendered_cluster=$(mktemp)
 trap 'rm -f "$rendered_service" "$rendered_cluster"' EXIT
 
 kustomize build "$service_dir/kubernetes/overlays/production" >"$rendered_service"
-kustomize build "$repository_dir/clusters/production/dystopia" >"$rendered_cluster"
+kustomize build "$repository_dir/clusters/production/tools" >"$rendered_cluster"
 
 assert_value() {
   actual=$(yq eval-all "$1" "$2")

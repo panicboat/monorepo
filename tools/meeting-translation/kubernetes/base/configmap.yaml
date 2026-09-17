@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: meeting-translation
+data:
+  AWS_REGION: ap-northeast-1
+  BEDROCK_MODEL_ID: amazon.nova-lite-v1:0
+  MEETING_BASE_PATH: /translate
+  TRANSLATION_GLOSSARY: ""

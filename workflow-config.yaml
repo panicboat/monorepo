@@ -34,3 +34,13 @@ stack_conventions:
         required_attributes: [aws_region, iam_role_plan, iam_role_apply]
       - name: kubernetes
         directory: kubernetes/overlays/{environment}
+
+  - root: tools/{service}
+    stacks:
+      - name: container
+        directory: .
+      - name: terragrunt
+        directory: infrastructure/aws/{environment}
+        required_attributes: [aws_region, iam_role_plan, iam_role_apply]
+      - name: kubernetes
+        directory: kubernetes/overlays/{environment}
