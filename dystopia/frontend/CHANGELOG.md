@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/panicboat/monorepo/compare/frontend-v0.4.1...frontend-v0.5.0) (2026-09-17)
+
+
+### Features
+
+* **frontend:** increase typography and icon scale ([#1159](https://github.com/panicboat/monorepo/issues/1159)) ([381b485](https://github.com/panicboat/monorepo/commit/381b48575ecfb65915bc285f071fc174feb98d37))
+
 ## [0.4.1](https://github.com/panicboat/monorepo/compare/frontend-v0.4.0...frontend-v0.4.1) (2026-09-17)
 
 
