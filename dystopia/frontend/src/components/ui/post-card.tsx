@@ -1,10 +1,13 @@
 import * as React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Avatar } from "./avatar";
 import { cn } from "@/lib/utils";
 
 export interface PostCardProps {
   author: { name: string; handle: string; avatarSrc?: string };
+  /** Link to the author's profile page. Omit when the author has no linkable profile. */
+  authorHref?: string;
   time: string;
   body: string;
   images?: string[];
@@ -14,20 +17,28 @@ export interface PostCardProps {
 
 export function PostCard({
   author,
+  authorHref,
   time,
   body,
   images,
   reactions,
   className,
 }: PostCardProps) {
+  const avatar = <Avatar src={author.avatarSrc} fallback={author.name.slice(0, 1)} size="md" />;
+  const nameAndHandle = (
+    <span className="flex items-center gap-1">
+      <span className="font-bold text-text-primary">{author.name}</span>
+      <span className="text-text-secondary">@{author.handle}</span>
+    </span>
+  );
+
   return (
     <article className={cn("border-b border-divider px-4 py-3", className)}>
       <div className="flex gap-3">
-        <Avatar src={author.avatarSrc} fallback={author.name.slice(0, 1)} size="md" />
+        {authorHref ? <Link href={authorHref}>{avatar}</Link> : avatar}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1 text-sm">
-            <span className="font-bold text-text-primary">{author.name}</span>
-            <span className="text-text-secondary">@{author.handle}</span>
+            {authorHref ? <Link href={authorHref}>{nameAndHandle}</Link> : nameAndHandle}
             <span className="text-text-muted">· {time}</span>
           </div>
           <p className="mt-1 whitespace-pre-wrap text-text-primary">{body}</p>
