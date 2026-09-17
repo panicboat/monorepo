@@ -54,7 +54,7 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
                   type="button"
                   onClick={() => onDelete(r.id)}
                   disabled={deleting}
-                  className="mt-2 text-xs text-text-muted hover:text-error disabled:opacity-50"
+                  className="mt-2 text-sm text-text-muted hover:text-error disabled:opacity-50"
                 >
                   削除
                 </button>

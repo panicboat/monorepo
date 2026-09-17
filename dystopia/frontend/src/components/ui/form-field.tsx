@@ -31,7 +31,7 @@ export function FormField({
       )}
       {children}
       {error ? (
-        <p className="text-xs text-error">{error}</p>
+        <p className="text-sm text-error">{error}</p>
       ) : hint ? (
         <p className="text-xs text-text-muted">{hint}</p>
       ) : null}

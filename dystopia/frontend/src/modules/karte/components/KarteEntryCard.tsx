@@ -47,7 +47,7 @@ export function KarteEntryCard({ entry, onChanged }: Props) {
       </div>
       <div className="mt-1 text-base">{"★".repeat(entry.rating)}{"☆".repeat(5 - entry.rating)}</div>
       {entry.body && <p className="mt-2 whitespace-pre-wrap text-sm">{entry.body}</p>}
-      <div className="mt-2 flex gap-3 text-xs text-muted-foreground">
+      <div className="mt-2 flex gap-3 text-sm text-muted-foreground">
         {isOwn ? (
           <button
             type="button"
@@ -76,7 +76,7 @@ export function KarteEntryCard({ entry, onChanged }: Props) {
               name="reason"
               type="text"
               placeholder="理由"
-              className="rounded border border-border px-2 py-1 text-xs"
+              className="rounded border border-border px-2 py-1 text-sm"
             />
             <button type="submit" disabled={reporting} className="hover:text-foreground">
               送信

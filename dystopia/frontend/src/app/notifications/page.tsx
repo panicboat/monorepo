@@ -74,7 +74,7 @@ export default function NotificationsPage() {
           type="button"
           onClick={() => markAllRead().catch(() => {})}
           disabled={unreadCount === 0}
-          className="text-xs text-text-secondary underline-offset-2 hover:text-text-primary hover:underline disabled:opacity-40 disabled:no-underline"
+          className="text-sm text-text-secondary underline-offset-2 hover:text-text-primary hover:underline disabled:opacity-40 disabled:no-underline"
         >
           全て既読にする
         </button>

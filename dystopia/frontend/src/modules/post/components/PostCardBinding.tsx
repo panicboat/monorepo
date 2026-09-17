@@ -48,33 +48,33 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
         type="button"
         onClick={handleLikeClick}
         disabled={loading}
-        className="flex items-center gap-1 hover:text-text-primary disabled:opacity-50"
+        className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary disabled:opacity-50"
         aria-pressed={liked}
         aria-label={liked ? "いいねを解除" : "いいね"}
       >
-        <span aria-hidden="true">{liked ? "♥" : "♡"}</span>
+        <span className="text-xl" aria-hidden="true">{liked ? "♥" : "♡"}</span>
         <span>{likesCount}</span>
       </button>
       <Link
         href={detailHref || `/posts/${encodeURIComponent(post.id)}`}
-        className="flex items-center gap-1 hover:text-text-primary"
+        className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
         aria-label="コメント"
       >
-        <span aria-hidden="true">💬</span>
+        <span className="text-xl" aria-hidden="true">💬</span>
         <span>{post.commentsCount}</span>
       </Link>
       <button
         type="button"
         onClick={handleBookmarkClick}
         disabled={bookmarkLoading}
-        className="flex items-center gap-1 hover:text-text-primary disabled:opacity-50"
+        className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary disabled:opacity-50"
         aria-pressed={isBookmarked}
         aria-label={isBookmarked ? "ブックマークを解除" : "ブックマーク"}
       >
-        <span aria-hidden="true">{isBookmarked ? "🔖" : "🏷"}</span>
+        <span className="text-xl" aria-hidden="true">{isBookmarked ? "🔖" : "🏷"}</span>
       </button>
       {post.visibility === "private" && (
-        <span className="text-text-muted" aria-label="非公開">🔒</span>
+        <span className="flex min-h-11 items-center text-xl text-text-muted" aria-label="非公開">🔒</span>
       )}
     </>
   );

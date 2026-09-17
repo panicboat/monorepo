@@ -77,9 +77,9 @@
   --color-error: #dc2626;
 }
 
-/* root font-size 15px — spec §3.2 が全 rem token の前提とする */
+/* A 16px root keeps Tailwind's default type scale aligned to CSS pixels. */
 html {
-  font-size: 93.75%;
+  font-size: 100%;
 }
 
 @theme inline {

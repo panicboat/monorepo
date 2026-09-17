@@ -68,7 +68,7 @@ export default function SearchPage() {
                 type="button"
                 onClick={() => setRoleFilter(chip.id)}
                 className={cn(
-                  "shrink-0 rounded-full border px-3 py-1 text-xs",
+                  "shrink-0 rounded-full border px-3 py-1 text-sm",
                   active
                     ? "border-transparent bg-gradient-brand text-white"
                     : "border-divider text-text-secondary hover:text-text-primary"
