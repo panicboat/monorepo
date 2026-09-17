@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1](https://github.com/panicboat/monorepo/compare/frontend-v0.4.0...frontend-v0.4.1) (2026-09-17)
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** sync Cognito user pool/client ID after pool recreate ([#1158](https://github.com/panicboat/monorepo/issues/1158)) ([46a4ae0](https://github.com/panicboat/monorepo/commit/46a4ae0abe416d55e5ead727daae704ac7e9c201))
+* **dystopia/frontend:** update dependency next to v16.3.5 ([#1133](https://github.com/panicboat/monorepo/issues/1133)) ([021cc0e](https://github.com/panicboat/monorepo/commit/021cc0e3c2c98fa110fd914e2e8f832f048b88b9))
+
 ## [0.4.0](https://github.com/panicboat/monorepo/compare/frontend-v0.3.5...frontend-v0.4.0) (2026-09-07)
 
 
