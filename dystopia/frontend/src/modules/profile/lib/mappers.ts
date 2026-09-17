@@ -29,6 +29,32 @@ export function mapAreaToView(a: Area): AreaView {
   };
 }
 
+// Placeholder for the row SaveProfile upserts on first save; a fresh account has none yet.
+export function emptyProfileView(accountId: string): ProfileView {
+  return {
+    accountId,
+    username: "",
+    displayName: "",
+    bio: "",
+    avatarMediaId: "",
+    avatarUrl: "",
+    coverMediaId: "",
+    coverUrl: "",
+    website: "",
+    snsLinks: { ...EMPTY_SNS },
+    prefecture: "",
+    isPrivate: false,
+    registeredAt: "",
+    age: 0,
+    heightCm: 0,
+    cupSize: "",
+    industry: "",
+    areas: [],
+    shopId: "",
+    role: 0,
+  };
+}
+
 export function mapProfileToView(p: Profile): ProfileView {
   return {
     accountId: p.accountId,
