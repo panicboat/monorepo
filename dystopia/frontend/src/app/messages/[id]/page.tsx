@@ -74,7 +74,7 @@ export default function ChatPage() {
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{m.content}</p>
-                  <p className={`mt-1 text-[10px] opacity-70 ${isMine ? "text-white" : "text-text-muted"}`}>
+                  <p className={`mt-1 text-xs opacity-70 ${isMine ? "text-white" : "text-text-muted"}`}>
                     {timeAgo(m.createdAt)}
                   </p>
                 </div>

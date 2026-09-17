@@ -27,15 +27,15 @@ export function BottomTab() {
           <Link
             key={tab.id}
             href={tab.path}
-            className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-md py-2 text-xs ${
+            className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-md py-2 text-sm ${
               active ? "text-accent" : "text-text-secondary hover:text-text-primary"
             }`}
             aria-current={active ? "page" : undefined}
           >
-            <span className="text-xl" aria-hidden="true">{tab.icon}</span>
+            <span className="text-2xl" aria-hidden="true">{tab.icon}</span>
             <span>{tab.label}</span>
             {badgeCount > 0 && (
-              <span className="absolute right-2 top-1 min-w-[1.25rem] rounded-full bg-accent px-1 text-center text-[10px] font-bold text-white">
+              <span className="absolute right-2 top-1 min-w-[1.25rem] rounded-full bg-accent px-1 text-center text-xs font-bold text-white">
                 {badgeCount > 99 ? "99+" : badgeCount}
               </span>
             )}

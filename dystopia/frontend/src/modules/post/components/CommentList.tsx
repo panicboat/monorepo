@@ -55,7 +55,7 @@ export function CommentList({ postId }: CommentListProps) {
                   <span className="text-text-muted">· {c.createdAt ? formatTimeAgo(c.createdAt) : ""}</span>
                 </div>
                 <p className="mt-1 whitespace-pre-wrap text-text-primary">{c.content}</p>
-                <div className="mt-2 flex items-center gap-4 text-xs">
+                <div className="mt-2 flex items-center gap-4 text-sm">
                   <button
                     type="button"
                     onClick={() => setReplying((cur) => (cur === c.id ? null : c.id))}

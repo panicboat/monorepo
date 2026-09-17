@@ -27,13 +27,13 @@ color / typography / spacing / radius / shadow tokens、layout system、navigati
 
 ### Out of scope（別 spec）
 
-ページ個別の刷新、サービスカテゴリ（デリヘル/ソープ/個人）のドメインモデル、年齢確認/本人確認フロー、root font-size 15px 化の実移行、課金プラン詳細、評価共有のデータスキーマ。
+ページ個別の刷新、サービスカテゴリ（デリヘル/ソープ/個人）のドメインモデル、年齢確認/本人確認フロー、課金プラン詳細、評価共有のデータスキーマ。
 
 ## 2. Design Principles
 
 1. **情報階層が最優先設計力** — 1 画面に主役は 1 つ。重要度をサイズ・配置・色で明示
 2. **色数を絞る** — モノクロ neutral スケール + 単一ブランドグラデーションのみ
-3. **規律あるスペーシング** — rem ベース（root 15px）の固定スケール
+3. **規律あるスペーシング** — rem ベース（root 16px）の固定スケール
 4. **ロール差分は機能トグルで表現** — 単一デザイン言語。色・レイアウト・コンポーネントはキャスト/ゲスト完全共通。差分は nav 項目の追加のみ
 
 ## 3. Design Tokens
@@ -106,27 +106,31 @@ color / typography / spacing / radius / shadow tokens、layout system、navigati
 
 - **Font**: Noto Sans JP (variable)。`--font-sans: "Noto Sans JP", "Segoe UI", Meiryo, sans-serif;`
   - rx-sns は OS システムフォント任せだが、本プロダクトは OS 横断一貫のため web font を採用（唯一の意図的逸脱）
-- **Root font-size**: 15px（`html { font-size: 93.75% }`）。1rem = 15px が全 token の前提
+- **Root font-size**: 16px（`html { font-size: 100% }`）。Tailwind の既定タイポグラフィを CSS px 値へ直接対応させる
 - **Scale**:
-  - `--text-base`: 1rem (15px) / line-height 1.5 — 本文・nav label・CTA
-  - `--text-sm`: 0.875rem (13.125px) / line-height 約 1.43 — タブ・補助情報・小リンク
+  - `--text-xs`: 0.75rem (12px) / line-height 約 1.33 — 時刻・文字数・補足説明・バッジ
+  - `--text-sm`: 0.875rem (14px) / line-height 約 1.43 — 補助情報・小リンク
+  - `--text-base`: 1rem (16px) / line-height 1.5 — 本文・nav label・CTA
+  - `--text-lg`: 1.125rem (18px) / line-height 約 1.56 — デスクトップナビゲーションラベル
+  - `--text-xl`: 1.25rem (20px) / line-height 1.4 — リアクションアイコン
+  - `--text-2xl`: 1.5rem (24px) / line-height 約 1.33 — TopBar・BottomTab icon
 - **Weights**: 400 / 500 / 700
 - serif / display / italic は不使用
 
 ### 3.3 Spacing
 
-Tailwind デフォルト spacing-N を root 15px で解決。
+Tailwind デフォルト spacing-N を root 16px で解決。
 
-| N | rem | px |
-|---|---|---|
-| 1 | 0.25 | 3.75 |
-| 2 | 0.5 | 7.5 |
-| 3 | 0.75 | 11.25 |
-| 4 | 1 | 15 |
-| 5 | 1.25 | 18.75 |
-| 6 | 1.5 | 22.5 |
-| 8 | 2 | 30 |
-| 12 | 3 | 45 |
+| N   | rem  | px  |
+| --- | ---- | --- |
+| 1   | 0.25 | 4   |
+| 2   | 0.5  | 8   |
+| 3   | 0.75 | 12  |
+| 4   | 1    | 16  |
+| 5   | 1.25 | 20  |
+| 6   | 1.5  | 24  |
+| 8   | 2    | 32  |
+| 12  | 3    | 48  |
 
 ### 3.4 Radius
 
@@ -221,7 +225,7 @@ nav 項目の追加のみ。route prefix のロール分離はしない。shell�
 | `src/app/(cast)/` + `(guest)/` ルートグループ分離 | 解消。共通 shell + 機能トグル |
 | `--color-role-cast-*` / `--color-role-guest-*` の 2 系列 | 単一 neutral + brand に統合。role 別カラー廃止 |
 | README と `theme.ts` の Cast/Guest 色定義の齟齬 | 単一 SoT 化で解消 |
-| base font-size = browser default (16px) | 15px 化（移行タイミングは別 spec、影響大） |
+| base font-size = browser default (16px) | root 16px を採用し、Tailwind の既定スケールを使用 |
 | `config/theme.ts` の `colors.role.*` 参照 | 廃止対象 |
 | modules 構成（feed / identity / media / portfolio / post / relationship / trust） | **本 spec の対象外**。どの module が必要かは新コンセプトの domain/feature spec で決定し、それを経て初めて不要な module が判明する。design system spec は module 構成に踏み込まない（各 module の現状は未調査） |
 
@@ -229,7 +233,6 @@ nav 項目の追加のみ。route prefix のロール分離はしない。shell�
 
 - **法務**（弁護士確認必須）: 風営法 / 売春防止法 / 個人情報・名誉毀損・要配慮個人情報、(b) の同意有効性、キャスト年齢/本人確認
 - error / warning / info の semantic color 未確定
-- root font-size 15px 化の実移行タイミング（既存全画面に影響）
 - サービスカテゴリ（デリヘル/ソープ/個人）のドメインモデル — 本 spec では「カテゴリ軸が存在する」前提のみ、詳細は別 spec
 - カルテ画面の情報密度と SNS 余白基調の両立、客観事実 vs 主観評価のフィールド分離、課金プラン粒度
 

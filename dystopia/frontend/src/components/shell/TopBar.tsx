@@ -21,7 +21,7 @@ export function TopBar({ onAvatarClick }: TopBarProps) {
       <button
         type="button"
         onClick={onAvatarClick}
-        className="rounded-full focus:outline-none focus:ring-2 focus:ring-accent"
+        className="flex h-11 w-11 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-accent"
         aria-label="メニューを開く"
       >
         <Avatar src={avatarUrl} fallback={fallback} size="sm" />
@@ -29,12 +29,12 @@ export function TopBar({ onAvatarClick }: TopBarProps) {
       <BrandMark className="text-base" />
       <Link
         href="/notifications"
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-xl hover:bg-bg-secondary"
+        className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-2xl hover:bg-bg-secondary"
         aria-label={unread > 0 ? `通知 (未読 ${unread})` : "通知"}
       >
         <span aria-hidden="true">🔔</span>
         {unread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 min-w-[1.125rem] rounded-full bg-accent px-1 text-center text-[10px] font-bold leading-tight text-white">
+          <span className="absolute -right-0.5 -top-0.5 min-w-[1.125rem] rounded-full bg-accent px-1 text-center text-xs font-bold leading-tight text-white">
             {unread > 99 ? "99+" : unread}
           </span>
         )}

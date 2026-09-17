@@ -41,7 +41,7 @@ export function ImageUpload({ shape, url, onUploaded }: ImageUploadProps) {
           {shape === "avatar" ? "アバター" : "カバー画像"}
         </span>
       )}
-      <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+      <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
         {uploading ? "アップロード中…" : "変更"}
       </span>
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
