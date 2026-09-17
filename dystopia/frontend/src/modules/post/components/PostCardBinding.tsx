@@ -24,6 +24,9 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
   const authorName = post.author?.displayName || "名無し";
   const authorHandle = post.author?.username || post.authorId.slice(0, 8);
   const avatarSrc = post.author?.avatarUrl || undefined;
+  const authorHref = post.author?.username
+    ? `/u/${encodeURIComponent(post.author.username)}`
+    : undefined;
 
   const images = post.media
     .filter((m) => m.mediaType === "image")
@@ -82,6 +85,7 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
   return (
     <PostCard
       author={{ name: authorName, handle: authorHandle, avatarSrc }}
+      authorHref={authorHref}
       time={post.createdAt ? formatTimeAgo(post.createdAt) : ""}
       body={post.content}
       images={images.length > 0 ? images : undefined}
