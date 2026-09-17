@@ -7,7 +7,7 @@ resource "random_password" "monolith_db_master" {
 resource "aws_secretsmanager_secret" "monolith_database" {
   name                    = "dystopia/monolith/database"
   description             = "PostgreSQL credentials for monolith service"
-  recovery_window_in_days = 0
+  recovery_window_in_days = 30
   tags                    = var.common_tags
 }
 
