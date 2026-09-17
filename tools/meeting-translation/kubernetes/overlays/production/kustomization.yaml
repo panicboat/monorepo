@@ -1,8 +1,6 @@
----
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - namespaces.yaml
-  - dystopia
-  - system-components
-  - tools
+  - ../../base
+patches:
+  - path: deployment.yaml

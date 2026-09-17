@@ -1,0 +1,52 @@
+# root.hcl - Root Terragrunt configuration
+
+locals {
+  # Project metadata
+  project_name = "tools"
+
+  # Parse environment from the directory path
+  # The environment is the last path segment (e.g. .../production)
+  path_parts  = split("/", path_relative_to_include())
+  environment = element(local.path_parts, length(local.path_parts) - 1)
+
+  # Common tags applied to all resources
+  common_tags = {
+    Project     = local.project_name
+    Environment = local.environment
+    ManagedBy   = "terragrunt"
+    Repository  = "monorepo"
+    Component   = "meeting-translation"
+    Team        = "panicboat"
+  }
+}
+
+# Remote state configuration using shared S3 bucket
+remote_state {
+  backend = "s3"
+  generate = {
+    path      = "backend.tf"
+    if_exists = "overwrite_terragrunt"
+  }
+  config = {
+    # Shared bucket for all monorepo services
+    bucket = "terragrunt-state-${get_aws_account_id()}"
+
+    # Service-specific path: tools/meeting-translation/<environment>/terraform.tfstate
+    key    = "tools/meeting-translation/${local.environment}/terraform.tfstate"
+    region = "ap-northeast-1"
+
+    # Shared DynamoDB table for state locking across all services
+    dynamodb_table = "terragrunt-state-locks"
+
+    # Enable server-side encryption
+    encrypt = true
+  }
+}
+
+# Common inputs passed to all Terraform modules
+inputs = {
+  project_name = local.project_name
+  environment  = local.environment
+  common_tags  = local.common_tags
+  aws_region   = "ap-northeast-1"
+}

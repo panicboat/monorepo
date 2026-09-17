@@ -1,0 +1,8 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: meeting-translation
+  namespace: flux-system
+spec:
+  image: ghcr.io/panicboat/monorepo/meeting-translation
+  interval: 5m

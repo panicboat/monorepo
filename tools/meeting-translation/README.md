@@ -4,6 +4,16 @@ Zoom 会議と並行して使う、最大 3 人向けの日英双方向翻訳字
 
 AWS SDK の標準 credential provider chain を使います。ブラウザへ AWS credentials を渡さず、必要な権限を持つ開発者用 identity を server process 側だけに設定します。
 
+## AWS Prerequisites
+
+本番適用前に、AWS アカウントの `ap-northeast-1` で `amazon.nova-lite-v1:0` を利用できることを確認します。Bedrock 側で model access の有効化または利用申請が必要なアカウントでは、先に完了させてください。サービスの実行 role には `transcribe:StartStreamTranscription` と、設定した model に対する `bedrock:InvokeModel` が必要です。
+
+Pod Identity と workload は次の順序で適用します。
+
+1. PR で `tools/meeting-translation/infrastructure/aws/production/` の Terragrunt plan と Kubernetes 差分をレビューする。
+2. merge 後の既存 deployment workflow で Terraform apply が完了し、`tools` namespace の `meeting-translation` ServiceAccount を対象とする IAM role、policy、EKS Pod Identity association が作成されたことを確認する。
+3. その後、Flux に `tools/meeting-translation/kubernetes/overlays/production` を reconcile させる。Pod Identity association が確認できる前に Deployment の稼働確認へ進まない。
+
 ## Environment Variables
 
 | Variable | Required | Application Default | Purpose |
@@ -49,11 +59,11 @@ pnpm build
 
 共有リンクの `#` 以降は join token です。bearer credential として扱い、ログ、issue、PR、画面録画へ記録しないでください。
 
-## Connection Behavior
+## Connection and Deployment Behavior
 
 予期しない WebSocket 切断では、最後の参加者が切断した後も room を 5 秒間だけ保持し、その間の再接続を受け付けます。5 秒を過ぎると空の room を破棄します。利用者が送る明示的な `leave` はこの猶予を使わず即時処理され、最後の参加者の退出なら room を直ちに破棄します。再参加者へ過去の caption は再送しません。
 
-room と caption は service process 内だけにあり、process の終了や再起動で失われます。永続化や履歴復元はありません。
+Deployment は single replica の `Recreate` strategy です。更新中は停止時間が発生します。room と caption は service process 内だけにあり、Pod の終了、再起動、更新で失われます。永続化や履歴復元はありません。
 
 ## Logging and Privacy
 
