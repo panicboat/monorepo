@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/panicboat/monorepo/compare/meeting-translation-v1.0.0...meeting-translation-v1.1.0) (2026-09-17)
+
+
+### Features
+
+* **meeting-translation:** redeploy to EKS under tools/ layout ([#1155](https://github.com/panicboat/monorepo/issues/1155)) ([9f7441e](https://github.com/panicboat/monorepo/commit/9f7441e697a7d0c22585c7db0c6008e1de5556e8))
+
 ## 1.0.0 (2026-09-11)
 
 
