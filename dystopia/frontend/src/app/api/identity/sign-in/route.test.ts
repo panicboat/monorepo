@@ -31,10 +31,10 @@ const identity = identityMod.identityClient as unknown as {
 const phoneNumber = "+15551234567";
 const password = "Passw0rd!Passw0rd!";
 
-function signInRequest(role: number, requestPassword = password): NextRequest {
+function signInRequest(requestPassword = password): NextRequest {
   return new NextRequest("http://localhost/api/identity/sign-in", {
     method: "POST",
-    body: JSON.stringify({ phoneNumber, password: requestPassword, role }),
+    body: JSON.stringify({ phoneNumber, password: requestPassword }),
   });
 }
 
@@ -54,12 +54,12 @@ describe("POST /api/identity/sign-in", () => {
     identity.reactivateAccount.mockReset();
   });
 
-  it("returns the matching active account and auth cookies", async () => {
+  it("returns the active account and auth cookies", async () => {
     identity.getAccount.mockResolvedValue({
       account: { id: sub, role: 1, deactivatedAt: undefined },
     });
 
-    const res = await POST(signInRequest(1));
+    const res = await POST(signInRequest());
 
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toEqual({
@@ -69,12 +69,24 @@ describe("POST /api/identity/sign-in", () => {
     expect(res.headers.get("Set-Cookie")).toMatch(/access_token=/);
   });
 
-  it("rejects a role mismatch without issuing auth cookies", async () => {
+  it("returns a cast account's role as-is, without a client-supplied role", async () => {
     identity.getAccount.mockResolvedValue({
-      account: { id: sub, role: 1, deactivatedAt: undefined },
+      account: { id: sub, role: 2, deactivatedAt: undefined },
     });
 
-    const res = await POST(signInRequest(2));
+    const res = await POST(signInRequest());
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({
+      account: { id: sub, role: 2 },
+      reactivated: false,
+    });
+  });
+
+  it("rejects sign-in when the account cannot be found", async () => {
+    identity.getAccount.mockResolvedValue({ account: undefined });
+
+    const res = await POST(signInRequest());
 
     expect(res.status).toBe(401);
     expect(res.headers.get("Set-Cookie")).toBeNull();
@@ -88,7 +100,7 @@ describe("POST /api/identity/sign-in", () => {
       account: { id: sub, role: 1, deactivatedAt: undefined },
     });
 
-    const res = await POST(signInRequest(1));
+    const res = await POST(signInRequest());
 
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toEqual({
@@ -102,7 +114,7 @@ describe("POST /api/identity/sign-in", () => {
   });
 
   it("rejects an invalid password", async () => {
-    const res = await POST(signInRequest(1, "WrongPassword"));
+    const res = await POST(signInRequest("WrongPassword"));
 
     expect(res.status).toBe(401);
     await expect(res.json()).resolves.toEqual({
@@ -115,7 +127,7 @@ describe("POST /api/identity/sign-in", () => {
     vi.spyOn(adapter, "initiateAuth").mockRejectedValue(new Error("adapter unavailable"));
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
 
-    const res = await POST(signInRequest(1));
+    const res = await POST(signInRequest());
 
     expect(res.status).toBe(401);
     expect(warn).toHaveBeenCalledWith(

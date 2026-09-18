@@ -12,10 +12,9 @@ const invalidCredentials = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { phoneNumber, password, role } = (await req.json()) as {
+    const { phoneNumber, password } = (await req.json()) as {
       phoneNumber: string;
       password: string;
-      role: number;
     };
 
     let tokens: Tokens;
@@ -31,7 +30,7 @@ export async function POST(req: NextRequest) {
     const headers = await buildGrpcHeaders(req);
     const { account } = await identityClient.getAccount({ sub }, { headers });
 
-    if (!account || account.role !== role) {
+    if (!account) {
       await cognito()
         .globalSignOut(tokens.accessToken)
         .catch(() => {
