@@ -46,9 +46,8 @@ export function SideNav() {
   const [composerOpen, setComposerOpen] = useState(false);
 
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
-  const profileHref = profile?.username
-    ? `/u/${encodeURIComponent(profile.username)}`
-    : "/profile";
+  // /u/[username] has no self-edit affordance; /profile is the only page with the edit button.
+  const profileHref = "/profile";
 
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col px-3 py-4 md:flex">
