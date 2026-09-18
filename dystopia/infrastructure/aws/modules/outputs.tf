@@ -18,9 +18,9 @@ output "jwks_uri" {
   value = "https://cognito-idp.${var.aws_region}.amazonaws.com/${aws_cognito_user_pool.this.id}/.well-known/jwks.json"
 }
 
-output "rds_endpoint" {
-  value       = aws_db_instance.monolith.address
-  description = "RDS instance endpoint hostname"
+output "rds_alias" {
+  value       = aws_route53_record.monolith_db.fqdn
+  description = "Stable DNS alias for the RDS instance (CNAME to the underlying endpoint, survives instance recreation)"
 }
 
 output "rds_port" {
