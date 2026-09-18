@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useProfile } from "@/modules/profile/hooks";
 import { useSocialCounts } from "@/modules/social";
 import { useUnreadCount } from "@/modules/notifications/hooks";
 import { useTotalUnread } from "@/modules/messaging";
 import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { useNotificationPreferences } from "@/modules/notifications/hooks";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 
 const NAV_ITEMS = [
@@ -31,16 +32,16 @@ interface DrawerProps {
 }
 
 export function Drawer({ open, onClose }: DrawerProps) {
-  const router = useRouter();
+  const { logout } = useAuth();
   const { profile } = useProfile();
   const { followingCount, followersCount } = useSocialCounts(profile?.accountId);
   const { count: unread } = useUnreadCount();
   const { count: msgUnread } = useTotalUnread();
   const { count: footprintsUnread } = useFootprintsUnreadCount();
   const { preferences } = useNotificationPreferences();
-  const clearIdentity = useAuthStore((s) => s.clearIdentity);
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
   const { hasAccess: karteAccess } = useMyKarteAccess();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -49,10 +50,10 @@ export function Drawer({ open, onClose }: DrawerProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  const onLogout = () => {
-    clearIdentity();
+  const onConfirmLogout = () => {
+    setConfirmOpen(false);
     onClose();
-    router.push("/");
+    logout();
   };
 
   return (
@@ -131,7 +132,7 @@ export function Drawer({ open, onClose }: DrawerProps) {
         <div className="border-t border-border px-4 py-3">
           <button
             type="button"
-            onClick={onLogout}
+            onClick={() => setConfirmOpen(true)}
             className="flex w-full items-center gap-3 text-sm text-text-secondary hover:text-text-primary"
           >
             <Avatar
@@ -145,6 +146,21 @@ export function Drawer({ open, onClose }: DrawerProps) {
           </button>
         </div>
       </aside>
+
+      <Dialog.Root open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface p-4">
+            <Dialog.Title className="text-base font-bold text-text-primary">ログアウトしますか？</Dialog.Title>
+            <div className="mt-4 flex justify-end gap-2">
+              <Dialog.Close asChild>
+                <Button variant="secondary" size="sm">キャンセル</Button>
+              </Dialog.Close>
+              <Button variant="primary" size="sm" onClick={onConfirmLogout}>ログアウト</Button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </>
   );
 }
