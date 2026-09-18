@@ -9,6 +9,7 @@ import { ComposerFAB } from "./ComposerFAB";
 import { Drawer } from "./Drawer";
 import { SideNav } from "./SideNav";
 import { SuggestedUsersPane } from "./SuggestedUsersPane";
+import { FeatureTourModal } from "@/modules/onboarding/components/FeatureTourModal";
 
 const AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/onboarding"];
 
@@ -60,6 +61,7 @@ export function AppShell({ children }: AppShellProps) {
       <BottomTab />
       <ComposerFAB />
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <FeatureTourModal />
     </div>
   );
 }
