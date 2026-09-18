@@ -21,6 +21,8 @@ resource "aws_cognito_user_pool" "this" {
     mutable             = true
   }
 
+  sms_verification_message = "【dystopia.city】認証コードは {####} です。本人以外に共有しないでください。"
+
   mfa_configuration = "OFF"
 
   user_pool_add_ons {
