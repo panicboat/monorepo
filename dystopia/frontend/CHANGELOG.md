@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/panicboat/monorepo/compare/frontend-v0.6.0...frontend-v0.6.1) (2026-09-18)
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** always route the profile nav item to /profile ([#1179](https://github.com/panicboat/monorepo/issues/1179)) ([c2e66db](https://github.com/panicboat/monorepo/commit/c2e66db0c4bb611dd073957e17f267766298aec4))
+
 ## [0.6.0](https://github.com/panicboat/monorepo/compare/frontend-v0.5.0...frontend-v0.6.0) (2026-09-18)
 
 
