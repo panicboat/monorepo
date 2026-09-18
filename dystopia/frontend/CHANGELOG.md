@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.6.0](https://github.com/panicboat/monorepo/compare/frontend-v0.5.0...frontend-v0.6.0) (2026-09-18)
+
+
+### Features
+
+* **dystopia/frontend:** add a first-run tour explaining each nav feature ([#1171](https://github.com/panicboat/monorepo/issues/1171)) ([98ee923](https://github.com/panicboat/monorepo/commit/98ee923ea1cc2fefc3c64c39398719d416a3bee7))
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** confirm before logout and clear the session cookie ([#1172](https://github.com/panicboat/monorepo/issues/1172)) ([57301b6](https://github.com/panicboat/monorepo/commit/57301b6d40be446c0248f8f04ef54407044191e3))
+* **dystopia/frontend:** link post author name to their profile ([#1168](https://github.com/panicboat/monorepo/issues/1168)) ([276c7ba](https://github.com/panicboat/monorepo/commit/276c7ba550d978f0d0fa3dfc49bcfcdec2143bee))
+* **dystopia/frontend:** sign in by DB role instead of client-supplied role ([#1177](https://github.com/panicboat/monorepo/issues/1177)) ([38e7c3a](https://github.com/panicboat/monorepo/commit/38e7c3a856064656cace8db8f4a9fcdad681ef01))
+* **dystopia/frontend:** treat a missing profile row as editable, not logged-out ([#1169](https://github.com/panicboat/monorepo/issues/1169)) ([8470e63](https://github.com/panicboat/monorepo/commit/8470e63e5f6bf1ce0f0e32e95fe8d1c970351b50))
+
 ## [0.5.0](https://github.com/panicboat/monorepo/compare/frontend-v0.4.1...frontend-v0.5.0) (2026-09-17)
 
 
