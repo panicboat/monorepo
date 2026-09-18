@@ -41,9 +41,8 @@ type AuthContextType = {
   signIn: (
     phoneNumber: string,
     password: string,
-    role: 1 | 2,
   ) => Promise<{ reactivated: boolean }>;
-  login: (phoneNumber: string, password: string, role?: 1 | 2) => Promise<void>;
+  login: (phoneNumber: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   logout: () => Promise<void>;
   forgotPassword: (phoneNumber: string) => Promise<void>;
@@ -166,15 +165,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  const signIn = async (
-    phoneNumber: string,
-    password: string,
-    signInRole: 1 | 2,
-  ) => {
+  const signIn = async (phoneNumber: string, password: string) => {
     const res = await fetch("/api/identity/sign-in", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, password, role: signInRole }),
+      body: JSON.stringify({ phoneNumber, password }),
     });
     const data = await res.json();
     // 423 Locked carries a friendly message in `data.message` (with retry minutes);
@@ -211,12 +206,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { reactivated: data.reactivated === true };
   };
 
-  const login = async (
-    phoneNumber: string,
-    password: string,
-    loginRole: 1 | 2 = 1,
-  ) => {
-    await signIn(phoneNumber, password, loginRole);
+  const login = async (phoneNumber: string, password: string) => {
+    await signIn(phoneNumber, password);
   };
 
   const forgotPassword = async (phoneNumber: string) => {
