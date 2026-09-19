@@ -17,6 +17,10 @@ frontend だけでなく **proto 契約 + Ruby モノリス + frontend** を新�
 - **設計の進め方 = ハイブリッド**: 本 keystone（高レベル context マップ）→ 以降は context 単位の縦スライス（domain → proto → モノリス → frontend）。
 - Phase 0（design token）と Phase 1a（コンポーネント語彙）は**ドメイン非依存**で本再構築でも有効。保留中の frontend データ層は新契約確定後に context スライスで作り直す。
 
+### Amendment (2026-09-19)
+
+出勤情報の自己発信（本人が出勤日時を公開するのみ、予約・成約を伴わないもの）は上記ドロップの対象外とし、`2026-09-19-schedule-slice-design.md` で `schedule` スライスとして再導入する。plans / offer / 予約（booking）は引き続きドロップ対象のまま。
+
 ## Ubiquitous language（命名）
 
 エスコート時代のスライス名を新コンセプトの語彙に揃える。proto パッケージ・モノリススライス・frontend module 名に一貫適用する。
@@ -53,10 +57,11 @@ frontend だけでなく **proto 契約 + Ruby モノリス + frontend** を新�
 | **notifications** | 通知 | 通知 |
 | **bookmarks** | 投稿の保存 | ブックマーク |
 | **discovery** | 検索・ランキング・推し! | 検索 / ランキング / 推し! |
+| **schedule**（Amendment 2026-09-19 で追加） | キャスト本人による出勤日時の自己発信のみ。予約・空き枠・成約は持たない | 出勤スケジュール |
 
 ### Drop
 
-- **offer**（plans / schedules）と booking / 出勤管理 次元を完全撤去。
+- **offer**（plans / schedules）と booking / 予約 次元を完全撤去。出勤の自己発信のみ Amendment (2026-09-19) により `schedule` context として再導入。
 - **公開の guest→cast レビュー/評価**（旧 trust の guest→cast 部分）も撤去。評判は follow / エンゲージメントで表現する。将来 cast へのレビュー機能が必要になれば、旧 trust から salvage せず **別 context（reviews / reputation）として greenfield 設計**する。karte（cast→guest・private）とは方向・公開範囲・目的が別概念。
 
 ## Role model（確定済）
