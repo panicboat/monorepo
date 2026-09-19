@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/panicboat/monorepo/compare/frontend-v0.6.1...frontend-v0.7.0) (2026-09-19)
+
+
+### Features
+
+* **dystopia:** enrich cast profile with body stats and sns links ([#1182](https://github.com/panicboat/monorepo/issues/1182)) ([2c8292f](https://github.com/panicboat/monorepo/commit/2c8292fab1dddc328c44cc018c224568bb0eb1ce))
+
 ## [0.6.1](https://github.com/panicboat/monorepo/compare/frontend-v0.6.0...frontend-v0.6.1) (2026-09-18)
 
 
