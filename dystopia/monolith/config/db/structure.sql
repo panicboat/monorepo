@@ -17,6 +17,13 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: billing; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA billing;
+
+
+--
 -- Name: bookmarks; Type: SCHEMA; Schema: -; Owner: -
 --
 
@@ -96,6 +103,52 @@ CREATE SCHEMA social;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: customers; Type: TABLE; Schema: billing; Owner: -
+--
+
+CREATE TABLE billing.customers (
+    id uuid NOT NULL,
+    account_id uuid NOT NULL,
+    stripe_customer_id text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: stripe_events; Type: TABLE; Schema: billing; Owner: -
+--
+
+CREATE TABLE billing.stripe_events (
+    id uuid NOT NULL,
+    stripe_event_id text NOT NULL,
+    event_type text NOT NULL,
+    payload jsonb NOT NULL,
+    processed_at timestamp with time zone,
+    error_message text,
+    received_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: subscriptions; Type: TABLE; Schema: billing; Owner: -
+--
+
+CREATE TABLE billing.subscriptions (
+    id uuid NOT NULL,
+    account_id uuid NOT NULL,
+    stripe_subscription_id text NOT NULL,
+    stripe_price_id text NOT NULL,
+    status text NOT NULL,
+    current_period_end timestamp with time zone NOT NULL,
+    cancel_at_period_end boolean DEFAULT false NOT NULL,
+    canceled_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
 
 --
 -- Name: bookmarks; Type: TABLE; Schema: bookmarks; Owner: -
@@ -538,12 +591,10 @@ CREATE TABLE profile.profiles (
     is_private boolean DEFAULT false NOT NULL,
     registered_at timestamp with time zone,
     age integer,
-    height_cm integer,
-    cup_size character varying(10),
     industry character varying(50),
-    shop_id uuid,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    body_stats jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -580,6 +631,70 @@ CREATE TABLE social.follows (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
+
+
+--
+-- Name: customers customers_pkey; Type: CONSTRAINT; Schema: billing; Owner: -
+--
+
+ALTER TABLE ONLY billing.customers
+    ADD CONSTRAINT customers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: stripe_events stripe_events_pkey; Type: CONSTRAINT; Schema: billing; Owner: -
+--
+
+ALTER TABLE ONLY billing.stripe_events
+    ADD CONSTRAINT stripe_events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: subscriptions subscriptions_pkey; Type: CONSTRAINT; Schema: billing; Owner: -
+--
+
+ALTER TABLE ONLY billing.subscriptions
+    ADD CONSTRAINT subscriptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: customers uq_billing_customers_account_id; Type: CONSTRAINT; Schema: billing; Owner: -
+--
+
+ALTER TABLE ONLY billing.customers
+    ADD CONSTRAINT uq_billing_customers_account_id UNIQUE (account_id);
+
+
+--
+-- Name: customers uq_billing_customers_stripe_customer_id; Type: CONSTRAINT; Schema: billing; Owner: -
+--
+
+ALTER TABLE ONLY billing.customers
+    ADD CONSTRAINT uq_billing_customers_stripe_customer_id UNIQUE (stripe_customer_id);
+
+
+--
+-- Name: stripe_events uq_billing_stripe_events_stripe_event_id; Type: CONSTRAINT; Schema: billing; Owner: -
+--
+
+ALTER TABLE ONLY billing.stripe_events
+    ADD CONSTRAINT uq_billing_stripe_events_stripe_event_id UNIQUE (stripe_event_id);
+
+
+--
+-- Name: subscriptions uq_billing_subscriptions_account_id; Type: CONSTRAINT; Schema: billing; Owner: -
+--
+
+ALTER TABLE ONLY billing.subscriptions
+    ADD CONSTRAINT uq_billing_subscriptions_account_id UNIQUE (account_id);
+
+
+--
+-- Name: subscriptions uq_billing_subscriptions_stripe_subscription_id; Type: CONSTRAINT; Schema: billing; Owner: -
+--
+
+ALTER TABLE ONLY billing.subscriptions
+    ADD CONSTRAINT uq_billing_subscriptions_stripe_subscription_id UNIQUE (stripe_subscription_id);
 
 
 --
@@ -932,6 +1047,27 @@ ALTER TABLE ONLY social.follows
 
 ALTER TABLE ONLY social.follows
     ADD CONSTRAINT follows_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_billing_stripe_events_event_type; Type: INDEX; Schema: billing; Owner: -
+--
+
+CREATE INDEX idx_billing_stripe_events_event_type ON billing.stripe_events USING btree (event_type);
+
+
+--
+-- Name: idx_billing_stripe_events_processed_at; Type: INDEX; Schema: billing; Owner: -
+--
+
+CREATE INDEX idx_billing_stripe_events_processed_at ON billing.stripe_events USING btree (processed_at);
+
+
+--
+-- Name: idx_billing_subscriptions_status; Type: INDEX; Schema: billing; Owner: -
+--
+
+CREATE INDEX idx_billing_subscriptions_status ON billing.subscriptions USING btree (status);
 
 
 --
@@ -1451,4 +1587,6 @@ INSERT INTO schema_migrations (filename) VALUES
 ('20260628010000_drop_trust_schema.rb'),
 ('20260629010000_relax_messaging_columns_for_deactivation.rb'),
 ('20260629020000_add_uploader_account_id_to_media_files.rb'),
-('20260826132540_create_identity_accounts.rb');
+('20260826132540_create_identity_accounts.rb'),
+('20260827235511_create_billing_schema.rb'),
+('20260919000000_add_body_stats_to_profiles.rb');

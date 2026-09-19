@@ -14,10 +14,8 @@ module Profile
         attribute :is_private, Types::Bool
         attribute :registered_at, Types::Time.optional
         attribute :age, Types::Integer.optional
-        attribute :height_cm, Types::Integer.optional
-        attribute :cup_size, Types::String.optional
+        attribute :body_stats, Types::Hash          # JSONB: height_cm/bust/waist/hip/cup
         attribute :industry, Types::String.optional
-        attribute :shop_id, Types::String.optional
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 

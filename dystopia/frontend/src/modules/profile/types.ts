@@ -4,6 +4,15 @@ export interface SnsLinksView {
   tiktok: string;
   bluesky: string;
   line: string;
+  cityheaven: string;
+}
+
+export interface BodyStatsView {
+  heightCm: number;
+  bust: number;
+  waist: number;
+  hip: number;
+  cup: string;
 }
 
 export interface AreaView {
@@ -29,11 +38,9 @@ export interface ProfileView {
   isPrivate: boolean;
   registeredAt: string;
   age: number;
-  heightCm: number;
-  cupSize: string;
+  bodyStats: BodyStatsView;
   industry: string;
   areas: AreaView[];
-  shopId: string;
   role: number; // identity role mirror: 1 = GUEST, 2 = CAST, 0 = unknown
 }
 
@@ -46,11 +53,9 @@ export interface SaveProfilePayload {
   prefecture?: string;
   isPrivate?: boolean;
   age?: number;
-  heightCm?: number;
-  cupSize?: string;
+  bodyStats?: Partial<BodyStatsView>;
   industry?: string;
   areaIds?: string[];
-  shopId?: string;
 }
 
 export interface SaveProfileMediaPayload {

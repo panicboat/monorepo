@@ -64,11 +64,9 @@ module Profile
           prefecture: blank_to_nil(m.prefecture),
           is_private: m.is_private,
           age: zero_to_nil(m.age),
-          height_cm: zero_to_nil(m.height_cm),
-          cup_size: blank_to_nil(m.cup_size),
+          body_stats: body_stats_to_hash(m.body_stats),
           industry: blank_to_nil(m.industry),
-          area_ids: m.area_ids.to_a,
-          shop_id: blank_to_nil(m.shop_id)
+          area_ids: m.area_ids.to_a
         )
         build_response(::Profile::V1::SaveProfileResponse, profile)
       rescue Errors::ValidationError => e
@@ -152,8 +150,21 @@ module Profile
           "instagram" => sns.instagram,
           "tiktok" => sns.tiktok,
           "bluesky" => sns.bluesky,
-          "line" => sns.line
+          "line" => sns.line,
+          "cityheaven" => sns.cityheaven
         }.reject { |_, v| v.nil? || v.empty? }
+      end
+
+      def body_stats_to_hash(stats)
+        return {} unless stats
+
+        {
+          "height_cm" => stats.height_cm,
+          "bust" => stats.bust_cm,
+          "waist" => stats.waist_cm,
+          "hip" => stats.hip_cm,
+          "cup" => stats.cup
+        }.reject { |_, v| v.nil? || v == 0 || v == "" }
       end
 
       def blank_to_nil(value)

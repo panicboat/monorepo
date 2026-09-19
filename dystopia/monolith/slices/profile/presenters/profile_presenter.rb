@@ -22,11 +22,9 @@ module Profile
             is_private: profile.is_private ? true : false,
             registered_at: profile.registered_at ? profile.registered_at.iso8601 : "",
             age: profile.age || 0,
-            height_cm: profile.height_cm || 0,
-            cup_size: profile.cup_size || "",
+            body_stats: body_stats_proto(profile.body_stats),
             industry: profile.industry || "",
             areas: area_records.map { |a| area_to_proto(a) },
-            shop_id: profile.shop_id || "",
             role: role || 0
           )
         end
@@ -50,7 +48,19 @@ module Profile
             instagram: h["instagram"] || h[:instagram] || "",
             tiktok: h["tiktok"] || h[:tiktok] || "",
             bluesky: h["bluesky"] || h[:bluesky] || "",
-            line: h["line"] || h[:line] || ""
+            line: h["line"] || h[:line] || "",
+            cityheaven: h["cityheaven"] || h[:cityheaven] || ""
+          )
+        end
+
+        def body_stats_proto(hash)
+          h = hash || {}
+          ::Profile::V1::BodyStats.new(
+            height_cm: h["height_cm"] || h[:height_cm] || 0,
+            bust_cm: h["bust"] || h[:bust] || 0,
+            waist_cm: h["waist"] || h[:waist] || 0,
+            hip_cm: h["hip"] || h[:hip] || 0,
+            cup: h["cup"] || h[:cup] || ""
           )
         end
       end

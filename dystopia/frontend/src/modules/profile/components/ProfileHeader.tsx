@@ -3,6 +3,7 @@
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { ProfileView } from "@/modules/profile/types";
+import { formatBodyStats } from "@/modules/profile/lib/format";
 
 const SNS_LABELS: { key: keyof ProfileView["snsLinks"]; label: string }[] = [
   { key: "x", label: "X" },
@@ -10,6 +11,7 @@ const SNS_LABELS: { key: keyof ProfileView["snsLinks"]; label: string }[] = [
   { key: "tiktok", label: "TikTok" },
   { key: "bluesky", label: "Bluesky" },
   { key: "line", label: "LINE" },
+  { key: "cityheaven", label: "シティーヘブン" },
 ];
 
 interface ProfileHeaderProps {
@@ -102,10 +104,9 @@ export function ProfileHeader({ profile, role, onEdit }: ProfileHeaderProps) {
         {isCast && (
           <div className="flex flex-wrap gap-x-4 gap-y-1 pt-2 text-sm text-text-secondary">
             {profile.age > 0 && <span>{profile.age}歳</span>}
-            {profile.heightCm > 0 && <span>{profile.heightCm}cm</span>}
-            {profile.cupSize && <span>{profile.cupSize}カップ</span>}
             {profile.industry && <span>{profile.industry}</span>}
             {profile.areas.length > 0 && <span>{profile.areas.map((a) => a.name).join(" / ")}</span>}
+            {formatBodyStats(profile.bodyStats) && <span>{formatBodyStats(profile.bodyStats)}</span>}
           </div>
         )}
       </div>
