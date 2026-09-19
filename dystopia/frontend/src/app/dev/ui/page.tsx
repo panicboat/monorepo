@@ -52,16 +52,14 @@ export default function DevUiPage() {
     coverMediaId: "",
     coverUrl: "",
     website: "https://example.com",
-    snsLinks: { x: "https://x.com/yuna", instagram: "", tiktok: "", bluesky: "", line: "" },
+    snsLinks: { x: "https://x.com/yuna", instagram: "", tiktok: "", bluesky: "", line: "", cityheaven: "" },
     prefecture: "東京都",
     isPrivate: false,
     registeredAt: "",
     age: 23,
-    heightCm: 158,
-    cupSize: "D",
+    bodyStats: { heightCm: 158, bust: 88, waist: 58, hip: 86, cup: "D" },
     industry: "デリヘル",
     areas: [{ id: "a1", region: "関東", prefecture: "東京都", name: "渋谷", code: "shibuya" }],
-    shopId: "",
     role: 2,
   };
 

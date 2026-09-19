@@ -262,10 +262,7 @@ module Messaging
           is_private: row.is_private ? true : false,
           registered_at: row.registered_at ? row.registered_at.iso8601 : "",
           age: row.age || 0,
-          height_cm: row.height_cm || 0,
-          cup_size: row.cup_size || "",
-          industry: row.industry || "",
-          shop_id: row.shop_id || ""
+          industry: row.industry || ""
         )
       end
 

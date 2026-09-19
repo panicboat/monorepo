@@ -18,10 +18,25 @@ RSpec.describe "Profile::UseCases::SaveProfile", type: :database do
     expect { uc.call(account_id: account_id, display_name: "") }.to raise_error(Errors::ValidationError)
   end
 
-  it "rejects a bio longer than 160 chars" do
+  it "rejects a bio longer than 1000 chars" do
     expect {
-      uc.call(account_id: account_id, display_name: "Coco", bio: "あ" * 161)
+      uc.call(account_id: account_id, display_name: "Coco", bio: "あ" * 1001)
     }.to raise_error(Errors::ValidationError)
+  end
+
+  it "accepts a bio up to 1000 chars" do
+    profile = uc.call(account_id: account_id, display_name: "Coco", bio: "あ" * 1000)
+    expect(profile.bio.length).to eq(1000)
+  end
+
+  it "persists body_stats as a jsonb hash" do
+    profile = uc.call(
+      account_id: account_id, display_name: "Coco",
+      body_stats: { "height_cm" => 158, "bust" => 88, "waist" => 58, "hip" => 86, "cup" => "D" }
+    )
+    expect(profile.body_stats).to eq(
+      "height_cm" => 158, "bust" => 88, "waist" => 58, "hip" => 86, "cup" => "D"
+    )
   end
 
   it "rejects an invalid username format" do

@@ -27,13 +27,17 @@ interface FormState {
   website: string;
   age: string;
   heightCm: string;
-  cupSize: string;
+  bust: string;
+  waist: string;
+  hip: string;
+  cup: string;
   industry: string;
   snsX: string;
   snsInstagram: string;
   snsTiktok: string;
   snsBluesky: string;
   snsLine: string;
+  snsCityheaven: string;
 }
 
 function toForm(p: ProfileView): FormState {
@@ -43,18 +47,22 @@ function toForm(p: ProfileView): FormState {
     prefecture: p.prefecture,
     website: p.website,
     age: p.age ? String(p.age) : "",
-    heightCm: p.heightCm ? String(p.heightCm) : "",
-    cupSize: p.cupSize,
+    heightCm: p.bodyStats.heightCm ? String(p.bodyStats.heightCm) : "",
+    bust: p.bodyStats.bust ? String(p.bodyStats.bust) : "",
+    waist: p.bodyStats.waist ? String(p.bodyStats.waist) : "",
+    hip: p.bodyStats.hip ? String(p.bodyStats.hip) : "",
+    cup: p.bodyStats.cup,
     industry: p.industry,
     snsX: p.snsLinks.x,
     snsInstagram: p.snsLinks.instagram,
     snsTiktok: p.snsLinks.tiktok,
     snsBluesky: p.snsLinks.bluesky,
     snsLine: p.snsLinks.line,
+    snsCityheaven: p.snsLinks.cityheaven,
   };
 }
 
-// full-payload: 現在値 + 編集。モーダルが扱わない username/isPrivate/areaIds/shopId は現在値を維持。
+// full-payload: 現在値 + 編集。モーダルが扱わない username/isPrivate/areaIds は現在値を維持。
 function buildPayload(current: ProfileView, f: FormState, isCast: boolean): SaveProfilePayload {
   return {
     username: current.username,
@@ -67,15 +75,22 @@ function buildPayload(current: ProfileView, f: FormState, isCast: boolean): Save
       tiktok: f.snsTiktok,
       bluesky: f.snsBluesky,
       line: f.snsLine,
+      cityheaven: f.snsCityheaven,
     },
     prefecture: f.prefecture,
     isPrivate: current.isPrivate,
     age: isCast ? Number(f.age) || 0 : 0,
-    heightCm: isCast ? Number(f.heightCm) || 0 : 0,
-    cupSize: isCast ? f.cupSize : "",
+    bodyStats: isCast
+      ? {
+          heightCm: Number(f.heightCm) || 0,
+          bust: Number(f.bust) || 0,
+          waist: Number(f.waist) || 0,
+          hip: Number(f.hip) || 0,
+          cup: f.cup,
+        }
+      : { heightCm: 0, bust: 0, waist: 0, hip: 0, cup: "" },
     industry: isCast ? f.industry : "",
     areaIds: current.areas.map((a) => a.id),
-    shopId: current.shopId,
   };
 }
 
@@ -136,13 +151,14 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, 
               <Input id="displayName" value={form.displayName} onChange={(e) => set("displayName", e.target.value)} />
             </FormField>
 
-            <FormField label="自己紹介" htmlFor="bio" hint={`${form.bio.length}/160`}>
+            <FormField label="自己紹介" htmlFor="bio" hint={`${form.bio.length}/1000`}>
               <Textarea
                 id="bio"
-                maxLength={160}
+                maxLength={1000}
+                rows={6}
                 value={form.bio}
                 onChange={(e) => set("bio", e.target.value)}
-                placeholder="自己紹介を入力"
+                placeholder={"自己紹介を入力（【〇〇について】のように見出しを付けて書けます）"}
               />
             </FormField>
 
@@ -172,21 +188,6 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, 
                   <FormField label="年齢" htmlFor="age">
                     <Input id="age" type="number" value={form.age} onChange={(e) => set("age", e.target.value)} />
                   </FormField>
-                  <FormField label="身長(cm)" htmlFor="height">
-                    <Input id="height" type="number" value={form.heightCm} onChange={(e) => set("heightCm", e.target.value)} />
-                  </FormField>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField label="カップ" htmlFor="cup">
-                    <Select id="cup" value={form.cupSize} onChange={(e) => set("cupSize", e.target.value)}>
-                      <option value="">未選択</option>
-                      {CUP_SIZES.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </Select>
-                  </FormField>
                   <FormField label="業種" htmlFor="industry">
                     <Select id="industry" value={form.industry} onChange={(e) => set("industry", e.target.value)}>
                       <option value="">未選択</option>
@@ -196,6 +197,32 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, 
                         </option>
                       ))}
                     </Select>
+                  </FormField>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField label="身長(cm)" htmlFor="height">
+                    <Input id="height" type="number" value={form.heightCm} onChange={(e) => set("heightCm", e.target.value)} />
+                  </FormField>
+                  <FormField label="カップ" htmlFor="cup">
+                    <Select id="cup" value={form.cup} onChange={(e) => set("cup", e.target.value)}>
+                      <option value="">未選択</option>
+                      {CUP_SIZES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormField>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <FormField label="バスト(cm)" htmlFor="bust">
+                    <Input id="bust" type="number" value={form.bust} onChange={(e) => set("bust", e.target.value)} />
+                  </FormField>
+                  <FormField label="ウエスト(cm)" htmlFor="waist">
+                    <Input id="waist" type="number" value={form.waist} onChange={(e) => set("waist", e.target.value)} />
+                  </FormField>
+                  <FormField label="ヒップ(cm)" htmlFor="hip">
+                    <Input id="hip" type="number" value={form.hip} onChange={(e) => set("hip", e.target.value)} />
                   </FormField>
                 </div>
               </>
@@ -208,6 +235,11 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, 
               <Input value={form.snsTiktok} onChange={(e) => set("snsTiktok", e.target.value)} placeholder="TikTok" />
               <Input value={form.snsBluesky} onChange={(e) => set("snsBluesky", e.target.value)} placeholder="Bluesky" />
               <Input value={form.snsLine} onChange={(e) => set("snsLine", e.target.value)} placeholder="LINE" />
+              <Input
+                value={form.snsCityheaven}
+                onChange={(e) => set("snsCityheaven", e.target.value)}
+                placeholder="シティーヘブン"
+              />
             </div>
 
             {error && <p className="text-sm text-error">{error}</p>}

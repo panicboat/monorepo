@@ -8,13 +8,13 @@ module Profile
       include Deps["repositories.profile_repository"]
 
       DISPLAY_NAME_MAX = 50
-      BIO_MAX = 160
+      BIO_MAX = 1000
       USERNAME_FORMAT = /\A[A-Za-z0-9_]{3,30}\z/
       AREAS_MAX = 2
 
       def call(account_id:, display_name:, username: nil, bio: nil, website: nil,
                sns_links: {}, prefecture: nil, is_private: false, age: nil,
-               height_cm: nil, cup_size: nil, industry: nil, area_ids: [], shop_id: nil)
+               body_stats: {}, industry: nil, area_ids: [])
         validate_display_name!(display_name)
         validate_bio!(bio)
         validate_username!(username, account_id) unless username.nil?
@@ -28,10 +28,8 @@ module Profile
           prefecture: prefecture,
           is_private: is_private ? true : false,
           age: age,
-          height_cm: height_cm,
-          cup_size: cup_size,
-          industry: industry,
-          shop_id: shop_id
+          body_stats: Sequel.pg_jsonb(body_stats || {}),
+          industry: industry
         }
         attrs[:username] = username unless username.nil?
 

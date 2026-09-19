@@ -18,7 +18,7 @@ message Profile {
   string account_id = 1;       // 1:1 with identity.Account
   string username = 2;         // @handle, case-insensitive unique
   string display_name = 3;
-  string bio = 4;              // max 160 (enforced in monolith)
+  string bio = 4;              // max 1000 (enforced in monolith)
   string avatar_media_id = 5;
   string avatar_url = 6;       // read-only download URL
   string cover_media_id = 7;
@@ -31,11 +31,9 @@ message Profile {
 
   // cast extras (role = cast)
   int32 age = 14;
-  int32 height_cm = 15;
-  string cup_size = 16;
+  BodyStats body_stats = 15;   // 身長/スリーサイズ/カップ
   string industry = 17;        // 業種 / service category (enum 値は §10 で確定)
   repeated Area areas = 18;    // 活動エリア (max 2)
-  string shop_id = 19;         // 所属店舗 ref (shop domain は §10 で defer)
 
   // identity role mirror: 1 = GUEST, 2 = CAST (0 = unknown / not joined yet).
   // Sourced from identity__users.role at presentation time so UI does not
@@ -49,6 +47,15 @@ message SnsLinks {
   string tiktok = 3;
   string bluesky = 4;
   string line = 5;
+  string cityheaven = 6;  // 口コミサイト等の外部リンク
+}
+
+message BodyStats {
+  int32 height_cm = 1;
+  int32 bust_cm = 2;
+  int32 waist_cm = 3;
+  int32 hip_cm = 4;
+  string cup = 5;
 }
 
 message Area {
@@ -73,11 +80,9 @@ message SaveProfileRequest {
   bool is_private = 7;
   // cast extras
   int32 age = 8;
-  int32 height_cm = 9;
-  string cup_size = 10;
+  BodyStats body_stats = 9;
   string industry = 11;
   repeated string area_ids = 12; // max 2
-  string shop_id = 13;
 }
 message SaveProfileResponse { Profile profile = 1; }
 

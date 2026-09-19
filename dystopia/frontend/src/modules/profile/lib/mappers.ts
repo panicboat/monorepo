@@ -1,12 +1,14 @@
-import type { Profile, Area, SnsLinks } from "@/stub/profile/v1/service_pb";
+import type { Profile, Area, SnsLinks, BodyStats } from "@/stub/profile/v1/service_pb";
 import type {
   AreaView,
+  BodyStatsView,
   ProfileView,
   SaveProfilePayload,
   SnsLinksView,
 } from "@/modules/profile/types";
 
-const EMPTY_SNS: SnsLinksView = { x: "", instagram: "", tiktok: "", bluesky: "", line: "" };
+const EMPTY_SNS: SnsLinksView = { x: "", instagram: "", tiktok: "", bluesky: "", line: "", cityheaven: "" };
+const EMPTY_BODY_STATS: BodyStatsView = { heightCm: 0, bust: 0, waist: 0, hip: 0, cup: "" };
 
 function mapSnsLinks(s: SnsLinks | undefined): SnsLinksView {
   if (!s) return { ...EMPTY_SNS };
@@ -16,6 +18,18 @@ function mapSnsLinks(s: SnsLinks | undefined): SnsLinksView {
     tiktok: s.tiktok || "",
     bluesky: s.bluesky || "",
     line: s.line || "",
+    cityheaven: s.cityheaven || "",
+  };
+}
+
+function mapBodyStats(b: BodyStats | undefined): BodyStatsView {
+  if (!b) return { ...EMPTY_BODY_STATS };
+  return {
+    heightCm: b.heightCm || 0,
+    bust: b.bustCm || 0,
+    waist: b.waistCm || 0,
+    hip: b.hipCm || 0,
+    cup: b.cup || "",
   };
 }
 
@@ -46,11 +60,9 @@ export function emptyProfileView(accountId: string): ProfileView {
     isPrivate: false,
     registeredAt: "",
     age: 0,
-    heightCm: 0,
-    cupSize: "",
+    bodyStats: { ...EMPTY_BODY_STATS },
     industry: "",
     areas: [],
-    shopId: "",
     role: 0,
   };
 }
@@ -71,11 +83,9 @@ export function mapProfileToView(p: Profile): ProfileView {
     isPrivate: p.isPrivate,
     registeredAt: p.registeredAt || "",
     age: p.age || 0,
-    heightCm: p.heightCm || 0,
-    cupSize: p.cupSize || "",
+    bodyStats: mapBodyStats(p.bodyStats),
     industry: p.industry || "",
     areas: (p.areas || []).map(mapAreaToView),
-    shopId: p.shopId || "",
     role: p.role || 0,
   };
 }
@@ -90,16 +100,15 @@ export function profileViewToSavePayload(p: ProfileView): SaveProfilePayload {
     prefecture: p.prefecture,
     isPrivate: p.isPrivate,
     age: p.age,
-    heightCm: p.heightCm,
-    cupSize: p.cupSize,
+    bodyStats: { ...p.bodyStats },
     industry: p.industry,
     areaIds: p.areas.map((a) => a.id),
-    shopId: p.shopId,
   };
 }
 
 export function buildSaveProfileRequest(payload: SaveProfilePayload) {
   const sns = payload.snsLinks;
+  const stats = payload.bodyStats;
   return {
     username: payload.username || "",
     displayName: payload.displayName,
@@ -111,14 +120,19 @@ export function buildSaveProfileRequest(payload: SaveProfilePayload) {
       tiktok: sns?.tiktok || "",
       bluesky: sns?.bluesky || "",
       line: sns?.line || "",
+      cityheaven: sns?.cityheaven || "",
     },
     prefecture: payload.prefecture || "",
     isPrivate: payload.isPrivate ?? false,
     age: payload.age ?? 0,
-    heightCm: payload.heightCm ?? 0,
-    cupSize: payload.cupSize || "",
+    bodyStats: {
+      heightCm: stats?.heightCm ?? 0,
+      bustCm: stats?.bust ?? 0,
+      waistCm: stats?.waist ?? 0,
+      hipCm: stats?.hip ?? 0,
+      cup: stats?.cup || "",
+    },
     industry: payload.industry || "",
     areaIds: payload.areaIds || [],
-    shopId: payload.shopId || "",
   };
 }
