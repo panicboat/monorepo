@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/panicboat/monorepo/compare/frontend-v0.6.1...frontend-v0.7.0) (2026-09-20)
+
+
+### Features
+
+* **dystopia:** add schedule slice for cast attendance ([#1185](https://github.com/panicboat/monorepo/issues/1185)) ([e5a4f3a](https://github.com/panicboat/monorepo/commit/e5a4f3a1550a033da10b5bd3dd8a4f6a9120d0e0))
+* **dystopia:** enrich cast profile with body stats and sns links ([#1182](https://github.com/panicboat/monorepo/issues/1182)) ([2c8292f](https://github.com/panicboat/monorepo/commit/2c8292fab1dddc328c44cc018c224568bb0eb1ce))
+
 ## [0.6.1](https://github.com/panicboat/monorepo/compare/frontend-v0.6.0...frontend-v0.6.1) (2026-09-18)
 
 
