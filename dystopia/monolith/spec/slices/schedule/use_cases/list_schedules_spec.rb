@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "errors/validation_error"
 
 RSpec.describe "Schedule::UseCases::ListSchedules", type: :database do
   let(:uc) { Hanami.app.slices[:schedule]["use_cases.list_schedules"] }
@@ -13,5 +14,11 @@ RSpec.describe "Schedule::UseCases::ListSchedules", type: :database do
     rows = uc.call(account_id: account_id, from_date: "2026-09-19", to_date: "2026-09-21")
     expect(rows.size).to eq(1)
     expect(rows.first.work_date.to_s).to eq("2026-09-20")
+  end
+
+  it "rejects a malformed from_date" do
+    expect {
+      uc.call(account_id: account_id, from_date: "not-a-date", to_date: "2026-09-20")
+    }.to raise_error(Errors::ValidationError)
   end
 end

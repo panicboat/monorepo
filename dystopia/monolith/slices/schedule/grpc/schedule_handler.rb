@@ -40,6 +40,8 @@ module Schedule
             )
           }
         )
+      rescue Errors::ValidationError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
 
       def save_schedule
@@ -68,6 +70,8 @@ module Schedule
         authenticate_user!
         delete_schedule_uc.call(account_id: current_user_id, work_date: request.message.work_date)
         ::Schedule::V1::DeleteScheduleResponse.new
+      rescue Errors::ValidationError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       end
     end
   end

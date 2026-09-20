@@ -34,6 +34,10 @@ module Schedule
       def delete(account_id:, work_date:)
         schedule_records.dataset.where(account_id: account_id, work_date: work_date).delete
       end
+
+      def delete_by_account(account_id)
+        schedule_records.dataset.where(account_id: account_id).delete
+      end
     end
   end
 end

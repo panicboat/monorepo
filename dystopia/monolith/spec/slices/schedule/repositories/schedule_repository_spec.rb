@@ -45,4 +45,14 @@ RSpec.describe "Schedule::Repositories::ScheduleRepository", type: :database do
     rows = repo.list(account_id: account_id, from_date: "2026-09-20", to_date: "2026-09-20")
     expect(rows).to be_empty
   end
+
+  it "deletes all rows for an account, across dates" do
+    repo.upsert(account_id: account_id, work_date: "2026-09-18", start_time: "20:00", end_time: "02:00")
+    repo.upsert(account_id: account_id, work_date: "2026-09-25", start_time: "20:00", end_time: "02:00")
+
+    repo.delete_by_account(account_id)
+
+    rows = repo.list(account_id: account_id, from_date: "2026-09-01", to_date: "2026-09-30")
+    expect(rows).to be_empty
+  end
 end
