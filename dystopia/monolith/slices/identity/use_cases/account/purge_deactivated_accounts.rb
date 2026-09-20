@@ -18,6 +18,7 @@ module Identity
           purge_social: nil,
           purge_post: nil,
           purge_media: nil,
+          purge_schedule: nil,
           purge_profile: nil,
           purge_identity: nil,
           logger: nil,
@@ -32,6 +33,7 @@ module Identity
           @purge_social = purge_social
           @purge_post = purge_post
           @purge_media = purge_media
+          @purge_schedule = purge_schedule
           @purge_profile = purge_profile
           @purge_identity = purge_identity
           @logger = logger
@@ -66,6 +68,7 @@ module Identity
             purge_social,
             purge_post,
             purge_media,
+            purge_schedule,
             purge_profile
           ]
         end
@@ -100,6 +103,10 @@ module Identity
 
         def purge_media
           @purge_media ||= ::Media::Slice["use_cases.purge_account"]
+        end
+
+        def purge_schedule
+          @purge_schedule ||= ::Schedule::Slice["use_cases.purge_account"]
         end
 
         def purge_profile

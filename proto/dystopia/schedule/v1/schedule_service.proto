@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package schedule.v1;
+
+// Cast self-published attendance, not a booking system — see docs/superpowers/specs/2026-09-19-schedule-slice-design.md
+service ScheduleService {
+  // Rows in [from_date, to_date] inclusive; a missing date means the cast is off
+  rpc ListSchedules(ListSchedulesRequest) returns (ListSchedulesResponse);
+
+  // Upserts the caller's own row; account_id comes from the authenticated caller, never the request
+  rpc SaveSchedule(SaveScheduleRequest) returns (SaveScheduleResponse);
+
+  // Deletes the caller's own row for work_date (= marks that day as off).
+  rpc DeleteSchedule(DeleteScheduleRequest) returns (DeleteScheduleResponse);
+}
+
+message Schedule {
+  string account_id = 1;
+  string work_date = 2;   // "YYYY-MM-DD"
+  string start_time = 3;  // "HH:MM"
+  string end_time = 4;    // "HH:MM", may be earlier than start_time (crosses midnight)
+}
+
+message ListSchedulesRequest {
+  string account_id = 1;
+  string from_date = 2;  // "YYYY-MM-DD", inclusive
+  string to_date = 3;    // "YYYY-MM-DD", inclusive
+}
+
+message ListSchedulesResponse {
+  repeated Schedule schedules = 1;
+}
+
+message SaveScheduleRequest {
+  string work_date = 1;
+  string start_time = 2;
+  string end_time = 3;
+}
+
+message SaveScheduleResponse {
+  Schedule schedule = 1;
+}
+
+message DeleteScheduleRequest {
+  string work_date = 1;
+}
+
+message DeleteScheduleResponse {}

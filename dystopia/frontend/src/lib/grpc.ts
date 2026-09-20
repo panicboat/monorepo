@@ -16,6 +16,7 @@ import { KarteService } from "@/stub/karte/v1/service_pb";
 import { DiscoveryService } from "@/stub/discovery/v1/discovery_service_pb";
 import { MessagingService } from "@/stub/messaging/v1/messaging_service_pb";
 import { FootprintsService } from "@/stub/footprints/v1/footprints_service_pb";
+import { ScheduleService } from "@/stub/schedule/v1/schedule_service_pb";
 
 // In server environment (Next.js API Routes), we connect to Monolith directly.
 // Monolith is at 'http://monolith:9001' or 'http://localhost:9001' depending on Docker/Local.
@@ -83,3 +84,6 @@ export const footprintsClient = createClient(FootprintsService, transport);
 
 // Karte domain client (karte.v1)
 export const karteClient = createClient(KarteService, transport);
+
+// Schedule domain client (schedule.v1)
+export const scheduleClient = createClient(ScheduleService, transport);

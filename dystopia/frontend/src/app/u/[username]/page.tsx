@@ -11,6 +11,7 @@ import { useRecordVisit } from "@/modules/footprints";
 import { useAuthStore, selectUserId } from "@/stores/authStore";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
+import { ScheduleSection } from "@/modules/schedule";
 
 export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
@@ -55,6 +56,7 @@ export default function PublicProfilePage() {
           <strong className="text-text-primary">{counts.followersCount}</strong> フォロワー
         </span>
       </div>
+      {role === "cast" && <ScheduleSection accountId={profile.accountId} isOwner={viewerId === profile.accountId} />}
       <ProfileContentTabs
         accountId={profile.accountId}
         extraTabs={
