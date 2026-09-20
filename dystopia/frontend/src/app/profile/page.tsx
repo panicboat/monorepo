@@ -6,6 +6,7 @@ import { useAuthStore, selectRole, selectIsHydrated } from "@/stores/authStore";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
 import { EditProfileModal } from "@/modules/profile/components/EditProfileModal";
 import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs";
+import { ScheduleSection } from "@/modules/schedule";
 
 export default function ProfilePage() {
   const isHydrated = useAuthStore(selectIsHydrated);
@@ -27,6 +28,7 @@ export default function ProfilePage() {
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <ProfileHeader profile={profile} role={role} onEdit={() => setEditing(true)} />
+      {role === "cast" && <ScheduleSection accountId={profile.accountId} isOwner />}
       <ProfileContentTabs accountId={profile.accountId} />
       <EditProfileModal
         open={editing}
