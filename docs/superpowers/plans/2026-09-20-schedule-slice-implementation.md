@@ -38,15 +38,12 @@ syntax = "proto3";
 
 package schedule.v1;
 
-// Cast self-published attendance. Not a booking/reservation system — see
-// docs/superpowers/specs/2026-09-19-schedule-slice-design.md.
+// Cast self-published attendance, not a booking system — see docs/superpowers/specs/2026-09-19-schedule-slice-design.md
 service ScheduleService {
-  // Returns the rows in [from_date, to_date] (inclusive) for account_id.
-  // A date with no row means the cast is off that day.
+  // Rows in [from_date, to_date] inclusive; a missing date means the cast is off
   rpc ListSchedules(ListSchedulesRequest) returns (ListSchedulesResponse);
 
-  // Upserts the caller's own row for work_date. account_id is derived from
-  // the authenticated caller, never taken from the request.
+  // Upserts the caller's own row; account_id comes from the authenticated caller, never the request
   rpc SaveSchedule(SaveScheduleRequest) returns (SaveScheduleResponse);
 
   // Deletes the caller's own row for work_date (= marks that day as off).
@@ -336,9 +333,7 @@ module Schedule
           .to_a
       end
 
-      # Upsert per (account_id, work_date). Returns a row hash (not a ROM
-      # struct — this is a raw SQL RETURNING result, same pattern as
-      # Footprints::Repositories::FootprintsRepository#upsert_visit).
+      # Upserts by (account_id, work_date); returns a raw-SQL row hash, matching FootprintsRepository#upsert_visit
       def upsert(account_id:, work_date:, start_time:, end_time:)
         new_id = SecureRandom.uuid_v7
         now = Time.now
