@@ -85,4 +85,5 @@ export const footprintsClient = createClient(FootprintsService, transport);
 // Karte domain client (karte.v1)
 export const karteClient = createClient(KarteService, transport);
 
+// Schedule domain client (schedule.v1)
 export const scheduleClient = createClient(ScheduleService, transport);
