@@ -5,6 +5,7 @@ import { useSWRConfig } from "swr";
 import { authFetch } from "@/lib/auth";
 import { PostComposer } from "./PostComposer";
 import type { SavePostPayload } from "@/modules/post/lib/post-view";
+import { usePostFeedStore } from "@/stores/postFeedStore";
 
 interface PostComposerModalProps {
   open: boolean;
@@ -13,6 +14,7 @@ interface PostComposerModalProps {
 
 export function PostComposerModal({ open, onClose }: PostComposerModalProps) {
   const { mutate } = useSWRConfig();
+  const notifyPostCreated = usePostFeedStore((s) => s.notifyPostCreated);
 
   useEffect(() => {
     if (!open) return;
@@ -23,10 +25,12 @@ export function PostComposerModal({ open, onClose }: PostComposerModalProps) {
 
   const handleSubmit = useCallback(async (payload: SavePostPayload) => {
     await authFetch("/api/posts", { method: "POST", body: payload });
-    // Invalidate any feed/posts list cache so the new post appears on next navigation/refresh.
+    // Invalidate any SWR-backed post/feed cache (e.g. the profile posts tab).
     mutate((key) => typeof key === "string" && (key.startsWith("/api/posts") || key.startsWith("/api/feed")), undefined, { revalidate: true });
+    // Non-SWR lists (e.g. the home feed's usePaginatedFetch) refetch via this signal instead.
+    notifyPostCreated();
     onClose();
-  }, [mutate, onClose]);
+  }, [mutate, notifyPostCreated, onClose]);
 
   if (!open) return null;
 
