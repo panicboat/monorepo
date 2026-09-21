@@ -65,7 +65,7 @@ export function ScheduleSection({ accountId, isOwner }: ScheduleSectionProps) {
                 type="button"
                 disabled={!isOwner}
                 onClick={() => isOwner && startEdit(dateKey)}
-                className="flex w-full items-center justify-between text-left text-sm disabled:cursor-default"
+                className="grid w-full grid-cols-[5rem_1fr] items-center gap-2 text-left text-sm disabled:cursor-default"
               >
                 <span className="text-text-secondary">{formatDayLabel(dateKey)}</span>
                 <span className={entry ? "text-text-primary" : "text-text-secondary"}>
