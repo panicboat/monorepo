@@ -529,6 +529,26 @@ git add dystopia/monolith/slices/post/adapters/cast_adapter.rb
 git commit -s -m "refactor(dystopia/monolith): narrow CastAdapter to an existence check"
 ```
 
+- [ ] **Step 4: Delete the now-broken, already-dead `GetPost` use case**
+
+The task reviewer's grep methodology for Step 1 (`grepping cast_adapter\. across dystopia/monolith/slices/post`) has a blind spot: `dystopia/monolith/slices/post/use_cases/posts/get_post.rb` calls `Post::Adapters::CastAdapter.new.find_by_cast_id(cast_user_id)` through a freshly-instantiated adapter, not the `cast_adapter` accessor, so it doesn't match that pattern. Verified separately: `Post::UseCases::Posts::GetPost`/`use_cases.posts.get_post` has zero callers anywhere in the monolith (the live `get_post` RPC in `post_handler.rb:45-58` calls `post_repo.find_by_id` + `profile_author_adapter` directly, not this use case) and no spec file exists for it. It was already fully dead before this task; Task 6's deletion of `find_by_cast_id` just makes it dead code that would additionally raise `NoMethodError` if anything ever revived it. Delete it now rather than leave that landmine:
+
+```bash
+rm dystopia/monolith/slices/post/use_cases/posts/get_post.rb
+```
+
+- [ ] **Step 5: Run the post-slice suite again**
+
+Run: `cd dystopia/monolith && bundle exec rspec spec/slices/post`
+Expected: 0 failures (same count as Step 2 — no spec covered the deleted file).
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add dystopia/monolith/slices/post/use_cases/posts/get_post.rb
+git commit -s -m "refactor(dystopia/monolith): delete the orphaned GetPost use case"
+```
+
 ---
 
 ### Task 7: Delete dead comment-author code from `Post::Grpc::Handler`/`CommentHandler`
