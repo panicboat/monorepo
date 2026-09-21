@@ -55,9 +55,6 @@ export default function SettingsPage() {
               <p className="mt-2 text-sm text-muted-foreground">
                 30 日以内に同じ電話番号で login すれば自動的に復活します。
                 30 日経過後はデータが消えます。
-                <span className="block mt-1">
-                  ※ カルテに残した記録は、他の Cast の安全情報として残ります。
-                </span>
               </p>
               <button
                 type="button"
@@ -84,9 +81,6 @@ export default function SettingsPage() {
             <p className="mt-2 text-sm text-muted-foreground">
               30 日以内に同じ電話番号で login すれば自動的に復活します。
               30 日経過後はデータが消えます。
-              <span className="mt-1 block">
-                ※ カルテに残した記録は、他の Cast の安全情報として残ります。
-              </span>
             </p>
             <div className="mt-4 flex justify-end gap-2">
               <button
