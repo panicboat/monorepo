@@ -31,10 +31,6 @@ module Profile
         cast_gallery_media.where(cast_user_id: cast_user_id).order(:position).pluck(:media_id)
       end
 
-      def save_visibility(user_id, visibility)
-        update(user_id, visibility: visibility)
-      end
-
       def save_genres(cast_user_id:, genre_ids:)
         transaction do
           cast_genres.where(cast_user_id: cast_user_id).delete
@@ -46,10 +42,6 @@ module Profile
 
       def find_genre_ids(cast_user_id)
         cast_genres.where(cast_user_id: cast_user_id).pluck(:genre_id)
-      end
-
-      def public_cast_ids
-        casts.where(visibility: "public").pluck(:user_id)
       end
     end
   end
