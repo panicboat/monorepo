@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { authFetch } from "@/lib/auth/fetch";
 import { usePaginatedFetch, type PaginatedResult } from "@/lib/hooks/usePaginatedFetch";
+import { usePostFeedStore } from "@/stores/postFeedStore";
 import type { PostView } from "@/modules/post/lib/post-view";
 import type { FeedFilterValue, FeedListView, UseFeedOptions } from "@/modules/feed/types";
 
@@ -52,6 +53,16 @@ export function useFeed(options: UseFeedOptions = {}) {
     fetchFn,
     buildParams,
   });
+
+  // Not SWR-backed, so a post created elsewhere (ComposerFAB) needs this signal to refetch.
+  const postCreatedVersion = usePostFeedStore((s) => s.version);
+  const lastSeenVersionRef = useRef(postCreatedVersion);
+  useEffect(() => {
+    if (lastSeenVersionRef.current === postCreatedVersion) return;
+    lastSeenVersionRef.current = postCreatedVersion;
+    reset();
+    fetchInitial();
+  }, [postCreatedVersion, reset, fetchInitial]);
 
   return {
     posts,
