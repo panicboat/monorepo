@@ -282,15 +282,16 @@ git commit -s -m "refactor(dystopia/monolith): narrow the casts relation to cast
 
 ---
 
-### Task 3: Narrow `CastRepository`
+### Task 3: Narrow `CastRepository`, delete the dead `SaveCastVisibility` use case
 
 **Files:**
 - Modify: `dystopia/monolith/slices/profile/repositories/cast_repository.rb`
 - Modify: `dystopia/monolith/spec/slices/profile/repositories/cast_repository_spec.rb`
+- Delete: `dystopia/monolith/slices/profile/use_cases/save_cast_visibility.rb`
 
 **Interfaces:**
 - Consumes: `Profile::Relations::Casts` from Task 2.
-- Produces: `CastRepository` keeps exactly `#find_by_user_id`, `#find_by_id`, `#find_by_ids`, `#find_by_user_ids`, `#find_gallery_media_ids`, `#save_visibility`, `#public_cast_ids` (now `visibility`-only, no `registered_at` filter — that filter moves to `ProfileRepository#registered_account_ids` in Task 4), `#save_genres`, `#find_genre_ids`, `#find_area_and_genre_ids` (drop the `area_ids` half of its return — see Step 3), `#get_genre_ids`. Everything else found dead in the spec (`#find_by_slug`, `#slug_available?`, `#get_popular_tags`, `#complete_registration`, `#save_images`, `#find_with_plans`, `#find_by_user_id_with_plans`, `#private_cast_ids`, `#save_areas`, `#find_area_ids`, `#area_ids_by_prefecture`, `#cast_user_ids_by_area_ids`) is deleted.
+- Produces: `CastRepository` keeps exactly `#find_by_user_id`, `#find_by_id`, `#find_by_ids`, `#find_by_user_ids`, `#find_gallery_media_ids`, `#save_genres`, `#find_genre_ids`. Everything else — including `#save_visibility` and `#public_cast_ids` — is deleted: their only caller, `Profile::UseCases::SaveCastVisibility`, itself has zero callers anywhere in the monolith (no gRPC handler exposes it), so the whole write path for `casts.visibility` is dead, not just the columns dropped in Task 1. (Found the hard way: an early draft of this task kept `#save_visibility`/`#public_cast_ids` and left `SaveCastVisibility` in place; implementing it surfaced that `SaveCastVisibility` calls `#find_by_user_id_with_plans`, a method already being deleted here — tracing that use case's own callers found none, at which point keeping `#save_visibility`/`#public_cast_ids` around had no remaining justification either.) `#find_area_and_genre_ids` and the standalone `#is_registered?`/`#list_by_visibility` methods from the original file are also deleted — none had a live caller.
 
 - [ ] **Step 1: Replace `cast_repository_spec.rb` with specs for only the surviving methods**
 
@@ -316,36 +317,13 @@ RSpec.describe "Profile::Repositories::CastRepository", type: :database do
       expect(repo.find_by_user_id(user_id).user_id).to eq(user_id)
     end
   end
-
-  describe "#save_visibility" do
-    it "updates the visibility column" do
-      user_id = SecureRandom.uuid_v7
-      repo.create(user_id: user_id, visibility: "offline")
-
-      repo.save_visibility(user_id, "public")
-
-      expect(repo.find_by_user_id(user_id).visibility).to eq("public")
-    end
-  end
-
-  describe "#public_cast_ids" do
-    it "returns only user_ids with visibility public" do
-      public_id = SecureRandom.uuid_v7
-      private_id = SecureRandom.uuid_v7
-      repo.create(user_id: public_id, visibility: "public")
-      repo.create(user_id: private_id, visibility: "private")
-
-      expect(repo.public_cast_ids).to include(public_id)
-      expect(repo.public_cast_ids).not_to include(private_id)
-    end
-  end
 end
 ```
 
 - [ ] **Step 2: Run it to confirm it fails**
 
 Run: `cd dystopia/monolith && bundle exec rspec spec/slices/profile/repositories/cast_repository_spec.rb`
-Expected: FAIL/ERROR — `repo.create(user_id: ..., visibility: ...)` errors because the relation (from Task 2) no longer accepts `name`/`bio` as required attributes the way the old spec assumed, and `public_cast_ids` still references the now-dropped `registered_at` column.
+Expected: FAIL/ERROR — the current (pre-Task-3) repository still defines `#public_cast_ids` referencing the now-dropped `registered_at` column and other methods this task deletes, so the file fails to load correctly against the narrowed relation from Task 2.
 
 - [ ] **Step 3: Narrow the repository**
 
@@ -385,14 +363,6 @@ module Profile
         cast_gallery_media.where(cast_user_id: cast_user_id).order(:position).pluck(:media_id)
       end
 
-      def save_visibility(user_id, visibility)
-        update(user_id, visibility: visibility)
-      end
-
-      def public_cast_ids
-        casts.where(visibility: "public").pluck(:user_id)
-      end
-
       def save_genres(cast_user_id:, genre_ids:)
         transaction do
           cast_genres.where(cast_user_id: cast_user_id).delete
@@ -412,223 +382,69 @@ end
 
 Note: `#find_area_and_genre_ids` and the standalone `#is_registered?`/`#list_by_visibility` methods from the original file are dropped along with this rewrite — none had a live caller (see spec Evidence section); `find_genre_ids` above covers the one live half of what `find_area_and_genre_ids` used to combine.
 
-- [ ] **Step 4: Run the spec again to confirm it passes**
+- [ ] **Step 4: Delete the dead `SaveCastVisibility` use case**
+
+`Profile::UseCases::SaveCastVisibility` is the only caller of `#save_visibility`/`#public_cast_ids`, both just deleted above, and it has zero callers of its own anywhere in the monolith (no gRPC handler references `use_cases.save_cast_visibility`). Delete the whole file:
+
+```bash
+rm dystopia/monolith/slices/profile/use_cases/save_cast_visibility.rb
+```
+
+There is no spec file for this use case to remove (none exists).
+
+- [ ] **Step 5: Run the spec again to confirm it passes**
 
 Run: `cd dystopia/monolith && bundle exec rspec spec/slices/profile/repositories/cast_repository_spec.rb`
-Expected: 4 examples, 0 failures.
+Expected: 2 examples, 0 failures.
 
-- [ ] **Step 5: Run the full profile-slice spec suite to catch any other caller this plan missed**
+- [ ] **Step 6: Run the full profile-slice spec suite to catch any other caller this plan missed**
 
 Run: `cd dystopia/monolith && bundle exec rspec spec/slices/profile`
-Expected: 0 failures. If something fails referencing a method deleted in Step 3, that method had a live caller this plan's static trace missed — stop and re-add just that method rather than proceeding.
+Expected: 0 failures. If something fails referencing a method or use case deleted in this task, it had a live caller this plan's static trace missed — stop and re-add just that piece rather than proceeding.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add dystopia/monolith/slices/profile/repositories/cast_repository.rb \
-        dystopia/monolith/spec/slices/profile/repositories/cast_repository_spec.rb
-git commit -s -m "refactor(dystopia/monolith): narrow CastRepository to its live methods"
+        dystopia/monolith/spec/slices/profile/repositories/cast_repository_spec.rb \
+        dystopia/monolith/slices/profile/use_cases/save_cast_visibility.rb
+git commit -s -m "refactor(dystopia/monolith): narrow CastRepository, delete dead SaveCastVisibility"
 ```
 
 ---
 
-### Task 4: Move "registered" and area filtering onto `ProfileRepository`
+### Task 4: Delete the dead cast area-discovery use cases
 
-**Why this task exists (beyond the spec):** `CastRepository#public_cast_ids` used to also filter out casts with a `nil` `registered_at` — that column no longer exists on `casts` after Task 1 (it now lives only on `profiles`, backfilled with the same values). To keep cast discovery returning the same set of accounts as before, the "registered" check moves to a new `ProfileRepository` method that reads `profiles.registered_at`. `GetPublicCastIdsInPrefecture`'s area filter moves from `cast_areas` to `profiles.prefecture`, per the spec.
+**Why this task exists (revised from the original plan):** The original plan for this task rewrote `GetPublicCastIds`/`GetPublicCastIdsInPrefecture` to filter by `profile_areas` instead of `cast_areas`, on the assumption that cast area-discovery was live but reading the wrong table. Implementing Task 3 revealed the whole call chain into these two use cases (`Post::Adapters::CastAdapter#public_cast_ids`, their only caller) has zero callers of its own — the chain is unreachable, not just wrong. Fixing unreachable code changes nothing observable, so this task deletes the two use cases outright instead. Real cast discovery already goes through the `profiles`-based discovery slice (`role_filter`), untouched by this plan.
 
 **Files:**
-- Modify: `dystopia/monolith/slices/profile/repositories/profile_repository.rb`
-- Modify: `dystopia/monolith/spec/slices/profile/repositories/profile_repository_spec.rb`
-- Modify: `dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids.rb`
-- Modify: `dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids_in_prefecture.rb`
-- Create: `dystopia/monolith/spec/slices/profile/use_cases/cast/queries/get_public_cast_ids_in_prefecture_spec.rb`
+- Delete: `dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids.rb`
+- Delete: `dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids_in_prefecture.rb`
 
 **Interfaces:**
-- Produces: `ProfileRepository#registered_account_ids -> Array<String>`. `GetPublicCastIds#call -> Array<String>` (unchanged signature). `GetPublicCastIdsInPrefecture#call(prefecture:) -> Array<String>` (unchanged signature).
+- Consumes: nothing (their only caller, `Post::Adapters::CastAdapter#public_cast_ids`, is deleted in Task 6).
+- Produces: nothing; pure deletion.
 
-- [ ] **Step 1: Write the failing spec for `ProfileRepository#registered_account_ids`**
-
-Append to `dystopia/monolith/spec/slices/profile/repositories/profile_repository_spec.rb` (inside the existing `RSpec.describe` block, alongside the other `describe` blocks):
-
-```ruby
-  describe "#registered_account_ids" do
-    it "returns only accounts with a non-nil registered_at" do
-      registered_id = SecureRandom.uuid_v7
-      unregistered_id = SecureRandom.uuid_v7
-      repo.create(account_id: registered_id, display_name: "Registered", registered_at: Time.now)
-      repo.create(account_id: unregistered_id, display_name: "Unregistered")
-
-      expect(repo.registered_account_ids).to include(registered_id)
-      expect(repo.registered_account_ids).not_to include(unregistered_id)
-    end
-  end
-```
-
-- [ ] **Step 2: Run it to confirm it fails**
-
-Run: `cd dystopia/monolith && bundle exec rspec spec/slices/profile/repositories/profile_repository_spec.rb -e "#registered_account_ids"`
-Expected: FAIL with `NoMethodError: undefined method 'registered_account_ids'`.
-
-- [ ] **Step 3: Add the method**
-
-In `dystopia/monolith/slices/profile/repositories/profile_repository.rb`, add this method (e.g. directly below `#account_ids_by_prefecture`):
-
-```ruby
-      # Accounts that have completed onboarding, per the same registered_at
-      # gate cast discovery has always used (now sourced from profiles
-      # instead of the retired profile.casts.registered_at).
-      def registered_account_ids
-        profiles.exclude(registered_at: nil).pluck(:account_id)
-      end
-```
-
-- [ ] **Step 4: Run it to confirm it passes**
-
-Run: `cd dystopia/monolith && bundle exec rspec spec/slices/profile/repositories/profile_repository_spec.rb`
-Expected: all examples pass (including the new one).
-
-- [ ] **Step 5: Rewrite `GetPublicCastIds` to intersect with `registered_account_ids`**
-
-Replace the full contents of `dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids.rb`:
-
-```ruby
-# frozen_string_literal: true
-
-module Profile
-  module UseCases
-    module Cast
-      module Queries
-        # Query for getting IDs of all public, registered casts.
-        # Intended for cross-slice communication (e.g., Feed slice).
-        class GetPublicCastIds
-          include ::Profile::Deps[
-            repo: "repositories.cast_repository",
-            profile_repository: "repositories.profile_repository"
-          ]
-
-          # Get all public, registered cast IDs.
-          #
-          # @return [Array<String>] array of cast IDs
-          def call
-            repo.public_cast_ids & profile_repository.registered_account_ids
-          end
-        end
-      end
-    end
-  end
-end
-```
-
-- [ ] **Step 6: Write the failing spec for `GetPublicCastIdsInPrefecture`**
-
-Create `dystopia/monolith/spec/slices/profile/use_cases/cast/queries/get_public_cast_ids_in_prefecture_spec.rb`:
-
-```ruby
-# frozen_string_literal: true
-
-require "spec_helper"
-
-RSpec.describe "Profile::UseCases::Cast::Queries::GetPublicCastIdsInPrefecture", type: :database do
-  let(:use_case) { Hanami.app.slices[:profile]["use_cases.cast.queries.get_public_cast_ids_in_prefecture"] }
-  let(:cast_repo) { Hanami.app.slices[:profile]["repositories.cast_repository"] }
-  let(:profile_repo) { Hanami.app.slices[:profile]["repositories.profile_repository"] }
-
-  def create_public_registered_cast(prefecture:)
-    account_id = SecureRandom.uuid_v7
-    cast_repo.create(user_id: account_id, visibility: "public")
-    profile_repo.create(
-      account_id: account_id,
-      display_name: "Cast",
-      prefecture: prefecture,
-      registered_at: Time.now
-    )
-    account_id
-  end
-
-  it "returns only public, registered casts in the given prefecture" do
-    in_prefecture = create_public_registered_cast(prefecture: "東京都")
-    other_prefecture = create_public_registered_cast(prefecture: "大阪府")
-
-    result = use_case.call(prefecture: "東京都")
-
-    expect(result).to include(in_prefecture)
-    expect(result).not_to include(other_prefecture)
-  end
-
-  it "falls back to all public registered cast ids when prefecture is blank" do
-    cast_id = create_public_registered_cast(prefecture: "東京都")
-
-    expect(use_case.call(prefecture: nil)).to include(cast_id)
-    expect(use_case.call(prefecture: "")).to include(cast_id)
-  end
-
-  it "excludes casts that are not registered" do
-    account_id = SecureRandom.uuid_v7
-    cast_repo.create(user_id: account_id, visibility: "public")
-    profile_repo.create(account_id: account_id, display_name: "Cast", prefecture: "東京都")
-
-    expect(use_case.call(prefecture: "東京都")).not_to include(account_id)
-  end
-end
-```
-
-- [ ] **Step 7: Run it to confirm it fails**
-
-Run: `cd dystopia/monolith && bundle exec rspec spec/slices/profile/use_cases/cast/queries/get_public_cast_ids_in_prefecture_spec.rb`
-Expected: FAIL — the current implementation still calls `repo.area_ids_by_prefecture`/`repo.cast_user_ids_by_area_ids`, which were deleted in Task 3, so this errors with `NoMethodError`.
-
-- [ ] **Step 8: Rewrite `GetPublicCastIdsInPrefecture`**
-
-Replace the full contents of `dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids_in_prefecture.rb`:
-
-```ruby
-# frozen_string_literal: true
-
-module Profile
-  module UseCases
-    module Cast
-      module Queries
-        # Query for getting IDs of public, registered casts filtered by prefecture.
-        # Falls back to all public, registered cast IDs when no prefecture is specified.
-        # Intended for cross-slice communication (e.g., Feed slice).
-        class GetPublicCastIdsInPrefecture
-          include ::Profile::Deps[
-            repo: "repositories.cast_repository",
-            profile_repository: "repositories.profile_repository"
-          ]
-
-          # Get public, registered cast IDs filtered by prefecture.
-          #
-          # @param prefecture [String, nil] prefecture name to filter by
-          # @return [Array<String>] array of cast IDs
-          def call(prefecture:)
-            public_registered_ids = repo.public_cast_ids & profile_repository.registered_account_ids
-            return public_registered_ids if prefecture.nil? || prefecture.empty?
-
-            account_ids_in_prefecture = profile_repository.account_ids_by_prefecture(prefecture)
-            public_registered_ids & account_ids_in_prefecture
-          end
-        end
-      end
-    end
-  end
-end
-```
-
-- [ ] **Step 9: Run it to confirm it passes**
-
-Run: `cd dystopia/monolith && bundle exec rspec spec/slices/profile/use_cases/cast/queries/get_public_cast_ids_in_prefecture_spec.rb`
-Expected: 3 examples, 0 failures.
-
-- [ ] **Step 10: Commit**
+- [ ] **Step 1: Delete both files**
 
 ```bash
-git add dystopia/monolith/slices/profile/repositories/profile_repository.rb \
-        dystopia/monolith/spec/slices/profile/repositories/profile_repository_spec.rb \
-        dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids.rb \
-        dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids_in_prefecture.rb \
-        dystopia/monolith/spec/slices/profile/use_cases/cast/queries/get_public_cast_ids_in_prefecture_spec.rb
-git commit -s -m "fix(dystopia/monolith): filter cast discovery by profile_areas instead of cast_areas"
+rm dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids.rb
+rm dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids_in_prefecture.rb
+```
+
+There is no spec file for either use case to remove (none exists — confirmed during planning).
+
+- [ ] **Step 2: Run the full profile-slice spec suite to catch any other caller this plan missed**
+
+Run: `cd dystopia/monolith && bundle exec rspec spec/slices/profile`
+Expected: 0 failures. If something fails referencing either deleted use case, it had a live caller this plan's static trace missed — stop and restore it rather than proceeding.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids.rb \
+        dystopia/monolith/slices/profile/use_cases/cast/queries/get_public_cast_ids_in_prefecture.rb
+git commit -s -m "refactor(dystopia/monolith): delete the dead cast area-discovery use cases"
 ```
 
 ---
