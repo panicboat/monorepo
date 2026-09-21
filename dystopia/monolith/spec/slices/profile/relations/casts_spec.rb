@@ -5,24 +5,10 @@ require "spec_helper"
 RSpec.describe "Profile::Relations::Casts", type: :database do
   let(:relation) { Hanami.app.slices[:profile]["relations.casts"] }
 
-  it "defines the correct schema" do
+  it "defines the narrowed schema" do
     expect(relation.schema.primary_key_name).to eq(:user_id)
     attribute_names = relation.schema.attributes.map(&:name)
-    expect(attribute_names).to include(:user_id)
-    expect(attribute_names).to include(:name)
-    expect(attribute_names).to include(:bio)
-    expect(attribute_names).to include(:profile_media_id)
-    expect(attribute_names).to include(:avatar_media_id)
-    expect(attribute_names).to include(:visibility)
-  end
-
-  it "defines physical attribute fields" do
-    attribute_names = relation.schema.attributes.map(&:name)
-    expect(attribute_names).to include(:age)
-    expect(attribute_names).to include(:height)
-    expect(attribute_names).to include(:blood_type)
-    expect(attribute_names).to include(:three_sizes)
-    expect(attribute_names).to include(:tags)
+    expect(attribute_names).to contain_exactly(:user_id, :visibility, :created_at, :updated_at)
   end
 
   it "maps to the correct table" do
@@ -31,7 +17,6 @@ RSpec.describe "Profile::Relations::Casts", type: :database do
 
   it "defines associations" do
     associations = relation.schema.associations.elements
-    expect(associations.keys).to include(:plans)
-    # Note: schedules association moved to Offer slice
+    expect(associations.keys).to contain_exactly(:plans, :cast_gallery_media)
   end
 end

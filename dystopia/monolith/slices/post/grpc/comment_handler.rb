@@ -204,37 +204,6 @@ module Post
 
         media_adapter.find_by_ids(media_ids)
       end
-
-      def load_media_files_for_comments_with_authors(comments, user_ids)
-        media_ids = comments.flat_map do |comment|
-          next [] unless comment.respond_to?(:comment_media)
-
-          (comment.comment_media || []).filter_map(&:media_id)
-        end
-
-        # Collect author avatar media IDs
-        user_ids.each do |user_id|
-          user_type = account_adapter.get_user_type(user_id)
-          next unless user_type
-
-          if user_type == "cast"
-            cast = cast_adapter.find_by_user_id(user_id)
-            if cast
-              media_id = cast.avatar_media_id.to_s.empty? ? cast.profile_media_id : cast.avatar_media_id
-              media_ids << media_id if media_id
-            end
-          else
-            guest = guest_adapter.find_by_user_id(user_id)
-            media_ids << guest.avatar_media_id if guest&.avatar_media_id
-          end
-        end
-
-        media_ids.compact!
-        media_ids.uniq!
-        return {} if media_ids.empty?
-
-        media_adapter.find_by_ids(media_ids)
-      end
     end
   end
 end
