@@ -15,7 +15,6 @@ module Profile
         primary_key :id
 
         associations do
-          has_many :cast_areas, foreign_key: :area_id
           has_many :profile_areas, foreign_key: :area_id
         end
       end
