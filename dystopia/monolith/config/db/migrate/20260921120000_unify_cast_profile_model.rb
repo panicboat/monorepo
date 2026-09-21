@@ -49,6 +49,7 @@ ROM::SQL.migration do
     alter_table :"profile__casts" do
       drop_column :name
       drop_column :tagline
+      drop_column :bio
       drop_column :social_links
       drop_column :age
       drop_column :height
@@ -80,6 +81,7 @@ ROM::SQL.migration do
     alter_table :"profile__casts" do
       add_column :name, String
       add_column :tagline, String
+      add_column :bio, String
       add_column :social_links, :jsonb, default: Sequel.lit("'{}'::jsonb")
       add_column :age, Integer
       add_column :height, Integer
