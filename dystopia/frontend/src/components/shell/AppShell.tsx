@@ -10,6 +10,7 @@ import { Drawer } from "./Drawer";
 import { SideNav } from "./SideNav";
 import { SuggestedUsersPane } from "./SuggestedUsersPane";
 import { FeatureTourModal } from "@/modules/onboarding/components/FeatureTourModal";
+import { LandingPage } from "@/modules/landing/components/LandingPage";
 
 const AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/onboarding"];
 
@@ -26,13 +27,14 @@ export function AppShell({ children }: AppShellProps) {
   const router = useRouter();
 
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
+  const isLandingRoute = pathname === "/";
 
   // Redirect unauthenticated users to /login after hydration, except on auth routes.
   useEffect(() => {
-    if (isHydrated && !viewerId && !isAuthRoute) {
+    if (isHydrated && !viewerId && !isAuthRoute && !isLandingRoute) {
       router.replace("/login");
     }
-  }, [isHydrated, viewerId, isAuthRoute, router]);
+  }, [isHydrated, viewerId, isAuthRoute, isLandingRoute, router]);
 
   // Before hydration: auth routes still render their SSR content (avoid a blank
   // flash on /login etc.); other routes wait to avoid flashing shell-less content.
@@ -40,8 +42,11 @@ export function AppShell({ children }: AppShellProps) {
     return isAuthRoute ? <>{children}</> : null;
   }
 
-  // Hydrated but unauthenticated: auth routes render their own page; others wait for redirect.
+  // Keep the public landing route out of auth redirects while preserving auth pages.
   if (!viewerId) {
+    if (isLandingRoute) {
+      return <LandingPage />;
+    }
     return isAuthRoute ? <>{children}</> : null;
   }
 
