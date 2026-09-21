@@ -11,7 +11,7 @@ const SNS_LABELS: { key: keyof ProfileView["snsLinks"]; label: string }[] = [
   { key: "tiktok", label: "TikTok" },
   { key: "bluesky", label: "Bluesky" },
   { key: "line", label: "LINE" },
-  { key: "cityheaven", label: "シティーヘブン" },
+  { key: "cityheaven", label: "CityHeaven" },
 ];
 
 interface ProfileHeaderProps {

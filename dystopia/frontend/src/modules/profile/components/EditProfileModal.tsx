@@ -238,7 +238,7 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, 
               <Input
                 value={form.snsCityheaven}
                 onChange={(e) => set("snsCityheaven", e.target.value)}
-                placeholder="シティーヘブン"
+                placeholder="CityHeaven"
               />
             </div>
 
