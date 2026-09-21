@@ -34,7 +34,7 @@ Issue: [#1181](https://github.com/panicboat/monorepo/issues/1181) — 新旧2つ
 - **`Post::Grpc::Handler#get_comment_author`（基底クラス版、`cast_adapter`/`guest_adapter`で分岐する実装）と、`Post::Grpc::CommentHandler#load_media_files_for_comments_with_authors`。** どちらも`cast_adapter.find_by_user_id`/`guest_adapter.find_by_user_id`を経由して`name`/`avatar_media_id`/`profile_media_id`を読んでいるが、呼び出し元がゼロ。`CommentHandler < Handler`は`get_comment_author`を`ProfileAuthorAdapter`ベースの実装で上書きしており、`add_comment`から呼ばれるのは常にそのオーバーライド側。`load_media_files_for_comments_with_authors`に至っては定義以外どこからも参照されていない。当初「投稿とコメントの著者情報が食い違う生きたバグ」だと誤認していたのはこの2メソッドで、実際にはどちらも死んでいた（Problem参照）。
 - **`casts.default_schedules`** — 一見cast固有で「明らかに必要」に見えるが、実際にはリレーションのスキーマ定義と、上記の死んでいる`Cast::SaveProfileContract`のバリデーションルールでしか参照されていない。presenter・handler・use caseのどこからも読み書きされておらず、実際にスケジュール機能を提供している`Schedule`スライス（`schedule_handler.rb`の`SaveSchedule`/`ListSchedules`/`DeleteSchedule`、`offer`schema）とは一切結びついていない。spec作成の途中で「これ本当に必要？」と聞かれて気づいた一件— 「cast固有に見える」ことと「生きている」ことは別物であり、この文書に挙げた全カラムは目視ではなく呼び出し元の有無で判定した。維持ではなく削除する。
 
-実務上の含意: `casts.name`, `tagline`, `social_links`, `age`, `height`, `blood_type`, `three_sizes`, `tags`, `slug`, `profile_media_id`, `avatar_media_id`, `registered_at`, `default_schedules` のいずれも、現状どの生きたコードパスからも新たな非NULL値を生成できない。既存の値はすべて凍結された残骸である。これにより、この移行は「2つの書き込み経路が競合している」状態よりもかなり安全で、実質「使われなくなったコピーを片付ける」作業に近い。とはいえ`profiles`に無いデータが`casts`側にだけ残っている可能性に備え、一度だけバックフィルする（Migration参照）。
+実務上の含意: `casts.name`, `tagline`, `bio`, `social_links`, `age`, `height`, `blood_type`, `three_sizes`, `tags`, `slug`, `profile_media_id`, `avatar_media_id`, `registered_at`, `default_schedules` のいずれも、現状どの生きたコードパスからも新たな非NULL値を生成できない。既存の値はすべて凍結された残骸である。これにより、この移行は「2つの書き込み経路が競合している」状態よりもかなり安全で、実質「使われなくなったコピーを片付ける」作業に近い。とはいえ`profiles`に無いデータが`casts`側にだけ残っている可能性に備え、一度だけバックフィルする（Migration参照）。
 
 ## Target design
 
@@ -42,7 +42,7 @@ Issue: [#1181](https://github.com/panicboat/monorepo/issues/1181) — 新旧2つ
 
 **`profile.casts`** は、`profiles`に対応物のないcast固有の業務データだけに縮小する: `user_id`（PK、= `profiles.account_id`）, `visibility`, `created_at`, `updated_at`。関連する`cast_genres`と`cast_gallery_media`はそのまま維持。`cast_areas`は廃止する（後述）。
 
-**完全に削除する**（死んでいるコード・カラムをまとめて削除）: `casts.name`, `tagline`, `social_links`, `age`, `height`, `blood_type`, `three_sizes`, `tags`, `slug`, `profile_media_id`, `avatar_media_id`, `registered_at`, `default_schedules`、および`Cast::SaveProfileContract`と上記で挙げた死んでいる`CastRepository`/`Handler`のメソッド群。
+**完全に削除する**（死んでいるコード・カラムをまとめて削除）: `casts.name`, `tagline`, `bio`, `social_links`, `age`, `height`, `blood_type`, `three_sizes`, `tags`, `slug`, `profile_media_id`, `avatar_media_id`, `registered_at`, `default_schedules`、および`Cast::SaveProfileContract`と上記で挙げた死んでいる`CastRepository`/`Handler`のメソッド群。
 
 **コメント著者解決はコードを書き換える必要が無い**（既に`ProfileAuthorAdapter`に統一済みのため）。代わりに、死んでいる基底`Handler#get_comment_author`と`CommentHandler#load_media_files_for_comments_with_authors`を削除する。これにより`CastAdapter`が表示系フィールドを持つ理由が完全に無くなるので、`CastAdapter`/`CastInfo`を`user_id`だけ（存在確認用）に縮小する。`find_my_cast`/`find_blocker`が読むのは`user_id`だけで、`visibility`はpost slice側では読まれていなかった。`casts.visibility`自体はprofile slice側（`SaveCastVisibility`/discoveryの公開cast一覧）で生きたまま使われ続けるので、削除するのはpost slice側の`CastAdapter`が持つコピーだけである。
 
@@ -58,7 +58,7 @@ ROM::SQLのmigrationを1本、以下の順で実施する（上記の「死ん�
    `UPDATE profile.profiles p SET <field> = c.<field> FROM profile.casts c WHERE p.account_id = c.user_id AND p.<field> IS NULL AND c.<field> IS NOT NULL`
    — 対象は`name→display_name`, `bio→bio`, `avatar_media_id→avatar_media_id`, `registered_at→registered_at`, `age→age`の5カラムに限定する。両方に値がある場合は`profiles`側（現在実際に編集されている方）を優先する。
    `tagline`/`social_links`/`height`/`blood_type`/`three_sizes`/`tags`/`slug`/`profile_media_id`は`profiles`側に形の異なる対応先（`sns_links`はキー構成が違う、`body_stats`はキー名が違う等）しか無いか、対応先が無いため、バックフィル対象から外し、そのまま破棄する（destroy-and-recreateを優先するこのリポジトリの既存方針に沿う。Open Questions参照）。
-2. **カラム削除** — `profile.casts`から`name`, `tagline`, `social_links`, `age`, `height`, `blood_type`, `three_sizes`, `tags`, `slug`, `profile_media_id`, `avatar_media_id`, `registered_at`, `default_schedules`を削除する。（`name`/`bio`は現状`casts`上で`NOT NULL`だが、カラムごと削除するので制約も一緒に消える。安全）
+2. **カラム削除** — `profile.casts`から`name`, `tagline`, `bio`, `social_links`, `age`, `height`, `blood_type`, `three_sizes`, `tags`, `slug`, `profile_media_id`, `avatar_media_id`, `registered_at`, `default_schedules`を削除する。（`name`は現状`casts`上で`NOT NULL`だが、カラムごと削除するので制約も一緒に消える。安全）
 3. **`profile.cast_areas`を削除**（テーブル本体＋ROM上のリレーション/アソシエーション）。
 4. 通常のmigration運用に従う（memory「monolith migration追加時のstructure.sql運用」の通り、`structure.sql`の同梱は不要。ローカルでmigrate実行→`bundle exec rspec`で確認する）。
 
