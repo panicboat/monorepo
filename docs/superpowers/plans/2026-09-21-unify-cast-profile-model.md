@@ -162,11 +162,12 @@ git commit -s -m "feat(dystopia/monolith): unify cast profile data into profile.
 **Files:**
 - Modify: `dystopia/monolith/slices/profile/relations/casts.rb`
 - Delete: `dystopia/monolith/slices/profile/relations/cast_areas.rb`
+- Modify: `dystopia/monolith/slices/profile/relations/areas.rb`
 - Modify: `dystopia/monolith/spec/slices/profile/relations/casts_spec.rb`
 
 **Interfaces:**
 - Consumes: the migrated `profile__casts` table from Task 1 (columns: `user_id, visibility, created_at, updated_at`).
-- Produces: `Profile::Relations::Casts` schema with attributes `user_id, visibility, created_at, updated_at` and associations `plans, cast_gallery_media` (no more `cast_areas`).
+- Produces: `Profile::Relations::Casts` schema with attributes `user_id, visibility, created_at, updated_at` and associations `plans, cast_gallery_media` (no more `cast_areas`). `Profile::Relations::Areas` keeps only its `profile_areas` association (its reverse `cast_areas` association is removed too — the deleted `CastAreas` relation cannot be a `has_many` target from any other relation, or Hanami's ROM registry raises `ROM::ElementNotFoundError` on boot).
 
 - [ ] **Step 1: Update the failing spec first**
 
@@ -234,16 +235,47 @@ end
 rm dystopia/monolith/slices/profile/relations/cast_areas.rb
 ```
 
-- [ ] **Step 5: Run the spec again to confirm it passes**
+- [ ] **Step 5: Remove the reverse `cast_areas` association from `Areas`**
+
+`Profile::Relations::Areas` declares a `has_many :cast_areas` pointing at the relation just deleted in Step 4 — left in place, Hanami's ROM registry raises `ROM::ElementNotFoundError: :cast_areas doesn't exist` on boot. Replace the full contents of `dystopia/monolith/slices/profile/relations/areas.rb`:
+
+```ruby
+module Profile
+  module Relations
+    class Areas < Profile::DB::Relation
+      schema(:"profile__areas", as: :areas, infer: false) do
+        attribute :id, Types::String
+        attribute :prefecture, Types::String
+        attribute :name, Types::String
+        attribute :code, Types::String
+        attribute :region, Types::String.optional
+        attribute :sort_order, Types::Integer
+        attribute :active, Types::Bool
+        attribute :created_at, Types::Time
+        attribute :updated_at, Types::Time
+
+        primary_key :id
+
+        associations do
+          has_many :profile_areas, foreign_key: :area_id
+        end
+      end
+    end
+  end
+end
+```
+
+- [ ] **Step 6: Run the spec again to confirm it passes**
 
 Run: `cd dystopia/monolith && bundle exec rspec spec/slices/profile/relations/casts_spec.rb`
-Expected: 3 examples, 0 failures.
+Expected: 3 examples, 0 failures. Hanami must also boot cleanly for this run to succeed at all — a passing run here already proves Step 5's fix worked, since a dangling `cast_areas` association fails at boot before any example runs.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add dystopia/monolith/slices/profile/relations/casts.rb \
         dystopia/monolith/slices/profile/relations/cast_areas.rb \
+        dystopia/monolith/slices/profile/relations/areas.rb \
         dystopia/monolith/spec/slices/profile/relations/casts_spec.rb
 git commit -s -m "refactor(dystopia/monolith): narrow the casts relation to cast-only fields"
 ```
