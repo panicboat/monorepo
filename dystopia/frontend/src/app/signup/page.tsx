@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
+import { RoleSelector } from "@/modules/identity/components/RoleSelector";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -93,35 +94,7 @@ export default function SignupPage() {
               />
             </div>
 
-            <fieldset className="space-y-2">
-              <legend className="text-sm font-medium text-text-primary">
-                登録種別
-              </legend>
-              <div className="flex gap-3">
-                <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-border py-2 text-sm text-text-primary has-[:checked]:border-accent has-[:checked]:text-accent">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="1"
-                    checked={role === 1}
-                    onChange={() => setRole(1)}
-                    className="sr-only"
-                  />
-                  ゲスト
-                </label>
-                <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-border py-2 text-sm text-text-primary has-[:checked]:border-accent has-[:checked]:text-accent">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="2"
-                    checked={role === 2}
-                    onChange={() => setRole(2)}
-                    className="sr-only"
-                  />
-                  キャスト
-                </label>
-              </div>
-            </fieldset>
+            <RoleSelector value={role} onChange={setRole} />
 
             {error && (
               <p role="alert" className="text-sm text-error">
