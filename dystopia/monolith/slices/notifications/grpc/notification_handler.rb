@@ -115,9 +115,12 @@ module Notifications
       # nil-safe: ProfilePresenter.to_proto returns nil for nil input.
       def present_profile(profile)
         return nil unless profile
+        role = role_for(profile.account_id)
+        cast = role == 2 ? cast_repository.find_by_user_id(profile.account_id) : nil
         ::Profile::Presenters::ProfilePresenter.to_proto(
           profile,
-          role: role_for(profile.account_id)
+          cast: cast,
+          role: role
         )
       end
 
@@ -127,6 +130,10 @@ module Notifications
 
       def identity_account_repo
         @identity_account_repo ||= ::Identity::Slice["repositories.account_repository"]
+      end
+
+      def cast_repository
+        @cast_repository ||= ::Profile::Slice["repositories.cast_repository"]
       end
 
       def preferences_to_proto(prefs)

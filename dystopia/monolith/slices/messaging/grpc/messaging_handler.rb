@@ -250,20 +250,21 @@ module Messaging
       def profile_to_proto(row)
         return nil unless row
 
-        ::Profile::V1::Profile.new(
-          account_id: row.account_id.to_s,
-          username: row.username || "",
-          display_name: row.display_name || "",
-          bio: row.bio || "",
-          avatar_media_id: row.avatar_media_id || "",
-          cover_media_id: row.cover_media_id || "",
-          website: row.website || "",
-          prefecture: row.prefecture || "",
-          is_private: row.is_private ? true : false,
-          registered_at: row.registered_at ? row.registered_at.iso8601 : "",
-          age: row.age || 0,
-          industry: row.industry || ""
-        )
+        role = role_for(row.account_id)
+        cast = role == 2 ? cast_repository.find_by_user_id(row.account_id) : nil
+        ::Profile::Presenters::ProfilePresenter.to_proto(row, cast: cast, role: role)
+      end
+
+      def role_for(account_id)
+        identity_account_repo.find_by_id(account_id)&.role || 0
+      end
+
+      def identity_account_repo
+        @identity_account_repo ||= ::Identity::Slice["repositories.account_repository"]
+      end
+
+      def cast_repository
+        @cast_repository ||= ::Profile::Slice["repositories.cast_repository"]
       end
 
       def fetch_field(row, key)
