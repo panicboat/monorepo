@@ -62,4 +62,18 @@ RSpec.describe "Post::Repositories::LikeRepository", type: :database do
       expect(status[post2.id]).to be true
     end
   end
+
+  describe "#delete_by_account" do
+    it "deletes all likes by the account" do
+      account_id = SecureRandom.uuid_v7
+      other_account_id = SecureRandom.uuid_v7
+      repo.account_like(post_id: post.id, account_id: account_id)
+      repo.account_like(post_id: post.id, account_id: other_account_id)
+
+      repo.delete_by_account(account_id)
+
+      expect(repo.account_liked?(post_id: post.id, account_id: account_id)).to be false
+      expect(repo.account_liked?(post_id: post.id, account_id: other_account_id)).to be true
+    end
+  end
 end

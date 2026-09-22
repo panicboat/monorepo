@@ -143,4 +143,18 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
       expect(result.map(&:content)).not_to include("p2")
     end
   end
+
+  describe "#delete_by_author" do
+    it "deletes all posts by the author" do
+      author_id = SecureRandom.uuid_v7
+      other_author_id = SecureRandom.uuid_v7
+      mine = repo.create_post(author_id: author_id, content: "mine")
+      other = repo.create_post(author_id: other_author_id, content: "not mine")
+
+      repo.delete_by_author(author_id)
+
+      expect(repo.find_by_id(mine.id)).to be_nil
+      expect(repo.find_by_id(other.id)).not_to be_nil
+    end
+  end
 end
