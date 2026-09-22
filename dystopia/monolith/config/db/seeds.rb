@@ -9,7 +9,6 @@ require_relative "seeds/helper"
 
 # === Master Data ===
 require_relative "seeds/portfolio/areas"
-require_relative "seeds/portfolio/genres"
 
 # === Users ===
 require_relative "seeds/identity/users"
@@ -17,10 +16,6 @@ require_relative "seeds/identity/users"
 # === Profiles ===
 require_relative "seeds/portfolio/casts"
 require_relative "seeds/portfolio/profiles"
-require_relative "seeds/portfolio/assignments"
-
-# === Offer ===
-require_relative "seeds/offer/plans"
 
 # === Content ===
 require_relative "seeds/post/posts"
