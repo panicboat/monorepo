@@ -4,7 +4,7 @@ module Profile
   module Presenters
     class ProfilePresenter
       class << self
-        def to_proto(profile, area_records: [], media_files: {}, role: 0)
+        def to_proto(profile, cast: nil, area_records: [], media_files: {}, role: 0)
           return nil unless profile
 
           ::Profile::V1::Profile.new(
@@ -17,13 +17,13 @@ module Profile
             cover_media_id: profile.cover_media_id || "",
             cover_url: media_files[profile.cover_media_id]&.url || "",
             website: profile.website || "",
-            sns_links: sns_links_proto(profile.sns_links),
+            sns_links: sns_links_proto(cast&.sns_links),
             prefecture: profile.prefecture || "",
             is_private: profile.is_private ? true : false,
             registered_at: profile.registered_at ? profile.registered_at.iso8601 : "",
-            age: profile.age || 0,
-            body_stats: body_stats_proto(profile.body_stats),
-            industry: profile.industry || "",
+            age: cast&.age || 0,
+            body_stats: body_stats_proto(cast&.body_stats),
+            industry: cast&.industry || "",
             areas: area_records.map { |a| area_to_proto(a) },
             role: role || 0
           )

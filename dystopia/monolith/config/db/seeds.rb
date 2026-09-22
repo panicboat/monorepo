@@ -16,7 +16,6 @@ require_relative "seeds/identity/users"
 
 # === Profiles ===
 require_relative "seeds/portfolio/casts"
-require_relative "seeds/portfolio/guests"
 require_relative "seeds/portfolio/profiles"
 require_relative "seeds/portfolio/assignments"
 

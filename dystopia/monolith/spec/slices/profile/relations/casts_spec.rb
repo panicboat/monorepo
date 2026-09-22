@@ -8,7 +8,7 @@ RSpec.describe "Profile::Relations::Casts", type: :database do
   it "defines the narrowed schema" do
     expect(relation.schema.primary_key_name).to eq(:user_id)
     attribute_names = relation.schema.attributes.map(&:name)
-    expect(attribute_names).to contain_exactly(:user_id, :visibility, :created_at, :updated_at)
+    expect(attribute_names).to contain_exactly(:user_id, :sns_links, :age, :body_stats, :industry, :created_at, :updated_at)
   end
 
   it "maps to the correct table" do

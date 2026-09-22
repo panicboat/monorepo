@@ -9,13 +9,9 @@ module Profile
         attribute :avatar_media_id, Types::String.optional
         attribute :cover_media_id, Types::String.optional
         attribute :website, Types::String.optional
-        attribute :sns_links, Types::Hash          # JSONB
         attribute :prefecture, Types::String.optional
         attribute :is_private, Types::Bool
         attribute :registered_at, Types::Time.optional
-        attribute :age, Types::Integer.optional
-        attribute :body_stats, Types::Hash          # JSONB: height_cm/bust/waist/hip/cup
-        attribute :industry, Types::String.optional
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 
