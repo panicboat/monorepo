@@ -8,25 +8,6 @@ module Profile
         casts.by_pk(user_id).one
       end
 
-      # find_by_id is now equivalent to find_by_user_id since PK = user_id
-      def find_by_id(id)
-        casts.by_pk(id).one
-      end
-
-      # find_by_ids now uses user_id (which is the PK)
-      def find_by_ids(ids)
-        return [] if ids.nil? || ids.empty?
-
-        casts.where(user_id: ids).to_a
-      end
-
-      # find_by_user_ids is equivalent to find_by_ids since PK = user_id
-      def find_by_user_ids(user_ids)
-        return [] if user_ids.nil? || user_ids.empty?
-
-        casts.where(user_id: user_ids).to_a
-      end
-
       def upsert(user_id:, attrs:)
         if casts.by_pk(user_id).exist?
           update(user_id, attrs.merge(updated_at: Time.now))

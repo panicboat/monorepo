@@ -3,8 +3,7 @@
 require "concerns/cursor_pagination"
 require "gruf"
 require "storage"
-require_relative "../adapters/cast_adapter"
-require_relative "../adapters/guest_adapter"
+require_relative "../../../lib/grpc/authenticatable"
 require_relative "../adapters/account_adapter"
 require_relative "../adapters/block_adapter"
 require_relative "../adapters/media_adapter"
@@ -28,14 +27,6 @@ module Post
       PostPresenter = Post::Presenters::PostPresenter
       CommentPresenter = Post::Presenters::CommentPresenter
 
-      def cast_adapter
-        @cast_adapter ||= Post::Adapters::CastAdapter.new
-      end
-
-      def guest_adapter
-        @guest_adapter ||= Post::Adapters::GuestAdapter.new
-      end
-
       def account_adapter
         @account_adapter ||= Post::Adapters::AccountAdapter.new
       end
@@ -48,35 +39,10 @@ module Post
         @media_adapter ||= Post::Adapters::MediaAdapter.new
       end
 
-      def find_my_cast
-        return nil unless current_user_id
-
-        cast_adapter.find_by_user_id(current_user_id)
-      end
-
-      def find_my_guest
-        return nil unless current_user_id
-
-        guest_adapter.find_by_user_id(current_user_id)
-      end
-
-      def find_blocker
-        return nil unless current_user_id
-
-        guest = find_my_guest
-        return { id: guest.user_id, type: "guest" } if guest
-
-        cast = find_my_cast
-        return { id: cast.user_id, type: "cast" } if cast
-
-        nil
-      end
-
       def get_blocked_user_ids
-        blocker = find_blocker
-        return [] unless blocker
+        return [] unless current_user_id
 
-        block_adapter.blocked_ids(account_id: blocker[:id])
+        block_adapter.blocked_ids(account_id: current_user_id)
       end
     end
   end
