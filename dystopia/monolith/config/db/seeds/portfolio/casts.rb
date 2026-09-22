@@ -2,25 +2,26 @@
 
 puts "Seeding Portfolio: Casts..."
 
-cast_data = [
-  { visibility: "public" },
-  { visibility: "private" },
-  { visibility: "public" },
+cast_extras = [
+  { age: 23, body_stats: { height_cm: 158, cup: "D" }, industry: "デリヘル" },
+  { age: 25, body_stats: { height_cm: 162, cup: "C" }, industry: "ソープ" },
+  { age: 21, body_stats: { height_cm: 155, cup: "E" }, industry: "個人" },
 ]
 
-cast_data.each_with_index do |data, idx|
-  user_id = CAST_USER_IDS[idx]
+CAST_USER_IDS.each_with_index do |user_id, idx|
   next unless user_id
 
   existing = Seeds::Helper.db[:profile__casts].where(user_id: user_id).first
   next if existing
 
+  extras = cast_extras[idx] || {}
   Seeds::Helper.db[:profile__casts].insert(
-    data.merge(
-      user_id: user_id,
-      created_at: Time.now,
-      updated_at: Time.now,
-    )
+    user_id: user_id,
+    age: extras[:age],
+    body_stats: (extras[:body_stats] || {}).to_json,
+    industry: extras[:industry],
+    created_at: Time.now,
+    updated_at: Time.now,
   )
 end
 
