@@ -11,11 +11,6 @@ module Profile
         attribute :updated_at, Types::Time
 
         primary_key :user_id
-
-        associations do
-          has_many :plans, foreign_key: :cast_user_id
-          has_many :cast_gallery_media, foreign_key: :cast_user_id
-        end
       end
     end
   end

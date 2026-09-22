@@ -15,8 +15,8 @@ RSpec.describe "Profile::Relations::Casts", type: :database do
     expect(relation.name.dataset).to eq(:"profile__casts")
   end
 
-  it "defines associations" do
+  it "defines no associations" do
     associations = relation.schema.associations.elements
-    expect(associations.keys).to contain_exactly(:plans, :cast_gallery_media)
+    expect(associations.keys).to be_empty
   end
 end
