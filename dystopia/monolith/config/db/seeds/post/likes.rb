@@ -15,12 +15,11 @@ guest_ids.each_with_index do |guest_id, guest_idx|
     # ゲストごとに異なるパターンでいいねを分配
     next unless (post_idx + guest_idx) % 2 == 0
 
-    existing = db[:"post__likes"].where(guest_user_id: guest_id, post_id: post[:id]).first
+    existing = db[:"post__likes"].where(account_id: guest_id, post_id: post[:id]).first
     next if existing
 
     db[:"post__likes"].insert(
       id: SecureRandom.uuid_v7,
-      guest_user_id: guest_id,
       account_id: guest_id,
       post_id: post[:id],
       created_at: Time.now - (post_idx * 1800),

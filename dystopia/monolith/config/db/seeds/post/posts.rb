@@ -86,7 +86,7 @@ post_count = 0
 CAST_USER_IDS.each_with_index do |cast_user_id, cast_idx|
   next unless cast_user_id
 
-  existing = db[:"post__posts"].where(cast_user_id: cast_user_id).count
+  existing = db[:"post__posts"].where(author_id: cast_user_id).count
   next if existing > 0
 
   all_posts = (base_posts[cast_idx] || []) + (extra_posts[cast_idx] || [])
@@ -94,7 +94,6 @@ CAST_USER_IDS.each_with_index do |cast_user_id, cast_idx|
     post_id = SecureRandom.uuid_v7
     db[:"post__posts"].insert(
       id: post_id,
-      cast_user_id: cast_user_id,
       author_id: cast_user_id,
       content: data[:content],
       visibility: data[:visibility],

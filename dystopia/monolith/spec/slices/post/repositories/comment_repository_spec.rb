@@ -6,9 +6,9 @@ RSpec.describe "Post::Repositories::CommentRepository", type: :database do
   let(:repo) { Hanami.app.slices[:post]["repositories.comment_repository"] }
   let(:post_repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
   let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
-  let(:cast_id) { SecureRandom.uuid_v7 }
+  let(:author_id) { SecureRandom.uuid_v7 }
   let(:user_id) { create_user[:id] }
-  let(:post) { post_repo.create_post(cast_user_id: cast_id, content: "Test post") }
+  let(:post) { post_repo.create_post(author_id: author_id, content: "Test post") }
 
   def create_user(role: 1)
     id = SecureRandom.uuid_v7
@@ -140,7 +140,7 @@ RSpec.describe "Post::Repositories::CommentRepository", type: :database do
 
   describe "#comments_count_batch" do
     it "returns counts for multiple posts" do
-      post2 = post_repo.create_post(cast_user_id: cast_id, content: "Post 2")
+      post2 = post_repo.create_post(author_id: author_id, content: "Post 2")
       repo.create_comment(post_id: post.id, user_id: user_id, content: "Comment 1")
       repo.create_comment(post_id: post.id, user_id: user_id, content: "Comment 2")
       repo.create_comment(post_id: post2.id, user_id: user_id, content: "Comment 3")

@@ -13,10 +13,6 @@ module Media
         files.where(id: ids).to_a
       end
 
-      def find_by_media_key(media_key)
-        files.where(media_key: media_key).one
-      end
-
       def create(id:, media_type:, url:, thumbnail_url: nil, filename: nil, content_type: nil, size_bytes: nil, media_key: nil, thumbnail_key: nil, uploader_account_id: nil)
         files.command(:create).call(
           id: id,
