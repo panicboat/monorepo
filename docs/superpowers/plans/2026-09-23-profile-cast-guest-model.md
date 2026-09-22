@@ -763,6 +763,7 @@ EOF
 - Delete: `slices/post/adapters/guest_adapter.rb`
 - Delete: `slices/profile/policies/profile_access_policy.rb`
 - Delete: `spec/slices/profile/policies/profile_access_policy_spec.rb`
+- Test: `spec/slices/post/grpc/handler_spec.rb` (new)
 
 **Interfaces:**
 - Consumes: `Post::Adapters::BlockAdapter#blocked_ids(account_id:)` (unchanged), `current_user_id` (unchanged, existing `Grpc::Authenticatable` method available in `Post::Grpc::Handler`).
@@ -930,7 +931,58 @@ end
 
 `find_my_cast`/`find_my_guest`/`find_blocker` are gone: their only purpose was picking a user_id to pass to `block_adapter.blocked_ids`, and that id was always `current_user_id` (the `type: "cast"/"guest"` half of the old `find_blocker` result was never read anywhere). `account_adapter` accessor is kept even though nothing in this file calls it yet — it was already unused before this change (pre-existing, out of scope; see the design spec's Evidence section) and removing it is not part of this task's goal.
 
-- [ ] **Step 7: Delete `ProfileAccessPolicy` and its spec**
+- [ ] **Step 7: Add a handler-level regression spec for `get_blocked_user_ids`**
+
+This codebase has exactly one existing precedent for instantiating a Gruf controller directly in a spec: `spec/slices/identity/grpc/handler_spec.rb`. It passes `method_key:, service:, rpc_desc:, active_call:, message:` as doubles (Gruf's `Controllers::Base#initialize` only stores them on `@request`, which `get_blocked_user_ids` never touches) plus overrides for any `Deps[]`-injected dependencies it exercises. `Post::Grpc::Handler`'s own `Deps["repositories.post_repository", ...]` aren't touched by this test, so they're left at their container-resolved defaults.
+
+Create `spec/slices/post/grpc/handler_spec.rb`:
+
+```ruby
+# frozen_string_literal: true
+
+require "spec_helper"
+require "lib/current"
+require "slices/post/grpc/handler"
+
+RSpec.describe Post::Grpc::Handler, type: :database do
+  let(:handler) do
+    described_class.new(
+      method_key: :test,
+      service: double,
+      rpc_desc: double,
+      active_call: double,
+      message: double(:message)
+    )
+  end
+  let(:block_repo) { Social::Slice["repositories.block_repository"] }
+
+  after { Current.clear }
+
+  describe "#get_blocked_user_ids" do
+    it "returns an empty array without a current user" do
+      expect(handler.send(:get_blocked_user_ids)).to eq([])
+    end
+
+    it "returns ids blocked by the current user, using identity.accounts.role rather than a profile.casts/profile.guests row" do
+      blocker_id = SecureRandom.uuid_v7
+      blocked_id = SecureRandom.uuid_v7
+      block_repo.block(blocker_id: blocker_id, blocked_id: blocked_id)
+      Current.user_id = blocker_id
+
+      expect(handler.send(:get_blocked_user_ids)).to contain_exactly(blocked_id)
+    end
+  end
+end
+```
+
+The second example is the regression the design spec asked for: it authenticates as `blocker_id` — an account with no `profile.casts` or `profile.guests` row at all (none is created anywhere in this test) — and confirms block-filtering still returns the correct result, because `get_blocked_user_ids` no longer looks at those tables.
+
+- [ ] **Step 8: Run the new handler spec**
+
+Run: `bundle exec rspec spec/slices/post/grpc/handler_spec.rb -f doc`
+Expected: both examples PASS.
+
+- [ ] **Step 9: Delete `ProfileAccessPolicy` and its spec**
 
 ```bash
 rm slices/profile/policies/profile_access_policy.rb
@@ -938,21 +990,22 @@ rm spec/slices/profile/policies/profile_access_policy_spec.rb
 rmdir slices/profile/policies 2>/dev/null || true
 ```
 
-- [ ] **Step 8: Run the full monolith suite**
+- [ ] **Step 10: Run the full monolith suite**
 
 Run: `cd dystopia/monolith && bundle exec rspec`
 Expected: 0 failures.
 
-- [ ] **Step 9: Confirm nothing still references the deleted files**
+- [ ] **Step 11: Confirm nothing still references the deleted files**
 
 Run: `grep -rn "CastAdapter\|GuestAdapter\|ProfileAccessPolicy\|relations.guests\|repositories.guest_repository\|use_cases.guest\.\|use_cases.cast.queries" slices spec --include="*.rb"`
 Expected: no output (empty).
 
-- [ ] **Step 10: Commit**
+- [ ] **Step 12: Commit**
 
 ```bash
 git add config/db/migrate/20260923130000_drop_guests_table.rb \
-  slices/profile/repositories/cast_repository.rb slices/post/grpc/handler.rb
+  slices/profile/repositories/cast_repository.rb slices/post/grpc/handler.rb \
+  spec/slices/post/grpc/handler_spec.rb
 git add -u slices/profile/relations/guests.rb slices/profile/repositories/guest_repository.rb \
   slices/profile/use_cases/guest slices/profile/use_cases/cast \
   slices/post/adapters/cast_adapter.rb slices/post/adapters/guest_adapter.rb \
@@ -976,7 +1029,7 @@ EOF
 
 ## Self-Review Notes
 
-- **Spec coverage:** Every "Consumer changes by slice" bullet in the design spec has a corresponding step above, with one deliberate deviation: the spec's Testing strategy asked for "a regression spec confirming block-filtering works via identity.accounts.role even without casts/guests rows." This plan does not add one. `Post::Grpc::Handler` (like every Gruf controller in this codebase — confirmed zero existing handler-level specs anywhere) requires `method_key:, service:, rpc_desc:, active_call:, message:` to instantiate (`Gruf::Controllers::Base#initialize`), none of which this codebase has existing test scaffolding for. Building that scaffolding from scratch to cover what Task 2 reduces to two lines of pure delegation (`current_user_id` → `block_adapter.blocked_ids`) would be a disproportionate, novel testing investment for this plan to introduce unprompted. The full `bundle exec rspec` run after Task 2 (Step 8) is the verification signal instead, consistent with how this codebase already tests Gruf handlers (it doesn't, at this layer — only their `use_cases`/`repositories`/`presenters`/`adapters`). Flagged here rather than silently dropped; worth raising with the user before executing if a handler-level testing pattern should be established.
+- **Spec coverage:** Every "Consumer changes by slice" bullet and the Testing strategy's "regression spec confirming block-filtering works via identity.accounts.role even without casts/guests rows" now have a corresponding step. Initial planning missed that `spec/slices/identity/grpc/handler_spec.rb` already establishes exactly the pattern needed to instantiate a Gruf controller in a spec (`described_class.new(method_key: :test, service: double, rpc_desc: double, active_call: double, message: ...)`); Task 2 Step 7 reuses it for `Post::Grpc::Handler` rather than inventing a new one.
 - The five `present_profile` call sites (only one of which — `profile_handler.rb` — is named explicitly in the spec's consumer list) were discovered during planning by grepping all callers of `ProfilePresenter.to_proto`; the spec's own "Evidence" section already established the method for finding them (grep before assuming).
 - **Placeholder scan:** No TBD/TODO. Every step shows complete file contents or precise before/after diffs.
 - **Type consistency:** `ProfilePresenter.to_proto(profile, cast: nil, area_records: [], media_files: {}, role: 0)` — the same signature is used identically in Task 1 Steps 12, 15, and 16. `CastRepository#upsert(user_id:, attrs:)` matches between Task 1 Step 7 (added) and Task 2 Step 4 (kept as-is in the full-file replacement).
