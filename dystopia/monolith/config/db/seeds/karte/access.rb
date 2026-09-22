@@ -15,8 +15,7 @@ if cast.nil?
 else
   db[:karte__access].insert_conflict.insert(
     account_id: cast[:id],
-    granted_at: Time.now,
-    granted_by: "seed"
+    granted_at: Time.now
   )
   puts "[karte seed] granted karte access to Cast #{cast[:id]}"
 end
