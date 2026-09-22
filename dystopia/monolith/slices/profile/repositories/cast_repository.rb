@@ -27,6 +27,14 @@ module Profile
         casts.where(user_id: user_ids).to_a
       end
 
+      def upsert(user_id:, attrs:)
+        if casts.by_pk(user_id).exist?
+          update(user_id, attrs.merge(updated_at: Time.now))
+        else
+          create(attrs.merge(user_id: user_id))
+        end
+      end
+
       def find_gallery_media_ids(cast_user_id)
         cast_gallery_media.where(cast_user_id: cast_user_id).order(:position).pluck(:media_id)
       end

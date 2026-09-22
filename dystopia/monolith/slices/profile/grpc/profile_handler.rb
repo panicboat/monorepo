@@ -29,7 +29,8 @@ module Profile
         save_media_uc: "use_cases.save_profile_media",
         list_areas_uc: "use_cases.list_areas",
         profile_repository: "repositories.profile_repository",
-        area_repository: "repositories.area_repository"
+        area_repository: "repositories.area_repository",
+        cast_repository: "repositories.cast_repository"
       ]
 
       def get_profile
@@ -120,7 +121,8 @@ module Profile
         area_records = area_repository.find_by_ids(area_ids)
         media_files = load_media_files(profile)
         role = role_for(profile.account_id)
-        Presenter.to_proto(profile, area_records: area_records, media_files: media_files, role: role)
+        cast = role == 2 ? cast_repository.find_by_user_id(profile.account_id) : nil
+        Presenter.to_proto(profile, cast: cast, area_records: area_records, media_files: media_files, role: role)
       end
 
       def role_for(account_id)

@@ -5,12 +5,13 @@ require "errors/validation_error"
 module Profile
   module UseCases
     class SaveProfile
-      include Deps["repositories.profile_repository"]
+      include Deps["repositories.profile_repository", "repositories.cast_repository"]
 
       DISPLAY_NAME_MAX = 50
       BIO_MAX = 1000
       USERNAME_FORMAT = /\A[A-Za-z0-9_]{3,30}\z/
       AREAS_MAX = 2
+      ROLE_CAST = 2
 
       def call(account_id:, display_name:, username: nil, bio: nil, website: nil,
                sns_links: {}, prefecture: nil, is_private: false, age: nil,
@@ -24,21 +25,38 @@ module Profile
           display_name: display_name,
           bio: bio,
           website: website,
-          sns_links: Sequel.pg_jsonb(sns_links || {}),
           prefecture: prefecture,
-          is_private: is_private ? true : false,
-          age: age,
-          body_stats: Sequel.pg_jsonb(body_stats || {}),
-          industry: industry
+          is_private: is_private ? true : false
         }
         attrs[:username] = username unless username.nil?
 
         profile_repository.upsert(account_id: account_id, attrs: attrs)
         profile_repository.save_areas(account_id: account_id, area_ids: area_ids || [])
+
+        if cast_account?(account_id)
+          cast_repository.upsert(
+            user_id: account_id,
+            attrs: {
+              sns_links: Sequel.pg_jsonb(sns_links || {}),
+              age: age,
+              body_stats: Sequel.pg_jsonb(body_stats || {}),
+              industry: industry
+            }
+          )
+        end
+
         profile_repository.find_by_account_id(account_id)
       end
 
       private
+
+      def cast_account?(account_id)
+        identity_account_repo.find_by_id(account_id)&.role == ROLE_CAST
+      end
+
+      def identity_account_repo
+        @identity_account_repo ||= ::Identity::Slice["repositories.account_repository"]
+      end
 
       def validate_display_name!(value)
         if value.nil? || value.strip.empty?
