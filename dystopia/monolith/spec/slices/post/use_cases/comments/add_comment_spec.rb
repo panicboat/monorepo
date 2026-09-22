@@ -6,9 +6,9 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
   let(:use_case) { Hanami.app.slices[:post]["use_cases.comments.add_comment"] }
   let(:post_repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
   let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
-  let(:cast_id) { SecureRandom.uuid_v7 }
+  let(:author_id) { SecureRandom.uuid_v7 }
   let(:user_id) { create_user[:id] }
-  let(:post) { post_repo.create_post(cast_user_id: cast_id, content: "Test post") }
+  let(:post) { post_repo.create_post(author_id: author_id, content: "Test post") }
 
   def create_user(role: 1)
     id = SecureRandom.uuid_v7

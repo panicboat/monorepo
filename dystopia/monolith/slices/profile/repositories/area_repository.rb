@@ -9,10 +9,6 @@ module Profile
         areas.where(active: true, prefecture: prefecture).order(:sort_order).to_a
       end
 
-      def find_by_code(code)
-        areas.where(code: code).one
-      end
-
       def find_by_ids(ids)
         return [] if ids.nil? || ids.empty?
         areas.where(id: ids).to_a

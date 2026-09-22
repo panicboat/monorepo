@@ -74,13 +74,13 @@ posts.each_with_index do |post, post_i|
 
     # 3投稿に1回、キャストからリプライを追加
     if post_i % 3 == 0 && i == 0
-      cast_user_id = post[:cast_user_id]
+      author_id = post[:author_id]
       reply_content = cast_replies[reply_idx % cast_replies.size]
 
       db[:"post__comments"].insert(
         id: SecureRandom.uuid_v7,
         post_id: post[:id],
-        user_id: cast_user_id,
+        user_id: author_id,
         content: reply_content,
         parent_id: c_id,
         replies_count: 0,

@@ -5,7 +5,6 @@ module Post
     class Posts < Post::DB::Relation
       schema(:"post__posts", as: :posts, infer: false) do
         attribute :id, Types::String
-        attribute :cast_user_id, Types::String
         attribute :author_id, Types::String.optional
         attribute :content, Types::String
         attribute :visibility, Types::String
