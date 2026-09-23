@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/panicboat/monorepo/compare/monolith-v0.6.0...monolith-v0.6.1) (2026-09-23)
+
+
+### Bug Fixes
+
+* **dystopia/monolith:** align profile seed with body_stats schema ([#1196](https://github.com/panicboat/monorepo/issues/1196)) ([251cac8](https://github.com/panicboat/monorepo/commit/251cac833298eb3450cef9be5e00a07ca0d28696))
+
 ## [0.6.0](https://github.com/panicboat/monorepo/compare/monolith-v0.5.0...monolith-v0.6.0) (2026-09-20)
 
 
