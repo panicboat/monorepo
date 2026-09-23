@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.8.0](https://github.com/panicboat/monorepo/compare/frontend-v0.7.0...frontend-v0.8.0) (2026-09-23)
+
+
+### Features
+
+* **dystopia/frontend:** add unauthenticated landing page ([#1198](https://github.com/panicboat/monorepo/issues/1198)) ([d3e8813](https://github.com/panicboat/monorepo/commit/d3e88136a66c7f284e378fdbbcd4dae47ce7afc2))
+* **dystopia/frontend:** refresh the home feed after posting ([#1194](https://github.com/panicboat/monorepo/issues/1194)) ([0b36ea8](https://github.com/panicboat/monorepo/commit/0b36ea8e7d138ec68ffd8d5d4cafe1e2b6181ffc))
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** align schedule rows into a 2-column layout ([#1189](https://github.com/panicboat/monorepo/issues/1189)) ([680dee7](https://github.com/panicboat/monorepo/commit/680dee76479a8db97ba3201c4861e6bc26175091))
+* **dystopia/frontend:** clarify guest/cast role selector on signup ([#1199](https://github.com/panicboat/monorepo/issues/1199)) ([5301f5c](https://github.com/panicboat/monorepo/commit/5301f5c629dbefb866fe6bafd3037a88f9012127))
+* **dystopia/frontend:** drop karte mention from the deactivation copy ([#1192](https://github.com/panicboat/monorepo/issues/1192)) ([21b0606](https://github.com/panicboat/monorepo/commit/21b0606e9c7def47666af51e2db03613aafc9046))
+* **dystopia/frontend:** wire media upload into the post composer ([#1191](https://github.com/panicboat/monorepo/issues/1191)) ([a868103](https://github.com/panicboat/monorepo/commit/a8681032c1218623ed04da0b444682453ecf6d92))
+
 ## [0.7.0](https://github.com/panicboat/monorepo/compare/frontend-v0.6.1...frontend-v0.7.0) (2026-09-20)
 
 
