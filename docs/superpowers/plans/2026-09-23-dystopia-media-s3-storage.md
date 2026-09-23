@@ -4,7 +4,7 @@
 
 **Goal:** Fix GitHub issue #1210 (file upload fails in production for profile/post images) by giving `dystopia/monolith` a real production storage backend on S3, replacing the dev-only `Storage::LocalAdapter` that was silently the only adapter ever wired up.
 
-**Architecture:** Add a `Storage::S3Adapter` that mirrors the existing `Cognito::AwsAdapter` / `Cognito::FakeAdapter` split (`lib/storage.rb#default_adapter` picks the adapter by `HANAMI_ENV`, exactly like `lib/cognito.rb#default_adapter`). The S3 bucket stays fully private; `S3Adapter#upload_url` issues a presigned PUT (for the browser's direct upload) and `S3Adapter#download_url` issues a presigned GET (regenerated on every read, never persisted long-term). Because `Media::UseCases::GetMedia`/`GetMediaBatch` are the single choke point every slice (post/profile/karte) and the gRPC handler go through, the "re-sign on read" behavior is implemented once in `Media::Repositories::MediaRepository` — no other slice needs to change.
+**Architecture:** Add a `Storage::S3Adapter` that mirrors the existing `Cognito::AwsAdapter` / `Cognito::FakeAdapter` split (`lib/storage.rb#default_adapter` picks the adapter by `HANAMI_ENV`, exactly like `lib/cognito.rb#default_adapter`). The S3 bucket stays fully private; `S3Adapter#upload_url` issues a presigned PUT (for the browser's direct upload) and `S3Adapter#download_url` issues a presigned GET, regenerated on every read and never persisted — the `url`/`thumbnail_url` database columns are dropped entirely (see Task 3) rather than left holding a value nothing trusts. Because `Media::UseCases::GetMedia`/`GetMediaBatch` are the single choke point every slice (post/profile/karte) and the gRPC handler go through, the "re-sign on read" behavior is implemented once in `Media::Repositories::MediaRepository` — no other slice needs to change.
 
 **Tech Stack:** `aws-sdk-s3` (already in Gemfile, unused until now), Terraform/Terragrunt (`dystopia/infrastructure/aws`), Hanami 2 / ROM-SQL (`dystopia/monolith`), Next.js 16 (`dystopia/frontend`).
 
@@ -13,7 +13,9 @@
 ## Global Constraints
 
 - Root cause: `Storage.default_adapter` (`dystopia/monolith/lib/storage.rb`) always returns `LocalAdapter`, and `Middleware::LocalUploader` (the only thing that serves `LocalAdapter`'s upload URL) is mounted only under `Hanami.env?(:development)` (`dystopia/monolith/config/app.rb:12-15`). Production has never had a working upload path, regardless of device.
-- `Media::UseCases::RegisterMedia` (`dystopia/monolith/slices/media/use_cases/register_media.rb:13`) persists `Storage.download_url(key:)`'s return value as a plain string in `media.files.url` at upload time. Presigned S3 GET URLs expire (max ~7 days under our EKS Pod Identity/STS credentials), so that value must never be trusted for reads — it must be recomputed fresh every time media is read. Do not change `register_media.rb` (the DB schema's `url` column is `NOT NULL`, per `dystopia/monolith/slices/media/relations/files.rb:9`, so it must keep writing something at create time; that write is simply never read back in production after this plan).
+- `Media::UseCases::RegisterMedia` (`dystopia/monolith/slices/media/use_cases/register_media.rb:13`) used to persist `Storage.download_url(key:)`'s return value as a plain string in `media.files.url` at upload time. Presigned S3 GET URLs expire (max ~7 days under our EKS Pod Identity/STS credentials), so that value can never be trusted for reads. Since nothing should ever read a stored URL, **the `url`/`thumbnail_url` columns themselves are dropped** (not just stopped-being-read) — this repo's own precedent for exactly this move is `config/db/migrate/20260218220000_remove_legacy_media_columns.rb`, which already dropped equivalent legacy `url`/`thumbnail_url` columns from `post__post_media` and `post__comment_media`. `url`/`thumbnail_url` become purely computed, in-memory fields: derived from `media_key`/`thumbnail_key` via `Storage.download_url` every time a record is read, never written to disk.
+- Dropping `url`/`thumbnail_url` as real columns means they are no longer part of `Media::Relations::Files`' ROM schema, so `Media::Repositories::MediaRepository` can no longer use the `existing_struct.new(url: ..., thumbnail_url: ...)` trick (confirmed by reading `dry-struct` 1.8.0 source, `lib/dry/struct.rb:202` — `Struct#new(changeset)` calls `self.class.schema.apply(changeset, ...)`, which raises `Dry::Struct::Error` for any key not declared in that struct's own schema). Instead, `MediaRepository` builds a plain `Data.define` value object (`MediaRepository::MediaRecord`) with the raw columns plus the two computed fields — same pattern this codebase already uses for `Profile::Adapters::MediaAdapter::MediaFile` (`dystopia/monolith/slices/profile/adapters/media_adapter.rb:7`). `MediaRecord` must expose every attribute any consumer currently reads: `id`, `media_type`, `url`, `thumbnail_url`, `filename`, `content_type`, `size_bytes`, `media_key`, `thumbnail_key`, `created_at`, `uploader_account_id`.
+- `MediaRepository#create`'s return value is not just used in tests — `Media::UseCases::RegisterMedia#call` returns it directly, and `Media::Grpc::Handler#register_media` immediately calls `MediaPresenter.to_proto(result)` on it to hand the freshly-uploaded media (including its `url`) back to the client in the same response. So `#create` must also resolve `url`/`thumbnail_url` before returning — not only `#find_by_id`/`#find_by_ids` — or `register_media`'s gRPC response would call `.url` on a struct that no longer has that attribute at all and crash. All three read paths (`create`, `find_by_id`, `find_by_ids`) funnel through the same private `resolve_urls` method.
 - Media reads only ever go through `Media::Repositories::MediaRepository#find_by_id` / `#find_by_ids` (verified: `find_by_media_key` has zero callers; no slice queries the `media__files` table directly). `slices/post/adapters/media_adapter.rb`, `slices/profile/adapters/media_adapter.rb`, `slices/karte/adapters/media_adapter.rb`, and `Media::Grpc::Handler` all call `Media::UseCases::GetMedia`/`GetMediaBatch`, which just delegate to the repository. Fixing the repository fixes every consumer.
 - AWS access pattern in this repo is EKS Pod Identity, not IRSA annotations: `dystopia/infrastructure/aws/modules/pod_identity.tf` already associates the `monolith` ServiceAccount (namespace `dystopia`) with `aws_iam_role.monolith`. New S3 permissions are just another `aws_iam_policy` + `aws_iam_role_policy_attachment` onto that same role — no Kubernetes-side ServiceAccount change needed.
 - Terraform naming/region conventions already established in `dystopia/infrastructure/aws/modules`: `var.environment = "production"`, `var.aws_region = "ap-northeast-1"`, resource names follow `"<service>-${var.environment}"` (e.g. `aws_iam_role.monolith` is named `"monolith-${var.environment}"`, Cognito pool is `"dystopia-production"`). Use `bucket = "dystopia-media-${var.environment}"` (→ `dystopia-media-production`) — no random/account-id suffix; this project's convention only adds an account-id suffix for genuinely generic names (the shared Terragrunt state bucket), not project-branded ones.
@@ -31,8 +33,12 @@
 - `dystopia/infrastructure/aws/modules/outputs.tf` (modify) — expose the bucket name for operator reference.
 - `dystopia/monolith/lib/storage/s3_adapter.rb` (new) — `Storage::S3Adapter`, presigned PUT/GET + delete, mirrors `Cognito::AwsAdapter`.
 - `dystopia/monolith/lib/storage.rb` (modify) — `default_adapter` switches on `HANAMI_ENV` like `lib/cognito.rb` does.
-- `dystopia/monolith/slices/media/repositories/media_repository.rb` (modify) — re-resolve `url`/`thumbnail_url` from `Storage` on every read.
-- `dystopia/monolith/spec/slices/media/repositories/media_repository_spec.rb` (modify) — tests for the re-resolve behavior and its fallback.
+- `dystopia/monolith/config/db/migrate/20260925130000_drop_url_columns_from_media_files.rb` (new) — drops the now-dead `url`/`thumbnail_url` columns from `media__files`.
+- `dystopia/monolith/slices/media/relations/files.rb` (modify) — remove `url`/`thumbnail_url` from the ROM schema (columns no longer exist).
+- `dystopia/monolith/slices/media/repositories/media_repository.rb` (modify) — `create`/`find_by_id`/`find_by_ids` all resolve `url`/`thumbnail_url` from `Storage` via a new `MediaRecord` value object, computed fresh every call.
+- `dystopia/monolith/slices/media/use_cases/register_media.rb` (modify) — stop computing/passing `url`/`thumbnail_url` at creation time (nothing left to write).
+- `dystopia/monolith/spec/slices/media/relations/files_spec.rb` (modify) — assert `url`/`thumbnail_url` are gone from the schema.
+- `dystopia/monolith/spec/slices/media/repositories/media_repository_spec.rb` (modify) — rewrite fixtures (no more `url:`/`thumbnail_url:` args to `create`) and add coverage for the resolve behavior.
 - `dystopia/monolith/kubernetes/overlays/production/configmap.yaml` (new) — `MEDIA_BUCKET_NAME` / `MEDIA_BUCKET_REGION`.
 - `dystopia/monolith/kubernetes/overlays/production/kustomization.yaml` (modify) — register the new configmap patch.
 - `dystopia/frontend/kubernetes/overlays/production/configmap.yaml` (modify) — `NEXT_PUBLIC_MEDIA_URL`.
@@ -222,44 +228,175 @@ git commit -s -m "feat(dystopia/monolith): add S3-backed storage adapter for pro
 
 ---
 
-### Task 3: Ruby — re-resolve media URLs from Storage on every read
+### Task 3: Ruby — drop stored media URLs, resolve from Storage on every read
 
 **Files:**
+- Create: `dystopia/monolith/config/db/migrate/20260925130000_drop_url_columns_from_media_files.rb`
+- Modify: `dystopia/monolith/slices/media/relations/files.rb`
 - Modify: `dystopia/monolith/slices/media/repositories/media_repository.rb`
+- Modify: `dystopia/monolith/slices/media/use_cases/register_media.rb`
+- Test: `dystopia/monolith/spec/slices/media/relations/files_spec.rb`
 - Test: `dystopia/monolith/spec/slices/media/repositories/media_repository_spec.rb`
 
 **Interfaces:**
-- Consumes: `Storage.download_url(key:)` (module method, delegates to whatever `Storage.adapter` currently is — see Task 2).
-- Produces: `MediaRepository#find_by_id(id)` / `#find_by_ids(ids)` continue to return the same struct type as before (`Media::DB::Struct` instances with `.id`, `.url`, `.thumbnail_url`, `.media_key`, `.thumbnail_key`, etc.) — only the `.url`/`.thumbnail_url` values change to be freshly resolved. No caller-visible interface change; `slices/post/adapters/media_adapter.rb`, `slices/profile/adapters/media_adapter.rb`, `slices/karte/adapters/media_adapter.rb`, and `Media::Grpc::Handler` need no changes.
+- Consumes: `Storage.download_url(key:)` (module method, delegates to whatever `Storage.adapter` currently is — see Task 2). For a blank/nil key it returns `""` (both `LocalAdapter` and `S3Adapter` already guard `return "" if key.to_s.empty?`), so `resolve_urls` never needs its own blank-key branch.
+- Produces: `MediaRepository::MediaRecord` — a `Data.define(:id, :media_type, :url, :thumbnail_url, :filename, :content_type, :size_bytes, :media_key, :thumbnail_key, :created_at, :uploader_account_id)` value object. `#create`, `#find_by_id`, `#find_by_ids` all now return this type (or `nil`/`[]`) instead of the raw ROM struct. No caller-visible interface change beyond that — every field consumers read today (`slices/post/adapters/media_adapter.rb`, `slices/profile/adapters/media_adapter.rb`, `slices/karte/adapters/media_adapter.rb`, `Media::Presenters::MediaPresenter`) is still a plain attribute reader with the same name, so none of those files need to change.
 
-- [ ] **Step 1: Write the failing tests**
-
-Add to `dystopia/monolith/spec/slices/media/repositories/media_repository_spec.rb`, inside the existing `describe "#find_by_id"` block (after the existing two `it` blocks):
+- [ ] **Step 1: Write the migration**
 
 ```ruby
-    it "resolves the url from Storage using the stored media_key" do
+# frozen_string_literal: true
+
+ROM::SQL.migration do
+  up do
+    alter_table :"media__files" do
+      drop_column :url
+      drop_column :thumbnail_url
+    end
+  end
+
+  down do
+    alter_table :"media__files" do
+      add_column :url, :text, null: false, default: ""
+      add_column :thumbnail_url, :text
+    end
+  end
+end
+```
+
+Save as `dystopia/monolith/config/db/migrate/20260925130000_drop_url_columns_from_media_files.rb` (this repo's precedent for the same kind of drop is `config/db/migrate/20260218220000_remove_legacy_media_columns.rb` — same `alter_table` / `drop_column` shape).
+
+- [ ] **Step 2: Run the migration against the test database**
+
+Run: `cd dystopia/monolith && docker-compose up -d db && HANAMI_ENV=test bundle exec hanami db migrate`
+Expected: no errors; migration `20260925130000` applied.
+
+- [ ] **Step 3: Update the relation schema**
+
+Replace the full contents of `dystopia/monolith/slices/media/relations/files.rb` with:
+
+```ruby
+# frozen_string_literal: true
+
+module Media
+  module Relations
+    class Files < Media::DB::Relation
+      schema(:"media__files", as: :files, infer: false) do
+        attribute :id, Types::String
+        attribute :media_type, Types::String
+        attribute :filename, Types::String.optional
+        attribute :content_type, Types::String.optional
+        attribute :size_bytes, Types::Integer.optional
+        attribute :media_key, Types::String.optional
+        attribute :thumbnail_key, Types::String.optional
+        attribute :created_at, Types::Time
+        attribute :uploader_account_id, Types::String.optional
+
+        primary_key :id
+      end
+    end
+  end
+end
+```
+
+- [ ] **Step 4: Update the relation spec**
+
+Replace the full contents of `dystopia/monolith/spec/slices/media/relations/files_spec.rb` with:
+
+```ruby
+# frozen_string_literal: true
+
+require "spec_helper"
+
+RSpec.describe "Media::Relations::Files", type: :database do
+  let(:relation) { Hanami.app.slices[:media]["relations.files"] }
+
+  it "defines the correct schema" do
+    expect(relation.schema.primary_key_name).to eq(:id)
+    attribute_names = relation.schema.attributes.map(&:name)
+    expect(attribute_names).to include(:media_type)
+    expect(attribute_names).to include(:filename)
+    expect(attribute_names).to include(:content_type)
+    expect(attribute_names).to include(:media_key)
+    expect(attribute_names).not_to include(:url)
+    expect(attribute_names).not_to include(:thumbnail_url)
+  end
+
+  it "maps to the correct table" do
+    expect(relation.name.dataset).to eq(:"media__files")
+  end
+end
+```
+
+Run: `cd dystopia/monolith && HANAMI_ENV=test bundle exec rspec spec/slices/media/relations/files_spec.rb`
+Expected: passes against the migrated schema.
+
+- [ ] **Step 5: Write the failing repository tests**
+
+Replace the full contents of `dystopia/monolith/spec/slices/media/repositories/media_repository_spec.rb` with:
+
+```ruby
+# frozen_string_literal: true
+
+require "spec_helper"
+
+RSpec.describe "Media::Repositories::MediaRepository", type: :database do
+  let(:repo) { Hanami.app.slices[:media]["repositories.media_repository"] }
+
+  describe "#create" do
+    it "creates a new media record with a url resolved from Storage" do
       media_key = "media/image/#{SecureRandom.uuid_v7}.jpg"
-      created = repo.create(
+      media = repo.create(
         id: SecureRandom.uuid_v7,
         media_type: "image",
-        url: "https://stale.example.com/old.jpg",
-        media_key: media_key
+        media_key: media_key,
+        filename: "image.jpg",
+        content_type: "image/jpeg",
+        size_bytes: 1024
       )
 
-      media = repo.find_by_id(created.id)
+      expect(media.id).not_to be_nil
+      expect(media.media_type).to eq("image")
+      expect(media.url).to eq(Storage.download_url(key: media_key))
+      expect(media.filename).to eq("image.jpg")
+    end
+  end
+
+  describe "#find_by_id" do
+    let(:media_key) { "media/video/#{SecureRandom.uuid_v7}.mp4" }
+    let!(:created_media) do
+      repo.create(
+        id: SecureRandom.uuid_v7,
+        media_type: "video",
+        media_key: media_key,
+        filename: "video.mp4",
+        content_type: "video/mp4"
+      )
+    end
+
+    it "returns the media when found" do
+      media = repo.find_by_id(created_media.id)
+      expect(media).not_to be_nil
+      expect(media.id).to eq(created_media.id)
+    end
+
+    it "returns nil when not found" do
+      media = repo.find_by_id(SecureRandom.uuid_v7)
+      expect(media).to be_nil
+    end
+
+    it "resolves the url from Storage using the stored media_key" do
+      media = repo.find_by_id(created_media.id)
 
       expect(media.url).to eq(Storage.download_url(key: media_key))
-      expect(media.url).not_to eq("https://stale.example.com/old.jpg")
     end
 
     it "resolves the thumbnail_url from Storage using the stored thumbnail_key" do
-      thumbnail_key = "media/image/#{SecureRandom.uuid_v7}_thumb.jpg"
+      thumbnail_key = "media/video/#{SecureRandom.uuid_v7}_thumb.jpg"
       created = repo.create(
         id: SecureRandom.uuid_v7,
-        media_type: "image",
-        url: "https://example.com/full.jpg",
-        thumbnail_url: "https://stale.example.com/old_thumb.jpg",
-        media_key: "media/image/#{SecureRandom.uuid_v7}.jpg",
+        media_type: "video",
+        media_key: "media/video/#{SecureRandom.uuid_v7}.mp4",
         thumbnail_key: thumbnail_key
       )
 
@@ -268,43 +405,60 @@ Add to `dystopia/monolith/spec/slices/media/repositories/media_repository_spec.r
       expect(media.thumbnail_url).to eq(Storage.download_url(key: thumbnail_key))
     end
 
-    it "keeps the stored url when media_key is blank" do
-      created = repo.create(
-        id: SecureRandom.uuid_v7,
-        media_type: "image",
-        url: "https://example.com/no-key.jpg"
-      )
+    it "returns an empty url when there is no media_key" do
+      created = repo.create(id: SecureRandom.uuid_v7, media_type: "image")
 
       media = repo.find_by_id(created.id)
 
-      expect(media.url).to eq("https://example.com/no-key.jpg")
+      expect(media.url).to eq("")
     end
-```
+  end
 
-And inside the existing `describe "#find_by_ids"` block:
+  describe "#find_by_ids" do
+    let!(:media1) do
+      repo.create(id: SecureRandom.uuid_v7, media_type: "image", media_key: "media/image/#{SecureRandom.uuid_v7}.jpg")
+    end
 
-```ruby
+    let!(:media2) do
+      repo.create(id: SecureRandom.uuid_v7, media_type: "image", media_key: "media/image/#{SecureRandom.uuid_v7}.jpg")
+    end
+
+    it "returns multiple media records" do
+      result = repo.find_by_ids([media1.id, media2.id])
+      expect(result.size).to eq(2)
+    end
+
+    it "returns empty array for empty input" do
+      expect(repo.find_by_ids([])).to eq([])
+      expect(repo.find_by_ids(nil)).to eq([])
+    end
+
     it "resolves urls for every returned media" do
-      key1 = "media/image/#{SecureRandom.uuid_v7}.jpg"
-      m1 = repo.create(id: SecureRandom.uuid_v7, media_type: "image", url: "https://stale.example.com/1.jpg", media_key: key1)
+      result = repo.find_by_ids([media1.id])
 
-      result = repo.find_by_ids([m1.id])
-
-      expect(result.first.url).to eq(Storage.download_url(key: key1))
+      expect(result.first.url).to eq(Storage.download_url(key: media1.media_key))
     end
+  end
+
+  describe "#delete" do
+    let!(:media) do
+      repo.create(id: SecureRandom.uuid_v7, media_type: "image", media_key: "media/image/#{SecureRandom.uuid_v7}.jpg")
+    end
+
+    it "deletes the media record" do
+      repo.delete(media.id)
+      expect(repo.find_by_id(media.id)).to be_nil
+    end
+  end
+end
 ```
 
-- [ ] **Step 2: Confirm the environment can run database specs**
-
-Run: `cd dystopia/monolith && docker-compose up -d db && HANAMI_ENV=test bundle exec hanami db create && HANAMI_ENV=test bundle exec hanami db migrate`
-Expected: no errors (if the test DB already exists/migrated from a previous session, this is a no-op).
-
-- [ ] **Step 3: Run the new tests and verify they fail**
+- [ ] **Step 6: Run the new tests and verify they fail**
 
 Run: `cd dystopia/monolith && HANAMI_ENV=test bundle exec rspec spec/slices/media/repositories/media_repository_spec.rb`
-Expected: FAIL on the three new assertions — `media.url` still equals the stale stored value because `find_by_id`/`find_by_ids` don't resolve anything yet.
+Expected: FAIL — `create` still requires a `url:` keyword argument that these tests no longer pass, and `.url` is not yet resolved from `Storage`.
 
-- [ ] **Step 4: Implement `resolve_urls` in the repository**
+- [ ] **Step 7: Implement the repository**
 
 Replace the full contents of `dystopia/monolith/slices/media/repositories/media_repository.rb` with:
 
@@ -316,6 +470,11 @@ require "storage"
 module Media
   module Repositories
     class MediaRepository < Media::DB::Repo
+      MediaRecord = Data.define(
+        :id, :media_type, :url, :thumbnail_url, :filename, :content_type,
+        :size_bytes, :media_key, :thumbnail_key, :created_at, :uploader_account_id
+      )
+
       def find_by_id(id)
         resolve_urls(files.by_pk(id).one)
       end
@@ -330,19 +489,17 @@ module Media
         files.where(media_key: media_key).one
       end
 
-      def create(id:, media_type:, url:, thumbnail_url: nil, filename: nil, content_type: nil, size_bytes: nil, media_key: nil, thumbnail_key: nil, uploader_account_id: nil)
-        files.command(:create).call(
+      def create(id:, media_type:, filename: nil, content_type: nil, size_bytes: nil, media_key: nil, thumbnail_key: nil, uploader_account_id: nil)
+        resolve_urls(files.command(:create).call(
           id: id,
           media_type: media_type,
-          url: url,
-          thumbnail_url: thumbnail_url,
           filename: filename,
           content_type: content_type,
           size_bytes: size_bytes,
           media_key: media_key,
           thumbnail_key: thumbnail_key,
           uploader_account_id: uploader_account_id
-        )
+        ))
       end
 
       def delete(id)
@@ -355,13 +512,22 @@ module Media
 
       private
 
-      # Recomputed on every read so presigned S3 URLs never go stale in stored data.
+      # url/thumbnail_url are not columns — always derived from the key so presigned S3 URLs never go stale.
       def resolve_urls(media)
         return nil unless media
 
-        media.new(
-          url: media.media_key.to_s.empty? ? media.url : Storage.download_url(key: media.media_key),
-          thumbnail_url: media.thumbnail_key.to_s.empty? ? media.thumbnail_url : Storage.download_url(key: media.thumbnail_key)
+        MediaRecord.new(
+          id: media.id,
+          media_type: media.media_type,
+          url: Storage.download_url(key: media.media_key),
+          thumbnail_url: Storage.download_url(key: media.thumbnail_key),
+          filename: media.filename,
+          content_type: media.content_type,
+          size_bytes: media.size_bytes,
+          media_key: media.media_key,
+          thumbnail_key: media.thumbnail_key,
+          created_at: media.created_at,
+          uploader_account_id: media.uploader_account_id
         )
       end
     end
@@ -369,21 +535,54 @@ module Media
 end
 ```
 
-- [ ] **Step 5: Run the tests and verify they pass**
+- [ ] **Step 8: Simplify `RegisterMedia`**
+
+Replace the full contents of `dystopia/monolith/slices/media/use_cases/register_media.rb` with:
+
+```ruby
+# frozen_string_literal: true
+
+module Media
+  module UseCases
+    class RegisterMedia
+      include Media::Deps[repo: "repositories.media_repository"]
+
+      def call(media_id:, media_key:, media_type:, filename: nil, content_type: nil, size_bytes: nil, thumbnail_key: nil, uploader_account_id: nil)
+        return nil if media_id.to_s.empty? || media_key.to_s.empty?
+
+        repo.create(
+          id: media_id,
+          media_type: media_type,
+          filename: filename,
+          content_type: content_type,
+          size_bytes: size_bytes,
+          media_key: media_key,
+          thumbnail_key: thumbnail_key,
+          uploader_account_id: uploader_account_id
+        )
+      end
+    end
+  end
+end
+```
+
+(Drops the `require "storage"` and the two `Storage.download_url` calls this file used to make — `MediaRepository#create` resolves them now.)
+
+- [ ] **Step 9: Run the tests and verify they pass**
 
 Run: `cd dystopia/monolith && HANAMI_ENV=test bundle exec rspec spec/slices/media/repositories/media_repository_spec.rb`
-Expected: all pass (including the pre-existing tests — `media.new(...)` from `dry-struct` returns a same-shape struct, so `.id`/`.media_type`/`.filename` assertions in the untouched tests are unaffected).
-
-- [ ] **Step 6: Run the full media slice + storage spec suite as a regression check**
-
-Run: `cd dystopia/monolith && HANAMI_ENV=test bundle exec rspec spec/slices/media spec/lib/storage_spec.rb spec/lib/storage`
 Expected: all pass.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 10: Run the full media slice + storage spec suite as a regression check**
+
+Run: `cd dystopia/monolith && HANAMI_ENV=test bundle exec rspec spec/slices/media spec/lib/storage_spec.rb spec/lib/storage`
+Expected: all pass — this also re-runs `spec/slices/media/use_cases/purge_account_spec.rb`, which does not touch `url`/`thumbnail_url` and should be unaffected.
+
+- [ ] **Step 11: Commit**
 
 ```bash
-git add dystopia/monolith/slices/media/repositories/media_repository.rb dystopia/monolith/spec/slices/media/repositories/media_repository_spec.rb
-git commit -s -m "fix(dystopia/monolith): re-resolve media urls from storage on every read"
+git add dystopia/monolith/config/db/migrate/20260925130000_drop_url_columns_from_media_files.rb dystopia/monolith/slices/media/relations/files.rb dystopia/monolith/slices/media/repositories/media_repository.rb dystopia/monolith/slices/media/use_cases/register_media.rb dystopia/monolith/spec/slices/media/relations/files_spec.rb dystopia/monolith/spec/slices/media/repositories/media_repository_spec.rb
+git commit -s -m "fix(dystopia/monolith): drop stored media urls, resolve from storage on every read"
 ```
 
 ---
