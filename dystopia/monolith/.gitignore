@@ -1,4 +1,5 @@
 .env*.local
+config/db/structure.sql
 log/*
 public/*
 !public/404.html
