@@ -17,6 +17,9 @@ require_relative "seeds/identity/users"
 require_relative "seeds/portfolio/casts"
 require_relative "seeds/portfolio/profiles"
 
+# === Karte ===
+require_relative "seeds/karte/access"
+
 # === Content ===
 require_relative "seeds/post/posts"
 require_relative "seeds/post/likes"
