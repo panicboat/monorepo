@@ -28,12 +28,12 @@ karte は Cast にだけ見える Guest 評価 DB。
 | 1 author × 1 guest の重複 | 許可 (時系列で複数 entry 可、unique 制約なし) |
 | Guest 可視性 | 完全 silent (Guest UI なし) |
 | 読み手範囲 | 全 Cast + `karte__access` 必要 |
-| 利用ゲート | `karte__access` table の存在判定 (boolean に等価)。MVP 付与は **DB 直 SQL** で手動 (`INSERT INTO karte__access (account_id, granted_at, granted_by) VALUES (...)`)。self-serve 課金は別 sub-project |
+| 利用ゲート | `karte__access` table の存在判定 (boolean に等価)。MVP 付与は **DB 直 SQL** で手動 (`INSERT INTO karte__access (account_id, granted_at) VALUES (...)`)。self-serve 課金は別 sub-project |
 | abuse 対策 | ① author identity 透明化 (read 時に author Cast の username/avatar を表示)、② Cast 間 `ReportEntry` (内部シグナル、admin 巡回用)、③ `flagged: bool` (`reported_count >= 3`) を read API で公開、raw `reported_count` は非公開 |
 | edit/delete | 書き手いつでも可 (SNS と同じ) |
 | 旧 trust slice | 同 sub-project 内で完全 destroy (T1〜T4)。pre-prod ゆえ DB DROP も含む |
 | aggregate 計算 | `count` / `avg_rating` は flagged も含む全 entry で集計 (シンプル、abuse 経路を作らない) |
-| paywall 拡張余地 | `karte__access` は別 table で `granted_at` / `granted_by` を持つ。後で `expires_at` や `plan_id` を加える形で Stripe 等を後付け可 |
+| paywall 拡張余地 | `karte__access` は別 table で `granted_at` を持つ。後で `expires_at` や `plan_id` を加える形で Stripe 等を後付け可 |
 | Guest 可視性の将来余地 | 本 MVP では visibility 列を持たない。後で per-entry public モードを足す際に追加 |
 
 ## Grounding
@@ -72,7 +72,8 @@ index:
 |---|---|---|
 | `account_id` | uuid | PK (Cast の id) |
 | `granted_at` | timestamptz | NOT NULL |
-| `granted_by` | text | NULL 可、付与者メモ (`"admin: <name>"` / `"seed"` 等のフリーテキスト) |
+
+`granted_by` (付与者メモ、text) は当初この table に持たせる想定だったが、書き込み経路 (`access_repository#grant` への実引数、または手動 SQL) が実際には一度も使われず読み取り側も無いまま残っていたため 2026-09-25 に削除。付与者の追跡が必要になったら、その機能の一部として設計し直す。
 
 ### `karte__reports`
 
@@ -91,7 +92,7 @@ report 時に `karte__entries.reported_count += 1` を atomic 実行。
 ## B. Repositories
 
 - `entry_repository`: create / update / delete / find_by_id / list_by_target (cursor) / list_by_author (cursor) / aggregate(target_account_id) → `{count, avg_rating}` / `increment_reported_count(id)`
-- `access_repository`: find_by_account / grant(account_id, granted_by) / revoke(account_id) (revoke は MVP では使わなくても API 整合のため定義)
+- `access_repository`: find_by_account / grant(account_id) / revoke(account_id) (revoke は MVP では使わなくても API 整合のため定義)
 - `report_repository`: create(entry_id, reporter_account_id, reason) (UNIQUE 違反は `ON CONFLICT DO NOTHING` 相当で握りつぶし)
 
 cursor は既存 slice の `(created_at, id)` 複合 cursor を踏襲。

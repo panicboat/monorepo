@@ -7,11 +7,10 @@ module Karte
         access_records.by_pk(account_id).one
       end
 
-      def grant(account_id:, granted_by: nil)
+      def grant(account_id:)
         access_records.command(:create).call(
           account_id: account_id,
-          granted_at: Time.now,
-          granted_by: granted_by
+          granted_at: Time.now
         )
       end
 

@@ -9,25 +9,25 @@ module Footprints
 
       # Idempotent upsert per (visitor_id, visited_id) pair.
       # First visit inserts visit_count = 1; each repeat visit increments it and
-      # refreshes last_visited_at + updated_at; first_visited_at stays.
-      # Returns row hash with :first_visited_at, :last_visited_at, :visit_count.
+      # refreshes last_visited_at + updated_at.
+      # Returns row hash with :last_visited_at, :visit_count.
       def upsert_visit(visitor_id:, visited_id:)
         new_id = SecureRandom.uuid_v7
         now = Time.now
 
         sql = <<~SQL
           INSERT INTO footprints.visits
-            (id, visitor_id, visited_id, first_visited_at, last_visited_at, visit_count, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, 1, ?, ?)
+            (id, visitor_id, visited_id, last_visited_at, visit_count, created_at, updated_at)
+          VALUES (?, ?, ?, ?, 1, ?, ?)
           ON CONFLICT (visitor_id, visited_id) DO UPDATE
             SET last_visited_at = EXCLUDED.last_visited_at,
                 updated_at = EXCLUDED.updated_at,
                 visit_count = footprints.visits.visit_count + 1
-          RETURNING first_visited_at, last_visited_at, visit_count
+          RETURNING last_visited_at, visit_count
         SQL
 
         ds = visit_records.dataset.db
-        ds.fetch(sql, new_id, visitor_id, visited_id, now, now, now, now).first
+        ds.fetch(sql, new_id, visitor_id, visited_id, now, now, now).first
       end
 
       # Cursor: (last_visited_at, id) DESC.

@@ -51,7 +51,6 @@ RSpec.describe Footprints::UseCases::RecordVisit do
     rows = visit_records.dataset.all
     expect(rows.size).to eq(1)
     expect(rows.first[:last_visited_at]).to be > row1[:last_visited_at]
-    expect(rows.first[:first_visited_at]).to eq(row1[:first_visited_at])
     expect(rows.first[:visit_count]).to eq(2)
   end
 end
