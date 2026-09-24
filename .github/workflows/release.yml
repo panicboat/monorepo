@@ -3,9 +3,15 @@ name: Release
 on:
   push:
     branches: [main]
+  workflow_dispatch: {}
 
 permissions:
   contents: read
+
+# workflow_dispatch lets an operator force a fresh run to recover a stale/conflicting release PR without waiting for the next push to main — see docs/RELEASE_PLEASE.md.
+concurrency:
+  group: release-please
+  cancel-in-progress: false
 
 jobs:
   release-please:
