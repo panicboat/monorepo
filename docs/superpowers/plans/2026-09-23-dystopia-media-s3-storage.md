@@ -20,7 +20,9 @@
 - AWS access pattern in this repo is EKS Pod Identity, not IRSA annotations: `dystopia/infrastructure/aws/modules/pod_identity.tf` already associates the `monolith` ServiceAccount (namespace `dystopia`) with `aws_iam_role.monolith`. New S3 permissions are just another `aws_iam_policy` + `aws_iam_role_policy_attachment` onto that same role — no Kubernetes-side ServiceAccount change needed.
 - Terraform naming/region conventions already established in `dystopia/infrastructure/aws/modules`: `var.environment = "production"`, `var.aws_region = "ap-northeast-1"`, resource names follow `"<service>-${var.environment}"` (e.g. `aws_iam_role.monolith` is named `"monolith-${var.environment}"`, Cognito pool is `"dystopia-production"`). Use `bucket = "dystopia-media-${var.environment}"` (→ `dystopia-media-production`) — no random/account-id suffix; this project's convention only adds an account-id suffix for genuinely generic names (the shared Terragrunt state bucket), not project-branded ones.
 - Production frontend origin (for S3 CORS `allowed_origins`, since the presigned PUT is issued directly from the browser to S3) is `https://dystopia.city` (`dystopia/frontend/kubernetes/base/httproute.yaml:21`).
-- `NEXT_PUBLIC_MEDIA_URL` is read only inside `dystopia/frontend/next.config.ts` (module-level `process.env` read, not inside any React component — confirmed via repo-wide grep), so it only needs to be correct in the **runtime** container env (`envFrom: configMapRef` in the Deployment). Next.js's `output: "standalone"` server re-evaluates `next.config.ts` at `node server.js` boot, and the Deployment already carries `reloader.stakater.com/auto: "true"`, so a ConfigMap change alone (no Docker/CI build-arg change) is sufficient. Do not touch `dystopia/frontend/Dockerfile` or `.github/workflows/reusable--container-builder.yaml` for this plan — confirmed unnecessary.
+- **CORRECTION (post-Task-4/5-review):** the original bullet here claimed `output: "standalone"` re-evaluates `next.config.ts` (and therefore `process.env.NEXT_PUBLIC_MEDIA_URL`) at `node server.js` boot. This is false — independently verified by running `pnpm build` in this worktree and inspecting the emitted output: `next.config.js` is read once during `next build` and its resolved values (including `images.remotePatterns`) are serialized as a static JS object literal into `.next/standalone/server.js` (confirmed at `server.js:12`) and into `.next/standalone/.next/required-server-files.json`'s `config.images.remotePatterns`. Neither is re-read from the container's environment at boot. Since this repo's Dockerfile (`dystopia/frontend/Dockerfile:18`, `RUN pnpm build`) and CI workflow (`.github/workflows/reusable--container-builder.yaml`) pass no `NEXT_PUBLIC_MEDIA_URL` build-arg, the value baked into every built image is always the `http://localhost:3000` fallback — so a runtime-only ConfigMap value (as Task 4/5 originally implemented) can never reach `next/image`'s `remotePatterns` check in production, regardless of what the Deployment's `envFrom` supplies.
+- Given the above, and that this app has exactly one non-dev environment (only `overlays/production` exists — no staging), the fix is not "wire the env var through correctly" but "stop depending on a per-environment value Next.js's standalone build can't deliver at runtime": Task 5 sets `images.unoptimized: true` globally in `next.config.ts` and removes the `remotePatterns`/`mediaUrl` derivation entirely. When `unoptimized` is true, `next/image` renders the original URL directly without proxying through the `/_next/image` optimization endpoint, so `remotePatterns` matching (and therefore the build-time-freeze problem) becomes structurally irrelevant. Cost: this repo's two `next/image` usages (`src/components/ui/post-card.tsx`, `src/modules/karte/components/KarteEntryCard.tsx` — confirmed via grep to be the only two; avatars render through Radix's `AvatarPrimitive.Image`, a plain `<img>`, and were never affected by `remotePatterns` in the first place) lose Next.js's automatic resize/format-conversion; acceptable for a bug fix restoring broken rendering, revisit only if a future task specifically wants image optimization back (would then require the Docker build-arg approach, deliberately not chosen here).
+- Task 4's `NEXT_PUBLIC_MEDIA_URL` line in `dystopia/frontend/kubernetes/overlays/production/configmap.yaml` is removed as part of this correction — it has no reader once Task 5's `next.config.ts` stops referencing it (confirmed via repo-wide grep: the only reference was in `next.config.ts` itself). `dystopia/monolith`'s `MEDIA_BUCKET_NAME`/`MEDIA_BUCKET_REGION` ConfigMap values (Task 4) are unaffected by this correction — those are read by Ruby's `ENV` at process runtime, which has no build-time-freeze equivalent.
 - Presigned PUT expiry: 300 seconds. Presigned GET expiry: 3600 seconds. These are plain constants in `Storage::S3Adapter`, not new configurable ENV vars (no requirement yet to tune them).
 - IAM actions needed on the bucket for the `monolith` role: `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject` (presigned URLs are only honored at request time if the signing identity actually holds the permission for the signed action).
 - `dystopia-media-production` in this plan is provisioned by Terraform but **applied by the existing CI pipeline** (`.github/workflows/reusable--terragrunt-executor.yaml` / `auto-label--deploy-trigger.yaml`), not by a local `terraform apply` from this session. Task 1's local verification is `terraform validate` / `terraform plan` only.
@@ -41,8 +43,7 @@
 - `dystopia/monolith/spec/slices/media/repositories/media_repository_spec.rb` (modify) — rewrite fixtures (no more `url:`/`thumbnail_url:` args to `create`) and add coverage for the resolve behavior.
 - `dystopia/monolith/kubernetes/overlays/production/configmap.yaml` (new) — `MEDIA_BUCKET_NAME` / `MEDIA_BUCKET_REGION`.
 - `dystopia/monolith/kubernetes/overlays/production/kustomization.yaml` (modify) — register the new configmap patch.
-- `dystopia/frontend/kubernetes/overlays/production/configmap.yaml` (modify) — `NEXT_PUBLIC_MEDIA_URL`.
-- `dystopia/frontend/next.config.ts` (modify) — drop the `/uploads/**`-specific `pathname`, which no longer matches S3 keys.
+- `dystopia/frontend/next.config.ts` (modify) — replace the `remotePatterns`/`NEXT_PUBLIC_MEDIA_URL` approach (proven build-time-frozen under standalone output) with `images.unoptimized: true`.
 
 ---
 
@@ -629,80 +630,74 @@ patches:
   - path: deployment.yaml
 ```
 
-- [ ] **Step 3: Add the media URL to the frontend production ConfigMap**
+- [ ] **Step 3: Validate the kustomize build**
 
-In `dystopia/frontend/kubernetes/overlays/production/configmap.yaml`, add one line to `data:`:
+Run: `cd dystopia/monolith/kubernetes/overlays/production && kustomize build .`
+Expected: renders without error; output's `ConfigMap/monolith` includes `MEDIA_BUCKET_NAME: dystopia-media-production` and `MEDIA_BUCKET_REGION: ap-northeast-1`.
 
-```yaml
-  NEXT_PUBLIC_MEDIA_URL: https://dystopia-media-production.s3.ap-northeast-1.amazonaws.com
-```
+(No frontend ConfigMap change in this task — see the Global Constraints correction: `next.config.ts`'s `output: "standalone"` freezes config at `pnpm build` time, so a runtime-only ConfigMap value can never reach it. Task 5 fixes the frontend side without a per-environment env var at all.)
 
-(Full file after this change has five `data:` entries: `MONOLITH_URL`, `COGNITO_ADAPTER`, `COGNITO_REGION`, `COGNITO_USER_POOL_ID`, `COGNITO_CLIENT_ID`, plus this new one.)
-
-- [ ] **Step 4: Validate the kustomize build**
-
-Run: `cd dystopia/monolith/kubernetes/overlays/production && kustomize build .` and `cd dystopia/frontend/kubernetes/overlays/production && kustomize build .`
-Expected: both render without error; the monolith output's `ConfigMap/monolith` includes `MEDIA_BUCKET_NAME: dystopia-media-production` and `MEDIA_BUCKET_REGION: ap-northeast-1`; the frontend output's `ConfigMap/frontend` includes the new `NEXT_PUBLIC_MEDIA_URL` line.
-
-- [ ] **Step 5: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add dystopia/monolith/kubernetes/overlays/production/configmap.yaml dystopia/monolith/kubernetes/overlays/production/kustomization.yaml dystopia/frontend/kubernetes/overlays/production/configmap.yaml
-git commit -s -m "feat(dystopia): wire production media bucket env vars"
+git add dystopia/monolith/kubernetes/overlays/production/configmap.yaml dystopia/monolith/kubernetes/overlays/production/kustomization.yaml
+git commit -s -m "feat(dystopia/monolith): wire production media bucket env vars"
 ```
 
 ---
 
-### Task 5: Frontend — allow the S3 host in Next.js image config
+### Task 5: Frontend — bypass next/image optimization instead of chasing a runtime env var
 
 **Files:**
 - Modify: `dystopia/frontend/next.config.ts`
+- Modify: `dystopia/frontend/kubernetes/overlays/production/configmap.yaml`
 
 **Interfaces:**
-- Consumes: `NEXT_PUBLIC_MEDIA_URL` (Task 4) at container runtime.
+- Consumes: nothing from earlier tasks.
 - Produces: nothing consumed by a later task.
 
-- [ ] **Step 1: Drop the dev-only `/uploads/**` pathname assumption**
+**Why not `remotePatterns` at all:** confirmed by running `pnpm build` in this worktree — with `output: "standalone"`, Next.js reads `next.config.ts` once during `next build` and serializes the resolved `images` config as a static object literal into `.next/standalone/server.js` and `.next/standalone/.next/required-server-files.json`; neither is re-read from the container's environment at `node server.js` boot. Since this repo's `Dockerfile`/CI workflow pass no `NEXT_PUBLIC_MEDIA_URL` build-arg, any `remotePatterns` value derived from that env var is permanently frozen to its `pnpm build`-time value (the `http://localhost:3000` fallback) in every built image — a Kubernetes ConfigMap can never fix this at runtime. Setting `images.unoptimized: true` sidesteps the problem structurally: `next/image` then renders the original URL directly without proxying through the `/_next/image` optimization endpoint, so `remotePatterns` matching (and therefore this build-time-freeze issue) becomes irrelevant. The only two `next/image` usages in this repo are `src/components/ui/post-card.tsx` and `src/modules/karte/components/KarteEntryCard.tsx` (confirmed via repo-wide grep); avatars render through Radix's `AvatarPrimitive.Image` (a plain `<img>`, never subject to `remotePatterns` in the first place).
+
+- [ ] **Step 1: Replace the remotePatterns approach with unoptimized: true**
 
 Replace the full contents of `dystopia/frontend/next.config.ts` with:
 
 ```ts
 import type { NextConfig } from "next";
 
-// Media URL host differs per environment (dev: local disk, prod: S3) — derive remotePattern from NEXT_PUBLIC_MEDIA_URL instead of hardcoding it.
-const mediaUrl = new URL(
-  process.env.NEXT_PUBLIC_MEDIA_URL || "http://localhost:3000"
-);
-
 const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: ["@frontend/rpc"],
   images: {
-    remotePatterns: [
-      {
-        protocol: mediaUrl.protocol.replace(":", "") as "http" | "https",
-        hostname: mediaUrl.hostname,
-        port: mediaUrl.port || undefined,
-      },
-    ],
+    // Media host (dev: local disk, prod: S3) isn't knowable at `next build` time in standalone
+    // output, so skip the optimizer entirely instead of a remotePatterns value that would freeze
+    // to whatever NEXT_PUBLIC_MEDIA_URL happened to be at build time.
+    unoptimized: true,
   },
 };
 
 export default nextConfig;
 ```
 
-(This removes the `pathname: "/uploads/**"` restriction — S3 keys look like `media/image/<uuid>.jpg`, not `/uploads/...`, and dropping `pathname` still matches the dev `LocalAdapter` case since omitting it matches any path.)
+- [ ] **Step 2: Remove the now-unused NEXT_PUBLIC_MEDIA_URL wiring from the frontend production ConfigMap**
 
-- [ ] **Step 2: Type-check the frontend**
+In `dystopia/frontend/kubernetes/overlays/production/configmap.yaml`, confirm it has no `NEXT_PUBLIC_MEDIA_URL` line (Task 4 no longer adds one — see Task 4's Step 3 correction). If this repo state still has one from an earlier attempt, remove it; the file should have exactly its original five `data:` entries (`MONOLITH_URL`, `COGNITO_ADAPTER`, `COGNITO_REGION`, `COGNITO_USER_POOL_ID`, `COGNITO_CLIENT_ID`).
+
+- [ ] **Step 3: Type-check the frontend**
 
 Run: `cd dystopia/frontend && pnpm exec tsc --noEmit`
 Expected: no new errors (per project memory, `pnpm lint` itself is broken on this repo's ESLint pin — use `tsc` for verification, not lint).
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Validate the kustomize build**
+
+Run: `cd dystopia/frontend/kubernetes/overlays/production && kustomize build .`
+Expected: renders without error; `ConfigMap/frontend` has exactly its original five `data:` entries, no `NEXT_PUBLIC_MEDIA_URL`.
+
+- [ ] **Step 5: Commit**
 
 ```bash
-git add dystopia/frontend/next.config.ts
-git commit -s -m "fix(dystopia/frontend): allow S3-hosted media urls in next/image config"
+git add dystopia/frontend/next.config.ts dystopia/frontend/kubernetes/overlays/production/configmap.yaml
+git commit -s -m "fix(dystopia/frontend): bypass next/image optimization for S3-hosted media"
 ```
 
 ---
@@ -710,5 +705,5 @@ git commit -s -m "fix(dystopia/frontend): allow S3-hosted media urls in next/ima
 ## Final Verification (manual, after CI applies Task 1's Terraform and redeploys monolith/frontend)
 
 1. Confirm the CI-applied bucket name matches the literal used in Task 4 (`dystopia-media-production`) — if Terraform's actual applied name ever diverges (e.g. someone edits `s3.tf` bucket naming later), update Task 4's ConfigMap to match.
-2. From a real device (the original bug report was from a smartphone), sign in to production, upload a profile photo, and attach an image to a post. Confirm both succeed and the image renders afterward (exercises `S3Adapter#upload_url`, `#download_url`, and the Next.js `remotePatterns` change together).
+2. From a real device (the original bug report was from a smartphone), sign in to production, upload a profile photo, and attach an image to a post. Confirm both succeed and the image renders afterward (exercises `S3Adapter#upload_url`/`#download_url` end-to-end, and `next/image`'s `unoptimized: true` path for the post-card/karte-entry-card image usages).
 3. Check monolith logs for the deploy for any `Aws::Errors::MissingCredentialsError` or `Aws::S3::Errors::AccessDenied` — would indicate the Pod Identity association or IAM policy from Task 1 didn't propagate.
