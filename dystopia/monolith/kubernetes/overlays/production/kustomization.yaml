@@ -5,4 +5,5 @@ resources:
   - external-secret.yaml
   - external-secret-billing.yaml
 patches:
+  - path: configmap.yaml
   - path: deployment.yaml
