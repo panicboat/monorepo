@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/panicboat/monorepo/compare/monolith-v0.6.1...monolith-v0.6.2) (2026-09-24)
+
+
+### Bug Fixes
+
+* **dystopia:** media upload failing in production (S3 storage backend) ([#1212](https://github.com/panicboat/monorepo/issues/1212)) ([c878ea6](https://github.com/panicboat/monorepo/commit/c878ea65f35cb1e319c9b40f00b759a76786b207))
+
 ## [0.6.1](https://github.com/panicboat/monorepo/compare/monolith-v0.6.0...monolith-v0.6.1) (2026-09-23)
 
 
