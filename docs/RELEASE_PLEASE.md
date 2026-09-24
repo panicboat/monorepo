@@ -2,7 +2,7 @@
 
 ## 構成
 
-`release-please-config.json` で `separate-pull-requests: true` を設定しており、`dystopia/monolith` / `dystopia/frontend` / `tools/meeting-translation` / `system-components/pennyworth` の4コンポーネントがそれぞれ独立した release PR を持つ。一方でバージョン管理用の `release-please-manifest.json` は全コンポーネント共有の単一ファイル。
+`release-please-config.json` で `separate-pull-requests: true` を設定しており、`packages` に定義した各コンポーネントがそれぞれ独立した release PR を持つ。一方でバージョン管理用の `release-please-manifest.json` は全コンポーネント共有の単一ファイル。
 
 ## 既知の問題: release PR がコンフリクトする
 
