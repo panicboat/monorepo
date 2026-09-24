@@ -12,4 +12,4 @@ overrides:
   '@typescript-eslint/typescript-estree': ^8.70.1
   '@typescript-eslint/scope-manager': ^8.70.1
   '@typescript-eslint/visitor-keys': ^8.70.0
-  typescript-eslint: ^8.70.0
+  typescript-eslint: ^8.70.1
