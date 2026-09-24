@@ -48,7 +48,13 @@ module Storage
     private
 
     def default_adapter
-      LocalAdapter.new
+      env = ENV.fetch("HANAMI_ENV", "development")
+      if env == "development" || env == "test"
+        LocalAdapter.new
+      else
+        require_relative "storage/s3_adapter"
+        S3Adapter.new
+      end
     end
   end
 end

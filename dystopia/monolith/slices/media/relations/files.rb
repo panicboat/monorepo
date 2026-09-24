@@ -6,8 +6,6 @@ module Media
       schema(:"media__files", as: :files, infer: false) do
         attribute :id, Types::String
         attribute :media_type, Types::String
-        attribute :url, Types::String
-        attribute :thumbnail_url, Types::String.optional
         attribute :filename, Types::String.optional
         attribute :content_type, Types::String.optional
         attribute :size_bytes, Types::Integer.optional

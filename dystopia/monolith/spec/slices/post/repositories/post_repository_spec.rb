@@ -52,7 +52,6 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
       media_repo.create(
         id: media_id,
         media_type: media_type,
-        url: "https://example.com/#{media_id}.jpg",
         media_key: "uploads/#{media_id}.jpg"
       )
       media_id

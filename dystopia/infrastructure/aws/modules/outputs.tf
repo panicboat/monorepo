@@ -47,3 +47,8 @@ output "billing_secret_name" {
   value       = aws_secretsmanager_secret.monolith_billing.name
   description = "AWS Secrets Manager secret name (= ESO ExternalSecret で参照)"
 }
+
+output "media_bucket_name" {
+  value       = aws_s3_bucket.media.bucket
+  description = "S3 bucket name for media storage (avatars / post images) — matches MEDIA_BUCKET_NAME on monolith"
+}
