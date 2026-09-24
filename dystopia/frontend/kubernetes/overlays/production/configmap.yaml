@@ -8,4 +8,3 @@ data:
   COGNITO_REGION: ap-northeast-1
   COGNITO_USER_POOL_ID: ap-northeast-1_QUERzTeOD
   COGNITO_CLIENT_ID: 28frce3i227l36pdf5ru4ggag0
-  NEXT_PUBLIC_MEDIA_URL: https://dystopia-media-production.s3.ap-northeast-1.amazonaws.com
