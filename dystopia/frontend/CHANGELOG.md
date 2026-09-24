@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/panicboat/monorepo/compare/frontend-v0.8.0...frontend-v0.8.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* **dystopia:** media upload failing in production (S3 storage backend) ([#1212](https://github.com/panicboat/monorepo/issues/1212)) ([c878ea6](https://github.com/panicboat/monorepo/commit/c878ea65f35cb1e319c9b40f00b759a76786b207))
+
 ## [0.8.0](https://github.com/panicboat/monorepo/compare/frontend-v0.7.0...frontend-v0.8.0) (2026-09-23)
 
 
