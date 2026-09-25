@@ -51,12 +51,12 @@ export function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="flex min-h-screen flex-col bg-bg">
       <div className="md:hidden">
         <TopBar onAvatarClick={() => setDrawerOpen(true)} />
       </div>
       {/* Desktop 3-col: persistent left nav + center column + おすすめユーザー pane (xl:). */}
-      <div className="mx-auto flex w-full max-w-screen-xl">
+      <div className="mx-auto flex w-full max-w-screen-xl flex-1">
         <SideNav />
         <main className="min-w-0 flex-1 pb-24 md:max-w-2xl md:border-x md:border-border md:pb-0">
           {children}
