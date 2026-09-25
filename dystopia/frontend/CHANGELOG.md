@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.3](https://github.com/panicboat/monorepo/compare/frontend-v0.8.2...frontend-v0.8.3) (2026-09-25)
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** use dvh so BottomTab tracks the visible viewport ([#1230](https://github.com/panicboat/monorepo/issues/1230)) ([f34290f](https://github.com/panicboat/monorepo/commit/f34290fc699fd4a629cb9cce59ef0e0a0accb4d2))
+
 ## [0.8.2](https://github.com/panicboat/monorepo/compare/frontend-v0.8.1...frontend-v0.8.2) (2026-09-25)
 
 
