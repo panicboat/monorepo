@@ -51,7 +51,7 @@ export function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="flex min-h-dvh flex-col bg-bg">
       <div className="md:hidden">
         <TopBar onAvatarClick={() => setDrawerOpen(true)} />
       </div>
