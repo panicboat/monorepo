@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/panicboat/monorepo/compare/frontend-v0.8.1...frontend-v0.8.2) (2026-09-25)
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** pin BottomTab to viewport bottom on short pages ([#1228](https://github.com/panicboat/monorepo/issues/1228)) ([0ffef81](https://github.com/panicboat/monorepo/commit/0ffef81c8a89bdf30f767f7dd3fbd4ab30c885b0))
+
 ## [0.8.1](https://github.com/panicboat/monorepo/compare/frontend-v0.8.0...frontend-v0.8.1) (2026-09-24)
 
 
