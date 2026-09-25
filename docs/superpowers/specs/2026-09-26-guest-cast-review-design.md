@@ -21,9 +21,9 @@ review は Guest (author) が Cast (target) を評価する、双方に公開さ
 | 評価項目 | `rating`（0.5刻み、1.0〜5.0の10値）+ `body`（任意テキスト） |
 | レビュー資格 | 制限なし。予約実績等のゲートなし |
 | 多重度 | 制限なし（同一 Guest×Cast に対し時系列で何度でも投稿可、karte と同じ方針） |
-| Cast のレビュー受付可否 (`accepts_reviews`) | デフォルト ON（オプトアウト方式）。既存 Cast にも適用 |
-| `accepts_reviews` の効果範囲 | **書き込みはブロックしない。公開可否のみを制御する**（詳細は可視性セクション） |
-| 「レビューを書く」CTA | Cast の `accepts_reviews` に関わらず常に表示 |
+| Cast のレビュー表示可否 (`reviews_visible`) | デフォルト ON（オプトアウト方式）。既存 Cast にも適用 |
+| `reviews_visible` の効果範囲 | **書き込みはブロックしない。公開可否のみを制御する**（詳細は可視性セクション） |
+| 「レビューを書く」CTA | Cast の `reviews_visible` に関わらず常に表示 |
 | per-entry 非表示 (`hidden`) | Cast が entry 単位で切り替え可能。第三者からは見えなくなるが、書いた Guest 本人には見え続ける。状態を示すバッジ等の UI は不要 |
 | Guest 側一覧の可視性 | プロフィール閲覧者全員に公開（既存「投稿」「いいね」タブと同じ） |
 | Cast 側一覧の可視性 | 同上、全員に公開 |
@@ -36,17 +36,17 @@ review は Guest (author) が Cast (target) を評価する、双方に公開さ
 
 ### `cast_settings` を `review` slice に置く理由
 
-`profile__casts`（`sns_links` / `age` / `body_stats` / `industry`）は表示・プロフィール情報のみを持ち、機能ごとの挙動フラグを扱っていない。karte も同じ理由で `karte__access` を `karte` slice 側に置いている（karte design spec: 「`karte__access` は別 table で `granted_at` を持つ。後で `expires_at` や `plan_id` を加える形で Stripe 等を後付け可」）。`accepts_reviews` も現時点では 1 boolean だが、将来の課金プラン用カラム追加を見据えて `review` slice 側に独立させる。
+`profile__casts`（`sns_links` / `age` / `body_stats` / `industry`）は表示・プロフィール情報のみを持ち、機能ごとの挙動フラグを扱っていない。karte も同じ理由で `karte__access` を `karte` slice 側に置いている（karte design spec: 「`karte__access` は別 table で `granted_at` を持つ。後で `expires_at` や `plan_id` を加える形で Stripe 等を後付け可」）。`reviews_visible` も現時点では 1 boolean だが、将来の課金プラン用カラム追加を見据えて `review` slice 側に独立させる。
 
 ## 可視性ルール
 
 書き込みは常に成功する（`target.role == CAST` の検証のみ）。可視性は以下の統一ルールで、`ListEntriesByTarget` と `ListEntriesByAuthor` の両方に同じ形で適用する。
 
-**self-view**: `viewer_account_id == page_owner_account_id`（Guest が自分の「書いたレビュー」タブを見ている／Cast が自分の「受信レビュー」タブを見ている）の場合、`hidden` や `accepts_reviews` の状態に関わらず全件を返す。
+**self-view**: `viewer_account_id == page_owner_account_id`（Guest が自分の「書いたレビュー」タブを見ている／Cast が自分の「受信レビュー」タブを見ている）の場合、`hidden` や `reviews_visible` の状態に関わらず全件を返す。
 
 self-view でない場合、以下を全て満たす entry のみ表示する。
 
-1. **Level A（review ドメイン固有、viewer に非依存）**: `NOT hidden AND accepts_reviews[target]`（`accepts_reviews` は target の現在の設定を都度参照する。過去に NG だった時点で書かれた entry でも、Cast が後から opt-in すれば公開されうる）
+1. **Level A（review ドメイン固有、viewer に非依存）**: `NOT hidden AND reviews_visible[target]`（`reviews_visible` は target の現在の設定を都度参照する。過去に NG だった時点で書かれた entry でも、Cast が後から opt-in すれば公開されうる）
 2. **Level B1（social、page_owner 基準、リスト全体で1回だけ判定）**: 既存の `Social::UseCases::FilterVisiblePosts`（`dystopia/monolith/slices/social/use_cases/filter_visible_posts.rb`）を `page_owner_account_id` 1件について呼び出し、viewer が page_owner のコンテンツを見られるか（block・非公開プロフィール+フォロー状態）を判定する。page_owner はリスト呼び出し内で固定値なので、entry ごとに呼ぶ必要はない
 3. **Level B2（social、もう一方の当事者との block、entry ごとにバッチ判定）**: `Social::Slice["repositories.block_repository"].bidirectionally_blocked_ids` を使い、viewer と「もう一方の当事者」（target-list なら各 entry の author、author-list なら各 entry の target）との bidirectional block を entry ごとに除外する
 
@@ -90,27 +90,27 @@ target role 検証は karte 同様 DB 制約でなく use_case 層で `target.ro
 | column | type | note |
 |---|---|---|
 | `account_id` | uuid | PK（Cast） |
-| `accepts_reviews` | boolean | NOT NULL DEFAULT true |
+| `reviews_visible` | boolean | NOT NULL DEFAULT true |
 | `updated_at` | timestamptz | NOT NULL DEFAULT now |
 
-行が存在しない Cast は `accepts_reviews = true` とみなす（karte の `karte__access` とは逆に、レコードなし = 有効）。Cast の self-serve トグルから upsert される（karte の DB 直 SQL 運用とは異なる経路）。
+行が存在しない Cast は `reviews_visible = true` とみなす（karte の `karte__access` とは逆に、レコードなし = 有効）。Cast の self-serve トグルから upsert される（karte の DB 直 SQL 運用とは異なる経路）。
 
 ## B. Repositories
 
 - `entry_repository`: `create` / `update` / `delete` / `find_by_id` / `list_by_target`（cursor） / `list_by_author`（cursor） / `hide` / `unhide`
-- `cast_settings_repository`: `find_by_account`（nilなら呼び出し側で `accepts_reviews: true` とみなす） / `upsert`
+- `cast_settings_repository`: `find_by_account`（nilなら呼び出し側で `reviews_visible: true` とみなす） / `upsert`
 
 cursor は既存 slice の `(created_at, id)` 複合 cursor を踏襲。
 
 ## C. Use cases
 
-- `CreateEntry`: `target.role == CAST` のみ検証。`accepts_reviews` によるブロックなし
+- `CreateEntry`: `target.role == CAST` のみ検証。`reviews_visible` によるブロックなし
 - `UpdateEntry` / `DeleteEntry`: author のみ実行可
 - `HideEntry` / `UnhideEntry`: target のみ実行可。`review__entries.hidden` を切り替えるだけ
 - `ListEntriesByTarget(target_account_id, viewer_account_id)`: repo から target 基準で raw 行を取得 → `page_owner_account_id = target` として `FilterVisibleEntries` に委譲
 - `ListEntriesByAuthor(author_account_id, viewer_account_id)`: repo から author 基準で raw 行を取得 → `page_owner_account_id = author` として `FilterVisibleEntries` に委譲
 - `FilterVisibleEntries(viewer_account_id:, page_owner_account_id:, entries:)`: 可視性ルールセクションの Level A / self-view / B1 / B2 を実装する内部 use case
-- `GetMySettings` / `UpdateMySettings`: `accepts_reviews` の読み書き（Cast本人のみ）
+- `GetMySettings` / `UpdateMySettings`: `reviews_visible` の読み書き（Cast本人のみ）
 
 ## D. Cross-slice adapters
 
@@ -132,8 +132,8 @@ RPC: `CreateEntry` / `UpdateEntry` / `DeleteEntry` / `HideEntry` / `UnhideEntry`
 - `modules/review/components/`: `ReviewComposer`（星入力0.5刻み + テキスト）、`ReviewEntryCard`、`ReviewsTab`
 - `modules/review/hooks/`: 各 use case に対応する hook 一式
 - `ProfileContentTabs`（`dystopia/frontend/src/modules/post/components/ProfileContentTabs.tsx`）の `extraTabs` に注入。karte と異なり Cast/Guest どちらの profile でも常時表示し、ラベルを Guest側「書いたレビュー」／Cast側「受信レビュー」で出し分ける
-- `settings/reviews/page.tsx` を新設し `accepts_reviews` トグルを配置（既存の `settings/blocks`、`settings/follow-requests` と同じ構成パターン）
-- Cast プロフィール上の「レビューを書く」CTA は `accepts_reviews` の値に関わらず常時表示
+- `settings/reviews/page.tsx` を新設し `reviews_visible` トグルを配置（既存の `settings/blocks`、`settings/follow-requests` と同じ構成パターン）
+- Cast プロフィール上の「レビューを書く」CTA は `reviews_visible` の値に関わらず常時表示
 
 ## G. Error handling
 
@@ -148,8 +148,8 @@ RPC: `CreateEntry` / `UpdateEntry` / `DeleteEntry` / `HideEntry` / `UnhideEntry`
 
 karte の spec 構成（use_case / repository / handler の request spec）を踏襲する。
 
-- `FilterVisibleEntries` は `accepts_reviews × hidden × block(author/target) × private(page_owner) × self-view` の組み合わせを網羅するテストマトリクスを持つ。可視性判定はここに一本化されているため、`ListEntriesByTarget` / `ListEntriesByAuthor` 側では委譲呼び出しの確認のみでよい
-- `CreateEntry` が `accepts_reviews = false` でも成功することを明示的にテストする（デフォルト動作と逆の直感になりやすいため）
+- `FilterVisibleEntries` は `reviews_visible × hidden × block(author/target) × private(page_owner) × self-view` の組み合わせを網羅するテストマトリクスを持つ。可視性判定はここに一本化されているため、`ListEntriesByTarget` / `ListEntriesByAuthor` 側では委譲呼び出しの確認のみでよい
+- `CreateEntry` が `reviews_visible = false` でも成功することを明示的にテストする（デフォルト動作と逆の直感になりやすいため）
 - frontend: `modules/karte` のテストパターンに倣い hook / component テストを整備する
 
 ## I. Out of scope（将来検討）
