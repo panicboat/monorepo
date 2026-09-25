@@ -1,6 +1,6 @@
 {
   "dystopia/monolith": "0.6.2",
-  "dystopia/frontend": "0.8.1",
+  "dystopia/frontend": "0.8.2",
   "system-components/pennyworth": "1.1.0",
   "tools/meeting-translation": "1.1.0"
 }
