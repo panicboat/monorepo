@@ -14,7 +14,14 @@ module Post
 
         MAX_LIMIT = 50
 
+        ForbiddenError = Class.new(StandardError)
+
         def call(account_id:, viewer_account_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
+          # Likes are self-only; enforced here so a direct RPC call can't bypass a hidden frontend tab.
+          unless viewer_account_id && viewer_account_id.to_s == account_id.to_s
+            raise ForbiddenError, "viewer cannot see another account's likes"
+          end
+
           limit = normalize_limit(limit)
           decoded_cursor = decode_cursor(cursor)
 

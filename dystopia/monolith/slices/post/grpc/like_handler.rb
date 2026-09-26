@@ -79,6 +79,8 @@ module Post
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
+      rescue UseCases::Likes::ListLikedPostsByAccount::ForbiddenError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, e.message)
       end
 
       private
