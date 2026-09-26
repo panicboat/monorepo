@@ -21,7 +21,6 @@ const NAV_ITEMS = [
   { path: "/footprints", label: "足跡", icon: "👣", badgeKey: "footprints_unread" as const },
   { path: "/messages", label: "メッセージ", icon: "💬", badgeKey: "messaging_unread" as const },
   { path: "/bookmarks", label: "ブックマーク", icon: "🔖" },
-  { path: "/oshi", label: "推し！", icon: "⭐" },
   { path: "/ranking", label: "ランキング", icon: "🏆" },
   { path: "/settings", label: "設定", icon: "⚙" },
 ];
