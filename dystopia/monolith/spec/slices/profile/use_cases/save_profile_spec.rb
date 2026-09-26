@@ -80,21 +80,4 @@ RSpec.describe "Profile::UseCases::SaveProfile", type: :database do
     }.to raise_error(Errors::ValidationError)
   end
 
-  it "rejects more than two areas" do
-    expect {
-      uc.call(account_id: account_id, display_name: "Coco",
-        area_ids: [SecureRandom.uuid_v7, SecureRandom.uuid_v7, SecureRandom.uuid_v7])
-    }.to raise_error(Errors::ValidationError)
-  end
-
-  it "persists up to two areas" do
-    a1 = SecureRandom.uuid_v7
-    a2 = SecureRandom.uuid_v7
-    areas = Hanami.app.slices[:profile]["relations.areas"]
-    [a1, a2].each_with_index do |id, i|
-      areas.changeset(:create, id: id, prefecture: "東京都", name: "e#{i}", code: "c#{i}").commit
-    end
-    uc.call(account_id: account_id, display_name: "Coco", area_ids: [a1, a2])
-    expect(repo.find_area_ids(account_id)).to contain_exactly(a1, a2)
-  end
 end

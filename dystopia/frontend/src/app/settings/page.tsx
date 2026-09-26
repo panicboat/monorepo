@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useProfile } from "@/modules/profile/hooks";
-import { useAuthStore, selectRole, selectIsHydrated } from "@/stores/authStore";
+import { useAuthStore, selectIsHydrated } from "@/stores/authStore";
 import { Tabs } from "@/components/ui/tab";
-import { AreaSettings } from "@/modules/profile/components/AreaSettings";
 import { PrivacySettings } from "@/modules/profile/components/PrivacySettings";
 import { AccountSettings } from "@/modules/profile/components/AccountSettings";
 import { NotificationSettings } from "@/modules/notifications/components/NotificationSettings";
@@ -13,14 +12,12 @@ import { useDeactivateAccount } from "@/modules/identity/hooks/useDeactivateAcco
 
 export default function SettingsPage() {
   const isHydrated = useAuthStore(selectIsHydrated);
-  const role = useAuthStore(selectRole);
   const { profile, loading, error, saveProfile } = useProfile();
   const { deactivate, loading: deactivating, error: deactivateError } = useDeactivateAccount();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const items = [
     { id: "notifications", label: "通知設定" },
-    ...(role === "cast" ? [{ id: "area", label: "エリア" }] : []),
     { id: "privacy", label: "プライバシー" },
     { id: "appearance", label: "外観" },
     { id: "account", label: "アカウント" },
@@ -44,7 +41,6 @@ export default function SettingsPage() {
       <Tabs items={items} value={tab} onValueChange={setTab} />
       <div className="px-4">
         {tab === "notifications" && <NotificationSettings />}
-        {tab === "area" && role === "cast" && <AreaSettings profile={profile} save={saveProfile} />}
         {tab === "privacy" && <PrivacySettings profile={profile} save={saveProfile} />}
         {tab === "appearance" && <AppearanceSettings />}
         {tab === "account" && (

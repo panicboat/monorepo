@@ -19,7 +19,6 @@ module Profile
       rpc :SaveProfile, ::Profile::V1::SaveProfileRequest, ::Profile::V1::SaveProfileResponse
       rpc :CheckUsernameAvailability, ::Profile::V1::CheckUsernameAvailabilityRequest, ::Profile::V1::CheckUsernameAvailabilityResponse
       rpc :SaveProfileMedia, ::Profile::V1::SaveProfileMediaRequest, ::Profile::V1::SaveProfileMediaResponse
-      rpc :ListAreas, ::Profile::V1::ListAreasRequest, ::Profile::V1::ListAreasResponse
 
       include ::Profile::Deps[
         get_profile_uc: "use_cases.get_profile",
@@ -27,9 +26,7 @@ module Profile
         save_profile_uc: "use_cases.save_profile",
         check_username_uc: "use_cases.check_username_availability",
         save_media_uc: "use_cases.save_profile_media",
-        list_areas_uc: "use_cases.list_areas",
         profile_repository: "repositories.profile_repository",
-        area_repository: "repositories.area_repository",
         cast_repository: "repositories.cast_repository"
       ]
 
@@ -66,8 +63,7 @@ module Profile
           is_private: m.is_private,
           age: zero_to_nil(m.age),
           body_stats: body_stats_to_hash(m.body_stats),
-          industry: blank_to_nil(m.industry),
-          area_ids: m.area_ids.to_a
+          industry: blank_to_nil(m.industry)
         )
         build_response(::Profile::V1::SaveProfileResponse, profile)
       rescue Errors::ValidationError => e
@@ -99,15 +95,6 @@ module Profile
         build_response(::Profile::V1::SaveProfileMediaResponse, profile)
       end
 
-      def list_areas
-        authenticate_user!
-
-        areas = list_areas_uc.call(prefecture: blank_to_nil(request.message.prefecture))
-        ::Profile::V1::ListAreasResponse.new(
-          areas: areas.map { |a| Presenter.area_to_proto(a) }
-        )
-      end
-
       private
 
       Presenter = Profile::Presenters::ProfilePresenter
@@ -117,12 +104,10 @@ module Profile
       end
 
       def present(profile)
-        area_ids = profile_repository.find_area_ids(profile.account_id)
-        area_records = area_repository.find_by_ids(area_ids)
         media_files = load_media_files(profile)
         role = role_for(profile.account_id)
         cast = role == 2 ? cast_repository.find_by_user_id(profile.account_id) : nil
-        Presenter.to_proto(profile, cast: cast, area_records: area_records, media_files: media_files, role: role)
+        Presenter.to_proto(profile, cast: cast, media_files: media_files, role: role)
       end
 
       def role_for(account_id)

@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file profile/v1/service.proto.
  */
 export const file_profile_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("Chhwcm9maWxlL3YxL3NlcnZpY2UucHJvdG8SCnByb2ZpbGUudjEinAMKB1Byb2ZpbGUSEgoKYWNjb3VudF9pZBgBIAEoCRIQCgh1c2VybmFtZRgCIAEoCRIUCgxkaXNwbGF5X25hbWUYAyABKAkSCwoDYmlvGAQgASgJEhcKD2F2YXRhcl9tZWRpYV9pZBgFIAEoCRISCgphdmF0YXJfdXJsGAYgASgJEhYKDmNvdmVyX21lZGlhX2lkGAcgASgJEhEKCWNvdmVyX3VybBgIIAEoCRIPCgd3ZWJzaXRlGAkgASgJEicKCXNuc19saW5rcxgKIAEoCzIULnByb2ZpbGUudjEuU25zTGlua3MSEgoKcHJlZmVjdHVyZRgLIAEoCRISCgppc19wcml2YXRlGAwgASgIEhUKDXJlZ2lzdGVyZWRfYXQYDSABKAkSCwoDYWdlGA4gASgFEikKCmJvZHlfc3RhdHMYDyABKAsyFS5wcm9maWxlLnYxLkJvZHlTdGF0cxIQCghpbmR1c3RyeRgRIAEoCRIfCgVhcmVhcxgSIAMoCzIQLnByb2ZpbGUudjEuQXJlYRIMCgRyb2xlGBQgASgFImsKCFNuc0xpbmtzEgkKAXgYASABKAkSEQoJaW5zdGFncmFtGAIgASgJEg4KBnRpa3RvaxgDIAEoCRIPCgdibHVlc2t5GAQgASgJEgwKBGxpbmUYBSABKAkSEgoKY2l0eWhlYXZlbhgGIAEoCSJeCglCb2R5U3RhdHMSEQoJaGVpZ2h0X2NtGAEgASgFEg8KB2J1c3RfY20YAiABKAUSEAoId2Fpc3RfY20YAyABKAUSDgoGaGlwX2NtGAQgASgFEgsKA2N1cBgFIAEoCSJSCgRBcmVhEgoKAmlkGAEgASgJEg4KBnJlZ2lvbhgCIAEoCRISCgpwcmVmZWN0dXJlGAMgASgJEgwKBG5hbWUYBCABKAkSDAoEY29kZRgFIAEoCSInChFHZXRQcm9maWxlUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJIi8KG0dldFByb2ZpbGVCeVVzZXJuYW1lUmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCSI6ChJHZXRQcm9maWxlUmVzcG9uc2USJAoHcHJvZmlsZRgBIAEoCzITLnByb2ZpbGUudjEuUHJvZmlsZSKHAgoSU2F2ZVByb2ZpbGVSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRILCgNiaW8YAyABKAkSDwoHd2Vic2l0ZRgEIAEoCRInCglzbnNfbGlua3MYBSABKAsyFC5wcm9maWxlLnYxLlNuc0xpbmtzEhIKCnByZWZlY3R1cmUYBiABKAkSEgoKaXNfcHJpdmF0ZRgHIAEoCBILCgNhZ2UYCCABKAUSKQoKYm9keV9zdGF0cxgJIAEoCzIVLnByb2ZpbGUudjEuQm9keVN0YXRzEhAKCGluZHVzdHJ5GAsgASgJEhAKCGFyZWFfaWRzGAwgAygJIjsKE1NhdmVQcm9maWxlUmVzcG9uc2USJAoHcHJvZmlsZRgBIAEoCzITLnByb2ZpbGUudjEuUHJvZmlsZSI0CiBDaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCSJHCiFDaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVzcG9uc2USEQoJYXZhaWxhYmxlGAEgASgIEg8KB21lc3NhZ2UYAiABKAkiSgoXU2F2ZVByb2ZpbGVNZWRpYVJlcXVlc3QSFwoPYXZhdGFyX21lZGlhX2lkGAEgASgJEhYKDmNvdmVyX21lZGlhX2lkGAIgASgJIkAKGFNhdmVQcm9maWxlTWVkaWFSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIiYKEExpc3RBcmVhc1JlcXVlc3QSEgoKcHJlZmVjdHVyZRgBIAEoCSI0ChFMaXN0QXJlYXNSZXNwb25zZRIfCgVhcmVhcxgBIAMoCzIQLnByb2ZpbGUudjEuQXJlYTKxBAoOUHJvZmlsZVNlcnZpY2USSwoKR2V0UHJvZmlsZRIdLnByb2ZpbGUudjEuR2V0UHJvZmlsZVJlcXVlc3QaHi5wcm9maWxlLnYxLkdldFByb2ZpbGVSZXNwb25zZRJfChRHZXRQcm9maWxlQnlVc2VybmFtZRInLnByb2ZpbGUudjEuR2V0UHJvZmlsZUJ5VXNlcm5hbWVSZXF1ZXN0Gh4ucHJvZmlsZS52MS5HZXRQcm9maWxlUmVzcG9uc2USTgoLU2F2ZVByb2ZpbGUSHi5wcm9maWxlLnYxLlNhdmVQcm9maWxlUmVxdWVzdBofLnByb2ZpbGUudjEuU2F2ZVByb2ZpbGVSZXNwb25zZRJ4ChlDaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5EiwucHJvZmlsZS52MS5DaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVxdWVzdBotLnByb2ZpbGUudjEuQ2hlY2tVc2VybmFtZUF2YWlsYWJpbGl0eVJlc3BvbnNlEl0KEFNhdmVQcm9maWxlTWVkaWESIy5wcm9maWxlLnYxLlNhdmVQcm9maWxlTWVkaWFSZXF1ZXN0GiQucHJvZmlsZS52MS5TYXZlUHJvZmlsZU1lZGlhUmVzcG9uc2USSAoJTGlzdEFyZWFzEhwucHJvZmlsZS52MS5MaXN0QXJlYXNSZXF1ZXN0Gh0ucHJvZmlsZS52MS5MaXN0QXJlYXNSZXNwb25zZWIGcHJvdG8z");
+  fileDesc("Chhwcm9maWxlL3YxL3NlcnZpY2UucHJvdG8SCnByb2ZpbGUudjEi+wIKB1Byb2ZpbGUSEgoKYWNjb3VudF9pZBgBIAEoCRIQCgh1c2VybmFtZRgCIAEoCRIUCgxkaXNwbGF5X25hbWUYAyABKAkSCwoDYmlvGAQgASgJEhcKD2F2YXRhcl9tZWRpYV9pZBgFIAEoCRISCgphdmF0YXJfdXJsGAYgASgJEhYKDmNvdmVyX21lZGlhX2lkGAcgASgJEhEKCWNvdmVyX3VybBgIIAEoCRIPCgd3ZWJzaXRlGAkgASgJEicKCXNuc19saW5rcxgKIAEoCzIULnByb2ZpbGUudjEuU25zTGlua3MSEgoKcHJlZmVjdHVyZRgLIAEoCRISCgppc19wcml2YXRlGAwgASgIEhUKDXJlZ2lzdGVyZWRfYXQYDSABKAkSCwoDYWdlGA4gASgFEikKCmJvZHlfc3RhdHMYDyABKAsyFS5wcm9maWxlLnYxLkJvZHlTdGF0cxIQCghpbmR1c3RyeRgRIAEoCRIMCgRyb2xlGBQgASgFImsKCFNuc0xpbmtzEgkKAXgYASABKAkSEQoJaW5zdGFncmFtGAIgASgJEg4KBnRpa3RvaxgDIAEoCRIPCgdibHVlc2t5GAQgASgJEgwKBGxpbmUYBSABKAkSEgoKY2l0eWhlYXZlbhgGIAEoCSJeCglCb2R5U3RhdHMSEQoJaGVpZ2h0X2NtGAEgASgFEg8KB2J1c3RfY20YAiABKAUSEAoId2Fpc3RfY20YAyABKAUSDgoGaGlwX2NtGAQgASgFEgsKA2N1cBgFIAEoCSInChFHZXRQcm9maWxlUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJIi8KG0dldFByb2ZpbGVCeVVzZXJuYW1lUmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCSI6ChJHZXRQcm9maWxlUmVzcG9uc2USJAoHcHJvZmlsZRgBIAEoCzITLnByb2ZpbGUudjEuUHJvZmlsZSL1AQoSU2F2ZVByb2ZpbGVSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRILCgNiaW8YAyABKAkSDwoHd2Vic2l0ZRgEIAEoCRInCglzbnNfbGlua3MYBSABKAsyFC5wcm9maWxlLnYxLlNuc0xpbmtzEhIKCnByZWZlY3R1cmUYBiABKAkSEgoKaXNfcHJpdmF0ZRgHIAEoCBILCgNhZ2UYCCABKAUSKQoKYm9keV9zdGF0cxgJIAEoCzIVLnByb2ZpbGUudjEuQm9keVN0YXRzEhAKCGluZHVzdHJ5GAsgASgJIjsKE1NhdmVQcm9maWxlUmVzcG9uc2USJAoHcHJvZmlsZRgBIAEoCzITLnByb2ZpbGUudjEuUHJvZmlsZSI0CiBDaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCSJHCiFDaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVzcG9uc2USEQoJYXZhaWxhYmxlGAEgASgIEg8KB21lc3NhZ2UYAiABKAkiSgoXU2F2ZVByb2ZpbGVNZWRpYVJlcXVlc3QSFwoPYXZhdGFyX21lZGlhX2lkGAEgASgJEhYKDmNvdmVyX21lZGlhX2lkGAIgASgJIkAKGFNhdmVQcm9maWxlTWVkaWFSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlMucDCg5Qcm9maWxlU2VydmljZRJLCgpHZXRQcm9maWxlEh0ucHJvZmlsZS52MS5HZXRQcm9maWxlUmVxdWVzdBoeLnByb2ZpbGUudjEuR2V0UHJvZmlsZVJlc3BvbnNlEl8KFEdldFByb2ZpbGVCeVVzZXJuYW1lEicucHJvZmlsZS52MS5HZXRQcm9maWxlQnlVc2VybmFtZVJlcXVlc3QaHi5wcm9maWxlLnYxLkdldFByb2ZpbGVSZXNwb25zZRJOCgtTYXZlUHJvZmlsZRIeLnByb2ZpbGUudjEuU2F2ZVByb2ZpbGVSZXF1ZXN0Gh8ucHJvZmlsZS52MS5TYXZlUHJvZmlsZVJlc3BvbnNlEngKGUNoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHkSLC5wcm9maWxlLnYxLkNoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHlSZXF1ZXN0Gi0ucHJvZmlsZS52MS5DaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVzcG9uc2USXQoQU2F2ZVByb2ZpbGVNZWRpYRIjLnByb2ZpbGUudjEuU2F2ZVByb2ZpbGVNZWRpYVJlcXVlc3QaJC5wcm9maWxlLnYxLlNhdmVQcm9maWxlTWVkaWFSZXNwb25zZWIGcHJvdG8z");
 
 /**
  * @generated from message profile.v1.Profile
@@ -119,13 +119,6 @@ export type Profile = Message<"profile.v1.Profile"> & {
   industry: string;
 
   /**
-   * 活動エリア (max 2)
-   *
-   * @generated from field: repeated profile.v1.Area areas = 18;
-   */
-  areas: Area[];
-
-  /**
    * identity role mirror: 1 = GUEST, 2 = CAST (0 = unknown / not joined yet).
    * Sourced from identity__users.role at presentation time so UI does not
    * have to infer the role from cast-only attributes.
@@ -226,49 +219,6 @@ export const BodyStatsSchema: GenMessage<BodyStats> = /*@__PURE__*/
   messageDesc(file_profile_v1_service, 2);
 
 /**
- * @generated from message profile.v1.Area
- */
-export type Area = Message<"profile.v1.Area"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-
-  /**
-   * 地方
-   *
-   * @generated from field: string region = 2;
-   */
-  region: string;
-
-  /**
-   * 都道府県
-   *
-   * @generated from field: string prefecture = 3;
-   */
-  prefecture: string;
-
-  /**
-   * エリアクラスタ (例: 池袋・赤羽・日暮里エリア)
-   *
-   * @generated from field: string name = 4;
-   */
-  name: string;
-
-  /**
-   * @generated from field: string code = 5;
-   */
-  code: string;
-};
-
-/**
- * Describes the message profile.v1.Area.
- * Use `create(AreaSchema)` to create a new message.
- */
-export const AreaSchema: GenMessage<Area> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 3);
-
-/**
  * @generated from message profile.v1.GetProfileRequest
  */
 export type GetProfileRequest = Message<"profile.v1.GetProfileRequest"> & {
@@ -283,7 +233,7 @@ export type GetProfileRequest = Message<"profile.v1.GetProfileRequest"> & {
  * Use `create(GetProfileRequestSchema)` to create a new message.
  */
 export const GetProfileRequestSchema: GenMessage<GetProfileRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 4);
+  messageDesc(file_profile_v1_service, 3);
 
 /**
  * @generated from message profile.v1.GetProfileByUsernameRequest
@@ -300,7 +250,7 @@ export type GetProfileByUsernameRequest = Message<"profile.v1.GetProfileByUserna
  * Use `create(GetProfileByUsernameRequestSchema)` to create a new message.
  */
 export const GetProfileByUsernameRequestSchema: GenMessage<GetProfileByUsernameRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 5);
+  messageDesc(file_profile_v1_service, 4);
 
 /**
  * @generated from message profile.v1.GetProfileResponse
@@ -317,7 +267,7 @@ export type GetProfileResponse = Message<"profile.v1.GetProfileResponse"> & {
  * Use `create(GetProfileResponseSchema)` to create a new message.
  */
 export const GetProfileResponseSchema: GenMessage<GetProfileResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 6);
+  messageDesc(file_profile_v1_service, 5);
 
 /**
  * @generated from message profile.v1.SaveProfileRequest
@@ -376,13 +326,6 @@ export type SaveProfileRequest = Message<"profile.v1.SaveProfileRequest"> & {
    * @generated from field: string industry = 11;
    */
   industry: string;
-
-  /**
-   * max 2
-   *
-   * @generated from field: repeated string area_ids = 12;
-   */
-  areaIds: string[];
 };
 
 /**
@@ -390,7 +333,7 @@ export type SaveProfileRequest = Message<"profile.v1.SaveProfileRequest"> & {
  * Use `create(SaveProfileRequestSchema)` to create a new message.
  */
 export const SaveProfileRequestSchema: GenMessage<SaveProfileRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 7);
+  messageDesc(file_profile_v1_service, 6);
 
 /**
  * @generated from message profile.v1.SaveProfileResponse
@@ -407,7 +350,7 @@ export type SaveProfileResponse = Message<"profile.v1.SaveProfileResponse"> & {
  * Use `create(SaveProfileResponseSchema)` to create a new message.
  */
 export const SaveProfileResponseSchema: GenMessage<SaveProfileResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 8);
+  messageDesc(file_profile_v1_service, 7);
 
 /**
  * @generated from message profile.v1.CheckUsernameAvailabilityRequest
@@ -424,7 +367,7 @@ export type CheckUsernameAvailabilityRequest = Message<"profile.v1.CheckUsername
  * Use `create(CheckUsernameAvailabilityRequestSchema)` to create a new message.
  */
 export const CheckUsernameAvailabilityRequestSchema: GenMessage<CheckUsernameAvailabilityRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 9);
+  messageDesc(file_profile_v1_service, 8);
 
 /**
  * @generated from message profile.v1.CheckUsernameAvailabilityResponse
@@ -446,7 +389,7 @@ export type CheckUsernameAvailabilityResponse = Message<"profile.v1.CheckUsernam
  * Use `create(CheckUsernameAvailabilityResponseSchema)` to create a new message.
  */
 export const CheckUsernameAvailabilityResponseSchema: GenMessage<CheckUsernameAvailabilityResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 10);
+  messageDesc(file_profile_v1_service, 9);
 
 /**
  * @generated from message profile.v1.SaveProfileMediaRequest
@@ -468,7 +411,7 @@ export type SaveProfileMediaRequest = Message<"profile.v1.SaveProfileMediaReques
  * Use `create(SaveProfileMediaRequestSchema)` to create a new message.
  */
 export const SaveProfileMediaRequestSchema: GenMessage<SaveProfileMediaRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 11);
+  messageDesc(file_profile_v1_service, 10);
 
 /**
  * @generated from message profile.v1.SaveProfileMediaResponse
@@ -485,41 +428,7 @@ export type SaveProfileMediaResponse = Message<"profile.v1.SaveProfileMediaRespo
  * Use `create(SaveProfileMediaResponseSchema)` to create a new message.
  */
 export const SaveProfileMediaResponseSchema: GenMessage<SaveProfileMediaResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 12);
-
-/**
- * @generated from message profile.v1.ListAreasRequest
- */
-export type ListAreasRequest = Message<"profile.v1.ListAreasRequest"> & {
-  /**
-   * @generated from field: string prefecture = 1;
-   */
-  prefecture: string;
-};
-
-/**
- * Describes the message profile.v1.ListAreasRequest.
- * Use `create(ListAreasRequestSchema)` to create a new message.
- */
-export const ListAreasRequestSchema: GenMessage<ListAreasRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 13);
-
-/**
- * @generated from message profile.v1.ListAreasResponse
- */
-export type ListAreasResponse = Message<"profile.v1.ListAreasResponse"> & {
-  /**
-   * @generated from field: repeated profile.v1.Area areas = 1;
-   */
-  areas: Area[];
-};
-
-/**
- * Describes the message profile.v1.ListAreasResponse.
- * Use `create(ListAreasResponseSchema)` to create a new message.
- */
-export const ListAreasResponseSchema: GenMessage<ListAreasResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 14);
+  messageDesc(file_profile_v1_service, 11);
 
 /**
  * Unified profile service (replaces portfolio CastService + GuestService).
@@ -568,14 +477,6 @@ export const ProfileService: GenService<{
     methodKind: "unary";
     input: typeof SaveProfileMediaRequestSchema;
     output: typeof SaveProfileMediaResponseSchema;
-  },
-  /**
-   * @generated from rpc profile.v1.ProfileService.ListAreas
-   */
-  listAreas: {
-    methodKind: "unary";
-    input: typeof ListAreasRequestSchema;
-    output: typeof ListAreasResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_profile_v1_service, 0);

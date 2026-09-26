@@ -96,8 +96,8 @@ export function Drawer({ open, onClose }: DrawerProps) {
               item.badgeKey === "footprints_unread" ? (footprintsBadgeEnabled ? footprintsUnread : 0) :
               0;
             const showBadge = badgeCount > 0;
-            // /u/[username] has no self-edit affordance; /profile is the only page with the edit button.
-            const href = item.path === "__profile__" ? "/profile" : item.path;
+            // Falls back to /profile (which now redirects) while the own profile is still loading.
+            const href = item.path === "__profile__" ? (profile?.username ? `/u/${profile.username}` : "/profile") : item.path;
             return (
               <Link
                 key={item.path}

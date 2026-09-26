@@ -13,9 +13,8 @@ import { Select } from "@/components/ui/select";
 import { FormField } from "@/components/ui/form-field";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
 import { EditProfileModal } from "@/modules/profile/components/EditProfileModal";
-import { AreaAccordion } from "@/modules/profile/components/AreaAccordion";
 import { ImageUpload } from "@/modules/profile/components/ImageUpload";
-import type { ProfileView, AreaView } from "@/modules/profile/types";
+import type { ProfileView } from "@/modules/profile/types";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { PostComposer } from "@/modules/post/components/PostComposer";
 import type { PostView, SavePostPayload } from "@/modules/post/lib/post-view";
@@ -28,19 +27,11 @@ export default function DevUiPage() {
   const [bio, setBio] = useState("");
   const [prefecture, setPrefecture] = useState("東京都");
   const [editOpen, setEditOpen] = useState(false);
-  const [areaSel, setAreaSel] = useState<string[]>(["1"]);
   const [feedFilter, setFeedFilter] = useState<FeedFilterValue>("all");
   const FEED_TAB_ITEMS: TabItem[] = [
     { id: "all", label: "全員" },
     { id: "area", label: "エリア" },
     { id: "following", label: "フォロー中" },
-  ];
-  const mockAreas: AreaView[] = [
-    { id: "1", region: "関東", prefecture: "東京都", name: "渋谷", code: "shibuya" },
-    { id: "2", region: "関東", prefecture: "東京都", name: "新宿", code: "shinjuku" },
-    { id: "3", region: "関東", prefecture: "神奈川県", name: "横浜", code: "yokohama" },
-    { id: "4", region: "関西", prefecture: "大阪府", name: "難波", code: "namba" },
-    { id: "5", region: "九州・沖縄", prefecture: "福岡県", name: "中洲", code: "nakasu" },
   ];
   const mockProfile: ProfileView = {
     accountId: "demo",
@@ -59,7 +50,6 @@ export default function DevUiPage() {
     age: 23,
     bodyStats: { heightCm: 158, bust: 88, waist: 58, hip: 86, cup: "D" },
     industry: "デリヘル",
-    areas: [{ id: "a1", region: "関東", prefecture: "東京都", name: "渋谷", code: "shibuya" }],
     role: 2,
   };
 
@@ -203,10 +193,6 @@ export default function DevUiPage() {
           onSave={async () => {}}
           onSaveMedia={async () => {}}
         />
-      </section>
-
-      <section>
-        <AreaAccordion areas={mockAreas} selectedIds={areaSel} onChange={setAreaSel} max={2} />
       </section>
 
       <section className="border border-divider rounded-lg">

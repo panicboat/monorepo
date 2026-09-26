@@ -11,7 +11,7 @@ interface ProfileResponse {
 
 export function usePublicProfile(username: string | null) {
   const userId = useAuthStore((s) => s.userId);
-  const { data, error, isLoading } = useSWR<ProfileResponse>(
+  const { data, error, isLoading, mutate } = useSWR<ProfileResponse>(
     userId && username ? `/api/profile/by-username/${encodeURIComponent(username)}` : null,
     fetcher,
     { revalidateOnFocus: false }
@@ -21,5 +21,6 @@ export function usePublicProfile(username: string | null) {
     profile: data?.profile ?? null,
     loading: isLoading,
     error,
+    mutate,
   };
 }

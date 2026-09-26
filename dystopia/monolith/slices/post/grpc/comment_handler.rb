@@ -155,11 +155,8 @@ module Post
 
         media_files = load_media_files_for_comments(result[:comments])
 
-        # author hydration is intentionally empty for this RPC — the "返信" tab page already
-        # knows the author (it's the profile being viewed), so the UI doesn't depend on
-        # CommentAuthor here. We can layer it on in a follow-up if a use case appears.
         ::Post::V1::ListCommentsByAuthorResponse.new(
-          comments: CommentPresenter.many_to_proto(result[:comments], authors: {}, media_files: media_files),
+          comments: CommentPresenter.many_to_proto(result[:comments], authors: result[:authors], media_files: media_files),
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more],
           posts_by_id: result[:posts_by_id] || {}
