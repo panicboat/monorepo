@@ -10,6 +10,7 @@ import { useProfile } from "@/modules/profile/hooks";
 import { useUnreadCount, useNotificationPreferences } from "@/modules/notifications/hooks";
 import { useTotalUnread } from "@/modules/messaging";
 import { useFootprintsUnreadCount } from "@/modules/footprints";
+import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 
 type BadgeKey = "unread" | "messaging_unread" | "footprints_unread";
 
@@ -43,6 +44,7 @@ export function SideNav() {
   const { count: msgUnread } = useTotalUnread();
   const { count: footprintsUnread } = useFootprintsUnreadCount();
   const { preferences } = useNotificationPreferences();
+  const { hasAccess: karteAccess } = useMyKarteAccess();
   const [composerOpen, setComposerOpen] = useState(false);
 
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
@@ -80,6 +82,18 @@ export function SideNav() {
             </Link>
           );
         })}
+        {karteAccess && (
+          <Link
+            href="/karte/my"
+            className={`relative flex items-center gap-3 rounded-full px-4 py-3 text-lg hover:bg-bg-secondary ${
+              pathname === "/karte/my" ? "font-bold text-text-primary" : "text-text-secondary"
+            }`}
+            aria-current={pathname === "/karte/my" ? "page" : undefined}
+          >
+            <span className="text-2xl" aria-hidden="true">📋</span>
+            <span className="flex-1">カルテ</span>
+          </Link>
+        )}
       </nav>
 
       <button
