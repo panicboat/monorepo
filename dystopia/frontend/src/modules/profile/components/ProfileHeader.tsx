@@ -67,7 +67,7 @@ export function ProfileHeader({ profile, role, onEdit }: ProfileHeaderProps) {
               isCast ? "bg-accent/15 text-accent" : "bg-text-secondary/10 text-text-secondary"
             }`}
           >
-            {isCast ? "セラピスト" : "ユーザー"}
+            {isCast ? "キャスト" : "ゲスト"}
           </span>
         </div>
         <p className="text-sm text-text-secondary">@{profile.username || "—"}</p>
