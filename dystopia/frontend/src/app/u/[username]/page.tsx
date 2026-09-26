@@ -59,6 +59,7 @@ export default function PublicProfilePage() {
       {role === "cast" && <ScheduleSection accountId={profile.accountId} isOwner={isOwnProfile} />}
       <ProfileContentTabs
         accountId={profile.accountId}
+        isOwnProfile={isOwnProfile}
         extraTabs={[
           ...(role === "guest" && karteAccess
             ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guestAccountId={profile.accountId} /> }]
