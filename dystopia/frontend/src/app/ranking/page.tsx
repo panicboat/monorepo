@@ -13,15 +13,22 @@ const TABS: TabItem[] = [
   { id: "all", label: "全期間" },
 ];
 
+export function RankingHeader() {
+  return (
+    <div className="px-4 pt-4">
+      <h1 className="text-xl font-bold">🏆 ランキング</h1>
+      <p className="text-sm text-text-secondary">いいねが多い投稿を期間別に並べたランキングです</p>
+    </div>
+  );
+}
+
 export default function RankingPage() {
   const [period, setPeriod] = useState<RankPeriodLiteral>("week");
   const { posts, hasMore, loading, loadMore } = useRankPosts(period);
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
-      <div className="px-4 pt-4">
-        <h1 className="text-xl font-bold">🏆 ランキング</h1>
-      </div>
+      <RankingHeader />
       <Tabs items={TABS} value={period} onValueChange={(v) => setPeriod(v as RankPeriodLiteral)} />
 
       {loading && posts.length === 0 && (
