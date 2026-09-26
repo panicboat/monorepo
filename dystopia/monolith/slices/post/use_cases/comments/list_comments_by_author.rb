@@ -12,6 +12,7 @@ module Post
       class ListCommentsByAuthor
         include ::Concerns::CursorPagination
         include Post::Deps[comment_repo: "repositories.comment_repository"]
+        include Post::Concerns::ProfileAuthorResolvable
 
         MAX_LIMIT = 50
 
@@ -33,9 +34,14 @@ module Post
           post_ids = result[:items].map(&:post_id).uniq
           posts_by_id = list_posts_uc.call(post_ids: post_ids, viewer_account_id: viewer_account_id)
 
+          # Hydrate comment authors via the unified Profile slice (symmetric), same as ListComments/ListReplies.
+          user_ids = result[:items].map(&:user_id).uniq
+          authors = build_authors(user_ids)
+
           {
             comments: result[:items],
             posts_by_id: posts_by_id,
+            authors: authors,
             next_cursor: result[:next_cursor],
             has_more: result[:has_more]
           }
@@ -45,6 +51,23 @@ module Post
 
         def list_posts_uc
           @list_posts_uc ||= Post::Slice["use_cases.posts.list_posts_by_ids"]
+        end
+
+        def build_authors(user_ids)
+          return {} if user_ids.empty?
+
+          infos = profile_author_adapter.load(user_ids).transform_keys(&:to_s)
+          user_ids.each_with_object({}) do |user_id, hash|
+            info = infos[user_id.to_s]
+            next unless info
+
+            hash[user_id] = {
+              id: user_id.to_s,
+              name: info.display_name,
+              image_url: info.avatar_url,
+              user_type: ""
+            }
+          end
         end
       end
     end
