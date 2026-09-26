@@ -11,6 +11,7 @@ import { useRecordVisit } from "@/modules/footprints";
 import { useAuthStore, selectUserId } from "@/stores/authStore";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
+import { ReviewsTab } from "@/modules/review/components/ReviewsTab";
 import { ScheduleSection } from "@/modules/schedule";
 
 export default function PublicProfilePage() {
@@ -59,11 +60,21 @@ export default function PublicProfilePage() {
       {role === "cast" && <ScheduleSection accountId={profile.accountId} isOwner={viewerId === profile.accountId} />}
       <ProfileContentTabs
         accountId={profile.accountId}
-        extraTabs={
-          role === "guest" && karteAccess
+        extraTabs={[
+          ...(role === "guest" && karteAccess
             ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guestAccountId={profile.accountId} /> }]
-            : []
-        }
+            : []),
+          {
+            id: "reviews",
+            label: role === "cast" ? "受信レビュー" : "書いたレビュー",
+            content: (
+              <ReviewsTab
+                accountId={profile.accountId}
+                mode={role === "cast" ? "received" : "written"}
+              />
+            ),
+          },
+        ]}
       />
     </main>
   );
