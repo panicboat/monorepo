@@ -297,7 +297,7 @@ export default function DevUiPage() {
           <div className="flex items-center gap-3 rounded border border-border px-3 py-2">
             <span className="text-xl" aria-hidden="true">✅</span>
             <div className="flex-1 text-sm">
-              <p className="text-text-primary">E さんがフォロー承認しました</p>
+              <p className="text-text-primary">E さんにフォローされました</p>
               <p className="text-xs text-text-secondary">昨日 / 既読</p>
             </div>
           </div>
