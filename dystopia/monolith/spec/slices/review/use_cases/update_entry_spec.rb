@@ -11,9 +11,17 @@ RSpec.describe Review::UseCases::UpdateEntry do
   it "updates rating/body when called by the author" do
     allow(entry_repo).to receive(:find_by_id).with(entry_id)
       .and_return(double(:entry, author_account_id: author_id))
-    expect(entry_repo).to receive(:update).with(entry_id, rating: 4.5, body: "updated")
+    expect(entry_repo).to receive(:update).with(entry_id, { rating: 4.5, body: "updated" })
 
     use_case.call(viewer_account_id: author_id, entry_id: entry_id, rating: 4.5, body: "updated")
+  end
+
+  it "updates with empty attrs when rating and body are omitted" do
+    allow(entry_repo).to receive(:find_by_id).with(entry_id)
+      .and_return(double(:entry, author_account_id: author_id))
+    expect(entry_repo).to receive(:update).with(entry_id, {})
+
+    use_case.call(viewer_account_id: author_id, entry_id: entry_id)
   end
 
   it "raises NotFoundError when the entry does not exist" do

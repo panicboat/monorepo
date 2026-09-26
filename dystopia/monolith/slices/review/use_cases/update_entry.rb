@@ -26,7 +26,7 @@ module Review
         attrs[:rating] = rating if rating
         attrs[:body] = body if body
 
-        entry_repo.update(entry_id, **attrs)
+        entry_repo.update(entry_id, attrs)
       end
     end
   end
