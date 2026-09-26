@@ -16,10 +16,6 @@ module Profile
         attribute :updated_at, Types::Time
 
         primary_key :account_id
-
-        associations do
-          has_many :profile_areas, foreign_key: :profile_id
-        end
       end
     end
   end

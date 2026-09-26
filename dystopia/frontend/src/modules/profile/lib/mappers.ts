@@ -1,6 +1,5 @@
-import type { Profile, Area, SnsLinks, BodyStats } from "@/stub/profile/v1/service_pb";
+import type { Profile, SnsLinks, BodyStats } from "@/stub/profile/v1/service_pb";
 import type {
-  AreaView,
   BodyStatsView,
   ProfileView,
   SaveProfilePayload,
@@ -33,16 +32,6 @@ function mapBodyStats(b: BodyStats | undefined): BodyStatsView {
   };
 }
 
-export function mapAreaToView(a: Area): AreaView {
-  return {
-    id: a.id,
-    region: a.region || "",
-    prefecture: a.prefecture || "",
-    name: a.name || "",
-    code: a.code || "",
-  };
-}
-
 // Placeholder for the row SaveProfile upserts on first save; a fresh account has none yet.
 export function emptyProfileView(accountId: string): ProfileView {
   return {
@@ -62,7 +51,6 @@ export function emptyProfileView(accountId: string): ProfileView {
     age: 0,
     bodyStats: { ...EMPTY_BODY_STATS },
     industry: "",
-    areas: [],
     role: 0,
   };
 }
@@ -85,7 +73,6 @@ export function mapProfileToView(p: Profile): ProfileView {
     age: p.age || 0,
     bodyStats: mapBodyStats(p.bodyStats),
     industry: p.industry || "",
-    areas: (p.areas || []).map(mapAreaToView),
     role: p.role || 0,
   };
 }
@@ -102,7 +89,6 @@ export function profileViewToSavePayload(p: ProfileView): SaveProfilePayload {
     age: p.age,
     bodyStats: { ...p.bodyStats },
     industry: p.industry,
-    areaIds: p.areas.map((a) => a.id),
   };
 }
 
@@ -133,6 +119,5 @@ export function buildSaveProfileRequest(payload: SaveProfilePayload) {
       cup: stats?.cup || "",
     },
     industry: payload.industry || "",
-    areaIds: payload.areaIds || [],
   };
 }

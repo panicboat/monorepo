@@ -105,7 +105,6 @@ export function ProfileHeader({ profile, role, onEdit }: ProfileHeaderProps) {
           <div className="flex flex-wrap gap-x-4 gap-y-1 pt-2 text-sm text-text-secondary">
             {profile.age > 0 && <span>{profile.age}歳</span>}
             {profile.industry && <span>{profile.industry}</span>}
-            {profile.areas.length > 0 && <span>{profile.areas.map((a) => a.name).join(" / ")}</span>}
             {formatBodyStats(profile.bodyStats) && <span>{formatBodyStats(profile.bodyStats)}</span>}
           </div>
         )}

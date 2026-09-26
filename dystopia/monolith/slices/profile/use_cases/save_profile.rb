@@ -10,16 +10,14 @@ module Profile
       DISPLAY_NAME_MAX = 50
       BIO_MAX = 1000
       USERNAME_FORMAT = /\A[A-Za-z0-9_]{3,30}\z/
-      AREAS_MAX = 2
       ROLE_CAST = 2
 
       def call(account_id:, display_name:, username: nil, bio: nil, website: nil,
                sns_links: {}, prefecture: nil, is_private: false, age: nil,
-               body_stats: {}, industry: nil, area_ids: [])
+               body_stats: {}, industry: nil)
         validate_display_name!(display_name)
         validate_bio!(bio)
         validate_username!(username, account_id) unless username.nil?
-        validate_areas!(area_ids)
 
         attrs = {
           display_name: display_name,
@@ -31,7 +29,6 @@ module Profile
         attrs[:username] = username unless username.nil?
 
         profile_repository.upsert(account_id: account_id, attrs: attrs)
-        profile_repository.save_areas(account_id: account_id, area_ids: area_ids || [])
 
         if cast_account?(account_id)
           cast_repository.upsert(
@@ -81,14 +78,6 @@ module Profile
         end
         unless profile_repository.username_available?(value, exclude_account_id: account_id)
           raise Errors::ValidationError, "このユーザー名は使用できません"
-        end
-      end
-
-      def validate_areas!(ids)
-        return if ids.nil?
-
-        if ids.size > AREAS_MAX
-          raise Errors::ValidationError, "活動エリアは#{AREAS_MAX}件まで選択できます"
         end
       end
     end

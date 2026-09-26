@@ -35,19 +35,6 @@ module Profile
         end
       end
 
-      def save_areas(account_id:, area_ids:)
-        transaction do
-          profile_areas.where(profile_id: account_id).delete
-          (area_ids || []).each do |area_id|
-            profile_areas.changeset(:create, profile_id: account_id, area_id: area_id).commit
-          end
-        end
-      end
-
-      def find_area_ids(account_id)
-        profile_areas.where(profile_id: account_id).pluck(:area_id)
-      end
-
       # Cross-slice query for feed AREA tab. Returns account_ids whose
       # profile.prefecture matches the input. NULL prefecture rows are
       # naturally excluded (Sequel where uses = which doesn't match NULL).
@@ -129,10 +116,6 @@ module Profile
         end
 
         scope.order { [created_at.desc, account_id.desc] }.limit(limit + 1).to_a
-      end
-
-      def delete_profile_areas_by_account(account_id)
-        profile_areas.where(profile_id: account_id).delete
       end
 
       def delete_by_account(account_id)
