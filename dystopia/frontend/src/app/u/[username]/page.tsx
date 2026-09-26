@@ -73,7 +73,7 @@ export default function PublicProfilePage() {
             : []),
           {
             id: "reviews",
-            label: role === "cast" ? "受信レビュー" : "書いたレビュー",
+            label: "レビュー",
             content: (
               <ReviewsTab
                 accountId={profile.accountId}
