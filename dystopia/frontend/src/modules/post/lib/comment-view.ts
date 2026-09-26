@@ -2,6 +2,7 @@ export interface CommentAuthorView {
   userId: string;
   name: string;
   imageUrl: string;
+  username: string;
 }
 
 export interface CommentView {

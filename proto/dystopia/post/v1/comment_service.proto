@@ -25,6 +25,7 @@ message CommentAuthor {
   string name = 2;
   string image_url = 3;
   string user_type = 4; // "guest" or "cast"
+  string username = 5;
 }
 
 message Comment {

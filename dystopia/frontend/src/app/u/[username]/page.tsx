@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { usePublicProfile, useProfile } from "@/modules/profile/hooks";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
 import { EditProfileModal } from "@/modules/profile/components/EditProfileModal";
-import { FollowButton, BlockButton, useSocialCounts } from "@/modules/social";
+import { FollowButton, BlockButton, SocialCountsLinks } from "@/modules/social";
 import { StartChatButton } from "@/modules/messaging";
 import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs";
 import { useRecordVisit } from "@/modules/footprints";
@@ -19,7 +19,6 @@ export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
   const username = typeof params.username === "string" ? params.username : "";
   const { profile, loading, error, mutate } = usePublicProfile(username || null);
-  const counts = useSocialCounts(profile?.accountId);
   const viewerId = useAuthStore(selectUserId);
   const recordVisit = useRecordVisit();
   const { hasAccess: karteAccess } = useMyKarteAccess();
@@ -56,14 +55,7 @@ export default function PublicProfilePage() {
           <BlockButton targetAccountId={profile.accountId} />
         </div>
       )}
-      <div className="flex gap-4 px-4 pt-3 text-sm text-text-secondary">
-        <span>
-          <strong className="text-text-primary">{counts.followingCount}</strong> フォロー中
-        </span>
-        <span>
-          <strong className="text-text-primary">{counts.followersCount}</strong> フォロワー
-        </span>
-      </div>
+      <SocialCountsLinks accountId={profile.accountId} username={profile.username} />
       {role === "cast" && <ScheduleSection accountId={profile.accountId} isOwner={isOwnProfile} />}
       <ProfileContentTabs
         accountId={profile.accountId}
@@ -73,7 +65,7 @@ export default function PublicProfilePage() {
             : []),
           {
             id: "reviews",
-            label: role === "cast" ? "受信レビュー" : "書いたレビュー",
+            label: "レビュー",
             content: (
               <ReviewsTab
                 accountId={profile.accountId}

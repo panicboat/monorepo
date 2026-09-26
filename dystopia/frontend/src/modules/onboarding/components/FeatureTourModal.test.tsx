@@ -11,4 +11,10 @@ describe("FeatureTourList", () => {
     expect(html).toContain("カルテ");
     expect(html).toContain("ゲストについて書いたレビューの管理・共有");
   });
+
+  it("does not list the retired standalone oshi menu item", () => {
+    const html = renderToStaticMarkup(<FeatureTourList />);
+
+    expect(html).not.toContain("推し！");
+  });
 });

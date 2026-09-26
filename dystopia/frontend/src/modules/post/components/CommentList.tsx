@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { formatTimeAgo } from "@/lib/utils/date";
@@ -41,17 +42,27 @@ export function CommentList({ postId }: CommentListProps) {
       {comments.map((c) => {
         const isOwn = !!viewerId && c.userId === viewerId;
         const isExpanded = !!expanded[c.id];
+        const authorHref = c.author?.username ? `/u/${encodeURIComponent(c.author.username)}` : undefined;
+        const avatar = (
+          <Avatar
+            src={c.author?.imageUrl || undefined}
+            fallback={(c.author?.name || "?").slice(0, 1)}
+            size="sm"
+          />
+        );
         return (
           <div key={c.id}>
             <article className="flex gap-3 border-b border-divider px-4 py-3">
-              <Avatar
-                src={c.author?.imageUrl || undefined}
-                fallback={(c.author?.name || "?").slice(0, 1)}
-                size="sm"
-              />
+              {authorHref ? <Link href={authorHref}>{avatar}</Link> : avatar}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 text-sm">
-                  <span className="font-bold text-text-primary">{c.author?.name || "—"}</span>
+                  {authorHref ? (
+                    <Link href={authorHref} className="font-bold text-text-primary">
+                      {c.author?.name || "—"}
+                    </Link>
+                  ) : (
+                    <span className="font-bold text-text-primary">{c.author?.name || "—"}</span>
+                  )}
                   <span className="text-text-muted">· {c.createdAt ? formatTimeAgo(c.createdAt) : ""}</span>
                 </div>
                 <p className="mt-1 whitespace-pre-wrap text-text-primary">{c.content}</p>

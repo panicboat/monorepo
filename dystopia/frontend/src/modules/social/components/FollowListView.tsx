@@ -4,8 +4,11 @@ import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, type TabItem } from "@/components/ui/tab";
-import { useFollowList, useFollowerList, FollowButton } from "@/modules/social";
-import type { SocialAccountView } from "@/modules/social/types";
+import { useFollowList, useFollowerList } from "@/modules/social/hooks";
+import { FollowButton } from "./FollowButton";
+import type { SocialAccountView } from "../types";
+
+export type FollowListTab = "following" | "followers";
 
 const TABS: TabItem[] = [
   { id: "following", label: "フォロー中" },
@@ -25,16 +28,20 @@ function ProfileRow({ profile }: { profile: SocialAccountView }) {
   );
 }
 
-export default function OshiPage() {
-  const [tab, setTab] = useState("following");
-  const following = useFollowList();
-  const followers = useFollowerList();
+interface FollowListViewProps {
+  accountId?: string;
+  initialTab?: FollowListTab;
+}
+
+export function FollowListView({ accountId, initialTab = "following" }: FollowListViewProps) {
+  const [tab, setTab] = useState<string>(initialTab);
+  const following = useFollowList(accountId);
+  const followers = useFollowerList(accountId);
 
   const active = tab === "following" ? following : followers;
 
   return (
-    <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
-      <h1 className="px-4 pb-2 pt-4 text-xl font-bold">推し</h1>
+    <>
       <Tabs items={TABS} value={tab} onValueChange={setTab} />
       {active.loading && <p className="px-4 py-6 text-text-secondary">読み込み中…</p>}
       {!active.loading && active.profiles.length === 0 && (
@@ -52,6 +59,6 @@ export default function OshiPage() {
           </Button>
         </div>
       )}
-    </main>
+    </>
   );
 }

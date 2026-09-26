@@ -13,6 +13,16 @@ export interface ReplyWithParentRowProps {
 
 export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowProps) {
   const detailHref = `/posts/${encodeURIComponent(comment.postId)}`;
+  const authorHref = comment.author?.username
+    ? `/u/${encodeURIComponent(comment.author.username)}`
+    : undefined;
+  const avatar = (
+    <Avatar
+      src={comment.author?.imageUrl || undefined}
+      fallback={(comment.author?.name || "?").slice(0, 1)}
+      size="sm"
+    />
+  );
   return (
     <article className="border-b border-divider px-4 py-3">
       {parentPost ? (
@@ -39,14 +49,16 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
         </div>
       )}
       <div className="flex gap-3">
-        <Avatar
-          src={comment.author?.imageUrl || undefined}
-          fallback={(comment.author?.name || "?").slice(0, 1)}
-          size="sm"
-        />
+        {authorHref ? <Link href={authorHref}>{avatar}</Link> : avatar}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1 text-sm">
-            <span className="font-bold text-text-primary">{comment.author?.name || "—"}</span>
+            {authorHref ? (
+              <Link href={authorHref} className="font-bold text-text-primary">
+                {comment.author?.name || "—"}
+              </Link>
+            ) : (
+              <span className="font-bold text-text-primary">{comment.author?.name || "—"}</span>
+            )}
             <span className="text-text-muted">
               · {comment.createdAt ? formatTimeAgo(comment.createdAt) : ""}
             </span>

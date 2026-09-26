@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { formatTimeAgo } from "@/lib/utils/date";
@@ -36,16 +37,26 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
     <div className="bg-bg-secondary/30">
       {replies.map((r) => {
         const isOwn = !!viewerId && r.userId === viewerId;
+        const authorHref = r.author?.username ? `/u/${encodeURIComponent(r.author.username)}` : undefined;
+        const avatar = (
+          <Avatar
+            src={r.author?.imageUrl || undefined}
+            fallback={(r.author?.name || "?").slice(0, 1)}
+            size="sm"
+          />
+        );
         return (
           <article key={r.id} className="flex gap-3 border-b border-divider py-3 pl-12 pr-4">
-            <Avatar
-              src={r.author?.imageUrl || undefined}
-              fallback={(r.author?.name || "?").slice(0, 1)}
-              size="sm"
-            />
+            {authorHref ? <Link href={authorHref}>{avatar}</Link> : avatar}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1 text-sm">
-                <span className="font-bold text-text-primary">{r.author?.name || "—"}</span>
+                {authorHref ? (
+                  <Link href={authorHref} className="font-bold text-text-primary">
+                    {r.author?.name || "—"}
+                  </Link>
+                ) : (
+                  <span className="font-bold text-text-primary">{r.author?.name || "—"}</span>
+                )}
                 <span className="text-text-muted">· {r.createdAt ? formatTimeAgo(r.createdAt) : ""}</span>
               </div>
               <p className="mt-1 whitespace-pre-wrap text-text-primary">{r.content}</p>

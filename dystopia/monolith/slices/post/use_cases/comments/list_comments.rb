@@ -53,7 +53,8 @@ module Post
               id: user_id.to_s,
               name: info.display_name,
               image_url: info.avatar_url,
-              user_type: ""
+              user_type: "",
+              username: info.username
             }
           end
         end
