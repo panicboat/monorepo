@@ -20,7 +20,6 @@ const profile: ProfileView = {
   age: 23,
   bodyStats: { heightCm: 158, bust: 88, waist: 58, hip: 86, cup: "D" },
   industry: "",
-  areas: [],
   role: 1,
 };
 
