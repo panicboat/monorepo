@@ -243,21 +243,28 @@ RSpec.describe Review::Repositories::EntryRepository, type: :database do
   end
 
   describe "#list_by_target cursor pagination" do
-    it "returns newest first and continues correctly across a cursor boundary" do
-      first = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 1.0, body: "a")
+    it "returns limit+1 rows (sentinel for has_more) newest first, and continues correctly across a cursor boundary" do
+      e1 = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 1.0, body: "a")
       sleep 0.01
-      second = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 2.0, body: "b")
+      e2 = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 2.0, body: "b")
       sleep 0.01
-      third = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 3.0, body: "c")
+      e3 = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 3.0, body: "c")
+      sleep 0.01
+      e4 = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 4.0, body: "d")
 
+      # limit: 2 fetches limit+1 = 3 rows so the caller can detect has_more (matches
+      # Karte::Repositories::EntryRepository#list_by_target and this plan's
+      # ListEntriesByTarget/ListEntriesByAuthor use cases, which take(limit) after this).
       page1 = repo.list_by_target(target_account_id: target_id, limit: 2)
-      expect(page1.map(&:id)).to eq([third.id, second.id])
+      expect(page1.map(&:id)).to eq([e4.id, e3.id, e2.id])
 
       # EntryRepository 自身が Concerns::CursorPagination を include しているので、
       # 同じインスタンスの private #encode_cursor をそのまま使って有効なカーソル文字列を作る。
-      cursor = repo.send(:encode_cursor, created_at: second.created_at.iso8601, id: second.id)
+      # カーソルは実際の呼び出し元 (use case) が組み立てる形と同じく、センチネル行 (e2)
+      # ではなく可視ページの最後の行 (limit-1 番目 = e3) から作る。
+      cursor = repo.send(:encode_cursor, created_at: e3.created_at.iso8601, id: e3.id)
       page2 = repo.list_by_target(target_account_id: target_id, limit: 2, cursor: cursor)
-      expect(page2.map(&:id)).to eq([first.id])
+      expect(page2.map(&:id)).to eq([e2.id, e1.id])
     end
   end
 end
