@@ -189,7 +189,8 @@ module Post
           id: user_id,
           name: info.display_name,
           image_url: info.avatar_url,
-          user_type: ""
+          user_type: "",
+          username: info.username
         }
       end
 

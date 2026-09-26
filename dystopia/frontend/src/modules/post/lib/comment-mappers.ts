@@ -11,6 +11,7 @@ function mapAuthor(a: CommentAuthor | undefined): CommentAuthorView | null {
     userId: a.userId,
     name: a.name,
     imageUrl: a.imageUrl,
+    username: a.username,
   };
 }
 

@@ -47,7 +47,8 @@ module Post
           user_id: author_info[:id].to_s,
           name: author_info[:name] || "",
           image_url: author_info[:image_url] || "",
-          user_type: author_info[:user_type] || "guest"
+          user_type: author_info[:user_type] || "guest",
+          username: author_info[:username] || ""
         )
       end
     end
