@@ -81,4 +81,12 @@ RSpec.describe Review::UseCases::FilterVisibleEntries do
     result = use_case.call(viewer_account_id: viewer_id, page_owner_account_id: page_owner_id, entries: entries)
     expect(result).to eq(entries)
   end
+
+  it "raises when an entry has neither party as the page owner" do
+    entries = [entry(author: viewer_id, target: other_id, hidden: false)]
+
+    expect {
+      use_case.call(viewer_account_id: viewer_id, page_owner_account_id: page_owner_id, entries: entries)
+    }.to raise_error(ArgumentError, /neither author nor target matching page_owner_account_id/)
+  end
 end

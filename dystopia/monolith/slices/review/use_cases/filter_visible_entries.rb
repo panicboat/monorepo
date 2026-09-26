@@ -46,7 +46,13 @@ module Review
       end
 
       def other_party_id(entry, page_owner_account_id)
-        entry.author_account_id == page_owner_account_id ? entry.target_account_id : entry.author_account_id
+        if entry.author_account_id == page_owner_account_id
+          entry.target_account_id
+        elsif entry.target_account_id == page_owner_account_id
+          entry.author_account_id
+        else
+          raise ArgumentError, "entry #{entry.id} has neither author nor target matching page_owner_account_id"
+        end
       end
 
       def block_adapter
