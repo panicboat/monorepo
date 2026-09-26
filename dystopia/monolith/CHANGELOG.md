@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/panicboat/monorepo/compare/monolith-v0.6.2...monolith-v0.7.0) (2026-09-26)
+
+
+### Features
+
+* **review:** add Guest→Cast review feature ([#1232](https://github.com/panicboat/monorepo/issues/1232)) ([#1234](https://github.com/panicboat/monorepo/issues/1234)) ([7043d79](https://github.com/panicboat/monorepo/commit/7043d79a7e5f2d0e1718c29b50657035ed264102))
+
 ## [0.6.2](https://github.com/panicboat/monorepo/compare/monolith-v0.6.1...monolith-v0.6.2) (2026-09-24)
 
 
