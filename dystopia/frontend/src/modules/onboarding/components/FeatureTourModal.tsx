@@ -18,7 +18,6 @@ export const FEATURES: FeatureItem[] = [
   { icon: "👣", label: "足跡", description: "プロフィールを見に来た人の一覧" },
   { icon: "💬", label: "メッセージ", description: "個別のダイレクトメッセージ" },
   { icon: "🔖", label: "ブックマーク", description: "保存した投稿の一覧" },
-  { icon: "⭐", label: "推し！", description: "フォロー中・フォロワーの一覧" },
   { icon: "🏆", label: "ランキング", description: "期間別の人気投稿ランキング" },
   { icon: "👤", label: "プロフィール", description: "自分のプロフィールの確認・編集" },
   { icon: "⚙", label: "設定", description: "アカウント・プライバシーなどの設定" },

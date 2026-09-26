@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
-vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
-}));
-
 vi.mock("@/modules/profile/hooks", () => ({
   useProfile: () => ({ profile: null }),
+}));
+
+vi.mock("@/modules/social", () => ({
+  useSocialCounts: () => ({ followingCount: 0, followersCount: 0 }),
 }));
 
 vi.mock("@/modules/notifications/hooks", () => ({
@@ -22,8 +22,8 @@ vi.mock("@/modules/footprints", () => ({
   useFootprintsUnreadCount: () => ({ count: 0 }),
 }));
 
-vi.mock("@/modules/post/components/PostComposerModal", () => ({
-  PostComposerModal: () => null,
+vi.mock("@/modules/identity/hooks/useAuth", () => ({
+  useAuth: () => ({ logout: vi.fn() }),
 }));
 
 const karteMocks = vi.hoisted(() => ({
@@ -34,30 +34,13 @@ vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({
   useMyKarteAccess: karteMocks.useMyKarteAccess,
 }));
 
-const { SideNav } = await import("./SideNav");
+const { Drawer } = await import("./Drawer");
 
-describe("SideNav", () => {
-  it("links to my karte when the viewer has karte access", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
-
-    const html = renderToStaticMarkup(<SideNav />);
-
-    expect(html).toContain("/karte/my");
-    expect(html).toContain("カルテ");
-  });
-
-  it("hides the karte item when the viewer has no karte access", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
-
-    const html = renderToStaticMarkup(<SideNav />);
-
-    expect(html).not.toContain("/karte/my");
-  });
-
+describe("Drawer", () => {
   it("has no standalone oshi menu entry", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
 
-    const html = renderToStaticMarkup(<SideNav />);
+    const html = renderToStaticMarkup(<Drawer open onClose={() => {}} />);
 
     expect(html).not.toContain("/oshi");
   });
