@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.0](https://github.com/panicboat/monorepo/compare/frontend-v0.8.3...frontend-v0.9.0) (2026-09-26)
+
+
+### Features
+
+* **review:** add Guest→Cast review feature ([#1232](https://github.com/panicboat/monorepo/issues/1232)) ([#1234](https://github.com/panicboat/monorepo/issues/1234)) ([7043d79](https://github.com/panicboat/monorepo/commit/7043d79a7e5f2d0e1718c29b50657035ed264102))
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** onboarding form loses input and never submits ([#1238](https://github.com/panicboat/monorepo/issues/1238)) ([7981769](https://github.com/panicboat/monorepo/commit/79817692eb6ace7c2e26fb5143c051b57ddbd6f9))
+
 ## [0.8.3](https://github.com/panicboat/monorepo/compare/frontend-v0.8.2...frontend-v0.8.3) (2026-09-25)
 
 
