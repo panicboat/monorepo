@@ -25,13 +25,15 @@ export interface ExtraTab {
 
 export interface ProfileContentTabsProps {
   accountId: string;
+  isOwnProfile?: boolean;
   extraTabs?: ExtraTab[];
 }
 
-export function ProfileContentTabs({ accountId, extraTabs = [] }: ProfileContentTabsProps) {
+export function ProfileContentTabs({ accountId, isOwnProfile = true, extraTabs = [] }: ProfileContentTabsProps) {
   const [tab, setTab] = useState<string>("posts");
+  const tabItems = isOwnProfile ? TAB_ITEMS : TAB_ITEMS.filter((item) => item.id !== "likes");
   const allItems = [
-    ...(TAB_ITEMS as unknown as { id: string; label: string }[]),
+    ...(tabItems as unknown as { id: string; label: string }[]),
     ...extraTabs.map((t) => ({ id: t.id, label: t.label })),
   ];
   const extraTab = extraTabs.find((t) => t.id === tab);
@@ -47,7 +49,7 @@ export function ProfileContentTabs({ accountId, extraTabs = [] }: ProfileContent
         {tab === "posts" && <AuthorPostsPane accountId={accountId} mediaOnly={false} />}
         {tab === "replies" && <AuthorRepliesPane accountId={accountId} />}
         {tab === "media" && <AuthorPostsPane accountId={accountId} mediaOnly={true} />}
-        {tab === "likes" && <AuthorLikesPane accountId={accountId} />}
+        {tab === "likes" && isOwnProfile && <AuthorLikesPane accountId={accountId} />}
         {extraTab?.content}
       </div>
     </section>
