@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { profileViewToSavePayload } from "@/modules/profile/lib/mappers";
@@ -42,6 +43,9 @@ export function PrivacySettings({ profile, save }: PanelProps) {
         </Button>
         {saved && <span className="text-sm text-accent">保存しました</span>}
       </div>
+      <Button asChild variant="secondary" size="sm" className="self-start">
+        <Link href="/settings/blocks">ブロックしたアカウント</Link>
+      </Button>
     </div>
   );
 }
