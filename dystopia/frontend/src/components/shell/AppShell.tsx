@@ -11,6 +11,7 @@ import { SideNav } from "./SideNav";
 import { SuggestedUsersPane } from "./SuggestedUsersPane";
 import { FeatureTourModal } from "@/modules/onboarding/components/FeatureTourModal";
 import { LandingPage } from "@/modules/landing/components/LandingPage";
+import { resolveShellMode } from "./resolveShellMode";
 
 const AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/onboarding"];
 
@@ -36,18 +37,19 @@ export function AppShell({ children }: AppShellProps) {
     }
   }, [isHydrated, viewerId, isAuthRoute, isLandingRoute, router]);
 
-  // Before hydration: auth routes still render their SSR content (avoid a blank
-  // flash on /login etc.); other routes wait to avoid flashing shell-less content.
-  if (!isHydrated) {
-    return isAuthRoute ? <>{children}</> : null;
+  const mode = resolveShellMode({ isHydrated, viewerId, isAuthRoute, isLandingRoute });
+
+  // See resolveShellMode: auth routes stay bare even once hydrated with a viewer set.
+  if (mode === "bare") {
+    return <>{children}</>;
   }
 
-  // Keep the public landing route out of auth redirects while preserving auth pages.
-  if (!viewerId) {
-    if (isLandingRoute) {
-      return <LandingPage />;
-    }
-    return isAuthRoute ? <>{children}</> : null;
+  if (mode === "loading") {
+    return null;
+  }
+
+  if (mode === "landing") {
+    return <LandingPage />;
   }
 
   return (
