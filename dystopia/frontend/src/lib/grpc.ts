@@ -13,6 +13,7 @@ import { ProfileService } from "@/stub/profile/v1/service_pb";
 import { NotificationService } from "@/stub/notifications/v1/notification_service_pb";
 import { BookmarkService } from "@/stub/bookmarks/v1/bookmark_service_pb";
 import { KarteService } from "@/stub/karte/v1/service_pb";
+import { ReviewService } from "@/stub/review/v1/service_pb";
 import { DiscoveryService } from "@/stub/discovery/v1/discovery_service_pb";
 import { MessagingService } from "@/stub/messaging/v1/messaging_service_pb";
 import { FootprintsService } from "@/stub/footprints/v1/footprints_service_pb";
@@ -84,6 +85,8 @@ export const footprintsClient = createClient(FootprintsService, transport);
 
 // Karte domain client (karte.v1)
 export const karteClient = createClient(KarteService, transport);
+
+export const reviewClient = createClient(ReviewService, transport);
 
 // Schedule domain client (schedule.v1)
 export const scheduleClient = createClient(ScheduleService, transport);
