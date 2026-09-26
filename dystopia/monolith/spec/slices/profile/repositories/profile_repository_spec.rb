@@ -58,27 +58,6 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
     end
   end
 
-  describe "#save_areas / #find_area_ids" do
-    let(:area_a) { SecureRandom.uuid_v7 }
-    let(:area_b) { SecureRandom.uuid_v7 }
-
-    before do
-      repo.create(account_id: account_id, display_name: "Coco")
-      areas = Hanami.app.slices[:profile]["relations.areas"]
-      [area_a, area_b].each_with_index do |id, i|
-        areas.changeset(:create, id: id, prefecture: "東京都", name: "エリア#{i}", code: "tokyo-#{i}").commit
-      end
-    end
-
-    it "replaces the area set" do
-      repo.save_areas(account_id: account_id, area_ids: [area_a, area_b])
-      expect(repo.find_area_ids(account_id)).to contain_exactly(area_a, area_b)
-
-      repo.save_areas(account_id: account_id, area_ids: [area_a])
-      expect(repo.find_area_ids(account_id)).to contain_exactly(area_a)
-    end
-  end
-
   describe "#save_media" do
     let(:avatar) { SecureRandom.uuid_v7 }
     let(:cover) { SecureRandom.uuid_v7 }

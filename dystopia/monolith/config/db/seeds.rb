@@ -7,9 +7,6 @@
 
 require_relative "seeds/helper"
 
-# === Master Data ===
-require_relative "seeds/portfolio/areas"
-
 # === Users ===
 require_relative "seeds/identity/users"
 

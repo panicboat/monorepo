@@ -62,7 +62,7 @@ function toForm(p: ProfileView): FormState {
   };
 }
 
-// full-payload: 現在値 + 編集。モーダルが扱わない username/isPrivate/areaIds は現在値を維持。
+// full-payload: 現在値 + 編集。モーダルが扱わない username/isPrivate は現在値を維持。
 function buildPayload(current: ProfileView, f: FormState, isCast: boolean): SaveProfilePayload {
   return {
     username: current.username,
@@ -90,7 +90,6 @@ function buildPayload(current: ProfileView, f: FormState, isCast: boolean): Save
         }
       : { heightCm: 0, bust: 0, waist: 0, hip: 0, cup: "" },
     industry: isCast ? f.industry : "",
-    areaIds: current.areas.map((a) => a.id),
   };
 }
 

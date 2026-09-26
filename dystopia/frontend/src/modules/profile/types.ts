@@ -15,14 +15,6 @@ export interface BodyStatsView {
   cup: string;
 }
 
-export interface AreaView {
-  id: string;
-  region: string;
-  prefecture: string;
-  name: string;
-  code: string;
-}
-
 export interface ProfileView {
   accountId: string;
   username: string;
@@ -40,7 +32,6 @@ export interface ProfileView {
   age: number;
   bodyStats: BodyStatsView;
   industry: string;
-  areas: AreaView[];
   role: number; // identity role mirror: 1 = GUEST, 2 = CAST, 0 = unknown
 }
 
@@ -55,7 +46,6 @@ export interface SaveProfilePayload {
   age?: number;
   bodyStats?: Partial<BodyStatsView>;
   industry?: string;
-  areaIds?: string[];
 }
 
 export interface SaveProfileMediaPayload {
