@@ -15,6 +15,7 @@ const MAX_LENGTH = 5000;
 export function MessageComposer({ onSend, onTyping, disabled }: MessageComposerProps) {
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const trimmed = content.trim();
   const overLimit = content.length > MAX_LENGTH;
@@ -30,11 +31,13 @@ export function MessageComposer({ onSend, onTyping, disabled }: MessageComposerP
       e.preventDefault();
       if (!canSubmit) return;
       setSubmitting(true);
+      setError(null);
       try {
         await onSend(trimmed);
         setContent("");
-      } catch {
-        // SILENT: error は呼び出し側で expose、本 form は state 内回収しない
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "メッセージを送信できませんでした";
+        setError(message);
       } finally {
         setSubmitting(false);
       }
@@ -63,6 +66,11 @@ export function MessageComposer({ onSend, onTyping, disabled }: MessageComposerP
           {submitting ? "送信中…" : "送信"}
         </Button>
       </div>
+      {error && (
+        <p className="mt-2 text-sm text-error" role="alert">
+          {error}
+        </p>
+      )}
     </form>
   );
 }
