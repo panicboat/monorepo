@@ -262,7 +262,11 @@ RSpec.describe Review::Repositories::EntryRepository, type: :database do
       # 同じインスタンスの private #encode_cursor をそのまま使って有効なカーソル文字列を作る。
       # カーソルは実際の呼び出し元 (use case) が組み立てる形と同じく、センチネル行 (e2)
       # ではなく可視ページの最後の行 (limit-1 番目 = e3) から作る。
-      cursor = repo.send(:encode_cursor, created_at: e3.created_at.iso8601, id: e3.id)
+      # iso8601(6) preserves microseconds — plain iso8601 truncates to whole
+      # seconds, which silently drops same-second rows from the next page
+      # (found while writing this test: two rows created less than a second
+      # apart round-tripped through a truncated cursor and vanished).
+      cursor = repo.send(:encode_cursor, created_at: e3.created_at.iso8601(6), id: e3.id)
       page2 = repo.list_by_target(target_account_id: target_id, limit: 2, cursor: cursor)
       expect(page2.map(&:id)).to eq([e2.id, e1.id])
     end
@@ -1426,7 +1430,10 @@ module Review
 
         next_cursor = if has_more && page.any?
           last = page.last
-          encode_cursor(created_at: last.created_at.iso8601, id: last.id)
+          # iso8601(6) keeps microseconds; plain iso8601 truncates to whole
+          # seconds and silently drops same-second rows across a page
+          # boundary (see Task 2's repository spec for the reproduction).
+          encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
         end
 
         profile_cache = {}
@@ -1506,7 +1513,10 @@ module Review
 
         next_cursor = if has_more && page.any?
           last = page.last
-          encode_cursor(created_at: last.created_at.iso8601, id: last.id)
+          # iso8601(6) keeps microseconds; plain iso8601 truncates to whole
+          # seconds and silently drops same-second rows across a page
+          # boundary (see Task 2's repository spec for the reproduction).
+          encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
         end
 
         profile_cache = {}
