@@ -46,8 +46,8 @@ export function SideNav() {
   const [composerOpen, setComposerOpen] = useState(false);
 
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
-  // /u/[username] has no self-edit affordance; /profile is the only page with the edit button.
-  const profileHref = "/profile";
+  // Falls back to /profile (which now redirects) while the own profile is still loading.
+  const profileHref = profile?.username ? `/u/${profile.username}` : "/profile";
 
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col px-3 py-4 md:flex">
