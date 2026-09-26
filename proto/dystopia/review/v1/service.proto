@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package review.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service ReviewService {
+  rpc CreateEntry(CreateEntryRequest) returns (CreateEntryResponse);
+  rpc UpdateEntry(UpdateEntryRequest) returns (UpdateEntryResponse);
+  rpc DeleteEntry(DeleteEntryRequest) returns (DeleteEntryResponse);
+  rpc HideEntry(HideEntryRequest) returns (HideEntryResponse);
+  rpc UnhideEntry(UnhideEntryRequest) returns (UnhideEntryResponse);
+  rpc ListEntriesByTarget(ListEntriesByTargetRequest) returns (ListEntriesByTargetResponse);
+  rpc ListEntriesByAuthor(ListEntriesByAuthorRequest) returns (ListEntriesByAuthorResponse);
+  rpc GetMySettings(GetMySettingsRequest) returns (GetMySettingsResponse);
+  rpc UpdateMySettings(UpdateMySettingsRequest) returns (UpdateMySettingsResponse);
+}
+
+message ReviewEntry {
+  string id = 1;
+  string author_account_id = 2;
+  string target_account_id = 3;
+  string author_username = 4;
+  string author_avatar_url = 5;
+  double rating = 6;
+  string body = 7;
+  bool hidden = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message CreateEntryRequest {
+  string target_account_id = 1;
+  double rating = 2;
+  string body = 3;
+}
+message CreateEntryResponse { ReviewEntry entry = 1; }
+
+message UpdateEntryRequest {
+  string entry_id = 1;
+  double rating = 2;  // 0 = unchanged
+  string body = 3;    // empty = unchanged
+}
+message UpdateEntryResponse { ReviewEntry entry = 1; }
+
+message DeleteEntryRequest { string entry_id = 1; }
+message DeleteEntryResponse {}
+
+message HideEntryRequest { string entry_id = 1; }
+message HideEntryResponse { ReviewEntry entry = 1; }
+
+message UnhideEntryRequest { string entry_id = 1; }
+message UnhideEntryResponse { ReviewEntry entry = 1; }
+
+message ListEntriesByTargetRequest {
+  string target_account_id = 1;
+  int32 limit = 2;    // default 20
+  string cursor = 3;
+}
+message ListEntriesByTargetResponse {
+  repeated ReviewEntry entries = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message ListEntriesByAuthorRequest {
+  string author_account_id = 1;
+  int32 limit = 2;
+  string cursor = 3;
+}
+message ListEntriesByAuthorResponse {
+  repeated ReviewEntry entries = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message GetMySettingsRequest {}
+message GetMySettingsResponse { bool reviews_visible = 1; }
+
+message UpdateMySettingsRequest { bool reviews_visible = 1; }
+message UpdateMySettingsResponse { bool reviews_visible = 1; }

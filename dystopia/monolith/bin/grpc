@@ -51,6 +51,7 @@ require "messaging/v1/messaging_service_services_pb"
 require "footprints/v1/footprints_service_services_pb"
 require "schedule/v1/schedule_service_services_pb"
 require "karte/v1/service_services_pb"
+require "review/v1/service_services_pb"
 require "billing/v1/service_services_pb"
 
 # Boot the OTel SDK before Gruf so the gruf instrumentation has required its
@@ -112,6 +113,8 @@ require_relative "../slices/schedule/grpc/handler"
 require_relative "../slices/schedule/grpc/schedule_handler"
 require_relative "../slices/karte/grpc/handler"
 require_relative "../slices/karte/grpc/karte_handler"
+require_relative "../slices/review/grpc/handler"
+require_relative "../slices/review/grpc/review_handler"
 require_relative "../slices/billing/grpc/handler"
 require_relative "../slices/billing/grpc/billing_handler"
 

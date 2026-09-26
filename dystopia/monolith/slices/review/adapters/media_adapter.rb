@@ -1,0 +1,18 @@
+# frozen_string_literal: true
+
+module Review
+  module Adapters
+    class MediaAdapter
+      def find_url(media_id)
+        return "" if media_id.nil? || media_id.to_s.empty?
+        get_media_batch.call(ids: [media_id]).first&.url || ""
+      end
+
+      private
+
+      def get_media_batch
+        @get_media_batch ||= ::Media::Slice["use_cases.get_media_batch"]
+      end
+    end
+  end
+end
