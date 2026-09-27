@@ -3643,7 +3643,7 @@ The final whole-branch review (after Task 17) found two Critical, empirically-ve
 - Modify: `tools/meeting-translation/assets/session.js` (replace `window.prompt()` + hardcoded fields with a real join form, gated on the socket actually being open, whose submission sends the user's real choices)
 
 **Interfaces:**
-- Produces: `#[route(GET "/translate/healthz")] pub async fn healthz() -> &'static str` in `pages.rs`, registered as `.route(pages::healthz)` in `main.rs`.
+- Produces: `#[route(GET "/translate/healthz")] pub async fn healthz() -> Result<&'static str>` in `pages.rs`, registered as `.route(pages::healthz)` in `main.rs`.
 - Consumes: `ClientMessage::Join`'s existing fields (`display_name`, `speech_language`, `display_language`, `consent` — from `src/protocol.rs`, unchanged) — this task only changes what values the browser sends, not the wire protocol itself.
 
 - [ ] **Step 1: Add the health check route**
@@ -3652,10 +3652,12 @@ In `tools/meeting-translation/src/pages.rs`, add near the other route/page funct
 
 ```rust
 #[route(GET "/translate/healthz")]
-pub async fn healthz() -> &'static str {
-    "ok"
+pub async fn healthz() -> Result<&'static str> {
+    Ok("ok")
 }
 ```
+
+Every `#[route]`/`#[page]` handler must return a `Result`, even one that can never fail: `topcoat-router-grammar-0.9.0`'s macro expansion unconditionally applies `#ident::handler(...).await?` at the call site (`src/route.rs:166`), so a bare `&'static str` return type fails to compile with "the `?` operator can only be applied to values that implement `Try`" — `&'static str` implementing `IntoResponse` (confirmed in `topcoat-router-0.9.0`'s `src/response.rs`) only means it can appear *inside* the `Ok(...)`, not that the `Result` wrapper can be skipped. This matches every other handler in this file (`create_room`, `meeting_page`, `creation_form`), all of which already return `Result<...>`.
 
 In `tools/meeting-translation/src/main.rs`, add `.route(pages::healthz)` to the router builder chain (order among the other `.route`/`.page` calls does not matter):
 
@@ -3672,7 +3674,7 @@ let router = Router::builder()
 ```
 
 Run: `cargo build`
-Expected: compiles cleanly (`&'static str` implements Topcoat's `IntoResponse`, confirmed against `topcoat-router-0.9.0`'s `src/response.rs` during the final review — no `Result` wrapper needed for a handler that cannot fail).
+Expected: compiles cleanly.
 
 - [ ] **Step 2: Remove the creation form's dead display-name input**
 
