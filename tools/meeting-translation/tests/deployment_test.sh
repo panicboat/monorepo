@@ -38,7 +38,7 @@ assert_value 'select(.kind == "Deployment" and .metadata.name == "meeting-transl
 assert_pattern 'select(.kind == "Deployment" and .metadata.name == "meeting-translation") | .spec.template.spec.containers[0].image' "$rendered_service" '^ghcr\.io/panicboat/monorepo/meeting-translation:v[0-9]+\.[0-9]+\.[0-9]+$' 'Production image'
 assert_value 'select(.kind == "Service" and .metadata.name == "meeting-translation") | .spec.ports[0].targetPort' "$rendered_service" '3000' 'Service target port'
 assert_value 'select(.kind == "HTTPRoute" and .metadata.name == "meeting-translation") | .spec.rules[0].matches[0].path.value' "$rendered_service" '/translate' 'HTTPRoute prefix'
-assert_value 'select(.kind == "ConfigMap" and .metadata.name == "meeting-translation") | .data | length' "$rendered_service" '4' 'ConfigMap key count'
+assert_value 'select(.kind == "ConfigMap" and .metadata.name == "meeting-translation") | .data | length' "$rendered_service" '3' 'ConfigMap key count'
 assert_value '[select(.kind == "Kustomization" and .metadata.name == "meeting-translation" and .metadata.namespace == "flux-system")] | length' "$rendered_cluster" '1' 'Flux service registration'
 assert_value '[select(.kind == "ImagePolicy" and .metadata.name == "meeting-translation")] | length' "$rendered_cluster" '1' 'Flux image policy registration'
 
