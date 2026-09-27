@@ -26,6 +26,7 @@ vi.mock("@/modules/profile/components/EditProfileModal", () => ({
 vi.mock("@/modules/social", () => ({
   FollowButton: () => null,
   BlockButton: () => null,
+  SocialCountsLinks: () => null,
   useSocialCounts: () => ({ followingCount: 0, followersCount: 0 }),
 }));
 
