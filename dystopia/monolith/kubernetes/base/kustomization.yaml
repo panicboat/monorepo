@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - configmap.yaml
   - deployment.yaml
+  - migrate-job.yaml
   - service.yaml
   - serviceaccount.yaml
 labels:
