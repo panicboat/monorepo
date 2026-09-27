@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.1](https://github.com/panicboat/monorepo/compare/monolith-v0.7.0...monolith-v0.7.1) (2026-09-27)
+
+
+### Bug Fixes
+
+* **dystopia/monolith:** automate DB migration with a Job and gate rollouts with probes ([#1273](https://github.com/panicboat/monorepo/issues/1273)) ([4a0a5ff](https://github.com/panicboat/monorepo/commit/4a0a5ffad0273723d50219abd408a5625059deaf))
+* **dystopia/monolith:** hydrate reply author in ListCommentsByAuthor response ([#1255](https://github.com/panicboat/monorepo/issues/1255)) ([8bc1d41](https://github.com/panicboat/monorepo/commit/8bc1d4139107d0052d83035d21fad8d982efe3ca))
+* **dystopia:** link comment and reply avatars to author profile ([#1260](https://github.com/panicboat/monorepo/issues/1260)) ([301a742](https://github.com/panicboat/monorepo/commit/301a742a8005380e1cb09418470dd4fc326d755f))
+* **dystopia:** reject cross-account likes-list requests ([#1271](https://github.com/panicboat/monorepo/issues/1271)) ([389c27b](https://github.com/panicboat/monorepo/commit/389c27b07f32ed0db05e67759e0f820b1cd44dac))
+* **dystopia:** remove unused cast area setting ([#1259](https://github.com/panicboat/monorepo/issues/1259)) ([e08aafa](https://github.com/panicboat/monorepo/commit/e08aafabc5d84fec86c0344591a95c29803bc6a2))
+
 ## [0.7.0](https://github.com/panicboat/monorepo/compare/monolith-v0.6.2...monolith-v0.7.0) (2026-09-26)
 
 
