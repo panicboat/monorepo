@@ -5,9 +5,8 @@ use topcoat::router::response::Response;
 use topcoat::router::{path_param, route};
 
 use crate::protocol::{ClientMessage, ServerMessage, StatusCode, parse_client_message};
+pub use crate::room::RoomId;
 use crate::room::{JoinOutcome, RoomCommand, RoomRegistry};
-
-topcoat::router::path_param!(room_id: String, error = bad_request);
 
 #[route(GET "/translate/rooms/{room_id}/session")]
 pub async fn session(cx: &Cx, upgrade: WebSocketUpgrade) -> Result<Response> {
