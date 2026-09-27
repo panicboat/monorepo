@@ -1,3 +1,5 @@
+import { startMicrophone, stopMicrophone } from "./microphone.js";
+
 const appElement = document.getElementById("app");
 const roomId = appElement.dataset.roomId;
 const joinToken = window.location.hash.slice(1);
@@ -22,6 +24,7 @@ function renderApp() {
       <input id="manual-caption-text" maxlength="2000" placeholder="Type a caption">
       <button type="submit">Send</button>
     </form>
+    <button id="mic-toggle">Start speaking</button>
   `;
 }
 
@@ -63,6 +66,24 @@ function upsertCaption(caption) {
 }
 
 renderApp();
+
+let micActive = false;
+document.getElementById("mic-toggle").addEventListener("click", async () => {
+  if (micActive) {
+    stopMicrophone();
+    socket.send(JSON.stringify({ type: "audio_stop" }));
+    micActive = false;
+    return;
+  }
+
+  try {
+    await startMicrophone((chunk) => socket.send(chunk));
+    socket.send(JSON.stringify({ type: "audio_start" }));
+    micActive = true;
+  } catch {
+    showStatus("microphone_unavailable");
+  }
+});
 
 const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 const socket = new WebSocket(`${protocol}//${window.location.host}/translate/rooms/${roomId}/session`);

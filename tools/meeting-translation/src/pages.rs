@@ -68,7 +68,7 @@ pub async fn meeting_page(cx: &Cx) -> Result<impl View> {
             </head>
             <body>
                 <div id="app" data-room-id=(room_id)></div>
-                <script src=(crate::assets::SESSION_JS)></script>
+                <script type="module" src=(crate::assets::SESSION_JS)></script>
             </body>
         </html>
     })
