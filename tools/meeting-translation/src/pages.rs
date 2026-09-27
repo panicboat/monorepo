@@ -33,6 +33,7 @@ pub async fn creation_form() -> Result<impl View> {
         <html>
             <head>
                 <title>"Meeting Translation"</title>
+                <link rel="stylesheet" href=(crate::assets::STYLES_CSS)>
                 topcoat::dev::script()
             </head>
             <body>
@@ -87,6 +88,7 @@ pub async fn meeting_page(cx: &Cx) -> Result<impl View> {
         <html>
             <head>
                 <title>"Meeting Translation"</title>
+                <link rel="stylesheet" href=(crate::assets::STYLES_CSS)>
                 topcoat::dev::script()
                 <script type="importmap">(import_map)</script>
             </head>

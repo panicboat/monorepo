@@ -1,5 +1,6 @@
 use topcoat::asset::{Asset, asset};
 
+pub const STYLES_CSS: Asset = asset!("../assets/styles.css");
 pub const CREATION_FORM_JS: Asset = asset!("../assets/creation-form.js");
 pub const SESSION_JS: Asset = asset!("../assets/session.js");
 pub const MICROPHONE_JS: Asset = asset!("../assets/microphone.js");
