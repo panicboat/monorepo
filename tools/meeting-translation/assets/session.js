@@ -15,9 +15,17 @@ const statusMessages = {
   reconnecting: "Reconnecting to speech recognition...",
 };
 
-function renderJoinForm() {
+async function renderJoinForm() {
+  const shareLink = `${window.location.origin}/translate/rooms/${roomId}#${joinToken}`;
   appElement.innerHTML = `
     <div id="status" role="status"></div>
+    <div id="share-link-section">
+      <label>
+        Invitation link
+        <input id="share-link" readonly value="${shareLink}">
+      </label>
+      <p id="share-link-status"></p>
+    </div>
     <form id="join-form">
       <label>
         Display name
@@ -51,6 +59,15 @@ function renderJoinForm() {
   if (params.has("speech_language")) document.getElementById("join-speech-language").value = params.get("speech_language");
   if (params.has("display_language")) document.getElementById("join-display-language").value = params.get("display_language");
   if (params.get("consent") === "true") document.getElementById("join-consent").checked = true;
+
+  const shareLinkStatus = document.getElementById("share-link-status");
+  try {
+    await navigator.clipboard.writeText(shareLink);
+    shareLinkStatus.textContent = "Invitation link copied to clipboard.";
+  } catch {
+    // FALLBACK: the selectable link input above remains available when clipboard access is unavailable or denied.
+    shareLinkStatus.textContent = "Select and copy this invitation link.";
+  }
 }
 
 function renderApp() {

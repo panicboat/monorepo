@@ -66,6 +66,21 @@ select {
   gap: 0.3rem;
 }
 
+#share-link-section {
+  display: grid;
+  gap: 0.3rem;
+  margin-bottom: 1.25rem;
+}
+
+#share-link {
+  width: 100%;
+}
+
+#share-link-status {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
 #status {
   min-height: 1.5rem;
   font-weight: 600;
