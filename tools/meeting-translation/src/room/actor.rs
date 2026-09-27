@@ -502,9 +502,12 @@ impl RoomActor {
     }
 
     fn disconnect(&mut self, participant_id: Uuid) {
-        let Some(removed) = self.participants.remove(&participant_id) else {
+        let Some(mut removed) = self.participants.remove(&participant_id) else {
             return;
         };
+        if let Some(session) = removed.recognition_session.take() {
+            session.stop();
+        }
         self.broadcast(
             ServerMessage::ParticipantLeft {
                 participant: removed.participant,
@@ -1147,6 +1150,59 @@ mod tests {
                 .await
                 .unwrap();
                 tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+                assert!(stopped.load(Ordering::SeqCst));
+            }
+
+            #[tokio::test]
+            async fn disconnect_stops_active_recognition_session() {
+                let written = Arc::new(Mutex::new(Vec::new()));
+                let stopped = Arc::new(AtomicBool::new(false));
+                let (became_empty_tx, _rx) = mpsc::unbounded_channel();
+                let (room, _handle) = spawn_room(
+                    "room-1".to_string(),
+                    token_hash("secret"),
+                    became_empty_tx,
+                    Arc::new(NoopTranslator),
+                    vec![],
+                    Arc::new(FakeRecognizer {
+                        written: written.clone(),
+                        stopped: stopped.clone(),
+                    }),
+                );
+                let (participant_id, _inbox) = join_and_drain(&room, "Alice").await;
+
+                room.send(RoomCommand::HandleMessage {
+                    participant_id,
+                    message: ClientMessage::AudioStart,
+                })
+                .await
+                .unwrap();
+
+                let marker = vec![4, 5, 6];
+                tokio::time::timeout(std::time::Duration::from_secs(1), async {
+                    while !written.lock().unwrap().iter().any(|chunk| chunk == &marker) {
+                        room.send(RoomCommand::WriteAudio {
+                            participant_id,
+                            chunk: marker.clone(),
+                        })
+                        .await
+                        .unwrap();
+                        tokio::task::yield_now().await;
+                    }
+                })
+                .await
+                .expect("recognition session must be installed before disconnect");
+
+                room.send(RoomCommand::Disconnect { participant_id })
+                    .await
+                    .unwrap();
+                tokio::time::timeout(std::time::Duration::from_secs(1), async {
+                    while !stopped.load(Ordering::SeqCst) {
+                        tokio::task::yield_now().await;
+                    }
+                })
+                .await
+                .expect("disconnect must stop the active recognition session");
                 assert!(stopped.load(Ordering::SeqCst));
             }
 
