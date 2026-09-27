@@ -1,8 +1,7 @@
 import { NotificationType } from "@/stub/notifications/v1/notification_service_pb";
 import type { NotificationView } from "../types";
 
-// FOLLOW_APPROVED fires both for a plain follow on a public account and for
-// an approved pending request; word it as the (far more common) former.
+// FOLLOW_APPROVED covers both a plain follow and an approved request; worded for the (far more common) former.
 export function describeNotification(n: NotificationView): string {
   const actorName = n.latestActor?.displayName || "誰か";
   const othersSuffix = n.actorCount > 1 ? ` 他 ${n.actorCount - 1} 人` : "";
@@ -22,9 +21,7 @@ export function describeNotification(n: NotificationView): string {
   }
 }
 
-// Returns the destination URL for a notification tap, or null when no
-// deep-link is possible. COMMENT/REPLY route to the parent post via
-// `targetPostId` (target_resource_id itself is the comment_id).
+// COMMENT/REPLY route via targetPostId; target_resource_id is actually the comment_id here.
 export function notificationHref(n: NotificationView): string | null {
   switch (n.type) {
     case NotificationType.LIKE:

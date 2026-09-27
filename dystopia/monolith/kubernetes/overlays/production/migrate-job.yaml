@@ -1,9 +1,4 @@
-# =============================================================================
-# Job patch for monolith-migrate (production overlay)
-# =============================================================================
-# 同じ $imagepolicy マーカーを付けることで、Flux ImageUpdateAutomation が
-# deployment.yaml と同じ commit でこの image 行も書き換える。
-# =============================================================================
+# Same $imagepolicy marker as deployment.yaml so Flux updates both in one commit.
 apiVersion: batch/v1
 kind: Job
 metadata:
