@@ -22,6 +22,8 @@ enum InternalEvent {
         caption_id: Uuid,
         result: Result<String, ()>,
     },
+    // Explicit exit signal prevents the actor loop from retaining its own sender.
+    Shutdown,
 }
 
 pub type Connection = mpsc::UnboundedSender<ServerMessage>;
@@ -80,7 +82,7 @@ pub fn spawn_room(
     became_empty: mpsc::UnboundedSender<String>,
     translator: Arc<dyn Translator>,
     glossary: Vec<String>,
-) -> mpsc::Sender<RoomCommand> {
+) -> (mpsc::Sender<RoomCommand>, tokio::task::JoinHandle<()>) {
     let (tx, mut rx) = mpsc::channel(64);
     let (event_tx, mut event_rx) = mpsc::unbounded_channel::<InternalEvent>();
 
@@ -91,9 +93,11 @@ pub fn spawn_room(
                 break;
             }
         }
+        // Closed command channel means all RoomCommand senders are gone.
+        let _ = forward_tx.send(InternalEvent::Shutdown);
     });
 
-    tokio::spawn(async move {
+    let handle = tokio::spawn(async move {
         let mut actor = RoomActor {
             room_id,
             join_token_hash,
@@ -116,11 +120,12 @@ pub fn spawn_room(
                     actor.translation_in_flight = false;
                     actor.drain_translation_queue(event_tx.clone());
                 }
+                InternalEvent::Shutdown => break,
             }
         }
     });
 
-    tx
+    (tx, handle)
 }
 
 impl RoomActor {
@@ -417,7 +422,7 @@ mod tests {
     #[tokio::test]
     async fn join_then_second_participant_broadcasts_to_first_only() {
         let (became_empty_tx, _became_empty_rx) = mpsc::unbounded_channel();
-        let room = spawn_room(
+        let (room, _handle) = spawn_room(
             "room-1".to_string(),
             token_hash("secret"),
             became_empty_tx,
@@ -449,7 +454,7 @@ mod tests {
     #[tokio::test]
     async fn wrong_token_is_room_not_found() {
         let (became_empty_tx, _rx) = mpsc::unbounded_channel();
-        let room = spawn_room(
+        let (room, _handle) = spawn_room(
             "room-1".to_string(),
             token_hash("secret"),
             became_empty_tx,
@@ -467,7 +472,7 @@ mod tests {
     #[tokio::test]
     async fn fourth_participant_is_rejected_as_room_full() {
         let (became_empty_tx, _rx) = mpsc::unbounded_channel();
-        let room = spawn_room(
+        let (room, _handle) = spawn_room(
             "room-1".to_string(),
             token_hash("secret"),
             became_empty_tx,
@@ -490,7 +495,7 @@ mod tests {
     #[tokio::test]
     async fn clarification_request_notifies_only_the_speaker() {
         let (became_empty_tx, _rx) = mpsc::unbounded_channel();
-        let room = spawn_room(
+        let (room, _handle) = spawn_room(
             "room-1".to_string(),
             token_hash("secret"),
             became_empty_tx,
@@ -563,13 +568,14 @@ mod tests {
 
         async fn spawn_test_room(translator: Arc<dyn Translator>) -> mpsc::Sender<RoomCommand> {
             let (became_empty_tx, _rx) = mpsc::unbounded_channel();
-            spawn_room(
+            let (room, _handle) = spawn_room(
                 "room-1".to_string(),
                 token_hash("secret"),
                 became_empty_tx,
                 translator,
                 vec![],
-            )
+            );
+            room
         }
 
         async fn join_and_drain(
@@ -703,6 +709,120 @@ mod tests {
                 alice_inbox.recv().await.unwrap(),
                 ServerMessage::ClarificationRequested { .. }
             ));
+        }
+
+        struct VariableDelayTranslator;
+
+        #[async_trait]
+        impl Translator for VariableDelayTranslator {
+            async fn translate(&self, request: TranslationRequest) -> Result<String, ()> {
+                // "first" is slower so concurrent translation would reverse final order.
+                let delay = if request.source_text == "first" {
+                    Duration::from_millis(100)
+                } else {
+                    Duration::from_millis(10)
+                };
+                tokio::time::sleep(delay).await;
+                Ok(format!("[translated] {}", request.source_text))
+            }
+        }
+
+        #[tokio::test]
+        async fn second_caption_does_not_translate_until_the_first_resolves() {
+            let room = spawn_test_room(Arc::new(VariableDelayTranslator)).await;
+            let (participant_id, mut inbox) = join_and_drain(&room, "Alice").await;
+
+            room.send(RoomCommand::HandleMessage {
+                participant_id,
+                message: ClientMessage::CaptionManual {
+                    text: "first".to_string(),
+                },
+            })
+            .await
+            .unwrap();
+            room.send(RoomCommand::HandleMessage {
+                participant_id,
+                message: ClientMessage::CaptionManual {
+                    text: "second".to_string(),
+                },
+            })
+            .await
+            .unwrap();
+
+            let mut states = Vec::new();
+            for _ in 0..4 {
+                let ServerMessage::CaptionUpdate { caption } = inbox.recv().await.unwrap() else {
+                    panic!("expected CaptionUpdate");
+                };
+                states.push((caption.source_text, caption.state));
+            }
+
+            assert_eq!(
+                states,
+                vec![
+                    ("first".to_string(), CaptionState::Translating),
+                    ("second".to_string(), CaptionState::Translating),
+                    ("first".to_string(), CaptionState::Final),
+                    ("second".to_string(), CaptionState::Final),
+                ],
+                "the second caption's Final must not arrive before the first caption's Final",
+            );
+        }
+
+        #[tokio::test(start_paused = true)]
+        async fn translation_times_out_after_ten_seconds() {
+            // The translator never resolves; the room timeout must finish this job.
+            let translator = Arc::new(FakeTranslator {
+                delay: Duration::from_secs(3600),
+                fail: false,
+            });
+            let room = spawn_test_room(translator).await;
+            let (participant_id, mut inbox) = join_and_drain(&room, "Alice").await;
+
+            room.send(RoomCommand::HandleMessage {
+                participant_id,
+                message: ClientMessage::CaptionManual {
+                    text: "hello".to_string(),
+                },
+            })
+            .await
+            .unwrap();
+            inbox.recv().await.unwrap(); // Translating
+
+            tokio::time::advance(Duration::from_secs(10)).await;
+
+            let ServerMessage::CaptionUpdate { caption } = inbox.recv().await.unwrap() else {
+                panic!("expected CaptionUpdate");
+            };
+            assert_eq!(caption.state, CaptionState::Failed);
+            assert!(matches!(
+                inbox.recv().await.unwrap(),
+                ServerMessage::Status {
+                    code: crate::protocol::StatusCode::TranslationUnavailable
+                }
+            ));
+        }
+
+        #[tokio::test]
+        async fn room_actor_task_terminates_once_every_command_sender_is_dropped() {
+            let (became_empty_tx, _rx) = mpsc::unbounded_channel();
+            let (room, handle) = spawn_room(
+                "room-1".to_string(),
+                token_hash("secret"),
+                became_empty_tx,
+                Arc::new(FakeTranslator {
+                    delay: Duration::ZERO,
+                    fail: false,
+                }),
+                vec![],
+            );
+
+            drop(room); // the only RoomCommand sender
+
+            tokio::time::timeout(Duration::from_secs(1), handle)
+                .await
+                .expect("actor task must exit once its command channel closes")
+                .expect("actor task must not panic");
         }
     }
 }
