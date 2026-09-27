@@ -2230,6 +2230,8 @@ git commit -s -m "feat(meeting-translation): add Transcribe streaming recognizer
 - Create: `tools/meeting-translation/src/session.rs`
 - Modify: `tools/meeting-translation/src/main.rs` (add `mod session;`)
 - Modify: `tools/meeting-translation/Cargo.toml` (add `futures-util`, dev-dependency `tokio-tungstenite`)
+- Modify: `tools/meeting-translation/src/room/actor.rs` (add `reconnectable: bool` to `RoomCommand::Disconnect` — see Step 4)
+- Modify: `tools/meeting-translation/src/room/registry.rs` (make the grace timer conditional on `reconnectable`, update `RoomBecameEmpty`'s shape — see Step 4)
 
 **Interfaces:**
 - Produces: `#[route(GET "/translate/rooms/{room_id}/session")] pub async fn session(cx: &Cx, upgrade: WebSocketUpgrade) -> Result<Response>` — registered into the router as `.route(session::session)` in Task 14.
@@ -2479,6 +2481,8 @@ distinguishable, closing a gap left open since Task 7."
 **Files:**
 - Create: `tools/meeting-translation/src/pages.rs`
 - Modify: `tools/meeting-translation/src/main.rs` (add `mod pages;`)
+- Modify: `tools/meeting-translation/src/room.rs` (add the shared `path_param!(room_id: String, ...)` declaration — see Step 2)
+- Modify: `tools/meeting-translation/src/session.rs` (drop its own copy of that declaration in favor of the one now in `room.rs` — see Step 2)
 - Create: `tools/meeting-translation/assets/` (directory, populated in Tasks 12-13)
 
 **Interfaces:**
@@ -2777,7 +2781,8 @@ git commit -s -m "feat(meeting-translation): add browser WebSocket client and ca
 - Create: `tools/meeting-translation/assets/audio-worklet-processor.js`
 - Create: `tools/meeting-translation/assets/microphone.js`
 - Modify: `tools/meeting-translation/assets/session.js` (wire in mic start/stop)
-- Modify: `tools/meeting-translation/src/assets.rs` (register the two new asset files needed at runtime: the worklet processor and, indirectly, `microphone.js` via a `<script>` include from `session.js`'s page — simplest is to inline `microphone.js`'s contents into `session.js` at the end of Task 13 rather than add a third `<script>` tag; see Step 5)
+- Modify: `tools/meeting-translation/src/assets.rs` (register `microphone.js`, `audio-worklet-processor.js`, and `pcm-resample.js` via `asset!()` so Topcoat's bundler serves them — see Step 7)
+- Modify: `tools/meeting-translation/src/pages.rs` (change `meeting_page`'s `<script>` tag to `type="module"` — see Step 6)
 
 **Interfaces:**
 - Produces (pure, unit-tested): `resamplePcm16(input: Int16Array, inputSampleRate: number, outputSampleRate: number): Int16Array` in `pcm-resample.js`.
