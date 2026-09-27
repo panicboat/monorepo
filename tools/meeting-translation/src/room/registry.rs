@@ -277,6 +277,42 @@ mod tests {
         );
     }
 
+    #[tokio::test(start_paused = true)]
+    async fn rejoin_within_grace_period_cancels_the_pending_expiry() {
+        let registry = test_registry();
+        let (room_id, token) = registry.create();
+        let sender = registry.find(&room_id).unwrap();
+
+        let outcome = join(&sender, &room_id, &token).await;
+        let participant_id = match outcome {
+            crate::room::actor::JoinOutcome::Joined { participant_id } => participant_id,
+            other => panic!("expected Joined, got {other:?}"),
+        };
+        sender
+            .send(RoomCommand::Disconnect { participant_id })
+            .await
+            .unwrap();
+        tokio::time::advance(std::time::Duration::from_millis(1)).await;
+        registry.pump_lifecycle_events_for_test().await;
+
+        tokio::time::advance(std::time::Duration::from_secs(4)).await;
+        let sender = registry
+            .find(&room_id)
+            .expect("room should still exist within the grace period");
+        let rejoin_outcome = join(&sender, &room_id, &token).await;
+        assert!(matches!(
+            rejoin_outcome,
+            crate::room::actor::JoinOutcome::Joined { .. }
+        ));
+
+        tokio::time::advance(std::time::Duration::from_secs(2)).await;
+        registry.pump_lifecycle_events_for_test().await;
+        assert!(
+            registry.room_exists_for_test(&room_id),
+            "a rejoin within the grace period must cancel the pending expiry"
+        );
+    }
+
     #[test]
     fn rate_limiter_allows_five_then_rejects_the_sixth_within_the_window() {
         let registry = test_registry();
