@@ -48,6 +48,7 @@ module Identity
             count += 1
             logger&.info("[purge] account #{account.id} fully purged")
           rescue => error
+            # FALLBACK: Continue purging other accounts after recording this failure.
             logger&.error("[purge] account #{account.id} failed: #{error.class}: #{error.message}")
           end
 
@@ -56,8 +57,6 @@ module Identity
 
         private
 
-        # Slices retain ownership of their data, so this boundary supplies each
-        # slice's purge use case instead of coupling repositories across slices.
         def cascades
           [
             purge_notifications,

@@ -4,19 +4,12 @@ require "set"
 
 module Social
   module UseCases
-    # Batch follow-gate filter. Used by Post::UseCases::Posts::ListPostsByIds at
-    # hydration tail. Order-preserving. Batches profile/follow/block lookups by
-    # author_id so a feed of N posts costs O(authors) profile fetches + 2 SQL
-    # queries (status_batch + bidirectionally_blocked_ids) instead of O(N).
     class FilterVisiblePosts
       include Social::Deps[
         follow_repo: "repositories.follow_repository",
         block_repo: "repositories.block_repository"
       ]
 
-      # @param viewer_account_id [String, nil] nil = anonymous
-      # @param posts [Array<#author_id>]
-      # @return [Array] order-preserving subset of posts
       def call(viewer_account_id:, posts:)
         return [] if posts.nil? || posts.empty?
 

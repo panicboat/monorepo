@@ -6,7 +6,6 @@ import "google/protobuf/timestamp.proto";
 import "profile/v1/service.proto";
 
 service MessagingService {
-  // Unary
   rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
   rpc ListThreads(ListThreadsRequest) returns (ListThreadsResponse);
   rpc GetOrCreateThread(GetOrCreateThreadRequest) returns (GetOrCreateThreadResponse);
@@ -15,7 +14,6 @@ service MessagingService {
   rpc GetTotalUnreadCount(GetTotalUnreadCountRequest) returns (GetTotalUnreadCountResponse);
   rpc SendTyping(SendTypingRequest) returns (SendTypingResponse);
 
-  // Streaming
   rpc StreamEvents(StreamEventsRequest) returns (stream Event);
 }
 

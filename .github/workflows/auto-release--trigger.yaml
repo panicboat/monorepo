@@ -48,8 +48,7 @@ jobs:
           SERVICE: ${{ steps.parse.outputs.service }}
         run: |
           set -euo pipefail
-          # workflow-config.yaml が stack convention の source of truth。
-          # root を列挙して {service} を展開し、実在するものを採用する。
+          # Use workflow-config.yaml as the source of truth for deployable stacks.
           while IFS= read -r root_pattern; do
             dir="${root_pattern//\{service\}/$SERVICE}"
             if [ -d "$dir" ]; then

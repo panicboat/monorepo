@@ -19,27 +19,12 @@ import { MessagingService } from "@/stub/messaging/v1/messaging_service_pb";
 import { FootprintsService } from "@/stub/footprints/v1/footprints_service_pb";
 import { ScheduleService } from "@/stub/schedule/v1/schedule_service_pb";
 
-// In server environment (Next.js API Routes), we connect to Monolith directly.
-// Monolith is at 'http://monolith:9001' or 'http://localhost:9001' depending on Docker/Local.
-// We should use ENV.
-// Two transports on purpose:
-// - `transport` for regular (unary) RPCs
-// - `streamingTransport` for long-lived server-streaming RPCs
-//   (e.g. /api/messaging/stream)
-//
-// @connectrpc/connect-node opens one HTTP/2 connection per transport
-// instance and multiplexes streams on it. If a long-lived SSE stream
-// shares the same transport as unary RPCs, the SSE stream keeps the
-// connection open forever and can wedge subsequent unary RPCs (feed,
-// follow, etc.) so they never receive response frames — puppet
-// reproduces this after opening /messages then navigating back home.
-// Isolating the streaming client onto its own connection keeps the
-// unary path free.
 const baseUrl = process.env.MONOLITH_URL || "http://localhost:9001";
 const transport = createGrpcTransport({
   baseUrl,
   interceptors: [traceContextInterceptor],
 });
+// Keep streaming RPCs on a separate transport because long-lived streams can block unary RPCs.
 const streamingTransport = createGrpcTransport({
   baseUrl,
   interceptors: [traceContextInterceptor],
@@ -47,46 +32,32 @@ const streamingTransport = createGrpcTransport({
 
 export const identityClient = createClient(IdentityService, transport);
 
-// Media domain client
 export const mediaClient = createClient(MediaService, transport);
 
-// Post domain clients
 export const postClient = createClient(PostService, transport);
 export const likeClient = createClient(LikeService, transport);
 export const commentClient = createClient(CommentService, transport);
 
-// Social domain clients (social.v1 — symmetric account-based follow/block)
 export const socialFollowClient = createClient(SocialFollowService, transport);
 export const socialBlockClient = createClient(SocialBlockService, transport);
 
-// Feed domain client
 export const feedClient = createClient(FeedService, transport);
 
-// Profile domain client
 export const profileClient = createClient(ProfileService, transport);
 
-// Notifications domain client (notifications.v1)
 export const notificationClient = createClient(NotificationService, transport);
 
-// Bookmarks domain client (bookmarks.v1)
 export const bookmarkClient = createClient(BookmarkService, transport);
 
-// Discovery domain client (discovery.v1)
 export const discoveryClient = createClient(DiscoveryService, transport);
 
-// Messaging domain client (messaging.v1)
 export const messagingClient = createClient(MessagingService, transport);
-// Server-streaming client. `/api/messaging/stream` uses this so the long-poll
-// SSE keeps its own HTTP/2 connection and never blocks unary RPCs.
 export const messagingStreamingClient = createClient(MessagingService, streamingTransport);
 
-// Footprints domain client (footprints.v1)
 export const footprintsClient = createClient(FootprintsService, transport);
 
-// Karte domain client (karte.v1)
 export const karteClient = createClient(KarteService, transport);
 
 export const reviewClient = createClient(ReviewService, transport);
 
-// Schedule domain client (schedule.v1)
 export const scheduleClient = createClient(ScheduleService, transport);

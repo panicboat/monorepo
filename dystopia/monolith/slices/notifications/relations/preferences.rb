@@ -2,8 +2,6 @@
 
 module Notifications
   module Relations
-    # NB: top-level `::Notifications` reference avoids resolving as
-    # `Notifications::Relations::Notifications` when defined inside this module.
     class Preferences < ::Notifications::DB::Relation
       schema(:"notifications__preferences", as: :preference_records, infer: false) do
         attribute :account_id, Types::String

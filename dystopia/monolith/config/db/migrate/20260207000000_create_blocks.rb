@@ -5,9 +5,9 @@ ROM::SQL.migration do
     create_table :"social__blocks" do
       column :id, :uuid, null: false
       column :blocker_id, :uuid, null: false
-      column :blocker_type, :text, null: false # "guest" or "cast"
+      column :blocker_type, :text, null: false
       column :blocked_id, :uuid, null: false
-      column :blocked_type, :text, null: false # "guest" or "cast"
+      column :blocked_type, :text, null: false
       column :created_at, :timestamptz, null: false, default: Sequel.lit("now()")
 
       primary_key [:id]

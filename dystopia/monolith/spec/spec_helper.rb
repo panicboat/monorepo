@@ -13,7 +13,6 @@ require "database_cleaner/sequel"
 
 
 RSpec.configure do |config|
-  # Use the recommended RSpec 4 defaults
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end
@@ -36,7 +35,6 @@ RSpec.configure do |config|
   config.order = :random
   Kernel.srand config.seed
 
-  # DatabaseCleaner
   config.before(:suite) do
     DatabaseCleaner[:sequel].db = Hanami.app["db.gateway"].connection
     DatabaseCleaner.strategy = :transaction

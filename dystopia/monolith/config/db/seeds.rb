@@ -1,26 +1,17 @@
 # frozen_string_literal: true
 
-# This seeds file creates the database records required to run the app.
-# The code is idempotent so that it can be executed at any time.
-#
-# To load the seeds, run `hanami db seed`. Seeds are also loaded as part of `hanami db prepare`.
 
 require_relative "seeds/helper"
 
-# === Users ===
 require_relative "seeds/identity/users"
 
-# === Profiles ===
 require_relative "seeds/portfolio/casts"
 require_relative "seeds/portfolio/profiles"
 
-# === Karte ===
 require_relative "seeds/karte/access"
 
-# === Content ===
 require_relative "seeds/post/posts"
 require_relative "seeds/post/likes"
 require_relative "seeds/post/comments"
 
-# === Summary ===
 Seeds::Helper.print_summary

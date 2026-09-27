@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
     try {
       ({ sub } = await verifyAccessToken(accessToken));
     } catch {
+      // FALLBACK: Try the refresh token when the access token cannot be verified.
       const refreshToken = getRefreshCookie(req);
       if (!refreshToken) {
         const res = NextResponse.json({ error: "ログインしてください" }, { status: 401 });
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest) {
         ({ sub } = await verifyAccessToken(tokens.accessToken));
         refreshed = { accessToken: tokens.accessToken, refreshToken };
       } catch {
+        // FALLBACK: Clear invalid session cookies and return 401 when refresh fails.
         const res = NextResponse.json({ error: "ログインしてください" }, { status: 401 });
         clearAuthCookies(res);
         return res;

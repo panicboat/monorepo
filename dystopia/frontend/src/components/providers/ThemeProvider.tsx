@@ -27,11 +27,8 @@ function readStoredTheme(): ThemeChoice {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Lazy initializer runs on the client only (ThemeProvider is "use client").
-  // On the server, localStorage is undefined and readStoredTheme returns "system".
   const [theme, setThemeState] = useState<ThemeChoice>(readStoredTheme);
 
-  // Apply on change, and follow the OS while in system mode.
   useEffect(() => {
     applyTheme(theme);
     if (theme !== "system") return;

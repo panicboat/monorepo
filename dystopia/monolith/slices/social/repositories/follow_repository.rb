@@ -4,15 +4,10 @@ require "concerns/cursor_pagination"
 
 module Social
   module Repositories
-    # Symmetric follow repository. follower_id/followee_id are both account_ids.
-    # status is "approved" (immediate, default for public targets) or "pending" (private targets).
     class FollowRepository < Social::DB::Repo
       include Concerns::CursorPagination
 
-      # --- Mutations ----
 
-      # Insert or no-op. Returns the resulting status (existing or new).
-      # @return [Hash{success: Boolean, status: String, reason: Symbol?}]
       def follow(follower_id:, followee_id:, status:)
         existing = follows.where(follower_id: follower_id, followee_id: followee_id).one
         return { success: false, status: existing.status, reason: :already_exists } if existing
@@ -44,7 +39,6 @@ module Social
         updated > 0
       end
 
-      # Delete both directions (used by Block transaction in BlockRepository).
       def remove_bidirectional(account_a:, account_b:)
         follows.dataset
           .where(
@@ -56,7 +50,6 @@ module Social
           .delete
       end
 
-      # --- Reads ----
 
       def find(follower_id:, followee_id:)
         follows.where(follower_id: follower_id, followee_id: followee_id).one
@@ -82,7 +75,6 @@ module Social
         follows.where(followee_id: account_id, status: "pending").count
       end
 
-      # @return [Hash{target_account_id (String) => status (String)}], missing keys = no row
       def status_batch(follower_id:, followee_ids:)
         return {} if followee_ids.nil? || followee_ids.empty?
 
@@ -92,7 +84,6 @@ module Social
         rows.each_with_object({}) { |(target, status), h| h[target.to_s] = status }
       end
 
-      # Used by Feed FOLLOWING tab (already exposed since F3).
       def following_account_ids(account_id:)
         follows.dataset
           .where(follower_id: account_id, status: "approved")

@@ -6,7 +6,6 @@ require_relative "../../../lib/grpc/authenticatable"
 
 module Notifications
   module Grpc
-    # Base handler for Notifications slice. Provides authenticatable + cursor pagination.
     class Handler < ::Gruf::Controllers::Base
       include ::GRPC::GenericService
       include ::Grpc::Authenticatable

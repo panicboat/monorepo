@@ -111,9 +111,6 @@ module Profile
       end
 
       def role_for(account_id)
-        # Mirror identity__accounts.role onto the Profile proto so the UI does
-        # not have to infer role from cast-only attributes (heuristic was
-        # the post-merge follow-up from PR #765).
         user = identity_account_repo.find_by_id(account_id)
         user&.role || 0
       end

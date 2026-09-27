@@ -2,9 +2,6 @@
 
 module Notifications
   module UseCases
-    # Returns the per-account notification preferences row.
-    # New accounts have no row yet; we return a default-all-true hash so the
-    # UI can render toggles without an eager insert at signup time.
     class GetPreferences
       DEFAULT_PREFERENCES = {
         push_enabled: true,

@@ -4,7 +4,6 @@ puts "Seeding Post: Comments..."
 
 db = Seeds::Helper.db
 
-# コメントテンプレート（ゲストから）
 guest_comments = [
   "素敵な投稿ですね！✨",
   "いつも応援しています！",
@@ -28,7 +27,6 @@ guest_comments = [
   "予約した！",
 ]
 
-# リプライテンプレート（キャストから）
 cast_replies = [
   "ありがとうございます！嬉しいです😊",
   "ぜひお待ちしています！",
@@ -54,9 +52,7 @@ posts.each_with_index do |post, post_i|
   existing = db[:"post__comments"].where(post_id: post[:id]).count
   next if existing > 0
 
-  # 投稿ごとに2コメント（全投稿で ~102コメント）
   2.times do |i|
-    # ユーザーをローテーションで割り当て
     user_id = all_user_ids[(comment_idx + i) % all_user_ids.size]
     content = guest_comments[comment_idx % guest_comments.size]
 
@@ -72,7 +68,6 @@ posts.each_with_index do |post, post_i|
     )
     comment_count += 1
 
-    # 3投稿に1回、キャストからリプライを追加
     if post_i % 3 == 0 && i == 0
       author_id = post[:author_id]
       reply_content = cast_replies[reply_idx % cast_replies.size]

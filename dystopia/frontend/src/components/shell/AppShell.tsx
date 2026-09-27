@@ -20,7 +20,6 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
-  // All hooks run unconditionally at the top (rules-of-hooks).
   const isHydrated = useAuthStore(selectIsHydrated);
   const viewerId = useAuthStore(selectUserId);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -30,7 +29,6 @@ export function AppShell({ children }: AppShellProps) {
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
   const isLandingRoute = pathname === "/";
 
-  // Redirect unauthenticated users to /login after hydration, except on auth routes.
   useEffect(() => {
     if (isHydrated && !viewerId && !isAuthRoute && !isLandingRoute) {
       router.replace("/login");
@@ -39,7 +37,6 @@ export function AppShell({ children }: AppShellProps) {
 
   const mode = resolveShellMode({ isHydrated, viewerId, isAuthRoute, isLandingRoute });
 
-  // See resolveShellMode: auth routes stay bare even once hydrated with a viewer set.
   if (mode === "bare") {
     return <>{children}</>;
   }
@@ -57,7 +54,6 @@ export function AppShell({ children }: AppShellProps) {
       <div className="md:hidden">
         <TopBar onAvatarClick={() => setDrawerOpen(true)} />
       </div>
-      {/* Desktop 3-col: persistent left nav + center column + おすすめユーザー pane (xl:). */}
       <div className="mx-auto flex w-full max-w-screen-xl flex-1">
         <SideNav />
         <main className="min-w-0 flex-1 pb-24 md:max-w-2xl md:border-x md:border-border md:pb-0">

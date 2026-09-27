@@ -2,12 +2,10 @@
 
 ROM::SQL.migration do
   change do
-    # Add new JSONB column
     alter_table :portfolio__casts do
       add_column :default_schedules, :jsonb, default: Sequel.lit("'[]'::jsonb")
     end
 
-    # Migrate existing data
     run <<~SQL
       UPDATE portfolio.casts
       SET default_schedules = CASE
@@ -17,7 +15,6 @@ ROM::SQL.migration do
       END
     SQL
 
-    # Drop old columns
     alter_table :portfolio__casts do
       drop_column :default_schedule_start
       drop_column :default_schedule_end

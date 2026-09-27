@@ -1,25 +1,13 @@
 #!/usr/bin/env bash
-# Regenerate proto stubs for one product, or for every product.
-#
-# Usage:
-#   bin/codegen            # all products under proto/
-#   bin/codegen dystopia   # one product
-#
-# Why this exists: a proto change must regenerate every consumer's stubs at
-# once, otherwise they drift. Targets are discovered rather than listed —
-# a service opts in by providing an executable bin/codegen — so adding a
-# service does not require editing this file.
-
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
 if [ -z "${NODE_OPTIONS+x}" ]; then
-  # Pass through.
   RUN_PREFIX=""
 else
-  # The cmux harness sets NODE_OPTIONS for its own preload; unset for tool runs.
+  # Clear harness-specific NODE_OPTIONS before running codegen tools.
   RUN_PREFIX="env -u NODE_OPTIONS"
 fi
 

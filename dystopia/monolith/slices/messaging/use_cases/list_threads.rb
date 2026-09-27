@@ -4,10 +4,6 @@ require "concerns/cursor_pagination"
 
 module Messaging
   module UseCases
-    # Cursor-paginated list of the viewer's threads, ordered by (last_message_at, id) DESC.
-    # Each thread row is augmented with: counterpart profile (via Profile slice),
-    # last_message row, unread_count, and the response carries total_unread_count
-    # so the bottom-tab badge avoids a second round-trip.
     class ListThreads
       include ::Concerns::CursorPagination
       include Messaging::Deps[messaging_repo: "repositories.messaging_repository"]

@@ -3,12 +3,9 @@
 module Social
   module UseCases
     module Follows
-      # Symmetric Follow. Looks up the target's profile.is_private (cross-slice) and decides
-      # whether to insert pending or approved. Returns the resulting status.
       class Follow
         include Social::Deps[follow_repo: "repositories.follow_repository", block_repo: "repositories.block_repository"]
 
-        # @return [Hash{status: String, reason: Symbol?}]
         def call(follower_id:, target_account_id:)
           if block_repo.blocked?(blocker_id: target_account_id, blocked_id: follower_id) ||
              block_repo.blocked?(blocker_id: follower_id, blocked_id: target_account_id)

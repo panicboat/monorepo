@@ -3,7 +3,6 @@
 module Social
   module UseCases
     module Follows
-      # Reject = remove the pending row outright.
       class RejectFollowRequest
         include Social::Deps[follow_repo: "repositories.follow_repository"]
 

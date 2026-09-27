@@ -2,11 +2,7 @@
 
 puts "Seeding Karte: Access..."
 
-# Grants karte access to the first Cast (role=2) found in identity__accounts.
-# This is intentionally minimal — MVP grant policy is manual SQL in production
-# (see spec, Decisions table). Seed exists so dev environments boot with a
-# working karte gate.
-
+# Grant access to the first cast so local environments have a usable karte gate.
 db = Seeds::Helper.db
 
 cast = db[:identity__accounts].where(role: 2).first

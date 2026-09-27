@@ -35,11 +35,6 @@ module Profile
         end
       end
 
-      # Cross-slice query for feed AREA tab. Returns account_ids whose
-      # profile.prefecture matches the input. NULL prefecture rows are
-      # naturally excluded (Sequel where uses = which doesn't match NULL).
-      # is_private (account 鍵) follow-gate is NOT applied here — that is
-      # the social slice's responsibility, deferred per feed spec.
       def account_ids_by_prefecture(prefecture)
         return [] if prefecture.nil? || prefecture.to_s.empty?
 
@@ -55,10 +50,6 @@ module Profile
         update(account_id, attrs.merge(updated_at: Time.now))
       end
 
-      # Newest-first profiles for the suggested-users feature.
-      # role_filter: nil = no filter, 1 = guest only, 2 = cast only (subquery against identity.accounts).
-      # exclude_account_ids: viewer self + already-following + bidirectionally-blocked.
-      # Cursor pagination over (created_at, account_id) — same shape as search_by_query.
       def list_recent(limit:, cursor: nil, exclude_account_ids: [], role_filter: nil)
         scope = profiles
         scope = scope.exclude(account_id: exclude_account_ids) unless exclude_account_ids.empty?
@@ -82,11 +73,6 @@ module Profile
         scope.order { [created_at.desc, account_id.desc] }.limit(limit + 1).to_a
       end
 
-      # Cross-slice query for discovery slice. Case-insensitive partial match
-      # on username or display_name. Cursor pagination over (created_at, account_id)
-      # — profiles has no separate id column, account_id is the PK.
-      # role_filter: nil/0 = no filter, 1 = guest only, 2 = cast only.
-      # Implemented via subquery against identity.accounts (account.id == accounts.id).
       def search_by_query(query:, limit: 20, cursor: nil, role_filter: nil)
         q = query.to_s.strip
         return [] if q.empty?

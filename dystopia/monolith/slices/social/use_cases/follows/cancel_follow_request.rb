@@ -3,8 +3,6 @@
 module Social
   module UseCases
     module Follows
-      # Same as Unfollow but semantically used while status='pending'. The repo doesn't
-      # distinguish so this is a thin alias.
       class CancelFollowRequest
         include Social::Deps[follow_repo: "repositories.follow_repository"]
 

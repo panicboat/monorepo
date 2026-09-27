@@ -7,7 +7,6 @@ RSpec.describe Storage do
   let(:mock_adapter) { instance_double(Storage::Adapter) }
 
   after do
-    # Reset adapter after each test
     described_class.reset!
   end
 

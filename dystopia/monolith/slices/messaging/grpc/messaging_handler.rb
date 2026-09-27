@@ -6,11 +6,6 @@ require_relative "handler"
 
 module Messaging
   module Grpc
-    # MessagingHandler binds the 8 RPCs of messaging.v1.MessagingService.
-    # The 7 unary methods (SendMessage / ListThreads / GetOrCreateThread /
-    # ListMessages / MarkRead / GetTotalUnreadCount / SendTyping) are fully
-    # implemented. StreamEvents is a server-streaming RPC backed by a
-    # PG LISTEN/NOTIFY subscriber loop on channel `messaging_user_<viewer_id>`.
     class MessagingHandler < Handler
       self.marshal_class_method = :encode
       self.unmarshal_class_method = :decode
@@ -163,30 +158,14 @@ module Messaging
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, e.message)
       end
 
-      # Server-streaming RPC. Subscribes to PG LISTEN/NOTIFY channel
-      # `messaging_user_<viewer_id>` (published by SendMessage/MarkRead/SendTyping)
-      # and yields proto Event messages to the client.
-      #
-      # Loop exits when:
-      #   - client disconnects (yield raises GRPC error)
-      #   - the conn is closed by PG side
-      #
-      # UNLISTEN + connection return-to-pool always run via ensure block.
       def stream_events
         authenticate_user!
         viewer = current_user_id
         channel = "messaging_user_#{viewer}"
 
-        # Open a dedicated PG connection for the LISTEN loop instead of
-        # borrowing a Sequel-pool slot for the lifetime of the subscription.
-        # `db.synchronize` used to hold the slot for the whole loop; every
-        # open SSE subscription then locked up one of the pool's
-        # connections indefinitely, and any other RPC that needed SQL
-        # (login, feed, ...) would block waiting on the pool once the
-        # slots were saturated — which puppet reproduced as a total
-        # server hang after a single /messages visit.
         db = messaging_repo.send(:thread_records).dataset.db
         opts = db.opts
+        # Use a dedicated connection because a long-lived stream must not hold a Sequel pool slot.
         conn = PG.connect(
           host: opts[:host] || "localhost",
           port: opts[:port] || 5432,
@@ -205,15 +184,16 @@ module Messaging
             end
           end
         ensure
+          # Release the listener connection because client disconnects and parse failures bypass the loop.
           begin
             conn.async_exec("UNLISTEN #{quoted_channel}")
           rescue StandardError
-            # connection may already be in error state, ignore
+            # SILENT: Ignore cleanup errors after the stream has already ended.
           end
           begin
             conn.close
           rescue StandardError
-            # already closed, ignore
+            # SILENT: Ignore cleanup errors after the stream has already ended.
           end
         end
       end
@@ -283,8 +263,6 @@ module Messaging
         Google::Protobuf::Timestamp.new(seconds: t.to_i, nanos: (t.respond_to?(:nsec) ? (t.nsec || 0) : 0))
       end
 
-      # Parse JSON payload produced by NOTIFY senders and build proto Event.
-      # Returns nil for unknown types or malformed payloads (silently drop bad payloads).
       def parse_payload_to_event(payload)
         return nil if payload.nil? || payload.empty?
 
@@ -317,6 +295,7 @@ module Messaging
         end
       rescue JSON::ParserError, ArgumentError => e
         Hanami.logger.warn("Messaging::StreamEvents bad payload: #{e.class}: #{e.message}")
+        # FALLBACK: Drop malformed events after recording the parse failure.
         nil
       end
 
@@ -325,6 +304,7 @@ module Messaging
         t = Time.iso8601(s)
         Google::Protobuf::Timestamp.new(seconds: t.to_i, nanos: t.nsec || 0)
       rescue ArgumentError
+        # FALLBACK: Omit invalid timestamps so the event remains deliverable.
         nil
       end
     end

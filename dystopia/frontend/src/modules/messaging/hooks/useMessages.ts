@@ -31,7 +31,6 @@ export function useMessages(threadId: string | null | undefined) {
         method: "POST",
         body: { threadId, content },
       });
-      // streaming で event 受信 → SWR mutate されるので明示 refresh 不要だが、保険として
       mutate();
     },
     [threadId, mutate]

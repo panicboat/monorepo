@@ -1,13 +1,8 @@
 # frozen_string_literal: true
 
-# Drops the last remnants of the "escort commerce dimension" (plans/schedules/genres)
-# dropped from the API in 2026-05-29 (see proto/dystopia/profile/v1/service.proto:7).
-# All five tables have zero live callers as of the 2026-09-22 schema audit — the
-# repository/relation code accessing them was never removed when the feature was
-# dropped from the API.
+# Remove commerce tables because the API has no live readers or writers for them.
 ROM::SQL.migration do
   up do
-    # cast_genres references both genres and casts; drop before genres.
     drop_table :"profile__cast_genres"
     drop_table :"profile__genres"
     drop_table :"profile__cast_gallery_media"

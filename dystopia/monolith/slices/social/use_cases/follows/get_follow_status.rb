@@ -3,7 +3,6 @@
 module Social
   module UseCases
     module Follows
-      # Batch follow status check. Missing keys = NONE (not following).
       class GetFollowStatus
         include Social::Deps[follow_repo: "repositories.follow_repository"]
 

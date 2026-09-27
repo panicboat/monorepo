@@ -17,17 +17,12 @@ export function AccountSettings({ profile, save }: PanelProps) {
   const [username, setUsername] = useState(profile.username);
   const [fetchedStatus, setFetchedStatus] = useState<{ available: boolean; message: string } | null>(null);
   const [saving, setSaving] = useState(false);
-  // Derive `saved` from the last saved username instead of a separate state.
-  // WHY: react-hooks/set-state-in-effect forbids resetting `saved` from the
-  // username-watch effect; tracking the saved username lets `saved` flip back
-  // to false automatically whenever the user edits the input.
   const [lastSavedUsername, setLastSavedUsername] = useState<string | null>(null);
+  // Track the saved username because setState in the effect is disallowed by react-hooks/set-state-in-effect.
   const saved = lastSavedUsername !== null && lastSavedUsername === username;
 
-  // Treat the fetched status as null whenever the input is empty or unchanged
-  // from the persisted username; deriving here avoids a synchronous setState
-  // inside the debounce effect, which react-hooks/set-state-in-effect forbids.
   const isUsernameDirty = !!username && username !== profile.username;
+  // Derive status to avoid synchronous setState in the debounce effect.
   const status = isUsernameDirty ? fetchedStatus : null;
 
   useEffect(() => {
@@ -38,6 +33,7 @@ export function AccountSettings({ profile, save }: PanelProps) {
       try {
         setFetchedStatus(await checkUsernameAvailability(username));
       } catch {
+        // FALLBACK: Clear availability status when the username check cannot complete.
         setFetchedStatus(null);
       }
     }, 400);

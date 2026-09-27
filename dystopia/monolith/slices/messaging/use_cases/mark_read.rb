@@ -4,8 +4,6 @@ require "json"
 
 module Messaging
   module UseCases
-    # Persists the viewer's last_read_message_id for the given thread and notifies
-    # the counterpart so their read-receipt UI updates immediately.
     class MarkRead
       include Messaging::Deps[messaging_repo: "repositories.messaging_repository"]
 
@@ -61,6 +59,7 @@ module Messaging
         db.notify(channel, payload: payload)
       rescue StandardError => e
         Hanami.logger.warn("Messaging::MarkRead notify failed on #{channel}: #{e.class}: #{e.message}")
+        # SILENT: Notification delivery failure must not fail the read-state update.
         nil
       end
     end

@@ -39,7 +39,6 @@ vi.mock("@/modules/footprints", () => ({
 }));
 
 vi.mock("@/stores/authStore", () => ({
-  // Selector-agnostic: satisfies both `useAuthStore(selectUserId)` and `useAuthStore((s) => s.userId)` call sites.
   useAuthStore: (selector?: (state: { userId: string }) => unknown) => {
     const state = { userId: "viewer-1" };
     return selector ? selector(state) : state;
@@ -55,7 +54,6 @@ vi.mock("@/modules/schedule", () => ({
   ScheduleSection: () => null,
 }));
 
-// Stubs to extraTabs' labels only, mirroring how the real ProfileContentTabs renders every tab label up front.
 vi.mock("@/modules/post/components/ProfileContentTabs", () => ({
   ProfileContentTabs: ({ extraTabs }: { extraTabs?: { id: string; label: string }[] }) => (
     <div>

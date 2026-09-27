@@ -26,15 +26,10 @@ function clientId(): string {
 export function createAwsAdapter(): CognitoAdapter {
   return {
     async signUp(phone, password) {
-      // The user pool aliases phone_number, but SignUp rejects an alias
-      // value as the Username outright ("Username cannot be of phone
-      // number format, since user pool is configured for phone number
-      // alias"). Use a deterministic, non-phone-shaped Username derived
-      // from the phone number instead — see usernameForPhone for why
-      // ConfirmSignUp needs the same value rather than the phone number.
       const response = await client().send(
         new SignUpCommand({
           ClientId: clientId(),
+          // Use a deterministic non-phone-shaped username because Cognito rejects phone-shaped aliases during SignUp.
           Username: usernameForPhone(phone),
           Password: password,
           UserAttributes: [{ Name: "phone_number", Value: normalizePhoneNumber(phone) }],
@@ -45,13 +40,10 @@ export function createAwsAdapter(): CognitoAdapter {
       return { userSub: response.UserSub };
     },
     async confirmSignUp(phone, code) {
-      // Must match the Username SignUp used — phone_number isn't a
-      // resolvable alias yet (phone_number_verified is still false), so
-      // passing the phone number here targets no user. See
-      // usernameForPhone for the full explanation.
       await client().send(
         new ConfirmSignUpCommand({
           ClientId: clientId(),
+          // Reuse the SignUp username because the phone alias is not resolvable before verification.
           Username: usernameForPhone(phone),
           ConfirmationCode: code,
         }),

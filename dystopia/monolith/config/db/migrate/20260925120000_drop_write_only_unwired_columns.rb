@@ -1,11 +1,6 @@
 # frozen_string_literal: true
 
-# footprints.visits.first_visited_at and karte.access.granted_by are written
-# but never read by any consumer (proto, presenter, or handler) as of the
-# 2026-09-22 schema audit — not dead code left over from a removed feature,
-# but write-only surface for features that were never built (a "first
-# visited" UI, an admin karte-access grant flow). Dropped rather than kept
-# half-wired; re-add with a real read path if either feature gets built.
+# Drop write-only columns because no runtime consumer reads them.
 ROM::SQL.migration do
   up do
     alter_table :"footprints__visits" do

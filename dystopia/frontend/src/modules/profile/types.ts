@@ -32,7 +32,7 @@ export interface ProfileView {
   age: number;
   bodyStats: BodyStatsView;
   industry: string;
-  role: number; // identity role mirror: 1 = GUEST, 2 = CAST, 0 = unknown
+  role: number;
 }
 
 export interface SaveProfilePayload {

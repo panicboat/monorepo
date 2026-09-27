@@ -13,11 +13,8 @@ import type { UploadedMedia } from "@/modules/media/types";
 const MAX_ATTACHMENTS = 4;
 
 export interface PostComposerProps {
-  /** Called on submit with the form payload. Throws to surface an error to the user. */
   onSubmit: (payload: SavePostPayload) => Promise<unknown>;
-  /** Optional initial content (for edit reuse later). */
   initialContent?: string;
-  /** Optional initial visibility. Defaults to "public". */
   initialVisibility?: "public" | "private";
   className?: string;
 }

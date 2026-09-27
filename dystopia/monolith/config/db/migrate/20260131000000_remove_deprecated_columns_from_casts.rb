@@ -3,24 +3,19 @@
 ROM::SQL.migration do
   up do
     alter_table :portfolio__casts do
-      # Completely unused columns
       drop_column :occupation
       drop_column :charm_point
       drop_column :personality
 
-      # Read-only, unused
       drop_column :promise_rate
 
-      # Migrated to three_sizes JSONB
       drop_column :bust
       drop_column :waist
       drop_column :hip
       drop_column :cup_size
 
-      # Migrated to cast_areas table
       drop_column :area
 
-      # User-requested removal
       drop_column :service_category
       drop_column :location_type
     end

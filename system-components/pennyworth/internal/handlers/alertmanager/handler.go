@@ -45,11 +45,8 @@ type Handler struct {
 	Cfg       config.Config
 	HolmesGPT investigator
 	Client    messagePoster
-	// Sleep defaults to time.Sleep. Tests inject a call-recording no-op so
-	// the retry loop's attempt count and deadline handling run without
-	// real waiting.
-	Sleep func(time.Duration)
-	Now   func() time.Time
+	Sleep     func(time.Duration)
+	Now       func() time.Time
 }
 
 func (h *Handler) sleep(d time.Duration) {
@@ -128,13 +125,8 @@ func (h *Handler) investigateAlert(alert alertmanagerAlert, channel string) {
 	}
 }
 
-// findNotificationTs searches recent channel history for the
-// Alertmanager-native notification matching this alert's fingerprint,
-// retrying with exponential backoff since Alertmanager's slack_configs and
-// webhook_configs for the same receiver fire concurrently with no ordering
-// guarantee. Returns "" if nothing matches within the search budget, or
-// immediately if fingerprint is empty (nothing to match against).
 func (h *Handler) findNotificationTs(channel, fingerprint string) string {
+	// Retry history because Alertmanager sends Slack and webhook notifications concurrently.
 	if fingerprint == "" {
 		return ""
 	}

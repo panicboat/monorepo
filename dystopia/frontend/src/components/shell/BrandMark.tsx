@@ -5,7 +5,6 @@ export interface BrandMarkProps {
   className?: string;
 }
 
-// dystopia.city wordmark, rendered as brand-gradient text. Links to home.
 export function BrandMark({ className }: BrandMarkProps) {
   return (
     <Link

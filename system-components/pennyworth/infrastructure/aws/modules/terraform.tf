@@ -1,4 +1,3 @@
-# terraform.tf - Terraform configuration for pennyworth secrets module
 
 terraform {
   required_version = "1.12.6"
@@ -11,7 +10,6 @@ terraform {
   }
 }
 
-# AWS Provider configuration
 provider "aws" {
   region = var.aws_region
 

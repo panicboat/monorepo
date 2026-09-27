@@ -5,9 +5,6 @@ require "concerns/cursor_pagination"
 module Post
   module UseCases
     module Likes
-      # Lists posts liked by `account_id` (newest like first) for the "いいね" tab on /u/[username].
-      # Hydrates Post protos via the shared `list_posts_by_ids` use_case which applies
-      # `Social::FilterVisiblePosts` (privacy / block filtering) transparently.
       class ListLikedPostsByAccount
         include ::Concerns::CursorPagination
         include Post::Deps[like_repo: "repositories.like_repository"]
@@ -17,7 +14,6 @@ module Post
         ForbiddenError = Class.new(StandardError)
 
         def call(account_id:, viewer_account_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
-          # Likes are self-only; enforced here so a direct RPC call can't bypass a hidden frontend tab.
           unless viewer_account_id && viewer_account_id.to_s == account_id.to_s
             raise ForbiddenError, "viewer cannot see another account's likes"
           end
@@ -35,8 +31,6 @@ module Post
             encode_cursor(created_at: last.created_at.iso8601, id: last.id)
           end
 
-          # Preserve like-row order when hydrating; drop any post that the viewer
-          # cannot see (FilterVisiblePosts removes it from the hydrated hash).
           post_ids = result[:items].map(&:post_id)
           posts_map = list_posts_uc.call(post_ids: post_ids, viewer_account_id: viewer_account_id)
           ordered_posts = post_ids.filter_map { |id| posts_map[id.to_s] }

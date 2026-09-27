@@ -95,7 +95,7 @@ export function Drawer({ open, onClose }: DrawerProps) {
               item.badgeKey === "footprints_unread" ? (footprintsBadgeEnabled ? footprintsUnread : 0) :
               0;
             const showBadge = badgeCount > 0;
-            // Falls back to /profile (which now redirects) while the own profile is still loading.
+            // FALLBACK: Use /profile until the own profile has loaded.
             const href = item.path === "__profile__" ? (profile?.username ? `/u/${profile.username}` : "/profile") : item.path;
             return (
               <Link

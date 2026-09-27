@@ -8,7 +8,7 @@ ROM::SQL.migration do
       column :id, :uuid, null: false
       column :follower_id, :uuid, null: false
       column :followee_id, :uuid, null: false
-      column :status, :text, null: false, default: "approved"  # "pending" | "approved"
+      column :status, :text, null: false, default: "approved"
       column :created_at, :timestamptz, null: false, default: Sequel.lit("now()")
       column :updated_at, :timestamptz, null: false, default: Sequel.lit("now()")
 

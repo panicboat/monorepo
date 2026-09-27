@@ -12,6 +12,7 @@ export interface FeatureItem {
   description: string;
 }
 
+// Keep descriptions centralized so the tour and page headers cannot drift.
 export const FEATURES: FeatureItem[] = [
   { key: "home", icon: "🏠", label: "ホーム", description: "フォロー中のアカウントの投稿が並ぶタイムライン" },
   { key: "search", icon: "🔍", label: "検索", description: "ユーザーや投稿をキーワードで検索" },
@@ -25,7 +26,6 @@ export const FEATURES: FeatureItem[] = [
   { key: "karte", icon: "📋", label: "カルテ（キャスト向け・有料機能）", description: "ゲストについて書いたレビューの管理・共有" },
 ];
 
-// Single source of truth for header descriptions so the tour and in-page page headers can't drift apart.
 export function getFeatureDescription(key: string): string {
   const feature = FEATURES.find((f) => f.key === key);
   if (!feature) throw new Error(`Unknown feature key: ${key}`);

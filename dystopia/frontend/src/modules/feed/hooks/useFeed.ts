@@ -54,7 +54,7 @@ export function useFeed(options: UseFeedOptions = {}) {
     buildParams,
   });
 
-  // Not SWR-backed, so a post created elsewhere (ComposerFAB) needs this signal to refetch.
+  // Signal non-SWR lists because they do not revalidate from SWR cache invalidation.
   const postCreatedVersion = usePostFeedStore((s) => s.version);
   const lastSeenVersionRef = useRef(postCreatedVersion);
   useEffect(() => {

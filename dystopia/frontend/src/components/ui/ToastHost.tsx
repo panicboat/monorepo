@@ -2,11 +2,6 @@
 
 import { useToastStore } from "@/stores/toastStore";
 
-/**
- * Top-level toast renderer. Subscribes to `useToastStore` and renders the
- * current message at the bottom of the viewport. Auto-dismissed by the
- * store after a fixed duration; user can tap the message to dismiss early.
- */
 export function ToastHost() {
   const message = useToastStore((s) => s.message);
   const hide = useToastStore((s) => s.hide);

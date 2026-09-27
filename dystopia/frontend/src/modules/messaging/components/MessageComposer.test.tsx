@@ -1,10 +1,10 @@
 // @vitest-environment happy-dom
+// React 19's act() needs this flag because testing-library does not set it reliably.
 import { describe, expect, it, vi } from "vitest";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { MessageComposer } from "./MessageComposer";
 
-// React 19's act() no-ops without this flag; @testing-library normally sets it for us.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 function flush() {

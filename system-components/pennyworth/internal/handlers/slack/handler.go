@@ -43,12 +43,6 @@ type slackInnerEvent struct {
 	ThreadTs string `json:"thread_ts,omitempty"`
 }
 
-// actionEnvelope is the common wrapper HolmesGPT returns when it decides
-// a message requests an action, instead of a plain analysis. Action is
-// empty when the response is a plain analysis — callers check that
-// before treating the rest of the envelope as meaningful. Payload stays
-// raw until the action name is known, so each action's fields live in
-// their own struct instead of piling into one shared one.
 type actionEnvelope struct {
 	Action  string          `json:"action"`
 	Ready   bool            `json:"ready"`
@@ -151,9 +145,6 @@ func (h *Handler) handleMention(evt slackInnerEvent) {
 	h.dispatchAction(evt.Channel, threadTs, env)
 }
 
-// parseActionEnvelope reports ok=false when response carries no action
-// field — meaning HolmesGPT judged no action was requested, so response
-// is a plain analysis to post as-is rather than an envelope to dispatch.
 func parseActionEnvelope(response string) (env actionEnvelope, ok bool) {
 	if err := json.Unmarshal([]byte(stripCodeFence(response)), &env); err != nil {
 		return actionEnvelope{}, false
@@ -176,8 +167,6 @@ func (h *Handler) dispatchAction(channel, threadTs string, env actionEnvelope) {
 	}
 }
 
-// handleCreateIssue either asks the user to confirm an inferred repo, or
-// creates the issue and reports the result — never both.
 func (h *Handler) handleCreateIssue(channel, threadTs string, env actionEnvelope) {
 	var payload createIssuePayload
 	if err := json.Unmarshal(env.Payload, &payload); err != nil {
@@ -198,7 +187,7 @@ func (h *Handler) handleCreateIssue(channel, threadTs string, env actionEnvelope
 
 	body := payload.Body
 	if permalink, err := h.Client.GetPermalink(channel, threadTs); err != nil {
-		// FALLBACK: issue creation must not depend on the optional thread link.
+		// FALLBACK: Keep issue creation independent of the optional thread link.
 		log.Printf("failed to get thread permalink: %v", err)
 	} else {
 		body = fmt.Sprintf("%s\n\n---\n**元スレッド:** %s", body, permalink)
@@ -222,11 +211,8 @@ func (h *Handler) handleCreateIssue(channel, threadTs string, env actionEnvelope
 	}
 }
 
-// stripCodeFence removes a surrounding markdown code fence (```json ... ```
-// or ``` ... ```), if present. The create_issue prompt instructs HolmesGPT
-// not to wrap its JSON envelope in one, but LLMs commonly do anyway — this
-// keeps that response parseable instead of failing to detect the action.
 func stripCodeFence(s string) string {
+	// Strip fences because LLMs may wrap JSON despite the create_issue prompt.
 	trimmed := strings.TrimSpace(s)
 	trimmed = strings.TrimPrefix(trimmed, "```json")
 	trimmed = strings.TrimPrefix(trimmed, "```")

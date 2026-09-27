@@ -36,7 +36,7 @@ export function useTyping(threadId: string | null | undefined) {
         method: "POST",
       });
     } catch {
-      // SILENT: typing 通知失敗は UI に影響させない
+      // SILENT: Typing notification failures must not affect the UI.
     }
   }, [threadId]);
 

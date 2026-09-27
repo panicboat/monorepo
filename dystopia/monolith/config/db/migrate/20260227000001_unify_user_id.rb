@@ -1,25 +1,10 @@
 # frozen_string_literal: true
 
-# Unify all profile-based IDs (cast_id/guest_id) to user_id across the entire database.
-#
-# This migration:
-# 1. Adds cast_user_id / guest_user_id columns to all dependent tables
-# 2. Migrates data from old profile IDs to user IDs (via JOIN to portfolio.casts/guests)
-# 3. Drops old cast_id / guest_id columns
-# 4. Changes PK of portfolio.casts and portfolio.guests from id to user_id
-# 5. Re-establishes FK constraints for same-schema tables
-#
-# This is NOT reversible - restore from backup if needed.
+# This migration is irreversible because it replaces legacy profile IDs and primary keys.
 
 ROM::SQL.migration do
   up do
-    # =========================================================================
-    # PHASE 1: Migrate dependent tables (cast_id -> cast_user_id)
-    # =========================================================================
 
-    # -----------------------------------------------------------------------
-    # 1a. portfolio.cast_areas (composite PK [cast_id, area_id])
-    # -----------------------------------------------------------------------
     run <<-SQL
       ALTER TABLE portfolio.cast_areas
       DROP CONSTRAINT cast_areas_cast_id_fkey;
@@ -62,9 +47,6 @@ ROM::SQL.migration do
       ADD CONSTRAINT cast_areas_pkey PRIMARY KEY (cast_user_id, area_id);
     SQL
 
-    # -----------------------------------------------------------------------
-    # 1b. portfolio.cast_genres (unique [cast_id, genre_id])
-    # -----------------------------------------------------------------------
     run <<-SQL
       ALTER TABLE portfolio.cast_genres
       DROP CONSTRAINT cast_genres_cast_id_fkey;
@@ -116,9 +98,6 @@ ROM::SQL.migration do
       ON portfolio.cast_genres USING btree (cast_user_id);
     SQL
 
-    # -----------------------------------------------------------------------
-    # 1c. portfolio.cast_gallery_media
-    # -----------------------------------------------------------------------
     run <<-SQL
       ALTER TABLE portfolio.cast_gallery_media
       DROP CONSTRAINT cast_gallery_media_cast_id_fkey;
@@ -169,9 +148,6 @@ ROM::SQL.migration do
       ON portfolio.cast_gallery_media USING btree (cast_user_id, "position");
     SQL
 
-    # -----------------------------------------------------------------------
-    # 1d. offer.plans (cross-schema, no FK)
-    # -----------------------------------------------------------------------
     run <<-SQL
       DROP INDEX IF EXISTS offer.portfolio_cast_plans_cast_id_index;
     SQL
@@ -213,9 +189,6 @@ ROM::SQL.migration do
       ON offer.plans USING btree (cast_user_id);
     SQL
 
-    # -----------------------------------------------------------------------
-    # 1e. offer.schedules (cross-schema, no FK)
-    # -----------------------------------------------------------------------
     run <<-SQL
       DROP INDEX IF EXISTS offer.portfolio_cast_schedules_cast_id_index;
     SQL
@@ -257,9 +230,6 @@ ROM::SQL.migration do
       ON offer.schedules USING btree (cast_user_id);
     SQL
 
-    # -----------------------------------------------------------------------
-    # 1f. post.posts (cross-schema, no FK)
-    # -----------------------------------------------------------------------
     run <<-SQL
       DROP INDEX IF EXISTS post.social_cast_posts_cast_id_index;
     SQL
@@ -301,9 +271,6 @@ ROM::SQL.migration do
       ON post.posts USING btree (cast_user_id);
     SQL
 
-    # -----------------------------------------------------------------------
-    # 1g. post.likes (guest_id -> guest_user_id, unique [post_id, guest_id])
-    # -----------------------------------------------------------------------
     run <<-SQL
       ALTER TABLE post.likes
       DROP CONSTRAINT post_likes_post_id_guest_id_key;
@@ -355,9 +322,6 @@ ROM::SQL.migration do
       ON post.likes USING btree (guest_user_id);
     SQL
 
-    # -----------------------------------------------------------------------
-    # 1h. relationship.follows (cast_id + guest_id, unique constraint)
-    # -----------------------------------------------------------------------
     run <<-SQL
       ALTER TABLE relationship.follows
       DROP CONSTRAINT cast_follows_cast_id_guest_id_key;
@@ -433,9 +397,6 @@ ROM::SQL.migration do
       ON relationship.follows USING btree (guest_user_id);
     SQL
 
-    # -----------------------------------------------------------------------
-    # 1i. relationship.favorites (cast_id + guest_id, unique constraint)
-    # -----------------------------------------------------------------------
     run <<-SQL
       ALTER TABLE relationship.favorites
       DROP CONSTRAINT cast_favorites_cast_id_guest_id_key;
@@ -511,9 +472,6 @@ ROM::SQL.migration do
       ON relationship.favorites USING btree (guest_user_id);
     SQL
 
-    # =========================================================================
-    # PHASE 2: Change PK of portfolio.casts from id to user_id
-    # =========================================================================
     run <<-SQL
       ALTER TABLE portfolio.casts
       DROP CONSTRAINT casts_pkey;
@@ -524,7 +482,6 @@ ROM::SQL.migration do
       DROP COLUMN id;
     SQL
 
-    # Drop the unique index on user_id (it becomes the PK)
     run <<-SQL
       DROP INDEX IF EXISTS portfolio.portfolio_casts_user_id_index;
     SQL
@@ -534,9 +491,6 @@ ROM::SQL.migration do
       ADD CONSTRAINT casts_pkey PRIMARY KEY (user_id);
     SQL
 
-    # =========================================================================
-    # PHASE 3: Change PK of portfolio.guests from id to user_id
-    # =========================================================================
     run <<-SQL
       ALTER TABLE portfolio.guests
       DROP CONSTRAINT guests_pkey;
@@ -547,7 +501,6 @@ ROM::SQL.migration do
       DROP COLUMN id;
     SQL
 
-    # Drop the unique index on user_id (it becomes the PK)
     run <<-SQL
       DROP INDEX IF EXISTS portfolio.portfolio_guests_user_id_index;
     SQL
@@ -557,9 +510,6 @@ ROM::SQL.migration do
       ADD CONSTRAINT guests_pkey PRIMARY KEY (user_id);
     SQL
 
-    # =========================================================================
-    # PHASE 4: Re-establish FK constraints for same-schema (portfolio) tables
-    # =========================================================================
     run <<-SQL
       ALTER TABLE portfolio.cast_areas
       ADD CONSTRAINT cast_areas_cast_user_id_fkey

@@ -11,11 +11,9 @@ module Media
         media = repo.find_by_id(id)
         return false unless media
 
-        # Delete from storage
         Storage.delete(key: media.media_key) if media.media_key
         Storage.delete(key: media.thumbnail_key) if media.thumbnail_key
 
-        # Delete from database
         repo.delete(id)
         true
       end

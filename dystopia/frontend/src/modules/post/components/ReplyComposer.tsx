@@ -31,7 +31,7 @@ export function ReplyComposer({ postId, parentId, onCancel, onSubmitted }: Reply
         setContent("");
         onSubmitted();
       } catch {
-        // error は hook 内 state、UI で表示
+        // SILENT: useAddComment exposes submission failures through the hook state.
       }
     },
     [canSubmit, content, parentId, addComment, onSubmitted]

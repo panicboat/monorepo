@@ -4,13 +4,6 @@ require "concerns/cursor_pagination"
 
 module Discovery
   module UseCases
-    # Cross-slice post ranking by like count. Calls Post repository for
-    # [[id, likes_count], ...] within the period, then hydrates the truncated
-    # id slice via Post::Slice["use_cases.posts.list_posts_by_ids"] which
-    # internally applies Social::FilterVisiblePosts (block + is_private).
-    # Pagination cursor is (likes_count, id) DESC — semantically reuses the
-    # (created_at, id) encoder by stuffing likes_count (as string) into the
-    # created_at slot.
     class RankPosts
       include ::Concerns::CursorPagination
 

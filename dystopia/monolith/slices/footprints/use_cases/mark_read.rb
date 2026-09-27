@@ -2,7 +2,6 @@
 
 module Footprints
   module UseCases
-    # Sets account_id's last_read_visit_at to now(), upserting the read_state row.
     class MarkRead
       include Footprints::Deps[footprints_repo: "repositories.footprints_repository"]
 

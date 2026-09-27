@@ -4,7 +4,6 @@ module Post
   module Repositories
     class CommentRepository < Post::DB::Repo
       def create_comment(post_id:, user_id:, content:, parent_id: nil, media: [])
-        # Validate parent_id is a top-level comment (not a reply)
         if parent_id
           parent = comments.where(id: parent_id).one
           return nil unless parent
@@ -22,10 +21,8 @@ module Post
 
         comment = comments.changeset(:create, comment_data).commit
 
-        # Save media if provided
         save_media(comment_id: comment.id, media_data: media) if media.any?
 
-        # Increment parent's replies_count if this is a reply
         if parent_id
           comments.dataset.where(id: parent_id).update(
             replies_count: Sequel.expr(:replies_count) + 1
@@ -43,24 +40,19 @@ module Post
         deleted_count = 1
 
         if comment.parent_id
-          # This is a reply - decrement parent's replies_count
           comments.dataset.where(id: comment.parent_id).update(
             replies_count: Sequel.expr(:replies_count) - 1
           )
         else
-          # This is a top-level comment - count replies to be deleted
           deleted_count += comments.where(parent_id: id).count
         end
 
-        # Delete media first
         comment_media.dataset.where(comment_id: id).delete
-        # Delete replies if top-level comment
         if comment.parent_id.nil?
           reply_ids = comments.dataset.where(parent_id: id).select_map(:id)
           comment_media.dataset.where(comment_id: reply_ids).delete unless reply_ids.empty?
           comments.dataset.where(parent_id: id).delete
         end
-        # Delete the comment itself
         comments.dataset.where(id: id).delete
 
         { post_id: comment.post_id, deleted_count: deleted_count }
@@ -100,9 +92,6 @@ module Post
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      # List comments authored by a single user_id (account id), newest first.
-      # Used by the "返信" tab on /u/[username]. cursor is the already-decoded hash
-      # produced by `Concerns::CursorPagination#decode_cursor` in the use_case layer.
       def list_by_author(author_id:, limit: 20, cursor: nil)
         scope = comments.combine(:comment_media).where(user_id: author_id)
 
@@ -122,12 +111,6 @@ module Post
         scope.count
       end
 
-      # Batch get comments count for multiple posts.
-      # Only counts top-level comments (parent_id is null).
-      #
-      # @param post_ids [Array<String>] the post IDs to count comments for
-      # @param exclude_user_ids [Array<String>, nil] user IDs to exclude from count
-      # @return [Hash<String, Integer>] hash of post_id => count
       def comments_count_batch(post_ids:, exclude_user_ids: nil)
         return {} if post_ids.nil? || post_ids.empty?
 

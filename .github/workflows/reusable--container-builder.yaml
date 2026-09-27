@@ -45,12 +45,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Use GITHUB_TOKEN to ensure permission to create new packages
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # label-resolver matches this stack on directory existence alone, so a
-      # discovered pseudo-service with no Dockerfile (e.g. dystopia/infrastructure)
-      # still reaches this job. Skip the build instead of failing on a missing file.
       - name: Check for Dockerfile
         id: dockerfile
         run: |

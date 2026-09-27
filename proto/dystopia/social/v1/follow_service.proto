@@ -20,19 +20,18 @@ service FollowService {
 
 enum FollowStatus {
   FOLLOW_STATUS_UNSPECIFIED = 0;
-  FOLLOW_STATUS_NONE = 1;       // not following
-  FOLLOW_STATUS_PENDING = 2;    // follow request pending approval
-  FOLLOW_STATUS_APPROVED = 3;   // approved follower
+  FOLLOW_STATUS_NONE = 1;
+  FOLLOW_STATUS_PENDING = 2;
+  FOLLOW_STATUS_APPROVED = 3;
 }
 
-// ---- mutation requests ----
 
 message FollowRequest {
   string target_account_id = 1;
 }
 
 message FollowResponse {
-  FollowStatus status = 1;  // PENDING (target is_private) or APPROVED (public)
+  FollowStatus status = 1;
 }
 
 message UnfollowRequest {
@@ -59,12 +58,11 @@ message RejectFollowRequestRequest {
 
 message RejectFollowRequestResponse {}
 
-// ---- list requests ----
 
 message ListFollowingRequest {
-  string account_id = 1;  // empty = viewer (current account)
-  int32 limit = 2;        // default 20, max 50
-  string cursor = 3;      // base64 (created_at, id)
+  string account_id = 1;
+  int32 limit = 2;
+  string cursor = 3;
 }
 
 message ListFollowingResponse {
@@ -91,19 +89,18 @@ message ListPendingFollowRequestsRequest {
 }
 
 message ListPendingFollowRequestsResponse {
-  repeated profile.v1.Profile profiles = 1;  // requesters' profiles
+  repeated profile.v1.Profile profiles = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }
 
-// ---- batch / count ----
 
 message GetFollowStatusRequest {
   repeated string target_account_ids = 1;
 }
 
 message GetFollowStatusResponse {
-  map<string, FollowStatus> statuses = 1;  // target_account_id -> status
+  map<string, FollowStatus> statuses = 1;
 }
 
 message GetPendingFollowCountRequest {}
@@ -113,7 +110,7 @@ message GetPendingFollowCountResponse {
 }
 
 message GetSocialCountsRequest {
-  string account_id = 1;  // empty = viewer (current account)
+  string account_id = 1;
 }
 
 message GetSocialCountsResponse {

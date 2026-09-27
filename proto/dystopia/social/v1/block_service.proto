@@ -24,7 +24,7 @@ message UnblockRequest {
 message UnblockResponse {}
 
 message ListBlockedRequest {
-  int32 limit = 1;       // default 20, max 50
+  int32 limit = 1;
   string cursor = 2;
 }
 
@@ -39,5 +39,5 @@ message GetBlockStatusRequest {
 }
 
 message GetBlockStatusResponse {
-  map<string, bool> blocked = 1;  // target_account_id -> bool (viewer blocked them?)
+  map<string, bool> blocked = 1;
 }

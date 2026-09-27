@@ -2,7 +2,6 @@
 
 ROM::SQL.migration do
   up do
-    # Create missing profile rows because signup does not guarantee SaveProfile is called.
     run <<~SQL
       INSERT INTO profile.profiles (account_id, display_name, bio, avatar_media_id, registered_at, age, created_at, updated_at)
       SELECT c.user_id, c.name, c.bio, c.avatar_media_id, c.registered_at, c.age, c.created_at, c.updated_at
@@ -10,7 +9,6 @@ ROM::SQL.migration do
       WHERE NOT EXISTS (SELECT 1 FROM profile.profiles p WHERE p.account_id = c.user_id)
     SQL
 
-    # Backfill only direct same-shape fields and leave fields without a profile counterpart unmigrated.
     run <<~SQL
       UPDATE profile.profiles p
       SET display_name = c.name

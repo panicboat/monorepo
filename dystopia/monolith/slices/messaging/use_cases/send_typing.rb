@@ -4,8 +4,6 @@ require "json"
 
 module Messaging
   module UseCases
-    # Ephemeral typing indicator. No DB writes — the typing state is published
-    # via NOTIFY only and expires on the client (3s timer in the UI layer).
     class SendTyping
       include Messaging::Deps[messaging_repo: "repositories.messaging_repository"]
 
@@ -46,6 +44,7 @@ module Messaging
         db.notify(channel, payload: payload)
       rescue StandardError => e
         Hanami.logger.warn("Messaging::SendTyping notify failed on #{channel}: #{e.class}: #{e.message}")
+        # SILENT: Notification delivery failure must not fail the typing request.
         nil
       end
     end

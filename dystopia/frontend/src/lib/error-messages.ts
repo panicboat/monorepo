@@ -1,4 +1,3 @@
-// dystopia/frontend/src/lib/error-messages.ts
 import type { ErrorCode } from "./errors";
 
 export const ERROR_MESSAGES: Record<ErrorCode, string> = {
@@ -12,7 +11,6 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   UNKNOWN: "予期しないエラーが発生しました",
 };
 
-/** ErrorCode からデフォルトの日本語メッセージを取得 */
 export function getDefaultMessage(code: ErrorCode): string {
   return ERROR_MESSAGES[code];
 }

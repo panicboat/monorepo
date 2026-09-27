@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 :root {
-  /* Neutral scale */
   --color-neutral-50: #f8fafc;
   --color-neutral-100: #f1f5f9;
   --color-neutral-200: #e2e8f0;
@@ -14,23 +13,19 @@
   --color-neutral-900: #0f172a;
   --color-neutral-950: #14161a;
 
-  /* Brand */
   --color-brand-primary: #a855f7;
   --color-brand-secondary: #ec4899;
   --color-brand-tertiary: #f97316;
 
-  /* Functional */
   --color-input-bg: #303030;
   --color-success-bg: #166534;
   --color-success-text: #4ade80;
 
-  /* Status — spec §10 未確定。暗色テーマ用の仮値 */
-  /* TODO: spec §10 で error/warning/info の正式色が確定したら差し替える */
+  /* TODO: Replace interim status colors when the design specification is finalized. */
   --color-error: #f87171;
   --color-warning: #fbbf24;
   --color-info: #60a5fa;
 
-  /* Semantic aliases */
   --color-bg: var(--color-neutral-950);
   --color-bg-secondary: var(--color-neutral-800);
   --color-surface: var(--color-neutral-900);
@@ -41,7 +36,6 @@
   --color-text-muted: var(--color-neutral-500);
   --color-accent: var(--color-brand-primary);
 
-  /* Brand gradient & glow — hex token を直接利用。glow は alpha 合成のため channel をハードコード */
   --gradient-brand-2: linear-gradient(
     to right,
     var(--color-brand-primary),
@@ -58,8 +52,6 @@
     0 4px 6px -4px rgb(168 85 247 / 0.2);
 }
 
-/* Light theme: override only the semantic aliases. Neutral/brand scales,
-   gradients, and radius stay shared in :root (dark default). */
 [data-theme="light"] {
   --color-bg: #ffffff;
   --color-surface: var(--color-neutral-100);
@@ -70,14 +62,10 @@
   --color-text-secondary: var(--color-neutral-500);
   --color-text-muted: var(--color-neutral-400);
   --color-input-bg: var(--color-neutral-100);
-  /* accent/brand stay shared with :root — no override needed */
-  /* error needs a darker red for AA contrast on light surfaces; the :root
-     #f87171 is ~3:1 on white. warning/info/success keep their interim values
-     (spec §10) — they are not yet surfaced on light backgrounds. */
+  /* Keep the light-theme error color dark enough for AA contrast on white surfaces. */
   --color-error: #dc2626;
 }
 
-/* A 16px root keeps Tailwind's default type scale aligned to CSS pixels. */
 html {
   font-size: 100%;
 }
@@ -85,7 +73,6 @@ html {
 @theme inline {
   --font-sans: var(--font-noto-sans-jp), "Segoe UI", Meiryo, sans-serif;
 
-  /* Neutral scale */
   --color-neutral-50: var(--color-neutral-50);
   --color-neutral-100: var(--color-neutral-100);
   --color-neutral-200: var(--color-neutral-200);
@@ -98,22 +85,18 @@ html {
   --color-neutral-900: var(--color-neutral-900);
   --color-neutral-950: var(--color-neutral-950);
 
-  /* Brand */
   --color-brand-primary: var(--color-brand-primary);
   --color-brand-secondary: var(--color-brand-secondary);
   --color-brand-tertiary: var(--color-brand-tertiary);
 
-  /* Functional */
   --color-input-bg: var(--color-input-bg);
   --color-success-bg: var(--color-success-bg);
   --color-success-text: var(--color-success-text);
 
-  /* Status (interim) */
   --color-error: var(--color-error);
   --color-warning: var(--color-warning);
   --color-info: var(--color-info);
 
-  /* Semantic */
   --color-bg: var(--color-bg);
   --color-bg-secondary: var(--color-bg-secondary);
   --color-surface: var(--color-surface);
@@ -124,7 +107,6 @@ html {
   --color-text-muted: var(--color-text-muted);
   --color-accent: var(--color-accent);
 
-  /* Radius */
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-full: 9999px;
@@ -166,7 +148,7 @@ body {
 }
 
 @media screen and (max-width: 899px) {
-  /* iOS の input focus ズーム防止のため 16px を強制 */
+  /* Keep form controls at 16px on mobile to prevent iOS focus zoom. */
   input,
   textarea,
   select {

@@ -14,7 +14,7 @@ module Cognito
       @client.admin_delete_user(user_pool_id: @user_pool_id, username: sub)
       true
     rescue Aws::CognitoIdentityProvider::Errors::UserNotFoundException
-      # idempotent: already gone from Cognito is the desired end state
+      # FALLBACK: Treat an already-absent Cognito user as success so deletion remains idempotent.
       true
     end
   end

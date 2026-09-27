@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# No discovery/search/matching query ever read area_ids; its only consumer was a profile-page label.
+# Drop area tables because no discovery or matching query consumes them.
 ROM::SQL.migration do
   up do
     drop_table :"profile__profile_areas"

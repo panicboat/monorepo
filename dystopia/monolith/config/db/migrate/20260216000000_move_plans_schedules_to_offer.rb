@@ -2,10 +2,8 @@
 
 ROM::SQL.migration do
   up do
-    # Create offer schema
     run "CREATE SCHEMA IF NOT EXISTS offer"
 
-    # Move tables from portfolio to offer domain
     run "ALTER TABLE portfolio.cast_plans SET SCHEMA offer"
     run "ALTER TABLE portfolio.cast_schedules SET SCHEMA offer"
   end

@@ -4,15 +4,11 @@ require "concerns/cursor_pagination"
 
 module Messaging
   module Repositories
-    # Single repository for the 3 messaging tables (threads / messages / read_states).
-    # Thread rows are stored with (account_a, account_b) normalized as account_a < account_b
-    # to keep 1-on-1 thread uniqueness. Callers MUST pass already-sorted pairs to
-    # find_thread_by_pair / upsert_thread.
     class MessagingRepository < Messaging::DB::Repo
       include ::Concerns::CursorPagination
 
-      # --- Thread reads ----
 
+      # Callers must pass normalized account pairs because the unique constraint uses account_a < account_b.
       def find_thread(id:)
         thread_records.by_pk(id).one
       end
@@ -21,7 +17,6 @@ module Messaging
         thread_records.where(account_a: account_a, account_b: account_b).one
       end
 
-      # Upsert thread row for the normalized (account_a, account_b) pair. Returns the row.
       def upsert_thread(account_a:, account_b:)
         new_id = SecureRandom.uuid_v7
         now = Time.now
@@ -41,8 +36,6 @@ module Messaging
         thread_records.dataset.where(id: thread_id).update(last_message_at: time)
       end
 
-      # Cursor: (last_message_at, id) DESC. Threads with NULL last_message_at are
-      # ordered last (NULLS LAST mirrors the index ordering).
       def list_threads(account_id:, limit: 20, cursor: nil)
         scope = thread_records.where(
           Sequel.|(
@@ -56,9 +49,7 @@ module Messaging
           .to_a
       end
 
-      # --- Message writes/reads ----
 
-      # Inserts the message and bumps the thread.last_message_at in a single transaction.
       def insert_message(thread_id:, sender_id:, content:)
         new_id = SecureRandom.uuid_v7
         now = Time.now
@@ -77,7 +68,6 @@ module Messaging
         end
       end
 
-      # Cursor: (created_at, id) DESC. Newest first.
       def list_messages(thread_id:, limit: 50, cursor: nil)
         scope = message_records.where(thread_id: thread_id)
         scope = apply_message_cursor(scope, cursor)
@@ -91,7 +81,6 @@ module Messaging
           .one
       end
 
-      # --- Read-state writes/reads ----
 
       def upsert_read_state(thread_id:, account_id:, last_read_message_id:)
         now = Time.now
@@ -112,12 +101,7 @@ module Messaging
         read_state_records.where(thread_id: thread_id, account_id: account_id).one
       end
 
-      # --- Unread counts ----
 
-      # Counts messages in the thread authored by someone other than the viewer
-      # that arrived after the viewer's last_read_message_id (created_at compare,
-      # consistent with index ordering). If no read-state exists, all
-      # non-viewer-authored messages are unread.
       def unread_count(thread_id:, account_id:)
         rs = find_read_state(thread_id: thread_id, account_id: account_id)
         last_id = rs&.last_read_message_id
@@ -132,7 +116,6 @@ module Messaging
         scope.count
       end
 
-      # --- PurgeAccount helpers ----
 
       def delete_read_states_by_account(account_id)
         read_state_records.where(account_id: account_id).command(:delete).call
@@ -147,8 +130,6 @@ module Messaging
         thread_records.where(account_b: account_id).dataset.update(account_b: nil)
       end
 
-      # Sums unread across all threads the account participates in. SQL-level
-      # aggregation avoids loading every thread into Ruby.
       def total_unread_count(account_id:)
         ds = message_records.dataset.db
         sql = <<~SQL

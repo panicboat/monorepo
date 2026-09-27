@@ -21,7 +21,6 @@ export function useAuthorComments(accountId: string | null | undefined) {
 
   const pages = data || [];
   const comments = pages.flatMap((p) => p.comments || []);
-  // Merge postsById maps across all pages
   const postsById: Record<string, PostView> = {};
   for (const p of pages) {
     Object.assign(postsById, p.postsById || {});

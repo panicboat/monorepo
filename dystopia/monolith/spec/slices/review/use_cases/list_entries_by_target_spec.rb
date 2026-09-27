@@ -44,7 +44,7 @@ RSpec.describe Review::UseCases::ListEntriesByTarget do
   it "computes has_more/next_cursor from the raw page, before filtering" do
     entries = Array.new(21) { raw_entry }
     allow(entry_repo).to receive(:list_by_target).and_return(entries)
-    allow(filter_visible_entries).to receive(:call).and_return([]) # everything filtered out
+    allow(filter_visible_entries).to receive(:call).and_return([])
     allow(get_profile).to receive(:call).and_return(double(username: "g", avatar_media_id: nil))
 
     result = use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, limit: 20)

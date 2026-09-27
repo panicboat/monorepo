@@ -109,10 +109,6 @@ module Notifications
 
       private
 
-      # Same Struct→proto fix as PR #770 / #791. Notifications carries a
-      # single profile.v1.Profile field (latest_actor) rather than a
-      # repeated one, so the earlier sweep grep on `profiles:` missed it.
-      # nil-safe: ProfilePresenter.to_proto returns nil for nil input.
       def present_profile(profile)
         return nil unless profile
         role = role_for(profile.account_id)

@@ -9,19 +9,10 @@ module Post
         posts.combine(:post_media, :hashtags).by_pk(id).one
       end
 
-      # Lightweight lookup for cursor pagination: returns just the created_at
-      # for an id without eager-loading post_media / hashtags. Used by feed
-      # slice cursor encoding (see Feed::UseCases::ListFeed).
       def created_at_for_id(id)
         posts.dataset.where(id: id).get(:created_at)
       end
 
-      # Batch fetch posts by id list. Used by cross-slice consumers (e.g. feed slice)
-      # that have already determined which posts to display and need full hydration.
-      # Returns an unordered array — caller is responsible for re-ordering if needed.
-      # Caller MUST pre-filter for visibility (e.g. only "public") and any soft-delete
-      # scoping; this method intentionally does not apply visibility filters so it can
-      # serve owner-view / admin paths uniformly.
       def find_by_ids(ids:)
         return [] if ids.nil? || ids.empty?
 
@@ -62,10 +53,6 @@ module Post
         scope = scope.where(author_id: author_id) if author_id
 
         if media_only
-          # Filter to posts that have at least one media attachment.
-          # `post_media` relation reader is not exposed on this repo, so we go via the
-          # underlying Sequel dataset to build a distinct subquery of post_ids that
-          # have media rows.
           media_post_ids = posts.dataset.db[:post__post_media].select(:post_id).distinct
           scope = scope.where(id: media_post_ids)
         end
@@ -80,11 +67,6 @@ module Post
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      # Symmetric public post id query for feed slice (cursor-paginated).
-      # Returns an array of post ids (String) ordered by created_at DESC, id DESC.
-      # Filters: visibility='public', author_ids whitelist (if provided), excluded_author_ids blocklist.
-      # Returns limit + 1 ids so caller can detect has_more.
-      # author_ids semantics: nil = no whitelist (all authors), [] = whitelist of nothing (return empty).
       def list_public_post_ids(limit: 20, cursor: nil, author_ids: nil, excluded_author_ids: [])
         return [] if !author_ids.nil? && author_ids.empty?
 
@@ -106,9 +88,6 @@ module Post
         posts.combine(:post_media, :hashtags).where(id: id, author_id: author_id).one
       end
 
-      # Cross-slice query for discovery slice. Case-insensitive content match
-      # on public posts. Cursor (already-decoded hash) is over (created_at, id) DESC.
-      # Returns limit + 1 ids so caller can detect has_more.
       def search_by_content(query:, limit: 20, cursor: nil)
         q = query.to_s.strip
         return [] if q.empty?
@@ -126,14 +105,6 @@ module Post
         scope.order(Sequel.desc(:created_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
       end
 
-      # Cross-slice query for discovery ranking. Top public posts by like count
-      # within the period. period: 'day' | 'week' | 'all'.
-      # likes_count is aggregated from post__likes via LEFT JOIN — posts table
-      # has no denormalized counter column.
-      # Cursor (already-decoded hash) is semantically (likes_count, id) DESC —
-      # cursor[:created_at] is reused to carry likes_count as an integer-string.
-      # Returns [[id, likes_count], ...] so caller can encode the next cursor
-      # without an additional lookup.
       def top_by_likes(period:, limit: 20, cursor: nil)
         ds = posts.dataset.where(visibility: "public")
 
@@ -143,7 +114,6 @@ module Post
         when "week"
           ds = ds.where { created_at >= Sequel.lit("NOW() - INTERVAL '7 days'") }
         when "all"
-          # no period filter
         else
           return []
         end

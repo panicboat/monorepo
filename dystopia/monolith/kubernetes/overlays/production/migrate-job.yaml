@@ -1,4 +1,3 @@
-# Same $imagepolicy marker as deployment.yaml so Flux updates both in one commit.
 apiVersion: batch/v1
 kind: Job
 metadata:

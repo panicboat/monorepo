@@ -3,7 +3,7 @@ interface PageHeaderProps {
   description: string;
 }
 
-// No own padding/wrapper: each page composes this inside its existing header container.
+// Keep padding and wrappers at the page level so this header composes with existing layouts.
 export function PageHeader({ title, description }: PageHeaderProps) {
   return (
     <>

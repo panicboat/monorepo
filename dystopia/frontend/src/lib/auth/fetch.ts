@@ -9,12 +9,7 @@ export type AuthFetchOptions = {
   body?: unknown;
   requireAuth?: boolean;
   cache?: RequestCache;
-  /**
-   * Client-side hard deadline. The BFF -> monolith path also carries a
-   * 15s gRPC deadline (lib/grpc.ts), so 20s here gives the server the full
-   * budget plus a small overhead. Without this, a stuck fetch leaves the
-   * UI on its loading spinner forever.
-   */
+  // Keep this deadline above the BFF gRPC deadline so stalled requests do not leave the UI loading.
   timeoutMs?: number;
 };
 
@@ -48,9 +43,7 @@ export async function authFetch<T = unknown>(
       signal: controller.signal,
     });
   } catch (cause) {
-    // AbortError = client-side timeout; surface as NETWORK so the caller
-    // shows the same "接続を確認してください" hint and stops the spinner
-    // instead of hanging indefinitely.
+    // Map client timeouts to NETWORK so callers can stop the loading state.
     throw new AppError(
       "NETWORK",
       "ネットワーク接続を確認してください",
@@ -62,7 +55,7 @@ export async function authFetch<T = unknown>(
   }
 
   if (!res.ok) {
-    // FALLBACK: Returns empty object when JSON parse fails
+    // FALLBACK: Use an empty object when the error body is not JSON.
     const errBody = await res.json().catch(() => ({}));
     const code = httpStatusToErrorCode(res.status);
     const message = errBody.error || getDefaultMessage(code);

@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-# Drops the orphaned offer.schedules table. The offer slice was removed in the
-# 2026-05-29 commerce dimension drop, leaving this table with no writer; the
-# only readers (cast online-status queries) were dead code and have been removed.
 ROM::SQL.migration do
   up do
     drop_table :"offer__schedules"

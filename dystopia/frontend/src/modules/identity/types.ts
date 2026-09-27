@@ -1,8 +1,3 @@
-/**
- * Identity Module Types
- *
- * Types for authentication and user identity.
- */
 
 export type Role = "guest" | "cast";
 

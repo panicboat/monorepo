@@ -4,14 +4,9 @@ require "concerns/cursor_pagination"
 
 module Notifications
   module Repositories
-    # Single-table notification store with built-in aggregation:
-    # UPSERT on (recipient_id, type, target_resource_id) increments actor_count and
-    # rebumps latest_event_at + clears read_at on each new event.
     class NotificationRepository < Notifications::DB::Repo
       include Concerns::CursorPagination
 
-      # Idempotent emit. Aggregates into existing group row if present, else inserts new.
-      # Returns the resulting row.
       def emit(recipient_id:, type:, target_resource_id:, actor_id:, target_post_id: nil)
         new_id = SecureRandom.uuid_v7
         now = Time.now
@@ -45,7 +40,6 @@ module Notifications
         notification_records.where(recipient_id: recipient_id, read_at: nil).count
       end
 
-      # Updates read_at only if the caller is the recipient (defense against cross-account access).
       def mark_read(id:, recipient_id:)
         updated = notification_records.dataset
           .where(id: id, recipient_id: recipient_id)
@@ -53,15 +47,12 @@ module Notifications
         updated > 0
       end
 
-      # Marks all currently-unread notifications for `recipient_id` as read.
-      # Returns the number of rows affected.
       def mark_all_read(recipient_id:)
         notification_records.dataset
           .where(recipient_id: recipient_id, read_at: nil)
           .update(read_at: Time.now)
       end
 
-      # --- Preferences ----
 
       PREFERENCE_COLUMNS = %i[
         push_enabled post like repost quote reply follow mention message oshi footprint_unread_badge footprints_record_my_visits
@@ -71,9 +62,6 @@ module Notifications
         preference_records.where(account_id: account_id).one
       end
 
-      # Idempotent upsert. Inserts a new row with the supplied 12 bool attrs, or updates
-      # all 12 columns on the existing row keyed by account_id. Returns the resulting row.
-      # Column names are double-quoted because `like` and `message` collide with PG reserved words.
       def upsert_preferences(account_id:, attrs:)
         now = Time.now
         values = PREFERENCE_COLUMNS.map { |c| attrs.fetch(c) }
@@ -85,7 +73,6 @@ module Notifications
             (account_id, #{quoted_cols}, created_at, updated_at)
           VALUES (?, #{(['?'] * PREFERENCE_COLUMNS.size).join(', ')}, ?, ?)
           ON CONFLICT (account_id) DO UPDATE SET
-            #{update_assignments},
             updated_at = EXCLUDED.updated_at
           RETURNING *
         SQL

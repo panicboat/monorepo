@@ -2,7 +2,6 @@
 
 ROM::SQL.migration do
   up do
-    # cascade: also drops the FK from profile.guest_prefectures without dropping guest_prefectures.
     drop_table :"profile__guests", cascade: true
   end
 

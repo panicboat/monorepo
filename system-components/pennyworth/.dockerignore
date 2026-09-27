@@ -1,6 +1,5 @@
 *_test.go
 
-# Deployment concerns — not part of the image build context.
 kubernetes/
 aws/
 CHANGELOG.md

@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
-# Drops the entire trust schema. Per the karte spec
-# (docs/superpowers/specs/2026-06-27-karte-design.md), trust is being
-# destroyed as part of the karte sub-project; pre-prod means data loss
-# on these tables is acceptable.
+# Keep this migration destructive because trust data is outside the retained product surface.
 ROM::SQL.migration do
   up do
     run "DROP SCHEMA IF EXISTS trust CASCADE"

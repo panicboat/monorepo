@@ -3,10 +3,6 @@
 require "spec_helper"
 require "slices/karte/repositories/entry_repository"
 
-# Regression: PG::GroupingError when aggregate() runs against a target that
-# has at least one entry. Pure-double specs let it slip because they don't
-# materialise the relation's default ORDER BY id, which collides with the
-# SELECT count(id), avg(rating) ... shape Postgres requires aggregates to use.
 RSpec.describe Karte::Repositories::EntryRepository, type: :database do
   subject(:repo) { described_class.new }
 

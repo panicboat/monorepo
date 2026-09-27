@@ -17,7 +17,6 @@ ROM::SQL.migration do
       unique [:slug]
     end
 
-    # Seed data is managed in config/db/seeds.rb
   end
 
   down do

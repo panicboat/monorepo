@@ -63,8 +63,6 @@ func (c *Client) PostMessage(channel, threadTs, text string) (string, error) {
 	return result.Ts, nil
 }
 
-// AddReaction adds an emoji reaction (name without colons, e.g. "eyes")
-// to the message at ts in channel, via Slack's reactions.add.
 func (c *Client) AddReaction(channel, ts, name string) error {
 	payload := map[string]string{
 		"channel":   channel,
@@ -108,19 +106,12 @@ func (c *Client) ConversationsReplies(channel, threadTs string) ([]Message, erro
 	return c.getMessages(url)
 }
 
-// ConversationsHistory fetches messages in channel no older than oldest (a
-// Slack ts-format Unix timestamp string). Used to search for the
-// Alertmanager-native notification a critical alert's investigation
-// should thread under.
 func (c *Client) ConversationsHistory(channel, oldest string) ([]Message, error) {
 	url := fmt.Sprintf("%s/conversations.history?channel=%s&oldest=%s&limit=50",
 		c.BaseURL, neturl.QueryEscape(channel), neturl.QueryEscape(oldest))
 	return c.getMessages(url)
 }
 
-// GetPermalink returns a shareable URL for the message at ts in channel,
-// via Slack's chat.getPermalink. Used to link a created GitHub issue back
-// to the Slack thread it came from.
 func (c *Client) GetPermalink(channel, ts string) (string, error) {
 	url := fmt.Sprintf("%s/chat.getPermalink?channel=%s&message_ts=%s",
 		c.BaseURL, neturl.QueryEscape(channel), neturl.QueryEscape(ts))

@@ -1,4 +1,3 @@
-// 都道府県（場所 select）。
 export const PREFECTURES = [
   "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
   "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
@@ -10,8 +9,6 @@ export const PREFECTURES = [
   "福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県",
 ] as const;
 
-// カップサイズ select。canonical な値域は §10 で確定（暫定）。
 export const CUP_SIZES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"] as const;
 
-// 業種 select。canonical enum は §10 service-category spec で確定（暫定値）。
 export const INDUSTRIES = ["デリヘル", "ホテヘル", "店舗型", "ソープ", "エステ", "メンズエステ", "個人"] as const;

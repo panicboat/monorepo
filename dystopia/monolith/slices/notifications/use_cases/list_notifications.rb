@@ -4,17 +4,12 @@ require "concerns/cursor_pagination"
 
 module Notifications
   module UseCases
-    # Cursor-paginated list of the recipient's notifications, with each row's
-    # latest_actor hydrated to profile.v1.Profile via the Profile slice. The
-    # response is bundled with the recipient's total unread_count so the frontend
-    # avoids a separate round-trip on page load.
     class ListNotifications
       include Concerns::CursorPagination
       include Notifications::Deps[notification_repo: "repositories.notification_repository"]
 
       MAX_LIMIT = 50
 
-      # @return [Hash] { rows: Array<row>, profiles_by_actor_id: Hash, next_cursor: String|nil, has_more: Boolean, unread_count: Integer }
       def call(recipient_id:, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
 

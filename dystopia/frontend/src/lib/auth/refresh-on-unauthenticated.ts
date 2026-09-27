@@ -1,12 +1,3 @@
-/**
- * BFF helper: run an upstream gRPC call, and on UNAUTHENTICATED transparently
- * refresh the access token using the refresh cookie, then retry the call once.
- *
- * Tokens stay in httpOnly cookies; the client never sees them. New cookies
- * (existing refresh + fresh access) are set on the outgoing response so the
- * next request from the same client uses the refreshed token.
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { identityClient } from "@/lib/grpc";
 import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
@@ -57,6 +48,7 @@ export async function callWithRefresh<T>(
         refreshed.accessToken,
       ));
     } catch {
+      // FALLBACK: Clear invalid session cookies and return 401 when refresh fails.
       const res = NextResponse.json(
         { error: "ログインしてください" },
         { status: 401 },
@@ -65,9 +57,8 @@ export async function callWithRefresh<T>(
       return { ok: false, response: res };
     }
 
-    // The request still contains the old cookie, so replace its user metadata
-    // with the subject from the newly issued and verified access token.
     const retryHeaders = await buildGrpcHeaders(req);
+    // Use the verified subject because retry metadata may still contain the expired identity.
     retryHeaders[HEADER_NAMES.USER_ID] = refreshedUserId;
     const data = await call(retryHeaders);
     return { ok: true, data, refreshed };

@@ -62,9 +62,6 @@ module Social
 
       private
 
-      # Same Struct→proto fix as PR #770 (discovery). list_blocked assigns
-      # profile structs straight to repeated profile.v1.Profile and would
-      # otherwise raise Google::Protobuf::TypeError.
       def present_profile(profile)
         role = role_for(profile.account_id)
         cast = role == 2 ? cast_repository.find_by_user_id(profile.account_id) : nil

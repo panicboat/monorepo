@@ -1,4 +1,3 @@
-// Media module types for UI use
 
 export type MediaType = "image" | "video";
 

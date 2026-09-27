@@ -30,9 +30,6 @@ module Post
             encode_cursor(created_at: last.created_at.iso8601, id: last.id)
           end
 
-          # Load authors for all comments via the unified Profile slice (symmetric).
-          # Profiles that cannot be resolved (e.g. account sync lag) are omitted from the hash;
-          # the presenter renders `author: nil` for those comments, matching AddComment behavior.
           user_ids = comments.map(&:user_id).uniq
           authors = build_authors(user_ids)
 

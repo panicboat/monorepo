@@ -34,7 +34,6 @@ export function useNotifications() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Failed to mark all read");
     }
-    // optimistic: set readAt on all unread + zero unreadCount across pages
     const now = new Date().toISOString();
     mutate(
       (cur) =>
@@ -57,7 +56,6 @@ export function useNotifications() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Failed to mark read");
     }
-    // optimistic: bump readAt of the affected notification in cache
     const now = new Date().toISOString();
     mutate(
       (cur) =>

@@ -1,17 +1,6 @@
-# pennyworth takes direct POSTs from Slack and Alertmanager, so unlike the
-# oauth2-proxy-fronted monitoring-uis Ingresses it has no auth in front.
-# Uses the panicboat.net private-tooling zone, kept separate from the
-# public product's dystopia.city / cilium Gateway API path
-# (frontend/monolith, still incomplete). Shares the ALB with platform's
-# kubernetes/components/cilium application Ingress via group.name:
-# application.
-#
-# healthcheck-path is an Ingress-level annotation applied to every
-# target group in this Ingress (both pennyworth-slack and
-# pennyworth-alertmanager), so one /healthz setting covers both Services —
-# both binaries implement that path.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
+# Keep webhook routes unauthenticated because Slack and Alertmanager authenticate the requests themselves.
 metadata:
   name: pennyworth
   annotations:

@@ -29,7 +29,6 @@ export interface PaginatedMessagesResponse {
   hasMore: boolean;
 }
 
-// SSE bridge wire format (BFF → browser)
 export type StreamEventPayload =
   | { type: "message"; data: MessageView }
   | { type: "read_state"; data: { threadId: string; accountId: string; lastReadMessageId: string } }

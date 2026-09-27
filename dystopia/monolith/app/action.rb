@@ -6,7 +6,6 @@ require "dry/monads"
 
 module Monolith
   class Action < Hanami::Action
-    # Provide `Success` and `Failure` for pattern matching on operation results
     include Dry::Monads[:result]
   end
 end

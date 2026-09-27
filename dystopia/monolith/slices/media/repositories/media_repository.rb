@@ -43,7 +43,6 @@ module Media
 
       private
 
-      # url/thumbnail_url are not columns — always derived from the key so presigned S3 URLs never go stale.
       def resolve_urls(media)
         return nil unless media
 

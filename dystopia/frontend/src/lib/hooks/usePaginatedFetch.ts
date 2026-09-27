@@ -11,15 +11,10 @@ export interface PaginatedResult<T> {
 }
 
 export interface UsePaginatedFetchOptions<T, R> {
-  /** Base API URL */
   apiUrl: string;
-  /** Transform API response to paginated result */
   mapResponse: (data: R) => PaginatedResult<T>;
-  /** Get unique identifier from item (for deduplication) */
   getItemId: (item: T) => string;
-  /** Additional query params builder */
   buildParams?: (params: URLSearchParams) => void;
-  /** Custom fetch function (for authFetch support) */
   fetchFn?: (url: string) => Promise<R>;
 }
 
@@ -36,10 +31,6 @@ export interface UsePaginatedFetchReturn<T> {
   reset: () => void;
 }
 
-/**
- * Generic hook for cursor-based paginated data fetching.
- * Uses ref-based state tracking to prevent infinite loops in useEffect.
- */
 export function usePaginatedFetch<T, R = unknown>(
   options: UsePaginatedFetchOptions<T, R>
 ): UsePaginatedFetchReturn<T> {
@@ -52,12 +43,12 @@ export function usePaginatedFetch<T, R = unknown>(
   const [hasMore, setHasMore] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
-  // Use refs to track state without triggering re-renders of callbacks
   const cursorRef = useRef<string | null>(null);
   const loadingRef = useRef(false);
   const loadingMoreRef = useRef(false);
   const initializedRef = useRef(false);
   const hasMoreRef = useRef(true);
+  // Keep fetch guards in refs so callback dependencies do not trigger fetch loops.
 
   const buildUrl = useCallback(
     (cursor?: string | null) => {
@@ -78,7 +69,7 @@ export function usePaginatedFetch<T, R = unknown>(
       const res = await fetch(url, { cache: "no-store" });
 
       if (!res.ok) {
-        // FALLBACK: Returns empty object when JSON parse fails
+        // FALLBACK: Use an empty object when the error body is not JSON.
         const errBody = await res.json().catch(() => ({}));
         const code = httpStatusToErrorCode(res.status);
         throw new AppError(code, errBody.error || getDefaultMessage(code), res.status, errBody);
@@ -86,12 +77,10 @@ export function usePaginatedFetch<T, R = unknown>(
 
       return res.json();
     },
-    // apiUrl is unused inside the body — url comes via parameter.
     [fetchFn]
   );
 
   const fetchInitial = useCallback(async () => {
-    // Use refs to check state without dependency issues
     if (initializedRef.current || loadingRef.current) {
       return;
     }

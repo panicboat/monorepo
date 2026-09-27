@@ -1,18 +1,15 @@
 import type { MediaItem, MediaType } from "../types";
 
-// Map proto MediaType enum to string
 const MEDIA_TYPE_MAP: Record<number, MediaType> = {
-  0: "image", // UNSPECIFIED defaults to image
-  1: "image", // IMAGE
-  2: "video", // VIDEO
+  0: "image",
+  1: "image",
+  2: "video",
 };
 
-// Map string to proto MediaType enum
 export function toProtoMediaType(type: MediaType): number {
   return type === "video" ? 2 : 1;
 }
 
-// Map API response to MediaItem
 export function mapApiToMediaItem(data: {
   id: string;
   mediaType: number;
@@ -35,7 +32,6 @@ export function mapApiToMediaItem(data: {
   };
 }
 
-// Map array of API responses to MediaItems
 export function mapApiToMediaList(
   data: Array<{
     id: string;
@@ -51,12 +47,10 @@ export function mapApiToMediaList(
   return data.map(mapApiToMediaItem);
 }
 
-// Determine media type from MIME type
 export function getMediaTypeFromMime(mimeType: string): MediaType {
   return mimeType.startsWith("video/") ? "video" : "image";
 }
 
-// Determine media type from file extension
 const VIDEO_EXTENSIONS = ["mp4", "webm", "mov", "avi", "m4v", "mkv"];
 
 export function getMediaTypeFromPath(path: string): MediaType {

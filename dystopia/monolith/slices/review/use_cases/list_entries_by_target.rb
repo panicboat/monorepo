@@ -28,7 +28,6 @@ module Review
 
         next_cursor = if has_more && page.any?
           last = page.last
-          # Preserve microseconds so same-second rows remain paginable across boundaries.
           encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
         end
 

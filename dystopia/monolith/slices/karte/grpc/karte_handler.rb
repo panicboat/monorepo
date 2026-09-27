@@ -153,13 +153,7 @@ module Karte
         fail!(:invalid_argument, :invalid_argument, e.message)
       end
 
-      # For Create/Update return paths the use_case returns the raw row; build the
-      # presentation shape (with author hydration) once here so the response matches
-      # what list_* produce.
       def present_for_author(entry)
-        # Reuse the presenter logic by going through list_by_target with limit 1,
-        # OR call the same helper. For MVP simplicity: call get_profile + media here
-        # directly. This duplicates the helper but keeps create/update fast.
         profile = ::Profile::Slice["use_cases.get_profile"].call(account_id: entry.author_account_id)
         media = ::Karte::Adapters::MediaAdapter.new
         {

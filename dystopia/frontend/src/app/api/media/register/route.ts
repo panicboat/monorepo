@@ -25,8 +25,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Convert mediaType to number (supports both string "IMAGE"/"VIDEO" and number 1/2)
-    // FALLBACK: Defaults to IMAGE (1) when mediaType is not specified
+    // FALLBACK: Use IMAGE when mediaType is absent.
     let mediaTypeNum = 1;
     if (typeof mediaType === "number") {
       mediaTypeNum = mediaType;
@@ -39,7 +38,7 @@ export async function POST(req: NextRequest) {
         mediaId,
         mediaKey,
         mediaType: mediaTypeNum,
-        // FALLBACK: Returns empty/default values when optional fields are missing
+        // FALLBACK: Use empty values for missing optional fields.
         filename: filename || "",
         contentType: contentType || "",
         sizeBytes: BigInt(sizeBytes || 0),

@@ -70,7 +70,7 @@ export async function PUT(req: NextRequest) {
 
     const headers = await buildGrpcHeaders(req);
     const body = (await req.json()) as Partial<NotificationPreferences>;
-    // Merge with defaults so a partial body still produces a complete proto payload.
+    // Supply defaults because the proto payload requires every preference field.
     const merged: NotificationPreferences = { ...DEFAULT_PREFERENCES, ...body };
     const res = await notificationClient.updateNotificationPreferences(
       { preferences: merged },

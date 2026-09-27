@@ -3,19 +3,14 @@ syntax = "proto3";
 package media.v1;
 
 service MediaService {
-  // Get a presigned URL for uploading a file
   rpc GetUploadUrl(GetUploadUrlRequest) returns (GetUploadUrlResponse);
 
-  // Register uploaded media after successful upload
   rpc RegisterMedia(RegisterMediaRequest) returns (RegisterMediaResponse);
 
-  // Get media by ID
   rpc GetMedia(GetMediaRequest) returns (GetMediaResponse);
 
-  // Get multiple media by IDs
   rpc GetMediaBatch(GetMediaBatchRequest) returns (GetMediaBatchResponse);
 
-  // Delete media by ID
   rpc DeleteMedia(DeleteMediaRequest) returns (DeleteMediaResponse);
 }
 
@@ -33,7 +28,7 @@ message Media {
   string filename = 5;
   string content_type = 6;
   int64 size_bytes = 7;
-  string created_at = 8; // ISO8601
+  string created_at = 8;
 }
 
 message GetUploadUrlRequest {
@@ -43,19 +38,19 @@ message GetUploadUrlRequest {
 }
 
 message GetUploadUrlResponse {
-  string upload_url = 1;    // Presigned URL for upload
-  string media_key = 2;     // S3 key (path) for the file
-  string media_id = 3;      // Pre-generated ID for the media record
+  string upload_url = 1;
+  string media_key = 2;
+  string media_id = 3;
 }
 
 message RegisterMediaRequest {
-  string media_id = 1;      // ID from GetUploadUrlResponse
-  string media_key = 2;     // Key from GetUploadUrlResponse
+  string media_id = 1;
+  string media_key = 2;
   MediaType media_type = 3;
   string filename = 4;
   string content_type = 5;
   int64 size_bytes = 6;
-  string thumbnail_key = 7; // Optional: key for thumbnail (for videos)
+  string thumbnail_key = 7;
 }
 
 message RegisterMediaResponse {

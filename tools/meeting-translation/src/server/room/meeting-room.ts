@@ -288,6 +288,7 @@ export class MeetingRoom {
         },
       });
     } catch {
+      // FALLBACK: Report recognition as unavailable when session startup fails.
       attempt.active = false;
       if (!attempt.failureReported) {
         attempt.failureReported = true;

@@ -1,17 +1,10 @@
-/**
- * Auth Store
- *
- * Identity-only state. Tokens live exclusively in httpOnly cookies set by the
- * BFF; client JS never holds them. The store remembers who is logged in
- * (userId/role) so the UI can render shell + nav decisions synchronously,
- * even before /api/identity/me resolves.
- */
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { Role } from "@/lib/auth";
 
+// Keep only identity state because tokens remain in httpOnly cookies.
 interface AuthState {
   role: Role | null;
   userId: string | null;

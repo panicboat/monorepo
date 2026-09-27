@@ -22,7 +22,6 @@ export default function PublicProfilePage() {
   const viewerId = useAuthStore(selectUserId);
   const recordVisit = useRecordVisit();
   const { hasAccess: karteAccess } = useMyKarteAccess();
-  // useProfile() piggybacks on the SWR cache SideNav/Drawer already populate for the viewer's own profile.
   const { saveProfile, saveMedia } = useProfile();
   const [editing, setEditing] = useState(false);
 
@@ -39,9 +38,6 @@ export default function PublicProfilePage() {
     return <main className="mx-auto max-w-xl p-6 text-text-secondary">プロフィールが見つかりませんでした。</main>;
   }
 
-  // 2 = CAST per identity__users.role, mirrored onto profile.role by the
-  // monolith presenter. 0 (unknown) is treated as guest so the karte tab
-  // stays hidden until identity is fully resolved.
   const role = profile.role === 2 ? "cast" : "guest";
   const isOwnProfile = !!viewerId && viewerId === profile.accountId;
 

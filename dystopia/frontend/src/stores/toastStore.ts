@@ -1,8 +1,3 @@
-/**
- * Lightweight transient-message store. One message at a time is enough for
- * the current call sites (login auto-reactivation hint). Auto-dismisses
- * after DURATION_MS so callers don't have to track timers.
- */
 
 import { create } from "zustand";
 

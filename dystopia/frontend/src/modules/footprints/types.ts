@@ -1,5 +1,3 @@
-// View shapes for footprints module.
-// Visitor is the rx-sns-equivalent: "誰が私を訪問したか" (incoming-direction).
 
 export interface FootprintVisitorView {
   accountId: string;
@@ -10,7 +8,7 @@ export interface FootprintVisitorView {
 
 export interface FootprintView {
   visitor: FootprintVisitorView;
-  lastVisitedAt: string; // ISO8601
+  lastVisitedAt: string;
   isUnread: boolean;
   visitCount: number;
 }

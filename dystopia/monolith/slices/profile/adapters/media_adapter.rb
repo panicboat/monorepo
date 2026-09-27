@@ -2,7 +2,6 @@
 
 module Profile
   module Adapters
-    # Anti-Corruption Layer for accessing Media data from Media slice.
     class MediaAdapter
       MediaFile = Data.define(:id, :url, :thumbnail_url, :media_type, :media_key, :thumbnail_key)
 

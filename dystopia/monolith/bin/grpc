@@ -1,22 +1,19 @@
 #!/usr/bin/env ruby
 
-# Crucial Fix: Exclude development gems (like hanami-reloader) from loading.
-# This prevents the Reloader middleware from being added, fixing Zeitwerk errors.
+# Keep development gems out of the gRPC process because the reloader causes Zeitwerk errors.
 ENV["BUNDLE_WITHOUT"] = "development:cli:test"
 ENV["HANAMI_ENV"] = "production"
 ENV["SECRET_KEY_BASE"] ||= "development_secret_key_base_for_local_production_mode"
 
-# Sync output for Docker/Process logging
 STDOUT.sync = true
 STDERR.sync = true
 
 require "bundler/setup"
 require "hanami/setup"
 
-# Boot the app
 Hanami.app.boot
 
-# SLEDGEHAMMER FIX: Monkey-patch Zeitwerk::Loader to ignore reload calls
+# Suppress reload calls because the gRPC process must not run the development reloader.
 require "zeitwerk"
 class Zeitwerk::Loader
   def reload
@@ -32,7 +29,6 @@ require_relative "../lib/types"
 require_relative "../lib/interceptors/access_log_interceptor"
 require_relative "../lib/interceptors/authentication_interceptor"
 
-# Ensure Proto files are loaded (they are in lib/)
 $LOAD_PATH.unshift(File.expand_path("../stubs", __dir__))
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 require "identity/v1/service_services_pb"
@@ -54,39 +50,26 @@ require "karte/v1/service_services_pb"
 require "review/v1/service_services_pb"
 require "billing/v1/service_services_pb"
 
-# Boot the OTel SDK before Gruf so the gruf instrumentation has required its
-# interceptor classes by the time the chain below is built.
+# Initialize OpenTelemetry before Gruf so its interceptor classes are available during chain setup.
 otel_enabled = Telemetry.configure
 
-# Configure Gruf
 Gruf.configure do |c|
-  # Use Hanami logger
   c.logger = Hanami.logger
 
-  # Bind to 0.0.0.0 to ensure Docker/External access if needed, but client tests via localhost
   c.server_binding_url = ENV.fetch("GRPC_BIND_ADDRESS", "0.0.0.0:9001")
-  # 認証失敗も 1 span に収めるため chain の先頭に置く。 interceptor class は
-  # instrumentation の install 時に require されるので、 SDK を起動していない
-  # 環境では定数自体が存在しない。
+  # Keep authentication first so each request remains in one trace.
   if otel_enabled
     c.interceptors.use(OpenTelemetry::Instrumentation::Gruf::Interceptors::Server)
   end
   c.interceptors.use(Interceptors::AccessLogInterceptor)
   c.interceptors.use(Interceptors::AuthenticationInterceptor)
 
-  # HTTP/2 concurrent-streams cap on the server side. The gRPC gem's
-  # default (100) sounds comfortable but a long-lived server-streaming
-  # RPC (messaging StreamEvents) combined with the frontend Node.js gRPC
-  # client's connection-reuse behaviour wedged every subsequent unary
-  # RPC on the same connection in puppet. Lifting the cap gives the
-  # mixed workload room to breathe.
+  # Raise the HTTP/2 stream cap because long-lived messaging streams share the connection with unary RPCs.
   c.server_options = {
     "grpc.max_concurrent_streams" => 1024,
   }
-  # c.services.clear
 end
 
-# Ensure Handlers are loaded so `bind` logic executes!
 require_relative "../slices/identity/grpc/handler"
 require_relative "../slices/profile/grpc/handler"
 require_relative "../slices/profile/grpc/profile_handler"

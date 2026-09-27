@@ -6,9 +6,6 @@ require_relative "../../../lib/grpc/authenticatable"
 
 module Messaging
   module Grpc
-    # Base handler for Messaging slice. Provides authentication + cursor pagination
-    # helpers + a shared messaging_repo dependency, matching the discovery / notifications
-    # slice handler shape.
     class Handler < ::Gruf::Controllers::Base
       include ::GRPC::GenericService
       include ::Grpc::Authenticatable

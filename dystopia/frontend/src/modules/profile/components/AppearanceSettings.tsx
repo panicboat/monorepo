@@ -9,8 +9,7 @@ const OPTIONS: { value: ThemeChoice; label: string }[] = [
   { value: "system", label: "システム" },
 ];
 
-// useSyncExternalStore with a no-op subscribe returns false on the server
-// and true on the client, preventing hydration mismatches without setState in effects.
+// Use useSyncExternalStore to avoid hydration mismatches without setState in an effect.
 const subscribe = () => () => {};
 
 export function AppearanceSettings() {
