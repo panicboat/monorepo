@@ -31,6 +31,7 @@ async fn main() {
         .route(pages::create_room)
         .page(pages::meeting_page)
         .route(session::session)
+        .route(pages::healthz)
         .assets(AssetBundle::load().unwrap())
         .app_context(registry)
         .build();

@@ -15,6 +15,36 @@ const statusMessages = {
   reconnecting: "Reconnecting to speech recognition...",
 };
 
+function renderJoinForm() {
+  appElement.innerHTML = `
+    <form id="join-form">
+      <label>
+        Display name
+        <input id="join-display-name" maxlength="40" required>
+      </label>
+      <label>
+        Spoken language
+        <select id="join-speech-language">
+          <option value="japanese">Japanese</option>
+          <option value="english">English</option>
+        </select>
+      </label>
+      <label>
+        Display language
+        <select id="join-display-language">
+          <option value="japanese">Japanese</option>
+          <option value="english">English</option>
+        </select>
+      </label>
+      <label>
+        <input id="join-consent" type="checkbox" required>
+        I consent to sending audio and captions to Amazon Transcribe and Amazon Bedrock for transcription and translation.
+      </label>
+      <button type="submit" id="join-submit" disabled="">Join meeting</button>
+    </form>
+  `;
+}
+
 function renderApp() {
   appElement.innerHTML = `
     <div id="status" role="status"></div>
@@ -30,7 +60,7 @@ function renderApp() {
 
 function showStatus(code) {
   const statusElement = document.getElementById("status");
-  statusElement.textContent = statusMessages[code] ?? "";
+  if (statusElement) statusElement.textContent = statusMessages[code] ?? "";
 }
 
 function renderParticipants(participants) {
@@ -65,47 +95,23 @@ function upsertCaption(caption) {
   }
 }
 
-renderApp();
+renderJoinForm();
 
 let micActive = false;
-document.getElementById("mic-toggle").addEventListener("click", async () => {
-  if (micActive) {
-    stopMicrophone();
-    socket.send(JSON.stringify({ type: "audio_stop" }));
-    micActive = false;
-    return;
-  }
-
-  try {
-    await startMicrophone((chunk) => socket.send(chunk));
-    socket.send(JSON.stringify({ type: "audio_start" }));
-    micActive = true;
-  } catch {
-    showStatus("microphone_unavailable");
-  }
-});
 
 const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 const socket = new WebSocket(`${protocol}//${window.location.host}/translate/rooms/${roomId}/session`);
 
 socket.addEventListener("open", () => {
-  socket.send(
-    JSON.stringify({
-      type: "join",
-      room_id: roomId,
-      token: joinToken,
-      display_name: window.prompt("Your display name") ?? "Guest",
-      speech_language: "japanese",
-      display_language: "english",
-      consent: true,
-    }),
-  );
+  const submitButton = document.getElementById("join-submit");
+  if (submitButton) submitButton.disabled = false;
 });
 
 socket.addEventListener("message", (event) => {
   const message = JSON.parse(event.data);
   switch (message.type) {
     case "room_joined":
+      renderApp();
       renderParticipants(message.participants);
       break;
     case "participant_joined":
@@ -127,10 +133,49 @@ socket.addEventListener("message", (event) => {
 });
 
 document.addEventListener("submit", (event) => {
-  if (event.target.id !== "manual-caption-form") return;
-  event.preventDefault();
-  const input = document.getElementById("manual-caption-text");
-  if (!input.value) return;
-  socket.send(JSON.stringify({ type: "caption_manual", text: input.value }));
-  input.value = "";
+  if (event.target.id === "join-form") {
+    event.preventDefault();
+    socket.send(
+      JSON.stringify({
+        type: "join",
+        room_id: roomId,
+        token: joinToken,
+        display_name: document.getElementById("join-display-name").value,
+        speech_language: document.getElementById("join-speech-language").value,
+        display_language: document.getElementById("join-display-language").value,
+        consent: document.getElementById("join-consent").checked,
+      }),
+    );
+    return;
+  }
+
+  if (event.target.id === "manual-caption-form") {
+    event.preventDefault();
+    const input = document.getElementById("manual-caption-text");
+    if (!input.value) return;
+    socket.send(JSON.stringify({ type: "caption_manual", text: input.value }));
+    input.value = "";
+  }
 });
+
+document.addEventListener("click", (event) => {
+  if (event.target.id !== "mic-toggle") return;
+  toggleMicrophone();
+});
+
+async function toggleMicrophone() {
+  if (micActive) {
+    stopMicrophone();
+    socket.send(JSON.stringify({ type: "audio_stop" }));
+    micActive = false;
+    return;
+  }
+
+  try {
+    await startMicrophone((chunk) => socket.send(chunk));
+    socket.send(JSON.stringify({ type: "audio_start" }));
+    micActive = true;
+  } catch {
+    showStatus("microphone_unavailable");
+  }
+}

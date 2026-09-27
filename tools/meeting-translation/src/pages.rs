@@ -38,10 +38,6 @@ pub async fn creation_form() -> Result<impl View> {
             <body>
                 <h1>"Meeting Translation"</h1>
                 <form id="create-room-form">
-                    <label>
-                        "Display name"
-                        <input type="text" id="display-name" maxlength="40" required="">
-                    </label>
                     <button type="submit">"Create meeting"</button>
                 </form>
                 <script src=(crate::assets::CREATION_FORM_JS)></script>
@@ -69,6 +65,11 @@ pub async fn create_room(cx: &Cx) -> Result<Json<CreateRoomResponse>> {
         room_id,
         join_token,
     }))
+}
+
+#[route(GET "/translate/healthz")]
+pub async fn healthz() -> Result<&'static str> {
+    Ok("ok")
 }
 
 #[page("/translate/rooms/{room_id}")]
