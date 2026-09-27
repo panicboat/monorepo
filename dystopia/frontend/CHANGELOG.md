@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.9.1](https://github.com/panicboat/monorepo/compare/frontend-v0.9.0...frontend-v0.9.1) (2026-09-27)
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** add karte and review tabs to the footer menu ([#1269](https://github.com/panicboat/monorepo/issues/1269)) ([0480316](https://github.com/panicboat/monorepo/commit/0480316ffb1943bc179b94924a94bb3fbce379ef))
+* **dystopia/frontend:** describe a follow notification as being followed ([#1268](https://github.com/panicboat/monorepo/issues/1268)) ([5d2526c](https://github.com/panicboat/monorepo/commit/5d2526cb52914a4ff978577153308380324a9200))
+* **dystopia/frontend:** drop removed areas field from PrivacySettings test mock ([#1267](https://github.com/panicboat/monorepo/issues/1267)) ([930f5ba](https://github.com/panicboat/monorepo/commit/930f5bae36ed89bd32ceb56e3b76e3bd7eaf6ce9))
+* **dystopia/frontend:** drop the direction word from the profile reviews tab label ([#1266](https://github.com/panicboat/monorepo/issues/1266)) ([140be78](https://github.com/panicboat/monorepo/commit/140be78270ccab240025f8977e3f6d8c0aa9c55e))
+* **dystopia/frontend:** drop the standalone oshi menu, link profile counts to it instead ([#1270](https://github.com/panicboat/monorepo/issues/1270)) ([1149c5d](https://github.com/panicboat/monorepo/commit/1149c5d32ea0c811eb301b05dae502989ea79ba3))
+* **dystopia/frontend:** explain every main destination's header ([#1265](https://github.com/panicboat/monorepo/issues/1265)) ([a412a35](https://github.com/panicboat/monorepo/commit/a412a35730a02c8e4c84e2575f461711771af92f))
+* **dystopia/frontend:** give /u/[username] a self-edit affordance and retire /profile ([#1257](https://github.com/panicboat/monorepo/issues/1257)) ([fb2c830](https://github.com/panicboat/monorepo/commit/fb2c83013fdeaa013be1ad0335c9b96b922dc7ff))
+* **dystopia/frontend:** label profiles キャスト/ゲスト instead of セラピスト/ユーザー ([#1264](https://github.com/panicboat/monorepo/issues/1264)) ([eb69e9c](https://github.com/panicboat/monorepo/commit/eb69e9c3c525337f321a2bd95ba6a6305ec5c6e6))
+* **dystopia/frontend:** link to the blocked accounts list from settings ([#1256](https://github.com/panicboat/monorepo/issues/1256)) ([82c8f54](https://github.com/panicboat/monorepo/commit/82c8f541e400243a7377156ccf936faee31a0ebc))
+* **dystopia/frontend:** show karte link in the desktop side nav ([#1254](https://github.com/panicboat/monorepo/issues/1254)) ([faaf8ad](https://github.com/panicboat/monorepo/commit/faaf8ad246409caf32fef60809760847f74383c5))
+* **dystopia/frontend:** stub SocialCountsLinks in u/[username] page test mock ([#1272](https://github.com/panicboat/monorepo/issues/1272)) ([f9117f5](https://github.com/panicboat/monorepo/commit/f9117f5b7f2f36a2bf502683d72017d2604b7fd8))
+* **dystopia/frontend:** surface message send failures in the composer ([#1258](https://github.com/panicboat/monorepo/issues/1258)) ([01c44a8](https://github.com/panicboat/monorepo/commit/01c44a8bcdb5708a0b532b0c602850d2544075d9))
+* **dystopia:** link comment and reply avatars to author profile ([#1260](https://github.com/panicboat/monorepo/issues/1260)) ([301a742](https://github.com/panicboat/monorepo/commit/301a742a8005380e1cb09418470dd4fc326d755f))
+* **dystopia:** reject cross-account likes-list requests ([#1271](https://github.com/panicboat/monorepo/issues/1271)) ([389c27b](https://github.com/panicboat/monorepo/commit/389c27b07f32ed0db05e67759e0f820b1cd44dac))
+* **dystopia:** remove unused cast area setting ([#1259](https://github.com/panicboat/monorepo/issues/1259)) ([e08aafa](https://github.com/panicboat/monorepo/commit/e08aafabc5d84fec86c0344591a95c29803bc6a2))
+
 ## [0.9.0](https://github.com/panicboat/monorepo/compare/frontend-v0.8.3...frontend-v0.9.0) (2026-09-26)
 
 
