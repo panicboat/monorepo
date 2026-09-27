@@ -39,6 +39,28 @@ pub async fn creation_form() -> Result<impl View> {
             <body>
                 <h1>"Meeting Translation"</h1>
                 <form id="create-room-form">
+                    <label>
+                        "Display name"
+                        <input type="text" id="creation-display-name" maxlength="40" required="">
+                    </label>
+                    <label>
+                        "Spoken language"
+                        <select id="creation-speech-language">
+                            <option value="japanese">"Japanese"</option>
+                            <option value="english">"English"</option>
+                        </select>
+                    </label>
+                    <label>
+                        "Display language"
+                        <select id="creation-display-language">
+                            <option value="japanese">"Japanese"</option>
+                            <option value="english">"English"</option>
+                        </select>
+                    </label>
+                    <label>
+                        <input type="checkbox" id="creation-consent" required="">
+                        "I consent to sending audio and captions to Amazon Transcribe and Amazon Bedrock for transcription and translation."
+                    </label>
                     <button type="submit">"Create meeting"</button>
                 </form>
                 <script src=(crate::assets::CREATION_FORM_JS)></script>

@@ -44,6 +44,13 @@ function renderJoinForm() {
       <button type="submit" id="join-submit" disabled="">Join meeting</button>
     </form>
   `;
+
+  // Pre-fills from the creator's own settings, carried here via query params from the creation form.
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("display_name")) document.getElementById("join-display-name").value = params.get("display_name");
+  if (params.has("speech_language")) document.getElementById("join-speech-language").value = params.get("speech_language");
+  if (params.has("display_language")) document.getElementById("join-display-language").value = params.get("display_language");
+  if (params.get("consent") === "true") document.getElementById("join-consent").checked = true;
 }
 
 function renderApp() {
