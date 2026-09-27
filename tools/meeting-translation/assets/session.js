@@ -109,15 +109,6 @@ function upsertCaption(caption) {
 
   const text = caption.state === "final" ? caption.translated_text : caption.source_text;
   item.textContent = `${caption.speaker.display_name}: ${text ?? "..."}`;
-
-  if (caption.state !== "translating") {
-    const clarifyButton = document.createElement("button");
-    clarifyButton.textContent = "Ask to clarify";
-    clarifyButton.addEventListener("click", () => {
-      socket.send(JSON.stringify({ type: "clarification_request", caption_id: caption.id }));
-    });
-    item.appendChild(clarifyButton);
-  }
 }
 
 renderJoinForm();
@@ -147,9 +138,6 @@ socket.addEventListener("message", (event) => {
       break;
     case "caption_update":
       upsertCaption(message.caption);
-      break;
-    case "clarification_requested":
-      showStatus("reconnecting"); // TODO: Use a dedicated clarification-request UI slot.
       break;
     case "status":
       showStatus(message.code);

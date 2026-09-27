@@ -72,9 +72,6 @@ pub enum ClientMessage {
     CaptionManual {
         text: String,
     },
-    ClarificationRequest {
-        caption_id: Uuid,
-    },
     Leave,
 }
 
@@ -110,10 +107,6 @@ pub enum ServerMessage {
     },
     CaptionUpdate {
         caption: Caption,
-    },
-    ClarificationRequested {
-        caption_id: Uuid,
-        requester: Participant,
     },
     Status {
         code: StatusCode,

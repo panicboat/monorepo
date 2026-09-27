@@ -277,9 +277,6 @@ impl RoomActor {
                     event_tx,
                 );
             }
-            ClientMessage::ClarificationRequest { caption_id } => {
-                self.request_clarification(speaker, caption_id);
-            }
             ClientMessage::AudioStart => {
                 self.start_recognition(participant_id, speaker.speech_language, event_tx);
             }
@@ -492,21 +489,6 @@ impl RoomActor {
         }
     }
 
-    fn request_clarification(&self, requester: Participant, caption_id: Uuid) {
-        let Some(caption) = self.captions.get(&caption_id) else {
-            return;
-        };
-        let Some(speaker_connection) = self.participants.get(&caption.speaker.id) else {
-            return;
-        };
-        let _ = speaker_connection
-            .connection
-            .send(ServerMessage::ClarificationRequested {
-                caption_id,
-                requester,
-            });
-    }
-
     fn disconnect(&mut self, participant_id: Uuid, reconnectable: bool) {
         let Some(mut removed) = self.participants.remove(&participant_id) else {
             return;
@@ -684,50 +666,6 @@ mod tests {
         assert!(matches!(outcome, JoinOutcome::RoomFull));
     }
 
-    #[tokio::test]
-    async fn clarification_request_notifies_only_the_speaker() {
-        let (became_empty_tx, _rx) = mpsc::unbounded_channel();
-        let (room, _handle) = spawn_room(
-            "room-1".to_string(),
-            token_hash("secret"),
-            became_empty_tx,
-            Arc::new(translation_tests::FakeTranslator {
-                delay: Duration::ZERO,
-                fail: false,
-            }),
-            vec![],
-            Arc::new(NoopRecognizer),
-        );
-
-        let (outcome_a, mut inbox_a) = join(&room, "secret", "Alice").await;
-        let alice_id = match outcome_a {
-            JoinOutcome::Joined { participant_id } => participant_id,
-            other => panic!("expected Joined, got {other:?}"),
-        };
-        let (_outcome_b, mut inbox_b) = join(&room, "secret", "Bob").await;
-        // Drain Alice's RoomJoined + ParticipantJoined(Bob) before asserting on the next message.
-        inbox_a.recv().await.unwrap();
-        inbox_a.recv().await.unwrap();
-        // Drain Bob's own RoomJoined.
-        inbox_b.recv().await.unwrap();
-
-        let caption_id = uuid::Uuid::new_v4();
-        room.send(RoomCommand::HandleMessage {
-            participant_id: alice_id,
-            message: ClientMessage::ClarificationRequest { caption_id },
-        })
-        .await
-        .unwrap();
-
-        // Unknown captions have no recorded speaker, so clarification is a no-op.
-        let timeout =
-            tokio::time::timeout(std::time::Duration::from_millis(50), inbox_b.recv()).await;
-        assert!(
-            timeout.is_err(),
-            "Bob should not receive anything for an unknown caption id"
-        );
-    }
-
     mod translation_tests {
         use super::super::*;
         use super::NoopRecognizer;
@@ -862,47 +800,6 @@ mod tests {
                 ServerMessage::Status {
                     code: crate::protocol::StatusCode::TranslationUnavailable
                 }
-            ));
-        }
-
-        #[tokio::test]
-        async fn clarification_request_reaches_the_captions_speaker() {
-            let room = spawn_test_room(Arc::new(FakeTranslator {
-                delay: Duration::ZERO,
-                fail: false,
-            }))
-            .await;
-            let (alice_id, mut alice_inbox) = join_and_drain(&room, "Alice").await;
-            let (bob_id, mut bob_inbox) = join_and_drain(&room, "Bob").await;
-            alice_inbox.recv().await.unwrap(); // ParticipantJoined(Bob)
-
-            room.send(RoomCommand::HandleMessage {
-                participant_id: alice_id,
-                message: ClientMessage::CaptionManual {
-                    text: "hello".to_string(),
-                },
-            })
-            .await
-            .unwrap();
-            bob_inbox.recv().await.unwrap(); // Translating
-            let ServerMessage::CaptionUpdate { caption } = bob_inbox.recv().await.unwrap() else {
-                panic!("expected CaptionUpdate");
-            };
-
-            room.send(RoomCommand::HandleMessage {
-                participant_id: bob_id,
-                message: ClientMessage::ClarificationRequest {
-                    caption_id: caption.id,
-                },
-            })
-            .await
-            .unwrap();
-
-            alice_inbox.recv().await.unwrap(); // Translating (Alice sees her own caption too)
-            alice_inbox.recv().await.unwrap(); // Final
-            assert!(matches!(
-                alice_inbox.recv().await.unwrap(),
-                ServerMessage::ClarificationRequested { .. }
             ));
         }
 
