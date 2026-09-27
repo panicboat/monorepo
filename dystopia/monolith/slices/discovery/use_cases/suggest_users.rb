@@ -4,15 +4,11 @@ require "concerns/cursor_pagination"
 
 module Discovery
   module UseCases
-    # Suggests newest-first profiles of the viewer's opposite role (cast↔guest),
-    # excluding self / approved-following / bidirectionally-blocked accounts.
-    # Mirrors SearchUsers: Profile repo supplies rows, get_profile hydrates them.
     class SuggestUsers
       include ::Concerns::CursorPagination
 
       MAX_LIMIT = 50
 
-      # identity.users.role: 1 = guest, 2 = cast. Suggest the opposite role.
       OPPOSITE_ROLE = { 1 => 2, 2 => 1 }.freeze
 
       def call(viewer_account_id:, limit: DEFAULT_LIMIT, cursor: nil)

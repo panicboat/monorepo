@@ -3,8 +3,7 @@ import { context, propagation } from "@opentelemetry/api";
 import type { UnaryRequest } from "@connectrpc/connect";
 import { traceContextInterceptor } from "./otel-interceptor";
 
-// Interceptor は request.header しか読み書きしないため、テストでは Connect の
-// 内部型を組み立てず header だけを持つ最小限のオブジェクトで代用する。
+// Use a minimal carrier because the interceptor only accesses request headers.
 function fakeReq(header: Headers) {
   return { header } as UnaryRequest;
 }
@@ -19,9 +18,6 @@ describe("traceContextInterceptor", () => {
     const injectSpy = vi
       .spyOn(propagation, "inject")
       .mockImplementation((_ctx, carrier, setter) => {
-        // propagation.inject の既定 setter は carrier[key] = value で書き込む。
-        // Headers はプレーンオブジェクトではないためこれでは効かず、
-        // interceptor が渡す setter が Headers.set を呼ぶことを検証する。
         setter?.set(carrier as Headers, "traceparent", "00-abc-def-01");
       });
 
@@ -34,6 +30,7 @@ describe("traceContextInterceptor", () => {
 
     await traceContextInterceptor(next)(fakeReq(header));
 
+    // Assert the custom setter mutates Headers because the default carrier setter cannot.
     expect(injectSpy).toHaveBeenCalledWith(
       context.active(),
       header,

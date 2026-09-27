@@ -63,7 +63,7 @@ module Post
       def list_liked_posts_by_account
         authenticate_user!
 
-        # FALLBACK: Default pagination limit when client sends 0 (unset) for limit
+        # FALLBACK: Use the default page size when the client sends zero.
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 

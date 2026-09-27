@@ -21,9 +21,6 @@ interface NavItem {
   badgeKey?: BadgeKey;
 }
 
-// Desktop nav order mirrors the rx-sns 3-col reference (ホーム first, プロフィール
-// near the bottom). The mobile Drawer keeps its own order, so the two lists are
-// intentionally separate.
 const NAV_ITEMS: NavItem[] = [
   { path: "/", label: "ホーム", icon: "🏠" },
   { path: "/search", label: "検索", icon: "🔍" },
@@ -47,7 +44,7 @@ export function SideNav() {
   const [composerOpen, setComposerOpen] = useState(false);
 
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
-  // Falls back to /profile (which now redirects) while the own profile is still loading.
+  // FALLBACK: Use /profile until the own profile has loaded.
   const profileHref = profile?.username ? `/u/${profile.username}` : "/profile";
 
   return (

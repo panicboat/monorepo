@@ -7,7 +7,7 @@ interface ResolveShellModeArgs {
   isLandingRoute: boolean;
 }
 
-// isAuthRoute wins over every other state, or an authenticated viewer on /onboarding remounts mid-form.
+// Keep auth routes bare to avoid remounting authenticated onboarding forms.
 export function resolveShellMode({
   isHydrated,
   viewerId,

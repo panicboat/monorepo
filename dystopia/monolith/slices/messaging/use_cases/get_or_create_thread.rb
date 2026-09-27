@@ -2,10 +2,6 @@
 
 module Messaging
   module UseCases
-    # Returns an existing thread for the (viewer, recipient) pair, creating one
-    # if absent. Applies the same mutual-followers / not-blocked / not-self
-    # suppression rules as SendMessage. Counterpart profile + last_message + unread
-    # are hydrated for the same shape ListThreads returns per row.
     class GetOrCreateThread
       include Messaging::Deps[messaging_repo: "repositories.messaging_repository"]
 

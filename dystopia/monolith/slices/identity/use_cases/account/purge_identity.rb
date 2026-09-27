@@ -8,8 +8,6 @@ module Identity
       class PurgeIdentity
         include Identity::Deps[account_repo: "repositories.account_repository"]
 
-        # Cross-slice foreign keys are intentionally absent, so hard deletion
-        # must cascade through each slice before the identity account is removed.
         def initialize(cascades:, **kwargs)
           super(**kwargs)
           @cascades = cascades

@@ -11,7 +11,6 @@ module Schedule
           .to_a
       end
 
-      # Upserts by (account_id, work_date); returns a raw-SQL row hash, matching FootprintsRepository#upsert_visit
       def upsert(account_id:, work_date:, start_time:, end_time:)
         new_id = SecureRandom.uuid_v7
         now = Time.now

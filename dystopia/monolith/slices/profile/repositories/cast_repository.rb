@@ -3,7 +3,6 @@ module Profile
     class CastRepository < Profile::DB::Repo
       commands :create, update: :by_pk
 
-      # PK is user_id (no separate id column)
       def find_by_user_id(user_id)
         casts.by_pk(user_id).one
       end

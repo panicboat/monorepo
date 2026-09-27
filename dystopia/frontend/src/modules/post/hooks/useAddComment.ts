@@ -23,7 +23,6 @@ export function useAddComment(postId: string | null | undefined) {
           body: { content: trimmed, parentId: parentId || "" },
         });
         if (parentId) {
-          // Refresh reply list for this parent + top-level comment row (repliesCount bump).
           const repliesPrefix = `/api/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(parentId)}/replies`;
           mutate(
             (key) => typeof key === "string" && key.startsWith(repliesPrefix)

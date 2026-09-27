@@ -32,7 +32,6 @@ function mapBodyStats(b: BodyStats | undefined): BodyStatsView {
   };
 }
 
-// Placeholder for the row SaveProfile upserts on first save; a fresh account has none yet.
 export function emptyProfileView(accountId: string): ProfileView {
   return {
     accountId,

@@ -40,7 +40,7 @@ export function useMediaUpload(): UseMediaUploadResult {
     });
 
     if (!res.ok) {
-      // FALLBACK: Returns empty object when JSON parse fails
+      // FALLBACK: Use an empty object when JSON parsing fails.
       const err = await res.json().catch(() => ({} as { error?: string }));
       throw new Error(err.error || "メディアの登録に失敗しました");
     }
@@ -61,7 +61,6 @@ export function useMediaUpload(): UseMediaUploadResult {
       try {
         const mediaType: MediaType = getMediaTypeFromMime(file.type);
 
-        // 1. Get presigned upload URL from Media API
         const res = await fetch("/api/media/upload-url", {
           method: "POST",
           headers: {
@@ -75,14 +74,13 @@ export function useMediaUpload(): UseMediaUploadResult {
         });
 
         if (!res.ok) {
-          // FALLBACK: Returns empty object when JSON parse fails
+          // FALLBACK: Use an empty object when JSON parsing fails.
           const err = await res.json().catch(() => ({} as { error?: string }));
           throw new Error(err.error || "アップロードに失敗しました");
         }
 
         const { uploadUrl, mediaKey, mediaId } = await res.json();
 
-        // 2. Upload file to presigned URL
         const uploadRes = await fetch(uploadUrl, {
           method: "PUT",
           headers: { "Content-Type": file.type },
@@ -104,7 +102,6 @@ export function useMediaUpload(): UseMediaUploadResult {
           mediaType,
         };
 
-        // 3. Optionally register media after upload
         if (options.registerAfterUpload) {
           await registerMedia(uploaded);
         }

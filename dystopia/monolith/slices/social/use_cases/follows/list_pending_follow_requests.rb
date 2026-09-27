@@ -5,7 +5,6 @@ require "concerns/cursor_pagination"
 module Social
   module UseCases
     module Follows
-      # Pending follow requests TO viewer.
       class ListPendingFollowRequests
         include Concerns::CursorPagination
         include Social::Deps[follow_repo: "repositories.follow_repository"]

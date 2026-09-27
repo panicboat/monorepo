@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
           controller.enqueue(enc.encode(`data: ${JSON.stringify(serialized)}\n\n`));
         }
       } catch {
-        // SILENT: signal aborted = client tab closed、正常終了扱い
+        // SILENT: Treat client-aborted streams as normal completion.
       } finally {
         try {
           controller.close();

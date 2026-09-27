@@ -23,9 +23,6 @@ module Feed
 
       rpc :ListFeed, ::Feed::V1::ListFeedRequest, ::Feed::V1::ListFeedResponse
 
-      # Symmetric (account-authored) feed handler. Cross-slice:
-      # - Feed::UseCases::ListFeed builds ordered post_ids + pagination metadata
-      # - Post::Slice["use_cases.posts.list_posts_by_ids"] hydrates ids to Post::V1::Post
       def list_feed
         authenticate_user!
 
@@ -56,10 +53,8 @@ module Feed
           cursor: cursor
         )
 
-        # Hydrate via the posts cross-slice contract (list_posts_by_ids).
         hydrated = list_posts_by_ids_uc.call(post_ids: result[:post_ids], viewer_account_id: current_user_id)
 
-        # Preserve order; drop entries that disappeared between query and hydration
         posts = result[:post_ids].map { |id| hydrated[id] }.compact
 
         ::Feed::V1::ListFeedResponse.new(

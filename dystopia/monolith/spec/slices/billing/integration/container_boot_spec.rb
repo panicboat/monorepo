@@ -37,7 +37,6 @@ RSpec.describe "Billing slice container resolution" do
   end
 
   it "loads Billing::Grpc::BillingHandler when stubs/ is on $LOAD_PATH (matches bin/grpc)" do
-    # bin/grpc prepends stubs/ before requiring the handler.
     stubs_path = File.expand_path("../../../../stubs", __dir__)
     $LOAD_PATH.unshift(stubs_path) unless $LOAD_PATH.include?(stubs_path)
     expect { require "slices/billing/grpc/billing_handler" }.not_to raise_error
@@ -45,7 +44,6 @@ RSpec.describe "Billing slice container resolution" do
   end
 
   it "the handler binds to the generated service class" do
-    # Loading the generated service validates its nested service_pb require.
     stubs_path = File.expand_path("../../../../stubs", __dir__)
     $LOAD_PATH.unshift(stubs_path) unless $LOAD_PATH.include?(stubs_path)
     require "slices/billing/grpc/billing_handler"

@@ -12,7 +12,6 @@ export function useFollow(targetAccountId: string | null | undefined) {
   const [status, setStatus] = useState<FollowStatus>(FollowStatus.NONE);
   const [loading, setLoading] = useState(false);
 
-  // Initial fetch
   useEffect(() => {
     if (!targetAccountId || !useAuthStore.getState().userId) return;
     let cancelled = false;

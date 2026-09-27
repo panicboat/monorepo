@@ -51,10 +51,7 @@ type Message struct {
 	Attachments []Attachment `json:"attachments,omitempty"`
 }
 
-// Attachment is Slack's legacy attachments format. Alertmanager's
-// slack_configs posts notifications this way — the message's top-level
-// Text is empty and the actual content (including anything a search needs
-// to match against) lives here instead.
+// Read attachments because Alertmanager's legacy Slack payload leaves top-level Text empty.
 type Attachment struct {
 	Text string `json:"text"`
 }

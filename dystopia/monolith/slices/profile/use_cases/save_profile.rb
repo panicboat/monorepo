@@ -28,6 +28,7 @@ module Profile
         }
         attrs[:username] = username unless username.nil?
 
+        # Upsert the profile because onboarding may not have created a row yet.
         profile_repository.upsert(account_id: account_id, attrs: attrs)
 
         if cast_account?(account_id)

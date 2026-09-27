@@ -41,11 +41,9 @@ RSpec.describe Review::Repositories::EntryRepository, type: :database do
       sleep 0.01
       e4 = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 4.0, body: "d")
 
-      # Fetch limit+1 rows so callers can detect has_more before taking the visible limit.
       page1 = repo.list_by_target(target_account_id: target_id, limit: 2)
       expect(page1.map(&:id)).to eq([e4.id, e3.id, e2.id])
 
-      # Build the cursor from the last visible row rather than the extra sentinel row.
       cursor = repo.send(:encode_cursor, created_at: e3.created_at.iso8601(6), id: e3.id)
       page2 = repo.list_by_target(target_account_id: target_id, limit: 2, cursor: cursor)
       expect(page2.map(&:id)).to eq([e2.id, e1.id])

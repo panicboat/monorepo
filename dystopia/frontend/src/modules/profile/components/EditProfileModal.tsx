@@ -62,7 +62,6 @@ function toForm(p: ProfileView): FormState {
   };
 }
 
-// Full-payload save: merges current values with edits; fields this modal doesn't manage (username, isPrivate) stay as-is.
 function buildPayload(current: ProfileView, f: FormState, isCast: boolean): SaveProfilePayload {
   return {
     username: current.username,
@@ -93,6 +92,7 @@ function buildPayload(current: ProfileView, f: FormState, isCast: boolean): Save
   };
 }
 
+// Preserve fields this modal does not edit by building the save payload from the current profile.
 export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, onSaveMedia }: EditProfileModalProps) {
   const [form, setForm] = useState<FormState>(() => toForm(profile));
   const [saving, setSaving] = useState(false);

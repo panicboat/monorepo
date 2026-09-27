@@ -6,7 +6,6 @@ module Requests
   end
 
   module InstanceMethods
-    # Helper to mock Gruf controller request
     def mock_gruf_controller(controller_class, message:)
       service = controller_class.service_name
       method_key = "test_method"

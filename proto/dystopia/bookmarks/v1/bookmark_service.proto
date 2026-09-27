@@ -24,8 +24,8 @@ message UnbookmarkRequest {
 message UnbookmarkResponse {}
 
 message ListBookmarksRequest {
-  int32 limit = 1;      // default 20, max 50
-  string cursor = 2;    // base64 (created_at, id)
+  int32 limit = 1;
+  string cursor = 2;
 }
 
 message ListBookmarksResponse {
@@ -39,5 +39,5 @@ message GetBookmarkStatusRequest {
 }
 
 message GetBookmarkStatusResponse {
-  map<string, bool> bookmarked = 1;  // post_id -> true if bookmarked by viewer
+  map<string, bool> bookmarked = 1;
 }

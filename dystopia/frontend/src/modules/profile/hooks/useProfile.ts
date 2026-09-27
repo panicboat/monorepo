@@ -17,12 +17,12 @@ interface ProfileResponse {
   profile: ProfileView;
 }
 
-// A fresh account 404s on GetProfile until SaveProfile upserts the row; treat that as an empty editable profile instead of an error.
 export async function fetchProfileOrEmpty(url: string, accountId: string): Promise<ProfileResponse> {
   try {
     return await fetcher<ProfileResponse>(url);
   } catch (error) {
     if (isAppError(error) && error.code === "NOT_FOUND") {
+      // Treat a missing profile as empty because SaveProfile creates it on first save.
       return { profile: emptyProfileView(accountId) };
     }
     throw error;

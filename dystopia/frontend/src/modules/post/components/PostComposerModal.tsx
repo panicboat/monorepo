@@ -25,9 +25,7 @@ export function PostComposerModal({ open, onClose }: PostComposerModalProps) {
 
   const handleSubmit = useCallback(async (payload: SavePostPayload) => {
     await authFetch("/api/posts", { method: "POST", body: payload });
-    // Invalidate any SWR-backed post/feed cache (e.g. the profile posts tab).
     mutate((key) => typeof key === "string" && (key.startsWith("/api/posts") || key.startsWith("/api/feed")), undefined, { revalidate: true });
-    // Non-SWR lists (e.g. the home feed's usePaginatedFetch) refetch via this signal instead.
     notifyPostCreated();
     onClose();
   }, [mutate, notifyPostCreated, onClose]);

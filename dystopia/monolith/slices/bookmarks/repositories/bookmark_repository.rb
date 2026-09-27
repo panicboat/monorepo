@@ -7,7 +7,6 @@ module Bookmarks
     class BookmarkRepository < Bookmarks::DB::Repo
       include ::Concerns::CursorPagination
 
-      # Idempotent INSERT. Returns true if a new row was inserted, false if it already existed.
       def bookmark(account_id:, post_id:)
         new_id = SecureRandom.uuid_v7
         now = Time.now
@@ -31,14 +30,12 @@ module Bookmarks
         deleted > 0
       end
 
-      # Cursor: (created_at, id) DESC
       def list(account_id:, limit: 20, cursor: nil)
         scope = bookmark_records.where(account_id: account_id)
         scope = apply_cursor(scope, cursor)
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      # @return [Hash{post_id (String) => Boolean}] for ALL inputs, missing => false
       def status_batch(account_id:, post_ids:)
         return {} if post_ids.nil? || post_ids.empty?
 

@@ -1,15 +1,10 @@
 #!/bin/sh
 set -e
 
-# In Kubernetes, the database is created by the Postgres container (using POSTGRES_DB).
-# We rely on DATABASE_URL for connection details.
-
 echo "Running migrations..."
-# Check if hanami exists before running
 if [ -f "Gemfile" ]; then
   bundle exec hanami db create
-  # --no-dump: the runtime image ships postgresql-client-17; RDS runs
-  # PostgreSQL 18, and pg_dump refuses to dump a newer server than itself.
+  # Use --no-dump because the image's pg_dump is older than the RDS server.
   bundle exec hanami db migrate --no-dump
 else
   echo "Gemfile not found, skipping migrations."

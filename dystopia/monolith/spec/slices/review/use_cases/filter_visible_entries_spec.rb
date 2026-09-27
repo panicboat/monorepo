@@ -23,9 +23,9 @@ RSpec.describe Review::UseCases::FilterVisibleEntries do
   end
 
   before do
-    allow(cast_settings_repo).to receive(:find_by_account).and_return(nil) # default: reviews_visible = true
+    allow(cast_settings_repo).to receive(:find_by_account).and_return(nil)
     allow(block_adapter).to receive(:bidirectionally_blocked_ids).and_return([])
-    allow(filter_visible_posts).to receive(:call).and_return([double(:post)]) # default: page owner reachable
+    allow(filter_visible_posts).to receive(:call).and_return([double(:post)])
   end
 
   it "self-view: returns everything including hidden, ignoring reviews_visible" do

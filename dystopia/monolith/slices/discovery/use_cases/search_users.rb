@@ -4,11 +4,6 @@ require "concerns/cursor_pagination"
 
 module Discovery
   module UseCases
-    # Cross-slice user search. Calls Profile repository for raw rows, then
-    # hydrates each row through Profile::Slice["use_cases.get_profile"] to
-    # obtain the canonical Profile::V1::Profile-shaped record.
-    # Pagination cursor encodes (created_at, account_id) — profiles table has
-    # no separate id column, account_id is the PK.
     class SearchUsers
       include ::Concerns::CursorPagination
 

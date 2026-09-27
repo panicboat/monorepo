@@ -72,6 +72,7 @@ export class TranslationQueue {
         const result = await Promise.race([translation, timedOut, cancelled]);
         if (!this.closed && result.kind === "translated") job.onTranslated(result.text);
       } catch {
+        // FALLBACK: Mark the job failed when translation, timeout, or cancellation interrupts processing.
         if (!this.closed) job.onFailed();
       } finally {
         if (timeout) clearTimeout(timeout);

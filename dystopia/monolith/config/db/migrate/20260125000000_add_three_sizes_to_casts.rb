@@ -6,7 +6,6 @@ ROM::SQL.migration do
       add_column :three_sizes, :jsonb, default: '{}'
     end
 
-    # Migrate existing data from individual columns to three_sizes (if any data exists)
     run <<~SQL
       UPDATE portfolio.casts
       SET three_sizes = jsonb_build_object(

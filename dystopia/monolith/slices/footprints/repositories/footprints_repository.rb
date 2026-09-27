@@ -7,10 +7,6 @@ module Footprints
     class FootprintsRepository < Footprints::DB::Repo
       include ::Concerns::CursorPagination
 
-      # Idempotent upsert per (visitor_id, visited_id) pair.
-      # First visit inserts visit_count = 1; each repeat visit increments it and
-      # refreshes last_visited_at + updated_at.
-      # Returns row hash with :last_visited_at, :visit_count.
       def upsert_visit(visitor_id:, visited_id:)
         new_id = SecureRandom.uuid_v7
         now = Time.now
@@ -30,8 +26,6 @@ module Footprints
         ds.fetch(sql, new_id, visitor_id, visited_id, now, now, now).first
       end
 
-      # Cursor: (last_visited_at, id) DESC.
-      # exclude_visitor_ids removes mutually-blocked pairs at read time.
       def list_for_visited(visited_id:, limit: 20, cursor: nil, exclude_visitor_ids: [])
         scope = visit_records.where(visited_id: visited_id)
         scope = scope.exclude(visitor_id: exclude_visitor_ids) if exclude_visitor_ids.any?
@@ -39,8 +33,6 @@ module Footprints
         scope.order { [last_visited_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      # Number of visits with last_visited_at > viewer.last_read_visit_at.
-      # If no read_state row exists, last_read_visit_at defaults to nil (= all unread).
       def count_unread(account_id:)
         last_read = read_state_records.where(account_id: account_id).one&.last_read_visit_at
         scope = visit_records.where(visited_id: account_id)
@@ -52,7 +44,6 @@ module Footprints
         read_state_records.where(account_id: account_id).one&.last_read_visit_at
       end
 
-      # Upsert read_state row with last_read_visit_at = now(). Returns row hash.
       def set_last_read_now(account_id:)
         now = Time.now
 
@@ -82,8 +73,6 @@ module Footprints
 
       private
 
-      # Cursor is encoded under the :created_at JSON key (Concerns::CursorPagination
-      # only Time.parse's that field). Locally, the value represents last_visited_at.
       def apply_cursor(scope, cursor)
         return scope unless cursor
 
@@ -92,6 +81,7 @@ module Footprints
 
         cutoff = decoded[:created_at]
         cutoff_id = decoded[:id]
+        # Decode last_visited_at through created_at because the shared cursor parser expects that field.
         scope.where {
           (last_visited_at < cutoff) |
             ((last_visited_at =~ cutoff) & (id < cutoff_id))

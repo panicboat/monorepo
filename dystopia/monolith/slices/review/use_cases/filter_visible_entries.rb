@@ -32,7 +32,6 @@ module Review
 
       private
 
-      # The target is fixed to the page owner for target lists but varies per entry for author lists.
       def reviews_visible?(target_account_id)
         settings = cast_settings_repo.find_by_account(target_account_id)
         settings.nil? || settings.reviews_visible != false

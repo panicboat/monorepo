@@ -19,8 +19,6 @@ export function useDeactivateAccount() {
         method: "POST",
         body: {},
       });
-      // Clear local identity + cookies are server-controlled; the next
-      // /api/identity/me will 401 and the shell redirect kicks in.
       clearIdentity();
       router.push("/");
       return true;

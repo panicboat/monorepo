@@ -13,7 +13,6 @@ describe("toDateKey", () => {
 
 describe("formatDayLabel", () => {
   it("formats a date key with its Japanese weekday", () => {
-    // 2026-09-20 is a Sunday
     expect(formatDayLabel("2026-09-20")).toBe("9/20(日)");
   });
 });

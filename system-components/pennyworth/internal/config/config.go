@@ -33,9 +33,6 @@ func fromEnv() Config {
 	return cfg
 }
 
-// LoadSlack loads and validates the environment variables the Slack
-// mention process needs: verifying/posting to Slack and creating GitHub
-// issues.
 func LoadSlack() (Config, error) {
 	cfg := fromEnv()
 	if cfg.SlackSigningSecret == "" {
@@ -59,9 +56,6 @@ func LoadSlack() (Config, error) {
 	return cfg, nil
 }
 
-// LoadAlertmanager loads and validates the environment variables the
-// Alertmanager relay process needs: verifying the webhook and posting
-// to Slack. It never requires GitHub App credentials.
 func LoadAlertmanager() (Config, error) {
 	cfg := fromEnv()
 	if cfg.AlertmanagerToken == "" {

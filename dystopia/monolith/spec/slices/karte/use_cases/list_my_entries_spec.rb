@@ -80,8 +80,6 @@ RSpec.describe Karte::UseCases::ListMyEntries do
       created_at: now - 300,
       updated_at: now - 250)
 
-    # limit = 2, repo returns 3 rows -> use_case detects has_more and
-    # encodes the cursor from the last *visible* (= 2nd) entry.
     allow(entry_repo).to receive(:list_by_author)
       .with(author_account_id: viewer_id, limit: 2, cursor: nil)
       .and_return([entry1, entry2, entry3])

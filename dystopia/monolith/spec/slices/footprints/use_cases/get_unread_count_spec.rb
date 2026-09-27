@@ -21,7 +21,6 @@ RSpec.describe Footprints::UseCases::GetUnreadCount do
 
   it "uses `>` exclusive boundary: visit at exact last_read_visit_at is read" do
     row = footprints_repo.upsert_visit(visitor_id: visitor, visited_id: viewer)
-    # set read state to exactly the visit's last_visited_at
     read_state_records.dataset.insert(
       account_id: viewer,
       last_read_visit_at: row[:last_visited_at],

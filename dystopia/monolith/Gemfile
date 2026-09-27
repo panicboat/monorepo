@@ -18,13 +18,10 @@ gem "aws-sdk-cognitoidentityprovider", "~> 1.153"
 gem "pg"
 
 gem "dry-types", "~> 1.9", ">= 1.9.1"
-# hanami-validations was retired in Hanami 3; actions/contracts use dry-validation directly.
+# Keep dry-validation because hanami-validations was retired in Hanami 3.
 gem "dry-validation"
 gem "dry-operation", ">= 1.1.0"
 gem "puma"
-# =============================================================================
-# OpenTelemetry SDK + auto-instrumentation
-# =============================================================================
 gem "opentelemetry-sdk", "~> 1.13", ">= 1.13.1"
 gem "opentelemetry-instrumentation-all", "~> 0.96"
 gem "opentelemetry-exporter-otlp", "~> 0.35", ">= 0.35.1"
@@ -34,11 +31,7 @@ gem "dotenv"
 
 group :development do
   gem "hanami-webconsole", "~> 3.0"
-  # Pinned to match the version used to commit checked-in stubs.
-  # Different grpc-tools versions emit different `R<jsonName>` annotations
-  # in the descriptor blob, causing spurious churn on `bin/codegen`.
-  # 1.81.1 is the minimum that supports Ruby 4.0 (earlier versions cap at
-  # `< 3.5.dev` on Linux platform gemspecs).
+  # Pin grpc-tools because descriptor annotations vary by version and Ruby 4.0 needs a recent release.
   gem "grpc-tools", "1.84.0"
 end
 
@@ -55,10 +48,8 @@ group :cli, :development, :test do
 end
 
 group :test do
-  # Database
   gem "database_cleaner-sequel"
 
-  # Web integration
   gem "capybara"
   gem "rack-test"
 end

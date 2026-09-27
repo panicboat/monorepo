@@ -8,7 +8,6 @@ import { useSuggestedUsers } from "@/modules/discovery/hooks";
 export function SuggestedUsersPane() {
   const { profiles, loading } = useSuggestedUsers(10);
 
-  // Hide the pane entirely when there is nothing to suggest.
   if (!loading && profiles.length === 0) return null;
 
   return (

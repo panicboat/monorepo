@@ -12,6 +12,7 @@ const parseTextFrame = (data: WebSocket.RawData): unknown => {
   try {
     return JSON.parse(data.toString());
   } catch {
+    // SILENT: Ignore malformed text frames so the route can return an invalid-message status.
     return undefined;
   }
 };

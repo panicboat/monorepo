@@ -2,7 +2,6 @@ import { ImageResponse } from "next/og";
 import { readFileSync } from "fs";
 import { join } from "path";
 
-// Function to allow reading file in Node.js runtime
 export const runtime = "nodejs";
 
 export const size = {
@@ -26,7 +25,6 @@ export default function Icon() {
         background: "transparent",
       }}
     >
-      {/* Render SVG as an image (alt empty: decorative — this IS the icon). */}
       <img
         alt=""
         src={`data:image/svg+xml;base64,${svg.toString("base64")}`}

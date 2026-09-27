@@ -4,7 +4,6 @@
 module Monolith
   module Views
     module Helpers
-      # Add your view helpers here
     end
   end
 end

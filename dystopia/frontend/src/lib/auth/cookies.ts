@@ -1,35 +1,18 @@
-/**
- * httpOnly cookie helpers for BFF token mediation.
- *
- * Tokens are kept in httpOnly cookies so XSS cannot read them, and the BFF
- * — not client JS — attaches them to upstream gRPC calls. Cookies are
- * Secure + SameSite=Lax + Path=/, which blocks cross-site cookie attachment
- * on mutations (we never use GET for state changes, so SameSite=Lax is
- * sufficient and no separate CSRF token is needed).
- */
-
 import { NextRequest, NextResponse } from "next/server";
+
+// Use httpOnly, Secure, and SameSite=Lax cookies so client code cannot access tokens or send state-changing requests cross-site.
 
 export const ACCESS_COOKIE = "access_token";
 export const REFRESH_COOKIE = "refresh_token";
 
-// Mirror the backend TTLs so cookie lifetime matches token lifetime.
-// Access TTL = 1h (JWT TTL), refresh TTL = 30d (post-H7).
 const ACCESS_MAX_AGE = 60 * 60;
 const REFRESH_MAX_AGE = 60 * 60 * 24 * 30;
 
 const isProd = process.env.NODE_ENV === "production";
 
-// Production build (`pnpm build && pnpm start`) sets secure=true, which
-// Chrome refuses to persist over http://localhost. Local headless e2e
-// runs need a way to override that — only that. The name is deliberately
-// blunt: anyone reviewing a deploy config and seeing INSECURE_COOKIES=true
-// should immediately treat it as a misconfiguration to fix, not a knob to
-// experiment with. Negative language is the guard, not a smell.
+// Allow insecure cookies only for local HTTP tests; production deployments must keep this flag unset.
 const insecureCookies = process.env.INSECURE_COOKIES === "true";
 if (isProd && insecureCookies) {
-  // Fail-loud at boot so a stray env var in a deployed environment is
-  // obvious in the logs. Never silently downgrade cookie security.
   console.warn(
     "[cookies] INSECURE_COOKIES=true detected with NODE_ENV=production. " +
       "Cookies will NOT have the Secure flag. This must ONLY happen on a " +

@@ -41,9 +41,7 @@ func TestHandler_MissingChannel(t *testing.T) {
 }
 
 func TestHandler_Accepted(t *testing.T) {
-	// h.HolmesGPT and h.Client must be real (non-nil) here: ServeHTTP spawns
-	// investigateAlert in a goroutine, and a nil-pointer panic inside a
-	// goroutine crashes the whole test binary, not just this test.
+	// Use real dependencies because ServeHTTP starts investigation goroutines.
 	posted := make(chan string, 2)
 
 	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -67,9 +65,6 @@ func TestHandler_Accepted(t *testing.T) {
 		HolmesGPT: holmesgptclient.New(holmesServer.URL, "sonnet-4-6"),
 		Client:    slackClient,
 	}
-	// No "fingerprint" in the payload, so investigateAlert skips the
-	// search and posts a fallback notification before threading the
-	// analysis under it — two messages total.
 	body := []byte(`{"alerts":[{"status":"firing","labels":{"alertname":"KubePodCrashLooping","severity":"critical"},"annotations":{"summary":"pod is crash looping"}}]}`)
 	req := httptest.NewRequest(http.MethodPost, "/alertmanager/webhook?channel=incidents", bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer secret-token")
@@ -125,9 +120,6 @@ func TestBuildFallbackNotification(t *testing.T) {
 	}
 }
 
-// mockPoster is a hand-written messagePoster for tests that need precise,
-// per-call control over ConversationsHistory results (httptest can't easily
-// script different responses for repeated calls to the same path).
 type mockPoster struct {
 	historyResponses [][]slackclient.Message
 	historyCallCount int
@@ -159,12 +151,8 @@ func (m *mockPoster) ConversationsHistory(channel, oldest string) ([]slackclient
 	return nil, nil
 }
 
-// newFakeClock returns a Now/advance pair for tests that exercise
-// findNotificationTs's deadline logic: the returned sleep function must be
-// wired into Handler.Sleep so backoff waits advance the same clock Now
-// reads — otherwise the loop's attempt count diverges from what real
-// time.Sleep would produce (a bug once caught in this exact task).
 func newFakeClock(start time.Time) (now func() time.Time, sleep func(time.Duration)) {
+	// Advance the injected clock with each retry so tests do not wait in real time.
 	current := start
 	now = func() time.Time { return current }
 	sleep = func(d time.Duration) { current = current.Add(d) }
@@ -190,11 +178,6 @@ func TestFindNotificationTs_FoundImmediately(t *testing.T) {
 }
 
 func TestFindNotificationTs_FoundInAttachmentText(t *testing.T) {
-	// Regression test: Alertmanager's native slack_configs notification uses
-	// the legacy Slack attachments format — its top-level Text is empty and
-	// the real content lives in Attachments[0].Text. Verified against a real
-	// notification captured live 2026-08-16; searching only m.Text (the
-	// original implementation) never matched these messages at all.
 	mock := &mockPoster{
 		historyResponses: [][]slackclient.Message{
 			{

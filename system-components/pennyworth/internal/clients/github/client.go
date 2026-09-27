@@ -50,10 +50,9 @@ func base64URLEncode(b []byte) string {
 	return base64.RawURLEncoding.EncodeToString(b)
 }
 
-// GitHub rejects App JWTs that exceed its ten-minute lifetime; backdating
-// avoids a false rejection when the local and GitHub clocks differ slightly.
 func (c *Client) generateJWT() (string, error) {
 	now := time.Now()
+	// Backdate iat and keep exp below ten minutes because GitHub rejects clock-skewed or long-lived App JWTs.
 	header := base64URLEncode([]byte(`{"alg":"RS256","typ":"JWT"}`))
 	claims := base64URLEncode([]byte(fmt.Sprintf(
 		`{"iat":%d,"exp":%d,"iss":"%s"}`,

@@ -5,10 +5,6 @@ require "concerns/cursor_pagination"
 module Post
   module UseCases
     module Comments
-      # Lists comments authored by `author_id` (newest first) for the "返信" tab on /u/[username].
-      # Hydrates parent posts via the shared `list_posts_by_ids` use_case so the UI can render
-      # quoted parent posts; visibility filtering for parent posts is applied transitively
-      # via `Social::FilterVisiblePosts` inside `ListPostsByIds`.
       class ListCommentsByAuthor
         include ::Concerns::CursorPagination
         include Post::Deps[comment_repo: "repositories.comment_repository"]
@@ -30,11 +26,9 @@ module Post
             encode_cursor(created_at: last.created_at.iso8601, id: last.id)
           end
 
-          # Hydrate parent posts, keyed by post_id string. Frontend joins by comment.post_id.
           post_ids = result[:items].map(&:post_id).uniq
           posts_by_id = list_posts_uc.call(post_ids: post_ids, viewer_account_id: viewer_account_id)
 
-          # Hydrate comment authors via the unified Profile slice (symmetric), same as ListComments/ListReplies.
           user_ids = result[:items].map(&:user_id).uniq
           authors = build_authors(user_ids)
 

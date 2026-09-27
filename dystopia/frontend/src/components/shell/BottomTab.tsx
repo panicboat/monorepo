@@ -21,7 +21,6 @@ export function BottomTab() {
   const pathname = usePathname();
   const { count: notifCount } = useUnreadCount();
   const { count: msgCount } = useTotalUnread();
-  // Karte access is only ever granted to Cast accounts, mirroring SideNav/Drawer's gate.
   const { hasAccess: karteAccess } = useMyKarteAccess();
   const role = useAuthStore(selectRole);
 

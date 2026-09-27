@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useProfile } from "@/modules/profile/hooks";
 import { useAuthStore, selectIsHydrated } from "@/stores/authStore";
 
-// Superseded by /u/[username] (which now carries the edit affordance too); kept so old links/bookmarks still land somewhere.
 export default function ProfilePage() {
   const router = useRouter();
   const isHydrated = useAuthStore(selectIsHydrated);

@@ -2,18 +2,12 @@
 
 module Social
   module UseCases
-    # Single-post follow-gate check. Used by Post::Grpc::PostHandler#get_post.
-    # For batch checks (ListPostsByIds), prefer FilterVisiblePosts to avoid
-    # N+1 profile/follow/block queries.
     class ViewerCanSeePost
       include Social::Deps[
         follow_repo: "repositories.follow_repository",
         block_repo: "repositories.block_repository"
       ]
 
-      # @param viewer_account_id [String, nil] nil = anonymous
-      # @param post [Object] must respond to :author_id
-      # @return [Boolean]
       def call(viewer_account_id:, post:)
         author_id = post.author_id
         return true if viewer_account_id && author_id == viewer_account_id

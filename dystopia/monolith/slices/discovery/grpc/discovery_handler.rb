@@ -101,12 +101,8 @@ module Discovery
 
       private
 
-      # User-list responses carry profile.v1.Profile submessages, but the
-      # Profile use_cases return Profile::Structs::Profile. Without an
-      # explicit presenter step the proto layer raised
-      # Google::Protobuf::TypeError: Invalid type Profile::Structs::Profile
-      # to assign to submessage field 'profiles'.
       def present_profile(profile)
+        # Convert slice structs because protobuf fields require protobuf message instances.
         role = role_for(profile.account_id)
         cast = role == 2 ? cast_repository.find_by_user_id(profile.account_id) : nil
         ::Profile::Presenters::ProfilePresenter.to_proto(
@@ -128,8 +124,6 @@ module Discovery
         @cast_repository ||= ::Profile::Slice["repositories.cast_repository"]
       end
 
-      # Default period is "week" when the RPC sends UNSPECIFIED — matches the
-      # /ranking surface default tab in D2.
       def period_to_string(enum)
         case enum
         when :RANK_PERIOD_DAY, ::Discovery::V1::RankPeriod::RANK_PERIOD_DAY then "day"

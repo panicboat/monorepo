@@ -14,23 +14,18 @@ module Post
         MAX_MEDIA_COUNT = 3
 
         def call(post_id:, user_id:, content:, parent_id: nil, media: [])
-          # Validate user exists via adapter (cross-schema reference)
           raise UserNotFoundError unless account_adapter.user_exists?(user_id)
 
-          # Validate post exists
           post = post_repo.find_by_id(post_id)
           raise PostNotFoundError unless post
 
-          # Validate content or media is required
           empty_content = content.nil? || content.strip.empty?
           empty_media = media.nil? || media.empty?
           raise EmptyContentError if empty_content && empty_media
           raise ContentTooLongError if !empty_content && content.length > MAX_CONTENT_LENGTH
 
-          # Validate media count
           raise TooManyMediaError if !empty_media && media.length > MAX_MEDIA_COUNT
 
-          # Validate parent is a top-level comment (not a reply)
           parent = nil
           if parent_id
             parent = comment_repo.find_by_id(parent_id)
@@ -38,7 +33,6 @@ module Post
             raise CannotReplyToReplyError if parent.parent_id
           end
 
-          # Create comment
           media_data = media.map do |m|
             {
               media_id: m[:media_id] || m["media_id"],

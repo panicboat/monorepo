@@ -6,7 +6,6 @@ ROM::SQL.migration do
       add_column :handle, :varchar, size: 30, null: true
     end
 
-    # Create unique index for case-insensitive handle lookup
     run "CREATE UNIQUE INDEX idx_casts_handle_lower ON portfolio.casts (LOWER(handle)) WHERE handle IS NOT NULL"
   end
 

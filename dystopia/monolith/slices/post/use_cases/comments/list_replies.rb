@@ -30,8 +30,6 @@ module Post
             encode_cursor(created_at: last.created_at.iso8601, id: last.id)
           end
 
-          # Load authors for all replies via the unified Profile slice (symmetric).
-          # Profiles that cannot be resolved are omitted; the presenter renders `author: nil`.
           user_ids = replies.map(&:user_id).uniq
           authors = build_authors(user_ids)
 

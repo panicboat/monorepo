@@ -4,10 +4,6 @@ require "concerns/cursor_pagination"
 
 module Discovery
   module UseCases
-    # Cross-slice post search. Calls Post repository for public-only id list,
-    # then hydrates the truncated id slice via Post::Slice["use_cases.posts.list_posts_by_ids"]
-    # which internally applies Social::FilterVisiblePosts (block + is_private).
-    # Pagination cursor is (created_at, id) DESC, same shape as feed slice.
     class SearchPosts
       include ::Concerns::CursorPagination
 

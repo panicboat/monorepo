@@ -23,7 +23,7 @@ spec:
           command: ["./bin/start"]
           ports:
             - containerPort: 9001
-          # tcpSocket used because bin/grpc doesn't register grpc.health.v1.Health
+          # Use a TCP probe because bin/grpc does not register grpc.health.v1.Health.
           startupProbe:
             tcpSocket:
               port: 9001
@@ -34,8 +34,6 @@ spec:
               port: 9001
             periodSeconds: 10
             failureThreshold: 3
-          # OTel の resource attributes は downward API の値を $() 展開して組み立てる。
-          # envFrom 経由の値は $() 展開されないため env: に置く。
           env:
             - name: POD_NAME
               valueFrom:
@@ -51,13 +49,10 @@ spec:
                   fieldPath: spec.nodeName
             - name: OTEL_SERVICE_NAME
               value: monolith
-            # Ruby の opentelemetry-exporter-otlp は OTLP/HTTP のみで、 collector の
-            # otlp-http port を指す。 この env の有無が lib/telemetry.rb の計装 on/off。
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://opentelemetry-collector.monitoring.svc.cluster.local:4318
-            # k8s.* は Application Monitoring dashboard の TraceQL が
-            # resource.k8s.namespace.name で絞り込むために必要。
             - name: OTEL_RESOURCE_ATTRIBUTES
+              # Use env values because Kubernetes does not expand variables from envFrom.
               value: k8s.namespace.name=$(POD_NAMESPACE),k8s.pod.name=$(POD_NAME),k8s.node.name=$(NODE_NAME),k8s.deployment.name=monolith
           envFrom:
             - configMapRef:

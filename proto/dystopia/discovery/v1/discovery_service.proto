@@ -14,16 +14,15 @@ service DiscoveryService {
 
 enum RankPeriod {
   RANK_PERIOD_UNSPECIFIED = 0;
-  RANK_PERIOD_DAY = 1;       // last 24 hours
-  RANK_PERIOD_WEEK = 2;      // last 7 days
-  RANK_PERIOD_ALL = 3;       // all-time
+  RANK_PERIOD_DAY = 1;
+  RANK_PERIOD_WEEK = 2;
+  RANK_PERIOD_ALL = 3;
 }
 
 message SearchUsersRequest {
   string query = 1;
   int32 limit = 2;
   string cursor = 3;
-  // 0 = no filter (return all roles), 1 = guest only, 2 = cast only
   int32 role_filter = 4;
 }
 
@@ -58,8 +57,8 @@ message RankPostsResponse {
 }
 
 message SuggestUsersRequest {
-  int32 limit = 1;     // default 10, max 50
-  string cursor = 2;   // base64 (created_at, account_id)
+  int32 limit = 1;
+  string cursor = 2;
 }
 
 message SuggestUsersResponse {

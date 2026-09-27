@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
-# Allow sender_id and threads.account_a / account_b to be NULL so that
-# hard-delete of a Cast can preserve the conversation history for the
-# remaining participant (mainstream messaging UX: "(retired)" sender).
+# Allow null participants so deactivation can preserve conversation history for the remaining participant.
 ROM::SQL.migration do
   up do
     alter_table :messaging__messages do

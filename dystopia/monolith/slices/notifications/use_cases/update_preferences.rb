@@ -2,8 +2,6 @@
 
 module Notifications
   module UseCases
-    # Upserts the per-account notification preferences. Caller passes all 11
-    # bool fields; first-time updates create the row.
     class UpdatePreferences
       include Notifications::Deps[notification_repo: "repositories.notification_repository"]
 

@@ -1,14 +1,6 @@
 # frozen_string_literal: true
 
-# Physically drop the legacy `relationship` schema. Data was bulk-copied to
-# the `social` schema in 20260615180000_migrate_relationship_to_social.rb;
-# subsequent PRs (#683 / #684 / #685) removed every code, BFF, stub, and proto
-# consumer. This is the last PR of the cleanup sequence.
-#
-# `down` rebuilds an empty schema + table skeleton so the migration is
-# technically reversible, but the original data cannot be restored — callers
-# of `bundle exec hanami db rollback` past this point should treat the rolled
-# back state as "schema present but empty."
+# Drop the legacy schema only after relationship data has been copied into social.
 ROM::SQL.migration do
   up do
     run "DROP TABLE IF EXISTS relationship.follows"

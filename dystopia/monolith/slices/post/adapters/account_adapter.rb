@@ -2,7 +2,6 @@
 
 module Post
   module Adapters
-    # Anti-Corruption Layer for accessing Account data from Identity slice.
     class AccountAdapter
       ROLE_GUEST = 1
       ROLE_CAST = 2
@@ -15,7 +14,7 @@ module Post
       end
 
       def get_user_types_batch(user_ids)
-        # FALLBACK: Skip cross-slice call when no user_ids are given
+        # FALLBACK: Skip the cross-slice call when no user IDs are provided.
         return {} if user_ids.nil? || user_ids.empty?
 
         user_ids.each_with_object({}) do |user_id, hash|

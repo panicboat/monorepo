@@ -27,7 +27,7 @@ export function CommentComposer({ postId }: CommentComposerProps) {
         await addComment(content);
         setContent("");
       } catch {
-        // error は hook 内 state に立つ、UI で表示
+        // SILENT: useAddComment exposes submission failures through the hook state.
       }
     },
     [canSubmit, content, addComment]

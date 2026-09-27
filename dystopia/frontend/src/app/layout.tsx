@@ -28,10 +28,7 @@ export default function RootLayout({
   return (
     <html lang="ja" className={notoSansJP.variable} suppressHydrationWarning>
       <body className="antialiased bg-bg">
-        {/* Blocking script: set data-theme before first paint to prevent a theme
-            flash. A raw <script> as the first body child is intentional —
-            next/script beforeInteractive lands in <head> and is not guaranteed
-            to run before the body paints. */}
+        {/* Set the theme before first paint because next/script is not guaranteed to run before body paint. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem("theme")||"system";var d=t==="dark"||(t==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";}catch(e){}})();`,

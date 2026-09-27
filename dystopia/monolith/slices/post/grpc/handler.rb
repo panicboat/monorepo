@@ -10,7 +10,6 @@ require_relative "../adapters/media_adapter"
 
 module Post
   module Grpc
-    # Base handler class for Post gRPC services.
     class Handler < ::Gruf::Controllers::Base
       include ::GRPC::GenericService
       include ::Grpc::Authenticatable

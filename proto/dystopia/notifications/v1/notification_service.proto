@@ -26,24 +26,24 @@ enum NotificationType {
 message Notification {
   string id = 1;
   NotificationType type = 2;
-  string target_resource_id = 3;             // post_id | comment_id | actor_account_id (per type)
-  int32 actor_count = 4;                     // >= 1
-  profile.v1.Profile latest_actor = 5;        // cross-slice hydration
+  string target_resource_id = 3;
+  int32 actor_count = 4;
+  profile.v1.Profile latest_actor = 5;
   google.protobuf.Timestamp latest_event_at = 6;
-  google.protobuf.Timestamp read_at = 7;      // unset = unread
-  string target_post_id = 8;                 // non-empty only for COMMENT / REPLY notifications (= the parent post for deep-link)
+  google.protobuf.Timestamp read_at = 7;
+  string target_post_id = 8;
 }
 
 message ListNotificationsRequest {
-  int32 limit = 1;       // default 20, max 50
-  string cursor = 2;     // base64 (latest_event_at, id)
+  int32 limit = 1;
+  string cursor = 2;
 }
 
 message ListNotificationsResponse {
   repeated Notification notifications = 1;
   string next_cursor = 2;
   bool has_more = 3;
-  int32 unread_count = 4;  // bundled to avoid 2x round-trip
+  int32 unread_count = 4;
 }
 
 message GetUnreadCountRequest {}
@@ -60,7 +60,7 @@ message MarkReadResponse {}
 
 message MarkAllReadRequest {}
 message MarkAllReadResponse {
-  int32 affected = 1;  // number of unread rows updated
+  int32 affected = 1;
 }
 
 message NotificationPreferences {
@@ -75,7 +75,7 @@ message NotificationPreferences {
   bool message = 9;
   bool oshi = 10;
   bool footprint_unread_badge = 11;
-  bool footprints_record_my_visits = 12;  // false = visitor opts out — visits are not recorded into footprints
+  bool footprints_record_my_visits = 12;
 }
 
 message GetNotificationPreferencesRequest {}

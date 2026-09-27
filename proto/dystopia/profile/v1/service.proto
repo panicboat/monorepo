@@ -2,9 +2,6 @@ syntax = "proto3";
 
 package profile.v1;
 
-// Unified profile service (replaces portfolio CastService + GuestService).
-// One Profile per account (1:1 with identity.Account). role-specific fields are
-// optional (cast extras). Escort commerce dimension (plans/schedules/genres) dropped.
 service ProfileService {
   rpc GetProfile (GetProfileRequest) returns (GetProfileResponse);
   rpc GetProfileByUsername (GetProfileByUsernameRequest) returns (GetProfileResponse);
@@ -14,38 +11,34 @@ service ProfileService {
 }
 
 message Profile {
-  string account_id = 1;       // 1:1 with identity.Account
-  string username = 2;         // @handle, case-insensitive unique
+  string account_id = 1;
+  string username = 2;
   string display_name = 3;
-  string bio = 4;              // max 1000 (enforced in monolith)
+  string bio = 4;
   string avatar_media_id = 5;
-  string avatar_url = 6;       // read-only download URL
+  string avatar_url = 6;
   string cover_media_id = 7;
-  string cover_url = 8;        // read-only download URL
+  string cover_url = 8;
   string website = 9;
   SnsLinks sns_links = 10;
-  string prefecture = 11;      // location (guest 都道府県 / display)
-  bool is_private = 12;        // 鍵アカウント
-  string registered_at = 13;   // onboarding completion (empty if not)
+  string prefecture = 11;
+  bool is_private = 12;
+  string registered_at = 13;
 
-  // cast extras (role = cast)
   int32 age = 14;
-  BodyStats body_stats = 15;   // 身長/スリーサイズ/カップ
-  string industry = 17;        // 業種 / service category (enum 値は §10 で確定)
+  BodyStats body_stats = 15;
+  string industry = 17;
 
-  // identity role mirror: 1 = GUEST, 2 = CAST (0 = unknown / not joined yet).
-  // Sourced from identity__users.role at presentation time so UI does not
-  // have to infer the role from cast-only attributes.
   int32 role = 20;
 }
 
 message SnsLinks {
-  string x = 1;          // X (Twitter)
+  string x = 1;
   string instagram = 2;
   string tiktok = 3;
   string bluesky = 4;
   string line = 5;
-  string cityheaven = 6;  // 口コミサイト等の外部リンク
+  string cityheaven = 6;
 }
 
 message BodyStats {
@@ -61,14 +54,13 @@ message GetProfileByUsernameRequest { string username = 1; }
 message GetProfileResponse { Profile profile = 1; }
 
 message SaveProfileRequest {
-  string username = 1;          // 変更時。空なら据え置き
+  string username = 1;
   string display_name = 2;
   string bio = 3;
   string website = 4;
   SnsLinks sns_links = 5;
   string prefecture = 6;
   bool is_private = 7;
-  // cast extras
   int32 age = 8;
   BodyStats body_stats = 9;
   string industry = 11;

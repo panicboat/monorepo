@@ -3,11 +3,8 @@ require 'bundler/setup'
 
 puts "🚀 Running buf generate..."
 
-# Find grpc_ruby_plugin using Bundler
+# Resolve the native gRPC plugin through Bundler because its path varies by OS.
 begin
-  # We need the actual binary for 'buf'.
-  # Heuristic: Check if there's a binary in the same gem structure.
-
   gem_root = Gem::Specification.find_by_name("grpc-tools").gem_dir
   os_name = `uname -s`.strip
   filter = os_name == "Darwin" ? "macos" : "linux"
@@ -20,16 +17,15 @@ begin
     puts "🔍 Found grpc plugin in: #{binary_dir}"
     ENV['PATH'] = "#{binary_dir}:#{ENV['PATH']}"
   else
+    # FALLBACK: Use the default PATH when no platform-specific gRPC plugin is found.
     puts "⚠️  Could not find native binary for grpc_ruby_plugin. Falling back to default PATH."
   end
 
 rescue Gem::GemNotFoundException
+  # FALLBACK: Use the default PATH when grpc-tools is unavailable.
   puts "⚠️  grpc-tools gem not found. Ensure bundle install is run."
 end
 
-# Run buf generate, pointing to the proto definitions at root
-# Command runs from the service root, using local buf.gen.yaml
-# Input: ../../proto/dystopia (relative to the service root)
 system("buf generate ../../proto/dystopia")
 
 if $?.success?

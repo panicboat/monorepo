@@ -8,7 +8,6 @@ import type { PaginatedUsersResponse } from "../types";
 
 const DEBOUNCE_MS = 300;
 
-// 0 = all, 1 = guest only, 2 = cast only
 export type SearchUsersRoleFilter = 0 | 1 | 2;
 
 export function useSearchUsers(query: string, roleFilter: SearchUsersRoleFilter = 0) {

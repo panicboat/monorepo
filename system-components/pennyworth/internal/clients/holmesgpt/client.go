@@ -9,27 +9,9 @@ import (
 	"time"
 )
 
-// formattingPrompt is sent as HolmesGPT's additional_system_prompt on
-// every request. HolmesGPT's default output is standard Markdown and
-// English; pennyworth relays the response into Slack chat.postMessage
-// verbatim with no reformatting, so it must ask HolmesGPT to produce
-// Slack's mrkdwn dialect directly (Slack does not render **bold**,
-// #-headings, or [text](url) links) and to respond in Japanese, the
-// team's operating language. It also names the two source repositories
-// HolmesGPT can read via its bash toolset's git allowlist (see
-// panicboat/platform's kubernetes/components/holmesgpt component) —
-// HolmesGPT has no other way to learn these repos exist or when to use
-// them.
-//
 //go:embed prompts/formatting.md
 var formattingPrompt string
 
-// createIssuePrompt is appended to Chat's additional_system_prompt only
-// (never Investigate's — Alertmanager's fixed alert-investigation ask
-// never carries human issue-creation intent, so keeping this off that
-// path means it can never receive or need to parse a create_issue
-// envelope).
-//
 //go:embed prompts/create_issue.md
 var createIssuePrompt string
 
@@ -63,9 +45,6 @@ func (c *Client) Investigate(ask string) (string, error) {
 	return c.chat(ask, formattingPrompt)
 }
 
-// Chat is used by the Slack mention flow — same request/response shape as
-// Investigate, but its additional_system_prompt also asks HolmesGPT to
-// detect action intent (see createIssuePrompt).
 func (c *Client) Chat(ask string) (string, error) {
 	return c.chat(ask, formattingPrompt+"\n\n"+createIssuePrompt)
 }

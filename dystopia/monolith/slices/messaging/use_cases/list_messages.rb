@@ -4,9 +4,6 @@ require "concerns/cursor_pagination"
 
 module Messaging
   module UseCases
-    # Cursor-paginated list of messages within a single thread, newest first.
-    # The viewer MUST be one of the thread participants (account_a / account_b);
-    # otherwise ForbiddenError is raised and the handler maps it to PERMISSION_DENIED.
     class ListMessages
       include ::Concerns::CursorPagination
       include Messaging::Deps[messaging_repo: "repositories.messaging_repository"]

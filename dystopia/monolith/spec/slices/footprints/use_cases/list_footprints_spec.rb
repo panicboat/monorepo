@@ -16,7 +16,6 @@ RSpec.describe Footprints::UseCases::ListFootprints do
     footprints_repo.upsert_visit(visitor_id: visitor, visited_id: visited)
   end
 
-  # Insert a social.blocks row directly (BlockRepository#block has a pre-existing bug).
   def seed_block(blocker:, blocked:)
     social_blocks.dataset.insert(
       id: SecureRandom.uuid_v7,

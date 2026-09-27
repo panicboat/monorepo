@@ -18,21 +18,16 @@ module Middleware
     private
 
     def handle_upload(request)
-      # Use query_string only to avoid consuming POST body when parsing params
+      # Read query_string only so raw PUT bodies are not parsed as form parameters.
       query_params = Rack::Utils.parse_query(request.query_string)
       key = query_params["key"]
       if key.nil? || key.empty?
         return [400, { "content-type" => "text/plain" }, ["Missing key"]]
       end
 
-      # In a PUT request for Presigned URL simulation, the body is the file content.
-      # However, our client uses `fetch(url, { method: 'PUT', body: file })`.
-      # Rack Request might try to parse params if it's form data, but here it's raw.
-      # We just read the input stream.
 
-      # Security Note: Thorough input validation for 'key' is crucial in production
-      # to prevent directory traversal. Since this is DEV only, basic check is fine.
       if key.include?("..")
+        # Keep this uploader development-only because key validation is intentionally minimal.
         return [400, { "content-type" => "text/plain" }, ["Invalid key"]]
       end
 
@@ -40,7 +35,6 @@ module Middleware
       dir = File.dirname(path)
       FileUtils.mkdir_p(dir)
 
-      # Write body to file
       File.open(path, "wb") do |f|
         IO.copy_stream(request.body, f)
       end

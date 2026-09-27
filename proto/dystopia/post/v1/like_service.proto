@@ -32,7 +32,7 @@ message GetLikeStatusRequest {
 }
 
 message GetLikeStatusResponse {
-  map<string, bool> liked = 1; // post_id -> is_liked
+  map<string, bool> liked = 1;
 }
 
 message ListLikedPostsByAccountRequest {

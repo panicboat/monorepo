@@ -2,12 +2,11 @@
 
 module Post
   module Adapters
-    # Anti-Corruption Layer for accessing Media data from Media slice.
     class MediaAdapter
       MediaFile = Data.define(:id, :url, :thumbnail_url, :media_type, :media_key, :thumbnail_key)
 
       def find_by_ids(ids)
-        # FALLBACK: Skip cross-slice call when no media ids are given
+        # FALLBACK: Skip the cross-slice call when no media IDs are provided.
         return {} if ids.nil? || ids.empty?
 
         files = get_media_batch.call(ids: ids)

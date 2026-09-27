@@ -21,7 +21,6 @@ export default function ChatPage() {
   const { messages, hasMore, loading, send, markRead, loadMore } = useMessages(threadId || null);
   const { typingActorId, sendTyping } = useTyping(threadId || null);
 
-  // 最上端の message を read marker として mark (= 最新の to-viewer message)
   useEffect(() => {
     const incoming = messages.find((m) => m.senderId !== viewerId);
     if (incoming) {
@@ -58,7 +57,6 @@ export default function ChatPage() {
         {!loading && messages.length === 0 && (
           <p className="px-4 py-6 text-center text-text-secondary">メッセージはまだありません</p>
         )}
-        {/* messages は新→古順なので reverse して古→新で render */}
         <div className="flex flex-col-reverse gap-2 px-4 pb-4">
           {messages.map((m) => {
             const isMine = m.senderId === viewerId;

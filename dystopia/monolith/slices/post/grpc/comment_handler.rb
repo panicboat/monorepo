@@ -44,14 +44,11 @@ module Post
           media: media_data
         )
 
-        # Get comments count excluding blocked users
         blocked_user_ids = get_blocked_user_ids
         comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_user_ids: blocked_user_ids)
 
-        # Load media files for comment and author avatar
         media_files = load_media_files_for_comments([result[:comment]])
 
-        # Get author info with loaded media
         author = get_comment_author(current_user_id, media_files: media_files)
 
         ::Post::V1::AddCommentResponse.new(
@@ -82,7 +79,6 @@ module Post
           user_id: current_user_id
         )
 
-        # Get comments count excluding blocked users
         blocked_user_ids = get_blocked_user_ids
         comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_user_ids: blocked_user_ids)
 
@@ -92,11 +88,10 @@ module Post
       end
 
       def list_comments
-        # FALLBACK: Default pagination limit when client sends 0 (unset) for limit
+        # FALLBACK: Use the default page size when the client sends zero.
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        # Get blocked user IDs for filtering comments
         blocked_user_ids = get_blocked_user_ids
 
         result = list_comments_uc.call(
@@ -116,11 +111,10 @@ module Post
       end
 
       def list_replies
-        # FALLBACK: Default pagination limit when client sends 0 (unset) for limit
+        # FALLBACK: Use the default page size when the client sends zero.
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        # Get blocked user IDs for filtering replies
         blocked_user_ids = get_blocked_user_ids
 
         result = list_replies_uc.call(
@@ -142,7 +136,7 @@ module Post
       def list_comments_by_author
         authenticate_user!
 
-        # FALLBACK: Default pagination limit when client sends 0 (unset) for limit
+        # FALLBACK: Use the default page size when the client sends zero.
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
@@ -168,18 +162,9 @@ module Post
       AddComment = Post::UseCases::Comments::AddComment
       DeleteComment = Post::UseCases::Comments::DeleteComment
 
-      # Symmetric author resolution via Profile slice (account-based).
-      # Overrides the base handler's role-aware implementation.
-      # `media_files` is retained for signature compatibility but unused —
-      # ProfileAuthorAdapter resolves avatar URLs internally.
-      # Returns a Hash matching the shape expected by CommentPresenter.author_to_proto.
       def get_comment_author(user_id, media_files: {})
         infos = profile_author_adapter.load([user_id]).transform_keys(&:to_s)
         info = infos[user_id.to_s]
-        # Intentional nil return: when the profile is missing (e.g. account sync lag),
-        # we surface absence to the client rather than fabricating a "Anonymous" placeholder
-        # like the legacy cast/guest path. The presenter passes `author: nil` to proto,
-        # which the frontend tolerates (no UI conditional on author presence today).
         return nil unless info
 
         {

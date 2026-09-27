@@ -34,6 +34,7 @@ module Billing
               updated += 1
             end
           rescue => e
+            # FALLBACK: Continue reconciling other accounts after recording this failure.
             errors += 1
             warn "reconcile error for account=#{customer.account_id}: #{e.class}: #{e.message}"
           end
@@ -49,6 +50,7 @@ module Billing
 
         @stripe_client.retrieve_subscription(stripe_subscription_id: known_id)
       rescue Stripe::InvalidRequestError
+        # FALLBACK: Treat a missing Stripe subscription as absent during reconciliation.
         nil
       end
 

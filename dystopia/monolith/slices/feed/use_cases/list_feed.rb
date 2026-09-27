@@ -4,9 +4,6 @@ require "concerns/cursor_pagination"
 
 module Feed
   module UseCases
-    # Symmetric account-authored feed query. Returns ordered post_ids + pagination
-    # metadata. Hydration (post -> Post::V1::Post) is the handler's responsibility
-    # via the posts cross-slice contract (Post::Slice["use_cases.posts.list_posts_by_ids"]).
     class ListFeed
       include Concerns::CursorPagination
 
@@ -17,12 +14,6 @@ module Feed
         @follow_adapter = Feed::Adapters::FollowAdapter.new
       end
 
-      # @param filter [String] "all" | "area" | "following"
-      # @param viewer_account_id [String] required (handler authenticates first)
-      # @param prefecture [String, nil] required when filter == "area"
-      # @param limit [Integer]
-      # @param cursor [String, nil] base64 cursor
-      # @return [Hash] { post_ids: Array<String>, next_cursor: String|nil, has_more: Boolean }
       def call(filter:, viewer_account_id:, prefecture: nil, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
         decoded_cursor = decode_cursor(cursor)
@@ -30,7 +21,7 @@ module Feed
 
         author_ids = case filter
         when "all"
-          nil # no whitelist = all public posts
+          nil
         when "area"
           list_account_ids_by_prefecture_uc.call(prefecture: prefecture)
         when "following"
@@ -50,7 +41,6 @@ module Feed
         truncated = has_more ? post_ids.first(limit) : post_ids
 
         next_cursor = if has_more && truncated.any?
-          # Fetch the last post's created_at to encode cursor (we only have ids).
           last_created_at = post_repo.created_at_for_id(truncated.last)
           last_created_at ? encode_cursor(created_at: last_created_at.iso8601, id: truncated.last) : nil
         end

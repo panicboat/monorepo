@@ -38,7 +38,6 @@ export function useNotificationPreferences() {
   const update = useCallback(
     async (partial: Partial<NotificationPreferences>) => {
       const next: NotificationPreferences = { ...preferences, ...partial };
-      // Optimistic mutate so the toggle reflects the new state immediately.
       await mutate(next, { revalidate: false });
       setUpdating(true);
       try {
@@ -48,7 +47,6 @@ export function useNotificationPreferences() {
         });
         await mutate(saved, { revalidate: false });
       } catch (e) {
-        // Roll back on failure so UI matches server.
         await mutate(undefined, { revalidate: true });
         throw e;
       } finally {

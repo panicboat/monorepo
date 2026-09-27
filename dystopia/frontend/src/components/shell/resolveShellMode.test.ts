@@ -3,7 +3,6 @@ import { resolveShellMode } from "./resolveShellMode";
 
 describe("resolveShellMode", () => {
   it("stays bare for an auth route once hydrated with a viewer already set", () => {
-    // Regression test for #1235: an authenticated viewer on /onboarding must not remount into the full shell.
     expect(
       resolveShellMode({ isHydrated: true, viewerId: "u1", isAuthRoute: true, isLandingRoute: false })
     ).toBe("bare");

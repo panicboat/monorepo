@@ -31,7 +31,6 @@ message Subscription {
 
 message GetMySubscriptionRequest {}
 message GetMySubscriptionResponse {
-  // 未加入 (完全 Free) は unset。TRIALING / ACTIVE / その他 status は Subscription を返す。
   Subscription subscription = 1;
 }
 

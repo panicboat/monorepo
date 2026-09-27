@@ -4,17 +4,11 @@ const VIDEO_EXTENSIONS = ["mp4", "webm", "mov", "avi", "m4v", "mkv"];
 
 export type MediaType = "image" | "video";
 
-/**
- * Determine media type from file path or URL based on extension
- */
 export function getMediaType(path: string): MediaType {
   const ext = path.split(".").pop()?.toLowerCase() || "";
   return VIDEO_EXTENSIONS.includes(ext) ? "video" : "image";
 }
 
-/**
- * Determine media type from MIME type
- */
 export function getMediaTypeFromMime(mimeType: string): MediaType {
   return mimeType.startsWith("video/") ? "video" : "image";
 }
@@ -24,9 +18,6 @@ export interface UploadResult {
   mediaKey: string;
 }
 
-/**
- * Upload a file to storage and return the media ID and key
- */
 export async function uploadFile(file: File): Promise<UploadResult | null> {
   if (!useAuthStore.getState().userId) return null;
 
@@ -54,7 +45,6 @@ export async function uploadFile(file: File): Promise<UploadResult | null> {
 
   if (!uploadRes.ok) return null;
 
-  // Register the uploaded media in the database
   const registerRes = await fetch("/api/media/register", {
     method: "POST",
     headers: {

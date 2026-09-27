@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-# post.posts.cast_user_id and post.likes.guest_user_id predate the
-# 2026-06-07 author_id/account_id migration (20260607000001/20260607000002)
-# that unified post authorship across casts and guests. New rows have never
-# written to either column since; only a handful of now-deleted repository
-# methods still read them. Zero live callers as of the 2026-09-22 schema
-# audit.
 ROM::SQL.migration do
   up do
     alter_table :"post__posts" do

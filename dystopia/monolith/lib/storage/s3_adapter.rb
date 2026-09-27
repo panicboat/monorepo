@@ -31,7 +31,7 @@ module Storage
       true
     rescue Aws::S3::Errors::ServiceError => e
       warn "[Storage::S3Adapter] Failed to delete #{key}: #{e.message}"
-      # FALLBACK: Returns false on delete failure
+      # FALLBACK: Return false when deletion fails.
       false
     end
   end

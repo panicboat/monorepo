@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
     try {
       refreshed = await cognito().refreshTokens(refreshToken);
     } catch {
+      // FALLBACK: Clear invalid session cookies and return 401 when refresh fails.
       const res = NextResponse.json({ error: "ログインしてください" }, { status: 401 });
       clearAuthCookies(res);
       return res;

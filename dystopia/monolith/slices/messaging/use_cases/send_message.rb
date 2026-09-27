@@ -4,11 +4,6 @@ require "json"
 
 module Messaging
   module UseCases
-    # SendMessage applies suppression rules (self / mutual followers / not blocked),
-    # gets-or-creates the (account_a, account_b)-normalized thread, INSERTs the message
-    # and bumps thread.last_message_at in a single transaction, then publishes
-    # NOTIFY events to both participants' channels. NOTIFY failure is swallowed —
-    # delivery is best-effort by design (subscriber may be absent in M1).
     class SendMessage
       include Messaging::Deps[messaging_repo: "repositories.messaging_repository"]
 
@@ -102,6 +97,7 @@ module Messaging
         db.notify(channel, payload: payload)
       rescue StandardError => e
         Hanami.logger.warn("Messaging::SendMessage notify failed on #{channel}: #{e.class}: #{e.message}")
+        # SILENT: Notification delivery failure must not fail message persistence.
         nil
       end
 

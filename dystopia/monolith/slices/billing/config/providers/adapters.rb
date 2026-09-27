@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-# A :stripe_client provider is not started when a prepared slice resolves adapters.stripe_client.
 Billing::Slice.register_provider(:adapters) do
   prepare do
     require_relative "../../adapters/stripe_client"
   end
 
   start do
+    # Register the adapter during boot because prepared slices resolve this provider lazily.
     target["settings"]
     register(
       "adapters.stripe_client",

@@ -139,11 +139,6 @@ module Social
 
       private
 
-      # Same Struct→proto fix as PR #770 (discovery). list_following /
-      # list_followers / list_pending_follow_requests all assign profile
-      # structs straight to repeated profile.v1.Profile fields and would
-      # otherwise raise Google::Protobuf::TypeError: Invalid type
-      # Profile::Structs::Profile to assign to submessage field 'profiles'.
       def present_profile(profile)
         role = role_for(profile.account_id)
         cast = role == 2 ? cast_repository.find_by_user_id(profile.account_id) : nil

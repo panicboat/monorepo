@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 
 export interface PostCardProps {
   author: { name: string; handle: string; avatarSrc?: string };
-  /** Link to the author's profile page. Omit when the author has no linkable profile. */
   authorHref?: string;
   time: string;
   body: string;

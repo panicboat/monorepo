@@ -14,27 +14,27 @@ service CommentService {
 
 message CommentMedia {
   string id = 1;
-  string media_type = 2; // "image" or "video"
+  string media_type = 2;
   string url = 3;
   string thumbnail_url = 4;
-  string media_id = 5; // Reference to media__files.id (required for input)
+  string media_id = 5;
 }
 
 message CommentAuthor {
   string user_id = 1;
   string name = 2;
   string image_url = 3;
-  string user_type = 4; // "guest" or "cast"
+  string user_type = 4;
   string username = 5;
 }
 
 message Comment {
   string id = 1;
   string post_id = 2;
-  string parent_id = 3; // empty if top-level comment
-  string user_id = 4;   // Guest or Cast user ID
+  string parent_id = 3;
+  string user_id = 4;
   string content = 5;
-  string created_at = 6; // ISO8601
+  string created_at = 6;
   CommentAuthor author = 7;
   repeated CommentMedia media = 8;
   int32 replies_count = 9;
@@ -43,13 +43,13 @@ message Comment {
 message AddCommentRequest {
   string post_id = 1;
   string content = 2;
-  string parent_id = 3; // optional, for replies
-  repeated CommentMedia media = 4; // max 3
+  string parent_id = 3;
+  repeated CommentMedia media = 4;
 }
 
 message AddCommentResponse {
   Comment comment = 1;
-  int32 comments_count = 2; // updated post comments count
+  int32 comments_count = 2;
 }
 
 message DeleteCommentRequest {
@@ -62,20 +62,20 @@ message DeleteCommentResponse {
 
 message ListCommentsRequest {
   string post_id = 1;
-  int32 limit = 2;   // default: 20, max: 50
-  string cursor = 3; // optional, for pagination
+  int32 limit = 2;
+  string cursor = 3;
 }
 
 message ListCommentsResponse {
-  repeated Comment comments = 1; // top-level comments only
+  repeated Comment comments = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }
 
 message ListRepliesRequest {
-  string comment_id = 1; // parent comment id
-  int32 limit = 2;   // default: 20, max: 50
-  string cursor = 3; // optional, for pagination
+  string comment_id = 1;
+  int32 limit = 2;
+  string cursor = 3;
 }
 
 message ListRepliesResponse {
@@ -94,7 +94,5 @@ message ListCommentsByAuthorResponse {
   repeated Comment comments = 1;
   string next_cursor = 2;
   bool has_more = 3;
-  // Parent posts keyed by post_id (for the "返信" tab UI to render quoted parent posts).
-  // Frontend joins by comment.post_id.
   map<string, post.v1.Post> posts_by_id = 4;
 }

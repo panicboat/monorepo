@@ -6,10 +6,9 @@ module Interceptors
     def call
       start_time = Time.now
 
-      # yield to the next interceptor/handler
       result = yield
 
-      duration = (Time.now - start_time) * 1000 # ms
+      duration = (Time.now - start_time) * 1000
 
       log_entry = {
         time: start_time.iso8601,
@@ -25,7 +24,7 @@ module Interceptors
 
       result
     rescue => e
-      duration = (Time.now - start_time) * 1000 # ms
+      duration = (Time.now - start_time) * 1000
 
       log_entry = {
         time: start_time.iso8601,

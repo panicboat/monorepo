@@ -4,7 +4,6 @@ require_relative "media_adapter"
 
 module Post
   module Adapters
-    # Resolves post authors via the unified Profile slice (symmetric, account-based).
     class ProfileAuthorAdapter
       AuthorInfo = Data.define(:account_id, :display_name, :username, :avatar_url)
 
@@ -13,7 +12,6 @@ module Post
         @media_adapter = MediaAdapter.new
       end
 
-      # account_ids -> { account_id => AuthorInfo }
       def load(account_ids)
         ids = (account_ids || []).compact.uniq
         return {} if ids.empty?

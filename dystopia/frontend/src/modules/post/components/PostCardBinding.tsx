@@ -9,7 +9,6 @@ import { useBookmark } from "@/modules/bookmarks";
 
 export interface PostCardBindingProps {
   post: PostView;
-  /** Whether to wrap the body / time area with a link to the post detail page. */
   detailHref?: string;
   className?: string;
 }

@@ -21,7 +21,7 @@ import type { Role } from "@/lib/auth";
 
 export type User = {
   id: string;
-  name: string; // Phone Number for now
+  name: string;
   avatarUrl?: string;
   isGuest: boolean;
   role: number | string;
@@ -55,9 +55,6 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/**
- * Convert API role to store role
- */
 function toStoreRole(apiRole: number | string): Role {
   if (apiRole === 2 || apiRole === "ROLE_CAST") {
     return "cast";
@@ -69,26 +66,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [newUserFlag, setNewUserFlag] = useState(false);
   const router = useRouter();
 
-  // Identity-only zustand state. The access/refresh tokens live in httpOnly
-  // cookies set by the BFF; React never holds them.
   const userId = useAuthStore(selectUserId);
   const role = useAuthStore(selectRole);
   const isHydrated = useAuthStore(selectIsHydrated);
   const setIdentity = useAuthStore((state) => state.setIdentity);
   const clearIdentity = useAuthStore((state) => state.clearIdentity);
 
-  // SWR fetcher for /api/identity/me. The cookie rides along automatically
-  // (same-origin). The BFF refreshes transparently on UNAUTHENTICATED, so the
-  // client does not have to orchestrate refresh-retry itself.
   const meFetcher = useCallback(
     async (url: string) => {
       const res = await fetch(url, { cache: "no-store" });
       if (res.ok) return res.json();
       if (res.status === 401) {
-        // Cookie missing or refresh failed — drop identity so the shell redirects.
         clearIdentity();
       }
-      // FALLBACK: Returns null when authentication fails
+      // FALLBACK: Return null when authentication fails.
       return null;
     },
     [clearIdentity],
@@ -115,9 +106,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     : null;
 
-  // The BFF sets access/refresh cookies on verify / sign-in.
-  // We seed identity from response.account so the shell can render synchronously.
-  void role; // kept as a reactive subscription so role changes re-render.
+  // Keep role in the dependency list because auth state must react to role changes.
+  void role;
   void userId;
 
   const register = async (phoneNumber: string, password: string) => {
@@ -172,8 +162,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ phoneNumber, password }),
     });
     const data = await res.json();
-    // 423 Locked carries a friendly message in `data.message` (with retry minutes);
-    // fall back to `data.error` for other failure codes.
     if (!res.ok)
       throw new Error(data.message || data.error || "ログインに失敗しました");
 
@@ -187,8 +175,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (data.reactivated === true) {
-      // Non-blocking toast; mobile browsers can silently suppress repeat
-      // window.alert dialogs, which would drop this feedback entirely.
       useToastStore.getState().show("お帰りなさい。アカウントは復活しました。");
     }
 
@@ -237,8 +223,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    // The BFF reads refresh from cookie and clears both cookies on success.
-    // Always call it (even with no userId) so a stale cookie is cleared.
     try {
       await fetch("/api/identity/logout", { method: "POST" });
     } catch {

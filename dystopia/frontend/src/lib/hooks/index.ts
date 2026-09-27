@@ -1,8 +1,3 @@
-/**
- * Shared Hooks
- *
- * Reusable hook utilities for API interactions.
- */
 
 export {
   usePaginatedFetch,
@@ -18,4 +13,3 @@ export {
   type UseApiMutationOptions,
   type UseApiMutationReturn,
 } from "./useApiMutation";
-

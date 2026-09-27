@@ -2,11 +2,6 @@
 
 module Footprints
   module UseCases
-    # Records that `visitor_id` viewed `visited_id`'s profile.
-    # No-op (returns nil) when:
-    #   - visitor == visited
-    #   - either direction of block exists between visitor and visited
-    # Upsert per (visitor, visited) pair via FootprintsRepository#upsert_visit.
     class RecordVisit
       include Footprints::Deps[footprints_repo: "repositories.footprints_repository"]
 
