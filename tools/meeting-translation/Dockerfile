@@ -1,33 +1,28 @@
-FROM node:24.20.0-alpine AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-
-FROM base AS builder
+FROM rust:1-bookworm AS builder
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+COPY assets ./assets
+RUN cargo install topcoat-cli
+RUN cargo build --release
+RUN topcoat asset bundle --release
 
-COPY . .
-RUN pnpm build
-RUN pnpm prune --prod
-
-FROM base AS runner
+FROM debian:bookworm-slim AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+  && rm -rf /var/lib/apt/lists/* \
+  && addgroup --system --gid 1001 meeting-translation \
+  && adduser --system --uid 1001 --ingroup meeting-translation meeting-translation
+
 ENV PORT=3000
+ENV HOST=0.0.0.0
 
-RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 --ingroup nodejs nodejs
+COPY --from=builder --chown=meeting-translation:meeting-translation /app/target/release/meeting-translation ./meeting-translation
+COPY --from=builder --chown=meeting-translation:meeting-translation /app/target/release/assets ./assets
 
-COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
-
-USER nodejs
-
+USER meeting-translation
 EXPOSE 3000
 
-CMD ["node", "dist/server/main.js"]
+CMD ["./meeting-translation"]

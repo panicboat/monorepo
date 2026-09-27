@@ -1,7 +1,4 @@
-node_modules
-dist
+target
 .git
-.worktrees
-coverage
 .env
 .env.*
