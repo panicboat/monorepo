@@ -1,0 +1,15 @@
+[package]
+name = "meeting-translation"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+topcoat = { version = "0.9.0", features = ["websocket"] }
+
+[dev-dependencies]
+# Unlocks `#[tokio::test(start_paused = true)]` and `tokio::time::advance`,
+# used by Task 7's reconnect-grace tests. Cargo only unifies this into test
+# builds, not the release binary.
+tokio = { version = "1", features = ["test-util"] }
