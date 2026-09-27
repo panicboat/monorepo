@@ -1,8 +1,8 @@
-import { startMicrophone, stopMicrophone } from "./microphone.js";
-
 const appElement = document.getElementById("app");
 const roomId = appElement.dataset.roomId;
 const joinToken = window.location.hash.slice(1);
+// Dynamic import of an absolute, server-resolved URL: a relative specifier (static or dynamic) does not reliably resolve through an import map this early in page load in real Chrome (confirmed empirically).
+const { startMicrophone, stopMicrophone } = await import(appElement.dataset.microphoneUrl);
 
 const statusMessages = {
   invalid_message: "Something went wrong. Please refresh.",
@@ -180,7 +180,11 @@ async function toggleMicrophone() {
   }
 
   try {
-    await startMicrophone((chunk) => socket.send(chunk));
+    await startMicrophone(
+      (chunk) => socket.send(chunk),
+      appElement.dataset.pcmResampleUrl,
+      appElement.dataset.audioWorkletUrl,
+    );
     socket.send(JSON.stringify({ type: "audio_start" }));
     micActive = true;
   } catch {

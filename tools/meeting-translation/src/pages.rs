@@ -11,21 +11,6 @@ use topcoat::view::{View, view};
 pub use crate::room::RoomId;
 use crate::room::RoomRegistry;
 
-fn import_map_json(
-    microphone_url: &str,
-    pcm_resample_url: &str,
-    audio_worklet_url: &str,
-) -> String {
-    serde_json::json!({
-        "imports": {
-            "./microphone.js": microphone_url,
-            "./pcm-resample.js": pcm_resample_url,
-            "./audio-worklet-processor.js": audio_worklet_url,
-        }
-    })
-    .to_string()
-}
-
 #[page("/translate/")]
 pub async fn creation_form() -> Result<impl View> {
     Ok(view! {
@@ -99,11 +84,9 @@ pub async fn healthz() -> Result<&'static str> {
 pub async fn meeting_page(cx: &Cx) -> Result<impl View> {
     let room_id = path_param::<RoomId>(cx)?.clone();
     let assets = asset_config(cx);
-    let import_map = import_map_json(
-        &assets.resolve(crate::assets::MICROPHONE_JS),
-        &assets.resolve(crate::assets::PCM_RESAMPLE_JS),
-        &assets.resolve(crate::assets::AUDIO_WORKLET_PROCESSOR_JS),
-    );
+    let microphone_url = assets.resolve(crate::assets::MICROPHONE_JS);
+    let pcm_resample_url = assets.resolve(crate::assets::PCM_RESAMPLE_JS);
+    let audio_worklet_url = assets.resolve(crate::assets::AUDIO_WORKLET_PROCESSOR_JS);
 
     Ok(view! {
         <!DOCTYPE html>
@@ -112,29 +95,17 @@ pub async fn meeting_page(cx: &Cx) -> Result<impl View> {
                 <title>"Meeting Translation"</title>
                 <link rel="stylesheet" href=(crate::assets::STYLES_CSS)>
                 topcoat::dev::script()
-                <script type="importmap">(import_map)</script>
             </head>
             <body>
-                <div id="app" data-room-id=(room_id)></div>
+                <div
+                    id="app"
+                    data-room-id=(room_id)
+                    data-microphone-url=(microphone_url)
+                    data-pcm-resample-url=(pcm_resample_url)
+                    data-audio-worklet-url=(audio_worklet_url)
+                ></div>
                 <script type="module" src=(crate::assets::SESSION_JS)></script>
             </body>
         </html>
     })
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn import_map_json_maps_each_relative_specifier_to_its_url() {
-        let json = import_map_json("/a-1.js", "/b-2.js", "/c-3.js");
-        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
-        assert_eq!(parsed["imports"]["./microphone.js"], "/a-1.js");
-        assert_eq!(parsed["imports"]["./pcm-resample.js"], "/b-2.js");
-        assert_eq!(
-            parsed["imports"]["./audio-worklet-processor.js"],
-            "/c-3.js"
-        );
-    }
 }
