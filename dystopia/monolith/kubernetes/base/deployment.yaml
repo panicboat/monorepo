@@ -23,7 +23,7 @@ spec:
           command: ["./bin/start"]
           ports:
             - containerPort: 9001
-          # grpc.health.v1.Health は bin/grpc に未登録のため、9001 の TCP bind で代替する。
+          # tcpSocket used because bin/grpc doesn't register grpc.health.v1.Health
           startupProbe:
             tcpSocket:
               port: 9001
