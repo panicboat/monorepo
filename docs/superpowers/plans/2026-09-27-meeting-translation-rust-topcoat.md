@@ -1676,10 +1676,29 @@ InternalEvent::Recognition { participant_id, event } => {
 
 Also add `SessionStarted { participant_id: Uuid, session: Box<dyn RecognitionSession> }` as a fourth variant on the `InternalEvent` enum declared in Task 5 (alongside `Command` and `TranslationDone`) — `handle_recognition_event`'s `RecognitionEvent::Reconnected` arm is unrelated to session startup and stays reserved for a future adapter that can actually detect a resumed connection (see Task 9's note on `TranscribeRecognizer` not emitting one today).
 
+`disconnect` (defined back in Task 4, unchanged since) removes the participant but never stops their recognition session — this task adds the session field, so it must also close this gap, or a live session leaks past its owner leaving. Update `disconnect`:
+
+```rust
+fn disconnect(&mut self, participant_id: Uuid) {
+    let Some(mut removed) = self.participants.remove(&participant_id) else {
+        return;
+    };
+    if let Some(session) = removed.recognition_session.take() {
+        session.stop();
+    }
+    self.broadcast(ServerMessage::ParticipantLeft { participant: removed.participant }, None);
+    if self.participants.is_empty() {
+        let _ = self.became_empty.send(self.room_id.clone());
+    }
+}
+```
+
+Add a regression test to `recognition_tests` proving this: join a participant, send `AudioStart` and drain until the `FakeSession` is actually installed (send `WriteAudio` with a marker chunk and wait for it to appear in `written`, same pattern `audio_start_streams_partial_then_final_becomes_a_caption` already uses to synchronize past the async session-start race), then send `RoomCommand::Disconnect` and assert `stopped` becomes `true` within a short timeout — mirroring `audio_start_streams_partial_then_final_becomes_a_caption`'s own assertion style for `AudioStop`.
+
 - [ ] **Step 5: Run to verify it passes**
 
 Run: `cargo test --lib room`
-Expected: PASS — all tests from Tasks 4, 5, and 6 green.
+Expected: PASS — all tests from Tasks 4, 5, and 6 green, including the new disconnect-stops-the-session regression test.
 
 - [ ] **Step 6: Wire the module into `src/lib.rs`**
 
