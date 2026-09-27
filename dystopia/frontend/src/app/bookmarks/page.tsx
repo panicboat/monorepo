@@ -1,8 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { useBookmarkList } from "@/modules/bookmarks";
+import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
+
+export function BookmarksHeader() {
+  return <PageHeader title="ブックマーク" description={getFeatureDescription("bookmarks")} />;
+}
 
 export default function BookmarksPage() {
   const { posts, hasMore, loading, error, loadMore } = useBookmarkList();
@@ -10,7 +16,7 @@ export default function BookmarksPage() {
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <div className="px-4 pt-4">
-        <h1 className="text-xl font-bold">ブックマーク</h1>
+        <BookmarksHeader />
       </div>
 
       {loading && posts.length === 0 && (

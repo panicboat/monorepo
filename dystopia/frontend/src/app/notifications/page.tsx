@@ -3,8 +3,14 @@
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { useNotifications, describeNotification, notificationHref } from "@/modules/notifications";
 import type { NotificationView } from "@/modules/notifications/types";
+import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
+
+export function NotificationsHeader() {
+  return <PageHeader title="通知" description={getFeatureDescription("notifications")} />;
+}
 
 function formatDate(iso: string): string {
   if (!iso) return "";
@@ -27,7 +33,7 @@ export default function NotificationsPage() {
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <div className="flex items-start justify-between px-4 pt-4">
         <div>
-          <h1 className="text-xl font-bold">通知</h1>
+          <NotificationsHeader />
           <p className="pt-1 text-sm text-text-secondary">未読 {unreadCount} 件</p>
         </div>
         <button

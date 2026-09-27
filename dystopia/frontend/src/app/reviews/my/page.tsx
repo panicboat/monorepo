@@ -1,7 +1,12 @@
 "use client";
 
+import { PageHeader } from "@/components/ui/page-header";
 import { useProfile } from "@/modules/profile/hooks";
 import { ReviewsTab } from "@/modules/review/components/ReviewsTab";
+
+export function MyReviewsHeader() {
+  return <PageHeader title="レビュー" description="キャストについて書いたレビューの一覧" />;
+}
 
 export default function MyReviewsPage() {
   const { profile, loading } = useProfile();
@@ -12,7 +17,7 @@ export default function MyReviewsPage() {
   return (
     <div>
       <header className="border-b border-border px-4 py-3">
-        <h1 className="text-lg font-medium">レビュー</h1>
+        <MyReviewsHeader />
       </header>
       <ReviewsTab accountId={profile.accountId} mode="written" />
     </div>

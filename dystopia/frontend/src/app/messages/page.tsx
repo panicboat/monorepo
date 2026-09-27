@@ -2,8 +2,14 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
+import { PageHeader } from "@/components/ui/page-header";
 import { useThreads } from "@/modules/messaging";
 import type { ThreadView } from "@/modules/messaging/types";
+import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
+
+export function MessagesHeader() {
+  return <PageHeader title="メッセージ" description={getFeatureDescription("messages")} />;
+}
 
 function timeAgo(iso: string): string {
   if (!iso) return "";
@@ -52,7 +58,7 @@ export default function MessagesPage() {
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <div className="px-4 pt-4">
-        <h1 className="text-xl font-bold">メッセージ</h1>
+        <MessagesHeader />
         <p className="pt-1 text-sm text-text-secondary">未読 {totalUnreadCount} 件</p>
       </div>
 
