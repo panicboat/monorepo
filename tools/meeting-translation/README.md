@@ -21,9 +21,9 @@ Pod Identity と workload は次の順序で適用します。
 | `AWS_REGION` | Yes | なし | Transcribe と Bedrock を呼び出すリージョン |
 | `BEDROCK_MODEL_ID` | Yes | なし | 翻訳に使う Bedrock model ID |
 | `TRANSLATION_GLOSSARY` | No | 空 | 1 行 1 項目の用語集 |
-| `PORT` | No | `3001` | server の listen port |
+| `PORT` | No | `3000` | server の listen port |
 
-Required の 3 変数は空文字も許可されません。AWS access key などの credentials はこのサービスの環境変数へ追加しません。
+Required の 2 変数は空文字も許可されません。AWS access key などの credentials はこのサービスの環境変数へ追加しません。
 
 ## Running Locally
 
