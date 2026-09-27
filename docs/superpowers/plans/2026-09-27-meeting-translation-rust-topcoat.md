@@ -3712,6 +3712,7 @@ const statusMessages = {
 
 function renderJoinForm() {
   appElement.innerHTML = `
+    <div id="status" role="status"></div>
     <form id="join-form">
       <label>
         Display name
@@ -3880,6 +3881,7 @@ Notes on what changed from the previous version, and why:
 - The join form's submit button starts `disabled` and is only enabled once the WebSocket's `open` event fires — sending before the connection is open throws `InvalidStateError`; a human filling out four fields will almost always outlast the handshake, but this closes the race rather than relying on that.
 - The `mic-toggle` click listener moved from a direct `getElementById(...).addEventListener(...)` (attached once, at module load, to a button that existed at that time) to the same delegated-listener pattern already used for `manual-caption-form`'s submit handler — necessary because `#mic-toggle` no longer exists until `renderApp()` runs after `room_joined`, and a delegated listener on `document` survives that element being created fresh.
 - `renderApp()` (previously called unconditionally at module load) now only runs inside the `room_joined` case, after a real join has actually succeeded — matching the old TypeScript app's behavior of only showing the meeting UI post-join, and naturally hiding the caption/mic UI from someone who hasn't consented or hasn't finished the form yet.
+- `renderJoinForm()`'s template also has its own `<div id="status" role="status"></div>`, not just `renderApp()`'s — `showStatus()` targets whichever one currently exists by ID. Without this, a join that the server rejects (`room_full`, `room_not_found`, `invalid_message` — all sent as a `status` message in place of `room_joined`, per `src/session.rs`) would be silently invisible, since `#status` wouldn't exist yet if it only lived inside `renderApp()`'s post-join template.
 
 Run: `node --check tools/meeting-translation/assets/session.js`
 Expected: exits 0 (no syntax errors); this file has no unit test target (same as before this task — it is DOM-driven and was never in scope for `node --test`, matching Task 12's original scope).

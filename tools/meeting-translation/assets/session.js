@@ -17,6 +17,7 @@ const statusMessages = {
 
 function renderJoinForm() {
   appElement.innerHTML = `
+    <div id="status" role="status"></div>
     <form id="join-form">
       <label>
         Display name
