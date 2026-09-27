@@ -2000,10 +2000,7 @@ impl RoomRegistry {
         });
     }
 
-    /// Test-only: drains every lifecycle notification currently queued and
-    /// starts its expiry timer, without spawning the free-running loop
-    /// production uses. Since tests never call `run_lifecycle_loop`, this is
-    /// the channel's only consumer, so `try_recv()` here races nothing.
+    /// Test-only: drains queued lifecycle notifications and starts their expiry timers (tests never run `run_lifecycle_loop`, so this is the channel's only consumer).
     #[cfg(test)]
     async fn pump_lifecycle_events_for_test(self: &Arc<Self>) {
         loop {
@@ -2016,6 +2013,8 @@ impl RoomRegistry {
             };
             self.schedule_expiry(room_id);
         }
+        // Lets a freshly spawned timer task reach its first poll and arm its sleep before a caller advances the paused clock.
+        tokio::task::yield_now().await;
     }
 }
 ```
@@ -2023,6 +2022,8 @@ impl RoomRegistry {
 Because `schedule_expiry` takes `&Arc<Self>` (it clones `self` into the spawned timer task), both `run_lifecycle_loop` and `pump_lifecycle_events_for_test` must be called through an `Arc<RoomRegistry>` — already the case everywhere in this plan, since `RoomRegistry::new` returns `Arc<Self>` and the test module's `test_registry()` helper (Step 2) returns that `Arc` directly rather than unwrapping it.
 
 `find` cancels a room's pending expiry as a side effect, which is correct for its one real caller (Task 10's session route calls it exactly when a client sends `join`, and a real rejoin should keep the room alive) but makes it unsuitable for a read-only "does this room still exist" check — calling `find` purely to observe existence would itself cancel the timer being observed. `room_exists_for_test` exists so the reconnect-grace test can check existence at the 4-second and 6-second marks without disturbing the timer it's testing.
+
+`pump_lifecycle_events_for_test`'s trailing `yield_now().await` exists for a second, independent reason from the same test: `schedule_expiry` only calls `tokio::spawn` — it does not itself await anything — so the timer task it starts has not been polled even once by the time `pump_lifecycle_events_for_test` returns. Under a real clock this is harmless (the task gets polled soon regardless), but under `#[tokio::test(start_paused = true)]` a `tokio::time::sleep` only registers its deadline against the paused clock on its first poll; calling `tokio::time::advance` before that first poll advances a clock the timer isn't listening to yet, so the timer never fires. One `yield_now` gives the scheduler a chance to run the freshly spawned task once (enough for its `tokio::select!` to poll `tokio::time::sleep(RECONNECT_GRACE)` and arm it) before the test advances time.
 
 - [ ] **Step 5: Re-export from `src/room.rs`**
 
