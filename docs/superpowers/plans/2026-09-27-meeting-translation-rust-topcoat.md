@@ -3461,6 +3461,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
   && adduser --system --uid 1001 --ingroup meeting-translation meeting-translation
 
 ENV PORT=3000
+ENV HOST=0.0.0.0
 
 COPY --from=builder --chown=meeting-translation:meeting-translation /app/target/release/meeting-translation ./meeting-translation
 COPY --from=builder --chown=meeting-translation:meeting-translation /app/target/release/assets ./assets
@@ -3470,6 +3471,8 @@ EXPOSE 3000
 
 CMD ["./meeting-translation"]
 ```
+
+Note: `ENV HOST=0.0.0.0` is required because Topcoat's `topcoat::start`/`topcoat::serve` (`topcoat-0.9.0`'s `src/serve.rs`) reads the `HOST` env var and defaults to `127.0.0.1` when it is unset — inside a container, binding only to the container's own loopback makes the app unreachable from outside the container, even with `-p 3000:3000` or a Kubernetes Service/Pod IP, since neither is loopback traffic from the process's point of view. This is not just a `docker run` smoke-test artifact: `kubernetes/base/deployment.yaml`'s `env` list only sets `PORT`, never `HOST`, so a real cluster deployment would have failed its readiness/liveness probes and never received traffic — setting the default here, in the image, is what fixes both cases without needing to touch `deployment.yaml` (Docker `ENV` defaults carry through into a container's environment unless a Kubernetes `env`/`envFrom` entry explicitly overrides the same name, which none here do for `HOST`).
 
 Note: `ca-certificates` is required at runtime because the AWS SDK's HTTPS client (used for Bedrock and Transcribe calls) validates TLS certificates against the system trust store — this is the one runtime package the `debian:bookworm-slim` base does not include by default. `topcoat asset bundle` (see the Global Constraints entry on the asset bundle, and Task 14) is a separate step from `cargo build`, not something `cargo build --release` does on its own — skipping it means the binary panics on startup exactly as it did in Task 14's first attempt. `topcoat asset bundle --release` writes the bundle to `target/release/assets`, next to the executable it scanned (confirmed empirically in Task 14 for the `debug` profile; `--release` uses the same layout under the `release` profile directory per the crate's own docs) — this is why the runner stage's second `COPY --from=builder` now reads from `/app/target/release/assets` rather than a top-level `/app/assets` (the source tree's `assets/` holds the *unbundled* JS files; the runtime needs the *bundled*, content-hashed output). Confirm at Task 17's dogfooding pass that the container's `AssetBundle::load()` finds this directory without a panic.
 
@@ -3494,7 +3497,7 @@ docker run --rm -p 3000:3000 \
 sleep 2
 curl -s http://127.0.0.1:3000/translate/
 ```
-Expected: same creation-form HTML as Task 14's `cargo run` smoke test, this time served from the container. If the asset directory path from the Step 1 note was wrong, this is where it will 404 on the assets referenced by the page — fix the `COPY` line and rebuild.
+Expected: same creation-form HTML as Task 14's `cargo run` smoke test, this time served from the container. If the asset directory path from the Step 1 note was wrong, this is where it will 404 on the assets referenced by the page — fix the `COPY` line and rebuild. If `curl` instead returns `curl: (52) Empty reply from server` while `docker ps`/`docker logs` show the container running with no panic, that is the symptom of the `HOST` bind gap the Step 1 note above already covers — confirm the Dockerfile has `ENV HOST=0.0.0.0` (already fixed in this plan; this note exists only in case this step is ever run against an out-of-date Dockerfile).
 
 - [ ] **Step 4: Commit**
 
