@@ -3629,6 +3629,289 @@ git commit -s -m "docs(meeting-translation): update running instructions for the
 
 ---
 
+## Task 18: Fix final-review findings — health check route and real join settings
+
+The final whole-branch review (after Task 17) found two Critical, empirically-verified defects. Both are plan defects — the reference code below was wrong in the original Task 12/16 text, not a deviation by either task's implementer — so this task fixes the plan directly with corrected code, the same way every mid-run BLOCKED finding in this run was handled.
+
+**Finding 1 — health check route missing.** `kubernetes/base/deployment.yaml` (unchanged by this whole rewrite) points both `readinessProbe` and `livenessProbe` at `GET /translate/healthz`, but no task ever added that route to the Rust app — `pages.rs` only has `/translate/`, `POST /translate/api/rooms`, and `/translate/rooms/{room_id}`. A real `cargo build` + `topcoat asset bundle` + running binary + `curl` during the final review confirmed `/translate/healthz` returns 404. Deployed as-is, the pod never becomes `Ready` (no Service endpoint, full outage) and the liveness probe drives repeated restarts. The pre-rewrite TypeScript app had a real handler for this route (`app.get(\`${basePath}/healthz\`, ...)`) that this rewrite never ported.
+
+**Finding 2 — the client hardcodes speech language, display language, and consent, and discards the creator's typed display name.** `assets/session.js`'s `join` message (Task 12's own reference code, followed exactly by the implementer) always sends `speech_language: "japanese"`, `display_language: "english"`, `consent: true` for every participant in every room, and collects the display name via a bare `window.prompt()` — the creation form's own "Display name" `<input>` (`src/pages.rs`) is `required` but never read by `assets/creation-form.js`. This directly contradicts the design spec (`docs/superpowers/specs/2026-09-27-meeting-translation-rust-topcoat-design.md`, which lists `displayName・speechLanguage・displayLanguage・consent` as fields the client collects and sends in `join`, and states `join` must validate `consent` as one of its three checks) and the still-current README's "Meeting Operation" section, which this rewrite's own goal was to preserve as a behavior contract. Checking the pre-rewrite TypeScript app's `src/web/components/entry-form.tsx` (the authoritative prior behavior) confirms the real design: creating a room collects no personal settings at all (just a "Create meeting" button — a room can exist before anyone decides how they'll join it); *every* participant, including the creator, fills in display name + a spoken-language select + a display-language select + an explicit consent checkbox on the page where they actually join — the creator reaches that same page immediately after creating the room, participants reach it via the shared link. The two-page split in this rewrite (`/translate/` vs `/translate/rooms/{room_id}`, vs. the old app's single client-routed SPA) makes the room page — not the creation page — the one natural place for this per-participant form to live for everyone uniformly.
+
+**Files:**
+- Modify: `tools/meeting-translation/src/pages.rs` (add `healthz` route; remove the now-redundant, never-read "Display name" input from `creation_form`)
+- Modify: `tools/meeting-translation/src/main.rs` (register the new route)
+- Modify: `tools/meeting-translation/assets/session.js` (replace `window.prompt()` + hardcoded fields with a real join form, gated on the socket actually being open, whose submission sends the user's real choices)
+
+**Interfaces:**
+- Produces: `#[route(GET "/translate/healthz")] pub async fn healthz() -> &'static str` in `pages.rs`, registered as `.route(pages::healthz)` in `main.rs`.
+- Consumes: `ClientMessage::Join`'s existing fields (`display_name`, `speech_language`, `display_language`, `consent` — from `src/protocol.rs`, unchanged) — this task only changes what values the browser sends, not the wire protocol itself.
+
+- [ ] **Step 1: Add the health check route**
+
+In `tools/meeting-translation/src/pages.rs`, add near the other route/page functions:
+
+```rust
+#[route(GET "/translate/healthz")]
+pub async fn healthz() -> &'static str {
+    "ok"
+}
+```
+
+In `tools/meeting-translation/src/main.rs`, add `.route(pages::healthz)` to the router builder chain (order among the other `.route`/`.page` calls does not matter):
+
+```rust
+let router = Router::builder()
+    .page(pages::creation_form)
+    .route(pages::create_room)
+    .page(pages::meeting_page)
+    .route(session::session)
+    .route(pages::healthz)
+    .assets(AssetBundle::load().unwrap())
+    .app_context(registry)
+    .build();
+```
+
+Run: `cargo build`
+Expected: compiles cleanly (`&'static str` implements Topcoat's `IntoResponse`, confirmed against `topcoat-router-0.9.0`'s `src/response.rs` during the final review — no `Result` wrapper needed for a handler that cannot fail).
+
+- [ ] **Step 2: Remove the creation form's dead display-name input**
+
+In `tools/meeting-translation/src/pages.rs`'s `creation_form`, remove the label/input, leaving only the submit button — this field was never read by `creation-form.js` and, per Step 3 below, display name is now collected uniformly for every participant (creator included) on the room page instead:
+
+```rust
+<form id="create-room-form">
+    <button type="submit">"Create meeting"</button>
+</form>
+```
+
+`assets/creation-form.js` needs no change — it never referenced `#display-name`.
+
+- [ ] **Step 3: Replace `assets/session.js`'s join flow with a real settings form**
+
+Replace the whole file with:
+
+```javascript
+import { startMicrophone, stopMicrophone } from "./microphone.js";
+
+const appElement = document.getElementById("app");
+const roomId = appElement.dataset.roomId;
+const joinToken = window.location.hash.slice(1);
+
+const statusMessages = {
+  invalid_message: "Something went wrong. Please refresh.",
+  room_full: "This meeting already has 3 participants.",
+  room_not_found: "This meeting link is no longer valid.",
+  microphone_unavailable: "Microphone access is unavailable.",
+  recognition_available: "Speech recognition is back online.",
+  recognition_unavailable: "Speech recognition is unavailable. You can type captions manually.",
+  translation_unavailable: "Translation failed for the last caption.",
+  reconnecting: "Reconnecting to speech recognition...",
+};
+
+function renderJoinForm() {
+  appElement.innerHTML = `
+    <form id="join-form">
+      <label>
+        Display name
+        <input id="join-display-name" maxlength="40" required>
+      </label>
+      <label>
+        Spoken language
+        <select id="join-speech-language">
+          <option value="japanese">Japanese</option>
+          <option value="english">English</option>
+        </select>
+      </label>
+      <label>
+        Display language
+        <select id="join-display-language">
+          <option value="japanese">Japanese</option>
+          <option value="english">English</option>
+        </select>
+      </label>
+      <label>
+        <input id="join-consent" type="checkbox" required>
+        I consent to sending audio and captions to Amazon Transcribe and Amazon Bedrock for transcription and translation.
+      </label>
+      <button type="submit" id="join-submit" disabled="">Join meeting</button>
+    </form>
+  `;
+}
+
+function renderApp() {
+  appElement.innerHTML = `
+    <div id="status" role="status"></div>
+    <ul id="participants"></ul>
+    <ul id="captions"></ul>
+    <form id="manual-caption-form">
+      <input id="manual-caption-text" maxlength="2000" placeholder="Type a caption">
+      <button type="submit">Send</button>
+    </form>
+    <button id="mic-toggle">Start speaking</button>
+  `;
+}
+
+function showStatus(code) {
+  const statusElement = document.getElementById("status");
+  if (statusElement) statusElement.textContent = statusMessages[code] ?? "";
+}
+
+function renderParticipants(participants) {
+  const list = document.getElementById("participants");
+  list.innerHTML = "";
+  for (const participant of participants) {
+    const item = document.createElement("li");
+    item.textContent = participant.display_name;
+    list.appendChild(item);
+  }
+}
+
+function upsertCaption(caption) {
+  const list = document.getElementById("captions");
+  let item = document.getElementById(`caption-${caption.id}`);
+  if (!item) {
+    item = document.createElement("li");
+    item.id = `caption-${caption.id}`;
+    list.appendChild(item);
+  }
+
+  const text = caption.state === "final" ? caption.translated_text : caption.source_text;
+  item.textContent = `${caption.speaker.display_name}: ${text ?? "..."}`;
+
+  if (caption.state !== "translating") {
+    const clarifyButton = document.createElement("button");
+    clarifyButton.textContent = "Ask to clarify";
+    clarifyButton.addEventListener("click", () => {
+      socket.send(JSON.stringify({ type: "clarification_request", caption_id: caption.id }));
+    });
+    item.appendChild(clarifyButton);
+  }
+}
+
+renderJoinForm();
+
+let micActive = false;
+
+const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+const socket = new WebSocket(`${protocol}//${window.location.host}/translate/rooms/${roomId}/session`);
+
+socket.addEventListener("open", () => {
+  const submitButton = document.getElementById("join-submit");
+  if (submitButton) submitButton.disabled = false;
+});
+
+socket.addEventListener("message", (event) => {
+  const message = JSON.parse(event.data);
+  switch (message.type) {
+    case "room_joined":
+      renderApp();
+      renderParticipants(message.participants);
+      break;
+    case "participant_joined":
+    case "participant_left":
+      // TODO: Track membership incrementally after the core loop is confirmed.
+      break;
+    case "caption_preview":
+      break;
+    case "caption_update":
+      upsertCaption(message.caption);
+      break;
+    case "clarification_requested":
+      showStatus("reconnecting"); // TODO: Use a dedicated clarification-request UI slot.
+      break;
+    case "status":
+      showStatus(message.code);
+      break;
+  }
+});
+
+document.addEventListener("submit", (event) => {
+  if (event.target.id === "join-form") {
+    event.preventDefault();
+    socket.send(
+      JSON.stringify({
+        type: "join",
+        room_id: roomId,
+        token: joinToken,
+        display_name: document.getElementById("join-display-name").value,
+        speech_language: document.getElementById("join-speech-language").value,
+        display_language: document.getElementById("join-display-language").value,
+        consent: document.getElementById("join-consent").checked,
+      }),
+    );
+    return;
+  }
+
+  if (event.target.id === "manual-caption-form") {
+    event.preventDefault();
+    const input = document.getElementById("manual-caption-text");
+    if (!input.value) return;
+    socket.send(JSON.stringify({ type: "caption_manual", text: input.value }));
+    input.value = "";
+  }
+});
+
+document.addEventListener("click", (event) => {
+  if (event.target.id !== "mic-toggle") return;
+  toggleMicrophone();
+});
+
+async function toggleMicrophone() {
+  if (micActive) {
+    stopMicrophone();
+    socket.send(JSON.stringify({ type: "audio_stop" }));
+    micActive = false;
+    return;
+  }
+
+  try {
+    await startMicrophone((chunk) => socket.send(chunk));
+    socket.send(JSON.stringify({ type: "audio_start" }));
+    micActive = true;
+  } catch {
+    showStatus("microphone_unavailable");
+  }
+}
+```
+
+Notes on what changed from the previous version, and why:
+- The join form's submit button starts `disabled` and is only enabled once the WebSocket's `open` event fires — sending before the connection is open throws `InvalidStateError`; a human filling out four fields will almost always outlast the handshake, but this closes the race rather than relying on that.
+- The `mic-toggle` click listener moved from a direct `getElementById(...).addEventListener(...)` (attached once, at module load, to a button that existed at that time) to the same delegated-listener pattern already used for `manual-caption-form`'s submit handler — necessary because `#mic-toggle` no longer exists until `renderApp()` runs after `room_joined`, and a delegated listener on `document` survives that element being created fresh.
+- `renderApp()` (previously called unconditionally at module load) now only runs inside the `room_joined` case, after a real join has actually succeeded — matching the old TypeScript app's behavior of only showing the meeting UI post-join, and naturally hiding the caption/mic UI from someone who hasn't consented or hasn't finished the form yet.
+
+Run: `node --check tools/meeting-translation/assets/session.js`
+Expected: exits 0 (no syntax errors); this file has no unit test target (same as before this task — it is DOM-driven and was never in scope for `node --test`, matching Task 12's original scope).
+
+- [ ] **Step 4: Manual verification**
+
+This task's core behavior (a real form gating a real WebSocket join with real user-selected values) cannot be verified by a unit test — verify by reading the diff against Steps 1-3 above, plus:
+
+```bash
+cd tools/meeting-translation
+source "$HOME/.cargo/env"
+cargo build
+topcoat asset bundle
+export AWS_REGION=ap-northeast-1
+export BEDROCK_MODEL_ID=amazon.nova-lite-v1:0
+export TRANSLATION_GLOSSARY=""
+cargo run &
+sleep 2
+curl -s -o /dev/null -w "healthz status: %{http_code}\n" http://127.0.0.1:3000/translate/healthz
+curl -s http://127.0.0.1:3000/translate/ | grep -c 'id="display-name"'
+kill %1
+```
+
+Expected: `healthz status: 200`; the `grep -c` prints `0` (the dead input is gone from the creation form's served HTML).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add tools/meeting-translation/src/pages.rs tools/meeting-translation/src/main.rs tools/meeting-translation/assets/session.js
+git commit -s -m "fix(meeting-translation): add health check route and collect real join settings"
+```
+
+---
+
 ## Plan Self-Review Notes
 
 - **Spec coverage:** every section of the design spec has a task — Topcoat verification informed Tasks 2/10/11/12/14, the actor-based Concurrency Model is Tasks 4-7, the Protocol section is Task 3, Adapters are Tasks 8-9, Browser Layer is Tasks 12-13, Error Handling & Logging is threaded through Tasks 4-10 (status codes) and called out again in Task 17's checklist (log content), Deployment is Tasks 15-16, and Testing culminates in Task 17.
