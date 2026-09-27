@@ -9,7 +9,7 @@ let mediaStream;
 export async function startMicrophone(onChunk) {
   mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   audioContext = new AudioContext();
-  await audioContext.audioWorklet.addModule("./audio-worklet-processor.js");
+  await audioContext.audioWorklet.addModule(import.meta.resolve("./audio-worklet-processor.js"));
 
   const source = audioContext.createMediaStreamSource(mediaStream);
   workletNode = new AudioWorkletNode(audioContext, "pcm-capture");

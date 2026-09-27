@@ -1,5 +1,6 @@
 use serde::Serialize;
 use topcoat::Result;
+use topcoat::asset::asset_config;
 use topcoat::context::{Cx, app_context};
 use topcoat::router::content::Json;
 use topcoat::router::error::too_many_requests;
@@ -9,6 +10,21 @@ use topcoat::view::{View, view};
 
 pub use crate::room::RoomId;
 use crate::room::RoomRegistry;
+
+fn import_map_json(
+    microphone_url: &str,
+    pcm_resample_url: &str,
+    audio_worklet_url: &str,
+) -> String {
+    serde_json::json!({
+        "imports": {
+            "./microphone.js": microphone_url,
+            "./pcm-resample.js": pcm_resample_url,
+            "./audio-worklet-processor.js": audio_worklet_url,
+        }
+    })
+    .to_string()
+}
 
 #[page("/translate/")]
 pub async fn creation_form() -> Result<impl View> {
@@ -58,6 +74,12 @@ pub async fn create_room(cx: &Cx) -> Result<Json<CreateRoomResponse>> {
 #[page("/translate/rooms/{room_id}")]
 pub async fn meeting_page(cx: &Cx) -> Result<impl View> {
     let room_id = path_param::<RoomId>(cx)?.clone();
+    let assets = asset_config(cx);
+    let import_map = import_map_json(
+        &assets.resolve(crate::assets::MICROPHONE_JS),
+        &assets.resolve(crate::assets::PCM_RESAMPLE_JS),
+        &assets.resolve(crate::assets::AUDIO_WORKLET_PROCESSOR_JS),
+    );
 
     Ok(view! {
         <!DOCTYPE html>
@@ -65,6 +87,7 @@ pub async fn meeting_page(cx: &Cx) -> Result<impl View> {
             <head>
                 <title>"Meeting Translation"</title>
                 topcoat::dev::script()
+                <script type="importmap">(import_map)</script>
             </head>
             <body>
                 <div id="app" data-room-id=(room_id)></div>
@@ -72,4 +95,21 @@ pub async fn meeting_page(cx: &Cx) -> Result<impl View> {
             </body>
         </html>
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn import_map_json_maps_each_relative_specifier_to_its_url() {
+        let json = import_map_json("/a-1.js", "/b-2.js", "/c-3.js");
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed["imports"]["./microphone.js"], "/a-1.js");
+        assert_eq!(parsed["imports"]["./pcm-resample.js"], "/b-2.js");
+        assert_eq!(
+            parsed["imports"]["./audio-worklet-processor.js"],
+            "/c-3.js"
+        );
+    }
 }
