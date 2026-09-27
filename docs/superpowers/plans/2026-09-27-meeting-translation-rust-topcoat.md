@@ -1823,11 +1823,12 @@ mod tests {
         registry.pump_lifecycle_events_for_test().await;
 
         tokio::time::advance(std::time::Duration::from_secs(4)).await;
-        assert!(registry.find(&room_id).is_some(), "still within the 5s grace period");
+        // Not `find`: it cancels any pending expiry as a side effect, which would itself defeat this check.
+        assert!(registry.room_exists_for_test(&room_id), "still within the 5s grace period");
 
         tokio::time::advance(std::time::Duration::from_secs(2)).await;
         registry.pump_lifecycle_events_for_test().await;
-        assert!(registry.find(&room_id).is_none(), "grace period has elapsed");
+        assert!(!registry.room_exists_for_test(&room_id), "grace period has elapsed");
     }
 
     #[test]
@@ -1954,6 +1955,11 @@ impl RoomRegistry {
         Some(entry.sender.clone())
     }
 
+    #[cfg(test)]
+    fn room_exists_for_test(&self, room_id: &str) -> bool {
+        self.rooms.lock().unwrap().contains_key(room_id)
+    }
+
     pub fn allow_creation(&self, ip: IpAddr) -> bool {
         let now = Instant::now();
         let mut creations = self.creation_times_by_ip.lock().unwrap();
@@ -2015,6 +2021,8 @@ impl RoomRegistry {
 ```
 
 Because `schedule_expiry` takes `&Arc<Self>` (it clones `self` into the spawned timer task), both `run_lifecycle_loop` and `pump_lifecycle_events_for_test` must be called through an `Arc<RoomRegistry>` — already the case everywhere in this plan, since `RoomRegistry::new` returns `Arc<Self>` and the test module's `test_registry()` helper (Step 2) returns that `Arc` directly rather than unwrapping it.
+
+`find` cancels a room's pending expiry as a side effect, which is correct for its one real caller (Task 10's session route calls it exactly when a client sends `join`, and a real rejoin should keep the room alive) but makes it unsuitable for a read-only "does this room still exist" check — calling `find` purely to observe existence would itself cancel the timer being observed. `room_exists_for_test` exists so the reconnect-grace test can check existence at the 4-second and 6-second marks without disturbing the timer it's testing.
 
 - [ ] **Step 5: Re-export from `src/room.rs`**
 
