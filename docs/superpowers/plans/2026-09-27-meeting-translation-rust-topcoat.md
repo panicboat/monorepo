@@ -18,6 +18,8 @@
 - Join tokens: 32 random bytes, base64url-encoded for the shared link; only a SHA-256 hash is ever held in memory or compared (constant-time compare). Never log the raw token, transcript text, caption text, or AWS credentials — logs carry only `event_code` and non-sensitive IDs.
 - `MEETING_BASE_PATH` is retired; `/translate` is a literal path prefix in the route macros (Decision recorded in the spec).
 - No React, no Vite, no Node build step in the new implementation. All browser code is plain JS served via Topcoat's `asset!()` pipeline.
+- Topcoat's asset bundle (`manifest.toml` plus content-hashed files under `<cargo-target>/<profile>/assets`) is produced by the separate `topcoat` CLI (crate `topcoat-cli`, install once with `cargo install topcoat-cli`), never by plain `cargo build`/`cargo run`. Run `topcoat asset bundle` (matching the profile you are about to run or deploy — each profile keeps its own bundle) before starting the binary, or use `topcoat dev` for a loop that rebuilds and re-bundles automatically. `AssetBundle::load()` panics with an `io::ErrorKind::NotFound` error if this step is skipped — confirmed empirically in Task 14.
+- An `asset!()` declaration only survives into the bundle if something reachable in the compiled binary actually reads the `Asset` constant — Topcoat's bundler scans the binary for embedded declarations, and the optimizer strips ones nothing uses before that scan runs (confirmed empirically in Task 14: `MICROPHONE_JS`/`PCM_RESAMPLE_JS`/`AUDIO_WORKLET_PROCESSOR_JS` were declared in Task 13 but absent from `manifest.toml` until Task 14 made `meeting_page` read them). A `pub const` declaration alone is not enough.
 - The old TypeScript implementation is deleted in Task 1, not kept around during the rewrite — this is a from-scratch rebuild, not a port.
 - The crate has both a library target (`src/lib.rs`) and a binary target (`src/main.rs`) — Task 3's Step 0 introduces the split so `cargo test --lib` has something to run against. Every task from Task 3 onward that says "add `mod X;` to `src/main.rs`" means "add `pub mod X;` to `src/lib.rs`"; `src/main.rs` stays a thin binary until Task 14 gives it its final form.
 
@@ -3162,15 +3164,20 @@ git commit -s -m "feat(meeting-translation): add microphone capture and PCM resa
 
 ---
 
-## Task 14: Wire main.rs and do a first end-to-end smoke test
+## Task 14: Wire main.rs, fix cross-file JS asset resolution, and do a first end-to-end smoke test
+
+A first implementation attempt found two real gaps, both now understood and folded into this task's steps below: (1) nothing in this plan installed the `topcoat` CLI or ran the separate asset-bundling step `AssetBundle::load()` requires — `cargo run` alone panics with `NotFound`; (2) `MICROPHONE_JS`/`PCM_RESAMPLE_JS`/`AUDIO_WORKLET_PROCESSOR_JS` (declared in Task 13) never made it into the bundle because nothing read those constants, so the optimizer stripped them before Topcoat's binary scan — see the two new Global Constraints entries above. Step 2 and Step 4 below fix both.
 
 **Files:**
-- Modify: `tools/meeting-translation/src/main.rs` (rewrite as a thin binary — see Step 2)
+- Modify: `tools/meeting-translation/src/main.rs` (rewrite as a thin binary — see Step 3)
 - Modify: `tools/meeting-translation/src/lib.rs` (add `pub mod config;` — the last module declaration this plan adds to it)
 - Create: `tools/meeting-translation/src/config.rs` (deferred until now since this is the first task that needs it; see Step 1)
+- Modify: `tools/meeting-translation/src/pages.rs` (`meeting_page` renders an import map so the browser can resolve `session.js`'s and `microphone.js`'s plain relative `import`s to their real content-hashed URLs — see Step 4)
+- Modify: `tools/meeting-translation/assets/microphone.js` (resolve the worklet URL through that import map instead of a bare relative string — see Step 4)
 
 **Interfaces:**
 - Produces: the fully assembled `main()` that loads config, builds both AWS clients, constructs `RoomRegistry`, assembles the router with all pages/routes/assets, and calls `topcoat::start`.
+- Produces: `fn import_map_json(microphone_url: &str, pcm_resample_url: &str, audio_worklet_url: &str) -> String` in `pages.rs` — pure JSON construction, unit-tested directly with no router or app context needed.
 
 - [ ] **Step 1: Write `src/config.rs`** (this was scoped in the original design but not yet created by any earlier task — add it now since `main.rs` needs it immediately)
 
@@ -3237,7 +3244,25 @@ mod tests {
 Run: `cargo test --lib config`
 Expected: PASS.
 
-- [ ] **Step 2: Wire `config` into `src/lib.rs`, then rewrite `src/main.rs` as a thin binary**
+- [ ] **Step 2: Install the `topcoat` CLI, one time, as a dev/build tool (not a project dependency — do not add it to `Cargo.toml`)**
+
+```bash
+cargo install topcoat-cli
+```
+
+Run: `topcoat --version`
+Expected: prints a version (confirms `~/.cargo/bin` is on `PATH`; `cargo install` already put it there).
+
+This installs two binaries, `topcoat` and `cargo-topcoat` (so `cargo topcoat <subcommand>` also works). It is what actually builds the app and writes the content-hashed asset bundle `AssetBundle::load()` reads at runtime — plain `cargo build`/`cargo run` never does this. Confirm it works before moving on:
+
+```bash
+topcoat asset bundle
+ls target/debug/assets
+```
+
+Expected: `target/debug/assets/manifest.toml` plus `session-<hash>.js` and `creation-form-<hash>.js`. `microphone-<hash>.js`, `pcm-resample-<hash>.js`, and `audio-worklet-processor-<hash>.js` are **not** there yet — Step 4 fixes that by making `meeting_page` actually read those three constants.
+
+- [ ] **Step 3: Wire `config` into `src/lib.rs`, then rewrite `src/main.rs` as a thin binary**
 
 By this point, `src/lib.rs` already declares `pub mod protocol;`, `pub mod room;`, `pub mod translator;`, `pub mod recognizer;`, `pub mod adapters;`, `pub mod session;`, `pub mod pages;`, and `pub mod assets;` (added incrementally by Tasks 3, 4, 8, 5, 6, 10, 11, and 11 respectively). Add one more line, `pub mod config;`, to that same file — this task does not create any other new modules.
 
@@ -3285,10 +3310,100 @@ This replaces Task 2's placeholder `main.rs` (the `#[page("/translate/")]` `home
 
 `aws_config::from_env().region(...)` uses the `aws_config`/`aws_types` `Region` type — verify the exact builder method chain against the `aws-config` version resolved in `Cargo.lock` via `cargo doc -p aws-config --open`, since this plan's earlier verification focused on the two SDK service crates (`aws-sdk-bedrockruntime`, `aws-sdk-transcribestreaming`) rather than `aws-config` itself; both official examples used `aws_config::from_env()...load().await` (Bedrock example) and `aws_config::from_env().region(region_provider).load().await` (Transcribe example), so this call shape has already been seen twice in the AWS official examples fetched during planning — the concrete methods this task's code calls are the same ones the Transcribe example used, just with a fixed `Region` instead of a `RegionProviderChain`.
 
-- [ ] **Step 3: Build and smoke-test**
+- [ ] **Step 4: Fix cross-file JS asset resolution with a rendered import map**
+
+Root cause (verified empirically, see the Global Constraints entry above): `session.js` and `microphone.js` reference their sibling files with plain relative specifiers (`import "./microphone.js"`, `import "./pcm-resample.js"`, `addModule("./audio-worklet-processor.js")`), but Topcoat serves each bundled file under a content-hashed filename (`/_topcoat/assets/microphone-<hash>.js`). A browser resolves a bare relative specifier against the *fetching* file's own URL, so `./microphone.js` resolves to `/_topcoat/assets/microphone.js` — which does not exist. Fix this with a standard-JS import map, rendered server-side from the real resolved URLs, plus one call-site change for the one API import maps do not cover.
+
+Add to `tools/meeting-translation/src/pages.rs`, near the top (new import) and as a free function (this is the pure, unit-testable piece):
+
+```rust
+use topcoat::asset::asset_config;
+```
+
+```rust
+fn import_map_json(microphone_url: &str, pcm_resample_url: &str, audio_worklet_url: &str) -> String {
+    serde_json::json!({
+        "imports": {
+            "./microphone.js": microphone_url,
+            "./pcm-resample.js": pcm_resample_url,
+            "./audio-worklet-processor.js": audio_worklet_url,
+        }
+    })
+    .to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn import_map_json_maps_each_relative_specifier_to_its_url() {
+        let json = import_map_json("/a-1.js", "/b-2.js", "/c-3.js");
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed["imports"]["./microphone.js"], "/a-1.js");
+        assert_eq!(parsed["imports"]["./pcm-resample.js"], "/b-2.js");
+        assert_eq!(parsed["imports"]["./audio-worklet-processor.js"], "/c-3.js");
+    }
+}
+```
+
+Run: `cargo test --lib pages`
+Expected: PASS.
+
+Change `meeting_page` to build the import map from the real asset URLs and render it in `<head>`, before the module script (an import map must appear before any module script that relies on it):
+
+```rust
+#[page("/translate/rooms/{room_id}")]
+pub async fn meeting_page(cx: &Cx) -> Result<impl View> {
+    let room_id = path_param::<RoomId>(cx)?.clone();
+
+    let assets = asset_config(cx);
+    let import_map = import_map_json(
+        &assets.resolve(crate::assets::MICROPHONE_JS),
+        &assets.resolve(crate::assets::PCM_RESAMPLE_JS),
+        &assets.resolve(crate::assets::AUDIO_WORKLET_PROCESSOR_JS),
+    );
+
+    Ok(view! {
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title>"Meeting Translation"</title>
+                topcoat::dev::script()
+                <script type="importmap">(import_map)</script>
+            </head>
+            <body>
+                <div id="app" data-room-id=(room_id)></div>
+                <script type="module" src=(crate::assets::SESSION_JS)></script>
+            </body>
+        </html>
+    })
+}
+```
+
+`(import_map)` renders as HTML text-node content, which only escapes `&`, `<`, `>` — none of which ever appear in a Topcoat asset URL (alphanumeric, `/`, `-`, `.`), so the JSON reaches the browser byte-for-byte. This same `assets.resolve(...)` call is what makes `MICROPHONE_JS`/`PCM_RESAMPLE_JS`/`AUDIO_WORKLET_PROCESSOR_JS` reachable in the compiled binary, fixing the bundling gap from Step 2 as a side effect — no separate fix needed for that.
+
+Import maps apply to `import` specifiers but not to arbitrary strings passed to other APIs, so `microphone.js`'s `AudioWorklet.addModule()` call needs its own fix. In `tools/meeting-translation/assets/microphone.js`, change:
+
+```javascript
+  await audioContext.audioWorklet.addModule("./audio-worklet-processor.js");
+```
+
+to:
+
+```javascript
+  await audioContext.audioWorklet.addModule(import.meta.resolve("./audio-worklet-processor.js"));
+```
+
+`import.meta.resolve()` performs the same import-map-aware resolution `import` statements use and returns the resolved absolute URL as a string, which `addModule()` accepts directly. The two static `import` statements in `session.js` and `microphone.js` need no code change — the browser now has an import map to resolve them against.
+
+- [ ] **Step 5: Build and smoke-test**
 
 Run: `cargo build`
-Expected: compiles cleanly. Fix any remaining signature drift flagged by earlier tasks' notes (the `too_many_requests` helper, the `path_param!` duplicate-type issue, the `audio_stream.into()` bound, the relative-import asset URL question) as they surface here — this is the first point where every module compiles together.
+Expected: compiles cleanly. Fix any remaining signature drift flagged by earlier tasks' notes (the `too_many_requests` helper, the `path_param!` duplicate-type issue, the `audio_stream.into()` bound) as it surfaces here — this is the first point every module compiles together.
+
+Run: `topcoat asset bundle` (re-run after every `cargo build` that changes asset-referencing code — the bundle is not regenerated automatically)
+Expected: `target/debug/assets/manifest.toml` now lists all five files: `session`, `creation-form`, `microphone`, `pcm-resample`, `audio-worklet-processor`.
 
 Run:
 ```bash
@@ -3299,16 +3414,19 @@ cargo run &
 sleep 1
 curl -s http://127.0.0.1:3000/translate/
 curl -s -X POST http://127.0.0.1:3000/translate/api/rooms
+curl -s http://127.0.0.1:3000/translate/rooms/some-room-id | grep -o '<script type="importmap">[^<]*</script>'
 kill %1
 ```
-Expected: the first `curl` returns the creation form HTML; the second returns a JSON body with `room_id` and `join_token`. This does not require valid AWS credentials since neither `translate()` nor `start_stream_transcription()` is called by these two requests.
+Expected: the first `curl` returns the creation form HTML; the second returns a JSON body with `room_id` and `join_token`; the third's `grep` prints the import map `<script>` tag with all three `./microphone.js`/`./pcm-resample.js`/`./audio-worklet-processor.js` keys mapped to `/_topcoat/assets/...` URLs — this is the empirical confirmation that the relative-import chain resolves. This does not require valid AWS credentials since neither `translate()` nor `start_stream_transcription()` is called by these requests.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add tools/meeting-translation/src/main.rs tools/meeting-translation/src/lib.rs \
-  tools/meeting-translation/src/config.rs tools/meeting-translation/Cargo.toml tools/meeting-translation/Cargo.lock
-git commit -s -m "feat(meeting-translation): wire main.rs and verify the app boots"
+  tools/meeting-translation/src/config.rs tools/meeting-translation/src/pages.rs \
+  tools/meeting-translation/assets/microphone.js \
+  tools/meeting-translation/Cargo.toml tools/meeting-translation/Cargo.lock
+git commit -s -m "feat(meeting-translation): wire main.rs and resolve cross-file JS assets via an import map"
 ```
 
 ---
@@ -3330,7 +3448,9 @@ WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 COPY assets ./assets
+RUN cargo install topcoat-cli
 RUN cargo build --release
+RUN topcoat asset bundle --release
 
 FROM debian:bookworm-slim AS runner
 WORKDIR /app
@@ -3343,7 +3463,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 ENV PORT=3000
 
 COPY --from=builder --chown=meeting-translation:meeting-translation /app/target/release/meeting-translation ./meeting-translation
-COPY --from=builder --chown=meeting-translation:meeting-translation /app/assets ./assets
+COPY --from=builder --chown=meeting-translation:meeting-translation /app/target/release/assets ./assets
 
 USER meeting-translation
 EXPOSE 3000
@@ -3351,7 +3471,7 @@ EXPOSE 3000
 CMD ["./meeting-translation"]
 ```
 
-Note: `ca-certificates` is required at runtime because the AWS SDK's HTTPS client (used for Bedrock and Transcribe calls) validates TLS certificates against the system trust store — this is the one runtime package the `debian:bookworm-slim` base does not include by default. Verify at Task 17's dogfooding pass that Topcoat's asset bundler places the runtime-served files where this Dockerfile's `COPY --from=builder .../assets ./assets` expects them (the getting-started docs describe the bundler scanning the compiled binary for `asset!` calls and copying files into "a local asset directory" but do not name that directory explicitly) — adjust the `COPY` source path if `cargo build --release` produces the bundled assets somewhere other than `./assets` relative to the crate root (check for a `target/release/assets` or similar directory after the build step; use whichever the running binary actually reads from, confirmed by the curl smoke test in Step 3 below).
+Note: `ca-certificates` is required at runtime because the AWS SDK's HTTPS client (used for Bedrock and Transcribe calls) validates TLS certificates against the system trust store — this is the one runtime package the `debian:bookworm-slim` base does not include by default. `topcoat asset bundle` (see the Global Constraints entry on the asset bundle, and Task 14) is a separate step from `cargo build`, not something `cargo build --release` does on its own — skipping it means the binary panics on startup exactly as it did in Task 14's first attempt. `topcoat asset bundle --release` writes the bundle to `target/release/assets`, next to the executable it scanned (confirmed empirically in Task 14 for the `debug` profile; `--release` uses the same layout under the `release` profile directory per the crate's own docs) — this is why the runner stage's second `COPY --from=builder` now reads from `/app/target/release/assets` rather than a top-level `/app/assets` (the source tree's `assets/` holds the *unbundled* JS files; the runtime needs the *bundled*, content-hashed output). Confirm at Task 17's dogfooding pass that the container's `AssetBundle::load()` finds this directory without a panic.
 
 - [ ] **Step 2: Update `.dockerignore`**
 
@@ -3444,7 +3564,11 @@ Replace the pnpm-based instructions with:
 ```markdown
 ## Running Locally
 
-Rust (stable, ≥1.98) is required.
+Rust (stable, ≥1.98) is required, along with the `topcoat` CLI, which builds the app and bundles its browser assets (a separate step from `cargo build`):
+
+\`\`\`bash
+cargo install topcoat-cli
+\`\`\`
 
 \`\`\`bash
 cd tools/meeting-translation
@@ -3453,8 +3577,10 @@ export AWS_REGION=ap-northeast-1
 export BEDROCK_MODEL_ID=amazon.nova-lite-v1:0
 export TRANSLATION_GLOSSARY=""
 
-cargo run
+topcoat dev
 \`\`\`
+
+`topcoat dev` rebuilds and re-bundles assets automatically on every change; a plain `cargo run` starts the server without ever generating the asset bundle, so `topcoat dev` is the loop to use as `cargo run`'s replacement. If you need a one-shot bundle for a plain `cargo run` instead, run `topcoat asset bundle` once beforehand (re-run it after any change to `assets/` or to an `asset!()` declaration).
 
 The app serves both the web UI and the WebSocket session route at `http://localhost:3000/translate/`. To try real speech recognition and translation, make sure the process can obtain AWS credentials with the necessary permissions from the standard credential provider chain.
 
@@ -3463,6 +3589,7 @@ Tests and the production build run in the same directory.
 \`\`\`bash
 cargo test
 cargo build --release
+topcoat asset bundle --release
 \`\`\`
 ```
 
@@ -3502,5 +3629,5 @@ git commit -s -m "docs(meeting-translation): update running instructions for the
 ## Plan Self-Review Notes
 
 - **Spec coverage:** every section of the design spec has a task — Topcoat verification informed Tasks 2/10/11/12/14, the actor-based Concurrency Model is Tasks 4-7, the Protocol section is Task 3, Adapters are Tasks 8-9, Browser Layer is Tasks 12-13, Error Handling & Logging is threaded through Tasks 4-10 (status codes) and called out again in Task 17's checklist (log content), Deployment is Tasks 15-16, and Testing culminates in Task 17.
-- **Known open verification points, called out inline rather than hidden:** the exact `topcoat::serve`-on-a-bound-listener shape used in Task 10's test (Step 2's note), whether `topcoat::router::error::too_many_requests` exists in 0.9.0 (Task 11's note), the `path_param!` duplicate-type fix required across Task 10/11 (Task 11 Step 2), the `audio_stream.into()` bound in Task 9 (Step 4's note), and the asset-relative-import question in Task 13 (Step 7's note). Each carries a concrete fallback, not a placeholder.
+- **Known open verification points, called out inline rather than hidden:** the exact `topcoat::serve`-on-a-bound-listener shape used in Task 10's test (Step 2's note), whether `topcoat::router::error::too_many_requests` exists in 0.9.0 (Task 11's note), the `path_param!` duplicate-type fix required across Task 10/11 (Task 11 Step 2), and the `audio_stream.into()` bound in Task 9 (Step 4's note). Each carries a concrete fallback, not a placeholder. The asset-relative-import question flagged in Task 13 (Step 7's note) was resolved empirically in Task 14: an import map rendered from `AssetConfig::resolve()`, plus `import.meta.resolve()` for the one `AudioWorklet.addModule()` call — see Task 14 Step 4 and the two Global Constraints entries on the asset bundle it added.
 - **Type consistency check:** `RoomCommand`, `JoinOutcome`, `ServerMessage`, `ClientMessage`, `Language`, `Caption`, `RecognitionEvent`, `RecognitionSession`, `SpeechRecognizer`, `Translator`, `TranslationRequest`, and `RoomRegistry`'s public methods are used with the same names and shapes from the task that introduces them through every later task that consumes them; the one deliberate mid-plan signature change (`RoomCommand::Disconnect` gaining `reconnectable: bool`) is called out explicitly in Task 10 with the exact prior-task tests that need updating.
