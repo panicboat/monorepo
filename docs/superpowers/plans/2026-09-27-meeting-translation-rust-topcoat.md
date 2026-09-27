@@ -3250,8 +3250,8 @@ Expected: PASS.
 cargo install topcoat-cli
 ```
 
-Run: `topcoat --version`
-Expected: prints a version (confirms `~/.cargo/bin` is on `PATH`; `cargo install` already put it there).
+Run: `topcoat --help`
+Expected: prints its subcommand list (`dev`, `fmt`, `asset`, `ui`, `help`) — confirms `~/.cargo/bin` is on `PATH` (`cargo install` already put it there). `topcoat-cli` 0.9.0 has no `--version` flag; don't use it as the sanity check.
 
 This installs two binaries, `topcoat` and `cargo-topcoat` (so `cargo topcoat <subcommand>` also works). It is what actually builds the app and writes the content-hashed asset bundle `AssetBundle::load()` reads at runtime — plain `cargo build`/`cargo run` never does this. Confirm it works before moving on:
 
@@ -3411,13 +3411,13 @@ export AWS_REGION=ap-northeast-1
 export BEDROCK_MODEL_ID=amazon.nova-lite-v1:0
 export TRANSLATION_GLOSSARY=""
 cargo run &
-sleep 1
+sleep 2
 curl -s http://127.0.0.1:3000/translate/
 curl -s -X POST http://127.0.0.1:3000/translate/api/rooms
 curl -s http://127.0.0.1:3000/translate/rooms/some-room-id | grep -o '<script type="importmap">[^<]*</script>'
 kill %1
 ```
-Expected: the first `curl` returns the creation form HTML; the second returns a JSON body with `room_id` and `join_token`; the third's `grep` prints the import map `<script>` tag with all three `./microphone.js`/`./pcm-resample.js`/`./audio-worklet-processor.js` keys mapped to `/_topcoat/assets/...` URLs — this is the empirical confirmation that the relative-import chain resolves. This does not require valid AWS credentials since neither `translate()` nor `start_stream_transcription()` is called by these requests.
+Expected: the first `curl` returns the creation form HTML; the second returns a JSON body with `room_id` and `join_token`; the third's `grep` prints the import map `<script>` tag with all three `./microphone.js`/`./pcm-resample.js`/`./audio-worklet-processor.js` keys mapped to `/_topcoat/assets/...` URLs — this is the empirical confirmation that the relative-import chain resolves. This does not require valid AWS credentials since neither `translate()` nor `start_stream_transcription()` is called by these requests. `sleep 2`, not `1` — confirmed empirically that `cargo run`'s child-process startup race can leave the server not yet listening at the 1-second mark, making `curl` fail with exit status 7 (connection refused) even though the app never panicked.
 
 - [ ] **Step 6: Commit**
 
