@@ -17,6 +17,11 @@ const RECONNECT_GRACE: Duration = Duration::from_secs(5);
 const RATE_LIMIT_WINDOW: Duration = Duration::from_secs(10 * 60);
 const RATE_LIMIT_MAX: usize = 5;
 
+pub struct RoomBecameEmpty {
+    pub(super) room_id: String,
+    pub(super) reconnectable: bool,
+}
+
 struct RoomEntry {
     sender: mpsc::Sender<RoomCommand>,
     // Retaining the handle keeps the actor task observable until its room entry is removed.
@@ -30,9 +35,9 @@ pub struct RoomRegistry {
     recognizer: Arc<dyn SpeechRecognizer>,
     glossary: Vec<String>,
     rooms: Mutex<HashMap<String, RoomEntry>>,
-    became_empty_tx: mpsc::UnboundedSender<String>,
+    became_empty_tx: mpsc::UnboundedSender<RoomBecameEmpty>,
     // The receiver guard spans recv().await, so it must use an async-aware mutex.
-    became_empty_rx: tokio::sync::Mutex<mpsc::UnboundedReceiver<String>>,
+    became_empty_rx: tokio::sync::Mutex<mpsc::UnboundedReceiver<RoomBecameEmpty>>,
     creation_times_by_ip: Mutex<HashMap<IpAddr, Vec<Instant>>>,
 }
 
@@ -56,14 +61,14 @@ impl RoomRegistry {
 
     pub async fn run_lifecycle_loop(self: Arc<Self>) {
         loop {
-            let room_id = {
+            let became_empty = {
                 let mut rx = self.became_empty_rx.lock().await;
                 match rx.recv().await {
-                    Some(id) => id,
+                    Some(event) => event,
                     None => return,
                 }
             };
-            self.schedule_expiry(room_id);
+            self.schedule_expiry(became_empty.room_id, became_empty.reconnectable);
         }
     }
 
@@ -120,7 +125,16 @@ impl RoomRegistry {
         true
     }
 
-    fn schedule_expiry(self: &Arc<Self>, room_id: String) {
+    fn schedule_expiry(self: &Arc<Self>, room_id: String, reconnectable: bool) {
+        if !reconnectable {
+            let sender = {
+                let mut rooms = self.rooms.lock().unwrap();
+                rooms.remove(&room_id).map(|entry| entry.sender)
+            };
+            drop(sender);
+            return;
+        }
+
         let (cancel_tx, cancel_rx) = oneshot::channel();
         {
             let mut rooms = self.rooms.lock().unwrap();
@@ -149,14 +163,14 @@ impl RoomRegistry {
     #[cfg(test)]
     async fn pump_lifecycle_events_for_test(self: &Arc<Self>) {
         loop {
-            let room_id = {
+            let became_empty = {
                 let mut rx = self.became_empty_rx.lock().await;
                 match rx.try_recv() {
-                    Ok(id) => id,
+                    Ok(event) => event,
                     Err(_) => break,
                 }
             };
-            self.schedule_expiry(room_id);
+            self.schedule_expiry(became_empty.room_id, became_empty.reconnectable);
         }
         tokio::task::yield_now().await;
     }
@@ -257,7 +271,10 @@ mod tests {
             other => panic!("expected Joined, got {other:?}"),
         };
         sender
-            .send(RoomCommand::Disconnect { participant_id })
+            .send(RoomCommand::Disconnect {
+                participant_id,
+                reconnectable: true,
+            })
             .await
             .unwrap();
         tokio::time::advance(std::time::Duration::from_millis(1)).await;
@@ -289,7 +306,10 @@ mod tests {
             other => panic!("expected Joined, got {other:?}"),
         };
         sender
-            .send(RoomCommand::Disconnect { participant_id })
+            .send(RoomCommand::Disconnect {
+                participant_id,
+                reconnectable: true,
+            })
             .await
             .unwrap();
         tokio::time::advance(std::time::Duration::from_millis(1)).await;
@@ -310,6 +330,33 @@ mod tests {
         assert!(
             registry.room_exists_for_test(&room_id),
             "a rejoin within the grace period must cancel the pending expiry"
+        );
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn explicit_leave_removes_room_without_grace_period() {
+        let registry = test_registry();
+        let (room_id, token) = registry.create();
+        let sender = registry.find(&room_id).unwrap();
+
+        let outcome = join(&sender, &room_id, &token).await;
+        let participant_id = match outcome {
+            crate::room::actor::JoinOutcome::Joined { participant_id } => participant_id,
+            other => panic!("expected Joined, got {other:?}"),
+        };
+        sender
+            .send(RoomCommand::Disconnect {
+                participant_id,
+                reconnectable: false,
+            })
+            .await
+            .unwrap();
+        tokio::time::advance(std::time::Duration::from_millis(1)).await;
+        registry.pump_lifecycle_events_for_test().await;
+
+        assert!(
+            registry.find(&room_id).is_none(),
+            "an explicit leave must remove the room immediately"
         );
     }
 

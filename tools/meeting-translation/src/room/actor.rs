@@ -13,6 +13,8 @@ use crate::protocol::{
 use crate::recognizer::{RecognitionEvent, RecognitionSession, SpeechRecognizer};
 use crate::translator::{TranslationRequest, Translator};
 
+use super::registry::RoomBecameEmpty;
+
 const MAX_PARTICIPANTS: usize = 3;
 const MAX_CONTEXT_CAPTIONS: usize = 12;
 const TRANSLATION_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
@@ -61,6 +63,7 @@ pub enum RoomCommand {
     },
     Disconnect {
         participant_id: Uuid,
+        reconnectable: bool,
     },
 }
 
@@ -75,7 +78,7 @@ struct RoomActor {
     room_id: String,
     join_token_hash: [u8; 32],
     participants: HashMap<Uuid, ActiveParticipant>,
-    became_empty: mpsc::UnboundedSender<String>,
+    became_empty: mpsc::UnboundedSender<RoomBecameEmpty>,
     translator: Arc<dyn Translator>,
     recognizer: Arc<dyn SpeechRecognizer>,
     glossary: Vec<String>,
@@ -90,7 +93,7 @@ struct RoomActor {
 pub fn spawn_room(
     room_id: String,
     join_token_hash: [u8; 32],
-    became_empty: mpsc::UnboundedSender<String>,
+    became_empty: mpsc::UnboundedSender<RoomBecameEmpty>,
     translator: Arc<dyn Translator>,
     glossary: Vec<String>,
     recognizer: Arc<dyn SpeechRecognizer>,
@@ -185,8 +188,11 @@ impl RoomActor {
                     }
                 }
             }
-            RoomCommand::Disconnect { participant_id } => {
-                self.disconnect(participant_id);
+            RoomCommand::Disconnect {
+                participant_id,
+                reconnectable,
+            } => {
+                self.disconnect(participant_id, reconnectable);
             }
         }
     }
@@ -281,7 +287,7 @@ impl RoomActor {
                 self.stop_recognition(participant_id);
             }
             ClientMessage::Leave => {
-                self.disconnect(participant_id);
+                self.disconnect(participant_id, false);
             }
             ClientMessage::Join { .. } => {}
         }
@@ -501,7 +507,7 @@ impl RoomActor {
             });
     }
 
-    fn disconnect(&mut self, participant_id: Uuid) {
+    fn disconnect(&mut self, participant_id: Uuid, reconnectable: bool) {
         let Some(mut removed) = self.participants.remove(&participant_id) else {
             return;
         };
@@ -516,7 +522,10 @@ impl RoomActor {
         );
         if self.participants.is_empty() {
             // SILENT: Room manager shutdown can race with the last participant leaving.
-            let _ = self.became_empty.send(self.room_id.clone());
+            let _ = self.became_empty.send(RoomBecameEmpty {
+                room_id: self.room_id.clone(),
+                reconnectable,
+            });
         }
     }
 
@@ -1193,9 +1202,12 @@ mod tests {
                 .await
                 .expect("recognition session must be installed before disconnect");
 
-                room.send(RoomCommand::Disconnect { participant_id })
-                    .await
-                    .unwrap();
+                room.send(RoomCommand::Disconnect {
+                    participant_id,
+                    reconnectable: true,
+                })
+                .await
+                .unwrap();
                 tokio::time::timeout(std::time::Duration::from_secs(1), async {
                     while !stopped.load(Ordering::SeqCst) {
                         tokio::task::yield_now().await;

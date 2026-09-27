@@ -1572,6 +1572,7 @@ dependencies = [
  "aws-sdk-bedrockruntime",
  "aws-sdk-transcribestreaming",
  "base64 0.22.1",
+ "futures-util",
  "getrandom 0.4.3",
  "serde",
  "serde_json",
@@ -1579,6 +1580,7 @@ dependencies = [
  "subtle",
  "tokio",
  "tokio-stream",
+ "tokio-tungstenite",
  "topcoat",
  "uuid",
 ]
