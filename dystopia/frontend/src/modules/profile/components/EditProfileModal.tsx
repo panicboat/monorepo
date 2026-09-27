@@ -62,7 +62,7 @@ function toForm(p: ProfileView): FormState {
   };
 }
 
-// full-payload: 現在値 + 編集。モーダルが扱わない username/isPrivate は現在値を維持。
+// Full-payload save: merges current values with edits; fields this modal doesn't manage (username, isPrivate) stay as-is.
 function buildPayload(current: ProfileView, f: FormState, isCast: boolean): SaveProfilePayload {
   return {
     username: current.username,
