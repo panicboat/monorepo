@@ -10,6 +10,7 @@ use uuid::Uuid;
 use crate::protocol::{
     Caption, CaptionKind, CaptionState, ClientMessage, Participant, ServerMessage, StatusCode,
 };
+use crate::recognizer::{RecognitionEvent, RecognitionSession, SpeechRecognizer};
 use crate::translator::{TranslationRequest, Translator};
 
 const MAX_PARTICIPANTS: usize = 3;
@@ -21,6 +22,14 @@ enum InternalEvent {
     TranslationDone {
         caption_id: Uuid,
         result: Result<String, ()>,
+    },
+    Recognition {
+        participant_id: Uuid,
+        event: RecognitionEvent,
+    },
+    SessionStarted {
+        participant_id: Uuid,
+        session: Box<dyn RecognitionSession>,
     },
     // Explicit exit signal prevents the actor loop from retaining its own sender.
     Shutdown,
@@ -58,6 +67,7 @@ pub enum RoomCommand {
 struct ActiveParticipant {
     participant: Participant,
     connection: Connection,
+    recognition_session: Option<Box<dyn RecognitionSession>>,
 }
 
 /// Room state stays task-confined because every mutation is serialized through the command channel.
@@ -67,6 +77,7 @@ struct RoomActor {
     participants: HashMap<Uuid, ActiveParticipant>,
     became_empty: mpsc::UnboundedSender<String>,
     translator: Arc<dyn Translator>,
+    recognizer: Arc<dyn SpeechRecognizer>,
     glossary: Vec<String>,
     captions: HashMap<Uuid, Caption>,
     context: Vec<Caption>,
@@ -82,6 +93,7 @@ pub fn spawn_room(
     became_empty: mpsc::UnboundedSender<String>,
     translator: Arc<dyn Translator>,
     glossary: Vec<String>,
+    recognizer: Arc<dyn SpeechRecognizer>,
 ) -> (mpsc::Sender<RoomCommand>, tokio::task::JoinHandle<()>) {
     let (tx, mut rx) = mpsc::channel(64);
     let (event_tx, mut event_rx) = mpsc::unbounded_channel::<InternalEvent>();
@@ -104,6 +116,7 @@ pub fn spawn_room(
             participants: HashMap::new(),
             became_empty,
             translator,
+            recognizer,
             glossary,
             captions: HashMap::new(),
             context: Vec::new(),
@@ -119,6 +132,22 @@ pub fn spawn_room(
                     actor.finish_translation(caption_id, result);
                     actor.translation_in_flight = false;
                     actor.drain_translation_queue(event_tx.clone());
+                }
+                InternalEvent::SessionStarted {
+                    participant_id,
+                    session,
+                } => {
+                    if let Some(active) = actor.participants.get_mut(&participant_id) {
+                        active.recognition_session = Some(session);
+                    } else {
+                        session.stop();
+                    }
+                }
+                InternalEvent::Recognition {
+                    participant_id,
+                    event,
+                } => {
+                    actor.handle_recognition_event(participant_id, event, event_tx.clone());
                 }
                 InternalEvent::Shutdown => break,
             }
@@ -146,8 +175,15 @@ impl RoomActor {
             } => {
                 self.handle_message(participant_id, message, event_tx);
             }
-            RoomCommand::WriteAudio { .. } => {
-                // TODO: Forward audio chunks once recognition sessions own the participant stream.
+            RoomCommand::WriteAudio {
+                participant_id,
+                chunk,
+            } => {
+                if let Some(active) = self.participants.get(&participant_id) {
+                    if let Some(session) = &active.recognition_session {
+                        session.write(chunk);
+                    }
+                }
             }
             RoomCommand::Disconnect { participant_id } => {
                 self.disconnect(participant_id);
@@ -208,6 +244,7 @@ impl RoomActor {
             ActiveParticipant {
                 participant,
                 connection,
+                recognition_session: None,
             },
         );
         JoinOutcome::Joined { participant_id }
@@ -237,10 +274,127 @@ impl RoomActor {
             ClientMessage::ClarificationRequest { caption_id } => {
                 self.request_clarification(speaker, caption_id);
             }
+            ClientMessage::AudioStart => {
+                self.start_recognition(participant_id, speaker.speech_language, event_tx);
+            }
+            ClientMessage::AudioStop => {
+                self.stop_recognition(participant_id);
+            }
             ClientMessage::Leave => {
                 self.disconnect(participant_id);
             }
-            _ => {}
+            ClientMessage::Join { .. } => {}
+        }
+    }
+
+    fn start_recognition(
+        &mut self,
+        participant_id: Uuid,
+        language: crate::protocol::Language,
+        event_tx: mpsc::UnboundedSender<InternalEvent>,
+    ) {
+        if self
+            .participants
+            .get(&participant_id)
+            .and_then(|participant| participant.recognition_session.as_ref())
+            .is_some()
+        {
+            return;
+        }
+        let recognizer = self.recognizer.clone();
+        let (events_tx, mut events_rx) = mpsc::unbounded_channel();
+        let forward_tx = event_tx.clone();
+        tokio::spawn(async move {
+            while let Some(event) = events_rx.recv().await {
+                if forward_tx
+                    .send(InternalEvent::Recognition {
+                        participant_id,
+                        event,
+                    })
+                    .is_err()
+                {
+                    break;
+                }
+            }
+        });
+
+        let started_tx = event_tx.clone();
+        tokio::spawn(async move {
+            match recognizer.start(language, events_tx).await {
+                Ok(session) => {
+                    // SILENT: Actor shutdown can race with recognition startup.
+                    let _ = started_tx.send(InternalEvent::SessionStarted {
+                        participant_id,
+                        session,
+                    });
+                }
+                Err(()) => {
+                    // SILENT: Actor shutdown can race with recognition startup.
+                    let _ = started_tx.send(InternalEvent::Recognition {
+                        participant_id,
+                        event: RecognitionEvent::Error,
+                    });
+                }
+            }
+        });
+    }
+
+    fn stop_recognition(&mut self, participant_id: Uuid) {
+        if let Some(active) = self.participants.get_mut(&participant_id) {
+            if let Some(session) = active.recognition_session.take() {
+                session.stop();
+            }
+        }
+    }
+
+    fn handle_recognition_event(
+        &mut self,
+        participant_id: Uuid,
+        event: RecognitionEvent,
+        event_tx: mpsc::UnboundedSender<InternalEvent>,
+    ) {
+        let Some(active) = self.participants.get(&participant_id) else {
+            return;
+        };
+        let speaker = active.participant.clone();
+        let connection = active.connection.clone();
+
+        match event {
+            RecognitionEvent::Partial(text) => {
+                // SILENT: A disconnected client cannot receive recognition previews.
+                let _ = connection.send(ServerMessage::CaptionPreview {
+                    speaker_id: participant_id,
+                    source_text: text,
+                });
+            }
+            RecognitionEvent::Final(text) => {
+                let language = speaker.speech_language;
+                self.enqueue_caption(speaker, language, text, CaptionKind::Speech, event_tx);
+            }
+            RecognitionEvent::Error => {
+                self.broadcast(
+                    ServerMessage::Status {
+                        code: StatusCode::RecognitionUnavailable,
+                    },
+                    None,
+                );
+            }
+            RecognitionEvent::Reconnecting => {
+                self.broadcast(
+                    ServerMessage::Status {
+                        code: StatusCode::Reconnecting,
+                    },
+                    None,
+                );
+            }
+            RecognitionEvent::Reconnected => {
+                self.broadcast(
+                    ServerMessage::Status {
+                        code: StatusCode::RecognitionAvailable,
+                    },
+                    None,
+                );
+            }
         }
     }
 
@@ -382,10 +536,33 @@ impl RoomActor {
 mod tests {
     use super::*;
     use crate::protocol::{ClientMessage, Language, ServerMessage};
+    use crate::recognizer::{RecognitionEvent, RecognitionSession, SpeechRecognizer};
+    use async_trait::async_trait;
     use sha2::{Digest, Sha256};
     use std::sync::Arc;
     use std::time::Duration;
     use tokio::sync::{mpsc, oneshot};
+
+    struct NoopSession;
+
+    impl RecognitionSession for NoopSession {
+        fn write(&self, _chunk: Vec<u8>) {}
+
+        fn stop(self: Box<Self>) {}
+    }
+
+    struct NoopRecognizer;
+
+    #[async_trait]
+    impl SpeechRecognizer for NoopRecognizer {
+        async fn start(
+            &self,
+            _language: Language,
+            _events: mpsc::UnboundedSender<RecognitionEvent>,
+        ) -> Result<Box<dyn RecognitionSession>, ()> {
+            Ok(Box::new(NoopSession))
+        }
+    }
 
     fn token_hash(token: &str) -> [u8; 32] {
         Sha256::digest(token.as_bytes()).into()
@@ -431,6 +608,7 @@ mod tests {
                 fail: false,
             }),
             vec![],
+            Arc::new(NoopRecognizer),
         );
 
         let (outcome_a, mut inbox_a) = join(&room, "secret", "Alice").await;
@@ -463,6 +641,7 @@ mod tests {
                 fail: false,
             }),
             vec![],
+            Arc::new(NoopRecognizer),
         );
 
         let (outcome, _inbox) = join(&room, "wrong-token", "Alice").await;
@@ -481,6 +660,7 @@ mod tests {
                 fail: false,
             }),
             vec![],
+            Arc::new(NoopRecognizer),
         );
 
         for name in ["Alice", "Bob", "Carol"] {
@@ -504,6 +684,7 @@ mod tests {
                 fail: false,
             }),
             vec![],
+            Arc::new(NoopRecognizer),
         );
 
         let (outcome_a, mut inbox_a) = join(&room, "secret", "Alice").await;
@@ -537,6 +718,7 @@ mod tests {
 
     mod translation_tests {
         use super::super::*;
+        use super::NoopRecognizer;
         use crate::protocol::{CaptionState, ClientMessage, Language, ServerMessage};
         use crate::translator::{TranslationRequest, Translator};
         use async_trait::async_trait;
@@ -574,6 +756,7 @@ mod tests {
                 became_empty_tx,
                 translator,
                 vec![],
+                Arc::new(NoopRecognizer),
             );
             room
         }
@@ -815,6 +998,7 @@ mod tests {
                     fail: false,
                 }),
                 vec![],
+                Arc::new(NoopRecognizer),
             );
 
             drop(room); // the only RoomCommand sender
@@ -823,6 +1007,176 @@ mod tests {
                 .await
                 .expect("actor task must exit once its command channel closes")
                 .expect("actor task must not panic");
+        }
+
+        mod recognition_tests {
+            use super::super::*;
+            use crate::protocol::{ClientMessage, Language, ServerMessage};
+            use crate::recognizer::{RecognitionEvent, RecognitionSession, SpeechRecognizer};
+            use crate::translator::{TranslationRequest, Translator};
+            use async_trait::async_trait;
+            use sha2::{Digest, Sha256};
+            use std::sync::atomic::{AtomicBool, Ordering};
+            use std::sync::{Arc, Mutex};
+            use tokio::sync::{mpsc, oneshot};
+
+            struct NoopTranslator;
+
+            #[async_trait]
+            impl Translator for NoopTranslator {
+                async fn translate(&self, request: TranslationRequest) -> Result<String, ()> {
+                    Ok(format!("[translated] {}", request.source_text))
+                }
+            }
+
+            struct FakeSession {
+                written: Arc<Mutex<Vec<Vec<u8>>>>,
+                stopped: Arc<AtomicBool>,
+            }
+
+            impl RecognitionSession for FakeSession {
+                fn write(&self, chunk: Vec<u8>) {
+                    self.written.lock().unwrap().push(chunk);
+                }
+
+                fn stop(self: Box<Self>) {
+                    self.stopped.store(true, Ordering::SeqCst);
+                }
+            }
+
+            struct FakeRecognizer {
+                written: Arc<Mutex<Vec<Vec<u8>>>>,
+                stopped: Arc<AtomicBool>,
+            }
+
+            #[async_trait]
+            impl SpeechRecognizer for FakeRecognizer {
+                async fn start(
+                    &self,
+                    _language: Language,
+                    events: mpsc::UnboundedSender<RecognitionEvent>,
+                ) -> Result<Box<dyn RecognitionSession>, ()> {
+                    let _ = events.send(RecognitionEvent::Partial("hel".to_string()));
+                    let _ = events.send(RecognitionEvent::Final("hello".to_string()));
+                    Ok(Box::new(FakeSession {
+                        written: self.written.clone(),
+                        stopped: self.stopped.clone(),
+                    }))
+                }
+            }
+
+            fn token_hash(token: &str) -> [u8; 32] {
+                Sha256::digest(token.as_bytes()).into()
+            }
+
+            async fn join_and_drain(
+                room: &mpsc::Sender<RoomCommand>,
+                name: &str,
+            ) -> (uuid::Uuid, mpsc::UnboundedReceiver<ServerMessage>) {
+                let (connection, mut inbox) = mpsc::unbounded_channel();
+                let (reply_tx, reply_rx) = oneshot::channel();
+                room.send(RoomCommand::Join {
+                    connection,
+                    message: ClientMessage::Join {
+                        room_id: "room-1".to_string(),
+                        token: "secret".to_string(),
+                        display_name: name.to_string(),
+                        speech_language: Language::Japanese,
+                        display_language: Language::English,
+                        consent: true,
+                    },
+                    reply: reply_tx,
+                })
+                .await
+                .unwrap();
+                let id = match reply_rx.await.unwrap() {
+                    JoinOutcome::Joined { participant_id } => participant_id,
+                    other => panic!("expected Joined, got {other:?}"),
+                };
+                inbox.recv().await.unwrap();
+                (id, inbox)
+            }
+
+            #[tokio::test]
+            async fn audio_start_streams_partial_then_final_becomes_a_caption() {
+                let written = Arc::new(Mutex::new(Vec::new()));
+                let stopped = Arc::new(AtomicBool::new(false));
+                let (became_empty_tx, _rx) = mpsc::unbounded_channel();
+                let (room, _handle) = spawn_room(
+                    "room-1".to_string(),
+                    token_hash("secret"),
+                    became_empty_tx,
+                    Arc::new(NoopTranslator),
+                    vec![],
+                    Arc::new(FakeRecognizer {
+                        written: written.clone(),
+                        stopped: stopped.clone(),
+                    }),
+                );
+                let (participant_id, mut inbox) = join_and_drain(&room, "Alice").await;
+
+                room.send(RoomCommand::HandleMessage {
+                    participant_id,
+                    message: ClientMessage::AudioStart,
+                })
+                .await
+                .unwrap();
+
+                assert!(matches!(
+                    inbox.recv().await.unwrap(),
+                    ServerMessage::CaptionPreview { source_text, .. } if source_text == "hel"
+                ));
+                let ServerMessage::CaptionUpdate { caption } = inbox.recv().await.unwrap() else {
+                    panic!("expected CaptionUpdate");
+                };
+                assert_eq!(caption.source_text, "hello");
+
+                room.send(RoomCommand::WriteAudio {
+                    participant_id,
+                    chunk: vec![1, 2, 3],
+                })
+                .await
+                .unwrap();
+                tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+                assert_eq!(written.lock().unwrap().as_slice(), &[vec![1u8, 2, 3]]);
+
+                room.send(RoomCommand::HandleMessage {
+                    participant_id,
+                    message: ClientMessage::AudioStop,
+                })
+                .await
+                .unwrap();
+                tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+                assert!(stopped.load(Ordering::SeqCst));
+            }
+
+            #[tokio::test]
+            async fn write_audio_without_active_session_is_a_silent_no_op() {
+                let written = Arc::new(Mutex::new(Vec::new()));
+                let stopped = Arc::new(AtomicBool::new(false));
+                let (became_empty_tx, _rx) = mpsc::unbounded_channel();
+                let (room, _handle) = spawn_room(
+                    "room-1".to_string(),
+                    token_hash("secret"),
+                    became_empty_tx,
+                    Arc::new(NoopTranslator),
+                    vec![],
+                    Arc::new(FakeRecognizer {
+                        written: written.clone(),
+                        stopped,
+                    }),
+                );
+                let (participant_id, _inbox) = join_and_drain(&room, "Alice").await;
+
+                room.send(RoomCommand::WriteAudio {
+                    participant_id,
+                    chunk: vec![9],
+                })
+                .await
+                .unwrap();
+                tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+                assert!(written.lock().unwrap().is_empty());
+            }
         }
     }
 }
