@@ -19,6 +19,7 @@
 - `MEETING_BASE_PATH` is retired; `/translate` is a literal path prefix in the route macros (Decision recorded in the spec).
 - No React, no Vite, no Node build step in the new implementation. All browser code is plain JS served via Topcoat's `asset!()` pipeline.
 - The old TypeScript implementation is deleted in Task 1, not kept around during the rewrite — this is a from-scratch rebuild, not a port.
+- The crate has both a library target (`src/lib.rs`) and a binary target (`src/main.rs`) — Task 3's Step 0 introduces the split so `cargo test --lib` has something to run against. Every task from Task 3 onward that says "add `mod X;` to `src/main.rs`" means "add `pub mod X;` to `src/lib.rs`"; `src/main.rs` stays a thin binary until Task 14 gives it its final form.
 
 ---
 
@@ -155,12 +156,24 @@ git commit -s -m "feat(meeting-translation): scaffold Topcoat crate"
 
 **Files:**
 - Create: `tools/meeting-translation/src/protocol.rs`
-- Modify: `tools/meeting-translation/src/main.rs` (add `mod protocol;`)
+- Create: `tools/meeting-translation/src/lib.rs` (new library target — see Step 0; every later task's "add `mod X;` to `src/main.rs`" instruction instead means "add `pub mod X;` to `src/lib.rs`", starting here)
 - Modify: `tools/meeting-translation/Cargo.toml` (add `serde`, `serde_json`, `uuid`)
 
 **Interfaces:**
 - Produces: `Language` (`Japanese`/`English`, with `.opposite()`), `Participant`, `CaptionKind`, `CaptionState`, `Caption`, `ClientMessage`, `ServerMessage`, `StatusCode`, `parse_client_message(bytes: &[u8]) -> Result<ClientMessage, ()>`, constants `MAX_DISPLAY_NAME_LEN: usize = 40`, `MAX_MANUAL_CAPTION_LEN: usize = 2000`.
 - Consumes: nothing (pure domain types).
+
+- [ ] **Step 0: Split the crate into a library target + a thin binary**
+
+Task 2 scaffolded `src/main.rs` as the crate's only file, which makes it a binary-only crate — `cargo test --lib` has nothing to run against, because there is no library target. From this task on, every module the plan adds belongs in a library target so it is unit-testable; `main.rs` becomes a thin binary that only wires things together and calls `topcoat::start`.
+
+Create `tools/meeting-translation/src/lib.rs`:
+
+```rust
+pub mod protocol;
+```
+
+Cargo automatically treats `src/lib.rs` as a library target (crate name `meeting_translation`, package name `meeting-translation`) and `src/main.rs` as a separate binary target in the same package — no `[lib]`/`[[bin]]` section needs adding to `Cargo.toml` for this. Every later task's instruction to "add `mod X;` near the top of `src/main.rs`" means: add `pub mod X;` to this file (`src/lib.rs`) instead. `src/main.rs` itself does not need a `mod protocol;` line — it does not use `protocol` yet, and once it does (from Task 14 on), it reaches it via `use meeting_translation::protocol;` like any external caller of the library.
 
 - [ ] **Step 1: Add dependencies**
 
@@ -394,20 +407,16 @@ pub fn parse_client_message(bytes: &[u8]) -> Result<ClientMessage, ()> {
 }
 ```
 
-- [ ] **Step 5: Wire the module into `main.rs`**
-
-Add `mod protocol;` near the top of `src/main.rs`.
-
-- [ ] **Step 6: Run to verify it passes**
+- [ ] **Step 5: Run to verify it passes**
 
 Run: `cargo test --lib protocol`
-Expected: PASS, all 6 tests green.
+Expected: PASS, all 6 tests green (this now runs, because Step 0 gave the crate a library target).
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add tools/meeting-translation/Cargo.toml tools/meeting-translation/Cargo.lock \
-  tools/meeting-translation/src/main.rs tools/meeting-translation/src/protocol.rs
+  tools/meeting-translation/src/lib.rs tools/meeting-translation/src/protocol.rs
 git commit -s -m "feat(meeting-translation): add protocol types and validation"
 ```
 
@@ -418,7 +427,7 @@ git commit -s -m "feat(meeting-translation): add protocol types and validation"
 **Files:**
 - Create: `tools/meeting-translation/src/room.rs`
 - Create: `tools/meeting-translation/src/room/actor.rs`
-- Modify: `tools/meeting-translation/src/main.rs` (add `mod room;`)
+- Modify: `tools/meeting-translation/src/lib.rs` (add `pub mod room;`)
 - Modify: `tools/meeting-translation/Cargo.toml` (add `sha2`, `subtle`)
 
 **Interfaces:**
@@ -752,9 +761,9 @@ impl RoomActor {
 
 Note: `request_clarification` and the `RoomCommand::WriteAudio` arm are intentionally inert here — Task 5 adds caption storage (needed to know who spoke a given caption) and Task 6 adds recognition sessions (needed to do anything with audio bytes). Wiring them now would mean guessing at shapes this task doesn't need yet.
 
-- [ ] **Step 6: Wire the module into `main.rs`**
+- [ ] **Step 6: Wire the module into `src/lib.rs`**
 
-Add `mod room;` near the top of `src/main.rs`.
+Add `pub mod room;` near the top of `src/lib.rs`.
 
 - [ ] **Step 7: Run to verify it passes**
 
@@ -765,7 +774,7 @@ Expected: PASS, all 4 tests green.
 
 ```bash
 git add tools/meeting-translation/Cargo.toml tools/meeting-translation/Cargo.lock \
-  tools/meeting-translation/src/main.rs tools/meeting-translation/src/room.rs \
+  tools/meeting-translation/src/lib.rs tools/meeting-translation/src/room.rs \
   tools/meeting-translation/src/room/actor.rs
 git commit -s -m "feat(meeting-translation): add room actor with membership and broadcast"
 ```
@@ -777,7 +786,7 @@ git commit -s -m "feat(meeting-translation): add room actor with membership and 
 **Files:**
 - Modify: `tools/meeting-translation/src/room/actor.rs`
 - Create: `tools/meeting-translation/src/translator.rs`
-- Modify: `tools/meeting-translation/src/main.rs` (add `mod translator;`)
+- Modify: `tools/meeting-translation/src/lib.rs` (add `pub mod translator;`)
 
 **Interfaces:**
 - Produces: `pub trait Translator: Send + Sync { async fn translate(&self, request: TranslationRequest) -> Result<String, ()>; }`, `pub struct TranslationRequest { pub source_text: String, pub source_language: Language, pub target_language: Language, pub context: Vec<Caption>, pub glossary: Vec<String> }`. Extends `spawn_room` to take `translator: std::sync::Arc<dyn Translator>` and `glossary: Vec<String>`. `request_clarification` now looks up the real speaker from stored captions.
@@ -1186,15 +1195,15 @@ impl RoomActor {
 Run: `cargo test --lib room`
 Expected: PASS — Task 4's 4 tests plus this task's 3 tests, all green.
 
-- [ ] **Step 8: Wire the module into `main.rs`**
+- [ ] **Step 8: Wire the module into `src/lib.rs`**
 
-Add `mod translator;` near the top of `src/main.rs`.
+Add `pub mod translator;` near the top of `src/lib.rs`.
 
 - [ ] **Step 9: Commit**
 
 ```bash
 git add tools/meeting-translation/Cargo.toml tools/meeting-translation/Cargo.lock \
-  tools/meeting-translation/src/main.rs tools/meeting-translation/src/translator.rs \
+  tools/meeting-translation/src/lib.rs tools/meeting-translation/src/translator.rs \
   tools/meeting-translation/src/room/actor.rs
 git commit -s -m "feat(meeting-translation): add manual captions and translation queue"
 ```
@@ -1206,7 +1215,7 @@ git commit -s -m "feat(meeting-translation): add manual captions and translation
 **Files:**
 - Create: `tools/meeting-translation/src/recognizer.rs`
 - Modify: `tools/meeting-translation/src/room/actor.rs`
-- Modify: `tools/meeting-translation/src/main.rs` (add `mod recognizer;`)
+- Modify: `tools/meeting-translation/src/lib.rs` (add `pub mod recognizer;`)
 
 **Interfaces:**
 - Produces: `pub enum RecognitionEvent { Partial(String), Final(String), Error, Reconnecting, Reconnected }`, `pub trait RecognitionSession: Send { fn write(&self, chunk: Vec<u8>); fn stop(self: Box<Self>); }`, `pub trait SpeechRecognizer: Send + Sync { async fn start(&self, language: Language, events: mpsc::UnboundedSender<RecognitionEvent>) -> Result<Box<dyn RecognitionSession>, ()>; }`. Extends `spawn_room` to take `recognizer: Arc<dyn SpeechRecognizer>`. Wires `AudioStart`/`AudioStop`/`WriteAudio`.
@@ -1563,15 +1572,15 @@ Also add `SessionStarted { participant_id: Uuid, session: Box<dyn RecognitionSes
 Run: `cargo test --lib room`
 Expected: PASS — all tests from Tasks 4, 5, and 6 green.
 
-- [ ] **Step 6: Wire the module into `main.rs`**
+- [ ] **Step 6: Wire the module into `src/lib.rs`**
 
-Add `mod recognizer;` near the top of `src/main.rs`.
+Add `pub mod recognizer;` near the top of `src/lib.rs`.
 
 - [ ] **Step 7: Commit**
 
 ```bash
 git add tools/meeting-translation/Cargo.toml tools/meeting-translation/Cargo.lock \
-  tools/meeting-translation/src/main.rs tools/meeting-translation/src/recognizer.rs \
+  tools/meeting-translation/src/lib.rs tools/meeting-translation/src/recognizer.rs \
   tools/meeting-translation/src/room/actor.rs
 git commit -s -m "feat(meeting-translation): add audio recognition lifecycle"
 ```
@@ -1904,7 +1913,7 @@ git commit -s -m "feat(meeting-translation): add room registry, reconnect grace,
 **Files:**
 - Create: `tools/meeting-translation/src/adapters.rs`
 - Create: `tools/meeting-translation/src/adapters/bedrock.rs`
-- Modify: `tools/meeting-translation/src/main.rs` (add `mod adapters;`)
+- Modify: `tools/meeting-translation/src/lib.rs` (add `pub mod adapters;`)
 - Modify: `tools/meeting-translation/Cargo.toml` (add `aws-config`, `aws-sdk-bedrockruntime`)
 
 **Interfaces:**
@@ -2060,15 +2069,15 @@ Expected: PASS.
 Run: `cargo build`
 Expected: compiles cleanly (this is the first task that pulls in the AWS SDK — a clean `cargo build` here is itself evidence the dependency versions resolve).
 
-- [ ] **Step 7: Wire the module into `main.rs`**
+- [ ] **Step 7: Wire the module into `src/lib.rs`**
 
-Add `mod adapters;` near the top of `src/main.rs`.
+Add `pub mod adapters;` near the top of `src/lib.rs`.
 
 - [ ] **Step 8: Commit**
 
 ```bash
 git add tools/meeting-translation/Cargo.toml tools/meeting-translation/Cargo.lock \
-  tools/meeting-translation/src/main.rs tools/meeting-translation/src/adapters.rs \
+  tools/meeting-translation/src/lib.rs tools/meeting-translation/src/adapters.rs \
   tools/meeting-translation/src/adapters/bedrock.rs
 git commit -s -m "feat(meeting-translation): add Bedrock translator adapter"
 ```
@@ -2228,7 +2237,7 @@ git commit -s -m "feat(meeting-translation): add Transcribe streaming recognizer
 
 **Files:**
 - Create: `tools/meeting-translation/src/session.rs`
-- Modify: `tools/meeting-translation/src/main.rs` (add `mod session;`)
+- Modify: `tools/meeting-translation/src/lib.rs` (add `pub mod session;`)
 - Modify: `tools/meeting-translation/Cargo.toml` (add `futures-util`, dev-dependency `tokio-tungstenite`)
 - Modify: `tools/meeting-translation/src/room/actor.rs` (add `reconnectable: bool` to `RoomCommand::Disconnect` — see Step 4)
 - Modify: `tools/meeting-translation/src/room/registry.rs` (make the grace timer conditional on `reconnectable`, update `RoomBecameEmpty`'s shape — see Step 4)
@@ -2457,15 +2466,15 @@ Expected: PASS.
 Run: `cargo test --lib room::registry`
 Expected: PASS, including the new explicit-leave-has-no-grace-period case from Step 4.
 
-- [ ] **Step 6: Wire the module into `main.rs`**
+- [ ] **Step 6: Wire the module into `src/lib.rs`**
 
-Add `mod session;` near the top of `src/main.rs`.
+Add `pub mod session;` near the top of `src/lib.rs`.
 
 - [ ] **Step 7: Commit**
 
 ```bash
 git add tools/meeting-translation/Cargo.toml tools/meeting-translation/Cargo.lock \
-  tools/meeting-translation/src/main.rs tools/meeting-translation/src/session.rs \
+  tools/meeting-translation/src/lib.rs tools/meeting-translation/src/session.rs \
   tools/meeting-translation/src/room/actor.rs tools/meeting-translation/src/room/registry.rs
 git commit -s -m "feat(meeting-translation): add WebSocket session route
 
@@ -2480,14 +2489,41 @@ distinguishable, closing a gap left open since Task 7."
 
 **Files:**
 - Create: `tools/meeting-translation/src/pages.rs`
-- Modify: `tools/meeting-translation/src/main.rs` (add `mod pages;`)
+- Create: `tools/meeting-translation/src/assets.rs` (moved up from Task 12 — `pages.rs` references it in this task, so it must exist now; Task 12 only fills in the two JS files' real content, it does not touch this Rust file again)
+- Create: `tools/meeting-translation/assets/creation-form.js` (placeholder — Task 12 replaces the content)
+- Create: `tools/meeting-translation/assets/session.js` (placeholder — Task 12 replaces the content)
+- Modify: `tools/meeting-translation/src/lib.rs` (add `pub mod pages;` and `pub mod assets;`)
 - Modify: `tools/meeting-translation/src/room.rs` (add the shared `path_param!(room_id: String, ...)` declaration — see Step 2)
 - Modify: `tools/meeting-translation/src/session.rs` (drop its own copy of that declaration in favor of the one now in `room.rs` — see Step 2)
-- Create: `tools/meeting-translation/assets/` (directory, populated in Tasks 12-13)
 
 **Interfaces:**
 - Produces: `pub async fn creation_form() -> Result<impl View>` (`#[page("/translate/")]`), `pub async fn create_room(cx: &Cx) -> Result<Json<CreateRoomResponse>>` (`#[route(POST "/translate/api/rooms")]`), `pub async fn meeting_page(cx: &Cx) -> Result<impl View>` (`#[page("/translate/rooms/{room_id}")]`).
 - Consumes: `crate::room::RoomRegistry` (app context), `topcoat::router::request::client_ip`.
+
+- [ ] **Step 0: Create the asset module and placeholder JS files `pages.rs` needs**
+
+`pages.rs` (Step 1) references `crate::assets::CREATION_FORM_JS`/`SESSION_JS`. Rather than leave the crate in a non-compiling state until Task 12, create the asset module and two placeholder JS files now; Task 12 replaces the JS files' content but does not touch this Rust file again.
+
+Write `tools/meeting-translation/src/assets.rs`:
+
+```rust
+use topcoat::asset::{asset, Asset};
+
+pub const CREATION_FORM_JS: Asset = asset!("../assets/creation-form.js");
+pub const SESSION_JS: Asset = asset!("../assets/session.js");
+```
+
+Write `tools/meeting-translation/assets/creation-form.js`:
+
+```javascript
+// Placeholder — Task 12 replaces this with the real room-creation flow.
+```
+
+Write `tools/meeting-translation/assets/session.js`:
+
+```javascript
+// Placeholder — Task 12 replaces this with the real WebSocket client.
+```
 
 - [ ] **Step 1: Write `src/pages.rs`**
 
@@ -2571,20 +2607,22 @@ Note: `too_many_requests` is used here on the assumption that `topcoat::router::
 
 Also note `path_param!(room_id: String, ...)` is declared identically in both `pages.rs` (for `meeting_page`) and `session.rs` (for the WebSocket route) — this duplicates the `RoomId` marker type in two modules with the same name, which will not compile as two separate types both named `RoomId` in scope of `topcoat::router`'s registration. Move this single declaration into `src/room.rs` (re-exported as `pub use` from both `pages.rs` and `session.rs`) before finishing this task, since both call sites need the exact same generated type.
 
-- [ ] **Step 2: `cargo check` to catch the two issues flagged above, then fix them**
+- [ ] **Step 2: Wire the modules into `src/lib.rs`**
+
+Add `pub mod pages;` and `pub mod assets;` near the top of `src/lib.rs` — needed before `cargo check` will even attempt to compile `pages.rs`'s contents (an undeclared module file is not part of the build).
+
+- [ ] **Step 3: `cargo check` to catch the two issues flagged above, then fix them**
 
 Run: `cargo check`
 Expected: first FAILS on the duplicate `RoomId` type and (possibly) the missing `too_many_requests`; fix per the notes above, then re-run until it passes.
 
-- [ ] **Step 3: Wire the module into `main.rs`** (asset module comes from Task 12; leave `crate::assets::CREATION_FORM_JS`/`SESSION_JS` as forward references resolved when Task 12 adds `src/assets.rs`)
-
-Add `mod pages;` near the top of `src/main.rs`.
-
 - [ ] **Step 4: Commit**
 
 ```bash
-git add tools/meeting-translation/src/main.rs tools/meeting-translation/src/pages.rs \
-  tools/meeting-translation/src/room.rs tools/meeting-translation/src/session.rs
+git add tools/meeting-translation/src/lib.rs tools/meeting-translation/src/pages.rs \
+  tools/meeting-translation/src/assets.rs tools/meeting-translation/assets/creation-form.js \
+  tools/meeting-translation/assets/session.js tools/meeting-translation/src/room.rs \
+  tools/meeting-translation/src/session.rs
 git commit -s -m "feat(meeting-translation): add creation form, room API, and meeting page"
 ```
 
@@ -2593,26 +2631,15 @@ git commit -s -m "feat(meeting-translation): add creation form, room API, and me
 ## Task 12: Browser JS — WebSocket client, caption rendering, manual caption, clarification
 
 **Files:**
-- Create: `tools/meeting-translation/assets/session.js`
-- Create: `tools/meeting-translation/assets/creation-form.js`
-- Create: `tools/meeting-translation/src/assets.rs`
-- Modify: `tools/meeting-translation/src/main.rs` (add `mod assets;`)
+- Modify: `tools/meeting-translation/assets/session.js` (Task 11 created this as a placeholder — replace its content)
+- Modify: `tools/meeting-translation/assets/creation-form.js` (Task 11 created this as a placeholder — replace its content)
 - Modify: `tools/meeting-translation/Cargo.toml` (add `asset` feature — already implied by Topcoat's default features, no change needed; confirm during build)
 
 **Interfaces:**
-- Produces: `src/assets.rs` exporting `pub const CREATION_FORM_JS: topcoat::asset::Asset` and `pub const SESSION_JS: topcoat::asset::Asset`, wired via `asset!()`; `.assets(AssetBundle::load()?)` added to the router in Task 14.
-- Consumes: nothing Rust-side beyond the `asset!` macro.
+- Produces: real content for the two JS files Task 11 created as placeholders (`src/assets.rs`'s `CREATION_FORM_JS`/`SESSION_JS` constants already point at them — no Rust change needed in this task).
+- Consumes: nothing Rust-side beyond the `asset!` macro Task 11 already wired up.
 
-- [ ] **Step 1: Write `src/assets.rs`**
-
-```rust
-use topcoat::asset::{asset, Asset};
-
-pub const CREATION_FORM_JS: Asset = asset!("../assets/creation-form.js");
-pub const SESSION_JS: Asset = asset!("../assets/session.js");
-```
-
-- [ ] **Step 2: Write `assets/creation-form.js`**
+- [ ] **Step 1: Write `assets/creation-form.js`**
 
 ```javascript
 document.getElementById("create-room-form").addEventListener("submit", async (event) => {
@@ -2629,7 +2656,7 @@ document.getElementById("create-room-form").addEventListener("submit", async (ev
 });
 ```
 
-- [ ] **Step 3: Write `assets/session.js`**
+- [ ] **Step 2: Write `assets/session.js`**
 
 ```javascript
 const appElement = document.getElementById("app");
@@ -2752,22 +2779,17 @@ document.addEventListener("submit", (event) => {
 
 Note: this is a functional but intentionally minimal first pass — it proves the wire protocol end-to-end (join, roster, manual captions, clarification requests, status codes). `participant_joined`/`participant_left` incremental roster updates and a dedicated clarification-request UI slot are left as visible gaps rather than papered over with fake logic; extend them once the core loop is confirmed working in Task 17's dogfooding pass.
 
-- [ ] **Step 4: Verify the app serves the new pages with assets wired**
+- [ ] **Step 3: Verify the crate still compiles**
 
-This requires Task 14's router assembly (which adds `.assets(...)`) to actually load; until then, verify only that the files exist and `cargo check` still passes with the `mod assets;` addition.
+Task 11 already declared `pub mod assets;` in `src/lib.rs` and wired the `asset!()` calls — this task only replaced the two JS files' content, so no Rust file changes are expected here.
 
 Run: `cargo check`
-Expected: PASS (the `Asset` constants are unused until Task 14 references them from `pages.rs`'s `<script src=...>` tags, which already reference them — so this should compile once Task 14's asset bundle is registered; if `cargo check` complains about an unregistered asset at runtime later, that surfaces in Task 14's manual smoke test, not here).
+Expected: PASS, with no diff to any `.rs` file (confirm with `git status --short` that only the two `.js` files changed).
 
-- [ ] **Step 5: Wire the module into `main.rs`**
-
-Add `mod assets;` near the top of `src/main.rs`.
-
-- [ ] **Step 6: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add tools/meeting-translation/src/main.rs tools/meeting-translation/src/assets.rs \
-  tools/meeting-translation/assets/session.js tools/meeting-translation/assets/creation-form.js
+git add tools/meeting-translation/assets/session.js tools/meeting-translation/assets/creation-form.js
 git commit -s -m "feat(meeting-translation): add browser WebSocket client and caption UI"
 ```
 
@@ -2973,8 +2995,9 @@ git commit -s -m "feat(meeting-translation): add microphone capture and PCM resa
 ## Task 14: Wire main.rs and do a first end-to-end smoke test
 
 **Files:**
-- Modify: `tools/meeting-translation/src/main.rs`
-- Modify: `tools/meeting-translation/src/config.rs` (create — this was deferred; see Step 1)
+- Modify: `tools/meeting-translation/src/main.rs` (rewrite as a thin binary — see Step 2)
+- Modify: `tools/meeting-translation/src/lib.rs` (add `pub mod config;` — the last module declaration this plan adds to it)
+- Create: `tools/meeting-translation/src/config.rs` (deferred until now since this is the first task that needs it; see Step 1)
 
 **Interfaces:**
 - Produces: the fully assembled `main()` that loads config, builds both AWS clients, constructs `RoomRegistry`, assembles the router with all pages/routes/assets, and calls `topcoat::start`.
@@ -3044,28 +3067,23 @@ mod tests {
 Run: `cargo test --lib config`
 Expected: PASS.
 
-- [ ] **Step 2: Assemble `main.rs`**
+- [ ] **Step 2: Wire `config` into `src/lib.rs`, then rewrite `src/main.rs` as a thin binary**
+
+By this point, `src/lib.rs` already declares `pub mod protocol;`, `pub mod room;`, `pub mod translator;`, `pub mod recognizer;`, `pub mod adapters;`, `pub mod session;`, `pub mod pages;`, and `pub mod assets;` (added incrementally by Tasks 3, 4, 8, 5, 6, 10, 11, and 11 respectively). Add one more line, `pub mod config;`, to that same file — this task does not create any other new modules.
+
+`src/main.rs` (a separate binary target — see Task 3's Step 0) then only needs to import from the library crate (`meeting_translation`, derived from the package name `meeting-translation`) and contain the `main` function itself:
 
 ```rust
 // tools/meeting-translation/src/main.rs
-mod adapters;
-mod assets;
-mod config;
-mod pages;
-mod protocol;
-mod recognizer;
-mod room;
-mod session;
-mod translator;
-
 use std::sync::Arc;
 
 use topcoat::asset::{AssetBundle, RouterBuilderAssetExt};
-use topcoat::router::{Router, RouterBuilderDiscoverExt};
+use topcoat::router::Router;
 
-use crate::adapters::bedrock::BedrockTranslator;
-use crate::adapters::transcribe::TranscribeRecognizer;
-use crate::room::RoomRegistry;
+use meeting_translation::adapters::bedrock::BedrockTranslator;
+use meeting_translation::adapters::transcribe::TranscribeRecognizer;
+use meeting_translation::room::RoomRegistry;
+use meeting_translation::{config, pages, session};
 
 #[tokio::main]
 async fn main() {
@@ -3093,6 +3111,8 @@ async fn main() {
 }
 ```
 
+This replaces Task 2's placeholder `main.rs` (the `#[page("/translate/")]` `home` function moved into `pages.rs` as `creation_form` back in Task 11 — delete Task 2's old placeholder `home`/`hello`-style content entirely; nothing in this file should still define a page or route directly).
+
 `aws_config::from_env().region(...)` uses the `aws_config`/`aws_types` `Region` type — verify the exact builder method chain against the `aws-config` version resolved in `Cargo.lock` via `cargo doc -p aws-config --open`, since this plan's earlier verification focused on the two SDK service crates (`aws-sdk-bedrockruntime`, `aws-sdk-transcribestreaming`) rather than `aws-config` itself; both official examples used `aws_config::from_env()...load().await` (Bedrock example) and `aws_config::from_env().region(region_provider).load().await` (Transcribe example), so this call shape has already been seen twice in the AWS official examples fetched during planning — the concrete methods this task's code calls are the same ones the Transcribe example used, just with a fixed `Region` instead of a `RegionProviderChain`.
 
 - [ ] **Step 3: Build and smoke-test**
@@ -3116,8 +3136,8 @@ Expected: the first `curl` returns the creation form HTML; the second returns a 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add tools/meeting-translation/src/main.rs tools/meeting-translation/src/config.rs \
-  tools/meeting-translation/Cargo.toml tools/meeting-translation/Cargo.lock
+git add tools/meeting-translation/src/main.rs tools/meeting-translation/src/lib.rs \
+  tools/meeting-translation/src/config.rs tools/meeting-translation/Cargo.toml tools/meeting-translation/Cargo.lock
 git commit -s -m "feat(meeting-translation): wire main.rs and verify the app boots"
 ```
 
