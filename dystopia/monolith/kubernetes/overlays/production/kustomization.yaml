@@ -7,3 +7,21 @@ resources:
 patches:
   - path: configmap.yaml
   - path: deployment.yaml
+  - path: migrate-job.yaml
+replacements:
+  - source:
+      kind: Job
+      name: monolith-migrate
+      fieldPath: spec.template.spec.containers.[name=migrate].image
+      options:
+        delimiter: ":"
+        index: 1
+    targets:
+      - select:
+          kind: Job
+          name: monolith-migrate
+        fieldPaths:
+          - metadata.name
+        options:
+          delimiter: "-"
+          index: 2

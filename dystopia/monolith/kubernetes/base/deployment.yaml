@@ -23,6 +23,17 @@ spec:
           command: ["./bin/start"]
           ports:
             - containerPort: 9001
+          # grpc.health.v1.Health は bin/grpc に未登録のため、9001 の TCP bind で代替する。
+          startupProbe:
+            tcpSocket:
+              port: 9001
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: 9001
+            periodSeconds: 10
+            failureThreshold: 3
           # OTel の resource attributes は downward API の値を $() 展開して組み立てる。
           # envFrom 経由の値は $() 展開されないため env: に置く。
           env:
