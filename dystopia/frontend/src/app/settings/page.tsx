@@ -3,12 +3,18 @@
 import { useState } from "react";
 import { useProfile } from "@/modules/profile/hooks";
 import { useAuthStore, selectIsHydrated } from "@/stores/authStore";
+import { PageHeader } from "@/components/ui/page-header";
 import { Tabs } from "@/components/ui/tab";
 import { PrivacySettings } from "@/modules/profile/components/PrivacySettings";
 import { AccountSettings } from "@/modules/profile/components/AccountSettings";
 import { NotificationSettings } from "@/modules/notifications/components/NotificationSettings";
 import { AppearanceSettings } from "@/modules/profile/components/AppearanceSettings";
 import { useDeactivateAccount } from "@/modules/identity/hooks/useDeactivateAccount";
+import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
+
+export function SettingsHeader() {
+  return <PageHeader title="設定" description={getFeatureDescription("settings")} />;
+}
 
 export default function SettingsPage() {
   const isHydrated = useAuthStore(selectIsHydrated);
@@ -37,7 +43,9 @@ export default function SettingsPage() {
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
-      <h1 className="px-4 py-4 text-lg font-bold">設定</h1>
+      <div className="px-4 pt-4">
+        <SettingsHeader />
+      </div>
       <Tabs items={items} value={tab} onValueChange={setTab} />
       <div className="px-4">
         {tab === "notifications" && <NotificationSettings />}

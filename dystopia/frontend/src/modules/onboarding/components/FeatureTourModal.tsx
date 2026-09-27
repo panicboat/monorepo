@@ -6,23 +6,31 @@ import { Button } from "@/components/ui/button";
 import { hasSeenFeatureTour, markFeatureTourSeen } from "@/modules/onboarding/lib/feature-tour-storage";
 
 export interface FeatureItem {
+  key: string;
   icon: string;
   label: string;
   description: string;
 }
 
 export const FEATURES: FeatureItem[] = [
-  { icon: "🏠", label: "ホーム", description: "フォロー中のアカウントの投稿が並ぶタイムライン" },
-  { icon: "🔍", label: "検索", description: "ユーザーや投稿をキーワードで検索" },
-  { icon: "🔔", label: "通知", description: "いいね・コメントなどのお知らせ" },
-  { icon: "👣", label: "足跡", description: "プロフィールを見に来た人の一覧" },
-  { icon: "💬", label: "メッセージ", description: "個別のダイレクトメッセージ" },
-  { icon: "🔖", label: "ブックマーク", description: "保存した投稿の一覧" },
-  { icon: "🏆", label: "ランキング", description: "期間別の人気投稿ランキング" },
-  { icon: "👤", label: "プロフィール", description: "自分のプロフィールの確認・編集" },
-  { icon: "⚙", label: "設定", description: "アカウント・プライバシーなどの設定" },
-  { icon: "📋", label: "カルテ（キャスト向け・有料機能）", description: "ゲストについて書いたレビューの管理・共有" },
+  { key: "home", icon: "🏠", label: "ホーム", description: "フォロー中のアカウントの投稿が並ぶタイムライン" },
+  { key: "search", icon: "🔍", label: "検索", description: "ユーザーや投稿をキーワードで検索" },
+  { key: "notifications", icon: "🔔", label: "通知", description: "いいね・コメントなどのお知らせ" },
+  { key: "footprints", icon: "👣", label: "足跡", description: "プロフィールを見に来た人の一覧" },
+  { key: "messages", icon: "💬", label: "メッセージ", description: "個別のダイレクトメッセージ" },
+  { key: "bookmarks", icon: "🔖", label: "ブックマーク", description: "保存した投稿の一覧" },
+  { key: "ranking", icon: "🏆", label: "ランキング", description: "期間別の人気投稿ランキング" },
+  { key: "profile", icon: "👤", label: "プロフィール", description: "自分のプロフィールの確認・編集" },
+  { key: "settings", icon: "⚙", label: "設定", description: "アカウント・プライバシーなどの設定" },
+  { key: "karte", icon: "📋", label: "カルテ（キャスト向け・有料機能）", description: "ゲストについて書いたレビューの管理・共有" },
 ];
+
+// Single source of truth for header descriptions so the tour and in-page page headers can't drift apart.
+export function getFeatureDescription(key: string): string {
+  const feature = FEATURES.find((f) => f.key === key);
+  if (!feature) throw new Error(`Unknown feature key: ${key}`);
+  return feature.description;
+}
 
 export function FeatureTourList() {
   return (

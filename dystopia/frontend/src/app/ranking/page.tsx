@@ -2,16 +2,22 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { useRankPosts } from "@/modules/discovery";
 import type { RankPeriodLiteral } from "@/modules/discovery/types";
+import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
 
 const TABS: TabItem[] = [
   { id: "day", label: "24h" },
   { id: "week", label: "1週間" },
   { id: "all", label: "全期間" },
 ];
+
+export function RankingHeader() {
+  return <PageHeader title="🏆 ランキング" description={getFeatureDescription("ranking")} />;
+}
 
 export default function RankingPage() {
   const [period, setPeriod] = useState<RankPeriodLiteral>("week");
@@ -20,7 +26,7 @@ export default function RankingPage() {
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <div className="px-4 pt-4">
-        <h1 className="text-xl font-bold">🏆 ランキング</h1>
+        <RankingHeader />
       </div>
       <Tabs items={TABS} value={period} onValueChange={(v) => setPeriod(v as RankPeriodLiteral)} />
 

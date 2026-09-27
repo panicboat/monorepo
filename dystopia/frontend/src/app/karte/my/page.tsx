@@ -1,9 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
 import { useMyKarte } from "@/modules/karte/hooks/useMyKarte";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { KarteEntryCard } from "@/modules/karte/components/KarteEntryCard";
+import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
+
+export function MyKarteHeader() {
+  return <PageHeader title="自分のカルテ" description={getFeatureDescription("karte")} />;
+}
 
 export default function MyKartePage() {
   const { hasAccess, loading: accessLoading } = useMyKarteAccess();
@@ -23,7 +29,7 @@ export default function MyKartePage() {
   return (
     <div>
       <header className="border-b border-border px-4 py-3">
-        <h1 className="text-lg font-medium">自分のカルテ</h1>
+        <MyKarteHeader />
       </header>
       {entries.map((e) => (
         <KarteEntryCard key={e.id} entry={e} onChanged={refresh} />
