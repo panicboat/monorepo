@@ -50,7 +50,7 @@ export function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg">
+    <div className="flex min-h-dvh flex-col bg-bg [touch-action:pan-y_pinch-zoom]">
       <div className="md:hidden">
         <TopBar onAvatarClick={() => setDrawerOpen(true)} />
       </div>
@@ -63,7 +63,7 @@ export function AppShell({ children }: AppShellProps) {
       </div>
       <BottomTab />
       <ComposerFAB />
-      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
       <FeatureTourModal />
     </div>
   );

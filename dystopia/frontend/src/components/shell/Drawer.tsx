@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Avatar } from "@/components/ui/avatar";
@@ -13,6 +14,7 @@ import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { useNotificationPreferences } from "@/modules/notifications/hooks";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
+import { classifySwipeDirection, clampDrawerOffset, shouldToggleDrawer, type SwipeDirection } from "./drawerSwipe";
 
 const NAV_ITEMS = [
   { path: "__profile__", label: "プロフィール", icon: "👤" },
@@ -28,9 +30,23 @@ const NAV_ITEMS = [
 interface DrawerProps {
   open: boolean;
   onClose: () => void;
+  onOpen: () => void;
 }
 
-export function Drawer({ open, onClose }: DrawerProps) {
+// Lets overflow-x-auto rows (tag filters, oshi row) keep native horizontal scroll instead of triggering the open-swipe gesture.
+function isWithinHorizontalScrollable(element: Element | null): boolean {
+  let el: Element | null = element;
+  while (el instanceof HTMLElement) {
+    const overflowX = window.getComputedStyle(el).overflowX;
+    if ((overflowX === "auto" || overflowX === "scroll") && el.scrollWidth > el.clientWidth) {
+      return true;
+    }
+    el = el.parentElement;
+  }
+  return false;
+}
+
+export function Drawer({ open, onClose, onOpen }: DrawerProps) {
   const { logout } = useAuth();
   const { profile } = useProfile();
   const { followingCount, followersCount } = useSocialCounts(profile?.accountId);
@@ -41,6 +57,9 @@ export function Drawer({ open, onClose }: DrawerProps) {
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
   const { hasAccess: karteAccess } = useMyKarteAccess();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const asideRef = useRef<HTMLElement>(null);
+  const [dragOffsetPx, setDragOffsetPx] = useState<number | null>(null);
+  const closeDragRef = useRef<{ startX: number; startY: number; direction: SwipeDirection } | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -48,6 +67,96 @@ export function Drawer({ open, onClose }: DrawerProps) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  // Listens across the whole content area, not just the edge, because edge-only detection competed with iOS Safari's back-swipe gesture.
+  useEffect(() => {
+    if (open) return;
+
+    let gesture: { startX: number; startY: number; direction: SwipeDirection; ignored: boolean } | null = null;
+
+    function onPointerDown(e: PointerEvent) {
+      if (e.pointerType === "mouse") return;
+      if (window.matchMedia("(min-width: 768px)").matches) return;
+      gesture = {
+        startX: e.clientX,
+        startY: e.clientY,
+        direction: "pending",
+        ignored: isWithinHorizontalScrollable(e.target as Element | null),
+      };
+    }
+
+    function onPointerMove(e: PointerEvent) {
+      if (!gesture || gesture.ignored) return;
+      const dx = e.clientX - gesture.startX;
+      const dy = e.clientY - gesture.startY;
+      if (gesture.direction === "pending") {
+        gesture.direction = classifySwipeDirection(dx, dy);
+        if (gesture.direction === "vertical") {
+          gesture.ignored = true;
+          return;
+        }
+      }
+      if (gesture.direction !== "horizontal") return;
+      const width = asideRef.current?.offsetWidth ?? 0;
+      setDragOffsetPx(clampDrawerOffset(-width, dx, width));
+    }
+
+    function onPointerEnd(e: PointerEvent) {
+      if (!gesture || gesture.ignored || gesture.direction !== "horizontal") {
+        gesture = null;
+        return;
+      }
+      const dx = e.clientX - gesture.startX;
+      const width = asideRef.current?.offsetWidth ?? 0;
+      if (shouldToggleDrawer(dx, width, false)) {
+        onOpen();
+      }
+      setDragOffsetPx(null);
+      gesture = null;
+    }
+
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerEnd);
+    window.addEventListener("pointercancel", onPointerEnd);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerEnd);
+      window.removeEventListener("pointercancel", onPointerEnd);
+    };
+  }, [open, onOpen]);
+
+  function handleCloseDragStart(e: ReactPointerEvent<HTMLElement>) {
+    if (e.pointerType === "mouse") return;
+    closeDragRef.current = { startX: e.clientX, startY: e.clientY, direction: "pending" };
+  }
+
+  function handleCloseDragMove(e: ReactPointerEvent<HTMLElement>) {
+    const gesture = closeDragRef.current;
+    if (!gesture) return;
+    const dx = e.clientX - gesture.startX;
+    const dy = e.clientY - gesture.startY;
+    if (gesture.direction === "pending") {
+      gesture.direction = classifySwipeDirection(dx, dy);
+      if (gesture.direction === "vertical") return;
+    }
+    if (gesture.direction !== "horizontal") return;
+    const width = asideRef.current?.offsetWidth ?? 0;
+    setDragOffsetPx(clampDrawerOffset(0, dx, width));
+  }
+
+  function handleCloseDragEnd(e: ReactPointerEvent<HTMLElement>) {
+    const gesture = closeDragRef.current;
+    closeDragRef.current = null;
+    if (!gesture || gesture.direction !== "horizontal") return;
+    const dx = e.clientX - gesture.startX;
+    const width = asideRef.current?.offsetWidth ?? 0;
+    if (shouldToggleDrawer(dx, width, true)) {
+      onClose();
+    }
+    setDragOffsetPx(null);
+  }
 
   const onConfirmLogout = () => {
     setConfirmOpen(false);
@@ -65,9 +174,15 @@ export function Drawer({ open, onClose }: DrawerProps) {
         aria-hidden="true"
       />
       <aside
-        className={`fixed left-0 top-0 z-50 flex h-full w-80 max-w-[80vw] flex-col bg-bg shadow-2xl transition-transform duration-300 ease-out ${
-          open ? "translate-x-0" : "-translate-x-full"
-        }`}
+        ref={asideRef}
+        className={`fixed left-0 top-0 z-50 flex h-full w-80 max-w-[80vw] flex-col bg-bg shadow-2xl [touch-action:pan-y_pinch-zoom] ${
+          dragOffsetPx === null ? "transition-transform duration-300 ease-out" : ""
+        } ${open ? "translate-x-0" : "-translate-x-full"}`}
+        style={dragOffsetPx !== null ? { transform: `translateX(${dragOffsetPx}px)` } : undefined}
+        onPointerDown={handleCloseDragStart}
+        onPointerMove={handleCloseDragMove}
+        onPointerUp={handleCloseDragEnd}
+        onPointerCancel={handleCloseDragEnd}
         role="dialog"
         aria-label="メニュー"
         aria-hidden={!open}
