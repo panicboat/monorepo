@@ -482,9 +482,12 @@ git commit -s -m "feat(dystopia/monolith): add cast-only ListRecentEntries to ka
       author2 = SecureRandom.uuid_v7
       target1 = SecureRandom.uuid_v7
       target2 = SecureRandom.uuid_v7
+      now = Time.now
 
       e1 = repo.create(author_account_id: author1, target_account_id: target1, rating: 3.0, body: "first")
+      repo.update(e1.id, created_at: now - 200)
       e2 = repo.create(author_account_id: author2, target_account_id: target2, rating: 4.0, body: "second")
+      repo.update(e2.id, created_at: now - 100)
 
       page = repo.list_recent(limit: 10)
 
@@ -492,6 +495,8 @@ git commit -s -m "feat(dystopia/monolith): add cast-only ListRecentEntries to ka
     end
   end
 ```
+
+（`created_at` はDBの `now()` デフォルトのため、同一トランザクション内の連続insertが同一timestampになり得る。tie-breakの`id DESC`はUUIDv7のミリ秒内ランダムsuffixに依存するため、明示的に異なる`created_at`を設定してordering assertionを決定的にする）
 
 もし `spec/slices/review/repositories/entry_repository_spec.rb` が存在しない場合は、以下の内容で新規作成する（`subject`/`let`の宣言込み）:
 
@@ -510,9 +515,12 @@ RSpec.describe Review::Repositories::EntryRepository, type: :database do
       author2 = SecureRandom.uuid_v7
       target1 = SecureRandom.uuid_v7
       target2 = SecureRandom.uuid_v7
+      now = Time.now
 
       e1 = repo.create(author_account_id: author1, target_account_id: target1, rating: 3.0, body: "first")
+      repo.update(e1.id, created_at: now - 200)
       e2 = repo.create(author_account_id: author2, target_account_id: target2, rating: 4.0, body: "second")
+      repo.update(e2.id, created_at: now - 100)
 
       page = repo.list_recent(limit: 10)
 
