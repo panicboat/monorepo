@@ -1564,14 +1564,14 @@ export default function HomePage() {
     if (karte.error) {
       return <p className="px-4 py-8 text-center text-text-danger">読み込みに失敗しました</p>;
     }
-    if (karte.entries.length === 0) {
-      return <p className="px-4 py-8 text-center text-text-secondary">まだカルテがありません</p>;
-    }
     return (
       <>
         {karte.entries.map((e) => (
           <KarteEntryCard key={e.id} entry={e} mode="recent" onChanged={karte.refresh} />
         ))}
+        {karte.entries.length === 0 && !karte.hasMore && (
+          <p className="px-4 py-8 text-center text-text-secondary">まだカルテがありません</p>
+        )}
         {karte.hasMore && (
           <div className="px-4 py-4 text-center">
             <Button variant="secondary" onClick={() => karte.loadMore()} disabled={karte.loading}>
@@ -1590,14 +1590,14 @@ export default function HomePage() {
     if (reviews.error) {
       return <p className="px-4 py-8 text-center text-text-danger">読み込みに失敗しました</p>;
     }
-    if (reviews.entries.length === 0) {
-      return <p className="px-4 py-8 text-center text-text-secondary">まだレビューがありません</p>;
-    }
     return (
       <>
         {reviews.entries.map((e) => (
           <ReviewEntryCard key={e.id} entry={e} mode="recent" onChanged={reviews.refresh} />
         ))}
+        {reviews.entries.length === 0 && !reviews.hasMore && (
+          <p className="px-4 py-8 text-center text-text-secondary">まだレビューがありません</p>
+        )}
         {reviews.hasMore && (
           <div className="px-4 py-4 text-center">
             <Button variant="secondary" onClick={() => reviews.loadMore()} disabled={reviews.loading}>
@@ -1625,6 +1625,8 @@ export default function HomePage() {
   );
 }
 ```
+
+（`karteContent`/`reviewsContent`の空メッセージと`hasMore`ボタンは兄弟要素にしており、`entries.length === 0`での早期returnにしていない。review側の`list_recent`はfetch後にvisibility filterを適用するため、`entries`が0件でも`hasMore`がtrueなケースがあり得る（取得したページの大半が非表示/ブロック対象だった場合）。既存の`ReviewsTab.tsx`と同じパターンで、空メッセージが「もっと見る」ボタンを隠さないようにする）
 
 - [ ] **Step 4: テストを再実行してパスを確認**
 
