@@ -109,4 +109,20 @@ RSpec.describe Review::UseCases::ListRecentEntries do
     expect(result[:next_cursor]).not_to be_nil
     expect(result[:entries].length).to eq(2)
   end
+
+  it "caps a large limit before querying the repository" do
+    expect(entry_repo).to receive(:list_recent).with(limit: 100, cursor: nil).and_return([])
+
+    result = use_case.call(viewer_account_id: viewer_id, limit: 10_000)
+
+    expect(result[:entries]).to eq([])
+  end
+
+  it "clamps a negative limit to one before querying the repository" do
+    expect(entry_repo).to receive(:list_recent).with(limit: 1, cursor: nil).and_return([])
+
+    result = use_case.call(viewer_account_id: viewer_id, limit: -5)
+
+    expect(result[:entries]).to eq([])
+  end
 end

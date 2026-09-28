@@ -111,4 +111,53 @@ RSpec.describe Karte::UseCases::ListRecentEntries do
     expect(result[:next_cursor]).not_to be_nil
     expect(result[:entries].length).to eq(2)
   end
+
+  it "returns entries after a cursor when timestamps differ only by microseconds" do
+    base_time = Time.utc(2026, 1, 1, 0, 0, 0)
+    all_entries = [
+      double(:entry, id: "e-1", author_account_id: "author-1", target_account_id: "target-1",
+        rating: 5, body: "newest", reported_count: 0, created_at: base_time + 0.900_000, updated_at: base_time),
+      double(:entry, id: "e-2", author_account_id: "author-2", target_account_id: "target-2",
+        rating: 4, body: "middle", reported_count: 0, created_at: base_time + 0.800_000, updated_at: base_time),
+      double(:entry, id: "e-3", author_account_id: "author-3", target_account_id: "target-3",
+        rating: 3, body: "oldest", reported_count: 0, created_at: base_time + 0.700_000, updated_at: base_time)
+    ]
+    allow(entry_repo).to receive(:list_recent) do |limit:, cursor:|
+      decoded = use_case.send(:decode_cursor, cursor)
+      page = if decoded
+        all_entries.select do |entry|
+          entry.created_at < decoded[:created_at] ||
+            (entry.created_at == decoded[:created_at] && entry.id < decoded[:id])
+        end
+      else
+        all_entries
+      end
+      page.first(limit + 1)
+    end
+    allow(get_profile_uc).to receive(:call) do |account_id:|
+      double(:profile, username: account_id, avatar_media_id: nil)
+    end
+
+    first_page = use_case.call(viewer_account_id: viewer_id, limit: 2)
+    second_page = use_case.call(viewer_account_id: viewer_id, limit: 2, cursor: first_page[:next_cursor])
+
+    expect(first_page[:next_cursor]).not_to be_nil
+    expect(second_page[:entries].map { |entry| entry[:id] }).to eq(["e-3"])
+  end
+
+  it "caps a large limit before querying the repository" do
+    expect(entry_repo).to receive(:list_recent).with(limit: 100, cursor: nil).and_return([])
+
+    result = use_case.call(viewer_account_id: viewer_id, limit: 10_000)
+
+    expect(result[:entries]).to eq([])
+  end
+
+  it "clamps a negative limit to one before querying the repository" do
+    expect(entry_repo).to receive(:list_recent).with(limit: 1, cursor: nil).and_return([])
+
+    result = use_case.call(viewer_account_id: viewer_id, limit: -5)
+
+    expect(result[:entries]).to eq([])
+  end
 end

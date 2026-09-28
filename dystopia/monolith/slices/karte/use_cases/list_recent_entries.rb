@@ -18,6 +18,7 @@ module Karte
       end
 
       def call(viewer_account_id:, limit: 20, cursor: nil)
+        limit = normalize_limit(limit)
         viewer = user_repo.find_by_id(viewer_account_id)
         raise AccessError, "Karte recent list is cast-only" unless viewer&.role == 2
 
@@ -27,7 +28,7 @@ module Karte
 
         next_cursor = if has_more && visible.any?
           last = visible.last
-          encode_cursor(created_at: last.created_at.iso8601, id: last.id)
+          encode_cursor(created_at: last.created_at.iso8601(6), id: last.id)
         end
 
         profile_cache = {}

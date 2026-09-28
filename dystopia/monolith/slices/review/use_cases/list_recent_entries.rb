@@ -24,6 +24,7 @@ module Review
       end
 
       def call(viewer_account_id:, limit: 20, cursor: nil)
+        limit = normalize_limit(limit)
         page = entry_repo.list_recent(limit: limit, cursor: cursor)
         has_more = page.length > limit
         page = page.take(limit)
