@@ -13,7 +13,8 @@ module Karte
 
       def call(viewer_account_id:)
         row = access_repo.find_by_account(viewer_account_id)
-        { has_access: !row.nil?, granted_at: row&.granted_at }
+        # TODO: gate on row presence again once the billing purchase flow grants access rows
+        { has_access: true, granted_at: row&.granted_at }
       end
     end
   end

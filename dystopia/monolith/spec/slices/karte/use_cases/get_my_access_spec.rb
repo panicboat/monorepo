@@ -21,12 +21,12 @@ RSpec.describe Karte::UseCases::GetMyAccess do
     expect(result[:granted_at]).to eq(granted_time)
   end
 
-  it "returns has_access false with nil granted_at when no access row" do
+  it "returns has_access true with nil granted_at when no access row" do
     allow(access_repo).to receive(:find_by_account).with(viewer_id).and_return(nil)
 
     result = use_case.call(viewer_account_id: viewer_id)
 
-    expect(result[:has_access]).to be(false)
+    expect(result[:has_access]).to be(true)
     expect(result[:granted_at]).to be_nil
   end
 end
