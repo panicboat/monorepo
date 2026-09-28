@@ -23,4 +23,19 @@ describe("PostCard", () => {
 
     expect(html).not.toContain("<a ");
   });
+
+  it("wraps the body and images in a link to the post when detailHref is given", () => {
+    const html = renderToStaticMarkup(
+      <PostCard {...baseProps} detailHref="/posts/post-1" />
+    );
+
+    expect(html).toContain(`href="/posts/post-1"`);
+    expect(html).toContain("こんにちは");
+  });
+
+  it("does not link the body when detailHref is not given", () => {
+    const html = renderToStaticMarkup(<PostCard {...baseProps} />);
+
+    expect(html).not.toContain("<a ");
+  });
 });

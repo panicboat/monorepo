@@ -36,4 +36,18 @@ describe("PostCardBinding", () => {
 
     expect(html).not.toContain('<a href="/u/');
   });
+
+  it("links the post body to the post detail page", () => {
+    const html = renderToStaticMarkup(<PostCardBinding post={basePost} />);
+
+    expect(html).toContain(`href="/posts/post-1"`);
+  });
+
+  it("links the post body to the given detailHref when provided", () => {
+    const html = renderToStaticMarkup(
+      <PostCardBinding post={basePost} detailHref="/discovery/posts/post-1" />
+    );
+
+    expect(html).toContain(`href="/discovery/posts/post-1"`);
+  });
 });

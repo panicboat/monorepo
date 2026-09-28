@@ -32,6 +32,8 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
     .map((m) => m.thumbnailUrl || m.url)
     .filter((u) => u.length > 0);
 
+  const href = detailHref || `/posts/${encodeURIComponent(post.id)}`;
+
   const handleLikeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -58,7 +60,7 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
         <span>{likesCount}</span>
       </button>
       <Link
-        href={detailHref || `/posts/${encodeURIComponent(post.id)}`}
+        href={href}
         className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
         aria-label="コメント"
       >
@@ -85,6 +87,7 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
     <PostCard
       author={{ name: authorName, handle: authorHandle, avatarSrc }}
       authorHref={authorHref}
+      detailHref={href}
       time={post.createdAt ? formatTimeAgo(post.createdAt) : ""}
       body={post.content}
       images={images.length > 0 ? images : undefined}

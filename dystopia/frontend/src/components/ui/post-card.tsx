@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 export interface PostCardProps {
   author: { name: string; handle: string; avatarSrc?: string };
   authorHref?: string;
+  detailHref?: string;
   time: string;
   body: string;
   images?: string[];
@@ -17,6 +18,7 @@ export interface PostCardProps {
 export function PostCard({
   author,
   authorHref,
+  detailHref,
   time,
   body,
   images,
@@ -31,6 +33,32 @@ export function PostCard({
     </span>
   );
 
+  const content = (
+    <>
+      <p className="mt-1 whitespace-pre-wrap text-text-primary">{body}</p>
+      {images && images.length > 0 && (
+        <div
+          className={cn(
+            "mt-2 grid gap-1 overflow-hidden rounded-md",
+            images.length === 1 ? "grid-cols-1" : "grid-cols-2"
+          )}
+        >
+          {images.slice(0, 4).map((src, i) => (
+            <div key={i} className="relative aspect-video w-full">
+              <Image
+                src={src}
+                alt=""
+                fill
+                sizes="(min-width: 640px) 320px, 50vw"
+                className="object-cover"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
   return (
     <article className={cn("border-b border-divider px-4 py-3", className)}>
       <div className="flex gap-3">
@@ -40,26 +68,12 @@ export function PostCard({
             {authorHref ? <Link href={authorHref}>{nameAndHandle}</Link> : nameAndHandle}
             <span className="text-text-muted">· {time}</span>
           </div>
-          <p className="mt-1 whitespace-pre-wrap text-text-primary">{body}</p>
-          {images && images.length > 0 && (
-            <div
-              className={cn(
-                "mt-2 grid gap-1 overflow-hidden rounded-md",
-                images.length === 1 ? "grid-cols-1" : "grid-cols-2"
-              )}
-            >
-              {images.slice(0, 4).map((src, i) => (
-                <div key={i} className="relative aspect-video w-full">
-                  <Image
-                    src={src}
-                    alt=""
-                    fill
-                    sizes="(min-width: 640px) 320px, 50vw"
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
+          {detailHref ? (
+            <Link href={detailHref} className="block">
+              {content}
+            </Link>
+          ) : (
+            content
           )}
           {reactions && (
             <div className="mt-3 flex items-center gap-6 text-text-secondary">
