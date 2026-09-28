@@ -489,14 +489,15 @@ git commit -s -m "feat(dystopia/monolith): add cast-only ListRecentEntries to ka
       e2 = repo.create(author_account_id: author2, target_account_id: target2, rating: 4.0, body: "second")
       repo.update(e2.id, created_at: now - 100)
 
-      page = repo.list_recent(limit: 10)
+      page = repo.list_recent(limit: 1000)
+      ours = page.select { |e| [e1.id, e2.id].include?(e.id) }
 
-      expect(page.map(&:id)).to eq([e2.id, e1.id])
+      expect(ours.map(&:id)).to eq([e2.id, e1.id])
     end
   end
 ```
 
-（`created_at` はDBの `now()` デフォルトのため、同一トランザクション内の連続insertが同一timestampになり得る。tie-breakの`id DESC`はUUIDv7のミリ秒内ランダムsuffixに依存するため、明示的に異なる`created_at`を設定してordering assertionを決定的にする）
+（`created_at` はDBの `now()` デフォルトのため、同一トランザクション内の連続insertが同一timestampになり得る。tie-breakの`id DESC`はUUIDv7のミリ秒内ランダムsuffixに依存するため、明示的に異なる`created_at`を設定してordering assertionを決定的にする。`list_recent`は`ListEntriesByTarget`等と違いtargetでスコープされないため、test DBに他のテストや手動seedによる既存行があっても`page`から自分が作った2件だけを`select`で絞り込んでから順序を検証する — DB内の他の行を消したり、テストの前提としてDBが空であることに依存しない）
 
 もし `spec/slices/review/repositories/entry_repository_spec.rb` が存在しない場合は、以下の内容で新規作成する（`subject`/`let`の宣言込み）:
 
@@ -522,9 +523,10 @@ RSpec.describe Review::Repositories::EntryRepository, type: :database do
       e2 = repo.create(author_account_id: author2, target_account_id: target2, rating: 4.0, body: "second")
       repo.update(e2.id, created_at: now - 100)
 
-      page = repo.list_recent(limit: 10)
+      page = repo.list_recent(limit: 1000)
+      ours = page.select { |e| [e1.id, e2.id].include?(e.id) }
 
-      expect(page.map(&:id)).to eq([e2.id, e1.id])
+      expect(ours.map(&:id)).to eq([e2.id, e1.id])
     end
   end
 end
