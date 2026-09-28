@@ -40,6 +40,12 @@ export function BottomTab() {
           <Link
             key={tab.id}
             href={tab.path}
+            onClick={(e) => {
+              if (tab.id === "home" && active) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
             className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-md py-2 text-sm ${
               active ? "text-accent" : "text-text-secondary hover:text-text-primary"
             }`}
