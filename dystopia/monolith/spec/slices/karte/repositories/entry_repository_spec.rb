@@ -34,9 +34,13 @@ RSpec.describe Karte::Repositories::EntryRepository, type: :database do
   describe "#list_recent" do
     it "returns entries across different targets ordered by created_at desc, and respects limit+1 for has_more" do
       other_target_id = SecureRandom.uuid_v7
+      now = Time.now
       e1 = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 3, body: "first")
+      repo.update(e1.id, created_at: now - 300)
       e2 = repo.create(author_account_id: author_id, target_account_id: other_target_id, rating: 4, body: "second")
+      repo.update(e2.id, created_at: now - 200)
       e3 = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 5, body: "third")
+      repo.update(e3.id, created_at: now - 100)
 
       page = repo.list_recent(limit: 2)
 
