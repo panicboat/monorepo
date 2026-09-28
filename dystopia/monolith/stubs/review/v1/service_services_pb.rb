@@ -24,6 +24,7 @@ module Review
         rpc :ListEntriesByAuthor, ::Review::V1::ListEntriesByAuthorRequest, ::Review::V1::ListEntriesByAuthorResponse
         rpc :GetMySettings, ::Review::V1::GetMySettingsRequest, ::Review::V1::GetMySettingsResponse
         rpc :UpdateMySettings, ::Review::V1::UpdateMySettingsRequest, ::Review::V1::UpdateMySettingsResponse
+        rpc :ListRecentEntries, ::Review::V1::ListRecentEntriesRequest, ::Review::V1::ListRecentEntriesResponse
       end
 
       Stub = Service.rpc_stub_class

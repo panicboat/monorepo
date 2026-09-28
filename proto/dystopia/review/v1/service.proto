@@ -14,6 +14,7 @@ service ReviewService {
   rpc ListEntriesByAuthor(ListEntriesByAuthorRequest) returns (ListEntriesByAuthorResponse);
   rpc GetMySettings(GetMySettingsRequest) returns (GetMySettingsResponse);
   rpc UpdateMySettings(UpdateMySettingsRequest) returns (UpdateMySettingsResponse);
+  rpc ListRecentEntries(ListRecentEntriesRequest) returns (ListRecentEntriesResponse);
 }
 
 message ReviewEntry {
@@ -81,3 +82,13 @@ message GetMySettingsResponse { bool reviews_visible = 1; }
 
 message UpdateMySettingsRequest { bool reviews_visible = 1; }
 message UpdateMySettingsResponse { bool reviews_visible = 1; }
+
+message ListRecentEntriesRequest {
+  int32 limit = 1;
+  string cursor = 2;
+}
+message ListRecentEntriesResponse {
+  repeated ReviewEntry entries = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
