@@ -27,6 +27,8 @@ message ReviewEntry {
   bool hidden = 8;
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
+  string target_username = 11;
+  string target_avatar_url = 12;
 }
 
 message CreateEntryRequest {

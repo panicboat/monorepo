@@ -45,12 +45,15 @@ module Karte
 
       def present_with_author(e, profile_cache)
         profile = profile_cache[e.author_account_id] ||= get_profile.call(account_id: e.author_account_id)
+        target_profile = profile_cache[e.target_account_id] ||= get_profile.call(account_id: e.target_account_id)
         {
           id: e.id,
           author_account_id: e.author_account_id,
           target_account_id: e.target_account_id,
           author_username: profile&.username,
           author_avatar_url: avatar_url_for(profile),
+          target_username: target_profile&.username,
+          target_avatar_url: avatar_url_for(target_profile),
           rating: e.rating,
           body: e.body,
           flagged: e.reported_count >= MIN_FLAG_REPORTS,

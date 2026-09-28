@@ -46,6 +46,7 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
 
   let(:profile1) { double(:profile, username: "cast1", avatar_media_id: "media-1") }
   let(:profile2) { double(:profile, username: "cast2", avatar_media_id: nil) }
+  let(:target_profile) { double(:profile, username: "guest_target", avatar_media_id: nil) }
   let(:aggregate) { { count: 2, avg_rating: 4.0 } }
 
   before do
@@ -63,6 +64,7 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
 
     allow(get_profile_uc).to receive(:call).with(account_id: "author-1").and_return(profile1)
     allow(get_profile_uc).to receive(:call).with(account_id: "author-2").and_return(profile2)
+    allow(get_profile_uc).to receive(:call).with(account_id: target_id).and_return(target_profile)
     allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
 
     result = use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, limit: 2)
@@ -73,6 +75,7 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
     expect(result[:entries][0][:author_username]).to eq("cast1")
     expect(result[:entries][0][:author_avatar_url]).to eq("https://cdn.example.com/avatar.jpg")
     expect(result[:entries][1][:author_avatar_url]).to eq("")
+    expect(result[:entries][0][:target_username]).to eq("guest_target")
     expect(result[:has_more]).to be(false)
     expect(result[:next_cursor]).to be_nil
     expect(result[:aggregate]).to eq(aggregate)
@@ -98,6 +101,7 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
 
     allow(get_profile_uc).to receive(:call).with(account_id: "author-1").and_return(profile1)
     allow(get_profile_uc).to receive(:call).with(account_id: "author-2").and_return(profile2)
+    allow(get_profile_uc).to receive(:call).with(account_id: target_id).and_return(target_profile)
     allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
 
     result = use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, limit: 2)
@@ -135,6 +139,7 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
 
     expect(get_profile_uc).to receive(:call).with(account_id: "author-1").once.and_return(profile1)
     expect(get_profile_uc).to receive(:call).with(account_id: "author-2").once.and_return(profile2)
+    expect(get_profile_uc).to receive(:call).with(account_id: target_id).once.and_return(target_profile)
 
     use_case.call(viewer_account_id: viewer_id, target_account_id: target_id)
   end

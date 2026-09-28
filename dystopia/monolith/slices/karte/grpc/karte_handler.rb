@@ -155,6 +155,7 @@ module Karte
 
       def present_for_author(entry)
         profile = ::Profile::Slice["use_cases.get_profile"].call(account_id: entry.author_account_id)
+        target_profile = ::Profile::Slice["use_cases.get_profile"].call(account_id: entry.target_account_id)
         media = ::Karte::Adapters::MediaAdapter.new
         {
           id: entry.id,
@@ -162,6 +163,8 @@ module Karte
           target_account_id: entry.target_account_id,
           author_username: profile&.username,
           author_avatar_url: media.find_url(profile&.avatar_media_id),
+          target_username: target_profile&.username,
+          target_avatar_url: media.find_url(target_profile&.avatar_media_id),
           rating: entry.rating,
           body: entry.body,
           flagged: entry.reported_count >= Karte::UseCases::ListEntriesByTarget::MIN_FLAG_REPORTS,
@@ -177,6 +180,8 @@ module Karte
           target_account_id: e[:target_account_id].to_s,
           author_username: e[:author_username] || "",
           author_avatar_url: e[:author_avatar_url] || "",
+          target_username: e[:target_username] || "",
+          target_avatar_url: e[:target_avatar_url] || "",
           rating: e[:rating],
           body: e[:body] || "",
           flagged: e[:flagged],

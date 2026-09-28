@@ -43,11 +43,14 @@ RSpec.describe Karte::UseCases::ListMyEntries do
       .with(author_account_id: viewer_id, limit: 20, cursor: nil)
       .and_return([entry1])
     allow(get_profile_uc).to receive(:call).with(account_id: viewer_id).and_return(profile)
+    allow(get_profile_uc).to receive(:call).with(account_id: "target-1")
+      .and_return(double(:profile, username: "guest1", avatar_media_id: nil))
 
     result = use_case.call(viewer_account_id: viewer_id)
 
     expect(result[:entries].length).to eq(1)
     expect(result[:entries][0][:author_account_id]).to eq(viewer_id)
+    expect(result[:entries][0][:target_username]).to eq("guest1")
     expect(result[:has_more]).to be(false)
     expect(result[:next_cursor]).to be_nil
     expect(result).not_to have_key(:aggregate)
@@ -84,6 +87,10 @@ RSpec.describe Karte::UseCases::ListMyEntries do
       .with(author_account_id: viewer_id, limit: 2, cursor: nil)
       .and_return([entry1, entry2, entry3])
     allow(get_profile_uc).to receive(:call).with(account_id: viewer_id).and_return(profile)
+    allow(get_profile_uc).to receive(:call).with(account_id: "target-1")
+      .and_return(double(:profile, username: "guest1", avatar_media_id: nil))
+    allow(get_profile_uc).to receive(:call).with(account_id: "target-2")
+      .and_return(double(:profile, username: "guest2", avatar_media_id: nil))
 
     result = use_case.call(viewer_account_id: viewer_id, limit: 2)
 

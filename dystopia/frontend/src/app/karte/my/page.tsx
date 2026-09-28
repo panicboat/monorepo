@@ -32,7 +32,7 @@ export default function MyKartePage() {
         <MyKarteHeader />
       </header>
       {entries.map((e) => (
-        <KarteEntryCard key={e.id} entry={e} onChanged={refresh} />
+        <KarteEntryCard key={e.id} entry={e} mode="my" onChanged={refresh} />
       ))}
       {loading && <div className="px-4 py-3 text-sm text-muted-foreground">読み込み中…</div>}
       {hasMore && (

@@ -33,11 +33,15 @@ RSpec.describe Review::UseCases::ListEntriesByTarget do
     expect(filter_visible_entries).to receive(:call).with(
       viewer_account_id: viewer_id, page_owner_account_id: target_id, entries: [raw_entry]
     ).and_return([raw_entry])
-    allow(get_profile).to receive(:call).and_return(double(username: "guest1", avatar_media_id: nil))
+    allow(get_profile).to receive(:call).with(account_id: "author-1")
+      .and_return(double(username: "author1", avatar_media_id: nil))
+    allow(get_profile).to receive(:call).with(account_id: target_id)
+      .and_return(double(username: "guest1", avatar_media_id: nil))
 
     result = use_case.call(viewer_account_id: viewer_id, target_account_id: target_id)
     expect(result[:entries].first[:id]).to eq("e-1")
     expect(result[:entries].first[:rating]).to eq(4.5)
+    expect(result[:entries].first[:target_username]).to eq("guest1")
     expect(result[:has_more]).to eq(false)
   end
 
