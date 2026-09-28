@@ -49,4 +49,24 @@ RSpec.describe Review::Repositories::EntryRepository, type: :database do
       expect(page2.map(&:id)).to eq([e2.id, e1.id])
     end
   end
+
+  describe "#list_recent" do
+    it "returns entries across different authors/targets ordered by created_at desc" do
+      author1 = SecureRandom.uuid_v7
+      author2 = SecureRandom.uuid_v7
+      target1 = SecureRandom.uuid_v7
+      target2 = SecureRandom.uuid_v7
+      now = Time.now
+
+      e1 = repo.create(author_account_id: author1, target_account_id: target1, rating: 3.0, body: "first")
+      repo.update(e1.id, created_at: now - 200)
+      e2 = repo.create(author_account_id: author2, target_account_id: target2, rating: 4.0, body: "second")
+      repo.update(e2.id, created_at: now - 100)
+
+      page = repo.list_recent(limit: 1000)
+      ours = page.select { |e| [e1.id, e2.id].include?(e.id) }
+
+      expect(ours.map(&:id)).to eq([e2.id, e1.id])
+    end
+  end
 end

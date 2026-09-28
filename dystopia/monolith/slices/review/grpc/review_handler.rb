@@ -24,6 +24,7 @@ module Review
       rpc :ListEntriesByAuthor, ::Review::V1::ListEntriesByAuthorRequest, ::Review::V1::ListEntriesByAuthorResponse
       rpc :GetMySettings,       ::Review::V1::GetMySettingsRequest,       ::Review::V1::GetMySettingsResponse
       rpc :UpdateMySettings,    ::Review::V1::UpdateMySettingsRequest,    ::Review::V1::UpdateMySettingsResponse
+      rpc :ListRecentEntries,   ::Review::V1::ListRecentEntriesRequest,   ::Review::V1::ListRecentEntriesResponse
 
       include Review::Deps[
         create_uc:           "use_cases.create_entry",
@@ -34,7 +35,8 @@ module Review
         list_by_target_uc:   "use_cases.list_entries_by_target",
         list_by_author_uc:   "use_cases.list_entries_by_author",
         get_settings_uc:     "use_cases.get_my_settings",
-        update_settings_uc:  "use_cases.update_my_settings"
+        update_settings_uc:  "use_cases.update_my_settings",
+        list_recent_uc:      "use_cases.list_recent_entries"
       ]
 
       def create_entry
@@ -137,6 +139,22 @@ module Review
           reviews_visible: request.message.reviews_visible
         )
         ::Review::V1::UpdateMySettingsResponse.new(reviews_visible: result[:reviews_visible])
+      end
+
+      def list_recent_entries
+        authenticate_user!
+        limit = request.message.limit.zero? ? 20 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+        result = list_recent_uc.call(
+          viewer_account_id: current_user_id,
+          limit: limit,
+          cursor: cursor
+        )
+        ::Review::V1::ListRecentEntriesResponse.new(
+          entries: result[:entries].map { |e| entry_to_proto(e) },
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
       end
 
       private
