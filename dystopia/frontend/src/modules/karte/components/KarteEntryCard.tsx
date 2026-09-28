@@ -10,22 +10,25 @@ import type { KarteEntry } from "../types";
 
 interface Props {
   entry: KarteEntry;
+  mode: "my" | "target";
   onChanged?: () => void;
 }
 
-export function KarteEntryCard({ entry, onChanged }: Props) {
+export function KarteEntryCard({ entry, mode, onChanged }: Props) {
   const viewerId = useAuthStore((s) => s.userId);
   const isOwn = viewerId === entry.authorAccountId;
   const { remove, loading: deleting } = useDeleteKarte();
   const { report, loading: reporting } = useReportKarte();
   const [reportOpen, setReportOpen] = useState(false);
+  const identityUsername = mode === "my" ? entry.targetUsername : entry.authorUsername;
+  const identityAvatarUrl = mode === "my" ? entry.targetAvatarUrl : entry.authorAvatarUrl;
 
   return (
     <article className="border-b border-border px-4 py-3">
       <div className="flex items-center gap-2 text-sm">
-        {entry.authorAvatarUrl ? (
+        {identityAvatarUrl ? (
           <Image
-            src={entry.authorAvatarUrl}
+            src={identityAvatarUrl}
             alt=""
             width={32}
             height={32}
@@ -34,7 +37,7 @@ export function KarteEntryCard({ entry, onChanged }: Props) {
         ) : (
           <div className="size-8 rounded-full bg-muted" />
         )}
-        <span className="font-medium">{entry.authorUsername || "(退会済)"}</span>
+        <span className="font-medium">{identityUsername || "(退会済)"}</span>
         <span className="text-muted-foreground">{formatTimeAgo(entry.createdAt)}</span>
         {entry.flagged && (
           <span

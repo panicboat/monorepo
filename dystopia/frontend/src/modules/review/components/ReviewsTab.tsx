@@ -20,7 +20,7 @@ export function ReviewsTab({ accountId, mode }: Props) {
     <div>
       {mode === "received" && <ReviewComposer targetAccountId={accountId} onCreated={refresh} />}
       {entries.map((e) => (
-        <ReviewEntryCard key={e.id} entry={e} onChanged={refresh} />
+        <ReviewEntryCard key={e.id} entry={e} mode={mode} onChanged={refresh} />
       ))}
       {loading && <div className="px-4 py-3 text-sm text-muted-foreground">読み込み中…</div>}
       {!loading && entries.length === 0 && (

@@ -10,23 +10,26 @@ import type { ReviewEntry } from "../types";
 
 interface Props {
   entry: ReviewEntry;
+  mode: "written" | "received";
   onChanged?: () => void;
 }
 
-export function ReviewEntryCard({ entry, onChanged }: Props) {
+export function ReviewEntryCard({ entry, mode, onChanged }: Props) {
   const viewerId = useAuthStore((s) => s.userId);
   const isAuthor = viewerId === entry.authorAccountId;
   const isTarget = viewerId === entry.targetAccountId;
   const { remove, loading: deleting } = useDeleteReview();
   const { hide, loading: hiding } = useHideReview();
   const { unhide, loading: unhiding } = useUnhideReview();
+  const identityUsername = mode === "written" ? entry.targetUsername : entry.authorUsername;
+  const identityAvatarUrl = mode === "written" ? entry.targetAvatarUrl : entry.authorAvatarUrl;
 
   return (
     <article className="border-b border-border px-4 py-3">
       <div className="flex items-center gap-2 text-sm">
-        {entry.authorAvatarUrl ? (
+        {identityAvatarUrl ? (
           <Image
-            src={entry.authorAvatarUrl}
+            src={identityAvatarUrl}
             alt=""
             width={32}
             height={32}
@@ -35,7 +38,7 @@ export function ReviewEntryCard({ entry, onChanged }: Props) {
         ) : (
           <div className="size-8 rounded-full bg-muted" />
         )}
-        <span className="font-medium">{entry.authorUsername || "(退会済)"}</span>
+        <span className="font-medium">{identityUsername || "(退会済)"}</span>
         <span className="text-muted-foreground">{formatTimeAgo(entry.createdAt)}</span>
         {isTarget && entry.hidden && (
           <span className="ml-auto text-xs text-amber-600">非表示中</span>

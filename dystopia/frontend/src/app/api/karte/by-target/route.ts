@@ -12,6 +12,8 @@ function entryToView(e: ListEntry) {
     targetAccountId: e.targetAccountId,
     authorUsername: e.authorUsername || "",
     authorAvatarUrl: e.authorAvatarUrl || "",
+    targetUsername: e.targetUsername || "",
+    targetAvatarUrl: e.targetAvatarUrl || "",
     rating: e.rating,
     body: e.body || "",
     flagged: !!e.flagged,

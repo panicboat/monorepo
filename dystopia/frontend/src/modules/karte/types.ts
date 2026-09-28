@@ -4,6 +4,8 @@ export interface KarteEntry {
   targetAccountId: string;
   authorUsername: string;
   authorAvatarUrl: string;
+  targetUsername: string;
+  targetAvatarUrl: string;
   rating: number;
   body: string;
   flagged: boolean;

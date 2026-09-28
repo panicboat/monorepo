@@ -17,6 +17,8 @@ const mockEntries: KarteEntry[] = [
     targetAccountId: "guest-demo",
     authorUsername: "yuna",
     authorAvatarUrl: "",
+    targetUsername: "guest_demo",
+    targetAvatarUrl: "",
     rating: 5,
     body: "とても丁寧で好印象でした。また来てほしいです。",
     flagged: false,
@@ -29,6 +31,8 @@ const mockEntries: KarteEntry[] = [
     targetAccountId: "guest-demo",
     authorUsername: "sakura",
     authorAvatarUrl: "",
+    targetUsername: "guest_demo",
+    targetAvatarUrl: "",
     rating: 3,
     body: "",
     flagged: true,
@@ -60,7 +64,7 @@ export default function DevUiKartePage() {
       <section className="flex flex-col">
         <h2 className="pb-3 text-sm font-bold text-text-secondary">KarteEntryCard</h2>
         {mockEntries.map((e) => (
-          <KarteEntryCard key={e.id} entry={e} />
+          <KarteEntryCard key={e.id} entry={e} mode="target" />
         ))}
       </section>
     </main>
