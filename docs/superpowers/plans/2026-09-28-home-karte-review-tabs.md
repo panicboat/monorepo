@@ -1561,6 +1561,9 @@ export default function HomePage() {
     if (karte.loading && karte.entries.length === 0) {
       return <p className="px-4 py-8 text-center text-text-secondary">読み込み中…</p>;
     }
+    if (karte.error) {
+      return <p className="px-4 py-8 text-center text-text-danger">読み込みに失敗しました</p>;
+    }
     if (karte.entries.length === 0) {
       return <p className="px-4 py-8 text-center text-text-secondary">まだカルテがありません</p>;
     }
@@ -1578,11 +1581,14 @@ export default function HomePage() {
         )}
       </>
     );
-  }, [karte.loading, karte.entries, karte.hasMore, karte.refresh, karte.loadMore]);
+  }, [karte.loading, karte.error, karte.entries, karte.hasMore, karte.refresh, karte.loadMore]);
 
   const reviewsContent = useMemo(() => {
     if (reviews.loading && reviews.entries.length === 0) {
       return <p className="px-4 py-8 text-center text-text-secondary">読み込み中…</p>;
+    }
+    if (reviews.error) {
+      return <p className="px-4 py-8 text-center text-text-danger">読み込みに失敗しました</p>;
     }
     if (reviews.entries.length === 0) {
       return <p className="px-4 py-8 text-center text-text-secondary">まだレビューがありません</p>;
@@ -1601,7 +1607,7 @@ export default function HomePage() {
         )}
       </>
     );
-  }, [reviews.loading, reviews.entries, reviews.hasMore, reviews.refresh, reviews.loadMore]);
+  }, [reviews.loading, reviews.error, reviews.entries, reviews.hasMore, reviews.refresh, reviews.loadMore]);
 
   const content = tab === "karte" ? karteContent : tab === "reviews" ? reviewsContent : postContent;
 
