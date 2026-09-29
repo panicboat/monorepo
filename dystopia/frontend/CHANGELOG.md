@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.10.0](https://github.com/panicboat/monorepo/compare/frontend-v0.9.1...frontend-v0.10.0) (2026-09-29)
+
+
+### Features
+
+* **dystopia/frontend:** navigate to post detail on card tap ([#1294](https://github.com/panicboat/monorepo/issues/1294)) ([da550e1](https://github.com/panicboat/monorepo/commit/da550e19e4e726b0612406c7cc86c0b2618d2265))
+* **dystopia/frontend:** open the drawer with a right swipe on mobile ([#1287](https://github.com/panicboat/monorepo/issues/1287)) ([a48fb55](https://github.com/panicboat/monorepo/commit/a48fb55f5cfc714004fd7f17727e38fa3ea3814f))
+* **dystopia/frontend:** scroll to top when the home tab is tapped while active ([#1295](https://github.com/panicboat/monorepo/issues/1295)) ([2a186e1](https://github.com/panicboat/monorepo/commit/2a186e1c5e94af2640bdb93e5a9948a67e4ff4d4))
+* **dystopia:** add karte and review tabs to Home ([#1297](https://github.com/panicboat/monorepo/issues/1297)) ([b0ace3c](https://github.com/panicboat/monorepo/commit/b0ace3c1dbd585976be2814d1f2a3c3e81d663ce))
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** remove followers avatar row from home ([#1290](https://github.com/panicboat/monorepo/issues/1290)) ([3912bf5](https://github.com/panicboat/monorepo/commit/3912bf5fa9c27eff1b573bc1b95bc24fcea47ebf))
+* **dystopia/frontend:** update dependency next to v16.3.6 ([#1281](https://github.com/panicboat/monorepo/issues/1281)) ([8ca980c](https://github.com/panicboat/monorepo/commit/8ca980cd2ec40e112160fb757301604bf33d97ff))
+* **dystopia:** show target identity in review and karte lists ([#1292](https://github.com/panicboat/monorepo/issues/1292)) ([f75485f](https://github.com/panicboat/monorepo/commit/f75485f1d09a4dc77fa8edd004cd36107721818e))
+
 ## [0.9.1](https://github.com/panicboat/monorepo/compare/frontend-v0.9.0...frontend-v0.9.1) (2026-09-27)
 
 
