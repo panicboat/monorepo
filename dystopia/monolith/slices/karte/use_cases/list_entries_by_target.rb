@@ -10,13 +10,15 @@ module Karte
       MIN_FLAG_REPORTS = 3
 
       include Concerns::CursorPagination
-      include Karte::Deps[entry_repo: "repositories.entry_repository"]
+      include Karte::Deps[
+        entry_repo: "repositories.entry_repository",
+        authorize_cast_access: "use_cases.authorize_cast_access"
+      ]
 
       def initialize(entry_repo: nil, authorize_cast_access: nil, get_profile: nil, media_adapter: nil, **kwargs)
-        super(**kwargs.merge(entry_repo: entry_repo).compact)
-        @authorize_cast_access = authorize_cast_access
-        @get_profile           = get_profile
-        @media_adapter         = media_adapter
+        super(**kwargs.merge(entry_repo: entry_repo, authorize_cast_access: authorize_cast_access).compact)
+        @get_profile   = get_profile
+        @media_adapter = media_adapter
       end
 
       def call(viewer_account_id:, target_account_id:, limit: 20, cursor: nil)
@@ -63,10 +65,6 @@ module Karte
       def avatar_url_for(profile)
         return "" if profile.nil? || profile.avatar_media_id.nil?
         media_adapter.find_url(profile.avatar_media_id)
-      end
-
-      def authorize_cast_access
-        @authorize_cast_access ||= Karte::Slice["use_cases.authorize_cast_access"]
       end
 
       def get_profile

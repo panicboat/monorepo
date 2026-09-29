@@ -6,15 +6,15 @@ RSpec.describe Karte::UseCases::ListRecentEntries do
   let(:use_case) do
     described_class.new(
       entry_repo: entry_repo,
-      user_repo: user_repo,
+      authorize_cast_access: authorize_cast_access,
       get_profile: get_profile_uc,
       media_adapter: media_adapter
     )
   end
-  let(:entry_repo)     { double(:entry_repository) }
-  let(:user_repo)      { double(:user_repository) }
-  let(:get_profile_uc) { double(:get_profile) }
-  let(:media_adapter)  { double(:media_adapter) }
+  let(:entry_repo)            { double(:entry_repository) }
+  let(:authorize_cast_access) { double(:authorize_cast_access) }
+  let(:get_profile_uc)        { double(:get_profile) }
+  let(:media_adapter)         { double(:media_adapter) }
 
   let(:viewer_id) { "viewer-cast-1" }
   let(:now)       { Time.now }
@@ -49,7 +49,7 @@ RSpec.describe Karte::UseCases::ListRecentEntries do
   let(:target_profile2) { double(:profile, username: "guest2", avatar_media_id: nil) }
 
   before do
-    allow(user_repo).to receive(:find_by_id).with(viewer_id).and_return(double(:user, role: 2))
+    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(true)
   end
 
   it "returns entries across authors when the viewer is a cast" do
@@ -72,15 +72,8 @@ RSpec.describe Karte::UseCases::ListRecentEntries do
     expect(result[:next_cursor]).to be_nil
   end
 
-  it "rejects when the viewer is a guest" do
-    allow(user_repo).to receive(:find_by_id).with(viewer_id).and_return(double(:user, role: 1))
-    expect {
-      use_case.call(viewer_account_id: viewer_id)
-    }.to raise_error(Karte::UseCases::ListRecentEntries::AccessError)
-  end
-
-  it "rejects when the viewer account cannot be found" do
-    allow(user_repo).to receive(:find_by_id).with(viewer_id).and_return(nil)
+  it "delegates the cast/billing check to AuthorizeCastAccess and rejects when it fails" do
+    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(false)
     expect {
       use_case.call(viewer_account_id: viewer_id)
     }.to raise_error(Karte::UseCases::ListRecentEntries::AccessError)

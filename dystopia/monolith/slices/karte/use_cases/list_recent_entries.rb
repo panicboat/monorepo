@@ -8,19 +8,20 @@ module Karte
       class AccessError < StandardError; end
 
       include Concerns::CursorPagination
-      include Karte::Deps[entry_repo: "repositories.entry_repository"]
+      include Karte::Deps[
+        entry_repo: "repositories.entry_repository",
+        authorize_cast_access: "use_cases.authorize_cast_access"
+      ]
 
-      def initialize(entry_repo: nil, user_repo: nil, get_profile: nil, media_adapter: nil, **kwargs)
-        super(**kwargs.merge(entry_repo: entry_repo).compact)
-        @user_repo = user_repo
+      def initialize(entry_repo: nil, authorize_cast_access: nil, get_profile: nil, media_adapter: nil, **kwargs)
+        super(**kwargs.merge(entry_repo: entry_repo, authorize_cast_access: authorize_cast_access).compact)
         @get_profile = get_profile
         @media_adapter = media_adapter
       end
 
       def call(viewer_account_id:, limit: 20, cursor: nil)
         limit = normalize_limit(limit)
-        viewer = user_repo.find_by_id(viewer_account_id)
-        raise AccessError, "Karte recent list is cast-only" unless viewer&.role == 2
+        raise AccessError, "Karte access required" unless authorize_cast_access.call(viewer_account_id: viewer_account_id)
 
         result = entry_repo.list_recent(limit: limit, cursor: cursor)
         has_more = result.length > limit
@@ -61,10 +62,6 @@ module Karte
       def avatar_url_for(profile)
         return "" if profile.nil? || profile.avatar_media_id.nil?
         media_adapter.find_url(profile.avatar_media_id)
-      end
-
-      def user_repo
-        @user_repo ||= ::Identity::Slice["repositories.account_repository"]
       end
 
       def get_profile

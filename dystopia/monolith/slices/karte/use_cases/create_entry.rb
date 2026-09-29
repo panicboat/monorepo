@@ -8,12 +8,14 @@ module Karte
 
       MAX_BODY_LENGTH = 500
 
-      include Karte::Deps[entry_repo: "repositories.entry_repository"]
+      include Karte::Deps[
+        entry_repo: "repositories.entry_repository",
+        authorize_cast_access: "use_cases.authorize_cast_access"
+      ]
 
-      def initialize(entry_repo: nil, user_repo: nil, authorize_cast_access: nil, **kwargs)
-        super(**kwargs.merge(entry_repo: entry_repo).compact)
-        @user_repo             = user_repo
-        @authorize_cast_access = authorize_cast_access
+      def initialize(entry_repo: nil, authorize_cast_access: nil, user_repo: nil, **kwargs)
+        super(**kwargs.merge(entry_repo: entry_repo, authorize_cast_access: authorize_cast_access).compact)
+        @user_repo = user_repo
       end
 
       def call(viewer_account_id:, target_account_id:, rating:, body:)
@@ -37,10 +39,6 @@ module Karte
 
       def user_repo
         @user_repo ||= ::Identity::Slice["repositories.account_repository"]
-      end
-
-      def authorize_cast_access
-        @authorize_cast_access ||= Karte::Slice["use_cases.authorize_cast_access"]
       end
     end
   end

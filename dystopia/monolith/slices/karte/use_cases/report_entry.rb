@@ -8,13 +8,9 @@ module Karte
 
       include Karte::Deps[
         entry_repo: "repositories.entry_repository",
-        report_repo: "repositories.report_repository"
+        report_repo: "repositories.report_repository",
+        authorize_cast_access: "use_cases.authorize_cast_access"
       ]
-
-      def initialize(entry_repo: nil, report_repo: nil, authorize_cast_access: nil, **kwargs)
-        super(**kwargs.merge(entry_repo: entry_repo, report_repo: report_repo).compact)
-        @authorize_cast_access = authorize_cast_access
-      end
 
       def call(viewer_account_id:, entry_id:, reason:)
         raise AccessError, "Karte access required" unless authorize_cast_access.call(viewer_account_id: viewer_account_id)
@@ -32,12 +28,6 @@ module Karte
         entry_repo.increment_reported_count(entry_id) if inserted
 
         nil
-      end
-
-      private
-
-      def authorize_cast_access
-        @authorize_cast_access ||= Karte::Slice["use_cases.authorize_cast_access"]
       end
     end
   end
