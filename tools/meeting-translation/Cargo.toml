@@ -26,4 +26,4 @@ uuid = { version = "1.26.1", features = ["v4", "serde"] }
 # used by Task 7's reconnect-grace tests. Cargo only unifies this into test
 # builds, not the release binary.
 tokio = { version = "1.53.1", features = ["test-util"] }
-tokio-tungstenite = "0.29"
+tokio-tungstenite = "0.30.0"
