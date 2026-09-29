@@ -3,10 +3,11 @@
 module Post
   module Presenters
     class CommentPresenter
-      def self.to_proto(comment, author: nil, media_files: {})
+      def self.to_proto(comment, author: nil, media_files: {}, mentioned_usernames: {})
         return nil unless comment
 
         media = (comment.respond_to?(:comment_media) ? comment.comment_media : []) || []
+        mentions = (comment.respond_to?(:comment_mentions) ? comment.comment_mentions : []) || []
 
         ::Post::V1::Comment.new(
           id: comment.id.to_s,
@@ -17,14 +18,15 @@ module Post
           created_at: comment.created_at.iso8601,
           author: author_to_proto(author),
           media: media.sort_by(&:position).map { |m| media_to_proto(m, media_files: media_files) },
-          replies_count: comment.replies_count || 0
+          replies_count: comment.replies_count || 0,
+          mentions: mentions.map { |m| mention_to_proto(m, mentioned_usernames: mentioned_usernames) }
         )
       end
 
-      def self.many_to_proto(comments, authors: {}, media_files: {})
+      def self.many_to_proto(comments, authors: {}, media_files: {}, mentioned_usernames: {})
         (comments || []).map do |c|
           author = authors[c.user_id]
-          to_proto(c, author: author, media_files: media_files)
+          to_proto(c, author: author, media_files: media_files, mentioned_usernames: mentioned_usernames)
         end
       end
 
@@ -37,6 +39,15 @@ module Post
           url: media_file&.url || "",
           thumbnail_url: media_file&.thumbnail_url || "",
           media_id: media.media_id.to_s
+        )
+      end
+
+      def self.mention_to_proto(mention, mentioned_usernames: {})
+        ::Post::V1::PostMention.new(
+          account_id: mention.account_id.to_s,
+          username: mentioned_usernames[mention.account_id.to_s] || "",
+          position: mention.position,
+          length: mention.length
         )
       end
 
