@@ -5,3 +5,4 @@ export { useUpdateKarte } from "./useUpdateKarte";
 export { useDeleteKarte } from "./useDeleteKarte";
 export { useReportKarte } from "./useReportKarte";
 export { useMyKarteAccess } from "./useMyKarteAccess";
+export { useRecentKarte } from "./useRecentKarte";

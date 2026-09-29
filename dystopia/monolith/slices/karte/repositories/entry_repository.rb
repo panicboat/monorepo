@@ -41,6 +41,11 @@ module Karte
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
+      def list_recent(limit: 20, cursor: nil)
+        scope = apply_cursor(entry_records, cursor)
+        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
+
       def aggregate(target_account_id:)
         row = entry_records
           .where(target_account_id: target_account_id)

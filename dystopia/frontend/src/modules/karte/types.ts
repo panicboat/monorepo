@@ -31,6 +31,12 @@ export interface PaginatedKarteMyResponse {
   hasMore: boolean;
 }
 
+export interface PaginatedKarteRecentResponse {
+  entries: KarteEntry[];
+  nextCursor: string;
+  hasMore: boolean;
+}
+
 export interface KarteAccess {
   hasAccess: boolean;
   grantedAt: string | null;

@@ -12,6 +12,7 @@ service KarteService {
   rpc ListMyEntries(ListMyEntriesRequest) returns (ListMyEntriesResponse);
   rpc ReportEntry(ReportEntryRequest) returns (ReportEntryResponse);
   rpc GetMyAccess(GetMyAccessRequest) returns (GetMyAccessResponse);
+  rpc ListRecentEntries(ListRecentEntriesRequest) returns (ListRecentEntriesResponse);
 }
 
 message KarteEntry {
@@ -83,4 +84,14 @@ message GetMyAccessRequest {}
 message GetMyAccessResponse {
   bool has_access = 1;
   google.protobuf.Timestamp granted_at = 2;
+}
+
+message ListRecentEntriesRequest {
+  int32 limit = 1;
+  string cursor = 2;
+}
+message ListRecentEntriesResponse {
+  repeated KarteEntry entries = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
 }

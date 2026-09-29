@@ -22,6 +22,7 @@ module Karte
       rpc :ListMyEntries,       ::Karte::V1::ListMyEntriesRequest,       ::Karte::V1::ListMyEntriesResponse
       rpc :ReportEntry,         ::Karte::V1::ReportEntryRequest,         ::Karte::V1::ReportEntryResponse
       rpc :GetMyAccess,         ::Karte::V1::GetMyAccessRequest,         ::Karte::V1::GetMyAccessResponse
+      rpc :ListRecentEntries,  ::Karte::V1::ListRecentEntriesRequest,  ::Karte::V1::ListRecentEntriesResponse
 
       include Karte::Deps[
         create_uc:          "use_cases.create_entry",
@@ -30,7 +31,8 @@ module Karte
         list_by_target_uc:  "use_cases.list_entries_by_target",
         list_my_uc:         "use_cases.list_my_entries",
         report_uc:          "use_cases.report_entry",
-        get_my_access_uc:   "use_cases.get_my_access"
+        get_my_access_uc:   "use_cases.get_my_access",
+        list_recent_uc:      "use_cases.list_recent_entries"
       ]
 
       def create_entry
@@ -135,6 +137,24 @@ module Karte
         )
       end
 
+      def list_recent_entries
+        authenticate_user!
+        limit = request.message.limit.zero? ? 20 : request.message.limit
+        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+        result = wrap_errors do
+          list_recent_uc.call(
+            viewer_account_id: current_user_id,
+            limit: limit,
+            cursor: cursor
+          )
+        end
+        ::Karte::V1::ListRecentEntriesResponse.new(
+          entries: result[:entries].map { |e| entry_to_proto(e) },
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        )
+      end
+
       private
 
       def wrap_errors
@@ -144,6 +164,7 @@ module Karte
              Karte::UseCases::DeleteEntry::AccessError,
              Karte::UseCases::ListEntriesByTarget::AccessError,
              Karte::UseCases::ListMyEntries::AccessError,
+             Karte::UseCases::ListRecentEntries::AccessError,
              Karte::UseCases::ReportEntry::AccessError => e
         fail!(:permission_denied, :permission_denied, e.message)
       rescue Karte::UseCases::CreateEntry::CreateError,

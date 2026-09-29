@@ -42,6 +42,11 @@ module Review
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
+      def list_recent(limit: 20, cursor: nil)
+        scope = apply_cursor(entry_records, cursor)
+        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
+
       private
 
       def apply_cursor(scope, cursor)

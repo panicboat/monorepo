@@ -22,6 +22,7 @@ module Karte
         rpc :ListMyEntries, ::Karte::V1::ListMyEntriesRequest, ::Karte::V1::ListMyEntriesResponse
         rpc :ReportEntry, ::Karte::V1::ReportEntryRequest, ::Karte::V1::ReportEntryResponse
         rpc :GetMyAccess, ::Karte::V1::GetMyAccessRequest, ::Karte::V1::GetMyAccessResponse
+        rpc :ListRecentEntries, ::Karte::V1::ListRecentEntriesRequest, ::Karte::V1::ListRecentEntriesResponse
       end
 
       Stub = Service.rpc_stub_class

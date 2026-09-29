@@ -10,7 +10,7 @@ import type { KarteEntry } from "../types";
 
 interface Props {
   entry: KarteEntry;
-  mode: "my" | "target";
+  mode: "my" | "target" | "recent";
   onChanged?: () => void;
 }
 
@@ -26,18 +26,20 @@ export function KarteEntryCard({ entry, mode, onChanged }: Props) {
   return (
     <article className="border-b border-border px-4 py-3">
       <div className="flex items-center gap-2 text-sm">
-        {identityAvatarUrl ? (
-          <Image
-            src={identityAvatarUrl}
-            alt=""
-            width={32}
-            height={32}
-            className="size-8 rounded-full object-cover"
-          />
+        {mode === "recent" ? (
+          <>
+            <IdentityAvatar url={entry.authorAvatarUrl} />
+            <span className="font-medium">{entry.authorUsername || "(退会済)"}</span>
+            <span className="text-muted-foreground">→</span>
+            <IdentityAvatar url={entry.targetAvatarUrl} />
+            <span className="font-medium">{entry.targetUsername || "(退会済)"}</span>
+          </>
         ) : (
-          <div className="size-8 rounded-full bg-muted" />
+          <>
+            <IdentityAvatar url={identityAvatarUrl} />
+            <span className="font-medium">{identityUsername || "(退会済)"}</span>
+          </>
         )}
-        <span className="font-medium">{identityUsername || "(退会済)"}</span>
         <span className="text-muted-foreground">{formatTimeAgo(entry.createdAt)}</span>
         {entry.flagged && (
           <span
@@ -99,5 +101,12 @@ export function KarteEntryCard({ entry, mode, onChanged }: Props) {
         )}
       </div>
     </article>
+  );
+}
+
+function IdentityAvatar({ url }: { url: string }) {
+  if (!url) return <div className="size-8 rounded-full bg-muted" />;
+  return (
+    <Image src={url} alt="" width={32} height={32} className="size-8 rounded-full object-cover" />
   );
 }

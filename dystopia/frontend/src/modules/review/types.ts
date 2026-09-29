@@ -25,6 +25,12 @@ export interface PaginatedReviewByAuthorResponse {
   hasMore: boolean;
 }
 
+export interface PaginatedReviewRecentResponse {
+  entries: ReviewEntry[];
+  nextCursor: string;
+  hasMore: boolean;
+}
+
 export interface ReviewSettings {
   reviewsVisible: boolean;
 }
