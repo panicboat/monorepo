@@ -1,4 +1,8 @@
+// @vitest-environment happy-dom
+// React 19's act() needs this flag because testing-library does not set it reliably.
 import { describe, expect, it, vi } from "vitest";
+import { act } from "react";
+import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PostCardBinding } from "./PostCardBinding";
 import type { PostView } from "@/modules/post/lib/post-view";
@@ -6,6 +10,13 @@ import type { PostView } from "@/modules/post/lib/post-view";
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: () => {} }),
 }));
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+// next/image rewrites `src` to `/_next/image?url=<encoded>&w=...`, so match on the encoded original url.
+function findImageWithUrl(url: string) {
+  return document.querySelector(`img[src*="${encodeURIComponent(url)}"]`);
+}
 
 const basePost: PostView = {
   id: "post-1",
@@ -70,5 +81,43 @@ describe("PostCardBinding", () => {
     expect(html).toContain("@alice");
     expect(html).toContain('role="link"');
     expect(html).not.toMatch(/<a[^>]*><a/);
+  });
+
+  it("shows the original-resolution image when a thumbnail is clicked", async () => {
+    const post: PostView = {
+      ...basePost,
+      media: [
+        {
+          id: "media-1",
+          mediaType: "image",
+          url: "https://example.com/original-1.jpg",
+          thumbnailUrl: "https://example.com/thumb-1.jpg",
+          mediaId: "media-1",
+        },
+      ],
+    };
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(<PostCardBinding post={post} />);
+    });
+    await act(async () => { await Promise.resolve(); });
+
+    expect(findImageWithUrl(post.media[0].url)).toBeNull();
+
+    const thumbnailButton = container.querySelector("button[aria-label='画像を拡大']") as HTMLButtonElement;
+    await act(async () => {
+      thumbnailButton.click();
+    });
+    await act(async () => { await Promise.resolve(); });
+
+    expect(findImageWithUrl(post.media[0].url)).not.toBeNull();
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 });
