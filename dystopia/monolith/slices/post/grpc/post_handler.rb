@@ -20,6 +20,9 @@ module Post
       rpc :DeletePost, ::Post::V1::DeletePostRequest, ::Post::V1::DeletePostResponse
 
       include Post::Concerns::ProfileAuthorResolvable
+      include Post::Deps[
+        extract_mentions: "use_cases.extract_mentions"
+      ]
 
       def list_posts
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
@@ -68,8 +71,10 @@ module Post
         visibility = m.visibility.empty? ? "public" : m.visibility
         media_data = m.media.map { |x| { media_id: x.media_id, media_type: x.media_type } }
         hashtags = m.hashtags.to_a
+        mentions = extract_mentions.call(content: content)
+        is_create = m.id.empty?
 
-        if m.id.empty?
+        if is_create
           post = post_repo.create_post(author_id: current_user_id, content: content, visibility: visibility)
         else
           existing = post_repo.find_by_id_and_author(id: m.id, author_id: current_user_id)
@@ -79,10 +84,25 @@ module Post
         end
 
         post_repo.save_media(post_id: post.id, media_data: media_data) if media_data.any?
-        post_repo.save_hashtags(post_id: post.id, hashtags: hashtags) if hashtags.any? || !m.id.empty?
+        post_repo.save_hashtags(post_id: post.id, hashtags: hashtags) if hashtags.any? || !is_create
+        post_repo.save_mentions(post_id: post.id, mentions: mentions)
         post = post_repo.find_by_id(post.id)
 
-        ::Post::V1::SavePostResponse.new(post: present_post(post))
+        if is_create
+          mentions.each do |mention|
+            notifications_emit.call(
+              recipient_id: mention[:account_id],
+              type: "mention",
+              target_resource_id: post.id,
+              actor_id: current_user_id,
+              target_post_id: post.id
+            )
+          end
+        end
+
+        mentioned_usernames = mentioned_usernames_for(mentions.map { |m| m[:account_id] })
+
+        ::Post::V1::SavePostResponse.new(post: present_post(post, mentioned_usernames: mentioned_usernames))
       end
 
       def delete_post
@@ -116,6 +136,7 @@ module Post
         comments_counts = comment_repo.comments_count_batch(post_ids: post_ids, exclude_user_ids: [])
         liked = current_user_id ? like_repo.account_liked_status_batch(post_ids: post_ids, account_id: current_user_id) : {}
         media_files = load_media_files_for_posts(rows)
+        mentioned_usernames = mentioned_usernames_for(rows.flat_map { |p| p.post_mentions.map(&:account_id) })
 
         rows.map do |post|
           PostPresenter.to_post_proto(
@@ -124,17 +145,19 @@ module Post
             likes_count: likes_counts[post.id] || 0,
             comments_count: comments_counts[post.id] || 0,
             liked: liked[post.id] || false,
-            media_files: media_files
+            media_files: media_files,
+            mentioned_usernames: mentioned_usernames
           )
         end
       end
 
-      def present_post(post)
+      def present_post(post, mentioned_usernames: nil)
         authors = profile_author_adapter.load([post.author_id])
         likes_count = like_repo.likes_count(post_id: post.id)
         comments_count = comment_repo.comments_count(post_id: post.id, exclude_user_ids: [])
         liked = current_user_id ? like_repo.account_liked?(post_id: post.id, account_id: current_user_id) : false
         media_files = load_media_files_for_posts([post])
+        mentioned_usernames ||= mentioned_usernames_for(post.post_mentions.map(&:account_id))
 
         PostPresenter.to_post_proto(
           post,
@@ -142,8 +165,20 @@ module Post
           likes_count: likes_count,
           comments_count: comments_count,
           liked: liked,
-          media_files: media_files
+          media_files: media_files,
+          mentioned_usernames: mentioned_usernames
         )
+      end
+
+      def mentioned_usernames_for(account_ids)
+        ids = account_ids.uniq
+        return {} if ids.empty?
+
+        profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
+      end
+
+      def notifications_emit
+        @notifications_emit ||= Notifications::Slice["use_cases.emit"]
       end
 
       def viewer_can_see_post
