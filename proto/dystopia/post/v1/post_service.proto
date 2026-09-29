@@ -16,6 +16,13 @@ message PostAuthor {
   string avatar_url = 4;
 }
 
+message PostMention {
+  string account_id = 1;
+  string username = 2;
+  int32 position = 3;
+  int32 length = 4;
+}
+
 message PostMedia {
   string id = 1;
   string media_type = 2;
@@ -36,6 +43,7 @@ message Post {
   string visibility = 9;
   repeated string hashtags = 10;
   bool liked = 11;
+  repeated PostMention mentions = 12;
 }
 
 message ListPostsRequest {

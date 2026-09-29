@@ -38,6 +38,7 @@ message Comment {
   CommentAuthor author = 7;
   repeated CommentMedia media = 8;
   int32 replies_count = 9;
+  repeated PostMention mentions = 10;
 }
 
 message AddCommentRequest {

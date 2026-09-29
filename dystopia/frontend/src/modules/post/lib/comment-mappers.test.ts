@@ -22,6 +22,7 @@ const comment: Comment = {
   author,
   media: [],
   repliesCount: 0,
+  mentions: [],
 };
 
 describe("mapCommentToView", () => {
