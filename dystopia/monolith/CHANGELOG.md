@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.0](https://github.com/panicboat/monorepo/compare/monolith-v0.7.1...monolith-v0.8.0) (2026-09-29)
+
+
+### Features
+
+* **dystopia:** add karte and review tabs to Home ([#1297](https://github.com/panicboat/monorepo/issues/1297)) ([b0ace3c](https://github.com/panicboat/monorepo/commit/b0ace3c1dbd585976be2814d1f2a3c3e81d663ce))
+
+
+### Bug Fixes
+
+* **dystopia/monolith:** default karte access to true until billing lands ([#1289](https://github.com/panicboat/monorepo/issues/1289)) ([2d27908](https://github.com/panicboat/monorepo/commit/2d27908becff43bb8142264769b166811909674b))
+* **dystopia:** show target identity in review and karte lists ([#1292](https://github.com/panicboat/monorepo/issues/1292)) ([f75485f](https://github.com/panicboat/monorepo/commit/f75485f1d09a4dc77fa8edd004cd36107721818e))
+
 ## [0.7.1](https://github.com/panicboat/monorepo/compare/monolith-v0.7.0...monolith-v0.7.1) (2026-09-27)
 
 
