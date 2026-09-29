@@ -6,11 +6,11 @@ RSpec.describe Karte::UseCases::UpdateEntry do
   let(:use_case) do
     described_class.new(
       entry_repo: entry_repo,
-      access_repo: access_repo
+      authorize_cast_access: authorize_cast_access
     )
   end
-  let(:entry_repo)  { double(:entry_repository) }
-  let(:access_repo) { double(:access_repository) }
+  let(:entry_repo)            { double(:entry_repository) }
+  let(:authorize_cast_access) { double(:authorize_cast_access) }
 
   let(:viewer_id) { "viewer-cast-1" }
   let(:entry_id)  { "entry-1" }
@@ -20,8 +20,7 @@ RSpec.describe Karte::UseCases::UpdateEntry do
   end
 
   before do
-    allow(access_repo).to receive(:find_by_account).with(viewer_id)
-      .and_return(double(:access, account_id: viewer_id))
+    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(true)
     allow(entry_repo).to receive(:find_by_id).with(entry_id).and_return(entry)
   end
 
@@ -35,8 +34,8 @@ RSpec.describe Karte::UseCases::UpdateEntry do
     use_case.call(viewer_account_id: viewer_id, entry_id: entry_id, rating: 5, body: "great")
   end
 
-  it "rejects when viewer has no karte access" do
-    allow(access_repo).to receive(:find_by_account).with(viewer_id).and_return(nil)
+  it "delegates the cast/billing check to AuthorizeCastAccess and rejects when it fails" do
+    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(false)
     expect {
       use_case.call(viewer_account_id: viewer_id, entry_id: entry_id, rating: 3)
     }.to raise_error(Karte::UseCases::UpdateEntry::AccessError)

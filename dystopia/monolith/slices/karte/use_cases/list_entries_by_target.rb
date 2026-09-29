@@ -12,18 +12,15 @@ module Karte
       include Concerns::CursorPagination
       include Karte::Deps[entry_repo: "repositories.entry_repository"]
 
-      def initialize(entry_repo: nil, user_repo: nil, get_my_access: nil, get_profile: nil, media_adapter: nil, **kwargs)
+      def initialize(entry_repo: nil, authorize_cast_access: nil, get_profile: nil, media_adapter: nil, **kwargs)
         super(**kwargs.merge(entry_repo: entry_repo).compact)
-        @user_repo     = user_repo
-        @get_my_access = get_my_access
-        @get_profile   = get_profile
-        @media_adapter = media_adapter
+        @authorize_cast_access = authorize_cast_access
+        @get_profile           = get_profile
+        @media_adapter         = media_adapter
       end
 
       def call(viewer_account_id:, target_account_id:, limit: 20, cursor: nil)
-        viewer = user_repo.find_by_id(viewer_account_id)
-        raise AccessError, "Karte access is cast-only" unless viewer&.role == 2
-        raise AccessError, "Karte access required" unless get_my_access.call(viewer_account_id: viewer_account_id)[:has_access]
+        raise AccessError, "Karte access required" unless authorize_cast_access.call(viewer_account_id: viewer_account_id)
 
         result = entry_repo.list_by_target(target_account_id: target_account_id, limit: limit, cursor: cursor)
         has_more = result.length > limit
@@ -68,12 +65,8 @@ module Karte
         media_adapter.find_url(profile.avatar_media_id)
       end
 
-      def user_repo
-        @user_repo ||= ::Identity::Slice["repositories.account_repository"]
-      end
-
-      def get_my_access
-        @get_my_access ||= Karte::Slice["use_cases.get_my_access"]
+      def authorize_cast_access
+        @authorize_cast_access ||= Karte::Slice["use_cases.authorize_cast_access"]
       end
 
       def get_profile

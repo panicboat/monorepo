@@ -10,16 +10,14 @@ module Karte
 
       include Karte::Deps[entry_repo: "repositories.entry_repository"]
 
-      def initialize(entry_repo: nil, user_repo: nil, get_my_access: nil, **kwargs)
+      def initialize(entry_repo: nil, user_repo: nil, authorize_cast_access: nil, **kwargs)
         super(**kwargs.merge(entry_repo: entry_repo).compact)
-        @user_repo     = user_repo
-        @get_my_access = get_my_access
+        @user_repo             = user_repo
+        @authorize_cast_access = authorize_cast_access
       end
 
       def call(viewer_account_id:, target_account_id:, rating:, body:)
-        author = user_repo.find_by_id(viewer_account_id)
-        raise AccessError, "Karte access is cast-only" unless author&.role == 2
-        raise AccessError, "Karte access required" unless get_my_access.call(viewer_account_id: viewer_account_id)[:has_access]
+        raise AccessError, "Karte access required" unless authorize_cast_access.call(viewer_account_id: viewer_account_id)
         raise CreateError, "Rating must be 1..5" unless (1..5).cover?(rating)
         raise CreateError, "Body too long" if body && body.length > MAX_BODY_LENGTH
 
@@ -41,8 +39,8 @@ module Karte
         @user_repo ||= ::Identity::Slice["repositories.account_repository"]
       end
 
-      def get_my_access
-        @get_my_access ||= Karte::Slice["use_cases.get_my_access"]
+      def authorize_cast_access
+        @authorize_cast_access ||= Karte::Slice["use_cases.authorize_cast_access"]
       end
     end
   end
