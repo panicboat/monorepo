@@ -3,10 +3,13 @@
 module Messaging
   module UseCases
     class GetOrCreateThread
-      include Messaging::Deps[messaging_repo: "repositories.messaging_repository"]
+      include Messaging::Deps[
+        messaging_repo: "repositories.messaging_repository",
+        authorize_message: "use_cases.authorize_message"
+      ]
 
       SelfMessageError = Class.new(StandardError)
-      NotMutualFollowersError = Class.new(StandardError)
+      FollowRequiredError = Class.new(StandardError)
       BlockedError = Class.new(StandardError)
       RecipientUnresolvedError = Class.new(StandardError)
 
@@ -16,8 +19,8 @@ module Messaging
         end
         raise SelfMessageError, "viewer == recipient" if viewer_id.to_s == recipient_account_id.to_s
         raise BlockedError, "blocked" if bidirectionally_blocked?(viewer_id, recipient_account_id)
-        unless mutual_followers?(viewer_id, recipient_account_id)
-          raise NotMutualFollowersError, "not mutual followers"
+        unless authorize_message.call(sender_id: viewer_id, recipient_id: recipient_account_id)
+          raise FollowRequiredError, "follow required"
         end
 
         account_a, account_b = [viewer_id.to_s, recipient_account_id.to_s].minmax
@@ -34,22 +37,12 @@ module Messaging
 
       private
 
-      def social_follow_repo
-        @social_follow_repo ||= Social::Slice["repositories.follow_repository"]
-      end
-
       def social_block_repo
         @social_block_repo ||= Social::Slice["repositories.block_repository"]
       end
 
       def get_profile
         @get_profile ||= Profile::Slice["use_cases.get_profile"]
-      end
-
-      def mutual_followers?(a, b)
-        s1 = social_follow_repo.find(follower_id: a, followee_id: b)
-        s2 = social_follow_repo.find(follower_id: b, followee_id: a)
-        !!(s1 && s1.status == "approved" && s2 && s2.status == "approved")
       end
 
       def bidirectionally_blocked?(a, b)

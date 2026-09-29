@@ -57,7 +57,7 @@ module Messaging
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       rescue UseCases::SendMessage::SelfMessageError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
-      rescue UseCases::SendMessage::NotMutualFollowersError => e
+      rescue UseCases::SendMessage::FollowRequiredError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
       rescue UseCases::SendMessage::BlockedError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, e.message)
@@ -94,7 +94,7 @@ module Messaging
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       rescue UseCases::GetOrCreateThread::SelfMessageError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
-      rescue UseCases::GetOrCreateThread::NotMutualFollowersError => e
+      rescue UseCases::GetOrCreateThread::FollowRequiredError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
       rescue UseCases::GetOrCreateThread::BlockedError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, e.message)
