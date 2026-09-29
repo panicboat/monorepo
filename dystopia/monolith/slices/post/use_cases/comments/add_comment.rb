@@ -7,7 +7,8 @@ module Post
         include Post::Deps[
           comment_repo: "repositories.comment_repository",
           post_repo: "repositories.post_repository",
-          account_adapter: "adapters.account_adapter"
+          account_adapter: "adapters.account_adapter",
+          extract_mentions: "use_cases.extract_mentions"
         ]
 
         MAX_CONTENT_LENGTH = 1000
@@ -39,13 +40,15 @@ module Post
               media_type: m[:media_type] || m["media_type"]
             }
           end
+          mentions = extract_mentions.call(content: content.to_s)
 
           comment = comment_repo.create_comment(
             post_id: post_id,
             user_id: user_id,
             content: content.strip,
             parent_id: parent_id,
-            media: media_data
+            media: media_data,
+            mentions: mentions
           )
 
           raise CreateFailedError unless comment
@@ -63,6 +66,16 @@ module Post
               recipient_id: post.author_id,
               type: "comment",
               target_resource_id: post.id,
+              actor_id: user_id,
+              target_post_id: post.id
+            )
+          end
+
+          mentions.uniq { |mention| mention[:account_id] }.each do |mention|
+            notifications_emit.call(
+              recipient_id: mention[:account_id],
+              type: "mention",
+              target_resource_id: comment.id,
               actor_id: user_id,
               target_post_id: post.id
             )

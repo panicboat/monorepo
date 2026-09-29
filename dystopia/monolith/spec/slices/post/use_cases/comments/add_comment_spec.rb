@@ -108,5 +108,57 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
         }.to raise_error(Post::UseCases::Comments::AddComment::ContentTooLongError)
       end
     end
+
+    context "when content contains a mention" do
+      let(:notification_repo) { Hanami.app.slices[:notifications]["repositories.notification_repository"] }
+      let(:profile_repo) { Hanami.app.slices[:profile]["repositories.profile_repository"] }
+
+      it "saves the mention and notifies the mentioned account" do
+        mentioned_id = SecureRandom.uuid_v7
+        profile_repo.create(account_id: mentioned_id, display_name: "Mentioned", username: "mentioned_user")
+
+        result = use_case.call(post_id: post.id, user_id: user_id, content: "hi @mentioned_user")
+
+        expect(result[:comment].comment_mentions.map(&:account_id)).to eq([mentioned_id])
+        notifications = notification_repo.list(recipient_id: mentioned_id)
+        expect(notifications.map(&:type)).to include("mention")
+      end
+
+      it "does not save a mention for an unresolved username" do
+        result = use_case.call(post_id: post.id, user_id: user_id, content: "hi @nobody_here_xyz")
+
+        expect(result[:comment].comment_mentions).to eq([])
+      end
+
+      it "does not notify a self-mention" do
+        profile_repo.create(account_id: user_id, display_name: "Self", username: "self_user")
+
+        use_case.call(post_id: post.id, user_id: user_id, content: "hi @self_user")
+
+        expect(notification_repo.list(recipient_id: user_id)).to eq([])
+      end
+
+      it "does not notify a mentioned account that has blocked the commenter" do
+        block_repo = Hanami.app.slices[:social]["repositories.block_repository"]
+        mentioned_id = SecureRandom.uuid_v7
+        profile_repo.create(account_id: mentioned_id, display_name: "Mentioned", username: "mentioned_user")
+        block_repo.block(blocker_id: mentioned_id, blocked_id: user_id)
+
+        use_case.call(post_id: post.id, user_id: user_id, content: "hi @mentioned_user")
+
+        expect(notification_repo.list(recipient_id: mentioned_id)).to eq([])
+      end
+
+      it "collapses repeated mentions of the same account into a single notification" do
+        mentioned_id = SecureRandom.uuid_v7
+        profile_repo.create(account_id: mentioned_id, display_name: "Mentioned", username: "mentioned_user")
+
+        use_case.call(post_id: post.id, user_id: user_id, content: "@mentioned_user @mentioned_user")
+
+        notifications = notification_repo.list(recipient_id: mentioned_id)
+        expect(notifications.length).to eq(1)
+        expect(notifications.first.actor_count).to eq(1)
+      end
+    end
   end
 end
