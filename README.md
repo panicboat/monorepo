@@ -71,3 +71,11 @@ flowchart LR
 
 - [panicboat/platform](https://github.com/panicboat/platform) — cluster bootstrap, shared components, OIDC IAM.
 - [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — reusable GitHub Actions (`label-resolver`, `container-builder`, `terragrunt`, `auto-approve`).
+
+## 🪝 Git Hooks
+
+Hooks under `.githooks/` mechanically enforce this repo's commit conventions (e.g. no `Co-Authored-By` line). Enable them once:
+
+```sh
+git config core.hooksPath .githooks
+```
