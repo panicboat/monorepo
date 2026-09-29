@@ -26,7 +26,7 @@ export function BottomTab() {
 
   const tabs = [
     ...TABS,
-    ...(role === "cast" && karteAccess ? [KARTE_TAB] : []),
+    ...(karteAccess ? [KARTE_TAB] : []),
     ...(role === "guest" ? [REVIEWS_TAB] : []),
   ];
 

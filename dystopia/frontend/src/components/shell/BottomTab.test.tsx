@@ -79,16 +79,6 @@ describe("BottomTab", () => {
     expect(html).not.toContain("/reviews/my");
   });
 
-  it("hides the karte tab for a Guest viewer even when karte access is on", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
-    authMocks.useAuthStore.mockReturnValue("guest");
-
-    const html = renderToStaticMarkup(<BottomTab />);
-
-    expect(html).not.toContain("/karte/my");
-    expect(html).toContain("/reviews/my");
-  });
-
   it("shows the review tab for a Guest viewer and hides the karte tab", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
     authMocks.useAuthStore.mockReturnValue("guest");

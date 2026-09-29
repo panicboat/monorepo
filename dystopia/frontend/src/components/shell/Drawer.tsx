@@ -14,7 +14,6 @@ import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { useNotificationPreferences } from "@/modules/notifications/hooks";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
-import { useAuthStore, selectRole } from "@/stores/authStore";
 import { classifySwipeDirection, clampDrawerOffset, shouldToggleDrawer, type SwipeDirection } from "./drawerSwipe";
 
 const NAV_ITEMS = [
@@ -57,7 +56,6 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
   const { preferences } = useNotificationPreferences();
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
   const { hasAccess: karteAccess } = useMyKarteAccess();
-  const role = useAuthStore(selectRole);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const asideRef = useRef<HTMLElement>(null);
   const [dragOffsetPx, setDragOffsetPx] = useState<number | null>(null);
@@ -231,7 +229,7 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
               </Link>
             );
           })}
-          {role === "cast" && karteAccess && (
+          {karteAccess && (
             <Link
               href="/karte/my"
               onClick={onClose}

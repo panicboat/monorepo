@@ -9,7 +9,7 @@ import { FollowButton, BlockButton, SocialCountsLinks } from "@/modules/social";
 import { StartChatButton } from "@/modules/messaging";
 import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs";
 import { useRecordVisit } from "@/modules/footprints";
-import { useAuthStore, selectUserId, selectRole } from "@/stores/authStore";
+import { useAuthStore, selectUserId } from "@/stores/authStore";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
 import { ReviewsTab } from "@/modules/review/components/ReviewsTab";
@@ -20,7 +20,6 @@ export default function PublicProfilePage() {
   const username = typeof params.username === "string" ? params.username : "";
   const { profile, loading, error, mutate } = usePublicProfile(username || null);
   const viewerId = useAuthStore(selectUserId);
-  const viewerRole = useAuthStore(selectRole);
   const recordVisit = useRecordVisit();
   const { hasAccess: karteAccess } = useMyKarteAccess();
   const { saveProfile, saveMedia } = useProfile();
@@ -58,7 +57,7 @@ export default function PublicProfilePage() {
         accountId={profile.accountId}
         isOwnProfile={isOwnProfile}
         extraTabs={[
-          ...(role === "guest" && viewerRole === "cast" && karteAccess
+          ...(role === "guest" && karteAccess
             ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guestAccountId={profile.accountId} /> }]
             : []),
           {

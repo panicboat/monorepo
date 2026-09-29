@@ -11,7 +11,6 @@ import { useUnreadCount, useNotificationPreferences } from "@/modules/notificati
 import { useTotalUnread } from "@/modules/messaging";
 import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
-import { useAuthStore, selectRole } from "@/stores/authStore";
 
 type BadgeKey = "unread" | "messaging_unread" | "footprints_unread";
 
@@ -42,7 +41,6 @@ export function SideNav() {
   const { count: footprintsUnread } = useFootprintsUnreadCount();
   const { preferences } = useNotificationPreferences();
   const { hasAccess: karteAccess } = useMyKarteAccess();
-  const role = useAuthStore(selectRole);
   const [composerOpen, setComposerOpen] = useState(false);
 
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
@@ -80,7 +78,7 @@ export function SideNav() {
             </Link>
           );
         })}
-        {role === "cast" && karteAccess && (
+        {karteAccess && (
           <Link
             href="/karte/my"
             className={`relative flex items-center gap-3 rounded-full px-4 py-3 text-lg hover:bg-bg-secondary ${
