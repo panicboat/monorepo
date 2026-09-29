@@ -42,7 +42,9 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
             </span>
             <span>· {parentPost.createdAt ? formatTimeAgo(parentPost.createdAt) : ""}</span>
           </div>
-          <MentionText content={parentPost.content} mentions={parentPost.mentions} />
+          <p className="mt-1 line-clamp-2 text-sm text-text-primary">
+            <MentionText content={parentPost.content} mentions={parentPost.mentions} />
+          </p>
         </Link>
       ) : (
         <div className="mb-2 rounded-md border border-divider/60 bg-bg-surface/40 p-3 text-xs text-text-muted">
@@ -64,7 +66,9 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
               · {comment.createdAt ? formatTimeAgo(comment.createdAt) : ""}
             </span>
           </div>
-          <MentionText content={comment.content} mentions={comment.mentions} />
+          <p className="mt-1 whitespace-pre-wrap text-text-primary">
+            <MentionText content={comment.content} mentions={comment.mentions} />
+          </p>
         </div>
       </div>
     </article>
