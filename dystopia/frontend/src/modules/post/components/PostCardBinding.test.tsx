@@ -19,6 +19,7 @@ const basePost: PostView = {
   commentsCount: 0,
   visibility: "public",
   hashtags: [],
+  mentions: [],
   liked: false,
 };
 

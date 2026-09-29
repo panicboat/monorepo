@@ -16,6 +16,7 @@ const comment: CommentView = {
     username: "coco_u",
   },
   repliesCount: 0,
+  mentions: [],
 };
 
 const commentsMocks = vi.hoisted(() => ({

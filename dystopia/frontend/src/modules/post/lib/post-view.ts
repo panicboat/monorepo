@@ -1,3 +1,10 @@
+export interface MentionView {
+  accountId: string;
+  username: string;
+  position: number;
+  length: number;
+}
+
 export interface PostAuthorView {
   accountId: string;
   displayName: string;
@@ -24,6 +31,7 @@ export interface PostView {
   commentsCount: number;
   visibility: "public" | "private";
   hashtags: string[];
+  mentions: MentionView[];
   liked: boolean;
 }
 

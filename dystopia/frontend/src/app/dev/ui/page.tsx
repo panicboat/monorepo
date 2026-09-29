@@ -70,6 +70,7 @@ export default function DevUiPage() {
       commentsCount: 3,
       visibility: "public",
       hashtags: ["新作", "渋谷"],
+      mentions: [],
       liked: false,
     },
     {
@@ -88,6 +89,7 @@ export default function DevUiPage() {
       commentsCount: 0,
       visibility: "private",
       hashtags: [],
+      mentions: [],
       liked: true,
     },
   ];

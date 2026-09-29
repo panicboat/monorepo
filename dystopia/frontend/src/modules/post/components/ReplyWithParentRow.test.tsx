@@ -17,6 +17,7 @@ const baseComment: CommentView = {
     username: "coco_u",
   },
   repliesCount: 0,
+  mentions: [],
 };
 
 describe("ReplyWithParentRow", () => {

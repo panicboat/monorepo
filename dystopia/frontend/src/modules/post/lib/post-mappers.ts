@@ -2,14 +2,25 @@ import type {
   Post,
   PostAuthor,
   PostMedia,
+  PostMention,
 } from "@/stub/post/v1/post_service_pb";
 import type {
+  MentionView,
   PostAuthorView,
   PostMediaView,
   PostView,
   PostsListView,
   SavePostPayload,
 } from "@/modules/post/lib/post-view";
+
+export function mapMentionToView(m: PostMention): MentionView {
+  return {
+    accountId: m.accountId || "",
+    username: m.username || "",
+    position: m.position || 0,
+    length: m.length || 0,
+  };
+}
 
 export function mapPostAuthorToView(a: PostAuthor | undefined): PostAuthorView | null {
   if (!a) return null;
@@ -43,6 +54,7 @@ export function mapPostToView(p: Post): PostView {
     commentsCount: p.commentsCount || 0,
     visibility: (p.visibility || "").toLowerCase() === "private" ? "private" : "public",
     hashtags: p.hashtags || [],
+    mentions: (p.mentions || []).map(mapMentionToView),
     liked: p.liked || false,
   };
 }
