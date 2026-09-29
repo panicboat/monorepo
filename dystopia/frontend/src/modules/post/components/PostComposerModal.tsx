@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { useSWRConfig } from "swr";
 import { authFetch } from "@/lib/auth";
 import { PostComposer } from "./PostComposer";
@@ -16,13 +17,6 @@ export function PostComposerModal({ open, onClose }: PostComposerModalProps) {
   const { mutate } = useSWRConfig();
   const notifyPostCreated = usePostFeedStore((s) => s.notifyPostCreated);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
   const handleSubmit = useCallback(async (payload: SavePostPayload) => {
     await authFetch("/api/posts", { method: "POST", body: payload });
     mutate((key) => typeof key === "string" && (key.startsWith("/api/posts") || key.startsWith("/api/feed")), undefined, { revalidate: true });
@@ -30,34 +24,29 @@ export function PostComposerModal({ open, onClose }: PostComposerModalProps) {
     onClose();
   }, [mutate, notifyPostCreated, onClose]);
 
-  if (!open) return null;
-
   return (
-    <>
-      <div
-        className="fixed inset-0 z-50 bg-black/60"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="投稿を作成"
-        className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-lg bg-bg p-4 shadow-2xl"
-      >
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-text-primary">投稿を作成</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-1 text-text-secondary hover:bg-bg-secondary hover:text-text-primary"
-            aria-label="閉じる"
-          >
-            ✕
-          </button>
-        </div>
-        <PostComposer onSubmit={handleSubmit} />
-      </div>
-    </>
+    <Dialog.Root open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60" />
+        <Dialog.Content
+          aria-label="投稿を作成"
+          className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-lg bg-bg p-4 shadow-2xl"
+        >
+          <div className="mb-3 flex items-center justify-between">
+            <Dialog.Title className="text-lg font-bold text-text-primary">投稿を作成</Dialog.Title>
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                className="rounded-full p-1 text-text-secondary hover:bg-bg-secondary hover:text-text-primary"
+                aria-label="閉じる"
+              >
+                ✕
+              </button>
+            </Dialog.Close>
+          </div>
+          <PostComposer onSubmit={handleSubmit} />
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
