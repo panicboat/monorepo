@@ -6,7 +6,7 @@ module Post
       commands :create, update: :by_pk, delete: :by_pk
 
       def find_by_id(id)
-        posts.combine(:post_media, :hashtags).by_pk(id).one
+        posts.combine(:post_media, :hashtags, :post_mentions).by_pk(id).one
       end
 
       def created_at_for_id(id)
@@ -16,7 +16,7 @@ module Post
       def find_by_ids(ids:)
         return [] if ids.nil? || ids.empty?
 
-        posts.combine(:post_media, :hashtags).where(id: ids).to_a
+        posts.combine(:post_media, :hashtags, :post_mentions).where(id: ids).to_a
       end
 
       def create_post(data)
@@ -48,8 +48,22 @@ module Post
         end
       end
 
+      def save_mentions(post_id:, mentions:)
+        post_mentions.dataset.where(post_id: post_id).delete
+        mentions.each do |mention|
+          post_mentions.changeset(
+            :create,
+            id: SecureRandom.uuid_v7,
+            post_id: post_id,
+            account_id: mention[:account_id],
+            position: mention[:position],
+            length: mention[:length]
+          ).commit
+        end
+      end
+
       def list_posts(limit: 20, cursor: nil, author_id: nil, media_only: false)
-        scope = posts.combine(:post_media, :hashtags).exclude(author_id: nil).where(visibility: "public")
+        scope = posts.combine(:post_media, :hashtags, :post_mentions).exclude(author_id: nil).where(visibility: "public")
         scope = scope.where(author_id: author_id) if author_id
 
         if media_only
@@ -85,7 +99,7 @@ module Post
       end
 
       def find_by_id_and_author(id:, author_id:)
-        posts.combine(:post_media, :hashtags).where(id: id, author_id: author_id).one
+        posts.combine(:post_media, :hashtags, :post_mentions).where(id: id, author_id: author_id).one
       end
 
       def search_by_content(query:, limit: 20, cursor: nil)

@@ -16,6 +16,7 @@ module Post
         associations do
           has_many :post_media, foreign_key: :post_id
           has_many :hashtags, foreign_key: :post_id
+          has_many :post_mentions, foreign_key: :post_id
         end
       end
     end
