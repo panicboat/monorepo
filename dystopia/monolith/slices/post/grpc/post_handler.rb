@@ -89,7 +89,7 @@ module Post
         post = post_repo.find_by_id(post.id)
 
         if is_create
-          mentions.each do |mention|
+          mentions.uniq { |mention| mention[:account_id] }.each do |mention|
             notifications_emit.call(
               recipient_id: mention[:account_id],
               type: "mention",

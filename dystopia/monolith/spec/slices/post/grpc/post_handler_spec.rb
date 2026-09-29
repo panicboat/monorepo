@@ -57,5 +57,16 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
       notifications = notification_repo.list(recipient_id: mentioned_id)
       expect(notifications.map(&:type).count("mention")).to eq(1)
     end
+
+    it "collapses repeated mentions of the same account into a single notification" do
+      repeated_message = Post::V1::SavePostRequest.new(id: "", content: "@mentioned_user @mentioned_user", visibility: "public")
+      repeated_handler = described_class.new(method_key: :save_post, service: double, rpc_desc: double, active_call: double, message: repeated_message)
+
+      repeated_handler.save_post
+
+      notifications = notification_repo.list(recipient_id: mentioned_id)
+      expect(notifications.length).to eq(1)
+      expect(notifications.first.actor_count).to eq(1)
+    end
   end
 end
