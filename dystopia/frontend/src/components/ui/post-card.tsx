@@ -9,7 +9,7 @@ export interface PostCardProps {
   authorHref?: string;
   detailHref?: string;
   time: string;
-  body: string;
+  body: React.ReactNode;
   images?: string[];
   reactions?: React.ReactNode;
   className?: string;

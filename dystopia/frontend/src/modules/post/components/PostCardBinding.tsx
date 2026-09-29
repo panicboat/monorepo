@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { PostCard } from "@/components/ui/post-card";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { MentionText } from "@/modules/post/lib/mention-text";
 import type { PostView } from "@/modules/post/lib/post-view";
 import { usePostLike } from "@/modules/post/hooks/usePostLike";
 import { useBookmark } from "@/modules/bookmarks";
@@ -89,7 +90,7 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
       authorHref={authorHref}
       detailHref={href}
       time={post.createdAt ? formatTimeAgo(post.createdAt) : ""}
-      body={post.content}
+      body={<MentionText content={post.content} mentions={post.mentions} />}
       images={images.length > 0 ? images : undefined}
       reactions={reactions}
       className={className}

@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ReplyWithParentRow } from "./ReplyWithParentRow";
 import type { CommentView } from "@/modules/post/lib/comment-view";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: () => {} }),
+}));
 
 const baseComment: CommentView = {
   id: "comment-1",

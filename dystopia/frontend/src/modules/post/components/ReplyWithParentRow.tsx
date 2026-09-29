@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { formatTimeAgo } from "@/lib/utils/date";
 import type { CommentView } from "@/modules/post/lib/comment-view";
+import { MentionText } from "@/modules/post/lib/mention-text";
 import type { PostView } from "@/modules/post/lib/post-view";
 
 export interface ReplyWithParentRowProps {
@@ -41,7 +42,7 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
             </span>
             <span>· {parentPost.createdAt ? formatTimeAgo(parentPost.createdAt) : ""}</span>
           </div>
-          <p className="mt-1 line-clamp-2 text-sm text-text-primary">{parentPost.content}</p>
+          <MentionText content={parentPost.content} mentions={parentPost.mentions} />
         </Link>
       ) : (
         <div className="mb-2 rounded-md border border-divider/60 bg-bg-surface/40 p-3 text-xs text-text-muted">
@@ -63,7 +64,7 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
               · {comment.createdAt ? formatTimeAgo(comment.createdAt) : ""}
             </span>
           </div>
-          <p className="mt-1 whitespace-pre-wrap text-text-primary">{comment.content}</p>
+          <MentionText content={comment.content} mentions={comment.mentions} />
         </div>
       </div>
     </article>
