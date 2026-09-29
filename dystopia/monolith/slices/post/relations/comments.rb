@@ -18,6 +18,7 @@ module Post
           belongs_to :posts, foreign_key: :post_id
           belongs_to :comments, foreign_key: :parent_id, as: :parent
           has_many :comment_media, foreign_key: :comment_id
+          has_many :comment_mentions, foreign_key: :comment_id
           has_many :comments, foreign_key: :parent_id, as: :replies
         end
       end
