@@ -6,15 +6,17 @@ RSpec.describe Karte::UseCases::ListMyEntries do
   let(:use_case) do
     described_class.new(
       entry_repo: entry_repo,
-      access_repo: access_repo,
+      user_repo: user_repo,
+      get_my_access: get_my_access_uc,
       get_profile: get_profile_uc,
       media_adapter: media_adapter
     )
   end
-  let(:entry_repo)     { double(:entry_repository) }
-  let(:access_repo)    { double(:access_repository) }
-  let(:get_profile_uc) { double(:get_profile) }
-  let(:media_adapter)  { double(:media_adapter) }
+  let(:entry_repo)       { double(:entry_repository) }
+  let(:user_repo)        { double(:user_repository) }
+  let(:get_my_access_uc) { double(:get_my_access) }
+  let(:get_profile_uc)   { double(:get_profile) }
+  let(:media_adapter)    { double(:media_adapter) }
 
   let(:viewer_id) { "viewer-cast-1" }
   let(:now)       { Time.now }
@@ -34,8 +36,8 @@ RSpec.describe Karte::UseCases::ListMyEntries do
   let(:profile) { double(:profile, username: "cast1", avatar_media_id: nil) }
 
   before do
-    allow(access_repo).to receive(:find_by_account).with(viewer_id)
-      .and_return(double(:access, account_id: viewer_id))
+    allow(user_repo).to receive(:find_by_id).with(viewer_id).and_return(double(:user, role: 2))
+    allow(get_my_access_uc).to receive(:call).with(viewer_account_id: viewer_id).and_return(has_access: true)
   end
 
   it "returns the viewer's entries without aggregate" do
@@ -56,8 +58,22 @@ RSpec.describe Karte::UseCases::ListMyEntries do
     expect(result).not_to have_key(:aggregate)
   end
 
-  it "rejects when viewer has no karte access" do
-    allow(access_repo).to receive(:find_by_account).with(viewer_id).and_return(nil)
+  it "rejects when the viewer is not a cast" do
+    allow(user_repo).to receive(:find_by_id).with(viewer_id).and_return(double(:user, role: 1))
+    expect {
+      use_case.call(viewer_account_id: viewer_id)
+    }.to raise_error(Karte::UseCases::ListMyEntries::AccessError)
+  end
+
+  it "rejects when the viewer account cannot be found" do
+    allow(user_repo).to receive(:find_by_id).with(viewer_id).and_return(nil)
+    expect {
+      use_case.call(viewer_account_id: viewer_id)
+    }.to raise_error(Karte::UseCases::ListMyEntries::AccessError)
+  end
+
+  it "rejects when karte billing access is off" do
+    allow(get_my_access_uc).to receive(:call).with(viewer_account_id: viewer_id).and_return(has_access: false)
     expect {
       use_case.call(viewer_account_id: viewer_id)
     }.to raise_error(Karte::UseCases::ListMyEntries::AccessError)

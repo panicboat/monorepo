@@ -8,18 +8,18 @@ module Karte
 
       MAX_BODY_LENGTH = 500
 
-      include Karte::Deps[
-        entry_repo: "repositories.entry_repository",
-        access_repo: "repositories.access_repository"
-      ]
+      include Karte::Deps[entry_repo: "repositories.entry_repository"]
 
-      def initialize(entry_repo: nil, access_repo: nil, user_repo: nil, **kwargs)
-        super(**kwargs.merge(entry_repo: entry_repo, access_repo: access_repo).compact)
-        @user_repo = user_repo
+      def initialize(entry_repo: nil, user_repo: nil, get_my_access: nil, **kwargs)
+        super(**kwargs.merge(entry_repo: entry_repo).compact)
+        @user_repo     = user_repo
+        @get_my_access = get_my_access
       end
 
       def call(viewer_account_id:, target_account_id:, rating:, body:)
-        raise AccessError, "Karte access required" unless access_repo.find_by_account(viewer_account_id)
+        author = user_repo.find_by_id(viewer_account_id)
+        raise AccessError, "Karte access is cast-only" unless author&.role == 2
+        raise AccessError, "Karte access required" unless get_my_access.call(viewer_account_id: viewer_account_id)[:has_access]
         raise CreateError, "Rating must be 1..5" unless (1..5).cover?(rating)
         raise CreateError, "Body too long" if body && body.length > MAX_BODY_LENGTH
 
@@ -39,6 +39,10 @@ module Karte
 
       def user_repo
         @user_repo ||= ::Identity::Slice["repositories.account_repository"]
+      end
+
+      def get_my_access
+        @get_my_access ||= Karte::Slice["use_cases.get_my_access"]
       end
     end
   end
