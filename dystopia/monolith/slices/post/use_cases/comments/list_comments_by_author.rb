@@ -31,17 +31,26 @@ module Post
 
           user_ids = result[:items].map(&:user_id).uniq
           authors = build_authors(user_ids)
+          mentioned_usernames = build_mentioned_usernames(result[:items])
 
           {
             comments: result[:items],
             posts_by_id: posts_by_id,
             authors: authors,
+            mentioned_usernames: mentioned_usernames,
             next_cursor: result[:next_cursor],
             has_more: result[:has_more]
           }
         end
 
         private
+
+        def build_mentioned_usernames(comments)
+          ids = comments.flat_map { |comment| comment.comment_mentions.map(&:account_id) }.uniq
+          return {} if ids.empty?
+
+          profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
+        end
 
         def list_posts_uc
           @list_posts_uc ||= Post::Slice["use_cases.posts.list_posts_by_ids"]

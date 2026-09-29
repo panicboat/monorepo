@@ -156,6 +156,7 @@ module Notifications
         when "reply" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_REPLY
         when "follow_request" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_FOLLOW_REQUEST
         when "follow_approved" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_FOLLOW_APPROVED
+        when "mention" then ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_MENTION
         else ::Notifications::V1::NotificationType::NOTIFICATION_TYPE_UNSPECIFIED
         end
       end

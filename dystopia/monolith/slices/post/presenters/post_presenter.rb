@@ -3,11 +3,12 @@
 module Post
   module Presenters
     class PostPresenter
-      def self.to_post_proto(post, author: nil, likes_count: 0, comments_count: 0, liked: false, media_files: {})
+      def self.to_post_proto(post, author: nil, likes_count: 0, comments_count: 0, liked: false, media_files: {}, mentioned_usernames: {})
         return nil unless post
 
         media = (post.respond_to?(:post_media) ? post.post_media : []) || []
         hashtags = (post.respond_to?(:hashtags) ? post.hashtags : []) || []
+        mentions = (post.respond_to?(:post_mentions) ? post.post_mentions : []) || []
 
         ::Post::V1::Post.new(
           id: post.id.to_s,
@@ -20,7 +21,8 @@ module Post
           comments_count: comments_count,
           visibility: post.respond_to?(:visibility) ? post.visibility : "public",
           hashtags: hashtags.sort_by(&:position).map(&:tag),
-          liked: liked
+          liked: liked,
+          mentions: mentions.map { |m| mention_to_proto(m, mentioned_usernames: mentioned_usernames) }
         )
       end
 
@@ -32,6 +34,15 @@ module Post
           url: media_file&.url || "",
           thumbnail_url: media_file&.thumbnail_url || "",
           media_id: media.media_id.to_s
+        )
+      end
+
+      def self.mention_to_proto(mention, mentioned_usernames: {})
+        ::Post::V1::PostMention.new(
+          account_id: mention.account_id.to_s,
+          username: mentioned_usernames[mention.account_id.to_s] || "",
+          position: mention.position,
+          length: mention.length
         )
       end
 

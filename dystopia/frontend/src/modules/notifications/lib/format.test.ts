@@ -43,6 +43,11 @@ describe("describeNotification", () => {
     const n = buildNotification({ type: NotificationType.COMMENT, latestActor: null });
     expect(describeNotification(n)).toBe("誰か さんがコメントしました");
   });
+
+  it("describes a mention notification", () => {
+    const n = buildNotification({ type: NotificationType.MENTION });
+    expect(describeNotification(n)).toBe("花子 さんがメンションしました");
+  });
 });
 
 describe("notificationHref", () => {
@@ -54,5 +59,13 @@ describe("notificationHref", () => {
   it("routes a follow request notification to the follow-requests settings page", () => {
     const n = buildNotification({ type: NotificationType.FOLLOW_REQUEST });
     expect(notificationHref(n)).toBe("/settings/follow-requests");
+  });
+
+  it("routes a mention notification to its post", () => {
+    const n = buildNotification({
+      type: NotificationType.MENTION,
+      targetPostId: "post-mention-1",
+    });
+    expect(notificationHref(n)).toBe("/posts/post-mention-1");
   });
 });

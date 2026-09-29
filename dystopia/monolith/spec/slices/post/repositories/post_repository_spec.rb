@@ -124,6 +124,31 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     end
   end
 
+  describe "#save_mentions" do
+    it "saves mentions for a post" do
+      post = repo.create_post(author_id: cast_id, content: "@alice hi")
+      mentioned_id = SecureRandom.uuid_v7
+      repo.save_mentions(post_id: post.id, mentions: [{ account_id: mentioned_id, position: 0, length: 6 }])
+
+      result = repo.find_by_id(post.id)
+      expect(result.post_mentions.length).to eq(1)
+      expect(result.post_mentions.first.account_id).to eq(mentioned_id)
+      expect(result.post_mentions.first.position).to eq(0)
+      expect(result.post_mentions.first.length).to eq(6)
+    end
+
+    it "replaces existing mentions" do
+      post = repo.create_post(author_id: cast_id, content: "@a @b")
+      id_a = SecureRandom.uuid_v7
+      id_b = SecureRandom.uuid_v7
+      repo.save_mentions(post_id: post.id, mentions: [{ account_id: id_a, position: 0, length: 2 }])
+      repo.save_mentions(post_id: post.id, mentions: [{ account_id: id_b, position: 3, length: 2 }])
+
+      result = repo.find_by_id(post.id)
+      expect(result.post_mentions.map(&:account_id)).to eq([id_b])
+    end
+  end
+
   describe "author-based queries (symmetric)" do
     let(:author_id) { SecureRandom.uuid_v7 }
 

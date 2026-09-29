@@ -1,3 +1,5 @@
+import type { MentionView } from "./post-view";
+
 export interface CommentAuthorView {
   userId: string;
   name: string;
@@ -14,6 +16,7 @@ export interface CommentView {
   createdAt: string;
   author: CommentAuthorView | null;
   repliesCount: number;
+  mentions: MentionView[];
 }
 
 export interface PaginatedCommentsResponse {
@@ -21,3 +24,5 @@ export interface PaginatedCommentsResponse {
   nextCursor: string;
   hasMore: boolean;
 }
+
+export type { MentionView };

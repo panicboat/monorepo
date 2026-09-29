@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { CommentView } from "@/modules/post/lib/comment-view";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: () => {} }),
+}));
+
 const comment: CommentView = {
   id: "comment-1",
   postId: "post-1",
@@ -16,6 +20,7 @@ const comment: CommentView = {
     username: "coco_u",
   },
   repliesCount: 0,
+  mentions: [],
 };
 
 const commentsMocks = vi.hoisted(() => ({
@@ -59,5 +64,26 @@ describe("CommentList", () => {
     const html = renderToStaticMarkup(<CommentList postId="post-1" />);
 
     expect(html).not.toContain('<a href="/u/');
+  });
+
+  it("renders a mention in comment content as an inline link", () => {
+    commentsMocks.useComments.mockReturnValue({
+      comments: [
+        {
+          ...comment,
+          content: "hi @alice",
+          mentions: [{ accountId: "acc-1", username: "alice", position: 3, length: 6 }],
+        },
+      ],
+      hasMore: false,
+      loading: false,
+      error: undefined,
+      loadMore: vi.fn(),
+    });
+
+    const html = renderToStaticMarkup(<CommentList postId="post-1" />);
+
+    expect(html).toContain("@alice");
+    expect(html).toContain('role="link"');
   });
 });

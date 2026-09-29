@@ -51,6 +51,28 @@ RSpec.describe "Post::Repositories::CommentRepository", type: :database do
 
       expect(nested).to be_nil
     end
+
+    describe "#create_comment with mentions" do
+      it "saves mentions alongside the comment" do
+        mentioned_id = SecureRandom.uuid_v7
+
+        comment = repo.create_comment(
+          post_id: post.id,
+          user_id: user_id,
+          content: "@alice hi",
+          mentions: [{ account_id: mentioned_id, position: 0, length: 6 }]
+        )
+
+        expect(comment.comment_mentions.length).to eq(1)
+        expect(comment.comment_mentions.first.account_id).to eq(mentioned_id)
+      end
+
+      it "creates a comment with no mentions when the array is empty" do
+        comment = repo.create_comment(post_id: post.id, user_id: user_id, content: "hi")
+
+        expect(comment.comment_mentions).to eq([])
+      end
+    end
   end
 
   describe "#delete_comment" do

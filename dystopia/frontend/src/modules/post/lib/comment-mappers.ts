@@ -1,4 +1,5 @@
 import type { Comment, CommentAuthor, ListCommentsResponse } from "@/stub/post/v1/comment_service_pb";
+import { mapMentionToView } from "./post-mappers";
 import type {
   CommentAuthorView,
   CommentView,
@@ -25,6 +26,7 @@ export function mapCommentToView(c: Comment): CommentView {
     createdAt: c.createdAt,
     author: mapAuthor(c.author),
     repliesCount: c.repliesCount,
+    mentions: (c.mentions || []).map(mapMentionToView),
   };
 }
 

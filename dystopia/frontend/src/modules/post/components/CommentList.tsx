@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { useComments } from "@/modules/post/hooks/useComments";
 import { useDeleteComment } from "@/modules/post/hooks/useDeleteComment";
+import { MentionText } from "@/modules/post/lib/mention-text";
 import { ReplyList } from "./ReplyList";
 import { ReplyComposer } from "./ReplyComposer";
 import { useAuthStore, selectUserId } from "@/stores/authStore";
@@ -65,7 +66,9 @@ export function CommentList({ postId }: CommentListProps) {
                   )}
                   <span className="text-text-muted">· {c.createdAt ? formatTimeAgo(c.createdAt) : ""}</span>
                 </div>
-                <p className="mt-1 whitespace-pre-wrap text-text-primary">{c.content}</p>
+                <p className="mt-1 whitespace-pre-wrap text-text-primary">
+                  <MentionText content={c.content} mentions={c.mentions} />
+                </p>
                 <div className="mt-2 flex items-center gap-4 text-sm">
                   <button
                     type="button"

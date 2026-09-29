@@ -3,7 +3,7 @@
 module Post
   module Repositories
     class CommentRepository < Post::DB::Repo
-      def create_comment(post_id:, user_id:, content:, parent_id: nil, media: [])
+      def create_comment(post_id:, user_id:, content:, parent_id: nil, media: [], mentions: [])
         if parent_id
           parent = comments.where(id: parent_id).one
           return nil unless parent
@@ -22,6 +22,7 @@ module Post
         comment = comments.changeset(:create, comment_data).commit
 
         save_media(comment_id: comment.id, media_data: media) if media.any?
+        save_mentions(comment_id: comment.id, mentions: mentions) if mentions.any?
 
         if parent_id
           comments.dataset.where(id: parent_id).update(
@@ -59,11 +60,11 @@ module Post
       end
 
       def find_by_id(id)
-        comments.combine(:comment_media).where(id: id).one
+        comments.combine(:comment_media, :comment_mentions).where(id: id).one
       end
 
       def list_by_post_id(post_id:, limit: 20, cursor: nil, exclude_user_ids: nil)
-        scope = comments.combine(:comment_media)
+        scope = comments.combine(:comment_media, :comment_mentions)
           .where(post_id: post_id, parent_id: nil)
         scope = scope.exclude(user_id: exclude_user_ids) if exclude_user_ids && !exclude_user_ids.empty?
 
@@ -78,7 +79,7 @@ module Post
       end
 
       def list_replies(parent_id:, limit: 20, cursor: nil, exclude_user_ids: nil)
-        scope = comments.combine(:comment_media)
+        scope = comments.combine(:comment_media, :comment_mentions)
           .where(parent_id: parent_id)
         scope = scope.exclude(user_id: exclude_user_ids) if exclude_user_ids && !exclude_user_ids.empty?
 
@@ -93,7 +94,7 @@ module Post
       end
 
       def list_by_author(author_id:, limit: 20, cursor: nil)
-        scope = comments.combine(:comment_media).where(user_id: author_id)
+        scope = comments.combine(:comment_media, :comment_mentions).where(user_id: author_id)
 
         if cursor
           scope = scope.where {
@@ -133,6 +134,19 @@ module Post
       def save_media(comment_id:, media_data:)
         media_data.each_with_index do |media, index|
           comment_media.changeset(:create, media.merge(id: SecureRandom.uuid_v7, comment_id: comment_id, position: index)).commit
+        end
+      end
+
+      def save_mentions(comment_id:, mentions:)
+        mentions.each do |mention|
+          comment_mentions.changeset(
+            :create,
+            id: SecureRandom.uuid_v7,
+            comment_id: comment_id,
+            account_id: mention[:account_id],
+            position: mention[:position],
+            length: mention[:length]
+          ).commit
         end
       end
     end

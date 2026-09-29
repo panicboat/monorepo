@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { CommentView } from "@/modules/post/lib/comment-view";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: () => {} }),
+}));
+
 const reply: CommentView = {
   id: "reply-1",
   postId: "post-1",
@@ -16,6 +20,7 @@ const reply: CommentView = {
     username: "coco_u",
   },
   repliesCount: 0,
+  mentions: [],
 };
 
 const repliesMocks = vi.hoisted(() => ({
