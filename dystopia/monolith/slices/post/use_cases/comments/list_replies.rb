@@ -32,11 +32,19 @@ module Post
 
           user_ids = replies.map(&:user_id).uniq
           authors = build_authors(user_ids)
+          mentioned_usernames = build_mentioned_usernames(replies)
 
-          { replies: replies, next_cursor: next_cursor, has_more: has_more, authors: authors }
+          { replies: replies, next_cursor: next_cursor, has_more: has_more, authors: authors, mentioned_usernames: mentioned_usernames }
         end
 
         private
+
+        def build_mentioned_usernames(replies)
+          ids = replies.flat_map { |reply| reply.comment_mentions.map(&:account_id) }.uniq
+          return {} if ids.empty?
+
+          profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
+        end
 
         def build_authors(user_ids)
           return {} if user_ids.empty?

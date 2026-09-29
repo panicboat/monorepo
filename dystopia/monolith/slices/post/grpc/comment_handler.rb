@@ -50,9 +50,10 @@ module Post
         media_files = load_media_files_for_comments([result[:comment]])
 
         author = get_comment_author(current_user_id, media_files: media_files)
+        mentioned_usernames = mentioned_usernames_for(result[:comment].comment_mentions.map(&:account_id))
 
         ::Post::V1::AddCommentResponse.new(
-          comment: CommentPresenter.to_proto(result[:comment], author: author, media_files: media_files),
+          comment: CommentPresenter.to_proto(result[:comment], author: author, media_files: media_files, mentioned_usernames: mentioned_usernames),
           comments_count: comments_count
         )
       rescue AddComment::PostNotFoundError
@@ -104,7 +105,7 @@ module Post
         media_files = load_media_files_for_comments(result[:comments])
 
         ::Post::V1::ListCommentsResponse.new(
-          comments: CommentPresenter.many_to_proto(result[:comments], authors: result[:authors], media_files: media_files),
+          comments: CommentPresenter.many_to_proto(result[:comments], authors: result[:authors], media_files: media_files, mentioned_usernames: result[:mentioned_usernames] || {}),
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -127,7 +128,7 @@ module Post
         media_files = load_media_files_for_comments(result[:replies])
 
         ::Post::V1::ListRepliesResponse.new(
-          replies: CommentPresenter.many_to_proto(result[:replies], authors: result[:authors], media_files: media_files),
+          replies: CommentPresenter.many_to_proto(result[:replies], authors: result[:authors], media_files: media_files, mentioned_usernames: result[:mentioned_usernames] || {}),
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -150,7 +151,7 @@ module Post
         media_files = load_media_files_for_comments(result[:comments])
 
         ::Post::V1::ListCommentsByAuthorResponse.new(
-          comments: CommentPresenter.many_to_proto(result[:comments], authors: result[:authors], media_files: media_files),
+          comments: CommentPresenter.many_to_proto(result[:comments], authors: result[:authors], media_files: media_files, mentioned_usernames: result[:mentioned_usernames] || {}),
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more],
           posts_by_id: result[:posts_by_id] || {}
@@ -161,6 +162,13 @@ module Post
 
       AddComment = Post::UseCases::Comments::AddComment
       DeleteComment = Post::UseCases::Comments::DeleteComment
+
+      def mentioned_usernames_for(account_ids)
+        ids = account_ids.uniq
+        return {} if ids.empty?
+
+        profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
+      end
 
       def get_comment_author(user_id, media_files: {})
         infos = profile_author_adapter.load([user_id]).transform_keys(&:to_s)
