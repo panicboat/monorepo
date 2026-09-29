@@ -69,15 +69,43 @@ vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({
   useMyKarteAccess: karteMocks.useMyKarteAccess,
 }));
 
+const authMocks = vi.hoisted(() => ({
+  useAuthStore: vi.fn(),
+}));
+
+vi.mock("@/stores/authStore", () => ({
+  useAuthStore: authMocks.useAuthStore,
+  selectRole: (s: { role: string | null }) => s.role,
+}));
+
 const { Drawer } = await import("./Drawer");
 
 describe("Drawer", () => {
   it("has no standalone oshi menu entry", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authMocks.useAuthStore.mockReturnValue("cast");
 
     const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
 
     expect(html).not.toContain("/oshi");
+  });
+
+  it("links to my karte when the viewer is a cast with karte access", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
+    authMocks.useAuthStore.mockReturnValue("cast");
+
+    const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
+
+    expect(html).toContain("/karte/my");
+  });
+
+  it("hides the karte item for a Guest viewer even with karte access", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
+    authMocks.useAuthStore.mockReturnValue("guest");
+
+    const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
+
+    expect(html).not.toContain("/karte/my");
   });
 
   describe("edge-to-anywhere swipe to open", () => {
