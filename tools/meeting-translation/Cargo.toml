@@ -16,7 +16,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.11"
 subtle = "2.6"
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "sync", "time"] }
 tokio-stream = "0.1"
 topcoat = { version = "0.9.0", features = ["websocket"] }
 uuid = { version = "1", features = ["v4", "serde"] }
@@ -25,5 +25,5 @@ uuid = { version = "1", features = ["v4", "serde"] }
 # Unlocks `#[tokio::test(start_paused = true)]` and `tokio::time::advance`,
 # used by Task 7's reconnect-grace tests. Cargo only unifies this into test
 # builds, not the release binary.
-tokio = { version = "1", features = ["test-util"] }
+tokio = { version = "1.53.1", features = ["test-util"] }
 tokio-tungstenite = "0.29"
