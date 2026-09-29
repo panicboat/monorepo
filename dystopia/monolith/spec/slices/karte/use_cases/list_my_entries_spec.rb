@@ -6,15 +6,15 @@ RSpec.describe Karte::UseCases::ListMyEntries do
   let(:use_case) do
     described_class.new(
       entry_repo: entry_repo,
-      access_repo: access_repo,
+      authorize_cast_access: authorize_cast_access,
       get_profile: get_profile_uc,
       media_adapter: media_adapter
     )
   end
-  let(:entry_repo)     { double(:entry_repository) }
-  let(:access_repo)    { double(:access_repository) }
-  let(:get_profile_uc) { double(:get_profile) }
-  let(:media_adapter)  { double(:media_adapter) }
+  let(:entry_repo)            { double(:entry_repository) }
+  let(:authorize_cast_access) { double(:authorize_cast_access) }
+  let(:get_profile_uc)        { double(:get_profile) }
+  let(:media_adapter)         { double(:media_adapter) }
 
   let(:viewer_id) { "viewer-cast-1" }
   let(:now)       { Time.now }
@@ -34,8 +34,7 @@ RSpec.describe Karte::UseCases::ListMyEntries do
   let(:profile) { double(:profile, username: "cast1", avatar_media_id: nil) }
 
   before do
-    allow(access_repo).to receive(:find_by_account).with(viewer_id)
-      .and_return(double(:access, account_id: viewer_id))
+    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(true)
   end
 
   it "returns the viewer's entries without aggregate" do
@@ -56,8 +55,8 @@ RSpec.describe Karte::UseCases::ListMyEntries do
     expect(result).not_to have_key(:aggregate)
   end
 
-  it "rejects when viewer has no karte access" do
-    allow(access_repo).to receive(:find_by_account).with(viewer_id).and_return(nil)
+  it "delegates the cast/billing check to AuthorizeCastAccess and rejects when it fails" do
+    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(false)
     expect {
       use_case.call(viewer_account_id: viewer_id)
     }.to raise_error(Karte::UseCases::ListMyEntries::AccessError)

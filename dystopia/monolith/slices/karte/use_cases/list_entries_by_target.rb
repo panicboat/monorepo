@@ -12,17 +12,17 @@ module Karte
       include Concerns::CursorPagination
       include Karte::Deps[
         entry_repo: "repositories.entry_repository",
-        access_repo: "repositories.access_repository"
+        authorize_cast_access: "use_cases.authorize_cast_access"
       ]
 
-      def initialize(entry_repo: nil, access_repo: nil, get_profile: nil, media_adapter: nil, **kwargs)
-        super(**kwargs.merge(entry_repo: entry_repo, access_repo: access_repo).compact)
-        @get_profile  = get_profile
+      def initialize(entry_repo: nil, authorize_cast_access: nil, get_profile: nil, media_adapter: nil, **kwargs)
+        super(**kwargs.merge(entry_repo: entry_repo, authorize_cast_access: authorize_cast_access).compact)
+        @get_profile   = get_profile
         @media_adapter = media_adapter
       end
 
       def call(viewer_account_id:, target_account_id:, limit: 20, cursor: nil)
-        raise AccessError, "Karte access required" unless access_repo.find_by_account(viewer_account_id)
+        raise AccessError, "Karte access required" unless authorize_cast_access.call(viewer_account_id: viewer_account_id)
 
         result = entry_repo.list_by_target(target_account_id: target_account_id, limit: limit, cursor: cursor)
         has_more = result.length > limit

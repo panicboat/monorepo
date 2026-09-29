@@ -6,19 +6,19 @@ RSpec.describe Karte::UseCases::CreateEntry do
   let(:use_case) do
     described_class.new(
       entry_repo: entry_repo,
-      access_repo: access_repo,
-      user_repo: user_repo
+      user_repo: user_repo,
+      authorize_cast_access: authorize_cast_access
     )
   end
-  let(:entry_repo) { double(:entry_repository) }
-  let(:access_repo) { double(:access_repository) }
-  let(:user_repo) { double(:user_repository) }
+  let(:entry_repo)            { double(:entry_repository) }
+  let(:user_repo)             { double(:user_repository) }
+  let(:authorize_cast_access) { double(:authorize_cast_access) }
 
   let(:viewer_id) { "viewer-cast-1" }
   let(:target_id) { "target-guest-1" }
 
   before do
-    allow(access_repo).to receive(:find_by_account).with(viewer_id).and_return(double(:access, account_id: viewer_id))
+    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(true)
   end
 
   it "creates an entry when target is a guest" do
@@ -34,8 +34,8 @@ RSpec.describe Karte::UseCases::CreateEntry do
     expect(result.id).to eq("e-1")
   end
 
-  it "rejects when viewer has no karte access" do
-    allow(access_repo).to receive(:find_by_account).with(viewer_id).and_return(nil)
+  it "delegates the cast/billing check to AuthorizeCastAccess and rejects when it fails" do
+    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(false)
     expect {
       use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, rating: 3, body: "ok")
     }.to raise_error(Karte::UseCases::CreateEntry::AccessError)

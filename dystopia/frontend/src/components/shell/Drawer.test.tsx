@@ -80,6 +80,22 @@ describe("Drawer", () => {
     expect(html).not.toContain("/oshi");
   });
 
+  it("links to my karte when the viewer has karte access", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
+
+    const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
+
+    expect(html).toContain("/karte/my");
+  });
+
+  it("hides the karte item when the viewer has no karte access", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+
+    const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
+
+    expect(html).not.toContain("/karte/my");
+  });
+
   describe("edge-to-anywhere swipe to open", () => {
     function renderClosedDrawer() {
       karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });

@@ -6,15 +6,15 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
   let(:use_case) do
     described_class.new(
       entry_repo: entry_repo,
-      access_repo: access_repo,
+      authorize_cast_access: authorize_cast_access,
       get_profile: get_profile_uc,
       media_adapter: media_adapter
     )
   end
-  let(:entry_repo)     { double(:entry_repository) }
-  let(:access_repo)    { double(:access_repository) }
-  let(:get_profile_uc) { double(:get_profile) }
-  let(:media_adapter)  { double(:media_adapter) }
+  let(:entry_repo)             { double(:entry_repository) }
+  let(:authorize_cast_access)  { double(:authorize_cast_access) }
+  let(:get_profile_uc)         { double(:get_profile) }
+  let(:media_adapter)          { double(:media_adapter) }
 
   let(:viewer_id) { "viewer-cast-1" }
   let(:target_id) { "target-guest-1" }
@@ -50,8 +50,7 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
   let(:aggregate) { { count: 2, avg_rating: 4.0 } }
 
   before do
-    allow(access_repo).to receive(:find_by_account).with(viewer_id)
-      .and_return(double(:access, account_id: viewer_id))
+    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(true)
   end
 
   it "returns entries with correct flagged values and aggregate" do
@@ -111,8 +110,8 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
     expect(result[:entries].length).to eq(2)
   end
 
-  it "rejects when viewer has no karte access" do
-    allow(access_repo).to receive(:find_by_account).with(viewer_id).and_return(nil)
+  it "delegates the cast/billing check to AuthorizeCastAccess and rejects when it fails" do
+    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(false)
     expect {
       use_case.call(viewer_account_id: viewer_id, target_account_id: target_id)
     }.to raise_error(Karte::UseCases::ListEntriesByTarget::AccessError)
