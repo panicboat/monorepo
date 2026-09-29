@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { useFeed } from "@/modules/feed/hooks/useFeed";
 import { useProfile } from "@/modules/profile/hooks/useProfile";
-import { useAuthStore, selectRole } from "@/stores/authStore";
+import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { useRecentKarte } from "@/modules/karte/hooks/useRecentKarte";
 import { KarteEntryCard } from "@/modules/karte/components/KarteEntryCard";
 import { useRecentReviews } from "@/modules/review/hooks/useRecentReviews";
@@ -28,7 +28,7 @@ function isFeedFilter(tab: HomeTabValue): tab is FeedFilterValue {
 export default function HomePage() {
   const [tab, setTab] = useState<HomeTabValue>("all");
   const { profile } = useProfile();
-  const role = useAuthStore(selectRole);
+  const { hasAccess: karteAccess } = useMyKarteAccess();
   const isPostTab = isFeedFilter(tab);
   const filter = isPostTab ? tab : "all";
   const prefecture = filter === "area" ? profile?.prefecture || undefined : undefined;
@@ -62,10 +62,10 @@ export default function HomePage() {
 
   const tabItems: TabItem[] = useMemo(() => {
     const items = [...POST_TAB_ITEMS];
-    if (role === "cast") items.push({ id: "karte", label: "カルテ" });
+    if (karteAccess) items.push({ id: "karte", label: "カルテ" });
     items.push({ id: "reviews", label: "レビュー" });
     return items;
-  }, [role]);
+  }, [karteAccess]);
 
   const showAreaHint = filter === "area" && !prefecture;
   const showEmptyState = initialized && !loading && posts.length === 0 && !showAreaHint;

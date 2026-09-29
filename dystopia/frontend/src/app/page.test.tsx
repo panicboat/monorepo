@@ -19,11 +19,8 @@ vi.mock("@/modules/profile/hooks/useProfile", () => ({
   useProfile: () => ({ profile: { prefecture: "" } }),
 }));
 
-const authMocks = vi.hoisted(() => ({ useAuthStore: vi.fn() }));
-vi.mock("@/stores/authStore", () => ({
-  useAuthStore: authMocks.useAuthStore,
-  selectRole: (s: { role: string | null }) => s.role,
-}));
+const karteAccessMocks = vi.hoisted(() => ({ useMyKarteAccess: vi.fn() }));
+vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({ useMyKarteAccess: karteAccessMocks.useMyKarteAccess }));
 
 const karteMocks = vi.hoisted(() => ({ useRecentKarte: vi.fn() }));
 vi.mock("@/modules/karte/hooks/useRecentKarte", () => ({ useRecentKarte: karteMocks.useRecentKarte }));
@@ -36,8 +33,8 @@ const { default: HomePage } = await import("./page");
 const emptyList = { entries: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn(), refresh: vi.fn() };
 
 describe("HomePage tabs", () => {
-  it("shows the karte tab for a Cast viewer", () => {
-    authMocks.useAuthStore.mockReturnValue("cast");
+  it("shows the karte tab when the viewer has karte access", () => {
+    karteAccessMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
     karteMocks.useRecentKarte.mockReturnValue(emptyList);
     reviewMocks.useRecentReviews.mockReturnValue(emptyList);
 
@@ -47,8 +44,8 @@ describe("HomePage tabs", () => {
     expect(html).toContain("レビュー");
   });
 
-  it("hides the karte tab for a Guest viewer but keeps the review tab", () => {
-    authMocks.useAuthStore.mockReturnValue("guest");
+  it("hides the karte tab when the viewer has no karte access but keeps the review tab", () => {
+    karteAccessMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
     karteMocks.useRecentKarte.mockReturnValue(emptyList);
     reviewMocks.useRecentReviews.mockReturnValue(emptyList);
 
