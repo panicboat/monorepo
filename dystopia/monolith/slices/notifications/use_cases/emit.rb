@@ -13,7 +13,8 @@ module Notifications
         "comment" => :post,
         "reply" => :reply,
         "follow_request" => :follow,
-        "follow_approved" => :follow
+        "follow_approved" => :follow,
+        "mention" => :mention
       }.freeze
 
       def call(recipient_id:, type:, target_resource_id:, actor_id:, target_post_id: nil)
