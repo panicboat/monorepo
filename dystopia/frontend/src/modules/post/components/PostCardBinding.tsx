@@ -30,8 +30,8 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
 
   const images = post.media
     .filter((m) => m.mediaType === "image")
-    .map((m) => m.thumbnailUrl || m.url)
-    .filter((u) => u.length > 0);
+    .map((m) => ({ thumbnailUrl: m.thumbnailUrl || m.url, url: m.url || m.thumbnailUrl }))
+    .filter((image) => image.thumbnailUrl.length > 0);
 
   const href = detailHref || `/posts/${encodeURIComponent(post.id)}`;
 
