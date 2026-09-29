@@ -27,6 +27,8 @@ module Post
 
           raise TooManyMediaError if !empty_media && media.length > MAX_MEDIA_COUNT
 
+          normalized_content = content.to_s.strip
+
           parent = nil
           if parent_id
             parent = comment_repo.find_by_id(parent_id)
@@ -40,12 +42,12 @@ module Post
               media_type: m[:media_type] || m["media_type"]
             }
           end
-          mentions = extract_mentions.call(content: content.to_s)
+          mentions = extract_mentions.call(content: normalized_content)
 
           comment = comment_repo.create_comment(
             post_id: post_id,
             user_id: user_id,
-            content: content.strip,
+            content: normalized_content,
             parent_id: parent_id,
             media: media_data,
             mentions: mentions

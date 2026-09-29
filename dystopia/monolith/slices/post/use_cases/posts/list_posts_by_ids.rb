@@ -30,6 +30,7 @@ module Post
             {}
           end
           media_files = load_media_files(posts)
+          mentioned_usernames = mentioned_usernames_for(posts.flat_map { |p| p.post_mentions.map(&:account_id) })
 
           posts.each_with_object({}) do |post, hash|
             proto = Post::Presenters::PostPresenter.to_post_proto(
@@ -38,7 +39,8 @@ module Post
               likes_count: likes_counts[post.id] || 0,
               comments_count: comments_counts[post.id] || 0,
               liked: liked[post.id] || false,
-              media_files: media_files
+              media_files: media_files,
+              mentioned_usernames: mentioned_usernames
             )
             hash[post.id.to_s] = proto if proto
           end
@@ -56,6 +58,13 @@ module Post
           return {} if media_ids.empty?
 
           media_adapter.find_by_ids(media_ids)
+        end
+
+        def mentioned_usernames_for(account_ids)
+          ids = account_ids.uniq
+          return {} if ids.empty?
+
+          profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
         end
 
         def media_adapter

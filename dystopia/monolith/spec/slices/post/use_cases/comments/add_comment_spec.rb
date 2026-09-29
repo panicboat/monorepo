@@ -5,6 +5,7 @@ require "spec_helper"
 RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
   let(:use_case) { Hanami.app.slices[:post]["use_cases.comments.add_comment"] }
   let(:post_repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
+  let(:comment_repo) { Hanami.app.slices[:post]["repositories.comment_repository"] }
   let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
   let(:author_id) { SecureRandom.uuid_v7 }
   let(:user_id) { create_user[:id] }
@@ -124,6 +125,16 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
         expect(notifications.map(&:type)).to include("mention")
       end
 
+      it "normalizes content before saving mentions" do
+        mentioned_id = SecureRandom.uuid_v7
+        profile_repo.create(account_id: mentioned_id, display_name: "Mentioned", username: "mentioned_user")
+
+        result = use_case.call(post_id: post.id, user_id: user_id, content: "\n@mentioned_user hi")
+
+        expect(result[:comment].content).to eq("@mentioned_user hi")
+        expect(result[:comment].comment_mentions.first.position).to eq(0)
+      end
+
       it "does not save a mention for an unresolved username" do
         result = use_case.call(post_id: post.id, user_id: user_id, content: "hi @nobody_here_xyz")
 
@@ -158,6 +169,23 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
         notifications = notification_repo.list(recipient_id: mentioned_id)
         expect(notifications.length).to eq(1)
         expect(notifications.first.actor_count).to eq(1)
+      end
+
+      it "saves and notifies mentions in replies" do
+        mentioned_id = SecureRandom.uuid_v7
+        profile_repo.create(account_id: mentioned_id, display_name: "Mentioned", username: "mentioned_user")
+        parent = comment_repo.create_comment(post_id: post.id, user_id: create_user[:id], content: "Parent")
+
+        result = use_case.call(
+          post_id: post.id,
+          user_id: user_id,
+          content: "hi @mentioned_user",
+          parent_id: parent.id
+        )
+
+        expect(result[:comment].comment_mentions.map(&:account_id)).to eq([mentioned_id])
+        notifications = notification_repo.list(recipient_id: mentioned_id)
+        expect(notifications.map(&:type)).to include("mention")
       end
     end
   end

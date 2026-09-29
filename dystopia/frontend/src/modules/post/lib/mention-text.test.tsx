@@ -1,11 +1,20 @@
+// @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vitest";
+import { act } from "react";
+import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { splitContentByMentions, MentionText } from "./mention-text";
 import type { MentionView } from "./post-view";
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: () => {} }),
+const routerMocks = vi.hoisted(() => ({
+  push: vi.fn(),
 }));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => routerMocks,
+}));
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 describe("splitContentByMentions", () => {
   it("splits content into text and mention parts", () => {
@@ -76,5 +85,37 @@ describe("MentionText", () => {
 
     expect(html).toContain("@alice");
     expect(html).not.toContain("<a ");
+  });
+
+  it("navigates to a mention on Enter", async () => {
+    routerMocks.push.mockClear();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <MentionText
+          content="@alice hi"
+          mentions={[{ accountId: "a1", username: "alice", position: 0, length: 6 }]}
+        />,
+      );
+    });
+
+    const mention = container.querySelector('[role="link"]');
+    expect(mention).not.toBeNull();
+
+    await act(async () => {
+      mention!.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(routerMocks.push).toHaveBeenCalledWith("/u/alice");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 });

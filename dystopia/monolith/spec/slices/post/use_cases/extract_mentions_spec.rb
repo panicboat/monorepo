@@ -72,4 +72,21 @@ RSpec.describe "Post::UseCases::ExtractMentions", type: :database do
       { account_id: id, position: 9, length: 8 }
     ])
   end
+
+  it "looks up each unique username only once" do
+    id = create_profile(username: "alice_1")
+    extractor = Post::UseCases::ExtractMentions.new(profile_repo: profile_repo)
+
+    expect(profile_repo).to receive(:find_by_username).with("alice_1").once.and_call_original
+
+    result = extractor.call(content: "@alice_1 @alice_1 @alice_1")
+
+    expect(result.map { |mention| mention[:account_id] }).to eq([id, id, id])
+  end
+
+  it "does not match a username embedded in an email address" do
+    create_profile(username: "alice_1")
+
+    expect(use_case.call(content: "contact me@alice_1.com")).to eq([])
+  end
 end

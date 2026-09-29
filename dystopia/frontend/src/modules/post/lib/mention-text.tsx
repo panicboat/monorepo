@@ -64,6 +64,9 @@ export function MentionText({
 }: MentionTextProps) {
   const router = useRouter();
   const parts = splitContentByMentions(content, mentions);
+  const navigateToMention = (username: string) => {
+    router.push(`/u/${encodeURIComponent(username)}`);
+  };
 
   return (
     <span className={className}>
@@ -77,7 +80,13 @@ export function MentionText({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              router.push(`/u/${encodeURIComponent(part.username)}`);
+              navigateToMention(part.username);
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter" && e.key !== " ") return;
+              e.preventDefault();
+              e.stopPropagation();
+              navigateToMention(part.username);
             }}
           >
             {part.value}

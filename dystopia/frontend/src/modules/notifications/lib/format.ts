@@ -15,6 +15,8 @@ export function describeNotification(n: NotificationView): string {
       return `${actorName} さんからフォロー申請が届きました`;
     case NotificationType.FOLLOW_APPROVED:
       return `${actorName} さんにフォローされました`;
+    case NotificationType.MENTION:
+      return `${actorName}${othersSuffix} さんがメンションしました`;
     default:
       return `${actorName} さんから通知`;
   }
@@ -26,6 +28,7 @@ export function notificationHref(n: NotificationView): string | null {
       return `/posts/${encodeURIComponent(n.targetResourceId)}`;
     case NotificationType.COMMENT:
     case NotificationType.REPLY:
+    case NotificationType.MENTION:
       // Use targetPostId because comment notifications store the comment ID as targetResourceId.
       return n.targetPostId ? `/posts/${encodeURIComponent(n.targetPostId)}` : null;
     case NotificationType.FOLLOW_REQUEST:
