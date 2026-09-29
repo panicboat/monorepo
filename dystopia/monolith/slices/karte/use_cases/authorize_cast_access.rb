@@ -10,7 +10,6 @@ module Karte
         @get_my_access = get_my_access
       end
 
-      # Karte access is cast-only, gated separately by the billing flag in GetMyAccess.
       def call(viewer_account_id:)
         viewer = user_repo.find_by_id(viewer_account_id)
         return false unless viewer&.role == ROLE_CAST
