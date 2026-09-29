@@ -4,7 +4,8 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { authFetch } from "@/lib/auth";
-import { useAuthStore, selectUserId } from "@/stores/authStore";
+import { useAuthStore, selectUserId, selectRole } from "@/stores/authStore";
+import { useFollow } from "@/modules/social/hooks";
 import type { ThreadView } from "@/modules/messaging/types";
 
 interface StartChatButtonProps {
@@ -19,6 +20,8 @@ interface GetOrCreateThreadResponse {
 export function StartChatButton({ targetAccountId, className }: StartChatButtonProps) {
   const router = useRouter();
   const viewerId = useAuthStore(selectUserId);
+  const viewerRole = useAuthStore(selectRole);
+  const { isFollowing } = useFollow(targetAccountId);
   const [loading, setLoading] = useState(false);
 
   const onClick = useCallback(async () => {
@@ -36,13 +39,14 @@ export function StartChatButton({ targetAccountId, className }: StartChatButtonP
       }
     } catch (e) {
       const message = e instanceof Error ? e.message : "メッセージを送れません";
-      alert(message || "相互フォロー関係でない可能性があります");
+      alert(message || "フォロー関係が条件を満たしていない可能性があります");
     } finally {
       setLoading(false);
     }
   }, [targetAccountId, loading, router]);
 
   if (!targetAccountId || !viewerId || viewerId === targetAccountId) return null;
+  if (viewerRole === "guest" && !isFollowing) return null;
 
   return (
     <Button
