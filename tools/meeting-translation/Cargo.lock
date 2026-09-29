@@ -1583,7 +1583,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-bedrockruntime",
  "aws-sdk-transcribestreaming",
- "base64 0.22.1",
+ "base64 0.23.1",
  "futures-util",
  "getrandom 0.4.3",
  "serde",
