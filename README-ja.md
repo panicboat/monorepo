@@ -71,3 +71,11 @@ flowchart LR
 
 - [panicboat/platform](https://github.com/panicboat/platform) — クラスタ bootstrap、共通コンポーネント、OIDC IAM。
 - [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — 再利用可能な GitHub Actions（`label-resolver` / `container-builder` / `terragrunt` / `auto-approve`）。
+
+## 🪝 Git Hooks
+
+本リポジトリの commit 規約（`Co-Authored-By` 行の禁止 等）を機械的に検証する hook を `.githooks/` 配下に置いている。有効化するには一度だけ実行する。
+
+```sh
+git config core.hooksPath .githooks
+```
