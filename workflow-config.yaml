@@ -1,5 +1,4 @@
-environments:
-
+environments: []
   # eks-production teardown中のため無効化 (Renovate PRのCI auto-applyでdestroy済stackへの再作成を防ぐ、panicboat/platform docs/runbooks/eks-production-recreate.md 参照)
   # - environment: production
   #   stacks:
