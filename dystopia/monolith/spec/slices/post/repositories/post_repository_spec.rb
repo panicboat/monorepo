@@ -168,6 +168,16 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     end
   end
 
+  describe "#top_by_likes" do
+    it "does not raise an ambiguous column error for day and week periods" do
+      repo.create_post(author_id: cast_id, content: "ranked", visibility: "public")
+
+      %w[day week all].each do |period|
+        expect { repo.top_by_likes(period: period, limit: 10) }.not_to raise_error
+      end
+    end
+  end
+
   describe "#delete_by_author" do
     it "deletes all posts by the author" do
       author_id = SecureRandom.uuid_v7

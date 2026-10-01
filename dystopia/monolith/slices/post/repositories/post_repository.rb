@@ -124,9 +124,9 @@ module Post
 
         case period.to_s
         when "day"
-          ds = ds.where { created_at >= Sequel.lit("NOW() - INTERVAL '1 day'") }
+          ds = ds.where { Sequel[:post__posts][:created_at] >= Sequel.lit("NOW() - INTERVAL '1 day'") }
         when "week"
-          ds = ds.where { created_at >= Sequel.lit("NOW() - INTERVAL '7 days'") }
+          ds = ds.where { Sequel[:post__posts][:created_at] >= Sequel.lit("NOW() - INTERVAL '7 days'") }
         when "all"
         else
           return []
