@@ -178,8 +178,8 @@ importers:
   .:
     dependencies:
       '@aws-sdk/client-cognito-identity-provider':
-        specifier: ^3.1142.0
-        version: 3.1142.0
+        specifier: ^3.1143.0
+        version: 3.1143.0
       '@bufbuild/buf':
         specifier: 1.73.0
         version: 1.73.0
@@ -305,8 +305,8 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
-  '@aws-sdk/client-cognito-identity-provider@3.1142.0':
-    resolution: {integrity: sha512-dyn+mkDjNTFrUV79p2XHcFQGUz2dBX86ilVbrWYGkUGg2WPP4qEdCwbV7VS7laKXiFEj5h5Yz98O+98NoLCDCA==}
+  '@aws-sdk/client-cognito-identity-provider@3.1143.0':
+    resolution: {integrity: sha512-L41OkTgbMRkGKXASK9YelQuY7ckYa091ASq/lvKa8G3I2byGk7KlaYI5POiKtiyglgye0eFg3cM2TY947aKNKQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.978.1':
@@ -4205,7 +4205,7 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@aws-sdk/client-cognito-identity-provider@3.1142.0':
+  '@aws-sdk/client-cognito-identity-provider@3.1143.0':
     dependencies:
       '@aws-sdk/core': 3.978.1
       '@aws-sdk/credential-provider-node': 3.972.84
