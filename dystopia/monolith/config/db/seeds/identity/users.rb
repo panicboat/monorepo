@@ -2,7 +2,7 @@
 
 puts "Seeding Identity: Accounts..."
 
-# Keep fixed IDs so other development seeds can reference these accounts.
+# Keep fixed IDs so other development seeds and frontend/src/lib/cognito/fake.ts (local sign-in) can reference these accounts.
 cast_accounts = [
   { id: "11111111-1111-4111-8111-111111111111", role: 2 },
   { id: "22222222-2222-4222-8222-222222222222", role: 2 },

@@ -11,6 +11,24 @@ type FakeUser = {
 const users = new Map<string, FakeUser>();
 export const FAKE_CONFIRMATION_CODE = "000000";
 
+// Subs mirror the fixed account ids in monolith config/db/seeds/identity/users.rb so seeded accounts can sign in.
+const SEED_USERS: Array<{ phone: string; sub: string }> = [
+  { phone: "+819000000101", sub: "11111111-1111-4111-8111-111111111111" },
+  { phone: "+819000000102", sub: "22222222-2222-4222-8222-222222222222" },
+  { phone: "+819000000103", sub: "33333333-3333-4333-8333-333333333333" },
+  { phone: "+819000000104", sub: "44444444-4444-4444-8444-444444444444" },
+  { phone: "+819000000105", sub: "55555555-5555-4555-8555-555555555555" },
+  { phone: "+819000000106", sub: "66666666-6666-4666-8666-666666666666" },
+  { phone: "+819000000107", sub: "77777777-7777-4777-8777-777777777777" },
+];
+
+function seedDevUsers(): void {
+  for (const { phone, sub } of SEED_USERS) {
+    users.set(phone, { sub, password: "password", confirmed: true });
+  }
+}
+seedDevUsers();
+
 const { publicKey, privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
 
 export async function fakeJwks(): Promise<{ keys: JWK[] }> {
@@ -104,4 +122,5 @@ export function createFakeAdapter(): CognitoAdapter {
 
 export function _resetFakePool(): void {
   users.clear();
+  seedDevUsers();
 }
