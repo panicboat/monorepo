@@ -36,7 +36,7 @@ export function PostCard({
   const [lightboxIndex, setLightboxIndex] = React.useState<number | null>(null);
   const shownImages = images?.slice(0, 4) ?? [];
 
-  const avatar = <Avatar src={author.avatarSrc} fallback={author.name.slice(0, 1)} size="md" />;
+  const avatar = <Avatar src={author.avatarSrc} fallback={author.name.slice(0, 1)} size="md" href={authorHref} />;
   const nameAndHandle = (
     <span className="flex items-center gap-1">
       <span className="font-bold text-text-primary">{author.name}</span>
@@ -61,7 +61,7 @@ export function PostCard({
   return (
     <article className={cn("border-b border-divider px-4 py-3", className)}>
       <div className="flex gap-3">
-        {authorHref ? <Link href={authorHref}>{avatar}</Link> : avatar}
+        {avatar}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1 text-sm">
             {authorHref ? <Link href={authorHref}>{nameAndHandle}</Link> : nameAndHandle}
