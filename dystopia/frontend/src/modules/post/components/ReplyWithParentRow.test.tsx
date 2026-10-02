@@ -51,7 +51,7 @@ describe("ReplyWithParentRow", () => {
       <ReplyWithParentRow comment={baseComment} parentPost={null} />
     );
 
-    expect(html).toContain(`<a href="/u/coco_u"`);
+    expect(html).toMatch(/<a[^>]*href="\/u\/coco_u"/);
   });
 
   it("does not link the reply author when there is no username", () => {

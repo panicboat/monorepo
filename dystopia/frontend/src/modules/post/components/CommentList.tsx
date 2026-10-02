@@ -49,12 +49,13 @@ export function CommentList({ postId }: CommentListProps) {
             src={c.author?.imageUrl || undefined}
             fallback={(c.author?.name || "?").slice(0, 1)}
             size="sm"
+            href={authorHref}
           />
         );
         return (
           <div key={c.id}>
             <article className="flex gap-3 border-b border-divider px-4 py-3">
-              {authorHref ? <Link href={authorHref}>{avatar}</Link> : avatar}
+              {avatar}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 text-sm">
                   {authorHref ? (

@@ -49,7 +49,7 @@ describe("ReplyList", () => {
 
     const html = renderToStaticMarkup(<ReplyList postId="post-1" commentId="comment-1" />);
 
-    expect(html).toContain(`<a href="/u/coco_u"`);
+    expect(html).toMatch(/<a[^>]*href="\/u\/coco_u"/);
   });
 
   it("does not link the reply author when there is no username", () => {

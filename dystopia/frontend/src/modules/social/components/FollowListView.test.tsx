@@ -65,4 +65,14 @@ describe("FollowListView", () => {
     expect(html).toContain("りん");
     expect(html).not.toContain("ゆな");
   });
+
+  it("links each profile's avatar and name to their profile page", () => {
+    hookMocks.useFollowList.mockReturnValue(following);
+    hookMocks.useFollowerList.mockReturnValue(followers);
+
+    const html = renderToStaticMarkup(<FollowListView accountId="account-1" />);
+
+    const matches = html.match(/<a[^>]*href="\/u\/yuna"/g) ?? [];
+    expect(matches.length).toBe(2);
+  });
 });

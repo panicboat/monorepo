@@ -44,11 +44,12 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
             src={r.author?.imageUrl || undefined}
             fallback={(r.author?.name || "?").slice(0, 1)}
             size="sm"
+            href={authorHref}
           />
         );
         return (
           <article key={r.id} className="flex gap-3 border-b border-divider py-3 pl-12 pr-4">
-            {authorHref ? <Link href={authorHref}>{avatar}</Link> : avatar}
+            {avatar}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1 text-sm">
                 {authorHref ? (

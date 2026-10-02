@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export interface AvatarProps {
@@ -10,6 +11,7 @@ export interface AvatarProps {
   fallback: string;
   size?: "sm" | "md" | "lg";
   className?: string;
+  href?: string;
 }
 
 const sizeMap = {
@@ -18,8 +20,8 @@ const sizeMap = {
   lg: "h-14 w-14 text-base",
 };
 
-export function Avatar({ src, alt, fallback, size = "md", className }: AvatarProps) {
-  return (
+export function Avatar({ src, alt, fallback, size = "md", className, href }: AvatarProps) {
+  const avatar = (
     <AvatarPrimitive.Root
       className={cn(
         "relative inline-flex shrink-0 overflow-hidden rounded-full bg-surface",
@@ -36,5 +38,13 @@ export function Avatar({ src, alt, fallback, size = "md", className }: AvatarPro
         {fallback}
       </AvatarPrimitive.Fallback>
     </AvatarPrimitive.Root>
+  );
+
+  if (!href) return avatar;
+
+  return (
+    <Link href={href} aria-hidden="true" tabIndex={-1}>
+      {avatar}
+    </Link>
   );
 }
