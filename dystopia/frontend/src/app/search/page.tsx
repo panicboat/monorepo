@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,19 +101,22 @@ export default function SearchPage() {
           {!users.loading && users.profiles.length === 0 && (
             <p className="px-4 py-6 text-text-secondary">該当するユーザーがいません</p>
           )}
-          {users.profiles.map((p) => (
-            <div
-              key={p.accountId}
-              className="flex items-center gap-3 border-b border-border px-4 py-3"
-            >
-              <Avatar src={p.avatarUrl || undefined} fallback={p.displayName.slice(0, 1) || "?"} size="md" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-bold text-text-primary">{p.displayName}</p>
-                <p className="truncate text-sm text-text-secondary">@{p.username}</p>
+          {users.profiles.map((p) => {
+            const href = `/u/${encodeURIComponent(p.username)}`;
+            return (
+              <div
+                key={p.accountId}
+                className="flex items-center gap-3 border-b border-border px-4 py-3"
+              >
+                <Avatar src={p.avatarUrl || undefined} fallback={p.displayName.slice(0, 1) || "?"} size="md" href={href} />
+                <Link href={href} className="min-w-0 flex-1">
+                  <p className="truncate font-bold text-text-primary">{p.displayName}</p>
+                  <p className="truncate text-sm text-text-secondary">@{p.username}</p>
+                </Link>
+                <FollowButton targetAccountId={p.accountId} />
               </div>
-              <FollowButton targetAccountId={p.accountId} />
-            </div>
-          ))}
+            );
+          })}
           {users.hasMore && (
             <div className="flex justify-center px-4 py-6">
               <Button variant="secondary" size="md" onClick={() => users.loadMore()} disabled={users.loading}>
