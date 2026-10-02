@@ -196,9 +196,13 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
           />
           <p className="pt-2 font-bold text-text-primary">{profile?.displayName || "—"}</p>
           <p className="text-sm text-text-secondary">@{profile?.username || "—"}</p>
-          <p className="pt-1 text-xs text-text-secondary">
-            <strong className="text-text-primary">{followingCount}</strong> フォロー中{" "}
-            <strong className="text-text-primary">{followersCount}</strong> フォロワー
+          <p className="flex gap-3 pt-1 text-xs text-text-secondary">
+            <Link href={profile?.username ? `/u/${profile.username}/following` : "/profile"} onClick={onClose} className="hover:underline">
+              <strong className="text-text-primary">{followingCount}</strong> フォロー中
+            </Link>
+            <Link href={profile?.username ? `/u/${profile.username}/followers` : "/profile"} onClick={onClose} className="hover:underline">
+              <strong className="text-text-primary">{followersCount}</strong> フォロワー
+            </Link>
           </p>
         </div>
 
