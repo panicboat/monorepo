@@ -22,6 +22,7 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
       src={comment.author?.imageUrl || undefined}
       fallback={(comment.author?.name || "?").slice(0, 1)}
       size="sm"
+      href={authorHref}
     />
   );
   return (
@@ -52,7 +53,7 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
         </div>
       )}
       <div className="flex gap-3">
-        {authorHref ? <Link href={authorHref}>{avatar}</Link> : avatar}
+        {avatar}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1 text-sm">
             {authorHref ? (
