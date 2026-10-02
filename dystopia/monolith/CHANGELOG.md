@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.0](https://github.com/panicboat/monorepo/compare/monolith-v0.8.0...monolith-v0.9.0) (2026-10-02)
+
+
+### Features
+
+* **dystopia:** implement [@username](https://github.com/username) mentions in posts, comments, and replies ([#1348](https://github.com/panicboat/monorepo/issues/1348)) ([6895572](https://github.com/panicboat/monorepo/commit/6895572f1fbdb57c9a7189cb9bb3581af36be535))
+
+
+### Bug Fixes
+
+* **dystopia:** feed and ranking errors, local dev sign-in ([#1380](https://github.com/panicboat/monorepo/issues/1380)) ([7e68c92](https://github.com/panicboat/monorepo/commit/7e68c9221bd7ccf1e5b85c137215ad1867aee4f7))
+* **dystopia:** gate message button by role-based follow requirement ([#1301](https://github.com/panicboat/monorepo/issues/1301)) ([68f1563](https://github.com/panicboat/monorepo/commit/68f1563fede3044976a07e17b65682a5debc554b))
+
 ## [0.8.0](https://github.com/panicboat/monorepo/compare/monolith-v0.7.1...monolith-v0.8.0) (2026-09-29)
 
 
