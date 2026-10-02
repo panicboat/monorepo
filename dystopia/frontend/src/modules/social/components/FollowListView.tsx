@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, type TabItem } from "@/components/ui/tab";
@@ -16,13 +17,19 @@ const TABS: TabItem[] = [
 ];
 
 function ProfileRow({ profile }: { profile: SocialAccountView }) {
+  const href = `/u/${encodeURIComponent(profile.username)}`;
   return (
     <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-      <Avatar src={profile.avatarUrl || undefined} fallback={profile.displayName.slice(0, 1) || "?"} size="md" />
-      <div className="min-w-0 flex-1">
+      <Avatar
+        src={profile.avatarUrl || undefined}
+        fallback={profile.displayName.slice(0, 1) || "?"}
+        size="md"
+        href={href}
+      />
+      <Link href={href} className="min-w-0 flex-1">
         <p className="truncate font-bold text-text-primary">{profile.displayName}</p>
         <p className="truncate text-sm text-text-secondary">@{profile.username}</p>
-      </div>
+      </Link>
       <FollowButton targetAccountId={profile.accountId} />
     </div>
   );
