@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.11.0](https://github.com/panicboat/monorepo/compare/frontend-v0.10.0...frontend-v0.11.0) (2026-10-02)
+
+
+### Features
+
+* **dystopia/frontend:** open a lightbox when a post image is clicked ([#1366](https://github.com/panicboat/monorepo/issues/1366)) ([29e1e84](https://github.com/panicboat/monorepo/commit/29e1e845dd7b945ba23e52c18a58b4740ad953e5))
+* **dystopia:** implement [@username](https://github.com/username) mentions in posts, comments, and replies ([#1348](https://github.com/panicboat/monorepo/issues/1348)) ([6895572](https://github.com/panicboat/monorepo/commit/6895572f1fbdb57c9a7189cb9bb3581af36be535))
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** link follow counts in the mobile drawer menu ([#1382](https://github.com/panicboat/monorepo/issues/1382)) ([fbb0794](https://github.com/panicboat/monorepo/commit/fbb0794310fec1b3be3a6e8437cbec7fbb0a23e1))
+* **dystopia/frontend:** link profile avatars and names consistently ([#1381](https://github.com/panicboat/monorepo/issues/1381)) ([5abd0f6](https://github.com/panicboat/monorepo/commit/5abd0f6e7e673d77f873467715780aa4a678516d))
+* **dystopia/frontend:** render post composer modal via Radix Dialog portal ([#1346](https://github.com/panicboat/monorepo/issues/1346)) ([06b8f2e](https://github.com/panicboat/monorepo/commit/06b8f2e8578d3915fe688b6673e562c220c165ca))
+* **dystopia/frontend:** update dependency @aws-sdk/client-cognito-identity-provider to ^3.1141.0 ([#1324](https://github.com/panicboat/monorepo/issues/1324)) ([51a320b](https://github.com/panicboat/monorepo/commit/51a320b8ecfa2b1ded6f16f181c575b7811b946c))
+* **dystopia/frontend:** update dependency @aws-sdk/client-cognito-identity-provider to ^3.1142.0 ([#1363](https://github.com/panicboat/monorepo/issues/1363)) ([0c08bac](https://github.com/panicboat/monorepo/commit/0c08bac6f0434229311687fe84d7d6c09d8752ec))
+* **dystopia/frontend:** update dependency @aws-sdk/client-cognito-identity-provider to ^3.1143.0 ([#1378](https://github.com/panicboat/monorepo/issues/1378)) ([49a79d0](https://github.com/panicboat/monorepo/commit/49a79d0940b2965453e5f240f02d236375975ee7))
+* **dystopia/frontend:** update dependency @bufbuild/buf to v1.73.0 ([#1325](https://github.com/panicboat/monorepo/issues/1325)) ([4610bf1](https://github.com/panicboat/monorepo/commit/4610bf1a06c2d3e897601cff4733895ad9b06a52))
+* **dystopia/frontend:** update dependency @bufbuild/protobuf to ^2.15.0 ([#1326](https://github.com/panicboat/monorepo/issues/1326)) ([4f39da0](https://github.com/panicboat/monorepo/commit/4f39da01f96a01ba0631d05b06da5099139ebece))
+* **dystopia/frontend:** update dependency @bufbuild/protobuf to ^2.16.0 ([#1364](https://github.com/panicboat/monorepo/issues/1364)) ([b9c2cf9](https://github.com/panicboat/monorepo/commit/b9c2cf93124ec428be19a2a683283d0d270a5c48))
+* **dystopia/frontend:** update dependency @connectrpc/connect to ^2.2.0 ([#1327](https://github.com/panicboat/monorepo/issues/1327)) ([af692dc](https://github.com/panicboat/monorepo/commit/af692dcaccaf4c50caf2419c820d9179b6d1dc87))
+* **dystopia/frontend:** update dependency @connectrpc/connect-node to ^2.2.0 ([#1328](https://github.com/panicboat/monorepo/issues/1328)) ([6e300c6](https://github.com/panicboat/monorepo/commit/6e300c698bf5d537ccdcd4862d0c8a9b5715bf05))
+* **dystopia/frontend:** update dependency @opentelemetry/auto-instrumentations-node to ^0.80.0 ([#1329](https://github.com/panicboat/monorepo/issues/1329)) ([9caaa7d](https://github.com/panicboat/monorepo/commit/9caaa7d3c2119f4c897cef8f25a38565f79985cd))
+* **dystopia/frontend:** update dependency @opentelemetry/exporter-trace-otlp-grpc to ^0.222.0 ([#1330](https://github.com/panicboat/monorepo/issues/1330)) ([84fd926](https://github.com/panicboat/monorepo/commit/84fd926d83949cebf7fd5990300735637834a9a3))
+* **dystopia/frontend:** update dependency @opentelemetry/sdk-node to ^0.222.0 ([#1331](https://github.com/panicboat/monorepo/issues/1331)) ([037ae96](https://github.com/panicboat/monorepo/commit/037ae9621d9c40e1da6145652d99c8726841c53b))
+* **dystopia/frontend:** update dependency lucide-react to ^1.48.0 ([#1332](https://github.com/panicboat/monorepo/issues/1332)) ([9b9bc7e](https://github.com/panicboat/monorepo/commit/9b9bc7e449cf6550e80321040deb52816c66cbe0))
+* **dystopia/frontend:** update dependency motion to ^13.4.6 ([#1351](https://github.com/panicboat/monorepo/issues/1351)) ([1949674](https://github.com/panicboat/monorepo/commit/19496745ea0d8a615f20bfc3071bae8f6265e08c))
+* **dystopia/frontend:** update dependency motion to ^13.4.6 ([#1374](https://github.com/panicboat/monorepo/issues/1374)) ([b34af9c](https://github.com/panicboat/monorepo/commit/b34af9c2b416fec3fa87d21c21b2b352dcb95ebb))
+* **dystopia/frontend:** update dependency motion to v13 ([#1342](https://github.com/panicboat/monorepo/issues/1342)) ([75d77b2](https://github.com/panicboat/monorepo/commit/75d77b249119c6d3c34532a6cf35bffffd44b40e))
+* **dystopia/frontend:** update dependency next to v16.3.7 ([#1352](https://github.com/panicboat/monorepo/issues/1352)) ([a73b6d8](https://github.com/panicboat/monorepo/commit/a73b6d8e01d9c5d1396dfaa894eec9cce3b97d3a))
+* **dystopia/frontend:** update dependency react to v19.3.0 ([#1333](https://github.com/panicboat/monorepo/issues/1333)) ([9c952ec](https://github.com/panicboat/monorepo/commit/9c952ece81e085c3affb42c0894384aabdea6d97))
+* **dystopia/frontend:** update dependency react-dom to v19.3.0 ([#1334](https://github.com/panicboat/monorepo/issues/1334)) ([0782462](https://github.com/panicboat/monorepo/commit/078246230f8e09f578d71bd5e5314348cb891d9a))
+* **dystopia/frontend:** update dependency tailwind-merge to ^3.7.0 ([#1335](https://github.com/panicboat/monorepo/issues/1335)) ([480e34d](https://github.com/panicboat/monorepo/commit/480e34ded55a47e2bef131f342a12d89bb44790c))
+* **dystopia:** feed and ranking errors, local dev sign-in ([#1380](https://github.com/panicboat/monorepo/issues/1380)) ([7e68c92](https://github.com/panicboat/monorepo/commit/7e68c9221bd7ccf1e5b85c137215ad1867aee4f7))
+* **dystopia:** gate message button by role-based follow requirement ([#1301](https://github.com/panicboat/monorepo/issues/1301)) ([68f1563](https://github.com/panicboat/monorepo/commit/68f1563fede3044976a07e17b65682a5debc554b))
+
 ## [0.10.0](https://github.com/panicboat/monorepo/compare/frontend-v0.9.1...frontend-v0.10.0) (2026-09-29)
 
 
