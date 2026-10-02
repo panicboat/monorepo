@@ -36,8 +36,12 @@ function dispatchPointer(
   );
 }
 
+const profileMocks = vi.hoisted(() => ({
+  useProfile: vi.fn(),
+}));
+
 vi.mock("@/modules/profile/hooks", () => ({
-  useProfile: () => ({ profile: null }),
+  useProfile: profileMocks.useProfile,
 }));
 
 vi.mock("@/modules/social", () => ({
@@ -74,6 +78,7 @@ const { Drawer } = await import("./Drawer");
 describe("Drawer", () => {
   it("has no standalone oshi menu entry", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    profileMocks.useProfile.mockReturnValue({ profile: null });
 
     const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
 
@@ -82,6 +87,7 @@ describe("Drawer", () => {
 
   it("links to my karte when the viewer has karte access", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
+    profileMocks.useProfile.mockReturnValue({ profile: null });
 
     const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
 
@@ -90,15 +96,39 @@ describe("Drawer", () => {
 
   it("hides the karte item when the viewer has no karte access", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    profileMocks.useProfile.mockReturnValue({ profile: null });
 
     const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
 
     expect(html).not.toContain("/karte/my");
   });
 
+  it("links the follow counts to the viewer's following and followers pages", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    profileMocks.useProfile.mockReturnValue({
+      profile: { username: "alice", accountId: "acc-1", displayName: "Alice", avatarUrl: null },
+    });
+
+    const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
+
+    expect(html).toContain('href="/u/alice/following"');
+    expect(html).toContain('href="/u/alice/followers"');
+  });
+
+  it("falls back the follow count links to /profile while the viewer's profile is still loading", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    profileMocks.useProfile.mockReturnValue({ profile: null });
+
+    const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
+
+    expect(html).not.toContain("/u/undefined");
+    expect(html).toContain('href="/profile"');
+  });
+
   describe("edge-to-anywhere swipe to open", () => {
     function renderClosedDrawer() {
       karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+      profileMocks.useProfile.mockReturnValue({ profile: null });
       stubMobileViewport();
 
       const container = document.createElement("div");
