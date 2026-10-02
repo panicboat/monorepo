@@ -49,6 +49,7 @@ export default function HomePage() {
   const lastFetchFingerprint = useRef<string>("");
   useEffect(() => {
     if (!isPostTab) return;
+    if (filter === "area" && !prefecture) return;
     const fingerprint = `${filter}::${prefecture ?? ""}`;
     if (lastFetchFingerprint.current === fingerprint) return;
     lastFetchFingerprint.current = fingerprint;

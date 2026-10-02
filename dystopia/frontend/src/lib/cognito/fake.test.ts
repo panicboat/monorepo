@@ -1,3 +1,4 @@
+import { decodeJwt } from "jose";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createFakeAdapter, _resetFakePool, FAKE_CONFIRMATION_CODE } from "./fake";
 
@@ -16,6 +17,14 @@ describe("createFakeAdapter", () => {
 
     expect(tokens.accessToken).toMatch(/^eyJ/);
     expect(tokens.refreshToken).toMatch(/^fake-refresh:/);
+  });
+
+  it("signs in a seeded account with the account id from the monolith seeds as its sub", async () => {
+    const adapter = createFakeAdapter();
+
+    const tokens = await adapter.initiateAuth("+819000000101", "password");
+
+    expect(decodeJwt(tokens.accessToken).sub).toBe("11111111-1111-4111-8111-111111111111");
   });
 
   it("rejects authentication for an unconfirmed user", async () => {
