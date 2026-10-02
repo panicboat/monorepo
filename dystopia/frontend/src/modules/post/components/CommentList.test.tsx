@@ -49,7 +49,7 @@ describe("CommentList", () => {
 
     const html = renderToStaticMarkup(<CommentList postId="post-1" />);
 
-    expect(html).toContain(`<a href="/u/coco_u"`);
+    expect(html).toMatch(/<a[^>]*href="\/u\/coco_u"/);
   });
 
   it("does not link the comment author when there is no username", () => {

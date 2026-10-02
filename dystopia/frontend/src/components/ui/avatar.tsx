@@ -42,5 +42,9 @@ export function Avatar({ src, alt, fallback, size = "md", className, href }: Ava
 
   if (!href) return avatar;
 
-  return <Link href={href}>{avatar}</Link>;
+  return (
+    <Link href={href} aria-hidden="true" tabIndex={-1}>
+      {avatar}
+    </Link>
+  );
 }
