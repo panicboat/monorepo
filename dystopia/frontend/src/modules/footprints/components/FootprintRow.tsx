@@ -11,13 +11,16 @@ export interface FootprintRowProps {
 
 export function FootprintRow({ footprint }: FootprintRowProps) {
   const { visitor, lastVisitedAt, isUnread, visitCount } = footprint;
-  const href = visitor.username ? `/u/${encodeURIComponent(visitor.username)}` : "#";
+  const href = visitor.username ? `/u/${encodeURIComponent(visitor.username)}` : undefined;
+  const nameAndHandle = (
+    <>
+      <p className="truncate font-bold text-text-primary">{visitor.displayName || "—"}</p>
+      <p className="truncate text-sm text-text-secondary">@{visitor.username || "—"}</p>
+    </>
+  );
 
   return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 border-b border-divider px-4 py-3 hover:bg-bg-surface/50"
-    >
+    <div className="flex items-center gap-3 border-b border-divider px-4 py-3 hover:bg-bg-surface/50">
       {isUnread && (
         <span aria-hidden="true" className="-ml-2 h-12 w-0.5 rounded-full bg-gradient-brand" />
       )}
@@ -25,11 +28,15 @@ export function FootprintRow({ footprint }: FootprintRowProps) {
         src={visitor.avatarUrl || undefined}
         fallback={(visitor.displayName || "?").slice(0, 1)}
         size="md"
+        href={href}
       />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-bold text-text-primary">{visitor.displayName || "—"}</p>
-        <p className="truncate text-sm text-text-secondary">@{visitor.username || "—"}</p>
-      </div>
+      {href ? (
+        <Link href={href} className="min-w-0 flex-1">
+          {nameAndHandle}
+        </Link>
+      ) : (
+        <div className="min-w-0 flex-1">{nameAndHandle}</div>
+      )}
       <div className="flex flex-col items-end gap-0.5">
         <span className="text-xs text-text-muted">
           {lastVisitedAt ? formatTimeAgo(lastVisitedAt) : ""}
@@ -38,6 +45,6 @@ export function FootprintRow({ footprint }: FootprintRowProps) {
           <span className="text-xs text-text-secondary">{visitCount}回訪問</span>
         )}
       </div>
-    </Link>
+    </div>
   );
 }
