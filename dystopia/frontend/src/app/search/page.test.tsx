@@ -73,7 +73,8 @@ describe("SearchPage", () => {
     const input = container.querySelector('input[aria-label="検索"]') as HTMLInputElement;
     await typeQuery(input, "yuna");
 
-    expect(container.innerHTML).toContain(`<a href="/u/yuna"`);
+    const matches = container.innerHTML.match(/<a[^>]*href="\/u\/yuna"/g) ?? [];
+    expect(matches.length).toBe(2);
 
     await act(async () => {
       root.unmount();

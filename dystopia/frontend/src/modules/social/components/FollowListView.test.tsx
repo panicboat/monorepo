@@ -72,6 +72,7 @@ describe("FollowListView", () => {
 
     const html = renderToStaticMarkup(<FollowListView accountId="account-1" />);
 
-    expect(html).toContain(`<a href="/u/yuna"`);
+    const matches = html.match(/<a[^>]*href="\/u\/yuna"/g) ?? [];
+    expect(matches.length).toBe(2);
   });
 });
