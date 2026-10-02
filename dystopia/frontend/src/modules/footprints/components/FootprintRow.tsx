@@ -20,7 +20,7 @@ export function FootprintRow({ footprint }: FootprintRowProps) {
   );
 
   return (
-    <div className="flex items-center gap-3 border-b border-divider px-4 py-3 hover:bg-bg-surface/50">
+    <div className="flex items-center gap-3 border-b border-divider px-4 py-3">
       {isUnread && (
         <span aria-hidden="true" className="-ml-2 h-12 w-0.5 rounded-full bg-gradient-brand" />
       )}
@@ -31,7 +31,7 @@ export function FootprintRow({ footprint }: FootprintRowProps) {
         href={href}
       />
       {href ? (
-        <Link href={href} className="min-w-0 flex-1">
+        <Link href={href} className="min-w-0 flex-1 hover:bg-bg-surface/50">
           {nameAndHandle}
         </Link>
       ) : (
