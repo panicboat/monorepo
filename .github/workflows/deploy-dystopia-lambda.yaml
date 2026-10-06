@@ -18,11 +18,6 @@ on:
       - '!dystopia/lambda/**/tests/**'
   workflow_dispatch: {}
 
-permissions:
-  id-token: write
-  contents: read
-  pull-requests: write
-
 concurrency:
   group: deploy-dystopia-lambda-${{ github.event.pull_request.number || 'main' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -31,6 +26,10 @@ jobs:
   plan:
     name: 'Plan'
     if: github.event_name == 'pull_request'
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
     uses: ./.github/workflows/reusable--terragrunt-executor.yaml
     with:
       service-name: lambda
@@ -48,6 +47,9 @@ jobs:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 90
+    permissions:
+      id-token: write
+      contents: read
     env:
       AWS_REGION: ap-northeast-1
       TF_INPUT: 'false'
@@ -76,7 +78,7 @@ jobs:
       # Apply the repository first because a Lambda function cannot be created while its image is missing.
       - name: Apply ECR repository
         working-directory: ${{ env.TERRAGRUNT_DIRECTORY }}
-        run: terragrunt apply -auto-approve -input=false -no-color -target=aws_ecr_repository.app
+        run: terragrunt apply -auto-approve -input=false -no-color -lock-timeout=5m -target=aws_ecr_repository.app
 
       - name: Log in to ECR
         id: ecr
@@ -106,21 +108,25 @@ jobs:
 
       - name: Apply infrastructure
         working-directory: ${{ env.TERRAGRUNT_DIRECTORY }}
-        run: terragrunt apply -auto-approve -input=false -no-color
+        run: terragrunt apply -auto-approve -input=false -no-color -lock-timeout=5m
 
+      # Disable CLI retries because a retried invocation would start a second migration while the first is still running.
       - name: Run migrations
         env:
           IMAGE_URI: ${{ steps.ecr.outputs.image }}:${{ github.sha }}
+          AWS_MAX_ATTEMPTS: '1'
         run: |
           set -euo pipefail
           aws lambda update-function-code --function-name "$TASK_FUNCTION" --image-uri "$IMAGE_URI" --query LastUpdateStatus --output text
           aws lambda wait function-updated-v2 --function-name "$TASK_FUNCTION"
           aws lambda invoke --function-name "$TASK_FUNCTION" \
-            --cli-binary-format raw-in-base64-out --cli-read-timeout 900 \
+            --cli-binary-format raw-in-base64-out --cli-read-timeout 960 \
             --payload '{"task":"migrate"}' "$RUNNER_TEMP/migrate-output.json" > "$RUNNER_TEMP/migrate-invoke.json"
           cat "$RUNNER_TEMP/migrate-output.json"
           echo
-          if jq -e 'has("FunctionError")' "$RUNNER_TEMP/migrate-invoke.json" > /dev/null; then
+          # Require the task server's own success report because a missing error flag alone does not prove the migration ran.
+          if jq -e 'has("FunctionError")' "$RUNNER_TEMP/migrate-invoke.json" > /dev/null \
+            || ! jq -e '.task == "migrate" and .exitCode == 0' "$RUNNER_TEMP/migrate-output.json" > /dev/null; then
             echo "::error::Migration failed; the application function was not updated."
             exit 1
           fi
@@ -132,3 +138,19 @@ jobs:
           set -euo pipefail
           aws lambda update-function-code --function-name "$APP_FUNCTION" --image-uri "$IMAGE_URI" --query LastUpdateStatus --output text
           aws lambda wait function-updated-v2 --function-name "$APP_FUNCTION"
+
+      # Ask the function URL directly because DNS and CloudFront propagation would add delay unrelated to the image.
+      - name: Verify application
+        run: |
+          set -euo pipefail
+          function_url="$(aws lambda get-function-url-config --function-name "$APP_FUNCTION" --query FunctionUrl --output text)"
+          for attempt in 1 2 3 4 5; do
+            status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$function_url" || true)"
+            echo "attempt ${attempt}: HTTP ${status}"
+            if [ "$status" -ge 200 ] && [ "$status" -lt 400 ]; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::The application function did not answer after the update."
+          exit 1
