@@ -2,7 +2,7 @@
 
 ## What
 
-EKS に戻すまでの間、dystopia を AWS Lambda で動かすための構成。frontend（Next.js）と monolith（gRPC）を 1 つのコンテナイメージに同居させ、CloudFront と Lambda Function URL の後ろで動かす。
+dystopia を AWS Lambda で動かすための構成。常時稼働のクラスタを持たずに固定費を抑えるため、frontend（Next.js）と monolith（gRPC）を 1 つのコンテナイメージに同居させ、CloudFront と Lambda Function URL の後ろで動かす。
 
 ```
 Browser → CloudFront → Lambda Function URL → Lambda Web Adapter → Next.js :3000
@@ -40,8 +40,9 @@ main への push で `.github/workflows/deploy-dystopia-lambda.yaml` が次の�
 3. 全体を apply する
 4. task 用関数を新しいイメージに更新し、migration を実行する
 5. アプリ用関数を新しいイメージに更新する
+6. アプリ用関数の Function URL に問い合わせ、応答がなければ失敗にする
 
-migration が失敗すると 5 は実行されない。migration はアプリより先に反映されるため、破壊的なスキーマ変更は 2 回のデプロイに分ける。
+migration が失敗すると 5 は実行されない。成否は invoke のエラー有無に加えて、応答の `task` と `exitCode` で判定する。migration はアプリより先に反映されるため、破壊的なスキーマ変更は 2 回のデプロイに分ける。
 
 関数が動かすイメージは workflow が決める。Terraform は関数の作成時に `latest` を使い、以後は `image_uri` を変更しない。
 
@@ -82,7 +83,8 @@ bash dystopia/lambda/image/tests/image_test.sh
 
 ## Teardown
 
-- Cognito user pool は削除保護が有効なので、destroy の前に `deletion_protection` を `INACTIVE` にして apply する
+- Cognito user pool と RDS は削除保護が有効なので、destroy の前に user pool の `deletion_protection` を `INACTIVE`、RDS の `deletion_protection` を `false` にして apply する
+- ECR リポジトリはイメージが残っていると削除できず、media バケットはオブジェクトが残っていると削除できない。destroy の前に空にする
 - Lambda は VPC 内のネットワークインターフェースを実行ロールの権限で片付ける。destroy では関数の直後にロールも消えるため、インターフェースが `available` のまま残って security group と subnet の削除が止まることがある。その場合は次のコマンドで削除する
 
 ```bash

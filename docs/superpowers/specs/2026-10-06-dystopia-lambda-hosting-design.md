@@ -136,7 +136,7 @@ dystopia/
   deploy-dystopia-lambda.yaml
 ```
 
-イメージ関連を `image/` に一段下げるのは、`dystopia/lambda/Dockerfile` に置くと `workflow-config.yaml` の規約 `dystopia/{service}` がコンテナビルド対象と見なすためである。現在は環境が空で規約は発火しないが、再有効化されても影響を受けない配置にする。
+イメージ関連を `image/` に一段下げるのは、`dystopia/lambda/Dockerfile` に置くと `workflow-config.yaml` の規約 `dystopia/{service}` がコンテナビルド対象と見なすためである。現在は環境が空で規約は発火しないが、再有効化されても影響を受けない配置にする。一方 `dystopia/lambda/aws/production` は同じ規約の terragrunt stack には一致するため、環境を再有効化すると規約ベースのデプロイ経路もこの stack を plan / apply の対象にする。
 
 ## Infrastructure
 
@@ -145,7 +145,7 @@ dystopia/
 | ファイル | 内容 |
 |---|---|
 | `network.tf` | VPC、subnet、egress-only internet gateway、route table、S3 gateway endpoint、security group |
-| `rds.tf` | RDS（PostgreSQL 18.6、db.t4g.micro、非公開）、subnet group、VPC 内の private zone と DNS 別名 |
+| `rds.tf` | RDS（PostgreSQL 18.6、db.t4g.micro、非公開、削除保護あり）、subnet group、VPC 内の private zone と DNS 別名 |
 | `cognito.tf` | user pool、BFF 用 client、SMS 用ロール |
 | `s3.tf` | media バケット、public access block、CORS |
 | `lambda.tf` | ECR リポジトリ、アプリ用関数、task 用関数、Function URL、実行ロール、ロググループ |
@@ -155,7 +155,8 @@ dystopia/
 
 - Cognito・RDS・S3 のリソース名は `dystopia/infrastructure` と同じにする（user pool `dystopia-production`、バケット `dystopia-media-production`、DB 識別子 `monolith-production`）。アプリ設定と CORS を変えずに済む。2 つの stack を同時に apply することはできない
 - Route53 は management account（559744160976）の `dystopia.city` ゾーンを `route53-zone-access` ロール経由で更新する。apex の A / AAAA は削除済みの ELB を指しているため `allow_overwrite` で置き換える
-- `DATABASE_URL` は `random_password` と DNS 別名から組み立てて Lambda の環境変数に入れる。パスワードは state に既にあり、露出は増えない。URL にエスケープなしで埋め込むため、パスワードは英数字のみにする
+- `DATABASE_URL` は `random_password` と DNS 別名から組み立てて Lambda の環境変数に入れる。パスワードは state に加えて、関数の設定を読める利用者（`lambda:GetFunctionConfiguration` とコンソール）からも見える。RDS は private で VPC の外からは接続できないため受け入れる。URL にエスケープなしで埋め込むため、パスワードは英数字のみにする
+- RDS は `deletion_protection` を有効にする。この stack は main への push のたびに無人で apply されるため、置換を伴う変更が入っても DB が消えないようにする
 - 関数の `image_uri` は `ignore_changes` にし、作成時のみ `latest` タグを使う
 - ECR は直近 10 イメージを残すライフサイクルを付ける
 - ロググループの保持は 30 日
@@ -255,9 +256,13 @@ HTTP サーバーを挟むのは、イメージに Lambda Web Adapter が入っ�
 3. 全体を terragrunt apply する。関数を新規に作る場合は手順 2 で push した `latest` が使われる
 4. task 用関数のイメージを更新し、更新完了を待って `{"task":"migrate"}` で呼ぶ。失敗したら停止する
 5. アプリ用関数のイメージを更新し、更新完了を待つ
+6. アプリ用関数の Function URL に問い合わせ、2xx か 3xx が返らなければ失敗にする
 
 - 手順 1 は初回のためにある。関数は作成時にイメージを必要とし、ECR が空だと作れない。2 回目以降は差分なしで通過する
+- migration の成否は、invoke のエラー有無に加えて応答本文の `task` と `exitCode` で判定する。エラーの印が無いだけでは migration が実行された証拠にならない
 - migration はアプリの更新より先に走るので、古いコードが新しいスキーマに一時的に触れる。破壊的なスキーマ変更は 2 回のデプロイに分ける
+- 手順 6 は DNS と CloudFront を経由せず Function URL を直接叩く。起動できないイメージが成功扱いで残るのを防ぐ
+- terragrunt apply は state の lock を 5 分まで待つ。PR の plan と重なっても即失敗しない
 - `concurrency` でデプロイを直列にする
 - 認証は既存の GitHub OIDC ロール（`github-oidc-auth-production-github-actions-plan-role` / `-apply-role`）
 
