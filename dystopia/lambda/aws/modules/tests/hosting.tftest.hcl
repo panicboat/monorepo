@@ -95,6 +95,11 @@ run "database_is_private" {
   }
 
   assert {
+    condition     = aws_db_instance.monolith.deletion_protection == true
+    error_message = "RDS must be protected from deletion because every push to main applies this stack unattended."
+  }
+
+  assert {
     condition     = random_password.monolith_db_master.special == false
     error_message = "The database password must stay alphanumeric because DATABASE_URL embeds it without escaping."
   }

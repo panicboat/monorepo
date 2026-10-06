@@ -31,8 +31,8 @@ assert_count aws_egress_only_internet_gateway 1
 assert_count aws_vpc_security_group_ingress_rule 1
 assert_count aws_lambda_function_url 1
 
-if ! grep -Fq 'ignore_changes = [image_uri]' lambda.tf; then
-  echo 'Lambda functions must ignore image_uri so the deploy workflow owns the running image.' >&2
+if [ "$(grep -Fc 'ignore_changes = [image_uri]' lambda.tf)" != 2 ]; then
+  echo 'Both Lambda functions must ignore image_uri so the deploy workflow owns the running image.' >&2
   exit 1
 fi
 

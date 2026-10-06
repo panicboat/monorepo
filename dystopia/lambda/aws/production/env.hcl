@@ -3,7 +3,6 @@ locals {
 
   domain_name = "dystopia.city"
 
-  # Role assumed to manage the public hosted zone in the management account.
   route53_zone_role_arn = "arn:aws:iam::559744160976:role/route53-zone-access"
 
   additional_tags = {

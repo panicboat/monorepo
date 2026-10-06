@@ -34,7 +34,7 @@ resource "aws_db_instance" "monolith" {
   maintenance_window      = "sun:17:00-sun:18:00"
 
   skip_final_snapshot = true
-  deletion_protection = false
+  deletion_protection = true
 }
 
 resource "aws_route53_zone" "dystopia_local" {
