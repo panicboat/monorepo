@@ -155,8 +155,8 @@ dystopia/
 
 - Cognito・RDS・S3 のリソース名は `dystopia/infrastructure` と同じにする（user pool `dystopia-production`、バケット `dystopia-media-production`、DB 識別子 `monolith-production`）。アプリ設定と CORS を変えずに済む。2 つの stack を同時に apply することはできない
 - Route53 は management account（559744160976）の `dystopia.city` ゾーンを `route53-zone-access` ロール経由で更新する。apex の A / AAAA は削除済みの ELB を指しているため `allow_overwrite` で置き換える
-- `DATABASE_URL` は `random_password` と DNS 別名から組み立てて Lambda の環境変数に入れる。パスワードは state に既にあり、露出は増えない
-- 関数の `image_uri` は `ignore_changes` にし、作成時のみ変数 `image_tag` の値を使う
+- `DATABASE_URL` は `random_password` と DNS 別名から組み立てて Lambda の環境変数に入れる。パスワードは state に既にあり、露出は増えない。URL にエスケープなしで埋め込むため、パスワードは英数字のみにする
+- 関数の `image_uri` は `ignore_changes` にし、作成時のみ `latest` タグを使う
 - ECR は直近 10 イメージを残すライフサイクルを付ける
 - ロググループの保持は 30 日
 
@@ -168,7 +168,7 @@ dystopia/
 | アーキテクチャ | arm64 | arm64 |
 | メモリ | 1024 MB | 1024 MB |
 | タイムアウト | 30 秒 | 900 秒 |
-| 起動コマンド | イメージの既定（`start`） | `node /app/lambda/task.mjs` |
+| 起動コマンド | イメージの既定（`start`） | `node /app/lambda/task.mjs`（作業ディレクトリは `/app/monolith`） |
 | 入口 | Function URL | なし（IAM での invoke のみ） |
 
 両方とも同じ subnet と security group に置き、実行ロールを共有する。実行ロールには VPC 接続、Cognito の `AdminDeleteUser`、media バケットへの読み書きを付ける。
@@ -225,17 +225,19 @@ task 用関数は `DATABASE_URL`、`STRIPE_*` / `BILLING_*`、`MEDIA_BUCKET_*`�
 
 ### task.mjs
 
-Node の標準ライブラリだけで書いた HTTP サーバー。Lambda Web Adapter が `aws lambda invoke` のイベントを `POST /events` として渡す。
+Node の標準ライブラリだけで書いた HTTP サーバー。Lambda Web Adapter が `aws lambda invoke` のイベントを HTTP の POST として渡す。渡し先のパスには依存せず、POST であればどのパスでも受け付ける。
 
 | リクエスト本文 | 動作 |
 |---|---|
-| `{"task":"migrate"}` | `/app/monolith` で `bundle exec hanami db migrate --no-dump` を実行 |
-| `{"task":"psql","sql":"<SQL>"}` | `psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "<SQL>"` を実行 |
+| `{"task":"migrate"}` | `bundle exec hanami db migrate --no-dump` を実行 |
+| `{"task":"psql","sql":"<SQL>"}` | `psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -P pager=off -c "<SQL>"` を実行 |
 
 - コマンドは引数配列で起動し、シェルを経由しない
-- 成功時は 200 と標準出力・標準エラーを返す。コマンドが非ゼロで終了した場合と未知の `task` は 500 を返す
+- 応答は JSON の `{"task", "exitCode", "output"}`。成功時は 200、コマンドが非ゼロで終了した場合・未知の `task`・JSON として読めない本文は 500 を返す
+- `output` は標準出力と標準エラーの末尾 256 KiB まで。同期呼び出しの応答は 6 MB を超えられない
+- ログには `task` と `exitCode` だけを出す。クエリ結果に個人情報が含まれうるため `output` は出さない
 - `AWS_LWA_ERROR_STATUS_CODES=500-599` により、500 は invoke の失敗として呼び出し側に伝わる
-- `GET /` は 200 を返し、readiness check に使う
+- POST 以外のリクエストには 200 を返し、readiness check に使う
 
 HTTP サーバーを挟むのは、イメージに Lambda Web Adapter が入っている以上、同じイメージの関数では adapter が必ず起動してイベントの受け口を握るためである。adapter を避けるには別イメージか Ruby 用のランタイム gem が要る。
 
@@ -249,8 +251,8 @@ HTTP サーバーを挟むのは、イメージに Lambda Web Adapter が入っ�
 | main への push で `dystopia/frontend/**`、`dystopia/monolith/**`、`dystopia/lambda/**` を変更 | 下の 5 段階（apply ロール） |
 
 1. ECR リポジトリだけを対象に terragrunt apply する
-2. 統合イメージをビルドし、commit の SHA をタグにして ECR に push する
-3. `image_tag` に SHA を渡して全体を terragrunt apply する
+2. 統合イメージをビルドし、commit の SHA と `latest` をタグにして ECR に push する
+3. 全体を terragrunt apply する。関数を新規に作る場合は手順 2 で push した `latest` が使われる
 4. task 用関数のイメージを更新し、更新完了を待って `{"task":"migrate"}` で呼ぶ。失敗したら停止する
 5. アプリ用関数のイメージを更新し、更新完了を待つ
 
@@ -279,7 +281,7 @@ HTTP サーバーを挟むのは、イメージに Lambda Web Adapter が入っ�
 | リスク | 対応 |
 |---|---|
 | Cognito への IPv6 接続が実環境で通らない | 未検証。本番確認の最初に確かめ、通らなければ NAT instance を追加する |
-| Lambda Web Adapter が invoke のイベントを `POST /events` で渡す挙動 | README の環境変数表でしか確認していない。実装の早い段階で task 用関数を単体で検証する |
+| Lambda Web Adapter が invoke のイベントを HTTP の POST で渡す挙動 | README の環境変数表でしか確認していない。`task.mjs` をパスに依存しない実装にし、初回デプロイの migration で実際の挙動を確認する |
 | 同時実行 10 の上限で 429 が出る | 上限の引き上げを申請する（本 spec の範囲外） |
 | デプロイ直後の最初の訪問者に並列の cold start が起きる | CloudFront のキャッシュが空の間だけ発生する。受け入れる |
 | stack を destroy する際にネットワークインターフェースが残る | 実行ロールは関数の削除後、インターフェースの解放を確認してから消す。手順を `README.md` に書く |
