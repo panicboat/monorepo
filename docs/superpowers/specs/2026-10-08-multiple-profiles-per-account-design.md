@@ -87,7 +87,7 @@ httpOnly cookie に持たせない理由: cookie は全タブ共有のため、�
 
 role は account に置くが、各 slice が手にしているのは行為者である profile の id になる。現在は行為者の id でそのまま `identity.accounts` を引いて role を判定している箇所が identity slice の外に 18 箇所あり、id の種類が変わるとすべて該当なしになる。
 
-profile の id から role を得る入口を profile slice に 1 つ設け(単体と一括の両方)、他 slice はそれを使う。profile slice は `profiles.account_id` を介して `identity.accounts.role` を引く。`ProfileRepository` の `role_filter` も同じ結合に改める。
+profile の id から role を得る入口を profile slice に 1 つ設け、他 slice はそれを使う。profile slice は `profiles.account_id` を介して `identity.accounts.role` を引く。`ProfileRepository` の `role_filter` は既に `profiles.account_id` と `identity.accounts` を結合しており、`account_id` が PK でなくなっても式は変わらない。
 
 他 slice が行為者の id で `Identity::Slice["repositories.account_repository"]` を直接引くことはやめる。account の id を扱う billing は従来どおり直接引く。
 
@@ -242,7 +242,7 @@ frontend は上 2 つを受けたら `ListMyProfiles` を取り直し、人格�
 
 ## Delivery
 
-`gh stack` で 1 本の stack に積み、`gh stack merge --squash` でまとめて merge する。途中の段では「カラム名は `account_id` だが値は profile の id」という状態を通るが、まとめて merge するため `main` には現れない。plan は段ごとに 1 本書く。
+`gh stack` で 1 本の stack に積み、`gh stack merge --squash` でまとめて merge する。途中の段では「カラム名は `account_id` だが値は profile の id」という状態を通るが、まとめて merge するため `main` には現れない。plan は段ごとに書く。段 1 は量が多いため monolith(P1a)と frontend(P1b)の 2 本に分け、同じブランチに積む。
 
 意味の切替は最下段の 1 箇所で済ませる。段 1 で `current_user_id` が profile の id を返すようになり、全 slice が同じ入口から同じ種類の id を受け取るので、slice 間で id の種類が食い違う期間が無い。
 
