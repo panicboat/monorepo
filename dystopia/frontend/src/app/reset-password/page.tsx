@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
+import { PasswordRequirements } from "@/modules/identity/components/PasswordRequirements";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -143,7 +144,9 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 autoComplete="new-password"
+                aria-describedby="reset-password-requirements"
               />
+              <PasswordRequirements id="reset-password-requirements" />
             </div>
 
             {error && (
