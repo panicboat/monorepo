@@ -1,0 +1,23 @@
+#!/bin/bash
+set -uo pipefail
+
+(cd /app/monolith && exec ./bin/grpc) &
+grpc_pid=$!
+
+(cd /app/frontend && exec node server.js) &
+next_pid=$!
+
+trap 'kill -TERM "$grpc_pid" "$next_pid" 2>/dev/null' TERM INT
+
+# Stop the whole environment when either process exits because a half-running pair keeps accepting requests it cannot serve.
+wait -n "$grpc_pid" "$next_pid"
+status=$?
+
+kill -TERM "$grpc_pid" "$next_pid" 2>/dev/null
+wait
+
+# Report failure even for a clean exit because neither process is expected to stop on its own.
+if [ "$status" -eq 0 ]; then
+  status=1
+fi
+exit "$status"

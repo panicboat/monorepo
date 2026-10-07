@@ -1,0 +1,97 @@
+locals {
+  user_pool_name = "dystopia-${var.environment}"
+}
+
+resource "aws_iam_role" "cognito_sms" {
+  name = "${local.user_pool_name}-cognito-sms"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "cognito-idp.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+      Condition = {
+        StringEquals = {
+          "sts:ExternalId" = "${local.user_pool_name}-cognito-sms"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "cognito_sms" {
+  name = "${local.user_pool_name}-cognito-sms"
+  role = aws_iam_role.cognito_sms.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["sns:Publish"]
+      Resource = "*"
+    }]
+  })
+}
+
+resource "aws_cognito_user_pool" "this" {
+  name = local.user_pool_name
+
+  alias_attributes = ["phone_number"]
+
+  auto_verified_attributes = ["phone_number"]
+
+  password_policy {
+    minimum_length                   = 12
+    require_lowercase                = true
+    require_numbers                  = true
+    require_symbols                  = true
+    require_uppercase                = true
+    temporary_password_validity_days = 7
+  }
+
+  schema {
+    name                = "phone_number"
+    attribute_data_type = "String"
+    required            = true
+    mutable             = true
+  }
+
+  sms_verification_message = "【dystopia.city】認証コードは {####} です。本人以外に共有しないでください。"
+
+  mfa_configuration = "OFF"
+
+  user_pool_add_ons {
+    advanced_security_mode = "OFF"
+  }
+
+  sms_configuration {
+    external_id    = "${local.user_pool_name}-cognito-sms"
+    sns_caller_arn = aws_iam_role.cognito_sms.arn
+    sns_region     = var.aws_region
+  }
+
+  deletion_protection = "ACTIVE"
+}
+
+resource "aws_cognito_user_pool_client" "bff" {
+  name         = "${local.user_pool_name}-bff"
+  user_pool_id = aws_cognito_user_pool.this.id
+
+  generate_secret               = false
+  prevent_user_existence_errors = "ENABLED"
+
+  explicit_auth_flows = [
+    "ALLOW_USER_PASSWORD_AUTH",
+    "ALLOW_REFRESH_TOKEN_AUTH"
+  ]
+
+  access_token_validity  = 1
+  id_token_validity      = 1
+  refresh_token_validity = 30
+  token_validity_units {
+    access_token  = "hours"
+    id_token      = "hours"
+    refresh_token = "days"
+  }
+}

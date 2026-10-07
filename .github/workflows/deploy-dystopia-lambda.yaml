@@ -1,0 +1,156 @@
+name: 'Deploy - dystopia Lambda'
+
+on:
+  pull_request:
+    paths:
+      - 'dystopia/lambda/aws/**'
+      - '.github/workflows/deploy-dystopia-lambda.yaml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'dystopia/frontend/**'
+      - 'dystopia/monolith/**'
+      - 'dystopia/lambda/**'
+      - '.github/workflows/deploy-dystopia-lambda.yaml'
+      - '!dystopia/**/*.md'
+      - '!dystopia/**/kubernetes/**'
+      - '!dystopia/lambda/**/tests/**'
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-dystopia-lambda-${{ github.event.pull_request.number || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  plan:
+    name: 'Plan'
+    if: github.event_name == 'pull_request'
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    uses: ./.github/workflows/reusable--terragrunt-executor.yaml
+    with:
+      service-name: lambda
+      environment: production
+      action-type: plan
+      iam-role: arn:aws:iam::337169763788:role/github-oidc-auth-production-github-actions-plan-role
+      aws-region: ap-northeast-1
+      working-directory: dystopia/lambda/aws/production
+      app-id: ${{ vars.APP_ID }}
+    secrets:
+      private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+  deploy:
+    name: 'Deploy'
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 90
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_REGION: ap-northeast-1
+      TF_INPUT: 'false'
+      TERRAGRUNT_DIRECTORY: dystopia/lambda/aws/production
+      ECR_REPOSITORY: dystopia
+      APP_FUNCTION: dystopia-production
+      TASK_FUNCTION: dystopia-production-task
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b # v6.2.1
+        with:
+          role-to-assume: arn:aws:iam::337169763788:role/github-oidc-auth-production-github-actions-apply-role
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-DystopiaLambda-Deploy
+          role-duration-seconds: 7200
+          audience: sts.amazonaws.com
+
+      - name: Setup aqua
+        uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e # v4.0.5
+        with:
+          aqua_version: v2.48.2
+
+      # Apply the repository first because a Lambda function cannot be created while its image is missing.
+      - name: Apply ECR repository
+        working-directory: ${{ env.TERRAGRUNT_DIRECTORY }}
+        run: terragrunt apply -auto-approve -input=false -no-color -lock-timeout=5m -target=aws_ecr_repository.app
+
+      - name: Log in to ECR
+        id: ecr
+        run: |
+          set -euo pipefail
+          registry="$(aws sts get-caller-identity --query Account --output text).dkr.ecr.${AWS_REGION}.amazonaws.com"
+          aws ecr get-login-password | docker login --username AWS --password-stdin "$registry"
+          echo "image=${registry}/${ECR_REPOSITORY}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      # Disable provenance because Lambda rejects the multi-manifest image index that attestations produce.
+      - name: Build and push image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: dystopia
+          file: dystopia/lambda/image/Dockerfile
+          platforms: linux/arm64
+          provenance: false
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.image }}:${{ github.sha }}
+            ${{ steps.ecr.outputs.image }}:latest
+          cache-from: type=gha,scope=dystopia-lambda
+          cache-to: type=gha,mode=max,scope=dystopia-lambda
+
+      - name: Apply infrastructure
+        working-directory: ${{ env.TERRAGRUNT_DIRECTORY }}
+        run: terragrunt apply -auto-approve -input=false -no-color -lock-timeout=5m
+
+      # Disable CLI retries because a retried invocation would start a second migration while the first is still running.
+      - name: Run migrations
+        env:
+          IMAGE_URI: ${{ steps.ecr.outputs.image }}:${{ github.sha }}
+          AWS_MAX_ATTEMPTS: '1'
+        run: |
+          set -euo pipefail
+          aws lambda update-function-code --function-name "$TASK_FUNCTION" --image-uri "$IMAGE_URI" --query LastUpdateStatus --output text
+          aws lambda wait function-updated-v2 --function-name "$TASK_FUNCTION"
+          aws lambda invoke --function-name "$TASK_FUNCTION" \
+            --cli-binary-format raw-in-base64-out --cli-read-timeout 960 \
+            --payload '{"task":"migrate"}' "$RUNNER_TEMP/migrate-output.json" > "$RUNNER_TEMP/migrate-invoke.json"
+          cat "$RUNNER_TEMP/migrate-output.json"
+          echo
+          # Require the task server's own success report because a missing error flag alone does not prove the migration ran.
+          if jq -e 'has("FunctionError")' "$RUNNER_TEMP/migrate-invoke.json" > /dev/null \
+            || ! jq -e '.task == "migrate" and .exitCode == 0' "$RUNNER_TEMP/migrate-output.json" > /dev/null; then
+            echo "::error::Migration failed; the application function was not updated."
+            exit 1
+          fi
+
+      - name: Update application
+        env:
+          IMAGE_URI: ${{ steps.ecr.outputs.image }}:${{ github.sha }}
+        run: |
+          set -euo pipefail
+          aws lambda update-function-code --function-name "$APP_FUNCTION" --image-uri "$IMAGE_URI" --query LastUpdateStatus --output text
+          aws lambda wait function-updated-v2 --function-name "$APP_FUNCTION"
+
+      # Ask the function URL directly because DNS and CloudFront propagation would add delay unrelated to the image.
+      - name: Verify application
+        run: |
+          set -euo pipefail
+          function_url="$(aws lambda get-function-url-config --function-name "$APP_FUNCTION" --query FunctionUrl --output text)"
+          for attempt in 1 2 3 4 5; do
+            status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$function_url" || true)"
+            echo "attempt ${attempt}: HTTP ${status}"
+            if [ "$status" -ge 200 ] && [ "$status" -lt 400 ]; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::The application function did not answer after the update."
+          exit 1
