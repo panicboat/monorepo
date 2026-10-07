@@ -17,3 +17,5 @@ aws/
 CHANGELOG.md
 README.md
 README-ja.md
+release-please-config.json
+release-please-manifest.json

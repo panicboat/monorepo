@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "separate-pull-requests": true,
+  "label": "autorelease: pending,release: monolith",
+  "packages": {
+    "dystopia/monolith": {
+      "release-type": "simple",
+      "component": "monolith",
+      "include-component-in-tag": true
+    }
+  }
+}

@@ -64,7 +64,7 @@ flowchart LR
   - `container` → `dystopia/{service}` または `system-components/{service}` をビルドして GHCR に push。
   - `terragrunt` → `dystopia/{service}/aws/{environment}` または `system-components/{service}/infrastructure/aws/{environment}` で `terragrunt plan/apply` を実行する。`dystopia/infrastructure` は frontend/monolith 共有の AWS リソース（Cognito、RDS）を持つ stack であり、実際にデプロイされるサービスではない。
   - `kubernetes` → PR に kustomize diff をコメントする。apply は Flux に委譲しており、CI 側で `kubectl apply` は実行しない。
-- **Versioning**: release-please（`release-please-config.json`）がサービスごとに release PR を起票する。release PR のマージで `<service>-vX.Y.Z` の semver tag が打たれ、その tag 起点でコンテナビルドが走る。
+- **Versioning**: release-please（各サービスの `release-please-config.json`）がサービスごとに release PR を起票する。release PR のマージで `<service>-vX.Y.Z` の semver tag が打たれ、その tag 起点でコンテナビルドが走る。
 - **GitOps**: `clusters/<environment>/dystopia/<service>/image-policy.yaml` が GHCR から最新の semver tag を選び、`ImageUpdateAutomation` がその tag を overlay にコミットバックする。クラスタで稼働しているものとリポジトリにコミットされているものを一致させるための構成。
 
 ### Related Repositories

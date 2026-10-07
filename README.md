@@ -64,7 +64,7 @@ flowchart LR
   - `container` → builds `dystopia/{service}` or `system-components/{service}` and pushes to GHCR.
   - `terragrunt` → runs `terragrunt plan/apply` under `dystopia/{service}/aws/{environment}` or `system-components/{service}/infrastructure/aws/{environment}`. `dystopia/infrastructure` is a shared stack for frontend/monolith's AWS resources (Cognito, RDS) — not a real deployable service.
   - `kubernetes` → posts a kustomize diff on the PR. Apply is delegated to Flux; CI does not run `kubectl apply`.
-- **Versioning**: release-please (`release-please-config.json`) raises per-service release PRs. Merging the release PR creates a `<service>-vX.Y.Z` tag, which triggers the container build under that tag.
+- **Versioning**: release-please (each service's `release-please-config.json`) raises per-service release PRs. Merging the release PR creates a `<service>-vX.Y.Z` tag, which triggers the container build under that tag.
 - **GitOps**: `clusters/<environment>/dystopia/<service>/image-policy.yaml` selects the latest matching semver from GHCR. `ImageUpdateAutomation` commits the new tag back into the overlay, keeping what runs in the cluster identical to what is checked in.
 
 ### Related Repositories
