@@ -55,4 +55,31 @@ describe("POST /api/identity/confirm-forgot-password", () => {
     expect(res.status).toBe(400);
     await expect(res.json()).resolves.toEqual({ error: "認証コードが正しくありません" });
   });
+
+  it("returns 400 with the requirements when Cognito rejects the new password", async () => {
+    const error = new Error("Password does not conform to policy: Password not long enough");
+    error.name = "InvalidPasswordException";
+    cognitoMocks.adapter = {
+      ...createFakeAdapter(),
+      confirmForgotPassword: async () => {
+        throw error;
+      },
+    };
+    const req = new NextRequest("http://localhost/api/identity/confirm-forgot-password", {
+      method: "POST",
+      body: JSON.stringify({
+        phoneNumber: "+15551234567",
+        code: FAKE_CONFIRMATION_CODE,
+        newPassword: "short",
+      }),
+    });
+
+    const res = await POST(req);
+
+    expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toEqual({
+      error:
+        "パスワードが条件を満たしていません。12 文字以上で、大文字・小文字・数字・記号をそれぞれ 1 文字以上含めてください。",
+    });
+  });
 });

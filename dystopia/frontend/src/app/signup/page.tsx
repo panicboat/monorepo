@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { RoleSelector } from "@/modules/identity/components/RoleSelector";
+import { PasswordRequirements } from "@/modules/identity/components/PasswordRequirements";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -91,7 +92,9 @@ export default function SignupPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="new-password"
+                aria-describedby="signup-password-requirements"
               />
+              <PasswordRequirements id="signup-password-requirements" />
             </div>
 
             <RoleSelector value={role} onChange={setRole} />

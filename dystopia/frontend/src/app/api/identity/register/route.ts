@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api-helpers";
 import { cognito } from "@/lib/cognito/adapter";
+import { INVALID_PASSWORD_MESSAGE, isInvalidPasswordError } from "@/lib/cognito/password";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +18,9 @@ export async function POST(req: NextRequest) {
           { error: "この電話番号は既に登録されています" },
           { status: 409 },
         );
+      }
+      if (isInvalidPasswordError(err)) {
+        return NextResponse.json({ error: INVALID_PASSWORD_MESSAGE }, { status: 400 });
       }
       throw err;
     }

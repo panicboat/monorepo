@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api-helpers";
 import { cognito } from "@/lib/cognito/adapter";
+import { INVALID_PASSWORD_MESSAGE, isInvalidPasswordError } from "@/lib/cognito/password";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,6 +19,9 @@ export async function POST(req: NextRequest) {
         (err.name === "CodeMismatchException" || err.name === "ExpiredCodeException")
       ) {
         return NextResponse.json({ error: "認証コードが正しくありません" }, { status: 400 });
+      }
+      if (isInvalidPasswordError(err)) {
+        return NextResponse.json({ error: INVALID_PASSWORD_MESSAGE }, { status: 400 });
       }
       throw err;
     }
