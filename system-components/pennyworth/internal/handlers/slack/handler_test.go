@@ -710,3 +710,156 @@ func TestHandleMention_MalformedCreateIssuePayload(t *testing.T) {
 		t.Errorf("expected an action-parse-failure message when the payload fails to decode, got: %+v", final)
 	}
 }
+
+func TestHandleMention_PermalinkInMention(t *testing.T) {
+	var repliesQueries []string
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/conversations.replies":
+			repliesQueries = append(repliesQueries, r.URL.Query().Get("channel")+"/"+r.URL.Query().Get("ts"))
+			json.NewEncoder(w).Encode(map[string]any{
+				"ok": true,
+				"messages": []slackclient.Message{
+					{Text: "deploy failed at 10:00", User: "U2", Ts: "1700000000.123456"},
+				},
+			})
+		case "/chat.postMessage", "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		default:
+			t.Errorf("unexpected slack path: %s", r.URL.Path)
+		}
+	}))
+	defer slackServer.Close()
+
+	var gotAsk string
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req map[string]string
+		json.NewDecoder(r.Body).Decode(&req)
+		gotAsk = req["ask"]
+		json.NewEncoder(w).Encode(map[string]string{"analysis": "deploy was rolled back"})
+	}))
+	defer holmesServer.Close()
+
+	h := &Handler{
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+	}
+
+	h.handleMention(slackInnerEvent{
+		Type:    "app_mention",
+		Channel: "C123",
+		User:    "U1",
+		Text:    "<@BOT> what happened in <https://example.slack.com/archives/C999/p1700000000123456>?",
+		Ts:      "100.001",
+	})
+
+	if len(repliesQueries) != 1 || repliesQueries[0] != "C999/1700000000.123456" {
+		t.Fatalf("expected the linked thread C999/1700000000.123456 to be fetched once, got: %v", repliesQueries)
+	}
+	if !strings.Contains(gotAsk, "deploy failed at 10:00") {
+		t.Errorf("expected ask sent to HolmesGPT to include the linked message, got: %q", gotAsk)
+	}
+}
+
+func TestHandleMention_PermalinkInThreadHistory(t *testing.T) {
+	var repliesQueries []string
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/conversations.replies":
+			query := r.URL.Query().Get("channel") + "/" + r.URL.Query().Get("ts")
+			repliesQueries = append(repliesQueries, query)
+			messages := []slackclient.Message{
+				{Text: "context is in <https://example.slack.com/archives/C999/p1700000000123456>", User: "U1", Ts: "50"},
+			}
+			if query == "C999/1700000000.123456" {
+				messages = []slackclient.Message{{Text: "deploy failed at 10:00", User: "U2", Ts: "1700000000.123456"}}
+			}
+			json.NewEncoder(w).Encode(map[string]any{"ok": true, "messages": messages})
+		case "/chat.postMessage", "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		default:
+			t.Errorf("unexpected slack path: %s", r.URL.Path)
+		}
+	}))
+	defer slackServer.Close()
+
+	var gotAsk string
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req map[string]string
+		json.NewDecoder(r.Body).Decode(&req)
+		gotAsk = req["ask"]
+		json.NewEncoder(w).Encode(map[string]string{"analysis": "deploy was rolled back"})
+	}))
+	defer holmesServer.Close()
+
+	h := &Handler{
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+	}
+
+	h.handleMention(slackInnerEvent{
+		Type:     "app_mention",
+		Channel:  "C123",
+		User:     "U1",
+		Text:     "<@BOT> what happened there?",
+		Ts:       "60",
+		ThreadTs: "50",
+	})
+
+	want := []string{"C123/50", "C999/1700000000.123456"}
+	if len(repliesQueries) != 2 || repliesQueries[0] != want[0] || repliesQueries[1] != want[1] {
+		t.Fatalf("expected fetches %v, got: %v", want, repliesQueries)
+	}
+	if !strings.Contains(gotAsk, "deploy failed at 10:00") {
+		t.Errorf("expected ask sent to HolmesGPT to include the linked message, got: %q", gotAsk)
+	}
+}
+
+func TestHandleMention_PermalinkUnreadable(t *testing.T) {
+	var posted []map[string]string
+	slackServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/conversations.replies":
+			json.NewEncoder(w).Encode(map[string]any{"ok": false, "error": "not_in_channel"})
+		case "/chat.postMessage":
+			var body map[string]string
+			json.NewDecoder(r.Body).Decode(&body)
+			posted = append(posted, body)
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		case "/reactions.add":
+			json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		default:
+			t.Errorf("unexpected slack path: %s", r.URL.Path)
+		}
+	}))
+	defer slackServer.Close()
+
+	var gotAsk string
+	holmesServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req map[string]string
+		json.NewDecoder(r.Body).Decode(&req)
+		gotAsk = req["ask"]
+		json.NewEncoder(w).Encode(map[string]string{"analysis": "the bot is not in that channel"})
+	}))
+	defer holmesServer.Close()
+
+	h := &Handler{
+		HolmesGPT: holmesgptclient.New(holmesServer.URL, "test-model"),
+		Client:    &slackclient.Client{BotToken: "xoxb-test", BaseURL: slackServer.URL, HTTPClient: &http.Client{}},
+	}
+
+	h.handleMention(slackInnerEvent{
+		Type:    "app_mention",
+		Channel: "C123",
+		User:    "U1",
+		Text:    "<@BOT> what happened in <https://example.slack.com/archives/C999/p1700000000123456>?",
+		Ts:      "100.001",
+	})
+
+	if !strings.Contains(gotAsk, "not_in_channel") {
+		t.Errorf("expected ask sent to HolmesGPT to carry the Slack failure reason, got: %q", gotAsk)
+	}
+	if len(posted) != 1 || posted[0]["text"] != "the bot is not in that channel" {
+		t.Errorf("expected the investigation result to still be posted, got: %+v", posted)
+	}
+}
