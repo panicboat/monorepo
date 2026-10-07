@@ -154,6 +154,42 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
 
       expect(rows.map(&:id)).to eq([cast_profile.id])
     end
+
+    it "returns the remaining profiles on the next cursor page" do
+      profiles = 3.times.map do |index|
+        create_account_with_profile(created_at: Time.now - index)
+      end
+      first_page = repo.list_recent(limit: 2).first(2)
+      cursor = repo.send(:encode_cursor, {
+        created_at: first_page.last.created_at.iso8601,
+        id: first_page.last.id
+      })
+
+      second_page = repo.list_recent(limit: 2, cursor: cursor)
+
+      expect(second_page.map(&:id)).to contain_exactly(*(profiles - first_page.map(&:id)))
+      expect((first_page.map(&:id) & second_page.map(&:id))).to be_empty
+    end
+
+    it "returns the remaining search results on the next cursor page" do
+      profiles = 3.times.map do |index|
+        create_account_with_profile(
+          display_name: "Cursor query #{index}",
+          username: "cursor_query_#{index}",
+          created_at: Time.now - index
+        )
+      end
+      first_page = repo.search_by_query(query: "cursor_query", limit: 2).first(2)
+      cursor = repo.send(:encode_cursor, {
+        created_at: first_page.last.created_at.iso8601,
+        id: first_page.last.id
+      })
+
+      second_page = repo.search_by_query(query: "cursor_query", limit: 2, cursor: cursor)
+
+      expect(second_page.map(&:id)).to contain_exactly(*(profiles - first_page.map(&:id)))
+      expect((first_page.map(&:id) & second_page.map(&:id))).to be_empty
+    end
   end
 
   describe "#role_of" do

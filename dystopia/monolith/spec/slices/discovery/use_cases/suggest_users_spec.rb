@@ -68,4 +68,26 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
 
     expect(ids.index(newer)).to be < ids.index(older)
   end
+
+  it "encodes the last profile id and continues without repeating a profile" do
+    viewer = create_account_with_profile(role: 2)
+    candidates = 3.times.map do |index|
+      create_account_with_profile(
+        role: 1,
+        display_name: "Candidate #{index}",
+        username: "cursor_candidate_#{index}",
+        created_at: Time.utc(2026, 10, 1) + index
+      )
+    end
+
+    first_page = use_case.call(viewer_account_id: viewer, limit: 2)
+    last_profile = first_page[:profiles].last
+    decoded_cursor = use_case.send(:decode_cursor, first_page[:next_cursor])
+    second_page = use_case.call(viewer_account_id: viewer, limit: 2, cursor: first_page[:next_cursor])
+
+    expect(decoded_cursor[:id]).to eq(last_profile.id)
+    expect(decoded_cursor[:id]).not_to eq(last_profile.account_id)
+    expect((first_page[:profiles].map(&:id) & second_page[:profiles].map(&:id))).to be_empty
+    expect((first_page[:profiles].map(&:id) + second_page[:profiles].map(&:id)).sort).to eq(candidates.sort)
+  end
 end
