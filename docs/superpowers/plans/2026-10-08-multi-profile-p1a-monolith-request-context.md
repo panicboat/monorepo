@@ -2257,7 +2257,7 @@ profile slice の外で、profile を account の id で引いている箇所・
 - Modify(cast の参照): `slices/{footprints/grpc/footprints_handler,discovery/grpc/discovery_handler,social/grpc/block_handler,social/grpc/follow_handler,messaging/grpc/messaging_handler,notifications/grpc/notification_handler}.rb`
 - Modify(role の参照): `slices/post/adapters/account_adapter.rb`、`slices/discovery/use_cases/suggest_users.rb`、`slices/review/use_cases/create_entry.rb`、`slices/karte/use_cases/create_entry.rb`、`slices/karte/use_cases/authorize_cast_access.rb`、`slices/messaging/use_cases/authorize_message.rb`
 - Modify(その他): `slices/post/use_cases/extract_mentions.rb`、`slices/feed/use_cases/list_feed.rb`
-- Test: `spec/slices/{post,social,discovery,karte,review,messaging,notifications,footprints,feed}` 配下
+- Test: `spec/slices/{post,social,discovery,karte,review,messaging,notifications,footprints}` 配下(feed slice には spec が無く、Step 6 の変更は Task 9 の全体実行で検証する)
 
 すべて `dystopia/monolith` からの相対パス。
 
@@ -2625,7 +2625,7 @@ Expected: 出力なし。
 
 - [ ] **Step 8: 対象 slice の spec が通ることを確認する**
 
-Run: `HANAMI_ENV=test bundle exec rspec spec/slices/post spec/slices/social spec/slices/discovery spec/slices/karte spec/slices/review spec/slices/messaging spec/slices/notifications spec/slices/footprints spec/slices/feed 2>&1 | tail -15`
+Run: `HANAMI_ENV=test bundle exec rspec spec/slices/post spec/slices/social spec/slices/discovery spec/slices/karte spec/slices/review spec/slices/messaging spec/slices/notifications spec/slices/footprints 2>&1 | tail -15`
 Expected: Task 1 で記録した既存の失敗以外に失敗が無い。
 
 失敗が残る場合は、失敗した spec が上の規則 A〜C のどれに当たるかを確認して適用する。どの規則にも当たらない失敗は、原因を「X が Y を引き起こす。なぜなら Z」の形で特定してから直す。
