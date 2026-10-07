@@ -1,55 +1,137 @@
 # frozen_string_literal: true
 
-require "base64"
-require "json"
-require "openssl"
 require "spec_helper"
 require "lib/current"
 require "lib/interceptors/authentication_interceptor"
 
-RSpec.describe Interceptors::AuthenticationInterceptor do
+RSpec.describe Interceptors::AuthenticationInterceptor, type: :database do
   let(:interceptor) { described_class.new(request, error) }
   let(:request) { double(:request, metadata: metadata, context: {}) }
   let(:error) { double(:error) }
   let(:metadata) { {} }
+  let(:account_id) { create_account(role: 2) }
+
+  def permission_denied
+    raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(GRPC::Core::StatusCodes::PERMISSION_DENIED) }
+  end
 
   describe "#call" do
-    context "when x-user-id metadata is present" do
+    context "when x-user-id metadata is absent" do
+      it "leaves the account and the profile empty" do
+        interceptor.call do
+          expect(Current.account_id).to be_nil
+          expect(Current.profile_id).to be_nil
+        end
+      end
+    end
+
+    context "with an Authorization: Bearer header only" do
+      let(:metadata) { { "authorization" => "Bearer anything" } }
+
+      it "does not extract an account from Bearer" do
+        interceptor.call { expect(Current.account_id).to be_nil }
+      end
+    end
+
+    context "when x-user-id is present without x-profile-id" do
+      let(:metadata) { { "x-user-id" => account_id } }
+
+      it "resolves the only enabled profile of the account" do
+        profile_id = create_account_with_profile(account_id: account_id)
+
+        interceptor.call do
+          expect(Current.account_id).to eq(account_id)
+          expect(Current.profile_id).to eq(profile_id)
+        end
+      end
+
+      it "ignores disabled profiles when resolving the only enabled one" do
+        enabled = create_account_with_profile(account_id: account_id)
+        create_account_with_profile(account_id: account_id, disabled_at: Time.now)
+
+        interceptor.call { expect(Current.profile_id).to eq(enabled) }
+      end
+
+      it "leaves the profile empty when the account has several enabled profiles" do
+        create_account_with_profile(account_id: account_id)
+        create_account_with_profile(account_id: account_id)
+
+        interceptor.call do
+          expect(Current.account_id).to eq(account_id)
+          expect(Current.profile_id).to be_nil
+        end
+      end
+
+      it "leaves the profile empty when the account has no profile" do
+        interceptor.call { expect(Current.profile_id).to be_nil }
+      end
+    end
+
+    context "when x-user-id is not a UUID" do
       let(:metadata) { { "x-user-id" => "sub-1" } }
 
-      it "sets Current.user_id to the metadata value" do
-        interceptor.call { expect(Current.user_id).to eq("sub-1") }
-      end
-
-      it "sets current_user_id in the request context" do
-        interceptor.call {}
-        expect(request.context[:current_user_id]).to eq("sub-1")
+      it "keeps the account and resolves no profile" do
+        interceptor.call do
+          expect(Current.account_id).to eq("sub-1")
+          expect(Current.profile_id).to be_nil
+        end
       end
     end
 
-    context "when x-user-id metadata is absent" do
-      it "leaves Current.user_id nil" do
-        interceptor.call { expect(Current.user_id).to be_nil }
-      end
-    end
+    context "when x-profile-id is present" do
+      let(:metadata) { { "x-user-id" => account_id, "x-profile-id" => requested } }
+      let(:own_profile) { create_account_with_profile(account_id: account_id) }
 
-    context "with an Authorization: Bearer header" do
-      let(:private_key) { OpenSSL::PKey::RSA.new(2048) }
-      let(:metadata) { { "authorization" => "Bearer #{signed_token}" } }
+      context "and it is an enabled profile of the account" do
+        let(:requested) { own_profile }
 
-      around do |example|
-        original_private_key = ENV["JWT_PRIVATE_KEY"]
-        original_public_key = ENV["JWT_PUBLIC_KEY"]
-        ENV["JWT_PRIVATE_KEY"] = private_key.to_pem
-        ENV["JWT_PUBLIC_KEY"] = private_key.public_key.to_pem
-        example.run
-      ensure
-        restore_environment("JWT_PRIVATE_KEY", original_private_key)
-        restore_environment("JWT_PUBLIC_KEY", original_public_key)
+        it "uses the requested profile even when the account has several" do
+          create_account_with_profile(account_id: account_id)
+
+          interceptor.call { expect(Current.profile_id).to eq(own_profile) }
+        end
       end
 
-      it "does not extract a user id from Bearer" do
-        interceptor.call { expect(Current.user_id).to be_nil }
+      context "and it belongs to another account" do
+        let(:requested) { create_account_with_profile }
+
+        it "rejects the call" do
+          expect { interceptor.call {} }.to permission_denied
+        end
+      end
+
+      context "and it is disabled" do
+        let(:requested) { create_account_with_profile(account_id: account_id, disabled_at: Time.now) }
+
+        it "rejects the call" do
+          expect { interceptor.call {} }.to permission_denied
+        end
+      end
+
+      context "and it does not exist" do
+        let(:requested) { SecureRandom.uuid_v7 }
+
+        it "rejects the call" do
+          expect { interceptor.call {} }.to permission_denied
+        end
+      end
+
+      context "and it is not a UUID" do
+        let(:requested) { "'; DROP TABLE profiles; --" }
+
+        it "rejects the call without a database error" do
+          expect { interceptor.call {} }.to permission_denied
+        end
+      end
+
+      context "and it is an empty string" do
+        let(:requested) { "" }
+
+        it "falls back to the only enabled profile" do
+          own_profile
+
+          interceptor.call { expect(Current.profile_id).to eq(own_profile) }
+        end
       end
     end
 
@@ -59,23 +141,20 @@ RSpec.describe Interceptors::AuthenticationInterceptor do
 
     it "clears Current after the block" do
       interceptor.call {}
-      expect(Current.user_id).to be_nil
+
+      expect(Current.account_id).to be_nil
+      expect(Current.profile_id).to be_nil
       expect(Current.request_id).to be_nil
     end
-  end
 
-  private
+    context "when the call is rejected" do
+      let(:metadata) { { "x-user-id" => account_id, "x-profile-id" => SecureRandom.uuid_v7 } }
 
-  def signed_token
-    header = Base64.urlsafe_encode64(JSON.generate({ alg: "RS256", typ: "JWT" }), padding: false)
-    payload = Base64.urlsafe_encode64(JSON.generate({ sub: "legacy-sub" }), padding: false)
-    signing_input = [header, payload].join(".")
-    signature = private_key.sign(OpenSSL::Digest::SHA256.new, signing_input)
+      it "still clears Current" do
+        expect { interceptor.call {} }.to raise_error(GRPC::BadStatus)
 
-    [signing_input, Base64.urlsafe_encode64(signature, padding: false)].join(".")
-  end
-
-  def restore_environment(key, value)
-    value.nil? ? ENV.delete(key) : ENV[key] = value
+        expect(Current.account_id).to be_nil
+      end
+    end
   end
 end
