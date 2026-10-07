@@ -73,11 +73,13 @@ httpOnly cookie に持たせない理由: cookie は全タブ共有のため、�
 `AuthenticationInterceptor` の解決規則:
 
 1. `x-user-id` があれば `Current.account_id` に設定する。
-2. `x-profile-id` があれば、その profile が存在し、`account_id` が一致し、無効でないことを照合する。満たさなければ `PERMISSION_DENIED` で拒否する。満たせば `Current.profile_id` に設定する。
+2. `x-profile-id` があれば、その profile が存在し、`account_id` が一致し、無効でないことを照合する。満たせば `Current.profile_id` に設定する。満たさなければ `Current.profile_id` は空のままにし、「指定された profile は使えない」ことを記録する。このとき account の唯一の有効な profile へ倒さない。行為者を必要とする RPC はこの記録を見て `PERMISSION_DENIED` を返す。
 3. `x-profile-id` が無く、account の有効な profile が 1 つだけなら、それを `Current.profile_id` に設定する。
 4. `x-profile-id` が無く、有効な profile が 0 または 2 つ以上なら、`Current.profile_id` は空のままにする。行為者を必要とする RPC は `FAILED_PRECONDITION` を返す。
 
 規則 4 により、曖昧なときに既定の人格へ自動で倒さない。ヘッダの付け忘れは、誤った人格での実行ではなくエラーとして表面化する。
+
+規則 2 の拒否を interceptor の時点で返さないのは、回復経路を塞がないためである。使えなくなった profile の id を持ち続けているクライアント(別の account で再ログインした、他の端末で人格を無効化された)は、`ListMyProfiles` を取り直して人格を選び直す必要がある。interceptor が RPC の種類を問わず拒否すると、その `ListMyProfiles` も、課金も、退会も同じヘッダで拒否される。account を主体とする RPC は `x-profile-id` の内容にかかわらず通す。
 
 `Grpc::Authenticatable#current_user_id` は削除し、`current_account_id` と `current_profile_id` に分ける。89 箇所の呼び出しごとに、Ownership boundary を基準としてどちらを使うかを選び直す。
 
@@ -177,12 +179,14 @@ karte の記録はこの規則の対象外とする。記録そのものは targ
 
 | 状況 | gRPC status |
 |---|---|
-| `x-profile-id` が他人のもの、存在しない、または無効な人格 | `PERMISSION_DENIED` |
-| 行為者が必要な RPC で `Current.profile_id` が空 | `FAILED_PRECONDITION` |
+| 行為者が必要な RPC で、`x-profile-id` が他人のもの、存在しない、または無効な人格だった | `PERMISSION_DENIED`、理由コード `profile_not_permitted` |
+| 行為者が必要な RPC で、`x-profile-id` が無く `Current.profile_id` が空 | `FAILED_PRECONDITION`、理由コード `profile_required` |
 | 上限超過、有効な人格の削除、最後の有効な人格の無効化 | `FAILED_PRECONDITION`(メッセージで区別) |
 | username の重複・形式不正 | 既存の `Errors::ValidationError` |
 
 frontend は上 2 つを受けたら `ListMyProfiles` を取り直し、人格選択へ戻す。
+
+この 2 つは status だけでは他のエラーと区別できない。`FAILED_PRECONDITION` は DM の送信条件や人格数の上限でも返り、`PERMISSION_DENIED` は DM・karte・review の権限エラーでも返る。status で分岐すると、フォローしていない相手への DM で人格選択画面に飛んでしまう。そのため、この 2 つには gRPC の trailing metadata `error-reason` に理由コードを載せ、BFF はそれをレスポンスの `code` に写す。frontend は理由コードで分岐する。
 
 ## Evidence
 
@@ -203,6 +207,8 @@ frontend は上 2 つを受けたら `ListMyProfiles` を取り直し、人格�
 ## Schema changes
 
 既存行の整合は保たない。migration はスキーマ変更だけを行い、ローカルは seed で作り直す。
+
+行のある環境にこの stack を適用すると、約 30 の行為者カラムに古い account の id が残る。その行はどの profile の id とも一致しないため、著者不明の投稿として表示され、退会の purge でも消えない(purge は profile の id で消すため)。stack を merge する前に、適用先の database が空であることを確認する。空でなければ、行為者カラムを持つ表を空にするか database を作り直す。
 
 | table | 変更 |
 |---|---|

@@ -3071,4 +3071,8 @@ git add config/db/seeds.rb config/db/seeds && git commit -s -m "chore(dystopia/m
 - karte の通報(`karte.reports.reporter_account_id`)と記録の著者には profile の id が入る。段 2 で所有権を account に戻す。それまで退会の purge は karte の通報を消さない。
 - 各 slice のカラム名・引数名(`author_id`、`viewer_account_id` 等)は account を指す名前のままで、値は profile の id である。段 3〜7 で改名する。
 - `current_user_id` と `authenticate_user!` は名前が実態(profile を要求する)と合っていない。段 8 で `current_user_id` を削除する際に合わせて整理する。
+- karte の利用権(`karte.access`、account 単位)は profile の id で引かれている。現在は `GetMyAccess` が常に利用可を返すため、実害は `granted_at` が常に空になることだけである。利用権の判定を戻す前に、段 2 で account の id を渡すように直す。
+- `identity.accounts` に行が無い account でも profile を作れる。その場合は上限判定のための行ロックが効かず、同時リクエストで上限 1 を超えうる。P1b の onboarding で、account の行が無ければ作成を拒否するように直す。
+- アクセスログの `account_id` / `profile_id` は常に空になる。`bin/grpc` で `AccessLogInterceptor` が外側に登録されており、内側の `AuthenticationInterceptor` が `Current` を消した後にログを組み立てるためである。登録順はこの plan より前からのもので、変更前の `user_id` も同じ理由で常に空だった。
+- 退会の purge は、ある slice の削除が失敗しても profile と account の削除まで進む。失敗した slice の行は残り、account と profile の対応が消えるので再実行できない。この挙動はこの plan より前からのもので、段 8 で purge を profile 単位に作り替えるときに直す。
 - 無効な profile を他人から隠す処理は無い。段 1 の時点では無効化する手段が無いため、無効な profile は存在しない。段 8 で対応する。
