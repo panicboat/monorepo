@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { useAuthStore } from "@/stores/authStore";
 import { AppError, httpStatusToErrorCode } from "@/lib/errors";
 import { getDefaultMessage } from "@/lib/error-messages";
@@ -55,6 +56,7 @@ export function useApiMutation<TPayload = unknown, TResponse = unknown>(
           method,
           headers: {
             "Content-Type": "application/json",
+            ...profileRequestHeaders(),
           },
           body: JSON.stringify(mapPayload(payload)),
         });

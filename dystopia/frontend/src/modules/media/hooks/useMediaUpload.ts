@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { useAuthStore } from "@/stores/authStore";
 import type { UploadedMedia, MediaType, MediaUploadOptions } from "../types";
 import { getMediaTypeFromMime, toProtoMediaType } from "../lib/mappers";
@@ -28,6 +29,7 @@ export function useMediaUpload(): UseMediaUploadResult {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...profileRequestHeaders(),
       },
       body: JSON.stringify({
         mediaId: uploaded.mediaId,
@@ -65,6 +67,7 @@ export function useMediaUpload(): UseMediaUploadResult {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...profileRequestHeaders(),
           },
           body: JSON.stringify({
             filename: file.name,

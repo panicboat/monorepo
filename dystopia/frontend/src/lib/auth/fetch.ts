@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuthStore } from "@/stores/authStore";
+import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { AppError, httpStatusToErrorCode } from "@/lib/errors";
 import { getDefaultMessage } from "@/lib/error-messages";
 
@@ -25,7 +26,7 @@ export async function authFetch<T = unknown>(
     throw new AppError("UNAUTHORIZED", "ログインしてください", 401);
   }
 
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = { ...profileRequestHeaders() };
   if (body !== undefined) {
     headers["Content-Type"] = "application/json";
   }

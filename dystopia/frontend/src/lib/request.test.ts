@@ -71,6 +71,47 @@ describe("buildGrpcHeaders", () => {
     expect(headers.Authorization).toBeUndefined();
   });
 
+  it("forwards x-profile-id alongside a verified x-user-id", async () => {
+    const adapter = createFakeAdapter();
+    await adapter.signUp("+15551234567", "Passw0rd!Passw0rd!");
+    await adapter.confirmSignUp("+15551234567", FAKE_CONFIRMATION_CODE);
+    const tokens = await adapter.initiateAuth("+15551234567", "Passw0rd!Passw0rd!");
+    const req = new NextRequest("http://localhost/api/test", {
+      method: "POST",
+      headers: { "x-profile-id": "0199c0de-0000-7000-8000-0000000000aa" },
+    });
+    req.cookies.set(ACCESS_COOKIE, tokens.accessToken);
+
+    const headers = await buildGrpcHeaders(req);
+
+    expect(headers["x-profile-id"]).toBe("0199c0de-0000-7000-8000-0000000000aa");
+  });
+
+  it("omits x-profile-id when the request has none", async () => {
+    const adapter = createFakeAdapter();
+    await adapter.signUp("+15551234567", "Passw0rd!Passw0rd!");
+    await adapter.confirmSignUp("+15551234567", FAKE_CONFIRMATION_CODE);
+    const tokens = await adapter.initiateAuth("+15551234567", "Passw0rd!Passw0rd!");
+    const req = new NextRequest("http://localhost/api/test", { method: "POST" });
+    req.cookies.set(ACCESS_COOKIE, tokens.accessToken);
+
+    const headers = await buildGrpcHeaders(req);
+
+    expect(headers["x-profile-id"]).toBeUndefined();
+  });
+
+  it("does not forward x-profile-id without a verified access token", async () => {
+    const req = new NextRequest("http://localhost/api/test", {
+      method: "POST",
+      headers: { "x-profile-id": "0199c0de-0000-7000-8000-0000000000aa" },
+    });
+
+    const headers = await buildGrpcHeaders(req);
+
+    expect(headers["x-profile-id"]).toBeUndefined();
+    expect(headers["x-user-id"]).toBeUndefined();
+  });
+
   it("omits x-user-id when the access token is malformed", async () => {
     const req = new NextRequest("http://localhost/api/test", {
       method: "POST",

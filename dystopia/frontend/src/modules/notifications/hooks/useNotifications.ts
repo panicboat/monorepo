@@ -3,6 +3,7 @@
 import useSWRInfinite from "swr/infinite";
 import { useCallback } from "react";
 import { fetcher } from "@/lib/swr";
+import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedNotificationsResponse } from "../types";
 
@@ -28,7 +29,7 @@ export function useNotifications() {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
     const res = await fetch(`/api/notifications/mark-all-read`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -50,7 +51,7 @@ export function useNotifications() {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
     const res = await fetch(`/api/notifications/${id}/read`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

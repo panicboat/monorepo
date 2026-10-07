@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { fetcher } from "@/lib/swr";
+import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { useAuthStore } from "@/stores/authStore";
 import type { FollowRequestItem } from "../types";
 
@@ -33,7 +34,7 @@ export function useFollowRequests() {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
     const res = await fetch(`/api/social/follow/requests/${requesterAccountId}/approve`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -47,7 +48,7 @@ export function useFollowRequests() {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
     const res = await fetch(`/api/social/follow/requests/${requesterAccountId}/reject`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
