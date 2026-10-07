@@ -3075,4 +3075,9 @@ git add config/db/seeds.rb config/db/seeds && git commit -s -m "chore(dystopia/m
 - `identity.accounts` に行が無い account でも profile を作れる。その場合は上限判定のための行ロックが効かず、同時リクエストで上限 1 を超えうる。P1b の onboarding で、account の行が無ければ作成を拒否するように直す。
 - アクセスログの `account_id` / `profile_id` は常に空になる。`bin/grpc` で `AccessLogInterceptor` が外側に登録されており、内側の `AuthenticationInterceptor` が `Current` を消した後にログを組み立てるためである。登録順はこの plan より前からのもので、変更前の `user_id` も同じ理由で常に空だった。
 - 退会の purge は、ある slice の削除が失敗しても profile と account の削除まで進む。失敗した slice の行は残り、account と profile の対応が消えるので再実行できない。この挙動はこの plan より前からのもので、段 8 で purge を profile 単位に作り替えるときに直す。
+- 使えない `x-profile-id` を付けたリクエストは、認証を要求しない 5 つの読み取り RPC(`list_posts` / `get_post` / `get_like_status` / `list_comments` / `list_replies`)ではエラーにならず、未ログインと同じ結果を返す。クライアントは行為を伴う RPC を呼ぶまで拒否に気づけない。P1b で、ログイン直後に `ListMyProfiles` と照合して検出する。
+- `spec/slices/identity/use_cases/account/purge_wiring_spec.rb` は、第三者のスレッドが残ることを `account_b` で確認している。これは退会する人格の id が第三者の id より小さいときしか成り立たず、同一ミリ秒内に採番されると稀に失敗する。同じ spec に、2 要素の配列リテラルの長さを確かめるだけの検証が 1 行ある。次の plan の最初に直す。
+- `spec/lib/interceptors/authentication_interceptor_spec.rb` は、account があり `x-profile-id` が無い場合に `Current.profile_denied` が偽であることを確認していない。次の plan の最初に足す。
+- ユーザー検索・おすすめの cursor は `created_at` を秒精度で持つため、ページ末尾の行と同じ秒に作られた profile が次ページから漏れることがある。この plan より前からの挙動である。
+- media slice の handler(`get_upload_url` / `register_media` / `delete_media`)は認証を要求しない。この plan より前からの挙動である。
 - 無効な profile を他人から隠す処理は無い。段 1 の時点では無効化する手段が無いため、無効な profile は存在しない。段 8 で対応する。
