@@ -262,7 +262,9 @@ frontend は上 2 つを受けたら `ListMyProfiles` を取り直し、人格�
 | 6 | footprints / bookmarks / schedule / media の改名 |
 | 7 | review / discovery / feed の改名 |
 | 8 | ライフサイクルと可視判定(`DisableProfile` / `EnableProfile` / `DeleteProfile`、profile 単位の purge、退会時の非表示)、`current_user_id` の削除、proto の静的検査 |
-| 9 | frontend の切替・追加・無効化・有効化・削除の UI、切替時のキャッシュ消去 |
+| 9 | frontend の人格選択画面、切替・追加・無効化・有効化・削除の UI、切替時のキャッシュ消去 |
+
+段 1 の frontend は、有効な profile が 1 つの account までを扱う。有効な profile が複数あって選択が保存されていない場合に出す人格選択画面は、2 つ目の profile を作る UI と同じ段 9 で作る。それまでこの状態には UI から到達しない。
 
 段 3〜7 は挙動を変えない改名とする。各段の完了条件は、ローカルの rspec 全体と frontend の `tsc` / `vitest` が通ることである。
 
