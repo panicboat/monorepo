@@ -88,7 +88,7 @@ RSpec.describe Identity::Grpc::Handler do
 
   describe "#deactivate_account" do
     it "deactivates the current user's account" do
-      Current.user_id = "sub-1"
+      Current.account_id = "sub-1"
       expect(deactivate_account_uc).to receive(:call).with(sub: "sub-1")
 
       response = handler.deactivate_account

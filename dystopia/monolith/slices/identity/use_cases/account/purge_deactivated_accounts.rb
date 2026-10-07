@@ -57,17 +57,22 @@ module Identity
 
         private
 
-        def cascades
+        def actor_cascades
           [
             purge_notifications,
             purge_footprints,
             purge_bookmarks,
-            purge_karte,
             purge_messaging,
             purge_social,
             purge_post,
             purge_media,
-            purge_schedule,
+            purge_schedule
+          ]
+        end
+
+        def account_cascades
+          [
+            purge_karte,
             purge_profile
           ]
         end
@@ -113,7 +118,11 @@ module Identity
         end
 
         def purge_identity
-          @purge_identity ||= PurgeIdentity.new(account_repo: account_repo, cascades: cascades)
+          @purge_identity ||= PurgeIdentity.new(
+            account_repo: account_repo,
+            actor_cascades: actor_cascades,
+            account_cascades: account_cascades
+          )
         end
 
         def logger

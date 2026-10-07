@@ -54,7 +54,7 @@ module Identity
       end
 
       def deactivate_account
-        sub = Current.user_id
+        sub = Current.account_id
         raise GRPC::Unauthenticated.new("no current user") unless sub
 
         deactivate_account_uc.call(sub: sub)
