@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { create } from "@bufbuild/protobuf";
-import { BodyStatsSchema, ProfileSchema, SnsLinksSchema } from "@/stub/profile/v1/service_pb";
+import { ProfileSchema } from "@/stub/profile/v1/service_pb";
 import { emptyProfileView, mapProfileToView, profileViewToSavePayload, buildSaveProfileRequest } from "./mappers";
 
 describe("mapProfileToView", () => {
   it("maps body_stats into a BodyStatsView", () => {
     const proto = create(ProfileSchema, {
       id: "prof-1",
-      bodyStats: create(BodyStatsSchema, { heightCm: 158, bustCm: 88, waistCm: 58, hipCm: 86, cup: "D" }),
+      bodyStats: { heightCm: 158, bustCm: 88, waistCm: 58, hipCm: 86, cup: "D" },
     });
 
     const view = mapProfileToView(proto);
@@ -26,7 +26,7 @@ describe("mapProfileToView", () => {
   it("maps the cityheaven sns link", () => {
     const proto = create(ProfileSchema, {
       id: "prof-1",
-      snsLinks: create(SnsLinksSchema, { cityheaven: "https://www.cityheaven.net/example/" }),
+      snsLinks: { cityheaven: "https://www.cityheaven.net/example/" },
     });
 
     const view = mapProfileToView(proto);
