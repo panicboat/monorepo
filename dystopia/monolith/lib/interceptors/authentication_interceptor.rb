@@ -32,7 +32,8 @@ module Interceptors
       profile = profile_repository.find_by_id(requested_id)
       permitted = profile && profile.account_id == account_id && profile.disabled_at.nil?
       unless permitted
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, "Profile is not available")
+        ::Current.profile_denied = true
+        return nil
       end
 
       profile.id

@@ -2,6 +2,7 @@
 
 require "spec_helper"
 require "lib/current"
+require "lib/interceptors/authentication_interceptor"
 require "slices/profile/grpc/profile_handler"
 
 RSpec.describe Profile::Grpc::ProfileHandler, type: :database do
@@ -11,6 +12,12 @@ RSpec.describe Profile::Grpc::ProfileHandler, type: :database do
 
   def status(code)
     raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(code) }
+  end
+
+  def with_denied_profile(account_id:, profile_id:)
+    request = double(:request, metadata: { "x-user-id" => account_id, "x-profile-id" => profile_id }, context: {})
+    interceptor = Interceptors::AuthenticationInterceptor.new(request, double(:error))
+    interceptor.call { yield }
   end
 
   after { Current.clear }
@@ -33,6 +40,18 @@ RSpec.describe Profile::Grpc::ProfileHandler, type: :database do
 
     it "raises UNAUTHENTICATED without an account" do
       expect { handler.list_my_profiles }.to status(GRPC::Core::StatusCodes::UNAUTHENTICATED)
+    end
+
+    it "returns the account's profiles when the requested profile belongs to another account" do
+      account_id = create_account(role: 2)
+      own_profile = create_account_with_profile(account_id: account_id)
+      other_profile = create_account_with_profile
+
+      response = with_denied_profile(account_id: account_id, profile_id: other_profile) do
+        handler.list_my_profiles
+      end
+
+      expect(response.profiles.map(&:id)).to eq([own_profile])
     end
   end
 
@@ -118,6 +137,21 @@ RSpec.describe Profile::Grpc::ProfileHandler, type: :database do
       expect {
         handler_for(::Profile::V1::SaveProfileRequest.new(display_name: "Renamed")).save_profile
       }.to status(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
+    end
+
+    it "raises PERMISSION_DENIED with a reason when the requested profile belongs to another account" do
+      account_id = create_account(role: 2)
+      create_account_with_profile(account_id: account_id)
+      other_profile = create_account_with_profile
+
+      expect {
+        with_denied_profile(account_id: account_id, profile_id: other_profile) do
+          handler_for(::Profile::V1::SaveProfileRequest.new(display_name: "Renamed")).save_profile
+        end
+      }.to raise_error(GRPC::BadStatus) { |error|
+        expect(error.code).to eq(GRPC::Core::StatusCodes::PERMISSION_DENIED)
+        expect(error.metadata["error-reason"]).to eq("profile_not_permitted")
+      }
     end
   end
 

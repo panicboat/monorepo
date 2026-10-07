@@ -11,16 +11,13 @@ RSpec.describe Interceptors::AuthenticationInterceptor, type: :database do
   let(:metadata) { {} }
   let(:account_id) { create_account(role: 2) }
 
-  def permission_denied
-    raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(GRPC::Core::StatusCodes::PERMISSION_DENIED) }
-  end
-
   describe "#call" do
     context "when x-user-id metadata is absent" do
       it "leaves the account and the profile empty" do
         interceptor.call do
           expect(Current.account_id).to be_nil
           expect(Current.profile_id).to be_nil
+          expect(Current.profile_denied).to be false
         end
       end
     end
@@ -88,39 +85,67 @@ RSpec.describe Interceptors::AuthenticationInterceptor, type: :database do
         it "uses the requested profile even when the account has several" do
           create_account_with_profile(account_id: account_id)
 
-          interceptor.call { expect(Current.profile_id).to eq(own_profile) }
+          interceptor.call do
+            expect(Current.profile_id).to eq(own_profile)
+            expect(Current.profile_denied).to be false
+          end
         end
       end
 
       context "and it belongs to another account" do
         let(:requested) { create_account_with_profile }
 
-        it "rejects the call" do
-          expect { interceptor.call {} }.to permission_denied
+        it "records the denied profile and keeps the account" do
+          interceptor.call do
+            expect(Current.account_id).to eq(account_id)
+            expect(Current.profile_id).to be_nil
+            expect(Current.profile_denied).to be true
+          end
+        end
+
+        it "does not fall back to the only enabled profile" do
+          own_profile
+
+          interceptor.call do
+            expect(Current.profile_id).to be_nil
+            expect(Current.profile_denied).to be true
+          end
         end
       end
 
       context "and it is disabled" do
         let(:requested) { create_account_with_profile(account_id: account_id, disabled_at: Time.now) }
 
-        it "rejects the call" do
-          expect { interceptor.call {} }.to permission_denied
+        it "records the denied profile and keeps the account" do
+          interceptor.call do
+            expect(Current.account_id).to eq(account_id)
+            expect(Current.profile_id).to be_nil
+            expect(Current.profile_denied).to be true
+          end
         end
       end
 
       context "and it does not exist" do
         let(:requested) { SecureRandom.uuid_v7 }
 
-        it "rejects the call" do
-          expect { interceptor.call {} }.to permission_denied
+        it "records the denied profile and keeps the account" do
+          interceptor.call do
+            expect(Current.account_id).to eq(account_id)
+            expect(Current.profile_id).to be_nil
+            expect(Current.profile_denied).to be true
+          end
         end
       end
 
       context "and it is not a UUID" do
         let(:requested) { "'; DROP TABLE profiles; --" }
 
-        it "rejects the call without a database error" do
-          expect { interceptor.call {} }.to permission_denied
+        it "records the denied profile and keeps the account without a database error" do
+          interceptor.call do
+            expect(Current.account_id).to eq(account_id)
+            expect(Current.profile_id).to be_nil
+            expect(Current.profile_denied).to be true
+          end
         end
       end
 
@@ -144,16 +169,19 @@ RSpec.describe Interceptors::AuthenticationInterceptor, type: :database do
 
       expect(Current.account_id).to be_nil
       expect(Current.profile_id).to be_nil
+      expect(Current.profile_denied).to be false
       expect(Current.request_id).to be_nil
     end
 
-    context "when the call is rejected" do
+    context "when the requested profile is denied" do
       let(:metadata) { { "x-user-id" => account_id, "x-profile-id" => SecureRandom.uuid_v7 } }
 
-      it "still clears Current" do
-        expect { interceptor.call {} }.to raise_error(GRPC::BadStatus)
+      it "clears the denial state after the block" do
+        interceptor.call { expect(Current.profile_denied).to be true }
 
         expect(Current.account_id).to be_nil
+        expect(Current.profile_id).to be_nil
+        expect(Current.profile_denied).to be false
       end
     end
   end
