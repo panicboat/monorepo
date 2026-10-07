@@ -2,6 +2,7 @@ module Profile
   module Relations
     class Profiles < Profile::DB::Relation
       schema(:"profile__profiles", as: :profiles, infer: false) do
+        attribute :id, Types::String
         attribute :account_id, Types::String
         attribute :username, Types::String.optional
         attribute :display_name, Types::String
@@ -12,10 +13,11 @@ module Profile
         attribute :prefecture, Types::String.optional
         attribute :is_private, Types::Bool
         attribute :registered_at, Types::Time.optional
+        attribute :disabled_at, Types::Time.optional
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 
-        primary_key :account_id
+        primary_key :id
       end
     end
   end

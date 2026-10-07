@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "securerandom"
 require "concerns/cursor_pagination"
 
 module Profile
@@ -7,10 +8,14 @@ module Profile
     class ProfileRepository < Profile::DB::Repo
       include ::Concerns::CursorPagination
 
+      UUID_FORMAT = /\A\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\z/
+
       commands :create, update: :by_pk
 
-      def find_by_account_id(account_id)
-        profiles.by_pk(account_id).one
+      def find_by_id(id)
+        return nil unless uuid?(id)
+
+        profiles.by_pk(id).one
       end
 
       def find_by_username(username)
@@ -19,58 +24,62 @@ module Profile
         profiles.where { Sequel.function(:lower, :username) =~ username.downcase }.one
       end
 
-      def username_available?(username, exclude_account_id: nil)
+      def list_by_account(account_id)
+        return [] unless uuid?(account_id)
+
+        profiles.where(account_id: account_id).order { [created_at.asc, id.asc] }.to_a
+      end
+
+      def enabled_ids_by_account(account_id)
+        return [] unless uuid?(account_id)
+
+        profiles.where(account_id: account_id, disabled_at: nil).pluck(:id)
+      end
+
+      def username_available?(username, exclude_profile_id: nil)
         return false if username.nil? || username.strip.empty?
 
         scope = profiles.where { Sequel.function(:lower, :username) =~ username.downcase }
-        scope = scope.exclude(account_id: exclude_account_id) if exclude_account_id
+        scope = scope.exclude(id: exclude_profile_id) if exclude_profile_id
         !scope.exist?
       end
 
-      def upsert(account_id:, attrs:)
-        if profiles.by_pk(account_id).exist?
-          update(account_id, attrs.merge(updated_at: Time.now))
-        else
-          create(attrs.merge(account_id: account_id))
+      def create_within_limit(account_id:, limit:, attrs:)
+        profiles.dataset.db.transaction do
+          # Lock the account row so concurrent creations cannot both pass the count check.
+          profiles.dataset.db[:identity__accounts].where(id: account_id).for_update.first
+          next nil if profiles.where(account_id: account_id).count >= limit
+
+          create(attrs.merge(id: SecureRandom.uuid_v7, account_id: account_id))
         end
       end
 
-      def account_ids_by_prefecture(prefecture)
-        return [] if prefecture.nil? || prefecture.to_s.empty?
-
-        profiles.where(prefecture: prefecture).pluck(:account_id)
+      def update_profile(id, attrs)
+        update(id, attrs.merge(updated_at: Time.now))
       end
 
-      def save_media(account_id:, avatar_media_id: nil, cover_media_id: nil)
+      def profile_ids_by_prefecture(prefecture)
+        return [] if prefecture.nil? || prefecture.to_s.empty?
+
+        profiles.where(prefecture: prefecture).pluck(:id)
+      end
+
+      def save_media(profile_id:, avatar_media_id: nil, cover_media_id: nil)
         attrs = {}
         attrs[:avatar_media_id] = avatar_media_id unless avatar_media_id.nil?
         attrs[:cover_media_id] = cover_media_id unless cover_media_id.nil?
         return if attrs.empty?
 
-        update(account_id, attrs.merge(updated_at: Time.now))
+        update(profile_id, attrs.merge(updated_at: Time.now))
       end
 
-      def list_recent(limit:, cursor: nil, exclude_account_ids: [], role_filter: nil)
+      def list_recent(limit:, cursor: nil, exclude_profile_ids: [], role_filter: nil)
         scope = profiles
-        scope = scope.exclude(account_id: exclude_account_ids) unless exclude_account_ids.empty?
+        scope = scope.exclude(id: exclude_profile_ids) unless exclude_profile_ids.empty?
+        scope = filter_by_role(scope, role_filter)
+        scope = apply_cursor(scope, cursor)
 
-        if role_filter && [1, 2].include?(role_filter)
-          scope = scope.where(
-            account_id: profiles.dataset.db[:identity__accounts].where(role: role_filter).select(:id)
-          )
-        end
-
-        if cursor
-          decoded = decode_cursor(cursor)
-          if decoded
-            scope = scope.where {
-              (created_at < decoded[:created_at]) |
-                ((created_at =~ decoded[:created_at]) & (account_id < decoded[:id]))
-            }
-          end
-        end
-
-        scope.order { [created_at.desc, account_id.desc] }.limit(limit + 1).to_a
+        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
       def search_by_query(query:, limit: 20, cursor: nil, role_filter: nil)
@@ -84,28 +93,47 @@ module Profile
             Sequel.lit("display_name ILIKE ?", pattern)
           )
         )
+        scope = filter_by_role(scope, role_filter)
+        scope = apply_cursor(scope, cursor)
 
-        if role_filter && [1, 2].include?(role_filter)
-          scope = scope.where(
-            account_id: profiles.dataset.db[:identity__accounts].where(role: role_filter).select(:id)
-          )
-        end
+        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
 
-        if cursor
-          decoded = decode_cursor(cursor)
-          if decoded
-            scope = scope.where {
-              (created_at < decoded[:created_at]) |
-                ((created_at =~ decoded[:created_at]) & (account_id < decoded[:id]))
-            }
-          end
-        end
+      def role_of(profile_id)
+        profile = find_by_id(profile_id)
+        return nil unless profile
 
-        scope.order { [created_at.desc, account_id.desc] }.limit(limit + 1).to_a
+        profiles.dataset.db[:identity__accounts].where(id: profile.account_id).get(:role)
       end
 
       def delete_by_account(account_id)
         profiles.dataset.where(account_id: account_id).delete
+      end
+
+      private
+
+      def uuid?(value)
+        UUID_FORMAT.match?(value.to_s)
+      end
+
+      def filter_by_role(scope, role_filter)
+        return scope unless role_filter && [1, 2].include?(role_filter)
+
+        scope.where(
+          account_id: profiles.dataset.db[:identity__accounts].where(role: role_filter).select(:id)
+        )
+      end
+
+      def apply_cursor(scope, cursor)
+        return scope unless cursor
+
+        decoded = decode_cursor(cursor)
+        return scope unless decoded
+
+        scope.where {
+          (created_at < decoded[:created_at]) |
+            ((created_at =~ decoded[:created_at]) & (id < decoded[:id]))
+        }
       end
     end
   end
