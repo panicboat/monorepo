@@ -2,11 +2,11 @@
 
 module Profile
   module UseCases
-    class GetProfile
+    class ListMyProfiles
       include Deps["repositories.profile_repository"]
 
-      def call(profile_id:)
-        profile_repository.find_by_id(profile_id)
+      def call(account_id:)
+        profile_repository.list_by_account(account_id)
       end
     end
   end
