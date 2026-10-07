@@ -33,7 +33,7 @@ RSpec.describe Review::UseCases::ListRecentEntries do
     allow(cast_settings_repo).to receive(:find_by_account).and_return(nil)
     allow(block_adapter).to receive(:bidirectionally_blocked_ids).and_return([])
     allow(filter_visible_posts).to receive(:call) { |viewer_account_id:, posts:| posts }
-    allow(get_profile).to receive(:call) { |account_id:| double(:profile, username: "user-#{account_id}", avatar_media_id: nil) }
+    allow(get_profile).to receive(:call) { |profile_id:| double(:profile, username: "user-#{profile_id}", avatar_media_id: nil) }
   end
 
   it "returns a visible entry that passes every check" do

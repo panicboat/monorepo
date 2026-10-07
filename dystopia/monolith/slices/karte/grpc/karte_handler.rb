@@ -175,8 +175,8 @@ module Karte
       end
 
       def present_for_author(entry)
-        profile = ::Profile::Slice["use_cases.get_profile"].call(account_id: entry.author_account_id)
-        target_profile = ::Profile::Slice["use_cases.get_profile"].call(account_id: entry.target_account_id)
+        profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.author_account_id)
+        target_profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.target_account_id)
         media = ::Karte::Adapters::MediaAdapter.new
         {
           id: entry.id,

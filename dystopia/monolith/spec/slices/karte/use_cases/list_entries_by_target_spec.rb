@@ -61,9 +61,9 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
       .with(target_account_id: target_id)
       .and_return(aggregate)
 
-    allow(get_profile_uc).to receive(:call).with(account_id: "author-1").and_return(profile1)
-    allow(get_profile_uc).to receive(:call).with(account_id: "author-2").and_return(profile2)
-    allow(get_profile_uc).to receive(:call).with(account_id: target_id).and_return(target_profile)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1").and_return(profile1)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2").and_return(profile2)
+    allow(get_profile_uc).to receive(:call).with(profile_id: target_id).and_return(target_profile)
     allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
 
     result = use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, limit: 2)
@@ -98,9 +98,9 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
       .with(target_account_id: target_id)
       .and_return(aggregate)
 
-    allow(get_profile_uc).to receive(:call).with(account_id: "author-1").and_return(profile1)
-    allow(get_profile_uc).to receive(:call).with(account_id: "author-2").and_return(profile2)
-    allow(get_profile_uc).to receive(:call).with(account_id: target_id).and_return(target_profile)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1").and_return(profile1)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2").and_return(profile2)
+    allow(get_profile_uc).to receive(:call).with(profile_id: target_id).and_return(target_profile)
     allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
 
     result = use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, limit: 2)
@@ -136,9 +136,9 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
       .and_return(aggregate)
     allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
 
-    expect(get_profile_uc).to receive(:call).with(account_id: "author-1").once.and_return(profile1)
-    expect(get_profile_uc).to receive(:call).with(account_id: "author-2").once.and_return(profile2)
-    expect(get_profile_uc).to receive(:call).with(account_id: target_id).once.and_return(target_profile)
+    expect(get_profile_uc).to receive(:call).with(profile_id: "author-1").once.and_return(profile1)
+    expect(get_profile_uc).to receive(:call).with(profile_id: "author-2").once.and_return(profile2)
+    expect(get_profile_uc).to receive(:call).with(profile_id: target_id).once.and_return(target_profile)
 
     use_case.call(viewer_account_id: viewer_id, target_account_id: target_id)
   end

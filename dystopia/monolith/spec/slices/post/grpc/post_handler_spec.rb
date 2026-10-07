@@ -5,17 +5,9 @@ require "lib/current"
 require "slices/post/grpc/post_handler"
 
 RSpec.describe Post::Grpc::PostHandler, type: :database do
-  let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
-  let(:profile_repo) { Hanami.app.slices[:profile]["repositories.profile_repository"] }
   let(:notification_repo) { Hanami.app.slices[:notifications]["repositories.notification_repository"] }
-  let(:author_id) { create_account }
-  let(:mentioned_id) { create_account }
-
-  def create_account(role: 1)
-    id = SecureRandom.uuid_v7
-    db[:identity__accounts].insert(id: id, role: role, created_at: Time.now, updated_at: Time.now)
-    id
-  end
+  let(:author_id) { create_account_with_profile }
+  let(:mentioned_id) { create_account_with_profile(display_name: "Mentioned", username: "mentioned_user") }
 
   after { Current.clear }
 
@@ -28,8 +20,9 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
     end
 
     before do
-      profile_repo.create(account_id: mentioned_id, display_name: "Mentioned", username: "mentioned_user")
-      Current.user_id = author_id
+      mentioned_id
+      Current.account_id = SecureRandom.uuid_v7
+      Current.profile_id = author_id
     end
 
     it "includes the resolved mention in the response" do

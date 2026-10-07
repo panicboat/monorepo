@@ -231,7 +231,7 @@ module Messaging
         return nil unless row
 
         role = role_for(row.account_id)
-        cast = role == 2 ? cast_repository.find_by_user_id(row.account_id) : nil
+        cast = role == 2 ? cast_repository.find_by_profile_id(row.id) : nil
         ::Profile::Presenters::ProfilePresenter.to_proto(row, cast: cast, role: role)
       end
 

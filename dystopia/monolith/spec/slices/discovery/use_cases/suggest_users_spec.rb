@@ -5,52 +5,37 @@ require "spec_helper"
 RSpec.describe Discovery::UseCases::SuggestUsers do
   subject(:use_case) { Discovery::Slice["use_cases.suggest_users"] }
 
-  let(:accounts) { Identity::Slice["relations.accounts"] }
   let(:follows) { Social::Slice["relations.follows"] }
   let(:blocks) { Social::Slice["relations.blocks"] }
-  let(:profile_repo) { Profile::Slice["repositories.profile_repository"] }
-
-  def insert_account(role:)
-    id = SecureRandom.uuid_v7
-    accounts.dataset.insert(
-      id: id,
-      role: role,
-      created_at: Time.now,
-      updated_at: Time.now
-    )
-    id
-  end
 
   def make(role:, display_name:)
-    id = insert_account(role: role)
-    profile_repo.create(account_id: id, display_name: display_name, username: "u#{id.delete('-')[8, 20]}")
-    id
+    create_account_with_profile(role: role, display_name: display_name, username: "u#{SecureRandom.hex(10)}")
   end
 
   it "returns the opposite role of the viewer (cast viewer → guests)" do
-    viewer = insert_account(role: 2)
+    viewer = create_account_with_profile(role: 2)
     guest = make(role: 1, display_name: "G")
     other_cast = make(role: 2, display_name: "C")
 
-    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:account_id)
+    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:id)
 
     expect(ids).to include(guest)
     expect(ids).not_to include(other_cast)
   end
 
   it "returns the opposite role of the viewer (guest viewer → casts)" do
-    viewer = insert_account(role: 1)
+    viewer = create_account_with_profile(role: 1)
     cast = make(role: 2, display_name: "C")
     other_guest = make(role: 1, display_name: "G")
 
-    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:account_id)
+    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:id)
 
     expect(ids).to include(cast)
     expect(ids).not_to include(other_guest)
   end
 
   it "excludes self, already-following, and bidirectionally-blocked accounts" do
-    viewer = insert_account(role: 2)
+    viewer = create_account_with_profile(role: 2)
     followed = make(role: 1, display_name: "F")
     blocked = make(role: 1, display_name: "B")
     visible = make(role: 1, display_name: "V")
@@ -65,7 +50,7 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
       blocker_id: blocked, blocked_id: viewer, created_at: Time.now
     )
 
-    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:account_id)
+    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:id)
 
     expect(ids).to include(visible)
     expect(ids).not_to include(followed)
@@ -74,12 +59,12 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
   end
 
   it "orders newest-first" do
-    viewer = insert_account(role: 2)
+    viewer = create_account_with_profile(role: 2)
     older = make(role: 1, display_name: "old")
     sleep 0.05
     newer = make(role: 1, display_name: "new")
 
-    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:account_id)
+    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:id)
 
     expect(ids.index(newer)).to be < ids.index(older)
   end

@@ -33,9 +33,9 @@ RSpec.describe Review::UseCases::ListEntriesByAuthor do
     expect(filter_visible_entries).to receive(:call).with(
       viewer_account_id: viewer_id, page_owner_account_id: author_id, entries: [raw_entry]
     ).and_return([raw_entry])
-    allow(get_profile).to receive(:call).with(account_id: author_id)
+    allow(get_profile).to receive(:call).with(profile_id: author_id)
       .and_return(double(username: "author-user", avatar_media_id: nil))
-    allow(get_profile).to receive(:call).with(account_id: "target-1")
+    allow(get_profile).to receive(:call).with(profile_id: "target-1")
       .and_return(double(username: "target-user", avatar_media_id: nil))
 
     result = use_case.call(viewer_account_id: viewer_id, author_account_id: author_id)

@@ -16,7 +16,7 @@ module Social
         author_ids = posts.map(&:author_id).compact.uniq
 
         is_private_by_author = author_ids.each_with_object({}) do |aid, h|
-          profile = get_profile.call(account_id: aid)
+          profile = get_profile.call(profile_id: aid)
           h[aid] = profile.respond_to?(:is_private) ? !!profile.is_private : false
         end
 

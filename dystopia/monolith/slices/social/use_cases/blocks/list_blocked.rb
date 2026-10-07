@@ -19,7 +19,7 @@ module Social
             encode_cursor(created_at: last.created_at.iso8601, id: last.id)
           end
 
-          profiles = result[:items].filter_map { |row| get_profile.call(account_id: row.blocked_id) }
+          profiles = result[:items].filter_map { |row| get_profile.call(profile_id: row.blocked_id) }
 
           { profiles: profiles, next_cursor: result[:next_cursor], has_more: result[:has_more] }
         end

@@ -40,8 +40,8 @@ module Karte
       private
 
       def present_with_author(e, profile_cache)
-        profile = profile_cache[e.author_account_id] ||= get_profile.call(account_id: e.author_account_id)
-        target_profile = profile_cache[e.target_account_id] ||= get_profile.call(account_id: e.target_account_id)
+        profile = profile_cache[e.author_account_id] ||= get_profile.call(profile_id: e.author_account_id)
+        target_profile = profile_cache[e.target_account_id] ||= get_profile.call(profile_id: e.target_account_id)
         {
           id: e.id,
           author_account_id: e.author_account_id,

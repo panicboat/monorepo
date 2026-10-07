@@ -21,7 +21,7 @@ module Notifications
 
         actor_ids = result[:items].map(&:latest_actor_id).uniq
         profiles_by_actor_id = actor_ids.each_with_object({}) do |aid, h|
-          h[aid] = get_profile.call(account_id: aid)
+          h[aid] = get_profile.call(profile_id: aid)
         end
 
         {

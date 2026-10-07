@@ -24,7 +24,7 @@ module Messaging
           counterpart_id = row.account_a.to_s == account_id.to_s ? row.account_b : row.account_a
           {
             row: row,
-            counterpart: get_profile.call(account_id: counterpart_id),
+            counterpart: get_profile.call(profile_id: counterpart_id),
             last_message: messaging_repo.last_message(thread_id: row.id),
             unread_count: messaging_repo.unread_count(thread_id: row.id, account_id: account_id)
           }
