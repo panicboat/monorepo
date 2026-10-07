@@ -5,13 +5,15 @@ package profile.v1;
 service ProfileService {
   rpc GetProfile (GetProfileRequest) returns (GetProfileResponse);
   rpc GetProfileByUsername (GetProfileByUsernameRequest) returns (GetProfileResponse);
+  rpc ListMyProfiles (ListMyProfilesRequest) returns (ListMyProfilesResponse);
+  rpc CreateProfile (CreateProfileRequest) returns (CreateProfileResponse);
   rpc SaveProfile (SaveProfileRequest) returns (SaveProfileResponse);
   rpc CheckUsernameAvailability (CheckUsernameAvailabilityRequest) returns (CheckUsernameAvailabilityResponse);
   rpc SaveProfileMedia (SaveProfileMediaRequest) returns (SaveProfileMediaResponse);
 }
 
 message Profile {
-  string account_id = 1;
+  string id = 1;
   string username = 2;
   string display_name = 3;
   string bio = 4;
@@ -30,6 +32,7 @@ message Profile {
   string industry = 17;
 
   int32 role = 20;
+  bool disabled = 21;
 }
 
 message SnsLinks {
@@ -49,9 +52,18 @@ message BodyStats {
   string cup = 5;
 }
 
-message GetProfileRequest { string account_id = 1; }
+message GetProfileRequest { string profile_id = 1; }
 message GetProfileByUsernameRequest { string username = 1; }
 message GetProfileResponse { Profile profile = 1; }
+
+message ListMyProfilesRequest {}
+message ListMyProfilesResponse { repeated Profile profiles = 1; }
+
+message CreateProfileRequest {
+  string display_name = 1;
+  string username = 2;
+}
+message CreateProfileResponse { Profile profile = 1; }
 
 message SaveProfileRequest {
   string username = 1;

@@ -7,9 +7,6 @@ require 'profile/v1/service_pb'
 module Profile
   module V1
     module ProfileService
-      # Unified profile service (replaces portfolio CastService + GuestService).
-      # One Profile per account (1:1 with identity.Account). role-specific fields are
-      # optional (cast extras). Escort commerce dimension (plans/schedules/genres) dropped.
       class Service
 
         include ::GRPC::GenericService
@@ -20,6 +17,8 @@ module Profile
 
         rpc :GetProfile, ::Profile::V1::GetProfileRequest, ::Profile::V1::GetProfileResponse
         rpc :GetProfileByUsername, ::Profile::V1::GetProfileByUsernameRequest, ::Profile::V1::GetProfileResponse
+        rpc :ListMyProfiles, ::Profile::V1::ListMyProfilesRequest, ::Profile::V1::ListMyProfilesResponse
+        rpc :CreateProfile, ::Profile::V1::CreateProfileRequest, ::Profile::V1::CreateProfileResponse
         rpc :SaveProfile, ::Profile::V1::SaveProfileRequest, ::Profile::V1::SaveProfileResponse
         rpc :CheckUsernameAvailability, ::Profile::V1::CheckUsernameAvailabilityRequest, ::Profile::V1::CheckUsernameAvailabilityResponse
         rpc :SaveProfileMedia, ::Profile::V1::SaveProfileMediaRequest, ::Profile::V1::SaveProfileMediaResponse
