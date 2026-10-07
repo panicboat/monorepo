@@ -5,6 +5,15 @@ to HolmesGPT's `/api/chat`, posting the investigation result back to Slack.
 
 Design: `docs/superpowers/specs/2026-09-05-holmes-to-pennyworth-rename-design.md`
 
+## Slack permalinks
+
+mention 本文と同スレッド内の Slack permalink（`https://<workspace>.slack.com/archives/...`）は、
+pennyworth がリンク先スレッドを `conversations.replies` で取得して HolmesGPT への ask に埋め込む。
+Slack permalink はサインイン必須で、HolmesGPT の `internet` toolset からは取得できないため。
+
+bot token で読めないリンク先（bot が未参加の private channel 等）は Slack API のエラー理由を ask に
+含めるので、読ませたい channel には bot を招待する。
+
 ## Manual setup (cannot be automated)
 
 pennyworth owns its Slack and GitHub App secret containers

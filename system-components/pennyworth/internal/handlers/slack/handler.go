@@ -105,6 +105,7 @@ func (h *Handler) handleMention(evt slackInnerEvent) {
 	}
 
 	ask := slackclient.StripMention(evt.Text)
+	linkSources := []string{evt.Text}
 
 	if evt.ThreadTs != "" {
 		history, err := h.Client.ConversationsReplies(evt.Channel, evt.ThreadTs)
@@ -112,7 +113,14 @@ func (h *Handler) handleMention(evt slackInnerEvent) {
 			log.Printf("failed to fetch thread history: %v", err)
 		} else if len(history) > 0 {
 			ask = slackclient.BuildAskWithHistory(history, ask)
+			for _, m := range history {
+				linkSources = append(linkSources, m.Text)
+			}
 		}
+	}
+
+	if linked := h.fetchLinkedThreads(strings.Join(linkSources, "\n")); len(linked) > 0 {
+		ask = slackclient.BuildAskWithLinkedThreads(ask, linked)
 	}
 
 	if err := h.Client.AddReaction(evt.Channel, evt.Ts, "eyes"); err != nil {
@@ -143,6 +151,19 @@ func (h *Handler) handleMention(evt slackInnerEvent) {
 	}
 
 	h.dispatchAction(evt.Channel, threadTs, env)
+}
+
+// Expand permalinks here because HolmesGPT cannot sign in to Slack to fetch them.
+func (h *Handler) fetchLinkedThreads(text string) []slackclient.LinkedThread {
+	var linked []slackclient.LinkedThread
+	for _, link := range slackclient.FindPermalinks(text) {
+		messages, err := h.Client.ConversationsReplies(link.Channel, link.ThreadTs)
+		if err != nil {
+			log.Printf("failed to fetch linked thread %s: %v", link.URL, err)
+		}
+		linked = append(linked, slackclient.LinkedThread{URL: link.URL, Messages: messages, Err: err})
+	}
+	return linked
 }
 
 func parseActionEnvelope(response string) (env actionEnvelope, ok bool) {
