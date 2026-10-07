@@ -53,11 +53,13 @@ RSpec.describe "Profile::UseCases::CreateProfile", type: :database do
   end
 
   context "when the account row does not exist" do
-    it "applies the single-profile limit" do
+    it "rejects the creation and creates nothing" do
       account_id = SecureRandom.uuid_v7
-      uc.call(account_id: account_id, display_name: "Solo")
 
-      expect { uc.call(account_id: account_id, display_name: "Solo 2") }.to raise_error(limit_error)
+      expect {
+        uc.call(account_id: account_id, display_name: "Solo")
+      }.to raise_error(Profile::UseCases::CreateProfile::AccountNotFoundError)
+      expect(repo.list_by_account(account_id)).to eq([])
     end
   end
 

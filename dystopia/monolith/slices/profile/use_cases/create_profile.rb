@@ -6,6 +6,7 @@ module Profile
   module UseCases
     class CreateProfile
       class LimitExceededError < StandardError; end
+      class AccountNotFoundError < StandardError; end
 
       include Deps["repositories.profile_repository"]
 
@@ -17,12 +18,15 @@ module Profile
         validate_display_name!(display_name)
         validate_username!(username) unless username.nil?
 
+        account = identity_account_repo.find_by_id(account_id)
+        raise AccountNotFoundError, "Account not found" unless account
+
         attrs = { display_name: display_name }
         attrs[:username] = username unless username.nil?
 
         profile = profile_repository.create_within_limit(
           account_id: account_id,
-          limit: limit_for(account_id),
+          limit: limit_for(account),
           attrs: attrs
         )
         raise LimitExceededError, "作成できるプロフィールの上限に達しています" unless profile
@@ -32,9 +36,8 @@ module Profile
 
       private
 
-      def limit_for(account_id)
-        role = identity_account_repo.find_by_id(account_id)&.role
-        role == ROLE_CAST ? CAST_PROFILE_LIMIT : SINGLE_PROFILE_LIMIT
+      def limit_for(account)
+        account.role == ROLE_CAST ? CAST_PROFILE_LIMIT : SINGLE_PROFILE_LIMIT
       end
 
       def identity_account_repo

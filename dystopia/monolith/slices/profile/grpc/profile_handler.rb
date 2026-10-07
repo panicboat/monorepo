@@ -73,6 +73,8 @@ module Profile
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
       rescue Profile::UseCases::CreateProfile::LimitExceededError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
+      rescue Profile::UseCases::CreateProfile::AccountNotFoundError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, e.message)
       end
 
       def save_profile

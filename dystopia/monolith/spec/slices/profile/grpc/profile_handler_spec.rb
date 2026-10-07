@@ -76,6 +76,12 @@ RSpec.describe Profile::Grpc::ProfileHandler, type: :database do
       expect { handler.create_profile }.to status(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
     end
 
+    it "raises NOT_FOUND when the account has no identity row" do
+      Current.account_id = SecureRandom.uuid_v7
+
+      expect { handler.create_profile }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
+    end
+
     it "raises INVALID_ARGUMENT for a taken username" do
       create_account_with_profile(username: "coco_01")
       Current.account_id = create_account(role: 1)
