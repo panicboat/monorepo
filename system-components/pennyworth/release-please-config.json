@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "separate-pull-requests": true,
+  "label": "autorelease: pending,release: pennyworth",
+  "packages": {
+    "system-components/pennyworth": {
+      "release-type": "simple",
+      "component": "pennyworth",
+      "include-component-in-tag": true
+    }
+  }
+}
