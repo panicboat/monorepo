@@ -5,8 +5,8 @@ require_relative "seeds/helper"
 
 require_relative "seeds/identity/users"
 
-require_relative "seeds/portfolio/casts"
 require_relative "seeds/portfolio/profiles"
+require_relative "seeds/portfolio/casts"
 
 require_relative "seeds/karte/access"
 

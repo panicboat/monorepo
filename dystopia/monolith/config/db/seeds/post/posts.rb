@@ -76,7 +76,7 @@ extra_posts = {
 }
 
 post_count = 0
-CAST_USER_IDS.each_with_index do |author_id, cast_idx|
+CAST_PROFILE_IDS.each_with_index do |author_id, cast_idx|
   next unless author_id
 
   existing = db[:"post__posts"].where(author_id: author_id).count
