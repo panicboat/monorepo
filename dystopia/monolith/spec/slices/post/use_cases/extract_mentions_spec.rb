@@ -5,6 +5,7 @@ require "spec_helper"
 RSpec.describe "Post::UseCases::ExtractMentions", type: :database do
   let(:use_case) { Hanami.app.slices[:post]["use_cases.extract_mentions"] }
   let(:profile_repo) { Hanami.app.slices[:profile]["repositories.profile_repository"] }
+
   def create_profile(username:)
     create_account_with_profile(display_name: username, username: username)
   end
