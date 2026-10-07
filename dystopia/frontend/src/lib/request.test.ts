@@ -159,4 +159,54 @@ describe("buildGrpcHeaders", () => {
       },
     });
   });
+
+  it("retries with x-profile-id from the request after refreshing the access token", async () => {
+    const adapter = createFakeAdapter();
+    cognitoMocks.adapter = adapter;
+    await adapter.signUp("+15551234567", "Passw0rd!Passw0rd!");
+    await adapter.confirmSignUp("+15551234567", FAKE_CONFIRMATION_CODE);
+    const refreshedTokens = await adapter.initiateAuth(
+      "+15551234567",
+      "Passw0rd!Passw0rd!",
+    );
+    const profileId = "0199c0de-0000-7000-8000-0000000000aa";
+    const req = new NextRequest("http://localhost/api/test", {
+      method: "POST",
+      headers: { "x-profile-id": profileId },
+    });
+    req.cookies.set(ACCESS_COOKIE, "not.a.jwt");
+    req.cookies.set(REFRESH_COOKIE, refreshedTokens.refreshToken);
+
+    await callWithRefresh(req, async (headers) => {
+      if (!headers["x-user-id"]) {
+        throw new ConnectError("unauthenticated", GrpcCode.UNAUTHENTICATED);
+      }
+      expect(headers["x-profile-id"]).toBe(profileId);
+      return "retried";
+    });
+  });
+
+  it("retries without x-profile-id when the request has none", async () => {
+    const adapter = createFakeAdapter();
+    cognitoMocks.adapter = adapter;
+    await adapter.signUp("+15551234567", "Passw0rd!Passw0rd!");
+    await adapter.confirmSignUp("+15551234567", FAKE_CONFIRMATION_CODE);
+    const refreshedTokens = await adapter.initiateAuth(
+      "+15551234567",
+      "Passw0rd!Passw0rd!",
+    );
+    const req = new NextRequest("http://localhost/api/test", {
+      method: "POST",
+    });
+    req.cookies.set(ACCESS_COOKIE, "not.a.jwt");
+    req.cookies.set(REFRESH_COOKIE, refreshedTokens.refreshToken);
+
+    await callWithRefresh(req, async (headers) => {
+      if (!headers["x-user-id"]) {
+        throw new ConnectError("unauthenticated", GrpcCode.UNAUTHENTICATED);
+      }
+      expect(headers["x-profile-id"]).toBeUndefined();
+      return "retried";
+    });
+  });
 });

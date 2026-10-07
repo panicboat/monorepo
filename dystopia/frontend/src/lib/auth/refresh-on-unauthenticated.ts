@@ -60,6 +60,8 @@ export async function callWithRefresh<T>(
     const retryHeaders = await buildGrpcHeaders(req);
     // Use the verified subject because retry metadata may still contain the expired identity.
     retryHeaders[HEADER_NAMES.USER_ID] = refreshedUserId;
+    const profileId = req.headers.get(HEADER_NAMES.PROFILE_ID);
+    if (profileId) retryHeaders[HEADER_NAMES.PROFILE_ID] = profileId;
     const data = await call(retryHeaders);
     return { ok: true, data, refreshed };
   }
