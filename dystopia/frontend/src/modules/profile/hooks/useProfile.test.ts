@@ -19,7 +19,7 @@ describe("fetchProfileOrEmpty", () => {
 
     const result = await fetchProfileOrEmpty("/api/profile", "account-1");
 
-    expect(result.profile.accountId).toBe("account-1");
+    expect(result.profile.id).toBe("account-1");
     expect(result.profile.displayName).toBe("");
   });
 
@@ -31,7 +31,7 @@ describe("fetchProfileOrEmpty", () => {
   });
 
   it("passes an existing profile response through untouched", async () => {
-    const response = { profile: { accountId: "account-1", displayName: "既存太郎" } };
+    const response = { profile: { id: "account-1", displayName: "既存太郎" } };
     swrMocks.fetcher.mockResolvedValueOnce(response);
 
     await expect(fetchProfileOrEmpty("/api/profile", "account-1")).resolves.toBe(response);

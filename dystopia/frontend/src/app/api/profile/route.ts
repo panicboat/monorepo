@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     if (authError) return authError;
 
     const headers = await buildGrpcHeaders(req);
-    const res = await profileClient.getProfile({ accountId: "" }, { headers });
+    const res = await profileClient.getProfile({ profileId: "" }, { headers });
     if (!res.profile) {
       return NextResponse.json({ error: "プロフィールが見つかりませんでした" }, { status: 404 });
     }

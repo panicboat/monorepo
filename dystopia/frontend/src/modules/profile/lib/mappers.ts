@@ -32,9 +32,9 @@ function mapBodyStats(b: BodyStats | undefined): BodyStatsView {
   };
 }
 
-export function emptyProfileView(accountId: string): ProfileView {
+export function emptyProfileView(id: string): ProfileView {
   return {
-    accountId,
+    id,
     username: "",
     displayName: "",
     bio: "",
@@ -51,12 +51,13 @@ export function emptyProfileView(accountId: string): ProfileView {
     bodyStats: { ...EMPTY_BODY_STATS },
     industry: "",
     role: 0,
+    disabled: false,
   };
 }
 
 export function mapProfileToView(p: Profile): ProfileView {
   return {
-    accountId: p.accountId,
+    id: p.id,
     username: p.username || "",
     displayName: p.displayName || "",
     bio: p.bio || "",
@@ -73,6 +74,7 @@ export function mapProfileToView(p: Profile): ProfileView {
     bodyStats: mapBodyStats(p.bodyStats),
     industry: p.industry || "",
     role: p.role || 0,
+    disabled: p.disabled,
   };
 }
 

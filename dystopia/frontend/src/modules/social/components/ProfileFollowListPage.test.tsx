@@ -24,7 +24,7 @@ describe("ProfileFollowListPage", () => {
   it("resolves the username param and forwards its accountId and tab to FollowListView", () => {
     navMocks.useParams.mockReturnValue({ username: "yuna" });
     profileMocks.usePublicProfile.mockReturnValue({
-      profile: { accountId: "account-1", displayName: "ゆな", username: "yuna" },
+      profile: { id: "account-1", displayName: "ゆな", username: "yuna" },
       loading: false,
       error: undefined,
     });

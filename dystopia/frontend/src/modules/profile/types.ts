@@ -16,7 +16,7 @@ export interface BodyStatsView {
 }
 
 export interface ProfileView {
-  accountId: string;
+  id: string;
   username: string;
   displayName: string;
   bio: string;
@@ -33,6 +33,7 @@ export interface ProfileView {
   bodyStats: BodyStatsView;
   industry: string;
   role: number;
+  disabled: boolean;
 }
 
 export interface SaveProfilePayload {

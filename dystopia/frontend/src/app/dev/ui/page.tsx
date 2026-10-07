@@ -34,7 +34,7 @@ export default function DevUiPage() {
     { id: "following", label: "フォロー中" },
   ];
   const mockProfile: ProfileView = {
-    accountId: "demo",
+    id: "demo",
     username: "yuna",
     displayName: "ゆな",
     bio: "はじめまして、ゆなです。\nよろしくお願いします。",
@@ -51,6 +51,7 @@ export default function DevUiPage() {
     bodyStats: { heightCm: 158, bust: 88, waist: 58, hip: 86, cup: "D" },
     industry: "デリヘル",
     role: 2,
+    disabled: false,
   };
 
   const mockPosts: PostView[] = [

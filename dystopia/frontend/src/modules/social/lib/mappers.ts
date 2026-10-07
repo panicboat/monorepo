@@ -6,7 +6,7 @@ import type {
 
 export function profileToSocialAccount(p: Profile): SocialAccountView {
   return {
-    accountId: p.accountId,
+    accountId: p.id,
     username: p.username,
     displayName: p.displayName,
     avatarUrl: p.avatarUrl,
@@ -16,7 +16,7 @@ export function profileToSocialAccount(p: Profile): SocialAccountView {
 
 export function profileToFollowRequestItem(p: Profile): FollowRequestItem {
   return {
-    requesterAccountId: p.accountId,
+    requesterAccountId: p.id,
     username: p.username,
     displayName: p.displayName,
     avatarUrl: p.avatarUrl,

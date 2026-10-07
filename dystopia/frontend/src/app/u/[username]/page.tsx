@@ -26,10 +26,10 @@ export default function PublicProfilePage() {
   const [editing, setEditing] = useState(false);
 
   useEffect(() => {
-    if (!viewerId || !profile?.accountId) return;
-    if (viewerId === profile.accountId) return;
-    recordVisit(profile.accountId);
-  }, [viewerId, profile?.accountId, recordVisit]);
+    if (!viewerId || !profile?.id) return;
+    if (viewerId === profile.id) return;
+    recordVisit(profile.id);
+  }, [viewerId, profile?.id, recordVisit]);
 
   if (loading) {
     return <main className="mx-auto max-w-xl p-6 text-text-secondary">読み込み中…</main>;
@@ -39,33 +39,33 @@ export default function PublicProfilePage() {
   }
 
   const role = profile.role === 2 ? "cast" : "guest";
-  const isOwnProfile = !!viewerId && viewerId === profile.accountId;
+  const isOwnProfile = !!viewerId && viewerId === profile.id;
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <ProfileHeader profile={profile} role={role} onEdit={isOwnProfile ? () => setEditing(true) : undefined} />
       {!isOwnProfile && (
         <div className="flex items-center gap-2 px-4 pt-3">
-          <FollowButton targetAccountId={profile.accountId} />
-          <StartChatButton targetAccountId={profile.accountId} />
-          <BlockButton targetAccountId={profile.accountId} />
+          <FollowButton targetAccountId={profile.id} />
+          <StartChatButton targetAccountId={profile.id} />
+          <BlockButton targetAccountId={profile.id} />
         </div>
       )}
-      <SocialCountsLinks accountId={profile.accountId} username={profile.username} />
-      {role === "cast" && <ScheduleSection accountId={profile.accountId} isOwner={isOwnProfile} />}
+      <SocialCountsLinks accountId={profile.id} username={profile.username} />
+      {role === "cast" && <ScheduleSection accountId={profile.id} isOwner={isOwnProfile} />}
       <ProfileContentTabs
-        accountId={profile.accountId}
+        accountId={profile.id}
         isOwnProfile={isOwnProfile}
         extraTabs={[
           ...(role === "guest" && karteAccess
-            ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guestAccountId={profile.accountId} /> }]
+            ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guestAccountId={profile.id} /> }]
             : []),
           {
             id: "reviews",
             label: "レビュー",
             content: (
               <ReviewsTab
-                accountId={profile.accountId}
+                accountId={profile.id}
                 mode={role === "cast" ? "received" : "written"}
               />
             ),
