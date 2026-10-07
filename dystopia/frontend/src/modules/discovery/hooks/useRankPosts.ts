@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedPostsResponse, RankPeriodLiteral } from "../types";
 
 export function useRankPosts(period: RankPeriodLiteral) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedPostsResponse | null): string | null => {
     if (!userId) return null;

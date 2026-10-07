@@ -10,7 +10,7 @@ interface PostResponse {
 }
 
 export function usePost(id: string | null) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
   const { data, error, isLoading, mutate } = useSWR<PostResponse>(
     userId && id ? `/api/posts/${encodeURIComponent(id)}` : null,
     fetcher,

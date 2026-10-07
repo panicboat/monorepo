@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedProfilesResponse } from "../types";
 
 export function useFollowerList(accountId?: string) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedProfilesResponse | null): string | null => {
     if (!userId) return null;

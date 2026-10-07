@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { authFetch } from "@/lib/auth";
-import { useAuthStore, selectUserId, selectRole } from "@/stores/authStore";
+import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
 import { useFollow } from "@/modules/social/hooks";
 import type { ThreadView } from "@/modules/messaging/types";
 
@@ -19,7 +19,7 @@ interface GetOrCreateThreadResponse {
 
 export function StartChatButton({ targetAccountId, className }: StartChatButtonProps) {
   const router = useRouter();
-  const viewerId = useAuthStore(selectUserId);
+  const viewerId = useAuthStore(selectActiveProfileId);
   const viewerRole = useAuthStore(selectRole);
   const { isFollowing } = useFollow(targetAccountId);
   const [loading, setLoading] = useState(false);

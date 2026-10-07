@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedKarteByTargetResponse } from "../types";
 
 export function useGuestKarte(targetAccountId: string | null | undefined) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedKarteByTargetResponse | null): string | null => {
     if (!userId || !targetAccountId) return null;

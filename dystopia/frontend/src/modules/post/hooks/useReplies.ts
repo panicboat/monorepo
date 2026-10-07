@@ -10,7 +10,7 @@ export function useReplies(
   commentId: string | null | undefined,
   enabled: boolean
 ) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedCommentsResponse | null): string | null => {
     if (!enabled || !userId || !postId || !commentId) return null;

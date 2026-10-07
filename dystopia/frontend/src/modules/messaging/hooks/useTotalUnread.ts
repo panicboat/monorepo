@@ -9,7 +9,7 @@ interface Response {
 }
 
 export function useTotalUnread() {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
   const { data, isLoading, mutate } = useSWR<Response>(
     userId ? "/api/messaging/unread-count" : null,
     fetcher,

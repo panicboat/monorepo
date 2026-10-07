@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedThreadsResponse } from "../types";
 
 export function useThreads() {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
   const { data, error, isLoading, mutate } = useSWR<PaginatedThreadsResponse>(
     userId ? "/api/messaging/threads" : null,
     fetcher,

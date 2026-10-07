@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuthStore, selectUserId, selectIsHydrated } from "@/stores/authStore";
+import { useAuthStore, selectAccountId, selectIsHydrated } from "@/stores/authStore";
 import { TopBar } from "./TopBar";
 import { BottomTab } from "./BottomTab";
 import { ComposerFAB } from "./ComposerFAB";
@@ -21,7 +21,7 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const isHydrated = useAuthStore(selectIsHydrated);
-  const viewerId = useAuthStore(selectUserId);
+  const viewerId = useAuthStore(selectAccountId);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();

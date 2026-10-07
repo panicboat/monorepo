@@ -19,7 +19,7 @@ export interface UploadResult {
 }
 
 export async function uploadFile(file: File): Promise<UploadResult | null> {
-  if (!useAuthStore.getState().userId) return null;
+  if (!useAuthStore.getState().accountId) return null;
 
   const mediaType = file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
   const res = await fetch("/api/media/upload-url", {

@@ -20,7 +20,7 @@ export function useMediaUpload(): UseMediaUploadResult {
   const [error, setError] = useState<Error | null>(null);
 
   const registerMedia = useCallback(async (uploaded: UploadedMedia) => {
-    if (!useAuthStore.getState().userId) {
+    if (!useAuthStore.getState().activeProfileId) {
       throw new Error("ログインしてください");
     }
 
@@ -51,7 +51,7 @@ export function useMediaUpload(): UseMediaUploadResult {
       file: File,
       options: MediaUploadOptions = {}
     ): Promise<UploadedMedia> => {
-      if (!useAuthStore.getState().userId) {
+      if (!useAuthStore.getState().activeProfileId) {
         throw new Error("ログインしてください");
       }
 

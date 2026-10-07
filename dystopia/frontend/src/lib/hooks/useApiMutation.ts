@@ -40,7 +40,7 @@ export function useApiMutation<TPayload = unknown, TResponse = unknown>(
 
   const mutate = useCallback(
     async (payload: TPayload): Promise<TResponse> => {
-      if (!useAuthStore.getState().userId) {
+      if (!useAuthStore.getState().accountId) {
         const err = new AppError("UNAUTHORIZED", "ログインしてください", 401);
         setError(err);
         onError?.(err);

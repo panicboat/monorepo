@@ -1,42 +1,66 @@
-
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { Role } from "@/lib/auth";
 
-// Keep only identity state because tokens remain in httpOnly cookies.
-interface AuthState {
+interface PersistedAuth {
   role: Role | null;
-  userId: string | null;
+  accountId: string | null;
+  activeProfileId: string | null;
+}
+
+// Keep only identity state because tokens remain in httpOnly cookies.
+interface AuthState extends PersistedAuth {
   isHydrated: boolean;
 
-  setIdentity: (identity: { userId: string; role: Role }) => void;
+  setIdentity: (identity: { accountId: string; role: Role }) => void;
+  setActiveProfile: (profileId: string | null) => void;
   clearIdentity: () => void;
   setHydrated: () => void;
 
   isAuthenticated: () => boolean;
 }
 
+export function migrateAuthState(persisted: unknown): PersistedAuth {
+  const state = (persisted ?? {}) as Partial<PersistedAuth> & { userId?: string | null };
+  return {
+    role: state.role ?? null,
+    accountId: state.accountId ?? state.userId ?? null,
+    activeProfileId: state.activeProfileId ?? null,
+  };
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       role: null,
-      userId: null,
+      accountId: null,
+      activeProfileId: null,
       isHydrated: false,
 
-      setIdentity: ({ userId, role }) => set({ userId, role }),
-      clearIdentity: () => set({ userId: null, role: null }),
+      // Drop the acting profile on an account change so one login never acts as another login's profile.
+      setIdentity: ({ accountId, role }) =>
+        set((state) => ({
+          accountId,
+          role,
+          activeProfileId: state.accountId === accountId ? state.activeProfileId : null,
+        })),
+      setActiveProfile: (profileId) => set({ activeProfileId: profileId }),
+      clearIdentity: () => set({ accountId: null, role: null, activeProfileId: null }),
       setHydrated: () => set({ isHydrated: true }),
 
-      isAuthenticated: () => !!get().userId,
+      isAuthenticated: () => !!get().accountId,
     }),
     {
       name: "frontend-auth",
+      version: 1,
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
+      partialize: (state): PersistedAuth => ({
         role: state.role,
-        userId: state.userId,
+        accountId: state.accountId,
+        activeProfileId: state.activeProfileId,
       }),
+      migrate: (persisted) => migrateAuthState(persisted),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated();
       },
@@ -45,6 +69,7 @@ export const useAuthStore = create<AuthState>()(
 );
 
 export const selectRole = (state: AuthState) => state.role;
-export const selectUserId = (state: AuthState) => state.userId;
-export const selectIsAuthenticated = (state: AuthState) => !!state.userId;
+export const selectAccountId = (state: AuthState) => state.accountId;
+export const selectActiveProfileId = (state: AuthState) => state.activeProfileId;
+export const selectIsAuthenticated = (state: AuthState) => !!state.accountId;
 export const selectIsHydrated = (state: AuthState) => state.isHydrated;

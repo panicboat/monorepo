@@ -21,7 +21,7 @@ export async function authFetch<T = unknown>(
 ): Promise<T> {
   const { method = "GET", body, requireAuth = true, cache, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
 
-  if (requireAuth && !useAuthStore.getState().userId) {
+  if (requireAuth && !useAuthStore.getState().accountId) {
     throw new AppError("UNAUTHORIZED", "ログインしてください", 401);
   }
 

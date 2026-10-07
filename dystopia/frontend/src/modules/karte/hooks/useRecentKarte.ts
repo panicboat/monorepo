@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedKarteRecentResponse } from "../types";
 
 export function useRecentKarte(enabled: boolean) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedKarteRecentResponse | null): string | null => {
     if (!enabled || !userId) return null;

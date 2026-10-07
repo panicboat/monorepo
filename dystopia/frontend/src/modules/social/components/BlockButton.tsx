@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useBlock } from "@/modules/social/hooks";
-import { useAuthStore, selectUserId } from "@/stores/authStore";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface BlockButtonProps {
   targetAccountId: string;
@@ -10,7 +10,7 @@ interface BlockButtonProps {
 }
 
 export function BlockButton({ targetAccountId, className }: BlockButtonProps) {
-  const viewerId = useAuthStore(selectUserId);
+  const viewerId = useAuthStore(selectActiveProfileId);
   const { isBlocked, block, unblock, loading } = useBlock(targetAccountId);
 
   if (!targetAccountId || (viewerId && viewerId === targetAccountId)) return null;

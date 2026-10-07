@@ -7,7 +7,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedNotificationsResponse } from "../types";
 
 export function useNotifications() {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedNotificationsResponse | null): string | null => {
     if (!userId) return null;
@@ -25,7 +25,7 @@ export function useNotifications() {
   const unreadCount = pages.length > 0 ? pages[0].unreadCount : 0;
 
   const markAllRead = useCallback(async () => {
-    if (!useAuthStore.getState().userId) throw new Error("Not authenticated");
+    if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
     const res = await fetch(`/api/notifications/mark-all-read`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -47,7 +47,7 @@ export function useNotifications() {
   }, [mutate]);
 
   const markRead = useCallback(async (id: string) => {
-    if (!useAuthStore.getState().userId) throw new Error("Not authenticated");
+    if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
     const res = await fetch(`/api/notifications/${id}/read`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

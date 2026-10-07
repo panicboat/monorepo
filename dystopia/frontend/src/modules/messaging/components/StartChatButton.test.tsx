@@ -11,11 +11,11 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/stores/authStore", () => ({
-  useAuthStore: (selector?: (state: { userId: string; role: string | null }) => unknown) => {
-    const state = { userId: "viewer-1", role: mocks.role };
+  useAuthStore: (selector?: (state: { activeProfileId: string; role: string | null }) => unknown) => {
+    const state = { activeProfileId: "viewer-1", role: mocks.role };
     return selector ? selector(state) : state;
   },
-  selectUserId: (state: { userId: string }) => state.userId,
+  selectActiveProfileId: (state: { activeProfileId: string }) => state.activeProfileId,
   selectRole: (state: { role: string | null }) => state.role,
 }));
 

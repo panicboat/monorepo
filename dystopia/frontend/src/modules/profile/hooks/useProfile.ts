@@ -30,7 +30,7 @@ export async function fetchProfileOrEmpty(url: string, accountId: string): Promi
 }
 
 export function useProfile() {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
   const { data, error, isLoading, mutate } = useSWR<ProfileResponse>(
     userId ? "/api/profile" : null,
     (url: string) => fetchProfileOrEmpty(url, userId!),

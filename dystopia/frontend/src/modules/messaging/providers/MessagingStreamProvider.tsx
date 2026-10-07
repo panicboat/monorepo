@@ -11,7 +11,7 @@ export function MessagingStreamProvider({ children }: { children: React.ReactNod
   const { mutate } = useSWRConfig();
 
   useEffect(() => {
-    if (!useAuthStore.getState().userId) return;
+    if (!useAuthStore.getState().activeProfileId) return;
     const tick = () => {
       mutate("/api/messaging/unread-count");
       mutate("/api/messaging/threads");

@@ -14,7 +14,7 @@ import {
   useAuthStore,
   selectRole,
   selectIsHydrated,
-  selectUserId,
+  selectAccountId,
 } from "@/stores/authStore";
 import { useToastStore } from "@/stores/toastStore";
 import type { Role } from "@/lib/auth";
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [newUserFlag, setNewUserFlag] = useState(false);
   const router = useRouter();
 
-  const userId = useAuthStore(selectUserId);
+  const accountId = useAuthStore(selectAccountId);
   const role = useAuthStore(selectRole);
   const isHydrated = useAuthStore(selectIsHydrated);
   const setIdentity = useAuthStore((state) => state.setIdentity);
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     data: userData,
     isLoading: swrLoading,
     mutate,
-  } = useSWR(isHydrated && userId ? "/api/identity/me" : null, meFetcher, {
+  } = useSWR(isHydrated && accountId ? "/api/identity/me" : null, meFetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 5000,
   });
@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Keep role in the dependency list because auth state must react to role changes.
   void role;
-  void userId;
+  void accountId;
 
   const register = async (phoneNumber: string, password: string) => {
     const res = await fetch("/api/identity/register", {
@@ -140,7 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setIdentity({
-      userId: data.account.id,
+      accountId: data.account.id,
       role: toStoreRole(data.account.role),
     });
 
@@ -170,7 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setIdentity({
-      userId: data.account.id,
+      accountId: data.account.id,
       role: toStoreRole(data.account.role),
     });
 

@@ -13,7 +13,7 @@ export function useFollow(targetAccountId: string | null | undefined) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!targetAccountId || !useAuthStore.getState().userId) return;
+    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
     let cancelled = false;
     (async () => {
       try {
@@ -31,7 +31,7 @@ export function useFollow(targetAccountId: string | null | undefined) {
   }, [targetAccountId]);
 
   const follow = useCallback(async () => {
-    if (!targetAccountId || !useAuthStore.getState().userId) return;
+    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
       const res = await authFetch<FollowResponse>(
@@ -46,7 +46,7 @@ export function useFollow(targetAccountId: string | null | undefined) {
   }, [targetAccountId]);
 
   const unfollow = useCallback(async () => {
-    if (!targetAccountId || !useAuthStore.getState().userId) return;
+    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
       await authFetch(`/api/social/follow?target_account_id=${encodeURIComponent(targetAccountId)}`, { method: "DELETE" });
@@ -57,7 +57,7 @@ export function useFollow(targetAccountId: string | null | undefined) {
   }, [targetAccountId]);
 
   const cancelRequest = useCallback(async () => {
-    if (!targetAccountId || !useAuthStore.getState().userId) return;
+    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
       await authFetch(`/api/social/follow?target_account_id=${encodeURIComponent(targetAccountId)}&cancel=1`, { method: "DELETE" });

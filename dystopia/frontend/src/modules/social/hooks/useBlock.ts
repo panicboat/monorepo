@@ -11,7 +11,7 @@ export function useBlock(targetAccountId: string | null | undefined) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!targetAccountId || !useAuthStore.getState().userId) return;
+    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
     let cancelled = false;
     (async () => {
       try {
@@ -29,7 +29,7 @@ export function useBlock(targetAccountId: string | null | undefined) {
   }, [targetAccountId]);
 
   const block = useCallback(async () => {
-    if (!targetAccountId || !useAuthStore.getState().userId) return;
+    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
       await authFetch("/api/social/blocks", { method: "POST", body: { targetAccountId } });
@@ -40,7 +40,7 @@ export function useBlock(targetAccountId: string | null | undefined) {
   }, [targetAccountId]);
 
   const unblock = useCallback(async () => {
-    if (!targetAccountId || !useAuthStore.getState().userId) return;
+    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
       await authFetch(`/api/social/blocks?target_account_id=${encodeURIComponent(targetAccountId)}`, { method: "DELETE" });

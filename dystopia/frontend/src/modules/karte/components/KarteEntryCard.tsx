@@ -15,7 +15,7 @@ interface Props {
 }
 
 export function KarteEntryCard({ entry, mode, onChanged }: Props) {
-  const viewerId = useAuthStore((s) => s.userId);
+  const viewerId = useAuthStore((s) => s.activeProfileId);
   const isOwn = viewerId === entry.authorAccountId;
   const { remove, loading: deleting } = useDeleteKarte();
   const { report, loading: reporting } = useReportKarte();

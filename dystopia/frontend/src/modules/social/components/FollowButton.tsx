@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useFollow } from "@/modules/social/hooks";
 import { FollowStatus } from "@/modules/social/types";
-import { useAuthStore, selectUserId } from "@/stores/authStore";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface FollowButtonProps {
   targetAccountId: string;
@@ -11,7 +11,7 @@ interface FollowButtonProps {
 }
 
 export function FollowButton({ targetAccountId, className }: FollowButtonProps) {
-  const viewerId = useAuthStore(selectUserId);
+  const viewerId = useAuthStore(selectActiveProfileId);
   const { status, isFollowing, isPending, follow, unfollow, cancelRequest, loading } =
     useFollow(targetAccountId);
 

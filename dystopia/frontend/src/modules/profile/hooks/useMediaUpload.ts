@@ -14,7 +14,7 @@ export function useMediaUpload() {
   const [error, setError] = useState<string | null>(null);
 
   const upload = async (file: File): Promise<UploadResult | null> => {
-    if (!useAuthStore.getState().userId) {
+    if (!useAuthStore.getState().activeProfileId) {
       setError("ログインが必要です");
       return null;
     }

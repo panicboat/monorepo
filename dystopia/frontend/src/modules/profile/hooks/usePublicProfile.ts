@@ -10,7 +10,7 @@ interface ProfileResponse {
 }
 
 export function usePublicProfile(username: string | null) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
   const { data, error, isLoading, mutate } = useSWR<ProfileResponse>(
     userId && username ? `/api/profile/by-username/${encodeURIComponent(username)}` : null,
     fetcher,

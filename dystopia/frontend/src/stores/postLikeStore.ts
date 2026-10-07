@@ -41,7 +41,7 @@ export const usePostLikeStore = create<PostLikeState>()((set, get) => ({
   },
 
   like: async (postId) => {
-    if (!useAuthStore.getState().userId) {
+    if (!useAuthStore.getState().accountId) {
       // FALLBACK: Return null when the user is not authenticated.
       console.warn("Cannot like: not authenticated");
       return null;
@@ -65,7 +65,7 @@ export const usePostLikeStore = create<PostLikeState>()((set, get) => ({
   },
 
   unlike: async (postId) => {
-    if (!useAuthStore.getState().userId) {
+    if (!useAuthStore.getState().accountId) {
       // FALLBACK: Return null when the user is not authenticated.
       console.warn("Cannot unlike: not authenticated");
       return null;

@@ -18,7 +18,7 @@ export function useMedia(): UseMediaResult {
   const [error, setError] = useState<Error | null>(null);
 
   const getMedia = useCallback(async (id: string): Promise<MediaItem | null> => {
-    if (!useAuthStore.getState().userId) {
+    if (!useAuthStore.getState().activeProfileId) {
       throw new Error("ログインしてください");
     }
 
@@ -52,7 +52,7 @@ export function useMedia(): UseMediaResult {
     async (ids: string[]): Promise<MediaItem[]> => {
       if (ids.length === 0) return [];
 
-      if (!useAuthStore.getState().userId) {
+      if (!useAuthStore.getState().activeProfileId) {
         throw new Error("ログインしてください");
       }
 
@@ -87,7 +87,7 @@ export function useMedia(): UseMediaResult {
   );
 
   const deleteMedia = useCallback(async (id: string): Promise<boolean> => {
-    if (!useAuthStore.getState().userId) {
+    if (!useAuthStore.getState().activeProfileId) {
       throw new Error("ログインしてください");
     }
 

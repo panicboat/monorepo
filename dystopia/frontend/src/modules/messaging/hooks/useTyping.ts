@@ -30,7 +30,7 @@ export function useTyping(threadId: string | null | undefined) {
   }, [threadId]);
 
   const sendTyping = useCallback(async () => {
-    if (!threadId || !useAuthStore.getState().userId) return;
+    if (!threadId || !useAuthStore.getState().activeProfileId) return;
     try {
       await authFetch(`/api/messaging/threads/${encodeURIComponent(threadId)}/typing`, {
         method: "POST",
