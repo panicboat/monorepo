@@ -3026,6 +3026,8 @@ Expected: `config/db/seeds/identity/users.rb`(定義)と `config/db/seeds/portfo
 
 - [ ] **Step 3: seed が流れることを確認する**
 
+seed は開発用の database に対して流す。`HANAMI_ENV=test` を付けてテスト用の database に流さない。spec の `DatabaseCleaner.clean_with(:truncation)` は `public` schema のテーブルしか列挙しないため、slice の schema に入った seed の行は残り、後続の spec が余分な行として拾って失敗する。開発用の database が無い環境では、先に `bundle exec hanami db create && bundle exec hanami db migrate` で作る。
+
 Run: `bundle exec hanami db seed 2>&1 | tail -20`
 Expected: `Seed completed!` が出る。
 
