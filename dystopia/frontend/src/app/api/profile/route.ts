@@ -4,7 +4,7 @@ import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, handleApiError } from "@/lib/api-helpers";
 import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 import { mapProfileToView, buildSaveProfileRequest } from "@/modules/profile/lib/mappers";
-import type { SaveProfilePayload } from "@/modules/profile/types";
+import type { CreateProfilePayload, SaveProfilePayload } from "@/modules/profile/types";
 
 export async function GET(req: NextRequest) {
   try {
@@ -39,5 +39,25 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ profile: mapProfileToView(res.profile) });
   } catch (error: unknown) {
     return handleApiError(error, "SaveProfile");
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const authError = requireAuth(req);
+    if (authError) return authError;
+
+    const body = (await req.json()) as CreateProfilePayload;
+    const headers = await buildGrpcHeaders(req);
+    const res = await profileClient.createProfile(
+      { displayName: body.displayName, username: body.username || "" },
+      { headers }
+    );
+    if (!res.profile) {
+      return NextResponse.json({ error: "保存に失敗しました" }, { status: 500 });
+    }
+    return NextResponse.json({ profile: mapProfileToView(res.profile) });
+  } catch (error: unknown) {
+    return handleApiError(error, "CreateProfile");
   }
 }

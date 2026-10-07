@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuthStore, selectAccountId, selectIsHydrated } from "@/stores/authStore";
+import { useAuthStore, selectAccountId, selectActiveProfileId, selectIsHydrated } from "@/stores/authStore";
+import { useProfileSession } from "@/modules/profile/hooks";
 import { TopBar } from "./TopBar";
 import { BottomTab } from "./BottomTab";
 import { ComposerFAB } from "./ComposerFAB";
@@ -21,21 +22,34 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const isHydrated = useAuthStore(selectIsHydrated);
-  const viewerId = useAuthStore(selectAccountId);
+  const accountId = useAuthStore(selectAccountId);
+  const activeProfileId = useAuthStore(selectActiveProfileId);
+  const session = useProfileSession();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
   const isLandingRoute = pathname === "/";
+  const needsOnboarding = session?.kind === "onboarding";
 
   useEffect(() => {
-    if (isHydrated && !viewerId && !isAuthRoute && !isLandingRoute) {
-      router.replace("/login");
+    if (!isHydrated || isAuthRoute) return;
+    if (!accountId) {
+      if (!isLandingRoute) router.replace("/login");
+      return;
     }
-  }, [isHydrated, viewerId, isAuthRoute, isLandingRoute, router]);
+    if (needsOnboarding) router.replace("/onboarding");
+  }, [isHydrated, accountId, needsOnboarding, isAuthRoute, isLandingRoute, router]);
 
-  const mode = resolveShellMode({ isHydrated, viewerId, isAuthRoute, isLandingRoute });
+  // TODO: Render a profile picker when the session kind is "select"; the shell stays blank until then.
+  const mode = resolveShellMode({
+    isHydrated,
+    isAuthenticated: !!accountId,
+    hasActiveProfile: !!activeProfileId,
+    isAuthRoute,
+    isLandingRoute,
+  });
 
   if (mode === "bare") {
     return <>{children}</>;

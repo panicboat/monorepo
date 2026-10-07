@@ -36,6 +36,15 @@ export interface ProfileView {
   disabled: boolean;
 }
 
+export interface CreateProfilePayload {
+  displayName: string;
+  username?: string;
+}
+
+export interface MyProfilesResponse {
+  profiles: ProfileView[];
+}
+
 export interface SaveProfilePayload {
   username?: string;
   displayName: string;

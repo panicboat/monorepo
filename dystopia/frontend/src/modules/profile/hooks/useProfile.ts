@@ -1,13 +1,14 @@
 "use client";
 
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { useCallback } from "react";
 import { fetcher } from "@/lib/swr";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { authFetch } from "@/lib/auth/fetch";
-import { isAppError } from "@/lib/errors";
-import { emptyProfileView } from "@/modules/profile/lib/mappers";
+import { isMyProfilesKey } from "@/modules/profile/lib/session";
 import type {
+  CreateProfilePayload,
+  MyProfilesResponse,
   ProfileView,
   SaveProfilePayload,
   SaveProfileMediaPayload,
@@ -17,24 +18,32 @@ interface ProfileResponse {
   profile: ProfileView;
 }
 
-export async function fetchProfileOrEmpty(url: string, accountId: string): Promise<ProfileResponse> {
-  try {
-    return await fetcher<ProfileResponse>(url);
-  } catch (error) {
-    if (isAppError(error) && error.code === "NOT_FOUND") {
-      // Treat a missing profile as empty because SaveProfile creates it on first save.
-      return { profile: emptyProfileView(accountId) };
-    }
-    throw error;
-  }
-}
-
 export function useProfile() {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const activeProfileId = useAuthStore(selectActiveProfileId);
+  const setActiveProfile = useAuthStore((s) => s.setActiveProfile);
+  const { mutate: mutateCache } = useSWRConfig();
   const { data, error, isLoading, mutate } = useSWR<ProfileResponse>(
-    userId ? "/api/profile" : null,
-    (url: string) => fetchProfileOrEmpty(url, userId!),
+    activeProfileId ? (["/api/profile", activeProfileId] as const) : null,
+    ([url]: readonly [string, string]) => fetcher<ProfileResponse>(url),
     { revalidateOnFocus: false, dedupingInterval: 5000 }
+  );
+
+  const createProfile = useCallback(
+    async (payload: CreateProfilePayload) => {
+      const res = await authFetch<ProfileResponse>("/api/profile", {
+        method: "POST",
+        body: payload,
+      });
+      // Put the new profile into the cached list first; a stale empty list would resolve back to onboarding.
+      await mutateCache<MyProfilesResponse>(
+        isMyProfilesKey,
+        (current) => ({ profiles: [...(current?.profiles ?? []), res.profile] }),
+        { revalidate: false }
+      );
+      setActiveProfile(res.profile.id);
+      return res.profile;
+    },
+    [setActiveProfile, mutateCache]
   );
 
   const saveProfile = useCallback(
@@ -65,6 +74,7 @@ export function useProfile() {
     profile: data?.profile ?? null,
     loading: isLoading,
     error,
+    createProfile,
     saveProfile,
     saveMedia,
     mutate,

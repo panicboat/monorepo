@@ -2,7 +2,8 @@ export type ShellMode = "bare" | "loading" | "landing" | "shell";
 
 interface ResolveShellModeArgs {
   isHydrated: boolean;
-  viewerId: string | null;
+  isAuthenticated: boolean;
+  hasActiveProfile: boolean;
   isAuthRoute: boolean;
   isLandingRoute: boolean;
 }
@@ -10,12 +11,14 @@ interface ResolveShellModeArgs {
 // Keep auth routes bare to avoid remounting authenticated onboarding forms.
 export function resolveShellMode({
   isHydrated,
-  viewerId,
+  isAuthenticated,
+  hasActiveProfile,
   isAuthRoute,
   isLandingRoute,
 }: ResolveShellModeArgs): ShellMode {
   if (isAuthRoute) return "bare";
   if (!isHydrated) return "loading";
-  if (!viewerId) return isLandingRoute ? "landing" : "loading";
+  if (!isAuthenticated) return isLandingRoute ? "landing" : "loading";
+  if (!hasActiveProfile) return "loading";
   return "shell";
 }
