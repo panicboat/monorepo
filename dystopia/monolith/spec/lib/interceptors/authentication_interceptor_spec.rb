@@ -39,6 +39,7 @@ RSpec.describe Interceptors::AuthenticationInterceptor, type: :database do
         interceptor.call do
           expect(Current.account_id).to eq(account_id)
           expect(Current.profile_id).to eq(profile_id)
+          expect(Current.profile_denied).to be false
         end
       end
 
@@ -46,7 +47,10 @@ RSpec.describe Interceptors::AuthenticationInterceptor, type: :database do
         enabled = create_account_with_profile(account_id: account_id)
         create_account_with_profile(account_id: account_id, disabled_at: Time.now)
 
-        interceptor.call { expect(Current.profile_id).to eq(enabled) }
+        interceptor.call do
+          expect(Current.profile_id).to eq(enabled)
+          expect(Current.profile_denied).to be false
+        end
       end
 
       it "leaves the profile empty when the account has several enabled profiles" do
@@ -56,11 +60,15 @@ RSpec.describe Interceptors::AuthenticationInterceptor, type: :database do
         interceptor.call do
           expect(Current.account_id).to eq(account_id)
           expect(Current.profile_id).to be_nil
+          expect(Current.profile_denied).to be false
         end
       end
 
       it "leaves the profile empty when the account has no profile" do
-        interceptor.call { expect(Current.profile_id).to be_nil }
+        interceptor.call do
+          expect(Current.profile_id).to be_nil
+          expect(Current.profile_denied).to be false
+        end
       end
     end
 
@@ -155,7 +163,10 @@ RSpec.describe Interceptors::AuthenticationInterceptor, type: :database do
         it "falls back to the only enabled profile" do
           own_profile
 
-          interceptor.call { expect(Current.profile_id).to eq(own_profile) }
+          interceptor.call do
+            expect(Current.profile_id).to eq(own_profile)
+            expect(Current.profile_denied).to be false
+          end
         end
       end
     end

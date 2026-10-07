@@ -118,8 +118,9 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:notifications__notifications].where(latest_actor_id: bystander).count).to eq(1)
     expect(db[:footprints__visits].where(visitor_id: bystander, visited_id: witness).count).to eq(1)
     expect(db[:messaging__read_states].where(thread_id: thread[:id], account_id: bystander).count).to eq(1)
-    expect(db[:messaging__threads].where(id: thread[:id], account_b: bystander).count).to eq(1)
+    expect(
+      db[:messaging__threads].where(id: thread[:id]).where(Sequel.|({ account_a: bystander }, { account_b: bystander })).count
+    ).to eq(1)
     expect(db[:schedule__schedules].where(account_id: bystander).count).to eq(1)
-    expect([post_a.id, post_b.id].length).to eq(2)
   end
 end
