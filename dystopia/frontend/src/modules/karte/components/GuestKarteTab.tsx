@@ -5,13 +5,13 @@ import { KarteAggregateHeader } from "./KarteAggregateHeader";
 import { KarteComposer } from "./KarteComposer";
 import { KarteEntryCard } from "./KarteEntryCard";
 
-export function GuestKarteTab({ guestAccountId }: { guestAccountId: string }) {
-  const { entries, aggregate, hasMore, loading, loadMore, refresh } = useGuestKarte(guestAccountId);
+export function GuestKarteTab({ guestProfileId }: { guestProfileId: string }) {
+  const { entries, aggregate, hasMore, loading, loadMore, refresh } = useGuestKarte(guestProfileId);
 
   return (
     <div>
       <KarteAggregateHeader aggregate={aggregate} />
-      <KarteComposer targetAccountId={guestAccountId} onCreated={refresh} />
+      <KarteComposer targetProfileId={guestProfileId} onCreated={refresh} />
       {entries.map((e) => (
         <KarteEntryCard key={e.id} entry={e} mode="target" onChanged={refresh} />
       ))}

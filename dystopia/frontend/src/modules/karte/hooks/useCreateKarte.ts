@@ -9,7 +9,7 @@ export function useCreateKarte() {
   const [error, setError] = useState<Error | null>(null);
 
   const create = useCallback(async (
-    targetAccountId: string,
+    targetProfileId: string,
     rating: number,
     body: string
   ): Promise<KarteEntry | null> => {
@@ -18,7 +18,7 @@ export function useCreateKarte() {
     try {
       const res = await authFetch<{ entry: KarteEntry }>("/api/karte", {
         method: "POST",
-        body: { targetAccountId, rating, body },
+        body: { targetProfileId, rating, body },
       });
       return res.entry;
     } catch (e) {

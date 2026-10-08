@@ -13,8 +13,9 @@ const mockAggregate: KarteAggregate = {
 const mockEntries: KarteEntry[] = [
   {
     id: "k1",
-    authorAccountId: "cast-demo",
-    targetAccountId: "guest-demo",
+    authorProfileId: "cast-demo",
+    targetProfileId: "guest-demo",
+    isMine: true,
     authorUsername: "yuna",
     authorAvatarUrl: "",
     targetUsername: "guest_demo",
@@ -27,8 +28,9 @@ const mockEntries: KarteEntry[] = [
   },
   {
     id: "k2",
-    authorAccountId: "cast-other",
-    targetAccountId: "guest-demo",
+    authorProfileId: "cast-other",
+    targetProfileId: "guest-demo",
+    isMine: false,
     authorUsername: "sakura",
     authorAvatarUrl: "",
     targetUsername: "guest_demo",
@@ -57,7 +59,7 @@ export default function DevUiKartePage() {
       <section>
         <h2 className="pb-3 text-sm font-bold text-text-secondary">KarteComposer (no live API)</h2>
         <div className="border border-divider rounded-lg overflow-hidden">
-          <KarteComposer targetAccountId="guest-demo-noop" />
+          <KarteComposer targetProfileId="guest-demo-noop" />
         </div>
       </section>
 

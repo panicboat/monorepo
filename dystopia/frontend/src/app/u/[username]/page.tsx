@@ -58,7 +58,7 @@ export default function PublicProfilePage() {
         isOwnProfile={isOwnProfile}
         extraTabs={[
           ...(role === "guest" && karteAccess
-            ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guestAccountId={profile.id} /> }]
+            ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guestProfileId={profile.id} /> }]
             : []),
           {
             id: "reviews",
