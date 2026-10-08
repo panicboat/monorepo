@@ -16,7 +16,7 @@ function messageProtoToView(m: Message): MessageView {
   return {
     id: m.id,
     threadId: m.threadId,
-    senderId: m.senderId,
+    senderProfileId: m.senderProfileId,
     content: m.content,
     createdAt: timestampToIso(m.createdAt),
   };
@@ -30,21 +30,21 @@ export async function POST(req: NextRequest) {
     const headers = await buildGrpcHeaders(req);
     const body = await req.json();
     const threadId: string = body?.threadId ?? "";
-    const recipientAccountId: string = body?.recipientAccountId ?? "";
+    const recipientProfileId: string = body?.recipientProfileId ?? "";
     const content: string = body?.content ?? "";
 
     if (!content) {
       return NextResponse.json({ error: "content required" }, { status: 400 });
     }
-    if (!threadId && !recipientAccountId) {
+    if (!threadId && !recipientProfileId) {
       return NextResponse.json(
-        { error: "threadId or recipientAccountId required" },
+        { error: "threadId or recipientProfileId required" },
         { status: 400 }
       );
     }
 
     const res = await messagingClient.sendMessage(
-      { threadId, recipientAccountId, content },
+      { threadId, recipientProfileId, content },
       { headers }
     );
     return NextResponse.json({

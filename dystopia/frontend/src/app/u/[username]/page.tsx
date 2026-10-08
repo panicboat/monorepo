@@ -47,7 +47,7 @@ export default function PublicProfilePage() {
       {!isOwnProfile && (
         <div className="flex items-center gap-2 px-4 pt-3">
           <FollowButton targetProfileId={profile.id} />
-          <StartChatButton targetAccountId={profile.id} />
+          <StartChatButton targetProfileId={profile.id} />
           <BlockButton targetProfileId={profile.id} />
         </div>
       )}

@@ -22,7 +22,7 @@ export default function ChatPage() {
   const { typingActorId, sendTyping } = useTyping(threadId || null);
 
   useEffect(() => {
-    const incoming = messages.find((m) => m.senderId !== viewerId);
+    const incoming = messages.find((m) => m.senderProfileId !== viewerId);
     if (incoming) {
       markRead(incoming.id);
     }
@@ -59,7 +59,7 @@ export default function ChatPage() {
         )}
         <div className="flex flex-col-reverse gap-2 px-4 pb-4">
           {messages.map((m) => {
-            const isMine = m.senderId === viewerId;
+            const isMine = m.senderProfileId === viewerId;
             return (
               <div
                 key={m.id}

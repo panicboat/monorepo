@@ -9,7 +9,7 @@ import { useFollow } from "@/modules/social/hooks";
 import type { ThreadView } from "@/modules/messaging/types";
 
 interface StartChatButtonProps {
-  targetAccountId: string;
+  targetProfileId: string;
   className?: string;
 }
 
@@ -17,11 +17,11 @@ interface GetOrCreateThreadResponse {
   thread: ThreadView | null;
 }
 
-export function StartChatButton({ targetAccountId, className }: StartChatButtonProps) {
+export function StartChatButton({ targetProfileId, className }: StartChatButtonProps) {
   const router = useRouter();
   const viewerId = useAuthStore(selectActiveProfileId);
   const viewerRole = useAuthStore(selectRole);
-  const { isFollowing } = useFollow(targetAccountId);
+  const { isFollowing } = useFollow(targetProfileId);
   const [loading, setLoading] = useState(false);
 
   const onClick = useCallback(async () => {
@@ -30,7 +30,7 @@ export function StartChatButton({ targetAccountId, className }: StartChatButtonP
     try {
       const res = await authFetch<GetOrCreateThreadResponse>("/api/messaging/threads", {
         method: "POST",
-        body: { recipientAccountId: targetAccountId },
+        body: { recipientProfileId: targetProfileId },
       });
       if (res.thread?.id) {
         router.push(`/messages/${encodeURIComponent(res.thread.id)}`);
@@ -43,9 +43,9 @@ export function StartChatButton({ targetAccountId, className }: StartChatButtonP
     } finally {
       setLoading(false);
     }
-  }, [targetAccountId, loading, router]);
+  }, [targetProfileId, loading, router]);
 
-  if (!targetAccountId || !viewerId || viewerId === targetAccountId) return null;
+  if (!targetProfileId || !viewerId || viewerId === targetProfileId) return null;
   if (viewerRole === "guest" && !isFollowing) return null;
 
   return (

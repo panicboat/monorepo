@@ -5,15 +5,15 @@ import { useUnreadCount } from "@/modules/notifications/hooks";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface NotificationBellProps {
-  targetAccountId: string;
+  targetProfileId: string;
   className?: string;
 }
 
-export function NotificationBell({ targetAccountId, className }: NotificationBellProps) {
+export function NotificationBell({ targetProfileId, className }: NotificationBellProps) {
   const viewerId = useAuthStore(selectActiveProfileId);
   const { count } = useUnreadCount();
 
-  if (!targetAccountId || !viewerId || viewerId !== targetAccountId) return null;
+  if (!targetProfileId || !viewerId || viewerId !== targetProfileId) return null;
 
   return (
     <Link

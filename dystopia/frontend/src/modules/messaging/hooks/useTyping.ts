@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 
 interface TypingDetail {
   type: "typing";
-  data: { threadId: string; accountId: string };
+  data: { threadId: string; profileId: string };
 }
 
 export function useTyping(threadId: string | null | undefined) {
@@ -18,7 +18,7 @@ export function useTyping(threadId: string | null | undefined) {
     const onTyping = (e: Event) => {
       const detail = (e as CustomEvent<TypingDetail>).detail;
       if (detail?.data?.threadId !== threadId) return;
-      setTypingActorId(detail.data.accountId);
+      setTypingActorId(detail.data.profileId);
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => setTypingActorId(null), 3000);
     };
