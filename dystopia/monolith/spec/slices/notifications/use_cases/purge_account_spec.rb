@@ -7,8 +7,8 @@ RSpec.describe Notifications::UseCases::PurgeAccount do
   let(:notification_repo) { double(:notification_repository) }
 
   it "deletes notifications (recipient or latest_actor) and preferences for the account" do
-    expect(notification_repo).to receive(:delete_notifications_by_account).with("cast-1")
-    expect(notification_repo).to receive(:delete_preferences_by_account).with("cast-1")
+    expect(notification_repo).to receive(:delete_notifications_by_profile).with("cast-1")
+    expect(notification_repo).to receive(:delete_preferences_by_profile).with("cast-1")
     use_case.call(account_id: "cast-1")
   end
 end

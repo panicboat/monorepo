@@ -20,10 +20,10 @@ module Social
 
           notification_type = result[:status] == "approved" ? "follow_approved" : "follow_request"
           notifications_emit.call(
-            recipient_id: target_profile_id,
+            recipient_profile_id: target_profile_id,
             type: notification_type,
             target_resource_id: follower_profile_id,
-            actor_id: follower_profile_id
+            actor_profile_id: follower_profile_id
           )
 
           { status: result[:status] }

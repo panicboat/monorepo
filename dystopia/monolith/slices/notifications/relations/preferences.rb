@@ -4,7 +4,7 @@ module Notifications
   module Relations
     class Preferences < ::Notifications::DB::Relation
       schema(:"notifications__preferences", as: :preference_records, infer: false) do
-        attribute :account_id, Types::String
+        attribute :profile_id, Types::String
         attribute :push_enabled, Types::Bool
         attribute :post, Types::Bool
         attribute :like, Types::Bool
@@ -20,7 +20,7 @@ module Notifications
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
 
-        primary_key :account_id
+        primary_key :profile_id
       end
     end
   end

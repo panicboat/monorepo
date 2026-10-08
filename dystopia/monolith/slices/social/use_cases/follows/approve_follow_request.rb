@@ -14,10 +14,10 @@ module Social
           )
 
           notifications_emit.call(
-            recipient_id: requester_profile_id,
+            recipient_profile_id: requester_profile_id,
             type: "follow_approved",
             target_resource_id: target_profile_id,
-            actor_id: target_profile_id
+            actor_profile_id: target_profile_id
           )
 
           {}

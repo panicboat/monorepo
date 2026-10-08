@@ -32,10 +32,10 @@ module Post
         like_repo.profile_like(post_id: request.message.post_id, profile_id: current_profile_id)
 
         notifications_emit.call(
-          recipient_id: post.author_profile_id,
+          recipient_profile_id: post.author_profile_id,
           type: "like",
           target_resource_id: post.id,
-          actor_id: current_profile_id
+          actor_profile_id: current_profile_id
         )
 
         ::Post::V1::LikePostResponse.new(likes_count: like_repo.likes_count(post_id: request.message.post_id))

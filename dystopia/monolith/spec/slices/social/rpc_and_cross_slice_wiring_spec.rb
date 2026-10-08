@@ -135,15 +135,15 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       authorize = Messaging::UseCases::AuthorizeMessage.new
       open_thread = Messaging::Slice["use_cases.get_or_create_thread"]
 
-      expect(authorize.call(sender_id: viewer, recipient_id: public_cast)).to be false
+      expect(authorize.call(sender_profile_id: viewer, recipient_profile_id: public_cast)).to be false
       follow_repo.follow(follower_profile_id: viewer, followee_profile_id: public_cast, status: "approved")
-      expect(authorize.call(sender_id: viewer, recipient_id: public_cast)).to be true
-      expect(open_thread.call(viewer_id: viewer, recipient_account_id: public_cast)[:counterpart].id).to eq(public_cast)
+      expect(authorize.call(sender_profile_id: viewer, recipient_profile_id: public_cast)).to be true
+      expect(open_thread.call(viewer_profile_id: viewer, recipient_profile_id: public_cast)[:counterpart].id).to eq(public_cast)
 
       block_repo.block(blocker_profile_id: public_cast, blocked_profile_id: viewer)
-      expect { open_thread.call(viewer_id: viewer, recipient_account_id: public_cast) }
+      expect { open_thread.call(viewer_profile_id: viewer, recipient_profile_id: public_cast) }
         .to raise_error(Messaging::UseCases::GetOrCreateThread::BlockedError)
-      expect { Messaging::Slice["use_cases.send_message"].call(sender_id: viewer, content: "hi", recipient_account_id: public_cast) }
+      expect { Messaging::Slice["use_cases.send_message"].call(sender_profile_id: viewer, content: "hi", recipient_profile_id: public_cast) }
         .to raise_error(Messaging::UseCases::SendMessage::BlockedError)
     end
 
@@ -166,9 +166,9 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       emit = Notifications::Slice["use_cases.emit"]
       target = SecureRandom.uuid_v7
 
-      delivered = emit.call(recipient_id: public_cast, type: "like", target_resource_id: target, actor_id: viewer)
+      delivered = emit.call(recipient_profile_id: public_cast, type: "like", target_resource_id: target, actor_profile_id: viewer)
       block_repo.block(blocker_profile_id: public_cast, blocked_profile_id: other_guest)
-      suppressed = emit.call(recipient_id: public_cast, type: "like", target_resource_id: target, actor_id: other_guest)
+      suppressed = emit.call(recipient_profile_id: public_cast, type: "like", target_resource_id: target, actor_profile_id: other_guest)
 
       expect(delivered).not_to be_nil
       expect(suppressed).to be_nil

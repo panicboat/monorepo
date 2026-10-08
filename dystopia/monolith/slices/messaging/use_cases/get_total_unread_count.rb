@@ -5,10 +5,10 @@ module Messaging
     class GetTotalUnreadCount
       include Messaging::Deps[messaging_repo: "repositories.messaging_repository"]
 
-      def call(account_id:)
-        return 0 if account_id.nil? || account_id.to_s.empty?
+      def call(profile_id:)
+        return 0 if profile_id.nil? || profile_id.to_s.empty?
 
-        messaging_repo.total_unread_count(account_id: account_id)
+        messaging_repo.total_unread_count(profile_id: profile_id)
       end
     end
   end

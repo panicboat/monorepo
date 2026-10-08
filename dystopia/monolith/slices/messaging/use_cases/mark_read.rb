@@ -10,13 +10,13 @@ module Messaging
       ThreadNotFoundError = Class.new(StandardError)
       ForbiddenError = Class.new(StandardError)
 
-      def call(thread_id:, viewer_id:, message_id:)
+      def call(thread_id:, viewer_profile_id:, message_id:)
         thread = messaging_repo.find_thread(id: thread_id)
         raise ThreadNotFoundError, "thread not found" unless thread
 
-        viewer = viewer_id.to_s
-        a = thread.account_a.to_s
-        b = thread.account_b.to_s
+        viewer = viewer_profile_id.to_s
+        a = thread.profile_a.to_s
+        b = thread.profile_b.to_s
         unless [a, b].include?(viewer)
           raise ForbiddenError, "viewer is not a thread participant"
         end
@@ -26,15 +26,15 @@ module Messaging
 
         messaging_repo.upsert_read_state(
           thread_id: thread_id,
-          account_id: viewer,
+          profile_id: viewer,
           last_read_message_id: last_id
         )
 
         publish_read_state_event(
           thread_id: thread_id,
-          account_id: viewer,
+          profile_id: viewer,
           last_read_message_id: last_id,
-          recipient_id: counterpart
+          recipient_profile_id: counterpart
         )
 
         {}
@@ -42,16 +42,16 @@ module Messaging
 
       private
 
-      def publish_read_state_event(thread_id:, account_id:, last_read_message_id:, recipient_id:)
+      def publish_read_state_event(thread_id:, profile_id:, last_read_message_id:, recipient_profile_id:)
         payload = {
           type: "read_state",
           data: {
             thread_id: thread_id.to_s,
-            account_id: account_id.to_s,
+            profile_id: profile_id.to_s,
             last_read_message_id: last_read_message_id.to_s
           }
         }.to_json
-        notify("messaging_user_#{recipient_id}", payload)
+        notify("messaging_user_#{recipient_profile_id}", payload)
       end
 
       def notify(channel, payload)

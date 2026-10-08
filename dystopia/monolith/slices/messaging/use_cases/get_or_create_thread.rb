@@ -13,25 +13,25 @@ module Messaging
       BlockedError = Class.new(StandardError)
       RecipientUnresolvedError = Class.new(StandardError)
 
-      def call(viewer_id:, recipient_account_id:)
-        if recipient_account_id.nil? || recipient_account_id.to_s.empty?
-          raise RecipientUnresolvedError, "recipient_account_id required"
+      def call(viewer_profile_id:, recipient_profile_id:)
+        if recipient_profile_id.nil? || recipient_profile_id.to_s.empty?
+          raise RecipientUnresolvedError, "recipient_profile_id required"
         end
-        raise SelfMessageError, "viewer == recipient" if viewer_id.to_s == recipient_account_id.to_s
-        raise BlockedError, "blocked" if bidirectionally_blocked?(viewer_id, recipient_account_id)
-        unless authorize_message.call(sender_id: viewer_id, recipient_id: recipient_account_id)
+        raise SelfMessageError, "viewer == recipient" if viewer_profile_id.to_s == recipient_profile_id.to_s
+        raise BlockedError, "blocked" if bidirectionally_blocked?(viewer_profile_id, recipient_profile_id)
+        unless authorize_message.call(sender_profile_id: viewer_profile_id, recipient_profile_id: recipient_profile_id)
           raise FollowRequiredError, "follow required"
         end
 
-        account_a, account_b = [viewer_id.to_s, recipient_account_id.to_s].minmax
-        row = messaging_repo.upsert_thread(account_a: account_a, account_b: account_b)
+        profile_a, profile_b = [viewer_profile_id.to_s, recipient_profile_id.to_s].minmax
+        row = messaging_repo.upsert_thread(profile_a: profile_a, profile_b: profile_b)
         thread_id = row[:id] || row.id
 
         {
           row: row,
-          counterpart: get_profile.call(profile_id: recipient_account_id),
+          counterpart: get_profile.call(profile_id: recipient_profile_id),
           last_message: messaging_repo.last_message(thread_id: thread_id),
-          unread_count: messaging_repo.unread_count(thread_id: thread_id, account_id: viewer_id)
+          unread_count: messaging_repo.unread_count(thread_id: thread_id, profile_id: viewer_profile_id)
         }
       end
 

@@ -20,8 +20,8 @@ module Notifications
 
       include Notifications::Deps[notification_repo: "repositories.notification_repository"]
 
-      def call(account_id:)
-        row = notification_repo.get_preferences(account_id: account_id)
+      def call(profile_id:)
+        row = notification_repo.get_preferences(profile_id: profile_id)
         return DEFAULT_PREFERENCES.dup unless row
 
         DEFAULT_PREFERENCES.keys.each_with_object({}) do |key, acc|

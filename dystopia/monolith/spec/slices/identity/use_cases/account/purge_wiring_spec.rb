@@ -74,24 +74,24 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     bookmark_repo.bookmark(account_id: bystander, post_id: witness_post.id)
 
     notification_repo.emit(
-      recipient_id: bystander,
+      recipient_profile_id: bystander,
       type: "mention",
       target_resource_id: post_a.id,
-      actor_id: persona_a
+      actor_profile_id: persona_a
     )
     notification_repo.emit(
-      recipient_id: bystander,
+      recipient_profile_id: bystander,
       type: "mention",
       target_resource_id: witness_post.id,
-      actor_id: bystander
+      actor_profile_id: bystander
     )
     footprints_repo.upsert_visit(visitor_id: persona_a, visited_id: bystander)
     footprints_repo.upsert_visit(visitor_id: bystander, visited_id: witness)
 
-    account_a, account_b = [persona_a, bystander].sort
-    thread = messaging_repo.upsert_thread(account_a: account_a, account_b: account_b)
-    messaging_repo.upsert_read_state(thread_id: thread[:id], account_id: persona_a, last_read_message_id: nil)
-    messaging_repo.upsert_read_state(thread_id: thread[:id], account_id: bystander, last_read_message_id: nil)
+    profile_a, profile_b = [persona_a, bystander].sort
+    thread = messaging_repo.upsert_thread(profile_a: profile_a, profile_b: profile_b)
+    messaging_repo.upsert_read_state(thread_id: thread[:id], profile_id: persona_a, last_read_message_id: nil)
+    messaging_repo.upsert_read_state(thread_id: thread[:id], profile_id: bystander, last_read_message_id: nil)
     schedule_repo.upsert(account_id: persona_a, work_date: "2026-10-01", start_time: "20:00", end_time: "02:00")
     schedule_repo.upsert(account_id: bystander, work_date: "2026-10-01", start_time: "20:00", end_time: "02:00")
 
@@ -115,10 +115,10 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:social__follows].where(follower_profile_id: personas).or(followee_profile_id: personas).count).to eq(0)
     expect(db[:social__blocks].where(blocker_profile_id: personas).count).to eq(0)
     expect(db[:bookmarks__bookmarks].where(account_id: personas).count).to eq(0)
-    expect(db[:notifications__notifications].where(latest_actor_id: personas).count).to eq(0)
+    expect(db[:notifications__notifications].where(latest_actor_profile_id: personas).count).to eq(0)
     expect(db[:footprints__visits].where(visitor_id: personas).or(visited_id: personas).count).to eq(0)
-    expect(db[:messaging__read_states].where(account_id: personas).count).to eq(0)
-    expect(db[:messaging__threads].where(account_a: personas).or(account_b: personas).count).to eq(0)
+    expect(db[:messaging__read_states].where(profile_id: personas).count).to eq(0)
+    expect(db[:messaging__threads].where(profile_a: personas).or(profile_b: personas).count).to eq(0)
     expect(db[:schedule__schedules].where(account_id: personas).count).to eq(0)
 
     expect(db[:profile__profiles].where(id: bystander).count).to eq(1)
@@ -130,11 +130,11 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:social__follows].where(follower_profile_id: bystander, followee_profile_id: witness).count).to eq(1)
     expect(db[:social__blocks].where(blocker_profile_id: bystander, blocked_profile_id: block_target).count).to eq(1)
     expect(db[:bookmarks__bookmarks].where(account_id: bystander).count).to eq(1)
-    expect(db[:notifications__notifications].where(latest_actor_id: bystander).count).to eq(1)
+    expect(db[:notifications__notifications].where(latest_actor_profile_id: bystander).count).to eq(1)
     expect(db[:footprints__visits].where(visitor_id: bystander, visited_id: witness).count).to eq(1)
-    expect(db[:messaging__read_states].where(thread_id: thread[:id], account_id: bystander).count).to eq(1)
+    expect(db[:messaging__read_states].where(thread_id: thread[:id], profile_id: bystander).count).to eq(1)
     expect(
-      db[:messaging__threads].where(id: thread[:id]).where(Sequel.|({ account_a: bystander }, { account_b: bystander })).count
+      db[:messaging__threads].where(id: thread[:id]).where(Sequel.|({ profile_a: bystander }, { profile_b: bystander })).count
     ).to eq(1)
     expect(db[:schedule__schedules].where(account_id: bystander).count).to eq(1)
   end

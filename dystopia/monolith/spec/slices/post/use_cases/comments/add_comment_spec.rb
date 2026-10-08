@@ -106,7 +106,7 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
         result = use_case.call(post_id: post.id, author_profile_id: author_profile_id, content: "hi @mentioned_user")
 
         expect(result[:comment].comment_mentions.map(&:profile_id)).to eq([mentioned_id])
-        notifications = notification_repo.list(recipient_id: mentioned_id)
+        notifications = notification_repo.list(recipient_profile_id: mentioned_id)
         expect(notifications.map(&:type)).to include("mention")
       end
 
@@ -128,7 +128,7 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
       it "does not notify a self-mention" do
         use_case.call(post_id: post.id, author_profile_id: author_profile_id, content: "hi @self_user")
 
-        expect(notification_repo.list(recipient_id: author_profile_id)).to eq([])
+        expect(notification_repo.list(recipient_profile_id: author_profile_id)).to eq([])
       end
 
       it "does not notify a mentioned profile that has blocked the commenter" do
@@ -138,7 +138,7 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
 
         use_case.call(post_id: post.id, author_profile_id: author_profile_id, content: "hi @mentioned_user")
 
-        expect(notification_repo.list(recipient_id: mentioned_id)).to eq([])
+        expect(notification_repo.list(recipient_profile_id: mentioned_id)).to eq([])
       end
 
       it "collapses repeated mentions of the same profile into a single notification" do
@@ -146,7 +146,7 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
 
         use_case.call(post_id: post.id, author_profile_id: author_profile_id, content: "@mentioned_user @mentioned_user")
 
-        notifications = notification_repo.list(recipient_id: mentioned_id)
+        notifications = notification_repo.list(recipient_profile_id: mentioned_id)
         expect(notifications.length).to eq(1)
         expect(notifications.first.actor_count).to eq(1)
       end
@@ -163,7 +163,7 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
         )
 
         expect(result[:comment].comment_mentions.map(&:profile_id)).to eq([mentioned_id])
-        notifications = notification_repo.list(recipient_id: mentioned_id)
+        notifications = notification_repo.list(recipient_profile_id: mentioned_id)
         expect(notifications.map(&:type)).to include("mention")
       end
     end
