@@ -18,18 +18,19 @@ module Karte
         @get_role = get_role
       end
 
-      def call(viewer_account_id:, target_account_id:, rating:, body:)
+      def call(viewer_account_id:, viewer_profile_id:, target_profile_id:, rating:, body:)
         raise AccessError, "Karte access required" unless authorize_cast_access.call(viewer_account_id: viewer_account_id)
         raise CreateError, "Rating must be 1..5" unless (1..5).cover?(rating)
         raise CreateError, "Body too long" if body && body.length > MAX_BODY_LENGTH
 
-        target_role = get_role.call(profile_id: target_account_id)
+        target_role = get_role.call(profile_id: target_profile_id)
         raise CreateError, "Target not found" unless target_role
         raise CreateError, "Target must be a guest" unless target_role == 1
 
         entry_repo.create(
           author_account_id: viewer_account_id,
-          target_account_id: target_account_id,
+          author_profile_id: viewer_profile_id,
+          target_profile_id: target_profile_id,
           rating: rating,
           body: body
         )

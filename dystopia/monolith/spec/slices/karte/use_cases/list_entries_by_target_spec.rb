@@ -23,8 +23,8 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
   let(:entry_flagged) do
     double(:entry,
       id: "e-1",
-      author_account_id: "author-1",
-      target_account_id: target_id,
+      author_account_id: "author-1", author_profile_id: "author-1-profile",
+      target_profile_id: target_id,
       rating: 5,
       body: "flagged entry",
       reported_count: 5,
@@ -35,8 +35,8 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
   let(:entry_clean) do
     double(:entry,
       id: "e-2",
-      author_account_id: "author-2",
-      target_account_id: target_id,
+      author_account_id: "author-2", author_profile_id: "author-2-profile",
+      target_profile_id: target_id,
       rating: 3,
       body: "clean entry",
       reported_count: 0,
@@ -55,18 +55,18 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
 
   it "returns entries with correct flagged values and aggregate" do
     allow(entry_repo).to receive(:list_by_target)
-      .with(target_account_id: target_id, limit: 2, cursor: nil)
+      .with(target_profile_id: target_id, limit: 2, cursor: nil)
       .and_return([entry_flagged, entry_clean])
     allow(entry_repo).to receive(:aggregate)
-      .with(target_account_id: target_id)
+      .with(target_profile_id: target_id)
       .and_return(aggregate)
 
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1").and_return(profile1)
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2").and_return(profile2)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1-profile").and_return(profile1)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2-profile").and_return(profile2)
     allow(get_profile_uc).to receive(:call).with(profile_id: target_id).and_return(target_profile)
     allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
 
-    result = use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, limit: 2)
+    result = use_case.call(viewer_account_id: viewer_id, target_profile_id: target_id, limit: 2)
 
     expect(result[:entries].length).to eq(2)
     expect(result[:entries][0][:flagged]).to be(true)
@@ -83,8 +83,8 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
   it "detects has_more and builds next_cursor when repo returns limit + 1 entries" do
     extra_entry = double(:entry,
       id: "e-3",
-      author_account_id: "author-1",
-      target_account_id: target_id,
+      author_account_id: "author-1", author_profile_id: "author-1-profile",
+      target_profile_id: target_id,
       rating: 4,
       body: "extra",
       reported_count: 0,
@@ -92,18 +92,18 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
       updated_at: now - 200)
 
     allow(entry_repo).to receive(:list_by_target)
-      .with(target_account_id: target_id, limit: 2, cursor: nil)
+      .with(target_profile_id: target_id, limit: 2, cursor: nil)
       .and_return([entry_flagged, entry_clean, extra_entry])
     allow(entry_repo).to receive(:aggregate)
-      .with(target_account_id: target_id)
+      .with(target_profile_id: target_id)
       .and_return(aggregate)
 
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1").and_return(profile1)
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2").and_return(profile2)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1-profile").and_return(profile1)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2-profile").and_return(profile2)
     allow(get_profile_uc).to receive(:call).with(profile_id: target_id).and_return(target_profile)
     allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
 
-    result = use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, limit: 2)
+    result = use_case.call(viewer_account_id: viewer_id, target_profile_id: target_id, limit: 2)
 
     expect(result[:has_more]).to be(true)
     expect(result[:next_cursor]).not_to be_nil
@@ -113,15 +113,15 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
   it "delegates the cast/billing check to AuthorizeCastAccess and rejects when it fails" do
     allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(false)
     expect {
-      use_case.call(viewer_account_id: viewer_id, target_account_id: target_id)
+      use_case.call(viewer_account_id: viewer_id, target_profile_id: target_id)
     }.to raise_error(Karte::UseCases::ListEntriesByTarget::AccessError)
   end
 
   it "dedupes author lookups within a page (calls get_profile once per unique author)" do
     entry_same_author = double(:entry,
       id: "e-3",
-      author_account_id: "author-1",
-      target_account_id: target_id,
+      author_account_id: "author-1", author_profile_id: "author-1-profile",
+      target_profile_id: target_id,
       rating: 4,
       body: "another entry by author-1",
       reported_count: 0,
@@ -129,17 +129,45 @@ RSpec.describe Karte::UseCases::ListEntriesByTarget do
       updated_at: now - 200)
 
     allow(entry_repo).to receive(:list_by_target)
-      .with(target_account_id: target_id, limit: 20, cursor: nil)
+      .with(target_profile_id: target_id, limit: 20, cursor: nil)
       .and_return([entry_flagged, entry_same_author, entry_clean])
     allow(entry_repo).to receive(:aggregate)
-      .with(target_account_id: target_id)
+      .with(target_profile_id: target_id)
       .and_return(aggregate)
     allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
 
-    expect(get_profile_uc).to receive(:call).with(profile_id: "author-1").once.and_return(profile1)
-    expect(get_profile_uc).to receive(:call).with(profile_id: "author-2").once.and_return(profile2)
+    expect(get_profile_uc).to receive(:call).with(profile_id: "author-1-profile").once.and_return(profile1)
+    expect(get_profile_uc).to receive(:call).with(profile_id: "author-2-profile").once.and_return(profile2)
     expect(get_profile_uc).to receive(:call).with(profile_id: target_id).once.and_return(target_profile)
 
-    use_case.call(viewer_account_id: viewer_id, target_account_id: target_id)
+    use_case.call(viewer_account_id: viewer_id, target_profile_id: target_id)
+  end
+
+  it "marks an entry as mine by the owning account, whichever profile wrote it" do
+    mine = double(:entry, id: "e-mine", author_account_id: viewer_id, author_profile_id: "other-persona",
+      target_profile_id: "target-x", rating: 3, body: nil, reported_count: 0, created_at: now, updated_at: now)
+    theirs = double(:entry, id: "e-theirs", author_account_id: "someone-else", author_profile_id: "their-persona",
+      target_profile_id: "target-x", rating: 3, body: nil, reported_count: 0, created_at: now, updated_at: now)
+    allow(entry_repo).to receive(:list_by_target).and_return([mine, theirs])
+    allow(entry_repo).to receive(:aggregate).and_return(count: 0, avg_rating: 0.0)
+    allow(get_profile_uc).to receive(:call).and_return(nil)
+
+    entries = use_case.call(viewer_account_id: viewer_id, target_profile_id: "target-x")[:entries]
+
+    expect(entries.map { |e| e[:is_mine] }).to eq([true, false])
+    expect(entries.map { |e| e[:author_profile_id] }).to eq(["other-persona", "their-persona"])
+  end
+
+  it "never includes the author's account id in a presented entry" do
+    entry = double(:entry, id: "e-1", author_account_id: "secret-account", author_profile_id: "persona-1",
+      target_profile_id: "target-x", rating: 3, body: nil, reported_count: 0, created_at: now, updated_at: now)
+    allow(entry_repo).to receive(:list_by_target).and_return([entry])
+    allow(entry_repo).to receive(:aggregate).and_return(count: 0, avg_rating: 0.0)
+    allow(get_profile_uc).to receive(:call).and_return(nil)
+
+    presented = use_case.call(viewer_account_id: viewer_id, target_profile_id: "target-x")[:entries].first
+
+    expect(presented).not_to have_key(:author_account_id)
+    expect(presented.values).not_to include("secret-account")
   end
 end
