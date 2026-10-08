@@ -177,13 +177,15 @@ describe("buildGrpcHeaders", () => {
     req.cookies.set(ACCESS_COOKIE, "not.a.jwt");
     req.cookies.set(REFRESH_COOKIE, refreshedTokens.refreshToken);
 
-    await callWithRefresh(req, async (headers) => {
+    const result = await callWithRefresh(req, async (headers) => {
       if (!headers["x-user-id"]) {
         throw new ConnectError("unauthenticated", GrpcCode.UNAUTHENTICATED);
       }
       expect(headers["x-profile-id"]).toBe(profileId);
       return "retried";
     });
+
+    expect(result).toMatchObject({ ok: true, data: "retried" });
   });
 
   it("retries without x-profile-id when the request has none", async () => {
@@ -201,12 +203,14 @@ describe("buildGrpcHeaders", () => {
     req.cookies.set(ACCESS_COOKIE, "not.a.jwt");
     req.cookies.set(REFRESH_COOKIE, refreshedTokens.refreshToken);
 
-    await callWithRefresh(req, async (headers) => {
+    const result = await callWithRefresh(req, async (headers) => {
       if (!headers["x-user-id"]) {
         throw new ConnectError("unauthenticated", GrpcCode.UNAUTHENTICATED);
       }
       expect(headers["x-profile-id"]).toBeUndefined();
       return "retried";
     });
+
+    expect(result).toMatchObject({ ok: true, data: "retried" });
   });
 });
