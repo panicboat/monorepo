@@ -6,9 +6,9 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
   let(:use_case) { Hanami.app.slices[:post]["use_cases.comments.add_comment"] }
   let(:post_repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
   let(:comment_repo) { Hanami.app.slices[:post]["repositories.comment_repository"] }
-  let(:author_profile_id) { create_account_with_profile }
+  let(:post_author_profile_id) { create_account_with_profile }
   let(:author_profile_id) { create_account_with_profile(display_name: "Self", username: "self_user") }
-  let(:post) { post_repo.create_post(author_profile_id: author_profile_id, content: "Test post") }
+  let(:post) { post_repo.create_post(author_profile_id: post_author_profile_id, content: "Test post") }
 
   describe "#call" do
     context "when user does not exist" do

@@ -7,8 +7,8 @@ RSpec.describe "Post::UseCases::Comments::ListReplies", type: :database do
   let(:add_comment) { Hanami.app.slices[:post]["use_cases.comments.add_comment"] }
   let(:comment_repo) { Hanami.app.slices[:post]["repositories.comment_repository"] }
   let(:post_repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
-  let(:author_profile_id) { create_account_with_profile }
-  let(:post) { post_repo.create_post(author_profile_id: author_profile_id, content: "Test post") }
+  let(:post_author_profile_id) { create_account_with_profile }
+  let(:post) { post_repo.create_post(author_profile_id: post_author_profile_id, content: "Test post") }
 
   describe "#call" do
     it "includes the replier's username in the hydrated author" do
