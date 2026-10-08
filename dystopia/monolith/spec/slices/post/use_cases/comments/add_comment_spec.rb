@@ -11,8 +11,8 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
   let(:post) { post_repo.create_post(author_profile_id: post_author_profile_id, content: "Test post") }
 
   describe "#call" do
-    context "when user does not exist" do
-      it "raises UserNotFoundError" do
+    context "when profile does not exist" do
+      it "raises ProfileNotFoundError" do
         non_existent_author_profile_id = SecureRandom.uuid_v7
 
         expect {
@@ -21,11 +21,11 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
             author_profile_id: non_existent_author_profile_id,
             content: "Test comment"
           )
-        }.to raise_error(Post::UseCases::Comments::AddComment::UserNotFoundError)
+        }.to raise_error(Post::UseCases::Comments::AddComment::ProfileNotFoundError)
       end
     end
 
-    context "when user exists" do
+    context "when profile exists" do
       it "creates a comment successfully" do
         result = use_case.call(
           post_id: post.id,

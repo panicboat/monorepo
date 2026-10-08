@@ -15,7 +15,7 @@ module Post
         MAX_MEDIA_COUNT = 3
 
         def call(post_id:, author_profile_id:, content:, parent_id: nil, media: [])
-          raise UserNotFoundError unless account_adapter.user_exists?(author_profile_id)
+          raise ProfileNotFoundError unless account_adapter.profile_exists?(author_profile_id)
 
           post = post_repo.find_by_id(post_id)
           raise PostNotFoundError unless post
@@ -94,7 +94,7 @@ module Post
 
         public
 
-        class UserNotFoundError < StandardError; end
+        class ProfileNotFoundError < StandardError; end
         class PostNotFoundError < StandardError; end
         class EmptyContentError < StandardError; end
         class ContentTooLongError < StandardError; end

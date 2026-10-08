@@ -5,21 +5,9 @@ require "spec_helper"
 RSpec.describe "Post::Repositories::CommentRepository", type: :database do
   let(:repo) { Hanami.app.slices[:post]["repositories.comment_repository"] }
   let(:post_repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
-  let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
   let(:post_author_profile_id) { SecureRandom.uuid_v7 }
-  let(:author_profile_id) { create_user[:id] }
+  let(:author_profile_id) { SecureRandom.uuid_v7 }
   let(:post) { post_repo.create_post(author_profile_id: post_author_profile_id, content: "Test post") }
-
-  def create_user(role: 1)
-    id = SecureRandom.uuid_v7
-    db[:identity__accounts].insert(
-      id: id,
-      role: role,
-      created_at: Time.now,
-      updated_at: Time.now
-    )
-    { id: id }
-  end
 
   describe "#create_comment" do
     it "creates a top-level comment" do
@@ -86,7 +74,7 @@ RSpec.describe "Post::Repositories::CommentRepository", type: :database do
 
     it "does not delete a comment by non-owner" do
       comment = repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "Protected")
-      other_author_profile_id = create_user[:id]
+      other_author_profile_id = SecureRandom.uuid_v7
       result = repo.delete_comment(id: comment.id, author_profile_id: other_author_profile_id)
 
       expect(result).to be_nil
@@ -122,7 +110,7 @@ RSpec.describe "Post::Repositories::CommentRepository", type: :database do
     end
 
     it "excludes comments from blocked users" do
-      blocked_author_profile_id = create_user[:id]
+      blocked_author_profile_id = SecureRandom.uuid_v7
       repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "Normal")
       repo.create_comment(post_id: post.id, author_profile_id: blocked_author_profile_id, content: "Blocked")
 
@@ -152,7 +140,7 @@ RSpec.describe "Post::Repositories::CommentRepository", type: :database do
     end
 
     it "excludes comments from specified users" do
-      blocked_author_profile_id = create_user[:id]
+      blocked_author_profile_id = SecureRandom.uuid_v7
       repo.create_comment(post_id: post.id, author_profile_id: author_profile_id, content: "Normal")
       repo.create_comment(post_id: post.id, author_profile_id: blocked_author_profile_id, content: "Blocked")
 

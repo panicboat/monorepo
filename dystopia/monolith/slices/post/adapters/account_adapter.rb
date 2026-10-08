@@ -14,7 +14,7 @@ module Post
       end
 
       def get_user_types_batch(profile_ids)
-        # FALLBACK: Skip the cross-slice call when no user IDs are provided.
+        # FALLBACK: Skip the cross-slice call when no profile IDs are provided.
         return {} if profile_ids.nil? || profile_ids.empty?
 
         profile_ids.each_with_object({}) do |profile_id, hash|
@@ -25,7 +25,7 @@ module Post
         end
       end
 
-      def user_exists?(profile_id)
+      def profile_exists?(profile_id)
         !get_role.call(profile_id: profile_id).nil?
       end
 

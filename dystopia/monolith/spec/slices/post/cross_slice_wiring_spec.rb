@@ -9,6 +9,7 @@ require "slices/feed/grpc/handler"
 
 RSpec.describe "Post slice wiring with the slices that read posts", type: :database do
   let(:post_repo) { Post::Slice["repositories.post_repository"] }
+  let(:comment_repo) { Post::Slice["repositories.comment_repository"] }
   let(:like_repo) { Post::Slice["repositories.like_repository"] }
   let(:follow_repo) { Social::Slice["repositories.follow_repository"] }
   let(:bookmark_repo) { Bookmarks::Slice["repositories.bookmark_repository"] }
@@ -58,6 +59,22 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
     expect(following[:post_ids]).to eq([public_post.id])
   end
 
+  it "excludes posts from profiles blocked by the viewer" do
+    Social::Slice["repositories.block_repository"].block(blocker_id: viewer, blocked_id: public_author)
+
+    result = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_account_id: viewer)
+
+    expect(result[:post_ids]).not_to include(public_post.id)
+  end
+
+  it "excludes posts from profiles that blocked the viewer" do
+    Social::Slice["repositories.block_repository"].block(blocker_id: public_author, blocked_id: viewer)
+
+    result = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_account_id: viewer)
+
+    expect(result[:post_ids]).not_to include(public_post.id)
+  end
+
   it "ranks and searches posts for a viewer" do
     ranked = Discovery::Slice["use_cases.rank_posts"].call(period: "all", viewer_account_id: viewer)
     found = Discovery::Slice["use_cases.search_posts"].call(query: "wiring", viewer_account_id: viewer)
@@ -76,6 +93,14 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
 
   it "filters review author references through the post visibility filter" do
     refs = [public_author, private_author].map { |id| Review::UseCases::ListRecentEntries::AuthorRef.new(id) }
+
+    visible = Social::Slice["use_cases.filter_visible_posts"].call(viewer_account_id: viewer, posts: refs)
+
+    expect(visible.map(&:author_profile_id)).to eq([public_author])
+  end
+
+  it "filters review entry author references through the post visibility filter" do
+    refs = [public_author, private_author].map { |id| Review::UseCases::FilterVisibleEntries::AuthorRef.new(id) }
 
     visible = Social::Slice["use_cases.filter_visible_posts"].call(viewer_account_id: viewer, posts: refs)
 
@@ -108,6 +133,18 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
       expect(listed.posts.first.author_profile_id).to eq(public_author)
       expect(got.post.author.profile_id).to eq(public_author)
       expect { rpc(Post::Grpc::PostHandler, :get_post, Post::V1::GetPostRequest.new(id: private_post.id)) }
+        .to status(GRPC::Core::StatusCodes::NOT_FOUND)
+    end
+
+    it "returns a private post only to its author" do
+      act_as(public_author)
+      saved = rpc(Post::Grpc::PostHandler, :save_post, Post::V1::SavePostRequest.new(content: "private wiring", visibility: "private"))
+      authored = rpc(Post::Grpc::PostHandler, :get_post, Post::V1::GetPostRequest.new(id: saved.post.id))
+
+      expect(authored.post.id).to eq(saved.post.id)
+
+      act_as(viewer)
+      expect { rpc(Post::Grpc::PostHandler, :get_post, Post::V1::GetPostRequest.new(id: saved.post.id)) }
         .to status(GRPC::Core::StatusCodes::NOT_FOUND)
     end
 
@@ -164,6 +201,25 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
       act_as(viewer)
       deleted = rpc(Post::Grpc::CommentHandler, :delete_comment, Post::V1::DeleteCommentRequest.new(comment_id: added.comment.id))
       expect(deleted.comments_count).to eq(0)
+    end
+
+    it "excludes a blocked profile's comments and replies" do
+      blocked_profile = create_account_with_profile(username: "wiring_blocked")
+      visible_comment = comment_repo.create_comment(post_id: public_post.id, author_profile_id: public_author, content: "visible")
+      comment_repo.create_comment(post_id: public_post.id, author_profile_id: blocked_profile, content: "blocked")
+      reply_parent = comment_repo.create_comment(post_id: public_post.id, author_profile_id: public_author, content: "reply parent")
+      visible_reply = comment_repo.create_comment(post_id: public_post.id, author_profile_id: public_author, content: "visible reply", parent_id: reply_parent.id)
+      comment_repo.create_comment(post_id: public_post.id, author_profile_id: blocked_profile, content: "blocked reply", parent_id: reply_parent.id)
+      Social::Slice["repositories.block_repository"].block(blocker_id: viewer, blocked_id: blocked_profile)
+
+      act_as(viewer)
+      comments = rpc(Post::Grpc::CommentHandler, :list_comments, Post::V1::ListCommentsRequest.new(post_id: public_post.id))
+      replies = rpc(Post::Grpc::CommentHandler, :list_replies, Post::V1::ListRepliesRequest.new(comment_id: reply_parent.id))
+
+      expect(comments.comments.map(&:id)).to contain_exactly(visible_comment.id, reply_parent.id)
+      expect(comments.comments.map(&:author_profile_id)).not_to include(blocked_profile)
+      expect(replies.replies.map(&:id)).to contain_exactly(visible_reply.id)
+      expect(replies.replies.map(&:author_profile_id)).not_to include(blocked_profile)
     end
 
     it "serves the feed with hydrated posts" do
