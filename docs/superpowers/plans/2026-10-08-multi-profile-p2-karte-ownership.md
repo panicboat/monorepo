@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-08-multiple-profiles-per-account-design.md`(Ownership boundary、API contract の `karte.v1.KarteEntry`、Schema changes、Delivery の段 2)
 
-**Dry run:** この plan のコードは、使い捨ての database と作業ツリー上で一度通しで適用して確かめてある(monolith `592 examples, 0 failures`、frontend `tsc` エラー 0・vitest 85 ファイル 324 件通過)。各 Step の Expected はそのときの実測である。
+**Dry run:** この plan のコードは、使い捨ての database と作業ツリー上で一度通しで適用して確かめてある(monolith `592 examples, 0 failures`、frontend `tsc` エラー 0・vitest 85 ファイル 324 件通過)。各 Step の Expected はそのときの実測である(Task 4 Step 5 の最後の検索だけは dry run で実行しておらず、実行時に検索条件の誤りが見つかったので直した)。
 
 この plan は stack の 2 段目で、ブランチ `feat/dystopia-multi-profile-karte`(`feat/dystopia-multi-profile-model` の上)に積む。
 
@@ -1016,8 +1016,8 @@ Expected: `0 failures`
 Run: `HANAMI_ENV=test rbenv exec bundle exec rspec > /tmp/rspec-full.txt 2>&1; /usr/bin/grep -E '^[0-9]+ examples' /tmp/rspec-full.txt`
 Expected: `592 examples, 0 failures`
 
-Run: `/usr/bin/grep -rn -E 'target_account_id' slices/karte spec/slices/karte`
-Expected: 出力なし。
+Run: `/usr/bin/grep -rn -E 'target_account_id' slices/karte spec/slices/karte | /usr/bin/grep -v 'descriptor\.map'`
+Expected: 出力なし(handler の spec は、proto に `author_account_id` / `target_account_id` という field が無いことを `descriptor.map` で確かめるために、この名前を含む)。
 
 - [ ] **Step 6: Commit**
 
