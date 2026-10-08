@@ -3,7 +3,7 @@ import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
 
 export { FollowStatus };
 
-export interface SocialAccountView {
+export interface SocialProfileView {
   profileId: string;
   username: string;
   displayName: string;
@@ -15,7 +15,7 @@ export type FollowStatusMap = Record<string, FollowStatus>;
 export type BlockStatusMap = Record<string, boolean>;
 
 export interface PaginatedProfilesResponse {
-  profiles: SocialAccountView[];
+  profiles: SocialProfileView[];
   nextCursor: string;
   hasMore: boolean;
 }

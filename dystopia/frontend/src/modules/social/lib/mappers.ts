@@ -1,10 +1,10 @@
 import type { Profile } from "@/stub/profile/v1/service_pb";
 import type {
-  SocialAccountView,
+  SocialProfileView,
   FollowRequestItem,
 } from "../types";
 
-export function profileToSocialAccount(p: Profile): SocialAccountView {
+export function profileToSocialProfile(p: Profile): SocialProfileView {
   return {
     profileId: p.id,
     username: p.username,

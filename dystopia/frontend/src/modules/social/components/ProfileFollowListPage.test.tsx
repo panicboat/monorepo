@@ -14,7 +14,7 @@ vi.mock("@/modules/profile/hooks", () => ({
 
 vi.mock("./FollowListView", () => ({
   FollowListView: ({ profileId, initialTab }: { profileId?: string; initialTab?: string }) => (
-    <div data-testid="follow-list-view" data-account-id={profileId} data-initial-tab={initialTab} />
+    <div data-testid="follow-list-view" data-profile-id={profileId} data-initial-tab={initialTab} />
   ),
 }));
 
@@ -32,7 +32,7 @@ describe("ProfileFollowListPage", () => {
     const html = renderToStaticMarkup(<ProfileFollowListPage initialTab="followers" />);
 
     expect(profileMocks.usePublicProfile).toHaveBeenCalledWith("yuna");
-    expect(html).toContain('data-account-id="account-1"');
+    expect(html).toContain('data-profile-id="account-1"');
     expect(html).toContain('data-initial-tab="followers"');
     expect(html).toContain("ゆな");
   });

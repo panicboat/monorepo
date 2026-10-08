@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { messagingClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, handleApiError } from "@/lib/api-helpers";
-import { profileToSocialAccount } from "@/modules/social";
+import { profileToSocialProfile } from "@/modules/social";
 import type { Message, Thread } from "@/stub/messaging/v1/messaging_service_pb";
 import type { ThreadView, MessageView } from "@/modules/messaging/types";
 
@@ -26,7 +26,7 @@ function messageProtoToView(m: Message): MessageView {
 function threadProtoToView(t: Thread): ThreadView {
   return {
     id: t.id,
-    counterpart: t.counterpart ? profileToSocialAccount(t.counterpart) : null,
+    counterpart: t.counterpart ? profileToSocialProfile(t.counterpart) : null,
     lastMessage: t.lastMessage && t.lastMessage.id ? messageProtoToView(t.lastMessage) : null,
     unreadCount: t.unreadCount || 0,
     lastMessageAt: timestampToIso(t.lastMessageAt),

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { useFollowList, useFollowerList } from "@/modules/social/hooks";
 import { FollowButton } from "./FollowButton";
-import type { SocialAccountView } from "../types";
+import type { SocialProfileView } from "../types";
 
 export type FollowListTab = "following" | "followers";
 
@@ -16,7 +16,7 @@ const TABS: TabItem[] = [
   { id: "followers", label: "フォロワー" },
 ];
 
-function ProfileRow({ profile }: { profile: SocialAccountView }) {
+function ProfileRow({ profile }: { profile: SocialProfileView }) {
   const href = `/u/${encodeURIComponent(profile.username)}`;
   return (
     <div className="flex items-center gap-3 border-b border-border px-4 py-3">

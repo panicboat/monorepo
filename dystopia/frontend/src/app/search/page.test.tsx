@@ -48,7 +48,7 @@ async function typeQuery(input: HTMLInputElement, value: string) {
 describe("SearchPage", () => {
   it("links each matched user's avatar and name to their profile", async () => {
     hookMocks.useSearchUsers.mockReturnValue({
-      profiles: [{ accountId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false }],
+      profiles: [{ profileId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false }],
       hasMore: false,
       loading: false,
       error: undefined,
