@@ -1340,3 +1340,17 @@ Task 5 の後、controller が実サーバーを起動して確認する。起�
 - 人格を削除したとき、その人格が書いた karte の著者表示は空になる。所有者は別の人格から引き続き一覧・編集できる。人格の削除は段 8 で入る。
 - karte の利用権(`karte.access`)は account 単位で、現在は `GetMyAccess` が常に利用可を返す(既存の TODO)。課金との接続はこの stack の範囲外である。
 - P1a と P1b の Known gaps のうち karte 以外のものはそのまま残る。
+- ログアウトしても SWR のキャッシュが消えない(P1b の Known gaps と同じ問題)。この段から karte の一覧が `isMine` をキャッシュに持つので、同じタブで別の cast がログインすると、再検証が終わるまで前の account の記録に「削除」が並び、前の account の人格同士の紐付きが見える。削除そのものは server が拒否する。段 9 のキャッシュ消去を、人格の切替だけでなくログアウトと account の変更にも適用する。
+- `/api/karte/by-target` の `profile_id` と `POST /api/karte` の `targetProfileId` は、BFF の route と hook の両側に文字列で書かれており、ずれても `tsc` は検知しない。`GuestKarteTab` は取得エラーを表示しないので、ずれると 400 が「記録 0 件」に見える。route のテスト(`src/app/api/profile/route.test.ts` と同じ形)が無い。
+- 「自分のカルテ」の一覧(`mode="my"`)は対象だけを表示し、どの人格で書いたかを表示しない。作成フォームも、どの人格の名前で他の cast に見えるかを表示しない。人格の UI を作る段 9 で扱う。
+- `GetMyAccess` は account 単位の利用権を返すが、操作中の profile を要求する(`authenticate_user!`)。画面は人格の中からしか呼ばないので支障は無い。
+- DB を使う handler の spec は、guest account の拒否を `create_entry` でだけ確かめている。一覧 RPC の「別人格で書いた自分の記録が `is_mine` 真」は `list_my_entries` でだけ実 DB で確かめ、`list_entries_by_target` と `list_recent_entries` は double の spec で確かめている。
+- 適用先の database の `karte.entries` と `karte.reports` が空であることを、merge の前に確認する(spec の Schema changes の前提)。
+
+## Controller verification result
+
+2026-10-08 に、使い捨ての database と実サーバー(`bin/grpc` + `next dev`)で確認した。
+
+- API 26 項目がすべて通った: 人格 1 で作成 → 人格 2 から一覧・編集(`isMine` 真、著者は人格 1 のまま) → 人格 2 からの自己通報は 400 → 別の cast には `isMine` 偽・編集と削除は 400・同じ account の通報 2 回で件数 1 → 別の cast への応答に所有者の account の id が無い → cast の profile と guest の account の id を対象にした作成は 400 → guest account は 403。
+- headless Chrome で、別の cast には「報告」、所有者には(2 つ目の人格を操作中でも)「削除」が出て、著者は書いた人格の名前で表示された。
+- 2 つ目の人格を持つ account は、ログイン直後に選択不能の画面(ログアウトのみ)になる。これは P1b の Known gaps にある制限で、UI からの人格の切替は段 9 まで出来ない。ブラウザの確認は、保存された `activeProfileId` を書き換えて行った。
