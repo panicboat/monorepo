@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-08-multiple-profiles-per-account-design.md`(API contract の「その他の proto」、Schema changes の post の 5 行、Delivery の段 3)
 
-**Dry run:** この plan の手順は、使い捨ての database と作業ツリー上で通しで適用して確かめてある。plan に載せた script と file をゼロから再適用して、同じ差分(98 ファイル)になることも確かめた。最終結果は monolith `604 examples, 0 failures`、frontend `tsc` エラー 0・vitest `86` ファイル `328` 件通過。各 Step の Expected のうち数を示したものは、そのときの実測である。
+**Dry run:** この plan の手順は、使い捨ての database と作業ツリー上で通しで適用して確かめてある。plan に載せた script と file をゼロから再適用して、同じ差分(98 ファイル)になることも確かめた。最終結果は monolith `604 examples, 0 failures`、frontend `tsc` エラー 0・vitest `86` ファイル `328` 件通過。各 Step の Expected のうち数を示したものは、そのときの実測である。実行時に implementer が、置換規則が 2 つの spec で fixture を 1 つに潰すことを見つけた(suite は通るため dry run では検知できなかった)。Step 5 の script の 3 番と、その後の確認はこの修正である。
 
 この plan は stack の 3 段目で、ブランチ `feat/dystopia-multi-profile-post`(`feat/dystopia-multi-profile-karte` の上)に積む。
 
@@ -57,10 +57,11 @@ proto の field 番号は変えない。
 
 1. feed / discovery / bookmarks が post の repository と use case を新しい引数名で呼べる(Task 1 の結線 spec)。
 2. social と review が、post の struct の `author_profile_id` を読める。social の引数名 `viewer_account_id:` は元のまま呼ばれる(Task 1 の結線 spec)。
-3. `create_post` は未知のキーを黙って捨てる。旧名 `author_id:` のまま呼ぶ箇所が残ると、著者の無い投稿が作られる(Task 1 の結線 spec が、保存した投稿の `author_profile_id` を確かめる)。
-4. コメントの著者の id が、`Comment.author_profile_id` と `CommentAuthor.profile_id` に正しく分かれる(Task 1 の結線 spec、Task 2 の `comment-mappers.test.ts`)。
-5. いいね一覧は本人の profile でだけ見え、他人の profile の id を渡すと拒否される(Task 1 の結線 spec)。
-6. BFF が新しい query 名(`author_profile_id` / `profile_id`)を読む(Task 2 の route test)。hook が同じ名前を送ることは、Controller verification のブラウザ確認で確かめる。
+3. 置換は `author_id`(投稿者)と `user_id`(コメントの著者)を同じ `author_profile_id` にする。両方を別々の fixture として持つ spec では 2 つが 1 つに潰れ、投稿者とコメントの著者が同じ profile になっても suite は通る。コメントの 4 つの spec では投稿者の fixture を `post_author_profile_id` にして分ける(Task 1 の Step 5 の script と、`let` の種類の数を比べる確認)。
+4. `create_post` は未知のキーを黙って捨てる。旧名 `author_id:` のまま呼ぶ箇所が残ると、著者の無い投稿が作られる(Task 1 の結線 spec が、保存した投稿の `author_profile_id` を確かめる)。
+5. コメントの著者の id が、`Comment.author_profile_id` と `CommentAuthor.profile_id` に正しく分かれる(Task 1 の結線 spec、Task 2 の `comment-mappers.test.ts`)。
+6. いいね一覧は本人の profile でだけ見え、他人の profile の id を渡すと拒否される(Task 1 の結線 spec)。
+7. BFF が新しい query 名(`author_profile_id` / `profile_id`)を読む(Task 2 の route test)。hook が同じ名前を送ることは、Controller verification のブラウザ確認で確かめる。
 
 ---
 
@@ -360,40 +361,43 @@ git mv spec/slices/post/use_cases/likes/list_liked_posts_by_account_spec.rb spec
 # 2. the role adapter takes profile ids
 perl -pi -e 's/user_ids\b/profile_ids/g; s/user_id\b/profile_id/g' slices/post/adapters/account_adapter.rb spec/slices/post/adapters/account_adapter_spec.rb
 
-# 3. every other file of the post slice and its specs (the wiring spec already uses the new names)
+# 3. comment specs keep the post author fixture distinct from the comment author, which also becomes author_profile_id
+perl -pi -e 's/let\(:author_id\)/let(:post_author_profile_id)/; s/create_post\(author_id: author_id,/create_post(author_profile_id: post_author_profile_id,/' spec/slices/post/repositories/comment_repository_spec.rb spec/slices/post/use_cases/comments/add_comment_spec.rb spec/slices/post/use_cases/comments/list_comments_spec.rb spec/slices/post/use_cases/comments/list_replies_spec.rb
+
+# 4. every other file of the post slice and its specs (the wiring spec already uses the new names)
 FILES=$(find slices/post spec/slices/post -name '*.rb' ! -name 'account_adapter.rb' ! -name 'account_adapter_spec.rb' ! -name 'cross_slice_wiring_spec.rb')
 perl -pi -e 's/account_liked_status_batch/profile_liked_status_batch/g; s/account_liked\?/profile_liked?/g; s/account_unlike/profile_unlike/g; s/account_like/profile_like/g; s/liked_post_ids_by_account/liked_post_ids_by_profile/g; s/delete_by_account/delete_by_profile/g; s/list_liked_posts_by_account/list_liked_posts_by_profile/g; s/ListLikedPostsByAccount/ListLikedPostsByProfile/g' $FILES
 perl -pi -e 's/viewer_account_id/viewer_profile_id/g; s/current_user_id/current_profile_id/g; s/author_id(s?)\b/author_profile_id$1/g; s/exclude_user_ids/exclude_author_profile_ids/g; s/blocked_user_ids/blocked_profile_ids/g; s/user_ids\b/author_profile_ids/g; s/user_id\b/author_profile_id/g' $FILES
 perl -pi -e 's/account_ids\b/profile_ids/g; s/(?<!Current\.)account_id\b/profile_id/g' $(echo "$FILES" | /usr/bin/grep -v 'purge_account')
 
-# 4. keywords owned by the social slice keep their names; only the value changes
+# 5. keywords owned by the social slice keep their names; only the value changes
 perl -pi -e 's/viewer_can_see_post\.call\(viewer_profile_id:/viewer_can_see_post.call(viewer_account_id:/' slices/post/grpc/post_handler.rb
 perl -pi -e 's/visibility_filter\.call\(viewer_profile_id:/visibility_filter.call(viewer_account_id:/' slices/post/use_cases/posts/list_posts_by_ids.rb
 perl -pi -e 's/block_repo\.blocked_ids\(profile_id:/block_repo.blocked_ids(account_id:/' slices/post/adapters/block_adapter.rb
 
-# 5. CommentAuthor carries the profile id of the author
+# 6. CommentAuthor carries the profile id of the author
 perl -pi -e 's/author_profile_id: author_info\[:id\]/profile_id: author_info[:id]/' slices/post/presenters/comment_presenter.rb
 
-# 6. locals and a message that still say account
+# 7. locals and a message that still say account
 perl -pi -e 's/accounts_by_username/profiles_by_username/g; s/\baccount\b/profile/g' slices/post/use_cases/extract_mentions.rb
 perl -pi -e "s/another account's likes/another profile's likes/" slices/post/use_cases/likes/list_liked_posts_by_profile.rb spec/slices/post/use_cases/likes/list_liked_posts_by_profile_spec.rb
 
-# 7. other slices that read post structs or call post use cases and repositories
+# 8. other slices that read post structs or call post use cases and repositories
 perl -pi -e 's/post\.author_id\b/post.author_profile_id/; s/posts\.map\(&:author_id\)/posts.map(&:author_profile_id)/' slices/social/use_cases/viewer_can_see_post.rb slices/social/use_cases/filter_visible_posts.rb
 perl -pi -e 's/Struct\.new\(:author_id\)/Struct.new(:author_profile_id)/; s/\.map\(&:author_id\)/.map(&:author_profile_id)/' slices/review/use_cases/list_recent_entries.rb slices/review/use_cases/filter_visible_entries.rb
 perl -pi -e 's/^(\s+)author_ids: author_ids,$/$1author_profile_ids: author_ids,/; s/^(\s+)excluded_author_ids: excluded$/$1excluded_author_profile_ids: excluded/' slices/feed/use_cases/list_feed.rb
 perl -pi -e 's/(list_posts(?:_by_ids)?_uc\.call\(post_ids: [^,]+, )viewer_account_id:/$1viewer_profile_id:/' slices/feed/grpc/handler.rb slices/discovery/use_cases/rank_posts.rb slices/discovery/use_cases/search_posts.rb slices/bookmarks/use_cases/list_bookmarks.rb
 
-# 8. seeds
+# 9. seeds
 perl -pi -e 's/author_id = post\[:author_id\]/post_author_profile_id = post[:author_profile_id]/; s/user_id: author_id,/author_profile_id: post_author_profile_id,/; s/all_user_ids/all_profile_ids/g; s/\buser_id\b/author_profile_id/g' config/db/seeds/post/comments.rb
 perl -pi -e 's/\bauthor_id\b/author_profile_id/g' config/db/seeds/post/posts.rb
 perl -pi -e 's/\baccount_id\b/profile_id/g' config/db/seeds/post/likes.rb
 
-# 9. specs of other slices that build post rows
+# 10. specs of other slices that build post rows
 perl -pi -e 's/p\.author_id\b/p.author_profile_id/' spec/slices/review/use_cases/list_recent_entries_spec.rb
 perl -pi -e 's/create_post\(author_id:/create_post(author_profile_id:/; s/like_repo\.account_like\(post_id: ([^,]+), account_id:/like_repo.profile_like(post_id: $1, profile_id:/; s/(create_comment\(post_id: [^,]+, )user_id:/$1author_profile_id:/; s/db\[:post__posts\]\.where\(author_id:/db[:post__posts].where(author_profile_id:/; s/db\[:post__likes\]\.where\(account_id:/db[:post__likes].where(profile_id:/; s/db\[:post__comments\]\.where\(user_id:/db[:post__comments].where(author_profile_id:/' spec/slices/identity/use_cases/account/purge_wiring_spec.rb
 
-# 10. example names that describe a profile as an account
+# 11. example names that describe a profile as an account
 perl -pi -e 's/mentioned account/mentioned profile/g; s/the same account/the same profile/g; s/existing account/existing profile/; s/account-based likes \(symmetric\)/profile-based likes (symmetric)/; s/a like by account/a like by profile/; s/likes by the account/likes by the profile/' spec/slices/post/grpc/post_handler_spec.rb spec/slices/post/repositories/like_repository_spec.rb spec/slices/post/presenters/post_presenter_spec.rb spec/slices/post/presenters/comment_presenter_spec.rb spec/slices/post/use_cases/comments/add_comment_spec.rb spec/slices/post/use_cases/extract_mentions_spec.rb
 ```
 
@@ -413,6 +417,14 @@ spec/slices/post/use_cases/purge_account_spec.rb:28:    expect(use_case.call(acc
 
 Run: `git status --short . | wc -l`
 Expected: `62`
+
+2 つの名前を同じ名前に置換する規則なので、別々だった fixture が 1 つに潰れていないことを確かめる。
+
+Run:
+```bash
+git diff --name-only --relative HEAD -- spec | while read -r f; do [ -f "$f" ] || continue; git cat-file -e "HEAD:dystopia/monolith/$f" 2>/dev/null || continue; a=$(git show "HEAD:dystopia/monolith/$f" | /usr/bin/grep -o 'let!\{0,1\}(:[a-z_0-9]*)' | sort -u | wc -l); b=$(/usr/bin/grep -o 'let!\{0,1\}(:[a-z_0-9]*)' "$f" | sort -u | wc -l); [ "$a" -eq "$b" ] || echo "$f: $a -> $b distinct let names"; done
+```
+Expected: 出力なし(`let` の名前の種類が、どの spec でも置換の前後で同じ数である)。
 
 - [ ] **Step 6: 結線の spec と全体が通ることを確認する**
 
