@@ -7,15 +7,15 @@ module Footprints
     class FootprintsRepository < Footprints::DB::Repo
       include ::Concerns::CursorPagination
 
-      def upsert_visit(visitor_id:, visited_id:)
+      def upsert_visit(visitor_profile_id:, visited_profile_id:)
         new_id = SecureRandom.uuid_v7
         now = Time.now
 
         sql = <<~SQL
           INSERT INTO footprints.visits
-            (id, visitor_id, visited_id, last_visited_at, visit_count, created_at, updated_at)
+            (id, visitor_profile_id, visited_profile_id, last_visited_at, visit_count, created_at, updated_at)
           VALUES (?, ?, ?, ?, 1, ?, ?)
-          ON CONFLICT (visitor_id, visited_id) DO UPDATE
+          ON CONFLICT (visitor_profile_id, visited_profile_id) DO UPDATE
             SET last_visited_at = EXCLUDED.last_visited_at,
                 updated_at = EXCLUDED.updated_at,
                 visit_count = footprints.visits.visit_count + 1
@@ -23,52 +23,52 @@ module Footprints
         SQL
 
         ds = visit_records.dataset.db
-        ds.fetch(sql, new_id, visitor_id, visited_id, now, now, now).first
+        ds.fetch(sql, new_id, visitor_profile_id, visited_profile_id, now, now, now).first
       end
 
-      def list_for_visited(visited_id:, limit: 20, cursor: nil, exclude_visitor_ids: [])
-        scope = visit_records.where(visited_id: visited_id)
-        scope = scope.exclude(visitor_id: exclude_visitor_ids) if exclude_visitor_ids.any?
+      def list_for_visited(visited_profile_id:, limit: 20, cursor: nil, exclude_visitor_profile_ids: [])
+        scope = visit_records.where(visited_profile_id: visited_profile_id)
+        scope = scope.exclude(visitor_profile_id: exclude_visitor_profile_ids) if exclude_visitor_profile_ids.any?
         scope = apply_cursor(scope, cursor)
         scope.order { [last_visited_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def count_unread(account_id:)
-        last_read = read_state_records.where(account_id: account_id).one&.last_read_visit_at
-        scope = visit_records.where(visited_id: account_id)
+      def count_unread(profile_id:)
+        last_read = read_state_records.where(profile_id: profile_id).one&.last_read_visit_at
+        scope = visit_records.where(visited_profile_id: profile_id)
         scope = scope.where { last_visited_at > last_read } if last_read
         scope.count
       end
 
-      def last_read_at(account_id:)
-        read_state_records.where(account_id: account_id).one&.last_read_visit_at
+      def last_read_at(profile_id:)
+        read_state_records.where(profile_id: profile_id).one&.last_read_visit_at
       end
 
-      def set_last_read_now(account_id:)
+      def set_last_read_now(profile_id:)
         now = Time.now
 
         sql = <<~SQL
           INSERT INTO footprints.read_states
-            (account_id, last_read_visit_at, created_at, updated_at)
+            (profile_id, last_read_visit_at, created_at, updated_at)
           VALUES (?, ?, ?, ?)
-          ON CONFLICT (account_id) DO UPDATE
+          ON CONFLICT (profile_id) DO UPDATE
             SET last_read_visit_at = EXCLUDED.last_read_visit_at,
                 updated_at = EXCLUDED.updated_at
           RETURNING *
         SQL
 
         ds = read_state_records.dataset.db
-        ds.fetch(sql, account_id, now, now, now).first
+        ds.fetch(sql, profile_id, now, now, now).first
       end
 
-      def delete_visits_by_account(account_id)
+      def delete_visits_by_profile(profile_id)
         visit_records.dataset
-          .where(Sequel.|({visitor_id: account_id}, {visited_id: account_id}))
+          .where(Sequel.|({visitor_profile_id: profile_id}, {visited_profile_id: profile_id}))
           .delete
       end
 
-      def delete_read_state_by_account(account_id)
-        read_state_records.dataset.where(account_id: account_id).delete
+      def delete_read_state_by_profile(profile_id)
+        read_state_records.dataset.where(profile_id: profile_id).delete
       end
 
       private

@@ -9,9 +9,9 @@ module Schedule
 
       DATE_FORMAT = /\A\d{4}-\d{2}-\d{2}\z/
 
-      def call(account_id:, work_date:)
+      def call(profile_id:, work_date:)
         validate_format!(work_date, "出勤日")
-        schedule_repo.delete(account_id: account_id, work_date: work_date)
+        schedule_repo.delete(profile_id: profile_id, work_date: work_date)
       end
 
       private

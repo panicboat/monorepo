@@ -10,13 +10,13 @@ module Schedule
       DATE_FORMAT = /\A\d{4}-\d{2}-\d{2}\z/
       TIME_FORMAT = /\A([01]\d|2[0-3]):[0-5]\d\z/
 
-      def call(account_id:, work_date:, start_time:, end_time:)
+      def call(profile_id:, work_date:, start_time:, end_time:)
         validate_format!(work_date, DATE_FORMAT, "出勤日")
         validate_format!(start_time, TIME_FORMAT, "開始時刻")
         validate_format!(end_time, TIME_FORMAT, "終了時刻")
 
         schedule_repo.upsert(
-          account_id: account_id,
+          profile_id: profile_id,
           work_date: work_date,
           start_time: start_time,
           end_time: end_time

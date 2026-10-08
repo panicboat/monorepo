@@ -151,15 +151,15 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       record = Footprints::Slice["use_cases.record_visit"]
       list = Footprints::Slice["use_cases.list_footprints"]
 
-      record.call(visitor_id: viewer, visited_id: public_cast)
-      record.call(visitor_id: other_guest, visited_id: public_cast)
-      expect(list.call(viewer_id: public_cast)[:rows].map { |row| row[:visitor_id] }).to contain_exactly(viewer, other_guest)
+      record.call(visitor_profile_id: viewer, visited_profile_id: public_cast)
+      record.call(visitor_profile_id: other_guest, visited_profile_id: public_cast)
+      expect(list.call(viewer_profile_id: public_cast)[:rows].map { |row| row[:visitor_profile_id] }).to contain_exactly(viewer, other_guest)
 
       block_repo.block(blocker_profile_id: public_cast, blocked_profile_id: other_guest)
-      expect(list.call(viewer_id: public_cast)[:rows].map { |row| row[:visitor_id] }).to eq([viewer])
-      expect(record.call(visitor_id: other_guest, visited_id: private_cast)).not_to be_nil
+      expect(list.call(viewer_profile_id: public_cast)[:rows].map { |row| row[:visitor_profile_id] }).to eq([viewer])
+      expect(record.call(visitor_profile_id: other_guest, visited_profile_id: private_cast)).not_to be_nil
       block_repo.block(blocker_profile_id: other_guest, blocked_profile_id: private_cast)
-      expect(record.call(visitor_id: private_cast, visited_id: other_guest)).to be_nil
+      expect(record.call(visitor_profile_id: private_cast, visited_profile_id: other_guest)).to be_nil
     end
 
     it "does not notify a recipient who blocked the actor" do

@@ -6,7 +6,7 @@ module Schedule
       include Schedule::Deps[schedule_repo: "repositories.schedule_repository"]
 
       def call(account_id:)
-        schedule_repo.delete_by_account(account_id)
+        schedule_repo.delete_by_profile(account_id)
         nil
       end
     end

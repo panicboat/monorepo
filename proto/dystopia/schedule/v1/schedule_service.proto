@@ -11,14 +11,14 @@ service ScheduleService {
 }
 
 message Schedule {
-  string account_id = 1;
+  string profile_id = 1;
   string work_date = 2;
   string start_time = 3;
   string end_time = 4;
 }
 
 message ListSchedulesRequest {
-  string account_id = 1;
+  string profile_id = 1;
   string from_date = 2;
   string to_date = 3;
 }

@@ -21,33 +21,33 @@ RSpec.describe Footprints::UseCases::RecordVisit do
   end
 
   it "no-ops when visitor == visited" do
-    use_case.call(visitor_id: visitor, visited_id: visitor)
+    use_case.call(visitor_profile_id: visitor, visited_profile_id: visitor)
     expect(visit_records.dataset.count).to eq(0)
   end
 
   it "no-ops when visitor blocks visited" do
     insert_block(blocker_profile_id: visitor, blocked_profile_id: visited)
-    use_case.call(visitor_id: visitor, visited_id: visited)
+    use_case.call(visitor_profile_id: visitor, visited_profile_id: visited)
     expect(visit_records.dataset.count).to eq(0)
   end
 
   it "no-ops when visited blocks visitor" do
     insert_block(blocker_profile_id: visited, blocked_profile_id: visitor)
-    use_case.call(visitor_id: visitor, visited_id: visited)
+    use_case.call(visitor_profile_id: visitor, visited_profile_id: visited)
     expect(visit_records.dataset.count).to eq(0)
   end
 
   it "inserts a row with visit_count 1 on first visit" do
-    use_case.call(visitor_id: visitor, visited_id: visited)
+    use_case.call(visitor_profile_id: visitor, visited_profile_id: visited)
     expect(visit_records.dataset.count).to eq(1)
     expect(visit_records.dataset.first[:visit_count]).to eq(1)
   end
 
   it "upserts (single row, last_visited_at refreshed, visit_count incremented) on second visit" do
-    use_case.call(visitor_id: visitor, visited_id: visited)
+    use_case.call(visitor_profile_id: visitor, visited_profile_id: visited)
     row1 = visit_records.dataset.first
     sleep 0.05
-    use_case.call(visitor_id: visitor, visited_id: visited)
+    use_case.call(visitor_profile_id: visitor, visited_profile_id: visited)
     rows = visit_records.dataset.all
     expect(rows.size).to eq(1)
     expect(rows.first[:last_visited_at]).to be > row1[:last_visited_at]

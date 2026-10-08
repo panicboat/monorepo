@@ -5,7 +5,7 @@ module Media
     class RegisterMedia
       include Media::Deps[repo: "repositories.media_repository"]
 
-      def call(media_id:, media_key:, media_type:, filename: nil, content_type: nil, size_bytes: nil, thumbnail_key: nil, uploader_account_id: nil)
+      def call(media_id:, media_key:, media_type:, filename: nil, content_type: nil, size_bytes: nil, thumbnail_key: nil, uploader_profile_id: nil)
         return nil if media_id.to_s.empty? || media_key.to_s.empty?
 
         repo.create(
@@ -16,7 +16,7 @@ module Media
           size_bytes: size_bytes,
           media_key: media_key,
           thumbnail_key: thumbnail_key,
-          uploader_account_id: uploader_account_id
+          uploader_profile_id: uploader_profile_id
         )
       end
     end

@@ -112,4 +112,19 @@ RSpec.describe "Media::Repositories::MediaRepository", type: :database do
       expect(repo.find_by_id(media.id)).to be_nil
     end
   end
+
+  describe "#delete_by_uploader" do
+    it "stores the uploading profile and deletes only the files that profile uploaded" do
+      uploader = SecureRandom.uuid_v7
+      mine = repo.create(id: SecureRandom.uuid_v7, media_type: "image", media_key: "media/image/mine.jpg", uploader_profile_id: uploader)
+      theirs = repo.create(id: SecureRandom.uuid_v7, media_type: "image", media_key: "media/image/theirs.jpg", uploader_profile_id: SecureRandom.uuid_v7)
+
+      expect(mine.uploader_profile_id).to eq(uploader)
+
+      repo.delete_by_uploader(uploader)
+
+      expect(repo.find_by_id(mine.id)).to be_nil
+      expect(repo.find_by_id(theirs.id)).not_to be_nil
+    end
+  end
 end

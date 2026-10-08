@@ -5,8 +5,8 @@ module Footprints
     class MarkRead
       include Footprints::Deps[footprints_repo: "repositories.footprints_repository"]
 
-      def call(account_id:)
-        footprints_repo.set_last_read_now(account_id: account_id)
+      def call(profile_id:)
+        footprints_repo.set_last_read_now(profile_id: profile_id)
       end
     end
   end

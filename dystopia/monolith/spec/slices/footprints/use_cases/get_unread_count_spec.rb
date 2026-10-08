@@ -11,31 +11,31 @@ RSpec.describe Footprints::UseCases::GetUnreadCount do
   let(:read_state_records) { Footprints::Slice["relations.read_state_records"] }
 
   it "returns 0 when no visits" do
-    expect(use_case.call(account_id: viewer)).to eq(0)
+    expect(use_case.call(profile_id: viewer)).to eq(0)
   end
 
   it "counts all visits when no read state exists" do
-    footprints_repo.upsert_visit(visitor_id: visitor, visited_id: viewer)
-    expect(use_case.call(account_id: viewer)).to eq(1)
+    footprints_repo.upsert_visit(visitor_profile_id: visitor, visited_profile_id: viewer)
+    expect(use_case.call(profile_id: viewer)).to eq(1)
   end
 
   it "uses `>` exclusive boundary: visit at exact last_read_visit_at is read" do
-    row = footprints_repo.upsert_visit(visitor_id: visitor, visited_id: viewer)
+    row = footprints_repo.upsert_visit(visitor_profile_id: visitor, visited_profile_id: viewer)
     read_state_records.dataset.insert(
-      account_id: viewer,
+      profile_id: viewer,
       last_read_visit_at: row[:last_visited_at],
       created_at: Time.now,
       updated_at: Time.now
     )
-    expect(use_case.call(account_id: viewer)).to eq(0)
+    expect(use_case.call(profile_id: viewer)).to eq(0)
   end
 
   it "counts only visits after last_read_visit_at" do
-    footprints_repo.upsert_visit(visitor_id: visitor, visited_id: viewer)
-    footprints_repo.set_last_read_now(account_id: viewer)
+    footprints_repo.upsert_visit(visitor_profile_id: visitor, visited_profile_id: viewer)
+    footprints_repo.set_last_read_now(profile_id: viewer)
     sleep 0.05
     second_visitor = SecureRandom.uuid_v7
-    footprints_repo.upsert_visit(visitor_id: second_visitor, visited_id: viewer)
-    expect(use_case.call(account_id: viewer)).to eq(1)
+    footprints_repo.upsert_visit(visitor_profile_id: second_visitor, visited_profile_id: viewer)
+    expect(use_case.call(profile_id: viewer)).to eq(1)
   end
 end
