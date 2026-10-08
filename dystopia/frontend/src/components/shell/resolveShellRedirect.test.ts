@@ -42,6 +42,7 @@ describe("resolveShellRedirect", () => {
   it("moves an account that already has a profile away from the onboarding route", () => {
     expect(resolveShellRedirect({ ...base, sessionKind: "active", isAuthRoute: true, isOnboardingRoute: true })).toBe("/");
     expect(resolveShellRedirect({ ...base, sessionKind: "select", isAuthRoute: true, isOnboardingRoute: true })).toBe("/");
+    expect(resolveShellRedirect({ ...base, sessionKind: "unavailable", isAuthRoute: true, isOnboardingRoute: true })).toBe("/");
   });
 
   it("waits on the onboarding route while the profile list is still loading", () => {
@@ -51,6 +52,7 @@ describe("resolveShellRedirect", () => {
   it("does nothing for an account with an active profile elsewhere", () => {
     expect(resolveShellRedirect(base)).toBeNull();
     expect(resolveShellRedirect({ ...base, sessionKind: "select" })).toBeNull();
+    expect(resolveShellRedirect({ ...base, sessionKind: "unavailable" })).toBeNull();
     expect(resolveShellRedirect({ ...base, sessionKind: null })).toBeNull();
   });
 });

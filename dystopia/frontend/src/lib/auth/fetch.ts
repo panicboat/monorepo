@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuthStore } from "@/stores/authStore";
-import { profileRequestHeaders } from "@/lib/auth/profile-headers";
+import { profileRequestHeaders, PROFILE_ID_HEADER } from "@/lib/auth/profile-headers";
 import { isProfileSelectionError, resetProfileSelection } from "@/lib/auth/profile-errors";
 import { AppError, httpStatusToErrorCode } from "@/lib/errors";
 import { getDefaultMessage } from "@/lib/error-messages";
@@ -27,7 +27,9 @@ export async function authFetch<T = unknown>(
     throw new AppError("UNAUTHORIZED", "ログインしてください", 401);
   }
 
-  const headers: Record<string, string> = { ...profileRequestHeaders() };
+  const profileHeaders = profileRequestHeaders();
+  const sentProfileId = profileHeaders[PROFILE_ID_HEADER] ?? null;
+  const headers: Record<string, string> = { ...profileHeaders };
   if (body !== undefined) {
     headers["Content-Type"] = "application/json";
   }
@@ -59,7 +61,7 @@ export async function authFetch<T = unknown>(
   if (!res.ok) {
     // FALLBACK: Use an empty object when the error body is not JSON.
     const errBody = await res.json().catch(() => ({}));
-    if (isProfileSelectionError(errBody)) resetProfileSelection();
+    if (isProfileSelectionError(errBody)) resetProfileSelection(sentProfileId);
     const code = httpStatusToErrorCode(res.status);
     const message = errBody.error || getDefaultMessage(code);
     throw new AppError(code, message, res.status, errBody);

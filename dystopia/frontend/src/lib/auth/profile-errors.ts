@@ -14,7 +14,8 @@ export function isProfileSelectionError(body: unknown): boolean {
   return typeof code === "string" && PROFILE_SELECTION_REASONS.includes(code);
 }
 
-export function resetProfileSelection(): void {
-  useAuthStore.getState().setActiveProfile(null);
-  void mutate(isMyProfilesKey);
+export function resetProfileSelection(sentProfileId: string | null): void {
+  if (!useAuthStore.getState().denyActiveProfile(sentProfileId)) return;
+  void mutate(isMyProfilesKey, undefined, { revalidate: true });
+  void mutate("/api/identity/me");
 }

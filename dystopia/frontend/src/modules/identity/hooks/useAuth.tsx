@@ -17,7 +17,7 @@ import {
   selectAccountId,
 } from "@/stores/authStore";
 import { useToastStore } from "@/stores/toastStore";
-import type { Role } from "@/lib/auth";
+import { syncIdentityWithAccount, toStoreRole } from "@/lib/auth/identity-sync";
 
 export type User = {
   id: string;
@@ -55,13 +55,6 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function toStoreRole(apiRole: number | string): Role {
-  if (apiRole === 2 || apiRole === "ROLE_CAST") {
-    return "cast";
-  }
-  return "guest";
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [newUserFlag, setNewUserFlag] = useState(false);
   const router = useRouter();
@@ -75,7 +68,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const meFetcher = useCallback(
     async (url: string) => {
       const res = await fetch(url, { cache: "no-store" });
-      if (res.ok) return res.json();
+      if (res.ok) {
+        const body = await res.json();
+        syncIdentityWithAccount(body?.account);
+        return body;
+      }
       if (res.status === 401) {
         clearIdentity();
       }

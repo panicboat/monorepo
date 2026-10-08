@@ -23,6 +23,14 @@ describe("resolveProfileSession", () => {
     expect(resolveProfileSession([enabled("p1")], "gone")).toEqual({ kind: "active", profileId: "p1" });
   });
 
+  it("marks the only enabled profile unavailable when the server denied it", () => {
+    expect(resolveProfileSession([enabled("p1")], null, "p1")).toEqual({ kind: "unavailable" });
+  });
+
+  it("activates the only enabled profile when a different profile was denied", () => {
+    expect(resolveProfileSession([enabled("p1")], null, "p2")).toEqual({ kind: "active", profileId: "p1" });
+  });
+
   it("keeps the stored profile when it is still enabled among several", () => {
     expect(resolveProfileSession([enabled("p1"), enabled("p2")], "p2")).toEqual({ kind: "active", profileId: "p2" });
   });
@@ -33,6 +41,14 @@ describe("resolveProfileSession", () => {
 
   it("asks for a selection when the stored profile is not in the list", () => {
     expect(resolveProfileSession([enabled("p1"), enabled("p2")], "gone")).toEqual({ kind: "select" });
+  });
+
+  it("asks for a selection when the stored profile was denied", () => {
+    expect(resolveProfileSession([enabled("p1"), enabled("p2")], "p1", "p1")).toEqual({ kind: "select" });
+  });
+
+  it("keeps the stored profile when another profile was denied", () => {
+    expect(resolveProfileSession([enabled("p1"), enabled("p2")], "p1", "p2")).toEqual({ kind: "active", profileId: "p1" });
   });
 
   it("does not keep a stored profile that has been disabled", () => {

@@ -6,17 +6,26 @@ export const MY_PROFILES_URL = "/api/profile/mine";
 export type ProfileSession =
   | { kind: "onboarding" }
   | { kind: "active"; profileId: string }
-  | { kind: "select" };
+  | { kind: "select" }
+  | { kind: "unavailable" };
 
 // Never pick one of several enabled profiles implicitly; acting as an unintended profile is the failure to avoid.
 export function resolveProfileSession(
   profiles: Pick<ProfileView, "id" | "disabled">[],
-  storedProfileId: string | null
+  storedProfileId: string | null,
+  deniedProfileId: string | null = null
 ): ProfileSession {
   const enabled = profiles.filter((profile) => !profile.disabled);
   if (enabled.length === 0) return { kind: "onboarding" };
-  if (enabled.length === 1) return { kind: "active", profileId: enabled[0].id };
-  if (storedProfileId && enabled.some((profile) => profile.id === storedProfileId)) {
+  if (enabled.length === 1) {
+    if (enabled[0].id === deniedProfileId) return { kind: "unavailable" };
+    return { kind: "active", profileId: enabled[0].id };
+  }
+  if (
+    storedProfileId &&
+    storedProfileId !== deniedProfileId &&
+    enabled.some((profile) => profile.id === storedProfileId)
+  ) {
     return { kind: "active", profileId: storedProfileId };
   }
   return { kind: "select" };
