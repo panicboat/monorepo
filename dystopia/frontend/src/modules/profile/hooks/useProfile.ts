@@ -34,8 +34,9 @@ export function useProfile() {
         body: payload,
       });
       const accountId = useAuthStore.getState().accountId;
+      if (!accountId) return res.profile;
       // Put the new profile into the cached list first; a stale empty list would resolve back to onboarding.
-      if (accountId) await addToMyProfiles(mutateCache, accountId, res.profile);
+      await addToMyProfiles(mutateCache, accountId, res.profile);
       setActiveProfile(res.profile.id);
       return res.profile;
     },

@@ -40,10 +40,16 @@ export function isMyProfilesKey(key: unknown): boolean {
 }
 
 // Target one account's key: a filter would also rewrite the cached list of another account signed in earlier in this tab.
-export function addToMyProfiles(mutateCache: ScopedMutator, accountId: string, profile: ProfileView) {
-  return mutateCache<MyProfilesResponse>(
-    myProfilesKey(accountId),
-    (current) => ({ profiles: [...(current?.profiles ?? []), profile] }),
+export async function addToMyProfiles(
+  mutateCache: ScopedMutator,
+  accountId: string,
+  profile: ProfileView
+): Promise<void> {
+  const key = myProfilesKey(accountId);
+  const updated = await mutateCache<MyProfilesResponse>(
+    key,
+    (current) => (current ? { profiles: [...current.profiles, profile] } : current),
     { revalidate: false }
   );
+  if (!updated) await mutateCache(key);
 }

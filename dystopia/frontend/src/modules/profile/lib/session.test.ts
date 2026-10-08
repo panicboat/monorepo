@@ -72,20 +72,38 @@ describe("myProfilesKey", () => {
 });
 
 describe("addToMyProfiles", () => {
-  it("updates only the given account's list and appends the profile without revalidating", async () => {
-    const mutateCache = vi.fn(async () => undefined);
+  it("appends to the cached list for the given account without revalidating", async () => {
+    const profile = emptyProfileView("prof-1");
+    const existing = emptyProfileView("prof-0");
+    const mutateCache = vi.fn().mockImplementation(async (_key, updater) => updater({ profiles: [existing] }));
 
-    await addToMyProfiles(mutateCache as unknown as ScopedMutator, "acc-1", emptyProfileView("prof-1"));
+    await addToMyProfiles(mutateCache as unknown as ScopedMutator, "acc-1", profile);
 
+    expect(mutateCache).toHaveBeenCalledTimes(1);
     const [key, updater, options] = mutateCache.mock.calls[0] as unknown as [
       unknown,
-      (current?: { profiles: { id: string }[] }) => { profiles: { id: string }[] },
+      (current?: { profiles: { id: string }[] }) => { profiles: { id: string }[] } | undefined,
       unknown,
     ];
     expect(key).toEqual(myProfilesKey("acc-1"));
-    expect(typeof key).not.toBe("function");
-    expect(updater(undefined).profiles.map((p) => p.id)).toEqual(["prof-1"]);
-    expect(updater({ profiles: [{ id: "prof-0" }] }).profiles.map((p) => p.id)).toEqual(["prof-0", "prof-1"]);
+    expect(updater({ profiles: [existing] })?.profiles.map((p) => p.id)).toEqual(["prof-0", "prof-1"]);
     expect(options).toEqual({ revalidate: false });
+  });
+
+  it("revalidates instead of fabricating a list when the cache is empty", async () => {
+    const mutateCache = vi.fn().mockResolvedValue(undefined);
+
+    await addToMyProfiles(mutateCache as unknown as ScopedMutator, "acc-1", emptyProfileView("prof-1"));
+
+    expect(mutateCache).toHaveBeenCalledTimes(2);
+    const [key, updater, options] = mutateCache.mock.calls[0] as unknown as [
+      unknown,
+      (current?: { profiles: { id: string }[] }) => { profiles: { id: string }[] } | undefined,
+      unknown,
+    ];
+    expect(key).toEqual(myProfilesKey("acc-1"));
+    expect(updater(undefined)).toBeUndefined();
+    expect(options).toEqual({ revalidate: false });
+    expect(mutateCache.mock.calls[1]).toEqual([myProfilesKey("acc-1")]);
   });
 });
