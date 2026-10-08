@@ -87,6 +87,9 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     )
     footprints_repo.upsert_visit(visitor_profile_id: persona_a, visited_profile_id: bystander)
     footprints_repo.upsert_visit(visitor_profile_id: bystander, visited_profile_id: witness)
+    footprints_repo.upsert_visit(visitor_profile_id: witness, visited_profile_id: persona_a)
+    footprints_repo.set_last_read_now(profile_id: persona_a)
+    footprints_repo.set_last_read_now(profile_id: bystander)
 
     profile_a, profile_b = [persona_a, bystander].sort
     thread = messaging_repo.upsert_thread(profile_a: profile_a, profile_b: profile_b)
@@ -117,6 +120,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:bookmarks__bookmarks].where(profile_id: personas).count).to eq(0)
     expect(db[:notifications__notifications].where(latest_actor_profile_id: personas).count).to eq(0)
     expect(db[:footprints__visits].where(visitor_profile_id: personas).or(visited_profile_id: personas).count).to eq(0)
+    expect(db[:footprints__read_states].where(profile_id: personas).count).to eq(0)
     expect(db[:messaging__read_states].where(profile_id: personas).count).to eq(0)
     expect(db[:messaging__threads].where(profile_a: personas).or(profile_b: personas).count).to eq(0)
     expect(db[:schedule__schedules].where(profile_id: personas).count).to eq(0)
@@ -132,6 +136,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:bookmarks__bookmarks].where(profile_id: bystander).count).to eq(1)
     expect(db[:notifications__notifications].where(latest_actor_profile_id: bystander).count).to eq(1)
     expect(db[:footprints__visits].where(visitor_profile_id: bystander, visited_profile_id: witness).count).to eq(1)
+    expect(db[:footprints__read_states].where(profile_id: bystander).count).to eq(1)
     expect(db[:messaging__read_states].where(thread_id: thread[:id], profile_id: bystander).count).to eq(1)
     expect(
       db[:messaging__threads].where(id: thread[:id]).where(Sequel.|({ profile_a: bystander }, { profile_b: bystander })).count

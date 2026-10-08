@@ -63,9 +63,28 @@ RSpec.describe Footprints::Grpc::FootprintsHandler, type: :database do
     expect(unread).to eq(0)
   end
 
-  it "does not record a visit when the visitor turned visit recording off" do
-    preferences = Notifications::Slice["use_cases.get_preferences"].call(profile_id: guest)
-    Notifications::Slice["use_cases.update_preferences"].call(profile_id: guest, preferences: preferences.merge(footprints_record_my_visits: false))
+  it "keeps one profile's read state from clearing another profile's unread footprints" do
+    act_as(guest)
+    visit(cast)
+    act_as(other_cast)
+    rpc(:mark_read, Footprints::V1::MarkReadRequest.new)
+
+    act_as(cast)
+    expect(unread).to eq(1)
+    expect(footprints.map(&:is_unread)).to eq([true])
+
+    rpc(:mark_read, Footprints::V1::MarkReadRequest.new)
+
+    expect(db[:footprints__read_states].select_order_map(:profile_id)).to eq([cast, other_cast].sort)
+    expect(unread).to eq(0)
+  end
+
+  it "decides whether to record a visit from the visitor's setting, not the visited profile's" do
+    get_preferences = Notifications::Slice["use_cases.get_preferences"]
+    update_preferences = Notifications::Slice["use_cases.update_preferences"]
+    [guest, cast].each do |profile_id|
+      update_preferences.call(profile_id: profile_id, preferences: get_preferences.call(profile_id: profile_id).merge(footprints_record_my_visits: false))
+    end
 
     act_as(guest)
     visit(cast)

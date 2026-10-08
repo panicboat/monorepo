@@ -30,7 +30,7 @@ RSpec.describe "Schedule::Repositories::ScheduleRepository", type: :database do
     expect(rows).to be_empty
   end
 
-  it "does not return another account's rows" do
+  it "does not return another profile's rows" do
     other_profile_id = SecureRandom.uuid_v7
     repo.upsert(profile_id: other_profile_id, work_date: "2026-09-20", start_time: "20:00", end_time: "02:00")
 
@@ -46,7 +46,7 @@ RSpec.describe "Schedule::Repositories::ScheduleRepository", type: :database do
     expect(rows).to be_empty
   end
 
-  it "deletes all rows for an account, across dates" do
+  it "deletes all rows for a profile, across dates" do
     repo.upsert(profile_id: profile_id, work_date: "2026-09-18", start_time: "20:00", end_time: "02:00")
     repo.upsert(profile_id: profile_id, work_date: "2026-09-25", start_time: "20:00", end_time: "02:00")
 
