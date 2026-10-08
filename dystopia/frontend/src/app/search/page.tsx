@@ -105,7 +105,7 @@ export default function SearchPage() {
             const href = `/u/${encodeURIComponent(p.username)}`;
             return (
               <div
-                key={p.accountId}
+                key={p.profileId}
                 className="flex items-center gap-3 border-b border-border px-4 py-3"
               >
                 <Avatar src={p.avatarUrl || undefined} fallback={p.displayName.slice(0, 1) || "?"} size="md" href={href} />
@@ -113,7 +113,7 @@ export default function SearchPage() {
                   <p className="truncate font-bold text-text-primary">{p.displayName}</p>
                   <p className="truncate text-sm text-text-secondary">@{p.username}</p>
                 </Link>
-                <FollowButton targetAccountId={p.accountId} />
+                <FollowButton targetProfileId={p.profileId} />
               </div>
             );
           })}

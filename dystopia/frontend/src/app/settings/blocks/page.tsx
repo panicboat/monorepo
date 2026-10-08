@@ -23,7 +23,7 @@ export default function BlockedAccountsPage() {
 
       {profiles.map((p) => (
         <div
-          key={p.accountId}
+          key={p.profileId}
           className="flex items-center gap-3 border-b border-border px-4 py-3"
         >
           <Avatar
@@ -35,7 +35,7 @@ export default function BlockedAccountsPage() {
             <p className="truncate font-bold text-text-primary">{p.displayName}</p>
             <p className="truncate text-sm text-text-secondary">@{p.username}</p>
           </div>
-          <BlockButton targetAccountId={p.accountId} />
+          <BlockButton targetProfileId={p.profileId} />
         </div>
       ))}
     </main>

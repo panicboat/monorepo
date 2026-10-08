@@ -11,11 +11,11 @@ export async function POST(req: NextRequest) {
 
     const headers = await buildGrpcHeaders(req);
     const body = await req.json();
-    const targetAccountId = body?.targetAccountId ?? "";
-    if (!targetAccountId) {
-      return NextResponse.json({ error: "targetAccountId required" }, { status: 400 });
+    const targetProfileId = body?.targetProfileId ?? "";
+    if (!targetProfileId) {
+      return NextResponse.json({ error: "targetProfileId required" }, { status: 400 });
     }
-    await socialBlockClient.block({ targetAccountId }, { headers });
+    await socialBlockClient.block({ targetProfileId }, { headers });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     return handleApiError(error, "Block");
@@ -28,11 +28,11 @@ export async function DELETE(req: NextRequest) {
     if (authError) return authError;
 
     const headers = await buildGrpcHeaders(req);
-    const targetAccountId = req.nextUrl.searchParams.get("target_account_id") || "";
-    if (!targetAccountId) {
-      return NextResponse.json({ error: "target_account_id required" }, { status: 400 });
+    const targetProfileId = req.nextUrl.searchParams.get("target_profile_id") || "";
+    if (!targetProfileId) {
+      return NextResponse.json({ error: "target_profile_id required" }, { status: 400 });
     }
-    await socialBlockClient.unblock({ targetAccountId }, { headers });
+    await socialBlockClient.unblock({ targetProfileId }, { headers });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     return handleApiError(error, "Unblock");

@@ -5,15 +5,15 @@ import { useBlock } from "@/modules/social/hooks";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface BlockButtonProps {
-  targetAccountId: string;
+  targetProfileId: string;
   className?: string;
 }
 
-export function BlockButton({ targetAccountId, className }: BlockButtonProps) {
+export function BlockButton({ targetProfileId, className }: BlockButtonProps) {
   const viewerId = useAuthStore(selectActiveProfileId);
-  const { isBlocked, block, unblock, loading } = useBlock(targetAccountId);
+  const { isBlocked, block, unblock, loading } = useBlock(targetProfileId);
 
-  if (!targetAccountId || (viewerId && viewerId === targetAccountId)) return null;
+  if (!targetProfileId || (viewerId && viewerId === targetProfileId)) return null;
 
   const onClick = async () => {
     if (isBlocked) {

@@ -7,14 +7,14 @@ import type { BlockStatusMap } from "../types";
 
 interface Response { blocked: BlockStatusMap }
 
-export function useBlockStatusBatch(targetAccountIds: string[]) {
+export function useBlockStatusBatch(targetProfileIds: string[]) {
   const [blocked, setBlocked] = useState<BlockStatusMap>({});
   const [loading, setLoading] = useState(false);
 
-  const key = targetAccountIds.join(",");
+  const key = targetProfileIds.join(",");
 
   useEffect(() => {
-    if (!useAuthStore.getState().activeProfileId || targetAccountIds.length === 0) return;
+    if (!useAuthStore.getState().activeProfileId || targetProfileIds.length === 0) return;
     let cancelled = false;
     (async () => {
       if (cancelled) return;
@@ -22,7 +22,7 @@ export function useBlockStatusBatch(targetAccountIds: string[]) {
       try {
         const res = await authFetch<Response>(
           "/api/social/blocks/status",
-          { method: "POST", body: { targetAccountIds } }
+          { method: "POST", body: { targetProfileIds } }
         );
         if (cancelled) return;
         setBlocked(res.blocked || {});

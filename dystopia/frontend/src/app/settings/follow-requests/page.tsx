@@ -24,7 +24,7 @@ export default function FollowRequestsPage() {
 
       {requests.map((r) => (
         <div
-          key={r.requesterAccountId}
+          key={r.requesterProfileId}
           className="flex items-center gap-3 border-b border-border px-4 py-3"
         >
           <Avatar src={r.avatarUrl || undefined} fallback={r.displayName.slice(0, 1) || "?"} size="md" />
@@ -33,10 +33,10 @@ export default function FollowRequestsPage() {
             <p className="truncate text-sm text-text-secondary">@{r.username}</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="primary" size="sm" onClick={() => approve(r.requesterAccountId)}>
+            <Button variant="primary" size="sm" onClick={() => approve(r.requesterProfileId)}>
               承認
             </Button>
-            <Button variant="secondary" size="sm" onClick={() => reject(r.requesterAccountId)}>
+            <Button variant="secondary" size="sm" onClick={() => reject(r.requesterProfileId)}>
               拒否
             </Button>
           </div>

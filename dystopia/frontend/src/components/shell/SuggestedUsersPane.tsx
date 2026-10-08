@@ -20,13 +20,13 @@ export function SuggestedUsersPane() {
         {profiles.map((p) => {
           const href = `/u/${encodeURIComponent(p.username)}`;
           return (
-            <div key={p.accountId} className="flex items-center gap-3 px-4 py-3">
+            <div key={p.profileId} className="flex items-center gap-3 px-4 py-3">
               <Avatar src={p.avatarUrl || undefined} fallback={p.displayName.slice(0, 1) || "?"} size="md" href={href} />
               <Link href={href} className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-text-primary">{p.displayName}</p>
                 <p className="truncate text-xs text-text-secondary">@{p.username}</p>
               </Link>
-              <FollowButton targetAccountId={p.accountId} />
+              <FollowButton targetProfileId={p.profileId} />
             </div>
           );
         })}

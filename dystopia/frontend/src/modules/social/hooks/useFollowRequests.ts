@@ -30,9 +30,9 @@ export function useFollowRequests() {
     { revalidateOnFocus: false, dedupingInterval: 10000 }
   );
 
-  const approve = useCallback(async (requesterAccountId: string) => {
+  const approve = useCallback(async (requesterProfileId: string) => {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
-    const res = await fetch(`/api/social/follow/requests/${requesterAccountId}/approve`, {
+    const res = await fetch(`/api/social/follow/requests/${requesterProfileId}/approve`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
     });
@@ -40,13 +40,13 @@ export function useFollowRequests() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Failed to approve");
     }
-    mutateList((cur) => (cur ? { ...cur, requests: cur.requests.filter((r) => r.requesterAccountId !== requesterAccountId) } : cur), { revalidate: false });
+    mutateList((cur) => (cur ? { ...cur, requests: cur.requests.filter((r) => r.requesterProfileId !== requesterProfileId) } : cur), { revalidate: false });
     mutateCount((cur) => (cur ? { count: Math.max(0, cur.count - 1) } : cur), { revalidate: false });
   }, [mutateList, mutateCount]);
 
-  const reject = useCallback(async (requesterAccountId: string) => {
+  const reject = useCallback(async (requesterProfileId: string) => {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
-    const res = await fetch(`/api/social/follow/requests/${requesterAccountId}/reject`, {
+    const res = await fetch(`/api/social/follow/requests/${requesterProfileId}/reject`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
     });
@@ -54,7 +54,7 @@ export function useFollowRequests() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Failed to reject");
     }
-    mutateList((cur) => (cur ? { ...cur, requests: cur.requests.filter((r) => r.requesterAccountId !== requesterAccountId) } : cur), { revalidate: false });
+    mutateList((cur) => (cur ? { ...cur, requests: cur.requests.filter((r) => r.requesterProfileId !== requesterProfileId) } : cur), { revalidate: false });
     mutateCount((cur) => (cur ? { count: Math.max(0, cur.count - 1) } : cur), { revalidate: false });
   }, [mutateList, mutateCount]);
 

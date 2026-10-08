@@ -4,7 +4,7 @@ import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
 export { FollowStatus };
 
 export interface SocialAccountView {
-  accountId: string;
+  profileId: string;
   username: string;
   displayName: string;
   avatarUrl: string;
@@ -21,7 +21,7 @@ export interface PaginatedProfilesResponse {
 }
 
 export interface FollowRequestItem {
-  requesterAccountId: string;
+  requesterProfileId: string;
   username: string;
   displayName: string;
   avatarUrl: string;

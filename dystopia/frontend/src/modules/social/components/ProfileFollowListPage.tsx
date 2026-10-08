@@ -31,7 +31,7 @@ export function ProfileFollowListPage({ initialTab }: ProfileFollowListPageProps
         {profile.displayName}
         {HEADINGS[initialTab]}
       </h1>
-      <FollowListView accountId={profile.id} initialTab={initialTab} />
+      <FollowListView profileId={profile.id} initialTab={initialTab} />
     </main>
   );
 }
