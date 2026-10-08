@@ -684,3 +684,27 @@ Task 2 の後、controller が実サーバーを起動して確認する(使い�
 - `src/lib/media.ts` が読む auth store の `accountId` は本物の account の id で、変えていない。
 - frontend の hook の `const userId = useAuthStore((s) => s.activeProfileId)` は、この段で footprints と bookmarks の 3 箇所を改名した。残りは 18 箇所で、review 4・discovery 4 は段 7、social 5・karte 4・profile 1 は段 9 で改名する。
 - P1a・P1b・P2・P3・P4・P5 の Known gaps はそのまま残る。
+- footprints と bookmarks の一覧・未読数の hook は、SWR の key に profile を含めていない(現状のまま)。人格を切り替えたときに前の人格の cache が残るので、段 9 で cache の消去と合わせて扱う。
+- `BookmarkRepository#bookmarked?` は呼び出し元も spec も無い(現状のまま。この段では名前だけを変えた)。
+- profile の id が空のまま uuid のカラムに届くと、`ListSchedules` と `RecordVisit` は 400 ではなく 500 を返す(改名前から同じ)。
+- 退会の purge は各 slice の失敗を握りつぶす(`PurgeIdentity` の `rescue nil`)。カラム名の間違いはエラーにならず行が残るだけなので、purge の対象は結線の spec で行が消えることを確かめる必要がある。段 8 で purge を作り替えるときに全 slice を見直す。
+
+## Changes after the whole-branch review
+
+branch 全体のレビュー(Critical なし)の指摘を受けて、次を変えた。挙動は変えていない。
+
+- `spec/slices/footprints/grpc/footprints_handler_spec.rb`: 別の profile が既読にしても自分の未読が消えないことを確かめる example を足した(以前は既読の行が 1 つしか無く、profile で絞る条件を外しても通っていた)。訪問を記録するかどうかの example は、訪問先の設定が切られていても記録されることも確かめる。
+- `spec/slices/identity/use_cases/account/purge_wiring_spec.rb`: 足跡の既読の行と「訪問された側」の訪問を作り、purge で消えること・他の profile の行が残ることを確かめる(purge は失敗を握りつぶすので、以前は既読の削除が壊れても通っていた)。
+- 上の 2 つは、対象の行を壊すと失敗することを確かめた(未読数と既読時刻の絞り込みを外す、既読の削除のカラム名を変える、訪問の削除を片側だけにする、訪問先の設定も読む)。
+- `stubs/footprints/v1/footprints_service_services_pb.rb` と `stubs/schedule/v1/schedule_service_services_pb.rb`: 生成し直した。Task 1 では差分を戻していたが、戻した側には proto から消えた説明と、存在しない field 名(`visited_account_id`、`account_id`)を含むコメントが残っていた。
+- frontend: schedule の route の test を `src/app/api/schedule/profile-names.test.ts` に分けた。schedule の mapper の test の値 `"acc-1"` を `"prof-1"` に直した。
+- `spec/slices/schedule/repositories/schedule_repository_spec.rb`: example の名前の「account」を「profile」に直した。
+
+## Controller verification result
+
+2026-10-09 に、使い捨ての database と実サーバー(`bin/grpc` + `next dev`)で確認した(修正前の commit `e68cf5bd` に対して。修正は spec・test と生成 stub のコメントだけを変える)。`bin/grpc` は production として動くので、media の確認のために `MEDIA_BUCKET_NAME` と AWS の認証情報にダミーの値を export した(署名付き URL の生成は通信を伴わない)。
+
+- API 31 項目がすべて通った: 訪問が `visitedProfileId` で記録され `visitedAccountId` では記録されないこと、足跡一覧の訪問者・回数・未読、既読、訪問の記録を切った profile と自分自身への訪問が記録されないこと、ブックマークの追加・状態・一覧・profile ごとの解除、スケジュールの保存・profile の id での取得・profile ごとの削除・不正な時刻の 400、media の upload URL の取得と登録。
+- headless Chrome(幅 1280px、2 つの browser context): cast のプロフィールページのスケジュールが本人と訪問者に見え、ページを開くと足跡が記録され、足跡ページに訪問者が並び、ブックマークページがその profile の分だけを表示する。失敗した呼び出しは無い。
+- gRPC server のログの ERROR は、確認 script が意図して送った不正な入力(不正な時刻、空の profile の id)の 3 件だけだった。
+
