@@ -12,12 +12,12 @@ guest_ids.each_with_index do |guest_id, guest_idx|
   posts.each_with_index do |post, post_idx|
     next unless (post_idx + guest_idx) % 2 == 0
 
-    existing = db[:"post__likes"].where(account_id: guest_id, post_id: post[:id]).first
+    existing = db[:"post__likes"].where(profile_id: guest_id, post_id: post[:id]).first
     next if existing
 
     db[:"post__likes"].insert(
       id: SecureRandom.uuid_v7,
-      account_id: guest_id,
+      profile_id: guest_id,
       post_id: post[:id],
       created_at: Time.now - (post_idx * 1800),
     )

@@ -89,7 +89,7 @@ RSpec.describe Review::UseCases::ListRecentEntries do
     e = entry
     allow(entry_repo).to receive(:list_recent).with(limit: 20, cursor: nil).and_return([e])
     allow(filter_visible_posts).to receive(:call) do |viewer_account_id:, posts:|
-      posts.reject { |p| p.author_id == target_id }
+      posts.reject { |p| p.author_profile_id == target_id }
     end
 
     result = use_case.call(viewer_account_id: viewer_id)

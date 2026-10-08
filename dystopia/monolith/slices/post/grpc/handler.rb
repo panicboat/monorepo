@@ -38,10 +38,10 @@ module Post
         @media_adapter ||= Post::Adapters::MediaAdapter.new
       end
 
-      def get_blocked_user_ids
-        return [] unless current_user_id
+      def get_blocked_profile_ids
+        return [] unless current_profile_id
 
-        block_adapter.blocked_ids(account_id: current_user_id)
+        block_adapter.blocked_ids(profile_id: current_profile_id)
       end
     end
   end

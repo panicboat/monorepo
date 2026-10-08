@@ -76,10 +76,10 @@ extra_posts = {
 }
 
 post_count = 0
-CAST_PROFILE_IDS.each_with_index do |author_id, cast_idx|
-  next unless author_id
+CAST_PROFILE_IDS.each_with_index do |author_profile_id, cast_idx|
+  next unless author_profile_id
 
-  existing = db[:"post__posts"].where(author_id: author_id).count
+  existing = db[:"post__posts"].where(author_profile_id: author_profile_id).count
   next if existing > 0
 
   all_posts = (base_posts[cast_idx] || []) + (extra_posts[cast_idx] || [])
@@ -87,7 +87,7 @@ CAST_PROFILE_IDS.each_with_index do |author_id, cast_idx|
     post_id = SecureRandom.uuid_v7
     db[:"post__posts"].insert(
       id: post_id,
-      author_id: author_id,
+      author_profile_id: author_profile_id,
       content: data[:content],
       visibility: data[:visibility],
       created_at: Time.now - (idx * 3600),

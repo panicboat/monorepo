@@ -8,7 +8,7 @@ service LikeService {
   rpc LikePost(LikePostRequest) returns (LikePostResponse);
   rpc UnlikePost(UnlikePostRequest) returns (UnlikePostResponse);
   rpc GetLikeStatus(GetLikeStatusRequest) returns (GetLikeStatusResponse);
-  rpc ListLikedPostsByAccount(ListLikedPostsByAccountRequest) returns (ListLikedPostsByAccountResponse);
+  rpc ListLikedPostsByProfile(ListLikedPostsByProfileRequest) returns (ListLikedPostsByProfileResponse);
 }
 
 message LikePostRequest {
@@ -35,13 +35,13 @@ message GetLikeStatusResponse {
   map<string, bool> liked = 1;
 }
 
-message ListLikedPostsByAccountRequest {
-  string account_id = 1;
+message ListLikedPostsByProfileRequest {
+  string profile_id = 1;
   int32 limit = 2;
   string cursor = 3;
 }
 
-message ListLikedPostsByAccountResponse {
+message ListLikedPostsByProfileResponse {
   repeated post.v1.Post posts = 1;
   string next_cursor = 2;
   bool has_more = 3;

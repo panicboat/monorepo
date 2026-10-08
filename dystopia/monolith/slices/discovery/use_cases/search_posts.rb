@@ -22,7 +22,7 @@ module Discovery
           last_created_at ? encode_cursor(created_at: last_created_at.iso8601, id: truncated.last) : nil
         end
 
-        post_protos_map = list_posts_uc.call(post_ids: truncated, viewer_account_id: viewer_account_id)
+        post_protos_map = list_posts_uc.call(post_ids: truncated, viewer_profile_id: viewer_account_id)
         ordered_posts = truncated.filter_map { |id| post_protos_map[id.to_s] }
 
         { posts: ordered_posts, next_cursor: next_cursor, has_more: has_more }

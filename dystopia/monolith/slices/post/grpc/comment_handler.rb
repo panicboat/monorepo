@@ -38,19 +38,19 @@ module Post
 
         result = add_comment_uc.call(
           post_id: request.message.post_id,
-          user_id: current_user_id,
+          author_profile_id: current_profile_id,
           content: request.message.content,
           parent_id: request.message.parent_id.empty? ? nil : request.message.parent_id,
           media: media_data
         )
 
-        blocked_user_ids = get_blocked_user_ids
-        comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_user_ids: blocked_user_ids)
+        blocked_profile_ids = get_blocked_profile_ids
+        comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_author_profile_ids: blocked_profile_ids)
 
         media_files = load_media_files_for_comments([result[:comment]])
 
-        author = get_comment_author(current_user_id, media_files: media_files)
-        mentioned_usernames = mentioned_usernames_for(result[:comment].comment_mentions.map(&:account_id))
+        author = get_comment_author(current_profile_id, media_files: media_files)
+        mentioned_usernames = mentioned_usernames_for(result[:comment].comment_mentions.map(&:profile_id))
 
         ::Post::V1::AddCommentResponse.new(
           comment: CommentPresenter.to_proto(result[:comment], author: author, media_files: media_files, mentioned_usernames: mentioned_usernames),
@@ -77,11 +77,11 @@ module Post
 
         result = delete_comment_uc.call(
           comment_id: request.message.comment_id,
-          user_id: current_user_id
+          author_profile_id: current_profile_id
         )
 
-        blocked_user_ids = get_blocked_user_ids
-        comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_user_ids: blocked_user_ids)
+        blocked_profile_ids = get_blocked_profile_ids
+        comments_count = comment_repo.comments_count(post_id: result[:post_id], exclude_author_profile_ids: blocked_profile_ids)
 
         ::Post::V1::DeleteCommentResponse.new(comments_count: comments_count)
       rescue DeleteComment::CommentNotFoundOrUnauthorizedError
@@ -93,13 +93,13 @@ module Post
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        blocked_user_ids = get_blocked_user_ids
+        blocked_profile_ids = get_blocked_profile_ids
 
         result = list_comments_uc.call(
           post_id: request.message.post_id,
           limit: limit,
           cursor: cursor,
-          exclude_user_ids: blocked_user_ids
+          exclude_author_profile_ids: blocked_profile_ids
         )
 
         media_files = load_media_files_for_comments(result[:comments])
@@ -116,13 +116,13 @@ module Post
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        blocked_user_ids = get_blocked_user_ids
+        blocked_profile_ids = get_blocked_profile_ids
 
         result = list_replies_uc.call(
           comment_id: request.message.comment_id,
           limit: limit,
           cursor: cursor,
-          exclude_user_ids: blocked_user_ids
+          exclude_author_profile_ids: blocked_profile_ids
         )
 
         media_files = load_media_files_for_comments(result[:replies])
@@ -142,8 +142,8 @@ module Post
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         result = list_comments_by_author_uc.call(
-          author_id: request.message.author_id,
-          viewer_account_id: current_user_id,
+          author_profile_id: request.message.author_profile_id,
+          viewer_profile_id: current_profile_id,
           limit: limit,
           cursor: cursor
         )
@@ -163,20 +163,20 @@ module Post
       AddComment = Post::UseCases::Comments::AddComment
       DeleteComment = Post::UseCases::Comments::DeleteComment
 
-      def mentioned_usernames_for(account_ids)
-        ids = account_ids.uniq
+      def mentioned_usernames_for(profile_ids)
+        ids = profile_ids.uniq
         return {} if ids.empty?
 
         profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
       end
 
-      def get_comment_author(user_id, media_files: {})
-        infos = profile_author_adapter.load([user_id]).transform_keys(&:to_s)
-        info = infos[user_id.to_s]
+      def get_comment_author(author_profile_id, media_files: {})
+        infos = profile_author_adapter.load([author_profile_id]).transform_keys(&:to_s)
+        info = infos[author_profile_id.to_s]
         return nil unless info
 
         {
-          id: user_id,
+          id: author_profile_id,
           name: info.display_name,
           image_url: info.avatar_url,
           user_type: "",

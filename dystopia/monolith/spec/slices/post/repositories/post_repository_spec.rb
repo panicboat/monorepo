@@ -8,8 +8,8 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
 
   describe "#create_post" do
     it "creates a post and returns it" do
-      post = repo.create_post(author_id: cast_id, content: "Hello world")
-      expect(post.author_id).to eq(cast_id)
+      post = repo.create_post(author_profile_id: cast_id, content: "Hello world")
+      expect(post.author_profile_id).to eq(cast_id)
       expect(post.content).to eq("Hello world")
       expect(post.id).not_to be_nil
     end
@@ -21,7 +21,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     end
 
     it "returns post with media when exists" do
-      post = repo.create_post(author_id: cast_id, content: "Test")
+      post = repo.create_post(author_profile_id: cast_id, content: "Test")
       result = repo.find_by_id(post.id)
       expect(result).not_to be_nil
       expect(result.content).to eq("Test")
@@ -30,7 +30,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
 
   describe "#update_post" do
     it "updates post content" do
-      post = repo.create_post(author_id: cast_id, content: "Original")
+      post = repo.create_post(author_profile_id: cast_id, content: "Original")
       result = repo.update_post(post.id, content: "Updated")
       expect(result.content).to eq("Updated")
     end
@@ -38,7 +38,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
 
   describe "#delete_post" do
     it "deletes the post" do
-      post = repo.create_post(author_id: cast_id, content: "To delete")
+      post = repo.create_post(author_profile_id: cast_id, content: "To delete")
       repo.delete_post(post.id)
       expect(repo.find_by_id(post.id)).to be_nil
     end
@@ -58,7 +58,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     end
 
     it "saves media with media_id for a post" do
-      post = repo.create_post(author_id: cast_id, content: "With media")
+      post = repo.create_post(author_profile_id: cast_id, content: "With media")
       media_id = create_media_file(media_type: "image")
       media_data = [
         { media_id: media_id, media_type: "image" }
@@ -72,7 +72,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     end
 
     it "saves multiple media with media_ids preserving position" do
-      post = repo.create_post(author_id: cast_id, content: "With media")
+      post = repo.create_post(author_profile_id: cast_id, content: "With media")
       media_id1 = create_media_file(media_type: "image")
       media_id2 = create_media_file(media_type: "video")
       media_data = [
@@ -91,7 +91,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     end
 
     it "replaces existing media" do
-      post = repo.create_post(author_id: cast_id, content: "With media")
+      post = repo.create_post(author_profile_id: cast_id, content: "With media")
       old_media_id = create_media_file(media_type: "image")
       new_media_id = create_media_file(media_type: "video")
 
@@ -107,7 +107,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
 
   describe "#save_hashtags" do
     it "saves hashtags for a post" do
-      post = repo.create_post(author_id: cast_id, content: "Post with hashtags")
+      post = repo.create_post(author_profile_id: cast_id, content: "Post with hashtags")
       repo.save_hashtags(post_id: post.id, hashtags: ["ruby", "rails"])
 
       result = repo.find_by_id(post.id)
@@ -115,7 +115,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     end
 
     it "replaces existing hashtags" do
-      post = repo.create_post(author_id: cast_id, content: "Post")
+      post = repo.create_post(author_profile_id: cast_id, content: "Post")
       repo.save_hashtags(post_id: post.id, hashtags: ["old"])
       repo.save_hashtags(post_id: post.id, hashtags: ["new"])
 
@@ -126,43 +126,43 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
 
   describe "#save_mentions" do
     it "saves mentions for a post" do
-      post = repo.create_post(author_id: cast_id, content: "@alice hi")
+      post = repo.create_post(author_profile_id: cast_id, content: "@alice hi")
       mentioned_id = SecureRandom.uuid_v7
-      repo.save_mentions(post_id: post.id, mentions: [{ account_id: mentioned_id, position: 0, length: 6 }])
+      repo.save_mentions(post_id: post.id, mentions: [{ profile_id: mentioned_id, position: 0, length: 6 }])
 
       result = repo.find_by_id(post.id)
       expect(result.post_mentions.length).to eq(1)
-      expect(result.post_mentions.first.account_id).to eq(mentioned_id)
+      expect(result.post_mentions.first.profile_id).to eq(mentioned_id)
       expect(result.post_mentions.first.position).to eq(0)
       expect(result.post_mentions.first.length).to eq(6)
     end
 
     it "replaces existing mentions" do
-      post = repo.create_post(author_id: cast_id, content: "@a @b")
+      post = repo.create_post(author_profile_id: cast_id, content: "@a @b")
       id_a = SecureRandom.uuid_v7
       id_b = SecureRandom.uuid_v7
-      repo.save_mentions(post_id: post.id, mentions: [{ account_id: id_a, position: 0, length: 2 }])
-      repo.save_mentions(post_id: post.id, mentions: [{ account_id: id_b, position: 3, length: 2 }])
+      repo.save_mentions(post_id: post.id, mentions: [{ profile_id: id_a, position: 0, length: 2 }])
+      repo.save_mentions(post_id: post.id, mentions: [{ profile_id: id_b, position: 3, length: 2 }])
 
       result = repo.find_by_id(post.id)
-      expect(result.post_mentions.map(&:account_id)).to eq([id_b])
+      expect(result.post_mentions.map(&:profile_id)).to eq([id_b])
     end
   end
 
   describe "author-based queries (symmetric)" do
-    let(:author_id) { SecureRandom.uuid_v7 }
+    let(:author_profile_id) { SecureRandom.uuid_v7 }
 
-    it "creates a post with author_id and finds it" do
-      created = repo.create_post(author_id: author_id, content: "hello", visibility: "public")
-      found = repo.find_by_id_and_author(id: created.id, author_id: author_id)
+    it "creates a post with author_profile_id and finds it" do
+      created = repo.create_post(author_profile_id: author_profile_id, content: "hello", visibility: "public")
+      found = repo.find_by_id_and_author(id: created.id, author_profile_id: author_profile_id)
       expect(found).not_to be_nil
       expect(found.content).to eq("hello")
     end
 
-    it "lists public posts by author_id" do
-      repo.create_post(author_id: author_id, content: "p1", visibility: "public")
-      repo.create_post(author_id: author_id, content: "p2", visibility: "private")
-      result = repo.list_posts(author_id: author_id)
+    it "lists public posts by author_profile_id" do
+      repo.create_post(author_profile_id: author_profile_id, content: "p1", visibility: "public")
+      repo.create_post(author_profile_id: author_profile_id, content: "p2", visibility: "private")
+      result = repo.list_posts(author_profile_id: author_profile_id)
       expect(result.map(&:content)).to include("p1")
       expect(result.map(&:content)).not_to include("p2")
     end
@@ -170,7 +170,7 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
 
   describe "#top_by_likes" do
     it "does not raise an ambiguous column error for day and week periods" do
-      repo.create_post(author_id: cast_id, content: "ranked", visibility: "public")
+      repo.create_post(author_profile_id: cast_id, content: "ranked", visibility: "public")
 
       %w[day week all].each do |period|
         expect { repo.top_by_likes(period: period, limit: 10) }.not_to raise_error
@@ -180,12 +180,12 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
 
   describe "#delete_by_author" do
     it "deletes all posts by the author" do
-      author_id = SecureRandom.uuid_v7
-      other_author_id = SecureRandom.uuid_v7
-      mine = repo.create_post(author_id: author_id, content: "mine")
-      other = repo.create_post(author_id: other_author_id, content: "not mine")
+      author_profile_id = SecureRandom.uuid_v7
+      other_author_profile_id = SecureRandom.uuid_v7
+      mine = repo.create_post(author_profile_id: author_profile_id, content: "mine")
+      other = repo.create_post(author_profile_id: other_author_profile_id, content: "not mine")
 
-      repo.delete_by_author(author_id)
+      repo.delete_by_author(author_profile_id)
 
       expect(repo.find_by_id(mine.id)).to be_nil
       expect(repo.find_by_id(other.id)).not_to be_nil

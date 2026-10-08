@@ -6,7 +6,7 @@ require "slices/post/grpc/post_handler"
 
 RSpec.describe Post::Grpc::PostHandler, type: :database do
   let(:notification_repo) { Hanami.app.slices[:notifications]["repositories.notification_repository"] }
-  let(:author_id) { create_account_with_profile }
+  let(:author_profile_id) { create_account_with_profile }
   let(:mentioned_id) { create_account_with_profile(display_name: "Mentioned", username: "mentioned_user") }
 
   after { Current.clear }
@@ -22,14 +22,14 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
     before do
       mentioned_id
       Current.account_id = SecureRandom.uuid_v7
-      Current.profile_id = author_id
+      Current.profile_id = author_profile_id
     end
 
     it "includes the resolved mention in the response" do
       response = handler.save_post
 
       expect(response.post.mentions.length).to eq(1)
-      expect(response.post.mentions.first.account_id).to eq(mentioned_id)
+      expect(response.post.mentions.first.profile_id).to eq(mentioned_id)
       expect(response.post.mentions.first.username).to eq("mentioned_user")
     end
 
@@ -51,7 +51,7 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
       expect(notifications.map(&:type).count("mention")).to eq(1)
     end
 
-    it "collapses repeated mentions of the same account into a single notification" do
+    it "collapses repeated mentions of the same profile into a single notification" do
       repeated_message = Post::V1::SavePostRequest.new(id: "", content: "@mentioned_user @mentioned_user", visibility: "public")
       repeated_handler = described_class.new(method_key: :save_post, service: double, rpc_desc: double, active_call: double, message: repeated_message)
 

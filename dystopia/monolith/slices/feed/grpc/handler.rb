@@ -53,7 +53,7 @@ module Feed
           cursor: cursor
         )
 
-        hydrated = list_posts_by_ids_uc.call(post_ids: result[:post_ids], viewer_account_id: current_user_id)
+        hydrated = list_posts_by_ids_uc.call(post_ids: result[:post_ids], viewer_profile_id: current_user_id)
 
         posts = result[:post_ids].map { |id| hydrated[id] }.compact
 

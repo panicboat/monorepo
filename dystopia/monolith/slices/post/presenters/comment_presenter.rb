@@ -13,7 +13,7 @@ module Post
           id: comment.id.to_s,
           post_id: comment.post_id.to_s,
           parent_id: comment.parent_id.to_s,
-          user_id: comment.user_id.to_s,
+          author_profile_id: comment.author_profile_id.to_s,
           content: comment.content,
           created_at: comment.created_at.iso8601,
           author: author_to_proto(author),
@@ -25,7 +25,7 @@ module Post
 
       def self.many_to_proto(comments, authors: {}, media_files: {}, mentioned_usernames: {})
         (comments || []).map do |c|
-          author = authors[c.user_id]
+          author = authors[c.author_profile_id]
           to_proto(c, author: author, media_files: media_files, mentioned_usernames: mentioned_usernames)
         end
       end
@@ -44,8 +44,8 @@ module Post
 
       def self.mention_to_proto(mention, mentioned_usernames: {})
         ::Post::V1::PostMention.new(
-          account_id: mention.account_id.to_s,
-          username: mentioned_usernames[mention.account_id.to_s] || "",
+          profile_id: mention.profile_id.to_s,
+          username: mentioned_usernames[mention.profile_id.to_s] || "",
           position: mention.position,
           length: mention.length
         )
@@ -55,7 +55,7 @@ module Post
         return nil unless author_info
 
         ::Post::V1::CommentAuthor.new(
-          user_id: author_info[:id].to_s,
+          profile_id: author_info[:id].to_s,
           name: author_info[:name] || "",
           image_url: author_info[:image_url] || "",
           user_type: author_info[:user_type] || "guest",

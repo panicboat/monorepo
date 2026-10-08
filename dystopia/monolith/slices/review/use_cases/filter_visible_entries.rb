@@ -3,7 +3,7 @@
 module Review
   module UseCases
     class FilterVisibleEntries
-      AuthorRef = Struct.new(:author_id)
+      AuthorRef = Struct.new(:author_profile_id)
 
       include Review::Deps[cast_settings_repo: "repositories.cast_settings_repository"]
 

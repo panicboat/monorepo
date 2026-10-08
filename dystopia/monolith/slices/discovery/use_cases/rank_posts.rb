@@ -26,7 +26,7 @@ module Discovery
         end
 
         ids = truncated.map(&:first)
-        post_protos_map = list_posts_uc.call(post_ids: ids, viewer_account_id: viewer_account_id)
+        post_protos_map = list_posts_uc.call(post_ids: ids, viewer_profile_id: viewer_account_id)
         ordered_posts = ids.filter_map { |id| post_protos_map[id.to_s] }
 
         { posts: ordered_posts, next_cursor: next_cursor, has_more: has_more }

@@ -5,7 +5,7 @@ require "concerns/cursor_pagination"
 module Post
   module UseCases
     module Likes
-      class ListLikedPostsByAccount
+      class ListLikedPostsByProfile
         include ::Concerns::CursorPagination
         include Post::Deps[like_repo: "repositories.like_repository"]
 
@@ -13,16 +13,16 @@ module Post
 
         ForbiddenError = Class.new(StandardError)
 
-        def call(account_id:, viewer_account_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
-          unless viewer_account_id && viewer_account_id.to_s == account_id.to_s
-            raise ForbiddenError, "viewer cannot see another account's likes"
+        def call(profile_id:, viewer_profile_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
+          unless viewer_profile_id && viewer_profile_id.to_s == profile_id.to_s
+            raise ForbiddenError, "viewer cannot see another profile's likes"
           end
 
           limit = normalize_limit(limit)
           decoded_cursor = decode_cursor(cursor)
 
-          rows = like_repo.liked_post_ids_by_account(
-            account_id: account_id,
+          rows = like_repo.liked_post_ids_by_profile(
+            profile_id: profile_id,
             limit: limit,
             cursor: decoded_cursor
           )
@@ -32,7 +32,7 @@ module Post
           end
 
           post_ids = result[:items].map(&:post_id)
-          posts_map = list_posts_uc.call(post_ids: post_ids, viewer_account_id: viewer_account_id)
+          posts_map = list_posts_uc.call(post_ids: post_ids, viewer_profile_id: viewer_profile_id)
           ordered_posts = post_ids.filter_map { |id| posts_map[id.to_s] }
 
           {

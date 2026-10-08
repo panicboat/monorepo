@@ -41,7 +41,7 @@ cast_replies = [
 ]
 
 posts = db[:"post__posts"].order(:id).all.to_a
-all_user_ids = GUEST_PROFILE_IDS + CAST_PROFILE_IDS
+all_profile_ids = GUEST_PROFILE_IDS + CAST_PROFILE_IDS
 
 comment_count = 0
 reply_count = 0
@@ -53,14 +53,14 @@ posts.each_with_index do |post, post_i|
   next if existing > 0
 
   2.times do |i|
-    user_id = all_user_ids[(comment_idx + i) % all_user_ids.size]
+    author_profile_id = all_profile_ids[(comment_idx + i) % all_profile_ids.size]
     content = guest_comments[comment_idx % guest_comments.size]
 
     c_id = SecureRandom.uuid_v7
     db[:"post__comments"].insert(
       id: c_id,
       post_id: post[:id],
-      user_id: user_id,
+      author_profile_id: author_profile_id,
       content: content,
       parent_id: nil,
       replies_count: 0,
@@ -69,13 +69,13 @@ posts.each_with_index do |post, post_i|
     comment_count += 1
 
     if post_i % 3 == 0 && i == 0
-      author_id = post[:author_id]
+      post_author_profile_id = post[:author_profile_id]
       reply_content = cast_replies[reply_idx % cast_replies.size]
 
       db[:"post__comments"].insert(
         id: SecureRandom.uuid_v7,
         post_id: post[:id],
-        user_id: author_id,
+        author_profile_id: post_author_profile_id,
         content: reply_content,
         parent_id: c_id,
         replies_count: 0,

@@ -8,8 +8,8 @@ RSpec.describe "Post::Adapters::AccountAdapter", type: :database do
   describe "#user_exists?" do
     context "when user exists" do
       it "returns true" do
-        user_id = create_account_with_profile
-        expect(adapter.user_exists?(user_id)).to be true
+        profile_id = create_account_with_profile
+        expect(adapter.user_exists?(profile_id)).to be true
       end
     end
 
@@ -22,13 +22,13 @@ RSpec.describe "Post::Adapters::AccountAdapter", type: :database do
 
   describe "#get_user_type" do
     it "returns 'guest' for role 1" do
-      user_id = create_account_with_profile(role: 1)
-      expect(adapter.get_user_type(user_id)).to eq("guest")
+      profile_id = create_account_with_profile(role: 1)
+      expect(adapter.get_user_type(profile_id)).to eq("guest")
     end
 
     it "returns 'cast' for role 2" do
-      user_id = create_account_with_profile(role: 2)
-      expect(adapter.get_user_type(user_id)).to eq("cast")
+      profile_id = create_account_with_profile(role: 2)
+      expect(adapter.get_user_type(profile_id)).to eq("cast")
     end
 
     it "returns nil for non-existent user" do

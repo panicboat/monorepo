@@ -15,16 +15,16 @@ module Post
         matches = []
         content.to_s.scan(MENTION_PATTERN) { matches << Regexp.last_match }
 
-        accounts_by_username = matches.map { |match| match[1].downcase }.uniq.each_with_object({}) do |username, hash|
-          account = profile_repo.find_by_username(username)
-          hash[username] = account if account
+        profiles_by_username = matches.map { |match| match[1].downcase }.uniq.each_with_object({}) do |username, hash|
+          profile = profile_repo.find_by_username(username)
+          hash[username] = profile if profile
         end
 
         matches.filter_map do |match|
-          account = accounts_by_username[match[1].downcase]
-          next unless account
+          profile = profiles_by_username[match[1].downcase]
+          next unless profile
 
-          { account_id: account.id.to_s, position: match.begin(0), length: match[0].length }
+          { profile_id: profile.id.to_s, position: match.begin(0), length: match[0].length }
         end
       end
 

@@ -10,8 +10,8 @@ module Post
       ]
 
       def call(account_id:)
-        like_repo.delete_by_account(account_id)
-        comment_repo.delete_by_account(account_id)
+        like_repo.delete_by_profile(account_id)
+        comment_repo.delete_by_profile(account_id)
         post_repo.delete_by_author(account_id)
         nil
       end

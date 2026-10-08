@@ -10,14 +10,14 @@ service PostService {
 }
 
 message PostAuthor {
-  string account_id = 1;
+  string profile_id = 1;
   string display_name = 2;
   string username = 3;
   string avatar_url = 4;
 }
 
 message PostMention {
-  string account_id = 1;
+  string profile_id = 1;
   string username = 2;
   int32 position = 3;
   int32 length = 4;
@@ -33,7 +33,7 @@ message PostMedia {
 
 message Post {
   string id = 1;
-  string author_id = 2;
+  string author_profile_id = 2;
   string content = 3;
   repeated PostMedia media = 4;
   string created_at = 5;
@@ -49,7 +49,7 @@ message Post {
 message ListPostsRequest {
   int32 limit = 1;
   string cursor = 2;
-  string author_id = 3;
+  string author_profile_id = 3;
   string filter = 4;
   bool media_only = 5;
 }

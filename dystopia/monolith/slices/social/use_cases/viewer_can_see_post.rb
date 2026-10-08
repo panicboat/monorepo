@@ -9,7 +9,7 @@ module Social
       ]
 
       def call(viewer_account_id:, post:)
-        author_id = post.author_id
+        author_id = post.author_profile_id
         return true if viewer_account_id && author_id == viewer_account_id
 
         if viewer_account_id

@@ -28,14 +28,14 @@ RSpec.describe Post::Presenters::CommentPresenter do
   end
 
   describe ".to_proto mentions" do
-    let(:mention) { double(:mention, account_id: "mentioned-1", position: 0, length: 6) }
+    let(:mention) { double(:mention, profile_id: "mentioned-1", position: 0, length: 6) }
     let(:comment) do
       double(
         :comment,
         id: "comment-1",
         post_id: "post-1",
         parent_id: nil,
-        user_id: "user-1",
+        author_profile_id: "user-1",
         content: "@alice hi",
         created_at: Time.now,
         comment_media: [],
@@ -44,7 +44,7 @@ RSpec.describe Post::Presenters::CommentPresenter do
       )
     end
 
-    it "resolves the mentioned account's current username" do
+    it "resolves the mentioned profile's current username" do
       proto = described_class.to_proto(comment, mentioned_usernames: { "mentioned-1" => "alice_now" })
 
       expect(proto.mentions.length).to eq(1)

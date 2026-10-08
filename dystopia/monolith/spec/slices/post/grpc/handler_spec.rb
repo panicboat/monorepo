@@ -18,9 +18,9 @@ RSpec.describe Post::Grpc::Handler, type: :database do
 
   after { Current.clear }
 
-  describe "#get_blocked_user_ids" do
+  describe "#get_blocked_profile_ids" do
     it "returns an empty array without a current user" do
-      expect(handler.send(:get_blocked_user_ids)).to eq([])
+      expect(handler.send(:get_blocked_profile_ids)).to eq([])
     end
 
     it "returns ids blocked by the current user, using identity.accounts.role rather than a profile.casts/profile.guests row" do
@@ -30,7 +30,7 @@ RSpec.describe Post::Grpc::Handler, type: :database do
       Current.account_id = SecureRandom.uuid_v7
       Current.profile_id = blocker_id
 
-      expect(handler.send(:get_blocked_user_ids)).to contain_exactly(blocked_id)
+      expect(handler.send(:get_blocked_profile_ids)).to contain_exactly(blocked_id)
     end
   end
 end
