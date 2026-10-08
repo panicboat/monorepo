@@ -43,6 +43,18 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     cast_repo.create(profile_id: bystander)
     access_repo.grant(account_id: account_id)
     access_repo.grant(account_id: bystander_account_id)
+    entry_repo = Karte::Slice["repositories.entry_repository"]
+    report_repo = Karte::Slice["repositories.report_repository"]
+    reported_entry = entry_repo.create(
+      author_account_id: bystander_account_id, author_profile_id: bystander,
+      target_profile_id: SecureRandom.uuid_v7, rating: 3, body: nil
+    )
+    report_repo.create(entry_id: reported_entry.id, reporter_account_id: account_id, reason: "x")
+    own_entry = entry_repo.create(
+      author_account_id: account_id, author_profile_id: persona_a,
+      target_profile_id: SecureRandom.uuid_v7, rating: 3, body: nil
+    )
+    report_repo.create(entry_id: own_entry.id, reporter_account_id: bystander_account_id, reason: "x")
 
     post_a = post_repo.create_post(author_id: persona_a, content: "a")
     post_b = post_repo.create_post(author_id: persona_b, content: "b")
@@ -94,6 +106,9 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:profile__profiles].where(account_id: account_id).count).to eq(0)
     expect(db[:profile__casts].where(profile_id: personas).count).to eq(0)
     expect(db[:karte__access].where(account_id: account_id).count).to eq(0)
+    expect(db[:karte__reports].where(reporter_account_id: account_id).count).to eq(0)
+    expect(db[:karte__reports].where(reporter_account_id: bystander_account_id).count).to eq(1)
+    expect(db[:karte__entries].where(id: own_entry.id).count).to eq(1)
     expect(db[:post__posts].where(author_id: personas).count).to eq(0)
     expect(db[:post__likes].where(account_id: personas).count).to eq(0)
     expect(db[:post__comments].where(user_id: personas).count).to eq(0)
