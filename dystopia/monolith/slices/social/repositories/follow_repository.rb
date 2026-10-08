@@ -8,99 +8,99 @@ module Social
       include Concerns::CursorPagination
 
 
-      def follow(follower_id:, followee_id:, status:)
-        existing = follows.where(follower_id: follower_id, followee_id: followee_id).one
+      def follow(follower_profile_id:, followee_profile_id:, status:)
+        existing = follows.where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_id).one
         return { success: false, status: existing.status, reason: :already_exists } if existing
 
         follows.changeset(:create,
           id: SecureRandom.uuid_v7,
-          follower_id: follower_id,
-          followee_id: followee_id,
+          follower_profile_id: follower_profile_id,
+          followee_profile_id: followee_profile_id,
           status: status,
           updated_at: Time.now
         ).commit
         { success: true, status: status }
       end
 
-      def unfollow(follower_id:, followee_id:)
-        follows.dataset.where(follower_id: follower_id, followee_id: followee_id).delete > 0
+      def unfollow(follower_profile_id:, followee_profile_id:)
+        follows.dataset.where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_id).delete > 0
       end
 
-      def approve_all_pending(account_id:)
+      def approve_all_pending(profile_id:)
         follows.dataset
-          .where(followee_id: account_id, status: "pending")
+          .where(followee_profile_id: profile_id, status: "pending")
           .update(status: "approved", updated_at: Time.now)
       end
 
-      def update_status(follower_id:, followee_id:, status:)
+      def update_status(follower_profile_id:, followee_profile_id:, status:)
         updated = follows.dataset
-          .where(follower_id: follower_id, followee_id: followee_id)
+          .where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_id)
           .update(status: status, updated_at: Time.now)
         updated > 0
       end
 
-      def remove_bidirectional(account_a:, account_b:)
+      def remove_bidirectional(profile_a:, profile_b:)
         follows.dataset
           .where(
             Sequel.|(
-              { follower_id: account_a, followee_id: account_b },
-              { follower_id: account_b, followee_id: account_a }
+              { follower_profile_id: profile_a, followee_profile_id: profile_b },
+              { follower_profile_id: profile_b, followee_profile_id: profile_a }
             )
           )
           .delete
       end
 
 
-      def find(follower_id:, followee_id:)
-        follows.where(follower_id: follower_id, followee_id: followee_id).one
+      def find(follower_profile_id:, followee_profile_id:)
+        follows.where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_id).one
       end
 
-      def list_following(account_id:, status: "approved", limit: 20, cursor: nil)
-        scope = follows.where(follower_id: account_id, status: status)
+      def list_following(profile_id:, status: "approved", limit: 20, cursor: nil)
+        scope = follows.where(follower_profile_id: profile_id, status: status)
         scope = apply_cursor(scope, cursor)
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def list_followers(account_id:, status: "approved", limit: 20, cursor: nil)
-        scope = follows.where(followee_id: account_id, status: status)
+      def list_followers(profile_id:, status: "approved", limit: 20, cursor: nil)
+        scope = follows.where(followee_profile_id: profile_id, status: status)
         scope = apply_cursor(scope, cursor)
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def list_pending_to(account_id:, limit: 20, cursor: nil)
-        list_followers(account_id: account_id, status: "pending", limit: limit, cursor: cursor)
+      def list_pending_to(profile_id:, limit: 20, cursor: nil)
+        list_followers(profile_id: profile_id, status: "pending", limit: limit, cursor: cursor)
       end
 
-      def count_pending_to(account_id:)
-        follows.where(followee_id: account_id, status: "pending").count
+      def count_pending_to(profile_id:)
+        follows.where(followee_profile_id: profile_id, status: "pending").count
       end
 
-      def status_batch(follower_id:, followee_ids:)
-        return {} if followee_ids.nil? || followee_ids.empty?
+      def status_batch(follower_profile_id:, followee_profile_ids:)
+        return {} if followee_profile_ids.nil? || followee_profile_ids.empty?
 
         rows = follows.dataset
-          .where(follower_id: follower_id, followee_id: followee_ids)
-          .select_map([:followee_id, :status])
+          .where(follower_profile_id: follower_profile_id, followee_profile_id: followee_profile_ids)
+          .select_map([:followee_profile_id, :status])
         rows.each_with_object({}) { |(target, status), h| h[target.to_s] = status }
       end
 
-      def following_account_ids(account_id:)
+      def following_profile_ids(profile_id:)
         follows.dataset
-          .where(follower_id: account_id, status: "approved")
-          .select_map(:followee_id)
+          .where(follower_profile_id: profile_id, status: "approved")
+          .select_map(:followee_profile_id)
       end
 
-      def count_following(account_id:)
-        follows.where(follower_id: account_id, status: "approved").count
+      def count_following(profile_id:)
+        follows.where(follower_profile_id: profile_id, status: "approved").count
       end
 
-      def count_followers(account_id:)
-        follows.where(followee_id: account_id, status: "approved").count
+      def count_followers(profile_id:)
+        follows.where(followee_profile_id: profile_id, status: "approved").count
       end
 
-      def delete_by_account(account_id)
+      def delete_by_profile(profile_id)
         follows.dataset
-          .where(Sequel.|({follower_id: account_id}, {followee_id: account_id}))
+          .where(Sequel.|({follower_profile_id: profile_id}, {followee_profile_id: profile_id}))
           .delete
       end
 

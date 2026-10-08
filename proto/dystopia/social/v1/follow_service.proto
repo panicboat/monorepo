@@ -27,7 +27,7 @@ enum FollowStatus {
 
 
 message FollowRequest {
-  string target_account_id = 1;
+  string target_profile_id = 1;
 }
 
 message FollowResponse {
@@ -35,32 +35,32 @@ message FollowResponse {
 }
 
 message UnfollowRequest {
-  string target_account_id = 1;
+  string target_profile_id = 1;
 }
 
 message UnfollowResponse {}
 
 message CancelFollowRequestRequest {
-  string target_account_id = 1;
+  string target_profile_id = 1;
 }
 
 message CancelFollowRequestResponse {}
 
 message ApproveFollowRequestRequest {
-  string requester_account_id = 1;
+  string requester_profile_id = 1;
 }
 
 message ApproveFollowRequestResponse {}
 
 message RejectFollowRequestRequest {
-  string requester_account_id = 1;
+  string requester_profile_id = 1;
 }
 
 message RejectFollowRequestResponse {}
 
 
 message ListFollowingRequest {
-  string account_id = 1;
+  string profile_id = 1;
   int32 limit = 2;
   string cursor = 3;
 }
@@ -72,7 +72,7 @@ message ListFollowingResponse {
 }
 
 message ListFollowersRequest {
-  string account_id = 1;
+  string profile_id = 1;
   int32 limit = 2;
   string cursor = 3;
 }
@@ -96,7 +96,7 @@ message ListPendingFollowRequestsResponse {
 
 
 message GetFollowStatusRequest {
-  repeated string target_account_ids = 1;
+  repeated string target_profile_ids = 1;
 }
 
 message GetFollowStatusResponse {
@@ -110,7 +110,7 @@ message GetPendingFollowCountResponse {
 }
 
 message GetSocialCountsRequest {
-  string account_id = 1;
+  string profile_id = 1;
 }
 
 message GetSocialCountsResponse {

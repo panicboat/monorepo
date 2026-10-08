@@ -53,7 +53,7 @@ module Post
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
         end
 
-        unless viewer_can_see_post.call(viewer_account_id: current_profile_id, post: post)
+        unless viewer_can_see_post.call(viewer_profile_id: current_profile_id, post: post)
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
         end
 

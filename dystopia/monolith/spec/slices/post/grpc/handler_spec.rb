@@ -24,13 +24,13 @@ RSpec.describe Post::Grpc::Handler, type: :database do
     end
 
     it "returns ids blocked by the current user, using identity.accounts.role rather than a profile.casts/profile.guests row" do
-      blocker_id = create_account_with_profile
-      blocked_id = create_account_with_profile
-      block_repo.block(blocker_id: blocker_id, blocked_id: blocked_id)
+      blocker_profile_id = create_account_with_profile
+      blocked_profile_id = create_account_with_profile
+      block_repo.block(blocker_profile_id: blocker_profile_id, blocked_profile_id: blocked_profile_id)
       Current.account_id = SecureRandom.uuid_v7
-      Current.profile_id = blocker_id
+      Current.profile_id = blocker_profile_id
 
-      expect(handler.send(:get_blocked_profile_ids)).to contain_exactly(blocked_id)
+      expect(handler.send(:get_blocked_profile_ids)).to contain_exactly(blocked_profile_id)
     end
   end
 end

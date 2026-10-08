@@ -19,8 +19,8 @@ RSpec.describe Footprints::UseCases::ListFootprints do
   def seed_block(blocker:, blocked:)
     social_blocks.dataset.insert(
       id: SecureRandom.uuid_v7,
-      blocker_id: blocker,
-      blocked_id: blocked,
+      blocker_profile_id: blocker,
+      blocked_profile_id: blocked,
       created_at: Time.now
     )
   end

@@ -10,32 +10,32 @@ module Social
         block_repo: "repositories.block_repository"
       ]
 
-      def call(viewer_account_id:, posts:)
+      def call(viewer_profile_id:, posts:)
         return [] if posts.nil? || posts.empty?
 
-        author_ids = posts.map(&:author_profile_id).compact.uniq
+        author_profile_ids = posts.map(&:author_profile_id).compact.uniq
 
-        is_private_by_author = author_ids.each_with_object({}) do |aid, h|
+        is_private_by_author = author_profile_ids.each_with_object({}) do |aid, h|
           profile = get_profile.call(profile_id: aid)
           h[aid] = profile.respond_to?(:is_private) ? !!profile.is_private : false
         end
 
-        if viewer_account_id
-          blocked_set = block_repo.bidirectionally_blocked_ids(account_id: viewer_account_id).map(&:to_s).to_set
-          follow_statuses = follow_repo.status_batch(follower_id: viewer_account_id, followee_ids: author_ids)
+        if viewer_profile_id
+          blocked_set = block_repo.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id).map(&:to_s).to_set
+          follow_statuses = follow_repo.status_batch(follower_profile_id: viewer_profile_id, followee_profile_ids: author_profile_ids)
         else
           blocked_set = Set.new
           follow_statuses = {}
         end
 
         posts.select do |post|
-          author_id = post.author_profile_id
-          next true if viewer_account_id && author_id == viewer_account_id
-          next false if blocked_set.include?(author_id.to_s)
-          next true unless is_private_by_author[author_id]
-          next false unless viewer_account_id
+          author_profile_id = post.author_profile_id
+          next true if viewer_profile_id && author_profile_id == viewer_profile_id
+          next false if blocked_set.include?(author_profile_id.to_s)
+          next true unless is_private_by_author[author_profile_id]
+          next false unless viewer_profile_id
 
-          follow_statuses[author_id.to_s] == "approved"
+          follow_statuses[author_profile_id.to_s] == "approved"
         end
       end
 

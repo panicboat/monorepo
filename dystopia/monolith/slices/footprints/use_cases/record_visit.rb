@@ -8,8 +8,8 @@ module Footprints
       def call(visitor_id:, visited_id:)
         return nil if visitor_id.nil? || visited_id.nil?
         return nil if visitor_id.to_s == visited_id.to_s
-        return nil if block_repo.blocked?(blocker_id: visitor_id, blocked_id: visited_id)
-        return nil if block_repo.blocked?(blocker_id: visited_id, blocked_id: visitor_id)
+        return nil if block_repo.blocked?(blocker_profile_id: visitor_id, blocked_profile_id: visited_id)
+        return nil if block_repo.blocked?(blocker_profile_id: visited_id, blocked_profile_id: visitor_id)
         return nil unless visitor_records_visits?(visitor_id)
 
         footprints_repo.upsert_visit(visitor_id: visitor_id, visited_id: visited_id)

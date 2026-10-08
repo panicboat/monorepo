@@ -6,24 +6,24 @@ module Social
       class Follow
         include Social::Deps[follow_repo: "repositories.follow_repository", block_repo: "repositories.block_repository"]
 
-        def call(follower_id:, target_account_id:)
-          if block_repo.blocked?(blocker_id: target_account_id, blocked_id: follower_id) ||
-             block_repo.blocked?(blocker_id: follower_id, blocked_id: target_account_id)
+        def call(follower_profile_id:, target_profile_id:)
+          if block_repo.blocked?(blocker_profile_id: target_profile_id, blocked_profile_id: follower_profile_id) ||
+             block_repo.blocked?(blocker_profile_id: follower_profile_id, blocked_profile_id: target_profile_id)
             return { status: "none", reason: :blocked }
           end
 
-          profile = get_profile.call(profile_id: target_account_id)
+          profile = get_profile.call(profile_id: target_profile_id)
           is_private = profile.respond_to?(:is_private) ? !!profile.is_private : false
           status = is_private ? "pending" : "approved"
 
-          result = follow_repo.follow(follower_id: follower_id, followee_id: target_account_id, status: status)
+          result = follow_repo.follow(follower_profile_id: follower_profile_id, followee_profile_id: target_profile_id, status: status)
 
           notification_type = result[:status] == "approved" ? "follow_approved" : "follow_request"
           notifications_emit.call(
-            recipient_id: target_account_id,
+            recipient_id: target_profile_id,
             type: notification_type,
-            target_resource_id: follower_id,
-            actor_id: follower_id
+            target_resource_id: follower_profile_id,
+            actor_id: follower_profile_id
           )
 
           { status: result[:status] }

@@ -11,15 +11,15 @@ module Social
 
         MAX_LIMIT = 50
 
-        def call(account_id:, limit: DEFAULT_LIMIT, cursor: nil)
+        def call(profile_id:, limit: DEFAULT_LIMIT, cursor: nil)
           limit = normalize_limit(limit)
-          rows = follow_repo.list_pending_to(account_id: account_id, limit: limit, cursor: cursor)
+          rows = follow_repo.list_pending_to(profile_id: profile_id, limit: limit, cursor: cursor)
 
           result = build_pagination_result(items: rows, limit: limit) do |last|
             encode_cursor(created_at: last.created_at.iso8601, id: last.id)
           end
 
-          profiles = result[:items].filter_map { |row| get_profile.call(profile_id: row.follower_id) }
+          profiles = result[:items].filter_map { |row| get_profile.call(profile_id: row.follower_profile_id) }
 
           { profiles: profiles, next_cursor: result[:next_cursor], has_more: result[:has_more] }
         end

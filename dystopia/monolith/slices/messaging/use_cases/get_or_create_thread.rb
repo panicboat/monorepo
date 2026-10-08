@@ -46,8 +46,8 @@ module Messaging
       end
 
       def bidirectionally_blocked?(a, b)
-        social_block_repo.blocked?(blocker_id: a, blocked_id: b) ||
-          social_block_repo.blocked?(blocker_id: b, blocked_id: a)
+        social_block_repo.blocked?(blocker_profile_id: a, blocked_profile_id: b) ||
+          social_block_repo.blocked?(blocker_profile_id: b, blocked_profile_id: a)
       end
     end
   end

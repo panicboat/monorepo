@@ -6,7 +6,7 @@ module Feed
       def following_account_ids(account_id:)
         return [] if account_id.nil? || account_id.to_s.empty?
 
-        follow_repo.following_account_ids(account_id: account_id)
+        follow_repo.following_profile_ids(profile_id: account_id)
       end
 
       private

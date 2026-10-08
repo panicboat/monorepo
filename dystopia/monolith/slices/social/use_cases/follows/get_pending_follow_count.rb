@@ -6,8 +6,8 @@ module Social
       class GetPendingFollowCount
         include Social::Deps[follow_repo: "repositories.follow_repository"]
 
-        def call(account_id:)
-          follow_repo.count_pending_to(account_id: account_id)
+        def call(profile_id:)
+          follow_repo.count_pending_to(profile_id: profile_id)
         end
       end
     end

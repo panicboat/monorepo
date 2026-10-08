@@ -6,10 +6,10 @@ module Social
       class GetSocialCounts
         include Social::Deps[follow_repo: "repositories.follow_repository"]
 
-        def call(account_id:)
+        def call(profile_id:)
           {
-            following_count: follow_repo.count_following(account_id: account_id),
-            followers_count: follow_repo.count_followers(account_id: account_id)
+            following_count: follow_repo.count_following(profile_id: profile_id),
+            followers_count: follow_repo.count_followers(profile_id: profile_id)
           }
         end
       end

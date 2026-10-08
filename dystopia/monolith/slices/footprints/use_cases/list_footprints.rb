@@ -47,7 +47,7 @@ module Footprints
 
       def excluded_visitor_ids_for(viewer_id)
         Social::Slice["repositories.block_repository"]
-          .bidirectionally_blocked_ids(account_id: viewer_id)
+          .bidirectionally_blocked_profile_ids(profile_id: viewer_id)
       end
     end
   end

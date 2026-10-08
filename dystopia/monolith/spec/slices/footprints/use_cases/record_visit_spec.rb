@@ -11,11 +11,11 @@ RSpec.describe Footprints::UseCases::RecordVisit do
   let(:visit_records) { Footprints::Slice["relations.visit_records"] }
   let(:blocks) { Social::Slice["relations.blocks"] }
 
-  def insert_block(blocker_id:, blocked_id:)
+  def insert_block(blocker_profile_id:, blocked_profile_id:)
     blocks.dataset.insert(
       id: SecureRandom.uuid_v7,
-      blocker_id: blocker_id,
-      blocked_id: blocked_id,
+      blocker_profile_id: blocker_profile_id,
+      blocked_profile_id: blocked_profile_id,
       created_at: Time.now
     )
   end
@@ -26,13 +26,13 @@ RSpec.describe Footprints::UseCases::RecordVisit do
   end
 
   it "no-ops when visitor blocks visited" do
-    insert_block(blocker_id: visitor, blocked_id: visited)
+    insert_block(blocker_profile_id: visitor, blocked_profile_id: visited)
     use_case.call(visitor_id: visitor, visited_id: visited)
     expect(visit_records.dataset.count).to eq(0)
   end
 
   it "no-ops when visited blocks visitor" do
-    insert_block(blocker_id: visited, blocked_id: visitor)
+    insert_block(blocker_profile_id: visited, blocked_profile_id: visitor)
     use_case.call(visitor_id: visitor, visited_id: visited)
     expect(visit_records.dataset.count).to eq(0)
   end

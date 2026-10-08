@@ -39,7 +39,7 @@ module Review
 
       def page_owner_reachable?(viewer_account_id, page_owner_account_id)
         filter_visible_posts.call(
-          viewer_account_id: viewer_account_id,
+          viewer_profile_id: viewer_account_id,
           posts: [AuthorRef.new(page_owner_account_id)]
         ).any?
       end

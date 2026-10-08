@@ -8,22 +8,22 @@ module Social
         block_repo: "repositories.block_repository"
       ]
 
-      def call(viewer_account_id:, post:)
-        author_id = post.author_profile_id
-        return true if viewer_account_id && author_id == viewer_account_id
+      def call(viewer_profile_id:, post:)
+        author_profile_id = post.author_profile_id
+        return true if viewer_profile_id && author_profile_id == viewer_profile_id
 
-        if viewer_account_id
-          return false if block_repo.blocked?(blocker_id: viewer_account_id, blocked_id: author_id) ||
-                          block_repo.blocked?(blocker_id: author_id, blocked_id: viewer_account_id)
+        if viewer_profile_id
+          return false if block_repo.blocked?(blocker_profile_id: viewer_profile_id, blocked_profile_id: author_profile_id) ||
+                          block_repo.blocked?(blocker_profile_id: author_profile_id, blocked_profile_id: viewer_profile_id)
         end
 
-        profile = get_profile.call(profile_id: author_id)
+        profile = get_profile.call(profile_id: author_profile_id)
         is_private = profile.respond_to?(:is_private) ? !!profile.is_private : false
         return true unless is_private
 
-        return false unless viewer_account_id
+        return false unless viewer_profile_id
 
-        row = follow_repo.find(follower_id: viewer_account_id, followee_id: author_id)
+        row = follow_repo.find(follower_profile_id: viewer_profile_id, followee_profile_id: author_profile_id)
         row && row.status == "approved"
       end
 

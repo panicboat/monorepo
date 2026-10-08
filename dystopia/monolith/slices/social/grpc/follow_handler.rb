@@ -42,41 +42,41 @@ module Social
 
       def follow
         authenticate_user!
-        result = follow_uc.call(follower_id: current_user_id, target_account_id: request.message.target_account_id)
+        result = follow_uc.call(follower_profile_id: current_profile_id, target_profile_id: request.message.target_profile_id)
         ::Social::V1::FollowResponse.new(status: status_to_enum(result[:status]))
       end
 
       def unfollow
         authenticate_user!
-        unfollow_uc.call(follower_id: current_user_id, target_account_id: request.message.target_account_id)
+        unfollow_uc.call(follower_profile_id: current_profile_id, target_profile_id: request.message.target_profile_id)
         ::Social::V1::UnfollowResponse.new
       end
 
       def cancel_follow_request
         authenticate_user!
-        cancel_follow_request_uc.call(follower_id: current_user_id, target_account_id: request.message.target_account_id)
+        cancel_follow_request_uc.call(follower_profile_id: current_profile_id, target_profile_id: request.message.target_profile_id)
         ::Social::V1::CancelFollowRequestResponse.new
       end
 
       def approve_follow_request
         authenticate_user!
-        approve_follow_request_uc.call(target_account_id: current_user_id, requester_account_id: request.message.requester_account_id)
+        approve_follow_request_uc.call(target_profile_id: current_profile_id, requester_profile_id: request.message.requester_profile_id)
         ::Social::V1::ApproveFollowRequestResponse.new
       end
 
       def reject_follow_request
         authenticate_user!
-        reject_follow_request_uc.call(target_account_id: current_user_id, requester_account_id: request.message.requester_account_id)
+        reject_follow_request_uc.call(target_profile_id: current_profile_id, requester_profile_id: request.message.requester_profile_id)
         ::Social::V1::RejectFollowRequestResponse.new
       end
 
       def list_following
         authenticate_user!
-        account_id = request.message.account_id.empty? ? current_user_id : request.message.account_id
+        profile_id = request.message.profile_id.empty? ? current_profile_id : request.message.profile_id
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        result = list_following_uc.call(account_id: account_id, limit: limit, cursor: cursor)
+        result = list_following_uc.call(profile_id: profile_id, limit: limit, cursor: cursor)
         ::Social::V1::ListFollowingResponse.new(
           profiles: result[:profiles].map { |p| present_profile(p) },
           next_cursor: result[:next_cursor] || "",
@@ -86,11 +86,11 @@ module Social
 
       def list_followers
         authenticate_user!
-        account_id = request.message.account_id.empty? ? current_user_id : request.message.account_id
+        profile_id = request.message.profile_id.empty? ? current_profile_id : request.message.profile_id
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        result = list_followers_uc.call(account_id: account_id, limit: limit, cursor: cursor)
+        result = list_followers_uc.call(profile_id: profile_id, limit: limit, cursor: cursor)
         ::Social::V1::ListFollowersResponse.new(
           profiles: result[:profiles].map { |p| present_profile(p) },
           next_cursor: result[:next_cursor] || "",
@@ -103,7 +103,7 @@ module Social
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        result = list_pending_follow_requests_uc.call(account_id: current_user_id, limit: limit, cursor: cursor)
+        result = list_pending_follow_requests_uc.call(profile_id: current_profile_id, limit: limit, cursor: cursor)
         ::Social::V1::ListPendingFollowRequestsResponse.new(
           profiles: result[:profiles].map { |p| present_profile(p) },
           next_cursor: result[:next_cursor] || "",
@@ -114,8 +114,8 @@ module Social
       def get_follow_status
         authenticate_user!
         statuses = get_follow_status_uc.call(
-          follower_id: current_user_id,
-          target_account_ids: request.message.target_account_ids.to_a
+          follower_profile_id: current_profile_id,
+          target_profile_ids: request.message.target_profile_ids.to_a
         )
         proto_statuses = statuses.transform_values { |s| status_to_enum(s) }
         ::Social::V1::GetFollowStatusResponse.new(statuses: proto_statuses)
@@ -123,14 +123,14 @@ module Social
 
       def get_pending_follow_count
         authenticate_user!
-        count = get_pending_follow_count_uc.call(account_id: current_user_id)
+        count = get_pending_follow_count_uc.call(profile_id: current_profile_id)
         ::Social::V1::GetPendingFollowCountResponse.new(count: count)
       end
 
       def get_social_counts
         authenticate_user!
-        account_id = request.message.account_id.empty? ? current_user_id : request.message.account_id
-        result = get_social_counts_uc.call(account_id: account_id)
+        profile_id = request.message.profile_id.empty? ? current_profile_id : request.message.profile_id
+        result = get_social_counts_uc.call(profile_id: profile_id)
         ::Social::V1::GetSocialCountsResponse.new(
           following_count: result[:following_count],
           followers_count: result[:followers_count]

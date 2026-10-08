@@ -28,13 +28,13 @@ module Social
 
       def block
         authenticate_user!
-        block_uc.call(blocker_id: current_user_id, target_account_id: request.message.target_account_id)
+        block_uc.call(blocker_profile_id: current_profile_id, target_profile_id: request.message.target_profile_id)
         ::Social::V1::BlockResponse.new
       end
 
       def unblock
         authenticate_user!
-        unblock_uc.call(blocker_id: current_user_id, target_account_id: request.message.target_account_id)
+        unblock_uc.call(blocker_profile_id: current_profile_id, target_profile_id: request.message.target_profile_id)
         ::Social::V1::UnblockResponse.new
       end
 
@@ -43,7 +43,7 @@ module Social
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        result = list_blocked_uc.call(blocker_id: current_user_id, limit: limit, cursor: cursor)
+        result = list_blocked_uc.call(blocker_profile_id: current_profile_id, limit: limit, cursor: cursor)
         ::Social::V1::ListBlockedResponse.new(
           profiles: result[:profiles].map { |p| present_profile(p) },
           next_cursor: result[:next_cursor] || "",
@@ -54,8 +54,8 @@ module Social
       def get_block_status
         authenticate_user!
         statuses = get_block_status_uc.call(
-          blocker_id: current_user_id,
-          target_account_ids: request.message.target_account_ids.to_a
+          blocker_profile_id: current_profile_id,
+          target_profile_ids: request.message.target_profile_ids.to_a
         )
         ::Social::V1::GetBlockStatusResponse.new(blocked: statuses)
       end

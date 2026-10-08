@@ -134,7 +134,7 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
       it "does not notify a mentioned profile that has blocked the commenter" do
         block_repo = Hanami.app.slices[:social]["repositories.block_repository"]
         mentioned_id = create_account_with_profile(display_name: "Mentioned", username: "mentioned_user")
-        block_repo.block(blocker_id: mentioned_id, blocked_id: author_profile_id)
+        block_repo.block(blocker_profile_id: mentioned_id, blocked_profile_id: author_profile_id)
 
         use_case.call(post_id: post.id, author_profile_id: author_profile_id, content: "hi @mentioned_user")
 

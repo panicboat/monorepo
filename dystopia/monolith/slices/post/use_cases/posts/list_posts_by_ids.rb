@@ -17,7 +17,7 @@ module Post
           posts = post_repo.find_by_ids(ids: post_ids)
           return {} if posts.empty?
 
-          posts = visibility_filter.call(viewer_account_id: viewer_profile_id, posts: posts)
+          posts = visibility_filter.call(viewer_profile_id: viewer_profile_id, posts: posts)
           return {} if posts.empty?
 
           ids = posts.map(&:id)
