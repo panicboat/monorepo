@@ -28,6 +28,7 @@
 | social の use case の引数 | `viewer_account_id:` / `target_account_id:` / `target_account_ids:` / `requester_account_id:` / `account_id:` | `viewer_profile_id:` / `target_profile_id:` / `target_profile_ids:` / `requester_profile_id:` / `profile_id:` |
 | social の handler | `current_user_id` | `current_profile_id` |
 | frontend の view | `SocialAccountView.accountId` / `FollowRequestItem.requesterAccountId` | `profileId` / `requesterProfileId` |
+| frontend の型と mapper(レビュー後に追加) | `SocialAccountView` / `profileToSocialAccount` | `SocialProfileView` / `profileToSocialProfile` |
 | frontend の props・引数 | `targetAccountId` / `targetAccountIds` / `accountId`(social の component と hook) | `targetProfileId` / `targetProfileIds` / `profileId` |
 | BFF | body `targetAccountId(s)`、query `target_account_id` / `account_id`、path `[requesterAccountId]` | `targetProfileId(s)`、`target_profile_id` / `profile_id`、`[requesterProfileId]` |
 
@@ -57,7 +58,7 @@ proto の field 番号は変えない。
 
 1. follow と block の RPC が、新しい field 名と引数名で通しで動く(Task 1 の結線 spec。social の handler と use case には、これまで spec が無かった)。
 2. messaging / footprints / notifications / review / feed が、social の repository を新しい名前で呼べる(Task 1 の結線 spec)。`Notifications::UseCases::Emit` は例外を握りつぶして `nil` を返すので、引数名を間違えると、エラーにならず通知が 1 件も届かなくなる。結線 spec は、block していない相手には通知が作られることを確かめる。
-3. 本物の account の id(`profile.account_id` と `role_for(account_id)`)が、置換に巻き込まれない(Task 1 の Step 5 の確認と、結線 spec の一覧 RPC。巻き込むと profile の表示で role が引けなくなる)。
+3. 本物の account の id(`profile.account_id` と `role_for(account_id)`)が、置換に巻き込まれない(Task 1 の Step 5 の確認)。巻き込むと profile の表示で role が引けなくなる。当初の結線 spec は一覧の id しか見ておらず、これを検知できなかった。branch 全体のレビューの後に、一覧 RPC が返す `role` を確かめる行を足した。
 4. block したとき、両方向の follow が消える(Task 1 の結線 spec。`remove_bidirectional` の引数名を変える)。
 5. BFF が新しい body・query・path の名前を読み、旧い名前を受け付けない(Task 2 の route test)。hook が同じ名前を送ることは、Controller verification のブラウザ確認で確かめる。
 6. `SocialAccountView.accountId` を `profileId` に変えると、discovery・messaging・notifications の一覧もこの型を使っているので、そこでの参照も変わる(Task 2 の `tsc`)。
@@ -627,6 +628,11 @@ perl -pi -e 's/^(\s+)accountId: "actor-1",/$1profileId: "actor-1",/' src/modules
 Run: `/usr/bin/grep -rn -E 'targetAccountId|requesterAccountId|\baccountId\b|account_id' src/modules/social src/app/api/social | /usr/bin/grep -v 'profile-queries.test.ts'`
 Expected: 出力なし(`profile-queries.test.ts` は、旧い名前を受け付けないことを確かめるために旧名を含む)。
 
+型の付いていない mock の fixture は `tsc` で拾えない。social の profile の形(`accountId` の直後に `username`)をした fixture が test に残っていないことを、`src` 全体で確かめる。
+
+Run: `/usr/bin/grep -rn -E 'accountId: "[^"]*", username' src --include='*.test.ts' --include='*.test.tsx'`
+Expected: `src/modules/footprints/components/FootprintRow.test.tsx` の 1 行だけ(footprints の型の fixture で、段 6 で改名する)。当初の script は `src/app/search/page.test.tsx` と `src/components/shell/SuggestedUsersPane.test.tsx` の 2 件を取りこぼしており、branch 全体のレビューの後に直した。
+
 - [ ] **Step 4: 全体を確認する**
 
 route の path を改名したので、`next dev` が作った型のキャッシュ(`.next`、git の管理外)が古い path を指す。`tsc` はこれも読むので、先に消す。
@@ -665,5 +671,26 @@ Task 2 の後、controller が実サーバーを起動して確認する(使い�
 - feed の adapter(`following_account_ids` / `bidirectionally_blocked_account_ids`)、review の adapter(`bidirectionally_blocked_ids(account_id:)`)、feed / discovery / review / messaging / footprints / notifications の use case 自身の引数は、それぞれの段(5〜7)で改名する。social を呼ぶ行では、旧い名前の変数を新しい引数名に渡している(`following_profile_ids(profile_id: viewer_account_id)` など)。
 - frontend の messaging(`StartChatButton` の `targetAccountId`、event の `accountId`)と notifications(`NotificationBell` の `targetAccountId`)は、段 5 で改名する。
 - social の表には、`social_` で始まる index 名が残る(schema 名と重なる接頭辞)。この段はカラム名の部分だけを直した。
-- BFF の route と hook が同じ名前を使うことは、route 側だけを test で固定した。hook 側は Controller verification で確かめる。
+- BFF の route と hook が同じ名前を使うことは、route 側だけを test で固定した。hook 側は Controller verification のブラウザ確認で確かめた。
+- block した直後、同じ画面のフォローボタンが「フォロー中」のまま残る(再読み込みで直る)。server 側ではフォローは消えている。この段より前からの表示の更新漏れで、改名とは関係が無い。
+- `FollowRepository#approve_all_pending` には呼び出し元が無い(この段より前から)。名前だけ改名した。
 - P1a・P1b・P2・P3 の Known gaps はそのまま残る。
+
+## Changes after the whole-branch review
+
+branch 全体のレビューは、本体コード・migration・proto・BFF に欠陥を見つけなかった。次の点を 1 回の修正でまとめて直した。上の Task の Expected は修正前の数である。
+
+- 結線の spec に、守れていなかった経路を足した。一覧 RPC が返す `role`(本物の account の id から引く)、`ViewerCanSeePost` のフォローの向き(逆向きのフォローでは見えず、viewer が author をフォローして承認されると見える)、review の use case から可視判定を呼ぶ経路。handler を `role_for(profile.id)` に変えた場合と、フォローの向きを入れ替えた場合に、足した行が落ちることを確かめてある。
+- social の profile の形をした test の fixture 2 件が旧い key `accountId` のままだったのを直した。mock に型が無く、`tsc` も vitest も通っていた。
+- social が持つ型 `SocialAccountView` と mapper `profileToSocialAccount` を、`SocialProfileView` と `profileToSocialProfile` に改名した(discovery・messaging・notifications の import を含む)。
+
+修正後の結果: monolith `619 examples, 0 failures`、frontend `tsc` エラー 0・vitest `87` ファイル `341` 件通過。
+
+## Controller verification result
+
+2026-10-08 に、使い捨ての database と実サーバー(`bin/grpc` + `next dev`)で確認した(修正前の commit `bf34ff1b` に対して。修正は spec・test と型名だけを変える)。
+
+- API 36 項目がすべて通った: 公開 profile へのフォローは即承認、非公開は申請中 → 承認・拒否・取り消し、フォロー数・一覧・状態を profile の id で取得、フォローの通知、旧い名前(`targetAccountId` / `target_account_id`)の 400、block でフォローが消え・feed から投稿が消え・フォローと DM ができなくなること、解除、フォローしていない guest が cast に DM を送れないこと。
+- headless Chrome: フォローボタンが「フォロー中」に変わって再読み込み後も保たれ、block ボタンが「ブロック解除」に変わり、block 一覧に相手が出る。hook は `targetProfileId(s)` / `profile_id` で BFF を呼び、失敗した呼び出しは無い。
+- gRPC server のログの ERROR は意図した拒否の 2 件だけで、`Notifications::Emit failed` の warn は無かった。
+
