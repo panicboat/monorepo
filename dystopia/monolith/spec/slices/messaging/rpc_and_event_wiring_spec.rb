@@ -103,7 +103,7 @@ RSpec.describe "Messaging and notifications RPC entry points and event payloads"
         .to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
       expect { rpc(Messaging::Grpc::MessagingHandler, :send_typing, Messaging::V1::SendTypingRequest.new(thread_id: thread_id)) }
         .to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
-      expect { send_message(thread_id: thread_id, content: "intrusion") }.to raise_error(GRPC::BadStatus)
+      expect { send_message(thread_id: thread_id, content: "intrusion") }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
       expect(threads.threads).to eq([])
     end
   end
@@ -129,6 +129,16 @@ RSpec.describe "Messaging and notifications RPC entry points and event payloads"
       event = parse(published.first.last)
       expect(event.message_event.sender_profile_id).to eq(cast)
       expect(event.message_event.content).to eq("event")
+    end
+
+    it "publishes a reply sent through the thread id to the other participant" do
+      use_case = Messaging::Slice["use_cases.send_message"]
+      thread_id = use_case.call(sender_profile_id: cast, content: "first", recipient_profile_id: guest)[:thread_id]
+      published = capture(use_case)
+
+      use_case.call(sender_profile_id: cast, content: "second", thread_id: thread_id)
+
+      expect(published.map(&:first)).to eq(["messaging_user_#{cast}", "messaging_user_#{guest}"])
     end
 
     it "publishes read state and typing to the counterpart in a shape the stream can read back" do

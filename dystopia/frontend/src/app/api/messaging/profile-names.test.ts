@@ -42,19 +42,19 @@ describe("messaging routes address the counterpart by profile id", () => {
     expect((await res.json()).message).toMatchObject({ id: "m-1", senderProfileId: "viewer-1" });
   });
 
-  it("POST /api/messaging/messages rejects the former field name", async () => {
+  it("POST /api/messaging/messages rejects recipientAccountId", async () => {
     const res = await messagesRoute.POST(post("/api/messaging/messages", { recipientAccountId: "prof-1", content: "hi" }));
 
     expect(res.status).toBe(400);
     expect(messaging.sendMessage).not.toHaveBeenCalled();
   });
 
-  it("POST /api/messaging/threads opens a thread by recipientProfileId and rejects the former field name", async () => {
+  it("POST /api/messaging/threads opens a thread by recipientProfileId and rejects recipientAccountId", async () => {
     const ok = await threadsRoute.POST(post("/api/messaging/threads", { recipientProfileId: "prof-1" }));
-    const former = await threadsRoute.POST(post("/api/messaging/threads", { recipientAccountId: "prof-1" }));
+    const rejected = await threadsRoute.POST(post("/api/messaging/threads", { recipientAccountId: "prof-1" }));
 
     expect(ok.status).toBe(200);
-    expect(former.status).toBe(400);
+    expect(rejected.status).toBe(400);
     expect(messaging.getOrCreateThread).toHaveBeenCalledTimes(1);
     expect(messaging.getOrCreateThread).toHaveBeenCalledWith({ recipientProfileId: "prof-1" }, expect.anything());
   });

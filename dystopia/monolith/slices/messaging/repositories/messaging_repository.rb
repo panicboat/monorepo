@@ -8,11 +8,11 @@ module Messaging
       include ::Concerns::CursorPagination
 
 
-      # Callers must pass normalized profile pairs because the unique constraint uses profile_a < profile_b.
       def find_thread(id:)
         thread_records.by_pk(id).one
       end
 
+      # Callers must pass the pair ordered because chk_threads_profile_order requires profile_a < profile_b.
       def find_thread_by_pair(profile_a:, profile_b:)
         thread_records.where(profile_a: profile_a, profile_b: profile_b).one
       end

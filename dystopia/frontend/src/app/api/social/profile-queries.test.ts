@@ -51,12 +51,12 @@ describe("social routes address other profiles by profile id", () => {
     Object.values(block).forEach((fn) => fn.mockReset().mockResolvedValue({ blocked: {} }));
   });
 
-  it("POST /api/social/follow sends targetProfileId and rejects the former field name", async () => {
+  it("POST /api/social/follow sends targetProfileId and rejects targetAccountId", async () => {
     const ok = await followRoute.POST(request("POST", "/api/social/follow", { targetProfileId: "prof-1" }));
-    const former = await followRoute.POST(request("POST", "/api/social/follow", { targetAccountId: "prof-1" }));
+    const rejected = await followRoute.POST(request("POST", "/api/social/follow", { targetAccountId: "prof-1" }));
 
     expect(ok.status).toBe(200);
-    expect(former.status).toBe(400);
+    expect(rejected.status).toBe(400);
     expect(follow.follow).toHaveBeenCalledTimes(1);
     expect(follow.follow).toHaveBeenCalledWith({ targetProfileId: "prof-1" }, expect.anything());
   });
@@ -64,11 +64,11 @@ describe("social routes address other profiles by profile id", () => {
   it("DELETE /api/social/follow reads target_profile_id for unfollow and for cancel", async () => {
     await followRoute.DELETE(request("DELETE", "/api/social/follow?target_profile_id=prof-1"));
     await followRoute.DELETE(request("DELETE", "/api/social/follow?target_profile_id=prof-2&cancel=1"));
-    const former = await followRoute.DELETE(request("DELETE", "/api/social/follow?target_account_id=prof-1"));
+    const rejected = await followRoute.DELETE(request("DELETE", "/api/social/follow?target_account_id=prof-1"));
 
     expect(follow.unfollow).toHaveBeenCalledWith({ targetProfileId: "prof-1" }, expect.anything());
     expect(follow.cancelFollowRequest).toHaveBeenCalledWith({ targetProfileId: "prof-2" }, expect.anything());
-    expect(former.status).toBe(400);
+    expect(rejected.status).toBe(400);
   });
 
   it("POST /api/social/follow/status sends targetProfileIds", async () => {
