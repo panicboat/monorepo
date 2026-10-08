@@ -2,6 +2,7 @@
 
 import { useAuthStore } from "@/stores/authStore";
 import { profileRequestHeaders } from "@/lib/auth/profile-headers";
+import { isProfileSelectionError, resetProfileSelection } from "@/lib/auth/profile-errors";
 import { AppError, httpStatusToErrorCode } from "@/lib/errors";
 import { getDefaultMessage } from "@/lib/error-messages";
 
@@ -58,6 +59,7 @@ export async function authFetch<T = unknown>(
   if (!res.ok) {
     // FALLBACK: Use an empty object when the error body is not JSON.
     const errBody = await res.json().catch(() => ({}));
+    if (isProfileSelectionError(errBody)) resetProfileSelection();
     const code = httpStatusToErrorCode(res.status);
     const message = errBody.error || getDefaultMessage(code);
     throw new AppError(code, message, res.status, errBody);

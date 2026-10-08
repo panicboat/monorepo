@@ -34,7 +34,8 @@ export function handleApiError(error: unknown, context?: string): NextResponse {
     if (context) {
       console.error(`[${context}] gRPC error (${error.code}):`, error.rawMessage);
     }
-    return NextResponse.json({ error: message }, { status });
+    const reason = error.metadata.get("error-reason");
+    return NextResponse.json(reason ? { error: message, code: reason } : { error: message }, { status });
   }
 
   if (context) {
