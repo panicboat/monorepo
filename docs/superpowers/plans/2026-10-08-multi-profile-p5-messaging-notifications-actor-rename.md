@@ -62,7 +62,7 @@ proto の field 番号は変えない。notifications の proto には改名す�
 3. `SendMessage#call` で、呼び出し元が指定した相手(`recipient_profile_id`、thread を指定したときは空)と、解決した相手(`resolved_recipient_profile_id`)が別の名前のままであること(Task 1 の Step 5 の script の 1 番と確認。結線 spec は、thread の id だけで返信できること、参加者でない profile が送れないことを確かめる)。
 4. `Notifications::UseCases::Emit` は内部の例外を握りつぶして `nil` を返す。内部で呼ぶ repository と設定の引数名を間違えると、通知が 1 件も作られなくなる(`spec/slices/notifications/use_cases/emit_spec.rb` と結線 spec が、作られた通知が返ることを確かめる。設定の引数名を旧名に戻すと落ちることを確かめた)。
 5. 本物の account の id(`role_for(account_id)`)が置換に巻き込まれない(Task 1 の結線 spec が、thread の相手と通知の行為者の `role` を確かめる。`role_for` に profile の id を渡すと落ちることを確かめた)。
-6. BFF が新しい body の名前を読み、旧い名前を受け付けない(Task 2 の route test)。event の `profileId` と hook が送る名前は、Controller verification のブラウザ確認で確かめる。
+6. BFF が新しい body の名前を読み、旧い名前を受け付けない(Task 2 の route test)。「メッセージを送る」ボタンが送る body の名前は component の test で確かめる。stream の event の `profileId` を読む frontend のコードは型でしか守られていない(Known gaps)。
 
 ---
 
@@ -613,7 +613,7 @@ git add -A src && git commit -s -m "refactor(dystopia/frontend): address message
 Task 2 の後、controller が実サーバーを起動して確認する(使い捨ての database に migrate と seed、`bin/grpc` に `.env` と `.env.test` を export、`next dev`、ブラウザは `localhost` で開く、終了後に生成物と database を削除)。
 
 - cast が guest に DM を送れる。guest は、フォローが承認されている cast にだけ送れる。thread 一覧に相手と未読数が出て、開くと既読になる。
-- 2 つのブラウザで同じ thread を開き、片方が送った message・入力中の表示・既読が、もう片方に届く(event の key が一致していることの確認)。
+- 送信・入力中・既読で monolith が発行する NOTIFY の payload の key と channel が、改名後の名前になっている(`psql` の `LISTEN` で受け取って確かめる)。
 - いいね・コメント・mention・フォローで通知が届き、一覧に行為者が表示される。既読と全件既読が動く。通知の設定を切ると、その種類の通知が作られない。
 - プロフィールページの「メッセージを送る」が動く(hook が新しい名前を送っていることの確認)。
 - gRPC server のログに、意図しない ERROR と、`notify failed` / `Notifications::Emit failed` / `bad payload` の warn が無い。
@@ -623,6 +623,31 @@ Task 2 の後、controller が実サーバーを起動して確認する(使い�
 - `Messaging::UseCases::PurgeAccount#call(account_id:)` と `Notifications::UseCases::PurgeAccount#call(account_id:)` は、profile の id を `account_id` という引数名で受け取る。段 8 で改名する。
 - messaging と notifications の handler の `role_for(account_id)` は、本物の account の id を受け取る。
 - PostgreSQL の NOTIFY の channel 名は `messaging_user_<profile の id>` のままである。名前の中の `user` は id の種類を表していないので変えていない。
-- messaging の stream の event を BFF が JSON に写す処理(`src/app/api/messaging/stream/route.ts`)と、hook が event を読む処理は、型でしか守られていない。Controller verification のブラウザ確認で確かめる。
+- messaging の stream の event を BFF が JSON に写す処理(`src/app/api/messaging/stream/route.ts`)と、hook が event を読む処理(`useTyping`)は、型でしか守られていない。frontend に stream を開くコードも `messaging:typing` を発火するコードも無いので、ブラウザでは確かめられない。
 - `idx_notifications_recipient_latest` などの index 名と `uq_notifications_group` は、カラム名を含まないので変えていない。
 - P1a・P1b・P2・P3・P4 の Known gaps はそのまま残る。
+- frontend の hook にある `const userId = useAuthStore((s) => s.activeProfileId)` は、messaging と notifications の 6 箇所を `profileId` に改名した。残りは 21 箇所ある(VERIFIED: `/usr/bin/grep -rn 'const userId = useAuthStore' src`)。footprints 2・bookmarks 1 は段 6、review 4・discovery 4 は段 7、social 5・karte 4・profile 1 は段 9 で改名する。
+- 以下は main に元からある不具合で、この stack では直していない(別の PR で扱う)。
+  - `StreamEvents` は最初の event で `no block given (yield)` になって終わる。grpc は server streaming の handler を block なしで呼ぶ(`rpc_desc.rb` の `handle_server_streamer`)。
+  - `RACK_ENV` / `RAILS_ENV` が未設定だと gruf が development として動き、RPC ごとに reload の書き込みロックを取る。終わらない `StreamEvents` が読み取りロックを持ち続けるので、stream が 1 本開くと以降の全 RPC が待ち続ける。`bin/grpc` は `HANAMI_ENV` しか設定していない。
+  - `NotificationRepository#upsert_preferences` の `ON CONFLICT ... DO UPDATE SET` が `updated_at` しか更新しないので、通知設定は 2 回目以降の保存が反映されない(`update_assignments` が SQL に入っていない)。
+  - 幅 390px では、DM の入力欄の中央に下部ナビの link が重なる。
+
+## Changes after the whole-branch review
+
+branch 全体のレビュー(Critical なし)の指摘を受けて、次を変えた。挙動は変えていない。
+
+- `spec/slices/messaging/rpc_and_event_wiring_spec.rb`: 参加者でない profile の送信を `PERMISSION_DENIED` で確かめる(以前は status を指定しておらず、所属の判定を壊しても「フォローが必要」の拒否で通っていた)。thread の id だけで返信したときに event が相手の channel に発行されることを確かめる example を足した。どちらも、対象の行を壊すと失敗することを確かめた。
+- `src/modules/messaging/components/StartChatButton.request.test.tsx`: ボタンが `recipientProfileId` で thread を開くことを確かめる(body は型の無い object なので `tsc` では守れない)。
+- messaging と notifications の hook の `userId` を `profileId` に改名した。
+- `src/app/api/messaging/profile-names.test.ts` と `src/app/api/social/profile-queries.test.ts`: test の名前と変数から「former」を外し、拒否する field の名前で書いた。
+- `MessagingRepository` の、pair の順序についてのコメントを、対象の method(`find_thread_by_pair`)の上に移し、制約の名前(`chk_threads_profile_order`)で書き直した。
+
+## Controller verification result
+
+2026-10-08 に、使い捨ての database と実サーバー(`bin/grpc` + `next dev`)で確認した(修正前の commit `af0a383f` に対して。修正は spec・test・hook の変数名・コメントだけを変える)。gruf の reload のロックを避けるため、確認用の server には `RACK_ENV=production` を export した。
+
+- API 51 項目のうち 47 項目が通った: thread を開ける相手(cast から guest、フォローが承認された guest から cast)、送信と返信、thread 一覧の相手と未読数、既読、参加者でない profile の拒否、旧い名前(`recipientAccountId`)の 400、フォロー・いいね・コメント・mention の通知と行為者、既読と全件既読、通知の設定を切った種類が作られないこと、足跡の記録。
+- 通らなかった 4 項目はすべて stream の受信で、原因は Known gaps に書いた `StreamEvents` の不具合である。monolith が発行する payload は `psql` の `LISTEN` で受け取り、message が `sender_profile_id`、typing と read_state が `profile_id` を持ち、相手(message は両者)の channel に届くことを確かめた。
+- headless Chrome(幅 1280px、2 つの browser context): 「メッセージを送る」が `recipientProfileId` で thread を開き、送信と返信ができ、吹き出しが自分と相手に正しく分かれ、thread 一覧と通知一覧に相手が表示される。失敗した呼び出しは無い。
+- gRPC server のログの ERROR は、意図した拒否の 3 件と `StreamEvents` の 2 件だけで、`notify failed` / `Notifications::Emit failed` / `bad payload` の warn は無かった。
