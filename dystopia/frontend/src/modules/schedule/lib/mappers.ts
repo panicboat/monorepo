@@ -3,7 +3,7 @@ import type { ScheduleView } from "@/modules/schedule/types";
 
 export function mapScheduleToView(p: Schedule): ScheduleView {
   return {
-    accountId: p.accountId || "",
+    profileId: p.profileId || "",
     workDate: p.workDate || "",
     startTime: p.startTime || "",
     endTime: p.endTime || "",

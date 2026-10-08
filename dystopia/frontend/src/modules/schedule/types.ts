@@ -1,5 +1,5 @@
 export interface ScheduleView {
-  accountId: string;
+  profileId: string;
   workDate: string;
   startTime: string;
   endTime: string;

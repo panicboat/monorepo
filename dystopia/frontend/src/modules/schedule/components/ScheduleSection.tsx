@@ -6,14 +6,14 @@ import { useSchedules, useSaveSchedule, useDeleteSchedule } from "@/modules/sche
 import { formatDayLabel, buildDateRange } from "@/modules/schedule/lib/dates";
 
 interface ScheduleSectionProps {
-  accountId: string;
+  profileId: string;
   isOwner: boolean;
 }
 
 const COLLAPSED_DAYS = 3;
 const EXPANDED_DAYS = 14;
 
-export function ScheduleSection({ accountId, isOwner }: ScheduleSectionProps) {
+export function ScheduleSection({ profileId, isOwner }: ScheduleSectionProps) {
   const [expanded, setExpanded] = useState(false);
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [startInput, setStartInput] = useState("");
@@ -24,7 +24,7 @@ export function ScheduleSection({ accountId, isOwner }: ScheduleSectionProps) {
   const fromDate = days[0];
   const toDate = days[days.length - 1];
 
-  const { schedules, loading, refresh } = useSchedules(accountId || null, fromDate, toDate);
+  const { schedules, loading, refresh } = useSchedules(profileId || null, fromDate, toDate);
   const saveSchedule = useSaveSchedule();
   const deleteSchedule = useDeleteSchedule();
 

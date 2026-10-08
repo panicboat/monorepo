@@ -6,13 +6,13 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedFootprintsResponse } from "../types";
 
 export function useFootprints() {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (
     pageIndex: number,
     prev: PaginatedFootprintsResponse | null
   ): string | null => {
-    if (!userId) return null;
+    if (!profileId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs =
       pageIndex === 0

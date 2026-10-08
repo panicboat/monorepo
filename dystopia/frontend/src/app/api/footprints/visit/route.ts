@@ -10,9 +10,9 @@ export async function POST(req: NextRequest) {
 
     const headers = await buildGrpcHeaders(req);
     const body = await req.json();
-    const visitedAccountId = body?.visitedAccountId || "";
+    const visitedProfileId = body?.visitedProfileId || "";
 
-    await footprintsClient.recordVisit({ visitedAccountId }, { headers });
+    await footprintsClient.recordVisit({ visitedProfileId }, { headers });
     return NextResponse.json({});
   } catch (error: unknown) {
     return handleApiError(error, "RecordVisit");
