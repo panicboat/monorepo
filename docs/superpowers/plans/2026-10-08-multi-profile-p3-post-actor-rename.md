@@ -325,9 +325,17 @@ ROM::SQL.migration do
     run "ALTER INDEX post.idx_post_likes_post_account RENAME TO idx_post_likes_post_profile"
     run "ALTER INDEX post.post_post_mentions_account_id_index RENAME TO post_post_mentions_profile_id_index"
     run "ALTER INDEX post.post_comment_mentions_account_id_index RENAME TO post_comment_mentions_profile_id_index"
+
+    run "ALTER TABLE post.comments RENAME CONSTRAINT post_comments_user_id_not_null TO post_comments_author_profile_id_not_null"
+    run "ALTER TABLE post.post_mentions RENAME CONSTRAINT post_mentions_account_id_not_null TO post_mentions_profile_id_not_null"
+    run "ALTER TABLE post.comment_mentions RENAME CONSTRAINT comment_mentions_account_id_not_null TO comment_mentions_profile_id_not_null"
   end
 
   down do
+    run "ALTER TABLE post.comment_mentions RENAME CONSTRAINT comment_mentions_profile_id_not_null TO comment_mentions_account_id_not_null"
+    run "ALTER TABLE post.post_mentions RENAME CONSTRAINT post_mentions_profile_id_not_null TO post_mentions_account_id_not_null"
+    run "ALTER TABLE post.comments RENAME CONSTRAINT post_comments_author_profile_id_not_null TO post_comments_user_id_not_null"
+
     run "ALTER INDEX post.post_comment_mentions_profile_id_index RENAME TO post_comment_mentions_account_id_index"
     run "ALTER INDEX post.post_post_mentions_profile_id_index RENAME TO post_post_mentions_account_id_index"
     run "ALTER INDEX post.idx_post_likes_post_profile RENAME TO idx_post_likes_post_account"
@@ -342,7 +350,7 @@ ROM::SQL.migration do
 end
 ```
 
-カラム名を含む index の名前も合わせて変える。NOT NULL 制約の名前(`post_comments_user_id_not_null` など)は変えない。この名前が付くのは NOT NULL 制約を名前付きで持つ PostgreSQL だけで、適用先の版によっては存在せず、改名の SQL が失敗するためである(ローカルは PostgreSQL 18 で存在する。適用先の版は未確認)。
+カラム名を含む index の名前と、NOT NULL 制約の名前(`post_comments_user_id_not_null` など 3 つ)も合わせて変える。全環境が PostgreSQL 18.6 に固定されており(`dystopia/infrastructure/aws/modules/rds.tf`、`dystopia/lambda/aws/modules/rds.tf`、`dystopia/monolith/docker-compose.yaml`)、18 は NOT NULL 制約に名前を付ける。制約の改名は、branch 全体のレビューの後に足した(当初は適用先の版を確かめずに残していた)。
 
 Run: `HANAMI_ENV=test rbenv exec bundle exec hanami db migrate`
 Expected: `=> database monolith_test migrated` と出る。`config/db/structure.sql` の dump は git の管理外なので commit に含めない。
@@ -425,6 +433,14 @@ Run:
 git diff --name-only --relative HEAD -- spec | while read -r f; do [ -f "$f" ] || continue; git cat-file -e "HEAD:dystopia/monolith/$f" 2>/dev/null || continue; a=$(git show "HEAD:dystopia/monolith/$f" | /usr/bin/grep -o 'let!\{0,1\}(:[a-z_0-9]*)' | sort -u | wc -l); b=$(/usr/bin/grep -o 'let!\{0,1\}(:[a-z_0-9]*)' "$f" | sort -u | wc -l); [ "$a" -eq "$b" ] || echo "$f: $a -> $b distinct let names"; done
 ```
 Expected: 出力なし(`let` の名前の種類が、どの spec でも置換の前後で同じ数である)。
+
+この確認は、`let` と local 変数の衝突や local 同士の合流を検出しない。同じ新名に写る 2 つの旧名を両方含んでいたファイルを列挙し、全件を読んで、役割の違う名前が 1 つになっていないことを確かめる。
+
+Run:
+```bash
+git diff --name-only --relative HEAD -- . | while read -r f; do git cat-file -e "HEAD:dystopia/monolith/$f" 2>/dev/null || continue; old=$(git show "HEAD:dystopia/monolith/$f"); echo "$old" | /usr/bin/grep -q -E '\bauthor_id\b' && echo "$old" | /usr/bin/grep -q -E '\buser_id\b' && echo "$f"; done
+```
+Expected: 12 ファイルが出る(seed 1、post slice 4、spec 6、stub 1)。それぞれで、投稿者とコメントの著者が別の名前のままであることを読んで確かめる。
 
 - [ ] **Step 6: 結線の spec と全体が通ることを確認する**
 
@@ -626,10 +642,33 @@ Task 2 の後、controller が実サーバーを起動して確認する(使い�
 ## Known gaps left for later plans
 
 - `Post::UseCases::PurgeAccount#call(account_id:)` は、profile の id を `account_id` という引数名で受け取る。段 8 で profile 単位の purge に作り替えるときに改名する。
-- `Post::Adapters::AccountAdapter` は class 名をそのままにした。profile の id から、その account の role(cast / guest)を引く adapter である。
+- `Post::Adapters::AccountAdapter` は class 名と、`get_user_type` / `get_user_types_batch` をそのままにした。profile の id から、その account の role を引き、proto の `user_type`(cast / guest)の値を返す adapter である。存在確認は `profile_exists?`、存在しないときの例外は `ProfileNotFoundError` に改名した。
 - post の中から他 slice を呼ぶ箇所は、相手の引数名に合わせて `viewer_account_id:` / `account_id:` / `recipient_id:` / `actor_id:` のままである。social(段 4)、notifications(段 5)の改名で直る。
 - feed / discovery / bookmarks の use case 自身の引数(`viewer_account_id:` / `account_id:`)と、handler の `current_user_id` は変えていない。段 6・7 で改名する。
-- `post.comments` などの NOT NULL 制約の名前に、旧カラム名が残る(Task 1 Step 4 の理由による)。
+- post の表には、旧い表名に由来する制約名と index 名(`cast_posts_*`、`social_post_comments_*` など)が、この段より前から残っている。この段はカラム名の部分だけを直した。
+- `GET /api/posts` は、旧い query 名 `author_id` を受け取ると著者の指定なしとして全件を返す。リポジトリ内に旧名を送る箇所は無く、影響するのは deploy をまたいで開いたままのタブだけである。
 - `post.posts` の著者のカラムには index が無い(この段より前からの状態)。著者別の一覧は全件走査になる。
-- BFF の route と hook が同じ query 名を使うことは、route 側だけを test で固定した。hook 側は Controller verification で確かめる。
+- BFF の route と hook が同じ query 名を使うことは、route 側だけを test で固定した。hook 側は Controller verification のブラウザ確認で確かめた。
 - P1a・P1b・P2 の Known gaps はそのまま残る。
+
+## Changes after the whole-branch review
+
+branch 全体のレビューは、挙動を変える欠陥を見つけなかった。次の点を 1 回の修正でまとめて直した(monolith `f7159572`、frontend `ab7b01d8`)。上の Task の Expected は修正前の数である。
+
+- NOT NULL 制約 3 つを改名した(Task 1 Step 4 の migration は修正後の内容)。`hanami db rollback` で down を実行し、カラム・index・制約の名前がすべて元に戻ること、再度 migrate できることを確かめた。
+- `user_exists?` を `profile_exists?` に、`UserNotFoundError` を `ProfileNotFoundError` に改名した。
+- `comment_repository_spec.rb` が、profile と名付けた fixture に account の id を入れていたのを直した。
+- 結線の spec に、どの spec も通っていなかった経路を足した: block があるときの feed の除外(両方向)、block した相手のコメントと返信の除外、private の投稿の `get_post`、`FilterVisibleEntries::AuthorRef`。
+- frontend の test を足した: コメントの `authorProfileId` と著者の `profileId` を別の値で確かめる。自分のコメント・返信にだけ削除が出ることを確かめる。
+
+修正後の結果: monolith `609 examples, 0 failures`、frontend `tsc` エラー 0・vitest `86` ファイル `335` 件通過。
+
+## Controller verification result
+
+2026-10-08 に、使い捨ての database と実サーバー(`bin/grpc` + `next dev`)で確認した(修正前の commit `83987532` に対して)。
+
+- seed が新しいカラム名で入った(投稿 51、コメント 119、いいね 102)。
+- API: feed(すべて・フォロー中)、ランキング、検索、ブックマーク一覧、投稿の作成・編集・削除、いいね・解除、コメントと返信の追加・削除、mention の通知、他人の投稿・コメントの編集と削除の拒否、他人のいいね一覧の 403 を確かめた。応答に旧い key(`authorId` / `accountId`)は無い。
+- headless Chrome: 自分のプロフィールに「投稿・返信・メディア・いいね」が出て内容が表示され、他人のプロフィールに「いいね」は出ない。hook は `author_profile_id` / `profile_id` で BFF を呼び、失敗した呼び出しは無い。
+- gRPC server のログの ERROR は、意図した拒否の 5 件だけだった。
+
