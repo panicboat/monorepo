@@ -19,7 +19,7 @@
 - frontend の判定基準は `env -u NODE_OPTIONS pnpm exec tsc --noEmit`(エラー 0)と `env -u NODE_OPTIONS pnpm exec vitest run`(失敗 0)。`pnpm lint` は使わない(ESLint 10 の問題で全滅するため)。開始時点の基準は `tsc` エラー 0、`vitest` 72 ファイル 232 件すべて通過。
 - monolith の判定基準は `HANAMI_ENV=test rbenv exec bundle exec rspec > /tmp/rspec.txt 2>&1`。出力は必ずファイルへ redirect する。開始時点の基準は `568 examples, 0 failures`。
 - テスト用 database に seed や手動の行を入れない。spec の truncation は slice の schema の行を消さない。
-- vitest は `environment: "node"` で動く。React の hook や component を描画するテストは書かない。テストは純粋関数・store・BFF の route handler を対象にする。
+- vitest の既定は `environment: "node"` だが、ファイル先頭に `// @vitest-environment happy-dom` を置けば React を描画できる(`src/app/page.feed-fetch.test.tsx`、`src/components/shell/Drawer.test.tsx` が前例)。判断は純粋関数に切り出して node 環境でテストし、hook・store・SWR の結線は happy-dom で実物を mount してテストする。
 - `authStore` を実体のまま使うテストは、store を import する前に `localStorage` を stub する(Task 4 に書式がある)。node には使える `localStorage` が無く、stub しないと `set` が例外を投げる。
 - `x-profile-id` を付けるのは自分の BFF(`/api/...`)への fetch だけとする。ストレージへの直接アップロード(`fetch(uploadUrl, ...)`)には付けない。
 - 理由コードは `profile_required`(操作中の profile が無い)と `profile_not_permitted`(指定した profile が使えない)の 2 つ。monolith は gRPC の trailing metadata `error-reason` に載せ、BFF は JSON の `code` に写す。
@@ -795,7 +795,7 @@ Expected: 失敗 0。
 
 自分の BFF を呼ぶ `fetch` のうち、ヘッダを付けていないものが identity 以外に残っていないことを確認する。
 
-Run: `/usr/bin/grep -rn -E '\bfetch\(' src --include=*.ts --include=*.tsx | /usr/bin/grep -v -E '\.test\.|^src/app/api/|^src/stub/'`
+Run: `/usr/bin/grep -rn -E '\bfetch\(' src --include='*.ts' --include='*.tsx' | /usr/bin/grep -v -E '\.test\.|^src/app/api/|^src/stub/'`(zsh は引用符の無い `*.ts` を展開しようとするので、パターンは必ず引用符で囲む)
 
 出力の各行について、次のどれかに当たることを確認する。
 
@@ -806,7 +806,7 @@ Run: `/usr/bin/grep -rn -E '\bfetch\(' src --include=*.ts --include=*.tsx | /usr
 
 どれにも当たらない `fetch` があれば、呼び先が自分の BFF(`/api/...`)で identity 以外なら付ける。
 
-Run: `/usr/bin/grep -rn -A4 'fetch(uploadUrl' src --include=*.ts | /usr/bin/grep -c 'profileRequestHeaders'`
+Run: `/usr/bin/grep -rn -A4 'fetch(uploadUrl' src --include='*.ts' | /usr/bin/grep -c 'profileRequestHeaders'`
 Expected: `0`
 
 Run: `env -u NODE_OPTIONS pnpm exec tsc --noEmit; echo "tsc exit=$?"; env -u NODE_OPTIONS pnpm exec vitest run > /tmp/vitest-t5.txt 2>&1; sed 's/\x1b\[[0-9;]*m//g' /tmp/vitest-t5.txt | /usr/bin/grep -E 'Test Files|Tests '`
@@ -1708,6 +1708,19 @@ Expected: 出力なし(profile 以外の stub に差分が残っていない)。
 
 ---
 
+## Implemented design that differs from the task code above
+
+Task 5〜7 のコード例は、実装とレビューの結果、次の点で実際のコードと異なる。現在の設計は spec の Frontend flows と Frontend session recovery が定める。
+
+- **Task 5**: `src/lib/auth/refresh-on-unauthenticated.ts` の `callWithRefresh` も、token 更新後の再試行で `x-profile-id` を転送する。再試行時の cookie は期限切れのままなので、`buildGrpcHeaders` の「token を検証できたときだけ転送する」分岐を通らないためである。
+- **Task 6**: `createProfile` は絞り込み関数での一括更新を使わず、`addToMyProfiles(mutateCache, accountId, profile)` で現在の account の一覧だけを更新する。一覧がキャッシュに無い場合は 1 件だけの一覧を作らず、取り直す。account が消えていた場合は作成した profile を操作中にしない。
+- **Task 6**: リダイレクトの判定は純粋関数 `resolveShellRedirect`(`src/components/shell/resolveShellRedirect.ts`)にあり、profile を持つ account を `/onboarding` から `/` へ戻す。onboarding 完了後の遷移は `router.replace` である。
+- **Task 6**: `resolveShellMode` は `sessionKind`・`hasProfileListError`・`isOnboardingRoute` も受け取り、`profile-gate` を返すことがある。認証済みの account に onboarding のフォームを出すのは、session が `onboarding` に解決したときだけである。`useProfileSession` は `{ session, hasListError, retry }` を返す。
+- **Task 6**: `AppShell` は `profile-gate` のとき `ProfileGate`(再試行とログアウト)を描画し、shell の根の要素に `key={activeProfileId}` を付ける。
+- **Task 6**: `resolveProfileSession` は第 3 引数に拒否された profile の id を受け取り、`unavailable` を返すことがある。
+- **Task 7**: `resetProfileSelection(sentProfileId)` は、失敗したリクエストが送った profile がいまも操作中のときだけ作用する。作用するときは、store の `denyActiveProfile` で操作中の profile を消して拒否を記録し、一覧のキャッシュを破棄して取り直し、`/api/identity/me` も取り直す。`authFetch` は送った profile の id を渡す。
+- **Task 7**: `src/lib/auth/identity-sync.ts` の `syncIdentityWithAccount` が、`/api/identity/me` の応答で store の account と role を合わせ直す。
+
 ## Controller verification (not dispatched)
 
 Task 8 の後、controller が実際のサーバーを起動して確認する。implementer には渡さない。
@@ -1719,7 +1732,15 @@ Task 8 の後、controller が実際のサーバーを起動して確認する�
 - `x-profile-id` に存在しない id を付けて投稿を作成すると、403 と `code: "profile_not_permitted"` が返る。同じヘッダで `GET /api/profile/mine` は 200 を返す。
 - `x-profile-id` を付けずに、profile が 1 つの account で投稿を作成できる(monolith が唯一の有効な profile を解決する)。
 
-起動方法と具体的なコマンドは、実装後に controller が実物を見て決める。monolith は `bin/grpc` が `HANAMI_ENV=production` を強制するため、`.env` と `.env.test` を export し、`DATABASE_URL` を使い捨ての database に向けて起動する。確認に使った database は終了後に削除する。
+起動方法: monolith は `bin/grpc` が `HANAMI_ENV=production` を強制するため、`.env` と `.env.test` を export し、`DATABASE_URL` を使い捨ての database に向け、`GRPC_BIND_ADDRESS` で空いている port を指定して起動する。frontend は `MONOLITH_URL` をその port に向けて `next dev` を起動する。ブラウザからは `http://localhost:<port>` で開く。`127.0.0.1` で開くと、Next の開発サーバーが開発用リソースへのアクセスを遮断し(`allowedDevOrigins`)、画面の JavaScript が動かない。`next dev` は `dystopia/frontend` に `AGENTS.md` と `CLAUDE.md` を書き出すので、終了後に削除する。確認に使った database も削除する。
+
+実ブラウザでは、上記に加えて次も確認する。
+
+- ログイン後に shell が描画され、identity 以外のリクエストに `x-profile-id` が付く。
+- profile を持つ account が `/onboarding` を開くと `/` に戻され、フォームが出ない。
+- 保存済みの操作中 profile が古い場合、1 回の失敗で正しい profile に回復する。
+- 開いたままのタブの裏で cookie が別の account に変わった場合(再読み込みなし)、store が新しい account と profile に追従し、リクエスト数が増え続けない。
+- 新規登録から onboarding を経てトップ画面に着き、戻るボタンで onboarding のフォームに戻らない。
 
 ## Known gaps left for later plans
 
@@ -1728,3 +1749,14 @@ Task 8 の後、controller が実際のサーバーを起動して確認する�
 - component の props 名と view の型のフィールド名(`targetAccountId`、`SocialAccountView.accountId`、`authorAccountId` 等)は account を指す名前のままで、値は profile の id である。段 3〜7 で改名する。
 - `src/modules/identity/types.ts` の `AuthState` は `userId` を持つが、store とは別の型でどこからも参照されていない。この plan では触らない。
 - P1a の Known gaps のうち、この plan で解消しないもの(karte の所有権、アクセスログ、検索の cursor の秒精度、media の認証など)はそのまま残る。
+- account が変わった後、前の account の SWR の key に新しい account の profile 一覧が残る。同じタブで前の account が再ログインすると、その一覧から誤った profile が 1 往復だけ操作中になり、backend に拒否されてから正しい profile に回復する。account の変更時とログアウト時に SWR と閲覧者依存の store を消す処理を、段 9 で人格切替時の消去と同じ場所に入れる。
+- `syncIdentityWithAccount` は、store が未ログインでも account を書き込む。ログアウトの直前に始まった `/api/identity/me` の応答がログアウト後に届くと、cookie の無いまま store がログイン済みに戻る。`state.accountId` が空なら何もしない 1 行で塞げる。
+- `useProfile` の fetcher は、`x-profile-id` を key からではなく fetch 時点の store から取る。人格切替を入れると、ある profile の応答が別の profile の key に入る余地がある。段 9 で切替の設計と一緒に決める。
+- `activeProfileId` は localStorage に保存され、全タブで共有される。再読み込みや新しいタブは、最後に書かれた人格で始まる。spec の「タブ単位で人格を保つ」との関係は段 9 で決める。
+- 行為を伴う素の `fetch`(`useFollowRequests`、`useNotifications` の既読化、`modules/media/hooks/useMediaUpload`)は `authFetch` を通らないので、profile の拒否に反応しない。次の `authFetch` で回復するが、その画面に留まる間は失敗が続く。`authFetch` に寄せる。`useApiMutation`、`modules/media/hooks/useMedia`、`lib/media.ts` の `uploadFile` は呼び出し元が無いので削除する。
+- `emptyProfileView` は本番コードから参照されず、テストの fixture としてだけ使われている。
+- BFF は 422 を汎用の文言(「予期しないエラーが発生しました」)にし、monolith の `FAILED_PRECONDITION` の文言を捨てる。人格数の上限超過などを区別して表示するには、文言か理由コードを通す必要がある。段 9 の追加 UI で必要になる。
+- `saveProfile` は自分の profile 一覧のキャッシュを更新しない。段 9 の人格一覧が古い表示名を出す。
+- profile 作成の直後、onboarding のフォームが消えてから `/` への遷移が終わるまで、画面が空白になる。「再試行」には実行中の表示が無い。
+- テストの不足: shell の `key`、`useProfileSession` の `retry`、一覧取得失敗時の `ProfileGate` への結線、`ProfileGate` の本文、`resolveShellMode` の `loading` の 2 分岐は、退行しても落ちるテストが無い。`src/app/api/profile/route.test.ts` には cookie 無しの POST の検証が無い。`resolveShellMode.ts` に、onboarding を制限する理由のコメントが入っていない。
+- この機能で API の応答が `x-profile-id` によって変わるようになった。CDN や中間 cache が URL と cookie だけを key にしている場合、人格をまたいで応答が混ざる。段 9 の前にインフラ側の設定を確認する。
