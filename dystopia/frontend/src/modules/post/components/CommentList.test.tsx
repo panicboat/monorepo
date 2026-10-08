@@ -10,11 +10,11 @@ const comment: CommentView = {
   id: "comment-1",
   postId: "post-1",
   parentId: null,
-  userId: "author-1",
+  authorProfileId: "author-1",
   content: "Nice post!",
   createdAt: new Date().toISOString(),
   author: {
-    userId: "author-1",
+    profileId: "author-1",
     name: "Coco",
     imageUrl: "",
     username: "coco_u",
@@ -72,7 +72,7 @@ describe("CommentList", () => {
         {
           ...comment,
           content: "hi @alice",
-          mentions: [{ accountId: "acc-1", username: "alice", position: 3, length: 6 }],
+          mentions: [{ profileId: "acc-1", username: "alice", position: 3, length: 6 }],
         },
       ],
       hasMore: false,

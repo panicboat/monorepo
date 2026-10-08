@@ -1,7 +1,7 @@
 import type { MentionView } from "./post-view";
 
 export interface CommentAuthorView {
-  userId: string;
+  profileId: string;
   name: string;
   imageUrl: string;
   username: string;
@@ -11,7 +11,7 @@ export interface CommentView {
   id: string;
   postId: string;
   parentId: string | null;
-  userId: string;
+  authorProfileId: string;
   content: string;
   createdAt: string;
   author: CommentAuthorView | null;

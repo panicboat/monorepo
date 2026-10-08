@@ -10,12 +10,12 @@ export async function GET(req: NextRequest) {
     if (authError) return authError;
 
     const headers = await buildGrpcHeaders(req);
-    const accountId = req.nextUrl.searchParams.get("account_id") || "";
+    const profileId = req.nextUrl.searchParams.get("profile_id") || "";
     const limit = Number(req.nextUrl.searchParams.get("limit") || "20");
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
 
-    const res = await likeClient.listLikedPostsByAccount(
-      { accountId, limit, cursor },
+    const res = await likeClient.listLikedPostsByProfile(
+      { profileId, limit, cursor },
       { headers }
     );
 
@@ -25,6 +25,6 @@ export async function GET(req: NextRequest) {
       hasMore: !!res.hasMore,
     });
   } catch (error: unknown) {
-    return handleApiError(error, "ListLikedPostsByAccount");
+    return handleApiError(error, "ListLikedPostsByProfile");
   }
 }

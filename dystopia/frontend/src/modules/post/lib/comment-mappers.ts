@@ -7,9 +7,9 @@ import type {
 } from "./comment-view";
 
 function mapAuthor(a: CommentAuthor | undefined): CommentAuthorView | null {
-  if (!a || !a.userId) return null;
+  if (!a || !a.profileId) return null;
   return {
-    userId: a.userId,
+    profileId: a.profileId,
     name: a.name,
     imageUrl: a.imageUrl,
     username: a.username,
@@ -21,7 +21,7 @@ export function mapCommentToView(c: Comment): CommentView {
     id: c.id,
     postId: c.postId,
     parentId: c.parentId || null,
-    userId: c.userId,
+    authorProfileId: c.authorProfileId,
     content: c.content,
     createdAt: c.createdAt,
     author: mapAuthor(c.author),

@@ -20,12 +20,12 @@ function findImageWithUrl(url: string) {
 
 const basePost: PostView = {
   id: "post-1",
-  authorId: "author-1",
+  authorProfileId: "author-1",
   content: "こんにちは",
   media: [],
   createdAt: new Date().toISOString(),
   author: {
-    accountId: "author-1",
+    profileId: "author-1",
     displayName: "テスト太郎",
     username: "test_taro",
     avatarUrl: "",
@@ -73,7 +73,7 @@ describe("PostCardBinding", () => {
         post={{
           ...basePost,
           content: "hi @alice",
-          mentions: [{ accountId: "acc-1", username: "alice", position: 3, length: 6 }],
+          mentions: [{ profileId: "acc-1", username: "alice", position: 3, length: 6 }],
         }}
       />
     );

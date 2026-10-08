@@ -16,12 +16,12 @@ export async function GET(req: NextRequest) {
 
     const headers = await buildGrpcHeaders(req);
     const { limit, cursor } = extractPaginationParams(req.nextUrl.searchParams);
-    const authorId = req.nextUrl.searchParams.get("author_id") || "";
+    const authorProfileId = req.nextUrl.searchParams.get("author_profile_id") || "";
     const filter = req.nextUrl.searchParams.get("filter") || "";
     const mediaOnly = req.nextUrl.searchParams.get("media_only") === "1";
 
     const res = await postClient.listPosts(
-      { limit, cursor, authorId, filter, mediaOnly },
+      { limit, cursor, authorProfileId, filter, mediaOnly },
       { headers }
     );
     return NextResponse.json(mapPostsListResponse(res));

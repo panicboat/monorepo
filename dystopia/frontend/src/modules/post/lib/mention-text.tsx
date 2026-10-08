@@ -6,7 +6,7 @@ import type { MentionView } from "./post-view";
 
 export type ContentPart =
   | { type: "text"; value: string }
-  | { type: "mention"; accountId: string; username: string; value: string };
+  | { type: "mention"; profileId: string; username: string; value: string };
 
 export function splitContentByMentions(
   content: string,
@@ -34,7 +34,7 @@ export function splitContentByMentions(
       .join("");
     parts.push({
       type: "mention",
-      accountId: mention.accountId,
+      profileId: mention.profileId,
       username: mention.username,
       value,
     });

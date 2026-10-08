@@ -10,11 +10,11 @@ const reply: CommentView = {
   id: "reply-1",
   postId: "post-1",
   parentId: "comment-1",
-  userId: "author-1",
+  authorProfileId: "author-1",
   content: "Reply body",
   createdAt: new Date().toISOString(),
   author: {
-    userId: "author-1",
+    profileId: "author-1",
     name: "Coco",
     imageUrl: "",
     username: "coco_u",

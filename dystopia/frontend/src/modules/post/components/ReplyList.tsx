@@ -37,7 +37,7 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
   return (
     <div className="bg-bg-secondary/30">
       {replies.map((r) => {
-        const isOwn = !!viewerId && r.userId === viewerId;
+        const isOwn = !!viewerId && r.authorProfileId === viewerId;
         const authorHref = r.author?.username ? `/u/${encodeURIComponent(r.author.username)}` : undefined;
         const avatar = (
           <Avatar

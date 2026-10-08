@@ -12,11 +12,11 @@ const baseComment: CommentView = {
   id: "comment-1",
   postId: "post-1",
   parentId: null,
-  userId: "author-1",
+  authorProfileId: "author-1",
   content: "Nice post!",
   createdAt: new Date().toISOString(),
   author: {
-    userId: "author-1",
+    profileId: "author-1",
     name: "Coco",
     imageUrl: "",
     username: "coco_u",
@@ -27,12 +27,12 @@ const baseComment: CommentView = {
 
 const parentPost: PostView = {
   id: "parent-post-1",
-  authorId: "parent-author-1",
+  authorProfileId: "parent-author-1",
   content: "Parent post",
   media: [],
   createdAt: new Date().toISOString(),
   author: {
-    accountId: "parent-author-1",
+    profileId: "parent-author-1",
     displayName: "Parent",
     username: "parent",
     avatarUrl: "",

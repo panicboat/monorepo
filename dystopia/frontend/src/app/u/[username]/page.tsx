@@ -54,7 +54,7 @@ export default function PublicProfilePage() {
       <SocialCountsLinks accountId={profile.id} username={profile.username} />
       {role === "cast" && <ScheduleSection accountId={profile.id} isOwner={isOwnProfile} />}
       <ProfileContentTabs
-        accountId={profile.id}
+        profileId={profile.id}
         isOwnProfile={isOwnProfile}
         extraTabs={[
           ...(role === "guest" && karteAccess

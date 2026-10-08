@@ -1,12 +1,12 @@
 export interface MentionView {
-  accountId: string;
+  profileId: string;
   username: string;
   position: number;
   length: number;
 }
 
 export interface PostAuthorView {
-  accountId: string;
+  profileId: string;
   displayName: string;
   username: string;
   avatarUrl: string;
@@ -22,7 +22,7 @@ export interface PostMediaView {
 
 export interface PostView {
   id: string;
-  authorId: string;
+  authorProfileId: string;
   content: string;
   media: PostMediaView[];
   createdAt: string;

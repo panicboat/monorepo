@@ -4,19 +4,19 @@ import { ProfileContentTabs } from "./ProfileContentTabs";
 
 describe("ProfileContentTabs", () => {
   it("shows the likes tab on your own profile", () => {
-    const html = renderToStaticMarkup(<ProfileContentTabs accountId="account-1" isOwnProfile />);
+    const html = renderToStaticMarkup(<ProfileContentTabs profileId="profile-1" isOwnProfile />);
 
     expect(html).toContain("いいね");
   });
 
   it("hides the likes tab on someone else's profile", () => {
-    const html = renderToStaticMarkup(<ProfileContentTabs accountId="account-1" isOwnProfile={false} />);
+    const html = renderToStaticMarkup(<ProfileContentTabs profileId="profile-1" isOwnProfile={false} />);
 
     expect(html).not.toContain("いいね");
   });
 
   it("defaults to showing the likes tab when isOwnProfile is not passed", () => {
-    const html = renderToStaticMarkup(<ProfileContentTabs accountId="account-1" />);
+    const html = renderToStaticMarkup(<ProfileContentTabs profileId="profile-1" />);
 
     expect(html).toContain("いいね");
   });
