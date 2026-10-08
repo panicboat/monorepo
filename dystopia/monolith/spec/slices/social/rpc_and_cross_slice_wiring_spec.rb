@@ -51,7 +51,9 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       following = rpc(Social::Grpc::FollowHandler, :list_following, Social::V1::ListFollowingRequest.new)
       followers = rpc(Social::Grpc::FollowHandler, :list_followers, Social::V1::ListFollowersRequest.new(profile_id: public_cast))
       expect(following.profiles.map(&:id)).to eq([public_cast])
+      expect(following.profiles.map(&:role)).to eq([2])
       expect(followers.profiles.map(&:id)).to eq([viewer])
+      expect(followers.profiles.map(&:role)).to eq([1])
       expect(db[:social__follows].select_map([:follower_profile_id, :followee_profile_id, :status])).to eq([[viewer, public_cast, "approved"]])
 
       rpc(Social::Grpc::FollowHandler, :unfollow, Social::V1::UnfollowRequest.new(target_profile_id: public_cast))
@@ -114,6 +116,7 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
 
       expect(status).to eq(public_cast => true, private_cast => false)
       expect(listed.profiles.map(&:id)).to eq([public_cast])
+      expect(listed.profiles.map(&:role)).to eq([2])
       expect(db[:social__follows].count).to eq(0)
       expect(db[:social__blocks].select_map([:blocker_profile_id, :blocked_profile_id])).to eq([[viewer, public_cast]])
 
@@ -169,6 +172,22 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
 
       expect(delivered).not_to be_nil
       expect(suppressed).to be_nil
+    end
+
+    it "lets the review use cases ask the post visibility filter whether a page owner is reachable" do
+      entry = Struct.new(:hidden, :author_account_id, :target_account_id)
+      filter = Review::Slice["use_cases.filter_visible_entries"]
+      entry_repo = Review::Slice["repositories.entry_repository"]
+
+      on_public_page = filter.call(viewer_account_id: viewer, page_owner_account_id: public_cast, entries: [entry.new(false, other_guest, public_cast)])
+      on_private_page = filter.call(viewer_account_id: viewer, page_owner_account_id: private_cast, entries: [entry.new(false, other_guest, private_cast)])
+      expect(on_public_page.length).to eq(1)
+      expect(on_private_page).to eq([])
+
+      entry_repo.create(author_account_id: other_guest, target_account_id: public_cast, rating: 4.0, body: "ok")
+      entry_repo.create(author_account_id: other_guest, target_account_id: private_cast, rating: 4.0, body: "ok")
+      recent = Review::Slice["use_cases.list_recent_entries"].call(viewer_account_id: viewer)
+      expect(recent[:entries].length).to eq(1)
     end
 
     it "gives the review and feed adapters the profiles blocked in either direction and the followed profiles" do

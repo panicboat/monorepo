@@ -47,6 +47,11 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
     expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(public_post.id))).to be true
     expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(private_post.id))).to be_falsy
     expect(can_see.call(viewer_profile_id: private_author, post: post_repo.find_by_id(private_post.id))).to be true
+
+    follow_repo.follow(follower_profile_id: private_author, followee_profile_id: viewer, status: "approved")
+    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(private_post.id))).to be_falsy
+    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_author, status: "approved")
+    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(private_post.id))).to be true
   end
 
   it "lists the following feed by the followed author profiles" do
