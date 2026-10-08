@@ -6,6 +6,16 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: () => {} }),
 }));
 
+const authMocks = vi.hoisted(() => ({ activeProfileId: null as string | null }));
+
+vi.mock("@/stores/authStore", () => ({
+  useAuthStore: (selector?: (state: { activeProfileId: string | null }) => unknown) => {
+    const state = { activeProfileId: authMocks.activeProfileId };
+    return selector ? selector(state) : state;
+  },
+  selectActiveProfileId: (state: { activeProfileId: string | null }) => state.activeProfileId,
+}));
+
 const comment: CommentView = {
   id: "comment-1",
   postId: "post-1",
@@ -85,5 +95,50 @@ describe("CommentList", () => {
 
     expect(html).toContain("@alice");
     expect(html).toContain('role="link"');
+  });
+
+  it("renders the delete control for a comment authored by the active profile", () => {
+    authMocks.activeProfileId = "author-1";
+    commentsMocks.useComments.mockReturnValue({
+      comments: [comment],
+      hasMore: false,
+      loading: false,
+      error: undefined,
+      loadMore: vi.fn(),
+    });
+
+    const html = renderToStaticMarkup(<CommentList postId="post-1" />);
+
+    expect(html).toContain(">削除</button>");
+  });
+
+  it("does not render the delete control for another active profile", () => {
+    authMocks.activeProfileId = "viewer-1";
+    commentsMocks.useComments.mockReturnValue({
+      comments: [comment],
+      hasMore: false,
+      loading: false,
+      error: undefined,
+      loadMore: vi.fn(),
+    });
+
+    const html = renderToStaticMarkup(<CommentList postId="post-1" />);
+
+    expect(html).not.toContain(">削除</button>");
+  });
+
+  it("does not render the delete control when no profile is active", () => {
+    authMocks.activeProfileId = null;
+    commentsMocks.useComments.mockReturnValue({
+      comments: [comment],
+      hasMore: false,
+      loading: false,
+      error: undefined,
+      loadMore: vi.fn(),
+    });
+
+    const html = renderToStaticMarkup(<CommentList postId="post-1" />);
+
+    expect(html).not.toContain(">削除</button>");
   });
 });

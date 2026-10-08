@@ -6,6 +6,16 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: () => {} }),
 }));
 
+const authMocks = vi.hoisted(() => ({ activeProfileId: null as string | null }));
+
+vi.mock("@/stores/authStore", () => ({
+  useAuthStore: (selector?: (state: { activeProfileId: string | null }) => unknown) => {
+    const state = { activeProfileId: authMocks.activeProfileId };
+    return selector ? selector(state) : state;
+  },
+  selectActiveProfileId: (state: { activeProfileId: string | null }) => state.activeProfileId,
+}));
+
 const reply: CommentView = {
   id: "reply-1",
   postId: "post-1",
@@ -64,5 +74,50 @@ describe("ReplyList", () => {
     const html = renderToStaticMarkup(<ReplyList postId="post-1" commentId="comment-1" />);
 
     expect(html).not.toContain('<a href="/u/');
+  });
+
+  it("renders the delete control for a reply authored by the active profile", () => {
+    authMocks.activeProfileId = "author-1";
+    repliesMocks.useReplies.mockReturnValue({
+      replies: [reply],
+      hasMore: false,
+      loading: false,
+      error: undefined,
+      loadMore: vi.fn(),
+    });
+
+    const html = renderToStaticMarkup(<ReplyList postId="post-1" commentId="comment-1" />);
+
+    expect(html).toContain(">削除</button>");
+  });
+
+  it("does not render the delete control for another active profile", () => {
+    authMocks.activeProfileId = "viewer-1";
+    repliesMocks.useReplies.mockReturnValue({
+      replies: [reply],
+      hasMore: false,
+      loading: false,
+      error: undefined,
+      loadMore: vi.fn(),
+    });
+
+    const html = renderToStaticMarkup(<ReplyList postId="post-1" commentId="comment-1" />);
+
+    expect(html).not.toContain(">削除</button>");
+  });
+
+  it("does not render the delete control when no profile is active", () => {
+    authMocks.activeProfileId = null;
+    repliesMocks.useReplies.mockReturnValue({
+      replies: [reply],
+      hasMore: false,
+      loading: false,
+      error: undefined,
+      loadMore: vi.fn(),
+    });
+
+    const html = renderToStaticMarkup(<ReplyList postId="post-1" commentId="comment-1" />);
+
+    expect(html).not.toContain(">削除</button>");
   });
 });
