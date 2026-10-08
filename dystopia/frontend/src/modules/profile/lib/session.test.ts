@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { isMyProfilesKey, myProfilesKey, resolveProfileSession } from "./session";
+import { describe, expect, it, vi } from "vitest";
+import type { ScopedMutator } from "swr";
+import { emptyProfileView } from "@/modules/profile/lib/mappers";
+import { addToMyProfiles, isMyProfilesKey, myProfilesKey, resolveProfileSession } from "./session";
 
 const enabled = (id: string) => ({ id, disabled: false });
 const disabled = (id: string) => ({ id, disabled: true });
@@ -50,5 +52,24 @@ describe("myProfilesKey", () => {
     expect(isMyProfilesKey("/api/profile/mine")).toBe(false);
     expect(isMyProfilesKey(["/api/profile", "acc-1"])).toBe(false);
     expect(isMyProfilesKey(null)).toBe(false);
+  });
+});
+
+describe("addToMyProfiles", () => {
+  it("updates only the given account's list and appends the profile without revalidating", async () => {
+    const mutateCache = vi.fn(async () => undefined);
+
+    await addToMyProfiles(mutateCache as unknown as ScopedMutator, "acc-1", emptyProfileView("prof-1"));
+
+    const [key, updater, options] = mutateCache.mock.calls[0] as unknown as [
+      unknown,
+      (current?: { profiles: { id: string }[] }) => { profiles: { id: string }[] },
+      unknown,
+    ];
+    expect(key).toEqual(myProfilesKey("acc-1"));
+    expect(typeof key).not.toBe("function");
+    expect(updater(undefined).profiles.map((p) => p.id)).toEqual(["prof-1"]);
+    expect(updater({ profiles: [{ id: "prof-0" }] }).profiles.map((p) => p.id)).toEqual(["prof-0", "prof-1"]);
+    expect(options).toEqual({ revalidate: false });
   });
 });

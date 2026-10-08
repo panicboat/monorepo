@@ -25,7 +25,7 @@ export default function OnboardingPage() {
     setSubmitting(true);
     try {
       await createProfile({ displayName, username });
-      router.push("/");
+      router.replace("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "プロフィールの保存に失敗しました");
     } finally {

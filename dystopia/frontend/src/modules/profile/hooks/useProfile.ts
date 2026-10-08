@@ -5,10 +5,9 @@ import { useCallback } from "react";
 import { fetcher } from "@/lib/swr";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { authFetch } from "@/lib/auth/fetch";
-import { isMyProfilesKey } from "@/modules/profile/lib/session";
+import { addToMyProfiles } from "@/modules/profile/lib/session";
 import type {
   CreateProfilePayload,
-  MyProfilesResponse,
   ProfileView,
   SaveProfilePayload,
   SaveProfileMediaPayload,
@@ -34,12 +33,9 @@ export function useProfile() {
         method: "POST",
         body: payload,
       });
+      const accountId = useAuthStore.getState().accountId;
       // Put the new profile into the cached list first; a stale empty list would resolve back to onboarding.
-      await mutateCache<MyProfilesResponse>(
-        isMyProfilesKey,
-        (current) => ({ profiles: [...(current?.profiles ?? []), res.profile] }),
-        { revalidate: false }
-      );
+      if (accountId) await addToMyProfiles(mutateCache, accountId, res.profile);
       setActiveProfile(res.profile.id);
       return res.profile;
     },

@@ -1,4 +1,5 @@
-import type { ProfileView } from "@/modules/profile/types";
+import type { ScopedMutator } from "swr";
+import type { MyProfilesResponse, ProfileView } from "@/modules/profile/types";
 
 export const MY_PROFILES_URL = "/api/profile/mine";
 
@@ -27,4 +28,13 @@ export function myProfilesKey(accountId: string): readonly [string, string] {
 
 export function isMyProfilesKey(key: unknown): boolean {
   return Array.isArray(key) && key[0] === MY_PROFILES_URL;
+}
+
+// Target one account's key: a filter would also rewrite the cached list of another account signed in earlier in this tab.
+export function addToMyProfiles(mutateCache: ScopedMutator, accountId: string, profile: ProfileView) {
+  return mutateCache<MyProfilesResponse>(
+    myProfilesKey(accountId),
+    (current) => ({ profiles: [...(current?.profiles ?? []), profile] }),
+    { revalidate: false }
+  );
 }

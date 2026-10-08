@@ -12,6 +12,7 @@ import { SideNav } from "./SideNav";
 import { SuggestedUsersPane } from "./SuggestedUsersPane";
 import { FeatureTourModal } from "@/modules/onboarding/components/FeatureTourModal";
 import { LandingPage } from "@/modules/landing/components/LandingPage";
+import { resolveShellRedirect } from "./resolveShellRedirect";
 import { resolveShellMode } from "./resolveShellMode";
 
 const AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/onboarding"];
@@ -31,16 +32,19 @@ export function AppShell({ children }: AppShellProps) {
 
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
   const isLandingRoute = pathname === "/";
-  const needsOnboarding = session?.kind === "onboarding";
+  const isOnboardingRoute = pathname.startsWith("/onboarding");
+  const redirectTo = resolveShellRedirect({
+    isHydrated,
+    isAuthenticated: !!accountId,
+    sessionKind: session?.kind ?? null,
+    isAuthRoute,
+    isOnboardingRoute,
+    isLandingRoute,
+  });
 
   useEffect(() => {
-    if (!isHydrated || isAuthRoute) return;
-    if (!accountId) {
-      if (!isLandingRoute) router.replace("/login");
-      return;
-    }
-    if (needsOnboarding) router.replace("/onboarding");
-  }, [isHydrated, accountId, needsOnboarding, isAuthRoute, isLandingRoute, router]);
+    if (redirectTo) router.replace(redirectTo);
+  }, [redirectTo, router]);
 
   // TODO: Render a profile picker when the session kind is "select"; the shell stays blank until then.
   const mode = resolveShellMode({
