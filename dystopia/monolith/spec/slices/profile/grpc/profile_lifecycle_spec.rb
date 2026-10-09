@@ -69,10 +69,17 @@ RSpec.describe "Profile lifecycle RPCs", type: :database do
       expect(disabled?(stranger)).to be false
     end
 
-    it "keeps a disabled profile disabled when asked again" do
+    it "keeps a disabled profile disabled, with its original time, when asked again" do
       disable(first)
+      disabled_at = db[:profile__profiles].where(id: first).get(:disabled_at)
 
       expect(disable(first).profile.disabled).to be true
+      expect(db[:profile__profiles].where(id: first).get(:disabled_at)).to eq(disabled_at)
+    end
+
+    it "answers NOT_FOUND for an empty or malformed profile id" do
+      expect { disable("") }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
+      expect { disable("not-a-uuid") }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
     end
 
     it "requires an account" do
@@ -91,6 +98,12 @@ RSpec.describe "Profile lifecycle RPCs", type: :database do
       expect([response.profile.id, response.profile.disabled]).to eq([first, false])
       expect(disabled?(first)).to be false
       expect(acting_as(first) { rpc(:get_profile, Profile::V1::GetProfileRequest.new).profile.id }).to eq(first)
+    end
+
+    it "returns an enabled profile unchanged" do
+      response = enable(first)
+
+      expect([response.profile.id, response.profile.disabled]).to eq([first, false])
     end
 
     it "answers NOT_FOUND for a profile of another account and leaves it disabled" do

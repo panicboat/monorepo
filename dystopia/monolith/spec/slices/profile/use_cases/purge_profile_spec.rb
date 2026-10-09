@@ -28,22 +28,27 @@ RSpec.describe Profile::UseCases::PurgeProfile, type: :database do
     expect(cast_repo.find_by_profile_id(sibling)).not_to be_nil
   end
 
-  it "keeps the profile and its cast row when a slice purge fails, and skips the slices after it" do
+  it "undoes the slices already purged and keeps the profile when a later slice fails" do
+    earlier = double(:slice_purge)
     failing = double(:slice_purge)
     later = double(:slice_purge)
+    allow(earlier).to receive(:call) { cast_repo.delete_by_profile_ids([sibling]) }
     allow(failing).to receive(:call).and_raise(RuntimeError, "slice failed")
     expect(later).not_to receive(:call)
 
-    expect { described_class.new(slice_purges: [failing, later]).call(profile_id: purged) }.to raise_error(RuntimeError, "slice failed")
+    expect {
+      described_class.new(slice_purges: [earlier, failing, later]).call(profile_id: purged)
+    }.to raise_error(RuntimeError, "slice failed")
 
     expect(repo.find_by_id(purged)).not_to be_nil
     expect(cast_repo.find_by_profile_id(purged)).not_to be_nil
+    expect(cast_repo.find_by_profile_id(sibling)).not_to be_nil
   end
 
   it "resolves a purge for every slice that stores rows per profile" do
     purges = Hanami.app.slices[:profile]["use_cases.purge_profile"].send(:slice_purges)
 
-    expect(purges.map { |purge| purge.class.name }).to eq(%w[
+    expect(purges.map { |purge| purge.class.name }).to match_array(%w[
       Notifications::UseCases::PurgeProfile
       Footprints::UseCases::PurgeProfile
       Bookmarks::UseCases::PurgeProfile

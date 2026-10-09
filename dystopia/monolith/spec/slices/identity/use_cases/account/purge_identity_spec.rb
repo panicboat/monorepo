@@ -32,6 +32,21 @@ RSpec.describe Identity::UseCases::Account::PurgeIdentity do
     expect(use_case.call(sub: sub)).to be_nil
   end
 
+  it "keeps the Cognito user and the account when purging the karte rows fails" do
+    allow(purge_karte).to receive(:call).and_raise(RuntimeError, "karte failed")
+    expect(cognito_adapter).not_to receive(:admin_delete_user)
+    expect(account_repo).not_to receive(:delete)
+
+    expect { use_case.call(sub: sub) }.to raise_error(RuntimeError, "karte failed")
+  end
+
+  it "keeps the account when deleting the Cognito user fails" do
+    allow(cognito_adapter).to receive(:admin_delete_user).and_raise(RuntimeError, "cognito failed")
+    expect(account_repo).not_to receive(:delete)
+
+    expect { use_case.call(sub: sub) }.to raise_error(RuntimeError, "cognito failed")
+  end
+
   it "keeps the Cognito user and the account when purging the profiles fails" do
     allow(purge_profiles).to receive(:call).and_raise(RuntimeError, "slice failed")
     expect(purge_karte).not_to receive(:call)

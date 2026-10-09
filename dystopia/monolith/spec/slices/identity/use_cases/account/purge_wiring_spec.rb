@@ -65,7 +65,14 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     like_repo.profile_like(post_id: bystander_post.id, profile_id: persona_b)
     like_repo.profile_like(post_id: witness_post.id, profile_id: bystander)
     comment_repo.create_comment(post_id: bystander_post.id, author_profile_id: persona_b, content: "hi")
-    comment_repo.create_comment(post_id: witness_post.id, author_profile_id: bystander, content: "hello")
+    mention_of = ->(profile_id) { [{ profile_id: profile_id, position: 0, length: 5 }] }
+    bystander_comment = comment_repo.create_comment(
+      post_id: witness_post.id, author_profile_id: bystander, content: "hello",
+      mentions: mention_of.call(persona_b) + mention_of.call(witness)
+    )
+    comment_repo.create_comment(post_id: witness_post.id, author_profile_id: persona_a, content: "reply", parent_id: bystander_comment.id)
+    comment_repo.create_comment(post_id: witness_post.id, author_profile_id: witness, content: "kept reply", parent_id: bystander_comment.id)
+    post_repo.save_mentions(post_id: bystander_post.id, mentions: mention_of.call(persona_a) + mention_of.call(witness))
     follow_repo.follow(follower_profile_id: persona_a, followee_profile_id: bystander, status: "approved")
     follow_repo.follow(follower_profile_id: bystander, followee_profile_id: persona_b, status: "approved")
     follow_repo.follow(follower_profile_id: bystander, followee_profile_id: witness, status: "approved")
@@ -119,6 +126,9 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:post__posts].where(author_profile_id: personas).count).to eq(0)
     expect(db[:post__likes].where(profile_id: personas).count).to eq(0)
     expect(db[:post__comments].where(author_profile_id: personas).count).to eq(0)
+    expect(db[:post__comments].where(id: bystander_comment.id).get(:replies_count)).to eq(1)
+    expect(db[:post__post_mentions].where(post_id: bystander_post.id).select_map(:profile_id)).to eq([witness])
+    expect(db[:post__comment_mentions].where(comment_id: bystander_comment.id).select_map(:profile_id)).to eq([witness])
     expect(db[:social__follows].where(follower_profile_id: personas).or(followee_profile_id: personas).count).to eq(0)
     expect(db[:social__blocks].where(blocker_profile_id: personas).count).to eq(0)
     expect(db[:bookmarks__bookmarks].where(profile_id: personas).count).to eq(0)
@@ -155,7 +165,9 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     create_account_with_profile(account_id: account_id)
     persona_b = create_account_with_profile(account_id: account_id)
     schedule_repo.upsert(profile_id: persona_b, work_date: "2026-10-01", start_time: "20:00", end_time: "02:00")
+    post_repo.create_post(author_profile_id: persona_b, content: "purged before the schedule slice")
     db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (31 * 24 * 3600))
+    allow(Hanami.logger).to receive(:error)
     purge = Identity::Slice["use_cases.account.purge_deactivated_accounts"]
     schedule_fails = true
     allow_any_instance_of(Schedule::UseCases::PurgeProfile).to receive(:call).and_wrap_original do |original, profile_id:|
@@ -170,6 +182,8 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:identity__accounts].where(id: account_id).count).to eq(1)
     expect(db[:profile__profiles].where(account_id: account_id).select_map(:id)).to include(persona_b)
     expect(db[:schedule__schedules].where(profile_id: persona_b).count).to eq(1)
+    expect(db[:post__posts].where(author_profile_id: persona_b).count).to eq(1)
+    expect(Hanami.logger).to have_received(:error).with(a_string_including(account_id, "schedule failed"))
 
     schedule_fails = false
 
@@ -177,5 +191,6 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:identity__accounts].where(id: account_id).count).to eq(0)
     expect(db[:profile__profiles].where(account_id: account_id).count).to eq(0)
     expect(db[:schedule__schedules].where(profile_id: persona_b).count).to eq(0)
+    expect(db[:post__posts].where(author_profile_id: persona_b).count).to eq(0)
   end
 end

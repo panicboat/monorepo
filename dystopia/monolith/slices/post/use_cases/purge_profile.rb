@@ -11,6 +11,8 @@ module Post
 
       def call(profile_id:)
         like_repo.delete_by_profile(profile_id)
+        comment_repo.delete_mentions_of(profile_id)
+        post_repo.delete_mentions_of(profile_id)
         comment_repo.delete_by_profile(profile_id)
         post_repo.delete_by_author(profile_id)
         nil

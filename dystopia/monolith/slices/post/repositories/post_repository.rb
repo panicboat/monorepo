@@ -48,6 +48,10 @@ module Post
         end
       end
 
+      def delete_mentions_of(profile_id)
+        post_mentions.dataset.where(profile_id: profile_id).delete
+      end
+
       def save_mentions(post_id:, mentions:)
         post_mentions.dataset.where(post_id: post_id).delete
         mentions.each do |mention|

@@ -45,9 +45,7 @@ module Profile
       end
 
       def create_within_limit(account_id:, limit:, attrs:)
-        profiles.dataset.db.transaction do
-          # Lock the account row so concurrent creations cannot both pass the count check.
-          profiles.dataset.db[:identity__accounts].where(id: account_id).for_update.first
+        locking_account(account_id) do
           next nil if profiles.where(account_id: account_id).count >= limit
 
           create(attrs.merge(id: SecureRandom.uuid_v7, account_id: account_id))
@@ -60,10 +58,16 @@ module Profile
         profiles.where(id: profile_id, account_id: account_id).one
       end
 
-      def disable_unless_last_enabled(account_id:, profile_id:)
+      # Holding the account row serializes every change to which profiles of the account exist or are enabled.
+      def locking_account(account_id)
         profiles.dataset.db.transaction do
-          # Lock the account row so concurrent disables cannot both leave the account without an enabled profile.
           profiles.dataset.db[:identity__accounts].where(id: account_id).for_update.first
+          yield
+        end
+      end
+
+      def disable_unless_last_enabled(account_id:, profile_id:)
+        locking_account(account_id) do
           next nil if profiles.where(account_id: account_id, disabled_at: nil).exclude(id: profile_id).count.zero?
 
           update(profile_id, disabled_at: Time.now, updated_at: Time.now)
@@ -128,6 +132,10 @@ module Profile
 
       def delete(id)
         profiles.dataset.where(id: id).delete
+      end
+
+      def transaction(&block)
+        profiles.dataset.db.transaction(&block)
       end
 
       private

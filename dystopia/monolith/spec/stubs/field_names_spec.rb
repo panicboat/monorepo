@@ -3,7 +3,7 @@
 require "spec_helper"
 
 RSpec.describe "proto field names" do
-  ACCOUNT_SCOPED_PACKAGES = %w[identity.v1 billing.v1].freeze
+  let(:account_scoped_packages) { %w[identity.v1 billing.v1] }
 
   let(:stub_files) do
     Dir[File.expand_path("../../stubs/**/*_pb.rb", __dir__)].reject { |path| path.end_with?("_services_pb.rb") }
@@ -20,12 +20,12 @@ RSpec.describe "proto field names" do
     expect(packages).to include("profile.v1", "post.v1", "social.v1", "messaging.v1", "karte.v1", "review.v1")
   end
 
-  it "names no field after an account id outside the identity and billing packages" do
+  it "names no field after an account outside the identity and billing packages" do
     pool = Google::Protobuf::DescriptorPool.generated_pool
-    exposed = message_names.reject { |name| ACCOUNT_SCOPED_PACKAGES.any? { |package| name.start_with?("#{package}.") } }
+    exposed = message_names.reject { |name| account_scoped_packages.any? { |package| name.start_with?("#{package}.") } }
 
     offenders = exposed.flat_map do |name|
-      pool.lookup(name).map(&:name).grep(/account_id/).map { |field| "#{name}.#{field}" }
+      pool.lookup(name).map(&:name).grep(/account/).map { |field| "#{name}.#{field}" }
     end
 
     expect(offenders).to eq([])

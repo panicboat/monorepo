@@ -23,10 +23,10 @@ module Identity
           account_repo.deactivated_before(cutoff).each do |account|
             purge_identity.call(sub: account.id)
             count += 1
-            logger&.info("[purge] account #{account.id} fully purged")
+            logger.info("[purge] account #{account.id} fully purged")
           rescue => error
             # FALLBACK: Continue purging other accounts after recording this failure.
-            logger&.error("[purge] account #{account.id} failed: #{error.class}: #{error.message}")
+            logger.error("[purge] account #{account.id} failed: #{error.class}: #{error.message}")
           end
 
           count
@@ -35,7 +35,7 @@ module Identity
         private
 
         def logger
-          @logger
+          @logger || Hanami.logger
         end
       end
     end

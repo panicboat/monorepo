@@ -13,11 +13,13 @@ module Profile
         @slice_purges = slice_purges
       end
 
-      # Deletes the profile row last so that a failed slice leaves the profile in place and the call can be repeated.
+      # One transaction covers every slice only while they share this database, so the profile row still goes last and each delete stays repeatable.
       def call(profile_id:)
-        slice_purges.each { |purge| purge.call(profile_id: profile_id) }
-        cast_repo.delete_by_profile_ids([profile_id])
-        profile_repo.delete(profile_id)
+        profile_repo.transaction do
+          slice_purges.each { |purge| purge.call(profile_id: profile_id) }
+          cast_repo.delete_by_profile_ids([profile_id])
+          profile_repo.delete(profile_id)
+        end
         nil
       end
 
