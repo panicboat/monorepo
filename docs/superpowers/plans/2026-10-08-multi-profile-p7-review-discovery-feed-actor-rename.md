@@ -23,7 +23,7 @@
 | proto(review) | `ReviewEntry` と各 request の `author_account_id` / `target_account_id` | `author_profile_id` / `target_profile_id` |
 | review の use case と repository の引数 | `viewer_account_id:` / `target_account_id:` / `author_account_id:` / `page_owner_account_id:` / `account_id:` | `viewer_profile_id:` / `target_profile_id:` / `author_profile_id:` / `page_owner_profile_id:` / `profile_id:` |
 | review の use case が返す entry の hash の key | `:author_account_id` / `:target_account_id` | `:author_profile_id` / `:target_profile_id` |
-| review の repository・adapter・private メソッド | `find_by_account` / `bidirectionally_blocked_ids(account_id:)` / `reachable_account_ids` | `find_by_profile` / `bidirectionally_blocked_ids(profile_id:)` / `reachable_profile_ids` |
+| review の repository・adapter・private メソッド | `find_by_account` / `bidirectionally_blocked_ids(account_id:)` / `reachable_account_ids` | `find_by_profile` / `bidirectionally_blocked_profile_ids(profile_id:)`(branch 全体のレビュー後に、feed・social と同じ名前に揃えた)/ `reachable_profile_ids` |
 | discovery と feed の use case の引数 | `viewer_account_id:` | `viewer_profile_id:` |
 | feed の adapter | `following_account_ids(account_id:)` / `bidirectionally_blocked_account_ids(account_id:)` | `following_profile_ids(profile_id:)` / `bidirectionally_blocked_profile_ids(profile_id:)` |
 | handler | `current_user_id` | `current_profile_id` |
@@ -672,3 +672,24 @@ Task 2 の後、controller が実サーバーを起動して確認する(使い�
 - frontend の hook の `const userId = useAuthStore((s) => s.activeProfileId)` は、この段で review と discovery の 8 箇所を改名した。残りは social 5・karte 4・profile 1 の 10 箇所で、段 9 で改名する。
 - review と discovery の一覧の hook は、SWR の key に操作中の profile を含めていない(現状のまま)。段 9 で cache の消去と合わせて扱う。
 - P1a・P1b・P2・P3・P4・P5・P6 の Known gaps はそのまま残る。
+- `Review::UseCases::CreateEntry` は、作者と対象が同じ account の別の人格であることを拒否していない。複数の人格を持てるようになると、cast が自分の別の人格にレビューを書ける。段 8 で扱いを決める。
+- `ReviewEntryCard` の「作者なら削除、対象なら非表示」の分岐を通す component の test は無い(key の名前は、BFF の view に付けた型で固定している)。
+- review の 3 つの一覧の cursor、`ListFeed` の `area`、`RankPosts` / `SearchPosts` の cursor は、database を使う spec が通っていない(現状のまま)。
+
+## Changes after the whole-branch review
+
+branch 全体のレビュー(Critical なし)の指摘を受けて、次を変えた。
+
+- `src/app/api/review/**/route.ts` の 5 つの `entryToView` の戻り値に `ReviewEntry` の型を付けた。以前は型が無く、view の key の名前を `tsc` が守っていなかった(`recent` の `authorProfileId` がずれると、ホームのレビュー欄で削除・非表示のボタンがエラー無しに消える)。key を旧名に戻すと `tsc` が落ちることを確かめた。
+- 型を付けた結果、作成(POST)と更新(PATCH)の応答が `targetUsername` と `targetAvatarUrl` を返していないことが `tsc` で検出されたので、2 つの field を足した。frontend の hook はこの応答を `ReviewEntry` として受け取ると宣言していたが、値が入っていなかった。この段で唯一の挙動の追加である(応答に 2 つの field が増える)。
+- `spec/slices/review/grpc/review_handler_spec.rb`: 2 人目の作者のレビューを足し、作者での絞り込みと対象での絞り込みを確かめる(以前は作者が 1 人だけで、絞り込みを外しても通っていた。外すと落ちることを確かめた)。同じ example の中で作った 2 件の並びは、順序を問わずに比べる(`created_at` が transaction の中で同じ値になり、並びが uuid v7 の乱数部分で決まるため)。
+- `Review::Adapters::BlockAdapter#bidirectionally_blocked_ids` を `bidirectionally_blocked_profile_ids` に改名した(feed と social の同じ役割のメソッドに揃える)。
+
+## Controller verification result
+
+2026-10-09 に、使い捨ての database と実サーバー(`bin/grpc` + `next dev`)で確認した(修正前の commit `85c35bdc` に対して)。
+
+- API 35 項目がすべて通った: レビューの作成(`targetProfileId`。`targetAccountId` は 400)、guest を対象にした作成の 400、対象別・作者別の一覧(`profile_id`。`account_id` は 400)、新着、作者だけの編集・削除、対象だけの非表示・再表示、非表示と公開停止が他の profile に見えないこと、公開設定が profile ごとであること、おすすめ(反対の role、フォロー済みを除く)、profile と投稿の検索、ランキングとフィードの可視性、フォロー中のフィード。
+- headless Chrome(幅 1280px、2 つの browser context): プロフィールページのレビュー欄から投稿でき、作者には「削除」、対象には「非表示にする」「表示に戻す」が出る。非表示にすると作者から見たページから消える。「書いたレビュー」、検索、ランキング、ホームが表示される。失敗した呼び出しは無い。
+- gRPC server のログの ERROR は、意図した拒否の 4 件だけだった。
+
