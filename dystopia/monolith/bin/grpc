@@ -3,6 +3,8 @@
 # Keep development gems out of the gRPC process because the reloader causes Zeitwerk errors.
 ENV["BUNDLE_WITHOUT"] = "development:cli:test"
 ENV["HANAMI_ENV"] = "production"
+# gruf reads RACK_ENV, not HANAMI_ENV: without it gruf runs as development and takes a reload lock on every request, so one open stream stalls every other request.
+ENV["RACK_ENV"] = "production"
 ENV["SECRET_KEY_BASE"] ||= "development_secret_key_base_for_local_production_mode"
 
 STDOUT.sync = true
@@ -12,15 +14,6 @@ require "bundler/setup"
 require "hanami/setup"
 
 Hanami.app.boot
-
-# Suppress reload calls because the gRPC process must not run the development reloader.
-require "zeitwerk"
-class Zeitwerk::Loader
-  def reload
-    puts "DEBUG: Zeitwerk::Loader#reload called (suppressed for gRPC)"
-    true
-  end
-end
 
 require "gruf"
 require_relative "../lib/current"
