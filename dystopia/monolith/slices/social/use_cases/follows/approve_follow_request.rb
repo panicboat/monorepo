@@ -6,18 +6,18 @@ module Social
       class ApproveFollowRequest
         include Social::Deps[follow_repo: "repositories.follow_repository"]
 
-        def call(target_account_id:, requester_account_id:)
+        def call(target_profile_id:, requester_profile_id:)
           follow_repo.update_status(
-            follower_id: requester_account_id,
-            followee_id: target_account_id,
+            follower_profile_id: requester_profile_id,
+            followee_profile_id: target_profile_id,
             status: "approved"
           )
 
           notifications_emit.call(
-            recipient_id: requester_account_id,
+            recipient_id: requester_profile_id,
             type: "follow_approved",
-            target_resource_id: target_account_id,
-            actor_id: target_account_id
+            target_resource_id: target_profile_id,
+            actor_id: target_profile_id
           )
 
           {}

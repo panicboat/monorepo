@@ -12,13 +12,13 @@ service BlockService {
 }
 
 message BlockRequest {
-  string target_account_id = 1;
+  string target_profile_id = 1;
 }
 
 message BlockResponse {}
 
 message UnblockRequest {
-  string target_account_id = 1;
+  string target_profile_id = 1;
 }
 
 message UnblockResponse {}
@@ -35,7 +35,7 @@ message ListBlockedResponse {
 }
 
 message GetBlockStatusRequest {
-  repeated string target_account_ids = 1;
+  repeated string target_profile_ids = 1;
 }
 
 message GetBlockStatusResponse {

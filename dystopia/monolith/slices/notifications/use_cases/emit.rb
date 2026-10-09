@@ -21,7 +21,7 @@ module Notifications
         return nil if recipient_id.nil? || actor_id.nil?
         return nil if recipient_id.to_s == actor_id.to_s
 
-        return nil if block_repo.blocked?(blocker_id: recipient_id, blocked_id: actor_id)
+        return nil if block_repo.blocked?(blocker_profile_id: recipient_id, blocked_profile_id: actor_id)
         return nil unless type_enabled_for?(recipient_id, type)
 
         notification_repo.emit(

@@ -67,7 +67,7 @@ module Review
       def reachable_account_ids(viewer_account_id, entries)
         candidate_ids = (entries.map(&:author_account_id) + entries.map(&:target_account_id)).uniq
         refs = candidate_ids.map { |id| AuthorRef.new(id) }
-        filter_visible_posts.call(viewer_account_id: viewer_account_id, posts: refs).map(&:author_profile_id).to_set
+        filter_visible_posts.call(viewer_profile_id: viewer_account_id, posts: refs).map(&:author_profile_id).to_set
       end
 
       def reviews_visible?(target_account_id)

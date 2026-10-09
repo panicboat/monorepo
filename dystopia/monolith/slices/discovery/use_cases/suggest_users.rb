@@ -35,8 +35,8 @@ module Discovery
       private
 
       def exclusion_ids(viewer_account_id)
-        following = follow_repo.following_account_ids(account_id: viewer_account_id)
-        blocked = block_repo.bidirectionally_blocked_ids(account_id: viewer_account_id)
+        following = follow_repo.following_profile_ids(profile_id: viewer_account_id)
+        blocked = block_repo.bidirectionally_blocked_profile_ids(profile_id: viewer_account_id)
         ([viewer_account_id] + following + blocked).uniq
       end
 

@@ -13,7 +13,7 @@ module Messaging
       def call(sender_id:, recipient_id:)
         return true if get_role.call(profile_id: sender_id) == ROLE_CAST
 
-        follow = follow_repo.find(follower_id: sender_id, followee_id: recipient_id)
+        follow = follow_repo.find(follower_profile_id: sender_id, followee_profile_id: recipient_id)
         !!(follow && follow.status == "approved")
       end
 

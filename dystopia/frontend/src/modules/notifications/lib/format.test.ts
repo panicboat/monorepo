@@ -10,7 +10,7 @@ function buildNotification(overrides: Partial<NotificationView>): NotificationVi
     targetResourceId: "post-1",
     actorCount: 1,
     latestActor: {
-      accountId: "actor-1",
+      profileId: "actor-1",
       username: "hanako",
       displayName: "花子",
       avatarUrl: "",

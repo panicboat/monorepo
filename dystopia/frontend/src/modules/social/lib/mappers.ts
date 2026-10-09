@@ -1,12 +1,12 @@
 import type { Profile } from "@/stub/profile/v1/service_pb";
 import type {
-  SocialAccountView,
+  SocialProfileView,
   FollowRequestItem,
 } from "../types";
 
-export function profileToSocialAccount(p: Profile): SocialAccountView {
+export function profileToSocialProfile(p: Profile): SocialProfileView {
   return {
-    accountId: p.id,
+    profileId: p.id,
     username: p.username,
     displayName: p.displayName,
     avatarUrl: p.avatarUrl,
@@ -16,7 +16,7 @@ export function profileToSocialAccount(p: Profile): SocialAccountView {
 
 export function profileToFollowRequestItem(p: Profile): FollowRequestItem {
   return {
-    requesterAccountId: p.id,
+    requesterProfileId: p.id,
     username: p.username,
     displayName: p.displayName,
     avatarUrl: p.avatarUrl,

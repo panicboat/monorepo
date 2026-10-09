@@ -9,62 +9,62 @@ module Social
       include Social::Deps[follow_repo: "repositories.follow_repository"]
 
 
-      def block(blocker_id:, blocked_id:)
+      def block(blocker_profile_id:, blocked_profile_id:)
         transaction do
-          existing = blocks.where(blocker_id: blocker_id, blocked_id: blocked_id).one
+          existing = blocks.where(blocker_profile_id: blocker_profile_id, blocked_profile_id: blocked_profile_id).one
           unless existing
             blocks.changeset(:create,
               id: SecureRandom.uuid_v7,
-              blocker_id: blocker_id,
-              blocked_id: blocked_id
+              blocker_profile_id: blocker_profile_id,
+              blocked_profile_id: blocked_profile_id
             ).commit
           end
-          follow_repo.remove_bidirectional(account_a: blocker_id, account_b: blocked_id)
+          follow_repo.remove_bidirectional(profile_a: blocker_profile_id, profile_b: blocked_profile_id)
         end
         true
       end
 
-      def unblock(blocker_id:, blocked_id:)
-        blocks.dataset.where(blocker_id: blocker_id, blocked_id: blocked_id).delete > 0
+      def unblock(blocker_profile_id:, blocked_profile_id:)
+        blocks.dataset.where(blocker_profile_id: blocker_profile_id, blocked_profile_id: blocked_profile_id).delete > 0
       end
 
 
-      def blocked?(blocker_id:, blocked_id:)
-        blocks.where(blocker_id: blocker_id, blocked_id: blocked_id).exist?
+      def blocked?(blocker_profile_id:, blocked_profile_id:)
+        blocks.where(blocker_profile_id: blocker_profile_id, blocked_profile_id: blocked_profile_id).exist?
       end
 
-      def blocked_ids(account_id:)
-        blocks.dataset.where(blocker_id: account_id).select_map(:blocked_id)
+      def blocked_profile_ids(profile_id:)
+        blocks.dataset.where(blocker_profile_id: profile_id).select_map(:blocked_profile_id)
       end
 
-      def blocker_ids(account_id:)
-        blocks.dataset.where(blocked_id: account_id).select_map(:blocker_id)
+      def blocker_profile_ids(profile_id:)
+        blocks.dataset.where(blocked_profile_id: profile_id).select_map(:blocker_profile_id)
       end
 
-      def bidirectionally_blocked_ids(account_id:)
-        (blocked_ids(account_id: account_id) + blocker_ids(account_id: account_id)).uniq
+      def bidirectionally_blocked_profile_ids(profile_id:)
+        (blocked_profile_ids(profile_id: profile_id) + blocker_profile_ids(profile_id: profile_id)).uniq
       end
 
-      def delete_by_account(account_id)
+      def delete_by_profile(profile_id)
         blocks.dataset
-          .where(Sequel.|({blocker_id: account_id}, {blocked_id: account_id}))
+          .where(Sequel.|({blocker_profile_id: profile_id}, {blocked_profile_id: profile_id}))
           .delete
       end
 
-      def list_blocked(blocker_id:, limit: 20, cursor: nil)
-        scope = blocks.where(blocker_id: blocker_id)
+      def list_blocked(blocker_profile_id:, limit: 20, cursor: nil)
+        scope = blocks.where(blocker_profile_id: blocker_profile_id)
         scope = apply_cursor(scope, cursor)
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def status_batch(blocker_id:, blocked_ids:)
-        return {} if blocked_ids.nil? || blocked_ids.empty?
+      def status_batch(blocker_profile_id:, blocked_profile_ids:)
+        return {} if blocked_profile_ids.nil? || blocked_profile_ids.empty?
 
         present = blocks.dataset
-          .where(blocker_id: blocker_id, blocked_id: blocked_ids)
-          .select_map(:blocked_id)
+          .where(blocker_profile_id: blocker_profile_id, blocked_profile_id: blocked_profile_ids)
+          .select_map(:blocked_profile_id)
           .map(&:to_s)
-        blocked_ids.each_with_object({}) { |id, h| h[id.to_s] = present.include?(id.to_s) }
+        blocked_profile_ids.each_with_object({}) { |id, h| h[id.to_s] = present.include?(id.to_s) }
       end
 
       private

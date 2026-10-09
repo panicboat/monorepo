@@ -9,9 +9,9 @@ export async function GET(req: NextRequest) {
     if (authError) return authError;
 
     const headers = await buildGrpcHeaders(req);
-    const accountId = req.nextUrl.searchParams.get("account_id") || "";
+    const profileId = req.nextUrl.searchParams.get("profile_id") || "";
 
-    const res = await socialFollowClient.getSocialCounts({ accountId }, { headers });
+    const res = await socialFollowClient.getSocialCounts({ profileId }, { headers });
     return NextResponse.json({
       followingCount: res.followingCount || 0,
       followersCount: res.followersCount || 0,

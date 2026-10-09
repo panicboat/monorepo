@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { discoveryClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, handleApiError } from "@/lib/api-helpers";
-import { profileToSocialAccount } from "@/modules/social";
+import { profileToSocialProfile } from "@/modules/social";
 
 export async function GET(req: NextRequest) {
   try {
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       { headers }
     );
     return NextResponse.json({
-      profiles: (res.profiles || []).map(profileToSocialAccount),
+      profiles: (res.profiles || []).map(profileToSocialProfile),
       nextCursor: res.nextCursor || "",
       hasMore: !!res.hasMore,
     });

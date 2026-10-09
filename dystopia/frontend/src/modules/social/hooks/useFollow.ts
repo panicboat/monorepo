@@ -8,64 +8,64 @@ import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
 interface FollowResponse { status: FollowStatus }
 interface StatusResponse { statuses: Record<string, FollowStatus> }
 
-export function useFollow(targetAccountId: string | null | undefined) {
+export function useFollow(targetProfileId: string | null | undefined) {
   const [status, setStatus] = useState<FollowStatus>(FollowStatus.NONE);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
+    if (!targetProfileId || !useAuthStore.getState().activeProfileId) return;
     let cancelled = false;
     (async () => {
       try {
         const res = await authFetch<StatusResponse>(
           "/api/social/follow/status",
-          { method: "POST", body: { targetAccountIds: [targetAccountId] } }
+          { method: "POST", body: { targetProfileIds: [targetProfileId] } }
         );
         if (cancelled) return;
-        setStatus(res.statuses?.[targetAccountId] ?? FollowStatus.NONE);
+        setStatus(res.statuses?.[targetProfileId] ?? FollowStatus.NONE);
       } catch (e) {
         console.error("useFollow fetch error", e);
       }
     })();
     return () => { cancelled = true };
-  }, [targetAccountId]);
+  }, [targetProfileId]);
 
   const follow = useCallback(async () => {
-    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
+    if (!targetProfileId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
       const res = await authFetch<FollowResponse>(
         "/api/social/follow",
-        { method: "POST", body: { targetAccountId } }
+        { method: "POST", body: { targetProfileId } }
       );
       setStatus(res.status ?? FollowStatus.NONE);
       return res.status;
     } finally {
       setLoading(false);
     }
-  }, [targetAccountId]);
+  }, [targetProfileId]);
 
   const unfollow = useCallback(async () => {
-    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
+    if (!targetProfileId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
-      await authFetch(`/api/social/follow?target_account_id=${encodeURIComponent(targetAccountId)}`, { method: "DELETE" });
+      await authFetch(`/api/social/follow?target_profile_id=${encodeURIComponent(targetProfileId)}`, { method: "DELETE" });
       setStatus(FollowStatus.NONE);
     } finally {
       setLoading(false);
     }
-  }, [targetAccountId]);
+  }, [targetProfileId]);
 
   const cancelRequest = useCallback(async () => {
-    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
+    if (!targetProfileId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
-      await authFetch(`/api/social/follow?target_account_id=${encodeURIComponent(targetAccountId)}&cancel=1`, { method: "DELETE" });
+      await authFetch(`/api/social/follow?target_profile_id=${encodeURIComponent(targetProfileId)}&cancel=1`, { method: "DELETE" });
       setStatus(FollowStatus.NONE);
     } finally {
       setLoading(false);
     }
-  }, [targetAccountId]);
+  }, [targetProfileId]);
 
   return {
     status,

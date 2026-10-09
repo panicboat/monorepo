@@ -9,7 +9,7 @@ const { SocialCountsLinks } = await import("./SocialCountsLinks");
 
 describe("SocialCountsLinks", () => {
   it("links each count to that account's following/followers list", () => {
-    const html = renderToStaticMarkup(<SocialCountsLinks accountId="account-1" username="yuna" />);
+    const html = renderToStaticMarkup(<SocialCountsLinks profileId="account-1" username="yuna" />);
 
     expect(html).toContain('href="/u/yuna/following"');
     expect(html).toContain('href="/u/yuna/followers"');

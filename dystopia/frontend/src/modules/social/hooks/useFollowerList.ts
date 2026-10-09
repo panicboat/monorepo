@@ -5,16 +5,16 @@ import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedProfilesResponse } from "../types";
 
-export function useFollowerList(accountId?: string) {
+export function useFollowerList(profileId?: string) {
   const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedProfilesResponse | null): string | null => {
     if (!userId) return null;
     if (prev && !prev.hasMore) return null;
-    const accountQs = accountId ? `account_id=${encodeURIComponent(accountId)}` : "";
+    const profileQs = profileId ? `profile_id=${encodeURIComponent(profileId)}` : "";
     const cursorQs = pageIndex === 0 ? "" : `cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    const sep = accountQs && cursorQs ? "&" : "";
-    const qs = (accountQs || cursorQs) ? `?${accountQs}${sep}${cursorQs}` : "";
+    const sep = profileQs && cursorQs ? "&" : "";
+    const qs = (profileQs || cursorQs) ? `?${profileQs}${sep}${cursorQs}` : "";
     return `/api/social/followers${qs}`;
   };
 

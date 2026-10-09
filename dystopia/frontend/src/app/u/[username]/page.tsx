@@ -46,12 +46,12 @@ export default function PublicProfilePage() {
       <ProfileHeader profile={profile} role={role} onEdit={isOwnProfile ? () => setEditing(true) : undefined} />
       {!isOwnProfile && (
         <div className="flex items-center gap-2 px-4 pt-3">
-          <FollowButton targetAccountId={profile.id} />
+          <FollowButton targetProfileId={profile.id} />
           <StartChatButton targetAccountId={profile.id} />
-          <BlockButton targetAccountId={profile.id} />
+          <BlockButton targetProfileId={profile.id} />
         </div>
       )}
-      <SocialCountsLinks accountId={profile.id} username={profile.username} />
+      <SocialCountsLinks profileId={profile.id} username={profile.username} />
       {role === "cast" && <ScheduleSection accountId={profile.id} isOwner={isOwnProfile} />}
       <ProfileContentTabs
         profileId={profile.id}

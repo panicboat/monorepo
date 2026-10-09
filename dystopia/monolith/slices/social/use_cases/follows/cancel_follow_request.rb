@@ -6,8 +6,8 @@ module Social
       class CancelFollowRequest
         include Social::Deps[follow_repo: "repositories.follow_repository"]
 
-        def call(follower_id:, target_account_id:)
-          follow_repo.unfollow(follower_id: follower_id, followee_id: target_account_id)
+        def call(follower_profile_id:, target_profile_id:)
+          follow_repo.unfollow(follower_profile_id: follower_profile_id, followee_profile_id: target_profile_id)
           {}
         end
       end

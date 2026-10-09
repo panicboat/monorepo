@@ -18,7 +18,7 @@ const { SuggestedUsersPane } = await import("./SuggestedUsersPane");
 describe("SuggestedUsersPane", () => {
   it("links each suggested user's avatar and name to their profile as two separate links", () => {
     hookMocks.useSuggestedUsers.mockReturnValue({
-      profiles: [{ accountId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false }],
+      profiles: [{ profileId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false }],
       loading: false,
     });
 

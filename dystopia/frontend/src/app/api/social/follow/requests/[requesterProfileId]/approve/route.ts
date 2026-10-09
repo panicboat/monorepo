@@ -5,17 +5,17 @@ import { requireAuth, handleApiError } from "@/lib/api-helpers";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ requesterAccountId: string }> }
+  { params }: { params: Promise<{ requesterProfileId: string }> }
 ) {
   try {
     const authError = requireAuth(req);
     if (authError) return authError;
 
-    const { requesterAccountId } = await params;
+    const { requesterProfileId } = await params;
     const headers = await buildGrpcHeaders(req);
-    await socialFollowClient.rejectFollowRequest({ requesterAccountId }, { headers });
+    await socialFollowClient.approveFollowRequest({ requesterProfileId }, { headers });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    return handleApiError(error, "RejectFollowRequest");
+    return handleApiError(error, "ApproveFollowRequest");
   }
 }

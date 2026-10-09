@@ -1,4 +1,4 @@
-import type { SocialAccountView } from "@/modules/social";
+import type { SocialProfileView } from "@/modules/social";
 
 export interface MessageView {
   id: string;
@@ -10,7 +10,7 @@ export interface MessageView {
 
 export interface ThreadView {
   id: string;
-  counterpart: SocialAccountView | null;
+  counterpart: SocialProfileView | null;
   lastMessage: MessageView | null;
   unreadCount: number;
   lastMessageAt: string;

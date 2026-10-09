@@ -42,12 +42,12 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
 
     follows.dataset.insert(
       id: SecureRandom.uuid_v7,
-      follower_id: viewer, followee_id: followed, status: "approved",
+      follower_profile_id: viewer, followee_profile_id: followed, status: "approved",
       created_at: Time.now, updated_at: Time.now
     )
     blocks.dataset.insert(
       id: SecureRandom.uuid_v7,
-      blocker_id: blocked, blocked_id: viewer, created_at: Time.now
+      blocker_profile_id: blocked, blocked_profile_id: viewer, created_at: Time.now
     )
 
     ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:id)

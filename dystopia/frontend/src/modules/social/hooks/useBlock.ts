@@ -6,49 +6,49 @@ import { useAuthStore } from "@/stores/authStore";
 
 interface StatusResponse { blocked: Record<string, boolean> }
 
-export function useBlock(targetAccountId: string | null | undefined) {
+export function useBlock(targetProfileId: string | null | undefined) {
   const [isBlocked, setIsBlocked] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
+    if (!targetProfileId || !useAuthStore.getState().activeProfileId) return;
     let cancelled = false;
     (async () => {
       try {
         const res = await authFetch<StatusResponse>(
           "/api/social/blocks/status",
-          { method: "POST", body: { targetAccountIds: [targetAccountId] } }
+          { method: "POST", body: { targetProfileIds: [targetProfileId] } }
         );
         if (cancelled) return;
-        setIsBlocked(!!res.blocked?.[targetAccountId]);
+        setIsBlocked(!!res.blocked?.[targetProfileId]);
       } catch (e) {
         console.error("useBlock fetch error", e);
       }
     })();
     return () => { cancelled = true };
-  }, [targetAccountId]);
+  }, [targetProfileId]);
 
   const block = useCallback(async () => {
-    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
+    if (!targetProfileId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
-      await authFetch("/api/social/blocks", { method: "POST", body: { targetAccountId } });
+      await authFetch("/api/social/blocks", { method: "POST", body: { targetProfileId } });
       setIsBlocked(true);
     } finally {
       setLoading(false);
     }
-  }, [targetAccountId]);
+  }, [targetProfileId]);
 
   const unblock = useCallback(async () => {
-    if (!targetAccountId || !useAuthStore.getState().activeProfileId) return;
+    if (!targetProfileId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
-      await authFetch(`/api/social/blocks?target_account_id=${encodeURIComponent(targetAccountId)}`, { method: "DELETE" });
+      await authFetch(`/api/social/blocks?target_profile_id=${encodeURIComponent(targetProfileId)}`, { method: "DELETE" });
       setIsBlocked(false);
     } finally {
       setLoading(false);
     }
-  }, [targetAccountId]);
+  }, [targetProfileId]);
 
   return { isBlocked, block, unblock, loading };
 }

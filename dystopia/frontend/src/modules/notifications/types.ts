@@ -1,5 +1,5 @@
 import { NotificationType } from "@/stub/notifications/v1/notification_service_pb";
-import type { SocialAccountView } from "@/modules/social/types";
+import type { SocialProfileView } from "@/modules/social/types";
 
 export { NotificationType };
 
@@ -8,7 +8,7 @@ export interface NotificationView {
   type: NotificationType;
   targetResourceId: string;
   actorCount: number;
-  latestActor: SocialAccountView | null;
+  latestActor: SocialProfileView | null;
   latestEventAt: string;
   readAt: string | null;
   targetPostId: string | null;

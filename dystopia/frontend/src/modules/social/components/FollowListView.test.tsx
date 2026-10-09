@@ -18,7 +18,7 @@ vi.mock("./FollowButton", () => ({
 const { FollowListView } = await import("./FollowListView");
 
 const following = {
-  profiles: [{ accountId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false }],
+  profiles: [{ profileId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false }],
   hasMore: false,
   loading: false,
   error: undefined,
@@ -27,7 +27,7 @@ const following = {
 };
 
 const followers = {
-  profiles: [{ accountId: "a2", username: "rin", displayName: "りん", avatarUrl: "", isPrivate: false }],
+  profiles: [{ profileId: "a2", username: "rin", displayName: "りん", avatarUrl: "", isPrivate: false }],
   hasMore: false,
   loading: false,
   error: undefined,
@@ -36,11 +36,11 @@ const followers = {
 };
 
 describe("FollowListView", () => {
-  it("passes the given accountId through to both list hooks", () => {
+  it("passes the given profileId through to both list hooks", () => {
     hookMocks.useFollowList.mockReturnValue(following);
     hookMocks.useFollowerList.mockReturnValue(followers);
 
-    renderToStaticMarkup(<FollowListView accountId="account-1" />);
+    renderToStaticMarkup(<FollowListView profileId="account-1" />);
 
     expect(hookMocks.useFollowList).toHaveBeenCalledWith("account-1");
     expect(hookMocks.useFollowerList).toHaveBeenCalledWith("account-1");
@@ -50,7 +50,7 @@ describe("FollowListView", () => {
     hookMocks.useFollowList.mockReturnValue(following);
     hookMocks.useFollowerList.mockReturnValue(followers);
 
-    const html = renderToStaticMarkup(<FollowListView accountId="account-1" />);
+    const html = renderToStaticMarkup(<FollowListView profileId="account-1" />);
 
     expect(html).toContain("ゆな");
     expect(html).not.toContain("りん");
@@ -60,7 +60,7 @@ describe("FollowListView", () => {
     hookMocks.useFollowList.mockReturnValue(following);
     hookMocks.useFollowerList.mockReturnValue(followers);
 
-    const html = renderToStaticMarkup(<FollowListView accountId="account-1" initialTab="followers" />);
+    const html = renderToStaticMarkup(<FollowListView profileId="account-1" initialTab="followers" />);
 
     expect(html).toContain("りん");
     expect(html).not.toContain("ゆな");
@@ -70,7 +70,7 @@ describe("FollowListView", () => {
     hookMocks.useFollowList.mockReturnValue(following);
     hookMocks.useFollowerList.mockReturnValue(followers);
 
-    const html = renderToStaticMarkup(<FollowListView accountId="account-1" />);
+    const html = renderToStaticMarkup(<FollowListView profileId="account-1" />);
 
     const matches = html.match(/<a[^>]*href="\/u\/yuna"/g) ?? [];
     expect(matches.length).toBe(2);

@@ -19,7 +19,7 @@ RSpec.describe Messaging::UseCases::AuthorizeMessage do
 
   it "allows a guest sender who approvedly follows the recipient" do
     allow(get_role).to receive(:call).with(profile_id: sender_id).and_return(1)
-    allow(follow_repo).to receive(:find).with(follower_id: sender_id, followee_id: recipient_id)
+    allow(follow_repo).to receive(:find).with(follower_profile_id: sender_id, followee_profile_id: recipient_id)
       .and_return(double(:follow, status: "approved"))
 
     expect(use_case.call(sender_id: sender_id, recipient_id: recipient_id)).to be(true)
@@ -27,14 +27,14 @@ RSpec.describe Messaging::UseCases::AuthorizeMessage do
 
   it "denies a guest sender who does not follow the recipient" do
     allow(get_role).to receive(:call).with(profile_id: sender_id).and_return(1)
-    allow(follow_repo).to receive(:find).with(follower_id: sender_id, followee_id: recipient_id).and_return(nil)
+    allow(follow_repo).to receive(:find).with(follower_profile_id: sender_id, followee_profile_id: recipient_id).and_return(nil)
 
     expect(use_case.call(sender_id: sender_id, recipient_id: recipient_id)).to be(false)
   end
 
   it "denies a guest sender whose follow request is still pending" do
     allow(get_role).to receive(:call).with(profile_id: sender_id).and_return(1)
-    allow(follow_repo).to receive(:find).with(follower_id: sender_id, followee_id: recipient_id)
+    allow(follow_repo).to receive(:find).with(follower_profile_id: sender_id, followee_profile_id: recipient_id)
       .and_return(double(:follow, status: "pending"))
 
     expect(use_case.call(sender_id: sender_id, recipient_id: recipient_id)).to be(false)

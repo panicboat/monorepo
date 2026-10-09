@@ -32,7 +32,7 @@ RSpec.describe Review::UseCases::ListRecentEntries do
   before do
     allow(cast_settings_repo).to receive(:find_by_account).and_return(nil)
     allow(block_adapter).to receive(:bidirectionally_blocked_ids).and_return([])
-    allow(filter_visible_posts).to receive(:call) { |viewer_account_id:, posts:| posts }
+    allow(filter_visible_posts).to receive(:call) { |viewer_profile_id:, posts:| posts }
     allow(get_profile).to receive(:call) { |profile_id:| double(:profile, username: "user-#{profile_id}", avatar_media_id: nil) }
   end
 
@@ -88,7 +88,7 @@ RSpec.describe Review::UseCases::ListRecentEntries do
   it "drops entries where the author or target is unreachable (private account, not followed)" do
     e = entry
     allow(entry_repo).to receive(:list_recent).with(limit: 20, cursor: nil).and_return([e])
-    allow(filter_visible_posts).to receive(:call) do |viewer_account_id:, posts:|
+    allow(filter_visible_posts).to receive(:call) do |viewer_profile_id:, posts:|
       posts.reject { |p| p.author_profile_id == target_id }
     end
 

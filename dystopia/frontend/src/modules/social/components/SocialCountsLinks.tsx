@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useSocialCounts } from "@/modules/social/hooks";
 
 interface SocialCountsLinksProps {
-  accountId?: string;
+  profileId?: string;
   username: string;
 }
 
-export function SocialCountsLinks({ accountId, username }: SocialCountsLinksProps) {
-  const { followingCount, followersCount } = useSocialCounts(accountId);
+export function SocialCountsLinks({ profileId, username }: SocialCountsLinksProps) {
+  const { followingCount, followersCount } = useSocialCounts(profileId);
   const base = `/u/${encodeURIComponent(username)}`;
 
   return (

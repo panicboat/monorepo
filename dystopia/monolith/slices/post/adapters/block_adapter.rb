@@ -4,7 +4,7 @@ module Post
   module Adapters
     class BlockAdapter
       def blocked_ids(profile_id:)
-        block_repo.blocked_ids(account_id: profile_id)
+        block_repo.blocked_profile_ids(profile_id: profile_id)
       end
 
       private

@@ -10,11 +10,11 @@ export async function POST(req: NextRequest) {
 
     const headers = await buildGrpcHeaders(req);
     const body = await req.json();
-    const targetAccountIds: string[] = Array.isArray(body?.targetAccountIds) ? body.targetAccountIds : [];
-    if (targetAccountIds.length === 0) {
+    const targetProfileIds: string[] = Array.isArray(body?.targetProfileIds) ? body.targetProfileIds : [];
+    if (targetProfileIds.length === 0) {
       return NextResponse.json({ statuses: {} });
     }
-    const res = await socialFollowClient.getFollowStatus({ targetAccountIds }, { headers });
+    const res = await socialFollowClient.getFollowStatus({ targetProfileIds }, { headers });
     return NextResponse.json({ statuses: res.statuses || {} });
   } catch (error: unknown) {
     return handleApiError(error, "GetFollowStatus");

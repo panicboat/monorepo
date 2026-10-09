@@ -9,8 +9,8 @@ module Social
       ]
 
       def call(account_id:)
-        follow_repo.delete_by_account(account_id)
-        block_repo.delete_by_account(account_id)
+        follow_repo.delete_by_profile(account_id)
+        block_repo.delete_by_profile(account_id)
         nil
       end
     end

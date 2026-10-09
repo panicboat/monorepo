@@ -13,15 +13,15 @@ vi.mock("@/modules/profile/hooks", () => ({
 }));
 
 vi.mock("./FollowListView", () => ({
-  FollowListView: ({ accountId, initialTab }: { accountId?: string; initialTab?: string }) => (
-    <div data-testid="follow-list-view" data-account-id={accountId} data-initial-tab={initialTab} />
+  FollowListView: ({ profileId, initialTab }: { profileId?: string; initialTab?: string }) => (
+    <div data-testid="follow-list-view" data-profile-id={profileId} data-initial-tab={initialTab} />
   ),
 }));
 
 const { ProfileFollowListPage } = await import("./ProfileFollowListPage");
 
 describe("ProfileFollowListPage", () => {
-  it("resolves the username param and forwards its accountId and tab to FollowListView", () => {
+  it("resolves the username param and forwards its profileId and tab to FollowListView", () => {
     navMocks.useParams.mockReturnValue({ username: "yuna" });
     profileMocks.usePublicProfile.mockReturnValue({
       profile: { id: "account-1", displayName: "ゆな", username: "yuna" },
@@ -32,7 +32,7 @@ describe("ProfileFollowListPage", () => {
     const html = renderToStaticMarkup(<ProfileFollowListPage initialTab="followers" />);
 
     expect(profileMocks.usePublicProfile).toHaveBeenCalledWith("yuna");
-    expect(html).toContain('data-account-id="account-1"');
+    expect(html).toContain('data-profile-id="account-1"');
     expect(html).toContain('data-initial-tab="followers"');
     expect(html).toContain("ゆな");
   });

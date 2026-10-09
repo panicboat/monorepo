@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { useFollowList, useFollowerList } from "@/modules/social/hooks";
 import { FollowButton } from "./FollowButton";
-import type { SocialAccountView } from "../types";
+import type { SocialProfileView } from "../types";
 
 export type FollowListTab = "following" | "followers";
 
@@ -16,7 +16,7 @@ const TABS: TabItem[] = [
   { id: "followers", label: "フォロワー" },
 ];
 
-function ProfileRow({ profile }: { profile: SocialAccountView }) {
+function ProfileRow({ profile }: { profile: SocialProfileView }) {
   const href = `/u/${encodeURIComponent(profile.username)}`;
   return (
     <div className="flex items-center gap-3 border-b border-border px-4 py-3">
@@ -30,20 +30,20 @@ function ProfileRow({ profile }: { profile: SocialAccountView }) {
         <p className="truncate font-bold text-text-primary">{profile.displayName}</p>
         <p className="truncate text-sm text-text-secondary">@{profile.username}</p>
       </Link>
-      <FollowButton targetAccountId={profile.accountId} />
+      <FollowButton targetProfileId={profile.profileId} />
     </div>
   );
 }
 
 interface FollowListViewProps {
-  accountId?: string;
+  profileId?: string;
   initialTab?: FollowListTab;
 }
 
-export function FollowListView({ accountId, initialTab = "following" }: FollowListViewProps) {
+export function FollowListView({ profileId, initialTab = "following" }: FollowListViewProps) {
   const [tab, setTab] = useState<string>(initialTab);
-  const following = useFollowList(accountId);
-  const followers = useFollowerList(accountId);
+  const following = useFollowList(profileId);
+  const followers = useFollowerList(profileId);
 
   const active = tab === "following" ? following : followers;
 
@@ -57,7 +57,7 @@ export function FollowListView({ accountId, initialTab = "following" }: FollowLi
         </p>
       )}
       {active.profiles.map((p) => (
-        <ProfileRow key={p.accountId} profile={p} />
+        <ProfileRow key={p.profileId} profile={p} />
       ))}
       {active.hasMore && (
         <div className="flex justify-center px-4 py-6">

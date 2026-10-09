@@ -8,14 +8,14 @@ import type { FollowStatusMap } from "../types";
 
 interface Response { statuses: FollowStatusMap }
 
-export function useFollowStatusBatch(targetAccountIds: string[]) {
+export function useFollowStatusBatch(targetProfileIds: string[]) {
   const [statuses, setStatuses] = useState<FollowStatusMap>({});
   const [loading, setLoading] = useState(false);
 
-  const key = targetAccountIds.join(",");
+  const key = targetProfileIds.join(",");
 
   useEffect(() => {
-    if (!useAuthStore.getState().activeProfileId || targetAccountIds.length === 0) return;
+    if (!useAuthStore.getState().activeProfileId || targetProfileIds.length === 0) return;
     let cancelled = false;
     (async () => {
       if (cancelled) return;
@@ -23,7 +23,7 @@ export function useFollowStatusBatch(targetAccountIds: string[]) {
       try {
         const res = await authFetch<Response>(
           "/api/social/follow/status",
-          { method: "POST", body: { targetAccountIds } }
+          { method: "POST", body: { targetProfileIds } }
         );
         if (cancelled) return;
         setStatuses(res.statuses || {});

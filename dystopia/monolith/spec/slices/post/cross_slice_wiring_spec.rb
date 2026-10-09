@@ -31,7 +31,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   end
 
   it "shows a private author's post to an approved follower and marks the viewer's like" do
-    follow_repo.follow(follower_id: viewer, followee_id: private_author, status: "approved")
+    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_author, status: "approved")
     like_repo.profile_like(post_id: private_post.id, profile_id: viewer)
 
     result = list_posts.call(post_ids: [public_post.id, private_post.id], viewer_profile_id: viewer)
@@ -44,13 +44,18 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   it "decides a single post's visibility from its author profile" do
     can_see = Social::Slice["use_cases.viewer_can_see_post"]
 
-    expect(can_see.call(viewer_account_id: viewer, post: post_repo.find_by_id(public_post.id))).to be true
-    expect(can_see.call(viewer_account_id: viewer, post: post_repo.find_by_id(private_post.id))).to be_falsy
-    expect(can_see.call(viewer_account_id: private_author, post: post_repo.find_by_id(private_post.id))).to be true
+    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(public_post.id))).to be true
+    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(private_post.id))).to be_falsy
+    expect(can_see.call(viewer_profile_id: private_author, post: post_repo.find_by_id(private_post.id))).to be true
+
+    follow_repo.follow(follower_profile_id: private_author, followee_profile_id: viewer, status: "approved")
+    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(private_post.id))).to be_falsy
+    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_author, status: "approved")
+    expect(can_see.call(viewer_profile_id: viewer, post: post_repo.find_by_id(private_post.id))).to be true
   end
 
   it "lists the following feed by the followed author profiles" do
-    follow_repo.follow(follower_id: viewer, followee_id: public_author, status: "approved")
+    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: public_author, status: "approved")
 
     all = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_account_id: viewer)
     following = Feed::UseCases::ListFeed.new.call(filter: "following", viewer_account_id: viewer)
@@ -60,7 +65,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   end
 
   it "excludes posts from profiles blocked by the viewer" do
-    Social::Slice["repositories.block_repository"].block(blocker_id: viewer, blocked_id: public_author)
+    Social::Slice["repositories.block_repository"].block(blocker_profile_id: viewer, blocked_profile_id: public_author)
 
     result = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_account_id: viewer)
 
@@ -68,7 +73,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   end
 
   it "excludes posts from profiles that blocked the viewer" do
-    Social::Slice["repositories.block_repository"].block(blocker_id: public_author, blocked_id: viewer)
+    Social::Slice["repositories.block_repository"].block(blocker_profile_id: public_author, blocked_profile_id: viewer)
 
     result = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_account_id: viewer)
 
@@ -94,7 +99,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   it "filters review author references through the post visibility filter" do
     refs = [public_author, private_author].map { |id| Review::UseCases::ListRecentEntries::AuthorRef.new(id) }
 
-    visible = Social::Slice["use_cases.filter_visible_posts"].call(viewer_account_id: viewer, posts: refs)
+    visible = Social::Slice["use_cases.filter_visible_posts"].call(viewer_profile_id: viewer, posts: refs)
 
     expect(visible.map(&:author_profile_id)).to eq([public_author])
   end
@@ -102,7 +107,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   it "filters review entry author references through the post visibility filter" do
     refs = [public_author, private_author].map { |id| Review::UseCases::FilterVisibleEntries::AuthorRef.new(id) }
 
-    visible = Social::Slice["use_cases.filter_visible_posts"].call(viewer_account_id: viewer, posts: refs)
+    visible = Social::Slice["use_cases.filter_visible_posts"].call(viewer_profile_id: viewer, posts: refs)
 
     expect(visible.map(&:author_profile_id)).to eq([public_author])
   end
@@ -210,7 +215,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
       reply_parent = comment_repo.create_comment(post_id: public_post.id, author_profile_id: public_author, content: "reply parent")
       visible_reply = comment_repo.create_comment(post_id: public_post.id, author_profile_id: public_author, content: "visible reply", parent_id: reply_parent.id)
       comment_repo.create_comment(post_id: public_post.id, author_profile_id: blocked_profile, content: "blocked reply", parent_id: reply_parent.id)
-      Social::Slice["repositories.block_repository"].block(blocker_id: viewer, blocked_id: blocked_profile)
+      Social::Slice["repositories.block_repository"].block(blocker_profile_id: viewer, blocked_profile_id: blocked_profile)
 
       act_as(viewer)
       comments = rpc(Post::Grpc::CommentHandler, :list_comments, Post::V1::ListCommentsRequest.new(post_id: public_post.id))

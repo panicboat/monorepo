@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { socialBlockClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, handleApiError } from "@/lib/api-helpers";
-import { profileToSocialAccount } from "@/modules/social";
+import { profileToSocialProfile } from "@/modules/social";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,11 +11,11 @@ export async function POST(req: NextRequest) {
 
     const headers = await buildGrpcHeaders(req);
     const body = await req.json();
-    const targetAccountId = body?.targetAccountId ?? "";
-    if (!targetAccountId) {
-      return NextResponse.json({ error: "targetAccountId required" }, { status: 400 });
+    const targetProfileId = body?.targetProfileId ?? "";
+    if (!targetProfileId) {
+      return NextResponse.json({ error: "targetProfileId required" }, { status: 400 });
     }
-    await socialBlockClient.block({ targetAccountId }, { headers });
+    await socialBlockClient.block({ targetProfileId }, { headers });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     return handleApiError(error, "Block");
@@ -28,11 +28,11 @@ export async function DELETE(req: NextRequest) {
     if (authError) return authError;
 
     const headers = await buildGrpcHeaders(req);
-    const targetAccountId = req.nextUrl.searchParams.get("target_account_id") || "";
-    if (!targetAccountId) {
-      return NextResponse.json({ error: "target_account_id required" }, { status: 400 });
+    const targetProfileId = req.nextUrl.searchParams.get("target_profile_id") || "";
+    if (!targetProfileId) {
+      return NextResponse.json({ error: "target_profile_id required" }, { status: 400 });
     }
-    await socialBlockClient.unblock({ targetAccountId }, { headers });
+    await socialBlockClient.unblock({ targetProfileId }, { headers });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     return handleApiError(error, "Unblock");
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
 
     const res = await socialBlockClient.listBlocked({ limit, cursor }, { headers });
     return NextResponse.json({
-      profiles: (res.profiles || []).map(profileToSocialAccount),
+      profiles: (res.profiles || []).map(profileToSocialProfile),
       nextCursor: res.nextCursor || "",
       hasMore: !!res.hasMore,
     });

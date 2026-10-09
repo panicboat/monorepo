@@ -6,16 +6,16 @@ import { FollowStatus } from "@/modules/social/types";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface FollowButtonProps {
-  targetAccountId: string;
+  targetProfileId: string;
   className?: string;
 }
 
-export function FollowButton({ targetAccountId, className }: FollowButtonProps) {
+export function FollowButton({ targetProfileId, className }: FollowButtonProps) {
   const viewerId = useAuthStore(selectActiveProfileId);
   const { status, isFollowing, isPending, follow, unfollow, cancelRequest, loading } =
-    useFollow(targetAccountId);
+    useFollow(targetProfileId);
 
-  if (!targetAccountId || (viewerId && viewerId === targetAccountId)) return null;
+  if (!targetProfileId || (viewerId && viewerId === targetProfileId)) return null;
 
   const onClick = async () => {
     if (isFollowing) {
