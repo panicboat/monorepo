@@ -6,19 +6,19 @@ require "errors/validation_error"
 RSpec.describe "Schedule::UseCases::ListSchedules", type: :database do
   let(:uc) { Hanami.app.slices[:schedule]["use_cases.list_schedules"] }
   let(:save_uc) { Hanami.app.slices[:schedule]["use_cases.save_schedule"] }
-  let(:account_id) { SecureRandom.uuid_v7 }
+  let(:profile_id) { SecureRandom.uuid_v7 }
 
   it "returns rows within the date range" do
-    save_uc.call(account_id: account_id, work_date: "2026-09-20", start_time: "20:00", end_time: "02:00")
+    save_uc.call(profile_id: profile_id, work_date: "2026-09-20", start_time: "20:00", end_time: "02:00")
 
-    rows = uc.call(account_id: account_id, from_date: "2026-09-19", to_date: "2026-09-21")
+    rows = uc.call(profile_id: profile_id, from_date: "2026-09-19", to_date: "2026-09-21")
     expect(rows.size).to eq(1)
     expect(rows.first.work_date.to_s).to eq("2026-09-20")
   end
 
   it "rejects a malformed from_date" do
     expect {
-      uc.call(account_id: account_id, from_date: "not-a-date", to_date: "2026-09-20")
+      uc.call(profile_id: profile_id, from_date: "not-a-date", to_date: "2026-09-20")
     }.to raise_error(Errors::ValidationError)
   end
 end

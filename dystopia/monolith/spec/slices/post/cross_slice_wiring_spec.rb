@@ -89,9 +89,9 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   end
 
   it "lists bookmarked posts for a viewer" do
-    bookmark_repo.bookmark(account_id: viewer, post_id: public_post.id)
+    bookmark_repo.bookmark(profile_id: viewer, post_id: public_post.id)
 
-    result = Bookmarks::Slice["use_cases.list_bookmarks"].call(account_id: viewer)
+    result = Bookmarks::Slice["use_cases.list_bookmarks"].call(profile_id: viewer)
 
     expect(result[:posts].map(&:id)).to eq([public_post.id])
   end

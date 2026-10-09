@@ -28,12 +28,12 @@ module Schedule
       def list_schedules
         authenticate_user!
         m = request.message
-        rows = list_schedules_uc.call(account_id: m.account_id, from_date: m.from_date, to_date: m.to_date)
+        rows = list_schedules_uc.call(profile_id: m.profile_id, from_date: m.from_date, to_date: m.to_date)
 
         ::Schedule::V1::ListSchedulesResponse.new(
           schedules: rows.map { |r|
             ::Schedule::V1::Schedule.new(
-              account_id: r.account_id.to_s,
+              profile_id: r.profile_id.to_s,
               work_date: r.work_date.to_s,
               start_time: r.start_time.to_s,
               end_time: r.end_time.to_s
@@ -48,7 +48,7 @@ module Schedule
         authenticate_user!
         m = request.message
         row = save_schedule_uc.call(
-          account_id: current_user_id,
+          profile_id: current_profile_id,
           work_date: m.work_date,
           start_time: m.start_time,
           end_time: m.end_time
@@ -56,7 +56,7 @@ module Schedule
 
         ::Schedule::V1::SaveScheduleResponse.new(
           schedule: ::Schedule::V1::Schedule.new(
-            account_id: row[:account_id].to_s,
+            profile_id: row[:profile_id].to_s,
             work_date: row[:work_date].to_s,
             start_time: row[:start_time],
             end_time: row[:end_time]
@@ -68,7 +68,7 @@ module Schedule
 
       def delete_schedule
         authenticate_user!
-        delete_schedule_uc.call(account_id: current_user_id, work_date: request.message.work_date)
+        delete_schedule_uc.call(profile_id: current_profile_id, work_date: request.message.work_date)
         ::Schedule::V1::DeleteScheduleResponse.new
       rescue Errors::ValidationError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)

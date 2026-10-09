@@ -7,7 +7,7 @@ RSpec.describe Bookmarks::UseCases::PurgeAccount do
   let(:bookmark_repo) { double(:bookmark_repository) }
 
   it "deletes all bookmarks owned by the account" do
-    expect(bookmark_repo).to receive(:delete_by_account).with("cast-1")
+    expect(bookmark_repo).to receive(:delete_by_profile).with("cast-1")
     use_case.call(account_id: "cast-1")
   end
 end

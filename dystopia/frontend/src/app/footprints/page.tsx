@@ -38,7 +38,7 @@ export default function FootprintsPage() {
       )}
 
       {footprints.map((f) => (
-        <FootprintRow key={f.visitor.accountId} footprint={f} />
+        <FootprintRow key={f.visitor.profileId} footprint={f} />
       ))}
 
       {hasMore && (

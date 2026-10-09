@@ -5,8 +5,8 @@ module Bookmarks
     class Bookmark
       include Bookmarks::Deps[bookmark_repo: "repositories.bookmark_repository"]
 
-      def call(account_id:, post_id:)
-        bookmark_repo.bookmark(account_id: account_id, post_id: post_id)
+      def call(profile_id:, post_id:)
+        bookmark_repo.bookmark(profile_id: profile_id, post_id: post_id)
         {}
       end
     end

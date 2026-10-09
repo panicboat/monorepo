@@ -6,14 +6,14 @@ import { mapScheduleToView } from "./mappers";
 describe("mapScheduleToView", () => {
   it("maps all fields from the proto", () => {
     const proto = create(ScheduleSchema, {
-      accountId: "acc-1",
+      profileId: "prof-1",
       workDate: "2026-09-20",
       startTime: "20:00",
       endTime: "02:00",
     });
 
     expect(mapScheduleToView(proto)).toEqual({
-      accountId: "acc-1",
+      profileId: "prof-1",
       workDate: "2026-09-20",
       startTime: "20:00",
       endTime: "02:00",
@@ -24,7 +24,7 @@ describe("mapScheduleToView", () => {
     const proto = create(ScheduleSchema, {});
 
     expect(mapScheduleToView(proto)).toEqual({
-      accountId: "",
+      profileId: "",
       workDate: "",
       startTime: "",
       endTime: "",

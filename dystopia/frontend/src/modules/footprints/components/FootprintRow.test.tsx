@@ -4,7 +4,7 @@ import { FootprintRow } from "./FootprintRow";
 import type { FootprintView } from "@/modules/footprints/types";
 
 const footprint: FootprintView = {
-  visitor: { accountId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: null },
+  visitor: { profileId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: null },
   lastVisitedAt: new Date().toISOString(),
   isUnread: false,
   visitCount: 1,

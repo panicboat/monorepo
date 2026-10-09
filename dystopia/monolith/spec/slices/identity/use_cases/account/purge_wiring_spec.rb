@@ -70,8 +70,8 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     follow_repo.follow(follower_profile_id: bystander, followee_profile_id: witness, status: "approved")
     block_repo.block(blocker_profile_id: persona_b, blocked_profile_id: bystander)
     block_repo.block(blocker_profile_id: bystander, blocked_profile_id: block_target)
-    bookmark_repo.bookmark(account_id: persona_a, post_id: bystander_post.id)
-    bookmark_repo.bookmark(account_id: bystander, post_id: witness_post.id)
+    bookmark_repo.bookmark(profile_id: persona_a, post_id: bystander_post.id)
+    bookmark_repo.bookmark(profile_id: bystander, post_id: witness_post.id)
 
     notification_repo.emit(
       recipient_profile_id: bystander,
@@ -85,15 +85,18 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
       target_resource_id: witness_post.id,
       actor_profile_id: bystander
     )
-    footprints_repo.upsert_visit(visitor_id: persona_a, visited_id: bystander)
-    footprints_repo.upsert_visit(visitor_id: bystander, visited_id: witness)
+    footprints_repo.upsert_visit(visitor_profile_id: persona_a, visited_profile_id: bystander)
+    footprints_repo.upsert_visit(visitor_profile_id: bystander, visited_profile_id: witness)
+    footprints_repo.upsert_visit(visitor_profile_id: witness, visited_profile_id: persona_a)
+    footprints_repo.set_last_read_now(profile_id: persona_a)
+    footprints_repo.set_last_read_now(profile_id: bystander)
 
     profile_a, profile_b = [persona_a, bystander].sort
     thread = messaging_repo.upsert_thread(profile_a: profile_a, profile_b: profile_b)
     messaging_repo.upsert_read_state(thread_id: thread[:id], profile_id: persona_a, last_read_message_id: nil)
     messaging_repo.upsert_read_state(thread_id: thread[:id], profile_id: bystander, last_read_message_id: nil)
-    schedule_repo.upsert(account_id: persona_a, work_date: "2026-10-01", start_time: "20:00", end_time: "02:00")
-    schedule_repo.upsert(account_id: bystander, work_date: "2026-10-01", start_time: "20:00", end_time: "02:00")
+    schedule_repo.upsert(profile_id: persona_a, work_date: "2026-10-01", start_time: "20:00", end_time: "02:00")
+    schedule_repo.upsert(profile_id: bystander, work_date: "2026-10-01", start_time: "20:00", end_time: "02:00")
 
     db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (31 * 24 * 3600))
 
@@ -114,12 +117,13 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:post__comments].where(author_profile_id: personas).count).to eq(0)
     expect(db[:social__follows].where(follower_profile_id: personas).or(followee_profile_id: personas).count).to eq(0)
     expect(db[:social__blocks].where(blocker_profile_id: personas).count).to eq(0)
-    expect(db[:bookmarks__bookmarks].where(account_id: personas).count).to eq(0)
+    expect(db[:bookmarks__bookmarks].where(profile_id: personas).count).to eq(0)
     expect(db[:notifications__notifications].where(latest_actor_profile_id: personas).count).to eq(0)
-    expect(db[:footprints__visits].where(visitor_id: personas).or(visited_id: personas).count).to eq(0)
+    expect(db[:footprints__visits].where(visitor_profile_id: personas).or(visited_profile_id: personas).count).to eq(0)
+    expect(db[:footprints__read_states].where(profile_id: personas).count).to eq(0)
     expect(db[:messaging__read_states].where(profile_id: personas).count).to eq(0)
     expect(db[:messaging__threads].where(profile_a: personas).or(profile_b: personas).count).to eq(0)
-    expect(db[:schedule__schedules].where(account_id: personas).count).to eq(0)
+    expect(db[:schedule__schedules].where(profile_id: personas).count).to eq(0)
 
     expect(db[:profile__profiles].where(id: bystander).count).to eq(1)
     expect(db[:profile__casts].where(profile_id: bystander).count).to eq(1)
@@ -129,13 +133,14 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:post__comments].where(author_profile_id: bystander).count).to eq(1)
     expect(db[:social__follows].where(follower_profile_id: bystander, followee_profile_id: witness).count).to eq(1)
     expect(db[:social__blocks].where(blocker_profile_id: bystander, blocked_profile_id: block_target).count).to eq(1)
-    expect(db[:bookmarks__bookmarks].where(account_id: bystander).count).to eq(1)
+    expect(db[:bookmarks__bookmarks].where(profile_id: bystander).count).to eq(1)
     expect(db[:notifications__notifications].where(latest_actor_profile_id: bystander).count).to eq(1)
-    expect(db[:footprints__visits].where(visitor_id: bystander, visited_id: witness).count).to eq(1)
+    expect(db[:footprints__visits].where(visitor_profile_id: bystander, visited_profile_id: witness).count).to eq(1)
+    expect(db[:footprints__read_states].where(profile_id: bystander).count).to eq(1)
     expect(db[:messaging__read_states].where(thread_id: thread[:id], profile_id: bystander).count).to eq(1)
     expect(
       db[:messaging__threads].where(id: thread[:id]).where(Sequel.|({ profile_a: bystander }, { profile_b: bystander })).count
     ).to eq(1)
-    expect(db[:schedule__schedules].where(account_id: bystander).count).to eq(1)
+    expect(db[:schedule__schedules].where(profile_id: bystander).count).to eq(1)
   end
 end

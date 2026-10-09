@@ -10,17 +10,17 @@ module Bookmarks
 
       MAX_LIMIT = 50
 
-      def call(account_id:, limit: DEFAULT_LIMIT, cursor: nil)
+      def call(profile_id:, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
 
-        rows = bookmark_repo.list(account_id: account_id, limit: limit, cursor: cursor)
+        rows = bookmark_repo.list(profile_id: profile_id, limit: limit, cursor: cursor)
 
         result = build_pagination_result(items: rows, limit: limit) do |last|
           encode_cursor(created_at: last.created_at.iso8601, id: last.id)
         end
 
         post_ids = result[:items].map(&:post_id)
-        post_protos_map = list_posts_uc.call(post_ids: post_ids, viewer_profile_id: account_id)
+        post_protos_map = list_posts_uc.call(post_ids: post_ids, viewer_profile_id: profile_id)
 
         ordered_posts = post_ids.filter_map { |id| post_protos_map[id.to_s] }
 

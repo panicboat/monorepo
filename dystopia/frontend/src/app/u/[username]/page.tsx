@@ -52,7 +52,7 @@ export default function PublicProfilePage() {
         </div>
       )}
       <SocialCountsLinks profileId={profile.id} username={profile.username} />
-      {role === "cast" && <ScheduleSection accountId={profile.id} isOwner={isOwnProfile} />}
+      {role === "cast" && <ScheduleSection profileId={profile.id} isOwner={isOwnProfile} />}
       <ProfileContentTabs
         profileId={profile.id}
         isOwnProfile={isOwnProfile}

@@ -9,9 +9,9 @@ interface UnreadCountResponse {
 }
 
 export function useFootprintsUnreadCount() {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
   const { data, error, isLoading, mutate } = useSWR<UnreadCountResponse>(
-    userId ? "/api/footprints/unread-count" : null,
+    profileId ? "/api/footprints/unread-count" : null,
     fetcher,
     { refreshInterval: 30000, revalidateOnFocus: false }
   );

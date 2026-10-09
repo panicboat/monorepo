@@ -28,13 +28,13 @@ module Bookmarks
 
       def bookmark
         authenticate_user!
-        bookmark_uc.call(account_id: current_user_id, post_id: request.message.post_id)
+        bookmark_uc.call(profile_id: current_profile_id, post_id: request.message.post_id)
         ::Bookmarks::V1::BookmarkResponse.new
       end
 
       def unbookmark
         authenticate_user!
-        unbookmark_uc.call(account_id: current_user_id, post_id: request.message.post_id)
+        unbookmark_uc.call(profile_id: current_profile_id, post_id: request.message.post_id)
         ::Bookmarks::V1::UnbookmarkResponse.new
       end
 
@@ -43,7 +43,7 @@ module Bookmarks
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        result = list_bookmarks_uc.call(account_id: current_user_id, limit: limit, cursor: cursor)
+        result = list_bookmarks_uc.call(profile_id: current_profile_id, limit: limit, cursor: cursor)
         ::Bookmarks::V1::ListBookmarksResponse.new(
           posts: result[:posts],
           next_cursor: result[:next_cursor] || "",
@@ -54,7 +54,7 @@ module Bookmarks
       def get_bookmark_status
         authenticate_user!
         statuses = get_bookmark_status_uc.call(
-          account_id: current_user_id,
+          profile_id: current_profile_id,
           post_ids: request.message.post_ids.to_a
         )
         ::Bookmarks::V1::GetBookmarkStatusResponse.new(bookmarked: statuses)

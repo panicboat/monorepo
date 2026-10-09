@@ -16,7 +16,7 @@ service FootprintsService {
 }
 
 message RecordVisitRequest {
-  string visited_account_id = 1;
+  string visited_profile_id = 1;
 }
 
 message RecordVisitResponse {}

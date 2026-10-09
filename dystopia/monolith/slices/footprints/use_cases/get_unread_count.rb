@@ -5,8 +5,8 @@ module Footprints
     class GetUnreadCount
       include Footprints::Deps[footprints_repo: "repositories.footprints_repository"]
 
-      def call(account_id:)
-        footprints_repo.count_unread(account_id: account_id)
+      def call(profile_id:)
+        footprints_repo.count_unread(profile_id: profile_id)
       end
     end
   end

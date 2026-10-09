@@ -10,11 +10,11 @@ export async function GET(req: NextRequest) {
     if (authError) return authError;
 
     const headers = await buildGrpcHeaders(req);
-    const accountId = req.nextUrl.searchParams.get("accountId") || "";
+    const profileId = req.nextUrl.searchParams.get("profileId") || "";
     const fromDate = req.nextUrl.searchParams.get("fromDate") || "";
     const toDate = req.nextUrl.searchParams.get("toDate") || "";
 
-    const res = await scheduleClient.listSchedules({ accountId, fromDate, toDate }, { headers });
+    const res = await scheduleClient.listSchedules({ profileId, fromDate, toDate }, { headers });
     return NextResponse.json({ schedules: (res.schedules || []).map(mapScheduleToView) });
   } catch (error: unknown) {
     return handleApiError(error, "ListSchedules");

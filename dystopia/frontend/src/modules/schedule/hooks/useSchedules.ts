@@ -8,9 +8,9 @@ interface ListSchedulesResponse {
   schedules: ScheduleView[];
 }
 
-export function useSchedules(accountId: string | null, fromDate: string, toDate: string) {
-  const key = accountId
-    ? `/api/schedule/list?accountId=${encodeURIComponent(accountId)}&fromDate=${fromDate}&toDate=${toDate}`
+export function useSchedules(profileId: string | null, fromDate: string, toDate: string) {
+  const key = profileId
+    ? `/api/schedule/list?profileId=${encodeURIComponent(profileId)}&fromDate=${fromDate}&toDate=${toDate}`
     : null;
 
   const { data, error, isLoading, mutate } = useSWR<ListSchedulesResponse>(key, fetcher);

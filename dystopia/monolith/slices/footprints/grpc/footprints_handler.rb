@@ -29,8 +29,8 @@ module Footprints
       def record_visit
         authenticate_user!
         record_visit_uc.call(
-          visitor_id: current_user_id,
-          visited_id: request.message.visited_account_id
+          visitor_profile_id: current_profile_id,
+          visited_profile_id: request.message.visited_profile_id
         )
         ::Footprints::V1::RecordVisitResponse.new
       end
@@ -41,18 +41,18 @@ module Footprints
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         result = list_footprints_uc.call(
-          viewer_id: current_user_id,
+          viewer_profile_id: current_profile_id,
           limit: limit,
           cursor: cursor
         )
 
-        visitor_ids = result[:rows].map { |r| r[:visitor_id] }.uniq
-        profiles_by_id = visitor_ids.each_with_object({}) do |aid, h|
-          h[aid] = get_profile.call(profile_id: aid)
+        visitor_profile_ids = result[:rows].map { |r| r[:visitor_profile_id] }.uniq
+        profiles_by_id = visitor_profile_ids.each_with_object({}) do |visitor_profile_id, h|
+          h[visitor_profile_id] = get_profile.call(profile_id: visitor_profile_id)
         end
 
         footprints = result[:rows].filter_map do |row|
-          profile = profiles_by_id[row[:visitor_id]]
+          profile = profiles_by_id[row[:visitor_profile_id]]
           next nil unless profile
 
           ::Footprints::V1::Footprint.new(
@@ -72,13 +72,13 @@ module Footprints
 
       def get_unread_count
         authenticate_user!
-        count = get_unread_count_uc.call(account_id: current_user_id)
+        count = get_unread_count_uc.call(profile_id: current_profile_id)
         ::Footprints::V1::GetUnreadCountResponse.new(count: count)
       end
 
       def mark_read
         authenticate_user!
-        mark_read_uc.call(account_id: current_user_id)
+        mark_read_uc.call(profile_id: current_profile_id)
         ::Footprints::V1::MarkReadResponse.new
       end
 

@@ -6,8 +6,8 @@ module Footprints
       include Footprints::Deps[footprints_repo: "repositories.footprints_repository"]
 
       def call(account_id:)
-        footprints_repo.delete_visits_by_account(account_id)
-        footprints_repo.delete_read_state_by_account(account_id)
+        footprints_repo.delete_visits_by_profile(account_id)
+        footprints_repo.delete_read_state_by_profile(account_id)
         nil
       end
     end
