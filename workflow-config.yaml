@@ -17,15 +17,10 @@ stacks:
         iam_role_plan: arn:aws:iam::337169763788:role/github-oidc-auth-production-github-actions-plan-role
         iam_role_apply: arn:aws:iam::337169763788:role/github-oidc-auth-production-github-actions-apply-role
     exclude:
-      # eks-production teardown中のため無効化 (Renovate PRのCI auto-applyでdestroy済stackへの再作成を防ぐ、panicboat/platform docs/runbooks/eks-production-recreate.md 参照)
+      # eks-production teardown 中のため無効化 (Renovate PR の CI auto-apply で destroy 済 stack への再作成を防ぐ)
       - environment: production
 
   - name: kubernetes
     paths:
       - "dystopia/{service}/kubernetes/overlays/{environment}"
       - "system-components/{service}/kubernetes/overlays/{environment}"
-    environments:
-      production: {}
-    exclude:
-      # eks-production teardown中のため無効化 (Renovate PRのCI auto-applyでdestroy済stackへの再作成を防ぐ、panicboat/platform docs/runbooks/eks-production-recreate.md 参照)
-      - environment: production
