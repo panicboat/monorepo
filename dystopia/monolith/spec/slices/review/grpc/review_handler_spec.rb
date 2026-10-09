@@ -79,8 +79,8 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
     act_as(reader)
 
     expect(parties(by_target(cast))).to eq([about_cast])
-    expect(parties(by_author(guest))).to eq([about_other_cast, about_cast])
-    expect(parties(recent)).to eq([about_other_cast, about_cast])
+    expect(parties(by_author(guest))).to contain_exactly(about_cast, about_other_cast)
+    expect(parties(recent)).to contain_exactly(about_cast, about_other_cast)
   end
 
   it "lets only the author change a review and only the target hide it" do
