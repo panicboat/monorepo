@@ -10,12 +10,16 @@ import {
   selectDeniedProfileId,
 } from "@/stores/authStore";
 import { myProfilesKey, resolveProfileSession, type ProfileSession } from "@/modules/profile/lib/session";
-import type { MyProfilesResponse } from "@/modules/profile/types";
+import type { MyProfilesResponse, ProfileView } from "@/modules/profile/types";
+
+const NO_PROFILES: ProfileView[] = [];
 
 export interface ProfileSessionState {
   session: ProfileSession | null;
+  profiles: ProfileView[];
   hasListError: boolean;
   retry: () => void;
+  refresh: () => Promise<void>;
 }
 
 export function useProfileSession(): ProfileSessionState {
@@ -40,11 +44,15 @@ export function useProfileSession(): ProfileSessionState {
     void mutate();
   }, [clearDeniedProfile, mutate]);
 
+  const refresh = useCallback(async () => {
+    await mutate();
+  }, [mutate]);
+
   useEffect(() => {
     if (isResolved && resolvedProfileId !== activeProfileId) {
       setActiveProfile(resolvedProfileId);
     }
   }, [isResolved, resolvedProfileId, activeProfileId, setActiveProfile]);
 
-  return { session, hasListError: !data && !!error, retry };
+  return { session, profiles: data?.profiles ?? NO_PROFILES, hasListError: !data && !!error, retry, refresh };
 }

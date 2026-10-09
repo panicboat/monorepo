@@ -35,8 +35,24 @@ vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({
 }));
 
 const { SideNav } = await import("./SideNav");
+const { AccountProfilesProvider } = await import("@/modules/profile/context/AccountProfilesContext");
+const { emptyProfileView } = await import("@/modules/profile/lib/mappers");
 
 describe("SideNav", () => {
+  it("offers the account's other profiles to switch to", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    const profiles = [{ ...emptyProfileView("p2"), username: "second_persona" }];
+
+    const html = renderToStaticMarkup(
+      <AccountProfilesProvider value={{ profiles, switchProfile: () => {}, refresh: async () => {} }}>
+        <SideNav />
+      </AccountProfilesProvider>
+    );
+
+    expect(html).toContain("プロフィールを切り替え");
+    expect(html).toContain("@second_persona");
+  });
+
   it("links to my karte when the viewer has karte access", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
 

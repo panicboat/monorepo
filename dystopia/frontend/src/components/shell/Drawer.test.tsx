@@ -74,8 +74,25 @@ vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({
 }));
 
 const { Drawer } = await import("./Drawer");
+const { AccountProfilesProvider } = await import("@/modules/profile/context/AccountProfilesContext");
+const { emptyProfileView } = await import("@/modules/profile/lib/mappers");
 
 describe("Drawer", () => {
+  it("offers the account's other profiles to switch to", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    profileMocks.useProfile.mockReturnValue({ profile: null });
+    const profiles = [{ ...emptyProfileView("p2"), username: "second_persona" }];
+
+    const html = renderToStaticMarkup(
+      <AccountProfilesProvider value={{ profiles, switchProfile: () => {}, refresh: async () => {} }}>
+        <Drawer open onClose={() => {}} onOpen={() => {}} />
+      </AccountProfilesProvider>
+    );
+
+    expect(html).toContain("プロフィールを切り替え");
+    expect(html).toContain("@second_persona");
+  });
+
   it("has no standalone oshi menu entry", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
     profileMocks.useProfile.mockReturnValue({ profile: null });

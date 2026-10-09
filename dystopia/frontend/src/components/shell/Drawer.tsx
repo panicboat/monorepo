@@ -14,6 +14,7 @@ import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { useNotificationPreferences } from "@/modules/notifications/hooks";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
+import { ProfileSwitcher } from "@/modules/profile/components/ProfileSwitcher";
 import { classifySwipeDirection, clampDrawerOffset, shouldToggleDrawer, type SwipeDirection } from "./drawerSwipe";
 
 const NAV_ITEMS = [
@@ -244,6 +245,8 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
             </Link>
           )}
         </nav>
+
+        <ProfileSwitcher />
 
         <div className="border-t border-border px-4 py-3">
           <button

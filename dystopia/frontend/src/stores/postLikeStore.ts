@@ -104,3 +104,8 @@ export const usePostLikeStore = create<PostLikeState>()((set, get) => ({
   isLiked: (postId, fallback = false) => get().entries[postId]?.liked ?? fallback,
   getLikesCount: (postId, fallback = 0) => get().entries[postId]?.likesCount ?? fallback,
 }));
+
+// Like state belongs to the acting profile; seed() keeps existing entries, so they must not survive a change of profile.
+useAuthStore.subscribe((state, previous) => {
+  if (state.activeProfileId !== previous.activeProfileId) usePostLikeStore.setState({ entries: {} });
+});

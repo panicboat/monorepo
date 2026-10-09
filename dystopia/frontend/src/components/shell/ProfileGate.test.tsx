@@ -14,7 +14,6 @@ describe("ProfileGate", () => {
     const headings = [
       ["error", "プロフィールを読み込めませんでした"],
       ["unavailable", "このプロフィールは利用できません"],
-      ["select", "プロフィールを選択できません"],
     ] as const;
 
     for (const [reason, heading] of headings) {
@@ -25,7 +24,7 @@ describe("ProfileGate", () => {
     }
   });
 
-  it("shows retry for errors and unavailable profiles only", () => {
+  it("offers retry and sign-out for every blocked reason", () => {
     for (const reason of ["error", "unavailable"] as const) {
       const html = renderToStaticMarkup(
         <ProfileGate reason={reason} onRetry={() => {}} onSignOut={() => {}} />
@@ -33,12 +32,6 @@ describe("ProfileGate", () => {
       expect(html).toContain("再試行");
       expect(html).toContain("ログアウト");
     }
-
-    const selectHtml = renderToStaticMarkup(
-      <ProfileGate reason="select" onRetry={() => {}} onSignOut={() => {}} />
-    );
-    expect(selectHtml).not.toContain("再試行");
-    expect(selectHtml).toContain("ログアウト");
   });
 
   it("calls retry and sign-out handlers from their buttons", async () => {
