@@ -69,6 +69,20 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
     expect(db[:review__entries].count).to eq(0)
   end
 
+  it "rejects a review about another profile of the author's own account, and about the author itself" do
+    owner = create_account(role: 2)
+    persona = create_account_with_profile(account_id: owner, username: "review_persona")
+    sibling = create_account_with_profile(account_id: owner, username: "review_sibling")
+    Hanami.app.slices[:profile]["repositories.cast_repository"].create(profile_id: sibling)
+
+    act_as(persona)
+
+    expect { review(sibling) }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+    expect { review(persona) }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+    expect(review(cast).target_profile_id).to eq(cast)
+    expect(db[:review__entries].count).to eq(1)
+  end
+
   it "lists reviews by target, by author and in the recent list with both parties" do
     act_as(guest)
     review(cast)

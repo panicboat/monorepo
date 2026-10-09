@@ -3,7 +3,8 @@
 require "spec_helper"
 
 RSpec.describe Review::UseCases::CreateEntry do
-  let(:use_case) { described_class.new(entry_repo: entry_repo, get_role: get_role) }
+  let(:use_case) { described_class.new(entry_repo: entry_repo, get_role: get_role, same_account: same_account) }
+  let(:same_account) { double(:same_account, call: false) }
   let(:entry_repo) { double(:entry_repository) }
   let(:get_role) { double(:get_role) }
 
@@ -30,6 +31,16 @@ RSpec.describe Review::UseCases::CreateEntry do
     expect {
       use_case.call(viewer_profile_id: viewer_id, target_profile_id: target_id, rating: 1.0, body: nil)
     }.not_to raise_error
+  end
+
+  it "rejects a review about a profile of the author's own account" do
+    allow(get_role).to receive(:call).with(profile_id: target_id).and_return(2)
+    allow(same_account).to receive(:call).with(profile_id: viewer_id, other_profile_id: target_id).and_return(true)
+    expect(entry_repo).not_to receive(:create)
+
+    expect {
+      use_case.call(viewer_profile_id: viewer_id, target_profile_id: target_id, rating: 3.0, body: nil)
+    }.to raise_error(Review::UseCases::CreateEntry::CreateError, /own account/)
   end
 
   it "rejects when target is a guest" do

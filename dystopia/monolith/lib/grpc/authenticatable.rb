@@ -41,10 +41,5 @@ module Grpc
     def current_profile_id
       ::Current.profile_id
     end
-
-    # TODO: Remove once every slice reads current_profile_id.
-    def current_user_id
-      ::Current.profile_id
-    end
   end
 end

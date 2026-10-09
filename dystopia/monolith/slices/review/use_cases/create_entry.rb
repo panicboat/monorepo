@@ -10,9 +10,10 @@ module Review
 
       include Review::Deps[entry_repo: "repositories.entry_repository"]
 
-      def initialize(entry_repo: nil, get_role: nil, **kwargs)
+      def initialize(entry_repo: nil, get_role: nil, same_account: nil, **kwargs)
         super(**kwargs.merge(entry_repo: entry_repo).compact)
         @get_role = get_role
+        @same_account = same_account
       end
 
       def call(viewer_profile_id:, target_profile_id:, rating:, body:)
@@ -22,6 +23,9 @@ module Review
         target_role = get_role.call(profile_id: target_profile_id)
         raise CreateError, "Target not found" unless target_role
         raise CreateError, "Target must be a cast" unless target_role == 2
+        if same_account.call(profile_id: viewer_profile_id, other_profile_id: target_profile_id)
+          raise CreateError, "Cannot review a profile of your own account"
+        end
 
         entry_repo.create(
           author_profile_id: viewer_profile_id,
@@ -35,6 +39,10 @@ module Review
 
       def get_role
         @get_role ||= ::Profile::Slice["use_cases.get_role"]
+      end
+
+      def same_account
+        @same_account ||= ::Profile::Slice["use_cases.same_account"]
       end
     end
   end

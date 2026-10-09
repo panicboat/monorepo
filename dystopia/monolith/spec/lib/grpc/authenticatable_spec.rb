@@ -74,11 +74,4 @@ RSpec.describe Grpc::Authenticatable do
     expect(host.current_account_id).to eq("acc-1")
     expect(host.current_profile_id).to eq("prof-1")
   end
-
-  it "returns the profile id from current_user_id" do
-    Current.account_id = "acc-1"
-    Current.profile_id = "prof-1"
-
-    expect(host.current_user_id).to eq("prof-1")
-  end
 end
