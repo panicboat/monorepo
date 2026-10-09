@@ -10,11 +10,14 @@ module Review
       MAX_BODY_LENGTH = 500
       ALLOWED_RATINGS = (1..10).map { |n| n * 0.5 }.freeze
 
-      include Review::Deps[entry_repo: "repositories.entry_repository"]
+      include Review::Deps[
+        entry_repo: "repositories.entry_repository",
+        entry_parties_visible: "use_cases.entry_parties_visible"
+      ]
 
       def call(viewer_profile_id:, entry_id:, rating: nil, body: nil)
         entry = entry_repo.find_by_id(entry_id)
-        raise NotFoundError, "Entry not found" unless entry
+        raise NotFoundError, "Entry not found" unless entry && entry_parties_visible.call(entry: entry)
         raise PermissionError, "Not the author" unless entry.author_profile_id == viewer_profile_id
 
         if rating

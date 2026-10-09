@@ -42,10 +42,6 @@ module Post
         @viewer_can_see_post ||= Social::Slice["use_cases.viewer_can_see_post"]
       end
 
-      def filter_visible_posts
-        @filter_visible_posts ||= Social::Slice["use_cases.filter_visible_posts"]
-      end
-
       def find_readable_post(post_id)
         post = post_repo.find_by_id(post_id)
         return nil unless post

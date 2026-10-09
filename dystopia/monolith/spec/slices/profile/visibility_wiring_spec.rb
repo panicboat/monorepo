@@ -209,9 +209,23 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
       expect(written.map(&:target_profile_id)).to eq([shown])
     end
 
+    it "leaves a review with it out of reach for the other party" do
+      by_ghost = db[:review__entries].where(author_profile_id: ghost).get(:id)
+      about_ghost = db[:review__entries].where(target_profile_id: ghost).get(:id)
+      not_found = GRPC::Core::StatusCodes::NOT_FOUND
+
+      act_as(shown)
+      expect { rpc(Review::Grpc::ReviewHandler, :hide_entry, Review::V1::HideEntryRequest.new(entry_id: by_ghost)) }.to status(not_found)
+      expect { rpc(Review::Grpc::ReviewHandler, :unhide_entry, Review::V1::UnhideEntryRequest.new(entry_id: by_ghost)) }.to status(not_found)
+      act_as(viewer)
+      expect { rpc(Review::Grpc::ReviewHandler, :update_entry, Review::V1::UpdateEntryRequest.new(entry_id: about_ghost, rating: 1.0)) }.to status(not_found)
+      expect { rpc(Review::Grpc::ReviewHandler, :delete_entry, Review::V1::DeleteEntryRequest.new(entry_id: about_ghost)) }.to status(not_found)
+      expect(db[:review__entries].where(hidden: false, rating: 4.0).count).to eq(3)
+    end
+
     it "leaves its posts and comments out of reach for likes, comments and their lists" do
       ghost_comment = db[:post__comments].where(author_profile_id: ghost, parent_id: nil).get(:id)
-      comment_repo.create_comment(post_id: ghost_post.id, author_profile_id: shown, content: "under the post")
+      under_ghost_post = comment_repo.create_comment(post_id: ghost_post.id, author_profile_id: shown, content: "under the post")
       like_repo.profile_like(post_id: ghost_post.id, profile_id: shown)
       comment_repo.create_comment(post_id: shown_post.id, author_profile_id: viewer, content: "under the comment", parent_id: ghost_comment)
       notifications_before = db[:notifications__notifications].count
@@ -224,6 +238,13 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
       }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
       expect(rpc(Post::Grpc::CommentHandler, :list_comments, Post::V1::ListCommentsRequest.new(post_id: ghost_post.id)).comments).to be_empty
       expect(rpc(Post::Grpc::CommentHandler, :list_replies, Post::V1::ListRepliesRequest.new(comment_id: ghost_comment)).replies).to be_empty
+      expect {
+        rpc(Post::Grpc::CommentHandler, :add_comment, Post::V1::AddCommentRequest.new(post_id: shown_post.id, content: "anyone?", parent_id: under_ghost_post.id))
+      }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
+      by_shown = rpc(Post::Grpc::CommentHandler, :list_comments_by_author, Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: shown)).comments
+      by_viewer = rpc(Post::Grpc::CommentHandler, :list_comments_by_author, Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: viewer)).comments
+      expect(by_shown).to be_empty
+      expect(by_viewer.map(&:id)).to eq([shown_comment.id])
       expect(db[:post__likes].where(profile_id: stranger).count).to eq(0)
       expect(db[:post__comments].where(author_profile_id: stranger).count).to eq(0)
       expect(db[:notifications__notifications].count).to eq(notifications_before)
@@ -260,11 +281,12 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
     it "leaves no trace of its id in the conversation and has a new message rejected" do
       act_as(viewer)
       thread = rpc(Messaging::Grpc::MessagingHandler, :list_threads, Messaging::V1::ListThreadsRequest.new).threads.first
+      Messaging::Slice["repositories.messaging_repository"].insert_message(thread_id: thread.id, sender_profile_id: viewer, content: "my own line")
       messages = rpc(Messaging::Grpc::MessagingHandler, :list_messages, Messaging::V1::ListMessagesRequest.new(thread_id: thread.id)).messages
 
       expect(thread.counterpart).to be_nil
       expect(thread.last_message.sender_profile_id).to eq("")
-      expect(messages.map(&:sender_profile_id)).to eq([""])
+      expect(messages.map(&:sender_profile_id)).to contain_exactly("", viewer)
       expect {
         rpc(Messaging::Grpc::MessagingHandler, :send_message, Messaging::V1::SendMessageRequest.new(thread_id: thread.id, content: "anyone?"))
       }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)

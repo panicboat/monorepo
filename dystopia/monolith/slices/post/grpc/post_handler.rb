@@ -180,6 +180,10 @@ module Post
       def notifications_emit
         @notifications_emit ||= Notifications::Slice["use_cases.emit"]
       end
+
+      def filter_visible_posts
+        @filter_visible_posts ||= Social::Slice["use_cases.filter_visible_posts"]
+      end
     end
   end
 end
