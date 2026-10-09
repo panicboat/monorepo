@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
-import { useMessages, useTyping } from "@/modules/messaging";
+import { useMessages } from "@/modules/messaging";
 import { MessageComposer } from "@/modules/messaging/components/MessageComposer";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
@@ -19,7 +19,6 @@ export default function ChatPage() {
   const viewerId = useAuthStore(selectActiveProfileId);
 
   const { messages, hasMore, loading, send, markRead, loadMore } = useMessages(threadId || null);
-  const { typingActorId, sendTyping } = useTyping(threadId || null);
 
   useEffect(() => {
     const incoming = messages.find((m) => m.senderProfileId !== viewerId);
@@ -82,13 +81,7 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {typingActorId && typingActorId !== viewerId && (
-        <p className="px-4 py-1 text-xs text-text-secondary" aria-live="polite">
-          入力中…
-        </p>
-      )}
-
-      <MessageComposer onSend={send} onTyping={sendTyping} />
+      <MessageComposer onSend={send} />
     </main>
   );
 }

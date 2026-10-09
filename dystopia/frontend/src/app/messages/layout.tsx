@@ -1,7 +1,7 @@
 "use client";
 
-import { MessagingStreamProvider } from "@/modules/messaging";
+import { MessagingPollingProvider } from "@/modules/messaging";
 
 export default function MessagesLayout({ children }: { children: React.ReactNode }) {
-  return <MessagingStreamProvider>{children}</MessagingStreamProvider>;
+  return <MessagingPollingProvider>{children}</MessagingPollingProvider>;
 }

@@ -3,11 +3,9 @@
 import { useEffect } from "react";
 import { useSWRConfig } from "swr";
 import { useAuthStore } from "@/stores/authStore";
+import { MESSAGING_POLL_INTERVAL_MS } from "../lib/polling";
 
-const POLL_INTERVAL_MS = 6_000;
-
-// Poll instead of SSE because aborted gRPC streams can block later unary RPCs.
-export function MessagingStreamProvider({ children }: { children: React.ReactNode }) {
+export function MessagingPollingProvider({ children }: { children: React.ReactNode }) {
   const { mutate } = useSWRConfig();
 
   useEffect(() => {
@@ -17,7 +15,7 @@ export function MessagingStreamProvider({ children }: { children: React.ReactNod
       mutate("/api/messaging/threads");
     };
     tick();
-    const handle = setInterval(tick, POLL_INTERVAL_MS);
+    const handle = setInterval(tick, MESSAGING_POLL_INTERVAL_MS);
     return () => clearInterval(handle);
   }, [mutate]);
 

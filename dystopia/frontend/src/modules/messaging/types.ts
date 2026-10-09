@@ -28,8 +28,3 @@ export interface PaginatedMessagesResponse {
   nextCursor: string;
   hasMore: boolean;
 }
-
-export type StreamEventPayload =
-  | { type: "message"; data: MessageView }
-  | { type: "read_state"; data: { threadId: string; profileId: string; lastReadMessageId: string } }
-  | { type: "typing"; data: { threadId: string; profileId: string } };

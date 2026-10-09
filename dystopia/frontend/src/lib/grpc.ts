@@ -24,11 +24,6 @@ const transport = createGrpcTransport({
   baseUrl,
   interceptors: [traceContextInterceptor],
 });
-// Keep streaming RPCs on a separate transport because long-lived streams can block unary RPCs.
-const streamingTransport = createGrpcTransport({
-  baseUrl,
-  interceptors: [traceContextInterceptor],
-});
 
 export const identityClient = createClient(IdentityService, transport);
 
@@ -52,7 +47,6 @@ export const bookmarkClient = createClient(BookmarkService, transport);
 export const discoveryClient = createClient(DiscoveryService, transport);
 
 export const messagingClient = createClient(MessagingService, transport);
-export const messagingStreamingClient = createClient(MessagingService, streamingTransport);
 
 export const footprintsClient = createClient(FootprintsService, transport);
 

@@ -12,9 +12,6 @@ service MessagingService {
   rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
   rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
   rpc GetTotalUnreadCount(GetTotalUnreadCountRequest) returns (GetTotalUnreadCountResponse);
-  rpc SendTyping(SendTypingRequest) returns (SendTypingResponse);
-
-  rpc StreamEvents(StreamEventsRequest) returns (stream Event);
 }
 
 message Message {
@@ -87,31 +84,4 @@ message GetTotalUnreadCountRequest {}
 
 message GetTotalUnreadCountResponse {
   int32 count = 1;
-}
-
-message SendTypingRequest {
-  string thread_id = 1;
-}
-
-message SendTypingResponse {}
-
-message StreamEventsRequest {}
-
-message Event {
-  oneof payload {
-    Message message_event = 1;
-    ReadStateEvent read_state = 2;
-    TypingEvent typing = 3;
-  }
-}
-
-message ReadStateEvent {
-  string thread_id = 1;
-  string profile_id = 2;
-  string last_read_message_id = 3;
-}
-
-message TypingEvent {
-  string thread_id = 1;
-  string profile_id = 2;
 }

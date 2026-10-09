@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "json"
-
 module Messaging
   module UseCases
     class SendMessage
@@ -48,8 +46,6 @@ module Messaging
           content: content
         )
 
-        publish_message_event(message, sender_profile_id: sender_profile_id, recipient_profile_id: resolved_recipient_profile_id)
-
         { message: message, thread_id: thread[:id] || thread.id }
       end
 
@@ -88,32 +84,6 @@ module Messaging
       def bidirectionally_blocked?(a, b)
         social_block_repo.blocked?(blocker_profile_id: a, blocked_profile_id: b) ||
           social_block_repo.blocked?(blocker_profile_id: b, blocked_profile_id: a)
-      end
-
-      def publish_message_event(message, sender_profile_id:, recipient_profile_id:)
-        data = serialize_message(message)
-        payload = { type: "message", data: data }.to_json
-        notify("messaging_user_#{sender_profile_id}", payload)
-        notify("messaging_user_#{recipient_profile_id}", payload)
-      end
-
-      def notify(channel, payload)
-        db = messaging_repo.send(:thread_records).dataset.db
-        db.notify(channel, payload: payload)
-      rescue StandardError => e
-        Hanami.logger.warn("Messaging::SendMessage notify failed on #{channel}: #{e.class}: #{e.message}")
-        # SILENT: Notification delivery failure must not fail message persistence.
-        nil
-      end
-
-      def serialize_message(row)
-        {
-          id: (row[:id] || row.id).to_s,
-          thread_id: (row[:thread_id] || row.thread_id).to_s,
-          sender_profile_id: (row[:sender_profile_id] || row.sender_profile_id).to_s,
-          content: row[:content] || row.content,
-          created_at: (row[:created_at] || row.created_at).iso8601
-        }
       end
     end
   end
