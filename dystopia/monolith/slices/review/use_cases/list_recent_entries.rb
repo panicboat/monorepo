@@ -52,7 +52,7 @@ module Review
         not_hidden = not_hidden.select { |e| visible_target_ids.include?(e.target_profile_id) }
         return [] if not_hidden.empty?
 
-        blocked_ids = block_adapter.bidirectionally_blocked_ids(profile_id: viewer_profile_id)
+        blocked_ids = block_adapter.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id)
         not_blocked = not_hidden.reject do |e|
           blocked_ids.include?(e.author_profile_id) || blocked_ids.include?(e.target_profile_id)
         end

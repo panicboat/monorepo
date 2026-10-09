@@ -24,7 +24,7 @@ RSpec.describe Review::UseCases::FilterVisibleEntries do
 
   before do
     allow(cast_settings_repo).to receive(:find_by_profile).and_return(nil)
-    allow(block_adapter).to receive(:bidirectionally_blocked_ids).and_return([])
+    allow(block_adapter).to receive(:bidirectionally_blocked_profile_ids).and_return([])
     allow(filter_visible_posts).to receive(:call).and_return([double(:post)])
   end
 
@@ -63,14 +63,14 @@ RSpec.describe Review::UseCases::FilterVisibleEntries do
   end
 
   it "Level B2: drops an entry when the viewer is blocked with the other party (author-list case)" do
-    allow(block_adapter).to receive(:bidirectionally_blocked_ids).with(profile_id: viewer_id).and_return([other_id])
+    allow(block_adapter).to receive(:bidirectionally_blocked_profile_ids).with(profile_id: viewer_id).and_return([other_id])
     entries = [entry(author: page_owner_id, target: other_id, hidden: false)]
     result = use_case.call(viewer_profile_id: viewer_id, page_owner_profile_id: page_owner_id, entries: entries)
     expect(result).to be_empty
   end
 
   it "Level B2: drops an entry when the viewer is blocked with the other party (target-list case)" do
-    allow(block_adapter).to receive(:bidirectionally_blocked_ids).with(profile_id: viewer_id).and_return([other_id])
+    allow(block_adapter).to receive(:bidirectionally_blocked_profile_ids).with(profile_id: viewer_id).and_return([other_id])
     entries = [entry(author: other_id, target: page_owner_id, hidden: false)]
     result = use_case.call(viewer_profile_id: viewer_id, page_owner_profile_id: page_owner_id, entries: entries)
     expect(result).to be_empty

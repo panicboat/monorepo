@@ -26,7 +26,7 @@ module Review
 
         return [] unless page_owner_reachable?(viewer_profile_id, page_owner_profile_id)
 
-        blocked_ids = block_adapter.bidirectionally_blocked_ids(profile_id: viewer_profile_id)
+        blocked_ids = block_adapter.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id)
         visible.reject { |e| blocked_ids.include?(other_party_id(e, page_owner_profile_id)) }
       end
 

@@ -196,7 +196,7 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       block_repo.block(blocker_profile_id: viewer, blocked_profile_id: other_guest)
       block_repo.block(blocker_profile_id: private_cast, blocked_profile_id: viewer)
 
-      expect(Review::Adapters::BlockAdapter.new.bidirectionally_blocked_ids(profile_id: viewer)).to contain_exactly(other_guest, private_cast)
+      expect(Review::Adapters::BlockAdapter.new.bidirectionally_blocked_profile_ids(profile_id: viewer)).to contain_exactly(other_guest, private_cast)
       expect(Feed::Adapters::BlockAdapter.new.bidirectionally_blocked_profile_ids(profile_id: viewer)).to contain_exactly(other_guest, private_cast)
       expect(Feed::Adapters::FollowAdapter.new.following_profile_ids(profile_id: viewer)).to eq([public_cast])
     end

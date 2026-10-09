@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { reviewClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError, requireAuth } from "@/lib/api-helpers";
+import type { ReviewEntry } from "@/modules/review/types";
 
 type ListEntry = Awaited<ReturnType<typeof reviewClient.listEntriesByAuthor>>["entries"][number];
 
-function entryToView(e: ListEntry) {
+function entryToView(e: ListEntry): ReviewEntry {
   return {
     id: e.id,
     authorProfileId: e.authorProfileId,
