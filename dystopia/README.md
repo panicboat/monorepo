@@ -200,8 +200,21 @@ env を unset する対処を優先する。
 
 `bundle exec hanami db seed` (`dystopia/monolith/config/db/seeds.rb`) が cast と
 guest の account、プロフィール、follow / block、投稿・いいね・コメントを投入する。
-投入した account の電話番号と password、誰に何が見えるかの筋書きは、seed の完了時に
-標準出力へ表示される。
+同じ一覧は seed の完了時にも標準出力へ表示される。
+
+password はすべて `password`。
+
+| 電話番号 | role | プロフィール | 状態 |
+|---|---|---|---|
+| `+819000000101` | cast | `@yuna` (公開)、`@yuna_osaka` (公開) | プロフィールを 2 件持ち、どちらも有効 |
+| `+819000000102` | cast | `@mio` (非公開)、`@mio_kyoto` (無効化済み) | 有効なプロフィールと無効化済みのプロフィールを持つ |
+| `+819000000103` | cast | `@rin` (公開) | `@taro` を block している |
+| `+819000000104` | guest | `@taro` | `@yuna` と `@mio` を follow 済み。`@rin` から block されている |
+| `+819000000105` | guest | `@jiro` | 誰も follow していない |
+| `+819000000106` | guest | `@saburo` | `@mio` に follow を申請中 (承認待ち) |
+| `+819000000107` | guest | `@shiro` | `@rin` を follow 済み |
+
+有効な cast のプロフィールは、公開の投稿とフォロワー限定の投稿を両方持つ。
 
 - 再実行しても行は増えない。既に存在する行は読み飛ばす
 - account の id は固定している。frontend の fake Cognito adapter
