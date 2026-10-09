@@ -921,10 +921,55 @@ Task 1 の後、controller が実サーバーを起動して確認する(使い�
 
 ## Known gaps left for later plans
 
-- 件数(フォロー数・フォロワー数・いいね数・コメント数・返信数、通知・足跡・DM の未読数)は、見えない人格の分を引かない(Decisions 参照)。
+- 件数(フォロー数・フォロワー数・いいね数・コメント数・返信数、通知・足跡・DM の未読数)は、見えない人格の分を引かない(Decisions 参照)。このため、見えない人格と関係があった profile は、自分の件数と一覧の差から「削除ではなく非表示」と推測できる(例: 自分のフォロー中の件数は 2 のまま、一覧は 1 件)。件数の query に可視性の条件を足すには、social / post の repository から profile と account の表を引く必要がある。
+- 読める投稿の判定は 2 箇所にある(単体は `Post::Grpc::Handler#find_readable_post`、一括は `Post::UseCases::Posts::ListReadablePostIds`)。規則を変えるときは両方を変える。
 - 絞り込みを paging の後に行う経路(コメント、返信、通知、投稿の一覧、レビュー)は、見えない人格の分だけページが短くなることがある。
 - `GetProfile` は、見つからない profile に対して `NOT_FOUND` ではなく空の応答を返す(以前から)。
-- 退会手続き中の account 自身の session が残っている場合、その account の人格は本人からも `GetProfile` で見えない。interceptor は退会手続き中の account の request を拒否していない(以前から。ログインし直すと退会が取り消される)。
-- 既に保存されている mention の行のうち、見えない人格を指すものは、username が空で表示される(行は消さない。人格が戻ると表示も戻る)。
+- `CheckUsernameAvailability` は、見えない人格の username を「使用済み」と答える(username の重複検査は見えない人格も対象にする必要がある)。
+- `GetMedia` / `GetMediaBatch` は認証も可視判定も無い(以前から)。media の id を知っていれば、見えない人格の画像の URL を取得できる。
 - frontend の無効化・有効化・削除の画面は段 9 で作る。
 - P1a〜P8a の Known gaps はそのまま残る。
+
+## Changes after the task review and the whole-branch review
+
+Task 1 の commit は dry run と同一だった。タスクレビューは承認(重要以上の指摘なし)。ブランチ全体のレビューは、一覧に混ざる見えない人格は隠れているが、**request が名指しする見えない人格**と、**見えない人格の投稿・コメントにぶら下がるもの**が漏れていることを実測で示した。修正後の再レビューは、指摘がすべて閉じたことを確かめたうえで、同じ規則に照らして残る経路を 4 つ示した。うち 3 つを直し、1 つ(フォロー数)は Known gaps に残した。指摘はすべて、直す前に失敗する example(1 回目 14 件、2 回目 5 件)で再現してから直した。
+
+採用した規則: **見えない人格、またはその投稿・コメントを名指しする request は、存在しない id に対するのと同じ応答を返す。**
+
+| 経路 | 直す前 | 直した後 |
+|---|---|---|
+| `ListCommentsByAuthor`(見えない人格を指定) | コメントの本文が返る | 空 |
+| レビューの一覧(閲覧者がページの主) | 相手が見えない人格のレビューも返る | 返さない(相手側の可視判定を、ページの主にも適用する) |
+| `ListFollowers` / `ListFollowing` / `GetSocialCounts`(見えない人格を指定) | フォロー関係と件数が返る | 空 / 0 |
+| `ListPosts`(著者を指定)、レビューの一覧(見えない人格のページ) | 投稿は空だが `has_more` と `next_cursor` が返り、cursor から投稿の id と時刻が読める | 空、`has_more` は偽、cursor なし |
+| `LikePost` / `AddComment` / `ListComments` / `ListReplies` / `UnlikePost`(見えない人格の投稿、または見えない人格のコメントの配下) | 成功し、いいね・コメント・通知の行が増える | `GetPost` と同じ可視判定を通す。`NOT_FOUND` / 空 / 件数 0 |
+| `GetFollowStatus` / `GetLikeStatus` / `GetBookmarkStatus` | 関係が残っていると答える | 関係なしと答える(行は残り、人格が戻れば元に戻る) |
+| DM の message の `sender_profile_id` | 見えない相手の id が残る | 空(削除された人格の message と同じ) |
+| レビューを id で指定する操作(`HideEntry` / `UnhideEntry` / `UpdateEntry` / `DeleteEntry`) | 相手が見えない人格のレビューを操作でき、応答に相手の id と本文が返る | `NOT_FOUND` |
+| `ListCommentsByAuthor`(見える人格を指定) | 見えない人格の投稿に付けたコメントと、見えない人格のコメントへの返信が残る | 閲覧者が読める投稿に付いた、親コメントの著者が見えるコメントだけを返す |
+| 承認待ちのフォロー申請の件数 | 一覧には出ないのに件数に入る | 見える申請者だけを数える |
+| 保存済みの mention | 見えない人格の id が応答に残る | 解決できない人格の mention は応答に含めない(行は残る) |
+| **退会手続き中の account の行為** | 残った session から投稿・コメントなどができ、`AddComment` は `INTERNAL` になる | interceptor が操作中の人格を解決しない。行為系の RPC は無効な人格と同じ `PERMISSION_DENIED`(`profile_not_permitted`)になる。ログインし直すと退会が取り消されて元に戻る |
+
+付随する決定:
+
+- いいね・コメント・コメントの一覧は `GetPost` と同じ可視判定を通るので、非公開の cast の投稿(フォローしていない相手)と、block した・された相手の投稿にも、いいね・コメントができなくなった。これまでは投稿の id を知っていればできた。
+- 返信は、親コメントが同じ投稿のものであるときだけ作れる。これまでは別の投稿のコメントを親に指定しても返信が作れた(見えない人格とは無関係の、以前からの不具合)。
+- block の一覧は、見えない人格を載せない(block の行は残り、人格が戻れば一覧にも戻る)。
+- 見える profile の id をまとめて判定する入口を `Profile::UseCases::ListVisibleProfileIds` に、読める投稿の id をまとめて判定する入口を `Post::UseCases::Posts::ListReadablePostIds` に設けた。状態の一括取得(フォロー・いいね・ブックマーク)は、関係がある id だけをこの入口に通す。
+- `ProfileRepository#enabled_ids_by_account` は `visible_ids_by_account` に改めた(退会手続き中の account では空を返す)。
+
+確認: 直した 37 箇所を 1 つずつ元に戻し、すべて example が落ちることを確かめた。足した example は 5〜6 回繰り返して結果が変わらなかった。monolith 全体は `710 examples, 0 failures`。
+
+## Controller verification result
+
+使い捨ての database に migrate と seed を行い、`bin/grpc` と `next dev` を起動して確認した。無効化・有効化は gRPC を直接呼び、見え方は BFF(HTTP)とブラウザで確かめた。
+
+- 修正後の実行で 164 項目がすべて通った。cast の 2 つ目の人格について、有効 → 無効 → 有効 → account の退会手続き → 再ログインの 5 つの状態で、プロフィールページ・ユーザー検索・著者別の投稿・投稿の単体・フィード 2 種・投稿検索・コメント・フォロワーとフォロー中の一覧・通知・DM の thread 一覧・レビュー 3 種・足跡・スケジュール、名指しの経路(フォロワー・件数・書いたコメント・いいね・コメント・コメント一覧・thread の message)を確かめた。無効と退会手続き中ではどの応答にも人格の id と username が現れず、有効に戻すとすべて元に戻る。
+- 無効な人格への DM は 400、フォローは行を作らず、レビューは拒否される。thread は相手なしで一覧に残る。
+- 退会手続き中の account に残った session からの投稿は 403(`profile_not_permitted`)で、投稿の行は作られない。
+- 非公開の cast の投稿一覧は、フォローしていない profile には空で返る。block した相手・された相手の投稿一覧も空で返る。
+- ブラウザ(幅 1280): 無効な人格のプロフィールページは「プロフィールが見つかりませんでした。」になり、ホームのフィードから投稿が消え、メッセージ一覧の相手は「(退会)」と表示される。有効に戻すと元どおり表示される。
+- gRPC server のログの ERROR は、意図した拒否だけだった(`NOT_FOUND`、`INVALID_ARGUMENT`、`PERMISSION_DENIED`)。
+- seed は「Follow」「Block」の行を作ったと表示するが、実際には 1 行も作らない(`main` でも同じ)。block の確認は BFF から block を作って行った。
+
