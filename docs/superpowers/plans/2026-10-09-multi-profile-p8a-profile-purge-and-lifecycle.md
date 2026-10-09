@@ -1130,7 +1130,7 @@ Expected: 5 回とも `8 examples, 0 failures`(行の並びに依存していな
 cd ../.. && git add -A dystopia/monolith && git status --short && git commit -s -m "feat(dystopia/monolith): purge one profile across slices and stop the account purge on failure" && cd dystopia/monolith
 ```
 
-`git status --short` の出力が `dystopia/monolith` の下の 46 行であることを確認してから commit する。
+`git status --short` の出力が `dystopia/monolith` の下だけであることを確認してから commit する(`git add -A` の後は改名が 1 行にまとまるので 31 行、`git add -A` の前に数えると 46 行)。
 
 ---
 
