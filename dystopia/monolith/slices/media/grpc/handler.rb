@@ -2,11 +2,13 @@
 
 require "media/v1/media_service_services_pb"
 require "gruf"
+require_relative "../../../lib/grpc/authenticatable"
 
 module Media
   module Grpc
     class Handler < Gruf::Controllers::Base
       include GRPC::GenericService
+      include ::Grpc::Authenticatable
       self.marshal_class_method = :encode
       self.unmarshal_class_method = :decode
       self.service_name = "media.v1.MediaService"
@@ -30,6 +32,8 @@ module Media
       ]
 
       def get_upload_url
+        authenticate_user!
+
         media_type = media_type_enum_to_string(request.message.media_type)
 
         result = get_upload_url_uc.call(
@@ -50,6 +54,8 @@ module Media
       end
 
       def register_media
+        authenticate_user!
+
         media_type = media_type_enum_to_string(request.message.media_type)
 
         result = register_media_uc.call(
@@ -59,7 +65,8 @@ module Media
           filename: request.message.filename,
           content_type: request.message.content_type,
           size_bytes: request.message.size_bytes,
-          thumbnail_key: request.message.thumbnail_key.empty? ? nil : request.message.thumbnail_key
+          thumbnail_key: request.message.thumbnail_key.empty? ? nil : request.message.thumbnail_key,
+          uploader_profile_id: current_profile_id
         )
 
         unless result
@@ -72,6 +79,8 @@ module Media
       end
 
       def get_media
+        authenticate_account!
+
         result = get_media_uc.call(id: request.message.id)
 
         unless result
@@ -84,6 +93,8 @@ module Media
       end
 
       def get_media_batch
+        authenticate_account!
+
         result = get_media_batch_uc.call(ids: request.message.ids.to_a)
 
         ::Media::V1::GetMediaBatchResponse.new(
@@ -92,7 +103,9 @@ module Media
       end
 
       def delete_media
-        success = delete_media_uc.call(id: request.message.id)
+        authenticate_user!
+
+        success = delete_media_uc.call(id: request.message.id, profile_id: current_profile_id)
 
         ::Media::V1::DeleteMediaResponse.new(success: success)
       end
