@@ -18,6 +18,11 @@ module Messaging
       EmptyContentError = Class.new(StandardError)
       RecipientUnresolvedError = Class.new(StandardError)
 
+      def initialize(get_profile: nil, **kwargs)
+        super(**kwargs)
+        @get_profile = get_profile
+      end
+
       def call(sender_profile_id:, content:, thread_id: nil, recipient_profile_id: nil)
         raise EmptyContentError, "content is required" if content.nil? || content.to_s.strip.empty?
 
@@ -28,6 +33,7 @@ module Messaging
         )
 
         raise SelfMessageError, "sender == recipient" if sender_profile_id.to_s == resolved_recipient_profile_id.to_s
+        raise RecipientUnresolvedError, "recipient not found" unless get_profile.call(profile_id: resolved_recipient_profile_id)
         raise BlockedError, "blocked" if bidirectionally_blocked?(sender_profile_id, resolved_recipient_profile_id)
         unless authorize_message.call(sender_profile_id: sender_profile_id, recipient_profile_id: resolved_recipient_profile_id)
           raise FollowRequiredError, "follow required"
@@ -73,6 +79,10 @@ module Messaging
 
       def social_block_repo
         @social_block_repo ||= Social::Slice["repositories.block_repository"]
+      end
+
+      def get_profile
+        @get_profile ||= Profile::Slice["use_cases.get_profile"]
       end
 
       def bidirectionally_blocked?(a, b)

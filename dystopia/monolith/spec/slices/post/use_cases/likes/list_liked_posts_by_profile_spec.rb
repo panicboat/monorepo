@@ -9,7 +9,7 @@ RSpec.describe "Post::UseCases::Likes::ListLikedPostsByProfile", type: :database
   let(:like_repo) { Hanami.app.slices[:post]["repositories.like_repository"] }
   let(:profile_id) { SecureRandom.uuid_v7 }
   let(:other_profile_id) { SecureRandom.uuid_v7 }
-  let(:post) { post_repo.create_post(author_profile_id: SecureRandom.uuid_v7, content: "Liked post", visibility: "public") }
+  let(:post) { post_repo.create_post(author_profile_id: create_account_with_profile(role: 2), content: "Liked post", visibility: "public") }
 
   before { like_repo.profile_like(post_id: post.id, profile_id: profile_id) }
 

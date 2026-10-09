@@ -6,7 +6,7 @@ require "errors/validation_error"
 RSpec.describe "Schedule::UseCases::ListSchedules", type: :database do
   let(:uc) { Hanami.app.slices[:schedule]["use_cases.list_schedules"] }
   let(:save_uc) { Hanami.app.slices[:schedule]["use_cases.save_schedule"] }
-  let(:profile_id) { SecureRandom.uuid_v7 }
+  let(:profile_id) { create_account_with_profile(role: 2) }
 
   it "returns rows within the date range" do
     save_uc.call(profile_id: profile_id, work_date: "2026-09-20", start_time: "20:00", end_time: "02:00")

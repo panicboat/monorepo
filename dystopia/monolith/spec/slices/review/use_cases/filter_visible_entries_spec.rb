@@ -7,9 +7,11 @@ RSpec.describe Review::UseCases::FilterVisibleEntries do
     described_class.new(
       cast_settings_repo: cast_settings_repo,
       block_adapter: block_adapter,
-      filter_visible_posts: filter_visible_posts
+      filter_visible_posts: filter_visible_posts,
+      get_profile: get_profile
     )
   end
+  let(:get_profile) { double(:get_profile, call: double(:profile)) }
   let(:cast_settings_repo) { double(:cast_settings_repository) }
   let(:block_adapter) { double(:block_adapter) }
   let(:filter_visible_posts) { double(:filter_visible_posts) }
@@ -80,6 +82,15 @@ RSpec.describe Review::UseCases::FilterVisibleEntries do
     entries = [entry(author: page_owner_id, target: other_id, hidden: false)]
     result = use_case.call(viewer_profile_id: viewer_id, page_owner_profile_id: page_owner_id, entries: entries)
     expect(result).to eq(entries)
+  end
+
+  it "drops an entry whose other party cannot be resolved" do
+    allow(get_profile).to receive(:call).with(profile_id: other_id).and_return(nil)
+    entries = [entry(author: page_owner_id, target: other_id, hidden: false)]
+
+    result = use_case.call(viewer_profile_id: viewer_id, page_owner_profile_id: page_owner_id, entries: entries)
+
+    expect(result).to be_empty
   end
 
   it "raises when an entry has neither party as the page owner" do

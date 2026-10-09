@@ -75,7 +75,7 @@ RSpec.describe "Post::UseCases::ExtractMentions", type: :database do
     id = create_profile(username: "alice_1")
     extractor = Post::UseCases::ExtractMentions.new(profile_repo: profile_repo)
 
-    expect(profile_repo).to receive(:find_by_username).with("alice_1").once.and_call_original
+    expect(profile_repo).to receive(:find_visible_by_username).with("alice_1").once.and_call_original
 
     result = extractor.call(content: "@alice_1 @alice_1 @alice_1")
 

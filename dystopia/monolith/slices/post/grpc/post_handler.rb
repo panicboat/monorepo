@@ -37,6 +37,7 @@ module Post
         else
           ""
         end
+        rows = filter_visible_posts.call(viewer_profile_id: current_profile_id, posts: rows)
 
         ::Post::V1::ListPostsResponse.new(
           posts: present_posts(rows),
@@ -183,6 +184,10 @@ module Post
 
       def viewer_can_see_post
         @viewer_can_see_post ||= Social::Slice["use_cases.viewer_can_see_post"]
+      end
+
+      def filter_visible_posts
+        @filter_visible_posts ||= Social::Slice["use_cases.filter_visible_posts"]
       end
     end
   end

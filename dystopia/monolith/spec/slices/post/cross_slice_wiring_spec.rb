@@ -227,6 +227,24 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
       expect(replies.replies.map(&:author_profile_id)).not_to include(blocked_profile)
     end
 
+    it "lists an author's posts only to viewers who may see them" do
+      authored_by = ->(author) { rpc(Post::Grpc::PostHandler, :list_posts, Post::V1::ListPostsRequest.new(author_profile_id: author)).posts.map(&:id) }
+
+      act_as(viewer)
+      expect(authored_by.call(public_author)).to eq([public_post.id])
+      expect(authored_by.call(private_author)).to be_empty
+      expect(rpc(Post::Grpc::PostHandler, :list_posts, Post::V1::ListPostsRequest.new).posts.map(&:id)).to eq([public_post.id])
+
+      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_author, status: "approved")
+      expect(authored_by.call(private_author)).to eq([private_post.id])
+
+      Social::Slice["repositories.block_repository"].block(blocker_profile_id: public_author, blocked_profile_id: viewer)
+      expect(authored_by.call(public_author)).to be_empty
+
+      act_as(private_author)
+      expect(authored_by.call(private_author)).to eq([private_post.id])
+    end
+
     it "serves the feed with hydrated posts" do
       act_as(viewer)
 

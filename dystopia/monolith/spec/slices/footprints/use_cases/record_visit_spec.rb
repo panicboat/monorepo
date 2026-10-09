@@ -5,8 +5,8 @@ require "spec_helper"
 RSpec.describe Footprints::UseCases::RecordVisit do
   subject(:use_case) { Footprints::Slice["use_cases.record_visit"] }
 
-  let(:visitor) { SecureRandom.uuid_v7 }
-  let(:visited) { SecureRandom.uuid_v7 }
+  let(:visitor) { create_account_with_profile }
+  let(:visited) { create_account_with_profile(role: 2) }
 
   let(:visit_records) { Footprints::Slice["relations.visit_records"] }
   let(:blocks) { Social::Slice["relations.blocks"] }

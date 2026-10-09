@@ -16,7 +16,7 @@ module Post
         content.to_s.scan(MENTION_PATTERN) { matches << Regexp.last_match }
 
         profiles_by_username = matches.map { |match| match[1].downcase }.uniq.each_with_object({}) do |username, hash|
-          profile = profile_repo.find_by_username(username)
+          profile = profile_repo.find_visible_by_username(username)
           hash[username] = profile if profile
         end
 

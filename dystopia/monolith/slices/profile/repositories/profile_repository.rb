@@ -24,6 +24,18 @@ module Profile
         profiles.where { Sequel.function(:lower, :username) =~ username.downcase }.one
       end
 
+      def find_visible_by_id(id)
+        return nil unless uuid?(id)
+
+        visible_profiles.by_pk(id).one
+      end
+
+      def find_visible_by_username(username)
+        return nil if username.nil? || username.strip.empty?
+
+        visible_profiles.where { Sequel.function(:lower, :username) =~ username.downcase }.one
+      end
+
       def list_by_account(account_id)
         return [] unless uuid?(account_id)
 
@@ -85,7 +97,7 @@ module Profile
       def profile_ids_by_prefecture(prefecture)
         return [] if prefecture.nil? || prefecture.to_s.empty?
 
-        profiles.where(prefecture: prefecture).pluck(:id)
+        visible_profiles.where(prefecture: prefecture).pluck(:id)
       end
 
       def save_media(profile_id:, avatar_media_id: nil, cover_media_id: nil)
@@ -98,7 +110,7 @@ module Profile
       end
 
       def list_recent(limit:, cursor: nil, exclude_profile_ids: [], role_filter: nil)
-        scope = profiles
+        scope = visible_profiles
         scope = scope.exclude(id: exclude_profile_ids) unless exclude_profile_ids.empty?
         scope = filter_by_role(scope, role_filter)
         scope = apply_cursor(scope, cursor)
@@ -111,7 +123,7 @@ module Profile
         return [] if q.empty?
 
         pattern = "%#{q}%"
-        scope = profiles.where(
+        scope = visible_profiles.where(
           Sequel.|(
             Sequel.lit("username ILIKE ?", pattern),
             Sequel.lit("display_name ILIKE ?", pattern)
@@ -130,11 +142,25 @@ module Profile
         profiles.dataset.db[:identity__accounts].where(id: profile.account_id).get(:role)
       end
 
+      def visible_role_of(profile_id)
+        profile = find_visible_by_id(profile_id)
+        return nil unless profile
+
+        profiles.dataset.db[:identity__accounts].where(id: profile.account_id).get(:role)
+      end
+
       def delete(id)
         profiles.dataset.where(id: id).delete
       end
 
       private
+
+      # A disabled profile and every profile of a deactivated account read as nonexistent to other slices.
+      def visible_profiles
+        profiles.where(disabled_at: nil).where(
+          account_id: profiles.dataset.db[:identity__accounts].where(deactivated_at: nil).select(:id)
+        )
+      end
 
       def uuid?(value)
         UUID_FORMAT.match?(value.to_s)

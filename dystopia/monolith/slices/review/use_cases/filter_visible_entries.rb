@@ -7,10 +7,11 @@ module Review
 
       include Review::Deps[cast_settings_repo: "repositories.cast_settings_repository"]
 
-      def initialize(cast_settings_repo: nil, block_adapter: nil, filter_visible_posts: nil, **kwargs)
+      def initialize(cast_settings_repo: nil, block_adapter: nil, filter_visible_posts: nil, get_profile: nil, **kwargs)
         super(**kwargs.merge(cast_settings_repo: cast_settings_repo).compact)
         @block_adapter = block_adapter
         @filter_visible_posts = filter_visible_posts
+        @get_profile = get_profile
       end
 
       def call(viewer_profile_id:, page_owner_profile_id:, entries:)
@@ -27,7 +28,10 @@ module Review
         return [] unless page_owner_reachable?(viewer_profile_id, page_owner_profile_id)
 
         blocked_ids = block_adapter.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id)
-        visible.reject { |e| blocked_ids.include?(other_party_id(e, page_owner_profile_id)) }
+        visible.reject do |e|
+          other_party = other_party_id(e, page_owner_profile_id)
+          blocked_ids.include?(other_party) || get_profile.call(profile_id: other_party).nil?
+        end
       end
 
       private
@@ -60,6 +64,10 @@ module Review
 
       def filter_visible_posts
         @filter_visible_posts ||= ::Social::Slice["use_cases.filter_visible_posts"]
+      end
+
+      def get_profile
+        @get_profile ||= ::Profile::Slice["use_cases.get_profile"]
       end
     end
   end

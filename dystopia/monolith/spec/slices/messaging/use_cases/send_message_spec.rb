@@ -3,7 +3,8 @@
 require "spec_helper"
 
 RSpec.describe Messaging::UseCases::SendMessage do
-  let(:use_case) { described_class.new(messaging_repo: messaging_repo, authorize_message: authorize_message) }
+  let(:use_case) { described_class.new(messaging_repo: messaging_repo, authorize_message: authorize_message, get_profile: get_profile) }
+  let(:get_profile) { double(:get_profile, call: double(:profile)) }
   let(:messaging_repo)    { double(:messaging_repository) }
   let(:authorize_message) { double(:authorize_message) }
 
