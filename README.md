@@ -97,4 +97,5 @@ Each service has a directory under `clusters/<environment>/` (e.g. [`clusters/pr
 ### Related Repositories
 
 - [panicboat/platform](https://github.com/panicboat/platform) — cluster bootstrap, shared components, OIDC IAM.
-- [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — reusable GitHub Actions (`label-resolver`, `container-builder`, `terragrunt`, `auto-approve`).
+- [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — GitHub Actions that turn the changes in a PR into deploy labels and the labels into deploy targets.
+- [panicboat/panicboat-actions](https://github.com/panicboat/panicboat-actions) — GitHub Actions that run Terragrunt against panicboat's AWS accounts.
