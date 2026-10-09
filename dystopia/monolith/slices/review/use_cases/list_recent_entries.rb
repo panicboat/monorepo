@@ -23,13 +23,13 @@ module Review
         @media_adapter = media_adapter
       end
 
-      def call(viewer_account_id:, limit: 20, cursor: nil)
+      def call(viewer_profile_id:, limit: 20, cursor: nil)
         limit = normalize_limit(limit)
         page = entry_repo.list_recent(limit: limit, cursor: cursor)
         has_more = page.length > limit
         page = page.take(limit)
 
-        visible = filter_visible(viewer_account_id, page)
+        visible = filter_visible(viewer_profile_id, page)
 
         next_cursor = if has_more && page.any?
           last = page.last
@@ -44,44 +44,44 @@ module Review
 
       private
 
-      def filter_visible(viewer_account_id, entries)
+      def filter_visible(viewer_profile_id, entries)
         return [] if entries.empty?
 
         not_hidden = entries.reject(&:hidden)
-        visible_target_ids = not_hidden.map(&:target_account_id).uniq.select { |id| reviews_visible?(id) }
-        not_hidden = not_hidden.select { |e| visible_target_ids.include?(e.target_account_id) }
+        visible_target_ids = not_hidden.map(&:target_profile_id).uniq.select { |id| reviews_visible?(id) }
+        not_hidden = not_hidden.select { |e| visible_target_ids.include?(e.target_profile_id) }
         return [] if not_hidden.empty?
 
-        blocked_ids = block_adapter.bidirectionally_blocked_ids(account_id: viewer_account_id)
+        blocked_ids = block_adapter.bidirectionally_blocked_ids(profile_id: viewer_profile_id)
         not_blocked = not_hidden.reject do |e|
-          blocked_ids.include?(e.author_account_id) || blocked_ids.include?(e.target_account_id)
+          blocked_ids.include?(e.author_profile_id) || blocked_ids.include?(e.target_profile_id)
         end
         return [] if not_blocked.empty?
 
-        reachable_ids = reachable_account_ids(viewer_account_id, not_blocked)
+        reachable_ids = reachable_profile_ids(viewer_profile_id, not_blocked)
         not_blocked.select do |e|
-          reachable_ids.include?(e.author_account_id) && reachable_ids.include?(e.target_account_id)
+          reachable_ids.include?(e.author_profile_id) && reachable_ids.include?(e.target_profile_id)
         end
       end
 
-      def reachable_account_ids(viewer_account_id, entries)
-        candidate_ids = (entries.map(&:author_account_id) + entries.map(&:target_account_id)).uniq
+      def reachable_profile_ids(viewer_profile_id, entries)
+        candidate_ids = (entries.map(&:author_profile_id) + entries.map(&:target_profile_id)).uniq
         refs = candidate_ids.map { |id| AuthorRef.new(id) }
-        filter_visible_posts.call(viewer_profile_id: viewer_account_id, posts: refs).map(&:author_profile_id).to_set
+        filter_visible_posts.call(viewer_profile_id: viewer_profile_id, posts: refs).map(&:author_profile_id).to_set
       end
 
-      def reviews_visible?(target_account_id)
-        settings = cast_settings_repo.find_by_account(target_account_id)
+      def reviews_visible?(target_profile_id)
+        settings = cast_settings_repo.find_by_profile(target_profile_id)
         settings.nil? || settings.reviews_visible != false
       end
 
       def present_with_author(e, profile_cache)
-        profile = profile_cache[e.author_account_id] ||= get_profile.call(profile_id: e.author_account_id)
-        target_profile = profile_cache[e.target_account_id] ||= get_profile.call(profile_id: e.target_account_id)
+        profile = profile_cache[e.author_profile_id] ||= get_profile.call(profile_id: e.author_profile_id)
+        target_profile = profile_cache[e.target_profile_id] ||= get_profile.call(profile_id: e.target_profile_id)
         {
           id: e.id,
-          author_account_id: e.author_account_id,
-          target_account_id: e.target_account_id,
+          author_profile_id: e.author_profile_id,
+          target_profile_id: e.target_profile_id,
           author_username: profile&.username,
           author_avatar_url: avatar_url_for(profile),
           target_username: target_profile&.username,

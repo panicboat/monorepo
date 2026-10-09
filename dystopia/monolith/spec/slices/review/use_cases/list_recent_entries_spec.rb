@@ -25,12 +25,12 @@ RSpec.describe Review::UseCases::ListRecentEntries do
   let(:target_id) { "target-1" }
 
   def entry(author: author_id, target: target_id, hidden: false, id: SecureRandom.uuid)
-    double(:entry, id: id, author_account_id: author, target_account_id: target,
+    double(:entry, id: id, author_profile_id: author, target_profile_id: target,
       rating: 4.0, body: "body", hidden: hidden, created_at: Time.now, updated_at: Time.now)
   end
 
   before do
-    allow(cast_settings_repo).to receive(:find_by_account).and_return(nil)
+    allow(cast_settings_repo).to receive(:find_by_profile).and_return(nil)
     allow(block_adapter).to receive(:bidirectionally_blocked_ids).and_return([])
     allow(filter_visible_posts).to receive(:call) { |viewer_profile_id:, posts:| posts }
     allow(get_profile).to receive(:call) { |profile_id:| double(:profile, username: "user-#{profile_id}", avatar_media_id: nil) }
@@ -40,7 +40,7 @@ RSpec.describe Review::UseCases::ListRecentEntries do
     e = entry
     allow(entry_repo).to receive(:list_recent).with(limit: 20, cursor: nil).and_return([e])
 
-    result = use_case.call(viewer_account_id: viewer_id)
+    result = use_case.call(viewer_profile_id: viewer_id)
 
     expect(result[:entries].length).to eq(1)
     expect(result[:entries].first[:id]).to eq(e.id)
@@ -50,49 +50,49 @@ RSpec.describe Review::UseCases::ListRecentEntries do
     e = entry(hidden: true)
     allow(entry_repo).to receive(:list_recent).with(limit: 20, cursor: nil).and_return([e])
 
-    result = use_case.call(viewer_account_id: viewer_id)
+    result = use_case.call(viewer_profile_id: viewer_id)
 
     expect(result[:entries]).to be_empty
   end
 
   it "drops entries whose target has reviews_visible = false" do
-    allow(cast_settings_repo).to receive(:find_by_account).with(target_id).and_return(double(reviews_visible: false))
+    allow(cast_settings_repo).to receive(:find_by_profile).with(target_id).and_return(double(reviews_visible: false))
     e = entry
     allow(entry_repo).to receive(:list_recent).with(limit: 20, cursor: nil).and_return([e])
 
-    result = use_case.call(viewer_account_id: viewer_id)
+    result = use_case.call(viewer_profile_id: viewer_id)
 
     expect(result[:entries]).to be_empty
   end
 
   it "drops entries where the viewer is blocked with the author" do
-    allow(block_adapter).to receive(:bidirectionally_blocked_ids).with(account_id: viewer_id).and_return([author_id])
+    allow(block_adapter).to receive(:bidirectionally_blocked_ids).with(profile_id: viewer_id).and_return([author_id])
     e = entry
     allow(entry_repo).to receive(:list_recent).with(limit: 20, cursor: nil).and_return([e])
 
-    result = use_case.call(viewer_account_id: viewer_id)
+    result = use_case.call(viewer_profile_id: viewer_id)
 
     expect(result[:entries]).to be_empty
   end
 
   it "drops entries where the viewer is blocked with the target" do
-    allow(block_adapter).to receive(:bidirectionally_blocked_ids).with(account_id: viewer_id).and_return([target_id])
+    allow(block_adapter).to receive(:bidirectionally_blocked_ids).with(profile_id: viewer_id).and_return([target_id])
     e = entry
     allow(entry_repo).to receive(:list_recent).with(limit: 20, cursor: nil).and_return([e])
 
-    result = use_case.call(viewer_account_id: viewer_id)
+    result = use_case.call(viewer_profile_id: viewer_id)
 
     expect(result[:entries]).to be_empty
   end
 
-  it "drops entries where the author or target is unreachable (private account, not followed)" do
+  it "drops entries where the author or target is unreachable (private profile, not followed)" do
     e = entry
     allow(entry_repo).to receive(:list_recent).with(limit: 20, cursor: nil).and_return([e])
     allow(filter_visible_posts).to receive(:call) do |viewer_profile_id:, posts:|
       posts.reject { |p| p.author_profile_id == target_id }
     end
 
-    result = use_case.call(viewer_account_id: viewer_id)
+    result = use_case.call(viewer_profile_id: viewer_id)
 
     expect(result[:entries]).to be_empty
   end
@@ -103,7 +103,7 @@ RSpec.describe Review::UseCases::ListRecentEntries do
     e3 = entry(id: "e-3")
     allow(entry_repo).to receive(:list_recent).with(limit: 2, cursor: nil).and_return([e1, e2, e3])
 
-    result = use_case.call(viewer_account_id: viewer_id, limit: 2)
+    result = use_case.call(viewer_profile_id: viewer_id, limit: 2)
 
     expect(result[:has_more]).to be(true)
     expect(result[:next_cursor]).not_to be_nil
@@ -113,7 +113,7 @@ RSpec.describe Review::UseCases::ListRecentEntries do
   it "caps a large limit before querying the repository" do
     expect(entry_repo).to receive(:list_recent).with(limit: 100, cursor: nil).and_return([])
 
-    result = use_case.call(viewer_account_id: viewer_id, limit: 10_000)
+    result = use_case.call(viewer_profile_id: viewer_id, limit: 10_000)
 
     expect(result[:entries]).to eq([])
   end
@@ -121,7 +121,7 @@ RSpec.describe Review::UseCases::ListRecentEntries do
   it "clamps a negative limit to one before querying the repository" do
     expect(entry_repo).to receive(:list_recent).with(limit: 1, cursor: nil).and_return([])
 
-    result = use_case.call(viewer_account_id: viewer_id, limit: -5)
+    result = use_case.call(viewer_profile_id: viewer_id, limit: -5)
 
     expect(result[:entries]).to eq([])
   end

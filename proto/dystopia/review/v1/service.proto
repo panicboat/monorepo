@@ -19,8 +19,8 @@ service ReviewService {
 
 message ReviewEntry {
   string id = 1;
-  string author_account_id = 2;
-  string target_account_id = 3;
+  string author_profile_id = 2;
+  string target_profile_id = 3;
   string author_username = 4;
   string author_avatar_url = 5;
   double rating = 6;
@@ -33,7 +33,7 @@ message ReviewEntry {
 }
 
 message CreateEntryRequest {
-  string target_account_id = 1;
+  string target_profile_id = 1;
   double rating = 2;
   string body = 3;
 }
@@ -56,7 +56,7 @@ message UnhideEntryRequest { string entry_id = 1; }
 message UnhideEntryResponse { ReviewEntry entry = 1; }
 
 message ListEntriesByTargetRequest {
-  string target_account_id = 1;
+  string target_profile_id = 1;
   int32 limit = 2;
   string cursor = 3;
 }
@@ -67,7 +67,7 @@ message ListEntriesByTargetResponse {
 }
 
 message ListEntriesByAuthorRequest {
-  string author_account_id = 1;
+  string author_profile_id = 1;
   int32 limit = 2;
   string cursor = 3;
 }

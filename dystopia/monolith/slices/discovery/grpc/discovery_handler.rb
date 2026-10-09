@@ -51,7 +51,7 @@ module Discovery
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
         result = suggest_users_uc.call(
-          viewer_account_id: current_user_id,
+          viewer_profile_id: current_profile_id,
           limit: limit,
           cursor: cursor
         )
@@ -69,7 +69,7 @@ module Discovery
 
         result = search_posts_uc.call(
           query: request.message.query,
-          viewer_account_id: current_user_id,
+          viewer_profile_id: current_profile_id,
           limit: limit,
           cursor: cursor
         )
@@ -88,7 +88,7 @@ module Discovery
 
         result = rank_posts_uc.call(
           period: period,
-          viewer_account_id: current_user_id,
+          viewer_profile_id: current_profile_id,
           limit: limit,
           cursor: cursor
         )

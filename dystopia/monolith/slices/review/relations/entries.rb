@@ -5,8 +5,8 @@ module Review
     class Entries < Review::DB::Relation
       schema(:"review__entries", as: :entry_records, infer: false) do
         attribute :id, Types::String
-        attribute :author_account_id, Types::String
-        attribute :target_account_id, Types::String
+        attribute :author_profile_id, Types::String
+        attribute :target_profile_id, Types::String
         attribute :rating, Types::Decimal
         attribute :body, Types::String.optional
         attribute :hidden, Types::Bool

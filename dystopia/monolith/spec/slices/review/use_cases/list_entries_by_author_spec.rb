@@ -21,24 +21,24 @@ RSpec.describe Review::UseCases::ListEntriesByAuthor do
 
   let(:raw_entry) do
     double(:entry,
-      id: "e-1", author_account_id: author_id, target_account_id: "target-1",
+      id: "e-1", author_profile_id: author_id, target_profile_id: "target-1",
       rating: 2.0, body: nil, hidden: false,
       created_at: Time.now, updated_at: Time.now)
   end
 
   it "delegates filtering to FilterVisibleEntries with page_owner = author" do
     allow(entry_repo).to receive(:list_by_author)
-      .with(author_account_id: author_id, limit: 20, cursor: nil)
+      .with(author_profile_id: author_id, limit: 20, cursor: nil)
       .and_return([raw_entry])
     expect(filter_visible_entries).to receive(:call).with(
-      viewer_account_id: viewer_id, page_owner_account_id: author_id, entries: [raw_entry]
+      viewer_profile_id: viewer_id, page_owner_profile_id: author_id, entries: [raw_entry]
     ).and_return([raw_entry])
     allow(get_profile).to receive(:call).with(profile_id: author_id)
       .and_return(double(username: "author-user", avatar_media_id: nil))
     allow(get_profile).to receive(:call).with(profile_id: "target-1")
       .and_return(double(username: "target-user", avatar_media_id: nil))
 
-    result = use_case.call(viewer_account_id: viewer_id, author_account_id: author_id)
+    result = use_case.call(viewer_profile_id: viewer_id, author_profile_id: author_id)
     expect(result[:entries].first[:id]).to eq("e-1")
     expect(result[:entries].first[:author_username]).to eq("author-user")
     expect(result[:entries].first[:target_username]).to eq("target-user")

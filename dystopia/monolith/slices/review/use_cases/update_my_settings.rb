@@ -5,8 +5,8 @@ module Review
     class UpdateMySettings
       include Review::Deps[cast_settings_repo: "repositories.cast_settings_repository"]
 
-      def call(viewer_account_id:, reviews_visible:)
-        cast_settings_repo.upsert(account_id: viewer_account_id, reviews_visible: reviews_visible)
+      def call(viewer_profile_id:, reviews_visible:)
+        cast_settings_repo.upsert(profile_id: viewer_profile_id, reviews_visible: reviews_visible)
         { reviews_visible: reviews_visible }
       end
     end

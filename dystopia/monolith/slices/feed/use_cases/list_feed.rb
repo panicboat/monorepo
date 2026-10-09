@@ -14,10 +14,10 @@ module Feed
         @follow_adapter = Feed::Adapters::FollowAdapter.new
       end
 
-      def call(filter:, viewer_account_id:, prefecture: nil, limit: DEFAULT_LIMIT, cursor: nil)
+      def call(filter:, viewer_profile_id:, prefecture: nil, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
         decoded_cursor = decode_cursor(cursor)
-        excluded = @block_adapter.bidirectionally_blocked_account_ids(account_id: viewer_account_id)
+        excluded = @block_adapter.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id)
 
         author_ids = case filter
         when "all"
@@ -25,7 +25,7 @@ module Feed
         when "area"
           list_profile_ids_by_prefecture_uc.call(prefecture: prefecture)
         when "following"
-          @follow_adapter.following_account_ids(account_id: viewer_account_id)
+          @follow_adapter.following_profile_ids(profile_id: viewer_profile_id)
         else
           raise ArgumentError, "unknown filter: #{filter.inspect}"
         end

@@ -15,14 +15,14 @@ module Review
         @media_adapter = media_adapter
       end
 
-      def call(viewer_account_id:, author_account_id:, limit: 20, cursor: nil)
-        page = entry_repo.list_by_author(author_account_id: author_account_id, limit: limit, cursor: cursor)
+      def call(viewer_profile_id:, author_profile_id:, limit: 20, cursor: nil)
+        page = entry_repo.list_by_author(author_profile_id: author_profile_id, limit: limit, cursor: cursor)
         has_more = page.length > limit
         page = page.take(limit)
 
         visible = filter_visible_entries.call(
-          viewer_account_id: viewer_account_id,
-          page_owner_account_id: author_account_id,
+          viewer_profile_id: viewer_profile_id,
+          page_owner_profile_id: author_profile_id,
           entries: page
         )
 
@@ -40,12 +40,12 @@ module Review
       private
 
       def present_with_author(e, profile_cache)
-        profile = profile_cache[e.author_account_id] ||= get_profile.call(profile_id: e.author_account_id)
-        target_profile = profile_cache[e.target_account_id] ||= get_profile.call(profile_id: e.target_account_id)
+        profile = profile_cache[e.author_profile_id] ||= get_profile.call(profile_id: e.author_profile_id)
+        target_profile = profile_cache[e.target_profile_id] ||= get_profile.call(profile_id: e.target_profile_id)
         {
           id: e.id,
-          author_account_id: e.author_account_id,
-          target_account_id: e.target_account_id,
+          author_profile_id: e.author_profile_id,
+          target_profile_id: e.target_profile_id,
           author_username: profile&.username,
           author_avatar_url: avatar_url_for(profile),
           target_username: target_profile&.username,

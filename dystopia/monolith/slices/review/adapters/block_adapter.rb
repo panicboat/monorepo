@@ -3,8 +3,8 @@
 module Review
   module Adapters
     class BlockAdapter
-      def bidirectionally_blocked_ids(account_id:)
-        block_repo.bidirectionally_blocked_profile_ids(profile_id: account_id)
+      def bidirectionally_blocked_ids(profile_id:)
+        block_repo.bidirectionally_blocked_profile_ids(profile_id: profile_id)
       end
 
       private

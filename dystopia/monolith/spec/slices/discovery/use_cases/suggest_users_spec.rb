@@ -17,7 +17,7 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
     guest = make(role: 1, display_name: "G")
     other_cast = make(role: 2, display_name: "C")
 
-    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:id)
+    ids = use_case.call(viewer_profile_id: viewer, limit: 10)[:profiles].map(&:id)
 
     expect(ids).to include(guest)
     expect(ids).not_to include(other_cast)
@@ -28,13 +28,13 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
     cast = make(role: 2, display_name: "C")
     other_guest = make(role: 1, display_name: "G")
 
-    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:id)
+    ids = use_case.call(viewer_profile_id: viewer, limit: 10)[:profiles].map(&:id)
 
     expect(ids).to include(cast)
     expect(ids).not_to include(other_guest)
   end
 
-  it "excludes self, already-following, and bidirectionally-blocked accounts" do
+  it "excludes self, already-following, and bidirectionally-blocked profiles" do
     viewer = create_account_with_profile(role: 2)
     followed = make(role: 1, display_name: "F")
     blocked = make(role: 1, display_name: "B")
@@ -50,7 +50,7 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
       blocker_profile_id: blocked, blocked_profile_id: viewer, created_at: Time.now
     )
 
-    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:id)
+    ids = use_case.call(viewer_profile_id: viewer, limit: 10)[:profiles].map(&:id)
 
     expect(ids).to include(visible)
     expect(ids).not_to include(followed)
@@ -64,7 +64,7 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
     sleep 0.05
     newer = make(role: 1, display_name: "new")
 
-    ids = use_case.call(viewer_account_id: viewer, limit: 10)[:profiles].map(&:id)
+    ids = use_case.call(viewer_profile_id: viewer, limit: 10)[:profiles].map(&:id)
 
     expect(ids.index(newer)).to be < ids.index(older)
   end
@@ -80,10 +80,10 @@ RSpec.describe Discovery::UseCases::SuggestUsers do
       )
     end
 
-    first_page = use_case.call(viewer_account_id: viewer, limit: 2)
+    first_page = use_case.call(viewer_profile_id: viewer, limit: 2)
     last_profile = first_page[:profiles].last
     decoded_cursor = use_case.send(:decode_cursor, first_page[:next_cursor])
-    second_page = use_case.call(viewer_account_id: viewer, limit: 2, cursor: first_page[:next_cursor])
+    second_page = use_case.call(viewer_profile_id: viewer, limit: 2, cursor: first_page[:next_cursor])
 
     expect(decoded_cursor[:id]).to eq(last_profile.id)
     expect(decoded_cursor[:id]).not_to eq(last_profile.account_id)
