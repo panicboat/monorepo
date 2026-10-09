@@ -42,11 +42,15 @@ RSpec.describe Media::Grpc::Handler, type: :database do
     raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(code) }
   end
 
-  def register(media_id = SecureRandom.uuid_v7, media_key: key_for(Current.profile_id, media_id), thumbnail_key: "")
+  def register_as(media_type, media_id = SecureRandom.uuid_v7, media_key: key_for(Current.profile_id, media_id), thumbnail_key: "")
     rpc(:register_media, Media::V1::RegisterMediaRequest.new(
-      media_id: media_id, media_key: media_key, media_type: :MEDIA_TYPE_IMAGE, filename: "a.png", content_type: "image/png", size_bytes: 10,
+      media_id: media_id, media_key: media_key, media_type: media_type, filename: "a.png", content_type: "image/png", size_bytes: 10,
       thumbnail_key: thumbnail_key
-    )).media.id
+    )).media
+  end
+
+  def register(media_id = SecureRandom.uuid_v7, **options)
+    register_as(:MEDIA_TYPE_IMAGE, media_id, **options).id
   end
 
   def upload_url(filename = "a.png")
@@ -74,6 +78,19 @@ RSpec.describe Media::Grpc::Handler, type: :database do
     row = db[:media__files].where(id: media_id).first
     expect(row[:uploader_profile_id]).to eq(uploader)
     expect(row[:owner_account_id]).to eq(Current.account_id)
+  end
+
+  it "stores what kind of file it is and hands the same kind back" do
+    act_as(uploader)
+
+    image = register_as(:MEDIA_TYPE_IMAGE)
+    video = register_as(:MEDIA_TYPE_VIDEO)
+    by_number = register_as(2)
+
+    expect(db[:media__files].where(id: [image.id, video.id, by_number.id]).to_hash(:id, :media_type))
+      .to eq(image.id => "image", video.id => "video", by_number.id => "video")
+    expect([image.media_type, video.media_type, by_number.media_type]).to eq(%i[MEDIA_TYPE_IMAGE MEDIA_TYPE_VIDEO MEDIA_TYPE_VIDEO])
+    expect(rpc(:get_media, Media::V1::GetMediaRequest.new(id: video.id)).media.media_type).to eq(:MEDIA_TYPE_VIDEO)
   end
 
   it "issues an upload key under the acting profile, without the account in it" do

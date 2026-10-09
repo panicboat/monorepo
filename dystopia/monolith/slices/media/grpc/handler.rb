@@ -114,10 +114,11 @@ module Media
       MediaPresenter = Media::Presenters::MediaPresenter
 
       def media_type_enum_to_string(enum_value)
+        # Compare with the names: protobuf hands an enum field back as a Symbol, which never equals the numeric constants.
         case enum_value
-        when ::Media::V1::MediaType::MEDIA_TYPE_IMAGE
+        when :MEDIA_TYPE_IMAGE
           "image"
-        when ::Media::V1::MediaType::MEDIA_TYPE_VIDEO
+        when :MEDIA_TYPE_VIDEO
           "video"
         else
           "unknown"
