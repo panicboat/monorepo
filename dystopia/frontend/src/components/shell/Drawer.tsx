@@ -187,6 +187,7 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
         role="dialog"
         aria-label="メニュー"
         aria-hidden={!open}
+        inert={!open}
       >
         <div className="border-b border-border px-4 py-4">
           <Avatar
