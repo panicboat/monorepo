@@ -33,10 +33,9 @@ jobs:
         continue-on-error: true
 
       - name: Dispatch Labels
-        uses: panicboat/deploy-actions/label-dispatcher@4959f951f9004feccef54a75d3a2b7b9a9064a5c # v1.4.1
+        uses: panicboat/deploy-actions/label-dispatcher@e6348f655498106642a58c983ab3cfb2bf38a409
         with:
           pr-number: ${{ steps.pr-info.outputs.number }}
           repository: ${{ github.repository }}
           github-token: ${{ steps.app-token.outputs.token }}
           config-path: 'workflow-config.yaml'
-          deploy-actions-ref: 4959f951f9004feccef54a75d3a2b7b9a9064a5c

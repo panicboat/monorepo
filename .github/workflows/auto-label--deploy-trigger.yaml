@@ -45,13 +45,12 @@ jobs:
 
       - name: Label Resolver
         id: resolver
-        uses: panicboat/deploy-actions/label-resolver@4959f951f9004feccef54a75d3a2b7b9a9064a5c # v1.4.1
+        uses: panicboat/deploy-actions/label-resolver@e6348f655498106642a58c983ab3cfb2bf38a409
         with:
           repository: ${{ github.repository }}
           pr-number: ${{ steps.pr-info.outputs.number }}
           github-token: ${{ steps.app-token.outputs.token }}
           config-path: 'workflow-config.yaml'
-          deploy-actions-ref: 4959f951f9004feccef54a75d3a2b7b9a9064a5c
 
   deploy-terragrunt:
     name: 'Deploy Terragrunt (${{ matrix.target.service }}:${{ matrix.target.environment }})'
