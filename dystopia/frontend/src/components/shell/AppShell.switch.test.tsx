@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { createElement } from "react";
+import { createElement, useEffect } from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { mutate as globalMutate } from "swr";
@@ -9,11 +9,13 @@ import { emptyProfileView } from "@/modules/profile/lib/mappers";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const REQUEST_MS = 30;
-const push = vi.fn();
+const navigation = { pathname: "/footprints" };
+const replace = vi.fn();
+const pageMounts: (string | null)[] = [];
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/messages",
-  useRouter: () => ({ replace: vi.fn(), push }),
+  usePathname: () => navigation.pathname,
+  useRouter: () => ({ replace, push: vi.fn() }),
 }));
 vi.mock("@/components/shell/TopBar", () => ({ TopBar: () => null }));
 vi.mock("@/components/shell/BottomTab", () => ({ BottomTab: () => null }));
@@ -73,6 +75,7 @@ vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
       })),
     });
   }
+  if (url === "/api/profile" && init?.method === "POST") return json({ profile: profile("pD", "persona_d") });
   const disabling = url.match(/^\/api\/profile\/(\w+)\/disable$/);
   if (disabling) {
     disabledProfiles.add(disabling[1]);
@@ -88,13 +91,27 @@ async function mountApp() {
     import("@/components/providers/SWRProvider"),
     import("@/modules/profile/components/ProfileManager"),
   ]);
+  const PageProbe = () => {
+    useEffect(() => void pageMounts.push(useAuthStore.getState().activeProfileId), []);
+    return null;
+  };
+  const tree = () =>
+    createElement(
+      SWRProvider,
+      null,
+      createElement(AuthProvider, null, createElement(AppShell, null, createElement(PageProbe), createElement(ProfileManager)))
+    );
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
+  mounted.push(async () => {
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
   await act(async () => {
-    root.render(
-      createElement(SWRProvider, null, createElement(AuthProvider, null, createElement(AppShell, null, createElement(ProfileManager))))
-    );
+    root.render(tree());
   });
   return {
     container,
@@ -114,20 +131,37 @@ async function mountApp() {
       });
       if (!condition()) throw new Error(`the app did not settle: ${container.textContent}`);
     },
-    unmount: async () => {
+    type: async (selector: string, value: string) => {
+      const input = container.querySelector(selector) as HTMLInputElement;
+      const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
       await act(async () => {
-        root.unmount();
+        setValue?.call(input, value);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
       });
-      container.remove();
+    },
+    submit: async () => {
+      await act(async () => {
+        container.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      });
+    },
+    arriveAt: async (pathname: string) => {
+      navigation.pathname = pathname;
+      await act(async () => {
+        root.render(tree());
+      });
     },
   };
 }
 
+const mounted: (() => Promise<void>)[] = [];
+
 beforeEach(async () => {
+  navigation.pathname = "/footprints";
+  replace.mockClear();
+  pageMounts.length = 0;
   calls.length = 0;
   disabledProfiles.clear();
   disabledProfiles.add("pC");
-  push.mockClear();
   memory.clear();
   useAuthStore.getState().clearIdentity();
   useAuthStore.getState().setIdentity({ accountId: "account-A", role: "cast" });
@@ -136,7 +170,8 @@ beforeEach(async () => {
   await globalMutate(() => true, undefined, { revalidate: false });
 });
 
-afterEach(() => {
+afterEach(async () => {
+  while (mounted.length > 0) await mounted.pop()?.();
   useAuthStore.getState().clearIdentity();
 });
 
@@ -150,7 +185,6 @@ describe("AppShell with several enabled profiles", () => {
     expect(app.container.textContent).not.toContain("@persona_c");
     expect(app.container.querySelector('[data-testid="shell-mounted"]')).toBeNull();
     expect(calls.filter((call) => call.profileId !== null)).toEqual([]);
-    await app.unmount();
   });
 
   it("opens the shell as the chosen profile without leaving the current page", async () => {
@@ -161,8 +195,9 @@ describe("AppShell with several enabled profiles", () => {
     await app.until(() => app.unread() === "1");
 
     expect(useAuthStore.getState().activeProfileId).toBe("pA");
-    expect(push).not.toHaveBeenCalled();
-    await app.unmount();
+    expect(replace).not.toHaveBeenCalled();
+    expect(pageMounts).toEqual(["pA"]);
+    expect(memory.get("frontend-auth")).toContain('"activeProfileId":"pA"');
   });
 
   it("shows nothing of the previous profile after a switch, loads as the next one and goes to the top", async () => {
@@ -175,14 +210,71 @@ describe("AppShell with several enabled profiles", () => {
 
     expect(useAuthStore.getState().activeProfileId).toBe("pB");
     expect(app.unread()).toBe("0");
-    expect(push.mock.calls).toEqual([["/"]]);
+    expect(replace.mock.calls).toEqual([["/"]]);
 
     await app.until(() => app.unread() === "2");
 
     expect(calls.filter((call) => call.url === "/api/notifications/unread-count").map((call) => call.profileId)).toEqual(["pB"]);
     expect(app.switcher()).toContain("@persona_a");
     expect(app.switcher()).not.toContain("@persona_b");
-    await app.unmount();
+  });
+
+  it("does not open the page the switch was made on as the next profile", async () => {
+    useAuthStore.getState().setActiveProfile("pA");
+    const app = await mountApp();
+    await app.until(() => app.switcher().includes("@persona_b"));
+    expect(pageMounts).toEqual(["pA"]);
+
+    await app.click("@persona_b");
+    await app.until(() => app.unread() === "2");
+
+    expect(pageMounts).toEqual(["pA"]);
+
+    await app.arriveAt("/");
+
+    expect(pageMounts).toEqual(["pA", "pB"]);
+  });
+
+  it("opens that page again when the next profile navigates to it", async () => {
+    useAuthStore.getState().setActiveProfile("pA");
+    const app = await mountApp();
+    await app.until(() => app.switcher().includes("@persona_b"));
+    await app.click("@persona_b");
+    await app.arriveAt("/");
+    pageMounts.length = 0;
+
+    await app.arriveAt("/footprints");
+
+    expect(app.container.textContent).toContain("プロフィールを追加");
+  });
+
+  it("acts as a profile added from the management list even though the fetched list does not have it yet", async () => {
+    useAuthStore.getState().setActiveProfile("pA");
+    const app = await mountApp();
+    await app.until(() => app.switcher().includes("@persona_b"));
+
+    await app.click("プロフィールを追加");
+    await app.type("#displayName", "Persona D");
+    await app.type("#username", "persona_d");
+    await app.submit();
+    await app.until(() => useAuthStore.getState().activeProfileId === "pD");
+    await app.arriveAt("/");
+
+    expect(app.container.textContent).not.toContain("プロフィールを選択");
+    expect(app.switcher()).toContain("@persona_a");
+    expect(replace.mock.calls).toEqual([["/"]]);
+  });
+
+  it("ignores a second click that lands on the switcher right after a switch", async () => {
+    useAuthStore.getState().setActiveProfile("pA");
+    const app = await mountApp();
+    await app.until(() => app.switcher().includes("@persona_b"));
+
+    await app.click("@persona_b");
+    await app.click("@persona_a");
+
+    expect(useAuthStore.getState().activeProfileId).toBe("pB");
+    expect(replace.mock.calls).toEqual([["/"]]);
   });
 
   it("drops a profile disabled from the management list out of the switcher", async () => {
@@ -196,10 +288,9 @@ describe("AppShell with several enabled profiles", () => {
     expect(disabledProfiles.has("pB")).toBe(true);
     expect(useAuthStore.getState().activeProfileId).toBe("pA");
     expect(calls.filter((call) => call.url === "/api/profile/pB/disable").map((call) => call.profileId)).toEqual(["pA"]);
-    await app.unmount();
   });
 
-  it("does not offer a profile the server denied until the list is retried", async () => {
+  it("does not offer a profile the server denied", async () => {
     useAuthStore.getState().setActiveProfile("pA");
     const app = await mountApp();
     await app.until(() => app.unread() === "1");
@@ -211,7 +302,6 @@ describe("AppShell with several enabled profiles", () => {
 
     expect(app.container.textContent).toContain("@persona_b");
     expect(app.container.textContent).not.toContain("@persona_a");
-    await app.unmount();
   });
 
   it("returns to the picker when a denied profile is chosen from the switcher", async () => {
@@ -228,15 +318,13 @@ describe("AppShell with several enabled profiles", () => {
     expect(useAuthStore.getState().activeProfileId).toBeNull();
     expect(app.container.textContent).toContain("@persona_a");
     expect(app.container.textContent).not.toContain("@persona_b");
-    await app.unmount();
   });
 
-  it("keeps the stored profile across a reload", async () => {
+  it("starts as the stored profile without asking", async () => {
     useAuthStore.getState().setActiveProfile("pB");
     const app = await mountApp();
     await app.until(() => app.unread() === "2");
 
     expect(app.container.textContent).not.toContain("プロフィールを選択");
-    await app.unmount();
   });
 });

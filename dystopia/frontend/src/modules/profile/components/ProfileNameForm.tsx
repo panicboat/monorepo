@@ -8,9 +8,10 @@ import type { CreateProfilePayload } from "@/modules/profile/types";
 export interface ProfileNameFormProps {
   submitLabel: string;
   onSubmit: (payload: Required<CreateProfilePayload>) => Promise<void>;
+  onCancel?: () => void;
 }
 
-export function ProfileNameForm({ submitLabel, onSubmit }: ProfileNameFormProps) {
+export function ProfileNameForm({ submitLabel, onSubmit, onCancel }: ProfileNameFormProps) {
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +91,11 @@ export function ProfileNameForm({ submitLabel, onSubmit }: ProfileNameFormProps)
       <Button type="submit" className="w-full" disabled={submitting}>
         {submitting ? "保存中…" : submitLabel}
       </Button>
+      {onCancel && (
+        <Button type="button" variant="secondary" className="w-full" disabled={submitting} onClick={onCancel}>
+          キャンセル
+        </Button>
+      )}
     </form>
   );
 }

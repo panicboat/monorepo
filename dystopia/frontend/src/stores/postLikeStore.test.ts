@@ -7,6 +7,9 @@ vi.stubGlobal("localStorage", {
   removeItem: (key: string) => void memory.delete(key),
 });
 
+const authFetch = vi.fn();
+vi.mock("@/lib/auth/fetch", () => ({ authFetch: (...args: unknown[]) => authFetch(...args) }));
+
 const { useAuthStore } = await import("./authStore");
 const { usePostLikeStore } = await import("./postLikeStore");
 
@@ -23,6 +26,27 @@ describe("postLikeStore", () => {
     usePostLikeStore.getState().seed("post-1", false, 3);
 
     expect(usePostLikeStore.getState().isLiked("post-1")).toBe(false);
+  });
+
+  it("discards the answer to a like or unlike sent as the previous profile", async () => {
+    const answers: ((value: { likesCount: number }) => void)[] = [];
+    authFetch.mockImplementation(() => new Promise((resolve) => answers.push(resolve)));
+
+    const liking = usePostLikeStore.getState().like("post-1");
+    const unliking = usePostLikeStore.getState().unlike("post-2");
+    useAuthStore.getState().setActiveProfile("profile-b");
+    answers.forEach((answer) => answer({ likesCount: 5 }));
+    await Promise.all([liking, unliking]);
+
+    expect(usePostLikeStore.getState().entries).toEqual({});
+  });
+
+  it("records the answer to a like sent as the acting profile", async () => {
+    authFetch.mockResolvedValue({ likesCount: 5 });
+
+    await usePostLikeStore.getState().like("post-1");
+
+    expect(usePostLikeStore.getState().entries).toEqual({ "post-1": { liked: true, likesCount: 5 } });
   });
 
   it("keeps the like state while the acting profile stays the same", () => {

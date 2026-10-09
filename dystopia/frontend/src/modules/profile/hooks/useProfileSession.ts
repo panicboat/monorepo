@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { fetcher } from "@/lib/swr";
 import {
   useAuthStore,
@@ -9,7 +9,7 @@ import {
   selectActiveProfileId,
   selectDeniedProfileId,
 } from "@/stores/authStore";
-import { myProfilesKey, resolveProfileSession, type ProfileSession } from "@/modules/profile/lib/session";
+import { addToMyProfiles, myProfilesKey, resolveProfileSession, type ProfileSession } from "@/modules/profile/lib/session";
 import type { MyProfilesResponse, ProfileView } from "@/modules/profile/types";
 
 const NO_PROFILES: ProfileView[] = [];
@@ -20,6 +20,7 @@ export interface ProfileSessionState {
   hasListError: boolean;
   retry: () => void;
   refresh: () => Promise<void>;
+  append: (profile: ProfileView) => Promise<void>;
 }
 
 export function useProfileSession(): ProfileSessionState {
@@ -47,6 +48,13 @@ export function useProfileSession(): ProfileSessionState {
   const refresh = useCallback(async () => {
     await mutate();
   }, [mutate]);
+  const { mutate: mutateCache } = useSWRConfig();
+  const append = useCallback(
+    async (profile: ProfileView) => {
+      if (accountId) await addToMyProfiles(mutateCache, accountId, profile);
+    },
+    [mutateCache, accountId]
+  );
 
   useEffect(() => {
     if (isResolved && resolvedProfileId !== activeProfileId) {
@@ -54,5 +62,5 @@ export function useProfileSession(): ProfileSessionState {
     }
   }, [isResolved, resolvedProfileId, activeProfileId, setActiveProfile]);
 
-  return { session, profiles: data?.profiles ?? NO_PROFILES, hasListError: !data && !!error, retry, refresh };
+  return { session, profiles: data?.profiles ?? NO_PROFILES, hasListError: !data && !!error, retry, refresh, append };
 }

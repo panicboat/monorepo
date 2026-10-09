@@ -44,7 +44,7 @@ describe("SideNav", () => {
     const profiles = [{ ...emptyProfileView("p2"), username: "second_persona" }];
 
     const html = renderToStaticMarkup(
-      <AccountProfilesProvider value={{ profiles, switchProfile: () => {}, refresh: async () => {} }}>
+      <AccountProfilesProvider value={{ profiles, switchProfile: () => {}, refresh: async () => {}, append: async () => {} }}>
         <SideNav />
       </AccountProfilesProvider>
     );

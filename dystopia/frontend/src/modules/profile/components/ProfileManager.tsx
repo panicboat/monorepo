@@ -14,40 +14,53 @@ interface ProfileResponse {
   profile: ProfileView;
 }
 
+const ACTIONS_CLASS = "flex w-full justify-end gap-2 sm:w-auto";
+
+function handleOf(profile: ProfileView): string {
+  return profile.username ? `@${profile.username}` : "このプロフィール";
+}
+
 export function ProfileManager() {
   const activeProfileId = useAuthStore(selectActiveProfileId);
-  const { profiles, switchProfile, refresh } = useAccountProfiles();
-  const [pendingProfileId, setPendingProfileId] = useState<string | null>(null);
+  const { profiles, switchProfile, refresh, append } = useAccountProfiles();
+  const [busy, setBusy] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ProfileView | null>(null);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const change = async (profileId: string, request: () => Promise<unknown>) => {
+  const change = async (request: () => Promise<unknown>) => {
     setError(null);
-    setPendingProfileId(profileId);
+    setBusy(true);
     try {
       await request();
-      await refresh();
       return true;
     } catch (err) {
+      // FALLBACK: Use a generic message when the failure carries none.
       setError(err instanceof Error ? err.message : "変更に失敗しました");
       return false;
     } finally {
-      setPendingProfileId(null);
+      // Reload after a refusal too: it usually means the list on screen is no longer what the server holds.
+      await refresh();
+      setBusy(false);
     }
   };
 
   const disable = (profile: ProfileView) =>
-    change(profile.id, () => authFetch(`/api/profile/${encodeURIComponent(profile.id)}/disable`, { method: "POST" }));
+    change(() => authFetch(`/api/profile/${encodeURIComponent(profile.id)}/disable`, { method: "POST" }));
   const enable = (profile: ProfileView) =>
-    change(profile.id, () => authFetch(`/api/profile/${encodeURIComponent(profile.id)}/enable`, { method: "POST" }));
+    change(() => authFetch(`/api/profile/${encodeURIComponent(profile.id)}/enable`, { method: "POST" }));
   const remove = async (profile: ProfileView) => {
-    const removed = await change(profile.id, () =>
+    const removed = await change(() =>
       authFetch(`/api/profile/${encodeURIComponent(profile.id)}`, { method: "DELETE" })
     );
     if (removed) setDeleteTarget(null);
   };
+  const openDeleteDialog = (profile: ProfileView) => {
+    setError(null);
+    setDeleteTarget(profile);
+  };
   const closeDeleteDialog = () => {
+    if (busy) return;
     setError(null);
     setDeleteTarget(null);
   };
@@ -59,76 +72,77 @@ export function ProfileManager() {
         プロフィールは互いに別人として表示されます。無効にしたプロフィールは他の人から見えなくなり、いつでも有効に戻せます。
       </p>
 
-      <ul className="mt-4 divide-y divide-border border-y border-border">
-        {profiles.map((profile) => {
-          const isActive = profile.id === activeProfileId;
-          const isPending = pendingProfileId === profile.id;
-          return (
-            <li key={profile.id} className="flex flex-wrap items-center gap-3 py-3">
-              <Avatar src={profile.avatarUrl || undefined} fallback={(profile.displayName || "?").slice(0, 1)} size="md" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-text-primary">{profile.displayName || "—"}</p>
-                <p className="truncate text-xs text-text-secondary">
-                  @{profile.username || "—"}
-                  {isActive && <span className="ml-2 text-accent">使用中</span>}
-                  {profile.disabled && <span className="ml-2">無効</span>}
-                </p>
-              </div>
-              {!profile.disabled && !isActive && (
-                <>
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={isPending}
-                    aria-label={`@${profile.username} に切り替える`}
-                    onClick={() => switchProfile(profile.id)}
-                  >
-                    切り替える
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    disabled={isPending}
-                    aria-label={`@${profile.username} を無効にする`}
-                    onClick={() => disable(profile)}
-                  >
-                    無効にする
-                  </Button>
-                </>
-              )}
-              {profile.disabled && (
-                <>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    disabled={isPending}
-                    aria-label={`@${profile.username} を有効にする`}
-                    onClick={() => enable(profile)}
-                  >
-                    有効にする
-                  </Button>
-                  {!isActive && (
-                    <button
+      {profiles.length === 0 ? (
+        <p className="mt-4 text-sm text-text-secondary">読み込み中…</p>
+      ) : (
+        <ul className="mt-4 divide-y divide-border border-y border-border">
+          {profiles.map((profile) => {
+            const isActive = profile.id === activeProfileId;
+            const handle = handleOf(profile);
+            return (
+              <li key={profile.id} className="flex flex-wrap items-center gap-3 py-3">
+                <Avatar src={profile.avatarUrl || undefined} fallback={(profile.displayName || "?").slice(0, 1)} size="md" />
+                <div className="min-w-[8rem] flex-1">
+                  <p className="truncate text-sm font-bold text-text-primary">{profile.displayName || "—"}</p>
+                  <p className="truncate text-xs text-text-secondary">
+                    @{profile.username || "—"}
+                    {isActive && <span className="ml-2 text-accent">使用中</span>}
+                    {profile.disabled && <span className="ml-2">無効</span>}
+                  </p>
+                </div>
+                {!profile.disabled && !isActive && (
+                  <div className={ACTIONS_CLASS}>
+                    <Button
                       type="button"
-                      disabled={isPending}
-                      aria-label={`@${profile.username} を削除する`}
-                      onClick={() => {
-                        setError(null);
-                        setDeleteTarget(profile);
-                      }}
-                      className="h-9 rounded-full border border-red-600 px-4 text-sm font-bold text-red-600 disabled:opacity-50"
+                      size="sm"
+                      disabled={busy}
+                      aria-label={`${handle} に切り替える`}
+                      onClick={() => switchProfile(profile.id)}
                     >
-                      削除する
-                    </button>
-                  )}
-                </>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+                      切り替える
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      disabled={busy}
+                      aria-label={`${handle} を無効にする`}
+                      onClick={() => disable(profile)}
+                    >
+                      無効にする
+                    </Button>
+                  </div>
+                )}
+                {profile.disabled && (
+                  <div className={ACTIONS_CLASS}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      disabled={busy}
+                      aria-label={`${handle} を有効にする`}
+                      onClick={() => enable(profile)}
+                    >
+                      有効にする
+                    </Button>
+                    {!isActive && (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        aria-label={`${handle} を削除する`}
+                        onClick={() => openDeleteDialog(profile)}
+                        className="h-9 rounded-full border border-red-600 px-4 text-sm font-bold text-red-600 disabled:opacity-50"
+                      >
+                        削除する
+                      </button>
+                    )}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
       <p className="mt-2 text-xs text-text-secondary">使用中のプロフィールを無効にするには、先に別のプロフィールへ切り替えてください。</p>
 
       {error && deleteTarget === null && (
@@ -139,20 +153,16 @@ export function ProfileManager() {
 
       <div className="mt-6">
         {adding ? (
-          <>
-            <ProfileNameForm
-              submitLabel="追加して切り替える"
-              onSubmit={async (payload) => {
-                const res = await authFetch<ProfileResponse>("/api/profile", { method: "POST", body: payload });
-                // Refresh the list first; switching to a profile the cached list lacks resolves back to the picker.
-                await refresh();
-                switchProfile(res.profile.id);
-              }}
-            />
-            <Button type="button" variant="secondary" className="mt-3 w-full" onClick={() => setAdding(false)}>
-              キャンセル
-            </Button>
-          </>
+          <ProfileNameForm
+            submitLabel="追加して切り替える"
+            onCancel={() => setAdding(false)}
+            onSubmit={async (payload) => {
+              const res = await authFetch<ProfileResponse>("/api/profile", { method: "POST", body: payload });
+              // Put the profile into the list first; switching to a profile the cached list lacks resolves back to the picker.
+              await append(res.profile);
+              switchProfile(res.profile.id);
+            }}
+          />
         ) : (
           <Button type="button" variant="secondary" onClick={() => setAdding(true)}>
             プロフィールを追加
@@ -165,7 +175,7 @@ export function ProfileManager() {
           <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60" />
           <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface p-4">
             <Dialog.Title className="text-base font-bold text-text-primary">
-              @{deleteTarget?.username} を削除しますか？
+              {deleteTarget ? handleOf(deleteTarget) : ""} を削除しますか？
             </Dialog.Title>
             <Dialog.Description className="mt-2 text-sm text-text-secondary">
               このプロフィールの投稿・コメント・フォロー・メッセージ・レビューが削除され、元に戻せません。カルテの記録は残ります。
@@ -176,16 +186,16 @@ export function ProfileManager() {
               </p>
             )}
             <div className="mt-4 flex justify-end gap-2">
-              <Dialog.Close asChild>
-                <Button variant="secondary" size="sm">キャンセル</Button>
-              </Dialog.Close>
+              <Button type="button" variant="secondary" size="sm" disabled={busy} onClick={closeDeleteDialog}>
+                キャンセル
+              </Button>
               <button
                 type="button"
-                disabled={pendingProfileId !== null}
+                disabled={busy}
                 onClick={() => deleteTarget && remove(deleteTarget)}
                 className="h-9 rounded-full bg-red-600 px-4 text-sm font-bold text-white disabled:opacity-50"
               >
-                削除する
+                {busy ? "削除中…" : "削除する"}
               </button>
             </div>
           </Dialog.Content>

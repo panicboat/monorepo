@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { profileClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError, requireAuth } from "@/lib/api-helpers";
+import { isConnectError, GrpcCode } from "@/lib/grpc-errors";
 import { mapProfileToView } from "@/modules/profile/lib/mappers";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -15,6 +16,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
     return NextResponse.json({ profile: mapProfileToView(res.profile) });
   } catch (error: unknown) {
+    if (isConnectError(error) && error.code === GrpcCode.FAILED_PRECONDITION) {
+      return NextResponse.json({ error: "有効なプロフィールが他に無いため、無効にできません" }, { status: 422 });
+    }
     return handleApiError(error, "DisableProfile");
   }
 }

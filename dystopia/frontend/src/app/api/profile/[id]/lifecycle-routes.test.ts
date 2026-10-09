@@ -40,7 +40,7 @@ describe("profile lifecycle routes", () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(client.disableProfile.mock.calls[0][0]).toEqual({ profileId: "prof-2" });
+    expect(client.disableProfile.mock.calls[0]).toEqual([{ profileId: "prof-2" }, { headers: { "x-user-id": "acc-1" } }]);
     expect([body.profile.id, body.profile.disabled]).toEqual(["prof-2", true]);
   });
 
@@ -51,7 +51,7 @@ describe("profile lifecycle routes", () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(client.enableProfile.mock.calls[0][0]).toEqual({ profileId: "prof-2" });
+    expect(client.enableProfile.mock.calls[0]).toEqual([{ profileId: "prof-2" }, { headers: { "x-user-id": "acc-1" } }]);
     expect([body.profile.id, body.profile.disabled]).toEqual(["prof-2", false]);
   });
 
@@ -61,7 +61,7 @@ describe("profile lifecycle routes", () => {
     const res = await remove(request("DELETE"), context);
 
     expect(res.status).toBe(200);
-    expect(client.deleteProfile.mock.calls[0][0]).toEqual({ profileId: "prof-2" });
+    expect(client.deleteProfile.mock.calls[0]).toEqual([{ profileId: "prof-2" }, { headers: { "x-user-id": "acc-1" } }]);
   });
 
   it("answers 401 without an access cookie and calls nothing", async () => {
@@ -75,11 +75,29 @@ describe("profile lifecycle routes", () => {
     Object.values(client).forEach((fn) => expect(fn).not.toHaveBeenCalled());
   });
 
-  it("maps a refused change to 422 and a profile of another account to 404", async () => {
+  it("says why the last enabled profile cannot be disabled", async () => {
     client.disableProfile.mockRejectedValue(new ConnectError("last enabled profile", Code.FailedPrecondition));
-    client.deleteProfile.mockRejectedValue(new ConnectError("not found", Code.NotFound));
 
-    expect((await disable(request("POST"), context)).status).toBe(422);
+    const res = await disable(request("POST"), context);
+
+    expect(res.status).toBe(422);
+    expect((await res.json()).error).toBe("有効なプロフィールが他に無いため、無効にできません");
+  });
+
+  it("says why a profile that is still enabled cannot be deleted", async () => {
+    client.deleteProfile.mockRejectedValue(new ConnectError("not disabled", Code.FailedPrecondition));
+
+    const res = await remove(request("DELETE"), context);
+
+    expect(res.status).toBe(422);
+    expect((await res.json()).error).toBe("有効なプロフィールは削除できません。先に無効にしてください");
+  });
+
+  it("answers 404 for a profile of another account", async () => {
+    client.deleteProfile.mockRejectedValue(new ConnectError("not found", Code.NotFound));
+    client.enableProfile.mockRejectedValue(new ConnectError("not found", Code.NotFound));
+
     expect((await remove(request("DELETE"), context)).status).toBe(404);
+    expect((await enable(request("POST"), context)).status).toBe(404);
   });
 });

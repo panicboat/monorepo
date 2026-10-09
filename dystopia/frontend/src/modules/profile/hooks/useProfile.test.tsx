@@ -19,6 +19,7 @@ vi.stubGlobal("localStorage", {
 
 const { useAuthStore } = await import("@/stores/authStore");
 const { useProfile } = await import("./useProfile");
+const { AccountProfilesProvider } = await import("@/modules/profile/context/AccountProfilesContext");
 
 describe("useProfile createProfile", () => {
   beforeEach(() => {
@@ -54,6 +55,53 @@ describe("useProfile createProfile", () => {
     expect(created).toEqual(profile);
     expect(useAuthStore.getState().accountId).toBeNull();
     expect(useAuthStore.getState().activeProfileId).toBeNull();
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+});
+
+describe("useProfile saving", () => {
+  beforeEach(() => {
+    memory.clear();
+    authMocks.authFetch.mockReset();
+    authMocks.authFetch.mockResolvedValue({ profile: emptyProfileView("p1") });
+    useAuthStore.getState().clearIdentity();
+    useAuthStore.getState().setIdentity({ accountId: "account-A", role: "cast" });
+    useAuthStore.getState().setActiveProfile("p1");
+  });
+
+  it("refreshes the account's profile list after the name or the images change", async () => {
+    const refresh = vi.fn(async () => {});
+    let api: ReturnType<typeof useProfile> | undefined;
+    const Probe = () => {
+      api = useProfile();
+      return null;
+    };
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        createElement(
+          AccountProfilesProvider,
+          { value: { profiles: [], switchProfile: () => {}, refresh, append: async () => {} } },
+          createElement(Probe)
+        )
+      );
+    });
+
+    await act(async () => {
+      await api!.saveProfile({ displayName: "Renamed" });
+    });
+    expect(refresh).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await api!.saveMedia({ avatarMediaId: "media-1" });
+    });
+    expect(refresh).toHaveBeenCalledTimes(2);
 
     await act(async () => {
       root.unmount();

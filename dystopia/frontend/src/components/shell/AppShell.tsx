@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SWRConfig } from "swr";
 import {
@@ -29,6 +29,9 @@ import { resolveShellMode } from "./resolveShellMode";
 
 const AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/onboarding"];
 
+// A switch re-creates the navigation, so a double click would land on the profile just left and switch straight back.
+const SWITCH_GUARD_MS = 800;
+
 // Keep one object: a new config value on every render makes every SWR hook below re-render.
 const PROFILE_CACHE_CONFIG = { provider: () => new Map() };
 
@@ -42,9 +45,11 @@ export function AppShell({ children }: AppShellProps) {
   const activeProfileId = useAuthStore(selectActiveProfileId);
   const deniedProfileId = useAuthStore(selectDeniedProfileId);
   const setActiveProfile = useAuthStore((s) => s.setActiveProfile);
-  const { session, profiles, hasListError, retry, refresh } = useProfileSession();
+  const { session, profiles, hasListError, retry, refresh, append } = useProfileSession();
   const { signOut } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [pathSwitchedAwayFrom, setPathSwitchedAwayFrom] = useState<string | null>(null);
+  const lastSwitchAt = useRef(0);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -66,13 +71,24 @@ export function AppShell({ children }: AppShellProps) {
 
   const switchProfile = useCallback(
     (profileId: string) => {
+      if (Date.now() - lastSwitchAt.current < SWITCH_GUARD_MS) return;
+      lastSwitchAt.current = Date.now();
+      // Hold the page back until the top is reached: mounted as the next profile it would mark footprints read or leave a visit as that profile.
+      if (pathname !== "/") setPathSwitchedAwayFrom(pathname);
       setActiveProfile(profileId);
       setDrawerOpen(false);
-      router.push("/");
+      router.replace("/");
     },
-    [setActiveProfile, router]
+    [setActiveProfile, router, pathname]
   );
-  const accountProfiles = useMemo(() => ({ profiles, switchProfile, refresh }), [profiles, switchProfile, refresh]);
+  const accountProfiles = useMemo(
+    () => ({ profiles, switchProfile, refresh, append }),
+    [profiles, switchProfile, refresh, append]
+  );
+
+  useEffect(() => {
+    if (pathSwitchedAwayFrom !== null && pathSwitchedAwayFrom !== pathname) setPathSwitchedAwayFrom(null);
+  }, [pathSwitchedAwayFrom, pathname]);
 
   const mode = resolveShellMode({
     isHydrated,
@@ -124,7 +140,7 @@ export function AppShell({ children }: AppShellProps) {
           <div className="mx-auto flex w-full max-w-screen-xl flex-1">
             <SideNav />
             <main className="min-w-0 flex-1 pb-24 md:max-w-2xl md:border-x md:border-border md:pb-0">
-              {children}
+              {pathSwitchedAwayFrom === pathname ? null : children}
             </main>
             <SuggestedUsersPane />
           </div>

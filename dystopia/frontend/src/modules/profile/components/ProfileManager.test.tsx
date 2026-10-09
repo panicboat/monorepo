@@ -19,13 +19,14 @@ const profile = (id: string, username: string, disabled = false) => ({ ...emptyP
 const profiles = [profile("p1", "first"), profile("p2", "second"), profile("p3", "third", true)];
 const switchProfile = vi.fn((profileId: string) => void log.push(`switch ${profileId}`));
 const refresh = vi.fn(async () => void log.push("refresh"));
+const append = vi.fn(async (added: { id: string }) => void log.push(`append ${added.id}`));
 
 async function mount() {
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
   await act(async () => {
-    root.render(createElement(AccountProfilesProvider, { value: { profiles, switchProfile, refresh } }, createElement(ProfileManager)));
+    root.render(createElement(AccountProfilesProvider, { value: { profiles, switchProfile, refresh, append } }, createElement(ProfileManager)));
   });
   return {
     container,
@@ -74,6 +75,7 @@ describe("ProfileManager", () => {
     });
     switchProfile.mockClear();
     refresh.mockClear();
+    append.mockClear();
     useAuthStore.setState({ accountId: "account-1", role: "cast", activeProfileId: "p1" });
   });
 
@@ -136,7 +138,7 @@ describe("ProfileManager", () => {
     await view.unmount();
   });
 
-  it("adds a profile, refreshes the list and only then switches to it", async () => {
+  it("adds a profile, puts it into the list and only then switches to it", async () => {
     const view = await mount();
 
     await click(view.container, "プロフィールを追加");
@@ -147,7 +149,7 @@ describe("ProfileManager", () => {
     });
 
     expect(authFetch.mock.calls[0]).toEqual(["/api/profile", { method: "POST", body: { displayName: "Fourth", username: "fourth" } }]);
-    expect(log).toEqual(["POST /api/profile", "refresh", "switch p4"]);
+    expect(log).toEqual(["POST /api/profile", "append p4", "switch p4"]);
     await view.unmount();
   });
 
@@ -179,11 +181,11 @@ describe("ProfileManager", () => {
     await click(dialog, "削除する");
 
     expect(document.body.querySelector('[role="dialog"]')?.querySelector('[role="alert"]')?.textContent).toBe("削除できませんでした");
-    expect(refresh).not.toHaveBeenCalled();
+    expect(log).toEqual(["refresh"]);
 
     await click(dialog, "削除する");
 
-    expect(log).toEqual(["DELETE /api/profile/p3", "refresh"]);
+    expect(log).toEqual(["refresh", "DELETE /api/profile/p3", "refresh"]);
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
     await view.unmount();
   });
@@ -215,14 +217,69 @@ describe("ProfileManager", () => {
     await view.unmount();
   });
 
-  it("shows the reason and keeps the list when a change is refused", async () => {
-    authFetch.mockRejectedValue(new Error("入力内容を確認してください"));
+  it("shows the reason and reloads the list when a change is refused", async () => {
+    authFetch.mockRejectedValue(new Error("有効なプロフィールが他に無いため、無効にできません"));
     const view = await mount();
 
     await click(row(view.container, "second"), "無効にする");
 
-    expect(view.container.querySelector('[role="alert"]')?.textContent).toBe("入力内容を確認してください");
-    expect(refresh).not.toHaveBeenCalled();
+    expect(view.container.querySelector('[role="alert"]')?.textContent).toBe("有効なプロフィールが他に無いため、無効にできません");
+    expect(log).toEqual(["refresh"]);
     await view.unmount();
+  });
+
+  it("accepts no other change while one is in flight", async () => {
+    let finish: () => void = () => {};
+    authFetch.mockImplementation(() => new Promise<void>((resolve) => (finish = resolve)));
+    const view = await mount();
+
+    await click(row(view.container, "second"), "無効にする");
+    const disabledWhileBusy = Array.from(view.container.querySelectorAll("li button")).map((button) => (button as HTMLButtonElement).disabled);
+    await act(async () => {
+      finish();
+    });
+    const disabledAfterwards = Array.from(view.container.querySelectorAll("li button")).map((button) => (button as HTMLButtonElement).disabled);
+
+    expect(disabledWhileBusy).toEqual([true, true, true, true]);
+    expect(disabledAfterwards).toEqual([false, false, false, false]);
+    await view.unmount();
+  });
+
+  it("does not let the add form be cancelled while the profile is being created", async () => {
+    let finish: (value: unknown) => void = () => {};
+    authFetch.mockImplementation(() => new Promise((resolve) => (finish = resolve)));
+    const view = await mount();
+    await click(view.container, "プロフィールを追加");
+    await type(view.container.querySelector("#displayName") as HTMLInputElement, "Fourth");
+    await type(view.container.querySelector("#username") as HTMLInputElement, "fourth");
+
+    await act(async () => {
+      view.container.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    const cancel = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent === "キャンセル");
+
+    expect(cancel?.disabled).toBe(true);
+    await act(async () => {
+      finish({ profile: profile("p4", "fourth") });
+    });
+    await view.unmount();
+  });
+
+  it("shows a loading note instead of an empty list before the profiles arrive", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        createElement(AccountProfilesProvider, { value: { profiles: [], switchProfile, refresh, append } }, createElement(ProfileManager))
+      );
+    });
+
+    expect(container.textContent).toContain("読み込み中…");
+    expect(container.querySelector("li")).toBeNull();
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 });
