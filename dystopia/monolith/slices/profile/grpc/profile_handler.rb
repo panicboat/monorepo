@@ -21,6 +21,9 @@ module Profile
       rpc :SaveProfile, ::Profile::V1::SaveProfileRequest, ::Profile::V1::SaveProfileResponse
       rpc :CheckUsernameAvailability, ::Profile::V1::CheckUsernameAvailabilityRequest, ::Profile::V1::CheckUsernameAvailabilityResponse
       rpc :SaveProfileMedia, ::Profile::V1::SaveProfileMediaRequest, ::Profile::V1::SaveProfileMediaResponse
+      rpc :DisableProfile, ::Profile::V1::DisableProfileRequest, ::Profile::V1::DisableProfileResponse
+      rpc :EnableProfile, ::Profile::V1::EnableProfileRequest, ::Profile::V1::EnableProfileResponse
+      rpc :DeleteProfile, ::Profile::V1::DeleteProfileRequest, ::Profile::V1::DeleteProfileResponse
 
       include ::Profile::Deps[
         get_profile_uc: "use_cases.get_profile",
@@ -30,6 +33,9 @@ module Profile
         save_profile_uc: "use_cases.save_profile",
         check_username_uc: "use_cases.check_username_availability",
         save_media_uc: "use_cases.save_profile_media",
+        disable_profile_uc: "use_cases.disable_profile",
+        enable_profile_uc: "use_cases.enable_profile",
+        delete_profile_uc: "use_cases.delete_profile",
         profile_repository: "repositories.profile_repository",
         cast_repository: "repositories.cast_repository"
       ]
@@ -122,6 +128,37 @@ module Profile
           cover_media_id: blank_to_nil(m.cover_media_id)
         )
         build_response(::Profile::V1::SaveProfileMediaResponse, profile)
+      end
+
+      def disable_profile
+        authenticate_account!
+
+        profile = disable_profile_uc.call(account_id: current_account_id, profile_id: request.message.profile_id)
+        build_response(::Profile::V1::DisableProfileResponse, profile)
+      rescue Profile::UseCases::DisableProfile::NotFoundError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, e.message)
+      rescue Profile::UseCases::DisableProfile::LastEnabledProfileError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
+      end
+
+      def enable_profile
+        authenticate_account!
+
+        profile = enable_profile_uc.call(account_id: current_account_id, profile_id: request.message.profile_id)
+        build_response(::Profile::V1::EnableProfileResponse, profile)
+      rescue Profile::UseCases::EnableProfile::NotFoundError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, e.message)
+      end
+
+      def delete_profile
+        authenticate_account!
+
+        delete_profile_uc.call(account_id: current_account_id, profile_id: request.message.profile_id)
+        ::Profile::V1::DeleteProfileResponse.new
+      rescue Profile::UseCases::DeleteProfile::NotFoundError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, e.message)
+      rescue Profile::UseCases::DeleteProfile::NotDisabledError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
       end
 
       private

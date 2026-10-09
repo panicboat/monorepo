@@ -22,6 +22,9 @@ module Profile
         rpc :SaveProfile, ::Profile::V1::SaveProfileRequest, ::Profile::V1::SaveProfileResponse
         rpc :CheckUsernameAvailability, ::Profile::V1::CheckUsernameAvailabilityRequest, ::Profile::V1::CheckUsernameAvailabilityResponse
         rpc :SaveProfileMedia, ::Profile::V1::SaveProfileMediaRequest, ::Profile::V1::SaveProfileMediaResponse
+        rpc :DisableProfile, ::Profile::V1::DisableProfileRequest, ::Profile::V1::DisableProfileResponse
+        rpc :EnableProfile, ::Profile::V1::EnableProfileRequest, ::Profile::V1::EnableProfileResponse
+        rpc :DeleteProfile, ::Profile::V1::DeleteProfileRequest, ::Profile::V1::DeleteProfileResponse
       end
 
       Stub = Service.rpc_stub_class

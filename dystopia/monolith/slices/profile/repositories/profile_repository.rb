@@ -54,6 +54,26 @@ module Profile
         end
       end
 
+      def find_owned(account_id:, profile_id:)
+        return nil unless uuid?(account_id) && uuid?(profile_id)
+
+        profiles.where(id: profile_id, account_id: account_id).one
+      end
+
+      def disable_unless_last_enabled(account_id:, profile_id:)
+        profiles.dataset.db.transaction do
+          # Lock the account row so concurrent disables cannot both leave the account without an enabled profile.
+          profiles.dataset.db[:identity__accounts].where(id: account_id).for_update.first
+          next nil if profiles.where(account_id: account_id, disabled_at: nil).exclude(id: profile_id).count.zero?
+
+          update(profile_id, disabled_at: Time.now, updated_at: Time.now)
+        end
+      end
+
+      def enable(profile_id)
+        update(profile_id, disabled_at: nil, updated_at: Time.now)
+      end
+
       def update_profile(id, attrs)
         update(id, attrs.merge(updated_at: Time.now))
       end
