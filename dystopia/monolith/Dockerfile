@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.27
+# syntax=docker/dockerfile:1.28
 ARG RUBY_VERSION=4.0.3
 
 FROM ruby:${RUBY_VERSION}-slim AS builder
