@@ -45,6 +45,9 @@ module Profile
 
         profile_id = blank_to_nil(request.message.profile_id) || current_profile_id
         profile = get_profile_uc.call(profile_id: profile_id)
+        unless profile
+          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found")
+        end
         build_response(::Profile::V1::GetProfileResponse, profile)
       end
 

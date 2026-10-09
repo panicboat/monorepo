@@ -77,7 +77,9 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
     it "is not returned by the profile lookups, the search or the suggestions" do
       act_as(viewer)
 
-      expect(rpc(Profile::Grpc::ProfileHandler, :get_profile, Profile::V1::GetProfileRequest.new(profile_id: ghost)).profile).to be_nil
+      expect {
+        rpc(Profile::Grpc::ProfileHandler, :get_profile, Profile::V1::GetProfileRequest.new(profile_id: ghost))
+      }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
       expect {
         rpc(Profile::Grpc::ProfileHandler, :get_profile_by_username, Profile::V1::GetProfileByUsernameRequest.new(username: "ghost_cast"))
       }.to status(GRPC::Core::StatusCodes::NOT_FOUND)

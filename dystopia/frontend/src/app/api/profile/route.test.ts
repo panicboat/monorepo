@@ -42,6 +42,16 @@ describe("/api/profile", () => {
     expect((await res.json()).profile.id).toBe("prof-1");
   });
 
+  it("GET answers 404 when the monolith does not find the profile, whether by status or by an empty reply", async () => {
+    client.getProfile.mockRejectedValueOnce(new ConnectError("Profile not found", Code.NotFound));
+    const byStatus = await GET(request("GET"));
+    client.getProfile.mockResolvedValueOnce({});
+    const byEmptyReply = await GET(request("GET"));
+
+    expect([byStatus.status, byEmptyReply.status]).toEqual([404, 404]);
+    expect((await byStatus.json()).error).toBe("プロフィールが見つかりませんでした");
+  });
+
   it("POST creates a profile from the display name and the username", async () => {
     client.createProfile.mockResolvedValue({ profile: create(ProfileSchema, { id: "prof-1", username: "coco_01" }) });
 

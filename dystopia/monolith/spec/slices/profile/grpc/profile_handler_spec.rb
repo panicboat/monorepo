@@ -110,17 +110,20 @@ RSpec.describe Profile::Grpc::ProfileHandler, type: :database do
       }.to status(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
     end
 
-    it "returns no profile for a disabled profile, as for one that does not exist" do
+    it "raises NOT_FOUND for a disabled profile, exactly as for one that does not exist" do
       other = create_account_with_profile(disabled_at: Time.now)
       account_id = create_account(role: 1)
       Current.account_id = account_id
       Current.profile_id = create_account_with_profile(account_id: account_id)
+      refusal = lambda do |profile_id|
+        handler_for(::Profile::V1::GetProfileRequest.new(profile_id: profile_id)).get_profile
+        nil
+      rescue GRPC::BadStatus => e
+        [e.code, e.details]
+      end
 
-      disabled = handler_for(::Profile::V1::GetProfileRequest.new(profile_id: other)).get_profile
-      missing = handler_for(::Profile::V1::GetProfileRequest.new(profile_id: SecureRandom.uuid_v7)).get_profile
-
-      expect(disabled.profile).to be_nil
-      expect(disabled).to eq(missing)
+      expect(refusal.call(other)).to eq([GRPC::Core::StatusCodes::NOT_FOUND, "Profile not found"])
+      expect(refusal.call(other)).to eq(refusal.call(SecureRandom.uuid_v7))
     end
   end
 
