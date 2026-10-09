@@ -6,10 +6,10 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedKarteRecentResponse } from "../types";
 
 export function useRecentKarte(enabled: boolean) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedKarteRecentResponse | null): string | null => {
-    if (!enabled || !userId) return null;
+    if (!enabled || !profileId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
     return `/api/karte/recent${cursorQs}`;
