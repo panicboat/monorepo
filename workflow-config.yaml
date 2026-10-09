@@ -3,6 +3,8 @@ stacks:
     paths:
       - "dystopia/{service}"
       - "system-components/{service}"
+    attributes:
+      repository: ghcr.io/panicboat
 
   - name: terragrunt
     id: aws
