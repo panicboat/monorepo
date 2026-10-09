@@ -42,10 +42,17 @@ module Profile
         profiles.where(account_id: account_id).order { [created_at.asc, id.asc] }.to_a
       end
 
-      def enabled_ids_by_account(account_id)
+      def visible_ids_by_account(account_id)
         return [] unless uuid?(account_id)
 
-        profiles.where(account_id: account_id, disabled_at: nil).pluck(:id)
+        visible_profiles.where(account_id: account_id).pluck(:id)
+      end
+
+      def visible_ids(ids)
+        ids = ids.select { |id| uuid?(id) }
+        return [] if ids.empty?
+
+        visible_profiles.where(id: ids).pluck(:id)
       end
 
       def username_available?(username, exclude_profile_id: nil)
@@ -155,7 +162,7 @@ module Profile
 
       private
 
-      # A disabled profile and every profile of a deactivated account read as nonexistent to other slices.
+      # Profile management and the username uniqueness check must not read through this scope: they act on hidden profiles too.
       def visible_profiles
         profiles.where(disabled_at: nil).where(
           account_id: profiles.dataset.db[:identity__accounts].where(deactivated_at: nil).select(:id)

@@ -30,11 +30,20 @@ module Messaging
           encode_cursor(created_at: last.created_at.iso8601, id: last.id)
         end
 
+        counterpart_id = thread.profile_a.to_s == viewer ? thread.profile_b : thread.profile_a
+
         {
           messages: result[:items],
           next_cursor: result[:next_cursor],
-          has_more: result[:has_more]
+          has_more: result[:has_more],
+          hidden_sender_profile_id: get_profile.call(profile_id: counterpart_id) ? nil : counterpart_id
         }
+      end
+
+      private
+
+      def get_profile
+        @get_profile ||= Profile::Slice["use_cases.get_profile"]
       end
     end
   end

@@ -51,10 +51,10 @@ RSpec.describe Post::Presenters::CommentPresenter do
       expect(proto.mentions.first.username).to eq("alice_now")
     end
 
-    it "defaults to an empty username when unresolved" do
+    it "leaves out a mention whose profile is unresolved" do
       proto = described_class.to_proto(comment, mentioned_usernames: {})
 
-      expect(proto.mentions.first.username).to eq("")
+      expect(proto.mentions).to be_empty
     end
   end
 end

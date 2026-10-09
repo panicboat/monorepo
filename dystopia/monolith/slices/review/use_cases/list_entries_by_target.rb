@@ -16,6 +16,8 @@ module Review
       end
 
       def call(viewer_profile_id:, target_profile_id:, limit: 20, cursor: nil)
+        return { entries: [], next_cursor: nil, has_more: false } unless get_profile.call(profile_id: target_profile_id)
+
         page = entry_repo.list_by_target(target_profile_id: target_profile_id, limit: limit, cursor: cursor)
         has_more = page.length > limit
         page = page.take(limit)

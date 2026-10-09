@@ -13,6 +13,10 @@ module Post
         MAX_LIMIT = 50
 
         def call(author_profile_id:, viewer_profile_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
+          if profile_author_adapter.load([author_profile_id]).empty?
+            return { comments: [], posts_by_id: {}, authors: {}, mentioned_usernames: {}, next_cursor: nil, has_more: false }
+          end
+
           limit = normalize_limit(limit)
           decoded_cursor = decode_cursor(cursor)
 

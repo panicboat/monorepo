@@ -8,10 +8,10 @@ RSpec.describe Review::UseCases::FilterVisibleEntries do
       cast_settings_repo: cast_settings_repo,
       block_adapter: block_adapter,
       filter_visible_posts: filter_visible_posts,
-      get_profile: get_profile
+      list_visible_profile_ids: list_visible_profile_ids
     )
   end
-  let(:get_profile) { double(:get_profile, call: double(:profile)) }
+  let(:list_visible_profile_ids) { double(:list_visible_profile_ids) }
   let(:cast_settings_repo) { double(:cast_settings_repository) }
   let(:block_adapter) { double(:block_adapter) }
   let(:filter_visible_posts) { double(:filter_visible_posts) }
@@ -27,6 +27,7 @@ RSpec.describe Review::UseCases::FilterVisibleEntries do
   before do
     allow(cast_settings_repo).to receive(:find_by_profile).and_return(nil)
     allow(block_adapter).to receive(:bidirectionally_blocked_profile_ids).and_return([])
+    allow(list_visible_profile_ids).to receive(:call) { |profile_ids:| profile_ids }
     allow(filter_visible_posts).to receive(:call).and_return([double(:post)])
   end
 
@@ -84,13 +85,15 @@ RSpec.describe Review::UseCases::FilterVisibleEntries do
     expect(result).to eq(entries)
   end
 
-  it "drops an entry whose other party cannot be resolved" do
-    allow(get_profile).to receive(:call).with(profile_id: other_id).and_return(nil)
+  it "drops an entry whose other party is not visible, for a third-party viewer and for the page owner" do
+    allow(list_visible_profile_ids).to receive(:call).with(profile_ids: [other_id]).and_return([])
     entries = [entry(author: page_owner_id, target: other_id, hidden: false)]
 
-    result = use_case.call(viewer_profile_id: viewer_id, page_owner_profile_id: page_owner_id, entries: entries)
+    as_third_party = use_case.call(viewer_profile_id: viewer_id, page_owner_profile_id: page_owner_id, entries: entries)
+    as_page_owner = use_case.call(viewer_profile_id: page_owner_id, page_owner_profile_id: page_owner_id, entries: entries)
 
-    expect(result).to be_empty
+    expect(as_third_party).to be_empty
+    expect(as_page_owner).to be_empty
   end
 
   it "raises when an entry has neither party as the page owner" do

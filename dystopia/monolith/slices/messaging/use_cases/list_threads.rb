@@ -22,9 +22,11 @@ module Messaging
 
         threads = result[:items].map do |row|
           counterpart_id = row.profile_a.to_s == profile_id.to_s ? row.profile_b : row.profile_a
+          counterpart = get_profile.call(profile_id: counterpart_id)
           {
             row: row,
-            counterpart: get_profile.call(profile_id: counterpart_id),
+            counterpart: counterpart,
+            hidden_sender_profile_id: counterpart ? nil : counterpart_id,
             last_message: messaging_repo.last_message(thread_id: row.id),
             unread_count: messaging_repo.unread_count(thread_id: row.id, profile_id: profile_id)
           }

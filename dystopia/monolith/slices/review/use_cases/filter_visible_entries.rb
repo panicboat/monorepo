@@ -7,14 +7,15 @@ module Review
 
       include Review::Deps[cast_settings_repo: "repositories.cast_settings_repository"]
 
-      def initialize(cast_settings_repo: nil, block_adapter: nil, filter_visible_posts: nil, get_profile: nil, **kwargs)
+      def initialize(cast_settings_repo: nil, block_adapter: nil, filter_visible_posts: nil, list_visible_profile_ids: nil, **kwargs)
         super(**kwargs.merge(cast_settings_repo: cast_settings_repo).compact)
         @block_adapter = block_adapter
         @filter_visible_posts = filter_visible_posts
-        @get_profile = get_profile
+        @list_visible_profile_ids = list_visible_profile_ids
       end
 
       def call(viewer_profile_id:, page_owner_profile_id:, entries:)
+        entries = with_visible_other_party(entries, page_owner_profile_id)
         return entries if viewer_profile_id == page_owner_profile_id
         return [] if entries.empty?
 
@@ -28,13 +29,18 @@ module Review
         return [] unless page_owner_reachable?(viewer_profile_id, page_owner_profile_id)
 
         blocked_ids = block_adapter.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id)
-        visible.reject do |e|
-          other_party = other_party_id(e, page_owner_profile_id)
-          blocked_ids.include?(other_party) || get_profile.call(profile_id: other_party).nil?
-        end
+        visible.reject { |e| blocked_ids.include?(other_party_id(e, page_owner_profile_id)) }
       end
 
       private
+
+      def with_visible_other_party(entries, page_owner_profile_id)
+        return entries if entries.empty?
+
+        other_party_ids = entries.map { |e| other_party_id(e, page_owner_profile_id) }
+        visible_ids = list_visible_profile_ids.call(profile_ids: other_party_ids)
+        entries.select { |e| visible_ids.include?(other_party_id(e, page_owner_profile_id)) }
+      end
 
       def reviews_visible?(target_profile_id)
         settings = cast_settings_repo.find_by_profile(target_profile_id)
@@ -66,8 +72,8 @@ module Review
         @filter_visible_posts ||= ::Social::Slice["use_cases.filter_visible_posts"]
       end
 
-      def get_profile
-        @get_profile ||= ::Profile::Slice["use_cases.get_profile"]
+      def list_visible_profile_ids
+        @list_visible_profile_ids ||= ::Profile::Slice["use_cases.list_visible_profile_ids"]
       end
     end
   end

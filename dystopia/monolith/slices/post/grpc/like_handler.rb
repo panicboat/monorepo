@@ -20,13 +20,14 @@ module Post
       rpc :ListLikedPostsByProfile, ::Post::V1::ListLikedPostsByProfileRequest, ::Post::V1::ListLikedPostsByProfileResponse
 
       include Post::Deps[
-        list_liked_posts_by_profile_uc: "use_cases.likes.list_liked_posts_by_profile"
+        list_liked_posts_by_profile_uc: "use_cases.likes.list_liked_posts_by_profile",
+        list_readable_post_ids: "use_cases.posts.list_readable_post_ids"
       ]
 
       def like_post
         authenticate_user!
 
-        post = post_repo.find_by_id(request.message.post_id)
+        post = find_readable_post(request.message.post_id)
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless post
 
         like_repo.profile_like(post_id: request.message.post_id, profile_id: current_profile_id)
@@ -45,14 +46,15 @@ module Post
         authenticate_user!
 
         like_repo.profile_unlike(post_id: request.message.post_id, profile_id: current_profile_id)
-        ::Post::V1::UnlikePostResponse.new(likes_count: like_repo.likes_count(post_id: request.message.post_id))
+        likes_count = find_readable_post(request.message.post_id) ? like_repo.likes_count(post_id: request.message.post_id) : 0
+        ::Post::V1::UnlikePostResponse.new(likes_count: likes_count)
       end
 
       def get_like_status
         post_ids = request.message.post_ids.to_a
 
         liked = if current_profile_id
-          like_repo.profile_liked_status_batch(post_ids: post_ids, profile_id: current_profile_id)
+          readable_likes(like_repo.profile_liked_status_batch(post_ids: post_ids, profile_id: current_profile_id))
         else
           post_ids.each_with_object({}) { |id, h| h[id] = false }
         end
@@ -84,6 +86,14 @@ module Post
       end
 
       private
+
+      def readable_likes(liked)
+        liked_ids = liked.select { |_, value| value }.keys
+        return liked if liked_ids.empty?
+
+        readable_ids = list_readable_post_ids.call(post_ids: liked_ids, viewer_profile_id: current_profile_id)
+        liked.to_h { |post_id, value| [post_id, value && readable_ids.include?(post_id.to_s)] }
+      end
 
       def notifications_emit
         @notifications_emit ||= Notifications::Slice["use_cases.emit"]

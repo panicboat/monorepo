@@ -32,7 +32,7 @@ module Post
           parent = nil
           if parent_id
             parent = comment_repo.find_by_id(parent_id)
-            raise ParentNotFoundError unless parent
+            raise ParentNotFoundError unless parent && account_adapter.profile_exists?(parent.author_profile_id)
             raise CannotReplyToReplyError if parent.parent_id
           end
 

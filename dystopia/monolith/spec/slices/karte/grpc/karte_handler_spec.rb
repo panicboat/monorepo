@@ -179,6 +179,22 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
     end
   end
 
+  describe "an entry whose target's account is being deactivated" do
+    it "stays listed with an empty target name and no further entry can be written about the target" do
+      act_as(cast_account, persona_a)
+      entry = create_entry
+      db[:identity__accounts].where(id: guest_account).update(deactivated_at: Time.now)
+
+      mine = list_my.first
+
+      expect(mine.id).to eq(entry.id)
+      expect(mine.target_profile_id).to eq(guest)
+      expect(mine.target_username).to eq("")
+      expect { create_entry(body: "again") }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+      expect(db[:karte__entries].count).to eq(1)
+    end
+  end
+
   describe "#report_entry" do
     def report(entry_id)
       handler_for(::Karte::V1::ReportEntryRequest.new(entry_id: entry_id, reason: "spam")).report_entry

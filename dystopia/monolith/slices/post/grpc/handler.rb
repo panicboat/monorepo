@@ -38,6 +38,22 @@ module Post
         @media_adapter ||= Post::Adapters::MediaAdapter.new
       end
 
+      def viewer_can_see_post
+        @viewer_can_see_post ||= Social::Slice["use_cases.viewer_can_see_post"]
+      end
+
+      def filter_visible_posts
+        @filter_visible_posts ||= Social::Slice["use_cases.filter_visible_posts"]
+      end
+
+      def find_readable_post(post_id)
+        post = post_repo.find_by_id(post_id)
+        return nil unless post
+        return nil if post.visibility == "private" && post.author_profile_id != current_profile_id
+
+        viewer_can_see_post.call(viewer_profile_id: current_profile_id, post: post) ? post : nil
+      end
+
       def get_blocked_profile_ids
         return [] unless current_profile_id
 

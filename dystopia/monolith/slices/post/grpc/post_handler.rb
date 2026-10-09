@@ -24,10 +24,13 @@ module Post
         extract_mentions: "use_cases.extract_mentions"
       ]
 
+      AuthorRef = Struct.new(:author_profile_id)
+
       def list_posts
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : decode_cursor(request.message.cursor)
         author_profile_id = request.message.author_profile_id.empty? ? nil : request.message.author_profile_id
+        return ::Post::V1::ListPostsResponse.new(posts: [], next_cursor: "", has_more: false) if author_profile_id && !author_readable?(author_profile_id)
 
         rows = post_repo.list_posts(limit: limit, cursor: cursor, author_profile_id: author_profile_id, media_only: request.message.media_only)
         has_more = rows.length > limit
@@ -47,16 +50,8 @@ module Post
       end
 
       def get_post
-        post = post_repo.find_by_id(request.message.id)
+        post = find_readable_post(request.message.id)
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless post
-
-        if post.visibility == "private" && post.author_profile_id != current_profile_id
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
-        end
-
-        unless viewer_can_see_post.call(viewer_profile_id: current_profile_id, post: post)
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
-        end
 
         ::Post::V1::GetPostResponse.new(post: present_post(post))
       end
@@ -171,6 +166,10 @@ module Post
         )
       end
 
+      def author_readable?(author_profile_id)
+        filter_visible_posts.call(viewer_profile_id: current_profile_id, posts: [AuthorRef.new(author_profile_id)]).any?
+      end
+
       def mentioned_usernames_for(profile_ids)
         ids = profile_ids.uniq
         return {} if ids.empty?
@@ -180,14 +179,6 @@ module Post
 
       def notifications_emit
         @notifications_emit ||= Notifications::Slice["use_cases.emit"]
-      end
-
-      def viewer_can_see_post
-        @viewer_can_see_post ||= Social::Slice["use_cases.viewer_can_see_post"]
-      end
-
-      def filter_visible_posts
-        @filter_visible_posts ||= Social::Slice["use_cases.filter_visible_posts"]
       end
     end
   end

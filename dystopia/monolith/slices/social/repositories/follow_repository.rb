@@ -71,8 +71,8 @@ module Social
         list_followers(profile_id: profile_id, status: "pending", limit: limit, cursor: cursor)
       end
 
-      def count_pending_to(profile_id:)
-        follows.where(followee_profile_id: profile_id, status: "pending").count
+      def pending_requester_ids(profile_id:)
+        follows.where(followee_profile_id: profile_id, status: "pending").pluck(:follower_profile_id)
       end
 
       def status_batch(follower_profile_id:, followee_profile_ids:)

@@ -171,6 +171,33 @@ RSpec.describe Interceptors::AuthenticationInterceptor, type: :database do
       end
     end
 
+    context "when the account is being deactivated" do
+      let(:metadata) { { "x-user-id" => account_id } }
+      let!(:profile_id) { create_account_with_profile(account_id: account_id) }
+
+      before { Hanami.app["db.gateway"].connection[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now) }
+
+      it "keeps the account and resolves no profile without x-profile-id" do
+        interceptor.call do
+          expect(Current.account_id).to eq(account_id)
+          expect(Current.profile_id).to be_nil
+          expect(Current.profile_denied).to be false
+        end
+      end
+
+      context "and x-profile-id names its profile" do
+        let(:metadata) { { "x-user-id" => account_id, "x-profile-id" => profile_id } }
+
+        it "records the denied profile and keeps the account" do
+          interceptor.call do
+            expect(Current.account_id).to eq(account_id)
+            expect(Current.profile_id).to be_nil
+            expect(Current.profile_denied).to be true
+          end
+        end
+      end
+    end
+
     it "propagates or generates a request id" do
       interceptor.call { expect(Current.request_id).not_to be_nil }
     end

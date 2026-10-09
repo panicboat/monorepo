@@ -31,6 +31,7 @@ module Post
 
       def add_comment
         authenticate_user!
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless find_readable_post(request.message.post_id)
 
         media_data = request.message.media.map do |m|
           { media_id: m.media_id, media_type: m.media_type }
@@ -92,6 +93,7 @@ module Post
         # FALLBACK: Use the default page size when the client sends zero.
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
+        return ::Post::V1::ListCommentsResponse.new(comments: [], next_cursor: "", has_more: false) unless find_readable_post(request.message.post_id)
 
         blocked_profile_ids = get_blocked_profile_ids
 
@@ -115,6 +117,7 @@ module Post
         # FALLBACK: Use the default page size when the client sends zero.
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
+        return ::Post::V1::ListRepliesResponse.new(replies: [], next_cursor: "", has_more: false) unless readable_comment?(request.message.comment_id)
 
         blocked_profile_ids = get_blocked_profile_ids
 
@@ -162,6 +165,13 @@ module Post
 
       AddComment = Post::UseCases::Comments::AddComment
       DeleteComment = Post::UseCases::Comments::DeleteComment
+
+      def readable_comment?(comment_id)
+        comment = comment_repo.find_by_id(comment_id)
+        return false unless comment && find_readable_post(comment.post_id)
+
+        profile_author_adapter.load([comment.author_profile_id]).any?
+      end
 
       def mentioned_usernames_for(profile_ids)
         ids = profile_ids.uniq

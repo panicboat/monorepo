@@ -6,6 +6,11 @@ require "gruf"
 require "lib/grpc/authenticatable"
 require "slices/profile/grpc/profile_handler"
 require "slices/post/grpc/post_handler"
+require "slices/post/grpc/comment_handler"
+require "slices/post/grpc/like_handler"
+require "slices/social/grpc/follow_handler"
+require "slices/bookmarks/grpc/bookmark_handler"
+require "slices/messaging/grpc/messaging_handler"
 require "slices/feed/grpc/handler"
 require "slices/review/grpc/review_handler"
 require "slices/footprints/grpc/footprints_handler"
@@ -168,6 +173,111 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
       expect {
         rpc(Review::Grpc::ReviewHandler, :create_entry, Review::V1::CreateEntryRequest.new(target_profile_id: ghost, rating: 4.0))
       }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+    end
+
+    it "answers a request that names it as it answers for a profile that does not exist" do
+      post_repo.create_post(author_profile_id: ghost, content: "visibility ghost again", visibility: "public")
+      review_repo.create(author_profile_id: stranger, target_profile_id: ghost, rating: 3.0, body: "also about ghost")
+      review_repo.create(author_profile_id: ghost, target_profile_id: create_account_with_profile(role: 2, username: "another_cast"), rating: 3.0, body: "also by ghost")
+      act_as(stranger)
+      answers = lambda do |profile_id|
+        posts = rpc(Post::Grpc::PostHandler, :list_posts, Post::V1::ListPostsRequest.new(author_profile_id: profile_id, limit: 1))
+        received = rpc(Review::Grpc::ReviewHandler, :list_entries_by_target, Review::V1::ListEntriesByTargetRequest.new(target_profile_id: profile_id, limit: 1))
+        written = rpc(Review::Grpc::ReviewHandler, :list_entries_by_author, Review::V1::ListEntriesByAuthorRequest.new(author_profile_id: profile_id, limit: 1))
+        counts = rpc(Social::Grpc::FollowHandler, :get_social_counts, Social::V1::GetSocialCountsRequest.new(profile_id: profile_id))
+        {
+          posts: [posts.posts.length, posts.has_more, posts.next_cursor],
+          received_reviews: [received.entries.length, received.has_more, received.next_cursor],
+          written_reviews: [written.entries.length, written.has_more, written.next_cursor],
+          comments: rpc(Post::Grpc::CommentHandler, :list_comments_by_author, Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: profile_id)).comments.length,
+          followers: rpc(Social::Grpc::FollowHandler, :list_followers, Social::V1::ListFollowersRequest.new(profile_id: profile_id)).profiles.length,
+          following: rpc(Social::Grpc::FollowHandler, :list_following, Social::V1::ListFollowingRequest.new(profile_id: profile_id)).profiles.length,
+          counts: [counts.following_count, counts.followers_count]
+        }
+      end
+
+      expect(answers.call(ghost)).to eq(answers.call(SecureRandom.uuid_v7))
+    end
+
+    it "is absent from the reviews on the other party's own page" do
+      act_as(shown)
+      received = rpc(Review::Grpc::ReviewHandler, :list_entries_by_target, Review::V1::ListEntriesByTargetRequest.new(target_profile_id: shown)).entries
+      act_as(viewer)
+      written = rpc(Review::Grpc::ReviewHandler, :list_entries_by_author, Review::V1::ListEntriesByAuthorRequest.new(author_profile_id: viewer)).entries
+
+      expect(received.map(&:author_profile_id)).to eq([viewer])
+      expect(written.map(&:target_profile_id)).to eq([shown])
+    end
+
+    it "leaves its posts and comments out of reach for likes, comments and their lists" do
+      ghost_comment = db[:post__comments].where(author_profile_id: ghost, parent_id: nil).get(:id)
+      comment_repo.create_comment(post_id: ghost_post.id, author_profile_id: shown, content: "under the post")
+      like_repo.profile_like(post_id: ghost_post.id, profile_id: shown)
+      comment_repo.create_comment(post_id: shown_post.id, author_profile_id: viewer, content: "under the comment", parent_id: ghost_comment)
+      notifications_before = db[:notifications__notifications].count
+
+      act_as(stranger)
+      expect { rpc(Post::Grpc::LikeHandler, :like_post, Post::V1::LikePostRequest.new(post_id: ghost_post.id)) }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
+      expect { rpc(Post::Grpc::CommentHandler, :add_comment, Post::V1::AddCommentRequest.new(post_id: ghost_post.id, content: "anyone?")) }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
+      expect {
+        rpc(Post::Grpc::CommentHandler, :add_comment, Post::V1::AddCommentRequest.new(post_id: shown_post.id, content: "anyone?", parent_id: ghost_comment))
+      }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
+      expect(rpc(Post::Grpc::CommentHandler, :list_comments, Post::V1::ListCommentsRequest.new(post_id: ghost_post.id)).comments).to be_empty
+      expect(rpc(Post::Grpc::CommentHandler, :list_replies, Post::V1::ListRepliesRequest.new(comment_id: ghost_comment)).replies).to be_empty
+      expect(db[:post__likes].where(profile_id: stranger).count).to eq(0)
+      expect(db[:post__comments].where(author_profile_id: stranger).count).to eq(0)
+      expect(db[:notifications__notifications].count).to eq(notifications_before)
+
+      act_as(viewer)
+      liked = rpc(Post::Grpc::LikeHandler, :get_like_status, Post::V1::GetLikeStatusRequest.new(post_ids: [ghost_post.id])).liked
+      bookmarked = rpc(Bookmarks::Grpc::BookmarkHandler, :get_bookmark_status, Bookmarks::V1::GetBookmarkStatusRequest.new(post_ids: [ghost_post.id])).bookmarked
+      unliked = rpc(Post::Grpc::LikeHandler, :unlike_post, Post::V1::UnlikePostRequest.new(post_id: ghost_post.id))
+
+      expect(liked.to_h).to eq(ghost_post.id => false)
+      expect(bookmarked.to_h).to eq(ghost_post.id => false)
+      expect(unliked.likes_count).to eq(0)
+    end
+
+    it "reports no relationship with it" do
+      missing = SecureRandom.uuid_v7
+      follow_repo.follow(follower_profile_id: ghost, followee_profile_id: stranger, status: "pending")
+      Social::Slice["repositories.block_repository"].block(blocker_profile_id: shown, blocked_profile_id: ghost)
+
+      act_as(viewer)
+      statuses = rpc(Social::Grpc::FollowHandler, :get_follow_status, Social::V1::GetFollowStatusRequest.new(target_profile_ids: [ghost, missing, shown])).statuses
+      act_as(stranger)
+      pending_count = rpc(Social::Grpc::FollowHandler, :get_pending_follow_count, Social::V1::GetPendingFollowCountRequest.new).count
+      pending = rpc(Social::Grpc::FollowHandler, :list_pending_follow_requests, Social::V1::ListPendingFollowRequestsRequest.new).profiles
+      blocked = Social::Slice["use_cases.blocks.list_blocked"].call(blocker_profile_id: shown)[:profiles]
+
+      expect(statuses[ghost]).to eq(statuses[missing])
+      expect(statuses[shown]).not_to eq(statuses[missing])
+      expect(pending_count).to eq(0)
+      expect(pending).to be_empty
+      expect(blocked).to be_empty
+    end
+
+    it "leaves no trace of its id in the conversation and has a new message rejected" do
+      act_as(viewer)
+      thread = rpc(Messaging::Grpc::MessagingHandler, :list_threads, Messaging::V1::ListThreadsRequest.new).threads.first
+      messages = rpc(Messaging::Grpc::MessagingHandler, :list_messages, Messaging::V1::ListMessagesRequest.new(thread_id: thread.id)).messages
+
+      expect(thread.counterpart).to be_nil
+      expect(thread.last_message.sender_profile_id).to eq("")
+      expect(messages.map(&:sender_profile_id)).to eq([""])
+      expect {
+        rpc(Messaging::Grpc::MessagingHandler, :send_message, Messaging::V1::SendMessageRequest.new(thread_id: thread.id, content: "anyone?"))
+      }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+    end
+
+    it "is not named by a mention stored before it was hidden" do
+      mentioning = post_repo.create_post(author_profile_id: shown, content: "hi @ghost_cast and @visible_viewer", visibility: "public")
+      post_repo.save_mentions(post_id: mentioning.id, mentions: [{ profile_id: ghost, position: 3, length: 11 }, { profile_id: viewer, position: 19, length: 15 }])
+      act_as(stranger)
+
+      mentions = rpc(Post::Grpc::PostHandler, :get_post, Post::V1::GetPostRequest.new(id: mentioning.id)).post.mentions
+
+      expect(mentions.map(&:profile_id)).to eq([viewer])
     end
 
     it "is still listed for its own account and comes back when it is shown again" do

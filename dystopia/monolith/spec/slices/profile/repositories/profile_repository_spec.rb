@@ -52,16 +52,16 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
     end
   end
 
-  describe "#enabled_ids_by_account" do
+  describe "#visible_ids_by_account" do
     it "excludes disabled profiles" do
       enabled = create_profile
       create_profile(disabled_at: Time.now)
 
-      expect(repo.enabled_ids_by_account(account_id)).to eq([enabled.id])
+      expect(repo.visible_ids_by_account(account_id)).to eq([enabled.id])
     end
 
     it "returns an empty list for a value that is not a UUID" do
-      expect(repo.enabled_ids_by_account("sub-1")).to eq([])
+      expect(repo.visible_ids_by_account("sub-1")).to eq([])
     end
   end
 

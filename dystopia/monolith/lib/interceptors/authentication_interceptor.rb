@@ -25,13 +25,12 @@ module Interceptors
     def resolve_profile_id(account_id, requested_id)
       if requested_id.nil? || requested_id.empty?
         # Leave the profile empty when ambiguous so a missing header never acts as an unintended profile.
-        enabled_ids = profile_repository.enabled_ids_by_account(account_id)
-        return enabled_ids.length == 1 ? enabled_ids.first : nil
+        profile_ids = profile_repository.visible_ids_by_account(account_id)
+        return profile_ids.length == 1 ? profile_ids.first : nil
       end
 
-      profile = profile_repository.find_by_id(requested_id)
-      permitted = profile && profile.account_id == account_id && profile.disabled_at.nil?
-      unless permitted
+      profile = profile_repository.find_visible_by_id(requested_id)
+      unless profile && profile.account_id == account_id
         ::Current.profile_denied = true
         return nil
       end
