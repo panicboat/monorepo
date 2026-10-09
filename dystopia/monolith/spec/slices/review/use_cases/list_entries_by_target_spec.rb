@@ -21,24 +21,24 @@ RSpec.describe Review::UseCases::ListEntriesByTarget do
 
   let(:raw_entry) do
     double(:entry,
-      id: "e-1", author_account_id: "author-1", target_account_id: target_id,
+      id: "e-1", author_profile_id: "author-1", target_profile_id: target_id,
       rating: 4.5, body: "nice", hidden: false,
       created_at: Time.now, updated_at: Time.now)
   end
 
   it "delegates filtering to FilterVisibleEntries with page_owner = target" do
     allow(entry_repo).to receive(:list_by_target)
-      .with(target_account_id: target_id, limit: 20, cursor: nil)
+      .with(target_profile_id: target_id, limit: 20, cursor: nil)
       .and_return([raw_entry])
     expect(filter_visible_entries).to receive(:call).with(
-      viewer_account_id: viewer_id, page_owner_account_id: target_id, entries: [raw_entry]
+      viewer_profile_id: viewer_id, page_owner_profile_id: target_id, entries: [raw_entry]
     ).and_return([raw_entry])
     allow(get_profile).to receive(:call).with(profile_id: "author-1")
       .and_return(double(username: "author1", avatar_media_id: nil))
     allow(get_profile).to receive(:call).with(profile_id: target_id)
       .and_return(double(username: "guest1", avatar_media_id: nil))
 
-    result = use_case.call(viewer_account_id: viewer_id, target_account_id: target_id)
+    result = use_case.call(viewer_profile_id: viewer_id, target_profile_id: target_id)
     expect(result[:entries].first[:id]).to eq("e-1")
     expect(result[:entries].first[:rating]).to eq(4.5)
     expect(result[:entries].first[:target_username]).to eq("guest1")
@@ -51,7 +51,7 @@ RSpec.describe Review::UseCases::ListEntriesByTarget do
     allow(filter_visible_entries).to receive(:call).and_return([])
     allow(get_profile).to receive(:call).and_return(double(username: "g", avatar_media_id: nil))
 
-    result = use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, limit: 20)
+    result = use_case.call(viewer_profile_id: viewer_id, target_profile_id: target_id, limit: 20)
     expect(result[:has_more]).to eq(true)
     expect(result[:next_cursor]).not_to be_nil
     expect(result[:entries]).to eq([])

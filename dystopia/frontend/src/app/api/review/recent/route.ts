@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { reviewClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError, requireAuth } from "@/lib/api-helpers";
+import type { ReviewEntry } from "@/modules/review/types";
 
 type ListEntry = Awaited<ReturnType<typeof reviewClient.listRecentEntries>>["entries"][number];
 
-function entryToView(e: ListEntry) {
+function entryToView(e: ListEntry): ReviewEntry {
   return {
     id: e.id,
-    authorAccountId: e.authorAccountId,
-    targetAccountId: e.targetAccountId,
+    authorProfileId: e.authorProfileId,
+    targetProfileId: e.targetProfileId,
     authorUsername: e.authorUsername || "",
     authorAvatarUrl: e.authorAvatarUrl || "",
     targetUsername: e.targetUsername || "",

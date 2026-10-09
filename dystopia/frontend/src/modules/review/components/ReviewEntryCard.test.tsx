@@ -16,8 +16,8 @@ const { ReviewEntryCard } = await import("./ReviewEntryCard");
 
 const baseEntry = {
   id: "e-1",
-  authorAccountId: "author-1",
-  targetAccountId: "target-1",
+  authorProfileId: "author-1",
+  targetProfileId: "target-1",
   authorUsername: "guest_hanako",
   authorAvatarUrl: "",
   targetUsername: "cast_taro",

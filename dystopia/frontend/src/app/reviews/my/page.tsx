@@ -19,7 +19,7 @@ export default function MyReviewsPage() {
       <header className="border-b border-border px-4 py-3">
         <MyReviewsHeader />
       </header>
-      <ReviewsTab accountId={profile.id} mode="written" />
+      <ReviewsTab profileId={profile.id} mode="written" />
     </div>
   );
 }

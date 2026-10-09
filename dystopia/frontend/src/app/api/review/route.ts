@@ -2,14 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { reviewClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError, requireAuth } from "@/lib/api-helpers";
+import type { ReviewEntry } from "@/modules/review/types";
 
-function entryToView(e: NonNullable<Awaited<ReturnType<typeof reviewClient.createEntry>>["entry"]>) {
+function entryToView(e: NonNullable<Awaited<ReturnType<typeof reviewClient.createEntry>>["entry"]>): ReviewEntry {
   return {
     id: e.id,
-    authorAccountId: e.authorAccountId,
-    targetAccountId: e.targetAccountId,
+    authorProfileId: e.authorProfileId,
+    targetProfileId: e.targetProfileId,
     authorUsername: e.authorUsername || "",
     authorAvatarUrl: e.authorAvatarUrl || "",
+    targetUsername: e.targetUsername || "",
+    targetAvatarUrl: e.targetAvatarUrl || "",
     rating: e.rating,
     body: e.body || "",
     hidden: !!e.hidden,
@@ -23,14 +26,14 @@ export async function POST(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
     const body = await req.json();
-    const targetAccountId = body.targetAccountId as string | undefined;
+    const targetProfileId = body.targetProfileId as string | undefined;
     const rating = Number(body.rating);
     const text = (body.body as string | undefined) ?? "";
-    if (!targetAccountId || !Number.isFinite(rating)) {
-      return NextResponse.json({ error: "targetAccountId and rating required" }, { status: 400 });
+    if (!targetProfileId || !Number.isFinite(rating)) {
+      return NextResponse.json({ error: "targetProfileId and rating required" }, { status: 400 });
     }
     const res = await reviewClient.createEntry(
-      { targetAccountId, rating, body: text },
+      { targetProfileId, rating, body: text },
       { headers: await buildGrpcHeaders(req) }
     );
     if (!res.entry) {

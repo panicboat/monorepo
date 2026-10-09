@@ -10,7 +10,7 @@ module Discovery
       MAX_LIMIT = 50
       VALID_PERIODS = %w[day week all].freeze
 
-      def call(period:, viewer_account_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
+      def call(period:, viewer_profile_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
         period = period.to_s
         return { posts: [], next_cursor: nil, has_more: false } unless VALID_PERIODS.include?(period)
@@ -26,7 +26,7 @@ module Discovery
         end
 
         ids = truncated.map(&:first)
-        post_protos_map = list_posts_uc.call(post_ids: ids, viewer_profile_id: viewer_account_id)
+        post_protos_map = list_posts_uc.call(post_ids: ids, viewer_profile_id: viewer_profile_id)
         ordered_posts = ids.filter_map { |id| post_protos_map[id.to_s] }
 
         { posts: ordered_posts, next_cursor: next_cursor, has_more: has_more }

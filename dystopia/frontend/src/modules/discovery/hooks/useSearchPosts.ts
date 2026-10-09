@@ -9,7 +9,7 @@ import type { PaginatedPostsResponse } from "../types";
 const DEBOUNCE_MS = 300;
 
 export function useSearchPosts(query: string) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
   const [debounced, setDebounced] = useState(query);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export function useSearchPosts(query: string) {
   }, [query]);
 
   const getKey = (pageIndex: number, prev: PaginatedPostsResponse | null): string | null => {
-    if (!userId) return null;
+    if (!profileId) return null;
     const trimmed = debounced.trim();
     if (trimmed.length === 0) return null;
     if (prev && !prev.hasMore) return null;

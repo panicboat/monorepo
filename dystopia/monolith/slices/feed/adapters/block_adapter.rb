@@ -3,10 +3,10 @@
 module Feed
   module Adapters
     class BlockAdapter
-      def bidirectionally_blocked_account_ids(account_id:)
-        return [] if account_id.nil? || account_id.to_s.empty?
+      def bidirectionally_blocked_profile_ids(profile_id:)
+        return [] if profile_id.nil? || profile_id.to_s.empty?
 
-        block_repo.bidirectionally_blocked_profile_ids(profile_id: account_id)
+        block_repo.bidirectionally_blocked_profile_ids(profile_id: profile_id)
       end
 
       private

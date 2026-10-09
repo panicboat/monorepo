@@ -9,7 +9,7 @@ RSpec.describe "Review::Relations::Entries", type: :database do
     expect(relation.name.dataset).to eq(:"review__entries")
     expect(relation.schema.primary_key_name).to eq(:id)
     expect(relation.schema.attributes.map(&:name)).to contain_exactly(
-      :id, :author_account_id, :target_account_id, :rating, :body, :hidden,
+      :id, :author_profile_id, :target_profile_id, :rating, :body, :hidden,
       :created_at, :updated_at
     )
   end
@@ -20,9 +20,9 @@ RSpec.describe "Review::Relations::CastSettings", type: :database do
 
   it "maps to review__cast_settings with the expected schema" do
     expect(relation.name.dataset).to eq(:"review__cast_settings")
-    expect(relation.schema.primary_key_name).to eq(:account_id)
+    expect(relation.schema.primary_key_name).to eq(:profile_id)
     expect(relation.schema.attributes.map(&:name)).to contain_exactly(
-      :account_id, :reviews_visible, :updated_at
+      :profile_id, :reviews_visible, :updated_at
     )
   end
 end

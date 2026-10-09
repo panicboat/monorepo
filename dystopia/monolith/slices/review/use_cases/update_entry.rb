@@ -12,10 +12,10 @@ module Review
 
       include Review::Deps[entry_repo: "repositories.entry_repository"]
 
-      def call(viewer_account_id:, entry_id:, rating: nil, body: nil)
+      def call(viewer_profile_id:, entry_id:, rating: nil, body: nil)
         entry = entry_repo.find_by_id(entry_id)
         raise NotFoundError, "Entry not found" unless entry
-        raise PermissionError, "Not the author" unless entry.author_account_id == viewer_account_id
+        raise PermissionError, "Not the author" unless entry.author_profile_id == viewer_profile_id
 
         if rating
           raise UpdateError, "Rating must be one of #{ALLOWED_RATINGS.join(', ')}" unless ALLOWED_RATINGS.include?(rating)

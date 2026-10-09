@@ -16,8 +16,8 @@ interface Props {
 
 export function ReviewEntryCard({ entry, mode, onChanged }: Props) {
   const viewerId = useAuthStore((s) => s.activeProfileId);
-  const isAuthor = viewerId === entry.authorAccountId;
-  const isTarget = viewerId === entry.targetAccountId;
+  const isAuthor = viewerId === entry.authorProfileId;
+  const isTarget = viewerId === entry.targetProfileId;
   const { remove, loading: deleting } = useDeleteReview();
   const { hide, loading: hiding } = useHideReview();
   const { unhide, loading: unhiding } = useUnhideReview();

@@ -6,10 +6,10 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedReviewRecentResponse } from "../types";
 
 export function useRecentReviews(enabled: boolean) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedReviewRecentResponse | null): string | null => {
-    if (!enabled || !userId) return null;
+    if (!enabled || !profileId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
     return `/api/review/recent${cursorQs}`;

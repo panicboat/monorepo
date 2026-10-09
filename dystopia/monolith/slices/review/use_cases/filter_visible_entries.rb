@@ -13,44 +13,44 @@ module Review
         @filter_visible_posts = filter_visible_posts
       end
 
-      def call(viewer_account_id:, page_owner_account_id:, entries:)
-        return entries if viewer_account_id == page_owner_account_id
+      def call(viewer_profile_id:, page_owner_profile_id:, entries:)
+        return entries if viewer_profile_id == page_owner_profile_id
         return [] if entries.empty?
 
         visible = entries.reject(&:hidden)
         return [] if visible.empty?
 
-        visible_target_ids = visible.map(&:target_account_id).uniq.select { |id| reviews_visible?(id) }
-        visible = visible.select { |e| visible_target_ids.include?(e.target_account_id) }
+        visible_target_ids = visible.map(&:target_profile_id).uniq.select { |id| reviews_visible?(id) }
+        visible = visible.select { |e| visible_target_ids.include?(e.target_profile_id) }
         return [] if visible.empty?
 
-        return [] unless page_owner_reachable?(viewer_account_id, page_owner_account_id)
+        return [] unless page_owner_reachable?(viewer_profile_id, page_owner_profile_id)
 
-        blocked_ids = block_adapter.bidirectionally_blocked_ids(account_id: viewer_account_id)
-        visible.reject { |e| blocked_ids.include?(other_party_id(e, page_owner_account_id)) }
+        blocked_ids = block_adapter.bidirectionally_blocked_profile_ids(profile_id: viewer_profile_id)
+        visible.reject { |e| blocked_ids.include?(other_party_id(e, page_owner_profile_id)) }
       end
 
       private
 
-      def reviews_visible?(target_account_id)
-        settings = cast_settings_repo.find_by_account(target_account_id)
+      def reviews_visible?(target_profile_id)
+        settings = cast_settings_repo.find_by_profile(target_profile_id)
         settings.nil? || settings.reviews_visible != false
       end
 
-      def page_owner_reachable?(viewer_account_id, page_owner_account_id)
+      def page_owner_reachable?(viewer_profile_id, page_owner_profile_id)
         filter_visible_posts.call(
-          viewer_profile_id: viewer_account_id,
-          posts: [AuthorRef.new(page_owner_account_id)]
+          viewer_profile_id: viewer_profile_id,
+          posts: [AuthorRef.new(page_owner_profile_id)]
         ).any?
       end
 
-      def other_party_id(entry, page_owner_account_id)
-        if entry.author_account_id == page_owner_account_id
-          entry.target_account_id
-        elsif entry.target_account_id == page_owner_account_id
-          entry.author_account_id
+      def other_party_id(entry, page_owner_profile_id)
+        if entry.author_profile_id == page_owner_profile_id
+          entry.target_profile_id
+        elsif entry.target_profile_id == page_owner_profile_id
+          entry.author_profile_id
         else
-          raise ArgumentError, "entry #{entry.id} has neither author nor target matching page_owner_account_id"
+          raise ArgumentError, "entry #{entry.id} has neither author nor target matching page_owner_profile_id"
         end
       end
 

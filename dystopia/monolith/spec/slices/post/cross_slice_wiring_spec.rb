@@ -57,8 +57,8 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   it "lists the following feed by the followed author profiles" do
     follow_repo.follow(follower_profile_id: viewer, followee_profile_id: public_author, status: "approved")
 
-    all = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_account_id: viewer)
-    following = Feed::UseCases::ListFeed.new.call(filter: "following", viewer_account_id: viewer)
+    all = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_profile_id: viewer)
+    following = Feed::UseCases::ListFeed.new.call(filter: "following", viewer_profile_id: viewer)
 
     expect(all[:post_ids]).to contain_exactly(public_post.id, private_post.id)
     expect(following[:post_ids]).to eq([public_post.id])
@@ -67,7 +67,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   it "excludes posts from profiles blocked by the viewer" do
     Social::Slice["repositories.block_repository"].block(blocker_profile_id: viewer, blocked_profile_id: public_author)
 
-    result = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_account_id: viewer)
+    result = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_profile_id: viewer)
 
     expect(result[:post_ids]).not_to include(public_post.id)
   end
@@ -75,14 +75,14 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   it "excludes posts from profiles that blocked the viewer" do
     Social::Slice["repositories.block_repository"].block(blocker_profile_id: public_author, blocked_profile_id: viewer)
 
-    result = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_account_id: viewer)
+    result = Feed::UseCases::ListFeed.new.call(filter: "all", viewer_profile_id: viewer)
 
     expect(result[:post_ids]).not_to include(public_post.id)
   end
 
   it "ranks and searches posts for a viewer" do
-    ranked = Discovery::Slice["use_cases.rank_posts"].call(period: "all", viewer_account_id: viewer)
-    found = Discovery::Slice["use_cases.search_posts"].call(query: "wiring", viewer_account_id: viewer)
+    ranked = Discovery::Slice["use_cases.rank_posts"].call(period: "all", viewer_profile_id: viewer)
+    found = Discovery::Slice["use_cases.search_posts"].call(query: "wiring", viewer_profile_id: viewer)
 
     expect(ranked[:posts].map(&:id)).to eq([public_post.id])
     expect(found[:posts].map(&:id)).to eq([public_post.id])

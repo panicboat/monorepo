@@ -44,8 +44,8 @@ module Review
         body = request.message.body == "" ? nil : request.message.body
         entry = wrap_errors do
           create_uc.call(
-            viewer_account_id: current_user_id,
-            target_account_id: request.message.target_account_id,
+            viewer_profile_id: current_profile_id,
+            target_profile_id: request.message.target_profile_id,
             rating: request.message.rating,
             body: body
           )
@@ -59,7 +59,7 @@ module Review
         body = request.message.body == "" ? nil : request.message.body
         entry = wrap_errors do
           update_uc.call(
-            viewer_account_id: current_user_id,
+            viewer_profile_id: current_profile_id,
             entry_id: request.message.entry_id,
             rating: rating,
             body: body
@@ -71,7 +71,7 @@ module Review
       def delete_entry
         authenticate_user!
         wrap_errors do
-          delete_uc.call(viewer_account_id: current_user_id, entry_id: request.message.entry_id)
+          delete_uc.call(viewer_profile_id: current_profile_id, entry_id: request.message.entry_id)
         end
         ::Review::V1::DeleteEntryResponse.new
       end
@@ -79,7 +79,7 @@ module Review
       def hide_entry
         authenticate_user!
         entry = wrap_errors do
-          hide_uc.call(viewer_account_id: current_user_id, entry_id: request.message.entry_id)
+          hide_uc.call(viewer_profile_id: current_profile_id, entry_id: request.message.entry_id)
         end
         ::Review::V1::HideEntryResponse.new(entry: entry_to_proto(present_for_actor(entry)))
       end
@@ -87,7 +87,7 @@ module Review
       def unhide_entry
         authenticate_user!
         entry = wrap_errors do
-          unhide_uc.call(viewer_account_id: current_user_id, entry_id: request.message.entry_id)
+          unhide_uc.call(viewer_profile_id: current_profile_id, entry_id: request.message.entry_id)
         end
         ::Review::V1::UnhideEntryResponse.new(entry: entry_to_proto(present_for_actor(entry)))
       end
@@ -97,8 +97,8 @@ module Review
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
         result = list_by_target_uc.call(
-          viewer_account_id: current_user_id,
-          target_account_id: request.message.target_account_id,
+          viewer_profile_id: current_profile_id,
+          target_profile_id: request.message.target_profile_id,
           limit: limit,
           cursor: cursor
         )
@@ -114,8 +114,8 @@ module Review
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
         result = list_by_author_uc.call(
-          viewer_account_id: current_user_id,
-          author_account_id: request.message.author_account_id,
+          viewer_profile_id: current_profile_id,
+          author_profile_id: request.message.author_profile_id,
           limit: limit,
           cursor: cursor
         )
@@ -128,14 +128,14 @@ module Review
 
       def get_my_settings
         authenticate_user!
-        result = get_settings_uc.call(viewer_account_id: current_user_id)
+        result = get_settings_uc.call(viewer_profile_id: current_profile_id)
         ::Review::V1::GetMySettingsResponse.new(reviews_visible: result[:reviews_visible])
       end
 
       def update_my_settings
         authenticate_user!
         result = update_settings_uc.call(
-          viewer_account_id: current_user_id,
+          viewer_profile_id: current_profile_id,
           reviews_visible: request.message.reviews_visible
         )
         ::Review::V1::UpdateMySettingsResponse.new(reviews_visible: result[:reviews_visible])
@@ -146,7 +146,7 @@ module Review
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
         result = list_recent_uc.call(
-          viewer_account_id: current_user_id,
+          viewer_profile_id: current_profile_id,
           limit: limit,
           cursor: cursor
         )
@@ -177,13 +177,13 @@ module Review
       end
 
       def present_for_actor(entry)
-        profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.author_account_id)
-        target_profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.target_account_id)
+        profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.author_profile_id)
+        target_profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.target_profile_id)
         media = ::Review::Adapters::MediaAdapter.new
         {
           id: entry.id,
-          author_account_id: entry.author_account_id,
-          target_account_id: entry.target_account_id,
+          author_profile_id: entry.author_profile_id,
+          target_profile_id: entry.target_profile_id,
           author_username: profile&.username,
           author_avatar_url: media.find_url(profile&.avatar_media_id),
           target_username: target_profile&.username,
@@ -199,8 +199,8 @@ module Review
       def entry_to_proto(e)
         ::Review::V1::ReviewEntry.new(
           id: e[:id].to_s,
-          author_account_id: e[:author_account_id].to_s,
-          target_account_id: e[:target_account_id].to_s,
+          author_profile_id: e[:author_profile_id].to_s,
+          target_profile_id: e[:target_profile_id].to_s,
           author_username: e[:author_username] || "",
           author_avatar_url: e[:author_avatar_url] || "",
           target_username: e[:target_username] || "",

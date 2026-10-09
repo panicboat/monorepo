@@ -175,18 +175,18 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
     end
 
     it "lets the review use cases ask the post visibility filter whether a page owner is reachable" do
-      entry = Struct.new(:hidden, :author_account_id, :target_account_id)
+      entry = Struct.new(:hidden, :author_profile_id, :target_profile_id)
       filter = Review::Slice["use_cases.filter_visible_entries"]
       entry_repo = Review::Slice["repositories.entry_repository"]
 
-      on_public_page = filter.call(viewer_account_id: viewer, page_owner_account_id: public_cast, entries: [entry.new(false, other_guest, public_cast)])
-      on_private_page = filter.call(viewer_account_id: viewer, page_owner_account_id: private_cast, entries: [entry.new(false, other_guest, private_cast)])
+      on_public_page = filter.call(viewer_profile_id: viewer, page_owner_profile_id: public_cast, entries: [entry.new(false, other_guest, public_cast)])
+      on_private_page = filter.call(viewer_profile_id: viewer, page_owner_profile_id: private_cast, entries: [entry.new(false, other_guest, private_cast)])
       expect(on_public_page.length).to eq(1)
       expect(on_private_page).to eq([])
 
-      entry_repo.create(author_account_id: other_guest, target_account_id: public_cast, rating: 4.0, body: "ok")
-      entry_repo.create(author_account_id: other_guest, target_account_id: private_cast, rating: 4.0, body: "ok")
-      recent = Review::Slice["use_cases.list_recent_entries"].call(viewer_account_id: viewer)
+      entry_repo.create(author_profile_id: other_guest, target_profile_id: public_cast, rating: 4.0, body: "ok")
+      entry_repo.create(author_profile_id: other_guest, target_profile_id: private_cast, rating: 4.0, body: "ok")
+      recent = Review::Slice["use_cases.list_recent_entries"].call(viewer_profile_id: viewer)
       expect(recent[:entries].length).to eq(1)
     end
 
@@ -196,9 +196,9 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       block_repo.block(blocker_profile_id: viewer, blocked_profile_id: other_guest)
       block_repo.block(blocker_profile_id: private_cast, blocked_profile_id: viewer)
 
-      expect(Review::Adapters::BlockAdapter.new.bidirectionally_blocked_ids(account_id: viewer)).to contain_exactly(other_guest, private_cast)
-      expect(Feed::Adapters::BlockAdapter.new.bidirectionally_blocked_account_ids(account_id: viewer)).to contain_exactly(other_guest, private_cast)
-      expect(Feed::Adapters::FollowAdapter.new.following_account_ids(account_id: viewer)).to eq([public_cast])
+      expect(Review::Adapters::BlockAdapter.new.bidirectionally_blocked_profile_ids(profile_id: viewer)).to contain_exactly(other_guest, private_cast)
+      expect(Feed::Adapters::BlockAdapter.new.bidirectionally_blocked_profile_ids(profile_id: viewer)).to contain_exactly(other_guest, private_cast)
+      expect(Feed::Adapters::FollowAdapter.new.following_profile_ids(profile_id: viewer)).to eq([public_cast])
     end
   end
 end

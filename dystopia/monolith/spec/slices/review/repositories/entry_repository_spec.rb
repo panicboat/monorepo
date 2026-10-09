@@ -11,21 +11,21 @@ RSpec.describe Review::Repositories::EntryRepository, type: :database do
 
   describe "#create" do
     it "persists an entry with hidden defaulting to false" do
-      entry = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 3.5, body: "ok")
+      entry = repo.create(author_profile_id: author_id, target_profile_id: target_id, rating: 3.5, body: "ok")
       expect(entry.rating.to_f).to eq(3.5)
       expect(entry.hidden).to eq(false)
     end
 
     it "rejects a rating outside the 0.5-step set via the DB constraint" do
       expect {
-        repo.create(author_account_id: author_id, target_account_id: target_id, rating: 3.3, body: nil)
+        repo.create(author_profile_id: author_id, target_profile_id: target_id, rating: 3.3, body: nil)
       }.to raise_error(ROM::SQL::Error)
     end
   end
 
   describe "#update" do
     it "can flip hidden independently of rating/body" do
-      entry = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 4.0, body: nil)
+      entry = repo.create(author_profile_id: author_id, target_profile_id: target_id, rating: 4.0, body: nil)
       repo.update(entry.id, hidden: true)
       expect(repo.find_by_id(entry.id).hidden).to eq(true)
     end
@@ -33,19 +33,19 @@ RSpec.describe Review::Repositories::EntryRepository, type: :database do
 
   describe "#list_by_target cursor pagination" do
     it "returns limit+1 rows (sentinel for has_more) newest first, and continues correctly across a cursor boundary" do
-      e1 = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 1.0, body: "a")
+      e1 = repo.create(author_profile_id: author_id, target_profile_id: target_id, rating: 1.0, body: "a")
       sleep 0.01
-      e2 = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 2.0, body: "b")
+      e2 = repo.create(author_profile_id: author_id, target_profile_id: target_id, rating: 2.0, body: "b")
       sleep 0.01
-      e3 = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 3.0, body: "c")
+      e3 = repo.create(author_profile_id: author_id, target_profile_id: target_id, rating: 3.0, body: "c")
       sleep 0.01
-      e4 = repo.create(author_account_id: author_id, target_account_id: target_id, rating: 4.0, body: "d")
+      e4 = repo.create(author_profile_id: author_id, target_profile_id: target_id, rating: 4.0, body: "d")
 
-      page1 = repo.list_by_target(target_account_id: target_id, limit: 2)
+      page1 = repo.list_by_target(target_profile_id: target_id, limit: 2)
       expect(page1.map(&:id)).to eq([e4.id, e3.id, e2.id])
 
       cursor = repo.send(:encode_cursor, created_at: e3.created_at.iso8601(6), id: e3.id)
-      page2 = repo.list_by_target(target_account_id: target_id, limit: 2, cursor: cursor)
+      page2 = repo.list_by_target(target_profile_id: target_id, limit: 2, cursor: cursor)
       expect(page2.map(&:id)).to eq([e2.id, e1.id])
     end
   end
@@ -58,9 +58,9 @@ RSpec.describe Review::Repositories::EntryRepository, type: :database do
       target2 = SecureRandom.uuid_v7
       now = Time.now
 
-      e1 = repo.create(author_account_id: author1, target_account_id: target1, rating: 3.0, body: "first")
+      e1 = repo.create(author_profile_id: author1, target_profile_id: target1, rating: 3.0, body: "first")
       repo.update(e1.id, created_at: now - 200)
-      e2 = repo.create(author_account_id: author2, target_account_id: target2, rating: 4.0, body: "second")
+      e2 = repo.create(author_profile_id: author2, target_profile_id: target2, rating: 4.0, body: "second")
       repo.update(e2.id, created_at: now - 100)
 
       page = repo.list_recent(limit: 1000)

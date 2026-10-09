@@ -65,7 +65,7 @@ export default function PublicProfilePage() {
             label: "レビュー",
             content: (
               <ReviewsTab
-                accountId={profile.id}
+                profileId={profile.id}
                 mode={role === "cast" ? "received" : "written"}
               />
             ),

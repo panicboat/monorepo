@@ -3,10 +3,10 @@
 module Feed
   module Adapters
     class FollowAdapter
-      def following_account_ids(account_id:)
-        return [] if account_id.nil? || account_id.to_s.empty?
+      def following_profile_ids(profile_id:)
+        return [] if profile_id.nil? || profile_id.to_s.empty?
 
-        follow_repo.following_profile_ids(profile_id: account_id)
+        follow_repo.following_profile_ids(profile_id: profile_id)
       end
 
       private

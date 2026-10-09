@@ -10,40 +10,40 @@ RSpec.describe Review::UseCases::UpdateEntry do
 
   it "updates rating/body when called by the author" do
     allow(entry_repo).to receive(:find_by_id).with(entry_id)
-      .and_return(double(:entry, author_account_id: author_id))
+      .and_return(double(:entry, author_profile_id: author_id))
     expect(entry_repo).to receive(:update).with(entry_id, { rating: 4.5, body: "updated" })
 
-    use_case.call(viewer_account_id: author_id, entry_id: entry_id, rating: 4.5, body: "updated")
+    use_case.call(viewer_profile_id: author_id, entry_id: entry_id, rating: 4.5, body: "updated")
   end
 
   it "updates with empty attrs when rating and body are omitted" do
     allow(entry_repo).to receive(:find_by_id).with(entry_id)
-      .and_return(double(:entry, author_account_id: author_id))
+      .and_return(double(:entry, author_profile_id: author_id))
     expect(entry_repo).to receive(:update).with(entry_id, {})
 
-    use_case.call(viewer_account_id: author_id, entry_id: entry_id)
+    use_case.call(viewer_profile_id: author_id, entry_id: entry_id)
   end
 
   it "raises NotFoundError when the entry does not exist" do
     allow(entry_repo).to receive(:find_by_id).with(entry_id).and_return(nil)
     expect {
-      use_case.call(viewer_account_id: author_id, entry_id: entry_id, rating: 4.5)
+      use_case.call(viewer_profile_id: author_id, entry_id: entry_id, rating: 4.5)
     }.to raise_error(Review::UseCases::UpdateEntry::NotFoundError)
   end
 
   it "raises PermissionError when the viewer is not the author" do
     allow(entry_repo).to receive(:find_by_id).with(entry_id)
-      .and_return(double(:entry, author_account_id: "someone-else"))
+      .and_return(double(:entry, author_profile_id: "someone-else"))
     expect {
-      use_case.call(viewer_account_id: author_id, entry_id: entry_id, rating: 4.5)
+      use_case.call(viewer_profile_id: author_id, entry_id: entry_id, rating: 4.5)
     }.to raise_error(Review::UseCases::UpdateEntry::PermissionError)
   end
 
   it "raises UpdateError for an invalid rating" do
     allow(entry_repo).to receive(:find_by_id).with(entry_id)
-      .and_return(double(:entry, author_account_id: author_id))
+      .and_return(double(:entry, author_profile_id: author_id))
     expect {
-      use_case.call(viewer_account_id: author_id, entry_id: entry_id, rating: 3.3)
+      use_case.call(viewer_profile_id: author_id, entry_id: entry_id, rating: 3.3)
     }.to raise_error(Review::UseCases::UpdateEntry::UpdateError)
   end
 end
