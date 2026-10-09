@@ -9,7 +9,7 @@ export function useCreateReview() {
   const [error, setError] = useState<Error | null>(null);
 
   const create = useCallback(async (
-    targetAccountId: string,
+    targetProfileId: string,
     rating: number,
     body: string
   ): Promise<ReviewEntry | null> => {
@@ -18,7 +18,7 @@ export function useCreateReview() {
     try {
       const res = await authFetch<{ entry: ReviewEntry }>("/api/review", {
         method: "POST",
-        body: { targetAccountId, rating, body },
+        body: { targetProfileId, rating, body },
       });
       return res.entry;
     } catch (e) {

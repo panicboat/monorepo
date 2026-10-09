@@ -1,7 +1,7 @@
 export interface ReviewEntry {
   id: string;
-  authorAccountId: string;
-  targetAccountId: string;
+  authorProfileId: string;
+  targetProfileId: string;
   authorUsername: string;
   authorAvatarUrl: string;
   targetUsername: string;

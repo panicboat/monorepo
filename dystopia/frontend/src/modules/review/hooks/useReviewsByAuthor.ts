@@ -5,13 +5,13 @@ import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedReviewByAuthorResponse } from "../types";
 
-export function useReviewsByAuthor(authorAccountId: string | null | undefined) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+export function useReviewsByAuthor(authorProfileId: string | null | undefined) {
+  const profileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedReviewByAuthorResponse | null): string | null => {
-    if (!userId || !authorAccountId) return null;
+    if (!profileId || !authorProfileId) return null;
     if (prev && !prev.hasMore) return null;
-    const base = `/api/review/by-author?account_id=${encodeURIComponent(authorAccountId)}`;
+    const base = `/api/review/by-author?profile_id=${encodeURIComponent(authorProfileId)}`;
     const cursorQs = pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
     return `${base}${cursorQs}`;
   };

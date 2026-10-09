@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useCreateReview } from "../hooks/useCreateReview";
 
 interface Props {
-  targetAccountId: string;
+  targetProfileId: string;
   onCreated?: () => void;
 }
 
 const RATING_OPTIONS = Array.from({ length: 10 }, (_, i) => (i + 1) * 0.5);
 
-export function ReviewComposer({ targetAccountId, onCreated }: Props) {
+export function ReviewComposer({ targetProfileId, onCreated }: Props) {
   const { create, loading, error } = useCreateReview();
   const [rating, setRating] = useState(5);
   const [body, setBody] = useState("");
@@ -19,7 +19,7 @@ export function ReviewComposer({ targetAccountId, onCreated }: Props) {
     <form
       onSubmit={async (e) => {
         e.preventDefault();
-        const entry = await create(targetAccountId, rating, body);
+        const entry = await create(targetProfileId, rating, body);
         if (entry) {
           setBody("");
           onCreated?.();

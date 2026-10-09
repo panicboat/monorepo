@@ -8,9 +8,9 @@ import { useAuthStore } from "@/stores/authStore";
 import type { ReviewSettings } from "../types";
 
 export function useReviewSettings() {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
   const { data, isLoading, mutate } = useSWR<ReviewSettings>(
-    userId ? "/api/review/settings" : null,
+    profileId ? "/api/review/settings" : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 60_000 }
   );

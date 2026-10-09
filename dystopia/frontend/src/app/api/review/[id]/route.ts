@@ -6,8 +6,8 @@ import { handleApiError, requireAuth } from "@/lib/api-helpers";
 function entryToView(e: NonNullable<Awaited<ReturnType<typeof reviewClient.updateEntry>>["entry"]>) {
   return {
     id: e.id,
-    authorAccountId: e.authorAccountId,
-    targetAccountId: e.targetAccountId,
+    authorProfileId: e.authorProfileId,
+    targetProfileId: e.targetProfileId,
     authorUsername: e.authorUsername || "",
     authorAvatarUrl: e.authorAvatarUrl || "",
     rating: e.rating,

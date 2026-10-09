@@ -11,7 +11,7 @@ const DEBOUNCE_MS = 300;
 export type SearchUsersRoleFilter = 0 | 1 | 2;
 
 export function useSearchUsers(query: string, roleFilter: SearchUsersRoleFilter = 0) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
   const [debounced, setDebounced] = useState(query);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export function useSearchUsers(query: string, roleFilter: SearchUsersRoleFilter 
   }, [query]);
 
   const getKey = (pageIndex: number, prev: PaginatedUsersResponse | null): string | null => {
-    if (!userId) return null;
+    if (!profileId) return null;
     const trimmed = debounced.trim();
     if (trimmed.length === 0) return null;
     if (prev && !prev.hasMore) return null;

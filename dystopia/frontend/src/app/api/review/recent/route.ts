@@ -8,8 +8,8 @@ type ListEntry = Awaited<ReturnType<typeof reviewClient.listRecentEntries>>["ent
 function entryToView(e: ListEntry) {
   return {
     id: e.id,
-    authorAccountId: e.authorAccountId,
-    targetAccountId: e.targetAccountId,
+    authorProfileId: e.authorProfileId,
+    targetProfileId: e.targetProfileId,
     authorUsername: e.authorUsername || "",
     authorAvatarUrl: e.authorAvatarUrl || "",
     targetUsername: e.targetUsername || "",

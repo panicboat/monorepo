@@ -6,19 +6,19 @@ import { ReviewComposer } from "./ReviewComposer";
 import { ReviewEntryCard } from "./ReviewEntryCard";
 
 interface Props {
-  accountId: string;
+  profileId: string;
   mode: "received" | "written";
 }
 
-export function ReviewsTab({ accountId, mode }: Props) {
-  const byTarget = useReviewsByTarget(mode === "received" ? accountId : null);
-  const byAuthor = useReviewsByAuthor(mode === "written" ? accountId : null);
+export function ReviewsTab({ profileId, mode }: Props) {
+  const byTarget = useReviewsByTarget(mode === "received" ? profileId : null);
+  const byAuthor = useReviewsByAuthor(mode === "written" ? profileId : null);
   const { entries, hasMore, loading, loadMore, refresh } =
     mode === "received" ? byTarget : byAuthor;
 
   return (
     <div>
-      {mode === "received" && <ReviewComposer targetAccountId={accountId} onCreated={refresh} />}
+      {mode === "received" && <ReviewComposer targetProfileId={profileId} onCreated={refresh} />}
       {entries.map((e) => (
         <ReviewEntryCard key={e.id} entry={e} mode={mode} onChanged={refresh} />
       ))}

@@ -8,8 +8,8 @@ type ListEntry = Awaited<ReturnType<typeof reviewClient.listEntriesByAuthor>>["e
 function entryToView(e: ListEntry) {
   return {
     id: e.id,
-    authorAccountId: e.authorAccountId,
-    targetAccountId: e.targetAccountId,
+    authorProfileId: e.authorProfileId,
+    targetProfileId: e.targetProfileId,
     authorUsername: e.authorUsername || "",
     authorAvatarUrl: e.authorAvatarUrl || "",
     targetUsername: e.targetUsername || "",
@@ -27,13 +27,13 @@ export async function GET(req: NextRequest) {
     const authError = requireAuth(req);
     if (authError) return authError;
     const headers = await buildGrpcHeaders(req);
-    const authorAccountId = req.nextUrl.searchParams.get("account_id") || "";
-    if (!authorAccountId) {
-      return NextResponse.json({ error: "account_id required" }, { status: 400 });
+    const authorProfileId = req.nextUrl.searchParams.get("profile_id") || "";
+    if (!authorProfileId) {
+      return NextResponse.json({ error: "profile_id required" }, { status: 400 });
     }
     const limit = Number(req.nextUrl.searchParams.get("limit") || "20");
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
-    const res = await reviewClient.listEntriesByAuthor({ authorAccountId, limit, cursor }, { headers });
+    const res = await reviewClient.listEntriesByAuthor({ authorProfileId, limit, cursor }, { headers });
     return NextResponse.json({
       entries: (res.entries || []).map(entryToView),
       nextCursor: res.nextCursor || "",
