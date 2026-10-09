@@ -15,9 +15,8 @@ module Social
 
         author_profile_ids = posts.map(&:author_profile_id).compact.uniq
 
-        is_private_by_author = author_profile_ids.each_with_object({}) do |aid, h|
-          profile = get_profile.call(profile_id: aid)
-          h[aid] = profile.respond_to?(:is_private) ? !!profile.is_private : false
+        profile_by_author = author_profile_ids.each_with_object({}) do |aid, h|
+          h[aid] = get_profile.call(profile_id: aid)
         end
 
         if viewer_profile_id
@@ -31,8 +30,9 @@ module Social
         posts.select do |post|
           author_profile_id = post.author_profile_id
           next true if viewer_profile_id && author_profile_id == viewer_profile_id
+          next false unless profile_by_author[author_profile_id]
           next false if blocked_set.include?(author_profile_id.to_s)
-          next true unless is_private_by_author[author_profile_id]
+          next true unless profile_by_author[author_profile_id].is_private
           next false unless viewer_profile_id
 
           follow_statuses[author_profile_id.to_s] == "approved"

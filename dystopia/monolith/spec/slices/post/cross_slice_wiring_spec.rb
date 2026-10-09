@@ -182,8 +182,20 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
         rpc(Post::Grpc::LikeHandler, :list_liked_posts_by_profile, Post::V1::ListLikedPostsByProfileRequest.new(profile_id: public_author))
       }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
 
+      like_repo.profile_like(post_id: public_post.id, profile_id: public_author)
       unliked = rpc(Post::Grpc::LikeHandler, :unlike_post, Post::V1::UnlikePostRequest.new(post_id: public_post.id))
-      expect(unliked.likes_count).to eq(0)
+      expect(unliked.likes_count).to eq(1)
+    end
+
+    it "rejects a reply whose parent comment belongs to another post" do
+      other_post = post_repo.create_post(author_profile_id: public_author, content: "another post", visibility: "public")
+      parent = comment_repo.create_comment(post_id: other_post.id, author_profile_id: public_author, content: "on the other post")
+      act_as(viewer)
+
+      expect {
+        rpc(Post::Grpc::CommentHandler, :add_comment, Post::V1::AddCommentRequest.new(post_id: public_post.id, content: "reply", parent_id: parent.id))
+      }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
+      expect(comment_repo.list_replies(parent_id: parent.id)).to be_empty
     end
 
     it "adds, lists and deletes comments by author profile" do
@@ -225,6 +237,24 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
       expect(comments.comments.map(&:author_profile_id)).not_to include(blocked_profile)
       expect(replies.replies.map(&:id)).to contain_exactly(visible_reply.id)
       expect(replies.replies.map(&:author_profile_id)).not_to include(blocked_profile)
+    end
+
+    it "lists an author's posts only to viewers who may see them" do
+      authored_by = ->(author) { rpc(Post::Grpc::PostHandler, :list_posts, Post::V1::ListPostsRequest.new(author_profile_id: author)).posts.map(&:id) }
+
+      act_as(viewer)
+      expect(authored_by.call(public_author)).to eq([public_post.id])
+      expect(authored_by.call(private_author)).to be_empty
+      expect(rpc(Post::Grpc::PostHandler, :list_posts, Post::V1::ListPostsRequest.new).posts.map(&:id)).to eq([public_post.id])
+
+      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: private_author, status: "approved")
+      expect(authored_by.call(private_author)).to eq([private_post.id])
+
+      Social::Slice["repositories.block_repository"].block(blocker_profile_id: public_author, blocked_profile_id: viewer)
+      expect(authored_by.call(public_author)).to be_empty
+
+      act_as(private_author)
+      expect(authored_by.call(private_author)).to eq([private_post.id])
     end
 
     it "serves the feed with hydrated posts" do

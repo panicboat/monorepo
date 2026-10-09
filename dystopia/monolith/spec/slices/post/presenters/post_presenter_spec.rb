@@ -31,10 +31,10 @@ RSpec.describe Post::Presenters::PostPresenter do
       expect(proto.mentions.first.length).to eq(6)
     end
 
-    it "defaults to an empty username when unresolved" do
+    it "leaves out a mention whose profile is unresolved" do
       proto = described_class.to_post_proto(post, mentioned_usernames: {})
 
-      expect(proto.mentions.first.username).to eq("")
+      expect(proto.mentions).to be_empty
     end
 
     it "defaults to no mentions when the post has none" do

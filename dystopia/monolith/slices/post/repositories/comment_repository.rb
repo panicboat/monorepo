@@ -126,7 +126,15 @@ module Post
       end
 
       def delete_by_profile(profile_id)
-        comments.dataset.where(author_profile_id: profile_id).delete
+        authored = comments.dataset.where(author_profile_id: profile_id)
+        authored.exclude(parent_id: nil).unordered.group_and_count(:parent_id).each do |row|
+          comments.dataset.where(id: row[:parent_id]).update(replies_count: Sequel.expr(:replies_count) - row[:count])
+        end
+        authored.delete
+      end
+
+      def delete_mentions_of(profile_id)
+        comment_mentions.dataset.where(profile_id: profile_id).delete
       end
 
       private

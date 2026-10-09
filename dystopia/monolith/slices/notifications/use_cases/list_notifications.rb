@@ -25,7 +25,7 @@ module Notifications
         end
 
         {
-          rows: result[:items],
+          rows: result[:items].select { |row| profiles_by_actor_profile_id[row.latest_actor_profile_id] },
           profiles_by_actor_profile_id: profiles_by_actor_profile_id,
           next_cursor: result[:next_cursor],
           has_more: result[:has_more],

@@ -13,8 +13,9 @@ module Social
           end
 
           profile = get_profile.call(profile_id: target_profile_id)
-          is_private = profile.respond_to?(:is_private) ? !!profile.is_private : false
-          status = is_private ? "pending" : "approved"
+          return { status: "none", reason: :not_found } unless profile
+
+          status = profile.is_private ? "pending" : "approved"
 
           result = follow_repo.follow(follower_profile_id: follower_profile_id, followee_profile_id: target_profile_id, status: status)
 

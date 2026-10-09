@@ -8,19 +8,16 @@ module Identity
       class PurgeIdentity
         include Identity::Deps[account_repo: "repositories.account_repository"]
 
-        def initialize(actor_cascades:, account_cascades:, list_profiles: nil, **kwargs)
+        def initialize(purge_profiles: nil, purge_karte: nil, **kwargs)
           super(**kwargs)
-          @actor_cascades = actor_cascades
-          @account_cascades = account_cascades
-          @list_profiles = list_profiles
+          @purge_profiles = purge_profiles
+          @purge_karte = purge_karte
         end
 
+        # Raises on the first failure so the account stays deactivated and the next run repeats the purge.
         def call(sub:)
-          profile_ids = list_profiles.call(account_id: sub).map(&:id)
-          @actor_cascades.each do |cascade|
-            profile_ids.each { |profile_id| cascade.call(account_id: profile_id) rescue nil } # SILENT: A failed slice purge must not prevent remaining profile data from being removed.
-          end
-          @account_cascades.each { |cascade| cascade.call(account_id: sub) rescue nil } # SILENT: A failed slice purge must not prevent remaining account data from being removed.
+          purge_profiles.call(account_id: sub)
+          purge_karte.call(account_id: sub)
           Cognito.admin_delete_user(sub: sub)
           account_repo.delete(sub)
           nil
@@ -28,8 +25,12 @@ module Identity
 
         private
 
-        def list_profiles
-          @list_profiles ||= ::Profile::Slice["use_cases.list_my_profiles"]
+        def purge_profiles
+          @purge_profiles ||= ::Profile::Slice["use_cases.purge_account"]
+        end
+
+        def purge_karte
+          @purge_karte ||= ::Karte::Slice["use_cases.purge_account"]
         end
       end
     end

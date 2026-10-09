@@ -10,6 +10,9 @@ service ProfileService {
   rpc SaveProfile (SaveProfileRequest) returns (SaveProfileResponse);
   rpc CheckUsernameAvailability (CheckUsernameAvailabilityRequest) returns (CheckUsernameAvailabilityResponse);
   rpc SaveProfileMedia (SaveProfileMediaRequest) returns (SaveProfileMediaResponse);
+  rpc DisableProfile (DisableProfileRequest) returns (DisableProfileResponse);
+  rpc EnableProfile (EnableProfileRequest) returns (EnableProfileResponse);
+  rpc DeleteProfile (DeleteProfileRequest) returns (DeleteProfileResponse);
 }
 
 message Profile {
@@ -90,3 +93,12 @@ message SaveProfileMediaRequest {
   string cover_media_id = 2;
 }
 message SaveProfileMediaResponse { Profile profile = 1; }
+
+message DisableProfileRequest { string profile_id = 1; }
+message DisableProfileResponse { Profile profile = 1; }
+
+message EnableProfileRequest { string profile_id = 1; }
+message EnableProfileResponse { Profile profile = 1; }
+
+message DeleteProfileRequest { string profile_id = 1; }
+message DeleteProfileResponse {}

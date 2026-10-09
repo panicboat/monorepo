@@ -22,7 +22,22 @@ RSpec.describe Identity::UseCases::Account::PurgeDeactivatedAccounts do
       expect(purge_identity).to receive(:call).with(sub: "sub-a")
       expect(purge_identity).to receive(:call).with(sub: "sub-b")
 
-      expect(use_case.call(now: now)).to eq(2)
+      result = use_case.call(now: now)
+
+      expect([result.purged, result.failed_account_ids]).to eq([2, []])
+    end
+
+    it "logs an account whose purge fails and goes on to the next account" do
+      logger = double(:logger, info: nil)
+      use_case = described_class.new(account_repo: account_repo, purge_identity: purge_identity, logger: logger)
+      allow(account_repo).to receive(:deactivated_before).and_return([double(:account, id: "sub-a"), double(:account, id: "sub-b")])
+      allow(purge_identity).to receive(:call).with(sub: "sub-a").and_raise(RuntimeError, "slice failed")
+      allow(purge_identity).to receive(:call).with(sub: "sub-b")
+      expect(logger).to receive(:error).with(a_string_including("sub-a", "slice failed"))
+
+      result = use_case.call(now: now)
+
+      expect([result.purged, result.failed_account_ids]).to eq([1, ["sub-a"]])
     end
   end
 end

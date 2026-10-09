@@ -12,6 +12,8 @@ module Social
         MAX_LIMIT = 50
 
         def call(profile_id:, limit: DEFAULT_LIMIT, cursor: nil)
+          return { profiles: [], next_cursor: nil, has_more: false } unless get_profile.call(profile_id: profile_id)
+
           limit = normalize_limit(limit)
           rows = follow_repo.list_following(profile_id: profile_id, limit: limit, cursor: cursor)
 

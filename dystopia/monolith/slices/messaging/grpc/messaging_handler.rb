@@ -114,7 +114,7 @@ module Messaging
         )
 
         ::Messaging::V1::ListMessagesResponse.new(
-          messages: result[:messages].map { |row| build_message_proto(row) },
+          messages: result[:messages].map { |row| build_message_proto(row, hidden_sender_profile_id: result[:hidden_sender_profile_id]) },
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -200,13 +200,16 @@ module Messaging
 
       private
 
-      def build_message_proto(row)
+      def build_message_proto(row, hidden_sender_profile_id: nil)
         return nil unless row
+
+        sender_profile_id = fetch_field(row, :sender_profile_id).to_s
+        sender_profile_id = "" if hidden_sender_profile_id && sender_profile_id == hidden_sender_profile_id.to_s
 
         ::Messaging::V1::Message.new(
           id: fetch_field(row, :id).to_s,
           thread_id: fetch_field(row, :thread_id).to_s,
-          sender_profile_id: fetch_field(row, :sender_profile_id).to_s,
+          sender_profile_id: sender_profile_id,
           content: fetch_field(row, :content) || "",
           created_at: time_to_timestamp(fetch_field(row, :created_at))
         )
@@ -221,7 +224,7 @@ module Messaging
         ::Messaging::V1::Thread.new(
           id: fetch_field(row, :id).to_s,
           counterpart: counterpart_row ? profile_to_proto(counterpart_row) : nil,
-          last_message: last_message ? build_message_proto(last_message) : nil,
+          last_message: last_message ? build_message_proto(last_message, hidden_sender_profile_id: thread_entry[:hidden_sender_profile_id]) : nil,
           unread_count: thread_entry[:unread_count].to_i,
           last_message_at: last_message_at ? time_to_timestamp(last_message_at) : nil
         )

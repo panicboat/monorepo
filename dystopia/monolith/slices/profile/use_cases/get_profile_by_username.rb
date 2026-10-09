@@ -6,7 +6,7 @@ module Profile
       include Deps["repositories.profile_repository"]
 
       def call(username:)
-        profile_repository.find_by_username(username)
+        profile_repository.find_visible_by_username(username)
       end
     end
   end

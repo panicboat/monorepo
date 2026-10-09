@@ -18,8 +18,8 @@ module Social
         end
 
         profile = get_profile.call(profile_id: author_profile_id)
-        is_private = profile.respond_to?(:is_private) ? !!profile.is_private : false
-        return true unless is_private
+        return false unless profile
+        return true unless profile.is_private
 
         return false unless viewer_profile_id
 

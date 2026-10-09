@@ -32,6 +32,7 @@ module Post
 
           author_profile_ids = comments.map(&:author_profile_id).uniq
           authors = build_authors(author_profile_ids)
+          comments = comments.select { |comment| authors.key?(comment.author_profile_id) }
           mentioned_usernames = build_mentioned_usernames(comments)
 
           { comments: comments, next_cursor: next_cursor, has_more: has_more, authors: authors, mentioned_usernames: mentioned_usernames }

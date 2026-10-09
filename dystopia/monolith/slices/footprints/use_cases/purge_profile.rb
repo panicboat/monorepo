@@ -2,12 +2,12 @@
 
 module Footprints
   module UseCases
-    class PurgeAccount
+    class PurgeProfile
       include Footprints::Deps[footprints_repo: "repositories.footprints_repository"]
 
-      def call(account_id:)
-        footprints_repo.delete_visits_by_profile(account_id)
-        footprints_repo.delete_read_state_by_profile(account_id)
+      def call(profile_id:)
+        footprints_repo.delete_visits_by_profile(profile_id)
+        footprints_repo.delete_read_state_by_profile(profile_id)
         nil
       end
     end

@@ -11,6 +11,7 @@ module Footprints
         return nil if block_repo.blocked?(blocker_profile_id: visitor_profile_id, blocked_profile_id: visited_profile_id)
         return nil if block_repo.blocked?(blocker_profile_id: visited_profile_id, blocked_profile_id: visitor_profile_id)
         return nil unless visitor_records_visits?(visitor_profile_id)
+        return nil unless get_profile.call(profile_id: visited_profile_id)
 
         footprints_repo.upsert_visit(visitor_profile_id: visitor_profile_id, visited_profile_id: visited_profile_id)
       end
@@ -24,6 +25,10 @@ module Footprints
       def visitor_records_visits?(visitor_profile_id)
         prefs = notifications_get_prefs.call(profile_id: visitor_profile_id)
         prefs[:footprints_record_my_visits] != false
+      end
+
+      def get_profile
+        @get_profile ||= Profile::Slice["use_cases.get_profile"]
       end
 
       def notifications_get_prefs

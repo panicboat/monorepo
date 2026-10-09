@@ -24,16 +24,35 @@ module Profile
         profiles.where { Sequel.function(:lower, :username) =~ username.downcase }.one
       end
 
+      def find_visible_by_id(id)
+        return nil unless uuid?(id)
+
+        visible_profiles.by_pk(id).one
+      end
+
+      def find_visible_by_username(username)
+        return nil if username.nil? || username.strip.empty?
+
+        visible_profiles.where { Sequel.function(:lower, :username) =~ username.downcase }.one
+      end
+
       def list_by_account(account_id)
         return [] unless uuid?(account_id)
 
         profiles.where(account_id: account_id).order { [created_at.asc, id.asc] }.to_a
       end
 
-      def enabled_ids_by_account(account_id)
+      def visible_ids_by_account(account_id)
         return [] unless uuid?(account_id)
 
-        profiles.where(account_id: account_id, disabled_at: nil).pluck(:id)
+        visible_profiles.where(account_id: account_id).pluck(:id)
+      end
+
+      def visible_ids(ids)
+        ids = ids.select { |id| uuid?(id) }
+        return [] if ids.empty?
+
+        visible_profiles.where(id: ids).pluck(:id)
       end
 
       def username_available?(username, exclude_profile_id: nil)
@@ -45,13 +64,37 @@ module Profile
       end
 
       def create_within_limit(account_id:, limit:, attrs:)
-        profiles.dataset.db.transaction do
-          # Lock the account row so concurrent creations cannot both pass the count check.
-          profiles.dataset.db[:identity__accounts].where(id: account_id).for_update.first
+        locking_account(account_id) do
           next nil if profiles.where(account_id: account_id).count >= limit
 
           create(attrs.merge(id: SecureRandom.uuid_v7, account_id: account_id))
         end
+      end
+
+      def find_owned(account_id:, profile_id:)
+        return nil unless uuid?(account_id) && uuid?(profile_id)
+
+        profiles.where(id: profile_id, account_id: account_id).one
+      end
+
+      # Holding the account row serializes every change to which profiles of the account exist or are enabled.
+      def locking_account(account_id)
+        transaction do
+          profiles.dataset.db[:identity__accounts].where(id: account_id).for_update.first if uuid?(account_id)
+          yield
+        end
+      end
+
+      def other_enabled?(account_id:, profile_id:)
+        profiles.where(account_id: account_id, disabled_at: nil).exclude(id: profile_id).exist?
+      end
+
+      def disable(profile_id)
+        update(profile_id, disabled_at: Time.now, updated_at: Time.now)
+      end
+
+      def enable(profile_id)
+        update(profile_id, disabled_at: nil, updated_at: Time.now)
       end
 
       def update_profile(id, attrs)
@@ -61,7 +104,7 @@ module Profile
       def profile_ids_by_prefecture(prefecture)
         return [] if prefecture.nil? || prefecture.to_s.empty?
 
-        profiles.where(prefecture: prefecture).pluck(:id)
+        visible_profiles.where(prefecture: prefecture).pluck(:id)
       end
 
       def save_media(profile_id:, avatar_media_id: nil, cover_media_id: nil)
@@ -74,7 +117,7 @@ module Profile
       end
 
       def list_recent(limit:, cursor: nil, exclude_profile_ids: [], role_filter: nil)
-        scope = profiles
+        scope = visible_profiles
         scope = scope.exclude(id: exclude_profile_ids) unless exclude_profile_ids.empty?
         scope = filter_by_role(scope, role_filter)
         scope = apply_cursor(scope, cursor)
@@ -87,7 +130,7 @@ module Profile
         return [] if q.empty?
 
         pattern = "%#{q}%"
-        scope = profiles.where(
+        scope = visible_profiles.where(
           Sequel.|(
             Sequel.lit("username ILIKE ?", pattern),
             Sequel.lit("display_name ILIKE ?", pattern)
@@ -106,11 +149,25 @@ module Profile
         profiles.dataset.db[:identity__accounts].where(id: profile.account_id).get(:role)
       end
 
-      def delete_by_account(account_id)
-        profiles.dataset.where(account_id: account_id).delete
+      def visible_role_of(profile_id)
+        profile = find_visible_by_id(profile_id)
+        return nil unless profile
+
+        profiles.dataset.db[:identity__accounts].where(id: profile.account_id).get(:role)
+      end
+
+      def delete(id)
+        profiles.dataset.where(id: id).delete
       end
 
       private
+
+      # Profile management and the username uniqueness check must not read through this scope: they act on hidden profiles too.
+      def visible_profiles
+        profiles.where(disabled_at: nil).where(
+          account_id: profiles.dataset.db[:identity__accounts].where(deactivated_at: nil).select(:id)
+        )
+      end
 
       def uuid?(value)
         UUID_FORMAT.match?(value.to_s)

@@ -52,16 +52,16 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
     end
   end
 
-  describe "#enabled_ids_by_account" do
+  describe "#visible_ids_by_account" do
     it "excludes disabled profiles" do
       enabled = create_profile
       create_profile(disabled_at: Time.now)
 
-      expect(repo.enabled_ids_by_account(account_id)).to eq([enabled.id])
+      expect(repo.visible_ids_by_account(account_id)).to eq([enabled.id])
     end
 
     it "returns an empty list for a value that is not a UUID" do
-      expect(repo.enabled_ids_by_account("sub-1")).to eq([])
+      expect(repo.visible_ids_by_account("sub-1")).to eq([])
     end
   end
 
@@ -83,6 +83,26 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
     it "stays false for another profile of the same account" do
       sibling = create_profile
       expect(repo.username_available?("coco", exclude_profile_id: sibling.id)).to be false
+    end
+  end
+
+  describe "#locking_account" do
+    let(:db) { Hanami.app["db.gateway"].connection }
+
+    it "locks the account row before running the block" do
+      log = StringIO.new
+      logger = Logger.new(log)
+      db.loggers << logger
+
+      repo.locking_account(account_id) { log.puts "BLOCK" }
+
+      expect(log.string).to match(/"identity"\."accounts".*FOR UPDATE.*BLOCK/m)
+    ensure
+      db.loggers.delete(logger)
+    end
+
+    it "runs the block without a lock for an id that is not a uuid" do
+      expect(repo.locking_account("not-a-uuid") { :ran }).to eq(:ran)
     end
   end
 
@@ -205,16 +225,14 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
     end
   end
 
-  describe "#delete_by_account" do
-    it "deletes every profile of the account and no others" do
-      create_profile
-      create_profile
-      other = create_profile(owner: create_account)
+  describe "#delete" do
+    it "deletes the profile and no other profile of the account" do
+      deleted = create_profile
+      kept = create_profile
 
-      repo.delete_by_account(account_id)
+      repo.delete(deleted.id)
 
-      expect(repo.list_by_account(account_id)).to eq([])
-      expect(repo.find_by_id(other.id)).not_to be_nil
+      expect(repo.list_by_account(account_id).map(&:id)).to eq([kept.id])
     end
   end
 end

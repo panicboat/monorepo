@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Social::UseCases::PurgeAccount do
+RSpec.describe Social::UseCases::PurgeProfile do
   let(:use_case) do
     described_class.new(follow_repo: follow_repo, block_repo: block_repo)
   end
@@ -12,12 +12,12 @@ RSpec.describe Social::UseCases::PurgeAccount do
   it "deletes follows (follower OR followee) and blocks (blocker OR blocked)" do
     expect(follow_repo).to receive(:delete_by_profile).with("cast-1")
     expect(block_repo).to receive(:delete_by_profile).with("cast-1")
-    use_case.call(account_id: "cast-1")
+    use_case.call(profile_id: "cast-1")
   end
 
   it "returns nil" do
     allow(follow_repo).to receive(:delete_by_profile)
     allow(block_repo).to receive(:delete_by_profile)
-    expect(use_case.call(account_id: "cast-1")).to be_nil
+    expect(use_case.call(profile_id: "cast-1")).to be_nil
   end
 end

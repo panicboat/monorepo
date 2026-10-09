@@ -3,7 +3,7 @@
 require "spec_helper"
 
 RSpec.describe Review::UseCases::HideEntry do
-  let(:use_case) { described_class.new(entry_repo: entry_repo) }
+  let(:use_case) { described_class.new(entry_repo: entry_repo, entry_parties_visible: double(:entry_parties_visible, call: true)) }
   let(:entry_repo) { double(:entry_repository) }
   let(:target_id) { "target-1" }
   let(:entry_id) { "entry-1" }

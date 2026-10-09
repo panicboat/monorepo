@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file profile/v1/service.proto.
  */
 export const file_profile_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("Chhwcm9maWxlL3YxL3NlcnZpY2UucHJvdG8SCnByb2ZpbGUudjEihQMKB1Byb2ZpbGUSCgoCaWQYASABKAkSEAoIdXNlcm5hbWUYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEgsKA2JpbxgEIAEoCRIXCg9hdmF0YXJfbWVkaWFfaWQYBSABKAkSEgoKYXZhdGFyX3VybBgGIAEoCRIWCg5jb3Zlcl9tZWRpYV9pZBgHIAEoCRIRCgljb3Zlcl91cmwYCCABKAkSDwoHd2Vic2l0ZRgJIAEoCRInCglzbnNfbGlua3MYCiABKAsyFC5wcm9maWxlLnYxLlNuc0xpbmtzEhIKCnByZWZlY3R1cmUYCyABKAkSEgoKaXNfcHJpdmF0ZRgMIAEoCBIVCg1yZWdpc3RlcmVkX2F0GA0gASgJEgsKA2FnZRgOIAEoBRIpCgpib2R5X3N0YXRzGA8gASgLMhUucHJvZmlsZS52MS5Cb2R5U3RhdHMSEAoIaW5kdXN0cnkYESABKAkSDAoEcm9sZRgUIAEoBRIQCghkaXNhYmxlZBgVIAEoCCJrCghTbnNMaW5rcxIJCgF4GAEgASgJEhEKCWluc3RhZ3JhbRgCIAEoCRIOCgZ0aWt0b2sYAyABKAkSDwoHYmx1ZXNreRgEIAEoCRIMCgRsaW5lGAUgASgJEhIKCmNpdHloZWF2ZW4YBiABKAkiXgoJQm9keVN0YXRzEhEKCWhlaWdodF9jbRgBIAEoBRIPCgdidXN0X2NtGAIgASgFEhAKCHdhaXN0X2NtGAMgASgFEg4KBmhpcF9jbRgEIAEoBRILCgNjdXAYBSABKAkiJwoRR2V0UHJvZmlsZVJlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoCSIvChtHZXRQcm9maWxlQnlVc2VybmFtZVJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkiOgoSR2V0UHJvZmlsZVJlc3BvbnNlEiQKB3Byb2ZpbGUYASABKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUiFwoVTGlzdE15UHJvZmlsZXNSZXF1ZXN0Ij8KFkxpc3RNeVByb2ZpbGVzUmVzcG9uc2USJQoIcHJvZmlsZXMYASADKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUiPgoUQ3JlYXRlUHJvZmlsZVJlcXVlc3QSFAoMZGlzcGxheV9uYW1lGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJIj0KFUNyZWF0ZVByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIvUBChJTYXZlUHJvZmlsZVJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJEgsKA2JpbxgDIAEoCRIPCgd3ZWJzaXRlGAQgASgJEicKCXNuc19saW5rcxgFIAEoCzIULnByb2ZpbGUudjEuU25zTGlua3MSEgoKcHJlZmVjdHVyZRgGIAEoCRISCgppc19wcml2YXRlGAcgASgIEgsKA2FnZRgIIAEoBRIpCgpib2R5X3N0YXRzGAkgASgLMhUucHJvZmlsZS52MS5Cb2R5U3RhdHMSEAoIaW5kdXN0cnkYCyABKAkiOwoTU2F2ZVByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIjQKIENoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHlSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJIkcKIUNoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHlSZXNwb25zZRIRCglhdmFpbGFibGUYASABKAgSDwoHbWVzc2FnZRgCIAEoCSJKChdTYXZlUHJvZmlsZU1lZGlhUmVxdWVzdBIXCg9hdmF0YXJfbWVkaWFfaWQYASABKAkSFgoOY292ZXJfbWVkaWFfaWQYAiABKAkiQAoYU2F2ZVByb2ZpbGVNZWRpYVJlc3BvbnNlEiQKB3Byb2ZpbGUYASABKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUylgUKDlByb2ZpbGVTZXJ2aWNlEksKCkdldFByb2ZpbGUSHS5wcm9maWxlLnYxLkdldFByb2ZpbGVSZXF1ZXN0Gh4ucHJvZmlsZS52MS5HZXRQcm9maWxlUmVzcG9uc2USXwoUR2V0UHJvZmlsZUJ5VXNlcm5hbWUSJy5wcm9maWxlLnYxLkdldFByb2ZpbGVCeVVzZXJuYW1lUmVxdWVzdBoeLnByb2ZpbGUudjEuR2V0UHJvZmlsZVJlc3BvbnNlElcKDkxpc3RNeVByb2ZpbGVzEiEucHJvZmlsZS52MS5MaXN0TXlQcm9maWxlc1JlcXVlc3QaIi5wcm9maWxlLnYxLkxpc3RNeVByb2ZpbGVzUmVzcG9uc2USVAoNQ3JlYXRlUHJvZmlsZRIgLnByb2ZpbGUudjEuQ3JlYXRlUHJvZmlsZVJlcXVlc3QaIS5wcm9maWxlLnYxLkNyZWF0ZVByb2ZpbGVSZXNwb25zZRJOCgtTYXZlUHJvZmlsZRIeLnByb2ZpbGUudjEuU2F2ZVByb2ZpbGVSZXF1ZXN0Gh8ucHJvZmlsZS52MS5TYXZlUHJvZmlsZVJlc3BvbnNlEngKGUNoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHkSLC5wcm9maWxlLnYxLkNoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHlSZXF1ZXN0Gi0ucHJvZmlsZS52MS5DaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVzcG9uc2USXQoQU2F2ZVByb2ZpbGVNZWRpYRIjLnByb2ZpbGUudjEuU2F2ZVByb2ZpbGVNZWRpYVJlcXVlc3QaJC5wcm9maWxlLnYxLlNhdmVQcm9maWxlTWVkaWFSZXNwb25zZWIGcHJvdG8z");
+  fileDesc("Chhwcm9maWxlL3YxL3NlcnZpY2UucHJvdG8SCnByb2ZpbGUudjEihQMKB1Byb2ZpbGUSCgoCaWQYASABKAkSEAoIdXNlcm5hbWUYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEgsKA2JpbxgEIAEoCRIXCg9hdmF0YXJfbWVkaWFfaWQYBSABKAkSEgoKYXZhdGFyX3VybBgGIAEoCRIWCg5jb3Zlcl9tZWRpYV9pZBgHIAEoCRIRCgljb3Zlcl91cmwYCCABKAkSDwoHd2Vic2l0ZRgJIAEoCRInCglzbnNfbGlua3MYCiABKAsyFC5wcm9maWxlLnYxLlNuc0xpbmtzEhIKCnByZWZlY3R1cmUYCyABKAkSEgoKaXNfcHJpdmF0ZRgMIAEoCBIVCg1yZWdpc3RlcmVkX2F0GA0gASgJEgsKA2FnZRgOIAEoBRIpCgpib2R5X3N0YXRzGA8gASgLMhUucHJvZmlsZS52MS5Cb2R5U3RhdHMSEAoIaW5kdXN0cnkYESABKAkSDAoEcm9sZRgUIAEoBRIQCghkaXNhYmxlZBgVIAEoCCJrCghTbnNMaW5rcxIJCgF4GAEgASgJEhEKCWluc3RhZ3JhbRgCIAEoCRIOCgZ0aWt0b2sYAyABKAkSDwoHYmx1ZXNreRgEIAEoCRIMCgRsaW5lGAUgASgJEhIKCmNpdHloZWF2ZW4YBiABKAkiXgoJQm9keVN0YXRzEhEKCWhlaWdodF9jbRgBIAEoBRIPCgdidXN0X2NtGAIgASgFEhAKCHdhaXN0X2NtGAMgASgFEg4KBmhpcF9jbRgEIAEoBRILCgNjdXAYBSABKAkiJwoRR2V0UHJvZmlsZVJlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoCSIvChtHZXRQcm9maWxlQnlVc2VybmFtZVJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkiOgoSR2V0UHJvZmlsZVJlc3BvbnNlEiQKB3Byb2ZpbGUYASABKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUiFwoVTGlzdE15UHJvZmlsZXNSZXF1ZXN0Ij8KFkxpc3RNeVByb2ZpbGVzUmVzcG9uc2USJQoIcHJvZmlsZXMYASADKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUiPgoUQ3JlYXRlUHJvZmlsZVJlcXVlc3QSFAoMZGlzcGxheV9uYW1lGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJIj0KFUNyZWF0ZVByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIvUBChJTYXZlUHJvZmlsZVJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJEgsKA2JpbxgDIAEoCRIPCgd3ZWJzaXRlGAQgASgJEicKCXNuc19saW5rcxgFIAEoCzIULnByb2ZpbGUudjEuU25zTGlua3MSEgoKcHJlZmVjdHVyZRgGIAEoCRISCgppc19wcml2YXRlGAcgASgIEgsKA2FnZRgIIAEoBRIpCgpib2R5X3N0YXRzGAkgASgLMhUucHJvZmlsZS52MS5Cb2R5U3RhdHMSEAoIaW5kdXN0cnkYCyABKAkiOwoTU2F2ZVByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIjQKIENoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHlSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJIkcKIUNoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHlSZXNwb25zZRIRCglhdmFpbGFibGUYASABKAgSDwoHbWVzc2FnZRgCIAEoCSJKChdTYXZlUHJvZmlsZU1lZGlhUmVxdWVzdBIXCg9hdmF0YXJfbWVkaWFfaWQYASABKAkSFgoOY292ZXJfbWVkaWFfaWQYAiABKAkiQAoYU2F2ZVByb2ZpbGVNZWRpYVJlc3BvbnNlEiQKB3Byb2ZpbGUYASABKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUiKwoVRGlzYWJsZVByb2ZpbGVSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAkiPgoWRGlzYWJsZVByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIioKFEVuYWJsZVByb2ZpbGVSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAkiPQoVRW5hYmxlUHJvZmlsZVJlc3BvbnNlEiQKB3Byb2ZpbGUYASABKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUiKgoURGVsZXRlUHJvZmlsZVJlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoCSIXChVEZWxldGVQcm9maWxlUmVzcG9uc2UymwcKDlByb2ZpbGVTZXJ2aWNlEksKCkdldFByb2ZpbGUSHS5wcm9maWxlLnYxLkdldFByb2ZpbGVSZXF1ZXN0Gh4ucHJvZmlsZS52MS5HZXRQcm9maWxlUmVzcG9uc2USXwoUR2V0UHJvZmlsZUJ5VXNlcm5hbWUSJy5wcm9maWxlLnYxLkdldFByb2ZpbGVCeVVzZXJuYW1lUmVxdWVzdBoeLnByb2ZpbGUudjEuR2V0UHJvZmlsZVJlc3BvbnNlElcKDkxpc3RNeVByb2ZpbGVzEiEucHJvZmlsZS52MS5MaXN0TXlQcm9maWxlc1JlcXVlc3QaIi5wcm9maWxlLnYxLkxpc3RNeVByb2ZpbGVzUmVzcG9uc2USVAoNQ3JlYXRlUHJvZmlsZRIgLnByb2ZpbGUudjEuQ3JlYXRlUHJvZmlsZVJlcXVlc3QaIS5wcm9maWxlLnYxLkNyZWF0ZVByb2ZpbGVSZXNwb25zZRJOCgtTYXZlUHJvZmlsZRIeLnByb2ZpbGUudjEuU2F2ZVByb2ZpbGVSZXF1ZXN0Gh8ucHJvZmlsZS52MS5TYXZlUHJvZmlsZVJlc3BvbnNlEngKGUNoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHkSLC5wcm9maWxlLnYxLkNoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHlSZXF1ZXN0Gi0ucHJvZmlsZS52MS5DaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVzcG9uc2USXQoQU2F2ZVByb2ZpbGVNZWRpYRIjLnByb2ZpbGUudjEuU2F2ZVByb2ZpbGVNZWRpYVJlcXVlc3QaJC5wcm9maWxlLnYxLlNhdmVQcm9maWxlTWVkaWFSZXNwb25zZRJXCg5EaXNhYmxlUHJvZmlsZRIhLnByb2ZpbGUudjEuRGlzYWJsZVByb2ZpbGVSZXF1ZXN0GiIucHJvZmlsZS52MS5EaXNhYmxlUHJvZmlsZVJlc3BvbnNlElQKDUVuYWJsZVByb2ZpbGUSIC5wcm9maWxlLnYxLkVuYWJsZVByb2ZpbGVSZXF1ZXN0GiEucHJvZmlsZS52MS5FbmFibGVQcm9maWxlUmVzcG9uc2USVAoNRGVsZXRlUHJvZmlsZRIgLnByb2ZpbGUudjEuRGVsZXRlUHJvZmlsZVJlcXVlc3QaIS5wcm9maWxlLnYxLkRlbGV0ZVByb2ZpbGVSZXNwb25zZWIGcHJvdG8z");
 
 /**
  * @generated from message profile.v1.Profile
@@ -471,6 +471,104 @@ export const SaveProfileMediaResponseSchema: GenMessage<SaveProfileMediaResponse
   messageDesc(file_profile_v1_service, 15);
 
 /**
+ * @generated from message profile.v1.DisableProfileRequest
+ */
+export type DisableProfileRequest = Message<"profile.v1.DisableProfileRequest"> & {
+  /**
+   * @generated from field: string profile_id = 1;
+   */
+  profileId: string;
+};
+
+/**
+ * Describes the message profile.v1.DisableProfileRequest.
+ * Use `create(DisableProfileRequestSchema)` to create a new message.
+ */
+export const DisableProfileRequestSchema: GenMessage<DisableProfileRequest> = /*@__PURE__*/
+  messageDesc(file_profile_v1_service, 16);
+
+/**
+ * @generated from message profile.v1.DisableProfileResponse
+ */
+export type DisableProfileResponse = Message<"profile.v1.DisableProfileResponse"> & {
+  /**
+   * @generated from field: profile.v1.Profile profile = 1;
+   */
+  profile?: Profile | undefined;
+};
+
+/**
+ * Describes the message profile.v1.DisableProfileResponse.
+ * Use `create(DisableProfileResponseSchema)` to create a new message.
+ */
+export const DisableProfileResponseSchema: GenMessage<DisableProfileResponse> = /*@__PURE__*/
+  messageDesc(file_profile_v1_service, 17);
+
+/**
+ * @generated from message profile.v1.EnableProfileRequest
+ */
+export type EnableProfileRequest = Message<"profile.v1.EnableProfileRequest"> & {
+  /**
+   * @generated from field: string profile_id = 1;
+   */
+  profileId: string;
+};
+
+/**
+ * Describes the message profile.v1.EnableProfileRequest.
+ * Use `create(EnableProfileRequestSchema)` to create a new message.
+ */
+export const EnableProfileRequestSchema: GenMessage<EnableProfileRequest> = /*@__PURE__*/
+  messageDesc(file_profile_v1_service, 18);
+
+/**
+ * @generated from message profile.v1.EnableProfileResponse
+ */
+export type EnableProfileResponse = Message<"profile.v1.EnableProfileResponse"> & {
+  /**
+   * @generated from field: profile.v1.Profile profile = 1;
+   */
+  profile?: Profile | undefined;
+};
+
+/**
+ * Describes the message profile.v1.EnableProfileResponse.
+ * Use `create(EnableProfileResponseSchema)` to create a new message.
+ */
+export const EnableProfileResponseSchema: GenMessage<EnableProfileResponse> = /*@__PURE__*/
+  messageDesc(file_profile_v1_service, 19);
+
+/**
+ * @generated from message profile.v1.DeleteProfileRequest
+ */
+export type DeleteProfileRequest = Message<"profile.v1.DeleteProfileRequest"> & {
+  /**
+   * @generated from field: string profile_id = 1;
+   */
+  profileId: string;
+};
+
+/**
+ * Describes the message profile.v1.DeleteProfileRequest.
+ * Use `create(DeleteProfileRequestSchema)` to create a new message.
+ */
+export const DeleteProfileRequestSchema: GenMessage<DeleteProfileRequest> = /*@__PURE__*/
+  messageDesc(file_profile_v1_service, 20);
+
+/**
+ * @generated from message profile.v1.DeleteProfileResponse
+ */
+export type DeleteProfileResponse = Message<"profile.v1.DeleteProfileResponse"> & {
+};
+
+/**
+ * Describes the message profile.v1.DeleteProfileResponse.
+ * Use `create(DeleteProfileResponseSchema)` to create a new message.
+ */
+export const DeleteProfileResponseSchema: GenMessage<DeleteProfileResponse> = /*@__PURE__*/
+  messageDesc(file_profile_v1_service, 21);
+
+/**
  * @generated from service profile.v1.ProfileService
  */
 export const ProfileService: GenService<{
@@ -529,6 +627,30 @@ export const ProfileService: GenService<{
     methodKind: "unary";
     input: typeof SaveProfileMediaRequestSchema;
     output: typeof SaveProfileMediaResponseSchema;
+  },
+  /**
+   * @generated from rpc profile.v1.ProfileService.DisableProfile
+   */
+  disableProfile: {
+    methodKind: "unary";
+    input: typeof DisableProfileRequestSchema;
+    output: typeof DisableProfileResponseSchema;
+  },
+  /**
+   * @generated from rpc profile.v1.ProfileService.EnableProfile
+   */
+  enableProfile: {
+    methodKind: "unary";
+    input: typeof EnableProfileRequestSchema;
+    output: typeof EnableProfileResponseSchema;
+  },
+  /**
+   * @generated from rpc profile.v1.ProfileService.DeleteProfile
+   */
+  deleteProfile: {
+    methodKind: "unary";
+    input: typeof DeleteProfileRequestSchema;
+    output: typeof DeleteProfileResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_profile_v1_service, 0);

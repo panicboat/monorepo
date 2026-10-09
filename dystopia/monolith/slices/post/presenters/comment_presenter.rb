@@ -19,7 +19,7 @@ module Post
           author: author_to_proto(author),
           media: media.sort_by(&:position).map { |m| media_to_proto(m, media_files: media_files) },
           replies_count: comment.replies_count || 0,
-          mentions: mentions.map { |m| mention_to_proto(m, mentioned_usernames: mentioned_usernames) }
+          mentions: mentions.select { |m| mentioned_usernames.key?(m.profile_id.to_s) }.map { |m| mention_to_proto(m, mentioned_usernames: mentioned_usernames) }
         )
       end
 
