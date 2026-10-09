@@ -1832,3 +1832,28 @@ frontend にはまだ無効化・削除の画面が無い(段 9)ので、BFF を
 - 人格を消すとき、その人格の投稿に付いた他人のいいね・コメント・ブックマークと、その人格宛ての通知の扱いは、各 slice の既存の purge のままである。
 - `slices/review/grpc/handler.rb` は gruf と `lib/grpc/authenticatable` を自分で require していない(P7 から引き継ぎ)。
 - P1a〜P7 の Known gaps はそのまま残る。
+- 人格を消すと、その人格の投稿をブックマークしていた他の profile の行は、投稿が無いまま残る(ブックマークには投稿への外部キーが無い。一覧は存在しない投稿を読み飛ばすので表示には出ない)。
+- 人格を消すと、その人格が行為者だった通知は、最新の行為者ならまとまりごと消え、そうでなければ `actor_count` が減らないまま残る(notifications の既存の purge のまま)。
+- 退会手続き中の account が、purge の実行と同時に人格を作成すると、account の行が消えた後に持ち主のいない profile が残りうる(`CreateProfile` は account が退会手続き中かどうかを見ていない)。
+- 削除の前に認証を通過していた request は、削除された profile の id で行を書きうる(無効化と削除が 1 つの request の間に終わる場合に限る)。
+
+## Changes after the task reviews and the whole-branch review
+
+task ごとのレビューと branch 全体のレビュー(いずれも Critical なし)を受けて、次を変えた。Task 1〜3 の patch(上に載せたもの)は最初の実装で、以下はその後の commit `b35f0f8a` と `5e26988f` の内容である。
+
+- **1 つの人格の purge を 1 つの transaction にした。** spec は「複数 slice をまたぐため 1 トランザクションにならない」としていたが、全 slice の repository が同じ database 接続を使い、profile slice で開いた transaction が他 slice の文も含むことを実測した。途中で失敗すると全部が巻き戻るので、半分だけ消えた状態が無くなる。slice ごとに database が分かれたときのために、profile の行を最後に消す順序と、何度実行しても同じ結果になる削除は残してある(順序は spec で固定した)。
+- **人格の作成・無効化・有効化・削除と account の purge は、account の行をロックしてから行う**(`ProfileRepository#locking_account`)。以前は作成と無効化だけがロックを取っており、削除の最中に同じ人格を有効化できた。無効化は、ロックを取ってから profile を読み直す。ロックを先に取ること、各操作がロックを取ることを spec で固定した。
+- **purge の失敗が運用者に見えるようにした。** rake task は logger を渡しておらず、失敗のログは 1 行も出ていなかった(以前からの不具合)。use case は logger が無ければアプリケーションの logger に書き、purge できた件数と失敗した account の id を返す。rake task は結果を出力し、失敗があれば exit 1 で終わる。
+- **人格が他の profile の行の中に残していたものを消す。** 残った親コメントの返信数(`replies_count`)を、消した返信の数だけ減らす。他の profile の投稿・コメントの中の、消した人格への mention の行を消す(以前は、名前が空の mention として表示に残った)。
+- proto の field 名の検査は、`account_id` だけでなく `account` を含む名前を対象にした。
+- spec: karte の purge と Cognito の削除が失敗したときに account が残ること、無効化を繰り返しても時刻が変わらないこと、不正な id が `NOT_FOUND` になること、有効な人格の有効化が何も変えないこと、purge する slice の一覧(順序は問わない)。
+
+## Controller verification result
+
+2026-10-09 に、使い捨ての database に seed を入れ、`bin/grpc` を起動して gRPC を直接呼んで確認した(commit `b35f0f8a` に対して。rake task の失敗時の確認は `5e26988f` の変更を含む作業ツリーに対して)。
+
+- gRPC 16 項目がすべて通った: 2 つ目の人格の作成、その人格での投稿・フォロー・レビュー、同じ account の人格へのレビューの拒否(`INVALID_ARGUMENT`)、他の account からの無効化・削除の拒否(`NOT_FOUND`)、唯一の人格・最後の有効な人格の無効化と有効な人格の削除の拒否(`FAILED_PRECONDITION`)、操作中の人格なしでの無効化、無効な人格での操作の拒否(`PERMISSION_DENIED`)、`ListMyProfiles` の無効の表示、有効化後に操作できること、削除で profile・投稿・フォロー・レビューが消えてもう一方の人格が残ること、username を取り直せること。
+- 退会の purge(`rake account:purge_deactivated`): 31 日前に退会手続きをした account が、profile・投稿 17 件・account の行ごと消え、exit 0 で終わる。
+- 同じ rake task を、schedule の purge が必ず失敗する状態で実行すると、exit 1 で終わり、失敗した account の id を出力し、account・profile・投稿 17 件が残る(先に消えた slice の行も巻き戻る)。失敗の原因を取り除いて再実行すると、すべて消えて exit 0 で終わる。
+- gRPC server のログの ERROR は、意図した拒否だけだった。
+
