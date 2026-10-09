@@ -21,10 +21,10 @@ module Karte
         @media_adapter = media_adapter
       end
 
-      def call(viewer_account_id:, target_account_id:, limit: 20, cursor: nil)
+      def call(viewer_account_id:, target_profile_id:, limit: 20, cursor: nil)
         raise AccessError, "Karte access required" unless authorize_cast_access.call(viewer_account_id: viewer_account_id)
 
-        result = entry_repo.list_by_target(target_account_id: target_account_id, limit: limit, cursor: cursor)
+        result = entry_repo.list_by_target(target_profile_id: target_profile_id, limit: limit, cursor: cursor)
         has_more = result.length > limit
         visible = result.take(limit)
 
@@ -33,23 +33,24 @@ module Karte
           encode_cursor(created_at: last.created_at.iso8601, id: last.id)
         end
 
-        aggregate = entry_repo.aggregate(target_account_id: target_account_id)
+        aggregate = entry_repo.aggregate(target_profile_id: target_profile_id)
 
         profile_cache = {}
-        entries = visible.map { |e| present_with_author(e, profile_cache) }
+        entries = visible.map { |e| present_with_author(e, profile_cache, viewer_account_id) }
 
         { entries: entries, next_cursor: next_cursor, has_more: has_more, aggregate: aggregate }
       end
 
       private
 
-      def present_with_author(e, profile_cache)
-        profile = profile_cache[e.author_account_id] ||= get_profile.call(profile_id: e.author_account_id)
-        target_profile = profile_cache[e.target_account_id] ||= get_profile.call(profile_id: e.target_account_id)
+      def present_with_author(e, profile_cache, viewer_account_id)
+        profile = profile_cache[e.author_profile_id] ||= get_profile.call(profile_id: e.author_profile_id)
+        target_profile = profile_cache[e.target_profile_id] ||= get_profile.call(profile_id: e.target_profile_id)
         {
           id: e.id,
-          author_account_id: e.author_account_id,
-          target_account_id: e.target_account_id,
+          author_profile_id: e.author_profile_id,
+          target_profile_id: e.target_profile_id,
+          is_mine: e.author_account_id == viewer_account_id,
           author_username: profile&.username,
           author_avatar_url: avatar_url_for(profile),
           target_username: target_profile&.username,

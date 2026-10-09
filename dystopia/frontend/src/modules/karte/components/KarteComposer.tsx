@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useCreateKarte } from "../hooks/useCreateKarte";
 
 interface Props {
-  targetAccountId: string;
+  targetProfileId: string;
   onCreated?: () => void;
 }
 
-export function KarteComposer({ targetAccountId, onCreated }: Props) {
+export function KarteComposer({ targetProfileId, onCreated }: Props) {
   const { create, loading, error } = useCreateKarte();
   const [rating, setRating] = useState(3);
   const [body, setBody] = useState("");
@@ -17,7 +17,7 @@ export function KarteComposer({ targetAccountId, onCreated }: Props) {
     <form
       onSubmit={async (e) => {
         e.preventDefault();
-        const entry = await create(targetAccountId, rating, body);
+        const entry = await create(targetProfileId, rating, body);
         if (entry) {
           setBody("");
           onCreated?.();

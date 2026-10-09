@@ -7,11 +7,12 @@ module Karte
     class EntryRepository < Karte::DB::Repo
       include ::Concerns::CursorPagination
 
-      def create(author_account_id:, target_account_id:, rating:, body:)
+      def create(author_account_id:, author_profile_id:, target_profile_id:, rating:, body:)
         entry_records.command(:create).call(
           id: SecureRandom.uuid_v7,
           author_account_id: author_account_id,
-          target_account_id: target_account_id,
+          author_profile_id: author_profile_id,
+          target_profile_id: target_profile_id,
           rating: rating,
           body: body
         )
@@ -29,8 +30,8 @@ module Karte
         entry_records.by_pk(id).command(:delete).call
       end
 
-      def list_by_target(target_account_id:, limit: 20, cursor: nil)
-        scope = entry_records.where(target_account_id: target_account_id)
+      def list_by_target(target_profile_id:, limit: 20, cursor: nil)
+        scope = entry_records.where(target_profile_id: target_profile_id)
         scope = apply_cursor(scope, cursor)
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
@@ -46,9 +47,9 @@ module Karte
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def aggregate(target_account_id:)
+      def aggregate(target_profile_id:)
         row = entry_records
-          .where(target_account_id: target_account_id)
+          .where(target_profile_id: target_profile_id)
           # Remove the relation's implicit ORDER BY because PostgreSQL rejects it with aggregates.
           .dataset
           .unordered

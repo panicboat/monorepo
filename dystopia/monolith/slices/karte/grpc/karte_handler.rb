@@ -40,8 +40,9 @@ module Karte
         body = request.message.body == "" ? nil : request.message.body
         entry = wrap_errors do
           create_uc.call(
-            viewer_account_id: current_user_id,
-            target_account_id: request.message.target_account_id,
+            viewer_account_id: current_account_id,
+            viewer_profile_id: current_profile_id,
+            target_profile_id: request.message.target_profile_id,
             rating: request.message.rating,
             body: body
           )
@@ -55,7 +56,7 @@ module Karte
         body = request.message.body == "" ? nil : request.message.body
         entry = wrap_errors do
           update_uc.call(
-            viewer_account_id: current_user_id,
+            viewer_account_id: current_account_id,
             entry_id: request.message.entry_id,
             rating: rating,
             body: body
@@ -68,7 +69,7 @@ module Karte
         authenticate_user!
         wrap_errors do
           delete_uc.call(
-            viewer_account_id: current_user_id,
+            viewer_account_id: current_account_id,
             entry_id: request.message.entry_id
           )
         end
@@ -81,8 +82,8 @@ module Karte
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
         result = wrap_errors do
           list_by_target_uc.call(
-            viewer_account_id: current_user_id,
-            target_account_id: request.message.target_account_id,
+            viewer_account_id: current_account_id,
+            target_profile_id: request.message.target_profile_id,
             limit: limit,
             cursor: cursor
           )
@@ -104,7 +105,7 @@ module Karte
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
         result = wrap_errors do
           list_my_uc.call(
-            viewer_account_id: current_user_id,
+            viewer_account_id: current_account_id,
             limit: limit,
             cursor: cursor
           )
@@ -120,7 +121,7 @@ module Karte
         authenticate_user!
         wrap_errors do
           report_uc.call(
-            viewer_account_id: current_user_id,
+            viewer_account_id: current_account_id,
             entry_id: request.message.entry_id,
             reason: request.message.reason
           )
@@ -130,7 +131,7 @@ module Karte
 
       def get_my_access
         authenticate_user!
-        result = get_my_access_uc.call(viewer_account_id: current_user_id)
+        result = get_my_access_uc.call(viewer_account_id: current_account_id)
         ::Karte::V1::GetMyAccessResponse.new(
           has_access: result[:has_access],
           granted_at: result[:granted_at] ? timestamp(result[:granted_at]) : nil
@@ -143,7 +144,7 @@ module Karte
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
         result = wrap_errors do
           list_recent_uc.call(
-            viewer_account_id: current_user_id,
+            viewer_account_id: current_account_id,
             limit: limit,
             cursor: cursor
           )
@@ -175,13 +176,14 @@ module Karte
       end
 
       def present_for_author(entry)
-        profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.author_account_id)
-        target_profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.target_account_id)
+        profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.author_profile_id)
+        target_profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.target_profile_id)
         media = ::Karte::Adapters::MediaAdapter.new
         {
           id: entry.id,
-          author_account_id: entry.author_account_id,
-          target_account_id: entry.target_account_id,
+          author_profile_id: entry.author_profile_id,
+          target_profile_id: entry.target_profile_id,
+          is_mine: entry.author_account_id == current_account_id,
           author_username: profile&.username,
           author_avatar_url: media.find_url(profile&.avatar_media_id),
           target_username: target_profile&.username,
@@ -197,8 +199,9 @@ module Karte
       def entry_to_proto(e)
         ::Karte::V1::KarteEntry.new(
           id: e[:id].to_s,
-          author_account_id: e[:author_account_id].to_s,
-          target_account_id: e[:target_account_id].to_s,
+          author_profile_id: e[:author_profile_id].to_s,
+          target_profile_id: e[:target_profile_id].to_s,
+          is_mine: e[:is_mine] ? true : false,
           author_username: e[:author_username] || "",
           author_avatar_url: e[:author_avatar_url] || "",
           target_username: e[:target_username] || "",

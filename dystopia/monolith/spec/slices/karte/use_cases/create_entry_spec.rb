@@ -15,6 +15,7 @@ RSpec.describe Karte::UseCases::CreateEntry do
   let(:authorize_cast_access) { double(:authorize_cast_access) }
 
   let(:viewer_id) { "viewer-cast-1" }
+  let(:viewer_profile_id) { "viewer-profile-1" }
   let(:target_id) { "target-guest-1" }
 
   before do
@@ -25,50 +26,51 @@ RSpec.describe Karte::UseCases::CreateEntry do
     allow(get_role).to receive(:call).with(profile_id: target_id).and_return(1)
     expect(entry_repo).to receive(:create).with(
       author_account_id: viewer_id,
-      target_account_id: target_id,
+      author_profile_id: viewer_profile_id,
+      target_profile_id: target_id,
       rating: 3,
       body: "ok"
     ).and_return(double(:entry, id: "e-1"))
 
-    result = use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, rating: 3, body: "ok")
+    result = use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 3, body: "ok")
     expect(result.id).to eq("e-1")
   end
 
   it "delegates the cast/billing check to AuthorizeCastAccess and rejects when it fails" do
     allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(false)
     expect {
-      use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, rating: 3, body: "ok")
+      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 3, body: "ok")
     }.to raise_error(Karte::UseCases::CreateEntry::AccessError)
   end
 
   it "rejects when target is a Cast" do
     allow(get_role).to receive(:call).with(profile_id: target_id).and_return(2)
     expect {
-      use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, rating: 3, body: "ok")
+      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 3, body: "ok")
     }.to raise_error(Karte::UseCases::CreateEntry::CreateError, "Target must be a guest")
   end
 
   it "rejects when target does not exist" do
     allow(get_role).to receive(:call).with(profile_id: target_id).and_return(nil)
     expect {
-      use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, rating: 3, body: "ok")
+      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 3, body: "ok")
     }.to raise_error(Karte::UseCases::CreateEntry::CreateError, "Target not found")
   end
 
   it "rejects rating outside 1..5" do
     allow(get_role).to receive(:call).with(profile_id: target_id).and_return(1)
     expect {
-      use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, rating: 0, body: "ok")
+      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 0, body: "ok")
     }.to raise_error(Karte::UseCases::CreateEntry::CreateError, "Rating must be 1..5")
     expect {
-      use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, rating: 6, body: "ok")
+      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 6, body: "ok")
     }.to raise_error(Karte::UseCases::CreateEntry::CreateError, "Rating must be 1..5")
   end
 
   it "rejects body over 500 chars" do
     allow(get_role).to receive(:call).with(profile_id: target_id).and_return(1)
     expect {
-      use_case.call(viewer_account_id: viewer_id, target_account_id: target_id, rating: 3, body: "x" * 501)
+      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 3, body: "x" * 501)
     }.to raise_error(Karte::UseCases::CreateEntry::CreateError, "Body too long")
   end
 end

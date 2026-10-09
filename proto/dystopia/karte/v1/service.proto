@@ -17,8 +17,8 @@ service KarteService {
 
 message KarteEntry {
   string id = 1;
-  string author_account_id = 2;
-  string target_account_id = 3;
+  string author_profile_id = 2;
+  string target_profile_id = 3;
   string author_username = 4;
   string author_avatar_url = 5;
   int32 rating = 6;
@@ -28,6 +28,7 @@ message KarteEntry {
   google.protobuf.Timestamp updated_at = 10;
   string target_username = 11;
   string target_avatar_url = 12;
+  bool is_mine = 13;
 }
 
 message Aggregate {
@@ -36,7 +37,7 @@ message Aggregate {
 }
 
 message CreateEntryRequest {
-  string target_account_id = 1;
+  string target_profile_id = 1;
   int32 rating = 2;
   string body = 3;
 }
@@ -53,7 +54,7 @@ message DeleteEntryRequest { string entry_id = 1; }
 message DeleteEntryResponse {}
 
 message ListEntriesByTargetRequest {
-  string target_account_id = 1;
+  string target_profile_id = 1;
   int32 limit = 2;
   string cursor = 3;
 }

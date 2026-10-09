@@ -6,7 +6,8 @@ module Karte
       schema(:"karte__entries", as: :entry_records, infer: false) do
         attribute :id, Types::String
         attribute :author_account_id, Types::String
-        attribute :target_account_id, Types::String
+        attribute :author_profile_id, Types::String
+        attribute :target_profile_id, Types::String
         attribute :rating, Types::Integer
         attribute :body, Types::String.optional
         attribute :reported_count, Types::Integer

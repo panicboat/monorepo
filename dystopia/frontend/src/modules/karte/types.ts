@@ -1,7 +1,8 @@
 export interface KarteEntry {
   id: string;
-  authorAccountId: string;
-  targetAccountId: string;
+  authorProfileId: string;
+  targetProfileId: string;
+  isMine: boolean;
   authorUsername: string;
   authorAvatarUrl: string;
   targetUsername: string;

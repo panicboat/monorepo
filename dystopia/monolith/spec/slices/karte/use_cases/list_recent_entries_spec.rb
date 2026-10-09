@@ -22,8 +22,8 @@ RSpec.describe Karte::UseCases::ListRecentEntries do
   let(:entry_flagged) do
     double(:entry,
       id: "e-1",
-      author_account_id: "author-1",
-      target_account_id: "target-1",
+      author_account_id: "author-1", author_profile_id: "author-1-profile",
+      target_profile_id: "target-1",
       rating: 5,
       body: "flagged entry",
       reported_count: 5,
@@ -34,8 +34,8 @@ RSpec.describe Karte::UseCases::ListRecentEntries do
   let(:entry_clean) do
     double(:entry,
       id: "e-2",
-      author_account_id: "author-2",
-      target_account_id: "target-2",
+      author_account_id: "author-2", author_profile_id: "author-2-profile",
+      target_profile_id: "target-2",
       rating: 3,
       body: "clean entry",
       reported_count: 0,
@@ -55,8 +55,8 @@ RSpec.describe Karte::UseCases::ListRecentEntries do
   it "returns entries across authors when the viewer is a cast" do
     allow(entry_repo).to receive(:list_recent).with(limit: 2, cursor: nil)
       .and_return([entry_flagged, entry_clean])
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1").and_return(profile1)
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2").and_return(profile2)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1-profile").and_return(profile1)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2-profile").and_return(profile2)
     allow(get_profile_uc).to receive(:call).with(profile_id: "target-1").and_return(target_profile1)
     allow(get_profile_uc).to receive(:call).with(profile_id: "target-2").and_return(target_profile2)
     allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
@@ -82,8 +82,8 @@ RSpec.describe Karte::UseCases::ListRecentEntries do
   it "sets has_more and next_cursor when the repo returns limit + 1 rows" do
     extra_entry = double(:entry,
       id: "e-3",
-      author_account_id: "author-1",
-      target_account_id: "target-1",
+      author_account_id: "author-1", author_profile_id: "author-1-profile",
+      target_profile_id: "target-1",
       rating: 4,
       body: "extra",
       reported_count: 0,
@@ -92,8 +92,8 @@ RSpec.describe Karte::UseCases::ListRecentEntries do
 
     allow(entry_repo).to receive(:list_recent).with(limit: 2, cursor: nil)
       .and_return([entry_flagged, entry_clean, extra_entry])
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1").and_return(profile1)
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2").and_return(profile2)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1-profile").and_return(profile1)
+    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2-profile").and_return(profile2)
     allow(get_profile_uc).to receive(:call).with(profile_id: "target-1").and_return(target_profile1)
     allow(get_profile_uc).to receive(:call).with(profile_id: "target-2").and_return(target_profile2)
     allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
@@ -108,11 +108,11 @@ RSpec.describe Karte::UseCases::ListRecentEntries do
   it "returns entries after a cursor when timestamps differ only by microseconds" do
     base_time = Time.utc(2026, 1, 1, 0, 0, 0)
     all_entries = [
-      double(:entry, id: "e-1", author_account_id: "author-1", target_account_id: "target-1",
+      double(:entry, id: "e-1", author_account_id: "author-1", author_profile_id: "author-1-profile", target_profile_id: "target-1",
         rating: 5, body: "newest", reported_count: 0, created_at: base_time + 0.900_000, updated_at: base_time),
-      double(:entry, id: "e-2", author_account_id: "author-2", target_account_id: "target-2",
+      double(:entry, id: "e-2", author_account_id: "author-2", author_profile_id: "author-2-profile", target_profile_id: "target-2",
         rating: 4, body: "middle", reported_count: 0, created_at: base_time + 0.800_000, updated_at: base_time),
-      double(:entry, id: "e-3", author_account_id: "author-3", target_account_id: "target-3",
+      double(:entry, id: "e-3", author_account_id: "author-3", author_profile_id: "author-3-profile", target_profile_id: "target-3",
         rating: 3, body: "oldest", reported_count: 0, created_at: base_time + 0.700_000, updated_at: base_time)
     ]
     allow(entry_repo).to receive(:list_recent) do |limit:, cursor:|
@@ -152,5 +152,31 @@ RSpec.describe Karte::UseCases::ListRecentEntries do
     result = use_case.call(viewer_account_id: viewer_id, limit: -5)
 
     expect(result[:entries]).to eq([])
+  end
+
+  it "marks an entry as mine by the owning account, whichever profile wrote it" do
+    mine = double(:entry, id: "e-mine", author_account_id: viewer_id, author_profile_id: "other-persona",
+      target_profile_id: "target-x", rating: 3, body: nil, reported_count: 0, created_at: now, updated_at: now)
+    theirs = double(:entry, id: "e-theirs", author_account_id: "someone-else", author_profile_id: "their-persona",
+      target_profile_id: "target-x", rating: 3, body: nil, reported_count: 0, created_at: now, updated_at: now)
+    allow(entry_repo).to receive(:list_recent).and_return([mine, theirs])
+    allow(get_profile_uc).to receive(:call).and_return(nil)
+
+    entries = use_case.call(viewer_account_id: viewer_id)[:entries]
+
+    expect(entries.map { |e| e[:is_mine] }).to eq([true, false])
+    expect(entries.map { |e| e[:author_profile_id] }).to eq(["other-persona", "their-persona"])
+  end
+
+  it "never includes the author's account id in a presented entry" do
+    entry = double(:entry, id: "e-1", author_account_id: "secret-account", author_profile_id: "persona-1",
+      target_profile_id: "target-x", rating: 3, body: nil, reported_count: 0, created_at: now, updated_at: now)
+    allow(entry_repo).to receive(:list_recent).and_return([entry])
+    allow(get_profile_uc).to receive(:call).and_return(nil)
+
+    presented = use_case.call(viewer_account_id: viewer_id)[:entries].first
+
+    expect(presented).not_to have_key(:author_account_id)
+    expect(presented.values).not_to include("secret-account")
   end
 end
