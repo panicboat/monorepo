@@ -33,7 +33,7 @@ export default function ChatPage() {
   }
 
   return (
-    <main className="mx-auto flex h-[100dvh] max-w-xl flex-col bg-bg text-text-primary">
+    <main className="mx-auto flex h-full max-w-xl flex-col bg-bg text-text-primary">
       <header className="sticky top-0 z-10 border-b border-border bg-bg/95 px-4 py-3 backdrop-blur">
         <h1 className="text-base font-bold">チャット</h1>
       </header>
