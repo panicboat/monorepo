@@ -21,6 +21,11 @@ base_posts = {
     { content: "[Rin/Public/Public] 雨の日は少し寂しいですね☔ でも、あなたに会えたら嬉しいな。", visibility: "public", hashtags: ["雨の日", "会いたい"] },
     { content: "[Rin/Public/Private] フォロワーさん限定のオフショットです📸", visibility: "private", hashtags: ["オフショット", "限定"] },
   ],
+  3 => [
+    { content: "[Yuna大阪/Public/Public] 今週は大阪に出勤します！梅田でお待ちしています✨", visibility: "public", hashtags: ["大阪", "出勤予定"] },
+    { content: "[Yuna大阪/Public/Public] 大阪のおすすめランチを教えてください🍴", visibility: "public", hashtags: ["大阪", "日常"] },
+    { content: "[Yuna大阪/Public/Private] 大阪のフォロワーさん限定のお知らせです🔒", visibility: "private", hashtags: ["フォロワー限定"] },
+  ],
 }
 
 
@@ -76,7 +81,7 @@ extra_posts = {
 }
 
 post_count = 0
-CAST_PROFILE_IDS.each_with_index do |author_profile_id, cast_idx|
+(CAST_PROFILE_IDS + [YUNA_OSAKA_PROFILE_ID]).each_with_index do |author_profile_id, cast_idx|
   next unless author_profile_id
 
   existing = db[:"post__posts"].where(author_profile_id: author_profile_id).count

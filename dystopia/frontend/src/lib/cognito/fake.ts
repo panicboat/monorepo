@@ -11,7 +11,7 @@ type FakeUser = {
 const users = new Map<string, FakeUser>();
 export const FAKE_CONFIRMATION_CODE = "000000";
 
-// Subs mirror the fixed account ids in monolith config/db/seeds/identity/users.rb so seeded accounts can sign in.
+// Subs mirror the fixed account ids in monolith config/db/seeds/identity/accounts.rb so seeded accounts can sign in.
 const SEED_USERS: Array<{ phone: string; sub: string }> = [
   { phone: "+819000000101", sub: "11111111-1111-4111-8111-111111111111" },
   { phone: "+819000000102", sub: "22222222-2222-4222-8222-222222222222" },

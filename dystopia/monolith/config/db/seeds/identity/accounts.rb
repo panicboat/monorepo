@@ -24,7 +24,7 @@ db = Seeds::Helper.db
   )
 end
 
-CAST_USER_IDS = cast_accounts.map { |account| account[:id] }
-GUEST_USER_IDS = guest_accounts.map { |account| account[:id] }
+CAST_ACCOUNT_IDS = cast_accounts.map { |account| account[:id] }
+GUEST_ACCOUNT_IDS = guest_accounts.map { |account| account[:id] }
 
-puts "  Created #{CAST_USER_IDS.size} cast accounts, #{GUEST_USER_IDS.size} guest accounts"
+puts "  Created #{CAST_ACCOUNT_IDS.size} cast accounts, #{GUEST_ACCOUNT_IDS.size} guest accounts"
