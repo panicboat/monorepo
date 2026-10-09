@@ -50,8 +50,10 @@ A PR-label / push-driven CI pipeline produces container images; Flux pulls them 
 flowchart LR
   PR[PR / push main] --> Resolver[label-resolver]
   Resolver -->|stack: container| Builder[container-builder]
+  Resolver -->|stack: terragrunt| Terragrunt[terragrunt-executor<br/>plan on PR / apply on main]
   Resolver -->|stack: kubernetes| Diff[kubernetes diff<br/>PR comment]
   Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
+  Terragrunt --> AWS[(AWS)]
   GHCR --> Flux[Flux CD]
   Main[Commit on main] --> Flux
   Flux --> K8s[(Kubernetes)]
@@ -59,23 +61,38 @@ flowchart LR
 
 ### Mechanics
 
-- **Trigger**: `.github/workflows/auto-label--deploy-trigger.yaml` runs on PR labels and main pushes. `panicboat/deploy-actions/label-resolver` reads `workflow-config.yaml` and dispatches to the matching stack workflow.
-- **Stacks** (see `stack_conventions` in `workflow-config.yaml`):
-  - `container` → builds `dystopia/{service}` or `system-components/{service}` and pushes to GHCR.
-  - `terragrunt` → runs `terragrunt plan/apply` under `dystopia/{service}/aws/{environment}` or `system-components/{service}/infrastructure/aws/{environment}`. `dystopia/infrastructure` is a shared stack for frontend/monolith's AWS resources (Cognito, RDS) — not a real deployable service.
-  - `kubernetes` → posts a kustomize diff on the PR. Apply is delegated to Flux; CI does not run `kubectl apply`.
-- **Versioning**: release-please (each service's `release-please-config.json`) raises per-service release PRs. Merging the release PR creates a `<service>-vX.Y.Z` tag, which triggers the container build under that tag.
-- **GitOps**: `clusters/<environment>/dystopia/<service>/image-policy.yaml` selects the latest matching semver from GHCR. `ImageUpdateAutomation` commits the new tag back into the overlay, keeping what runs in the cluster identical to what is checked in.
+#### Trigger
+
+1. [`auto-label--label-dispatcher.yaml`](.github/workflows/auto-label--label-dispatcher.yaml) runs [`label-dispatcher`](https://github.com/panicboat/deploy-actions/tree/main/label-dispatcher) on every PR update and puts a `deploy:<service>` label on the PR for each service the diff touches.
+2. [`auto-label--deploy-trigger.yaml`](.github/workflows/auto-label--deploy-trigger.yaml) runs when a PR is labeled and on every push to `main`. [`label-resolver`](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) reads `stacks` in [`workflow-config.yaml`](workflow-config.yaml) and turns the labels into deploy targets.
+3. Each target goes to the reusable workflow of its stack.
+
+#### Stacks
+
+| Stack | Target path | Workflow | On a PR | On push to `main` |
+| --- | --- | --- | --- | --- |
+| `container` | `dystopia/{service}`<br>`system-components/{service}` | [`reusable--container-builder.yaml`](.github/workflows/reusable--container-builder.yaml) | Build and push to GHCR | Build and push to GHCR |
+| `terragrunt` | `dystopia/{service}/aws/{environment}`<br>`system-components/{service}/infrastructure/aws/{environment}` | [`reusable--terragrunt-executor.yaml`](.github/workflows/reusable--terragrunt-executor.yaml) → [`terragrunt-run`](https://github.com/panicboat/panicboat-actions/tree/main/terragrunt-run) | `terragrunt plan` | `terragrunt apply` |
+| `kubernetes` | `dystopia/{service}/kubernetes/overlays/{environment}`<br>`system-components/{service}/kubernetes/overlays/{environment}` | [`reusable--kubernetes-builder.yaml`](.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. Flux applies; CI never runs `kubectl apply` |
+
+[`dystopia/infrastructure`](dystopia/infrastructure) is a `terragrunt` stack that holds the AWS resources frontend and monolith share (Cognito, RDS). It is not a deployable service.
+
+#### Versioning
+
+1. [`release.yml`](.github/workflows/release.yml) runs release-please once for every `release-please-config.json` (e.g. [`dystopia/monolith/release-please-config.json`](dystopia/monolith/release-please-config.json)) and raises one release PR per service.
+2. Merging a release PR publishes the release `<service>-vX.Y.Z`.
+3. [`auto-release--trigger.yaml`](.github/workflows/auto-release--trigger.yaml) builds the container for that release and tags the image `vX.Y.Z`.
+
+[`docs/RELEASE_PLEASE.md`](docs/RELEASE_PLEASE.md) explains why each service has its own config.
+
+#### GitOps
+
+Each service has a directory under `clusters/<environment>/` (e.g. [`clusters/production/dystopia/monolith`](clusters/production/dystopia/monolith)).
+
+- [`image-policy.yaml`](clusters/production/dystopia/monolith/image-policy.yaml) selects the highest `vX.Y.Z` tag on GHCR.
+- [`image-automation.yaml`](clusters/production/dystopia/monolith/image-automation.yaml) commits that tag into the service's overlay (e.g. [`dystopia/monolith/kubernetes/overlays/production`](dystopia/monolith/kubernetes/overlays/production)), so what runs in the cluster is what is checked in.
 
 ### Related Repositories
 
 - [panicboat/platform](https://github.com/panicboat/platform) — cluster bootstrap, shared components, OIDC IAM.
 - [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — reusable GitHub Actions (`label-resolver`, `container-builder`, `terragrunt`, `auto-approve`).
-
-## 🪝 Git Hooks
-
-Hooks under `.githooks/` mechanically enforce this repo's commit conventions (e.g. no `Co-Authored-By` line). Enable them once:
-
-```sh
-git config core.hooksPath .githooks
-```

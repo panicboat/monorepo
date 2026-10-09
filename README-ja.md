@@ -50,8 +50,10 @@ PR ラベルおよび `main` への push を起点とした CI が GHCR にコ�
 flowchart LR
   PR[PR / push main] --> Resolver[label-resolver]
   Resolver -->|stack: container| Builder[container-builder]
+  Resolver -->|stack: terragrunt| Terragrunt[terragrunt-executor<br/>plan on PR / apply on main]
   Resolver -->|stack: kubernetes| Diff[kubernetes diff<br/>PR comment]
   Builder --> GHCR[(ghcr.io/panicboat/monorepo)]
+  Terragrunt --> AWS[(AWS)]
   GHCR --> Flux[Flux CD]
   Main[Commit on main] --> Flux
   Flux --> K8s[(Kubernetes)]
@@ -59,23 +61,38 @@ flowchart LR
 
 ### Mechanics
 
-- **Trigger**: `.github/workflows/auto-label--deploy-trigger.yaml` が PR ラベルと main への push を起点に起動する。`panicboat/deploy-actions/label-resolver` が `workflow-config.yaml` を読み、該当の stack ワークフローへディスパッチする。
-- **Stacks**（`workflow-config.yaml` の `stack_conventions` を参照）:
-  - `container` → `dystopia/{service}` または `system-components/{service}` をビルドして GHCR に push。
-  - `terragrunt` → `dystopia/{service}/aws/{environment}` または `system-components/{service}/infrastructure/aws/{environment}` で `terragrunt plan/apply` を実行する。`dystopia/infrastructure` は frontend/monolith 共有の AWS リソース（Cognito、RDS）を持つ stack であり、実際にデプロイされるサービスではない。
-  - `kubernetes` → PR に kustomize diff をコメントする。apply は Flux に委譲しており、CI 側で `kubectl apply` は実行しない。
-- **Versioning**: release-please（各サービスの `release-please-config.json`）がサービスごとに release PR を起票する。release PR のマージで `<service>-vX.Y.Z` の semver tag が打たれ、その tag 起点でコンテナビルドが走る。
-- **GitOps**: `clusters/<environment>/dystopia/<service>/image-policy.yaml` が GHCR から最新の semver tag を選び、`ImageUpdateAutomation` がその tag を overlay にコミットバックする。クラスタで稼働しているものとリポジトリにコミットされているものを一致させるための構成。
+#### Trigger
+
+1. [`auto-label--label-dispatcher.yaml`](.github/workflows/auto-label--label-dispatcher.yaml) が PR の更新ごとに [`label-dispatcher`](https://github.com/panicboat/deploy-actions/tree/main/label-dispatcher) を実行し、差分が触れたサービスごとに `deploy:<service>` ラベルを PR に付ける。
+2. [`auto-label--deploy-trigger.yaml`](.github/workflows/auto-label--deploy-trigger.yaml) が PR へのラベル付与と `main` への push で起動する。[`label-resolver`](https://github.com/panicboat/deploy-actions/tree/main/label-resolver) が [`workflow-config.yaml`](workflow-config.yaml) の `stacks` を読み、ラベルをデプロイ対象に変換する。
+3. 各デプロイ対象は、その stack の reusable workflow に渡される。
+
+#### Stacks
+
+| Stack | 対象パス | Workflow | PR | `main` への push |
+| --- | --- | --- | --- | --- |
+| `container` | `dystopia/{service}`<br>`system-components/{service}` | [`reusable--container-builder.yaml`](.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push |
+| `terragrunt` | `dystopia/{service}/aws/{environment}`<br>`system-components/{service}/infrastructure/aws/{environment}` | [`reusable--terragrunt-executor.yaml`](.github/workflows/reusable--terragrunt-executor.yaml) → [`terragrunt-run`](https://github.com/panicboat/panicboat-actions/tree/main/terragrunt-run) | `terragrunt plan` | `terragrunt apply` |
+| `kubernetes` | `dystopia/{service}/kubernetes/overlays/{environment}`<br>`system-components/{service}/kubernetes/overlays/{environment}` | [`reusable--kubernetes-builder.yaml`](.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。apply は Flux が行い、CI は `kubectl apply` を実行しない |
+
+[`dystopia/infrastructure`](dystopia/infrastructure) は frontend と monolith が共有する AWS リソース（Cognito、RDS）を持つ `terragrunt` stack であり、デプロイされるサービスではない。
+
+#### Versioning
+
+1. [`release.yml`](.github/workflows/release.yml) が `release-please-config.json`（例: [`dystopia/monolith/release-please-config.json`](dystopia/monolith/release-please-config.json)）ごとに release-please を実行し、サービスごとに release PR を起票する。
+2. release PR をマージすると、release `<service>-vX.Y.Z` が公開される。
+3. [`auto-release--trigger.yaml`](.github/workflows/auto-release--trigger.yaml) がその release のコンテナをビルドし、イメージに `vX.Y.Z` の tag を付ける。
+
+サービスごとに config を分けている理由は [`docs/RELEASE_PLEASE.md`](docs/RELEASE_PLEASE.md) に書いてある。
+
+#### GitOps
+
+各サービスは `clusters/<environment>/` 配下にディレクトリを持つ（例: [`clusters/production/dystopia/monolith`](clusters/production/dystopia/monolith)）。
+
+- [`image-policy.yaml`](clusters/production/dystopia/monolith/image-policy.yaml) が GHCR から最も新しい `vX.Y.Z` の tag を選ぶ。
+- [`image-automation.yaml`](clusters/production/dystopia/monolith/image-automation.yaml) がその tag をサービスの overlay（例: [`dystopia/monolith/kubernetes/overlays/production`](dystopia/monolith/kubernetes/overlays/production)）にコミットする。クラスタで動いているものとリポジトリにあるものが一致する。
 
 ### Related Repositories
 
 - [panicboat/platform](https://github.com/panicboat/platform) — クラスタ bootstrap、共通コンポーネント、OIDC IAM。
 - [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — 再利用可能な GitHub Actions（`label-resolver` / `container-builder` / `terragrunt` / `auto-approve`）。
-
-## 🪝 Git Hooks
-
-本リポジトリの commit 規約（`Co-Authored-By` 行の禁止 等）を機械的に検証する hook を `.githooks/` 配下に置いている。有効化するには一度だけ実行する。
-
-```sh
-git config core.hooksPath .githooks
-```
