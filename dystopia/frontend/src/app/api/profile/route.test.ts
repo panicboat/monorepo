@@ -78,5 +78,6 @@ describe("/api/profile", () => {
     const res = await POST(request("POST", { displayName: "Coco" }));
 
     expect(res.status).toBe(422);
+    expect((await res.json()).error).toBe("プロフィールをこれ以上追加できません");
   });
 });

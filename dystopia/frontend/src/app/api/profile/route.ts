@@ -58,6 +58,9 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ profile: mapProfileToView(res.profile) });
   } catch (error: unknown) {
+    if (isConnectError(error) && error.code === GrpcCode.FAILED_PRECONDITION) {
+      return NextResponse.json({ error: "プロフィールをこれ以上追加できません" }, { status: 422 });
+    }
     return handleApiError(error, "CreateProfile");
   }
 }
