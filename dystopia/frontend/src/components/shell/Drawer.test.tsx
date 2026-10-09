@@ -78,6 +78,19 @@ const { AccountProfilesProvider } = await import("@/modules/profile/context/Acco
 const { emptyProfileView } = await import("@/modules/profile/lib/mappers");
 
 describe("Drawer", () => {
+  it("takes its links and buttons out of reach while closed and gives them back when open", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    profileMocks.useProfile.mockReturnValue({ profile: null });
+    const menu = (html: string) => html.match(/<aside[^>]*>/)?.[0] ?? "";
+
+    const closed = menu(renderToStaticMarkup(<Drawer open={false} onClose={() => {}} onOpen={() => {}} />));
+    const open = menu(renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />));
+
+    expect(closed).toContain("inert");
+    expect(closed).toContain('aria-hidden="true"');
+    expect(open).not.toContain("inert");
+  });
+
   it("offers the account's other profiles to switch to", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
     profileMocks.useProfile.mockReturnValue({ profile: null });
