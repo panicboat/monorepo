@@ -27,6 +27,8 @@ import { FeatureTourModal } from "@/modules/onboarding/components/FeatureTourMod
 import { LandingPage } from "@/modules/landing/components/LandingPage";
 import { resolveShellRedirect } from "./resolveShellRedirect";
 import { resolveShellMode } from "./resolveShellMode";
+import { resolveShellLayout } from "./resolveShellLayout";
+import { cn } from "@/lib/utils";
 
 const AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/onboarding"];
 
@@ -131,23 +133,35 @@ export function AppShell({ children }: AppShellProps) {
     );
   }
 
+  const fitsViewport = resolveShellLayout(pathname) === "viewport";
+
   // Give each acting profile its own cache: keys carry no profile id, so a shared cache would show one profile's data to the next.
   return (
     <SWRConfig key={activeProfileId} value={PROFILE_CACHE_CONFIG}>
       <AccountProfilesProvider value={accountProfiles}>
-        <div className="flex min-h-dvh flex-col bg-bg [touch-action:pan-y_pinch-zoom]">
+        <div
+          className={cn(
+            "flex flex-col bg-bg [touch-action:pan-y_pinch-zoom]",
+            fitsViewport ? "h-dvh overflow-hidden" : "min-h-dvh"
+          )}
+        >
           <div className="md:hidden">
             <TopBar onAvatarClick={() => setDrawerOpen(true)} />
           </div>
-          <div className="mx-auto flex w-full max-w-screen-xl flex-1">
+          <div className={cn("mx-auto flex w-full max-w-screen-xl flex-1", fitsViewport && "min-h-0")}>
             <SideNav />
-            <main className="min-w-0 flex-1 pb-24 md:max-w-2xl md:border-x md:border-border md:pb-0">
+            <main
+              className={cn(
+                "min-w-0 flex-1 md:max-w-2xl md:border-x md:border-border",
+                fitsViewport ? "min-h-0" : "pb-24 md:pb-0"
+              )}
+            >
               {pathSwitchedAwayFrom === pathname ? null : children}
             </main>
             <SuggestedUsersPane />
           </div>
           <BottomTab />
-          <ComposerFAB />
+          {!fitsViewport && <ComposerFAB />}
           <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
           <FeatureTourModal />
         </div>
