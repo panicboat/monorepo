@@ -17,7 +17,7 @@ export interface TabsProps {
 
 export function Tabs({ items, value, onValueChange, className }: TabsProps) {
   return (
-    <div role="tablist" className={cn("flex border-b border-divider", className)}>
+    <div role="tablist" className={cn("flex overflow-x-auto border-b border-divider", className)}>
       {items.map((item) => {
         const active = item.id === value;
         return (
@@ -27,7 +27,7 @@ export function Tabs({ items, value, onValueChange, className }: TabsProps) {
             aria-selected={active}
             onClick={() => onValueChange(item.id)}
             className={cn(
-              "relative px-4 py-3 text-sm font-medium transition-colors",
+              "relative shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium transition-colors",
               active
                 ? "text-text-primary"
                 : "text-text-secondary hover:text-text-primary"

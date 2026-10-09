@@ -49,12 +49,7 @@ export default function SettingsPage() {
       <div className="px-4 pt-4">
         <SettingsHeader />
       </div>
-      <Tabs
-        items={items}
-        value={tab}
-        onValueChange={setTab}
-        className="overflow-x-auto [&>button]:shrink-0 [&>button]:whitespace-nowrap"
-      />
+      <Tabs items={items} value={tab} onValueChange={setTab} />
       <div className="px-4">
         {tab === "notifications" && <NotificationSettings />}
         {tab === "privacy" && <PrivacySettings profile={profile} save={saveProfile} />}
