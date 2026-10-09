@@ -2,6 +2,8 @@
 
 require "spec_helper"
 require "storage/local_adapter"
+require "fileutils"
+require "securerandom"
 
 RSpec.describe Storage::LocalAdapter do
   let(:adapter) { described_class.new(base_url: "http://localhost:3000") }
@@ -105,6 +107,21 @@ RSpec.describe Storage::LocalAdapter do
       url = adapter.download_url(key: "test.jpg")
 
       expect(url).to include("/custom/files/test.jpg")
+    end
+  end
+
+  describe "#tag" do
+    it "answers whether the file was uploaded, since a local file carries no tags" do
+      key = "media/spec-profile/#{SecureRandom.uuid}.txt"
+      path = File.join("public", "uploads", key)
+
+      expect(adapter.tag(key: key, tags: { "owner-account-id" => "a" })).to be false
+
+      FileUtils.mkdir_p(File.dirname(path))
+      File.write(path, "x")
+      expect(adapter.tag(key: key, tags: { "owner-account-id" => "a" })).to be true
+    ensure
+      FileUtils.rm_rf(File.join("public", "uploads", "media", "spec-profile"))
     end
   end
 end

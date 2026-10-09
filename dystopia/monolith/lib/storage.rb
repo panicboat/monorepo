@@ -30,6 +30,10 @@ module Storage
       adapter.delete(key: key)
     end
 
+    def tag(key:, tags:)
+      adapter.tag(key: key, tags: tags)
+    end
+
     private
 
     def default_adapter

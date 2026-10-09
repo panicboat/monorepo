@@ -34,5 +34,17 @@ module Storage
       # FALLBACK: Return false when deletion fails.
       false
     end
+
+    def tag(key:, tags:)
+      return false if key.to_s.empty?
+
+      tag_set = tags.map { |name, value| { key: name.to_s, value: value.to_s } }
+      @client.put_object_tagging(bucket: @bucket, key: key, tagging: { tag_set: tag_set })
+      true
+    rescue Aws::S3::Errors::ServiceError => e
+      warn "[Storage::S3Adapter] Failed to tag #{key}: #{e.message}"
+      # FALLBACK: Return false when the object is missing or cannot be tagged.
+      false
+    end
   end
 end

@@ -34,5 +34,10 @@ module Storage
       # FALLBACK: Return false when deletion fails.
       false
     end
+
+    # Local files carry no tags, so the owner is kept in the database row alone.
+    def tag(key:, tags:)
+      File.exist?(File.join("public", "uploads", key.to_s))
+    end
   end
 end

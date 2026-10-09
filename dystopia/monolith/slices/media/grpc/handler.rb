@@ -34,12 +34,10 @@ module Media
       def get_upload_url
         authenticate_user!
 
-        media_type = media_type_enum_to_string(request.message.media_type)
-
         result = get_upload_url_uc.call(
           filename: request.message.filename,
           content_type: request.message.content_type,
-          media_type: media_type
+          profile_id: current_profile_id
         )
 
         unless result
@@ -66,16 +64,17 @@ module Media
           content_type: request.message.content_type,
           size_bytes: request.message.size_bytes,
           thumbnail_key: request.message.thumbnail_key.empty? ? nil : request.message.thumbnail_key,
-          uploader_profile_id: current_profile_id
+          uploader_profile_id: current_profile_id,
+          owner_account_id: current_account_id
         )
-
-        unless result
-          raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Invalid input")
-        end
 
         ::Media::V1::RegisterMediaResponse.new(
           media: MediaPresenter.to_proto(result)
         )
+      rescue UseCases::RegisterMedia::KeyNotIssuedError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, "Invalid input")
+      rescue UseCases::RegisterMedia::UploadMissingError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, "The file has not been uploaded")
       end
 
       def get_media
