@@ -77,8 +77,6 @@ The paths each stack covers are defined in `stacks` in [`workflow-config.yaml`](
 | `terragrunt` | [`reusable--terragrunt-executor.yaml`](.github/workflows/reusable--terragrunt-executor.yaml) → [`terragrunt-run`](https://github.com/panicboat/panicboat-actions/tree/main/terragrunt-run) | `terragrunt plan` | `terragrunt apply` |
 | `kubernetes` | [`reusable--kubernetes-builder.yaml`](.github/workflows/reusable--kubernetes-builder.yaml) | Kustomize diff as a PR comment | Nothing. Flux applies; CI never runs `kubectl apply` |
 
-[`dystopia/infrastructure`](dystopia/infrastructure) is a `terragrunt` stack that holds the AWS resources frontend and monolith share (Cognito, RDS). It is not a deployable service.
-
 #### Versioning
 
 1. [`release.yml`](.github/workflows/release.yml) runs release-please once for every `release-please-config.json` (e.g. [`dystopia/monolith/release-please-config.json`](dystopia/monolith/release-please-config.json)) and raises one release PR per service.

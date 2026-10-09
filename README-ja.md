@@ -77,8 +77,6 @@ flowchart LR
 | `terragrunt` | [`reusable--terragrunt-executor.yaml`](.github/workflows/reusable--terragrunt-executor.yaml) → [`terragrunt-run`](https://github.com/panicboat/panicboat-actions/tree/main/terragrunt-run) | `terragrunt plan` | `terragrunt apply` |
 | `kubernetes` | [`reusable--kubernetes-builder.yaml`](.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。apply は Flux が行い、CI は `kubectl apply` を実行しない |
 
-[`dystopia/infrastructure`](dystopia/infrastructure) は frontend と monolith が共有する AWS リソース（Cognito、RDS）を持つ `terragrunt` stack であり、デプロイされるサービスではない。
-
 #### Versioning
 
 1. [`release.yml`](.github/workflows/release.yml) が `release-please-config.json`（例: [`dystopia/monolith/release-please-config.json`](dystopia/monolith/release-please-config.json)）ごとに release-please を実行し、サービスごとに release PR を起票する。
