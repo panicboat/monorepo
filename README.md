@@ -8,16 +8,15 @@
 
 ```
 .
-├── .github/workflows/   # CI: auto-label, deploy trigger, reusable builders
-├── clusters/            # Flux CD sources per environment (Kustomization, ImagePolicy)
-├── docs/                # Architecture & access policy
-├── proto/
-│   └── dystopia/        # gRPC contracts shared between dystopia services
-├── dystopia/            # One directory per service
-│   └── {service}/
-│       ├── kubernetes/  # Kustomize base & overlays
-│       └── README.md    # Service-specific notes
-└── system-components/   # Internal/ops tooling, not customer-facing — same per-service structure as dystopia/
+├── .github/workflows/        # CI: auto-label, deploy trigger, reusable builders
+├── clusters/{environment}/   # Flux CD sources (Kustomization, ImagePolicy)
+├── docs/                     # Architecture & access policy
+├── proto/{product}/          # gRPC contracts shared between the product's services
+└── {product}/
+    └── {service}/
+        ├── infrastructure/   # Terragrunt stacks
+        ├── kubernetes/       # Kustomize base & overlays
+        └── README.md         # Service-specific notes
 ```
 
 ## 🛠 Prerequisites

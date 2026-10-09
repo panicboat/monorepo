@@ -8,16 +8,15 @@
 
 ```
 .
-├── .github/workflows/   # CI ワークフロー（auto-label / deploy trigger / reusable builders）
-├── clusters/            # 環境ごとの Flux CD ソース（Kustomization / ImagePolicy）
-├── docs/                # アーキテクチャ・アクセスポリシー
-├── proto/
-│   └── dystopia/        # dystopia サービス間で共有する gRPC コントラクト
-├── dystopia/            # サービス単位のディレクトリ
-│   └── {service}/
-│       ├── kubernetes/  # Kustomize base / overlays
-│       └── README.md    # サービス固有のドキュメント
-└── system-components/   # 内部/運用ツール群（顧客向けではない） — dystopia/ と同じ per-service 構造
+├── .github/workflows/        # CI ワークフロー（auto-label / deploy trigger / reusable builders）
+├── clusters/{environment}/   # Flux CD ソース（Kustomization / ImagePolicy）
+├── docs/                     # アーキテクチャ・アクセスポリシー
+├── proto/{product}/          # product 内のサービス間で共有する gRPC コントラクト
+└── {product}/
+    └── {service}/
+        ├── infrastructure/   # Terragrunt stack
+        ├── kubernetes/       # Kustomize base / overlays
+        └── README.md         # サービス固有のドキュメント
 ```
 
 ## 🛠 Prerequisites
