@@ -2,11 +2,11 @@
 
 module Bookmarks
   module UseCases
-    class PurgeAccount
+    class PurgeProfile
       include Bookmarks::Deps[bookmark_repo: "repositories.bookmark_repository"]
 
-      def call(account_id:)
-        bookmark_repo.delete_by_profile(account_id)
+      def call(profile_id:)
+        bookmark_repo.delete_by_profile(profile_id)
         nil
       end
     end

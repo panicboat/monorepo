@@ -21,6 +21,10 @@ module Review
           )
         end
       end
+
+      def delete_by_profile(profile_id)
+        cast_settings_records.dataset.where(profile_id: profile_id).delete
+      end
     end
   end
 end

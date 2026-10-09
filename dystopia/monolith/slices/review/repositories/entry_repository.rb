@@ -30,6 +30,12 @@ module Review
         entry_records.by_pk(id).command(:delete).call
       end
 
+      def delete_by_profile(profile_id)
+        entry_records.dataset
+          .where(Sequel.|({ author_profile_id: profile_id }, { target_profile_id: profile_id }))
+          .delete
+      end
+
       def list_by_target(target_profile_id:, limit: 20, cursor: nil)
         scope = entry_records.where(target_profile_id: target_profile_id)
         scope = apply_cursor(scope, cursor)

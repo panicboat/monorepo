@@ -205,16 +205,14 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
     end
   end
 
-  describe "#delete_by_account" do
-    it "deletes every profile of the account and no others" do
-      create_profile
-      create_profile
-      other = create_profile(owner: create_account)
+  describe "#delete" do
+    it "deletes the profile and no other profile of the account" do
+      deleted = create_profile
+      kept = create_profile
 
-      repo.delete_by_account(account_id)
+      repo.delete(deleted.id)
 
-      expect(repo.list_by_account(account_id)).to eq([])
-      expect(repo.find_by_id(other.id)).not_to be_nil
+      expect(repo.list_by_account(account_id).map(&:id)).to eq([kept.id])
     end
   end
 end

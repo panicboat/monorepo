@@ -106,8 +106,8 @@ module Profile
         profiles.dataset.db[:identity__accounts].where(id: profile.account_id).get(:role)
       end
 
-      def delete_by_account(account_id)
-        profiles.dataset.where(account_id: account_id).delete
+      def delete(id)
+        profiles.dataset.where(id: id).delete
       end
 
       private

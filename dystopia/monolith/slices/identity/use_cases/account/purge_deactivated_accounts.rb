@@ -6,36 +6,13 @@ module Identity
       class PurgeDeactivatedAccounts
         GRACE_PERIOD_SECONDS = 30 * 24 * 3600
 
-        include Identity::Deps[account_repo: "repositories.account_repository"]
+        include Identity::Deps[
+          account_repo: "repositories.account_repository",
+          purge_identity: "use_cases.account.purge_identity"
+        ]
 
-        def initialize(
-          account_repo: nil,
-          purge_notifications: nil,
-          purge_footprints: nil,
-          purge_bookmarks: nil,
-          purge_karte: nil,
-          purge_messaging: nil,
-          purge_social: nil,
-          purge_post: nil,
-          purge_media: nil,
-          purge_schedule: nil,
-          purge_profile: nil,
-          purge_identity: nil,
-          logger: nil,
-          **kwargs
-        )
-          super(**kwargs.merge(account_repo: account_repo).compact)
-          @purge_notifications = purge_notifications
-          @purge_footprints = purge_footprints
-          @purge_bookmarks = purge_bookmarks
-          @purge_karte = purge_karte
-          @purge_messaging = purge_messaging
-          @purge_social = purge_social
-          @purge_post = purge_post
-          @purge_media = purge_media
-          @purge_schedule = purge_schedule
-          @purge_profile = purge_profile
-          @purge_identity = purge_identity
+        def initialize(logger: nil, **kwargs)
+          super(**kwargs)
           @logger = logger
         end
 
@@ -56,74 +33,6 @@ module Identity
         end
 
         private
-
-        def actor_cascades
-          [
-            purge_notifications,
-            purge_footprints,
-            purge_bookmarks,
-            purge_messaging,
-            purge_social,
-            purge_post,
-            purge_media,
-            purge_schedule
-          ]
-        end
-
-        def account_cascades
-          [
-            purge_karte,
-            purge_profile
-          ]
-        end
-
-        def purge_notifications
-          @purge_notifications ||= ::Notifications::Slice["use_cases.purge_account"]
-        end
-
-        def purge_footprints
-          @purge_footprints ||= ::Footprints::Slice["use_cases.purge_account"]
-        end
-
-        def purge_bookmarks
-          @purge_bookmarks ||= ::Bookmarks::Slice["use_cases.purge_account"]
-        end
-
-        def purge_karte
-          @purge_karte ||= ::Karte::Slice["use_cases.purge_account"]
-        end
-
-        def purge_messaging
-          @purge_messaging ||= ::Messaging::Slice["use_cases.purge_account"]
-        end
-
-        def purge_social
-          @purge_social ||= ::Social::Slice["use_cases.purge_account"]
-        end
-
-        def purge_post
-          @purge_post ||= ::Post::Slice["use_cases.purge_account"]
-        end
-
-        def purge_media
-          @purge_media ||= ::Media::Slice["use_cases.purge_account"]
-        end
-
-        def purge_schedule
-          @purge_schedule ||= ::Schedule::Slice["use_cases.purge_account"]
-        end
-
-        def purge_profile
-          @purge_profile ||= ::Profile::Slice["use_cases.purge_account"]
-        end
-
-        def purge_identity
-          @purge_identity ||= PurgeIdentity.new(
-            account_repo: account_repo,
-            actor_cascades: actor_cascades,
-            account_cascades: account_cascades
-          )
-        end
 
         def logger
           @logger

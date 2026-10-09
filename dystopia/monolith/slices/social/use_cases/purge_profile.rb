@@ -2,15 +2,15 @@
 
 module Social
   module UseCases
-    class PurgeAccount
+    class PurgeProfile
       include Social::Deps[
         follow_repo: "repositories.follow_repository",
         block_repo: "repositories.block_repository"
       ]
 
-      def call(account_id:)
-        follow_repo.delete_by_profile(account_id)
-        block_repo.delete_by_profile(account_id)
+      def call(profile_id:)
+        follow_repo.delete_by_profile(profile_id)
+        block_repo.delete_by_profile(profile_id)
         nil
       end
     end

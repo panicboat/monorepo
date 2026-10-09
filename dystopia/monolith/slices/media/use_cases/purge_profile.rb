@@ -2,11 +2,11 @@
 
 module Media
   module UseCases
-    class PurgeAccount
+    class PurgeProfile
       include Media::Deps[repo: "repositories.media_repository"]
 
-      def call(account_id:)
-        repo.delete_by_uploader(account_id)
+      def call(profile_id:)
+        repo.delete_by_uploader(profile_id)
         nil
       end
     end

@@ -2,12 +2,12 @@
 
 module Notifications
   module UseCases
-    class PurgeAccount
+    class PurgeProfile
       include Notifications::Deps[notification_repo: "repositories.notification_repository"]
 
-      def call(account_id:)
-        notification_repo.delete_notifications_by_profile(account_id)
-        notification_repo.delete_preferences_by_profile(account_id)
+      def call(profile_id:)
+        notification_repo.delete_notifications_by_profile(profile_id)
+        notification_repo.delete_preferences_by_profile(profile_id)
         nil
       end
     end

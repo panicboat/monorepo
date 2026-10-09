@@ -7,7 +7,7 @@ RSpec.describe "Profile::UseCases::PurgeAccount", type: :database do
   let(:repo) { Hanami.app.slices[:profile]["repositories.profile_repository"] }
   let(:cast_repo) { Hanami.app.slices[:profile]["repositories.cast_repository"] }
 
-  it "deletes every profile and cast row of the account and leaves other accounts" do
+  it "purges every profile of the account and leaves other accounts" do
     account_id = create_account(role: 2)
     first = create_account_with_profile(account_id: account_id)
     second = create_account_with_profile(account_id: account_id)

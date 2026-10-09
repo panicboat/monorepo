@@ -2,11 +2,11 @@
 
 module Schedule
   module UseCases
-    class PurgeAccount
+    class PurgeProfile
       include Schedule::Deps[schedule_repo: "repositories.schedule_repository"]
 
-      def call(account_id:)
-        schedule_repo.delete_by_profile(account_id)
+      def call(profile_id:)
+        schedule_repo.delete_by_profile(profile_id)
         nil
       end
     end
