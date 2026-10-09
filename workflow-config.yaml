@@ -1,4 +1,9 @@
 stacks:
+  - name: container
+    paths:
+      - "dystopia/{service}"
+      - "system-components/{service}"
+
   - name: terragrunt
     id: aws
     paths:
@@ -12,11 +17,6 @@ stacks:
     exclude:
       # eks-production teardown中のため無効化 (Renovate PRのCI auto-applyでdestroy済stackへの再作成を防ぐ、panicboat/platform docs/runbooks/eks-production-recreate.md 参照)
       - environment: production
-
-  - name: container
-    paths:
-      - "dystopia/{service}"
-      - "system-components/{service}"
 
   - name: kubernetes
     paths:
