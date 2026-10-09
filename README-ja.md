@@ -74,7 +74,7 @@ flowchart LR
 | Stack | Workflow | PR | `main` への push |
 | --- | --- | --- | --- |
 | `container` | [`reusable--container-builder.yaml`](.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push |
-| `terragrunt` | [`reusable--terragrunt-executor.yaml`](.github/workflows/reusable--terragrunt-executor.yaml) → [`terragrunt-run`](https://github.com/panicboat/panicboat-actions/tree/main/terragrunt-run) | `terragrunt plan` | `terragrunt apply` |
+| `terragrunt` | [`reusable--terragrunt-executor.yaml`](.github/workflows/reusable--terragrunt-executor.yaml) | `terragrunt plan` | `terragrunt apply` |
 | `kubernetes` | [`reusable--kubernetes-builder.yaml`](.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。apply は Flux が行い、CI は `kubectl apply` を実行しない |
 
 #### Versioning
