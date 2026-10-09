@@ -11,13 +11,13 @@ RSpec.describe "Post::UseCases::Posts::ListPostsByIds", type: :database do
     it "resolves mention usernames in hydrated post protos" do
       mentioned_id = create_account_with_profile(display_name: "Mentioned", username: "mentioned_user")
       post = post_repo.create_post(
-        author_id: create_account_with_profile,
+        author_profile_id: create_account_with_profile,
         content: "hi @mentioned_user",
         visibility: "public"
       )
       post_repo.save_mentions(
         post_id: post.id,
-        mentions: [{ account_id: mentioned_id, position: 3, length: 15 }]
+        mentions: [{ profile_id: mentioned_id, position: 3, length: 15 }]
       )
 
       result = use_case.call(post_ids: [post.id])

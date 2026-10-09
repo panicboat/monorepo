@@ -27,9 +27,9 @@ module Post
       def list_posts
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : decode_cursor(request.message.cursor)
-        author_id = request.message.author_id.empty? ? nil : request.message.author_id
+        author_profile_id = request.message.author_profile_id.empty? ? nil : request.message.author_profile_id
 
-        rows = post_repo.list_posts(limit: limit, cursor: cursor, author_id: author_id, media_only: request.message.media_only)
+        rows = post_repo.list_posts(limit: limit, cursor: cursor, author_profile_id: author_profile_id, media_only: request.message.media_only)
         has_more = rows.length > limit
         rows = rows.first(limit) if has_more
         next_cursor = if has_more && rows.any?
@@ -49,11 +49,11 @@ module Post
         post = post_repo.find_by_id(request.message.id)
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless post
 
-        if post.visibility == "private" && post.author_id != current_user_id
+        if post.visibility == "private" && post.author_profile_id != current_profile_id
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
         end
 
-        unless viewer_can_see_post.call(viewer_account_id: current_user_id, post: post)
+        unless viewer_can_see_post.call(viewer_account_id: current_profile_id, post: post)
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
         end
 
@@ -75,9 +75,9 @@ module Post
         is_create = m.id.empty?
 
         if is_create
-          post = post_repo.create_post(author_id: current_user_id, content: content, visibility: visibility)
+          post = post_repo.create_post(author_profile_id: current_profile_id, content: content, visibility: visibility)
         else
-          existing = post_repo.find_by_id_and_author(id: m.id, author_id: current_user_id)
+          existing = post_repo.find_by_id_and_author(id: m.id, author_profile_id: current_profile_id)
           raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless existing
           post_repo.update_post(m.id, content: content, visibility: visibility)
           post = post_repo.find_by_id(m.id)
@@ -89,18 +89,18 @@ module Post
         post = post_repo.find_by_id(post.id)
 
         if is_create
-          mentions.uniq { |mention| mention[:account_id] }.each do |mention|
+          mentions.uniq { |mention| mention[:profile_id] }.each do |mention|
             notifications_emit.call(
-              recipient_id: mention[:account_id],
+              recipient_id: mention[:profile_id],
               type: "mention",
               target_resource_id: post.id,
-              actor_id: current_user_id,
+              actor_id: current_profile_id,
               target_post_id: post.id
             )
           end
         end
 
-        mentioned_usernames = mentioned_usernames_for(mentions.map { |m| m[:account_id] })
+        mentioned_usernames = mentioned_usernames_for(mentions.map { |m| m[:profile_id] })
 
         ::Post::V1::SavePostResponse.new(post: present_post(post, mentioned_usernames: mentioned_usernames))
       end
@@ -108,7 +108,7 @@ module Post
       def delete_post
         authenticate_user!
 
-        existing = post_repo.find_by_id_and_author(id: request.message.id, author_id: current_user_id)
+        existing = post_repo.find_by_id_and_author(id: request.message.id, author_profile_id: current_profile_id)
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless existing
 
         post_repo.delete_post(request.message.id)
@@ -131,17 +131,17 @@ module Post
 
       def present_posts(rows)
         post_ids = rows.map(&:id)
-        authors = profile_author_adapter.load(rows.map(&:author_id))
+        authors = profile_author_adapter.load(rows.map(&:author_profile_id))
         likes_counts = like_repo.likes_count_batch(post_ids: post_ids)
-        comments_counts = comment_repo.comments_count_batch(post_ids: post_ids, exclude_user_ids: [])
-        liked = current_user_id ? like_repo.account_liked_status_batch(post_ids: post_ids, account_id: current_user_id) : {}
+        comments_counts = comment_repo.comments_count_batch(post_ids: post_ids, exclude_author_profile_ids: [])
+        liked = current_profile_id ? like_repo.profile_liked_status_batch(post_ids: post_ids, profile_id: current_profile_id) : {}
         media_files = load_media_files_for_posts(rows)
-        mentioned_usernames = mentioned_usernames_for(rows.flat_map { |p| p.post_mentions.map(&:account_id) })
+        mentioned_usernames = mentioned_usernames_for(rows.flat_map { |p| p.post_mentions.map(&:profile_id) })
 
         rows.map do |post|
           PostPresenter.to_post_proto(
             post,
-            author: authors[post.author_id],
+            author: authors[post.author_profile_id],
             likes_count: likes_counts[post.id] || 0,
             comments_count: comments_counts[post.id] || 0,
             liked: liked[post.id] || false,
@@ -152,16 +152,16 @@ module Post
       end
 
       def present_post(post, mentioned_usernames: nil)
-        authors = profile_author_adapter.load([post.author_id])
+        authors = profile_author_adapter.load([post.author_profile_id])
         likes_count = like_repo.likes_count(post_id: post.id)
-        comments_count = comment_repo.comments_count(post_id: post.id, exclude_user_ids: [])
-        liked = current_user_id ? like_repo.account_liked?(post_id: post.id, account_id: current_user_id) : false
+        comments_count = comment_repo.comments_count(post_id: post.id, exclude_author_profile_ids: [])
+        liked = current_profile_id ? like_repo.profile_liked?(post_id: post.id, profile_id: current_profile_id) : false
         media_files = load_media_files_for_posts([post])
-        mentioned_usernames ||= mentioned_usernames_for(post.post_mentions.map(&:account_id))
+        mentioned_usernames ||= mentioned_usernames_for(post.post_mentions.map(&:profile_id))
 
         PostPresenter.to_post_proto(
           post,
-          author: authors[post.author_id],
+          author: authors[post.author_profile_id],
           likes_count: likes_count,
           comments_count: comments_count,
           liked: liked,
@@ -170,8 +170,8 @@ module Post
         )
       end
 
-      def mentioned_usernames_for(account_ids)
-        ids = account_ids.uniq
+      def mentioned_usernames_for(profile_ids)
+        ids = profile_ids.uniq
         return {} if ids.empty?
 
         profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)

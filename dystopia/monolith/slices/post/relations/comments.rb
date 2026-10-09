@@ -7,7 +7,7 @@ module Post
         attribute :id, Types::String
         attribute :post_id, Types::String
         attribute :parent_id, Types::String.optional
-        attribute :user_id, Types::String
+        attribute :author_profile_id, Types::String
         attribute :content, Types::String
         attribute :replies_count, Types::Integer
         attribute :created_at, Types::Time

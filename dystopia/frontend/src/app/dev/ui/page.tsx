@@ -57,12 +57,12 @@ export default function DevUiPage() {
   const mockPosts: PostView[] = [
     {
       id: "mock-1",
-      authorId: "demo",
+      authorProfileId: "demo",
       content: "新作のお洋服届きました！今日はこれで出勤します🌷",
       media: [],
       createdAt: "2026-06-08T11:55:00Z",
       author: {
-        accountId: "demo",
+        profileId: "demo",
         displayName: "ゆな",
         username: "yuna",
         avatarUrl: "",
@@ -76,12 +76,12 @@ export default function DevUiPage() {
     },
     {
       id: "mock-2",
-      authorId: "guest-1",
+      authorProfileId: "guest-1",
       content: "今度の週末空いてる方いますか？",
       media: [],
       createdAt: "2026-06-08T11:00:00Z",
       author: {
-        accountId: "guest-1",
+        profileId: "guest-1",
         displayName: "ぱにっく",
         username: "panicboat",
         avatarUrl: "",

@@ -24,12 +24,12 @@ export interface ExtraTab {
 }
 
 export interface ProfileContentTabsProps {
-  accountId: string;
+  profileId: string;
   isOwnProfile?: boolean;
   extraTabs?: ExtraTab[];
 }
 
-export function ProfileContentTabs({ accountId, isOwnProfile = true, extraTabs = [] }: ProfileContentTabsProps) {
+export function ProfileContentTabs({ profileId, isOwnProfile = true, extraTabs = [] }: ProfileContentTabsProps) {
   const [tab, setTab] = useState<string>("posts");
   const tabItems = isOwnProfile ? TAB_ITEMS : TAB_ITEMS.filter((item) => item.id !== "likes");
   const allItems = [
@@ -46,10 +46,10 @@ export function ProfileContentTabs({ accountId, isOwnProfile = true, extraTabs =
         onValueChange={setTab}
       />
       <div>
-        {tab === "posts" && <AuthorPostsPane accountId={accountId} mediaOnly={false} />}
-        {tab === "replies" && <AuthorRepliesPane accountId={accountId} />}
-        {tab === "media" && <AuthorPostsPane accountId={accountId} mediaOnly={true} />}
-        {tab === "likes" && isOwnProfile && <AuthorLikesPane accountId={accountId} />}
+        {tab === "posts" && <AuthorPostsPane profileId={profileId} mediaOnly={false} />}
+        {tab === "replies" && <AuthorRepliesPane profileId={profileId} />}
+        {tab === "media" && <AuthorPostsPane profileId={profileId} mediaOnly={true} />}
+        {tab === "likes" && isOwnProfile && <AuthorLikesPane profileId={profileId} />}
         {extraTab?.content}
       </div>
     </section>
@@ -71,8 +71,8 @@ function LoadMore({ hasMore, loading, onClick }: { hasMore: boolean; loading: bo
   );
 }
 
-function AuthorPostsPane({ accountId, mediaOnly }: { accountId: string; mediaOnly: boolean }) {
-  const { posts, hasMore, loading, error, loadMore } = useAuthorPosts(accountId, mediaOnly);
+function AuthorPostsPane({ profileId, mediaOnly }: { profileId: string; mediaOnly: boolean }) {
+  const { posts, hasMore, loading, error, loadMore } = useAuthorPosts(profileId, mediaOnly);
   if (loading && posts.length === 0) return <EmptyState message="読み込み中…" />;
   if (error) return <EmptyState message="読み込みに失敗しました" />;
   if (posts.length === 0)
@@ -87,8 +87,8 @@ function AuthorPostsPane({ accountId, mediaOnly }: { accountId: string; mediaOnl
   );
 }
 
-function AuthorRepliesPane({ accountId }: { accountId: string }) {
-  const { comments, postsById, hasMore, loading, error, loadMore } = useAuthorComments(accountId);
+function AuthorRepliesPane({ profileId }: { profileId: string }) {
+  const { comments, postsById, hasMore, loading, error, loadMore } = useAuthorComments(profileId);
   if (loading && comments.length === 0) return <EmptyState message="読み込み中…" />;
   if (error) return <EmptyState message="読み込みに失敗しました" />;
   if (comments.length === 0) return <EmptyState message="まだ返信はありません" />;
@@ -102,8 +102,8 @@ function AuthorRepliesPane({ accountId }: { accountId: string }) {
   );
 }
 
-function AuthorLikesPane({ accountId }: { accountId: string }) {
-  const { posts, hasMore, loading, error, loadMore } = useAuthorLikedPosts(accountId);
+function AuthorLikesPane({ profileId }: { profileId: string }) {
+  const { posts, hasMore, loading, error, loadMore } = useAuthorLikedPosts(profileId);
   if (loading && posts.length === 0) return <EmptyState message="読み込み中…" />;
   if (error) return <EmptyState message="読み込みに失敗しました" />;
   if (posts.length === 0) return <EmptyState message="まだいいねした投稿はありません" />;

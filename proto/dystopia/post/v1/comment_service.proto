@@ -21,7 +21,7 @@ message CommentMedia {
 }
 
 message CommentAuthor {
-  string user_id = 1;
+  string profile_id = 1;
   string name = 2;
   string image_url = 3;
   string user_type = 4;
@@ -32,7 +32,7 @@ message Comment {
   string id = 1;
   string post_id = 2;
   string parent_id = 3;
-  string user_id = 4;
+  string author_profile_id = 4;
   string content = 5;
   string created_at = 6;
   CommentAuthor author = 7;
@@ -86,7 +86,7 @@ message ListRepliesResponse {
 }
 
 message ListCommentsByAuthorRequest {
-  string author_id = 1;
+  string author_profile_id = 1;
   int32 limit = 2;
   string cursor = 3;
 }

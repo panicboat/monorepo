@@ -10,9 +10,9 @@ interface PostResponse {
 }
 
 export function usePost(id: string | null) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const activeProfileId = useAuthStore((s) => s.activeProfileId);
   const { data, error, isLoading, mutate } = useSWR<PostResponse>(
-    userId && id ? `/api/posts/${encodeURIComponent(id)}` : null,
+    activeProfileId && id ? `/api/posts/${encodeURIComponent(id)}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );

@@ -22,7 +22,7 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
   const likesCount = getLikesCount(post.id, post.likesCount);
 
   const authorName = post.author?.displayName || "名無し";
-  const authorHandle = post.author?.username || post.authorId.slice(0, 8);
+  const authorHandle = post.author?.username || post.authorProfileId.slice(0, 8);
   const avatarSrc = post.author?.avatarUrl || undefined;
   const authorHref = post.author?.username
     ? `/u/${encodeURIComponent(post.author.username)}`

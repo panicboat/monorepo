@@ -17,9 +17,9 @@ RSpec.describe Post::Grpc::CommentHandler, type: :database do
     end
 
     it "includes the author's username" do
-      user_id = create_account_with_profile(display_name: "Coco", username: "coco_u")
+      author_profile_id = create_account_with_profile(display_name: "Coco", username: "coco_u")
 
-      author = handler.send(:get_comment_author, user_id)
+      author = handler.send(:get_comment_author, author_profile_id)
 
       expect(author[:username]).to eq("coco_u")
     end
@@ -42,22 +42,22 @@ RSpec.describe Post::Grpc::CommentHandler, type: :database do
       )
     end
     let(:message) do
-      Post::V1::ListCommentsByAuthorRequest.new(author_id: reply_author_id, limit: 20, cursor: "")
+      Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: reply_author_profile_id, limit: 20, cursor: "")
     end
 
     let(:post_repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
     let(:comment_repo) { Hanami.app.slices[:post]["repositories.comment_repository"] }
 
-    let(:post_author_id) { create_account_with_profile }
-    let(:reply_author_id) { create_account_with_profile(display_name: "テストゲスト", username: "test_guest_2") }
+    let(:post_author_profile_id) { create_account_with_profile }
+    let(:reply_author_profile_id) { create_account_with_profile(display_name: "テストゲスト", username: "test_guest_2") }
 
     after { Current.clear }
 
     it "hydrates the reply author's display name and avatar instead of leaving them blank" do
       Current.account_id = SecureRandom.uuid_v7
-      Current.profile_id = post_author_id
-      post = post_repo.create_post(author_id: post_author_id, content: "元の投稿")
-      comment_repo.create_comment(post_id: post.id, user_id: reply_author_id, content: "bbbb")
+      Current.profile_id = post_author_profile_id
+      post = post_repo.create_post(author_profile_id: post_author_profile_id, content: "元の投稿")
+      comment_repo.create_comment(post_id: post.id, author_profile_id: reply_author_profile_id, content: "bbbb")
 
       response = handler.list_comments_by_author
 
@@ -72,15 +72,15 @@ RSpec.describe Post::Grpc::CommentHandler, type: :database do
       described_class.new(method_key: :add_comment, service: double, rpc_desc: double, active_call: double, message: message)
     end
     let(:message) { Post::V1::AddCommentRequest.new(post_id: post.id, content: "hi @mentioned_user") }
-    let(:author_id) { create_account_with_profile }
+    let(:author_profile_id) { create_account_with_profile }
     let(:mentioned_id) { create_account_with_profile(display_name: "Mentioned", username: "mentioned_user") }
-    let(:post) { post_repo.create_post(author_id: create_account_with_profile, content: "post") }
+    let(:post) { post_repo.create_post(author_profile_id: create_account_with_profile, content: "post") }
     let(:post_repo) { Hanami.app.slices[:post]["repositories.post_repository"] }
 
     before do
       mentioned_id
       Current.account_id = SecureRandom.uuid_v7
-      Current.profile_id = author_id
+      Current.profile_id = author_profile_id
     end
 
     after { Current.clear }

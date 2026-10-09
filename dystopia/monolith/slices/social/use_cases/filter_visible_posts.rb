@@ -13,7 +13,7 @@ module Social
       def call(viewer_account_id:, posts:)
         return [] if posts.nil? || posts.empty?
 
-        author_ids = posts.map(&:author_id).compact.uniq
+        author_ids = posts.map(&:author_profile_id).compact.uniq
 
         is_private_by_author = author_ids.each_with_object({}) do |aid, h|
           profile = get_profile.call(profile_id: aid)
@@ -29,7 +29,7 @@ module Social
         end
 
         posts.select do |post|
-          author_id = post.author_id
+          author_id = post.author_profile_id
           next true if viewer_account_id && author_id == viewer_account_id
           next false if blocked_set.include?(author_id.to_s)
           next true unless is_private_by_author[author_id]

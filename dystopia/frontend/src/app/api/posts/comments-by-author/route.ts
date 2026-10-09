@@ -11,12 +11,12 @@ export async function GET(req: NextRequest) {
     if (authError) return authError;
 
     const headers = await buildGrpcHeaders(req);
-    const authorId = req.nextUrl.searchParams.get("author_id") || "";
+    const authorProfileId = req.nextUrl.searchParams.get("author_profile_id") || "";
     const limit = Number(req.nextUrl.searchParams.get("limit") || "20");
     const cursor = req.nextUrl.searchParams.get("cursor") || "";
 
     const res = await commentClient.listCommentsByAuthor(
-      { authorId, limit, cursor },
+      { authorProfileId, limit, cursor },
       { headers }
     );
 

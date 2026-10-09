@@ -17,10 +17,10 @@ module Post
       rpc :LikePost, ::Post::V1::LikePostRequest, ::Post::V1::LikePostResponse
       rpc :UnlikePost, ::Post::V1::UnlikePostRequest, ::Post::V1::UnlikePostResponse
       rpc :GetLikeStatus, ::Post::V1::GetLikeStatusRequest, ::Post::V1::GetLikeStatusResponse
-      rpc :ListLikedPostsByAccount, ::Post::V1::ListLikedPostsByAccountRequest, ::Post::V1::ListLikedPostsByAccountResponse
+      rpc :ListLikedPostsByProfile, ::Post::V1::ListLikedPostsByProfileRequest, ::Post::V1::ListLikedPostsByProfileResponse
 
       include Post::Deps[
-        list_liked_posts_by_account_uc: "use_cases.likes.list_liked_posts_by_account"
+        list_liked_posts_by_profile_uc: "use_cases.likes.list_liked_posts_by_profile"
       ]
 
       def like_post
@@ -29,13 +29,13 @@ module Post
         post = post_repo.find_by_id(request.message.post_id)
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found") unless post
 
-        like_repo.account_like(post_id: request.message.post_id, account_id: current_user_id)
+        like_repo.profile_like(post_id: request.message.post_id, profile_id: current_profile_id)
 
         notifications_emit.call(
-          recipient_id: post.author_id,
+          recipient_id: post.author_profile_id,
           type: "like",
           target_resource_id: post.id,
-          actor_id: current_user_id
+          actor_id: current_profile_id
         )
 
         ::Post::V1::LikePostResponse.new(likes_count: like_repo.likes_count(post_id: request.message.post_id))
@@ -44,15 +44,15 @@ module Post
       def unlike_post
         authenticate_user!
 
-        like_repo.account_unlike(post_id: request.message.post_id, account_id: current_user_id)
+        like_repo.profile_unlike(post_id: request.message.post_id, profile_id: current_profile_id)
         ::Post::V1::UnlikePostResponse.new(likes_count: like_repo.likes_count(post_id: request.message.post_id))
       end
 
       def get_like_status
         post_ids = request.message.post_ids.to_a
 
-        liked = if current_user_id
-          like_repo.account_liked_status_batch(post_ids: post_ids, account_id: current_user_id)
+        liked = if current_profile_id
+          like_repo.profile_liked_status_batch(post_ids: post_ids, profile_id: current_profile_id)
         else
           post_ids.each_with_object({}) { |id, h| h[id] = false }
         end
@@ -60,26 +60,26 @@ module Post
         ::Post::V1::GetLikeStatusResponse.new(liked: liked)
       end
 
-      def list_liked_posts_by_account
+      def list_liked_posts_by_profile
         authenticate_user!
 
         # FALLBACK: Use the default page size when the client sends zero.
         limit = request.message.limit.zero? ? DEFAULT_LIMIT : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        result = list_liked_posts_by_account_uc.call(
-          account_id: request.message.account_id,
-          viewer_account_id: current_user_id,
+        result = list_liked_posts_by_profile_uc.call(
+          profile_id: request.message.profile_id,
+          viewer_profile_id: current_profile_id,
           limit: limit,
           cursor: cursor
         )
 
-        ::Post::V1::ListLikedPostsByAccountResponse.new(
+        ::Post::V1::ListLikedPostsByProfileResponse.new(
           posts: result[:posts],
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
-      rescue UseCases::Likes::ListLikedPostsByAccount::ForbiddenError => e
+      rescue UseCases::Likes::ListLikedPostsByProfile::ForbiddenError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, e.message)
       end
 

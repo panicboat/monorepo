@@ -12,12 +12,12 @@ module Post
 
         MAX_LIMIT = 50
 
-        def call(author_id:, viewer_account_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
+        def call(author_profile_id:, viewer_profile_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
           limit = normalize_limit(limit)
           decoded_cursor = decode_cursor(cursor)
 
           rows = comment_repo.list_by_author(
-            author_id: author_id,
+            author_profile_id: author_profile_id,
             limit: limit,
             cursor: decoded_cursor
           )
@@ -27,10 +27,10 @@ module Post
           end
 
           post_ids = result[:items].map(&:post_id).uniq
-          posts_by_id = list_posts_uc.call(post_ids: post_ids, viewer_account_id: viewer_account_id)
+          posts_by_id = list_posts_uc.call(post_ids: post_ids, viewer_profile_id: viewer_profile_id)
 
-          user_ids = result[:items].map(&:user_id).uniq
-          authors = build_authors(user_ids)
+          author_profile_ids = result[:items].map(&:author_profile_id).uniq
+          authors = build_authors(author_profile_ids)
           mentioned_usernames = build_mentioned_usernames(result[:items])
 
           {
@@ -46,7 +46,7 @@ module Post
         private
 
         def build_mentioned_usernames(comments)
-          ids = comments.flat_map { |comment| comment.comment_mentions.map(&:account_id) }.uniq
+          ids = comments.flat_map { |comment| comment.comment_mentions.map(&:profile_id) }.uniq
           return {} if ids.empty?
 
           profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
@@ -56,16 +56,16 @@ module Post
           @list_posts_uc ||= Post::Slice["use_cases.posts.list_posts_by_ids"]
         end
 
-        def build_authors(user_ids)
-          return {} if user_ids.empty?
+        def build_authors(author_profile_ids)
+          return {} if author_profile_ids.empty?
 
-          infos = profile_author_adapter.load(user_ids).transform_keys(&:to_s)
-          user_ids.each_with_object({}) do |user_id, hash|
-            info = infos[user_id.to_s]
+          infos = profile_author_adapter.load(author_profile_ids).transform_keys(&:to_s)
+          author_profile_ids.each_with_object({}) do |author_profile_id, hash|
+            info = infos[author_profile_id.to_s]
             next unless info
 
-            hash[user_id] = {
-              id: user_id.to_s,
+            hash[author_profile_id] = {
+              id: author_profile_id.to_s,
               name: info.display_name,
               image_url: info.avatar_url,
               user_type: ""

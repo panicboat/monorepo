@@ -6,27 +6,27 @@ module Post
       ROLE_GUEST = 1
       ROLE_CAST = 2
 
-      def get_user_type(user_id)
-        role = get_role.call(profile_id: user_id)
+      def get_user_type(profile_id)
+        role = get_role.call(profile_id: profile_id)
         return nil unless role
 
         role == ROLE_CAST ? "cast" : "guest"
       end
 
-      def get_user_types_batch(user_ids)
-        # FALLBACK: Skip the cross-slice call when no user IDs are provided.
-        return {} if user_ids.nil? || user_ids.empty?
+      def get_user_types_batch(profile_ids)
+        # FALLBACK: Skip the cross-slice call when no profile IDs are provided.
+        return {} if profile_ids.nil? || profile_ids.empty?
 
-        user_ids.each_with_object({}) do |user_id, hash|
-          role = get_role.call(profile_id: user_id)
+        profile_ids.each_with_object({}) do |profile_id, hash|
+          role = get_role.call(profile_id: profile_id)
           next unless role
 
-          hash[user_id] = role == ROLE_CAST ? "cast" : "guest"
+          hash[profile_id] = role == ROLE_CAST ? "cast" : "guest"
         end
       end
 
-      def user_exists?(user_id)
-        !get_role.call(profile_id: user_id).nil?
+      def profile_exists?(profile_id)
+        !get_role.call(profile_id: profile_id).nil?
       end
 
       private

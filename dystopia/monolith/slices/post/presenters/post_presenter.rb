@@ -12,7 +12,7 @@ module Post
 
         ::Post::V1::Post.new(
           id: post.id.to_s,
-          author_id: post.author_id.to_s,
+          author_profile_id: post.author_profile_id.to_s,
           content: post.content,
           media: media.sort_by(&:position).map { |m| post_media_to_proto(m, media_files: media_files) },
           created_at: post.created_at.iso8601,
@@ -39,8 +39,8 @@ module Post
 
       def self.mention_to_proto(mention, mentioned_usernames: {})
         ::Post::V1::PostMention.new(
-          account_id: mention.account_id.to_s,
-          username: mentioned_usernames[mention.account_id.to_s] || "",
+          profile_id: mention.profile_id.to_s,
+          username: mentioned_usernames[mention.profile_id.to_s] || "",
           position: mention.position,
           length: mention.length
         )
@@ -50,7 +50,7 @@ module Post
         return nil unless author
 
         ::Post::V1::PostAuthor.new(
-          account_id: author.account_id.to_s,
+          profile_id: author.profile_id.to_s,
           display_name: author.display_name || "",
           username: author.username || "",
           avatar_url: author.avatar_url || ""

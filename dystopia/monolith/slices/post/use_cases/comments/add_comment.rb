@@ -14,8 +14,8 @@ module Post
         MAX_CONTENT_LENGTH = 1000
         MAX_MEDIA_COUNT = 3
 
-        def call(post_id:, user_id:, content:, parent_id: nil, media: [])
-          raise UserNotFoundError unless account_adapter.user_exists?(user_id)
+        def call(post_id:, author_profile_id:, content:, parent_id: nil, media: [])
+          raise ProfileNotFoundError unless account_adapter.profile_exists?(author_profile_id)
 
           post = post_repo.find_by_id(post_id)
           raise PostNotFoundError unless post
@@ -46,7 +46,7 @@ module Post
 
           comment = comment_repo.create_comment(
             post_id: post_id,
-            user_id: user_id,
+            author_profile_id: author_profile_id,
             content: normalized_content,
             parent_id: parent_id,
             media: media_data,
@@ -57,28 +57,28 @@ module Post
 
           if parent
             notifications_emit.call(
-              recipient_id: parent.user_id,
+              recipient_id: parent.author_profile_id,
               type: "reply",
               target_resource_id: parent.id,
-              actor_id: user_id,
+              actor_id: author_profile_id,
               target_post_id: post.id
             )
           else
             notifications_emit.call(
-              recipient_id: post.author_id,
+              recipient_id: post.author_profile_id,
               type: "comment",
               target_resource_id: post.id,
-              actor_id: user_id,
+              actor_id: author_profile_id,
               target_post_id: post.id
             )
           end
 
-          mentions.uniq { |mention| mention[:account_id] }.each do |mention|
+          mentions.uniq { |mention| mention[:profile_id] }.each do |mention|
             notifications_emit.call(
-              recipient_id: mention[:account_id],
+              recipient_id: mention[:profile_id],
               type: "mention",
               target_resource_id: comment.id,
-              actor_id: user_id,
+              actor_id: author_profile_id,
               target_post_id: post.id
             )
           end
@@ -94,7 +94,7 @@ module Post
 
         public
 
-        class UserNotFoundError < StandardError; end
+        class ProfileNotFoundError < StandardError; end
         class PostNotFoundError < StandardError; end
         class EmptyContentError < StandardError; end
         class ContentTooLongError < StandardError; end

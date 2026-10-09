@@ -5,14 +5,14 @@ import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedAuthorPostsResponse } from "@/modules/post/lib/author-tab-view";
 
-export function useAuthorLikedPosts(accountId: string | null | undefined) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+export function useAuthorLikedPosts(profileId: string | null | undefined) {
+  const activeProfileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedAuthorPostsResponse | null): string | null => {
-    if (!userId || !accountId) return null;
+    if (!activeProfileId || !profileId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    return `/api/posts/liked-by?account_id=${encodeURIComponent(accountId)}${cursorQs}`;
+    return `/api/posts/liked-by?profile_id=${encodeURIComponent(profileId)}${cursorQs}`;
   };
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =

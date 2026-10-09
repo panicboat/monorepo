@@ -6,10 +6,10 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedCommentsResponse } from "@/modules/post/lib/comment-view";
 
 export function useComments(postId: string | null | undefined) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const activeProfileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedCommentsResponse | null): string | null => {
-    if (!userId || !postId) return null;
+    if (!activeProfileId || !postId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
     return `/api/posts/${encodeURIComponent(postId)}/comments${cursorQs}`;

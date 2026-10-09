@@ -6,7 +6,7 @@ import { usePaginatedFetch, type PaginatedResult } from "@/lib/hooks/usePaginate
 import type { PostView, PostsListView, SavePostPayload } from "@/modules/post/lib/post-view";
 
 interface UsePostsOptions {
-  authorId?: string;
+  authorProfileId?: string;
   filter?: string;
 }
 
@@ -15,7 +15,7 @@ interface SavePostResponse {
 }
 
 export function usePosts(options: UsePostsOptions = {}) {
-  const { authorId, filter } = options;
+  const { authorProfileId, filter } = options;
 
   const mapResponse = useCallback(
     (data: PostsListView): PaginatedResult<PostView> => ({
@@ -36,10 +36,10 @@ export function usePosts(options: UsePostsOptions = {}) {
 
   const buildParams = useCallback(
     (params: URLSearchParams) => {
-      if (authorId) params.set("author_id", authorId);
+      if (authorProfileId) params.set("author_profile_id", authorProfileId);
       if (filter) params.set("filter", filter);
     },
-    [authorId, filter]
+    [authorProfileId, filter]
   );
 
   const {

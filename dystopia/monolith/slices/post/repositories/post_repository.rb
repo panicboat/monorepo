@@ -55,16 +55,16 @@ module Post
             :create,
             id: SecureRandom.uuid_v7,
             post_id: post_id,
-            account_id: mention[:account_id],
+            profile_id: mention[:profile_id],
             position: mention[:position],
             length: mention[:length]
           ).commit
         end
       end
 
-      def list_posts(limit: 20, cursor: nil, author_id: nil, media_only: false)
-        scope = posts.combine(:post_media, :hashtags, :post_mentions).exclude(author_id: nil).where(visibility: "public")
-        scope = scope.where(author_id: author_id) if author_id
+      def list_posts(limit: 20, cursor: nil, author_profile_id: nil, media_only: false)
+        scope = posts.combine(:post_media, :hashtags, :post_mentions).exclude(author_profile_id: nil).where(visibility: "public")
+        scope = scope.where(author_profile_id: author_profile_id) if author_profile_id
 
         if media_only
           media_post_ids = posts.dataset.db[:post__post_media].select(:post_id).distinct
@@ -81,12 +81,12 @@ module Post
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def list_public_post_ids(limit: 20, cursor: nil, author_ids: nil, excluded_author_ids: [])
-        return [] if !author_ids.nil? && author_ids.empty?
+      def list_public_post_ids(limit: 20, cursor: nil, author_profile_ids: nil, excluded_author_profile_ids: [])
+        return [] if !author_profile_ids.nil? && author_profile_ids.empty?
 
         scope = posts.dataset.where(visibility: "public")
-        scope = scope.where(author_id: author_ids) if author_ids
-        scope = scope.exclude(author_id: excluded_author_ids) if excluded_author_ids && !excluded_author_ids.empty?
+        scope = scope.where(author_profile_id: author_profile_ids) if author_profile_ids
+        scope = scope.exclude(author_profile_id: excluded_author_profile_ids) if excluded_author_profile_ids && !excluded_author_profile_ids.empty?
 
         if cursor
           scope = scope.where {
@@ -98,8 +98,8 @@ module Post
         scope.order(Sequel.desc(:created_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
       end
 
-      def find_by_id_and_author(id:, author_id:)
-        posts.combine(:post_media, :hashtags, :post_mentions).where(id: id, author_id: author_id).one
+      def find_by_id_and_author(id:, author_profile_id:)
+        posts.combine(:post_media, :hashtags, :post_mentions).where(id: id, author_profile_id: author_profile_id).one
       end
 
       def search_by_content(query:, limit: 20, cursor: nil)
@@ -153,8 +153,8 @@ module Post
           .map { |row| [row[:id].to_s, row[:likes_count].to_i] }
       end
 
-      def delete_by_author(account_id)
-        posts.dataset.where(author_id: account_id).delete
+      def delete_by_author(profile_id)
+        posts.dataset.where(author_profile_id: profile_id).delete
       end
     end
   end

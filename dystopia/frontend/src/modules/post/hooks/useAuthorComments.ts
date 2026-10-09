@@ -6,14 +6,14 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedAuthorCommentsResponse } from "@/modules/post/lib/author-tab-view";
 import type { PostView } from "@/modules/post/lib/post-view";
 
-export function useAuthorComments(accountId: string | null | undefined) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+export function useAuthorComments(profileId: string | null | undefined) {
+  const activeProfileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedAuthorCommentsResponse | null): string | null => {
-    if (!userId || !accountId) return null;
+    if (!activeProfileId || !profileId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    return `/api/posts/comments-by-author?author_id=${encodeURIComponent(accountId)}${cursorQs}`;
+    return `/api/posts/comments-by-author?author_profile_id=${encodeURIComponent(profileId)}${cursorQs}`;
   };
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =

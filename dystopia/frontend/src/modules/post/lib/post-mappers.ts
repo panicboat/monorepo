@@ -15,7 +15,7 @@ import type {
 
 export function mapMentionToView(m: PostMention): MentionView {
   return {
-    accountId: m.accountId || "",
+    profileId: m.profileId || "",
     username: m.username || "",
     position: m.position || 0,
     length: m.length || 0,
@@ -25,7 +25,7 @@ export function mapMentionToView(m: PostMention): MentionView {
 export function mapPostAuthorToView(a: PostAuthor | undefined): PostAuthorView | null {
   if (!a) return null;
   return {
-    accountId: a.accountId || "",
+    profileId: a.profileId || "",
     displayName: a.displayName || "",
     username: a.username || "",
     avatarUrl: a.avatarUrl || "",
@@ -45,7 +45,7 @@ export function mapPostMediaToView(m: PostMedia): PostMediaView {
 export function mapPostToView(p: Post): PostView {
   return {
     id: p.id || "",
-    authorId: p.authorId || "",
+    authorProfileId: p.authorProfileId || "",
     content: p.content || "",
     media: (p.media || []).map(mapPostMediaToView),
     createdAt: p.createdAt || "",

@@ -19,14 +19,14 @@ vi.mock("next/navigation", () => ({
 describe("splitContentByMentions", () => {
   it("splits content into text and mention parts", () => {
     const mentions: MentionView[] = [
-      { accountId: "a1", username: "alice", position: 3, length: 6 },
+      { profileId: "a1", username: "alice", position: 3, length: 6 },
     ];
 
     const parts = splitContentByMentions("hi @alice!", mentions);
 
     expect(parts).toEqual([
       { type: "text", value: "hi " },
-      { type: "mention", accountId: "a1", username: "alice", value: "@alice" },
+      { type: "mention", profileId: "a1", username: "alice", value: "@alice" },
       { type: "text", value: "!" },
     ]);
   });
@@ -39,7 +39,7 @@ describe("splitContentByMentions", () => {
 
   it("treats a mention with an empty username as plain text", () => {
     const mentions: MentionView[] = [
-      { accountId: "a1", username: "", position: 0, length: 6 },
+      { profileId: "a1", username: "", position: 0, length: 6 },
     ];
 
     const parts = splitContentByMentions("@alice hi", mentions);
@@ -50,21 +50,21 @@ describe("splitContentByMentions", () => {
   it("computes positions by codepoint, not UTF-16 code unit", () => {
     // One code point can occupy two UTF-16 code units.
     const mentions: MentionView[] = [
-      { accountId: "a1", username: "alice", position: 2, length: 6 },
+      { profileId: "a1", username: "alice", position: 2, length: 6 },
     ];
 
     const parts = splitContentByMentions("🎉 @alice", mentions);
 
     expect(parts).toEqual([
       { type: "text", value: "🎉 " },
-      { type: "mention", accountId: "a1", username: "alice", value: "@alice" },
+      { type: "mention", profileId: "a1", username: "alice", value: "@alice" },
     ]);
   });
 
   it("sorts out-of-order mentions by position", () => {
     const mentions: MentionView[] = [
-      { accountId: "b1", username: "bob", position: 10, length: 4 },
-      { accountId: "a1", username: "alice", position: 0, length: 6 },
+      { profileId: "b1", username: "bob", position: 10, length: 4 },
+      { profileId: "a1", username: "alice", position: 0, length: 6 },
     ];
 
     const parts = splitContentByMentions("@alice hi @bob", mentions);
@@ -76,7 +76,7 @@ describe("splitContentByMentions", () => {
 describe("MentionText", () => {
   it("renders mention parts as clickable spans pointing at /u/{username}", () => {
     const mentions: MentionView[] = [
-      { accountId: "a1", username: "alice", position: 0, length: 6 },
+      { profileId: "a1", username: "alice", position: 0, length: 6 },
     ];
 
     const html = renderToStaticMarkup(
@@ -97,7 +97,7 @@ describe("MentionText", () => {
       root.render(
         <MentionText
           content="@alice hi"
-          mentions={[{ accountId: "a1", username: "alice", position: 0, length: 6 }]}
+          mentions={[{ profileId: "a1", username: "alice", position: 0, length: 6 }]}
         />,
       );
     });

@@ -41,7 +41,7 @@ export function CommentList({ postId }: CommentListProps) {
   return (
     <div>
       {comments.map((c) => {
-        const isOwn = !!viewerId && c.userId === viewerId;
+        const isOwn = !!viewerId && c.authorProfileId === viewerId;
         const isExpanded = !!expanded[c.id];
         const authorHref = c.author?.username ? `/u/${encodeURIComponent(c.author.username)}` : undefined;
         const avatar = (
