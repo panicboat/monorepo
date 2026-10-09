@@ -66,14 +66,13 @@ module Notifications
         now = Time.now
         values = PREFERENCE_COLUMNS.map { |c| attrs.fetch(c) }
         quoted_cols = PREFERENCE_COLUMNS.map { |c| %("#{c}") }.join(", ")
-        update_assignments = PREFERENCE_COLUMNS.map { |c| %("#{c}" = EXCLUDED."#{c}") }.join(", ")
+        update_assignments = (PREFERENCE_COLUMNS + [:updated_at]).map { |c| %("#{c}" = EXCLUDED."#{c}") }.join(", ")
 
         sql = <<~SQL
           INSERT INTO notifications.preferences
             (profile_id, #{quoted_cols}, created_at, updated_at)
           VALUES (?, #{(['?'] * PREFERENCE_COLUMNS.size).join(', ')}, ?, ?)
-          ON CONFLICT (profile_id) DO UPDATE SET
-            updated_at = EXCLUDED.updated_at
+          ON CONFLICT (profile_id) DO UPDATE SET #{update_assignments}
           RETURNING *
         SQL
 
