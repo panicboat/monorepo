@@ -93,6 +93,17 @@ describe("profile lifecycle routes", () => {
     expect((await res.json()).error).toBe("有効なプロフィールは削除できません。先に無効にしてください");
   });
 
+  it("passes a refusal that carries a reason code through with the code", async () => {
+    const refusal = () =>
+      new ConnectError("profile required", Code.FailedPrecondition, new Headers({ "error-reason": "profile_required" }));
+    client.disableProfile.mockRejectedValue(refusal());
+    client.deleteProfile.mockRejectedValue(refusal());
+
+    const bodies = [await (await disable(request("POST"), context)).json(), await (await remove(request("DELETE"), context)).json()];
+
+    expect(bodies.map((body) => body.code)).toEqual(["profile_required", "profile_required"]);
+  });
+
   it("answers 404 for a profile of another account", async () => {
     client.deleteProfile.mockRejectedValue(new ConnectError("not found", Code.NotFound));
     client.enableProfile.mockRejectedValue(new ConnectError("not found", Code.NotFound));

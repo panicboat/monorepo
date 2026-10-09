@@ -277,6 +277,7 @@ describe("ProfileManager", () => {
 
     expect(container.textContent).toContain("読み込み中…");
     expect(container.querySelector("li")).toBeNull();
+    expect(container.textContent).not.toContain("プロフィールを追加");
     await act(async () => {
       root.unmount();
     });

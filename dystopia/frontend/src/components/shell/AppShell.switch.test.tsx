@@ -258,6 +258,7 @@ describe("AppShell with several enabled profiles", () => {
     await app.type("#username", "persona_d");
     await app.submit();
     await app.until(() => useAuthStore.getState().activeProfileId === "pD");
+    expect(pageMounts).toEqual(["pA"]);
     await app.arriveAt("/");
 
     expect(app.container.textContent).not.toContain("プロフィールを選択");

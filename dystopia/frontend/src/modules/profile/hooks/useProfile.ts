@@ -52,7 +52,7 @@ export function useProfile() {
         body: payload,
       });
       await mutate(res, { revalidate: false });
-      await refreshAccountProfiles();
+      void refreshAccountProfiles();
       return res.profile;
     },
     [mutate, refreshAccountProfiles]
@@ -65,7 +65,7 @@ export function useProfile() {
         body: payload,
       });
       await mutate(res, { revalidate: false });
-      await refreshAccountProfiles();
+      void refreshAccountProfiles();
       return res.profile;
     },
     [mutate, refreshAccountProfiles]

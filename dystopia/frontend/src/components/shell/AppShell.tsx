@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { SWRConfig } from "swr";
 import {
@@ -48,6 +49,7 @@ export function AppShell({ children }: AppShellProps) {
   const { session, profiles, hasListError, retry, refresh, append } = useProfileSession();
   const { signOut } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // The page a switch was made on is held back until the top is reached: mounted as the next profile it would mark footprints read or leave a visit as that profile.
   const [pathSwitchedAwayFrom, setPathSwitchedAwayFrom] = useState<string | null>(null);
   const lastSwitchAt = useRef(0);
   const pathname = usePathname();
@@ -73,8 +75,8 @@ export function AppShell({ children }: AppShellProps) {
     (profileId: string) => {
       if (Date.now() - lastSwitchAt.current < SWITCH_GUARD_MS) return;
       lastSwitchAt.current = Date.now();
-      // Hold the page back until the top is reached: mounted as the next profile it would mark footprints read or leave a visit as that profile.
-      if (pathname !== "/") setPathSwitchedAwayFrom(pathname);
+      // Commit the hold before the profile changes: outside an event handler the store update renders ahead of a state update.
+      if (pathname !== "/") flushSync(() => setPathSwitchedAwayFrom(pathname));
       setActiveProfile(profileId);
       setDrawerOpen(false);
       router.replace("/");

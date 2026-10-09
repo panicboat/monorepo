@@ -16,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
     return NextResponse.json({ profile: mapProfileToView(res.profile) });
   } catch (error: unknown) {
-    if (isConnectError(error) && error.code === GrpcCode.FAILED_PRECONDITION) {
+    if (isConnectError(error) && error.code === GrpcCode.FAILED_PRECONDITION && !error.metadata.get("error-reason")) {
       return NextResponse.json({ error: "有効なプロフィールが他に無いため、無効にできません" }, { status: 422 });
     }
     return handleApiError(error, "DisableProfile");

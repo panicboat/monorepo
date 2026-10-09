@@ -151,24 +151,26 @@ export function ProfileManager() {
         </p>
       )}
 
-      <div className="mt-6">
-        {adding ? (
-          <ProfileNameForm
-            submitLabel="追加して切り替える"
-            onCancel={() => setAdding(false)}
-            onSubmit={async (payload) => {
-              const res = await authFetch<ProfileResponse>("/api/profile", { method: "POST", body: payload });
-              // Put the profile into the list first; switching to a profile the cached list lacks resolves back to the picker.
-              await append(res.profile);
-              switchProfile(res.profile.id);
-            }}
-          />
-        ) : (
-          <Button type="button" variant="secondary" onClick={() => setAdding(true)}>
-            プロフィールを追加
-          </Button>
-        )}
-      </div>
+      {profiles.length > 0 && (
+        <div className="mt-6">
+          {adding ? (
+            <ProfileNameForm
+              submitLabel="追加して切り替える"
+              onCancel={() => setAdding(false)}
+              onSubmit={async (payload) => {
+                const res = await authFetch<ProfileResponse>("/api/profile", { method: "POST", body: payload });
+                // Put the profile into the list first; switching to a profile the cached list lacks resolves back to the picker.
+                await append(res.profile);
+                switchProfile(res.profile.id);
+              }}
+            />
+          ) : (
+            <Button type="button" variant="secondary" onClick={() => setAdding(true)}>
+              プロフィールを追加
+            </Button>
+          )}
+        </div>
+      )}
 
       <Dialog.Root open={deleteTarget !== null} onOpenChange={(open) => !open && closeDeleteDialog()}>
         <Dialog.Portal>

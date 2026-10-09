@@ -12,7 +12,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     await profileClient.deleteProfile({ profileId: id }, { headers: await buildGrpcHeaders(req) });
     return NextResponse.json({ ok: true });
   } catch (error: unknown) {
-    if (isConnectError(error) && error.code === GrpcCode.FAILED_PRECONDITION) {
+    if (isConnectError(error) && error.code === GrpcCode.FAILED_PRECONDITION && !error.metadata.get("error-reason")) {
       return NextResponse.json({ error: "有効なプロフィールは削除できません。先に無効にしてください" }, { status: 422 });
     }
     return handleApiError(error, "DeleteProfile");
