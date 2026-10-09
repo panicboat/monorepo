@@ -45,7 +45,7 @@ jobs:
 
       - name: Label Resolver
         id: resolver
-        uses: panicboat/deploy-actions/label-resolver@12e9318f917c71fdf4d129d4f7acda84d1e9dd4c # v1.4.0
+        uses: panicboat/deploy-actions/label-resolver@4959f951f9004feccef54a75d3a2b7b9a9064a5c # v1.4.1
         with:
           repository: ${{ github.repository }}
           pr-number: ${{ steps.pr-info.outputs.number }}
