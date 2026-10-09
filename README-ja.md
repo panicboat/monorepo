@@ -96,4 +96,3 @@ flowchart LR
 
 - [panicboat/platform](https://github.com/panicboat/platform) — クラスタ bootstrap、共通コンポーネント、OIDC IAM。
 - [panicboat/deploy-actions](https://github.com/panicboat/deploy-actions) — PR の変更をデプロイ用ラベルに、ラベルをデプロイ対象に変換する GitHub Actions。
-- [panicboat/panicboat-actions](https://github.com/panicboat/panicboat-actions) — panicboat の AWS アカウントに対して Terragrunt を実行する GitHub Actions。
