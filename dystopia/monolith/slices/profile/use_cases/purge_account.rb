@@ -9,7 +9,9 @@ module Profile
       ]
 
       def call(account_id:)
-        profile_repo.list_by_account(account_id).each { |profile| purge_profile.call(profile_id: profile.id) }
+        profile_repo.locking_account(account_id) do
+          profile_repo.list_by_account(account_id).each { |profile| purge_profile.call(profile_id: profile.id) }
+        end
         nil
       end
     end

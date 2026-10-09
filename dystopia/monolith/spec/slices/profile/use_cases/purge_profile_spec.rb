@@ -28,6 +28,18 @@ RSpec.describe Profile::UseCases::PurgeProfile, type: :database do
     expect(cast_repo.find_by_profile_id(sibling)).not_to be_nil
   end
 
+  it "deletes the cast and profile rows only after every slice" do
+    profile_repo = double(:profile_repository)
+    cast_repo = double(:cast_repository)
+    slice_purge = double(:slice_purge)
+    allow(profile_repo).to receive(:transaction).and_yield
+    expect(slice_purge).to receive(:call).with(profile_id: "profile-1").ordered
+    expect(cast_repo).to receive(:delete_by_profile_ids).with(["profile-1"]).ordered
+    expect(profile_repo).to receive(:delete).with("profile-1").ordered
+
+    described_class.new(slice_purges: [slice_purge], profile_repo: profile_repo, cast_repo: cast_repo).call(profile_id: "profile-1")
+  end
+
   it "undoes the slices already purged and keeps the profile when a later slice fails" do
     earlier = double(:slice_purge)
     failing = double(:slice_purge)

@@ -86,6 +86,26 @@ RSpec.describe "Profile::Repositories::ProfileRepository", type: :database do
     end
   end
 
+  describe "#locking_account" do
+    let(:db) { Hanami.app["db.gateway"].connection }
+
+    it "locks the account row before running the block" do
+      log = StringIO.new
+      logger = Logger.new(log)
+      db.loggers << logger
+
+      repo.locking_account(account_id) { log.puts "BLOCK" }
+
+      expect(log.string).to match(/"identity"\."accounts".*FOR UPDATE.*BLOCK/m)
+    ensure
+      db.loggers.delete(logger)
+    end
+
+    it "runs the block without a lock for an id that is not a uuid" do
+      expect(repo.locking_account("not-a-uuid") { :ran }).to eq(:ran)
+    end
+  end
+
   describe "#create_within_limit" do
     it "creates a profile with a new id that differs from the account id" do
       profile = repo.create_within_limit(account_id: account_id, limit: 1, attrs: { display_name: "Coco" })

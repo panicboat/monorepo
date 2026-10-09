@@ -43,11 +43,18 @@ RSpec.describe "Profile lifecycle RPCs", type: :database do
     Interceptors::AuthenticationInterceptor.new(request, double(:error)).call { yield }
   end
 
+  def expect_account_lock
+    expect_any_instance_of(Profile::Repositories::ProfileRepository)
+      .to receive(:locking_account).with(account_id).at_least(:once).and_call_original
+  end
+
   before { Current.account_id = account_id }
   after { Current.clear }
 
   describe "DisableProfile" do
     it "disables a profile of the account without an acting profile and stops it from acting" do
+      expect_account_lock
+
       response = disable(first)
 
       expect([response.profile.id, response.profile.disabled]).to eq([first, true])
@@ -92,6 +99,7 @@ RSpec.describe "Profile lifecycle RPCs", type: :database do
   describe "EnableProfile" do
     it "enables a disabled profile of the account so that it can act again" do
       disable(first)
+      expect_account_lock
 
       response = enable(first)
 
@@ -138,6 +146,7 @@ RSpec.describe "Profile lifecycle RPCs", type: :database do
         author_account_id: account_id, author_profile_id: first, target_profile_id: stranger, rating: 3, body: "note"
       )
       disable(first)
+      expect_account_lock
 
       delete(first)
 

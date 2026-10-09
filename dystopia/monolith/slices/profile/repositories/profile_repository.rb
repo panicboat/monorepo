@@ -60,18 +60,18 @@ module Profile
 
       # Holding the account row serializes every change to which profiles of the account exist or are enabled.
       def locking_account(account_id)
-        profiles.dataset.db.transaction do
-          profiles.dataset.db[:identity__accounts].where(id: account_id).for_update.first
+        transaction do
+          profiles.dataset.db[:identity__accounts].where(id: account_id).for_update.first if uuid?(account_id)
           yield
         end
       end
 
-      def disable_unless_last_enabled(account_id:, profile_id:)
-        locking_account(account_id) do
-          next nil if profiles.where(account_id: account_id, disabled_at: nil).exclude(id: profile_id).count.zero?
+      def other_enabled?(account_id:, profile_id:)
+        profiles.where(account_id: account_id, disabled_at: nil).exclude(id: profile_id).exist?
+      end
 
-          update(profile_id, disabled_at: Time.now, updated_at: Time.now)
-        end
+      def disable(profile_id)
+        update(profile_id, disabled_at: Time.now, updated_at: Time.now)
       end
 
       def enable(profile_id)
@@ -132,10 +132,6 @@ module Profile
 
       def delete(id)
         profiles.dataset.where(id: id).delete
-      end
-
-      def transaction(&block)
-        profiles.dataset.db.transaction(&block)
       end
 
       private

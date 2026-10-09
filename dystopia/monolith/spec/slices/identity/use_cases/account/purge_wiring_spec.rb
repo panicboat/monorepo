@@ -71,6 +71,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
       mentions: mention_of.call(persona_b) + mention_of.call(witness)
     )
     comment_repo.create_comment(post_id: witness_post.id, author_profile_id: persona_a, content: "reply", parent_id: bystander_comment.id)
+    comment_repo.create_comment(post_id: witness_post.id, author_profile_id: persona_a, content: "second reply", parent_id: bystander_comment.id)
     comment_repo.create_comment(post_id: witness_post.id, author_profile_id: witness, content: "kept reply", parent_id: bystander_comment.id)
     post_repo.save_mentions(post_id: bystander_post.id, mentions: mention_of.call(persona_a) + mention_of.call(witness))
     follow_repo.follow(follower_profile_id: persona_a, followee_profile_id: bystander, status: "approved")
@@ -111,9 +112,9 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
 
     db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (31 * 24 * 3600))
 
-    count = Identity::Slice["use_cases.account.purge_deactivated_accounts"].call(now: Time.now)
+    result = Identity::Slice["use_cases.account.purge_deactivated_accounts"].call(now: Time.now)
 
-    expect(count).to eq(1)
+    expect([result.purged, result.failed_account_ids]).to eq([1, []])
     expect(cognito_adapter).to have_received(:admin_delete_user).with(sub: account_id)
     expect(db[:identity__accounts].where(id: account_id).count).to eq(0)
     expect(db[:identity__accounts].where(id: bystander_account_id).count).to eq(1)
@@ -176,7 +177,9 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
       original.call(profile_id: profile_id)
     end
 
-    expect(purge.call(now: Time.now)).to eq(0)
+    failed = purge.call(now: Time.now)
+
+    expect([failed.purged, failed.failed_account_ids]).to eq([0, [account_id]])
 
     expect(cognito_adapter).not_to have_received(:admin_delete_user)
     expect(db[:identity__accounts].where(id: account_id).count).to eq(1)
@@ -187,7 +190,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
 
     schedule_fails = false
 
-    expect(purge.call(now: Time.now)).to eq(1)
+    expect(purge.call(now: Time.now).purged).to eq(1)
     expect(db[:identity__accounts].where(id: account_id).count).to eq(0)
     expect(db[:profile__profiles].where(account_id: account_id).count).to eq(0)
     expect(db[:schedule__schedules].where(profile_id: persona_b).count).to eq(0)
