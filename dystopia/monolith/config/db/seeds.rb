@@ -10,6 +10,9 @@ require_relative "seeds/portfolio/casts"
 
 require_relative "seeds/karte/access"
 
+require_relative "seeds/social/follows"
+require_relative "seeds/social/blocks"
+
 require_relative "seeds/post/posts"
 require_relative "seeds/post/likes"
 require_relative "seeds/post/comments"
