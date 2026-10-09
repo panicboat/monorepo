@@ -31,7 +31,7 @@ resource "aws_iam_policy" "monolith_media_s3" {
     Version = "2012-10-17"
     Statement = [{
       Effect   = "Allow"
-      Action   = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"]
+      Action   = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject", "s3:PutObjectTagging", "s3:GetObjectTagging"]
       Resource = "${aws_s3_bucket.media.arn}/*"
     }]
   })

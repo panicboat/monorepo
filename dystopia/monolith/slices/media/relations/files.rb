@@ -13,6 +13,7 @@ module Media
         attribute :thumbnail_key, Types::String.optional
         attribute :created_at, Types::Time
         attribute :uploader_profile_id, Types::String.optional
+        attribute :owner_account_id, Types::String.optional
 
         primary_key :id
       end

@@ -5,6 +5,8 @@ require "lib/current"
 require "gruf"
 require "lib/grpc/authenticatable"
 require "slices/media/grpc/handler"
+require "storage"
+require "cgi"
 
 RSpec.describe Media::Grpc::Handler, type: :database do
   let(:db) { Hanami.app["db.gateway"].connection }
@@ -16,32 +18,146 @@ RSpec.describe Media::Grpc::Handler, type: :database do
   end
 
   def act_as(profile_id)
-    Current.account_id = SecureRandom.uuid_v7
+    Current.account_id = db[:profile__profiles].where(id: profile_id).get(:account_id)
     Current.profile_id = profile_id
   end
+
+  let(:storage) do
+    Class.new(Storage::LocalAdapter) do
+      attr_reader :tagged
+      attr_accessor :missing_keys
+
+      def tag(key:, tags:)
+        return false if (missing_keys || []).include?(key)
+
+        (@tagged ||= {})[key] = tags
+        true
+      end
+    end.new
+  end
+
+  before { Storage.adapter = storage }
 
   def status(code)
     raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(code) }
   end
 
-  def register(media_id = SecureRandom.uuid_v7)
+  def register(media_id = SecureRandom.uuid_v7, media_key: key_for(Current.profile_id, media_id), thumbnail_key: "")
     rpc(:register_media, Media::V1::RegisterMediaRequest.new(
-      media_id: media_id, media_key: "media/image/#{media_id}.png", media_type: :MEDIA_TYPE_IMAGE, filename: "a.png", content_type: "image/png", size_bytes: 10
+      media_id: media_id, media_key: media_key, media_type: :MEDIA_TYPE_IMAGE, filename: "a.png", content_type: "image/png", size_bytes: 10,
+      thumbnail_key: thumbnail_key
     )).media.id
+  end
+
+  def upload_url(filename = "a.png")
+    rpc(:get_upload_url, Media::V1::GetUploadUrlRequest.new(filename: filename, content_type: "image/png", media_type: :MEDIA_TYPE_IMAGE))
   end
 
   def delete(media_id)
     rpc(:delete_media, Media::V1::DeleteMediaRequest.new(id: media_id)).success
   end
 
-  after { Current.clear }
+  after do
+    Current.clear
+    Storage.reset!
+  end
 
-  it "records the acting profile as the uploader of what it registers" do
+  def key_for(profile_id, media_id, extension = ".png")
+    "media/#{profile_id}/#{media_id}#{extension}"
+  end
+
+  it "records the acting profile as the uploader and its account as the owner of what it registers" do
     act_as(uploader)
 
     media_id = register
 
-    expect(db[:media__files].where(id: media_id).get(:uploader_profile_id)).to eq(uploader)
+    row = db[:media__files].where(id: media_id).first
+    expect(row[:uploader_profile_id]).to eq(uploader)
+    expect(row[:owner_account_id]).to eq(Current.account_id)
+  end
+
+  it "issues an upload key under the acting profile, without the account in it" do
+    act_as(uploader)
+
+    issued = upload_url("Photo.JPEG")
+
+    expect(issued.media_key).to eq("media/#{uploader}/#{issued.media_id}.jpeg")
+    expect(issued.media_key).not_to include(Current.account_id)
+    expect(issued.upload_url).to include(CGI.escape(issued.media_key))
+  end
+
+  it "drops an extension that is not plain letters and digits from the key" do
+    act_as(uploader)
+
+    keys = ["photo.p ng", "photo.#{'x' * 11}", "photo.p%2Fg"].map { |filename| upload_url(filename) }
+
+    expect(keys.map(&:media_key)).to eq(keys.map { |issued| "media/#{uploader}/#{issued.media_id}" })
+  end
+
+  it "tags the stored object with the owning account, which the key does not show" do
+    act_as(uploader)
+    media_id = SecureRandom.uuid_v7
+
+    register(media_id)
+
+    expect(storage.tagged).to eq(key_for(uploader, media_id) => { "owner-account-id" => Current.account_id })
+  end
+
+  it "registers only a key issued to the acting profile for that media id" do
+    act_as(uploader)
+    media_id = SecureRandom.uuid_v7
+    refused = [
+      key_for(other, media_id),
+      key_for(uploader, SecureRandom.uuid_v7),
+      "media/image/#{media_id}.png",
+      "media/#{uploader}/../#{other}/#{media_id}.png",
+      "#{key_for(uploader, media_id)}/extra",
+      key_for(uploader, media_id, ".p ng")
+    ]
+
+    refused.each do |media_key|
+      expect { register(media_id, media_key: media_key) }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+    end
+    expect(db[:media__files].count).to eq(0)
+    expect(storage.tagged).to be_nil
+    expect(register(media_id, media_key: key_for(uploader, media_id, ""))).to eq(media_id)
+  end
+
+  it "accepts a thumbnail only from the acting profile's own keys, so deleting a file cannot remove another profile's object" do
+    act_as(other)
+    victim_id = register
+    victim_key = key_for(other, victim_id)
+    act_as(uploader)
+    refused = [victim_key, "media/image/#{victim_id}.png", "media/#{uploader}/../#{other}/#{victim_id}.png", "anything"]
+
+    refused.each do |thumbnail_key|
+      expect { register(thumbnail_key: thumbnail_key) }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+    end
+    expect(db[:media__files].where(uploader_profile_id: uploader).count).to eq(0)
+
+    own_thumbnail = key_for(uploader, SecureRandom.uuid_v7, ".jpg")
+    media_id = register(thumbnail_key: own_thumbnail)
+    expect(db[:media__files].where(id: media_id).get(:thumbnail_key)).to eq(own_thumbnail)
+  end
+
+  it "refuses to register a file that was never uploaded" do
+    act_as(uploader)
+    media_id = SecureRandom.uuid_v7
+    storage.missing_keys = [key_for(uploader, media_id)]
+
+    expect { register(media_id) }.to status(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
+    expect(db[:media__files].count).to eq(0)
+  end
+
+  it "does not hand the owning account to anyone who reads the file" do
+    act_as(uploader)
+    account_id = Current.account_id
+    media_id = register
+    act_as(other)
+
+    answer = rpc(:get_media, Media::V1::GetMediaRequest.new(id: media_id))
+
+    expect(answer.to_json).not_to include(account_id)
   end
 
   it "lets the uploader delete its media file" do
@@ -78,7 +194,7 @@ RSpec.describe Media::Grpc::Handler, type: :database do
     expect {
       rpc(:get_upload_url, Media::V1::GetUploadUrlRequest.new(filename: "a.png", content_type: "image/png", media_type: :MEDIA_TYPE_IMAGE))
     }.to status(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
-    expect { register }.to status(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
+    expect { register(media_key: "media/x/y.png") }.to status(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
     expect { delete(SecureRandom.uuid_v7) }.to status(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
     expect(db[:media__files].count).to eq(0)
   end
@@ -92,7 +208,7 @@ RSpec.describe Media::Grpc::Handler, type: :database do
     expect { rpc(:get_media, Media::V1::GetMediaRequest.new(id: media_id)) }.to status(unauthenticated)
     expect { rpc(:get_media_batch, Media::V1::GetMediaBatchRequest.new(ids: [media_id])) }.to status(unauthenticated)
     expect { rpc(:get_upload_url, Media::V1::GetUploadUrlRequest.new(filename: "a.png", content_type: "image/png", media_type: :MEDIA_TYPE_IMAGE)) }.to status(unauthenticated)
-    expect { register }.to status(unauthenticated)
+    expect { register(media_key: "media/x/y.png") }.to status(unauthenticated)
     expect { delete(media_id) }.to status(unauthenticated)
     expect(db[:media__files].where(id: media_id).count).to eq(1)
   end

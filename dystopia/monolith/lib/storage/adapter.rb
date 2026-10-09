@@ -13,5 +13,9 @@ module Storage
     def delete(key:)
       raise NotImplementedError, "#{self.class}#delete must be implemented"
     end
+
+    def tag(key:, tags:)
+      raise NotImplementedError, "#{self.class}#tag must be implemented"
+    end
   end
 end

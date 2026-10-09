@@ -29,4 +29,12 @@ RSpec.describe Storage::Adapter do
       }.to raise_error(NotImplementedError, /delete must be implemented/)
     end
   end
+
+  describe "#tag" do
+    it "raises NotImplementedError" do
+      expect {
+        adapter.tag(key: "test.jpg", tags: { "owner-account-id" => "a" })
+      }.to raise_error(NotImplementedError, /tag must be implemented/)
+    end
+  end
 end
