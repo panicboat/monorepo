@@ -16,16 +16,16 @@ interface ListResponse {
 interface CountResponse { count: number }
 
 export function useFollowRequests() {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
 
   const { data: list, error: listError, isLoading, mutate: mutateList } = useSWR<ListResponse>(
-    userId ? "/api/social/follow/requests" : null,
+    profileId ? "/api/social/follow/requests" : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 5000 }
   );
 
   const { data: countData, mutate: mutateCount } = useSWR<CountResponse>(
-    userId ? "/api/social/follow/requests/count" : null,
+    profileId ? "/api/social/follow/requests/count" : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 10000 }
   );

@@ -46,15 +46,18 @@ export const usePostLikeStore = create<PostLikeState>()((set, get) => ({
       console.warn("Cannot like: not authenticated");
       return null;
     }
+    const sentAs = useAuthStore.getState().activeProfileId;
     set({ loading: true });
     try {
       const data = await authFetch<LikeApiResponse>(
         `/api/posts/${encodeURIComponent(postId)}/like`,
         { method: "POST" }
       );
-      set((s) => ({
-        entries: { ...s.entries, [postId]: { liked: true, likesCount: data.likesCount } },
-      }));
+      if (useAuthStore.getState().activeProfileId === sentAs) {
+        set((s) => ({
+          entries: { ...s.entries, [postId]: { liked: true, likesCount: data.likesCount } },
+        }));
+      }
       return data.likesCount;
     } catch (e) {
       console.error("Like error:", e);
@@ -70,15 +73,18 @@ export const usePostLikeStore = create<PostLikeState>()((set, get) => ({
       console.warn("Cannot unlike: not authenticated");
       return null;
     }
+    const sentAs = useAuthStore.getState().activeProfileId;
     set({ loading: true });
     try {
       const data = await authFetch<LikeApiResponse>(
         `/api/posts/${encodeURIComponent(postId)}/like`,
         { method: "DELETE" }
       );
-      set((s) => ({
-        entries: { ...s.entries, [postId]: { liked: false, likesCount: data.likesCount } },
-      }));
+      if (useAuthStore.getState().activeProfileId === sentAs) {
+        set((s) => ({
+          entries: { ...s.entries, [postId]: { liked: false, likesCount: data.likesCount } },
+        }));
+      }
       return data.likesCount;
     } catch (e) {
       console.error("Unlike error:", e);
@@ -104,3 +110,8 @@ export const usePostLikeStore = create<PostLikeState>()((set, get) => ({
   isLiked: (postId, fallback = false) => get().entries[postId]?.liked ?? fallback,
   getLikesCount: (postId, fallback = 0) => get().entries[postId]?.likesCount ?? fallback,
 }));
+
+// Like state belongs to the acting profile; isLiked() prefers an entry over the server's answer, so entries must not survive a change of profile.
+useAuthStore.subscribe((state, previous) => {
+  if (state.activeProfileId !== previous.activeProfileId) usePostLikeStore.setState({ entries: {} });
+});

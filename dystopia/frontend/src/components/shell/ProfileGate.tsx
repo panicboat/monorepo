@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 
 export interface ProfileGateProps {
-  reason: "error" | "unavailable" | "select";
+  reason: "error" | "unavailable";
   onRetry: () => void;
   onSignOut: () => void;
 }
@@ -17,10 +17,6 @@ const messages = {
     heading: "このプロフィールは利用できません",
     body: "もう一度読み込むか、ログインし直してください。",
   },
-  select: {
-    heading: "プロフィールを選択できません",
-    body: "複数のプロフィールがあります。ログインし直してください。",
-  },
 } as const;
 
 export function ProfileGate({ reason, onRetry, onSignOut }: ProfileGateProps) {
@@ -32,11 +28,9 @@ export function ProfileGate({ reason, onRetry, onSignOut }: ProfileGateProps) {
         <h1 className="mb-2 text-center text-2xl font-bold text-text-primary">{heading}</h1>
         <p className="mb-8 text-center text-sm text-text-secondary">{body}</p>
         <div className="space-y-3">
-          {reason !== "select" && (
-            <Button type="button" className="w-full" onClick={onRetry}>
-              再試行
-            </Button>
-          )}
+          <Button type="button" className="w-full" onClick={onRetry}>
+            再試行
+          </Button>
           <Button type="button" variant="secondary" className="w-full" onClick={onSignOut}>
             ログアウト
           </Button>

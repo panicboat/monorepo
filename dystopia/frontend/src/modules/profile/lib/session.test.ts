@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ScopedMutator } from "swr";
 import { emptyProfileView } from "@/modules/profile/lib/mappers";
-import { addToMyProfiles, isMyProfilesKey, myProfilesKey, resolveProfileSession } from "./session";
+import { addToMyProfiles, isMyProfilesKey, myProfilesKey, resolveProfileSession, selectableProfiles } from "./session";
 
 const enabled = (id: string) => ({ id, disabled: false });
 const disabled = (id: string) => ({ id, disabled: true });
@@ -54,6 +54,16 @@ describe("resolveProfileSession", () => {
   it("does not keep a stored profile that has been disabled", () => {
     expect(resolveProfileSession([enabled("p1"), enabled("p2"), disabled("p3")], "p3")).toEqual({ kind: "select" });
     expect(resolveProfileSession([enabled("p1"), disabled("p3")], "p3")).toEqual({ kind: "active", profileId: "p1" });
+  });
+});
+
+describe("selectableProfiles", () => {
+  it("offers enabled profiles only", () => {
+    expect(selectableProfiles([enabled("p1"), disabled("p2"), enabled("p3")], null).map((p) => p.id)).toEqual(["p1", "p3"]);
+  });
+
+  it("leaves out the profile the server denied", () => {
+    expect(selectableProfiles([enabled("p1"), enabled("p2"), enabled("p3")], "p2").map((p) => p.id)).toEqual(["p1", "p3"]);
   });
 });
 

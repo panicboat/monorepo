@@ -31,6 +31,13 @@ export function resolveProfileSession(
   return { kind: "select" };
 }
 
+export function selectableProfiles<T extends Pick<ProfileView, "id" | "disabled">>(
+  profiles: T[],
+  deniedProfileId: string | null
+): T[] {
+  return profiles.filter((profile) => !profile.disabled && profile.id !== deniedProfileId);
+}
+
 export function myProfilesKey(accountId: string): readonly [string, string] {
   return [MY_PROFILES_URL, accountId];
 }

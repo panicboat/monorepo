@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useProfile } from "@/modules/profile/hooks";
-import { useAuthStore, selectIsHydrated } from "@/stores/authStore";
+import { useAuthStore, selectIsHydrated, selectRole } from "@/stores/authStore";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs } from "@/components/ui/tab";
 import { PrivacySettings } from "@/modules/profile/components/PrivacySettings";
 import { AccountSettings } from "@/modules/profile/components/AccountSettings";
+import { ProfileManager } from "@/modules/profile/components/ProfileManager";
 import { NotificationSettings } from "@/modules/notifications/components/NotificationSettings";
 import { AppearanceSettings } from "@/modules/profile/components/AppearanceSettings";
 import { useDeactivateAccount } from "@/modules/identity/hooks/useDeactivateAccount";
@@ -18,6 +19,7 @@ export function SettingsHeader() {
 
 export default function SettingsPage() {
   const isHydrated = useAuthStore(selectIsHydrated);
+  const role = useAuthStore(selectRole);
   const { profile, loading, error, saveProfile } = useProfile();
   const { deactivate, loading: deactivating, error: deactivateError } = useDeactivateAccount();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -26,6 +28,7 @@ export default function SettingsPage() {
     { id: "notifications", label: "通知設定" },
     { id: "privacy", label: "プライバシー" },
     { id: "appearance", label: "外観" },
+    ...(role === "cast" ? [{ id: "profiles", label: "プロフィール" }] : []),
     { id: "account", label: "アカウント" },
   ];
   const [tab, setTab] = useState("notifications");
@@ -46,11 +49,17 @@ export default function SettingsPage() {
       <div className="px-4 pt-4">
         <SettingsHeader />
       </div>
-      <Tabs items={items} value={tab} onValueChange={setTab} />
+      <Tabs
+        items={items}
+        value={tab}
+        onValueChange={setTab}
+        className="overflow-x-auto [&>button]:shrink-0 [&>button]:whitespace-nowrap"
+      />
       <div className="px-4">
         {tab === "notifications" && <NotificationSettings />}
         {tab === "privacy" && <PrivacySettings profile={profile} save={saveProfile} />}
         {tab === "appearance" && <AppearanceSettings />}
+        {tab === "profiles" && role === "cast" && <ProfileManager />}
         {tab === "account" && (
           <>
             <AccountSettings profile={profile} save={saveProfile} />

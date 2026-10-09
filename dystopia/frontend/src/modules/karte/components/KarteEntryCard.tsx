@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useDeleteKarte } from "../hooks/useDeleteKarte";
 import { useReportKarte } from "../hooks/useReportKarte";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import type { KarteEntry } from "../types";
 
 interface Props {
@@ -15,6 +16,8 @@ interface Props {
 
 export function KarteEntryCard({ entry, mode, onChanged }: Props) {
   const isOwn = entry.isMine;
+  const activeProfileId = useAuthStore(selectActiveProfileId);
+  const writtenAsOtherProfile = mode === "my" && entry.authorProfileId !== activeProfileId;
   const { remove, loading: deleting } = useDeleteKarte();
   const { report, loading: reporting } = useReportKarte();
   const [reportOpen, setReportOpen] = useState(false);
@@ -48,6 +51,11 @@ export function KarteEntryCard({ entry, mode, onChanged }: Props) {
           </span>
         )}
       </div>
+      {writtenAsOtherProfile && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          {entry.authorUsername ? `@${entry.authorUsername} として記録` : "削除したプロフィールで記録"}
+        </p>
+      )}
       <div className="mt-1 text-base">{"★".repeat(entry.rating)}{"☆".repeat(5 - entry.rating)}</div>
       {entry.body && <p className="mt-2 whitespace-pre-wrap text-sm">{entry.body}</p>}
       <div className="mt-2 flex gap-3 text-sm text-muted-foreground">

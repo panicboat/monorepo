@@ -11,6 +11,7 @@ import { useUnreadCount, useNotificationPreferences } from "@/modules/notificati
 import { useTotalUnread } from "@/modules/messaging";
 import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
+import { ProfileSwitcher } from "@/modules/profile/components/ProfileSwitcher";
 
 type BadgeKey = "unread" | "messaging_unread" | "footprints_unread";
 
@@ -114,6 +115,8 @@ export function SideNav() {
           <p className="truncate text-xs text-text-secondary">@{profile?.username || "—"}</p>
         </div>
       </Link>
+
+      <ProfileSwitcher />
 
       <PostComposerModal open={composerOpen} onClose={() => setComposerOpen(false)} />
     </aside>

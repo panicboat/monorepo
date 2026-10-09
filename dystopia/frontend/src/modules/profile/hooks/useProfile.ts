@@ -6,6 +6,7 @@ import { fetcher } from "@/lib/swr";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { authFetch } from "@/lib/auth/fetch";
 import { addToMyProfiles } from "@/modules/profile/lib/session";
+import { useAccountProfiles } from "@/modules/profile/context/AccountProfilesContext";
 import type {
   CreateProfilePayload,
   ProfileView,
@@ -21,6 +22,7 @@ export function useProfile() {
   const activeProfileId = useAuthStore(selectActiveProfileId);
   const setActiveProfile = useAuthStore((s) => s.setActiveProfile);
   const { mutate: mutateCache } = useSWRConfig();
+  const { refresh: refreshAccountProfiles } = useAccountProfiles();
   const { data, error, isLoading, mutate } = useSWR<ProfileResponse>(
     activeProfileId ? (["/api/profile", activeProfileId] as const) : null,
     ([url]: readonly [string, string]) => fetcher<ProfileResponse>(url),
@@ -50,9 +52,10 @@ export function useProfile() {
         body: payload,
       });
       await mutate(res, { revalidate: false });
+      void refreshAccountProfiles();
       return res.profile;
     },
-    [mutate]
+    [mutate, refreshAccountProfiles]
   );
 
   const saveMedia = useCallback(
@@ -62,9 +65,10 @@ export function useProfile() {
         body: payload,
       });
       await mutate(res, { revalidate: false });
+      void refreshAccountProfiles();
       return res.profile;
     },
-    [mutate]
+    [mutate, refreshAccountProfiles]
   );
 
   return {

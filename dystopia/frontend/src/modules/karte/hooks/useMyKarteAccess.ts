@@ -11,10 +11,10 @@ export function hasKarteAccess(role: string | null, data: KarteAccess | undefine
 }
 
 export function useMyKarteAccess() {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
   const role = useAuthStore(selectRole);
   const { data, error, isLoading } = useSWR<KarteAccess>(
-    userId ? "/api/karte/access" : null,
+    profileId ? "/api/karte/access" : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 60_000 }
   );

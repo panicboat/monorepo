@@ -6,10 +6,10 @@ import { useAuthStore } from "@/stores/authStore";
 import type { SocialCounts } from "../types";
 
 export function useSocialCounts(profileId?: string) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const activeProfileId = useAuthStore((s) => s.activeProfileId);
   const qs = profileId ? `?profile_id=${encodeURIComponent(profileId)}` : "";
   const { data, error, isLoading, mutate } = useSWR<SocialCounts>(
-    userId ? `/api/social/counts${qs}` : null,
+    activeProfileId ? `/api/social/counts${qs}` : null,
     fetcher,
     { revalidateOnFocus: false }
   );

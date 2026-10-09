@@ -2,11 +2,19 @@
 import { createElement } from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { mutate as globalMutate } from "swr";
+import { mutate as globalMutate, useSWRConfig, type ScopedMutator } from "swr";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { emptyProfileView } from "@/modules/profile/lib/mappers";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+// The shell keeps a cache per acting profile, so its requests are revalidated through the mutator of that cache.
+const shell: { mutate: ScopedMutator | null } = { mutate: null };
+
+function revalidateInShell(key: string) {
+  if (!shell.mutate) throw new Error("the shell has not rendered, so nothing can be revalidated in its cache");
+  return shell.mutate(key);
+}
 
 const LIST_MS = 40;
 const REQUEST_MS = 30;
@@ -33,6 +41,7 @@ vi.mock("@/components/shell/Drawer", async () => {
   const { useFollow } = await import("@/modules/social/hooks/useFollow");
   return {
     Drawer: () => {
+      shell.mutate = useSWRConfig().mutate;
       useUnreadCount();
       useTotalUnread();
       useFootprintsUnreadCount();
@@ -208,7 +217,7 @@ describe("AppShell profile recovery", () => {
       expect(useAuthStore.getState()).toMatchObject({ accountId: "account-A", activeProfileId: "pA" });
 
       server.cookieAccount = "account-B";
-      void globalMutate("/api/notifications/unread-count");
+      void revalidateInShell("/api/notifications/unread-count");
       await act(async () => {
         await sleep(500);
       });
@@ -237,7 +246,7 @@ describe("AppShell profile recovery", () => {
         await sleep(100);
       });
       server.rejectedProfiles.add("pA");
-      void globalMutate("/api/notifications/unread-count");
+      void revalidateInShell("/api/notifications/unread-count");
       await act(async () => {
         await sleep(500);
       });

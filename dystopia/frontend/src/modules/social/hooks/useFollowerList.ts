@@ -6,10 +6,10 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedProfilesResponse } from "../types";
 
 export function useFollowerList(profileId?: string) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const activeProfileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedProfilesResponse | null): string | null => {
-    if (!userId) return null;
+    if (!activeProfileId) return null;
     if (prev && !prev.hasMore) return null;
     const profileQs = profileId ? `profile_id=${encodeURIComponent(profileId)}` : "";
     const cursorQs = pageIndex === 0 ? "" : `cursor=${encodeURIComponent(prev?.nextCursor || "")}`;

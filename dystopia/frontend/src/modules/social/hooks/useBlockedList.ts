@@ -6,9 +6,9 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedProfilesResponse } from "../types";
 
 export function useBlockedList() {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
   const { data, error, isLoading, mutate } = useSWR<PaginatedProfilesResponse>(
-    userId ? "/api/social/blocks" : null,
+    profileId ? "/api/social/blocks" : null,
     fetcher,
     { revalidateOnFocus: false }
   );
