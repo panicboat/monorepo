@@ -69,11 +69,13 @@ flowchart LR
 
 #### Stacks
 
-| Stack | 対象パス | Workflow | PR | `main` への push |
-| --- | --- | --- | --- | --- |
-| `container` | `dystopia/{service}`<br>`system-components/{service}` | [`reusable--container-builder.yaml`](.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push |
-| `terragrunt` | `dystopia/{service}/aws/{environment}`<br>`system-components/{service}/infrastructure/aws/{environment}` | [`reusable--terragrunt-executor.yaml`](.github/workflows/reusable--terragrunt-executor.yaml) → [`terragrunt-run`](https://github.com/panicboat/panicboat-actions/tree/main/terragrunt-run) | `terragrunt plan` | `terragrunt apply` |
-| `kubernetes` | `dystopia/{service}/kubernetes/overlays/{environment}`<br>`system-components/{service}/kubernetes/overlays/{environment}` | [`reusable--kubernetes-builder.yaml`](.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。apply は Flux が行い、CI は `kubectl apply` を実行しない |
+各 stack が対象とするパスは [`workflow-config.yaml`](workflow-config.yaml) の `stacks` で定義している。
+
+| Stack | Workflow | PR | `main` への push |
+| --- | --- | --- | --- |
+| `container` | [`reusable--container-builder.yaml`](.github/workflows/reusable--container-builder.yaml) | ビルドして GHCR に push | ビルドして GHCR に push |
+| `terragrunt` | [`reusable--terragrunt-executor.yaml`](.github/workflows/reusable--terragrunt-executor.yaml) → [`terragrunt-run`](https://github.com/panicboat/panicboat-actions/tree/main/terragrunt-run) | `terragrunt plan` | `terragrunt apply` |
+| `kubernetes` | [`reusable--kubernetes-builder.yaml`](.github/workflows/reusable--kubernetes-builder.yaml) | kustomize diff を PR にコメント | 何もしない。apply は Flux が行い、CI は `kubectl apply` を実行しない |
 
 [`dystopia/infrastructure`](dystopia/infrastructure) は frontend と monolith が共有する AWS リソース（Cognito、RDS）を持つ `terragrunt` stack であり、デプロイされるサービスではない。
 
