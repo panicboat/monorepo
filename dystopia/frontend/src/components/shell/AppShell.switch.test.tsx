@@ -40,6 +40,7 @@ vi.mock("@/components/shell/Drawer", async () => {
 
 const unreadByProfile: Record<string, number> = { pA: 1, pB: 2 };
 const calls: { url: string; profileId: string | null }[] = [];
+const disabledProfiles = new Set<string>(["pC"]);
 
 const memory = new Map<string, string>();
 vi.stubGlobal("localStorage", {
@@ -65,23 +66,34 @@ vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
   await sleep(REQUEST_MS);
   if (url === "/api/identity/me") return json({ account: { id: "account-A", role: 2 } });
   if (url === "/api/profile/mine") {
-    return json({ profiles: [profile("pA", "persona_a"), profile("pB", "persona_b"), { ...profile("pC", "persona_c"), disabled: true }] });
+    return json({
+      profiles: [profile("pA", "persona_a"), profile("pB", "persona_b"), profile("pC", "persona_c")].map((entry) => ({
+        ...entry,
+        disabled: disabledProfiles.has(entry.id),
+      })),
+    });
+  }
+  const disabling = url.match(/^\/api\/profile\/(\w+)\/disable$/);
+  if (disabling) {
+    disabledProfiles.add(disabling[1]);
+    return json({ profile: { ...profile(disabling[1], "disabled"), disabled: true } });
   }
   return json({ count: profileId ? unreadByProfile[profileId] : 0 });
 });
 
 async function mountApp() {
-  const [{ AppShell }, { AuthProvider }, { SWRProvider }] = await Promise.all([
+  const [{ AppShell }, { AuthProvider }, { SWRProvider }, { ProfileManager }] = await Promise.all([
     import("./AppShell"),
     import("@/modules/identity/hooks/useAuth"),
     import("@/components/providers/SWRProvider"),
+    import("@/modules/profile/components/ProfileManager"),
   ]);
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
   await act(async () => {
     root.render(
-      createElement(SWRProvider, null, createElement(AuthProvider, null, createElement(AppShell, null, createElement("div", null, "page"))))
+      createElement(SWRProvider, null, createElement(AuthProvider, null, createElement(AppShell, null, createElement(ProfileManager))))
     );
   });
   return {
@@ -94,10 +106,13 @@ async function mountApp() {
         button.click();
       });
     },
-    settle: async () => {
+    switcher: () => container.querySelector('[aria-label="プロフィールを切り替え"]')?.textContent ?? "",
+    until: async (condition: () => boolean) => {
+      const deadline = Date.now() + 3000;
       await act(async () => {
-        await sleep(REQUEST_MS * 4);
+        while (!condition() && Date.now() < deadline) await sleep(10);
       });
+      if (!condition()) throw new Error(`the app did not settle: ${container.textContent}`);
     },
     unmount: async () => {
       await act(async () => {
@@ -110,6 +125,8 @@ async function mountApp() {
 
 beforeEach(async () => {
   calls.length = 0;
+  disabledProfiles.clear();
+  disabledProfiles.add("pC");
   push.mockClear();
   memory.clear();
   useAuthStore.getState().clearIdentity();
@@ -126,9 +143,8 @@ afterEach(() => {
 describe("AppShell with several enabled profiles", () => {
   it("asks which profile to use and sends no request as a profile before the choice", async () => {
     const app = await mountApp();
-    await app.settle();
+    await app.until(() => app.container.textContent?.includes("プロフィールを選択") ?? false);
 
-    expect(app.container.textContent).toContain("プロフィールを選択");
     expect(app.container.textContent).toContain("@persona_a");
     expect(app.container.textContent).toContain("@persona_b");
     expect(app.container.textContent).not.toContain("@persona_c");
@@ -139,23 +155,20 @@ describe("AppShell with several enabled profiles", () => {
 
   it("opens the shell as the chosen profile without leaving the current page", async () => {
     const app = await mountApp();
-    await app.settle();
+    await app.until(() => app.container.textContent?.includes("プロフィールを選択") ?? false);
 
     await app.click("@persona_a");
-    await app.settle();
+    await app.until(() => app.unread() === "1");
 
     expect(useAuthStore.getState().activeProfileId).toBe("pA");
-    expect(app.unread()).toBe("1");
     expect(push).not.toHaveBeenCalled();
     await app.unmount();
   });
 
   it("shows nothing of the previous profile after a switch, loads as the next one and goes to the top", async () => {
+    useAuthStore.getState().setActiveProfile("pA");
     const app = await mountApp();
-    await app.settle();
-    await app.click("@persona_a");
-    await app.settle();
-    expect(app.unread()).toBe("1");
+    await app.until(() => app.unread() === "1" && app.switcher().includes("@persona_b"));
     calls.length = 0;
 
     await app.click("@persona_b");
@@ -164,38 +177,66 @@ describe("AppShell with several enabled profiles", () => {
     expect(app.unread()).toBe("0");
     expect(push.mock.calls).toEqual([["/"]]);
 
-    await app.settle();
+    await app.until(() => app.unread() === "2");
 
-    expect(app.unread()).toBe("2");
     expect(calls.filter((call) => call.url === "/api/notifications/unread-count").map((call) => call.profileId)).toEqual(["pB"]);
-    expect(app.container.textContent).toContain("@persona_a");
-    expect(app.container.textContent).not.toContain("@persona_b");
+    expect(app.switcher()).toContain("@persona_a");
+    expect(app.switcher()).not.toContain("@persona_b");
+    await app.unmount();
+  });
+
+  it("drops a profile disabled from the management list out of the switcher", async () => {
+    useAuthStore.getState().setActiveProfile("pA");
+    const app = await mountApp();
+    await app.until(() => app.switcher().includes("@persona_b"));
+
+    await app.click("無効にする");
+    await app.until(() => !app.switcher().includes("@persona_b"));
+
+    expect(disabledProfiles.has("pB")).toBe(true);
+    expect(useAuthStore.getState().activeProfileId).toBe("pA");
+    expect(calls.filter((call) => call.url === "/api/profile/pB/disable").map((call) => call.profileId)).toEqual(["pA"]);
     await app.unmount();
   });
 
   it("does not offer a profile the server denied until the list is retried", async () => {
     useAuthStore.getState().setActiveProfile("pA");
     const app = await mountApp();
-    await app.settle();
+    await app.until(() => app.unread() === "1");
 
     await act(async () => {
       useAuthStore.getState().denyActiveProfile("pA");
     });
-    await app.settle();
+    await app.until(() => app.container.textContent?.includes("プロフィールを選択") ?? false);
 
-    expect(app.container.textContent).toContain("プロフィールを選択");
     expect(app.container.textContent).toContain("@persona_b");
     expect(app.container.textContent).not.toContain("@persona_a");
+    await app.unmount();
+  });
+
+  it("returns to the picker when a denied profile is chosen from the switcher", async () => {
+    useAuthStore.getState().setActiveProfile("pA");
+    const app = await mountApp();
+    await app.until(() => app.switcher().includes("@persona_b"));
+    await act(async () => {
+      useAuthStore.setState({ deniedProfileId: "pB" });
+    });
+
+    await app.click("@persona_b");
+    await app.until(() => app.container.textContent?.includes("プロフィールを選択") ?? false);
+
+    expect(useAuthStore.getState().activeProfileId).toBeNull();
+    expect(app.container.textContent).toContain("@persona_a");
+    expect(app.container.textContent).not.toContain("@persona_b");
     await app.unmount();
   });
 
   it("keeps the stored profile across a reload", async () => {
     useAuthStore.getState().setActiveProfile("pB");
     const app = await mountApp();
-    await app.settle();
+    await app.until(() => app.unread() === "2");
 
     expect(app.container.textContent).not.toContain("プロフィールを選択");
-    expect(app.unread()).toBe("2");
     await app.unmount();
   });
 });

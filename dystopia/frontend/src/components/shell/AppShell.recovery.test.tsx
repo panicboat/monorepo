@@ -11,6 +11,11 @@ import { emptyProfileView } from "@/modules/profile/lib/mappers";
 // The shell keeps a cache per acting profile, so its requests are revalidated through the mutator of that cache.
 const shell: { mutate: ScopedMutator | null } = { mutate: null };
 
+function revalidateInShell(key: string) {
+  if (!shell.mutate) throw new Error("the shell has not rendered, so nothing can be revalidated in its cache");
+  return shell.mutate(key);
+}
+
 const LIST_MS = 40;
 const REQUEST_MS = 30;
 
@@ -212,7 +217,7 @@ describe("AppShell profile recovery", () => {
       expect(useAuthStore.getState()).toMatchObject({ accountId: "account-A", activeProfileId: "pA" });
 
       server.cookieAccount = "account-B";
-      void shell.mutate?.("/api/notifications/unread-count");
+      void revalidateInShell("/api/notifications/unread-count");
       await act(async () => {
         await sleep(500);
       });
@@ -241,7 +246,7 @@ describe("AppShell profile recovery", () => {
         await sleep(100);
       });
       server.rejectedProfiles.add("pA");
-      void shell.mutate?.("/api/notifications/unread-count");
+      void revalidateInShell("/api/notifications/unread-count");
       await act(async () => {
         await sleep(500);
       });

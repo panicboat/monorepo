@@ -29,6 +29,9 @@ import { resolveShellMode } from "./resolveShellMode";
 
 const AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/onboarding"];
 
+// Keep one object: a new config value on every render makes every SWR hook below re-render.
+const PROFILE_CACHE_CONFIG = { provider: () => new Map() };
+
 interface AppShellProps {
   children: React.ReactNode;
 }
@@ -112,7 +115,7 @@ export function AppShell({ children }: AppShellProps) {
 
   // Give each acting profile its own cache: keys carry no profile id, so a shared cache would show one profile's data to the next.
   return (
-    <SWRConfig key={activeProfileId} value={{ provider: () => new Map() }}>
+    <SWRConfig key={activeProfileId} value={PROFILE_CACHE_CONFIG}>
       <AccountProfilesProvider value={accountProfiles}>
         <div className="flex min-h-dvh flex-col bg-bg [touch-action:pan-y_pinch-zoom]">
           <div className="md:hidden">

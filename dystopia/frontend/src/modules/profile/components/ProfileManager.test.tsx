@@ -151,6 +151,70 @@ describe("ProfileManager", () => {
     await view.unmount();
   });
 
+  it("names the profile each button acts on for assistive technology", async () => {
+    const view = await mount();
+    const names = (username: string) =>
+      Array.from(row(view.container, username).querySelectorAll("button")).map((button) => button.getAttribute("aria-label"));
+
+    expect(names("second")).toEqual(["@second に切り替える", "@second を無効にする"]);
+    expect(names("third")).toEqual(["@third を有効にする", "@third を削除する"]);
+    await view.unmount();
+  });
+
+  it("offers an acting profile that was disabled elsewhere only to be enabled", async () => {
+    useAuthStore.setState({ activeProfileId: "p3" });
+    const view = await mount();
+
+    expect(labels(row(view.container, "third"))).toEqual(["有効にする"]);
+    await view.unmount();
+  });
+
+  it("keeps the confirmation open with the reason when the deletion is refused, and deletes on the next try", async () => {
+    const view = await mount();
+    await click(row(view.container, "third"), "削除する");
+    const dialog = document.body.querySelector('[role="dialog"]');
+    if (!dialog) throw new Error("the confirmation did not open");
+
+    authFetch.mockRejectedValueOnce(new Error("削除できませんでした"));
+    await click(dialog, "削除する");
+
+    expect(document.body.querySelector('[role="dialog"]')?.querySelector('[role="alert"]')?.textContent).toBe("削除できませんでした");
+    expect(refresh).not.toHaveBeenCalled();
+
+    await click(dialog, "削除する");
+
+    expect(log).toEqual(["DELETE /api/profile/p3", "refresh"]);
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+    await view.unmount();
+  });
+
+  it("shows why a profile could not be added and neither refreshes nor switches", async () => {
+    authFetch.mockRejectedValue(new Error("プロフィールをこれ以上追加できません"));
+    const view = await mount();
+
+    await click(view.container, "プロフィールを追加");
+    await type(view.container.querySelector("#displayName") as HTMLInputElement, "Fourth");
+    await type(view.container.querySelector("#username") as HTMLInputElement, "fourth");
+    await act(async () => {
+      view.container.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+
+    expect(view.container.querySelector('form [role="alert"]')?.textContent).toBe("プロフィールをこれ以上追加できません");
+    expect(log).toEqual([]);
+    await view.unmount();
+  });
+
+  it("closes the add form without creating anything when it is cancelled", async () => {
+    const view = await mount();
+
+    await click(view.container, "プロフィールを追加");
+    await click(view.container, "キャンセル");
+
+    expect(view.container.querySelector("form")).toBeNull();
+    expect(authFetch).not.toHaveBeenCalled();
+    await view.unmount();
+  });
+
   it("shows the reason and keeps the list when a change is refused", async () => {
     authFetch.mockRejectedValue(new Error("入力内容を確認してください"));
     const view = await mount();

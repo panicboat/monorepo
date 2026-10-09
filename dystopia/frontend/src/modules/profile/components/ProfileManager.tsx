@@ -28,8 +28,10 @@ export function ProfileManager() {
     try {
       await request();
       await refresh();
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "変更に失敗しました");
+      return false;
     } finally {
       setPendingProfileId(null);
     }
@@ -40,7 +42,13 @@ export function ProfileManager() {
   const enable = (profile: ProfileView) =>
     change(profile.id, () => authFetch(`/api/profile/${encodeURIComponent(profile.id)}/enable`, { method: "POST" }));
   const remove = async (profile: ProfileView) => {
-    await change(profile.id, () => authFetch(`/api/profile/${encodeURIComponent(profile.id)}`, { method: "DELETE" }));
+    const removed = await change(profile.id, () =>
+      authFetch(`/api/profile/${encodeURIComponent(profile.id)}`, { method: "DELETE" })
+    );
+    if (removed) setDeleteTarget(null);
+  };
+  const closeDeleteDialog = () => {
+    setError(null);
     setDeleteTarget(null);
   };
 
@@ -68,27 +76,53 @@ export function ProfileManager() {
               </div>
               {!profile.disabled && !isActive && (
                 <>
-                  <Button type="button" size="sm" disabled={isPending} onClick={() => switchProfile(profile.id)}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={isPending}
+                    aria-label={`@${profile.username} に切り替える`}
+                    onClick={() => switchProfile(profile.id)}
+                  >
                     切り替える
                   </Button>
-                  <Button type="button" size="sm" variant="secondary" disabled={isPending} onClick={() => disable(profile)}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    disabled={isPending}
+                    aria-label={`@${profile.username} を無効にする`}
+                    onClick={() => disable(profile)}
+                  >
                     無効にする
                   </Button>
                 </>
               )}
               {profile.disabled && (
                 <>
-                  <Button type="button" size="sm" variant="secondary" disabled={isPending} onClick={() => enable(profile)}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    disabled={isPending}
+                    aria-label={`@${profile.username} を有効にする`}
+                    onClick={() => enable(profile)}
+                  >
                     有効にする
                   </Button>
-                  <button
-                    type="button"
-                    disabled={isPending}
-                    onClick={() => setDeleteTarget(profile)}
-                    className="h-9 rounded-full border border-red-600 px-4 text-sm font-bold text-red-600 disabled:opacity-50"
-                  >
-                    削除する
-                  </button>
+                  {!isActive && (
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      aria-label={`@${profile.username} を削除する`}
+                      onClick={() => {
+                        setError(null);
+                        setDeleteTarget(profile);
+                      }}
+                      className="h-9 rounded-full border border-red-600 px-4 text-sm font-bold text-red-600 disabled:opacity-50"
+                    >
+                      削除する
+                    </button>
+                  )}
                 </>
               )}
             </li>
@@ -97,7 +131,7 @@ export function ProfileManager() {
       </ul>
       <p className="mt-2 text-xs text-text-secondary">使用中のプロフィールを無効にするには、先に別のプロフィールへ切り替えてください。</p>
 
-      {error && (
+      {error && deleteTarget === null && (
         <p role="alert" className="mt-3 text-sm text-error">
           {error}
         </p>
@@ -105,15 +139,20 @@ export function ProfileManager() {
 
       <div className="mt-6">
         {adding ? (
-          <ProfileNameForm
-            submitLabel="追加して切り替える"
-            onSubmit={async (payload) => {
-              const res = await authFetch<ProfileResponse>("/api/profile", { method: "POST", body: payload });
-              // Refresh the list first; switching to a profile the cached list lacks resolves back to the picker.
-              await refresh();
-              switchProfile(res.profile.id);
-            }}
-          />
+          <>
+            <ProfileNameForm
+              submitLabel="追加して切り替える"
+              onSubmit={async (payload) => {
+                const res = await authFetch<ProfileResponse>("/api/profile", { method: "POST", body: payload });
+                // Refresh the list first; switching to a profile the cached list lacks resolves back to the picker.
+                await refresh();
+                switchProfile(res.profile.id);
+              }}
+            />
+            <Button type="button" variant="secondary" className="mt-3 w-full" onClick={() => setAdding(false)}>
+              キャンセル
+            </Button>
+          </>
         ) : (
           <Button type="button" variant="secondary" onClick={() => setAdding(true)}>
             プロフィールを追加
@@ -121,7 +160,7 @@ export function ProfileManager() {
         )}
       </div>
 
-      <Dialog.Root open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <Dialog.Root open={deleteTarget !== null} onOpenChange={(open) => !open && closeDeleteDialog()}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60" />
           <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface p-4">
@@ -131,6 +170,11 @@ export function ProfileManager() {
             <Dialog.Description className="mt-2 text-sm text-text-secondary">
               このプロフィールの投稿・コメント・フォロー・メッセージ・レビューが削除され、元に戻せません。カルテの記録は残ります。
             </Dialog.Description>
+            {error && (
+              <p role="alert" className="mt-3 text-sm text-error">
+                {error}
+              </p>
+            )}
             <div className="mt-4 flex justify-end gap-2">
               <Dialog.Close asChild>
                 <Button variant="secondary" size="sm">キャンセル</Button>
