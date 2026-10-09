@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { useAuthStore } from "@/stores/authStore";
 import type { MediaItem } from "../types";
 import { mapApiToMediaItem, mapApiToMediaList } from "../lib/mappers";
@@ -18,7 +19,7 @@ export function useMedia(): UseMediaResult {
   const [error, setError] = useState<Error | null>(null);
 
   const getMedia = useCallback(async (id: string): Promise<MediaItem | null> => {
-    if (!useAuthStore.getState().userId) {
+    if (!useAuthStore.getState().activeProfileId) {
       throw new Error("ログインしてください");
     }
 
@@ -26,7 +27,7 @@ export function useMedia(): UseMediaResult {
     setError(null);
 
     try {
-      const res = await fetch(`/api/media/${id}`);
+      const res = await fetch(`/api/media/${id}`, { headers: profileRequestHeaders() });
 
       if (res.status === 404) {
         return null;
@@ -52,7 +53,7 @@ export function useMedia(): UseMediaResult {
     async (ids: string[]): Promise<MediaItem[]> => {
       if (ids.length === 0) return [];
 
-      if (!useAuthStore.getState().userId) {
+      if (!useAuthStore.getState().activeProfileId) {
         throw new Error("ログインしてください");
       }
 
@@ -64,6 +65,7 @@ export function useMedia(): UseMediaResult {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...profileRequestHeaders(),
           },
           body: JSON.stringify({ ids }),
         });
@@ -87,7 +89,7 @@ export function useMedia(): UseMediaResult {
   );
 
   const deleteMedia = useCallback(async (id: string): Promise<boolean> => {
-    if (!useAuthStore.getState().userId) {
+    if (!useAuthStore.getState().activeProfileId) {
       throw new Error("ログインしてください");
     }
 
@@ -97,6 +99,7 @@ export function useMedia(): UseMediaResult {
     try {
       const res = await fetch(`/api/media/${id}`, {
         method: "DELETE",
+        headers: profileRequestHeaders(),
       });
 
       if (!res.ok) {

@@ -2,11 +2,11 @@
 
 module Profile
   module UseCases
-    class ListAccountIdsByPrefecture
+    class ListProfileIdsByPrefecture
       include Deps["repositories.profile_repository"]
 
       def call(prefecture:)
-        profile_repository.account_ids_by_prefecture(prefecture)
+        profile_repository.profile_ids_by_prefecture(prefecture)
       end
     end
   end

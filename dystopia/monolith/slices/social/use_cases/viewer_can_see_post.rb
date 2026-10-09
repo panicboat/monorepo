@@ -17,7 +17,7 @@ module Social
                           block_repo.blocked?(blocker_id: author_id, blocked_id: viewer_account_id)
         end
 
-        profile = get_profile.call(account_id: author_id)
+        profile = get_profile.call(profile_id: author_id)
         is_private = profile.respond_to?(:is_private) ? !!profile.is_private : false
         return true unless is_private
 

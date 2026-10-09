@@ -5,10 +5,8 @@ module Profile
     class GetProfile
       include Deps["repositories.profile_repository"]
 
-      def call(account_id:)
-        return nil if account_id.nil? || account_id.to_s.empty?
-
-        profile_repository.find_by_account_id(account_id)
+      def call(profile_id:)
+        profile_repository.find_by_id(profile_id)
       end
     end
   end

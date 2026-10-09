@@ -40,11 +40,11 @@ vi.mock("@/modules/footprints", () => ({
 }));
 
 vi.mock("@/stores/authStore", () => ({
-  useAuthStore: (selector?: (state: { userId: string }) => unknown) => {
-    const state = { userId: "viewer-1" };
+  useAuthStore: (selector?: (state: { activeProfileId: string }) => unknown) => {
+    const state = { activeProfileId: "viewer-1" };
     return selector ? selector(state) : state;
   },
-  selectUserId: (state: { userId: string }) => state.userId,
+  selectActiveProfileId: (state: { activeProfileId: string }) => state.activeProfileId,
 }));
 
 vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({

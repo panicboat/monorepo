@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedCommentsResponse } from "@/modules/post/lib/comment-view";
 
 export function useComments(postId: string | null | undefined) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedCommentsResponse | null): string | null => {
     if (!userId || !postId) return null;

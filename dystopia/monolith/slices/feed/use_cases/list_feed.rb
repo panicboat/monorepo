@@ -23,7 +23,7 @@ module Feed
         when "all"
           nil
         when "area"
-          list_account_ids_by_prefecture_uc.call(prefecture: prefecture)
+          list_profile_ids_by_prefecture_uc.call(prefecture: prefecture)
         when "following"
           @follow_adapter.following_account_ids(account_id: viewer_account_id)
         else
@@ -54,8 +54,8 @@ module Feed
         @post_repo ||= Post::Slice["repositories.post_repository"]
       end
 
-      def list_account_ids_by_prefecture_uc
-        @list_account_ids_by_prefecture_uc ||= Profile::Slice["use_cases.list_account_ids_by_prefecture"]
+      def list_profile_ids_by_prefecture_uc
+        @list_profile_ids_by_prefecture_uc ||= Profile::Slice["use_cases.list_profile_ids_by_prefecture"]
       end
     end
   end

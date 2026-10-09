@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedFootprintsResponse } from "../types";
 
 export function useFootprints() {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (
     pageIndex: number,

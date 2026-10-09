@@ -41,7 +41,7 @@ cast_replies = [
 ]
 
 posts = db[:"post__posts"].order(:id).all.to_a
-all_user_ids = GUEST_USER_IDS + CAST_USER_IDS
+all_user_ids = GUEST_PROFILE_IDS + CAST_PROFILE_IDS
 
 comment_count = 0
 reply_count = 0

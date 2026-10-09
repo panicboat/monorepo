@@ -6,9 +6,9 @@ RSpec.describe "Profile::Relations::Casts", type: :database do
   let(:relation) { Hanami.app.slices[:profile]["relations.casts"] }
 
   it "defines the narrowed schema" do
-    expect(relation.schema.primary_key_name).to eq(:user_id)
+    expect(relation.schema.primary_key_name).to eq(:profile_id)
     attribute_names = relation.schema.attributes.map(&:name)
-    expect(attribute_names).to contain_exactly(:user_id, :sns_links, :age, :body_stats, :industry, :created_at, :updated_at)
+    expect(attribute_names).to contain_exactly(:profile_id, :sns_links, :age, :body_stats, :industry, :created_at, :updated_at)
   end
 
   it "maps to the correct table" do

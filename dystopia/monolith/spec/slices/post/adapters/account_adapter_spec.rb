@@ -4,23 +4,11 @@ require "spec_helper"
 
 RSpec.describe "Post::Adapters::AccountAdapter", type: :database do
   let(:adapter) { Hanami.app.slices[:post]["adapters.account_adapter"] }
-  let(:db) { Hanami.app.slices[:post]["db.rom"].gateways[:default].connection }
-
-  def create_user(role: 1)
-    id = SecureRandom.uuid_v7
-    db[:identity__accounts].insert(
-      id: id,
-      role: role,
-      created_at: Time.now,
-      updated_at: Time.now
-    )
-    id
-  end
 
   describe "#user_exists?" do
     context "when user exists" do
       it "returns true" do
-        user_id = create_user
+        user_id = create_account_with_profile
         expect(adapter.user_exists?(user_id)).to be true
       end
     end
@@ -34,12 +22,12 @@ RSpec.describe "Post::Adapters::AccountAdapter", type: :database do
 
   describe "#get_user_type" do
     it "returns 'guest' for role 1" do
-      user_id = create_user(role: 1)
+      user_id = create_account_with_profile(role: 1)
       expect(adapter.get_user_type(user_id)).to eq("guest")
     end
 
     it "returns 'cast' for role 2" do
-      user_id = create_user(role: 2)
+      user_id = create_account_with_profile(role: 2)
       expect(adapter.get_user_type(user_id)).to eq("cast")
     end
 
@@ -50,8 +38,8 @@ RSpec.describe "Post::Adapters::AccountAdapter", type: :database do
 
   describe "#get_user_types_batch" do
     it "returns user types for multiple users" do
-      guest_id = create_user(role: 1)
-      cast_id = create_user(role: 2)
+      guest_id = create_account_with_profile(role: 1)
+      cast_id = create_account_with_profile(role: 2)
 
       result = adapter.get_user_types_batch([guest_id, cast_id])
       expect(result[guest_id]).to eq("guest")

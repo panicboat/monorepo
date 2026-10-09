@@ -26,22 +26,22 @@ module Billing
       ]
 
       def get_my_subscription
-        authenticate_user!
-        result = get_uc.call(account_id: current_user_id)
+        authenticate_account!
+        result = get_uc.call(account_id: current_account_id)
         response = ::Billing::V1::GetMySubscriptionResponse.new
         response.subscription = subscription_to_proto(result) if result
         response
       end
 
       def create_checkout_session
-        authenticate_user!
-        result = wrap_errors { checkout_uc.call(account_id: current_user_id) }
+        authenticate_account!
+        result = wrap_errors { checkout_uc.call(account_id: current_account_id) }
         ::Billing::V1::CreateCheckoutSessionResponse.new(url: result[:url])
       end
 
       def create_customer_portal_session
-        authenticate_user!
-        result = wrap_errors { portal_uc.call(account_id: current_user_id) }
+        authenticate_account!
+        result = wrap_errors { portal_uc.call(account_id: current_account_id) }
         ::Billing::V1::CreateCustomerPortalSessionResponse.new(url: result[:url])
       end
 

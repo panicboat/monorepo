@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedAuthorPostsResponse } from "@/modules/post/lib/author-tab-view";
 
 export function useAuthorLikedPosts(accountId: string | null | undefined) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedAuthorPostsResponse | null): string | null => {
     if (!userId || !accountId) return null;

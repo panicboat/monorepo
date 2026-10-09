@@ -13,7 +13,7 @@ export function mapFootprintToView(proto: FootprintProto): FootprintView {
 
   return {
     visitor: {
-      accountId: visitor?.accountId || "",
+      accountId: visitor?.id || "",
       username: visitor?.username || "",
       displayName: visitor?.displayName || "",
       avatarUrl: visitor?.avatarUrl || null,

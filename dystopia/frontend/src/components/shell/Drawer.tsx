@@ -49,7 +49,7 @@ function isWithinHorizontalScrollable(element: Element | null): boolean {
 export function Drawer({ open, onClose, onOpen }: DrawerProps) {
   const { logout } = useAuth();
   const { profile } = useProfile();
-  const { followingCount, followersCount } = useSocialCounts(profile?.accountId);
+  const { followingCount, followersCount } = useSocialCounts(profile?.id);
   const { count: unread } = useUnreadCount();
   const { count: msgUnread } = useTotalUnread();
   const { count: footprintsUnread } = useFootprintsUnreadCount();

@@ -14,7 +14,7 @@ export function useBookmarkStatusBatch(postIds: string[]) {
   const key = postIds.join(",");
 
   useEffect(() => {
-    if (!useAuthStore.getState().userId || postIds.length === 0) return;
+    if (!useAuthStore.getState().activeProfileId || postIds.length === 0) return;
     let cancelled = false;
     (async () => {
       if (cancelled) return;

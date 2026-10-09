@@ -9,6 +9,7 @@ export function generateRequestId(): string {
 export const HEADER_NAMES = {
   REQUEST_ID: "X-Request-ID",
   USER_ID: "x-user-id",
+  PROFILE_ID: "x-profile-id",
 } as const;
 
 export async function buildGrpcHeaders(
@@ -25,6 +26,8 @@ export async function buildGrpcHeaders(
     try {
       const { sub } = await verifyAccessToken(accessToken);
       headers[HEADER_NAMES.USER_ID] = sub;
+      const profileId = req.headers.get(HEADER_NAMES.PROFILE_ID);
+      if (profileId) headers[HEADER_NAMES.PROFILE_ID] = profileId;
     } catch {
       // SILENT: Ignore invalid tokens so downstream handlers can produce the 401 response.
     }

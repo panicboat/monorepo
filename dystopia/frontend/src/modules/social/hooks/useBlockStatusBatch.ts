@@ -14,7 +14,7 @@ export function useBlockStatusBatch(targetAccountIds: string[]) {
   const key = targetAccountIds.join(",");
 
   useEffect(() => {
-    if (!useAuthStore.getState().userId || targetAccountIds.length === 0) return;
+    if (!useAuthStore.getState().activeProfileId || targetAccountIds.length === 0) return;
     let cancelled = false;
     (async () => {
       if (cancelled) return;

@@ -11,7 +11,7 @@ export function useBookmark(postId: string | null | undefined) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!postId || !useAuthStore.getState().userId) return;
+    if (!postId || !useAuthStore.getState().activeProfileId) return;
     let cancelled = false;
     (async () => {
       try {
@@ -29,7 +29,7 @@ export function useBookmark(postId: string | null | undefined) {
   }, [postId]);
 
   const bookmark = useCallback(async () => {
-    if (!postId || !useAuthStore.getState().userId) return;
+    if (!postId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
       await authFetch(`/api/bookmarks/${encodeURIComponent(postId)}`, { method: "POST" });
@@ -40,7 +40,7 @@ export function useBookmark(postId: string | null | undefined) {
   }, [postId]);
 
   const unbookmark = useCallback(async () => {
-    if (!postId || !useAuthStore.getState().userId) return;
+    if (!postId || !useAuthStore.getState().activeProfileId) return;
     setLoading(true);
     try {
       await authFetch(`/api/bookmarks/${encodeURIComponent(postId)}`, { method: "DELETE" });

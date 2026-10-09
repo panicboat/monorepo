@@ -48,7 +48,7 @@ module Footprints
 
         visitor_ids = result[:rows].map { |r| r[:visitor_id] }.uniq
         profiles_by_id = visitor_ids.each_with_object({}) do |aid, h|
-          h[aid] = get_profile.call(account_id: aid)
+          h[aid] = get_profile.call(profile_id: aid)
         end
 
         footprints = result[:rows].filter_map do |row|
@@ -87,7 +87,7 @@ module Footprints
       def present_profile(profile)
         return nil unless profile
         role = role_for(profile.account_id)
-        cast = role == 2 ? cast_repository.find_by_user_id(profile.account_id) : nil
+        cast = role == 2 ? cast_repository.find_by_profile_id(profile.id) : nil
         ::Profile::Presenters::ProfilePresenter.to_proto(
           profile,
           cast: cast,

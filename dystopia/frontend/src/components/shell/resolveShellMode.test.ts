@@ -1,52 +1,122 @@
 import { describe, expect, it } from "vitest";
 import { resolveShellMode } from "./resolveShellMode";
 
+const base = {
+  isHydrated: true,
+  isAuthenticated: true,
+  hasActiveProfile: true,
+  sessionKind: "active" as const,
+  hasProfileListError: false,
+  isAuthRoute: false,
+  isOnboardingRoute: false,
+  isLandingRoute: false,
+};
+
 describe("resolveShellMode", () => {
-  it("stays bare for an auth route once hydrated with a viewer already set", () => {
-    expect(
-      resolveShellMode({ isHydrated: true, viewerId: "u1", isAuthRoute: true, isLandingRoute: false })
-    ).toBe("bare");
+  it("keeps auth routes other than onboarding bare in every identity state", () => {
+    const states = [
+      { isHydrated: false, isAuthenticated: false, hasActiveProfile: false },
+      { isHydrated: true, isAuthenticated: false, hasActiveProfile: false },
+      { isHydrated: true, isAuthenticated: true, hasActiveProfile: false },
+      { isHydrated: true, isAuthenticated: true, hasActiveProfile: true },
+    ];
+
+    for (const state of states) {
+      expect(
+        resolveShellMode({ ...base, ...state, isAuthRoute: true, isOnboardingRoute: false })
+      ).toBe("bare");
+    }
   });
 
-  it("stays bare for an auth route before hydration", () => {
+  it("waits for hydration before showing onboarding", () => {
     expect(
-      resolveShellMode({ isHydrated: false, viewerId: null, isAuthRoute: true, isLandingRoute: false })
-    ).toBe("bare");
-  });
-
-  it("stays bare for an auth route once hydrated with no viewer", () => {
-    expect(
-      resolveShellMode({ isHydrated: true, viewerId: null, isAuthRoute: true, isLandingRoute: false })
-    ).toBe("bare");
-  });
-
-  it("stays bare for an auth route before hydration even with a viewer already set", () => {
-    expect(
-      resolveShellMode({ isHydrated: false, viewerId: "u1", isAuthRoute: true, isLandingRoute: false })
-    ).toBe("bare");
-  });
-
-  it("renders nothing before hydration on a non-auth route", () => {
-    expect(
-      resolveShellMode({ isHydrated: false, viewerId: null, isAuthRoute: false, isLandingRoute: false })
+      resolveShellMode({
+        ...base,
+        isHydrated: false,
+        isAuthenticated: true,
+        hasActiveProfile: false,
+        sessionKind: null,
+        isAuthRoute: true,
+        isOnboardingRoute: true,
+      })
     ).toBe("loading");
   });
 
-  it("renders the landing page once hydrated with no viewer on the landing route", () => {
+  it("shows onboarding to a signed-out visitor", () => {
     expect(
-      resolveShellMode({ isHydrated: true, viewerId: null, isAuthRoute: false, isLandingRoute: true })
+      resolveShellMode({
+        ...base,
+        isAuthenticated: false,
+        hasActiveProfile: false,
+        sessionKind: null,
+        isAuthRoute: true,
+        isOnboardingRoute: true,
+      })
+    ).toBe("bare");
+  });
+
+  it("shows onboarding to an authenticated account with no enabled profile", () => {
+    expect(
+      resolveShellMode({
+        ...base,
+        hasActiveProfile: false,
+        sessionKind: "onboarding",
+        isAuthRoute: true,
+        isOnboardingRoute: true,
+      })
+    ).toBe("bare");
+  });
+
+  it("waits on onboarding until the authenticated session resolves as onboarding", () => {
+    for (const sessionKind of [null, "active", "select", "unavailable"] as const) {
+      expect(
+        resolveShellMode({
+          ...base,
+          hasActiveProfile: false,
+          sessionKind,
+          isAuthRoute: true,
+          isOnboardingRoute: true,
+        })
+      ).toBe("loading");
+    }
+  });
+
+  it("shows the profile gate when the profile list failed on onboarding", () => {
+    expect(
+      resolveShellMode({
+        ...base,
+        hasActiveProfile: false,
+        sessionKind: null,
+        hasProfileListError: true,
+        isAuthRoute: true,
+        isOnboardingRoute: true,
+      })
+    ).toBe("profile-gate");
+  });
+
+  it("renders the shell when a profile is active even if the list failed", () => {
+    expect(resolveShellMode({ ...base, hasProfileListError: true })).toBe("shell");
+  });
+
+  it("shows the profile gate for list errors and resolved blocked sessions", () => {
+    expect(resolveShellMode({ ...base, hasActiveProfile: false, sessionKind: null, hasProfileListError: true })).toBe("profile-gate");
+    expect(resolveShellMode({ ...base, hasActiveProfile: false, sessionKind: "unavailable" })).toBe("profile-gate");
+    expect(resolveShellMode({ ...base, hasActiveProfile: false, sessionKind: "select" })).toBe("profile-gate");
+  });
+
+  it("waits while the acting profile is unresolved", () => {
+    expect(resolveShellMode({ ...base, hasActiveProfile: false, sessionKind: null })).toBe("loading");
+  });
+
+  it("renders the landing page for a signed-out visitor", () => {
+    expect(
+      resolveShellMode({
+        ...base,
+        isAuthenticated: false,
+        hasActiveProfile: false,
+        sessionKind: null,
+        isLandingRoute: true,
+      })
     ).toBe("landing");
-  });
-
-  it("renders nothing once hydrated with no viewer on a non-landing, non-auth route", () => {
-    expect(
-      resolveShellMode({ isHydrated: true, viewerId: null, isAuthRoute: false, isLandingRoute: false })
-    ).toBe("loading");
-  });
-
-  it("renders the full shell once hydrated with a viewer on a non-auth route", () => {
-    expect(
-      resolveShellMode({ isHydrated: true, viewerId: "u1", isAuthRoute: false, isLandingRoute: false })
-    ).toBe("shell");
   });
 });

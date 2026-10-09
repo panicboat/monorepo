@@ -7,7 +7,7 @@ import type { PaginatedAuthorCommentsResponse } from "@/modules/post/lib/author-
 import type { PostView } from "@/modules/post/lib/post-view";
 
 export function useAuthorComments(accountId: string | null | undefined) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedAuthorCommentsResponse | null): string | null => {
     if (!userId || !accountId) return null;

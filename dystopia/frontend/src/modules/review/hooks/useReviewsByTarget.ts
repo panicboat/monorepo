@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedReviewByTargetResponse } from "../types";
 
 export function useReviewsByTarget(targetAccountId: string | null | undefined) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedReviewByTargetResponse | null): string | null => {
     if (!userId || !targetAccountId) return null;

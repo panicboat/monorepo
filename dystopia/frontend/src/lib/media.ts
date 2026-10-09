@@ -1,4 +1,5 @@
 import { useAuthStore } from "@/stores/authStore";
+import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 
 const VIDEO_EXTENSIONS = ["mp4", "webm", "mov", "avi", "m4v", "mkv"];
 
@@ -19,13 +20,14 @@ export interface UploadResult {
 }
 
 export async function uploadFile(file: File): Promise<UploadResult | null> {
-  if (!useAuthStore.getState().userId) return null;
+  if (!useAuthStore.getState().accountId) return null;
 
   const mediaType = file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
   const res = await fetch("/api/media/upload-url", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...profileRequestHeaders(),
     },
     body: JSON.stringify({
       filename: file.name,
@@ -49,6 +51,7 @@ export async function uploadFile(file: File): Promise<UploadResult | null> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...profileRequestHeaders(),
     },
     body: JSON.stringify({
       mediaId,

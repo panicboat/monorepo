@@ -5,22 +5,21 @@ module Karte
     class AuthorizeCastAccess
       ROLE_CAST = 2
 
-      def initialize(user_repo: nil, get_my_access: nil)
-        @user_repo = user_repo
+      def initialize(get_role: nil, get_my_access: nil)
+        @get_role = get_role
         @get_my_access = get_my_access
       end
 
       def call(viewer_account_id:)
-        viewer = user_repo.find_by_id(viewer_account_id)
-        return false unless viewer&.role == ROLE_CAST
+        return false unless get_role.call(profile_id: viewer_account_id) == ROLE_CAST
 
         get_my_access.call(viewer_account_id: viewer_account_id)[:has_access]
       end
 
       private
 
-      def user_repo
-        @user_repo ||= ::Identity::Slice["repositories.account_repository"]
+      def get_role
+        @get_role ||= ::Profile::Slice["use_cases.get_role"]
       end
 
       def get_my_access

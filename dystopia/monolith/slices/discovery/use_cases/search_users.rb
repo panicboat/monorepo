@@ -14,10 +14,10 @@ module Discovery
         rows = profile_repo.search_by_query(query: query, limit: limit, cursor: cursor, role_filter: role_filter)
 
         result = build_pagination_result(items: rows, limit: limit) do |last|
-          encode_cursor(created_at: last.created_at.iso8601, id: last.account_id)
+          encode_cursor(created_at: last.created_at.iso8601, id: last.id)
         end
 
-        profiles = result[:items].filter_map { |row| get_profile.call(account_id: row.account_id) }
+        profiles = result[:items].filter_map { |row| get_profile.call(profile_id: row.id) }
 
         { profiles: profiles, next_cursor: result[:next_cursor], has_more: result[:has_more] }
       end

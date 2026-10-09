@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { fetcher } from "@/lib/swr";
+import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { useAuthStore } from "@/stores/authStore";
 import type { FollowRequestItem } from "../types";
 
@@ -15,7 +16,7 @@ interface ListResponse {
 interface CountResponse { count: number }
 
 export function useFollowRequests() {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const { data: list, error: listError, isLoading, mutate: mutateList } = useSWR<ListResponse>(
     userId ? "/api/social/follow/requests" : null,
@@ -30,10 +31,10 @@ export function useFollowRequests() {
   );
 
   const approve = useCallback(async (requesterAccountId: string) => {
-    if (!useAuthStore.getState().userId) throw new Error("Not authenticated");
+    if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
     const res = await fetch(`/api/social/follow/requests/${requesterAccountId}/approve`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -44,10 +45,10 @@ export function useFollowRequests() {
   }, [mutateList, mutateCount]);
 
   const reject = useCallback(async (requesterAccountId: string) => {
-    if (!useAuthStore.getState().userId) throw new Error("Not authenticated");
+    if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
     const res = await fetch(`/api/social/follow/requests/${requesterAccountId}/reject`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...profileRequestHeaders() },
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

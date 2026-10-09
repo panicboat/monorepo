@@ -24,7 +24,7 @@ module Post
           account = accounts_by_username[match[1].downcase]
           next unless account
 
-          { account_id: account.account_id.to_s, position: match.begin(0), length: match[0].length }
+          { account_id: account.id.to_s, position: match.begin(0), length: match[0].length }
         end
       end
 

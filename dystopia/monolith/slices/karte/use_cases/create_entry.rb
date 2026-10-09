@@ -13,9 +13,9 @@ module Karte
         authorize_cast_access: "use_cases.authorize_cast_access"
       ]
 
-      def initialize(entry_repo: nil, authorize_cast_access: nil, user_repo: nil, **kwargs)
+      def initialize(entry_repo: nil, authorize_cast_access: nil, get_role: nil, **kwargs)
         super(**kwargs.merge(entry_repo: entry_repo, authorize_cast_access: authorize_cast_access).compact)
-        @user_repo = user_repo
+        @get_role = get_role
       end
 
       def call(viewer_account_id:, target_account_id:, rating:, body:)
@@ -23,9 +23,9 @@ module Karte
         raise CreateError, "Rating must be 1..5" unless (1..5).cover?(rating)
         raise CreateError, "Body too long" if body && body.length > MAX_BODY_LENGTH
 
-        target = user_repo.find_by_id(target_account_id)
-        raise CreateError, "Target not found" unless target
-        raise CreateError, "Target must be a guest" unless target.role == 1
+        target_role = get_role.call(profile_id: target_account_id)
+        raise CreateError, "Target not found" unless target_role
+        raise CreateError, "Target must be a guest" unless target_role == 1
 
         entry_repo.create(
           author_account_id: viewer_account_id,
@@ -37,8 +37,8 @@ module Karte
 
       private
 
-      def user_repo
-        @user_repo ||= ::Identity::Slice["repositories.account_repository"]
+      def get_role
+        @get_role ||= ::Profile::Slice["use_cases.get_role"]
       end
     end
   end

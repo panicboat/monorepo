@@ -11,7 +11,7 @@ export function hasKarteAccess(role: string | null, data: KarteAccess | undefine
 }
 
 export function useMyKarteAccess() {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
   const role = useAuthStore(selectRole);
   const { data, error, isLoading } = useSWR<KarteAccess>(
     userId ? "/api/karte/access" : null,

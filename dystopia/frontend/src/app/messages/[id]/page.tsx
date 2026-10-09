@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { useMessages, useTyping } from "@/modules/messaging";
 import { MessageComposer } from "@/modules/messaging/components/MessageComposer";
-import { useAuthStore, selectUserId } from "@/stores/authStore";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 function timeAgo(iso: string): string {
   if (!iso) return "";
@@ -16,7 +16,7 @@ function timeAgo(iso: string): string {
 export default function ChatPage() {
   const params = useParams<{ id: string }>();
   const threadId = typeof params.id === "string" ? params.id : "";
-  const viewerId = useAuthStore(selectUserId);
+  const viewerId = useAuthStore(selectActiveProfileId);
 
   const { messages, hasMore, loading, send, markRead, loadMore } = useMessages(threadId || null);
   const { typingActorId, sendTyping } = useTyping(threadId || null);

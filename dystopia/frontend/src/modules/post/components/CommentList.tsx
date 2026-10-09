@@ -10,14 +10,14 @@ import { useDeleteComment } from "@/modules/post/hooks/useDeleteComment";
 import { MentionText } from "@/modules/post/lib/mention-text";
 import { ReplyList } from "./ReplyList";
 import { ReplyComposer } from "./ReplyComposer";
-import { useAuthStore, selectUserId } from "@/stores/authStore";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface CommentListProps {
   postId: string;
 }
 
 export function CommentList({ postId }: CommentListProps) {
-  const viewerId = useAuthStore(selectUserId);
+  const viewerId = useAuthStore(selectActiveProfileId);
   const { comments, hasMore, loading, error, loadMore } = useComments(postId);
   const { deleteComment, submitting: deleting } = useDeleteComment(postId);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});

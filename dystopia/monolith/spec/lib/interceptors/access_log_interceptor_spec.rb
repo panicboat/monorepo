@@ -18,7 +18,8 @@ RSpec.describe Interceptors::AccessLogInterceptor do
   describe "#call" do
     context "when request succeeds" do
       before do
-        ::Current.user_id = "user-123"
+        ::Current.account_id = "user-123"
+        ::Current.profile_id = "profile-123"
         ::Current.request_id = "request-abc-123"
       end
 
@@ -30,7 +31,8 @@ RSpec.describe Interceptors::AccessLogInterceptor do
         expect(logger).to receive(:info) do |json_string|
           log = JSON.parse(json_string)
           expect(log["request_id"]).to eq("request-abc-123")
-          expect(log["user_id"]).to eq("user-123")
+          expect(log["account_id"]).to eq("user-123")
+          expect(log["profile_id"]).to eq("profile-123")
           expect(log["method"]).to eq("test_method")
           expect(log["service"]).to eq("test_service")
           expect(log["status"]).to eq("OK")
@@ -48,7 +50,8 @@ RSpec.describe Interceptors::AccessLogInterceptor do
 
     context "when request fails" do
       before do
-        ::Current.user_id = "user-456"
+        ::Current.account_id = "user-456"
+        ::Current.profile_id = "profile-456"
         ::Current.request_id = "request-def-456"
       end
 
@@ -60,7 +63,8 @@ RSpec.describe Interceptors::AccessLogInterceptor do
         expect(logger).to receive(:error) do |json_string|
           log = JSON.parse(json_string)
           expect(log["request_id"]).to eq("request-def-456")
-          expect(log["user_id"]).to eq("user-456")
+          expect(log["account_id"]).to eq("user-456")
+          expect(log["profile_id"]).to eq("profile-456")
           expect(log["status"]).to eq("ERROR")
           expect(log["error"]).to eq("Something went wrong")
           expect(log["error_class"]).to eq("RuntimeError")
@@ -81,7 +85,8 @@ RSpec.describe Interceptors::AccessLogInterceptor do
         expect(logger).to receive(:info) do |json_string|
           log = JSON.parse(json_string)
           expect(log["request_id"]).to be_nil
-          expect(log["user_id"]).to be_nil
+          expect(log["account_id"]).to be_nil
+          expect(log["profile_id"]).to be_nil
         end
 
         interceptor.call { :result }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { AppError, httpStatusToErrorCode } from "@/lib/errors";
 import { getDefaultMessage } from "@/lib/error-messages";
 
@@ -66,7 +67,10 @@ export function usePaginatedFetch<T, R = unknown>(
         return fetchFn(url);
       }
 
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: profileRequestHeaders(),
+      });
 
       if (!res.ok) {
         // FALLBACK: Use an empty object when the error body is not JSON.

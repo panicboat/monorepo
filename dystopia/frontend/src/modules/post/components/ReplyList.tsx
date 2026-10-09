@@ -7,7 +7,7 @@ import { formatTimeAgo } from "@/lib/utils/date";
 import { useReplies } from "@/modules/post/hooks/useReplies";
 import { useDeleteComment } from "@/modules/post/hooks/useDeleteComment";
 import { MentionText } from "@/modules/post/lib/mention-text";
-import { useAuthStore, selectUserId } from "@/stores/authStore";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface ReplyListProps {
   postId: string;
@@ -15,7 +15,7 @@ interface ReplyListProps {
 }
 
 export function ReplyList({ postId, commentId }: ReplyListProps) {
-  const viewerId = useAuthStore(selectUserId);
+  const viewerId = useAuthStore(selectActiveProfileId);
   const { replies, hasMore, loading, error, loadMore } = useReplies(postId, commentId, true);
   const { deleteComment, submitting: deleting } = useDeleteComment(postId);
 

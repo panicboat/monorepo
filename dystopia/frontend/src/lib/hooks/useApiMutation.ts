@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { useAuthStore } from "@/stores/authStore";
 import { AppError, httpStatusToErrorCode } from "@/lib/errors";
 import { getDefaultMessage } from "@/lib/error-messages";
@@ -40,7 +41,7 @@ export function useApiMutation<TPayload = unknown, TResponse = unknown>(
 
   const mutate = useCallback(
     async (payload: TPayload): Promise<TResponse> => {
-      if (!useAuthStore.getState().userId) {
+      if (!useAuthStore.getState().accountId) {
         const err = new AppError("UNAUTHORIZED", "ログインしてください", 401);
         setError(err);
         onError?.(err);
@@ -55,6 +56,7 @@ export function useApiMutation<TPayload = unknown, TResponse = unknown>(
           method,
           headers: {
             "Content-Type": "application/json",
+            ...profileRequestHeaders(),
           },
           body: JSON.stringify(mapPayload(payload)),
         });

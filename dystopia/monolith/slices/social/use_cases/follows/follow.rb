@@ -12,7 +12,7 @@ module Social
             return { status: "none", reason: :blocked }
           end
 
-          profile = get_profile.call(account_id: target_account_id)
+          profile = get_profile.call(profile_id: target_account_id)
           is_private = profile.respond_to?(:is_private) ? !!profile.is_private : false
           status = is_private ? "pending" : "approved"
 

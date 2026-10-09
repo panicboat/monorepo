@@ -8,7 +8,7 @@ import { useCallback } from "react";
 import type { PaginatedMessagesResponse } from "../types";
 
 export function useMessages(threadId: string | null | undefined) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedMessagesResponse | null): string | null => {
     if (!userId || !threadId) return null;

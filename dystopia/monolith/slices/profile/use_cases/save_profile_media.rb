@@ -5,13 +5,15 @@ module Profile
     class SaveProfileMedia
       include Deps["repositories.profile_repository"]
 
-      def call(account_id:, avatar_media_id: nil, cover_media_id: nil)
+      def call(profile_id:, avatar_media_id: nil, cover_media_id: nil)
+        return nil unless profile_repository.find_by_id(profile_id)
+
         profile_repository.save_media(
-          account_id: account_id,
+          profile_id: profile_id,
           avatar_media_id: avatar_media_id,
           cover_media_id: cover_media_id
         )
-        profile_repository.find_by_account_id(account_id)
+        profile_repository.find_by_id(profile_id)
       end
     end
   end

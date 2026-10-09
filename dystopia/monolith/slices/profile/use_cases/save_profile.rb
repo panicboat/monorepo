@@ -12,12 +12,14 @@ module Profile
       USERNAME_FORMAT = /\A[A-Za-z0-9_]{3,30}\z/
       ROLE_CAST = 2
 
-      def call(account_id:, display_name:, username: nil, bio: nil, website: nil,
+      def call(profile_id:, display_name:, username: nil, bio: nil, website: nil,
                sns_links: {}, prefecture: nil, is_private: false, age: nil,
                body_stats: {}, industry: nil)
+        return nil unless profile_repository.find_by_id(profile_id)
+
         validate_display_name!(display_name)
         validate_bio!(bio)
-        validate_username!(username, account_id) unless username.nil?
+        validate_username!(username, profile_id) unless username.nil?
 
         attrs = {
           display_name: display_name,
@@ -28,12 +30,11 @@ module Profile
         }
         attrs[:username] = username unless username.nil?
 
-        # Upsert the profile because onboarding may not have created a row yet.
-        profile_repository.upsert(account_id: account_id, attrs: attrs)
+        profile_repository.update_profile(profile_id, attrs)
 
-        if cast_account?(account_id)
+        if profile_repository.role_of(profile_id) == ROLE_CAST
           cast_repository.upsert(
-            user_id: account_id,
+            profile_id: profile_id,
             attrs: {
               sns_links: Sequel.pg_jsonb(sns_links || {}),
               age: age,
@@ -43,18 +44,10 @@ module Profile
           )
         end
 
-        profile_repository.find_by_account_id(account_id)
+        profile_repository.find_by_id(profile_id)
       end
 
       private
-
-      def cast_account?(account_id)
-        identity_account_repo.find_by_id(account_id)&.role == ROLE_CAST
-      end
-
-      def identity_account_repo
-        @identity_account_repo ||= ::Identity::Slice["repositories.account_repository"]
-      end
 
       def validate_display_name!(value)
         if value.nil? || value.strip.empty?
@@ -73,11 +66,11 @@ module Profile
         end
       end
 
-      def validate_username!(value, account_id)
+      def validate_username!(value, profile_id)
         unless value.match?(USERNAME_FORMAT)
           raise Errors::ValidationError, "ユーザー名は半角英数字とアンダースコア3〜30文字です"
         end
-        unless profile_repository.username_available?(value, exclude_account_id: account_id)
+        unless profile_repository.username_available?(value, exclude_profile_id: profile_id)
           raise Errors::ValidationError, "このユーザー名は使用できません"
         end
       end

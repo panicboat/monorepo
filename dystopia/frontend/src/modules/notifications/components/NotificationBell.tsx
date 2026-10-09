@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useUnreadCount } from "@/modules/notifications/hooks";
-import { useAuthStore, selectUserId } from "@/stores/authStore";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface NotificationBellProps {
   targetAccountId: string;
@@ -10,7 +10,7 @@ interface NotificationBellProps {
 }
 
 export function NotificationBell({ targetAccountId, className }: NotificationBellProps) {
-  const viewerId = useAuthStore(selectUserId);
+  const viewerId = useAuthStore(selectActiveProfileId);
   const { count } = useUnreadCount();
 
   if (!targetAccountId || !viewerId || viewerId !== targetAccountId) return null;

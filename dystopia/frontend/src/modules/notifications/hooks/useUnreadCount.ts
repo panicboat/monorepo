@@ -9,7 +9,7 @@ interface UnreadCountResponse {
 }
 
 export function useUnreadCount() {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
   const { data, error, isLoading, mutate } = useSWR<UnreadCountResponse>(
     userId ? "/api/notifications/unread-count" : null,
     fetcher,

@@ -106,7 +106,7 @@ describe("Drawer", () => {
   it("links the follow counts to the viewer's following and followers pages", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
     profileMocks.useProfile.mockReturnValue({
-      profile: { username: "alice", accountId: "acc-1", displayName: "Alice", avatarUrl: null },
+      profile: { username: "alice", id: "prof-1", displayName: "Alice", avatarUrl: null },
     });
 
     const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);

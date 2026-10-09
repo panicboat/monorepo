@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedReviewRecentResponse } from "../types";
 
 export function useRecentReviews(enabled: boolean) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedReviewRecentResponse | null): string | null => {
     if (!enabled || !userId) return null;

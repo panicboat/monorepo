@@ -4,7 +4,7 @@ import { PrivacySettings } from "./PrivacySettings";
 import type { ProfileView } from "@/modules/profile/types";
 
 const profile: ProfileView = {
-  accountId: "demo",
+  id: "demo",
   username: "yuna",
   displayName: "ゆな",
   bio: "",
@@ -21,6 +21,7 @@ const profile: ProfileView = {
   bodyStats: { heightCm: 158, bust: 88, waist: 58, hip: 86, cup: "D" },
   industry: "",
   role: 1,
+  disabled: false,
 };
 
 describe("PrivacySettings", () => {

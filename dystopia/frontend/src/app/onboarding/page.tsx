@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 export default function OnboardingPage() {
   const router = useRouter();
   const role = useAuthStore(selectRole);
-  const { saveProfile } = useProfile();
+  const { createProfile } = useProfile();
 
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
@@ -24,8 +24,8 @@ export default function OnboardingPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await saveProfile({ displayName, username });
-      router.push("/");
+      await createProfile({ displayName, username });
+      router.replace("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "プロフィールの保存に失敗しました");
     } finally {

@@ -16,6 +16,8 @@ module Profile
 
       rpc :GetProfile, ::Profile::V1::GetProfileRequest, ::Profile::V1::GetProfileResponse
       rpc :GetProfileByUsername, ::Profile::V1::GetProfileByUsernameRequest, ::Profile::V1::GetProfileResponse
+      rpc :ListMyProfiles, ::Profile::V1::ListMyProfilesRequest, ::Profile::V1::ListMyProfilesResponse
+      rpc :CreateProfile, ::Profile::V1::CreateProfileRequest, ::Profile::V1::CreateProfileResponse
       rpc :SaveProfile, ::Profile::V1::SaveProfileRequest, ::Profile::V1::SaveProfileResponse
       rpc :CheckUsernameAvailability, ::Profile::V1::CheckUsernameAvailabilityRequest, ::Profile::V1::CheckUsernameAvailabilityResponse
       rpc :SaveProfileMedia, ::Profile::V1::SaveProfileMediaRequest, ::Profile::V1::SaveProfileMediaResponse
@@ -23,6 +25,8 @@ module Profile
       include ::Profile::Deps[
         get_profile_uc: "use_cases.get_profile",
         get_profile_by_username_uc: "use_cases.get_profile_by_username",
+        list_my_profiles_uc: "use_cases.list_my_profiles",
+        create_profile_uc: "use_cases.create_profile",
         save_profile_uc: "use_cases.save_profile",
         check_username_uc: "use_cases.check_username_availability",
         save_media_uc: "use_cases.save_profile_media",
@@ -33,8 +37,8 @@ module Profile
       def get_profile
         authenticate_user!
 
-        account_id = blank_to_nil(request.message.account_id) || current_user_id
-        profile = get_profile_uc.call(account_id: account_id)
+        profile_id = blank_to_nil(request.message.profile_id) || current_profile_id
+        profile = get_profile_uc.call(profile_id: profile_id)
         build_response(::Profile::V1::GetProfileResponse, profile)
       end
 
@@ -48,12 +52,37 @@ module Profile
         build_response(::Profile::V1::GetProfileResponse, profile)
       end
 
+      def list_my_profiles
+        authenticate_account!
+
+        profiles = list_my_profiles_uc.call(account_id: current_account_id)
+        ::Profile::V1::ListMyProfilesResponse.new(profiles: profiles.map { |profile| present(profile) })
+      end
+
+      def create_profile
+        authenticate_account!
+
+        m = request.message
+        profile = create_profile_uc.call(
+          account_id: current_account_id,
+          display_name: m.display_name,
+          username: blank_to_nil(m.username)
+        )
+        build_response(::Profile::V1::CreateProfileResponse, profile)
+      rescue Errors::ValidationError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::INVALID_ARGUMENT, e.message)
+      rescue Profile::UseCases::CreateProfile::LimitExceededError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
+      rescue Profile::UseCases::CreateProfile::AccountNotFoundError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, e.message)
+      end
+
       def save_profile
         authenticate_user!
 
         m = request.message
         profile = save_profile_uc.call(
-          account_id: current_user_id,
+          profile_id: current_profile_id,
           username: blank_to_nil(m.username),
           display_name: m.display_name,
           bio: blank_to_nil(m.bio),
@@ -71,11 +100,11 @@ module Profile
       end
 
       def check_username_availability
-        authenticate_user!
+        authenticate_account!
 
         result = check_username_uc.call(
           username: blank_to_nil(request.message.username),
-          account_id: current_user_id
+          profile_id: current_profile_id
         )
         ::Profile::V1::CheckUsernameAvailabilityResponse.new(
           available: result[:available],
@@ -88,7 +117,7 @@ module Profile
 
         m = request.message
         profile = save_media_uc.call(
-          account_id: current_user_id,
+          profile_id: current_profile_id,
           avatar_media_id: blank_to_nil(m.avatar_media_id),
           cover_media_id: blank_to_nil(m.cover_media_id)
         )
@@ -106,8 +135,14 @@ module Profile
       def present(profile)
         media_files = load_media_files(profile)
         role = role_for(profile.account_id)
-        cast = role == 2 ? cast_repository.find_by_user_id(profile.account_id) : nil
-        Presenter.to_proto(profile, cast: cast, media_files: media_files, role: role)
+        cast = role == 2 ? cast_repository.find_by_profile_id(profile.id) : nil
+        Presenter.to_proto(
+          profile,
+          cast: cast,
+          media_files: media_files,
+          role: role,
+          own: profile.account_id == current_account_id
+        )
       end
 
       def role_for(account_id)

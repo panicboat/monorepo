@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedUsersResponse } from "../types";
 
 export function useSuggestedUsers(limit = 10) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
   const { data, error, isLoading, mutate } = useSWR<PaginatedUsersResponse>(
     userId ? `/api/discovery/suggested-users?limit=${limit}` : null,
     fetcher,

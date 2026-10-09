@@ -29,7 +29,7 @@ module Messaging
 
         {
           row: row,
-          counterpart: get_profile.call(account_id: recipient_account_id),
+          counterpart: get_profile.call(profile_id: recipient_account_id),
           last_message: messaging_repo.last_message(thread_id: thread_id),
           unread_count: messaging_repo.unread_count(thread_id: thread_id, account_id: viewer_id)
         }

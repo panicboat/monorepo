@@ -11,7 +11,7 @@ const DEBOUNCE_MS = 300;
 export type SearchUsersRoleFilter = 0 | 1 | 2;
 
 export function useSearchUsers(query: string, roleFilter: SearchUsersRoleFilter = 0) {
-  const userId = useAuthStore((s) => s.userId);
+  const userId = useAuthStore((s) => s.activeProfileId);
   const [debounced, setDebounced] = useState(query);
 
   useEffect(() => {

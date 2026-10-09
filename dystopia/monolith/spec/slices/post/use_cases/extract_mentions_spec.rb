@@ -7,9 +7,7 @@ RSpec.describe "Post::UseCases::ExtractMentions", type: :database do
   let(:profile_repo) { Hanami.app.slices[:profile]["repositories.profile_repository"] }
 
   def create_profile(username:)
-    id = SecureRandom.uuid_v7
-    profile_repo.create(account_id: id, display_name: username, username: username)
-    id
+    create_account_with_profile(display_name: username, username: username)
   end
 
   it "returns an empty array for content with no mentions" do

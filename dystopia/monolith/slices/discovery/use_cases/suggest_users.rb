@@ -19,15 +19,15 @@ module Discovery
         rows = profile_repo.list_recent(
           limit: limit,
           cursor: cursor,
-          exclude_account_ids: exclude_ids,
+          exclude_profile_ids: exclude_ids,
           role_filter: role_filter
         )
 
         result = build_pagination_result(items: rows, limit: limit) do |last|
-          encode_cursor(created_at: last.created_at.iso8601, id: last.account_id)
+          encode_cursor(created_at: last.created_at.iso8601, id: last.id)
         end
 
-        profiles = result[:items].filter_map { |row| get_profile.call(account_id: row.account_id) }
+        profiles = result[:items].filter_map { |row| get_profile.call(profile_id: row.id) }
 
         { profiles: profiles, next_cursor: result[:next_cursor], has_more: result[:has_more] }
       end
@@ -41,7 +41,7 @@ module Discovery
       end
 
       def viewer_role(viewer_account_id)
-        user_repo.find_by_id(viewer_account_id)&.role
+        get_role.call(profile_id: viewer_account_id)
       end
 
       def profile_repo
@@ -60,8 +60,8 @@ module Discovery
         @block_repo ||= Social::Slice["repositories.block_repository"]
       end
 
-      def user_repo
-        @user_repo ||= Identity::Slice["repositories.account_repository"]
+      def get_role
+        @get_role ||= Profile::Slice["use_cases.get_role"]
       end
     end
   end

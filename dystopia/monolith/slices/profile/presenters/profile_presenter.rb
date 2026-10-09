@@ -4,11 +4,11 @@ module Profile
   module Presenters
     class ProfilePresenter
       class << self
-        def to_proto(profile, cast: nil, media_files: {}, role: 0)
+        def to_proto(profile, cast: nil, media_files: {}, role: 0, own: false)
           return nil unless profile
 
           ::Profile::V1::Profile.new(
-            account_id: profile.account_id.to_s,
+            id: profile.id.to_s,
             username: profile.username || "",
             display_name: profile.display_name || "",
             bio: profile.bio || "",
@@ -24,7 +24,8 @@ module Profile
             age: cast&.age || 0,
             body_stats: body_stats_proto(cast&.body_stats),
             industry: cast&.industry || "",
-            role: role || 0
+            role: role || 0,
+            disabled: own && !profile.disabled_at.nil?
           )
         end
 
