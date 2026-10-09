@@ -4,7 +4,7 @@ stacks:
       - "dystopia/{service}"
       - "system-components/{service}"
     attributes:
-      repository: ghcr.io/panicboat
+      repository: ghcr.io/panicboat/monorepo/{service}
 
   - name: terragrunt
     id: aws
