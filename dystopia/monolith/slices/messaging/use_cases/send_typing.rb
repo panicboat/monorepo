@@ -10,33 +10,33 @@ module Messaging
       ThreadNotFoundError = Class.new(StandardError)
       ForbiddenError = Class.new(StandardError)
 
-      def call(thread_id:, viewer_id:)
+      def call(thread_id:, viewer_profile_id:)
         thread = messaging_repo.find_thread(id: thread_id)
         raise ThreadNotFoundError, "thread not found" unless thread
 
-        viewer = viewer_id.to_s
-        a = thread.account_a.to_s
-        b = thread.account_b.to_s
+        viewer = viewer_profile_id.to_s
+        a = thread.profile_a.to_s
+        b = thread.profile_b.to_s
         unless [a, b].include?(viewer)
           raise ForbiddenError, "viewer is not a thread participant"
         end
 
         counterpart = viewer == a ? b : a
-        publish_typing_event(thread_id: thread_id, account_id: viewer, recipient_id: counterpart)
+        publish_typing_event(thread_id: thread_id, profile_id: viewer, recipient_profile_id: counterpart)
         {}
       end
 
       private
 
-      def publish_typing_event(thread_id:, account_id:, recipient_id:)
+      def publish_typing_event(thread_id:, profile_id:, recipient_profile_id:)
         payload = {
           type: "typing",
           data: {
             thread_id: thread_id.to_s,
-            account_id: account_id.to_s
+            profile_id: profile_id.to_s
           }
         }.to_json
-        notify("messaging_user_#{recipient_id}", payload)
+        notify("messaging_user_#{recipient_profile_id}", payload)
       end
 
       def notify(channel, payload)

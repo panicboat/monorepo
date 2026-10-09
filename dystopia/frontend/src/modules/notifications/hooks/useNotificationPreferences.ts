@@ -25,9 +25,9 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
 const KEY = "/api/notifications/preferences";
 
 export function useNotificationPreferences() {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
   const { data, error, isLoading, mutate } = useSWR<NotificationPreferences>(
-    userId ? KEY : null,
+    profileId ? KEY : null,
     fetcher,
     { revalidateOnFocus: false }
   );

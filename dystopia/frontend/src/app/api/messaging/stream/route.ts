@@ -17,16 +17,16 @@ type SerializedEvent =
       data: {
         id: string;
         threadId: string;
-        senderId: string;
+        senderProfileId: string;
         content: string;
         createdAt: string;
       };
     }
   | {
       type: "read_state";
-      data: { threadId: string; accountId: string; lastReadMessageId: string };
+      data: { threadId: string; profileId: string; lastReadMessageId: string };
     }
-  | { type: "typing"; data: { threadId: string; accountId: string } };
+  | { type: "typing"; data: { threadId: string; profileId: string } };
 
 function serializeEvent(event: Event): SerializedEvent | null {
   if (event.payload.case === "messageEvent") {
@@ -36,7 +36,7 @@ function serializeEvent(event: Event): SerializedEvent | null {
       data: {
         id: m.id,
         threadId: m.threadId,
-        senderId: m.senderId,
+        senderProfileId: m.senderProfileId,
         content: m.content,
         createdAt: timestampToIso(m.createdAt),
       },
@@ -47,13 +47,13 @@ function serializeEvent(event: Event): SerializedEvent | null {
       type: "read_state",
       data: {
         threadId: r.threadId,
-        accountId: r.accountId,
+        profileId: r.profileId,
         lastReadMessageId: r.lastReadMessageId,
       },
     };
   } else if (event.payload.case === "typing") {
     const t = event.payload.value;
-    return { type: "typing", data: { threadId: t.threadId, accountId: t.accountId } };
+    return { type: "typing", data: { threadId: t.threadId, profileId: t.profileId } };
   }
   return null;
 }

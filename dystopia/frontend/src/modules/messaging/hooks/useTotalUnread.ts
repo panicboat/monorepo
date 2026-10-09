@@ -9,9 +9,9 @@ interface Response {
 }
 
 export function useTotalUnread() {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
   const { data, isLoading, mutate } = useSWR<Response>(
-    userId ? "/api/messaging/unread-count" : null,
+    profileId ? "/api/messaging/unread-count" : null,
     fetcher,
     { refreshInterval: 30000, revalidateOnFocus: false }
   );

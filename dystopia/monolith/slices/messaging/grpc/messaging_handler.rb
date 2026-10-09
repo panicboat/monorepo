@@ -38,13 +38,13 @@ module Messaging
         authenticate_user!
         m = request.message
         thread_id = m.thread_id.empty? ? nil : m.thread_id
-        recipient = m.recipient_account_id.empty? ? nil : m.recipient_account_id
+        recipient = m.recipient_profile_id.empty? ? nil : m.recipient_profile_id
 
         result = send_message_uc.call(
-          sender_id: current_user_id,
+          sender_profile_id: current_profile_id,
           content: m.content,
           thread_id: thread_id,
-          recipient_account_id: recipient
+          recipient_profile_id: recipient
         )
 
         ::Messaging::V1::SendMessageResponse.new(
@@ -72,7 +72,7 @@ module Messaging
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        result = list_threads_uc.call(account_id: current_user_id, limit: limit, cursor: cursor)
+        result = list_threads_uc.call(profile_id: current_profile_id, limit: limit, cursor: cursor)
 
         ::Messaging::V1::ListThreadsResponse.new(
           threads: result[:threads].map { |t| build_thread_proto(t) },
@@ -85,8 +85,8 @@ module Messaging
       def get_or_create_thread
         authenticate_user!
         result = get_or_create_thread_uc.call(
-          viewer_id: current_user_id,
-          recipient_account_id: request.message.recipient_account_id
+          viewer_profile_id: current_profile_id,
+          recipient_profile_id: request.message.recipient_profile_id
         )
 
         ::Messaging::V1::GetOrCreateThreadResponse.new(thread: build_thread_proto(result))
@@ -108,7 +108,7 @@ module Messaging
 
         result = list_messages_uc.call(
           thread_id: m.thread_id,
-          viewer_id: current_user_id,
+          viewer_profile_id: current_profile_id,
           limit: limit,
           cursor: cursor
         )
@@ -129,7 +129,7 @@ module Messaging
         m = request.message
         mark_read_uc.call(
           thread_id: m.thread_id,
-          viewer_id: current_user_id,
+          viewer_profile_id: current_profile_id,
           message_id: m.message_id
         )
         ::Messaging::V1::MarkReadResponse.new
@@ -141,7 +141,7 @@ module Messaging
 
       def get_total_unread_count
         authenticate_user!
-        count = get_total_unread_count_uc.call(account_id: current_user_id)
+        count = get_total_unread_count_uc.call(profile_id: current_profile_id)
         ::Messaging::V1::GetTotalUnreadCountResponse.new(count: count)
       end
 
@@ -149,7 +149,7 @@ module Messaging
         authenticate_user!
         send_typing_uc.call(
           thread_id: request.message.thread_id,
-          viewer_id: current_user_id
+          viewer_profile_id: current_profile_id
         )
         ::Messaging::V1::SendTypingResponse.new
       rescue UseCases::SendTyping::ThreadNotFoundError => e
@@ -160,7 +160,7 @@ module Messaging
 
       def stream_events
         authenticate_user!
-        viewer = current_user_id
+        viewer = current_profile_id
         channel = "messaging_user_#{viewer}"
 
         db = messaging_repo.send(:thread_records).dataset.db
@@ -206,7 +206,7 @@ module Messaging
         ::Messaging::V1::Message.new(
           id: fetch_field(row, :id).to_s,
           thread_id: fetch_field(row, :thread_id).to_s,
-          sender_id: fetch_field(row, :sender_id).to_s,
+          sender_profile_id: fetch_field(row, :sender_profile_id).to_s,
           content: fetch_field(row, :content) || "",
           created_at: time_to_timestamp(fetch_field(row, :created_at))
         )
@@ -274,7 +274,7 @@ module Messaging
           msg = ::Messaging::V1::Message.new(
             id: data["id"].to_s,
             thread_id: data["thread_id"].to_s,
-            sender_id: data["sender_id"].to_s,
+            sender_profile_id: data["sender_profile_id"].to_s,
             content: data["content"].to_s,
             created_at: parse_iso8601_timestamp(data["created_at"])
           )
@@ -282,14 +282,14 @@ module Messaging
         when "read_state"
           rs = ::Messaging::V1::ReadStateEvent.new(
             thread_id: data["thread_id"].to_s,
-            account_id: data["account_id"].to_s,
+            profile_id: data["profile_id"].to_s,
             last_read_message_id: data["last_read_message_id"].to_s
           )
           ::Messaging::V1::Event.new(read_state: rs)
         when "typing"
           typing = ::Messaging::V1::TypingEvent.new(
             thread_id: data["thread_id"].to_s,
-            account_id: data["account_id"].to_s
+            profile_id: data["profile_id"].to_s
           )
           ::Messaging::V1::Event.new(typing: typing)
         end

@@ -7,8 +7,8 @@ RSpec.describe Messaging::UseCases::SendMessage do
   let(:messaging_repo)    { double(:messaging_repository) }
   let(:authorize_message) { double(:authorize_message) }
 
-  let(:sender_id) { "sender-1" }
-  let(:recipient_id) { "recipient-1" }
+  let(:sender_profile_id) { "sender-1" }
+  let(:recipient_profile_id) { "recipient-1" }
 
   before do
     allow(use_case).to receive(:bidirectionally_blocked?).and_return(false)
@@ -16,21 +16,21 @@ RSpec.describe Messaging::UseCases::SendMessage do
   end
 
   it "raises FollowRequiredError when AuthorizeMessage denies the sender" do
-    allow(authorize_message).to receive(:call).with(sender_id: sender_id, recipient_id: recipient_id).and_return(false)
+    allow(authorize_message).to receive(:call).with(sender_profile_id: sender_profile_id, recipient_profile_id: recipient_profile_id).and_return(false)
 
     expect {
-      use_case.call(sender_id: sender_id, content: "hi", recipient_account_id: recipient_id)
+      use_case.call(sender_profile_id: sender_profile_id, content: "hi", recipient_profile_id: recipient_profile_id)
     }.to raise_error(described_class::FollowRequiredError)
   end
 
   it "sends the message when AuthorizeMessage allows the sender" do
-    allow(authorize_message).to receive(:call).with(sender_id: sender_id, recipient_id: recipient_id).and_return(true)
+    allow(authorize_message).to receive(:call).with(sender_profile_id: sender_profile_id, recipient_profile_id: recipient_profile_id).and_return(true)
     thread = double(:thread, id: "thread-1", :[] => nil)
     message = double(:message, id: "message-1")
-    allow(messaging_repo).to receive(:upsert_thread).with(account_a: "recipient-1", account_b: "sender-1").and_return(thread)
-    allow(messaging_repo).to receive(:insert_message).with(thread_id: "thread-1", sender_id: sender_id, content: "hi").and_return(message)
+    allow(messaging_repo).to receive(:upsert_thread).with(profile_a: "recipient-1", profile_b: "sender-1").and_return(thread)
+    allow(messaging_repo).to receive(:insert_message).with(thread_id: "thread-1", sender_profile_id: sender_profile_id, content: "hi").and_return(message)
 
-    result = use_case.call(sender_id: sender_id, content: "hi", recipient_account_id: recipient_id)
+    result = use_case.call(sender_profile_id: sender_profile_id, content: "hi", recipient_profile_id: recipient_profile_id)
     expect(result[:message]).to eq(message)
   end
 
@@ -39,7 +39,7 @@ RSpec.describe Messaging::UseCases::SendMessage do
     expect(authorize_message).not_to receive(:call)
 
     expect {
-      use_case.call(sender_id: sender_id, content: "hi", recipient_account_id: recipient_id)
+      use_case.call(sender_profile_id: sender_profile_id, content: "hi", recipient_profile_id: recipient_profile_id)
     }.to raise_error(described_class::BlockedError)
   end
 end

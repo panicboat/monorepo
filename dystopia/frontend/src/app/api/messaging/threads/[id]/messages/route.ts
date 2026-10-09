@@ -16,7 +16,7 @@ function messageProtoToView(m: Message): MessageView {
   return {
     id: m.id,
     threadId: m.threadId,
-    senderId: m.senderId,
+    senderProfileId: m.senderProfileId,
     content: m.content,
     createdAt: timestampToIso(m.createdAt),
   };

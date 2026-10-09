@@ -91,10 +91,10 @@ module Post
         if is_create
           mentions.uniq { |mention| mention[:profile_id] }.each do |mention|
             notifications_emit.call(
-              recipient_id: mention[:profile_id],
+              recipient_profile_id: mention[:profile_id],
               type: "mention",
               target_resource_id: post.id,
-              actor_id: current_profile_id,
+              actor_profile_id: current_profile_id,
               target_post_id: post.id
             )
           end

@@ -22,7 +22,7 @@ module Footprints
       end
 
       def visitor_records_visits?(visitor_id)
-        prefs = notifications_get_prefs.call(account_id: visitor_id)
+        prefs = notifications_get_prefs.call(profile_id: visitor_id)
         prefs[:footprints_record_my_visits] != false
       end
 

@@ -13,14 +13,14 @@ module Messaging
       ThreadNotFoundError = Class.new(StandardError)
       ForbiddenError = Class.new(StandardError)
 
-      def call(thread_id:, viewer_id:, limit: 50, cursor: nil)
+      def call(thread_id:, viewer_profile_id:, limit: 50, cursor: nil)
         limit = normalize_limit(limit)
 
         thread = messaging_repo.find_thread(id: thread_id)
         raise ThreadNotFoundError, "thread not found" unless thread
 
-        viewer = viewer_id.to_s
-        unless [thread.account_a.to_s, thread.account_b.to_s].include?(viewer)
+        viewer = viewer_profile_id.to_s
+        unless [thread.profile_a.to_s, thread.profile_b.to_s].include?(viewer)
           raise ForbiddenError, "viewer is not a thread participant"
         end
 

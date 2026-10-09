@@ -57,28 +57,28 @@ module Post
 
           if parent
             notifications_emit.call(
-              recipient_id: parent.author_profile_id,
+              recipient_profile_id: parent.author_profile_id,
               type: "reply",
               target_resource_id: parent.id,
-              actor_id: author_profile_id,
+              actor_profile_id: author_profile_id,
               target_post_id: post.id
             )
           else
             notifications_emit.call(
-              recipient_id: post.author_profile_id,
+              recipient_profile_id: post.author_profile_id,
               type: "comment",
               target_resource_id: post.id,
-              actor_id: author_profile_id,
+              actor_profile_id: author_profile_id,
               target_post_id: post.id
             )
           end
 
           mentions.uniq { |mention| mention[:profile_id] }.each do |mention|
             notifications_emit.call(
-              recipient_id: mention[:profile_id],
+              recipient_profile_id: mention[:profile_id],
               type: "mention",
               target_resource_id: comment.id,
-              actor_id: author_profile_id,
+              actor_profile_id: author_profile_id,
               target_post_id: post.id
             )
           end

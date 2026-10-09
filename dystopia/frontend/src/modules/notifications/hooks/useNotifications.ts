@@ -8,10 +8,10 @@ import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedNotificationsResponse } from "../types";
 
 export function useNotifications() {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedNotificationsResponse | null): string | null => {
-    if (!userId) return null;
+    if (!profileId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
     return `/api/notifications${cursorQs}`;

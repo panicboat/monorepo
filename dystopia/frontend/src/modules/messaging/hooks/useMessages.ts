@@ -8,10 +8,10 @@ import { useCallback } from "react";
 import type { PaginatedMessagesResponse } from "../types";
 
 export function useMessages(threadId: string | null | undefined) {
-  const userId = useAuthStore((s) => s.activeProfileId);
+  const profileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedMessagesResponse | null): string | null => {
-    if (!userId || !threadId) return null;
+    if (!profileId || !threadId) return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
     return `/api/messaging/threads/${encodeURIComponent(threadId)}/messages${cursorQs}`;

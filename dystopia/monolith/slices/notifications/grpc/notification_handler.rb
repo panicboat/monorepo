@@ -35,7 +35,7 @@ module Notifications
         limit = request.message.limit.zero? ? 20 : request.message.limit
         cursor = request.message.cursor.empty? ? nil : request.message.cursor
 
-        result = list_uc.call(recipient_id: current_user_id, limit: limit, cursor: cursor)
+        result = list_uc.call(recipient_profile_id: current_profile_id, limit: limit, cursor: cursor)
 
         proto_notifications = result[:rows].map do |row|
           ::Notifications::V1::Notification.new(
@@ -43,7 +43,7 @@ module Notifications
             type: type_to_enum(row.type),
             target_resource_id: row.target_resource_id,
             actor_count: row.actor_count,
-            latest_actor: present_profile(result[:profiles_by_actor_id][row.latest_actor_id]),
+            latest_actor: present_profile(result[:profiles_by_actor_profile_id][row.latest_actor_profile_id]),
             latest_event_at: time_to_timestamp(row.latest_event_at),
             read_at: row.read_at ? time_to_timestamp(row.read_at) : nil,
             target_post_id: row.target_post_id || ""
@@ -60,25 +60,25 @@ module Notifications
 
       def get_unread_count
         authenticate_user!
-        count = unread_count_uc.call(recipient_id: current_user_id)
+        count = unread_count_uc.call(recipient_profile_id: current_profile_id)
         ::Notifications::V1::GetUnreadCountResponse.new(count: count)
       end
 
       def mark_read
         authenticate_user!
-        mark_read_uc.call(id: request.message.id, recipient_id: current_user_id)
+        mark_read_uc.call(id: request.message.id, recipient_profile_id: current_profile_id)
         ::Notifications::V1::MarkReadResponse.new
       end
 
       def mark_all_read
         authenticate_user!
-        affected = mark_all_read_uc.call(recipient_id: current_user_id)
+        affected = mark_all_read_uc.call(recipient_profile_id: current_profile_id)
         ::Notifications::V1::MarkAllReadResponse.new(affected: affected)
       end
 
       def get_notification_preferences
         authenticate_user!
-        prefs = get_preferences_uc.call(account_id: current_user_id)
+        prefs = get_preferences_uc.call(profile_id: current_profile_id)
         ::Notifications::V1::GetNotificationPreferencesResponse.new(
           preferences: preferences_to_proto(prefs)
         )
@@ -101,7 +101,7 @@ module Notifications
           footprint_unread_badge: input.footprint_unread_badge,
           footprints_record_my_visits: input.footprints_record_my_visits
         }
-        prefs = update_preferences_uc.call(account_id: current_user_id, preferences: attrs)
+        prefs = update_preferences_uc.call(profile_id: current_profile_id, preferences: attrs)
         ::Notifications::V1::UpdateNotificationPreferencesResponse.new(
           preferences: preferences_to_proto(prefs)
         )

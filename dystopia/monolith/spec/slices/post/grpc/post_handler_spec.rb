@@ -36,7 +36,7 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
     it "emits a mention notification on create" do
       handler.save_post
 
-      notifications = notification_repo.list(recipient_id: mentioned_id)
+      notifications = notification_repo.list(recipient_profile_id: mentioned_id)
       expect(notifications.map(&:type)).to include("mention")
     end
 
@@ -47,7 +47,7 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
       edit_handler = described_class.new(method_key: :save_post, service: double, rpc_desc: double, active_call: double, message: edit_message)
       edit_handler.save_post
 
-      notifications = notification_repo.list(recipient_id: mentioned_id)
+      notifications = notification_repo.list(recipient_profile_id: mentioned_id)
       expect(notifications.map(&:type).count("mention")).to eq(1)
     end
 
@@ -57,7 +57,7 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
 
       repeated_handler.save_post
 
-      notifications = notification_repo.list(recipient_id: mentioned_id)
+      notifications = notification_repo.list(recipient_profile_id: mentioned_id)
       expect(notifications.length).to eq(1)
       expect(notifications.first.actor_count).to eq(1)
     end

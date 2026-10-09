@@ -7,36 +7,36 @@ RSpec.describe Messaging::UseCases::AuthorizeMessage do
   let(:get_role)   { double(:get_role) }
   let(:follow_repo) { double(:follow_repository) }
 
-  let(:sender_id) { "sender-1" }
-  let(:recipient_id) { "recipient-1" }
+  let(:sender_profile_id) { "sender-1" }
+  let(:recipient_profile_id) { "recipient-1" }
 
   it "allows a cast sender without checking follow status" do
-    allow(get_role).to receive(:call).with(profile_id: sender_id).and_return(2)
+    allow(get_role).to receive(:call).with(profile_id: sender_profile_id).and_return(2)
     expect(follow_repo).not_to receive(:find)
 
-    expect(use_case.call(sender_id: sender_id, recipient_id: recipient_id)).to be(true)
+    expect(use_case.call(sender_profile_id: sender_profile_id, recipient_profile_id: recipient_profile_id)).to be(true)
   end
 
   it "allows a guest sender who approvedly follows the recipient" do
-    allow(get_role).to receive(:call).with(profile_id: sender_id).and_return(1)
-    allow(follow_repo).to receive(:find).with(follower_profile_id: sender_id, followee_profile_id: recipient_id)
+    allow(get_role).to receive(:call).with(profile_id: sender_profile_id).and_return(1)
+    allow(follow_repo).to receive(:find).with(follower_profile_id: sender_profile_id, followee_profile_id: recipient_profile_id)
       .and_return(double(:follow, status: "approved"))
 
-    expect(use_case.call(sender_id: sender_id, recipient_id: recipient_id)).to be(true)
+    expect(use_case.call(sender_profile_id: sender_profile_id, recipient_profile_id: recipient_profile_id)).to be(true)
   end
 
   it "denies a guest sender who does not follow the recipient" do
-    allow(get_role).to receive(:call).with(profile_id: sender_id).and_return(1)
-    allow(follow_repo).to receive(:find).with(follower_profile_id: sender_id, followee_profile_id: recipient_id).and_return(nil)
+    allow(get_role).to receive(:call).with(profile_id: sender_profile_id).and_return(1)
+    allow(follow_repo).to receive(:find).with(follower_profile_id: sender_profile_id, followee_profile_id: recipient_profile_id).and_return(nil)
 
-    expect(use_case.call(sender_id: sender_id, recipient_id: recipient_id)).to be(false)
+    expect(use_case.call(sender_profile_id: sender_profile_id, recipient_profile_id: recipient_profile_id)).to be(false)
   end
 
   it "denies a guest sender whose follow request is still pending" do
-    allow(get_role).to receive(:call).with(profile_id: sender_id).and_return(1)
-    allow(follow_repo).to receive(:find).with(follower_profile_id: sender_id, followee_profile_id: recipient_id)
+    allow(get_role).to receive(:call).with(profile_id: sender_profile_id).and_return(1)
+    allow(follow_repo).to receive(:find).with(follower_profile_id: sender_profile_id, followee_profile_id: recipient_profile_id)
       .and_return(double(:follow, status: "pending"))
 
-    expect(use_case.call(sender_id: sender_id, recipient_id: recipient_id)).to be(false)
+    expect(use_case.call(sender_profile_id: sender_profile_id, recipient_profile_id: recipient_profile_id)).to be(false)
   end
 end

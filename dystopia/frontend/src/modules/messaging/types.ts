@@ -3,7 +3,7 @@ import type { SocialProfileView } from "@/modules/social";
 export interface MessageView {
   id: string;
   threadId: string;
-  senderId: string;
+  senderProfileId: string;
   content: string;
   createdAt: string;
 }
@@ -31,5 +31,5 @@ export interface PaginatedMessagesResponse {
 
 export type StreamEventPayload =
   | { type: "message"; data: MessageView }
-  | { type: "read_state"; data: { threadId: string; accountId: string; lastReadMessageId: string } }
-  | { type: "typing"; data: { threadId: string; accountId: string } };
+  | { type: "read_state"; data: { threadId: string; profileId: string; lastReadMessageId: string } }
+  | { type: "typing"; data: { threadId: string; profileId: string } };

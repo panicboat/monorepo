@@ -30,7 +30,7 @@ describe("StartChatButton visibility", () => {
     mocks.role = "guest";
     mocks.isFollowing = false;
 
-    const html = renderToStaticMarkup(<StartChatButton targetAccountId="target-1" />);
+    const html = renderToStaticMarkup(<StartChatButton targetProfileId="target-1" />);
 
     expect(html).toBe("");
   });
@@ -39,7 +39,7 @@ describe("StartChatButton visibility", () => {
     mocks.role = "guest";
     mocks.isFollowing = true;
 
-    const html = renderToStaticMarkup(<StartChatButton targetAccountId="target-1" />);
+    const html = renderToStaticMarkup(<StartChatButton targetProfileId="target-1" />);
 
     expect(html).toContain("メッセージを送る");
   });
@@ -48,7 +48,7 @@ describe("StartChatButton visibility", () => {
     mocks.role = "cast";
     mocks.isFollowing = false;
 
-    const html = renderToStaticMarkup(<StartChatButton targetAccountId="target-1" />);
+    const html = renderToStaticMarkup(<StartChatButton targetProfileId="target-1" />);
 
     expect(html).toContain("メッセージを送る");
   });
