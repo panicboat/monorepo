@@ -13,7 +13,6 @@ RSpec.describe Messaging::UseCases::SendMessage do
 
   before do
     allow(use_case).to receive(:bidirectionally_blocked?).and_return(false)
-    allow(use_case).to receive(:publish_message_event)
   end
 
   it "raises FollowRequiredError when AuthorizeMessage denies the sender" do

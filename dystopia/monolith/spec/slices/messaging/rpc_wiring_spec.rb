@@ -5,7 +5,7 @@ require "lib/current"
 require "slices/messaging/grpc/messaging_handler"
 require "slices/notifications/grpc/notification_handler"
 
-RSpec.describe "Messaging and notifications RPC entry points and event payloads", type: :database do
+RSpec.describe "Messaging and notifications RPC entry points", type: :database do
   let(:db) { Hanami.app["db.gateway"].connection }
 
   let(:cast) { create_account_with_profile(role: 2, username: "wiring_cast") }
@@ -101,60 +101,8 @@ RSpec.describe "Messaging and notifications RPC entry points and event payloads"
         .to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
       expect { rpc(Messaging::Grpc::MessagingHandler, :mark_read, Messaging::V1::MarkReadRequest.new(thread_id: thread_id)) }
         .to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
-      expect { rpc(Messaging::Grpc::MessagingHandler, :send_typing, Messaging::V1::SendTypingRequest.new(thread_id: thread_id)) }
-        .to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
       expect { send_message(thread_id: thread_id, content: "intrusion") }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
       expect(threads.threads).to eq([])
-    end
-  end
-
-  describe "event payloads" do
-    def capture(use_case)
-      published = []
-      allow(use_case).to receive(:notify) { |channel, payload| published << [channel, payload] }
-      published
-    end
-
-    def parse(payload)
-      handler(Messaging::Grpc::MessagingHandler, :stream_events, Messaging::V1::StreamEventsRequest.new).send(:parse_payload_to_event, payload)
-    end
-
-    it "publishes a message to both participants in a shape the stream can read back" do
-      use_case = Messaging::Slice["use_cases.send_message"]
-      published = capture(use_case)
-
-      use_case.call(sender_profile_id: cast, content: "event", recipient_profile_id: guest)
-
-      expect(published.map(&:first)).to eq(["messaging_user_#{cast}", "messaging_user_#{guest}"])
-      event = parse(published.first.last)
-      expect(event.message_event.sender_profile_id).to eq(cast)
-      expect(event.message_event.content).to eq("event")
-    end
-
-    it "publishes a reply sent through the thread id to the other participant" do
-      use_case = Messaging::Slice["use_cases.send_message"]
-      thread_id = use_case.call(sender_profile_id: cast, content: "first", recipient_profile_id: guest)[:thread_id]
-      published = capture(use_case)
-
-      use_case.call(sender_profile_id: cast, content: "second", thread_id: thread_id)
-
-      expect(published.map(&:first)).to eq(["messaging_user_#{cast}", "messaging_user_#{guest}"])
-    end
-
-    it "publishes read state and typing to the counterpart in a shape the stream can read back" do
-      thread_id = Messaging::Slice["use_cases.send_message"].call(sender_profile_id: cast, content: "x", recipient_profile_id: guest)[:thread_id]
-      mark_read = Messaging::Slice["use_cases.mark_read"]
-      typing = Messaging::Slice["use_cases.send_typing"]
-      read_published = capture(mark_read)
-      typing_published = capture(typing)
-
-      mark_read.call(thread_id: thread_id, viewer_profile_id: guest, message_id: nil)
-      typing.call(thread_id: thread_id, viewer_profile_id: guest)
-
-      expect(read_published.map(&:first)).to eq(["messaging_user_#{cast}"])
-      expect(parse(read_published.first.last).read_state.profile_id).to eq(guest)
-      expect(typing_published.map(&:first)).to eq(["messaging_user_#{cast}"])
-      expect(parse(typing_published.first.last).typing.profile_id).to eq(guest)
     end
   end
 

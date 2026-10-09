@@ -14,7 +14,7 @@ import type { Message as Message$1 } from "@bufbuild/protobuf";
  * Describes the file messaging/v1/messaging_service.proto.
  */
 export const file_messaging_v1_messaging_service: GenFile = /*@__PURE__*/
-  fileDesc("CiRtZXNzYWdpbmcvdjEvbWVzc2FnaW5nX3NlcnZpY2UucHJvdG8SDG1lc3NhZ2luZy52MSKEAQoHTWVzc2FnZRIKCgJpZBgBIAEoCRIRCgl0aHJlYWRfaWQYAiABKAkSGQoRc2VuZGVyX3Byb2ZpbGVfaWQYAyABKAkSDwoHY29udGVudBgEIAEoCRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCK2AQoGVGhyZWFkEgoKAmlkGAEgASgJEigKC2NvdW50ZXJwYXJ0GAIgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlEisKDGxhc3RfbWVzc2FnZRgDIAEoCzIVLm1lc3NhZ2luZy52MS5NZXNzYWdlEhQKDHVucmVhZF9jb3VudBgEIAEoBRIzCg9sYXN0X21lc3NhZ2VfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIlYKElNlbmRNZXNzYWdlUmVxdWVzdBIRCgl0aHJlYWRfaWQYASABKAkSHAoUcmVjaXBpZW50X3Byb2ZpbGVfaWQYAiABKAkSDwoHY29udGVudBgDIAEoCSJQChNTZW5kTWVzc2FnZVJlc3BvbnNlEiYKB21lc3NhZ2UYASABKAsyFS5tZXNzYWdpbmcudjEuTWVzc2FnZRIRCgl0aHJlYWRfaWQYAiABKAkiMwoSTGlzdFRocmVhZHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJ/ChNMaXN0VGhyZWFkc1Jlc3BvbnNlEiUKB3RocmVhZHMYASADKAsyFC5tZXNzYWdpbmcudjEuVGhyZWFkEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIEhoKEnRvdGFsX3VucmVhZF9jb3VudBgEIAEoBSI4ChhHZXRPckNyZWF0ZVRocmVhZFJlcXVlc3QSHAoUcmVjaXBpZW50X3Byb2ZpbGVfaWQYASABKAkiQQoZR2V0T3JDcmVhdGVUaHJlYWRSZXNwb25zZRIkCgZ0aHJlYWQYASABKAsyFC5tZXNzYWdpbmcudjEuVGhyZWFkIkcKE0xpc3RNZXNzYWdlc1JlcXVlc3QSEQoJdGhyZWFkX2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJmChRMaXN0TWVzc2FnZXNSZXNwb25zZRInCghtZXNzYWdlcxgBIAMoCzIVLm1lc3NhZ2luZy52MS5NZXNzYWdlEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIjgKD01hcmtSZWFkUmVxdWVzdBIRCgl0aHJlYWRfaWQYASABKAkSEgoKbWVzc2FnZV9pZBgCIAEoCSISChBNYXJrUmVhZFJlc3BvbnNlIhwKGkdldFRvdGFsVW5yZWFkQ291bnRSZXF1ZXN0IiwKG0dldFRvdGFsVW5yZWFkQ291bnRSZXNwb25zZRINCgVjb3VudBgBIAEoBSImChFTZW5kVHlwaW5nUmVxdWVzdBIRCgl0aHJlYWRfaWQYASABKAkiFAoSU2VuZFR5cGluZ1Jlc3BvbnNlIhUKE1N0cmVhbUV2ZW50c1JlcXVlc3QiowEKBUV2ZW50Ei4KDW1lc3NhZ2VfZXZlbnQYASABKAsyFS5tZXNzYWdpbmcudjEuTWVzc2FnZUgAEjIKCnJlYWRfc3RhdGUYAiABKAsyHC5tZXNzYWdpbmcudjEuUmVhZFN0YXRlRXZlbnRIABIrCgZ0eXBpbmcYAyABKAsyGS5tZXNzYWdpbmcudjEuVHlwaW5nRXZlbnRIAEIJCgdwYXlsb2FkIlUKDlJlYWRTdGF0ZUV2ZW50EhEKCXRocmVhZF9pZBgBIAEoCRISCgpwcm9maWxlX2lkGAIgASgJEhwKFGxhc3RfcmVhZF9tZXNzYWdlX2lkGAMgASgJIjQKC1R5cGluZ0V2ZW50EhEKCXRocmVhZF9pZBgBIAEoCRISCgpwcm9maWxlX2lkGAIgASgJMskFChBNZXNzYWdpbmdTZXJ2aWNlElIKC1NlbmRNZXNzYWdlEiAubWVzc2FnaW5nLnYxLlNlbmRNZXNzYWdlUmVxdWVzdBohLm1lc3NhZ2luZy52MS5TZW5kTWVzc2FnZVJlc3BvbnNlElIKC0xpc3RUaHJlYWRzEiAubWVzc2FnaW5nLnYxLkxpc3RUaHJlYWRzUmVxdWVzdBohLm1lc3NhZ2luZy52MS5MaXN0VGhyZWFkc1Jlc3BvbnNlEmQKEUdldE9yQ3JlYXRlVGhyZWFkEiYubWVzc2FnaW5nLnYxLkdldE9yQ3JlYXRlVGhyZWFkUmVxdWVzdBonLm1lc3NhZ2luZy52MS5HZXRPckNyZWF0ZVRocmVhZFJlc3BvbnNlElUKDExpc3RNZXNzYWdlcxIhLm1lc3NhZ2luZy52MS5MaXN0TWVzc2FnZXNSZXF1ZXN0GiIubWVzc2FnaW5nLnYxLkxpc3RNZXNzYWdlc1Jlc3BvbnNlEkkKCE1hcmtSZWFkEh0ubWVzc2FnaW5nLnYxLk1hcmtSZWFkUmVxdWVzdBoeLm1lc3NhZ2luZy52MS5NYXJrUmVhZFJlc3BvbnNlEmoKE0dldFRvdGFsVW5yZWFkQ291bnQSKC5tZXNzYWdpbmcudjEuR2V0VG90YWxVbnJlYWRDb3VudFJlcXVlc3QaKS5tZXNzYWdpbmcudjEuR2V0VG90YWxVbnJlYWRDb3VudFJlc3BvbnNlEk8KClNlbmRUeXBpbmcSHy5tZXNzYWdpbmcudjEuU2VuZFR5cGluZ1JlcXVlc3QaIC5tZXNzYWdpbmcudjEuU2VuZFR5cGluZ1Jlc3BvbnNlEkgKDFN0cmVhbUV2ZW50cxIhLm1lc3NhZ2luZy52MS5TdHJlYW1FdmVudHNSZXF1ZXN0GhMubWVzc2FnaW5nLnYxLkV2ZW50MAFiBnByb3RvMw", [file_google_protobuf_timestamp, file_profile_v1_service]);
+  fileDesc("CiRtZXNzYWdpbmcvdjEvbWVzc2FnaW5nX3NlcnZpY2UucHJvdG8SDG1lc3NhZ2luZy52MSKEAQoHTWVzc2FnZRIKCgJpZBgBIAEoCRIRCgl0aHJlYWRfaWQYAiABKAkSGQoRc2VuZGVyX3Byb2ZpbGVfaWQYAyABKAkSDwoHY29udGVudBgEIAEoCRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCK2AQoGVGhyZWFkEgoKAmlkGAEgASgJEigKC2NvdW50ZXJwYXJ0GAIgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlEisKDGxhc3RfbWVzc2FnZRgDIAEoCzIVLm1lc3NhZ2luZy52MS5NZXNzYWdlEhQKDHVucmVhZF9jb3VudBgEIAEoBRIzCg9sYXN0X21lc3NhZ2VfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIlYKElNlbmRNZXNzYWdlUmVxdWVzdBIRCgl0aHJlYWRfaWQYASABKAkSHAoUcmVjaXBpZW50X3Byb2ZpbGVfaWQYAiABKAkSDwoHY29udGVudBgDIAEoCSJQChNTZW5kTWVzc2FnZVJlc3BvbnNlEiYKB21lc3NhZ2UYASABKAsyFS5tZXNzYWdpbmcudjEuTWVzc2FnZRIRCgl0aHJlYWRfaWQYAiABKAkiMwoSTGlzdFRocmVhZHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJ/ChNMaXN0VGhyZWFkc1Jlc3BvbnNlEiUKB3RocmVhZHMYASADKAsyFC5tZXNzYWdpbmcudjEuVGhyZWFkEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIEhoKEnRvdGFsX3VucmVhZF9jb3VudBgEIAEoBSI4ChhHZXRPckNyZWF0ZVRocmVhZFJlcXVlc3QSHAoUcmVjaXBpZW50X3Byb2ZpbGVfaWQYASABKAkiQQoZR2V0T3JDcmVhdGVUaHJlYWRSZXNwb25zZRIkCgZ0aHJlYWQYASABKAsyFC5tZXNzYWdpbmcudjEuVGhyZWFkIkcKE0xpc3RNZXNzYWdlc1JlcXVlc3QSEQoJdGhyZWFkX2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJmChRMaXN0TWVzc2FnZXNSZXNwb25zZRInCghtZXNzYWdlcxgBIAMoCzIVLm1lc3NhZ2luZy52MS5NZXNzYWdlEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIjgKD01hcmtSZWFkUmVxdWVzdBIRCgl0aHJlYWRfaWQYASABKAkSEgoKbWVzc2FnZV9pZBgCIAEoCSISChBNYXJrUmVhZFJlc3BvbnNlIhwKGkdldFRvdGFsVW5yZWFkQ291bnRSZXF1ZXN0IiwKG0dldFRvdGFsVW5yZWFkQ291bnRSZXNwb25zZRINCgVjb3VudBgBIAEoBTKuBAoQTWVzc2FnaW5nU2VydmljZRJSCgtTZW5kTWVzc2FnZRIgLm1lc3NhZ2luZy52MS5TZW5kTWVzc2FnZVJlcXVlc3QaIS5tZXNzYWdpbmcudjEuU2VuZE1lc3NhZ2VSZXNwb25zZRJSCgtMaXN0VGhyZWFkcxIgLm1lc3NhZ2luZy52MS5MaXN0VGhyZWFkc1JlcXVlc3QaIS5tZXNzYWdpbmcudjEuTGlzdFRocmVhZHNSZXNwb25zZRJkChFHZXRPckNyZWF0ZVRocmVhZBImLm1lc3NhZ2luZy52MS5HZXRPckNyZWF0ZVRocmVhZFJlcXVlc3QaJy5tZXNzYWdpbmcudjEuR2V0T3JDcmVhdGVUaHJlYWRSZXNwb25zZRJVCgxMaXN0TWVzc2FnZXMSIS5tZXNzYWdpbmcudjEuTGlzdE1lc3NhZ2VzUmVxdWVzdBoiLm1lc3NhZ2luZy52MS5MaXN0TWVzc2FnZXNSZXNwb25zZRJJCghNYXJrUmVhZBIdLm1lc3NhZ2luZy52MS5NYXJrUmVhZFJlcXVlc3QaHi5tZXNzYWdpbmcudjEuTWFya1JlYWRSZXNwb25zZRJqChNHZXRUb3RhbFVucmVhZENvdW50EigubWVzc2FnaW5nLnYxLkdldFRvdGFsVW5yZWFkQ291bnRSZXF1ZXN0GikubWVzc2FnaW5nLnYxLkdldFRvdGFsVW5yZWFkQ291bnRSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_profile_v1_service]);
 
 /**
  * @generated from message messaging.v1.Message
@@ -347,133 +347,6 @@ export const GetTotalUnreadCountResponseSchema: GenMessage<GetTotalUnreadCountRe
   messageDesc(file_messaging_v1_messaging_service, 13);
 
 /**
- * @generated from message messaging.v1.SendTypingRequest
- */
-export type SendTypingRequest = Message$1<"messaging.v1.SendTypingRequest"> & {
-  /**
-   * @generated from field: string thread_id = 1;
-   */
-  threadId: string;
-};
-
-/**
- * Describes the message messaging.v1.SendTypingRequest.
- * Use `create(SendTypingRequestSchema)` to create a new message.
- */
-export const SendTypingRequestSchema: GenMessage<SendTypingRequest> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 14);
-
-/**
- * @generated from message messaging.v1.SendTypingResponse
- */
-export type SendTypingResponse = Message$1<"messaging.v1.SendTypingResponse"> & {
-};
-
-/**
- * Describes the message messaging.v1.SendTypingResponse.
- * Use `create(SendTypingResponseSchema)` to create a new message.
- */
-export const SendTypingResponseSchema: GenMessage<SendTypingResponse> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 15);
-
-/**
- * @generated from message messaging.v1.StreamEventsRequest
- */
-export type StreamEventsRequest = Message$1<"messaging.v1.StreamEventsRequest"> & {
-};
-
-/**
- * Describes the message messaging.v1.StreamEventsRequest.
- * Use `create(StreamEventsRequestSchema)` to create a new message.
- */
-export const StreamEventsRequestSchema: GenMessage<StreamEventsRequest> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 16);
-
-/**
- * @generated from message messaging.v1.Event
- */
-export type Event = Message$1<"messaging.v1.Event"> & {
-  /**
-   * @generated from oneof messaging.v1.Event.payload
-   */
-  payload: {
-    /**
-     * @generated from field: messaging.v1.Message message_event = 1;
-     */
-    value: Message;
-    case: "messageEvent";
-  } | {
-    /**
-     * @generated from field: messaging.v1.ReadStateEvent read_state = 2;
-     */
-    value: ReadStateEvent;
-    case: "readState";
-  } | {
-    /**
-     * @generated from field: messaging.v1.TypingEvent typing = 3;
-     */
-    value: TypingEvent;
-    case: "typing";
-  } | { case: undefined; value?: undefined };
-};
-
-/**
- * Describes the message messaging.v1.Event.
- * Use `create(EventSchema)` to create a new message.
- */
-export const EventSchema: GenMessage<Event> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 17);
-
-/**
- * @generated from message messaging.v1.ReadStateEvent
- */
-export type ReadStateEvent = Message$1<"messaging.v1.ReadStateEvent"> & {
-  /**
-   * @generated from field: string thread_id = 1;
-   */
-  threadId: string;
-
-  /**
-   * @generated from field: string profile_id = 2;
-   */
-  profileId: string;
-
-  /**
-   * @generated from field: string last_read_message_id = 3;
-   */
-  lastReadMessageId: string;
-};
-
-/**
- * Describes the message messaging.v1.ReadStateEvent.
- * Use `create(ReadStateEventSchema)` to create a new message.
- */
-export const ReadStateEventSchema: GenMessage<ReadStateEvent> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 18);
-
-/**
- * @generated from message messaging.v1.TypingEvent
- */
-export type TypingEvent = Message$1<"messaging.v1.TypingEvent"> & {
-  /**
-   * @generated from field: string thread_id = 1;
-   */
-  threadId: string;
-
-  /**
-   * @generated from field: string profile_id = 2;
-   */
-  profileId: string;
-};
-
-/**
- * Describes the message messaging.v1.TypingEvent.
- * Use `create(TypingEventSchema)` to create a new message.
- */
-export const TypingEventSchema: GenMessage<TypingEvent> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 19);
-
-/**
  * @generated from service messaging.v1.MessagingService
  */
 export const MessagingService: GenService<{
@@ -524,22 +397,6 @@ export const MessagingService: GenService<{
     methodKind: "unary";
     input: typeof GetTotalUnreadCountRequestSchema;
     output: typeof GetTotalUnreadCountResponseSchema;
-  },
-  /**
-   * @generated from rpc messaging.v1.MessagingService.SendTyping
-   */
-  sendTyping: {
-    methodKind: "unary";
-    input: typeof SendTypingRequestSchema;
-    output: typeof SendTypingResponseSchema;
-  },
-  /**
-   * @generated from rpc messaging.v1.MessagingService.StreamEvents
-   */
-  streamEvents: {
-    methodKind: "server_streaming";
-    input: typeof StreamEventsRequestSchema;
-    output: typeof EventSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_messaging_v1_messaging_service, 0);

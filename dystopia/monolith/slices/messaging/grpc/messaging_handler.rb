@@ -1,14 +1,11 @@
 # frozen_string_literal: true
 
-require "json"
 require "messaging/v1/messaging_service_services_pb"
 require_relative "handler"
 
 module Messaging
   module Grpc
     class MessagingHandler < Handler
-      STREAM_HEARTBEAT_SECONDS = 15
-
       self.marshal_class_method = :encode
       self.unmarshal_class_method = :decode
       self.service_name = "messaging.v1.MessagingService"
@@ -23,8 +20,6 @@ module Messaging
       rpc :ListMessages, ::Messaging::V1::ListMessagesRequest, ::Messaging::V1::ListMessagesResponse
       rpc :MarkRead, ::Messaging::V1::MarkReadRequest, ::Messaging::V1::MarkReadResponse
       rpc :GetTotalUnreadCount, ::Messaging::V1::GetTotalUnreadCountRequest, ::Messaging::V1::GetTotalUnreadCountResponse
-      rpc :SendTyping, ::Messaging::V1::SendTypingRequest, ::Messaging::V1::SendTypingResponse
-      rpc :StreamEvents, ::Messaging::V1::StreamEventsRequest, stream(::Messaging::V1::Event)
 
       include Messaging::Deps[
         send_message_uc: "use_cases.send_message",
@@ -32,8 +27,7 @@ module Messaging
         get_or_create_thread_uc: "use_cases.get_or_create_thread",
         list_messages_uc: "use_cases.list_messages",
         mark_read_uc: "use_cases.mark_read",
-        get_total_unread_count_uc: "use_cases.get_total_unread_count",
-        send_typing_uc: "use_cases.send_typing"
+        get_total_unread_count_uc: "use_cases.get_total_unread_count"
       ]
 
       def send_message
@@ -147,69 +141,6 @@ module Messaging
         ::Messaging::V1::GetTotalUnreadCountResponse.new(count: count)
       end
 
-      def send_typing
-        authenticate_user!
-        send_typing_uc.call(
-          thread_id: request.message.thread_id,
-          viewer_profile_id: current_profile_id
-        )
-        ::Messaging::V1::SendTypingResponse.new
-      rescue UseCases::SendTyping::ThreadNotFoundError => e
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, e.message)
-      rescue UseCases::SendTyping::ForbiddenError => e
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, e.message)
-      end
-
-      def stream_events
-        authenticate_user!
-        channel = "messaging_user_#{current_profile_id}"
-        db_opts = messaging_repo.send(:thread_records).dataset.db.opts
-
-        # Hand the events back instead of yielding them: gRPC calls a server-streaming handler without a block and reads its result with each.
-        Enumerator.new do |events|
-          # Use a dedicated connection because a long-lived stream must not hold a Sequel pool slot.
-          conn = PG.connect(
-            host: db_opts[:host] || "localhost",
-            port: db_opts[:port] || 5432,
-            dbname: db_opts[:database],
-            user: db_opts[:user],
-            password: db_opts[:password]
-          )
-
-          begin
-            quoted_channel = conn.escape_identifier(channel)
-            conn.async_exec("LISTEN #{quoted_channel}")
-            last_sent_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-            loop do
-              conn.wait_for_notify(0.5) do |_chan, _pid, payload|
-                event = parse_payload_to_event(payload)
-                next unless event
-
-                events << event
-                last_sent_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-              end
-              next if Process.clock_gettime(Process::CLOCK_MONOTONIC) - last_sent_at < STREAM_HEARTBEAT_SECONDS
-
-              # Send an empty event while idle: a client that went away shows only as a failed send, and without one the listener would never be released.
-              events << ::Messaging::V1::Event.new
-              last_sent_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-            end
-          ensure
-            # Release the listener connection because client disconnects and parse failures bypass the loop.
-            begin
-              conn.async_exec("UNLISTEN #{quoted_channel}")
-            rescue StandardError
-              # SILENT: Ignore cleanup errors after the stream has already ended.
-            end
-            begin
-              conn.close
-            rescue StandardError
-              # SILENT: Ignore cleanup errors after the stream has already ended.
-            end
-          end
-        end
-      end
-
       private
 
       def build_message_proto(row, hidden_sender_profile_id: nil)
@@ -276,51 +207,6 @@ module Messaging
         return nil unless t
 
         Google::Protobuf::Timestamp.new(seconds: t.to_i, nanos: (t.respond_to?(:nsec) ? (t.nsec || 0) : 0))
-      end
-
-      def parse_payload_to_event(payload)
-        return nil if payload.nil? || payload.empty?
-
-        parsed = JSON.parse(payload)
-        data = parsed["data"] || {}
-
-        case parsed["type"]
-        when "message"
-          msg = ::Messaging::V1::Message.new(
-            id: data["id"].to_s,
-            thread_id: data["thread_id"].to_s,
-            sender_profile_id: data["sender_profile_id"].to_s,
-            content: data["content"].to_s,
-            created_at: parse_iso8601_timestamp(data["created_at"])
-          )
-          ::Messaging::V1::Event.new(message_event: msg)
-        when "read_state"
-          rs = ::Messaging::V1::ReadStateEvent.new(
-            thread_id: data["thread_id"].to_s,
-            profile_id: data["profile_id"].to_s,
-            last_read_message_id: data["last_read_message_id"].to_s
-          )
-          ::Messaging::V1::Event.new(read_state: rs)
-        when "typing"
-          typing = ::Messaging::V1::TypingEvent.new(
-            thread_id: data["thread_id"].to_s,
-            profile_id: data["profile_id"].to_s
-          )
-          ::Messaging::V1::Event.new(typing: typing)
-        end
-      rescue JSON::ParserError, ArgumentError => e
-        Hanami.logger.warn("Messaging::StreamEvents bad payload: #{e.class}: #{e.message}")
-        # FALLBACK: Drop malformed events after recording the parse failure.
-        nil
-      end
-
-      def parse_iso8601_timestamp(s)
-        return nil if s.nil? || s.empty?
-        t = Time.iso8601(s)
-        Google::Protobuf::Timestamp.new(seconds: t.to_i, nanos: t.nsec || 0)
-      rescue ArgumentError
-        # FALLBACK: Omit invalid timestamps so the event remains deliverable.
-        nil
       end
     end
   end

@@ -6,13 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface MessageComposerProps {
   onSend: (content: string) => Promise<void>;
-  onTyping?: () => void;
   disabled?: boolean;
 }
 
 const MAX_LENGTH = 5000;
 
-export function MessageComposer({ onSend, onTyping, disabled }: MessageComposerProps) {
+export function MessageComposer({ onSend, disabled }: MessageComposerProps) {
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,11 +19,6 @@ export function MessageComposer({ onSend, onTyping, disabled }: MessageComposerP
   const trimmed = content.trim();
   const overLimit = content.length > MAX_LENGTH;
   const canSubmit = !submitting && !disabled && trimmed.length > 0 && !overLimit;
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
-    if (onTyping) onTyping();
-  };
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -49,7 +43,7 @@ export function MessageComposer({ onSend, onTyping, disabled }: MessageComposerP
     <form onSubmit={handleSubmit} className="border-t border-border bg-bg px-4 py-3">
       <Textarea
         value={content}
-        onChange={handleChange}
+        onChange={(e) => setContent(e.target.value)}
         placeholder="メッセージを入力"
         rows={2}
         disabled={disabled}

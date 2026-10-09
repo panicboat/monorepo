@@ -1,4 +1,4 @@
 export * from "./types";
 export * from "./hooks";
-export { MessagingStreamProvider } from "./providers/MessagingStreamProvider";
+export { MessagingPollingProvider } from "./providers/MessagingPollingProvider";
 export { StartChatButton } from "./components/StartChatButton";

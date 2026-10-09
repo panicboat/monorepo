@@ -57,7 +57,7 @@ Gruf.configure do |c|
   c.interceptors.use(Interceptors::AccessLogInterceptor)
   c.interceptors.use(Interceptors::AuthenticationInterceptor)
 
-  # Raise the HTTP/2 stream cap because long-lived messaging streams share the connection with unary RPCs.
+  # Keep the HTTP/2 stream cap high because the BFF sends every concurrent RPC over one connection.
   c.server_options = {
     "grpc.max_concurrent_streams" => 1024,
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import useSWRInfinite from "swr/infinite";
+import { MESSAGING_POLL_INTERVAL_MS } from "../lib/polling";
 import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
 import { authFetch } from "@/lib/auth";
@@ -18,7 +19,10 @@ export function useMessages(threadId: string | null | undefined) {
   };
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =
-    useSWRInfinite<PaginatedMessagesResponse>(getKey, fetcher, { revalidateOnFocus: false });
+    useSWRInfinite<PaginatedMessagesResponse>(getKey, fetcher, {
+      revalidateOnFocus: false,
+      refreshInterval: MESSAGING_POLL_INTERVAL_MS,
+    });
 
   const pages = data || [];
   const messages = pages.flatMap((p) => p.messages || []);
