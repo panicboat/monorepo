@@ -54,7 +54,7 @@ export function ScheduleSection({ profileId, isOwner }: ScheduleSectionProps) {
   };
 
   return (
-    <div className="flex flex-col gap-2 border-t border-divider px-4 py-3">
+    <div className="mt-4 flex flex-col gap-2 border-t border-divider px-4 py-4">
       <h2 className="text-sm font-bold text-text-primary">出勤スケジュール</h2>
       <ul className="flex flex-col gap-1">
         {days.map((dateKey) => {

@@ -11,25 +11,15 @@ interface BlockButtonProps {
 
 export function BlockButton({ targetProfileId, className }: BlockButtonProps) {
   const viewerId = useAuthStore(selectActiveProfileId);
-  const { isBlocked, block, unblock, loading } = useBlock(targetProfileId);
+  const { isBlocked, toggle, loading } = useBlock(targetProfileId);
 
   if (!targetProfileId || (viewerId && viewerId === targetProfileId)) return null;
-
-  const onClick = async () => {
-    if (isBlocked) {
-      if (!confirm("ブロックを解除しますか?")) return;
-      await unblock();
-    } else {
-      if (!confirm("このアカウントをブロックします。よろしいですか?")) return;
-      await block();
-    }
-  };
 
   return (
     <Button
       variant="secondary"
       size="sm"
-      onClick={onClick}
+      onClick={toggle}
       disabled={loading}
       className={className}
     >

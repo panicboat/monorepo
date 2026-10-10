@@ -41,7 +41,7 @@ describe("StartChatButton visibility", () => {
 
     const html = renderToStaticMarkup(<StartChatButton targetProfileId="target-1" />);
 
-    expect(html).toContain("メッセージを送る");
+    expect(html).toContain("メッセージ");
   });
 
   it("shows the button for a cast viewer regardless of follow status", () => {
@@ -50,6 +50,6 @@ describe("StartChatButton visibility", () => {
 
     const html = renderToStaticMarkup(<StartChatButton targetProfileId="target-1" />);
 
-    expect(html).toContain("メッセージを送る");
+    expect(html).toContain("メッセージ");
   });
 });

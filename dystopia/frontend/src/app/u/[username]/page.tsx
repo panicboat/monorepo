@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { usePublicProfile, useProfile } from "@/modules/profile/hooks";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
 import { EditProfileModal } from "@/modules/profile/components/EditProfileModal";
-import { FollowButton, BlockButton, SocialCountsLinks } from "@/modules/social";
+import { FollowButton, ProfileMoreMenu, SocialCountsLinks } from "@/modules/social";
 import { StartChatButton } from "@/modules/messaging";
 import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs";
 import { useRecordVisit } from "@/modules/footprints";
@@ -14,6 +14,7 @@ import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
 import { ReviewsTab } from "@/modules/review/components/ReviewsTab";
 import { ScheduleSection } from "@/modules/schedule";
+import { Button } from "@/components/ui/button";
 
 export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
@@ -43,14 +44,23 @@ export default function PublicProfilePage() {
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
-      <ProfileHeader profile={profile} role={role} onEdit={isOwnProfile ? () => setEditing(true) : undefined} />
-      {!isOwnProfile && (
-        <div className="flex items-center gap-2 px-4 pt-3">
-          <FollowButton targetProfileId={profile.id} />
-          <StartChatButton targetProfileId={profile.id} />
-          <BlockButton targetProfileId={profile.id} />
-        </div>
-      )}
+      <ProfileHeader
+        profile={profile}
+        role={role}
+        actions={
+          isOwnProfile ? (
+            <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
+              プロフィールを編集
+            </Button>
+          ) : (
+            <>
+              <ProfileMoreMenu targetProfileId={profile.id} />
+              <StartChatButton targetProfileId={profile.id} />
+              <FollowButton targetProfileId={profile.id} />
+            </>
+          )
+        }
+      />
       <SocialCountsLinks profileId={profile.id} username={profile.username} />
       {role === "cast" && <ScheduleSection profileId={profile.id} isOwner={isOwnProfile} />}
       <ProfileContentTabs

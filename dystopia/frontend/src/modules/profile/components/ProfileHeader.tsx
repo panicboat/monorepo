@@ -1,7 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import type { ProfileView } from "@/modules/profile/types";
 import { formatBodyStats, formatHeight } from "@/modules/profile/lib/format";
 
@@ -17,7 +17,7 @@ const SNS_LABELS: { key: keyof ProfileView["snsLinks"]; label: string }[] = [
 interface ProfileHeaderProps {
   profile: ProfileView;
   role: "cast" | "guest" | null;
-  onEdit?: () => void;
+  actions?: ReactNode;
 }
 
 function formatRegisteredAt(iso: string): string {
@@ -27,7 +27,7 @@ function formatRegisteredAt(iso: string): string {
   return `${d.getFullYear()}年${d.getMonth() + 1}月に登録`;
 }
 
-export function ProfileHeader({ profile, role, onEdit }: ProfileHeaderProps) {
+export function ProfileHeader({ profile, role, actions }: ProfileHeaderProps) {
   const isCast = role === "cast";
   const sns = SNS_LABELS.filter(({ key }) => profile.snsLinks[key]);
   const registeredLabel = formatRegisteredAt(profile.registeredAt);
@@ -53,13 +53,7 @@ export function ProfileHeader({ profile, role, onEdit }: ProfileHeaderProps) {
             className="h-20 w-20 text-2xl ring-4 ring-bg"
           />
         </div>
-        {onEdit && (
-          <div className="mt-3">
-            <Button variant="secondary" size="sm" onClick={onEdit}>
-              プロフィールを編集
-            </Button>
-          </div>
-        )}
+        {actions && <div className="mt-3 flex flex-wrap items-center justify-end gap-2">{actions}</div>}
       </div>
       <div className="flex flex-col gap-1 px-4 pt-2">
         <div className="flex items-center gap-2">

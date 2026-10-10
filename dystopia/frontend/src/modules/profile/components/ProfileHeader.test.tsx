@@ -45,4 +45,13 @@ describe("ProfileHeader", () => {
     expect(html).toContain("<span>158cm</span>");
     expect(html).toContain("<span>B88(D) W58 H86</span>");
   });
+
+  it("places the given actions beside the avatar, ahead of the display name", () => {
+    const html = renderToStaticMarkup(
+      <ProfileHeader profile={profile} role="cast" actions={<button type="button">follow-action</button>} />
+    );
+
+    expect(html).toContain("follow-action");
+    expect(html.indexOf("follow-action")).toBeLessThan(html.indexOf("<h1"));
+  });
 });
