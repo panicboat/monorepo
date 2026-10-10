@@ -2,8 +2,8 @@
 // @generated from file messaging/v1/messaging_service.proto (package messaging.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Profile } from "../../profile/v1/service_pb";
@@ -14,7 +14,7 @@ import type { Message as Message$1 } from "@bufbuild/protobuf";
  * Describes the file messaging/v1/messaging_service.proto.
  */
 export const file_messaging_v1_messaging_service: GenFile = /*@__PURE__*/
-  fileDesc("CiRtZXNzYWdpbmcvdjEvbWVzc2FnaW5nX3NlcnZpY2UucHJvdG8SDG1lc3NhZ2luZy52MSKEAQoHTWVzc2FnZRIKCgJpZBgBIAEoCRIRCgl0aHJlYWRfaWQYAiABKAkSGQoRc2VuZGVyX3Byb2ZpbGVfaWQYAyABKAkSDwoHY29udGVudBgEIAEoCRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCK2AQoGVGhyZWFkEgoKAmlkGAEgASgJEigKC2NvdW50ZXJwYXJ0GAIgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlEisKDGxhc3RfbWVzc2FnZRgDIAEoCzIVLm1lc3NhZ2luZy52MS5NZXNzYWdlEhQKDHVucmVhZF9jb3VudBgEIAEoBRIzCg9sYXN0X21lc3NhZ2VfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIlYKElNlbmRNZXNzYWdlUmVxdWVzdBIRCgl0aHJlYWRfaWQYASABKAkSHAoUcmVjaXBpZW50X3Byb2ZpbGVfaWQYAiABKAkSDwoHY29udGVudBgDIAEoCSJQChNTZW5kTWVzc2FnZVJlc3BvbnNlEiYKB21lc3NhZ2UYASABKAsyFS5tZXNzYWdpbmcudjEuTWVzc2FnZRIRCgl0aHJlYWRfaWQYAiABKAkiMwoSTGlzdFRocmVhZHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJ/ChNMaXN0VGhyZWFkc1Jlc3BvbnNlEiUKB3RocmVhZHMYASADKAsyFC5tZXNzYWdpbmcudjEuVGhyZWFkEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIEhoKEnRvdGFsX3VucmVhZF9jb3VudBgEIAEoBSI4ChhHZXRPckNyZWF0ZVRocmVhZFJlcXVlc3QSHAoUcmVjaXBpZW50X3Byb2ZpbGVfaWQYASABKAkiQQoZR2V0T3JDcmVhdGVUaHJlYWRSZXNwb25zZRIkCgZ0aHJlYWQYASABKAsyFC5tZXNzYWdpbmcudjEuVGhyZWFkIkcKE0xpc3RNZXNzYWdlc1JlcXVlc3QSEQoJdGhyZWFkX2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJmChRMaXN0TWVzc2FnZXNSZXNwb25zZRInCghtZXNzYWdlcxgBIAMoCzIVLm1lc3NhZ2luZy52MS5NZXNzYWdlEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIjgKD01hcmtSZWFkUmVxdWVzdBIRCgl0aHJlYWRfaWQYASABKAkSEgoKbWVzc2FnZV9pZBgCIAEoCSISChBNYXJrUmVhZFJlc3BvbnNlIhwKGkdldFRvdGFsVW5yZWFkQ291bnRSZXF1ZXN0IiwKG0dldFRvdGFsVW5yZWFkQ291bnRSZXNwb25zZRINCgVjb3VudBgBIAEoBTKuBAoQTWVzc2FnaW5nU2VydmljZRJSCgtTZW5kTWVzc2FnZRIgLm1lc3NhZ2luZy52MS5TZW5kTWVzc2FnZVJlcXVlc3QaIS5tZXNzYWdpbmcudjEuU2VuZE1lc3NhZ2VSZXNwb25zZRJSCgtMaXN0VGhyZWFkcxIgLm1lc3NhZ2luZy52MS5MaXN0VGhyZWFkc1JlcXVlc3QaIS5tZXNzYWdpbmcudjEuTGlzdFRocmVhZHNSZXNwb25zZRJkChFHZXRPckNyZWF0ZVRocmVhZBImLm1lc3NhZ2luZy52MS5HZXRPckNyZWF0ZVRocmVhZFJlcXVlc3QaJy5tZXNzYWdpbmcudjEuR2V0T3JDcmVhdGVUaHJlYWRSZXNwb25zZRJVCgxMaXN0TWVzc2FnZXMSIS5tZXNzYWdpbmcudjEuTGlzdE1lc3NhZ2VzUmVxdWVzdBoiLm1lc3NhZ2luZy52MS5MaXN0TWVzc2FnZXNSZXNwb25zZRJJCghNYXJrUmVhZBIdLm1lc3NhZ2luZy52MS5NYXJrUmVhZFJlcXVlc3QaHi5tZXNzYWdpbmcudjEuTWFya1JlYWRSZXNwb25zZRJqChNHZXRUb3RhbFVucmVhZENvdW50EigubWVzc2FnaW5nLnYxLkdldFRvdGFsVW5yZWFkQ291bnRSZXF1ZXN0GikubWVzc2FnaW5nLnYxLkdldFRvdGFsVW5yZWFkQ291bnRSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_profile_v1_service]);
+  fileDesc("CiRtZXNzYWdpbmcvdjEvbWVzc2FnaW5nX3NlcnZpY2UucHJvdG8SDG1lc3NhZ2luZy52MSKEAQoHTWVzc2FnZRIKCgJpZBgBIAEoCRIRCgl0aHJlYWRfaWQYAiABKAkSGQoRc2VuZGVyX3Byb2ZpbGVfaWQYAyABKAkSDwoHY29udGVudBgEIAEoCRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCK2AQoGVGhyZWFkEgoKAmlkGAEgASgJEigKC2NvdW50ZXJwYXJ0GAIgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlEisKDGxhc3RfbWVzc2FnZRgDIAEoCzIVLm1lc3NhZ2luZy52MS5NZXNzYWdlEhQKDHVucmVhZF9jb3VudBgEIAEoBRIzCg9sYXN0X21lc3NhZ2VfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIlYKElNlbmRNZXNzYWdlUmVxdWVzdBIRCgl0aHJlYWRfaWQYASABKAkSHAoUcmVjaXBpZW50X3Byb2ZpbGVfaWQYAiABKAkSDwoHY29udGVudBgDIAEoCSJQChNTZW5kTWVzc2FnZVJlc3BvbnNlEiYKB21lc3NhZ2UYASABKAsyFS5tZXNzYWdpbmcudjEuTWVzc2FnZRIRCgl0aHJlYWRfaWQYAiABKAkiMwoSTGlzdFRocmVhZHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJ/ChNMaXN0VGhyZWFkc1Jlc3BvbnNlEiUKB3RocmVhZHMYASADKAsyFC5tZXNzYWdpbmcudjEuVGhyZWFkEhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIEhoKEnRvdGFsX3VucmVhZF9jb3VudBgEIAEoBSI4ChhHZXRPckNyZWF0ZVRocmVhZFJlcXVlc3QSHAoUcmVjaXBpZW50X3Byb2ZpbGVfaWQYASABKAkiQQoZR2V0T3JDcmVhdGVUaHJlYWRSZXNwb25zZRIkCgZ0aHJlYWQYASABKAsyFC5tZXNzYWdpbmcudjEuVGhyZWFkIiUKEEdldFRocmVhZFJlcXVlc3QSEQoJdGhyZWFkX2lkGAEgASgJInIKEUdldFRocmVhZFJlc3BvbnNlEiQKBnRocmVhZBgBIAEoCzIULm1lc3NhZ2luZy52MS5UaHJlYWQSNwoQc2VuZF9yZXN0cmljdGlvbhgCIAEoDjIdLm1lc3NhZ2luZy52MS5TZW5kUmVzdHJpY3Rpb24iRwoTTGlzdE1lc3NhZ2VzUmVxdWVzdBIRCgl0aHJlYWRfaWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJImYKFExpc3RNZXNzYWdlc1Jlc3BvbnNlEicKCG1lc3NhZ2VzGAEgAygLMhUubWVzc2FnaW5nLnYxLk1lc3NhZ2USEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiOAoPTWFya1JlYWRSZXF1ZXN0EhEKCXRocmVhZF9pZBgBIAEoCRISCgptZXNzYWdlX2lkGAIgASgJIhIKEE1hcmtSZWFkUmVzcG9uc2UiHAoaR2V0VG90YWxVbnJlYWRDb3VudFJlcXVlc3QiLAobR2V0VG90YWxVbnJlYWRDb3VudFJlc3BvbnNlEg0KBWNvdW50GAEgASgFKsABCg9TZW5kUmVzdHJpY3Rpb24SIAocU0VORF9SRVNUUklDVElPTl9VTlNQRUNJRklFRBAAEhkKFVNFTkRfUkVTVFJJQ1RJT05fTk9ORRABEiQKIFNFTkRfUkVTVFJJQ1RJT05fRk9MTE9XX1JFUVVJUkVEEAISHAoYU0VORF9SRVNUUklDVElPTl9CTE9DS0VEEAMSLAooU0VORF9SRVNUUklDVElPTl9DT1VOVEVSUEFSVF9VTkFWQUlMQUJMRRAEMvwEChBNZXNzYWdpbmdTZXJ2aWNlElIKC1NlbmRNZXNzYWdlEiAubWVzc2FnaW5nLnYxLlNlbmRNZXNzYWdlUmVxdWVzdBohLm1lc3NhZ2luZy52MS5TZW5kTWVzc2FnZVJlc3BvbnNlElIKC0xpc3RUaHJlYWRzEiAubWVzc2FnaW5nLnYxLkxpc3RUaHJlYWRzUmVxdWVzdBohLm1lc3NhZ2luZy52MS5MaXN0VGhyZWFkc1Jlc3BvbnNlEmQKEUdldE9yQ3JlYXRlVGhyZWFkEiYubWVzc2FnaW5nLnYxLkdldE9yQ3JlYXRlVGhyZWFkUmVxdWVzdBonLm1lc3NhZ2luZy52MS5HZXRPckNyZWF0ZVRocmVhZFJlc3BvbnNlEkwKCUdldFRocmVhZBIeLm1lc3NhZ2luZy52MS5HZXRUaHJlYWRSZXF1ZXN0Gh8ubWVzc2FnaW5nLnYxLkdldFRocmVhZFJlc3BvbnNlElUKDExpc3RNZXNzYWdlcxIhLm1lc3NhZ2luZy52MS5MaXN0TWVzc2FnZXNSZXF1ZXN0GiIubWVzc2FnaW5nLnYxLkxpc3RNZXNzYWdlc1Jlc3BvbnNlEkkKCE1hcmtSZWFkEh0ubWVzc2FnaW5nLnYxLk1hcmtSZWFkUmVxdWVzdBoeLm1lc3NhZ2luZy52MS5NYXJrUmVhZFJlc3BvbnNlEmoKE0dldFRvdGFsVW5yZWFkQ291bnQSKC5tZXNzYWdpbmcudjEuR2V0VG90YWxVbnJlYWRDb3VudFJlcXVlc3QaKS5tZXNzYWdpbmcudjEuR2V0VG90YWxVbnJlYWRDb3VudFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_profile_v1_service]);
 
 /**
  * @generated from message messaging.v1.Message
@@ -228,6 +228,45 @@ export const GetOrCreateThreadResponseSchema: GenMessage<GetOrCreateThreadRespon
   messageDesc(file_messaging_v1_messaging_service, 7);
 
 /**
+ * @generated from message messaging.v1.GetThreadRequest
+ */
+export type GetThreadRequest = Message$1<"messaging.v1.GetThreadRequest"> & {
+  /**
+   * @generated from field: string thread_id = 1;
+   */
+  threadId: string;
+};
+
+/**
+ * Describes the message messaging.v1.GetThreadRequest.
+ * Use `create(GetThreadRequestSchema)` to create a new message.
+ */
+export const GetThreadRequestSchema: GenMessage<GetThreadRequest> = /*@__PURE__*/
+  messageDesc(file_messaging_v1_messaging_service, 8);
+
+/**
+ * @generated from message messaging.v1.GetThreadResponse
+ */
+export type GetThreadResponse = Message$1<"messaging.v1.GetThreadResponse"> & {
+  /**
+   * @generated from field: messaging.v1.Thread thread = 1;
+   */
+  thread?: Thread | undefined;
+
+  /**
+   * @generated from field: messaging.v1.SendRestriction send_restriction = 2;
+   */
+  sendRestriction: SendRestriction;
+};
+
+/**
+ * Describes the message messaging.v1.GetThreadResponse.
+ * Use `create(GetThreadResponseSchema)` to create a new message.
+ */
+export const GetThreadResponseSchema: GenMessage<GetThreadResponse> = /*@__PURE__*/
+  messageDesc(file_messaging_v1_messaging_service, 9);
+
+/**
  * @generated from message messaging.v1.ListMessagesRequest
  */
 export type ListMessagesRequest = Message$1<"messaging.v1.ListMessagesRequest"> & {
@@ -252,7 +291,7 @@ export type ListMessagesRequest = Message$1<"messaging.v1.ListMessagesRequest"> 
  * Use `create(ListMessagesRequestSchema)` to create a new message.
  */
 export const ListMessagesRequestSchema: GenMessage<ListMessagesRequest> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 8);
+  messageDesc(file_messaging_v1_messaging_service, 10);
 
 /**
  * @generated from message messaging.v1.ListMessagesResponse
@@ -279,7 +318,7 @@ export type ListMessagesResponse = Message$1<"messaging.v1.ListMessagesResponse"
  * Use `create(ListMessagesResponseSchema)` to create a new message.
  */
 export const ListMessagesResponseSchema: GenMessage<ListMessagesResponse> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 9);
+  messageDesc(file_messaging_v1_messaging_service, 11);
 
 /**
  * @generated from message messaging.v1.MarkReadRequest
@@ -301,7 +340,7 @@ export type MarkReadRequest = Message$1<"messaging.v1.MarkReadRequest"> & {
  * Use `create(MarkReadRequestSchema)` to create a new message.
  */
 export const MarkReadRequestSchema: GenMessage<MarkReadRequest> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 10);
+  messageDesc(file_messaging_v1_messaging_service, 12);
 
 /**
  * @generated from message messaging.v1.MarkReadResponse
@@ -314,7 +353,7 @@ export type MarkReadResponse = Message$1<"messaging.v1.MarkReadResponse"> & {
  * Use `create(MarkReadResponseSchema)` to create a new message.
  */
 export const MarkReadResponseSchema: GenMessage<MarkReadResponse> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 11);
+  messageDesc(file_messaging_v1_messaging_service, 13);
 
 /**
  * @generated from message messaging.v1.GetTotalUnreadCountRequest
@@ -327,7 +366,7 @@ export type GetTotalUnreadCountRequest = Message$1<"messaging.v1.GetTotalUnreadC
  * Use `create(GetTotalUnreadCountRequestSchema)` to create a new message.
  */
 export const GetTotalUnreadCountRequestSchema: GenMessage<GetTotalUnreadCountRequest> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 12);
+  messageDesc(file_messaging_v1_messaging_service, 14);
 
 /**
  * @generated from message messaging.v1.GetTotalUnreadCountResponse
@@ -344,7 +383,43 @@ export type GetTotalUnreadCountResponse = Message$1<"messaging.v1.GetTotalUnread
  * Use `create(GetTotalUnreadCountResponseSchema)` to create a new message.
  */
 export const GetTotalUnreadCountResponseSchema: GenMessage<GetTotalUnreadCountResponse> = /*@__PURE__*/
-  messageDesc(file_messaging_v1_messaging_service, 13);
+  messageDesc(file_messaging_v1_messaging_service, 15);
+
+/**
+ * @generated from enum messaging.v1.SendRestriction
+ */
+export enum SendRestriction {
+  /**
+   * @generated from enum value: SEND_RESTRICTION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: SEND_RESTRICTION_NONE = 1;
+   */
+  NONE = 1,
+
+  /**
+   * @generated from enum value: SEND_RESTRICTION_FOLLOW_REQUIRED = 2;
+   */
+  FOLLOW_REQUIRED = 2,
+
+  /**
+   * @generated from enum value: SEND_RESTRICTION_BLOCKED = 3;
+   */
+  BLOCKED = 3,
+
+  /**
+   * @generated from enum value: SEND_RESTRICTION_COUNTERPART_UNAVAILABLE = 4;
+   */
+  COUNTERPART_UNAVAILABLE = 4,
+}
+
+/**
+ * Describes the enum messaging.v1.SendRestriction.
+ */
+export const SendRestrictionSchema: GenEnum<SendRestriction> = /*@__PURE__*/
+  enumDesc(file_messaging_v1_messaging_service, 0);
 
 /**
  * @generated from service messaging.v1.MessagingService
@@ -373,6 +448,14 @@ export const MessagingService: GenService<{
     methodKind: "unary";
     input: typeof GetOrCreateThreadRequestSchema;
     output: typeof GetOrCreateThreadResponseSchema;
+  },
+  /**
+   * @generated from rpc messaging.v1.MessagingService.GetThread
+   */
+  getThread: {
+    methodKind: "unary";
+    input: typeof GetThreadRequestSchema;
+    output: typeof GetThreadResponseSchema;
   },
   /**
    * @generated from rpc messaging.v1.MessagingService.ListMessages

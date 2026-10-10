@@ -5,7 +5,7 @@ module Messaging
     class SendMessage
       include Messaging::Deps[
         messaging_repo: "repositories.messaging_repository",
-        authorize_message: "use_cases.authorize_message"
+        send_restriction: "use_cases.send_restriction"
       ]
 
       SelfMessageError = Class.new(StandardError)
@@ -32,9 +32,10 @@ module Messaging
 
         raise SelfMessageError, "sender == recipient" if sender_profile_id.to_s == resolved_recipient_profile_id.to_s
         raise RecipientUnresolvedError, "recipient not found" unless get_profile.call(profile_id: resolved_recipient_profile_id)
-        raise BlockedError, "blocked" if bidirectionally_blocked?(sender_profile_id, resolved_recipient_profile_id)
-        unless authorize_message.call(sender_profile_id: sender_profile_id, recipient_profile_id: resolved_recipient_profile_id)
-          raise FollowRequiredError, "follow required"
+
+        case send_restriction.call(sender_profile_id: sender_profile_id, recipient_profile_id: resolved_recipient_profile_id)
+        when :blocked then raise BlockedError, "blocked"
+        when :follow_required then raise FollowRequiredError, "follow required"
         end
 
         profile_a, profile_b = [sender_profile_id.to_s, resolved_recipient_profile_id.to_s].minmax
@@ -73,17 +74,8 @@ module Messaging
         end
       end
 
-      def social_block_repo
-        @social_block_repo ||= Social::Slice["repositories.block_repository"]
-      end
-
       def get_profile
         @get_profile ||= Profile::Slice["use_cases.get_profile"]
-      end
-
-      def bidirectionally_blocked?(a, b)
-        social_block_repo.blocked?(blocker_profile_id: a, blocked_profile_id: b) ||
-          social_block_repo.blocked?(blocker_profile_id: b, blocked_profile_id: a)
       end
     end
   end
