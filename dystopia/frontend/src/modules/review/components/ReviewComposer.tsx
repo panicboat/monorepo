@@ -8,7 +8,7 @@ interface Props {
   onCreated?: () => void;
 }
 
-const RATING_OPTIONS = Array.from({ length: 10 }, (_, i) => (i + 1) * 0.5);
+const RATING_OPTIONS = [1, 2, 3, 4, 5];
 
 export function ReviewComposer({ targetProfileId, onCreated }: Props) {
   const { create, loading, error } = useCreateReview();
@@ -35,7 +35,7 @@ export function ReviewComposer({ targetProfileId, onCreated }: Props) {
       >
         {RATING_OPTIONS.map((n) => (
           <option key={n} value={n}>
-            ★ {n.toFixed(1)}
+            {"★".repeat(n)}{"☆".repeat(5 - n)} ({n})
           </option>
         ))}
       </select>
