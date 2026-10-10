@@ -1,5 +1,6 @@
 "use client";
 
+import { TriangleAlert } from "lucide-react";
 import { IdentityLink } from "@/components/ui/identity-link";
 import { useState } from "react";
 import { useDeleteKarte } from "../hooks/useDeleteKarte";
@@ -47,7 +48,7 @@ export function KarteEntryCard({ entry, mode, onChanged }: Props) {
             className="ml-auto text-xs text-amber-600"
             title="他 Cast から複数件 report されています"
           >
-            ⚠︎
+            <TriangleAlert className="size-4" />
           </span>
         )}
       </div>

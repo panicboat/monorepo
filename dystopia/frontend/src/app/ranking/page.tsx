@@ -16,7 +16,7 @@ const TABS: TabItem[] = [
 ];
 
 export function RankingHeader() {
-  return <PageHeader title="🏆 ランキング" description={getFeatureDescription("ranking")} />;
+  return <PageHeader title="ランキング" description={getFeatureDescription("ranking")} />;
 }
 
 export default function RankingPage() {

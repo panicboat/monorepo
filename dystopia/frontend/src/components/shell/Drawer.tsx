@@ -208,7 +208,7 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
                 onClick={onClose}
                 className="flex items-center gap-3 px-4 py-3 text-text-primary hover:bg-bg-secondary"
               >
-                <span className="text-2xl" aria-hidden="true">{item.icon}</span>
+                <item.icon className="size-6 shrink-0" />
                 <span className="flex-1">{item.label}</span>
                 {showBadge && (
                   <span className="min-w-[1.25rem] rounded-full bg-accent px-1 text-center text-xs font-bold text-white">

@@ -49,7 +49,7 @@ export function SideNav() {
               }`}
               aria-current={active ? "page" : undefined}
             >
-              <span className="text-2xl" aria-hidden="true">{item.icon}</span>
+              <item.icon className="size-6 shrink-0" strokeWidth={active ? 2.5 : 2} />
               <span className="flex-1">{item.label}</span>
               {badgeCount > 0 && (
                 <span className="min-w-[1.25rem] rounded-full bg-accent px-1 text-center text-xs font-bold text-white">

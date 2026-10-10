@@ -100,6 +100,17 @@ describe("BottomTab", () => {
     expect(html).not.toContain("/reviews/my");
   });
 
+  it("draws every tab as a line icon and the tab of the current page with a heavier line", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authMocks.useAuthStore.mockReturnValue(null);
+
+    const html = renderToStaticMarkup(<BottomTab />);
+
+    expect(html.match(/<svg/g)).toHaveLength(4);
+    expect(html).toMatch(/<a href="\/"[^>]*><svg[^>]*stroke-width="2.5"/);
+    expect(html.match(/stroke-width="2"/g)).toHaveLength(3);
+  });
+
   describe("tapping the home tab while already on the home page", () => {
     async function renderBottomTab() {
       karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });

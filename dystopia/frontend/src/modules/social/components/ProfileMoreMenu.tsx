@@ -1,6 +1,7 @@
 "use client";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { Ellipsis } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBlock } from "@/modules/social/hooks";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
@@ -19,7 +20,7 @@ export function ProfileMoreMenu({ targetProfileId }: ProfileMoreMenuProps) {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <Button variant="secondary" size="sm" className="w-9 px-0" aria-label="その他の操作">
-          <span aria-hidden="true">⋯</span>
+          <Ellipsis className="size-5" />
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>

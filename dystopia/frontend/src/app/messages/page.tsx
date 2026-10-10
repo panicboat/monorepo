@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Mail } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/ui/page-header";
 import { useThreads } from "@/modules/messaging";
@@ -68,7 +69,7 @@ export default function MessagesPage() {
       {error && <p className="px-4 py-6 text-text-secondary">読み込みに失敗しました</p>}
       {!loading && threads.length === 0 && (
         <div className="flex flex-col items-center px-4 py-12 text-center">
-          <span className="text-4xl" aria-hidden="true">💬</span>
+          <Mail className="size-10 text-text-secondary" strokeWidth={1.5} />
           <p className="pt-3 text-text-primary">メッセージはまだありません</p>
           <p className="pt-1 text-sm text-text-secondary">
             フォロー中の相手の プロフィール からメッセージを送信できます

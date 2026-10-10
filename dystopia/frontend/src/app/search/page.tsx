@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Search, X } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,7 +71,7 @@ function SearchView({ initialQuery }: { initialQuery: string }) {
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-text-secondary hover:text-text-primary"
               aria-label="検索をクリア"
             >
-              ✕
+              <X className="size-4" />
             </button>
           )}
         </div>
@@ -103,7 +104,7 @@ function SearchView({ initialQuery }: { initialQuery: string }) {
 
       {trimmed.length === 0 && (
         <div className="flex flex-col items-center px-4 py-12 text-center">
-          <span className="text-4xl" aria-hidden="true">🔍</span>
+          <Search className="size-10 text-text-secondary" strokeWidth={1.5} />
           <p className="pt-3 text-text-primary">ユーザーや投稿を検索</p>
           <p className="pt-1 text-sm text-text-secondary">
             ユーザー名や投稿内容で検索できます。#タグ でタグの付いた投稿を探せます

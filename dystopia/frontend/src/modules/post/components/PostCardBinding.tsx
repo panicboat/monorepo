@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Bookmark, Heart, MessageCircle } from "lucide-react";
 import { PostCard } from "@/components/ui/post-card";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { PostText } from "@/modules/post/lib/post-text";
@@ -59,7 +60,7 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
         aria-pressed={liked}
         aria-label={liked ? "いいねを解除" : "いいね"}
       >
-        <span className="text-xl" aria-hidden="true">{liked ? "♥" : "♡"}</span>
+        <Heart className={liked ? "size-5 fill-current text-accent" : "size-5"} />
         <span>{likesCount}</span>
       </button>
       <Link
@@ -67,7 +68,7 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
         className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
         aria-label="コメント"
       >
-        <span className="text-xl" aria-hidden="true">💬</span>
+        <MessageCircle className="size-5" />
         <span>{post.commentsCount}</span>
       </Link>
       <button
@@ -78,7 +79,7 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
         aria-pressed={isBookmarked}
         aria-label={isBookmarked ? "ブックマークを解除" : "ブックマーク"}
       >
-        <span className="text-xl" aria-hidden="true">{isBookmarked ? "🔖" : "🏷"}</span>
+        <Bookmark className={isBookmarked ? "size-5 fill-current text-accent" : "size-5"} />
       </button>
     </>
   );

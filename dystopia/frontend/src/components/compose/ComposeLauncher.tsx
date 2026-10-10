@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import { FlowerMenu } from "@/components/ui/flower-menu";
 import { PostComposerModal } from "@/modules/post/components/PostComposerModal";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
@@ -15,8 +16,8 @@ const VARIANTS = {
     radius: 96,
     className: "fixed bottom-20 right-4 z-40 md:hidden",
     triggerClassName:
-      "flex h-14 w-14 items-center justify-center rounded-full bg-gradient-brand text-2xl text-white shadow-brand-glow active:scale-95",
-    content: "＋",
+      "flex h-14 w-14 items-center justify-center rounded-full bg-gradient-brand text-white shadow-brand-glow active:scale-95",
+    content: <Plus className="size-7" />,
   },
   sidebar: {
     spread: "up",

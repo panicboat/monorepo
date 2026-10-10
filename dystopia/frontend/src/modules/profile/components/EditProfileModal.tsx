@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -123,7 +124,7 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, 
           <div className="flex items-center justify-between border-b border-divider px-4 py-3">
             <Dialog.Title className="text-base font-bold text-text-primary">プロフィールを編集</Dialog.Title>
             <Dialog.Close className="text-text-muted hover:text-text-primary" aria-label="閉じる">
-              ✕
+              <X className="size-5" />
             </Dialog.Close>
           </div>
 

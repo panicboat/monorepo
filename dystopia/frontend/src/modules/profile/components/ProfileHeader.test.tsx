@@ -63,6 +63,14 @@ describe("ProfileHeader", () => {
     expect(open).not.toContain('aria-label="鍵付き"');
   });
 
+  it("shows the month of registration beside a calendar icon", () => {
+    const html = renderToStaticMarkup(
+      <ProfileHeader profile={{ ...profile, registeredAt: "2026-03-15T00:00:00Z" }} role="guest" />
+    );
+
+    expect(html).toMatch(/lucide-calendar-days[^>]*>.*?<\/svg>2026年3月に登録/);
+  });
+
   it("shows the industry of a cast as an icon named after the industry", () => {
     const html = renderToStaticMarkup(<ProfileHeader profile={{ ...profile, industry: "ソープ" }} role="cast" />);
 

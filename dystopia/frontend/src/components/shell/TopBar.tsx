@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Bell } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { BrandMark } from "./BrandMark";
 import { useProfile } from "@/modules/profile/hooks";
@@ -29,10 +30,10 @@ export function TopBar({ onAvatarClick }: TopBarProps) {
       <BrandMark className="text-base" />
       <Link
         href="/notifications"
-        className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-2xl hover:bg-bg-secondary"
+        className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-text-primary hover:bg-bg-secondary"
         aria-label={unread > 0 ? `通知 (未読 ${unread})` : "通知"}
       >
-        <span aria-hidden="true">🔔</span>
+        <Bell className="size-6" />
         {unread > 0 && (
           <span className="absolute -right-0.5 -top-0.5 min-w-[1.125rem] rounded-full bg-accent px-1 text-center text-xs font-bold leading-tight text-white">
             {unread > 99 ? "99+" : unread}
