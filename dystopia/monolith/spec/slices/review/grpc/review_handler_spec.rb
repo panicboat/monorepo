@@ -125,6 +125,38 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
     expect(db[:review__entries].count).to eq(0)
   end
 
+  it "edits the rating and the body separately and clears the body when an empty one is sent" do
+    act_as(guest)
+    id = review(cast).id
+
+    rated = rpc(:update_entry, Review::V1::UpdateEntryRequest.new(entry_id: id, rating: 3.0)).entry
+    expect([rated.rating, rated.body]).to eq([3.0, "great"])
+
+    reworded = rpc(:update_entry, Review::V1::UpdateEntryRequest.new(entry_id: id, body: "reworded")).entry
+    expect([reworded.rating, reworded.body]).to eq([3.0, "reworded"])
+
+    cleared = rpc(:update_entry, Review::V1::UpdateEntryRequest.new(entry_id: id, rating: 5.0, body: "")).entry
+    expect([cleared.rating, cleared.body]).to eq([5.0, ""])
+    expect(db[:review__entries].where(id: id).get(:body)).to be_nil
+  end
+
+  it "moves updated_at when the author edits a review and not when the cast hides it" do
+    act_as(guest)
+    id = review(cast).id
+    updated_at = -> { db[:review__entries].where(id: id).get(:updated_at) }
+    created_at = updated_at.call
+
+    act_as(cast)
+    rpc(:hide_entry, Review::V1::HideEntryRequest.new(entry_id: id))
+    expect(updated_at.call).to eq(created_at)
+    rpc(:unhide_entry, Review::V1::UnhideEntryRequest.new(entry_id: id))
+    expect(updated_at.call).to eq(created_at)
+
+    act_as(guest)
+    rpc(:update_entry, Review::V1::UpdateEntryRequest.new(entry_id: id, body: "edited"))
+    expect(updated_at.call).to be > created_at
+  end
+
   it "stores review settings per cast profile and hides that cast's reviews from other profiles" do
     act_as(guest)
     review(cast)

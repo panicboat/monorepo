@@ -56,7 +56,7 @@ module Review
       def update_entry
         authenticate_user!
         rating = request.message.rating.zero? ? nil : request.message.rating
-        body = request.message.body == "" ? nil : request.message.body
+        body = request.message.has_body? ? request.message.body : nil
         entry = wrap_errors do
           update_uc.call(
             viewer_profile_id: current_profile_id,

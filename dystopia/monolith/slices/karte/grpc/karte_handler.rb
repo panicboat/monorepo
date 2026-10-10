@@ -53,7 +53,7 @@ module Karte
       def update_entry
         authenticate_user!
         rating = request.message.rating.zero? ? nil : request.message.rating
-        body = request.message.body == "" ? nil : request.message.body
+        body = request.message.has_body? ? request.message.body : nil
         entry = wrap_errors do
           update_uc.call(
             viewer_account_id: current_account_id,

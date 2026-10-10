@@ -11,7 +11,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = await params;
     const body = await req.json();
     const rating = body.rating === undefined ? 0 : Number(body.rating);
-    const text = typeof body.body === "string" ? body.body : "";
+    const text = typeof body.body === "string" ? body.body : undefined;
     const res = await karteClient.updateEntry(
       { entryId: id, rating, body: text },
       { headers: await buildGrpcHeaders(req) }

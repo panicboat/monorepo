@@ -16,6 +16,14 @@ RSpec.describe Review::UseCases::UpdateEntry do
     use_case.call(viewer_profile_id: author_id, entry_id: entry_id, rating: 4.5, body: "updated")
   end
 
+  it "clears the body when an empty body is given" do
+    allow(entry_repo).to receive(:find_by_id).with(entry_id)
+      .and_return(double(:entry, author_profile_id: author_id))
+    expect(entry_repo).to receive(:update).with(entry_id, { body: nil })
+
+    use_case.call(viewer_profile_id: author_id, entry_id: entry_id, body: "")
+  end
+
   it "updates with empty attrs when rating and body are omitted" do
     allow(entry_repo).to receive(:find_by_id).with(entry_id)
       .and_return(double(:entry, author_profile_id: author_id))
