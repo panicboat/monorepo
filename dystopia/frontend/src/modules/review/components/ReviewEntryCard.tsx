@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { IdentityLink } from "@/components/ui/identity-link";
 import { useDeleteReview } from "../hooks/useDeleteReview";
 import { useHideReview } from "../hooks/useHideReview";
 import { useUnhideReview } from "../hooks/useUnhideReview";
@@ -30,17 +30,12 @@ export function ReviewEntryCard({ entry, mode, onChanged }: Props) {
       <div className="flex items-center gap-2 text-sm">
         {mode === "recent" ? (
           <>
-            <IdentityAvatar url={entry.authorAvatarUrl} />
-            <span className="font-medium">{entry.authorUsername || "(退会済)"}</span>
+            <IdentityLink username={entry.authorUsername} avatarUrl={entry.authorAvatarUrl} />
             <span className="text-muted-foreground">→</span>
-            <IdentityAvatar url={entry.targetAvatarUrl} />
-            <span className="font-medium">{entry.targetUsername || "(退会済)"}</span>
+            <IdentityLink username={entry.targetUsername} avatarUrl={entry.targetAvatarUrl} />
           </>
         ) : (
-          <>
-            <IdentityAvatar url={identityAvatarUrl} />
-            <span className="font-medium">{identityUsername || "(退会済)"}</span>
-          </>
+          <IdentityLink username={identityUsername} avatarUrl={identityAvatarUrl} />
         )}
         <span className="text-muted-foreground">{formatTimeAgo(entry.createdAt)}</span>
         {isTarget && entry.hidden && (
@@ -93,12 +88,5 @@ export function ReviewEntryCard({ entry, mode, onChanged }: Props) {
         )}
       </div>
     </article>
-  );
-}
-
-function IdentityAvatar({ url }: { url: string }) {
-  if (!url) return <div className="size-8 rounded-full bg-muted" />;
-  return (
-    <Image src={url} alt="" width={32} height={32} className="size-8 rounded-full object-cover" />
   );
 }
