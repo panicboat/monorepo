@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { useReplies } from "@/modules/post/hooks/useReplies";
 import { useDeleteComment } from "@/modules/post/hooks/useDeleteComment";
-import { MentionText } from "@/modules/post/lib/mention-text";
+import { PostText } from "@/modules/post/lib/post-text";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface ReplyListProps {
@@ -62,7 +62,7 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
                 <span className="text-text-muted">· {r.createdAt ? formatTimeAgo(r.createdAt) : ""}</span>
               </div>
               <p className="mt-1 whitespace-pre-wrap text-text-primary">
-                <MentionText content={r.content} mentions={r.mentions} />
+                <PostText content={r.content} mentions={r.mentions} />
               </p>
               {isOwn && (
                 <button

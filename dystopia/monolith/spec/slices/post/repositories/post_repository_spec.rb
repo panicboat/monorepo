@@ -15,6 +15,42 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
     end
   end
 
+  describe "#search_by_hashtag" do
+    def tagged_post(content, tags, visibility: "public")
+      post = repo.create_post(author_profile_id: cast_id, content: content, visibility: visibility)
+      repo.save_hashtags(post_id: post.id, hashtags: tags)
+      post.id
+    end
+
+    it "finds the public posts that carry exactly that tag, whatever its case" do
+      exact = tagged_post("a #NewLook", ["NewLook"])
+      tagged_post("a #NewLookBook", ["NewLookBook"])
+      tagged_post("no tag at all, only the words newlook", [])
+      tagged_post("a private #newlook", ["newlook"], visibility: "private")
+
+      expect(repo.search_by_hashtag(tag: "newlook")).to eq([exact])
+    end
+
+    it "finds a tag written in Japanese" do
+      id = tagged_post("今日の #新作", ["新作"])
+      tagged_post("今日の #新作コスメ", ["新作コスメ"])
+
+      expect(repo.search_by_hashtag(tag: "新作")).to eq([id])
+    end
+
+    it "lists a post once even when the tag was saved on it twice" do
+      id = tagged_post("#a and #A", ["a", "A"])
+
+      expect(repo.search_by_hashtag(tag: "a")).to eq([id])
+    end
+
+    it "returns nothing for an empty tag" do
+      tagged_post("a #tag", ["tag"])
+
+      expect(repo.search_by_hashtag(tag: " ")).to eq([])
+    end
+  end
+
   describe "#find_by_id" do
     it "returns nil when post does not exist" do
       expect(repo.find_by_id(SecureRandom.uuid_v7)).to be_nil

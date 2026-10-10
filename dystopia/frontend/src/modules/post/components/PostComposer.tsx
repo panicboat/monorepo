@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
 import type { SavePostPayload } from "@/modules/post/lib/post-view";
 import { toSavePostMedia } from "@/modules/post/lib/post-media";
+import { extractHashtags } from "@/modules/post/lib/hashtags";
 import { PostComposerAttachments } from "./PostComposerAttachments";
 import { useMediaUpload } from "@/modules/media/hooks/useMediaUpload";
 import type { UploadedMedia } from "@/modules/media/types";
@@ -82,6 +83,7 @@ export function PostComposer({
           content: trimmed,
           visibility: isPrivate ? "private" : "public",
           media: toSavePostMedia(attachments),
+          hashtags: extractHashtags(trimmed),
         });
         setContent("");
         setAttachments([]);

@@ -8,12 +8,13 @@ module Discovery
       include ::Concerns::CursorPagination
 
       MAX_LIMIT = 50
+      HASHTAG_QUERY = /\A[#＃](?<tag>.+)\z/
 
       def call(query:, viewer_profile_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
         limit = normalize_limit(limit)
         decoded_cursor = decode_cursor(cursor)
 
-        post_ids = post_repo.search_by_content(query: query, limit: limit, cursor: decoded_cursor)
+        post_ids = matching_post_ids(query.to_s.strip, limit: limit, cursor: decoded_cursor)
         has_more = post_ids.length > limit
         truncated = has_more ? post_ids.first(limit) : post_ids
 
@@ -29,6 +30,13 @@ module Discovery
       end
 
       private
+
+      def matching_post_ids(query, limit:, cursor:)
+        hashtag = HASHTAG_QUERY.match(query)
+        return post_repo.search_by_hashtag(tag: hashtag[:tag], limit: limit, cursor: cursor) if hashtag
+
+        post_repo.search_by_content(query: query, limit: limit, cursor: cursor)
+      end
 
       def post_repo
         @post_repo ||= Post::Slice["repositories.post_repository"]
