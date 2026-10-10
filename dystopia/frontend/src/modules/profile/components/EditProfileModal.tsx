@@ -190,9 +190,9 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, 
                   <FormField label="業種" htmlFor="industry">
                     <Select id="industry" value={form.industry} onChange={(e) => set("industry", e.target.value)}>
                       <option value="">未選択</option>
-                      {INDUSTRIES.map((i) => (
-                        <option key={i} value={i}>
-                          {i}
+                      {INDUSTRIES.map(({ name, icon }) => (
+                        <option key={name} value={name}>
+                          {icon} {name}
                         </option>
                       ))}
                     </Select>

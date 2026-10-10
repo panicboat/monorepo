@@ -5,7 +5,7 @@ puts "Seeding Profile: Casts..."
 cast_extras = {
   CAST_PROFILE_IDS[0] => { age: 23, body_stats: { height_cm: 158, cup: "D" }, industry: "デリヘル" },
   CAST_PROFILE_IDS[1] => { age: 25, body_stats: { height_cm: 162, cup: "C" }, industry: "ソープ" },
-  CAST_PROFILE_IDS[2] => { age: 21, body_stats: { height_cm: 155, cup: "E" }, industry: "個人" },
+  CAST_PROFILE_IDS[2] => { age: 21, body_stats: { height_cm: 155, cup: "E" }, industry: "箱ヘル" },
   YUNA_OSAKA_PROFILE_ID => { age: 23, body_stats: { height_cm: 158, cup: "D" }, industry: "メンズエステ" },
   MIO_KYOTO_PROFILE_ID => { age: 25, body_stats: { height_cm: 162, cup: "C" }, industry: "デリヘル" },
 }

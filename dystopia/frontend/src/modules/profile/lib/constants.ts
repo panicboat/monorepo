@@ -11,4 +11,20 @@ export const PREFECTURES = [
 
 export const CUP_SIZES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"] as const;
 
-export const INDUSTRIES = ["デリヘル", "ホテヘル", "店舗型", "ソープ", "エステ", "メンズエステ", "個人"] as const;
+export const INDUSTRIES = [
+  { name: "ソープ", icon: "🛁" },
+  { name: "デリヘル", icon: "🚗" },
+  { name: "ホテヘル", icon: "🏩" },
+  { name: "箱ヘル", icon: "📦" },
+  { name: "メンズエステ", icon: "🍜" },
+  { name: "風俗エステ", icon: "🎈" },
+  { name: "ピンサロ", icon: "📍" },
+  { name: "キャバクラ", icon: "🥂" },
+  { name: "ガールズバー", icon: "🍸" },
+  { name: "パパ活", icon: "🅿️" },
+  { name: "個撮", icon: "📸" },
+] as const;
+
+export function industryIcon(name: string): string | undefined {
+  return INDUSTRIES.find((industry) => industry.name === name)?.icon;
+}
