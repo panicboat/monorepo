@@ -3,10 +3,10 @@
 
 require_relative "seeds/helper"
 
-require_relative "seeds/identity/users"
+require_relative "seeds/identity/accounts"
 
-require_relative "seeds/portfolio/profiles"
-require_relative "seeds/portfolio/casts"
+require_relative "seeds/profile/profiles"
+require_relative "seeds/profile/casts"
 
 require_relative "seeds/karte/access"
 

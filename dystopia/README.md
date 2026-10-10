@@ -47,16 +47,16 @@ brew services stop postgresql@18
   (`postgresql@14` が別途 install されているマシンでは v14 が先に PATH に
   乗っており、pg_dump の version mismatch を招く)
 
-初回セットアップ (schema 作成):
+初回セットアップ (database と schema の作成、テストデータの投入):
 
 ```bash
 cd dystopia/monolith
+bundle exec hanami db create
 bundle exec hanami db migrate
+bundle exec hanami db seed
 ```
 
-`bundle exec hanami db seed` は現在 `Portfolio::Areas` を含む一部の旧 seed
-ファイルで失敗するので使わない。テストアカウントは
-[Seeding test users](#seeding-test-users) の手順で INSERT する。
+投入されるデータは [Seeding test accounts](#seeding-test-accounts) を参照。
 
 ## Monolith — Ruby gRPC :9001
 
@@ -196,50 +196,34 @@ local HTTP-only host — deployed instances must keep this env var unset.
 このメッセージがデプロイ環境の log に出ていたら、runbook として
 env を unset する対処を優先する。
 
-## Seeding test users
+## Seeding test accounts
 
-`hanami db seed` を使わず、`psql` で直接 INSERT する。password は bcrypt で
-事前計算する:
+`bundle exec hanami db seed` (`dystopia/monolith/config/db/seeds.rb`) が cast と
+guest の account、プロフィール、follow / block、投稿・いいね・コメントを投入する。
+同じ一覧は seed の完了時にも標準出力へ表示される。
 
-```bash
-# BCrypt hash を計算 (rails/hanami console でなくても ruby だけで OK)
-env -u NODE_OPTIONS bundle exec ruby -e '
-  require "bcrypt"
-  puts BCrypt::Password.create("00000000", cost: 12).to_s
-'
-```
+password はすべて `password`。
 
-出力 hash と `SecureRandom.uuid_v7` の id を差し込む:
+| 電話番号 | role | プロフィール | 状態 |
+|---|---|---|---|
+| `+819000000101` | cast | `@yuna` (公開)、`@yuna_osaka` (公開) | プロフィールを 2 件持ち、どちらも有効 |
+| `+819000000102` | cast | `@mio` (非公開)、`@mio_kyoto` (無効化済み) | 有効なプロフィールと無効化済みのプロフィールを持つ |
+| `+819000000103` | cast | `@rin` (公開) | `@taro` を block している |
+| `+819000000104` | guest | `@taro` | `@yuna` と `@mio` を follow 済み。`@rin` から block されている |
+| `+819000000105` | guest | `@jiro` | 誰も follow していない |
+| `+819000000106` | guest | `@saburo` | `@mio` に follow を申請中 (承認待ち) |
+| `+819000000107` | guest | `@shiro` | `@rin` を follow 済み |
 
-```sql
--- cast (role=2) と guest (role=1)
-INSERT INTO identity.users (id, phone_number, password_digest, role)
-VALUES
-  ('<uuid1>', '+819011111111', '<bcrypt_hash>', 2),
-  ('<uuid2>', '+818011111111', '<bcrypt_hash>', 1);
+有効な cast のプロフィールは、公開の投稿とフォロワー限定の投稿を両方持つ。
 
--- Karte access は cast にのみ手動付与 (paywall 境界のスタブ)
-INSERT INTO karte.access (account_id, granted_at, granted_by)
-VALUES ('<uuid1>', now(), 'seed');
-
--- Profile は onboarding UI 経由で作れるが、seed で埋めておくと login 直後に触れる
-INSERT INTO profile.profiles
-  (account_id, username, display_name, sns_links, prefecture, is_private,
-   age, height_cm, cup_size, industry)
-VALUES
-  ('<uuid1>', 'cast_dogfood', 'キャスト太郎',
-   '{}'::jsonb, '東京都', false, 0, 0, '', ''),
-  ('<uuid2>', 'guest_dogfood', 'ゲスト次郎',
-   '{}'::jsonb, '東京都', false, 0, 0, '', '');
-```
-
-制約:
-
-- phone は E.164 (`+81` 付き) 形式で保存する必要がある。UI は日本国内フォーマット
-  (`09011111111`) を受け付けるが、DB では `+81` 込みで持つ
-- password は最短 8 文字 (`Auth::MIN_PASSWORD_LENGTH`)。過去の seed で使われて
-  いた 4 桁 password (`"0000"` 等) は login contract で reject される
-- `role`: 1 = guest / 2 = cast (`identity.v1.Role` enum に対応)
+- 再実行しても行は増えない。既に存在する行は読み飛ばす
+- account の id は固定している。frontend の fake Cognito adapter
+  (`dystopia/frontend/src/lib/cognito/fake.ts`) が同じ id を sub に持つ user を
+  起動時に登録するので、`COGNITO_ADAPTER=aws` を指定しない限り seed した account で
+  sign-in できる
+- cast の account のうち 2 件は 2 つ目のプロフィールを持つ (有効なものと無効化済みの
+  もの)。guest の account は `CreateProfile` が 1 件に制限するので 1 件のまま
+- `karte.access` は cast の account 1 件にだけ付与する
 
 ## Verification
 
@@ -255,7 +239,7 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/
 # BFF 経由で sign-in
 curl -s -X POST http://localhost:3000/api/identity/sign-in \
   -H 'Content-Type: application/json' \
-  -d '{"phoneNumber":"+819011111111","password":"00000000"}'
+  -d '{"phoneNumber":"+819000000101","password":"password"}'
 ```
 
 sign-in が 200 で `{"account": {...}, "reactivated": false}` を返せば
@@ -301,10 +285,11 @@ pkill -9 -f "next start\|next dev\|next-server"
 lsof -iTCP:9001,3000 -sTCP:LISTEN -P
 ```
 
-DB の seed 痕跡を消したいときは:
+seed したデータを消すときは database ごと作り直す:
 
-```sql
-DELETE FROM identity.users WHERE phone_number LIKE '+81%';
--- 各 slice の関連行は per-slice の cascade / PurgeAccount 経由で片付ける
--- (詳細は docs/superpowers/specs/2026-06-29-account-durability-design.md)
+```bash
+cd dystopia/monolith
+bundle exec hanami db drop
+bundle exec hanami db create
+bundle exec hanami db migrate
 ```
