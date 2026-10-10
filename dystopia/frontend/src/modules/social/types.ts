@@ -1,5 +1,6 @@
 
 import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
+import type { Role } from "@/lib/auth";
 
 export { FollowStatus };
 
@@ -9,6 +10,7 @@ export interface SocialProfileView {
   displayName: string;
   avatarUrl: string;
   isPrivate: boolean;
+  role: Role | null;
 }
 
 export type FollowStatusMap = Record<string, FollowStatus>;

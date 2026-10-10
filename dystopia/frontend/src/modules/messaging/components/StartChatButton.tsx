@@ -1,49 +1,31 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { authFetch } from "@/lib/auth";
 import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
 import { useFollow } from "@/modules/social/hooks";
-import type { ThreadView } from "@/modules/messaging/types";
+import { useStartChat } from "@/modules/messaging/hooks/useStartChat";
 
 interface StartChatButtonProps {
   targetProfileId: string;
   className?: string;
 }
 
-interface GetOrCreateThreadResponse {
-  thread: ThreadView | null;
-}
-
 export function StartChatButton({ targetProfileId, className }: StartChatButtonProps) {
-  const router = useRouter();
   const viewerId = useAuthStore(selectActiveProfileId);
   const viewerRole = useAuthStore(selectRole);
   const { isFollowing } = useFollow(targetProfileId);
-  const [loading, setLoading] = useState(false);
+  const { start, loading } = useStartChat();
 
   const onClick = useCallback(async () => {
     if (loading) return;
-    setLoading(true);
     try {
-      const res = await authFetch<GetOrCreateThreadResponse>("/api/messaging/threads", {
-        method: "POST",
-        body: { recipientProfileId: targetProfileId },
-      });
-      if (res.thread?.id) {
-        router.push(`/messages/${encodeURIComponent(res.thread.id)}`);
-      } else {
-        alert("メッセージスレッドの作成に失敗しました");
-      }
+      await start(targetProfileId);
     } catch (e) {
       const message = e instanceof Error ? e.message : "メッセージを送れません";
       alert(message || "フォロー関係が条件を満たしていない可能性があります");
-    } finally {
-      setLoading(false);
     }
-  }, [targetProfileId, loading, router]);
+  }, [targetProfileId, loading, start]);
 
   if (!targetProfileId || !viewerId || viewerId === targetProfileId) return null;
   if (viewerRole === "guest" && !isFollowing) return null;

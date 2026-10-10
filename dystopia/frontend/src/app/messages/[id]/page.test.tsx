@@ -32,7 +32,7 @@ vi.mock("@/stores/authStore", () => ({
 
 const { default: ChatPage } = await import("./page");
 
-const counterpart = { profileId: "cast-1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false };
+const counterpart = { profileId: "cast-1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast" as const };
 const thread: ThreadView = { id: "t-1", counterpart, lastMessage: null, unreadCount: 0, lastMessageAt: "" };
 const incoming: MessageView = { id: "m-1", threadId: "t-1", senderProfileId: "cast-1", content: "こんにちは", createdAt: "" };
 
