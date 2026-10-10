@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { BrandMark } from "./BrandMark";
-import { PostComposerModal } from "@/modules/post/components/PostComposerModal";
+import { ComposeLauncher } from "@/components/compose/ComposeLauncher";
 import { useProfile } from "@/modules/profile/hooks";
 import { useUnreadCount, useNotificationPreferences } from "@/modules/notifications/hooks";
 import { useTotalUnread } from "@/modules/messaging";
@@ -24,7 +23,6 @@ export function SideNav() {
   const { preferences } = useNotificationPreferences();
   const { hasAccess: karteAccess } = useMyKarteAccess();
   const role = useAuthStore(selectRole);
-  const [composerOpen, setComposerOpen] = useState(false);
 
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
   // FALLBACK: Use /profile until the own profile has loaded.
@@ -63,13 +61,7 @@ export function SideNav() {
         })}
       </nav>
 
-      <button
-        type="button"
-        onClick={() => setComposerOpen(true)}
-        className="mt-3 rounded-full bg-gradient-brand py-3 text-center font-bold text-white shadow-brand-glow active:scale-95"
-      >
-        投稿する
-      </button>
+      <ComposeLauncher variant="sidebar" />
 
       <Link
         href={profileHref}
@@ -87,8 +79,6 @@ export function SideNav() {
       </Link>
 
       <ProfileSwitcher />
-
-      <PostComposerModal open={composerOpen} onClose={() => setComposerOpen(false)} />
     </aside>
   );
 }
