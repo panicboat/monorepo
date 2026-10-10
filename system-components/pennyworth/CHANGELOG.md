@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/panicboat/monorepo/compare/pennyworth-v1.1.0...pennyworth-v1.1.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* **system-components/pennyworth:** resolve Slack permalinks before asking HolmesGPT ([#1396](https://github.com/panicboat/monorepo/issues/1396)) ([76480e6](https://github.com/panicboat/monorepo/commit/76480e61d45120aa99809ce26939d0e94614bc18))
+
 ## [1.1.0](https://github.com/panicboat/monorepo/compare/pennyworth-v1.0.0...pennyworth-v1.1.0) (2026-09-05)
 
 
