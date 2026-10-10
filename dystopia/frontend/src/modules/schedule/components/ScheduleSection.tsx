@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSchedules, useSaveSchedule, useDeleteSchedule } from "@/modules/schedule/hooks";
 import { formatDayLabel, buildDateRange } from "@/modules/schedule/lib/dates";
+import { TimeSelect } from "./TimeSelect";
 
 interface ScheduleSectionProps {
   profileId: string;
@@ -33,10 +34,12 @@ export function ScheduleSection({ profileId, isOwner }: ScheduleSectionProps) {
   const byDate = new Map(schedules.map((s) => [s.workDate, s]));
 
   const startEdit = (dateKey: string) => {
-    const existing = byDate.get(dateKey);
+    const scheduled = [...schedules].sort((a, b) => a.workDate.localeCompare(b.workDate));
+    // FALLBACK: Start an unscheduled day from the closest earlier scheduled day, or the earliest one shown.
+    const template = byDate.get(dateKey) ?? scheduled.findLast((s) => s.workDate < dateKey) ?? scheduled[0];
     setEditingDate(dateKey);
-    setStartInput(existing?.startTime || "");
-    setEndInput(existing?.endTime || "");
+    setStartInput(template?.startTime || "");
+    setEndInput(template?.endTime || "");
   };
 
   const handleSave = async () => {
@@ -89,22 +92,12 @@ export function ScheduleSection({ profileId, isOwner }: ScheduleSectionProps) {
         <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3">
           <p className="text-sm text-text-secondary">{formatDayLabel(editingDate)} の出勤予定</p>
           <div className="flex items-center gap-2">
-            <input
-              type="time"
-              value={startInput}
-              onChange={(e) => setStartInput(e.target.value)}
-              className="rounded border border-border bg-bg px-2 py-1 text-sm text-text-primary"
-            />
+            <TimeSelect label="開始時刻" value={startInput} onChange={setStartInput} />
             <span className="text-text-secondary">-</span>
-            <input
-              type="time"
-              value={endInput}
-              onChange={(e) => setEndInput(e.target.value)}
-              className="rounded border border-border bg-bg px-2 py-1 text-sm text-text-primary"
-            />
+            <TimeSelect label="終了時刻" value={endInput} onChange={setEndInput} />
           </div>
           <div className="flex gap-2">
-            <Button variant="primary" size="sm" onClick={handleSave}>
+            <Button variant="primary" size="sm" onClick={handleSave} disabled={!startInput || !endInput}>
               保存
             </Button>
             <Button variant="secondary" size="sm" onClick={handleClear}>
