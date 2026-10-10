@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
-import { splitContentByMentions, MentionText } from "./mention-text";
+import { splitContentByMentions, PostText } from "./post-text";
 import type { MentionView } from "./post-view";
 
 const routerMocks = vi.hoisted(() => ({
@@ -73,14 +73,14 @@ describe("splitContentByMentions", () => {
   });
 });
 
-describe("MentionText", () => {
+describe("PostText", () => {
   it("renders mention parts as clickable spans pointing at /u/{username}", () => {
     const mentions: MentionView[] = [
       { profileId: "a1", username: "alice", position: 0, length: 6 },
     ];
 
     const html = renderToStaticMarkup(
-      <MentionText content="@alice hi" mentions={mentions} />,
+      <PostText content="@alice hi" mentions={mentions} />,
     );
 
     expect(html).toContain("@alice");
@@ -95,7 +95,7 @@ describe("MentionText", () => {
 
     await act(async () => {
       root.render(
-        <MentionText
+        <PostText
           content="@alice hi"
           mentions={[{ profileId: "a1", username: "alice", position: 0, length: 6 }]}
         />,
@@ -117,5 +117,46 @@ describe("MentionText", () => {
       root.unmount();
     });
     container.remove();
+  });
+
+  it("renders a saved tag as a link span and leaves an unsaved one as text", () => {
+    const html = renderToStaticMarkup(<PostText content="#新作 と #未保存" mentions={[]} hashtags={["新作"]} />);
+
+    expect(html.match(/role="link"/g)).toHaveLength(1);
+    expect(html).toMatch(/<span role="link"[^>]*>#新作<\/span>/);
+    expect(html).not.toContain("<a ");
+  });
+
+  it("opens the tag search when a tag is clicked", async () => {
+    routerMocks.push.mockClear();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(<PostText content="今日の #新作" mentions={[]} hashtags={["新作"]} />);
+    });
+    await act(async () => {
+      (container.querySelector('[role="link"]') as HTMLElement).click();
+    });
+
+    expect(routerMocks.push).toHaveBeenCalledWith("/search?q=%23%E6%96%B0%E4%BD%9C");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("links a mention and a tag in the same text", () => {
+    const html = renderToStaticMarkup(
+      <PostText
+        content="@alice #新作"
+        mentions={[{ profileId: "a1", username: "alice", position: 0, length: 6 }]}
+        hashtags={["新作"]}
+      />,
+    );
+
+    expect(html.match(/role="link"/g)).toHaveLength(2);
   });
 });

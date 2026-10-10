@@ -51,6 +51,21 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
     expect(suggested).to contain_exactly([viewer, 1], [other_guest, 1])
   end
 
+  it "searches by tag when the query starts with a number sign, and by content otherwise" do
+    tagged = post_repo.create_post(author_profile_id: public_cast, content: "new arrivals #spring", visibility: "public")
+    post_repo.save_hashtags(post_id: tagged.id, hashtags: ["spring"])
+    longer = post_repo.create_post(author_profile_id: public_cast, content: "sale #springsale", visibility: "public")
+    post_repo.save_hashtags(post_id: longer.id, hashtags: ["springsale"])
+    search = ->(query) { rpc(:search_posts, Discovery::V1::SearchPostsRequest.new(query: query)).posts.map(&:id) }
+
+    act_as(viewer)
+
+    expect(search.call("#spring")).to eq([tagged.id])
+    expect(search.call("＃Spring")).to eq([tagged.id])
+    expect(search.call("spring")).to contain_exactly(tagged.id, longer.id)
+    expect(rpc(:search_posts, Discovery::V1::SearchPostsRequest.new(query: "#spring")).posts.first.hashtags).to eq(["spring"])
+  end
+
   it "searches and ranks posts as the acting profile is allowed to see them" do
     act_as(viewer)
     expect(searched_post_ids).to eq([public_post.id])

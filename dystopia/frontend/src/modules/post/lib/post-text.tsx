@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import { useRouter } from "next/navigation";
 import type { MentionView } from "./post-view";
+import { hashtagSearchHref, splitTextByHashtags } from "./hashtags";
 
 export type ContentPart =
   | { type: "text"; value: string }
@@ -51,48 +52,60 @@ export function splitContentByMentions(
   return parts;
 }
 
-export interface MentionTextProps {
+export interface PostTextProps {
   content: string;
   mentions: MentionView[];
+  hashtags?: string[];
   className?: string;
 }
 
-export function MentionText({
-  content,
-  mentions,
-  className,
-}: MentionTextProps) {
+// The text sits inside the link to the post, so these are spans that navigate: a nested anchor would be invalid.
+function InlineLink({ href, children }: { href: string; children: string }) {
   const router = useRouter();
-  const parts = splitContentByMentions(content, mentions);
-  const navigateToMention = (username: string) => {
-    router.push(`/u/${encodeURIComponent(username)}`);
+  const navigate = (e: { preventDefault: () => void; stopPropagation: () => void }) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(href);
   };
+
+  return (
+    <span
+      role="link"
+      tabIndex={0}
+      className="cursor-pointer text-accent hover:underline"
+      onClick={navigate}
+      onKeyDown={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        navigate(e);
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+export function PostText({ content, mentions, hashtags = [], className }: PostTextProps) {
+  const parts = splitContentByMentions(content, mentions);
 
   return (
     <span className={className}>
       {parts.map((part, i) =>
         part.type === "mention" ? (
-          <span
-            key={i}
-            role="link"
-            tabIndex={0}
-            className="cursor-pointer text-accent hover:underline"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              navigateToMention(part.username);
-            }}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter" && e.key !== " ") return;
-              e.preventDefault();
-              e.stopPropagation();
-              navigateToMention(part.username);
-            }}
-          >
+          <InlineLink key={i} href={`/u/${encodeURIComponent(part.username)}`}>
             {part.value}
-          </span>
+          </InlineLink>
         ) : (
-          <Fragment key={i}>{part.value}</Fragment>
+          <Fragment key={i}>
+            {splitTextByHashtags(part.value, hashtags).map((piece, j) =>
+              piece.type === "hashtag" ? (
+                <InlineLink key={j} href={hashtagSearchHref(piece.tag)}>
+                  {piece.value}
+                </InlineLink>
+              ) : (
+                <Fragment key={j}>{piece.value}</Fragment>
+              ),
+            )}
+          </Fragment>
         ),
       )}
     </span>

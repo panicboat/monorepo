@@ -113,14 +113,17 @@ module Post
         pattern = "%#{q}%"
         scope = posts.dataset.where(visibility: "public").where(Sequel.lit("content ILIKE ?", pattern))
 
-        if cursor
-          scope = scope.where {
-            (created_at < cursor[:created_at]) |
-              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
-          }
-        end
+        newest_ids(scope, limit: limit, cursor: cursor)
+      end
 
-        scope.order(Sequel.desc(:created_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
+      def search_by_hashtag(tag:, limit: 20, cursor: nil)
+        t = tag.to_s.strip
+        return [] if t.empty?
+
+        tagged = posts.dataset.db[:post__hashtags].where(Sequel.function(:lower, :tag) => t.downcase).select(:post_id)
+        scope = posts.dataset.where(visibility: "public").where(id: tagged)
+
+        newest_ids(scope, limit: limit, cursor: cursor)
       end
 
       def top_by_likes(period:, limit: 20, cursor: nil)
@@ -159,6 +162,19 @@ module Post
 
       def delete_by_author(profile_id)
         posts.dataset.where(author_profile_id: profile_id).delete
+      end
+
+      private
+
+      def newest_ids(scope, limit:, cursor:)
+        if cursor
+          scope = scope.where {
+            (created_at < cursor[:created_at]) |
+              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+          }
+        end
+
+        scope.order(Sequel.desc(:created_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
       end
     end
   end

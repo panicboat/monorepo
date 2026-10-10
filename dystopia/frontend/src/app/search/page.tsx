@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +25,25 @@ const TABS: TabItem[] = [
   { id: "posts", label: "投稿" },
 ];
 
+const HASHTAG_QUERY = /^[#＃]/;
+
 export default function SearchPage() {
-  const [query, setQuery] = useState("");
-  const [tab, setTab] = useState("users");
+  return (
+    <Suspense>
+      <SearchFromUrl />
+    </Suspense>
+  );
+}
+
+function SearchFromUrl() {
+  const urlQuery = useSearchParams()?.get("q") ?? "";
+  // Remount per URL query: a tag opened from the results must replace what was typed, not be ignored.
+  return <SearchView key={urlQuery} initialQuery={urlQuery} />;
+}
+
+function SearchView({ initialQuery }: { initialQuery: string }) {
+  const [query, setQuery] = useState(initialQuery);
+  const [tab, setTab] = useState(HASHTAG_QUERY.test(initialQuery) ? "posts" : "users");
   const [roleFilter, setRoleFilter] = useState<SearchUsersRoleFilter>(0);
 
   const users = useSearchUsers(tab === "users" ? query : "", roleFilter);
@@ -89,7 +106,7 @@ export default function SearchPage() {
           <span className="text-4xl" aria-hidden="true">🔍</span>
           <p className="pt-3 text-text-primary">ユーザーや投稿を検索</p>
           <p className="pt-1 text-sm text-text-secondary">
-            ユーザー名や投稿内容で検索できます
+            ユーザー名や投稿内容で検索できます。#タグ でタグの付いた投稿を探せます
           </p>
         </div>
       )}

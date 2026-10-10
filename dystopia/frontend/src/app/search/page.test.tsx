@@ -11,6 +11,12 @@ const hookMocks = vi.hoisted(() => ({
   useSearchPosts: vi.fn(),
 }));
 
+const navigation = vi.hoisted(() => ({ query: null as string | null }));
+
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => (navigation.query === null ? null : new URLSearchParams({ q: navigation.query })),
+}));
+
 vi.mock("@/modules/discovery", () => ({
   useSearchUsers: hookMocks.useSearchUsers,
   useSearchPosts: hookMocks.useSearchPosts,
@@ -91,5 +97,29 @@ describe("SearchPage", () => {
   it("marks only a matched user whose profile is locked", async () => {
     expect(await searchUsersHtml(true)).toContain('aria-label="鍵付き"');
     expect(await searchUsersHtml(false)).not.toContain('aria-label="鍵付き"');
+  });
+
+  it("opens on the post results for the tag given in the URL", async () => {
+    const empty = { profiles: [], posts: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn() };
+    hookMocks.useSearchUsers.mockReset().mockReturnValue(empty);
+    hookMocks.useSearchPosts.mockReset().mockReturnValue(empty);
+    navigation.query = "#新作";
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(<SearchPage />);
+    });
+
+    expect((container.querySelector('input[aria-label="検索"]') as HTMLInputElement).value).toBe("#新作");
+    expect(hookMocks.useSearchPosts).toHaveBeenLastCalledWith("#新作");
+    expect(hookMocks.useSearchUsers).toHaveBeenLastCalledWith("", 0);
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+    navigation.query = null;
   });
 });
