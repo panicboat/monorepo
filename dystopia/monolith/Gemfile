@@ -12,7 +12,7 @@ gem "hanami-view", "~> 3.0", ">= 3.0.2"
 gem "grpc"
 gem "gruf"
 gem "stripe"
-gem "aws-sdk-s3", "~> 1.232", ">= 1.232.3"
+gem "aws-sdk-s3", "~> 1.233", ">= 1.233.2"
 gem "aws-sdk-cognitoidentityprovider", "~> 1.154"
 
 gem "pg"
