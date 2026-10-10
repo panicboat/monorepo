@@ -5,6 +5,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { LockMark } from "@/components/ui/lock-mark";
 import type { ProfileView } from "@/modules/profile/types";
 import { formatBodyStats, formatHeight } from "@/modules/profile/lib/format";
+import { industryIcon } from "@/modules/profile/lib/constants";
 
 const SNS_LABELS: { key: keyof ProfileView["snsLinks"]; label: string }[] = [
   { key: "x", label: "X" },
@@ -34,6 +35,7 @@ export function ProfileHeader({ profile, role, actions }: ProfileHeaderProps) {
   const registeredLabel = formatRegisteredAt(profile.registeredAt);
   const height = formatHeight(profile.bodyStats);
   const bodyStats = formatBodyStats(profile.bodyStats);
+  const industry = industryIcon(profile.industry);
 
   return (
     <div className="flex flex-col">
@@ -70,7 +72,7 @@ export function ProfileHeader({ profile, role, actions }: ProfileHeaderProps) {
         </div>
         <p className="text-sm text-text-secondary">@{profile.username || "—"}</p>
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-text-secondary">
-          {profile.prefecture && <span>📍 {profile.prefecture}</span>}
+          {profile.prefecture && <span>{profile.prefecture}</span>}
           {registeredLabel && <span>🗓 {registeredLabel}</span>}
         </div>
         {profile.bio && <p className="whitespace-pre-wrap pt-1 text-sm text-text-primary">{profile.bio}</p>}
@@ -102,7 +104,14 @@ export function ProfileHeader({ profile, role, actions }: ProfileHeaderProps) {
         {isCast && (
           <div className="flex flex-wrap gap-x-4 gap-y-1 pt-2 text-sm text-text-secondary">
             {profile.age > 0 && <span>{profile.age}歳</span>}
-            {profile.industry && <span>{profile.industry}</span>}
+            {industry ? (
+              <span role="img" aria-label={profile.industry} title={profile.industry}>
+                {industry}
+              </span>
+            ) : (
+              // FALLBACK: Show the stored name when it is not one of the listed industries.
+              profile.industry && <span>{profile.industry}</span>
+            )}
             {height && <span>{height}</span>}
             {bodyStats && <span>{bodyStats}</span>}
           </div>

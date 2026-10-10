@@ -62,4 +62,24 @@ describe("ProfileHeader", () => {
     expect(locked).toMatch(/<\/h1><span role="img" aria-label="鍵付き"/);
     expect(open).not.toContain('aria-label="鍵付き"');
   });
+
+  it("shows the industry of a cast as an icon named after the industry", () => {
+    const html = renderToStaticMarkup(<ProfileHeader profile={{ ...profile, industry: "ソープ" }} role="cast" />);
+
+    expect(html).toMatch(/<span role="img" aria-label="ソープ" title="ソープ">🛁<\/span>/);
+    expect(html).not.toContain(">ソープ<");
+  });
+
+  it("shows the location as plain text, so the pin stands for an industry alone", () => {
+    const html = renderToStaticMarkup(<ProfileHeader profile={{ ...profile, industry: "ピンサロ" }} role="cast" />);
+
+    expect(html).toContain("<span>東京都</span>");
+    expect(html.match(/📍/g)).toHaveLength(1);
+  });
+
+  it("shows the industry as text when it has no icon", () => {
+    const html = renderToStaticMarkup(<ProfileHeader profile={{ ...profile, industry: "その他" }} role="cast" />);
+
+    expect(html).toContain("<span>その他</span>");
+  });
 });
