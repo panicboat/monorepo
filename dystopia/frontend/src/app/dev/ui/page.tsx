@@ -187,7 +187,15 @@ export default function DevUiPage() {
       </section>
 
       <section className="flex flex-col gap-3 border border-divider rounded-lg">
-        <ProfileHeader profile={mockProfile} role="cast" onEdit={() => setEditOpen(true)} />
+        <ProfileHeader
+          profile={mockProfile}
+          role="cast"
+          actions={
+            <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
+              プロフィールを編集
+            </Button>
+          }
+        />
         <EditProfileModal
           open={editOpen}
           onOpenChange={setEditOpen}

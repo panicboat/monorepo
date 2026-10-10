@@ -50,5 +50,15 @@ export function useBlock(targetProfileId: string | null | undefined) {
     }
   }, [targetProfileId]);
 
-  return { isBlocked, block, unblock, loading };
+  const toggle = useCallback(async () => {
+    if (isBlocked) {
+      if (!confirm("ブロックを解除しますか?")) return;
+      await unblock();
+    } else {
+      if (!confirm("このアカウントをブロックします。よろしいですか?")) return;
+      await block();
+    }
+  }, [isBlocked, block, unblock]);
+
+  return { isBlocked, block, unblock, toggle, loading };
 }

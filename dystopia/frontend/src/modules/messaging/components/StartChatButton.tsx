@@ -56,7 +56,7 @@ export function StartChatButton({ targetProfileId, className }: StartChatButtonP
       disabled={loading}
       className={className}
     >
-      {loading ? "起動中…" : "メッセージを送る"}
+      {loading ? "起動中…" : "メッセージ"}
     </Button>
   );
 }
