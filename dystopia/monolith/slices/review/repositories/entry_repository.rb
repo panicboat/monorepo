@@ -26,6 +26,11 @@ module Review
         entry_records.by_pk(id).command(:update).call(attrs.merge(updated_at: Time.now))
       end
 
+      # Leaves updated_at alone: it marks the author's last edit, and hiding is the target's choice.
+      def set_hidden(id, hidden)
+        entry_records.by_pk(id).command(:update).call(hidden: hidden)
+      end
+
       def delete(id)
         entry_records.by_pk(id).command(:delete).call
       end

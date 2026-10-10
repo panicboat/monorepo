@@ -1,12 +1,15 @@
 "use client";
 
 import { IdentityLink } from "@/components/ui/identity-link";
+import { useState } from "react";
 import { useDeleteReview } from "../hooks/useDeleteReview";
 import { useHideReview } from "../hooks/useHideReview";
 import { useUnhideReview } from "../hooks/useUnhideReview";
+import { useUpdateReview } from "../hooks/useUpdateReview";
 import { useAuthStore } from "@/stores/authStore";
-import { formatTimeAgo } from "@/lib/utils/date";
+import { formatTimeAgo, isEditedAfterCreation } from "@/lib/utils/date";
 import { RatingStars } from "@/components/ui/rating-stars";
+import { EntryEditForm } from "@/components/ui/entry-edit-form";
 import type { ReviewEntry } from "../types";
 
 interface Props {
@@ -22,6 +25,8 @@ export function ReviewEntryCard({ entry, mode, onChanged }: Props) {
   const { remove, loading: deleting } = useDeleteReview();
   const { hide, loading: hiding } = useHideReview();
   const { unhide, loading: unhiding } = useUnhideReview();
+  const { update, loading: updating, error: updateError } = useUpdateReview();
+  const [editing, setEditing] = useState(false);
   const identityUsername = mode === "written" ? entry.targetUsername : entry.authorUsername;
   const identityAvatarUrl = mode === "written" ? entry.targetAvatarUrl : entry.authorAvatarUrl;
 
@@ -42,9 +47,36 @@ export function ReviewEntryCard({ entry, mode, onChanged }: Props) {
           <span className="ml-auto text-xs text-amber-600">非表示中</span>
         )}
       </div>
-      <RatingStars value={entry.rating} className="mt-1 block w-fit text-base" />
-      {entry.body && <p className="mt-2 whitespace-pre-wrap text-sm">{entry.body}</p>}
+      {editing ? (
+        <EntryEditForm
+          initialRating={entry.rating}
+          initialBody={entry.body}
+          saving={updating}
+          error={updateError?.message}
+          onCancel={() => setEditing(false)}
+          onSave={async (rating, body) => {
+            if (!(await update(entry.id, rating, body))) return;
+            setEditing(false);
+            onChanged?.();
+          }}
+        />
+      ) : (
+        <>
+          <div className="mt-1 flex items-center gap-2">
+            <RatingStars value={entry.rating} className="text-base" />
+            {isEditedAfterCreation(entry.createdAt, entry.updatedAt) && (
+              <span className="text-xs text-muted-foreground">編集済み</span>
+            )}
+          </div>
+          {entry.body && <p className="mt-2 whitespace-pre-wrap text-sm">{entry.body}</p>}
+        </>
+      )}
       <div className="mt-2 flex gap-3 text-sm text-muted-foreground">
+        {isAuthor && !editing && (
+          <button type="button" onClick={() => setEditing(true)} className="hover:text-foreground">
+            編集
+          </button>
+        )}
         {isAuthor && (
           <button
             type="button"

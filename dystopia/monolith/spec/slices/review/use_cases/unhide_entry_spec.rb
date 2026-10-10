@@ -11,7 +11,7 @@ RSpec.describe Review::UseCases::UnhideEntry do
   it "unhides when called by the target" do
     allow(entry_repo).to receive(:find_by_id).with(entry_id)
       .and_return(double(:entry, target_profile_id: target_id))
-    expect(entry_repo).to receive(:update).with(entry_id, hidden: false)
+    expect(entry_repo).to receive(:set_hidden).with(entry_id, false)
 
     use_case.call(viewer_profile_id: target_id, entry_id: entry_id)
   end

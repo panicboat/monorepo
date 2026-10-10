@@ -16,7 +16,7 @@ module Review
         raise NotFoundError, "Entry not found" unless entry && entry_parties_visible.call(entry: entry)
         raise PermissionError, "Not the target" unless entry.target_profile_id == viewer_profile_id
 
-        entry_repo.update(entry_id, hidden: false)
+        entry_repo.set_hidden(entry_id, false)
       end
     end
   end

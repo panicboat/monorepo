@@ -27,7 +27,7 @@ module Review
 
         attrs = {}
         attrs[:rating] = rating if rating
-        attrs[:body] = body if body
+        attrs[:body] = (body.empty? ? nil : body) unless body.nil?
 
         entry_repo.update(entry_id, attrs)
       end

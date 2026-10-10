@@ -42,7 +42,7 @@ message CreateEntryResponse { ReviewEntry entry = 1; }
 message UpdateEntryRequest {
   string entry_id = 1;
   double rating = 2;
-  string body = 3;
+  optional string body = 3;
 }
 message UpdateEntryResponse { ReviewEntry entry = 1; }
 

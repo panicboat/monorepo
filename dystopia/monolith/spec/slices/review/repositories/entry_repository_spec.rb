@@ -24,10 +24,27 @@ RSpec.describe Review::Repositories::EntryRepository, type: :database do
   end
 
   describe "#update" do
-    it "can flip hidden independently of rating/body" do
+    it "moves updated_at forward when the content changes" do
       entry = repo.create(author_profile_id: author_id, target_profile_id: target_id, rating: 4.0, body: nil)
-      repo.update(entry.id, hidden: true)
-      expect(repo.find_by_id(entry.id).hidden).to eq(true)
+      repo.update(entry.id, body: "edited")
+
+      updated = repo.find_by_id(entry.id)
+      expect(updated.body).to eq("edited")
+      expect(updated.updated_at).to be > entry.updated_at
+    end
+  end
+
+  describe "#set_hidden" do
+    it "flips hidden without touching the content or updated_at" do
+      entry = repo.create(author_profile_id: author_id, target_profile_id: target_id, rating: 4.0, body: "kept")
+      repo.set_hidden(entry.id, true)
+
+      hidden = repo.find_by_id(entry.id)
+      expect([hidden.hidden, hidden.body, hidden.rating.to_f]).to eq([true, "kept", 4.0])
+      expect(hidden.updated_at).to eq(entry.updated_at)
+
+      repo.set_hidden(entry.id, false)
+      expect(repo.find_by_id(entry.id).hidden).to eq(false)
     end
   end
 

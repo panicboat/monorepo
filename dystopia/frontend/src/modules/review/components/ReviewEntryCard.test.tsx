@@ -10,7 +10,8 @@ vi.mock("../hooks/useHideReview", () => ({
 vi.mock("../hooks/useUnhideReview", () => ({
   useUnhideReview: () => ({ unhide: vi.fn(), loading: false }),
 }));
-vi.mock("@/stores/authStore", () => ({ useAuthStore: () => null }));
+const mocks = vi.hoisted(() => ({ viewerId: null as string | null }));
+vi.mock("@/stores/authStore", () => ({ useAuthStore: () => mocks.viewerId }));
 
 const { ReviewEntryCard } = await import("./ReviewEntryCard");
 
@@ -71,5 +72,26 @@ describe("ReviewEntryCard on a profile", () => {
 
     expect(html).toContain('href="/u/cast_taro"');
     expect(html).not.toContain('href="/u/guest_hanako"');
+  });
+});
+
+describe("ReviewEntryCard editing", () => {
+  it("offers edit to the author only", () => {
+    mocks.viewerId = "author-1";
+    const asAuthor = renderToStaticMarkup(<ReviewEntryCard entry={baseEntry} mode="written" />);
+    mocks.viewerId = "target-1";
+    const asTarget = renderToStaticMarkup(<ReviewEntryCard entry={baseEntry} mode="received" />);
+    mocks.viewerId = null;
+
+    expect(asAuthor).toContain(">編集<");
+    expect(asTarget).not.toContain(">編集<");
+  });
+
+  it("marks a review whose content was changed after it was written", () => {
+    const edited = { ...baseEntry, createdAt: "2026-10-10T00:00:00.000Z", updatedAt: "2026-10-10T00:05:00.000Z" };
+    const untouched = { ...edited, updatedAt: edited.createdAt };
+
+    expect(renderToStaticMarkup(<ReviewEntryCard entry={edited} mode="recent" />)).toContain("編集済み");
+    expect(renderToStaticMarkup(<ReviewEntryCard entry={untouched} mode="recent" />)).not.toContain("編集済み");
   });
 });

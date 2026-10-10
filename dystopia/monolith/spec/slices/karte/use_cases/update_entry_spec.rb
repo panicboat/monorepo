@@ -29,6 +29,11 @@ RSpec.describe Karte::UseCases::UpdateEntry do
     use_case.call(viewer_account_id: viewer_id, entry_id: entry_id, rating: 4)
   end
 
+  it "clears the body when an empty body is given" do
+    expect(entry_repo).to receive(:update).with(entry_id, { body: nil })
+    use_case.call(viewer_account_id: viewer_id, entry_id: entry_id, body: "")
+  end
+
   it "updates both rating and body when both provided" do
     expect(entry_repo).to receive(:update).with(entry_id, { rating: 5, body: "great" })
     use_case.call(viewer_account_id: viewer_id, entry_id: entry_id, rating: 5, body: "great")

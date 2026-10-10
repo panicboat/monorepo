@@ -46,7 +46,7 @@ message CreateEntryResponse { KarteEntry entry = 1; }
 message UpdateEntryRequest {
   string entry_id = 1;
   int32 rating = 2;
-  string body = 3;
+  optional string body = 3;
 }
 message UpdateEntryResponse { KarteEntry entry = 1; }
 

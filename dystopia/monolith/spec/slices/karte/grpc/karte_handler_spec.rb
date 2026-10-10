@@ -111,6 +111,18 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
       expect(db[:karte__entries].where(id: entry.id).count).to eq(0)
     end
 
+    it "edits the rating and the body separately and clears the body when an empty one is sent" do
+      act_as(cast_account, persona_a)
+      entry = create_entry
+
+      rated = handler_for(::Karte::V1::UpdateEntryRequest.new(entry_id: entry.id, rating: 2)).update_entry.entry
+      expect([rated.rating, rated.body]).to eq([2, "memo"])
+
+      cleared = handler_for(::Karte::V1::UpdateEntryRequest.new(entry_id: entry.id, body: "")).update_entry.entry
+      expect([cleared.rating, cleared.body]).to eq([2, ""])
+      expect(db[:karte__entries].where(id: entry.id).get(:body)).to be_nil
+    end
+
     it "does not let another account update or delete the entry" do
       act_as(cast_account, persona_a)
       entry = create_entry

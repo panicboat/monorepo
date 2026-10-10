@@ -12,6 +12,11 @@ export function formatTimeAgo(dateString: string): string {
   return date.toLocaleDateString();
 }
 
+export function isEditedAfterCreation(createdAt: string, updatedAt: string): boolean {
+  if (!createdAt || !updatedAt) return false;
+  return new Date(updatedAt).getTime() > new Date(createdAt).getTime();
+}
+
 export function formatDate(
   dateString: string,
   options: Intl.DateTimeFormatOptions = {

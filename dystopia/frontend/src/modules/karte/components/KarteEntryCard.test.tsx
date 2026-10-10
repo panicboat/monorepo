@@ -84,3 +84,21 @@ describe("KarteEntryCard ownership", () => {
     expect(html).toContain("削除");
   });
 });
+
+describe("KarteEntryCard editing", () => {
+  it("offers edit for an entry the server marks as mine and not for another cast's entry", () => {
+    const mine = renderToStaticMarkup(<KarteEntryCard entry={{ ...baseEntry, isMine: true }} mode="my" />);
+    const theirs = renderToStaticMarkup(<KarteEntryCard entry={{ ...baseEntry, isMine: false }} mode="target" />);
+
+    expect(mine).toContain(">編集<");
+    expect(theirs).not.toContain(">編集<");
+  });
+
+  it("marks an entry whose content was changed after it was written", () => {
+    const edited = { ...baseEntry, createdAt: "2026-10-10T00:00:00.000Z", updatedAt: "2026-10-10T00:05:00.000Z" };
+    const untouched = { ...edited, updatedAt: edited.createdAt };
+
+    expect(renderToStaticMarkup(<KarteEntryCard entry={edited} mode="recent" />)).toContain("編集済み");
+    expect(renderToStaticMarkup(<KarteEntryCard entry={untouched} mode="recent" />)).not.toContain("編集済み");
+  });
+});
