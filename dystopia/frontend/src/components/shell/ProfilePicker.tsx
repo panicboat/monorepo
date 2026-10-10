@@ -1,22 +1,20 @@
 "use client";
 
 import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import type { ProfileView } from "@/modules/profile/types";
 
 export interface ProfilePickerProps {
   profiles: Pick<ProfileView, "id" | "displayName" | "username" | "avatarUrl">[];
   onSelect: (profileId: string) => void;
-  onSignOut: () => void;
 }
 
-export function ProfilePicker({ profiles, onSelect, onSignOut }: ProfilePickerProps) {
+export function ProfilePicker({ profiles, onSelect }: ProfilePickerProps) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg px-4">
       <div className="w-full max-w-sm">
         <h1 className="mb-2 text-center text-2xl font-bold text-text-primary">プロフィールを選択</h1>
         <p className="mb-8 text-center text-sm text-text-secondary">使用するプロフィールを選んでください。</p>
-        <ul className="mb-8 space-y-2">
+        <ul className="space-y-2">
           {profiles.map((profile) => (
             <li key={profile.id}>
               <button
@@ -33,9 +31,6 @@ export function ProfilePicker({ profiles, onSelect, onSignOut }: ProfilePickerPr
             </li>
           ))}
         </ul>
-        <Button type="button" variant="secondary" className="w-full" onClick={onSignOut}>
-          ログアウト
-        </Button>
       </div>
     </main>
   );

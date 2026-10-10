@@ -16,16 +16,16 @@ const profiles = [
 describe("ProfilePicker", () => {
   it("lists every profile it is given and reports the chosen one", async () => {
     const onSelect = vi.fn();
-    const onSignOut = vi.fn();
     const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
     await act(async () => {
-      root.render(createElement(ProfilePicker, { profiles, onSelect, onSignOut }));
+      root.render(createElement(ProfilePicker, { profiles, onSelect }));
     });
     const buttons = Array.from(container.querySelectorAll("button"));
 
+    expect(buttons).toHaveLength(profiles.length);
     expect(container.textContent).toContain("@yuna");
     expect(container.textContent).toContain("@yuna_two");
 
@@ -33,11 +33,6 @@ describe("ProfilePicker", () => {
       buttons.find((button) => button.textContent?.includes("@yuna_two"))?.click();
     });
     expect(onSelect.mock.calls).toEqual([["p2"]]);
-
-    await act(async () => {
-      buttons.find((button) => button.textContent === "ログアウト")?.click();
-    });
-    expect(onSignOut).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       root.unmount();

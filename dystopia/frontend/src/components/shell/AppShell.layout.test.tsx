@@ -13,7 +13,6 @@ vi.mock("next/navigation", () => ({
   usePathname: () => navigation.pathname,
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
 }));
-vi.mock("@/modules/identity/hooks/useAuth", () => ({ useAuth: () => ({ signOut: vi.fn() }) }));
 vi.mock("@/components/shell/TopBar", () => ({ TopBar: () => null }));
 vi.mock("@/components/shell/BottomTab", () => ({ BottomTab: () => createElement("nav", { "data-testid": "bottom-tab" }) }));
 vi.mock("@/components/shell/ComposerFAB", () => ({ ComposerFAB: () => createElement("button", { "data-testid": "composer-fab" }) }));

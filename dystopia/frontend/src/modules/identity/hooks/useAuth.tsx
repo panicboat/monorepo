@@ -43,8 +43,6 @@ type AuthContextType = {
     password: string,
   ) => Promise<{ reactivated: boolean }>;
   login: (phoneNumber: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  logout: () => Promise<void>;
   forgotPassword: (phoneNumber: string) => Promise<void>;
   confirmForgotPassword: (
     phoneNumber: string,
@@ -219,23 +217,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error(data.error || "パスワードの再設定に失敗しました");
   };
 
-  const signOut = async () => {
-    try {
-      await fetch("/api/identity/logout", { method: "POST" });
-    } catch {
-      // SILENT: logout failures still must clear local identity below.
-    }
-
-    clearIdentity();
-
-    setNewUserFlag(false);
-    mutate(null, { revalidate: false });
-
-    router.push("/login");
-  };
-
-  const logout = signOut;
-
   return (
     <AuthContext.Provider
       value={{
@@ -245,8 +226,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         verify,
         signIn,
         login,
-        signOut,
-        logout,
         forgotPassword,
         confirmForgotPassword,
       }}
