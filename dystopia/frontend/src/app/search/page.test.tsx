@@ -45,40 +45,51 @@ async function typeQuery(input: HTMLInputElement, value: string) {
   await flush();
 }
 
+async function searchUsersHtml(isPrivate: boolean) {
+  hookMocks.useSearchUsers.mockReturnValue({
+    profiles: [{ profileId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate }],
+    hasMore: false,
+    loading: false,
+    error: undefined,
+    loadMore: vi.fn(),
+  });
+  hookMocks.useSearchPosts.mockReturnValue({
+    posts: [],
+    hasMore: false,
+    loading: false,
+    error: undefined,
+    loadMore: vi.fn(),
+  });
+
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+
+  await act(async () => {
+    root.render(<SearchPage />);
+  });
+
+  const input = container.querySelector('input[aria-label="検索"]') as HTMLInputElement;
+  await typeQuery(input, "yuna");
+  const html = container.innerHTML;
+
+  await act(async () => {
+    root.unmount();
+  });
+  container.remove();
+  return html;
+}
+
 describe("SearchPage", () => {
   it("links each matched user's avatar and name to their profile", async () => {
-    hookMocks.useSearchUsers.mockReturnValue({
-      profiles: [{ profileId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false }],
-      hasMore: false,
-      loading: false,
-      error: undefined,
-      loadMore: vi.fn(),
-    });
-    hookMocks.useSearchPosts.mockReturnValue({
-      posts: [],
-      hasMore: false,
-      loading: false,
-      error: undefined,
-      loadMore: vi.fn(),
-    });
+    const html = await searchUsersHtml(false);
 
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    const root = createRoot(container);
-
-    await act(async () => {
-      root.render(<SearchPage />);
-    });
-
-    const input = container.querySelector('input[aria-label="検索"]') as HTMLInputElement;
-    await typeQuery(input, "yuna");
-
-    const matches = container.innerHTML.match(/<a[^>]*href="\/u\/yuna"/g) ?? [];
+    const matches = html.match(/<a[^>]*href="\/u\/yuna"/g) ?? [];
     expect(matches.length).toBe(2);
+  });
 
-    await act(async () => {
-      root.unmount();
-    });
-    container.remove();
+  it("marks only a matched user whose profile is locked", async () => {
+    expect(await searchUsersHtml(true)).toContain('aria-label="鍵付き"');
+    expect(await searchUsersHtml(false)).not.toContain('aria-label="鍵付き"');
   });
 });

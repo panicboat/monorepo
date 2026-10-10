@@ -75,4 +75,16 @@ describe("FollowListView", () => {
     const matches = html.match(/<a[^>]*href="\/u\/yuna"/g) ?? [];
     expect(matches.length).toBe(2);
   });
+
+  it("marks only a profile that is locked", () => {
+    hookMocks.useFollowerList.mockReturnValue(followers);
+
+    hookMocks.useFollowList.mockReturnValue({ ...following, profiles: [{ ...following.profiles[0], isPrivate: true }] });
+    const locked = renderToStaticMarkup(<FollowListView profileId="account-1" />);
+    hookMocks.useFollowList.mockReturnValue(following);
+    const open = renderToStaticMarkup(<FollowListView profileId="account-1" />);
+
+    expect(locked).toContain('aria-label="鍵付き"');
+    expect(open).not.toContain('aria-label="鍵付き"');
+  });
 });

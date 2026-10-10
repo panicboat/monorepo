@@ -78,9 +78,6 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
       >
         <span className="text-xl" aria-hidden="true">{isBookmarked ? "🔖" : "🏷"}</span>
       </button>
-      {post.visibility === "private" && (
-        <span className="flex min-h-11 items-center text-xl text-text-muted" aria-label="非公開">🔒</span>
-      )}
     </>
   );
 
@@ -90,6 +87,7 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
       authorHref={authorHref}
       detailHref={href}
       time={post.createdAt ? formatTimeAgo(post.createdAt) : ""}
+      isPrivate={post.visibility === "private"}
       body={<MentionText content={post.content} mentions={post.mentions} />}
       images={images.length > 0 ? images : undefined}
       reactions={reactions}

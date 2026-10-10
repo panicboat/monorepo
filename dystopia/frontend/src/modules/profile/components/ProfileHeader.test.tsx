@@ -54,4 +54,12 @@ describe("ProfileHeader", () => {
     expect(html).toContain("follow-action");
     expect(html.indexOf("follow-action")).toBeLessThan(html.indexOf("<h1"));
   });
+
+  it("marks a locked profile next to its display name", () => {
+    const locked = renderToStaticMarkup(<ProfileHeader profile={{ ...profile, isPrivate: true }} role="cast" />);
+    const open = renderToStaticMarkup(<ProfileHeader profile={profile} role="cast" />);
+
+    expect(locked).toMatch(/<\/h1><span role="img" aria-label="鍵付き"/);
+    expect(open).not.toContain('aria-label="鍵付き"');
+  });
 });

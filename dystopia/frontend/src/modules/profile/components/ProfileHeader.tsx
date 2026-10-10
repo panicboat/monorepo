@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Avatar } from "@/components/ui/avatar";
+import { LockMark } from "@/components/ui/lock-mark";
 import type { ProfileView } from "@/modules/profile/types";
 import { formatBodyStats, formatHeight } from "@/modules/profile/lib/format";
 
@@ -58,6 +59,7 @@ export function ProfileHeader({ profile, role, actions }: ProfileHeaderProps) {
       <div className="flex flex-col gap-1 px-4 pt-2">
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-text-primary">{profile.displayName}</h1>
+          {profile.isPrivate && <LockMark label="鍵付き" />}
           <span
             className={`rounded-full px-2 py-0.5 text-xs ${
               isCast ? "bg-accent/15 text-accent" : "bg-text-secondary/10 text-text-secondary"

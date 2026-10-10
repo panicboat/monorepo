@@ -51,6 +51,18 @@ async function renderMounted(ui: React.ReactElement) {
 }
 
 describe("PostCard", () => {
+  it("marks a private post next to its time", () => {
+    const html = renderToStaticMarkup(<PostCard {...baseProps} isPrivate />);
+
+    expect(html).toMatch(/· 1分前<\/span><span role="img" aria-label="非公開"/);
+  });
+
+  it("leaves a public post unmarked", () => {
+    const html = renderToStaticMarkup(<PostCard {...baseProps} />);
+
+    expect(html).not.toContain('aria-label="非公開"');
+  });
+
   it("wraps the author name in a link to the profile when authorHref is given", () => {
     const html = renderToStaticMarkup(
       <PostCard {...baseProps} authorHref="/u/test_taro" />
