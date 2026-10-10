@@ -90,6 +90,16 @@ describe("ProfileManager", () => {
     await view.unmount();
   });
 
+  it("marks only the profiles that are locked", async () => {
+    profiles[1].isPrivate = true;
+    const view = await mount();
+
+    expect(row(view.container, "second").textContent).toContain("鍵付き");
+    expect(row(view.container, "first").textContent).not.toContain("鍵付き");
+    await view.unmount();
+    profiles[1].isPrivate = false;
+  });
+
   it("switches to an enabled profile", async () => {
     const view = await mount();
 

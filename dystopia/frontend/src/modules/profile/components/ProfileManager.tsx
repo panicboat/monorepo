@@ -88,6 +88,7 @@ export function ProfileManager() {
                     @{profile.username || "—"}
                     {isActive && <span className="ml-2 text-accent">使用中</span>}
                     {profile.disabled && <span className="ml-2">無効</span>}
+                    {profile.isPrivate && <span className="ml-2">鍵付き</span>}
                   </p>
                 </div>
                 {!profile.disabled && !isActive && (
