@@ -89,6 +89,32 @@ describe("PostCardBinding", () => {
     expect(html).not.toMatch(/<a[^>]*><a/);
   });
 
+  it("plays a video attached to the post", () => {
+    const post: PostView = {
+      ...basePost,
+      media: [{ id: "media-1", mediaType: "video", url: "https://example.com/clip.mp4", thumbnailUrl: "", mediaId: "media-1" }],
+    };
+
+    const html = renderToStaticMarkup(<PostCardBinding post={post} />);
+
+    expect(html).toMatch(/<video[^>]*src="https:\/\/example.com\/clip.mp4"/);
+  });
+
+  it("shows a video and an image attached to the same post", () => {
+    const post: PostView = {
+      ...basePost,
+      media: [
+        { id: "media-1", mediaType: "video", url: "https://example.com/clip.mp4", thumbnailUrl: "", mediaId: "media-1" },
+        { id: "media-2", mediaType: "image", url: "https://example.com/photo.jpg", thumbnailUrl: "", mediaId: "media-2" },
+      ],
+    };
+
+    const html = renderToStaticMarkup(<PostCardBinding post={post} />);
+
+    expect(html.match(/<video/g)).toHaveLength(1);
+    expect(html).toContain("画像を拡大");
+  });
+
   it("shows the original-resolution image when a thumbnail is clicked", async () => {
     const post: PostView = {
       ...basePost,
