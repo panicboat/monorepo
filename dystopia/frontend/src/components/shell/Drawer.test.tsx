@@ -115,6 +115,27 @@ describe("Drawer", () => {
     expect(html).not.toContain("/oshi");
   });
 
+  it("lists the side nav entries in the same order without home", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
+    profileMocks.useProfile.mockReturnValue({ profile: null });
+
+    const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
+    const nav = html.match(/<nav[^>]*>(.*?)<\/nav>/)?.[1] ?? "";
+    const hrefs = Array.from(nav.matchAll(/href="([^"]+)"/g), (match) => match[1]);
+
+    expect(hrefs).toEqual([
+      "/search",
+      "/notifications",
+      "/messages",
+      "/footprints",
+      "/bookmarks",
+      "/ranking",
+      "/karte/my",
+      "/profile",
+      "/settings",
+    ]);
+  });
+
   it("links to my karte when the viewer has karte access", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
     profileMocks.useProfile.mockReturnValue({ profile: null });

@@ -15,18 +15,9 @@ import { useNotificationPreferences } from "@/modules/notifications/hooks";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { ProfileSwitcher } from "@/modules/profile/components/ProfileSwitcher";
+import { useAuthStore, selectRole } from "@/stores/authStore";
 import { classifySwipeDirection, clampDrawerOffset, shouldToggleDrawer, type SwipeDirection } from "./drawerSwipe";
-
-const NAV_ITEMS = [
-  { path: "__profile__", label: "プロフィール", icon: "👤" },
-  { path: "/search", label: "検索", icon: "🔍" },
-  { path: "/notifications", label: "通知", icon: "🔔", badgeKey: "unread" as const },
-  { path: "/footprints", label: "足跡", icon: "👣", badgeKey: "footprints_unread" as const },
-  { path: "/messages", label: "メッセージ", icon: "💬", badgeKey: "messaging_unread" as const },
-  { path: "/bookmarks", label: "ブックマーク", icon: "🔖" },
-  { path: "/ranking", label: "ランキング", icon: "🏆" },
-  { path: "/settings", label: "設定", icon: "⚙" },
-];
+import { PROFILE_NAV_PATH, resolveNavItems } from "./resolveNavItems";
 
 interface DrawerProps {
   open: boolean;
@@ -57,6 +48,9 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
   const { preferences } = useNotificationPreferences();
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
   const { hasAccess: karteAccess } = useMyKarteAccess();
+  const role = useAuthStore(selectRole);
+  // The bottom tab bar already carries home on the widths where this menu shows.
+  const navItems = resolveNavItems({ karteAccess, isGuest: role === "guest" }).filter((item) => item.path !== "/");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const asideRef = useRef<HTMLElement>(null);
   const [dragOffsetPx, setDragOffsetPx] = useState<number | null>(null);
@@ -209,7 +203,7 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-2">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const badgeCount =
               item.badgeKey === "unread" ? unread :
               item.badgeKey === "messaging_unread" ? msgUnread :
@@ -217,7 +211,7 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
               0;
             const showBadge = badgeCount > 0;
             // FALLBACK: Use /profile until the own profile has loaded.
-            const href = item.path === "__profile__" ? (profile?.username ? `/u/${profile.username}` : "/profile") : item.path;
+            const href = item.path === PROFILE_NAV_PATH ? (profile?.username ? `/u/${profile.username}` : "/profile") : item.path;
             return (
               <Link
                 key={item.path}
@@ -235,16 +229,6 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
               </Link>
             );
           })}
-          {karteAccess && (
-            <Link
-              href="/karte/my"
-              onClick={onClose}
-              className="flex items-center gap-3 px-4 py-3 text-text-primary hover:bg-bg-secondary"
-            >
-              <span className="text-2xl" aria-hidden="true">📋</span>
-              <span className="flex-1">カルテ</span>
-            </Link>
-          )}
         </nav>
 
         <ProfileSwitcher />
