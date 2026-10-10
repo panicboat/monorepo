@@ -14,7 +14,6 @@ import {
 import { useProfileSession } from "@/modules/profile/hooks";
 import { selectableProfiles } from "@/modules/profile/lib/session";
 import { AccountProfilesProvider } from "@/modules/profile/context/AccountProfilesContext";
-import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { ProfileGate } from "./ProfileGate";
 import { ProfilePicker } from "./ProfilePicker";
 import { TopBar } from "./TopBar";
@@ -49,7 +48,6 @@ export function AppShell({ children }: AppShellProps) {
   const deniedProfileId = useAuthStore(selectDeniedProfileId);
   const setActiveProfile = useAuthStore((s) => s.setActiveProfile);
   const { session, profiles, hasListError, retry, refresh, append } = useProfileSession();
-  const { signOut } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   // The page a switch was made on is held back until the top is reached: mounted as the next profile it would mark footprints read or leave a visit as that profile.
   const [pathSwitchedAwayFrom, setPathSwitchedAwayFrom] = useState<string | null>(null);
@@ -119,16 +117,15 @@ export function AppShell({ children }: AppShellProps) {
 
   if (mode === "profile-gate") {
     if (hasListError) {
-      return <ProfileGate reason="error" onRetry={retry} onSignOut={signOut} />;
+      return <ProfileGate reason="error" onRetry={retry} />;
     }
     if (session?.kind === "unavailable") {
-      return <ProfileGate reason="unavailable" onRetry={retry} onSignOut={signOut} />;
+      return <ProfileGate reason="unavailable" onRetry={retry} />;
     }
     return (
       <ProfilePicker
         profiles={selectableProfiles(profiles, deniedProfileId)}
         onSelect={setActiveProfile}
-        onSignOut={signOut}
       />
     );
   }

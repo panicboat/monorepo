@@ -61,10 +61,6 @@ vi.mock("@/modules/footprints", () => ({
   useFootprintsUnreadCount: () => ({ count: 0 }),
 }));
 
-vi.mock("@/modules/identity/hooks/useAuth", () => ({
-  useAuth: () => ({ logout: vi.fn() }),
-}));
-
 const karteMocks = vi.hoisted(() => ({
   useMyKarteAccess: vi.fn(),
 }));
@@ -134,6 +130,15 @@ describe("Drawer", () => {
       "/profile",
       "/settings",
     ]);
+  });
+
+  it("has no sign-out control", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    profileMocks.useProfile.mockReturnValue({ profile: null });
+
+    const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
+
+    expect(html).not.toContain("ログアウト");
   });
 
   it("links to my karte when the viewer has karte access", () => {

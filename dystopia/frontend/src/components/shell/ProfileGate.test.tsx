@@ -18,41 +18,38 @@ describe("ProfileGate", () => {
 
     for (const [reason, heading] of headings) {
       const html = renderToStaticMarkup(
-        <ProfileGate reason={reason} onRetry={() => {}} onSignOut={() => {}} />
+        <ProfileGate reason={reason} onRetry={() => {}} />
       );
       expect(html).toContain(heading);
     }
   });
 
-  it("offers retry and sign-out for every blocked reason", () => {
+  it("offers retry as the only action for every blocked reason", () => {
     for (const reason of ["error", "unavailable"] as const) {
       const html = renderToStaticMarkup(
-        <ProfileGate reason={reason} onRetry={() => {}} onSignOut={() => {}} />
+        <ProfileGate reason={reason} onRetry={() => {}} />
       );
+      expect(html.match(/<button/g)).toHaveLength(1);
       expect(html).toContain("再試行");
-      expect(html).toContain("ログアウト");
     }
   });
 
-  it("calls retry and sign-out handlers from their buttons", async () => {
+  it("calls the retry handler from its button", async () => {
     const onRetry = vi.fn();
-    const onSignOut = vi.fn();
     const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
     await act(async () => {
-      root.render(createElement(ProfileGate, { reason: "unavailable", onRetry, onSignOut }));
+      root.render(createElement(ProfileGate, { reason: "unavailable", onRetry }));
     });
     const buttons = Array.from(container.querySelectorAll("button"));
 
     await act(async () => {
       buttons.find((button) => button.textContent === "再試行")?.click();
-      buttons.find((button) => button.textContent === "ログアウト")?.click();
     });
 
     expect(onRetry).toHaveBeenCalledTimes(1);
-    expect(onSignOut).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       root.unmount();

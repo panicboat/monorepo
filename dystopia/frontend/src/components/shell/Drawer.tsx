@@ -3,16 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import Link from "next/link";
-import * as Dialog from "@radix-ui/react-dialog";
 import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { useProfile } from "@/modules/profile/hooks";
 import { useSocialCounts } from "@/modules/social";
 import { useUnreadCount } from "@/modules/notifications/hooks";
 import { useTotalUnread } from "@/modules/messaging";
 import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { useNotificationPreferences } from "@/modules/notifications/hooks";
-import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { ProfileSwitcher } from "@/modules/profile/components/ProfileSwitcher";
 import { useAuthStore, selectRole } from "@/stores/authStore";
@@ -39,7 +36,6 @@ function isWithinHorizontalScrollable(element: Element | null): boolean {
 }
 
 export function Drawer({ open, onClose, onOpen }: DrawerProps) {
-  const { logout } = useAuth();
   const { profile } = useProfile();
   const { followingCount, followersCount } = useSocialCounts(profile?.id);
   const { count: unread } = useUnreadCount();
@@ -51,7 +47,6 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
   const role = useAuthStore(selectRole);
   // The bottom tab bar already carries home on the widths where this menu shows.
   const navItems = resolveNavItems({ karteAccess, isGuest: role === "guest" }).filter((item) => item.path !== "/");
-  const [confirmOpen, setConfirmOpen] = useState(false);
   const asideRef = useRef<HTMLElement>(null);
   const [dragOffsetPx, setDragOffsetPx] = useState<number | null>(null);
   const closeDragRef = useRef<{ startX: number; startY: number; direction: SwipeDirection } | null>(null);
@@ -153,12 +148,6 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
     setDragOffsetPx(null);
   }
 
-  const onConfirmLogout = () => {
-    setConfirmOpen(false);
-    onClose();
-    logout();
-  };
-
   return (
     <>
       <div
@@ -232,39 +221,7 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
         </nav>
 
         <ProfileSwitcher />
-
-        <div className="border-t border-border px-4 py-3">
-          <button
-            type="button"
-            onClick={() => setConfirmOpen(true)}
-            className="flex w-full items-center gap-3 text-sm text-text-secondary hover:text-text-primary"
-          >
-            <Avatar
-              src={profile?.avatarUrl || undefined}
-              fallback={(profile?.displayName || "?").slice(0, 1)}
-              size="sm"
-            />
-            <span className="flex-1 text-left">@{profile?.username || "—"}</span>
-            <span aria-hidden="true">➜</span>
-            <span className="sr-only">ログアウト</span>
-          </button>
-        </div>
       </aside>
-
-      <Dialog.Root open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface p-4">
-            <Dialog.Title className="text-base font-bold text-text-primary">ログアウトしますか？</Dialog.Title>
-            <div className="mt-4 flex justify-end gap-2">
-              <Dialog.Close asChild>
-                <Button variant="secondary" size="sm">キャンセル</Button>
-              </Dialog.Close>
-              <Button variant="primary" size="sm" onClick={onConfirmLogout}>ログアウト</Button>
-            </div>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
     </>
   );
 }
