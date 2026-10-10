@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useDeleteKarte } from "../hooks/useDeleteKarte";
 import { useReportKarte } from "../hooks/useReportKarte";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { RatingStars } from "@/components/ui/rating-stars";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import type { KarteEntry } from "../types";
 
@@ -56,7 +57,7 @@ export function KarteEntryCard({ entry, mode, onChanged }: Props) {
           {entry.authorUsername ? `@${entry.authorUsername} として記録` : "削除したプロフィールで記録"}
         </p>
       )}
-      <div className="mt-1 text-base">{"★".repeat(entry.rating)}{"☆".repeat(5 - entry.rating)}</div>
+      <RatingStars value={entry.rating} className="mt-1 block w-fit text-base" />
       {entry.body && <p className="mt-2 whitespace-pre-wrap text-sm">{entry.body}</p>}
       <div className="mt-2 flex gap-3 text-sm text-muted-foreground">
         {isOwn ? (

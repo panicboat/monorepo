@@ -38,4 +38,13 @@ describe("ReviewEntryCard recent mode", () => {
     expect(html).toContain("guest_hanako");
     expect(html).toContain("cast_taro");
   });
+
+  it("shows the rating as stars filled in proportion to it", () => {
+    const html = renderToStaticMarkup(
+      <ReviewEntryCard entry={baseEntry} mode="recent" />,
+    );
+
+    expect(html).toContain('aria-label="5段階中 4.5"');
+    expect(html).toContain("width:90%");
+  });
 });

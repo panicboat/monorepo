@@ -6,6 +6,7 @@ import { useHideReview } from "../hooks/useHideReview";
 import { useUnhideReview } from "../hooks/useUnhideReview";
 import { useAuthStore } from "@/stores/authStore";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { RatingStars } from "@/components/ui/rating-stars";
 import type { ReviewEntry } from "../types";
 
 interface Props {
@@ -46,7 +47,7 @@ export function ReviewEntryCard({ entry, mode, onChanged }: Props) {
           <span className="ml-auto text-xs text-amber-600">非表示中</span>
         )}
       </div>
-      <div className="mt-1 text-base">★ {entry.rating.toFixed(1)}</div>
+      <RatingStars value={entry.rating} className="mt-1 block w-fit text-base" />
       {entry.body && <p className="mt-2 whitespace-pre-wrap text-sm">{entry.body}</p>}
       <div className="mt-2 flex gap-3 text-sm text-muted-foreground">
         {isAuthor && (
