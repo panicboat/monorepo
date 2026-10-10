@@ -3,7 +3,7 @@
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { ProfileView } from "@/modules/profile/types";
-import { formatBodyStats } from "@/modules/profile/lib/format";
+import { formatBodyStats, formatHeight } from "@/modules/profile/lib/format";
 
 const SNS_LABELS: { key: keyof ProfileView["snsLinks"]; label: string }[] = [
   { key: "x", label: "X" },
@@ -31,6 +31,8 @@ export function ProfileHeader({ profile, role, onEdit }: ProfileHeaderProps) {
   const isCast = role === "cast";
   const sns = SNS_LABELS.filter(({ key }) => profile.snsLinks[key]);
   const registeredLabel = formatRegisteredAt(profile.registeredAt);
+  const height = formatHeight(profile.bodyStats);
+  const bodyStats = formatBodyStats(profile.bodyStats);
 
   return (
     <div className="flex flex-col">
@@ -105,7 +107,8 @@ export function ProfileHeader({ profile, role, onEdit }: ProfileHeaderProps) {
           <div className="flex flex-wrap gap-x-4 gap-y-1 pt-2 text-sm text-text-secondary">
             {profile.age > 0 && <span>{profile.age}歳</span>}
             {profile.industry && <span>{profile.industry}</span>}
-            {formatBodyStats(profile.bodyStats) && <span>{formatBodyStats(profile.bodyStats)}</span>}
+            {height && <span>{height}</span>}
+            {bodyStats && <span>{bodyStats}</span>}
           </div>
         )}
       </div>

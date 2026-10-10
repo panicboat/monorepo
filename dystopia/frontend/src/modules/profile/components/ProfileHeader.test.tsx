@@ -38,4 +38,11 @@ describe("ProfileHeader", () => {
     expect(html).toContain("ゲスト");
     expect(html).not.toContain("ユーザー");
   });
+
+  it("shows the height of a cast as its own item apart from the three sizes", () => {
+    const html = renderToStaticMarkup(<ProfileHeader profile={profile} role="cast" />);
+
+    expect(html).toContain("<span>158cm</span>");
+    expect(html).toContain("<span>B88(D) W58 H86</span>");
+  });
 });
