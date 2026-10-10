@@ -12,27 +12,8 @@ import { useTotalUnread } from "@/modules/messaging";
 import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { ProfileSwitcher } from "@/modules/profile/components/ProfileSwitcher";
-
-type BadgeKey = "unread" | "messaging_unread" | "footprints_unread";
-
-interface NavItem {
-  path: string;
-  label: string;
-  icon: string;
-  badgeKey?: BadgeKey;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { path: "/", label: "ホーム", icon: "🏠" },
-  { path: "/search", label: "検索", icon: "🔍" },
-  { path: "/notifications", label: "通知", icon: "🔔", badgeKey: "unread" },
-  { path: "/footprints", label: "足跡", icon: "👣", badgeKey: "footprints_unread" },
-  { path: "/messages", label: "メッセージ", icon: "💬", badgeKey: "messaging_unread" },
-  { path: "/bookmarks", label: "ブックマーク", icon: "🔖" },
-  { path: "/ranking", label: "ランキング", icon: "🏆" },
-  { path: "__profile__", label: "プロフィール", icon: "👤" },
-  { path: "/settings", label: "設定", icon: "⚙" },
-];
+import { useAuthStore, selectRole } from "@/stores/authStore";
+import { PROFILE_NAV_PATH, resolveNavItems } from "./resolveNavItems";
 
 export function SideNav() {
   const pathname = usePathname();
@@ -42,6 +23,7 @@ export function SideNav() {
   const { count: footprintsUnread } = useFootprintsUnreadCount();
   const { preferences } = useNotificationPreferences();
   const { hasAccess: karteAccess } = useMyKarteAccess();
+  const role = useAuthStore(selectRole);
   const [composerOpen, setComposerOpen] = useState(false);
 
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
@@ -52,9 +34,9 @@ export function SideNav() {
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col px-3 py-4 md:flex">
       <BrandMark className="px-4 pb-4 text-xl" />
       <nav className="flex-1 overflow-y-auto">
-        {NAV_ITEMS.map((item) => {
-          const href = item.path === "__profile__" ? profileHref : item.path;
-          const active = item.path === "__profile__" ? pathname === profileHref : pathname === item.path;
+        {resolveNavItems({ karteAccess, isGuest: role === "guest" }).map((item) => {
+          const href = item.path === PROFILE_NAV_PATH ? profileHref : item.path;
+          const active = pathname === href;
           const badgeCount =
             item.badgeKey === "unread" ? unread :
             item.badgeKey === "messaging_unread" ? msgUnread :
@@ -79,18 +61,6 @@ export function SideNav() {
             </Link>
           );
         })}
-        {karteAccess && (
-          <Link
-            href="/karte/my"
-            className={`relative flex items-center gap-3 rounded-full px-4 py-3 text-lg hover:bg-bg-secondary ${
-              pathname === "/karte/my" ? "font-bold text-text-primary" : "text-text-secondary"
-            }`}
-            aria-current={pathname === "/karte/my" ? "page" : undefined}
-          >
-            <span className="text-2xl" aria-hidden="true">📋</span>
-            <span className="flex-1">カルテ</span>
-          </Link>
-        )}
       </nav>
 
       <button

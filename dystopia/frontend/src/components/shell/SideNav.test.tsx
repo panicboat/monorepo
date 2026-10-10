@@ -34,6 +34,13 @@ vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({
   useMyKarteAccess: karteMocks.useMyKarteAccess,
 }));
 
+const authState = vi.hoisted(() => ({ role: null as "guest" | "cast" | null, activeProfileId: null }));
+
+vi.mock("@/stores/authStore", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/stores/authStore")>()),
+  useAuthStore: (selector: (state: typeof authState) => unknown) => selector(authState),
+}));
+
 const { SideNav } = await import("./SideNav");
 const { AccountProfilesProvider } = await import("@/modules/profile/context/AccountProfilesContext");
 const { emptyProfileView } = await import("@/modules/profile/lib/mappers");
@@ -60,6 +67,20 @@ describe("SideNav", () => {
 
     expect(html).toContain("/karte/my");
     expect(html).toContain("カルテ");
+    expect(html.indexOf("カルテ")).toBeLessThan(html.indexOf("設定"));
+  });
+
+  it("links to my reviews only for a guest viewer", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+
+    authState.role = "guest";
+    const asGuest = renderToStaticMarkup(<SideNav />);
+    authState.role = "cast";
+    const asCast = renderToStaticMarkup(<SideNav />);
+    authState.role = null;
+
+    expect(asGuest).toContain("/reviews/my");
+    expect(asCast).not.toContain("/reviews/my");
   });
 
   it("hides the karte item when the viewer has no karte access", () => {
