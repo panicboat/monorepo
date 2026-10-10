@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import { useSWRConfig } from "swr";
 import { authFetch } from "@/lib/auth";
 import { PostComposer } from "./PostComposer";
@@ -40,7 +41,7 @@ export function PostComposerModal({ open, onClose }: PostComposerModalProps) {
                 className="rounded-full p-1 text-text-secondary hover:bg-bg-secondary hover:text-text-primary"
                 aria-label="閉じる"
               >
-                ✕
+                <X className="size-5" />
               </button>
             </Dialog.Close>
           </div>

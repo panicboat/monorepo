@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { CalendarDays } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { LockMark } from "@/components/ui/lock-mark";
 import type { ProfileView } from "@/modules/profile/types";
@@ -73,7 +74,12 @@ export function ProfileHeader({ profile, role, actions }: ProfileHeaderProps) {
         <p className="text-sm text-text-secondary">@{profile.username || "—"}</p>
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-text-secondary">
           {profile.prefecture && <span>{profile.prefecture}</span>}
-          {registeredLabel && <span>🗓 {registeredLabel}</span>}
+          {registeredLabel && (
+            <span className="inline-flex items-center gap-1">
+              <CalendarDays className="size-4" />
+              {registeredLabel}
+            </span>
+          )}
         </div>
         {profile.bio && <p className="whitespace-pre-wrap pt-1 text-sm text-text-primary">{profile.bio}</p>}
         {profile.website && (

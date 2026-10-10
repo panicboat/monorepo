@@ -4,6 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import { Avatar } from "./avatar";
 import { LockMark } from "./lock-mark";
 import { cn } from "@/lib/utils";
@@ -156,9 +157,9 @@ export function PostCard({
                 type="button"
                 onClick={(e) => e.stopPropagation()}
                 aria-label="閉じる"
-                className="absolute right-4 top-4 rounded-full bg-black/40 p-2 text-xl text-white hover:bg-black/60"
+                className="absolute right-4 top-4 rounded-full bg-black/40 p-2 text-white hover:bg-black/60"
               >
-                ✕
+                <X className="size-5" />
               </button>
             </Dialog.Close>
             {shownImages.length > 1 && (

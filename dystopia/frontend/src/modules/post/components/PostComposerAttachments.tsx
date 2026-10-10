@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import type { UploadedMedia } from "@/modules/media/types";
 
 export interface PostComposerAttachmentsProps {
@@ -29,9 +30,9 @@ export function PostComposerAttachments({
             onClick={() => onRemove(item.mediaId)}
             disabled={disabled}
             aria-label={`${item.filename}を削除`}
-            className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white"
+            className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white"
           >
-            ✕
+            <X className="size-3" strokeWidth={2.5} />
           </button>
         </li>
       ))}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
@@ -25,7 +26,7 @@ export default function BookmarksPage() {
       {error && <p className="px-4 py-6 text-text-secondary">読み込みに失敗しました。</p>}
       {!loading && posts.length === 0 && (
         <div className="flex flex-col items-center px-4 py-12 text-center">
-          <span className="text-3xl" aria-hidden="true">🔖</span>
+          <Bookmark className="size-10 text-text-secondary" strokeWidth={1.5} />
           <p className="pt-3 text-text-primary">ブックマークはまだありません</p>
           <p className="pt-1 text-sm text-text-secondary">
             投稿をブックマークすると、ここに表示されます

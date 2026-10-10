@@ -91,6 +91,15 @@ describe("SideNav", () => {
     expect(html).not.toContain("/karte/my");
   });
 
+  it("draws the entry of the current page with a heavier line than the others", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+
+    const html = renderToStaticMarkup(<SideNav />);
+
+    expect(html).toMatch(/<a[^>]*href="\/"[^>]*><svg[^>]*stroke-width="2.5"/);
+    expect(html).toMatch(/<a[^>]*href="\/search"[^>]*><svg[^>]*stroke-width="2"/);
+  });
+
   it("has no standalone oshi menu entry", () => {
     karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
+import { ArrowLeft, X } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { KarteComposer } from "@/modules/karte/components/KarteComposer";
 import { ReviewComposer } from "@/modules/review/components/ReviewComposer";
@@ -61,7 +62,7 @@ export function ComposeToDialog({ kind, onClose }: ComposeToDialogProps) {
                 aria-label="宛先を選び直す"
                 className="rounded-full p-1 text-text-secondary hover:bg-bg-secondary hover:text-text-primary"
               >
-                ←
+                <ArrowLeft className="size-5" />
               </button>
             )}
             <Dialog.Title className="flex-1 text-lg font-bold text-text-primary">
@@ -73,7 +74,7 @@ export function ComposeToDialog({ kind, onClose }: ComposeToDialogProps) {
                 aria-label="閉じる"
                 className="rounded-full p-1 text-text-secondary hover:bg-bg-secondary hover:text-text-primary"
               >
-                ✕
+                <X className="size-5" />
               </button>
             </Dialog.Close>
           </div>

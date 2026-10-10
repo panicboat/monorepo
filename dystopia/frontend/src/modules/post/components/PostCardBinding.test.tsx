@@ -59,6 +59,15 @@ describe("PostCardBinding", () => {
     expect(html.match(/aria-label="非公開"/g)).toHaveLength(1);
   });
 
+  it("fills the heart only on a post the viewer has liked", () => {
+    const liked = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, liked: true }} />);
+    const notLiked = renderToStaticMarkup(<PostCardBinding post={basePost} />);
+
+    expect(liked).toMatch(/lucide-heart[^"]*fill-current/);
+    expect(notLiked).toContain("lucide-heart");
+    expect(notLiked).not.toMatch(/lucide-heart[^"]*fill-current/);
+  });
+
   it("links the post body to the post detail page", () => {
     const html = renderToStaticMarkup(<PostCardBinding post={basePost} />);
 
