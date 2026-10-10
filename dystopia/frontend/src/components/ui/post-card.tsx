@@ -13,6 +13,10 @@ export interface PostCardImage {
   url: string;
 }
 
+export interface PostCardVideo {
+  url: string;
+}
+
 export interface PostCardProps {
   author: { name: string; handle: string; avatarSrc?: string };
   authorHref?: string;
@@ -21,6 +25,7 @@ export interface PostCardProps {
   isPrivate?: boolean;
   body: React.ReactNode;
   images?: PostCardImage[];
+  videos?: PostCardVideo[];
   reactions?: React.ReactNode;
   className?: string;
 }
@@ -33,6 +38,7 @@ export function PostCard({
   isPrivate,
   body,
   images,
+  videos,
   reactions,
   className,
 }: PostCardProps) {
@@ -78,6 +84,17 @@ export function PostCard({
           ) : (
             <p className="mt-1 whitespace-pre-wrap text-text-primary">{body}</p>
           )}
+          {videos?.map((video) => (
+            // Load only the metadata: a feed of full video files would download every one before any is played.
+            <video
+              key={video.url}
+              src={video.url}
+              controls
+              playsInline
+              preload="metadata"
+              className="mt-2 max-h-[70vh] w-full rounded-md bg-black"
+            />
+          ))}
           {shownImages.length > 0 && (
             <div
               className={cn(

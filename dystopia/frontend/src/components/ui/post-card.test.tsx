@@ -63,6 +63,31 @@ describe("PostCard", () => {
     expect(html).not.toContain('aria-label="非公開"');
   });
 
+  it("plays each given video inline with controls, loading only its metadata up front", () => {
+    const html = renderToStaticMarkup(
+      <PostCard {...baseProps} videos={[{ url: "https://example.com/a.mp4" }, { url: "https://example.com/b.mp4" }]} />
+    );
+
+    expect(html.match(/<video/g)).toHaveLength(2);
+    expect(html).toMatch(/<video[^>]*src="https:\/\/example.com\/a.mp4"[^>]*controls=""[^>]*playsInline=""[^>]*preload="metadata"/);
+  });
+
+  it("does not nest a video inside the post detail link", () => {
+    const html = renderToStaticMarkup(
+      <PostCard {...baseProps} detailHref="/posts/post-1" videos={[{ url: "https://example.com/a.mp4" }]} />
+    );
+    const detailLink = html.match(/<a[^>]*href="\/posts\/post-1"[^>]*>.*?<\/a>/)?.[0] ?? "";
+
+    expect(detailLink).not.toBe("");
+    expect(detailLink).not.toContain("<video");
+  });
+
+  it("renders no video element for a post without videos", () => {
+    const html = renderToStaticMarkup(<PostCard {...baseProps} images={oneImage} />);
+
+    expect(html).not.toContain("<video");
+  });
+
   it("wraps the author name in a link to the profile when authorHref is given", () => {
     const html = renderToStaticMarkup(
       <PostCard {...baseProps} authorHref="/u/test_taro" />

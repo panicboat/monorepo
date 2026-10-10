@@ -33,6 +33,8 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
     .map((m) => ({ thumbnailUrl: m.thumbnailUrl || m.url, url: m.url || m.thumbnailUrl }))
     .filter((image) => image.thumbnailUrl.length > 0);
 
+  const videos = post.media.filter((m) => m.mediaType === "video" && m.url.length > 0).map((m) => ({ url: m.url }));
+
   const href = detailHref || `/posts/${encodeURIComponent(post.id)}`;
 
   const handleLikeClick = (e: React.MouseEvent) => {
@@ -90,6 +92,7 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
       isPrivate={post.visibility === "private"}
       body={<PostText content={post.content} mentions={post.mentions} hashtags={post.hashtags} />}
       images={images.length > 0 ? images : undefined}
+      videos={videos.length > 0 ? videos : undefined}
       reactions={reactions}
       className={className}
     />
