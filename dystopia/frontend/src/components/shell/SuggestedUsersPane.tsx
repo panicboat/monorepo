@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
+import { LockMark } from "@/components/ui/lock-mark";
 import { FollowButton } from "@/modules/social";
 import { useSuggestedUsers } from "@/modules/discovery/hooks";
 
@@ -23,7 +24,10 @@ export function SuggestedUsersPane() {
             <div key={p.profileId} className="flex items-center gap-3 px-4 py-3">
               <Avatar src={p.avatarUrl || undefined} fallback={p.displayName.slice(0, 1) || "?"} size="md" href={href} />
               <Link href={href} className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-text-primary">{p.displayName}</p>
+                <p className="flex items-center gap-1 text-sm font-bold text-text-primary">
+                  <span className="truncate">{p.displayName}</span>
+                  {p.isPrivate && <LockMark label="鍵付き" className="text-xs" />}
+                </p>
                 <p className="truncate text-xs text-text-secondary">@{p.username}</p>
               </Link>
               <FollowButton targetProfileId={p.profileId} />

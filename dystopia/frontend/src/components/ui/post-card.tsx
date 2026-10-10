@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Avatar } from "./avatar";
+import { LockMark } from "./lock-mark";
 import { cn } from "@/lib/utils";
 
 export interface PostCardImage {
@@ -17,6 +18,7 @@ export interface PostCardProps {
   authorHref?: string;
   detailHref?: string;
   time: string;
+  isPrivate?: boolean;
   body: React.ReactNode;
   images?: PostCardImage[];
   reactions?: React.ReactNode;
@@ -28,6 +30,7 @@ export function PostCard({
   authorHref,
   detailHref,
   time,
+  isPrivate,
   body,
   images,
   reactions,
@@ -66,6 +69,7 @@ export function PostCard({
           <div className="flex items-center gap-1 text-sm">
             {authorHref ? <Link href={authorHref}>{nameAndHandle}</Link> : nameAndHandle}
             <span className="text-text-muted">· {time}</span>
+            {isPrivate && <LockMark label="非公開" className="text-xs" />}
           </div>
           {detailHref ? (
             <Link href={detailHref} className="block">

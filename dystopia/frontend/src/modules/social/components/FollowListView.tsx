@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { LockMark } from "@/components/ui/lock-mark";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { useFollowList, useFollowerList } from "@/modules/social/hooks";
 import { FollowButton } from "./FollowButton";
@@ -27,7 +28,10 @@ function ProfileRow({ profile }: { profile: SocialProfileView }) {
         href={href}
       />
       <Link href={href} className="min-w-0 flex-1">
-        <p className="truncate font-bold text-text-primary">{profile.displayName}</p>
+        <p className="flex items-center gap-1 font-bold text-text-primary">
+          <span className="truncate">{profile.displayName}</span>
+          {profile.isPrivate && <LockMark label="鍵付き" className="text-sm" />}
+        </p>
         <p className="truncate text-sm text-text-secondary">@{profile.username}</p>
       </Link>
       <FollowButton targetProfileId={profile.profileId} />

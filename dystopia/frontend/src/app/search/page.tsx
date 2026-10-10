@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LockMark } from "@/components/ui/lock-mark";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { FollowButton } from "@/modules/social";
@@ -110,7 +111,10 @@ export default function SearchPage() {
               >
                 <Avatar src={p.avatarUrl || undefined} fallback={p.displayName.slice(0, 1) || "?"} size="md" href={href} />
                 <Link href={href} className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-text-primary">{p.displayName}</p>
+                  <p className="flex items-center gap-1 font-bold text-text-primary">
+                    <span className="truncate">{p.displayName}</span>
+                    {p.isPrivate && <LockMark label="鍵付き" className="text-sm" />}
+                  </p>
                   <p className="truncate text-sm text-text-secondary">@{p.username}</p>
                 </Link>
                 <FollowButton targetProfileId={p.profileId} />
