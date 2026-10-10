@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.9.0](https://github.com/panicboat/monorepo/compare/monolith-v0.8.0...monolith-v0.9.0) (2026-10-10)
+
+
+### Features
+
+* **dystopia:** implement [@username](https://github.com/username) mentions in posts, comments, and replies ([#1348](https://github.com/panicboat/monorepo/issues/1348)) ([6895572](https://github.com/panicboat/monorepo/commit/6895572f1fbdb57c9a7189cb9bb3581af36be535))
+* **dystopia:** let the author edit a review or a karte entry ([#1496](https://github.com/panicboat/monorepo/issues/1496)) ([456549c](https://github.com/panicboat/monorepo/commit/456549c00e29bb9d88b3f4b683fdafe541808261))
+* **dystopia:** move the acting principal from the account to the profile ([#1403](https://github.com/panicboat/monorepo/issues/1403)) ([f71d417](https://github.com/panicboat/monorepo/commit/f71d417aeee6db931b5537cee129a59e9ada3731))
+* **dystopia:** own karte entries by account and show the writing profile as author ([#1410](https://github.com/panicboat/monorepo/issues/1410)) ([e29abdb](https://github.com/panicboat/monorepo/commit/e29abdb9e64a63033544bd246f97965e4c69eaba))
+* **dystopia:** profile lifecycle, per-profile purge and hiding of disabled profiles ([#1424](https://github.com/panicboat/monorepo/issues/1424)) ([abaed78](https://github.com/panicboat/monorepo/commit/abaed78ff5e248615d318db19588b80fa8a37324))
+* **dystopia:** record the owning account of a media file and key its object by the uploading profile ([#1443](https://github.com/panicboat/monorepo/issues/1443)) ([3008360](https://github.com/panicboat/monorepo/commit/300836072952d9c8b80b73fcf7132c741dae9002))
+* **dystopia:** turn the tags written in a post into links that find posts with the same tag ([#1501](https://github.com/panicboat/monorepo/issues/1501)) ([ff167b8](https://github.com/panicboat/monorepo/commit/ff167b8452098d534621f5b88b67e71be288d4e2))
+
+
+### Bug Fixes
+
+* **dystopia/frontend:** show the industry of a cast as an icon ([#1490](https://github.com/panicboat/monorepo/issues/1490)) ([924baae](https://github.com/panicboat/monorepo/commit/924baaea4bf7c9b24181b72a14f1825b1fedfbd0))
+* **dystopia/monolith:** authenticate media requests and let only the uploader delete a media file ([#1435](https://github.com/panicboat/monorepo/issues/1435)) ([49fcbc9](https://github.com/panicboat/monorepo/commit/49fcbc944f918f157ea8704118cce87f45528c1b))
+* **dystopia/monolith:** deliver messaging stream events instead of failing on the first one ([#1430](https://github.com/panicboat/monorepo/issues/1430)) ([c5d09dd](https://github.com/panicboat/monorepo/commit/c5d09dda2f896015e6428eaeddc337afd0d41b9e))
+* **dystopia/monolith:** save notification preferences on every update ([#1427](https://github.com/panicboat/monorepo/issues/1427)) ([cdc0bbb](https://github.com/panicboat/monorepo/commit/cdc0bbbe8e0ae9dad1355a4d9c61d3536e9fa4c7))
+* **dystopia/monolith:** seed the follows and the block the seed summary describes ([#1432](https://github.com/panicboat/monorepo/issues/1432)) ([eda3800](https://github.com/panicboat/monorepo/commit/eda38007d8a45c3a6e74b6ea797a7753db2b55a6))
+* **dystopia/monolith:** stop gruf from taking a reload lock on every request ([#1428](https://github.com/panicboat/monorepo/issues/1428)) ([eaa3906](https://github.com/panicboat/monorepo/commit/eaa39069839b15e48c82245db134b8ba82a410d1))
+* **dystopia/monolith:** store the kind of a media file instead of always storing unknown ([#1450](https://github.com/panicboat/monorepo/issues/1450)) ([1180da0](https://github.com/panicboat/monorepo/commit/1180da0eb899908f9083be80747b3aca13d99d25))
+* **dystopia:** answer NOT_FOUND from GetProfile for a profile that does not exist ([#1433](https://github.com/panicboat/monorepo/issues/1433)) ([cefcad8](https://github.com/panicboat/monorepo/commit/cefcad86dc7699537b6443fa1e90cd983b1f9e6c))
+* **dystopia:** feed and ranking errors, local dev sign-in ([#1380](https://github.com/panicboat/monorepo/issues/1380)) ([7e68c92](https://github.com/panicboat/monorepo/commit/7e68c9221bd7ccf1e5b85c137215ad1867aee4f7))
+* **dystopia:** gate message button by role-based follow requirement ([#1301](https://github.com/panicboat/monorepo/issues/1301)) ([68f1563](https://github.com/panicboat/monorepo/commit/68f1563fede3044976a07e17b65682a5debc554b))
+* **dystopia:** refresh an open conversation by polling and remove the event stream ([#1441](https://github.com/panicboat/monorepo/issues/1441)) ([7b9417a](https://github.com/panicboat/monorepo/commit/7b9417accc5f5682a4cc0ae38418da45d9904e33))
+* **dystopia:** seed accounts that own a second profile and make the README seed steps match the schema ([#1451](https://github.com/panicboat/monorepo/issues/1451)) ([09db2a8](https://github.com/panicboat/monorepo/commit/09db2a8d0c276693dc8d82b6fd36c20dd542e823))
+* **dystopia:** show who a conversation is with and say why a reply cannot be sent ([#1493](https://github.com/panicboat/monorepo/issues/1493)) ([79269bc](https://github.com/panicboat/monorepo/commit/79269bcf71f54df3d722783db0ef4a68af6cb8d6))
+
 ## [0.8.0](https://github.com/panicboat/monorepo/compare/monolith-v0.7.1...monolith-v0.8.0) (2026-09-29)
 
 
