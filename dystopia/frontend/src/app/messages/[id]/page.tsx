@@ -2,9 +2,11 @@
 
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { useMessages } from "@/modules/messaging";
+import { useMessages, useThread } from "@/modules/messaging";
 import { MessageComposer } from "@/modules/messaging/components/MessageComposer";
+import { SendRestrictionNotice } from "@/modules/messaging/components/SendRestrictionNotice";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 function timeAgo(iso: string): string {
@@ -19,6 +21,12 @@ export default function ChatPage() {
   const viewerId = useAuthStore(selectActiveProfileId);
 
   const { messages, hasMore, loading, send, markRead, loadMore } = useMessages(threadId || null);
+  const { thread, sendRestriction, loading: threadLoading } = useThread(threadId || null);
+  const counterpart = thread?.counterpart ?? null;
+  const counterpartName = counterpart?.displayName || "(退会)";
+  const counterpartAvatar = (
+    <Avatar src={counterpart?.avatarUrl || undefined} fallback={counterpartName.slice(0, 1)} size="sm" />
+  );
 
   useEffect(() => {
     const incoming = messages.find((m) => m.senderProfileId !== viewerId);
@@ -34,7 +42,19 @@ export default function ChatPage() {
   return (
     <main className="mx-auto flex h-full max-w-xl flex-col bg-bg text-text-primary">
       <header className="sticky top-0 z-10 border-b border-border bg-bg/95 px-4 py-3 backdrop-blur">
-        <h1 className="text-base font-bold">チャット</h1>
+        {threadLoading ? (
+          <h1 className="text-base font-bold">チャット</h1>
+        ) : counterpart ? (
+          <Link href={`/u/${encodeURIComponent(counterpart.username)}`} className="flex items-center gap-2">
+            {counterpartAvatar}
+            <h1 className="truncate text-base font-bold">{counterpartName}</h1>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-2">
+            {counterpartAvatar}
+            <h1 className="truncate text-base font-bold">{counterpartName}</h1>
+          </div>
+        )}
       </header>
 
       <div className="flex-1 overflow-y-auto pt-2">
@@ -64,7 +84,7 @@ export default function ChatPage() {
                 key={m.id}
                 className={`flex items-end gap-2 ${isMine ? "flex-row-reverse" : "flex-row"}`}
               >
-                {!isMine && <Avatar fallback="?" size="sm" />}
+                {!isMine && counterpartAvatar}
                 <div
                   className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
                     isMine ? "bg-accent text-white" : "bg-bg-secondary text-text-primary"
@@ -81,7 +101,11 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <MessageComposer onSend={send} />
+      {sendRestriction === "none" ? (
+        <MessageComposer onSend={send} />
+      ) : (
+        <SendRestrictionNotice restriction={sendRestriction} counterpartUsername={counterpart?.username} />
+      )}
     </main>
   );
 }

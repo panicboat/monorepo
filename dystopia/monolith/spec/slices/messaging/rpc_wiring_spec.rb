@@ -37,6 +37,10 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
     rpc(Messaging::Grpc::MessagingHandler, :list_threads, Messaging::V1::ListThreadsRequest.new)
   end
 
+  def thread(thread_id)
+    rpc(Messaging::Grpc::MessagingHandler, :get_thread, Messaging::V1::GetThreadRequest.new(thread_id: thread_id))
+  end
+
   def total_unread
     rpc(Messaging::Grpc::MessagingHandler, :get_total_unread_count, Messaging::V1::GetTotalUnreadCountRequest.new).count
   end
@@ -91,6 +95,36 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
       expect(db[:messaging__messages].order(:created_at).select_map(:sender_profile_id)).to eq([cast, guest])
     end
 
+    it "names the missing follow as the reason when a guest replies to a cast without following" do
+      act_as(cast)
+      thread_id = send_message(recipient_profile_id: guest, content: "from cast").thread_id
+
+      act_as(guest)
+
+      expect { send_message(thread_id: thread_id, content: "without a follow") }.to raise_error(GRPC::BadStatus) { |e|
+        expect(e.code).to eq(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
+        expect(e.metadata["error-reason"]).to eq("follow_required")
+      }
+    end
+
+    it "returns a thread by id with its counterpart and what restricts the viewer from sending" do
+      act_as(cast)
+      thread_id = send_message(recipient_profile_id: guest, content: "from cast").thread_id
+
+      opened = thread(thread_id)
+      expect([opened.thread.id, opened.thread.counterpart.id, opened.send_restriction]).to eq([thread_id, guest, :SEND_RESTRICTION_NONE])
+
+      act_as(guest)
+      opened = thread(thread_id)
+      expect([opened.thread.counterpart.id, opened.thread.unread_count, opened.send_restriction]).to eq([cast, 1, :SEND_RESTRICTION_FOLLOW_REQUIRED])
+
+      Social::Slice["repositories.follow_repository"].follow(follower_profile_id: guest, followee_profile_id: cast, status: "approved")
+      expect(thread(thread_id).send_restriction).to eq(:SEND_RESTRICTION_NONE)
+
+      Social::Slice["repositories.block_repository"].block(blocker_profile_id: cast, blocked_profile_id: guest)
+      expect(thread(thread_id).send_restriction).to eq(:SEND_RESTRICTION_BLOCKED)
+    end
+
     it "keeps a non-participant out of the thread" do
       act_as(cast)
       thread_id = send_message(recipient_profile_id: guest, content: "private").thread_id
@@ -102,6 +136,7 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
       expect { rpc(Messaging::Grpc::MessagingHandler, :mark_read, Messaging::V1::MarkReadRequest.new(thread_id: thread_id)) }
         .to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
       expect { send_message(thread_id: thread_id, content: "intrusion") }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
+      expect { thread(thread_id) }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
       expect(threads.threads).to eq([])
     end
   end

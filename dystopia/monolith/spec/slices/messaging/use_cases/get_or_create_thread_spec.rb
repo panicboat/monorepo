@@ -3,29 +3,36 @@
 require "spec_helper"
 
 RSpec.describe Messaging::UseCases::GetOrCreateThread do
-  let(:use_case) { described_class.new(messaging_repo: messaging_repo, authorize_message: authorize_message, get_profile: get_profile) }
+  let(:use_case) { described_class.new(messaging_repo: messaging_repo, send_restriction: send_restriction, get_profile: get_profile) }
   let(:get_profile) { double(:get_profile, call: double(:profile)) }
   let(:messaging_repo)   { double(:messaging_repository) }
-  let(:authorize_message) { double(:authorize_message) }
+  let(:send_restriction) { double(:send_restriction) }
 
   let(:viewer_profile_id) { "viewer-1" }
   let(:recipient_profile_id) { "recipient-1" }
 
-  before do
-    allow(use_case).to receive(:bidirectionally_blocked?).and_return(false)
+  def restrict(reason)
+    allow(send_restriction).to receive(:call).with(sender_profile_id: viewer_profile_id, recipient_profile_id: recipient_profile_id).and_return(reason)
   end
 
-  it "raises FollowRequiredError when AuthorizeMessage denies the sender" do
-    allow(authorize_message).to receive(:call).with(sender_profile_id: viewer_profile_id, recipient_profile_id: recipient_profile_id).and_return(false)
+  it "raises FollowRequiredError when the viewer must follow the recipient first" do
+    restrict(:follow_required)
 
     expect {
       use_case.call(viewer_profile_id: viewer_profile_id, recipient_profile_id: recipient_profile_id)
     }.to raise_error(described_class::FollowRequiredError)
   end
 
-  it "creates the thread when AuthorizeMessage allows the sender" do
-    allow(authorize_message).to receive(:call).with(sender_profile_id: viewer_profile_id, recipient_profile_id: recipient_profile_id).and_return(true)
-    allow(use_case).to receive(:get_profile).and_return(double(:get_profile, call: double(:profile)))
+  it "raises BlockedError when a block stands between the viewer and the recipient" do
+    restrict(:blocked)
+
+    expect {
+      use_case.call(viewer_profile_id: viewer_profile_id, recipient_profile_id: recipient_profile_id)
+    }.to raise_error(described_class::BlockedError)
+  end
+
+  it "creates the thread when nothing restricts the viewer" do
+    restrict(nil)
     thread_row = double(:thread_row, id: "thread-1", :[] => nil)
     allow(messaging_repo).to receive(:upsert_thread).with(profile_a: "recipient-1", profile_b: "viewer-1").and_return(thread_row)
     allow(messaging_repo).to receive(:last_message).with(thread_id: "thread-1").and_return(nil)
@@ -33,14 +40,5 @@ RSpec.describe Messaging::UseCases::GetOrCreateThread do
 
     result = use_case.call(viewer_profile_id: viewer_profile_id, recipient_profile_id: recipient_profile_id)
     expect(result[:row]).to eq(thread_row)
-  end
-
-  it "raises BlockedError before checking AuthorizeMessage when blocked" do
-    allow(use_case).to receive(:bidirectionally_blocked?).and_return(true)
-    expect(authorize_message).not_to receive(:call)
-
-    expect {
-      use_case.call(viewer_profile_id: viewer_profile_id, recipient_profile_id: recipient_profile_id)
-    }.to raise_error(described_class::BlockedError)
   end
 end

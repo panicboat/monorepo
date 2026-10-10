@@ -17,6 +17,7 @@ module Messaging
       rpc :SendMessage, ::Messaging::V1::SendMessageRequest, ::Messaging::V1::SendMessageResponse
       rpc :ListThreads, ::Messaging::V1::ListThreadsRequest, ::Messaging::V1::ListThreadsResponse
       rpc :GetOrCreateThread, ::Messaging::V1::GetOrCreateThreadRequest, ::Messaging::V1::GetOrCreateThreadResponse
+      rpc :GetThread, ::Messaging::V1::GetThreadRequest, ::Messaging::V1::GetThreadResponse
       rpc :ListMessages, ::Messaging::V1::ListMessagesRequest, ::Messaging::V1::ListMessagesResponse
       rpc :MarkRead, ::Messaging::V1::MarkReadRequest, ::Messaging::V1::MarkReadResponse
       rpc :GetTotalUnreadCount, ::Messaging::V1::GetTotalUnreadCountRequest, ::Messaging::V1::GetTotalUnreadCountResponse
@@ -25,10 +26,20 @@ module Messaging
         send_message_uc: "use_cases.send_message",
         list_threads_uc: "use_cases.list_threads",
         get_or_create_thread_uc: "use_cases.get_or_create_thread",
+        get_thread_uc: "use_cases.get_thread",
         list_messages_uc: "use_cases.list_messages",
         mark_read_uc: "use_cases.mark_read",
         get_total_unread_count_uc: "use_cases.get_total_unread_count"
       ]
+
+      FOLLOW_REQUIRED_REASON = "follow_required"
+
+      SEND_RESTRICTIONS = {
+        nil => :SEND_RESTRICTION_NONE,
+        follow_required: :SEND_RESTRICTION_FOLLOW_REQUIRED,
+        blocked: :SEND_RESTRICTION_BLOCKED,
+        counterpart_unavailable: :SEND_RESTRICTION_COUNTERPART_UNAVAILABLE
+      }.freeze
 
       def send_message
         authenticate_user!
@@ -54,7 +65,7 @@ module Messaging
       rescue UseCases::SendMessage::SelfMessageError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
       rescue UseCases::SendMessage::FollowRequiredError => e
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message, ERROR_REASON_METADATA_KEY => FOLLOW_REQUIRED_REASON)
       rescue UseCases::SendMessage::BlockedError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, e.message)
       rescue UseCases::SendMessage::ThreadMembershipError => e
@@ -91,8 +102,22 @@ module Messaging
       rescue UseCases::GetOrCreateThread::SelfMessageError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
       rescue UseCases::GetOrCreateThread::FollowRequiredError => e
-        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message)
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::FAILED_PRECONDITION, e.message, ERROR_REASON_METADATA_KEY => FOLLOW_REQUIRED_REASON)
       rescue UseCases::GetOrCreateThread::BlockedError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, e.message)
+      end
+
+      def get_thread
+        authenticate_user!
+        result = get_thread_uc.call(thread_id: request.message.thread_id, viewer_profile_id: current_profile_id)
+
+        ::Messaging::V1::GetThreadResponse.new(
+          thread: build_thread_proto(result),
+          send_restriction: SEND_RESTRICTIONS.fetch(result[:send_restriction])
+        )
+      rescue UseCases::GetThread::ThreadNotFoundError => e
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, e.message)
+      rescue UseCases::GetThread::ForbiddenError => e
         raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::PERMISSION_DENIED, e.message)
       end
 

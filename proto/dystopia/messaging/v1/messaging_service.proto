@@ -9,6 +9,7 @@ service MessagingService {
   rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
   rpc ListThreads(ListThreadsRequest) returns (ListThreadsResponse);
   rpc GetOrCreateThread(GetOrCreateThreadRequest) returns (GetOrCreateThreadResponse);
+  rpc GetThread(GetThreadRequest) returns (GetThreadResponse);
   rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
   rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
   rpc GetTotalUnreadCount(GetTotalUnreadCountRequest) returns (GetTotalUnreadCountResponse);
@@ -59,6 +60,23 @@ message GetOrCreateThreadRequest {
 
 message GetOrCreateThreadResponse {
   Thread thread = 1;
+}
+
+enum SendRestriction {
+  SEND_RESTRICTION_UNSPECIFIED = 0;
+  SEND_RESTRICTION_NONE = 1;
+  SEND_RESTRICTION_FOLLOW_REQUIRED = 2;
+  SEND_RESTRICTION_BLOCKED = 3;
+  SEND_RESTRICTION_COUNTERPART_UNAVAILABLE = 4;
+}
+
+message GetThreadRequest {
+  string thread_id = 1;
+}
+
+message GetThreadResponse {
+  Thread thread = 1;
+  SendRestriction send_restriction = 2;
 }
 
 message ListMessagesRequest {

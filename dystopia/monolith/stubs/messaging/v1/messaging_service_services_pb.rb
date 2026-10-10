@@ -18,6 +18,7 @@ module Messaging
         rpc :SendMessage, ::Messaging::V1::SendMessageRequest, ::Messaging::V1::SendMessageResponse
         rpc :ListThreads, ::Messaging::V1::ListThreadsRequest, ::Messaging::V1::ListThreadsResponse
         rpc :GetOrCreateThread, ::Messaging::V1::GetOrCreateThreadRequest, ::Messaging::V1::GetOrCreateThreadResponse
+        rpc :GetThread, ::Messaging::V1::GetThreadRequest, ::Messaging::V1::GetThreadResponse
         rpc :ListMessages, ::Messaging::V1::ListMessagesRequest, ::Messaging::V1::ListMessagesResponse
         rpc :MarkRead, ::Messaging::V1::MarkReadRequest, ::Messaging::V1::MarkReadResponse
         rpc :GetTotalUnreadCount, ::Messaging::V1::GetTotalUnreadCountRequest, ::Messaging::V1::GetTotalUnreadCountResponse

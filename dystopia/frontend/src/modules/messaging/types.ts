@@ -16,6 +16,13 @@ export interface ThreadView {
   lastMessageAt: string;
 }
 
+export type SendRestrictionView = "none" | "follow_required" | "blocked" | "counterpart_unavailable";
+
+export interface ThreadDetailResponse {
+  thread: ThreadView | null;
+  sendRestriction: SendRestrictionView;
+}
+
 export interface PaginatedThreadsResponse {
   threads: ThreadView[];
   nextCursor: string;

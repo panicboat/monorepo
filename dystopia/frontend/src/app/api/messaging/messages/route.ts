@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ConnectError } from "@connectrpc/connect";
 import { messagingClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, handleApiError } from "@/lib/api-helpers";
 import type { Message } from "@/stub/messaging/v1/messaging_service_pb";
 import type { MessageView } from "@/modules/messaging/types";
+import { FOLLOW_REQUIRED_REASON, SEND_RESTRICTION_MESSAGES } from "@/modules/messaging/lib/send-restriction";
 
 function timestampToIso(ts: { seconds?: bigint | number; nanos?: number } | undefined): string {
   if (!ts) return "";
@@ -52,6 +54,12 @@ export async function POST(req: NextRequest) {
       threadId: res.threadId || "",
     });
   } catch (error: unknown) {
+    if (error instanceof ConnectError && error.metadata.get("error-reason") === FOLLOW_REQUIRED_REASON) {
+      return NextResponse.json(
+        { error: SEND_RESTRICTION_MESSAGES.follow_required, code: FOLLOW_REQUIRED_REASON },
+        { status: 422 }
+      );
+    }
     return handleApiError(error, "SendMessage");
   }
 }
