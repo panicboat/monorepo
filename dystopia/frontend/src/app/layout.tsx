@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
@@ -12,6 +12,15 @@ const notoSansJP = Noto_Sans_JP({
 export const metadata: Metadata = {
   title: "dystopia.city",
   description: "The Ritual of Sovereign Love",
+  // "black" keeps the page below the status bar; "black-translucent" would draw the top bar under it.
+  appleWebApp: { capable: true, title: "dystopia.city", statusBarStyle: "black" },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#14161a" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+  ],
 };
 
 import { AuthProvider } from "@/modules/identity/hooks/useAuth";
