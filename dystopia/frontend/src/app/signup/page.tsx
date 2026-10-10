@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/modules/identity/hooks/useAuth";
 import { RoleSelector } from "@/modules/identity/components/RoleSelector";
 import { PasswordRequirements } from "@/modules/identity/components/PasswordRequirements";
@@ -11,11 +12,24 @@ import { Button } from "@/components/ui/button";
 type Step = "credentials" | "code";
 
 export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupFromUrl />
+    </Suspense>
+  );
+}
+
+function SignupFromUrl() {
+  const role = useSearchParams()?.get("role");
+  return <SignupForm initialRole={role === "cast" ? 2 : 1} />;
+}
+
+function SignupForm({ initialRole }: { initialRole: 1 | 2 }) {
   const { register, verify } = useAuth();
   const [step, setStep] = useState<Step>("credentials");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<1 | 2>(1);
+  const [role, setRole] = useState<1 | 2>(initialRole);
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);

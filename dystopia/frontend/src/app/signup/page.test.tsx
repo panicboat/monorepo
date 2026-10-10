@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
+const navigation = vi.hoisted(() => ({ role: null as string | null }));
+
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => (navigation.role === null ? null : new URLSearchParams({ role: navigation.role })),
+}));
+
 vi.mock("@/modules/identity/hooks/useAuth", () => ({
   useAuth: () => ({ register: vi.fn(), verify: vi.fn() }),
 }));
@@ -21,5 +27,19 @@ describe("SignupPage", () => {
 
     expect(describedBy).toBeDefined();
     expect(html).toMatch(new RegExp(`<p[^>]*id="${describedBy}"[^>]*>[^<]*12 文字以上`));
+  });
+
+  it("starts with the role chosen on the landing page", () => {
+    const checkedRole = (html: string) =>
+      (html.match(/<input[^>]*name="role"[^>]*>/g) ?? []).find((input) => input.includes("checked"))?.match(/value="(\d)"/)?.[1];
+
+    navigation.role = "cast";
+    const asCast = renderToStaticMarkup(<SignupPage />);
+    navigation.role = "guest";
+    const asGuest = renderToStaticMarkup(<SignupPage />);
+    navigation.role = null;
+    const withoutChoice = renderToStaticMarkup(<SignupPage />);
+
+    expect([checkedRole(asCast), checkedRole(asGuest), checkedRole(withoutChoice)]).toEqual(["2", "1", "1"]);
   });
 });
