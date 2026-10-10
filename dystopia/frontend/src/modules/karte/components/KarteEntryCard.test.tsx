@@ -35,6 +35,30 @@ describe("KarteEntryCard recent mode", () => {
     expect(html).toContain("cast_taro");
     expect(html).toContain("guest_hanako");
   });
+
+  it("links both the author and the target to their profiles", () => {
+    const html = renderToStaticMarkup(
+      <KarteEntryCard entry={baseEntry} mode="recent" />,
+    );
+
+    expect(html).toContain('href="/u/cast_taro"');
+    expect(html).toContain('href="/u/guest_hanako"');
+  });
+});
+
+describe("KarteEntryCard identity link", () => {
+  it("links the target of an entry in the own list to the target's profile", () => {
+    const html = renderToStaticMarkup(<KarteEntryCard entry={baseEntry} mode="my" />);
+
+    expect(html).toContain('href="/u/guest_hanako"');
+  });
+
+  it("links the author of an entry about a guest to the author's profile", () => {
+    const html = renderToStaticMarkup(<KarteEntryCard entry={baseEntry} mode="target" />);
+
+    expect(html).toContain('href="/u/cast_taro"');
+    expect(html).not.toContain('href="/u/guest_hanako"');
+  });
 });
 
 describe("KarteEntryCard ownership", () => {

@@ -47,4 +47,29 @@ describe("ReviewEntryCard recent mode", () => {
     expect(html).toContain('aria-label="5段階中 4.5"');
     expect(html).toContain("width:90%");
   });
+
+  it("links both the author and the target to their profiles", () => {
+    const html = renderToStaticMarkup(
+      <ReviewEntryCard entry={baseEntry} mode="recent" />,
+    );
+
+    expect(html).toContain('href="/u/guest_hanako"');
+    expect(html).toContain('href="/u/cast_taro"');
+  });
+});
+
+describe("ReviewEntryCard on a profile", () => {
+  it("links the author of a received review to the author's profile", () => {
+    const html = renderToStaticMarkup(<ReviewEntryCard entry={baseEntry} mode="received" />);
+
+    expect(html).toContain('href="/u/guest_hanako"');
+    expect(html).not.toContain('href="/u/cast_taro"');
+  });
+
+  it("links the target of a written review to the target's profile", () => {
+    const html = renderToStaticMarkup(<ReviewEntryCard entry={baseEntry} mode="written" />);
+
+    expect(html).toContain('href="/u/cast_taro"');
+    expect(html).not.toContain('href="/u/guest_hanako"');
+  });
 });
