@@ -50,7 +50,9 @@ describe("LandingPage", () => {
   it("leads a cast to sign up as a cast from both entry buttons", () => {
     const html = renderToStaticMarkup(<LandingPage />);
 
-    expect(html.match(/<a class="primary" href="\/signup\?role=cast">キャストとして街に入る/g)).toHaveLength(2);
+    expect(html.match(/<a class="primary" href="\/signup\?role=cast">キャストとして街で働く/g)).toHaveLength(2);
+    expect(html).toMatch(/<a class="login" href="#entry">街で働く/);
+    expect(html).not.toContain("街に入る");
   });
 
   it("keeps the way in for an existing account and the way out for a minor", () => {
@@ -70,7 +72,9 @@ describe("LandingPage", () => {
 
     expect(pressed(container)).toEqual(["ゲスト", "ゲストの方"]);
     expect(entryHrefs(container)).toEqual(["/signup?role=guest", "/signup?role=guest"]);
-    expect(container.textContent).toContain("ゲストとして街に入る");
+    expect(container.textContent).toContain("ゲストとして街で遊ぶ");
+    expect(container.querySelector("a.login")!.textContent).toContain("街で遊ぶ");
+    expect(container.textContent).not.toContain("街で働く");
     expect(container.textContent).toContain("気になる人を、");
     expect(container.textContent).not.toContain("お店の数だけ、");
     expect(container.querySelector('a[href="#guest-values"]')).not.toBeNull();
