@@ -131,11 +131,14 @@ interface SideSheetProps {
 }
 ```
 
-- 幅は `min(100%, 510px)`。`md` 未満では全幅になり、左の枠線を持たない
+- 幅は `min(100%, 510px)`。幅 510px 以下の画面では全幅になる。`md` 未満では左の枠線を持たない
 - ヘッダーは左から「戻るボタン（`onBack` を渡したときだけ表示）」「タイトル」「閉じるボタン」を並べる。本文はシート内でスクロールする
 - 面は `bg-bg-elevated`、背後のオーバーレイは黒の 70%
 - 開閉は CSS アニメーションで行う。シートは `translateX(103%)` から `0` へ `--duration-slide` と `--ease-emphasized` で動き、オーバーレイは `--duration-fade` でフェードする。Radix は `data-state` の CSS アニメーションの終了を待ってから unmount するので、閉じる動きも再生される
 - `stepKey` が変わると、本文に「不透明度 `.4` → `1`、X 方向 `13px` → `0`、`--duration-fade`」の動きをかける。宛先選択から入力への切り替えで使う
+- 閉じたとき、開く前にフォーカスがあった要素へフォーカスを戻す。Radix の Dialog は `Dialog.Trigger` を使わない場合フォーカスを戻さないので、`onOpenAutoFocus` で開く前の要素を控え、`onCloseAutoFocus` で戻す
+- 開いている間にルート（`usePathname`）が変わったら、`onOpenChange(false)` を呼んで閉じる。シートは開いたページに属するため
+- 利用側は `SideSheet` を mount したまま `open` を切り替える。閉じると同時に unmount すると、閉じる動きが再生されない
 - 同時に開くシートは 1 枚とする
 
 ### Back dismissal (`dystopia/frontend/src/components/ui/useBackDismiss.ts`)
@@ -144,14 +147,23 @@ interface SideSheetProps {
 
 - 開いたとき、同じ URL のまま履歴エントリを 1 つ積み、`history.state` にシートの印を付ける
 - `popstate` を受けたら `onOpenChange(false)` を呼ぶ
-- ×・Esc・オーバーレイ・呼び出し側の操作で閉じたとき、現在の履歴エントリがシートの印を持っていれば `history.back()` で取り除く
+- ×・Esc・オーバーレイ・呼び出し側の操作で閉じたとき（`open` が `false` になったとき）、現在の履歴エントリがシートの印を持っていれば `history.back()` で取り除く
+- 履歴エントリを積むのは 1 回の「開く」につき 1 回とする。effect の再実行（React の StrictMode）で 2 つ積まない
+- 開いたまま unmount されたときは履歴を操作しない。effect の cleanup で `history.back()` を呼ぶと、StrictMode の再実行で開いた直後に閉じてしまうため
 - シートが複数段（`stepKey`）を持っていても、ブラウザの「戻る」はシート全体を閉じる。段を戻るのはヘッダーの戻るボタンだけとする
 
 Next.js の App Router は `window.history.pushState` を差し替え、内部状態を保ったまま独自の `state` を載せられるようにしている（16.3.7 の `dist/client/components/app-router.js` の `copyNextJsInternalHistoryState` で確認）。
 
-シートの中からルート遷移する場合、遷移は `router.replace` で行う。シートの履歴エントリが遷移先に置き換わるので、遷移先で「戻る」を押すと元のページに戻る。`router.push` で遷移すると、シートのエントリが元のページと同じ URL のまま履歴に残り、「戻る」を 1 回余分に押す必要が生じる。
+シートの中からルート遷移する場合、遷移は `router.replace` で行い、シートは自分では閉じない。シートの履歴エントリが遷移先に置き換わり、ルートの変化を受けて `SideSheet` が閉じる。遷移先で「戻る」を押すと元のページに戻る。
 
-本段でこの条件に当たるのは、作成メニューの「メッセージ」で宛先を選んだときだけである。`useStartChat` の `start` に遷移方法を選ぶ引数を足し、シートから呼ぶときは `replace` を指定する。リクエスト内容は変えない。`StartChatButton` からの呼び出しは `push` のままにする。
+遷移と「閉じる」の順序をこの形に固定する理由は次のとおり。
+
+- `router.push` で遷移すると、シートのエントリが元のページと同じ URL のまま履歴に残り、「戻る」を 1 回余分に押す必要が生じる
+- 遷移を始めた直後に利用側がシートを閉じると、Next.js が履歴を書き換える前に `history.back()` が走り、`replace` が元のページのエントリを置き換えてしまう。Next.js は履歴の書き換えを、新しい `pathname` を反映する commit の `useInsertionEffect` で行う（16.3.7 の `HistoryUpdater` で確認）ので、`pathname` の変化を見て閉じれば、書き換えは必ず先に済んでいる
+
+本段でこの条件に当たるのは、作成メニューの「メッセージ」で宛先を選んだときだけである。`useStartChat` の `start` に遷移方法を選ぶ引数を足し、遷移先のパスを返すようにする。シートから呼ぶときは `replace` を指定する。リクエスト内容は変えない。`StartChatButton` からの呼び出しは `push` のままにする。
+
+遷移先が現在のページと同じとき（すでに開いているスレッドの相手を選んだとき）はルートが変わらないので、利用側が `start` の返すパスと現在のパスを比べ、同じならシートを閉じる。
 
 ### Route fade (`dystopia/frontend/src/lib/motion/useEnterAnimation.ts`)
 
@@ -207,7 +219,8 @@ PC のサイドナビの作成ボタンは、動作は花形メニューのま�
 | `components/compose/ComposeToDialog.tsx` | `ComposeToSheet.tsx` |
 
 - `ComposeToSheet` は宛先選択と入力の 2 段を持つ。段を `stepKey` に、宛先の選び直しを `onBack` に渡す
-- 「メッセージ」で宛先を選んだときは、`useStartChat` を `replace` で呼んでからシートを閉じる
+- 「メッセージ」で宛先を選んだときは、`useStartChat` を `replace` で呼ぶ。シートはルートの変化で閉じる
+- `ComposeLauncher` は選ばれた種類を保持したまま `open` だけを切り替え、閉じる動きの間もシートの中身を保つ。開くたびに `ComposeToSheet` を作り直し、前回の宛先とエラーを持ち越さない
 
 ### Deliberate differences from the mock
 
@@ -224,11 +237,13 @@ PC のサイドナビの作成ボタンは、動作は花形メニューのま�
 
 単体テスト（vitest）で次を確認する。
 
-- `SideSheet`: `open` で表示される。×・Esc・オーバーレイで `onOpenChange(false)` が呼ばれる。`onBack` を渡したときだけ戻るボタンが出る。閉じたあとフォーカスが開く前の要素に戻る
-- `useBackDismiss`: 開くと履歴エントリが 1 つ増える。`popstate` で閉じる。UI で閉じると履歴エントリが取り除かれる。現在のエントリがシートの印を持たないときは `history.back()` を呼ばない
+- `SideSheet`: `open` で表示される。×・Esc・オーバーレイで `onOpenChange(false)` が呼ばれる。`onBack` を渡したときだけ戻るボタンが出る。閉じたあとフォーカスが開く前の要素に戻る。ルートが変わると `onOpenChange(false)` が呼ばれる
+- `useBackDismiss`: 開くと履歴エントリが 1 つ増え、URL は変わらない。StrictMode でも 1 つだけ増える。`popstate` で閉じる。UI で閉じると履歴エントリが取り除かれる。現在のエントリがシートの印を持たないときは `history.back()` を呼ばない
 - `useEnterAnimation`: `key` が変わると `element.animate` が呼ばれる。初回と `--duration-fade` が `0ms` のときは呼ばれない
-- `ComposeToSheet`・`PostComposerSheet`・`ComposeLauncher`: 載せ替え前のテストが、名前の変更を除いて同じ振る舞いで通る。「メッセージ」の宛先選択が `replace` で遷移する
-- `useStartChat`: 引数なしでは `push`、`replace` 指定では `replace` で遷移する
+- `ComposeToSheet`: 載せ替え前のテストが同じ振る舞いで通る。「メッセージ」の宛先選択は `replace` で遷移し、ルートが変わると閉じ、遷移先が現在のページならその場で閉じる
+- `PostComposerSheet`: 投稿すると `/api/posts` へ載せ替え前と同じリクエストを送り、閉じる
+- `ComposeLauncher`: 載せ替え前のテストが通る。閉じたあともシートを mount したままにする
+- `useStartChat`: 引数なしでは `push`、`replace` 指定では `replace` で遷移し、どちらも遷移先のパスを返す
 - 既存のシェルのテスト（`AppShell`・`SideNav`・`BottomTab`・`Drawer`）が通る
 
 静的検査として `tsc --noEmit` と `next build` が通ることを確認する。
@@ -237,6 +252,8 @@ PC のサイドナビの作成ボタンは、動作は花形メニューのま�
 
 - 幅 1440px・1024px・390px のそれぞれで、ダークとライトのホーム・プロフィール・設定・自分のカルテ・メッセージスレッドが崩れていない
 - 作成メニューから投稿・メッセージ・カルテ（ゲストではレビュー）のシートが右から入り、×・Esc・オーバーレイ・ブラウザの「戻る」で閉じる
+- ブラウザの「戻る」でシートを閉じたとき、ページが再読み込みされず、スクロール位置が保たれる
+- 作成メニューからメッセージを始め、スレッドで「戻る」を 1 回押すと元のページに戻る
 - 投稿の作成、メッセージの開始、カルテの作成が載せ替え前と同じく成功する
 - OS の動き軽減を有効にすると、シートとフェードが動きなしで切り替わる
 
