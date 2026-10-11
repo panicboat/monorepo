@@ -8,18 +8,20 @@ import "./landing.css";
 
 type LandingRole = "cast" | "guest";
 
-const COPY: Record<LandingRole, { hero: string[]; endTitle: string; end: string[]; cta: string }> = {
+const COPY: Record<LandingRole, { hero: string[]; endTitle: string; end: string[]; entry: string; cta: string }> = {
   cast: {
     hero: ["お店の名前ではなく、自分の名前で。", "発信も、つながりも、仕事のことも。", "ここは、あなたが主役になれる場所。"],
     endTitle: "この街の、最初の住人に。",
     end: ["まだ始まったばかりの場所です。", "働く人が、自分の名前でつながれる街を、一緒に育ててください。"],
-    cta: "キャストとして街に入る",
+    entry: "街で働く",
+    cta: "キャストとして街で働く",
   },
   guest: {
     hero: ["お店からではなく、気になる人から。", "今日のつぶやきも、出勤予定も。", "「また会いたい」が、もっと身近になる場所。"],
     endTitle: "その人を知ることから、始めよう。",
     end: ["フォローして、日常を知って、また会いたくなる。", "あなたの夜に、新しいつながりを。"],
-    cta: "ゲストとして街に入る",
+    entry: "街で遊ぶ",
+    cta: "ゲストとして街で遊ぶ",
   },
 };
 
@@ -95,7 +97,7 @@ export function LandingPage() {
             <a href={`#${ANCHORS[role].values}`}>この街が大切にすること</a>
             <a href={`#${ANCHORS[role].experience}`}>この街でできること</a>
             <a className="login" href="#entry">
-              街に入る ↗
+              {copy.entry} ↗
             </a>
           </nav>
         </div>
