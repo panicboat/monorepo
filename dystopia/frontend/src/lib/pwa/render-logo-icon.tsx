@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { PWA_BACKGROUND_COLOR } from "./icons";
+import { PWA_ICON_BACKGROUND } from "./icons";
 
 export function renderLogoIcon(size: number, logoScale = 1): ImageResponse {
   const svg = readFileSync(join(process.cwd(), "public/logo.svg"));
@@ -15,7 +15,7 @@ export function renderLogoIcon(size: number, logoScale = 1): ImageResponse {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: PWA_BACKGROUND_COLOR,
+        background: PWA_ICON_BACKGROUND,
       }}
     >
       <img
