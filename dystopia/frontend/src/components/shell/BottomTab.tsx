@@ -32,7 +32,7 @@ export function BottomTab() {
   ];
 
   return (
-    <nav className="sticky bottom-0 z-30 flex items-center justify-around border-t border-divider bg-bg px-1 pb-safe md:hidden">
+    <nav className="sticky bottom-0 z-30 flex items-center justify-around border-t border-divider bg-bg px-1 md:hidden">
       {tabs.map((tab) => {
         const active = pathname === tab.path;
         const badgeCount =
@@ -47,7 +47,7 @@ export function BottomTab() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }
             }}
-            className={`relative flex min-h-[61px] flex-1 flex-col items-center justify-center gap-0.5 text-[11px] ${
+            className={`relative flex min-h-[61px] flex-1 flex-col items-center justify-center gap-0.5 text-[0.6875rem] ${
               active ? "text-accent" : "text-text-secondary hover:text-text-primary"
             }`}
             aria-current={active ? "page" : undefined}

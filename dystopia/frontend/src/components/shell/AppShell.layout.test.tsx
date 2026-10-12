@@ -108,7 +108,8 @@ describe("AppShell layout", () => {
 
     expect(frame.className).toContain("bg-backdrop");
     expect(main.className).toContain("bg-bg");
-    expect(main.className).toContain("xl:max-w-[620px]");
+    expect(main.className.split(/\s+/)).toEqual(expect.arrayContaining(["flex-1", "xl:w-[620px]", "xl:flex-none"]));
+    expect(main.className).not.toContain("xl:max-w-[620px]");
     expect(main.parentElement?.className).toContain("max-w-[1400px]");
   });
 

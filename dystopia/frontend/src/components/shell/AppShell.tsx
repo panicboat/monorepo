@@ -153,7 +153,7 @@ export function AppShell({ children }: AppShellProps) {
             <main
               ref={mainRef}
               className={cn(
-                "min-w-0 flex-1 bg-bg md:border-r md:border-divider xl:max-w-[620px]",
+                "min-w-0 flex-1 bg-bg md:border-r md:border-divider xl:w-[620px] xl:flex-none",
                 fitsViewport ? "min-h-0" : "pb-24 md:pb-0"
               )}
             >

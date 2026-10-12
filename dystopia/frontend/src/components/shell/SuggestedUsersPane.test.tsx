@@ -53,6 +53,7 @@ describe("SuggestedUsersPane", () => {
     const aside = /<aside class="([^"]*)"/.exec(html)?.[1].split(/\s+/) ?? [];
     const card = /<\/h2><div class="([^"]*)"/.exec(html)?.[1].split(/\s+/) ?? [];
 
+    expect(/<h2 class="([^"]*)"/.exec(html)?.[1].split(/\s+/)).toContain("text-[0.9375rem]");
     expect(aside).toEqual(expect.arrayContaining(["flex-1", "min-w-[185px]", "xl:block"]));
     expect(card).toEqual(expect.arrayContaining(["rounded-[17px]", "border", "border-border", "bg-surface"]));
   });
