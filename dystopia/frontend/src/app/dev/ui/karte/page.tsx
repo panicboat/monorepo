@@ -8,6 +8,8 @@ import type { KarteAggregate, KarteEntry } from "@/modules/karte/types";
 const mockAggregate: KarteAggregate = {
   count: 2,
   avgRating: 4.0,
+  authorCount: 2,
+  ratedCount: 2,
 };
 
 const mockEntries: KarteEntry[] = [
@@ -23,6 +25,11 @@ const mockEntries: KarteEntry[] = [
     rating: 5,
     body: "とても丁寧で好印象でした。また来てほしいです。",
     flagged: false,
+    status: "closed",
+    closedAt: "2026-06-20T10:00:00Z",
+    events: [],
+    latestEvent: null,
+    eventCount: 0,
     createdAt: "2026-06-20T10:00:00Z",
     updatedAt: "2026-06-20T10:00:00Z",
   },
@@ -38,6 +45,11 @@ const mockEntries: KarteEntry[] = [
     rating: 3,
     body: "",
     flagged: true,
+    status: "closed",
+    closedAt: "2026-06-18T14:30:00Z",
+    events: [],
+    latestEvent: null,
+    eventCount: 0,
     createdAt: "2026-06-18T14:30:00Z",
     updatedAt: "2026-06-18T14:30:00Z",
   },
@@ -52,7 +64,7 @@ export default function DevUiKartePage() {
           <KarteAggregateHeader aggregate={mockAggregate} />
         </div>
         <div className="mt-3 border border-divider rounded-lg overflow-hidden">
-          <KarteAggregateHeader aggregate={{ count: 0, avgRating: 0 }} />
+          <KarteAggregateHeader aggregate={{ count: 0, avgRating: null, authorCount: 0, ratedCount: 0 }} />
         </div>
       </section>
 

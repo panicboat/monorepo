@@ -74,7 +74,7 @@ export function KarteDetailSheet({ entryId, onOpenChange, onChanged }: Props) {
       const message = cause instanceof Error ? cause.message : "操作を完了できませんでした";
       if (active() && ui.current.step === requestedStep) setActionError(message);
       else useToastStore.getState().show(message);
-      if (active() && cause instanceof AppError && cause.status === 409) await refresh(undefined, { throwOnError: false });
+      if (active() && cause instanceof AppError && cause.status === 409) await refresh(undefined, { throwOnError: false, populateCache: false });
     }
   }
 
@@ -89,7 +89,7 @@ export function KarteDetailSheet({ entryId, onOpenChange, onChanged }: Props) {
 
   return <SideSheet open={entryId !== null} onOpenChange={changeOpen} title={title} onBack={step !== "detail" ? back : undefined} footer={footer}>
     {loading && !entry && <p className="py-8 text-center text-sm text-text-secondary">カルテを読み込み中…</p>}
-    {readError && <div role="alert" className="space-y-3 py-4"><p className="text-sm text-error">{readError.message || "カルテを取得できませんでした"}</p><Button variant="secondary" onClick={() => void refresh(undefined, { throwOnError: false })}>再試行</Button></div>}
+    {readError && <div role="alert" className="space-y-3 py-4"><p className="text-sm text-error">{readError.message || "カルテを取得できませんでした"}</p><Button variant="secondary" onClick={() => void refresh(undefined, { throwOnError: false, populateCache: false })}>再試行</Button></div>}
     {entry && <>
       {actionError && <p role="alert" className="mb-4 rounded-xl border border-error/40 p-3 text-sm text-error">{actionError}</p>}
       {(step === "event" || step === "rating") && !canEdit && <p className="mb-4 text-sm text-text-secondary">完了したカルテは変更できません。詳細に戻って再オープンしてください。</p>}
@@ -100,6 +100,7 @@ export function KarteDetailSheet({ entryId, onOpenChange, onChanged }: Props) {
           {entry.isMine && entry.authorProfileId !== activeProfileId && <p className="text-xs text-text-secondary">{entry.authorUsername ? `@${entry.authorUsername} として記録` : "削除したプロフィールで記録"}</p>}
           <div className="flex items-center gap-2">{entry.rating === null ? <span className="text-sm text-text-secondary">未評価</span> : <><RatingStars value={entry.rating} /><span className="text-sm text-text-secondary">{entry.rating} / 5</span></>}</div>
           {entry.closedAt && <p className="text-xs text-text-secondary">完了日 {new Date(entry.closedAt).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })}</p>}
+          <div className="space-y-1 text-xs text-text-secondary"><p>作成日時 <time dateTime={entry.createdAt}>{new Date(entry.createdAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}</time></p><p>更新日時 <time dateTime={entry.updatedAt}>{new Date(entry.updatedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}</time></p></div>
           {canEdit && <button type="button" disabled={busy} onClick={() => { setRating(entry.rating); setBody(entry.body); setFormErrors({}); setActionError(null); setStep("rating"); }} className="min-h-10 text-sm font-medium text-accent">評価・メモを変更</button>}
         </div>
         {entry.flagged && <p className="rounded-xl border border-warning/40 p-3 text-xs text-text-secondary">この記録には他のキャストから複数の報告があります。</p>}

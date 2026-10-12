@@ -9,7 +9,7 @@ describe("FeatureTourList", () => {
     expect(html).toContain("ホーム");
     expect(html).toContain("フォロー中のアカウントの投稿が並ぶタイムライン");
     expect(html).toContain("カルテ");
-    expect(html).toContain("ゲストについて書いたレビューの管理・共有");
+    expect(html).toContain("ゲストとの予約・接客の出来事を記録・共有");
   });
 
   it("does not list the retired standalone oshi menu item", () => {

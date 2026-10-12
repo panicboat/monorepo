@@ -19,9 +19,10 @@ const SAVED_MESSAGE = { karte: "カルテを保存しました", review: "レビ
 interface ComposeToDialogProps {
   kind: RecipientKind;
   onClose: () => void;
+  open?: boolean;
 }
 
-export function ComposeToDialog({ kind, onClose }: ComposeToDialogProps) {
+export function ComposeToDialog({ kind, onClose, open = true }: ComposeToDialogProps) {
   const viewerRole = useAuthStore(selectRole);
   const showToast = useToastStore((s) => s.show);
   const { start, loading: opening } = useStartChat();
@@ -47,7 +48,7 @@ export function ComposeToDialog({ kind, onClose }: ComposeToDialogProps) {
   };
 
   return (
-    <Dialog.Root open onOpenChange={(next) => { if (!next) onClose(); }}>
+    <Dialog.Root open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60" />
         <Dialog.Content

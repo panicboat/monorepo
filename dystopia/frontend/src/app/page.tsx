@@ -9,6 +9,8 @@ import { useProfile } from "@/modules/profile/hooks/useProfile";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { useRecentKarte } from "@/modules/karte/hooks/useRecentKarte";
 import { KarteEntryCard } from "@/modules/karte/components/KarteEntryCard";
+import { KarteDetailSheet } from "@/modules/karte/components/KarteDetailSheet";
+import { RouteFade } from "@/lib/motion/RouteFade";
 import { useRecentReviews } from "@/modules/review/hooks/useRecentReviews";
 import { ReviewEntryCard } from "@/modules/review/components/ReviewEntryCard";
 import type { FeedFilterValue } from "@/modules/feed/types";
@@ -27,6 +29,7 @@ function isFeedFilter(tab: HomeTabValue): tab is FeedFilterValue {
 
 export default function HomePage() {
   const [tab, setTab] = useState<HomeTabValue>("all");
+  const [openedEntryId, setOpenedEntryId] = useState<string | null>(null);
   const { profile } = useProfile();
   const { hasAccess: karteAccess } = useMyKarteAccess();
   const isPostTab = isFeedFilter(tab);
@@ -113,12 +116,12 @@ export default function HomePage() {
       return <p className="px-4 py-8 text-center text-text-secondary">読み込み中…</p>;
     }
     if (karte.error) {
-      return <p className="px-4 py-8 text-center text-text-danger">読み込みに失敗しました</p>;
+      return <div role="alert" className="space-y-3 px-4 py-8 text-center"><p className="text-sm text-error">{karte.error.message || "読み込みに失敗しました"}</p><Button variant="secondary" onClick={() => void karte.refresh()}>再試行</Button></div>;
     }
     return (
       <>
         {karte.entries.map((e) => (
-          <KarteEntryCard key={e.id} entry={e} mode="recent" onChanged={karte.refresh} />
+          <KarteEntryCard key={e.id} entry={e} mode="recent" onOpen={setOpenedEntryId} />
         ))}
         {karte.entries.length === 0 && !karte.hasMore && (
           <p className="px-4 py-8 text-center text-text-secondary">まだカルテがありません</p>
@@ -163,15 +166,16 @@ export default function HomePage() {
   const content = tab === "karte" ? karteContent : tab === "reviews" ? reviewsContent : postContent;
 
   return (
-    <main className="mx-auto flex max-w-xl flex-col bg-bg text-text-primary">
-      <header className="sticky top-0 z-10 bg-bg">
+    <main className="flex w-full flex-col bg-surface text-text-primary">
+      <header className="sticky top-0 z-10 bg-surface">
         <Tabs
           items={tabItems}
           value={tab}
-          onValueChange={(id) => setTab(id as HomeTabValue)}
+          onValueChange={(id) => { setOpenedEntryId(null); setTab(id as HomeTabValue); }}
         />
       </header>
-      <section>{content}</section>
+      <RouteFade transitionKey={tab}><section>{content}</section></RouteFade>
+      <KarteDetailSheet entryId={openedEntryId} onOpenChange={(open) => { if (!open) setOpenedEntryId(null); }} />
     </main>
   );
 }

@@ -258,7 +258,7 @@ it("does not render the completed account's panel after a profile switch", () =>
 
 **Interfaces:** 一覧ページは`openedEntryId`を一つだけ持ちTask 8へ渡す。作成入口は対象を選択する既存RecipientPickerまたはプロフィールの既知targetをTask 7へ渡す。自分のfilterは`all/open/closed`、件数は全体counts、ゲストの集計はTask 5のAggregateを使う。
 
-- [ ] **Step 1:** 作成直後のopenカードをホームで表示、自分のfilter/全体counts、guestの平均を最初に表示、未評価と0件の区別、cast/guestの作成候補、既知targetで宛先選択を省略することを固定する。
+- [x] **Step 1:** 作成直後のopenカードをホームで表示、自分のfilter/全体counts、guestの平均を最初に表示、未評価と0件の区別、cast/guestの作成候補、既知targetで宛先選択を省略することを固定する。
 
 ```ts
 it("shows equal-account averages with rater and rated-chart counts", () => {
@@ -268,10 +268,10 @@ it("shows equal-account averages with rater and rated-chart counts", () => {
 });
 ```
 
-- [ ] **Step 2:** `FE: pnpm test src/app/page.test.tsx src/app/karte/my/page.test.tsx 'src/app/u/[username]/page.test.tsx' src/modules/karte/components/GuestKarteTab.test.tsx src/modules/karte/components/KarteAggregateHeader.test.tsx src/components/compose`。旧集計/未実装filterでFAILを確認する。
-- [ ] **Step 3:** ホームはサマリー、自分は状態別管理、guestは平均と内訳を優先する。無限一覧は作成日時cursorを維持し、filter変更時に以前のページを混ぜない。関連作成・状態変更・削除が成功した後だけ一覧/集計を再取得する。アクセス失敗は空一覧として表示しない。
-- [ ] **Step 4:** 指定Vitestが0 failures、`FE: pnpm exec tsc --noEmit`が終了コード0。FlowerMenuタップ/スライド/キーボードとguestのreview導線を既存テストで確認する。
-- [ ] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): surface karte summaries and account-weighted guest ratings"`。
+- [x] **Step 2:** `FE: pnpm test src/app/page.test.tsx src/app/karte/my/page.test.tsx 'src/app/u/[username]/page.test.tsx' src/modules/karte/components/GuestKarteTab.test.tsx src/modules/karte/components/KarteAggregateHeader.test.tsx src/components/compose`。旧集計/未実装filterでFAILを確認する。
+- [x] **Step 3:** ホームはサマリー、自分は状態別管理、guestは平均と内訳を優先する。無限一覧は作成日時cursorを維持し、filter変更時に以前のページを混ぜない。関連作成・状態変更・削除が成功した後だけ一覧/集計を再取得する。アクセス失敗は空一覧として表示しない。
+- [x] **Step 4:** 指定Vitestが0 failures、`FE: pnpm exec tsc --noEmit`が終了コード0。FlowerMenuタップ/スライド/キーボードとguestのreview導線を既存テストで確認する。
+- [x] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): surface karte summaries and account-weighted guest ratings"`。
 
 ## Task 10: Connected Composition and Editing
 

@@ -144,3 +144,9 @@ describe("PublicProfilePage karte tab visibility", () => {
     expect(html).not.toContain("カルテ");
   });
 });
+
+
+it("offers a known-guest karte action from an accessible guest profile", () => {
+  mocks.profile = { ...emptyProfileView("profile-1"), role: 1 }; mocks.karteAccess = true;
+  expect(renderToStaticMarkup(<PublicProfilePage />)).toContain("カルテを記録");
+});

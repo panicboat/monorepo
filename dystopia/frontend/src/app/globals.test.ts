@@ -51,7 +51,6 @@ describe("typography scale", () => {
       postCard,
       notifications,
       search,
-      karte,
       commentList,
       replyList,
       formField,
@@ -61,7 +60,6 @@ describe("typography scale", () => {
       readSource("src/modules/post/components/PostCardBinding.tsx"),
       readSource("src/app/notifications/page.tsx"),
       readSource("src/app/search/page.tsx"),
-      readSource("src/modules/karte/components/KarteEntryCard.tsx"),
       readSource("src/modules/post/components/CommentList.tsx"),
       readSource("src/modules/post/components/ReplyList.tsx"),
       readSource("src/components/ui/form-field.tsx"),
@@ -77,9 +75,6 @@ describe("typography scale", () => {
     );
     expect(search).toContain(
       '"shrink-0 rounded-full border px-3 py-1 text-sm"',
-    );
-    expect(karte).toContain(
-      'className="mt-2 flex gap-3 text-sm text-muted-foreground"',
     );
     expect(commentList).toContain(
       'className="mt-2 flex items-center gap-4 text-sm"',

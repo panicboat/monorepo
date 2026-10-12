@@ -25,7 +25,7 @@ const VARIANTS = {
     className: "mt-3",
     triggerClassName:
       "w-full rounded-full bg-gradient-brand py-3 text-center font-bold text-white shadow-brand-glow active:scale-95",
-    content: "投稿する",
+    content: "作成する",
   },
 } as const;
 

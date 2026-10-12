@@ -73,3 +73,9 @@ describe("ComposeLauncher", () => {
     expect(await choose("カルテ")).toContain("compose-to:karte");
   });
 });
+
+
+it("labels the desktop launcher as a menu for multiple creation kinds", () => {
+  mocks.role = "cast"; mocks.karteAccess = true;
+  expect(renderToStaticMarkup(<ComposeLauncher variant="sidebar" />)).toContain("作成する");
+});

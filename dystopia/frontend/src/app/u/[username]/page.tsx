@@ -15,6 +15,9 @@ import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
 import { ReviewsTab } from "@/modules/review/components/ReviewsTab";
 import { ScheduleSection } from "@/modules/schedule";
 import { Button } from "@/components/ui/button";
+import { SideSheet } from "@/components/ui/side-sheet";
+import { KarteComposer } from "@/modules/karte/components/KarteComposer";
+import { useToastStore } from "@/stores/toastStore";
 
 export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
@@ -25,6 +28,7 @@ export default function PublicProfilePage() {
   const { hasAccess: karteAccess } = useMyKarteAccess();
   const { saveProfile, saveMedia } = useProfile();
   const [editing, setEditing] = useState(false);
+  const [creatingKarte, setCreatingKarte] = useState(false);
 
   useEffect(() => {
     if (!viewerId || !profile?.id) return;
@@ -57,10 +61,12 @@ export default function PublicProfilePage() {
               <ProfileMoreMenu targetProfileId={profile.id} />
               <StartChatButton targetProfileId={profile.id} />
               <FollowButton targetProfileId={profile.id} />
+              {role === "guest" && karteAccess && <Button variant="secondary" size="sm" onClick={() => setCreatingKarte(true)}>カルテを記録</Button>}
             </>
           )
         }
       />
+      {role === "guest" && karteAccess && <SideSheet open={creatingKarte} onOpenChange={setCreatingKarte} title="カルテを記録"><KarteComposer targetProfileId={profile.id} onCreated={() => { setCreatingKarte(false); useToastStore.getState().show("カルテを保存しました"); }} /></SideSheet>}
       <SocialCountsLinks profileId={profile.id} username={profile.username} />
       {role === "cast" && <ScheduleSection profileId={profile.id} isOwner={isOwnProfile} />}
       <ProfileContentTabs

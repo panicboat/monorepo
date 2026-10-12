@@ -16,6 +16,7 @@ const input = { targetProfileId: "guest", rating: null, firstEvent };
 let current: { create: ReturnType<typeof useCreateKarte>; update: ReturnType<typeof useUpdateKarte>; events: ReturnType<typeof useKarteEvents>; lifecycle: ReturnType<typeof useKarteLifecycle> };
 let unmount: (() => Promise<void>) | undefined;
 let total = 0;
+let myList: ReturnType<typeof useMyKarte>;
 const fetchMock = vi.fn<typeof fetch>();
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
@@ -25,7 +26,7 @@ async function mount(withList = false) {
     current = { create: useCreateKarte(), update: useUpdateKarte(), events: useKarteEvents("entry"), lifecycle: useKarteLifecycle("entry") };
     return null;
   }
-  function List() { total = useMyKarte().counts.total; return null; }
+  function List() { myList = useMyKarte(); total = myList.counts.total; return null; }
   unmount = async () => { await act(async () => root.unmount()); unmount = undefined; };
   await act(async () => root.render(createElement(SWRConfig, { value: { provider: () => new Map(), errorRetryCount: 0 } }, createElement(Probe), withList ? createElement(List) : null)));
 }
@@ -58,6 +59,19 @@ describe("karte mutations", () => {
     await mount(true);
     await act(async () => { expect(await current.create.create(input)).toEqual({ id: "saved" }); });
     expect(current.create.error).toBeNull();
+  });
+  it("refreshes a changed entry on a loaded later page", async () => {
+    let closed = false;
+    fetchMock.mockImplementation(async (url, options) => {
+      if (options?.method === "POST") { closed = true; return reply({ entry: { id: "entry", status: "closed" } }); }
+      const later = String(url).includes("cursor=older");
+      return reply({ entries: later ? [{ id: "entry", status: closed ? "closed" : "open" }] : [{ id: "newer", status: "open" }], hasMore: !later, nextCursor: later ? "" : "older", counts: { total: 2, open: closed ? 1 : 2, closed: closed ? 1 : 0 } });
+    });
+    await mount(true);
+    await act(async () => { await myList.loadMore(); });
+    expect(myList.entries.map((entry) => entry.status)).toEqual(["open", "open"]);
+    await act(async () => { await current.lifecycle.close(); });
+    expect(myList.entries.map((entry) => entry.status)).toEqual(["open", "closed"]);
   });
   it("sends one request while pending and waits for its response", async () => {
     let finish!: (value: Response) => void;

@@ -13,7 +13,7 @@ export function hasKarteAccess(role: string | null, data: KarteAccess | undefine
 export function useMyKarteAccess() {
   const profileId = useAuthStore((s) => s.activeProfileId);
   const role = useAuthStore(selectRole);
-  const { data, error, isLoading } = useSWR<KarteAccess>(
+  const { data, error, isLoading, mutate } = useSWR<KarteAccess>(
     profileId ? "/api/karte/access" : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 60_000 }
@@ -23,5 +23,6 @@ export function useMyKarteAccess() {
     grantedAt: data?.grantedAt ?? null,
     loading: isLoading,
     error,
+    refresh: () => mutate(undefined, { throwOnError: false, populateCache: false }),
   };
 }

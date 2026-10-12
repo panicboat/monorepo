@@ -25,7 +25,7 @@ export const FEATURES: FeatureItem[] = [
   { key: "ranking", icon: FEATURE_ICONS.ranking, label: "ランキング", description: "期間別の人気投稿ランキング" },
   { key: "profile", icon: FEATURE_ICONS.profile, label: "プロフィール", description: "自分のプロフィールの確認・編集" },
   { key: "settings", icon: FEATURE_ICONS.settings, label: "設定", description: "アカウント・プライバシーなどの設定" },
-  { key: "karte", icon: FEATURE_ICONS.karte, label: "カルテ（キャスト向け・有料機能）", description: "ゲストについて書いたレビューの管理・共有" },
+  { key: "karte", icon: FEATURE_ICONS.karte, label: "カルテ（キャスト向け）", description: "ゲストとの予約・接客の出来事を記録・共有" },
 ];
 
 export function getFeatureDescription(key: string): string {

@@ -26,11 +26,12 @@ export function useGuestKarte(targetProfileId: string | null | undefined) {
 
   return {
     entries,
+    initialized: pages.length > 0,
     aggregate,
     hasMore,
     loading: isLoading || isValidating,
     error,
     loadMore: () => setSize(size + 1),
-    refresh: () => mutate(),
+    refresh: () => mutate(undefined, { throwOnError: false, populateCache: false }),
   };
 }

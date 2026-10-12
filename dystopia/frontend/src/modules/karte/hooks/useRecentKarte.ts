@@ -28,6 +28,6 @@ export function useRecentKarte(enabled: boolean) {
     loading: isLoading || isValidating,
     error,
     loadMore: () => setSize(size + 1),
-    refresh: () => mutate(),
+    refresh: () => mutate(undefined, { throwOnError: false, populateCache: false }),
   };
 }
