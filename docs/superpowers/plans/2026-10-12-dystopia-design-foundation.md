@@ -41,7 +41,7 @@
 | ファイル | 責務 | Task |
 |---|---|---|
 | `src/app/globals.css` | 色・動きのトークン、シートのアニメーション | 1, 4 |
-| `src/app/globals.test.ts`（新規） | トークンの値を固定する | 1 |
+| `src/app/globals.tokens.test.ts`（新規） | トークンの値を固定する | 1 |
 | `src/app/layout.tsx` | ブラウザのステータスバー色 | 1 |
 | `src/lib/motion/useEnterAnimation.ts`（新規） | キーが変わったときの入場アニメーション | 2 |
 | `src/lib/motion/{variants,hooks,index}.ts` | 削除 | 2 |
@@ -63,7 +63,7 @@
 **Files:**
 - Modify: `src/app/globals.css:1-121`
 - Modify: `src/app/layout.tsx:20-23`
-- Test: `src/app/globals.test.ts`（新規）
+- Test: `src/app/globals.tokens.test.ts`（新規。既存の `src/app/globals.test.ts` は文字サイズのテストなので変更しない）
 
 **Interfaces:**
 - Consumes: なし
@@ -76,7 +76,7 @@ Expected: `Lockfile is up to date` を含み、エラーなく終わる
 
 - [ ] **Step 2: 失敗するテストを書く**
 
-`src/app/globals.test.ts` を作成する。
+`src/app/globals.tokens.test.ts` を作成する。
 
 ```ts
 import { readFileSync } from "node:fs";
@@ -175,7 +175,7 @@ describe("design tokens", () => {
 
 - [ ] **Step 3: テストが失敗することを確認する**
 
-Run: `env -u NODE_OPTIONS pnpm exec vitest run src/app/globals.test.ts`
+Run: `env -u NODE_OPTIONS pnpm exec vitest run src/app/globals.tokens.test.ts`
 Expected: FAIL。最初の失敗は `--color-backdrop` が存在しないこと
 
 - [ ] **Step 4: トークンを書き換える**
@@ -322,18 +322,18 @@ html {
 
 - [ ] **Step 6: テストが通ることを確認する**
 
-Run: `env -u NODE_OPTIONS pnpm exec vitest run src/app/globals.test.ts`
+Run: `env -u NODE_OPTIONS pnpm exec vitest run src/app/globals.tokens.test.ts`
 Expected: PASS（7 tests）
 
 - [ ] **Step 7: 削除したトークンの利用箇所がないことを確認する**
 
-Run: `/usr/bin/grep -rnE 'brand-tertiary|gradient-brand-3|neutral-(600|700|800|950)' src`
+Run: `/usr/bin/grep -rnE --exclude='*.test.ts' 'brand-tertiary|gradient-brand-3|neutral-(600|700|800|950)' src`
 Expected: 出力なし（終了コード 1）
 
 - [ ] **Step 8: コミットする**
 
 ```bash
-git add src/app/globals.css src/app/globals.test.ts src/app/layout.tsx
+git add src/app/globals.css src/app/globals.tokens.test.ts src/app/layout.tsx
 git commit -s -m "refactor(dystopia/frontend): take the dark palette and motion timings from the mock"
 ```
 
@@ -1031,7 +1031,7 @@ export function SideSheet({ open, onOpenChange, title, onBack, stepKey, children
 
 - [ ] **Step 5: テストが通ることを確認する**
 
-Run: `env -u NODE_OPTIONS pnpm exec vitest run src/components/ui/side-sheet.test.tsx src/app/globals.test.ts`
+Run: `env -u NODE_OPTIONS pnpm exec vitest run src/components/ui/side-sheet.test.tsx src/app/globals.tokens.test.ts`
 Expected: PASS（side-sheet 10 tests、globals 7 tests）
 
 - [ ] **Step 6: コミットする**
