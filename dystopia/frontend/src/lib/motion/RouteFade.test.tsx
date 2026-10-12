@@ -17,7 +17,7 @@ describe("RouteFade", () => {
     Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
     function Page() { const [text, setText] = useState("draft"); useEffect(() => { mounts++; }, []); return createElement("button", { onClick: () => setText("written") }, text); }
     const container = document.createElement("div"); root = createRoot(container);
-    const render = (key: string) => act(async () => root.render(createElement(RouteFade, { transitionKey: key }, createElement(Page))));
+    const render = (key: string) => act(async () => root.render(createElement(RouteFade, { transitionKey: key, children: createElement(Page) })));
     await render("one");
     await act(async () => (container.querySelector("button") as HTMLButtonElement).click());
     await render("two");
@@ -33,7 +33,7 @@ describe("RouteFade", () => {
     Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
     vi.stubGlobal("matchMedia", () => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     root = createRoot(document.createElement("div"));
-    await act(async () => root.render(createElement(RouteFade, { transitionKey: "one" }, "content")));
+    await act(async () => root.render(createElement(RouteFade, { transitionKey: "one", children: "content" })));
     expect(animate).not.toHaveBeenCalled();
   });
 });

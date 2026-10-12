@@ -8,13 +8,13 @@ import { readFileSync } from "node:fs";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let root: ReturnType<typeof createRoot>;
 let container: HTMLDivElement;
-let close: ReturnType<typeof vi.fn>;
-let internalBack: ReturnType<typeof vi.fn>;
+const close = vi.fn<(open: boolean) => void>();
+const internalBack = vi.fn<() => void>();
 
 async function mount() {
   function Probe() {
     const [open, setOpen] = useState(false);
-    return createElement("div", null, createElement("button", { onClick: () => setOpen(true), id: "origin" }, "open"), createElement(SideSheet, { open, onOpenChange: (next) => { close(next); setOpen(next); }, title: "カルテ詳細", onBack: internalBack, historyMode: "route", footer: createElement("button", null, "保存") }, createElement("input", { "aria-label": "補足" }), createElement("button", null, "next")));
+    return createElement("div", null, createElement("button", { onClick: () => setOpen(true), id: "origin" }, "open"), createElement(SideSheet, { open, onOpenChange: (next) => { close(next); setOpen(next); }, title: "カルテ詳細", onBack: internalBack, historyMode: "route", footer: createElement("button", null, "保存"), children: createElement("div", null, createElement("input", { "aria-label": "補足" }), createElement("button", null, "next")) }));
   }
   await act(async () => root.render(createElement(Probe)));
   const origin = container.querySelector("#origin") as HTMLButtonElement;
@@ -23,7 +23,7 @@ async function mount() {
   await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
   return origin;
 }
-beforeEach(() => { container = document.createElement("div"); document.body.appendChild(container); root = createRoot(container); close = vi.fn(); internalBack = vi.fn(); });
+beforeEach(() => { container = document.createElement("div"); document.body.appendChild(container); root = createRoot(container); close.mockReset(); internalBack.mockReset(); });
 afterEach(async () => { await act(async () => root.unmount()); container.remove(); vi.restoreAllMocks(); });
 
 describe("SideSheet", () => {

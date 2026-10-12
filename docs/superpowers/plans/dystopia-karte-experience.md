@@ -240,17 +240,17 @@ it("does not default the chart rating to three", () => expect(submittedRating).t
 
 **Interfaces:** `KarteDetailSheet({entryId: string | null,onOpenChange,onChanged(entryId)})`、`KarteEventTimeline({events,onEdit?,onDelete?,readOnly})`。Cardは既存identity/profile注記を維持し、`onOpen(entryId)`で親の一つのdetailへ接続する。編集段階は同じSheet内の表示切り替えで行う。
 
-- [ ] **Step 1:** 段階別・過去日順、過去のメモ、他cast読み取り専用、所有者の追記/編集/削除/評価変更/完了/再オープン、最後の出来事削除拒否、取得再試行、保存失敗時入力保持を検証する。
+- [x] **Step 1:** 段階別・過去日順、過去のメモ、他cast読み取り専用、所有者の追記/編集/削除/評価変更/完了/再オープン、最後の出来事削除拒否、取得再試行、保存失敗時入力保持を検証する。
 
 ```ts
 it("reopens without losing events or rating", () => expect(latestEntry).toMatchObject({status: "open", rating: 4, eventCount: 2}));
 it("does not render the completed account's panel after a profile switch", () => expect(document.querySelector('[role="dialog"]')).toBeNull());
 ```
 
-- [ ] **Step 2:** `FE: pnpm test src/modules/karte/components/KarteDetailSheet.test.tsx src/modules/karte/components/KarteEventTimeline.test.tsx src/modules/karte/components/KarteEntryCard`。未実装のdetail/状態操作でFAILを確認する。
-- [ ] **Step 3:** 詳細の全イベントを取得し、編集フォームはTask 7を再利用する。closedでは内容編集を隠し、再オープンと確認付き親削除だけを所有者へ表示する。成功後は返った詳細で更新して関連一覧・集計を再取得する。閉じたフォームの保存エラーは既存toastへ渡し、別profileのパネルを更新しない。通報と記録者/対象リンクは既存処理を維持する。
-- [ ] **Step 4:** 指定Vitestが0 failures。同一アカウント別プロフィールの注記と編集権限、closed競合409で再取得と入力保持、1つのpanel内で段階戻るができることを確認する。
-- [ ] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): manage karte events and lifecycle in the detail panel"`。
+- [x] **Step 2:** `FE: pnpm test src/modules/karte/components/KarteDetailSheet.test.tsx src/modules/karte/components/KarteEventTimeline.test.tsx src/modules/karte/components/KarteEntryCard`。未実装のdetail/状態操作でFAILを確認する。
+- [x] **Step 3:** 詳細の全イベントを取得し、編集フォームはTask 7を再利用する。closedでは内容編集を隠し、再オープンと確認付き親削除だけを所有者へ表示する。成功後は返った詳細で更新して関連一覧・集計を再取得する。閉じたフォームの保存エラーは既存toastへ渡し、別profileのパネルを更新しない。通報と記録者/対象リンクは既存処理を維持する。
+- [x] **Step 4:** 指定Vitestが0 failures。同一アカウント別プロフィールの注記と編集権限、closed競合409で再取得と入力保持、1つのpanel内で段階戻るができることを確認する。
+- [x] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): manage karte events and lifecycle in the detail panel"`。
 
 ## Task 9: Karte Discovery and Entry Points
 

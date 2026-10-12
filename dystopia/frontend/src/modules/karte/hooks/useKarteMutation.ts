@@ -6,6 +6,8 @@ import { unstable_serialize } from "swr/infinite";
 import { authFetch, type AuthFetchOptions } from "@/lib/auth/fetch";
 import { useAuthStore } from "@/stores/authStore";
 
+export class KarteInactiveViewError extends Error {}
+
 export function useKarteMutation<T>() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -24,12 +26,12 @@ export function useKarteMutation<T>() {
     setError(null);
     try {
       const result = await authFetch<T>(url, options);
-      if (!isCurrent()) throw new Error("操作元のプロフィールが変わりました");
+      if (!isCurrent()) throw new KarteInactiveViewError("操作元のプロフィールが変わりました");
       // SILENT: Read errors stay with SWR readers so a saved mutation is never retried as a failed save.
       await mutate((key) => typeof key === "string" && key.startsWith("/api/karte") && key !== "/api/karte/access", undefined, { revalidate: true, throwOnError: false });
       const infinitePrefix = unstable_serialize(() => "/api/karte");
       await Promise.all(Array.from(cache.keys()).filter((key) => key.startsWith(infinitePrefix)).map((key) => mutate(key, undefined, { revalidate: true, throwOnError: false })));
-      if (!isCurrent()) throw new Error("操作元のプロフィールが変わりました");
+      if (!isCurrent()) throw new KarteInactiveViewError("操作元のプロフィールが変わりました");
       return result;
     } catch (cause) {
       const failure = cause instanceof Error ? cause : new Error("保存できませんでした");

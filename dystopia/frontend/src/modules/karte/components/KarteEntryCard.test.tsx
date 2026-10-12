@@ -1,16 +1,10 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-
-vi.mock("../hooks/useDeleteKarte", () => ({
-  useDeleteKarte: () => ({ remove: vi.fn(), loading: false }),
-}));
-vi.mock("../hooks/useReportKarte", () => ({
-  useReportKarte: () => ({ report: vi.fn(), loading: false }),
-}));
+import type { KarteEntry } from "../types";
 
 const { KarteEntryCard } = await import("./KarteEntryCard");
 
-const baseEntry = {
+const baseEntry: KarteEntry = {
   id: "e-1",
   authorProfileId: "author-1",
   targetProfileId: "target-1",
@@ -22,6 +16,11 @@ const baseEntry = {
   rating: 4,
   body: "memo",
   flagged: false,
+  status: "closed",
+  closedAt: null,
+  events: [],
+  latestEvent: null,
+  eventCount: 0,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
@@ -62,18 +61,18 @@ describe("KarteEntryCard identity link", () => {
 });
 
 describe("KarteEntryCard ownership", () => {
-  it("offers delete and no report for an entry the server marks as mine", () => {
+  it("identifies an entry the server marks as mine", () => {
     const html = renderToStaticMarkup(<KarteEntryCard entry={{ ...baseEntry, isMine: true }} mode="my" />);
 
-    expect(html).toContain("削除");
-    expect(html).not.toContain("報告");
+    expect(html).toContain("自分の記録");
+    expect(html).not.toContain(">編集<");
   });
 
-  it("offers report and no delete for an entry that is not mine", () => {
+  it("does not identify another cast's record as mine", () => {
     const html = renderToStaticMarkup(<KarteEntryCard entry={{ ...baseEntry, isMine: false }} mode="target" />);
 
-    expect(html).toContain("報告");
-    expect(html).not.toContain("削除");
+    expect(html).not.toContain("自分の記録");
+    expect(html).not.toContain(">削除<");
   });
 
   it("decides by the server flag, not by comparing ids on the client", () => {
@@ -81,16 +80,18 @@ describe("KarteEntryCard ownership", () => {
       <KarteEntryCard entry={{ ...baseEntry, authorProfileId: "another-persona-of-mine", isMine: true }} mode="recent" />
     );
 
-    expect(html).toContain("削除");
+    expect(html).toContain("自分の記録");
   });
 });
 
 describe("KarteEntryCard editing", () => {
-  it("offers edit for an entry the server marks as mine and not for another cast's entry", () => {
+  it("opens details from summaries while the detail panel owns editing", () => {
     const mine = renderToStaticMarkup(<KarteEntryCard entry={{ ...baseEntry, isMine: true }} mode="my" />);
     const theirs = renderToStaticMarkup(<KarteEntryCard entry={{ ...baseEntry, isMine: false }} mode="target" />);
 
-    expect(mine).toContain(">編集<");
+    expect(mine).toContain("詳細を見る");
+    expect(mine).not.toContain(">編集<");
+    expect(theirs).toContain("詳細を見る");
     expect(theirs).not.toContain(">編集<");
   });
 
