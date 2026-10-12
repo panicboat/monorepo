@@ -13,6 +13,7 @@ import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { ProfileSwitcher } from "@/modules/profile/components/ProfileSwitcher";
 import { useAuthStore, selectRole } from "@/stores/authStore";
 import { PROFILE_NAV_PATH, resolveNavItems } from "./resolveNavItems";
+import { cn } from "@/lib/utils";
 
 export function SideNav() {
   const pathname = usePathname();
@@ -29,8 +30,8 @@ export function SideNav() {
   const profileHref = profile?.username ? `/u/${profile.username}` : "/profile";
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col px-3 py-4 md:flex">
-      <BrandMark className="px-4 pb-4 text-xl" />
+    <aside className="sticky top-0 hidden h-screen w-[266px] shrink-0 flex-col border-r border-divider bg-bg px-4 py-[18px] md:flex">
+      <BrandMark className="px-4 pb-3 text-lg" />
       <nav className="flex-1 overflow-y-auto">
         {resolveNavItems({ karteAccess, isGuest: role === "guest" }).map((item) => {
           const href = item.path === PROFILE_NAV_PATH ? profileHref : item.path;
@@ -44,12 +45,13 @@ export function SideNav() {
             <Link
               key={item.path}
               href={href}
-              className={`relative flex items-center gap-3 rounded-full px-4 py-3 text-lg hover:bg-bg-secondary ${
-                active ? "font-bold text-text-primary" : "text-text-secondary"
-              }`}
+              className={cn(
+                "relative flex h-[51px] items-center gap-4 rounded-[10px] px-4 text-base hover:bg-bg-secondary hover:text-text-primary",
+                active ? "bg-bg-secondary text-text-primary" : "text-text-secondary"
+              )}
               aria-current={active ? "page" : undefined}
             >
-              <item.icon className="size-6 shrink-0" strokeWidth={active ? 2.5 : 2} />
+              <item.icon className={cn("size-[22px] shrink-0", active && "text-accent")} strokeWidth={active ? 2.5 : 2} />
               <span className="flex-1">{item.label}</span>
               {badgeCount > 0 && (
                 <span className="min-w-[1.25rem] rounded-full bg-accent px-1 text-center text-xs font-bold text-white">
@@ -65,7 +67,7 @@ export function SideNav() {
 
       <Link
         href={profileHref}
-        className="mt-3 flex items-center gap-3 rounded-full px-2 py-2 hover:bg-bg-secondary"
+        className="mt-3 flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-bg-secondary"
       >
         <Avatar
           src={profile?.avatarUrl || undefined}

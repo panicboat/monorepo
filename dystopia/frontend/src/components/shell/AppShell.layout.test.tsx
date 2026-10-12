@@ -55,14 +55,16 @@ async function mountAt(pathname: string) {
     });
     container.remove();
   });
-  await act(async () => {
-    root.render(createElement(AppShell, null, createElement("div", { "data-testid": "page" })));
-  });
+  const render = () =>
+    act(async () => {
+      root.render(createElement(AppShell, null, createElement("div", { "data-testid": "page" })));
+    });
+  await render();
   const page = container.querySelector('[data-testid="page"]');
   if (!page) throw new Error(`the page did not render: ${container.innerHTML}`);
   const main = page.parentElement as HTMLElement;
   const frame = main.parentElement?.parentElement as HTMLElement;
-  return { container, main, frame };
+  return { container, main, frame, page, rerender: render };
 }
 
 beforeEach(() => {
@@ -99,5 +101,28 @@ describe("AppShell layout", () => {
     expect(main.className).toContain("pb-24");
     expect(container.querySelector('[data-testid="composer-fab"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="bottom-tab"]')).not.toBeNull();
+  });
+
+  it("sets the content column apart from the page behind the columns", async () => {
+    const { main, frame } = await mountAt("/messages");
+
+    expect(frame.className).toContain("bg-backdrop");
+    expect(main.className).toContain("bg-bg");
+    expect(main.className).toContain("xl:max-w-[620px]");
+    expect(main.parentElement?.className).toContain("max-w-[1400px]");
+  });
+
+  it("fades the content in when the route changes, keeping the same content element", async () => {
+    const animate = vi.spyOn(Element.prototype, "animate").mockReturnValue({} as Animation);
+    const { main, page, container, rerender } = await mountAt("/messages");
+    main.style.setProperty("--duration-fade", "200ms");
+
+    navigation.pathname = "/search";
+    await rerender();
+
+    expect(animate).toHaveBeenCalledTimes(1);
+    expect(animate.mock.contexts[0]).toBe(main);
+    expect(container.querySelector('[data-testid="page"]')).toBe(page);
+    animate.mockRestore();
   });
 });

@@ -32,7 +32,7 @@ export function BottomTab() {
   ];
 
   return (
-    <nav className="sticky bottom-0 z-30 flex items-center justify-around border-t border-border bg-bg/95 px-2 py-1 backdrop-blur md:hidden">
+    <nav className="sticky bottom-0 z-30 flex items-center justify-around border-t border-divider bg-bg px-1 pb-safe md:hidden">
       {tabs.map((tab) => {
         const active = pathname === tab.path;
         const badgeCount =
@@ -47,12 +47,12 @@ export function BottomTab() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }
             }}
-            className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-md py-2 text-sm ${
+            className={`relative flex min-h-[61px] flex-1 flex-col items-center justify-center gap-0.5 text-[11px] ${
               active ? "text-accent" : "text-text-secondary hover:text-text-primary"
             }`}
             aria-current={active ? "page" : undefined}
           >
-            <tab.icon className="size-6" strokeWidth={active ? 2.5 : 2} />
+            <tab.icon className="size-[23px]" strokeWidth={active ? 2.5 : 2} />
             <span>{tab.label}</span>
             {badgeCount > 0 && (
               <span className="absolute right-2 top-1 min-w-[1.25rem] rounded-full bg-accent px-1 text-center text-xs font-bold text-white">
