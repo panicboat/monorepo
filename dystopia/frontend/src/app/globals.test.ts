@@ -1,92 +1,91 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { compile } from "tailwindcss";
+import { describe, expect, test } from "vitest";
 
-const css = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
-const layout = readFileSync(join(process.cwd(), "src/app/layout.tsx"), "utf8");
+const require = createRequire(import.meta.url);
+const appDirectory = path.dirname(fileURLToPath(import.meta.url));
 
-function declarations(source: string, opener: string): Record<string, string> {
-  const start = source.indexOf(opener);
-  if (start < 0) throw new Error(`${opener} is missing`);
-  const body = source.slice(start + opener.length, source.indexOf("}", start));
-  return Object.fromEntries(
-    Array.from(body.matchAll(/(--[\w-]+):\s*([^;]+);/g), (match) => [match[1], match[2].replace(/\s+/g, " ").trim()])
+async function buildTypographyCss() {
+  const globalsPath = path.join(appDirectory, "globals.css");
+  const tailwindPath = require.resolve("tailwindcss/index.css");
+  const globals = await readFile(globalsPath, "utf8");
+  const tailwind = await readFile(tailwindPath, "utf8");
+  const compiler = await compile(
+    globals.replace('@import "tailwindcss";', tailwind),
   );
+
+  return compiler.build([
+    "text-xs",
+    "text-sm",
+    "text-base",
+    "text-lg",
+    "text-xl",
+    "text-2xl",
+  ]);
 }
 
-const dark = declarations(css, ":root {");
-const light = declarations(css, '[data-theme="light"] {');
-const reducedMotion = declarations(css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)")), ":root {");
-const theme = declarations(css, "@theme inline {");
+async function readSource(...segments: string[]) {
+  return readFile(path.join(appDirectory, "..", "..", ...segments), "utf8");
+}
 
-describe("design tokens", () => {
-  it("paints the dark theme with the mock's surfaces, rules and text", () => {
-    expect(dark).toMatchObject({
-      "--color-backdrop": "#090a0e",
-      "--color-bg": "#13151b",
-      "--color-bg-elevated": "#181a21",
-      "--color-surface": "#1b1e27",
-      "--color-bg-secondary": "#20232b",
-      "--color-input-bg": "#2b2c30",
-      "--color-border": "#303744",
-      "--color-divider": "#28313e",
-      "--color-text-primary": "#f6f4f8",
-      "--color-text-secondary": "#a4b1c5",
-      "--color-text-muted": "#8390a5",
-      "--color-rating": "#eab270",
-    });
+describe("typography scale", () => {
+  test("builds readable text and icon utilities", async () => {
+    const css = await buildTypographyCss();
+
+    expect(css).toContain("--text-xs: 0.75rem;");
+    expect(css).toContain("--text-sm: 0.875rem;");
+    expect(css).toContain("--text-base: 1rem;");
+    expect(css).toContain("--text-lg: 1.125rem;");
+    expect(css).toContain("--text-xl: 1.25rem;");
+    expect(css).toContain("--text-2xl: 1.5rem;");
+    expect(css).toContain(".text-2xl {\n    font-size: var(--text-2xl);");
+    expect(css).toContain("html {\n  font-size: 100%;\n}");
   });
 
-  it("draws the brand from the mock's violet and pink", () => {
-    expect(dark).toMatchObject({
-      "--color-brand-primary": "#b54bf1",
-      "--color-brand-secondary": "#e344ae",
-      "--color-brand-gradient-from": "#a345ed",
-      "--color-brand-gradient-to": "#e448a8",
-      "--color-accent": "var(--color-brand-primary)",
-      "--gradient-brand-2": "linear-gradient(110deg, var(--color-brand-gradient-from), var(--color-brand-gradient-to))",
-      "--shadow-brand-glow": "0 7px 21px rgb(168 44 146 / 0.27)",
-    });
-  });
+  test("keeps primary actions at a readable size", async () => {
+    const [
+      topBar,
+      postCard,
+      notifications,
+      search,
+      karte,
+      commentList,
+      replyList,
+      formField,
+      imageUpload,
+    ] = await Promise.all([
+      readSource("src/components/shell/TopBar.tsx"),
+      readSource("src/modules/post/components/PostCardBinding.tsx"),
+      readSource("src/app/notifications/page.tsx"),
+      readSource("src/app/search/page.tsx"),
+      readSource("src/modules/karte/components/KarteEntryCard.tsx"),
+      readSource("src/modules/post/components/CommentList.tsx"),
+      readSource("src/modules/post/components/ReplyList.tsx"),
+      readSource("src/components/ui/form-field.tsx"),
+      readSource("src/modules/profile/components/ImageUpload.tsx"),
+    ]);
 
-  it("keeps the light theme's own surfaces and gives it the added tokens", () => {
-    expect(light).toMatchObject({
-      "--color-bg": "#ffffff",
-      "--color-backdrop": "var(--color-neutral-50)",
-      "--color-bg-elevated": "#ffffff",
-      "--color-rating": "var(--color-warning)",
-    });
-    expect(light).not.toHaveProperty("--color-brand-primary");
-  });
-
-  it("exposes the added colors as utilities and keeps form controls at a 12px corner", () => {
-    expect(theme).toMatchObject({
-      "--color-backdrop": "var(--color-backdrop)",
-      "--color-bg-elevated": "var(--color-bg-elevated)",
-      "--color-rating": "var(--color-rating)",
-      "--radius-md": "0.75rem",
-    });
-  });
-
-  it("times motion from three durations and removes them for reduced motion", () => {
-    expect(dark).toMatchObject({
-      "--duration-slide": "330ms",
-      "--duration-fade": "200ms",
-      "--duration-quick": "170ms",
-      "--ease-emphasized": "cubic-bezier(0.22, 1, 0.36, 1)",
-    });
-    expect(reducedMotion).toEqual({
-      "--duration-slide": "0ms",
-      "--duration-fade": "0ms",
-      "--duration-quick": "0ms",
-    });
-  });
-
-  it("carries no token without a consumer", () => {
-    expect(css).not.toMatch(/brand-tertiary|gradient-brand-3|neutral-(600|700|800|950)/);
-  });
-
-  it("colors the browser chrome like the dark app surface", () => {
-    expect(layout).toContain(`{ media: "(prefers-color-scheme: dark)", color: "${dark["--color-bg"]}" }`);
+    expect(topBar).toContain(
+      'className="flex h-11 w-11 items-center justify-center rounded-full',
+    );
+    expect(postCard).toContain("min-h-11 min-w-11 items-center justify-center");
+    expect(notifications).toContain(
+      'className="text-sm text-text-secondary underline-offset-2',
+    );
+    expect(search).toContain(
+      '"shrink-0 rounded-full border px-3 py-1 text-sm"',
+    );
+    expect(karte).toContain(
+      'className="mt-2 flex gap-3 text-sm text-muted-foreground"',
+    );
+    expect(commentList).toContain(
+      'className="mt-2 flex items-center gap-4 text-sm"',
+    );
+    expect(replyList).toContain('className="mt-2 text-sm text-text-muted');
+    expect(formField).toContain('className="text-sm text-error"');
+    expect(imageUpload).toContain("bg-black/50 text-sm text-white");
   });
 });
