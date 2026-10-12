@@ -22,8 +22,8 @@ vi.mock("@/modules/footprints", () => ({
   useFootprintsUnreadCount: () => ({ count: 0 }),
 }));
 
-vi.mock("@/modules/post/components/PostComposerModal", () => ({
-  PostComposerModal: () => null,
+vi.mock("@/modules/post/components/PostComposerSheet", () => ({
+  PostComposerSheet: () => null,
 }));
 
 const karteMocks = vi.hoisted(() => ({

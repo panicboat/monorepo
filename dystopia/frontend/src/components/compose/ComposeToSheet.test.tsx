@@ -13,8 +13,10 @@ const mocks = vi.hoisted(() => ({
   start: vi.fn(),
   toast: vi.fn(),
   created: null as null | (() => void),
+  pathname: "/",
 }));
 
+vi.mock("next/navigation", () => ({ usePathname: () => mocks.pathname }));
 vi.mock("./RecipientPicker", () => ({
   RecipientPicker: ({ onPick }: { onPick: (profile: SocialProfileView) => void }) => (
     <button type="button" onClick={() => onPick(target)}>
@@ -40,18 +42,21 @@ vi.mock("@/stores/toastStore", () => ({
   useToastStore: (selector: (state: { show: (message: string) => void }) => unknown) => selector({ show: mocks.toast }),
 }));
 
-const { ComposeToDialog } = await import("./ComposeToDialog");
+const { ComposeToSheet } = await import("./ComposeToSheet");
 
-async function mount(kind: "message" | "karte" | "review") {
+async function mount(kind: "message" | "karte" | "review", open = true) {
   const onClose = vi.fn();
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
-  await act(async () => {
-    root.render(createElement(ComposeToDialog, { kind, onClose }));
-  });
+  const render = () =>
+    act(async () => {
+      root.render(createElement(ComposeToSheet, { kind, open, onClose }));
+    });
+  await render();
   return {
     onClose,
+    rerender: render,
     unmount: async () => {
       await act(async () => {
         root.unmount();
@@ -71,19 +76,35 @@ async function pick() {
 }
 
 beforeEach(() => {
-  mocks.start.mockReset().mockResolvedValue(undefined);
+  mocks.start.mockReset().mockResolvedValue("/messages/thread-1");
   mocks.toast.mockReset();
   mocks.created = null;
+  mocks.pathname = "/";
 });
 
-describe("ComposeToDialog", () => {
-  it("opens the conversation with the chosen profile and closes", async () => {
+describe("ComposeToSheet", () => {
+  it("opens the conversation in place of the sheet's history entry and closes once the route changes", async () => {
     const view = await mount("message");
     expect(document.body.textContent).toContain("メッセージの相手を選ぶ");
 
     await pick();
 
-    expect(mocks.start.mock.calls).toEqual([["guest-1"]]);
+    expect(mocks.start.mock.calls).toEqual([["guest-1", { replace: true }]]);
+    expect(view.onClose).not.toHaveBeenCalled();
+
+    mocks.pathname = "/messages/thread-1";
+    await view.rerender();
+
+    expect(view.onClose).toHaveBeenCalledTimes(1);
+    await view.unmount();
+  });
+
+  it("closes at once when the conversation is already the current page", async () => {
+    mocks.pathname = "/messages/thread-1";
+    const view = await mount("message");
+
+    await pick();
+
     expect(view.onClose).toHaveBeenCalledTimes(1);
     await view.unmount();
   });
@@ -102,6 +123,7 @@ describe("ComposeToDialog", () => {
 
   it("moves on to the karte form for the chosen guest, and back to the list", async () => {
     const view = await mount("karte");
+    expect(button("前に戻る")).toBeUndefined();
 
     await pick();
     expect(document.body.textContent).toContain("カルテを書く");
@@ -109,7 +131,7 @@ describe("ComposeToDialog", () => {
     expect(document.body.textContent).toContain("karte-composer:guest-1");
 
     await act(async () => {
-      button("宛先を選び直す").click();
+      button("前に戻る").click();
     });
     expect(document.body.textContent).toContain("カルテを書くゲストを選ぶ");
     await view.unmount();
@@ -135,6 +157,13 @@ describe("ComposeToDialog", () => {
 
     expect(document.body.textContent).toContain("レビューを書く");
     expect(document.body.textContent).toContain("review-composer:guest-1");
+    await view.unmount();
+  });
+
+  it("shows nothing while closed", async () => {
+    const view = await mount("karte", false);
+
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
     await view.unmount();
   });
 });
