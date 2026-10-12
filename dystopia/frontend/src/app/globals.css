@@ -114,6 +114,59 @@ html {
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-full: 9999px;
+
+  --animate-sheet-in: sheet-in var(--duration-slide) var(--ease-emphasized) both;
+  --animate-sheet-out: sheet-out var(--duration-slide) var(--ease-emphasized) both;
+  --animate-overlay-in: overlay-in var(--duration-fade) ease both;
+  --animate-overlay-out: overlay-out var(--duration-fade) ease both;
+  --animate-sheet-step: sheet-step var(--duration-fade) var(--ease-emphasized) both;
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateX(103%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sheet-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(103%);
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-step {
+  from {
+    opacity: 0.4;
+    transform: translateX(13px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .bg-gradient-brand {
