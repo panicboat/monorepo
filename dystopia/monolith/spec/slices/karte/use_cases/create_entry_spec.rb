@@ -3,74 +3,48 @@
 require "spec_helper"
 
 RSpec.describe Karte::UseCases::CreateEntry do
-  let(:use_case) do
-    described_class.new(
-      entry_repo: entry_repo,
-      get_role: get_role,
-      authorize_cast_access: authorize_cast_access
-    )
-  end
-  let(:entry_repo)            { double(:entry_repository) }
-  let(:get_role)              { double(:get_role) }
-  let(:authorize_cast_access) { double(:authorize_cast_access) }
+  let(:owner_id) { create_account(role: 2) }
+  let(:owner_profile) { create_account_with_profile(account_id: owner_id) }
+  let(:target_id) { create_account_with_profile(role: 1) }
+  let(:entry_repo) { Karte::Repositories::EntryRepository.new }
+  let(:event_repo) { Karte::Repositories::EventRepository.new }
+  let(:event) { {stage: "booking", outcome: "confirmed", tags: [], note: "", occurred_on: "2026-10-12"} }
+  let(:entry) { Karte::UseCases::CreateEntry.new.call(viewer_account_id: owner_id, viewer_profile_id: owner_profile, target_profile_id: target_id, rating: 4, first_event: event) }
 
-  let(:viewer_id) { "viewer-cast-1" }
-  let(:viewer_profile_id) { "viewer-profile-1" }
-  let(:target_id) { "target-guest-1" }
-
-  before do
-    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(true)
+  it "creates an open unrated chart and its first event together" do
+    result = described_class.new.call(viewer_account_id: owner_id, viewer_profile_id: owner_profile, target_profile_id: target_id, first_event: event)
+    expect([result.rating, result.status, result.author_account_id, result.author_profile_id]).to eq([nil, "open", owner_id, owner_profile])
+    expect(event_repo.list_by_entry(entry_id: result.id).map(&:outcome)).to eq(["confirmed"])
   end
 
-  it "creates an entry when target is a guest" do
-    allow(get_role).to receive(:call).with(profile_id: target_id).and_return(1)
-    expect(entry_repo).to receive(:create).with(
-      author_account_id: viewer_id,
-      author_profile_id: viewer_profile_id,
-      target_profile_id: target_id,
-      rating: 3,
-      body: "ok"
-    ).and_return(double(:entry, id: "e-1"))
-
-    result = use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 3, body: "ok")
-    expect(result.id).to eq("e-1")
+  it "rejects a missing first event without leaving a parent" do
+    expect { described_class.new.call(viewer_account_id: owner_id, viewer_profile_id: owner_profile, target_profile_id: target_id, first_event: nil) }.to raise_error(Karte::Domain::Errors::Validation)
+    expect(entry_repo.list_by_author(author_account_id: owner_id)).to eq([])
   end
 
-  it "delegates the cast/billing check to AuthorizeCastAccess and rejects when it fails" do
-    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(false)
-    expect {
-      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 3, body: "ok")
-    }.to raise_error(Karte::UseCases::CreateEntry::AccessError)
+  it "rejects a one-star chart without an explanation" do
+    expect { described_class.new.call(viewer_account_id: owner_id, viewer_profile_id: owner_profile, target_profile_id: target_id, rating: 1, first_event: event) }.to raise_error(Karte::Domain::Errors::Validation)
+    expect(entry_repo.list_by_author(author_account_id: owner_id)).to eq([])
   end
 
-  it "rejects when target is a Cast" do
-    allow(get_role).to receive(:call).with(profile_id: target_id).and_return(2)
-    expect {
-      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 3, body: "ok")
-    }.to raise_error(Karte::UseCases::CreateEntry::CreateError, "Target must be a guest")
+  it "rejects a guest account" do
+    guest_id = create_account(role: 1)
+    profile_id = create_account_with_profile(account_id: guest_id)
+    expect { described_class.new.call(viewer_account_id: guest_id, viewer_profile_id: profile_id, target_profile_id: target_id, first_event: event) }.to raise_error(Karte::Domain::Errors::Access)
   end
 
-  it "rejects when target does not exist" do
-    allow(get_role).to receive(:call).with(profile_id: target_id).and_return(nil)
-    expect {
-      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 3, body: "ok")
-    }.to raise_error(Karte::UseCases::CreateEntry::CreateError, "Target not found")
+  it "rejects a cast as the target" do
+    expect { described_class.new.call(viewer_account_id: owner_id, viewer_profile_id: owner_profile, target_profile_id: owner_profile, first_event: event) }.to raise_error(Karte::Domain::Errors::Validation)
   end
 
-  it "rejects rating outside 1..5" do
-    allow(get_role).to receive(:call).with(profile_id: target_id).and_return(1)
-    expect {
-      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 0, body: "ok")
-    }.to raise_error(Karte::UseCases::CreateEntry::CreateError, "Rating must be 1..5")
-    expect {
-      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 6, body: "ok")
-    }.to raise_error(Karte::UseCases::CreateEntry::CreateError, "Rating must be 1..5")
+  it "rejects a missing target" do
+    expect { described_class.new.call(viewer_account_id: owner_id, viewer_profile_id: owner_profile, target_profile_id: SecureRandom.uuid_v7, first_event: event) }.to raise_error(Karte::Domain::Errors::NotFound)
   end
 
-  it "rejects body over 500 chars" do
-    allow(get_role).to receive(:call).with(profile_id: target_id).and_return(1)
-    expect {
-      use_case.call(viewer_account_id: viewer_id, viewer_profile_id: viewer_profile_id, target_profile_id: target_id, rating: 3, body: "x" * 501)
-    }.to raise_error(Karte::UseCases::CreateEntry::CreateError, "Body too long")
+  it "rejects invalid ratings and oversized legacy memos" do
+    [0, 6, 2.5].each do |rating|
+      expect { described_class.new.call(viewer_account_id: owner_id, viewer_profile_id: owner_profile, target_profile_id: target_id, rating: rating, first_event: event) }.to raise_error(Karte::Domain::Errors::Validation)
+    end
+    expect { described_class.new.call(viewer_account_id: owner_id, viewer_profile_id: owner_profile, target_profile_id: target_id, body: "x" * 501, first_event: event) }.to raise_error(Karte::Domain::Errors::Validation)
   end
 end

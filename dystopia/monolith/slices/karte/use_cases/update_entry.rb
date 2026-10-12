@@ -3,35 +3,21 @@
 module Karte
   module UseCases
     class UpdateEntry
-      class UpdateError < StandardError; end
-      class AccessError < StandardError; end
+      UpdateError = Domain::Errors::Validation
+      AccessError = Domain::Errors::Access
 
-      MAX_BODY_LENGTH = 500
+      include Karte::Deps[entry_repo: "repositories.entry_repository", event_repo: "repositories.event_repository", mutate_entry: "use_cases.mutate_entry"]
 
-      include Karte::Deps[
-        entry_repo: "repositories.entry_repository",
-        authorize_cast_access: "use_cases.authorize_cast_access"
-      ]
+      def call(viewer_account_id:, entry_id:, attrs:)
+        mutate_entry.call(viewer_account_id: viewer_account_id, entry_id: entry_id) do |entry|
+          raise UpdateError, "変更内容が正しくありません" unless attrs.is_a?(Hash)
+          changes = attrs.slice(:rating, :body)
+          next entry if changes.empty?
 
-      def call(viewer_account_id:, entry_id:, rating: nil, body: nil)
-        raise AccessError, "Karte access required" unless authorize_cast_access.call(viewer_account_id: viewer_account_id)
-
-        entry = entry_repo.find_by_id(entry_id)
-        raise UpdateError, "Entry not found" unless entry
-        raise UpdateError, "Not the author" unless entry.author_account_id == viewer_account_id
-
-        if rating
-          raise UpdateError, "Rating must be 1..5" unless (1..5).cover?(rating)
+          changes[:body] = nil if changes[:body] == ""
+          Domain::EventRules.validate_entry!(rating: changes.fetch(:rating, entry.rating), body: changes.fetch(:body, entry.body), events: event_repo.list_by_entry(entry_id: entry.id))
+          entry_repo.update(entry.id, changes)
         end
-        if body
-          raise UpdateError, "Body too long" if body.length > MAX_BODY_LENGTH
-        end
-
-        attrs = {}
-        attrs[:rating] = rating if rating
-        attrs[:body] = (body.empty? ? nil : body) unless body.nil?
-
-        entry_repo.update(entry_id, attrs)
       end
     end
   end

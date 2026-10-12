@@ -133,7 +133,7 @@ end
 
 **Interfaces:** `MutateEntry#call(viewer_account_id:, entry_id:, require_open: true) { |locked_entry| ... }`は認可・存在・所有権・状態を確認して親ロック内で実行する。Createは`call(viewer_account_id:, viewer_profile_id:, target_profile_id:, rating: nil, body: nil, first_event:)`。Updateは`call(viewer_account_id:, entry_id:, attrs:)`。Add/UpdateEventは`event:`、Update/DeleteEventは`event_id:`を受け取る。Close/Reopen/Deleteは`viewer_account_id:, entry_id:`、削除以外は親を返す。
 
-- [ ] **Step 1:** 保存後の全内容検証、最後の出来事削除拒否、完了内容の変更拒否、同状態操作の日時保持、他アカウント拒否、同アカウント別プロフィール許可、旧形式の再オープンをテストする。閉じた旧形式への同状態操作は入力条件を遡及適用しない。
+- [x] **Step 1:** 保存後の全内容検証、最後の出来事削除拒否、完了内容の変更拒否、同状態操作の日時保持、他アカウント拒否、同アカウント別プロフィール許可、旧形式の再オープンをテストする。閉じた旧形式への同状態操作は入力条件を遡及適用しない。
 
 ```ruby
 it "does not change timestamps when closing an already closed entry" do
@@ -145,10 +145,10 @@ it "rejects an append that obtains the lock after completion" do
 end
 ```
 
-- [ ] **Step 2:** `BE: bundle exec rspec spec/slices/karte/use_cases/create_entry_spec.rb spec/slices/karte/use_cases/update_entry_spec.rb spec/slices/karte/use_cases/close_entry_spec.rb spec/slices/karte/use_cases/lifecycle_concurrency_spec.rb`。不足するfirst_event/ロック/状態拒否でFAILを確認する。
-- [ ] **Step 3:** 親と最初の出来事をtransactionで保存する。内容変更は親ロック内で行い、確定前に全体の補足条件を検証する。完了・再オープンは冪等、再オープンは入力条件の再検証を行わない。deleteは状態を問わず所有者だけ許可する。event操作は必ずparent IDとevent IDの組で探す。
-- [ ] **Step 4:** `BE: bundle exec rspec spec/slices/karte/use_cases`が0 failuresになることを確認する。競合テストだけ`:committed_database`でtruncationを選び、他のspecは既存transactionを維持する。2接続をQueueで同期し、両スレッドを親テストがjoin/valueで待ち、例外をテストへ返す。DBのstatement/lock timeoutと親の待機timeoutを設定し、失敗時もensureで自分のスレッドを終了・回収する。追記→完了と完了→追記の両順序で確定状態を確認する。
-- [ ] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): enforce karte ownership and lifecycle under a row lock"`。
+- [x] **Step 2:** `BE: bundle exec rspec spec/slices/karte/use_cases/create_entry_spec.rb spec/slices/karte/use_cases/update_entry_spec.rb spec/slices/karte/use_cases/close_entry_spec.rb spec/slices/karte/use_cases/lifecycle_concurrency_spec.rb`。不足するfirst_event/ロック/状態拒否でFAILを確認する。
+- [x] **Step 3:** 親と最初の出来事をtransactionで保存する。内容変更は親ロック内で行い、確定前に全体の補足条件を検証する。完了・再オープンは冪等、再オープンは入力条件の再検証を行わない。deleteは状態を問わず所有者だけ許可する。event操作は必ずparent IDとevent IDの組で探す。
+- [x] **Step 4:** `BE: bundle exec rspec spec/slices/karte/use_cases`が0 failuresになることを確認する。競合テストだけ`:committed_database`でtruncationを選び、他のspecは既存transactionを維持する。2接続をQueueで同期し、両スレッドを親テストがjoin/valueで待ち、例外をテストへ返す。DBのstatement/lock timeoutと親の待機timeoutを設定し、失敗時もensureで自分のスレッドを終了・回収する。追記→完了と完了→追記の両順序で確定状態を確認する。
+- [x] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): enforce karte ownership and lifecycle under a row lock"`。
 
 ## Task 4: Queries, Presentation and Account-Weighted Aggregates
 

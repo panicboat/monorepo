@@ -43,8 +43,9 @@ module Karte
             viewer_account_id: current_account_id,
             viewer_profile_id: current_profile_id,
             target_profile_id: request.message.target_profile_id,
-            rating: request.message.rating,
-            body: body
+            rating: request.message.has_rating? && !request.message.rating.zero? ? request.message.rating : nil,
+            body: body,
+            first_event: request.message.first_event&.to_h
           )
         end
         ::Karte::V1::CreateEntryResponse.new(entry: entry_to_proto(present_for_author(entry)))
@@ -52,14 +53,14 @@ module Karte
 
       def update_entry
         authenticate_user!
-        rating = request.message.rating.zero? ? nil : request.message.rating
-        body = request.message.has_body? ? request.message.body : nil
+        attrs = {}
+        attrs[:rating] = request.message.rating.zero? ? nil : request.message.rating if request.message.has_rating?
+        attrs[:body] = request.message.body if request.message.has_body?
         entry = wrap_errors do
           update_uc.call(
             viewer_account_id: current_account_id,
             entry_id: request.message.entry_id,
-            rating: rating,
-            body: body
+            attrs: attrs
           )
         end
         ::Karte::V1::UpdateEntryResponse.new(entry: entry_to_proto(present_for_author(entry)))
@@ -160,6 +161,10 @@ module Karte
 
       def wrap_errors
         yield
+      rescue Karte::Domain::Errors::NotFound => e
+        fail!(:not_found, :not_found, e.message)
+      rescue Karte::Domain::Errors::Conflict => e
+        fail!(:failed_precondition, :failed_precondition, e.message)
       rescue Karte::UseCases::CreateEntry::AccessError,
              Karte::UseCases::UpdateEntry::AccessError,
              Karte::UseCases::DeleteEntry::AccessError,
@@ -197,7 +202,7 @@ module Karte
       end
 
       def entry_to_proto(e)
-        ::Karte::V1::KarteEntry.new(
+        attrs = {
           id: e[:id].to_s,
           author_profile_id: e[:author_profile_id].to_s,
           target_profile_id: e[:target_profile_id].to_s,
@@ -206,12 +211,13 @@ module Karte
           author_avatar_url: e[:author_avatar_url] || "",
           target_username: e[:target_username] || "",
           target_avatar_url: e[:target_avatar_url] || "",
-          rating: e[:rating],
           body: e[:body] || "",
           flagged: e[:flagged],
           created_at: timestamp(e[:created_at]),
           updated_at: timestamp(e[:updated_at])
-        )
+        }
+        attrs[:rating] = e[:rating] unless e[:rating].nil?
+        ::Karte::V1::KarteEntry.new(attrs)
       end
 
       def timestamp(t)

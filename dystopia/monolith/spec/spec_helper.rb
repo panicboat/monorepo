@@ -13,6 +13,13 @@ require "database_cleaner/sequel"
 
 
 RSpec.configure do |config|
+  # DatabaseCleaner truncation quotes only unqualified names, so slices need schema-qualified cleanup.
+  clear_database = lambda do |db|
+    tables = db.fetch("SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema') AND table_name NOT IN ('schema_info', 'schema_migrations')").all
+    names = tables.map { |table| db.literal(Sequel.qualify(table[:table_schema], table[:table_name])) }
+    db.run("TRUNCATE TABLE #{names.join(', ')} RESTART IDENTITY CASCADE") unless names.empty?
+  end
+
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end
@@ -38,12 +45,20 @@ RSpec.configure do |config|
   config.before(:suite) do
     DatabaseCleaner[:sequel].db = Hanami.app["db.gateway"].connection
     DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.clean_with(:truncation)
+    clear_database.call(DatabaseCleaner[:sequel].db)
   end
 
   config.around(:each) do |example|
-    DatabaseCleaner.cleaning do
-      example.run
+    if example.metadata[:committed_database]
+      begin
+        example.run
+      ensure
+        clear_database.call(DatabaseCleaner[:sequel].db)
+      end
+    else
+      DatabaseCleaner.cleaning do
+        example.run
+      end
     end
   end
 end

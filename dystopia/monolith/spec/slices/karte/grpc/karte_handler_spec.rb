@@ -30,7 +30,7 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
   end
 
   def create_entry(target: guest, rating: 4, body: "memo")
-    handler_for(::Karte::V1::CreateEntryRequest.new(target_profile_id: target, rating: rating, body: body)).create_entry.entry
+    handler_for(::Karte::V1::CreateEntryRequest.new(target_profile_id: target, rating: rating, body: body, first_event: ::Karte::V1::KarteEventInput.new(stage: "booking", outcome: "confirmed", occurred_on: "2026-10-12"))).create_entry.entry
   end
 
   def list_my
@@ -73,7 +73,7 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
       guest
       act_as(cast_account, persona_a)
 
-      expect { create_entry(target: guest_account) }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+      expect { create_entry(target: guest_account) }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
     end
 
     it "rejects a guest account" do
@@ -131,10 +131,10 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
 
       expect {
         handler_for(::Karte::V1::UpdateEntryRequest.new(entry_id: entry.id, rating: 1)).update_entry
-      }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+      }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
       expect {
         handler_for(::Karte::V1::DeleteEntryRequest.new(entry_id: entry.id)).delete_entry
-      }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+      }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
       expect(db[:karte__entries].where(id: entry.id).count).to eq(1)
     end
 
@@ -202,7 +202,7 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
       expect(mine.id).to eq(entry.id)
       expect(mine.target_profile_id).to eq(guest)
       expect(mine.target_username).to eq("")
-      expect { create_entry(body: "again") }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+      expect { create_entry(body: "again") }.to status(GRPC::Core::StatusCodes::NOT_FOUND)
       expect(db[:karte__entries].count).to eq(1)
     end
   end

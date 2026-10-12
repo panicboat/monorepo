@@ -3,23 +3,16 @@
 module Karte
   module UseCases
     class DeleteEntry
-      class DeleteError < StandardError; end
-      class AccessError < StandardError; end
+      DeleteError = Domain::Errors::NotFound
+      AccessError = Domain::Errors::Access
 
-      include Karte::Deps[
-        entry_repo: "repositories.entry_repository",
-        authorize_cast_access: "use_cases.authorize_cast_access"
-      ]
+      include Karte::Deps[entry_repo: "repositories.entry_repository", mutate_entry: "use_cases.mutate_entry"]
 
       def call(viewer_account_id:, entry_id:)
-        raise AccessError, "Karte access required" unless authorize_cast_access.call(viewer_account_id: viewer_account_id)
-
-        entry = entry_repo.find_by_id(entry_id)
-        raise DeleteError, "Entry not found" unless entry
-        raise DeleteError, "Not the author" unless entry.author_account_id == viewer_account_id
-
-        entry_repo.delete(entry_id)
-        nil
+        mutate_entry.call(viewer_account_id: viewer_account_id, entry_id: entry_id, require_open: false) do |entry|
+          entry_repo.delete(entry.id)
+          nil
+        end
       end
     end
   end

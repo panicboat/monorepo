@@ -3,52 +3,25 @@
 require "spec_helper"
 
 RSpec.describe Karte::UseCases::DeleteEntry do
-  let(:use_case) do
-    described_class.new(
-      entry_repo: entry_repo,
-      authorize_cast_access: authorize_cast_access
-    )
-  end
-  let(:entry_repo)            { double(:entry_repository) }
-  let(:authorize_cast_access) { double(:authorize_cast_access) }
+  let(:owner_id) { create_account(role: 2) }
+  let(:owner_profile) { create_account_with_profile(account_id: owner_id) }
+  let(:target_id) { create_account_with_profile(role: 1) }
+  let(:entry_repo) { Karte::Repositories::EntryRepository.new }
+  let(:event_repo) { Karte::Repositories::EventRepository.new }
+  let(:event) { {stage: "booking", outcome: "confirmed", tags: [], note: "", occurred_on: "2026-10-12"} }
+  let(:entry) { Karte::UseCases::CreateEntry.new.call(viewer_account_id: owner_id, viewer_profile_id: owner_profile, target_profile_id: target_id, rating: 4, first_event: event) }
 
-  let(:viewer_id) { "viewer-cast-1" }
-  let(:entry_id)  { "entry-1" }
-
-  let(:entry) do
-    double(:entry, id: entry_id, author_account_id: viewer_id)
-  end
-
-  before do
-    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(true)
-    allow(entry_repo).to receive(:find_by_id).with(entry_id).and_return(entry)
+  it "allows the owner to delete a closed chart and its events" do
+    Karte::UseCases::CloseEntry.new.call(viewer_account_id: owner_id, entry_id: entry.id)
+    described_class.new.call(viewer_account_id: owner_id, entry_id: entry.id)
+    expect(entry_repo.find_by_id(entry.id)).to be_nil
+    expect(event_repo.list_by_entry(entry_id: entry.id)).to eq([])
   end
 
-  it "deletes the entry and returns nil" do
-    expect(entry_repo).to receive(:delete).with(entry_id)
-    result = use_case.call(viewer_account_id: viewer_id, entry_id: entry_id)
-    expect(result).to be_nil
-  end
-
-  it "delegates the cast/billing check to AuthorizeCastAccess and rejects when it fails" do
-    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(false)
-    expect {
-      use_case.call(viewer_account_id: viewer_id, entry_id: entry_id)
-    }.to raise_error(Karte::UseCases::DeleteEntry::AccessError)
-  end
-
-  it "rejects when entry not found" do
-    allow(entry_repo).to receive(:find_by_id).with(entry_id).and_return(nil)
-    expect {
-      use_case.call(viewer_account_id: viewer_id, entry_id: entry_id)
-    }.to raise_error(Karte::UseCases::DeleteEntry::DeleteError, "Entry not found")
-  end
-
-  it "rejects when viewer is not the author" do
-    other_entry = double(:entry, id: entry_id, author_account_id: "someone-else")
-    allow(entry_repo).to receive(:find_by_id).with(entry_id).and_return(other_entry)
-    expect {
-      use_case.call(viewer_account_id: viewer_id, entry_id: entry_id)
-    }.to raise_error(Karte::UseCases::DeleteEntry::DeleteError, "Not the author")
+  it "rejects other owners and guests" do
+    [create_account(role: 2), create_account(role: 1)].each do |viewer|
+      expect { described_class.new.call(viewer_account_id: viewer, entry_id: entry.id) }.to raise_error(Karte::Domain::Errors::Access)
+    end
+    expect(entry_repo.find_by_id(entry.id)).not_to be_nil
   end
 end
