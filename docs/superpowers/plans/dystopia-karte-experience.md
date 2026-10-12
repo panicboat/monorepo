@@ -112,7 +112,7 @@ it("accepts 500 emoji and rejects 501", () => {
 
 **Interfaces:** `EntryRepository#create(..., rating: nil, body: nil, status: "open", closed_at: nil)`、`transaction { ... }`、`locking_entry(entry_id) { |entry| ... }`。`EventRepository#create(entry_id:, input:)`、`update(entry_id:, event_id:, input:)`、`delete(entry_id:, event_id:)`、`list_by_entry(entry_id:)`、`summaries(entry_ids:) -> {entry_id => {latest_event:, event_count:}}`。各変更は同一DB transactionに参加する。
 
-- [ ] **Step 1:** Docker DBで移行前の行を用意し、移行後の保持を検証する。既存の評価・本文・著者・対象・日時・通報件数を比較し、出来事が作られないことを検証する。別カルテのevent IDを更新・削除できない、過去日順・同日ID順、親削除後の子削除も追加する。
+- [x] **Step 1:** Docker DBで移行前の行を用意し、移行後の保持を検証する。既存の評価・本文・著者・対象・日時・通報件数を比較し、出来事が作られないことを検証する。別カルテのevent IDを更新・削除できない、過去日順・同日ID順、親削除後の子削除も追加する。
 
 ```ruby
 it "preserves legacy content without inventing events" do
@@ -122,10 +122,10 @@ it "preserves legacy content without inventing events" do
 end
 ```
 
-- [ ] **Step 2:** `BE: bundle exec rspec spec/slices/karte/migration_spec.rb spec/slices/karte/repositories/event_repository_spec.rb`。専用の移行検証用DBへ旧schemaを構築するテスト内のfixtureを使い、未実装のstatus/eventsでFAILを確認する。
-- [ ] **Step 3:** ALTERで評価をnullable、既存行をclosed、以後のdefaultをopenにする。既存完了日時は元の更新日時を用い、元の日時列は変更しない。statusはopen/closedのCHECKを持つ。eventsはuuid PK、親FKのON DELETE CASCADE、stage/outcome/tags/note/date/timestampsと`(entry_id, created_at DESC, id DESC)`のindexを持つ。タグは既存の`Sequel.pg_jsonb`パターンに従う。親ロックは既存の`ProfileRepository#locking_account`と同じDB transactionと`FOR UPDATE`を使う。
-- [ ] **Step 4:** タスクのRSpecが0 failuresになることを確認する。summariesは件数のGROUP BYと最新出来事の一括取得を使用し、1件と20件でイベント取得SQL数が増えないテストを通す。移行検証用DBはこのテストが作成・終了・削除を所有する。
-- [ ] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): persist karte events without losing existing records"`。
+- [x] **Step 2:** `BE: bundle exec rspec spec/slices/karte/migration_spec.rb spec/slices/karte/repositories/event_repository_spec.rb`。専用の移行検証用DBへ旧schemaを構築するテスト内のfixtureを使い、未実装のstatus/eventsでFAILを確認する。
+- [x] **Step 3:** ALTERで評価をnullable、既存行をclosed、以後のdefaultをopenにする。既存完了日時は元の更新日時を用い、元の日時列は変更しない。statusはopen/closedのCHECKを持つ。eventsはuuid PK、親FKのON DELETE CASCADE、stage/outcome/tags/note/date/timestampsと`(entry_id, created_at DESC, id DESC)`のindexを持つ。タグは既存の`Sequel.pg_jsonb`パターンに従う。親ロックは既存の`ProfileRepository#locking_account`と同じDB transactionと`FOR UPDATE`を使う。
+- [x] **Step 4:** タスクのRSpecが0 failuresになることを確認する。summariesは件数のGROUP BYと最新出来事の一括取得を使用し、1件と20件でイベント取得SQL数が増えないテストを通す。移行検証用DBはこのテストが作成・終了・削除を所有する。
+- [x] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): persist karte events without losing existing records"`。
 
 ## Task 3: Owned Mutations and Lifecycle
 

@@ -7,14 +7,16 @@ module Karte
     class EntryRepository < Karte::DB::Repo
       include ::Concerns::CursorPagination
 
-      def create(author_account_id:, author_profile_id:, target_profile_id:, rating:, body:)
+      def create(author_account_id:, author_profile_id:, target_profile_id:, rating: nil, body: nil, status: "open", closed_at: nil)
         entry_records.command(:create).call(
           id: SecureRandom.uuid_v7,
           author_account_id: author_account_id,
           author_profile_id: author_profile_id,
           target_profile_id: target_profile_id,
           rating: rating,
-          body: body
+          body: body,
+          status: status,
+          closed_at: closed_at
         )
       end
 
@@ -23,7 +25,16 @@ module Karte
       end
 
       def update(id, attrs)
-        entry_records.by_pk(id).command(:update).call(attrs.merge(updated_at: Time.now))
+        entry_records.by_pk(id).dataset.update(attrs.merge(updated_at: Sequel.function(:clock_timestamp)))
+        find_by_id(id)
+      end
+
+      def locking_entry(id)
+        transaction(savepoint: true) do
+          scope = entry_records.by_pk(id)
+          record = scope.dataset.for_update.first
+          yield(record ? scope.one : nil)
+        end
       end
 
       def delete(id)

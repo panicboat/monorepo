@@ -9,6 +9,25 @@ RSpec.describe Karte::Repositories::EntryRepository, type: :database do
   let(:author_id) { SecureRandom.uuid_v7 }
   let(:target_id) { SecureRandom.uuid_v7 }
 
+  describe "open chart storage" do
+    it "creates an unrated chart without a legacy memo" do
+      entry = repo.create(author_account_id: author_id, author_profile_id: SecureRandom.uuid_v7, target_profile_id: target_id)
+      expect([entry.rating, entry.body, entry.status, entry.closed_at]).to eq([nil, nil, "open", nil])
+    end
+
+    it "rolls back failed mutations while holding the parent lock" do
+      entry = repo.create(author_account_id: author_id, author_profile_id: SecureRandom.uuid_v7, target_profile_id: target_id, rating: 3, body: "original")
+      expect {
+        repo.locking_entry(entry.id) do |locked|
+          expect(locked.id).to eq(entry.id)
+          repo.update(entry.id, body: "unsaved")
+          raise "cancelled"
+        end
+      }.to raise_error(RuntimeError, "cancelled")
+      expect(repo.find_by_id(entry.id).body).to eq("original")
+    end
+  end
+
   describe "#aggregate" do
     context "when the target has no entries" do
       it "returns zeros" do

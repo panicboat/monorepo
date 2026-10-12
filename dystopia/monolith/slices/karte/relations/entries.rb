@@ -8,8 +8,10 @@ module Karte
         attribute :author_account_id, Types::String
         attribute :author_profile_id, Types::String
         attribute :target_profile_id, Types::String
-        attribute :rating, Types::Integer
+        attribute :rating, Types::Integer.optional
         attribute :body, Types::String.optional
+        attribute :status, Types::String
+        attribute :closed_at, Types::Time.optional
         attribute :reported_count, Types::Integer
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
