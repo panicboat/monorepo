@@ -7,17 +7,14 @@
   --color-neutral-300: #cbd5e1;
   --color-neutral-400: #94a3b8;
   --color-neutral-500: #64748b;
-  --color-neutral-600: #475569;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #1e293b;
   --color-neutral-900: #0f172a;
-  --color-neutral-950: #14161a;
 
-  --color-brand-primary: #a855f7;
-  --color-brand-secondary: #ec4899;
-  --color-brand-tertiary: #f97316;
+  --color-brand-primary: #b54bf1;
+  --color-brand-secondary: #e344ae;
+  --color-brand-gradient-from: #a345ed;
+  --color-brand-gradient-to: #e448a8;
 
-  --color-input-bg: #303030;
+  --color-input-bg: #2b2c30;
   --color-success-bg: #166534;
   --color-success-text: #4ade80;
 
@@ -26,34 +23,41 @@
   --color-warning: #fbbf24;
   --color-info: #60a5fa;
 
-  --color-bg: var(--color-neutral-950);
-  --color-bg-secondary: var(--color-neutral-800);
-  --color-surface: var(--color-neutral-900);
-  --color-divider: var(--color-neutral-800);
-  --color-border: var(--color-neutral-700);
-  --color-text-primary: var(--color-neutral-50);
-  --color-text-secondary: var(--color-neutral-400);
-  --color-text-muted: var(--color-neutral-500);
+  --color-rating: #eab270;
+
+  --color-backdrop: #090a0e;
+  --color-bg: #13151b;
+  --color-bg-elevated: #181a21;
+  --color-bg-secondary: #20232b;
+  --color-surface: #1b1e27;
+  --color-divider: #28313e;
+  --color-border: #303744;
+  --color-text-primary: #f6f4f8;
+  --color-text-secondary: #a4b1c5;
+  --color-text-muted: #8390a5;
   --color-accent: var(--color-brand-primary);
 
-  --gradient-brand-2: linear-gradient(
-    to right,
-    var(--color-brand-primary),
-    var(--color-brand-secondary)
-  );
-  --gradient-brand-3: linear-gradient(
-    135deg,
-    var(--color-brand-primary),
-    var(--color-brand-secondary),
-    var(--color-brand-tertiary)
-  );
-  --shadow-brand-glow:
-    0 10px 15px -3px rgb(168 85 247 / 0.2),
-    0 4px 6px -4px rgb(168 85 247 / 0.2);
+  --gradient-brand-2: linear-gradient(110deg, var(--color-brand-gradient-from), var(--color-brand-gradient-to));
+  --shadow-brand-glow: 0 7px 21px rgb(168 44 146 / 0.27);
+
+  --duration-slide: 330ms;
+  --duration-fade: 200ms;
+  --duration-quick: 170ms;
+  --ease-emphasized: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-slide: 0ms;
+    --duration-fade: 0ms;
+    --duration-quick: 0ms;
+  }
 }
 
 [data-theme="light"] {
+  --color-backdrop: var(--color-neutral-50);
   --color-bg: #ffffff;
+  --color-bg-elevated: #ffffff;
   --color-surface: var(--color-neutral-100);
   --color-bg-secondary: var(--color-neutral-200);
   --color-divider: var(--color-neutral-200);
@@ -64,6 +68,7 @@
   --color-input-bg: var(--color-neutral-100);
   /* Keep the light-theme error color dark enough for AA contrast on white surfaces. */
   --color-error: #dc2626;
+  --color-rating: var(--color-warning);
 }
 
 html {
@@ -79,15 +84,10 @@ html {
   --color-neutral-300: var(--color-neutral-300);
   --color-neutral-400: var(--color-neutral-400);
   --color-neutral-500: var(--color-neutral-500);
-  --color-neutral-600: var(--color-neutral-600);
-  --color-neutral-700: var(--color-neutral-700);
-  --color-neutral-800: var(--color-neutral-800);
   --color-neutral-900: var(--color-neutral-900);
-  --color-neutral-950: var(--color-neutral-950);
 
   --color-brand-primary: var(--color-brand-primary);
   --color-brand-secondary: var(--color-brand-secondary);
-  --color-brand-tertiary: var(--color-brand-tertiary);
 
   --color-input-bg: var(--color-input-bg);
   --color-success-bg: var(--color-success-bg);
@@ -97,7 +97,11 @@ html {
   --color-warning: var(--color-warning);
   --color-info: var(--color-info);
 
+  --color-rating: var(--color-rating);
+
+  --color-backdrop: var(--color-backdrop);
   --color-bg: var(--color-bg);
+  --color-bg-elevated: var(--color-bg-elevated);
   --color-bg-secondary: var(--color-bg-secondary);
   --color-surface: var(--color-surface);
   --color-divider: var(--color-divider);
@@ -114,10 +118,6 @@ html {
 
 .bg-gradient-brand {
   background-image: var(--gradient-brand-2);
-}
-
-.bg-gradient-brand-3 {
-  background-image: var(--gradient-brand-3);
 }
 
 .shadow-brand-glow {
