@@ -65,7 +65,7 @@
 | `--color-bg` | `#13151b` | 中央カラム、サイドナビ、モバイルのヘッダーと下部ナビ |
 | `--color-bg-elevated`（新規） | `#181a21` | シート、トースト |
 | `--color-surface` | `#1b1e27` | カード |
-| `--color-bg-secondary` | `#20232b` | ホバー面、トグルのオフ |
+| `--color-bg-secondary` | `#20232b` | ホバー面 |
 | `--color-input-bg` | `#2b2c30` | 入力欄 |
 | `--color-border` | `#303744` | 枠線 |
 | `--color-divider` | `#28313e` | 一覧の罫線 |
@@ -177,15 +177,15 @@ Next.js の App Router は `window.history.pushState` を差し替え、内部�
 
 ### Shared components (`dystopia/frontend/src/components/ui/`)
 
-API（props）は変えず、見た目だけを変える。
+API（props）は変えず、見た目だけを変える。文字サイズは rem で指定する（11px は `0.6875rem`、15px は `0.9375rem`、21px は `1.3125rem`）。px で指定すると、ブラウザの文字サイズ設定を上げても拡大されないため。
 
 | 部品 | 変更 |
 |---|---|
 | `Button` | `primary` はグラデーションと新しいグロー。`secondary` はモックの既定ボタン（枠線はアクセント色の 50%、面はアクセント色の 10%、文字は `text-text-primary`、ピル形、太字） |
-| `Tabs` | 余白 `14px 17px`、太字。選択中は `text-text-primary` と `--color-brand-secondary` の 2px 下線。列の面は `bg-bg` |
-| `PageHeader` | 見出し 21px・極太、説明 12px |
+| `Tabs` | 余白 `14px 17px`、太字。選択中は `text-text-primary` と `--color-brand-secondary` の 2px 下線。列の面は `bg-bg`。モックと同じくスクロールバーを表示しない |
+| `PageHeader` | 見出し 21px・太字、説明 12px。読み込んでいるフォントの太さは 400・500・700 なので、800 は指定しない |
 | `Input`・`Textarea`・`Select` | 角丸 12px、高さ 44px 以上、フォーカスで枠線がアクセント色 |
-| `Toggle` | 44×26px、オンはアクセント色 |
+| `Toggle` | 44×26px、オンはアクセント色、オフは枠線の色（`bg-border`）。`--color-bg-secondary` ではカードの面と区別できないため |
 | `RatingStars` | 塗りの色を `text-warning` から `text-rating` にする |
 | `ToastHost` | 面 `bg-bg-elevated`、アクセント色の枠線、角丸 12px。`md` 未満では下部ナビの上に出す |
 
@@ -193,10 +193,10 @@ API（props）は変えず、見た目だけを変える。
 
 | 部品 | 変更 |
 |---|---|
-| `AppShell` | 最外の面を `bg-backdrop` にする。コンテナの最大幅 1400px。`<main>` は `bg-bg` で、`xl` 以上では最大幅 620px、`md`〜`xl` では残り幅を埋める。`<main>` に `useEnterAnimation` を適用する |
+| `AppShell` | 最外の面を `bg-backdrop` にする。コンテナの最大幅 1400px。`<main>` は `bg-bg` で、`xl` 以上では幅 620px に固定し（伸びない）、`md`〜`xl` では残り幅を埋める。`<main>` に `useEnterAnimation` を適用する |
 | `SideNav` | 幅 266px、面 `bg-bg`、右に罫線。項目は高さ 51px・角丸 10px・16px。選択中とホバーは `text-text-primary` と `bg-bg-secondary`、選択中のアイコンはアクセント色 |
 | `TopBar` | 高さ 62px、面 `bg-bg`、下に罫線 |
-| `BottomTab` | ラベル 11px、選択中はアクセント色、面 `bg-bg`、上に罫線 |
+| `BottomTab` | ラベル 11px、選択中はアクセント色、面 `bg-bg`、上に罫線。ページが `viewport-fit=cover` を宣言していないので、下端の safe area の余白は持たない |
 | `SuggestedUsersPane` | `xl` 以上で残り幅を埋める（最小 185px）。カードは角丸 17px・枠線つき |
 
 次のものは変更しない。
@@ -220,6 +220,7 @@ PC のサイドナビの作成ボタンは、動作は花形メニューのま�
 
 - `ComposeToSheet` は宛先選択と入力の 2 段を持つ。段を `stepKey` に、宛先の選び直しを `onBack` に渡す
 - 「メッセージ」で宛先を選んだときは、`useStartChat` を `replace` で呼ぶ。シートはルートの変化で閉じる
+- 宛先を選んでからルートが変わるまで、宛先リストは操作できず、閉じる要求（×・Esc・オーバーレイ）も受け付けない。この間に閉じると、遷移が置き換えるはずの履歴エントリが先に取り除かれるため。スレッドの作成に失敗したときは、操作と閉じる要求を再び受け付ける
 - `ComposeLauncher` は選ばれた種類を保持したまま `open` だけを切り替え、閉じる動きの間もシートの中身を保つ。開くたびに `ComposeToSheet` を作り直し、前回の宛先とエラーを持ち越さない
 
 ### Deliberate differences from the mock
@@ -232,6 +233,13 @@ PC のサイドナビの作成ボタンは、動作は花形メニューのま�
 | システムフォント | Noto Sans JP | モックのフォント指定にも含まれており、現行の表示を保つ |
 | 720px・1150px のブレークポイント | `md`・`xl` | 既存画面のレイアウトが Tailwind のブレークポイントに依存している |
 | フォーカスは `#e39fff` の outline | アクセント色の ring | 既存部品のフォーカス表示を保つ |
+
+## Known limitations
+
+- シートを開いたまま再読み込みすると、印の付いた履歴エントリが持ち主なしで残り、そのページを離れるのに「戻る」が 1 回余分に要る
+- 宛先を選んでからルートが変わるまでの間にブラウザの「戻る」を押すと、遷移が元のページのエントリを置き換える。スレッドから「戻る」と元のページを飛ばす
+- シートを閉じたあとのフォーカスは、花形メニューから開いた場合、非表示の花弁に戻る。花形メニューを変更しない本段では扱わない
+- `stepKey` が変わると本文を作り直すので、段をまたいで入力を保つフォームでは入力が消える。そのようなフォームを載せる段で、本文を保ったまま動きだけを再生する形に変える
 
 ## Testing
 

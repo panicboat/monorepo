@@ -2481,3 +2481,19 @@ git push
 ```
 
 Draft PR #1521 の説明の `## Status` を、実施した検証（コマンドと結果、スクリーンショット）に書き換える。PR は Draft のままにする。
+
+---
+
+## Post-review amendments
+
+最終レビューを受けて、Task 5・6・8 のコードを次のとおり変更した。上の各 Task の記述は当初の内容のままである。
+
+| 対象 | 当初 | 変更後 | 理由 |
+|---|---|---|---|
+| `AppShell` の `<main>` | `xl:max-w-[620px]` | `xl:w-[620px] xl:flex-none` | `<main>` と `SuggestedUsersPane` がともに `flex-1` で残り幅を分け合い、620px に達しなかった |
+| `ComposeToSheet` | 宛先を選んだ後も操作できる | ルートが変わるまで宛先リストを操作不可にし、閉じる要求を受け付けない | 二度押しでスレッド作成が 2 回走り、この間に閉じると遷移が元のページの履歴エントリを置き換えた |
+| `PageHeader` の見出し | `text-[21px] font-extrabold` | `text-[1.3125rem] font-bold` | フォントは 400・500・700 しか読み込んでおらず 800 は描画されない。px はブラウザの文字サイズ設定に従わない |
+| `BottomTab` のラベル | `text-[11px]` | `text-[0.6875rem]` | 同上 |
+| `SuggestedUsersPane` の見出し | `text-[15px]` | `text-[0.9375rem]` | 同上 |
+| `BottomTab` の `<nav>` | `pb-safe` あり | なし | `viewport-fit=cover` を宣言していないので効果がない |
+
