@@ -1,3 +1,21 @@
+export type KarteStage = "booking" | "service" | "after_service";
+export type KarteStatus = "open" | "closed";
+
+export interface KarteEventInput {
+  stage: KarteStage;
+  outcome: string;
+  tags: string[];
+  note: string;
+  occurredOn: string;
+}
+
+export interface KarteEvent extends KarteEventInput {
+  id: string;
+  entryId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface KarteEntry {
   id: string;
   authorProfileId: string;

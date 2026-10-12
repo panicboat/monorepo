@@ -23,6 +23,12 @@ module Karte
         rpc :ReportEntry, ::Karte::V1::ReportEntryRequest, ::Karte::V1::ReportEntryResponse
         rpc :GetMyAccess, ::Karte::V1::GetMyAccessRequest, ::Karte::V1::GetMyAccessResponse
         rpc :ListRecentEntries, ::Karte::V1::ListRecentEntriesRequest, ::Karte::V1::ListRecentEntriesResponse
+        rpc :GetEntry, ::Karte::V1::GetEntryRequest, ::Karte::V1::GetEntryResponse
+        rpc :AddEvent, ::Karte::V1::AddEventRequest, ::Karte::V1::AddEventResponse
+        rpc :UpdateEvent, ::Karte::V1::UpdateEventRequest, ::Karte::V1::UpdateEventResponse
+        rpc :DeleteEvent, ::Karte::V1::DeleteEventRequest, ::Karte::V1::DeleteEventResponse
+        rpc :CloseEntry, ::Karte::V1::CloseEntryRequest, ::Karte::V1::CloseEntryResponse
+        rpc :ReopenEntry, ::Karte::V1::ReopenEntryRequest, ::Karte::V1::ReopenEntryResponse
       end
 
       Stub = Service.rpc_stub_class

@@ -47,7 +47,7 @@
 
 ## Execution Environment
 
-Task 1の準備として、既存依存関係と専用Docker DBを用意する。Rubyはインストール済みの4.0.7を`RBENV_VERSION=4.0.7 rbenv exec`で選択し、Bundlerは`Gemfile.lock`の版を使う。フロントはworktree内で`pnpm install --frozen-lockfile`、Rubyは`BUNDLE_FROZEN=true`でインストールする。既存lockfileとmanifestが一致しない場合は原因を特定して報告し、無関係な依存更新で解消しない。
+Task 1の準備として、既存依存関係と専用Docker DBを用意する。Rubyはインストール済みの4.0.7を`RBENV_VERSION=4.0.7 rbenv exec`で選択し、BundlerはRuby互換のインストール済み4.0.20を使い、Gemの依存は`Gemfile.lock`の版に固定する。フロントはworktree内で`pnpm install --frozen-lockfile`、Rubyは`BUNDLE_FROZEN=true`でインストールする。既存lockfileとmanifestが一致しない場合は原因を特定して報告し、無関係な依存更新で解消しない。
 
 Docker contextは専用のColima profile `dystopia-karte-468d`を使う。起動は`colima start --profile dystopia-karte-468d --runtime docker --activate=false --ssh-config=false --cpus 4 --memory 8`。イメージ名は`BE/docker-compose.yaml`の`services.db.image`から読み、task固有コンテナ`dystopia-karte-468d-db`を`127.0.0.1`の動的ポートへ公開する。Docker ComposeやネイティブPostgreSQLは使用しない。
 
@@ -85,11 +85,11 @@ JSONの省略は未変更、`null`は解除、整数1〜5は設定。BFFは`null
 
 **Files:** Modify `proto/dystopia/karte/v1/service.proto`、`BE/stubs/karte/v1/service_pb.rb`・`service_services_pb.rb`、`FE/src/stub/karte/v1/service_pb.ts`、`FE/src/modules/karte/types.ts`。Create `BE/slices/karte/domain/errors.rb`・`event_rules.rb`、`BE/spec/slices/karte/domain/event_rules_spec.rb`、`FE/src/modules/karte/lib/event-catalog.ts`・`validation.ts`・`validation.test.ts`。
 
-**Interfaces:** `Karte::Errors::{Validation, Access, NotFound, Conflict}`。`EventRules.validate_event!(input) -> normalized Hash`、`validate_entry!(rating:, body:, events:) -> nil`。TSは`validateEvent(input: unknown): Record<string,string>`、`validateKarte(input: unknown): Record<string,string>`、`japanToday(now?: Date): string`を公開する。`types.ts`へKarteStage、KarteStatus、KarteEventInput、KarteEventを追加し、候補のコードと日本語ラベルは`eventCatalog`から取得する。
+**Interfaces:** `Karte::Domain::Errors::{Validation, Access, NotFound, Conflict}`。`EventRules.validate_event!(input) -> normalized Hash`、`validate_entry!(rating:, body:, events:) -> nil`。TSは`validateEvent(input: unknown): Record<string,string>`、`validateKarte(input: unknown): Record<string,string>`、`japanToday(now?: Date): string`を公開する。`types.ts`へKarteStage、KarteStatus、KarteEventInput、KarteEventを追加し、候補のコードと日本語ラベルは`eventCatalog`から取得する。
 
 タスクのテストコード内の結果変数は、各specのfixtureと実処理から作る。Rubyは既存`ProfileFixtures`、Reactは既存`createRoot`/`act`/`vi.mock`を使い、追加のテストライブラリや共通fixture abstractionは作らない。
 
-- [ ] **Step 1:** 既存のRSpec・Vitestの書式で検証テストを追加する。省略可能評価、段階別候補、補足条件、文字数、実在日付、日本の日付境界を固定する。
+- [x] **Step 1:** 既存のRSpec・Vitestの書式で検証テストを追加する。省略可能評価、段階別候補、補足条件、文字数、実在日付、日本の日付境界を固定する。
 
 ```ts
 it("uses Japan's date across midnight", () => expect(japanToday(new Date("2026-10-11T15:00:00Z"))).toBe("2026-10-12"));
@@ -101,10 +101,10 @@ it("accepts 500 emoji and rejects 501", () => {
 });
 ```
 
-- [ ] **Step 2:** `FE: pnpm test src/modules/karte/lib/validation.test.ts`と`BE: bundle exec rspec spec/slices/karte/domain/event_rules_spec.rb`を実行する。未定義の検証関数・クラスでFAILすることを確認する。
-- [ ] **Step 3:** 上記signatureと契約表を実装する。Rubyは実在日付とIntegerを検証する。TSの500文字は`Array.from(note).length`で数え、不正な入力を切り捨てない。候補ラベルはIssue #1519と照合する。専用環境の準備もこのタスク内で完了する。
-- [ ] **Step 4:** 両テストが0 failuresになることを確認する。`buf lint proto/dystopia`、`FE: pnpm proto:gen`、`BE: RBENV_VERSION=4.0.7 rbenv exec bundle exec ruby bin/codegen`を実行し、生成差分がカルテ契約だけであることを確認する。optional評価のRuby `has_rating?`とTS presenceを実際の生成コードで確認する。
-- [ ] **Step 5:** 指定した契約・検証・テスト・生成ファイルだけをstageし、`git commit -s -m "feat(dystopia): define karte events and input rules"`を実行する。
+- [x] **Step 2:** `FE: pnpm test src/modules/karte/lib/validation.test.ts`と`BE: bundle exec rspec spec/slices/karte/domain/event_rules_spec.rb`を実行する。未定義の検証関数・クラスでFAILすることを確認する。
+- [x] **Step 3:** 上記signatureと契約表を実装する。Rubyは実在日付とIntegerを検証する。TSの500文字は`Array.from(note).length`で数え、不正な入力を切り捨てない。候補ラベルはIssue #1519と照合する。専用環境の準備もこのタスク内で完了する。
+- [x] **Step 4:** 両テストが0 failuresになることを確認する。`buf lint proto/dystopia`、`FE: pnpm proto:gen`、`BE: RBENV_VERSION=4.0.7 rbenv exec bundle exec ruby bin/codegen`を実行し、生成差分がカルテ契約だけであることを確認する。optional評価のRuby `has_rating?`とTS presenceを実際の生成コードで確認する。
+- [x] **Step 5:** 指定した契約・検証・テスト・生成ファイルだけをstageし、`git commit -s -m "feat(dystopia): define karte events and input rules"`を実行する。
 
 ## Task 2: Preserving Storage and Event Repository
 
@@ -140,7 +140,7 @@ it "does not change timestamps when closing an already closed entry" do
   expect(close_entry.call(viewer_account_id: owner_id, entry_id: closed_entry.id).updated_at).to eq(closed_entry.updated_at)
 end
 it "rejects an append that obtains the lock after completion" do
-  expect(append_error).to be_a(Karte::Errors::Conflict)
+  expect(append_error).to be_a(Karte::Domain::Errors::Conflict)
   expect(event_repo.list_by_entry(entry_id: entry.id).length).to eq(event_count_before)
 end
 ```

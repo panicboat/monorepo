@@ -13,6 +13,12 @@ service KarteService {
   rpc ReportEntry(ReportEntryRequest) returns (ReportEntryResponse);
   rpc GetMyAccess(GetMyAccessRequest) returns (GetMyAccessResponse);
   rpc ListRecentEntries(ListRecentEntriesRequest) returns (ListRecentEntriesResponse);
+  rpc GetEntry(GetEntryRequest) returns (GetEntryResponse);
+  rpc AddEvent(AddEventRequest) returns (AddEventResponse);
+  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
+  rpc CloseEntry(CloseEntryRequest) returns (CloseEntryResponse);
+  rpc ReopenEntry(ReopenEntryRequest) returns (ReopenEntryResponse);
 }
 
 message KarteEntry {
@@ -21,7 +27,7 @@ message KarteEntry {
   string target_profile_id = 3;
   string author_username = 4;
   string author_avatar_url = 5;
-  int32 rating = 6;
+  optional int32 rating = 6;
   string body = 7;
   bool flagged = 8;
   google.protobuf.Timestamp created_at = 9;
@@ -29,23 +35,57 @@ message KarteEntry {
   string target_username = 11;
   string target_avatar_url = 12;
   bool is_mine = 13;
+  string status = 14;
+  google.protobuf.Timestamp closed_at = 15;
+  repeated KarteEvent events = 16;
+  KarteEvent latest_event = 17;
+  int32 event_count = 18;
+}
+
+message KarteEventInput {
+  string stage = 1;
+  string outcome = 2;
+  repeated string tags = 3;
+  string note = 4;
+  string occurred_on = 5;
+}
+
+message KarteEvent {
+  string id = 1;
+  string entry_id = 2;
+  string stage = 3;
+  string outcome = 4;
+  repeated string tags = 5;
+  string note = 6;
+  string occurred_on = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message KarteCounts {
+  int32 total = 1;
+  int32 open = 2;
+  int32 closed = 3;
 }
 
 message Aggregate {
   int32 count = 1;
-  double avg_rating = 2;
+  optional double avg_rating = 2;
+  int32 author_count = 3;
+  int32 rated_count = 4;
 }
 
 message CreateEntryRequest {
   string target_profile_id = 1;
-  int32 rating = 2;
+  optional int32 rating = 2;
   string body = 3;
+  KarteEventInput first_event = 4;
 }
 message CreateEntryResponse { KarteEntry entry = 1; }
 
 message UpdateEntryRequest {
   string entry_id = 1;
-  int32 rating = 2;
+  optional int32 rating = 2;
   optional string body = 3;
 }
 message UpdateEntryResponse { KarteEntry entry = 1; }
@@ -68,11 +108,13 @@ message ListEntriesByTargetResponse {
 message ListMyEntriesRequest {
   int32 limit = 1;
   string cursor = 2;
+  string status = 3;
 }
 message ListMyEntriesResponse {
   repeated KarteEntry entries = 1;
   string next_cursor = 2;
   bool has_more = 3;
+  KarteCounts counts = 4;
 }
 
 message ReportEntryRequest {
@@ -96,3 +138,31 @@ message ListRecentEntriesResponse {
   string next_cursor = 2;
   bool has_more = 3;
 }
+
+message GetEntryRequest { string entry_id = 1; }
+message GetEntryResponse { KarteEntry entry = 1; }
+
+message AddEventRequest {
+  string entry_id = 1;
+  KarteEventInput event = 2;
+}
+message AddEventResponse { KarteEntry entry = 1; }
+
+message UpdateEventRequest {
+  string entry_id = 1;
+  string event_id = 2;
+  KarteEventInput event = 3;
+}
+message UpdateEventResponse { KarteEntry entry = 1; }
+
+message DeleteEventRequest {
+  string entry_id = 1;
+  string event_id = 2;
+}
+message DeleteEventResponse { KarteEntry entry = 1; }
+
+message CloseEntryRequest { string entry_id = 1; }
+message CloseEntryResponse { KarteEntry entry = 1; }
+
+message ReopenEntryRequest { string entry_id = 1; }
+message ReopenEntryResponse { KarteEntry entry = 1; }
