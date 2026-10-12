@@ -55,6 +55,10 @@ RSpec.describe Karte::Domain::EventRules do
     expect(described_class.validate_event!(event.merge(occurred_on: "2028-02-29"))[:occurred_on]).to eq(Date.new(2028, 2, 29))
     expect(described_class.validate_event!(event.merge(occurred_on: "2020-01-01"))[:occurred_on]).to eq(Date.new(2020, 1, 1))
   end
+  it "uses the Gregorian calendar for historic date input" do
+    expect { described_class.validate_event!(event.merge(occurred_on: "1500-02-29")) }.to raise_error(Karte::Domain::Errors::Validation)
+    expect(described_class.validate_event!(event.merge(occurred_on: "1582-10-10"))[:occurred_on].iso8601).to eq("1582-10-10")
+  end
 
   [nil, 2, 3, 4, 5].each do |rating|
     it "accepts chart rating #{rating.inspect}" do

@@ -32,7 +32,7 @@ module Karte
         unless date.is_a?(Date)
           raise Errors::Validation, "実在する発生日を入力してください" unless date.is_a?(String) && date.match?(/\A\d{4}-\d{2}-\d{2}\z/)
           begin
-            date = Date.iso8601(date)
+            date = Date.iso8601(date, Date::GREGORIAN)
           rescue Date::Error
             raise Errors::Validation, "実在する発生日を入力してください"
           end

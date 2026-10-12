@@ -220,7 +220,7 @@ it("keeps page state when only the transition key changes", () => expect(pageMou
 
 **Interfaces:** `RatingInput({value: number | null,onChange,allowUnrated,disabled?})`。`KarteEventForm({value: KarteEventInput,onChange,errors?,disabled?})`。`KarteComposer({targetProfileId,onCreated(entry)})`はTask 5のcreateを使い、成功時だけ通知する。
 
-- [ ] **Step 1:** 初期予約・未選択結果・日本の当日・未評価、段階変更後の結果/タグリセット、日付/補足保持、星解除、補足必須、保存失敗時入力保持をテストする。
+- [x] **Step 1:** 初期予約・未選択結果・日本の当日・未評価、段階変更後の結果/タグリセット、日付/補足保持、星解除、補足必須、保存失敗時入力保持をテストする。
 
 ```ts
 it("retains date and note while resetting stage choices", () => {
@@ -229,10 +229,10 @@ it("retains date and note while resetting stage choices", () => {
 it("does not default the chart rating to three", () => expect(submittedRating).toBeNull());
 ```
 
-- [ ] **Step 2:** `FE: pnpm test src/components/ui/rating-input.test.tsx src/modules/karte/components/KarteEventForm.test.tsx src/modules/karte/components/KarteComposer.test.tsx`。現行のrating=3、body-only入力でFAILを確認する。
-- [ ] **Step 3:** 段階別の候補と日付入力、複数タグ、補足、任意評価を実装する。「3が標準」「予約・接客の信頼性」「未評価にする」を操作の説明として表示する。500 code pointをカウンターと検証に使い、入力の自動切り捨てを行わない。処理中は送信を無効化し、失敗はフォームへ返す。
-- [ ] **Step 4:** 指定Vitestが0 failures。実ルートのcreate requestがtargetProfileId・rating・firstEventを持つことを確認し、別プロフィールへ切り替えた後に旧フォームのonCreatedを実行しないテストを通す。
-- [ ] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): compose karte events with optional ratings"`。
+- [x] **Step 2:** `FE: pnpm test src/components/ui/rating-input.test.tsx src/modules/karte/components/KarteEventForm.test.tsx src/modules/karte/components/KarteComposer.test.tsx`。現行のrating=3、body-only入力でFAILを確認する。
+- [x] **Step 3:** 段階別の候補と日付入力、複数タグ、補足、任意評価を実装する。「3が標準」「予約・接客の信頼性」「未評価にする」を操作の説明として表示する。500 code pointをカウンターと検証に使い、入力の自動切り捨てを行わない。処理中は送信を無効化し、失敗はフォームへ返す。
+- [x] **Step 4:** 指定Vitestが0 failures。実ルートのcreate requestがtargetProfileId・rating・firstEventを持つことを確認し、別プロフィールへ切り替えた後に旧フォームのonCreatedを実行しないテストを通す。
+- [x] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): compose karte events with optional ratings"`。
 
 ## Task 8: Karte Details and Lifecycle Panel
 

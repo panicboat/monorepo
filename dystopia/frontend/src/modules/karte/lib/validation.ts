@@ -16,7 +16,7 @@ export function validateEvent(input: unknown): Record<string, string> {
   else {
     if (Array.from(note).length > 500) errors.note = "補足は500文字以内で入力してください";
     const required = catalog && (catalog.noteOutcomes.includes(String(value.outcome)) || (Array.isArray(tags) && tags.some((tag) => catalog.noteTags.includes(tag))));
-    if (required && !note.trim()) errors.note = "この対応結果・タグには補足が必要です";
+    if (required && !hasText(note)) errors.note = "この対応結果・タグには補足が必要です";
   }
   const day = value.occurredOn;
   if (typeof day !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(day) || Number(day.slice(0, 4)) < 1) errors.occurredOn = "実在する発生日を入力してください";
@@ -41,13 +41,17 @@ export function validateKarte(input: unknown): Record<string, string> {
     events.forEach((event, index) => {
       for (const [key, error] of Object.entries(validateEvent(event))) errors[`events.${index}.${key}`] = error;
     });
-    if (value.rating === 1 && !(typeof body === "string" && body.trim()) && !events.some((event) => event && typeof event.note === "string" && event.note.trim())) errors.note = "星1の評価には出来事か過去のメモに補足が必要です";
+    if (value.rating === 1 && !(typeof body === "string" && hasText(body)) && !events.some((event) => event && typeof event.note === "string" && hasText(event.note))) errors.note = "星1の評価には出来事か過去のメモに補足が必要です";
   }
   return errors;
 }
 
 export function validateRating(rating: unknown): string | null {
   return rating !== null && rating !== undefined && (typeof rating !== "number" || !Number.isInteger(rating) || rating < 1 || rating > 5) ? "評価は未評価または1〜5で選択してください" : null;
+}
+
+function hasText(text: string): boolean {
+  return /[^\p{White_Space}\uFEFF]/u.test(text);
 }
 
 export function japanToday(now = new Date()): string {

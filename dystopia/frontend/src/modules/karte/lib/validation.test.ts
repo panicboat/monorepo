@@ -44,6 +44,14 @@ describe("karte event validation", () => {
     expect(validateEvent({ ...event, occurredOn: "2028-02-29" })).toEqual({});
     expect(validateEvent({ ...event, occurredOn: "2020-01-01" })).toEqual({});
   });
+  it("uses the Gregorian calendar for historic date input", () => {
+    expect(validateEvent({ ...event, occurredOn: "1500-02-29" })).toHaveProperty("occurredOn");
+    expect(validateEvent({ ...event, occurredOn: "1582-10-10" })).toEqual({});
+  });
+  it("does not accept Unicode line-space characters as a required note", () => {
+    expect(validateEvent({ ...event, outcome: "no_show", note: "\u0085\ufeff" })).toHaveProperty("note");
+    expect(validateKarte({ rating: 1, body: "\u0085", events: [event] })).toHaveProperty("note");
+  });
   it.each([false, 1, null])("rejects a non-string note: %j", (note) => {
     expect(validateEvent({ ...event, note })).toHaveProperty("note");
   });
