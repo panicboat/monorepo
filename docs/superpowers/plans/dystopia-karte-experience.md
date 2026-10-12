@@ -156,7 +156,7 @@ end
 
 **Interfaces:** `aggregate(target_profile_id:) -> {count:, avg_rating: nil | Float, author_count:, rated_count:}`、`counts_by_author(author_account_id:) -> {total:, open:, closed:}`、`list_by_author(..., status: nil)`。`EntryPresenter#call(entries:, viewer_account_id:, include_events: false) -> Array<Hash>`で既存の公開項目と新項目を組み立てる。GetEntryは`call(viewer_account_id:, entry_id:) -> Hash`。
 
-- [ ] **Step 1:** 同一アカウントの星5を3件、別アカウントの星1を1件、未評価完了・記録中・複数出来事をfixtureにし、集計を固定する。削除プロフィール、読み取り専用cast、guest拒否、状態別件数、作成時刻が同じcursor、追記後に新着順が変わらないことを追加する。
+- [x] **Step 1:** 同一アカウントの星5を3件、別アカウントの星1を1件、未評価完了・記録中・複数出来事をfixtureにし、集計を固定する。削除プロフィール、読み取り専用cast、guest拒否、状態別件数、作成時刻が同じcursor、追記後に新着順が変わらないことを追加する。
 
 ```ruby
 it "weights accounts equally rather than entries, profiles or events" do
@@ -167,10 +167,10 @@ it "distinguishes unrated charts from an empty target" do
 end
 ```
 
-- [ ] **Step 2:** `BE: bundle exec rspec spec/slices/karte/repositories/entry_repository_spec.rb spec/slices/karte/use_cases/list_entries_by_target_spec.rb spec/slices/karte/use_cases/get_entry_spec.rb`。現行単純平均・不足するdetail/countsでFAILを確認する。
-- [ ] **Step 3:** 完了・評価ありの親をowner accountでGROUP BYし、その平均を等重みで平均する。総件数は全状態、rated_countは対象親数、author_countは対象アカウント数とする。出来事を集計JOINへ入れない。既存プロフィール・メディアの一括解決とイベントsummariesをPresenterへ集約し、detailだけ全イベントを取得する。
-- [ ] **Step 4:** `BE: bundle exec rspec spec/slices/karte/repositories spec/slices/karte/use_cases`が0 failures。平均・件数がcursorやlimitで変化しない、event追加や別プロフィールが重みを変えない、1件と20件で関連取得呼び出し数が増えないことを確認する。
-- [ ] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): query karte details and account-weighted ratings"`。
+- [x] **Step 2:** `BE: bundle exec rspec spec/slices/karte/repositories/entry_repository_spec.rb spec/slices/karte/use_cases/list_entries_by_target_spec.rb spec/slices/karte/use_cases/get_entry_spec.rb`。現行単純平均・不足するdetail/countsでFAILを確認する。
+- [x] **Step 3:** 完了・評価ありの親をowner accountでGROUP BYし、その平均を等重みで平均する。総件数は全状態、rated_countは対象親数、author_countは対象アカウント数とする。出来事を集計JOINへ入れない。既存プロフィール・メディアの一括解決とイベントsummariesをPresenterへ集約し、detailだけ全イベントを取得する。
+- [x] **Step 4:** `BE: bundle exec rspec spec/slices/karte/repositories spec/slices/karte/use_cases`が0 failures。平均・件数がcursorやlimitで変化しない、event追加や別プロフィールが重みを変えない、1件と20件で関連取得呼び出し数が増えないことを確認する。
+- [x] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): query karte details and account-weighted ratings"`。
 
 ## Task 5: gRPC, BFF and Frontend Data
 

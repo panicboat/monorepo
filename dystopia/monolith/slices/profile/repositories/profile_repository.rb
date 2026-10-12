@@ -30,6 +30,13 @@ module Profile
         visible_profiles.by_pk(id).one
       end
 
+      def find_visible_by_ids(ids)
+        ids = ids.compact.uniq.select { |id| uuid?(id) }
+        return [] if ids.empty?
+
+        visible_profiles.where(id: ids).to_a
+      end
+
       def find_visible_by_username(username)
         return nil if username.nil? || username.strip.empty?
 

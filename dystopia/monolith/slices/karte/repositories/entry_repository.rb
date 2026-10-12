@@ -47,8 +47,9 @@ module Karte
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def list_by_author(author_account_id:, limit: 20, cursor: nil)
+      def list_by_author(author_account_id:, limit: 20, cursor: nil, status: nil)
         scope = entry_records.where(author_account_id: author_account_id)
+        scope = scope.where(status: status) if status
         scope = apply_cursor(scope, cursor)
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
@@ -59,17 +60,24 @@ module Karte
       end
 
       def aggregate(target_profile_id:)
-        row = entry_records
-          .where(target_profile_id: target_profile_id)
-          # Remove the relation's implicit ORDER BY because PostgreSQL rejects it with aggregates.
-          .dataset
-          .unordered
-          .select { [count(id).as(:count), avg(rating).as(:avg)] }
-          .first
+        scope = entry_records.where(target_profile_id: target_profile_id).dataset.unordered
+        accounts = scope.where(status: "closed").exclude(rating: nil)
+          .group(:author_account_id).select { [author_account_id, avg(rating).as(:account_average), count(id).as(:rated_count)] }
+        row = scope.db.from(accounts.as(:rated_accounts))
+          .select { [avg(account_average).as(:average), count(author_account_id).as(:authors), sum(rated_count).as(:rated)] }.first
         {
-          count: row[:count].to_i,
-          avg_rating: row[:avg].nil? ? 0.0 : row[:avg].to_f
+          count: scope.count,
+          avg_rating: row[:average]&.to_f,
+          author_count: row[:authors].to_i,
+          rated_count: row[:rated].to_i
         }
+      end
+
+      def counts_by_author(author_account_id:)
+        counts = entry_records.where(author_account_id: author_account_id).dataset.unordered.group(:status).select { [status, count(id).as(:count)] }.all.to_h { |row| [row[:status], row[:count]] }
+        opened = counts.fetch("open", 0)
+        closed = counts.fetch("closed", 0)
+        {total: opened + closed, open: opened, closed: closed}
       end
 
       def increment_reported_count(id)
@@ -82,6 +90,8 @@ module Karte
         return scope unless cursor
 
         decoded = decode_cursor(cursor)
+        # FALLBACK: Malformed cursors follow the concern's initial-page behavior.
+        return scope unless decoded
         scope.where {
           (created_at < decoded[:created_at]) |
             ((created_at =~ decoded[:created_at]) & (id < decoded[:id]))

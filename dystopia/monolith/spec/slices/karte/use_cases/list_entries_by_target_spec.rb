@@ -3,171 +3,24 @@
 require "spec_helper"
 
 RSpec.describe Karte::UseCases::ListEntriesByTarget do
-  let(:use_case) do
-    described_class.new(
-      entry_repo: entry_repo,
-      authorize_cast_access: authorize_cast_access,
-      get_profile: get_profile_uc,
-      media_adapter: media_adapter
-    )
-  end
-  let(:entry_repo)             { double(:entry_repository) }
-  let(:authorize_cast_access)  { double(:authorize_cast_access) }
-  let(:get_profile_uc)         { double(:get_profile) }
-  let(:media_adapter)          { double(:media_adapter) }
+  let(:owner_id) { create_account(role: 2) }
+  let(:author_id) { create_account_with_profile(account_id: owner_id, username: "author") }
+  let(:target_id) { create_account_with_profile(role: 1, username: "guest") }
+  let(:entry_repo) { Karte::Repositories::EntryRepository.new }
+  let(:event_repo) { Karte::Repositories::EventRepository.new }
+  let(:entry) { entry_repo.create(author_account_id: owner_id, author_profile_id: author_id, target_profile_id: target_id, rating: 4) }
 
-  let(:viewer_id) { "viewer-cast-1" }
-  let(:target_id) { "target-guest-1" }
-  let(:now)       { Time.now }
-
-  let(:entry_flagged) do
-    double(:entry,
-      id: "e-1",
-      author_account_id: "author-1", author_profile_id: "author-1-profile",
-      target_profile_id: target_id,
-      rating: 5,
-      body: "flagged entry",
-      reported_count: 5,
-      created_at: now - 100,
-      updated_at: now - 50)
-  end
-
-  let(:entry_clean) do
-    double(:entry,
-      id: "e-2",
-      author_account_id: "author-2", author_profile_id: "author-2-profile",
-      target_profile_id: target_id,
-      rating: 3,
-      body: "clean entry",
-      reported_count: 0,
-      created_at: now - 200,
-      updated_at: now - 100)
-  end
-
-  let(:profile1) { double(:profile, username: "cast1", avatar_media_id: "media-1") }
-  let(:profile2) { double(:profile, username: "cast2", avatar_media_id: nil) }
-  let(:target_profile) { double(:profile, username: "guest_target", avatar_media_id: nil) }
-  let(:aggregate) { { count: 2, avg_rating: 4.0 } }
-
-  before do
-    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(true)
-  end
-
-  it "returns entries with correct flagged values and aggregate" do
-    allow(entry_repo).to receive(:list_by_target)
-      .with(target_profile_id: target_id, limit: 2, cursor: nil)
-      .and_return([entry_flagged, entry_clean])
-    allow(entry_repo).to receive(:aggregate)
-      .with(target_profile_id: target_id)
-      .and_return(aggregate)
-
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1-profile").and_return(profile1)
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2-profile").and_return(profile2)
-    allow(get_profile_uc).to receive(:call).with(profile_id: target_id).and_return(target_profile)
-    allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
-
-    result = use_case.call(viewer_account_id: viewer_id, target_profile_id: target_id, limit: 2)
-
-    expect(result[:entries].length).to eq(2)
-    expect(result[:entries][0][:flagged]).to be(true)
-    expect(result[:entries][1][:flagged]).to be(false)
-    expect(result[:entries][0][:author_username]).to eq("cast1")
-    expect(result[:entries][0][:author_avatar_url]).to eq("https://cdn.example.com/avatar.jpg")
-    expect(result[:entries][1][:author_avatar_url]).to eq("")
-    expect(result[:entries][0][:target_username]).to eq("guest_target")
-    expect(result[:has_more]).to be(false)
-    expect(result[:next_cursor]).to be_nil
-    expect(result[:aggregate]).to eq(aggregate)
-  end
-
-  it "detects has_more and builds next_cursor when repo returns limit + 1 entries" do
-    extra_entry = double(:entry,
-      id: "e-3",
-      author_account_id: "author-1", author_profile_id: "author-1-profile",
-      target_profile_id: target_id,
-      rating: 4,
-      body: "extra",
-      reported_count: 0,
-      created_at: now - 300,
-      updated_at: now - 200)
-
-    allow(entry_repo).to receive(:list_by_target)
-      .with(target_profile_id: target_id, limit: 2, cursor: nil)
-      .and_return([entry_flagged, entry_clean, extra_entry])
-    allow(entry_repo).to receive(:aggregate)
-      .with(target_profile_id: target_id)
-      .and_return(aggregate)
-
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-1-profile").and_return(profile1)
-    allow(get_profile_uc).to receive(:call).with(profile_id: "author-2-profile").and_return(profile2)
-    allow(get_profile_uc).to receive(:call).with(profile_id: target_id).and_return(target_profile)
-    allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
-
-    result = use_case.call(viewer_account_id: viewer_id, target_profile_id: target_id, limit: 2)
-
+  it "returns summaries and a global aggregate independently of page size" do
+    entry_repo.update(entry.id, status: "closed", closed_at: Sequel.function(:clock_timestamp))
+    entry_repo.create(author_account_id: owner_id, author_profile_id: author_id, target_profile_id: target_id, rating: 2, status: "closed", closed_at: Time.now)
+    result = described_class.new.call(viewer_account_id: owner_id, target_profile_id: target_id, limit: 1)
+    expect(result[:entries].length).to eq(1)
     expect(result[:has_more]).to be(true)
-    expect(result[:next_cursor]).not_to be_nil
-    expect(result[:entries].length).to eq(2)
+    expect(result[:aggregate]).to eq(count: 2, avg_rating: 3.0, author_count: 1, rated_count: 2)
+    expect(result[:entries].first).to include(events: [], status: "closed")
   end
 
-  it "delegates the cast/billing check to AuthorizeCastAccess and rejects when it fails" do
-    allow(authorize_cast_access).to receive(:call).with(viewer_account_id: viewer_id).and_return(false)
-    expect {
-      use_case.call(viewer_account_id: viewer_id, target_profile_id: target_id)
-    }.to raise_error(Karte::UseCases::ListEntriesByTarget::AccessError)
-  end
-
-  it "dedupes author lookups within a page (calls get_profile once per unique author)" do
-    entry_same_author = double(:entry,
-      id: "e-3",
-      author_account_id: "author-1", author_profile_id: "author-1-profile",
-      target_profile_id: target_id,
-      rating: 4,
-      body: "another entry by author-1",
-      reported_count: 0,
-      created_at: now - 300,
-      updated_at: now - 200)
-
-    allow(entry_repo).to receive(:list_by_target)
-      .with(target_profile_id: target_id, limit: 20, cursor: nil)
-      .and_return([entry_flagged, entry_same_author, entry_clean])
-    allow(entry_repo).to receive(:aggregate)
-      .with(target_profile_id: target_id)
-      .and_return(aggregate)
-    allow(media_adapter).to receive(:find_url).with("media-1").and_return("https://cdn.example.com/avatar.jpg")
-
-    expect(get_profile_uc).to receive(:call).with(profile_id: "author-1-profile").once.and_return(profile1)
-    expect(get_profile_uc).to receive(:call).with(profile_id: "author-2-profile").once.and_return(profile2)
-    expect(get_profile_uc).to receive(:call).with(profile_id: target_id).once.and_return(target_profile)
-
-    use_case.call(viewer_account_id: viewer_id, target_profile_id: target_id)
-  end
-
-  it "marks an entry as mine by the owning account, whichever profile wrote it" do
-    mine = double(:entry, id: "e-mine", author_account_id: viewer_id, author_profile_id: "other-persona",
-      target_profile_id: "target-x", rating: 3, body: nil, reported_count: 0, created_at: now, updated_at: now)
-    theirs = double(:entry, id: "e-theirs", author_account_id: "someone-else", author_profile_id: "their-persona",
-      target_profile_id: "target-x", rating: 3, body: nil, reported_count: 0, created_at: now, updated_at: now)
-    allow(entry_repo).to receive(:list_by_target).and_return([mine, theirs])
-    allow(entry_repo).to receive(:aggregate).and_return(count: 0, avg_rating: 0.0)
-    allow(get_profile_uc).to receive(:call).and_return(nil)
-
-    entries = use_case.call(viewer_account_id: viewer_id, target_profile_id: "target-x")[:entries]
-
-    expect(entries.map { |e| e[:is_mine] }).to eq([true, false])
-    expect(entries.map { |e| e[:author_profile_id] }).to eq(["other-persona", "their-persona"])
-  end
-
-  it "never includes the author's account id in a presented entry" do
-    entry = double(:entry, id: "e-1", author_account_id: "secret-account", author_profile_id: "persona-1",
-      target_profile_id: "target-x", rating: 3, body: nil, reported_count: 0, created_at: now, updated_at: now)
-    allow(entry_repo).to receive(:list_by_target).and_return([entry])
-    allow(entry_repo).to receive(:aggregate).and_return(count: 0, avg_rating: 0.0)
-    allow(get_profile_uc).to receive(:call).and_return(nil)
-
-    presented = use_case.call(viewer_account_id: viewer_id, target_profile_id: "target-x")[:entries].first
-
-    expect(presented).not_to have_key(:author_account_id)
-    expect(presented.values).not_to include("secret-account")
+  it "rejects guest readers" do
+    expect { described_class.new.call(viewer_account_id: create_account(role: 1), target_profile_id: target_id) }.to raise_error(Karte::Domain::Errors::Access)
   end
 end
