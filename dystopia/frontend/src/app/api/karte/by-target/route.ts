@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { karteClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
-import { handleApiError, requireAuth } from "@/lib/api-helpers";
+import { requireAuth } from "@/lib/api-helpers";
+import { handleKarteApiError } from "@/modules/karte/lib/api-errors";
 import { mapKarteEntryToView } from "@/modules/karte/lib/mappers";
 
 export async function GET(req: NextRequest) {
@@ -25,10 +26,12 @@ export async function GET(req: NextRequest) {
       hasMore: !!res.hasMore,
       aggregate: {
         count: res.aggregate?.count || 0,
-        avgRating: res.aggregate?.avgRating || 0,
+        avgRating: res.aggregate?.avgRating ?? null,
+        authorCount: res.aggregate?.authorCount ?? 0,
+        ratedCount: res.aggregate?.ratedCount ?? 0,
       },
     });
   } catch (error: unknown) {
-    return handleApiError(error, "ListKarteByTarget");
+    return handleKarteApiError(error, "ListKarteByTarget");
   }
 }

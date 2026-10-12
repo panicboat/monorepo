@@ -1,33 +1,14 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { authFetch } from "@/lib/auth/fetch";
-import type { KarteEntry } from "../types";
+import { useCallback } from "react";
+import type { KarteEntry, KarteEventInput } from "../types";
+import { useKarteMutation } from "./useKarteMutation";
 
 export function useCreateKarte() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const create = useCallback(async (
-    targetProfileId: string,
-    rating: number,
-    body: string
-  ): Promise<KarteEntry | null> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await authFetch<{ entry: KarteEntry }>("/api/karte", {
-        method: "POST",
-        body: { targetProfileId, rating, body },
-      });
-      return res.entry;
-    } catch (e) {
-      setError(e instanceof Error ? e : new Error("Failed to create karte"));
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+  const { run, loading, error } = useKarteMutation<{ entry: KarteEntry }>();
+  const create = useCallback(async (input: { targetProfileId: string; rating: number | null; firstEvent: KarteEventInput }): Promise<KarteEntry> => {
+    const response = await run("/api/karte", { method: "POST", body: input });
+    return response.entry;
+  }, [run]);
   return { create, loading, error };
 }

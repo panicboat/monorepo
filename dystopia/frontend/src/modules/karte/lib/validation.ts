@@ -31,7 +31,8 @@ export function validateKarte(input: unknown): Record<string, string> {
   if (!input || typeof input !== "object" || Array.isArray(input)) return { entry: "カルテの入力が正しくありません" };
   const value = input as Record<string, unknown>;
   const errors: Record<string, string> = {};
-  if (value.rating !== null && value.rating !== undefined && (typeof value.rating !== "number" || !Number.isInteger(value.rating) || value.rating < 1 || value.rating > 5)) errors.rating = "評価は未評価または1〜5で選択してください";
+  const ratingError = validateRating(value.rating);
+  if (ratingError) errors.rating = ratingError;
   const body = value.body === undefined || value.body === null ? "" : value.body;
   if (typeof body !== "string" || Array.from(body).length > 500) errors.body = "メモは500文字以内で入力してください";
   const events = value.events === undefined ? [] : value.events;
@@ -43,6 +44,10 @@ export function validateKarte(input: unknown): Record<string, string> {
     if (value.rating === 1 && !(typeof body === "string" && body.trim()) && !events.some((event) => event && typeof event.note === "string" && event.note.trim())) errors.note = "星1の評価には出来事か過去のメモに補足が必要です";
   }
   return errors;
+}
+
+export function validateRating(rating: unknown): string | null {
+  return rating !== null && rating !== undefined && (typeof rating !== "number" || !Number.isInteger(rating) || rating < 1 || rating > 5) ? "評価は未評価または1〜5で選択してください" : null;
 }
 
 export function japanToday(now = new Date()): string {

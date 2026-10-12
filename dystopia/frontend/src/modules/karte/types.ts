@@ -25,16 +25,29 @@ export interface KarteEntry {
   authorAvatarUrl: string;
   targetUsername: string;
   targetAvatarUrl: string;
-  rating: number;
+  rating: number | null;
   body: string;
   flagged: boolean;
   createdAt: string;
   updatedAt: string;
+  status: KarteStatus;
+  closedAt: string | null;
+  events: KarteEvent[];
+  latestEvent: KarteEvent | null;
+  eventCount: number;
 }
 
 export interface KarteAggregate {
   count: number;
-  avgRating: number;
+  avgRating: number | null;
+  authorCount: number;
+  ratedCount: number;
+}
+
+export interface KarteCounts {
+  total: number;
+  open: number;
+  closed: number;
 }
 
 export interface PaginatedKarteByTargetResponse {
@@ -48,6 +61,7 @@ export interface PaginatedKarteMyResponse {
   entries: KarteEntry[];
   nextCursor: string;
   hasMore: boolean;
+  counts: KarteCounts;
 }
 
 export interface PaginatedKarteRecentResponse {

@@ -4,6 +4,12 @@ import { KarteEntrySchema } from "@/stub/karte/v1/service_pb";
 import { mapKarteEntryToView } from "./mappers";
 
 describe("mapKarteEntryToView", () => {
+  it("maps optional ratings and full events without inventing dates", () => {
+    const view = mapKarteEntryToView(create(KarteEntrySchema, { id: "entry", status: "open", eventCount: 1, events: [{ id: "event", entryId: "entry", stage: "booking", outcome: "confirmed", occurredOn: "2026-10-10", createdAt: { seconds: 1700000000n, nanos: 123000000 } }] }));
+    expect(view.rating).toBeNull();
+    expect(view.status).toBe("open");
+    expect(view.events[0]).toMatchObject({ occurredOn: "2026-10-10", createdAt: "2023-11-14T22:13:20.123Z" });
+  });
   it("maps the author and target profile ids and the ownership flag", () => {
     const view = mapKarteEntryToView(
       create(KarteEntrySchema, {

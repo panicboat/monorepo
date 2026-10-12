@@ -3,16 +3,16 @@
 import useSWRInfinite from "swr/infinite";
 import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
-import type { PaginatedKarteMyResponse } from "../types";
+import type { KarteStatus, PaginatedKarteMyResponse } from "../types";
 
-export function useMyKarte() {
+export function useMyKarte(status: "all" | KarteStatus = "all") {
   const profileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedKarteMyResponse | null): string | null => {
     if (!profileId) return null;
     if (prev && !prev.hasMore) return null;
-    const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    return `/api/karte/my${cursorQs}`;
+    const cursorQs = pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
+    return `/api/karte/my?status=${status}${cursorQs}`;
   };
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =
@@ -24,6 +24,7 @@ export function useMyKarte() {
 
   return {
     entries,
+    counts: pages[0]?.counts ?? { total: 0, open: 0, closed: 0 },
     hasMore,
     loading: isLoading || isValidating,
     error,

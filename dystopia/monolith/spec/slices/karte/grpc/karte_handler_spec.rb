@@ -47,6 +47,54 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
 
   after { Current.clear }
 
+  describe "event and lifecycle RPCs" do
+    it "returns full events and preserves rating presence through lifecycle changes" do
+      act_as(cast_account, persona_a)
+      entry = create_entry
+      detail = handler_for(::Karte::V1::GetEntryRequest.new(entry_id: entry.id)).get_entry.entry
+      expect([detail.status, detail.event_count, detail.events.first.stage]).to eq(["open", 1, "booking"])
+      appended = handler_for(::Karte::V1::AddEventRequest.new(entry_id: entry.id, event: ::Karte::V1::KarteEventInput.new(stage: "service", outcome: "completed", occurred_on: "2026-10-12"))).add_event.entry
+      expect(appended.event_count).to eq(2)
+      service_event = appended.events.find { |event| event.stage == "service" }
+      edited = handler_for(::Karte::V1::UpdateEventRequest.new(entry_id: entry.id, event_id: service_event.id, event: ::Karte::V1::KarteEventInput.new(stage: "service", outcome: "completed", note: "agreed service", occurred_on: "2026-10-11"))).update_event.entry
+      expect(edited.events.find { |event| event.id == service_event.id }.note).to eq("agreed service")
+      deleted = handler_for(::Karte::V1::DeleteEventRequest.new(entry_id: entry.id, event_id: service_event.id)).delete_event.entry
+      expect(deleted.event_count).to eq(1)
+      cleared = handler_for(::Karte::V1::UpdateEntryRequest.new(entry_id: entry.id, rating: 0)).update_entry.entry
+      expect(cleared.has_rating?).to be(false)
+      closed = handler_for(::Karte::V1::CloseEntryRequest.new(entry_id: entry.id)).close_entry.entry
+      expect(closed.status).to eq("closed")
+      expect {
+        handler_for(::Karte::V1::AddEventRequest.new(entry_id: entry.id, event: ::Karte::V1::KarteEventInput.new(stage: "service", outcome: "completed", occurred_on: "2026-10-12"))).add_event
+      }.to status(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
+      reopened = handler_for(::Karte::V1::ReopenEntryRequest.new(entry_id: entry.id)).reopen_entry.entry
+      expect([reopened.status, reopened.event_count, reopened.has_rating?]).to eq(["open", 1, false])
+    end
+
+    it "returns status counts and only includes completed ratings in the aggregate" do
+      act_as(cast_account, persona_a)
+      open_entry = create_entry
+      closed_entry = create_entry(rating: 5)
+      handler_for(::Karte::V1::CloseEntryRequest.new(entry_id: closed_entry.id)).close_entry
+      result = handler_for(::Karte::V1::ListMyEntriesRequest.new(status: "open")).list_my_entries
+      expect(result.entries.map(&:id)).to eq([open_entry.id])
+      expect(result.counts.to_h).to eq({total: 2, open: 1, closed: 1})
+      aggregate = list_by_target.aggregate
+      expect([aggregate.count, aggregate.avg_rating, aggregate.author_count, aggregate.rated_count]).to eq([2, 5.0, 1, 1])
+      expect { handler_for(::Karte::V1::ListMyEntriesRequest.new(status: "invalid")).list_my_entries }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+    end
+
+    it "allows another cast to read events but denies guest readers" do
+      act_as(cast_account, persona_a)
+      entry = create_entry
+      act_as(other_cast_account, other_persona)
+      result = handler_for(::Karte::V1::GetEntryRequest.new(entry_id: entry.id)).get_entry.entry
+      expect(result.is_mine).to be(false)
+      act_as(guest_account, guest)
+      expect { handler_for(::Karte::V1::GetEntryRequest.new(entry_id: entry.id)).get_entry }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
+    end
+  end
+
   describe "#create_entry" do
     it "records the acting profile as the author and the account as the owner" do
       act_as(cast_account, persona_a)

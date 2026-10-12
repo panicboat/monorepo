@@ -178,7 +178,7 @@ end
 
 **Interfaces:** `useCreateKarte().create({targetProfileId,rating,firstEvent})`、`useUpdateKarte().update(id,{rating?,body?})`、`useKarte(id)`、`useKarteEvents(id).{add(event),update(eventId,event),remove(eventId)}`、`useKarteLifecycle(id).{close(),reopen()}`。変更は`Promise<KarteEntry>`を返し、失敗はErrorを返す。取得は既存のSWR構成、変更は既存`authFetch`を使う。`useMyKarte(status: "all" | KarteStatus)`はcountsを返す。
 
-- [ ] **Step 1:** 評価presence、strict JSON入力、全RPC/HTTPルートの所有権・状態・出来事・レスポンス変換をテストする。変更フックの二重送信防止、エラー伝播と完了待ちも固定する。
+- [x] **Step 1:** 評価presence、strict JSON入力、全RPC/HTTPルートの所有権・状態・出来事・レスポンス変換をテストする。変更フックの二重送信防止、エラー伝播と完了待ちも固定する。
 
 ```ts
 it("preserves omitted, cleared and set rating values", async () => {
@@ -188,10 +188,10 @@ it("preserves omitted, cleared and set rating values", async () => {
 });
 ```
 
-- [ ] **Step 2:** `FE: pnpm test src/app/api/karte src/modules/karte/lib/mappers.test.ts src/modules/karte/hooks/mutations.test.tsx`、`BE: bundle exec rspec spec/slices/karte/grpc/karte_handler_spec.rb`。評価解除・新RPC・エラー区分でFAILを確認する。上記テスト内の`rpcRatingFor`は実ルートにmock clientを渡して得たrequestを返すfixtureとする。
-- [ ] **Step 3:** handlerは`has_rating?`で省略を判定し、明示0をnilへ変換する。BFFはJSONの型とvalidationを検証し、feature-local `handleKarteApiError(error,context)`でFAILED_PRECONDITIONだけ409へ変換する。全体の`grpc-errors.ts`は変更しない。未評価・平均なしはレスポンスでnull、owner IDは返さない。
-- [ ] **Step 4:** 指定したVitest/RSpecが0 failures。401/403/404/409/400と再試行可能な取得失敗を固定し、文字列`"3"`・false・0、不正なJSON、配列やnullのリクエスト本体を400として拒否する。フックは開始時のprofileを保持し、別profileや破棄済みUIへ結果を適用しない。`FE: pnpm exec tsc --noEmit`で新契約の呼び出し箇所を列挙し、Task 7〜9の変更対象へ対応付ける。
-- [ ] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): connect karte lifecycle through gRPC and the BFF"`。
+- [x] **Step 2:** `FE: pnpm test src/app/api/karte src/modules/karte/lib/mappers.test.ts src/modules/karte/hooks/mutations.test.tsx`、`BE: bundle exec rspec spec/slices/karte/grpc/karte_handler_spec.rb`。評価解除・新RPC・エラー区分でFAILを確認する。上記テスト内の`rpcRatingFor`は実ルートにmock clientを渡して得たrequestを返すfixtureとする。
+- [x] **Step 3:** handlerは`has_rating?`で省略を判定し、明示0をnilへ変換する。BFFはJSONの型とvalidationを検証し、feature-local `handleKarteApiError(error,context)`でFAILED_PRECONDITIONだけ409へ変換する。全体の`grpc-errors.ts`は変更しない。未評価・平均なしはレスポンスでnull、owner IDは返さない。
+- [x] **Step 4:** 指定したVitest/RSpecが0 failures。401/403/404/409/400と再試行可能な取得失敗を固定し、文字列`"3"`・false・0、不正なJSON、配列やnullのリクエスト本体を400として拒否する。フックは開始時のprofileを保持し、別profileや破棄済みUIへ結果を適用しない。`FE: pnpm exec tsc --noEmit`で新契約の呼び出し箇所を列挙し、Task 7〜9の変更対象へ対応付ける。
+- [x] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): connect karte lifecycle through gRPC and the BFF"`。
 
 ## Task 6: Shared Panels, Motion and Shell
 

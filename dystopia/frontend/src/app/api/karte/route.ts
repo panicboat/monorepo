@@ -1,30 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { karteClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
-import { handleApiError, requireAuth } from "@/lib/api-helpers";
-import { mapKarteEntryToView } from "@/modules/karte/lib/mappers";
+import { requireAuth } from "@/lib/api-helpers";
+import { handleKarteApiError, KarteInputError } from "@/modules/karte/lib/api-errors";
+import { entryInput, eventInput, karteEntryResponse, readKarteBody } from "@/modules/karte/lib/api-input";
+import { validateKarte } from "@/modules/karte/lib/validation";
 
 export async function POST(req: NextRequest) {
   try {
     const authError = requireAuth(req);
     if (authError) return authError;
-    const body = await req.json();
-    const targetProfileId = body.targetProfileId as string | undefined;
-    const rating = Number(body.rating);
-    const text = (body.body as string | undefined) ?? "";
-    if (!targetProfileId || !Number.isFinite(rating)) {
-      return NextResponse.json({ error: "targetProfileId and rating required" }, { status: 400 });
-    }
+    const body = await readKarteBody(req);
+    const targetProfileId = body.targetProfileId;
+    if (typeof targetProfileId !== "string" || !targetProfileId) throw new KarteInputError("ゲストを選択してください");
+    const firstEvent = eventInput(body.firstEvent);
+    const errors = validateKarte({ ...body, events: [firstEvent] });
+    if (Object.keys(errors).length) throw new KarteInputError(Object.values(errors)[0]);
     const res = await karteClient.createEntry(
-      { targetProfileId, rating, body: text },
+      { targetProfileId, ...entryInput(body), firstEvent },
       { headers: await buildGrpcHeaders(req) }
     );
-    const e = res.entry;
-    if (!e) {
-      return NextResponse.json({ error: "create returned empty entry" }, { status: 500 });
-    }
-    return NextResponse.json({ entry: mapKarteEntryToView(e) });
+    return karteEntryResponse(res.entry);
   } catch (error: unknown) {
-    return handleApiError(error, "CreateKarte");
+    return handleKarteApiError(error, "CreateKarte");
   }
 }

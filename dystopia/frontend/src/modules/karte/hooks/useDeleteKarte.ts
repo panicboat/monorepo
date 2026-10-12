@@ -1,27 +1,10 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { authFetch } from "@/lib/auth/fetch";
+import { useCallback } from "react";
+import { useKarteMutation } from "./useKarteMutation";
 
 export function useDeleteKarte() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const remove = useCallback(async (id: string): Promise<boolean> => {
-    setLoading(true);
-    setError(null);
-    try {
-      await authFetch<{ ok: boolean }>(`/api/karte/${id}`, {
-        method: "DELETE",
-      });
-      return true;
-    } catch (e) {
-      setError(e instanceof Error ? e : new Error("Failed to delete karte"));
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+  const { run, loading, error } = useKarteMutation<{ ok: boolean }>();
+  const remove = useCallback(async (id: string): Promise<boolean> => (await run(`/api/karte/${id}`, { method: "DELETE" })).ok, [run]);
   return { remove, loading, error };
 }

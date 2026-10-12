@@ -23,6 +23,12 @@ module Karte
       rpc :ReportEntry,         ::Karte::V1::ReportEntryRequest,         ::Karte::V1::ReportEntryResponse
       rpc :GetMyAccess,         ::Karte::V1::GetMyAccessRequest,         ::Karte::V1::GetMyAccessResponse
       rpc :ListRecentEntries,  ::Karte::V1::ListRecentEntriesRequest,  ::Karte::V1::ListRecentEntriesResponse
+      rpc :GetEntry,     ::Karte::V1::GetEntryRequest,     ::Karte::V1::GetEntryResponse
+      rpc :AddEvent,     ::Karte::V1::AddEventRequest,     ::Karte::V1::AddEventResponse
+      rpc :UpdateEvent,  ::Karte::V1::UpdateEventRequest,  ::Karte::V1::UpdateEventResponse
+      rpc :DeleteEvent,  ::Karte::V1::DeleteEventRequest,  ::Karte::V1::DeleteEventResponse
+      rpc :CloseEntry,   ::Karte::V1::CloseEntryRequest,   ::Karte::V1::CloseEntryResponse
+      rpc :ReopenEntry,  ::Karte::V1::ReopenEntryRequest,  ::Karte::V1::ReopenEntryResponse
 
       include Karte::Deps[
         create_uc:          "use_cases.create_entry",
@@ -32,7 +38,14 @@ module Karte
         list_my_uc:         "use_cases.list_my_entries",
         report_uc:          "use_cases.report_entry",
         get_my_access_uc:   "use_cases.get_my_access",
-        list_recent_uc:      "use_cases.list_recent_entries"
+        list_recent_uc:      "use_cases.list_recent_entries",
+        get_entry_uc:        "use_cases.get_entry",
+        add_event_uc:        "use_cases.add_event",
+        update_event_uc:     "use_cases.update_event",
+        delete_event_uc:     "use_cases.delete_event",
+        close_entry_uc:      "use_cases.close_entry",
+        reopen_entry_uc:     "use_cases.reopen_entry",
+        entry_presenter:     "presenters.entry_presenter"
       ]
 
       def create_entry
@@ -95,7 +108,9 @@ module Karte
           has_more: result[:has_more],
           aggregate: ::Karte::V1::Aggregate.new(
             count: result[:aggregate][:count],
-            avg_rating: result[:aggregate][:avg_rating]
+            avg_rating: result[:aggregate][:avg_rating],
+            author_count: result[:aggregate][:author_count],
+            rated_count: result[:aggregate][:rated_count]
           )
         )
       end
@@ -108,13 +123,15 @@ module Karte
           list_my_uc.call(
             viewer_account_id: current_account_id,
             limit: limit,
-            cursor: cursor
+            cursor: cursor,
+            status: request.message.status
           )
         end
         ::Karte::V1::ListMyEntriesResponse.new(
           entries: result[:entries].map { |e| entry_to_proto(e) },
           next_cursor: result[:next_cursor] || "",
-          has_more: result[:has_more]
+          has_more: result[:has_more],
+          counts: ::Karte::V1::KarteCounts.new(result[:counts])
         )
       end
 
@@ -157,6 +174,42 @@ module Karte
         )
       end
 
+      def get_entry
+        authenticate_user!
+        entry = wrap_errors { get_entry_uc.call(viewer_account_id: current_account_id, entry_id: request.message.entry_id) }
+        ::Karte::V1::GetEntryResponse.new(entry: entry_to_proto(entry))
+      end
+
+      def add_event
+        authenticate_user!
+        entry = wrap_errors { add_event_uc.call(viewer_account_id: current_account_id, entry_id: request.message.entry_id, event: request.message.event&.to_h) }
+        ::Karte::V1::AddEventResponse.new(entry: entry_to_proto(present_for_author(entry)))
+      end
+
+      def update_event
+        authenticate_user!
+        entry = wrap_errors { update_event_uc.call(viewer_account_id: current_account_id, entry_id: request.message.entry_id, event_id: request.message.event_id, event: request.message.event&.to_h) }
+        ::Karte::V1::UpdateEventResponse.new(entry: entry_to_proto(present_for_author(entry)))
+      end
+
+      def delete_event
+        authenticate_user!
+        entry = wrap_errors { delete_event_uc.call(viewer_account_id: current_account_id, entry_id: request.message.entry_id, event_id: request.message.event_id) }
+        ::Karte::V1::DeleteEventResponse.new(entry: entry_to_proto(present_for_author(entry)))
+      end
+
+      def close_entry
+        authenticate_user!
+        entry = wrap_errors { close_entry_uc.call(viewer_account_id: current_account_id, entry_id: request.message.entry_id) }
+        ::Karte::V1::CloseEntryResponse.new(entry: entry_to_proto(present_for_author(entry)))
+      end
+
+      def reopen_entry
+        authenticate_user!
+        entry = wrap_errors { reopen_entry_uc.call(viewer_account_id: current_account_id, entry_id: request.message.entry_id) }
+        ::Karte::V1::ReopenEntryResponse.new(entry: entry_to_proto(present_for_author(entry)))
+      end
+
       private
 
       def wrap_errors
@@ -181,24 +234,7 @@ module Karte
       end
 
       def present_for_author(entry)
-        profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.author_profile_id)
-        target_profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.target_profile_id)
-        media = ::Karte::Adapters::MediaAdapter.new
-        {
-          id: entry.id,
-          author_profile_id: entry.author_profile_id,
-          target_profile_id: entry.target_profile_id,
-          is_mine: entry.author_account_id == current_account_id,
-          author_username: profile&.username,
-          author_avatar_url: media.find_url(profile&.avatar_media_id),
-          target_username: target_profile&.username,
-          target_avatar_url: media.find_url(target_profile&.avatar_media_id),
-          rating: entry.rating,
-          body: entry.body,
-          flagged: entry.reported_count >= Karte::UseCases::ListEntriesByTarget::MIN_FLAG_REPORTS,
-          created_at: entry.created_at,
-          updated_at: entry.updated_at
-        }
+        entry_presenter.call(entries: [entry], viewer_account_id: current_account_id, include_events: true).first
       end
 
       def entry_to_proto(e)
@@ -214,7 +250,12 @@ module Karte
           body: e[:body] || "",
           flagged: e[:flagged],
           created_at: timestamp(e[:created_at]),
-          updated_at: timestamp(e[:updated_at])
+          updated_at: timestamp(e[:updated_at]),
+          status: e[:status],
+          closed_at: timestamp(e[:closed_at]),
+          events: e[:events].map { |event| event_to_proto(event) },
+          latest_event: e[:latest_event] ? event_to_proto(e[:latest_event]) : nil,
+          event_count: e[:event_count]
         }
         attrs[:rating] = e[:rating] unless e[:rating].nil?
         ::Karte::V1::KarteEntry.new(attrs)
@@ -223,6 +264,14 @@ module Karte
       def timestamp(t)
         return nil unless t
         ::Google::Protobuf::Timestamp.new(seconds: t.to_i, nanos: t.nsec)
+      end
+
+      def event_to_proto(event)
+        ::Karte::V1::KarteEvent.new(
+          id: event[:id], entry_id: event[:entry_id], stage: event[:stage], outcome: event[:outcome],
+          tags: event[:tags], note: event[:note], occurred_on: event[:occurred_on].iso8601,
+          created_at: timestamp(event[:created_at]), updated_at: timestamp(event[:updated_at])
+        )
       end
     end
   end

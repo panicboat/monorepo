@@ -22,7 +22,7 @@ export function useGuestKarte(targetProfileId: string | null | undefined) {
   const pages = data || [];
   const entries = pages.flatMap((p) => p.entries || []);
   const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
-  const aggregate = pages[0]?.aggregate ?? { count: 0, avgRating: 0 };
+  const aggregate = pages[0]?.aggregate ?? { count: 0, avgRating: null, authorCount: 0, ratedCount: 0 };
 
   return {
     entries,

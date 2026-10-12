@@ -6,3 +6,6 @@ export { useDeleteKarte } from "./useDeleteKarte";
 export { useReportKarte } from "./useReportKarte";
 export { useMyKarteAccess } from "./useMyKarteAccess";
 export { useRecentKarte } from "./useRecentKarte";
+export { useKarte } from "./useKarte";
+export { useKarteEvents } from "./useKarteEvents";
+export { useKarteLifecycle } from "./useKarteLifecycle";
