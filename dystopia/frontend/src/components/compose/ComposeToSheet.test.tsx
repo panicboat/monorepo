@@ -109,6 +109,44 @@ describe("ComposeToSheet", () => {
     await view.unmount();
   });
 
+  it("ignores a second pick while the conversation is opening", async () => {
+    const view = await mount("message");
+
+    await pick();
+    await pick();
+
+    expect(mocks.start).toHaveBeenCalledTimes(1);
+    await view.unmount();
+  });
+
+  it("stays open when asked to close before the conversation is shown, then closes with the route", async () => {
+    const view = await mount("message");
+    await pick();
+
+    await act(async () => {
+      button("閉じる").click();
+    });
+    expect(view.onClose).not.toHaveBeenCalled();
+
+    mocks.pathname = "/messages/thread-1";
+    await view.rerender();
+    expect(view.onClose).toHaveBeenCalledTimes(1);
+    await view.unmount();
+  });
+
+  it("can be closed again after the conversation failed to open", async () => {
+    mocks.start.mockRejectedValue(new Error("相手をフォローするとメッセージを送れます"));
+    const view = await mount("message");
+    await pick();
+
+    await act(async () => {
+      button("閉じる").click();
+    });
+
+    expect(view.onClose).toHaveBeenCalledTimes(1);
+    await view.unmount();
+  });
+
   it("shows why the conversation could not be opened and stays on the list", async () => {
     mocks.start.mockRejectedValue(new Error("相手をフォローするとメッセージを送れます"));
     const view = await mount("message");

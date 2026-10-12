@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { SideSheet } from "@/components/ui/side-sheet";
@@ -29,19 +29,31 @@ export function ComposeToSheet({ kind, open, onClose }: ComposeToSheetProps) {
   const pathname = usePathname();
   const [target, setTarget] = useState<SocialProfileView | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  const startedOn = useRef(pathname);
   const source = resolveRecipientSource(kind, viewerRole);
   const composeKind = target && kind !== "message" ? kind : null;
 
   const pick = async (profile: SocialProfileView) => {
     setError(null);
     if (kind !== "message") return setTarget(profile);
+    if (starting) return;
+    startedOn.current = pathname;
+    setStarting(true);
     try {
       // The route change closes the sheet, so close here only when the conversation is already the current page.
       if ((await start(profile.profileId, { replace: true })) === pathname) onClose();
     } catch (e) {
+      setStarting(false);
       // FALLBACK: Use a generic message when the failure carries none.
       setError(e instanceof Error && e.message ? e.message : "メッセージを始められませんでした");
     }
+  };
+
+  // Stay open until the route changes while a conversation is opening: closing first would pop the history entry the navigation is about to replace.
+  const requestClose = () => {
+    if (starting && pathname === startedOn.current) return;
+    onClose();
   };
 
   const saved = () => {
@@ -52,7 +64,7 @@ export function ComposeToSheet({ kind, open, onClose }: ComposeToSheetProps) {
   return (
     <SideSheet
       open={open}
-      onOpenChange={(next) => { if (!next) onClose(); }}
+      onOpenChange={(next) => { if (!next) requestClose(); }}
       title={composeKind ? COMPOSE_TITLE[composeKind] : source.title}
       onBack={composeKind ? () => setTarget(null) : undefined}
       stepKey={composeKind ? "compose" : "pick"}
@@ -64,7 +76,7 @@ export function ComposeToSheet({ kind, open, onClose }: ComposeToSheetProps) {
       )}
 
       {!target && (
-        <div className={opening ? "pointer-events-none opacity-60" : undefined}>
+        <div className={opening || starting ? "pointer-events-none opacity-60" : undefined}>
           <RecipientPicker source={source} onPick={pick} />
         </div>
       )}
