@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: dark;
   --color-neutral-50: #f8fafc;
   --color-neutral-100: #f1f5f9;
   --color-neutral-200: #e2e8f0;
@@ -13,11 +14,11 @@
   --color-neutral-900: #0f172a;
   --color-neutral-950: #14161a;
 
-  --color-brand-primary: #a855f7;
-  --color-brand-secondary: #ec4899;
+  --color-brand-primary: #b54bf1;
+  --color-brand-secondary: #e344ae;
   --color-brand-tertiary: #f97316;
 
-  --color-input-bg: #303030;
+  --color-input-bg: #292b30;
   --color-success-bg: #166534;
   --color-success-text: #4ade80;
 
@@ -26,20 +27,20 @@
   --color-warning: #fbbf24;
   --color-info: #60a5fa;
 
-  --color-bg: var(--color-neutral-950);
-  --color-bg-secondary: var(--color-neutral-800);
-  --color-surface: var(--color-neutral-900);
-  --color-divider: var(--color-neutral-800);
-  --color-border: var(--color-neutral-700);
-  --color-text-primary: var(--color-neutral-50);
-  --color-text-secondary: var(--color-neutral-400);
-  --color-text-muted: var(--color-neutral-500);
+  --color-bg: #090a0e;
+  --color-bg-secondary: #1b1e27;
+  --color-surface: #13151b;
+  --color-divider: #252c38;
+  --color-border: #303744;
+  --color-text-primary: #f6f4f8;
+  --color-text-secondary: #a4b1c5;
+  --color-text-muted: #8390a5;
   --color-accent: var(--color-brand-primary);
 
   --gradient-brand-2: linear-gradient(
-    to right,
-    var(--color-brand-primary),
-    var(--color-brand-secondary)
+    110deg,
+    #9d32db,
+    #c42d89
   );
   --gradient-brand-3: linear-gradient(
     135deg,
@@ -53,14 +54,16 @@
 }
 
 [data-theme="light"] {
-  --color-bg: #ffffff;
-  --color-surface: var(--color-neutral-100);
-  --color-bg-secondary: var(--color-neutral-200);
+  color-scheme: light;
+  --color-accent: #8332bd;
+  --color-bg: #f4f4f8;
+  --color-surface: #ffffff;
+  --color-bg-secondary: #eceef3;
   --color-divider: var(--color-neutral-200);
   --color-border: var(--color-neutral-300);
   --color-text-primary: var(--color-neutral-900);
   --color-text-secondary: var(--color-neutral-500);
-  --color-text-muted: var(--color-neutral-400);
+  --color-text-muted: #647387;
   --color-input-bg: var(--color-neutral-100);
   /* Keep the light-theme error color dark enough for AA contrast on white surfaces. */
   --color-error: #dc2626;
@@ -154,4 +157,19 @@ body {
   select {
     font-size: 16px !important;
   }
+}
+
+.side-sheet { animation-duration: 330ms; animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
+.side-sheet[data-state="open"] { animation-name: sheet-enter; }
+.side-sheet[data-state="closed"] { animation-name: sheet-exit; }
+.side-sheet-overlay { animation-duration: 200ms; animation-timing-function: ease; }
+.side-sheet-overlay[data-state="open"] { animation-name: shade-enter; }
+.side-sheet-overlay[data-state="closed"] { animation-name: shade-exit; }
+@keyframes sheet-enter { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes sheet-exit { from { transform: translateX(0); } to { transform: translateX(100%); } }
+@keyframes shade-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes shade-exit { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .side-sheet, .side-sheet-overlay { animation-name: none !important; animation-duration: 0ms !important; }
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0ms !important; }
 }

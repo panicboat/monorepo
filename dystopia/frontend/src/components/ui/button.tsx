@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 font-bold transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 font-bold transition-[opacity,background-color,border-color] duration-170 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -14,7 +14,7 @@ const buttonVariants = cva(
           "border border-accent text-accent rounded-full hover:bg-accent/10",
       },
       size: {
-        sm: "h-9 px-4 text-sm",
+        sm: "h-10 px-4 text-sm",
         md: "h-11 px-6 text-base",
       },
     },

@@ -7,8 +7,8 @@ interface PageHeaderProps {
 export function PageHeader({ title, description }: PageHeaderProps) {
   return (
     <>
-      <h1 className="text-xl font-bold">{title}</h1>
-      <p className="pt-1 text-sm text-text-secondary">{description}</p>
+      <h1 className="text-xl font-bold tracking-tight">{title}</h1>
+      <p className="pt-2 text-sm leading-relaxed text-text-secondary">{description}</p>
     </>
   );
 }

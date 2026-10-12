@@ -159,8 +159,8 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
       />
       <aside
         ref={asideRef}
-        className={`fixed left-0 top-0 z-50 flex h-full w-80 max-w-[80vw] flex-col bg-bg shadow-2xl [touch-action:pan-y_pinch-zoom] ${
-          dragOffsetPx === null ? "transition-transform duration-300 ease-out" : ""
+        className={`fixed left-0 top-0 z-50 flex h-full w-80 max-w-[80vw] flex-col border-r border-divider bg-surface shadow-2xl [touch-action:pan-y_pinch-zoom] ${
+          dragOffsetPx === null ? "transition-transform duration-330 ease-out" : ""
         } ${open ? "translate-x-0" : "-translate-x-full"}`}
         style={dragOffsetPx !== null ? { transform: `translateX(${dragOffsetPx}px)` } : undefined}
         onPointerDown={handleCloseDragStart}

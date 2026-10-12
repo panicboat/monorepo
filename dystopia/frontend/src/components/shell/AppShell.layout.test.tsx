@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
-import { createElement } from "react";
+import { createElement, useEffect } from "react";
+import { useSWRConfig } from "swr";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -60,7 +61,7 @@ async function mountAt(pathname: string) {
   });
   const page = container.querySelector('[data-testid="page"]');
   if (!page) throw new Error(`the page did not render: ${container.innerHTML}`);
-  const main = page.parentElement as HTMLElement;
+  const main = page.closest("main") as HTMLElement;
   const frame = main.parentElement?.parentElement as HTMLElement;
   return { container, main, frame };
 }
@@ -79,6 +80,19 @@ afterEach(async () => {
 });
 
 describe("AppShell layout", () => {
+  it("preserves providers during navigation and separates them when the acting profile changes", async () => {
+    let mounts = 0;
+    let cache: unknown;
+    function Probe() { cache = useSWRConfig().cache; useEffect(() => { mounts++; }, []); return createElement("input", { defaultValue: "draft" }); }
+    const container = document.createElement("div"); const root = createRoot(container);
+    mounted.push(async () => { await act(async () => root.unmount()); });
+    const render = () => act(async () => root.render(createElement(AppShell, null, createElement(Probe))));
+    await render(); const first = cache;
+    navigation.pathname = "/search"; await render();
+    expect(mounts).toBe(1); expect(cache).toBe(first);
+    await act(async () => useAuthStore.getState().setActiveProfile("p2"));
+    expect(mounts).toBe(2); expect(cache).not.toBe(first);
+  });
   it("fits a message thread between its bars: fixed to the viewport, no room reserved below, no post button over the composer", async () => {
     const { container, main, frame } = await mountAt("/messages/thread-1");
 

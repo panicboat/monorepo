@@ -12,9 +12,9 @@ export function SuggestedUsersPane() {
   if (!loading && profiles.length === 0) return null;
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-80 shrink-0 overflow-y-auto px-4 py-4 xl:block">
+    <aside className="sticky top-0 hidden h-dvh w-80 flex-1 shrink-0 overflow-y-auto px-5 py-6 xl:block">
       <h2 className="px-2 pb-2 text-base font-bold text-text-primary">おすすめユーザー</h2>
-      <div className="rounded-2xl bg-surface">
+      <div className="rounded-2xl border border-divider bg-surface">
         {loading && profiles.length === 0 && (
           <p className="px-4 py-6 text-sm text-text-secondary">読み込み中…</p>
         )}

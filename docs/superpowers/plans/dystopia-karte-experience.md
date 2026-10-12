@@ -199,7 +199,7 @@ it("preserves omitted, cleared and set rating values", async () => {
 
 **Interfaces:** `SideSheet({open,onOpenChange,title,children,footer?,onBack?,historyMode?: "managed" | "route"})`。`useBackDismiss({open,onDismiss,enabled})`はmanagedパネルだけ同URLの履歴を一つ所有する。`RouteFade({children,transitionKey})`はDOMを再利用してフェードし、childrenをkeyで再マウントしない。
 
-- [ ] **Step 1:** 実Radixでタイトル、フォーカス、Esc、背景、戻る、退出アニメーション、reduced motionをテストする。既存shellテストへproviderのmount回数とキャッシュ境界の維持を追加する。
+- [x] **Step 1:** 実Radixでタイトル、フォーカス、Esc、背景、戻る、退出アニメーション、reduced motionをテストする。既存shellテストへproviderのmount回数とキャッシュ境界の維持を追加する。
 
 ```ts
 it("dismisses with Back without leaving the underlying page", async () => {
@@ -209,10 +209,10 @@ it("dismisses with Back without leaving the underlying page", async () => {
 it("keeps page state when only the transition key changes", () => expect(pageMounts).toBe(1));
 ```
 
-- [ ] **Step 2:** `FE: pnpm test src/components/ui/side-sheet.test.tsx src/lib/motion src/components/shell`。新パネル・履歴所有・フェードが未実装でFAILすることを確認する。
-- [ ] **Step 3:** 参照HTMLの配色・余白・幅を既存セマンティックトークンへ適用する。Radix Root/Portal/Overlay/Content/Title/Closeを使い、open=false後もCSS exitをRadixに完了させる。内部段階の戻るとパネルを閉じる操作は別にする。履歴フックは自分のmarkerだけを戻し、popstateで二度戻さない。フェードは160msのopacity変更、終了・破棄時にcancelし、reduced motion時は実行しない。
-- [ ] **Step 4:** 指定したVitestが0 failures。既存の`AppShell.switch`・`layout`・`recovery`とFlowerMenuのジェスチャーテストを通す。モバイル全幅、PCの参照幅、安全領域、`md`/`xl`の表示境界を実ブラウザ確認の項目へ登録する。CSS値とDialog APIはインストール済み版の実コードで確認する。
-- [ ] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): align shared panels and navigation with the connected interface"`。
+- [x] **Step 2:** `FE: pnpm test src/components/ui/side-sheet.test.tsx src/lib/motion src/components/shell`。新パネル・履歴所有・フェードが未実装でFAILすることを確認する。
+- [x] **Step 3:** 参照HTMLの配色・余白・幅を既存セマンティックトークンへ適用する。Radix Root/Portal/Overlay/Content/Title/Closeを使い、open=false後もCSS exitをRadixに完了させる。内部段階の戻るとパネルを閉じる操作は別にする。履歴フックは自分のmarkerだけを戻し、popstateで二度戻さない。フェードは160msのopacity変更、終了・破棄時にcancelし、reduced motion時は実行しない。
+- [x] **Step 4:** 指定したVitestが0 failures。既存の`AppShell.switch`・`layout`・`recovery`とFlowerMenuのジェスチャーテストを通す。モバイル全幅、PCの参照幅、安全領域、`md`/`xl`の表示境界を実ブラウザ確認の項目へ登録する。CSS値とDialog APIはインストール済み版の実コードで確認する。
+- [x] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): align shared panels and navigation with the connected interface"`。
 
 ## Task 7: Karte Event and Rating Forms
 

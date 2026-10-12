@@ -18,7 +18,7 @@ export function TopBar({ onAvatarClick }: TopBarProps) {
   const fallback = (profile?.displayName || "?").slice(0, 1);
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between bg-bg/95 px-4 py-2 backdrop-blur">
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-divider bg-surface/95 px-4 pt-[max(.5rem,env(safe-area-inset-top))] pb-2 backdrop-blur">
       <button
         type="button"
         onClick={onAvatarClick}

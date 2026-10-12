@@ -29,7 +29,7 @@ export function SideNav() {
   const profileHref = profile?.username ? `/u/${profile.username}` : "/profile";
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col px-3 py-4 md:flex">
+    <aside className="sticky top-0 hidden h-dvh w-[266px] shrink-0 flex-col border-r border-divider bg-bg px-4 py-5 md:flex">
       <BrandMark className="px-4 pb-4 text-xl" />
       <nav className="flex-1 overflow-y-auto">
         {resolveNavItems({ karteAccess, isGuest: role === "guest" }).map((item) => {
@@ -44,8 +44,8 @@ export function SideNav() {
             <Link
               key={item.path}
               href={href}
-              className={`relative flex items-center gap-3 rounded-full px-4 py-3 text-lg hover:bg-bg-secondary ${
-                active ? "font-bold text-text-primary" : "text-text-secondary"
+              className={`relative flex items-center min-h-[51px] gap-4 rounded-xl px-4 py-3 text-base hover:bg-bg-secondary ${
+                active ? "bg-bg-secondary font-bold text-text-primary" : "text-text-secondary"
               }`}
               aria-current={active ? "page" : undefined}
             >

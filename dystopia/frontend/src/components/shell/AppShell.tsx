@@ -28,6 +28,7 @@ import { resolveShellRedirect } from "./resolveShellRedirect";
 import { resolveShellMode } from "./resolveShellMode";
 import { resolveShellLayout } from "./resolveShellLayout";
 import { cn } from "@/lib/utils";
+import { RouteFade } from "@/lib/motion/RouteFade";
 
 const AUTH_ROUTES = ["/login", "/signup", "/reset-password", "/onboarding"];
 
@@ -145,15 +146,15 @@ export function AppShell({ children }: AppShellProps) {
           <div className="md:hidden">
             <TopBar onAvatarClick={() => setDrawerOpen(true)} />
           </div>
-          <div className={cn("mx-auto flex w-full max-w-screen-xl flex-1", fitsViewport && "min-h-0")}>
+          <div className={cn("mx-auto flex w-full max-w-[1400px] flex-1", fitsViewport && "min-h-0")}>
             <SideNav />
             <main
               className={cn(
-                "min-w-0 flex-1 md:max-w-2xl md:border-x md:border-border",
+                "min-w-0 flex-1 bg-surface md:max-w-[620px] md:border-x md:border-divider",
                 fitsViewport ? "min-h-0" : "pb-24 md:pb-0"
               )}
             >
-              {pathSwitchedAwayFrom === pathname ? null : children}
+              <RouteFade transitionKey={pathname} className={fitsViewport ? "h-full" : undefined}>{pathSwitchedAwayFrom === pathname ? null : children}</RouteFade>
             </main>
             <SuggestedUsersPane />
           </div>
