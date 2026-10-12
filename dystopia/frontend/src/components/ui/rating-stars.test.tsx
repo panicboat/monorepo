@@ -26,4 +26,11 @@ describe("RatingStars", () => {
     expect(filledWidth(renderToStaticMarkup(<RatingStars value={7} />))).toBe("100");
     expect(filledWidth(renderToStaticMarkup(<RatingStars value={-1} />))).toBe("0");
   });
+
+  it("fills the stars with the rating color", () => {
+    const html = renderToStaticMarkup(<RatingStars value={4} />);
+
+    expect(html).toContain("text-rating");
+    expect(html).not.toContain("text-warning");
+  });
 });

@@ -11,7 +11,7 @@ const buttonVariants = cva(
         primary:
           "bg-gradient-brand text-white shadow-brand-glow rounded-full hover:opacity-90",
         secondary:
-          "border border-accent text-accent rounded-full hover:bg-accent/10",
+          "border border-accent/50 bg-accent/10 text-text-primary rounded-full hover:border-accent",
       },
       size: {
         sm: "h-9 px-4 text-sm",

@@ -30,4 +30,13 @@ describe("Tabs", () => {
       expect(tab).toContain("whitespace-nowrap");
     }
   });
+
+  it("stands on the app surface and underlines the selected tab in the brand's pink", () => {
+    const [tablist] = classesOf(html, "tablist");
+    const underline = /<span class="([^"]*)"><\/span>/.exec(html)?.[1].split(/\s+/) ?? [];
+
+    expect(tablist).toContain("bg-bg");
+    expect(underline).toContain("bg-brand-secondary");
+    expect(html.match(/<span class="[^"]*"><\/span>/g)).toHaveLength(1);
+  });
 });
