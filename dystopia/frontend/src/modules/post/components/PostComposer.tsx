@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { useViewScope } from "@/lib/hooks/useViewScope";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
@@ -18,6 +19,7 @@ export interface PostComposerProps {
   initialContent?: string;
   initialVisibility?: "public" | "private";
   className?: string;
+  active?: boolean;
 }
 
 const MAX_LENGTH = 1000;
@@ -27,7 +29,11 @@ export function PostComposer({
   initialContent = "",
   initialVisibility = "public",
   className,
+  active = true,
 }: PostComposerProps) {
+  const { capture } = useViewScope(active);
+  const previews = useRef(new Set<string>());
+  useEffect(() => { const owned = previews.current; return () => { owned.forEach((url) => URL.revokeObjectURL(url)); owned.clear(); }; }, []);
   const [content, setContent] = useState(initialContent);
   const [isPrivate, setIsPrivate] = useState(initialVisibility === "private");
   const [submitting, setSubmitting] = useState(false);
@@ -39,7 +45,7 @@ export function PostComposer({
 
   const trimmed = content.trim();
   const overLimit = content.length > MAX_LENGTH;
-  const canSubmit = !submitting && !isUploadingFiles && trimmed.length > 0 && !overLimit;
+  const canSubmit = active && !submitting && !isUploadingFiles && trimmed.length > 0 && !overLimit;
   const canAttachMore = attachments.length < MAX_ATTACHMENTS;
 
   const handleFilesSelected = useCallback(
@@ -51,31 +57,35 @@ export function PostComposer({
       e.target.value = "";
       if (files.length === 0) return;
 
+      const request = capture();
       setError(null);
       setIsUploadingFiles(true);
       try {
         const uploaded = await Promise.all(
           files.map((file) => uploadMedia(file, { registerAfterUpload: true }))
         );
+        if (!request.isCurrent()) { uploaded.filter((item) => item.localUrl.startsWith("blob:")).forEach((item) => URL.revokeObjectURL(item.localUrl)); return; }
+        uploaded.filter((item) => item.localUrl.startsWith("blob:")).forEach((item) => previews.current.add(item.localUrl));
         setAttachments((prev) => [...prev, ...uploaded]);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : "アップロードに失敗しました";
-        setError(message);
+        if (request.isCurrent()) setError(message);
       } finally {
-        setIsUploadingFiles(false);
+        if (request.isCurrent()) setIsUploadingFiles(false);
       }
     },
-    [attachments.length, uploadMedia]
+    [attachments.length, uploadMedia, capture]
   );
 
   const handleRemoveAttachment = useCallback((mediaId: string) => {
-    setAttachments((prev) => prev.filter((item) => item.mediaId !== mediaId));
+    setAttachments((prev) => { const removed = prev.find((item) => item.mediaId === mediaId); if (removed && previews.current.delete(removed.localUrl)) URL.revokeObjectURL(removed.localUrl); return prev.filter((item) => item.mediaId !== mediaId); });
   }, []);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!canSubmit) return;
+      const request = capture();
       setSubmitting(true);
       setError(null);
       try {
@@ -85,16 +95,15 @@ export function PostComposer({
           media: toSavePostMedia(attachments),
           hashtags: extractHashtags(trimmed),
         });
-        setContent("");
-        setAttachments([]);
+        if (request.isCurrent()) { setContent(""); previews.current.forEach((url) => URL.revokeObjectURL(url)); previews.current.clear(); setAttachments([]); }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : "投稿に失敗しました";
-        setError(message);
+        if (request.isCurrent()) setError(message);
       } finally {
-        setSubmitting(false);
+        if (request.isCurrent()) setSubmitting(false);
       }
     },
-    [canSubmit, trimmed, isPrivate, attachments, onSubmit]
+    [canSubmit, trimmed, isPrivate, attachments, onSubmit, capture]
   );
 
   return (

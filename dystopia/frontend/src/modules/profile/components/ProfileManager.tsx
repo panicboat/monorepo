@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import { SideSheet } from "@/components/ui/side-sheet";
+import { useViewScope } from "@/lib/hooks/useViewScope";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { authFetch } from "@/lib/auth/fetch";
@@ -25,9 +26,11 @@ export function ProfileManager() {
   const { profiles, switchProfile, refresh, append } = useAccountProfiles();
   const [busy, setBusy] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ProfileView | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const addScope = useViewScope(adding);
   const change = async (request: () => Promise<unknown>) => {
     setError(null);
     setBusy(true);
@@ -53,16 +56,18 @@ export function ProfileManager() {
     const removed = await change(() =>
       authFetch(`/api/profile/${encodeURIComponent(profile.id)}`, { method: "DELETE" })
     );
-    if (removed) setDeleteTarget(null);
+    if (removed) setDeleteOpen(false);
   };
   const openDeleteDialog = (profile: ProfileView) => {
     setError(null);
+    setAdding(false);
     setDeleteTarget(profile);
+    setDeleteOpen(true);
   };
   const closeDeleteDialog = () => {
     if (busy) return;
     setError(null);
-    setDeleteTarget(null);
+    setDeleteOpen(false);
   };
 
   return (
@@ -146,64 +151,27 @@ export function ProfileManager() {
       )}
       <p className="mt-2 text-xs text-text-secondary">使用中のプロフィールを無効にするには、先に別のプロフィールへ切り替えてください。</p>
 
-      {error && deleteTarget === null && (
+      {error && !deleteOpen && (
         <p role="alert" className="mt-3 text-sm text-error">
           {error}
         </p>
       )}
 
-      {profiles.length > 0 && (
-        <div className="mt-6">
-          {adding ? (
-            <ProfileNameForm
-              submitLabel="追加して切り替える"
-              onCancel={() => setAdding(false)}
-              onSubmit={async (payload) => {
-                const res = await authFetch<ProfileResponse>("/api/profile", { method: "POST", body: payload });
-                // Put the profile into the list first; switching to a profile the cached list lacks resolves back to the picker.
-                await append(res.profile);
-                switchProfile(res.profile.id);
-              }}
-            />
-          ) : (
-            <Button type="button" variant="secondary" onClick={() => setAdding(true)}>
-              プロフィールを追加
-            </Button>
-          )}
-        </div>
-      )}
+      {profiles.length > 0 && <div className="mt-6"><Button type="button" variant="secondary" disabled={busy} onClick={() => { setDeleteOpen(false); setAdding(true); }}>プロフィールを追加</Button></div>}
+      <SideSheet open={adding} onOpenChange={setAdding} title="プロフィールを追加">
+        <ProfileNameForm submitLabel="追加して切り替える" onCancel={() => setAdding(false)} onSubmit={async (payload) => {
+          const request = addScope.capture();
+          const res = await authFetch<ProfileResponse>("/api/profile", { method: "POST", body: payload });
+          if (!request.isSameActor()) return;
+          await append(res.profile);
+          if (request.isCurrent()) switchProfile(res.profile.id);
+        }} />
+      </SideSheet>
 
-      <Dialog.Root open={deleteTarget !== null} onOpenChange={(open) => !open && closeDeleteDialog()}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-surface p-4">
-            <Dialog.Title className="text-base font-bold text-text-primary">
-              {deleteTarget ? handleOf(deleteTarget) : ""} を削除しますか？
-            </Dialog.Title>
-            <Dialog.Description className="mt-2 text-sm text-text-secondary">
-              このプロフィールの投稿・コメント・フォロー・メッセージ・レビューが削除され、元に戻せません。カルテの記録は残ります。
-            </Dialog.Description>
-            {error && (
-              <p role="alert" className="mt-3 text-sm text-error">
-                {error}
-              </p>
-            )}
-            <div className="mt-4 flex justify-end gap-2">
-              <Button type="button" variant="secondary" size="sm" disabled={busy} onClick={closeDeleteDialog}>
-                キャンセル
-              </Button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => deleteTarget && remove(deleteTarget)}
-                className="h-9 rounded-full bg-red-600 px-4 text-sm font-bold text-white disabled:opacity-50"
-              >
-                {busy ? "削除中…" : "削除する"}
-              </button>
-            </div>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+      <SideSheet open={deleteOpen} onOpenChange={(open) => { if (!open) closeDeleteDialog(); }} title={`${deleteTarget ? handleOf(deleteTarget) : ""} を削除しますか？`} footer={<><Button type="button" variant="secondary" disabled={busy} onClick={closeDeleteDialog}>キャンセル</Button><button type="button" disabled={busy} onClick={() => deleteTarget && remove(deleteTarget)} className="h-11 rounded-full bg-error px-5 text-sm font-bold text-white disabled:opacity-50">{busy ? "削除中…" : "削除する"}</button></>}>
+        <p className="text-sm leading-relaxed text-text-secondary">このプロフィールの投稿・コメント・フォロー・メッセージ・レビューが削除され、元に戻せません。カルテの記録は残ります。</p>
+        {error && <p role="alert" className="mt-3 text-sm text-error">{error}</p>}
+      </SideSheet>
     </section>
   );
 }

@@ -279,17 +279,17 @@ it("shows equal-account averages with rater and rated-chart counts", () => {
 
 **Interfaces:** 作成・編集はTask 6のSideSheet、reviewはTask 7のRatingInputを使う。`MessageDraft({recipientProfileId,onSent(threadId)})`は既存`POST /api/messaging/messages`へ`{recipientProfileId,content}`を送る。既存PostComposer、プロフィールpayload builder、review mutationの公開signatureは維持する。
 
-- [ ] **Step 1:** 既存作成・編集テストを拡張し、投稿本文/添付/公開範囲、review評価/本文/表示設定、プロフィール画像/基本/身体/SNS/公開設定がリクエストに残ることを確認する。メッセージは宛先選択だけで送信せず、本文送信後に保存済みthreadを開く。フォロー必須条件を維持する。
+- [x] **Step 1:** 既存作成・編集テストを拡張し、投稿本文/添付/公開範囲、review評価/本文/表示設定、プロフィール画像/基本/身体/SNS/公開設定がリクエストに残ることを確認する。メッセージは宛先選択だけで送信せず、本文送信後に保存済みthreadを開く。フォロー必須条件を維持する。
 
 ```ts
 it("sends the first message through the existing recipient endpoint", () => expect(sentBody).toEqual({recipientProfileId: "guest-1", content: "予約について相談したいです"}));
 it("retains the message draft after a failed send", () => expect(draftText).toBe("予約について相談したいです"));
 ```
 
-- [ ] **Step 2:** `FE: pnpm test src/components/compose src/modules/post/components src/modules/review/components src/modules/profile/components src/modules/messaging/components/MessageDraft.test.tsx`。旧modal配置・初回message入力でFAILを確認する。
-- [ ] **Step 3:** 作成・編集をSideSheetへ接続し、内部フォームと既存request項目を維持する。評価入力は共通RatingInputを使いreviewの必須評価は変更しない。複数の作成操作は既存kind unionで排他的に表示し、編集は同じパネル内の段階変更で行う。メッセージは送信成功後のthreadIdへ移動し、既存の送信制限エラーを表示する。
-- [ ] **Step 4:** 指定Vitestと`FE: pnpm exec tsc --noEmit`が終了コード0。プロフィール・投稿の全payload項目が既存テストと一致し、保存失敗で入力と添付を保持し、閉じた画面へ保存結果を適用しないことを確認する。
-- [ ] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): connect composition and editing panels to existing flows"`。
+- [x] **Step 2:** `FE: pnpm test src/components/compose src/modules/post/components src/modules/review/components src/modules/profile/components src/modules/messaging/components/MessageDraft.test.tsx`。旧modal配置・初回message入力でFAILを確認する。
+- [x] **Step 3:** 作成・編集をSideSheetへ接続し、内部フォームと既存request項目を維持する。評価入力は共通RatingInputを使いreviewの必須評価は変更しない。複数の作成操作は既存kind unionで排他的に表示し、編集は同じパネル内の段階変更で行う。メッセージは送信成功後のthreadIdへ移動し、既存の送信制限エラーを表示する。
+- [x] **Step 4:** 指定Vitestと`FE: pnpm exec tsc --noEmit`が終了コード0。プロフィール・投稿の全payload項目が既存テストと一致し、保存失敗で入力と添付を保持し、閉じた画面へ保存結果を適用しないことを確認する。
+- [x] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): connect composition and editing panels to existing flows"`。
 
 ## Task 11: Detail Routes and Provider Retention
 

@@ -152,10 +152,10 @@ describe("ProfileManager", () => {
     const view = await mount();
 
     await click(view.container, "プロフィールを追加");
-    await type(view.container.querySelector("#displayName") as HTMLInputElement, "Fourth");
-    await type(view.container.querySelector("#username") as HTMLInputElement, "fourth");
+    await type(document.querySelector("#displayName") as HTMLInputElement, "Fourth");
+    await type(document.querySelector("#username") as HTMLInputElement, "fourth");
     await act(async () => {
-      view.container.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      document.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
     expect(authFetch.mock.calls[0]).toEqual(["/api/profile", { method: "POST", body: { displayName: "Fourth", username: "fourth" } }]);
@@ -205,13 +205,13 @@ describe("ProfileManager", () => {
     const view = await mount();
 
     await click(view.container, "プロフィールを追加");
-    await type(view.container.querySelector("#displayName") as HTMLInputElement, "Fourth");
-    await type(view.container.querySelector("#username") as HTMLInputElement, "fourth");
+    await type(document.querySelector("#displayName") as HTMLInputElement, "Fourth");
+    await type(document.querySelector("#username") as HTMLInputElement, "fourth");
     await act(async () => {
-      view.container.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      document.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
-    expect(view.container.querySelector('form [role="alert"]')?.textContent).toBe("プロフィールをこれ以上追加できません");
+    expect(document.querySelector('form [role="alert"]')?.textContent).toBe("プロフィールをこれ以上追加できません");
     expect(log).toEqual([]);
     await view.unmount();
   });
@@ -220,9 +220,9 @@ describe("ProfileManager", () => {
     const view = await mount();
 
     await click(view.container, "プロフィールを追加");
-    await click(view.container, "キャンセル");
+    await click(document, "キャンセル");
 
-    expect(view.container.querySelector("form")).toBeNull();
+    expect(document.querySelector("form")).toBeNull();
     expect(authFetch).not.toHaveBeenCalled();
     await view.unmount();
   });
@@ -260,13 +260,13 @@ describe("ProfileManager", () => {
     authFetch.mockImplementation(() => new Promise((resolve) => (finish = resolve)));
     const view = await mount();
     await click(view.container, "プロフィールを追加");
-    await type(view.container.querySelector("#displayName") as HTMLInputElement, "Fourth");
-    await type(view.container.querySelector("#username") as HTMLInputElement, "fourth");
+    await type(document.querySelector("#displayName") as HTMLInputElement, "Fourth");
+    await type(document.querySelector("#username") as HTMLInputElement, "fourth");
 
     await act(async () => {
-      view.container.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      document.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
-    const cancel = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent === "キャンセル");
+    const cancel = Array.from(document.querySelectorAll("button")).find((button) => button.textContent === "キャンセル");
 
     expect(cancel?.disabled).toBe(true);
     await act(async () => {

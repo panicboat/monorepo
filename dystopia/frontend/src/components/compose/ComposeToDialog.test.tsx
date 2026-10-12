@@ -10,7 +10,8 @@ import type { SocialProfileView } from "@/modules/social/types";
 const target: SocialProfileView = { profileId: "guest-1", username: "taro", displayName: "たろう", avatarUrl: "", isPrivate: false, role: "guest" };
 
 const mocks = vi.hoisted(() => ({
-  start: vi.fn(),
+  replace: vi.fn(),
+  sent: null as null | ((threadId: string) => void),
   toast: vi.fn(),
   created: null as null | (() => void),
 }));
@@ -22,7 +23,8 @@ vi.mock("./RecipientPicker", () => ({
     </button>
   ),
 }));
-vi.mock("@/modules/messaging/hooks/useStartChat", () => ({ useStartChat: () => ({ start: mocks.start, loading: false }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: mocks.replace }), usePathname: () => "/" }));
+vi.mock("@/modules/messaging/components/MessageDraft", () => ({ MessageDraft: ({ recipientProfileId, onSent }: { recipientProfileId: string; onSent: (threadId: string) => void }) => { mocks.sent = onSent; return <div>message-draft:{recipientProfileId}</div>; } }));
 vi.mock("@/modules/karte/components/KarteComposer", () => ({
   KarteComposer: ({ targetProfileId, onCreated }: { targetProfileId: string; onCreated: () => void }) => {
     mocks.created = onCreated;
@@ -33,7 +35,7 @@ vi.mock("@/modules/review/components/ReviewComposer", () => ({
   ReviewComposer: ({ targetProfileId }: { targetProfileId: string }) => <div>review-composer:{targetProfileId}</div>,
 }));
 vi.mock("@/stores/authStore", () => ({
-  useAuthStore: (selector: (state: { role: string }) => unknown) => selector({ role: "cast" }),
+  useAuthStore: Object.assign((selector: (state: { role: string; accountId: string; activeProfileId: string }) => unknown) => selector({ role: "cast", accountId: "owner", activeProfileId: "writer" }), { getState: () => ({ role: "cast", accountId: "owner", activeProfileId: "writer" }) }),
   selectRole: (state: { role: string }) => state.role,
 }));
 vi.mock("@/stores/toastStore", () => ({
@@ -71,32 +73,33 @@ async function pick() {
 }
 
 beforeEach(() => {
-  mocks.start.mockReset().mockResolvedValue(undefined);
+  mocks.replace.mockReset();
+  mocks.sent = null;
+  vi.spyOn(window.history, "back").mockImplementation(() => {});
   mocks.toast.mockReset();
   mocks.created = null;
 });
 
 describe("ComposeToDialog", () => {
-  it("opens the conversation with the chosen profile and closes", async () => {
+  it("selects a recipient without creating a thread and opens the stored thread after sending", async () => {
     const view = await mount("message");
     expect(document.body.textContent).toContain("メッセージの相手を選ぶ");
 
     await pick();
 
-    expect(mocks.start.mock.calls).toEqual([["guest-1"]]);
-    expect(view.onClose).toHaveBeenCalledTimes(1);
+    expect(mocks.replace).not.toHaveBeenCalled();
+    expect(view.onClose).not.toHaveBeenCalled();
+    expect(document.body.textContent).toContain("message-draft:guest-1");
+    await act(async () => mocks.sent?.("stored-thread"));
+    expect(mocks.replace).toHaveBeenCalledWith("/messages/stored-thread");
     await view.unmount();
   });
 
-  it("shows why the conversation could not be opened and stays on the list", async () => {
-    mocks.start.mockRejectedValue(new Error("相手をフォローするとメッセージを送れます"));
-    const view = await mount("message");
-
-    await pick();
-
-    expect(document.querySelector('[role="alert"]')?.textContent).toBe("相手をフォローするとメッセージを送れます");
-    expect(view.onClose).not.toHaveBeenCalled();
-    expect(button("pick")).toBeDefined();
+  it("keeps one panel while returning from a message draft to recipient selection", async () => {
+    const view = await mount("message"); await pick();
+    await act(async () => button("前の画面に戻る").click());
+    expect(document.body.textContent).toContain("メッセージの相手を選ぶ");
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
     await view.unmount();
   });
 
@@ -109,7 +112,7 @@ describe("ComposeToDialog", () => {
     expect(document.body.textContent).toContain("karte-composer:guest-1");
 
     await act(async () => {
-      button("宛先を選び直す").click();
+      button("前の画面に戻る").click();
     });
     expect(document.body.textContent).toContain("カルテを書くゲストを選ぶ");
     await view.unmount();

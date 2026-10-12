@@ -18,7 +18,7 @@ vi.mock("@/modules/post/components/PostComposerModal", () => ({
   PostComposerModal: ({ open }: { open: boolean }) => (open ? <div>post-composer</div> : null),
 }));
 vi.mock("./ComposeToDialog", () => ({
-  ComposeToDialog: ({ kind }: { kind: string }) => <div>compose-to:{kind}</div>,
+  ComposeToDialog: ({ kind, open }: { kind: string; open: boolean }) => open ? <div>compose-to:{kind}</div> : null,
 }));
 
 const { ComposeLauncher } = await import("./ComposeLauncher");

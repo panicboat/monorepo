@@ -12,7 +12,7 @@ vi.mock("../hooks/useDeleteReview", () => ({ useDeleteReview: () => ({ remove: v
 vi.mock("../hooks/useHideReview", () => ({ useHideReview: () => ({ hide: vi.fn(), loading: false }) }));
 vi.mock("../hooks/useUnhideReview", () => ({ useUnhideReview: () => ({ unhide: vi.fn(), loading: false }) }));
 vi.mock("../hooks/useUpdateReview", () => ({ useUpdateReview: () => ({ update: mocks.update, loading: false, error: null }) }));
-vi.mock("@/stores/authStore", () => ({ useAuthStore: () => "author-1" }));
+vi.mock("@/stores/authStore", () => ({ useAuthStore: Object.assign((selector: (state: { activeProfileId: string; accountId: string }) => unknown) => selector({ activeProfileId: "author-1", accountId: "owner" }), { getState: () => ({ activeProfileId: "author-1", accountId: "owner" }) }) }));
 
 const { ReviewEntryCard } = await import("./ReviewEntryCard");
 
@@ -48,17 +48,17 @@ describe("ReviewEntryCard edit flow", () => {
     await act(async () => {
       button(container, "編集")!.click();
     });
-    expect(container.querySelector("textarea")?.value).toBe("review body");
-    expect(container.querySelector("select")?.value).toBe("4");
-    expect(button(container, "編集")).toBeUndefined();
+    expect(document.querySelector("textarea")?.value).toBe("review body");
+    expect(document.querySelector("select")?.value).toBe("4");
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
 
     await act(async () => {
-      container.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      document.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
     expect(mocks.update.mock.calls).toEqual([["e-1", 4, "review body"]]);
     expect(onChanged).toHaveBeenCalledTimes(1);
-    expect(container.querySelector("form")).toBeNull();
+    expect(document.querySelector("form")).toBeNull();
 
     await act(async () => {
       root.unmount();
@@ -79,10 +79,10 @@ describe("ReviewEntryCard edit flow", () => {
       button(container, "編集")!.click();
     });
     await act(async () => {
-      container.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      document.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
-    expect(container.querySelector("form")).not.toBeNull();
+    expect(document.querySelector("form")).not.toBeNull();
     expect(onChanged).not.toHaveBeenCalled();
 
     await act(async () => {

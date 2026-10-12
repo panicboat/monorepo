@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { SideSheet } from "@/components/ui/side-sheet";
+import { useViewScope } from "@/lib/hooks/useViewScope";
+import { useToastStore } from "@/stores/toastStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -95,6 +96,7 @@ function buildPayload(current: ProfileView, f: FormState, isCast: boolean): Save
 
 // Preserve fields this modal does not edit by building the save payload from the current profile.
 export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, onSaveMedia }: EditProfileModalProps) {
+  const { capture } = useViewScope(open, profile.id);
   const [form, setForm] = useState<FormState>(() => toForm(profile));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -104,46 +106,42 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleSave = async () => {
+    const request = capture();
+    if (!request.isCurrent() || saving) return;
     setSaving(true);
     setError(null);
     try {
       await onSave(buildPayload(profile, form, isCast));
-      onOpenChange(false);
+      if (request.isCurrent()) onOpenChange(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "保存に失敗しました");
+      const message = e instanceof Error ? e.message : "保存に失敗しました";
+      if (request.isCurrent()) setError(message);
+      else if (request.isSameActor()) useToastStore.getState().show(message);
     } finally {
-      setSaving(false);
+      if (request.isSameActor() && request.isMounted()) setSaving(false);
     }
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[90vh] w-[92vw] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-border bg-surface">
-          <div className="flex items-center justify-between border-b border-divider px-4 py-3">
-            <Dialog.Title className="text-base font-bold text-text-primary">プロフィールを編集</Dialog.Title>
-            <Dialog.Close className="text-text-muted hover:text-text-primary" aria-label="閉じる">
-              <X className="size-5" />
-            </Dialog.Close>
-          </div>
-
+    <SideSheet open={open} onOpenChange={onOpenChange} title="プロフィールを編集" footer={<><Button variant="secondary" onClick={() => onOpenChange(false)} disabled={saving}>キャンセル</Button><Button onClick={handleSave} disabled={saving}>{saving ? "保存中…" : "保存"}</Button></>}>
           <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4">
             <div className="flex flex-col gap-3">
               <ImageUpload
                 shape="cover"
                 url={coverUrl || undefined}
                 onUploaded={async (mediaId, url) => {
-                  setCoverUrl(url);
+                  const request = capture(); if (!request.isCurrent()) return;
                   await onSaveMedia({ coverMediaId: mediaId });
+                  if (request.isCurrent()) setCoverUrl(url);
                 }}
               />
               <ImageUpload
                 shape="avatar"
                 url={avatarUrl || undefined}
                 onUploaded={async (mediaId, url) => {
-                  setAvatarUrl(url);
+                  const request = capture(); if (!request.isCurrent()) return;
                   await onSaveMedia({ avatarMediaId: mediaId });
+                  if (request.isCurrent()) setAvatarUrl(url);
                 }}
               />
             </div>
@@ -245,16 +243,6 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, 
             {error && <p className="text-sm text-error">{error}</p>}
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-divider px-4 py-3">
-            <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)} disabled={saving}>
-              キャンセル
-            </Button>
-            <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
-              {saving ? "保存中…" : "保存"}
-            </Button>
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+    </SideSheet>
   );
 }

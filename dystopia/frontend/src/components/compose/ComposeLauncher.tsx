@@ -32,10 +32,11 @@ const VARIANTS = {
 export function ComposeLauncher({ variant }: { variant: keyof typeof VARIANTS }) {
   const role = useAuthStore(selectRole);
   const { hasAccess: karteAccess } = useMyKarteAccess();
-  const [kind, setKind] = useState<ComposeKind | null>(null);
+  const [kind, setKind] = useState<ComposeKind>("post");
+  const [open, setOpen] = useState(false);
   const { content, ...menu } = VARIANTS[variant];
   const kinds = resolveComposeKinds({ role, karteAccess });
-  const close = () => setKind(null);
+  const close = () => setOpen(false);
 
   return (
     <>
@@ -43,12 +44,12 @@ export function ComposeLauncher({ variant }: { variant: keyof typeof VARIANTS })
         {...menu}
         label="作成メニュー"
         items={kinds.map((id) => ({ id, label: COMPOSE_LABELS[id], icon: COMPOSE_ICONS[id] }))}
-        onSelect={(id) => setKind(id as ComposeKind)}
+        onSelect={(id) => { setKind(id as ComposeKind); setOpen(true); }}
       >
         {content}
       </FlowerMenu>
-      <PostComposerModal open={kind === "post"} onClose={close} />
-      {kind && kind !== "post" && <ComposeToDialog kind={kind} onClose={close} />}
+      <PostComposerModal open={open && kind === "post"} onClose={close} />
+      <ComposeToDialog kind={kind === "post" ? "message" : kind} open={open && kind !== "post"} onClose={close} />
     </>
   );
 }

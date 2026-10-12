@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, createElement } from "react";
+import { act, createElement, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useBackDismiss } from "./useBackDismiss";
@@ -45,5 +45,14 @@ describe("panel history ownership", () => {
     window.history.pushState({ route: true }, "", "/search");
     await render(false, vi.fn());
     expect(back).not.toHaveBeenCalled();
+  });
+  it("does not navigate when the owner disappears during a profile switch", async () => {
+    await render(true, vi.fn()); await act(async () => root.unmount());
+    expect(back).not.toHaveBeenCalled();
+  });
+  it("owns one entry when StrictMode rehearses its mount", async () => {
+    const push = vi.spyOn(window.history, "pushState");
+    await act(async () => root.render(createElement(StrictMode, null, createElement(Probe, { open: true, onDismiss: vi.fn(), enabled: true }))));
+    expect(push).toHaveBeenCalledTimes(1);
   });
 });
