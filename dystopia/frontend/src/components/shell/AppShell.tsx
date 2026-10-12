@@ -40,9 +40,10 @@ const PROFILE_CACHE_CONFIG = { provider: () => new Map() };
 
 interface AppShellProps {
   children: React.ReactNode;
+  detail?: React.ReactNode;
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, detail }: AppShellProps) {
   const isHydrated = useAuthStore(selectIsHydrated);
   const accountId = useAuthStore(selectAccountId);
   const activeProfileId = useAuthStore(selectActiveProfileId);
@@ -162,6 +163,7 @@ export function AppShell({ children }: AppShellProps) {
           {!fitsViewport && <ComposerFAB />}
           <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
           <FeatureTourModal />
+          {pathSwitchedAwayFrom === pathname ? null : detail}
         </div>
       </AccountProfilesProvider>
     </SWRConfig>

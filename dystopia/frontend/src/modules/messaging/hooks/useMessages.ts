@@ -35,7 +35,7 @@ export function useMessages(threadId: string | null | undefined) {
         method: "POST",
         body: { threadId, content },
       });
-      mutate();
+      await mutate(undefined, { throwOnError: false, populateCache: false });
     },
     [threadId, mutate]
   );
@@ -59,6 +59,6 @@ export function useMessages(threadId: string | null | undefined) {
     loadMore: () => setSize(size + 1),
     send,
     markRead,
-    refresh: () => mutate(),
+    refresh: () => mutate(undefined, { throwOnError: false, populateCache: false }),
   };
 }

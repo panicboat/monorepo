@@ -31,8 +31,10 @@ import { ToastHost } from "@/components/ui/ToastHost";
 
 export default function RootLayout({
   children,
+  detail,
 }: Readonly<{
   children: React.ReactNode;
+  detail: React.ReactNode;
 }>) {
   return (
     <html lang="ja" className={notoSansJP.variable} suppressHydrationWarning>
@@ -46,7 +48,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <SWRProvider>
-              <AppShell>{children}</AppShell>
+              <AppShell detail={detail}>{children}</AppShell>
             </SWRProvider>
           </AuthProvider>
         </ThemeProvider>

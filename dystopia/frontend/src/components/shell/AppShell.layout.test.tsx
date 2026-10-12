@@ -93,6 +93,15 @@ describe("AppShell layout", () => {
     await act(async () => useAuthStore.getState().setActiveProfile("p2"));
     expect(mounts).toBe(2); expect(cache).not.toBe(first);
   });
+  it("places details in the same profile cache as the retained page", async () => {
+    const caches: unknown[] = [];
+    function Probe() { const cache = useSWRConfig().cache; useEffect(() => { caches.push(cache); }, [cache]); return null; }
+    const root = createRoot(document.createElement("div")); mounted.push(async () => { await act(async () => root.unmount()); });
+    await act(async () => root.render(<AppShell detail={<Probe />}><Probe /></AppShell>));
+    expect(caches).toHaveLength(2); expect(caches[0]).toBe(caches[1]);
+    await act(async () => useAuthStore.getState().setActiveProfile("p2"));
+    expect(caches).toHaveLength(4); expect(caches[2]).toBe(caches[3]); expect(caches[2]).not.toBe(caches[0]);
+  });
   it("fits a message thread between its bars: fixed to the viewport, no room reserved below, no post button over the composer", async () => {
     const { container, main, frame } = await mountAt("/messages/thread-1");
 

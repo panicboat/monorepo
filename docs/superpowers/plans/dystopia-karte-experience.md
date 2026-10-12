@@ -293,21 +293,21 @@ it("retains the message draft after a failed send", () => expect(draftText).toBe
 
 ## Task 11: Detail Routes and Provider Retention
 
-**Files:** Modify `FE/src/app/layout.tsx`・`messages/layout.tsx`・`posts/[id]/page.tsx`・`messages/[id]/page.tsx`、`FE/src/components/shell/AppShell.tsx`と既存対応tests。Create `FE/src/modules/post/components/PostDetail.tsx`・`PostDetail.test.tsx`、`FE/src/modules/messaging/components/MessageThread.tsx`・`MessageThread.test.tsx`、`FE/src/app/@detail/default.tsx`・`@detail/(.)posts/[id]/page.tsx`・`@detail/[[...catchAll]]/page.tsx`、`FE/src/app/messages/@thread/default.tsx`・`@thread/(.)[id]/page.tsx`・`@thread/[[...catchAll]]/page.tsx`、`FE/src/app/detail-routes.test.tsx`。
+**Files:** Modify `FE/src/app/layout.tsx`・`messages/layout.tsx`・`posts/[id]/page.tsx`・`messages/[id]/page.tsx`、`FE/src/components/shell/AppShell.tsx`と既存対応tests。Create `FE/src/modules/post/components/PostDetail.tsx`・`PostDetail.test.tsx`、`FE/src/modules/messaging/components/MessageThread.tsx`・`MessageThread.test.tsx`、`FE/src/app/@detail/default.tsx`・`@detail/(.)posts/[id]/page.tsx`・`@detail/[...catchAll]/page.tsx`・`@detail/page.tsx`、`FE/src/app/messages/@thread/default.tsx`・`@thread/(.)[id]/page.tsx`・`@thread/[...catchAll]/page.tsx`・`@thread/page.tsx`、`FE/src/app/detail-routes.test.tsx`。
 
 **Interfaces:** `PostDetail({postId})`と`MessageThread({threadId})`は直接URL/パネルで同じ実処理を使う。root layout/AppShellは`detail: ReactNode`、messages layoutは`thread: ReactNode`を受け取る。detail slotはプロフィール別SWR境界内、thread slotは既存の単一MessagingPollingProvider内へ配置する。
 
-- [ ] **Step 1:** 既存pageテストを共有詳細へ移し、返信・送信・既読・media表示を確認する。slotの開閉、null route、プロフィール境界、providerの保持をテストする。
+- [x] **Step 1:** 既存pageテストを共有詳細へ移し、返信・送信・既読・media表示を確認する。slotの開閉、null route、プロフィール境界、providerの保持をテストする。
 
 ```ts
 it("does not duplicate the messaging provider when opening a thread panel", () => expect(providerMounts).toBe(1));
 it("clears the intercepted slot on a profile switch to home", () => expect(detailSlot).toBeNull());
 ```
 
-- [ ] **Step 2:** `FE: pnpm test src/modules/post/components/PostDetail.test.tsx src/modules/messaging/components/MessageThread.test.tsx 'src/app/messages/[id]/page.test.tsx' src/app/detail-routes.test.tsx src/components/shell`。共有詳細・slot/providerの不足でFAILを確認する。
-- [ ] **Step 3:** intercept routeはTask 6のSideSheetのhistoryMode=routeで`router.back()`を使い、追加の履歴を作らない。optional catch-allとdefaultはnull、通常pageは共有詳細のページ表示とする。プロフィール切り替え時にはdetailも既存holdの対象とする。メッセージpollingは既存providerとuseMessagesに任せ、新しいtimerを追加しない。
-- [ ] **Step 4:** 指定Vitestと`FE: pnpm exec tsc --noEmit`が終了コード0。実Nextブラウザで一覧→詳細→Back→Forward、直接URL/再読込→詳細ページ、パネルから別画面→null slotを確認する。既存message送信制限と既読処理を実HTTP経路で維持する。
-- [ ] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): preserve detail URLs and providers in side panels"`。
+- [x] **Step 2:** `FE: pnpm test src/modules/post/components/PostDetail.test.tsx src/modules/messaging/components/MessageThread.test.tsx 'src/app/messages/[id]/page.test.tsx' src/app/detail-routes.test.tsx src/components/shell`。共有詳細・slot/providerの不足でFAILを確認する。
+- [x] **Step 3:** intercept routeはTask 6のSideSheetのhistoryMode=routeで`router.back()`を使い、追加の履歴を作らない。catch-all・slot root page・defaultはnull、通常pageは共有詳細のページ表示とする。プロフィール切り替え時にはdetailも既存holdの対象とする。メッセージpollingは既存providerとuseMessagesに任せ、新しいtimerを追加しない。
+- [x] **Step 4:** 指定Vitestと`FE: pnpm exec tsc --noEmit`が終了コード0。Task 14の接続受け入れ環境の実Nextブラウザで一覧→詳細→Back→Forward、直接URL/再読込→詳細ページ、パネルから別画面→null slotを確認する。既存message送信制限と既読処理を実HTTP経路で維持する。
+- [x] **Step 5:** 対象ファイルだけをstageし、`git commit -s -m "feat(dystopia): preserve detail URLs and providers in side panels"`。
 
 ## Task 12: Connected Screen Layouts
 

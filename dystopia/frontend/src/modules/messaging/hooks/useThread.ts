@@ -7,7 +7,7 @@ import type { ThreadDetailResponse } from "../types";
 
 export function useThread(threadId: string | null | undefined) {
   const profileId = useAuthStore((s) => s.activeProfileId);
-  const { data, error, isLoading } = useSWR<ThreadDetailResponse>(
+  const { data, error, isLoading, mutate } = useSWR<ThreadDetailResponse>(
     profileId && threadId ? `/api/messaging/threads/${encodeURIComponent(threadId)}` : null,
     fetcher
   );
@@ -16,5 +16,6 @@ export function useThread(threadId: string | null | undefined) {
     sendRestriction: data?.sendRestriction ?? "none",
     loading: isLoading,
     error,
+    refresh: () => mutate(undefined, { throwOnError: false, populateCache: false }),
   };
 }

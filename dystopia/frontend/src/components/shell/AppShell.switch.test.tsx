@@ -12,6 +12,7 @@ const REQUEST_MS = 30;
 const navigation = { pathname: "/footprints" };
 const replace = vi.fn();
 const pageMounts: (string | null)[] = [];
+const detailMounts: (string | null)[] = [];
 
 vi.mock("next/navigation", () => ({
   usePathname: () => navigation.pathname,
@@ -95,11 +96,15 @@ async function mountApp() {
     useEffect(() => void pageMounts.push(useAuthStore.getState().activeProfileId), []);
     return null;
   };
+  const DetailProbe = () => {
+    useEffect(() => void detailMounts.push(useAuthStore.getState().activeProfileId), []);
+    return createElement("p", { "data-testid": "detail" }, "private detail");
+  };
   const tree = () =>
     createElement(
       SWRProvider,
       null,
-      createElement(AuthProvider, null, createElement(AppShell, null, createElement(PageProbe), createElement(ProfileManager)))
+      createElement(AuthProvider, null, <AppShell detail={navigation.pathname === "/" ? null : <DetailProbe />}><PageProbe /><ProfileManager /></AppShell>)
     );
   const container = document.createElement("div");
   document.body.appendChild(container);
@@ -159,6 +164,7 @@ beforeEach(async () => {
   navigation.pathname = "/footprints";
   replace.mockClear();
   pageMounts.length = 0;
+  detailMounts.length = 0;
   calls.length = 0;
   disabledProfiles.clear();
   disabledProfiles.add("pC");
@@ -224,11 +230,13 @@ describe("AppShell with several enabled profiles", () => {
     const app = await mountApp();
     await app.until(() => app.switcher().includes("@persona_b"));
     expect(pageMounts).toEqual(["pA"]);
+    expect(detailMounts).toEqual(["pA"]);
 
     await app.click("@persona_b");
     await app.until(() => app.unread() === "2");
 
     expect(pageMounts).toEqual(["pA"]);
+    expect(detailMounts).toEqual(["pA"]); expect(app.container.querySelector('[data-testid="detail"]')).toBeNull();
 
     await app.arriveAt("/");
 
