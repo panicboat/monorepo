@@ -16,7 +16,7 @@ vi.mock("./AddProfileSheet", () => ({
   AddProfileSheet: ({ open, onSubmit }: { open: boolean; onSubmit: (payload: { displayName: string; username: string }) => Promise<void> }) => (
     <div>
       add-sheet:{String(open)}
-      <button type="button" onClick={() => onSubmit({ displayName: "Fourth", username: "fourth" })}>
+      <button type="button" onClick={() => onSubmit({ displayName: "Fourth", username: "fourth" }).catch(() => {})}>
         submit-add
       </button>
     </div>
@@ -167,6 +167,19 @@ describe("ProfileManager", () => {
 
     expect(authFetch.mock.calls[0]).toEqual(["/api/profile", { method: "POST", body: { displayName: "Fourth", username: "fourth" } }]);
     expect(log).toEqual(["POST /api/profile", "append p4", "switch p4"]);
+    await view.unmount();
+  });
+
+  it("neither appends nor switches when the profile could not be created", async () => {
+    authFetch.mockRejectedValue(new Error("プロフィールをこれ以上追加できません"));
+    const view = await mount();
+
+    await click(view.container, "プロフィールを追加");
+    await click(view.container, "submit-add");
+
+    expect(append).not.toHaveBeenCalled();
+    expect(switchProfile).not.toHaveBeenCalled();
+    expect(log).toEqual([]);
     await view.unmount();
   });
 
