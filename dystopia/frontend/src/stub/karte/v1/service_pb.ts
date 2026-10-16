@@ -2,8 +2,8 @@
 // @generated from file karte/v1/service.proto (package karte.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -12,12 +12,101 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file karte/v1/service.proto.
  */
 export const file_karte_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("ChZrYXJ0ZS92MS9zZXJ2aWNlLnByb3RvEghrYXJ0ZS52MSLWAgoKS2FydGVFbnRyeRIKCgJpZBgBIAEoCRIZChFhdXRob3JfcHJvZmlsZV9pZBgCIAEoCRIZChF0YXJnZXRfcHJvZmlsZV9pZBgDIAEoCRIXCg9hdXRob3JfdXNlcm5hbWUYBCABKAkSGQoRYXV0aG9yX2F2YXRhcl91cmwYBSABKAkSDgoGcmF0aW5nGAYgASgFEgwKBGJvZHkYByABKAkSDwoHZmxhZ2dlZBgIIAEoCBIuCgpjcmVhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIXCg90YXJnZXRfdXNlcm5hbWUYCyABKAkSGQoRdGFyZ2V0X2F2YXRhcl91cmwYDCABKAkSDwoHaXNfbWluZRgNIAEoCCIuCglBZ2dyZWdhdGUSDQoFY291bnQYASABKAUSEgoKYXZnX3JhdGluZxgCIAEoASJNChJDcmVhdGVFbnRyeVJlcXVlc3QSGQoRdGFyZ2V0X3Byb2ZpbGVfaWQYASABKAkSDgoGcmF0aW5nGAIgASgFEgwKBGJvZHkYAyABKAkiOgoTQ3JlYXRlRW50cnlSZXNwb25zZRIjCgVlbnRyeRgBIAEoCzIULmthcnRlLnYxLkthcnRlRW50cnkiUgoSVXBkYXRlRW50cnlSZXF1ZXN0EhAKCGVudHJ5X2lkGAEgASgJEg4KBnJhdGluZxgCIAEoBRIRCgRib2R5GAMgASgJSACIAQFCBwoFX2JvZHkiOgoTVXBkYXRlRW50cnlSZXNwb25zZRIjCgVlbnRyeRgBIAEoCzIULmthcnRlLnYxLkthcnRlRW50cnkiJgoSRGVsZXRlRW50cnlSZXF1ZXN0EhAKCGVudHJ5X2lkGAEgASgJIhUKE0RlbGV0ZUVudHJ5UmVzcG9uc2UiVgoaTGlzdEVudHJpZXNCeVRhcmdldFJlcXVlc3QSGQoRdGFyZ2V0X3Byb2ZpbGVfaWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJIpMBChtMaXN0RW50cmllc0J5VGFyZ2V0UmVzcG9uc2USJQoHZW50cmllcxgBIAMoCzIULmthcnRlLnYxLkthcnRlRW50cnkSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgSJgoJYWdncmVnYXRlGAQgASgLMhMua2FydGUudjEuQWdncmVnYXRlIjUKFExpc3RNeUVudHJpZXNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJlChVMaXN0TXlFbnRyaWVzUmVzcG9uc2USJQoHZW50cmllcxgBIAMoCzIULmthcnRlLnYxLkthcnRlRW50cnkSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiNgoSUmVwb3J0RW50cnlSZXF1ZXN0EhAKCGVudHJ5X2lkGAEgASgJEg4KBnJlYXNvbhgCIAEoCSIVChNSZXBvcnRFbnRyeVJlc3BvbnNlIhQKEkdldE15QWNjZXNzUmVxdWVzdCJZChNHZXRNeUFjY2Vzc1Jlc3BvbnNlEhIKCmhhc19hY2Nlc3MYASABKAgSLgoKZ3JhbnRlZF9hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiOQoYTGlzdFJlY2VudEVudHJpZXNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJpChlMaXN0UmVjZW50RW50cmllc1Jlc3BvbnNlEiUKB2VudHJpZXMYASADKAsyFC5rYXJ0ZS52MS5LYXJ0ZUVudHJ5EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIMp4FCgxLYXJ0ZVNlcnZpY2USSgoLQ3JlYXRlRW50cnkSHC5rYXJ0ZS52MS5DcmVhdGVFbnRyeVJlcXVlc3QaHS5rYXJ0ZS52MS5DcmVhdGVFbnRyeVJlc3BvbnNlEkoKC1VwZGF0ZUVudHJ5Ehwua2FydGUudjEuVXBkYXRlRW50cnlSZXF1ZXN0Gh0ua2FydGUudjEuVXBkYXRlRW50cnlSZXNwb25zZRJKCgtEZWxldGVFbnRyeRIcLmthcnRlLnYxLkRlbGV0ZUVudHJ5UmVxdWVzdBodLmthcnRlLnYxLkRlbGV0ZUVudHJ5UmVzcG9uc2USYgoTTGlzdEVudHJpZXNCeVRhcmdldBIkLmthcnRlLnYxLkxpc3RFbnRyaWVzQnlUYXJnZXRSZXF1ZXN0GiUua2FydGUudjEuTGlzdEVudHJpZXNCeVRhcmdldFJlc3BvbnNlElAKDUxpc3RNeUVudHJpZXMSHi5rYXJ0ZS52MS5MaXN0TXlFbnRyaWVzUmVxdWVzdBofLmthcnRlLnYxLkxpc3RNeUVudHJpZXNSZXNwb25zZRJKCgtSZXBvcnRFbnRyeRIcLmthcnRlLnYxLlJlcG9ydEVudHJ5UmVxdWVzdBodLmthcnRlLnYxLlJlcG9ydEVudHJ5UmVzcG9uc2USSgoLR2V0TXlBY2Nlc3MSHC5rYXJ0ZS52MS5HZXRNeUFjY2Vzc1JlcXVlc3QaHS5rYXJ0ZS52MS5HZXRNeUFjY2Vzc1Jlc3BvbnNlElwKEUxpc3RSZWNlbnRFbnRyaWVzEiIua2FydGUudjEuTGlzdFJlY2VudEVudHJpZXNSZXF1ZXN0GiMua2FydGUudjEuTGlzdFJlY2VudEVudHJpZXNSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("ChZrYXJ0ZS92MS9zZXJ2aWNlLnByb3RvEghrYXJ0ZS52MSJ4Cg9LYXJ0ZUV2ZW50SW5wdXQSIwoFc3RhZ2UYASABKA4yFC5rYXJ0ZS52MS5LYXJ0ZVN0YWdlEg8KB291dGNvbWUYAiABKAkSDAoEdGFncxgDIAMoCRIMCgRub3RlGAQgASgJEhMKC29jY3VycmVkX29uGAUgASgJIt8BCgpLYXJ0ZUV2ZW50EgoKAmlkGAEgASgJEiMKBXN0YWdlGAIgASgOMhQua2FydGUudjEuS2FydGVTdGFnZRIPCgdvdXRjb21lGAMgASgJEgwKBHRhZ3MYBCADKAkSDAoEbm90ZRgFIAEoCRITCgtvY2N1cnJlZF9vbhgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKuAwoFS2FydGUSCgoCaWQYASABKAkSGQoRYXV0aG9yX3Byb2ZpbGVfaWQYAiABKAkSFwoPYXV0aG9yX3VzZXJuYW1lGAMgASgJEhkKEWF1dGhvcl9hdmF0YXJfdXJsGAQgASgJEhkKEXRhcmdldF9wcm9maWxlX2lkGAUgASgJEhcKD3RhcmdldF91c2VybmFtZRgGIAEoCRIZChF0YXJnZXRfYXZhdGFyX3VybBgHIAEoCRIPCgdpc19taW5lGAggASgIEg4KBnJhdGluZxgJIAEoBRIlCgZzdGF0dXMYCiABKA4yFS5rYXJ0ZS52MS5LYXJ0ZVN0YXR1cxIkCgZldmVudHMYCyADKAsyFC5rYXJ0ZS52MS5LYXJ0ZUV2ZW50Ei4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi0KCWNsb3NlZF9hdBgOIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiVgoSUmVsaWFiaWxpdHlTdW1tYXJ5EhYKDmF2ZXJhZ2VfcmF0aW5nGAEgASgBEhMKC3JhdGVyX2NvdW50GAIgASgFEhMKC2thcnRlX2NvdW50GAMgASgFImkKEkNyZWF0ZUthcnRlUmVxdWVzdBIZChF0YXJnZXRfcHJvZmlsZV9pZBgBIAEoCRIOCgZyYXRpbmcYAiABKAUSKAoFZXZlbnQYAyABKAsyGS5rYXJ0ZS52MS5LYXJ0ZUV2ZW50SW5wdXQiNQoTQ3JlYXRlS2FydGVSZXNwb25zZRIeCgVrYXJ0ZRgBIAEoCzIPLmthcnRlLnYxLkthcnRlIiMKD0dldEthcnRlUmVxdWVzdBIQCghrYXJ0ZV9pZBgBIAEoCSIyChBHZXRLYXJ0ZVJlc3BvbnNlEh4KBWthcnRlGAEgASgLMg8ua2FydGUudjEuS2FydGUiPAoYVXBkYXRlS2FydGVSYXRpbmdSZXF1ZXN0EhAKCGthcnRlX2lkGAEgASgJEg4KBnJhdGluZxgCIAEoBSI7ChlVcGRhdGVLYXJ0ZVJhdGluZ1Jlc3BvbnNlEh4KBWthcnRlGAEgASgLMg8ua2FydGUudjEuS2FydGUiJgoSRGVsZXRlS2FydGVSZXF1ZXN0EhAKCGthcnRlX2lkGAEgASgJIhUKE0RlbGV0ZUthcnRlUmVzcG9uc2UiJQoRQ2xvc2VLYXJ0ZVJlcXVlc3QSEAoIa2FydGVfaWQYASABKAkiNAoSQ2xvc2VLYXJ0ZVJlc3BvbnNlEh4KBWthcnRlGAEgASgLMg8ua2FydGUudjEuS2FydGUiJgoSUmVvcGVuS2FydGVSZXF1ZXN0EhAKCGthcnRlX2lkGAEgASgJIjUKE1Jlb3BlbkthcnRlUmVzcG9uc2USHgoFa2FydGUYASABKAsyDy5rYXJ0ZS52MS5LYXJ0ZSJSChRBZGRLYXJ0ZUV2ZW50UmVxdWVzdBIQCghrYXJ0ZV9pZBgBIAEoCRIoCgVldmVudBgCIAEoCzIZLmthcnRlLnYxLkthcnRlRXZlbnRJbnB1dCI3ChVBZGRLYXJ0ZUV2ZW50UmVzcG9uc2USHgoFa2FydGUYASABKAsyDy5rYXJ0ZS52MS5LYXJ0ZSJVChdVcGRhdGVLYXJ0ZUV2ZW50UmVxdWVzdBIQCghldmVudF9pZBgBIAEoCRIoCgVldmVudBgCIAEoCzIZLmthcnRlLnYxLkthcnRlRXZlbnRJbnB1dCI6ChhVcGRhdGVLYXJ0ZUV2ZW50UmVzcG9uc2USHgoFa2FydGUYASABKAsyDy5rYXJ0ZS52MS5LYXJ0ZSIrChdEZWxldGVLYXJ0ZUV2ZW50UmVxdWVzdBIQCghldmVudF9pZBgBIAEoCSI6ChhEZWxldGVLYXJ0ZUV2ZW50UmVzcG9uc2USHgoFa2FydGUYASABKAsyDy5rYXJ0ZS52MS5LYXJ0ZSJVChlMaXN0S2FydGVzQnlUYXJnZXRSZXF1ZXN0EhkKEXRhcmdldF9wcm9maWxlX2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSKXAQoaTGlzdEthcnRlc0J5VGFyZ2V0UmVzcG9uc2USHwoGa2FydGVzGAEgAygLMg8ua2FydGUudjEuS2FydGUSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgSMQoLcmVsaWFiaWxpdHkYBCABKAsyHC5rYXJ0ZS52MS5SZWxpYWJpbGl0eVN1bW1hcnkiNAoTTGlzdE15S2FydGVzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkiXgoUTGlzdE15S2FydGVzUmVzcG9uc2USHwoGa2FydGVzGAEgAygLMg8ua2FydGUudjEuS2FydGUSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiOAoXTGlzdFJlY2VudEthcnRlc1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJImIKGExpc3RSZWNlbnRLYXJ0ZXNSZXNwb25zZRIfCgZrYXJ0ZXMYASADKAsyDy5rYXJ0ZS52MS5LYXJ0ZRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCpbCgtLYXJ0ZVN0YXR1cxIcChhLQVJURV9TVEFUVVNfVU5TUEVDSUZJRUQQABIVChFLQVJURV9TVEFUVVNfT1BFThABEhcKE0tBUlRFX1NUQVRVU19DTE9TRUQQAip6CgpLYXJ0ZVN0YWdlEhsKF0tBUlRFX1NUQUdFX1VOU1BFQ0lGSUVEEAASGwoXS0FSVEVfU1RBR0VfUkVTRVJWQVRJT04QARIXChNLQVJURV9TVEFHRV9TRVJWSUNFEAISGQoVS0FSVEVfU1RBR0VfQUZURVJDQVJFEAMy7wcKDEthcnRlU2VydmljZRJKCgtDcmVhdGVLYXJ0ZRIcLmthcnRlLnYxLkNyZWF0ZUthcnRlUmVxdWVzdBodLmthcnRlLnYxLkNyZWF0ZUthcnRlUmVzcG9uc2USQQoIR2V0S2FydGUSGS5rYXJ0ZS52MS5HZXRLYXJ0ZVJlcXVlc3QaGi5rYXJ0ZS52MS5HZXRLYXJ0ZVJlc3BvbnNlElwKEVVwZGF0ZUthcnRlUmF0aW5nEiIua2FydGUudjEuVXBkYXRlS2FydGVSYXRpbmdSZXF1ZXN0GiMua2FydGUudjEuVXBkYXRlS2FydGVSYXRpbmdSZXNwb25zZRJKCgtEZWxldGVLYXJ0ZRIcLmthcnRlLnYxLkRlbGV0ZUthcnRlUmVxdWVzdBodLmthcnRlLnYxLkRlbGV0ZUthcnRlUmVzcG9uc2USRwoKQ2xvc2VLYXJ0ZRIbLmthcnRlLnYxLkNsb3NlS2FydGVSZXF1ZXN0Ghwua2FydGUudjEuQ2xvc2VLYXJ0ZVJlc3BvbnNlEkoKC1Jlb3BlbkthcnRlEhwua2FydGUudjEuUmVvcGVuS2FydGVSZXF1ZXN0Gh0ua2FydGUudjEuUmVvcGVuS2FydGVSZXNwb25zZRJQCg1BZGRLYXJ0ZUV2ZW50Eh4ua2FydGUudjEuQWRkS2FydGVFdmVudFJlcXVlc3QaHy5rYXJ0ZS52MS5BZGRLYXJ0ZUV2ZW50UmVzcG9uc2USWQoQVXBkYXRlS2FydGVFdmVudBIhLmthcnRlLnYxLlVwZGF0ZUthcnRlRXZlbnRSZXF1ZXN0GiIua2FydGUudjEuVXBkYXRlS2FydGVFdmVudFJlc3BvbnNlElkKEERlbGV0ZUthcnRlRXZlbnQSIS5rYXJ0ZS52MS5EZWxldGVLYXJ0ZUV2ZW50UmVxdWVzdBoiLmthcnRlLnYxLkRlbGV0ZUthcnRlRXZlbnRSZXNwb25zZRJfChJMaXN0S2FydGVzQnlUYXJnZXQSIy5rYXJ0ZS52MS5MaXN0S2FydGVzQnlUYXJnZXRSZXF1ZXN0GiQua2FydGUudjEuTGlzdEthcnRlc0J5VGFyZ2V0UmVzcG9uc2USTQoMTGlzdE15S2FydGVzEh0ua2FydGUudjEuTGlzdE15S2FydGVzUmVxdWVzdBoeLmthcnRlLnYxLkxpc3RNeUthcnRlc1Jlc3BvbnNlElkKEExpc3RSZWNlbnRLYXJ0ZXMSIS5rYXJ0ZS52MS5MaXN0UmVjZW50S2FydGVzUmVxdWVzdBoiLmthcnRlLnYxLkxpc3RSZWNlbnRLYXJ0ZXNSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
- * @generated from message karte.v1.KarteEntry
+ * @generated from message karte.v1.KarteEventInput
  */
-export type KarteEntry = Message<"karte.v1.KarteEntry"> & {
+export type KarteEventInput = Message<"karte.v1.KarteEventInput"> & {
+  /**
+   * @generated from field: karte.v1.KarteStage stage = 1;
+   */
+  stage: KarteStage;
+
+  /**
+   * @generated from field: string outcome = 2;
+   */
+  outcome: string;
+
+  /**
+   * @generated from field: repeated string tags = 3;
+   */
+  tags: string[];
+
+  /**
+   * @generated from field: string note = 4;
+   */
+  note: string;
+
+  /**
+   * @generated from field: string occurred_on = 5;
+   */
+  occurredOn: string;
+};
+
+/**
+ * Describes the message karte.v1.KarteEventInput.
+ * Use `create(KarteEventInputSchema)` to create a new message.
+ */
+export const KarteEventInputSchema: GenMessage<KarteEventInput> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 0);
+
+/**
+ * @generated from message karte.v1.KarteEvent
+ */
+export type KarteEvent = Message<"karte.v1.KarteEvent"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: karte.v1.KarteStage stage = 2;
+   */
+  stage: KarteStage;
+
+  /**
+   * @generated from field: string outcome = 3;
+   */
+  outcome: string;
+
+  /**
+   * @generated from field: repeated string tags = 4;
+   */
+  tags: string[];
+
+  /**
+   * @generated from field: string note = 5;
+   */
+  note: string;
+
+  /**
+   * @generated from field: string occurred_on = 6;
+   */
+  occurredOn: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 7;
+   */
+  createdAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_at = 8;
+   */
+  updatedAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message karte.v1.KarteEvent.
+ * Use `create(KarteEventSchema)` to create a new message.
+ */
+export const KarteEventSchema: GenMessage<KarteEvent> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 1);
+
+/**
+ * @generated from message karte.v1.Karte
+ */
+export type Karte = Message<"karte.v1.Karte"> & {
   /**
    * @generated from field: string id = 1;
    */
@@ -29,94 +118,104 @@ export type KarteEntry = Message<"karte.v1.KarteEntry"> & {
   authorProfileId: string;
 
   /**
-   * @generated from field: string target_profile_id = 3;
-   */
-  targetProfileId: string;
-
-  /**
-   * @generated from field: string author_username = 4;
+   * @generated from field: string author_username = 3;
    */
   authorUsername: string;
 
   /**
-   * @generated from field: string author_avatar_url = 5;
+   * @generated from field: string author_avatar_url = 4;
    */
   authorAvatarUrl: string;
 
   /**
-   * @generated from field: int32 rating = 6;
+   * @generated from field: string target_profile_id = 5;
    */
-  rating: number;
+  targetProfileId: string;
 
   /**
-   * @generated from field: string body = 7;
-   */
-  body: string;
-
-  /**
-   * @generated from field: bool flagged = 8;
-   */
-  flagged: boolean;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 9;
-   */
-  createdAt?: Timestamp | undefined;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 10;
-   */
-  updatedAt?: Timestamp | undefined;
-
-  /**
-   * @generated from field: string target_username = 11;
+   * @generated from field: string target_username = 6;
    */
   targetUsername: string;
 
   /**
-   * @generated from field: string target_avatar_url = 12;
+   * @generated from field: string target_avatar_url = 7;
    */
   targetAvatarUrl: string;
 
   /**
-   * @generated from field: bool is_mine = 13;
+   * @generated from field: bool is_mine = 8;
    */
   isMine: boolean;
+
+  /**
+   * @generated from field: int32 rating = 9;
+   */
+  rating: number;
+
+  /**
+   * @generated from field: karte.v1.KarteStatus status = 10;
+   */
+  status: KarteStatus;
+
+  /**
+   * @generated from field: repeated karte.v1.KarteEvent events = 11;
+   */
+  events: KarteEvent[];
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 12;
+   */
+  createdAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_at = 13;
+   */
+  updatedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp closed_at = 14;
+   */
+  closedAt?: Timestamp | undefined;
 };
 
 /**
- * Describes the message karte.v1.KarteEntry.
- * Use `create(KarteEntrySchema)` to create a new message.
+ * Describes the message karte.v1.Karte.
+ * Use `create(KarteSchema)` to create a new message.
  */
-export const KarteEntrySchema: GenMessage<KarteEntry> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 0);
+export const KarteSchema: GenMessage<Karte> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 2);
 
 /**
- * @generated from message karte.v1.Aggregate
+ * @generated from message karte.v1.ReliabilitySummary
  */
-export type Aggregate = Message<"karte.v1.Aggregate"> & {
+export type ReliabilitySummary = Message<"karte.v1.ReliabilitySummary"> & {
   /**
-   * @generated from field: int32 count = 1;
+   * @generated from field: double average_rating = 1;
    */
-  count: number;
+  averageRating: number;
 
   /**
-   * @generated from field: double avg_rating = 2;
+   * @generated from field: int32 rater_count = 2;
    */
-  avgRating: number;
+  raterCount: number;
+
+  /**
+   * @generated from field: int32 karte_count = 3;
+   */
+  karteCount: number;
 };
 
 /**
- * Describes the message karte.v1.Aggregate.
- * Use `create(AggregateSchema)` to create a new message.
+ * Describes the message karte.v1.ReliabilitySummary.
+ * Use `create(ReliabilitySummarySchema)` to create a new message.
  */
-export const AggregateSchema: GenMessage<Aggregate> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 1);
+export const ReliabilitySummarySchema: GenMessage<ReliabilitySummary> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 3);
 
 /**
- * @generated from message karte.v1.CreateEntryRequest
+ * @generated from message karte.v1.CreateKarteRequest
  */
-export type CreateEntryRequest = Message<"karte.v1.CreateEntryRequest"> & {
+export type CreateKarteRequest = Message<"karte.v1.CreateKarteRequest"> & {
   /**
    * @generated from field: string target_profile_id = 1;
    */
@@ -128,113 +227,322 @@ export type CreateEntryRequest = Message<"karte.v1.CreateEntryRequest"> & {
   rating: number;
 
   /**
-   * @generated from field: string body = 3;
+   * @generated from field: karte.v1.KarteEventInput event = 3;
    */
-  body: string;
+  event?: KarteEventInput | undefined;
 };
 
 /**
- * Describes the message karte.v1.CreateEntryRequest.
- * Use `create(CreateEntryRequestSchema)` to create a new message.
+ * Describes the message karte.v1.CreateKarteRequest.
+ * Use `create(CreateKarteRequestSchema)` to create a new message.
  */
-export const CreateEntryRequestSchema: GenMessage<CreateEntryRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 2);
+export const CreateKarteRequestSchema: GenMessage<CreateKarteRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 4);
 
 /**
- * @generated from message karte.v1.CreateEntryResponse
+ * @generated from message karte.v1.CreateKarteResponse
  */
-export type CreateEntryResponse = Message<"karte.v1.CreateEntryResponse"> & {
+export type CreateKarteResponse = Message<"karte.v1.CreateKarteResponse"> & {
   /**
-   * @generated from field: karte.v1.KarteEntry entry = 1;
+   * @generated from field: karte.v1.Karte karte = 1;
    */
-  entry?: KarteEntry | undefined;
+  karte?: Karte | undefined;
 };
 
 /**
- * Describes the message karte.v1.CreateEntryResponse.
- * Use `create(CreateEntryResponseSchema)` to create a new message.
+ * Describes the message karte.v1.CreateKarteResponse.
+ * Use `create(CreateKarteResponseSchema)` to create a new message.
  */
-export const CreateEntryResponseSchema: GenMessage<CreateEntryResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 3);
+export const CreateKarteResponseSchema: GenMessage<CreateKarteResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 5);
 
 /**
- * @generated from message karte.v1.UpdateEntryRequest
+ * @generated from message karte.v1.GetKarteRequest
  */
-export type UpdateEntryRequest = Message<"karte.v1.UpdateEntryRequest"> & {
+export type GetKarteRequest = Message<"karte.v1.GetKarteRequest"> & {
   /**
-   * @generated from field: string entry_id = 1;
+   * @generated from field: string karte_id = 1;
    */
-  entryId: string;
+  karteId: string;
+};
+
+/**
+ * Describes the message karte.v1.GetKarteRequest.
+ * Use `create(GetKarteRequestSchema)` to create a new message.
+ */
+export const GetKarteRequestSchema: GenMessage<GetKarteRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 6);
+
+/**
+ * @generated from message karte.v1.GetKarteResponse
+ */
+export type GetKarteResponse = Message<"karte.v1.GetKarteResponse"> & {
+  /**
+   * @generated from field: karte.v1.Karte karte = 1;
+   */
+  karte?: Karte | undefined;
+};
+
+/**
+ * Describes the message karte.v1.GetKarteResponse.
+ * Use `create(GetKarteResponseSchema)` to create a new message.
+ */
+export const GetKarteResponseSchema: GenMessage<GetKarteResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 7);
+
+/**
+ * @generated from message karte.v1.UpdateKarteRatingRequest
+ */
+export type UpdateKarteRatingRequest = Message<"karte.v1.UpdateKarteRatingRequest"> & {
+  /**
+   * @generated from field: string karte_id = 1;
+   */
+  karteId: string;
 
   /**
    * @generated from field: int32 rating = 2;
    */
   rating: number;
+};
+
+/**
+ * Describes the message karte.v1.UpdateKarteRatingRequest.
+ * Use `create(UpdateKarteRatingRequestSchema)` to create a new message.
+ */
+export const UpdateKarteRatingRequestSchema: GenMessage<UpdateKarteRatingRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 8);
+
+/**
+ * @generated from message karte.v1.UpdateKarteRatingResponse
+ */
+export type UpdateKarteRatingResponse = Message<"karte.v1.UpdateKarteRatingResponse"> & {
+  /**
+   * @generated from field: karte.v1.Karte karte = 1;
+   */
+  karte?: Karte | undefined;
+};
+
+/**
+ * Describes the message karte.v1.UpdateKarteRatingResponse.
+ * Use `create(UpdateKarteRatingResponseSchema)` to create a new message.
+ */
+export const UpdateKarteRatingResponseSchema: GenMessage<UpdateKarteRatingResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 9);
+
+/**
+ * @generated from message karte.v1.DeleteKarteRequest
+ */
+export type DeleteKarteRequest = Message<"karte.v1.DeleteKarteRequest"> & {
+  /**
+   * @generated from field: string karte_id = 1;
+   */
+  karteId: string;
+};
+
+/**
+ * Describes the message karte.v1.DeleteKarteRequest.
+ * Use `create(DeleteKarteRequestSchema)` to create a new message.
+ */
+export const DeleteKarteRequestSchema: GenMessage<DeleteKarteRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 10);
+
+/**
+ * @generated from message karte.v1.DeleteKarteResponse
+ */
+export type DeleteKarteResponse = Message<"karte.v1.DeleteKarteResponse"> & {
+};
+
+/**
+ * Describes the message karte.v1.DeleteKarteResponse.
+ * Use `create(DeleteKarteResponseSchema)` to create a new message.
+ */
+export const DeleteKarteResponseSchema: GenMessage<DeleteKarteResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 11);
+
+/**
+ * @generated from message karte.v1.CloseKarteRequest
+ */
+export type CloseKarteRequest = Message<"karte.v1.CloseKarteRequest"> & {
+  /**
+   * @generated from field: string karte_id = 1;
+   */
+  karteId: string;
+};
+
+/**
+ * Describes the message karte.v1.CloseKarteRequest.
+ * Use `create(CloseKarteRequestSchema)` to create a new message.
+ */
+export const CloseKarteRequestSchema: GenMessage<CloseKarteRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 12);
+
+/**
+ * @generated from message karte.v1.CloseKarteResponse
+ */
+export type CloseKarteResponse = Message<"karte.v1.CloseKarteResponse"> & {
+  /**
+   * @generated from field: karte.v1.Karte karte = 1;
+   */
+  karte?: Karte | undefined;
+};
+
+/**
+ * Describes the message karte.v1.CloseKarteResponse.
+ * Use `create(CloseKarteResponseSchema)` to create a new message.
+ */
+export const CloseKarteResponseSchema: GenMessage<CloseKarteResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 13);
+
+/**
+ * @generated from message karte.v1.ReopenKarteRequest
+ */
+export type ReopenKarteRequest = Message<"karte.v1.ReopenKarteRequest"> & {
+  /**
+   * @generated from field: string karte_id = 1;
+   */
+  karteId: string;
+};
+
+/**
+ * Describes the message karte.v1.ReopenKarteRequest.
+ * Use `create(ReopenKarteRequestSchema)` to create a new message.
+ */
+export const ReopenKarteRequestSchema: GenMessage<ReopenKarteRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 14);
+
+/**
+ * @generated from message karte.v1.ReopenKarteResponse
+ */
+export type ReopenKarteResponse = Message<"karte.v1.ReopenKarteResponse"> & {
+  /**
+   * @generated from field: karte.v1.Karte karte = 1;
+   */
+  karte?: Karte | undefined;
+};
+
+/**
+ * Describes the message karte.v1.ReopenKarteResponse.
+ * Use `create(ReopenKarteResponseSchema)` to create a new message.
+ */
+export const ReopenKarteResponseSchema: GenMessage<ReopenKarteResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 15);
+
+/**
+ * @generated from message karte.v1.AddKarteEventRequest
+ */
+export type AddKarteEventRequest = Message<"karte.v1.AddKarteEventRequest"> & {
+  /**
+   * @generated from field: string karte_id = 1;
+   */
+  karteId: string;
 
   /**
-   * @generated from field: optional string body = 3;
+   * @generated from field: karte.v1.KarteEventInput event = 2;
    */
-  body?: string | undefined;
+  event?: KarteEventInput | undefined;
 };
 
 /**
- * Describes the message karte.v1.UpdateEntryRequest.
- * Use `create(UpdateEntryRequestSchema)` to create a new message.
+ * Describes the message karte.v1.AddKarteEventRequest.
+ * Use `create(AddKarteEventRequestSchema)` to create a new message.
  */
-export const UpdateEntryRequestSchema: GenMessage<UpdateEntryRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 4);
+export const AddKarteEventRequestSchema: GenMessage<AddKarteEventRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 16);
 
 /**
- * @generated from message karte.v1.UpdateEntryResponse
+ * @generated from message karte.v1.AddKarteEventResponse
  */
-export type UpdateEntryResponse = Message<"karte.v1.UpdateEntryResponse"> & {
+export type AddKarteEventResponse = Message<"karte.v1.AddKarteEventResponse"> & {
   /**
-   * @generated from field: karte.v1.KarteEntry entry = 1;
+   * @generated from field: karte.v1.Karte karte = 1;
    */
-  entry?: KarteEntry | undefined;
+  karte?: Karte | undefined;
 };
 
 /**
- * Describes the message karte.v1.UpdateEntryResponse.
- * Use `create(UpdateEntryResponseSchema)` to create a new message.
+ * Describes the message karte.v1.AddKarteEventResponse.
+ * Use `create(AddKarteEventResponseSchema)` to create a new message.
  */
-export const UpdateEntryResponseSchema: GenMessage<UpdateEntryResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 5);
+export const AddKarteEventResponseSchema: GenMessage<AddKarteEventResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 17);
 
 /**
- * @generated from message karte.v1.DeleteEntryRequest
+ * @generated from message karte.v1.UpdateKarteEventRequest
  */
-export type DeleteEntryRequest = Message<"karte.v1.DeleteEntryRequest"> & {
+export type UpdateKarteEventRequest = Message<"karte.v1.UpdateKarteEventRequest"> & {
   /**
-   * @generated from field: string entry_id = 1;
+   * @generated from field: string event_id = 1;
    */
-  entryId: string;
+  eventId: string;
+
+  /**
+   * @generated from field: karte.v1.KarteEventInput event = 2;
+   */
+  event?: KarteEventInput | undefined;
 };
 
 /**
- * Describes the message karte.v1.DeleteEntryRequest.
- * Use `create(DeleteEntryRequestSchema)` to create a new message.
+ * Describes the message karte.v1.UpdateKarteEventRequest.
+ * Use `create(UpdateKarteEventRequestSchema)` to create a new message.
  */
-export const DeleteEntryRequestSchema: GenMessage<DeleteEntryRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 6);
+export const UpdateKarteEventRequestSchema: GenMessage<UpdateKarteEventRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 18);
 
 /**
- * @generated from message karte.v1.DeleteEntryResponse
+ * @generated from message karte.v1.UpdateKarteEventResponse
  */
-export type DeleteEntryResponse = Message<"karte.v1.DeleteEntryResponse"> & {
+export type UpdateKarteEventResponse = Message<"karte.v1.UpdateKarteEventResponse"> & {
+  /**
+   * @generated from field: karte.v1.Karte karte = 1;
+   */
+  karte?: Karte | undefined;
 };
 
 /**
- * Describes the message karte.v1.DeleteEntryResponse.
- * Use `create(DeleteEntryResponseSchema)` to create a new message.
+ * Describes the message karte.v1.UpdateKarteEventResponse.
+ * Use `create(UpdateKarteEventResponseSchema)` to create a new message.
  */
-export const DeleteEntryResponseSchema: GenMessage<DeleteEntryResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 7);
+export const UpdateKarteEventResponseSchema: GenMessage<UpdateKarteEventResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 19);
 
 /**
- * @generated from message karte.v1.ListEntriesByTargetRequest
+ * @generated from message karte.v1.DeleteKarteEventRequest
  */
-export type ListEntriesByTargetRequest = Message<"karte.v1.ListEntriesByTargetRequest"> & {
+export type DeleteKarteEventRequest = Message<"karte.v1.DeleteKarteEventRequest"> & {
+  /**
+   * @generated from field: string event_id = 1;
+   */
+  eventId: string;
+};
+
+/**
+ * Describes the message karte.v1.DeleteKarteEventRequest.
+ * Use `create(DeleteKarteEventRequestSchema)` to create a new message.
+ */
+export const DeleteKarteEventRequestSchema: GenMessage<DeleteKarteEventRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 20);
+
+/**
+ * @generated from message karte.v1.DeleteKarteEventResponse
+ */
+export type DeleteKarteEventResponse = Message<"karte.v1.DeleteKarteEventResponse"> & {
+  /**
+   * @generated from field: karte.v1.Karte karte = 1;
+   */
+  karte?: Karte | undefined;
+};
+
+/**
+ * Describes the message karte.v1.DeleteKarteEventResponse.
+ * Use `create(DeleteKarteEventResponseSchema)` to create a new message.
+ */
+export const DeleteKarteEventResponseSchema: GenMessage<DeleteKarteEventResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 21);
+
+/**
+ * @generated from message karte.v1.ListKartesByTargetRequest
+ */
+export type ListKartesByTargetRequest = Message<"karte.v1.ListKartesByTargetRequest"> & {
   /**
    * @generated from field: string target_profile_id = 1;
    */
@@ -252,20 +560,20 @@ export type ListEntriesByTargetRequest = Message<"karte.v1.ListEntriesByTargetRe
 };
 
 /**
- * Describes the message karte.v1.ListEntriesByTargetRequest.
- * Use `create(ListEntriesByTargetRequestSchema)` to create a new message.
+ * Describes the message karte.v1.ListKartesByTargetRequest.
+ * Use `create(ListKartesByTargetRequestSchema)` to create a new message.
  */
-export const ListEntriesByTargetRequestSchema: GenMessage<ListEntriesByTargetRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 8);
+export const ListKartesByTargetRequestSchema: GenMessage<ListKartesByTargetRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 22);
 
 /**
- * @generated from message karte.v1.ListEntriesByTargetResponse
+ * @generated from message karte.v1.ListKartesByTargetResponse
  */
-export type ListEntriesByTargetResponse = Message<"karte.v1.ListEntriesByTargetResponse"> & {
+export type ListKartesByTargetResponse = Message<"karte.v1.ListKartesByTargetResponse"> & {
   /**
-   * @generated from field: repeated karte.v1.KarteEntry entries = 1;
+   * @generated from field: repeated karte.v1.Karte kartes = 1;
    */
-  entries: KarteEntry[];
+  kartes: Karte[];
 
   /**
    * @generated from field: string next_cursor = 2;
@@ -278,22 +586,22 @@ export type ListEntriesByTargetResponse = Message<"karte.v1.ListEntriesByTargetR
   hasMore: boolean;
 
   /**
-   * @generated from field: karte.v1.Aggregate aggregate = 4;
+   * @generated from field: karte.v1.ReliabilitySummary reliability = 4;
    */
-  aggregate?: Aggregate | undefined;
+  reliability?: ReliabilitySummary | undefined;
 };
 
 /**
- * Describes the message karte.v1.ListEntriesByTargetResponse.
- * Use `create(ListEntriesByTargetResponseSchema)` to create a new message.
+ * Describes the message karte.v1.ListKartesByTargetResponse.
+ * Use `create(ListKartesByTargetResponseSchema)` to create a new message.
  */
-export const ListEntriesByTargetResponseSchema: GenMessage<ListEntriesByTargetResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 9);
+export const ListKartesByTargetResponseSchema: GenMessage<ListKartesByTargetResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 23);
 
 /**
- * @generated from message karte.v1.ListMyEntriesRequest
+ * @generated from message karte.v1.ListMyKartesRequest
  */
-export type ListMyEntriesRequest = Message<"karte.v1.ListMyEntriesRequest"> & {
+export type ListMyKartesRequest = Message<"karte.v1.ListMyKartesRequest"> & {
   /**
    * @generated from field: int32 limit = 1;
    */
@@ -306,20 +614,20 @@ export type ListMyEntriesRequest = Message<"karte.v1.ListMyEntriesRequest"> & {
 };
 
 /**
- * Describes the message karte.v1.ListMyEntriesRequest.
- * Use `create(ListMyEntriesRequestSchema)` to create a new message.
+ * Describes the message karte.v1.ListMyKartesRequest.
+ * Use `create(ListMyKartesRequestSchema)` to create a new message.
  */
-export const ListMyEntriesRequestSchema: GenMessage<ListMyEntriesRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 10);
+export const ListMyKartesRequestSchema: GenMessage<ListMyKartesRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 24);
 
 /**
- * @generated from message karte.v1.ListMyEntriesResponse
+ * @generated from message karte.v1.ListMyKartesResponse
  */
-export type ListMyEntriesResponse = Message<"karte.v1.ListMyEntriesResponse"> & {
+export type ListMyKartesResponse = Message<"karte.v1.ListMyKartesResponse"> & {
   /**
-   * @generated from field: repeated karte.v1.KarteEntry entries = 1;
+   * @generated from field: repeated karte.v1.Karte kartes = 1;
    */
-  entries: KarteEntry[];
+  kartes: Karte[];
 
   /**
    * @generated from field: string next_cursor = 2;
@@ -333,86 +641,16 @@ export type ListMyEntriesResponse = Message<"karte.v1.ListMyEntriesResponse"> & 
 };
 
 /**
- * Describes the message karte.v1.ListMyEntriesResponse.
- * Use `create(ListMyEntriesResponseSchema)` to create a new message.
+ * Describes the message karte.v1.ListMyKartesResponse.
+ * Use `create(ListMyKartesResponseSchema)` to create a new message.
  */
-export const ListMyEntriesResponseSchema: GenMessage<ListMyEntriesResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 11);
+export const ListMyKartesResponseSchema: GenMessage<ListMyKartesResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 25);
 
 /**
- * @generated from message karte.v1.ReportEntryRequest
+ * @generated from message karte.v1.ListRecentKartesRequest
  */
-export type ReportEntryRequest = Message<"karte.v1.ReportEntryRequest"> & {
-  /**
-   * @generated from field: string entry_id = 1;
-   */
-  entryId: string;
-
-  /**
-   * @generated from field: string reason = 2;
-   */
-  reason: string;
-};
-
-/**
- * Describes the message karte.v1.ReportEntryRequest.
- * Use `create(ReportEntryRequestSchema)` to create a new message.
- */
-export const ReportEntryRequestSchema: GenMessage<ReportEntryRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 12);
-
-/**
- * @generated from message karte.v1.ReportEntryResponse
- */
-export type ReportEntryResponse = Message<"karte.v1.ReportEntryResponse"> & {
-};
-
-/**
- * Describes the message karte.v1.ReportEntryResponse.
- * Use `create(ReportEntryResponseSchema)` to create a new message.
- */
-export const ReportEntryResponseSchema: GenMessage<ReportEntryResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 13);
-
-/**
- * @generated from message karte.v1.GetMyAccessRequest
- */
-export type GetMyAccessRequest = Message<"karte.v1.GetMyAccessRequest"> & {
-};
-
-/**
- * Describes the message karte.v1.GetMyAccessRequest.
- * Use `create(GetMyAccessRequestSchema)` to create a new message.
- */
-export const GetMyAccessRequestSchema: GenMessage<GetMyAccessRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 14);
-
-/**
- * @generated from message karte.v1.GetMyAccessResponse
- */
-export type GetMyAccessResponse = Message<"karte.v1.GetMyAccessResponse"> & {
-  /**
-   * @generated from field: bool has_access = 1;
-   */
-  hasAccess: boolean;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp granted_at = 2;
-   */
-  grantedAt?: Timestamp | undefined;
-};
-
-/**
- * Describes the message karte.v1.GetMyAccessResponse.
- * Use `create(GetMyAccessResponseSchema)` to create a new message.
- */
-export const GetMyAccessResponseSchema: GenMessage<GetMyAccessResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 15);
-
-/**
- * @generated from message karte.v1.ListRecentEntriesRequest
- */
-export type ListRecentEntriesRequest = Message<"karte.v1.ListRecentEntriesRequest"> & {
+export type ListRecentKartesRequest = Message<"karte.v1.ListRecentKartesRequest"> & {
   /**
    * @generated from field: int32 limit = 1;
    */
@@ -425,20 +663,20 @@ export type ListRecentEntriesRequest = Message<"karte.v1.ListRecentEntriesReques
 };
 
 /**
- * Describes the message karte.v1.ListRecentEntriesRequest.
- * Use `create(ListRecentEntriesRequestSchema)` to create a new message.
+ * Describes the message karte.v1.ListRecentKartesRequest.
+ * Use `create(ListRecentKartesRequestSchema)` to create a new message.
  */
-export const ListRecentEntriesRequestSchema: GenMessage<ListRecentEntriesRequest> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 16);
+export const ListRecentKartesRequestSchema: GenMessage<ListRecentKartesRequest> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 26);
 
 /**
- * @generated from message karte.v1.ListRecentEntriesResponse
+ * @generated from message karte.v1.ListRecentKartesResponse
  */
-export type ListRecentEntriesResponse = Message<"karte.v1.ListRecentEntriesResponse"> & {
+export type ListRecentKartesResponse = Message<"karte.v1.ListRecentKartesResponse"> & {
   /**
-   * @generated from field: repeated karte.v1.KarteEntry entries = 1;
+   * @generated from field: repeated karte.v1.Karte kartes = 1;
    */
-  entries: KarteEntry[];
+  kartes: Karte[];
 
   /**
    * @generated from field: string next_cursor = 2;
@@ -452,79 +690,168 @@ export type ListRecentEntriesResponse = Message<"karte.v1.ListRecentEntriesRespo
 };
 
 /**
- * Describes the message karte.v1.ListRecentEntriesResponse.
- * Use `create(ListRecentEntriesResponseSchema)` to create a new message.
+ * Describes the message karte.v1.ListRecentKartesResponse.
+ * Use `create(ListRecentKartesResponseSchema)` to create a new message.
  */
-export const ListRecentEntriesResponseSchema: GenMessage<ListRecentEntriesResponse> = /*@__PURE__*/
-  messageDesc(file_karte_v1_service, 17);
+export const ListRecentKartesResponseSchema: GenMessage<ListRecentKartesResponse> = /*@__PURE__*/
+  messageDesc(file_karte_v1_service, 27);
+
+/**
+ * @generated from enum karte.v1.KarteStatus
+ */
+export enum KarteStatus {
+  /**
+   * @generated from enum value: KARTE_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: KARTE_STATUS_OPEN = 1;
+   */
+  OPEN = 1,
+
+  /**
+   * @generated from enum value: KARTE_STATUS_CLOSED = 2;
+   */
+  CLOSED = 2,
+}
+
+/**
+ * Describes the enum karte.v1.KarteStatus.
+ */
+export const KarteStatusSchema: GenEnum<KarteStatus> = /*@__PURE__*/
+  enumDesc(file_karte_v1_service, 0);
+
+/**
+ * @generated from enum karte.v1.KarteStage
+ */
+export enum KarteStage {
+  /**
+   * @generated from enum value: KARTE_STAGE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: KARTE_STAGE_RESERVATION = 1;
+   */
+  RESERVATION = 1,
+
+  /**
+   * @generated from enum value: KARTE_STAGE_SERVICE = 2;
+   */
+  SERVICE = 2,
+
+  /**
+   * @generated from enum value: KARTE_STAGE_AFTERCARE = 3;
+   */
+  AFTERCARE = 3,
+}
+
+/**
+ * Describes the enum karte.v1.KarteStage.
+ */
+export const KarteStageSchema: GenEnum<KarteStage> = /*@__PURE__*/
+  enumDesc(file_karte_v1_service, 1);
 
 /**
  * @generated from service karte.v1.KarteService
  */
 export const KarteService: GenService<{
   /**
-   * @generated from rpc karte.v1.KarteService.CreateEntry
+   * @generated from rpc karte.v1.KarteService.CreateKarte
    */
-  createEntry: {
+  createKarte: {
     methodKind: "unary";
-    input: typeof CreateEntryRequestSchema;
-    output: typeof CreateEntryResponseSchema;
+    input: typeof CreateKarteRequestSchema;
+    output: typeof CreateKarteResponseSchema;
   },
   /**
-   * @generated from rpc karte.v1.KarteService.UpdateEntry
+   * @generated from rpc karte.v1.KarteService.GetKarte
    */
-  updateEntry: {
+  getKarte: {
     methodKind: "unary";
-    input: typeof UpdateEntryRequestSchema;
-    output: typeof UpdateEntryResponseSchema;
+    input: typeof GetKarteRequestSchema;
+    output: typeof GetKarteResponseSchema;
   },
   /**
-   * @generated from rpc karte.v1.KarteService.DeleteEntry
+   * @generated from rpc karte.v1.KarteService.UpdateKarteRating
    */
-  deleteEntry: {
+  updateKarteRating: {
     methodKind: "unary";
-    input: typeof DeleteEntryRequestSchema;
-    output: typeof DeleteEntryResponseSchema;
+    input: typeof UpdateKarteRatingRequestSchema;
+    output: typeof UpdateKarteRatingResponseSchema;
   },
   /**
-   * @generated from rpc karte.v1.KarteService.ListEntriesByTarget
+   * @generated from rpc karte.v1.KarteService.DeleteKarte
    */
-  listEntriesByTarget: {
+  deleteKarte: {
     methodKind: "unary";
-    input: typeof ListEntriesByTargetRequestSchema;
-    output: typeof ListEntriesByTargetResponseSchema;
+    input: typeof DeleteKarteRequestSchema;
+    output: typeof DeleteKarteResponseSchema;
   },
   /**
-   * @generated from rpc karte.v1.KarteService.ListMyEntries
+   * @generated from rpc karte.v1.KarteService.CloseKarte
    */
-  listMyEntries: {
+  closeKarte: {
     methodKind: "unary";
-    input: typeof ListMyEntriesRequestSchema;
-    output: typeof ListMyEntriesResponseSchema;
+    input: typeof CloseKarteRequestSchema;
+    output: typeof CloseKarteResponseSchema;
   },
   /**
-   * @generated from rpc karte.v1.KarteService.ReportEntry
+   * @generated from rpc karte.v1.KarteService.ReopenKarte
    */
-  reportEntry: {
+  reopenKarte: {
     methodKind: "unary";
-    input: typeof ReportEntryRequestSchema;
-    output: typeof ReportEntryResponseSchema;
+    input: typeof ReopenKarteRequestSchema;
+    output: typeof ReopenKarteResponseSchema;
   },
   /**
-   * @generated from rpc karte.v1.KarteService.GetMyAccess
+   * @generated from rpc karte.v1.KarteService.AddKarteEvent
    */
-  getMyAccess: {
+  addKarteEvent: {
     methodKind: "unary";
-    input: typeof GetMyAccessRequestSchema;
-    output: typeof GetMyAccessResponseSchema;
+    input: typeof AddKarteEventRequestSchema;
+    output: typeof AddKarteEventResponseSchema;
   },
   /**
-   * @generated from rpc karte.v1.KarteService.ListRecentEntries
+   * @generated from rpc karte.v1.KarteService.UpdateKarteEvent
    */
-  listRecentEntries: {
+  updateKarteEvent: {
     methodKind: "unary";
-    input: typeof ListRecentEntriesRequestSchema;
-    output: typeof ListRecentEntriesResponseSchema;
+    input: typeof UpdateKarteEventRequestSchema;
+    output: typeof UpdateKarteEventResponseSchema;
+  },
+  /**
+   * @generated from rpc karte.v1.KarteService.DeleteKarteEvent
+   */
+  deleteKarteEvent: {
+    methodKind: "unary";
+    input: typeof DeleteKarteEventRequestSchema;
+    output: typeof DeleteKarteEventResponseSchema;
+  },
+  /**
+   * @generated from rpc karte.v1.KarteService.ListKartesByTarget
+   */
+  listKartesByTarget: {
+    methodKind: "unary";
+    input: typeof ListKartesByTargetRequestSchema;
+    output: typeof ListKartesByTargetResponseSchema;
+  },
+  /**
+   * @generated from rpc karte.v1.KarteService.ListMyKartes
+   */
+  listMyKartes: {
+    methodKind: "unary";
+    input: typeof ListMyKartesRequestSchema;
+    output: typeof ListMyKartesResponseSchema;
+  },
+  /**
+   * @generated from rpc karte.v1.KarteService.ListRecentKartes
+   */
+  listRecentKartes: {
+    methodKind: "unary";
+    input: typeof ListRecentKartesRequestSchema;
+    output: typeof ListRecentKartesResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_karte_v1_service, 0);

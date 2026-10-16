@@ -1,44 +1,54 @@
-export interface KarteEntry {
+export type KarteStage = "reservation" | "service" | "aftercare";
+export type KarteStatus = "open" | "closed";
+
+export interface KarteEvent {
   id: string;
-  authorProfileId: string;
-  targetProfileId: string;
-  isMine: boolean;
-  authorUsername: string;
-  authorAvatarUrl: string;
-  targetUsername: string;
-  targetAvatarUrl: string;
-  rating: number;
-  body: string;
-  flagged: boolean;
+  stage: KarteStage;
+  outcome: string;
+  tags: string[];
+  note: string;
+  occurredOn: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface KarteAggregate {
-  count: number;
-  avgRating: number;
+export interface Karte {
+  id: string;
+  authorProfileId: string;
+  authorUsername: string;
+  authorAvatarUrl: string;
+  targetProfileId: string;
+  targetUsername: string;
+  targetAvatarUrl: string;
+  isMine: boolean;
+  rating: number | null;
+  status: KarteStatus;
+  events: KarteEvent[];
+  createdAt: string;
+  updatedAt: string;
+  closedAt: string | null;
 }
 
-export interface PaginatedKarteByTargetResponse {
-  entries: KarteEntry[];
+export interface KarteEventInput {
+  stage: KarteStage;
+  outcome: string;
+  tags: string[];
+  note: string;
+  occurredOn: string;
+}
+
+export interface ReliabilitySummary {
+  averageRating: number | null;
+  raterCount: number;
+  karteCount: number;
+}
+
+export interface KartePage {
+  kartes: Karte[];
   nextCursor: string;
   hasMore: boolean;
-  aggregate: KarteAggregate;
 }
 
-export interface PaginatedKarteMyResponse {
-  entries: KarteEntry[];
-  nextCursor: string;
-  hasMore: boolean;
-}
-
-export interface PaginatedKarteRecentResponse {
-  entries: KarteEntry[];
-  nextCursor: string;
-  hasMore: boolean;
-}
-
-export interface KarteAccess {
-  hasAccess: boolean;
-  grantedAt: string | null;
+export interface KartesByTargetPage extends KartePage {
+  reliability: ReliabilitySummary;
 }
