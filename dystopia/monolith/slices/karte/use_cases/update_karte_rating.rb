@@ -10,10 +10,12 @@ module Karte
       ]
 
       def call(viewer_account_id:, karte_id:, rating:)
-        karte = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: karte_id, require_open: true)
-        raise Errors::Invalid, "Rating must be 1..5" unless rating.nil? || (1..5).cover?(rating)
+        updated = karte_repo.transaction do
+          karte = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: karte_id, require_open: true, lock: true)
+          raise Errors::Invalid, "Rating must be 1..5" unless rating.nil? || (1..5).cover?(rating)
 
-        updated = karte_repo.update_rating(karte.id, rating)
+          karte_repo.update_rating(karte.id, rating)
+        end
         present_kartes.call(kartes: [updated], viewer_account_id: viewer_account_id).first
       end
     end

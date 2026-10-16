@@ -34,7 +34,7 @@ ROM::SQL.migration do
     SQL
     run <<~SQL
       CREATE INDEX idx_karte_kartes_reliability
-        ON karte.kartes (target_profile_id, author_account_id)
+        ON karte.kartes (target_profile_id, author_profile_id)
         WHERE status = 'closed'
     SQL
 

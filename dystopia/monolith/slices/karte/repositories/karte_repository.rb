@@ -34,6 +34,10 @@ module Karte
         update(id, status: "open", closed_at: nil)
       end
 
+      def lock(id)
+        find(id) if karte_records.dataset.where(id: id).for_update.select(:id).first
+      end
+
       def touch(id)
         karte_records.by_pk(id).command(:update).call(updated_at: Time.now)
       end
@@ -60,12 +64,12 @@ module Karte
 
       def reliability(target_profile_id:)
         # Remove the relation's implicit ORDER BY because PostgreSQL rejects it with aggregates.
-        per_account = karte_records.dataset.unordered
+        per_profile = karte_records.dataset.unordered
           .where(target_profile_id: target_profile_id, status: "closed")
-          .group(:author_account_id)
-          .select(Sequel.function(:avg, :rating).as(:account_average), Sequel.function(:count, :id).as(:karte_count))
-        row = karte_records.dataset.db.from(per_account.as(:per_account)).select(
-          Sequel.function(:avg, :account_average).as(:average_rating),
+          .group(:author_profile_id)
+          .select(Sequel.function(:avg, :rating).as(:profile_average), Sequel.function(:count, :id).as(:karte_count))
+        row = karte_records.dataset.db.from(per_profile.as(:per_profile)).select(
+          Sequel.function(:avg, :profile_average).as(:average_rating),
           Sequel.function(:count).*.as(:rater_count),
           Sequel.function(:sum, :karte_count).as(:karte_count)
         ).first

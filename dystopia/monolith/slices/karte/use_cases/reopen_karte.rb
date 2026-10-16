@@ -10,10 +10,12 @@ module Karte
       ]
 
       def call(viewer_account_id:, karte_id:)
-        karte = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: karte_id)
-        raise Errors::Invalid, "Karte is open" unless karte.status == "closed"
+        reopened = karte_repo.transaction do
+          karte = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: karte_id, lock: true)
+          raise Errors::Invalid, "Karte is open" unless karte.status == "closed"
 
-        reopened = karte_repo.reopen(karte.id)
+          karte_repo.reopen(karte.id)
+        end
         present_kartes.call(kartes: [reopened], viewer_account_id: viewer_account_id).first
       end
     end

@@ -145,6 +145,13 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
       expect { uc(:delete_karte_event).call(viewer_account_id: other_cast_account, event_id: event_id) }.to forbidden
       expect { uc(:update_karte_event).call(viewer_account_id: cast_account, event_id: "abc", event: event_input) }.to invalid("Event not found")
     end
+
+    it "refuses a guest before looking the event up" do
+      missing = SecureRandom.uuid_v7
+
+      expect { uc(:delete_karte_event).call(viewer_account_id: guest_account, event_id: missing) }.to forbidden
+      expect { uc(:update_karte_event).call(viewer_account_id: guest_account, event_id: missing, event: event_input) }.to forbidden
+    end
   end
 
   describe "deleting" do

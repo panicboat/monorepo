@@ -12,11 +12,11 @@ module Karte
       ]
 
       def call(viewer_account_id:, karte_id:, event:)
-        karte = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: karte_id, require_open: true)
-        attrs = validate_event.call(**event)
-        karte_repo.transaction do
-          event_repo.create(karte_id: karte.id, **attrs)
-          karte_repo.touch(karte.id)
+        karte = karte_repo.transaction do
+          locked = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: karte_id, require_open: true, lock: true)
+          event_repo.create(karte_id: locked.id, **validate_event.call(**event))
+          karte_repo.touch(locked.id)
+          locked
         end
         present_kartes.call(kartes: [karte_repo.find(karte.id)], viewer_account_id: viewer_account_id).first
       end

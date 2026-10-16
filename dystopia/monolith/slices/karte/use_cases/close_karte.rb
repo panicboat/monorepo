@@ -10,10 +10,12 @@ module Karte
       ]
 
       def call(viewer_account_id:, karte_id:)
-        karte = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: karte_id, require_open: true)
-        raise Errors::Invalid, "Rating required to close" if karte.rating.nil?
+        closed = karte_repo.transaction do
+          karte = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: karte_id, require_open: true, lock: true)
+          raise Errors::Invalid, "Rating required to close" if karte.rating.nil?
 
-        closed = karte_repo.close(karte.id)
+          karte_repo.close(karte.id)
+        end
         present_kartes.call(kartes: [closed], viewer_account_id: viewer_account_id).first
       end
     end

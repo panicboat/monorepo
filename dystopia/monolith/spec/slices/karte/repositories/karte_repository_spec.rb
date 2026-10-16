@@ -127,23 +127,35 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
     end
   end
 
+  describe "#lock" do
+    it "returns the karte inside a transaction and nothing for an unknown id" do
+      record = karte
+
+      repo.transaction do
+        expect(repo.lock(record.id).id).to eq(record.id)
+        expect(repo.lock(SecureRandom.uuid_v7)).to be_nil
+      end
+    end
+  end
+
   describe "#reliability" do
-    it "averages each account first, so a cast who wrote many kartes weighs the same as one who wrote one" do
+    it "averages each profile first, so a profile that wrote many kartes weighs the same as one that wrote one" do
       heavy = SecureRandom.uuid_v7
-      closed(rating: 5, author_account_id: heavy)
-      closed(rating: 3, author_account_id: heavy)
-      closed(rating: 4, author_account_id: heavy)
-      closed(rating: 2, author_account_id: SecureRandom.uuid_v7)
+      closed(rating: 5, author_profile_id: heavy)
+      closed(rating: 3, author_profile_id: heavy)
+      closed(rating: 4, author_profile_id: heavy)
+      closed(rating: 2, author_profile_id: SecureRandom.uuid_v7)
 
       expect(repo.reliability(target_profile_id: target)).to eq(average_rating: 3.0, rater_count: 2, karte_count: 4)
     end
 
-    it "counts the profiles of one account as one cast" do
+    it "counts two profiles of one account as two raters and weights them separately" do
       account = SecureRandom.uuid_v7
       closed(rating: 5, author_account_id: account, author_profile_id: SecureRandom.uuid_v7)
       closed(rating: 1, author_account_id: account, author_profile_id: SecureRandom.uuid_v7)
+      closed(rating: 3, author_account_id: SecureRandom.uuid_v7, author_profile_id: SecureRandom.uuid_v7)
 
-      expect(repo.reliability(target_profile_id: target)).to eq(average_rating: 3.0, rater_count: 1, karte_count: 2)
+      expect(repo.reliability(target_profile_id: target)).to eq(average_rating: 3.0, rater_count: 3, karte_count: 3)
     end
 
     it "leaves open kartes out, including a reopened one" do
