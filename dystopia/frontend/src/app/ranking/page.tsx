@@ -22,6 +22,7 @@ export function RankingHeader() {
 export default function RankingPage() {
   const [period, setPeriod] = useState<RankPeriodLiteral>("week");
   const { posts, hasMore, loading, loadMore } = useRankPosts(period);
+  const periodLabel = period === "day" ? "24時間" : (TABS.find((t) => t.id === period)?.label ?? "");
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
@@ -37,8 +38,13 @@ export default function RankingPage() {
         <p className="px-4 py-6 text-text-secondary">ランキング対象の投稿がありません</p>
       )}
 
-      {posts.map((post) => (
-        <PostCardBinding key={post.id} post={post} />
+      {posts.map((post, index) => (
+        <div key={post.id}>
+          <p className="px-4 pt-3 text-xs font-bold tracking-wide text-text-secondary">
+            #{index + 1} · {periodLabel}の人気投稿
+          </p>
+          <PostCardBinding post={post} />
+        </div>
       ))}
 
       {hasMore && (
