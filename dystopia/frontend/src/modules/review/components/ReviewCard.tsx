@@ -20,14 +20,29 @@ export function ReviewCard({ entry, variant, onOpen }: ReviewCardProps) {
   const viewerId = useAuthStore((s) => s.activeProfileId);
   const hiddenForViewer = entry.hidden && viewerId === entry.targetProfileId;
 
+  const authorHref = entry.authorUsername ? `/u/${encodeURIComponent(entry.authorUsername)}` : null;
+  const authorAvatar = <Avatar src={entry.authorAvatarUrl || undefined} fallback={(entry.authorUsername || "?").slice(0, 1)} />;
+
   return (
     <article className="border-b border-border px-4 py-3">
       <div className="flex gap-3">
-        <Avatar src={entry.authorAvatarUrl || undefined} fallback={(entry.authorUsername || "?").slice(0, 1)} />
+        {authorHref ? (
+          <Link href={authorHref} aria-label={handle(entry.authorUsername)} className="shrink-0">
+            {authorAvatar}
+          </Link>
+        ) : (
+          authorAvatar
+        )}
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold tracking-wide text-text-secondary">REVIEW / ゲストからキャストへ</p>
           <p className="flex min-w-0 items-center gap-1 text-sm">
-            <span className="truncate font-bold text-text-primary">{handle(entry.authorUsername)}</span>
+            {authorHref ? (
+              <Link href={authorHref} className="truncate font-bold text-text-primary hover:underline">
+                {handle(entry.authorUsername)}
+              </Link>
+            ) : (
+              <span className="truncate font-bold text-text-primary">{handle(entry.authorUsername)}</span>
+            )}
             <span className="shrink-0 text-text-secondary">· {formatTimeAgo(entry.createdAt)}</span>
           </p>
           <button

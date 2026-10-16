@@ -55,6 +55,16 @@ describe("ReviewCard", () => {
     expect(onOpen).toHaveBeenCalledWith(subject);
   });
 
+  it("links the author name to their profile, but not a deleted author", async () => {
+    const linked = await mount({ entry: entry(), variant: "feed" });
+    const names = Array.from(linked.querySelectorAll('a[href="/u/hanako"]'));
+    expect(names.some((a) => a.textContent === "@hanako")).toBe(true);
+
+    const deleted = await mount({ entry: entry({ authorUsername: "" }), variant: "feed" });
+    expect(deleted.textContent).toContain("(退会済)");
+    expect(deleted.querySelector('a[href="/u/"]')).toBeNull();
+  });
+
   it("leaves out the cast link on the cast's own reviews", async () => {
     const container = await mount({ entry: entry(), variant: "target" });
 
