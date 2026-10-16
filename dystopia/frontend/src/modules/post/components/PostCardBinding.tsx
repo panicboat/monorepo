@@ -73,7 +73,10 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
         <span>{likesCount}</span>
       </button>
       {inDetail ? (
-        <span className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm">
+        <span
+          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm"
+          aria-label={`コメント ${post.commentsCount} 件`}
+        >
           <MessageCircle className="size-5" aria-hidden="true" />
           <span>{post.commentsCount}</span>
         </span>

@@ -83,5 +83,6 @@ describe("PostCardBinding opening the detail", () => {
 
     expect(container.querySelector('a[href="/posts/post-1"]')).toBeNull();
     expect(container.textContent).toContain("3");
+    expect(container.querySelector('[aria-label="コメント 3 件"]')).not.toBeNull();
   });
 });

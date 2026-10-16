@@ -12,6 +12,13 @@ const hookMocks = vi.hoisted(() => ({
 }));
 
 const navigation = vi.hoisted(() => ({ query: null as string | null }));
+const enterKeys = vi.hoisted(() => [] as string[]);
+
+vi.mock("@/lib/motion/useEnterAnimation", () => ({
+  useEnterAnimation: (_ref: unknown, key: string) => {
+    enterKeys.push(key);
+  },
+}));
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => (navigation.query === null ? null : new URLSearchParams({ q: navigation.query })),
@@ -103,6 +110,28 @@ describe("SearchPage", () => {
     await act(async () => root.unmount());
     container.remove();
   });
+  it("fades the results again when the post tab is selected", async () => {
+    navigation.query = null;
+    const empty = { profiles: [], posts: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn() };
+    hookMocks.useSearchUsers.mockReset().mockReturnValue(empty);
+    hookMocks.useSearchPosts.mockReset().mockReturnValue(empty);
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(<SearchPage />);
+    });
+    expect(enterKeys.at(-1)).toBe("users");
+
+    await act(async () => {
+      (Array.from(container.querySelectorAll('[role="tab"]')).find((t) => t.textContent === "投稿") as HTMLElement).click();
+    });
+    expect(enterKeys.at(-1)).toBe("posts");
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
   it("links each matched user's avatar and name to their profile", async () => {
     const html = await searchUsersHtml(false);
 
