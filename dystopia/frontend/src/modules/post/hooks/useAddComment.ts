@@ -2,7 +2,10 @@
 
 import { useCallback, useState } from "react";
 import { useSWRConfig } from "swr";
+import { unstable_serialize } from "swr/infinite";
 import { authFetch } from "@/lib/auth";
+import { commentsKey } from "./useComments";
+import { repliesKey } from "./useReplies";
 
 export function useAddComment(postId: string | null | undefined) {
   const { mutate } = useSWRConfig();
@@ -22,24 +25,8 @@ export function useAddComment(postId: string | null | undefined) {
           method: "POST",
           body: { content: trimmed, parentId: parentId || "" },
         });
-        if (parentId) {
-          const repliesPrefix = `/api/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(parentId)}/replies`;
-          mutate(
-            (key) => typeof key === "string" && key.startsWith(repliesPrefix)
-          );
-          mutate(
-            (key) =>
-              typeof key === "string" &&
-              key.startsWith(`/api/posts/${encodeURIComponent(postId)}/comments`) &&
-              !key.includes("/replies")
-          );
-        } else {
-          mutate(
-            (key) =>
-              typeof key === "string" &&
-              key.startsWith(`/api/posts/${encodeURIComponent(postId)}/comments`)
-          );
-        }
+        if (parentId) mutate(unstable_serialize(repliesKey(postId, parentId)));
+        mutate(unstable_serialize(commentsKey(postId)));
         mutate(`/api/posts/${encodeURIComponent(postId)}`);
       } catch (e) {
         setError(e as Error);
