@@ -118,6 +118,43 @@ describe("ReviewDetailSheet", () => {
     expect(document.querySelector('[role="dialog"] textarea')).not.toBeNull();
   });
 
+  const edit = async () => {
+    mocks.viewer = "guest-1";
+    await mount(entry());
+    await click("編集");
+    const textarea = document.querySelector("textarea") as HTMLTextAreaElement;
+    const select = document.querySelector("select") as HTMLSelectElement;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!.call(textarea, "さらに良かった");
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")!.set!.call(select, "5");
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await click("保存");
+  };
+
+  it("saves the edit, confirms and returns to the review", async () => {
+    mocks.update.mockResolvedValue(entry({ rating: 5, body: "さらに良かった" }));
+
+    await edit();
+
+    expect(mocks.update).toHaveBeenCalledWith("r-1", 5, "さらに良かった");
+    expect(mocks.toast).toHaveBeenCalledWith("レビューを更新しました");
+    expect(onChanged).toHaveBeenCalled();
+    expect(document.querySelector("textarea")).toBeNull();
+    expect(text()).toContain("とても丁寧でした");
+  });
+
+  it("keeps the form open without a toast when the save fails", async () => {
+    mocks.update.mockResolvedValue(null);
+
+    await edit();
+
+    expect(document.querySelector("textarea")).not.toBeNull();
+    expect(mocks.toast).not.toHaveBeenCalled();
+    expect(onChanged).toHaveBeenCalled();
+  });
+
   it("lets the cast hide and show the review again", async () => {
     mocks.viewer = "cast-1";
     await mount(entry());

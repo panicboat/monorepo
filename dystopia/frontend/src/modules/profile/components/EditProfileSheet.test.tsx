@@ -60,4 +60,35 @@ describe("EditProfileSheet", () => {
     expect(document.body.textContent).toContain("ゆなとして編集中");
     expect(document.body.textContent).toContain("@yuna");
   });
+
+  it("saves the payload and then closes the sheet", async () => {
+    const calls: string[] = [];
+    const onSave = vi.fn(async () => {
+      calls.push("save");
+    });
+    const onOpenChange = vi.fn((open: boolean) => {
+      calls.push(`open:${open}`);
+    });
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    await act(async () => {
+      createRoot(container).render(
+        createElement(EditProfileSheet, {
+          open: true,
+          onOpenChange,
+          profile: { ...emptyProfileView("p1"), displayName: "ゆな", username: "yuna" },
+          isCast: false,
+          onSave,
+          onSaveMedia: async () => {},
+        })
+      );
+    });
+
+    await act(async () => {
+      (Array.from(document.querySelectorAll("button")).filter((b) => b.textContent === "保存").at(-1) as HTMLButtonElement).click();
+    });
+
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ username: "yuna", displayName: "ゆな" }));
+    expect(calls).toEqual(["save", "open:false"]);
+  });
 });
