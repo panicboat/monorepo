@@ -12,6 +12,7 @@ import { useRecordVisit } from "@/modules/footprints";
 import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
 import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
 import { ReviewsTab } from "@/modules/review/components/ReviewsTab";
+import { ScheduleTab, WeeklyScheduleSummary } from "@/modules/schedule";
 import type { SocialProfileView } from "@/modules/social/types";
 import { Button } from "@/components/ui/button";
 
@@ -72,21 +73,29 @@ export default function PublicProfilePage() {
       <ProfileContentTabs
         profileId={profile.id}
         isOwnProfile={isOwnProfile}
-        extraTabs={[
-          ...(role === "guest" && viewerRole === "cast"
-            ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guest={guestView} /> }]
-            : []),
-          {
-            id: "reviews",
-            label: "レビュー",
-            content: (
-              <ReviewsTab
-                profileId={profile.id}
-                mode={role === "cast" ? "received" : "written"}
-              />
-            ),
-          },
-        ]}
+        leadingTabs={
+          role === "cast"
+            ? [
+                { id: "schedule", label: "出勤", content: <ScheduleTab profileId={profile.id} isOwner={isOwnProfile} /> },
+                { id: "reviews", label: "レビュー", content: <ReviewsTab profileId={profile.id} mode="received" /> },
+              ]
+            : viewerRole === "cast"
+              ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guest={guestView} /> }]
+              : []
+        }
+        extraTabs={
+          role === "guest"
+            ? [{ id: "reviews", label: "レビュー", content: <ReviewsTab profileId={profile.id} mode="written" /> }]
+            : []
+        }
+        renderAboveTabs={
+          role === "cast"
+            ? (tab, selectTab) =>
+                tab === "schedule" ? null : (
+                  <WeeklyScheduleSummary profileId={profile.id} onShowMore={() => selectTab("schedule")} />
+                )
+            : undefined
+        }
       />
       {isOwnProfile && (
         <EditProfileModal

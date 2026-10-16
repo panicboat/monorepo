@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ProfileHeader } from "./ProfileHeader";
+import { emptyProfileView } from "@/modules/profile/lib/mappers";
 import type { ProfileView } from "@/modules/profile/types";
 
 const profile: ProfileView = {
@@ -81,7 +82,7 @@ describe("ProfileHeader", () => {
   it("shows the location as plain text, so the pin stands for an industry alone", () => {
     const html = renderToStaticMarkup(<ProfileHeader profile={{ ...profile, industry: "ピンサロ" }} role="cast" />);
 
-    expect(html).toContain("<span>東京都</span>");
+    expect(html).toContain(">東京都</span>");
     expect(html.match(/📍/g)).toHaveLength(1);
   });
 
@@ -89,5 +90,14 @@ describe("ProfileHeader", () => {
     const html = renderToStaticMarkup(<ProfileHeader profile={{ ...profile, industry: "その他" }} role="cast" />);
 
     expect(html).toContain("<span>その他</span>");
+  });
+
+  it("shows the role and the area as chips below the bio", () => {
+    const html = renderToStaticMarkup(
+      <ProfileHeader profile={{ ...emptyProfileView("p-1"), displayName: "ゆな", bio: "よろしく", prefecture: "東京都" }} role="cast" />
+    );
+
+    expect(html.indexOf("よろしく")).toBeLessThan(html.indexOf("キャスト"));
+    expect(html.indexOf("キャスト")).toBeLessThan(html.indexOf("東京都"));
   });
 });
