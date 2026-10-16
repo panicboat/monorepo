@@ -224,6 +224,19 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
     end
   end
 
+  describe "#counts_by_author" do
+    it "counts the account's kartes by state, across its profiles, leaving other accounts out" do
+      author = SecureRandom.uuid_v7
+      karte(author_account_id: author)
+      karte(author_account_id: author, author_profile_id: SecureRandom.uuid_v7)
+      closed(rating: 4, author_account_id: author)
+      karte
+
+      expect(repo.counts_by_author(author_account_id: author)).to eq(total: 3, open: 2, closed: 1)
+      expect(repo.counts_by_author(author_account_id: SecureRandom.uuid_v7)).to eq(total: 0, open: 0, closed: 0)
+    end
+  end
+
   describe "#reliability" do
     it "averages each profile first, so a profile that wrote many kartes weighs the same as one that wrote one" do
       heavy = SecureRandom.uuid_v7

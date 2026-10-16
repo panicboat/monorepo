@@ -143,6 +143,18 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
   end
 
   describe "the list RPCs" do
+    it "returns the display names, the last activity and my counts" do
+      act_as(cast_account, persona_a)
+      created = create_karte
+
+      expect(created.author_display_name).to eq("User")
+      expect(created.target_display_name).to eq("User")
+      expect(created.last_activity_at).not_to be_nil
+
+      mine = handler_for(::Karte::V1::ListMyKartesRequest.new).list_my_kartes
+      expect([mine.counts.total_count, mine.counts.open_count, mine.counts.closed_count]).to eq([1, 1, 0])
+    end
+
     it "lists by target with the reliability, and lists mine and recent ones" do
       act_as(cast_account, persona_a)
       rated = create_karte(rating: 4).id

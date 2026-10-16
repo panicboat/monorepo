@@ -26,9 +26,11 @@ module Karte
           id: karte.id,
           author_profile_id: karte.author_profile_id,
           author_username: author&.username || "",
+          author_display_name: author&.display_name || "",
           author_avatar_url: avatar_url(author),
           target_profile_id: karte.target_profile_id,
           target_username: target&.username || "",
+          target_display_name: target&.display_name || "",
           target_avatar_url: avatar_url(target),
           is_mine: karte.author_account_id == viewer_account_id,
           rating: karte.rating,
@@ -36,7 +38,8 @@ module Karte
           events: events.map { |event| present_event(event) },
           created_at: karte.created_at,
           updated_at: karte.updated_at,
-          closed_at: karte.closed_at
+          closed_at: karte.closed_at,
+          last_activity_at: karte.last_activity_at
         }
       end
 

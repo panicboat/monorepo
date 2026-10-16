@@ -24,6 +24,16 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
   def event_on(date) = event_input.merge(occurred_on: date)
 
   describe "creating" do
+    it "presents the display names and the last activity" do
+      named_cast = create_account_with_profile(account_id: cast_account, username: "yuna", display_name: "ゆな")
+      named_guest = create_account_with_profile(account_id: create_account(role: 1), username: "hanako", display_name: "はなこ")
+
+      karte = create(profile: named_cast, target: named_guest)
+
+      expect(karte).to include(author_display_name: "ゆな", target_display_name: "はなこ")
+      expect(karte[:last_activity_at]).to eq(karte[:created_at])
+    end
+
     it "opens a karte with its first event and presents the profiles" do
       karte = create
 

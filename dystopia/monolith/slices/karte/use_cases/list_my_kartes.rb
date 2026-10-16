@@ -9,12 +9,15 @@ module Karte
         page_kartes: "use_cases.page_kartes"
       ]
 
+      NO_COUNTS = { total: 0, open: 0, closed: 0 }.freeze
+
       def call(viewer_account_id:, limit:, cursor:)
         raise Errors::Forbidden, "Cast only" unless authorize_cast.call(viewer_account_id: viewer_account_id)
 
         limit = page_kartes.limit_for(limit)
         rows = karte_repo.list_by_author(author_account_id: viewer_account_id, limit: limit, cursor: cursor)
-        page_kartes.call(rows: rows, limit: limit, viewer_account_id: viewer_account_id)
+        counts = cursor.nil? ? karte_repo.counts_by_author(author_account_id: viewer_account_id) : NO_COUNTS
+        page_kartes.call(rows: rows, limit: limit, viewer_account_id: viewer_account_id).merge(counts: counts)
       end
     end
   end

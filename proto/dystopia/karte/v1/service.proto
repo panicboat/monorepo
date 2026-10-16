@@ -66,6 +66,9 @@ message Karte {
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp updated_at = 13;
   google.protobuf.Timestamp closed_at = 14;
+  google.protobuf.Timestamp last_activity_at = 15;
+  string author_display_name = 16;
+  string target_display_name = 17;
 }
 
 message ReliabilitySummary {
@@ -130,10 +133,17 @@ message ListMyKartesRequest {
   int32 limit = 1;
   string cursor = 2;
 }
+message KarteCounts {
+  int32 total_count = 1;
+  int32 open_count = 2;
+  int32 closed_count = 3;
+}
+
 message ListMyKartesResponse {
   repeated Karte kartes = 1;
   string next_cursor = 2;
   bool has_more = 3;
+  KarteCounts counts = 4;
 }
 
 message ListRecentKartesRequest {

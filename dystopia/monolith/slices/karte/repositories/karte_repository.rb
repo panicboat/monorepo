@@ -77,6 +77,18 @@ module Karte
         end
       end
 
+      def counts_by_author(author_account_id:)
+        # Remove the relation's implicit ORDER BY because PostgreSQL rejects it with GROUP BY.
+        by_status = karte_records.dataset.unordered
+          .where(author_account_id: author_account_id)
+          .group_and_count(:status)
+          .to_a
+          .to_h { |row| [row[:status], row[:count]] }
+        open = by_status.fetch("open", 0)
+        closed = by_status.fetch("closed", 0)
+        { total: open + closed, open: open, closed: closed }
+      end
+
       def reliability(target_profile_id:)
         # Remove the relation's implicit ORDER BY because PostgreSQL rejects it with aggregates.
         per_profile = karte_records.dataset.unordered
