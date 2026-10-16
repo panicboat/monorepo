@@ -1,0 +1,110 @@
+// @vitest-environment happy-dom
+import { act, createElement } from "react";
+import { createRoot } from "react-dom/client";
+import { describe, expect, it, vi } from "vitest";
+import type { Karte } from "../types";
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+vi.mock("@/stores/authStore", () => ({
+  useAuthStore: (selector: (state: { activeProfileId: string }) => unknown) => selector({ activeProfileId: "persona-a" }),
+  selectActiveProfileId: (state: { activeProfileId: string }) => state.activeProfileId,
+}));
+
+const { KarteCard } = await import("./KarteCard");
+
+const event = (id: string, overrides: Partial<Karte["events"][number]> = {}): Karte["events"][number] => ({
+  id, stage: "reservation", outcome: "booked", tags: [], note: "", occurredOn: "2026-10-01", createdAt: "", updatedAt: "", ...overrides,
+});
+
+const karte = (overrides: Partial<Karte> = {}): Karte => ({
+  id: "k-1",
+  authorProfileId: "persona-a",
+  authorUsername: "yuna",
+  authorDisplayName: "ゆな",
+  authorAvatarUrl: "",
+  targetProfileId: "guest-1",
+  targetUsername: "hanako",
+  targetDisplayName: "はなこ",
+  targetAvatarUrl: "",
+  isMine: true,
+  rating: null,
+  status: "open",
+  events: [
+    event("e-1"),
+    event("e-2", { stage: "service", outcome: "ended_early", tags: ["late", "payment_trouble", "excessive_request"], note: "30分で帰った", occurredOn: "2026-10-14" }),
+  ],
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  closedAt: null,
+  lastActivityAt: new Date().toISOString(),
+  ...overrides,
+});
+
+async function mount(props: { karte: Karte; variant: "feed" | "guest" | "mine"; onOpen?: (k: Karte) => void }) {
+  const container = document.createElement("div");
+  await act(async () => {
+    createRoot(container).render(createElement(KarteCard, { onOpen: vi.fn(), ...props }));
+  });
+  return container;
+}
+
+describe("KarteCard", () => {
+  it("summarizes the karte with its latest event, state and two tags", async () => {
+    const text = (await mount({ karte: karte(), variant: "feed" })).textContent;
+
+    expect(text).toContain("KARTE / キャストからゲストへ");
+    expect(text).toContain("ゆな");
+    expect(text).toContain("はなこ");
+    expect(text).toContain("@hanako");
+    expect(text).toContain("未評価");
+    expect(text).toContain("10/14 · 接客 · 途中終了 — 30分で帰った");
+    expect(text).toContain("記録中");
+    expect(text).toContain("遅刻あり");
+    expect(text).toContain("支払いトラブルあり");
+    expect(text).not.toContain("合意条件を超える要求あり");
+  });
+
+  it("shows the rating and the closed state", async () => {
+    const text = (await mount({ karte: karte({ rating: 4, status: "closed", closedAt: new Date().toISOString() }), variant: "feed" })).textContent;
+
+    expect(text).toContain("★ 4.0");
+    expect(text).toContain("完了");
+    expect(text).not.toContain("記録中");
+  });
+
+  it("leaves the dash out when the latest event has no note", async () => {
+    const text = (await mount({ karte: karte({ events: [event("e-1")] }), variant: "feed" })).textContent;
+
+    expect(text).toContain("10/1 · 予約・問い合わせ · 予約成立");
+    expect(text).not.toContain(" — ");
+  });
+
+  it("opens the karte from its summary", async () => {
+    const onOpen = vi.fn();
+    const subject = karte();
+    const container = await mount({ karte: subject, variant: "feed", onOpen });
+
+    (container.querySelector("button") as HTMLButtonElement).click();
+
+    expect(onOpen).toHaveBeenCalledWith(subject);
+  });
+
+  it("links to the guest except on the guest's own profile", async () => {
+    const feed = await mount({ karte: karte(), variant: "feed" });
+    const guest = await mount({ karte: karte(), variant: "guest" });
+
+    expect(feed.querySelector('a[href="/u/hanako"]')?.textContent).toBe("ゲストのプロフィールを見る →");
+    expect(guest.textContent).not.toContain("ゲストのプロフィールを見る");
+  });
+
+  it("names the profile a karte of my list was written as when it is not the current one", async () => {
+    const other = await mount({ karte: karte({ authorProfileId: "persona-b", authorUsername: "yuna_osaka" }), variant: "mine" });
+    const deleted = await mount({ karte: karte({ authorProfileId: "persona-gone", authorUsername: "" }), variant: "mine" });
+    const current = await mount({ karte: karte(), variant: "mine" });
+
+    expect(other.textContent).toContain("@yuna_osaka として記録");
+    expect(deleted.textContent).toContain("削除したプロフィールで記録");
+    expect(current.textContent).not.toContain("として記録");
+  });
+});

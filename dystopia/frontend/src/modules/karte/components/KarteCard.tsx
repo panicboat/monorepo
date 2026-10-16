@@ -1,0 +1,83 @@
+"use client";
+
+import Link from "next/link";
+import { Avatar } from "@/components/ui/avatar";
+import { formatTimeAgo } from "@/lib/utils/date";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
+import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
+import { formatMonthDay } from "../lib/dates";
+import type { Karte, KarteEvent } from "../types";
+import { KarteStatusBadge } from "./KarteStatusBadge";
+
+export function karteEventLine(event: KarteEvent): string {
+  const line = `${formatMonthDay(event.occurredOn)} · ${stageLabel(event.stage)} · ${outcomeLabel(event.stage, event.outcome)}`;
+  return event.note ? `${line} — ${event.note}` : line;
+}
+
+export function profileName(displayName: string, username: string): string {
+  return displayName || (username ? `@${username}` : "削除したプロフィール");
+}
+
+interface KarteCardProps {
+  karte: Karte;
+  variant: "feed" | "guest" | "mine";
+  onOpen: (karte: Karte) => void;
+}
+
+export function KarteCard({ karte, variant, onOpen }: KarteCardProps) {
+  const activeProfileId = useAuthStore(selectActiveProfileId);
+  const latest = karte.events[karte.events.length - 1];
+  const writtenAsOtherProfile = variant === "mine" && karte.authorProfileId !== activeProfileId;
+
+  return (
+    <article className="border-b border-border px-4 py-3">
+      <div className="flex gap-3">
+        <Avatar
+          src={karte.authorAvatarUrl || undefined}
+          fallback={profileName(karte.authorDisplayName, karte.authorUsername).replace("@", "").slice(0, 1) || "?"}
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-bold tracking-wide text-text-secondary">KARTE / キャストからゲストへ</p>
+          <p className="flex min-w-0 items-center gap-1 text-sm">
+            <span className="truncate font-bold text-text-primary">{profileName(karte.authorDisplayName, karte.authorUsername)}</span>
+            <span className="shrink-0 text-text-secondary">· {formatTimeAgo(karte.lastActivityAt)}</span>
+          </p>
+          {writtenAsOtherProfile && (
+            <p className="text-xs text-text-secondary">
+              {karte.authorUsername ? `@${karte.authorUsername} として記録` : "削除したプロフィールで記録"}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => onOpen(karte)}
+            className="mt-2 block w-full rounded-xl border border-border bg-surface p-3 text-left hover:border-accent/60"
+          >
+            <span className="flex items-baseline justify-between gap-2">
+              <span className="min-w-0 truncate">
+                <span className="font-bold text-text-primary">{profileName(karte.targetDisplayName, karte.targetUsername)}</span>
+                {karte.targetUsername && <span className="ml-1 text-xs text-text-secondary">@{karte.targetUsername}</span>}
+              </span>
+              <span className={karte.rating === null ? "shrink-0 text-sm text-text-secondary" : "shrink-0 text-sm font-bold text-rating"}>
+                {karte.rating === null ? "未評価" : `★ ${karte.rating.toFixed(1)}`}
+              </span>
+            </span>
+            {latest && <span className="mt-1 line-clamp-2 block text-sm text-text-primary">{karteEventLine(latest)}</span>}
+            <span className="mt-2 flex flex-wrap gap-1.5">
+              <KarteStatusBadge status={karte.status} />
+              {latest?.tags.slice(0, 2).map((tag) => (
+                <span key={tag} className="rounded-full border border-border px-2 py-0.5 text-xs text-text-secondary">
+                  {tagLabel(latest.stage, tag)}
+                </span>
+              ))}
+            </span>
+          </button>
+          {variant !== "guest" && karte.targetUsername && (
+            <Link href={`/u/${karte.targetUsername}`} className="mt-2 inline-block text-sm text-accent hover:underline">
+              ゲストのプロフィールを見る →
+            </Link>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
