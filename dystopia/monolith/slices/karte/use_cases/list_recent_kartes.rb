@@ -14,7 +14,7 @@ module Karte
 
         limit = page_kartes.limit_for(limit)
         rows = karte_repo.list_recent(limit: limit, cursor: cursor)
-        page_kartes.call(rows: rows, limit: limit, viewer_account_id: viewer_account_id)
+        page_kartes.call(rows: rows, limit: limit, viewer_account_id: viewer_account_id, order: :occurred)
       end
     end
   end

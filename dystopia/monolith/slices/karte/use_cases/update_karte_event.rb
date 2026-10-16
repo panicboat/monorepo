@@ -20,6 +20,7 @@ module Karte
           locked = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: record.karte_id, require_open: true, lock: true)
           event_repo.update(find_event(event_id).id, **validate_event.call(**event))
           karte_repo.touch(locked.id)
+          karte_repo.refresh_last_occurred_on(locked.id)
           locked
         end
         present_kartes.call(kartes: [karte_repo.find(karte.id)], viewer_account_id: viewer_account_id).first

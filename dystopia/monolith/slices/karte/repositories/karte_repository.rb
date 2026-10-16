@@ -7,15 +7,17 @@ module Karte
     class KarteRepository < Karte::DB::Repo
       include ::Concerns::CursorPagination
 
-      def create(author_account_id:, author_profile_id:, target_profile_id:, rating:)
-        karte_records.command(:create).call(
+      def create(author_account_id:, author_profile_id:, target_profile_id:, rating:, occurred_on: nil)
+        attrs = {
           id: SecureRandom.uuid_v7,
           author_account_id: author_account_id,
           author_profile_id: author_profile_id,
           target_profile_id: target_profile_id,
           rating: rating,
           status: "open"
-        )
+        }
+        attrs[:last_occurred_on] = occurred_on if occurred_on
+        karte_records.command(:create).call(attrs)
       end
 
       def find(id)
@@ -27,11 +29,20 @@ module Karte
       end
 
       def close(id)
-        update(id, status: "closed", closed_at: Time.now)
+        update(id, status: "closed", closed_at: Time.now, last_activity_at: Time.now)
       end
 
       def reopen(id)
-        update(id, status: "open", closed_at: nil)
+        update(id, status: "open", closed_at: nil, last_activity_at: Time.now)
+      end
+
+      def record_activity(id)
+        karte_records.by_pk(id).command(:update).call(last_activity_at: Time.now, updated_at: Time.now)
+      end
+
+      def refresh_last_occurred_on(id)
+        latest = karte_records.dataset.db[:karte__events].where(karte_id: id).max(:occurred_on)
+        karte_records.dataset.where(id: id).update(last_occurred_on: latest) if latest
       end
 
       def lock(id)
@@ -47,19 +58,23 @@ module Karte
       end
 
       def list_by_target(target_profile_id:, limit:, cursor: nil)
-        page(karte_records.where(target_profile_id: target_profile_id), limit, cursor)
+        page_by_activity(karte_records.where(target_profile_id: target_profile_id), limit, cursor)
       end
 
       def list_by_author(author_account_id:, limit:, cursor: nil)
-        page(karte_records.where(author_account_id: author_account_id), limit, cursor)
+        page_by_activity(karte_records.where(author_account_id: author_account_id), limit, cursor)
       end
 
       def list_recent(limit:, cursor: nil)
-        page(karte_records, limit, cursor)
+        page_by_occurred(karte_records, limit, cursor)
       end
 
-      def cursor_for(karte)
-        encode_cursor(created_at: karte.created_at.iso8601(6), id: karte.id)
+      def cursor_for(karte, order:)
+        if order == :occurred
+          encode_cursor(last_occurred_on: karte.last_occurred_on.iso8601, created_at: karte.created_at.iso8601(6), id: karte.id)
+        else
+          encode_cursor(last_activity_at: karte.last_activity_at.iso8601(6), id: karte.id)
+        end
       end
 
       def reliability(target_profile_id:)
@@ -88,15 +103,48 @@ module Karte
         find(id)
       end
 
-      def page(scope, limit, cursor)
-        decoded = decode_cursor(cursor)
-        if decoded
+      def page_by_activity(scope, limit, cursor)
+        after = activity_cursor(cursor)
+        if after
+          at = after[:last_activity_at]
+          last_id = after[:id]
+          scope = scope.where { (last_activity_at < at) | ((last_activity_at =~ at) & (id < last_id)) }
+        end
+        scope.order { [last_activity_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
+
+      def page_by_occurred(scope, limit, cursor)
+        after = occurred_cursor(cursor)
+        if after
+          on = after[:last_occurred_on]
+          at = after[:created_at]
+          last_id = after[:id]
           scope = scope.where {
-            (created_at < decoded[:created_at]) |
-              ((created_at =~ decoded[:created_at]) & (id < decoded[:id]))
+            (last_occurred_on < on) |
+              ((last_occurred_on =~ on) & ((created_at < at) | ((created_at =~ at) & (id < last_id))))
           }
         end
-        scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
+        scope.order { [last_occurred_on.desc, created_at.desc, id.desc] }.limit(limit + 1).to_a
+      end
+
+      def activity_cursor(cursor)
+        decoded = decode_cursor(cursor, keys: [:last_activity_at, :id])
+        return nil unless decoded&.values&.all?
+
+        { last_activity_at: Time.parse(decoded[:last_activity_at]), id: decoded[:id] }
+      rescue ArgumentError, TypeError
+        # FALLBACK: Read a cursor of another ordering or a broken one as the first page.
+        nil
+      end
+
+      def occurred_cursor(cursor)
+        decoded = decode_cursor(cursor, keys: [:last_occurred_on, :created_at, :id])
+        return nil unless decoded&.values&.all?
+
+        { last_occurred_on: Date.parse(decoded[:last_occurred_on]), created_at: decoded[:created_at], id: decoded[:id] }
+      rescue ArgumentError, TypeError
+        # FALLBACK: Read a cursor of another ordering or a broken one as the first page.
+        nil
       end
     end
   end

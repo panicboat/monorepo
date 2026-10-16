@@ -22,6 +22,7 @@ module Karte
 
           event_repo.delete(record.id)
           karte_repo.touch(locked.id)
+          karte_repo.refresh_last_occurred_on(locked.id)
           locked
         end
         present_kartes.call(kartes: [karte_repo.find(karte.id)], viewer_account_id: viewer_account_id).first
