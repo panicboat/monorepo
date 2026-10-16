@@ -11,7 +11,7 @@ RSpec.describe "config/db/seeds.rb" do
 
   let(:seeded_tables) do
     %i[
-      identity__accounts profile__profiles profile__casts karte__access
+      identity__accounts profile__profiles profile__casts
       social__follows social__blocks
       post__posts post__hashtags post__likes post__comments
     ]

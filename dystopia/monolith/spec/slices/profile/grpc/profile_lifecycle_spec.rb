@@ -124,7 +124,7 @@ RSpec.describe "Profile lifecycle RPCs", type: :database do
 
   describe "DeleteProfile" do
     let(:post_repo) { Post::Slice["repositories.post_repository"] }
-    let(:karte_entries) { Karte::Slice["repositories.entry_repository"] }
+    let(:kartes) { Karte::Slice["repositories.karte_repository"] }
 
     it "refuses to delete an enabled profile" do
       expect { delete(first) }.to status(GRPC::Core::StatusCodes::FAILED_PRECONDITION)
@@ -142,8 +142,8 @@ RSpec.describe "Profile lifecycle RPCs", type: :database do
       post_repo.create_post(author_profile_id: first, content: "by first", visibility: "public")
       kept_post = post_repo.create_post(author_profile_id: second, content: "by second", visibility: "public")
       Social::Slice["repositories.follow_repository"].follow(follower_profile_id: first, followee_profile_id: stranger, status: "approved")
-      record = karte_entries.create(
-        author_account_id: account_id, author_profile_id: first, target_profile_id: stranger, rating: 3, body: "note"
+      record = kartes.create(
+        author_account_id: account_id, author_profile_id: first, target_profile_id: stranger, rating: nil
       )
       disable(first)
       expect_account_lock
@@ -154,8 +154,7 @@ RSpec.describe "Profile lifecycle RPCs", type: :database do
       expect(db[:post__posts].select_map(:id)).to eq([kept_post.id])
       expect(db[:social__follows].count).to eq(0)
       expect(repo.username_available?("lifecycle_first")).to be true
-      mine = Karte::Slice["use_cases.list_my_entries"].call(viewer_account_id: account_id)
-      expect(mine[:entries].map { |entry| entry[:id] }).to eq([record.id])
+      expect(db[:karte__kartes].where(author_account_id: account_id).select_map(:id)).to eq([record.id])
     end
   end
 end
