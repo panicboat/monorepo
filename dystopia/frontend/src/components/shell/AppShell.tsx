@@ -28,6 +28,7 @@ import { LandingPage } from "@/modules/landing/components/LandingPage";
 import { resolveShellRedirect } from "./resolveShellRedirect";
 import { resolveShellMode } from "./resolveShellMode";
 import { resolveShellLayout } from "./resolveShellLayout";
+import { usePostSheetStore } from "@/stores/postSheetStore";
 import { useEnterAnimation } from "@/lib/motion/useEnterAnimation";
 import { cn } from "@/lib/utils";
 
@@ -95,6 +96,10 @@ export function AppShell({ children }: AppShellProps) {
   useEffect(() => {
     if (pathSwitchedAwayFrom !== null && pathSwitchedAwayFrom !== pathname) setPathSwitchedAwayFrom(null);
   }, [pathSwitchedAwayFrom, pathname]);
+
+  useEffect(() => {
+    usePostSheetStore.getState().close();
+  }, [accountId, activeProfileId]);
 
   const mode = resolveShellMode({
     isHydrated,
