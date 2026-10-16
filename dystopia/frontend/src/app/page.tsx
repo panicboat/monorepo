@@ -109,7 +109,7 @@ export default function HomePage() {
   }, [initialized, loading, error, showAreaHint, showEmptyState, posts, hasMore, loadingMore, fetchMore]);
 
   const karteContent = useMemo(() => {
-    if (karte.loading && karte.entries.length === 0) {
+    if (karte.loading && karte.kartes.length === 0) {
       return <p className="px-4 py-8 text-center text-text-secondary">読み込み中…</p>;
     }
     if (karte.error) {
@@ -117,10 +117,10 @@ export default function HomePage() {
     }
     return (
       <>
-        {karte.entries.map((e) => (
-          <KarteEntryCard key={e.id} entry={e} mode="recent" onChanged={karte.refresh} />
+        {karte.kartes.map((item) => (
+          <KarteEntryCard key={item.id} karte={item} mode="recent" onChanged={karte.refresh} />
         ))}
-        {karte.entries.length === 0 && !karte.hasMore && (
+        {karte.kartes.length === 0 && !karte.hasMore && (
           <p className="px-4 py-8 text-center text-text-secondary">まだカルテがありません</p>
         )}
         {karte.hasMore && (
@@ -132,7 +132,7 @@ export default function HomePage() {
         )}
       </>
     );
-  }, [karte.loading, karte.error, karte.entries, karte.hasMore, karte.refresh, karte.loadMore]);
+  }, [karte.loading, karte.error, karte.kartes, karte.hasMore, karte.refresh, karte.loadMore]);
 
   const reviewsContent = useMemo(() => {
     if (reviews.loading && reviews.entries.length === 0) {

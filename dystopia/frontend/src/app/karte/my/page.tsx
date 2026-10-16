@@ -13,7 +13,7 @@ export function MyKarteHeader() {
 
 export default function MyKartePage() {
   const role = useAuthStore(selectRole);
-  const { entries, hasMore, loading, loadMore, refresh } = useMyKarte();
+  const { kartes, hasMore, loading, loadMore, refresh } = useMyKarte();
 
   if (role !== "cast") {
     return (
@@ -29,8 +29,8 @@ export default function MyKartePage() {
       <header className="border-b border-border px-4 py-3">
         <MyKarteHeader />
       </header>
-      {entries.map((e) => (
-        <KarteEntryCard key={e.id} entry={e} mode="my" onChanged={refresh} />
+      {kartes.map((karte) => (
+        <KarteEntryCard key={karte.id} karte={karte} mode="my" onChanged={refresh} />
       ))}
       {loading && <div className="px-4 py-3 text-sm text-muted-foreground">読み込み中…</div>}
       {hasMore && (

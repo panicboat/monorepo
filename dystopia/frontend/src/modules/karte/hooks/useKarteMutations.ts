@@ -22,7 +22,7 @@ export function useKarteMutations() {
   }, []);
 
   const send = useCallback(
-    (url: string, method: string, body?: unknown) =>
+    (url: string, method: "POST" | "PATCH" | "DELETE", body?: unknown) =>
       run("カルテを更新できませんでした", async () => (await authFetch<{ karte: Karte }>(url, { method, body })).karte),
     [run]
   );

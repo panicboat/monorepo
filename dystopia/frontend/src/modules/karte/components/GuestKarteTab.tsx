@@ -6,21 +6,21 @@ import { KarteComposer } from "./KarteComposer";
 import { KarteEntryCard } from "./KarteEntryCard";
 
 export function GuestKarteTab({ guestProfileId }: { guestProfileId: string }) {
-  const { entries, aggregate, hasMore, loading, loadMore, refresh } = useGuestKarte(guestProfileId);
+  const { kartes, reliability, hasMore, loading, loadMore, refresh } = useGuestKarte(guestProfileId);
 
   return (
     <div>
-      <KarteAggregateHeader aggregate={aggregate} />
+      <KarteAggregateHeader reliability={reliability} />
       <KarteComposer targetProfileId={guestProfileId} onCreated={refresh} />
-      {entries.map((e) => (
-        <KarteEntryCard key={e.id} entry={e} mode="target" onChanged={refresh} />
+      {kartes.map((karte) => (
+        <KarteEntryCard key={karte.id} karte={karte} mode="target" onChanged={refresh} />
       ))}
-      {loading && <div className="px-4 py-3 text-sm text-muted-foreground">読み込み中…</div>}
+      {loading && <div className="px-4 py-3 text-sm text-text-secondary">読み込み中…</div>}
       {hasMore && (
         <button
           type="button"
           onClick={loadMore}
-          className="block w-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground"
+          className="block w-full px-4 py-3 text-sm text-text-secondary hover:text-text-primary"
         >
           もっと見る
         </button>

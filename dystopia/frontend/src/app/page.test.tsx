@@ -37,11 +37,12 @@ vi.mock("@/modules/review/hooks/useRecentReviews", () => ({ useRecentReviews: re
 const { default: HomePage } = await import("./page");
 
 const emptyList = { entries: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn(), refresh: vi.fn() };
+const emptyKarte = { kartes: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn(), refresh: vi.fn() };
 
 describe("HomePage tabs", () => {
   it("shows the karte tab to a cast", () => {
     authMocks.role = "cast";
-    karteMocks.useRecentKarte.mockReturnValue(emptyList);
+    karteMocks.useRecentKarte.mockReturnValue(emptyKarte);
     reviewMocks.useRecentReviews.mockReturnValue(emptyList);
 
     const html = renderToStaticMarkup(<HomePage />);
@@ -52,7 +53,7 @@ describe("HomePage tabs", () => {
 
   it("hides the karte tab from a guest but keeps the review tab", () => {
     authMocks.role = "guest";
-    karteMocks.useRecentKarte.mockReturnValue(emptyList);
+    karteMocks.useRecentKarte.mockReturnValue(emptyKarte);
     reviewMocks.useRecentReviews.mockReturnValue(emptyList);
 
     const html = renderToStaticMarkup(<HomePage />);

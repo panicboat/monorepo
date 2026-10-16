@@ -3,43 +3,45 @@
 import { KarteAggregateHeader } from "@/modules/karte/components/KarteAggregateHeader";
 import { KarteComposer } from "@/modules/karte/components/KarteComposer";
 import { KarteEntryCard } from "@/modules/karte/components/KarteEntryCard";
-import type { KarteAggregate, KarteEntry } from "@/modules/karte/types";
+import type { Karte } from "@/modules/karte/types";
 
-const mockAggregate: KarteAggregate = {
-  count: 2,
-  avgRating: 4.0,
-};
-
-const mockEntries: KarteEntry[] = [
+const mockKartes: Karte[] = [
   {
     id: "k1",
     authorProfileId: "cast-demo",
-    targetProfileId: "guest-demo",
-    isMine: true,
     authorUsername: "yuna",
     authorAvatarUrl: "",
+    targetProfileId: "guest-demo",
     targetUsername: "guest_demo",
     targetAvatarUrl: "",
-    rating: 5,
-    body: "とても丁寧で好印象でした。また来てほしいです。",
-    flagged: false,
-    createdAt: "2026-06-20T10:00:00Z",
-    updatedAt: "2026-06-20T10:00:00Z",
+    isMine: true,
+    rating: null,
+    status: "open",
+    events: [
+      { id: "e1", stage: "reservation", outcome: "booked", tags: ["smooth_contact"], note: "", occurredOn: "2026-10-10", createdAt: "", updatedAt: "" },
+    ],
+    createdAt: "2026-10-10T10:00:00Z",
+    updatedAt: "2026-10-10T10:00:00Z",
+    closedAt: null,
   },
   {
     id: "k2",
     authorProfileId: "cast-other",
-    targetProfileId: "guest-demo",
-    isMine: false,
     authorUsername: "sakura",
     authorAvatarUrl: "",
+    targetProfileId: "guest-demo",
     targetUsername: "guest_demo",
     targetAvatarUrl: "",
-    rating: 3,
-    body: "",
-    flagged: true,
-    createdAt: "2026-06-18T14:30:00Z",
-    updatedAt: "2026-06-18T14:30:00Z",
+    isMine: false,
+    rating: 2,
+    status: "closed",
+    events: [
+      { id: "e2", stage: "reservation", outcome: "booked", tags: [], note: "", occurredOn: "2026-10-01", createdAt: "", updatedAt: "" },
+      { id: "e3", stage: "service", outcome: "completed_with_issues", tags: ["late"], note: "30分遅刻", occurredOn: "2026-10-02", createdAt: "", updatedAt: "" },
+    ],
+    createdAt: "2026-10-01T14:30:00Z",
+    updatedAt: "2026-10-02T14:30:00Z",
+    closedAt: "2026-10-02T15:00:00Z",
   },
 ];
 
@@ -48,25 +50,25 @@ export default function DevUiKartePage() {
     <main className="mx-auto flex max-w-xl flex-col gap-8 bg-bg p-6 text-text-primary">
       <section>
         <h2 className="pb-3 text-sm font-bold text-text-secondary">KarteAggregateHeader</h2>
-        <div className="border border-divider rounded-lg overflow-hidden">
-          <KarteAggregateHeader aggregate={mockAggregate} />
+        <div className="overflow-hidden rounded-lg border border-divider">
+          <KarteAggregateHeader reliability={{ averageRating: 3.8, raterCount: 8, karteCount: 12 }} />
         </div>
-        <div className="mt-3 border border-divider rounded-lg overflow-hidden">
-          <KarteAggregateHeader aggregate={{ count: 0, avgRating: 0 }} />
+        <div className="mt-3 overflow-hidden rounded-lg border border-divider">
+          <KarteAggregateHeader reliability={{ averageRating: null, raterCount: 0, karteCount: 0 }} />
         </div>
       </section>
 
       <section>
         <h2 className="pb-3 text-sm font-bold text-text-secondary">KarteComposer (no live API)</h2>
-        <div className="border border-divider rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-lg border border-divider">
           <KarteComposer targetProfileId="guest-demo-noop" />
         </div>
       </section>
 
       <section className="flex flex-col">
         <h2 className="pb-3 text-sm font-bold text-text-secondary">KarteEntryCard</h2>
-        {mockEntries.map((e) => (
-          <KarteEntryCard key={e.id} entry={e} mode="target" />
+        {mockKartes.map((karte) => (
+          <KarteEntryCard key={karte.id} karte={karte} mode="target" />
         ))}
       </section>
     </main>
