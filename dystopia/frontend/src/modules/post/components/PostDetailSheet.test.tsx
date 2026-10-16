@@ -6,16 +6,33 @@ import { usePostSheetStore } from "@/stores/postSheetStore";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
-vi.mock("./PostDetailContent", () => ({ PostDetailContent: ({ postId }: { postId: string }) => <div>detail:{postId}</div> }));
+const router = vi.hoisted(() => ({ replace: vi.fn(), push: vi.fn() }));
+
+vi.mock("next/navigation", () => ({ usePathname: () => "/", useRouter: () => router }));
+vi.mock("./PostDetailContent", () => ({
+  PostDetailContent: ({ postId }: { postId: string }) => (
+    <div>
+      detail:{postId}
+      <a href="/u/yuna">author</a>
+      <a href="/">here</a>
+      <a href="https://example.com/x">external</a>
+    </div>
+  ),
+}));
 
 const { PostDetailSheet } = await import("./PostDetailSheet");
 
+const preventNavigation = (e: Event) => e.preventDefault();
+
 beforeEach(() => {
   usePostSheetStore.setState({ postId: null, session: 0, open: false });
+  router.replace.mockClear();
+  router.push.mockClear();
+  document.addEventListener("click", preventNavigation);
 });
 
 afterEach(() => {
+  document.removeEventListener("click", preventNavigation);
   document.body.innerHTML = "";
 });
 
@@ -46,5 +63,45 @@ describe("PostDetailSheet", () => {
     });
 
     expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", open: false });
+  });
+
+  describe("links inside the sheet", () => {
+    async function clickLink(text: string, init: MouseEventInit = {}) {
+      await mount();
+      await act(async () => usePostSheetStore.getState().openPost("post-1"));
+      const link = Array.from(document.querySelectorAll("a")).find((a) => a.textContent === text) as HTMLAnchorElement;
+      await act(async () => {
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ...init }));
+      });
+    }
+
+    it("replaces the history entry and leaves closing to the pathname change", async () => {
+      await clickLink("author");
+
+      expect(router.replace).toHaveBeenCalledWith("/u/yuna");
+      expect(router.push).not.toHaveBeenCalled();
+      expect(usePostSheetStore.getState().open).toBe(true);
+    });
+
+    it("only closes the sheet when the link points at the current URL", async () => {
+      await clickLink("here");
+
+      expect(router.replace).not.toHaveBeenCalled();
+      expect(usePostSheetStore.getState().open).toBe(false);
+    });
+
+    it("leaves a modified click to the browser", async () => {
+      await clickLink("author", { metaKey: true });
+
+      expect(router.replace).not.toHaveBeenCalled();
+      expect(usePostSheetStore.getState().open).toBe(true);
+    });
+
+    it("leaves a link to another origin to the browser", async () => {
+      await clickLink("external");
+
+      expect(router.replace).not.toHaveBeenCalled();
+      expect(usePostSheetStore.getState().open).toBe(true);
+    });
   });
 });

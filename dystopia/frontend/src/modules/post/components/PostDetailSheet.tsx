@@ -1,14 +1,29 @@
 "use client";
 
+import { useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { SideSheet } from "@/components/ui/side-sheet";
+import { SheetNavigationContext } from "@/components/ui/sheetNavigation";
+import { isPlainClick } from "@/lib/utils/isPlainClick";
 import { usePostSheetStore } from "@/stores/postSheetStore";
 import { PostDetailContent } from "./PostDetailContent";
 
 export function PostDetailSheet() {
+  const router = useRouter();
   const postId = usePostSheetStore((s) => s.postId);
   const session = usePostSheetStore((s) => s.session);
   const open = usePostSheetStore((s) => s.open);
   const close = usePostSheetStore((s) => s.close);
+
+  // The sheet closes on the pathname change, so it is closed here only when the target is the current URL.
+  const navigate = useCallback(
+    (href: string) => {
+      const target = new URL(href, window.location.href);
+      if (target.pathname + target.search === window.location.pathname + window.location.search) close();
+      else router.replace(target.pathname + target.search + target.hash);
+    },
+    [close, router]
+  );
 
   if (!postId) return null;
 
@@ -21,9 +36,23 @@ export function PostDetailSheet() {
       }}
       title="投稿の詳細"
     >
-      <div className="-mx-4 -mt-4 md:-mx-5">
-        <PostDetailContent postId={postId} />
-      </div>
+      <SheetNavigationContext.Provider value={navigate}>
+        <div
+          className="-mx-4 -mt-4 md:-mx-5"
+          onClickCapture={(e) => {
+            if (!isPlainClick(e)) return;
+            const anchor = (e.target as Element).closest("a[href]");
+            if (!anchor) return;
+            const href = anchor.getAttribute("href") ?? "";
+            if (new URL(href, window.location.href).origin !== window.location.origin) return;
+            e.preventDefault();
+            e.stopPropagation();
+            navigate(href);
+          }}
+        >
+          <PostDetailContent postId={postId} />
+        </div>
+      </SheetNavigationContext.Provider>
     </SideSheet>
   );
 }

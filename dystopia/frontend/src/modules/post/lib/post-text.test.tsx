@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
+import { SheetNavigationContext } from "@/components/ui/sheetNavigation";
 import { splitContentByMentions, PostText } from "./post-text";
 import type { MentionView } from "./post-view";
 
@@ -141,6 +142,33 @@ describe("PostText", () => {
     });
 
     expect(routerMocks.push).toHaveBeenCalledWith("/search?q=%23%E6%96%B0%E4%BD%9C");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("hands the target to the sheet's navigation instead of pushing inside a sheet", async () => {
+    routerMocks.push.mockClear();
+    const navigate = vi.fn();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <SheetNavigationContext.Provider value={navigate}>
+          <PostText content="今日の #新作" mentions={[]} hashtags={["新作"]} />
+        </SheetNavigationContext.Provider>,
+      );
+    });
+    await act(async () => {
+      (container.querySelector('[role="link"]') as HTMLElement).click();
+    });
+
+    expect(navigate).toHaveBeenCalledWith("/search?q=%23%E6%96%B0%E4%BD%9C");
+    expect(routerMocks.push).not.toHaveBeenCalled();
 
     await act(async () => {
       root.unmount();
