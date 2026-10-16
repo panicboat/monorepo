@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useEnterAnimation } from "@/lib/motion/useEnterAnimation";
 import { useProfile } from "@/modules/profile/hooks";
 import { useAuthStore, selectIsHydrated, selectRole } from "@/stores/authStore";
 import { PageHeader } from "@/components/ui/page-header";
@@ -32,6 +33,8 @@ export default function SettingsPage() {
     { id: "account", label: "アカウント" },
   ];
   const [tab, setTab] = useState("notifications");
+  const contentRef = useRef<HTMLDivElement>(null);
+  useEnterAnimation(contentRef, tab);
 
   if (!isHydrated || loading) {
     return <main className="mx-auto max-w-xl p-6 text-text-secondary">読み込み中…</main>;
@@ -50,7 +53,7 @@ export default function SettingsPage() {
         <SettingsHeader />
       </div>
       <Tabs items={items} value={tab} onValueChange={setTab} />
-      <div className="px-4">
+      <div ref={contentRef} className="px-4">
         {tab === "notifications" && <NotificationSettings />}
         {tab === "privacy" && <PrivacySettings profile={profile} save={saveProfile} />}
         {tab === "appearance" && <AppearanceSettings />}
@@ -59,8 +62,8 @@ export default function SettingsPage() {
           <>
             <AccountSettings profile={profile} save={saveProfile} />
             <section className="border-t border-border mt-8 pt-6">
-              <h2 className="text-base font-medium text-red-600">アカウントを退会</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <h2 className="text-base font-medium text-error">アカウントを退会</h2>
+              <p className="mt-2 text-sm text-text-secondary">
                 30 日以内に同じ電話番号で login すれば自動的に復活します。
                 30 日経過後はデータが消えます。
               </p>
@@ -68,12 +71,12 @@ export default function SettingsPage() {
                 type="button"
                 onClick={() => setConfirmOpen(true)}
                 disabled={deactivating}
-                className="mt-3 rounded border border-red-600 bg-bg px-3 py-1 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+                className="mt-3 rounded border border-error bg-bg px-3 py-1 text-sm text-error hover:bg-surface disabled:opacity-50"
               >
                 退会する
               </button>
               {deactivateError && (
-                <p className="mt-2 text-sm text-red-600">{deactivateError.message}</p>
+                <p className="mt-2 text-sm text-error">{deactivateError.message}</p>
               )}
             </section>
           </>
@@ -86,7 +89,7 @@ export default function SettingsPage() {
         >
           <div className="w-full max-w-sm rounded bg-bg p-4 shadow-lg">
             <p className="text-sm font-medium">本当に退会しますか？</p>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-text-secondary">
               30 日以内に同じ電話番号で login すれば自動的に復活します。
               30 日経過後はデータが消えます。
             </p>
@@ -94,7 +97,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setConfirmOpen(false)}
-                className="rounded px-3 py-1 text-sm hover:bg-muted"
+                className="rounded px-3 py-1 text-sm hover:bg-surface"
               >
                 キャンセル
               </button>
@@ -105,7 +108,7 @@ export default function SettingsPage() {
                   const ok = await deactivate();
                   if (ok) setConfirmOpen(false);
                 }}
-                className="rounded bg-red-600 px-3 py-1 text-sm text-white disabled:opacity-50"
+                className="rounded bg-error px-3 py-1 text-sm text-white disabled:opacity-50"
               >
                 退会する
               </button>

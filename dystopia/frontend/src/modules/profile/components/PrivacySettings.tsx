@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { profileViewToSavePayload } from "@/modules/profile/lib/mappers";
 import { useAccountProfiles } from "@/modules/profile/context/AccountProfilesContext";
+import { BlockedAccountsSheet } from "@/modules/social/components/BlockedAccountsSheet";
 import type { ProfileView, SaveProfilePayload } from "@/modules/profile/types";
 
 interface PanelProps {
@@ -18,6 +18,8 @@ export function PrivacySettings({ profile, save }: PanelProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const { profiles } = useAccountProfiles();
+  // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
+  const [blocked, setBlocked] = useState<{ session: number; open: boolean } | null>(null);
 
   const handleSave = async () => {
     setSaving(true);
@@ -52,9 +54,22 @@ export function PrivacySettings({ profile, save }: PanelProps) {
         </Button>
         {saved && <span className="text-sm text-accent">保存しました</span>}
       </div>
-      <Button asChild variant="secondary" size="sm" className="self-start">
-        <Link href="/settings/blocks">ブロックしたアカウント</Link>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        className="self-start"
+        onClick={() => setBlocked((current) => ({ session: (current?.session ?? 0) + 1, open: true }))}
+      >
+        ブロックしたアカウント
       </Button>
+      {blocked && (
+        <BlockedAccountsSheet
+          key={blocked.session}
+          open={blocked.open}
+          onClose={() => setBlocked((current) => current && { ...current, open: false })}
+        />
+      )}
     </div>
   );
 }

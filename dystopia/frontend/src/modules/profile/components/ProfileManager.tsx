@@ -133,7 +133,7 @@ export function ProfileManager() {
                         disabled={busy}
                         aria-label={`${handle} を削除する`}
                         onClick={() => openDeleteDialog(profile)}
-                        className="h-9 rounded-full border border-red-600 px-4 text-sm font-bold text-red-600 disabled:opacity-50"
+                        className="h-9 rounded-full border border-error px-4 text-sm font-bold text-error disabled:opacity-50"
                       >
                         削除する
                       </button>
@@ -201,7 +201,7 @@ export function ProfileManager() {
                 type="button"
                 disabled={busy}
                 onClick={() => deleteTarget && remove(deleteTarget)}
-                className="h-9 rounded-full bg-red-600 px-4 text-sm font-bold text-white disabled:opacity-50"
+                className="h-9 rounded-full bg-error px-4 text-sm font-bold text-white disabled:opacity-50"
               >
                 {busy ? "削除中…" : "削除する"}
               </button>
