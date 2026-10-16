@@ -15,12 +15,13 @@ export function PostDetailSheet() {
   const open = usePostSheetStore((s) => s.open);
   const close = usePostSheetStore((s) => s.close);
 
-  // The sheet closes on the pathname change, so it is closed here only when the target is the current URL.
+  // The sheet closes on a pathname change, so it is closed here when the target keeps the current pathname.
   const navigate = useCallback(
     (href: string) => {
       const target = new URL(href, window.location.href);
-      if (target.pathname + target.search === window.location.pathname + window.location.search) close();
-      else router.replace(target.pathname + target.search + target.hash);
+      const samePath = target.pathname === window.location.pathname;
+      if (!samePath || target.search !== window.location.search) router.replace(target.pathname + target.search + target.hash);
+      if (samePath) close();
     },
     [close, router]
   );

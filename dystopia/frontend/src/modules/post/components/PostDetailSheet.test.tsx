@@ -15,6 +15,7 @@ vi.mock("./PostDetailContent", () => ({
       detail:{postId}
       <a href="/u/yuna">author</a>
       <a href="/">here</a>
+      <a href="/?q=tag">query</a>
       <a href="https://example.com/x">external</a>
     </div>
   ),
@@ -87,6 +88,13 @@ describe("PostDetailSheet", () => {
       await clickLink("here");
 
       expect(router.replace).not.toHaveBeenCalled();
+      expect(usePostSheetStore.getState().open).toBe(false);
+    });
+
+    it("replaces and closes when only the query changes", async () => {
+      await clickLink("query");
+
+      expect(router.replace).toHaveBeenCalledWith("/?q=tag");
       expect(usePostSheetStore.getState().open).toBe(false);
     });
 
