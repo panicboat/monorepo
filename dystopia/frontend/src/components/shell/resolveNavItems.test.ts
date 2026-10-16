@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { PROFILE_NAV_PATH, resolveNavItems } from "./resolveNavItems";
 
-const paths = (context: { karteAccess: boolean; isGuest: boolean }) =>
-  resolveNavItems(context).map((item) => item.path);
+const paths = (role: "cast" | "guest" | null) => resolveNavItems({ role }).map((item) => item.path);
 
 describe("resolveNavItems", () => {
   it("orders the entries from home down to settings", () => {
-    expect(paths({ karteAccess: false, isGuest: false })).toEqual([
+    expect(paths(null)).toEqual([
       "/",
       "/search",
       "/notifications",
@@ -19,15 +18,15 @@ describe("resolveNavItems", () => {
     ]);
   });
 
-  it("places my karte above the profile and settings entries for a viewer with karte access", () => {
-    const result = paths({ karteAccess: true, isGuest: false });
+  it("places my karte above the profile and settings entries for a cast", () => {
+    const result = paths("cast");
 
     expect(result.slice(-3)).toEqual(["/karte/my", PROFILE_NAV_PATH, "/settings"]);
     expect(result).not.toContain("/reviews/my");
   });
 
-  it("places my reviews above the profile and settings entries for a guest viewer", () => {
-    const result = paths({ karteAccess: false, isGuest: true });
+  it("places my reviews above the profile and settings entries for a guest", () => {
+    const result = paths("guest");
 
     expect(result.slice(-3)).toEqual(["/reviews/my", PROFILE_NAV_PATH, "/settings"]);
     expect(result).not.toContain("/karte/my");

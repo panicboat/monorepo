@@ -26,14 +26,6 @@ vi.mock("@/modules/post/components/PostComposerSheet", () => ({
   PostComposerSheet: () => null,
 }));
 
-const karteMocks = vi.hoisted(() => ({
-  useMyKarteAccess: vi.fn(),
-}));
-
-vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({
-  useMyKarteAccess: karteMocks.useMyKarteAccess,
-}));
-
 const authState = vi.hoisted(() => ({ role: null as "guest" | "cast" | null, activeProfileId: null }));
 
 vi.mock("@/stores/authStore", async (importOriginal) => ({
@@ -47,7 +39,7 @@ const { emptyProfileView } = await import("@/modules/profile/lib/mappers");
 
 describe("SideNav", () => {
   it("offers the account's other profiles to switch to", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
     const profiles = [{ ...emptyProfileView("p2"), username: "second_persona" }];
 
     const html = renderToStaticMarkup(
@@ -60,8 +52,8 @@ describe("SideNav", () => {
     expect(html).toContain("@second_persona");
   });
 
-  it("links to my karte when the viewer has karte access", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
+  it("links to my karte for a cast viewer", () => {
+    authState.role = "cast";
 
     const html = renderToStaticMarkup(<SideNav />);
 
@@ -71,7 +63,7 @@ describe("SideNav", () => {
   });
 
   it("links to my reviews only for a guest viewer", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
 
     authState.role = "guest";
     const asGuest = renderToStaticMarkup(<SideNav />);
@@ -83,8 +75,8 @@ describe("SideNav", () => {
     expect(asCast).not.toContain("/reviews/my");
   });
 
-  it("hides the karte item when the viewer has no karte access", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+  it("hides the karte item before the role is known", () => {
+    authState.role = null;
 
     const html = renderToStaticMarkup(<SideNav />);
 
@@ -92,7 +84,7 @@ describe("SideNav", () => {
   });
 
   it("draws the entry of the current page with a heavier line than the others", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
 
     const html = renderToStaticMarkup(<SideNav />);
 
@@ -101,7 +93,7 @@ describe("SideNav", () => {
   });
 
   it("has no standalone oshi menu entry", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
 
     const html = renderToStaticMarkup(<SideNav />);
 
@@ -109,7 +101,7 @@ describe("SideNav", () => {
   });
 
   it("marks the entry of the current page with a surface and an accent icon", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
 
     const html = renderToStaticMarkup(<SideNav />);
     const linkClasses = (path: string) =>
@@ -123,7 +115,7 @@ describe("SideNav", () => {
   });
 
   it("stands 266px wide on the app surface with a rule on its right", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
 
     const aside = /<aside class="([^"]*)"/.exec(renderToStaticMarkup(<SideNav />))?.[1].split(/\s+/) ?? [];
 

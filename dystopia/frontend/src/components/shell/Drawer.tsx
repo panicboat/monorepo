@@ -10,7 +10,6 @@ import { useUnreadCount } from "@/modules/notifications/hooks";
 import { useTotalUnread } from "@/modules/messaging";
 import { useFootprintsUnreadCount } from "@/modules/footprints";
 import { useNotificationPreferences } from "@/modules/notifications/hooks";
-import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { ProfileSwitcher } from "@/modules/profile/components/ProfileSwitcher";
 import { useAuthStore, selectRole } from "@/stores/authStore";
 import { classifySwipeDirection, clampDrawerOffset, shouldToggleDrawer, type SwipeDirection } from "./drawerSwipe";
@@ -43,10 +42,9 @@ export function Drawer({ open, onClose, onOpen }: DrawerProps) {
   const { count: footprintsUnread } = useFootprintsUnreadCount();
   const { preferences } = useNotificationPreferences();
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
-  const { hasAccess: karteAccess } = useMyKarteAccess();
   const role = useAuthStore(selectRole);
   // The bottom tab bar already carries home on the widths where this menu shows.
-  const navItems = resolveNavItems({ karteAccess, isGuest: role === "guest" }).filter((item) => item.path !== "/");
+  const navItems = resolveNavItems({ role }).filter((item) => item.path !== "/");
   const asideRef = useRef<HTMLElement>(null);
   const [dragOffsetPx, setDragOffsetPx] = useState<number | null>(null);
   const closeDragRef = useRef<{ startX: number; startY: number; direction: SwipeDirection } | null>(null);

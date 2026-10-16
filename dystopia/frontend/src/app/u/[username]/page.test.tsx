@@ -4,7 +4,7 @@ import { emptyProfileView } from "@/modules/profile/lib/mappers";
 
 const mocks = vi.hoisted(() => ({
   profile: null as import("@/modules/profile/types").ProfileView | null,
-  karteAccess: false,
+  viewerRole: "guest" as "cast" | "guest",
 }));
 
 vi.mock("next/navigation", () => ({
@@ -40,15 +40,12 @@ vi.mock("@/modules/footprints", () => ({
 }));
 
 vi.mock("@/stores/authStore", () => ({
-  useAuthStore: (selector?: (state: { activeProfileId: string }) => unknown) => {
-    const state = { activeProfileId: "viewer-1" };
+  useAuthStore: (selector?: (state: { activeProfileId: string; role: string }) => unknown) => {
+    const state = { activeProfileId: "viewer-1", role: mocks.viewerRole };
     return selector ? selector(state) : state;
   },
   selectActiveProfileId: (state: { activeProfileId: string }) => state.activeProfileId,
-}));
-
-vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({
-  useMyKarteAccess: () => ({ hasAccess: mocks.karteAccess, grantedAt: null, loading: false, error: null }),
+  selectRole: (state: { role: string }) => state.role,
 }));
 
 vi.mock("@/modules/schedule", () => ({
@@ -117,27 +114,27 @@ describe("PublicProfilePage reviews tab label", () => {
 });
 
 describe("PublicProfilePage karte tab visibility", () => {
-  it("shows the karte tab on a guest profile when the viewer has karte access", () => {
+  it("shows the karte tab on a guest profile to a cast", () => {
     mocks.profile = { ...emptyProfileView("profile-1"), role: 1 };
-    mocks.karteAccess = true;
+    mocks.viewerRole = "cast";
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
     expect(html).toContain("カルテ");
   });
 
-  it("hides the karte tab on a guest profile when the viewer has no karte access", () => {
+  it("hides the karte tab on a guest profile from a guest", () => {
     mocks.profile = { ...emptyProfileView("profile-1"), role: 1 };
-    mocks.karteAccess = false;
+    mocks.viewerRole = "guest";
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
     expect(html).not.toContain("カルテ");
   });
 
-  it("hides the karte tab on a cast profile even when the viewer has karte access", () => {
+  it("hides the karte tab on a cast profile even from a cast", () => {
     mocks.profile = { ...emptyProfileView("profile-1"), role: 2 };
-    mocks.karteAccess = true;
+    mocks.viewerRole = "cast";
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
 

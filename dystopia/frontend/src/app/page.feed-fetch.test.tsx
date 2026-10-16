@@ -24,7 +24,6 @@ const profileMocks = vi.hoisted(() => ({ useProfile: vi.fn() }));
 vi.mock("@/modules/profile/hooks/useProfile", () => ({ useProfile: profileMocks.useProfile }));
 
 const emptyList = { entries: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn(), refresh: vi.fn() };
-vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({ useMyKarteAccess: () => ({ hasAccess: false }) }));
 vi.mock("@/modules/karte/hooks/useRecentKarte", () => ({ useRecentKarte: () => emptyList }));
 vi.mock("@/modules/review/hooks/useRecentReviews", () => ({ useRecentReviews: () => emptyList }));
 

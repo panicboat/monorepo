@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { useMyKarte } from "@/modules/karte/hooks/useMyKarte";
-import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
+import { useAuthStore, selectRole } from "@/stores/authStore";
 import { KarteEntryCard } from "@/modules/karte/components/KarteEntryCard";
 import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
 
@@ -12,15 +12,13 @@ export function MyKarteHeader() {
 }
 
 export default function MyKartePage() {
-  const { hasAccess, loading: accessLoading } = useMyKarteAccess();
+  const role = useAuthStore(selectRole);
   const { entries, hasMore, loading, loadMore, refresh } = useMyKarte();
 
-  if (accessLoading) return <div className="p-4 text-sm">読み込み中…</div>;
-  if (!hasAccess) {
+  if (role !== "cast") {
     return (
       <div className="p-4 text-sm">
-        <p>カルテは有料機能です。</p>
-        <p className="mt-2 text-muted-foreground">アクセス権の付与は運営にお問い合わせください。</p>
+        <p>カルテはキャストだけが使えます。</p>
         <Link href="/" className="mt-3 inline-block text-accent">ホームに戻る</Link>
       </div>
     );

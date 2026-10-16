@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { FlowerMenu } from "@/components/ui/flower-menu";
 import { PostComposerSheet } from "@/modules/post/components/PostComposerSheet";
-import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { useAuthStore, selectRole } from "@/stores/authStore";
 import { ComposeToSheet } from "./ComposeToSheet";
 import { COMPOSE_ICONS, COMPOSE_LABELS } from "./compose-icons";
@@ -42,11 +41,10 @@ interface Composing {
 
 export function ComposeLauncher({ variant }: { variant: keyof typeof VARIANTS }) {
   const role = useAuthStore(selectRole);
-  const { hasAccess: karteAccess } = useMyKarteAccess();
   // Keep the chosen kind after closing: dropping it would unmount the sheet before it slides out.
   const [composing, setComposing] = useState<Composing | null>(null);
   const { content, ...menu } = VARIANTS[variant];
-  const kinds = resolveComposeKinds({ role, karteAccess });
+  const kinds = resolveComposeKinds({ role });
   const close = () => setComposing((current) => current && { ...current, open: false });
 
   return (

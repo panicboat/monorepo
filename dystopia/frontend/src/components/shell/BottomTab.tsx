@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUnreadCount } from "@/modules/notifications/hooks";
 import { useTotalUnread } from "@/modules/messaging";
-import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { useAuthStore, selectRole } from "@/stores/authStore";
 import { FEATURE_ICONS } from "@/components/ui/feature-icons";
 
@@ -22,12 +21,11 @@ export function BottomTab() {
   const pathname = usePathname();
   const { count: notifCount } = useUnreadCount();
   const { count: msgCount } = useTotalUnread();
-  const { hasAccess: karteAccess } = useMyKarteAccess();
   const role = useAuthStore(selectRole);
 
   const tabs = [
     ...TABS,
-    ...(karteAccess ? [KARTE_TAB] : []),
+    ...(role === "cast" ? [KARTE_TAB] : []),
     ...(role === "guest" ? [REVIEWS_TAB] : []),
   ];
 

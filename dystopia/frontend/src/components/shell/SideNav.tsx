@@ -9,7 +9,6 @@ import { useProfile } from "@/modules/profile/hooks";
 import { useUnreadCount, useNotificationPreferences } from "@/modules/notifications/hooks";
 import { useTotalUnread } from "@/modules/messaging";
 import { useFootprintsUnreadCount } from "@/modules/footprints";
-import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { ProfileSwitcher } from "@/modules/profile/components/ProfileSwitcher";
 import { useAuthStore, selectRole } from "@/stores/authStore";
 import { PROFILE_NAV_PATH, resolveNavItems } from "./resolveNavItems";
@@ -22,7 +21,6 @@ export function SideNav() {
   const { count: msgUnread } = useTotalUnread();
   const { count: footprintsUnread } = useFootprintsUnreadCount();
   const { preferences } = useNotificationPreferences();
-  const { hasAccess: karteAccess } = useMyKarteAccess();
   const role = useAuthStore(selectRole);
 
   const footprintsBadgeEnabled = preferences?.footprintUnreadBadge !== false;
@@ -33,7 +31,7 @@ export function SideNav() {
     <aside className="sticky top-0 hidden h-screen w-[266px] shrink-0 flex-col border-r border-divider bg-bg px-4 py-[18px] md:flex">
       <BrandMark className="px-4 pb-3 text-lg" />
       <nav className="flex-1 overflow-y-auto">
-        {resolveNavItems({ karteAccess, isGuest: role === "guest" }).map((item) => {
+        {resolveNavItems({ role }).map((item) => {
           const href = item.path === PROFILE_NAV_PATH ? profileHref : item.path;
           const active = pathname === href;
           const badgeCount =

@@ -9,8 +9,7 @@ import { FollowButton, ProfileMoreMenu, SocialCountsLinks } from "@/modules/soci
 import { StartChatButton } from "@/modules/messaging";
 import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs";
 import { useRecordVisit } from "@/modules/footprints";
-import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
-import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
+import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
 import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
 import { ReviewsTab } from "@/modules/review/components/ReviewsTab";
 import { ScheduleSection } from "@/modules/schedule";
@@ -22,7 +21,7 @@ export default function PublicProfilePage() {
   const { profile, loading, error, mutate } = usePublicProfile(username || null);
   const viewerId = useAuthStore(selectActiveProfileId);
   const recordVisit = useRecordVisit();
-  const { hasAccess: karteAccess } = useMyKarteAccess();
+  const viewerRole = useAuthStore(selectRole);
   const { saveProfile, saveMedia } = useProfile();
   const [editing, setEditing] = useState(false);
 
@@ -67,7 +66,7 @@ export default function PublicProfilePage() {
         profileId={profile.id}
         isOwnProfile={isOwnProfile}
         extraTabs={[
-          ...(role === "guest" && karteAccess
+          ...(role === "guest" && viewerRole === "cast"
             ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guestProfileId={profile.id} /> }]
             : []),
           {

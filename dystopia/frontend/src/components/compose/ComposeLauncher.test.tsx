@@ -7,13 +7,12 @@ import { describe, expect, it, vi } from "vitest";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const mocks = vi.hoisted(() => ({ role: "cast" as "cast" | "guest" | null, karteAccess: true }));
+const mocks = vi.hoisted(() => ({ role: "cast" as "cast" | "guest" | null }));
 
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: (selector: (state: { role: string | null }) => unknown) => selector({ role: mocks.role }),
   selectRole: (state: { role: string | null }) => state.role,
 }));
-vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({ useMyKarteAccess: () => ({ hasAccess: mocks.karteAccess }) }));
 vi.mock("@/modules/post/components/PostComposerSheet", () => ({
   PostComposerSheet: ({ open }: { open: boolean }) => (open ? <div>post-composer</div> : null),
 }));
@@ -48,30 +47,26 @@ async function choose(label: string) {
 }
 
 describe("ComposeLauncher", () => {
-  it("offers a cast with karte access a post, a message and a karte entry", () => {
+  it("offers a cast a post, a message and a karte", () => {
     mocks.role = "cast";
-    mocks.karteAccess = true;
 
     expect(labels(renderToStaticMarkup(<ComposeLauncher variant="fab" />))).toEqual(["投稿", "メッセージ", "カルテ"]);
   });
 
   it("offers a guest a post, a message and a review", () => {
     mocks.role = "guest";
-    mocks.karteAccess = false;
 
     expect(labels(renderToStaticMarkup(<ComposeLauncher variant="sidebar" />))).toEqual(["投稿", "メッセージ", "レビュー"]);
   });
 
   it("opens the post composer for a post", async () => {
     mocks.role = "cast";
-    mocks.karteAccess = true;
 
     expect(await choose("投稿")).toContain("post-composer");
   });
 
   it("asks for a recipient for a message and for a karte entry", async () => {
     mocks.role = "cast";
-    mocks.karteAccess = true;
 
     expect(await choose("メッセージ")).toContain("compose-to:message");
     expect(await choose("カルテ")).toContain("compose-to:karte");
@@ -79,7 +74,6 @@ describe("ComposeLauncher", () => {
 
   it("keeps the sheet mounted while it closes, so it can slide out", async () => {
     mocks.role = "cast";
-    mocks.karteAccess = true;
     const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
@@ -104,7 +98,6 @@ describe("ComposeLauncher", () => {
 
   it("labels the sidebar button as creating, since it leads to more than a post", () => {
     mocks.role = "cast";
-    mocks.karteAccess = true;
 
     expect(renderToStaticMarkup(<ComposeLauncher variant="sidebar" />)).toContain("作成する");
   });
