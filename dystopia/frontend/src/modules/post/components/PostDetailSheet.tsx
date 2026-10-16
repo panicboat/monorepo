@@ -31,7 +31,9 @@ export function PostDetailSheet() {
   const navigate = useCallback(
     (href: string) => {
       const target = new URL(href, window.location.href);
-      const sameUrl = target.pathname + target.search === window.location.pathname + window.location.search;
+      const sameUrl =
+        target.pathname === window.location.pathname &&
+        new URLSearchParams(target.search).toString() === new URLSearchParams(window.location.search).toString();
       if (sameUrl) close();
       else router.replace(target.pathname + target.search + target.hash);
     },

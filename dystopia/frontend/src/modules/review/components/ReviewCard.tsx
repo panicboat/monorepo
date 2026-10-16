@@ -27,7 +27,7 @@ export function ReviewCard({ entry, variant, onOpen }: ReviewCardProps) {
     <article className="border-b border-border px-4 py-3">
       <div className="flex gap-3">
         {authorHref ? (
-          <Link href={authorHref} aria-label={handle(entry.authorUsername)} className="shrink-0">
+          <Link href={authorHref} tabIndex={-1} aria-hidden="true" className="shrink-0">
             {authorAvatar}
           </Link>
         ) : (

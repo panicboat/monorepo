@@ -24,7 +24,8 @@ export default function PublicProfilePage() {
   const recordVisit = useRecordVisit();
   const viewerRole = useAuthStore(selectRole);
   const { saveProfile, saveMedia } = useProfile();
-  const [editing, setEditing] = useState(false);
+  // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
+  const [editing, setEditing] = useState<{ session: number; open: boolean } | null>(null);
 
   useEffect(() => {
     if (!viewerId || !profile?.id) return;
@@ -57,7 +58,7 @@ export default function PublicProfilePage() {
         role={role}
         actions={
           isOwnProfile ? (
-            <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
+            <Button variant="secondary" size="sm" onClick={() => setEditing((current) => ({ session: (current?.session ?? 0) + 1, open: true }))}>
               プロフィールを編集
             </Button>
           ) : (
@@ -101,10 +102,11 @@ export default function PublicProfilePage() {
             : undefined
         }
       />
-      {isOwnProfile && (
+      {isOwnProfile && editing && (
         <EditProfileSheet
-          open={editing}
-          onOpenChange={setEditing}
+          key={editing.session}
+          open={editing.open}
+          onOpenChange={(open) => setEditing((current) => current && { ...current, open })}
           profile={profile}
           isCast={role === "cast"}
           onSave={async (payload) => {
