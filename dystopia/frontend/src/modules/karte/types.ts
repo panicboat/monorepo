@@ -16,9 +16,11 @@ export interface Karte {
   id: string;
   authorProfileId: string;
   authorUsername: string;
+  authorDisplayName: string;
   authorAvatarUrl: string;
   targetProfileId: string;
   targetUsername: string;
+  targetDisplayName: string;
   targetAvatarUrl: string;
   isMine: boolean;
   rating: number | null;
@@ -27,6 +29,7 @@ export interface Karte {
   createdAt: string;
   updatedAt: string;
   closedAt: string | null;
+  lastActivityAt: string;
 }
 
 export interface KarteEventInput {
@@ -51,4 +54,14 @@ export interface KartePage {
 
 export interface KartesByTargetPage extends KartePage {
   reliability: ReliabilitySummary;
+}
+
+export interface KarteCounts {
+  total: number;
+  open: number;
+  closed: number;
+}
+
+export interface MyKartePage extends KartePage {
+  counts: KarteCounts;
 }

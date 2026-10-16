@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { authFetch } from "@/lib/auth/fetch";
+import { revalidateKarte } from "../lib/revalidate";
 import type { Karte, KarteEventInput } from "../types";
 
 export function useKarteMutations() {
@@ -18,6 +19,7 @@ export function useKarteMutations() {
       return null;
     } finally {
       setLoading(false);
+      void revalidateKarte();
     }
   }, []);
 

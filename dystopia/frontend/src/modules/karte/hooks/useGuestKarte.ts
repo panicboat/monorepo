@@ -3,6 +3,8 @@
 import useSWRInfinite from "swr/infinite";
 import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
+import { useKarteRevalidation } from "../lib/revalidate";
+import { uniqueKartes } from "../lib/uniqueKartes";
 import type { KartesByTargetPage, ReliabilitySummary } from "../types";
 
 const NO_RELIABILITY: ReliabilitySummary = { averageRating: null, raterCount: 0, karteCount: 0 };
@@ -20,10 +22,11 @@ export function useGuestKarte(targetProfileId: string | null | undefined) {
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =
     useSWRInfinite<KartesByTargetPage>(getKey, fetcher, { revalidateOnFocus: false });
+  useKarteRevalidation(mutate);
 
   const pages = data || [];
   return {
-    kartes: pages.flatMap((p) => p.kartes || []),
+    kartes: uniqueKartes(pages.flatMap((p) => p.kartes || [])),
     reliability: pages[0]?.reliability ?? NO_RELIABILITY,
     hasMore: pages.length > 0 ? !!pages[pages.length - 1].hasMore : false,
     loading: isLoading || isValidating,

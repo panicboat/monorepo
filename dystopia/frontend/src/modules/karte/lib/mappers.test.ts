@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { create } from "@bufbuild/protobuf";
-import { KarteEventSchema, KarteSchema, KarteStage, KarteStatus, ReliabilitySummarySchema } from "@/stub/karte/v1/service_pb";
-import { eventInputToMessage, mapKarteToView, mapReliabilityToView } from "./mappers";
+import { KarteCountsSchema, KarteEventSchema, KarteSchema, KarteStage, KarteStatus, ReliabilitySummarySchema } from "@/stub/karte/v1/service_pb";
+import { eventInputToMessage, mapCountsToView, mapKarteToView, mapReliabilityToView } from "./mappers";
 
 describe("mapKarteToView", () => {
   it("maps a karte with its events", () => {
@@ -51,6 +51,21 @@ describe("mapKarteToView", () => {
 
     expect(stages).toEqual(["reservation", "service", "aftercare"]);
   });
+
+  it("maps the display names and the last activity", () => {
+    const view = mapKarteToView(
+      create(KarteSchema, {
+        id: "k-1",
+        authorDisplayName: "ゆな",
+        targetDisplayName: "はなこ",
+        lastActivityAt: { seconds: BigInt(1_700_000_000), nanos: 0 },
+      })
+    );
+
+    expect(view.authorDisplayName).toBe("ゆな");
+    expect(view.targetDisplayName).toBe("はなこ");
+    expect(view.lastActivityAt).toBe(new Date(1_700_000_000 * 1000).toISOString());
+  });
 });
 
 describe("mapReliabilityToView", () => {
@@ -77,5 +92,12 @@ describe("eventInputToMessage", () => {
       note: "",
       occurredOn: "2026-10-01",
     });
+  });
+});
+
+describe("mapCountsToView", () => {
+  it("maps the counts and reads missing counts as zero", () => {
+    expect(mapCountsToView(create(KarteCountsSchema, { totalCount: 3, openCount: 2, closedCount: 1 }))).toEqual({ total: 3, open: 2, closed: 1 });
+    expect(mapCountsToView(undefined)).toEqual({ total: 0, open: 0, closed: 0 });
   });
 });

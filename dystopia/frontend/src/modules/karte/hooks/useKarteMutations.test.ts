@@ -7,6 +7,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ authFetch: vi.fn() }));
 vi.mock("@/lib/auth/fetch", () => ({ authFetch: mocks.authFetch }));
+const revalidate = vi.hoisted(() => ({ revalidateKarte: vi.fn() }));
+vi.mock("../lib/revalidate", () => revalidate);
 
 const { useKarteMutations } = await import("./useKarteMutations");
 
@@ -83,5 +85,19 @@ describe("useKarteMutations", () => {
 
     expect(result).toBeNull();
     expect(hook.current!.error?.message).toBe("Rating required to close");
+  });
+
+  it("refreshes the karte data after a change, whether it worked or not", async () => {
+    revalidate.revalidateKarte.mockClear();
+    await act(async () => {
+      await hook.current!.close("k-1");
+    });
+    expect(revalidate.revalidateKarte).toHaveBeenCalledTimes(1);
+
+    mocks.authFetch.mockRejectedValue(new Error("Karte is closed"));
+    await act(async () => {
+      await hook.current!.addEvent("k-1", event);
+    });
+    expect(revalidate.revalidateKarte).toHaveBeenCalledTimes(2);
   });
 });
