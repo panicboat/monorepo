@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toDateKey, formatDayLabel, buildDateRange } from "./dates";
+import { toDateKey, formatDayLabel, buildDateRange, formatMonthDay } from "./dates";
 
 describe("toDateKey", () => {
   it("formats a local date as YYYY-MM-DD", () => {
@@ -24,5 +24,12 @@ describe("buildDateRange", () => {
       "2026-09-19",
       "2026-09-20",
     ]);
+  });
+});
+
+describe("formatMonthDay", () => {
+  it("shows a date key as month/day without leading zeros", () => {
+    expect(formatMonthDay("2026-10-13")).toBe("10/13");
+    expect(formatMonthDay("2026-01-05")).toBe("1/5");
   });
 });
