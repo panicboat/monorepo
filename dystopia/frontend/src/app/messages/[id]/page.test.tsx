@@ -47,7 +47,7 @@ describe("ChatPage", () => {
   it("heads the conversation with the counterpart's name linked to their profile", () => {
     const html = renderToStaticMarkup(<ChatPage />);
 
-    expect(html).toMatch(/<a[^>]*href="\/u\/yuna"[^>]*>.*<h1[^>]*>ゆな<\/h1>/);
+    expect(html).toMatch(/<a[^>]*href="\/u\/yuna"[^>]*>.*<h1[^>]*>ゆなとのメッセージ<\/h1>/);
   });
 
   it("shows the counterpart's initial beside an incoming message instead of a placeholder", () => {
@@ -80,6 +80,7 @@ describe("ChatPage", () => {
     const html = renderToStaticMarkup(<ChatPage />);
 
     expect(html).toContain("(退会)");
+    expect(html).toContain("(退会)とのメッセージ");
     expect(html).not.toContain('href="/u/');
   });
 });
