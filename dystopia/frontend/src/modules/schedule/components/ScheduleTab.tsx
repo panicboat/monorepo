@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSchedules } from "@/modules/schedule/hooks";
-import { buildDateRange, formatMonthDay } from "@/modules/schedule/lib/dates";
+import { buildDateRange, formatDayLabel } from "@/modules/schedule/lib/dates";
 import { ScheduleBulkSheet } from "./ScheduleBulkSheet";
 
-const DAYS = 7;
+const WEEK_DAYS = 7;
+const TWO_WEEK_DAYS = 14;
 
 interface Editing {
   session: number;
@@ -15,8 +16,9 @@ interface Editing {
 }
 
 export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner: boolean }) {
-  const days = useMemo(() => buildDateRange(new Date(), DAYS), []);
-  const { schedules, loading, refresh } = useSchedules(profileId, days[0], days[DAYS - 1]);
+  const [expanded, setExpanded] = useState(false);
+  const days = buildDateRange(new Date(), expanded ? TWO_WEEK_DAYS : WEEK_DAYS);
+  const { schedules, loading, refresh } = useSchedules(profileId, days[0], days[days.length - 1]);
   // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
   const [editing, setEditing] = useState<Editing | null>(null);
   const byDate = new Map(schedules.map((s) => [s.workDate, s]));
@@ -50,7 +52,7 @@ export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner
                   plan ? "border-accent/50 bg-accent/10 text-text-primary" : "border-border text-text-secondary"
                 )}
               >
-                <span className="font-bold">{formatMonthDay(dateKey)}</span>
+                <span className="font-bold">{formatDayLabel(dateKey)}</span>
                 {plan ? (
                   <>
                     <span>{plan.startTime}</span>
@@ -63,6 +65,11 @@ export function ScheduleTab({ profileId, isOwner }: { profileId: string; isOwner
             );
           })}
         </ol>
+      )}
+      {!expanded && (
+        <button type="button" onClick={() => setExpanded(true)} className="mt-2 min-h-11 text-sm text-accent hover:underline">
+          もっと見る
+        </button>
       )}
       <p className="mt-3 text-xs text-text-secondary">出勤情報は予約可能枠を保証するものではありません。</p>
       {editing && (

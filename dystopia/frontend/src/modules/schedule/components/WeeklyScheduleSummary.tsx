@@ -1,13 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
 import { useSchedules } from "@/modules/schedule/hooks";
 import { buildDateRange, formatMonthDay } from "@/modules/schedule/lib/dates";
 
 const DAYS = 7;
 
 export function WeeklyScheduleSummary({ profileId, onShowMore }: { profileId: string; onShowMore: () => void }) {
-  const days = useMemo(() => buildDateRange(new Date(), DAYS), []);
+  const days = buildDateRange(new Date(), DAYS);
   const { schedules, loading } = useSchedules(profileId, days[0], days[DAYS - 1]);
 
   if (loading) return null;

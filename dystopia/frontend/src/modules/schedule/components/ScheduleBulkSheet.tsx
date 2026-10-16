@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { cn } from "@/lib/utils";
 import { useDeleteSchedule, useSaveSchedule, useSchedules } from "@/modules/schedule/hooks";
-import { buildDateRange, formatMonthDay } from "@/modules/schedule/lib/dates";
+import { buildDateRange, formatDayLabel, formatMonthDay } from "@/modules/schedule/lib/dates";
 import { useToastStore } from "@/stores/toastStore";
 import { TimeSelect } from "./TimeSelect";
 
@@ -124,7 +124,7 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
                   isSelected ? "border-accent bg-accent/15 text-text-primary" : "border-border text-text-secondary"
                 )}
               >
-                <span className="font-bold">{formatMonthDay(dateKey)}</span>
+                <span className="font-bold">{formatDayLabel(dateKey)}</span>
                 {plan ? (
                   <>
                     <span>{plan.startTime}</span>
@@ -166,6 +166,7 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
                   <button
                     key={presetStart}
                     type="button"
+                    aria-pressed={start === presetStart && end === presetEnd}
                     onClick={() => {
                       setStart(presetStart);
                       setEnd(presetEnd);

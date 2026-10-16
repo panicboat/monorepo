@@ -74,6 +74,7 @@ describe("ScheduleBulkSheet", () => {
     expect(text()).toContain("SHIFT / 2週間まとめて編集");
     expect(text()).toContain("日付を複数選択して、同じ時間帯を一括で設定できます。1日ずつ入力する必要はありません。");
     expect(document.querySelectorAll("button[data-day]")).toHaveLength(14);
+    expect(day("2026-10-12").textContent).toContain("10/12(月)");
     expect(day("2026-10-12").textContent).toContain("未設定");
     expect(day("2026-10-13").textContent).toContain("19:00");
     expect(day("2026-10-25")).not.toBeNull();
@@ -102,7 +103,10 @@ describe("ScheduleBulkSheet", () => {
     await click(day("2026-10-14"));
     expect(button("選択した日に反映")!.disabled).toBe(true);
 
+    expect(button("20:00〜02:00")!.getAttribute("aria-pressed")).toBe("false");
     await click(button("20:00〜02:00")!);
+    expect(button("20:00〜02:00")!.getAttribute("aria-pressed")).toBe("true");
+    expect(button("18:00〜23:00")!.getAttribute("aria-pressed")).toBe("false");
     expect(button("選択した日に反映")!.disabled).toBe(false);
   });
 
