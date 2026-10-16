@@ -22,6 +22,7 @@ export interface PostCardProps {
   author: { name: string; handle: string; avatarSrc?: string };
   authorHref?: string;
   detailHref?: string;
+  onDetailClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
   time: string;
   isPrivate?: boolean;
   body: React.ReactNode;
@@ -35,6 +36,7 @@ export function PostCard({
   author,
   authorHref,
   detailHref,
+  onDetailClick,
   time,
   isPrivate,
   body,
@@ -79,7 +81,7 @@ export function PostCard({
             {isPrivate && <LockMark label="非公開" className="text-xs" />}
           </div>
           {detailHref ? (
-            <Link href={detailHref} className="block">
+            <Link href={detailHref} onClick={onDetailClick} className="block">
               <p className="mt-1 whitespace-pre-wrap text-text-primary">{body}</p>
             </Link>
           ) : (
