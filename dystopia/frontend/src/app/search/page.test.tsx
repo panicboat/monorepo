@@ -87,6 +87,22 @@ async function searchUsersHtml(isPrivate: boolean) {
 }
 
 describe("SearchPage", () => {
+  it("shows the page heading above the search box", async () => {
+    navigation.query = null;
+    hookMocks.useSearchUsers.mockReturnValue({ profiles: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn() });
+    hookMocks.useSearchPosts.mockReturnValue({ posts: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn() });
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(<SearchPage />);
+    });
+
+    expect(container.querySelector("h1")?.textContent).toBe("検索");
+    expect(container.textContent).toContain("ユーザーや投稿を探す");
+    await act(async () => root.unmount());
+    container.remove();
+  });
   it("links each matched user's avatar and name to their profile", async () => {
     const html = await searchUsersHtml(false);
 

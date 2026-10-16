@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { LockMark } from "@/components/ui/lock-mark";
 import { Tabs, type TabItem } from "@/components/ui/tab";
@@ -13,6 +14,7 @@ import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { FollowButton } from "@/modules/social";
 import { useSearchUsers, useSearchPosts } from "@/modules/discovery";
 import type { SearchUsersRoleFilter } from "@/modules/discovery/hooks/useSearchUsers";
+import { useEnterAnimation } from "@/lib/motion/useEnterAnimation";
 import { cn } from "@/lib/utils";
 
 const ROLE_CHIPS: Array<{ id: SearchUsersRoleFilter; label: string }> = [
@@ -51,9 +53,14 @@ function SearchView({ initialQuery }: { initialQuery: string }) {
   const posts = useSearchPosts(tab === "posts" ? query : "");
 
   const trimmed = query.trim();
+  const resultsRef = useRef<HTMLDivElement>(null);
+  useEnterAnimation(resultsRef, tab);
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
+      <header className="px-4 pt-3">
+        <PageHeader title="検索" description="ユーザーや投稿を探す" />
+      </header>
       <div className="sticky top-0 z-10 bg-bg/95 px-4 py-3 backdrop-blur">
         <div className="relative">
           <Input
@@ -77,6 +84,7 @@ function SearchView({ initialQuery }: { initialQuery: string }) {
         </div>
       </div>
       <Tabs items={TABS} value={tab} onValueChange={setTab} />
+      <div ref={resultsRef}>
 
       {tab === "users" && (
         <div className="flex gap-2 overflow-x-auto px-4 py-2">
@@ -169,6 +177,7 @@ function SearchView({ initialQuery }: { initialQuery: string }) {
           )}
         </>
       )}
+      </div>
     </main>
   );
 }
