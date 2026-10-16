@@ -12,7 +12,6 @@ import { useRecordVisit } from "@/modules/footprints";
 import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
 import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
 import { ReviewsTab } from "@/modules/review/components/ReviewsTab";
-import { ScheduleSection } from "@/modules/schedule";
 import type { SocialProfileView } from "@/modules/social/types";
 import { Button } from "@/components/ui/button";
 
@@ -70,7 +69,6 @@ export default function PublicProfilePage() {
         }
       />
       <SocialCountsLinks profileId={profile.id} username={profile.username} />
-      {role === "cast" && <ScheduleSection profileId={profile.id} isOwner={isOwnProfile} />}
       <ProfileContentTabs
         profileId={profile.id}
         isOwnProfile={isOwnProfile}

@@ -48,10 +48,6 @@ vi.mock("@/stores/authStore", () => ({
   selectRole: (state: { role: string }) => state.role,
 }));
 
-vi.mock("@/modules/schedule", () => ({
-  ScheduleSection: () => <span>schedule-section</span>,
-}));
-
 vi.mock("@/modules/post/components/ProfileContentTabs", () => ({
   ProfileContentTabs: ({ extraTabs }: { extraTabs?: { id: string; label: string }[] }) => (
     <div>
@@ -84,12 +80,12 @@ describe("PublicProfilePage layout", () => {
     expect(header).not.toContain("follow-button");
   });
 
-  it("shows the follow counts right under the header and above the schedule", () => {
+  it("shows the follow counts right under the header", () => {
     mocks.profile = { ...emptyProfileView("profile-1"), role: 2 };
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
-    expect(html).toContain("</header><span>social-counts</span><span>schedule-section</span>");
+    expect(html).toContain("</header><span>social-counts</span>");
   });
 });
 
