@@ -1,29 +1,44 @@
 "use client";
 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ComposeToSheet } from "@/components/compose/ComposeToSheet";
+import type { SocialProfileView } from "@/modules/social/types";
 import { useGuestKarte } from "../hooks/useGuestKarte";
-import { KarteAggregateHeader } from "./KarteAggregateHeader";
-import { KarteComposer } from "./KarteComposer";
-import { KarteEntryCard } from "./KarteEntryCard";
+import { KarteList } from "./KarteList";
+import { KarteReliabilityHeader } from "./KarteReliabilityHeader";
 
-export function GuestKarteTab({ guestProfileId }: { guestProfileId: string }) {
-  const { kartes, reliability, hasMore, loading, loadMore, refresh } = useGuestKarte(guestProfileId);
+interface Composing {
+  session: number;
+  open: boolean;
+}
+
+export function GuestKarteTab({ guest }: { guest: SocialProfileView }) {
+  const { kartes, reliability, hasMore, loading, loadMore } = useGuestKarte(guest.profileId);
+  // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
+  const [composing, setComposing] = useState<Composing | null>(null);
 
   return (
     <div>
-      <KarteAggregateHeader reliability={reliability} />
-      <KarteComposer targetProfileId={guestProfileId} onCreated={refresh} />
-      {kartes.map((karte) => (
-        <KarteEntryCard key={karte.id} karte={karte} mode="target" onChanged={refresh} />
-      ))}
-      {loading && <div className="px-4 py-3 text-sm text-text-secondary">読み込み中…</div>}
-      {hasMore && (
-        <button
+      <KarteReliabilityHeader reliability={reliability} />
+      <KarteList kartes={kartes} variant="guest" hasMore={hasMore} loading={loading} onLoadMore={loadMore} empty="カルテはまだありません" />
+      <div className="px-4 py-4">
+        <Button
           type="button"
-          onClick={loadMore}
-          className="block w-full px-4 py-3 text-sm text-text-secondary hover:text-text-primary"
+          className="w-full"
+          onClick={() => setComposing((current) => ({ session: (current?.session ?? 0) + 1, open: true }))}
         >
-          もっと見る
-        </button>
+          このゲストのカルテを書く
+        </Button>
+      </div>
+      {composing && (
+        <ComposeToSheet
+          key={composing.session}
+          kind="karte"
+          open={composing.open}
+          initialTarget={guest}
+          onClose={() => setComposing((current) => current && { ...current, open: false })}
+        />
       )}
     </div>
   );

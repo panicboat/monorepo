@@ -25,10 +25,10 @@ vi.mock("./RecipientPicker", () => ({
   ),
 }));
 vi.mock("@/modules/messaging/hooks/useStartChat", () => ({ useStartChat: () => ({ start: mocks.start, loading: false }) }));
-vi.mock("@/modules/karte/components/KarteComposer", () => ({
-  KarteComposer: ({ targetProfileId, onCreated }: { targetProfileId: string; onCreated: () => void }) => {
+vi.mock("@/modules/karte/components/KarteCreateForm", () => ({
+  KarteCreateForm: ({ target: chosen, onCreated }: { target: SocialProfileView; onCreated: () => void }) => {
     mocks.created = onCreated;
-    return <div>karte-composer:{targetProfileId}</div>;
+    return <div>karte-form:{chosen.profileId}:{chosen.displayName}</div>;
   },
 }));
 vi.mock("@/modules/review/components/ReviewComposer", () => ({
@@ -44,14 +44,14 @@ vi.mock("@/stores/toastStore", () => ({
 
 const { ComposeToSheet } = await import("./ComposeToSheet");
 
-async function mount(kind: "message" | "karte" | "review", open = true) {
+async function mount(kind: "message" | "karte" | "review", open = true, initialTarget?: SocialProfileView) {
   const onClose = vi.fn();
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
   const render = () =>
     act(async () => {
-      root.render(createElement(ComposeToSheet, { kind, open, onClose }));
+      root.render(createElement(ComposeToSheet, { kind, open, onClose, initialTarget }));
     });
   await render();
   return {
@@ -165,8 +165,7 @@ describe("ComposeToSheet", () => {
 
     await pick();
     expect(document.body.textContent).toContain("カルテを書く");
-    expect(document.body.textContent).toContain("たろう");
-    expect(document.body.textContent).toContain("karte-composer:guest-1");
+    expect(document.body.textContent).toContain("karte-form:guest-1:たろう");
 
     await act(async () => {
       button("前に戻る").click();
@@ -183,7 +182,7 @@ describe("ComposeToSheet", () => {
       mocks.created?.();
     });
 
-    expect(mocks.toast.mock.calls).toEqual([["カルテを保存しました"]]);
+    expect(mocks.toast.mock.calls).toEqual([["記録中のカルテを作成しました"]]);
     expect(view.onClose).toHaveBeenCalledTimes(1);
     await view.unmount();
   });
@@ -195,6 +194,15 @@ describe("ComposeToSheet", () => {
 
     expect(document.body.textContent).toContain("レビューを書く");
     expect(document.body.textContent).toContain("review-composer:guest-1");
+    await view.unmount();
+  });
+
+  it("opens straight on the karte form for a guest chosen beforehand, without going back to the list", async () => {
+    const view = await mount("karte", true, target);
+
+    expect(document.body.textContent).toContain("karte-form:guest-1:たろう");
+    expect(document.body.textContent).not.toContain("カルテを書くゲストを選ぶ");
+    expect(button("前に戻る")).toBeUndefined();
     await view.unmount();
   });
 

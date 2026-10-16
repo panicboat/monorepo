@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { SideSheet } from "@/components/ui/side-sheet";
-import { KarteComposer } from "@/modules/karte/components/KarteComposer";
+import { KarteCreateForm } from "@/modules/karte/components/KarteCreateForm";
 import { ReviewComposer } from "@/modules/review/components/ReviewComposer";
 import { useStartChat } from "@/modules/messaging/hooks/useStartChat";
 import type { SocialProfileView } from "@/modules/social/types";
@@ -14,20 +14,21 @@ import { RecipientPicker } from "./RecipientPicker";
 import { resolveRecipientSource, type RecipientKind } from "./resolveRecipientSource";
 
 const COMPOSE_TITLE = { karte: "カルテを書く", review: "レビューを書く" } as const;
-const SAVED_MESSAGE = { karte: "カルテを保存しました", review: "レビューを投稿しました" } as const;
+const SAVED_MESSAGE = { karte: "記録中のカルテを作成しました", review: "レビューを投稿しました" } as const;
 
 interface ComposeToSheetProps {
   kind: RecipientKind;
   open: boolean;
   onClose: () => void;
+  initialTarget?: SocialProfileView;
 }
 
-export function ComposeToSheet({ kind, open, onClose }: ComposeToSheetProps) {
+export function ComposeToSheet({ kind, open, onClose, initialTarget }: ComposeToSheetProps) {
   const viewerRole = useAuthStore(selectRole);
   const showToast = useToastStore((s) => s.show);
   const { start, loading: opening } = useStartChat();
   const pathname = usePathname();
-  const [target, setTarget] = useState<SocialProfileView | null>(null);
+  const [target, setTarget] = useState<SocialProfileView | null>(initialTarget ?? null);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const startedOn = useRef(pathname);
@@ -66,7 +67,7 @@ export function ComposeToSheet({ kind, open, onClose }: ComposeToSheetProps) {
       open={open}
       onOpenChange={(next) => { if (!next) requestClose(); }}
       title={composeKind ? COMPOSE_TITLE[composeKind] : source.title}
-      onBack={composeKind ? () => setTarget(null) : undefined}
+      onBack={composeKind && !initialTarget ? () => setTarget(null) : undefined}
       stepKey={composeKind ? "compose" : "pick"}
     >
       {error && (
@@ -81,18 +82,16 @@ export function ComposeToSheet({ kind, open, onClose }: ComposeToSheetProps) {
         </div>
       )}
 
-      {target && composeKind && (
+      {target && composeKind === "karte" && <KarteCreateForm target={target} onCreated={saved} />}
+
+      {target && composeKind === "review" && (
         <>
           <div className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2">
             <Avatar src={target.avatarUrl || undefined} fallback={target.displayName.slice(0, 1) || "?"} size="sm" />
             <span className="min-w-0 truncate text-sm font-bold text-text-primary">{target.displayName}</span>
             <span className="truncate text-xs text-text-secondary">@{target.username}</span>
           </div>
-          {composeKind === "karte" ? (
-            <KarteComposer targetProfileId={target.profileId} onCreated={saved} />
-          ) : (
-            <ReviewComposer targetProfileId={target.profileId} onCreated={saved} />
-          )}
+          <ReviewComposer targetProfileId={target.profileId} onCreated={saved} />
         </>
       )}
     </SideSheet>

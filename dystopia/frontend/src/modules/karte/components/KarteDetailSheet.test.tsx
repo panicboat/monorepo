@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import type { Karte } from "../types";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -56,7 +56,7 @@ const karte = (overrides: Partial<Karte> = {}): Karte => ({
 });
 
 let root: Root;
-let onClose: ReturnType<typeof vi.fn>;
+let onClose: Mock<() => void>;
 const confirmDialog = vi.fn();
 
 async function mount(subject: Karte) {

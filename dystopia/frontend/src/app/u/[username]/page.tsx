@@ -67,7 +67,16 @@ export default function PublicProfilePage() {
         isOwnProfile={isOwnProfile}
         extraTabs={[
           ...(role === "guest" && viewerRole === "cast"
-            ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guestProfileId={profile.id} /> }]
+            ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab
+            guest={{
+              profileId: profile.id,
+              username: profile.username,
+              displayName: profile.displayName,
+              avatarUrl: profile.avatarUrl,
+              isPrivate: profile.isPrivate,
+              role: "guest",
+            }}
+          /> }]
             : []),
           {
             id: "reviews",
