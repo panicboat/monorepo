@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SideSheet } from "@/components/ui/side-sheet";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
@@ -12,7 +11,7 @@ import { PREFECTURES, CUP_SIZES, INDUSTRIES } from "@/modules/profile/lib/consta
 import type { ProfileView, SaveProfilePayload } from "@/modules/profile/types";
 import { ImageUpload } from "@/modules/profile/components/ImageUpload";
 
-interface EditProfileModalProps {
+interface EditProfileSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   profile: ProfileView;
@@ -93,8 +92,8 @@ function buildPayload(current: ProfileView, f: FormState, isCast: boolean): Save
   };
 }
 
-// Preserve fields this modal does not edit by building the save payload from the current profile.
-export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, onSaveMedia }: EditProfileModalProps) {
+// Preserve fields this sheet does not edit by building the save payload from the current profile.
+export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, onSaveMedia }: EditProfileSheetProps) {
   const [form, setForm] = useState<FormState>(() => toForm(profile));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,18 +116,12 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, 
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[90vh] w-[92vw] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-border bg-surface">
-          <div className="flex items-center justify-between border-b border-divider px-4 py-3">
-            <Dialog.Title className="text-base font-bold text-text-primary">プロフィールを編集</Dialog.Title>
-            <Dialog.Close className="text-text-muted hover:text-text-primary" aria-label="閉じる">
-              <X className="size-5" />
-            </Dialog.Close>
-          </div>
-
-          <div className="flex flex-col gap-4 overflow-y-auto px-4 py-4">
+    <SideSheet open={open} onOpenChange={onOpenChange} title="プロフィールを編集">
+      <div className="flex flex-col gap-4">
+        <div className="rounded-lg bg-surface px-3 py-2">
+          <p className="text-sm font-bold text-text-primary">{profile.displayName}として編集中</p>
+          <p className="text-xs text-text-secondary">@{profile.username}</p>
+        </div>
             <div className="flex flex-col gap-3">
               <ImageUpload
                 shape="cover"
@@ -243,18 +236,16 @@ export function EditProfileModal({ open, onOpenChange, profile, isCast, onSave, 
             </div>
 
             {error && <p className="text-sm text-error">{error}</p>}
-          </div>
 
-          <div className="flex justify-end gap-2 border-t border-divider px-4 py-3">
-            <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)} disabled={saving}>
-              キャンセル
-            </Button>
-            <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
-              {saving ? "保存中…" : "保存"}
-            </Button>
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        <div className="flex justify-end gap-2 border-t border-divider pt-4">
+          <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)} disabled={saving}>
+            キャンセル
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
+            {saving ? "保存中…" : "保存"}
+          </Button>
+        </div>
+      </div>
+    </SideSheet>
   );
 }

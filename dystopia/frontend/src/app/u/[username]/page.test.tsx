@@ -20,8 +20,8 @@ vi.mock("@/modules/profile/components/ProfileHeader", () => ({
   ProfileHeader: ({ actions }: { actions?: import("react").ReactNode }) => <header>{actions}</header>,
 }));
 
-vi.mock("@/modules/profile/components/EditProfileModal", () => ({
-  EditProfileModal: () => null,
+vi.mock("@/modules/profile/components/EditProfileSheet", () => ({
+  EditProfileSheet: () => null,
 }));
 
 vi.mock("@/modules/social", () => ({

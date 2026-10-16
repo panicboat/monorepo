@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { authFetch } from "@/lib/auth/fetch";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { useAccountProfiles } from "@/modules/profile/context/AccountProfilesContext";
-import { ProfileNameForm } from "@/modules/profile/components/ProfileNameForm";
+import { AddProfileSheet } from "@/modules/profile/components/AddProfileSheet";
 import type { ProfileView } from "@/modules/profile/types";
 
 interface ProfileResponse {
@@ -25,7 +25,8 @@ export function ProfileManager() {
   const { profiles, switchProfile, refresh, append } = useAccountProfiles();
   const [busy, setBusy] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ProfileView | null>(null);
-  const [adding, setAdding] = useState(false);
+  // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
+  const [adding, setAdding] = useState<{ session: number; open: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const change = async (request: () => Promise<unknown>) => {
@@ -154,10 +155,18 @@ export function ProfileManager() {
 
       {profiles.length > 0 && (
         <div className="mt-6">
-          {adding ? (
-            <ProfileNameForm
-              submitLabel="追加して切り替える"
-              onCancel={() => setAdding(false)}
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setAdding((current) => ({ session: (current?.session ?? 0) + 1, open: true }))}
+          >
+            プロフィールを追加
+          </Button>
+          {adding && (
+            <AddProfileSheet
+              key={adding.session}
+              open={adding.open}
+              onClose={() => setAdding((current) => current && { ...current, open: false })}
               onSubmit={async (payload) => {
                 const res = await authFetch<ProfileResponse>("/api/profile", { method: "POST", body: payload });
                 // Put the profile into the list first; switching to a profile the cached list lacks resolves back to the picker.
@@ -165,10 +174,6 @@ export function ProfileManager() {
                 switchProfile(res.profile.id);
               }}
             />
-          ) : (
-            <Button type="button" variant="secondary" onClick={() => setAdding(true)}>
-              プロフィールを追加
-            </Button>
           )}
         </div>
       )}

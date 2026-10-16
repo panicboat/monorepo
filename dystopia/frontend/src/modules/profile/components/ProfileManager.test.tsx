@@ -12,6 +12,17 @@ const log: string[] = [];
 const authFetch = vi.fn();
 vi.mock("@/lib/auth/fetch", () => ({ authFetch: (...args: unknown[]) => authFetch(...args) }));
 
+vi.mock("./AddProfileSheet", () => ({
+  AddProfileSheet: ({ open, onSubmit }: { open: boolean; onSubmit: (payload: { displayName: string; username: string }) => Promise<void> }) => (
+    <div>
+      add-sheet:{String(open)}
+      <button type="button" onClick={() => onSubmit({ displayName: "Fourth", username: "fourth" })}>
+        submit-add
+      </button>
+    </div>
+  ),
+}));
+
 const { useAuthStore } = await import("@/stores/authStore");
 const { ProfileManager } = await import("./ProfileManager");
 
@@ -152,14 +163,21 @@ describe("ProfileManager", () => {
     const view = await mount();
 
     await click(view.container, "プロフィールを追加");
-    await type(view.container.querySelector("#displayName") as HTMLInputElement, "Fourth");
-    await type(view.container.querySelector("#username") as HTMLInputElement, "fourth");
-    await act(async () => {
-      view.container.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-    });
+    await click(view.container, "submit-add");
 
     expect(authFetch.mock.calls[0]).toEqual(["/api/profile", { method: "POST", body: { displayName: "Fourth", username: "fourth" } }]);
     expect(log).toEqual(["POST /api/profile", "append p4", "switch p4"]);
+    await view.unmount();
+  });
+
+  it("opens the add sheet from the add button without creating anything", async () => {
+    const view = await mount();
+
+    expect(view.container.textContent).not.toContain("add-sheet:true");
+    await click(view.container, "プロフィールを追加");
+
+    expect(view.container.textContent).toContain("add-sheet:true");
+    expect(authFetch).not.toHaveBeenCalled();
     await view.unmount();
   });
 
@@ -200,33 +218,6 @@ describe("ProfileManager", () => {
     await view.unmount();
   });
 
-  it("shows why a profile could not be added and neither refreshes nor switches", async () => {
-    authFetch.mockRejectedValue(new Error("プロフィールをこれ以上追加できません"));
-    const view = await mount();
-
-    await click(view.container, "プロフィールを追加");
-    await type(view.container.querySelector("#displayName") as HTMLInputElement, "Fourth");
-    await type(view.container.querySelector("#username") as HTMLInputElement, "fourth");
-    await act(async () => {
-      view.container.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-    });
-
-    expect(view.container.querySelector('form [role="alert"]')?.textContent).toBe("プロフィールをこれ以上追加できません");
-    expect(log).toEqual([]);
-    await view.unmount();
-  });
-
-  it("closes the add form without creating anything when it is cancelled", async () => {
-    const view = await mount();
-
-    await click(view.container, "プロフィールを追加");
-    await click(view.container, "キャンセル");
-
-    expect(view.container.querySelector("form")).toBeNull();
-    expect(authFetch).not.toHaveBeenCalled();
-    await view.unmount();
-  });
-
   it("shows the reason and reloads the list when a change is refused", async () => {
     authFetch.mockRejectedValue(new Error("有効なプロフィールが他に無いため、無効にできません"));
     const view = await mount();
@@ -252,26 +243,6 @@ describe("ProfileManager", () => {
 
     expect(disabledWhileBusy).toEqual([true, true, true, true]);
     expect(disabledAfterwards).toEqual([false, false, false, false]);
-    await view.unmount();
-  });
-
-  it("does not let the add form be cancelled while the profile is being created", async () => {
-    let finish: (value: unknown) => void = () => {};
-    authFetch.mockImplementation(() => new Promise((resolve) => (finish = resolve)));
-    const view = await mount();
-    await click(view.container, "プロフィールを追加");
-    await type(view.container.querySelector("#displayName") as HTMLInputElement, "Fourth");
-    await type(view.container.querySelector("#username") as HTMLInputElement, "fourth");
-
-    await act(async () => {
-      view.container.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-    });
-    const cancel = Array.from(view.container.querySelectorAll("button")).find((button) => button.textContent === "キャンセル");
-
-    expect(cancel?.disabled).toBe(true);
-    await act(async () => {
-      finish({ profile: profile("p4", "fourth") });
-    });
     await view.unmount();
   });
 

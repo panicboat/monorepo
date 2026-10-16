@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { usePublicProfile, useProfile } from "@/modules/profile/hooks";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
-import { EditProfileModal } from "@/modules/profile/components/EditProfileModal";
+import { EditProfileSheet } from "@/modules/profile/components/EditProfileSheet";
 import { FollowButton, ProfileMoreMenu, SocialCountsLinks } from "@/modules/social";
 import { StartChatButton } from "@/modules/messaging";
 import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs";
@@ -98,7 +98,7 @@ export default function PublicProfilePage() {
         }
       />
       {isOwnProfile && (
-        <EditProfileModal
+        <EditProfileSheet
           open={editing}
           onOpenChange={setEditing}
           profile={profile}
