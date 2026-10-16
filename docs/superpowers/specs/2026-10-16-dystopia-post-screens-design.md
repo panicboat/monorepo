@@ -75,6 +75,8 @@
 
 `PostCardBinding` のコメントアイコンは、`/posts/[id]` への `Link` のまま、修飾キーのない左クリックのときだけ遷移を止めて `openPost(post.id)` を呼ぶ。Ctrl・⌘・Shift・Alt を押したクリックと中クリックは、今までどおりリンクとして動く（新しいタブで開く等）。
 
+投稿カードの本文（`PostCard` の詳細リンク）も同じ詳細へのリンクなので、同じ規則でシートを開く。`PostCard` に `onDetailClick` を足して本文のリンクに渡す。
+
 `PostCardBinding` に `inDetail?: boolean` を足す。true のとき、本文の詳細リンク（`PostCard` の `detailHref`）を渡さず、コメントアイコンは詳細を開かない（押しても何もしない `span` として件数を出す）。`PostDetailContent` は `inDetail` を渡す。
 
 `ReplyWithParentRow`（プロフィールの返信タブ）の「元の投稿」へのリンクも、同じ規則でシートを開く。
@@ -112,7 +114,7 @@ vitest:
 
 - `isPlainClick`: 左クリックだけが true。修飾キーと中クリックは false
 - `postSheetStore`: `openPost` で `postId`・`open`・`session` が変わる。`close` は `postId` を残す
-- `PostCardBinding`: コメントアイコンの左クリックで `openPost` が呼ばれ遷移しない。修飾キー付きでは呼ばれない。`inDetail` では本文の詳細リンクがなく、コメントアイコンが詳細を開かない
+- `PostCardBinding`: コメントアイコンと本文の左クリックで `openPost` が呼ばれる。修飾キー付きでは呼ばれない。`inDetail` では本文の詳細リンクがなく、コメントアイコンが詳細を開かない
 - `ReplyWithParentRow`: 「元の投稿」の左クリックで `openPost` が呼ばれる
 - `PostDetailContent`: 投稿・コメント見出し・入力欄・一覧を出す。読み込み中と見つからないときの文言
 - `PostDetailSheet`: store が開いているときに見出し「投稿の詳細」と中身を出す。閉じる操作で `close` が呼ばれる
