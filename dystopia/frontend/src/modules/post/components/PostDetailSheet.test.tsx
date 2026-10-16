@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, createElement } from "react";
+import { act, createElement, useSyncExternalStore } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { usePostSheetStore } from "@/stores/postSheetStore";
@@ -8,7 +8,29 @@ import { usePostSheetStore } from "@/stores/postSheetStore";
 
 const router = vi.hoisted(() => ({ replace: vi.fn(), push: vi.fn() }));
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/", useRouter: () => router }));
+const search = vi.hoisted(() => {
+  const listeners = new Set<() => void>();
+  return {
+    value: "",
+    listeners,
+    set(next: string) {
+      this.value = next;
+      listeners.forEach((l) => l());
+    },
+  };
+});
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+  useRouter: () => router,
+  useSearchParams: () => {
+    const value = useSyncExternalStore(
+      (l) => (search.listeners.add(l), () => search.listeners.delete(l)),
+      () => search.value
+    );
+    return new URLSearchParams(value);
+  },
+}));
 vi.mock("./PostDetailContent", () => ({
   PostDetailContent: ({ postId }: { postId: string }) => (
     <div>
@@ -29,6 +51,8 @@ beforeEach(() => {
   usePostSheetStore.setState({ postId: null, session: 0, open: false });
   router.replace.mockClear();
   router.push.mockClear();
+  search.value = "";
+  search.listeners.clear();
   document.addEventListener("click", preventNavigation);
 });
 
@@ -91,10 +115,14 @@ describe("PostDetailSheet", () => {
       expect(usePostSheetStore.getState().open).toBe(false);
     });
 
-    it("replaces and closes when only the query changes", async () => {
+    it("replaces without closing when only the query changes, then closes once the query commits", async () => {
       await clickLink("query");
 
       expect(router.replace).toHaveBeenCalledWith("/?q=tag");
+      expect(usePostSheetStore.getState().open).toBe(true);
+
+      await act(async () => search.set("q=tag"));
+
       expect(usePostSheetStore.getState().open).toBe(false);
     });
 

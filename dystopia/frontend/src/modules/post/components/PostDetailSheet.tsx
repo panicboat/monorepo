@@ -1,12 +1,24 @@
 "use client";
 
-import { useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { SheetNavigationContext } from "@/components/ui/sheetNavigation";
 import { isPlainClick } from "@/lib/utils/isPlainClick";
 import { usePostSheetStore } from "@/stores/postSheetStore";
 import { PostDetailContent } from "./PostDetailContent";
+
+function CloseOnSearchChange({ open, close }: { open: boolean; close: () => void }) {
+  const search = useSearchParams().toString();
+  const openedOn = useRef(search);
+
+  useEffect(() => {
+    if (!open) openedOn.current = search;
+    else if (openedOn.current !== search) close();
+  }, [open, search, close]);
+
+  return null;
+}
 
 export function PostDetailSheet() {
   const router = useRouter();
@@ -15,13 +27,13 @@ export function PostDetailSheet() {
   const open = usePostSheetStore((s) => s.open);
   const close = usePostSheetStore((s) => s.close);
 
-  // The sheet closes on a pathname change, so it is closed here when the target keeps the current pathname.
+  // A same-path query change closes via CloseOnSearchChange once it commits; closing here would let history.back() undo the replace.
   const navigate = useCallback(
     (href: string) => {
       const target = new URL(href, window.location.href);
-      const samePath = target.pathname === window.location.pathname;
-      if (!samePath || target.search !== window.location.search) router.replace(target.pathname + target.search + target.hash);
-      if (samePath) close();
+      const sameUrl = target.pathname + target.search === window.location.pathname + window.location.search;
+      if (sameUrl) close();
+      else router.replace(target.pathname + target.search + target.hash);
     },
     [close, router]
   );
@@ -37,6 +49,9 @@ export function PostDetailSheet() {
       }}
       title="投稿の詳細"
     >
+      <Suspense fallback={null}>
+        <CloseOnSearchChange open={open} close={close} />
+      </Suspense>
       <SheetNavigationContext.Provider value={navigate}>
         <div
           className="-mx-4 -mt-4 md:-mx-5"
