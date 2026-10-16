@@ -9,6 +9,7 @@ import type { Karte } from "../types";
 const mocks = vi.hoisted(() => ({
   current: null as Karte | null,
   gone: false,
+  apply: vi.fn(),
   toast: vi.fn(),
   mutations: {
     updateRating: vi.fn(),
@@ -22,7 +23,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
-vi.mock("../hooks/useKarte", () => ({ useKarte: () => ({ karte: mocks.current, gone: mocks.gone, error: undefined, refresh: vi.fn() }) }));
+vi.mock("../hooks/useKarte", () => ({ useKarte: () => ({ karte: mocks.current, gone: mocks.gone, error: undefined, refresh: vi.fn(), apply: mocks.apply }) }));
 vi.mock("../hooks/useKarteMutations", () => ({ useKarteMutations: () => ({ ...mocks.mutations, loading: false, error: null }) }));
 vi.mock("@/stores/toastStore", () => ({
   useToastStore: (selector: (state: { show: (message: string) => void }) => unknown) => selector({ show: mocks.toast }),
@@ -82,6 +83,7 @@ const click = async (label: string) => {
 beforeEach(() => {
   mocks.gone = false;
   mocks.toast.mockReset();
+  mocks.apply.mockReset();
   for (const fn of Object.values(mocks.mutations)) fn.mockReset().mockResolvedValue(karte());
   mocks.mutations.remove.mockResolvedValue(true);
   vi.stubGlobal("confirm", confirmDialog);
@@ -155,11 +157,14 @@ describe("KarteDetailSheet", () => {
   });
 
   it("closes a rated karte in place and confirms it", async () => {
+    const closed = karte({ rating: 4, status: "closed", closedAt: "2026-10-16T00:00:00Z" });
+    mocks.mutations.close.mockResolvedValue(closed);
     await mount(karte({ rating: 4 }));
 
     await click("完了する");
 
     expect(mocks.mutations.close).toHaveBeenCalledWith("k-1");
+    expect(mocks.apply).toHaveBeenCalledWith(closed);
     expect(mocks.toast).toHaveBeenCalledWith("カルテを完了しました。平均評価へ反映します");
     expect(onClose).not.toHaveBeenCalled();
   });

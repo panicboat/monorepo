@@ -19,21 +19,25 @@ const { revalidateKarte } = await import("../lib/revalidate");
 
 const initial = { id: "k-1", rating: null } as Karte;
 const hook: { current: ReturnType<typeof useKarte> | null } = { current: null };
+let karteId: string | null = "k-1";
 function Probe() {
-  hook.current = useKarte("k-1", initial);
+  hook.current = useKarte(karteId, initial);
   return null;
 }
+
+const tree = () => createElement(SWRConfig, { value: { provider: () => new Map(), dedupingInterval: 0 } }, createElement(Probe));
 
 async function mount() {
   const root = createRoot(document.createElement("div"));
   await act(async () => {
-    root.render(createElement(SWRConfig, { value: { provider: () => new Map(), dedupingInterval: 0 } }, createElement(Probe)));
+    root.render(tree());
   });
   return root;
 }
 
 beforeEach(() => {
   mocks.fetcher.mockReset();
+  karteId = "k-1";
 });
 
 describe("useKarte", () => {
@@ -65,6 +69,36 @@ describe("useKarte", () => {
     const root = await mount();
 
     expect(hook.current!.gone).toBe(true);
+    await act(async () => root.unmount());
+  });
+
+  it("shows an applied karte without reading again", async () => {
+    mocks.fetcher.mockResolvedValue({ karte: { id: "k-1", rating: 4 } });
+    const root = await mount();
+    mocks.fetcher.mockClear();
+
+    await act(async () => {
+      await hook.current!.apply({ id: "k-1", rating: 5 } as Karte);
+    });
+
+    expect(hook.current!.karte).toEqual({ id: "k-1", rating: 5 });
+    expect(mocks.fetcher).not.toHaveBeenCalled();
+    await act(async () => root.unmount());
+  });
+
+  it("keeps showing the last karte once there is no id to read", async () => {
+    mocks.fetcher.mockResolvedValue({ karte: { id: "k-1", rating: 4 } });
+    const root = await mount();
+    await act(async () => {
+      await hook.current!.apply({ id: "k-1", rating: 5 } as Karte);
+    });
+
+    karteId = null;
+    await act(async () => {
+      root.render(tree());
+    });
+
+    expect(hook.current!.karte).toEqual({ id: "k-1", rating: 5 });
     await act(async () => root.unmount());
   });
 });

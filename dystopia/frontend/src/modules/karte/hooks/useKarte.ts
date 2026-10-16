@@ -14,6 +14,7 @@ export function useKarte(karteId: string | null, initial?: Karte) {
   const key = profileId && karteId ? `/api/karte/${encodeURIComponent(karteId)}` : null;
   const { data, error, mutate } = useSWR<{ karte: Karte }>(key, fetcher, {
     revalidateOnFocus: false,
+    keepPreviousData: true,
     fallbackData: initial ? { karte: initial } : undefined,
   });
   useKarteRevalidation(mutate);
@@ -23,5 +24,6 @@ export function useKarte(karteId: string | null, initial?: Karte) {
     gone: error instanceof AppError && error.message === NOT_FOUND,
     error,
     refresh: () => mutate(),
+    apply: (next: Karte) => mutate({ karte: next }, { revalidate: false }),
   };
 }

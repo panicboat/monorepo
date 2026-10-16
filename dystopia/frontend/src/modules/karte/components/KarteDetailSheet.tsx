@@ -26,7 +26,8 @@ interface KarteDetailSheetProps {
 }
 
 export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailSheetProps) {
-  const { karte: current, gone } = useKarte(open ? initial.id : null, initial);
+  const [deleting, setDeleting] = useState(false);
+  const { karte: current, gone, apply } = useKarte(open && !deleting ? initial.id : null, initial);
   const karte = current ?? initial;
   const { updateRating, close, reopen, addEvent, updateEvent, removeEvent, remove, loading, error } = useKarteMutations();
   const showToast = useToastStore((s) => s.show);
@@ -41,9 +42,12 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
   const isOpen = karte.status === "open";
   const editable = karte.isMine && isOpen;
   const guest = { displayName: profileName(karte.targetDisplayName, karte.targetUsername), username: karte.targetUsername, avatarUrl: karte.targetAvatarUrl };
-  const confirmed = async (request: () => Promise<unknown>, message: string) => {
+  const confirmed = async (request: () => Promise<Karte | null>, message?: string) => {
     const result = await request();
-    if (result) showToast(message);
+    if (result) {
+      apply(result);
+      if (message) showToast(message);
+    }
     return result;
   };
 
@@ -116,7 +120,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
           </p>
           {editable && (
             <div className="mt-3">
-              <KarteRatingInput value={karte.rating} disabled={loading} onChange={(rating) => void updateRating(karte.id, rating)} />
+              <KarteRatingInput value={karte.rating} disabled={loading} onChange={(rating) => void confirmed(() => updateRating(karte.id, rating))} />
             </div>
           )}
         </div>
@@ -197,7 +201,11 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
               disabled={loading}
               onClick={async () => {
                 if (!confirm("このカルテを削除しますか？")) return;
-                if (!(await remove(karte.id))) return;
+                setDeleting(true);
+                if (!(await remove(karte.id))) {
+                  setDeleting(false);
+                  return;
+                }
                 showToast("カルテを削除しました");
                 onClose();
               }}
