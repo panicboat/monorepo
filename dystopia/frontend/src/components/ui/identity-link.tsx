@@ -10,7 +10,7 @@ export function IdentityLink({ username, avatarUrl }: IdentityLinkProps) {
   const avatar = avatarUrl ? (
     <Image src={avatarUrl} alt="" width={32} height={32} className="size-8 rounded-full object-cover" />
   ) : (
-    <div className="size-8 rounded-full bg-muted" />
+    <div className="size-8 rounded-full bg-surface" />
   );
 
   if (!username) {

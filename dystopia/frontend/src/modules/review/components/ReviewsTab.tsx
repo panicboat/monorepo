@@ -1,39 +1,60 @@
 "use client";
 
-import { useReviewsByTarget } from "../hooks/useReviewsByTarget";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ComposeToSheet } from "@/components/compose/ComposeToSheet";
+import type { SocialProfileView } from "@/modules/social/types";
+import { useAuthStore, selectRole } from "@/stores/authStore";
 import { useReviewsByAuthor } from "../hooks/useReviewsByAuthor";
-import { ReviewComposer } from "./ReviewComposer";
-import { ReviewEntryCard } from "./ReviewEntryCard";
+import { useReviewsByTarget } from "../hooks/useReviewsByTarget";
+import { ReviewList } from "./ReviewList";
 
 interface Props {
   profileId: string;
   mode: "received" | "written";
+  target?: SocialProfileView;
 }
 
-export function ReviewsTab({ profileId, mode }: Props) {
+export function ReviewsTab({ profileId, mode, target }: Props) {
+  const viewerRole = useAuthStore(selectRole);
   const byTarget = useReviewsByTarget(mode === "received" ? profileId : null);
   const byAuthor = useReviewsByAuthor(mode === "written" ? profileId : null);
-  const { entries, hasMore, loading, loadMore, refresh } =
-    mode === "received" ? byTarget : byAuthor;
+  const { entries, hasMore, loading, loadMore, refresh } = mode === "received" ? byTarget : byAuthor;
+  // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
+  const [composing, setComposing] = useState<{ session: number; open: boolean } | null>(null);
+  const canWrite = mode === "received" && viewerRole === "guest" && !!target;
 
   return (
     <div>
-      {mode === "received" && <ReviewComposer targetProfileId={profileId} onCreated={refresh} />}
-      {entries.map((e) => (
-        <ReviewEntryCard key={e.id} entry={e} mode={mode} onChanged={refresh} />
-      ))}
-      {loading && <div className="px-4 py-3 text-sm text-muted-foreground">読み込み中…</div>}
-      {!loading && entries.length === 0 && (
-        <div className="px-4 py-3 text-sm text-muted-foreground">まだレビューはありません。</div>
+      <ReviewList
+        entries={entries}
+        variant={mode === "received" ? "target" : "author"}
+        hasMore={hasMore}
+        loading={loading}
+        onLoadMore={loadMore}
+        onChanged={refresh}
+        empty="まだレビューはありません。"
+      />
+      {canWrite && (
+        <div className="px-4 py-4">
+          <Button
+            type="button"
+            className="w-full"
+            onClick={() => setComposing((current) => ({ session: (current?.session ?? 0) + 1, open: true }))}
+          >
+            レビューを書く
+          </Button>
+        </div>
       )}
-      {hasMore && (
-        <button
-          type="button"
-          onClick={loadMore}
-          className="block w-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground"
-        >
-          もっと見る
-        </button>
+      {composing && target && (
+        <ComposeToSheet
+          key={composing.session}
+          kind="review"
+          open={composing.open}
+          initialTarget={target}
+          onSaved={refresh}
+          onClose={() => setComposing((current) => current && { ...current, open: false })}
+        />
       )}
     </div>
   );

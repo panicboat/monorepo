@@ -77,7 +77,11 @@ export default function PublicProfilePage() {
           role === "cast"
             ? [
                 { id: "schedule", label: "出勤", content: <ScheduleTab profileId={profile.id} isOwner={isOwnProfile} /> },
-                { id: "reviews", label: "レビュー", content: <ReviewsTab profileId={profile.id} mode="received" /> },
+                {
+                  id: "reviews",
+                  label: "レビュー",
+                  content: <ReviewsTab profileId={profile.id} mode="received" target={{ ...guestView, role: "cast" }} />,
+                },
               ]
             : viewerRole === "cast"
               ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guest={guestView} /> }]

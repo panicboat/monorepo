@@ -23,9 +23,10 @@ interface ComposeToSheetProps {
   open: boolean;
   onClose: () => void;
   initialTarget?: SocialProfileView;
+  onSaved?: () => void;
 }
 
-export function ComposeToSheet({ kind, open, onClose, initialTarget }: ComposeToSheetProps) {
+export function ComposeToSheet({ kind, open, onClose, initialTarget, onSaved }: ComposeToSheetProps) {
   const viewerRole = useAuthStore(selectRole);
   const showToast = useToastStore((s) => s.show);
   const { start, loading: opening } = useStartChat();
@@ -63,6 +64,7 @@ export function ComposeToSheet({ kind, open, onClose, initialTarget }: ComposeTo
 
   const saved = () => {
     if (kind !== "message") showToast(SAVED_MESSAGE[kind]);
+    onSaved?.();
     onClose();
   };
 

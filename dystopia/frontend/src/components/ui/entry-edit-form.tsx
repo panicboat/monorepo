@@ -54,19 +54,19 @@ export function EntryEditForm({ initialRating, initialBody, saving, error, onSav
         aria-label="本文"
         className="mt-2 block w-full rounded border border-border bg-bg p-2 text-sm"
       />
-      <div className="mt-1 text-right text-xs text-muted-foreground">
+      <div className="mt-1 text-right text-xs text-text-secondary">
         {body.length}/{MAX_BODY_LENGTH}
       </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-error">{error}</p>}
       <div className="mt-2 flex gap-3 text-sm">
         <button
           type="submit"
           disabled={saving}
-          className="rounded bg-accent px-3 py-1 text-accent-foreground disabled:opacity-50"
+          className="rounded bg-accent px-3 py-1 text-white disabled:opacity-50"
         >
           保存
         </button>
-        <button type="button" onClick={onCancel} disabled={saving} className="text-muted-foreground hover:text-foreground">
+        <button type="button" onClick={onCancel} disabled={saving} className="text-text-secondary hover:text-text-primary">
           キャンセル
         </button>
       </div>

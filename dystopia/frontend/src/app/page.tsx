@@ -11,7 +11,7 @@ import { useAuthStore, selectRole } from "@/stores/authStore";
 import { useRecentKarte } from "@/modules/karte/hooks/useRecentKarte";
 import { KarteList } from "@/modules/karte/components/KarteList";
 import { useRecentReviews } from "@/modules/review/hooks/useRecentReviews";
-import { ReviewEntryCard } from "@/modules/review/components/ReviewEntryCard";
+import { ReviewList } from "@/modules/review/components/ReviewList";
 import type { FeedFilterValue } from "@/modules/feed/types";
 
 type HomeTabValue = FeedFilterValue | "karte" | "reviews";
@@ -138,21 +138,15 @@ export default function HomePage() {
       body = <p className="px-4 py-8 text-center text-error">読み込みに失敗しました</p>;
     } else {
       body = (
-      <>
-        {reviews.entries.map((e) => (
-          <ReviewEntryCard key={e.id} entry={e} mode="recent" onChanged={reviews.refresh} />
-        ))}
-        {reviews.entries.length === 0 && !reviews.hasMore && (
-          <p className="px-4 py-8 text-center text-text-secondary">まだレビューがありません</p>
-        )}
-        {reviews.hasMore && (
-          <div className="px-4 py-4 text-center">
-            <Button variant="secondary" onClick={() => reviews.loadMore()} disabled={reviews.loading}>
-              {reviews.loading ? "読み込み中…" : "もっと見る"}
-            </Button>
-          </div>
-        )}
-      </>
+        <ReviewList
+          entries={reviews.entries}
+          variant="feed"
+          hasMore={reviews.hasMore}
+          loading={reviews.loading}
+          onLoadMore={() => reviews.loadMore()}
+          onChanged={reviews.refresh}
+          empty="まだレビューがありません"
+        />
       );
     }
     return (
