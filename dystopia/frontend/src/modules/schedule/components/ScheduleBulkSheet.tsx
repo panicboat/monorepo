@@ -33,7 +33,7 @@ interface ScheduleBulkSheetProps {
 
 export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: ScheduleBulkSheetProps) {
   const days = useMemo(() => buildDateRange(new Date(), DAYS), []);
-  const { schedules, refresh } = useSchedules(profileId, days[0], days[DAYS - 1]);
+  const { schedules, loading, error, refresh } = useSchedules(profileId, days[0], days[DAYS - 1]);
   const saveSchedule = useSaveSchedule();
   const deleteSchedule = useDeleteSchedule();
   const showToast = useToastStore((s) => s.show);
@@ -45,7 +45,11 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
   const [failed, setFailed] = useState<string[]>([]);
 
   const byDate = new Map(schedules.map((s) => [s.workDate, s]));
-  const ready = selected.size > 0 && (mode === "clear" || (start !== "" && end !== ""));
+  const hasPlanSelected = [...selected].some((dateKey) => byDate.has(dateKey));
+  const ready =
+    !loading &&
+    !error &&
+    (mode === "clear" ? hasPlanSelected : selected.size > 0 && start !== "" && end !== "");
 
   const toggle = (dateKey: string) =>
     setSelected((current) => {
@@ -94,7 +98,7 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
     <SideSheet
       open={open}
       onOpenChange={(next) => {
-        if (!next) onClose();
+        if (!next && !saving) onClose();
       }}
       title="出勤予定をまとめて編集"
     >

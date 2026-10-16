@@ -7,6 +7,8 @@ import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vite
 
 const mocks = vi.hoisted(() => ({
   schedules: [] as { profileId: string; workDate: string; startTime: string; endTime: string }[],
+  loading: false,
+  error: undefined as Error | undefined,
   refresh: vi.fn(),
   save: vi.fn(),
   remove: vi.fn(),
@@ -15,7 +17,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/u/yuna" }));
 vi.mock("@/modules/schedule/hooks", () => ({
-  useSchedules: () => ({ schedules: mocks.schedules, loading: false, error: undefined, refresh: mocks.refresh }),
+  useSchedules: () => ({ schedules: mocks.schedules, loading: mocks.loading, error: mocks.error, refresh: mocks.refresh }),
   useSaveSchedule: () => mocks.save,
   useDeleteSchedule: () => mocks.remove,
 }));
@@ -31,6 +33,8 @@ let onSaved: Mock<() => void>;
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-10-12T09:00:00"));
+  mocks.loading = false;
+  mocks.error = undefined;
   mocks.schedules = [{ profileId: "p-1", workDate: "2026-10-13", startTime: "19:00", endTime: "01:00" }];
   for (const fn of [mocks.refresh, mocks.save, mocks.remove, mocks.toast]) fn.mockReset();
   mocks.save.mockResolvedValue(undefined);
@@ -150,5 +154,48 @@ describe("ScheduleBulkSheet", () => {
     expect(onClose).not.toHaveBeenCalled();
     expect(mocks.refresh).toHaveBeenCalled();
     expect(onSaved).toHaveBeenCalled();
+  });
+
+  it("does not apply while the plans are loading or failed to load", async () => {
+    mocks.loading = true;
+    await mount();
+    await click(day("2026-10-13"));
+    await click(button("予定を消す")!);
+    expect(button("選択した日に反映")!.disabled).toBe(true);
+  });
+
+  it("does not apply when loading the plans failed", async () => {
+    mocks.error = new Error("failed");
+    await mount();
+    await click(day("2026-10-14"));
+    await click(button("18:00〜23:00")!);
+    expect(button("選択した日に反映")!.disabled).toBe(true);
+  });
+
+  it("waits for a planned day before clearing", async () => {
+    await mount();
+    await click(button("予定を消す")!);
+    await click(day("2026-10-14"));
+    expect(button("選択した日に反映")!.disabled).toBe(true);
+
+    await click(day("2026-10-13"));
+    expect(button("選択した日に反映")!.disabled).toBe(false);
+  });
+
+  it("ignores close requests until the apply finishes", async () => {
+    let finish!: () => void;
+    mocks.save.mockImplementation(() => new Promise<void>((resolve) => { finish = resolve; }));
+    await mount();
+    await click(day("2026-10-14"));
+    await click(button("18:00〜23:00")!);
+
+    await click(button("選択した日に反映")!);
+    await click(button("閉じる")!);
+    expect(onClose).not.toHaveBeenCalled();
+
+    await act(async () => {
+      finish();
+    });
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
