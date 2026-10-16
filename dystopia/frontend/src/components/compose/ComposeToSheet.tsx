@@ -4,9 +4,11 @@ import { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { SideSheet } from "@/components/ui/side-sheet";
+import { emptyKarteEvent } from "@/modules/karte/components/KarteEventForm";
 import { KarteCreateForm } from "@/modules/karte/components/KarteCreateForm";
 import { ReviewComposer } from "@/modules/review/components/ReviewComposer";
 import { useStartChat } from "@/modules/messaging/hooks/useStartChat";
+import type { KarteEventInput } from "@/modules/karte/types";
 import type { SocialProfileView } from "@/modules/social/types";
 import { useAuthStore, selectRole } from "@/stores/authStore";
 import { useToastStore } from "@/stores/toastStore";
@@ -30,6 +32,8 @@ export function ComposeToSheet({ kind, open, onClose, initialTarget }: ComposeTo
   const pathname = usePathname();
   const [target, setTarget] = useState<SocialProfileView | null>(initialTarget ?? null);
   const [error, setError] = useState<string | null>(null);
+  const [karteEvent, setKarteEvent] = useState<KarteEventInput>(() => emptyKarteEvent());
+  const [karteRating, setKarteRating] = useState<number | null>(null);
   const [starting, setStarting] = useState(false);
   const startedOn = useRef(pathname);
   const source = resolveRecipientSource(kind, viewerRole);
@@ -82,7 +86,16 @@ export function ComposeToSheet({ kind, open, onClose, initialTarget }: ComposeTo
         </div>
       )}
 
-      {target && composeKind === "karte" && <KarteCreateForm target={target} onCreated={saved} />}
+      {target && composeKind === "karte" && (
+        <KarteCreateForm
+          target={target}
+          event={karteEvent}
+          onEventChange={setKarteEvent}
+          rating={karteRating}
+          onRatingChange={setKarteRating}
+          onCreated={saved}
+        />
+      )}
 
       {target && composeKind === "review" && (
         <>

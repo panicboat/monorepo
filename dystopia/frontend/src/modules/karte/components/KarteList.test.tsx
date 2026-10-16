@@ -74,4 +74,14 @@ describe("KarteList", () => {
     expect(container.textContent).toContain("読み込み中…");
     expect(container.textContent).not.toContain("カルテはまだありません");
   });
+
+  it("keeps the cards and hides the loading line while loading more, and blocks another load", async () => {
+    const { container, onLoadMore } = await mount({ loading: true, hasMore: true });
+
+    expect(container.textContent).toContain("card:k-1");
+    expect(container.textContent).not.toContain("読み込み中…");
+    expect(button(container, "もっと見る").disabled).toBe(true);
+    await act(async () => button(container, "もっと見る").click());
+    expect(onLoadMore).not.toHaveBeenCalled();
+  });
 });

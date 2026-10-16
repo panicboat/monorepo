@@ -72,7 +72,7 @@ export function KarteCard({ karte, variant, onOpen }: KarteCardProps) {
             </span>
           </button>
           {variant !== "guest" && karte.targetUsername && (
-            <Link href={`/u/${karte.targetUsername}`} className="mt-2 inline-block text-sm text-accent hover:underline">
+            <Link href={`/u/${karte.targetUsername}`} className="mt-2 inline-flex min-h-11 items-center text-sm text-accent hover:underline">
               ゲストのプロフィールを見る →
             </Link>
           )}

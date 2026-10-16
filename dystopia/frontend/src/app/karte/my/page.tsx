@@ -26,7 +26,7 @@ export default function MyKartePage() {
   const [composing, setComposing] = useState<Composing | null>(null);
 
   if (!isHydrated) {
-    return <div className="px-4 py-3 text-sm text-text-secondary">読み込み中…</div>;
+    return <main className="mx-auto max-w-xl p-6 text-text-secondary">読み込み中…</main>;
   }
 
   if (role !== "cast") {

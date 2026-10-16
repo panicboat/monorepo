@@ -56,8 +56,8 @@ export function KarteEventForm({ guest, value, onChange, rating, submitLabel, su
       <div className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2">
         <Avatar src={guest.avatarUrl || undefined} fallback={guest.displayName.slice(0, 1) || "?"} size="sm" />
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-text-primary">{guest.displayName}</p>
-          <p className="truncate text-xs text-text-secondary">@{guest.username} · すべてのキャストに共有</p>
+          <p className="truncate text-sm font-bold text-text-primary">{guest.displayName || "削除したプロフィール"}</p>
+          <p className="truncate text-xs text-text-secondary">{guest.username ? `@${guest.username} · ` : ""}すべてのキャストに共有</p>
         </div>
       </div>
 

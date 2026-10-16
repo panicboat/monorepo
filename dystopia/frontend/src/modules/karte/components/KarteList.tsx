@@ -36,12 +36,13 @@ export function KarteList({ kartes, variant, hasMore, loading, onLoadMore, empty
         />
       ))}
       {!loading && kartes.length === 0 && <p className="px-4 py-8 text-center text-sm text-text-secondary">{empty}</p>}
-      {loading && <div className="px-4 py-3 text-sm text-text-secondary">読み込み中…</div>}
+      {loading && kartes.length === 0 && <div className="px-4 py-3 text-sm text-text-secondary">読み込み中…</div>}
       {hasMore && (
         <button
           type="button"
           onClick={onLoadMore}
-          className="block w-full px-4 py-3 text-sm text-text-secondary hover:text-text-primary"
+          disabled={loading}
+          className="block w-full px-4 py-3 text-sm text-text-secondary hover:text-text-primary disabled:opacity-50"
         >
           もっと見る
         </button>

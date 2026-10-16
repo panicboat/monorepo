@@ -13,6 +13,7 @@ import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authSt
 import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
 import { ReviewsTab } from "@/modules/review/components/ReviewsTab";
 import { ScheduleSection } from "@/modules/schedule";
+import type { SocialProfileView } from "@/modules/social/types";
 import { Button } from "@/components/ui/button";
 
 export default function PublicProfilePage() {
@@ -40,6 +41,14 @@ export default function PublicProfilePage() {
 
   const role = profile.role === 2 ? "cast" : "guest";
   const isOwnProfile = !!viewerId && viewerId === profile.id;
+  const guestView: SocialProfileView = {
+    profileId: profile.id,
+    username: profile.username,
+    displayName: profile.displayName,
+    avatarUrl: profile.avatarUrl,
+    isPrivate: profile.isPrivate,
+    role: "guest",
+  };
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
@@ -67,16 +76,7 @@ export default function PublicProfilePage() {
         isOwnProfile={isOwnProfile}
         extraTabs={[
           ...(role === "guest" && viewerRole === "cast"
-            ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab
-            guest={{
-              profileId: profile.id,
-              username: profile.username,
-              displayName: profile.displayName,
-              avatarUrl: profile.avatarUrl,
-              isPrivate: profile.isPrivate,
-              role: "guest",
-            }}
-          /> }]
+            ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guest={guestView} /> }]
             : []),
           {
             id: "reviews",

@@ -7,7 +7,7 @@ import { KarteEventForm, emptyKarteEvent, isKarteEventReady } from "./KarteEvent
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const guest = { displayName: "はなこ", username: "hanako", avatarUrl: "" };
+let guest = { displayName: "はなこ", username: "hanako", avatarUrl: "" };
 
 function Harness({ initial, withRating, onSubmit }: { initial: KarteEventInput; withRating: boolean; onSubmit: (event: KarteEventInput, rating: number | null) => void }) {
   const [value, setValue] = useState(initial);
@@ -50,6 +50,16 @@ describe("KarteEventForm", () => {
 
     expect(container.textContent).toContain("はなこ");
     expect(container.textContent).toContain("@hanako · すべてのキャストに共有");
+  });
+
+  it("shows a deleted guest profile without a username or a name", async () => {
+    guest = { displayName: "", username: "", avatarUrl: "" };
+    const container = await mount(emptyKarteEvent("2026-10-16"));
+    guest = { displayName: "はなこ", username: "hanako", avatarUrl: "" };
+
+    expect(container.textContent).toContain("削除したプロフィール");
+    expect(container.textContent).toContain("すべてのキャストに共有");
+    expect(container.textContent).not.toContain("@");
   });
 
   it("resets the outcome and the tags when the stage changes", async () => {

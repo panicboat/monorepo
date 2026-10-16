@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, createElement } from "react";
+import { act, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -9,14 +9,21 @@ const mocks = vi.hoisted(() => ({ create: vi.fn() }));
 vi.mock("../hooks/useKarteMutations", () => ({ useKarteMutations: () => ({ create: mocks.create, loading: false, error: null }) }));
 
 const { KarteCreateForm } = await import("./KarteCreateForm");
+const { emptyKarteEvent } = await import("./KarteEventForm");
 
 const target = { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" as const };
+
+function Harness({ onCreated }: { onCreated: () => void }) {
+  const [event, setEvent] = useState(() => emptyKarteEvent());
+  const [rating, setRating] = useState<number | null>(null);
+  return createElement(KarteCreateForm, { target, event, onEventChange: setEvent, rating, onRatingChange: setRating, onCreated });
+}
 
 async function mount(onCreated: () => void) {
   const container = document.createElement("div");
   document.body.appendChild(container);
   await act(async () => {
-    createRoot(container).render(createElement(KarteCreateForm, { target, onCreated }));
+    createRoot(container).render(createElement(Harness, { onCreated }));
   });
   return container;
 }
@@ -50,6 +57,6 @@ describe("KarteCreateForm", () => {
 
     expect(mocks.create).toHaveBeenCalledWith("guest-1", null, expect.anything());
     expect(onCreated).not.toHaveBeenCalled();
-    expect(submit(container)).toBeDefined();
+    expect(container.textContent).toContain("記録中のカルテを作成");
   });
 });

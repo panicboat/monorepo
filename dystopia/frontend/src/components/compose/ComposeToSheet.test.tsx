@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   start: vi.fn(),
   toast: vi.fn(),
   created: null as null | (() => void),
+  formProps: null as null | { event: { note: string }; onEventChange: (next: { note: string }) => void },
   pathname: "/",
 }));
 
@@ -26,8 +27,9 @@ vi.mock("./RecipientPicker", () => ({
 }));
 vi.mock("@/modules/messaging/hooks/useStartChat", () => ({ useStartChat: () => ({ start: mocks.start, loading: false }) }));
 vi.mock("@/modules/karte/components/KarteCreateForm", () => ({
-  KarteCreateForm: ({ target: chosen, onCreated }: { target: SocialProfileView; onCreated: () => void }) => {
+  KarteCreateForm: ({ target: chosen, onCreated, ...rest }: { target: SocialProfileView; onCreated: () => void; event: { note: string }; onEventChange: (next: { note: string }) => void }) => {
     mocks.created = onCreated;
+    mocks.formProps = rest;
     return <div>karte-form:{chosen.profileId}:{chosen.displayName}</div>;
   },
 }));
@@ -79,6 +81,7 @@ beforeEach(() => {
   mocks.start.mockReset().mockResolvedValue("/messages/thread-1");
   mocks.toast.mockReset();
   mocks.created = null;
+  mocks.formProps = null;
   mocks.pathname = "/";
 });
 
@@ -171,6 +174,18 @@ describe("ComposeToSheet", () => {
       button("前に戻る").click();
     });
     expect(document.body.textContent).toContain("カルテを書くゲストを選ぶ");
+    await view.unmount();
+  });
+
+  it("keeps the karte draft when going back and picking again", async () => {
+    const view = await mount("karte");
+    await pick();
+    await act(async () => mocks.formProps!.onEventChange({ ...mocks.formProps!.event, note: "下書き" }));
+
+    await act(async () => button("前に戻る").click());
+    await pick();
+
+    expect(mocks.formProps!.event.note).toBe("下書き");
     await view.unmount();
   });
 
