@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
-const authMocks = vi.hoisted(() => ({ role: "guest" as "cast" | "guest" | null }));
+const authMocks = vi.hoisted(() => ({ role: "guest" as "cast" | "guest" | null, isHydrated: true }));
 vi.mock("@/stores/authStore", () => ({
-  useAuthStore: (selector: (state: { role: string | null }) => unknown) => selector({ role: authMocks.role }),
+  useAuthStore: (selector: (state: { role: string | null; isHydrated: boolean }) => unknown) =>
+    selector({ role: authMocks.role, isHydrated: authMocks.isHydrated }),
   selectRole: (state: { role: string | null }) => state.role,
+  selectIsHydrated: (state: { isHydrated: boolean }) => state.isHydrated,
 }));
 vi.mock("@/modules/karte/hooks/useMyKarte", () => ({
   useMyKarte: () => ({ entries: [], kartes: [], hasMore: false, loading: false, loadMore: vi.fn(), refresh: vi.fn() }),
@@ -22,6 +24,17 @@ describe("MyKarteHeader", () => {
 });
 
 describe("MyKartePage", () => {
+  it("waits for the auth store before deciding what to show", () => {
+    authMocks.role = null;
+    authMocks.isHydrated = false;
+
+    const html = renderToStaticMarkup(<MyKartePage />);
+    authMocks.isHydrated = true;
+
+    expect(html).toContain("読み込み中…");
+    expect(html).not.toContain("キャストだけが使えます");
+  });
+
   it("tells a guest that karte is for casts", () => {
     authMocks.role = "guest";
 

@@ -2,14 +2,15 @@
 
 import useSWRInfinite from "swr/infinite";
 import { fetcher } from "@/lib/swr";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore, selectRole } from "@/stores/authStore";
 import type { KartePage } from "../types";
 
 export function useMyKarte() {
   const profileId = useAuthStore((s) => s.activeProfileId);
+  const role = useAuthStore(selectRole);
 
   const getKey = (pageIndex: number, prev: KartePage | null): string | null => {
-    if (!profileId) return null;
+    if (!profileId || role !== "cast") return null;
     if (prev && !prev.hasMore) return null;
     const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
     return `/api/karte/my${cursorQs}`;

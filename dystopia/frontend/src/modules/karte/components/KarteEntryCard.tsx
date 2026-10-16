@@ -28,9 +28,7 @@ export function KarteEntryCard({ karte, mode, onChanged }: KarteEntryCardProps) 
   const identityAvatarUrl = mode === "my" ? karte.targetAvatarUrl : karte.authorAvatarUrl;
   const latest = karte.events[karte.events.length - 1];
   const open = karte.status === "open";
-  const afterChange = (result: unknown) => {
-    if (result) onChanged?.();
-  };
+  const afterChange = () => onChanged?.();
 
   return (
     <article className="border-b border-border px-4 py-3">
@@ -79,17 +77,22 @@ export function KarteEntryCard({ karte, mode, onChanged }: KarteEntryCardProps) 
             <KarteRatingSelect
               value={karte.rating}
               disabled={loading}
-              onChange={async (rating) => afterChange(await updateRating(karte.id, rating))}
+              onChange={async (rating) => {
+                await updateRating(karte.id, rating);
+                afterChange();
+              }}
             />
           )}
           {open && adding && (
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-                if (!(await addEvent(karte.id, draft))) return;
-                setAdding(false);
-                setDraft(emptyKarteEvent());
-                onChanged?.();
+                const added = await addEvent(karte.id, draft);
+                if (added) {
+                  setAdding(false);
+                  setDraft(emptyKarteEvent());
+                }
+                afterChange();
               }}
               className="flex flex-col gap-2"
             >
@@ -114,7 +117,10 @@ export function KarteEntryCard({ karte, mode, onChanged }: KarteEntryCardProps) 
               <button
                 type="button"
                 disabled={loading || karte.rating === null}
-                onClick={async () => afterChange(await close(karte.id))}
+                onClick={async () => {
+                  await close(karte.id);
+                  afterChange();
+                }}
                 className="hover:text-text-primary disabled:opacity-50"
               >
                 完了する
@@ -124,7 +130,10 @@ export function KarteEntryCard({ karte, mode, onChanged }: KarteEntryCardProps) 
               <button
                 type="button"
                 disabled={loading}
-                onClick={async () => afterChange(await reopen(karte.id))}
+                onClick={async () => {
+                  await reopen(karte.id);
+                  afterChange();
+                }}
                 className="hover:text-text-primary"
               >
                 再オープン
@@ -135,7 +144,8 @@ export function KarteEntryCard({ karte, mode, onChanged }: KarteEntryCardProps) 
               disabled={loading}
               onClick={async () => {
                 if (!confirm("このカルテを削除しますか？")) return;
-                if (await remove(karte.id)) onChanged?.();
+                await remove(karte.id);
+                afterChange();
               }}
               className="hover:text-text-primary"
             >

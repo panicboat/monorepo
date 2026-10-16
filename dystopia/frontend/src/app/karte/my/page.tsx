@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { useMyKarte } from "@/modules/karte/hooks/useMyKarte";
-import { useAuthStore, selectRole } from "@/stores/authStore";
+import { useAuthStore, selectIsHydrated, selectRole } from "@/stores/authStore";
 import { KarteEntryCard } from "@/modules/karte/components/KarteEntryCard";
 import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
 
@@ -12,8 +12,13 @@ export function MyKarteHeader() {
 }
 
 export default function MyKartePage() {
+  const isHydrated = useAuthStore(selectIsHydrated);
   const role = useAuthStore(selectRole);
   const { kartes, hasMore, loading, loadMore, refresh } = useMyKarte();
+
+  if (!isHydrated) {
+    return <main className="mx-auto max-w-xl p-6 text-text-secondary">読み込み中…</main>;
+  }
 
   if (role !== "cast") {
     return (
