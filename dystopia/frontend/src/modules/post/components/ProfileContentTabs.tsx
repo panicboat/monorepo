@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Tabs } from "@/components/ui/tab";
 import { Button } from "@/components/ui/button";
+import { useEnterAnimation } from "@/lib/motion/useEnterAnimation";
 import { PostCardBinding } from "./PostCardBinding";
 import { ReplyWithParentRow } from "./ReplyWithParentRow";
 import { useAuthorPosts } from "@/modules/post/hooks/useAuthorPosts";
@@ -26,33 +27,39 @@ export interface ExtraTab {
 export interface ProfileContentTabsProps {
   profileId: string;
   isOwnProfile?: boolean;
+  leadingTabs?: ExtraTab[];
   extraTabs?: ExtraTab[];
+  renderAboveTabs?: (tab: string, selectTab: (id: string) => void) => ReactNode;
 }
 
-export function ProfileContentTabs({ profileId, isOwnProfile = true, extraTabs = [] }: ProfileContentTabsProps) {
+export function ProfileContentTabs({ profileId, isOwnProfile = true, leadingTabs = [], extraTabs = [], renderAboveTabs }: ProfileContentTabsProps) {
   const [tab, setTab] = useState<string>("posts");
   const tabItems = isOwnProfile ? TAB_ITEMS : TAB_ITEMS.filter((item) => item.id !== "likes");
+  const [postsItem, ...restItems] = tabItems as unknown as { id: string; label: string }[];
   const allItems = [
-    ...(tabItems as unknown as { id: string; label: string }[]),
+    postsItem,
+    ...leadingTabs.map((t) => ({ id: t.id, label: t.label })),
+    ...restItems,
     ...extraTabs.map((t) => ({ id: t.id, label: t.label })),
   ];
-  const extraTab = extraTabs.find((t) => t.id === tab);
+  const customTab = [...leadingTabs, ...extraTabs].find((t) => t.id === tab);
+  const contentRef = useRef<HTMLDivElement>(null);
+  useEnterAnimation(contentRef, tab);
 
   return (
-    <section className="mt-4">
-      <Tabs
-        items={allItems}
-        value={tab}
-        onValueChange={setTab}
-      />
-      <div>
-        {tab === "posts" && <AuthorPostsPane profileId={profileId} mediaOnly={false} />}
-        {tab === "replies" && <AuthorRepliesPane profileId={profileId} />}
-        {tab === "media" && <AuthorPostsPane profileId={profileId} mediaOnly={true} />}
-        {tab === "likes" && isOwnProfile && <AuthorLikesPane profileId={profileId} />}
-        {extraTab?.content}
-      </div>
-    </section>
+    <>
+      {renderAboveTabs?.(tab, setTab)}
+      <section className="mt-4">
+        <Tabs items={allItems} value={tab} onValueChange={setTab} />
+        <div ref={contentRef}>
+          {tab === "posts" && <AuthorPostsPane profileId={profileId} mediaOnly={false} />}
+          {tab === "replies" && <AuthorRepliesPane profileId={profileId} />}
+          {tab === "media" && <AuthorPostsPane profileId={profileId} mediaOnly={true} />}
+          {tab === "likes" && isOwnProfile && <AuthorLikesPane profileId={profileId} />}
+          {customTab?.content}
+        </div>
+      </section>
+    </>
   );
 }
 

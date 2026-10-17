@@ -20,8 +20,8 @@ vi.mock("@/modules/profile/components/ProfileHeader", () => ({
   ProfileHeader: ({ actions }: { actions?: import("react").ReactNode }) => <header>{actions}</header>,
 }));
 
-vi.mock("@/modules/profile/components/EditProfileModal", () => ({
-  EditProfileModal: () => null,
+vi.mock("@/modules/profile/components/EditProfileSheet", () => ({
+  EditProfileSheet: () => null,
 }));
 
 vi.mock("@/modules/social", () => ({
@@ -48,18 +48,27 @@ vi.mock("@/stores/authStore", () => ({
   selectRole: (state: { role: string }) => state.role,
 }));
 
-vi.mock("@/modules/schedule", () => ({
-  ScheduleSection: () => <span>schedule-section</span>,
-}));
-
 vi.mock("@/modules/post/components/ProfileContentTabs", () => ({
-  ProfileContentTabs: ({ extraTabs }: { extraTabs?: { id: string; label: string }[] }) => (
+  ProfileContentTabs: ({
+    leadingTabs,
+    extraTabs,
+    renderAboveTabs,
+  }: {
+    leadingTabs?: { id: string; label: string }[];
+    extraTabs?: { id: string; label: string }[];
+    renderAboveTabs?: (tab: string, selectTab: (id: string) => void) => import("react").ReactNode;
+  }) => (
     <div>
-      {(extraTabs ?? []).map((t) => (
+      {renderAboveTabs?.("posts", () => {})}
+      {[...(leadingTabs ?? []), ...(extraTabs ?? [])].map((t) => (
         <span key={t.id}>{t.label}</span>
       ))}
     </div>
   ),
+}));
+vi.mock("@/modules/schedule", () => ({
+  ScheduleTab: () => null,
+  WeeklyScheduleSummary: () => <span>weekly-summary</span>,
 }));
 
 const { default: PublicProfilePage } = await import("./page");
@@ -84,12 +93,12 @@ describe("PublicProfilePage layout", () => {
     expect(header).not.toContain("follow-button");
   });
 
-  it("shows the follow counts right under the header and above the schedule", () => {
+  it("shows the follow counts right under the header", () => {
     mocks.profile = { ...emptyProfileView("profile-1"), role: 2 };
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
-    expect(html).toContain("</header><span>social-counts</span><span>schedule-section</span>");
+    expect(html).toContain("</header><span>social-counts</span>");
   });
 });
 
@@ -139,5 +148,27 @@ describe("PublicProfilePage karte tab visibility", () => {
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
     expect(html).not.toContain("カルテ");
+  });
+});
+
+describe("PublicProfilePage tabs", () => {
+  it("leads a cast profile with shifts and reviews and shows the weekly summary", () => {
+    mocks.profile = { ...emptyProfileView("profile-1"), role: 2 };
+    mocks.viewerRole = "guest";
+
+    const html = renderToStaticMarkup(<PublicProfilePage />);
+
+    expect(html.indexOf("出勤")).toBeLessThan(html.indexOf("レビュー"));
+    expect(html).toContain("weekly-summary");
+  });
+
+  it("gives a guest profile no weekly summary", () => {
+    mocks.profile = { ...emptyProfileView("profile-1"), role: 1 };
+    mocks.viewerRole = "cast";
+
+    const html = renderToStaticMarkup(<PublicProfilePage />);
+
+    expect(html).not.toContain("weekly-summary");
+    expect(html.indexOf("カルテ")).toBeLessThan(html.indexOf("レビュー"));
   });
 });

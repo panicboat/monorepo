@@ -63,25 +63,29 @@ export function ProfileHeader({ profile, role, actions }: ProfileHeaderProps) {
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-text-primary">{profile.displayName}</h1>
           {profile.isPrivate && <LockMark label="鍵付き" />}
+        </div>
+        <p className="text-sm text-text-secondary">@{profile.username || "—"}</p>
+        {registeredLabel && (
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-text-secondary">
+            <span className="inline-flex items-center gap-1">
+              <CalendarDays className="size-4" />
+              {registeredLabel}
+            </span>
+          </div>
+        )}
+        {profile.bio && <p className="whitespace-pre-wrap pt-1 text-sm text-text-primary">{profile.bio}</p>}
+        <div className="flex flex-wrap gap-2 pt-2">
           <span
-            className={`rounded-full px-2 py-0.5 text-xs ${
+            className={`rounded-full px-2.5 py-0.5 text-xs ${
               isCast ? "bg-accent/15 text-accent" : "bg-text-secondary/10 text-text-secondary"
             }`}
           >
             {isCast ? "キャスト" : "ゲスト"}
           </span>
-        </div>
-        <p className="text-sm text-text-secondary">@{profile.username || "—"}</p>
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-text-secondary">
-          {profile.prefecture && <span>{profile.prefecture}</span>}
-          {registeredLabel && (
-            <span className="inline-flex items-center gap-1">
-              <CalendarDays className="size-4" />
-              {registeredLabel}
-            </span>
+          {profile.prefecture && (
+            <span className="rounded-full bg-text-secondary/10 px-2.5 py-0.5 text-xs text-text-secondary">{profile.prefecture}</span>
           )}
         </div>
-        {profile.bio && <p className="whitespace-pre-wrap pt-1 text-sm text-text-primary">{profile.bio}</p>}
         {profile.website && (
           <a
             href={profile.website}

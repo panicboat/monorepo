@@ -48,16 +48,18 @@ const { ComposeToSheet } = await import("./ComposeToSheet");
 
 async function mount(kind: "message" | "karte" | "review", open = true, initialTarget?: SocialProfileView) {
   const onClose = vi.fn();
+  const onSaved = vi.fn();
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
   const render = () =>
     act(async () => {
-      root.render(createElement(ComposeToSheet, { kind, open, onClose, initialTarget }));
+      root.render(createElement(ComposeToSheet, { kind, open, onClose, initialTarget, onSaved }));
     });
   await render();
   return {
     onClose,
+    onSaved,
     rerender: render,
     unmount: async () => {
       await act(async () => {
@@ -199,6 +201,7 @@ describe("ComposeToSheet", () => {
 
     expect(mocks.toast.mock.calls).toEqual([["記録中のカルテを作成しました"]]);
     expect(view.onClose).toHaveBeenCalledTimes(1);
+    expect(view.onSaved).toHaveBeenCalledTimes(1);
     await view.unmount();
   });
 

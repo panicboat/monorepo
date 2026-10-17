@@ -17,3 +17,8 @@ export function formatDayLabel(dateKey: string): string {
 export function buildDateRange(start: Date, days: number): string[] {
   return Array.from({ length: days }, (_, i) => toDateKey(new Date(start.getTime() + i * MS_PER_DAY)));
 }
+
+export function formatMonthDay(dateKey: string): string {
+  const [, month, day] = dateKey.split("-");
+  return `${Number(month)}/${Number(day)}`;
+}

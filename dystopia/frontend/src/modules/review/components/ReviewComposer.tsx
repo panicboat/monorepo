@@ -47,14 +47,14 @@ export function ReviewComposer({ targetProfileId, onCreated }: Props) {
         rows={3}
         className="mt-1 block w-full rounded border border-border bg-bg p-2 text-sm"
       />
-      <div className="mt-1 text-right text-xs text-muted-foreground">{body.length}/500</div>
+      <div className="mt-1 text-right text-xs text-text-secondary">{body.length}/500</div>
 
-      {error && <p className="mt-2 text-sm text-red-600">{error.message}</p>}
+      {error && <p className="mt-2 text-sm text-error">{error.message}</p>}
 
       <button
         type="submit"
         disabled={loading}
-        className="mt-2 rounded bg-accent px-3 py-1 text-sm text-accent-foreground disabled:opacity-50"
+        className="mt-2 rounded bg-accent px-3 py-1 text-sm text-white disabled:opacity-50"
       >
         投稿
       </button>

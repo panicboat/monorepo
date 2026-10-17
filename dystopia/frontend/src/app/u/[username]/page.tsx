@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { usePublicProfile, useProfile } from "@/modules/profile/hooks";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
-import { EditProfileModal } from "@/modules/profile/components/EditProfileModal";
+import { EditProfileSheet } from "@/modules/profile/components/EditProfileSheet";
 import { FollowButton, ProfileMoreMenu, SocialCountsLinks } from "@/modules/social";
 import { StartChatButton } from "@/modules/messaging";
 import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs";
@@ -12,7 +12,7 @@ import { useRecordVisit } from "@/modules/footprints";
 import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
 import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
 import { ReviewsTab } from "@/modules/review/components/ReviewsTab";
-import { ScheduleSection } from "@/modules/schedule";
+import { ScheduleTab, WeeklyScheduleSummary } from "@/modules/schedule";
 import type { SocialProfileView } from "@/modules/social/types";
 import { Button } from "@/components/ui/button";
 
@@ -24,7 +24,8 @@ export default function PublicProfilePage() {
   const recordVisit = useRecordVisit();
   const viewerRole = useAuthStore(selectRole);
   const { saveProfile, saveMedia } = useProfile();
-  const [editing, setEditing] = useState(false);
+  // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
+  const [editing, setEditing] = useState<{ session: number; open: boolean } | null>(null);
 
   useEffect(() => {
     if (!viewerId || !profile?.id) return;
@@ -57,7 +58,7 @@ export default function PublicProfilePage() {
         role={role}
         actions={
           isOwnProfile ? (
-            <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
+            <Button variant="secondary" size="sm" onClick={() => setEditing((current) => ({ session: (current?.session ?? 0) + 1, open: true }))}>
               プロフィールを編集
             </Button>
           ) : (
@@ -70,30 +71,42 @@ export default function PublicProfilePage() {
         }
       />
       <SocialCountsLinks profileId={profile.id} username={profile.username} />
-      {role === "cast" && <ScheduleSection profileId={profile.id} isOwner={isOwnProfile} />}
       <ProfileContentTabs
         profileId={profile.id}
         isOwnProfile={isOwnProfile}
-        extraTabs={[
-          ...(role === "guest" && viewerRole === "cast"
-            ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guest={guestView} /> }]
-            : []),
-          {
-            id: "reviews",
-            label: "レビュー",
-            content: (
-              <ReviewsTab
-                profileId={profile.id}
-                mode={role === "cast" ? "received" : "written"}
-              />
-            ),
-          },
-        ]}
+        leadingTabs={
+          role === "cast"
+            ? [
+                { id: "schedule", label: "出勤", content: <ScheduleTab profileId={profile.id} isOwner={isOwnProfile} /> },
+                {
+                  id: "reviews",
+                  label: "レビュー",
+                  content: <ReviewsTab profileId={profile.id} mode="received" target={{ ...guestView, role: "cast" }} />,
+                },
+              ]
+            : viewerRole === "cast"
+              ? [{ id: "karte", label: "カルテ", content: <GuestKarteTab guest={guestView} /> }]
+              : []
+        }
+        extraTabs={
+          role === "guest"
+            ? [{ id: "reviews", label: "レビュー", content: <ReviewsTab profileId={profile.id} mode="written" /> }]
+            : []
+        }
+        renderAboveTabs={
+          role === "cast"
+            ? (tab, selectTab) =>
+                tab === "schedule" ? null : (
+                  <WeeklyScheduleSummary profileId={profile.id} onShowMore={() => selectTab("schedule")} />
+                )
+            : undefined
+        }
       />
-      {isOwnProfile && (
-        <EditProfileModal
-          open={editing}
-          onOpenChange={setEditing}
+      {isOwnProfile && editing && (
+        <EditProfileSheet
+          key={editing.session}
+          open={editing.open}
+          onOpenChange={(open) => setEditing((current) => current && { ...current, open })}
           profile={profile}
           isCast={role === "cast"}
           onSave={async (payload) => {

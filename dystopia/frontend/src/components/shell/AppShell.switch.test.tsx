@@ -16,6 +16,7 @@ const pageMounts: (string | null)[] = [];
 vi.mock("next/navigation", () => ({
   usePathname: () => navigation.pathname,
   useRouter: () => ({ replace, push: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock("@/components/shell/TopBar", () => ({ TopBar: () => null }));
 vi.mock("@/components/shell/BottomTab", () => ({ BottomTab: () => null }));
@@ -133,7 +134,7 @@ async function mountApp() {
       if (!condition()) throw new Error(`the app did not settle: ${container.textContent}`);
     },
     type: async (selector: string, value: string) => {
-      const input = container.querySelector(selector) as HTMLInputElement;
+      const input = document.querySelector(selector) as HTMLInputElement;
       const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
       await act(async () => {
         setValue?.call(input, value);
@@ -142,7 +143,7 @@ async function mountApp() {
     },
     submit: async () => {
       await act(async () => {
-        container.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+        document.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
       });
     },
     arriveAt: async (pathname: string) => {

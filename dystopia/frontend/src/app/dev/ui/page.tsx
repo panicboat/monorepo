@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { FormField } from "@/components/ui/form-field";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
-import { EditProfileModal } from "@/modules/profile/components/EditProfileModal";
+import { EditProfileSheet } from "@/modules/profile/components/EditProfileSheet";
 import { ImageUpload } from "@/modules/profile/components/ImageUpload";
 import type { ProfileView } from "@/modules/profile/types";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
@@ -196,7 +196,7 @@ export default function DevUiPage() {
             </Button>
           }
         />
-        <EditProfileModal
+        <EditProfileSheet
           open={editOpen}
           onOpenChange={setEditOpen}
           profile={mockProfile}
