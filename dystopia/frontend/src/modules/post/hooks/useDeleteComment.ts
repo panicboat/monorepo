@@ -6,6 +6,7 @@ import { unstable_serialize } from "swr/infinite";
 import { authFetch } from "@/lib/auth";
 import { commentsKey } from "./useComments";
 import { repliesKey } from "./useReplies";
+import { revalidatePostLists } from "../lib/revalidate";
 
 export function useDeleteComment(postId: string | null | undefined) {
   const { mutate } = useSWRConfig();
@@ -24,6 +25,7 @@ export function useDeleteComment(postId: string | null | undefined) {
         if (parentId) mutate(unstable_serialize(repliesKey(postId, parentId)));
         mutate(unstable_serialize(commentsKey(postId)));
         mutate(`/api/posts/${encodeURIComponent(postId)}`);
+        void revalidatePostLists();
       } finally {
         setSubmitting(false);
       }

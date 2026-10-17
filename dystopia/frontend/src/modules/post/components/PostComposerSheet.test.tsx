@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   authFetch: vi.fn(),
   mutate: vi.fn(),
   notifyPostCreated: vi.fn(),
+  revalidatePostLists: vi.fn(),
   payload: { body: "こんにちは", isPrivate: false },
 }));
 
@@ -19,6 +20,7 @@ vi.mock("@/stores/postFeedStore", () => ({
   usePostFeedStore: (selector: (state: { notifyPostCreated: () => void }) => unknown) =>
     selector({ notifyPostCreated: mocks.notifyPostCreated }),
 }));
+vi.mock("../lib/revalidate", () => ({ revalidatePostLists: mocks.revalidatePostLists }));
 vi.mock("./PostComposer", () => ({
   PostComposer: ({ onSubmit }: { onSubmit: (payload: unknown) => Promise<unknown> }) => (
     <button type="button" onClick={() => void onSubmit(mocks.payload)}>
@@ -39,6 +41,7 @@ beforeEach(() => {
   mocks.authFetch.mockReset().mockResolvedValue({});
   mocks.mutate.mockReset();
   mocks.notifyPostCreated.mockReset();
+  mocks.revalidatePostLists.mockReset();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -74,6 +77,7 @@ describe("PostComposerSheet", () => {
     expect(mocks.authFetch.mock.calls).toEqual([["/api/posts", { method: "POST", body: mocks.payload }]]);
     expect(mocks.notifyPostCreated).toHaveBeenCalledTimes(1);
     expect(mocks.mutate).toHaveBeenCalledTimes(1);
+    expect(mocks.revalidatePostLists).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

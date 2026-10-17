@@ -6,6 +6,7 @@ import { PostCard } from "@/components/ui/post-card";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { isPlainClick } from "@/lib/utils/isPlainClick";
 import { usePostSheetStore } from "@/stores/postSheetStore";
+import { usePostCommentCountStore } from "@/stores/postCommentCountStore";
 import { PostText } from "@/modules/post/lib/post-text";
 import type { PostView } from "@/modules/post/lib/post-view";
 import { usePostLike } from "@/modules/post/hooks/usePostLike";
@@ -24,6 +25,7 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
 
   const liked = isLiked(post.id, post.liked);
   const likesCount = getLikesCount(post.id, post.likesCount);
+  const commentsCount = usePostCommentCountStore((s) => s.counts[post.id]) ?? post.commentsCount;
 
   const authorName = post.author?.displayName || "名無し";
   const authorHandle = post.author?.username || post.authorProfileId.slice(0, 8);
@@ -75,10 +77,10 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
       {inDetail ? (
         <span
           className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm"
-          aria-label={`コメント ${post.commentsCount} 件`}
+          aria-label={`コメント ${commentsCount} 件`}
         >
           <MessageCircle className="size-5" aria-hidden="true" />
-          <span>{post.commentsCount}</span>
+          <span>{commentsCount}</span>
         </span>
       ) : (
         <Link
@@ -88,7 +90,7 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
           aria-label="コメント"
         >
           <MessageCircle className="size-5" />
-          <span>{post.commentsCount}</span>
+          <span>{commentsCount}</span>
         </Link>
       )}
       <button

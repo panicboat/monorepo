@@ -7,6 +7,7 @@ import { SideSheet } from "@/components/ui/side-sheet";
 import { PostComposer } from "./PostComposer";
 import type { SavePostPayload } from "@/modules/post/lib/post-view";
 import { usePostFeedStore } from "@/stores/postFeedStore";
+import { revalidatePostLists } from "../lib/revalidate";
 
 interface PostComposerSheetProps {
   open: boolean;
@@ -20,6 +21,7 @@ export function PostComposerSheet({ open, onClose }: PostComposerSheetProps) {
   const handleSubmit = useCallback(async (payload: SavePostPayload) => {
     await authFetch("/api/posts", { method: "POST", body: payload });
     mutate((key) => typeof key === "string" && (key.startsWith("/api/posts") || key.startsWith("/api/feed")), undefined, { revalidate: true });
+    void revalidatePostLists();
     notifyPostCreated();
     onClose();
   }, [mutate, notifyPostCreated, onClose]);
