@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Mail } from "lucide-react";
+import { ChevronRight, Mail } from "lucide-react";
+import { ComposeToSheet } from "@/components/compose/ComposeToSheet";
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { useThreads } from "@/modules/messaging";
 import type { ThreadView } from "@/modules/messaging/types";
@@ -20,7 +23,7 @@ function timeAgo(iso: string): string {
 
 function ThreadRow({ thread }: { thread: ThreadView }) {
   const name = thread.counterpart?.displayName || "(退会)";
-  const preview = thread.lastMessage?.content || "（メッセージなし）";
+  const preview = thread.lastMessage?.content || "メッセージはまだありません";
   const isUnread = thread.unreadCount > 0;
 
   return (
@@ -49,18 +52,29 @@ function ThreadRow({ thread }: { thread: ThreadView }) {
           {thread.unreadCount > 99 ? "99+" : thread.unreadCount}
         </span>
       )}
+      <ChevronRight className="size-5 shrink-0 text-text-secondary" aria-hidden="true" />
     </Link>
   );
 }
 
 export default function MessagesPage() {
   const { threads, totalUnreadCount, loading, error } = useThreads();
+  // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
+  const [composing, setComposing] = useState<{ session: number; open: boolean } | null>(null);
 
   return (
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <div className="px-4 pt-4">
         <MessagesHeader />
         <p className="pt-1 text-sm text-text-secondary">未読 {totalUnreadCount} 件</p>
+        <Button
+          type="button"
+          size="sm"
+          className="mt-3"
+          onClick={() => setComposing((current) => ({ session: (current?.session ?? 0) + 1, open: true }))}
+        >
+          ＋ 新しいメッセージ
+        </Button>
       </div>
 
       {loading && threads.length === 0 && (
@@ -80,6 +94,14 @@ export default function MessagesPage() {
       {threads.map((t) => (
         <ThreadRow key={t.id} thread={t} />
       ))}
+      {composing && (
+        <ComposeToSheet
+          key={composing.session}
+          kind="message"
+          open={composing.open}
+          onClose={() => setComposing((current) => current && { ...current, open: false })}
+        />
+      )}
     </main>
   );
 }

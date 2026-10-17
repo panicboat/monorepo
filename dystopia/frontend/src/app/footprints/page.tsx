@@ -23,13 +23,14 @@ export default function FootprintsPage() {
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <div className="px-4 pt-4">
         <FootprintsHeader />
+        <p className="pt-2 text-sm text-text-secondary">最近の訪問を表示しています。足跡を残すかどうかは設定で切り替えられます。</p>
       </div>
 
       {loading && footprints.length === 0 && (
         <p className="px-4 py-8 text-center text-text-secondary">読み込み中…</p>
       )}
       {error && (
-        <p className="px-4 py-8 text-center text-text-danger">読み込みに失敗しました</p>
+        <p className="px-4 py-8 text-center text-error">読み込みに失敗しました</p>
       )}
       {!loading && footprints.length === 0 && !error && (
         <p className="px-4 py-8 text-center text-text-secondary">

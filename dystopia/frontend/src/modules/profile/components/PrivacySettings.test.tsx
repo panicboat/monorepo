@@ -26,12 +26,13 @@ const profile: ProfileView = {
 };
 
 describe("PrivacySettings", () => {
-  it("renders a link to the blocked accounts list", () => {
+  it("offers the blocked accounts as a button instead of a link", () => {
     const html = renderToStaticMarkup(
       <PrivacySettings profile={profile} save={async () => {}} />
     );
 
-    expect(html).toContain('href="/settings/blocks"');
+    expect(html).toContain("ブロックしたアカウント");
+    expect(html).not.toContain('href="/settings/blocks"');
   });
 
   it("names the lock as a setting of the profile in use", () => {

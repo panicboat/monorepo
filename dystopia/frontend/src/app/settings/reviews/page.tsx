@@ -24,7 +24,7 @@ export default function ReviewSettingsPage() {
             disabled={saving}
             onClick={() => update(!reviewsVisible)}
             className={`rounded px-3 py-1 text-sm ${
-              reviewsVisible ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"
+              reviewsVisible ? "bg-accent text-white" : "bg-surface text-text-secondary"
             }`}
           >
             {reviewsVisible ? "ON" : "OFF"}

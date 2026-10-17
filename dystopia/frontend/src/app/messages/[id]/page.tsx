@@ -47,12 +47,12 @@ export default function ChatPage() {
         ) : counterpart ? (
           <Link href={`/u/${encodeURIComponent(counterpart.username)}`} className="flex items-center gap-2">
             {counterpartAvatar}
-            <h1 className="truncate text-base font-bold">{counterpartName}</h1>
+            <h1 className="truncate text-base font-bold">{counterpartName}とのメッセージ</h1>
           </Link>
         ) : (
           <div className="flex items-center gap-2">
             {counterpartAvatar}
-            <h1 className="truncate text-base font-bold">{counterpartName}</h1>
+            <h1 className="truncate text-base font-bold">{counterpartName}とのメッセージ</h1>
           </div>
         )}
       </header>
@@ -87,7 +87,7 @@ export default function ChatPage() {
                 {!isMine && counterpartAvatar}
                 <div
                   className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
-                    isMine ? "bg-accent text-white" : "bg-bg-secondary text-text-primary"
+                    isMine ? "bg-accent text-white" : "bg-surface text-text-primary"
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{m.content}</p>
