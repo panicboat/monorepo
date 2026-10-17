@@ -85,7 +85,9 @@ module Post
         post = post_repo.find_by_id(post.id)
 
         if is_create
-          mentions.uniq { |mention| mention[:profile_id] }.each do |mention|
+          mentions.uniq { |mention| mention[:profile_id] }
+            .select { |mention| viewer_can_see_post.call(viewer_profile_id: mention[:profile_id], post: post) }
+            .each do |mention|
             notifications_emit.call(
               recipient_profile_id: mention[:profile_id],
               type: "mention",

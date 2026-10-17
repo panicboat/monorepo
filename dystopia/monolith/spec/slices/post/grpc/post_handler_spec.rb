@@ -11,6 +11,54 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
 
   after { Current.clear }
 
+  describe "#save_post mentions on a followers-only post" do
+    let(:follower_id) { create_account_with_profile(display_name: "Follower", username: "follower_user") }
+    let(:stranger_id) { create_account_with_profile(display_name: "Stranger", username: "stranger_user") }
+    let(:visibility) { "private" }
+    let(:content) { "hi @follower_user @stranger_user @#{author_username}" }
+    let(:author_username) { "author_user" }
+    let(:author_profile_id) { create_account_with_profile(display_name: "Author", username: author_username) }
+    let(:handler) do
+      message = Post::V1::SavePostRequest.new(id: "", content: content, visibility: visibility)
+      described_class.new(method_key: :save_post, service: double, rpc_desc: double, active_call: double, message: message)
+    end
+
+    before do
+      Social::Slice["repositories.follow_repository"].follow(follower_profile_id: follower_id, followee_profile_id: author_profile_id, status: "approved")
+      stranger_id
+      Current.account_id = SecureRandom.uuid_v7
+      Current.profile_id = author_profile_id
+    end
+
+    def mention_types_for(profile_id)
+      notification_repo.list(recipient_profile_id: profile_id).map(&:type).select { |type| type == "mention" }
+    end
+
+    it "notifies approved followers and not people who cannot see the post" do
+      handler.save_post
+
+      expect(mention_types_for(follower_id)).to eq(["mention"])
+      expect(mention_types_for(stranger_id)).to be_empty
+    end
+
+    it "does not notify the author about their own mention" do
+      handler.save_post
+
+      expect(mention_types_for(author_profile_id)).to be_empty
+    end
+
+    context "when the post is public" do
+      let(:visibility) { "public" }
+
+      it "notifies everyone mentioned" do
+        handler.save_post
+
+        expect(mention_types_for(follower_id)).to eq(["mention"])
+        expect(mention_types_for(stranger_id)).to eq(["mention"])
+      end
+    end
+  end
+
   describe "#save_post mentions" do
     let(:handler) do
       described_class.new(method_key: :save_post, service: double, rpc_desc: double, active_call: double, message: message)

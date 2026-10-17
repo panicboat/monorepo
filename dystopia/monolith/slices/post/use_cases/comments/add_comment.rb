@@ -74,7 +74,9 @@ module Post
             )
           end
 
-          mentions.uniq { |mention| mention[:profile_id] }.each do |mention|
+          mentions.uniq { |mention| mention[:profile_id] }
+            .select { |mention| viewer_can_see_post.call(viewer_profile_id: mention[:profile_id], post: post) }
+            .each do |mention|
             notifications_emit.call(
               recipient_profile_id: mention[:profile_id],
               type: "mention",
@@ -88,6 +90,10 @@ module Post
         end
 
         private
+
+        def viewer_can_see_post
+          @viewer_can_see_post ||= Social::Slice["use_cases.viewer_can_see_post"]
+        end
 
         def notifications_emit
           @notifications_emit ||= Notifications::Slice["use_cases.emit"]
