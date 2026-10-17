@@ -2,24 +2,24 @@
 
 require "spec_helper"
 require "lib/current"
-require "gruf"
-require "lib/grpc/authenticatable"
 require "slices/review/grpc/review_handler"
 
 RSpec.describe Review::Grpc::ReviewHandler, type: :database do
-  let(:db) { Hanami.app["db.gateway"].connection }
+  let(:guest_account) { create_account(role: 1) }
+  let(:guest) { create_account_with_profile(account_id: guest_account, username: "guest_one") }
+  let(:cast_account) { create_account(role: 2) }
+  let(:cast) { create_account_with_profile(account_id: cast_account, username: "cast_one") }
 
-  let(:cast) { create_account_with_profile(role: 2, username: "review_cast") }
-  let(:other_cast) { create_account_with_profile(role: 2, username: "review_other_cast") }
-  let(:guest) { create_account_with_profile(username: "review_guest") }
-  let(:reader) { create_account_with_profile(username: "review_reader") }
-
-  def rpc(method, message)
-    described_class.new(method_key: method, service: double, rpc_desc: double, active_call: double, message: message).public_send(method)
+  let(:booked) do
+    ::Review::V1::ReviewEventInput.new(stage: :REVIEW_STAGE_RESERVATION, outcome: "booked", tags: ["quick_reply"], note: "", occurred_on: "2026-10-01")
   end
 
-  def act_as(profile_id)
-    Current.account_id = SecureRandom.uuid_v7
+  def handler_for(message)
+    described_class.new(method_key: :test, service: double, rpc_desc: double, active_call: double, message: message)
+  end
+
+  def act_as(account_id, profile_id)
+    Current.account_id = account_id
     Current.profile_id = profile_id
   end
 
@@ -27,168 +27,64 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
     raise_error(GRPC::BadStatus) { |e| expect(e.code).to eq(code) }
   end
 
-  def review(target)
-    rpc(:create_entry, Review::V1::CreateEntryRequest.new(target_profile_id: target, rating: 4.5, body: "great")).entry
-  end
-
-  def by_target(profile_id)
-    rpc(:list_entries_by_target, Review::V1::ListEntriesByTargetRequest.new(target_profile_id: profile_id)).entries
-  end
-
-  def by_author(profile_id)
-    rpc(:list_entries_by_author, Review::V1::ListEntriesByAuthorRequest.new(author_profile_id: profile_id)).entries
-  end
-
-  def recent
-    rpc(:list_recent_entries, Review::V1::ListRecentEntriesRequest.new).entries
-  end
-
-  def parties(entries)
-    entries.map { |e| [e.author_profile_id, e.target_profile_id, e.author_username, e.target_username] }
-  end
-
-  def settings
-    rpc(:get_my_settings, Review::V1::GetMySettingsRequest.new).reviews_visible
+  def create_review(rating: 0, target: cast)
+    handler_for(::Review::V1::CreateReviewRequest.new(target_profile_id: target, rating: rating, event: booked)).create_review.review
   end
 
   after { Current.clear }
 
-  it "stores a review from the acting profile about the target profile" do
-    act_as(guest)
+  it "creates an open review by the acting profile" do
+    act_as(guest_account, guest)
 
-    entry = review(cast)
+    review = create_review
 
-    expect(parties([entry])).to eq([[guest, cast, "review_guest", "review_cast"]])
-    expect(db[:review__entries].select_map([:author_profile_id, :target_profile_id])).to eq([[guest, cast]])
+    expect([review.status, review.rating, review.author_profile_id, review.target_username, review.is_mine]).to eq([:REVIEW_STATUS_OPEN, 0, guest, "cast_one", true])
+    expect(review.events.first.stage).to eq(:REVIEW_STAGE_RESERVATION)
   end
 
-  it "accepts a review only about a cast profile" do
-    act_as(guest)
+  it "refuses a cast with PERMISSION_DENIED and a guest target with INVALID_ARGUMENT" do
+    act_as(cast_account, cast)
+    expect { create_review }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
 
-    expect { review(reader) }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
-    expect(db[:review__entries].count).to eq(0)
+    act_as(guest_account, guest)
+    expect { create_review(target: create_account_with_profile(username: "guest_two")) }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
   end
 
-  it "rejects a review about another profile of the author's own account, and about the author itself" do
-    owner = create_account(role: 2)
-    persona = create_account_with_profile(account_id: owner, username: "review_persona")
-    sibling = create_account_with_profile(account_id: owner, username: "review_sibling")
-    Hanami.app.slices[:profile]["repositories.cast_repository"].create(profile_id: sibling)
+  it "rates, closes and reopens, then lists the review with the summary for the cast" do
+    act_as(guest_account, guest)
+    id = create_review(rating: 4).id
+    closed = handler_for(::Review::V1::CloseReviewRequest.new(review_id: id)).close_review.review
+    expect(closed.status).to eq(:REVIEW_STATUS_CLOSED)
 
-    act_as(persona)
-
-    expect { review(sibling) }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
-    expect { review(persona) }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
-    expect(review(cast).target_profile_id).to eq(cast)
-    expect(db[:review__entries].count).to eq(1)
+    act_as(cast_account, cast)
+    listed = handler_for(::Review::V1::ListReviewsByTargetRequest.new(target_profile_id: cast)).list_reviews_by_target
+    expect(listed.reviews.map(&:id)).to eq([id])
+    expect([listed.summary.average_rating, listed.summary.rater_count, listed.summary.review_count]).to eq([4.0, 1, 1])
+    expect { handler_for(::Review::V1::ReopenReviewRequest.new(review_id: id)).reopen_review }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
   end
 
-  it "lists reviews by target, by author and in the recent list with both parties" do
-    act_as(guest)
-    review(cast)
-    review(other_cast)
-    act_as(reader)
-    review(other_cast)
-    about_cast = [guest, cast, "review_guest", "review_cast"]
-    about_other_cast = [guest, other_cast, "review_guest", "review_other_cast"]
-    by_reader = [reader, other_cast, "review_reader", "review_other_cast"]
+  it "lists the author's, the viewer's own and the recent reviews" do
+    act_as(guest_account, guest)
+    id = create_review.id
 
-    expect(parties(by_target(cast))).to eq([about_cast])
-    expect(parties(by_target(other_cast))).to contain_exactly(about_other_cast, by_reader)
-    expect(parties(by_author(guest))).to contain_exactly(about_cast, about_other_cast)
-    expect(parties(by_author(reader))).to eq([by_reader])
-    expect(parties(recent)).to contain_exactly(about_cast, about_other_cast, by_reader)
+    by_author = handler_for(::Review::V1::ListReviewsByAuthorRequest.new(author_profile_id: guest)).list_reviews_by_author
+    mine = handler_for(::Review::V1::ListMyReviewsRequest.new).list_my_reviews
+    recent = handler_for(::Review::V1::ListRecentReviewsRequest.new).list_recent_reviews
+
+    expect([by_author.reviews.map(&:id), mine.reviews.map(&:id), recent.reviews.map(&:id)]).to eq([[id], [id], [id]])
+    expect([mine.counts.total_count, mine.counts.open_count, mine.counts.closed_count]).to eq([1, 1, 0])
   end
 
-  it "lets only the author change a review and only the target hide it" do
-    act_as(guest)
-    id = review(cast).id
+  it "adds, updates and deletes events" do
+    act_as(guest_account, guest)
+    id = create_review.id
+    service = ::Review::V1::ReviewEventInput.new(stage: :REVIEW_STAGE_SERVICE, outcome: "satisfied", occurred_on: "2026-10-02")
 
-    act_as(reader)
-    expect { rpc(:update_entry, Review::V1::UpdateEntryRequest.new(entry_id: id, rating: 1.0)) }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
-    expect { rpc(:hide_entry, Review::V1::HideEntryRequest.new(entry_id: id)) }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
-    expect { rpc(:delete_entry, Review::V1::DeleteEntryRequest.new(entry_id: id)) }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
+    added = handler_for(::Review::V1::AddReviewEventRequest.new(review_id: id, event: service)).add_review_event.review
+    event_id = added.events.last.id
+    updated = handler_for(::Review::V1::UpdateReviewEventRequest.new(event_id: event_id, event: service.dup.tap { |e| e.outcome = "completed_with_issues" })).update_review_event.review
+    remaining = handler_for(::Review::V1::DeleteReviewEventRequest.new(event_id: event_id)).delete_review_event.review
 
-    act_as(cast)
-    expect { rpc(:update_entry, Review::V1::UpdateEntryRequest.new(entry_id: id, rating: 1.0)) }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
-    expect(rpc(:hide_entry, Review::V1::HideEntryRequest.new(entry_id: id)).entry.hidden).to be true
-    expect(by_target(cast).map(&:hidden)).to eq([true])
-
-    act_as(reader)
-    expect(by_target(cast)).to be_empty
-
-    act_as(guest)
-    expect { rpc(:unhide_entry, Review::V1::UnhideEntryRequest.new(entry_id: id)) }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
-    updated = rpc(:update_entry, Review::V1::UpdateEntryRequest.new(entry_id: id, rating: 2.0)).entry
-    expect([updated.rating, updated.author_profile_id, updated.target_profile_id]).to eq([2.0, guest, cast])
-    rpc(:delete_entry, Review::V1::DeleteEntryRequest.new(entry_id: id))
-    expect(db[:review__entries].count).to eq(0)
-  end
-
-  it "edits the rating and the body separately and clears the body when an empty one is sent" do
-    act_as(guest)
-    id = review(cast).id
-
-    rated = rpc(:update_entry, Review::V1::UpdateEntryRequest.new(entry_id: id, rating: 3.0)).entry
-    expect([rated.rating, rated.body]).to eq([3.0, "great"])
-
-    reworded = rpc(:update_entry, Review::V1::UpdateEntryRequest.new(entry_id: id, body: "reworded")).entry
-    expect([reworded.rating, reworded.body]).to eq([3.0, "reworded"])
-
-    cleared = rpc(:update_entry, Review::V1::UpdateEntryRequest.new(entry_id: id, rating: 5.0, body: "")).entry
-    expect([cleared.rating, cleared.body]).to eq([5.0, ""])
-    expect(db[:review__entries].where(id: id).get(:body)).to be_nil
-  end
-
-  it "moves updated_at when the author edits a review and not when the cast hides it" do
-    act_as(guest)
-    id = review(cast).id
-    updated_at = -> { db[:review__entries].where(id: id).get(:updated_at) }
-    created_at = updated_at.call
-
-    act_as(cast)
-    rpc(:hide_entry, Review::V1::HideEntryRequest.new(entry_id: id))
-    expect(updated_at.call).to eq(created_at)
-    rpc(:unhide_entry, Review::V1::UnhideEntryRequest.new(entry_id: id))
-    expect(updated_at.call).to eq(created_at)
-
-    act_as(guest)
-    rpc(:update_entry, Review::V1::UpdateEntryRequest.new(entry_id: id, body: "edited"))
-    expect(updated_at.call).to be > created_at
-  end
-
-  it "stores review settings per cast profile and hides that cast's reviews from other profiles" do
-    act_as(guest)
-    review(cast)
-    review(other_cast)
-
-    act_as(cast)
-    expect(settings).to be true
-    expect(rpc(:update_my_settings, Review::V1::UpdateMySettingsRequest.new(reviews_visible: false)).reviews_visible).to be false
-    expect(db[:review__cast_settings].select_map([:profile_id, :reviews_visible])).to eq([[cast, false]])
-    expect(settings).to be false
-    expect(by_target(cast).length).to eq(1)
-
-    act_as(other_cast)
-    expect(settings).to be true
-
-    act_as(reader)
-    expect(by_target(cast)).to be_empty
-    expect(by_target(other_cast).map(&:author_profile_id)).to eq([guest])
-    expect(recent.map(&:target_profile_id)).to eq([other_cast])
-  end
-
-  it "hides a review from a viewer who is blocked with the other party" do
-    act_as(guest)
-    review(cast)
-    Social::Slice["repositories.block_repository"].block(blocker_profile_id: guest, blocked_profile_id: reader)
-
-    act_as(reader)
-
-    expect(by_target(cast)).to be_empty
-    expect(recent).to be_empty
-
-    act_as(other_cast)
-    expect(by_target(cast).map(&:author_profile_id)).to eq([guest])
+    expect([added.events.length, updated.events.last.outcome, remaining.events.length]).to eq([2, "completed_with_issues", 1])
   end
 end

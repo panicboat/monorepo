@@ -175,19 +175,16 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
     end
 
     it "lets the review use cases ask the post visibility filter whether a page owner is reachable" do
-      entry = Struct.new(:hidden, :author_profile_id, :target_profile_id)
-      filter = Review::Slice["use_cases.filter_visible_entries"]
-      entry_repo = Review::Slice["repositories.entry_repository"]
+      review = Struct.new(:author_profile_id, :target_profile_id)
+      filter = Review::Slice["use_cases.filter_visible_reviews"]
 
-      on_public_page = filter.call(viewer_profile_id: viewer, page_owner_profile_id: public_cast, entries: [entry.new(false, other_guest, public_cast)])
-      on_private_page = filter.call(viewer_profile_id: viewer, page_owner_profile_id: private_cast, entries: [entry.new(false, other_guest, private_cast)])
+      on_public_page = filter.call(viewer_profile_id: viewer, page_owner_profile_id: public_cast, reviews: [review.new(other_guest, public_cast)])
+      on_private_page = filter.call(viewer_profile_id: viewer, page_owner_profile_id: private_cast, reviews: [review.new(other_guest, private_cast)])
+      recent = filter.recent(viewer_profile_id: viewer, reviews: [review.new(other_guest, public_cast), review.new(other_guest, private_cast)])
+
       expect(on_public_page.length).to eq(1)
       expect(on_private_page).to eq([])
-
-      entry_repo.create(author_profile_id: other_guest, target_profile_id: public_cast, rating: 4.0, body: "ok")
-      entry_repo.create(author_profile_id: other_guest, target_profile_id: private_cast, rating: 4.0, body: "ok")
-      recent = Review::Slice["use_cases.list_recent_entries"].call(viewer_profile_id: viewer)
-      expect(recent[:entries].length).to eq(1)
+      expect(recent.map(&:target_profile_id)).to eq([public_cast])
     end
 
     it "gives the review and feed adapters the profiles blocked in either direction and the followed profiles" do

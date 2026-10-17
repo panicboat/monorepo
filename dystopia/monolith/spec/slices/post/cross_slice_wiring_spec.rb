@@ -97,15 +97,7 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
   end
 
   it "filters review author references through the post visibility filter" do
-    refs = [public_author, private_author].map { |id| Review::UseCases::ListRecentEntries::AuthorRef.new(id) }
-
-    visible = Social::Slice["use_cases.filter_visible_posts"].call(viewer_profile_id: viewer, posts: refs)
-
-    expect(visible.map(&:author_profile_id)).to eq([public_author])
-  end
-
-  it "filters review entry author references through the post visibility filter" do
-    refs = [public_author, private_author].map { |id| Review::UseCases::FilterVisibleEntries::AuthorRef.new(id) }
+    refs = [public_author, private_author].map { |id| Review::UseCases::FilterVisibleReviews::AuthorRef.new(id) }
 
     visible = Social::Slice["use_cases.filter_visible_posts"].call(viewer_profile_id: viewer, posts: refs)
 

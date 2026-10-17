@@ -21,7 +21,10 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
   let(:comment_repo) { Post::Slice["repositories.comment_repository"] }
   let(:like_repo) { Post::Slice["repositories.like_repository"] }
   let(:follow_repo) { Social::Slice["repositories.follow_repository"] }
-  let(:review_repo) { Review::Slice["repositories.entry_repository"] }
+  let(:review_repo) { Review::Slice["repositories.review_repository"] }
+  let(:write_review) do
+    ->(author, target) { review_repo.create(author_account_id: db[:profile__profiles].where(id: author).get(:account_id), author_profile_id: author, target_profile_id: target, rating: nil, occurred_on: Date.new(2026, 10, 1)) }
+  end
 
   let(:ghost_account) { create_account(role: 2) }
   let!(:ghost) { create_account_with_profile(account_id: ghost_account, username: "ghost_cast", display_name: "Ghost", prefecture: "東京都") }
@@ -38,7 +41,7 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
   end
 
   def act_as(profile_id)
-    Current.account_id = SecureRandom.uuid_v7
+    Current.account_id = db[:profile__profiles].where(id: profile_id).get(:account_id) || SecureRandom.uuid_v7
     Current.profile_id = profile_id
   end
 
@@ -61,9 +64,9 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
     Messaging::Slice["use_cases.send_message"].call(sender_profile_id: ghost, content: "hello", recipient_profile_id: viewer)
     Notifications::Slice["use_cases.emit"].call(recipient_profile_id: viewer, type: "like", target_resource_id: SecureRandom.uuid_v7, actor_profile_id: ghost)
     Notifications::Slice["use_cases.emit"].call(recipient_profile_id: viewer, type: "like", target_resource_id: SecureRandom.uuid_v7, actor_profile_id: shown)
-    review_repo.create(author_profile_id: ghost, target_profile_id: shown, rating: 4.0, body: "by ghost")
-    review_repo.create(author_profile_id: viewer, target_profile_id: ghost, rating: 4.0, body: "about ghost")
-    review_repo.create(author_profile_id: viewer, target_profile_id: shown, rating: 4.0, body: "about shown")
+    write_review.call(ghost, shown)
+    write_review.call(viewer, ghost)
+    write_review.call(viewer, shown)
     Footprints::Slice["repositories.footprints_repository"].upsert_visit(visitor_profile_id: ghost, visited_profile_id: viewer)
     Footprints::Slice["repositories.footprints_repository"].upsert_visit(visitor_profile_id: shown, visited_profile_id: viewer)
     Schedule::Slice["repositories.schedule_repository"].upsert(profile_id: ghost, work_date: "2026-10-20", start_time: "20:00", end_time: "02:00")
@@ -163,34 +166,34 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
 
     it "has no reviews as author or target and cannot be reviewed" do
       act_as(stranger)
-      by_target = ->(profile_id) { rpc(Review::Grpc::ReviewHandler, :list_entries_by_target, Review::V1::ListEntriesByTargetRequest.new(target_profile_id: profile_id)).entries }
-      by_author = ->(profile_id) { rpc(Review::Grpc::ReviewHandler, :list_entries_by_author, Review::V1::ListEntriesByAuthorRequest.new(author_profile_id: profile_id)).entries }
-      recent = rpc(Review::Grpc::ReviewHandler, :list_recent_entries, Review::V1::ListRecentEntriesRequest.new).entries
+      by_target = ->(profile_id) { rpc(Review::Grpc::ReviewHandler, :list_reviews_by_target, Review::V1::ListReviewsByTargetRequest.new(target_profile_id: profile_id)).reviews }
+      by_author = ->(profile_id) { rpc(Review::Grpc::ReviewHandler, :list_reviews_by_author, Review::V1::ListReviewsByAuthorRequest.new(author_profile_id: profile_id)).reviews }
+      recent = rpc(Review::Grpc::ReviewHandler, :list_recent_reviews, Review::V1::ListRecentReviewsRequest.new).reviews
 
       expect(by_target.call(shown).map(&:author_profile_id)).to eq([viewer])
       expect(by_target.call(ghost)).to be_empty
       expect(by_author.call(ghost)).to be_empty
       expect(by_author.call(viewer).map(&:target_profile_id)).to eq([shown])
-      expect(recent.map { |entry| [entry.author_profile_id, entry.target_profile_id] }).to eq([[viewer, shown]])
+      expect(recent.map { |review| [review.author_profile_id, review.target_profile_id] }).to eq([[viewer, shown]])
       expect {
-        rpc(Review::Grpc::ReviewHandler, :create_entry, Review::V1::CreateEntryRequest.new(target_profile_id: ghost, rating: 4.0))
+        rpc(Review::Grpc::ReviewHandler, :create_review, Review::V1::CreateReviewRequest.new(target_profile_id: ghost, event: Review::V1::ReviewEventInput.new(stage: :REVIEW_STAGE_SERVICE, outcome: "satisfied", occurred_on: "2026-10-01")))
       }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
     end
 
     it "answers a request that names it as it answers for a profile that does not exist" do
       post_repo.create_post(author_profile_id: ghost, content: "visibility ghost again", visibility: "public")
-      review_repo.create(author_profile_id: stranger, target_profile_id: ghost, rating: 3.0, body: "also about ghost")
-      review_repo.create(author_profile_id: ghost, target_profile_id: create_account_with_profile(role: 2, username: "another_cast"), rating: 3.0, body: "also by ghost")
+      write_review.call(stranger, ghost)
+      write_review.call(ghost, create_account_with_profile(role: 2, username: "another_cast"))
       act_as(stranger)
       answers = lambda do |profile_id|
         posts = rpc(Post::Grpc::PostHandler, :list_posts, Post::V1::ListPostsRequest.new(author_profile_id: profile_id, limit: 1))
-        received = rpc(Review::Grpc::ReviewHandler, :list_entries_by_target, Review::V1::ListEntriesByTargetRequest.new(target_profile_id: profile_id, limit: 1))
-        written = rpc(Review::Grpc::ReviewHandler, :list_entries_by_author, Review::V1::ListEntriesByAuthorRequest.new(author_profile_id: profile_id, limit: 1))
+        received = rpc(Review::Grpc::ReviewHandler, :list_reviews_by_target, Review::V1::ListReviewsByTargetRequest.new(target_profile_id: profile_id, limit: 1))
+        written = rpc(Review::Grpc::ReviewHandler, :list_reviews_by_author, Review::V1::ListReviewsByAuthorRequest.new(author_profile_id: profile_id, limit: 1))
         counts = rpc(Social::Grpc::FollowHandler, :get_social_counts, Social::V1::GetSocialCountsRequest.new(profile_id: profile_id))
         {
           posts: [posts.posts.length, posts.has_more, posts.next_cursor],
-          received_reviews: [received.entries.length, received.has_more, received.next_cursor],
-          written_reviews: [written.entries.length, written.has_more, written.next_cursor],
+          received_reviews: [received.reviews.length, received.has_more, received.next_cursor],
+          written_reviews: [written.reviews.length, written.has_more, written.next_cursor],
           comments: rpc(Post::Grpc::CommentHandler, :list_comments_by_author, Post::V1::ListCommentsByAuthorRequest.new(author_profile_id: profile_id)).comments.length,
           followers: rpc(Social::Grpc::FollowHandler, :list_followers, Social::V1::ListFollowersRequest.new(profile_id: profile_id)).profiles.length,
           following: rpc(Social::Grpc::FollowHandler, :list_following, Social::V1::ListFollowingRequest.new(profile_id: profile_id)).profiles.length,
@@ -203,26 +206,23 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
 
     it "is absent from the reviews on the other party's own page" do
       act_as(shown)
-      received = rpc(Review::Grpc::ReviewHandler, :list_entries_by_target, Review::V1::ListEntriesByTargetRequest.new(target_profile_id: shown)).entries
+      received = rpc(Review::Grpc::ReviewHandler, :list_reviews_by_target, Review::V1::ListReviewsByTargetRequest.new(target_profile_id: shown)).reviews
       act_as(viewer)
-      written = rpc(Review::Grpc::ReviewHandler, :list_entries_by_author, Review::V1::ListEntriesByAuthorRequest.new(author_profile_id: viewer)).entries
+      written = rpc(Review::Grpc::ReviewHandler, :list_reviews_by_author, Review::V1::ListReviewsByAuthorRequest.new(author_profile_id: viewer)).reviews
 
       expect(received.map(&:author_profile_id)).to eq([viewer])
       expect(written.map(&:target_profile_id)).to eq([shown])
     end
 
     it "leaves a review with it out of reach for the other party" do
-      by_ghost = db[:review__entries].where(author_profile_id: ghost).get(:id)
-      about_ghost = db[:review__entries].where(target_profile_id: ghost).get(:id)
-      not_found = GRPC::Core::StatusCodes::NOT_FOUND
+      about_ghost = db[:review__reviews].where(author_profile_id: viewer, target_profile_id: ghost).get(:id)
+      invalid = GRPC::Core::StatusCodes::INVALID_ARGUMENT
 
-      act_as(shown)
-      expect { rpc(Review::Grpc::ReviewHandler, :hide_entry, Review::V1::HideEntryRequest.new(entry_id: by_ghost)) }.to status(not_found)
-      expect { rpc(Review::Grpc::ReviewHandler, :unhide_entry, Review::V1::UnhideEntryRequest.new(entry_id: by_ghost)) }.to status(not_found)
       act_as(viewer)
-      expect { rpc(Review::Grpc::ReviewHandler, :update_entry, Review::V1::UpdateEntryRequest.new(entry_id: about_ghost, rating: 1.0)) }.to status(not_found)
-      expect { rpc(Review::Grpc::ReviewHandler, :delete_entry, Review::V1::DeleteEntryRequest.new(entry_id: about_ghost)) }.to status(not_found)
-      expect(db[:review__entries].where(hidden: false, rating: 4.0).count).to eq(3)
+      expect { rpc(Review::Grpc::ReviewHandler, :get_review, Review::V1::GetReviewRequest.new(review_id: about_ghost)) }.to status(invalid)
+      expect { rpc(Review::Grpc::ReviewHandler, :update_review_rating, Review::V1::UpdateReviewRatingRequest.new(review_id: about_ghost, rating: 1)) }.to status(invalid)
+      expect { rpc(Review::Grpc::ReviewHandler, :delete_review, Review::V1::DeleteReviewRequest.new(review_id: about_ghost)) }.to status(invalid)
+      expect(db[:review__reviews].where(id: about_ghost).count).to eq(1)
     end
 
     it "leaves its posts and comments out of reach for likes, comments and their lists" do

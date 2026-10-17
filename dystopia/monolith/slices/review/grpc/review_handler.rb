@@ -15,207 +15,251 @@ module Review
 
       self.rpc_descs.clear
 
-      rpc :CreateEntry,         ::Review::V1::CreateEntryRequest,         ::Review::V1::CreateEntryResponse
-      rpc :UpdateEntry,         ::Review::V1::UpdateEntryRequest,         ::Review::V1::UpdateEntryResponse
-      rpc :DeleteEntry,         ::Review::V1::DeleteEntryRequest,         ::Review::V1::DeleteEntryResponse
-      rpc :HideEntry,           ::Review::V1::HideEntryRequest,           ::Review::V1::HideEntryResponse
-      rpc :UnhideEntry,         ::Review::V1::UnhideEntryRequest,         ::Review::V1::UnhideEntryResponse
-      rpc :ListEntriesByTarget, ::Review::V1::ListEntriesByTargetRequest, ::Review::V1::ListEntriesByTargetResponse
-      rpc :ListEntriesByAuthor, ::Review::V1::ListEntriesByAuthorRequest, ::Review::V1::ListEntriesByAuthorResponse
-      rpc :GetMySettings,       ::Review::V1::GetMySettingsRequest,       ::Review::V1::GetMySettingsResponse
-      rpc :UpdateMySettings,    ::Review::V1::UpdateMySettingsRequest,    ::Review::V1::UpdateMySettingsResponse
-      rpc :ListRecentEntries,   ::Review::V1::ListRecentEntriesRequest,   ::Review::V1::ListRecentEntriesResponse
+      rpc :CreateReview,        ::Review::V1::CreateReviewRequest,        ::Review::V1::CreateReviewResponse
+      rpc :GetReview,           ::Review::V1::GetReviewRequest,           ::Review::V1::GetReviewResponse
+      rpc :UpdateReviewRating,  ::Review::V1::UpdateReviewRatingRequest,  ::Review::V1::UpdateReviewRatingResponse
+      rpc :DeleteReview,        ::Review::V1::DeleteReviewRequest,        ::Review::V1::DeleteReviewResponse
+      rpc :CloseReview,         ::Review::V1::CloseReviewRequest,         ::Review::V1::CloseReviewResponse
+      rpc :ReopenReview,        ::Review::V1::ReopenReviewRequest,        ::Review::V1::ReopenReviewResponse
+      rpc :AddReviewEvent,      ::Review::V1::AddReviewEventRequest,      ::Review::V1::AddReviewEventResponse
+      rpc :UpdateReviewEvent,   ::Review::V1::UpdateReviewEventRequest,   ::Review::V1::UpdateReviewEventResponse
+      rpc :DeleteReviewEvent,   ::Review::V1::DeleteReviewEventRequest,   ::Review::V1::DeleteReviewEventResponse
+      rpc :ListReviewsByTarget, ::Review::V1::ListReviewsByTargetRequest, ::Review::V1::ListReviewsByTargetResponse
+      rpc :ListReviewsByAuthor, ::Review::V1::ListReviewsByAuthorRequest, ::Review::V1::ListReviewsByAuthorResponse
+      rpc :ListMyReviews,       ::Review::V1::ListMyReviewsRequest,       ::Review::V1::ListMyReviewsResponse
+      rpc :ListRecentReviews,   ::Review::V1::ListRecentReviewsRequest,   ::Review::V1::ListRecentReviewsResponse
+
+      STAGE_TO_PROTO = {
+        "reservation" => :REVIEW_STAGE_RESERVATION,
+        "service" => :REVIEW_STAGE_SERVICE,
+        "aftercare" => :REVIEW_STAGE_AFTERCARE
+      }.freeze
+      STAGE_FROM_PROTO = STAGE_TO_PROTO.invert.freeze
+      STATUS_TO_PROTO = { "open" => :REVIEW_STATUS_OPEN, "closed" => :REVIEW_STATUS_CLOSED }.freeze
 
       include Review::Deps[
-        create_uc:           "use_cases.create_entry",
-        update_uc:           "use_cases.update_entry",
-        delete_uc:           "use_cases.delete_entry",
-        hide_uc:             "use_cases.hide_entry",
-        unhide_uc:           "use_cases.unhide_entry",
-        list_by_target_uc:   "use_cases.list_entries_by_target",
-        list_by_author_uc:   "use_cases.list_entries_by_author",
-        get_settings_uc:     "use_cases.get_my_settings",
-        update_settings_uc:  "use_cases.update_my_settings",
-        list_recent_uc:      "use_cases.list_recent_entries"
+        create_review_uc: "use_cases.create_review",
+        get_review_uc: "use_cases.get_review",
+        update_review_rating_uc: "use_cases.update_review_rating",
+        delete_review_uc: "use_cases.delete_review",
+        close_review_uc: "use_cases.close_review",
+        reopen_review_uc: "use_cases.reopen_review",
+        add_review_event_uc: "use_cases.add_review_event",
+        update_review_event_uc: "use_cases.update_review_event",
+        delete_review_event_uc: "use_cases.delete_review_event",
+        list_reviews_by_target_uc: "use_cases.list_reviews_by_target",
+        list_reviews_by_author_uc: "use_cases.list_reviews_by_author",
+        list_my_reviews_uc: "use_cases.list_my_reviews",
+        list_recent_reviews_uc: "use_cases.list_recent_reviews"
       ]
 
-      def create_entry
+      def create_review
         authenticate_user!
-        body = request.message.body == "" ? nil : request.message.body
-        entry = wrap_errors do
-          create_uc.call(
+        message = request.message
+        review = wrap_errors do
+          create_review_uc.call(
+            viewer_account_id: current_account_id,
             viewer_profile_id: current_profile_id,
-            target_profile_id: request.message.target_profile_id,
-            rating: request.message.rating,
-            body: body
+            target_profile_id: message.target_profile_id,
+            rating: rating_from(message.rating),
+            event: event_from(message.event)
           )
         end
-        ::Review::V1::CreateEntryResponse.new(entry: entry_to_proto(present_for_actor(entry)))
+        ::Review::V1::CreateReviewResponse.new(review: review_to_proto(review))
       end
 
-      def update_entry
+      def get_review
         authenticate_user!
-        rating = request.message.rating.zero? ? nil : request.message.rating
-        body = request.message.has_body? ? request.message.body : nil
-        entry = wrap_errors do
-          update_uc.call(
-            viewer_profile_id: current_profile_id,
-            entry_id: request.message.entry_id,
-            rating: rating,
-            body: body
+        review = wrap_errors do
+          get_review_uc.call(viewer_account_id: current_account_id, viewer_profile_id: current_profile_id, review_id: request.message.review_id)
+        end
+        ::Review::V1::GetReviewResponse.new(review: review_to_proto(review))
+      end
+
+      def update_review_rating
+        authenticate_user!
+        message = request.message
+        review = wrap_errors do
+          update_review_rating_uc.call(viewer_account_id: current_account_id, review_id: message.review_id, rating: rating_from(message.rating))
+        end
+        ::Review::V1::UpdateReviewRatingResponse.new(review: review_to_proto(review))
+      end
+
+      def delete_review
+        authenticate_user!
+        wrap_errors { delete_review_uc.call(viewer_account_id: current_account_id, review_id: request.message.review_id) }
+        ::Review::V1::DeleteReviewResponse.new
+      end
+
+      def close_review
+        authenticate_user!
+        review = wrap_errors { close_review_uc.call(viewer_account_id: current_account_id, review_id: request.message.review_id) }
+        ::Review::V1::CloseReviewResponse.new(review: review_to_proto(review))
+      end
+
+      def reopen_review
+        authenticate_user!
+        review = wrap_errors { reopen_review_uc.call(viewer_account_id: current_account_id, review_id: request.message.review_id) }
+        ::Review::V1::ReopenReviewResponse.new(review: review_to_proto(review))
+      end
+
+      def add_review_event
+        authenticate_user!
+        message = request.message
+        review = wrap_errors do
+          add_review_event_uc.call(viewer_account_id: current_account_id, review_id: message.review_id, event: event_from(message.event))
+        end
+        ::Review::V1::AddReviewEventResponse.new(review: review_to_proto(review))
+      end
+
+      def update_review_event
+        authenticate_user!
+        message = request.message
+        review = wrap_errors do
+          update_review_event_uc.call(viewer_account_id: current_account_id, event_id: message.event_id, event: event_from(message.event))
+        end
+        ::Review::V1::UpdateReviewEventResponse.new(review: review_to_proto(review))
+      end
+
+      def delete_review_event
+        authenticate_user!
+        review = wrap_errors { delete_review_event_uc.call(viewer_account_id: current_account_id, event_id: request.message.event_id) }
+        ::Review::V1::DeleteReviewEventResponse.new(review: review_to_proto(review))
+      end
+
+      def list_reviews_by_target
+        authenticate_user!
+        message = request.message
+        result = wrap_errors do
+          list_reviews_by_target_uc.call(
+            viewer_account_id: current_account_id, viewer_profile_id: current_profile_id,
+            target_profile_id: message.target_profile_id, limit: message.limit, cursor: cursor_from(message.cursor)
           )
         end
-        ::Review::V1::UpdateEntryResponse.new(entry: entry_to_proto(present_for_actor(entry)))
+        summary = result[:summary]
+        ::Review::V1::ListReviewsByTargetResponse.new(
+          **page_to_proto(result),
+          summary: ::Review::V1::RatingSummary.new(
+            average_rating: summary[:average_rating], rater_count: summary[:rater_count], review_count: summary[:review_count]
+          )
+        )
       end
 
-      def delete_entry
+      def list_reviews_by_author
         authenticate_user!
-        wrap_errors do
-          delete_uc.call(viewer_profile_id: current_profile_id, entry_id: request.message.entry_id)
+        message = request.message
+        result = wrap_errors do
+          list_reviews_by_author_uc.call(
+            viewer_account_id: current_account_id, viewer_profile_id: current_profile_id,
+            author_profile_id: message.author_profile_id, limit: message.limit, cursor: cursor_from(message.cursor)
+          )
         end
-        ::Review::V1::DeleteEntryResponse.new
+        ::Review::V1::ListReviewsByAuthorResponse.new(**page_to_proto(result))
       end
 
-      def hide_entry
+      def list_my_reviews
         authenticate_user!
-        entry = wrap_errors do
-          hide_uc.call(viewer_profile_id: current_profile_id, entry_id: request.message.entry_id)
+        message = request.message
+        result = wrap_errors do
+          list_my_reviews_uc.call(viewer_account_id: current_account_id, limit: message.limit, cursor: cursor_from(message.cursor))
         end
-        ::Review::V1::HideEntryResponse.new(entry: entry_to_proto(present_for_actor(entry)))
+        counts = result[:counts]
+        ::Review::V1::ListMyReviewsResponse.new(
+          **page_to_proto(result),
+          counts: ::Review::V1::ReviewCounts.new(total_count: counts[:total], open_count: counts[:open], closed_count: counts[:closed])
+        )
       end
 
-      def unhide_entry
+      def list_recent_reviews
         authenticate_user!
-        entry = wrap_errors do
-          unhide_uc.call(viewer_profile_id: current_profile_id, entry_id: request.message.entry_id)
+        message = request.message
+        result = wrap_errors do
+          list_recent_reviews_uc.call(
+            viewer_account_id: current_account_id, viewer_profile_id: current_profile_id,
+            limit: message.limit, cursor: cursor_from(message.cursor)
+          )
         end
-        ::Review::V1::UnhideEntryResponse.new(entry: entry_to_proto(present_for_actor(entry)))
-      end
-
-      def list_entries_by_target
-        authenticate_user!
-        limit = request.message.limit.zero? ? 20 : request.message.limit
-        cursor = request.message.cursor.empty? ? nil : request.message.cursor
-        result = list_by_target_uc.call(
-          viewer_profile_id: current_profile_id,
-          target_profile_id: request.message.target_profile_id,
-          limit: limit,
-          cursor: cursor
-        )
-        ::Review::V1::ListEntriesByTargetResponse.new(
-          entries: result[:entries].map { |e| entry_to_proto(e) },
-          next_cursor: result[:next_cursor] || "",
-          has_more: result[:has_more]
-        )
-      end
-
-      def list_entries_by_author
-        authenticate_user!
-        limit = request.message.limit.zero? ? 20 : request.message.limit
-        cursor = request.message.cursor.empty? ? nil : request.message.cursor
-        result = list_by_author_uc.call(
-          viewer_profile_id: current_profile_id,
-          author_profile_id: request.message.author_profile_id,
-          limit: limit,
-          cursor: cursor
-        )
-        ::Review::V1::ListEntriesByAuthorResponse.new(
-          entries: result[:entries].map { |e| entry_to_proto(e) },
-          next_cursor: result[:next_cursor] || "",
-          has_more: result[:has_more]
-        )
-      end
-
-      def get_my_settings
-        authenticate_user!
-        result = get_settings_uc.call(viewer_profile_id: current_profile_id)
-        ::Review::V1::GetMySettingsResponse.new(reviews_visible: result[:reviews_visible])
-      end
-
-      def update_my_settings
-        authenticate_user!
-        result = update_settings_uc.call(
-          viewer_profile_id: current_profile_id,
-          reviews_visible: request.message.reviews_visible
-        )
-        ::Review::V1::UpdateMySettingsResponse.new(reviews_visible: result[:reviews_visible])
-      end
-
-      def list_recent_entries
-        authenticate_user!
-        limit = request.message.limit.zero? ? 20 : request.message.limit
-        cursor = request.message.cursor.empty? ? nil : request.message.cursor
-        result = list_recent_uc.call(
-          viewer_profile_id: current_profile_id,
-          limit: limit,
-          cursor: cursor
-        )
-        ::Review::V1::ListRecentEntriesResponse.new(
-          entries: result[:entries].map { |e| entry_to_proto(e) },
-          next_cursor: result[:next_cursor] || "",
-          has_more: result[:has_more]
-        )
+        ::Review::V1::ListRecentReviewsResponse.new(**page_to_proto(result))
       end
 
       private
 
       def wrap_errors
         yield
-      rescue Review::UseCases::CreateEntry::CreateError,
-             Review::UseCases::UpdateEntry::UpdateError => e
-        fail!(:invalid_argument, :invalid_argument, e.message)
-      rescue Review::UseCases::UpdateEntry::NotFoundError,
-             Review::UseCases::DeleteEntry::NotFoundError,
-             Review::UseCases::HideEntry::NotFoundError,
-             Review::UseCases::UnhideEntry::NotFoundError => e
-        fail!(:not_found, :not_found, e.message)
-      rescue Review::UseCases::UpdateEntry::PermissionError,
-             Review::UseCases::DeleteEntry::PermissionError,
-             Review::UseCases::HideEntry::PermissionError,
-             Review::UseCases::UnhideEntry::PermissionError => e
+      rescue Review::Errors::Forbidden => e
         fail!(:permission_denied, :permission_denied, e.message)
+      rescue Review::Errors::Invalid => e
+        fail!(:invalid_argument, :invalid_argument, e.message)
+      rescue ROM::SQL::CheckConstraintError
+        fail!(:invalid_argument, :invalid_argument, "Review state changed")
       end
 
-      def present_for_actor(entry)
-        profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.author_profile_id)
-        target_profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.target_profile_id)
-        media = ::Review::Adapters::MediaAdapter.new
+      def rating_from(value)
+        value.zero? ? nil : value
+      end
+
+      def cursor_from(value)
+        value.empty? ? nil : value
+      end
+
+      def event_from(input)
+        input ||= ::Review::V1::ReviewEventInput.new
         {
-          id: entry.id,
-          author_profile_id: entry.author_profile_id,
-          target_profile_id: entry.target_profile_id,
-          author_username: profile&.username,
-          author_avatar_url: media.find_url(profile&.avatar_media_id),
-          target_username: target_profile&.username,
-          target_avatar_url: media.find_url(target_profile&.avatar_media_id),
-          rating: entry.rating.to_f,
-          body: entry.body,
-          hidden: entry.hidden,
-          created_at: entry.created_at,
-          updated_at: entry.updated_at
+          stage: STAGE_FROM_PROTO[input.stage],
+          outcome: input.outcome,
+          tags: input.tags.to_a,
+          note: input.note,
+          occurred_on: input.occurred_on
         }
       end
 
-      def entry_to_proto(e)
-        ::Review::V1::ReviewEntry.new(
-          id: e[:id].to_s,
-          author_profile_id: e[:author_profile_id].to_s,
-          target_profile_id: e[:target_profile_id].to_s,
-          author_username: e[:author_username] || "",
-          author_avatar_url: e[:author_avatar_url] || "",
-          target_username: e[:target_username] || "",
-          target_avatar_url: e[:target_avatar_url] || "",
-          rating: e[:rating],
-          body: e[:body] || "",
-          hidden: e[:hidden],
-          created_at: timestamp(e[:created_at]),
-          updated_at: timestamp(e[:updated_at])
+      def page_to_proto(result)
+        {
+          reviews: result[:reviews].map { |review| review_to_proto(review) },
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        }
+      end
+
+      def review_to_proto(review)
+        ::Review::V1::Review.new(
+          id: review[:id],
+          author_profile_id: review[:author_profile_id],
+          author_username: review[:author_username],
+          author_display_name: review[:author_display_name],
+          author_avatar_url: review[:author_avatar_url],
+          target_profile_id: review[:target_profile_id],
+          target_username: review[:target_username],
+          target_display_name: review[:target_display_name],
+          target_avatar_url: review[:target_avatar_url],
+          is_mine: review[:is_mine],
+          rating: review[:rating] || 0,
+          status: STATUS_TO_PROTO.fetch(review[:status]),
+          events: review[:events].map { |event| event_to_proto(event) },
+          created_at: timestamp(review[:created_at]),
+          updated_at: timestamp(review[:updated_at]),
+          closed_at: timestamp(review[:closed_at]),
+          last_activity_at: timestamp(review[:last_activity_at])
         )
       end
 
-      def timestamp(t)
-        return nil unless t
-        ::Google::Protobuf::Timestamp.new(seconds: t.to_i, nanos: t.nsec)
+      def event_to_proto(event)
+        ::Review::V1::ReviewEvent.new(
+          id: event[:id],
+          stage: STAGE_TO_PROTO.fetch(event[:stage]),
+          outcome: event[:outcome],
+          tags: event[:tags],
+          note: event[:note] || "",
+          occurred_on: event[:occurred_on].iso8601,
+          created_at: timestamp(event[:created_at]),
+          updated_at: timestamp(event[:updated_at])
+        )
+      end
+
+      def timestamp(time)
+        return nil unless time
+
+        ::Google::Protobuf::Timestamp.new(seconds: time.to_i, nanos: time.nsec)
       end
     end
   end
