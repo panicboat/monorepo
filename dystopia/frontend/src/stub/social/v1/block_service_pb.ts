@@ -4,7 +4,7 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Profile } from "../../profile/v1/service_pb";
+import type { ProfileSummary } from "../../profile/v1/service_pb";
 import { file_profile_v1_service } from "../../profile/v1/service_pb";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file social/v1/block_service.proto.
  */
 export const file_social_v1_block_service: GenFile = /*@__PURE__*/
-  fileDesc("Ch1zb2NpYWwvdjEvYmxvY2tfc2VydmljZS5wcm90bxIJc29jaWFsLnYxIikKDEJsb2NrUmVxdWVzdBIZChF0YXJnZXRfcHJvZmlsZV9pZBgBIAEoCSIPCg1CbG9ja1Jlc3BvbnNlIisKDlVuYmxvY2tSZXF1ZXN0EhkKEXRhcmdldF9wcm9maWxlX2lkGAEgASgJIhEKD1VuYmxvY2tSZXNwb25zZSIzChJMaXN0QmxvY2tlZFJlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJImMKE0xpc3RCbG9ja2VkUmVzcG9uc2USJQoIcHJvZmlsZXMYASADKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUSEwoLbmV4dF9jdXJzb3IYAiABKAkSEAoIaGFzX21vcmUYAyABKAgiMwoVR2V0QmxvY2tTdGF0dXNSZXF1ZXN0EhoKEnRhcmdldF9wcm9maWxlX2lkcxgBIAMoCSKJAQoWR2V0QmxvY2tTdGF0dXNSZXNwb25zZRI/CgdibG9ja2VkGAEgAygLMi4uc29jaWFsLnYxLkdldEJsb2NrU3RhdHVzUmVzcG9uc2UuQmxvY2tlZEVudHJ5Gi4KDEJsb2NrZWRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAg6AjgBMrECCgxCbG9ja1NlcnZpY2USOgoFQmxvY2sSFy5zb2NpYWwudjEuQmxvY2tSZXF1ZXN0Ghguc29jaWFsLnYxLkJsb2NrUmVzcG9uc2USQAoHVW5ibG9jaxIZLnNvY2lhbC52MS5VbmJsb2NrUmVxdWVzdBoaLnNvY2lhbC52MS5VbmJsb2NrUmVzcG9uc2USTAoLTGlzdEJsb2NrZWQSHS5zb2NpYWwudjEuTGlzdEJsb2NrZWRSZXF1ZXN0Gh4uc29jaWFsLnYxLkxpc3RCbG9ja2VkUmVzcG9uc2USVQoOR2V0QmxvY2tTdGF0dXMSIC5zb2NpYWwudjEuR2V0QmxvY2tTdGF0dXNSZXF1ZXN0GiEuc29jaWFsLnYxLkdldEJsb2NrU3RhdHVzUmVzcG9uc2ViBnByb3RvMw", [file_profile_v1_service]);
+  fileDesc("Ch1zb2NpYWwvdjEvYmxvY2tfc2VydmljZS5wcm90bxIJc29jaWFsLnYxIikKDEJsb2NrUmVxdWVzdBIZChF0YXJnZXRfcHJvZmlsZV9pZBgBIAEoCSIPCg1CbG9ja1Jlc3BvbnNlIisKDlVuYmxvY2tSZXF1ZXN0EhkKEXRhcmdldF9wcm9maWxlX2lkGAEgASgJIhEKD1VuYmxvY2tSZXNwb25zZSIzChJMaXN0QmxvY2tlZFJlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJImoKE0xpc3RCbG9ja2VkUmVzcG9uc2USLAoIcHJvZmlsZXMYASADKAsyGi5wcm9maWxlLnYxLlByb2ZpbGVTdW1tYXJ5EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIjMKFUdldEJsb2NrU3RhdHVzUmVxdWVzdBIaChJ0YXJnZXRfcHJvZmlsZV9pZHMYASADKAkiiQEKFkdldEJsb2NrU3RhdHVzUmVzcG9uc2USPwoHYmxvY2tlZBgBIAMoCzIuLnNvY2lhbC52MS5HZXRCbG9ja1N0YXR1c1Jlc3BvbnNlLkJsb2NrZWRFbnRyeRouCgxCbG9ja2VkRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgIOgI4ATKxAgoMQmxvY2tTZXJ2aWNlEjoKBUJsb2NrEhcuc29jaWFsLnYxLkJsb2NrUmVxdWVzdBoYLnNvY2lhbC52MS5CbG9ja1Jlc3BvbnNlEkAKB1VuYmxvY2sSGS5zb2NpYWwudjEuVW5ibG9ja1JlcXVlc3QaGi5zb2NpYWwudjEuVW5ibG9ja1Jlc3BvbnNlEkwKC0xpc3RCbG9ja2VkEh0uc29jaWFsLnYxLkxpc3RCbG9ja2VkUmVxdWVzdBoeLnNvY2lhbC52MS5MaXN0QmxvY2tlZFJlc3BvbnNlElUKDkdldEJsb2NrU3RhdHVzEiAuc29jaWFsLnYxLkdldEJsb2NrU3RhdHVzUmVxdWVzdBohLnNvY2lhbC52MS5HZXRCbG9ja1N0YXR1c1Jlc3BvbnNlYgZwcm90bzM", [file_profile_v1_service]);
 
 /**
  * @generated from message social.v1.BlockRequest
@@ -101,9 +101,9 @@ export const ListBlockedRequestSchema: GenMessage<ListBlockedRequest> = /*@__PUR
  */
 export type ListBlockedResponse = Message<"social.v1.ListBlockedResponse"> & {
   /**
-   * @generated from field: repeated profile.v1.Profile profiles = 1;
+   * @generated from field: repeated profile.v1.ProfileSummary profiles = 1;
    */
-  profiles: Profile[];
+  profiles: ProfileSummary[];
 
   /**
    * @generated from field: string next_cursor = 2;

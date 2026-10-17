@@ -6,7 +6,7 @@ import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegen
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { Profile } from "../../profile/v1/service_pb";
+import type { ProfileSummary } from "../../profile/v1/service_pb";
 import { file_profile_v1_service } from "../../profile/v1/service_pb";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file footprints/v1/footprints_service.proto.
  */
 export const file_footprints_v1_footprints_service: GenFile = /*@__PURE__*/
-  fileDesc("CiZmb290cHJpbnRzL3YxL2Zvb3RwcmludHNfc2VydmljZS5wcm90bxINZm9vdHByaW50cy52MSIwChJSZWNvcmRWaXNpdFJlcXVlc3QSGgoSdmlzaXRlZF9wcm9maWxlX2lkGAEgASgJIhUKE1JlY29yZFZpc2l0UmVzcG9uc2UiNgoVTGlzdEZvb3RwcmludHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJtChZMaXN0Rm9vdHByaW50c1Jlc3BvbnNlEiwKCmZvb3RwcmludHMYASADKAsyGC5mb290cHJpbnRzLnYxLkZvb3RwcmludBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCKOAQoJRm9vdHByaW50EiQKB3Zpc2l0b3IYASABKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUSMwoPbGFzdF92aXNpdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCglpc191bnJlYWQYAyABKAgSEwoLdmlzaXRfY291bnQYBCABKAUiFwoVR2V0VW5yZWFkQ291bnRSZXF1ZXN0IicKFkdldFVucmVhZENvdW50UmVzcG9uc2USDQoFY291bnQYASABKAUiEQoPTWFya1JlYWRSZXF1ZXN0IhIKEE1hcmtSZWFkUmVzcG9uc2Uy9AIKEUZvb3RwcmludHNTZXJ2aWNlElQKC1JlY29yZFZpc2l0EiEuZm9vdHByaW50cy52MS5SZWNvcmRWaXNpdFJlcXVlc3QaIi5mb290cHJpbnRzLnYxLlJlY29yZFZpc2l0UmVzcG9uc2USXQoOTGlzdEZvb3RwcmludHMSJC5mb290cHJpbnRzLnYxLkxpc3RGb290cHJpbnRzUmVxdWVzdBolLmZvb3RwcmludHMudjEuTGlzdEZvb3RwcmludHNSZXNwb25zZRJdCg5HZXRVbnJlYWRDb3VudBIkLmZvb3RwcmludHMudjEuR2V0VW5yZWFkQ291bnRSZXF1ZXN0GiUuZm9vdHByaW50cy52MS5HZXRVbnJlYWRDb3VudFJlc3BvbnNlEksKCE1hcmtSZWFkEh4uZm9vdHByaW50cy52MS5NYXJrUmVhZFJlcXVlc3QaHy5mb290cHJpbnRzLnYxLk1hcmtSZWFkUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_profile_v1_service]);
+  fileDesc("CiZmb290cHJpbnRzL3YxL2Zvb3RwcmludHNfc2VydmljZS5wcm90bxINZm9vdHByaW50cy52MSIwChJSZWNvcmRWaXNpdFJlcXVlc3QSGgoSdmlzaXRlZF9wcm9maWxlX2lkGAEgASgJIhUKE1JlY29yZFZpc2l0UmVzcG9uc2UiNgoVTGlzdEZvb3RwcmludHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJtChZMaXN0Rm9vdHByaW50c1Jlc3BvbnNlEiwKCmZvb3RwcmludHMYASADKAsyGC5mb290cHJpbnRzLnYxLkZvb3RwcmludBITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCKVAQoJRm9vdHByaW50EisKB3Zpc2l0b3IYASABKAsyGi5wcm9maWxlLnYxLlByb2ZpbGVTdW1tYXJ5EjMKD2xhc3RfdmlzaXRlZF9hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJaXNfdW5yZWFkGAMgASgIEhMKC3Zpc2l0X2NvdW50GAQgASgFIhcKFUdldFVucmVhZENvdW50UmVxdWVzdCInChZHZXRVbnJlYWRDb3VudFJlc3BvbnNlEg0KBWNvdW50GAEgASgFIhEKD01hcmtSZWFkUmVxdWVzdCISChBNYXJrUmVhZFJlc3BvbnNlMvQCChFGb290cHJpbnRzU2VydmljZRJUCgtSZWNvcmRWaXNpdBIhLmZvb3RwcmludHMudjEuUmVjb3JkVmlzaXRSZXF1ZXN0GiIuZm9vdHByaW50cy52MS5SZWNvcmRWaXNpdFJlc3BvbnNlEl0KDkxpc3RGb290cHJpbnRzEiQuZm9vdHByaW50cy52MS5MaXN0Rm9vdHByaW50c1JlcXVlc3QaJS5mb290cHJpbnRzLnYxLkxpc3RGb290cHJpbnRzUmVzcG9uc2USXQoOR2V0VW5yZWFkQ291bnQSJC5mb290cHJpbnRzLnYxLkdldFVucmVhZENvdW50UmVxdWVzdBolLmZvb3RwcmludHMudjEuR2V0VW5yZWFkQ291bnRSZXNwb25zZRJLCghNYXJrUmVhZBIeLmZvb3RwcmludHMudjEuTWFya1JlYWRSZXF1ZXN0Gh8uZm9vdHByaW50cy52MS5NYXJrUmVhZFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_profile_v1_service]);
 
 /**
  * @generated from message footprints.v1.RecordVisitRequest
@@ -100,9 +100,9 @@ export const ListFootprintsResponseSchema: GenMessage<ListFootprintsResponse> = 
  */
 export type Footprint = Message<"footprints.v1.Footprint"> & {
   /**
-   * @generated from field: profile.v1.Profile visitor = 1;
+   * @generated from field: profile.v1.ProfileSummary visitor = 1;
    */
-  visitor?: Profile | undefined;
+  visitor?: ProfileSummary | undefined;
 
   /**
    * @generated from field: google.protobuf.Timestamp last_visited_at = 2;

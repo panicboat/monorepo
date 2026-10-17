@@ -63,12 +63,13 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
       thread_id = send_message(recipient_profile_id: guest, content: "one").thread_id
       send_message(thread_id: thread_id, content: "two")
 
-      expect(threads.threads.map { |t| [t.counterpart.id, t.unread_count] }).to eq([[guest, 0]])
+      expect(threads.threads.map { |t| [t.counterpart.profile_id, t.unread_count] }).to eq([[guest, 0]])
       expect(total_unread).to eq(0)
 
       act_as(guest)
       listed = threads
-      expect(listed.threads.map { |t| [t.id, t.counterpart.id, t.counterpart.role, t.unread_count] }).to eq([[thread_id, cast, 2, 2]])
+      expect(listed.threads.map { |t| [t.id, t.counterpart.profile_id, t.counterpart.role, t.unread_count] }).to eq([[thread_id, cast, 2, 2]])
+      expect(listed.threads.map(&:counterpart)).to all(be_a(::Profile::V1::ProfileSummary))
       expect(listed.total_unread_count).to eq(2)
       expect(total_unread).to eq(2)
 
@@ -90,7 +91,7 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
       Social::Slice["repositories.follow_repository"].follow(follower_profile_id: guest, followee_profile_id: cast, status: "approved")
       reply = send_message(thread_id: opened.id, content: "from guest")
 
-      expect(opened.counterpart.id).to eq(guest)
+      expect(opened.counterpart.profile_id).to eq(guest)
       expect(reply.thread_id).to eq(opened.id)
       expect(db[:messaging__messages].order(:created_at).select_map(:sender_profile_id)).to eq([cast, guest])
     end
@@ -112,11 +113,11 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
       thread_id = send_message(recipient_profile_id: guest, content: "from cast").thread_id
 
       opened = thread(thread_id)
-      expect([opened.thread.id, opened.thread.counterpart.id, opened.send_restriction]).to eq([thread_id, guest, :SEND_RESTRICTION_NONE])
+      expect([opened.thread.id, opened.thread.counterpart.profile_id, opened.send_restriction]).to eq([thread_id, guest, :SEND_RESTRICTION_NONE])
 
       act_as(guest)
       opened = thread(thread_id)
-      expect([opened.thread.counterpart.id, opened.thread.unread_count, opened.send_restriction]).to eq([cast, 1, :SEND_RESTRICTION_FOLLOW_REQUIRED])
+      expect([opened.thread.counterpart.profile_id, opened.thread.unread_count, opened.send_restriction]).to eq([cast, 1, :SEND_RESTRICTION_FOLLOW_REQUIRED])
 
       Social::Slice["repositories.follow_repository"].follow(follower_profile_id: guest, followee_profile_id: cast, status: "approved")
       expect(thread(thread_id).send_restriction).to eq(:SEND_RESTRICTION_NONE)
@@ -160,7 +161,8 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
 
       act_as(guest)
       listed = notifications
-      expect(listed.notifications.map { |n| [n.latest_actor.id, n.latest_actor.role] }).to eq([[cast, 2], [cast, 2]])
+      expect(listed.notifications.map { |n| [n.latest_actor.profile_id, n.latest_actor.role] }).to eq([[cast, 2], [cast, 2]])
+      expect(listed.notifications.map(&:latest_actor)).to all(be_a(::Profile::V1::ProfileSummary))
       expect(listed.unread_count).to eq(2)
       expect(unread).to eq(2)
 

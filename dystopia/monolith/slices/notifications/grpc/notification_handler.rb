@@ -37,13 +37,15 @@ module Notifications
 
         result = list_uc.call(recipient_profile_id: current_profile_id, limit: limit, cursor: cursor)
 
+        summaries = summarize_profiles.call(profile_ids: result[:rows].map(&:latest_actor_profile_id))
+
         proto_notifications = result[:rows].map do |row|
           ::Notifications::V1::Notification.new(
             id: row.id,
             type: type_to_enum(row.type),
             target_resource_id: row.target_resource_id,
             actor_count: row.actor_count,
-            latest_actor: present_profile(result[:profiles_by_actor_profile_id][row.latest_actor_profile_id]),
+            latest_actor: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(summaries[row.latest_actor_profile_id.to_s]),
             latest_event_at: time_to_timestamp(row.latest_event_at),
             read_at: row.read_at ? time_to_timestamp(row.read_at) : nil,
             target_post_id: row.target_post_id || ""
@@ -109,27 +111,8 @@ module Notifications
 
       private
 
-      def present_profile(profile)
-        return nil unless profile
-        role = role_for(profile.account_id)
-        cast = role == 2 ? cast_repository.find_by_profile_id(profile.id) : nil
-        ::Profile::Presenters::ProfilePresenter.to_proto(
-          profile,
-          cast: cast,
-          role: role
-        )
-      end
-
-      def role_for(account_id)
-        identity_account_repo.find_by_id(account_id)&.role || 0
-      end
-
-      def identity_account_repo
-        @identity_account_repo ||= ::Identity::Slice["repositories.account_repository"]
-      end
-
-      def cast_repository
-        @cast_repository ||= ::Profile::Slice["repositories.cast_repository"]
+      def summarize_profiles
+        @summarize_profiles ||= ::Profile::Slice["use_cases.summarize_profiles"]
       end
 
       def preferences_to_proto(prefs)

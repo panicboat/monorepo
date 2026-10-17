@@ -47,16 +47,14 @@ module Footprints
         )
 
         visitor_profile_ids = result[:rows].map { |r| r[:visitor_profile_id] }.uniq
-        profiles_by_id = visitor_profile_ids.each_with_object({}) do |visitor_profile_id, h|
-          h[visitor_profile_id] = get_profile.call(profile_id: visitor_profile_id)
-        end
+        summaries = summarize_profiles.call(profile_ids: visitor_profile_ids)
 
         footprints = result[:rows].filter_map do |row|
-          profile = profiles_by_id[row[:visitor_profile_id]]
-          next nil unless profile
+          summary = summaries[row[:visitor_profile_id].to_s]
+          next nil unless summary
 
           ::Footprints::V1::Footprint.new(
-            visitor: present_profile(profile),
+            visitor: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(summary),
             last_visited_at: to_proto_ts(row[:last_visited_at]),
             is_unread: row[:is_unread],
             visit_count: row[:visit_count]
@@ -84,31 +82,8 @@ module Footprints
 
       private
 
-      def present_profile(profile)
-        return nil unless profile
-        role = role_for(profile.account_id)
-        cast = role == 2 ? cast_repository.find_by_profile_id(profile.id) : nil
-        ::Profile::Presenters::ProfilePresenter.to_proto(
-          profile,
-          cast: cast,
-          role: role
-        )
-      end
-
-      def role_for(account_id)
-        identity_account_repo.find_by_id(account_id)&.role || 0
-      end
-
-      def identity_account_repo
-        @identity_account_repo ||= ::Identity::Slice["repositories.account_repository"]
-      end
-
-      def cast_repository
-        @cast_repository ||= ::Profile::Slice["repositories.cast_repository"]
-      end
-
-      def get_profile
-        @get_profile ||= Profile::Slice["use_cases.get_profile"]
+      def summarize_profiles
+        @summarize_profiles ||= ::Profile::Slice["use_cases.summarize_profiles"]
       end
 
       def to_proto_ts(time)

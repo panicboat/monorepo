@@ -26,7 +26,7 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
   end
 
   def suggested
-    rpc(:suggest_users, Discovery::V1::SuggestUsersRequest.new).profiles.map { |p| [p.id, p.role] }
+    rpc(:suggest_users, Discovery::V1::SuggestUsersRequest.new).profiles.map { |p| [p.profile_id, p.role] }
   end
 
   def searched_post_ids
@@ -86,5 +86,19 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
     found = rpc(:search_users, Discovery::V1::SearchUsersRequest.new(query: "discovery_p")).profiles
 
     expect(found.map { |p| [p.username, p.role] }).to contain_exactly(["discovery_public", 2], ["discovery_private", 2])
+    expect(found).to all(be_a(::Profile::V1::ProfileSummary))
+  end
+
+  it "returns the avatar url of a found profile that has an icon" do
+    media_id = SecureRandom.uuid_v7
+    db = Hanami.app["db.gateway"].connection
+    db[:profile__profiles].where(id: public_cast).update(avatar_media_id: media_id)
+    file = Struct.new(:id, :url, :thumbnail_url, :media_type, :media_key, :thumbnail_key).new(media_id, "https://cdn.example/a.png", nil, "image", "k", nil)
+    allow_any_instance_of(Media::UseCases::GetMediaBatch).to receive(:call).and_return([file])
+    act_as(viewer)
+
+    found = rpc(:search_users, Discovery::V1::SearchUsersRequest.new(query: "discovery_public")).profiles
+
+    expect(found.map(&:avatar_url)).to eq(["https://cdn.example/a.png"])
   end
 end

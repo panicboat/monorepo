@@ -45,7 +45,7 @@ module Social
 
         result = list_blocked_uc.call(blocker_profile_id: current_profile_id, limit: limit, cursor: cursor)
         ::Social::V1::ListBlockedResponse.new(
-          profiles: result[:profiles].map { |p| present_profile(p) },
+          profiles: present_profiles(result[:profiles]),
           next_cursor: result[:next_cursor] || "",
           has_more: result[:has_more]
         )
@@ -62,27 +62,15 @@ module Social
 
       private
 
-      def present_profile(profile)
-        role = role_for(profile.account_id)
-        cast = role == 2 ? cast_repository.find_by_profile_id(profile.id) : nil
-        ::Profile::Presenters::ProfilePresenter.to_proto(
-          profile,
-          cast: cast,
-          role: role
-        )
+      def present_profiles(profiles)
+        summaries = summarize_profiles.call(profile_ids: profiles.compact.map(&:id))
+        profiles.compact.filter_map { |profile| ::Profile::Presenters::ProfileSummaryPresenter.to_proto(summaries[profile.id.to_s]) }
       end
 
-      def role_for(account_id)
-        identity_account_repo.find_by_id(account_id)&.role || 0
+      def summarize_profiles
+        @summarize_profiles ||= ::Profile::Slice["use_cases.summarize_profiles"]
       end
 
-      def identity_account_repo
-        @identity_account_repo ||= ::Identity::Slice["repositories.account_repository"]
-      end
-
-      def cast_repository
-        @cast_repository ||= ::Profile::Slice["repositories.cast_repository"]
-      end
     end
   end
 end
