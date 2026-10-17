@@ -11,6 +11,7 @@ import { PostComposerAttachments } from "./PostComposerAttachments";
 import { useMediaUpload } from "@/modules/media/hooks/useMediaUpload";
 import type { UploadedMedia } from "@/modules/media/types";
 import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
+import { useProfile } from "@/modules/profile/hooks";
 
 const MAX_ATTACHMENTS = 4;
 
@@ -29,6 +30,8 @@ export function PostComposer({
   initialVisibility = "public",
   className,
 }: PostComposerProps) {
+  const { profile } = useProfile();
+  const accountPrivate = !!profile?.isPrivate;
   const [content, setContent] = useState(initialContent);
   const [isPrivate, setIsPrivate] = useState(initialVisibility === "private");
   const [submitting, setSubmitting] = useState(false);
@@ -135,8 +138,8 @@ export function PostComposer({
       </div>
       <div className="mt-2 flex items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-sm text-text-secondary">
-          <Toggle checked={isPrivate} onCheckedChange={setIsPrivate} aria-label="非公開投稿" />
-          <span>{isPrivate ? "非公開" : "公開"}</span>
+          <Toggle checked={isPrivate} onCheckedChange={setIsPrivate} aria-label="フォロワーのみ" />
+          <span>{isPrivate ? "フォロワーのみ" : "公開"}</span>
         </label>
         <div className="flex items-center gap-3">
           <span
@@ -150,6 +153,7 @@ export function PostComposer({
           </Button>
         </div>
       </div>
+      <p className="mt-1 text-xs text-text-secondary">{visibilityNote(accountPrivate, isPrivate)}</p>
       {error && (
         <p className="mt-2 text-sm text-error" role="alert">
           {error}
@@ -157,4 +161,15 @@ export function PostComposer({
       )}
     </form>
   );
+}
+
+function visibilityNote(accountPrivate: boolean, followersOnly: boolean): string {
+  if (followersOnly) {
+    return accountPrivate
+      ? "あなたとフォロワーだけが見られます。鍵を外してもフォロワーのみのままです"
+      : "あなたとフォロワーだけが見られます";
+  }
+  return accountPrivate
+    ? "今は鍵付きのため、フォロワーだけに表示されます。鍵を外すと誰でも見られるようになります"
+    : "誰でも見られます";
 }

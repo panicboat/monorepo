@@ -30,11 +30,12 @@ module Feed
           raise ArgumentError, "unknown filter: #{filter.inspect}"
         end
 
-        post_ids = post_repo.list_public_post_ids(
+        post_ids = post_repo.list_post_ids(
           limit: limit,
           cursor: decoded_cursor,
           author_profile_ids: author_ids,
-          excluded_author_profile_ids: excluded
+          excluded_author_profile_ids: excluded,
+          include_private: filter == "following"
         )
 
         has_more = post_ids.length > limit

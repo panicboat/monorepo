@@ -45,7 +45,6 @@ module Post
       def find_readable_post(post_id)
         post = post_repo.find_by_id(post_id)
         return nil unless post
-        return nil if post.visibility == "private" && post.author_profile_id != current_profile_id
 
         viewer_can_see_post.call(viewer_profile_id: current_profile_id, post: post) ? post : nil
       end
