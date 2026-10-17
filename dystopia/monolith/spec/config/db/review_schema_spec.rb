@@ -12,10 +12,10 @@ RSpec.describe "review schema", type: :database do
     end
   end
 
-  it "holds the lifecycle tables" do
-    tables = db[Sequel[:information_schema][:tables]].where(table_schema: "review").select_map(:table_name)
+  it "holds only the lifecycle tables" do
+    tables = db[Sequel[:information_schema][:tables]].where(table_schema: "review").select_map(:table_name).sort
 
-    expect(tables).to include("reviews", "events")
+    expect(tables).to eq(%w[events reviews])
   end
 
   it "refuses a rating outside 1..5, an unknown status and a closed review without a rating or a closing time" do
