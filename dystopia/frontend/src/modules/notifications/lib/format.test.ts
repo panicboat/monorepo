@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { NotificationType } from "@/stub/notifications/v1/notification_service_pb";
-import { describeNotification, notificationHref } from "./format";
+import { describeNotificationAction, notificationHref } from "./format";
 import type { NotificationView } from "../types";
 
 function buildNotification(overrides: Partial<NotificationView>): NotificationView {
@@ -24,30 +24,30 @@ function buildNotification(overrides: Partial<NotificationView>): NotificationVi
   };
 }
 
-describe("describeNotification", () => {
+describe("describeNotificationAction", () => {
   it("describes a follow as being followed, not as an approval", () => {
     const n = buildNotification({ type: NotificationType.FOLLOW_APPROVED });
-    expect(describeNotification(n)).toBe("花子 さんにフォローされました");
+    expect(describeNotificationAction(n)).toBe("さんにフォローされました");
   });
 
   it("describes a pending follow request", () => {
     const n = buildNotification({ type: NotificationType.FOLLOW_REQUEST });
-    expect(describeNotification(n)).toBe("花子 さんからフォロー申請が届きました");
+    expect(describeNotificationAction(n)).toBe("さんからフォロー申請が届きました");
   });
 
   it("appends the other-actors count for aggregated notifications", () => {
     const n = buildNotification({ type: NotificationType.LIKE, actorCount: 4 });
-    expect(describeNotification(n)).toBe("花子 他 3 人 さんがいいねしました");
+    expect(describeNotificationAction(n)).toBe("他 3 人 さんがいいねしました");
   });
 
-  it("falls back to a generic placeholder name when there is no actor", () => {
+  it("describes the action the same way when the actor is gone", () => {
     const n = buildNotification({ type: NotificationType.COMMENT, latestActor: null });
-    expect(describeNotification(n)).toBe("誰か さんがコメントしました");
+    expect(describeNotificationAction(n)).toBe("さんがコメントしました");
   });
 
   it("describes a mention notification", () => {
     const n = buildNotification({ type: NotificationType.MENTION });
-    expect(describeNotification(n)).toBe("花子 さんがメンションしました");
+    expect(describeNotificationAction(n)).toBe("さんがメンションしました");
   });
 });
 

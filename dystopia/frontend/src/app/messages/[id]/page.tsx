@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
+import { ProfileName } from "@/components/ui/profile-name";
 import { useMessages, useThread } from "@/modules/messaging";
 import { MessageComposer } from "@/modules/messaging/components/MessageComposer";
 import { SendRestrictionNotice } from "@/modules/messaging/components/SendRestrictionNotice";
@@ -23,9 +24,8 @@ export default function ChatPage() {
   const { messages, hasMore, loading, send, markRead, loadMore } = useMessages(threadId || null);
   const { thread, sendRestriction, loading: threadLoading } = useThread(threadId || null);
   const counterpart = thread?.counterpart ?? null;
-  const counterpartName = counterpart?.displayName || "(退会)";
-  const counterpartAvatar = (
-    <Avatar src={counterpart?.avatarUrl || undefined} fallback={counterpartName.slice(0, 1)} size="sm" />
+    const counterpartAvatar = (
+    <Avatar src={counterpart?.avatarUrl || undefined} fallback={(counterpart?.displayName || "?").slice(0, 1)} size="sm" />
   );
 
   useEffect(() => {
@@ -47,12 +47,18 @@ export default function ChatPage() {
         ) : counterpart ? (
           <Link href={`/u/${encodeURIComponent(counterpart.username)}`} className="flex items-center gap-2">
             {counterpartAvatar}
-            <h1 className="truncate text-base font-bold">{counterpartName}とのメッセージ</h1>
+            <h1 className="flex min-w-0 items-center text-base font-bold">
+              <ProfileName profile={counterpart} className="text-base" />
+              <span className="shrink-0">とのメッセージ</span>
+            </h1>
           </Link>
         ) : (
           <div className="flex items-center gap-2">
             {counterpartAvatar}
-            <h1 className="truncate text-base font-bold">{counterpartName}とのメッセージ</h1>
+            <h1 className="flex min-w-0 items-center text-base font-bold">
+              <ProfileName profile={counterpart} className="text-base" />
+              <span className="shrink-0">とのメッセージ</span>
+            </h1>
           </div>
         )}
       </header>

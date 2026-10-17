@@ -7,6 +7,7 @@ import { ComposeToSheet } from "@/components/compose/ComposeToSheet";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { ProfileName } from "@/components/ui/profile-name";
 import { useThreads } from "@/modules/messaging";
 import type { ThreadView } from "@/modules/messaging/types";
 import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
@@ -21,8 +22,8 @@ function timeAgo(iso: string): string {
   return d.toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
-function ThreadRow({ thread }: { thread: ThreadView }) {
-  const name = thread.counterpart?.displayName || "(退会)";
+export function ThreadRow({ thread }: { thread: ThreadView }) {
+  const initial = (thread.counterpart?.displayName || "?").slice(0, 1);
   const preview = thread.lastMessage?.content || "メッセージはまだありません";
   const isUnread = thread.unreadCount > 0;
 
@@ -35,13 +36,13 @@ function ThreadRow({ thread }: { thread: ThreadView }) {
     >
       <Avatar
         src={thread.counterpart?.avatarUrl || undefined}
-        fallback={name.slice(0, 1) || "?"}
+        fallback={initial}
         size="md"
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <p className={`truncate text-sm ${isUnread ? "font-bold text-text-primary" : "text-text-primary"}`}>
-            {name}
+          <p className="flex min-w-0">
+            <ProfileName profile={thread.counterpart} className={isUnread ? "text-sm" : "text-sm font-normal"} />
           </p>
           <span className="shrink-0 text-xs text-text-muted">{timeAgo(thread.lastMessageAt)}</span>
         </div>

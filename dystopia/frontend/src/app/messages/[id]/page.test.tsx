@@ -47,7 +47,7 @@ describe("ChatPage", () => {
   it("heads the conversation with the counterpart's name linked to their profile", () => {
     const html = renderToStaticMarkup(<ChatPage />);
 
-    expect(html).toMatch(/<a[^>]*href="\/u\/yuna"[^>]*>.*<h1[^>]*>ゆなとのメッセージ<\/h1>/);
+    expect(html).toMatch(/<a[^>]*href="\/u\/yuna"[^>]*>.*<h1[^>]*>.*ゆな.*とのメッセージ.*<\/h1>/);
   });
 
   it("shows the counterpart's initial beside an incoming message instead of a placeholder", () => {
@@ -73,14 +73,24 @@ describe("ChatPage", () => {
     expect(html).toContain("プロフィールを見る");
   });
 
+  it("marks only a counterpart whose profile is locked", () => {
+    mocks.thread = { ...thread, counterpart: { ...counterpart, isPrivate: true } };
+    const locked = renderToStaticMarkup(<ChatPage />);
+    mocks.thread = thread;
+    const open = renderToStaticMarkup(<ChatPage />);
+
+    expect(locked).toContain('aria-label="鍵付き"');
+    expect(open).not.toContain('aria-label="鍵付き"');
+  });
+
   it("names a withdrawn counterpart without a profile link", () => {
     mocks.thread = { ...thread, counterpart: null };
     mocks.sendRestriction = "counterpart_unavailable";
 
     const html = renderToStaticMarkup(<ChatPage />);
 
-    expect(html).toContain("(退会)");
-    expect(html).toContain("(退会)とのメッセージ");
+    expect(html).toContain("削除したプロフィール");
+    expect(html).toContain("とのメッセージ");
     expect(html).not.toContain('href="/u/');
   });
 });

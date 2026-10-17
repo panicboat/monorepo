@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LockMark } from "@/components/ui/lock-mark";
+import { ProfileName } from "@/components/ui/profile-name";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { useFollowList, useFollowerList } from "@/modules/social/hooks";
 import { FollowButton } from "./FollowButton";
@@ -28,9 +28,8 @@ function ProfileRow({ profile }: { profile: ProfileSummaryView }) {
         href={href}
       />
       <Link href={href} className="min-w-0 flex-1">
-        <p className="flex items-center gap-1 font-bold text-text-primary">
-          <span className="truncate">{profile.displayName}</span>
-          {profile.isPrivate && <LockMark label="鍵付き" className="text-sm" />}
+        <p className="flex">
+          <ProfileName profile={profile} />
         </p>
         <p className="truncate text-sm text-text-secondary">@{profile.username}</p>
       </Link>

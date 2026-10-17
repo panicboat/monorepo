@@ -1,24 +1,23 @@
 import { NotificationType } from "@/stub/notifications/v1/notification_service_pb";
 import type { NotificationView } from "../types";
 
-export function describeNotification(n: NotificationView): string {
-  const actorName = n.latestActor?.displayName || "誰か";
-  const othersSuffix = n.actorCount > 1 ? ` 他 ${n.actorCount - 1} 人` : "";
+export function describeNotificationAction(n: NotificationView): string {
+  const others = n.actorCount > 1 ? `他 ${n.actorCount - 1} 人 ` : "";
   switch (n.type) {
     case NotificationType.LIKE:
-      return `${actorName}${othersSuffix} さんがいいねしました`;
+      return `${others}さんがいいねしました`;
     case NotificationType.COMMENT:
-      return `${actorName}${othersSuffix} さんがコメントしました`;
+      return `${others}さんがコメントしました`;
     case NotificationType.REPLY:
-      return `${actorName}${othersSuffix} さんが返信しました`;
+      return `${others}さんが返信しました`;
     case NotificationType.FOLLOW_REQUEST:
-      return `${actorName} さんからフォロー申請が届きました`;
+      return "さんからフォロー申請が届きました";
     case NotificationType.FOLLOW_APPROVED:
-      return `${actorName} さんにフォローされました`;
+      return "さんにフォローされました";
     case NotificationType.MENTION:
-      return `${actorName}${othersSuffix} さんがメンションしました`;
+      return `${others}さんがメンションしました`;
     default:
-      return `${actorName} さんから通知`;
+      return "さんから通知";
   }
 }
 
