@@ -41,7 +41,7 @@ const feedPost: PostView = {
   content: "こんにちは",
   media: [],
   createdAt: new Date().toISOString(),
-  author: { profileId: "author-1", displayName: "テスト太郎", username: "test_taro", avatarUrl: "" },
+  author: { profileId: "author-1", displayName: "テスト太郎", username: "test_taro", avatarUrl: "", isPrivate: false, role: null },
   likesCount: 0,
   commentsCount: 3,
   visibility: "public",

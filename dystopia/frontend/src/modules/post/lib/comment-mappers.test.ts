@@ -1,15 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { mapCommentToView } from "./comment-mappers";
-import type { Comment, CommentAuthor } from "@/stub/post/v1/comment_service_pb";
+import { create } from "@bufbuild/protobuf";
+import type { Comment } from "@/stub/post/v1/comment_service_pb";
+import { ProfileSummarySchema } from "@/stub/profile/v1/service_pb";
 
-const author: CommentAuthor = {
-  $typeName: "post.v1.CommentAuthor",
+const author = create(ProfileSummarySchema, {
   profileId: "author-profile-1",
-  name: "Coco",
-  imageUrl: "https://example.com/a.png",
-  userType: "guest",
+  displayName: "Coco",
+  avatarUrl: "https://example.com/a.png",
   username: "coco_u",
-};
+  isPrivate: true,
+});
 
 const comment: Comment = {
   $typeName: "post.v1.Comment",
@@ -37,6 +38,14 @@ describe("mapCommentToView", () => {
     const view = mapCommentToView(comment);
 
     expect(view.author?.username).toBe("coco_u");
+  });
+
+  it("reads the author as a profile summary", () => {
+    const view = mapCommentToView(comment);
+
+    expect(view.author?.displayName).toBe("Coco");
+    expect(view.author?.avatarUrl).toBe("https://example.com/a.png");
+    expect(view.author?.isPrivate).toBe(true);
   });
 
   it("returns a null author when the comment has no author", () => {

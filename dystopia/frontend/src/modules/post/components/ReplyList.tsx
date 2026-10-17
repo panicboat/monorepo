@@ -41,8 +41,8 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
         const authorHref = r.author?.username ? `/u/${encodeURIComponent(r.author.username)}` : undefined;
         const avatar = (
           <Avatar
-            src={r.author?.imageUrl || undefined}
-            fallback={(r.author?.name || "?").slice(0, 1)}
+            src={r.author?.avatarUrl || undefined}
+            fallback={(r.author?.displayName || "?").slice(0, 1)}
             size="sm"
             href={authorHref}
           />
@@ -54,10 +54,10 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
               <div className="flex items-center gap-1 text-sm">
                 {authorHref ? (
                   <Link href={authorHref} className="font-bold text-text-primary">
-                    {r.author?.name || "—"}
+                    {r.author?.displayName || "—"}
                   </Link>
                 ) : (
-                  <span className="font-bold text-text-primary">{r.author?.name || "—"}</span>
+                  <span className="font-bold text-text-primary">{r.author?.displayName || "—"}</span>
                 )}
                 <span className="text-text-muted">· {r.createdAt ? formatTimeAgo(r.createdAt) : ""}</span>
               </div>

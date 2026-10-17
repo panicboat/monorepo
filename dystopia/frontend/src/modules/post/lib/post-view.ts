@@ -1,15 +1,10 @@
+import type { ProfileSummaryView } from "@/modules/profile/types";
+
 export interface MentionView {
   profileId: string;
   username: string;
   position: number;
   length: number;
-}
-
-export interface PostAuthorView {
-  profileId: string;
-  displayName: string;
-  username: string;
-  avatarUrl: string;
 }
 
 export interface PostMediaView {
@@ -26,7 +21,7 @@ export interface PostView {
   content: string;
   media: PostMediaView[];
   createdAt: string;
-  author: PostAuthorView | null;
+  author: ProfileSummaryView | null;
   likesCount: number;
   commentsCount: number;
   visibility: "public" | "private";

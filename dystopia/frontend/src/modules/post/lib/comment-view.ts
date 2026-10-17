@@ -1,11 +1,5 @@
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import type { MentionView } from "./post-view";
-
-export interface CommentAuthorView {
-  profileId: string;
-  name: string;
-  imageUrl: string;
-  username: string;
-}
 
 export interface CommentView {
   id: string;
@@ -14,7 +8,7 @@ export interface CommentView {
   authorProfileId: string;
   content: string;
   createdAt: string;
-  author: CommentAuthorView | null;
+  author: ProfileSummaryView | null;
   repliesCount: number;
   mentions: MentionView[];
 }
