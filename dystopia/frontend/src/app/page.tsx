@@ -8,7 +8,7 @@ import { useFeed } from "@/modules/feed/hooks/useFeed";
 import { useProfile } from "@/modules/profile/hooks/useProfile";
 import { useAuthStore, selectRole } from "@/stores/authStore";
 import { useRecentKarte } from "@/modules/karte/hooks/useRecentKarte";
-import { KarteEntryCard } from "@/modules/karte/components/KarteEntryCard";
+import { KarteList } from "@/modules/karte/components/KarteList";
 import { useRecentReviews } from "@/modules/review/hooks/useRecentReviews";
 import { ReviewEntryCard } from "@/modules/review/components/ReviewEntryCard";
 import type { FeedFilterValue } from "@/modules/feed/types";
@@ -109,30 +109,20 @@ export default function HomePage() {
   }, [initialized, loading, error, showAreaHint, showEmptyState, posts, hasMore, loadingMore, fetchMore]);
 
   const karteContent = useMemo(() => {
-    if (karte.loading && karte.kartes.length === 0) {
-      return <p className="px-4 py-8 text-center text-text-secondary">読み込み中…</p>;
-    }
     if (karte.error) {
       return <p className="px-4 py-8 text-center text-text-danger">読み込みに失敗しました</p>;
     }
     return (
-      <>
-        {karte.kartes.map((item) => (
-          <KarteEntryCard key={item.id} karte={item} mode="recent" onChanged={karte.refresh} />
-        ))}
-        {karte.kartes.length === 0 && !karte.hasMore && (
-          <p className="px-4 py-8 text-center text-text-secondary">まだカルテがありません</p>
-        )}
-        {karte.hasMore && (
-          <div className="px-4 py-4 text-center">
-            <Button variant="secondary" onClick={() => karte.loadMore()} disabled={karte.loading}>
-              {karte.loading ? "読み込み中…" : "もっと見る"}
-            </Button>
-          </div>
-        )}
-      </>
+      <KarteList
+        kartes={karte.kartes}
+        variant="feed"
+        hasMore={karte.hasMore}
+        loading={karte.loading}
+        onLoadMore={karte.loadMore}
+        empty="まだカルテがありません"
+      />
     );
-  }, [karte.loading, karte.error, karte.kartes, karte.hasMore, karte.refresh, karte.loadMore]);
+  }, [karte.error, karte.kartes, karte.hasMore, karte.loading, karte.loadMore]);
 
   const reviewsContent = useMemo(() => {
     if (reviews.loading && reviews.entries.length === 0) {

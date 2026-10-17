@@ -13,6 +13,8 @@ module Karte
         attribute :closed_at, Types::Time.optional
         attribute :created_at, Types::Time
         attribute :updated_at, Types::Time
+        attribute :last_activity_at, Types::Time
+        attribute :last_occurred_on, Types::Date
 
         primary_key :id
       end

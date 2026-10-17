@@ -17,7 +17,7 @@ RSpec.describe "Karte list use cases", type: :database do
   def write(account:, profile:, rating:, close: false, created_at: Time.now)
     karte = uc(:create_karte).call(viewer_account_id: account, viewer_profile_id: profile, target_profile_id: guest, rating: rating, event: event_input)
     uc(:close_karte).call(viewer_account_id: account, karte_id: karte[:id]) if close
-    db[:karte__kartes].where(id: karte[:id]).update(created_at: created_at)
+    db[:karte__kartes].where(id: karte[:id]).update(created_at: created_at, last_activity_at: created_at)
     karte
   end
 
@@ -70,6 +70,18 @@ RSpec.describe "Karte list use cases", type: :database do
     expect(result[:kartes].map { |k| k[:id] }).to contain_exactly(mine[:id], also_mine[:id])
   end
 
+  it "counts the viewer's kartes on the first page only" do
+    write(account: cast_account, profile: persona, rating: nil, created_at: Time.now - 20)
+    write(account: cast_account, profile: persona, rating: 3, close: true, created_at: Time.now - 10)
+    write(account: other_cast_account, profile: other_persona, rating: nil)
+
+    first = uc(:list_my_kartes).call(viewer_account_id: cast_account, limit: 1, cursor: nil)
+    expect(first[:counts]).to eq(total: 2, open: 1, closed: 1)
+
+    rest = uc(:list_my_kartes).call(viewer_account_id: cast_account, limit: 1, cursor: first[:next_cursor])
+    expect(rest[:counts]).to eq(total: 0, open: 0, closed: 0)
+  end
+
   it "lists recent kartes of every cast, open ones included" do
     open_karte = write(account: cast_account, profile: persona, rating: nil)
     closed_karte = write(account: other_cast_account, profile: other_persona, rating: 2, close: true)
@@ -77,6 +89,20 @@ RSpec.describe "Karte list use cases", type: :database do
     result = uc(:list_recent_kartes).call(viewer_account_id: other_cast_account, limit: 20, cursor: nil)
 
     expect(result[:kartes].map { |k| k[:id] }).to contain_exactly(open_karte[:id], closed_karte[:id])
+  end
+
+  it "pages the recent kartes by the latest event's date" do
+    now = Time.now
+    older = write(account: cast_account, profile: persona, rating: nil, created_at: now - 20)
+    newer = write(account: cast_account, profile: persona, rating: nil, created_at: now - 10)
+    db[:karte__kartes].where(id: older[:id]).update(last_occurred_on: Date.new(2026, 10, 9))
+    db[:karte__kartes].where(id: newer[:id]).update(last_occurred_on: Date.new(2026, 10, 8))
+
+    page = uc(:list_recent_kartes).call(viewer_account_id: cast_account, limit: 1, cursor: nil)
+    expect(page[:kartes].map { |k| k[:id] }).to eq([older[:id]])
+
+    rest = uc(:list_recent_kartes).call(viewer_account_id: cast_account, limit: 1, cursor: page[:next_cursor])
+    expect(rest[:kartes].map { |k| k[:id] }).to eq([newer[:id]])
   end
 
   it "refuses a guest viewer and a malformed target id" do

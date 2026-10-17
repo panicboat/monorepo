@@ -2,10 +2,11 @@ import {
   KarteStage as KarteStageMessage,
   KarteStatus as KarteStatusMessage,
   type Karte as KarteMessage,
+  type KarteCounts as KarteCountsMessage,
   type KarteEvent as KarteEventMessage,
   type ReliabilitySummary as ReliabilitySummaryMessage,
 } from "@/stub/karte/v1/service_pb";
-import type { Karte, KarteEvent, KarteEventInput, KarteStage, ReliabilitySummary } from "@/modules/karte/types";
+import type { Karte, KarteCounts, KarteEvent, KarteEventInput, KarteStage, ReliabilitySummary } from "@/modules/karte/types";
 
 const STAGE_TO_MESSAGE: Record<KarteStage, KarteStageMessage> = {
   reservation: KarteStageMessage.RESERVATION,
@@ -42,9 +43,11 @@ export function mapKarteToView(karte: KarteMessage): Karte {
     id: karte.id,
     authorProfileId: karte.authorProfileId,
     authorUsername: karte.authorUsername || "",
+    authorDisplayName: karte.authorDisplayName || "",
     authorAvatarUrl: karte.authorAvatarUrl || "",
     targetProfileId: karte.targetProfileId,
     targetUsername: karte.targetUsername || "",
+    targetDisplayName: karte.targetDisplayName || "",
     targetAvatarUrl: karte.targetAvatarUrl || "",
     isMine: !!karte.isMine,
     rating: karte.rating === 0 ? null : karte.rating,
@@ -53,6 +56,7 @@ export function mapKarteToView(karte: KarteMessage): Karte {
     createdAt: toIsoString(karte.createdAt),
     updatedAt: toIsoString(karte.updatedAt),
     closedAt: karte.closedAt ? toIsoString(karte.closedAt) : null,
+    lastActivityAt: toIsoString(karte.lastActivityAt),
   };
 }
 
@@ -73,4 +77,8 @@ export function eventInputToMessage(input: KarteEventInput) {
     note: input.note,
     occurredOn: input.occurredOn,
   };
+}
+
+export function mapCountsToView(counts: KarteCountsMessage | undefined): KarteCounts {
+  return { total: counts?.totalCount ?? 0, open: counts?.openCount ?? 0, closed: counts?.closedCount ?? 0 };
 }

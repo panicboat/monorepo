@@ -1,20 +1,29 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { ComposeToSheet } from "@/components/compose/ComposeToSheet";
 import { useMyKarte } from "@/modules/karte/hooks/useMyKarte";
+import { KarteList } from "@/modules/karte/components/KarteList";
 import { useAuthStore, selectIsHydrated, selectRole } from "@/stores/authStore";
-import { KarteEntryCard } from "@/modules/karte/components/KarteEntryCard";
-import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
 
 export function MyKarteHeader() {
-  return <PageHeader title="自分のカルテ" description={getFeatureDescription("karte")} />;
+  return <PageHeader title="自分のカルテ" description="自分が作成したカルテの一覧。ホームの「カルテ」は全キャストの新着です。" />;
+}
+
+interface Composing {
+  session: number;
+  open: boolean;
 }
 
 export default function MyKartePage() {
   const isHydrated = useAuthStore(selectIsHydrated);
   const role = useAuthStore(selectRole);
-  const { kartes, hasMore, loading, loadMore, refresh } = useMyKarte();
+  const { kartes, counts, hasMore, loading, loadMore } = useMyKarte();
+  // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
+  const [composing, setComposing] = useState<Composing | null>(null);
 
   if (!isHydrated) {
     return <main className="mx-auto max-w-xl p-6 text-text-secondary">読み込み中…</main>;
@@ -29,23 +38,38 @@ export default function MyKartePage() {
     );
   }
 
+  const summary = [
+    { label: "自分のカルテ", value: counts.total },
+    { label: "記録中", value: counts.open },
+    { label: "完了", value: counts.closed },
+  ];
+
   return (
     <div>
       <header className="border-b border-border px-4 py-3">
         <MyKarteHeader />
       </header>
-      {kartes.map((karte) => (
-        <KarteEntryCard key={karte.id} karte={karte} mode="my" onChanged={refresh} />
-      ))}
-      {loading && <div className="px-4 py-3 text-sm text-muted-foreground">読み込み中…</div>}
-      {hasMore && (
-        <button
-          type="button"
-          onClick={loadMore}
-          className="block w-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground"
-        >
-          もっと見る
-        </button>
+      <div className="px-4 py-3">
+        <Button type="button" onClick={() => setComposing((current) => ({ session: (current?.session ?? 0) + 1, open: true }))}>
+          ＋ カルテを作成
+        </Button>
+      </div>
+      <div className="grid grid-cols-3 border-y border-border text-center">
+        {summary.map((item) => (
+          <div key={item.label} className="py-3">
+            <p className="text-xl font-bold text-text-primary">{item.value}</p>
+            <p className="text-xs text-text-secondary">{item.label}</p>
+          </div>
+        ))}
+      </div>
+      <KarteList kartes={kartes} variant="mine" hasMore={hasMore} loading={loading} onLoadMore={loadMore} empty="自分のカルテはまだありません" />
+      {composing && (
+        <ComposeToSheet
+          key={composing.session}
+          kind="karte"
+          open={composing.open}
+          onClose={() => setComposing((current) => current && { ...current, open: false })}
+        />
       )}
     </div>
   );

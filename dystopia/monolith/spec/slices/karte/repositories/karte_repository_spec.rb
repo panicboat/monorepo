@@ -16,8 +16,12 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
     repo.close(karte(rating: rating, **attrs).id)
   end
 
-  def set_created_at(record, time)
-    db[:karte__kartes].where(id: record.id).update(created_at: time)
+  def set_order(record, **attrs)
+    db[:karte__kartes].where(id: record.id).update(attrs)
+  end
+
+  def column(record, name)
+    db[:karte__kartes].where(id: record.id).get(name)
   end
 
   describe "#create" do
@@ -31,6 +35,16 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
 
     it "allows an open karte without a rating" do
       expect(karte(rating: nil).rating).to be_nil
+    end
+
+    it "starts the ordering at its creation and its first event's date" do
+      record = repo.create(
+        author_account_id: SecureRandom.uuid_v7, author_profile_id: SecureRandom.uuid_v7,
+        target_profile_id: target, rating: nil, occurred_on: Date.new(2026, 9, 30)
+      )
+
+      expect(record.last_occurred_on).to eq(Date.new(2026, 9, 30))
+      expect(record.last_activity_at).to eq(record.created_at)
     end
   end
 
@@ -97,33 +111,105 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
   end
 
   describe "listing" do
-    it "lists the kartes about a guest newest first, one more than the limit, and continues from the cursor" do
+    it "lists the kartes about a guest by the last activity, and continues from the cursor" do
       now = Time.now
       first = karte
       second = karte
       third = karte
-      set_created_at(first, now - 300)
-      set_created_at(second, now - 200)
-      set_created_at(third, now - 100)
+      set_order(first, last_activity_at: now - 100)
+      set_order(second, last_activity_at: now - 300)
+      set_order(third, last_activity_at: now - 200)
       karte(target_profile_id: SecureRandom.uuid_v7)
 
       page = repo.list_by_target(target_profile_id: target, limit: 2)
-      expect(page.map(&:id)).to eq([third.id, second.id, first.id])
+      expect(page.map(&:id)).to eq([first.id, third.id, second.id])
 
-      rest = repo.list_by_target(target_profile_id: target, limit: 2, cursor: repo.cursor_for(page[1]))
-      expect(rest.map(&:id)).to eq([first.id])
+      rest = repo.list_by_target(target_profile_id: target, limit: 2, cursor: repo.cursor_for(page[1], order: :activity))
+      expect(rest.map(&:id)).to eq([second.id])
     end
 
-    it "lists the kartes of an author account and the recent kartes of everyone, open ones included" do
+    it "lists the kartes of an author account by the last activity" do
       now = Time.now
       author = SecureRandom.uuid_v7
-      mine = karte(author_account_id: author)
-      theirs = closed(rating: 4)
-      set_created_at(mine, now - 100)
-      set_created_at(theirs, now - 50)
+      older = karte(author_account_id: author)
+      newer = karte(author_account_id: author)
+      karte
+      set_order(older, last_activity_at: now - 200, created_at: now - 50)
+      set_order(newer, last_activity_at: now - 100, created_at: now - 300)
 
-      expect(repo.list_by_author(author_account_id: author, limit: 20).map(&:id)).to eq([mine.id])
-      expect(repo.list_recent(limit: 20).map(&:id)).to eq([theirs.id, mine.id])
+      expect(repo.list_by_author(author_account_id: author, limit: 20).map(&:id)).to eq([newer.id, older.id])
+    end
+
+    it "lists the recent kartes by the latest event's date, then by creation within a day, and continues from the cursor" do
+      now = Time.now
+      day_old = karte
+      today_early = karte
+      today_late = karte
+      set_order(day_old, last_occurred_on: Date.new(2026, 10, 14), created_at: now - 10)
+      set_order(today_early, last_occurred_on: Date.new(2026, 10, 15), created_at: now - 300)
+      set_order(today_late, last_occurred_on: Date.new(2026, 10, 15), created_at: now - 200)
+
+      page = repo.list_recent(limit: 1)
+      expect(page.map(&:id)).to eq([today_late.id, today_early.id])
+
+      rest = repo.list_recent(limit: 1, cursor: repo.cursor_for(page[0], order: :occurred))
+      expect(rest.map(&:id)).to eq([today_early.id, day_old.id])
+    end
+
+    it "reads a cursor of another ordering or a broken one as the first page" do
+      record = karte
+      other_ordering = repo.cursor_for(record, order: :occurred)
+
+      expect(repo.list_by_target(target_profile_id: target, limit: 20, cursor: other_ordering).map(&:id)).to eq([record.id])
+      expect(repo.list_recent(limit: 20, cursor: repo.cursor_for(record, order: :activity)).map(&:id)).to eq([record.id])
+      expect(repo.list_recent(limit: 20, cursor: "not-a-cursor").map(&:id)).to eq([record.id])
+    end
+  end
+
+  describe "#record_activity and #refresh_last_occurred_on" do
+    it "moves the last activity to now" do
+      record = karte
+      set_order(record, last_activity_at: Time.now - 3600)
+
+      repo.record_activity(record.id)
+
+      expect(column(record, :last_activity_at)).to be > Time.now - 60
+    end
+
+    it "sets the latest date to the newest event's date and leaves it when the karte has no events" do
+      record = karte
+      db[:karte__events].insert(id: SecureRandom.uuid_v7, karte_id: record.id, stage: "service", outcome: "completed", occurred_on: Date.new(2026, 10, 3))
+      db[:karte__events].insert(id: SecureRandom.uuid_v7, karte_id: record.id, stage: "reservation", outcome: "booked", occurred_on: Date.new(2026, 9, 28))
+
+      repo.refresh_last_occurred_on(record.id)
+      expect(column(record, :last_occurred_on)).to eq(Date.new(2026, 10, 3))
+
+      db[:karte__events].where(karte_id: record.id).delete
+      repo.refresh_last_occurred_on(record.id)
+      expect(column(record, :last_occurred_on)).to eq(Date.new(2026, 10, 3))
+    end
+  end
+
+  describe "#close and #reopen ordering" do
+    it "moves the last activity on closing and on reopening" do
+      record = karte(rating: 4)
+      set_order(record, last_activity_at: Time.now - 3600)
+      repo.close(record.id)
+      expect(column(record, :last_activity_at)).to be > Time.now - 60
+
+      set_order(record, last_activity_at: Time.now - 3600)
+      repo.reopen(record.id)
+      expect(column(record, :last_activity_at)).to be > Time.now - 60
+    end
+
+    it "leaves the last activity on a rating change" do
+      record = karte
+      past = Time.now - 3600
+      set_order(record, last_activity_at: past)
+
+      repo.update_rating(record.id, 3)
+
+      expect(column(record, :last_activity_at)).to be_within(1).of(past)
     end
   end
 
@@ -135,6 +221,19 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
         expect(repo.lock(record.id).id).to eq(record.id)
         expect(repo.lock(SecureRandom.uuid_v7)).to be_nil
       end
+    end
+  end
+
+  describe "#counts_by_author" do
+    it "counts the account's kartes by state, across its profiles, leaving other accounts out" do
+      author = SecureRandom.uuid_v7
+      karte(author_account_id: author)
+      karte(author_account_id: author, author_profile_id: SecureRandom.uuid_v7)
+      closed(rating: 4, author_account_id: author)
+      karte
+
+      expect(repo.counts_by_author(author_account_id: author)).to eq(total: 3, open: 2, closed: 1)
+      expect(repo.counts_by_author(author_account_id: SecureRandom.uuid_v7)).to eq(total: 0, open: 0, closed: 0)
     end
   end
 

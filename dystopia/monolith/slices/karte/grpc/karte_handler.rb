@@ -151,7 +151,11 @@ module Karte
         result = wrap_errors do
           list_my_kartes_uc.call(viewer_account_id: current_account_id, limit: message.limit, cursor: cursor_from(message.cursor))
         end
-        ::Karte::V1::ListMyKartesResponse.new(**page_to_proto(result))
+        counts = result[:counts]
+        ::Karte::V1::ListMyKartesResponse.new(
+          **page_to_proto(result),
+          counts: ::Karte::V1::KarteCounts.new(total_count: counts[:total], open_count: counts[:open], closed_count: counts[:closed])
+        )
       end
 
       def list_recent_kartes
@@ -207,9 +211,11 @@ module Karte
           id: karte[:id],
           author_profile_id: karte[:author_profile_id],
           author_username: karte[:author_username],
+          author_display_name: karte[:author_display_name],
           author_avatar_url: karte[:author_avatar_url],
           target_profile_id: karte[:target_profile_id],
           target_username: karte[:target_username],
+          target_display_name: karte[:target_display_name],
           target_avatar_url: karte[:target_avatar_url],
           is_mine: karte[:is_mine],
           rating: karte[:rating] || 0,
@@ -217,7 +223,8 @@ module Karte
           events: karte[:events].map { |event| event_to_proto(event) },
           created_at: timestamp(karte[:created_at]),
           updated_at: timestamp(karte[:updated_at]),
-          closed_at: timestamp(karte[:closed_at])
+          closed_at: timestamp(karte[:closed_at]),
+          last_activity_at: timestamp(karte[:last_activity_at])
         )
       end
 

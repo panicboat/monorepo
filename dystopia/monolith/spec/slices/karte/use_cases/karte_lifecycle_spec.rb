@@ -19,8 +19,21 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
 
   def forbidden = raise_error(Karte::Errors::Forbidden)
   def invalid(message) = raise_error(Karte::Errors::Invalid, message)
+  def column(karte, name) = Hanami.app["db.gateway"].connection[:karte__kartes].where(id: karte[:id]).get(name)
+  def set_activity(karte, time) = Hanami.app["db.gateway"].connection[:karte__kartes].where(id: karte[:id]).update(last_activity_at: time)
+  def event_on(date) = event_input.merge(occurred_on: date)
 
   describe "creating" do
+    it "presents the display names and the last activity" do
+      named_cast = create_account_with_profile(account_id: cast_account, username: "yuna", display_name: "ゆな")
+      named_guest = create_account_with_profile(account_id: create_account(role: 1), username: "hanako", display_name: "はなこ")
+
+      karte = create(profile: named_cast, target: named_guest)
+
+      expect(karte).to include(author_display_name: "ゆな", target_display_name: "はなこ")
+      expect(karte[:last_activity_at]).to eq(karte[:created_at])
+    end
+
     it "opens a karte with its first event and presents the profiles" do
       karte = create
 
@@ -166,4 +179,51 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
       expect { uc(:get_karte).call(viewer_account_id: cast_account, karte_id: closed_karte[:id]) }.to invalid("Karte not found")
     end
   end
+  describe "ordering" do
+    it "moves the karte up on adding an event, closing and reopening, but not on editing an event or the rating" do
+      karte = create
+      past = Time.now - 3600
+
+      set_activity(karte, past)
+      uc(:add_karte_event).call(viewer_account_id: cast_account, karte_id: karte[:id], event: event_on("2026-10-02"))
+      expect(column(karte, :last_activity_at)).to be > Time.now - 60
+
+      set_activity(karte, past)
+      event_id = column_events(karte).first
+      uc(:update_karte_event).call(viewer_account_id: cast_account, event_id: event_id, event: event_on("2026-10-01"))
+      uc(:update_karte_rating).call(viewer_account_id: cast_account, karte_id: karte[:id], rating: 4)
+      expect(column(karte, :last_activity_at)).to be_within(1).of(past)
+
+      uc(:close_karte).call(viewer_account_id: cast_account, karte_id: karte[:id])
+      expect(column(karte, :last_activity_at)).to be > Time.now - 60
+
+      set_activity(karte, past)
+      uc(:reopen_karte).call(viewer_account_id: cast_account, karte_id: karte[:id])
+      expect(column(karte, :last_activity_at)).to be > Time.now - 60
+    end
+
+    it "keeps the latest date at the newest event's date" do
+      karte = create
+      expect(column(karte, :last_occurred_on)).to eq(Date.new(2026, 10, 1))
+
+      uc(:add_karte_event).call(viewer_account_id: cast_account, karte_id: karte[:id], event: event_on("2026-09-20"))
+      expect(column(karte, :last_occurred_on)).to eq(Date.new(2026, 10, 1))
+
+      newest = uc(:add_karte_event).call(viewer_account_id: cast_account, karte_id: karte[:id], event: event_on("2026-10-05"))
+      expect(column(karte, :last_occurred_on)).to eq(Date.new(2026, 10, 5))
+
+      newest_id = newest[:events].find { |e| e[:occurred_on] == Date.new(2026, 10, 5) }[:id]
+      uc(:delete_karte_event).call(viewer_account_id: cast_account, event_id: newest_id)
+      expect(column(karte, :last_occurred_on)).to eq(Date.new(2026, 10, 1))
+
+      first_id = newest[:events].find { |e| e[:occurred_on] == Date.new(2026, 10, 1) }[:id]
+      uc(:update_karte_event).call(viewer_account_id: cast_account, event_id: first_id, event: event_on("2026-10-03"))
+      expect(column(karte, :last_occurred_on)).to eq(Date.new(2026, 10, 3))
+    end
+  end
+
+  def column_events(karte)
+    Hanami.app["db.gateway"].connection[:karte__events].where(karte_id: karte[:id]).order(:created_at, :id).select_map(:id)
+  end
+
 end

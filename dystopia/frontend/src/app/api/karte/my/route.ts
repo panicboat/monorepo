@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { karteClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { handleApiError, requireAuth } from "@/lib/api-helpers";
-import { mapKarteToView } from "@/modules/karte/lib/mappers";
+import { mapCountsToView, mapKarteToView } from "@/modules/karte/lib/mappers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
       kartes: (res.kartes || []).map(mapKarteToView),
       nextCursor: res.nextCursor || "",
       hasMore: !!res.hasMore,
+      counts: mapCountsToView(res.counts),
     });
   } catch (error: unknown) {
     return handleApiError(error, "ListMyKartes");

@@ -3,6 +3,8 @@
 import useSWRInfinite from "swr/infinite";
 import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
+import { useKarteRevalidation } from "../lib/revalidate";
+import { uniqueKartes } from "../lib/uniqueKartes";
 import type { KartePage } from "../types";
 
 export function useRecentKarte(enabled: boolean) {
@@ -17,10 +19,11 @@ export function useRecentKarte(enabled: boolean) {
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =
     useSWRInfinite<KartePage>(getKey, fetcher, { revalidateOnFocus: false });
+  useKarteRevalidation(mutate);
 
   const pages = data || [];
   return {
-    kartes: pages.flatMap((p) => p.kartes || []),
+    kartes: uniqueKartes(pages.flatMap((p) => p.kartes || [])),
     hasMore: pages.length > 0 ? !!pages[pages.length - 1].hasMore : false,
     loading: isLoading || isValidating,
     error,

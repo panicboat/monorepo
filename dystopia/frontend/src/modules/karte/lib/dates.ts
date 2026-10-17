@@ -4,3 +4,8 @@ const JAPAN_DATE = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo", ye
 export function todayInJapan(now: Date = new Date()): string {
   return JAPAN_DATE.format(now);
 }
+
+export function formatMonthDay(date: string): string {
+  const [, month, day] = date.split("-");
+  return `${Number(month)}/${Number(day)}`;
+}

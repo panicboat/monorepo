@@ -30,7 +30,8 @@ module Karte
             author_account_id: viewer_account_id,
             author_profile_id: viewer_profile_id,
             target_profile_id: target_profile_id,
-            rating: rating
+            rating: rating,
+            occurred_on: attrs[:occurred_on]
           )
           event_repo.create(karte_id: karte.id, **attrs)
         end
