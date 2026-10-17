@@ -20,7 +20,7 @@ export function RatingStars({ value, className }: RatingStarsProps) {
       <span aria-hidden="true">{STARS}</span>
       <span
         aria-hidden="true"
-        className="absolute inset-y-0 left-0 overflow-hidden text-warning"
+        className="absolute inset-y-0 left-0 overflow-hidden text-rating"
         style={{ width: `${(rating / MAX_RATING) * 100}%` }}
       >
         {STARS}

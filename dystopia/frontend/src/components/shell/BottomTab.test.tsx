@@ -111,6 +111,19 @@ describe("BottomTab", () => {
     expect(html.match(/stroke-width="2"/g)).toHaveLength(3);
   });
 
+  it("stands on the app surface under a rule with 11px labels", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authMocks.useAuthStore.mockReturnValue(null);
+
+    const html = renderToStaticMarkup(<BottomTab />);
+    const nav = /<nav class="([^"]*)"/.exec(html)?.[1].split(/\s+/) ?? [];
+    const home = /<a href="\/"[^>]*class="([^"]*)"/.exec(html)?.[1].split(/\s+/) ?? [];
+
+    expect(nav).toEqual(expect.arrayContaining(["sticky", "bottom-0", "bg-bg", "border-t", "border-divider"]));
+    expect(nav).not.toContain("pb-safe");
+    expect(home).toEqual(expect.arrayContaining(["text-[0.6875rem]", "text-accent"]));
+  });
+
   describe("tapping the home tab while already on the home page", () => {
     async function renderBottomTab() {
       karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });

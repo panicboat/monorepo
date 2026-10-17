@@ -22,8 +22,8 @@ vi.mock("@/modules/footprints", () => ({
   useFootprintsUnreadCount: () => ({ count: 0 }),
 }));
 
-vi.mock("@/modules/post/components/PostComposerModal", () => ({
-  PostComposerModal: () => null,
+vi.mock("@/modules/post/components/PostComposerSheet", () => ({
+  PostComposerSheet: () => null,
 }));
 
 const karteMocks = vi.hoisted(() => ({
@@ -106,5 +106,27 @@ describe("SideNav", () => {
     const html = renderToStaticMarkup(<SideNav />);
 
     expect(html).not.toContain("/oshi");
+  });
+
+  it("marks the entry of the current page with a surface and an accent icon", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+
+    const html = renderToStaticMarkup(<SideNav />);
+    const linkClasses = (path: string) =>
+      (/class="([^"]*)"/.exec(new RegExp(`<a([^>]*href="${path}"[^>]*)><svg`).exec(html)?.[1] ?? "")?.[1] ?? "").split(/\s+/);
+
+    expect(linkClasses("/")).toEqual(expect.arrayContaining(["bg-bg-secondary", "text-text-primary"]));
+    expect(linkClasses("/search")).not.toContain("bg-bg-secondary");
+    expect(linkClasses("/search")).toContain("text-text-secondary");
+    expect(html).toMatch(/<a[^>]*href="\/"[^>]*><svg[^>]*text-accent/);
+    expect(html).not.toMatch(/<a[^>]*href="\/search"[^>]*><svg[^>]*text-accent/);
+  });
+
+  it("stands 266px wide on the app surface with a rule on its right", () => {
+    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+
+    const aside = /<aside class="([^"]*)"/.exec(renderToStaticMarkup(<SideNav />))?.[1].split(/\s+/) ?? [];
+
+    expect(aside).toEqual(expect.arrayContaining(["w-[266px]", "bg-bg", "border-r", "border-divider"]));
   });
 });

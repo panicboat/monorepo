@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { FlowerMenu } from "@/components/ui/flower-menu";
-import { PostComposerModal } from "@/modules/post/components/PostComposerModal";
+import { PostComposerSheet } from "@/modules/post/components/PostComposerSheet";
 import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
 import { useAuthStore, selectRole } from "@/stores/authStore";
-import { ComposeToDialog } from "./ComposeToDialog";
+import { ComposeToSheet } from "./ComposeToSheet";
 import { COMPOSE_ICONS, COMPOSE_LABELS } from "./compose-icons";
 import { resolveComposeKinds, type ComposeKind } from "./resolveComposeKinds";
 
@@ -24,18 +24,30 @@ const VARIANTS = {
     radius: 92,
     className: "mt-3",
     triggerClassName:
-      "w-full rounded-full bg-gradient-brand py-3 text-center font-bold text-white shadow-brand-glow active:scale-95",
-    content: "投稿する",
+      "flex min-h-[47px] w-full items-center justify-center gap-2 rounded-full bg-gradient-brand font-bold text-white shadow-brand-glow active:scale-95",
+    content: (
+      <>
+        <Plus className="size-5" />
+        作成する
+      </>
+    ),
   },
 } as const;
+
+interface Composing {
+  kind: ComposeKind;
+  session: number;
+  open: boolean;
+}
 
 export function ComposeLauncher({ variant }: { variant: keyof typeof VARIANTS }) {
   const role = useAuthStore(selectRole);
   const { hasAccess: karteAccess } = useMyKarteAccess();
-  const [kind, setKind] = useState<ComposeKind | null>(null);
+  // Keep the chosen kind after closing: dropping it would unmount the sheet before it slides out.
+  const [composing, setComposing] = useState<Composing | null>(null);
   const { content, ...menu } = VARIANTS[variant];
   const kinds = resolveComposeKinds({ role, karteAccess });
-  const close = () => setKind(null);
+  const close = () => setComposing((current) => current && { ...current, open: false });
 
   return (
     <>
@@ -43,12 +55,16 @@ export function ComposeLauncher({ variant }: { variant: keyof typeof VARIANTS })
         {...menu}
         label="作成メニュー"
         items={kinds.map((id) => ({ id, label: COMPOSE_LABELS[id], icon: COMPOSE_ICONS[id] }))}
-        onSelect={(id) => setKind(id as ComposeKind)}
+        onSelect={(id) =>
+          setComposing((current) => ({ kind: id as ComposeKind, session: (current?.session ?? 0) + 1, open: true }))
+        }
       >
         {content}
       </FlowerMenu>
-      <PostComposerModal open={kind === "post"} onClose={close} />
-      {kind && kind !== "post" && <ComposeToDialog kind={kind} onClose={close} />}
+      <PostComposerSheet open={composing?.kind === "post" && composing.open} onClose={close} />
+      {composing && composing.kind !== "post" && (
+        <ComposeToSheet key={composing.session} kind={composing.kind} open={composing.open} onClose={close} />
+      )}
     </>
   );
 }

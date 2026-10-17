@@ -9,12 +9,16 @@ interface GetOrCreateThreadResponse {
   thread: ThreadView | null;
 }
 
+interface StartChatOptions {
+  replace?: boolean;
+}
+
 export function useStartChat() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const start = useCallback(
-    async (targetProfileId: string) => {
+    async (targetProfileId: string, { replace = false }: StartChatOptions = {}) => {
       setLoading(true);
       try {
         const res = await authFetch<GetOrCreateThreadResponse>("/api/messaging/threads", {
@@ -22,7 +26,10 @@ export function useStartChat() {
           body: { recipientProfileId: targetProfileId },
         });
         if (!res.thread?.id) throw new Error("メッセージスレッドの作成に失敗しました");
-        router.push(`/messages/${encodeURIComponent(res.thread.id)}`);
+        const path = `/messages/${encodeURIComponent(res.thread.id)}`;
+        if (replace) router.replace(path);
+        else router.push(path);
+        return path;
       } finally {
         setLoading(false);
       }

@@ -42,4 +42,19 @@ describe("SuggestedUsersPane", () => {
     expect(html.match(/aria-label="鍵付き"/g)).toHaveLength(1);
     expect(html.indexOf('aria-label="鍵付き"')).toBeLessThan(html.indexOf("りん"));
   });
+
+  it("fills the width left of the content column and lists users on an outlined card", () => {
+    hookMocks.useSuggestedUsers.mockReturnValue({
+      profiles: [{ profileId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false }],
+      loading: false,
+    });
+
+    const html = renderToStaticMarkup(<SuggestedUsersPane />);
+    const aside = /<aside class="([^"]*)"/.exec(html)?.[1].split(/\s+/) ?? [];
+    const card = /<\/h2><div class="([^"]*)"/.exec(html)?.[1].split(/\s+/) ?? [];
+
+    expect(/<h2 class="([^"]*)"/.exec(html)?.[1].split(/\s+/)).toContain("text-[0.9375rem]");
+    expect(aside).toEqual(expect.arrayContaining(["flex-1", "min-w-[185px]", "xl:block"]));
+    expect(card).toEqual(expect.arrayContaining(["rounded-[17px]", "border", "border-border", "bg-surface"]));
+  });
 });

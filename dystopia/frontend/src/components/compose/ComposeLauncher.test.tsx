@@ -14,11 +14,15 @@ vi.mock("@/stores/authStore", () => ({
   selectRole: (state: { role: string | null }) => state.role,
 }));
 vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({ useMyKarteAccess: () => ({ hasAccess: mocks.karteAccess }) }));
-vi.mock("@/modules/post/components/PostComposerModal", () => ({
-  PostComposerModal: ({ open }: { open: boolean }) => (open ? <div>post-composer</div> : null),
+vi.mock("@/modules/post/components/PostComposerSheet", () => ({
+  PostComposerSheet: ({ open }: { open: boolean }) => (open ? <div>post-composer</div> : null),
 }));
-vi.mock("./ComposeToDialog", () => ({
-  ComposeToDialog: ({ kind }: { kind: string }) => <div>compose-to:{kind}</div>,
+vi.mock("./ComposeToSheet", () => ({
+  ComposeToSheet: ({ kind, open, onClose }: { kind: string; open: boolean; onClose: () => void }) => (
+    <button type="button" data-testid="compose-to" onClick={onClose}>
+      compose-to:{kind}:{open ? "open" : "closed"}
+    </button>
+  ),
 }));
 
 const { ComposeLauncher } = await import("./ComposeLauncher");
@@ -71,5 +75,37 @@ describe("ComposeLauncher", () => {
 
     expect(await choose("メッセージ")).toContain("compose-to:message");
     expect(await choose("カルテ")).toContain("compose-to:karte");
+  });
+
+  it("keeps the sheet mounted while it closes, so it can slide out", async () => {
+    mocks.role = "cast";
+    mocks.karteAccess = true;
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(createElement(ComposeLauncher, { variant: "fab" }));
+    });
+    await act(async () => {
+      (Array.from(container.querySelectorAll('[role="menuitem"]')).find((el) => el.textContent?.includes("カルテ")) as HTMLButtonElement).click();
+    });
+    expect(container.textContent).toContain("compose-to:karte:open");
+
+    await act(async () => {
+      (container.querySelector('[data-testid="compose-to"]') as HTMLButtonElement).click();
+    });
+
+    expect(container.textContent).toContain("compose-to:karte:closed");
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("labels the sidebar button as creating, since it leads to more than a post", () => {
+    mocks.role = "cast";
+    mocks.karteAccess = true;
+
+    expect(renderToStaticMarkup(<ComposeLauncher variant="sidebar" />)).toContain("作成する");
   });
 });
