@@ -23,7 +23,7 @@
 | 共通化の範囲 | 他人のプロフィールを返す応答すべて（9 ドメイン） | ユーザーの判断 |
 | 共通の形 | 新しい軽い `ProfileSummary` を作る。完全な `Profile` は使わない | 投稿 1 件ごとに自己紹介や体型まで運ぶと応答が重くなる。画面が使う項目は要約で足りる |
 | 組み立て方 | profile slice に、まとめて要約を作る use case を 1 つ置き、全ドメインがそれを呼ぶ | 鍵・アイコン・役割の取り方を 1 か所にまとめ、1 件ずつの読み込み（N+1）をなくす |
-| frontend の型 | 既存の `SocialProfileView` をそのまま共通の形として使う | ユーザーの判断。広く使われており、改名で差分を増やさない |
+| frontend の型 | 既存の `SocialProfileView` を `ProfileSummaryView` に改名し、`modules/profile/types.ts` に移して共通の形にする | ユーザーの判断。投稿・カルテ・クチコミの作者にも使うので、social の名前では合わない |
 | 投稿の非公開の印 | 鍵マークをやめ、`Users` アイコン（読み上げ名「フォロワーのみ」）にする | 作者の鍵マークと同じ印だと、1 枚のカードに意味の違う鍵が 2 つ並ぶ。非公開の投稿は「フォロワーと自分」に見せる方針（別の段で実装） |
 
 ### Constraints
@@ -67,7 +67,7 @@
 
 | 段 | 内容 |
 |---|---|
-| 1 | `ProfileSummary` の proto、`summarize_profiles`、`ProfileSummaryPresenter`。完全なプロフィールを返していた 5 ドメイン（足あと、検索・おすすめ、フォロー・ブロック、メッセージ、通知）を切り替える |
+| 1 | `ProfileSummary` の proto、`summarize_profiles`、`ProfileSummaryPresenter`。完全なプロフィールを返していた 5 ドメイン（足あと、検索・おすすめ、フォロー・ブロック、メッセージ、通知）を切り替える。frontend の `SocialProfileView` を `ProfileSummaryView` に改名する |
 | 2 | 投稿とコメントの作者を `ProfileSummary` にする。`ProfileAuthorAdapter` と `AccountAdapter` の作者用の処理を削除する |
 | 3 | カルテとクチコミの書いた人と相手を `ProfileSummary` にする |
 | 4 | 名前を出す共通の部品 `ProfileName` を作り、名前を出すすべての画面に使う。投稿の非公開の印を `Users` アイコンにする |
@@ -120,12 +120,13 @@ message ProfileSummary {
 
 ### Frontend
 
-- 変換: `ProfileSummary` から `SocialProfileView`（`modules/social/types.ts`）に変換する関数 `summaryToSocialProfile` を `modules/social/lib/mappers.ts` に置き、`profileToSocialProfile` の呼び出しを置き換える。`SocialProfileView` の項目（`profileId`・`username`・`displayName`・`avatarUrl`・`isPrivate`・`role`）は変えない
-- 投稿: `PostView.author` を `SocialProfileView | null` にする。`displayName`・`avatarUrl` などの参照はそのまま使える
-- コメント: 作者を `SocialProfileView | null` にし、`name`・`imageUrl`・`userType` の参照を `displayName`・`avatarUrl`・`role` に替える
-- カルテ・クチコミ: `authorUsername`・`authorDisplayName`・`authorAvatarUrl` と target の同じ項目を、`author: SocialProfileView | null`・`target: SocialProfileView | null` に替える。`authorProfileId`・`targetProfileId` は残す
+- 型: `modules/social/types.ts` の `SocialProfileView` を `ProfileSummaryView` に改名して `modules/profile/types.ts` に移し、全参照を置き換える。項目（`profileId`・`username`・`displayName`・`avatarUrl`・`isPrivate`・`role`）は変えない
+- 変換: `ProfileSummary` から `ProfileSummaryView` に変換する関数 `summaryToView` を `modules/profile/lib/mappers.ts` に置き、`modules/social/lib/mappers.ts` の `profileToSocialProfile` を削除して呼び出しを置き換える
+- 投稿: `PostView.author` を `ProfileSummaryView | null` にする。`displayName`・`avatarUrl` などの参照はそのまま使える
+- コメント: 作者を `ProfileSummaryView | null` にし、`name`・`imageUrl`・`userType` の参照を `displayName`・`avatarUrl`・`role` に替える
+- カルテ・クチコミ: `authorUsername`・`authorDisplayName`・`authorAvatarUrl` と target の同じ項目を、`author: ProfileSummaryView | null`・`target: ProfileSummaryView | null` に替える。`authorProfileId`・`targetProfileId` は残す
 - 共通の部品 `ProfileName`（`src/components/ui/profile-name.tsx`）:
-  - 入力は `SocialProfileView | null`、リンクの有無、文字の大きさの class
+  - 入力は `ProfileSummaryView | null`、リンクの有無、文字の大きさの class
   - 表示名（空ならユーザー名に `@`）を出し、鍵付きなら `LockMark`（読み上げ名「鍵付き」）を並べる
   - リンクありで、ユーザー名があれば `/u/{username}` へのリンクにする
   - `null` なら「削除したプロフィール」と出し、リンクも鍵マークも出さない
@@ -143,8 +144,8 @@ monolith（rspec、`dystopia/monolith` でローカル実行）:
 
 frontend（vitest、`tsc --noEmit`）:
 
-- `summaryToSocialProfile`
-- 各ドメインの BFF と変換が要約を `SocialProfileView` に変換する
+- `summaryToView`
+- 各ドメインの BFF と変換が要約を `ProfileSummaryView` に変換する
 - `ProfileName`: 鍵マーク、リンク、表示名が空のとき、削除済み
 - 各カード・一覧: 鍵付きのときだけ鍵マークが出る。非公開の投稿は `Users` アイコンになる
 
