@@ -104,11 +104,11 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
     >
       <div className="flex flex-col gap-5">
         <div>
-          <p className="text-xs font-bold tracking-wide text-text-secondary">SHIFT / 2週間まとめて編集</p>
+          <p className="text-xs font-bold tracking-wide text-text-secondary">予定 / 2週間まとめて編集</p>
           <p className="mt-1 text-sm text-text-secondary">日付を複数選択して、同じ時間帯を一括で設定できます。1日ずつ入力する必要はありません。</p>
         </div>
 
-        <div className="grid grid-cols-7 gap-1.5">
+        <div className="flex flex-col gap-1.5">
           {days.map((dateKey) => {
             const plan = byDate.get(dateKey);
             const isSelected = selected.has(dateKey);
@@ -120,16 +120,15 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
                 aria-pressed={isSelected}
                 onClick={() => toggle(dateKey)}
                 className={cn(
-                  "flex min-h-16 flex-col items-center justify-center gap-0.5 rounded-lg border px-1 py-1.5 text-xs",
+                  "flex min-h-11 items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm",
                   isSelected ? "border-accent bg-accent/15 text-text-primary" : "border-border text-text-secondary"
                 )}
               >
                 <span className="font-bold">{formatDayLabel(dateKey)}</span>
                 {plan ? (
-                  <>
-                    <span>{plan.startTime}</span>
-                    <span>〜{plan.endTime}</span>
-                  </>
+                  <span className="font-bold tabular-nums text-text-primary">
+                    {plan.startTime} 〜 {plan.endTime}
+                  </span>
                 ) : (
                   <span>未設定</span>
                 )}
@@ -139,8 +138,7 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
         </div>
 
         <div className="rounded-xl border border-border bg-surface p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-bold text-text-primary">選択した日：{selected.size}日</p>
+          <div className="flex justify-end">
             <button type="button" onClick={selectWeekdays} className="min-h-11 text-sm text-accent hover:underline">
               平日を選択
             </button>
@@ -155,10 +153,12 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
           </div>
           {mode === "work" && (
             <div className="mt-3 flex flex-col gap-3">
-              <div className="flex flex-wrap items-center gap-3 text-sm text-text-secondary">
-                <span>開始</span>
+              <div className="flex items-center gap-3 text-sm text-text-secondary">
+                <span className="w-8 shrink-0">開始</span>
                 <TimeSelect label="開始" value={start} onChange={setStart} />
-                <span>終了</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-text-secondary">
+                <span className="w-8 shrink-0">終了</span>
                 <TimeSelect label="終了" value={end} onChange={setEnd} />
               </div>
               <div className="flex flex-wrap gap-2">
@@ -186,9 +186,12 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
             保存できなかった日があります: {failed.map(formatMonthDay).join(", ")}
           </p>
         )}
-        <Button type="button" disabled={!ready || saving} onClick={() => void apply()}>
-          選択した日に反映
-        </Button>
+        <div className="sticky bottom-0 -mx-4 -mb-8 flex items-center justify-between gap-3 border-t border-divider bg-bg-elevated px-4 py-3 md:-mx-5 md:px-5">
+          <p className="text-sm font-bold text-text-primary">選択した日：{selected.size}日</p>
+          <Button type="button" disabled={!ready || saving} onClick={() => void apply()}>
+            選択した日に反映
+          </Button>
+        </div>
       </div>
     </SideSheet>
   );
