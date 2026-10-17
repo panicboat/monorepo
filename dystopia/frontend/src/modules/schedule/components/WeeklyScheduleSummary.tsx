@@ -16,14 +16,14 @@ export function WeeklyScheduleSummary({ profileId, onShowMore }: { profileId: st
     .map((s) => `${formatMonthDay(s.workDate)} ${s.startTime}〜${s.endTime}`);
 
   return (
-    <section aria-label="今週の出勤" className="mx-4 mt-4 rounded-xl border border-border bg-surface px-4 py-2">
+    <section aria-label="今週の予定" className="mx-4 mt-4 rounded-xl border border-border bg-surface px-4 py-2">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold text-text-primary">今週の出勤</h2>
+        <h2 className="text-sm font-bold text-text-primary">今週の予定</h2>
         <button type="button" onClick={onShowMore} className="min-h-11 text-sm text-accent hover:underline">
           もっと見る →
         </button>
       </div>
-      <p className="pb-1 text-sm text-text-secondary">{shifts.length > 0 ? shifts.join("　") : "今週の出勤予定はありません"}</p>
+      <p className="pb-1 text-sm text-text-secondary">{shifts.length > 0 ? shifts.join("　") : "今週の予定はありません"}</p>
     </section>
   );
 }

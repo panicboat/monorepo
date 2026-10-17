@@ -74,7 +74,7 @@ export default function PublicProfilePage() {
         leadingTabs={
           role === "cast"
             ? [
-                { id: "schedule", label: "出勤", content: <ScheduleTab profileId={profile.id} isOwner={isOwnProfile} /> },
+                { id: "schedule", label: "予定", content: <ScheduleTab profileId={profile.id} isOwner={isOwnProfile} /> },
                 {
                   id: "reviews",
                   label: "クチコミ",

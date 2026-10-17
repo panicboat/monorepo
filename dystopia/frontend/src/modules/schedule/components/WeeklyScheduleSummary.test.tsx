@@ -40,7 +40,7 @@ describe("WeeklyScheduleSummary", () => {
     ];
     const { container, onShowMore } = await mount();
 
-    expect(container.textContent).toContain("今週の出勤");
+    expect(container.textContent).toContain("今週の予定");
     expect(container.textContent).toContain("10/13 20:00〜02:00　10/15 19:00〜01:00");
 
     await act(async () => {
@@ -53,6 +53,6 @@ describe("WeeklyScheduleSummary", () => {
     mocks.schedules = [];
     const { container } = await mount();
 
-    expect(container.textContent).toContain("今週の出勤予定はありません");
+    expect(container.textContent).toContain("今週の予定はありません");
   });
 });

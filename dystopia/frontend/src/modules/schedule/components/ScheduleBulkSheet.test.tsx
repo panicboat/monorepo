@@ -70,7 +70,7 @@ describe("ScheduleBulkSheet", () => {
   it("shows two weeks from today with each day's current plan", async () => {
     await mount();
 
-    expect(text()).toContain("出勤予定をまとめて編集");
+    expect(text()).toContain("予定をまとめて編集");
     expect(text()).toContain("SHIFT / 2週間まとめて編集");
     expect(text()).toContain("日付を複数選択して、同じ時間帯を一括で設定できます。1日ずつ入力する必要はありません。");
     expect(document.querySelectorAll("button[data-day]")).toHaveLength(14);
@@ -122,7 +122,7 @@ describe("ScheduleBulkSheet", () => {
       ["2026-10-14", "18:00", "23:00"],
       ["2026-10-15", "18:00", "23:00"],
     ]);
-    expect(mocks.toast).toHaveBeenCalledWith("出勤予定を更新しました");
+    expect(mocks.toast).toHaveBeenCalledWith("予定を更新しました");
     expect(onSaved).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
   });

@@ -32,7 +32,7 @@ describe("ProfileContentTabs order and above-tabs content", () => {
           profileId: "p-1",
           isOwnProfile: true,
           leadingTabs: [
-            { id: "schedule", label: "出勤", content: <div>schedule-pane</div> },
+            { id: "schedule", label: "予定", content: <div>schedule-pane</div> },
             { id: "reviews", label: "クチコミ", content: <div>reviews-pane</div> },
           ],
           extraTabs: [{ id: "extra", label: "おまけ", content: <div>extra-pane</div> }],
@@ -41,7 +41,7 @@ describe("ProfileContentTabs order and above-tabs content", () => {
     });
 
     expect(Array.from(container.querySelectorAll('[role="tab"]')).map((t) => t.textContent)).toEqual([
-      "投稿", "出勤", "クチコミ", "返信", "メディア", "いいね", "おまけ",
+      "投稿", "予定", "クチコミ", "返信", "メディア", "いいね", "おまけ",
     ]);
   });
 
@@ -52,7 +52,7 @@ describe("ProfileContentTabs order and above-tabs content", () => {
       createRoot(container).render(
         createElement(ProfileContentTabs, {
           profileId: "p-1",
-          leadingTabs: [{ id: "schedule", label: "出勤", content: <div>schedule-pane</div> }],
+          leadingTabs: [{ id: "schedule", label: "予定", content: <div>schedule-pane</div> }],
           renderAboveTabs: (tab: string, selectTab: (id: string) => void) =>
             tab === "schedule" ? null : (
               <button type="button" onClick={() => selectTab("schedule")}>
@@ -80,14 +80,14 @@ describe("ProfileContentTabs order and above-tabs content", () => {
       createRoot(container).render(
         createElement(ProfileContentTabs, {
           profileId: "p-1",
-          leadingTabs: [{ id: "schedule", label: "出勤", content: <div>schedule-pane</div> }],
+          leadingTabs: [{ id: "schedule", label: "予定", content: <div>schedule-pane</div> }],
         })
       );
     });
     expect(mocks.enterKeys.at(-1)).toBe("posts");
 
     await act(async () => {
-      (Array.from(container.querySelectorAll('[role="tab"]')).find((t) => t.textContent === "出勤") as HTMLElement).click();
+      (Array.from(container.querySelectorAll('[role="tab"]')).find((t) => t.textContent === "予定") as HTMLElement).click();
     });
 
     expect(mocks.enterKeys.at(-1)).toBe("schedule");
