@@ -3,18 +3,14 @@ import { resolveComposeKinds } from "./resolveComposeKinds";
 
 describe("resolveComposeKinds", () => {
   it("offers a guest a post, a message and a review", () => {
-    expect(resolveComposeKinds({ role: "guest", karteAccess: false })).toEqual(["post", "message", "review"]);
+    expect(resolveComposeKinds({ role: "guest" })).toEqual(["post", "message", "review"]);
   });
 
-  it("offers a cast with karte access a post, a message and a karte entry", () => {
-    expect(resolveComposeKinds({ role: "cast", karteAccess: true })).toEqual(["post", "message", "karte"]);
-  });
-
-  it("leaves the karte entry out for a cast without karte access", () => {
-    expect(resolveComposeKinds({ role: "cast", karteAccess: false })).toEqual(["post", "message"]);
+  it("offers a cast a post, a message and a karte", () => {
+    expect(resolveComposeKinds({ role: "cast" })).toEqual(["post", "message", "karte"]);
   });
 
   it("offers only a post before the role is known", () => {
-    expect(resolveComposeKinds({ role: null, karteAccess: true })).toEqual(["post"]);
+    expect(resolveComposeKinds({ role: null })).toEqual(["post"]);
   });
 });

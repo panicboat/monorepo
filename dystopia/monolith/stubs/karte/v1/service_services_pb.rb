@@ -15,14 +15,18 @@ module Karte
         self.unmarshal_class_method = :decode
         self.service_name = 'karte.v1.KarteService'
 
-        rpc :CreateEntry, ::Karte::V1::CreateEntryRequest, ::Karte::V1::CreateEntryResponse
-        rpc :UpdateEntry, ::Karte::V1::UpdateEntryRequest, ::Karte::V1::UpdateEntryResponse
-        rpc :DeleteEntry, ::Karte::V1::DeleteEntryRequest, ::Karte::V1::DeleteEntryResponse
-        rpc :ListEntriesByTarget, ::Karte::V1::ListEntriesByTargetRequest, ::Karte::V1::ListEntriesByTargetResponse
-        rpc :ListMyEntries, ::Karte::V1::ListMyEntriesRequest, ::Karte::V1::ListMyEntriesResponse
-        rpc :ReportEntry, ::Karte::V1::ReportEntryRequest, ::Karte::V1::ReportEntryResponse
-        rpc :GetMyAccess, ::Karte::V1::GetMyAccessRequest, ::Karte::V1::GetMyAccessResponse
-        rpc :ListRecentEntries, ::Karte::V1::ListRecentEntriesRequest, ::Karte::V1::ListRecentEntriesResponse
+        rpc :CreateKarte, ::Karte::V1::CreateKarteRequest, ::Karte::V1::CreateKarteResponse
+        rpc :GetKarte, ::Karte::V1::GetKarteRequest, ::Karte::V1::GetKarteResponse
+        rpc :UpdateKarteRating, ::Karte::V1::UpdateKarteRatingRequest, ::Karte::V1::UpdateKarteRatingResponse
+        rpc :DeleteKarte, ::Karte::V1::DeleteKarteRequest, ::Karte::V1::DeleteKarteResponse
+        rpc :CloseKarte, ::Karte::V1::CloseKarteRequest, ::Karte::V1::CloseKarteResponse
+        rpc :ReopenKarte, ::Karte::V1::ReopenKarteRequest, ::Karte::V1::ReopenKarteResponse
+        rpc :AddKarteEvent, ::Karte::V1::AddKarteEventRequest, ::Karte::V1::AddKarteEventResponse
+        rpc :UpdateKarteEvent, ::Karte::V1::UpdateKarteEventRequest, ::Karte::V1::UpdateKarteEventResponse
+        rpc :DeleteKarteEvent, ::Karte::V1::DeleteKarteEventRequest, ::Karte::V1::DeleteKarteEventResponse
+        rpc :ListKartesByTarget, ::Karte::V1::ListKartesByTargetRequest, ::Karte::V1::ListKartesByTargetResponse
+        rpc :ListMyKartes, ::Karte::V1::ListMyKartesRequest, ::Karte::V1::ListMyKartesResponse
+        rpc :ListRecentKartes, ::Karte::V1::ListRecentKartesRequest, ::Karte::V1::ListRecentKartesResponse
       end
 
       Stub = Service.rpc_stub_class

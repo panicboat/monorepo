@@ -1,141 +1,165 @@
 "use client";
 
-import { TriangleAlert } from "lucide-react";
-import { IdentityLink } from "@/components/ui/identity-link";
 import { useState } from "react";
-import { useDeleteKarte } from "../hooks/useDeleteKarte";
-import { useReportKarte } from "../hooks/useReportKarte";
-import { useUpdateKarte } from "../hooks/useUpdateKarte";
-import { formatTimeAgo, isEditedAfterCreation } from "@/lib/utils/date";
+import { Button } from "@/components/ui/button";
+import { IdentityLink } from "@/components/ui/identity-link";
 import { RatingStars } from "@/components/ui/rating-stars";
-import { EntryEditForm } from "@/components/ui/entry-edit-form";
+import { formatTimeAgo } from "@/lib/utils/date";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
-import type { KarteEntry } from "../types";
+import { useKarteMutations } from "../hooks/useKarteMutations";
+import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
+import type { Karte } from "../types";
+import { KarteEventFields, emptyKarteEvent, isKarteEventReady } from "./KarteEventFields";
+import { KarteRatingSelect } from "./KarteRatingSelect";
 
-interface Props {
-  entry: KarteEntry;
+interface KarteEntryCardProps {
+  karte: Karte;
   mode: "my" | "target" | "recent";
   onChanged?: () => void;
 }
 
-export function KarteEntryCard({ entry, mode, onChanged }: Props) {
-  const isOwn = entry.isMine;
+export function KarteEntryCard({ karte, mode, onChanged }: KarteEntryCardProps) {
   const activeProfileId = useAuthStore(selectActiveProfileId);
-  const writtenAsOtherProfile = mode === "my" && entry.authorProfileId !== activeProfileId;
-  const { remove, loading: deleting } = useDeleteKarte();
-  const { report, loading: reporting } = useReportKarte();
-  const { update, loading: updating, error: updateError } = useUpdateKarte();
-  const [reportOpen, setReportOpen] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const identityUsername = mode === "my" ? entry.targetUsername : entry.authorUsername;
-  const identityAvatarUrl = mode === "my" ? entry.targetAvatarUrl : entry.authorAvatarUrl;
+  const { updateRating, close, reopen, addEvent, remove, loading, error } = useKarteMutations();
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState(() => emptyKarteEvent());
+  const writtenAsOtherProfile = mode === "my" && karte.authorProfileId !== activeProfileId;
+  const identityUsername = mode === "my" ? karte.targetUsername : karte.authorUsername;
+  const identityAvatarUrl = mode === "my" ? karte.targetAvatarUrl : karte.authorAvatarUrl;
+  const latest = karte.events[karte.events.length - 1];
+  const open = karte.status === "open";
+  const afterChange = () => onChanged?.();
 
   return (
     <article className="border-b border-border px-4 py-3">
       <div className="flex items-center gap-2 text-sm">
         {mode === "recent" ? (
           <>
-            <IdentityLink username={entry.authorUsername} avatarUrl={entry.authorAvatarUrl} />
-            <span className="text-muted-foreground">→</span>
-            <IdentityLink username={entry.targetUsername} avatarUrl={entry.targetAvatarUrl} />
+            <IdentityLink username={karte.authorUsername} avatarUrl={karte.authorAvatarUrl} />
+            <span className="text-text-secondary">→</span>
+            <IdentityLink username={karte.targetUsername} avatarUrl={karte.targetAvatarUrl} />
           </>
         ) : (
           <IdentityLink username={identityUsername} avatarUrl={identityAvatarUrl} />
         )}
-        <span className="text-muted-foreground">{formatTimeAgo(entry.createdAt)}</span>
-        {entry.flagged && (
-          <span
-            className="ml-auto text-xs text-amber-600"
-            title="他 Cast から複数件 report されています"
-          >
-            <TriangleAlert className="size-4" />
-          </span>
-        )}
+        <span className="text-text-secondary">{formatTimeAgo(karte.createdAt)}</span>
+        <span className="ml-auto rounded-full border border-border px-2 py-0.5 text-xs text-text-secondary">
+          {open ? "記録中" : "完了"}
+        </span>
       </div>
       {writtenAsOtherProfile && (
-        <p className="mt-1 text-xs text-muted-foreground">
-          {entry.authorUsername ? `@${entry.authorUsername} として記録` : "削除したプロフィールで記録"}
+        <p className="mt-1 text-xs text-text-secondary">
+          {karte.authorUsername ? `@${karte.authorUsername} として記録` : "削除したプロフィールで記録"}
         </p>
       )}
-      {editing ? (
-        <EntryEditForm
-          initialRating={entry.rating}
-          initialBody={entry.body}
-          saving={updating}
-          error={updateError?.message}
-          onCancel={() => setEditing(false)}
-          onSave={async (rating, body) => {
-            if (!(await update(entry.id, rating, body))) return;
-            setEditing(false);
-            onChanged?.();
-          }}
-        />
-      ) : (
-        <>
-          <div className="mt-1 flex items-center gap-2">
-            <RatingStars value={entry.rating} className="text-base" />
-            {isEditedAfterCreation(entry.createdAt, entry.updatedAt) && (
-              <span className="text-xs text-muted-foreground">編集済み</span>
-            )}
-          </div>
-          {entry.body && <p className="mt-2 whitespace-pre-wrap text-sm">{entry.body}</p>}
-        </>
+      <div className="mt-1">
+        {karte.rating === null ? (
+          <span className="text-sm text-text-secondary">未評価</span>
+        ) : (
+          <RatingStars value={karte.rating} className="text-base" />
+        )}
+      </div>
+      {latest && (
+        <div className="mt-2 text-sm">
+          <p className="font-bold">
+            {stageLabel(latest.stage)}・{outcomeLabel(latest.stage, latest.outcome)}
+          </p>
+          {latest.tags.length > 0 && (
+            <p className="text-xs text-text-secondary">{latest.tags.map((tag) => tagLabel(latest.stage, tag)).join("・")}</p>
+          )}
+          {latest.note && <p className="mt-1 whitespace-pre-wrap">{latest.note}</p>}
+        </div>
       )}
-      <div className="mt-2 flex gap-3 text-sm text-muted-foreground">
-        {isOwn ? (
-          <>
-            {!editing && (
-              <button type="button" onClick={() => setEditing(true)} className="hover:text-foreground">
-                編集
+      {karte.events.length > 1 && <p className="mt-1 text-xs text-text-secondary">ほか {karte.events.length - 1} 件の出来事</p>}
+      {karte.isMine && (
+        <div className="mt-3 flex flex-col gap-2 text-sm">
+          {open && (
+            <KarteRatingSelect
+              value={karte.rating}
+              disabled={loading}
+              onChange={async (rating) => {
+                await updateRating(karte.id, rating);
+                afterChange();
+              }}
+            />
+          )}
+          {open && adding && (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const added = await addEvent(karte.id, draft);
+                if (added) {
+                  setAdding(false);
+                  setDraft(emptyKarteEvent());
+                }
+                afterChange();
+              }}
+              className="flex flex-col gap-2"
+            >
+              <KarteEventFields value={draft} onChange={setDraft} />
+              <div className="flex gap-2">
+                <Button type="submit" size="sm" disabled={loading || !isKarteEventReady(draft)}>
+                  追記する
+                </Button>
+                <Button type="button" size="sm" variant="secondary" onClick={() => setAdding(false)}>
+                  やめる
+                </Button>
+              </div>
+            </form>
+          )}
+          <div className="flex flex-wrap gap-3 text-sm text-text-secondary">
+            {open && !adding && (
+              <button type="button" onClick={() => setAdding(true)} className="hover:text-text-primary">
+                出来事を追加
+              </button>
+            )}
+            {open && (
+              <button
+                type="button"
+                disabled={loading || karte.rating === null}
+                onClick={async () => {
+                  await close(karte.id);
+                  afterChange();
+                }}
+                className="hover:text-text-primary disabled:opacity-50"
+              >
+                完了する
+              </button>
+            )}
+            {!open && (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={async () => {
+                  await reopen(karte.id);
+                  afterChange();
+                }}
+                className="hover:text-text-primary"
+              >
+                再オープン
               </button>
             )}
             <button
               type="button"
-              disabled={deleting}
+              disabled={loading}
               onClick={async () => {
                 if (!confirm("このカルテを削除しますか？")) return;
-                await remove(entry.id);
-                onChanged?.();
+                await remove(karte.id);
+                afterChange();
               }}
-              className="hover:text-foreground"
+              className="hover:text-text-primary"
             >
               削除
             </button>
-          </>
-        ) : reportOpen ? (
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const form = e.currentTarget;
-              const reason = (form.elements.namedItem("reason") as HTMLInputElement).value;
-              await report(entry.id, reason);
-              setReportOpen(false);
-            }}
-            className="flex gap-2"
-          >
-            <input
-              name="reason"
-              type="text"
-              placeholder="理由"
-              className="rounded border border-border px-2 py-1 text-sm"
-            />
-            <button type="submit" disabled={reporting} className="hover:text-foreground">
-              送信
-            </button>
-            <button type="button" onClick={() => setReportOpen(false)}>
-              キャンセル
-            </button>
-          </form>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setReportOpen(true)}
-            className="hover:text-foreground"
-          >
-            報告
-          </button>
-        )}
-      </div>
+          </div>
+          {open && karte.rating === null && <p className="text-xs text-text-secondary">完了するには星を選んでください</p>}
+          {error && (
+            <p className="text-xs text-error" role="alert">
+              {error.message}
+            </p>
+          )}
+        </div>
+      )}
     </article>
   );
 }

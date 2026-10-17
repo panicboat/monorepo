@@ -48,14 +48,6 @@ vi.mock("@/modules/messaging", () => ({
   useTotalUnread: () => ({ count: 0 }),
 }));
 
-const karteMocks = vi.hoisted(() => ({
-  useMyKarteAccess: vi.fn(),
-}));
-
-vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({
-  useMyKarteAccess: karteMocks.useMyKarteAccess,
-}));
-
 const authMocks = vi.hoisted(() => ({
   useAuthStore: vi.fn(),
 }));
@@ -69,7 +61,6 @@ const { BottomTab } = await import("./BottomTab");
 
 describe("BottomTab", () => {
   it("shows the karte tab for a Cast viewer and hides the review tab", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
     authMocks.useAuthStore.mockReturnValue("cast");
 
     const html = renderToStaticMarkup(<BottomTab />);
@@ -80,7 +71,6 @@ describe("BottomTab", () => {
   });
 
   it("shows the review tab for a Guest viewer and hides the karte tab", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
     authMocks.useAuthStore.mockReturnValue("guest");
 
     const html = renderToStaticMarkup(<BottomTab />);
@@ -90,8 +80,7 @@ describe("BottomTab", () => {
     expect(html).not.toContain("/karte/my");
   });
 
-  it("hides both the karte and review tabs without access or a resolved role", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+  it("hides both the karte and review tabs before the role is known", () => {
     authMocks.useAuthStore.mockReturnValue(null);
 
     const html = renderToStaticMarkup(<BottomTab />);
@@ -101,7 +90,6 @@ describe("BottomTab", () => {
   });
 
   it("draws every tab as a line icon and the tab of the current page with a heavier line", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
     authMocks.useAuthStore.mockReturnValue(null);
 
     const html = renderToStaticMarkup(<BottomTab />);
@@ -112,7 +100,6 @@ describe("BottomTab", () => {
   });
 
   it("stands on the app surface under a rule with 11px labels", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
     authMocks.useAuthStore.mockReturnValue(null);
 
     const html = renderToStaticMarkup(<BottomTab />);
@@ -126,7 +113,6 @@ describe("BottomTab", () => {
 
   describe("tapping the home tab while already on the home page", () => {
     async function renderBottomTab() {
-      karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
       authMocks.useAuthStore.mockReturnValue(null);
 
       const container = document.createElement("div");

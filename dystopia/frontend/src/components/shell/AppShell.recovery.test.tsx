@@ -35,7 +35,6 @@ vi.mock("@/components/shell/Drawer", async () => {
   const { useTotalUnread } = await import("@/modules/messaging/hooks/useTotalUnread");
   const { useFootprintsUnreadCount } = await import("@/modules/footprints/hooks/useFootprintsUnreadCount");
   const { useNotificationPreferences } = await import("@/modules/notifications/hooks/useNotificationPreferences");
-  const { useMyKarteAccess } = await import("@/modules/karte/hooks/useMyKarteAccess");
   const { useProfile } = await import("@/modules/profile/hooks/useProfile");
   const { useSuggestedUsers } = await import("@/modules/discovery/hooks/useSuggestedUsers");
   const { useFollow } = await import("@/modules/social/hooks/useFollow");
@@ -46,7 +45,6 @@ vi.mock("@/components/shell/Drawer", async () => {
       useTotalUnread();
       useFootprintsUnreadCount();
       useNotificationPreferences();
-      useMyKarteAccess();
       useProfile();
       useSuggestedUsers();
       useFollow("someone-else");

@@ -4,11 +4,10 @@ export type ComposeKind = "post" | "message" | "karte" | "review";
 
 interface ComposeContext {
   role: Role | null;
-  karteAccess: boolean;
 }
 
-export function resolveComposeKinds({ role, karteAccess }: ComposeContext): ComposeKind[] {
+export function resolveComposeKinds({ role }: ComposeContext): ComposeKind[] {
   if (role === "guest") return ["post", "message", "review"];
-  if (role === "cast") return karteAccess ? ["post", "message", "karte"] : ["post", "message"];
+  if (role === "cast") return ["post", "message", "karte"];
   return ["post"];
 }

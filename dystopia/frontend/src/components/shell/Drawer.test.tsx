@@ -61,12 +61,11 @@ vi.mock("@/modules/footprints", () => ({
   useFootprintsUnreadCount: () => ({ count: 0 }),
 }));
 
-const karteMocks = vi.hoisted(() => ({
-  useMyKarteAccess: vi.fn(),
-}));
+const authState = vi.hoisted(() => ({ role: null as "guest" | "cast" | null, activeProfileId: null }));
 
-vi.mock("@/modules/karte/hooks/useMyKarteAccess", () => ({
-  useMyKarteAccess: karteMocks.useMyKarteAccess,
+vi.mock("@/stores/authStore", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/stores/authStore")>()),
+  useAuthStore: (selector: (state: typeof authState) => unknown) => selector(authState),
 }));
 
 const { Drawer } = await import("./Drawer");
@@ -75,7 +74,7 @@ const { emptyProfileView } = await import("@/modules/profile/lib/mappers");
 
 describe("Drawer", () => {
   it("takes its links and buttons out of reach while closed and gives them back when open", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
     profileMocks.useProfile.mockReturnValue({ profile: null });
     const menu = (html: string) => html.match(/<aside[^>]*>/)?.[0] ?? "";
 
@@ -88,7 +87,7 @@ describe("Drawer", () => {
   });
 
   it("offers the account's other profiles to switch to", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
     profileMocks.useProfile.mockReturnValue({ profile: null });
     const profiles = [{ ...emptyProfileView("p2"), username: "second_persona" }];
 
@@ -103,7 +102,7 @@ describe("Drawer", () => {
   });
 
   it("has no standalone oshi menu entry", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
     profileMocks.useProfile.mockReturnValue({ profile: null });
 
     const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
@@ -112,7 +111,7 @@ describe("Drawer", () => {
   });
 
   it("lists the side nav entries in the same order without home", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
+    authState.role = "cast";
     profileMocks.useProfile.mockReturnValue({ profile: null });
 
     const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
@@ -133,7 +132,7 @@ describe("Drawer", () => {
   });
 
   it("has no sign-out control", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
     profileMocks.useProfile.mockReturnValue({ profile: null });
 
     const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
@@ -141,8 +140,8 @@ describe("Drawer", () => {
     expect(html).not.toContain("ログアウト");
   });
 
-  it("links to my karte when the viewer has karte access", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: true });
+  it("links to my karte for a cast viewer", () => {
+    authState.role = "cast";
     profileMocks.useProfile.mockReturnValue({ profile: null });
 
     const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
@@ -150,8 +149,8 @@ describe("Drawer", () => {
     expect(html).toContain("/karte/my");
   });
 
-  it("hides the karte item when the viewer has no karte access", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+  it("hides the karte item before the role is known", () => {
+    authState.role = null;
     profileMocks.useProfile.mockReturnValue({ profile: null });
 
     const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
@@ -160,7 +159,7 @@ describe("Drawer", () => {
   });
 
   it("links the follow counts to the viewer's following and followers pages", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
     profileMocks.useProfile.mockReturnValue({
       profile: { username: "alice", id: "prof-1", displayName: "Alice", avatarUrl: null },
     });
@@ -172,7 +171,7 @@ describe("Drawer", () => {
   });
 
   it("falls back the follow count links to /profile while the viewer's profile is still loading", () => {
-    karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+    authState.role = null;
     profileMocks.useProfile.mockReturnValue({ profile: null });
 
     const html = renderToStaticMarkup(<Drawer open onClose={() => {}} onOpen={() => {}} />);
@@ -183,7 +182,7 @@ describe("Drawer", () => {
 
   describe("edge-to-anywhere swipe to open", () => {
     function renderClosedDrawer() {
-      karteMocks.useMyKarteAccess.mockReturnValue({ hasAccess: false });
+      authState.role = null;
       profileMocks.useProfile.mockReturnValue({ profile: null });
       stubMobileViewport();
 

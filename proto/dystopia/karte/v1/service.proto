@@ -5,94 +5,143 @@ package karte.v1;
 import "google/protobuf/timestamp.proto";
 
 service KarteService {
-  rpc CreateEntry(CreateEntryRequest) returns (CreateEntryResponse);
-  rpc UpdateEntry(UpdateEntryRequest) returns (UpdateEntryResponse);
-  rpc DeleteEntry(DeleteEntryRequest) returns (DeleteEntryResponse);
-  rpc ListEntriesByTarget(ListEntriesByTargetRequest) returns (ListEntriesByTargetResponse);
-  rpc ListMyEntries(ListMyEntriesRequest) returns (ListMyEntriesResponse);
-  rpc ReportEntry(ReportEntryRequest) returns (ReportEntryResponse);
-  rpc GetMyAccess(GetMyAccessRequest) returns (GetMyAccessResponse);
-  rpc ListRecentEntries(ListRecentEntriesRequest) returns (ListRecentEntriesResponse);
+  rpc CreateKarte(CreateKarteRequest) returns (CreateKarteResponse);
+  rpc GetKarte(GetKarteRequest) returns (GetKarteResponse);
+  rpc UpdateKarteRating(UpdateKarteRatingRequest) returns (UpdateKarteRatingResponse);
+  rpc DeleteKarte(DeleteKarteRequest) returns (DeleteKarteResponse);
+  rpc CloseKarte(CloseKarteRequest) returns (CloseKarteResponse);
+  rpc ReopenKarte(ReopenKarteRequest) returns (ReopenKarteResponse);
+  rpc AddKarteEvent(AddKarteEventRequest) returns (AddKarteEventResponse);
+  rpc UpdateKarteEvent(UpdateKarteEventRequest) returns (UpdateKarteEventResponse);
+  rpc DeleteKarteEvent(DeleteKarteEventRequest) returns (DeleteKarteEventResponse);
+  rpc ListKartesByTarget(ListKartesByTargetRequest) returns (ListKartesByTargetResponse);
+  rpc ListMyKartes(ListMyKartesRequest) returns (ListMyKartesResponse);
+  rpc ListRecentKartes(ListRecentKartesRequest) returns (ListRecentKartesResponse);
 }
 
-message KarteEntry {
+enum KarteStatus {
+  KARTE_STATUS_UNSPECIFIED = 0;
+  KARTE_STATUS_OPEN = 1;
+  KARTE_STATUS_CLOSED = 2;
+}
+
+enum KarteStage {
+  KARTE_STAGE_UNSPECIFIED = 0;
+  KARTE_STAGE_RESERVATION = 1;
+  KARTE_STAGE_SERVICE = 2;
+  KARTE_STAGE_AFTERCARE = 3;
+}
+
+message KarteEventInput {
+  KarteStage stage = 1;
+  string outcome = 2;
+  repeated string tags = 3;
+  string note = 4;
+  string occurred_on = 5;
+}
+
+message KarteEvent {
+  string id = 1;
+  KarteStage stage = 2;
+  string outcome = 3;
+  repeated string tags = 4;
+  string note = 5;
+  string occurred_on = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message Karte {
   string id = 1;
   string author_profile_id = 2;
-  string target_profile_id = 3;
-  string author_username = 4;
-  string author_avatar_url = 5;
-  int32 rating = 6;
-  string body = 7;
-  bool flagged = 8;
-  google.protobuf.Timestamp created_at = 9;
-  google.protobuf.Timestamp updated_at = 10;
-  string target_username = 11;
-  string target_avatar_url = 12;
-  bool is_mine = 13;
+  string author_username = 3;
+  string author_avatar_url = 4;
+  string target_profile_id = 5;
+  string target_username = 6;
+  string target_avatar_url = 7;
+  bool is_mine = 8;
+  int32 rating = 9;
+  KarteStatus status = 10;
+  repeated KarteEvent events = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+  google.protobuf.Timestamp closed_at = 14;
 }
 
-message Aggregate {
-  int32 count = 1;
-  double avg_rating = 2;
+message ReliabilitySummary {
+  double average_rating = 1;
+  int32 rater_count = 2;
+  int32 karte_count = 3;
 }
 
-message CreateEntryRequest {
+message CreateKarteRequest {
   string target_profile_id = 1;
   int32 rating = 2;
-  string body = 3;
+  KarteEventInput event = 3;
 }
-message CreateEntryResponse { KarteEntry entry = 1; }
+message CreateKarteResponse { Karte karte = 1; }
 
-message UpdateEntryRequest {
-  string entry_id = 1;
+message GetKarteRequest { string karte_id = 1; }
+message GetKarteResponse { Karte karte = 1; }
+
+message UpdateKarteRatingRequest {
+  string karte_id = 1;
   int32 rating = 2;
-  optional string body = 3;
 }
-message UpdateEntryResponse { KarteEntry entry = 1; }
+message UpdateKarteRatingResponse { Karte karte = 1; }
 
-message DeleteEntryRequest { string entry_id = 1; }
-message DeleteEntryResponse {}
+message DeleteKarteRequest { string karte_id = 1; }
+message DeleteKarteResponse {}
 
-message ListEntriesByTargetRequest {
+message CloseKarteRequest { string karte_id = 1; }
+message CloseKarteResponse { Karte karte = 1; }
+
+message ReopenKarteRequest { string karte_id = 1; }
+message ReopenKarteResponse { Karte karte = 1; }
+
+message AddKarteEventRequest {
+  string karte_id = 1;
+  KarteEventInput event = 2;
+}
+message AddKarteEventResponse { Karte karte = 1; }
+
+message UpdateKarteEventRequest {
+  string event_id = 1;
+  KarteEventInput event = 2;
+}
+message UpdateKarteEventResponse { Karte karte = 1; }
+
+message DeleteKarteEventRequest { string event_id = 1; }
+message DeleteKarteEventResponse { Karte karte = 1; }
+
+message ListKartesByTargetRequest {
   string target_profile_id = 1;
   int32 limit = 2;
   string cursor = 3;
 }
-message ListEntriesByTargetResponse {
-  repeated KarteEntry entries = 1;
+message ListKartesByTargetResponse {
+  repeated Karte kartes = 1;
   string next_cursor = 2;
   bool has_more = 3;
-  Aggregate aggregate = 4;
+  ReliabilitySummary reliability = 4;
 }
 
-message ListMyEntriesRequest {
+message ListMyKartesRequest {
   int32 limit = 1;
   string cursor = 2;
 }
-message ListMyEntriesResponse {
-  repeated KarteEntry entries = 1;
+message ListMyKartesResponse {
+  repeated Karte kartes = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }
 
-message ReportEntryRequest {
-  string entry_id = 1;
-  string reason = 2;
-}
-message ReportEntryResponse {}
-
-message GetMyAccessRequest {}
-message GetMyAccessResponse {
-  bool has_access = 1;
-  google.protobuf.Timestamp granted_at = 2;
-}
-
-message ListRecentEntriesRequest {
+message ListRecentKartesRequest {
   int32 limit = 1;
   string cursor = 2;
 }
-message ListRecentEntriesResponse {
-  repeated KarteEntry entries = 1;
+message ListRecentKartesResponse {
+  repeated Karte kartes = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }

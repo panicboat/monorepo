@@ -3,12 +3,14 @@
 import useSWRInfinite from "swr/infinite";
 import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
-import type { PaginatedKarteByTargetResponse } from "../types";
+import type { KartesByTargetPage, ReliabilitySummary } from "../types";
+
+const NO_RELIABILITY: ReliabilitySummary = { averageRating: null, raterCount: 0, karteCount: 0 };
 
 export function useGuestKarte(targetProfileId: string | null | undefined) {
   const profileId = useAuthStore((s) => s.activeProfileId);
 
-  const getKey = (pageIndex: number, prev: PaginatedKarteByTargetResponse | null): string | null => {
+  const getKey = (pageIndex: number, prev: KartesByTargetPage | null): string | null => {
     if (!profileId || !targetProfileId) return null;
     if (prev && !prev.hasMore) return null;
     const base = `/api/karte/by-target?profile_id=${encodeURIComponent(targetProfileId)}`;
@@ -17,17 +19,13 @@ export function useGuestKarte(targetProfileId: string | null | undefined) {
   };
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =
-    useSWRInfinite<PaginatedKarteByTargetResponse>(getKey, fetcher, { revalidateOnFocus: false });
+    useSWRInfinite<KartesByTargetPage>(getKey, fetcher, { revalidateOnFocus: false });
 
   const pages = data || [];
-  const entries = pages.flatMap((p) => p.entries || []);
-  const hasMore = pages.length > 0 ? !!pages[pages.length - 1].hasMore : false;
-  const aggregate = pages[0]?.aggregate ?? { count: 0, avgRating: 0 };
-
   return {
-    entries,
-    aggregate,
-    hasMore,
+    kartes: pages.flatMap((p) => p.kartes || []),
+    reliability: pages[0]?.reliability ?? NO_RELIABILITY,
+    hasMore: pages.length > 0 ? !!pages[pages.length - 1].hasMore : false,
     loading: isLoading || isValidating,
     error,
     loadMore: () => setSize(size + 1),

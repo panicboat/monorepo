@@ -15,208 +15,229 @@ module Karte
 
       self.rpc_descs.clear
 
-      rpc :CreateEntry,         ::Karte::V1::CreateEntryRequest,         ::Karte::V1::CreateEntryResponse
-      rpc :UpdateEntry,         ::Karte::V1::UpdateEntryRequest,         ::Karte::V1::UpdateEntryResponse
-      rpc :DeleteEntry,         ::Karte::V1::DeleteEntryRequest,         ::Karte::V1::DeleteEntryResponse
-      rpc :ListEntriesByTarget, ::Karte::V1::ListEntriesByTargetRequest, ::Karte::V1::ListEntriesByTargetResponse
-      rpc :ListMyEntries,       ::Karte::V1::ListMyEntriesRequest,       ::Karte::V1::ListMyEntriesResponse
-      rpc :ReportEntry,         ::Karte::V1::ReportEntryRequest,         ::Karte::V1::ReportEntryResponse
-      rpc :GetMyAccess,         ::Karte::V1::GetMyAccessRequest,         ::Karte::V1::GetMyAccessResponse
-      rpc :ListRecentEntries,  ::Karte::V1::ListRecentEntriesRequest,  ::Karte::V1::ListRecentEntriesResponse
+      rpc :CreateKarte,        ::Karte::V1::CreateKarteRequest,        ::Karte::V1::CreateKarteResponse
+      rpc :GetKarte,           ::Karte::V1::GetKarteRequest,           ::Karte::V1::GetKarteResponse
+      rpc :UpdateKarteRating,  ::Karte::V1::UpdateKarteRatingRequest,  ::Karte::V1::UpdateKarteRatingResponse
+      rpc :DeleteKarte,        ::Karte::V1::DeleteKarteRequest,        ::Karte::V1::DeleteKarteResponse
+      rpc :CloseKarte,         ::Karte::V1::CloseKarteRequest,         ::Karte::V1::CloseKarteResponse
+      rpc :ReopenKarte,        ::Karte::V1::ReopenKarteRequest,        ::Karte::V1::ReopenKarteResponse
+      rpc :AddKarteEvent,      ::Karte::V1::AddKarteEventRequest,      ::Karte::V1::AddKarteEventResponse
+      rpc :UpdateKarteEvent,   ::Karte::V1::UpdateKarteEventRequest,   ::Karte::V1::UpdateKarteEventResponse
+      rpc :DeleteKarteEvent,   ::Karte::V1::DeleteKarteEventRequest,   ::Karte::V1::DeleteKarteEventResponse
+      rpc :ListKartesByTarget, ::Karte::V1::ListKartesByTargetRequest, ::Karte::V1::ListKartesByTargetResponse
+      rpc :ListMyKartes,       ::Karte::V1::ListMyKartesRequest,       ::Karte::V1::ListMyKartesResponse
+      rpc :ListRecentKartes,   ::Karte::V1::ListRecentKartesRequest,   ::Karte::V1::ListRecentKartesResponse
+
+      STAGE_TO_PROTO = {
+        "reservation" => :KARTE_STAGE_RESERVATION,
+        "service" => :KARTE_STAGE_SERVICE,
+        "aftercare" => :KARTE_STAGE_AFTERCARE
+      }.freeze
+      STAGE_FROM_PROTO = STAGE_TO_PROTO.invert.freeze
+      STATUS_TO_PROTO = { "open" => :KARTE_STATUS_OPEN, "closed" => :KARTE_STATUS_CLOSED }.freeze
 
       include Karte::Deps[
-        create_uc:          "use_cases.create_entry",
-        update_uc:          "use_cases.update_entry",
-        delete_uc:          "use_cases.delete_entry",
-        list_by_target_uc:  "use_cases.list_entries_by_target",
-        list_my_uc:         "use_cases.list_my_entries",
-        report_uc:          "use_cases.report_entry",
-        get_my_access_uc:   "use_cases.get_my_access",
-        list_recent_uc:      "use_cases.list_recent_entries"
+        create_karte_uc: "use_cases.create_karte",
+        get_karte_uc: "use_cases.get_karte",
+        update_karte_rating_uc: "use_cases.update_karte_rating",
+        delete_karte_uc: "use_cases.delete_karte",
+        close_karte_uc: "use_cases.close_karte",
+        reopen_karte_uc: "use_cases.reopen_karte",
+        add_karte_event_uc: "use_cases.add_karte_event",
+        update_karte_event_uc: "use_cases.update_karte_event",
+        delete_karte_event_uc: "use_cases.delete_karte_event",
+        list_kartes_by_target_uc: "use_cases.list_kartes_by_target",
+        list_my_kartes_uc: "use_cases.list_my_kartes",
+        list_recent_kartes_uc: "use_cases.list_recent_kartes"
       ]
 
-      def create_entry
+      def create_karte
         authenticate_user!
-        body = request.message.body == "" ? nil : request.message.body
-        entry = wrap_errors do
-          create_uc.call(
+        message = request.message
+        karte = wrap_errors do
+          create_karte_uc.call(
             viewer_account_id: current_account_id,
             viewer_profile_id: current_profile_id,
-            target_profile_id: request.message.target_profile_id,
-            rating: request.message.rating,
-            body: body
+            target_profile_id: message.target_profile_id,
+            rating: rating_from(message.rating),
+            event: event_from(message.event)
           )
         end
-        ::Karte::V1::CreateEntryResponse.new(entry: entry_to_proto(present_for_author(entry)))
+        ::Karte::V1::CreateKarteResponse.new(karte: karte_to_proto(karte))
       end
 
-      def update_entry
+      def get_karte
         authenticate_user!
-        rating = request.message.rating.zero? ? nil : request.message.rating
-        body = request.message.has_body? ? request.message.body : nil
-        entry = wrap_errors do
-          update_uc.call(
-            viewer_account_id: current_account_id,
-            entry_id: request.message.entry_id,
-            rating: rating,
-            body: body
-          )
+        karte = wrap_errors { get_karte_uc.call(viewer_account_id: current_account_id, karte_id: request.message.karte_id) }
+        ::Karte::V1::GetKarteResponse.new(karte: karte_to_proto(karte))
+      end
+
+      def update_karte_rating
+        authenticate_user!
+        message = request.message
+        karte = wrap_errors do
+          update_karte_rating_uc.call(viewer_account_id: current_account_id, karte_id: message.karte_id, rating: rating_from(message.rating))
         end
-        ::Karte::V1::UpdateEntryResponse.new(entry: entry_to_proto(present_for_author(entry)))
+        ::Karte::V1::UpdateKarteRatingResponse.new(karte: karte_to_proto(karte))
       end
 
-      def delete_entry
+      def delete_karte
         authenticate_user!
-        wrap_errors do
-          delete_uc.call(
-            viewer_account_id: current_account_id,
-            entry_id: request.message.entry_id
-          )
+        wrap_errors { delete_karte_uc.call(viewer_account_id: current_account_id, karte_id: request.message.karte_id) }
+        ::Karte::V1::DeleteKarteResponse.new
+      end
+
+      def close_karte
+        authenticate_user!
+        karte = wrap_errors { close_karte_uc.call(viewer_account_id: current_account_id, karte_id: request.message.karte_id) }
+        ::Karte::V1::CloseKarteResponse.new(karte: karte_to_proto(karte))
+      end
+
+      def reopen_karte
+        authenticate_user!
+        karte = wrap_errors { reopen_karte_uc.call(viewer_account_id: current_account_id, karte_id: request.message.karte_id) }
+        ::Karte::V1::ReopenKarteResponse.new(karte: karte_to_proto(karte))
+      end
+
+      def add_karte_event
+        authenticate_user!
+        message = request.message
+        karte = wrap_errors do
+          add_karte_event_uc.call(viewer_account_id: current_account_id, karte_id: message.karte_id, event: event_from(message.event))
         end
-        ::Karte::V1::DeleteEntryResponse.new
+        ::Karte::V1::AddKarteEventResponse.new(karte: karte_to_proto(karte))
       end
 
-      def list_entries_by_target
+      def update_karte_event
         authenticate_user!
-        limit = request.message.limit.zero? ? 20 : request.message.limit
-        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+        message = request.message
+        karte = wrap_errors do
+          update_karte_event_uc.call(viewer_account_id: current_account_id, event_id: message.event_id, event: event_from(message.event))
+        end
+        ::Karte::V1::UpdateKarteEventResponse.new(karte: karte_to_proto(karte))
+      end
+
+      def delete_karte_event
+        authenticate_user!
+        karte = wrap_errors { delete_karte_event_uc.call(viewer_account_id: current_account_id, event_id: request.message.event_id) }
+        ::Karte::V1::DeleteKarteEventResponse.new(karte: karte_to_proto(karte))
+      end
+
+      def list_kartes_by_target
+        authenticate_user!
+        message = request.message
         result = wrap_errors do
-          list_by_target_uc.call(
+          list_kartes_by_target_uc.call(
             viewer_account_id: current_account_id,
-            target_profile_id: request.message.target_profile_id,
-            limit: limit,
-            cursor: cursor
+            target_profile_id: message.target_profile_id,
+            limit: message.limit,
+            cursor: cursor_from(message.cursor)
           )
         end
-        ::Karte::V1::ListEntriesByTargetResponse.new(
-          entries: result[:entries].map { |e| entry_to_proto(e) },
-          next_cursor: result[:next_cursor] || "",
-          has_more: result[:has_more],
-          aggregate: ::Karte::V1::Aggregate.new(
-            count: result[:aggregate][:count],
-            avg_rating: result[:aggregate][:avg_rating]
+        reliability = result[:reliability]
+        ::Karte::V1::ListKartesByTargetResponse.new(
+          **page_to_proto(result),
+          reliability: ::Karte::V1::ReliabilitySummary.new(
+            average_rating: reliability[:average_rating],
+            rater_count: reliability[:rater_count],
+            karte_count: reliability[:karte_count]
           )
         )
       end
 
-      def list_my_entries
+      def list_my_kartes
         authenticate_user!
-        limit = request.message.limit.zero? ? 20 : request.message.limit
-        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+        message = request.message
         result = wrap_errors do
-          list_my_uc.call(
-            viewer_account_id: current_account_id,
-            limit: limit,
-            cursor: cursor
-          )
+          list_my_kartes_uc.call(viewer_account_id: current_account_id, limit: message.limit, cursor: cursor_from(message.cursor))
         end
-        ::Karte::V1::ListMyEntriesResponse.new(
-          entries: result[:entries].map { |e| entry_to_proto(e) },
-          next_cursor: result[:next_cursor] || "",
-          has_more: result[:has_more]
-        )
+        ::Karte::V1::ListMyKartesResponse.new(**page_to_proto(result))
       end
 
-      def report_entry
+      def list_recent_kartes
         authenticate_user!
-        wrap_errors do
-          report_uc.call(
-            viewer_account_id: current_account_id,
-            entry_id: request.message.entry_id,
-            reason: request.message.reason
-          )
-        end
-        ::Karte::V1::ReportEntryResponse.new
-      end
-
-      def get_my_access
-        authenticate_user!
-        result = get_my_access_uc.call(viewer_account_id: current_account_id)
-        ::Karte::V1::GetMyAccessResponse.new(
-          has_access: result[:has_access],
-          granted_at: result[:granted_at] ? timestamp(result[:granted_at]) : nil
-        )
-      end
-
-      def list_recent_entries
-        authenticate_user!
-        limit = request.message.limit.zero? ? 20 : request.message.limit
-        cursor = request.message.cursor.empty? ? nil : request.message.cursor
+        message = request.message
         result = wrap_errors do
-          list_recent_uc.call(
-            viewer_account_id: current_account_id,
-            limit: limit,
-            cursor: cursor
-          )
+          list_recent_kartes_uc.call(viewer_account_id: current_account_id, limit: message.limit, cursor: cursor_from(message.cursor))
         end
-        ::Karte::V1::ListRecentEntriesResponse.new(
-          entries: result[:entries].map { |e| entry_to_proto(e) },
-          next_cursor: result[:next_cursor] || "",
-          has_more: result[:has_more]
-        )
+        ::Karte::V1::ListRecentKartesResponse.new(**page_to_proto(result))
       end
 
       private
 
       def wrap_errors
         yield
-      rescue Karte::UseCases::CreateEntry::AccessError,
-             Karte::UseCases::UpdateEntry::AccessError,
-             Karte::UseCases::DeleteEntry::AccessError,
-             Karte::UseCases::ListEntriesByTarget::AccessError,
-             Karte::UseCases::ListMyEntries::AccessError,
-             Karte::UseCases::ListRecentEntries::AccessError,
-             Karte::UseCases::ReportEntry::AccessError => e
+      rescue Karte::Errors::Forbidden => e
         fail!(:permission_denied, :permission_denied, e.message)
-      rescue Karte::UseCases::CreateEntry::CreateError,
-             Karte::UseCases::UpdateEntry::UpdateError,
-             Karte::UseCases::DeleteEntry::DeleteError,
-             Karte::UseCases::ReportEntry::ReportError => e
+      rescue Karte::Errors::Invalid => e
         fail!(:invalid_argument, :invalid_argument, e.message)
+      rescue ROM::SQL::CheckConstraintError
+        fail!(:invalid_argument, :invalid_argument, "Karte state changed")
       end
 
-      def present_for_author(entry)
-        profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.author_profile_id)
-        target_profile = ::Profile::Slice["use_cases.get_profile"].call(profile_id: entry.target_profile_id)
-        media = ::Karte::Adapters::MediaAdapter.new
+      def rating_from(value)
+        value.zero? ? nil : value
+      end
+
+      def cursor_from(value)
+        value.empty? ? nil : value
+      end
+
+      def event_from(input)
+        input ||= ::Karte::V1::KarteEventInput.new
         {
-          id: entry.id,
-          author_profile_id: entry.author_profile_id,
-          target_profile_id: entry.target_profile_id,
-          is_mine: entry.author_account_id == current_account_id,
-          author_username: profile&.username,
-          author_avatar_url: media.find_url(profile&.avatar_media_id),
-          target_username: target_profile&.username,
-          target_avatar_url: media.find_url(target_profile&.avatar_media_id),
-          rating: entry.rating,
-          body: entry.body,
-          flagged: entry.reported_count >= Karte::UseCases::ListEntriesByTarget::MIN_FLAG_REPORTS,
-          created_at: entry.created_at,
-          updated_at: entry.updated_at
+          stage: STAGE_FROM_PROTO[input.stage],
+          outcome: input.outcome,
+          tags: input.tags.to_a,
+          note: input.note,
+          occurred_on: input.occurred_on
         }
       end
 
-      def entry_to_proto(e)
-        ::Karte::V1::KarteEntry.new(
-          id: e[:id].to_s,
-          author_profile_id: e[:author_profile_id].to_s,
-          target_profile_id: e[:target_profile_id].to_s,
-          is_mine: e[:is_mine] ? true : false,
-          author_username: e[:author_username] || "",
-          author_avatar_url: e[:author_avatar_url] || "",
-          target_username: e[:target_username] || "",
-          target_avatar_url: e[:target_avatar_url] || "",
-          rating: e[:rating],
-          body: e[:body] || "",
-          flagged: e[:flagged],
-          created_at: timestamp(e[:created_at]),
-          updated_at: timestamp(e[:updated_at])
+      def page_to_proto(result)
+        {
+          kartes: result[:kartes].map { |karte| karte_to_proto(karte) },
+          next_cursor: result[:next_cursor] || "",
+          has_more: result[:has_more]
+        }
+      end
+
+      def karte_to_proto(karte)
+        ::Karte::V1::Karte.new(
+          id: karte[:id],
+          author_profile_id: karte[:author_profile_id],
+          author_username: karte[:author_username],
+          author_avatar_url: karte[:author_avatar_url],
+          target_profile_id: karte[:target_profile_id],
+          target_username: karte[:target_username],
+          target_avatar_url: karte[:target_avatar_url],
+          is_mine: karte[:is_mine],
+          rating: karte[:rating] || 0,
+          status: STATUS_TO_PROTO.fetch(karte[:status]),
+          events: karte[:events].map { |event| event_to_proto(event) },
+          created_at: timestamp(karte[:created_at]),
+          updated_at: timestamp(karte[:updated_at]),
+          closed_at: timestamp(karte[:closed_at])
         )
       end
 
-      def timestamp(t)
-        return nil unless t
-        ::Google::Protobuf::Timestamp.new(seconds: t.to_i, nanos: t.nsec)
+      def event_to_proto(event)
+        ::Karte::V1::KarteEvent.new(
+          id: event[:id],
+          stage: STAGE_TO_PROTO.fetch(event[:stage]),
+          outcome: event[:outcome],
+          tags: event[:tags],
+          note: event[:note] || "",
+          occurred_on: event[:occurred_on].iso8601,
+          created_at: timestamp(event[:created_at]),
+          updated_at: timestamp(event[:updated_at])
+        )
+      end
+
+      def timestamp(time)
+        return nil unless time
+
+        ::Google::Protobuf::Timestamp.new(seconds: time.to_i, nanos: time.nsec)
       end
     end
   end

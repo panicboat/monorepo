@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { useMyKarte } from "@/modules/karte/hooks/useMyKarte";
-import { useMyKarteAccess } from "@/modules/karte/hooks/useMyKarteAccess";
+import { useAuthStore, selectIsHydrated, selectRole } from "@/stores/authStore";
 import { KarteEntryCard } from "@/modules/karte/components/KarteEntryCard";
 import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
 
@@ -12,15 +12,18 @@ export function MyKarteHeader() {
 }
 
 export default function MyKartePage() {
-  const { hasAccess, loading: accessLoading } = useMyKarteAccess();
-  const { entries, hasMore, loading, loadMore, refresh } = useMyKarte();
+  const isHydrated = useAuthStore(selectIsHydrated);
+  const role = useAuthStore(selectRole);
+  const { kartes, hasMore, loading, loadMore, refresh } = useMyKarte();
 
-  if (accessLoading) return <div className="p-4 text-sm">読み込み中…</div>;
-  if (!hasAccess) {
+  if (!isHydrated) {
+    return <main className="mx-auto max-w-xl p-6 text-text-secondary">読み込み中…</main>;
+  }
+
+  if (role !== "cast") {
     return (
       <div className="p-4 text-sm">
-        <p>カルテは有料機能です。</p>
-        <p className="mt-2 text-muted-foreground">アクセス権の付与は運営にお問い合わせください。</p>
+        <p>カルテはキャストだけが使えます。</p>
         <Link href="/" className="mt-3 inline-block text-accent">ホームに戻る</Link>
       </div>
     );
@@ -31,8 +34,8 @@ export default function MyKartePage() {
       <header className="border-b border-border px-4 py-3">
         <MyKarteHeader />
       </header>
-      {entries.map((e) => (
-        <KarteEntryCard key={e.id} entry={e} mode="my" onChanged={refresh} />
+      {kartes.map((karte) => (
+        <KarteEntryCard key={karte.id} karte={karte} mode="my" onChanged={refresh} />
       ))}
       {loading && <div className="px-4 py-3 text-sm text-muted-foreground">読み込み中…</div>}
       {hasMore && (

@@ -11,7 +11,6 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
   let(:follow_repo) { Social::Slice["repositories.follow_repository"] }
   let(:block_repo) { Social::Slice["repositories.block_repository"] }
   let(:bookmark_repo) { Bookmarks::Slice["repositories.bookmark_repository"] }
-  let(:access_repo) { Karte::Slice["repositories.access_repository"] }
   let(:cast_repo) { Hanami.app.slices[:profile]["repositories.cast_repository"] }
   let(:notification_repo) { Notifications::Slice["repositories.notification_repository"] }
   let(:footprints_repo) { Footprints::Slice["repositories.footprints_repository"] }
@@ -42,20 +41,10 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     cast_repo.create(profile_id: persona_a)
     cast_repo.create(profile_id: persona_b)
     cast_repo.create(profile_id: bystander)
-    access_repo.grant(account_id: account_id)
-    access_repo.grant(account_id: bystander_account_id)
-    entry_repo = Karte::Slice["repositories.entry_repository"]
-    report_repo = Karte::Slice["repositories.report_repository"]
-    reported_entry = entry_repo.create(
-      author_account_id: bystander_account_id, author_profile_id: bystander,
-      target_profile_id: SecureRandom.uuid_v7, rating: 3, body: nil
-    )
-    report_repo.create(entry_id: reported_entry.id, reporter_account_id: account_id, reason: "x")
-    own_entry = entry_repo.create(
+    own_karte = Karte::Slice["repositories.karte_repository"].create(
       author_account_id: account_id, author_profile_id: persona_a,
-      target_profile_id: SecureRandom.uuid_v7, rating: 3, body: nil
+      target_profile_id: SecureRandom.uuid_v7, rating: nil
     )
-    report_repo.create(entry_id: own_entry.id, reporter_account_id: bystander_account_id, reason: "x")
 
     post_a = post_repo.create_post(author_profile_id: persona_a, content: "a")
     post_b = post_repo.create_post(author_profile_id: persona_b, content: "b")
@@ -120,10 +109,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:identity__accounts].where(id: bystander_account_id).count).to eq(1)
     expect(db[:profile__profiles].where(account_id: account_id).count).to eq(0)
     expect(db[:profile__casts].where(profile_id: personas).count).to eq(0)
-    expect(db[:karte__access].where(account_id: account_id).count).to eq(0)
-    expect(db[:karte__reports].where(reporter_account_id: account_id).count).to eq(0)
-    expect(db[:karte__reports].where(reporter_account_id: bystander_account_id).count).to eq(1)
-    expect(db[:karte__entries].where(id: own_entry.id).count).to eq(1)
+    expect(db[:karte__kartes].where(id: own_karte.id).count).to eq(1)
     expect(db[:post__posts].where(author_profile_id: personas).count).to eq(0)
     expect(db[:post__likes].where(profile_id: personas).count).to eq(0)
     expect(db[:post__comments].where(author_profile_id: personas).count).to eq(0)
@@ -143,7 +129,6 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
 
     expect(db[:profile__profiles].where(id: bystander).count).to eq(1)
     expect(db[:profile__casts].where(profile_id: bystander).count).to eq(1)
-    expect(db[:karte__access].where(account_id: bystander_account_id).count).to eq(1)
     expect(db[:post__posts].where(id: bystander_post.id).count).to eq(1)
     expect(db[:post__likes].where(profile_id: bystander).count).to eq(1)
     expect(db[:post__comments].where(author_profile_id: bystander).count).to eq(1)

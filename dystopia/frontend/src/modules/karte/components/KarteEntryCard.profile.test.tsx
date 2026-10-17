@@ -6,30 +6,28 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("../hooks/useDeleteKarte", () => ({
-  useDeleteKarte: () => ({ remove: vi.fn(), loading: false }),
-}));
-vi.mock("../hooks/useReportKarte", () => ({
-  useReportKarte: () => ({ report: vi.fn(), loading: false }),
+vi.mock("../hooks/useKarteMutations", () => ({
+  useKarteMutations: () => ({ updateRating: vi.fn(), close: vi.fn(), reopen: vi.fn(), addEvent: vi.fn(), remove: vi.fn(), loading: false, error: null }),
 }));
 
 const { KarteEntryCard } = await import("./KarteEntryCard");
 const { useAuthStore } = await import("@/stores/authStore");
 
-const entry = {
-  id: "e-1",
+const entry: import("../types").Karte = {
+  id: "k-1",
   authorProfileId: "persona-a",
-  targetProfileId: "target-1",
-  isMine: true,
   authorUsername: "persona_a",
   authorAvatarUrl: "",
+  targetProfileId: "target-1",
   targetUsername: "guest_hanako",
   targetAvatarUrl: "",
+  isMine: true,
   rating: 4,
-  body: "memo",
-  flagged: false,
+  status: "open",
+  events: [{ id: "e-1", stage: "service", outcome: "completed", tags: [], note: "", occurredOn: "2026-10-01", createdAt: "", updatedAt: "" }],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
+  closedAt: null,
 };
 
 async function textOf(props: Parameters<typeof KarteEntryCard>[0]) {
@@ -53,21 +51,21 @@ describe("KarteEntryCard written by another profile of the account", () => {
   });
 
   it("names the profile that wrote the entry in the own list", async () => {
-    expect(await textOf({ entry, mode: "my" })).toContain("@persona_a として記録");
+    expect(await textOf({ karte: entry, mode: "my" })).toContain("@persona_a として記録");
   });
 
   it("says so when that profile no longer exists", async () => {
-    expect(await textOf({ entry: { ...entry, authorUsername: "" }, mode: "my" })).toContain("削除したプロフィールで記録");
+    expect(await textOf({ karte: { ...entry, authorUsername: "" }, mode: "my" })).toContain("削除したプロフィールで記録");
   });
 
   it("adds nothing for an entry written by the acting profile", async () => {
     useAuthStore.setState({ activeProfileId: "persona-a" });
 
-    expect(await textOf({ entry, mode: "my" })).not.toContain("として記録");
+    expect(await textOf({ karte: entry, mode: "my" })).not.toContain("として記録");
   });
 
   it("adds nothing outside the own list", async () => {
-    expect(await textOf({ entry, mode: "recent" })).not.toContain("として記録");
-    expect(await textOf({ entry, mode: "target" })).not.toContain("として記録");
+    expect(await textOf({ karte: entry, mode: "recent" })).not.toContain("として記録");
+    expect(await textOf({ karte: entry, mode: "target" })).not.toContain("として記録");
   });
 });
