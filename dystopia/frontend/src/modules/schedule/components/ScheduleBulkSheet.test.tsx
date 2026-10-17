@@ -71,13 +71,36 @@ describe("ScheduleBulkSheet", () => {
     await mount();
 
     expect(text()).toContain("予定をまとめて編集");
-    expect(text()).toContain("SHIFT / 2週間まとめて編集");
+    expect(text()).toContain("予定 / 2週間まとめて編集");
+    expect(text()).not.toContain("SHIFT");
     expect(text()).toContain("日付を複数選択して、同じ時間帯を一括で設定できます。1日ずつ入力する必要はありません。");
     expect(document.querySelectorAll("button[data-day]")).toHaveLength(14);
     expect(day("2026-10-12").textContent).toContain("10/12(月)");
     expect(day("2026-10-12").textContent).toContain("未設定");
-    expect(day("2026-10-13").textContent).toContain("19:00");
+    expect(day("2026-10-13").textContent).toContain("19:00 〜 01:00");
     expect(day("2026-10-25")).not.toBeNull();
+  });
+
+  it("lists the days one per row, marks a selected day and keeps the apply bar at the bottom", async () => {
+    await mount();
+
+    const list = day("2026-10-12").parentElement as HTMLElement;
+    expect(list.className).toContain("flex-col");
+    expect(list.className).not.toContain("grid-cols-7");
+    expect(day("2026-10-12").className).not.toContain("border-accent");
+    await click(day("2026-10-12"));
+    expect(day("2026-10-12").className).toContain("border-accent");
+
+    const bar = button("選択した日に反映")!.parentElement as HTMLElement;
+    expect(bar.className).toContain("sticky");
+    expect(bar.textContent).toContain("選択した日：1日");
+  });
+
+  it("puts the start and the end time on separate rows", async () => {
+    await mount();
+
+    const label = (name: string) => Array.from(document.querySelectorAll("span")).find((span) => span.textContent === name) as HTMLElement;
+    expect(label("開始").parentElement).not.toBe(label("終了").parentElement);
   });
 
   it("selects days, counts them and selects the weekdays", async () => {
