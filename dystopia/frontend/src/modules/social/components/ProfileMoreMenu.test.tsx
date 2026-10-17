@@ -23,12 +23,12 @@ vi.mock("@/stores/authStore", () => ({
 
 const { ProfileMoreMenu } = await import("./ProfileMoreMenu");
 
-async function openMenu() {
+async function openMenu(onUnfollow?: () => void) {
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
   await act(async () => {
-    root.render(createElement(ProfileMoreMenu, { targetProfileId: "target-1" }));
+    root.render(createElement(ProfileMoreMenu, { targetProfileId: "target-1", onUnfollow }));
   });
   await act(async () => {
     container
@@ -80,6 +80,20 @@ describe("ProfileMoreMenu", () => {
     const close = await openMenu();
 
     expect(menuItems().map((item) => item.textContent)).toEqual(["ブロック解除"]);
+
+    await close();
+  });
+
+  it("offers unfollow before block when an unfollow action is given", async () => {
+    const onUnfollow = vi.fn();
+    const close = await openMenu(onUnfollow);
+
+    expect(menuItems().map((item) => item.textContent)).toEqual(["フォローを外す", "ブロック"]);
+    await act(async () => {
+      (menuItems()[0] as HTMLElement).click();
+    });
+    expect(onUnfollow).toHaveBeenCalledTimes(1);
+    expect(mocks.toggle).not.toHaveBeenCalled();
 
     await close();
   });

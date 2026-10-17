@@ -25,14 +25,14 @@ vi.mock("@/modules/profile/components/EditProfileSheet", () => ({
 }));
 
 vi.mock("@/modules/social", () => ({
-  FollowButton: () => <span>follow-button</span>,
-  ProfileMoreMenu: () => <span>more-menu</span>,
   SocialCountsLinks: () => <span>social-counts</span>,
   useSocialCounts: () => ({ followingCount: 0, followersCount: 0 }),
 }));
 
-vi.mock("@/modules/messaging", () => ({
-  StartChatButton: () => <span>chat-button</span>,
+vi.mock("@/modules/profile/components/ProfileActions", () => ({
+  ProfileActions: ({ targetProfileId, isPrivate }: { targetProfileId: string; isPrivate: boolean }) => (
+    <span>{`profile-actions:${targetProfileId}:${isPrivate}`}</span>
+  ),
 }));
 
 vi.mock("@/modules/footprints", () => ({
@@ -74,13 +74,13 @@ vi.mock("@/modules/schedule", () => ({
 const { default: PublicProfilePage } = await import("./page");
 
 describe("PublicProfilePage layout", () => {
-  it("puts the more menu, message and follow actions in the header of another profile", () => {
-    mocks.profile = { ...emptyProfileView("profile-1"), role: 2 };
+  it("puts the follow-state actions in the header of another profile", () => {
+    mocks.profile = { ...emptyProfileView("profile-1"), role: 2, isPrivate: true };
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
     const header = html.match(/<header>(.*?)<\/header>/)?.[1] ?? "";
 
-    expect(header).toBe("<span>more-menu</span><span>chat-button</span><span>follow-button</span>");
+    expect(header).toBe("<span>profile-actions:profile-1:true</span>");
   });
 
   it("puts only the edit action in the header of the viewer's own profile", () => {
@@ -90,7 +90,7 @@ describe("PublicProfilePage layout", () => {
     const header = html.match(/<header>(.*?)<\/header>/)?.[1] ?? "";
 
     expect(header).toContain("プロフィールを編集");
-    expect(header).not.toContain("follow-button");
+    expect(header).not.toContain("profile-actions");
   });
 
   it("shows the follow counts right under the header", () => {

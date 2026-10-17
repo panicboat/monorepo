@@ -8,9 +8,10 @@ import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 
 interface ProfileMoreMenuProps {
   targetProfileId: string;
+  onUnfollow?: () => void;
 }
 
-export function ProfileMoreMenu({ targetProfileId }: ProfileMoreMenuProps) {
+export function ProfileMoreMenu({ targetProfileId, onUnfollow }: ProfileMoreMenuProps) {
   const viewerId = useAuthStore(selectActiveProfileId);
   const { isBlocked, toggle, loading } = useBlock(targetProfileId);
 
@@ -29,6 +30,14 @@ export function ProfileMoreMenu({ targetProfileId }: ProfileMoreMenuProps) {
           sideOffset={4}
           className="z-50 min-w-40 rounded-xl border border-border bg-surface p-1 shadow-2xl"
         >
+          {onUnfollow && (
+            <DropdownMenu.Item
+              onSelect={onUnfollow}
+              className="cursor-pointer rounded-lg px-3 py-2 text-sm text-text-primary outline-none data-[disabled]:opacity-50 data-[highlighted]:bg-bg-secondary"
+            >
+              フォローを外す
+            </DropdownMenu.Item>
+          )}
           <DropdownMenu.Item
             disabled={loading}
             onSelect={toggle}
