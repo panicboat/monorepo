@@ -107,4 +107,19 @@ describe("ReviewCard", () => {
     expect(deleted.textContent).toContain("削除したプロフィールで記録");
     expect(current.textContent).not.toContain("として記録");
   });
+
+  it("links the author's avatar and name to the author's profile", async () => {
+    const container = await mount({ review: review(), variant: "feed" });
+    const links = Array.from(container.querySelectorAll('a[href="/u/yuna"]'));
+
+    expect(links).toHaveLength(2);
+    expect(links.map((link) => link.textContent)).toContain("ゆな");
+  });
+
+  it("leaves the author unlinked when the profile was deleted", async () => {
+    const container = await mount({ review: review({ authorUsername: "", authorDisplayName: "" }), variant: "feed" });
+
+    expect(Array.from(container.querySelectorAll("a")).some((link) => link.getAttribute("href") === "/u/")).toBe(false);
+    expect(container.textContent).toContain("削除したプロフィール");
+  });
 });

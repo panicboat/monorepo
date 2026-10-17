@@ -28,18 +28,27 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
   const activeProfileId = useAuthStore(selectActiveProfileId);
   const latest = review.events[review.events.length - 1];
   const writtenAsOtherProfile = variant === "mine" && review.authorProfileId !== activeProfileId;
+  const authorName = profileName(review.authorDisplayName, review.authorUsername);
+  const authorHref = review.authorUsername ? `/u/${encodeURIComponent(review.authorUsername)}` : undefined;
 
   return (
     <article className="border-b border-border px-4 py-3">
       <div className="flex gap-3">
         <Avatar
           src={review.authorAvatarUrl || undefined}
-          fallback={profileName(review.authorDisplayName, review.authorUsername).replace("@", "").slice(0, 1) || "?"}
+          fallback={authorName.replace("@", "").slice(0, 1) || "?"}
+          href={authorHref}
         />
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold tracking-wide text-text-secondary">クチコミ / ゲストからキャストへ</p>
           <p className="flex min-w-0 items-center gap-1 text-sm">
-            <span className="truncate font-bold text-text-primary">{profileName(review.authorDisplayName, review.authorUsername)}</span>
+            {authorHref ? (
+              <Link href={authorHref} className="truncate font-bold text-text-primary hover:underline">
+                {authorName}
+              </Link>
+            ) : (
+              <span className="truncate font-bold text-text-primary">{authorName}</span>
+            )}
             <span className="shrink-0 text-text-secondary">· {formatTimeAgo(review.lastActivityAt)}</span>
           </p>
           {writtenAsOtherProfile && (

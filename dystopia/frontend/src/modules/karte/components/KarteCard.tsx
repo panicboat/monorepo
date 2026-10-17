@@ -28,18 +28,27 @@ export function KarteCard({ karte, variant, onOpen }: KarteCardProps) {
   const activeProfileId = useAuthStore(selectActiveProfileId);
   const latest = karte.events[karte.events.length - 1];
   const writtenAsOtherProfile = variant === "mine" && karte.authorProfileId !== activeProfileId;
+  const authorName = profileName(karte.authorDisplayName, karte.authorUsername);
+  const authorHref = karte.authorUsername ? `/u/${encodeURIComponent(karte.authorUsername)}` : undefined;
 
   return (
     <article className="border-b border-border px-4 py-3">
       <div className="flex gap-3">
         <Avatar
           src={karte.authorAvatarUrl || undefined}
-          fallback={profileName(karte.authorDisplayName, karte.authorUsername).replace("@", "").slice(0, 1) || "?"}
+          fallback={authorName.replace("@", "").slice(0, 1) || "?"}
+          href={authorHref}
         />
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold tracking-wide text-text-secondary">KARTE / キャストからゲストへ</p>
           <p className="flex min-w-0 items-center gap-1 text-sm">
-            <span className="truncate font-bold text-text-primary">{profileName(karte.authorDisplayName, karte.authorUsername)}</span>
+            {authorHref ? (
+              <Link href={authorHref} className="truncate font-bold text-text-primary hover:underline">
+                {authorName}
+              </Link>
+            ) : (
+              <span className="truncate font-bold text-text-primary">{authorName}</span>
+            )}
             <span className="shrink-0 text-text-secondary">· {formatTimeAgo(karte.lastActivityAt)}</span>
           </p>
           {writtenAsOtherProfile && (
