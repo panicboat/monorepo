@@ -1,6 +1,8 @@
 "use client";
 
 import { Avatar } from "@/components/ui/avatar";
+import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -12,12 +14,6 @@ import type { KarteEventInput } from "../types";
 import { StarRatingInput } from "@/components/ui/star-rating-input";
 import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
 
-export interface KarteGuest {
-  displayName: string;
-  username: string;
-  avatarUrl: string;
-}
-
 export function emptyKarteEvent(today: string = todayInJapan()): KarteEventInput {
   return { stage: "reservation", outcome: KARTE_OUTCOMES.reservation[0].code, tags: [], note: "", occurredOn: today };
 }
@@ -28,7 +24,7 @@ export function isKarteEventReady(event: KarteEventInput): boolean {
 }
 
 interface KarteEventFormProps {
-  guest: KarteGuest;
+  guest: ProfileSummaryView | null;
   value: KarteEventInput;
   onChange: (next: KarteEventInput) => void;
   rating?: { value: number | null; onChange: (next: number | null) => void };
@@ -52,10 +48,10 @@ export function KarteEventForm({ guest, value, onChange, rating, submitLabel, su
     >
       <ActingProfileLabel />
       <div className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2">
-        <Avatar src={guest.avatarUrl || undefined} fallback={guest.displayName.slice(0, 1) || "?"} size="sm" />
+        <Avatar src={guest?.avatarUrl || undefined} fallback={profileDisplayName(guest).replace("@", "").slice(0, 1) || "?"} size="sm" />
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-text-primary">{guest.displayName || "削除したプロフィール"}</p>
-          <p className="truncate text-xs text-text-secondary">{guest.username ? `@${guest.username} · ` : ""}すべてのキャストに共有</p>
+          <p className="flex min-w-0 text-sm"><ProfileName profile={guest} /></p>
+          <p className="truncate text-xs text-text-secondary">{guest?.username ? `@${guest.username} · ` : ""}すべてのキャストに共有</p>
         </div>
       </div>
 

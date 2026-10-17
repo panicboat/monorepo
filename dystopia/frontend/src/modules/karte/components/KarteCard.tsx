@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { ProfileName } from "@/components/ui/profile-name";
+import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { formatMonthDay } from "@/lib/utils/japan-date";
@@ -15,10 +15,6 @@ export function karteEventLine(event: KarteEvent): string {
   return event.note ? `${line} — ${event.note}` : line;
 }
 
-export function profileName(displayName: string, username: string): string {
-  return displayName || (username ? `@${username}` : "削除したプロフィール");
-}
-
 interface KarteCardProps {
   karte: Karte;
   variant: "feed" | "guest" | "mine";
@@ -29,7 +25,7 @@ export function KarteCard({ karte, variant, onOpen }: KarteCardProps) {
   const activeProfileId = useAuthStore(selectActiveProfileId);
   const latest = karte.events[karte.events.length - 1];
   const writtenAsOtherProfile = variant === "mine" && karte.authorProfileId !== activeProfileId;
-  const authorName = profileName(karte.author?.displayName ?? "", karte.author?.username ?? "");
+  const authorName = profileDisplayName(karte.author);
   const authorHref = karte.author?.username ? `/u/${encodeURIComponent(karte.author?.username)}` : undefined;
 
   return (

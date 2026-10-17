@@ -5,7 +5,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { StarRatingInput } from "@/components/ui/star-rating-input";
-import { ProfileName } from "@/components/ui/profile-name";
+import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
@@ -13,7 +13,6 @@ import { useReview } from "../hooks/useReview";
 import { useReviewMutations } from "../hooks/useReviewMutations";
 import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
 import type { Review, ReviewEventInput } from "../types";
-import { profileName } from "./ReviewCard";
 import { ReviewEventForm, emptyReviewEvent } from "./ReviewEventForm";
 
 type Step = { kind: "detail" } | { kind: "append" } | { kind: "edit"; eventId: string };
@@ -42,7 +41,6 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
 
   const isOpen = review.status === "open";
   const editable = review.isMine && isOpen;
-  const cast = { displayName: profileName(review.target?.displayName ?? "", review.target?.username ?? ""), username: review.target?.username ?? "", avatarUrl: review.target?.avatarUrl ?? "" };
   const confirmed = async (request: () => Promise<Review | null>, message?: string) => {
     const result = await request();
     if (result) {
@@ -63,7 +61,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
     if (step.kind === "append") {
       return (
         <ReviewEventForm
-          cast={cast}
+          cast={review.target}
           value={appendDraft}
           onChange={setAppendDraft}
           submitLabel="この段階を追記"
@@ -80,7 +78,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
     if (step.kind === "edit") {
       return (
         <ReviewEventForm
-          cast={cast}
+          cast={review.target}
           value={editDraft}
           onChange={setEditDraft}
           submitLabel="出来事を更新"
@@ -102,7 +100,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
         <p className="text-xs font-bold tracking-wide text-text-secondary">クチコミ / {isOpen ? "記録中" : "完了"}</p>
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center gap-3">
-            <Avatar src={review.target?.avatarUrl || undefined} fallback={cast.displayName.replace("@", "").slice(0, 1) || "?"} size="sm" />
+            <Avatar src={review.target?.avatarUrl || undefined} fallback={profileDisplayName(review.target).replace("@", "").slice(0, 1) || "?"} size="sm" />
             <div className="min-w-0">
               <p className="truncate"><ProfileName profile={review.target} /></p>
               <p className="truncate text-xs text-text-secondary">

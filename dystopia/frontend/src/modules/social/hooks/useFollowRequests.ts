@@ -5,10 +5,10 @@ import { useCallback } from "react";
 import { fetcher } from "@/lib/swr";
 import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { useAuthStore } from "@/stores/authStore";
-import type { FollowRequestItem } from "../types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 
 interface ListResponse {
-  requests: FollowRequestItem[];
+  requests: ProfileSummaryView[];
   nextCursor: string;
   hasMore: boolean;
 }
@@ -40,7 +40,7 @@ export function useFollowRequests() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Failed to approve");
     }
-    mutateList((cur) => (cur ? { ...cur, requests: cur.requests.filter((r) => r.requesterProfileId !== requesterProfileId) } : cur), { revalidate: false });
+    mutateList((cur) => (cur ? { ...cur, requests: cur.requests.filter((r) => r.profileId !== requesterProfileId) } : cur), { revalidate: false });
     mutateCount((cur) => (cur ? { count: Math.max(0, cur.count - 1) } : cur), { revalidate: false });
   }, [mutateList, mutateCount]);
 
@@ -54,7 +54,7 @@ export function useFollowRequests() {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Failed to reject");
     }
-    mutateList((cur) => (cur ? { ...cur, requests: cur.requests.filter((r) => r.requesterProfileId !== requesterProfileId) } : cur), { revalidate: false });
+    mutateList((cur) => (cur ? { ...cur, requests: cur.requests.filter((r) => r.profileId !== requesterProfileId) } : cur), { revalidate: false });
     mutateCount((cur) => (cur ? { count: Math.max(0, cur.count - 1) } : cur), { revalidate: false });
   }, [mutateList, mutateCount]);
 

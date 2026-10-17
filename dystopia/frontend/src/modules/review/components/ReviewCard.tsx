@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
-import { ProfileName } from "@/components/ui/profile-name";
+import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { formatMonthDay } from "@/lib/utils/japan-date";
@@ -15,10 +15,6 @@ export function reviewEventLine(event: ReviewEvent): string {
   return event.note ? `${line} — ${event.note}` : line;
 }
 
-export function profileName(displayName: string, username: string): string {
-  return displayName || (username ? `@${username}` : "削除したプロフィール");
-}
-
 interface ReviewCardProps {
   review: Review;
   variant: "feed" | "cast" | "mine";
@@ -29,7 +25,7 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
   const activeProfileId = useAuthStore(selectActiveProfileId);
   const latest = review.events[review.events.length - 1];
   const writtenAsOtherProfile = variant === "mine" && review.authorProfileId !== activeProfileId;
-  const authorName = profileName(review.author?.displayName ?? "", review.author?.username ?? "");
+  const authorName = profileDisplayName(review.author);
   const authorHref = review.author?.username ? `/u/${encodeURIComponent(review.author?.username)}` : undefined;
 
   return (

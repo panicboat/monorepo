@@ -19,7 +19,7 @@ export function KarteCreateForm({ target, event, onEventChange, rating, onRating
 
   return (
     <KarteEventForm
-      guest={{ displayName: target.displayName, username: target.username, avatarUrl: target.avatarUrl }}
+      guest={target}
       value={event}
       onChange={onEventChange}
       rating={{ value: rating, onChange: onRatingChange }}

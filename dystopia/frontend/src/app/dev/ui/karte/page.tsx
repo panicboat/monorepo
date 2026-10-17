@@ -78,7 +78,7 @@ export default function DevUiKartePage() {
       <section>
         <h2 className="pb-3 text-sm font-bold text-text-secondary">KarteEventForm</h2>
         <KarteEventForm
-          guest={{ displayName: "ゲスト", username: "guest_demo", avatarUrl: "" }}
+          guest={{ profileId: "guest-demo", displayName: "ゲスト", username: "guest_demo", avatarUrl: "", isPrivate: false, role: "guest" }}
           value={event}
           onChange={setEvent}
           rating={{ value: rating, onChange: setRating }}

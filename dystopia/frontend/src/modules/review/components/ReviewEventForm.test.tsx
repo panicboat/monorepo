@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import { act, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
@@ -9,7 +10,8 @@ vi.mock("@/modules/profile/components/ActingProfileLabel", () => ({ ActingProfil
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-let cast = { displayName: "はなこ", username: "hanako", avatarUrl: "" };
+const base: ProfileSummaryView = { profileId: "p-1", displayName: "はなこ", username: "hanako", avatarUrl: "", isPrivate: false, role: "cast" };
+let cast: ProfileSummaryView | null = base;
 
 function Harness({ initial, withRating, onSubmit }: { initial: ReviewEventInput; withRating: boolean; onSubmit: (event: ReviewEventInput, rating: number | null) => void }) {
   const [value, setValue] = useState(initial);
@@ -62,10 +64,21 @@ describe("ReviewEventForm", () => {
     expect(container.textContent).toContain("@hanako · 全員に公開");
   });
 
+  it("shows the handle for an empty display name and a lock mark only for a private profile", async () => {
+    cast = { ...base, displayName: "", isPrivate: true };
+    const privateHtml = (await mount(emptyReviewEvent("2026-10-16"))).innerHTML;
+    cast = base;
+    const publicHtml = (await mount(emptyReviewEvent("2026-10-16"))).innerHTML;
+
+    expect(privateHtml).toContain("鍵付き");
+    expect(privateHtml).toContain("@hanako");
+    expect(publicHtml).not.toContain("鍵付き");
+  });
+
   it("shows a deleted cast profile without a username or a name", async () => {
-    cast = { displayName: "", username: "", avatarUrl: "" };
+    cast = null;
     const container = await mount(emptyReviewEvent("2026-10-16"));
-    cast = { displayName: "はなこ", username: "hanako", avatarUrl: "" };
+    cast = base;
 
     expect(container.textContent).toContain("削除したプロフィール");
     expect(container.textContent).toContain("全員に公開");

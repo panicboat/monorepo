@@ -24,7 +24,7 @@ export default function ChatPage() {
   const { messages, hasMore, loading, send, markRead, loadMore } = useMessages(threadId || null);
   const { thread, sendRestriction, loading: threadLoading } = useThread(threadId || null);
   const counterpart = thread?.counterpart ?? null;
-    const counterpartAvatar = (
+  const counterpartAvatar = (
     <Avatar src={counterpart?.avatarUrl || undefined} fallback={(counterpart?.displayName || "?").slice(0, 1)} size="sm" />
   );
 

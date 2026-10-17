@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
-import { ProfileName } from "@/components/ui/profile-name";
+import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
@@ -12,7 +12,6 @@ import { useKarte } from "../hooks/useKarte";
 import { useKarteMutations } from "../hooks/useKarteMutations";
 import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
 import type { Karte, KarteEventInput } from "../types";
-import { profileName } from "./KarteCard";
 import { KarteEventForm, emptyKarteEvent } from "./KarteEventForm";
 import { StarRatingInput } from "@/components/ui/star-rating-input";
 
@@ -42,7 +41,6 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
 
   const isOpen = karte.status === "open";
   const editable = karte.isMine && isOpen;
-  const guest = { displayName: profileName(karte.target?.displayName ?? "", karte.target?.username ?? ""), username: karte.target?.username ?? "", avatarUrl: karte.target?.avatarUrl ?? "" };
   const confirmed = async (request: () => Promise<Karte | null>, message?: string) => {
     const result = await request();
     if (result) {
@@ -63,7 +61,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
     if (step.kind === "append") {
       return (
         <KarteEventForm
-          guest={guest}
+          guest={karte.target}
           value={appendDraft}
           onChange={setAppendDraft}
           submitLabel="この段階を追記"
@@ -80,7 +78,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
     if (step.kind === "edit") {
       return (
         <KarteEventForm
-          guest={guest}
+          guest={karte.target}
           value={editDraft}
           onChange={setEditDraft}
           submitLabel="出来事を更新"
@@ -102,7 +100,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
         <p className="text-xs font-bold tracking-wide text-text-secondary">KARTE / {isOpen ? "記録中" : "完了"}</p>
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center gap-3">
-            <Avatar src={karte.target?.avatarUrl || undefined} fallback={guest.displayName.replace("@", "").slice(0, 1) || "?"} size="sm" />
+            <Avatar src={karte.target?.avatarUrl || undefined} fallback={profileDisplayName(karte.target).replace("@", "").slice(0, 1) || "?"} size="sm" />
             <div className="min-w-0">
               <p className="truncate"><ProfileName profile={karte.target} /></p>
               <p className="truncate text-xs text-text-secondary">

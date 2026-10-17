@@ -53,7 +53,7 @@ export function PostCard({
     <span className="flex items-center gap-1">
       <span className="font-bold text-text-primary">{author.name}</span>
       {author.isPrivate && <LockMark label="鍵付き" className="text-xs" />}
-      <span className="text-text-secondary">@{author.handle}</span>
+      {author.handle && <span className="text-text-secondary">@{author.handle}</span>}
     </span>
   );
 

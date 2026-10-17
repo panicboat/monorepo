@@ -9,12 +9,17 @@ interface ProfileNameProps {
   className?: string;
 }
 
+export function profileDisplayName(profile: ProfileSummaryView | null): string {
+  if (!profile) return "削除したプロフィール";
+  return profile.displayName || (profile.username ? `@${profile.username}` : "削除したプロフィール");
+}
+
 export function ProfileName({ profile, link = false, className }: ProfileNameProps) {
   if (!profile) {
-    return <span className={cn("truncate font-bold text-text-primary", className)}>削除したプロフィール</span>;
+    return <span className={cn("truncate font-bold text-text-primary", className)}>{profileDisplayName(null)}</span>;
   }
 
-  const name = profile.displayName || (profile.username ? `@${profile.username}` : "削除したプロフィール");
+  const name = profileDisplayName(profile);
   const label = (
     <>
       <span className="truncate">{name}</span>

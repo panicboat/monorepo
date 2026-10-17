@@ -2,6 +2,7 @@
 
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ProfileName } from "@/components/ui/profile-name";
 import { useFollowRequests } from "@/modules/social";
 
 export default function FollowRequestsPage() {
@@ -24,19 +25,19 @@ export default function FollowRequestsPage() {
 
       {requests.map((r) => (
         <div
-          key={r.requesterProfileId}
+          key={r.profileId}
           className="flex items-center gap-3 border-b border-border px-4 py-3"
         >
-          <Avatar src={r.avatarUrl || undefined} fallback={r.displayName.slice(0, 1) || "?"} size="md" />
+          <Avatar src={r.avatarUrl || undefined} fallback={(r.displayName || r.username).slice(0, 1) || "?"} size="md" />
           <div className="min-w-0 flex-1">
-            <p className="truncate font-bold text-text-primary">{r.displayName}</p>
+            <p className="flex min-w-0"><ProfileName profile={r} /></p>
             <p className="truncate text-sm text-text-secondary">@{r.username}</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="primary" size="sm" onClick={() => approve(r.requesterProfileId)}>
+            <Button variant="primary" size="sm" onClick={() => approve(r.profileId)}>
               承認
             </Button>
-            <Button variant="secondary" size="sm" onClick={() => reject(r.requesterProfileId)}>
+            <Button variant="secondary" size="sm" onClick={() => reject(r.profileId)}>
               拒否
             </Button>
           </div>

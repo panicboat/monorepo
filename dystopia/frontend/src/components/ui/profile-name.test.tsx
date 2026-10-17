@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ProfileSummaryView } from "@/modules/profile/types";
-import { ProfileName } from "./profile-name";
+import { ProfileName, profileDisplayName } from "./profile-name";
 
 const profile = (overrides: Partial<ProfileSummaryView> = {}): ProfileSummaryView => ({
   profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "", isPrivate: false, role: "cast", ...overrides,
@@ -35,5 +35,17 @@ describe("ProfileName", () => {
     expect(html).toContain("削除したプロフィール");
     expect(html).not.toContain("href=");
     expect(html).not.toContain("鍵付き");
+  });
+});
+
+describe("profileDisplayName", () => {
+  it("prefers the display name", () => {
+    expect(profileDisplayName(profile())).toBe("りん");
+  });
+
+  it("falls back to the handle, then to the deleted label", () => {
+    expect(profileDisplayName(profile({ displayName: "" }))).toBe("@rin");
+    expect(profileDisplayName(profile({ displayName: "", username: "" }))).toBe("削除したプロフィール");
+    expect(profileDisplayName(null)).toBe("削除したプロフィール");
   });
 });

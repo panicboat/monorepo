@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { socialFollowClient } from "@/lib/grpc";
 import { buildGrpcHeaders } from "@/lib/request";
 import { requireAuth, handleApiError } from "@/lib/api-helpers";
-import { profileToFollowRequestItem } from "@/modules/social";
+import { summaryToView } from "@/modules/profile/lib/mappers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
     const res = await socialFollowClient.listPendingFollowRequests({ limit, cursor }, { headers });
     return NextResponse.json({
-      requests: (res.profiles || []).map(profileToFollowRequestItem),
+      requests: (res.profiles || []).map(summaryToView),
       nextCursor: res.nextCursor || "",
       hasMore: !!res.hasMore,
     });
