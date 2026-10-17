@@ -200,6 +200,19 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
       expect(unliked.likes_count).to eq(1)
     end
 
+    it "drops a liked followers-only post from the liked list once the viewer unfollows" do
+      secret = post_repo.create_post(author_profile_id: public_author, content: "followers", visibility: "private")
+      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: public_author, status: "approved")
+      like_repo.profile_like(post_id: secret.id, profile_id: viewer)
+      act_as(viewer)
+      liked_ids = -> { rpc(Post::Grpc::LikeHandler, :list_liked_posts_by_profile, Post::V1::ListLikedPostsByProfileRequest.new(profile_id: viewer)).posts.map(&:id) }
+
+      expect(liked_ids.call).to eq([secret.id])
+
+      follow_repo.unfollow(follower_profile_id: viewer, followee_profile_id: public_author)
+      expect(liked_ids.call).to eq([])
+    end
+
     it "rejects a reply whose parent comment belongs to another post" do
       other_post = post_repo.create_post(author_profile_id: public_author, content: "another post", visibility: "public")
       parent = comment_repo.create_comment(post_id: other_post.id, author_profile_id: public_author, content: "on the other post")

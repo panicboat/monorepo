@@ -32,7 +32,7 @@ module Post
         author_profile_id = request.message.author_profile_id.empty? ? nil : request.message.author_profile_id
         return ::Post::V1::ListPostsResponse.new(posts: [], next_cursor: "", has_more: false) if author_profile_id && !author_readable?(author_profile_id)
 
-        rows = post_repo.list_posts(limit: limit, cursor: cursor, author_profile_id: author_profile_id, media_only: request.message.media_only)
+        rows = post_repo.list_posts(limit: limit, cursor: cursor, author_profile_id: author_profile_id, media_only: request.message.media_only, include_private: author_profile_id ? followers_only_readable?(author_profile_id) : false)
         has_more = rows.length > limit
         rows = rows.first(limit) if has_more
         next_cursor = if has_more && rows.any?
@@ -164,6 +164,17 @@ module Post
           media_files: media_files,
           mentioned_usernames: mentioned_usernames
         )
+      end
+
+      def followers_only_readable?(author_profile_id)
+        return true if author_profile_id == current_profile_id
+        return false unless current_profile_id
+
+        follow_repo.find(follower_profile_id: current_profile_id, followee_profile_id: author_profile_id)&.status == "approved"
+      end
+
+      def follow_repo
+        @follow_repo ||= Social::Slice["repositories.follow_repository"]
       end
 
       def author_readable?(author_profile_id)

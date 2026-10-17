@@ -80,6 +80,15 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
     expect(ranked_post_ids).to eq([public_post.id])
   end
 
+  it "keeps followers-only posts out of search and ranking, even for an approved follower" do
+    post_repo.create_post(author_profile_id: public_cast, content: "discovery followers", visibility: "private")
+    follow_repo.follow(follower_profile_id: viewer, followee_profile_id: public_cast, status: "approved")
+    act_as(viewer)
+
+    expect(searched_post_ids).to eq([public_post.id])
+    expect(ranked_post_ids).to eq([public_post.id])
+  end
+
   it "returns each found profile with the role of its account" do
     act_as(viewer)
 

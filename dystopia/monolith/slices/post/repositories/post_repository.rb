@@ -66,8 +66,9 @@ module Post
         end
       end
 
-      def list_posts(limit: 20, cursor: nil, author_profile_id: nil, media_only: false)
-        scope = posts.combine(:post_media, :hashtags, :post_mentions).exclude(author_profile_id: nil).where(visibility: "public")
+      def list_posts(limit: 20, cursor: nil, author_profile_id: nil, media_only: false, include_private: false)
+        scope = posts.combine(:post_media, :hashtags, :post_mentions).exclude(author_profile_id: nil)
+        scope = scope.where(visibility: "public") unless include_private
         scope = scope.where(author_profile_id: author_profile_id) if author_profile_id
 
         if media_only
@@ -85,10 +86,11 @@ module Post
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def list_public_post_ids(limit: 20, cursor: nil, author_profile_ids: nil, excluded_author_profile_ids: [])
+      def list_post_ids(limit: 20, cursor: nil, author_profile_ids: nil, excluded_author_profile_ids: [], include_private: false)
         return [] if !author_profile_ids.nil? && author_profile_ids.empty?
 
-        scope = posts.dataset.where(visibility: "public")
+        scope = posts.dataset
+        scope = scope.where(visibility: "public") unless include_private
         scope = scope.where(author_profile_id: author_profile_ids) if author_profile_ids
         scope = scope.exclude(author_profile_id: excluded_author_profile_ids) if excluded_author_profile_ids && !excluded_author_profile_ids.empty?
 
