@@ -19,7 +19,9 @@ module Review
       private
 
       def visible?(review, viewer_account_id, viewer_profile_id)
-        return filter_visible_reviews.parties_visible?(review) if review.author_account_id == viewer_account_id
+        if review.author_account_id == viewer_account_id || viewer_profile_id == review.target_profile_id
+          return filter_visible_reviews.parties_visible?(review)
+        end
 
         filter_visible_reviews.recent(viewer_profile_id: viewer_profile_id, reviews: [review]).any?
       end

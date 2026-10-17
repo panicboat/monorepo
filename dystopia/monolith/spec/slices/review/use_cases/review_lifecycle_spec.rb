@@ -61,6 +61,38 @@ RSpec.describe "Review lifecycle use cases", type: :database do
       expect { uc(:get_review).call(viewer_account_id: cast_account, viewer_profile_id: cast, review_id: "abc") }.to invalid("Review not found")
     end
 
+    def read_as(account, profile, review) = uc(:get_review).call(viewer_account_id: account, viewer_profile_id: profile, review_id: review[:id])
+
+    def block(blocker, blocked) = Social::Slice["repositories.block_repository"].block(blocker_profile_id: blocker, blocked_profile_id: blocked)
+
+    it "reads a review as not found when the viewer blocks the author or is blocked by them" do
+      review = create
+      block(other_guest, persona_a)
+      expect { read_as(other_guest_account, other_guest, review) }.to invalid("Review not found")
+
+      third_account = create_account(role: 1)
+      third = create_account_with_profile(account_id: third_account, username: "third_guest")
+      block(persona_a, third)
+      expect { read_as(third_account, third, review) }.to invalid("Review not found")
+    end
+
+    it "reads a review of a private cast as not found for a viewer who cannot reach it" do
+      private_cast = create_account_with_profile(account_id: create_account(role: 2), username: "private_cast", is_private: true)
+      review = create(target: private_cast)
+
+      expect { read_as(other_guest_account, other_guest, review) }.to invalid("Review not found")
+    end
+
+    it "keeps the review readable for another profile of the author's account and for the cast" do
+      review = create
+      block(persona_b, cast)
+      block(cast, persona_b)
+      block(cast, persona_a)
+
+      expect(read_as(guest_account, persona_b, review)[:is_mine]).to be true
+      expect(read_as(cast_account, cast, review)[:is_mine]).to be false
+    end
+
     it "reads a review whose cast is disabled as not found" do
       review = create
       db[:profile__profiles].where(id: cast).update(disabled_at: Time.now)
