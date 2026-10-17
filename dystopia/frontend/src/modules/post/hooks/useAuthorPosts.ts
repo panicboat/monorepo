@@ -3,6 +3,7 @@
 import useSWRInfinite from "swr/infinite";
 import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
+import { usePostListRevalidation } from "@/modules/post/lib/revalidate";
 import type { PaginatedAuthorPostsResponse } from "@/modules/post/lib/author-tab-view";
 
 export function useAuthorPosts(profileId: string | null | undefined, mediaOnly: boolean) {
@@ -20,6 +21,7 @@ export function useAuthorPosts(profileId: string | null | undefined, mediaOnly: 
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =
     useSWRInfinite<PaginatedAuthorPostsResponse>(getKey, fetcher, { revalidateOnFocus: false });
+  usePostListRevalidation(mutate);
 
   const pages = data || [];
   const posts = pages.flatMap((p) => p.posts || []);

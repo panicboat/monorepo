@@ -3,6 +3,7 @@
 import useSWRInfinite from "swr/infinite";
 import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
+import { usePostListRevalidation } from "@/modules/post/lib/revalidate";
 import type { PaginatedAuthorCommentsResponse } from "@/modules/post/lib/author-tab-view";
 import type { PostView } from "@/modules/post/lib/post-view";
 
@@ -18,6 +19,7 @@ export function useAuthorComments(profileId: string | null | undefined) {
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =
     useSWRInfinite<PaginatedAuthorCommentsResponse>(getKey, fetcher, { revalidateOnFocus: false });
+  usePostListRevalidation(mutate);
 
   const pages = data || [];
   const comments = pages.flatMap((p) => p.comments || []);
