@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
+import { StarRatingInput } from "@/components/ui/star-rating-input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
@@ -13,7 +14,6 @@ import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
 import type { Review, ReviewEventInput } from "../types";
 import { profileName } from "./ReviewCard";
 import { ReviewEventForm, emptyReviewEvent } from "./ReviewEventForm";
-import { StarRatingInput } from "@/components/ui/star-rating-input";
 
 type Step = { kind: "detail" } | { kind: "append" } | { kind: "edit"; eventId: string };
 

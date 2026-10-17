@@ -68,6 +68,13 @@ describe("ReviewList", () => {
     expect(onLoadMore).toHaveBeenCalled();
   });
 
+  it("does not say there is nothing while more can be loaded", async () => {
+    const { container } = await mount({ reviews: [], hasMore: true });
+
+    expect(container.textContent).not.toContain("クチコミはまだありません");
+    expect(button(container, "もっと見る")).toBeDefined();
+  });
+
   it("does not say there is nothing while loading", async () => {
     const { container } = await mount({ reviews: [], loading: true });
 

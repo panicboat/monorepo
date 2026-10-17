@@ -35,7 +35,7 @@ export function ReviewList({ reviews, variant, hasMore, loading, onLoadMore, emp
           onOpen={(chosen) => setOpened((current) => ({ review: chosen, session: (current?.session ?? 0) + 1, open: true }))}
         />
       ))}
-      {!loading && reviews.length === 0 && <p className="px-4 py-8 text-center text-sm text-text-secondary">{empty}</p>}
+      {!loading && reviews.length === 0 && !hasMore && <p className="px-4 py-8 text-center text-sm text-text-secondary">{empty}</p>}
       {loading && reviews.length === 0 && <div className="px-4 py-3 text-sm text-text-secondary">読み込み中…</div>}
       {hasMore && (
         <button

@@ -4,12 +4,12 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { StarRatingInput } from "@/components/ui/star-rating-input";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleChip } from "@/components/ui/toggle-chip";
 import { todayInJapan } from "@/lib/utils/japan-date";
 import { REVIEW_OUTCOMES, REVIEW_STAGES, REVIEW_TAGS, MAX_NOTE_LENGTH, isNoteRequired } from "../lib/catalog";
 import type { ReviewEventInput } from "../types";
-import { StarRatingInput } from "@/components/ui/star-rating-input";
 import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
 
 export interface ReviewCast {
