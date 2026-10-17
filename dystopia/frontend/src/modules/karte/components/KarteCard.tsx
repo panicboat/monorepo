@@ -28,14 +28,14 @@ export function KarteCard({ karte, variant, onOpen }: KarteCardProps) {
   const activeProfileId = useAuthStore(selectActiveProfileId);
   const latest = karte.events[karte.events.length - 1];
   const writtenAsOtherProfile = variant === "mine" && karte.authorProfileId !== activeProfileId;
-  const authorName = profileName(karte.authorDisplayName, karte.authorUsername);
-  const authorHref = karte.authorUsername ? `/u/${encodeURIComponent(karte.authorUsername)}` : undefined;
+  const authorName = profileName(karte.author?.displayName ?? "", karte.author?.username ?? "");
+  const authorHref = karte.author?.username ? `/u/${encodeURIComponent(karte.author?.username)}` : undefined;
 
   return (
     <article className="border-b border-border px-4 py-3">
       <div className="flex gap-3">
         <Avatar
-          src={karte.authorAvatarUrl || undefined}
+          src={karte.author?.avatarUrl || undefined}
           fallback={authorName.replace("@", "").slice(0, 1) || "?"}
           href={authorHref}
         />
@@ -53,7 +53,7 @@ export function KarteCard({ karte, variant, onOpen }: KarteCardProps) {
           </p>
           {writtenAsOtherProfile && (
             <p className="text-xs text-text-secondary">
-              {karte.authorUsername ? `@${karte.authorUsername} として記録` : "削除したプロフィールで記録"}
+              {karte.author?.username ? `@${karte.author?.username} として記録` : "削除したプロフィールで記録"}
             </p>
           )}
           <button
@@ -63,8 +63,8 @@ export function KarteCard({ karte, variant, onOpen }: KarteCardProps) {
           >
             <span className="flex items-baseline justify-between gap-2">
               <span className="min-w-0 truncate">
-                <span className="font-bold text-text-primary">{profileName(karte.targetDisplayName, karte.targetUsername)}</span>
-                {karte.targetUsername && <span className="ml-1 text-xs text-text-secondary">@{karte.targetUsername}</span>}
+                <span className="font-bold text-text-primary">{profileName(karte.target?.displayName ?? "", karte.target?.username ?? "")}</span>
+                {karte.target?.username && <span className="ml-1 text-xs text-text-secondary">@{karte.target?.username}</span>}
               </span>
               <span className={karte.rating === null ? "shrink-0 text-sm text-text-secondary" : "shrink-0 text-sm font-bold text-rating"}>
                 {karte.rating === null ? "未評価" : `★ ${karte.rating.toFixed(1)}`}
@@ -80,8 +80,8 @@ export function KarteCard({ karte, variant, onOpen }: KarteCardProps) {
               ))}
             </span>
           </button>
-          {variant !== "guest" && karte.targetUsername && (
-            <Link href={`/u/${karte.targetUsername}`} className="mt-2 inline-flex min-h-11 items-center text-sm text-accent hover:underline">
+          {variant !== "guest" && karte.target?.username && (
+            <Link href={`/u/${karte.target?.username}`} className="mt-2 inline-flex min-h-11 items-center text-sm text-accent hover:underline">
               ゲストのプロフィールを見る →
             </Link>
           )}

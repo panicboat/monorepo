@@ -38,8 +38,17 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
 
     review = create_review
 
-    expect([review.status, review.rating, review.author_profile_id, review.target_username, review.is_mine]).to eq([:REVIEW_STATUS_OPEN, 0, guest, "cast_one", true])
+    expect([review.status, review.rating, review.author_profile_id, review.target.username, review.is_mine]).to eq([:REVIEW_STATUS_OPEN, 0, guest, "cast_one", true])
     expect(review.events.first.stage).to eq(:REVIEW_STAGE_RESERVATION)
+  end
+
+  it "marks a private cast target as private in its summary" do
+    act_as(guest_account, guest)
+    private_cast = create_account_with_profile(role: 2, username: "private_cast", is_private: true)
+
+    review = create_review(target: private_cast)
+
+    expect([review.target.username, review.target.is_private, review.author.is_private]).to eq(["private_cast", true, false])
   end
 
   it "refuses a cast with PERMISSION_DENIED and a guest target with INVALID_ARGUMENT" do

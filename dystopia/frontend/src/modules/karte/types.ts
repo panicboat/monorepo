@@ -1,3 +1,5 @@
+import type { ProfileSummaryView } from "@/modules/profile/types";
+
 export type KarteStage = "reservation" | "service" | "aftercare";
 export type KarteStatus = "open" | "closed";
 
@@ -15,13 +17,9 @@ export interface KarteEvent {
 export interface Karte {
   id: string;
   authorProfileId: string;
-  authorUsername: string;
-  authorDisplayName: string;
-  authorAvatarUrl: string;
+  author: ProfileSummaryView | null;
   targetProfileId: string;
-  targetUsername: string;
-  targetDisplayName: string;
-  targetAvatarUrl: string;
+  target: ProfileSummaryView | null;
   isMine: boolean;
   rating: number | null;
   status: KarteStatus;

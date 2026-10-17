@@ -28,14 +28,14 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
   const activeProfileId = useAuthStore(selectActiveProfileId);
   const latest = review.events[review.events.length - 1];
   const writtenAsOtherProfile = variant === "mine" && review.authorProfileId !== activeProfileId;
-  const authorName = profileName(review.authorDisplayName, review.authorUsername);
-  const authorHref = review.authorUsername ? `/u/${encodeURIComponent(review.authorUsername)}` : undefined;
+  const authorName = profileName(review.author?.displayName ?? "", review.author?.username ?? "");
+  const authorHref = review.author?.username ? `/u/${encodeURIComponent(review.author?.username)}` : undefined;
 
   return (
     <article className="border-b border-border px-4 py-3">
       <div className="flex gap-3">
         <Avatar
-          src={review.authorAvatarUrl || undefined}
+          src={review.author?.avatarUrl || undefined}
           fallback={authorName.replace("@", "").slice(0, 1) || "?"}
           href={authorHref}
         />
@@ -53,7 +53,7 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
           </p>
           {writtenAsOtherProfile && (
             <p className="text-xs text-text-secondary">
-              {review.authorUsername ? `@${review.authorUsername} として記録` : "削除したプロフィールで記録"}
+              {review.author?.username ? `@${review.author?.username} として記録` : "削除したプロフィールで記録"}
             </p>
           )}
           <button
@@ -63,8 +63,8 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
           >
             <span className="flex items-baseline justify-between gap-2">
               <span className="min-w-0 truncate">
-                <span className="font-bold text-text-primary">{profileName(review.targetDisplayName, review.targetUsername)}</span>
-                {review.targetUsername && <span className="ml-1 text-xs text-text-secondary">@{review.targetUsername}</span>}
+                <span className="font-bold text-text-primary">{profileName(review.target?.displayName ?? "", review.target?.username ?? "")}</span>
+                {review.target?.username && <span className="ml-1 text-xs text-text-secondary">@{review.target?.username}</span>}
               </span>
               <span className={review.rating === null ? "shrink-0 text-sm text-text-secondary" : "shrink-0 text-sm font-bold text-rating"}>
                 {review.rating === null ? "未評価" : `★ ${review.rating.toFixed(1)}`}
@@ -80,8 +80,8 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
               ))}
             </span>
           </button>
-          {variant !== "cast" && review.targetUsername && (
-            <Link href={`/u/${review.targetUsername}`} className="mt-2 inline-flex min-h-11 items-center text-sm text-accent hover:underline">
+          {variant !== "cast" && review.target?.username && (
+            <Link href={`/u/${review.target?.username}`} className="mt-2 inline-flex min-h-11 items-center text-sm text-accent hover:underline">
               キャストのプロフィールを見る →
             </Link>
           )}

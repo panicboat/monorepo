@@ -41,7 +41,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
 
   const isOpen = karte.status === "open";
   const editable = karte.isMine && isOpen;
-  const guest = { displayName: profileName(karte.targetDisplayName, karte.targetUsername), username: karte.targetUsername, avatarUrl: karte.targetAvatarUrl };
+  const guest = { displayName: profileName(karte.target?.displayName ?? "", karte.target?.username ?? ""), username: karte.target?.username ?? "", avatarUrl: karte.target?.avatarUrl ?? "" };
   const confirmed = async (request: () => Promise<Karte | null>, message?: string) => {
     const result = await request();
     if (result) {
@@ -101,11 +101,11 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
         <p className="text-xs font-bold tracking-wide text-text-secondary">KARTE / {isOpen ? "記録中" : "完了"}</p>
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center gap-3">
-            <Avatar src={karte.targetAvatarUrl || undefined} fallback={guest.displayName.replace("@", "").slice(0, 1) || "?"} size="sm" />
+            <Avatar src={karte.target?.avatarUrl || undefined} fallback={guest.displayName.replace("@", "").slice(0, 1) || "?"} size="sm" />
             <div className="min-w-0">
               <p className="truncate font-bold text-text-primary">{guest.displayName}</p>
               <p className="truncate text-xs text-text-secondary">
-                {karte.targetUsername ? `@${karte.targetUsername} · ` : ""}記録者 {profileName(karte.authorDisplayName, karte.authorUsername)}
+                {karte.target?.username ? `@${karte.target?.username} · ` : ""}記録者 {profileName(karte.author?.displayName ?? "", karte.author?.username ?? "")}
               </p>
             </div>
           </div>

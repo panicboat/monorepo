@@ -45,12 +45,21 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
       expect(karte.status).to eq(:KARTE_STATUS_OPEN)
       expect(karte.rating).to eq(0)
       expect(karte.author_profile_id).to eq(persona_a)
-      expect(karte.author_username).to eq("persona_a")
-      expect(karte.target_username).to eq("guest_one")
+      expect(karte.author.username).to eq("persona_a")
+      expect(karte.target.username).to eq("guest_one")
       expect(karte.is_mine).to be true
       expect(karte.closed_at).to be_nil
       event = karte.events.first
       expect([event.stage, event.outcome, event.tags.to_a, event.note, event.occurred_on]).to eq([:KARTE_STAGE_RESERVATION, "booked", ["smooth_contact"], "", "2026-10-01"])
+    end
+
+    it "marks a private guest target as private in its summary" do
+      act_as(cast_account, persona_a)
+      private_guest = create_account_with_profile(account_id: create_account(role: 1), username: "private_guest", is_private: true)
+
+      karte = create_karte(target: private_guest)
+
+      expect([karte.target.username, karte.target.is_private, karte.author.is_private]).to eq(["private_guest", true, false])
     end
 
     it "keeps a rating given at creation" do
@@ -147,8 +156,8 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
       act_as(cast_account, persona_a)
       created = create_karte
 
-      expect(created.author_display_name).to eq("User")
-      expect(created.target_display_name).to eq("User")
+      expect(created.author.display_name).to eq("User")
+      expect(created.target.display_name).to eq("User")
       expect(created.last_activity_at).not_to be_nil
 
       mine = handler_for(::Karte::V1::ListMyKartesRequest.new).list_my_kartes

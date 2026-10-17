@@ -26,7 +26,8 @@ RSpec.describe "Review lifecycle use cases", type: :database do
     it "opens a review with its first event and presents the profiles" do
       review = create
 
-      expect(review).to include(status: "open", rating: nil, is_mine: true, author_username: "persona_a", target_username: "cast_one", target_display_name: "りん")
+      expect(review).to include(status: "open", rating: nil, is_mine: true)
+      expect([review[:author].username, review[:target].username, review[:target].display_name]).to eq(%w[persona_a cast_one りん])
       expect(review[:events].map { |e| e.slice(:stage, :outcome, :tags) }).to eq([{ stage: "reservation", outcome: "booked", tags: %w[quick_reply] }])
     end
 

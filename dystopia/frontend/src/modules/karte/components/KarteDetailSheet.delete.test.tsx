@@ -28,8 +28,8 @@ const { KarteDetailSheet } = await import("./KarteDetailSheet");
 const { revalidateKarte } = await import("../lib/revalidate");
 
 const subject = {
-  id: "k-1", authorProfileId: "a", authorUsername: "yuna", authorDisplayName: "ゆな", authorAvatarUrl: "",
-  targetProfileId: "g", targetUsername: "hanako", targetDisplayName: "はなこ", targetAvatarUrl: "",
+  id: "k-1", authorProfileId: "a", author: { profileId: "a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast" },
+  targetProfileId: "g", target: { profileId: "g", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" },
   isMine: true, rating: null, status: "open",
   events: [{ id: "e-1", stage: "reservation", outcome: "booked", tags: [], note: "", occurredOn: "2026-10-01", createdAt: "", updatedAt: "" }],
   createdAt: "", updatedAt: "", closedAt: null, lastActivityAt: "",
