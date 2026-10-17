@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatMonthDay, todayInJapan } from "./dates";
+import { formatMonthDay, todayInJapan } from "./japan-date";
 
 describe("todayInJapan", () => {
   it("returns the calendar date in Japan as YYYY-MM-DD", () => {

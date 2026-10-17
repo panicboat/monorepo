@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { KarteCard } from "@/modules/karte/components/KarteCard";
 import { KarteEventForm, emptyKarteEvent } from "@/modules/karte/components/KarteEventForm";
-import { KarteRatingInput } from "@/modules/karte/components/KarteRatingInput";
+import { StarRatingInput } from "@/components/ui/star-rating-input";
 import { KarteReliabilityHeader } from "@/modules/karte/components/KarteReliabilityHeader";
 import type { Karte } from "@/modules/karte/types";
 
@@ -79,8 +79,8 @@ export default function DevUiKartePage() {
       </section>
 
       <section>
-        <h2 className="pb-3 text-sm font-bold text-text-secondary">KarteRatingInput</h2>
-        <KarteRatingInput value={rating} onChange={setRating} />
+        <h2 className="pb-3 text-sm font-bold text-text-secondary">StarRatingInput</h2>
+        <StarRatingInput label="予約・接客の信頼性" value={rating} onChange={setRating} />
       </section>
 
       <section>

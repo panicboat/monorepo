@@ -4,16 +4,16 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
 import { useKarte } from "../hooks/useKarte";
 import { useKarteMutations } from "../hooks/useKarteMutations";
 import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
-import { formatMonthDay } from "../lib/dates";
 import type { Karte, KarteEventInput } from "../types";
 import { profileName } from "./KarteCard";
 import { KarteEventForm, emptyKarteEvent } from "./KarteEventForm";
-import { KarteRatingInput } from "./KarteRatingInput";
-import { KarteStatusBadge } from "./KarteStatusBadge";
+import { StarRatingInput } from "@/components/ui/star-rating-input";
 
 type Step = { kind: "detail" } | { kind: "append" } | { kind: "edit"; eventId: string };
 
@@ -113,14 +113,14 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
             <p className="text-3xl font-bold text-text-primary">
               {karte.rating === null ? "—" : karte.rating.toFixed(1)} <span className="text-base text-rating">★</span>
             </p>
-            <KarteStatusBadge status={karte.status} />
+            <StatusBadge tone={karte.status === "open" ? "warning" : "success"}>{karte.status === "open" ? "記録中" : "完了"}</StatusBadge>
           </div>
           <p className="mt-2 text-xs text-text-secondary">
             {isOpen ? "記録中のため平均評価には含まれません" : "完了済みの評価は平均に反映されます"}
           </p>
           {editable && (
             <div className="mt-3">
-              <KarteRatingInput value={karte.rating} disabled={loading} onChange={(rating) => void confirmed(() => updateRating(karte.id, rating))} />
+              <StarRatingInput label="予約・接客の信頼性" value={karte.rating} disabled={loading} onChange={(rating) => void confirmed(() => updateRating(karte.id, rating))} />
             </div>
           )}
         </div>

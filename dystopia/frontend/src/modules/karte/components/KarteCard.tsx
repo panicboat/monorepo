@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
-import { formatMonthDay } from "../lib/dates";
 import type { Karte, KarteEvent } from "../types";
-import { KarteStatusBadge } from "./KarteStatusBadge";
 
 export function karteEventLine(event: KarteEvent): string {
   const line = `${formatMonthDay(event.occurredOn)} · ${stageLabel(event.stage)} · ${outcomeLabel(event.stage, event.outcome)}`;
@@ -63,7 +63,7 @@ export function KarteCard({ karte, variant, onOpen }: KarteCardProps) {
             </span>
             {latest && <span className="mt-1 line-clamp-2 block text-sm text-text-primary">{karteEventLine(latest)}</span>}
             <span className="mt-2 flex flex-wrap gap-1.5">
-              <KarteStatusBadge status={karte.status} />
+              <StatusBadge tone={karte.status === "open" ? "warning" : "success"}>{karte.status === "open" ? "記録中" : "完了"}</StatusBadge>
               {latest?.tags.slice(0, 2).map((tag) => (
                 <span key={tag} className="rounded-full border border-border px-2 py-0.5 text-xs text-text-secondary">
                   {tagLabel(latest.stage, tag)}
