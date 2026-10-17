@@ -38,8 +38,8 @@ export default function FootprintsPage() {
         </p>
       )}
 
-      {footprints.map((f) => (
-        <FootprintRow key={f.visitor.profileId} footprint={f} />
+      {footprints.map((f, i) => (
+        <FootprintRow key={f.visitor?.profileId ?? `deleted-${i}`} footprint={f} />
       ))}
 
       {hasMore && (

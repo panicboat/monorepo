@@ -1,4 +1,5 @@
 import type { Footprint as FootprintProto } from "@/stub/footprints/v1/footprints_service_pb";
+import { summaryToView } from "@/modules/profile/lib/mappers";
 import type { FootprintView } from "../types";
 
 export function mapFootprintToView(proto: FootprintProto): FootprintView {
@@ -12,12 +13,7 @@ export function mapFootprintToView(proto: FootprintProto): FootprintView {
     : "";
 
   return {
-    visitor: {
-      profileId: visitor?.id || "",
-      username: visitor?.username || "",
-      displayName: visitor?.displayName || "",
-      avatarUrl: visitor?.avatarUrl || null,
-    },
+    visitor: visitor ? summaryToView(visitor) : null,
     lastVisitedAt: lastVisitedAtIso,
     isUnread: !!proto.isUnread,
     visitCount: proto.visitCount || 0,

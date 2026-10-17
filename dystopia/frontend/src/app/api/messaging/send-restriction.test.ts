@@ -4,7 +4,7 @@ import { create } from "@bufbuild/protobuf";
 import { Code, ConnectError } from "@connectrpc/connect";
 import { ACCESS_COOKIE } from "@/lib/auth/cookies";
 import { GetThreadResponseSchema, SendRestriction, ThreadSchema } from "@/stub/messaging/v1/messaging_service_pb";
-import { ProfileSchema } from "@/stub/profile/v1/service_pb";
+import { ProfileSummarySchema } from "@/stub/profile/v1/service_pb";
 
 const messaging = vi.hoisted(() => ({
   sendMessage: vi.fn(),
@@ -33,7 +33,7 @@ function threadResponse(sendRestriction: SendRestriction) {
   return create(GetThreadResponseSchema, {
     thread: create(ThreadSchema, {
       id: "t-1",
-      counterpart: create(ProfileSchema, { id: "cast-1", username: "yuna", displayName: "ゆな" }),
+      counterpart: create(ProfileSummarySchema, { profileId: "cast-1", username: "yuna", displayName: "ゆな" }),
     }),
     sendRestriction,
   });

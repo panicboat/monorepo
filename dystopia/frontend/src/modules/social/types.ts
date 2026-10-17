@@ -1,23 +1,14 @@
 
 import { FollowStatus } from "@/stub/social/v1/follow_service_pb";
-import type { Role } from "@/lib/auth";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 
 export { FollowStatus };
-
-export interface SocialProfileView {
-  profileId: string;
-  username: string;
-  displayName: string;
-  avatarUrl: string;
-  isPrivate: boolean;
-  role: Role | null;
-}
 
 export type FollowStatusMap = Record<string, FollowStatus>;
 export type BlockStatusMap = Record<string, boolean>;
 
 export interface PaginatedProfilesResponse {
-  profiles: SocialProfileView[];
+  profiles: ProfileSummaryView[];
   nextCursor: string;
   hasMore: boolean;
 }

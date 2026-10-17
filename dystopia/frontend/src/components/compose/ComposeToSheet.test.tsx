@@ -3,11 +3,11 @@ import { createElement } from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { SocialProfileView } from "@/modules/social/types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const target: SocialProfileView = { profileId: "guest-1", username: "taro", displayName: "たろう", avatarUrl: "", isPrivate: false, role: "guest" };
+const target: ProfileSummaryView = { profileId: "guest-1", username: "taro", displayName: "たろう", avatarUrl: "", isPrivate: false, role: "guest" };
 
 const mocks = vi.hoisted(() => ({
   start: vi.fn(),
@@ -19,7 +19,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("next/navigation", () => ({ usePathname: () => mocks.pathname }));
 vi.mock("./RecipientPicker", () => ({
-  RecipientPicker: ({ onPick }: { onPick: (profile: SocialProfileView) => void }) => (
+  RecipientPicker: ({ onPick }: { onPick: (profile: ProfileSummaryView) => void }) => (
     <button type="button" onClick={() => onPick(target)}>
       pick
     </button>
@@ -27,14 +27,14 @@ vi.mock("./RecipientPicker", () => ({
 }));
 vi.mock("@/modules/messaging/hooks/useStartChat", () => ({ useStartChat: () => ({ start: mocks.start, loading: false }) }));
 vi.mock("@/modules/karte/components/KarteCreateForm", () => ({
-  KarteCreateForm: ({ target: chosen, onCreated, ...rest }: { target: SocialProfileView; onCreated: () => void; event: { note: string }; onEventChange: (next: { note: string }) => void }) => {
+  KarteCreateForm: ({ target: chosen, onCreated, ...rest }: { target: ProfileSummaryView; onCreated: () => void; event: { note: string }; onEventChange: (next: { note: string }) => void }) => {
     mocks.created = onCreated;
     mocks.formProps = rest;
     return <div>karte-form:{chosen.profileId}:{chosen.displayName}</div>;
   },
 }));
 vi.mock("@/modules/review/components/ReviewCreateForm", () => ({
-  ReviewCreateForm: ({ target: chosen }: { target: SocialProfileView }) => <div>review-form:{chosen.profileId}</div>,
+  ReviewCreateForm: ({ target: chosen }: { target: ProfileSummaryView }) => <div>review-form:{chosen.profileId}</div>,
 }));
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: (selector: (state: { role: string }) => unknown) => selector({ role: "cast" }),
@@ -46,7 +46,7 @@ vi.mock("@/stores/toastStore", () => ({
 
 const { ComposeToSheet } = await import("./ComposeToSheet");
 
-async function mount(kind: "message" | "karte" | "review", open = true, initialTarget?: SocialProfileView) {
+async function mount(kind: "message" | "karte" | "review", open = true, initialTarget?: ProfileSummaryView) {
   const onClose = vi.fn();
   const onSaved = vi.fn();
   const container = document.createElement("div");

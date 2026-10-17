@@ -3,12 +3,12 @@ import { createElement } from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { SocialProfileView } from "@/modules/social/types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import { resolveRecipientSource } from "./resolveRecipientSource";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const profile = (username: string, role: "cast" | "guest"): SocialProfileView => ({
+const profile = (username: string, role: "cast" | "guest"): ProfileSummaryView => ({
   profileId: username,
   username,
   displayName: username.toUpperCase(),
@@ -18,13 +18,13 @@ const profile = (username: string, role: "cast" | "guest"): SocialProfileView =>
 });
 
 const mocks = vi.hoisted(() => ({
-  following: [] as SocialProfileView[],
-  followers: [] as SocialProfileView[],
-  found: [] as SocialProfileView[],
+  following: [] as ProfileSummaryView[],
+  followers: [] as ProfileSummaryView[],
+  found: [] as ProfileSummaryView[],
   searches: [] as [string, number][],
 }));
 
-const list = (profiles: SocialProfileView[]) => ({ profiles, hasMore: false, loading: false, error: undefined, loadMore: () => {}, refresh: () => {} });
+const list = (profiles: ProfileSummaryView[]) => ({ profiles, hasMore: false, loading: false, error: undefined, loadMore: () => {}, refresh: () => {} });
 
 vi.mock("@/modules/social/hooks", () => ({
   useFollowList: () => list(mocks.following),

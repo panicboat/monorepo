@@ -1,13 +1,7 @@
-
-export interface FootprintVisitorView {
-  profileId: string;
-  username: string;
-  displayName: string;
-  avatarUrl: string | null;
-}
+import type { ProfileSummaryView } from "@/modules/profile/types";
 
 export interface FootprintView {
-  visitor: FootprintVisitorView;
+  visitor: ProfileSummaryView | null;
   lastVisitedAt: string;
   isUnread: boolean;
   visitCount: number;

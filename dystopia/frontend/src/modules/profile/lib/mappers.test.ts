@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { create } from "@bufbuild/protobuf";
-import { ProfileSchema } from "@/stub/profile/v1/service_pb";
-import { emptyProfileView, mapProfileToView, profileViewToSavePayload, buildSaveProfileRequest } from "./mappers";
+import { ProfileSchema, ProfileSummarySchema } from "@/stub/profile/v1/service_pb";
+import { emptyProfileView, mapProfileToView, profileViewToSavePayload, buildSaveProfileRequest, summaryToView } from "./mappers";
 
 describe("mapProfileToView", () => {
   it("maps body_stats into a BodyStatsView", () => {
@@ -66,5 +66,19 @@ describe("profileViewToSavePayload / buildSaveProfileRequest", () => {
 
     expect(request.bodyStats).toEqual({ heightCm: 158, bustCm: 88, waistCm: 58, hipCm: 86, cup: "D" });
     expect(request.snsLinks.cityheaven).toBe("https://www.cityheaven.net/example/");
+  });
+});
+
+describe("summaryToView", () => {
+  it("maps every field and the role number", () => {
+    const view = summaryToView(
+      create(ProfileSummarySchema, { profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "https://cdn.example/a.png", isPrivate: true, role: 2 })
+    );
+
+    expect(view).toEqual({ profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "https://cdn.example/a.png", isPrivate: true, role: "cast" });
+  });
+
+  it("reads an unknown role as null", () => {
+    expect(summaryToView(create(ProfileSummarySchema, { profileId: "p-2", role: 0 })).role).toBeNull();
   });
 });

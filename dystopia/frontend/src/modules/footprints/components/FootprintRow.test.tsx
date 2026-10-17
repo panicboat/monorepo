@@ -4,7 +4,7 @@ import { FootprintRow } from "./FootprintRow";
 import type { FootprintView } from "@/modules/footprints/types";
 
 const footprint: FootprintView = {
-  visitor: { profileId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: null },
+  visitor: { profileId: "a1", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: null },
   lastVisitedAt: new Date().toISOString(),
   isUnread: false,
   visitCount: 1,
@@ -20,9 +20,16 @@ describe("FootprintRow", () => {
 
   it("does not link when the visitor has no username", () => {
     const html = renderToStaticMarkup(
-      <FootprintRow footprint={{ ...footprint, visitor: { ...footprint.visitor, username: "" } }} />
+      <FootprintRow footprint={{ ...footprint, visitor: { ...footprint.visitor!, username: "" } }} />
     );
 
+    expect(html).not.toContain("<a ");
+  });
+
+  it("shows a deleted-profile label and no link when the visitor is gone", () => {
+    const html = renderToStaticMarkup(<FootprintRow footprint={{ ...footprint, visitor: null }} />);
+
+    expect(html).toContain("削除したプロフィール");
     expect(html).not.toContain("<a ");
   });
 });

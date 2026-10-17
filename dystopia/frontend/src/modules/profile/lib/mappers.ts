@@ -1,6 +1,7 @@
-import type { Profile, SnsLinks, BodyStats } from "@/stub/profile/v1/service_pb";
+import type { Profile, ProfileSummary, SnsLinks, BodyStats } from "@/stub/profile/v1/service_pb";
 import type {
   BodyStatsView,
+  ProfileSummaryView,
   ProfileView,
   SaveProfilePayload,
   SnsLinksView,
@@ -120,5 +121,18 @@ export function buildSaveProfileRequest(payload: SaveProfilePayload) {
       cup: stats?.cup || "",
     },
     industry: payload.industry || "",
+  };
+}
+
+const ROLE_BY_NUMBER: Record<number, ProfileSummaryView["role"]> = { 1: "guest", 2: "cast" };
+
+export function summaryToView(summary: ProfileSummary): ProfileSummaryView {
+  return {
+    profileId: summary.profileId,
+    username: summary.username,
+    displayName: summary.displayName,
+    avatarUrl: summary.avatarUrl,
+    isPrivate: !!summary.isPrivate,
+    role: ROLE_BY_NUMBER[summary.role] ?? null,
   };
 }

@@ -14,7 +14,7 @@ import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
 import { CastReviewsTab } from "@/modules/review/components/CastReviewsTab";
 import { AuthorReviewsTab } from "@/modules/review/components/AuthorReviewsTab";
 import { ScheduleTab, WeeklyScheduleSummary } from "@/modules/schedule";
-import type { SocialProfileView } from "@/modules/social/types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import { Button } from "@/components/ui/button";
 
 export default function PublicProfilePage() {
@@ -43,7 +43,7 @@ export default function PublicProfilePage() {
 
   const role = profile.role === 2 ? "cast" : "guest";
   const isOwnProfile = !!viewerId && viewerId === profile.id;
-  const guestView: SocialProfileView = {
+  const guestView: ProfileSummaryView = {
     profileId: profile.id,
     username: profile.username,
     displayName: profile.displayName,

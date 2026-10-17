@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ComposeToSheet } from "@/components/compose/ComposeToSheet";
-import type { SocialProfileView } from "@/modules/social/types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import { useGuestKarte } from "../hooks/useGuestKarte";
 import { KarteList } from "./KarteList";
 import { KarteReliabilityHeader } from "./KarteReliabilityHeader";
@@ -13,7 +13,7 @@ interface Composing {
   open: boolean;
 }
 
-export function GuestKarteTab({ guest }: { guest: SocialProfileView }) {
+export function GuestKarteTab({ guest }: { guest: ProfileSummaryView }) {
   const { kartes, reliability, hasMore, loading, loadMore } = useGuestKarte(guest.profileId);
   // Keep the sheet mounted after closing: unmounting it would cut its slide-out animation.
   const [composing, setComposing] = useState<Composing | null>(null);

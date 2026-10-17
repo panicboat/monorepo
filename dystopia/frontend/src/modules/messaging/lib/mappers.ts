@@ -1,4 +1,4 @@
-import { profileToSocialProfile } from "@/modules/social";
+import { summaryToView } from "@/modules/profile/lib/mappers";
 import type { Message, Thread } from "@/stub/messaging/v1/messaging_service_pb";
 import type { MessageView, ThreadView } from "../types";
 
@@ -22,7 +22,7 @@ function messageProtoToView(m: Message): MessageView {
 export function threadProtoToView(t: Thread): ThreadView {
   return {
     id: t.id,
-    counterpart: t.counterpart ? profileToSocialProfile(t.counterpart) : null,
+    counterpart: t.counterpart ? summaryToView(t.counterpart) : null,
     lastMessage: t.lastMessage && t.lastMessage.id ? messageProtoToView(t.lastMessage) : null,
     unreadCount: t.unreadCount || 0,
     lastMessageAt: timestampToIso(t.lastMessageAt),

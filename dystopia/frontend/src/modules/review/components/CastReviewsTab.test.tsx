@@ -2,7 +2,7 @@
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { SocialProfileView } from "@/modules/social/types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -27,16 +27,16 @@ vi.mock("./ReviewList", () => ({
   ReviewList: ({ variant, empty }: { variant: string; empty: string }) => <div>list:{variant}:{empty}</div>,
 }));
 vi.mock("@/components/compose/ComposeToSheet", () => ({
-  ComposeToSheet: ({ kind, open, initialTarget }: { kind: string; open: boolean; initialTarget?: SocialProfileView }) => (
+  ComposeToSheet: ({ kind, open, initialTarget }: { kind: string; open: boolean; initialTarget?: ProfileSummaryView }) => (
     <div>compose:{kind}:{String(open)}:{initialTarget?.profileId}</div>
   ),
 }));
 
 const { CastReviewsTab } = await import("./CastReviewsTab");
 
-const cast: SocialProfileView = { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" };
+const cast: ProfileSummaryView = { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" };
 
-const render = async (target: SocialProfileView = cast) => {
+const render = async (target: ProfileSummaryView = cast) => {
   const container = document.createElement("div");
   await act(async () => {
     createRoot(container).render(createElement(CastReviewsTab, { cast: target }));
