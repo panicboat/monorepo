@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 import { usePublicProfile, useProfile } from "@/modules/profile/hooks";
 import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
 import { EditProfileSheet } from "@/modules/profile/components/EditProfileSheet";
-import { FollowButton, ProfileMoreMenu, SocialCountsLinks } from "@/modules/social";
-import { StartChatButton } from "@/modules/messaging";
+import { ProfileActions } from "@/modules/profile/components/ProfileActions";
+import { SocialCountsLinks } from "@/modules/social";
 import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs";
 import { useRecordVisit } from "@/modules/footprints";
 import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
@@ -62,11 +62,7 @@ export default function PublicProfilePage() {
               プロフィールを編集
             </Button>
           ) : (
-            <>
-              <ProfileMoreMenu targetProfileId={profile.id} />
-              <StartChatButton targetProfileId={profile.id} />
-              <FollowButton targetProfileId={profile.id} />
-            </>
+            <ProfileActions targetProfileId={profile.id} isPrivate={profile.isPrivate} />
           )
         }
       />

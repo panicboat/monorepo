@@ -2,19 +2,17 @@
 
 import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
-import { useFollow } from "@/modules/social/hooks";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { useStartChat } from "@/modules/messaging/hooks/useStartChat";
 
 interface StartChatButtonProps {
   targetProfileId: string;
+  variant?: "primary" | "secondary";
   className?: string;
 }
 
-export function StartChatButton({ targetProfileId, className }: StartChatButtonProps) {
+export function StartChatButton({ targetProfileId, variant = "secondary", className }: StartChatButtonProps) {
   const viewerId = useAuthStore(selectActiveProfileId);
-  const viewerRole = useAuthStore(selectRole);
-  const { isFollowing } = useFollow(targetProfileId);
   const { start, loading } = useStartChat();
 
   const onClick = useCallback(async () => {
@@ -28,11 +26,10 @@ export function StartChatButton({ targetProfileId, className }: StartChatButtonP
   }, [targetProfileId, loading, start]);
 
   if (!targetProfileId || !viewerId || viewerId === targetProfileId) return null;
-  if (viewerRole === "guest" && !isFollowing) return null;
 
   return (
     <Button
-      variant="secondary"
+      variant={variant}
       size="sm"
       onClick={onClick}
       disabled={loading}
