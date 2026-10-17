@@ -1,36 +1,67 @@
-export interface ReviewEntry {
+export type ReviewStage = "reservation" | "service" | "aftercare";
+export type ReviewStatus = "open" | "closed";
+
+export interface ReviewEvent {
   id: string;
-  authorProfileId: string;
-  targetProfileId: string;
-  authorUsername: string;
-  authorAvatarUrl: string;
-  targetUsername: string;
-  targetAvatarUrl: string;
-  rating: number;
-  body: string;
-  hidden: boolean;
+  stage: ReviewStage;
+  outcome: string;
+  tags: string[];
+  note: string;
+  occurredOn: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface PaginatedReviewByTargetResponse {
-  entries: ReviewEntry[];
+export interface Review {
+  id: string;
+  authorProfileId: string;
+  authorUsername: string;
+  authorDisplayName: string;
+  authorAvatarUrl: string;
+  targetProfileId: string;
+  targetUsername: string;
+  targetDisplayName: string;
+  targetAvatarUrl: string;
+  isMine: boolean;
+  rating: number | null;
+  status: ReviewStatus;
+  events: ReviewEvent[];
+  createdAt: string;
+  updatedAt: string;
+  closedAt: string | null;
+  lastActivityAt: string;
+}
+
+export interface ReviewEventInput {
+  stage: ReviewStage;
+  outcome: string;
+  tags: string[];
+  note: string;
+  occurredOn: string;
+}
+
+export interface RatingSummary {
+  averageRating: number | null;
+  raterCount: number;
+  reviewCount: number;
+}
+
+export interface ReviewPage {
+  reviews: Review[];
   nextCursor: string;
   hasMore: boolean;
 }
 
-export interface PaginatedReviewByAuthorResponse {
-  entries: ReviewEntry[];
-  nextCursor: string;
-  hasMore: boolean;
+export interface ReviewsByTargetPage extends ReviewPage {
+  summary: RatingSummary;
 }
 
-export interface PaginatedReviewRecentResponse {
-  entries: ReviewEntry[];
-  nextCursor: string;
-  hasMore: boolean;
+export interface ReviewCounts {
+  total: number;
+  open: number;
+  closed: number;
 }
 
-export interface ReviewSettings {
-  reviewsVisible: boolean;
+export interface MyReviewPage extends ReviewPage {
+  counts: ReviewCounts;
 }
