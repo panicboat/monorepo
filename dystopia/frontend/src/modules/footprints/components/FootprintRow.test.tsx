@@ -26,6 +26,16 @@ describe("FootprintRow", () => {
     expect(html).not.toContain("<a ");
   });
 
+  it("marks only a visitor whose profile is locked", () => {
+    const locked = renderToStaticMarkup(
+      <FootprintRow footprint={{ ...footprint, visitor: { ...footprint.visitor!, isPrivate: true } }} />
+    );
+    const open = renderToStaticMarkup(<FootprintRow footprint={footprint} />);
+
+    expect(locked).toContain('aria-label="鍵付き"');
+    expect(open).not.toContain('aria-label="鍵付き"');
+  });
+
   it("shows a deleted-profile label and no link when the visitor is gone", () => {
     const html = renderToStaticMarkup(<FootprintRow footprint={{ ...footprint, visitor: null }} />);
 

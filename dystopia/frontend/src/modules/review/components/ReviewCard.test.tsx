@@ -118,4 +118,26 @@ describe("ReviewCard", () => {
     expect(Array.from(container.querySelectorAll("a")).some((link) => link.getAttribute("href") === "/u/")).toBe(false);
     expect(container.textContent).toContain("削除したプロフィール");
   });
+
+  it("marks a private author next to the author name only", async () => {
+    const base = review();
+    const container = await mount({ review: review({ author: { ...base.author!, isPrivate: true } }), variant: "feed" });
+
+    expect(container.querySelector('p [aria-label="鍵付き"]')).not.toBeNull();
+    expect(container.querySelector('button [aria-label="鍵付き"]')).toBeNull();
+  });
+
+  it("marks a private target next to the target name only", async () => {
+    const base = review();
+    const container = await mount({ review: review({ target: { ...base.target!, isPrivate: true } }), variant: "feed" });
+
+    expect(container.querySelector('button [aria-label="鍵付き"]')).not.toBeNull();
+    expect(container.querySelector('p > [aria-label="鍵付き"], a [aria-label="鍵付き"]')).toBeNull();
+  });
+
+  it("shows no lock mark when neither side is private", async () => {
+    const container = await mount({ review: review(), variant: "feed" });
+
+    expect(container.querySelector('[aria-label="鍵付き"]')).toBeNull();
+  });
 });

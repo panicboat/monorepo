@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
-import { useNotifications, describeNotification, notificationHref } from "@/modules/notifications";
+import { ProfileName } from "@/components/ui/profile-name";
+import { useNotifications, describeNotificationAction, notificationHref } from "@/modules/notifications";
 import type { NotificationView } from "@/modules/notifications/types";
 import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
 
@@ -15,6 +16,35 @@ export function NotificationsHeader() {
 function formatDate(iso: string): string {
   if (!iso) return "";
   return new Date(iso).toLocaleString("ja-JP");
+}
+
+export function NotificationRow({ notification: n, onClick }: { notification: NotificationView; onClick: () => void }) {
+  const isUnread = !n.readAt;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-start gap-3 border-b border-border px-4 py-3 text-left hover:bg-bg-secondary ${
+        isUnread ? "bg-bg-secondary/50" : ""
+      }`}
+    >
+      <Avatar
+        src={n.latestActor?.avatarUrl || undefined}
+        fallback={(n.latestActor?.displayName || "?").slice(0, 1)}
+        size="md"
+      />
+      <div className="min-w-0 flex-1">
+        <p className="flex items-center gap-1 text-sm text-text-primary">
+          <ProfileName profile={n.latestActor} className="text-sm" />
+          <span className="truncate">{describeNotificationAction(n)}</span>
+        </p>
+        <p className="text-xs text-text-secondary">{formatDate(n.latestEventAt)}</p>
+      </div>
+      {isUnread && (
+        <span className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full bg-accent" aria-label="未読" />
+      )}
+    </button>
+  );
 }
 
 export default function NotificationsPage() {
@@ -53,32 +83,9 @@ export default function NotificationsPage() {
         <p className="px-4 py-6 text-text-secondary">通知はまだありません。</p>
       )}
 
-      {notifications.map((n) => {
-        const isUnread = !n.readAt;
-        return (
-          <button
-            key={n.id}
-            type="button"
-            onClick={() => handleClick(n)}
-            className={`flex w-full items-start gap-3 border-b border-border px-4 py-3 text-left hover:bg-bg-secondary ${
-              isUnread ? "bg-bg-secondary/50" : ""
-            }`}
-          >
-            <Avatar
-              src={n.latestActor?.avatarUrl || undefined}
-              fallback={(n.latestActor?.displayName || "?").slice(0, 1)}
-              size="md"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm text-text-primary">{describeNotification(n)}</p>
-              <p className="text-xs text-text-secondary">{formatDate(n.latestEventAt)}</p>
-            </div>
-            {isUnread && (
-              <span className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full bg-accent" aria-label="未読" />
-            )}
-          </button>
-        );
-      })}
+      {notifications.map((n) => (
+        <NotificationRow key={n.id} notification={n} onClick={() => handleClick(n)} />
+      ))}
 
       {hasMore && (
         <div className="flex justify-center px-4 py-6">

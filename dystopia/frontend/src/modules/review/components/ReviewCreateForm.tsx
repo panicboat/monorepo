@@ -19,7 +19,7 @@ export function ReviewCreateForm({ target, event, onEventChange, rating, onRatin
 
   return (
     <ReviewEventForm
-      cast={{ displayName: target.displayName, username: target.username, avatarUrl: target.avatarUrl }}
+      cast={target}
       value={event}
       onChange={onEventChange}
       rating={{ value: rating, onChange: onRatingChange }}

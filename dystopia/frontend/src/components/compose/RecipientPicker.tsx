@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { ProfileName } from "@/components/ui/profile-name";
 import { useFollowList, useFollowerList } from "@/modules/social/hooks";
 import type { ProfileSummaryView } from "@/modules/profile/types";
 import { useSearchUsers, type SearchUsersRoleFilter } from "@/modules/discovery/hooks/useSearchUsers";
@@ -56,9 +57,9 @@ export function RecipientPicker({ source, onPick }: RecipientPickerProps) {
               onClick={() => onPick(profile)}
               className="flex w-full items-center gap-3 border-b border-divider px-1 py-2.5 text-left hover:bg-bg-secondary"
             >
-              <Avatar src={profile.avatarUrl || undefined} fallback={profile.displayName.slice(0, 1) || "?"} size="md" />
+              <Avatar src={profile.avatarUrl || undefined} fallback={(profile.displayName || profile.username).slice(0, 1) || "?"} size="md" />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-bold text-text-primary">{profile.displayName}</span>
+                <span className="flex min-w-0 text-sm"><ProfileName profile={profile} /></span>
                 <span className="block truncate text-xs text-text-secondary">@{profile.username}</span>
               </span>
               {profile.role && (

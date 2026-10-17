@@ -8,7 +8,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
-import { LockMark } from "@/components/ui/lock-mark";
+import { ProfileName } from "@/components/ui/profile-name";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
 import { FollowButton } from "@/modules/social";
@@ -137,9 +137,8 @@ function SearchView({ initialQuery }: { initialQuery: string }) {
               >
                 <Avatar src={p.avatarUrl || undefined} fallback={p.displayName.slice(0, 1) || "?"} size="md" href={href} />
                 <Link href={href} className="min-w-0 flex-1">
-                  <p className="flex items-center gap-1 font-bold text-text-primary">
-                    <span className="truncate">{p.displayName}</span>
-                    {p.isPrivate && <LockMark label="鍵付き" className="text-sm" />}
+                  <p className="flex">
+                    <ProfileName profile={p} />
                   </p>
                   <p className="truncate text-sm text-text-secondary">@{p.username}</p>
                 </Link>

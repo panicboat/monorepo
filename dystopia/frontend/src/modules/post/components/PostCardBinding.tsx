@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Bookmark, Heart, MessageCircle } from "lucide-react";
 import { PostCard } from "@/components/ui/post-card";
+import { profileDisplayName } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { isPlainClick } from "@/lib/utils/isPlainClick";
 import { usePostSheetStore } from "@/stores/postSheetStore";
@@ -27,8 +28,8 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
   const likesCount = getLikesCount(post.id, post.likesCount);
   const commentsCount = usePostCommentCountStore((s) => s.counts[post.id]) ?? post.commentsCount;
 
-  const authorName = post.author?.displayName || "名無し";
-  const authorHandle = post.author?.username || post.authorProfileId.slice(0, 8);
+  const authorName = profileDisplayName(post.author);
+  const authorHandle = post.author?.username ?? "";
   const avatarSrc = post.author?.avatarUrl || undefined;
   const authorHref = post.author?.username
     ? `/u/${encodeURIComponent(post.author.username)}`
@@ -108,7 +109,7 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
 
   return (
     <PostCard
-      author={{ name: authorName, handle: authorHandle, avatarSrc }}
+      author={{ name: authorName, handle: authorHandle, avatarSrc, isPrivate: !!post.author?.isPrivate }}
       authorHref={authorHref}
       detailHref={inDetail ? undefined : href}
       onDetailClick={inDetail ? undefined : openDetail}

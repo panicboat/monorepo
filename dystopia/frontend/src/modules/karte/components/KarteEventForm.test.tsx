@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import { act, createElement, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
@@ -9,7 +10,8 @@ vi.mock("@/modules/profile/components/ActingProfileLabel", () => ({ ActingProfil
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-let guest = { displayName: "はなこ", username: "hanako", avatarUrl: "" };
+const base: ProfileSummaryView = { profileId: "p-1", displayName: "はなこ", username: "hanako", avatarUrl: "", isPrivate: false, role: "guest" };
+let guest: ProfileSummaryView | null = base;
 
 function Harness({ initial, withRating, onSubmit }: { initial: KarteEventInput; withRating: boolean; onSubmit: (event: KarteEventInput, rating: number | null) => void }) {
   const [value, setValue] = useState(initial);
@@ -62,10 +64,21 @@ describe("KarteEventForm", () => {
     expect(container.textContent).toContain("@hanako · すべてのキャストに共有");
   });
 
+  it("shows the handle for an empty display name and a lock mark only for a private profile", async () => {
+    guest = { ...base, displayName: "", isPrivate: true };
+    const privateHtml = (await mount(emptyKarteEvent("2026-10-16"))).innerHTML;
+    guest = base;
+    const publicHtml = (await mount(emptyKarteEvent("2026-10-16"))).innerHTML;
+
+    expect(privateHtml).toContain("鍵付き");
+    expect(privateHtml).toContain("@hanako");
+    expect(publicHtml).not.toContain("鍵付き");
+  });
+
   it("shows a deleted guest profile without a username or a name", async () => {
-    guest = { displayName: "", username: "", avatarUrl: "" };
+    guest = null;
     const container = await mount(emptyKarteEvent("2026-10-16"));
-    guest = { displayName: "はなこ", username: "hanako", avatarUrl: "" };
+    guest = base;
 
     expect(container.textContent).toContain("削除したプロフィール");
     expect(container.textContent).toContain("すべてのキャストに共有");

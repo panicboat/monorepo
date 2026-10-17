@@ -13,13 +13,6 @@ export interface PaginatedProfilesResponse {
   hasMore: boolean;
 }
 
-export interface FollowRequestItem {
-  requesterProfileId: string;
-  username: string;
-  displayName: string;
-  avatarUrl: string;
-}
-
 export interface SocialCounts {
   followingCount: number;
   followersCount: number;

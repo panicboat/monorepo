@@ -1,6 +1,8 @@
 "use client";
 
 import { Avatar } from "@/components/ui/avatar";
+import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -12,12 +14,6 @@ import { REVIEW_OUTCOMES, REVIEW_STAGES, REVIEW_TAGS, MAX_NOTE_LENGTH, isNoteReq
 import type { ReviewEventInput } from "../types";
 import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
 
-export interface ReviewCast {
-  displayName: string;
-  username: string;
-  avatarUrl: string;
-}
-
 export function emptyReviewEvent(today: string = todayInJapan()): ReviewEventInput {
   return { stage: "reservation", outcome: REVIEW_OUTCOMES.reservation[0].code, tags: [], note: "", occurredOn: today };
 }
@@ -28,7 +24,7 @@ export function isReviewEventReady(event: ReviewEventInput): boolean {
 }
 
 interface ReviewEventFormProps {
-  cast: ReviewCast;
+  cast: ProfileSummaryView | null;
   value: ReviewEventInput;
   onChange: (next: ReviewEventInput) => void;
   rating?: { value: number | null; onChange: (next: number | null) => void };
@@ -52,10 +48,10 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
     >
       <ActingProfileLabel />
       <div className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2">
-        <Avatar src={cast.avatarUrl || undefined} fallback={cast.displayName.slice(0, 1) || "?"} size="sm" />
+        <Avatar src={cast?.avatarUrl || undefined} fallback={profileDisplayName(cast).replace("@", "").slice(0, 1) || "?"} size="sm" />
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-text-primary">{cast.displayName || "削除したプロフィール"}</p>
-          <p className="truncate text-xs text-text-secondary">{cast.username ? `@${cast.username} · ` : ""}全員に公開</p>
+          <p className="flex min-w-0 text-sm"><ProfileName profile={cast} /></p>
+          <p className="truncate text-xs text-text-secondary">{cast?.username ? `@${cast.username} · ` : ""}全員に公開</p>
         </div>
       </div>
 

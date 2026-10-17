@@ -55,10 +55,27 @@ describe("PostCardBinding", () => {
     expect(html).not.toContain('<a href="/u/');
   });
 
-  it("marks a post whose visibility is private", () => {
+  it("falls back to the handle when the author has no display name", () => {
+    const html = renderToStaticMarkup(
+      <PostCardBinding post={{ ...basePost, author: { ...basePost.author!, displayName: "", username: "rin" } }} />
+    );
+
+    expect(html).toContain("@rin");
+    expect(html).not.toContain("名無し");
+  });
+
+  it("names a deleted author without a handle", () => {
+    const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, author: null }} />);
+
+    expect(html).toContain("削除したプロフィール");
+    expect(html).not.toContain("@author-1");
+    expect(html).not.toContain("@</span>");
+  });
+
+  it("marks a post whose visibility is private as followers-only", () => {
     const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, visibility: "private" }} />);
 
-    expect(html.match(/aria-label="非公開"/g)).toHaveLength(1);
+    expect(html.match(/aria-label="フォロワーのみ"/g)).toHaveLength(1);
   });
 
   it("fills the heart only on a post the viewer has liked", () => {

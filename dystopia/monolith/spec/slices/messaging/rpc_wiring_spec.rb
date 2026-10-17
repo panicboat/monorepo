@@ -11,6 +11,7 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
   let(:cast) { create_account_with_profile(role: 2, username: "wiring_cast") }
   let(:guest) { create_account_with_profile(username: "wiring_guest") }
   let(:outsider) { create_account_with_profile(username: "wiring_outsider") }
+  let(:private_cast) { create_account_with_profile(role: 2, username: "wiring_private_cast", is_private: true) }
 
   def handler(handler_class, method, message)
     handler_class.new(method_key: method, service: double, rpc_desc: double, active_call: double, message: message)
@@ -56,6 +57,16 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
       expect(sent.message.sender_profile_id).to eq(cast)
       expect(db[:messaging__messages].select_map([:thread_id, :sender_profile_id])).to eq([[sent.thread_id, cast]])
       expect(db[:messaging__threads].select_map([:profile_a, :profile_b])).to eq([[cast, guest].minmax])
+    end
+
+    it "flags a private counterpart on the thread list and not a public one" do
+      act_as(private_cast)
+      send_message(recipient_profile_id: guest, content: "hello")
+
+      expect(threads.threads.map { |t| t.counterpart.is_private }).to eq([false])
+
+      act_as(guest)
+      expect(threads.threads.map { |t| [t.counterpart.profile_id, t.counterpart.is_private] }).to eq([[private_cast, true]])
     end
 
     it "shows the thread to both participants with the counterpart and the unread count" do
@@ -151,6 +162,16 @@ RSpec.describe "Messaging and notifications RPC entry points", type: :database d
 
     def unread
       rpc(Notifications::Grpc::NotificationHandler, :get_unread_count, Notifications::V1::GetUnreadCountRequest.new).count
+    end
+
+    it "flags a private latest actor and not a public one" do
+      emit.call(recipient_profile_id: guest, type: "like", target_resource_id: SecureRandom.uuid_v7, actor_profile_id: private_cast)
+      emit.call(recipient_profile_id: guest, type: "like", target_resource_id: SecureRandom.uuid_v7, actor_profile_id: cast)
+
+      act_as(guest)
+
+      expect(notifications.notifications.map { |n| [n.latest_actor.profile_id, n.latest_actor.is_private] })
+        .to contain_exactly([private_cast, true], [cast, false])
     end
 
     it "lists a recipient's notifications with the latest actor and marks them read" do

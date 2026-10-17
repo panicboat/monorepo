@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
+import { ProfileName } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
 import type { FootprintView } from "@/modules/footprints/types";
 
@@ -14,7 +15,9 @@ export function FootprintRow({ footprint }: FootprintRowProps) {
   const href = visitor?.username ? `/u/${encodeURIComponent(visitor.username)}` : undefined;
   const nameAndHandle = (
     <>
-      <p className="truncate font-bold text-text-primary">{visitor ? visitor.displayName || "—" : "削除したプロフィール"}</p>
+      <p className="flex">
+        <ProfileName profile={visitor} />
+      </p>
       <p className="truncate text-sm text-text-secondary">{visitor ? `@${visitor.username || "—"}` : ""}</p>
     </>
   );

@@ -70,7 +70,6 @@ module Social
       def summarize_profiles
         @summarize_profiles ||= ::Profile::Slice["use_cases.summarize_profiles"]
       end
-
     end
   end
 end

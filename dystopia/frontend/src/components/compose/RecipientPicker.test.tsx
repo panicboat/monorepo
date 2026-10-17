@@ -78,6 +78,16 @@ beforeEach(() => {
 });
 
 describe("RecipientPicker", () => {
+  it("marks only private candidates with a lock", async () => {
+    mocks.following = [{ ...profile("yuna", "cast"), isPrivate: true }, profile("taro", "guest")];
+    const unmount = await mount("message", "cast");
+
+    const rows = Array.from(container.querySelectorAll("li"));
+    expect(rows[0].innerHTML).toContain("鍵付き");
+    expect(rows[1].innerHTML).not.toContain("鍵付き");
+    await unmount();
+  });
+
   it("starts a message from the profiles the viewer follows, without the viewer", async () => {
     const unmount = await mount("message", "cast");
 

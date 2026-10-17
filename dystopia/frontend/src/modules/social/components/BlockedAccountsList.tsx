@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar } from "@/components/ui/avatar";
+import { ProfileName } from "@/components/ui/profile-name";
 import { useBlockedList } from "../hooks/useBlockedList";
 import { BlockButton } from "./BlockButton";
 
@@ -17,7 +18,9 @@ export function BlockedAccountsList() {
         <div key={p.profileId} className="flex items-center gap-3 border-b border-border px-4 py-3">
           <Avatar src={p.avatarUrl || undefined} fallback={p.displayName.slice(0, 1) || "?"} size="md" />
           <div className="min-w-0 flex-1">
-            <p className="truncate font-bold text-text-primary">{p.displayName}</p>
+            <p className="flex">
+              <ProfileName profile={p} />
+            </p>
             <p className="truncate text-sm text-text-secondary">@{p.username}</p>
           </div>
           <BlockButton targetProfileId={p.profileId} />
