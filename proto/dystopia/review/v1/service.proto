@@ -3,6 +3,7 @@ syntax = "proto3";
 package review.v1;
 
 import "google/protobuf/timestamp.proto";
+import "profile/v1/service.proto";
 
 service ReviewService {
   rpc CreateReview(CreateReviewRequest) returns (CreateReviewResponse);
@@ -55,13 +56,7 @@ message ReviewEvent {
 message Review {
   string id = 1;
   string author_profile_id = 2;
-  string author_username = 3;
-  string author_display_name = 4;
-  string author_avatar_url = 5;
   string target_profile_id = 6;
-  string target_username = 7;
-  string target_display_name = 8;
-  string target_avatar_url = 9;
   bool is_mine = 10;
   int32 rating = 11;
   ReviewStatus status = 12;
@@ -70,6 +65,10 @@ message Review {
   google.protobuf.Timestamp updated_at = 15;
   google.protobuf.Timestamp closed_at = 16;
   google.protobuf.Timestamp last_activity_at = 17;
+  profile.v1.ProfileSummary author = 18;
+  profile.v1.ProfileSummary target = 19;
+  reserved 3, 4, 5, 7, 8, 9;
+  reserved "author_username", "author_display_name", "author_avatar_url", "target_username", "target_display_name", "target_avatar_url";
 }
 
 message RatingSummary {

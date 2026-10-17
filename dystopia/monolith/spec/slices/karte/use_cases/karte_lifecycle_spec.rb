@@ -30,14 +30,15 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
 
       karte = create(profile: named_cast, target: named_guest)
 
-      expect(karte).to include(author_display_name: "ゆな", target_display_name: "はなこ")
+      expect([karte[:author].display_name, karte[:target].display_name]).to eq(%w[ゆな はなこ])
       expect(karte[:last_activity_at]).to eq(karte[:created_at])
     end
 
     it "opens a karte with its first event and presents the profiles" do
       karte = create
 
-      expect(karte).to include(status: "open", rating: nil, is_mine: true, author_username: "persona_a", target_username: "guest_one", closed_at: nil)
+      expect(karte).to include(status: "open", rating: nil, is_mine: true, closed_at: nil)
+      expect([karte[:author].username, karte[:target].username]).to eq(%w[persona_a guest_one])
       expect(karte[:events].map { |e| e.slice(:stage, :outcome, :tags, :note, :occurred_on) }).to eq([
         { stage: "reservation", outcome: "booked", tags: %w[smooth_contact], note: nil, occurred_on: Date.new(2026, 10, 1) }
       ])
