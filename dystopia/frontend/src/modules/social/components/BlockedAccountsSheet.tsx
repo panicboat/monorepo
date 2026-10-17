@@ -12,7 +12,7 @@ export function BlockedAccountsSheet({ open, onClose }: { open: boolean; onClose
       }}
       title="ブロックしたアカウント"
     >
-      <div className="-mx-4 md:-mx-5">
+      <div className="-mx-4">
         <BlockedAccountsList />
       </div>
     </SideSheet>

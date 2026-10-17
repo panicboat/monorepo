@@ -35,6 +35,7 @@ describe("MessagesPage", () => {
     });
 
     expect(container.textContent).toContain("メッセージはまだありません");
+    expect(container.querySelector('a[href="/messages/t-1"] svg[aria-hidden="true"]')).not.toBeNull();
     expect(container.textContent).not.toContain("compose:");
 
     await act(async () => {
