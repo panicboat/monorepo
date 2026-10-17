@@ -158,7 +158,8 @@ describe("PublicProfilePage tabs", () => {
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
-    expect(html.indexOf("出勤")).toBeLessThan(html.indexOf("クチコミ"));
+    expect(html).toContain(">予定<");
+    expect(html.indexOf(">予定<")).toBeLessThan(html.indexOf("クチコミ"));
     expect(html).toContain("weekly-summary");
   });
 

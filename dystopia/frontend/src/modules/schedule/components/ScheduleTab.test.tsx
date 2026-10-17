@@ -48,31 +48,29 @@ async function mount(isOwner: boolean) {
 }
 
 describe("ScheduleTab", () => {
-  it("shows a week from today with the planned hours and a note", async () => {
+  it("shows two weeks from today with the planned hours in a card and unplanned days as plain rows", async () => {
     const container = await mount(false);
 
-    expect(mocks.range).toEqual(["2026-10-12", "2026-10-18"]);
-    expect(container.querySelectorAll("li")).toHaveLength(7);
-    expect(container.textContent).toContain("10/13(火)");
-    expect(container.textContent).toContain("20:00");
-    expect(container.textContent).toContain("〜02:00");
-    expect(container.textContent).toContain("未設定");
-    expect(container.textContent).toContain("出勤情報は予約可能枠を保証するものではありません。");
+    expect(mocks.range).toEqual(["2026-10-12", "2026-10-25"]);
+    expect(container.querySelectorAll("li")).toHaveLength(14);
+    expect(container.textContent).toContain("予定");
+    expect(container.textContent).not.toContain("出勤");
+    const planned = Array.from(container.querySelectorAll("li")).find((li) => li.textContent?.includes("10/13(火)")) as HTMLElement;
+    expect(planned.textContent).toContain("20:00 〜 02:00");
+    expect(planned.querySelector("p")?.textContent).toBe("20:00 〜 02:00");
+    const unplanned = Array.from(container.querySelectorAll("li")).find((li) => li.textContent?.includes("10/12(月)")) as HTMLElement;
+    expect(unplanned.textContent).toContain("未設定");
+    expect(unplanned.querySelector("p")).toBeNull();
+    expect(container.textContent).toContain("予定は予約可能枠を保証するものではありません。");
+    expect(container.textContent).not.toContain("予定あり");
     expect(container.textContent).not.toContain("まとめて編集");
   });
 
-  it("shows two weeks after pressing もっと見る and fetches that range", async () => {
+  it("has no もっと見る button", async () => {
     const container = await mount(false);
-    const more = () => Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "もっと見る") as HTMLButtonElement | undefined;
-    expect(container.querySelectorAll("li")).toHaveLength(7);
 
-    await act(async () => {
-      more()!.click();
-    });
-
-    expect(container.querySelectorAll("li")).toHaveLength(14);
-    expect(mocks.range).toEqual(["2026-10-12", "2026-10-25"]);
-    expect(more()).toBeUndefined();
+    expect(Array.from(container.querySelectorAll("button")).some((b) => b.textContent === "もっと見る")).toBe(false);
+    expect(mocks.calls).toEqual([["2026-10-12", "2026-10-25"]]);
   });
 
   it("lets the owner open the bulk sheet", async () => {

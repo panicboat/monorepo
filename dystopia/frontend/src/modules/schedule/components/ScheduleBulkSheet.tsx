@@ -86,7 +86,7 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
     refresh();
     onSaved();
     if (failures.length === 0) {
-      showToast("出勤予定を更新しました");
+      showToast("予定を更新しました");
       onClose();
       return;
     }
@@ -100,7 +100,7 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
       onOpenChange={(next) => {
         if (!next && !saving) onClose();
       }}
-      title="出勤予定をまとめて編集"
+      title="予定をまとめて編集"
     >
       <div className="flex flex-col gap-5">
         <div>
@@ -147,7 +147,7 @@ export function ScheduleBulkSheet({ profileId, open, onClose, onSaved }: Schedul
           </div>
           <div className="mt-3 flex gap-2">
             <button type="button" aria-pressed={mode === "work"} onClick={() => setMode("work")} className={chipClass(mode === "work")}>
-              出勤
+              予定を入れる
             </button>
             <button type="button" aria-pressed={mode === "clear"} onClick={() => setMode("clear")} className={chipClass(mode === "clear")}>
               予定を消す
