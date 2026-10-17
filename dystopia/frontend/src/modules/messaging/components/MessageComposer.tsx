@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
 
 interface MessageComposerProps {
   onSend: (content: string) => Promise<void>;
@@ -41,6 +42,7 @@ export function MessageComposer({ onSend, disabled }: MessageComposerProps) {
 
   return (
     <form onSubmit={handleSubmit} className="border-t border-border bg-bg px-4 py-3">
+      <ActingProfileLabel className="mb-2" />
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}

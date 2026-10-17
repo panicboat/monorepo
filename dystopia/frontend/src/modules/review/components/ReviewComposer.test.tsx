@@ -5,6 +5,8 @@ vi.mock("../hooks/useCreateReview", () => ({
   useCreateReview: () => ({ create: vi.fn(), loading: false, error: null }),
 }));
 
+vi.mock("@/modules/profile/components/ActingProfileLabel", () => ({ ActingProfileLabel: () => <span>acting-profile</span> }));
+
 const { ReviewComposer } = await import("./ReviewComposer");
 
 describe("ReviewComposer", () => {
@@ -19,5 +21,12 @@ describe("ReviewComposer", () => {
     const html = renderToStaticMarkup(<ReviewComposer targetProfileId="target-1" />);
 
     expect(html).toContain("★★★★☆ (4)");
+  });
+
+  it("shows which profile the review is written as above the input", () => {
+    const html = renderToStaticMarkup(<ReviewComposer targetProfileId="target-1" />);
+
+    expect(html.indexOf("acting-profile")).toBeGreaterThanOrEqual(0);
+    expect(html.indexOf("acting-profile")).toBeLessThan(html.indexOf("<textarea"));
   });
 });

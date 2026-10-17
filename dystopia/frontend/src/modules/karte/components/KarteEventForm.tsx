@@ -10,6 +10,7 @@ import { KARTE_OUTCOMES, KARTE_STAGES, KARTE_TAGS, MAX_NOTE_LENGTH, isNoteRequir
 import { todayInJapan } from "../lib/dates";
 import type { KarteEventInput } from "../types";
 import { KarteRatingInput } from "./KarteRatingInput";
+import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
 
 export interface KarteGuest {
   displayName: string;
@@ -53,6 +54,7 @@ export function KarteEventForm({ guest, value, onChange, rating, submitLabel, su
       }}
       className="flex flex-col gap-5"
     >
+      <ActingProfileLabel />
       <div className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2">
         <Avatar src={guest.avatarUrl || undefined} fallback={guest.displayName.slice(0, 1) || "?"} size="sm" />
         <div className="min-w-0">

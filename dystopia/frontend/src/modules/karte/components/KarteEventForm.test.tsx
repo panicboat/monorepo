@@ -5,6 +5,8 @@ import { describe, expect, it, vi } from "vitest";
 import type { KarteEventInput } from "../types";
 import { KarteEventForm, emptyKarteEvent, isKarteEventReady } from "./KarteEventForm";
 
+vi.mock("@/modules/profile/components/ActingProfileLabel", () => ({ ActingProfileLabel: () => createElement("span", null, "acting-profile") }));
+
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 let guest = { displayName: "はなこ", username: "hanako", avatarUrl: "" };
@@ -45,6 +47,14 @@ async function setValue(element: HTMLTextAreaElement | HTMLSelectElement, value:
 }
 
 describe("KarteEventForm", () => {
+  it("shows which profile the karte is recorded as above the inputs", async () => {
+    const container = await mount(emptyKarteEvent());
+
+    const html = container.innerHTML;
+    expect(html.indexOf("acting-profile")).toBeGreaterThanOrEqual(0);
+    expect(html.indexOf("acting-profile")).toBeLessThan(html.indexOf("<fieldset"));
+  });
+
   it("shows the guest and that the record is shared with every cast", async () => {
     const container = await mount(emptyKarteEvent("2026-10-16"));
 

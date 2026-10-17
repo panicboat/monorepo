@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCreateReview } from "../hooks/useCreateReview";
+import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
 
 interface Props {
   targetProfileId: string;
@@ -27,6 +28,7 @@ export function ReviewComposer({ targetProfileId, onCreated }: Props) {
       }}
       className="border-b border-border p-4"
     >
+      <ActingProfileLabel className="mb-3" />
       <label className="block text-sm font-medium">評価</label>
       <select
         value={rating}
