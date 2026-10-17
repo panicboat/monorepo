@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file profile/v1/service.proto.
  */
 export const file_profile_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("Chhwcm9maWxlL3YxL3NlcnZpY2UucHJvdG8SCnByb2ZpbGUudjEihQMKB1Byb2ZpbGUSCgoCaWQYASABKAkSEAoIdXNlcm5hbWUYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEgsKA2JpbxgEIAEoCRIXCg9hdmF0YXJfbWVkaWFfaWQYBSABKAkSEgoKYXZhdGFyX3VybBgGIAEoCRIWCg5jb3Zlcl9tZWRpYV9pZBgHIAEoCRIRCgljb3Zlcl91cmwYCCABKAkSDwoHd2Vic2l0ZRgJIAEoCRInCglzbnNfbGlua3MYCiABKAsyFC5wcm9maWxlLnYxLlNuc0xpbmtzEhIKCnByZWZlY3R1cmUYCyABKAkSEgoKaXNfcHJpdmF0ZRgMIAEoCBIVCg1yZWdpc3RlcmVkX2F0GA0gASgJEgsKA2FnZRgOIAEoBRIpCgpib2R5X3N0YXRzGA8gASgLMhUucHJvZmlsZS52MS5Cb2R5U3RhdHMSEAoIaW5kdXN0cnkYESABKAkSDAoEcm9sZRgUIAEoBRIQCghkaXNhYmxlZBgVIAEoCCJrCghTbnNMaW5rcxIJCgF4GAEgASgJEhEKCWluc3RhZ3JhbRgCIAEoCRIOCgZ0aWt0b2sYAyABKAkSDwoHYmx1ZXNreRgEIAEoCRIMCgRsaW5lGAUgASgJEhIKCmNpdHloZWF2ZW4YBiABKAkiXgoJQm9keVN0YXRzEhEKCWhlaWdodF9jbRgBIAEoBRIPCgdidXN0X2NtGAIgASgFEhAKCHdhaXN0X2NtGAMgASgFEg4KBmhpcF9jbRgEIAEoBRILCgNjdXAYBSABKAkiJwoRR2V0UHJvZmlsZVJlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoCSIvChtHZXRQcm9maWxlQnlVc2VybmFtZVJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkiOgoSR2V0UHJvZmlsZVJlc3BvbnNlEiQKB3Byb2ZpbGUYASABKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUiFwoVTGlzdE15UHJvZmlsZXNSZXF1ZXN0Ij8KFkxpc3RNeVByb2ZpbGVzUmVzcG9uc2USJQoIcHJvZmlsZXMYASADKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUiPgoUQ3JlYXRlUHJvZmlsZVJlcXVlc3QSFAoMZGlzcGxheV9uYW1lGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJIj0KFUNyZWF0ZVByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIvUBChJTYXZlUHJvZmlsZVJlcXVlc3QSEAoIdXNlcm5hbWUYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJEgsKA2JpbxgDIAEoCRIPCgd3ZWJzaXRlGAQgASgJEicKCXNuc19saW5rcxgFIAEoCzIULnByb2ZpbGUudjEuU25zTGlua3MSEgoKcHJlZmVjdHVyZRgGIAEoCRISCgppc19wcml2YXRlGAcgASgIEgsKA2FnZRgIIAEoBRIpCgpib2R5X3N0YXRzGAkgASgLMhUucHJvZmlsZS52MS5Cb2R5U3RhdHMSEAoIaW5kdXN0cnkYCyABKAkiOwoTU2F2ZVByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIjQKIENoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHlSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJIkcKIUNoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHlSZXNwb25zZRIRCglhdmFpbGFibGUYASABKAgSDwoHbWVzc2FnZRgCIAEoCSJKChdTYXZlUHJvZmlsZU1lZGlhUmVxdWVzdBIXCg9hdmF0YXJfbWVkaWFfaWQYASABKAkSFgoOY292ZXJfbWVkaWFfaWQYAiABKAkiQAoYU2F2ZVByb2ZpbGVNZWRpYVJlc3BvbnNlEiQKB3Byb2ZpbGUYASABKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUiKwoVRGlzYWJsZVByb2ZpbGVSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAkiPgoWRGlzYWJsZVByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIioKFEVuYWJsZVByb2ZpbGVSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAkiPQoVRW5hYmxlUHJvZmlsZVJlc3BvbnNlEiQKB3Byb2ZpbGUYASABKAsyEy5wcm9maWxlLnYxLlByb2ZpbGUiKgoURGVsZXRlUHJvZmlsZVJlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoCSIXChVEZWxldGVQcm9maWxlUmVzcG9uc2UymwcKDlByb2ZpbGVTZXJ2aWNlEksKCkdldFByb2ZpbGUSHS5wcm9maWxlLnYxLkdldFByb2ZpbGVSZXF1ZXN0Gh4ucHJvZmlsZS52MS5HZXRQcm9maWxlUmVzcG9uc2USXwoUR2V0UHJvZmlsZUJ5VXNlcm5hbWUSJy5wcm9maWxlLnYxLkdldFByb2ZpbGVCeVVzZXJuYW1lUmVxdWVzdBoeLnByb2ZpbGUudjEuR2V0UHJvZmlsZVJlc3BvbnNlElcKDkxpc3RNeVByb2ZpbGVzEiEucHJvZmlsZS52MS5MaXN0TXlQcm9maWxlc1JlcXVlc3QaIi5wcm9maWxlLnYxLkxpc3RNeVByb2ZpbGVzUmVzcG9uc2USVAoNQ3JlYXRlUHJvZmlsZRIgLnByb2ZpbGUudjEuQ3JlYXRlUHJvZmlsZVJlcXVlc3QaIS5wcm9maWxlLnYxLkNyZWF0ZVByb2ZpbGVSZXNwb25zZRJOCgtTYXZlUHJvZmlsZRIeLnByb2ZpbGUudjEuU2F2ZVByb2ZpbGVSZXF1ZXN0Gh8ucHJvZmlsZS52MS5TYXZlUHJvZmlsZVJlc3BvbnNlEngKGUNoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHkSLC5wcm9maWxlLnYxLkNoZWNrVXNlcm5hbWVBdmFpbGFiaWxpdHlSZXF1ZXN0Gi0ucHJvZmlsZS52MS5DaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVzcG9uc2USXQoQU2F2ZVByb2ZpbGVNZWRpYRIjLnByb2ZpbGUudjEuU2F2ZVByb2ZpbGVNZWRpYVJlcXVlc3QaJC5wcm9maWxlLnYxLlNhdmVQcm9maWxlTWVkaWFSZXNwb25zZRJXCg5EaXNhYmxlUHJvZmlsZRIhLnByb2ZpbGUudjEuRGlzYWJsZVByb2ZpbGVSZXF1ZXN0GiIucHJvZmlsZS52MS5EaXNhYmxlUHJvZmlsZVJlc3BvbnNlElQKDUVuYWJsZVByb2ZpbGUSIC5wcm9maWxlLnYxLkVuYWJsZVByb2ZpbGVSZXF1ZXN0GiEucHJvZmlsZS52MS5FbmFibGVQcm9maWxlUmVzcG9uc2USVAoNRGVsZXRlUHJvZmlsZRIgLnByb2ZpbGUudjEuRGVsZXRlUHJvZmlsZVJlcXVlc3QaIS5wcm9maWxlLnYxLkRlbGV0ZVByb2ZpbGVSZXNwb25zZWIGcHJvdG8z");
+  fileDesc("Chhwcm9maWxlL3YxL3NlcnZpY2UucHJvdG8SCnByb2ZpbGUudjEihQMKB1Byb2ZpbGUSCgoCaWQYASABKAkSEAoIdXNlcm5hbWUYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEgsKA2JpbxgEIAEoCRIXCg9hdmF0YXJfbWVkaWFfaWQYBSABKAkSEgoKYXZhdGFyX3VybBgGIAEoCRIWCg5jb3Zlcl9tZWRpYV9pZBgHIAEoCRIRCgljb3Zlcl91cmwYCCABKAkSDwoHd2Vic2l0ZRgJIAEoCRInCglzbnNfbGlua3MYCiABKAsyFC5wcm9maWxlLnYxLlNuc0xpbmtzEhIKCnByZWZlY3R1cmUYCyABKAkSEgoKaXNfcHJpdmF0ZRgMIAEoCBIVCg1yZWdpc3RlcmVkX2F0GA0gASgJEgsKA2FnZRgOIAEoBRIpCgpib2R5X3N0YXRzGA8gASgLMhUucHJvZmlsZS52MS5Cb2R5U3RhdHMSEAoIaW5kdXN0cnkYESABKAkSDAoEcm9sZRgUIAEoBRIQCghkaXNhYmxlZBgVIAEoCCKCAQoOUHJvZmlsZVN1bW1hcnkSEgoKcHJvZmlsZV9pZBgBIAEoCRIQCgh1c2VybmFtZRgCIAEoCRIUCgxkaXNwbGF5X25hbWUYAyABKAkSEgoKYXZhdGFyX3VybBgEIAEoCRISCgppc19wcml2YXRlGAUgASgIEgwKBHJvbGUYBiABKAUiawoIU25zTGlua3MSCQoBeBgBIAEoCRIRCglpbnN0YWdyYW0YAiABKAkSDgoGdGlrdG9rGAMgASgJEg8KB2JsdWVza3kYBCABKAkSDAoEbGluZRgFIAEoCRISCgpjaXR5aGVhdmVuGAYgASgJIl4KCUJvZHlTdGF0cxIRCgloZWlnaHRfY20YASABKAUSDwoHYnVzdF9jbRgCIAEoBRIQCgh3YWlzdF9jbRgDIAEoBRIOCgZoaXBfY20YBCABKAUSCwoDY3VwGAUgASgJIicKEUdldFByb2ZpbGVSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAkiLwobR2V0UHJvZmlsZUJ5VXNlcm5hbWVSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJIjoKEkdldFByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIhcKFUxpc3RNeVByb2ZpbGVzUmVxdWVzdCI/ChZMaXN0TXlQcm9maWxlc1Jlc3BvbnNlEiUKCHByb2ZpbGVzGAEgAygLMhMucHJvZmlsZS52MS5Qcm9maWxlIj4KFENyZWF0ZVByb2ZpbGVSZXF1ZXN0EhQKDGRpc3BsYXlfbmFtZRgBIAEoCRIQCgh1c2VybmFtZRgCIAEoCSI9ChVDcmVhdGVQcm9maWxlUmVzcG9uc2USJAoHcHJvZmlsZRgBIAEoCzITLnByb2ZpbGUudjEuUHJvZmlsZSL1AQoSU2F2ZVByb2ZpbGVSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRILCgNiaW8YAyABKAkSDwoHd2Vic2l0ZRgEIAEoCRInCglzbnNfbGlua3MYBSABKAsyFC5wcm9maWxlLnYxLlNuc0xpbmtzEhIKCnByZWZlY3R1cmUYBiABKAkSEgoKaXNfcHJpdmF0ZRgHIAEoCBILCgNhZ2UYCCABKAUSKQoKYm9keV9zdGF0cxgJIAEoCzIVLnByb2ZpbGUudjEuQm9keVN0YXRzEhAKCGluZHVzdHJ5GAsgASgJIjsKE1NhdmVQcm9maWxlUmVzcG9uc2USJAoHcHJvZmlsZRgBIAEoCzITLnByb2ZpbGUudjEuUHJvZmlsZSI0CiBDaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCSJHCiFDaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVzcG9uc2USEQoJYXZhaWxhYmxlGAEgASgIEg8KB21lc3NhZ2UYAiABKAkiSgoXU2F2ZVByb2ZpbGVNZWRpYVJlcXVlc3QSFwoPYXZhdGFyX21lZGlhX2lkGAEgASgJEhYKDmNvdmVyX21lZGlhX2lkGAIgASgJIkAKGFNhdmVQcm9maWxlTWVkaWFSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIisKFURpc2FibGVQcm9maWxlUmVxdWVzdBISCgpwcm9maWxlX2lkGAEgASgJIj4KFkRpc2FibGVQcm9maWxlUmVzcG9uc2USJAoHcHJvZmlsZRgBIAEoCzITLnByb2ZpbGUudjEuUHJvZmlsZSIqChRFbmFibGVQcm9maWxlUmVxdWVzdBISCgpwcm9maWxlX2lkGAEgASgJIj0KFUVuYWJsZVByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMucHJvZmlsZS52MS5Qcm9maWxlIioKFERlbGV0ZVByb2ZpbGVSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAkiFwoVRGVsZXRlUHJvZmlsZVJlc3BvbnNlMpsHCg5Qcm9maWxlU2VydmljZRJLCgpHZXRQcm9maWxlEh0ucHJvZmlsZS52MS5HZXRQcm9maWxlUmVxdWVzdBoeLnByb2ZpbGUudjEuR2V0UHJvZmlsZVJlc3BvbnNlEl8KFEdldFByb2ZpbGVCeVVzZXJuYW1lEicucHJvZmlsZS52MS5HZXRQcm9maWxlQnlVc2VybmFtZVJlcXVlc3QaHi5wcm9maWxlLnYxLkdldFByb2ZpbGVSZXNwb25zZRJXCg5MaXN0TXlQcm9maWxlcxIhLnByb2ZpbGUudjEuTGlzdE15UHJvZmlsZXNSZXF1ZXN0GiIucHJvZmlsZS52MS5MaXN0TXlQcm9maWxlc1Jlc3BvbnNlElQKDUNyZWF0ZVByb2ZpbGUSIC5wcm9maWxlLnYxLkNyZWF0ZVByb2ZpbGVSZXF1ZXN0GiEucHJvZmlsZS52MS5DcmVhdGVQcm9maWxlUmVzcG9uc2USTgoLU2F2ZVByb2ZpbGUSHi5wcm9maWxlLnYxLlNhdmVQcm9maWxlUmVxdWVzdBofLnByb2ZpbGUudjEuU2F2ZVByb2ZpbGVSZXNwb25zZRJ4ChlDaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5EiwucHJvZmlsZS52MS5DaGVja1VzZXJuYW1lQXZhaWxhYmlsaXR5UmVxdWVzdBotLnByb2ZpbGUudjEuQ2hlY2tVc2VybmFtZUF2YWlsYWJpbGl0eVJlc3BvbnNlEl0KEFNhdmVQcm9maWxlTWVkaWESIy5wcm9maWxlLnYxLlNhdmVQcm9maWxlTWVkaWFSZXF1ZXN0GiQucHJvZmlsZS52MS5TYXZlUHJvZmlsZU1lZGlhUmVzcG9uc2USVwoORGlzYWJsZVByb2ZpbGUSIS5wcm9maWxlLnYxLkRpc2FibGVQcm9maWxlUmVxdWVzdBoiLnByb2ZpbGUudjEuRGlzYWJsZVByb2ZpbGVSZXNwb25zZRJUCg1FbmFibGVQcm9maWxlEiAucHJvZmlsZS52MS5FbmFibGVQcm9maWxlUmVxdWVzdBohLnByb2ZpbGUudjEuRW5hYmxlUHJvZmlsZVJlc3BvbnNlElQKDURlbGV0ZVByb2ZpbGUSIC5wcm9maWxlLnYxLkRlbGV0ZVByb2ZpbGVSZXF1ZXN0GiEucHJvZmlsZS52MS5EZWxldGVQcm9maWxlUmVzcG9uc2ViBnByb3RvMw");
 
 /**
  * @generated from message profile.v1.Profile
@@ -115,6 +115,48 @@ export const ProfileSchema: GenMessage<Profile> = /*@__PURE__*/
   messageDesc(file_profile_v1_service, 0);
 
 /**
+ * @generated from message profile.v1.ProfileSummary
+ */
+export type ProfileSummary = Message<"profile.v1.ProfileSummary"> & {
+  /**
+   * @generated from field: string profile_id = 1;
+   */
+  profileId: string;
+
+  /**
+   * @generated from field: string username = 2;
+   */
+  username: string;
+
+  /**
+   * @generated from field: string display_name = 3;
+   */
+  displayName: string;
+
+  /**
+   * @generated from field: string avatar_url = 4;
+   */
+  avatarUrl: string;
+
+  /**
+   * @generated from field: bool is_private = 5;
+   */
+  isPrivate: boolean;
+
+  /**
+   * @generated from field: int32 role = 6;
+   */
+  role: number;
+};
+
+/**
+ * Describes the message profile.v1.ProfileSummary.
+ * Use `create(ProfileSummarySchema)` to create a new message.
+ */
+export const ProfileSummarySchema: GenMessage<ProfileSummary> = /*@__PURE__*/
+  messageDesc(file_profile_v1_service, 1);
+
+/**
  * @generated from message profile.v1.SnsLinks
  */
 export type SnsLinks = Message<"profile.v1.SnsLinks"> & {
@@ -154,7 +196,7 @@ export type SnsLinks = Message<"profile.v1.SnsLinks"> & {
  * Use `create(SnsLinksSchema)` to create a new message.
  */
 export const SnsLinksSchema: GenMessage<SnsLinks> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 1);
+  messageDesc(file_profile_v1_service, 2);
 
 /**
  * @generated from message profile.v1.BodyStats
@@ -191,7 +233,7 @@ export type BodyStats = Message<"profile.v1.BodyStats"> & {
  * Use `create(BodyStatsSchema)` to create a new message.
  */
 export const BodyStatsSchema: GenMessage<BodyStats> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 2);
+  messageDesc(file_profile_v1_service, 3);
 
 /**
  * @generated from message profile.v1.GetProfileRequest
@@ -208,7 +250,7 @@ export type GetProfileRequest = Message<"profile.v1.GetProfileRequest"> & {
  * Use `create(GetProfileRequestSchema)` to create a new message.
  */
 export const GetProfileRequestSchema: GenMessage<GetProfileRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 3);
+  messageDesc(file_profile_v1_service, 4);
 
 /**
  * @generated from message profile.v1.GetProfileByUsernameRequest
@@ -225,7 +267,7 @@ export type GetProfileByUsernameRequest = Message<"profile.v1.GetProfileByUserna
  * Use `create(GetProfileByUsernameRequestSchema)` to create a new message.
  */
 export const GetProfileByUsernameRequestSchema: GenMessage<GetProfileByUsernameRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 4);
+  messageDesc(file_profile_v1_service, 5);
 
 /**
  * @generated from message profile.v1.GetProfileResponse
@@ -242,7 +284,7 @@ export type GetProfileResponse = Message<"profile.v1.GetProfileResponse"> & {
  * Use `create(GetProfileResponseSchema)` to create a new message.
  */
 export const GetProfileResponseSchema: GenMessage<GetProfileResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 5);
+  messageDesc(file_profile_v1_service, 6);
 
 /**
  * @generated from message profile.v1.ListMyProfilesRequest
@@ -255,7 +297,7 @@ export type ListMyProfilesRequest = Message<"profile.v1.ListMyProfilesRequest"> 
  * Use `create(ListMyProfilesRequestSchema)` to create a new message.
  */
 export const ListMyProfilesRequestSchema: GenMessage<ListMyProfilesRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 6);
+  messageDesc(file_profile_v1_service, 7);
 
 /**
  * @generated from message profile.v1.ListMyProfilesResponse
@@ -272,7 +314,7 @@ export type ListMyProfilesResponse = Message<"profile.v1.ListMyProfilesResponse"
  * Use `create(ListMyProfilesResponseSchema)` to create a new message.
  */
 export const ListMyProfilesResponseSchema: GenMessage<ListMyProfilesResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 7);
+  messageDesc(file_profile_v1_service, 8);
 
 /**
  * @generated from message profile.v1.CreateProfileRequest
@@ -294,7 +336,7 @@ export type CreateProfileRequest = Message<"profile.v1.CreateProfileRequest"> & 
  * Use `create(CreateProfileRequestSchema)` to create a new message.
  */
 export const CreateProfileRequestSchema: GenMessage<CreateProfileRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 8);
+  messageDesc(file_profile_v1_service, 9);
 
 /**
  * @generated from message profile.v1.CreateProfileResponse
@@ -311,7 +353,7 @@ export type CreateProfileResponse = Message<"profile.v1.CreateProfileResponse"> 
  * Use `create(CreateProfileResponseSchema)` to create a new message.
  */
 export const CreateProfileResponseSchema: GenMessage<CreateProfileResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 9);
+  messageDesc(file_profile_v1_service, 10);
 
 /**
  * @generated from message profile.v1.SaveProfileRequest
@@ -373,7 +415,7 @@ export type SaveProfileRequest = Message<"profile.v1.SaveProfileRequest"> & {
  * Use `create(SaveProfileRequestSchema)` to create a new message.
  */
 export const SaveProfileRequestSchema: GenMessage<SaveProfileRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 10);
+  messageDesc(file_profile_v1_service, 11);
 
 /**
  * @generated from message profile.v1.SaveProfileResponse
@@ -390,7 +432,7 @@ export type SaveProfileResponse = Message<"profile.v1.SaveProfileResponse"> & {
  * Use `create(SaveProfileResponseSchema)` to create a new message.
  */
 export const SaveProfileResponseSchema: GenMessage<SaveProfileResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 11);
+  messageDesc(file_profile_v1_service, 12);
 
 /**
  * @generated from message profile.v1.CheckUsernameAvailabilityRequest
@@ -407,7 +449,7 @@ export type CheckUsernameAvailabilityRequest = Message<"profile.v1.CheckUsername
  * Use `create(CheckUsernameAvailabilityRequestSchema)` to create a new message.
  */
 export const CheckUsernameAvailabilityRequestSchema: GenMessage<CheckUsernameAvailabilityRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 12);
+  messageDesc(file_profile_v1_service, 13);
 
 /**
  * @generated from message profile.v1.CheckUsernameAvailabilityResponse
@@ -429,7 +471,7 @@ export type CheckUsernameAvailabilityResponse = Message<"profile.v1.CheckUsernam
  * Use `create(CheckUsernameAvailabilityResponseSchema)` to create a new message.
  */
 export const CheckUsernameAvailabilityResponseSchema: GenMessage<CheckUsernameAvailabilityResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 13);
+  messageDesc(file_profile_v1_service, 14);
 
 /**
  * @generated from message profile.v1.SaveProfileMediaRequest
@@ -451,7 +493,7 @@ export type SaveProfileMediaRequest = Message<"profile.v1.SaveProfileMediaReques
  * Use `create(SaveProfileMediaRequestSchema)` to create a new message.
  */
 export const SaveProfileMediaRequestSchema: GenMessage<SaveProfileMediaRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 14);
+  messageDesc(file_profile_v1_service, 15);
 
 /**
  * @generated from message profile.v1.SaveProfileMediaResponse
@@ -468,7 +510,7 @@ export type SaveProfileMediaResponse = Message<"profile.v1.SaveProfileMediaRespo
  * Use `create(SaveProfileMediaResponseSchema)` to create a new message.
  */
 export const SaveProfileMediaResponseSchema: GenMessage<SaveProfileMediaResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 15);
+  messageDesc(file_profile_v1_service, 16);
 
 /**
  * @generated from message profile.v1.DisableProfileRequest
@@ -485,7 +527,7 @@ export type DisableProfileRequest = Message<"profile.v1.DisableProfileRequest"> 
  * Use `create(DisableProfileRequestSchema)` to create a new message.
  */
 export const DisableProfileRequestSchema: GenMessage<DisableProfileRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 16);
+  messageDesc(file_profile_v1_service, 17);
 
 /**
  * @generated from message profile.v1.DisableProfileResponse
@@ -502,7 +544,7 @@ export type DisableProfileResponse = Message<"profile.v1.DisableProfileResponse"
  * Use `create(DisableProfileResponseSchema)` to create a new message.
  */
 export const DisableProfileResponseSchema: GenMessage<DisableProfileResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 17);
+  messageDesc(file_profile_v1_service, 18);
 
 /**
  * @generated from message profile.v1.EnableProfileRequest
@@ -519,7 +561,7 @@ export type EnableProfileRequest = Message<"profile.v1.EnableProfileRequest"> & 
  * Use `create(EnableProfileRequestSchema)` to create a new message.
  */
 export const EnableProfileRequestSchema: GenMessage<EnableProfileRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 18);
+  messageDesc(file_profile_v1_service, 19);
 
 /**
  * @generated from message profile.v1.EnableProfileResponse
@@ -536,7 +578,7 @@ export type EnableProfileResponse = Message<"profile.v1.EnableProfileResponse"> 
  * Use `create(EnableProfileResponseSchema)` to create a new message.
  */
 export const EnableProfileResponseSchema: GenMessage<EnableProfileResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 19);
+  messageDesc(file_profile_v1_service, 20);
 
 /**
  * @generated from message profile.v1.DeleteProfileRequest
@@ -553,7 +595,7 @@ export type DeleteProfileRequest = Message<"profile.v1.DeleteProfileRequest"> & 
  * Use `create(DeleteProfileRequestSchema)` to create a new message.
  */
 export const DeleteProfileRequestSchema: GenMessage<DeleteProfileRequest> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 20);
+  messageDesc(file_profile_v1_service, 21);
 
 /**
  * @generated from message profile.v1.DeleteProfileResponse
@@ -566,7 +608,7 @@ export type DeleteProfileResponse = Message<"profile.v1.DeleteProfileResponse"> 
  * Use `create(DeleteProfileResponseSchema)` to create a new message.
  */
 export const DeleteProfileResponseSchema: GenMessage<DeleteProfileResponse> = /*@__PURE__*/
-  messageDesc(file_profile_v1_service, 21);
+  messageDesc(file_profile_v1_service, 22);
 
 /**
  * @generated from service profile.v1.ProfileService

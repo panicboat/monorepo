@@ -38,6 +38,15 @@ message Profile {
   bool disabled = 21;
 }
 
+message ProfileSummary {
+  string profile_id = 1;
+  string username = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  bool is_private = 5;
+  int32 role = 6;
+}
+
 message SnsLinks {
   string x = 1;
   string instagram = 2;
