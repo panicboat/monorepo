@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import { useRouter } from "next/navigation";
 import type { MentionView } from "./post-view";
+import { useSheetNavigation } from "@/components/ui/sheetNavigation";
 import { hashtagSearchHref, splitTextByHashtags } from "./hashtags";
 
 export type ContentPart =
@@ -62,10 +63,12 @@ export interface PostTextProps {
 // The text sits inside the link to the post, so these are spans that navigate: a nested anchor would be invalid.
 function InlineLink({ href, children }: { href: string; children: string }) {
   const router = useRouter();
+  const navigateInSheet = useSheetNavigation();
   const navigate = (e: { preventDefault: () => void; stopPropagation: () => void }) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(href);
+    if (navigateInSheet) navigateInSheet(href);
+    else router.push(href);
   };
 
   return (

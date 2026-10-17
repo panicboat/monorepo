@@ -27,9 +27,9 @@ export default function BookmarksPage() {
       {!loading && posts.length === 0 && (
         <div className="flex flex-col items-center px-4 py-12 text-center">
           <Bookmark className="size-10 text-text-secondary" strokeWidth={1.5} />
-          <p className="pt-3 text-text-primary">ブックマークはまだありません</p>
+          <p className="pt-3 text-text-primary">まだブックマークがありません</p>
           <p className="pt-1 text-sm text-text-secondary">
-            投稿をブックマークすると、ここに表示されます
+            投稿のしおりアイコンから追加できます。
           </p>
         </div>
       )}

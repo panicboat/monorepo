@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { isPlainClick } from "@/lib/utils/isPlainClick";
+import { usePostSheetStore } from "@/stores/postSheetStore";
 import type { CommentView } from "@/modules/post/lib/comment-view";
 import { PostText } from "@/modules/post/lib/post-text";
 import type { PostView } from "@/modules/post/lib/post-view";
@@ -14,6 +16,12 @@ export interface ReplyWithParentRowProps {
 
 export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowProps) {
   const detailHref = `/posts/${encodeURIComponent(comment.postId)}`;
+  const openPost = usePostSheetStore((s) => s.openPost);
+  const openParent = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isPlainClick(e)) return;
+    e.preventDefault();
+    openPost(comment.postId);
+  };
   const authorHref = comment.author?.username
     ? `/u/${encodeURIComponent(comment.author.username)}`
     : undefined;
@@ -30,6 +38,7 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
       {parentPost ? (
         <Link
           href={detailHref}
+          onClick={openParent}
           className="mb-2 block rounded-md border border-divider/60 bg-bg-surface/40 p-3 hover:bg-bg-surface/70"
         >
           <div className="flex items-center gap-2 text-xs text-text-secondary">

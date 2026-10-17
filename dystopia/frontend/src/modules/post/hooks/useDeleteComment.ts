@@ -2,14 +2,17 @@
 
 import { useCallback, useState } from "react";
 import { useSWRConfig } from "swr";
+import { unstable_serialize } from "swr/infinite";
 import { authFetch } from "@/lib/auth";
+import { commentsKey } from "./useComments";
+import { repliesKey } from "./useReplies";
 
 export function useDeleteComment(postId: string | null | undefined) {
   const { mutate } = useSWRConfig();
   const [submitting, setSubmitting] = useState(false);
 
   const deleteComment = useCallback(
-    async (commentId: string) => {
+    async (commentId: string, parentId?: string) => {
       if (!postId || !commentId) return;
 
       setSubmitting(true);
@@ -18,11 +21,8 @@ export function useDeleteComment(postId: string | null | undefined) {
           `/api/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(commentId)}`,
           { method: "DELETE" }
         );
-        mutate(
-          (key) =>
-            typeof key === "string" &&
-            key.startsWith(`/api/posts/${encodeURIComponent(postId)}/comments`)
-        );
+        if (parentId) mutate(unstable_serialize(repliesKey(postId, parentId)));
+        mutate(unstable_serialize(commentsKey(postId)));
         mutate(`/api/posts/${encodeURIComponent(postId)}`);
       } finally {
         setSubmitting(false);

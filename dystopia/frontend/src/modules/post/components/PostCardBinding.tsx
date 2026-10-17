@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Bookmark, Heart, MessageCircle } from "lucide-react";
 import { PostCard } from "@/components/ui/post-card";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { isPlainClick } from "@/lib/utils/isPlainClick";
+import { usePostSheetStore } from "@/stores/postSheetStore";
 import { PostText } from "@/modules/post/lib/post-text";
 import type { PostView } from "@/modules/post/lib/post-view";
 import { usePostLike } from "@/modules/post/hooks/usePostLike";
@@ -12,10 +14,11 @@ import { useBookmark } from "@/modules/bookmarks";
 export interface PostCardBindingProps {
   post: PostView;
   detailHref?: string;
+  inDetail?: boolean;
   className?: string;
 }
 
-export function PostCardBinding({ post, detailHref, className }: PostCardBindingProps) {
+export function PostCardBinding({ post, detailHref, inDetail, className }: PostCardBindingProps) {
   const { isLiked, getLikesCount, toggleLike, loading } = usePostLike();
   const { isBookmarked, toggle: toggleBookmark, loading: bookmarkLoading } = useBookmark(post.id);
 
@@ -37,6 +40,12 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
   const videos = post.media.filter((m) => m.mediaType === "video" && m.url.length > 0).map((m) => ({ url: m.url }));
 
   const href = detailHref || `/posts/${encodeURIComponent(post.id)}`;
+  const openPost = usePostSheetStore((s) => s.openPost);
+  const openDetail = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isPlainClick(e)) return;
+    e.preventDefault();
+    openPost(post.id);
+  };
 
   const handleLikeClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -63,14 +72,25 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
         <Heart className={liked ? "size-5 fill-current text-accent" : "size-5"} />
         <span>{likesCount}</span>
       </button>
-      <Link
-        href={href}
-        className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
-        aria-label="コメント"
-      >
-        <MessageCircle className="size-5" />
-        <span>{post.commentsCount}</span>
-      </Link>
+      {inDetail ? (
+        <span
+          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm"
+          aria-label={`コメント ${post.commentsCount} 件`}
+        >
+          <MessageCircle className="size-5" aria-hidden="true" />
+          <span>{post.commentsCount}</span>
+        </span>
+      ) : (
+        <Link
+          href={href}
+          onClick={openDetail}
+          className="flex min-h-11 min-w-11 items-center justify-center gap-1 text-sm hover:text-text-primary"
+          aria-label="コメント"
+        >
+          <MessageCircle className="size-5" />
+          <span>{post.commentsCount}</span>
+        </Link>
+      )}
       <button
         type="button"
         onClick={handleBookmarkClick}
@@ -88,7 +108,8 @@ export function PostCardBinding({ post, detailHref, className }: PostCardBinding
     <PostCard
       author={{ name: authorName, handle: authorHandle, avatarSrc }}
       authorHref={authorHref}
-      detailHref={href}
+      detailHref={inDetail ? undefined : href}
+      onDetailClick={inDetail ? undefined : openDetail}
       time={post.createdAt ? formatTimeAgo(post.createdAt) : ""}
       isPrivate={post.visibility === "private"}
       body={<PostText content={post.content} mentions={post.mentions} hashtags={post.hashtags} />}

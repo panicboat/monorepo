@@ -52,6 +52,7 @@ vi.stubGlobal("localStorage", {
 });
 
 const { useAuthStore } = await import("@/stores/authStore");
+const { usePostSheetStore } = await import("@/stores/postSheetStore");
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -327,5 +328,23 @@ describe("AppShell with several enabled profiles", () => {
     await app.until(() => app.unread() === "2");
 
     expect(app.container.textContent).not.toContain("プロフィールを選択");
+  });
+
+  it("closes a post sheet left open when the active profile changes or the account leaves", async () => {
+    useAuthStore.getState().setActiveProfile("pA");
+    const app = await mountApp();
+    await app.until(() => app.unread() === "1");
+    await act(async () => usePostSheetStore.getState().openPost("post-1"));
+
+    await act(async () => {
+      useAuthStore.getState().setActiveProfile("pB");
+    });
+    expect(usePostSheetStore.getState().open).toBe(false);
+
+    await act(async () => usePostSheetStore.getState().openPost("post-2"));
+    await act(async () => {
+      useAuthStore.getState().clearIdentity();
+    });
+    expect(usePostSheetStore.getState().open).toBe(false);
   });
 });

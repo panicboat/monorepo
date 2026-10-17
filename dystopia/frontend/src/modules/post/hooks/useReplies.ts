@@ -5,6 +5,14 @@ import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedCommentsResponse } from "@/modules/post/lib/comment-view";
 
+export const repliesKey =
+  (postId: string, commentId: string) =>
+  (pageIndex: number, prev: PaginatedCommentsResponse | null): string | null => {
+    if (prev && !prev.hasMore) return null;
+    const base = `/api/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(commentId)}/replies`;
+    return pageIndex === 0 ? base : `${base}?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
+  };
+
 export function useReplies(
   postId: string | null | undefined,
   commentId: string | null | undefined,
@@ -14,9 +22,7 @@ export function useReplies(
 
   const getKey = (pageIndex: number, prev: PaginatedCommentsResponse | null): string | null => {
     if (!enabled || !activeProfileId || !postId || !commentId) return null;
-    if (prev && !prev.hasMore) return null;
-    const base = `/api/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(commentId)}/replies`;
-    return pageIndex === 0 ? base : `${base}?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
+    return repliesKey(postId, commentId)(pageIndex, prev);
   };
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =

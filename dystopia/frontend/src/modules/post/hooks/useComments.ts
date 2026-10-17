@@ -5,14 +5,20 @@ import { fetcher } from "@/lib/swr";
 import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedCommentsResponse } from "@/modules/post/lib/comment-view";
 
+export const commentsKey =
+  (postId: string) =>
+  (pageIndex: number, prev: PaginatedCommentsResponse | null): string | null => {
+    if (prev && !prev.hasMore) return null;
+    const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
+    return `/api/posts/${encodeURIComponent(postId)}/comments${cursorQs}`;
+  };
+
 export function useComments(postId: string | null | undefined) {
   const activeProfileId = useAuthStore((s) => s.activeProfileId);
 
   const getKey = (pageIndex: number, prev: PaginatedCommentsResponse | null): string | null => {
     if (!activeProfileId || !postId) return null;
-    if (prev && !prev.hasMore) return null;
-    const cursorQs = pageIndex === 0 ? "" : `?cursor=${encodeURIComponent(prev?.nextCursor || "")}`;
-    return `/api/posts/${encodeURIComponent(postId)}/comments${cursorQs}`;
+    return commentsKey(postId)(pageIndex, prev);
   };
 
   const { data, error, size, setSize, isLoading, isValidating, mutate } =

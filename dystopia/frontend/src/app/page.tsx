@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useEnterAnimation } from "@/lib/motion/useEnterAnimation";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { Button } from "@/components/ui/button";
 import { PostCardBinding } from "@/modules/post/components/PostCardBinding";
@@ -76,7 +77,7 @@ export default function HomePage() {
       return <p className="px-4 py-8 text-center text-text-secondary">読み込み中…</p>;
     }
     if (error) {
-      return <p className="px-4 py-8 text-center text-text-danger">読み込みに失敗しました</p>;
+      return <p className="px-4 py-8 text-center text-error">読み込みに失敗しました</p>;
     }
     if (showAreaHint) {
       return (
@@ -108,30 +109,35 @@ export default function HomePage() {
     );
   }, [initialized, loading, error, showAreaHint, showEmptyState, posts, hasMore, loadingMore, fetchMore]);
 
-  const karteContent = useMemo(() => {
-    if (karte.error) {
-      return <p className="px-4 py-8 text-center text-text-danger">読み込みに失敗しました</p>;
-    }
-    return (
-      <KarteList
-        kartes={karte.kartes}
-        variant="feed"
-        hasMore={karte.hasMore}
-        loading={karte.loading}
-        onLoadMore={karte.loadMore}
-        empty="まだカルテがありません"
-      />
-    );
-  }, [karte.error, karte.kartes, karte.hasMore, karte.loading, karte.loadMore]);
+  const karteContent = useMemo(
+    () => (
+      <>
+        <p className="px-4 py-3 text-sm text-text-secondary">全キャスト間で共有される新着カルテ（記録中を含む）。カードから詳細を確認できます。</p>
+        {karte.error ? (
+          <p className="px-4 py-8 text-center text-error">読み込みに失敗しました</p>
+        ) : (
+          <KarteList
+            kartes={karte.kartes}
+            variant="feed"
+            hasMore={karte.hasMore}
+            loading={karte.loading}
+            onLoadMore={karte.loadMore}
+            empty="まだカルテがありません"
+          />
+        )}
+      </>
+    ),
+    [karte.error, karte.kartes, karte.hasMore, karte.loading, karte.loadMore]
+  );
 
   const reviewsContent = useMemo(() => {
+    let body: React.ReactNode;
     if (reviews.loading && reviews.entries.length === 0) {
-      return <p className="px-4 py-8 text-center text-text-secondary">読み込み中…</p>;
-    }
-    if (reviews.error) {
-      return <p className="px-4 py-8 text-center text-text-danger">読み込みに失敗しました</p>;
-    }
-    return (
+      body = <p className="px-4 py-8 text-center text-text-secondary">読み込み中…</p>;
+    } else if (reviews.error) {
+      body = <p className="px-4 py-8 text-center text-error">読み込みに失敗しました</p>;
+    } else {
+      body = (
       <>
         {reviews.entries.map((e) => (
           <ReviewEntryCard key={e.id} entry={e} mode="recent" onChanged={reviews.refresh} />
@@ -147,8 +153,18 @@ export default function HomePage() {
           </div>
         )}
       </>
+      );
+    }
+    return (
+      <>
+        <p className="px-4 py-3 text-sm text-text-secondary">ゲストがキャストに残した新着レビューです。</p>
+        {body}
+      </>
     );
   }, [reviews.loading, reviews.error, reviews.entries, reviews.hasMore, reviews.refresh, reviews.loadMore]);
+
+  const contentRef = useRef<HTMLElement>(null);
+  useEnterAnimation(contentRef, tab);
 
   const content = tab === "karte" ? karteContent : tab === "reviews" ? reviewsContent : postContent;
 
@@ -161,7 +177,7 @@ export default function HomePage() {
           onValueChange={(id) => setTab(id as HomeTabValue)}
         />
       </header>
-      <section>{content}</section>
+      <section ref={contentRef}>{content}</section>
     </main>
   );
 }

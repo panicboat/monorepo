@@ -31,7 +31,7 @@ export function ReplyList({ postId, commentId }: ReplyListProps) {
 
   const onDelete = async (id: string) => {
     if (!confirm("この返信を削除しますか?")) return;
-    await deleteComment(id).catch(() => {});
+    await deleteComment(id, commentId).catch(() => {});
   };
 
   return (

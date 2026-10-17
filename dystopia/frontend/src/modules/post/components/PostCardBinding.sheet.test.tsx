@@ -1,0 +1,88 @@
+// @vitest-environment happy-dom
+import { act, createElement } from "react";
+import { createRoot } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { PostView } from "@/modules/post/lib/post-view";
+import { usePostSheetStore } from "@/stores/postSheetStore";
+import { PostCardBinding } from "./PostCardBinding";
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }) }));
+
+const post: PostView = {
+  id: "post-1",
+  authorProfileId: "author-1",
+  content: "こんにちは",
+  media: [],
+  createdAt: new Date().toISOString(),
+  author: { profileId: "author-1", displayName: "テスト太郎", username: "test_taro", avatarUrl: "" },
+  likesCount: 0,
+  commentsCount: 3,
+  visibility: "public",
+  hashtags: [],
+  mentions: [],
+  liked: false,
+};
+
+const stopNavigation = (event: Event) => event.preventDefault();
+
+beforeEach(() => {
+  usePostSheetStore.setState({ postId: null, session: 0, open: false });
+  document.addEventListener("click", stopNavigation);
+});
+
+afterEach(() => {
+  document.removeEventListener("click", stopNavigation);
+  document.body.innerHTML = "";
+});
+
+async function mount(props: { inDetail?: boolean } = {}) {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  await act(async () => {
+    createRoot(container).render(createElement(PostCardBinding, { post, ...props }));
+  });
+  return container;
+}
+
+async function click(element: Element, init: MouseEventInit = {}) {
+  await act(async () => {
+    element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ...init }));
+  });
+}
+
+describe("PostCardBinding opening the detail", () => {
+  it("opens the sheet from the comment icon", async () => {
+    const container = await mount();
+
+    await click(container.querySelector('a[aria-label="コメント"]')!);
+
+    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", open: true });
+  });
+
+  it("opens the sheet from the body", async () => {
+    const container = await mount();
+
+    await click(container.querySelector('a[href="/posts/post-1"]:not([aria-label])')!);
+
+    expect(usePostSheetStore.getState()).toMatchObject({ postId: "post-1", open: true });
+  });
+
+  it("leaves a modified click to the link", async () => {
+    const container = await mount();
+
+    await click(container.querySelector('a[aria-label="コメント"]')!, { metaKey: true });
+    await click(container.querySelector('a[aria-label="コメント"]')!, { ctrlKey: true });
+
+    expect(usePostSheetStore.getState().open).toBe(false);
+  });
+
+  it("does not link to the detail inside the detail", async () => {
+    const container = await mount({ inDetail: true });
+
+    expect(container.querySelector('a[href="/posts/post-1"]')).toBeNull();
+    expect(container.textContent).toContain("3");
+    expect(container.querySelector('[aria-label="コメント 3 件"]')).not.toBeNull();
+  });
+});
