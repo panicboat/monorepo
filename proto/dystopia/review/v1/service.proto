@@ -5,90 +5,165 @@ package review.v1;
 import "google/protobuf/timestamp.proto";
 
 service ReviewService {
-  rpc CreateEntry(CreateEntryRequest) returns (CreateEntryResponse);
-  rpc UpdateEntry(UpdateEntryRequest) returns (UpdateEntryResponse);
-  rpc DeleteEntry(DeleteEntryRequest) returns (DeleteEntryResponse);
-  rpc HideEntry(HideEntryRequest) returns (HideEntryResponse);
-  rpc UnhideEntry(UnhideEntryRequest) returns (UnhideEntryResponse);
-  rpc ListEntriesByTarget(ListEntriesByTargetRequest) returns (ListEntriesByTargetResponse);
-  rpc ListEntriesByAuthor(ListEntriesByAuthorRequest) returns (ListEntriesByAuthorResponse);
-  rpc GetMySettings(GetMySettingsRequest) returns (GetMySettingsResponse);
-  rpc UpdateMySettings(UpdateMySettingsRequest) returns (UpdateMySettingsResponse);
-  rpc ListRecentEntries(ListRecentEntriesRequest) returns (ListRecentEntriesResponse);
+  rpc CreateReview(CreateReviewRequest) returns (CreateReviewResponse);
+  rpc GetReview(GetReviewRequest) returns (GetReviewResponse);
+  rpc UpdateReviewRating(UpdateReviewRatingRequest) returns (UpdateReviewRatingResponse);
+  rpc DeleteReview(DeleteReviewRequest) returns (DeleteReviewResponse);
+  rpc CloseReview(CloseReviewRequest) returns (CloseReviewResponse);
+  rpc ReopenReview(ReopenReviewRequest) returns (ReopenReviewResponse);
+  rpc AddReviewEvent(AddReviewEventRequest) returns (AddReviewEventResponse);
+  rpc UpdateReviewEvent(UpdateReviewEventRequest) returns (UpdateReviewEventResponse);
+  rpc DeleteReviewEvent(DeleteReviewEventRequest) returns (DeleteReviewEventResponse);
+  rpc ListReviewsByTarget(ListReviewsByTargetRequest) returns (ListReviewsByTargetResponse);
+  rpc ListReviewsByAuthor(ListReviewsByAuthorRequest) returns (ListReviewsByAuthorResponse);
+  rpc ListMyReviews(ListMyReviewsRequest) returns (ListMyReviewsResponse);
+  rpc ListRecentReviews(ListRecentReviewsRequest) returns (ListRecentReviewsResponse);
 }
 
-message ReviewEntry {
+enum ReviewStatus {
+  REVIEW_STATUS_UNSPECIFIED = 0;
+  REVIEW_STATUS_OPEN = 1;
+  REVIEW_STATUS_CLOSED = 2;
+}
+
+enum ReviewStage {
+  REVIEW_STAGE_UNSPECIFIED = 0;
+  REVIEW_STAGE_RESERVATION = 1;
+  REVIEW_STAGE_SERVICE = 2;
+  REVIEW_STAGE_AFTERCARE = 3;
+}
+
+message ReviewEventInput {
+  ReviewStage stage = 1;
+  string outcome = 2;
+  repeated string tags = 3;
+  string note = 4;
+  string occurred_on = 5;
+}
+
+message ReviewEvent {
+  string id = 1;
+  ReviewStage stage = 2;
+  string outcome = 3;
+  repeated string tags = 4;
+  string note = 5;
+  string occurred_on = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message Review {
   string id = 1;
   string author_profile_id = 2;
-  string target_profile_id = 3;
-  string author_username = 4;
+  string author_username = 3;
+  string author_display_name = 4;
   string author_avatar_url = 5;
-  double rating = 6;
-  string body = 7;
-  bool hidden = 8;
-  google.protobuf.Timestamp created_at = 9;
-  google.protobuf.Timestamp updated_at = 10;
-  string target_username = 11;
-  string target_avatar_url = 12;
+  string target_profile_id = 6;
+  string target_username = 7;
+  string target_display_name = 8;
+  string target_avatar_url = 9;
+  bool is_mine = 10;
+  int32 rating = 11;
+  ReviewStatus status = 12;
+  repeated ReviewEvent events = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+  google.protobuf.Timestamp closed_at = 16;
+  google.protobuf.Timestamp last_activity_at = 17;
 }
 
-message CreateEntryRequest {
+message RatingSummary {
+  double average_rating = 1;
+  int32 rater_count = 2;
+  int32 review_count = 3;
+}
+
+message ReviewCounts {
+  int32 total_count = 1;
+  int32 open_count = 2;
+  int32 closed_count = 3;
+}
+
+message CreateReviewRequest {
   string target_profile_id = 1;
-  double rating = 2;
-  string body = 3;
+  int32 rating = 2;
+  ReviewEventInput event = 3;
 }
-message CreateEntryResponse { ReviewEntry entry = 1; }
+message CreateReviewResponse { Review review = 1; }
 
-message UpdateEntryRequest {
-  string entry_id = 1;
-  double rating = 2;
-  optional string body = 3;
+message GetReviewRequest { string review_id = 1; }
+message GetReviewResponse { Review review = 1; }
+
+message UpdateReviewRatingRequest {
+  string review_id = 1;
+  int32 rating = 2;
 }
-message UpdateEntryResponse { ReviewEntry entry = 1; }
+message UpdateReviewRatingResponse { Review review = 1; }
 
-message DeleteEntryRequest { string entry_id = 1; }
-message DeleteEntryResponse {}
+message DeleteReviewRequest { string review_id = 1; }
+message DeleteReviewResponse {}
 
-message HideEntryRequest { string entry_id = 1; }
-message HideEntryResponse { ReviewEntry entry = 1; }
+message CloseReviewRequest { string review_id = 1; }
+message CloseReviewResponse { Review review = 1; }
 
-message UnhideEntryRequest { string entry_id = 1; }
-message UnhideEntryResponse { ReviewEntry entry = 1; }
+message ReopenReviewRequest { string review_id = 1; }
+message ReopenReviewResponse { Review review = 1; }
 
-message ListEntriesByTargetRequest {
+message AddReviewEventRequest {
+  string review_id = 1;
+  ReviewEventInput event = 2;
+}
+message AddReviewEventResponse { Review review = 1; }
+
+message UpdateReviewEventRequest {
+  string event_id = 1;
+  ReviewEventInput event = 2;
+}
+message UpdateReviewEventResponse { Review review = 1; }
+
+message DeleteReviewEventRequest { string event_id = 1; }
+message DeleteReviewEventResponse { Review review = 1; }
+
+message ListReviewsByTargetRequest {
   string target_profile_id = 1;
   int32 limit = 2;
   string cursor = 3;
 }
-message ListEntriesByTargetResponse {
-  repeated ReviewEntry entries = 1;
+message ListReviewsByTargetResponse {
+  repeated Review reviews = 1;
   string next_cursor = 2;
   bool has_more = 3;
+  RatingSummary summary = 4;
 }
 
-message ListEntriesByAuthorRequest {
+message ListReviewsByAuthorRequest {
   string author_profile_id = 1;
   int32 limit = 2;
   string cursor = 3;
 }
-message ListEntriesByAuthorResponse {
-  repeated ReviewEntry entries = 1;
+message ListReviewsByAuthorResponse {
+  repeated Review reviews = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }
 
-message GetMySettingsRequest {}
-message GetMySettingsResponse { bool reviews_visible = 1; }
-
-message UpdateMySettingsRequest { bool reviews_visible = 1; }
-message UpdateMySettingsResponse { bool reviews_visible = 1; }
-
-message ListRecentEntriesRequest {
+message ListMyReviewsRequest {
   int32 limit = 1;
   string cursor = 2;
 }
-message ListRecentEntriesResponse {
-  repeated ReviewEntry entries = 1;
+message ListMyReviewsResponse {
+  repeated Review reviews = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+  ReviewCounts counts = 4;
+}
+
+message ListRecentReviewsRequest {
+  int32 limit = 1;
+  string cursor = 2;
+}
+message ListRecentReviewsResponse {
+  repeated Review reviews = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }

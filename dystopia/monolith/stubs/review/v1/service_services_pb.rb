@@ -15,16 +15,19 @@ module Review
         self.unmarshal_class_method = :decode
         self.service_name = 'review.v1.ReviewService'
 
-        rpc :CreateEntry, ::Review::V1::CreateEntryRequest, ::Review::V1::CreateEntryResponse
-        rpc :UpdateEntry, ::Review::V1::UpdateEntryRequest, ::Review::V1::UpdateEntryResponse
-        rpc :DeleteEntry, ::Review::V1::DeleteEntryRequest, ::Review::V1::DeleteEntryResponse
-        rpc :HideEntry, ::Review::V1::HideEntryRequest, ::Review::V1::HideEntryResponse
-        rpc :UnhideEntry, ::Review::V1::UnhideEntryRequest, ::Review::V1::UnhideEntryResponse
-        rpc :ListEntriesByTarget, ::Review::V1::ListEntriesByTargetRequest, ::Review::V1::ListEntriesByTargetResponse
-        rpc :ListEntriesByAuthor, ::Review::V1::ListEntriesByAuthorRequest, ::Review::V1::ListEntriesByAuthorResponse
-        rpc :GetMySettings, ::Review::V1::GetMySettingsRequest, ::Review::V1::GetMySettingsResponse
-        rpc :UpdateMySettings, ::Review::V1::UpdateMySettingsRequest, ::Review::V1::UpdateMySettingsResponse
-        rpc :ListRecentEntries, ::Review::V1::ListRecentEntriesRequest, ::Review::V1::ListRecentEntriesResponse
+        rpc :CreateReview, ::Review::V1::CreateReviewRequest, ::Review::V1::CreateReviewResponse
+        rpc :GetReview, ::Review::V1::GetReviewRequest, ::Review::V1::GetReviewResponse
+        rpc :UpdateReviewRating, ::Review::V1::UpdateReviewRatingRequest, ::Review::V1::UpdateReviewRatingResponse
+        rpc :DeleteReview, ::Review::V1::DeleteReviewRequest, ::Review::V1::DeleteReviewResponse
+        rpc :CloseReview, ::Review::V1::CloseReviewRequest, ::Review::V1::CloseReviewResponse
+        rpc :ReopenReview, ::Review::V1::ReopenReviewRequest, ::Review::V1::ReopenReviewResponse
+        rpc :AddReviewEvent, ::Review::V1::AddReviewEventRequest, ::Review::V1::AddReviewEventResponse
+        rpc :UpdateReviewEvent, ::Review::V1::UpdateReviewEventRequest, ::Review::V1::UpdateReviewEventResponse
+        rpc :DeleteReviewEvent, ::Review::V1::DeleteReviewEventRequest, ::Review::V1::DeleteReviewEventResponse
+        rpc :ListReviewsByTarget, ::Review::V1::ListReviewsByTargetRequest, ::Review::V1::ListReviewsByTargetResponse
+        rpc :ListReviewsByAuthor, ::Review::V1::ListReviewsByAuthorRequest, ::Review::V1::ListReviewsByAuthorResponse
+        rpc :ListMyReviews, ::Review::V1::ListMyReviewsRequest, ::Review::V1::ListMyReviewsResponse
+        rpc :ListRecentReviews, ::Review::V1::ListRecentReviewsRequest, ::Review::V1::ListRecentReviewsResponse
       end
 
       Stub = Service.rpc_stub_class
