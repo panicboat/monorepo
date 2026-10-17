@@ -36,7 +36,7 @@ vi.mock("@/modules/review/hooks/useRecentReviews", () => ({ useRecentReviews: re
 
 const { default: HomePage } = await import("./page");
 
-const emptyList = { entries: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn(), refresh: vi.fn() };
+const emptyList = { reviews: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn(), refresh: vi.fn() };
 const emptyKarte = { kartes: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn(), refresh: vi.fn() };
 
 describe("HomePage tabs", () => {
@@ -48,7 +48,7 @@ describe("HomePage tabs", () => {
     const html = renderToStaticMarkup(<HomePage />);
 
     expect(html).toContain("カルテ");
-    expect(html).toContain("レビュー");
+    expect(html).toContain("クチコミ");
   });
 
   it("hides the karte tab from a guest but keeps the review tab", () => {
@@ -59,6 +59,6 @@ describe("HomePage tabs", () => {
     const html = renderToStaticMarkup(<HomePage />);
 
     expect(html).not.toContain("カルテ");
-    expect(html).toContain("レビュー");
+    expect(html).toContain("クチコミ");
   });
 });

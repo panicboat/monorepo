@@ -27,7 +27,7 @@ export function resolveNavItems({ role }: NavContext): NavItem[] {
     { path: "/bookmarks", label: "ブックマーク", icon: FEATURE_ICONS.bookmarks },
     { path: "/ranking", label: "ランキング", icon: FEATURE_ICONS.ranking },
     ...(role === "cast" ? [{ path: "/karte/my", label: "カルテ", icon: FEATURE_ICONS.karte }] : []),
-    ...(role === "guest" ? [{ path: "/reviews/my", label: "レビュー", icon: FEATURE_ICONS.reviews }] : []),
+    ...(role === "guest" ? [{ path: "/reviews/my", label: "クチコミ", icon: FEATURE_ICONS.reviews }] : []),
     { path: PROFILE_NAV_PATH, label: "プロフィール", icon: FEATURE_ICONS.profile },
     { path: "/settings", label: "設定", icon: FEATURE_ICONS.settings },
   ];

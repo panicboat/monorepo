@@ -33,7 +33,7 @@ describe("ProfileContentTabs order and above-tabs content", () => {
           isOwnProfile: true,
           leadingTabs: [
             { id: "schedule", label: "出勤", content: <div>schedule-pane</div> },
-            { id: "reviews", label: "レビュー", content: <div>reviews-pane</div> },
+            { id: "reviews", label: "クチコミ", content: <div>reviews-pane</div> },
           ],
           extraTabs: [{ id: "extra", label: "おまけ", content: <div>extra-pane</div> }],
         })
@@ -41,7 +41,7 @@ describe("ProfileContentTabs order and above-tabs content", () => {
     });
 
     expect(Array.from(container.querySelectorAll('[role="tab"]')).map((t) => t.textContent)).toEqual([
-      "投稿", "出勤", "レビュー", "返信", "メディア", "いいね", "おまけ",
+      "投稿", "出勤", "クチコミ", "返信", "メディア", "いいね", "おまけ",
     ]);
   });
 

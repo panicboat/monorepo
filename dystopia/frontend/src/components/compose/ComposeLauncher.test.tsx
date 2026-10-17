@@ -56,7 +56,7 @@ describe("ComposeLauncher", () => {
   it("offers a guest a post, a message and a review", () => {
     mocks.role = "guest";
 
-    expect(labels(renderToStaticMarkup(<ComposeLauncher variant="sidebar" />))).toEqual(["投稿", "メッセージ", "レビュー"]);
+    expect(labels(renderToStaticMarkup(<ComposeLauncher variant="sidebar" />))).toEqual(["投稿", "メッセージ", "クチコミ"]);
   });
 
   it("opens the post composer for a post", async () => {

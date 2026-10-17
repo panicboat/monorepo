@@ -65,7 +65,7 @@ export default function HomePage() {
   const tabItems: TabItem[] = useMemo(() => {
     const items = [...POST_TAB_ITEMS];
     if (role === "cast") items.push({ id: "karte", label: "カルテ" });
-    items.push({ id: "reviews", label: "レビュー" });
+    items.push({ id: "reviews", label: "クチコミ" });
     return items;
   }, [role]);
 
@@ -130,32 +130,26 @@ export default function HomePage() {
     [karte.error, karte.kartes, karte.hasMore, karte.loading, karte.loadMore]
   );
 
-  const reviewsContent = useMemo(() => {
-    let body: React.ReactNode;
-    if (reviews.loading && reviews.entries.length === 0) {
-      body = <p className="px-4 py-8 text-center text-text-secondary">読み込み中…</p>;
-    } else if (reviews.error) {
-      body = <p className="px-4 py-8 text-center text-error">読み込みに失敗しました</p>;
-    } else {
-      body = (
-        <ReviewList
-          entries={reviews.entries}
-          variant="feed"
-          hasMore={reviews.hasMore}
-          loading={reviews.loading}
-          onLoadMore={() => reviews.loadMore()}
-          onChanged={reviews.refresh}
-          empty="まだレビューがありません"
-        />
-      );
-    }
-    return (
+  const reviewsContent = useMemo(
+    () => (
       <>
-        <p className="px-4 py-3 text-sm text-text-secondary">ゲストがキャストに残した新着レビューです。</p>
-        {body}
+        <p className="px-4 py-3 text-sm text-text-secondary">ゲストがキャストについて残した新着のクチコミです。</p>
+        {reviews.error ? (
+          <p className="px-4 py-8 text-center text-error">読み込みに失敗しました</p>
+        ) : (
+          <ReviewList
+            reviews={reviews.reviews}
+            variant="feed"
+            hasMore={reviews.hasMore}
+            loading={reviews.loading}
+            onLoadMore={reviews.loadMore}
+            empty="まだクチコミがありません"
+          />
+        )}
       </>
-    );
-  }, [reviews.loading, reviews.error, reviews.entries, reviews.hasMore, reviews.refresh, reviews.loadMore]);
+    ),
+    [reviews.error, reviews.reviews, reviews.hasMore, reviews.loading, reviews.loadMore]
+  );
 
   const contentRef = useRef<HTMLElement>(null);
   useEnterAnimation(contentRef, tab);

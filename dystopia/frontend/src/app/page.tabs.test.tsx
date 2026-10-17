@@ -30,7 +30,7 @@ vi.mock("@/modules/karte/hooks/useRecentKarte", () => ({
   useRecentKarte: () => ({ kartes: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn(), refresh: vi.fn() }),
 }));
 vi.mock("@/modules/review/hooks/useRecentReviews", () => ({
-  useRecentReviews: () => ({ entries: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn(), refresh: vi.fn() }),
+  useRecentReviews: () => ({ reviews: [], hasMore: false, loading: false, error: undefined, loadMore: vi.fn(), refresh: vi.fn() }),
 }));
 vi.mock("@/modules/karte/components/KarteList", () => ({ KarteList: () => <div>karte-list</div> }));
 
@@ -55,8 +55,8 @@ describe("HomePage tab content", () => {
     expect(mocks.enterKeys.at(-1)).toBe("karte");
     expect(container.textContent).toContain("全キャスト間で共有される新着カルテ（記録中を含む）。カードから詳細を確認できます。");
 
-    await selectTab(container, "レビュー");
+    await selectTab(container, "クチコミ");
     expect(mocks.enterKeys.at(-1)).toBe("reviews");
-    expect(container.textContent).toContain("ゲストがキャストに残した新着レビューです。");
+    expect(container.textContent).toContain("ゲストがキャストについて残した新着のクチコミです。");
   });
 });

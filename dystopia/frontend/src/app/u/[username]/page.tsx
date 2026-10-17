@@ -11,7 +11,8 @@ import { ProfileContentTabs } from "@/modules/post/components/ProfileContentTabs
 import { useRecordVisit } from "@/modules/footprints";
 import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
 import { GuestKarteTab } from "@/modules/karte/components/GuestKarteTab";
-import { ReviewsTab } from "@/modules/review/components/ReviewsTab";
+import { CastReviewsTab } from "@/modules/review/components/CastReviewsTab";
+import { AuthorReviewsTab } from "@/modules/review/components/AuthorReviewsTab";
 import { ScheduleTab, WeeklyScheduleSummary } from "@/modules/schedule";
 import type { SocialProfileView } from "@/modules/social/types";
 import { Button } from "@/components/ui/button";
@@ -76,8 +77,8 @@ export default function PublicProfilePage() {
                 { id: "schedule", label: "出勤", content: <ScheduleTab profileId={profile.id} isOwner={isOwnProfile} /> },
                 {
                   id: "reviews",
-                  label: "レビュー",
-                  content: <ReviewsTab profileId={profile.id} mode="received" target={{ ...guestView, role: "cast" }} />,
+                  label: "クチコミ",
+                  content: <CastReviewsTab cast={{ ...guestView, role: "cast" }} />,
                 },
               ]
             : viewerRole === "cast"
@@ -86,7 +87,7 @@ export default function PublicProfilePage() {
         }
         extraTabs={
           role === "guest"
-            ? [{ id: "reviews", label: "レビュー", content: <ReviewsTab profileId={profile.id} mode="written" /> }]
+            ? [{ id: "reviews", label: "クチコミ", content: <AuthorReviewsTab authorProfileId={profile.id} /> }]
             : []
         }
         renderAboveTabs={

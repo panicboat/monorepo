@@ -16,5 +16,5 @@ export const COMPOSE_LABELS: Record<ComposeKind, string> = {
   post: "投稿",
   message: "メッセージ",
   karte: "カルテ",
-  review: "レビュー",
+  review: "クチコミ",
 };

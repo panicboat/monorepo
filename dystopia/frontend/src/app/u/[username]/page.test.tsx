@@ -108,8 +108,8 @@ describe("PublicProfilePage reviews tab label", () => {
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
-    expect(html).toContain(">レビュー<");
-    expect(html).not.toContain("受信レビュー");
+    expect(html).toContain(">クチコミ<");
+    expect(html).not.toContain("受信クチコミ");
   });
 
   it("labels the reviews tab plainly on a guest profile", () => {
@@ -117,8 +117,8 @@ describe("PublicProfilePage reviews tab label", () => {
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
-    expect(html).toContain(">レビュー<");
-    expect(html).not.toContain("書いたレビュー");
+    expect(html).toContain(">クチコミ<");
+    expect(html).not.toContain("書いたクチコミ");
   });
 });
 
@@ -158,7 +158,7 @@ describe("PublicProfilePage tabs", () => {
 
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
-    expect(html.indexOf("出勤")).toBeLessThan(html.indexOf("レビュー"));
+    expect(html.indexOf("出勤")).toBeLessThan(html.indexOf("クチコミ"));
     expect(html).toContain("weekly-summary");
   });
 
@@ -169,6 +169,6 @@ describe("PublicProfilePage tabs", () => {
     const html = renderToStaticMarkup(<PublicProfilePage />);
 
     expect(html).not.toContain("weekly-summary");
-    expect(html.indexOf("カルテ")).toBeLessThan(html.indexOf("レビュー"));
+    expect(html.indexOf("カルテ")).toBeLessThan(html.indexOf("クチコミ"));
   });
 });
