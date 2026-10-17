@@ -47,6 +47,20 @@ RSpec.describe Post::Grpc::PostHandler, type: :database do
       expect(mention_types_for(author_profile_id)).to be_empty
     end
 
+    it "still saves the post and skips only the mention whose visibility check fails" do
+      allow_any_instance_of(Social::UseCases::ViewerCanSeePost).to receive(:call).and_wrap_original do |original, **args|
+        raise "boom" if args[:viewer_profile_id] == stranger_id
+
+        original.call(**args)
+      end
+
+      response = handler.save_post
+
+      expect(response.post.id).not_to be_empty
+      expect(mention_types_for(stranger_id)).to be_empty
+      expect(mention_types_for(follower_id)).to eq(["mention"])
+    end
+
     context "when the post is public" do
       let(:visibility) { "public" }
 

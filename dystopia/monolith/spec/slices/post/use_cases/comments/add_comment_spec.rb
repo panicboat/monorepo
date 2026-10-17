@@ -125,6 +125,16 @@ RSpec.describe "Post::UseCases::Comments::AddComment", type: :database do
         expect(result[:comment].comment_mentions).to eq([])
       end
 
+      it "still saves the comment and skips the mention when the visibility check fails" do
+        mentioned_id = create_account_with_profile(display_name: "Mentioned", username: "mentioned_user")
+        allow_any_instance_of(Social::UseCases::ViewerCanSeePost).to receive(:call).and_raise("boom")
+
+        result = use_case.call(post_id: post.id, author_profile_id: author_profile_id, content: "hi @mentioned_user")
+
+        expect(result[:comment]).not_to be_nil
+        expect(notification_repo.list(recipient_profile_id: mentioned_id)).to eq([])
+      end
+
       it "does not notify a self-mention" do
         use_case.call(post_id: post.id, author_profile_id: author_profile_id, content: "hi @self_user")
 

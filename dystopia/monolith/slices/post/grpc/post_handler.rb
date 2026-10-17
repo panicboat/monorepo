@@ -86,7 +86,7 @@ module Post
 
         if is_create
           mentions.uniq { |mention| mention[:profile_id] }
-            .select { |mention| viewer_can_see_post.call(viewer_profile_id: mention[:profile_id], post: post) }
+            .select { |mention| mention_visible?(mention[:profile_id], post) }
             .each do |mention|
             notifications_emit.call(
               recipient_profile_id: mention[:profile_id],
@@ -114,6 +114,14 @@ module Post
       end
 
       private
+
+      def mention_visible?(profile_id, post)
+        viewer_can_see_post.call(viewer_profile_id: profile_id, post: post)
+      rescue StandardError => e
+        Hanami.logger.warn("Mention visibility check failed: #{e.class}: #{e.message}")
+        # SILENT: A failed visibility check skips that mention and must not fail the saved post.
+        false
+      end
 
       def load_media_files_for_posts(posts)
         media_ids = posts.flat_map do |post|

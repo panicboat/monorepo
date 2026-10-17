@@ -213,6 +213,27 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
       expect(liked_ids.call).to eq([])
     end
 
+    it "lets an approved follower like and comment on a followers-only post and refuses a non-follower" do
+      secret = post_repo.create_post(author_profile_id: public_author, content: "followers", visibility: "private")
+      follow_repo.follow(follower_profile_id: viewer, followee_profile_id: public_author, status: "approved")
+      outsider = create_account_with_profile(username: "wiring_outsider")
+
+      act_as(viewer)
+      liked = rpc(Post::Grpc::LikeHandler, :like_post, Post::V1::LikePostRequest.new(post_id: secret.id))
+      added = rpc(Post::Grpc::CommentHandler, :add_comment, Post::V1::AddCommentRequest.new(post_id: secret.id, content: "hello"))
+
+      act_as(outsider)
+      expect { rpc(Post::Grpc::LikeHandler, :like_post, Post::V1::LikePostRequest.new(post_id: secret.id)) }
+        .to status(GRPC::Core::StatusCodes::NOT_FOUND)
+      expect { rpc(Post::Grpc::CommentHandler, :add_comment, Post::V1::AddCommentRequest.new(post_id: secret.id, content: "hello")) }
+        .to status(GRPC::Core::StatusCodes::NOT_FOUND)
+
+      expect(liked.likes_count).to eq(1)
+      expect(added.comment.author_profile_id).to eq(viewer)
+      expect(like_repo.likes_count(post_id: secret.id)).to eq(1)
+      expect(comment_repo.comments_count(post_id: secret.id)).to eq(1)
+    end
+
     it "rejects a reply whose parent comment belongs to another post" do
       other_post = post_repo.create_post(author_profile_id: public_author, content: "another post", visibility: "public")
       parent = comment_repo.create_comment(post_id: other_post.id, author_profile_id: public_author, content: "on the other post")

@@ -41,12 +41,29 @@ RSpec.describe "post visibility in social", type: :database do
     expect([follower, stranger].map { |viewer| visible_to(viewer, post) }).to eq([true, false])
   end
 
-  it "hides a followers-only post from a follower when either side blocks" do
-    block_repo.block(blocker_profile_id: author, blocked_profile_id: follower)
-    post = post_ref.new("p4", author, "private")
+  describe "when a block exists alongside an approved follow" do
+    let(:blocks) { db[:social__blocks] }
+    let(:post) { post_ref.new("p4", author, "private") }
 
-    expect(visible_to(follower, post)).to be false
-    expect(can_see.call(viewer_profile_id: follower, post: post)).to be false
+    def insert_block(blocker, blocked)
+      blocks.insert(id: SecureRandom.uuid_v7, blocker_profile_id: blocker, blocked_profile_id: blocked)
+    end
+
+    it "hides a followers-only post from the follower when the author blocks them" do
+      insert_block(author, follower)
+
+      expect(follow_repo.find(follower_profile_id: follower, followee_profile_id: author)).not_to be_nil
+      expect(visible_to(follower, post)).to be false
+      expect(can_see.call(viewer_profile_id: follower, post: post)).to be false
+    end
+
+    it "hides a followers-only post from the follower when they block the author" do
+      insert_block(follower, author)
+
+      expect(follow_repo.find(follower_profile_id: follower, followee_profile_id: author)).not_to be_nil
+      expect(visible_to(follower, post)).to be false
+      expect(can_see.call(viewer_profile_id: follower, post: post)).to be false
+    end
   end
 
   it "treats a post reference without a visibility as public" do
