@@ -6,6 +6,7 @@ import {
   type KarteEvent as KarteEventMessage,
   type ReliabilitySummary as ReliabilitySummaryMessage,
 } from "@/stub/karte/v1/service_pb";
+import { summaryToView } from "@/modules/profile/lib/mappers";
 import type { Karte, KarteCounts, KarteEvent, KarteEventInput, KarteStage, ReliabilitySummary } from "@/modules/karte/types";
 
 const STAGE_TO_MESSAGE: Record<KarteStage, KarteStageMessage> = {
@@ -42,13 +43,9 @@ export function mapKarteToView(karte: KarteMessage): Karte {
   return {
     id: karte.id,
     authorProfileId: karte.authorProfileId,
-    authorUsername: karte.authorUsername || "",
-    authorDisplayName: karte.authorDisplayName || "",
-    authorAvatarUrl: karte.authorAvatarUrl || "",
+    author: karte.author ? summaryToView(karte.author) : null,
     targetProfileId: karte.targetProfileId,
-    targetUsername: karte.targetUsername || "",
-    targetDisplayName: karte.targetDisplayName || "",
-    targetAvatarUrl: karte.targetAvatarUrl || "",
+    target: karte.target ? summaryToView(karte.target) : null,
     isMine: !!karte.isMine,
     rating: karte.rating === 0 ? null : karte.rating,
     status: karte.status === KarteStatusMessage.CLOSED ? "closed" : "open",

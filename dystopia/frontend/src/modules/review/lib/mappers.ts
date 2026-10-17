@@ -6,6 +6,7 @@ import {
   type ReviewEvent as ReviewEventMessage,
   type RatingSummary as RatingSummaryMessage,
 } from "@/stub/review/v1/service_pb";
+import { summaryToView } from "@/modules/profile/lib/mappers";
 import type { Review, ReviewCounts, ReviewEvent, ReviewEventInput, ReviewStage, RatingSummary } from "@/modules/review/types";
 
 const STAGE_TO_MESSAGE: Record<ReviewStage, ReviewStageMessage> = {
@@ -42,13 +43,9 @@ export function mapReviewToView(review: ReviewMessage): Review {
   return {
     id: review.id,
     authorProfileId: review.authorProfileId,
-    authorUsername: review.authorUsername || "",
-    authorDisplayName: review.authorDisplayName || "",
-    authorAvatarUrl: review.authorAvatarUrl || "",
+    author: review.author ? summaryToView(review.author) : null,
     targetProfileId: review.targetProfileId,
-    targetUsername: review.targetUsername || "",
-    targetDisplayName: review.targetDisplayName || "",
-    targetAvatarUrl: review.targetAvatarUrl || "",
+    target: review.target ? summaryToView(review.target) : null,
     isMine: !!review.isMine,
     rating: review.rating === 0 ? null : review.rating,
     status: review.status === ReviewStatusMessage.CLOSED ? "closed" : "open",

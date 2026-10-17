@@ -41,7 +41,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
 
   const isOpen = review.status === "open";
   const editable = review.isMine && isOpen;
-  const cast = { displayName: profileName(review.targetDisplayName, review.targetUsername), username: review.targetUsername, avatarUrl: review.targetAvatarUrl };
+  const cast = { displayName: profileName(review.target?.displayName ?? "", review.target?.username ?? ""), username: review.target?.username ?? "", avatarUrl: review.target?.avatarUrl ?? "" };
   const confirmed = async (request: () => Promise<Review | null>, message?: string) => {
     const result = await request();
     if (result) {
@@ -101,11 +101,11 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
         <p className="text-xs font-bold tracking-wide text-text-secondary">クチコミ / {isOpen ? "記録中" : "完了"}</p>
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center gap-3">
-            <Avatar src={review.targetAvatarUrl || undefined} fallback={cast.displayName.replace("@", "").slice(0, 1) || "?"} size="sm" />
+            <Avatar src={review.target?.avatarUrl || undefined} fallback={cast.displayName.replace("@", "").slice(0, 1) || "?"} size="sm" />
             <div className="min-w-0">
               <p className="truncate font-bold text-text-primary">{cast.displayName}</p>
               <p className="truncate text-xs text-text-secondary">
-                {review.targetUsername ? `@${review.targetUsername} · ` : ""}書いた人 {profileName(review.authorDisplayName, review.authorUsername)}
+                {review.target?.username ? `@${review.target?.username} · ` : ""}書いた人 {profileName(review.author?.displayName ?? "", review.author?.username ?? "")}
               </p>
             </div>
           </div>

@@ -20,13 +20,9 @@ const event = (id: string, overrides: Partial<Review["events"][number]> = {}): R
 const review = (overrides: Partial<Review> = {}): Review => ({
   id: "k-1",
   authorProfileId: "persona-a",
-  authorUsername: "yuna",
-  authorDisplayName: "ゆな",
-  authorAvatarUrl: "",
+  author: { profileId: "persona-a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest" },
   targetProfileId: "cast-1",
-  targetUsername: "hanako",
-  targetDisplayName: "はなこ",
-  targetAvatarUrl: "",
+  target: { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" },
   isMine: true,
   rating: null,
   status: "open",
@@ -99,8 +95,8 @@ describe("ReviewCard", () => {
   });
 
   it("names the profile a review of my list was written as when it is not the current one", async () => {
-    const other = await mount({ review: review({ authorProfileId: "persona-b", authorUsername: "yuna_osaka" }), variant: "mine" });
-    const deleted = await mount({ review: review({ authorProfileId: "persona-gone", authorUsername: "" }), variant: "mine" });
+    const other = await mount({ review: review({ authorProfileId: "persona-b", author: { profileId: "persona-b", username: "yuna_osaka", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest" } }), variant: "mine" });
+    const deleted = await mount({ review: review({ authorProfileId: "persona-gone", author: null }), variant: "mine" });
     const current = await mount({ review: review(), variant: "mine" });
 
     expect(other.textContent).toContain("@yuna_osaka として記録");
@@ -117,7 +113,7 @@ describe("ReviewCard", () => {
   });
 
   it("leaves the author unlinked when the profile was deleted", async () => {
-    const container = await mount({ review: review({ authorUsername: "", authorDisplayName: "" }), variant: "feed" });
+    const container = await mount({ review: review({ author: null }), variant: "feed" });
 
     expect(Array.from(container.querySelectorAll("a")).some((link) => link.getAttribute("href") === "/u/")).toBe(false);
     expect(container.textContent).toContain("削除したプロフィール");

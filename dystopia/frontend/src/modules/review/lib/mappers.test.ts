@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { create } from "@bufbuild/protobuf";
+import { ProfileSummarySchema } from "@/stub/profile/v1/service_pb";
 import { ReviewCountsSchema, ReviewEventSchema, ReviewSchema, ReviewStage, ReviewStatus, RatingSummarySchema } from "@/stub/review/v1/service_pb";
 import { eventInputToMessage, mapCountsToView, mapReviewToView, mapSummaryToView } from "./mappers";
 
@@ -9,9 +10,9 @@ describe("mapReviewToView", () => {
       create(ReviewSchema, {
         id: "k-1",
         authorProfileId: "author",
-        authorUsername: "cast_taro",
+        author: create(ProfileSummarySchema, { profileId: "author", username: "cast_taro", displayName: "たろう", avatarUrl: "a.png", isPrivate: true, role: 2 }),
         targetProfileId: "target",
-        targetUsername: "cast_hanako",
+        target: create(ProfileSummarySchema, { profileId: "target", username: "cast_hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: 1 }),
         isMine: true,
         rating: 4,
         status: ReviewStatus.CLOSED,
@@ -24,8 +25,8 @@ describe("mapReviewToView", () => {
 
     expect(view).toMatchObject({
       id: "k-1",
-      authorUsername: "cast_taro",
-      targetUsername: "cast_hanako",
+      author: { profileId: "author", username: "cast_taro", displayName: "たろう", avatarUrl: "a.png", isPrivate: true, role: "cast" },
+      target: { profileId: "target", username: "cast_hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" },
       isMine: true,
       rating: 4,
       status: "closed",
@@ -40,7 +41,8 @@ describe("mapReviewToView", () => {
     expect(view.rating).toBeNull();
     expect(view.status).toBe("open");
     expect(view.closedAt).toBeNull();
-    expect(view.authorUsername).toBe("");
+    expect(view.author).toBeNull();
+    expect(view.target).toBeNull();
     expect(view.events).toEqual([]);
   });
 
@@ -52,18 +54,14 @@ describe("mapReviewToView", () => {
     expect(stages).toEqual(["reservation", "service", "aftercare"]);
   });
 
-  it("maps the display names and the last activity", () => {
+  it("maps the last activity", () => {
     const view = mapReviewToView(
       create(ReviewSchema, {
         id: "k-1",
-        authorDisplayName: "ゆな",
-        targetDisplayName: "はなこ",
         lastActivityAt: { seconds: BigInt(1_700_000_000), nanos: 0 },
       })
     );
 
-    expect(view.authorDisplayName).toBe("ゆな");
-    expect(view.targetDisplayName).toBe("はなこ");
     expect(view.lastActivityAt).toBe(new Date(1_700_000_000 * 1000).toISOString());
   });
 });
