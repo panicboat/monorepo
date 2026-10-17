@@ -2,72 +2,93 @@
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import type { ReviewEntry } from "../types";
+import type { Review } from "../types";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-const opened = vi.hoisted(() => ({ props: null as null | { entry: ReviewEntry; open: boolean; onClose: () => void } }));
+const opened = vi.hoisted(() => ({ props: null as null | { review: Review; open: boolean; onClose: () => void } }));
 
 vi.mock("./ReviewCard", () => ({
-  ReviewCard: ({ entry, onOpen }: { entry: ReviewEntry; onOpen: (e: ReviewEntry) => void }) => (
-    <button type="button" onClick={() => onOpen(entry)}>
-      card:{entry.id}
+  ReviewCard: ({ review, onOpen }: { review: Review; onOpen: (k: Review) => void }) => (
+    <button type="button" onClick={() => onOpen(review)}>
+      card:{review.id}
     </button>
   ),
 }));
 vi.mock("./ReviewDetailSheet", () => ({
-  ReviewDetailSheet: (props: { entry: ReviewEntry; open: boolean; onClose: () => void }) => {
+  ReviewDetailSheet: (props: { review: Review; open: boolean; onClose: () => void }) => {
     opened.props = props;
-    return <div>sheet:{props.entry.id}:{String(props.entry.hidden)}:{String(props.open)}</div>;
+    return <div>sheet:{props.review.id}:{String(props.open)}</div>;
   },
 }));
 
 const { ReviewList } = await import("./ReviewList");
 
-const entry = (id: string, hidden = false) => ({ id, hidden }) as ReviewEntry;
+async function mount(props: Partial<Parameters<typeof ReviewList>[0]> = {}) {
+  const container = document.createElement("div");
+  const onLoadMore = vi.fn();
+  await act(async () => {
+    createRoot(container).render(
+      createElement(ReviewList, {
+        reviews: [{ id: "k-1" } as Review, { id: "k-2" } as Review],
+        variant: "feed",
+        hasMore: false,
+        loading: false,
+        onLoadMore,
+        empty: "クチコミはまだありません",
+        ...props,
+      })
+    );
+  });
+  return { container, onLoadMore };
+}
+
+const button = (container: HTMLElement, label: string) =>
+  Array.from(container.querySelectorAll("button")).find((b) => b.textContent === label) as HTMLButtonElement;
 
 describe("ReviewList", () => {
-  it("opens the pressed review and shows its latest state after a refresh", async () => {
-    const container = document.createElement("div");
-    const root = createRoot(container);
-    const render = (entries: ReviewEntry[]) =>
-      act(async () => {
-        root.render(
-          createElement(ReviewList, {
-            entries,
-            variant: "feed",
-            hasMore: false,
-            loading: false,
-            onLoadMore: vi.fn(),
-            onChanged: vi.fn(),
-            empty: "まだレビューはありません。",
-          })
-        );
-      });
-    await render([entry("r-1"), entry("r-2")]);
+  it("opens the pressed review in the detail sheet and closes it", async () => {
+    opened.props = null;
+    const { container } = await mount();
+    expect(container.textContent).not.toContain("sheet:");
 
-    await act(async () => {
-      (Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "card:r-2") as HTMLButtonElement).click();
-    });
-    expect(container.textContent).toContain("sheet:r-2:false:true");
-
-    await render([entry("r-1"), entry("r-2", true)]);
-    expect(container.textContent).toContain("sheet:r-2:true:true");
+    await act(async () => button(container, "card:k-2").click());
+    expect(container.textContent).toContain("sheet:k-2:true");
 
     await act(async () => opened.props!.onClose());
-    expect(container.textContent).toContain("sheet:r-2:true:false");
+    expect(container.textContent).toContain("sheet:k-2:false");
   });
 
-  it("says when there is nothing", async () => {
-    const container = document.createElement("div");
-    await act(async () => {
-      createRoot(container).render(
-        createElement(ReviewList, {
-          entries: [], variant: "feed", hasMore: false, loading: false, onLoadMore: vi.fn(), onChanged: vi.fn(), empty: "まだレビューはありません。",
-        })
-      );
-    });
+  it("says when there is nothing and loads more on request", async () => {
+    const empty = await mount({ reviews: [] });
+    expect(empty.container.textContent).toContain("クチコミはまだありません");
 
-    expect(container.textContent).toContain("まだレビューはありません。");
+    const { container, onLoadMore } = await mount({ hasMore: true });
+    await act(async () => button(container, "もっと見る").click());
+    expect(onLoadMore).toHaveBeenCalled();
+  });
+
+  it("does not say there is nothing while more can be loaded", async () => {
+    const { container } = await mount({ reviews: [], hasMore: true });
+
+    expect(container.textContent).not.toContain("クチコミはまだありません");
+    expect(button(container, "もっと見る")).toBeDefined();
+  });
+
+  it("does not say there is nothing while loading", async () => {
+    const { container } = await mount({ reviews: [], loading: true });
+
+    expect(container.textContent).toContain("読み込み中…");
+    expect(container.textContent).not.toContain("クチコミはまだありません");
+  });
+
+  it("keeps the cards and hides the loading line while loading more, and blocks another load", async () => {
+    const { container, onLoadMore } = await mount({ loading: true, hasMore: true });
+
+    expect(container.textContent).toContain("card:k-1");
+    expect(container.textContent).not.toContain("読み込み中…");
+    expect(button(container, "もっと見る").disabled).toBe(true);
+    await act(async () => button(container, "もっと見る").click());
+    expect(onLoadMore).not.toHaveBeenCalled();
   });
 });

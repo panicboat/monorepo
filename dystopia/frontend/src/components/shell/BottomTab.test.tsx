@@ -76,7 +76,7 @@ describe("BottomTab", () => {
     const html = renderToStaticMarkup(<BottomTab />);
 
     expect(html).toContain("/reviews/my");
-    expect(html).toContain("レビュー");
+    expect(html).toContain("クチコミ");
     expect(html).not.toContain("/karte/my");
   });
 

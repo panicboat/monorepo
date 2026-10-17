@@ -16,7 +16,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
   let(:footprints_repo) { Footprints::Slice["repositories.footprints_repository"] }
   let(:messaging_repo) { Messaging::Slice["repositories.messaging_repository"] }
   let(:schedule_repo) { Schedule::Slice["repositories.schedule_repository"] }
-  let(:review_repo) { Review::Slice["repositories.entry_repository"] }
+  let(:review_repo) { Review::Slice["repositories.review_repository"] }
   let(:cognito_adapter) { double(:cognito_adapter, admin_delete_user: true) }
 
   before do
@@ -95,9 +95,9 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     messaging_repo.upsert_read_state(thread_id: thread[:id], profile_id: bystander, last_read_message_id: nil)
     schedule_repo.upsert(profile_id: persona_a, work_date: "2026-10-01", start_time: "20:00", end_time: "02:00")
     schedule_repo.upsert(profile_id: bystander, work_date: "2026-10-01", start_time: "20:00", end_time: "02:00")
-    review_repo.create(author_profile_id: bystander, target_profile_id: persona_a, rating: 4.0, body: "received")
-    review_repo.create(author_profile_id: persona_b, target_profile_id: witness, rating: 4.0, body: "written")
-    review_repo.create(author_profile_id: bystander, target_profile_id: witness, rating: 4.0, body: "kept")
+    review_repo.create(author_account_id: bystander_account_id, author_profile_id: bystander, target_profile_id: persona_a, rating: nil, occurred_on: Date.new(2026, 10, 1))
+    review_repo.create(author_account_id: account_id, author_profile_id: persona_b, target_profile_id: witness, rating: nil, occurred_on: Date.new(2026, 10, 1))
+    review_repo.create(author_account_id: bystander_account_id, author_profile_id: bystander, target_profile_id: witness, rating: nil, occurred_on: Date.new(2026, 10, 1))
 
     db[:identity__accounts].where(id: account_id).update(deactivated_at: Time.now - (31 * 24 * 3600))
 
@@ -125,7 +125,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
     expect(db[:messaging__read_states].where(profile_id: personas).count).to eq(0)
     expect(db[:messaging__threads].where(profile_a: personas).or(profile_b: personas).count).to eq(0)
     expect(db[:schedule__schedules].where(profile_id: personas).count).to eq(0)
-    expect(db[:review__entries].where(author_profile_id: personas).or(target_profile_id: personas).count).to eq(0)
+    expect(db[:review__reviews].where(author_profile_id: personas).or(target_profile_id: personas).count).to eq(0)
 
     expect(db[:profile__profiles].where(id: bystander).count).to eq(1)
     expect(db[:profile__casts].where(profile_id: bystander).count).to eq(1)
@@ -143,7 +143,7 @@ RSpec.describe "Identity::UseCases::Account::PurgeDeactivatedAccounts wiring", t
       db[:messaging__threads].where(id: thread[:id]).where(Sequel.|({ profile_a: bystander }, { profile_b: bystander })).count
     ).to eq(1)
     expect(db[:schedule__schedules].where(profile_id: bystander).count).to eq(1)
-    expect(db[:review__entries].where(author_profile_id: bystander, target_profile_id: witness).count).to eq(1)
+    expect(db[:review__reviews].where(author_profile_id: bystander, target_profile_id: witness).count).to eq(1)
   end
 
   it "keeps the account and the profile whose slice purge failed, and finishes on the next run" do

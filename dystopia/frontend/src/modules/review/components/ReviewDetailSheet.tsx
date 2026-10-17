@@ -1,43 +1,222 @@
 "use client";
 
-import { useState } from "react";
-import { EntryEditForm } from "@/components/ui/entry-edit-form";
-import { RatingStars } from "@/components/ui/rating-stars";
+import { useEffect, useState } from "react";
+import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
-import { formatTimeAgo, isEditedAfterCreation } from "@/lib/utils/date";
-import { useAuthStore } from "@/stores/authStore";
+import { StarRatingInput } from "@/components/ui/star-rating-input";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
-import { useDeleteReview } from "../hooks/useDeleteReview";
-import { useHideReview } from "../hooks/useHideReview";
-import { useUnhideReview } from "../hooks/useUnhideReview";
-import { useUpdateReview } from "../hooks/useUpdateReview";
-import type { ReviewEntry } from "../types";
-import { handle } from "./ReviewCard";
+import { useReview } from "../hooks/useReview";
+import { useReviewMutations } from "../hooks/useReviewMutations";
+import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
+import type { Review, ReviewEventInput } from "../types";
+import { profileName } from "./ReviewCard";
+import { ReviewEventForm, emptyReviewEvent } from "./ReviewEventForm";
+
+type Step = { kind: "detail" } | { kind: "append" } | { kind: "edit"; eventId: string };
+
+const TITLES = { detail: "クチコミの詳細", append: "クチコミに追記", edit: "出来事を編集" } as const;
 
 interface ReviewDetailSheetProps {
-  entry: ReviewEntry;
+  review: Review;
   open: boolean;
   onClose: () => void;
-  onChanged: () => void;
 }
 
-const ACTION = "min-h-11 text-sm text-text-secondary hover:text-text-primary disabled:opacity-50";
-
-export function ReviewDetailSheet({ entry, open, onClose, onChanged }: ReviewDetailSheetProps) {
-  const viewerId = useAuthStore((s) => s.activeProfileId);
-  const isAuthor = viewerId === entry.authorProfileId;
-  const isTarget = viewerId === entry.targetProfileId;
+export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDetailSheetProps) {
+  const [deleting, setDeleting] = useState(false);
+  const { review: current, gone, apply } = useReview(open && !deleting ? initial.id : null, initial);
+  const review = current ?? initial;
+  const { updateRating, close, reopen, addEvent, updateEvent, removeEvent, remove, loading, error } = useReviewMutations();
   const showToast = useToastStore((s) => s.show);
-  const { remove, loading: deleting } = useDeleteReview();
-  const { hide, loading: hiding } = useHideReview();
-  const { unhide, loading: unhiding } = useUnhideReview();
-  const { update, loading: updating, error: updateError } = useUpdateReview();
-  const [editing, setEditing] = useState(false);
+  const [step, setStep] = useState<Step>({ kind: "detail" });
+  const [appendDraft, setAppendDraft] = useState<ReviewEventInput>(() => emptyReviewEvent());
+  const [editDraft, setEditDraft] = useState<ReviewEventInput>(() => emptyReviewEvent());
 
-  const after = (succeeded: unknown, message: string) => {
-    onChanged();
-    if (succeeded) showToast(message);
-    return succeeded;
+  useEffect(() => {
+    if (open && gone) onClose();
+  }, [open, gone, onClose]);
+
+  const isOpen = review.status === "open";
+  const editable = review.isMine && isOpen;
+  const cast = { displayName: profileName(review.targetDisplayName, review.targetUsername), username: review.targetUsername, avatarUrl: review.targetAvatarUrl };
+  const confirmed = async (request: () => Promise<Review | null>, message?: string) => {
+    const result = await request();
+    if (result) {
+      apply(result);
+      if (message) showToast(message);
+    }
+    return result;
+  };
+
+  const startEdit = (eventId: string) => {
+    const target = review.events.find((event) => event.id === eventId);
+    if (!target) return;
+    setEditDraft({ stage: target.stage, outcome: target.outcome, tags: target.tags, note: target.note, occurredOn: target.occurredOn });
+    setStep({ kind: "edit", eventId });
+  };
+
+  const body = () => {
+    if (step.kind === "append") {
+      return (
+        <ReviewEventForm
+          cast={cast}
+          value={appendDraft}
+          onChange={setAppendDraft}
+          submitLabel="この段階を追記"
+          submitting={loading}
+          error={error?.message ?? null}
+          onSubmit={async () => {
+            if (!(await confirmed(() => addEvent(review.id, appendDraft), "クチコミに追記しました"))) return;
+            setAppendDraft(emptyReviewEvent());
+            setStep({ kind: "detail" });
+          }}
+        />
+      );
+    }
+    if (step.kind === "edit") {
+      return (
+        <ReviewEventForm
+          cast={cast}
+          value={editDraft}
+          onChange={setEditDraft}
+          submitLabel="出来事を更新"
+          submitting={loading}
+          error={error?.message ?? null}
+          onSubmit={async () => {
+            if (await confirmed(() => updateEvent(step.eventId, editDraft), "出来事を更新しました")) setStep({ kind: "detail" });
+          }}
+        />
+      );
+    }
+    return (
+      <div className="flex flex-col gap-5">
+        {error && (
+          <p className="text-sm text-error" role="alert">
+            {error.message}
+          </p>
+        )}
+        <p className="text-xs font-bold tracking-wide text-text-secondary">クチコミ / {isOpen ? "記録中" : "完了"}</p>
+        <div className="rounded-xl border border-border bg-surface p-4">
+          <div className="flex items-center gap-3">
+            <Avatar src={review.targetAvatarUrl || undefined} fallback={cast.displayName.replace("@", "").slice(0, 1) || "?"} size="sm" />
+            <div className="min-w-0">
+              <p className="truncate font-bold text-text-primary">{cast.displayName}</p>
+              <p className="truncate text-xs text-text-secondary">
+                {review.targetUsername ? `@${review.targetUsername} · ` : ""}書いた人 {profileName(review.authorDisplayName, review.authorUsername)}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 flex items-center justify-between">
+            <p className="text-3xl font-bold text-text-primary">
+              {review.rating === null ? "—" : review.rating.toFixed(1)} <span className="text-base text-rating">★</span>
+            </p>
+            <StatusBadge tone={review.status === "open" ? "warning" : "success"}>{review.status === "open" ? "記録中" : "完了"}</StatusBadge>
+          </div>
+          <p className="mt-2 text-xs text-text-secondary">
+            {isOpen ? "記録中のため平均評価には含まれません" : "完了済みの評価は平均に反映されます"}
+          </p>
+          {editable && (
+            <div className="mt-3">
+              <StarRatingInput label="利用の満足度" value={review.rating} disabled={loading} onChange={(rating) => void confirmed(() => updateRating(review.id, rating))} />
+            </div>
+          )}
+        </div>
+
+        <section>
+          <h3 className="mb-3 text-sm font-bold text-text-primary">予約から利用後までの記録</h3>
+          <ol className="flex flex-col gap-3">
+            {review.events.map((event) => (
+              <li key={event.id} className="rounded-lg border border-border p-3 text-sm">
+                <p className="font-bold text-text-primary">
+                  {stageLabel(event.stage)} · {outcomeLabel(event.stage, event.outcome)}
+                </p>
+                {event.tags.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {event.tags.map((tag) => (
+                      <span key={tag} className="rounded-full border border-border px-2 py-0.5 text-xs text-text-secondary">
+                        {tagLabel(event.stage, tag)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {event.note && <p className="mt-2 whitespace-pre-wrap text-text-primary">{event.note}</p>}
+                <p className="mt-2 text-xs text-text-secondary">発生日 {formatMonthDay(event.occurredOn)}</p>
+                {editable && (
+                  <div className="mt-2 flex gap-4 text-sm text-text-secondary">
+                    <button type="button" onClick={() => startEdit(event.id)} className="hover:text-text-primary">
+                      編集
+                    </button>
+                    <button
+                      type="button"
+                      disabled={loading || review.events.length <= 1}
+                      onClick={() => {
+                        if (!confirm("この出来事を削除しますか？")) return;
+                        void confirmed(() => removeEvent(event.id), "出来事を削除しました");
+                      }}
+                      className="hover:text-text-primary disabled:opacity-50"
+                    >
+                      削除
+                    </button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+          {editable && review.events.length <= 1 && <p className="mt-2 text-xs text-text-secondary">出来事は 1 件以上必要です</p>}
+        </section>
+
+        {editable && (
+          <Button type="button" variant="secondary" onClick={() => setStep({ kind: "append" })}>
+            ＋ 段階を追記する
+          </Button>
+        )}
+
+        {review.isMine && (
+          <div className="flex flex-col gap-2 border-t border-divider pt-4">
+            {isOpen ? (
+              <>
+                <Button
+                  type="button"
+                  disabled={loading || review.rating === null}
+                  onClick={() => void confirmed(() => close(review.id), "クチコミを完了しました。平均評価へ反映します")}
+                >
+                  完了する
+                </Button>
+                {review.rating === null && <p className="text-xs text-text-secondary">完了するには星を選んでください</p>}
+              </>
+            ) : (
+              <Button
+                type="button"
+                disabled={loading}
+                onClick={() => void confirmed(() => reopen(review.id), "クチコミを再オープンしました。集計から一時除外します")}
+              >
+                再オープン
+              </Button>
+            )}
+            <button
+              type="button"
+              disabled={loading}
+              onClick={async () => {
+                if (!confirm("このクチコミを削除しますか？")) return;
+                setDeleting(true);
+                if (!(await remove(review.id))) {
+                  setDeleting(false);
+                  return;
+                }
+                showToast("クチコミを削除しました");
+                onClose();
+              }}
+              className="min-h-11 text-sm text-error hover:underline disabled:opacity-50"
+            >
+              このクチコミを削除
+            </button>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -46,70 +225,11 @@ export function ReviewDetailSheet({ entry, open, onClose, onChanged }: ReviewDet
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
-      title="レビューの詳細"
+      title={TITLES[step.kind]}
+      onBack={step.kind === "detail" ? undefined : () => setStep({ kind: "detail" })}
+      stepKey={step.kind}
     >
-      <div className="flex flex-col gap-4">
-        <p className="text-xs font-bold tracking-wide text-text-secondary">REVIEW / ゲストからキャスト</p>
-        <div className="rounded-xl border border-border bg-surface p-4">
-          <p className="font-bold text-text-primary">{handle(entry.authorUsername)}</p>
-          <p className="text-xs text-text-secondary">
-            {handle(entry.targetUsername)} へのレビュー · {formatTimeAgo(entry.createdAt)}
-          </p>
-        </div>
-        {editing ? (
-          <EntryEditForm
-            initialRating={entry.rating}
-            initialBody={entry.body}
-            saving={updating}
-            error={updateError?.message}
-            onCancel={() => setEditing(false)}
-            onSave={async (rating, body) => {
-              if (!after(await update(entry.id, rating, body), "レビューを更新しました")) return;
-              setEditing(false);
-            }}
-          />
-        ) : (
-          <>
-            <div className="flex items-center gap-2">
-              <RatingStars value={entry.rating} className="text-3xl" />
-              {isEditedAfterCreation(entry.createdAt, entry.updatedAt) && <span className="text-xs text-text-secondary">編集済み</span>}
-            </div>
-            {entry.body && <p className="whitespace-pre-wrap text-text-primary">{entry.body}</p>}
-          </>
-        )}
-        {(isAuthor || isTarget) && !editing && (
-          <div className="flex gap-4 border-t border-divider pt-3">
-            {isAuthor && (
-              <button type="button" onClick={() => setEditing(true)} className={ACTION}>
-                編集
-              </button>
-            )}
-            {isAuthor && (
-              <button
-                type="button"
-                disabled={deleting}
-                onClick={async () => {
-                  if (!confirm("このレビューを削除しますか？")) return;
-                  if (after(await remove(entry.id), "レビューを削除しました")) onClose();
-                }}
-                className={ACTION}
-              >
-                削除
-              </button>
-            )}
-            {isTarget &&
-              (entry.hidden ? (
-                <button type="button" disabled={unhiding} onClick={async () => after(await unhide(entry.id), "レビューを表示に戻しました")} className={ACTION}>
-                  表示に戻す
-                </button>
-              ) : (
-                <button type="button" disabled={hiding} onClick={async () => after(await hide(entry.id), "レビューを非表示にしました")} className={ACTION}>
-                  非表示にする
-                </button>
-              ))}
-          </div>
-        )}
-      </div>
+      {body()}
     </SideSheet>
   );
 }

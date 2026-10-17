@@ -1,44 +1,42 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { ReviewEntry } from "../types";
+import type { Review } from "../types";
 import { ReviewCard } from "./ReviewCard";
 import { ReviewDetailSheet } from "./ReviewDetailSheet";
 
 interface Opened {
-  entry: ReviewEntry;
+  review: Review;
   session: number;
   open: boolean;
 }
 
 interface ReviewListProps {
-  entries: ReviewEntry[];
-  variant: "feed" | "target" | "author";
+  reviews: Review[];
+  variant: "feed" | "cast" | "mine";
   hasMore: boolean;
   loading: boolean;
   onLoadMore: () => void;
-  onChanged: () => void;
   empty: string;
 }
 
-export function ReviewList({ entries, variant, hasMore, loading, onLoadMore, onChanged, empty }: ReviewListProps) {
+export function ReviewList({ reviews, variant, hasMore, loading, onLoadMore, empty }: ReviewListProps) {
   // Keep the opened review after closing: dropping it would unmount the sheet before it slides out.
   const [opened, setOpened] = useState<Opened | null>(null);
   const close = useCallback(() => setOpened((current) => current && { ...current, open: false }), []);
-  const current = opened ? (entries.find((e) => e.id === opened.entry.id) ?? opened.entry) : null;
 
   return (
     <div>
-      {entries.map((entry) => (
+      {reviews.map((review) => (
         <ReviewCard
-          key={entry.id}
-          entry={entry}
+          key={review.id}
+          review={review}
           variant={variant}
-          onOpen={(chosen) => setOpened((previous) => ({ entry: chosen, session: (previous?.session ?? 0) + 1, open: true }))}
+          onOpen={(chosen) => setOpened((current) => ({ review: chosen, session: (current?.session ?? 0) + 1, open: true }))}
         />
       ))}
-      {!loading && entries.length === 0 && <p className="px-4 py-8 text-center text-sm text-text-secondary">{empty}</p>}
-      {loading && entries.length === 0 && <p className="px-4 py-3 text-sm text-text-secondary">読み込み中…</p>}
+      {!loading && reviews.length === 0 && !hasMore && <p className="px-4 py-8 text-center text-sm text-text-secondary">{empty}</p>}
+      {loading && reviews.length === 0 && <div className="px-4 py-3 text-sm text-text-secondary">読み込み中…</div>}
       {hasMore && (
         <button
           type="button"
@@ -49,9 +47,7 @@ export function ReviewList({ entries, variant, hasMore, loading, onLoadMore, onC
           もっと見る
         </button>
       )}
-      {opened && current && (
-        <ReviewDetailSheet key={opened.session} entry={current} open={opened.open} onClose={close} onChanged={onChanged} />
-      )}
+      {opened && <ReviewDetailSheet key={opened.session} review={opened.review} open={opened.open} onClose={close} />}
     </div>
   );
 }

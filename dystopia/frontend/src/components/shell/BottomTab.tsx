@@ -15,7 +15,7 @@ const TABS = [
 ];
 
 const KARTE_TAB = { id: "karte", path: "/karte/my", label: "カルテ", icon: FEATURE_ICONS.karte };
-const REVIEWS_TAB = { id: "reviews", path: "/reviews/my", label: "レビュー", icon: FEATURE_ICONS.reviews };
+const REVIEWS_TAB = { id: "reviews", path: "/reviews/my", label: "クチコミ", icon: FEATURE_ICONS.reviews };
 
 export function BottomTab() {
   const pathname = usePathname();

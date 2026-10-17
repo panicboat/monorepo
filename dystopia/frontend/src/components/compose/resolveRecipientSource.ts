@@ -19,7 +19,7 @@ export function resolveRecipientSource(kind: RecipientKind, viewerRole: Role | n
     return { title: "カルテを書くゲストを選ぶ", listLabel: "フォロワーのゲスト", initial: "followers", role: "guest", search: "everyone", emptyHint: SEARCH_HINT };
   }
   if (kind === "review") {
-    return { title: "レビューするキャストを選ぶ", listLabel: "フォロー中のキャスト", initial: "following", role: "cast", search: "everyone", emptyHint: SEARCH_HINT };
+    return { title: "クチコミを書くキャストを選ぶ", listLabel: "フォロー中のキャスト", initial: "following", role: "cast", search: "everyone", emptyHint: SEARCH_HINT };
   }
   // A guest may only message a cast they follow, so a guest's search stays inside that list.
   const followedOnly = viewerRole === "guest";

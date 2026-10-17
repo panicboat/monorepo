@@ -156,7 +156,7 @@ export function GuestValues() {
           <article className="value" data-num="03">
             <div aria-hidden="true" className="value-icon">♡</div>
             <h3>心地よい距離で、つながる。</h3>
-            <p>相手のペースを大切にしながら、会話を楽しむ。会ったあとは、感謝や思い出をレビューに残せる。</p>
+            <p>相手のペースを大切にしながら、会話を楽しむ。会ったあとは、感謝や思い出をクチコミに残せる。</p>
           </article>
         </div>
       </div>
@@ -293,12 +293,12 @@ export function GuestStories() {
         </article>
         <article className="story-row reverse">
           <div className="story-visual">
-            <div aria-label="キャストへのレビュー入力イメージ" className="review-ui">
+            <div aria-label="キャストへのクチコミ入力イメージ" className="review-ui">
               <div className="review-top">
                 <span>♡</span>
                 <div>
                   <strong>会った夜のことを、言葉に。</strong>
-                  <small>Rinへのレビュー</small>
+                  <small>Rinへのクチコミ</small>
                 </div>
               </div>
               <div className="review-stars">★★★★★</div>
@@ -309,7 +309,7 @@ export function GuestStories() {
               </div>
               <div className="review-footer">
                 <span>気持ちを伝える</span>
-                <b>レビューを確認 ↗</b>
+                <b>クチコミを確認 ↗</b>
               </div>
             </div>
           </div>
@@ -320,8 +320,8 @@ export function GuestStories() {
               <br />
               言葉で残す。
             </h3>
-            <p>会ったキャストへ、感謝や感想をレビューで届ける。一度きりの出会いを、あなたの言葉で残せる場所です。</p>
-            <p className="fine">※ 公開・承認などの条件は実際のレビュー運用に従います。画面はコンセプトイメージです。</p>
+            <p>会ったキャストへ、感謝や感想をクチコミで届ける。一度きりの出会いを、あなたの言葉で残せる場所です。</p>
+            <p className="fine">※ 公開・承認などの条件は実際のクチコミ運用に従います。画面はコンセプトイメージです。</p>
           </div>
         </article>
       </div>

@@ -33,8 +33,8 @@ vi.mock("@/modules/karte/components/KarteCreateForm", () => ({
     return <div>karte-form:{chosen.profileId}:{chosen.displayName}</div>;
   },
 }));
-vi.mock("@/modules/review/components/ReviewComposer", () => ({
-  ReviewComposer: ({ targetProfileId }: { targetProfileId: string }) => <div>review-composer:{targetProfileId}</div>,
+vi.mock("@/modules/review/components/ReviewCreateForm", () => ({
+  ReviewCreateForm: ({ target: chosen }: { target: SocialProfileView }) => <div>review-form:{chosen.profileId}</div>,
 }));
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: (selector: (state: { role: string }) => unknown) => selector({ role: "cast" }),
@@ -210,8 +210,8 @@ describe("ComposeToSheet", () => {
 
     await pick();
 
-    expect(document.body.textContent).toContain("レビューを書く");
-    expect(document.body.textContent).toContain("review-composer:guest-1");
+    expect(document.body.textContent).toContain("クチコミを書く");
+    expect(document.body.textContent).toContain("review-form:guest-1");
     await view.unmount();
   });
 

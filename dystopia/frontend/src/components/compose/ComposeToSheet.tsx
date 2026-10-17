@@ -2,21 +2,22 @@
 
 import { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Avatar } from "@/components/ui/avatar";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { emptyKarteEvent } from "@/modules/karte/components/KarteEventForm";
 import { KarteCreateForm } from "@/modules/karte/components/KarteCreateForm";
-import { ReviewComposer } from "@/modules/review/components/ReviewComposer";
+import { emptyReviewEvent } from "@/modules/review/components/ReviewEventForm";
+import { ReviewCreateForm } from "@/modules/review/components/ReviewCreateForm";
 import { useStartChat } from "@/modules/messaging/hooks/useStartChat";
 import type { KarteEventInput } from "@/modules/karte/types";
+import type { ReviewEventInput } from "@/modules/review/types";
 import type { SocialProfileView } from "@/modules/social/types";
 import { useAuthStore, selectRole } from "@/stores/authStore";
 import { useToastStore } from "@/stores/toastStore";
 import { RecipientPicker } from "./RecipientPicker";
 import { resolveRecipientSource, type RecipientKind } from "./resolveRecipientSource";
 
-const COMPOSE_TITLE = { karte: "カルテを書く", review: "レビューを書く" } as const;
-const SAVED_MESSAGE = { karte: "記録中のカルテを作成しました", review: "レビューを投稿しました" } as const;
+const COMPOSE_TITLE = { karte: "カルテを書く", review: "クチコミを書く" } as const;
+const SAVED_MESSAGE = { karte: "記録中のカルテを作成しました", review: "記録中のクチコミを作成しました" } as const;
 
 interface ComposeToSheetProps {
   kind: RecipientKind;
@@ -35,6 +36,8 @@ export function ComposeToSheet({ kind, open, onClose, initialTarget, onSaved }: 
   const [error, setError] = useState<string | null>(null);
   const [karteEvent, setKarteEvent] = useState<KarteEventInput>(() => emptyKarteEvent());
   const [karteRating, setKarteRating] = useState<number | null>(null);
+  const [reviewEvent, setReviewEvent] = useState<ReviewEventInput>(() => emptyReviewEvent());
+  const [reviewRating, setReviewRating] = useState<number | null>(null);
   const [starting, setStarting] = useState(false);
   const startedOn = useRef(pathname);
   const source = resolveRecipientSource(kind, viewerRole);
@@ -100,14 +103,14 @@ export function ComposeToSheet({ kind, open, onClose, initialTarget, onSaved }: 
       )}
 
       {target && composeKind === "review" && (
-        <>
-          <div className="flex items-center gap-3 rounded-lg bg-surface px-3 py-2">
-            <Avatar src={target.avatarUrl || undefined} fallback={target.displayName.slice(0, 1) || "?"} size="sm" />
-            <span className="min-w-0 truncate text-sm font-bold text-text-primary">{target.displayName}</span>
-            <span className="truncate text-xs text-text-secondary">@{target.username}</span>
-          </div>
-          <ReviewComposer targetProfileId={target.profileId} onCreated={saved} />
-        </>
+        <ReviewCreateForm
+          target={target}
+          event={reviewEvent}
+          onEventChange={setReviewEvent}
+          rating={reviewRating}
+          onRatingChange={setReviewRating}
+          onCreated={saved}
+        />
       )}
     </SideSheet>
   );

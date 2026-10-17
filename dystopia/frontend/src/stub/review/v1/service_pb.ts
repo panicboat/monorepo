@@ -2,8 +2,8 @@
 // @generated from file review/v1/service.proto (package review.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -12,12 +12,101 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file review/v1/service.proto.
  */
 export const file_review_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("ChdyZXZpZXcvdjEvc2VydmljZS5wcm90bxIJcmV2aWV3LnYxIsUCCgtSZXZpZXdFbnRyeRIKCgJpZBgBIAEoCRIZChFhdXRob3JfcHJvZmlsZV9pZBgCIAEoCRIZChF0YXJnZXRfcHJvZmlsZV9pZBgDIAEoCRIXCg9hdXRob3JfdXNlcm5hbWUYBCABKAkSGQoRYXV0aG9yX2F2YXRhcl91cmwYBSABKAkSDgoGcmF0aW5nGAYgASgBEgwKBGJvZHkYByABKAkSDgoGaGlkZGVuGAggASgIEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhcKD3RhcmdldF91c2VybmFtZRgLIAEoCRIZChF0YXJnZXRfYXZhdGFyX3VybBgMIAEoCSJNChJDcmVhdGVFbnRyeVJlcXVlc3QSGQoRdGFyZ2V0X3Byb2ZpbGVfaWQYASABKAkSDgoGcmF0aW5nGAIgASgBEgwKBGJvZHkYAyABKAkiPAoTQ3JlYXRlRW50cnlSZXNwb25zZRIlCgVlbnRyeRgBIAEoCzIWLnJldmlldy52MS5SZXZpZXdFbnRyeSJSChJVcGRhdGVFbnRyeVJlcXVlc3QSEAoIZW50cnlfaWQYASABKAkSDgoGcmF0aW5nGAIgASgBEhEKBGJvZHkYAyABKAlIAIgBAUIHCgVfYm9keSI8ChNVcGRhdGVFbnRyeVJlc3BvbnNlEiUKBWVudHJ5GAEgASgLMhYucmV2aWV3LnYxLlJldmlld0VudHJ5IiYKEkRlbGV0ZUVudHJ5UmVxdWVzdBIQCghlbnRyeV9pZBgBIAEoCSIVChNEZWxldGVFbnRyeVJlc3BvbnNlIiQKEEhpZGVFbnRyeVJlcXVlc3QSEAoIZW50cnlfaWQYASABKAkiOgoRSGlkZUVudHJ5UmVzcG9uc2USJQoFZW50cnkYASABKAsyFi5yZXZpZXcudjEuUmV2aWV3RW50cnkiJgoSVW5oaWRlRW50cnlSZXF1ZXN0EhAKCGVudHJ5X2lkGAEgASgJIjwKE1VuaGlkZUVudHJ5UmVzcG9uc2USJQoFZW50cnkYASABKAsyFi5yZXZpZXcudjEuUmV2aWV3RW50cnkiVgoaTGlzdEVudHJpZXNCeVRhcmdldFJlcXVlc3QSGQoRdGFyZ2V0X3Byb2ZpbGVfaWQYASABKAkSDQoFbGltaXQYAiABKAUSDgoGY3Vyc29yGAMgASgJIm0KG0xpc3RFbnRyaWVzQnlUYXJnZXRSZXNwb25zZRInCgdlbnRyaWVzGAEgAygLMhYucmV2aWV3LnYxLlJldmlld0VudHJ5EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIlYKGkxpc3RFbnRyaWVzQnlBdXRob3JSZXF1ZXN0EhkKEWF1dGhvcl9wcm9maWxlX2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSJtChtMaXN0RW50cmllc0J5QXV0aG9yUmVzcG9uc2USJwoHZW50cmllcxgBIAMoCzIWLnJldmlldy52MS5SZXZpZXdFbnRyeRITCgtuZXh0X2N1cnNvchgCIAEoCRIQCghoYXNfbW9yZRgDIAEoCCIWChRHZXRNeVNldHRpbmdzUmVxdWVzdCIwChVHZXRNeVNldHRpbmdzUmVzcG9uc2USFwoPcmV2aWV3c192aXNpYmxlGAEgASgIIjIKF1VwZGF0ZU15U2V0dGluZ3NSZXF1ZXN0EhcKD3Jldmlld3NfdmlzaWJsZRgBIAEoCCIzChhVcGRhdGVNeVNldHRpbmdzUmVzcG9uc2USFwoPcmV2aWV3c192aXNpYmxlGAEgASgIIjkKGExpc3RSZWNlbnRFbnRyaWVzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZjdXJzb3IYAiABKAkiawoZTGlzdFJlY2VudEVudHJpZXNSZXNwb25zZRInCgdlbnRyaWVzGAEgAygLMhYucmV2aWV3LnYxLlJldmlld0VudHJ5EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIMuwGCg1SZXZpZXdTZXJ2aWNlEkwKC0NyZWF0ZUVudHJ5Eh0ucmV2aWV3LnYxLkNyZWF0ZUVudHJ5UmVxdWVzdBoeLnJldmlldy52MS5DcmVhdGVFbnRyeVJlc3BvbnNlEkwKC1VwZGF0ZUVudHJ5Eh0ucmV2aWV3LnYxLlVwZGF0ZUVudHJ5UmVxdWVzdBoeLnJldmlldy52MS5VcGRhdGVFbnRyeVJlc3BvbnNlEkwKC0RlbGV0ZUVudHJ5Eh0ucmV2aWV3LnYxLkRlbGV0ZUVudHJ5UmVxdWVzdBoeLnJldmlldy52MS5EZWxldGVFbnRyeVJlc3BvbnNlEkYKCUhpZGVFbnRyeRIbLnJldmlldy52MS5IaWRlRW50cnlSZXF1ZXN0GhwucmV2aWV3LnYxLkhpZGVFbnRyeVJlc3BvbnNlEkwKC1VuaGlkZUVudHJ5Eh0ucmV2aWV3LnYxLlVuaGlkZUVudHJ5UmVxdWVzdBoeLnJldmlldy52MS5VbmhpZGVFbnRyeVJlc3BvbnNlEmQKE0xpc3RFbnRyaWVzQnlUYXJnZXQSJS5yZXZpZXcudjEuTGlzdEVudHJpZXNCeVRhcmdldFJlcXVlc3QaJi5yZXZpZXcudjEuTGlzdEVudHJpZXNCeVRhcmdldFJlc3BvbnNlEmQKE0xpc3RFbnRyaWVzQnlBdXRob3ISJS5yZXZpZXcudjEuTGlzdEVudHJpZXNCeUF1dGhvclJlcXVlc3QaJi5yZXZpZXcudjEuTGlzdEVudHJpZXNCeUF1dGhvclJlc3BvbnNlElIKDUdldE15U2V0dGluZ3MSHy5yZXZpZXcudjEuR2V0TXlTZXR0aW5nc1JlcXVlc3QaIC5yZXZpZXcudjEuR2V0TXlTZXR0aW5nc1Jlc3BvbnNlElsKEFVwZGF0ZU15U2V0dGluZ3MSIi5yZXZpZXcudjEuVXBkYXRlTXlTZXR0aW5nc1JlcXVlc3QaIy5yZXZpZXcudjEuVXBkYXRlTXlTZXR0aW5nc1Jlc3BvbnNlEl4KEUxpc3RSZWNlbnRFbnRyaWVzEiMucmV2aWV3LnYxLkxpc3RSZWNlbnRFbnRyaWVzUmVxdWVzdBokLnJldmlldy52MS5MaXN0UmVjZW50RW50cmllc1Jlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChdyZXZpZXcvdjEvc2VydmljZS5wcm90bxIJcmV2aWV3LnYxInsKEFJldmlld0V2ZW50SW5wdXQSJQoFc3RhZ2UYASABKA4yFi5yZXZpZXcudjEuUmV2aWV3U3RhZ2USDwoHb3V0Y29tZRgCIAEoCRIMCgR0YWdzGAMgAygJEgwKBG5vdGUYBCABKAkSEwoLb2NjdXJyZWRfb24YBSABKAki4gEKC1Jldmlld0V2ZW50EgoKAmlkGAEgASgJEiUKBXN0YWdlGAIgASgOMhYucmV2aWV3LnYxLlJldmlld1N0YWdlEg8KB291dGNvbWUYAyABKAkSDAoEdGFncxgEIAMoCRIMCgRub3RlGAUgASgJEhMKC29jY3VycmVkX29uGAYgASgJEi4KCmNyZWF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIqMECgZSZXZpZXcSCgoCaWQYASABKAkSGQoRYXV0aG9yX3Byb2ZpbGVfaWQYAiABKAkSFwoPYXV0aG9yX3VzZXJuYW1lGAMgASgJEhsKE2F1dGhvcl9kaXNwbGF5X25hbWUYBCABKAkSGQoRYXV0aG9yX2F2YXRhcl91cmwYBSABKAkSGQoRdGFyZ2V0X3Byb2ZpbGVfaWQYBiABKAkSFwoPdGFyZ2V0X3VzZXJuYW1lGAcgASgJEhsKE3RhcmdldF9kaXNwbGF5X25hbWUYCCABKAkSGQoRdGFyZ2V0X2F2YXRhcl91cmwYCSABKAkSDwoHaXNfbWluZRgKIAEoCBIOCgZyYXRpbmcYCyABKAUSJwoGc3RhdHVzGAwgASgOMhcucmV2aWV3LnYxLlJldmlld1N0YXR1cxImCgZldmVudHMYDSADKAsyFi5yZXZpZXcudjEuUmV2aWV3RXZlbnQSLgoKY3JlYXRlZF9hdBgOIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgPIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoJY2xvc2VkX2F0GBAgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBI0ChBsYXN0X2FjdGl2aXR5X2F0GBEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJSCg1SYXRpbmdTdW1tYXJ5EhYKDmF2ZXJhZ2VfcmF0aW5nGAEgASgBEhMKC3JhdGVyX2NvdW50GAIgASgFEhQKDHJldmlld19jb3VudBgDIAEoBSJNCgxSZXZpZXdDb3VudHMSEwoLdG90YWxfY291bnQYASABKAUSEgoKb3Blbl9jb3VudBgCIAEoBRIUCgxjbG9zZWRfY291bnQYAyABKAUibAoTQ3JlYXRlUmV2aWV3UmVxdWVzdBIZChF0YXJnZXRfcHJvZmlsZV9pZBgBIAEoCRIOCgZyYXRpbmcYAiABKAUSKgoFZXZlbnQYAyABKAsyGy5yZXZpZXcudjEuUmV2aWV3RXZlbnRJbnB1dCI5ChRDcmVhdGVSZXZpZXdSZXNwb25zZRIhCgZyZXZpZXcYASABKAsyES5yZXZpZXcudjEuUmV2aWV3IiUKEEdldFJldmlld1JlcXVlc3QSEQoJcmV2aWV3X2lkGAEgASgJIjYKEUdldFJldmlld1Jlc3BvbnNlEiEKBnJldmlldxgBIAEoCzIRLnJldmlldy52MS5SZXZpZXciPgoZVXBkYXRlUmV2aWV3UmF0aW5nUmVxdWVzdBIRCglyZXZpZXdfaWQYASABKAkSDgoGcmF0aW5nGAIgASgFIj8KGlVwZGF0ZVJldmlld1JhdGluZ1Jlc3BvbnNlEiEKBnJldmlldxgBIAEoCzIRLnJldmlldy52MS5SZXZpZXciKAoTRGVsZXRlUmV2aWV3UmVxdWVzdBIRCglyZXZpZXdfaWQYASABKAkiFgoURGVsZXRlUmV2aWV3UmVzcG9uc2UiJwoSQ2xvc2VSZXZpZXdSZXF1ZXN0EhEKCXJldmlld19pZBgBIAEoCSI4ChNDbG9zZVJldmlld1Jlc3BvbnNlEiEKBnJldmlldxgBIAEoCzIRLnJldmlldy52MS5SZXZpZXciKAoTUmVvcGVuUmV2aWV3UmVxdWVzdBIRCglyZXZpZXdfaWQYASABKAkiOQoUUmVvcGVuUmV2aWV3UmVzcG9uc2USIQoGcmV2aWV3GAEgASgLMhEucmV2aWV3LnYxLlJldmlldyJWChVBZGRSZXZpZXdFdmVudFJlcXVlc3QSEQoJcmV2aWV3X2lkGAEgASgJEioKBWV2ZW50GAIgASgLMhsucmV2aWV3LnYxLlJldmlld0V2ZW50SW5wdXQiOwoWQWRkUmV2aWV3RXZlbnRSZXNwb25zZRIhCgZyZXZpZXcYASABKAsyES5yZXZpZXcudjEuUmV2aWV3IlgKGFVwZGF0ZVJldmlld0V2ZW50UmVxdWVzdBIQCghldmVudF9pZBgBIAEoCRIqCgVldmVudBgCIAEoCzIbLnJldmlldy52MS5SZXZpZXdFdmVudElucHV0Ij4KGVVwZGF0ZVJldmlld0V2ZW50UmVzcG9uc2USIQoGcmV2aWV3GAEgASgLMhEucmV2aWV3LnYxLlJldmlldyIsChhEZWxldGVSZXZpZXdFdmVudFJlcXVlc3QSEAoIZXZlbnRfaWQYASABKAkiPgoZRGVsZXRlUmV2aWV3RXZlbnRSZXNwb25zZRIhCgZyZXZpZXcYASABKAsyES5yZXZpZXcudjEuUmV2aWV3IlYKGkxpc3RSZXZpZXdzQnlUYXJnZXRSZXF1ZXN0EhkKEXRhcmdldF9wcm9maWxlX2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBmN1cnNvchgDIAEoCSKTAQobTGlzdFJldmlld3NCeVRhcmdldFJlc3BvbnNlEiIKB3Jldmlld3MYASADKAsyES5yZXZpZXcudjEuUmV2aWV3EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIEikKB3N1bW1hcnkYBCABKAsyGC5yZXZpZXcudjEuUmF0aW5nU3VtbWFyeSJWChpMaXN0UmV2aWV3c0J5QXV0aG9yUmVxdWVzdBIZChFhdXRob3JfcHJvZmlsZV9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZjdXJzb3IYAyABKAkiaAobTGlzdFJldmlld3NCeUF1dGhvclJlc3BvbnNlEiIKB3Jldmlld3MYASADKAsyES5yZXZpZXcudjEuUmV2aWV3EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIjUKFExpc3RNeVJldmlld3NSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSKLAQoVTGlzdE15UmV2aWV3c1Jlc3BvbnNlEiIKB3Jldmlld3MYASADKAsyES5yZXZpZXcudjEuUmV2aWV3EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIEicKBmNvdW50cxgEIAEoCzIXLnJldmlldy52MS5SZXZpZXdDb3VudHMiOQoYTGlzdFJlY2VudFJldmlld3NSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBmN1cnNvchgCIAEoCSJmChlMaXN0UmVjZW50UmV2aWV3c1Jlc3BvbnNlEiIKB3Jldmlld3MYASADKAsyES5yZXZpZXcudjEuUmV2aWV3EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIKl8KDFJldmlld1N0YXR1cxIdChlSRVZJRVdfU1RBVFVTX1VOU1BFQ0lGSUVEEAASFgoSUkVWSUVXX1NUQVRVU19PUEVOEAESGAoUUkVWSUVXX1NUQVRVU19DTE9TRUQQAip/CgtSZXZpZXdTdGFnZRIcChhSRVZJRVdfU1RBR0VfVU5TUEVDSUZJRUQQABIcChhSRVZJRVdfU1RBR0VfUkVTRVJWQVRJT04QARIYChRSRVZJRVdfU1RBR0VfU0VSVklDRRACEhoKFlJFVklFV19TVEFHRV9BRlRFUkNBUkUQAzKSCQoNUmV2aWV3U2VydmljZRJPCgxDcmVhdGVSZXZpZXcSHi5yZXZpZXcudjEuQ3JlYXRlUmV2aWV3UmVxdWVzdBofLnJldmlldy52MS5DcmVhdGVSZXZpZXdSZXNwb25zZRJGCglHZXRSZXZpZXcSGy5yZXZpZXcudjEuR2V0UmV2aWV3UmVxdWVzdBocLnJldmlldy52MS5HZXRSZXZpZXdSZXNwb25zZRJhChJVcGRhdGVSZXZpZXdSYXRpbmcSJC5yZXZpZXcudjEuVXBkYXRlUmV2aWV3UmF0aW5nUmVxdWVzdBolLnJldmlldy52MS5VcGRhdGVSZXZpZXdSYXRpbmdSZXNwb25zZRJPCgxEZWxldGVSZXZpZXcSHi5yZXZpZXcudjEuRGVsZXRlUmV2aWV3UmVxdWVzdBofLnJldmlldy52MS5EZWxldGVSZXZpZXdSZXNwb25zZRJMCgtDbG9zZVJldmlldxIdLnJldmlldy52MS5DbG9zZVJldmlld1JlcXVlc3QaHi5yZXZpZXcudjEuQ2xvc2VSZXZpZXdSZXNwb25zZRJPCgxSZW9wZW5SZXZpZXcSHi5yZXZpZXcudjEuUmVvcGVuUmV2aWV3UmVxdWVzdBofLnJldmlldy52MS5SZW9wZW5SZXZpZXdSZXNwb25zZRJVCg5BZGRSZXZpZXdFdmVudBIgLnJldmlldy52MS5BZGRSZXZpZXdFdmVudFJlcXVlc3QaIS5yZXZpZXcudjEuQWRkUmV2aWV3RXZlbnRSZXNwb25zZRJeChFVcGRhdGVSZXZpZXdFdmVudBIjLnJldmlldy52MS5VcGRhdGVSZXZpZXdFdmVudFJlcXVlc3QaJC5yZXZpZXcudjEuVXBkYXRlUmV2aWV3RXZlbnRSZXNwb25zZRJeChFEZWxldGVSZXZpZXdFdmVudBIjLnJldmlldy52MS5EZWxldGVSZXZpZXdFdmVudFJlcXVlc3QaJC5yZXZpZXcudjEuRGVsZXRlUmV2aWV3RXZlbnRSZXNwb25zZRJkChNMaXN0UmV2aWV3c0J5VGFyZ2V0EiUucmV2aWV3LnYxLkxpc3RSZXZpZXdzQnlUYXJnZXRSZXF1ZXN0GiYucmV2aWV3LnYxLkxpc3RSZXZpZXdzQnlUYXJnZXRSZXNwb25zZRJkChNMaXN0UmV2aWV3c0J5QXV0aG9yEiUucmV2aWV3LnYxLkxpc3RSZXZpZXdzQnlBdXRob3JSZXF1ZXN0GiYucmV2aWV3LnYxLkxpc3RSZXZpZXdzQnlBdXRob3JSZXNwb25zZRJSCg1MaXN0TXlSZXZpZXdzEh8ucmV2aWV3LnYxLkxpc3RNeVJldmlld3NSZXF1ZXN0GiAucmV2aWV3LnYxLkxpc3RNeVJldmlld3NSZXNwb25zZRJeChFMaXN0UmVjZW50UmV2aWV3cxIjLnJldmlldy52MS5MaXN0UmVjZW50UmV2aWV3c1JlcXVlc3QaJC5yZXZpZXcudjEuTGlzdFJlY2VudFJldmlld3NSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
- * @generated from message review.v1.ReviewEntry
+ * @generated from message review.v1.ReviewEventInput
  */
-export type ReviewEntry = Message<"review.v1.ReviewEntry"> & {
+export type ReviewEventInput = Message<"review.v1.ReviewEventInput"> & {
+  /**
+   * @generated from field: review.v1.ReviewStage stage = 1;
+   */
+  stage: ReviewStage;
+
+  /**
+   * @generated from field: string outcome = 2;
+   */
+  outcome: string;
+
+  /**
+   * @generated from field: repeated string tags = 3;
+   */
+  tags: string[];
+
+  /**
+   * @generated from field: string note = 4;
+   */
+  note: string;
+
+  /**
+   * @generated from field: string occurred_on = 5;
+   */
+  occurredOn: string;
+};
+
+/**
+ * Describes the message review.v1.ReviewEventInput.
+ * Use `create(ReviewEventInputSchema)` to create a new message.
+ */
+export const ReviewEventInputSchema: GenMessage<ReviewEventInput> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 0);
+
+/**
+ * @generated from message review.v1.ReviewEvent
+ */
+export type ReviewEvent = Message<"review.v1.ReviewEvent"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: review.v1.ReviewStage stage = 2;
+   */
+  stage: ReviewStage;
+
+  /**
+   * @generated from field: string outcome = 3;
+   */
+  outcome: string;
+
+  /**
+   * @generated from field: repeated string tags = 4;
+   */
+  tags: string[];
+
+  /**
+   * @generated from field: string note = 5;
+   */
+  note: string;
+
+  /**
+   * @generated from field: string occurred_on = 6;
+   */
+  occurredOn: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 7;
+   */
+  createdAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_at = 8;
+   */
+  updatedAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message review.v1.ReviewEvent.
+ * Use `create(ReviewEventSchema)` to create a new message.
+ */
+export const ReviewEventSchema: GenMessage<ReviewEvent> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 1);
+
+/**
+ * @generated from message review.v1.Review
+ */
+export type Review = Message<"review.v1.Review"> & {
   /**
    * @generated from field: string id = 1;
    */
@@ -29,14 +118,14 @@ export type ReviewEntry = Message<"review.v1.ReviewEntry"> & {
   authorProfileId: string;
 
   /**
-   * @generated from field: string target_profile_id = 3;
-   */
-  targetProfileId: string;
-
-  /**
-   * @generated from field: string author_username = 4;
+   * @generated from field: string author_username = 3;
    */
   authorUsername: string;
+
+  /**
+   * @generated from field: string author_display_name = 4;
+   */
+  authorDisplayName: string;
 
   /**
    * @generated from field: string author_avatar_url = 5;
@@ -44,238 +133,458 @@ export type ReviewEntry = Message<"review.v1.ReviewEntry"> & {
   authorAvatarUrl: string;
 
   /**
-   * @generated from field: double rating = 6;
+   * @generated from field: string target_profile_id = 6;
    */
-  rating: number;
+  targetProfileId: string;
 
   /**
-   * @generated from field: string body = 7;
-   */
-  body: string;
-
-  /**
-   * @generated from field: bool hidden = 8;
-   */
-  hidden: boolean;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 9;
-   */
-  createdAt?: Timestamp | undefined;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 10;
-   */
-  updatedAt?: Timestamp | undefined;
-
-  /**
-   * @generated from field: string target_username = 11;
+   * @generated from field: string target_username = 7;
    */
   targetUsername: string;
 
   /**
-   * @generated from field: string target_avatar_url = 12;
+   * @generated from field: string target_display_name = 8;
+   */
+  targetDisplayName: string;
+
+  /**
+   * @generated from field: string target_avatar_url = 9;
    */
   targetAvatarUrl: string;
+
+  /**
+   * @generated from field: bool is_mine = 10;
+   */
+  isMine: boolean;
+
+  /**
+   * @generated from field: int32 rating = 11;
+   */
+  rating: number;
+
+  /**
+   * @generated from field: review.v1.ReviewStatus status = 12;
+   */
+  status: ReviewStatus;
+
+  /**
+   * @generated from field: repeated review.v1.ReviewEvent events = 13;
+   */
+  events: ReviewEvent[];
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 14;
+   */
+  createdAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_at = 15;
+   */
+  updatedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp closed_at = 16;
+   */
+  closedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp last_activity_at = 17;
+   */
+  lastActivityAt?: Timestamp | undefined;
 };
 
 /**
- * Describes the message review.v1.ReviewEntry.
- * Use `create(ReviewEntrySchema)` to create a new message.
+ * Describes the message review.v1.Review.
+ * Use `create(ReviewSchema)` to create a new message.
  */
-export const ReviewEntrySchema: GenMessage<ReviewEntry> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 0);
+export const ReviewSchema: GenMessage<Review> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 2);
 
 /**
- * @generated from message review.v1.CreateEntryRequest
+ * @generated from message review.v1.RatingSummary
  */
-export type CreateEntryRequest = Message<"review.v1.CreateEntryRequest"> & {
+export type RatingSummary = Message<"review.v1.RatingSummary"> & {
+  /**
+   * @generated from field: double average_rating = 1;
+   */
+  averageRating: number;
+
+  /**
+   * @generated from field: int32 rater_count = 2;
+   */
+  raterCount: number;
+
+  /**
+   * @generated from field: int32 review_count = 3;
+   */
+  reviewCount: number;
+};
+
+/**
+ * Describes the message review.v1.RatingSummary.
+ * Use `create(RatingSummarySchema)` to create a new message.
+ */
+export const RatingSummarySchema: GenMessage<RatingSummary> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 3);
+
+/**
+ * @generated from message review.v1.ReviewCounts
+ */
+export type ReviewCounts = Message<"review.v1.ReviewCounts"> & {
+  /**
+   * @generated from field: int32 total_count = 1;
+   */
+  totalCount: number;
+
+  /**
+   * @generated from field: int32 open_count = 2;
+   */
+  openCount: number;
+
+  /**
+   * @generated from field: int32 closed_count = 3;
+   */
+  closedCount: number;
+};
+
+/**
+ * Describes the message review.v1.ReviewCounts.
+ * Use `create(ReviewCountsSchema)` to create a new message.
+ */
+export const ReviewCountsSchema: GenMessage<ReviewCounts> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 4);
+
+/**
+ * @generated from message review.v1.CreateReviewRequest
+ */
+export type CreateReviewRequest = Message<"review.v1.CreateReviewRequest"> & {
   /**
    * @generated from field: string target_profile_id = 1;
    */
   targetProfileId: string;
 
   /**
-   * @generated from field: double rating = 2;
+   * @generated from field: int32 rating = 2;
    */
   rating: number;
 
   /**
-   * @generated from field: string body = 3;
+   * @generated from field: review.v1.ReviewEventInput event = 3;
    */
-  body: string;
+  event?: ReviewEventInput | undefined;
 };
 
 /**
- * Describes the message review.v1.CreateEntryRequest.
- * Use `create(CreateEntryRequestSchema)` to create a new message.
+ * Describes the message review.v1.CreateReviewRequest.
+ * Use `create(CreateReviewRequestSchema)` to create a new message.
  */
-export const CreateEntryRequestSchema: GenMessage<CreateEntryRequest> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 1);
-
-/**
- * @generated from message review.v1.CreateEntryResponse
- */
-export type CreateEntryResponse = Message<"review.v1.CreateEntryResponse"> & {
-  /**
-   * @generated from field: review.v1.ReviewEntry entry = 1;
-   */
-  entry?: ReviewEntry | undefined;
-};
-
-/**
- * Describes the message review.v1.CreateEntryResponse.
- * Use `create(CreateEntryResponseSchema)` to create a new message.
- */
-export const CreateEntryResponseSchema: GenMessage<CreateEntryResponse> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 2);
-
-/**
- * @generated from message review.v1.UpdateEntryRequest
- */
-export type UpdateEntryRequest = Message<"review.v1.UpdateEntryRequest"> & {
-  /**
-   * @generated from field: string entry_id = 1;
-   */
-  entryId: string;
-
-  /**
-   * @generated from field: double rating = 2;
-   */
-  rating: number;
-
-  /**
-   * @generated from field: optional string body = 3;
-   */
-  body?: string | undefined;
-};
-
-/**
- * Describes the message review.v1.UpdateEntryRequest.
- * Use `create(UpdateEntryRequestSchema)` to create a new message.
- */
-export const UpdateEntryRequestSchema: GenMessage<UpdateEntryRequest> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 3);
-
-/**
- * @generated from message review.v1.UpdateEntryResponse
- */
-export type UpdateEntryResponse = Message<"review.v1.UpdateEntryResponse"> & {
-  /**
-   * @generated from field: review.v1.ReviewEntry entry = 1;
-   */
-  entry?: ReviewEntry | undefined;
-};
-
-/**
- * Describes the message review.v1.UpdateEntryResponse.
- * Use `create(UpdateEntryResponseSchema)` to create a new message.
- */
-export const UpdateEntryResponseSchema: GenMessage<UpdateEntryResponse> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 4);
-
-/**
- * @generated from message review.v1.DeleteEntryRequest
- */
-export type DeleteEntryRequest = Message<"review.v1.DeleteEntryRequest"> & {
-  /**
-   * @generated from field: string entry_id = 1;
-   */
-  entryId: string;
-};
-
-/**
- * Describes the message review.v1.DeleteEntryRequest.
- * Use `create(DeleteEntryRequestSchema)` to create a new message.
- */
-export const DeleteEntryRequestSchema: GenMessage<DeleteEntryRequest> = /*@__PURE__*/
+export const CreateReviewRequestSchema: GenMessage<CreateReviewRequest> = /*@__PURE__*/
   messageDesc(file_review_v1_service, 5);
 
 /**
- * @generated from message review.v1.DeleteEntryResponse
+ * @generated from message review.v1.CreateReviewResponse
  */
-export type DeleteEntryResponse = Message<"review.v1.DeleteEntryResponse"> & {
+export type CreateReviewResponse = Message<"review.v1.CreateReviewResponse"> & {
+  /**
+   * @generated from field: review.v1.Review review = 1;
+   */
+  review?: Review | undefined;
 };
 
 /**
- * Describes the message review.v1.DeleteEntryResponse.
- * Use `create(DeleteEntryResponseSchema)` to create a new message.
+ * Describes the message review.v1.CreateReviewResponse.
+ * Use `create(CreateReviewResponseSchema)` to create a new message.
  */
-export const DeleteEntryResponseSchema: GenMessage<DeleteEntryResponse> = /*@__PURE__*/
+export const CreateReviewResponseSchema: GenMessage<CreateReviewResponse> = /*@__PURE__*/
   messageDesc(file_review_v1_service, 6);
 
 /**
- * @generated from message review.v1.HideEntryRequest
+ * @generated from message review.v1.GetReviewRequest
  */
-export type HideEntryRequest = Message<"review.v1.HideEntryRequest"> & {
+export type GetReviewRequest = Message<"review.v1.GetReviewRequest"> & {
   /**
-   * @generated from field: string entry_id = 1;
+   * @generated from field: string review_id = 1;
    */
-  entryId: string;
+  reviewId: string;
 };
 
 /**
- * Describes the message review.v1.HideEntryRequest.
- * Use `create(HideEntryRequestSchema)` to create a new message.
+ * Describes the message review.v1.GetReviewRequest.
+ * Use `create(GetReviewRequestSchema)` to create a new message.
  */
-export const HideEntryRequestSchema: GenMessage<HideEntryRequest> = /*@__PURE__*/
+export const GetReviewRequestSchema: GenMessage<GetReviewRequest> = /*@__PURE__*/
   messageDesc(file_review_v1_service, 7);
 
 /**
- * @generated from message review.v1.HideEntryResponse
+ * @generated from message review.v1.GetReviewResponse
  */
-export type HideEntryResponse = Message<"review.v1.HideEntryResponse"> & {
+export type GetReviewResponse = Message<"review.v1.GetReviewResponse"> & {
   /**
-   * @generated from field: review.v1.ReviewEntry entry = 1;
+   * @generated from field: review.v1.Review review = 1;
    */
-  entry?: ReviewEntry | undefined;
+  review?: Review | undefined;
 };
 
 /**
- * Describes the message review.v1.HideEntryResponse.
- * Use `create(HideEntryResponseSchema)` to create a new message.
+ * Describes the message review.v1.GetReviewResponse.
+ * Use `create(GetReviewResponseSchema)` to create a new message.
  */
-export const HideEntryResponseSchema: GenMessage<HideEntryResponse> = /*@__PURE__*/
+export const GetReviewResponseSchema: GenMessage<GetReviewResponse> = /*@__PURE__*/
   messageDesc(file_review_v1_service, 8);
 
 /**
- * @generated from message review.v1.UnhideEntryRequest
+ * @generated from message review.v1.UpdateReviewRatingRequest
  */
-export type UnhideEntryRequest = Message<"review.v1.UnhideEntryRequest"> & {
+export type UpdateReviewRatingRequest = Message<"review.v1.UpdateReviewRatingRequest"> & {
   /**
-   * @generated from field: string entry_id = 1;
+   * @generated from field: string review_id = 1;
    */
-  entryId: string;
+  reviewId: string;
+
+  /**
+   * @generated from field: int32 rating = 2;
+   */
+  rating: number;
 };
 
 /**
- * Describes the message review.v1.UnhideEntryRequest.
- * Use `create(UnhideEntryRequestSchema)` to create a new message.
+ * Describes the message review.v1.UpdateReviewRatingRequest.
+ * Use `create(UpdateReviewRatingRequestSchema)` to create a new message.
  */
-export const UnhideEntryRequestSchema: GenMessage<UnhideEntryRequest> = /*@__PURE__*/
+export const UpdateReviewRatingRequestSchema: GenMessage<UpdateReviewRatingRequest> = /*@__PURE__*/
   messageDesc(file_review_v1_service, 9);
 
 /**
- * @generated from message review.v1.UnhideEntryResponse
+ * @generated from message review.v1.UpdateReviewRatingResponse
  */
-export type UnhideEntryResponse = Message<"review.v1.UnhideEntryResponse"> & {
+export type UpdateReviewRatingResponse = Message<"review.v1.UpdateReviewRatingResponse"> & {
   /**
-   * @generated from field: review.v1.ReviewEntry entry = 1;
+   * @generated from field: review.v1.Review review = 1;
    */
-  entry?: ReviewEntry | undefined;
+  review?: Review | undefined;
 };
 
 /**
- * Describes the message review.v1.UnhideEntryResponse.
- * Use `create(UnhideEntryResponseSchema)` to create a new message.
+ * Describes the message review.v1.UpdateReviewRatingResponse.
+ * Use `create(UpdateReviewRatingResponseSchema)` to create a new message.
  */
-export const UnhideEntryResponseSchema: GenMessage<UnhideEntryResponse> = /*@__PURE__*/
+export const UpdateReviewRatingResponseSchema: GenMessage<UpdateReviewRatingResponse> = /*@__PURE__*/
   messageDesc(file_review_v1_service, 10);
 
 /**
- * @generated from message review.v1.ListEntriesByTargetRequest
+ * @generated from message review.v1.DeleteReviewRequest
  */
-export type ListEntriesByTargetRequest = Message<"review.v1.ListEntriesByTargetRequest"> & {
+export type DeleteReviewRequest = Message<"review.v1.DeleteReviewRequest"> & {
+  /**
+   * @generated from field: string review_id = 1;
+   */
+  reviewId: string;
+};
+
+/**
+ * Describes the message review.v1.DeleteReviewRequest.
+ * Use `create(DeleteReviewRequestSchema)` to create a new message.
+ */
+export const DeleteReviewRequestSchema: GenMessage<DeleteReviewRequest> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 11);
+
+/**
+ * @generated from message review.v1.DeleteReviewResponse
+ */
+export type DeleteReviewResponse = Message<"review.v1.DeleteReviewResponse"> & {
+};
+
+/**
+ * Describes the message review.v1.DeleteReviewResponse.
+ * Use `create(DeleteReviewResponseSchema)` to create a new message.
+ */
+export const DeleteReviewResponseSchema: GenMessage<DeleteReviewResponse> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 12);
+
+/**
+ * @generated from message review.v1.CloseReviewRequest
+ */
+export type CloseReviewRequest = Message<"review.v1.CloseReviewRequest"> & {
+  /**
+   * @generated from field: string review_id = 1;
+   */
+  reviewId: string;
+};
+
+/**
+ * Describes the message review.v1.CloseReviewRequest.
+ * Use `create(CloseReviewRequestSchema)` to create a new message.
+ */
+export const CloseReviewRequestSchema: GenMessage<CloseReviewRequest> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 13);
+
+/**
+ * @generated from message review.v1.CloseReviewResponse
+ */
+export type CloseReviewResponse = Message<"review.v1.CloseReviewResponse"> & {
+  /**
+   * @generated from field: review.v1.Review review = 1;
+   */
+  review?: Review | undefined;
+};
+
+/**
+ * Describes the message review.v1.CloseReviewResponse.
+ * Use `create(CloseReviewResponseSchema)` to create a new message.
+ */
+export const CloseReviewResponseSchema: GenMessage<CloseReviewResponse> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 14);
+
+/**
+ * @generated from message review.v1.ReopenReviewRequest
+ */
+export type ReopenReviewRequest = Message<"review.v1.ReopenReviewRequest"> & {
+  /**
+   * @generated from field: string review_id = 1;
+   */
+  reviewId: string;
+};
+
+/**
+ * Describes the message review.v1.ReopenReviewRequest.
+ * Use `create(ReopenReviewRequestSchema)` to create a new message.
+ */
+export const ReopenReviewRequestSchema: GenMessage<ReopenReviewRequest> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 15);
+
+/**
+ * @generated from message review.v1.ReopenReviewResponse
+ */
+export type ReopenReviewResponse = Message<"review.v1.ReopenReviewResponse"> & {
+  /**
+   * @generated from field: review.v1.Review review = 1;
+   */
+  review?: Review | undefined;
+};
+
+/**
+ * Describes the message review.v1.ReopenReviewResponse.
+ * Use `create(ReopenReviewResponseSchema)` to create a new message.
+ */
+export const ReopenReviewResponseSchema: GenMessage<ReopenReviewResponse> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 16);
+
+/**
+ * @generated from message review.v1.AddReviewEventRequest
+ */
+export type AddReviewEventRequest = Message<"review.v1.AddReviewEventRequest"> & {
+  /**
+   * @generated from field: string review_id = 1;
+   */
+  reviewId: string;
+
+  /**
+   * @generated from field: review.v1.ReviewEventInput event = 2;
+   */
+  event?: ReviewEventInput | undefined;
+};
+
+/**
+ * Describes the message review.v1.AddReviewEventRequest.
+ * Use `create(AddReviewEventRequestSchema)` to create a new message.
+ */
+export const AddReviewEventRequestSchema: GenMessage<AddReviewEventRequest> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 17);
+
+/**
+ * @generated from message review.v1.AddReviewEventResponse
+ */
+export type AddReviewEventResponse = Message<"review.v1.AddReviewEventResponse"> & {
+  /**
+   * @generated from field: review.v1.Review review = 1;
+   */
+  review?: Review | undefined;
+};
+
+/**
+ * Describes the message review.v1.AddReviewEventResponse.
+ * Use `create(AddReviewEventResponseSchema)` to create a new message.
+ */
+export const AddReviewEventResponseSchema: GenMessage<AddReviewEventResponse> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 18);
+
+/**
+ * @generated from message review.v1.UpdateReviewEventRequest
+ */
+export type UpdateReviewEventRequest = Message<"review.v1.UpdateReviewEventRequest"> & {
+  /**
+   * @generated from field: string event_id = 1;
+   */
+  eventId: string;
+
+  /**
+   * @generated from field: review.v1.ReviewEventInput event = 2;
+   */
+  event?: ReviewEventInput | undefined;
+};
+
+/**
+ * Describes the message review.v1.UpdateReviewEventRequest.
+ * Use `create(UpdateReviewEventRequestSchema)` to create a new message.
+ */
+export const UpdateReviewEventRequestSchema: GenMessage<UpdateReviewEventRequest> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 19);
+
+/**
+ * @generated from message review.v1.UpdateReviewEventResponse
+ */
+export type UpdateReviewEventResponse = Message<"review.v1.UpdateReviewEventResponse"> & {
+  /**
+   * @generated from field: review.v1.Review review = 1;
+   */
+  review?: Review | undefined;
+};
+
+/**
+ * Describes the message review.v1.UpdateReviewEventResponse.
+ * Use `create(UpdateReviewEventResponseSchema)` to create a new message.
+ */
+export const UpdateReviewEventResponseSchema: GenMessage<UpdateReviewEventResponse> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 20);
+
+/**
+ * @generated from message review.v1.DeleteReviewEventRequest
+ */
+export type DeleteReviewEventRequest = Message<"review.v1.DeleteReviewEventRequest"> & {
+  /**
+   * @generated from field: string event_id = 1;
+   */
+  eventId: string;
+};
+
+/**
+ * Describes the message review.v1.DeleteReviewEventRequest.
+ * Use `create(DeleteReviewEventRequestSchema)` to create a new message.
+ */
+export const DeleteReviewEventRequestSchema: GenMessage<DeleteReviewEventRequest> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 21);
+
+/**
+ * @generated from message review.v1.DeleteReviewEventResponse
+ */
+export type DeleteReviewEventResponse = Message<"review.v1.DeleteReviewEventResponse"> & {
+  /**
+   * @generated from field: review.v1.Review review = 1;
+   */
+  review?: Review | undefined;
+};
+
+/**
+ * Describes the message review.v1.DeleteReviewEventResponse.
+ * Use `create(DeleteReviewEventResponseSchema)` to create a new message.
+ */
+export const DeleteReviewEventResponseSchema: GenMessage<DeleteReviewEventResponse> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 22);
+
+/**
+ * @generated from message review.v1.ListReviewsByTargetRequest
+ */
+export type ListReviewsByTargetRequest = Message<"review.v1.ListReviewsByTargetRequest"> & {
   /**
    * @generated from field: string target_profile_id = 1;
    */
@@ -293,20 +602,20 @@ export type ListEntriesByTargetRequest = Message<"review.v1.ListEntriesByTargetR
 };
 
 /**
- * Describes the message review.v1.ListEntriesByTargetRequest.
- * Use `create(ListEntriesByTargetRequestSchema)` to create a new message.
+ * Describes the message review.v1.ListReviewsByTargetRequest.
+ * Use `create(ListReviewsByTargetRequestSchema)` to create a new message.
  */
-export const ListEntriesByTargetRequestSchema: GenMessage<ListEntriesByTargetRequest> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 11);
+export const ListReviewsByTargetRequestSchema: GenMessage<ListReviewsByTargetRequest> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 23);
 
 /**
- * @generated from message review.v1.ListEntriesByTargetResponse
+ * @generated from message review.v1.ListReviewsByTargetResponse
  */
-export type ListEntriesByTargetResponse = Message<"review.v1.ListEntriesByTargetResponse"> & {
+export type ListReviewsByTargetResponse = Message<"review.v1.ListReviewsByTargetResponse"> & {
   /**
-   * @generated from field: repeated review.v1.ReviewEntry entries = 1;
+   * @generated from field: repeated review.v1.Review reviews = 1;
    */
-  entries: ReviewEntry[];
+  reviews: Review[];
 
   /**
    * @generated from field: string next_cursor = 2;
@@ -317,19 +626,24 @@ export type ListEntriesByTargetResponse = Message<"review.v1.ListEntriesByTarget
    * @generated from field: bool has_more = 3;
    */
   hasMore: boolean;
+
+  /**
+   * @generated from field: review.v1.RatingSummary summary = 4;
+   */
+  summary?: RatingSummary | undefined;
 };
 
 /**
- * Describes the message review.v1.ListEntriesByTargetResponse.
- * Use `create(ListEntriesByTargetResponseSchema)` to create a new message.
+ * Describes the message review.v1.ListReviewsByTargetResponse.
+ * Use `create(ListReviewsByTargetResponseSchema)` to create a new message.
  */
-export const ListEntriesByTargetResponseSchema: GenMessage<ListEntriesByTargetResponse> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 12);
+export const ListReviewsByTargetResponseSchema: GenMessage<ListReviewsByTargetResponse> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 24);
 
 /**
- * @generated from message review.v1.ListEntriesByAuthorRequest
+ * @generated from message review.v1.ListReviewsByAuthorRequest
  */
-export type ListEntriesByAuthorRequest = Message<"review.v1.ListEntriesByAuthorRequest"> & {
+export type ListReviewsByAuthorRequest = Message<"review.v1.ListReviewsByAuthorRequest"> & {
   /**
    * @generated from field: string author_profile_id = 1;
    */
@@ -347,20 +661,20 @@ export type ListEntriesByAuthorRequest = Message<"review.v1.ListEntriesByAuthorR
 };
 
 /**
- * Describes the message review.v1.ListEntriesByAuthorRequest.
- * Use `create(ListEntriesByAuthorRequestSchema)` to create a new message.
+ * Describes the message review.v1.ListReviewsByAuthorRequest.
+ * Use `create(ListReviewsByAuthorRequestSchema)` to create a new message.
  */
-export const ListEntriesByAuthorRequestSchema: GenMessage<ListEntriesByAuthorRequest> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 13);
+export const ListReviewsByAuthorRequestSchema: GenMessage<ListReviewsByAuthorRequest> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 25);
 
 /**
- * @generated from message review.v1.ListEntriesByAuthorResponse
+ * @generated from message review.v1.ListReviewsByAuthorResponse
  */
-export type ListEntriesByAuthorResponse = Message<"review.v1.ListEntriesByAuthorResponse"> & {
+export type ListReviewsByAuthorResponse = Message<"review.v1.ListReviewsByAuthorResponse"> & {
   /**
-   * @generated from field: repeated review.v1.ReviewEntry entries = 1;
+   * @generated from field: repeated review.v1.Review reviews = 1;
    */
-  entries: ReviewEntry[];
+  reviews: Review[];
 
   /**
    * @generated from field: string next_cursor = 2;
@@ -374,80 +688,16 @@ export type ListEntriesByAuthorResponse = Message<"review.v1.ListEntriesByAuthor
 };
 
 /**
- * Describes the message review.v1.ListEntriesByAuthorResponse.
- * Use `create(ListEntriesByAuthorResponseSchema)` to create a new message.
+ * Describes the message review.v1.ListReviewsByAuthorResponse.
+ * Use `create(ListReviewsByAuthorResponseSchema)` to create a new message.
  */
-export const ListEntriesByAuthorResponseSchema: GenMessage<ListEntriesByAuthorResponse> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 14);
+export const ListReviewsByAuthorResponseSchema: GenMessage<ListReviewsByAuthorResponse> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 26);
 
 /**
- * @generated from message review.v1.GetMySettingsRequest
+ * @generated from message review.v1.ListMyReviewsRequest
  */
-export type GetMySettingsRequest = Message<"review.v1.GetMySettingsRequest"> & {
-};
-
-/**
- * Describes the message review.v1.GetMySettingsRequest.
- * Use `create(GetMySettingsRequestSchema)` to create a new message.
- */
-export const GetMySettingsRequestSchema: GenMessage<GetMySettingsRequest> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 15);
-
-/**
- * @generated from message review.v1.GetMySettingsResponse
- */
-export type GetMySettingsResponse = Message<"review.v1.GetMySettingsResponse"> & {
-  /**
-   * @generated from field: bool reviews_visible = 1;
-   */
-  reviewsVisible: boolean;
-};
-
-/**
- * Describes the message review.v1.GetMySettingsResponse.
- * Use `create(GetMySettingsResponseSchema)` to create a new message.
- */
-export const GetMySettingsResponseSchema: GenMessage<GetMySettingsResponse> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 16);
-
-/**
- * @generated from message review.v1.UpdateMySettingsRequest
- */
-export type UpdateMySettingsRequest = Message<"review.v1.UpdateMySettingsRequest"> & {
-  /**
-   * @generated from field: bool reviews_visible = 1;
-   */
-  reviewsVisible: boolean;
-};
-
-/**
- * Describes the message review.v1.UpdateMySettingsRequest.
- * Use `create(UpdateMySettingsRequestSchema)` to create a new message.
- */
-export const UpdateMySettingsRequestSchema: GenMessage<UpdateMySettingsRequest> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 17);
-
-/**
- * @generated from message review.v1.UpdateMySettingsResponse
- */
-export type UpdateMySettingsResponse = Message<"review.v1.UpdateMySettingsResponse"> & {
-  /**
-   * @generated from field: bool reviews_visible = 1;
-   */
-  reviewsVisible: boolean;
-};
-
-/**
- * Describes the message review.v1.UpdateMySettingsResponse.
- * Use `create(UpdateMySettingsResponseSchema)` to create a new message.
- */
-export const UpdateMySettingsResponseSchema: GenMessage<UpdateMySettingsResponse> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 18);
-
-/**
- * @generated from message review.v1.ListRecentEntriesRequest
- */
-export type ListRecentEntriesRequest = Message<"review.v1.ListRecentEntriesRequest"> & {
+export type ListMyReviewsRequest = Message<"review.v1.ListMyReviewsRequest"> & {
   /**
    * @generated from field: int32 limit = 1;
    */
@@ -460,20 +710,74 @@ export type ListRecentEntriesRequest = Message<"review.v1.ListRecentEntriesReque
 };
 
 /**
- * Describes the message review.v1.ListRecentEntriesRequest.
- * Use `create(ListRecentEntriesRequestSchema)` to create a new message.
+ * Describes the message review.v1.ListMyReviewsRequest.
+ * Use `create(ListMyReviewsRequestSchema)` to create a new message.
  */
-export const ListRecentEntriesRequestSchema: GenMessage<ListRecentEntriesRequest> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 19);
+export const ListMyReviewsRequestSchema: GenMessage<ListMyReviewsRequest> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 27);
 
 /**
- * @generated from message review.v1.ListRecentEntriesResponse
+ * @generated from message review.v1.ListMyReviewsResponse
  */
-export type ListRecentEntriesResponse = Message<"review.v1.ListRecentEntriesResponse"> & {
+export type ListMyReviewsResponse = Message<"review.v1.ListMyReviewsResponse"> & {
   /**
-   * @generated from field: repeated review.v1.ReviewEntry entries = 1;
+   * @generated from field: repeated review.v1.Review reviews = 1;
    */
-  entries: ReviewEntry[];
+  reviews: Review[];
+
+  /**
+   * @generated from field: string next_cursor = 2;
+   */
+  nextCursor: string;
+
+  /**
+   * @generated from field: bool has_more = 3;
+   */
+  hasMore: boolean;
+
+  /**
+   * @generated from field: review.v1.ReviewCounts counts = 4;
+   */
+  counts?: ReviewCounts | undefined;
+};
+
+/**
+ * Describes the message review.v1.ListMyReviewsResponse.
+ * Use `create(ListMyReviewsResponseSchema)` to create a new message.
+ */
+export const ListMyReviewsResponseSchema: GenMessage<ListMyReviewsResponse> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 28);
+
+/**
+ * @generated from message review.v1.ListRecentReviewsRequest
+ */
+export type ListRecentReviewsRequest = Message<"review.v1.ListRecentReviewsRequest"> & {
+  /**
+   * @generated from field: int32 limit = 1;
+   */
+  limit: number;
+
+  /**
+   * @generated from field: string cursor = 2;
+   */
+  cursor: string;
+};
+
+/**
+ * Describes the message review.v1.ListRecentReviewsRequest.
+ * Use `create(ListRecentReviewsRequestSchema)` to create a new message.
+ */
+export const ListRecentReviewsRequestSchema: GenMessage<ListRecentReviewsRequest> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 29);
+
+/**
+ * @generated from message review.v1.ListRecentReviewsResponse
+ */
+export type ListRecentReviewsResponse = Message<"review.v1.ListRecentReviewsResponse"> & {
+  /**
+   * @generated from field: repeated review.v1.Review reviews = 1;
+   */
+  reviews: Review[];
 
   /**
    * @generated from field: string next_cursor = 2;
@@ -487,95 +791,176 @@ export type ListRecentEntriesResponse = Message<"review.v1.ListRecentEntriesResp
 };
 
 /**
- * Describes the message review.v1.ListRecentEntriesResponse.
- * Use `create(ListRecentEntriesResponseSchema)` to create a new message.
+ * Describes the message review.v1.ListRecentReviewsResponse.
+ * Use `create(ListRecentReviewsResponseSchema)` to create a new message.
  */
-export const ListRecentEntriesResponseSchema: GenMessage<ListRecentEntriesResponse> = /*@__PURE__*/
-  messageDesc(file_review_v1_service, 20);
+export const ListRecentReviewsResponseSchema: GenMessage<ListRecentReviewsResponse> = /*@__PURE__*/
+  messageDesc(file_review_v1_service, 30);
+
+/**
+ * @generated from enum review.v1.ReviewStatus
+ */
+export enum ReviewStatus {
+  /**
+   * @generated from enum value: REVIEW_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: REVIEW_STATUS_OPEN = 1;
+   */
+  OPEN = 1,
+
+  /**
+   * @generated from enum value: REVIEW_STATUS_CLOSED = 2;
+   */
+  CLOSED = 2,
+}
+
+/**
+ * Describes the enum review.v1.ReviewStatus.
+ */
+export const ReviewStatusSchema: GenEnum<ReviewStatus> = /*@__PURE__*/
+  enumDesc(file_review_v1_service, 0);
+
+/**
+ * @generated from enum review.v1.ReviewStage
+ */
+export enum ReviewStage {
+  /**
+   * @generated from enum value: REVIEW_STAGE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: REVIEW_STAGE_RESERVATION = 1;
+   */
+  RESERVATION = 1,
+
+  /**
+   * @generated from enum value: REVIEW_STAGE_SERVICE = 2;
+   */
+  SERVICE = 2,
+
+  /**
+   * @generated from enum value: REVIEW_STAGE_AFTERCARE = 3;
+   */
+  AFTERCARE = 3,
+}
+
+/**
+ * Describes the enum review.v1.ReviewStage.
+ */
+export const ReviewStageSchema: GenEnum<ReviewStage> = /*@__PURE__*/
+  enumDesc(file_review_v1_service, 1);
 
 /**
  * @generated from service review.v1.ReviewService
  */
 export const ReviewService: GenService<{
   /**
-   * @generated from rpc review.v1.ReviewService.CreateEntry
+   * @generated from rpc review.v1.ReviewService.CreateReview
    */
-  createEntry: {
+  createReview: {
     methodKind: "unary";
-    input: typeof CreateEntryRequestSchema;
-    output: typeof CreateEntryResponseSchema;
+    input: typeof CreateReviewRequestSchema;
+    output: typeof CreateReviewResponseSchema;
   },
   /**
-   * @generated from rpc review.v1.ReviewService.UpdateEntry
+   * @generated from rpc review.v1.ReviewService.GetReview
    */
-  updateEntry: {
+  getReview: {
     methodKind: "unary";
-    input: typeof UpdateEntryRequestSchema;
-    output: typeof UpdateEntryResponseSchema;
+    input: typeof GetReviewRequestSchema;
+    output: typeof GetReviewResponseSchema;
   },
   /**
-   * @generated from rpc review.v1.ReviewService.DeleteEntry
+   * @generated from rpc review.v1.ReviewService.UpdateReviewRating
    */
-  deleteEntry: {
+  updateReviewRating: {
     methodKind: "unary";
-    input: typeof DeleteEntryRequestSchema;
-    output: typeof DeleteEntryResponseSchema;
+    input: typeof UpdateReviewRatingRequestSchema;
+    output: typeof UpdateReviewRatingResponseSchema;
   },
   /**
-   * @generated from rpc review.v1.ReviewService.HideEntry
+   * @generated from rpc review.v1.ReviewService.DeleteReview
    */
-  hideEntry: {
+  deleteReview: {
     methodKind: "unary";
-    input: typeof HideEntryRequestSchema;
-    output: typeof HideEntryResponseSchema;
+    input: typeof DeleteReviewRequestSchema;
+    output: typeof DeleteReviewResponseSchema;
   },
   /**
-   * @generated from rpc review.v1.ReviewService.UnhideEntry
+   * @generated from rpc review.v1.ReviewService.CloseReview
    */
-  unhideEntry: {
+  closeReview: {
     methodKind: "unary";
-    input: typeof UnhideEntryRequestSchema;
-    output: typeof UnhideEntryResponseSchema;
+    input: typeof CloseReviewRequestSchema;
+    output: typeof CloseReviewResponseSchema;
   },
   /**
-   * @generated from rpc review.v1.ReviewService.ListEntriesByTarget
+   * @generated from rpc review.v1.ReviewService.ReopenReview
    */
-  listEntriesByTarget: {
+  reopenReview: {
     methodKind: "unary";
-    input: typeof ListEntriesByTargetRequestSchema;
-    output: typeof ListEntriesByTargetResponseSchema;
+    input: typeof ReopenReviewRequestSchema;
+    output: typeof ReopenReviewResponseSchema;
   },
   /**
-   * @generated from rpc review.v1.ReviewService.ListEntriesByAuthor
+   * @generated from rpc review.v1.ReviewService.AddReviewEvent
    */
-  listEntriesByAuthor: {
+  addReviewEvent: {
     methodKind: "unary";
-    input: typeof ListEntriesByAuthorRequestSchema;
-    output: typeof ListEntriesByAuthorResponseSchema;
+    input: typeof AddReviewEventRequestSchema;
+    output: typeof AddReviewEventResponseSchema;
   },
   /**
-   * @generated from rpc review.v1.ReviewService.GetMySettings
+   * @generated from rpc review.v1.ReviewService.UpdateReviewEvent
    */
-  getMySettings: {
+  updateReviewEvent: {
     methodKind: "unary";
-    input: typeof GetMySettingsRequestSchema;
-    output: typeof GetMySettingsResponseSchema;
+    input: typeof UpdateReviewEventRequestSchema;
+    output: typeof UpdateReviewEventResponseSchema;
   },
   /**
-   * @generated from rpc review.v1.ReviewService.UpdateMySettings
+   * @generated from rpc review.v1.ReviewService.DeleteReviewEvent
    */
-  updateMySettings: {
+  deleteReviewEvent: {
     methodKind: "unary";
-    input: typeof UpdateMySettingsRequestSchema;
-    output: typeof UpdateMySettingsResponseSchema;
+    input: typeof DeleteReviewEventRequestSchema;
+    output: typeof DeleteReviewEventResponseSchema;
   },
   /**
-   * @generated from rpc review.v1.ReviewService.ListRecentEntries
+   * @generated from rpc review.v1.ReviewService.ListReviewsByTarget
    */
-  listRecentEntries: {
+  listReviewsByTarget: {
     methodKind: "unary";
-    input: typeof ListRecentEntriesRequestSchema;
-    output: typeof ListRecentEntriesResponseSchema;
+    input: typeof ListReviewsByTargetRequestSchema;
+    output: typeof ListReviewsByTargetResponseSchema;
+  },
+  /**
+   * @generated from rpc review.v1.ReviewService.ListReviewsByAuthor
+   */
+  listReviewsByAuthor: {
+    methodKind: "unary";
+    input: typeof ListReviewsByAuthorRequestSchema;
+    output: typeof ListReviewsByAuthorResponseSchema;
+  },
+  /**
+   * @generated from rpc review.v1.ReviewService.ListMyReviews
+   */
+  listMyReviews: {
+    methodKind: "unary";
+    input: typeof ListMyReviewsRequestSchema;
+    output: typeof ListMyReviewsResponseSchema;
+  },
+  /**
+   * @generated from rpc review.v1.ReviewService.ListRecentReviews
+   */
+  listRecentReviews: {
+    methodKind: "unary";
+    input: typeof ListRecentReviewsRequestSchema;
+    output: typeof ListRecentReviewsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_review_v1_service, 0);

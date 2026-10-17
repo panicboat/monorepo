@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require "gruf"
+require_relative "../../../lib/grpc/authenticatable"
+
 module Review
   module Grpc
     class Handler < ::Gruf::Controllers::Base
