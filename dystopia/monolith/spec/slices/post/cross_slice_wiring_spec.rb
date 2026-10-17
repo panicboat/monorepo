@@ -28,6 +28,8 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
     expect(result[public_post.id].author_profile_id).to eq(public_author)
     expect(result[public_post.id].author.profile_id).to eq(public_author)
     expect(result[public_post.id].author.username).to eq("wiring_public")
+    expect(result[public_post.id].author).to be_a(::Profile::V1::ProfileSummary)
+    expect(result[public_post.id].author.is_private).to be false
   end
 
   it "shows a private author's post to an approved follower and marks the viewer's like" do
@@ -131,6 +133,25 @@ RSpec.describe "Post slice wiring with the slices that read posts", type: :datab
       expect(got.post.author.profile_id).to eq(public_author)
       expect { rpc(Post::Grpc::PostHandler, :get_post, Post::V1::GetPostRequest.new(id: private_post.id)) }
         .to status(GRPC::Core::StatusCodes::NOT_FOUND)
+    end
+
+    it "returns the post author as a profile summary with its privacy" do
+      act_as(private_author)
+
+      got = rpc(Post::Grpc::PostHandler, :get_post, Post::V1::GetPostRequest.new(id: private_post.id))
+
+      expect(got.post.author).to be_a(::Profile::V1::ProfileSummary)
+      expect(got.post.author.is_private).to be true
+    end
+
+    it "returns the comment author as a profile summary with its privacy" do
+      act_as(private_author)
+      added = rpc(Post::Grpc::CommentHandler, :add_comment, Post::V1::AddCommentRequest.new(post_id: public_post.id, content: "hello"))
+      listed = rpc(Post::Grpc::CommentHandler, :list_comments, Post::V1::ListCommentsRequest.new(post_id: public_post.id))
+
+      expect(added.comment.author).to be_a(::Profile::V1::ProfileSummary)
+      expect(added.comment.author.is_private).to be true
+      expect(listed.comments.first.author.is_private).to be true
     end
 
     it "returns a private post only to its author" do

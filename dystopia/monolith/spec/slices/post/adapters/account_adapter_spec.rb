@@ -19,36 +19,4 @@ RSpec.describe "Post::Adapters::AccountAdapter", type: :database do
       end
     end
   end
-
-  describe "#get_user_type" do
-    it "returns 'guest' for role 1" do
-      profile_id = create_account_with_profile(role: 1)
-      expect(adapter.get_user_type(profile_id)).to eq("guest")
-    end
-
-    it "returns 'cast' for role 2" do
-      profile_id = create_account_with_profile(role: 2)
-      expect(adapter.get_user_type(profile_id)).to eq("cast")
-    end
-
-    it "returns nil for non-existent user" do
-      expect(adapter.get_user_type(SecureRandom.uuid_v7)).to be_nil
-    end
-  end
-
-  describe "#get_user_types_batch" do
-    it "returns user types for multiple users" do
-      guest_id = create_account_with_profile(role: 1)
-      cast_id = create_account_with_profile(role: 2)
-
-      result = adapter.get_user_types_batch([guest_id, cast_id])
-      expect(result[guest_id]).to eq("guest")
-      expect(result[cast_id]).to eq("cast")
-    end
-
-    it "returns empty hash for empty input" do
-      expect(adapter.get_user_types_batch([])).to eq({})
-      expect(adapter.get_user_types_batch(nil)).to eq({})
-    end
-  end
 end

@@ -18,7 +18,7 @@ RSpec.describe "Post::UseCases::Comments::ListReplies", type: :database do
 
       result = use_case.call(comment_id: parent.id)
 
-      expect(result[:authors][author_profile_id][:username]).to eq("coco_u")
+      expect(result[:authors][author_profile_id].username).to eq("coco_u")
     end
 
     it "returns mentioned_usernames for a reply mention" do

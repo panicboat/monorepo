@@ -3,6 +3,7 @@ syntax = "proto3";
 package post.v1;
 
 import "post/v1/post_service.proto";
+import "profile/v1/service.proto";
 
 service CommentService {
   rpc AddComment(AddCommentRequest) returns (AddCommentResponse);
@@ -20,14 +21,6 @@ message CommentMedia {
   string media_id = 5;
 }
 
-message CommentAuthor {
-  string profile_id = 1;
-  string name = 2;
-  string image_url = 3;
-  string user_type = 4;
-  string username = 5;
-}
-
 message Comment {
   string id = 1;
   string post_id = 2;
@@ -35,7 +28,7 @@ message Comment {
   string author_profile_id = 4;
   string content = 5;
   string created_at = 6;
-  CommentAuthor author = 7;
+  profile.v1.ProfileSummary author = 7;
   repeated CommentMedia media = 8;
   int32 replies_count = 9;
   repeated PostMention mentions = 10;

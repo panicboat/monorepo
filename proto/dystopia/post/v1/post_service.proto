@@ -2,18 +2,13 @@ syntax = "proto3";
 
 package post.v1;
 
+import "profile/v1/service.proto";
+
 service PostService {
   rpc ListPosts(ListPostsRequest) returns (ListPostsResponse);
   rpc GetPost(GetPostRequest) returns (GetPostResponse);
   rpc SavePost(SavePostRequest) returns (SavePostResponse);
   rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
-}
-
-message PostAuthor {
-  string profile_id = 1;
-  string display_name = 2;
-  string username = 3;
-  string avatar_url = 4;
 }
 
 message PostMention {
@@ -37,7 +32,7 @@ message Post {
   string content = 3;
   repeated PostMedia media = 4;
   string created_at = 5;
-  PostAuthor author = 6;
+  profile.v1.ProfileSummary author = 6;
   int32 likes_count = 7;
   int32 comments_count = 8;
   string visibility = 9;

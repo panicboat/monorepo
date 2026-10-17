@@ -127,7 +127,7 @@ module Post
 
       def present_posts(rows)
         post_ids = rows.map(&:id)
-        authors = profile_author_adapter.load(rows.map(&:author_profile_id))
+        authors = summarize_profiles.call(profile_ids: rows.map(&:author_profile_id))
         likes_counts = like_repo.likes_count_batch(post_ids: post_ids)
         comments_counts = comment_repo.comments_count_batch(post_ids: post_ids, exclude_author_profile_ids: [])
         liked = current_profile_id ? like_repo.profile_liked_status_batch(post_ids: post_ids, profile_id: current_profile_id) : {}
@@ -137,7 +137,7 @@ module Post
         rows.map do |post|
           PostPresenter.to_post_proto(
             post,
-            author: authors[post.author_profile_id],
+            author: authors[post.author_profile_id.to_s],
             likes_count: likes_counts[post.id] || 0,
             comments_count: comments_counts[post.id] || 0,
             liked: liked[post.id] || false,
@@ -148,7 +148,7 @@ module Post
       end
 
       def present_post(post, mentioned_usernames: nil)
-        authors = profile_author_adapter.load([post.author_profile_id])
+        authors = summarize_profiles.call(profile_ids: [post.author_profile_id])
         likes_count = like_repo.likes_count(post_id: post.id)
         comments_count = comment_repo.comments_count(post_id: post.id, exclude_author_profile_ids: [])
         liked = current_profile_id ? like_repo.profile_liked?(post_id: post.id, profile_id: current_profile_id) : false
@@ -157,7 +157,7 @@ module Post
 
         PostPresenter.to_post_proto(
           post,
-          author: authors[post.author_profile_id],
+          author: authors[post.author_profile_id.to_s],
           likes_count: likes_count,
           comments_count: comments_count,
           liked: liked,
@@ -174,7 +174,7 @@ module Post
         ids = profile_ids.uniq
         return {} if ids.empty?
 
-        profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
+        summarize_profiles.call(profile_ids: ids).transform_values(&:username)
       end
 
       def notifications_emit

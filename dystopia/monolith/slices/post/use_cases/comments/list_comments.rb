@@ -44,24 +44,18 @@ module Post
           ids = comments.flat_map { |comment| comment.comment_mentions.map(&:profile_id) }.uniq
           return {} if ids.empty?
 
-          profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
+          summarize_profiles.call(profile_ids: ids).transform_values(&:username)
         end
 
         def build_authors(author_profile_ids)
           return {} if author_profile_ids.empty?
 
-          infos = profile_author_adapter.load(author_profile_ids).transform_keys(&:to_s)
+          summaries = summarize_profiles.call(profile_ids: author_profile_ids)
           author_profile_ids.each_with_object({}) do |author_profile_id, hash|
-            info = infos[author_profile_id.to_s]
-            next unless info
+            summary = summaries[author_profile_id.to_s]
+            next unless summary
 
-            hash[author_profile_id] = {
-              id: author_profile_id.to_s,
-              name: info.display_name,
-              image_url: info.avatar_url,
-              user_type: "",
-              username: info.username
-            }
+            hash[author_profile_id] = summary
           end
         end
       end

@@ -21,7 +21,7 @@ RSpec.describe Post::Grpc::CommentHandler, type: :database do
 
       author = handler.send(:get_comment_author, author_profile_id)
 
-      expect(author[:username]).to eq("coco_u")
+      expect(author.username).to eq("coco_u")
     end
 
     it "returns nil when the profile cannot be resolved" do
@@ -63,7 +63,7 @@ RSpec.describe Post::Grpc::CommentHandler, type: :database do
 
       author = response.comments.first.author
       expect(author).not_to be_nil
-      expect(author.name).to eq("テストゲスト")
+      expect(author.display_name).to eq("テストゲスト")
     end
   end
 
