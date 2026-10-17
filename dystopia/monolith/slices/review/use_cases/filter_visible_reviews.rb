@@ -19,7 +19,12 @@ module Review
         return [] unless reachable_ids(viewer_profile_id, [page_owner_profile_id]).include?(page_owner_profile_id)
 
         blocked = blocked_ids(viewer_profile_id)
-        reviews.reject { |review| blocked.include?(other_party_id(review, page_owner_profile_id)) }
+        reviews = reviews.reject { |review| blocked.include?(other_party_id(review, page_owner_profile_id)) }
+        authored = reviews.select { |review| review.author_profile_id == page_owner_profile_id }
+        return reviews if authored.empty?
+
+        reachable = reachable_ids(viewer_profile_id, authored.map(&:target_profile_id).uniq)
+        reviews.select { |review| review.author_profile_id != page_owner_profile_id || reachable.include?(review.target_profile_id) }
       end
 
       def recent(viewer_profile_id:, reviews:)

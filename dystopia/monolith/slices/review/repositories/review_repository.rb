@@ -87,16 +87,8 @@ module Review
         end
       end
 
-      def counts_by_account(author_account_id:)
-        # Remove the relation's implicit ORDER BY because PostgreSQL rejects it with GROUP BY.
-        by_status = review_records.dataset.unordered
-          .where(author_account_id: author_account_id)
-          .group_and_count(:status)
-          .to_a
-          .to_h { |row| [row[:status], row[:count]] }
-        open = by_status.fetch("open", 0)
-        closed = by_status.fetch("closed", 0)
-        { total: open + closed, open: open, closed: closed }
+      def parties_and_statuses_by_account(author_account_id:)
+        review_records.where(author_account_id: author_account_id).select(:author_profile_id, :target_profile_id, :status).to_a
       end
 
       def rating_summary(target_profile_id:)

@@ -17,11 +17,21 @@ module Review
 
         limit = page_reviews.limit_for(limit)
         rows = review_repo.list_by_account(author_account_id: viewer_account_id, limit: limit, cursor: cursor)
-        counts = cursor.nil? ? review_repo.counts_by_account(author_account_id: viewer_account_id) : NO_COUNTS
+        counts = cursor.nil? ? counts_for(viewer_account_id) : NO_COUNTS
         page_reviews.call(
           rows: rows, limit: limit, viewer_account_id: viewer_account_id,
           visible: ->(page) { filter_visible_reviews.own(reviews: page) }
         ).merge(counts: counts)
+      end
+
+      private
+
+      def counts_for(account_id)
+        rows = review_repo.parties_and_statuses_by_account(author_account_id: account_id)
+        statuses = filter_visible_reviews.own(reviews: rows).map(&:status)
+        open = statuses.count("open")
+        closed = statuses.count("closed")
+        { total: open + closed, open: open, closed: closed }
       end
     end
   end

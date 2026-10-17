@@ -79,6 +79,63 @@ RSpec.describe "Review list use cases", type: :database do
     expect(result[:reviews].map { |r| r[:id] }).to eq([mine[:id]])
   end
 
+  context "on a guest's page listing the casts the guest wrote about" do
+    let(:viewer_account) { create_account(role: 1) }
+    let(:viewer) { create_account_with_profile(account_id: viewer_account, username: "viewer") }
+
+    def new_cast(username)
+      create_account_with_profile(account_id: create_account(role: 2), username: username)
+    end
+
+    def by_author(viewer_account:, viewer:)
+      uc(:list_reviews_by_author).call(viewer_account_id: viewer_account, viewer_profile_id: viewer, author_profile_id: guest, limit: 20, cursor: nil)[:reviews].map { |r| r[:id] }
+    end
+
+    let!(:plain) { write(at: Time.now - 40) }
+    let!(:about_private) do
+      private_cast = new_cast("private_cast")
+      write(target: private_cast, at: Time.now - 30).tap { db[:profile__profiles].where(id: private_cast).update(is_private: true) }
+    end
+    let!(:about_blocked) do
+      blocked_cast = new_cast("blocked_cast")
+      write(target: blocked_cast, at: Time.now - 20).tap do
+        Social::Slice["repositories.block_repository"].block(blocker_profile_id: viewer, blocked_profile_id: blocked_cast)
+      end
+    end
+    let!(:about_disabled) do
+      disabled_cast = new_cast("disabled_cast")
+      write(target: disabled_cast, at: Time.now - 10).tap { db[:profile__profiles].where(id: disabled_cast).update(disabled_at: Time.now) }
+    end
+
+    it "leaves out a review about a private cast the viewer does not follow" do
+      expect(by_author(viewer_account: viewer_account, viewer: viewer)).not_to include(about_private[:id])
+    end
+
+    it "leaves out a review about a cast the viewer blocks" do
+      expect(by_author(viewer_account: viewer_account, viewer: viewer)).not_to include(about_blocked[:id])
+    end
+
+    it "leaves out a review about a disabled cast" do
+      expect(by_author(viewer_account: viewer_account, viewer: viewer)).not_to include(about_disabled[:id])
+    end
+
+    it "shows the author every review except the one about a disabled cast" do
+      expect(by_author(viewer_account: guest_account, viewer: guest)).to eq([about_blocked[:id], about_private[:id], plain[:id]])
+    end
+  end
+
+  it "leaves a review about a disabled cast out of the viewer's own counts as well as the list" do
+    write(rating: 4, close: true)
+    disabled_cast = create_account_with_profile(account_id: create_account(role: 2), username: "disabled_cast")
+    write(target: disabled_cast)
+    db[:profile__profiles].where(id: disabled_cast).update(disabled_at: Time.now)
+
+    result = uc(:list_my_reviews).call(viewer_account_id: guest_account, limit: 20, cursor: nil)
+
+    expect(result[:reviews].length).to eq(1)
+    expect(result[:counts]).to eq(total: 1, open: 0, closed: 1)
+  end
+
   it "lists and counts the viewer's own reviews across the account's profiles" do
     second = create_account_with_profile(account_id: guest_account, username: "guest_alt")
     write(at: Time.now - 20)
@@ -104,6 +161,26 @@ RSpec.describe "Review list use cases", type: :database do
     result = uc(:list_recent_reviews).call(viewer_account_id: cast_account, viewer_profile_id: cast, limit: 20, cursor: nil)
 
     expect(result[:reviews].map { |r| r[:id] }).to eq([older[:id], newer[:id]])
+  end
+
+  it "walks every recent review exactly once across pages whose dates tie" do
+    ids = 5.times.map do |i|
+      review = write
+      db[:review__reviews].where(id: review[:id]).update(last_occurred_on: Date.new(2026, 10, i < 3 ? 5 : 6))
+      review[:id]
+    end
+    seen = []
+    cursor = nil
+    loop do
+      page = uc(:list_recent_reviews).call(viewer_account_id: cast_account, viewer_profile_id: cast, limit: 2, cursor: cursor)
+      seen.concat(page[:reviews].map { |r| r[:id] })
+      break unless page[:has_more]
+
+      cursor = page[:next_cursor]
+    end
+
+    expect(seen.sort).to eq(ids.sort)
+    expect(seen.uniq.length).to eq(5)
   end
 
   it "leaves a blocked author out of recent reviews while another author's review stays" do

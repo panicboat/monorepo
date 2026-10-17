@@ -32,14 +32,14 @@ RSpec.describe Review::Repositories::ReviewRepository, type: :database do
     expect(repo.rating_summary(target_profile_id: cast)).to eq(average_rating: 0.0, rater_count: 0, review_count: 0)
   end
 
-  it "lists by author profile and counts by account across profiles" do
+  it "lists by author profile and reads the statuses by account across profiles" do
     second = create_account_with_profile(account_id: guest_account, username: "guest_alt")
     mine = write
     write(author_profile: second, rating: 2, status: "closed")
 
     expect(repo.list_by_author_profile(author_profile_id: guest, limit: 20).map(&:id)).to eq([mine.id])
     expect(repo.list_by_account(author_account_id: guest_account, limit: 20).length).to eq(2)
-    expect(repo.counts_by_account(author_account_id: guest_account)).to eq(total: 2, open: 1, closed: 1)
+    expect(repo.parties_and_statuses_by_account(author_account_id: guest_account).map(&:status).sort).to eq(%w[closed open])
   end
 
   it "deletes the reviews a profile wrote or received" do
