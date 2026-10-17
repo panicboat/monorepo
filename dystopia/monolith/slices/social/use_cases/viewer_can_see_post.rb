@@ -19,15 +19,19 @@ module Social
 
         profile = get_profile.call(profile_id: author_profile_id)
         return false unless profile
-        return true unless profile.is_private
+        return true unless follow_required?(profile, post)
 
         return false unless viewer_profile_id
 
         row = follow_repo.find(follower_profile_id: viewer_profile_id, followee_profile_id: author_profile_id)
-        row && row.status == "approved"
+        row&.status == "approved"
       end
 
       private
+
+      def follow_required?(profile, post)
+        profile.is_private || (post.respond_to?(:visibility) && post.visibility == "private")
+      end
 
       def get_profile
         @get_profile ||= Profile::Slice["use_cases.get_profile"]

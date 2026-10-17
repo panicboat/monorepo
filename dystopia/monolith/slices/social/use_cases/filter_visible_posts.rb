@@ -32,7 +32,7 @@ module Social
           next true if viewer_profile_id && author_profile_id == viewer_profile_id
           next false unless profile_by_author[author_profile_id]
           next false if blocked_set.include?(author_profile_id.to_s)
-          next true unless profile_by_author[author_profile_id].is_private
+          next true unless follow_required?(profile_by_author[author_profile_id], post)
           next false unless viewer_profile_id
 
           follow_statuses[author_profile_id.to_s] == "approved"
@@ -40,6 +40,10 @@ module Social
       end
 
       private
+
+      def follow_required?(profile, post)
+        profile.is_private || (post.respond_to?(:visibility) && post.visibility == "private")
+      end
 
       def get_profile
         @get_profile ||= Profile::Slice["use_cases.get_profile"]
