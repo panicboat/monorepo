@@ -158,7 +158,7 @@ RSpec.describe "Visibility of a profile that others must not see", type: :databa
       schedules = Schedule::Slice["use_cases.list_schedules"].call(profile_id: ghost, from_date: "2026-10-01", to_date: "2026-10-31")
 
       expect(notifications[:rows].map(&:latest_actor_profile_id)).to eq([shown])
-      expect(footprints.map { |footprint| footprint.visitor.id }).to eq([shown])
+      expect(footprints.map { |footprint| footprint.visitor.profile_id }).to eq([shown])
       expect(schedules).to be_empty
       expect(Footprints::Slice["use_cases.record_visit"].call(visitor_profile_id: stranger, visited_profile_id: ghost)).to be_nil
       expect(db[:footprints__visits].where(visited_profile_id: ghost).count).to eq(0)

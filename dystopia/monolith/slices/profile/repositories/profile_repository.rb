@@ -55,6 +55,19 @@ module Profile
         visible_profiles.where(id: ids).pluck(:id)
       end
 
+      def visible_by_ids(ids)
+        ids = ids.select { |id| uuid?(id) }
+        return [] if ids.empty?
+
+        visible_profiles.where(id: ids).to_a
+      end
+
+      def roles_by_account_ids(account_ids)
+        return {} if account_ids.empty?
+
+        profiles.dataset.db[:identity__accounts].where(id: account_ids).select_hash(:id, :role).transform_keys(&:to_s)
+      end
+
       def username_available?(username, exclude_profile_id: nil)
         return false if username.nil? || username.strip.empty?
 

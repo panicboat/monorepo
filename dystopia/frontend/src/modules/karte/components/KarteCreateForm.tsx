@@ -1,12 +1,12 @@
 "use client";
 
-import type { SocialProfileView } from "@/modules/social/types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import { useKarteMutations } from "../hooks/useKarteMutations";
 import type { KarteEventInput } from "../types";
 import { KarteEventForm } from "./KarteEventForm";
 
 interface KarteCreateFormProps {
-  target: SocialProfileView;
+  target: ProfileSummaryView;
   event: KarteEventInput;
   onEventChange: (next: KarteEventInput) => void;
   rating: number | null;

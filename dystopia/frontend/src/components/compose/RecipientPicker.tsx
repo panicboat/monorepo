@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { useFollowList, useFollowerList } from "@/modules/social/hooks";
-import type { SocialProfileView } from "@/modules/social/types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import { useSearchUsers, type SearchUsersRoleFilter } from "@/modules/discovery/hooks/useSearchUsers";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import type { RecipientSource } from "./resolveRecipientSource";
@@ -14,10 +14,10 @@ const ROLE_LABEL = { cast: "キャスト", guest: "ゲスト" } as const;
 
 interface RecipientPickerProps {
   source: RecipientSource;
-  onPick: (profile: SocialProfileView) => void;
+  onPick: (profile: ProfileSummaryView) => void;
 }
 
-function matches(profile: SocialProfileView, query: string): boolean {
+function matches(profile: ProfileSummaryView, query: string): boolean {
   const q = query.toLowerCase();
   return profile.displayName.toLowerCase().includes(q) || profile.username.toLowerCase().includes(q);
 }

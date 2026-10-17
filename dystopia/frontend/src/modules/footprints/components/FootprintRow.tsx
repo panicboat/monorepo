@@ -11,11 +11,11 @@ export interface FootprintRowProps {
 
 export function FootprintRow({ footprint }: FootprintRowProps) {
   const { visitor, lastVisitedAt, isUnread, visitCount } = footprint;
-  const href = visitor.username ? `/u/${encodeURIComponent(visitor.username)}` : undefined;
+  const href = visitor?.username ? `/u/${encodeURIComponent(visitor.username)}` : undefined;
   const nameAndHandle = (
     <>
-      <p className="truncate font-bold text-text-primary">{visitor.displayName || "—"}</p>
-      <p className="truncate text-sm text-text-secondary">@{visitor.username || "—"}</p>
+      <p className="truncate font-bold text-text-primary">{visitor ? visitor.displayName || "—" : "削除したプロフィール"}</p>
+      <p className="truncate text-sm text-text-secondary">{visitor ? `@${visitor.username || "—"}` : ""}</p>
     </>
   );
 
@@ -25,8 +25,8 @@ export function FootprintRow({ footprint }: FootprintRowProps) {
         <span aria-hidden="true" className="-ml-2 h-12 w-0.5 rounded-full bg-gradient-brand" />
       )}
       <Avatar
-        src={visitor.avatarUrl || undefined}
-        fallback={(visitor.displayName || "?").slice(0, 1)}
+        src={visitor?.avatarUrl || undefined}
+        fallback={(visitor?.displayName || "?").slice(0, 1)}
         size="md"
         href={href}
       />

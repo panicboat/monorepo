@@ -27,7 +27,7 @@ message SearchUsersRequest {
 }
 
 message SearchUsersResponse {
-  repeated profile.v1.Profile profiles = 1;
+  repeated profile.v1.ProfileSummary profiles = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }
@@ -62,7 +62,7 @@ message SuggestUsersRequest {
 }
 
 message SuggestUsersResponse {
-  repeated profile.v1.Profile profiles = 1;
+  repeated profile.v1.ProfileSummary profiles = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }

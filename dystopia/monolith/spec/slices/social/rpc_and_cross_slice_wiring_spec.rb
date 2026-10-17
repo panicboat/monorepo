@@ -50,10 +50,13 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
 
       following = rpc(Social::Grpc::FollowHandler, :list_following, Social::V1::ListFollowingRequest.new)
       followers = rpc(Social::Grpc::FollowHandler, :list_followers, Social::V1::ListFollowersRequest.new(profile_id: public_cast))
-      expect(following.profiles.map(&:id)).to eq([public_cast])
+      expect(following.profiles.map(&:profile_id)).to eq([public_cast])
       expect(following.profiles.map(&:role)).to eq([2])
-      expect(followers.profiles.map(&:id)).to eq([viewer])
+      expect(following.profiles).to all(be_a(::Profile::V1::ProfileSummary))
+      expect(following.profiles.map(&:is_private)).to eq([false])
+      expect(followers.profiles.map(&:profile_id)).to eq([viewer])
       expect(followers.profiles.map(&:role)).to eq([1])
+      expect(followers.profiles).to all(be_a(::Profile::V1::ProfileSummary))
       expect(db[:social__follows].select_map([:follower_profile_id, :followee_profile_id, :status])).to eq([[viewer, public_cast, "approved"]])
 
       rpc(Social::Grpc::FollowHandler, :unfollow, Social::V1::UnfollowRequest.new(target_profile_id: public_cast))
@@ -68,7 +71,8 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       act_as(private_cast)
       pending = rpc(Social::Grpc::FollowHandler, :list_pending_follow_requests, Social::V1::ListPendingFollowRequestsRequest.new)
       pending_count = rpc(Social::Grpc::FollowHandler, :get_pending_follow_count, Social::V1::GetPendingFollowCountRequest.new).count
-      expect(pending.profiles.map(&:id)).to eq([viewer])
+      expect(pending.profiles.map(&:profile_id)).to eq([viewer])
+      expect(pending.profiles).to all(be_a(::Profile::V1::ProfileSummary))
       expect(pending_count).to eq(1)
 
       rpc(Social::Grpc::FollowHandler, :approve_follow_request, Social::V1::ApproveFollowRequestRequest.new(requester_profile_id: viewer))
@@ -115,8 +119,10 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       listed = rpc(Social::Grpc::BlockHandler, :list_blocked, Social::V1::ListBlockedRequest.new)
 
       expect(status).to eq(public_cast => true, private_cast => false)
-      expect(listed.profiles.map(&:id)).to eq([public_cast])
+      expect(listed.profiles.map(&:profile_id)).to eq([public_cast])
       expect(listed.profiles.map(&:role)).to eq([2])
+      expect(listed.profiles).to all(be_a(::Profile::V1::ProfileSummary))
+      expect(listed.profiles.map(&:is_private)).to eq([false])
       expect(db[:social__follows].count).to eq(0)
       expect(db[:social__blocks].select_map([:blocker_profile_id, :blocked_profile_id])).to eq([[viewer, public_cast]])
 

@@ -49,8 +49,9 @@ RSpec.describe Footprints::Grpc::FootprintsHandler, type: :database do
     visit(cast)
 
     act_as(cast)
-    expect(footprints.map { |f| [f.visitor.id, f.visitor.role, f.is_unread, f.visit_count] }).to eq([[other_cast, 2, true, 1], [guest, 1, true, 1]])
+    expect(footprints.map { |f| [f.visitor.profile_id, f.visitor.role, f.is_unread, f.visit_count] }).to eq([[other_cast, 2, true, 1], [guest, 1, true, 1]])
     expect(unread).to eq(2)
+    expect(footprints.first.visitor).to be_a(::Profile::V1::ProfileSummary)
 
     rpc(:mark_read, Footprints::V1::MarkReadRequest.new)
 
@@ -61,6 +62,21 @@ RSpec.describe Footprints::Grpc::FootprintsHandler, type: :database do
     act_as(guest)
     expect(footprints).to be_empty
     expect(unread).to eq(0)
+  end
+
+  it "returns the visitor as a summary that tells whether the visitor is private" do
+    private_guest = create_account_with_profile(username: "footprint_private_guest", is_private: true)
+    act_as(private_guest)
+    visit(cast)
+    act_as(guest)
+    visit(cast)
+
+    act_as(cast)
+    summaries = footprints.to_h { |f| [f.visitor.profile_id, f.visitor] }
+
+    expect(summaries.values).to all(be_a(::Profile::V1::ProfileSummary))
+    expect(summaries[private_guest].is_private).to be(true)
+    expect(summaries[guest].is_private).to be(false)
   end
 
   it "keeps one profile's read state from clearing another profile's unread footprints" do

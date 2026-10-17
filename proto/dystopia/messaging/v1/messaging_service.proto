@@ -25,7 +25,7 @@ message Message {
 
 message Thread {
   string id = 1;
-  profile.v1.Profile counterpart = 2;
+  profile.v1.ProfileSummary counterpart = 2;
   Message last_message = 3;
   int32 unread_count = 4;
   google.protobuf.Timestamp last_message_at = 5;

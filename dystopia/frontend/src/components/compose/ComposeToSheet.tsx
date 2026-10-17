@@ -10,7 +10,7 @@ import { ReviewCreateForm } from "@/modules/review/components/ReviewCreateForm";
 import { useStartChat } from "@/modules/messaging/hooks/useStartChat";
 import type { KarteEventInput } from "@/modules/karte/types";
 import type { ReviewEventInput } from "@/modules/review/types";
-import type { SocialProfileView } from "@/modules/social/types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import { useAuthStore, selectRole } from "@/stores/authStore";
 import { useToastStore } from "@/stores/toastStore";
 import { RecipientPicker } from "./RecipientPicker";
@@ -23,7 +23,7 @@ interface ComposeToSheetProps {
   kind: RecipientKind;
   open: boolean;
   onClose: () => void;
-  initialTarget?: SocialProfileView;
+  initialTarget?: ProfileSummaryView;
   onSaved?: () => void;
 }
 
@@ -32,7 +32,7 @@ export function ComposeToSheet({ kind, open, onClose, initialTarget, onSaved }: 
   const showToast = useToastStore((s) => s.show);
   const { start, loading: opening } = useStartChat();
   const pathname = usePathname();
-  const [target, setTarget] = useState<SocialProfileView | null>(initialTarget ?? null);
+  const [target, setTarget] = useState<ProfileSummaryView | null>(initialTarget ?? null);
   const [error, setError] = useState<string | null>(null);
   const [karteEvent, setKarteEvent] = useState<KarteEventInput>(() => emptyKarteEvent());
   const [karteRating, setKarteRating] = useState<number | null>(null);
@@ -43,7 +43,7 @@ export function ComposeToSheet({ kind, open, onClose, initialTarget, onSaved }: 
   const source = resolveRecipientSource(kind, viewerRole);
   const composeKind = target && kind !== "message" ? kind : null;
 
-  const pick = async (profile: SocialProfileView) => {
+  const pick = async (profile: ProfileSummaryView) => {
     setError(null);
     if (kind !== "message") return setTarget(profile);
     if (starting) return;

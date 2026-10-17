@@ -2,7 +2,7 @@
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import type { SocialProfileView } from "@/modules/social/types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -19,14 +19,14 @@ vi.mock("./KarteList", () => ({
   KarteList: ({ variant, empty }: { variant: string; empty: string }) => <div>list:{variant}:{empty}</div>,
 }));
 vi.mock("@/components/compose/ComposeToSheet", () => ({
-  ComposeToSheet: ({ kind, open, initialTarget }: { kind: string; open: boolean; initialTarget?: SocialProfileView }) => (
+  ComposeToSheet: ({ kind, open, initialTarget }: { kind: string; open: boolean; initialTarget?: ProfileSummaryView }) => (
     <div>compose:{kind}:{String(open)}:{initialTarget?.profileId}</div>
   ),
 }));
 
 const { GuestKarteTab } = await import("./GuestKarteTab");
 
-const guest: SocialProfileView = { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" };
+const guest: ProfileSummaryView = { profileId: "guest-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" };
 
 describe("GuestKarteTab", () => {
   it("shows the reliability above the guest's kartes and writes a karte for this guest", async () => {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ComposeToSheet } from "@/components/compose/ComposeToSheet";
-import type { SocialProfileView } from "@/modules/social/types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
 import { useCastReviews } from "../hooks/useCastReviews";
 import { ReviewList } from "./ReviewList";
@@ -14,7 +14,7 @@ interface Composing {
   open: boolean;
 }
 
-export function CastReviewsTab({ cast }: { cast: SocialProfileView }) {
+export function CastReviewsTab({ cast }: { cast: ProfileSummaryView }) {
   const viewerRole = useAuthStore(selectRole);
   const viewerId = useAuthStore(selectActiveProfileId);
   const { reviews, summary, hasMore, loading, loadMore } = useCastReviews(cast.profileId);

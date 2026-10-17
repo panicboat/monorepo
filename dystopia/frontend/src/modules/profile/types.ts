@@ -1,3 +1,5 @@
+import type { Role } from "@/lib/auth";
+
 export interface SnsLinksView {
   x: string;
   instagram: string;
@@ -66,4 +68,13 @@ export interface SaveProfileMediaPayload {
 export interface UsernameAvailability {
   available: boolean;
   message: string;
+}
+
+export interface ProfileSummaryView {
+  profileId: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string;
+  isPrivate: boolean;
+  role: Role | null;
 }

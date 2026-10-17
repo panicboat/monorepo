@@ -29,7 +29,7 @@ message ListBlockedRequest {
 }
 
 message ListBlockedResponse {
-  repeated profile.v1.Profile profiles = 1;
+  repeated profile.v1.ProfileSummary profiles = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }

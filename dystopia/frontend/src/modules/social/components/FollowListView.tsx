@@ -8,7 +8,7 @@ import { LockMark } from "@/components/ui/lock-mark";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { useFollowList, useFollowerList } from "@/modules/social/hooks";
 import { FollowButton } from "./FollowButton";
-import type { SocialProfileView } from "../types";
+import type { ProfileSummaryView } from "@/modules/profile/types";
 
 export type FollowListTab = "following" | "followers";
 
@@ -17,7 +17,7 @@ const TABS: TabItem[] = [
   { id: "followers", label: "フォロワー" },
 ];
 
-function ProfileRow({ profile }: { profile: SocialProfileView }) {
+function ProfileRow({ profile }: { profile: ProfileSummaryView }) {
   const href = `/u/${encodeURIComponent(profile.username)}`;
   return (
     <div className="flex items-center gap-3 border-b border-border px-4 py-3">
