@@ -5,6 +5,8 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { MessageComposer } from "./MessageComposer";
 
+vi.mock("@/modules/profile/components/ActingProfileLabel", () => ({ ActingProfileLabel: () => <span>acting-profile</span> }));
+
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 function flush() {
@@ -14,6 +16,25 @@ function flush() {
 }
 
 describe("MessageComposer", () => {
+  it("shows which profile the message is sent as above the input", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(<MessageComposer onSend={vi.fn()} />);
+    });
+
+    const html = container.innerHTML;
+    expect(html.indexOf("acting-profile")).toBeGreaterThanOrEqual(0);
+    expect(html.indexOf("acting-profile")).toBeLessThan(html.indexOf("<textarea"));
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
   it("shows the failure reason when onSend rejects, and keeps the draft", async () => {
     const container = document.createElement("div");
     document.body.appendChild(container);

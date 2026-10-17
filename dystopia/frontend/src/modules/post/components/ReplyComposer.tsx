@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAddComment } from "@/modules/post/hooks/useAddComment";
+import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
 
 interface ReplyComposerProps {
   postId: string;
@@ -39,6 +40,7 @@ export function ReplyComposer({ postId, parentId, onCancel, onSubmitted }: Reply
 
   return (
     <form onSubmit={handleSubmit} className="border-b border-divider py-3 pl-12 pr-4">
+      <ActingProfileLabel className="mb-2" />
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}

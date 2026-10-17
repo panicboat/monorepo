@@ -10,6 +10,7 @@ import { extractHashtags } from "@/modules/post/lib/hashtags";
 import { PostComposerAttachments } from "./PostComposerAttachments";
 import { useMediaUpload } from "@/modules/media/hooks/useMediaUpload";
 import type { UploadedMedia } from "@/modules/media/types";
+import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
 
 const MAX_ATTACHMENTS = 4;
 
@@ -99,6 +100,7 @@ export function PostComposer({
 
   return (
     <form onSubmit={handleSubmit} className={className}>
+      <ActingProfileLabel className="mb-2" />
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
