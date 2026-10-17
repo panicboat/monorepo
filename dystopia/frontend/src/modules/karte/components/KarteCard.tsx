@@ -4,9 +4,9 @@ import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatTimeAgo } from "@/lib/utils/date";
+import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { outcomeLabel, stageLabel, tagLabel } from "../lib/catalog";
-import { formatMonthDay } from "../lib/dates";
 import type { Karte, KarteEvent } from "../types";
 
 export function karteEventLine(event: KarteEvent): string {
