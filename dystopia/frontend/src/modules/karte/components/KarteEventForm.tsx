@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { KARTE_OUTCOMES, KARTE_STAGES, KARTE_TAGS, MAX_NOTE_LENGTH, isNoteRequired } from "../lib/catalog";
 import { todayInJapan } from "../lib/dates";
 import type { KarteEventInput } from "../types";
-import { KarteRatingInput } from "./KarteRatingInput";
+import { StarRatingInput } from "@/components/ui/star-rating-input";
 import { ActingProfileLabel } from "@/modules/profile/components/ActingProfileLabel";
 
 export interface KarteGuest {
@@ -126,7 +126,7 @@ export function KarteEventForm({ guest, value, onChange, rating, submitLabel, su
       {rating && (
         <fieldset>
           <legend className="mb-2 text-sm font-bold text-text-primary">予約・接客の信頼性</legend>
-          <KarteRatingInput value={rating.value} onChange={rating.onChange} />
+          <StarRatingInput label="予約・接客の信頼性" value={rating.value} onChange={rating.onChange} />
           <p className="mt-1 text-xs text-text-secondary">3.0 が標準。評価はカルテ全体につき 1 つです。星は完了するときに必要です</p>
         </fieldset>
       )}

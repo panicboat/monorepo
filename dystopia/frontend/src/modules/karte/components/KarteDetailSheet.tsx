@@ -12,7 +12,7 @@ import { formatMonthDay } from "../lib/dates";
 import type { Karte, KarteEventInput } from "../types";
 import { profileName } from "./KarteCard";
 import { KarteEventForm, emptyKarteEvent } from "./KarteEventForm";
-import { KarteRatingInput } from "./KarteRatingInput";
+import { StarRatingInput } from "@/components/ui/star-rating-input";
 import { KarteStatusBadge } from "./KarteStatusBadge";
 
 type Step = { kind: "detail" } | { kind: "append" } | { kind: "edit"; eventId: string };
@@ -120,7 +120,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
           </p>
           {editable && (
             <div className="mt-3">
-              <KarteRatingInput value={karte.rating} disabled={loading} onChange={(rating) => void confirmed(() => updateRating(karte.id, rating))} />
+              <StarRatingInput label="予約・接客の信頼性" value={karte.rating} disabled={loading} onChange={(rating) => void confirmed(() => updateRating(karte.id, rating))} />
             </div>
           )}
         </div>

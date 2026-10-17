@@ -2,25 +2,26 @@
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import { KarteRatingInput } from "./KarteRatingInput";
+import { StarRatingInput } from "./star-rating-input";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 async function mount(value: number | null, onChange: (next: number | null) => void) {
   const container = document.createElement("div");
   await act(async () => {
-    createRoot(container).render(createElement(KarteRatingInput, { value, onChange }));
+    createRoot(container).render(createElement(StarRatingInput, { label: "満足度", value, onChange }));
   });
   return container;
 }
 
 const star = (container: HTMLElement, n: number) => container.querySelector(`button[aria-label="${n}つ星"]`) as HTMLButtonElement;
 
-describe("KarteRatingInput", () => {
-  it("chooses the pressed star", async () => {
+describe("StarRatingInput", () => {
+  it("names the group with the given label and chooses the pressed star", async () => {
     const onChange = vi.fn();
     const container = await mount(null, onChange);
 
+    expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("満足度");
     star(container, 4).click();
 
     expect(onChange).toHaveBeenCalledWith(4);

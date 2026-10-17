@@ -4,15 +4,16 @@ import { cn } from "@/lib/utils";
 
 const STARS = [1, 2, 3, 4, 5] as const;
 
-interface KarteRatingInputProps {
+interface StarRatingInputProps {
+  label: string;
   value: number | null;
   onChange: (next: number | null) => void;
   disabled?: boolean;
 }
 
-export function KarteRatingInput({ value, onChange, disabled }: KarteRatingInputProps) {
+export function StarRatingInput({ label, value, onChange, disabled }: StarRatingInputProps) {
   return (
-    <div role="group" aria-label="予約・接客の信頼性" className="flex gap-1">
+    <div role="group" aria-label={label} className="flex gap-1">
       {STARS.map((star) => (
         <button
           key={star}
