@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { useToastStore } from "@/stores/toastStore";
 import { useKarte } from "../hooks/useKarte";
 import { useKarteMutations } from "../hooks/useKarteMutations";
@@ -13,7 +14,6 @@ import type { Karte, KarteEventInput } from "../types";
 import { profileName } from "./KarteCard";
 import { KarteEventForm, emptyKarteEvent } from "./KarteEventForm";
 import { StarRatingInput } from "@/components/ui/star-rating-input";
-import { KarteStatusBadge } from "./KarteStatusBadge";
 
 type Step = { kind: "detail" } | { kind: "append" } | { kind: "edit"; eventId: string };
 
@@ -113,7 +113,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
             <p className="text-3xl font-bold text-text-primary">
               {karte.rating === null ? "—" : karte.rating.toFixed(1)} <span className="text-base text-rating">★</span>
             </p>
-            <KarteStatusBadge status={karte.status} />
+            <StatusBadge tone={karte.status === "open" ? "warning" : "success"}>{karte.status === "open" ? "記録中" : "完了"}</StatusBadge>
           </div>
           <p className="mt-2 text-xs text-text-secondary">
             {isOpen ? "記録中のため平均評価には含まれません" : "完了済みの評価は平均に反映されます"}
