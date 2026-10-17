@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { Users, X } from "lucide-react";
 import { Avatar } from "./avatar";
 import { LockMark } from "./lock-mark";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ export interface PostCardVideo {
 }
 
 export interface PostCardProps {
-  author: { name: string; handle: string; avatarSrc?: string };
+  author: { name: string; handle: string; avatarSrc?: string; isPrivate?: boolean };
   authorHref?: string;
   detailHref?: string;
   onDetailClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
@@ -52,6 +52,7 @@ export function PostCard({
   const nameAndHandle = (
     <span className="flex items-center gap-1">
       <span className="font-bold text-text-primary">{author.name}</span>
+      {author.isPrivate && <LockMark label="鍵付き" className="text-xs" />}
       <span className="text-text-secondary">@{author.handle}</span>
     </span>
   );
@@ -78,7 +79,11 @@ export function PostCard({
           <div className="flex items-center gap-1 text-sm">
             {authorHref ? <Link href={authorHref}>{nameAndHandle}</Link> : nameAndHandle}
             <span className="text-text-muted">· {time}</span>
-            {isPrivate && <LockMark label="非公開" className="text-xs" />}
+            {isPrivate && (
+              <span role="img" aria-label="フォロワーのみ" title="フォロワーのみ" className="inline-flex shrink-0 items-center text-xs">
+                <Users className="size-[1em]" />
+              </span>
+            )}
           </div>
           {detailHref ? (
             <Link href={detailHref} onClick={onDetailClick} className="block">

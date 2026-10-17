@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
+import { ProfileName } from "@/components/ui/profile-name";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { formatMonthDay } from "@/lib/utils/japan-date";
@@ -42,13 +43,7 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold tracking-wide text-text-secondary">クチコミ / ゲストからキャストへ</p>
           <p className="flex min-w-0 items-center gap-1 text-sm">
-            {authorHref ? (
-              <Link href={authorHref} className="truncate font-bold text-text-primary hover:underline">
-                {authorName}
-              </Link>
-            ) : (
-              <span className="truncate font-bold text-text-primary">{authorName}</span>
-            )}
+            <ProfileName profile={review.author} link className="text-sm" />
             <span className="shrink-0 text-text-secondary">· {formatTimeAgo(review.lastActivityAt)}</span>
           </p>
           {writtenAsOtherProfile && (
@@ -63,7 +58,7 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
           >
             <span className="flex items-baseline justify-between gap-2">
               <span className="min-w-0 truncate">
-                <span className="font-bold text-text-primary">{profileName(review.target?.displayName ?? "", review.target?.username ?? "")}</span>
+                <ProfileName profile={review.target} />
                 {review.target?.username && <span className="ml-1 text-xs text-text-secondary">@{review.target?.username}</span>}
               </span>
               <span className={review.rating === null ? "shrink-0 text-sm text-text-secondary" : "shrink-0 text-sm font-bold text-rating"}>

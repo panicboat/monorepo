@@ -55,10 +55,10 @@ describe("PostCardBinding", () => {
     expect(html).not.toContain('<a href="/u/');
   });
 
-  it("marks a post whose visibility is private", () => {
+  it("marks a post whose visibility is private as followers-only", () => {
     const html = renderToStaticMarkup(<PostCardBinding post={{ ...basePost, visibility: "private" }} />);
 
-    expect(html.match(/aria-label="非公開"/g)).toHaveLength(1);
+    expect(html.match(/aria-label="フォロワーのみ"/g)).toHaveLength(1);
   });
 
   it("fills the heart only on a post the viewer has liked", () => {

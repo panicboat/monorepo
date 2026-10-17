@@ -108,7 +108,7 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
 
   return (
     <PostCard
-      author={{ name: authorName, handle: authorHandle, avatarSrc }}
+      author={{ name: authorName, handle: authorHandle, avatarSrc, isPrivate: !!post.author?.isPrivate }}
       authorHref={authorHref}
       detailHref={inDetail ? undefined : href}
       onDetailClick={inDetail ? undefined : openDetail}

@@ -51,16 +51,23 @@ async function renderMounted(ui: React.ReactElement) {
 }
 
 describe("PostCard", () => {
-  it("marks a private post next to its time", () => {
+  it("marks a followers-only post next to its time", () => {
     const html = renderToStaticMarkup(<PostCard {...baseProps} isPrivate />);
 
-    expect(html).toMatch(/· 1分前<\/span><span role="img" aria-label="非公開"/);
+    expect(html).toMatch(/· 1分前<\/span><span role="img" aria-label="フォロワーのみ"/);
+    expect(html).not.toContain('aria-label="非公開"');
   });
 
   it("leaves a public post unmarked", () => {
     const html = renderToStaticMarkup(<PostCard {...baseProps} />);
 
-    expect(html).not.toContain('aria-label="非公開"');
+    expect(html).not.toContain('aria-label="フォロワーのみ"');
+  });
+
+  it("marks a private author with the lock mark", () => {
+    const html = renderToStaticMarkup(<PostCard {...baseProps} author={{ ...baseProps.author, isPrivate: true }} />);
+
+    expect(html).toContain('aria-label="鍵付き"');
   });
 
   it("plays each given video inline with controls, loading only its metadata up front", () => {

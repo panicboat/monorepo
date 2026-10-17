@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ProfileName } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { useComments } from "@/modules/post/hooks/useComments";
 import { useDeleteComment } from "@/modules/post/hooks/useDeleteComment";
@@ -58,13 +58,7 @@ export function CommentList({ postId }: CommentListProps) {
               {avatar}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1 text-sm">
-                  {authorHref ? (
-                    <Link href={authorHref} className="font-bold text-text-primary">
-                      {c.author?.displayName || "—"}
-                    </Link>
-                  ) : (
-                    <span className="font-bold text-text-primary">{c.author?.displayName || "—"}</span>
-                  )}
+                  <ProfileName profile={c.author} link className="text-sm" />
                   <span className="text-text-muted">· {c.createdAt ? formatTimeAgo(c.createdAt) : ""}</span>
                 </div>
                 <p className="mt-1 whitespace-pre-wrap text-text-primary">

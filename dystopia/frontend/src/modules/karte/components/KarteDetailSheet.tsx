@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
+import { ProfileName } from "@/components/ui/profile-name";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
@@ -103,9 +104,9 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
           <div className="flex items-center gap-3">
             <Avatar src={karte.target?.avatarUrl || undefined} fallback={guest.displayName.replace("@", "").slice(0, 1) || "?"} size="sm" />
             <div className="min-w-0">
-              <p className="truncate font-bold text-text-primary">{guest.displayName}</p>
+              <p className="truncate"><ProfileName profile={karte.target} /></p>
               <p className="truncate text-xs text-text-secondary">
-                {karte.target?.username ? `@${karte.target?.username} · ` : ""}記録者 {profileName(karte.author?.displayName ?? "", karte.author?.username ?? "")}
+                {karte.target?.username ? `@${karte.target?.username} · ` : ""}記録者 <ProfileName profile={karte.author} className="font-normal" />
               </p>
             </div>
           </div>

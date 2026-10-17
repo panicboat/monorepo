@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
+import { ProfileName } from "@/components/ui/profile-name";
 import { formatTimeAgo } from "@/lib/utils/date";
 import { isPlainClick } from "@/lib/utils/isPlainClick";
 import { usePostSheetStore } from "@/stores/postSheetStore";
@@ -47,9 +48,7 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
               fallback={(parentPost.author?.displayName || "?").slice(0, 1)}
               size="sm"
             />
-            <span className="font-bold text-text-primary">
-              {parentPost.author?.displayName || "名無し"}
-            </span>
+            <ProfileName profile={parentPost.author} />
             <span>· {parentPost.createdAt ? formatTimeAgo(parentPost.createdAt) : ""}</span>
           </div>
           <p className="mt-1 line-clamp-2 text-sm text-text-primary">
@@ -65,13 +64,7 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
         {avatar}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1 text-sm">
-            {authorHref ? (
-              <Link href={authorHref} className="font-bold text-text-primary">
-                {comment.author?.displayName || "—"}
-              </Link>
-            ) : (
-              <span className="font-bold text-text-primary">{comment.author?.displayName || "—"}</span>
-            )}
+            <ProfileName profile={comment.author} link className="text-sm" />
             <span className="text-text-muted">
               · {comment.createdAt ? formatTimeAgo(comment.createdAt) : ""}
             </span>

@@ -37,7 +37,7 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-async function mount(props: { inDetail?: boolean } = {}) {
+async function mount(props: { inDetail?: boolean; post?: PostView } = {}) {
   const container = document.createElement("div");
   document.body.appendChild(container);
   await act(async () => {
@@ -84,5 +84,19 @@ describe("PostCardBinding opening the detail", () => {
     expect(container.querySelector('a[href="/posts/post-1"]')).toBeNull();
     expect(container.textContent).toContain("3");
     expect(container.querySelector('[aria-label="コメント 3 件"]')).not.toBeNull();
+  });
+});
+
+describe("PostCardBinding author lock mark", () => {
+  it("shows the lock mark for a private author", async () => {
+    const container = await mount({ post: { ...post, author: { ...post.author!, isPrivate: true } } });
+
+    expect(container.querySelector('[aria-label="鍵付き"]')).not.toBeNull();
+  });
+
+  it("shows no lock mark for a public author", async () => {
+    const container = await mount();
+
+    expect(container.querySelector('[aria-label="鍵付き"]')).toBeNull();
   });
 });

@@ -64,6 +64,18 @@ describe("CommentList", () => {
     expect(html).toMatch(/<a[^>]*href="\/u\/coco_u"/);
   });
 
+  it("marks a private comment author with the lock mark", () => {
+    commentsMocks.useComments.mockReturnValue({
+      comments: [{ ...comment, author: { ...comment.author!, isPrivate: true } }],
+      hasMore: false,
+      loading: false,
+      error: undefined,
+      loadMore: vi.fn(),
+    });
+
+    expect(renderToStaticMarkup(<CommentList postId="post-1" />)).toContain('aria-label="鍵付き"');
+  });
+
   it("does not link the comment author when there is no username", () => {
     commentsMocks.useComments.mockReturnValue({
       comments: [{ ...comment, author: { ...comment.author!, username: "" } }],

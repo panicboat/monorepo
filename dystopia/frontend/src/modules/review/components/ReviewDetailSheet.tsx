@@ -5,6 +5,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { StarRatingInput } from "@/components/ui/star-rating-input";
+import { ProfileName } from "@/components/ui/profile-name";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
@@ -103,9 +104,9 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
           <div className="flex items-center gap-3">
             <Avatar src={review.target?.avatarUrl || undefined} fallback={cast.displayName.replace("@", "").slice(0, 1) || "?"} size="sm" />
             <div className="min-w-0">
-              <p className="truncate font-bold text-text-primary">{cast.displayName}</p>
+              <p className="truncate"><ProfileName profile={review.target} /></p>
               <p className="truncate text-xs text-text-secondary">
-                {review.target?.username ? `@${review.target?.username} · ` : ""}書いた人 {profileName(review.author?.displayName ?? "", review.author?.username ?? "")}
+                {review.target?.username ? `@${review.target?.username} · ` : ""}書いた人 <ProfileName profile={review.author} className="font-normal" />
               </p>
             </div>
           </div>
