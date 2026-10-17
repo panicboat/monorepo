@@ -27,8 +27,8 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
     : undefined;
   const avatar = (
     <Avatar
-      src={comment.author?.imageUrl || undefined}
-      fallback={(comment.author?.name || "?").slice(0, 1)}
+      src={comment.author?.avatarUrl || undefined}
+      fallback={(comment.author?.displayName || "?").slice(0, 1)}
       size="sm"
       href={authorHref}
     />
@@ -67,10 +67,10 @@ export function ReplyWithParentRow({ comment, parentPost }: ReplyWithParentRowPr
           <div className="flex items-center gap-1 text-sm">
             {authorHref ? (
               <Link href={authorHref} className="font-bold text-text-primary">
-                {comment.author?.name || "—"}
+                {comment.author?.displayName || "—"}
               </Link>
             ) : (
-              <span className="font-bold text-text-primary">{comment.author?.name || "—"}</span>
+              <span className="font-bold text-text-primary">{comment.author?.displayName || "—"}</span>
             )}
             <span className="text-text-muted">
               · {comment.createdAt ? formatTimeAgo(comment.createdAt) : ""}

@@ -2,28 +2,32 @@
 
 require "spec_helper"
 require "post/v1/comment_service_pb"
+require "profile/v1/service_pb"
 require "slices/post/presenters/comment_presenter"
 
 RSpec.describe Post::Presenters::CommentPresenter do
-  describe ".author_to_proto" do
-    it "carries the author's username through to the proto" do
-      author_info = { id: "user-1", name: "Coco", image_url: "https://example.com/a.png", username: "coco_u" }
-
-      proto = described_class.author_to_proto(author_info)
-
-      expect(proto.username).to eq("coco_u")
+  describe ".to_proto author" do
+    let(:comment) do
+      double(
+        :comment, id: "comment-1", post_id: "post-1", parent_id: nil, author_profile_id: "user-1", content: "hi",
+        created_at: Time.now, comment_media: [], comment_mentions: [], replies_count: 0
+      )
     end
 
-    it "defaults username to an empty string when absent" do
-      author_info = { id: "user-1", name: "Coco", image_url: "" }
+    it "presents the author as a profile summary with its privacy" do
+      summary = Profile::UseCases::SummarizeProfiles::Summary.new(
+        profile_id: "user-1", username: "coco_u", display_name: "Coco", avatar_url: "", is_private: true, role: 1
+      )
 
-      proto = described_class.author_to_proto(author_info)
+      proto = described_class.to_proto(comment, author: summary)
 
-      expect(proto.username).to eq("")
+      expect(proto.author).to be_a(::Profile::V1::ProfileSummary)
+      expect(proto.author.username).to eq("coco_u")
+      expect(proto.author.is_private).to be true
     end
 
-    it "returns nil when author_info is nil" do
-      expect(described_class.author_to_proto(nil)).to be_nil
+    it "leaves the author unset when there is none" do
+      expect(described_class.to_proto(comment).author).to be_nil
     end
   end
 

@@ -1,20 +1,10 @@
-import type { Comment, CommentAuthor, ListCommentsResponse } from "@/stub/post/v1/comment_service_pb";
+import type { Comment, ListCommentsResponse } from "@/stub/post/v1/comment_service_pb";
 import { mapMentionToView } from "./post-mappers";
+import { summaryToView } from "@/modules/profile/lib/mappers";
 import type {
-  CommentAuthorView,
   CommentView,
   PaginatedCommentsResponse,
 } from "./comment-view";
-
-function mapAuthor(a: CommentAuthor | undefined): CommentAuthorView | null {
-  if (!a || !a.profileId) return null;
-  return {
-    profileId: a.profileId,
-    name: a.name,
-    imageUrl: a.imageUrl,
-    username: a.username,
-  };
-}
 
 export function mapCommentToView(c: Comment): CommentView {
   return {
@@ -24,7 +14,7 @@ export function mapCommentToView(c: Comment): CommentView {
     authorProfileId: c.authorProfileId,
     content: c.content,
     createdAt: c.createdAt,
-    author: mapAuthor(c.author),
+    author: c.author ? summaryToView(c.author) : null,
     repliesCount: c.repliesCount,
     mentions: (c.mentions || []).map(mapMentionToView),
   };

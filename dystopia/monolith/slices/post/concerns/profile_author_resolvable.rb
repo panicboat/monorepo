@@ -5,8 +5,8 @@ module Post
     module ProfileAuthorResolvable
       private
 
-      def profile_author_adapter
-        @profile_author_adapter ||= Post::Adapters::ProfileAuthorAdapter.new
+      def summarize_profiles
+        @summarize_profiles ||= ::Profile::Slice["use_cases.summarize_profiles"]
       end
     end
   end

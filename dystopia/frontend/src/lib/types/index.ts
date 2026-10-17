@@ -17,18 +17,6 @@ export type MediaWithKey = Media & {
   key?: string;
 };
 
-export type UserType = "guest" | "cast";
-
-export type Author = {
-  id: string;
-  name: string;
-  imageUrl: string;
-};
-
-export type AuthorWithType = Author & {
-  userType: UserType;
-};
-
 export type PaginatedResponse<T> = {
   items: T[];
   nextCursor: string;

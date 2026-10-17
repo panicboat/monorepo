@@ -16,7 +16,7 @@ module Post
           content: post.content,
           media: media.sort_by(&:position).map { |m| post_media_to_proto(m, media_files: media_files) },
           created_at: post.created_at.iso8601,
-          author: post_author_to_proto(author),
+          author: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(author),
           likes_count: likes_count,
           comments_count: comments_count,
           visibility: post.respond_to?(:visibility) ? post.visibility : "public",
@@ -43,17 +43,6 @@ module Post
           username: mentioned_usernames[mention.profile_id.to_s] || "",
           position: mention.position,
           length: mention.length
-        )
-      end
-
-      def self.post_author_to_proto(author)
-        return nil unless author
-
-        ::Post::V1::PostAuthor.new(
-          profile_id: author.profile_id.to_s,
-          display_name: author.display_name || "",
-          username: author.username || "",
-          avatar_url: author.avatar_url || ""
         )
       end
     end

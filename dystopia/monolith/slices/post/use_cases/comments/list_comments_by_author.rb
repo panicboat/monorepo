@@ -13,7 +13,7 @@ module Post
         MAX_LIMIT = 50
 
         def call(author_profile_id:, viewer_profile_id: nil, limit: DEFAULT_LIMIT, cursor: nil)
-          if profile_author_adapter.load([author_profile_id]).empty?
+          if summarize_profiles.call(profile_ids: [author_profile_id]).empty?
             return { comments: [], posts_by_id: {}, authors: {}, mentioned_usernames: {}, next_cursor: nil, has_more: false }
           end
 
@@ -54,14 +54,14 @@ module Post
           return true unless comment.parent_id
 
           parent = comment_repo.find_by_id(comment.parent_id)
-          !parent.nil? && profile_author_adapter.load([parent.author_profile_id]).any?
+          !parent.nil? && summarize_profiles.call(profile_ids: [parent.author_profile_id]).any?
         end
 
         def build_mentioned_usernames(comments)
           ids = comments.flat_map { |comment| comment.comment_mentions.map(&:profile_id) }.uniq
           return {} if ids.empty?
 
-          profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
+          summarize_profiles.call(profile_ids: ids).transform_values(&:username)
         end
 
         def list_posts_uc
@@ -71,17 +71,12 @@ module Post
         def build_authors(author_profile_ids)
           return {} if author_profile_ids.empty?
 
-          infos = profile_author_adapter.load(author_profile_ids).transform_keys(&:to_s)
+          summaries = summarize_profiles.call(profile_ids: author_profile_ids)
           author_profile_ids.each_with_object({}) do |author_profile_id, hash|
-            info = infos[author_profile_id.to_s]
-            next unless info
+            summary = summaries[author_profile_id.to_s]
+            next unless summary
 
-            hash[author_profile_id] = {
-              id: author_profile_id.to_s,
-              name: info.display_name,
-              image_url: info.avatar_url,
-              user_type: ""
-            }
+            hash[author_profile_id] = summary
           end
         end
       end

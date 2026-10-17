@@ -25,8 +25,10 @@ const comment: CommentView = {
   createdAt: new Date().toISOString(),
   author: {
     profileId: "author-1",
-    name: "Coco",
-    imageUrl: "",
+    displayName: "Coco",
+    avatarUrl: "",
+    isPrivate: false,
+    role: null,
     username: "coco_u",
   },
   repliesCount: 0,

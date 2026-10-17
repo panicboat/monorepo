@@ -4,45 +4,15 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { ProfileSummary } from "../../profile/v1/service_pb";
+import { file_profile_v1_service } from "../../profile/v1/service_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file post/v1/post_service.proto.
  */
 export const file_post_v1_post_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpwb3N0L3YxL3Bvc3Rfc2VydmljZS5wcm90bxIHcG9zdC52MSJcCgpQb3N0QXV0aG9yEhIKCnByb2ZpbGVfaWQYASABKAkSFAoMZGlzcGxheV9uYW1lGAIgASgJEhAKCHVzZXJuYW1lGAMgASgJEhIKCmF2YXRhcl91cmwYBCABKAkiVQoLUG9zdE1lbnRpb24SEgoKcHJvZmlsZV9pZBgBIAEoCRIQCgh1c2VybmFtZRgCIAEoCRIQCghwb3NpdGlvbhgDIAEoBRIOCgZsZW5ndGgYBCABKAUiYQoJUG9zdE1lZGlhEgoKAmlkGAEgASgJEhIKCm1lZGlhX3R5cGUYAiABKAkSCwoDdXJsGAMgASgJEhUKDXRodW1ibmFpbF91cmwYBCABKAkSEAoIbWVkaWFfaWQYBSABKAkipAIKBFBvc3QSCgoCaWQYASABKAkSGQoRYXV0aG9yX3Byb2ZpbGVfaWQYAiABKAkSDwoHY29udGVudBgDIAEoCRIhCgVtZWRpYRgEIAMoCzISLnBvc3QudjEuUG9zdE1lZGlhEhIKCmNyZWF0ZWRfYXQYBSABKAkSIwoGYXV0aG9yGAYgASgLMhMucG9zdC52MS5Qb3N0QXV0aG9yEhMKC2xpa2VzX2NvdW50GAcgASgFEhYKDmNvbW1lbnRzX2NvdW50GAggASgFEhIKCnZpc2liaWxpdHkYCSABKAkSEAoIaGFzaHRhZ3MYCiADKAkSDQoFbGlrZWQYCyABKAgSJgoIbWVudGlvbnMYDCADKAsyFC5wb3N0LnYxLlBvc3RNZW50aW9uInAKEExpc3RQb3N0c1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJEhkKEWF1dGhvcl9wcm9maWxlX2lkGAMgASgJEg4KBmZpbHRlchgEIAEoCRISCgptZWRpYV9vbmx5GAUgASgIIlgKEUxpc3RQb3N0c1Jlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIncKD1NhdmVQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEiEKBW1lZGlhGAMgAygLMhIucG9zdC52MS5Qb3N0TWVkaWESEgoKdmlzaWJpbGl0eRgEIAEoCRIQCghoYXNodGFncxgFIAMoCSIvChBTYXZlUG9zdFJlc3BvbnNlEhsKBHBvc3QYASABKAsyDS5wb3N0LnYxLlBvc3QiHAoOR2V0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkiLgoPR2V0UG9zdFJlc3BvbnNlEhsKBHBvc3QYASABKAsyDS5wb3N0LnYxLlBvc3QiHwoRRGVsZXRlUG9zdFJlcXVlc3QSCgoCaWQYASABKAkiFAoSRGVsZXRlUG9zdFJlc3BvbnNlMpcCCgtQb3N0U2VydmljZRJCCglMaXN0UG9zdHMSGS5wb3N0LnYxLkxpc3RQb3N0c1JlcXVlc3QaGi5wb3N0LnYxLkxpc3RQb3N0c1Jlc3BvbnNlEjwKB0dldFBvc3QSFy5wb3N0LnYxLkdldFBvc3RSZXF1ZXN0GhgucG9zdC52MS5HZXRQb3N0UmVzcG9uc2USPwoIU2F2ZVBvc3QSGC5wb3N0LnYxLlNhdmVQb3N0UmVxdWVzdBoZLnBvc3QudjEuU2F2ZVBvc3RSZXNwb25zZRJFCgpEZWxldGVQb3N0EhoucG9zdC52MS5EZWxldGVQb3N0UmVxdWVzdBobLnBvc3QudjEuRGVsZXRlUG9zdFJlc3BvbnNlYgZwcm90bzM");
-
-/**
- * @generated from message post.v1.PostAuthor
- */
-export type PostAuthor = Message<"post.v1.PostAuthor"> & {
-  /**
-   * @generated from field: string profile_id = 1;
-   */
-  profileId: string;
-
-  /**
-   * @generated from field: string display_name = 2;
-   */
-  displayName: string;
-
-  /**
-   * @generated from field: string username = 3;
-   */
-  username: string;
-
-  /**
-   * @generated from field: string avatar_url = 4;
-   */
-  avatarUrl: string;
-};
-
-/**
- * Describes the message post.v1.PostAuthor.
- * Use `create(PostAuthorSchema)` to create a new message.
- */
-export const PostAuthorSchema: GenMessage<PostAuthor> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 0);
+  fileDesc("Chpwb3N0L3YxL3Bvc3Rfc2VydmljZS5wcm90bxIHcG9zdC52MSJVCgtQb3N0TWVudGlvbhISCgpwcm9maWxlX2lkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJEhAKCHBvc2l0aW9uGAMgASgFEg4KBmxlbmd0aBgEIAEoBSJhCglQb3N0TWVkaWESCgoCaWQYASABKAkSEgoKbWVkaWFfdHlwZRgCIAEoCRILCgN1cmwYAyABKAkSFQoNdGh1bWJuYWlsX3VybBgEIAEoCRIQCghtZWRpYV9pZBgFIAEoCSKrAgoEUG9zdBIKCgJpZBgBIAEoCRIZChFhdXRob3JfcHJvZmlsZV9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJEiEKBW1lZGlhGAQgAygLMhIucG9zdC52MS5Qb3N0TWVkaWESEgoKY3JlYXRlZF9hdBgFIAEoCRIqCgZhdXRob3IYBiABKAsyGi5wcm9maWxlLnYxLlByb2ZpbGVTdW1tYXJ5EhMKC2xpa2VzX2NvdW50GAcgASgFEhYKDmNvbW1lbnRzX2NvdW50GAggASgFEhIKCnZpc2liaWxpdHkYCSABKAkSEAoIaGFzaHRhZ3MYCiADKAkSDQoFbGlrZWQYCyABKAgSJgoIbWVudGlvbnMYDCADKAsyFC5wb3N0LnYxLlBvc3RNZW50aW9uInAKEExpc3RQb3N0c1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGY3Vyc29yGAIgASgJEhkKEWF1dGhvcl9wcm9maWxlX2lkGAMgASgJEg4KBmZpbHRlchgEIAEoCRISCgptZWRpYV9vbmx5GAUgASgIIlgKEUxpc3RQb3N0c1Jlc3BvbnNlEhwKBXBvc3RzGAEgAygLMg0ucG9zdC52MS5Qb3N0EhMKC25leHRfY3Vyc29yGAIgASgJEhAKCGhhc19tb3JlGAMgASgIIncKD1NhdmVQb3N0UmVxdWVzdBIKCgJpZBgBIAEoCRIPCgdjb250ZW50GAIgASgJEiEKBW1lZGlhGAMgAygLMhIucG9zdC52MS5Qb3N0TWVkaWESEgoKdmlzaWJpbGl0eRgEIAEoCRIQCghoYXNodGFncxgFIAMoCSIvChBTYXZlUG9zdFJlc3BvbnNlEhsKBHBvc3QYASABKAsyDS5wb3N0LnYxLlBvc3QiHAoOR2V0UG9zdFJlcXVlc3QSCgoCaWQYASABKAkiLgoPR2V0UG9zdFJlc3BvbnNlEhsKBHBvc3QYASABKAsyDS5wb3N0LnYxLlBvc3QiHwoRRGVsZXRlUG9zdFJlcXVlc3QSCgoCaWQYASABKAkiFAoSRGVsZXRlUG9zdFJlc3BvbnNlMpcCCgtQb3N0U2VydmljZRJCCglMaXN0UG9zdHMSGS5wb3N0LnYxLkxpc3RQb3N0c1JlcXVlc3QaGi5wb3N0LnYxLkxpc3RQb3N0c1Jlc3BvbnNlEjwKB0dldFBvc3QSFy5wb3N0LnYxLkdldFBvc3RSZXF1ZXN0GhgucG9zdC52MS5HZXRQb3N0UmVzcG9uc2USPwoIU2F2ZVBvc3QSGC5wb3N0LnYxLlNhdmVQb3N0UmVxdWVzdBoZLnBvc3QudjEuU2F2ZVBvc3RSZXNwb25zZRJFCgpEZWxldGVQb3N0EhoucG9zdC52MS5EZWxldGVQb3N0UmVxdWVzdBobLnBvc3QudjEuRGVsZXRlUG9zdFJlc3BvbnNlYgZwcm90bzM", [file_profile_v1_service]);
 
 /**
  * @generated from message post.v1.PostMention
@@ -74,7 +44,7 @@ export type PostMention = Message<"post.v1.PostMention"> & {
  * Use `create(PostMentionSchema)` to create a new message.
  */
 export const PostMentionSchema: GenMessage<PostMention> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 1);
+  messageDesc(file_post_v1_post_service, 0);
 
 /**
  * @generated from message post.v1.PostMedia
@@ -111,7 +81,7 @@ export type PostMedia = Message<"post.v1.PostMedia"> & {
  * Use `create(PostMediaSchema)` to create a new message.
  */
 export const PostMediaSchema: GenMessage<PostMedia> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 2);
+  messageDesc(file_post_v1_post_service, 1);
 
 /**
  * @generated from message post.v1.Post
@@ -143,9 +113,9 @@ export type Post = Message<"post.v1.Post"> & {
   createdAt: string;
 
   /**
-   * @generated from field: post.v1.PostAuthor author = 6;
+   * @generated from field: profile.v1.ProfileSummary author = 6;
    */
-  author?: PostAuthor | undefined;
+  author?: ProfileSummary | undefined;
 
   /**
    * @generated from field: int32 likes_count = 7;
@@ -183,7 +153,7 @@ export type Post = Message<"post.v1.Post"> & {
  * Use `create(PostSchema)` to create a new message.
  */
 export const PostSchema: GenMessage<Post> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 3);
+  messageDesc(file_post_v1_post_service, 2);
 
 /**
  * @generated from message post.v1.ListPostsRequest
@@ -220,7 +190,7 @@ export type ListPostsRequest = Message<"post.v1.ListPostsRequest"> & {
  * Use `create(ListPostsRequestSchema)` to create a new message.
  */
 export const ListPostsRequestSchema: GenMessage<ListPostsRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 4);
+  messageDesc(file_post_v1_post_service, 3);
 
 /**
  * @generated from message post.v1.ListPostsResponse
@@ -247,7 +217,7 @@ export type ListPostsResponse = Message<"post.v1.ListPostsResponse"> & {
  * Use `create(ListPostsResponseSchema)` to create a new message.
  */
 export const ListPostsResponseSchema: GenMessage<ListPostsResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 5);
+  messageDesc(file_post_v1_post_service, 4);
 
 /**
  * @generated from message post.v1.SavePostRequest
@@ -284,7 +254,7 @@ export type SavePostRequest = Message<"post.v1.SavePostRequest"> & {
  * Use `create(SavePostRequestSchema)` to create a new message.
  */
 export const SavePostRequestSchema: GenMessage<SavePostRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 6);
+  messageDesc(file_post_v1_post_service, 5);
 
 /**
  * @generated from message post.v1.SavePostResponse
@@ -301,7 +271,7 @@ export type SavePostResponse = Message<"post.v1.SavePostResponse"> & {
  * Use `create(SavePostResponseSchema)` to create a new message.
  */
 export const SavePostResponseSchema: GenMessage<SavePostResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 7);
+  messageDesc(file_post_v1_post_service, 6);
 
 /**
  * @generated from message post.v1.GetPostRequest
@@ -318,7 +288,7 @@ export type GetPostRequest = Message<"post.v1.GetPostRequest"> & {
  * Use `create(GetPostRequestSchema)` to create a new message.
  */
 export const GetPostRequestSchema: GenMessage<GetPostRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 8);
+  messageDesc(file_post_v1_post_service, 7);
 
 /**
  * @generated from message post.v1.GetPostResponse
@@ -335,7 +305,7 @@ export type GetPostResponse = Message<"post.v1.GetPostResponse"> & {
  * Use `create(GetPostResponseSchema)` to create a new message.
  */
 export const GetPostResponseSchema: GenMessage<GetPostResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 9);
+  messageDesc(file_post_v1_post_service, 8);
 
 /**
  * @generated from message post.v1.DeletePostRequest
@@ -352,7 +322,7 @@ export type DeletePostRequest = Message<"post.v1.DeletePostRequest"> & {
  * Use `create(DeletePostRequestSchema)` to create a new message.
  */
 export const DeletePostRequestSchema: GenMessage<DeletePostRequest> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 10);
+  messageDesc(file_post_v1_post_service, 9);
 
 /**
  * @generated from message post.v1.DeletePostResponse
@@ -365,7 +335,7 @@ export type DeletePostResponse = Message<"post.v1.DeletePostResponse"> & {
  * Use `create(DeletePostResponseSchema)` to create a new message.
  */
 export const DeletePostResponseSchema: GenMessage<DeletePostResponse> = /*@__PURE__*/
-  messageDesc(file_post_v1_post_service, 11);
+  messageDesc(file_post_v1_post_service, 10);
 
 /**
  * @generated from service post.v1.PostService

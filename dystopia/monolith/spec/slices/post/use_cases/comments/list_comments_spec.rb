@@ -17,7 +17,7 @@ RSpec.describe "Post::UseCases::Comments::ListComments", type: :database do
 
       result = use_case.call(post_id: post.id)
 
-      expect(result[:authors][author_profile_id][:username]).to eq("coco_u")
+      expect(result[:authors][author_profile_id].username).to eq("coco_u")
     end
 
     context "when a comment contains a mention" do

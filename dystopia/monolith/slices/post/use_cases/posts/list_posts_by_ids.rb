@@ -21,7 +21,7 @@ module Post
           return {} if posts.empty?
 
           ids = posts.map(&:id)
-          authors = profile_author_adapter.load(posts.map(&:author_profile_id))
+          authors = summarize_profiles.call(profile_ids: posts.map(&:author_profile_id))
           likes_counts = like_repo.likes_count_batch(post_ids: ids)
           comments_counts = comment_repo.comments_count_batch(post_ids: ids, exclude_author_profile_ids: [])
           liked = if viewer_profile_id
@@ -35,7 +35,7 @@ module Post
           posts.each_with_object({}) do |post, hash|
             proto = Post::Presenters::PostPresenter.to_post_proto(
               post,
-              author: authors[post.author_profile_id],
+              author: authors[post.author_profile_id.to_s],
               likes_count: likes_counts[post.id] || 0,
               comments_count: comments_counts[post.id] || 0,
               liked: liked[post.id] || false,
@@ -64,7 +64,7 @@ module Post
           ids = profile_ids.uniq
           return {} if ids.empty?
 
-          profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
+          summarize_profiles.call(profile_ids: ids).transform_values(&:username)
         end
 
         def media_adapter

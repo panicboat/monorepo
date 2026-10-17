@@ -50,7 +50,7 @@ module Post
 
         media_files = load_media_files_for_comments([result[:comment]])
 
-        author = get_comment_author(current_profile_id, media_files: media_files)
+        author = get_comment_author(current_profile_id)
         mentioned_usernames = mentioned_usernames_for(result[:comment].comment_mentions.map(&:profile_id))
 
         ::Post::V1::AddCommentResponse.new(
@@ -170,28 +170,18 @@ module Post
         comment = comment_repo.find_by_id(comment_id)
         return false unless comment && find_readable_post(comment.post_id)
 
-        profile_author_adapter.load([comment.author_profile_id]).any?
+        summarize_profiles.call(profile_ids: [comment.author_profile_id]).any?
       end
 
       def mentioned_usernames_for(profile_ids)
         ids = profile_ids.uniq
         return {} if ids.empty?
 
-        profile_author_adapter.load(ids).transform_keys(&:to_s).transform_values(&:username)
+        summarize_profiles.call(profile_ids: ids).transform_values(&:username)
       end
 
-      def get_comment_author(author_profile_id, media_files: {})
-        infos = profile_author_adapter.load([author_profile_id]).transform_keys(&:to_s)
-        info = infos[author_profile_id.to_s]
-        return nil unless info
-
-        {
-          id: author_profile_id,
-          name: info.display_name,
-          image_url: info.avatar_url,
-          user_type: "",
-          username: info.username
-        }
+      def get_comment_author(author_profile_id)
+        summarize_profiles.call(profile_ids: [author_profile_id])[author_profile_id.to_s]
       end
 
       def load_media_files_for_comments(comments)

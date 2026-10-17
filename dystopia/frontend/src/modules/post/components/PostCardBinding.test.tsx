@@ -29,6 +29,8 @@ const basePost: PostView = {
     displayName: "テスト太郎",
     username: "test_taro",
     avatarUrl: "",
+    isPrivate: false,
+    role: null,
   },
   likesCount: 0,
   commentsCount: 0,

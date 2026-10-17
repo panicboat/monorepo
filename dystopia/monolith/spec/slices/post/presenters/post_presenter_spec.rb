@@ -2,9 +2,35 @@
 
 require "spec_helper"
 require "post/v1/post_service_pb"
+require "profile/v1/service_pb"
 require "slices/post/presenters/post_presenter"
 
 RSpec.describe Post::Presenters::PostPresenter do
+  describe ".to_post_proto author" do
+    let(:post) do
+      double(
+        :post, id: "post-1", author_profile_id: "author-1", content: "hi", created_at: Time.now,
+        post_media: [], hashtags: [], post_mentions: [], visibility: "public"
+      )
+    end
+
+    it "presents the author as a profile summary with its privacy" do
+      summary = Profile::UseCases::SummarizeProfiles::Summary.new(
+        profile_id: "author-1", username: "alice", display_name: "Alice", avatar_url: "", is_private: true, role: 2
+      )
+
+      proto = described_class.to_post_proto(post, author: summary)
+
+      expect(proto.author).to be_a(::Profile::V1::ProfileSummary)
+      expect(proto.author.username).to eq("alice")
+      expect(proto.author.is_private).to be true
+    end
+
+    it "leaves the author unset when there is none" do
+      expect(described_class.to_post_proto(post).author).to be_nil
+    end
+  end
+
   describe ".to_post_proto mentions" do
     let(:mention) { double(:mention, profile_id: "mentioned-1", position: 3, length: 6) }
     let(:post) do

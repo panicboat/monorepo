@@ -16,7 +16,7 @@ module Post
           author_profile_id: comment.author_profile_id.to_s,
           content: comment.content,
           created_at: comment.created_at.iso8601,
-          author: author_to_proto(author),
+          author: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(author),
           media: media.sort_by(&:position).map { |m| media_to_proto(m, media_files: media_files) },
           replies_count: comment.replies_count || 0,
           mentions: mentions.select { |m| mentioned_usernames.key?(m.profile_id.to_s) }.map { |m| mention_to_proto(m, mentioned_usernames: mentioned_usernames) }
@@ -25,7 +25,7 @@ module Post
 
       def self.many_to_proto(comments, authors: {}, media_files: {}, mentioned_usernames: {})
         (comments || []).map do |c|
-          author = authors[c.author_profile_id]
+          author = authors[c.author_profile_id.to_s]
           to_proto(c, author: author, media_files: media_files, mentioned_usernames: mentioned_usernames)
         end
       end
@@ -48,18 +48,6 @@ module Post
           username: mentioned_usernames[mention.profile_id.to_s] || "",
           position: mention.position,
           length: mention.length
-        )
-      end
-
-      def self.author_to_proto(author_info)
-        return nil unless author_info
-
-        ::Post::V1::CommentAuthor.new(
-          profile_id: author_info[:id].to_s,
-          name: author_info[:name] || "",
-          image_url: author_info[:image_url] || "",
-          user_type: author_info[:user_type] || "guest",
-          username: author_info[:username] || ""
         )
       end
     end

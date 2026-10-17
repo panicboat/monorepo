@@ -46,8 +46,8 @@ export function CommentList({ postId }: CommentListProps) {
         const authorHref = c.author?.username ? `/u/${encodeURIComponent(c.author.username)}` : undefined;
         const avatar = (
           <Avatar
-            src={c.author?.imageUrl || undefined}
-            fallback={(c.author?.name || "?").slice(0, 1)}
+            src={c.author?.avatarUrl || undefined}
+            fallback={(c.author?.displayName || "?").slice(0, 1)}
             size="sm"
             href={authorHref}
           />
@@ -60,10 +60,10 @@ export function CommentList({ postId }: CommentListProps) {
                 <div className="flex items-center gap-1 text-sm">
                   {authorHref ? (
                     <Link href={authorHref} className="font-bold text-text-primary">
-                      {c.author?.name || "—"}
+                      {c.author?.displayName || "—"}
                     </Link>
                   ) : (
-                    <span className="font-bold text-text-primary">{c.author?.name || "—"}</span>
+                    <span className="font-bold text-text-primary">{c.author?.displayName || "—"}</span>
                   )}
                   <span className="text-text-muted">· {c.createdAt ? formatTimeAgo(c.createdAt) : ""}</span>
                 </div>
