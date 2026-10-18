@@ -51,7 +51,11 @@ export function useKarteMutations() {
     (eventId: string, event: KarteEventInput) => send(eventUrl(eventId), "PATCH", { event }),
     [send]
   );
-  const removeEvent = useCallback((eventId: string) => send(eventUrl(eventId), "DELETE"), [send]);
+  const removeEvent = useCallback(
+    (eventId: string) =>
+      run("カルテを更新できませんでした", () => authFetch<{ karte: Karte | null }>(eventUrl(eventId), { method: "DELETE" })),
+    [run]
+  );
   const remove = useCallback(
     async (karteId: string) =>
       (await run("カルテを削除できませんでした", () => authFetch<{ ok: boolean }>(karteUrl(karteId), { method: "DELETE" }))) !== null,

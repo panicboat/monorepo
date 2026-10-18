@@ -105,6 +105,15 @@ describe("one review", () => {
     expect((await res.json()).review.id).toBe("k-1");
   });
 
+  it("answers no review when deleting the last event removed it", async () => {
+    reviewClient.deleteReviewEvent.mockResolvedValue({});
+
+    const res = await event.DELETE(request("/api/review/events/e-1", "DELETE"), params({ eventId: "e-1" }));
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ review: null });
+  });
+
   it("answers 500 when the server returns no review", async () => {
     reviewClient.closeReview.mockResolvedValue({});
 

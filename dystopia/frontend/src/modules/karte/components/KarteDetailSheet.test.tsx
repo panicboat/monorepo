@@ -137,13 +137,6 @@ describe("KarteDetailSheet", () => {
     expect(button("このカルテを削除")).toBeDefined();
   });
 
-  it("keeps the only event from being deleted and says why", async () => {
-    await mount(karte({ events: [event("e-1")] }));
-
-    expect(button("削除")!.disabled).toBe(true);
-    expect(text()).toContain("出来事は 1 件以上必要です");
-  });
-
   it("saves a rating from the stars", async () => {
     await mount(karte());
 
@@ -212,6 +205,7 @@ describe("KarteDetailSheet", () => {
   });
 
   it("deletes an event after confirming", async () => {
+    mocks.mutations.removeEvent.mockResolvedValue({ karte: karte() });
     await mount(karte());
 
     await act(async () => {
@@ -227,7 +221,7 @@ describe("KarteDetailSheet", () => {
 
     await click("このカルテを削除");
 
-    expect(confirmDialog).toHaveBeenCalledWith("このカルテを削除しますか？");
+    expect(confirmDialog).toHaveBeenCalledWith("このカルテを削除しますか？出来事もすべて削除されます。");
     expect(mocks.mutations.remove).toHaveBeenCalledWith("k-1");
     expect(mocks.toast).toHaveBeenCalledWith("カルテを削除しました");
     expect(onClose).toHaveBeenCalled();

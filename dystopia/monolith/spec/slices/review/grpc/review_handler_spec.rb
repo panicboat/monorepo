@@ -95,5 +95,8 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
     remaining = handler_for(::Review::V1::DeleteReviewEventRequest.new(event_id: event_id)).delete_review_event.review
 
     expect([added.events.length, updated.events.last.outcome, remaining.events.length]).to eq([2, "completed_with_issues", 1])
+
+    emptied = handler_for(::Review::V1::DeleteReviewEventRequest.new(event_id: remaining.events.first.id)).delete_review_event
+    expect(emptied.review).to be_nil
   end
 end

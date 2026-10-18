@@ -103,6 +103,15 @@ describe("one karte", () => {
     expect((await res.json()).karte.id).toBe("k-1");
   });
 
+  it("answers no karte when deleting the last event removed it", async () => {
+    karteClient.deleteKarteEvent.mockResolvedValue({});
+
+    const res = await event.DELETE(request("/api/karte/events/e-1", "DELETE"), params({ eventId: "e-1" }));
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ karte: null });
+  });
+
   it("answers 500 when the server returns no karte", async () => {
     karteClient.closeKarte.mockResolvedValue({});
 

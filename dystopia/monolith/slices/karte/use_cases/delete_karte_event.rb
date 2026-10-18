@@ -16,15 +16,20 @@ module Karte
 
         karte = karte_repo.transaction do
           record = find_event(event_id)
-          locked = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: record.karte_id, require_open: true, lock: true)
+          locked = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: record.karte_id, lock: true)
           find_event(event_id)
-          raise Errors::Invalid, "A karte keeps at least one event" if event_repo.count_for(locked.id) <= 1
+          if event_repo.count_for(locked.id) <= 1
+            karte_repo.delete(locked.id)
+            next nil
+          end
 
           event_repo.delete(record.id)
           karte_repo.touch(locked.id)
           karte_repo.refresh_last_occurred_on(locked.id)
           locked
         end
+        return nil unless karte
+
         present_kartes.call(kartes: [karte_repo.find(karte.id)], viewer_account_id: viewer_account_id).first
       end
 

@@ -23,5 +23,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   const authError = requireAuth(req);
   if (authError) return authError;
   const { eventId } = await params;
-  return respondWithReview(req, "DeleteReviewEvent", (headers) => reviewClient.deleteReviewEvent({ eventId }, { headers }));
+  return respondWithReview(req, "DeleteReviewEvent", (headers) => reviewClient.deleteReviewEvent({ eventId }, { headers }), {
+    allowDeleted: true,
+  });
 }

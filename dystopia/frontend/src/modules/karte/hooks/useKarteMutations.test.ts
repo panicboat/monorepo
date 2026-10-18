@@ -44,7 +44,6 @@ describe("useKarteMutations", () => {
       ["reopen", () => hook.current!.reopen("k-1")],
       ["add", () => hook.current!.addEvent("k-1", event)],
       ["update", () => hook.current!.updateEvent("e-1", event)],
-      ["remove event", () => hook.current!.removeEvent("e-1")],
     ];
     for (const [, run] of calls) {
       let result: unknown;
@@ -61,8 +60,17 @@ describe("useKarteMutations", () => {
       ["/api/karte/k-1/reopen", { method: "POST", body: undefined }],
       ["/api/karte/k-1/events", { method: "POST", body: { event } }],
       ["/api/karte/events/e-1", { method: "PATCH", body: { event } }],
-      ["/api/karte/events/e-1", { method: "DELETE", body: undefined }],
     ]);
+  });
+
+  it("deletes an event and returns what the server answers", async () => {
+    let result: unknown;
+    await act(async () => {
+      result = await hook.current!.removeEvent("e-1");
+    });
+
+    expect(mocks.authFetch).toHaveBeenCalledWith("/api/karte/events/e-1", { method: "DELETE" });
+    expect(result).toEqual({ karte: { id: "k-1" } });
   });
 
   it("deletes a karte and reports whether it worked", async () => {

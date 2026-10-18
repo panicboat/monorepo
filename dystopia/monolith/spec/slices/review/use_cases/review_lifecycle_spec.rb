@@ -125,7 +125,7 @@ RSpec.describe "Review lifecycle use cases", type: :database do
   end
 
   describe "events and deleting" do
-    it "adds, updates and deletes events while open, keeping at least one" do
+    it "adds, updates and deletes events while open" do
       review = create
       added = uc(:add_review_event).call(
         viewer_account_id: guest_account, review_id: review[:id],
@@ -139,8 +139,25 @@ RSpec.describe "Review lifecycle use cases", type: :database do
       expect(updated[:events].last).to include(outcome: "satisfied", note: nil)
 
       remaining = uc(:delete_review_event).call(viewer_account_id: guest_account, event_id: second[:id])
-      only = remaining[:events].first
-      expect { uc(:delete_review_event).call(viewer_account_id: guest_account, event_id: only[:id]) }.to invalid("A review keeps at least one event")
+      expect(remaining[:events].length).to eq(1)
+    end
+
+    it "deletes the review together with its last event" do
+      review = create
+
+      expect(uc(:delete_review_event).call(viewer_account_id: guest_account, event_id: review[:events].first[:id])).to be_nil
+      expect { uc(:get_review).call(viewer_account_id: guest_account, viewer_profile_id: persona_b, review_id: review[:id]) }.to invalid("Review not found")
+    end
+
+    it "deletes an event of a closed review" do
+      review = create(rating: 4)
+      uc(:add_review_event).call(viewer_account_id: guest_account, review_id: review[:id], event: event_input)
+      uc(:close_review).call(viewer_account_id: guest_account, review_id: review[:id])
+
+      remaining = uc(:delete_review_event).call(viewer_account_id: guest_account, event_id: review[:events].first[:id])
+
+      expect(remaining).to include(status: "closed")
+      expect(remaining[:events].length).to eq(1)
     end
 
     it "lets the author delete in any state and refuses another account" do

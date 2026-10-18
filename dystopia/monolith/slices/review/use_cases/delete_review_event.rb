@@ -16,15 +16,20 @@ module Review
 
         review = review_repo.transaction do
           record = find_event(event_id)
-          locked = load_own_review.call(viewer_account_id: viewer_account_id, review_id: record.review_id, require_open: true, lock: true)
+          locked = load_own_review.call(viewer_account_id: viewer_account_id, review_id: record.review_id, lock: true)
           find_event(event_id)
-          raise Errors::Invalid, "A review keeps at least one event" if event_repo.count_for(locked.id) <= 1
+          if event_repo.count_for(locked.id) <= 1
+            review_repo.delete(locked.id)
+            next nil
+          end
 
           event_repo.delete(record.id)
           review_repo.touch(locked.id)
           review_repo.refresh_last_occurred_on(locked.id)
           locked
         end
+        return nil unless review
+
         present_reviews.call(reviews: [review_repo.find(review.id)], viewer_account_id: viewer_account_id).first
       end
 

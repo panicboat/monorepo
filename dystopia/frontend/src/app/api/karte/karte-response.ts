@@ -9,10 +9,14 @@ type GrpcHeaders = Awaited<ReturnType<typeof buildGrpcHeaders>>;
 export async function respondWithKarte(
   req: NextRequest,
   label: string,
-  call: (headers: GrpcHeaders) => Promise<{ karte?: KarteMessage }>
+  call: (headers: GrpcHeaders) => Promise<{ karte?: KarteMessage }>,
+  { allowDeleted = false }: { allowDeleted?: boolean } = {}
 ) {
   try {
     const res = await call(await buildGrpcHeaders(req));
+    if (!res.karte && allowDeleted) {
+      return NextResponse.json({ karte: null });
+    }
     if (!res.karte) {
       return NextResponse.json({ error: `${label} returned no karte` }, { status: 500 });
     }

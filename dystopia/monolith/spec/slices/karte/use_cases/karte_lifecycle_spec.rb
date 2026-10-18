@@ -120,7 +120,7 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
   end
 
   describe "events" do
-    it "adds, updates and deletes events while open, keeping at least one" do
+    it "adds, updates and deletes events while open" do
       karte = create
       added = uc(:add_karte_event).call(
         viewer_account_id: cast_account, karte_id: karte[:id],
@@ -138,8 +138,24 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
       remaining = uc(:delete_karte_event).call(viewer_account_id: cast_account, event_id: second[:id])
       expect(remaining[:events].length).to eq(1)
 
-      only = remaining[:events].first
-      expect { uc(:delete_karte_event).call(viewer_account_id: cast_account, event_id: only[:id]) }.to invalid("A karte keeps at least one event")
+    end
+
+    it "deletes the karte together with its last event" do
+      karte = create
+
+      expect(uc(:delete_karte_event).call(viewer_account_id: cast_account, event_id: karte[:events].first[:id])).to be_nil
+      expect { uc(:get_karte).call(viewer_account_id: cast_account, karte_id: karte[:id]) }.to invalid("Karte not found")
+    end
+
+    it "deletes an event of a closed karte" do
+      karte = create(rating: 4)
+      uc(:add_karte_event).call(viewer_account_id: cast_account, karte_id: karte[:id], event: event_input)
+      uc(:close_karte).call(viewer_account_id: cast_account, karte_id: karte[:id])
+
+      remaining = uc(:delete_karte_event).call(viewer_account_id: cast_account, event_id: karte[:events].first[:id])
+
+      expect(remaining).to include(status: "closed")
+      expect(remaining[:events].length).to eq(1)
     end
 
     it "places a backdated event before newer ones" do
