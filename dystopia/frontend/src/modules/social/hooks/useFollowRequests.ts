@@ -15,17 +15,18 @@ interface ListResponse {
 
 interface CountResponse { count: number }
 
-export function useFollowRequests() {
+export function useFollowRequests({ enabled = true }: { enabled?: boolean } = {}) {
   const profileId = useAuthStore((s) => s.activeProfileId);
+  const active = enabled && !!profileId;
 
   const { data: list, error: listError, isLoading, mutate: mutateList } = useSWR<ListResponse>(
-    profileId ? "/api/social/follow/requests" : null,
+    active ? "/api/social/follow/requests" : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 5000 }
   );
 
   const { data: countData, mutate: mutateCount } = useSWR<CountResponse>(
-    profileId ? "/api/social/follow/requests/count" : null,
+    active ? "/api/social/follow/requests/count" : null,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 10000 }
   );

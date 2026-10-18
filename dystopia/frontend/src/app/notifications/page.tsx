@@ -8,6 +8,7 @@ import { EntryCard } from "@/components/ui/entry-card";
 import { useNotifications, describeNotificationAction, notificationHref } from "@/modules/notifications";
 import type { NotificationView } from "@/modules/notifications/types";
 import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
+import { useProfile } from "@/modules/profile/hooks";
 
 export function NotificationsHeader() {
   return <PageHeader title="通知" description={getFeatureDescription("notifications")} />;
@@ -47,12 +48,13 @@ export function NotificationRow({ notification: n, onClick }: { notification: No
 export default function NotificationsPage() {
   const router = useRouter();
   const { notifications, hasMore, unreadCount, loading, loadMore, markRead, markAllRead } = useNotifications();
+  const { profile } = useProfile();
 
   const handleClick = (n: NotificationView) => {
     if (!n.readAt) {
       markRead(n.id).catch(() => {});
     }
-    const href = notificationHref(n);
+    const href = notificationHref(n, profile?.username || null);
     if (href) router.push(href);
   };
 

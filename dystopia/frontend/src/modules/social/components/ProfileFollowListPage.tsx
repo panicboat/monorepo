@@ -8,6 +8,7 @@ import { FollowListView, type FollowListTab } from "./FollowListView";
 const HEADINGS: Record<FollowListTab, string> = {
   following: "のフォロー中",
   followers: "のフォロワー",
+  requests: "へのフォロー申請",
 };
 
 interface ProfileFollowListPageProps {
@@ -33,7 +34,7 @@ export function ProfileFollowListPage({ initialTab }: ProfileFollowListPageProps
         {profile.displayName}
         {HEADINGS[initialTab]}
       </h1>
-      <FollowListView profileId={profile.id} initialTab={initialTab} showBlocked={!!activeProfileId && activeProfileId === profile.id} />
+      <FollowListView profileId={profile.id} initialTab={initialTab} isOwnProfile={!!activeProfileId && activeProfileId === profile.id} />
     </main>
   );
 }
