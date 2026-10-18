@@ -23,7 +23,7 @@ describe("NotificationRow", () => {
     const html = renderToStaticMarkup(<NotificationRow notification={notification} onClick={() => {}} />);
 
     expect(html).toContain("花子");
-    expect(html).toContain("さんがいいねしました");
+    expect(html).toContain("あなたの投稿にいいねしました");
   });
 
   it("marks only an actor whose profile is locked", () => {
@@ -47,9 +47,22 @@ describe("NotificationRow", () => {
     expect(html).toContain("削除したプロフィール");
   });
 
-  it("does not nest a profile link inside the row button", () => {
+  it("opens the notification from the card and links the actor to their profile outside it", () => {
     const html = renderToStaticMarkup(<NotificationRow notification={notification} onClick={() => {}} />);
+    const card = html.match(/<button[^>]*>(.*?)<\/button>/)?.[1] ?? "";
 
-    expect(html).not.toContain("<a ");
+    expect(card).toContain("あなたの投稿にいいねしました");
+    expect(card).not.toContain("<a ");
+    expect(html.match(/<a[^>]*href="\/u\/hanako"/g)?.length).toBe(2);
+  });
+
+  it("marks only an unread notification", () => {
+    const unread = renderToStaticMarkup(<NotificationRow notification={notification} onClick={() => {}} />);
+    const read = renderToStaticMarkup(
+      <NotificationRow notification={{ ...notification, readAt: "2026-01-02T00:00:00.000Z" }} onClick={() => {}} />
+    );
+
+    expect(unread).toContain('aria-label="未読"');
+    expect(read).not.toContain('aria-label="未読"');
   });
 });

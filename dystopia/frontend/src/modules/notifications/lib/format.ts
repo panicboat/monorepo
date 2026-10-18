@@ -2,22 +2,22 @@ import { NotificationType } from "@/stub/notifications/v1/notification_service_p
 import type { NotificationView } from "../types";
 
 export function describeNotificationAction(n: NotificationView): string {
-  const others = n.actorCount > 1 ? `他 ${n.actorCount - 1} 人 ` : "";
+  const others = n.actorCount > 1 ? `ほか ${n.actorCount - 1} 人も` : "";
   switch (n.type) {
     case NotificationType.LIKE:
-      return `${others}さんがいいねしました`;
+      return `${others}あなたの投稿にいいねしました`;
     case NotificationType.COMMENT:
-      return `${others}さんがコメントしました`;
+      return `${others}あなたの投稿にコメントしました`;
     case NotificationType.REPLY:
-      return `${others}さんが返信しました`;
+      return `${others}あなたのコメントに返信しました`;
     case NotificationType.FOLLOW_REQUEST:
-      return "さんからフォロー申請が届きました";
+      return "フォロー申請が届きました";
     case NotificationType.FOLLOW_APPROVED:
-      return "さんにフォローされました";
+      return "あなたをフォローしました";
     case NotificationType.MENTION:
-      return `${others}さんがメンションしました`;
+      return `${others}あなたをメンションしました`;
     default:
-      return "さんから通知";
+      return "お知らせがあります";
   }
 }
 

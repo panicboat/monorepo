@@ -1,10 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
-import { ProfileName } from "@/components/ui/profile-name";
+import { EntryCard } from "@/components/ui/entry-card";
 import { useNotifications, describeNotificationAction, notificationHref } from "@/modules/notifications";
 import type { NotificationView } from "@/modules/notifications/types";
 import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
@@ -19,31 +18,10 @@ function formatDate(iso: string): string {
 }
 
 export function NotificationRow({ notification: n, onClick }: { notification: NotificationView; onClick: () => void }) {
-  const isUnread = !n.readAt;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex w-full items-start gap-3 border-b border-border px-4 py-3 text-left hover:bg-bg-secondary ${
-        isUnread ? "bg-bg-secondary/50" : ""
-      }`}
-    >
-      <Avatar
-        src={n.latestActor?.avatarUrl || undefined}
-        fallback={(n.latestActor?.displayName || "?").slice(0, 1)}
-        size="md"
-      />
-      <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1 text-sm text-text-primary">
-          <ProfileName profile={n.latestActor} className="text-sm" />
-          <span className="truncate">{describeNotificationAction(n)}</span>
-        </p>
-        <p className="text-xs text-text-secondary">{formatDate(n.latestEventAt)}</p>
-      </div>
-      {isUnread && (
-        <span className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full bg-accent" aria-label="未読" />
-      )}
-    </button>
+    <EntryCard profile={n.latestActor} meta={formatDate(n.latestEventAt)} unread={!n.readAt} onClick={onClick}>
+      <span className="block text-sm text-text-primary">{describeNotificationAction(n)}</span>
+    </EntryCard>
   );
 }
 
