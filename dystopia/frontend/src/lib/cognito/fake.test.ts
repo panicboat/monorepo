@@ -1,5 +1,5 @@
-import { decodeJwt } from "jose";
-import { beforeEach, describe, expect, it } from "vitest";
+import { decodeJwt, importJWK, jwtVerify } from "jose";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createFakeAdapter, _resetFakePool, FAKE_CONFIRMATION_CODE } from "./fake";
 
 describe("createFakeAdapter", () => {
@@ -89,5 +89,16 @@ describe("createFakeAdapter", () => {
     ).rejects.toMatchObject({
       name: "CodeMismatchException",
     });
+  });
+
+  it("signs refreshed tokens that another load of the module can verify", async () => {
+    const { accessToken } = await createFakeAdapter().refreshTokens(
+      "fake-refresh:11111111-1111-4111-8111-111111111111",
+    );
+    vi.resetModules();
+    const reloaded = await import("./fake");
+    const key = await importJWK((await reloaded.fakeJwks()).keys[0]);
+
+    await expect(jwtVerify(accessToken, key, { issuer: "fake-issuer" })).resolves.toBeTruthy();
   });
 });

@@ -71,13 +71,8 @@ describe("GET /api/identity/me", () => {
     expect(res.status).toBe(401);
   });
 
-  it("期限切れ access token と有効な refresh token では session を更新して account を返す", async () => {
-    const adapter = cognitoMocks.adapter!;
-    const { userSub } = await adapter.signUp("+15551234567", "Passw0rd!");
-    await adapter.confirmSignUp("+15551234567", FAKE_CONFIRMATION_CODE);
-    const tokens = await adapter.initiateAuth("+15551234567", "Passw0rd!");
-    identity.getAccount.mockResolvedValue({ account: { id: userSub, role: 1 } });
-
+  it("期限切れ access token は cookie を clear して 401 を返す", async () => {
+    const tokens = await issueTokens();
     const req = new NextRequest("http://localhost/api/identity/me");
     req.cookies.set(ACCESS_COOKIE, tokens.accessToken);
     req.cookies.set(REFRESH_COOKIE, tokens.refreshToken);
@@ -87,46 +82,9 @@ describe("GET /api/identity/me", () => {
     try {
       const res = await GET(req);
 
-      expect(res.status).toBe(200);
-      await expect(res.json()).resolves.toEqual({
-        account: { id: userSub, role: 1 },
-      });
-      expect(res.headers.get("Set-Cookie")).toMatch(/access_token=/);
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("期限切れ access token と refresh token 無しは cookie を clear して 401 を返す", async () => {
-    const tokens = await issueTokens();
-    const req = new NextRequest("http://localhost/api/identity/me");
-    req.cookies.set(ACCESS_COOKIE, tokens.accessToken);
-    vi.useFakeTimers();
-    vi.setSystemTime(Date.now() + 60 * 60 * 1000 + 1);
-
-    try {
-      const res = await GET(req);
-
       expect(res.status).toBe(401);
       expect(res.headers.get("Set-Cookie")).toMatch(/access_token=;/);
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("期限切れ access token と無効な refresh token は cookie を clear して 401 を返す", async () => {
-    const tokens = await issueTokens();
-    const req = new NextRequest("http://localhost/api/identity/me");
-    req.cookies.set(ACCESS_COOKIE, tokens.accessToken);
-    req.cookies.set(REFRESH_COOKIE, "invalid-refresh-token");
-    vi.useFakeTimers();
-    vi.setSystemTime(Date.now() + 60 * 60 * 1000 + 1);
-
-    try {
-      const res = await GET(req);
-
-      expect(res.status).toBe(401);
-      expect(res.headers.get("Set-Cookie")).toMatch(/access_token=;/);
+      expect(identity.getAccount).not.toHaveBeenCalled();
     } finally {
       vi.useRealTimers();
     }
