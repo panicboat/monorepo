@@ -55,12 +55,13 @@ describe("describeNotificationAction", () => {
 describe("notificationHref", () => {
   it("routes a follow notification to the actor's profile", () => {
     const n = buildNotification({ type: NotificationType.FOLLOW_APPROVED });
-    expect(notificationHref(n)).toBe("/u/hanako");
+    expect(notificationHref(n, "yuna")).toBe("/u/hanako");
   });
 
-  it("routes a follow request notification to the follow-requests settings page", () => {
+  it("routes a follow request notification to the viewer's own requests tab", () => {
     const n = buildNotification({ type: NotificationType.FOLLOW_REQUEST });
-    expect(notificationHref(n)).toBe("/settings/follow-requests");
+    expect(notificationHref(n, "yuna")).toBe("/u/yuna/requests");
+    expect(notificationHref(n, null)).toBeNull();
   });
 
   it("routes a mention notification to its post", () => {
@@ -68,6 +69,6 @@ describe("notificationHref", () => {
       type: NotificationType.MENTION,
       targetPostId: "post-mention-1",
     });
-    expect(notificationHref(n)).toBe("/posts/post-mention-1");
+    expect(notificationHref(n, "yuna")).toBe("/posts/post-mention-1");
   });
 });

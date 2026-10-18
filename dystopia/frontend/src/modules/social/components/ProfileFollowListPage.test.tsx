@@ -19,8 +19,8 @@ vi.mock("@/modules/profile/hooks", () => ({
 }));
 
 vi.mock("./FollowListView", () => ({
-  FollowListView: ({ profileId, initialTab, showBlocked }: { profileId?: string; initialTab?: string; showBlocked?: boolean }) => (
-    <div data-testid="follow-list-view" data-profile-id={profileId} data-initial-tab={initialTab} data-show-blocked={String(!!showBlocked)} />
+  FollowListView: ({ profileId, initialTab, isOwnProfile }: { profileId?: string; initialTab?: string; isOwnProfile?: boolean }) => (
+    <div data-testid="follow-list-view" data-profile-id={profileId} data-initial-tab={initialTab} data-own={String(!!isOwnProfile)} />
   ),
 }));
 
@@ -63,7 +63,7 @@ describe("ProfileFollowListPage", () => {
     expect(html).toContain("見つかりませんでした");
   });
 
-  it("offers the blocked tab only on the viewer's own lists", () => {
+  it("marks only the viewer's own lists as their own", () => {
     navMocks.useParams.mockReturnValue({ username: "yuna" });
     profileMocks.usePublicProfile.mockReturnValue({
       profile: { id: "account-1", displayName: "ゆな", username: "yuna" },
@@ -76,7 +76,7 @@ describe("ProfileFollowListPage", () => {
     authMocks.activeProfileId = "viewer-1";
     const other = renderToStaticMarkup(<ProfileFollowListPage initialTab="following" />);
 
-    expect(own).toContain('data-show-blocked="true"');
-    expect(other).toContain('data-show-blocked="false"');
+    expect(own).toContain('data-own="true"');
+    expect(other).toContain('data-own="false"');
   });
 });

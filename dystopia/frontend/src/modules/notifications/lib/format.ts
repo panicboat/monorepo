@@ -21,7 +21,7 @@ export function describeNotificationAction(n: NotificationView): string {
   }
 }
 
-export function notificationHref(n: NotificationView): string | null {
+export function notificationHref(n: NotificationView, ownUsername: string | null): string | null {
   switch (n.type) {
     case NotificationType.LIKE:
       return `/posts/${encodeURIComponent(n.targetResourceId)}`;
@@ -31,7 +31,7 @@ export function notificationHref(n: NotificationView): string | null {
       // Use targetPostId because comment notifications store the comment ID as targetResourceId.
       return n.targetPostId ? `/posts/${encodeURIComponent(n.targetPostId)}` : null;
     case NotificationType.FOLLOW_REQUEST:
-      return "/settings/follow-requests";
+      return ownUsername ? `/u/${encodeURIComponent(ownUsername)}/requests` : null;
     case NotificationType.FOLLOW_APPROVED:
       return n.latestActor?.username
         ? `/u/${encodeURIComponent(n.latestActor.username)}`

@@ -7,17 +7,19 @@ import { Button } from "@/components/ui/button";
 import { ProfileName } from "@/components/ui/profile-name";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { useFollowList, useFollowerList } from "@/modules/social/hooks";
+import { useFollowRequests } from "../hooks/useFollowRequests";
 import { BlockedAccountsList } from "./BlockedAccountsList";
 import { FollowButton } from "./FollowButton";
+import { FollowRequestsList } from "./FollowRequestsList";
 import type { ProfileSummaryView } from "@/modules/profile/types";
 
-export type FollowListTab = "following" | "followers";
+export type FollowListTab = "following" | "followers" | "requests";
 
 const TABS: TabItem[] = [
   { id: "following", label: "フォロー中" },
   { id: "followers", label: "フォロワー" },
 ];
-const BLOCKED_TAB: TabItem = { id: "blocked", label: "ブロック" };
+const OWN_ONLY_TABS = new Set(["requests", "blocked"]);
 
 function ProfileRow({ profile }: { profile: ProfileSummaryView }) {
   const href = `/u/${encodeURIComponent(profile.username)}`;
@@ -43,23 +45,26 @@ function ProfileRow({ profile }: { profile: ProfileSummaryView }) {
 interface FollowListViewProps {
   profileId?: string;
   initialTab?: FollowListTab;
-  showBlocked?: boolean;
+  isOwnProfile?: boolean;
 }
 
-export function FollowListView({ profileId, initialTab = "following", showBlocked = false }: FollowListViewProps) {
-  const [tab, setTab] = useState<string>(initialTab);
+export function FollowListView({ profileId, initialTab = "following", isOwnProfile = false }: FollowListViewProps) {
+  const [tab, setTab] = useState<string>(!isOwnProfile && OWN_ONLY_TABS.has(initialTab) ? "following" : initialTab);
+  const { pendingCount } = useFollowRequests({ enabled: isOwnProfile });
   const following = useFollowList(profileId);
   const followers = useFollowerList(profileId);
 
   const active = tab === "following" ? following : followers;
 
-  const tabs = showBlocked ? [...TABS, BLOCKED_TAB] : TABS;
+  const tabs = isOwnProfile
+    ? [...TABS, { id: "requests", label: pendingCount > 0 ? `申請(${pendingCount})` : "申請" }, { id: "blocked", label: "ブロック中" }]
+    : TABS;
 
-  if (tab === BLOCKED_TAB.id) {
+  if (tab === "requests" || tab === "blocked") {
     return (
       <>
         <Tabs items={tabs} value={tab} onValueChange={setTab} />
-        <BlockedAccountsList />
+        {tab === "requests" ? <FollowRequestsList /> : <BlockedAccountsList />}
       </>
     );
   }

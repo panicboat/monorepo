@@ -4,7 +4,7 @@ import type { ProfileSummaryView } from "@/modules/profile/types";
 
 const state = vi.hoisted(() => ({ requests: [] as ProfileSummaryView[] }));
 
-vi.mock("@/modules/social", () => ({
+vi.mock("../hooks/useFollowRequests", () => ({
   useFollowRequests: () => ({
     requests: state.requests,
     pendingCount: state.requests.length,
@@ -15,24 +15,40 @@ vi.mock("@/modules/social", () => ({
   }),
 }));
 
-const { default: FollowRequestsPage } = await import("./page");
+const { FollowRequestsList } = await import("./FollowRequestsList");
 
 const requester = (overrides: Partial<ProfileSummaryView> = {}): ProfileSummaryView => ({
   profileId: "p-1", username: "rin", displayName: "りん", avatarUrl: "", isPrivate: false, role: "guest", ...overrides,
 });
 
-describe("FollowRequestsPage", () => {
+describe("FollowRequestsList", () => {
+  it("links the requester's avatar and name to their profile beside the approve and reject buttons", () => {
+    state.requests = [requester()];
+    const html = renderToStaticMarkup(<FollowRequestsList />);
+
+    expect(html.match(/<a[^>]*href="\/u\/rin"/g)?.length).toBe(2);
+    expect(html).toContain("承認");
+    expect(html).toContain("拒否");
+    expect(html).toContain("承認待ちの申請 1 件");
+  });
+
   it("marks a private requester with a lock", () => {
     state.requests = [requester({ isPrivate: true })];
 
-    expect(renderToStaticMarkup(<FollowRequestsPage />)).toContain("鍵付き");
+    expect(renderToStaticMarkup(<FollowRequestsList />)).toContain("鍵付き");
   });
 
   it("shows no lock for a public requester and falls back to the handle", () => {
     state.requests = [requester({ displayName: "" })];
-    const html = renderToStaticMarkup(<FollowRequestsPage />);
+    const html = renderToStaticMarkup(<FollowRequestsList />);
 
     expect(html).not.toContain("鍵付き");
     expect(html).toContain("@rin");
+  });
+
+  it("says so when there are no requests", () => {
+    state.requests = [];
+
+    expect(renderToStaticMarkup(<FollowRequestsList />)).toContain("申請はありません。");
   });
 });
