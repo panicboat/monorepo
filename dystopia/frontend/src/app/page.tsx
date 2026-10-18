@@ -112,7 +112,7 @@ export default function HomePage() {
   const karteContent = useMemo(
     () => (
       <>
-        <p className="px-4 py-3 text-sm text-text-secondary">全キャスト間で共有される新着カルテ（記録中を含む）。カードから詳細を確認できます。</p>
+        <p className="px-4 py-3 text-sm text-text-secondary">キャストがゲストについて残した新着のカルテです。</p>
         {karte.error ? (
           <p className="px-4 py-8 text-center text-error">読み込みに失敗しました</p>
         ) : (
