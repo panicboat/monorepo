@@ -23,5 +23,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   const authError = requireAuth(req);
   if (authError) return authError;
   const { eventId } = await params;
-  return respondWithKarte(req, "DeleteKarteEvent", (headers) => karteClient.deleteKarteEvent({ eventId }, { headers }));
+  return respondWithKarte(req, "DeleteKarteEvent", (headers) => karteClient.deleteKarteEvent({ eventId }, { headers }), {
+    allowDeleted: true,
+  });
 }

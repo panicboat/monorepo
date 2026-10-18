@@ -139,6 +139,11 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
       remaining = handler_for(::Karte::V1::DeleteKarteEventRequest.new(event_id: event_id)).delete_karte_event.karte
       expect(remaining.events.length).to eq(1)
 
+      emptied = handler_for(::Karte::V1::DeleteKarteEventRequest.new(event_id: remaining.events.first.id)).delete_karte_event
+      expect(emptied.karte).to be_nil
+      expect { handler_for(::Karte::V1::GetKarteRequest.new(karte_id: id)).get_karte }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
+      id = create_karte.id
+
       handler_for(::Karte::V1::DeleteKarteRequest.new(karte_id: id)).delete_karte
       expect { handler_for(::Karte::V1::GetKarteRequest.new(karte_id: id)).get_karte }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
     end

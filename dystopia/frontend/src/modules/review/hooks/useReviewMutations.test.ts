@@ -44,7 +44,6 @@ describe("useReviewMutations", () => {
       ["reopen", () => hook.current!.reopen("k-1")],
       ["add", () => hook.current!.addEvent("k-1", event)],
       ["update", () => hook.current!.updateEvent("e-1", event)],
-      ["remove event", () => hook.current!.removeEvent("e-1")],
     ];
     for (const [, run] of calls) {
       let result: unknown;
@@ -61,8 +60,17 @@ describe("useReviewMutations", () => {
       ["/api/review/k-1/reopen", { method: "POST", body: undefined }],
       ["/api/review/k-1/events", { method: "POST", body: { event } }],
       ["/api/review/events/e-1", { method: "PATCH", body: { event } }],
-      ["/api/review/events/e-1", { method: "DELETE", body: undefined }],
     ]);
+  });
+
+  it("deletes an event and returns what the server answers", async () => {
+    let result: unknown;
+    await act(async () => {
+      result = await hook.current!.removeEvent("e-1");
+    });
+
+    expect(mocks.authFetch).toHaveBeenCalledWith("/api/review/events/e-1", { method: "DELETE" });
+    expect(result).toEqual({ review: { id: "k-1" } });
   });
 
   it("deletes a review and reports whether it worked", async () => {

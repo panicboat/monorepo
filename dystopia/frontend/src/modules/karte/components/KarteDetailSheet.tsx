@@ -50,6 +50,25 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
     return result;
   };
 
+  const deleteEvent = async (eventId: string) => {
+    const last = karte.events.length <= 1;
+    if (!confirm(last ? "最後の出来事を削除すると、カルテも削除されます。よろしいですか？" : "この出来事を削除しますか？")) return;
+    // Stop reading the karte before the server may delete it, as the whole-karte deletion does.
+    if (last) setDeleting(true);
+    const result = await removeEvent(eventId);
+    if (!result) {
+      setDeleting(false);
+      return;
+    }
+    if (!result.karte) {
+      showToast("カルテを削除しました");
+      onClose();
+      return;
+    }
+    apply(result.karte);
+    showToast("出来事を削除しました");
+  };
+
   const startEdit = (eventId: string) => {
     const target = karte.events.find((event) => event.id === eventId);
     if (!target) return;
@@ -143,18 +162,17 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
                 )}
                 {event.note && <p className="mt-2 whitespace-pre-wrap text-text-primary">{event.note}</p>}
                 <p className="mt-2 text-xs text-text-secondary">発生日 {formatMonthDay(event.occurredOn)}</p>
-                {editable && (
+                {karte.isMine && (
                   <div className="mt-2 flex gap-4 text-sm text-text-secondary">
-                    <button type="button" onClick={() => startEdit(event.id)} className="hover:text-text-primary">
-                      編集
-                    </button>
+                    {editable && (
+                      <button type="button" onClick={() => startEdit(event.id)} className="hover:text-text-primary">
+                        編集
+                      </button>
+                    )}
                     <button
                       type="button"
-                      disabled={loading || karte.events.length <= 1}
-                      onClick={() => {
-                        if (!confirm("この出来事を削除しますか？")) return;
-                        void confirmed(() => removeEvent(event.id), "出来事を削除しました");
-                      }}
+                      disabled={loading}
+                      onClick={() => void deleteEvent(event.id)}
                       className="hover:text-text-primary disabled:opacity-50"
                     >
                       削除
@@ -164,7 +182,6 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
               </li>
             ))}
           </ol>
-          {editable && karte.events.length <= 1 && <p className="mt-2 text-xs text-text-secondary">出来事は 1 件以上必要です</p>}
         </section>
 
         {editable && (
@@ -199,7 +216,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
               type="button"
               disabled={loading}
               onClick={async () => {
-                if (!confirm("このカルテを削除しますか？")) return;
+                if (!confirm("このカルテを削除しますか？出来事もすべて削除されます。")) return;
                 setDeleting(true);
                 if (!(await remove(karte.id))) {
                   setDeleting(false);

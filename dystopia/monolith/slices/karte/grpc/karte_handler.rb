@@ -120,7 +120,7 @@ module Karte
       def delete_karte_event
         authenticate_user!
         karte = wrap_errors { delete_karte_event_uc.call(viewer_account_id: current_account_id, event_id: request.message.event_id) }
-        ::Karte::V1::DeleteKarteEventResponse.new(karte: karte_to_proto(karte))
+        ::Karte::V1::DeleteKarteEventResponse.new(karte: karte && karte_to_proto(karte))
       end
 
       def list_kartes_by_target

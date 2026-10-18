@@ -137,13 +137,6 @@ describe("ReviewDetailSheet", () => {
     expect(button("このクチコミを削除")).toBeDefined();
   });
 
-  it("keeps the only event from being deleted and says why", async () => {
-    await mount(review({ events: [event("e-1")] }));
-
-    expect(button("削除")!.disabled).toBe(true);
-    expect(text()).toContain("出来事は 1 件以上必要です");
-  });
-
   it("saves a rating from the stars", async () => {
     await mount(review());
 
@@ -212,6 +205,7 @@ describe("ReviewDetailSheet", () => {
   });
 
   it("deletes an event after confirming", async () => {
+    mocks.mutations.removeEvent.mockResolvedValue({ review: review() });
     await mount(review());
 
     await act(async () => {
@@ -227,7 +221,7 @@ describe("ReviewDetailSheet", () => {
 
     await click("このクチコミを削除");
 
-    expect(confirmDialog).toHaveBeenCalledWith("このクチコミを削除しますか？");
+    expect(confirmDialog).toHaveBeenCalledWith("このクチコミを削除しますか？出来事もすべて削除されます。");
     expect(mocks.mutations.remove).toHaveBeenCalledWith("k-1");
     expect(mocks.toast).toHaveBeenCalledWith("クチコミを削除しました");
     expect(onClose).toHaveBeenCalled();

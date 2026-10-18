@@ -51,7 +51,11 @@ export function useReviewMutations() {
     (eventId: string, event: ReviewEventInput) => send(eventUrl(eventId), "PATCH", { event }),
     [send]
   );
-  const removeEvent = useCallback((eventId: string) => send(eventUrl(eventId), "DELETE"), [send]);
+  const removeEvent = useCallback(
+    (eventId: string) =>
+      run("クチコミを更新できませんでした", () => authFetch<{ review: Review | null }>(eventUrl(eventId), { method: "DELETE" })),
+    [run]
+  );
   const remove = useCallback(
     async (reviewId: string) =>
       (await run("クチコミを削除できませんでした", () => authFetch<{ ok: boolean }>(reviewUrl(reviewId), { method: "DELETE" }))) !== null,

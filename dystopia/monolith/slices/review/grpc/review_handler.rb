@@ -124,7 +124,7 @@ module Review
       def delete_review_event
         authenticate_user!
         review = wrap_errors { delete_review_event_uc.call(viewer_account_id: current_account_id, event_id: request.message.event_id) }
-        ::Review::V1::DeleteReviewEventResponse.new(review: review_to_proto(review))
+        ::Review::V1::DeleteReviewEventResponse.new(review: review && review_to_proto(review))
       end
 
       def list_reviews_by_target
