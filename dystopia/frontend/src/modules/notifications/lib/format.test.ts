@@ -25,29 +25,30 @@ function buildNotification(overrides: Partial<NotificationView>): NotificationVi
 }
 
 describe("describeNotificationAction", () => {
-  it("describes a follow as being followed, not as an approval", () => {
-    const n = buildNotification({ type: NotificationType.FOLLOW_APPROVED });
-    expect(describeNotificationAction(n)).toBe("さんにフォローされました");
+  it.each([
+    [NotificationType.LIKE, "あなたの投稿にいいねしました"],
+    [NotificationType.COMMENT, "あなたの投稿にコメントしました"],
+    [NotificationType.REPLY, "あなたのコメントに返信しました"],
+    [NotificationType.MENTION, "あなたをメンションしました"],
+    [NotificationType.FOLLOW_REQUEST, "フォロー申請が届きました"],
+    [NotificationType.FOLLOW_APPROVED, "あなたをフォローしました"],
+  ])("describes type %s without the actor's name", (type, expected) => {
+    expect(describeNotificationAction(buildNotification({ type }))).toBe(expected);
   });
 
-  it("describes a pending follow request", () => {
-    const n = buildNotification({ type: NotificationType.FOLLOW_REQUEST });
-    expect(describeNotificationAction(n)).toBe("さんからフォロー申請が届きました");
-  });
-
-  it("appends the other-actors count for aggregated notifications", () => {
-    const n = buildNotification({ type: NotificationType.LIKE, actorCount: 4 });
-    expect(describeNotificationAction(n)).toBe("他 3 人 さんがいいねしました");
+  it("leads with the other-actors count for aggregated notifications", () => {
+    const n = buildNotification({ type: NotificationType.LIKE, actorCount: 3 });
+    expect(describeNotificationAction(n)).toBe("ほか 2 人もあなたの投稿にいいねしました");
   });
 
   it("describes the action the same way when the actor is gone", () => {
     const n = buildNotification({ type: NotificationType.COMMENT, latestActor: null });
-    expect(describeNotificationAction(n)).toBe("さんがコメントしました");
+    expect(describeNotificationAction(n)).toBe("あなたの投稿にコメントしました");
   });
 
-  it("describes a mention notification", () => {
-    const n = buildNotification({ type: NotificationType.MENTION });
-    expect(describeNotificationAction(n)).toBe("さんがメンションしました");
+  it("falls back to a generic line for an unknown type", () => {
+    const n = buildNotification({ type: NotificationType.UNSPECIFIED });
+    expect(describeNotificationAction(n)).toBe("お知らせがあります");
   });
 });
 

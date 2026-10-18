@@ -42,4 +42,21 @@ describe("FootprintRow", () => {
     expect(html).toContain("削除したプロフィール");
     expect(html).not.toContain("<a ");
   });
+
+  it("says the visitor viewed the profile and counts repeat visits", () => {
+    const once = renderToStaticMarkup(<FootprintRow footprint={footprint} />);
+    const repeated = renderToStaticMarkup(<FootprintRow footprint={{ ...footprint, visitCount: 3 }} />);
+
+    expect(once).toContain("あなたのプロフィールを見ました");
+    expect(once).not.toContain("回訪問");
+    expect(repeated).toContain("3回訪問");
+  });
+
+  it("marks only an unread footprint", () => {
+    const unread = renderToStaticMarkup(<FootprintRow footprint={{ ...footprint, isUnread: true }} />);
+    const read = renderToStaticMarkup(<FootprintRow footprint={footprint} />);
+
+    expect(unread).toContain('aria-label="未読"');
+    expect(read).not.toContain('aria-label="未読"');
+  });
 });

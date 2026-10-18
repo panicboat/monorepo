@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Avatar } from "@/components/ui/avatar";
-import { ProfileName } from "@/components/ui/profile-name";
+import { EntryCard } from "@/components/ui/entry-card";
 import { formatTimeAgo } from "@/lib/utils/date";
 import type { FootprintView } from "@/modules/footprints/types";
 
@@ -12,42 +10,13 @@ export interface FootprintRowProps {
 
 export function FootprintRow({ footprint }: FootprintRowProps) {
   const { visitor, lastVisitedAt, isUnread, visitCount } = footprint;
-  const href = visitor?.username ? `/u/${encodeURIComponent(visitor.username)}` : undefined;
-  const nameAndHandle = (
-    <>
-      <p className="flex">
-        <ProfileName profile={visitor} />
-      </p>
-      <p className="truncate text-sm text-text-secondary">{visitor ? `@${visitor.username || "—"}` : ""}</p>
-    </>
-  );
 
   return (
-    <div className="flex items-center gap-3 border-b border-divider px-4 py-3">
-      {isUnread && (
-        <span aria-hidden="true" className="-ml-2 h-12 w-0.5 rounded-full bg-gradient-brand" />
-      )}
-      <Avatar
-        src={visitor?.avatarUrl || undefined}
-        fallback={(visitor?.displayName || "?").slice(0, 1)}
-        size="md"
-        href={href}
-      />
-      {href ? (
-        <Link href={href} className="min-w-0 flex-1 hover:bg-bg-surface/50">
-          {nameAndHandle}
-        </Link>
-      ) : (
-        <div className="min-w-0 flex-1">{nameAndHandle}</div>
-      )}
-      <div className="flex flex-col items-end gap-0.5">
-        <span className="text-xs text-text-muted">
-          {lastVisitedAt ? formatTimeAgo(lastVisitedAt) : ""}
-        </span>
-        {visitCount > 1 && (
-          <span className="text-xs text-text-secondary">{visitCount}回訪問</span>
-        )}
-      </div>
-    </div>
+    <EntryCard profile={visitor} meta={lastVisitedAt ? formatTimeAgo(lastVisitedAt) : ""} unread={isUnread}>
+      <span className="flex items-baseline justify-between gap-2 text-sm">
+        <span className="text-text-primary">あなたのプロフィールを見ました</span>
+        {visitCount > 1 && <span className="shrink-0 text-xs text-text-secondary">{visitCount}回訪問</span>}
+      </span>
+    </EntryCard>
   );
 }

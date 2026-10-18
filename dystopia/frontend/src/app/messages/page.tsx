@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { ChevronRight, Mail } from "lucide-react";
 import { ComposeToSheet } from "@/components/compose/ComposeToSheet";
-import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
-import { ProfileName } from "@/components/ui/profile-name";
+import { EntryCard } from "@/components/ui/entry-card";
 import { useThreads } from "@/modules/messaging";
 import type { ThreadView } from "@/modules/messaging/types";
 import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
@@ -23,38 +21,26 @@ function timeAgo(iso: string): string {
 }
 
 export function ThreadRow({ thread }: { thread: ThreadView }) {
-  const initial = (thread.counterpart?.displayName || "?").slice(0, 1);
   const preview = thread.lastMessage?.content || "メッセージはまだありません";
   const isUnread = thread.unreadCount > 0;
 
   return (
-    <Link
+    <EntryCard
+      profile={thread.counterpart}
+      meta={timeAgo(thread.lastMessageAt)}
+      unread={isUnread}
       href={`/messages/${encodeURIComponent(thread.id)}`}
-      className={`flex items-center gap-3 border-b border-border px-4 py-3 hover:bg-bg-secondary ${
-        isUnread ? "bg-bg-secondary/30" : ""
-      }`}
     >
-      <Avatar
-        src={thread.counterpart?.avatarUrl || undefined}
-        fallback={initial}
-        size="md"
-      />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <p className="flex min-w-0">
-            <ProfileName profile={thread.counterpart} className={isUnread ? "text-sm" : "text-sm font-normal"} />
-          </p>
-          <span className="shrink-0 text-xs text-text-muted">{timeAgo(thread.lastMessageAt)}</span>
-        </div>
-        <p className="truncate pt-0.5 text-sm text-text-secondary">{preview}</p>
-      </div>
-      {isUnread && (
-        <span className="ml-2 inline-flex shrink-0 min-w-[1.25rem] items-center justify-center rounded-full bg-accent px-1 text-xs font-bold text-white">
-          {thread.unreadCount > 99 ? "99+" : thread.unreadCount}
-        </span>
-      )}
-      <ChevronRight className="size-5 shrink-0 text-text-secondary" aria-hidden="true" />
-    </Link>
+      <span className="flex items-center gap-2">
+        <span className={`min-w-0 flex-1 truncate text-sm ${isUnread ? "text-text-primary" : "text-text-secondary"}`}>{preview}</span>
+        {isUnread && (
+          <span className="inline-flex min-w-[1.25rem] shrink-0 items-center justify-center rounded-full bg-accent px-1 text-xs font-bold text-white">
+            {thread.unreadCount > 99 ? "99+" : thread.unreadCount}
+          </span>
+        )}
+        <ChevronRight className="size-5 shrink-0 text-text-secondary" aria-hidden="true" />
+      </span>
+    </EntryCard>
   );
 }
 

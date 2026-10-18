@@ -32,9 +32,17 @@ describe("ThreadRow", () => {
     expect(html).toContain("削除したプロフィール");
   });
 
-  it("links the whole row to the thread without nesting a profile link", () => {
+  it("links the card to the thread and the counterpart to their profile", () => {
     const html = renderToStaticMarkup(<ThreadRow thread={thread} />);
 
-    expect(html.match(/<a /g)?.length).toBe(1);
+    expect(html.match(/<a[^>]*href="\/messages\/t-1"/g)?.length).toBe(1);
+    expect(html.match(/<a[^>]*href="\/u\/yuna"/g)?.length).toBe(2);
+  });
+
+  it("shows the unread count inside the card", () => {
+    const html = renderToStaticMarkup(<ThreadRow thread={{ ...thread, unreadCount: 3 }} />);
+
+    expect(html).toMatch(/<a[^>]*href="\/messages\/t-1"[^>]*>.*>3<.*<\/a>/);
+    expect(html).toContain('aria-label="未読"');
   });
 });
