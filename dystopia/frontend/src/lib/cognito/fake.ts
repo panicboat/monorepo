@@ -29,7 +29,10 @@ function seedDevUsers(): void {
 }
 seedDevUsers();
 
-const { publicKey, privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+// The proxy and the route handlers load this module separately, so a per-module key would sign tokens the routes reject.
+const keyHolder = globalThis as typeof globalThis & { fakeCognitoKeyPair?: ReturnType<typeof generateKeyPairSync> };
+keyHolder.fakeCognitoKeyPair ??= generateKeyPairSync("rsa", { modulusLength: 2048 });
+const { publicKey, privateKey } = keyHolder.fakeCognitoKeyPair;
 
 export async function fakeJwks(): Promise<{ keys: JWK[] }> {
   const jwk = await exportJWK(publicKey);
