@@ -53,7 +53,7 @@ describe("HomePage tab content", () => {
 
     await selectTab(container, "カルテ");
     expect(mocks.enterKeys.at(-1)).toBe("karte");
-    expect(container.textContent).toContain("全キャスト間で共有される新着カルテ（記録中を含む）。カードから詳細を確認できます。");
+    expect(container.textContent).toContain("キャストがゲストについて残した新着のカルテです。");
 
     await selectTab(container, "クチコミ");
     expect(mocks.enterKeys.at(-1)).toBe("reviews");
