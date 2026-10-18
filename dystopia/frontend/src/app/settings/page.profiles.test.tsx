@@ -13,9 +13,6 @@ vi.mock("@/modules/profile/hooks", () => ({
 vi.mock("@/modules/identity/hooks/useDeactivateAccount", () => ({
   useDeactivateAccount: () => ({ deactivate: vi.fn(), loading: false, error: null }),
 }));
-vi.mock("@/modules/notifications/components/NotificationSettings", () => ({ NotificationSettings: () => null }));
-vi.mock("@/modules/profile/components/PrivacySettings", () => ({ PrivacySettings: () => null }));
-vi.mock("@/modules/profile/components/AccountSettings", () => ({ AccountSettings: () => null }));
 vi.mock("@/modules/profile/components/AppearanceSettings", () => ({ AppearanceSettings: () => null }));
 vi.mock("@/modules/profile/components/ProfileManager", () => ({
   ProfileManager: () => createElement("div", { "data-testid": "profile-manager" }),
@@ -43,30 +40,39 @@ async function mount() {
   };
 }
 
-describe("SettingsPage profile management", () => {
+describe("SettingsPage tabs", () => {
   beforeEach(() => {
     useAuthStore.getState().setHydrated();
   });
 
-  it("gives a cast the profile tab and opens the manager from it", async () => {
+  it.each(["cast", "guest"] as const)("gives a %s only the profile and appearance tabs", async (role) => {
+    useAuthStore.setState({ accountId: "account-1", role, activeProfileId: "p1" });
+    const view = await mount();
+    const tabs = Array.from(view.container.querySelectorAll('[role="tab"]'), (tab) => tab.textContent);
+
+    expect(tabs).toEqual(["プロフィール", "外観"]);
+    await view.unmount();
+  });
+
+  it("opens on the profile manager with the deactivation below it", async () => {
+    useAuthStore.setState({ accountId: "account-1", role: "guest", activeProfileId: "p1" });
+    const view = await mount();
+
+    expect(view.container.querySelector('[data-testid="profile-manager"]')).not.toBeNull();
+    expect(view.container.textContent).toContain("アカウントを退会");
+    await view.unmount();
+  });
+
+  it("leaves the deactivation off the appearance tab", async () => {
     useAuthStore.setState({ accountId: "account-1", role: "cast", activeProfileId: "p1" });
     const view = await mount();
 
     await act(async () => {
-      view.tab("プロフィール")?.click();
+      view.tab("外観")?.click();
     });
 
-    expect(view.container.querySelector('[data-testid="profile-manager"]')).not.toBeNull();
-    await view.unmount();
-  });
-
-  it("gives a guest no profile tab", async () => {
-    useAuthStore.setState({ accountId: "account-1", role: "guest", activeProfileId: "p1" });
-    const view = await mount();
-
-    expect(view.tab("通知設定")).toBeDefined();
-    expect(view.tab("プロフィール")).toBeUndefined();
     expect(view.container.querySelector('[data-testid="profile-manager"]')).toBeNull();
+    expect(view.container.textContent).not.toContain("アカウントを退会");
     await view.unmount();
   });
 });

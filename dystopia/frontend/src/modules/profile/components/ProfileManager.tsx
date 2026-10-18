@@ -5,7 +5,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { authFetch } from "@/lib/auth/fetch";
-import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
+import { useAuthStore, selectActiveProfileId, selectRole } from "@/stores/authStore";
 import { useAccountProfiles } from "@/modules/profile/context/AccountProfilesContext";
 import { AddProfileSheet } from "@/modules/profile/components/AddProfileSheet";
 import type { ProfileView } from "@/modules/profile/types";
@@ -22,6 +22,7 @@ function handleOf(profile: ProfileView): string {
 
 export function ProfileManager() {
   const activeProfileId = useAuthStore(selectActiveProfileId);
+  const role = useAuthStore(selectRole);
   const { profiles, switchProfile, refresh, append } = useAccountProfiles();
   const [busy, setBusy] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ProfileView | null>(null);
@@ -153,7 +154,7 @@ export function ProfileManager() {
         </p>
       )}
 
-      {profiles.length > 0 && (
+      {profiles.length > 0 && role === "cast" && (
         <div className="mt-6">
           <Button
             type="button"

@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { FormField } from "@/components/ui/form-field";
+import { Toggle } from "@/components/ui/toggle";
+import { useUsernameAvailability } from "@/modules/profile/hooks/useUsernameCheck";
 import { PREFECTURES, CUP_SIZES, INDUSTRIES } from "@/modules/profile/lib/constants";
 import type { ProfileView, SaveProfilePayload } from "@/modules/profile/types";
 import { ImageUpload } from "@/modules/profile/components/ImageUpload";
@@ -21,6 +23,8 @@ interface EditProfileSheetProps {
 }
 
 interface FormState {
+  username: string;
+  isPrivate: boolean;
   displayName: string;
   bio: string;
   prefecture: string;
@@ -42,6 +46,8 @@ interface FormState {
 
 function toForm(p: ProfileView): FormState {
   return {
+    username: p.username,
+    isPrivate: p.isPrivate,
     displayName: p.displayName,
     bio: p.bio,
     prefecture: p.prefecture,
@@ -62,9 +68,9 @@ function toForm(p: ProfileView): FormState {
   };
 }
 
-function buildPayload(current: ProfileView, f: FormState, isCast: boolean): SaveProfilePayload {
+function buildPayload(f: FormState, isCast: boolean): SaveProfilePayload {
   return {
-    username: current.username,
+    username: f.username,
     displayName: f.displayName,
     bio: f.bio,
     website: f.website,
@@ -77,7 +83,7 @@ function buildPayload(current: ProfileView, f: FormState, isCast: boolean): Save
       cityheaven: f.snsCityheaven,
     },
     prefecture: f.prefecture,
-    isPrivate: current.isPrivate,
+    isPrivate: f.isPrivate,
     age: isCast ? Number(f.age) || 0 : 0,
     bodyStats: isCast
       ? {
@@ -92,13 +98,13 @@ function buildPayload(current: ProfileView, f: FormState, isCast: boolean): Save
   };
 }
 
-// Preserve fields this sheet does not edit by building the save payload from the current profile.
 export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, onSaveMedia }: EditProfileSheetProps) {
   const [form, setForm] = useState<FormState>(() => toForm(profile));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
   const [coverUrl, setCoverUrl] = useState(profile.coverUrl);
+  const username = useUsernameAvailability(form.username, profile.username);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -106,7 +112,7 @@ export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, 
     setSaving(true);
     setError(null);
     try {
-      await onSave(buildPayload(profile, form, isCast));
+      await onSave(buildPayload(form, isCast));
       onOpenChange(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "保存に失敗しました");
@@ -140,6 +146,15 @@ export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, 
             }}
           />
         </div>
+        <FormField
+          label="ユーザー名"
+          htmlFor="username"
+          required
+          error={username.blocked ? username.status?.message : undefined}
+          hint={username.status?.available ? "使用できます" : undefined}
+        >
+          <Input id="username" value={form.username} onChange={(e) => set("username", e.target.value)} placeholder="username" />
+        </FormField>
         <FormField label="表示名" htmlFor="displayName" required>
           <Input id="displayName" value={form.displayName} onChange={(e) => set("displayName", e.target.value)} />
         </FormField>
@@ -235,13 +250,21 @@ export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, 
           />
         </div>
 
+        <div className="flex items-center justify-between gap-3 border-t border-divider pt-4">
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-text-primary">プロフィールに鍵をかける</span>
+            <span className="text-xs text-text-muted">フォロワーだけが閲覧できます</span>
+          </div>
+          <Toggle checked={form.isPrivate} onCheckedChange={(value) => set("isPrivate", value)} aria-label="プロフィールに鍵をかける" />
+        </div>
+
         {error && <p className="text-sm text-error">{error}</p>}
 
         <div className="flex justify-end gap-2 border-t border-divider pt-4">
           <Button variant="secondary" size="sm" onClick={() => onOpenChange(false)} disabled={saving}>
             キャンセル
           </Button>
-          <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
+          <Button variant="primary" size="sm" onClick={handleSave} disabled={saving || username.blocked}>
             {saving ? "保存中…" : "保存"}
           </Button>
         </div>

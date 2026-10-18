@@ -18,10 +18,7 @@ vi.mock("@/stores/authStore", () => ({
   selectIsHydrated: (state: { isHydrated: boolean }) => state.isHydrated,
   selectRole: (state: { role: string }) => state.role,
 }));
-vi.mock("@/modules/notifications/components/NotificationSettings", () => ({ NotificationSettings: () => <div>notifications</div> }));
-vi.mock("@/modules/profile/components/PrivacySettings", () => ({ PrivacySettings: () => <div>privacy</div> }));
 vi.mock("@/modules/profile/components/AppearanceSettings", () => ({ AppearanceSettings: () => <div>appearance</div> }));
-vi.mock("@/modules/profile/components/AccountSettings", () => ({ AccountSettings: () => <div>account</div> }));
 vi.mock("@/modules/profile/components/ProfileManager", () => ({ ProfileManager: () => <div>profiles</div> }));
 vi.mock("@/modules/identity/hooks/useDeactivateAccount", () => ({ useDeactivateAccount: () => ({ deactivate: vi.fn(), loading: false, error: null }) }));
 
@@ -33,12 +30,12 @@ describe("SettingsPage tab fade", () => {
     await act(async () => {
       createRoot(container).render(createElement(SettingsPage));
     });
-    expect(mocks.keys.at(-1)).toBe("notifications");
+    expect(mocks.keys.at(-1)).toBe("profiles");
 
     await act(async () => {
-      (Array.from(container.querySelectorAll('[role="tab"]')).find((t) => t.textContent === "プライバシー") as HTMLElement).click();
+      (Array.from(container.querySelectorAll('[role="tab"]')).find((t) => t.textContent === "外観") as HTMLElement).click();
     });
 
-    expect(mocks.keys.at(-1)).toBe("privacy");
+    expect(mocks.keys.at(-1)).toBe("appearance");
   });
 });

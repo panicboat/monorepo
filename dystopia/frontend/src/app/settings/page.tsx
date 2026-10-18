@@ -3,13 +3,10 @@
 import { useRef, useState } from "react";
 import { useEnterAnimation } from "@/lib/motion/useEnterAnimation";
 import { useProfile } from "@/modules/profile/hooks";
-import { useAuthStore, selectIsHydrated, selectRole } from "@/stores/authStore";
+import { useAuthStore, selectIsHydrated } from "@/stores/authStore";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs } from "@/components/ui/tab";
-import { PrivacySettings } from "@/modules/profile/components/PrivacySettings";
-import { AccountSettings } from "@/modules/profile/components/AccountSettings";
 import { ProfileManager } from "@/modules/profile/components/ProfileManager";
-import { NotificationSettings } from "@/modules/notifications/components/NotificationSettings";
 import { AppearanceSettings } from "@/modules/profile/components/AppearanceSettings";
 import { useDeactivateAccount } from "@/modules/identity/hooks/useDeactivateAccount";
 import { getFeatureDescription } from "@/modules/onboarding/components/FeatureTourModal";
@@ -20,19 +17,15 @@ export function SettingsHeader() {
 
 export default function SettingsPage() {
   const isHydrated = useAuthStore(selectIsHydrated);
-  const role = useAuthStore(selectRole);
-  const { profile, loading, error, saveProfile } = useProfile();
+  const { profile, loading, error } = useProfile();
   const { deactivate, loading: deactivating, error: deactivateError } = useDeactivateAccount();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const items = [
-    { id: "notifications", label: "通知設定" },
-    { id: "privacy", label: "プライバシー" },
+    { id: "profiles", label: "プロフィール" },
     { id: "appearance", label: "外観" },
-    ...(role === "cast" ? [{ id: "profiles", label: "プロフィール" }] : []),
-    { id: "account", label: "アカウント" },
   ];
-  const [tab, setTab] = useState("notifications");
+  const [tab, setTab] = useState("profiles");
   const contentRef = useRef<HTMLDivElement>(null);
   useEnterAnimation(contentRef, tab);
 
@@ -54,13 +47,10 @@ export default function SettingsPage() {
       </div>
       <Tabs items={items} value={tab} onValueChange={setTab} />
       <div ref={contentRef} className="px-4">
-        {tab === "notifications" && <NotificationSettings />}
-        {tab === "privacy" && <PrivacySettings profile={profile} save={saveProfile} />}
         {tab === "appearance" && <AppearanceSettings />}
-        {tab === "profiles" && role === "cast" && <ProfileManager />}
-        {tab === "account" && (
+        {tab === "profiles" && (
           <>
-            <AccountSettings profile={profile} save={saveProfile} />
+            <ProfileManager />
             <section className="border-t border-border mt-8 pt-6">
               <h2 className="text-base font-medium text-error">アカウントを退会</h2>
               <p className="mt-2 text-sm text-text-secondary">

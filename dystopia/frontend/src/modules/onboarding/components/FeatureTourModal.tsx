@@ -24,7 +24,7 @@ export const FEATURES: FeatureItem[] = [
   { key: "bookmarks", icon: FEATURE_ICONS.bookmarks, label: "ブックマーク", description: "保存した投稿の一覧" },
   { key: "ranking", icon: FEATURE_ICONS.ranking, label: "ランキング", description: "期間別の人気投稿ランキング" },
   { key: "profile", icon: FEATURE_ICONS.profile, label: "プロフィール", description: "自分のプロフィールの確認・編集" },
-  { key: "settings", icon: FEATURE_ICONS.settings, label: "設定", description: "アカウント・プライバシーなどの設定" },
+  { key: "settings", icon: FEATURE_ICONS.settings, label: "設定", description: "プロフィール・外観の設定" },
   { key: "karte", icon: FEATURE_ICONS.karte, label: "カルテ（キャスト向け）", description: "ゲストについての記録の管理・共有" },
 ];
 
