@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { usePublicProfile } from "@/modules/profile/hooks";
+import { useAuthStore, selectActiveProfileId } from "@/stores/authStore";
 import { FollowListView, type FollowListTab } from "./FollowListView";
 
 const HEADINGS: Record<FollowListTab, string> = {
@@ -17,6 +18,7 @@ export function ProfileFollowListPage({ initialTab }: ProfileFollowListPageProps
   const params = useParams<{ username: string }>();
   const username = typeof params.username === "string" ? params.username : "";
   const { profile, loading, error } = usePublicProfile(username || null);
+  const activeProfileId = useAuthStore(selectActiveProfileId);
 
   if (loading) {
     return <main className="mx-auto max-w-xl p-6 text-text-secondary">読み込み中…</main>;
@@ -31,7 +33,7 @@ export function ProfileFollowListPage({ initialTab }: ProfileFollowListPageProps
         {profile.displayName}
         {HEADINGS[initialTab]}
       </h1>
-      <FollowListView profileId={profile.id} initialTab={initialTab} />
+      <FollowListView profileId={profile.id} initialTab={initialTab} showBlocked={!!activeProfileId && activeProfileId === profile.id} />
     </main>
   );
 }

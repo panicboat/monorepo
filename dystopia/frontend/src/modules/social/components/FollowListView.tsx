@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ProfileName } from "@/components/ui/profile-name";
 import { Tabs, type TabItem } from "@/components/ui/tab";
 import { useFollowList, useFollowerList } from "@/modules/social/hooks";
+import { BlockedAccountsList } from "./BlockedAccountsList";
 import { FollowButton } from "./FollowButton";
 import type { ProfileSummaryView } from "@/modules/profile/types";
 
@@ -16,6 +17,7 @@ const TABS: TabItem[] = [
   { id: "following", label: "フォロー中" },
   { id: "followers", label: "フォロワー" },
 ];
+const BLOCKED_TAB: TabItem = { id: "blocked", label: "ブロック" };
 
 function ProfileRow({ profile }: { profile: ProfileSummaryView }) {
   const href = `/u/${encodeURIComponent(profile.username)}`;
@@ -41,18 +43,30 @@ function ProfileRow({ profile }: { profile: ProfileSummaryView }) {
 interface FollowListViewProps {
   profileId?: string;
   initialTab?: FollowListTab;
+  showBlocked?: boolean;
 }
 
-export function FollowListView({ profileId, initialTab = "following" }: FollowListViewProps) {
+export function FollowListView({ profileId, initialTab = "following", showBlocked = false }: FollowListViewProps) {
   const [tab, setTab] = useState<string>(initialTab);
   const following = useFollowList(profileId);
   const followers = useFollowerList(profileId);
 
   const active = tab === "following" ? following : followers;
 
+  const tabs = showBlocked ? [...TABS, BLOCKED_TAB] : TABS;
+
+  if (tab === BLOCKED_TAB.id) {
+    return (
+      <>
+        <Tabs items={tabs} value={tab} onValueChange={setTab} />
+        <BlockedAccountsList />
+      </>
+    );
+  }
+
   return (
     <>
-      <Tabs items={TABS} value={tab} onValueChange={setTab} />
+      <Tabs items={tabs} value={tab} onValueChange={setTab} />
       {active.loading && <p className="px-4 py-6 text-text-secondary">読み込み中…</p>}
       {!active.loading && active.profiles.length === 0 && (
         <p className="px-4 py-6 text-text-secondary">

@@ -7,6 +7,6 @@ describe("SettingsHeader", () => {
     const html = renderToStaticMarkup(<SettingsHeader />);
 
     expect(html).toContain("設定");
-    expect(html).toContain("アカウント・プライバシーなどの設定");
+    expect(html).toContain("プロフィール・外観の設定");
   });
 });

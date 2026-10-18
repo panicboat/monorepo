@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -15,6 +16,24 @@ export function NotificationsHeader() {
 function formatDate(iso: string): string {
   if (!iso) return "";
   return new Date(iso).toLocaleString("ja-JP");
+}
+
+export function NotificationsActions({ unreadCount, onMarkAllRead }: { unreadCount: number; onMarkAllRead: () => void }) {
+  return (
+    <div className="flex flex-col items-end gap-2">
+      <Link href="/settings/notifications" className="text-sm text-text-secondary underline-offset-2 hover:text-text-primary hover:underline">
+        通知設定
+      </Link>
+      <button
+        type="button"
+        onClick={onMarkAllRead}
+        disabled={unreadCount === 0}
+        className="text-sm text-text-secondary underline-offset-2 hover:text-text-primary hover:underline disabled:opacity-40 disabled:no-underline"
+      >
+        全て既読にする
+      </button>
+    </div>
+  );
 }
 
 export function NotificationRow({ notification: n, onClick }: { notification: NotificationView; onClick: () => void }) {
@@ -44,14 +63,7 @@ export default function NotificationsPage() {
           <NotificationsHeader />
           <p className="pt-1 text-sm text-text-secondary">未読 {unreadCount} 件</p>
         </div>
-        <button
-          type="button"
-          onClick={() => markAllRead().catch(() => {})}
-          disabled={unreadCount === 0}
-          className="text-sm text-text-secondary underline-offset-2 hover:text-text-primary hover:underline disabled:opacity-40 disabled:no-underline"
-        >
-          全て既読にする
-        </button>
+        <NotificationsActions unreadCount={unreadCount} onMarkAllRead={() => markAllRead().catch(() => {})} />
       </div>
 
       {loading && notifications.length === 0 && (

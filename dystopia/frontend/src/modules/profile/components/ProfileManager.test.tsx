@@ -183,6 +183,21 @@ describe("ProfileManager", () => {
     await view.unmount();
   });
 
+  it("offers adding a profile to a cast only", async () => {
+    useAuthStore.setState({ role: "guest" });
+    const guest = await mount();
+    const guestButtons = labels(guest.container);
+    await guest.unmount();
+
+    useAuthStore.setState({ role: "cast" });
+    const cast = await mount();
+    const castButtons = labels(cast.container);
+    await cast.unmount();
+
+    expect(guestButtons).not.toContain("プロフィールを追加");
+    expect(castButtons).toContain("プロフィールを追加");
+  });
+
   it("opens the add sheet from the add button without creating anything", async () => {
     const view = await mount();
 

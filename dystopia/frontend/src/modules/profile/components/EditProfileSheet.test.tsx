@@ -8,6 +8,9 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/u/yuna" }));
 
+const authFetchMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/auth/fetch", () => ({ authFetch: authFetchMock }));
+
 const { EditProfileSheet } = await import("./EditProfileSheet");
 const { emptyProfileView } = await import("@/modules/profile/lib/mappers");
 
@@ -90,5 +93,70 @@ describe("EditProfileSheet", () => {
 
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ username: "yuna", displayName: "ゆな" }));
     expect(calls).toEqual(["save", "open:false"]);
+  });
+
+  async function renderSheet(onSave: (payload: unknown) => Promise<void>) {
+    document.body.innerHTML = "";
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    await act(async () => {
+      createRoot(container).render(
+        createElement(EditProfileSheet, {
+          open: true,
+          onOpenChange: () => {},
+          profile: { ...emptyProfileView("p1"), displayName: "ゆな", username: "yuna" },
+          isCast: false,
+          onSave,
+          onSaveMedia: async () => {},
+        })
+      );
+    });
+  }
+
+  async function typeUsername(value: string) {
+    const input = document.querySelector("#username") as HTMLInputElement;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, value);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+  }
+
+  const saveButton = () =>
+    Array.from(document.querySelectorAll("button")).filter((b) => b.textContent === "保存").at(-1) as HTMLButtonElement;
+
+  it("saves a new username once it is available", async () => {
+    authFetchMock.mockResolvedValue({ available: true, message: "" });
+    const onSave = vi.fn(async () => {});
+    await renderSheet(onSave);
+
+    await typeUsername("yuna_new");
+    await act(async () => saveButton().click());
+
+    expect(authFetchMock).toHaveBeenCalledWith("/api/profile/username-check?username=yuna_new", { method: "GET" });
+    expect(document.body.textContent).toContain("使用できます");
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ username: "yuna_new" }));
+  });
+
+  it("blocks saving a username that is taken", async () => {
+    authFetchMock.mockResolvedValue({ available: false, message: "このユーザー名は使われています" });
+    await renderSheet(async () => {});
+
+    await typeUsername("taken");
+
+    expect(document.body.textContent).toContain("このユーザー名は使われています");
+    expect(saveButton().disabled).toBe(true);
+  });
+
+  it("saves the lock setting of the profile", async () => {
+    const onSave = vi.fn(async () => {});
+    await renderSheet(onSave);
+
+    await act(async () => (document.querySelector('[aria-label="プロフィールに鍵をかける"]') as HTMLButtonElement).click());
+    await act(async () => saveButton().click());
+
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ isPrivate: true }));
   });
 });

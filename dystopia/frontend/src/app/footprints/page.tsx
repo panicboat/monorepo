@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { useFootprints, useFootprintsUnreadCount, markFootprintsRead } from "@/modules/footprints";
@@ -23,7 +24,13 @@ export default function FootprintsPage() {
     <main className="mx-auto max-w-xl bg-bg pb-10 text-text-primary">
       <div className="px-4 pt-4">
         <FootprintsHeader />
-        <p className="pt-2 text-sm text-text-secondary">最近の訪問を表示しています。足跡を残すかどうかは設定で切り替えられます。</p>
+        <p className="pt-2 text-sm text-text-secondary">
+          最近の訪問を表示しています。足跡を残すかどうかは
+          <Link href="/settings/notifications" className="text-accent hover:underline">
+            通知設定
+          </Link>
+          で切り替えられます。
+        </p>
       </div>
 
       {loading && footprints.length === 0 && (
