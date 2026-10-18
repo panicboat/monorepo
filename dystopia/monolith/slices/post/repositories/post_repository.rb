@@ -86,11 +86,15 @@ module Post
         scope.order { [created_at.desc, id.desc] }.limit(limit + 1).to_a
       end
 
-      def list_post_ids(limit: 20, cursor: nil, author_profile_ids: nil, excluded_author_profile_ids: [], include_private: false)
+      def list_post_ids(limit: 20, cursor: nil, author_profile_ids: nil, excluded_author_profile_ids: [], include_private: false, viewer_profile_id: nil)
         return [] if !author_profile_ids.nil? && author_profile_ids.empty?
 
         scope = posts.dataset
-        scope = scope.where(visibility: "public") unless include_private
+        unless include_private
+          readable = Sequel[visibility: "public"]
+          readable |= Sequel[author_profile_id: viewer_profile_id] if viewer_profile_id
+          scope = scope.where(readable)
+        end
         scope = scope.where(author_profile_id: author_profile_ids) if author_profile_ids
         scope = scope.exclude(author_profile_id: excluded_author_profile_ids) if excluded_author_profile_ids && !excluded_author_profile_ids.empty?
 

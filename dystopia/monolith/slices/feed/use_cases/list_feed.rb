@@ -35,7 +35,8 @@ module Feed
           cursor: decoded_cursor,
           author_profile_ids: author_ids,
           excluded_author_profile_ids: excluded,
-          include_private: filter == "following"
+          include_private: filter == "following",
+          viewer_profile_id: viewer_profile_id
         )
 
         has_more = post_ids.length > limit
