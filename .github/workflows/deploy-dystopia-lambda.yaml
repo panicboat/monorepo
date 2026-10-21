@@ -45,7 +45,7 @@ jobs:
   deploy:
     name: 'Deploy'
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 90
     permissions:
       id-token: write
