@@ -199,7 +199,7 @@ describe("ComposeToSheet", () => {
       mocks.created?.();
     });
 
-    expect(mocks.toast.mock.calls).toEqual([["記録中のカルテを作成しました"]]);
+    expect(mocks.toast.mock.calls).toEqual([["カルテを作成しました"]]);
     expect(view.onClose).toHaveBeenCalledTimes(1);
     expect(view.onSaved).toHaveBeenCalledTimes(1);
     await view.unmount();

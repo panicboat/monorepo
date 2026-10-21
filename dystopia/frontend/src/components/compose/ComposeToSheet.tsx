@@ -17,7 +17,7 @@ import { RecipientPicker } from "./RecipientPicker";
 import { resolveRecipientSource, type RecipientKind } from "./resolveRecipientSource";
 
 const COMPOSE_TITLE = { karte: "カルテを書く", review: "クチコミを書く" } as const;
-const SAVED_MESSAGE = { karte: "記録中のカルテを作成しました", review: "記録中のクチコミを作成しました" } as const;
+const SAVED_MESSAGE = { karte: "カルテを作成しました", review: "記録中のクチコミを作成しました" } as const;
 
 interface ComposeToSheetProps {
   kind: RecipientKind;
