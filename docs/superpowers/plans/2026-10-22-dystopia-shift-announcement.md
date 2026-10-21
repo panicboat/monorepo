@@ -13,13 +13,13 @@
 ## Global Constraints
 
 - 列: `schedule.schedules.post_id uuid NULL`、部分索引 `WHERE post_id IS NOT NULL`。他の slice の表への FK は張らない
-- proto: `post.v1.Post` に `schedule.v1.Schedule schedule = 15;`（`post_service.proto` で `schedule/v1` の proto を import。つながった予定がなければ未設定）。post.v1 に予定の型を新しく定義しない。`schedule.v1.SaveScheduleRequest` に `bool announce = 4; string announce_time = 5; string announce_note = 6;`
+- proto: `post.v1.Post` に `schedule.v1.Schedule schedule = 15;`（`post_service.proto` で `schedule/v1` の proto を import。つながった予定がなければ未設定）。post.v1 に予定の型を新しく定義しない。`profile.v1.ProfileSummary` に `string industry = 7;`。`schedule.v1.SaveScheduleRequest` に `bool announce = 4; string announce_time = 5; string announce_note = 6;`
 - 時刻はすべて日本時間（Asia/Tokyo）で解釈する。出勤の終了は、終了時刻が開始時刻以下なら翌日
 - 投稿: 本文はひとこと（空でもよい）、表示開始はお知らせ時刻（過ぎていれば今）、表示終了は出勤の終了、公開範囲 `public`
 - 保存の表（spec の Saving a schedule）: オン×なし→作る、オン×あり→本文と表示終了を書き換え（表示開始は予約中だけ）、オフ×あり→消して `post_id` を空に、オフ×なし→何もしない。出勤の終了を過ぎた日には新しく作らない。本人が消した投稿は「なし」として扱う
 - 検証の文言（そのまま）: 「お知らせの時刻は出勤の終了より前にしてください」「ひとことは200文字以内で入力してください」（INVALID_ARGUMENT）。`announce` がオフなら時刻とひとことは検証しない
-- 画面の文言（そのまま）: 「投稿でお知らせする」（初期値オン）、「お知らせする時刻」（初期値 09:00）、「ひとこと」、予定を消すときの「お知らせの投稿も消えます」、カードの小見出し「出勤」、カードの時間「10/24（金） 20:00〜02:00」の形、プレビューの 1 行「出勤 10/24（金）20:00〜02:00」
-- スタブは `bin/codegen` と `pnpm proto:gen` で再生成し、`post.v1`・`schedule.v1` の差分だけを commit する（ほかは戻し、未追跡の billing は消す）
+- 画面の文言（そのまま）: 「投稿でお知らせする」（初期値オン）、「お知らせする時刻」（初期値 09:00）、「ひとこと」、予定を消すときの「お知らせの投稿も消えます」、カードの小見出し「出勤」、カードの時間「🚗 10/24（金） 20:00〜02:00」の形（先頭は作者の業種アイコン。`src/modules/profile/lib/constants.ts` の `industryIcon`、読み上げ名は業種名。業種が未設定・一覧にないときはアイコンなし）、プレビューの 1 行「出勤 10/24（金）20:00〜02:00」
+- スタブは `bin/codegen` と `pnpm proto:gen` で再生成し、`post.v1`・`schedule.v1`・`profile.v1` の差分だけを commit する（ほかは戻し、未追跡の billing は消す）
 - コードコメントは英語で 1 行、task への言及なし。commit は `git commit -s`、`Co-Authored-By` なし、末尾に空行と `Claude-Session: https://claude.ai/code/session_01DA9qTtJtm2tPquKk7hyPR5`
 - monolith の検証: `HANAMI_ENV=test bundle exec hanami db migrate`（pg_dump の失敗は無視、structure.sql は commit しない）のあと `HANAMI_ENV=test bundle exec rspec <paths> > <scratchpad>/rspec.log 2>&1`。frontend: `env -u NODE_OPTIONS pnpm exec vitest run <paths>` と `tsc --noEmit`
 - shell: `cat` は bat なので `command cat`。grep は `/usr/bin/grep`、ls は `/bin/ls`、find は `/usr/bin/find`
@@ -67,18 +67,20 @@
 ### Task 2: Schedule on posts (backend)
 
 **Files:**
-- Modify: `proto/dystopia/post/v1/post_service.proto`、monolith の post スタブ
+- Modify: `proto/dystopia/post/v1/post_service.proto`、`proto/dystopia/profile/v1/` の `ProfileSummary`、monolith の post・profile スタブ
+- Modify: `slices/profile/use_cases/summarize_profiles.rb` と `slices/profile/presenters/profile_summary_presenter.rb`（`industry` を読んで詰める）
 - Create: `dystopia/monolith/slices/post/adapters/schedule_adapter.rb`（`Post::Adapters::*` の既存の形に合わせる。読み取りだけ）
 - Modify: `slices/post/presenters/post_presenter.rb`（`schedules:` を受け取り `schedule` を入れる。`author` に `ProfileSummaryPresenter` を使うのと同じく、schedule の proto を組み立てる）、`slices/post/use_cases/posts/list_posts_by_ids.rb`、`slices/post/grpc/post_handler.rb`（`present_posts`・`present_post`）
 - Modify/Create: 該当 spec
 
 **Interfaces:**
 - Consumes: Task 1 の `find_by_post_ids(post_ids:)`
-- Produces: `post.v1.Post.schedule`（`schedule.v1.Schedule`）
+- Produces: `post.v1.Post.schedule`（`schedule.v1.Schedule`）、`profile.v1.ProfileSummary.industry`
 
 - [ ] **Step 1: Specs first**
   - お知らせ投稿を `ListPostsByIds`・`ListPosts`（handler）・`GetPost` で返すと `schedule` に出勤日・開始・終了が入る。ほかの投稿は `schedule` が未設定（`has_schedule?` が false）
   - 予定の時間を変えると、次に読んだ `schedule` が新しい時間
+  - 投稿の `author.industry` に作者の業種が入る（`summarize_profiles` の spec と、投稿の一覧の spec）
   - 1 ページに複数のお知らせ投稿があっても、予定の問い合わせは 1 回（Review Focus 4。adapter / repository の呼び出し回数を spy で数える）
 - [ ] **Step 2: Run to verify they fail**
 - [ ] **Step 3: Implement**
@@ -87,21 +89,21 @@
 ### Task 3: Frontend
 
 **Files:**
-- Modify: frontend の `post.v1`・`schedule.v1` スタブ
+- Modify: frontend の `post.v1`・`schedule.v1`・`profile.v1` スタブ、`src/modules/profile/types.ts` の `ProfileSummaryView` と `lib/mappers.ts` の `summaryToView`（`industry`）
 - Modify: `src/modules/schedule/hooks/useSaveSchedule.ts`、`src/app/api/schedule/save/route.ts`、`src/modules/schedule/components/ScheduleBulkSheet.tsx`
 - Modify: `src/modules/post/lib/post-view.ts`（`schedule: { workDate: string; startTime: string; endTime: string } | null`）、`post-mappers.ts`、`src/modules/post/components/PostCardBinding.tsx`（出勤のカード）、`ReplyWithParentRow.tsx`（本文が空なら出勤の 1 行）、投稿詳細でカードが出る場所（`/usr/bin/grep -rln "PostCardBinding\|PostDetail" src/modules/post/components`）
 - Create: 出勤のカードの部品（`src/modules/post/components/PostScheduleCard.tsx`）。枠は `ReviewCard.tsx` のカード（`rounded-xl border border-border bg-surface p-3`）に合わせる。日付の形は `src/modules/schedule/lib/dates.ts` の既存関数を探して使う
 - Modify: 関係するテスト
 
 **Interfaces:**
-- Consumes: Task 1 の `SaveScheduleRequest` の 3 項目、Task 2 の `Post.schedule`
+- Consumes: Task 1 の `SaveScheduleRequest` の 3 項目、Task 2 の `Post.schedule` と `ProfileSummary.industry`
 - Produces: `PostView.schedule`
 
 - [ ] **Step 1: Tests first**
   - シート: 「予定を入れる」で「投稿でお知らせする」（初期値オン）・「お知らせする時刻」（初期値 09:00）・「ひとこと」が出て、反映すると各日の保存に `announce: true, announceTime: "09:00", announceNote: <入力>` が入る。オフにすると `announce: false`。「予定を消す」で「お知らせの投稿も消えます」が出る
   - BFF の保存 route が 3 項目を request に渡す
   - mapper: `schedule` があれば `{ workDate, startTime, endTime }`、なければ `null`
-  - 投稿カード: `schedule` があるとき小見出し「出勤」と「10/24（金） 20:00〜02:00」のカードが出て、`/u/<username>` へのリンク。本文が空ならひとことの段を出さない（Review Focus 5）。`schedule` がなければ出ない
+  - 投稿カード: `schedule` があるとき小見出し「出勤」と「10/24（金） 20:00〜02:00」のカードが出て、`/u/<username>` へのリンク。日付の前に作者の業種アイコン（読み上げ名＝業種名）。業種が空・一覧にないときはアイコンなし。本文が空ならひとことの段を出さない（Review Focus 5）。`schedule` がなければ出ない
   - 返信の親投稿のプレビュー: 本文が空で `schedule` があれば「出勤 10/24（金）20:00〜02:00」
 - [ ] **Step 2: Run to verify they fail**
 - [ ] **Step 3: Implement**
