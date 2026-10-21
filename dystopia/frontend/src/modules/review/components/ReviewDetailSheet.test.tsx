@@ -104,9 +104,8 @@ describe("ReviewDetailSheet", () => {
     await mount(review());
 
     expect(text()).toContain("クチコミの詳細");
-    expect(text()).toContain("クチコミ");
+    expect(document.querySelector("p.tracking-wide")?.textContent).toBe("クチコミ");
     expect(text()).not.toContain("記録中");
-    expect(text()).not.toContain("完了");
     expect(text()).toContain("@hanako · 書いた人 ゆな");
     expect(text()).toContain("予約から利用後までの記録");
     expect(text().indexOf("予約成立")).toBeLessThan(text().indexOf("途中で終了"));

@@ -36,7 +36,7 @@ beforeEach(() => {
 });
 
 describe("ReviewCreateForm", () => {
-  it("creates an open review for the cast with the chosen rating", async () => {
+  it("creates a review for the cast with the chosen rating", async () => {
     mocks.create.mockResolvedValue({ id: "k-1" });
     const onCreated = vi.fn();
     const container = await mount(onCreated);

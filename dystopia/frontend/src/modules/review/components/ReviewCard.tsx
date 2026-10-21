@@ -61,13 +61,15 @@ export function ReviewCard({ review, variant, onOpen }: ReviewCardProps) {
               </span>
             </span>
             {latest && <span className="mt-1 line-clamp-2 block text-sm text-text-primary">{reviewEventLine(latest)}</span>}
-            <span className="mt-2 flex flex-wrap gap-1.5">
-              {latest?.tags.slice(0, 2).map((tag) => (
-                <span key={tag} className="rounded-full border border-border px-2 py-0.5 text-xs text-text-secondary">
-                  {tagLabel(latest.stage, tag)}
-                </span>
-              ))}
-            </span>
+            {latest && latest.tags.length > 0 && (
+              <span className="mt-2 flex flex-wrap gap-1.5">
+                {latest.tags.slice(0, 2).map((tag) => (
+                  <span key={tag} className="rounded-full border border-border px-2 py-0.5 text-xs text-text-secondary">
+                    {tagLabel(latest.stage, tag)}
+                  </span>
+                ))}
+              </span>
+            )}
           </button>
           {variant !== "cast" && review.target?.username && (
             <Link href={`/u/${review.target?.username}`} className="mt-2 inline-flex min-h-11 items-center text-sm text-accent hover:underline">

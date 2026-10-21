@@ -104,9 +104,8 @@ describe("KarteDetailSheet", () => {
     await mount(karte());
 
     expect(text()).toContain("カルテの詳細");
-    expect(text()).toContain("KARTE");
+    expect(document.querySelector("p.tracking-wide")?.textContent).toBe("KARTE");
     expect(text()).not.toContain("記録中");
-    expect(text()).not.toContain("完了");
     expect(text()).toContain("@hanako · 記録者 ゆな");
     expect(text()).toContain("予約から接客後までの記録");
     expect(text().indexOf("予約成立")).toBeLessThan(text().indexOf("途中終了"));

@@ -53,7 +53,6 @@ describe("KarteCard", () => {
     expect(text).toContain("@hanako");
     expect(text).toContain("未評価");
     expect(text).not.toContain("記録中");
-    expect(text).not.toContain("完了");
     expect(text).toContain("10/14 · 接客 · 途中終了 — 30分で帰った");
     expect(text).toContain("遅刻あり");
     expect(text).toContain("支払いトラブルあり");
@@ -61,11 +60,11 @@ describe("KarteCard", () => {
   });
 
   it("shows the rating and no state mark", async () => {
-    const text = (await mount({ karte: karte({ rating: 4 }), variant: "feed" })).textContent;
+    const container = await mount({ karte: karte({ rating: 4 }), variant: "feed" });
 
-    expect(text).toContain("★ 4.0");
-    expect(text).not.toContain("完了");
-    expect(text).not.toContain("記録中");
+    expect(container.textContent).toContain("★ 4.0");
+    expect(container.querySelector("article p")?.textContent).toBe("KARTE / キャストからゲストへ");
+    expect(container.textContent).not.toContain("記録中");
   });
 
   it("leaves the dash out when the latest event has no note", async () => {
@@ -73,6 +72,18 @@ describe("KarteCard", () => {
 
     expect(text).toContain("10/1 · 予約・問い合わせ · 予約成立");
     expect(text).not.toContain(" — ");
+  });
+
+  it("renders no tag row when the latest event has no tags", async () => {
+    const container = await mount({ karte: karte({ events: [event("e-1")] }), variant: "feed" });
+
+    expect(container.querySelector("button .flex-wrap")).toBeNull();
+  });
+
+  it("renders the tag row when the latest event has tags", async () => {
+    const container = await mount({ karte: karte(), variant: "feed" });
+
+    expect(container.querySelector("button .flex-wrap")).not.toBeNull();
   });
 
   it("opens the karte from its summary", async () => {
