@@ -31,6 +31,9 @@ message SaveScheduleRequest {
   string work_date = 1;
   string start_time = 2;
   string end_time = 3;
+  bool announce = 4;
+  string announce_time = 5;
+  string announce_note = 6;
 }
 
 message SaveScheduleResponse {

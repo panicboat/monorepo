@@ -51,7 +51,10 @@ module Schedule
           profile_id: current_profile_id,
           work_date: m.work_date,
           start_time: m.start_time,
-          end_time: m.end_time
+          end_time: m.end_time,
+          announce: m.announce,
+          announce_time: m.announce_time,
+          announce_note: m.announce_note
         )
 
         ::Schedule::V1::SaveScheduleResponse.new(

@@ -22,4 +22,28 @@ RSpec.describe "Schedule::UseCases::DeleteSchedule", type: :database do
       uc.call(profile_id: profile_id, work_date: "not-a-date")
     }.to raise_error(Errors::ValidationError)
   end
+
+  it "deletes the announcement post linked to the schedule" do
+    post_repo = Post::Slice["repositories.post_repository"]
+    row = save_uc.call(
+      profile_id: profile_id, work_date: "2026-10-24", start_time: "20:00", end_time: "02:00",
+      announce: true, announce_time: "09:00", announce_note: "hi", now: Time.new(2026, 10, 20, 12, 0, 0, "+09:00")
+    )
+    expect(post_repo.find_by_id(row[:post_id])).not_to be_nil
+
+    uc.call(profile_id: profile_id, work_date: "2026-10-24")
+
+    expect(post_repo.find_by_id(row[:post_id])).to be_nil
+  end
+
+  it "does not fail when the linked post is already gone" do
+    post_repo = Post::Slice["repositories.post_repository"]
+    row = save_uc.call(
+      profile_id: profile_id, work_date: "2026-10-24", start_time: "20:00", end_time: "02:00",
+      announce: true, announce_time: "09:00", announce_note: "hi", now: Time.new(2026, 10, 20, 12, 0, 0, "+09:00")
+    )
+    post_repo.delete_post(row[:post_id])
+
+    expect { uc.call(profile_id: profile_id, work_date: "2026-10-24") }.not_to raise_error
+  end
 end
