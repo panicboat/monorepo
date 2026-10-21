@@ -20,4 +20,25 @@ RSpec.describe "follow approval migration", type: :database do
       raise Sequel::Rollback
     end
   end
+
+  it "approves pending requests on profiles that do not require approval and keeps the rest pending" do
+    locked = create_account_with_profile(username: "pending_locked", is_private: true)
+    open_profile = create_account_with_profile(username: "pending_open", is_private: false)
+    follower = create_account_with_profile(username: "pending_follower")
+    db[:social__follows].insert(
+      id: SecureRandom.uuid, follower_profile_id: follower, followee_profile_id: locked, status: "pending"
+    )
+    db[:social__follows].insert(
+      id: SecureRandom.uuid, follower_profile_id: follower, followee_profile_id: open_profile, status: "pending"
+    )
+
+    db.transaction(savepoint: true) do
+      db.alter_table(:profile__profiles) { drop_column :follow_approval_required }
+      migration.apply(db, :up)
+
+      expect(db[:social__follows].where(followee_profile_id: [locked, open_profile]).select_hash(:followee_profile_id, :status))
+        .to eq(locked => "pending", open_profile => "approved")
+      raise Sequel::Rollback
+    end
+  end
 end
