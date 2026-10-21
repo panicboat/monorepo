@@ -216,8 +216,7 @@ Portfolio → Relationship:
 Portfolio::Adapters::FollowAdapter
 ├── approved_follower?(guest_user_id:, cast_user_id:)
 ├── follow_status(guest_user_id:, cast_user_id:)
-├── get_follow_detail(guest_user_id:, cast_user_id:)
-└── approve_all_pending(cast_user_id:)
+└── get_follow_detail(guest_user_id:, cast_user_id:)
 
 Portfolio::Adapters::BlockAdapter
 ├── blocked?(guest_user_id:, cast_user_id:)
@@ -275,8 +274,8 @@ Feed::Adapters::BlockAdapter
 ### Follow on Visibility Change
 
 キャストが visibility を変更した場合：
-- `public` → `private`: 既存の approved フォロワーはそのまま。新規フォローは pending になる。
-- `private` → `public`: `FollowAdapter.approve_all_pending` により、全 pending リクエストが自動承認される。
+- `public` → `private`: 既存の approved フォロワーはそのまま。フォローが pending になるかは `follow_approval_required` だけで決まる。
+- `follow_approval_required` を true → false に保存すると、`ApproveAllFollowRequests` により全 pending リクエストが承認される。
 
 ### Future Considerations
 
