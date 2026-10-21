@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import type { SavePostPayload } from "@/modules/post/lib/post-view";
 import { toSavePostMedia } from "@/modules/post/lib/post-media";
 import { extractHashtags } from "@/modules/post/lib/hashtags";
-import { buildDisplayWindow, displayStateOf, toDateTimeLocal, type DisplayWindow } from "@/modules/post/lib/display-window";
+import { buildDisplayWindow } from "@/modules/post/lib/display-window";
 import { PostComposerAttachments } from "./PostComposerAttachments";
 import { useMediaUpload } from "@/modules/media/hooks/useMediaUpload";
 import type { UploadedMedia } from "@/modules/media/types";
@@ -21,7 +21,6 @@ export interface PostComposerProps {
   onSubmit: (payload: SavePostPayload) => Promise<unknown>;
   initialContent?: string;
   initialVisibility?: "public" | "private";
-  editing?: DisplayWindow;
   className?: string;
 }
 
@@ -31,17 +30,15 @@ export function PostComposer({
   onSubmit,
   initialContent = "",
   initialVisibility = "public",
-  editing,
   className,
 }: PostComposerProps) {
   const { profile } = useProfile();
   const accountPrivate = !!profile?.isPrivate;
   const [content, setContent] = useState(initialContent);
   const [isPrivate, setIsPrivate] = useState(initialVisibility === "private");
-  const editingScheduled = !!editing && displayStateOf(editing) === "scheduled";
-  const [windowEnabled, setWindowEnabled] = useState(editingScheduled || !!editing?.expiresAt);
-  const [windowStart, setWindowStart] = useState(toDateTimeLocal(editing?.publishedAt ?? ""));
-  const [windowEnd, setWindowEnd] = useState(toDateTimeLocal(editing?.expiresAt ?? ""));
+  const [windowEnabled, setWindowEnabled] = useState(false);
+  const [windowStart, setWindowStart] = useState("");
+  const [windowEnd, setWindowEnd] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<UploadedMedia[]>([]);
@@ -96,15 +93,13 @@ export function PostComposer({
           visibility: isPrivate ? "private" : "public",
           media: toSavePostMedia(attachments),
           hashtags: extractHashtags(trimmed),
-          ...buildDisplayWindow({ enabled: windowEnabled, start: windowStart, end: windowEnd }, editing),
+          ...buildDisplayWindow({ enabled: windowEnabled, start: windowStart, end: windowEnd }),
         });
-        if (!editing) {
-          setContent("");
-          setAttachments([]);
-          setWindowEnabled(false);
-          setWindowStart("");
-          setWindowEnd("");
-        }
+        setContent("");
+        setAttachments([]);
+        setWindowEnabled(false);
+        setWindowStart("");
+        setWindowEnd("");
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : "投稿に失敗しました";
         setError(message);
@@ -112,7 +107,7 @@ export function PostComposer({
         setSubmitting(false);
       }
     },
-    [canSubmit, trimmed, isPrivate, attachments, windowEnabled, windowStart, windowEnd, editing, onSubmit]
+    [canSubmit, trimmed, isPrivate, attachments, windowEnabled, windowStart, windowEnd, onSubmit]
   );
 
   return (
@@ -181,7 +176,6 @@ export function PostComposer({
               aria-label="表示開始"
               value={windowStart}
               onChange={(e) => setWindowStart(e.target.value)}
-              disabled={!!editing && !editingScheduled}
             />
           </label>
           <label className="grid gap-1 text-xs text-text-secondary">
