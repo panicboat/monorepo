@@ -25,6 +25,18 @@ RSpec.describe "Schedule::UseCases::SaveSchedule", type: :database do
     }.to raise_error(Errors::ValidationError)
   end
 
+  it "rejects an impossible work_date with the format message" do
+    expect {
+      uc.call(profile_id: profile_id, work_date: "2026-13-45", start_time: "20:00", end_time: "02:00")
+    }.to raise_error(Errors::ValidationError, "出勤日の形式が正しくありません")
+  end
+
+  it "rejects an impossible work_date when announcing" do
+    expect {
+      uc.call(profile_id: profile_id, work_date: "2026-02-30", start_time: "20:00", end_time: "02:00", announce: true, announce_time: "09:00")
+    }.to raise_error(Errors::ValidationError, "出勤日の形式が正しくありません")
+  end
+
   describe "announcement" do
     let(:post_repo) { Post::Slice["repositories.post_repository"] }
     let(:now) { Time.new(2026, 10, 20, 12, 0, 0, "+09:00") }

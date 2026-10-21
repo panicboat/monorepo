@@ -15,7 +15,7 @@ module Schedule
       NOTE_MAX_LENGTH = 200
 
       def call(profile_id:, work_date:, start_time:, end_time:, announce: false, announce_time: "", announce_note: "", now: Time.now)
-        validate_format!(work_date, DATE_FORMAT, "出勤日")
+        validate_date!(work_date)
         validate_format!(start_time, TIME_FORMAT, "開始時刻")
         validate_format!(end_time, TIME_FORMAT, "終了時刻")
 
@@ -73,6 +73,13 @@ module Schedule
 
       def post_repo
         @post_repo ||= Post::Slice["repositories.post_repository"]
+      end
+
+      def validate_date!(value)
+        validate_format!(value, DATE_FORMAT, "出勤日")
+        Date.iso8601(value)
+      rescue Date::Error
+        raise Errors::ValidationError, "出勤日の形式が正しくありません"
       end
 
       def validate_format!(value, format, label)
