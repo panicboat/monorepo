@@ -39,6 +39,14 @@ describe("PostComposer visibility", () => {
     expect(html).not.toContain("非公開");
   });
 
+  it("calls the open side everyone", () => {
+    const html = render(false, "public");
+
+    expect(html).toContain('aria-label="フォロワーのみ"');
+    expect(html).toContain(">全員<");
+    expect(html).not.toContain(">公開<");
+  });
+
   it("explains each visibility for a public account", () => {
     expect(noteOf(render(false, "public"))).toBe("誰でも見られます");
     expect(noteOf(render(false, "private"))).toBe("あなたとフォロワーだけが見られます");

@@ -4,9 +4,11 @@ import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
+import { Input } from "@/components/ui/input";
 import type { SavePostPayload } from "@/modules/post/lib/post-view";
 import { toSavePostMedia } from "@/modules/post/lib/post-media";
 import { extractHashtags } from "@/modules/post/lib/hashtags";
+import { buildDisplayWindow, displayStateOf, toDateTimeLocal, type DisplayWindow } from "@/modules/post/lib/display-window";
 import { PostComposerAttachments } from "./PostComposerAttachments";
 import { useMediaUpload } from "@/modules/media/hooks/useMediaUpload";
 import type { UploadedMedia } from "@/modules/media/types";
@@ -19,6 +21,7 @@ export interface PostComposerProps {
   onSubmit: (payload: SavePostPayload) => Promise<unknown>;
   initialContent?: string;
   initialVisibility?: "public" | "private";
+  editing?: DisplayWindow;
   className?: string;
 }
 
@@ -28,12 +31,17 @@ export function PostComposer({
   onSubmit,
   initialContent = "",
   initialVisibility = "public",
+  editing,
   className,
 }: PostComposerProps) {
   const { profile } = useProfile();
   const accountPrivate = !!profile?.isPrivate;
   const [content, setContent] = useState(initialContent);
   const [isPrivate, setIsPrivate] = useState(initialVisibility === "private");
+  const editingScheduled = !!editing && displayStateOf(editing) === "scheduled";
+  const [windowEnabled, setWindowEnabled] = useState(editingScheduled || !!editing?.expiresAt);
+  const [windowStart, setWindowStart] = useState(toDateTimeLocal(editing?.publishedAt ?? ""));
+  const [windowEnd, setWindowEnd] = useState(toDateTimeLocal(editing?.expiresAt ?? ""));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<UploadedMedia[]>([]);
@@ -88,9 +96,15 @@ export function PostComposer({
           visibility: isPrivate ? "private" : "public",
           media: toSavePostMedia(attachments),
           hashtags: extractHashtags(trimmed),
+          ...buildDisplayWindow({ enabled: windowEnabled, start: windowStart, end: windowEnd }, editing),
         });
-        setContent("");
-        setAttachments([]);
+        if (!editing) {
+          setContent("");
+          setAttachments([]);
+          setWindowEnabled(false);
+          setWindowStart("");
+          setWindowEnd("");
+        }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : "投稿に失敗しました";
         setError(message);
@@ -98,7 +112,7 @@ export function PostComposer({
         setSubmitting(false);
       }
     },
-    [canSubmit, trimmed, isPrivate, attachments, onSubmit]
+    [canSubmit, trimmed, isPrivate, attachments, windowEnabled, windowStart, windowEnd, editing, onSubmit]
   );
 
   return (
@@ -139,7 +153,7 @@ export function PostComposer({
       <div className="mt-2 flex items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-sm text-text-secondary">
           <Toggle checked={isPrivate} onCheckedChange={setIsPrivate} aria-label="フォロワーのみ" />
-          <span>{isPrivate ? "フォロワーのみ" : "公開"}</span>
+          <span>{isPrivate ? "フォロワーのみ" : "全員"}</span>
         </label>
         <div className="flex items-center gap-3">
           <span
@@ -154,6 +168,33 @@ export function PostComposer({
         </div>
       </div>
       <p className="mt-1 text-xs text-text-secondary">{visibilityNote(accountPrivate, isPrivate)}</p>
+      <label className="mt-3 flex items-center gap-2 text-sm text-text-secondary">
+        <Toggle checked={windowEnabled} onCheckedChange={setWindowEnabled} aria-label="表示期間を指定" />
+        <span>表示期間を指定</span>
+      </label>
+      {windowEnabled && (
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <label className="grid gap-1 text-xs text-text-secondary">
+            <span>表示開始</span>
+            <Input
+              type="datetime-local"
+              aria-label="表示開始"
+              value={windowStart}
+              onChange={(e) => setWindowStart(e.target.value)}
+              disabled={!!editing && !editingScheduled}
+            />
+          </label>
+          <label className="grid gap-1 text-xs text-text-secondary">
+            <span>表示終了</span>
+            <Input
+              type="datetime-local"
+              aria-label="表示終了"
+              value={windowEnd}
+              onChange={(e) => setWindowEnd(e.target.value)}
+            />
+          </label>
+        </div>
+      )}
       {error && (
         <p className="mt-2 text-sm text-error" role="alert">
           {error}

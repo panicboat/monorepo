@@ -14,6 +14,7 @@ vi.mock("@/lib/auth", () => ({ authFetch: (...args: unknown[]) => authFetchMock(
 vi.mock("@/stores/authStore", () => ({
   useAuthStore: (selector: (s: { activeProfileId: string }) => unknown) =>
     selector({ activeProfileId: "profile-1" }),
+  selectActiveProfileId: (state: { activeProfileId: string }) => state.activeProfileId,
 }));
 vi.mock("@/modules/bookmarks", () => ({
   useBookmark: () => ({ isBookmarked: false, toggle: vi.fn(), loading: false }),
@@ -41,6 +42,8 @@ const feedPost: PostView = {
   content: "こんにちは",
   media: [],
   createdAt: new Date().toISOString(),
+  publishedAt: new Date().toISOString(),
+  expiresAt: "",
   author: { profileId: "author-1", displayName: "テスト太郎", username: "test_taro", avatarUrl: "", isPrivate: false, role: null },
   likesCount: 0,
   commentsCount: 3,

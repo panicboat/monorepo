@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapPostToView } from "./post-mappers";
+import { buildSavePostRequest, mapPostToView } from "./post-mappers";
 import { create } from "@bufbuild/protobuf";
 import type { Post } from "@/stub/post/v1/post_service_pb";
 import { ProfileSummarySchema } from "@/stub/profile/v1/service_pb";
@@ -57,5 +57,42 @@ describe("mapPostToView author", () => {
     const view = mapPostToView(base as unknown as Post);
 
     expect(view.author).toBeNull();
+  });
+});
+
+describe("post display window", () => {
+  const base = {
+    id: "p1", authorProfileId: "a1", content: "hi", media: [], createdAt: "2026-10-01T00:00:00Z",
+    likesCount: 0, commentsCount: 0, visibility: "public", hashtags: [], liked: false, mentions: [],
+  };
+
+  it("maps the display start and end", () => {
+    const view = mapPostToView({ ...base, publishedAt: "2026-10-02T00:00:00Z", expiresAt: "2026-10-03T00:00:00Z" } as unknown as Post);
+
+    expect(view.publishedAt).toBe("2026-10-02T00:00:00Z");
+    expect(view.expiresAt).toBe("2026-10-03T00:00:00Z");
+  });
+
+  it("defaults both to empty", () => {
+    const view = mapPostToView(base as unknown as Post);
+
+    expect(view.publishedAt).toBe("");
+    expect(view.expiresAt).toBe("");
+  });
+});
+
+describe("buildSavePostRequest display window", () => {
+  it("passes the display start and end through", () => {
+    const req = buildSavePostRequest({ content: "hi", publishedAt: "2026-10-02T00:00:00.000Z", expiresAt: "2026-10-03T00:00:00.000Z" });
+
+    expect(req.publishedAt).toBe("2026-10-02T00:00:00.000Z");
+    expect(req.expiresAt).toBe("2026-10-03T00:00:00.000Z");
+  });
+
+  it("sends empty strings when no times are given", () => {
+    const req = buildSavePostRequest({ content: "hi" });
+
+    expect(req.publishedAt).toBe("");
+    expect(req.expiresAt).toBe("");
   });
 });

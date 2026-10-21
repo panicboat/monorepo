@@ -38,6 +38,8 @@ export function mapPostToView(p: Post): PostView {
     content: p.content || "",
     media: (p.media || []).map(mapPostMediaToView),
     createdAt: p.createdAt || "",
+    publishedAt: p.publishedAt || "",
+    expiresAt: p.expiresAt || "",
     author: p.author ? summaryToView(p.author) : null,
     likesCount: p.likesCount || 0,
     commentsCount: p.commentsCount || 0,
@@ -73,5 +75,7 @@ export function buildSavePostRequest(payload: SavePostPayload) {
     })),
     visibility: payload.visibility || "public",
     hashtags: payload.hashtags || [],
+    publishedAt: payload.publishedAt || "",
+    expiresAt: payload.expiresAt || "",
   };
 }

@@ -33,6 +33,8 @@ const parentPost: PostView = {
   content: "Parent post",
   media: [],
   createdAt: new Date().toISOString(),
+  publishedAt: new Date().toISOString(),
+  expiresAt: "",
   author: {
     profileId: "parent-author-1",
     displayName: "Parent",

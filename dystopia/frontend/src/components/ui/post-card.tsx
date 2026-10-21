@@ -25,6 +25,7 @@ export interface PostCardProps {
   onDetailClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
   time: string;
   isPrivate?: boolean;
+  statusMark?: string;
   body: React.ReactNode;
   images?: PostCardImage[];
   videos?: PostCardVideo[];
@@ -39,6 +40,7 @@ export function PostCard({
   onDetailClick,
   time,
   isPrivate,
+  statusMark,
   body,
   images,
   videos,
@@ -79,6 +81,7 @@ export function PostCard({
           <div className="flex items-center gap-1 text-sm">
             {authorHref ? <Link href={authorHref}>{nameAndHandle}</Link> : nameAndHandle}
             <span className="text-text-muted">· {time}</span>
+            {statusMark && <span className="shrink-0 text-xs text-text-muted">{statusMark}</span>}
             {isPrivate && (
               <span role="img" aria-label="フォロワーのみ" title="フォロワーのみ" className="inline-flex shrink-0 items-center text-xs">
                 <Users className="size-[1em]" />
