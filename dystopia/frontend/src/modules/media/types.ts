@@ -19,6 +19,7 @@ export interface MediaWithKey extends MediaItem {
 export interface UploadedMedia {
   mediaId: string;
   mediaKey: string;
+  thumbnailKey?: string;
   uploadUrl: string;
   localUrl: string;
   filename: string;

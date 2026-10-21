@@ -5,6 +5,64 @@ import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { useAuthStore } from "@/stores/authStore";
 import type { UploadedMedia, MediaType, MediaUploadOptions } from "../types";
 import { getMediaTypeFromMime, toProtoMediaType } from "../lib/mappers";
+import { isResizableImage, MAIN_MAX_EDGE, MAIN_QUALITY, resizeImage, THUMBNAIL_MAX_EDGE, THUMBNAIL_QUALITY } from "../lib/resize";
+
+interface PreparedUpload {
+  main: Blob;
+  thumbnail: Blob | null;
+  filename: string;
+  contentType: string;
+}
+
+async function prepareUpload(file: File): Promise<PreparedUpload> {
+  const original = { main: file, thumbnail: null, filename: file.name, contentType: file.type };
+  if (!isResizableImage(file.type)) return original;
+  try {
+    const [main, thumbnail] = await Promise.all([
+      resizeImage(file, MAIN_MAX_EDGE, MAIN_QUALITY),
+      resizeImage(file, THUMBNAIL_MAX_EDGE, THUMBNAIL_QUALITY),
+    ]);
+    return { main, thumbnail, filename: `${file.name.replace(/\.[^.]+$/, "")}.jpg`, contentType: "image/jpeg" };
+  } catch {
+    // FALLBACK: Upload the original when the browser cannot decode or encode the image.
+    return original;
+  }
+}
+
+async function putObject(body: Blob, filename: string, contentType: string, mediaType: MediaType) {
+  const res = await fetch("/api/media/upload-url", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...profileRequestHeaders(),
+    },
+    body: JSON.stringify({
+      filename,
+      contentType,
+      mediaType: toProtoMediaType(mediaType),
+    }),
+  });
+
+  if (!res.ok) {
+    // FALLBACK: Use an empty object when JSON parsing fails.
+    const err = await res.json().catch(() => ({} as { error?: string }));
+    throw new Error(err.error || "アップロードに失敗しました");
+  }
+
+  const { uploadUrl, mediaKey, mediaId } = (await res.json()) as { uploadUrl: string; mediaKey: string; mediaId: string };
+
+  const uploadRes = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    body,
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error("ファイルのアップロードに失敗しました");
+  }
+
+  return { uploadUrl, mediaKey, mediaId };
+}
 
 interface UseMediaUploadResult {
   uploading: boolean;
@@ -34,6 +92,7 @@ export function useMediaUpload(): UseMediaUploadResult {
       body: JSON.stringify({
         mediaId: uploaded.mediaId,
         mediaKey: uploaded.mediaKey,
+        ...(uploaded.thumbnailKey ? { thumbnailKey: uploaded.thumbnailKey } : {}),
         mediaType: toProtoMediaType(uploaded.mediaType),
         filename: uploaded.filename,
         contentType: uploaded.contentType,
@@ -62,46 +121,21 @@ export function useMediaUpload(): UseMediaUploadResult {
 
       try {
         const mediaType: MediaType = getMediaTypeFromMime(file.type);
-
-        const res = await fetch("/api/media/upload-url", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...profileRequestHeaders(),
-          },
-          body: JSON.stringify({
-            filename: file.name,
-            contentType: file.type,
-            mediaType: toProtoMediaType(mediaType),
-          }),
-        });
-
-        if (!res.ok) {
-          // FALLBACK: Use an empty object when JSON parsing fails.
-          const err = await res.json().catch(() => ({} as { error?: string }));
-          throw new Error(err.error || "アップロードに失敗しました");
-        }
-
-        const { uploadUrl, mediaKey, mediaId } = await res.json();
-
-        const uploadRes = await fetch(uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": file.type },
-          body: file,
-        });
-
-        if (!uploadRes.ok) {
-          throw new Error("ファイルのアップロードに失敗しました");
-        }
+        const prepared = await prepareUpload(file);
+        const { uploadUrl, mediaKey, mediaId } = await putObject(prepared.main, prepared.filename, prepared.contentType, mediaType);
+        const thumbnail = prepared.thumbnail
+          ? await putObject(prepared.thumbnail, `thumb-${prepared.filename}`, prepared.contentType, mediaType)
+          : null;
 
         const uploaded: UploadedMedia = {
           mediaId,
           mediaKey,
+          ...(thumbnail ? { thumbnailKey: thumbnail.mediaKey } : {}),
           uploadUrl,
-          localUrl: URL.createObjectURL(file),
-          filename: file.name,
-          contentType: file.type,
-          sizeBytes: file.size,
+          localUrl: URL.createObjectURL(prepared.main),
+          filename: prepared.filename,
+          contentType: prepared.contentType,
+          sizeBytes: prepared.main.size,
           mediaType,
         };
 
