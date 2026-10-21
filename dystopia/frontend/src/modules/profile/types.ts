@@ -56,7 +56,7 @@ export interface SaveProfilePayload {
   snsLinks?: Partial<SnsLinksView>;
   prefecture?: string;
   isPrivate?: boolean;
-  followApprovalRequired?: boolean;
+  followApprovalRequired: boolean;
   age?: number;
   bodyStats?: Partial<BodyStatsView>;
   industry?: string;

@@ -14,8 +14,8 @@ vi.mock("@/lib/request", () => ({
 }));
 
 const { profileClient } = await import("@/lib/grpc");
-const { GET, POST } = await import("./route");
-const client = profileClient as unknown as Record<"getProfile" | "createProfile", ReturnType<typeof vi.fn>>;
+const { GET, POST, PUT } = await import("./route");
+const client = profileClient as unknown as Record<"getProfile" | "createProfile" | "saveProfile", ReturnType<typeof vi.fn>>;
 
 function request(method: string, body?: unknown) {
   const req = new NextRequest("http://localhost/api/profile", {
@@ -30,6 +30,7 @@ describe("/api/profile", () => {
   beforeEach(() => {
     client.getProfile.mockReset();
     client.createProfile.mockReset();
+    client.saveProfile.mockReset();
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -50,6 +51,33 @@ describe("/api/profile", () => {
 
     expect([byStatus.status, byEmptyReply.status]).toEqual([404, 404]);
     expect((await byStatus.json()).error).toBe("プロフィールが見つかりませんでした");
+  });
+
+  it("PUT answers 400 and saves nothing when the follow approval setting is missing", async () => {
+    const res = await PUT(request("PUT", { displayName: "Coco", isPrivate: false }));
+
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe("フォローの承認制の設定が指定されていません");
+    expect(client.saveProfile).not.toHaveBeenCalled();
+  });
+
+  it("PUT answers 400 when the follow approval setting is not a boolean", async () => {
+    const res = await PUT(request("PUT", { displayName: "Coco", followApprovalRequired: "true" }));
+
+    expect(res.status).toBe(400);
+    expect(client.saveProfile).not.toHaveBeenCalled();
+  });
+
+  it.each([true, false])("PUT passes followApprovalRequired=%s through to the monolith", async (value) => {
+    client.saveProfile.mockResolvedValue({ profile: create(ProfileSchema, { id: "prof-1", followApprovalRequired: value }) });
+
+    const res = await PUT(request("PUT", { displayName: "Coco", followApprovalRequired: value }));
+
+    expect(res.status).toBe(200);
+    expect(client.saveProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ followApprovalRequired: value }),
+      expect.objectContaining({ headers: expect.any(Object) })
+    );
   });
 
   it("POST creates a profile from the display name and the username", async () => {

@@ -115,7 +115,7 @@ export function buildSaveProfileRequest(payload: SaveProfilePayload) {
     },
     prefecture: payload.prefecture || "",
     isPrivate: payload.isPrivate ?? false,
-    followApprovalRequired: payload.followApprovalRequired ?? false,
+    followApprovalRequired: payload.followApprovalRequired,
     age: payload.age ?? 0,
     bodyStats: {
       heightCm: stats?.heightCm ?? 0,

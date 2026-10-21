@@ -31,6 +31,9 @@ export async function PUT(req: NextRequest) {
     if (authError) return authError;
 
     const body = (await req.json()) as SaveProfilePayload;
+    if (typeof body.followApprovalRequired !== "boolean") {
+      return NextResponse.json({ error: "フォローの承認制の設定が指定されていません" }, { status: 400 });
+    }
     const headers = await buildGrpcHeaders(req);
     const res = await profileClient.saveProfile(buildSaveProfileRequest(body), { headers });
     if (!res.profile) {

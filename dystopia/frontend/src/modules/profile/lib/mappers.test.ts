@@ -84,8 +84,8 @@ describe("profileViewToSavePayload / buildSaveProfileRequest", () => {
     expect(buildSaveProfileRequest(profileViewToSavePayload(view)).followApprovalRequired).toBe(true);
   });
 
-  it("always sends the follow approval flag, off when the payload omits it", () => {
-    expect(buildSaveProfileRequest({ displayName: "ゆな" })).toHaveProperty("followApprovalRequired", false);
+  it.each([true, false])("passes followApprovalRequired=%s through to the save request unchanged", (value) => {
+    expect(buildSaveProfileRequest({ displayName: "ゆな", followApprovalRequired: value }).followApprovalRequired).toBe(value);
   });
 });
 
