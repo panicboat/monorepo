@@ -4,7 +4,7 @@
 
 **Goal:** 予定を入れるときに「投稿でお知らせする」を選べ、日ごとにひとことと出勤カードの予約投稿ができ、予定の変更・削除に追従する。
 
-**Architecture:** `schedule.schedules.post_id` で予定と投稿をつなぐ。`SaveSchedule`・`DeleteSchedule` が post slice の `PostRepository` で投稿を作る・書き換える・消す。投稿を返すときは投稿 ID の一覧で予定をまとめて引き、`Post.shift` に入れる。画面は予定のシートに入力を足し、投稿カードに出勤のカードを出す。
+**Architecture:** `schedule.schedules.post_id` で予定と投稿をつなぐ。`SaveSchedule`・`DeleteSchedule` が post slice の `PostRepository` で投稿を作る・書き換える・消す。投稿を返すときは投稿 ID の一覧で予定をまとめて引き、`Post.schedule`（`schedule.v1.Schedule`）に入れる。画面は予定のシートに入力を足し、投稿カードに出勤のカードを出す。
 
 **Tech Stack:** Hanami 2 + ROM-SQL + gruf（monolith）、buf protobuf、Next.js（frontend）、rspec、vitest。
 
@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - 列: `schedule.schedules.post_id uuid NULL`、部分索引 `WHERE post_id IS NOT NULL`。他の slice の表への FK は張らない
-- proto: `post.v1.PostShift { string work_date = 1; string start_time = 2; string end_time = 3; }`、`post.v1.Post.shift = 15`（つながった予定がなければ未設定）。`schedule.v1.SaveScheduleRequest` に `bool announce = 4; string announce_time = 5; string announce_note = 6;`
+- proto: `post.v1.Post` に `schedule.v1.Schedule schedule = 15;`（`post_service.proto` で `schedule/v1` の proto を import。つながった予定がなければ未設定）。post.v1 に予定の型を新しく定義しない。`schedule.v1.SaveScheduleRequest` に `bool announce = 4; string announce_time = 5; string announce_note = 6;`
 - 時刻はすべて日本時間（Asia/Tokyo）で解釈する。出勤の終了は、終了時刻が開始時刻以下なら翌日
 - 投稿: 本文はひとこと（空でもよい）、表示開始はお知らせ時刻（過ぎていれば今）、表示終了は出勤の終了、公開範囲 `public`
 - 保存の表（spec の Saving a schedule）: オン×なし→作る、オン×あり→本文と表示終了を書き換え（表示開始は予約中だけ）、オフ×あり→消して `post_id` を空に、オフ×なし→何もしない。出勤の終了を過ぎた日には新しく作らない。本人が消した投稿は「なし」として扱う
@@ -64,45 +64,45 @@
 - [ ] **Step 3: Implement** — migration（`alter_table :schedule__schedules { add_column :post_id, :uuid }` と `add_index :post_id, where: Sequel.~(post_id: nil)`。down は列を消す）、proto とスタブ、repository、`AnnouncementWindow`（入力: work_date, start_time, end_time, announce_time, now → `published_at`・`expires_at`・`ended?`）、`SaveSchedule` に `announce:, announce_time:, announce_note:` を足して上の表どおりに投稿を扱う、`DeleteSchedule`、handler の受け渡し
 - [ ] **Step 4: Run the schedule and post specs and the whole suite, then commit** — `feat(dystopia): announce a shift with a scheduled post`
 
-### Task 2: Shift on posts (backend)
+### Task 2: Schedule on posts (backend)
 
 **Files:**
 - Modify: `proto/dystopia/post/v1/post_service.proto`、monolith の post スタブ
-- Create: `dystopia/monolith/slices/post/adapters/schedule_adapter.rb`（`Post::Adapters::*` の既存の形に合わせる）
-- Modify: `slices/post/presenters/post_presenter.rb`（`shifts:` を受け取り `shift` を入れる）、`slices/post/use_cases/posts/list_posts_by_ids.rb`、`slices/post/grpc/post_handler.rb`（`present_posts`・`present_post`）
+- Create: `dystopia/monolith/slices/post/adapters/schedule_adapter.rb`（`Post::Adapters::*` の既存の形に合わせる。読み取りだけ）
+- Modify: `slices/post/presenters/post_presenter.rb`（`schedules:` を受け取り `schedule` を入れる。`author` に `ProfileSummaryPresenter` を使うのと同じく、schedule の proto を組み立てる）、`slices/post/use_cases/posts/list_posts_by_ids.rb`、`slices/post/grpc/post_handler.rb`（`present_posts`・`present_post`）
 - Modify/Create: 該当 spec
 
 **Interfaces:**
 - Consumes: Task 1 の `find_by_post_ids(post_ids:)`
-- Produces: `post.v1.Post.shift`（`PostShift`）
+- Produces: `post.v1.Post.schedule`（`schedule.v1.Schedule`）
 
 - [ ] **Step 1: Specs first**
-  - お知らせ投稿を `ListPostsByIds`・`ListPosts`（handler）・`GetPost` で返すと `shift` に出勤日・開始・終了が入る。ほかの投稿は `shift` が未設定（`has_shift?` が false）
-  - 予定の時間を変えると、次に読んだ `shift` が新しい時間
+  - お知らせ投稿を `ListPostsByIds`・`ListPosts`（handler）・`GetPost` で返すと `schedule` に出勤日・開始・終了が入る。ほかの投稿は `schedule` が未設定（`has_schedule?` が false）
+  - 予定の時間を変えると、次に読んだ `schedule` が新しい時間
   - 1 ページに複数のお知らせ投稿があっても、予定の問い合わせは 1 回（Review Focus 4。adapter / repository の呼び出し回数を spy で数える）
 - [ ] **Step 2: Run to verify they fail**
 - [ ] **Step 3: Implement**
-- [ ] **Step 4: Run the post, feed, discovery, bookmarks, schedule specs and the whole suite, then commit** — `feat(dystopia): attach the shift to announcement posts`
+- [ ] **Step 4: Run the post, feed, discovery, bookmarks, schedule specs and the whole suite, then commit** — `feat(dystopia): attach the schedule to announcement posts`
 
 ### Task 3: Frontend
 
 **Files:**
 - Modify: frontend の `post.v1`・`schedule.v1` スタブ
 - Modify: `src/modules/schedule/hooks/useSaveSchedule.ts`、`src/app/api/schedule/save/route.ts`、`src/modules/schedule/components/ScheduleBulkSheet.tsx`
-- Modify: `src/modules/post/lib/post-view.ts`（`shift: { workDate: string; startTime: string; endTime: string } | null`）、`post-mappers.ts`、`src/modules/post/components/PostCardBinding.tsx`（出勤のカード）、`ReplyWithParentRow.tsx`（本文が空なら出勤の 1 行）、投稿詳細でカードが出る場所（`/usr/bin/grep -rln "PostCardBinding\|PostDetail" src/modules/post/components`）
-- Create: 出勤のカードの部品（例 `src/modules/post/components/ShiftCard.tsx`）。枠は `ReviewCard.tsx` のカード（`rounded-xl border border-border bg-surface p-3`）に合わせる。日付の形は `src/modules/schedule/lib/dates.ts` の既存関数を探して使う
+- Modify: `src/modules/post/lib/post-view.ts`（`schedule: { workDate: string; startTime: string; endTime: string } | null`）、`post-mappers.ts`、`src/modules/post/components/PostCardBinding.tsx`（出勤のカード）、`ReplyWithParentRow.tsx`（本文が空なら出勤の 1 行）、投稿詳細でカードが出る場所（`/usr/bin/grep -rln "PostCardBinding\|PostDetail" src/modules/post/components`）
+- Create: 出勤のカードの部品（`src/modules/post/components/PostScheduleCard.tsx`）。枠は `ReviewCard.tsx` のカード（`rounded-xl border border-border bg-surface p-3`）に合わせる。日付の形は `src/modules/schedule/lib/dates.ts` の既存関数を探して使う
 - Modify: 関係するテスト
 
 **Interfaces:**
-- Consumes: Task 1 の `SaveScheduleRequest` の 3 項目、Task 2 の `Post.shift`
-- Produces: `PostView.shift`
+- Consumes: Task 1 の `SaveScheduleRequest` の 3 項目、Task 2 の `Post.schedule`
+- Produces: `PostView.schedule`
 
 - [ ] **Step 1: Tests first**
   - シート: 「予定を入れる」で「投稿でお知らせする」（初期値オン）・「お知らせする時刻」（初期値 09:00）・「ひとこと」が出て、反映すると各日の保存に `announce: true, announceTime: "09:00", announceNote: <入力>` が入る。オフにすると `announce: false`。「予定を消す」で「お知らせの投稿も消えます」が出る
   - BFF の保存 route が 3 項目を request に渡す
-  - mapper: `shift` があれば `{ workDate, startTime, endTime }`、なければ `null`
-  - 投稿カード: `shift` があるとき小見出し「出勤」と「10/24（金） 20:00〜02:00」のカードが出て、`/u/<username>` へのリンク。本文が空ならひとことの段を出さない（Review Focus 5）。`shift` がなければ出ない
-  - 返信の親投稿のプレビュー: 本文が空で `shift` があれば「出勤 10/24（金）20:00〜02:00」
+  - mapper: `schedule` があれば `{ workDate, startTime, endTime }`、なければ `null`
+  - 投稿カード: `schedule` があるとき小見出し「出勤」と「10/24（金） 20:00〜02:00」のカードが出て、`/u/<username>` へのリンク。本文が空ならひとことの段を出さない（Review Focus 5）。`schedule` がなければ出ない
+  - 返信の親投稿のプレビュー: 本文が空で `schedule` があれば「出勤 10/24（金）20:00〜02:00」
 - [ ] **Step 2: Run to verify they fail**
 - [ ] **Step 3: Implement**
 - [ ] **Step 4: Run the full vitest and tsc, then commit** — `feat(dystopia): announce shifts from the schedule sheet and show them on posts`

@@ -14,7 +14,7 @@
 | 予定を変えたとき | 投稿も追従させる（時間を変えたら書き換え、予定を消したら投稿も消す） | ユーザーの判断。古い時間のお知らせを残さない |
 | お知らせの時刻 | キャストがシートで選ぶ。初期値は 09:00 | ユーザーの判断 |
 | 見せ方 | 投稿の本文はひとこと（任意）だけ。出勤日と時間は、カルテ・クチコミと同じ枠のカードで本文の下に出す | ユーザーの判断 |
-| 出勤時間の持ち方 | 投稿には写さず、表示のたびに予定の行から引く | 予定を変えるとカードが自動で最新になり、同じ情報を 2 か所に持たない。タイムライン 1 ページあたり索引付きの問い合わせが 1 本増えるだけ（ユーザー了承） |
+| 出勤時間の持ち方 | 投稿には写さず、表示のたびに予定の行から引き、`schedule.v1.Schedule` として投稿に添える（作者の `profile.v1.ProfileSummary` と同じ形） | 予定を変えるとカードが自動で最新になり、同じ情報を 2 か所に持たない。タイムライン 1 ページあたり索引付きの問い合わせが 1 本増えるだけ（ユーザー了承） |
 | 切り替えの初期値 | オン | ユーザーの判断。フォロワーに届くのがこの機能の目的 |
 | 予定と投稿のつながり | 予定の行に `post_id` を持つ | ユーザーの判断。お知らせに限らない名前にしておく |
 | 作る場所 | サーバー側（`SaveSchedule`・`DeleteSchedule`） | 画面側で作ると、予定の変更・削除への追従と途中失敗の扱いを画面が抱える |
@@ -87,8 +87,7 @@
 
 `post.v1`:
 
-- `message PostShift { string work_date = 1; string start_time = 2; string end_time = 3; }`
-- `Post` に `PostShift shift = 15;`（つながった予定がなければ未設定）
+- `Post` に `schedule.v1.Schedule schedule = 15;`（つながった予定がなければ未設定）。`author` が `profile.v1.ProfileSummary` を参照するのと同じく、予定の型は schedule の定義をそのまま参照し、post.v1 に予定の概念を定義しない
 
 `schedule.v1` の `SaveScheduleRequest` に足す:
 
@@ -102,7 +101,7 @@
 - `SaveSchedule`: 予定を保存したあと、上の表で投稿を作る・書き換える・消す。投稿は post slice の `PostRepository`（`create_post`・`update_post`・`delete_post`・`find_by_id`）で扱う
 - `DeleteSchedule`: 予定を消す前に、つながった投稿を消す
 - 時刻の計算（お知らせ時刻・出勤の終了）は 1 か所（schedule slice の小さな部品）にまとめる
-- post の一覧・詳細の presenter（`ListPostsByIds` と post handler の presenter）は、投稿 ID の一覧で予定をまとめて引き（1 回の問い合わせ）、`Post.shift` に入れる。予定は schedule slice の repository に `find_by_post_ids(post_ids:)` を足して引く
+- post の一覧・詳細の presenter（`ListPostsByIds` と post handler の presenter）は、投稿 ID の一覧で予定をまとめて引き（1 回の問い合わせ）、`Post.schedule` に入れる。予定は post の adapter（`Post::Adapters::ScheduleAdapter`、読み取りだけ）から schedule slice の repository に足す `find_by_post_ids(post_ids:)` で引く
 
 ### Frontend
 
@@ -111,7 +110,7 @@
   - 「お知らせする時刻」（`TimeSelect`、初期値 09:00）
   - 「ひとこと」の入力（任意、200 文字まで）
 - 「予定を消す」には「お知らせの投稿も消えます」と添える
-- `PostView.shift`（`{ workDate, startTime, endTime } | null`）。投稿カード（`PostCardBinding`）と詳細で、本文の下に出勤のカード（クチコミのカードと同じ枠、小見出し「出勤」）を出し、押すと `/u/<username>` へ
+- `PostView.schedule`（`{ workDate, startTime, endTime } | null`）。投稿カード（`PostCardBinding`）と詳細で、本文の下に出勤のカード（クチコミのカードと同じ枠、小見出し「出勤」）を出し、押すと `/u/<username>` へ
 - 返信の親投稿のプレビューは、本文が空なら出勤の 1 行を出す
 - `useSaveSchedule` と BFF の保存 route が `announce`・`announceTime`・`announceNote` を送る
 
@@ -122,8 +121,8 @@ monolith（rspec）:
 - お知らせオンで投稿ができ、表示開始・表示終了・本文・公開範囲が正しい
 - 終了が日をまたぐ予定の表示終了が翌日になる
 - お知らせ時刻を過ぎていれば表示開始が今になる。出勤の終了を過ぎた日には作らない
-- 時間を変えると表示終了が変わり、投稿の `shift` が新しい時間になる。表示中の投稿の表示開始は変わらない
-- 投稿の一覧・詳細で、つながった予定がある投稿だけ `shift` が入る。一覧の予定の問い合わせは 1 回
+- 時間を変えると表示終了が変わり、投稿の `schedule` が新しい時間になる。表示中の投稿の表示開始は変わらない
+- 投稿の一覧・詳細で、つながった予定がある投稿だけ `schedule` が入る。一覧の予定の問い合わせは 1 回
 - オフで保存すると投稿が消える。予定を消すと投稿が消える
 - 本人が投稿を消したあと、オンで保存し直すと作り直す
 - お知らせ時刻が終了以降、ひとことが長すぎると INVALID_ARGUMENT
@@ -131,7 +130,7 @@ monolith（rspec）:
 frontend（vitest、`tsc --noEmit`）:
 
 - シートの切り替え・時刻・ひとことが保存する値に入る。オフなら `announce` が false
-- 投稿カードに出勤のカードが出る（`shift` があるときだけ）。本文が空ならひとことの段を出さない
+- 投稿カードに出勤のカードが出る（`schedule` があるときだけ）。本文が空ならひとことの段を出さない
 - 親投稿のプレビューで、本文が空なら出勤の 1 行
 
 ローカルの実機:
