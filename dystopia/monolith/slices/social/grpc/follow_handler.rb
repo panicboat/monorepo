@@ -113,12 +113,14 @@ module Social
 
       def get_follow_status
         authenticate_user!
-        statuses = get_follow_status_uc.call(
+        result = get_follow_status_uc.call(
           follower_profile_id: current_profile_id,
           target_profile_ids: request.message.target_profile_ids.to_a
         )
-        proto_statuses = statuses.transform_values { |s| status_to_enum(s) }
-        ::Social::V1::GetFollowStatusResponse.new(statuses: proto_statuses)
+        ::Social::V1::GetFollowStatusResponse.new(
+          statuses: result[:statuses].transform_values { |s| status_to_enum(s) },
+          approval_required: result[:approval_required]
+        )
       end
 
       def get_pending_follow_count

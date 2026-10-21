@@ -12,7 +12,7 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
 
   let(:viewer) { create_account_with_profile(username: "social_viewer") }
   let(:public_cast) { create_account_with_profile(role: 2, username: "social_public") }
-  let(:private_cast) { create_account_with_profile(role: 2, username: "social_private", is_private: true) }
+  let(:private_cast) { create_account_with_profile(role: 2, username: "social_private", is_private: true, follow_approval_required: true) }
   let(:other_guest) { create_account_with_profile(username: "social_other") }
 
   def rpc(handler_class, method, message)
@@ -30,6 +30,10 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
 
   def follow_status(*targets)
     rpc(Social::Grpc::FollowHandler, :get_follow_status, Social::V1::GetFollowStatusRequest.new(target_profile_ids: targets)).statuses.to_h
+  end
+
+  def follow_approval_required(*targets)
+    rpc(Social::Grpc::FollowHandler, :get_follow_status, Social::V1::GetFollowStatusRequest.new(target_profile_ids: targets)).approval_required.to_h
   end
 
   def counts(profile_id = "")
@@ -80,6 +84,20 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
 
       act_as(viewer)
       expect(follow_status(private_cast)).to eq(private_cast => :FOLLOW_STATUS_APPROVED)
+    end
+
+    it "follows a locked profile at once when it does not require approval" do
+      locked_open = create_account_with_profile(role: 2, username: "social_locked_open", is_private: true)
+      act_as(viewer)
+
+      expect(follow(locked_open)).to eq(:FOLLOW_STATUS_APPROVED)
+    end
+
+    it "reports per target whether the profile requires follow approval" do
+      missing = SecureRandom.uuid_v7
+      act_as(viewer)
+
+      expect(follow_approval_required(public_cast, private_cast, missing)).to eq(public_cast => false, private_cast => true, missing => false)
     end
 
     it "lets the target reject a request and the requester cancel one" do

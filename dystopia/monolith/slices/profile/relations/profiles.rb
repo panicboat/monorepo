@@ -12,6 +12,7 @@ module Profile
         attribute :website, Types::String.optional
         attribute :prefecture, Types::String.optional
         attribute :is_private, Types::Bool
+        attribute :follow_approval_required, Types::Bool
         attribute :registered_at, Types::Time.optional
         attribute :disabled_at, Types::Time.optional
         attribute :created_at, Types::Time

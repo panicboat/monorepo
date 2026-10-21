@@ -142,6 +142,32 @@ RSpec.describe Profile::Grpc::ProfileHandler, type: :database do
       expect(repo.find_by_id(sibling).display_name).to eq("Sibling")
     end
 
+    it "saves follow_approval_required as sent and returns it" do
+      account_id = create_account(role: 2)
+      active = create_account_with_profile(account_id: account_id, follow_approval_required: false)
+      Current.account_id = account_id
+      Current.profile_id = active
+
+      response = handler_for(::Profile::V1::SaveProfileRequest.new(display_name: "Renamed", follow_approval_required: true)).save_profile
+
+      expect(response.profile.follow_approval_required).to be true
+      expect(Hanami.app.slices[:profile]["repositories.profile_repository"].find_by_id(active).follow_approval_required).to be true
+    end
+
+    it "keeps pending requests when the sent follow_approval_required matches the stored value" do
+      account_id = create_account(role: 2)
+      active = create_account_with_profile(account_id: account_id, follow_approval_required: true)
+      requester = create_account_with_profile
+      follow_repo = Social::Slice["repositories.follow_repository"]
+      follow_repo.follow(follower_profile_id: requester, followee_profile_id: active, status: "pending")
+      Current.account_id = account_id
+      Current.profile_id = active
+
+      handler_for(::Profile::V1::SaveProfileRequest.new(display_name: "Renamed", follow_approval_required: true)).save_profile
+
+      expect(follow_repo.find(follower_profile_id: requester, followee_profile_id: active).status).to eq("pending")
+    end
+
     it "raises FAILED_PRECONDITION for a multi-profile account without an active profile" do
       Current.account_id = create_account(role: 2)
 

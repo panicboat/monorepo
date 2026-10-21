@@ -14,8 +14,9 @@ module Profile
 
       def call(profile_id:, display_name:, username: nil, bio: nil, website: nil,
                sns_links: {}, prefecture: nil, is_private: false, age: nil,
-               body_stats: {}, industry: nil)
-        return nil unless profile_repository.find_by_id(profile_id)
+               body_stats: {}, industry: nil, follow_approval_required: false)
+        current = profile_repository.find_by_id(profile_id)
+        return nil unless current
 
         validate_display_name!(display_name)
         validate_bio!(bio)
@@ -26,11 +27,15 @@ module Profile
           bio: bio,
           website: website,
           prefecture: prefecture,
-          is_private: is_private ? true : false
+          is_private: is_private ? true : false,
+          follow_approval_required: follow_approval_required ? true : false
         }
         attrs[:username] = username unless username.nil?
 
-        profile_repository.update_profile(profile_id, attrs)
+        profile_repository.transaction do
+          profile_repository.update_profile(profile_id, attrs)
+          approve_pending_requests(profile_id) if current.follow_approval_required && !attrs[:follow_approval_required]
+        end
 
         if profile_repository.role_of(profile_id) == ROLE_CAST
           cast_repository.upsert(
@@ -48,6 +53,10 @@ module Profile
       end
 
       private
+
+      def approve_pending_requests(profile_id)
+        ::Social::Slice["use_cases.follows.approve_all_follow_requests"].call(target_profile_id: profile_id)
+      end
 
       def validate_display_name!(value)
         if value.nil? || value.strip.empty?

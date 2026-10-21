@@ -55,6 +55,13 @@ module Profile
         visible_profiles.where(id: ids).pluck(:id)
       end
 
+      def visible_follow_approval_required_ids(ids)
+        ids = ids.select { |id| uuid?(id) }
+        return [] if ids.empty?
+
+        visible_profiles.where(id: ids, follow_approval_required: true).pluck(:id)
+      end
+
       def visible_by_ids(ids)
         ids = ids.select { |id| uuid?(id) }
         return [] if ids.empty?

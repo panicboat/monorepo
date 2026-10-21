@@ -105,4 +105,76 @@ RSpec.describe "Profile::UseCases::SaveProfile", type: :database do
 
     expect(cast_repo.find_by_profile_id(profile_id)).to be_nil
   end
+
+  describe "follow approval" do
+    let(:follow_repo) { Social::Slice["repositories.follow_repository"] }
+    let(:db) { Hanami.app["db.gateway"].connection }
+    let(:cast_profile) { create_account_with_profile(role: 2, username: "gate_cast", follow_approval_required: true, is_private: true) }
+    let(:first_requester) { create_account_with_profile(username: "gate_first") }
+    let(:second_requester) { create_account_with_profile(username: "gate_second") }
+
+    def request_follow(requester)
+      follow_repo.follow(follower_profile_id: requester, followee_profile_id: cast_profile, status: "pending")
+    end
+
+    def statuses
+      [first_requester, second_requester].map { |id| follow_repo.find(follower_profile_id: id, followee_profile_id: cast_profile).status }
+    end
+
+    def approvals
+      db[:notifications__notifications].where(type: "follow_approved").select_map([:recipient_profile_id, :actor_count])
+    end
+
+    it "persists follow_approval_required" do
+      profile = uc.call(profile_id: profile_id, display_name: "Coco", follow_approval_required: true)
+
+      expect(profile.follow_approval_required).to be true
+    end
+
+    it "approves every pending request and notifies each requester once when approval is turned off" do
+      request_follow(first_requester)
+      request_follow(second_requester)
+
+      uc.call(profile_id: cast_profile, display_name: "Gate", is_private: true, follow_approval_required: false)
+
+      expect(statuses).to eq(%w[approved approved])
+      expect(approvals).to contain_exactly([first_requester, 1], [second_requester, 1])
+    end
+
+    it "keeps the requests pending when only the lock is removed" do
+      request_follow(first_requester)
+
+      uc.call(profile_id: cast_profile, display_name: "Gate", is_private: false, follow_approval_required: true)
+
+      expect(follow_repo.find(follower_profile_id: first_requester, followee_profile_id: cast_profile).status).to eq("pending")
+      expect(approvals).to be_empty
+    end
+
+    it "approves once and notifies once when the lock and approval are removed together" do
+      request_follow(first_requester)
+
+      uc.call(profile_id: cast_profile, display_name: "Gate", is_private: false, follow_approval_required: false)
+
+      expect(follow_repo.find(follower_profile_id: first_requester, followee_profile_id: cast_profile).status).to eq("approved")
+      expect(approvals).to eq([[first_requester, 1]])
+    end
+
+    it "changes no request when the saved value stays the same" do
+      request_follow(first_requester)
+
+      uc.call(profile_id: cast_profile, display_name: "Gate", is_private: true, follow_approval_required: true)
+
+      expect(follow_repo.find(follower_profile_id: first_requester, followee_profile_id: cast_profile).status).to eq("pending")
+      expect(approvals).to be_empty
+    end
+
+    it "does not approve requests when approval was already off" do
+      open_profile = create_account_with_profile(role: 2, username: "gate_open", follow_approval_required: false)
+      follow_repo.follow(follower_profile_id: first_requester, followee_profile_id: open_profile, status: "pending")
+
+      uc.call(profile_id: open_profile, display_name: "Open", follow_approval_required: false)
+
+      expect(follow_repo.find(follower_profile_id: first_requester, followee_profile_id: open_profile).status).to eq("pending")
+    end
+  end
 end

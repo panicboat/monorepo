@@ -7,7 +7,7 @@ require "slices/profile/presenters/profile_presenter"
 RSpec.describe Profile::Presenters::ProfilePresenter do
   let(:profile_struct) do
     Struct.new(:id, :account_id, :username, :display_name, :bio, :avatar_media_id, :cover_media_id,
-      :website, :prefecture, :is_private, :registered_at, :disabled_at)
+      :website, :prefecture, :is_private, :follow_approval_required, :registered_at, :disabled_at)
   end
 
   let(:cast_struct) do
@@ -16,7 +16,7 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
 
   describe ".to_proto" do
     it "maps body_stats into a BodyStats proto" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, nil, nil)
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, false, nil, nil)
       cast = cast_struct.new(
         {}, 24, { "height_cm" => 158, "bust" => 88, "waist" => 58, "hip" => 86, "cup" => "D" }, nil
       )
@@ -31,7 +31,7 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
     end
 
     it "defaults body_stats and age fields to zero/empty when cast is nil" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, nil, nil)
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, false, nil, nil)
 
       proto = described_class.to_proto(profile, cast: nil)
 
@@ -41,7 +41,7 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
     end
 
     it "maps the cityheaven sns link" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, nil, nil)
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, false, nil, nil)
       cast = cast_struct.new({ "cityheaven" => "https://www.cityheaven.net/example/" }, nil, {}, nil)
 
       proto = described_class.to_proto(profile, cast: cast)
@@ -54,7 +54,7 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
     end
 
     it "exposes the profile id and has no field for the account id" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, nil, nil)
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, false, nil, nil)
 
       proto = described_class.to_proto(profile)
 
@@ -63,8 +63,16 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
       expect(proto.to_h.values).not_to include("acc-1")
     end
 
+    it "maps follow_approval_required independently of is_private" do
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, true, nil, nil)
+
+      proto = described_class.to_proto(profile)
+
+      expect([proto.is_private, proto.follow_approval_required]).to eq([false, true])
+    end
+
     it "reports the disabled state only for the owner" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, nil, Time.now)
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, false, nil, Time.now)
 
       expect(described_class.to_proto(profile, own: true).disabled).to be true
       expect(described_class.to_proto(profile).disabled).to be false

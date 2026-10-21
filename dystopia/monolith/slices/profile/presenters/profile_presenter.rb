@@ -20,6 +20,7 @@ module Profile
             sns_links: sns_links_proto(cast&.sns_links),
             prefecture: profile.prefecture || "",
             is_private: profile.is_private ? true : false,
+            follow_approval_required: profile.follow_approval_required ? true : false,
             registered_at: profile.registered_at ? profile.registered_at.iso8601 : "",
             age: cast&.age || 0,
             body_stats: body_stats_proto(cast&.body_stats),

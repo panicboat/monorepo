@@ -101,6 +101,7 @@ message GetFollowStatusRequest {
 
 message GetFollowStatusResponse {
   map<string, FollowStatus> statuses = 1;
+  map<string, bool> approval_required = 2;
 }
 
 message GetPendingFollowCountRequest {}
