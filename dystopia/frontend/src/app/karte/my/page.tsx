@@ -39,9 +39,8 @@ export default function MyKartePage() {
   }
 
   const summary = [
-    { label: "自分のカルテ", value: counts.total },
-    { label: "記録中", value: counts.open },
-    { label: "完了", value: counts.closed },
+    { label: "合計", value: counts.total },
+    { label: "未評価", value: counts.unrated },
   ];
 
   return (
@@ -54,7 +53,7 @@ export default function MyKartePage() {
           ＋ カルテを作成
         </Button>
       </div>
-      <div className="grid grid-cols-3 border-y border-border text-center">
+      <div className="grid grid-cols-2 border-y border-border text-center">
         {summary.map((item) => (
           <div key={item.label} className="py-3">
             <p className="text-xl font-bold text-text-primary">{item.value}</p>

@@ -134,7 +134,7 @@ describe("KarteEventForm", () => {
 
     const onSubmit = vi.fn();
     const container = await mount(emptyKarteEvent("2026-10-16"), true, onSubmit);
-    expect(container.textContent).toContain("3.0 が標準。評価はカルテ全体につき 1 つです。星は完了するときに必要です");
+    expect(container.textContent).toContain("3.0 が標準。評価はカルテ全体につき 1 つです");
     expect(container.querySelector('button[aria-pressed="true"][aria-label$="つ星"]')).toBeNull();
 
     await act(async () => (container.querySelector('button[aria-label="4つ星"]') as HTMLButtonElement).click());

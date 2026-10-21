@@ -16,13 +16,11 @@ const mockKartes: Karte[] = [
     target: { profileId: "guest-demo", username: "guest_demo", displayName: "ゲスト", avatarUrl: "", isPrivate: false, role: "guest" },
     isMine: true,
     rating: null,
-    status: "open",
     events: [
       { id: "e1", stage: "reservation", outcome: "booked", tags: ["smooth_contact"], note: "", occurredOn: "2026-10-10", createdAt: "", updatedAt: "" },
     ],
     createdAt: "2026-10-10T10:00:00Z",
     updatedAt: "2026-10-10T10:00:00Z",
-    closedAt: null,
     lastActivityAt: "2026-10-10T10:00:00Z",
   },
   {
@@ -33,14 +31,12 @@ const mockKartes: Karte[] = [
     target: { profileId: "guest-demo", username: "guest_demo", displayName: "ゲスト", avatarUrl: "", isPrivate: false, role: "guest" },
     isMine: false,
     rating: 2,
-    status: "closed",
     events: [
       { id: "e2", stage: "reservation", outcome: "booked", tags: [], note: "", occurredOn: "2026-10-01", createdAt: "", updatedAt: "" },
       { id: "e3", stage: "service", outcome: "completed_with_issues", tags: ["late"], note: "30分遅刻", occurredOn: "2026-10-02", createdAt: "", updatedAt: "" },
     ],
     createdAt: "2026-10-01T14:30:00Z",
     updatedAt: "2026-10-02T14:30:00Z",
-    closedAt: "2026-10-02T15:00:00Z",
     lastActivityAt: "2026-10-02T15:00:00Z",
   },
 ];
@@ -82,7 +78,7 @@ export default function DevUiKartePage() {
           value={event}
           onChange={setEvent}
           rating={{ value: rating, onChange: setRating }}
-          submitLabel="記録中のカルテを作成"
+          submitLabel="カルテを作成"
           submitting={false}
           error={null}
           onSubmit={() => {}}

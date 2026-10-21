@@ -9,7 +9,7 @@ vi.mock("@/stores/authStore", () => ({
   selectIsHydrated: (state: { isHydrated: boolean }) => state.isHydrated,
 }));
 vi.mock("@/modules/karte/hooks/useMyKarte", () => ({
-  useMyKarte: () => ({ kartes: [], counts: { total: 3, open: 2, closed: 1 }, hasMore: false, loading: false, loadMore: vi.fn(), refresh: vi.fn() }),
+  useMyKarte: () => ({ kartes: [], counts: { total: 3, unrated: 2 }, hasMore: false, loading: false, loadMore: vi.fn(), refresh: vi.fn() }),
 }));
 vi.mock("@/modules/karte/components/KarteList", () => ({
   KarteList: ({ variant, empty }: { variant: string; empty: string }) => <div>list:{variant}:{empty}</div>,
@@ -53,9 +53,9 @@ describe("MyKartePage", () => {
     expect(html).toContain("自分のカルテ");
     expect(html).not.toContain("キャストだけが使えます");
     expect(html).toContain("＋ カルテを作成");
-    expect(html).toMatch(/3<\/p><p[^>]*>自分のカルテ/);
-    expect(html).toMatch(/2<\/p><p[^>]*>記録中/);
-    expect(html).toMatch(/1<\/p><p[^>]*>完了/);
+    expect(html).toMatch(/3<\/p><p[^>]*>合計/);
+    expect(html).toMatch(/2<\/p><p[^>]*>未評価/);
+    expect(html).not.toContain("記録中");
     expect(html).toContain("list:mine:自分のカルテはまだありません");
   });
 });

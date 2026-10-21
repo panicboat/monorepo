@@ -36,7 +36,7 @@ describe("GuestKarteTab", () => {
     });
 
     expect(container.textContent).toContain("4.0");
-    expect(container.textContent).toContain("1人が評価 · 2件の完了済みカルテ");
+    expect(container.textContent).toContain("1人が評価 · 2件の評価済みカルテ");
     expect(container.textContent).toContain("list:guest:カルテはまだありません");
     expect(container.textContent).not.toContain("compose:");
 

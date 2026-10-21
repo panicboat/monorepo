@@ -23,7 +23,7 @@ export function KarteCreateForm({ target, event, onEventChange, rating, onRating
       value={event}
       onChange={onEventChange}
       rating={{ value: rating, onChange: onRatingChange }}
-      submitLabel="記録中のカルテを作成"
+      submitLabel="カルテを作成"
       submitting={loading}
       error={error?.message ?? null}
       onSubmit={async () => {

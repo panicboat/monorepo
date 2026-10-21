@@ -5,7 +5,6 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
 import { useKarte } from "../hooks/useKarte";
@@ -29,7 +28,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
   const [deleting, setDeleting] = useState(false);
   const { karte: current, gone, apply } = useKarte(open && !deleting ? initial.id : null, initial);
   const karte = current ?? initial;
-  const { updateRating, close, reopen, addEvent, updateEvent, removeEvent, remove, loading, error } = useKarteMutations();
+  const { updateRating, addEvent, updateEvent, removeEvent, remove, loading, error } = useKarteMutations();
   const showToast = useToastStore((s) => s.show);
   const [step, setStep] = useState<Step>({ kind: "detail" });
   const [appendDraft, setAppendDraft] = useState<KarteEventInput>(() => emptyKarteEvent());
@@ -39,8 +38,6 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
     if (open && gone) onClose();
   }, [open, gone, onClose]);
 
-  const isOpen = karte.status === "open";
-  const editable = karte.isMine && isOpen;
   const confirmed = async (request: () => Promise<Karte | null>, message?: string) => {
     const result = await request();
     if (result) {
@@ -116,7 +113,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
             {error.message}
           </p>
         )}
-        <p className="text-xs font-bold tracking-wide text-text-secondary">KARTE / {isOpen ? "記録中" : "完了"}</p>
+        <p className="text-xs font-bold tracking-wide text-text-secondary">KARTE</p>
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center gap-3">
             <Avatar src={karte.target?.avatarUrl || undefined} fallback={profileDisplayName(karte.target).replace("@", "").slice(0, 1) || "?"} size="sm" />
@@ -131,12 +128,11 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
             <p className="text-3xl font-bold text-text-primary">
               {karte.rating === null ? "—" : karte.rating.toFixed(1)} <span className="text-base text-rating">★</span>
             </p>
-            <StatusBadge tone={karte.status === "open" ? "warning" : "success"}>{karte.status === "open" ? "記録中" : "完了"}</StatusBadge>
           </div>
           <p className="mt-2 text-xs text-text-secondary">
-            {isOpen ? "記録中のため平均評価には含まれません" : "完了済みの評価は平均に反映されます"}
+            {karte.rating === null ? "星を付けると平均評価に反映されます" : "平均評価に反映されています"}
           </p>
-          {editable && (
+          {karte.isMine && (
             <div className="mt-3">
               <StarRatingInput label="予約・接客の信頼性" value={karte.rating} disabled={loading} onChange={(rating) => void confirmed(() => updateRating(karte.id, rating))} />
             </div>
@@ -164,11 +160,9 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
                 <p className="mt-2 text-xs text-text-secondary">発生日 {formatMonthDay(event.occurredOn)}</p>
                 {karte.isMine && (
                   <div className="mt-2 flex gap-4 text-sm text-text-secondary">
-                    {editable && (
-                      <button type="button" onClick={() => startEdit(event.id)} className="hover:text-text-primary">
-                        編集
-                      </button>
-                    )}
+                    <button type="button" onClick={() => startEdit(event.id)} className="hover:text-text-primary">
+                      編集
+                    </button>
                     <button
                       type="button"
                       disabled={loading}
@@ -184,7 +178,7 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
           </ol>
         </section>
 
-        {editable && (
+        {karte.isMine && (
           <Button type="button" variant="secondary" onClick={() => setStep({ kind: "append" })}>
             ＋ 段階を追記する
           </Button>
@@ -192,26 +186,6 @@ export function KarteDetailSheet({ karte: initial, open, onClose }: KarteDetailS
 
         {karte.isMine && (
           <div className="flex flex-col gap-2 border-t border-divider pt-4">
-            {isOpen ? (
-              <>
-                <Button
-                  type="button"
-                  disabled={loading || karte.rating === null}
-                  onClick={() => void confirmed(() => close(karte.id), "カルテを完了しました。平均評価へ反映します")}
-                >
-                  完了する
-                </Button>
-                {karte.rating === null && <p className="text-xs text-text-secondary">完了するには星を選んでください</p>}
-              </>
-            ) : (
-              <Button
-                type="button"
-                disabled={loading}
-                onClick={() => void confirmed(() => reopen(karte.id), "カルテを再オープンしました。集計から一時除外します")}
-              >
-                再オープン
-              </Button>
-            )}
             <button
               type="button"
               disabled={loading}

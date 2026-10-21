@@ -111,7 +111,7 @@ export function KarteEventForm({ guest, value, onChange, rating, submitLabel, su
         <fieldset>
           <legend className="mb-2 text-sm font-bold text-text-primary">予約・接客の信頼性</legend>
           <StarRatingInput label="予約・接客の信頼性" value={rating.value} onChange={rating.onChange} />
-          <p className="mt-1 text-xs text-text-secondary">3.0 が標準。評価はカルテ全体につき 1 つです。星は完了するときに必要です</p>
+          <p className="mt-1 text-xs text-text-secondary">3.0 が標準。評価はカルテ全体につき 1 つです</p>
         </fieldset>
       )}
 

@@ -2,15 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { create } from "@bufbuild/protobuf";
 import { ACCESS_COOKIE } from "@/lib/auth/cookies";
-import { KarteSchema, KarteStage, KarteStatus, ReliabilitySummarySchema } from "@/stub/karte/v1/service_pb";
+import { KarteSchema, KarteStage, ReliabilitySummarySchema } from "@/stub/karte/v1/service_pb";
 
 const karteClient = vi.hoisted(() => ({
   createKarte: vi.fn(),
   getKarte: vi.fn(),
   updateKarteRating: vi.fn(),
   deleteKarte: vi.fn(),
-  closeKarte: vi.fn(),
-  reopenKarte: vi.fn(),
   addKarteEvent: vi.fn(),
   updateKarteEvent: vi.fn(),
   deleteKarteEvent: vi.fn(),
@@ -25,15 +23,13 @@ vi.mock("@/lib/request", () => ({ buildGrpcHeaders: vi.fn(async () => ({ "x-prof
 const root = await import("./route");
 const one = await import("./[id]/route");
 const rating = await import("./[id]/rating/route");
-const close = await import("./[id]/close/route");
-const reopen = await import("./[id]/reopen/route");
 const events = await import("./[id]/events/route");
 const event = await import("./events/[eventId]/route");
 const byTarget = await import("./by-target/route");
 const my = await import("./my/route");
 const recent = await import("./recent/route");
 
-const karte = create(KarteSchema, { id: "k-1", rating: 0, status: KarteStatus.OPEN });
+const karte = create(KarteSchema, { id: "k-1", rating: 0 });
 const eventBody = { stage: "service", outcome: "completed", tags: ["late"], note: "遅刻", occurredOn: "2026-10-01" };
 const eventMessage = { stage: KarteStage.SERVICE, outcome: "completed", tags: ["late"], note: "遅刻", occurredOn: "2026-10-01" };
 
@@ -55,7 +51,7 @@ describe("POST /api/karte", () => {
 
     expect(res.status).toBe(200);
     expect(karteClient.createKarte).toHaveBeenCalledWith({ targetProfileId: "guest-1", rating: 0, event: eventMessage }, expect.anything());
-    expect((await res.json()).karte).toMatchObject({ id: "k-1", rating: null, status: "open" });
+    expect((await res.json()).karte).toMatchObject({ id: "k-1", rating: null });
   });
 
   it("rejects a request without a well-formed event", async () => {
@@ -82,14 +78,10 @@ describe("one karte", () => {
     expect(await deleted.json()).toEqual({ ok: true });
   });
 
-  it("rates, closes and reopens a karte", async () => {
+  it("rates a karte", async () => {
     await rating.PATCH(request("/api/karte/k-1/rating", "PATCH", { rating: null }), params({ id: "k-1" }));
-    await close.POST(request("/api/karte/k-1/close", "POST"), params({ id: "k-1" }));
-    await reopen.POST(request("/api/karte/k-1/reopen", "POST"), params({ id: "k-1" }));
 
     expect(karteClient.updateKarteRating).toHaveBeenCalledWith({ karteId: "k-1", rating: 0 }, expect.anything());
-    expect(karteClient.closeKarte).toHaveBeenCalledWith({ karteId: "k-1" }, expect.anything());
-    expect(karteClient.reopenKarte).toHaveBeenCalledWith({ karteId: "k-1" }, expect.anything());
   });
 
   it("adds, updates and deletes an event", async () => {
@@ -113,9 +105,9 @@ describe("one karte", () => {
   });
 
   it("answers 500 when the server returns no karte", async () => {
-    karteClient.closeKarte.mockResolvedValue({});
+    karteClient.updateKarteRating.mockResolvedValue({});
 
-    const res = await close.POST(request("/api/karte/k-1/close", "POST"), params({ id: "k-1" }));
+    const res = await rating.PATCH(request("/api/karte/k-1/rating", "PATCH", { rating: 4 }), params({ id: "k-1" }));
 
     expect(res.status).toBe(500);
   });

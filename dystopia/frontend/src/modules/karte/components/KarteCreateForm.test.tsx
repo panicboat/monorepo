@@ -29,14 +29,14 @@ async function mount(onCreated: () => void) {
 }
 
 const submit = (container: HTMLElement) =>
-  Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "記録中のカルテを作成") as HTMLButtonElement;
+  Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "カルテを作成") as HTMLButtonElement;
 
 beforeEach(() => {
   mocks.create.mockReset();
 });
 
 describe("KarteCreateForm", () => {
-  it("creates an open karte for the guest with the chosen rating", async () => {
+  it("creates a karte for the guest with the chosen rating", async () => {
     mocks.create.mockResolvedValue({ id: "k-1" });
     const onCreated = vi.fn();
     const container = await mount(onCreated);
@@ -57,6 +57,6 @@ describe("KarteCreateForm", () => {
 
     expect(mocks.create).toHaveBeenCalledWith("guest-1", null, expect.anything());
     expect(onCreated).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("記録中のカルテを作成");
+    expect(container.textContent).toContain("カルテを作成");
   });
 });

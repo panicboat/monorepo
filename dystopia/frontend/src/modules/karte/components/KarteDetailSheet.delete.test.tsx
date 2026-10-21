@@ -19,7 +19,7 @@ vi.mock("@/stores/toastStore", () => ({
 }));
 vi.mock("../hooks/useKarteMutations", () => ({
   useKarteMutations: () => ({
-    updateRating: vi.fn(), close: vi.fn(), reopen: vi.fn(), addEvent: vi.fn(), updateEvent: vi.fn(), removeEvent: mocks.removeEvent,
+    updateRating: vi.fn(), addEvent: vi.fn(), updateEvent: vi.fn(), removeEvent: mocks.removeEvent,
     remove: mocks.remove, loading: false, error: null,
   }),
 }));
@@ -30,9 +30,9 @@ const { revalidateKarte } = await import("../lib/revalidate");
 const subject = {
   id: "k-1", authorProfileId: "a", author: { profileId: "a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "cast" },
   targetProfileId: "g", target: { profileId: "g", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "guest" },
-  isMine: true, rating: null, status: "open",
+  isMine: true, rating: null,
   events: [{ id: "e-1", stage: "reservation", outcome: "booked", tags: [], note: "", occurredOn: "2026-10-01", createdAt: "", updatedAt: "" }],
-  createdAt: "", updatedAt: "", closedAt: null, lastActivityAt: "",
+  createdAt: "", updatedAt: "", lastActivityAt: "",
 } as Karte;
 
 afterEach(() => {
@@ -126,14 +126,6 @@ describe("KarteDetailSheet deleting", () => {
 
     expect(confirm).toHaveBeenCalledWith("このカルテを削除しますか？出来事もすべて削除されます。");
     expect(mocks.remove).not.toHaveBeenCalled();
-    await act(async () => root.unmount());
-  });
-
-  it("offers deleting events of a completed karte but not editing them", async () => {
-    const root = await renderSheet({ ...subject, status: "closed", rating: 4 } as Karte);
-
-    expect(buttons("削除")).toHaveLength(1);
-    expect(buttons("編集")).toHaveLength(0);
     await act(async () => root.unmount());
   });
 });
