@@ -17,7 +17,7 @@ module Karte
 
         karte = karte_repo.transaction do
           record = find_event(event_id)
-          locked = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: record.karte_id, require_open: true, lock: true)
+          locked = load_own_karte.call(viewer_account_id: viewer_account_id, karte_id: record.karte_id, lock: true)
           event_repo.update(find_event(event_id).id, **validate_event.call(**event))
           karte_repo.touch(locked.id)
           karte_repo.refresh_last_occurred_on(locked.id)

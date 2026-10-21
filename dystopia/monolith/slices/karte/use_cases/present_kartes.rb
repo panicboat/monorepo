@@ -27,11 +27,9 @@ module Karte
           target: summaries[karte.target_profile_id.to_s],
           is_mine: karte.author_account_id == viewer_account_id,
           rating: karte.rating,
-          status: karte.status,
           events: events.map { |event| present_event(event) },
           created_at: karte.created_at,
           updated_at: karte.updated_at,
-          closed_at: karte.closed_at,
           last_activity_at: karte.last_activity_at
         }
       end

@@ -10,20 +10,12 @@ service KarteService {
   rpc GetKarte(GetKarteRequest) returns (GetKarteResponse);
   rpc UpdateKarteRating(UpdateKarteRatingRequest) returns (UpdateKarteRatingResponse);
   rpc DeleteKarte(DeleteKarteRequest) returns (DeleteKarteResponse);
-  rpc CloseKarte(CloseKarteRequest) returns (CloseKarteResponse);
-  rpc ReopenKarte(ReopenKarteRequest) returns (ReopenKarteResponse);
   rpc AddKarteEvent(AddKarteEventRequest) returns (AddKarteEventResponse);
   rpc UpdateKarteEvent(UpdateKarteEventRequest) returns (UpdateKarteEventResponse);
   rpc DeleteKarteEvent(DeleteKarteEventRequest) returns (DeleteKarteEventResponse);
   rpc ListKartesByTarget(ListKartesByTargetRequest) returns (ListKartesByTargetResponse);
   rpc ListMyKartes(ListMyKartesRequest) returns (ListMyKartesResponse);
   rpc ListRecentKartes(ListRecentKartesRequest) returns (ListRecentKartesResponse);
-}
-
-enum KarteStatus {
-  KARTE_STATUS_UNSPECIFIED = 0;
-  KARTE_STATUS_OPEN = 1;
-  KARTE_STATUS_CLOSED = 2;
 }
 
 enum KarteStage {
@@ -58,15 +50,13 @@ message Karte {
   string target_profile_id = 5;
   bool is_mine = 8;
   int32 rating = 9;
-  KarteStatus status = 10;
   repeated KarteEvent events = 11;
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp updated_at = 13;
-  google.protobuf.Timestamp closed_at = 14;
   google.protobuf.Timestamp last_activity_at = 15;
   profile.v1.ProfileSummary author = 18;
   profile.v1.ProfileSummary target = 19;
-  reserved 3, 4, 6, 7, 16, 17;
+  reserved 3, 4, 6, 7, 10, 14, 16, 17;
   reserved "author_username", "author_avatar_url", "target_username", "target_avatar_url", "author_display_name", "target_display_name";
 }
 
@@ -94,12 +84,6 @@ message UpdateKarteRatingResponse { Karte karte = 1; }
 
 message DeleteKarteRequest { string karte_id = 1; }
 message DeleteKarteResponse {}
-
-message CloseKarteRequest { string karte_id = 1; }
-message CloseKarteResponse { Karte karte = 1; }
-
-message ReopenKarteRequest { string karte_id = 1; }
-message ReopenKarteResponse { Karte karte = 1; }
 
 message AddKarteEventRequest {
   string karte_id = 1;
@@ -134,8 +118,9 @@ message ListMyKartesRequest {
 }
 message KarteCounts {
   int32 total_count = 1;
-  int32 open_count = 2;
-  int32 closed_count = 3;
+  int32 unrated_count = 2;
+  reserved 3;
+  reserved "open_count", "closed_count";
 }
 
 message ListMyKartesResponse {

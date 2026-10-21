@@ -12,8 +12,8 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
     repo.create(author_account_id: author_account_id, author_profile_id: author_profile_id, target_profile_id: target_profile_id, rating: rating)
   end
 
-  def closed(rating:, **attrs)
-    repo.close(karte(rating: rating, **attrs).id)
+  def rated(rating:, **attrs)
+    karte(rating: rating, **attrs)
   end
 
   def set_order(record, **attrs)
@@ -25,15 +25,11 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
   end
 
   describe "#create" do
-    it "starts an open karte without a close time" do
-      record = karte(rating: 4)
-
-      expect(record.status).to eq("open")
-      expect(record.rating).to eq(4)
-      expect(record.closed_at).to be_nil
+    it "keeps the given rating" do
+      expect(karte(rating: 4).rating).to eq(4)
     end
 
-    it "allows an open karte without a rating" do
+    it "allows a karte without a rating" do
       expect(karte(rating: nil).rating).to be_nil
     end
 
@@ -48,21 +44,6 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
     end
   end
 
-  describe "#close and #reopen" do
-    it "records the close time and clears it on reopening, keeping the rating" do
-      record = karte(rating: 3)
-
-      closed_record = repo.close(record.id)
-      expect(closed_record.status).to eq("closed")
-      expect(closed_record.closed_at).not_to be_nil
-
-      reopened = repo.reopen(record.id)
-      expect(reopened.status).to eq("open")
-      expect(reopened.closed_at).to be_nil
-      expect(reopened.rating).to eq(3)
-    end
-  end
-
   describe "#update_rating" do
     it "sets and clears the rating" do
       record = karte(rating: nil)
@@ -73,26 +54,12 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
   end
 
   describe "constraints" do
-    it "rejects closing a karte without a rating" do
-      record = karte(rating: nil)
-
-      expect { repo.close(record.id) }.to raise_error(ROM::SQL::CheckConstraintError)
-    end
-
     it "rejects a rating outside 1..5" do
       expect { karte(rating: 6) }.to raise_error(ROM::SQL::CheckConstraintError)
     end
 
-    it "rejects an unknown status" do
-      record = karte(rating: 2)
-
-      expect { db[:karte__kartes].where(id: record.id).update(status: "archived") }.to raise_error(Sequel::CheckConstraintViolation)
-    end
-
-    it "rejects a closed karte without a close time" do
-      record = karte(rating: 2)
-
-      expect { db[:karte__kartes].where(id: record.id).update(status: "closed") }.to raise_error(Sequel::CheckConstraintViolation)
+    it "has no status or close time columns" do
+      expect(db[:karte__kartes].columns).not_to include(:status, :closed_at)
     end
   end
 
@@ -190,18 +157,7 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
     end
   end
 
-  describe "#close and #reopen ordering" do
-    it "moves the last activity on closing and on reopening" do
-      record = karte(rating: 4)
-      set_order(record, last_activity_at: Time.now - 3600)
-      repo.close(record.id)
-      expect(column(record, :last_activity_at)).to be > Time.now - 60
-
-      set_order(record, last_activity_at: Time.now - 3600)
-      repo.reopen(record.id)
-      expect(column(record, :last_activity_at)).to be > Time.now - 60
-    end
-
+  describe "#update_rating ordering" do
     it "leaves the last activity on a rating change" do
       record = karte
       past = Time.now - 3600
@@ -225,49 +181,48 @@ RSpec.describe Karte::Repositories::KarteRepository, type: :database do
   end
 
   describe "#counts_by_author" do
-    it "counts the account's kartes by state, across its profiles, leaving other accounts out" do
+    it "counts the account's kartes and the unrated ones, across its profiles, leaving other accounts out" do
       author = SecureRandom.uuid_v7
       karte(author_account_id: author)
-      karte(author_account_id: author, author_profile_id: SecureRandom.uuid_v7)
-      closed(rating: 4, author_account_id: author)
-      karte
+      rated(rating: 4, author_account_id: author, author_profile_id: SecureRandom.uuid_v7)
+      karte(rating: 2)
 
-      expect(repo.counts_by_author(author_account_id: author)).to eq(total: 3, open: 2, closed: 1)
-      expect(repo.counts_by_author(author_account_id: SecureRandom.uuid_v7)).to eq(total: 0, open: 0, closed: 0)
+      expect(repo.counts_by_author(author_account_id: author)).to eq(total: 2, unrated: 1)
+      expect(repo.counts_by_author(author_account_id: SecureRandom.uuid_v7)).to eq(total: 0, unrated: 0)
     end
   end
 
   describe "#reliability" do
     it "averages each profile first, so a profile that wrote many kartes weighs the same as one that wrote one" do
       heavy = SecureRandom.uuid_v7
-      closed(rating: 5, author_profile_id: heavy)
-      closed(rating: 3, author_profile_id: heavy)
-      closed(rating: 4, author_profile_id: heavy)
-      closed(rating: 2, author_profile_id: SecureRandom.uuid_v7)
+      rated(rating: 5, author_profile_id: heavy)
+      rated(rating: 3, author_profile_id: heavy)
+      rated(rating: 4, author_profile_id: heavy)
+      rated(rating: 2, author_profile_id: SecureRandom.uuid_v7)
 
       expect(repo.reliability(target_profile_id: target)).to eq(average_rating: 3.0, rater_count: 2, karte_count: 4)
     end
 
     it "counts two profiles of one account as two raters and weights them separately" do
       account = SecureRandom.uuid_v7
-      closed(rating: 5, author_account_id: account, author_profile_id: SecureRandom.uuid_v7)
-      closed(rating: 1, author_account_id: account, author_profile_id: SecureRandom.uuid_v7)
-      closed(rating: 3, author_account_id: SecureRandom.uuid_v7, author_profile_id: SecureRandom.uuid_v7)
+      rated(rating: 5, author_account_id: account, author_profile_id: SecureRandom.uuid_v7)
+      rated(rating: 1, author_account_id: account, author_profile_id: SecureRandom.uuid_v7)
+      rated(rating: 3, author_account_id: SecureRandom.uuid_v7, author_profile_id: SecureRandom.uuid_v7)
 
       expect(repo.reliability(target_profile_id: target)).to eq(average_rating: 3.0, rater_count: 3, karte_count: 3)
     end
 
-    it "leaves open kartes out, including a reopened one" do
-      closed(rating: 4)
-      karte(rating: 1)
-      reopened = closed(rating: 1)
-      repo.reopen(reopened.id)
+    it "leaves unrated kartes out, including one whose rating was removed" do
+      rated(rating: 4)
+      karte(rating: nil)
+      removed = rated(rating: 1)
+      repo.update_rating(removed.id, nil)
 
       expect(repo.reliability(target_profile_id: target)).to eq(average_rating: 4.0, rater_count: 1, karte_count: 1)
     end
 
-    it "reports nothing for a guest without closed kartes" do
-      karte(rating: 5)
+    it "reports nothing for a guest without rated kartes" do
+      karte(rating: nil)
 
       expect(repo.reliability(target_profile_id: target)).to eq(average_rating: 0.0, rater_count: 0, karte_count: 0)
     end

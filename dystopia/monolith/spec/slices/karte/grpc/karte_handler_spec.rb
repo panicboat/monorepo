@@ -37,18 +37,16 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
   after { Current.clear }
 
   describe "#create_karte" do
-    it "returns the open karte with its first event and the acting profile as the author" do
+    it "returns the karte with its first event and the acting profile as the author" do
       act_as(cast_account, persona_a)
 
       karte = create_karte
 
-      expect(karte.status).to eq(:KARTE_STATUS_OPEN)
       expect(karte.rating).to eq(0)
       expect(karte.author_profile_id).to eq(persona_a)
       expect(karte.author.username).to eq("persona_a")
       expect(karte.target.username).to eq("guest_one")
       expect(karte.is_mine).to be true
-      expect(karte.closed_at).to be_nil
       event = karte.events.first
       expect([event.stage, event.outcome, event.tags.to_a, event.note, event.occurred_on]).to eq([:KARTE_STAGE_RESERVATION, "booked", ["smooth_contact"], "", "2026-10-01"])
     end
@@ -86,29 +84,28 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
   end
 
   describe "the lifecycle RPCs" do
-    it "rates, closes, reopens and reads a karte" do
+    it "rates and reads a karte" do
       act_as(cast_account, persona_a)
       id = create_karte.id
-
-      expect { handler_for(::Karte::V1::CloseKarteRequest.new(karte_id: id)).close_karte }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
 
       rated = handler_for(::Karte::V1::UpdateKarteRatingRequest.new(karte_id: id, rating: 5)).update_karte_rating.karte
       expect(rated.rating).to eq(5)
 
-      closed = handler_for(::Karte::V1::CloseKarteRequest.new(karte_id: id)).close_karte.karte
-      expect(closed.status).to eq(:KARTE_STATUS_CLOSED)
-      expect(closed.closed_at).not_to be_nil
-
-      reopened = handler_for(::Karte::V1::ReopenKarteRequest.new(karte_id: id)).reopen_karte.karte
-      expect(reopened.status).to eq(:KARTE_STATUS_OPEN)
-
       act_as(other_cast_account, other_persona)
       read = handler_for(::Karte::V1::GetKarteRequest.new(karte_id: id)).get_karte.karte
       expect(read.is_mine).to be false
-      expect { handler_for(::Karte::V1::ReopenKarteRequest.new(karte_id: id)).reopen_karte }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
+      expect { handler_for(::Karte::V1::UpdateKarteRatingRequest.new(karte_id: id, rating: 1)).update_karte_rating }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
     end
 
-    it "clears the rating with 0 while open" do
+    it "has no close or reopen RPC" do
+      expect(described_class.method_defined?(:close_karte)).to be false
+      expect(described_class.method_defined?(:reopen_karte)).to be false
+      expect(defined?(::Karte::V1::CloseKarteRequest)).to be_nil
+      expect(defined?(::Karte::V1::ReopenKarteRequest)).to be_nil
+      expect(defined?(::Karte::V1::KarteStatus)).to be_nil
+    end
+
+    it "clears the rating with 0" do
       act_as(cast_account, persona_a)
       id = create_karte(rating: 3).id
 
@@ -120,7 +117,7 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
       id = create_karte(rating: 2).id
 
       act_as(cast_account, persona_b)
-      expect(handler_for(::Karte::V1::CloseKarteRequest.new(karte_id: id)).close_karte.karte.status).to eq(:KARTE_STATUS_CLOSED)
+      expect(handler_for(::Karte::V1::UpdateKarteRatingRequest.new(karte_id: id, rating: 4)).update_karte_rating.karte.rating).to eq(4)
     end
 
     it "adds, updates and deletes events and deletes the karte" do
@@ -166,25 +163,24 @@ RSpec.describe Karte::Grpc::KarteHandler, type: :database do
       expect(created.last_activity_at).not_to be_nil
 
       mine = handler_for(::Karte::V1::ListMyKartesRequest.new).list_my_kartes
-      expect([mine.counts.total_count, mine.counts.open_count, mine.counts.closed_count]).to eq([1, 1, 0])
+      expect([mine.counts.total_count, mine.counts.unrated_count]).to eq([1, 1])
     end
 
     it "lists by target with the reliability, and lists mine and recent ones" do
       act_as(cast_account, persona_a)
       rated = create_karte(rating: 4).id
-      handler_for(::Karte::V1::CloseKarteRequest.new(karte_id: rated)).close_karte
-      open_id = create_karte.id
+      unrated_id = create_karte.id
 
       by_target = handler_for(::Karte::V1::ListKartesByTargetRequest.new(target_profile_id: guest)).list_kartes_by_target
-      expect(by_target.kartes.map(&:id)).to contain_exactly(rated, open_id)
+      expect(by_target.kartes.map(&:id)).to contain_exactly(rated, unrated_id)
       expect([by_target.reliability.average_rating, by_target.reliability.rater_count, by_target.reliability.karte_count]).to eq([4.0, 1, 1])
       expect(by_target.has_more).to be false
       expect(by_target.next_cursor).to eq("")
 
-      expect(handler_for(::Karte::V1::ListMyKartesRequest.new).list_my_kartes.kartes.map(&:id)).to contain_exactly(rated, open_id)
+      expect(handler_for(::Karte::V1::ListMyKartesRequest.new).list_my_kartes.kartes.map(&:id)).to contain_exactly(rated, unrated_id)
 
       act_as(other_cast_account, other_persona)
-      expect(handler_for(::Karte::V1::ListRecentKartesRequest.new).list_recent_kartes.kartes.map(&:id)).to contain_exactly(rated, open_id)
+      expect(handler_for(::Karte::V1::ListRecentKartesRequest.new).list_recent_kartes.kartes.map(&:id)).to contain_exactly(rated, unrated_id)
       expect(handler_for(::Karte::V1::ListMyKartesRequest.new).list_my_kartes.kartes).to be_empty
     end
 

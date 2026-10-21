@@ -34,10 +34,11 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
       expect(karte[:last_activity_at]).to eq(karte[:created_at])
     end
 
-    it "opens a karte with its first event and presents the profiles" do
+    it "creates a karte with its first event and presents the profiles" do
       karte = create
 
-      expect(karte).to include(status: "open", rating: nil, is_mine: true, closed_at: nil)
+      expect(karte).to include(rating: nil, is_mine: true)
+      expect(karte.keys).not_to include(:status, :closed_at)
       expect([karte[:author].username, karte[:target].username]).to eq(%w[persona_a guest_one])
       expect(karte[:events].map { |e| e.slice(:stage, :outcome, :tags, :note, :occurred_on) }).to eq([
         { stage: "reservation", outcome: "booked", tags: %w[smooth_contact], note: nil, occurred_on: Date.new(2026, 10, 1) }
@@ -83,44 +84,38 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
     end
   end
 
-  describe "rating, closing and reopening" do
-    it "changes and clears the rating while open" do
+  describe "rating" do
+    it "changes and clears the rating" do
       karte = create(rating: 2)
 
       expect(uc(:update_karte_rating).call(viewer_account_id: cast_account, karte_id: karte[:id], rating: 5)[:rating]).to eq(5)
       expect(uc(:update_karte_rating).call(viewer_account_id: cast_account, karte_id: karte[:id], rating: nil)[:rating]).to be_nil
     end
 
-    it "requires a rating to close, then freezes the karte until it is reopened" do
+    it "lets an unrated karte take an event and a rating, with no state to check" do
       karte = create
-      close = -> { uc(:close_karte).call(viewer_account_id: cast_account, karte_id: karte[:id]) }
+      added = uc(:add_karte_event).call(viewer_account_id: cast_account, karte_id: karte[:id], event: event_input)
 
-      expect { close.call }.to invalid("Rating required to close")
+      edited = uc(:update_karte_event).call(
+        viewer_account_id: cast_account, event_id: added[:events].last[:id],
+        event: event_input.merge(outcome: "inquiry_only", occurred_on: "2026-10-02")
+      )
+      rated = uc(:update_karte_rating).call(viewer_account_id: cast_account, karte_id: karte[:id], rating: 4)
 
-      uc(:update_karte_rating).call(viewer_account_id: cast_account, karte_id: karte[:id], rating: 4)
-      closed = close.call
-      expect(closed).to include(status: "closed", rating: 4)
-      expect(closed[:closed_at]).not_to be_nil
-
-      expect { uc(:update_karte_rating).call(viewer_account_id: cast_account, karte_id: karte[:id], rating: 3) }.to invalid("Karte is closed")
-      expect { uc(:add_karte_event).call(viewer_account_id: cast_account, karte_id: karte[:id], event: event_input) }.to invalid("Karte is closed")
-      expect { close.call }.to invalid("Karte is closed")
-
-      reopened = uc(:reopen_karte).call(viewer_account_id: cast_account, karte_id: karte[:id])
-      expect(reopened).to include(status: "open", rating: 4, closed_at: nil)
-      expect { uc(:reopen_karte).call(viewer_account_id: cast_account, karte_id: karte[:id]) }.to invalid("Karte is open")
+      expect(edited[:events].length).to eq(2)
+      expect(rated[:rating]).to eq(4)
     end
 
     it "lets another profile of the author's account act and refuses another account" do
       karte = create(rating: 3)
 
-      expect(uc(:close_karte).call(viewer_account_id: cast_account, karte_id: karte[:id])[:status]).to eq("closed")
-      expect { uc(:reopen_karte).call(viewer_account_id: other_cast_account, karte_id: karte[:id]) }.to forbidden
+      expect(uc(:update_karte_rating).call(viewer_account_id: cast_account, karte_id: karte[:id], rating: 5)[:rating]).to eq(5)
+      expect { uc(:update_karte_rating).call(viewer_account_id: other_cast_account, karte_id: karte[:id], rating: 1) }.to forbidden
     end
   end
 
   describe "events" do
-    it "adds, updates and deletes events while open" do
+    it "adds, updates and deletes events" do
       karte = create
       added = uc(:add_karte_event).call(
         viewer_account_id: cast_account, karte_id: karte[:id],
@@ -137,7 +132,6 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
 
       remaining = uc(:delete_karte_event).call(viewer_account_id: cast_account, event_id: second[:id])
       expect(remaining[:events].length).to eq(1)
-
     end
 
     it "deletes the karte together with its last event" do
@@ -147,14 +141,13 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
       expect { uc(:get_karte).call(viewer_account_id: cast_account, karte_id: karte[:id]) }.to invalid("Karte not found")
     end
 
-    it "deletes an event of a closed karte" do
+    it "deletes an event of a rated karte" do
       karte = create(rating: 4)
       uc(:add_karte_event).call(viewer_account_id: cast_account, karte_id: karte[:id], event: event_input)
-      uc(:close_karte).call(viewer_account_id: cast_account, karte_id: karte[:id])
 
       remaining = uc(:delete_karte_event).call(viewer_account_id: cast_account, event_id: karte[:events].first[:id])
 
-      expect(remaining).to include(status: "closed")
+      expect(remaining).to include(rating: 4)
       expect(remaining[:events].length).to eq(1)
     end
 
@@ -185,19 +178,18 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
   end
 
   describe "deleting" do
-    it "lets the author delete in any state and refuses another account" do
-      open_karte = create
-      closed_karte = create(rating: 5)
-      uc(:close_karte).call(viewer_account_id: cast_account, karte_id: closed_karte[:id])
+    it "lets the author delete rated and unrated kartes and refuses another account" do
+      unrated_karte = create
+      rated_karte = create(rating: 5)
 
-      expect { uc(:delete_karte).call(viewer_account_id: other_cast_account, karte_id: open_karte[:id]) }.to forbidden
-      expect(uc(:delete_karte).call(viewer_account_id: cast_account, karte_id: open_karte[:id])).to be_nil
-      expect(uc(:delete_karte).call(viewer_account_id: cast_account, karte_id: closed_karte[:id])).to be_nil
-      expect { uc(:get_karte).call(viewer_account_id: cast_account, karte_id: closed_karte[:id]) }.to invalid("Karte not found")
+      expect { uc(:delete_karte).call(viewer_account_id: other_cast_account, karte_id: unrated_karte[:id]) }.to forbidden
+      expect(uc(:delete_karte).call(viewer_account_id: cast_account, karte_id: unrated_karte[:id])).to be_nil
+      expect(uc(:delete_karte).call(viewer_account_id: cast_account, karte_id: rated_karte[:id])).to be_nil
+      expect { uc(:get_karte).call(viewer_account_id: cast_account, karte_id: rated_karte[:id]) }.to invalid("Karte not found")
     end
   end
   describe "ordering" do
-    it "moves the karte up on adding an event, closing and reopening, but not on editing an event or the rating" do
+    it "moves the karte up on adding an event, but not on editing an event or the rating" do
       karte = create
       past = Time.now - 3600
 
@@ -210,13 +202,6 @@ RSpec.describe "Karte lifecycle use cases", type: :database do
       uc(:update_karte_event).call(viewer_account_id: cast_account, event_id: event_id, event: event_on("2026-10-01"))
       uc(:update_karte_rating).call(viewer_account_id: cast_account, karte_id: karte[:id], rating: 4)
       expect(column(karte, :last_activity_at)).to be_within(1).of(past)
-
-      uc(:close_karte).call(viewer_account_id: cast_account, karte_id: karte[:id])
-      expect(column(karte, :last_activity_at)).to be > Time.now - 60
-
-      set_activity(karte, past)
-      uc(:reopen_karte).call(viewer_account_id: cast_account, karte_id: karte[:id])
-      expect(column(karte, :last_activity_at)).to be > Time.now - 60
     end
 
     it "keeps the latest date at the newest event's date" do

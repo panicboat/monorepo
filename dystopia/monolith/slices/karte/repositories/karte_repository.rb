@@ -13,8 +13,7 @@ module Karte
           author_account_id: author_account_id,
           author_profile_id: author_profile_id,
           target_profile_id: target_profile_id,
-          rating: rating,
-          status: "open"
+          rating: rating
         }
         attrs[:last_occurred_on] = occurred_on if occurred_on
         karte_records.command(:create).call(attrs)
@@ -26,14 +25,6 @@ module Karte
 
       def update_rating(id, rating)
         update(id, rating: rating)
-      end
-
-      def close(id)
-        update(id, status: "closed", closed_at: Time.now, last_activity_at: Time.now)
-      end
-
-      def reopen(id)
-        update(id, status: "open", closed_at: nil, last_activity_at: Time.now)
       end
 
       def record_activity(id)
@@ -78,21 +69,18 @@ module Karte
       end
 
       def counts_by_author(author_account_id:)
-        # Remove the relation's implicit ORDER BY because PostgreSQL rejects it with GROUP BY.
-        by_status = karte_records.dataset.unordered
+        # Remove the relation's implicit ORDER BY because PostgreSQL rejects it with aggregates.
+        row = karte_records.dataset.unordered
           .where(author_account_id: author_account_id)
-          .group_and_count(:status)
-          .to_a
-          .to_h { |row| [row[:status], row[:count]] }
-        open = by_status.fetch("open", 0)
-        closed = by_status.fetch("closed", 0)
-        { total: open + closed, open: open, closed: closed }
+          .select(Sequel.function(:count).*.as(:total), Sequel.function(:count).*.filter(rating: nil).as(:unrated))
+          .first
+        { total: row[:total].to_i, unrated: row[:unrated].to_i }
       end
 
       def reliability(target_profile_id:)
         # Remove the relation's implicit ORDER BY because PostgreSQL rejects it with aggregates.
         per_profile = karte_records.dataset.unordered
-          .where(target_profile_id: target_profile_id, status: "closed")
+          .where(target_profile_id: target_profile_id).exclude(rating: nil)
           .group(:author_profile_id)
           .select(Sequel.function(:avg, :rating).as(:profile_average), Sequel.function(:count, :id).as(:karte_count))
         row = karte_records.dataset.db.from(per_profile.as(:per_profile)).select(

@@ -19,8 +19,6 @@ module Karte
       rpc :GetKarte,           ::Karte::V1::GetKarteRequest,           ::Karte::V1::GetKarteResponse
       rpc :UpdateKarteRating,  ::Karte::V1::UpdateKarteRatingRequest,  ::Karte::V1::UpdateKarteRatingResponse
       rpc :DeleteKarte,        ::Karte::V1::DeleteKarteRequest,        ::Karte::V1::DeleteKarteResponse
-      rpc :CloseKarte,         ::Karte::V1::CloseKarteRequest,         ::Karte::V1::CloseKarteResponse
-      rpc :ReopenKarte,        ::Karte::V1::ReopenKarteRequest,        ::Karte::V1::ReopenKarteResponse
       rpc :AddKarteEvent,      ::Karte::V1::AddKarteEventRequest,      ::Karte::V1::AddKarteEventResponse
       rpc :UpdateKarteEvent,   ::Karte::V1::UpdateKarteEventRequest,   ::Karte::V1::UpdateKarteEventResponse
       rpc :DeleteKarteEvent,   ::Karte::V1::DeleteKarteEventRequest,   ::Karte::V1::DeleteKarteEventResponse
@@ -34,15 +32,12 @@ module Karte
         "aftercare" => :KARTE_STAGE_AFTERCARE
       }.freeze
       STAGE_FROM_PROTO = STAGE_TO_PROTO.invert.freeze
-      STATUS_TO_PROTO = { "open" => :KARTE_STATUS_OPEN, "closed" => :KARTE_STATUS_CLOSED }.freeze
 
       include Karte::Deps[
         create_karte_uc: "use_cases.create_karte",
         get_karte_uc: "use_cases.get_karte",
         update_karte_rating_uc: "use_cases.update_karte_rating",
         delete_karte_uc: "use_cases.delete_karte",
-        close_karte_uc: "use_cases.close_karte",
-        reopen_karte_uc: "use_cases.reopen_karte",
         add_karte_event_uc: "use_cases.add_karte_event",
         update_karte_event_uc: "use_cases.update_karte_event",
         delete_karte_event_uc: "use_cases.delete_karte_event",
@@ -85,18 +80,6 @@ module Karte
         authenticate_user!
         wrap_errors { delete_karte_uc.call(viewer_account_id: current_account_id, karte_id: request.message.karte_id) }
         ::Karte::V1::DeleteKarteResponse.new
-      end
-
-      def close_karte
-        authenticate_user!
-        karte = wrap_errors { close_karte_uc.call(viewer_account_id: current_account_id, karte_id: request.message.karte_id) }
-        ::Karte::V1::CloseKarteResponse.new(karte: karte_to_proto(karte))
-      end
-
-      def reopen_karte
-        authenticate_user!
-        karte = wrap_errors { reopen_karte_uc.call(viewer_account_id: current_account_id, karte_id: request.message.karte_id) }
-        ::Karte::V1::ReopenKarteResponse.new(karte: karte_to_proto(karte))
       end
 
       def add_karte_event
@@ -154,7 +137,7 @@ module Karte
         counts = result[:counts]
         ::Karte::V1::ListMyKartesResponse.new(
           **page_to_proto(result),
-          counts: ::Karte::V1::KarteCounts.new(total_count: counts[:total], open_count: counts[:open], closed_count: counts[:closed])
+          counts: ::Karte::V1::KarteCounts.new(total_count: counts[:total], unrated_count: counts[:unrated])
         )
       end
 
@@ -215,11 +198,9 @@ module Karte
           target: ::Profile::Presenters::ProfileSummaryPresenter.to_proto(karte[:target]),
           is_mine: karte[:is_mine],
           rating: karte[:rating] || 0,
-          status: STATUS_TO_PROTO.fetch(karte[:status]),
           events: karte[:events].map { |event| event_to_proto(event) },
           created_at: timestamp(karte[:created_at]),
           updated_at: timestamp(karte[:updated_at]),
-          closed_at: timestamp(karte[:closed_at]),
           last_activity_at: timestamp(karte[:last_activity_at])
         )
       end
