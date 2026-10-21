@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ReplyWithParentRow } from "./ReplyWithParentRow";
 import type { CommentView } from "@/modules/post/lib/comment-view";
 import type { PostView } from "@/modules/post/lib/post-view";
+import { formatTimeAgo } from "@/lib/utils/date";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: () => {} }),
@@ -77,6 +78,17 @@ describe("ReplyWithParentRow", () => {
     );
 
     expect(html).toContain('class="mt-1 line-clamp-2 text-sm text-text-primary"');
+  });
+
+  it("dates the parent post by its display start", () => {
+    const createdAt = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    const publishedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const html = renderToStaticMarkup(
+      <ReplyWithParentRow comment={baseComment} parentPost={{ ...parentPost, createdAt, publishedAt }} />
+    );
+
+    expect(html).toContain(formatTimeAgo(publishedAt));
+    expect(html).not.toContain(formatTimeAgo(createdAt));
   });
 
   it("preserves the comment body whitespace layout class", () => {
