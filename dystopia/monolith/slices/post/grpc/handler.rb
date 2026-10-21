@@ -7,6 +7,7 @@ require_relative "../../../lib/grpc/authenticatable"
 require_relative "../adapters/account_adapter"
 require_relative "../adapters/block_adapter"
 require_relative "../adapters/media_adapter"
+require_relative "../adapters/schedule_adapter"
 
 module Post
   module Grpc
@@ -36,6 +37,10 @@ module Post
 
       def media_adapter
         @media_adapter ||= Post::Adapters::MediaAdapter.new
+      end
+
+      def schedule_adapter
+        @schedule_adapter ||= Post::Adapters::ScheduleAdapter.new
       end
 
       def viewer_can_see_post

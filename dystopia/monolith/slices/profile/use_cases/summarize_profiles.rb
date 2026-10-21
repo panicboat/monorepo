@@ -3,7 +3,7 @@
 module Profile
   module UseCases
     class SummarizeProfiles
-      Summary = Data.define(:profile_id, :username, :display_name, :avatar_url, :is_private, :role)
+      Summary = Data.define(:profile_id, :username, :display_name, :avatar_url, :is_private, :role, :industry)
 
       include Deps["repositories.profile_repository"]
 
@@ -17,9 +17,9 @@ module Profile
         rows = profile_repository.visible_by_ids(ids)
         return {} if rows.empty?
 
-        roles = profile_repository.roles_by_account_ids(rows.map { |row| row.account_id.to_s }.uniq)
-        avatars = media_adapter.find_by_ids(rows.filter_map { |row| row.avatar_media_id unless row.avatar_media_id.to_s.empty? })
-        by_id = rows.to_h { |row| [row.id.to_s, row] }
+        roles = profile_repository.roles_by_account_ids(rows.map { |row| row[:account_id].to_s }.uniq)
+        avatars = media_adapter.find_by_ids(rows.filter_map { |row| row[:avatar_media_id] unless row[:avatar_media_id].to_s.empty? })
+        by_id = rows.to_h { |row| [row[:id].to_s, row] }
 
         ids.each_with_object({}) do |id, summaries|
           row = by_id[id]
@@ -27,11 +27,12 @@ module Profile
 
           summaries[id] = Summary.new(
             profile_id: id,
-            username: row.username || "",
-            display_name: row.display_name || "",
-            avatar_url: avatars[row.avatar_media_id]&.url || "",
-            is_private: row.is_private ? true : false,
-            role: roles[row.account_id.to_s] || 0
+            username: row[:username] || "",
+            display_name: row[:display_name] || "",
+            avatar_url: avatars[row[:avatar_media_id]]&.url || "",
+            is_private: row[:is_private] ? true : false,
+            role: roles[row[:account_id].to_s] || 0,
+            industry: row[:industry] || ""
           )
         end
       end

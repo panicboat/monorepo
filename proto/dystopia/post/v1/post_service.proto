@@ -3,6 +3,7 @@ syntax = "proto3";
 package post.v1;
 
 import "profile/v1/service.proto";
+import "schedule/v1/schedule_service.proto";
 
 service PostService {
   rpc ListPosts(ListPostsRequest) returns (ListPostsResponse);
@@ -41,6 +42,7 @@ message Post {
   repeated PostMention mentions = 12;
   string published_at = 13;
   string expires_at = 14;
+  schedule.v1.Schedule schedule = 15;
 }
 
 message ListPostsRequest {

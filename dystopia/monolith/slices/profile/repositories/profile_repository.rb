@@ -66,7 +66,8 @@ module Profile
         ids = ids.select { |id| uuid?(id) }
         return [] if ids.empty?
 
-        visible_profiles.where(id: ids).to_a
+        industries = profiles.dataset.db[:profile__casts].where(profile_id: Sequel[:profiles][:id]).select(:industry)
+        visible_profiles.where(id: ids).dataset.select_append(industries.as(:industry)).all
       end
 
       def roles_by_account_ids(account_ids)

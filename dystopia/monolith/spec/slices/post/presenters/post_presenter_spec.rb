@@ -16,7 +16,7 @@ RSpec.describe Post::Presenters::PostPresenter do
 
     it "presents the author as a profile summary with its privacy" do
       summary = Profile::UseCases::SummarizeProfiles::Summary.new(
-        profile_id: "author-1", username: "alice", display_name: "Alice", avatar_url: "", is_private: true, role: 2
+        profile_id: "author-1", username: "alice", display_name: "Alice", avatar_url: "", is_private: true, role: 2, industry: ""
       )
 
       proto = described_class.to_post_proto(post, author: summary)
@@ -28,6 +28,28 @@ RSpec.describe Post::Presenters::PostPresenter do
 
     it "leaves the author unset when there is none" do
       expect(described_class.to_post_proto(post).author).to be_nil
+    end
+  end
+
+  describe ".to_post_proto schedule" do
+    let(:post) do
+      double(
+        :post, id: "post-1", author_profile_id: "author-1", content: "hi", created_at: Time.now,
+        published_at: Time.now, expires_at: nil, post_media: [], hashtags: [], post_mentions: [], visibility: "public"
+      )
+    end
+
+    it "presents the connected schedule with the author's profile id" do
+      schedules = { "post-1" => { work_date: "2026-10-24", start_time: "20:00", end_time: "02:00" } }
+
+      schedule = described_class.to_post_proto(post, schedules: schedules).schedule
+
+      expect(schedule).to be_a(::Schedule::V1::Schedule)
+      expect([schedule.profile_id, schedule.work_date, schedule.start_time, schedule.end_time]).to eq(%w[author-1 2026-10-24 20:00 02:00])
+    end
+
+    it "leaves the schedule unset when the post has none" do
+      expect(described_class.to_post_proto(post, schedules: {}).has_schedule?).to be false
     end
   end
 

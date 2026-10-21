@@ -183,6 +183,7 @@ module Post
         liked = current_profile_id ? like_repo.profile_liked_status_batch(post_ids: post_ids, profile_id: current_profile_id) : {}
         media_files = load_media_files_for_posts(rows)
         mentioned_usernames = mentioned_usernames_for(rows.flat_map { |p| p.post_mentions.map(&:profile_id) })
+        schedules = schedule_adapter.find_by_post_ids(post_ids.map(&:to_s))
 
         rows.map do |post|
           PostPresenter.to_post_proto(
@@ -192,7 +193,8 @@ module Post
             comments_count: comments_counts[post.id] || 0,
             liked: liked[post.id] || false,
             media_files: media_files,
-            mentioned_usernames: mentioned_usernames
+            mentioned_usernames: mentioned_usernames,
+            schedules: schedules
           )
         end
       end
@@ -204,6 +206,7 @@ module Post
         liked = current_profile_id ? like_repo.profile_liked?(post_id: post.id, profile_id: current_profile_id) : false
         media_files = load_media_files_for_posts([post])
         mentioned_usernames ||= mentioned_usernames_for(post.post_mentions.map(&:profile_id))
+        schedules = schedule_adapter.find_by_post_ids([post.id.to_s])
 
         PostPresenter.to_post_proto(
           post,
@@ -212,7 +215,8 @@ module Post
           comments_count: comments_count,
           liked: liked,
           media_files: media_files,
-          mentioned_usernames: mentioned_usernames
+          mentioned_usernames: mentioned_usernames,
+          schedules: schedules
         )
       end
 
