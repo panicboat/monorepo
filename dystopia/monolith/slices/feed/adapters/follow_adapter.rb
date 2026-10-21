@@ -9,6 +9,12 @@ module Feed
         follow_repo.following_profile_ids(profile_id: profile_id)
       end
 
+      def follower_profile_ids(profile_id:)
+        return [] if profile_id.nil? || profile_id.to_s.empty?
+
+        follow_repo.follower_profile_ids(profile_id: profile_id)
+      end
+
       private
 
       def follow_repo

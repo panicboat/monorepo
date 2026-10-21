@@ -9,6 +9,8 @@ export function feedFilterFromString(value: FeedFilterValue | undefined): FeedFi
       return FeedFilter.AREA;
     case "following":
       return FeedFilter.FOLLOWING;
+    case "followers":
+      return FeedFilter.FOLLOWERS;
     case "all":
     default:
       return FeedFilter.ALL;

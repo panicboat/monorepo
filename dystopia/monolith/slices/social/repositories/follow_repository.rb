@@ -90,6 +90,12 @@ module Social
           .select_map(:followee_profile_id)
       end
 
+      def follower_profile_ids(profile_id:)
+        follows.dataset
+          .where(followee_profile_id: profile_id, status: "approved")
+          .select_map(:follower_profile_id)
+      end
+
       def count_following(profile_id:)
         follows.where(follower_profile_id: profile_id, status: "approved").count
       end

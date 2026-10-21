@@ -1,6 +1,6 @@
 import type { PostView } from "@/modules/post/lib/post-view";
 
-export type FeedFilterValue = "all" | "area" | "following";
+export type FeedFilterValue = "all" | "area" | "following" | "followers";
 
 export interface FeedListView {
   posts: PostView[];
