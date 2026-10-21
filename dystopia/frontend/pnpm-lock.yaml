@@ -168,7 +168,7 @@ overrides:
   '@typescript-eslint/utils': ^8.71.2
   '@typescript-eslint/type-utils': ^8.72.0
   '@typescript-eslint/types': ^8.72.0
-  '@typescript-eslint/typescript-estree': ^8.71.2
+  '@typescript-eslint/typescript-estree': ^8.72.0
   '@typescript-eslint/scope-manager': ^8.72.0
   '@typescript-eslint/visitor-keys': ^8.71.2
   typescript-eslint: ^8.71.2
@@ -1706,8 +1706,8 @@ packages:
       eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
       typescript: '>=4.8.4 <6.1.0'
 
-  '@typescript-eslint/project-service@8.71.2':
-    resolution: {integrity: sha512-Pd68GsLVh5ZXlcEccFPdhSOvtHZ/2WU0XsA8zmXOS3F158lVlcTLhfQ6qvtL1RzbMie0Kp8xtbVwAg4nejKPHw==}
+  '@typescript-eslint/project-service@8.72.0':
+    resolution: {integrity: sha512-bzHngBbmIgzj6TsTjVUCntGx6FFLgE7mPjpO0PzHycOaZHXqS43XnrkFIHRS16LLr/xO6FHSXG3GJFo/F4bSBQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       typescript: '>=4.8.4 <6.1.0'
@@ -1716,8 +1716,8 @@ packages:
     resolution: {integrity: sha512-JewPyJOYcXBSAS7PIgufscHOwZqhTGyBRiQJhhuDln66tMchxvvt7nJ90JKKIoOelmdHA3kAQbm9cEUHc4JSEA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@typescript-eslint/tsconfig-utils@8.71.2':
-    resolution: {integrity: sha512-jz49TAWokm/7yWD9/o837nYax9DyALxIPOImdImvVzo6canBCZYzin8zJyqNR5k1j9K1DE0bVvr0XYB+99uAdg==}
+  '@typescript-eslint/tsconfig-utils@8.72.0':
+    resolution: {integrity: sha512-0vbxCf7xLVPSjcOdm6eQbgViH8EDJ8xnl1laLT9yoqSz2YmcSfSg5Vdl0JUvZf6rcuJ0ZivJIuMD4edTg8obaA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       typescript: '>=4.8.4 <6.1.0'
@@ -1733,8 +1733,8 @@ packages:
     resolution: {integrity: sha512-Adfoy59kxNEjT5E5fnyrp7GpHYuWs8ONbdohu4ez6IU46qDq8LltG90tLmkucZB2uhYL8mqBjtXqGd8yhfjXqQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@typescript-eslint/typescript-estree@8.71.2':
-    resolution: {integrity: sha512-DgNOEsl4pdYzwSL+N/Cl33tX1Hlw3FvId73LnKXfq7jnrF2viOEn7X+P7RBkkSWCVm92gnWd28GIC5vJuLREeA==}
+  '@typescript-eslint/typescript-estree@8.72.0':
+    resolution: {integrity: sha512-gwLfFgWcw15tN2KXDCJvxEOQjPn+P3j/n3eSqkZ5sX4VpW9Cosodr+tWwBZRvJT3TcKx6HnPRGZMCNAiP1Xhug==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       typescript: '>=4.8.4 <6.1.0'
@@ -5125,7 +5125,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/scope-manager': 8.72.0
       '@typescript-eslint/types': 8.72.0
-      '@typescript-eslint/typescript-estree': 8.71.2(supports-color@7.2.0)(typescript@7.0.2)
+      '@typescript-eslint/typescript-estree': 8.72.0(supports-color@7.2.0)(typescript@7.0.2)
       '@typescript-eslint/visitor-keys': 8.71.2
       debug: 4.4.3(supports-color@7.2.0)
       eslint: 10.13.0(jiti@2.7.0)(supports-color@7.2.0)
@@ -5133,9 +5133,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/project-service@8.71.2(supports-color@7.2.0)(typescript@7.0.2)':
+  '@typescript-eslint/project-service@8.72.0(supports-color@7.2.0)(typescript@7.0.2)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.71.2(typescript@7.0.2)
+      '@typescript-eslint/tsconfig-utils': 8.72.0(typescript@7.0.2)
       '@typescript-eslint/types': 8.72.0
       debug: 4.4.3(supports-color@7.2.0)
       typescript: 7.0.2
@@ -5147,14 +5147,14 @@ snapshots:
       '@typescript-eslint/types': 8.72.0
       '@typescript-eslint/visitor-keys': 8.71.2
 
-  '@typescript-eslint/tsconfig-utils@8.71.2(typescript@7.0.2)':
+  '@typescript-eslint/tsconfig-utils@8.72.0(typescript@7.0.2)':
     dependencies:
       typescript: 7.0.2
 
   '@typescript-eslint/type-utils@8.72.0(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)':
     dependencies:
       '@typescript-eslint/types': 8.72.0
-      '@typescript-eslint/typescript-estree': 8.71.2(supports-color@7.2.0)(typescript@7.0.2)
+      '@typescript-eslint/typescript-estree': 8.72.0(supports-color@7.2.0)(typescript@7.0.2)
       '@typescript-eslint/utils': 8.71.2(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)
       debug: 4.4.3(supports-color@7.2.0)
       eslint: 10.13.0(jiti@2.7.0)(supports-color@7.2.0)
@@ -5165,10 +5165,10 @@ snapshots:
 
   '@typescript-eslint/types@8.72.0': {}
 
-  '@typescript-eslint/typescript-estree@8.71.2(supports-color@7.2.0)(typescript@7.0.2)':
+  '@typescript-eslint/typescript-estree@8.72.0(supports-color@7.2.0)(typescript@7.0.2)':
     dependencies:
-      '@typescript-eslint/project-service': 8.71.2(supports-color@7.2.0)(typescript@7.0.2)
-      '@typescript-eslint/tsconfig-utils': 8.71.2(typescript@7.0.2)
+      '@typescript-eslint/project-service': 8.72.0(supports-color@7.2.0)(typescript@7.0.2)
+      '@typescript-eslint/tsconfig-utils': 8.72.0(typescript@7.0.2)
       '@typescript-eslint/types': 8.72.0
       '@typescript-eslint/visitor-keys': 8.71.2
       debug: 4.4.3(supports-color@7.2.0)
@@ -5185,7 +5185,7 @@ snapshots:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))
       '@typescript-eslint/scope-manager': 8.72.0
       '@typescript-eslint/types': 8.72.0
-      '@typescript-eslint/typescript-estree': 8.71.2(supports-color@7.2.0)(typescript@7.0.2)
+      '@typescript-eslint/typescript-estree': 8.72.0(supports-color@7.2.0)(typescript@7.0.2)
       eslint: 10.13.0(jiti@2.7.0)(supports-color@7.2.0)
       typescript: 7.0.2
     transitivePeerDependencies:
@@ -7042,7 +7042,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/eslint-plugin': 8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2))(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)
       '@typescript-eslint/parser': 8.72.0(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)
-      '@typescript-eslint/typescript-estree': 8.71.2(supports-color@7.2.0)(typescript@7.0.2)
+      '@typescript-eslint/typescript-estree': 8.72.0(supports-color@7.2.0)(typescript@7.0.2)
       '@typescript-eslint/utils': 8.71.2(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)
       eslint: 10.13.0(jiti@2.7.0)(supports-color@7.2.0)
       typescript: 7.0.2
