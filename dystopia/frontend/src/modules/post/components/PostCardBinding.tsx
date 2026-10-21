@@ -127,7 +127,7 @@ export function PostCardBinding({ post, detailHref, inDetail, className }: PostC
       authorHref={authorHref}
       detailHref={inDetail ? undefined : href}
       onDetailClick={inDetail ? undefined : openDetail}
-      time={postedAt ? formatTimeAgo(postedAt) : ""}
+      time={postedAt && displayState !== "scheduled" ? formatTimeAgo(postedAt) : ""}
       statusMark={statusMark}
       isPrivate={post.visibility === "private"}
       body={<PostText content={post.content} mentions={post.mentions} hashtags={post.hashtags} />}

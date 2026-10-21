@@ -215,6 +215,23 @@ describe("PostCardBinding", () => {
       expect(html).toContain("予約 10/25 09:05 から");
     });
 
+    it("shows no elapsed time on the author's scheduled post", async () => {
+      asViewer("author-1");
+
+      const html = await renderMounted({ ...basePost, publishedAt: "2099-10-25T00:05:00.000Z" });
+
+      expect(html).not.toContain("·");
+      expect(html).not.toContain("now");
+    });
+
+    it("keeps the elapsed time on a live post", async () => {
+      asViewer("author-1");
+
+      const html = await renderMounted(basePost);
+
+      expect(html).toContain("·");
+    });
+
     it("marks the author's expired post", async () => {
       asViewer("author-1");
 

@@ -30,16 +30,27 @@ describe("buildDisplayWindow", () => {
     const window = buildDisplayWindow({ enabled: true, start: "2026-10-25T09:00", end: "2026-10-26T09:30" });
 
     expect(window).toEqual({
-      publishedAt: new Date(2026, 9, 25, 9, 0).toISOString(),
-      expiresAt: new Date(2026, 9, 26, 9, 30).toISOString(),
+      publishedAt: "2026-10-25T00:00:00.000Z",
+      expiresAt: "2026-10-26T00:30:00.000Z",
     });
     expect(window.publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   });
 
   it("leaves an empty start and end out", () => {
     expect(buildDisplayWindow({ enabled: true, start: "", end: "2026-10-26T09:30" })).toEqual({
-      expiresAt: new Date(2026, 9, 26, 9, 30).toISOString(),
+      expiresAt: "2026-10-26T00:30:00.000Z",
     });
     expect(buildDisplayWindow({ enabled: true, start: "", end: "" })).toEqual({});
+  });
+
+  it("reads the inputs as Japan time", () => {
+    expect(buildDisplayWindow({ enabled: true, start: "2026-10-25T09:05", end: "" })).toEqual({
+      publishedAt: "2026-10-25T00:05:00.000Z",
+    });
+  });
+
+  it("rejects a value that is not a date", () => {
+    expect(() => buildDisplayWindow({ enabled: true, start: "not-a-date", end: "" })).toThrow("日時の形式が正しくありません");
+    expect(() => buildDisplayWindow({ enabled: true, start: "", end: "2026-13-45T99:99" })).toThrow("日時の形式が正しくありません");
   });
 });

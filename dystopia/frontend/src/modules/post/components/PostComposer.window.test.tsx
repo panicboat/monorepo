@@ -79,8 +79,8 @@ describe("PostComposer display window", () => {
     await submit();
 
     const payload = onSubmit.mock.calls[0][0];
-    expect(payload.publishedAt).toBe(new Date(2026, 9, 25, 9, 0).toISOString());
-    expect(payload.expiresAt).toBe(new Date(2026, 9, 26, 18, 30).toISOString());
+    expect(payload.publishedAt).toBe("2026-10-25T00:00:00.000Z");
+    expect(payload.expiresAt).toBe("2026-10-26T09:30:00.000Z");
   });
 
   it("sends no times when the window is switched off again", async () => {
