@@ -41,6 +41,13 @@ RSpec.describe Concerns::CursorPagination do
   end
 
   describe "#encode_cursor / #decode_cursor" do
+    it "reads a display start cursor as a time down to the microsecond" do
+      published_at = Time.at(1_800_000_000, 123_456, :usec)
+      encoded = instance.encode_cursor(published_at: published_at.iso8601(6), id: "abc-123")
+
+      expect(instance.decode_cursor(encoded, keys: [:published_at, :id])).to eq(published_at: published_at, id: "abc-123")
+    end
+
     it "round-trips cursor data" do
       data = { created_at: Time.now.iso8601, id: "abc-123" }
       encoded = instance.encode_cursor(data)

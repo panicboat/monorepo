@@ -30,6 +30,8 @@ module Bookmarks
         authenticate_user!
         bookmark_uc.call(profile_id: current_profile_id, post_id: request.message.post_id)
         ::Bookmarks::V1::BookmarkResponse.new
+      rescue UseCases::Bookmark::PostNotFoundError
+        raise GRPC::BadStatus.new(GRPC::Core::StatusCodes::NOT_FOUND, "Post not found")
       end
 
       def unbookmark

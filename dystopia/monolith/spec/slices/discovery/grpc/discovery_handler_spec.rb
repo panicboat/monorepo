@@ -89,6 +89,16 @@ RSpec.describe Discovery::Grpc::DiscoveryHandler, type: :database do
     expect(ranked_post_ids).to eq([public_post.id])
   end
 
+  it "keeps scheduled and expired posts out of search and ranking" do
+    now = Time.now
+    post_repo.create_post(author_profile_id: public_cast, content: "discovery scheduled", visibility: "public", published_at: now + 3600)
+    post_repo.create_post(author_profile_id: public_cast, content: "discovery expired", visibility: "public", published_at: now - 7200, expires_at: now - 3600)
+    act_as(public_cast)
+
+    expect(searched_post_ids).to eq([public_post.id])
+    expect(ranked_post_ids).to eq([public_post.id])
+  end
+
   it "returns each found profile with the role of its account" do
     act_as(viewer)
 

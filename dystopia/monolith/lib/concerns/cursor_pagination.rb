@@ -31,7 +31,7 @@ module Concerns
       parsed = JSON.parse(Base64.urlsafe_decode64(cursor))
       keys.each_with_object({}) do |key, hash|
         value = parsed[key.to_s]
-        hash[key] = key == :created_at ? Time.parse(value) : value
+        hash[key] = %i[created_at published_at].include?(key) ? Time.parse(value) : value
       end
     rescue StandardError
       # FALLBACK: Return no cursor when decoding fails.

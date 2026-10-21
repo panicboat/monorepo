@@ -71,4 +71,34 @@ RSpec.describe "post visibility in social", type: :database do
 
     expect(filter.call(viewer_profile_id: stranger, posts: [ref]).length).to eq(1)
   end
+
+  describe "the display window" do
+    let(:windowed_ref) { Struct.new(:id, :author_profile_id, :visibility, :published_at, :expires_at) }
+    let(:now) { Time.now }
+
+    it "shows scheduled and expired posts to the author only" do
+      scheduled = windowed_ref.new("p5", author, "public", now + 60, nil)
+      expired = windowed_ref.new("p6", author, "public", now - 120, now - 60)
+
+      [scheduled, expired].each do |post|
+        expect([author, follower, stranger, nil].map { |viewer| visible_to(viewer, post) }).to eq([true, false, false, false])
+        expect(can_see.call(viewer_profile_id: follower, post: post)).to be false
+      end
+    end
+
+    it "shows a live post with an end ahead under the usual rules" do
+      post = windowed_ref.new("p7", author, "private", now - 60, now + 60)
+
+      expect([author, follower, stranger].map { |viewer| visible_to(viewer, post) }).to eq([true, true, false])
+    end
+
+    it "hides a post from others once its end passes" do
+      post = windowed_ref.new("p8", author, "public", now - 60, now + 60)
+      expect(visible_to(stranger, post)).to be true
+
+      allow(Time).to receive(:now).and_return(now + 60)
+
+      expect([visible_to(stranger, post), visible_to(author, post)]).to eq([false, true])
+    end
+  end
 end
