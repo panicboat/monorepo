@@ -17,6 +17,7 @@ const profile: ProfileView = {
   snsLinks: { x: "", instagram: "", tiktok: "", bluesky: "", line: "", cityheaven: "" },
   prefecture: "東京都",
   isPrivate: false,
+  followApprovalRequired: false,
   registeredAt: "",
   age: 23,
   bodyStats: { heightCm: 158, bust: 88, waist: 58, hip: 86, cup: "D" },

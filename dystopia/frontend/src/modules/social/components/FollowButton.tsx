@@ -12,7 +12,7 @@ interface FollowButtonProps {
 
 export function FollowButton({ targetProfileId, className }: FollowButtonProps) {
   const viewerId = useAuthStore(selectActiveProfileId);
-  const { status, isFollowing, isPending, follow, unfollow, cancelRequest, loading } =
+  const { status, isFollowing, isPending, approvalRequired, follow, unfollow, cancelRequest, loading } =
     useFollow(targetProfileId);
 
   if (!targetProfileId || (viewerId && viewerId === targetProfileId)) return null;
@@ -29,7 +29,7 @@ export function FollowButton({ targetProfileId, className }: FollowButtonProps) 
     }
   };
 
-  const label = isFollowing ? "フォロー中" : isPending ? "申請中" : "フォロー";
+  const label = isFollowing ? "フォロー中" : isPending ? "申請中" : approvalRequired ? "フォローを申請" : "フォロー";
   const variant = status === FollowStatus.NONE ? "primary" : "secondary";
 
   return (

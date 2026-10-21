@@ -13,7 +13,7 @@ interface ProfileActionsProps {
 export function ProfileActions({ targetProfileId, isPrivate }: ProfileActionsProps) {
   const viewerId = useAuthStore(selectActiveProfileId);
   const viewerRole = useAuthStore(selectRole);
-  const { isFollowing, isPending, follow, unfollow, cancelRequest, loading } = useFollow(targetProfileId);
+  const { isFollowing, isPending, approvalRequired, follow, unfollow, cancelRequest, loading } = useFollow(targetProfileId);
 
   if (!targetProfileId || (viewerId && viewerId === targetProfileId)) return null;
 
@@ -48,7 +48,7 @@ export function ProfileActions({ targetProfileId, isPrivate }: ProfileActionsPro
         </Button>
       ) : (
         <Button variant="primary" size="sm" onClick={() => void follow()} disabled={loading}>
-          {isPrivate ? "フォロー申請" : "フォロー"}
+          {approvalRequired ? "フォローを申請" : "フォロー"}
         </Button>
       )}
     </>
