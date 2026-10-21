@@ -86,6 +86,19 @@ RSpec.describe "Social slice RPC entry points and the slices that read follows a
       expect(follow_status(private_cast)).to eq(private_cast => :FOLLOW_STATUS_APPROVED)
     end
 
+    it "approves every pending request to the acting profile at once" do
+      [viewer, other_guest].each do |requester|
+        act_as(requester)
+        follow(private_cast)
+      end
+      act_as(private_cast)
+
+      response = rpc(Social::Grpc::FollowHandler, :approve_all_follow_requests, Social::V1::ApproveAllFollowRequestsRequest.new)
+
+      expect(response.approved_count).to eq(2)
+      expect(rpc(Social::Grpc::FollowHandler, :get_pending_follow_count, Social::V1::GetPendingFollowCountRequest.new).count).to eq(0)
+    end
+
     it "follows a locked profile at once when it does not require approval" do
       locked_open = create_account_with_profile(role: 2, username: "social_locked_open", is_private: true)
       act_as(viewer)

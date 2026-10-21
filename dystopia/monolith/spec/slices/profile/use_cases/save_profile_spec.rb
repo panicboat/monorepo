@@ -131,32 +131,15 @@ RSpec.describe "Profile::UseCases::SaveProfile", type: :database do
       expect(profile.follow_approval_required).to be true
     end
 
-    it "approves every pending request and notifies each requester once when approval is turned off" do
+    it "keeps the requests pending and sends nothing when approval is turned off" do
       request_follow(first_requester)
       request_follow(second_requester)
 
-      uc.call(profile_id: cast_profile, display_name: "Gate", is_private: true, follow_approval_required: false)
+      profile = uc.call(profile_id: cast_profile, display_name: "Gate", is_private: false, follow_approval_required: false)
 
-      expect(statuses).to eq(%w[approved approved])
-      expect(approvals).to contain_exactly([first_requester, 1], [second_requester, 1])
-    end
-
-    it "keeps the requests pending when only the lock is removed" do
-      request_follow(first_requester)
-
-      uc.call(profile_id: cast_profile, display_name: "Gate", is_private: false, follow_approval_required: true)
-
-      expect(follow_repo.find(follower_profile_id: first_requester, followee_profile_id: cast_profile).status).to eq("pending")
+      expect(profile.follow_approval_required).to be false
+      expect(statuses).to eq(%w[pending pending])
       expect(approvals).to be_empty
-    end
-
-    it "approves once and notifies once when the lock and approval are removed together" do
-      request_follow(first_requester)
-
-      uc.call(profile_id: cast_profile, display_name: "Gate", is_private: false, follow_approval_required: false)
-
-      expect(follow_repo.find(follower_profile_id: first_requester, followee_profile_id: cast_profile).status).to eq("approved")
-      expect(approvals).to eq([[first_requester, 1]])
     end
 
     it "changes no request when the saved value stays the same" do

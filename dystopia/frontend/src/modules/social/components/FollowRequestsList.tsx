@@ -6,11 +6,23 @@ import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
 import { useFollowRequests } from "../hooks/useFollowRequests";
 
 export function FollowRequestsList() {
-  const { requests, pendingCount, loading, error, approve, reject } = useFollowRequests();
+  const { requests, pendingCount, loading, error, approve, reject, approveAll } = useFollowRequests();
+
+  const onApproveAll = async () => {
+    if (!confirm(`${pendingCount} 件の申請をすべて承認しますか？`)) return;
+    await approveAll();
+  };
 
   return (
     <div>
-      <p className="px-4 pt-1 text-sm text-text-secondary">承認待ちの申請 {pendingCount} 件</p>
+      <div className="flex items-center justify-between gap-3 px-4 pt-1">
+        <p className="text-sm text-text-secondary">承認待ちの申請 {pendingCount} 件</p>
+        {requests.length > 0 && (
+          <Button variant="secondary" size="sm" onClick={() => void onApproveAll()}>
+            すべて承認
+          </Button>
+        )}
+      </div>
       {loading && <p className="px-4 py-6 text-text-secondary">読み込み中…</p>}
       {error && <p className="px-4 py-6 text-text-secondary">読み込みに失敗しました。</p>}
       {!loading && requests.length === 0 && <p className="px-4 py-6 text-text-secondary">申請はありません。</p>}

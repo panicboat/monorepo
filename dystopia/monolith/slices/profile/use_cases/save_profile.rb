@@ -32,10 +32,7 @@ module Profile
         }
         attrs[:username] = username unless username.nil?
 
-        profile_repository.transaction do
-          profile_repository.update_profile(profile_id, attrs)
-          approve_pending_requests(profile_id) if current.follow_approval_required && !attrs[:follow_approval_required]
-        end
+        profile_repository.update_profile(profile_id, attrs)
 
         if profile_repository.role_of(profile_id) == ROLE_CAST
           cast_repository.upsert(
@@ -53,10 +50,6 @@ module Profile
       end
 
       private
-
-      def approve_pending_requests(profile_id)
-        ::Social::Slice["use_cases.follows.approve_all_follow_requests"].call(target_profile_id: profile_id)
-      end
 
       def validate_display_name!(value)
         if value.nil? || value.strip.empty?

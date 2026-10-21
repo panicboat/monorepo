@@ -16,12 +16,22 @@ RSpec.describe "Social::UseCases::Follows::ApproveAllFollowRequests", type: :dat
     follow_repo.follow(follower_profile_id: second_requester, followee_profile_id: target, status: "pending")
     follow_repo.follow(follower_profile_id: first_requester, followee_profile_id: other_target, status: "pending")
 
-    approve_all.call(target_profile_id: target)
+    expect(approve_all.call(target_profile_id: target)).to eq(approved_count: 2)
 
     expect(follow_repo.status_batch(follower_profile_id: first_requester, followee_profile_ids: [target, other_target]))
       .to eq(target => "approved", other_target => "pending")
     expect(follow_repo.find(follower_profile_id: second_requester, followee_profile_id: target).status).to eq("approved")
     expect(db[:notifications__notifications].where(type: "follow_approved").select_map([:recipient_profile_id, :actor_count]))
       .to contain_exactly([first_requester, 1], [second_requester, 1])
+  end
+
+  it "skips requesters the pending list does not show" do
+    hidden = create_account_with_profile(username: "approve_hidden")
+    follow_repo.follow(follower_profile_id: first_requester, followee_profile_id: target, status: "pending")
+    follow_repo.follow(follower_profile_id: hidden, followee_profile_id: target, status: "pending")
+    db[:profile__profiles].where(id: hidden).update(disabled_at: Time.now)
+
+    expect(approve_all.call(target_profile_id: target)).to eq(approved_count: 1)
+    expect(follow_repo.find(follower_profile_id: hidden, followee_profile_id: target).status).to eq("pending")
   end
 end

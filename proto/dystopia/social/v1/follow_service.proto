@@ -9,6 +9,7 @@ service FollowService {
   rpc Unfollow(UnfollowRequest) returns (UnfollowResponse);
   rpc CancelFollowRequest(CancelFollowRequestRequest) returns (CancelFollowRequestResponse);
   rpc ApproveFollowRequest(ApproveFollowRequestRequest) returns (ApproveFollowRequestResponse);
+  rpc ApproveAllFollowRequests(ApproveAllFollowRequestsRequest) returns (ApproveAllFollowRequestsResponse);
   rpc RejectFollowRequest(RejectFollowRequestRequest) returns (RejectFollowRequestResponse);
   rpc ListFollowing(ListFollowingRequest) returns (ListFollowingResponse);
   rpc ListFollowers(ListFollowersRequest) returns (ListFollowersResponse);
@@ -51,6 +52,12 @@ message ApproveFollowRequestRequest {
 }
 
 message ApproveFollowRequestResponse {}
+
+message ApproveAllFollowRequestsRequest {}
+
+message ApproveAllFollowRequestsResponse {
+  int32 approved_count = 1;
+}
 
 message RejectFollowRequestRequest {
   string requester_profile_id = 1;

@@ -275,7 +275,7 @@ Feed::Adapters::BlockAdapter
 
 キャストが visibility を変更した場合：
 - `public` → `private`: 既存の approved フォロワーはそのまま。フォローが pending になるかは `follow_approval_required` だけで決まる。
-- `follow_approval_required` を true → false に保存すると、`ApproveAllFollowRequests` により全 pending リクエストが承認される。
+- `follow_approval_required` を変えても pending リクエストは変わらない。本人が申請タブの「すべて承認」（`ApproveAllFollowRequests`）でまとめて承認できる。
 
 ### Future Considerations
 
