@@ -27,11 +27,9 @@ module Review
           target: summaries[review.target_profile_id.to_s],
           is_mine: review.author_account_id == viewer_account_id,
           rating: review.rating,
-          status: review.status,
           events: events.map { |event| present_event(event) },
           created_at: review.created_at,
           updated_at: review.updated_at,
-          closed_at: review.closed_at,
           last_activity_at: review.last_activity_at
         }
       end

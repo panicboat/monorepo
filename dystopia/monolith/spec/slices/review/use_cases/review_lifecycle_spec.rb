@@ -23,10 +23,11 @@ RSpec.describe "Review lifecycle use cases", type: :database do
   def invalid(message) = raise_error(Review::Errors::Invalid, message)
 
   describe "creating" do
-    it "opens a review with its first event and presents the profiles" do
+    it "creates a review with its first event and presents the profiles" do
       review = create
 
-      expect(review).to include(status: "open", rating: nil, is_mine: true)
+      expect(review).to include(rating: nil, is_mine: true)
+      expect(review.keys).not_to include(:status, :closed_at)
       expect([review[:author].username, review[:target].username, review[:target].display_name]).to eq(%w[persona_a cast_one りん])
       expect(review[:events].map { |e| e.slice(:stage, :outcome, :tags) }).to eq([{ stage: "reservation", outcome: "booked", tags: %w[quick_reply] }])
     end
@@ -99,33 +100,42 @@ RSpec.describe "Review lifecycle use cases", type: :database do
       db[:profile__profiles].where(id: cast).update(disabled_at: Time.now)
 
       expect { uc(:get_review).call(viewer_account_id: other_guest_account, viewer_profile_id: other_guest, review_id: review[:id]) }.to invalid("Review not found")
-      expect { uc(:close_review).call(viewer_account_id: guest_account, review_id: review[:id]) }.to invalid("Review not found")
+      expect { uc(:update_review_rating).call(viewer_account_id: guest_account, review_id: review[:id], rating: 4) }.to invalid("Review not found")
     end
   end
 
-  describe "rating, closing and reopening" do
-    it "requires a rating to close, then freezes the review until it is reopened" do
+  describe "rating" do
+    it "changes and clears the rating" do
+      review = create(rating: 2)
+
+      expect(uc(:update_review_rating).call(viewer_account_id: guest_account, review_id: review[:id], rating: 5)[:rating]).to eq(5)
+      expect(uc(:update_review_rating).call(viewer_account_id: guest_account, review_id: review[:id], rating: nil)[:rating]).to be_nil
+    end
+
+    it "lets an unrated review take an event and a rating, with no state to check" do
       review = create
-      close = -> { uc(:close_review).call(viewer_account_id: guest_account, review_id: review[:id]) }
+      added = uc(:add_review_event).call(viewer_account_id: guest_account, review_id: review[:id], event: event_input)
 
-      expect { close.call }.to invalid("Rating required to close")
-      uc(:update_review_rating).call(viewer_account_id: guest_account, review_id: review[:id], rating: 4)
-      expect(close.call).to include(status: "closed", rating: 4)
-      expect { uc(:add_review_event).call(viewer_account_id: guest_account, review_id: review[:id], event: event_input) }.to invalid("Review is closed")
+      edited = uc(:update_review_event).call(
+        viewer_account_id: guest_account, event_id: added[:events].last[:id],
+        event: event_input.merge(outcome: "inquiry_only", occurred_on: "2026-10-02")
+      )
+      rated = uc(:update_review_rating).call(viewer_account_id: guest_account, review_id: review[:id], rating: 4)
 
-      expect(uc(:reopen_review).call(viewer_account_id: guest_account, review_id: review[:id])).to include(status: "open", rating: 4, closed_at: nil)
+      expect(edited[:events].length).to eq(2)
+      expect(rated[:rating]).to eq(4)
     end
 
     it "lets another profile of the author's account act and refuses another account" do
       review = create(rating: 3)
 
-      expect(uc(:close_review).call(viewer_account_id: guest_account, review_id: review[:id])[:status]).to eq("closed")
-      expect { uc(:reopen_review).call(viewer_account_id: other_guest_account, review_id: review[:id]) }.to forbidden
+      expect(uc(:update_review_rating).call(viewer_account_id: guest_account, review_id: review[:id], rating: 5)[:rating]).to eq(5)
+      expect { uc(:update_review_rating).call(viewer_account_id: other_guest_account, review_id: review[:id], rating: 1) }.to forbidden
     end
   end
 
   describe "events and deleting" do
-    it "adds, updates and deletes events while open" do
+    it "adds, updates and deletes events" do
       review = create
       added = uc(:add_review_event).call(
         viewer_account_id: guest_account, review_id: review[:id],
@@ -149,20 +159,18 @@ RSpec.describe "Review lifecycle use cases", type: :database do
       expect { uc(:get_review).call(viewer_account_id: guest_account, viewer_profile_id: persona_b, review_id: review[:id]) }.to invalid("Review not found")
     end
 
-    it "deletes an event of a closed review" do
+    it "deletes an event of a rated review" do
       review = create(rating: 4)
       uc(:add_review_event).call(viewer_account_id: guest_account, review_id: review[:id], event: event_input)
-      uc(:close_review).call(viewer_account_id: guest_account, review_id: review[:id])
 
       remaining = uc(:delete_review_event).call(viewer_account_id: guest_account, event_id: review[:events].first[:id])
 
-      expect(remaining).to include(status: "closed")
+      expect(remaining).to include(rating: 4)
       expect(remaining[:events].length).to eq(1)
     end
 
-    it "lets the author delete in any state and refuses another account" do
+    it "lets the author delete a rated review and refuses another account" do
       review = create(rating: 5)
-      uc(:close_review).call(viewer_account_id: guest_account, review_id: review[:id])
 
       expect { uc(:delete_review).call(viewer_account_id: other_guest_account, review_id: review[:id]) }.to forbidden
       expect(uc(:delete_review).call(viewer_account_id: guest_account, review_id: review[:id])).to be_nil

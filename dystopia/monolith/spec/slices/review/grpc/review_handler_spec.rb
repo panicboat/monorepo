@@ -33,12 +33,12 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
 
   after { Current.clear }
 
-  it "creates an open review by the acting profile" do
+  it "creates a review by the acting profile" do
     act_as(guest_account, guest)
 
     review = create_review
 
-    expect([review.status, review.rating, review.author_profile_id, review.target.username, review.is_mine]).to eq([:REVIEW_STATUS_OPEN, 0, guest, "cast_one", true])
+    expect([review.rating, review.author_profile_id, review.target.username, review.is_mine]).to eq([0, guest, "cast_one", true])
     expect(review.events.first.stage).to eq(:REVIEW_STAGE_RESERVATION)
   end
 
@@ -59,17 +59,25 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
     expect { create_review(target: create_account_with_profile(username: "guest_two")) }.to status(GRPC::Core::StatusCodes::INVALID_ARGUMENT)
   end
 
-  it "rates, closes and reopens, then lists the review with the summary for the cast" do
+  it "rates a review, then lists it with the summary for the cast" do
     act_as(guest_account, guest)
-    id = create_review(rating: 4).id
-    closed = handler_for(::Review::V1::CloseReviewRequest.new(review_id: id)).close_review.review
-    expect(closed.status).to eq(:REVIEW_STATUS_CLOSED)
+    id = create_review.id
+    rated = handler_for(::Review::V1::UpdateReviewRatingRequest.new(review_id: id, rating: 4)).update_review_rating.review
+    expect(rated.rating).to eq(4)
 
     act_as(cast_account, cast)
     listed = handler_for(::Review::V1::ListReviewsByTargetRequest.new(target_profile_id: cast)).list_reviews_by_target
     expect(listed.reviews.map(&:id)).to eq([id])
     expect([listed.summary.average_rating, listed.summary.rater_count, listed.summary.review_count]).to eq([4.0, 1, 1])
-    expect { handler_for(::Review::V1::ReopenReviewRequest.new(review_id: id)).reopen_review }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
+    expect { handler_for(::Review::V1::UpdateReviewRatingRequest.new(review_id: id, rating: 1)).update_review_rating }.to status(GRPC::Core::StatusCodes::PERMISSION_DENIED)
+  end
+
+  it "has no close or reopen RPC" do
+    expect(described_class.method_defined?(:close_review)).to be false
+    expect(described_class.method_defined?(:reopen_review)).to be false
+    expect(defined?(::Review::V1::CloseReviewRequest)).to be_nil
+    expect(defined?(::Review::V1::ReopenReviewRequest)).to be_nil
+    expect(defined?(::Review::V1::ReviewStatus)).to be_nil
   end
 
   it "lists the author's, the viewer's own and the recent reviews" do
@@ -81,7 +89,7 @@ RSpec.describe Review::Grpc::ReviewHandler, type: :database do
     recent = handler_for(::Review::V1::ListRecentReviewsRequest.new).list_recent_reviews
 
     expect([by_author.reviews.map(&:id), mine.reviews.map(&:id), recent.reviews.map(&:id)]).to eq([[id], [id], [id]])
-    expect([mine.counts.total_count, mine.counts.open_count, mine.counts.closed_count]).to eq([1, 1, 0])
+    expect([mine.counts.total_count, mine.counts.unrated_count]).to eq([1, 1])
   end
 
   it "adds, updates and deletes events" do

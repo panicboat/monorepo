@@ -13,7 +13,7 @@ module Review
 
       def call(viewer_account_id:, review_id:, event:)
         review = review_repo.transaction do
-          locked = load_own_review.call(viewer_account_id: viewer_account_id, review_id: review_id, require_open: true, lock: true)
+          locked = load_own_review.call(viewer_account_id: viewer_account_id, review_id: review_id, lock: true)
           event_repo.create(review_id: locked.id, **validate_event.call(**event))
           review_repo.record_activity(locked.id)
           review_repo.refresh_last_occurred_on(locked.id)

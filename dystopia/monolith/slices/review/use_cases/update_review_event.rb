@@ -17,7 +17,7 @@ module Review
 
         review = review_repo.transaction do
           record = find_event(event_id)
-          locked = load_own_review.call(viewer_account_id: viewer_account_id, review_id: record.review_id, require_open: true, lock: true)
+          locked = load_own_review.call(viewer_account_id: viewer_account_id, review_id: record.review_id, lock: true)
           event_repo.update(find_event(event_id).id, **validate_event.call(**event))
           review_repo.touch(locked.id)
           review_repo.refresh_last_occurred_on(locked.id)

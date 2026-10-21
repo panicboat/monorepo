@@ -10,8 +10,6 @@ service ReviewService {
   rpc GetReview(GetReviewRequest) returns (GetReviewResponse);
   rpc UpdateReviewRating(UpdateReviewRatingRequest) returns (UpdateReviewRatingResponse);
   rpc DeleteReview(DeleteReviewRequest) returns (DeleteReviewResponse);
-  rpc CloseReview(CloseReviewRequest) returns (CloseReviewResponse);
-  rpc ReopenReview(ReopenReviewRequest) returns (ReopenReviewResponse);
   rpc AddReviewEvent(AddReviewEventRequest) returns (AddReviewEventResponse);
   rpc UpdateReviewEvent(UpdateReviewEventRequest) returns (UpdateReviewEventResponse);
   rpc DeleteReviewEvent(DeleteReviewEventRequest) returns (DeleteReviewEventResponse);
@@ -19,12 +17,6 @@ service ReviewService {
   rpc ListReviewsByAuthor(ListReviewsByAuthorRequest) returns (ListReviewsByAuthorResponse);
   rpc ListMyReviews(ListMyReviewsRequest) returns (ListMyReviewsResponse);
   rpc ListRecentReviews(ListRecentReviewsRequest) returns (ListRecentReviewsResponse);
-}
-
-enum ReviewStatus {
-  REVIEW_STATUS_UNSPECIFIED = 0;
-  REVIEW_STATUS_OPEN = 1;
-  REVIEW_STATUS_CLOSED = 2;
 }
 
 enum ReviewStage {
@@ -59,15 +51,13 @@ message Review {
   string target_profile_id = 6;
   bool is_mine = 10;
   int32 rating = 11;
-  ReviewStatus status = 12;
   repeated ReviewEvent events = 13;
   google.protobuf.Timestamp created_at = 14;
   google.protobuf.Timestamp updated_at = 15;
-  google.protobuf.Timestamp closed_at = 16;
   google.protobuf.Timestamp last_activity_at = 17;
   profile.v1.ProfileSummary author = 18;
   profile.v1.ProfileSummary target = 19;
-  reserved 3, 4, 5, 7, 8, 9;
+  reserved 3, 4, 5, 7, 8, 9, 12, 16;
   reserved "author_username", "author_display_name", "author_avatar_url", "target_username", "target_display_name", "target_avatar_url";
 }
 
@@ -79,8 +69,9 @@ message RatingSummary {
 
 message ReviewCounts {
   int32 total_count = 1;
-  int32 open_count = 2;
-  int32 closed_count = 3;
+  int32 unrated_count = 2;
+  reserved 3;
+  reserved "open_count", "closed_count";
 }
 
 message CreateReviewRequest {
@@ -101,12 +92,6 @@ message UpdateReviewRatingResponse { Review review = 1; }
 
 message DeleteReviewRequest { string review_id = 1; }
 message DeleteReviewResponse {}
-
-message CloseReviewRequest { string review_id = 1; }
-message CloseReviewResponse { Review review = 1; }
-
-message ReopenReviewRequest { string review_id = 1; }
-message ReopenReviewResponse { Review review = 1; }
 
 message AddReviewEventRequest {
   string review_id = 1;

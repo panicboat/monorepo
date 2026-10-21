@@ -11,7 +11,7 @@ module Review
 
       def call(viewer_account_id:, review_id:, rating:)
         updated = review_repo.transaction do
-          review = load_own_review.call(viewer_account_id: viewer_account_id, review_id: review_id, require_open: true, lock: true)
+          review = load_own_review.call(viewer_account_id: viewer_account_id, review_id: review_id, lock: true)
           raise Errors::Invalid, "Rating must be 1..5" unless rating.nil? || (1..5).cover?(rating)
 
           review_repo.update_rating(review.id, rating)
