@@ -111,7 +111,7 @@ export function ReviewEventForm({ cast, value, onChange, rating, submitLabel, su
         <fieldset>
           <legend className="mb-2 text-sm font-bold text-text-primary">利用の満足度</legend>
           <StarRatingInput label="利用の満足度" value={rating.value} onChange={rating.onChange} />
-          <p className="mt-1 text-xs text-text-secondary">3.0 が標準。評価はクチコミ全体につき 1 つです。星は完了するときに必要です</p>
+          <p className="mt-1 text-xs text-text-secondary">3.0 が標準。評価はクチコミ全体につき 1 つです</p>
         </fieldset>
       )}
 

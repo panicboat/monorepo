@@ -23,7 +23,7 @@ export function ReviewCreateForm({ target, event, onEventChange, rating, onRatin
       value={event}
       onChange={onEventChange}
       rating={{ value: rating, onChange: onRatingChange }}
-      submitLabel="記録中のクチコミを作成"
+      submitLabel="クチコミを作成"
       submitting={loading}
       error={error?.message ?? null}
       onSubmit={async () => {

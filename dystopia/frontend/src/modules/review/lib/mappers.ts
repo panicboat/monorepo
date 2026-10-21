@@ -1,6 +1,5 @@
 import {
   ReviewStage as ReviewStageMessage,
-  ReviewStatus as ReviewStatusMessage,
   type Review as ReviewMessage,
   type ReviewCounts as ReviewCountsMessage,
   type ReviewEvent as ReviewEventMessage,
@@ -48,11 +47,9 @@ export function mapReviewToView(review: ReviewMessage): Review {
     target: review.target ? summaryToView(review.target) : null,
     isMine: !!review.isMine,
     rating: review.rating === 0 ? null : review.rating,
-    status: review.status === ReviewStatusMessage.CLOSED ? "closed" : "open",
     events: review.events.map(mapReviewEventToView),
     createdAt: toIsoString(review.createdAt),
     updatedAt: toIsoString(review.updatedAt),
-    closedAt: review.closedAt ? toIsoString(review.closedAt) : null,
     lastActivityAt: toIsoString(review.lastActivityAt),
   };
 }
@@ -77,5 +74,5 @@ export function eventInputToMessage(input: ReviewEventInput) {
 }
 
 export function mapCountsToView(counts: ReviewCountsMessage | undefined): ReviewCounts {
-  return { total: counts?.totalCount ?? 0, open: counts?.openCount ?? 0, closed: counts?.closedCount ?? 0 };
+  return { total: counts?.totalCount ?? 0, unrated: counts?.unratedCount ?? 0 };
 }

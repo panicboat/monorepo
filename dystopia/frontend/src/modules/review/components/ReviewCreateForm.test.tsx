@@ -29,7 +29,7 @@ async function mount(onCreated: () => void) {
 }
 
 const submit = (container: HTMLElement) =>
-  Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "記録中のクチコミを作成") as HTMLButtonElement;
+  Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "クチコミを作成") as HTMLButtonElement;
 
 beforeEach(() => {
   mocks.create.mockReset();
@@ -57,6 +57,6 @@ describe("ReviewCreateForm", () => {
 
     expect(mocks.create).toHaveBeenCalledWith("cast-1", null, expect.anything());
     expect(onCreated).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("記録中のクチコミを作成");
+    expect(container.textContent).toContain("クチコミを作成");
   });
 });

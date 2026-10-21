@@ -9,7 +9,7 @@ vi.mock("@/stores/authStore", () => ({
   selectIsHydrated: (state: { isHydrated: boolean }) => state.isHydrated,
 }));
 vi.mock("@/modules/review/hooks/useMyReviews", () => ({
-  useMyReviews: () => ({ reviews: [], counts: { total: 3, open: 2, closed: 1 }, hasMore: false, loading: false, loadMore: vi.fn(), refresh: vi.fn() }),
+  useMyReviews: () => ({ reviews: [], counts: { total: 3, unrated: 2 }, hasMore: false, loading: false, loadMore: vi.fn(), refresh: vi.fn() }),
 }));
 vi.mock("@/modules/review/components/ReviewList", () => ({
   ReviewList: ({ variant, empty }: { variant: string; empty: string }) => <div>list:{variant}:{empty}</div>,
@@ -53,9 +53,9 @@ describe("MyReviewsPage", () => {
     expect(html).toContain("自分のクチコミ");
     expect(html).not.toContain("ゲストだけが書けます");
     expect(html).toContain("＋ クチコミを作成");
-    expect(html).toMatch(/3<\/p><p[^>]*>自分のクチコミ/);
-    expect(html).toMatch(/2<\/p><p[^>]*>記録中/);
-    expect(html).toMatch(/1<\/p><p[^>]*>完了/);
+    expect(html).toMatch(/3<\/p><p[^>]*>合計/);
+    expect(html).toMatch(/2<\/p><p[^>]*>未評価/);
+    expect(html).not.toContain("記録中");
     expect(html).toContain("list:mine:自分のクチコミはまだありません");
   });
 });

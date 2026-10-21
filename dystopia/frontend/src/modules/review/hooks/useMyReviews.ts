@@ -7,7 +7,7 @@ import { useReviewRevalidation } from "../lib/revalidate";
 import { uniqueReviews } from "../lib/uniqueReviews";
 import type { ReviewCounts, MyReviewPage } from "../types";
 
-const NO_COUNTS: ReviewCounts = { total: 0, open: 0, closed: 0 };
+const NO_COUNTS: ReviewCounts = { total: 0, unrated: 0 };
 
 export function useMyReviews() {
   const profileId = useAuthStore((s) => s.activeProfileId);

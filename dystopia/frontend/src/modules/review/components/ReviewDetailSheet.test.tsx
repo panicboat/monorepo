@@ -13,8 +13,6 @@ const mocks = vi.hoisted(() => ({
   toast: vi.fn(),
   mutations: {
     updateRating: vi.fn(),
-    close: vi.fn(),
-    reopen: vi.fn(),
     addEvent: vi.fn(),
     updateEvent: vi.fn(),
     removeEvent: vi.fn(),
@@ -23,7 +21,19 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
-vi.mock("../hooks/useReview", () => ({ useReview: () => ({ review: mocks.current, gone: mocks.gone, error: undefined, refresh: vi.fn(), apply: mocks.apply }) }));
+vi.mock("../hooks/useReview", async () => {
+  const { useState } = await import("react");
+  return {
+    useReview: () => {
+      const [review, setReview] = useState(mocks.current);
+      const apply = (next: Review) => {
+        mocks.apply(next);
+        setReview(next);
+      };
+      return { review, gone: mocks.gone, error: undefined, refresh: vi.fn(), apply };
+    },
+  };
+});
 vi.mock("../hooks/useReviewMutations", () => ({ useReviewMutations: () => ({ ...mocks.mutations, loading: false, error: null }) }));
 vi.mock("@/stores/toastStore", () => ({
   useToastStore: (selector: (state: { show: (message: string) => void }) => unknown) => selector({ show: mocks.toast }),
@@ -43,11 +53,9 @@ const review = (overrides: Partial<Review> = {}): Review => ({
   target: { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" },
   isMine: true,
   rating: null,
-  status: "open",
   events: [event("e-1"), event("e-2", { stage: "service", outcome: "ended_early", tags: [], note: "30分で帰った", occurredOn: "2026-10-14" })],
   createdAt: "",
   updatedAt: "",
-  closedAt: null,
   lastActivityAt: "",
   ...overrides,
 });
@@ -92,49 +100,61 @@ afterEach(async () => {
 });
 
 describe("ReviewDetailSheet", () => {
-  it("shows the review's state, author and every event in order", async () => {
+  it("shows the review's author and every event in order under a plain heading", async () => {
     await mount(review());
 
     expect(text()).toContain("クチコミの詳細");
-    expect(text()).toContain("クチコミ / 記録中");
+    expect(text()).toContain("クチコミ");
+    expect(text()).not.toContain("記録中");
+    expect(text()).not.toContain("完了");
     expect(text()).toContain("@hanako · 書いた人 ゆな");
-    expect(text()).toContain("記録中のため平均評価には含まれません");
     expect(text()).toContain("予約から利用後までの記録");
     expect(text().indexOf("予約成立")).toBeLessThan(text().indexOf("途中で終了"));
     expect(text()).toContain("30分で帰った");
     expect(text()).toContain("返信が早い");
   });
 
-  it("gives the author of an open review the rating, event edits, appending and closing", async () => {
+  it("explains that a star makes the review count toward the average", async () => {
     await mount(review());
+    expect(text()).toContain("星を付けると平均評価に反映されます");
+
+    await act(async () => root.unmount());
+    document.body.innerHTML = "";
+    await mount(review({ rating: 4 }));
+    expect(text()).toContain("平均評価に反映されています");
+    expect(text()).not.toContain("星を付けると");
+  });
+
+  it("switches the explanation once a star is chosen on an unrated review", async () => {
+    mocks.mutations.updateRating.mockResolvedValue(review({ rating: 4 }));
+    await mount(review());
+    expect(text()).toContain("星を付けると平均評価に反映されます");
+
+    await click("4つ星");
+
+    expect(mocks.apply).toHaveBeenCalledWith(expect.objectContaining({ rating: 4 }));
+    expect(text()).toContain("平均評価に反映されています");
+    expect(text()).not.toContain("星を付けると");
+  });
+
+  it("gives the author the rating, event edits, appending and deleting with no completing or reopening", async () => {
+    await mount(review({ rating: 4 }));
 
     expect(button("4つ星")).toBeDefined();
     expect(button("＋ 段階を追記する")).toBeDefined();
     expect(Array.from(document.querySelectorAll("button")).filter((b) => b.textContent === "編集")).toHaveLength(2);
-    expect(button("完了する")!.disabled).toBe(true);
-    expect(text()).toContain("完了するには星を選んでください");
+    expect(button("完了する")).toBeUndefined();
+    expect(button("再オープン")).toBeUndefined();
     expect(button("このクチコミを削除")).toBeDefined();
   });
 
-  it("gives another cast no operations", async () => {
+  it("gives another guest no operations", async () => {
     await mount(review({ isMine: false }));
 
     expect(button("4つ星")).toBeUndefined();
     expect(button("編集")).toBeUndefined();
     expect(button("＋ 段階を追記する")).toBeUndefined();
-    expect(button("完了する")).toBeUndefined();
     expect(button("このクチコミを削除")).toBeUndefined();
-  });
-
-  it("gives the author of a closed review reopening and deleting only", async () => {
-    await mount(review({ status: "closed", rating: 4, closedAt: "2026-10-15T00:00:00Z" }));
-
-    expect(text()).toContain("クチコミ / 完了");
-    expect(text()).toContain("完了済みの評価は平均に反映されます");
-    expect(button("再オープン")).toBeDefined();
-    expect(button("編集")).toBeUndefined();
-    expect(button("4つ星")).toBeUndefined();
-    expect(button("このクチコミを削除")).toBeDefined();
   });
 
   it("saves a rating from the stars", async () => {
@@ -143,28 +163,6 @@ describe("ReviewDetailSheet", () => {
     await click("4つ星");
 
     expect(mocks.mutations.updateRating).toHaveBeenCalledWith("k-1", 4);
-  });
-
-  it("closes a rated review in place and confirms it", async () => {
-    const closed = review({ rating: 4, status: "closed", closedAt: "2026-10-16T00:00:00Z" });
-    mocks.mutations.close.mockResolvedValue(closed);
-    await mount(review({ rating: 4 }));
-
-    await click("完了する");
-
-    expect(mocks.mutations.close).toHaveBeenCalledWith("k-1");
-    expect(mocks.apply).toHaveBeenCalledWith(closed);
-    expect(mocks.toast).toHaveBeenCalledWith("クチコミを完了しました。平均評価へ反映します");
-    expect(onClose).not.toHaveBeenCalled();
-  });
-
-  it("reopens a closed review and confirms it", async () => {
-    await mount(review({ status: "closed", rating: 4, closedAt: "2026-10-15T00:00:00Z" }));
-
-    await click("再オープン");
-
-    expect(mocks.mutations.reopen).toHaveBeenCalledWith("k-1");
-    expect(mocks.toast).toHaveBeenCalledWith("クチコミを再オープンしました。集計から一時除外します");
   });
 
   it("appends a stage in a step of the sheet and comes back", async () => {

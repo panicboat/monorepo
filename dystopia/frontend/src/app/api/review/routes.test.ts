@@ -2,15 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { create } from "@bufbuild/protobuf";
 import { ACCESS_COOKIE } from "@/lib/auth/cookies";
-import { ReviewSchema, ReviewStage, ReviewStatus, RatingSummarySchema } from "@/stub/review/v1/service_pb";
+import { ReviewSchema, ReviewStage, RatingSummarySchema } from "@/stub/review/v1/service_pb";
 
 const reviewClient = vi.hoisted(() => ({
   createReview: vi.fn(),
   getReview: vi.fn(),
   updateReviewRating: vi.fn(),
   deleteReview: vi.fn(),
-  closeReview: vi.fn(),
-  reopenReview: vi.fn(),
   addReviewEvent: vi.fn(),
   updateReviewEvent: vi.fn(),
   deleteReviewEvent: vi.fn(),
@@ -26,8 +24,6 @@ vi.mock("@/lib/request", () => ({ buildGrpcHeaders: vi.fn(async () => ({ "x-prof
 const root = await import("./route");
 const one = await import("./[id]/route");
 const rating = await import("./[id]/rating/route");
-const close = await import("./[id]/close/route");
-const reopen = await import("./[id]/reopen/route");
 const events = await import("./[id]/events/route");
 const event = await import("./events/[eventId]/route");
 const byTarget = await import("./by-target/route");
@@ -35,7 +31,7 @@ const byAuthor = await import("./by-author/route");
 const my = await import("./my/route");
 const recent = await import("./recent/route");
 
-const review = create(ReviewSchema, { id: "k-1", rating: 0, status: ReviewStatus.OPEN });
+const review = create(ReviewSchema, { id: "k-1", rating: 0 });
 const eventBody = { stage: "service", outcome: "satisfied", tags: ["late"], note: "遅刻", occurredOn: "2026-10-01" };
 const eventMessage = { stage: ReviewStage.SERVICE, outcome: "satisfied", tags: ["late"], note: "遅刻", occurredOn: "2026-10-01" };
 
@@ -57,7 +53,7 @@ describe("POST /api/review", () => {
 
     expect(res.status).toBe(200);
     expect(reviewClient.createReview).toHaveBeenCalledWith({ targetProfileId: "cast-1", rating: 0, event: eventMessage }, expect.anything());
-    expect((await res.json()).review).toMatchObject({ id: "k-1", rating: null, status: "open" });
+    expect((await res.json()).review).toMatchObject({ id: "k-1", rating: null });
   });
 
   it("rejects a request without a well-formed event", async () => {
@@ -84,14 +80,10 @@ describe("one review", () => {
     expect(await deleted.json()).toEqual({ ok: true });
   });
 
-  it("rates, closes and reopens a review", async () => {
+  it("rates a review", async () => {
     await rating.PATCH(request("/api/review/k-1/rating", "PATCH", { rating: null }), params({ id: "k-1" }));
-    await close.POST(request("/api/review/k-1/close", "POST"), params({ id: "k-1" }));
-    await reopen.POST(request("/api/review/k-1/reopen", "POST"), params({ id: "k-1" }));
 
     expect(reviewClient.updateReviewRating).toHaveBeenCalledWith({ reviewId: "k-1", rating: 0 }, expect.anything());
-    expect(reviewClient.closeReview).toHaveBeenCalledWith({ reviewId: "k-1" }, expect.anything());
-    expect(reviewClient.reopenReview).toHaveBeenCalledWith({ reviewId: "k-1" }, expect.anything());
   });
 
   it("adds, updates and deletes an event", async () => {
@@ -115,9 +107,9 @@ describe("one review", () => {
   });
 
   it("answers 500 when the server returns no review", async () => {
-    reviewClient.closeReview.mockResolvedValue({});
+    reviewClient.updateReviewRating.mockResolvedValue({});
 
-    const res = await close.POST(request("/api/review/k-1/close", "POST"), params({ id: "k-1" }));
+    const res = await rating.PATCH(request("/api/review/k-1/rating", "PATCH", { rating: 4 }), params({ id: "k-1" }));
 
     expect(res.status).toBe(500);
   });

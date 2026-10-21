@@ -40,8 +40,6 @@ describe("useReviewMutations", () => {
     const calls: [string, unknown][] = [
       ["create", () => hook.current!.create("guest-1", null, event)],
       ["rating", () => hook.current!.updateRating("k-1", 4)],
-      ["close", () => hook.current!.close("k-1")],
-      ["reopen", () => hook.current!.reopen("k-1")],
       ["add", () => hook.current!.addEvent("k-1", event)],
       ["update", () => hook.current!.updateEvent("e-1", event)],
     ];
@@ -56,8 +54,6 @@ describe("useReviewMutations", () => {
     expect(mocks.authFetch.mock.calls).toEqual([
       ["/api/review", { method: "POST", body: { targetProfileId: "guest-1", rating: null, event } }],
       ["/api/review/k-1/rating", { method: "PATCH", body: { rating: 4 } }],
-      ["/api/review/k-1/close", { method: "POST", body: undefined }],
-      ["/api/review/k-1/reopen", { method: "POST", body: undefined }],
       ["/api/review/k-1/events", { method: "POST", body: { event } }],
       ["/api/review/events/e-1", { method: "PATCH", body: { event } }],
     ]);
@@ -84,25 +80,25 @@ describe("useReviewMutations", () => {
   });
 
   it("keeps the server's message and returns null when a change fails", async () => {
-    mocks.authFetch.mockRejectedValue(new Error("Rating required to close"));
+    mocks.authFetch.mockRejectedValue(new Error("Rating out of range"));
     let result: unknown = "untouched";
 
     await act(async () => {
-      result = await hook.current!.close("k-1");
+      result = await hook.current!.updateRating("k-1", 4);
     });
 
     expect(result).toBeNull();
-    expect(hook.current!.error?.message).toBe("Rating required to close");
+    expect(hook.current!.error?.message).toBe("Rating out of range");
   });
 
   it("refreshes the review data after a change, whether it worked or not", async () => {
     revalidate.revalidateReview.mockClear();
     await act(async () => {
-      await hook.current!.close("k-1");
+      await hook.current!.updateRating("k-1", 4);
     });
     expect(revalidate.revalidateReview).toHaveBeenCalledTimes(1);
 
-    mocks.authFetch.mockRejectedValue(new Error("Review is closed"));
+    mocks.authFetch.mockRejectedValue(new Error("Review not found"));
     await act(async () => {
       await hook.current!.addEvent("k-1", event);
     });

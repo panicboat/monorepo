@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { SideSheet } from "@/components/ui/side-sheet";
 import { StarRatingInput } from "@/components/ui/star-rating-input";
 import { ProfileName, profileDisplayName } from "@/components/ui/profile-name";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { formatMonthDay } from "@/lib/utils/japan-date";
 import { useToastStore } from "@/stores/toastStore";
 import { useReview } from "../hooks/useReview";
@@ -29,7 +28,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
   const [deleting, setDeleting] = useState(false);
   const { review: current, gone, apply } = useReview(open && !deleting ? initial.id : null, initial);
   const review = current ?? initial;
-  const { updateRating, close, reopen, addEvent, updateEvent, removeEvent, remove, loading, error } = useReviewMutations();
+  const { updateRating, addEvent, updateEvent, removeEvent, remove, loading, error } = useReviewMutations();
   const showToast = useToastStore((s) => s.show);
   const [step, setStep] = useState<Step>({ kind: "detail" });
   const [appendDraft, setAppendDraft] = useState<ReviewEventInput>(() => emptyReviewEvent());
@@ -39,8 +38,6 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
     if (open && gone) onClose();
   }, [open, gone, onClose]);
 
-  const isOpen = review.status === "open";
-  const editable = review.isMine && isOpen;
   const confirmed = async (request: () => Promise<Review | null>, message?: string) => {
     const result = await request();
     if (result) {
@@ -116,7 +113,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
             {error.message}
           </p>
         )}
-        <p className="text-xs font-bold tracking-wide text-text-secondary">クチコミ / {isOpen ? "記録中" : "完了"}</p>
+        <p className="text-xs font-bold tracking-wide text-text-secondary">クチコミ</p>
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center gap-3">
             <Avatar src={review.target?.avatarUrl || undefined} fallback={profileDisplayName(review.target).replace("@", "").slice(0, 1) || "?"} size="sm" />
@@ -131,12 +128,11 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
             <p className="text-3xl font-bold text-text-primary">
               {review.rating === null ? "—" : review.rating.toFixed(1)} <span className="text-base text-rating">★</span>
             </p>
-            <StatusBadge tone={review.status === "open" ? "warning" : "success"}>{review.status === "open" ? "記録中" : "完了"}</StatusBadge>
           </div>
           <p className="mt-2 text-xs text-text-secondary">
-            {isOpen ? "記録中のため平均評価には含まれません" : "完了済みの評価は平均に反映されます"}
+            {review.rating === null ? "星を付けると平均評価に反映されます" : "平均評価に反映されています"}
           </p>
-          {editable && (
+          {review.isMine && (
             <div className="mt-3">
               <StarRatingInput label="利用の満足度" value={review.rating} disabled={loading} onChange={(rating) => void confirmed(() => updateRating(review.id, rating))} />
             </div>
@@ -164,11 +160,9 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
                 <p className="mt-2 text-xs text-text-secondary">発生日 {formatMonthDay(event.occurredOn)}</p>
                 {review.isMine && (
                   <div className="mt-2 flex gap-4 text-sm text-text-secondary">
-                    {editable && (
-                      <button type="button" onClick={() => startEdit(event.id)} className="hover:text-text-primary">
-                        編集
-                      </button>
-                    )}
+                    <button type="button" onClick={() => startEdit(event.id)} className="hover:text-text-primary">
+                      編集
+                    </button>
                     <button
                       type="button"
                       disabled={loading}
@@ -184,7 +178,7 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
           </ol>
         </section>
 
-        {editable && (
+        {review.isMine && (
           <Button type="button" variant="secondary" onClick={() => setStep({ kind: "append" })}>
             ＋ 段階を追記する
           </Button>
@@ -192,26 +186,6 @@ export function ReviewDetailSheet({ review: initial, open, onClose }: ReviewDeta
 
         {review.isMine && (
           <div className="flex flex-col gap-2 border-t border-divider pt-4">
-            {isOpen ? (
-              <>
-                <Button
-                  type="button"
-                  disabled={loading || review.rating === null}
-                  onClick={() => void confirmed(() => close(review.id), "クチコミを完了しました。平均評価へ反映します")}
-                >
-                  完了する
-                </Button>
-                {review.rating === null && <p className="text-xs text-text-secondary">完了するには星を選んでください</p>}
-              </>
-            ) : (
-              <Button
-                type="button"
-                disabled={loading}
-                onClick={() => void confirmed(() => reopen(review.id), "クチコミを再オープンしました。集計から一時除外します")}
-              >
-                再オープン
-              </Button>
-            )}
             <button
               type="button"
               disabled={loading}

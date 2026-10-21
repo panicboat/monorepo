@@ -47,13 +47,13 @@ describe("useMyReviews counts", () => {
   it("takes the counts from the first page and drops a review repeated on a later page", () => {
     mocks.state = { activeProfileId: "p-1", role: "guest" };
     mocks.data = [
-      { reviews: [{ id: "a" }, { id: "b" }], hasMore: true, nextCursor: "c1", counts: { total: 3, open: 2, closed: 1 } },
-      { reviews: [{ id: "b" }, { id: "c" }], hasMore: false, nextCursor: "", counts: { total: 0, open: 0, closed: 0 } },
+      { reviews: [{ id: "a" }, { id: "b" }], hasMore: true, nextCursor: "c1", counts: { total: 3, unrated: 2 } },
+      { reviews: [{ id: "b" }, { id: "c" }], hasMore: false, nextCursor: "", counts: { total: 0, unrated: 0 } },
     ];
 
     const result = useMyReviews();
 
-    expect(result.counts).toEqual({ total: 3, open: 2, closed: 1 });
+    expect(result.counts).toEqual({ total: 3, unrated: 2 });
     expect(result.reviews.map((k) => k.id)).toEqual(["a", "b", "c"]);
     mocks.data = undefined;
   });

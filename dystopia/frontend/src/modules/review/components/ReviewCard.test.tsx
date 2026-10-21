@@ -25,14 +25,12 @@ const review = (overrides: Partial<Review> = {}): Review => ({
   target: { profileId: "cast-1", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" },
   isMine: true,
   rating: null,
-  status: "open",
   events: [
     event("e-1"),
     event("e-2", { stage: "service", outcome: "ended_early", tags: ["late", "not_as_pictured", "unagreed_charge"], note: "30分で帰った", occurredOn: "2026-10-14" }),
   ],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
-  closedAt: null,
   lastActivityAt: new Date().toISOString(),
   ...overrides,
 });
@@ -55,17 +53,18 @@ describe("ReviewCard", () => {
     expect(text).toContain("@hanako");
     expect(text).toContain("未評価");
     expect(text).toContain("10/14 · 利用 · 途中で終了 — 30分で帰った");
-    expect(text).toContain("記録中");
+    expect(text).not.toContain("記録中");
+    expect(text).not.toContain("完了");
     expect(text).toContain("遅刻あり");
     expect(text).toContain("写真・プロフィールと違う");
     expect(text).not.toContain("合意していない料金・要求あり");
   });
 
-  it("shows the rating and the closed state", async () => {
-    const text = (await mount({ review: review({ rating: 4, status: "closed", closedAt: new Date().toISOString() }), variant: "feed" })).textContent;
+  it("shows the rating and no state mark", async () => {
+    const text = (await mount({ review: review({ rating: 4 }), variant: "feed" })).textContent;
 
     expect(text).toContain("★ 4.0");
-    expect(text).toContain("完了");
+    expect(text).not.toContain("完了");
     expect(text).not.toContain("記録中");
   });
 

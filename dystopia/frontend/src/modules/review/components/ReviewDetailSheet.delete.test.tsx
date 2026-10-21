@@ -19,7 +19,7 @@ vi.mock("@/stores/toastStore", () => ({
 }));
 vi.mock("../hooks/useReviewMutations", () => ({
   useReviewMutations: () => ({
-    updateRating: vi.fn(), close: vi.fn(), reopen: vi.fn(), addEvent: vi.fn(), updateEvent: vi.fn(), removeEvent: mocks.removeEvent,
+    updateRating: vi.fn(), addEvent: vi.fn(), updateEvent: vi.fn(), removeEvent: mocks.removeEvent,
     remove: mocks.remove, loading: false, error: null,
   }),
 }));
@@ -30,9 +30,9 @@ const { revalidateReview } = await import("../lib/revalidate");
 const subject = {
   id: "k-1", authorProfileId: "a", author: { profileId: "a", username: "yuna", displayName: "ゆな", avatarUrl: "", isPrivate: false, role: "guest" },
   targetProfileId: "g", target: { profileId: "g", username: "hanako", displayName: "はなこ", avatarUrl: "", isPrivate: false, role: "cast" },
-  isMine: true, rating: null, status: "open",
+  isMine: true, rating: null,
   events: [{ id: "e-1", stage: "reservation", outcome: "booked", tags: [], note: "", occurredOn: "2026-10-01", createdAt: "", updatedAt: "" }],
-  createdAt: "", updatedAt: "", closedAt: null, lastActivityAt: "",
+  createdAt: "", updatedAt: "", lastActivityAt: "",
 } as Review;
 
 afterEach(() => {
@@ -129,11 +129,4 @@ describe("ReviewDetailSheet deleting", () => {
     await act(async () => root.unmount());
   });
 
-  it("offers deleting events of a completed review but not editing them", async () => {
-    const root = await renderSheet({ ...subject, status: "closed", rating: 4 } as Review);
-
-    expect(buttons("削除")).toHaveLength(1);
-    expect(buttons("編集")).toHaveLength(0);
-    await act(async () => root.unmount());
-  });
 });
