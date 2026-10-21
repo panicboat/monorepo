@@ -1,14 +1,17 @@
 "use client";
 
+import { useSWRConfig } from "swr";
 import useSWRInfinite from "swr/infinite";
 import { useCallback } from "react";
 import { fetcher } from "@/lib/swr";
 import { profileRequestHeaders } from "@/lib/auth/profile-headers";
 import { useAuthStore } from "@/stores/authStore";
 import type { PaginatedNotificationsResponse } from "../types";
+import { UNREAD_COUNT_KEY } from "./useUnreadCount";
 
 export function useNotifications() {
   const profileId = useAuthStore((s) => s.activeProfileId);
+  const { mutate: mutateGlobal } = useSWRConfig();
 
   const getKey = (pageIndex: number, prev: PaginatedNotificationsResponse | null): string | null => {
     if (!profileId) return null;
@@ -45,7 +48,8 @@ export function useNotifications() {
         })),
       { revalidate: false }
     );
-  }, [mutate]);
+    void mutateGlobal(UNREAD_COUNT_KEY);
+  }, [mutate, mutateGlobal]);
 
   const markRead = useCallback(async (id: string) => {
     if (!useAuthStore.getState().activeProfileId) throw new Error("Not authenticated");
@@ -67,7 +71,8 @@ export function useNotifications() {
         })),
       { revalidate: false }
     );
-  }, [mutate]);
+    void mutateGlobal(UNREAD_COUNT_KEY);
+  }, [mutate, mutateGlobal]);
 
   return {
     notifications,
