@@ -275,5 +275,31 @@ RSpec.describe "Post::Repositories::PostRepository", type: :database do
 
       expect(ids).to eq([newest.id, *tied.map(&:id).sort.reverse, live.id])
     end
+
+    it "orders search and hashtags by the display start and pages through equal starts without gaps or repeats" do
+      shared = now - 60
+      tied = Array.new(3) do
+        repo.create_post(author_profile_id: cast_id, content: "window tied #w", visibility: "public", published_at: shared).tap { |post| repo.save_hashtags(post_id: post.id, hashtags: ["w"]) }
+      end
+      newest = repo.create_post(author_profile_id: cast_id, content: "window newest #w", visibility: "public", published_at: now - 30, created_at: now - 86_400)
+      repo.save_hashtags(post_id: newest.id, hashtags: ["w"])
+      expected = [newest.id, *tied.map(&:id).sort.reverse, live.id]
+
+      page_through = lambda do |search|
+        ids = []
+        cursor = nil
+        loop do
+          page = search.call(cursor)
+          ids.concat(page.first(2))
+          break if page.length <= 2
+
+          cursor = { published_at: repo.published_at_for_id(page[1]), id: page[1] }
+        end
+        ids
+      end
+
+      expect(page_through.call(->(cursor) { repo.search_by_content(query: "window", limit: 2, cursor: cursor) })).to eq(expected)
+      expect(page_through.call(->(cursor) { repo.search_by_hashtag(tag: "w", limit: 2, cursor: cursor) })).to eq(expected)
+    end
   end
 end

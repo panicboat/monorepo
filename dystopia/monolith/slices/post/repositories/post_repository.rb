@@ -9,10 +9,6 @@ module Post
         posts.combine(:post_media, :hashtags, :post_mentions).by_pk(id).one
       end
 
-      def created_at_for_id(id)
-        posts.dataset.where(id: id).get(:created_at)
-      end
-
       def published_at_for_id(id)
         posts.dataset.where(id: id).get(:published_at)
       end
@@ -188,12 +184,12 @@ module Post
       def newest_ids(scope, limit:, cursor:)
         if cursor
           scope = scope.where {
-            (created_at < cursor[:created_at]) |
-              ((created_at =~ cursor[:created_at]) & (id < cursor[:id]))
+            (published_at < cursor[:published_at]) |
+              ((published_at =~ cursor[:published_at]) & (id < cursor[:id]))
           }
         end
 
-        scope.order(Sequel.desc(:created_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
+        scope.order(Sequel.desc(:published_at), Sequel.desc(:id)).limit(limit + 1).select_map(:id).map(&:to_s)
       end
     end
   end
