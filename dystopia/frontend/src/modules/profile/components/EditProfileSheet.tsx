@@ -30,7 +30,6 @@ interface FormState {
   bio: string;
   prefecture: string;
   area: string;
-  website: string;
   age: string;
   heightCm: string;
   bust: string;
@@ -55,7 +54,6 @@ function toForm(p: ProfileView): FormState {
     bio: p.bio,
     prefecture: p.prefecture,
     area: p.area,
-    website: p.website,
     age: p.age ? String(p.age) : "",
     heightCm: p.bodyStats.heightCm ? String(p.bodyStats.heightCm) : "",
     bust: p.bodyStats.bust ? String(p.bodyStats.bust) : "",
@@ -77,7 +75,6 @@ function buildPayload(f: FormState, isCast: boolean): SaveProfilePayload {
     username: f.username,
     displayName: f.displayName,
     bio: f.bio,
-    website: f.website,
     snsLinks: {
       x: f.snsX,
       instagram: f.snsInstagram,
@@ -203,15 +200,6 @@ export function EditProfileSheet({ open, onOpenChange, profile, isCast, onSave, 
               </Select>
             )}
           </div>
-        </FormField>
-
-        <FormField label="ウェブサイト" htmlFor="website">
-          <Input
-            id="website"
-            value={form.website}
-            onChange={(e) => set("website", e.target.value)}
-            placeholder="https://"
-          />
         </FormField>
 
         {isCast && (

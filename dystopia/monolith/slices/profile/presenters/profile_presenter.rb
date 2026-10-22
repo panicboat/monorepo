@@ -16,7 +16,6 @@ module Profile
             avatar_url: media_files[profile.avatar_media_id]&.url || "",
             cover_media_id: profile.cover_media_id || "",
             cover_url: media_files[profile.cover_media_id]&.url || "",
-            website: profile.website || "",
             sns_links: sns_links_proto(cast&.sns_links),
             prefecture: profile.prefecture || "",
             area: profile.area || "",

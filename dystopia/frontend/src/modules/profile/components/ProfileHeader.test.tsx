@@ -13,7 +13,6 @@ const profile: ProfileView = {
   avatarUrl: "",
   coverMediaId: "",
   coverUrl: "",
-  website: "",
   snsLinks: { x: "", instagram: "", tiktok: "", bluesky: "", line: "", cityheaven: "" },
   prefecture: "東京都",
   area: "",

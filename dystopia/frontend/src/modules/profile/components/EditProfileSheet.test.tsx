@@ -36,6 +36,8 @@ describe("EditProfileSheet", () => {
 
     expect(options).toContain("🚗 デリヘル");
     expect(options).toContain("🛁 ソープ");
+    expect(document.querySelector("#website")).toBeNull();
+    expect(document.body.textContent).not.toContain("ウェブサイト");
 
     await act(async () => {
       root.unmount();

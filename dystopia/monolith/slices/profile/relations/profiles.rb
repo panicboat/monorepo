@@ -9,7 +9,6 @@ module Profile
         attribute :bio, Types::String.optional
         attribute :avatar_media_id, Types::String.optional
         attribute :cover_media_id, Types::String.optional
-        attribute :website, Types::String.optional
         attribute :prefecture, Types::String.optional
         attribute :area, Types::String.optional
         attribute :is_private, Types::Bool

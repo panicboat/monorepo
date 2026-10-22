@@ -42,7 +42,6 @@ export default function DevUiPage() {
     avatarUrl: "",
     coverMediaId: "",
     coverUrl: "",
-    website: "https://example.com",
     snsLinks: { x: "https://x.com/yuna", instagram: "", tiktok: "", bluesky: "", line: "", cityheaven: "" },
     prefecture: "東京都",
     area: "新宿",

@@ -88,16 +88,6 @@ export function ProfileHeader({ profile, role, actions }: ProfileHeaderProps) {
             </span>
           )}
         </div>
-        {profile.website && (
-          <a
-            href={profile.website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-accent hover:underline"
-          >
-            {profile.website}
-          </a>
-        )}
         {sns.length > 0 && (
           <div className="flex flex-wrap gap-3 pt-1">
             {sns.map(({ key, label }) => (

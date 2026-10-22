@@ -95,7 +95,6 @@ module Profile
           username: blank_to_nil(m.username),
           display_name: m.display_name,
           bio: blank_to_nil(m.bio),
-          website: blank_to_nil(m.website),
           sns_links: sns_links_to_hash(m.sns_links),
           prefecture: blank_to_nil(m.prefecture),
           area: blank_to_nil(m.area),

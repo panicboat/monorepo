@@ -7,7 +7,7 @@ require "slices/profile/presenters/profile_presenter"
 RSpec.describe Profile::Presenters::ProfilePresenter do
   let(:profile_struct) do
     Struct.new(:id, :account_id, :username, :display_name, :bio, :avatar_media_id, :cover_media_id,
-      :website, :prefecture, :is_private, :follow_approval_required, :registered_at, :disabled_at, :area)
+      :prefecture, :is_private, :follow_approval_required, :registered_at, :disabled_at, :area)
   end
 
   let(:cast_struct) do
@@ -16,7 +16,7 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
 
   describe ".to_proto" do
     it "maps body_stats into a BodyStats proto" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, false, nil, nil)
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, false, false, nil, nil)
       cast = cast_struct.new(
         {}, 24, { "height_cm" => 158, "bust" => 88, "waist" => 58, "hip" => 86, "cup" => "D" }, nil
       )
@@ -31,7 +31,7 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
     end
 
     it "defaults body_stats and age fields to zero/empty when cast is nil" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, false, nil, nil)
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, false, false, nil, nil)
 
       proto = described_class.to_proto(profile, cast: nil)
 
@@ -41,7 +41,7 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
     end
 
     it "maps the prefecture and the main area" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, "東京都", false, false, nil, nil, "新宿")
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, "東京都", false, false, nil, nil, "新宿")
 
       proto = described_class.to_proto(profile)
 
@@ -50,7 +50,7 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
     end
 
     it "maps the cityheaven sns link" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, false, nil, nil)
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, false, false, nil, nil)
       cast = cast_struct.new({ "cityheaven" => "https://www.cityheaven.net/example/" }, nil, {}, nil)
 
       proto = described_class.to_proto(profile, cast: cast)
@@ -58,12 +58,13 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
       expect(proto.sns_links.cityheaven).to eq("https://www.cityheaven.net/example/")
     end
 
-    it "no longer exposes cup_size, height_cm, or shop_id on the proto" do
-      expect(::Profile::V1::Profile.descriptor.map(&:name)).not_to include("cup_size", "height_cm", "shop_id")
+    it "no longer exposes cup_size, height_cm, shop_id, or website on the proto" do
+      expect(::Profile::V1::Profile.descriptor.map(&:name)).not_to include("cup_size", "height_cm", "shop_id", "website")
+      expect(::Profile::V1::SaveProfileRequest.descriptor.map(&:name)).not_to include("website")
     end
 
     it "exposes the profile id and has no field for the account id" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, false, nil, nil)
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, false, false, nil, nil)
 
       proto = described_class.to_proto(profile)
 
@@ -73,7 +74,7 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
     end
 
     it "maps follow_approval_required independently of is_private" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, true, nil, nil)
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, false, true, nil, nil)
 
       proto = described_class.to_proto(profile)
 
@@ -81,7 +82,7 @@ RSpec.describe Profile::Presenters::ProfilePresenter do
     end
 
     it "reports the disabled state only for the owner" do
-      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, nil, false, false, nil, Time.now)
+      profile = profile_struct.new("prof-1", "acc-1", "coco", "Coco", "bio", nil, nil, nil, false, false, nil, Time.now)
 
       expect(described_class.to_proto(profile, own: true).disabled).to be true
       expect(described_class.to_proto(profile).disabled).to be false

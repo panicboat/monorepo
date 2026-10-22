@@ -26,7 +26,6 @@ export interface ProfileView {
   avatarUrl: string;
   coverMediaId: string;
   coverUrl: string;
-  website: string;
   snsLinks: SnsLinksView;
   prefecture: string;
   area: string;
@@ -53,7 +52,6 @@ export interface SaveProfilePayload {
   username?: string;
   displayName: string;
   bio?: string;
-  website?: string;
   snsLinks?: Partial<SnsLinksView>;
   prefecture?: string;
   area?: string;

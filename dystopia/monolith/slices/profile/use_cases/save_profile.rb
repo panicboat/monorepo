@@ -12,7 +12,7 @@ module Profile
       USERNAME_FORMAT = /\A[A-Za-z0-9_]{3,30}\z/
       ROLE_CAST = 2
 
-      def call(profile_id:, display_name:, username: nil, bio: nil, website: nil,
+      def call(profile_id:, display_name:, username: nil, bio: nil,
                sns_links: {}, prefecture: nil, area: nil, is_private: false, age: nil,
                body_stats: {}, industry: nil, follow_approval_required: false)
         current = profile_repository.find_by_id(profile_id)
@@ -25,7 +25,6 @@ module Profile
         attrs = {
           display_name: display_name,
           bio: bio,
-          website: website,
           prefecture: prefecture,
           area: prefecture ? area : nil,
           is_private: is_private ? true : false,
